@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport-fit=cover lets the canvas run under the notch; the touch
+       controls pull themselves back inside the safe area in CSS. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#04060b">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Asteroid Blaster, in 3D. Fly, dodge and refit your way through the sector.">
+  <title>Asteroid Blaster</title>
+  <link rel="stylesheet" href="./src/styles/main.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="view" aria-label="Game view"></canvas>
+    <!-- Touch controls. Hidden on fine pointers by CSS; input/touch.ts wires
+         them. The whole layer is the stick's catchment, as in the original:
+         the ring comes to the thumb instead of the thumb hunting for it. -->
+    <div id="touch" aria-hidden="true">
+      <div id="stick"><div id="knob"></div></div>
+      <button type="button" id="release">Release</button>
+    </div>
+    <!-- Copy from COPY-game.md § 07. Placeholder chrome until the LCARS
+         pass (M7). -->
+    <div id="pause" role="status">
+      <div class="pause-t">All stop</div>
+      <div class="pause-h only-desktop">Click or press any key to resume</div>
+      <div class="pause-h only-touch">Tap to resume</div>
+    </div>
+    <div id="debug" aria-hidden="true"></div>
+  </div>
+  <noscript>Asteroid Blaster needs JavaScript and WebGL to run.</noscript>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

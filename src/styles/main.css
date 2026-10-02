@@ -1,0 +1,150 @@
+/* Tokens carried over from the original's css/game.css, so the LCARS pass
+   (M7) starts from the same palette rather than a new one. */
+:root {
+  --space: #04060b;
+  --cyan: #00f0ff;
+  --hot: #ff2d78;
+  --amber: #ff9f43;
+  --violet: #c77dff;
+  --frame: #4dffa6;
+  --ink: #e8ebff;
+  --mute: #7c85b8;
+  --mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, monospace;
+  --ez: cubic-bezier(.2, .7, .2, 1);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--space);
+  color: var(--ink);
+  font-family: var(--mono);
+  /* A game, not a page: no scrolling, no pull-to-refresh, no rubber band,
+     no text selection or callout menu under a held thumb. */
+  overscroll-behavior: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#view {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── touch controls ─────────────────────────────────────────────────────
+   Ported from the original. The layer catches every touch; the ring rests
+   bottom-left as an affordance and jumps to the thumb when one lands. */
+#touch {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+}
+
+#stick, #release { display: none; }
+.touch-ui #stick, .touch-ui #release { display: block; }
+
+#stick {
+  position: absolute;
+  left: calc(clamp(1rem, 5vw, 2rem) + env(safe-area-inset-left));
+  bottom: calc(clamp(1.4rem, 7vh, 3rem) + env(safe-area-inset-bottom));
+  width: clamp(118px, 34vw, 168px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(3, 9, 17, .42);
+  border: 1px solid rgba(0, 240, 255, .3);
+  pointer-events: none;
+  opacity: .6;
+  transition: opacity .18s var(--ez), background .18s var(--ez);
+}
+/* While a thumb is down the ring is anchored to it by inline left/top. */
+#stick.free { left: 0; bottom: auto; top: 0; transform: translate(-50%, -50%); }
+#stick.on { opacity: 1; background: rgba(3, 9, 17, .6); border-color: rgba(0, 240, 255, .65); }
+
+#knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  height: 44%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(0, 240, 255, .2);
+  border: 1px solid rgba(0, 240, 255, .75);
+  transition: transform .07s linear;
+}
+#stick.on #knob { background: rgba(0, 240, 255, .4); }
+
+#release {
+  position: absolute;
+  right: calc(clamp(1rem, 5vw, 2rem) + env(safe-area-inset-right));
+  bottom: calc(clamp(1.4rem, 7vh, 3rem) + env(safe-area-inset-bottom));
+  width: clamp(74px, 20vw, 104px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 240, 255, .2);
+  background: rgba(6, 3, 10, .5);
+  color: var(--mute);
+  font: 600 clamp(9px, 2.4vw, 11px) / 1 var(--mono);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  touch-action: none;
+  opacity: .32;
+}
+
+/* ── pause ──────────────────────────────────────────────────────────── */
+#pause {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  background: rgba(4, 6, 11, .55);
+}
+.paused #pause { display: flex; }
+.pause-t {
+  color: var(--cyan);
+  font-size: clamp(22px, 5vw, 34px);
+  font-weight: 700;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+}
+.pause-h {
+  color: var(--mute);
+  font-size: clamp(10px, 2.6vw, 12px);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+.only-touch { display: none; }
+.touch-ui .only-touch { display: block; }
+.touch-ui .only-desktop { display: none; }
+
+/* ── debug readout ──────────────────────────────────────────────────── */
+#debug {
+  position: absolute;
+  top: calc(.5rem + env(safe-area-inset-top));
+  left: calc(.5rem + env(safe-area-inset-left));
+  padding: .5rem .65rem;
+  background: rgba(4, 6, 11, .7);
+  border: 1px solid rgba(0, 240, 255, .2);
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre;
+  pointer-events: none;
+}
+#debug[hidden] { display: none; }
