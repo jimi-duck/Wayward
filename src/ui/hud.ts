@@ -6,15 +6,17 @@ import { ENCOUNTERS } from '../sim/encounters';
 import type { GameEvent } from '../sim/events';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
+import { POINTS_PER_REFIT } from '../sim/web';
 import type { World } from '../sim/world';
-import { systemLevel } from './panels';
+import { systemLevel } from './loadout';
 import { Radar } from './radar';
 import { range, Targeting } from './targeting';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view, as in the reference frames, with nothing
 // on it that does not earn its place while flying:
-//   top edge     · the refit rail: dilithium toward the next refit, violet
+//   top edge     · the refit rail: dilithium toward the next refit, violet,
+//                  and the refit web's banked points (R or a tap opens it)
 //   top right    · ship systems, one panel: the build's name; phasers, then
 //                  torpedoes and mines once they are fitted, and the warp
 //                  core, each with its key, a gauge, a reading and the level
@@ -29,6 +31,7 @@ import { range, Targeting } from './targeting';
 // Alerts are placards that come and go. Every figure is live. Text is
 // written ten times a second, the scope thirty, the world every frame.
 
+const FACTION_NAME: Record<string, string> = { klingon: 'Klingon', cardassian: 'Cardassian', romulan: 'Romulan', borg: 'Borg', tholian: 'Tholian' };
 const LOG_LINES = 2;
 const LOG_LIFE = 4.5;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -139,7 +142,9 @@ export class Hud {
         case 'overcharge': this.note(world, `Overcharge released · ${e.hits} hit${e.hits === 1 ? '' : 's'}`, 'gain'); break;
         case 'chain': this.note(world, `Chain ${e.count} · score ×${e.mult}`, 'gain'); break;
         case 'squad': this.note(world, `${e.label} inbound`, 'hit'); break;
-        case 'levelUp': this.banner('Dilithium hold full', `Refit ${pad(e.refit, 2)}`, 'Stand by for refit', 0.9, 'gain'); break;
+        case 'levelUp': this.banner('Dilithium hold full', `Refit ${pad(e.refit, 2)}`, `+${POINTS_PER_REFIT} points for the refit web`, 0.9, 'gain'); break;
+        case 'salvage': this.note(world, `Salvage · +${e.points} web points${e.tech ? ` · ${FACTION_NAME[e.faction] ?? e.faction} tech open` : ''}`, 'gain'); break;
+        case 'cloak': this.note(world, 'Cloaked · hulls hold fire', 'gain'); break;
         case 'shipHit':
           this.note(world, `Hull struck · ${e.source.split(':')[0]}`, 'hit');
           this.flashHit();
@@ -196,6 +201,8 @@ export class Hud {
     text($('xp-n'), String(world.xpNext));
     ticks($('xp'), world.xp / world.xpNext, 60);
     $('rail').classList.toggle('full', world.celebrate > 0);
+    text($('rail-pts'), String(world.points));
+    $('rail-web').classList.toggle('has', world.points > 0);
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
@@ -307,7 +314,8 @@ export class Hud {
 
     // power-ups running
     const live = (Object.keys(world.powers) as Array<keyof typeof world.powers>).filter((k) => world.powers[k] > 0);
-    const pk = live.map((k) => `${k}${Math.ceil(world.powers[k])}`).join() + (world.phaseT > 0 ? `phase${Math.ceil(world.phaseT)}` : '');
+    const pk = live.map((k) => `${k}${Math.ceil(world.powers[k])}`).join() + (world.phaseT > 0 ? `phase${Math.ceil(world.phaseT)}` : '')
+      + (world.cloakT > 0 ? `cloak${Math.ceil(world.cloakT)}` : '');
     if (pk !== this.powerKey) {
       this.powerKey = pk;
       const chip = (label: string, secs: number) => {
@@ -319,6 +327,7 @@ export class Hud {
       };
       const chips = live.map((k) => chip(POWER_LABEL[k], world.powers[k]));
       if (world.phaseT > 0) chips.push(chip('Phase cloak', world.phaseT));
+      if (world.cloakT > 0) chips.push(chip('Cloak', world.cloakT));
       $('powers').replaceChildren(...chips);
     }
 

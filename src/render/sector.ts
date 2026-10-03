@@ -306,6 +306,7 @@ export class Sector {
     this.ship.root.visible = world.alive;
     this.ship.status.charged = world.shields > 0 || world.powers.shield > 0 ? 1 : 0;
     this.ship.status.phased = world.phaseT > 0;
+    this.ship.status.cloaked = world.cloakT > 0;
     this.ship.status.overload = world.overload > 0 || world.powers.rapid > 0;
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);

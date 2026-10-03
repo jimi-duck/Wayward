@@ -139,6 +139,12 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #xp-gain { min-width: 3.2em; text-align: right; font: 600 calc(var(--fs) * .95)/1 var(--font-mono); letter-spacing: .1em; color: var(--violet); opacity: 0; transition: opacity .5s; }
 #xp-gain.on { opacity: 1; transition: none; }
 #rail.full #xp { --on: #ecd6ff; filter: drop-shadow(0 0 6px var(--violet)); }
+/* the refit web's door: banked points, lit violet when there are any to spend */
+#rail-web { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 7px; cursor: pointer; pointer-events: auto; color: var(--ink-3);
+  background: var(--glass); border: 1px solid var(--line); }
+#rail-web b { font: 600 calc(var(--fs) * 1.3)/1 var(--font-rail); color: var(--ink-2); }
+#rail-web.has { border-color: var(--violet); background: var(--violet-ghost); box-shadow: 0 0 10px var(--violet-dim); color: var(--violet); }
+#rail-web.has b { color: #f2dcff; }
 
 /* ── top right: ship systems ──────────────────────────────────────────── */
 /* One panel for everything the ship is and has: the build's name, then a
@@ -336,6 +342,13 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .ptr span { position: absolute; left: 0; top: 14px; translate: -50% 0; white-space: nowrap; text-shadow: 0 1px 5px #000;
   font: 500 calc(var(--fs) * .82)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--pc); }
 #ptr-obj { --pc: var(--amber); }
+/* hulls off screen: a smaller chevron each, in the faction's colour, brighter the closer; it blinks when one is close behind */
+#threats .thr { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
+#threats .thr i { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-right: 2px solid var(--pc); border-top: 2px solid var(--pc); rotate: var(--a, 0deg);
+  filter: drop-shadow(0 0 3px var(--pc)); }
+#threats .thr.elite i { --pc: var(--amber); }
+#threats .thr.close i { animation: thr-blink .5s steps(2, jump-none) infinite; }
+@keyframes thr-blink { 50% { opacity: .3; } }
 
 /* ── bottom left: sensors ─────────────────────────────────────────────── */
 #sensors { position: absolute; left: calc(var(--left) - 8px); bottom: calc(var(--bottom) - 8px); }
@@ -464,7 +477,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #release .ticks { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 64px; height: 4px; }
 #release.ready { --edge: var(--amber); --fill: rgba(255, 179, 61, .22); color: var(--ink); }
 
-/* ── panels: refit, hail, run report, logbook ─────────────────────────── */
+/* ── panels: hail, run report, logbook (the refit web is below) ───────── */
 .sheet { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: max(12px, var(--safe-t)) max(12px, var(--safe-r)) max(12px, var(--safe-b)) max(12px, var(--safe-l));
   background: radial-gradient(ellipse at 50% 50%, rgba(3, 5, 9, .3), rgba(3, 5, 9, .84) 75%); animation: ab-in .18s var(--ez); }
 .sheet[hidden] { display: none; }
@@ -490,44 +503,12 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .pf .keys { font: 500 calc(var(--fs) * .9)/1.6 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 
 /* the refit: three modules for the ship, and the ship as fitted so far */
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; min-height: 0; }
-.card { --cat: var(--hud); --c: 10px; --edge: rgba(236, 230, 225, .16); --fill: rgba(24, 26, 30, .9);
-  position: relative; isolation: isolate; display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 9px; padding: 13px 14px 12px 16px;
-  text-align: left; cursor: pointer; border: 0; background: none; color: inherit; font: inherit; transition: transform .14s var(--ez); }
-.card::before, .card::after { content: ""; position: absolute; pointer-events: none; }
-.card::before { inset: 0; z-index: -2; background: linear-gradient(90deg, var(--cat) 0 3px, var(--edge) 3px);
-  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-.card::after { inset: 1px 1px 1px 3px; z-index: -1; background: repeating-linear-gradient(0deg, rgba(236, 230, 225, .02) 0 1px, transparent 1px 3px), var(--fill);
-  clip-path: polygon(calc(var(--c) - 2px) 0, 100% 0, 100% calc(100% - var(--c) + .4px), calc(100% - var(--c) + .4px) 100%, 0 100%, 0 calc(var(--c) - 2px)); }
-.card:hover, .card.sel { transform: translateY(-3px); --edge: var(--hud); --fill: rgba(44, 24, 20, .92); }
-.card.sel kbd { background: var(--hud); color: #160606; border-color: var(--hud); }
-.card:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
-.card[data-cat="weapons"] { --cat: var(--hud); }
-.card[data-cat="defence"] { --cat: var(--cy); }
-.card[data-cat="ship"] { --cat: var(--violet); }
-.card .cat { display: flex; align-items: center; gap: 8px; font: 500 calc(var(--fs) * .9)/1 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
-.card .cat .path { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.card .cat .path b { color: var(--cat); font-weight: 600; }
-.card .slot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.card .tag { padding: 3px 6px; font: 600 calc(var(--fs) * .82)/1 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: #160606; background: var(--hud); }
-.card .tag.up { background: var(--ink-2); }
-.card .tag.spec { background: var(--amber); }
-.card .tag.synergy { background: var(--violet); }
-.card .tag.wild { background: transparent; color: var(--ink); outline: 1px solid var(--ink-3); outline-offset: -1px; }
-/* the module's level: owned in the category's colour, the one this card adds lit */
+/* the module's level: owned in the category's colour, the one a node adds lit */
 .lvl { display: flex; align-items: center; gap: 3px; }
 .lvl i { width: 9px; height: 6px; background: rgba(236, 230, 225, .12); }
 .lvl i.on { background: var(--cat); opacity: .5; }
 .lvl i.add { background: var(--cat); box-shadow: 0 0 6px var(--cat); }
-.card h3 { margin: 0; font: 700 18px/1.15 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--ink); }
-.card .ben { margin: 0; font: 400 13px/1.4 var(--font-display); color: var(--ink); }
-.card .cav { margin: 6px 0 0; font: 400 11px/1.4 var(--font-display); color: var(--ink-2); }
-.card .figs { display: grid; gap: 3px; padding-top: 8px; border-top: 1px solid var(--line); }
-.card .figs span { display: flex; justify-content: space-between; gap: 8px; font: 500 calc(var(--fs) * 1.02)/1.3 var(--font-mono); letter-spacing: .04em; color: var(--ink-2); }
-.card .figs b { font-weight: 600; color: var(--ink); white-space: nowrap; }
-.card .figs b em { font-style: normal; color: var(--cat); }
-.card .figs .cost b em { color: var(--alert); }
-/* the loadout: every branch the ship has fitted, and where the selected card goes */
+/* the loadout: every branch the ship has fitted, and where the node under the cursor goes */
 .loadout { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 6px; min-width: 0; }
 .loadout > .lbl { color: var(--ink-3); margin-right: 4px; }
 .loadout > .lbl b { color: var(--ink); font-weight: 600; }
@@ -621,6 +602,156 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .unlocks .kind { font: 500 calc(var(--fs) * .82)/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); align-self: center; }
 .unlocks p { grid-column: 1 / -1; margin: 0; font: 400 11px/1.4 var(--font-display); color: var(--ink-2); }
 
+/* ── the refit web ────────────────────────────────────────────────────── */
+/* The whole screen: a header (the refit, the points, the ship, launch),
+   the map, an inspector beside it, quick picks along the foot. Violet is
+   the refit's light, as on the rail; nodes wear their category's light
+   (orange-red weapons, cyan defence, violet ship), amber specialisations,
+   pale violet synergies, faction colours for salvaged tech. --nc is a
+   node's colour (never --c, which is the cut frame's corner). */
+html.webopen #hud { visibility: hidden; }
+#web { padding: 0; place-items: stretch; background: rgba(3, 5, 9, .94); }
+.webp { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; height: 100%;
+  padding: max(10px, var(--safe-t)) max(14px, var(--safe-r)) max(10px, var(--safe-b)) max(14px, var(--safe-l)); gap: 10px 14px; }
+.wh { grid-column: 1 / -1; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.wh .ph { gap: 5px; }
+.wh .ph .kick { color: var(--violet); }
+.wh .loadout { flex: 1; justify-content: flex-end; }
+.wpts { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--violet); background: var(--violet-ghost); }
+.wpts b { font: 600 22px/1 var(--font-rail); color: #f2dcff; letter-spacing: .06em; }
+.wpts .k { color: var(--violet); }
+.wpts .pips { display: flex; gap: 4px; }
+.wpts .pips i { width: 8px; height: 8px; background: var(--violet); box-shadow: 0 0 8px var(--violet-dim); }
+.wpts.none { border-color: var(--line); background: var(--glass); }
+.wpts.none b, .wpts.none .k { color: var(--ink-2); }
+#web-x { --edge: var(--hud); --lit: var(--hud); --fill: rgba(40, 14, 9, .9); border: 0; background: none; cursor: pointer; height: 38px; padding: 0 18px;
+  display: flex; align-items: center; gap: 10px; color: var(--ink); font: 700 12px/1 var(--font-display); letter-spacing: .22em; text-transform: uppercase; }
+#web-x:hover, #web-x:focus-visible { --fill: rgba(255, 90, 54, .3); outline: none; }
+.wmap { --edge: var(--violet-dim); --lit: var(--violet); --fill: rgb(8, 9, 12); min-height: 0; overflow: hidden; touch-action: none; cursor: grab; }
+.wmap:active { cursor: grabbing; }
+#web-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-select: none; }
+#web-svg .ring { fill: none; stroke: rgba(236, 230, 225, .08); stroke-dasharray: 3 5; vector-effect: non-scaling-stroke; }
+#web-svg .region { fill: var(--ink-3); font: 600 calc(11px / var(--k, 1)) var(--font-mono); letter-spacing: .28em; text-transform: uppercase; text-anchor: middle; dominant-baseline: middle; }
+#web-svg .edges line { stroke: rgba(236, 230, 225, .1); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+#web-svg .edges line.near { stroke: rgba(236, 230, 225, .22); }
+#web-svg .edges line.lead { stroke: var(--violet); stroke-opacity: .55; stroke-dasharray: 4 3; }
+#web-svg .edges line.on { stroke: var(--hud); stroke-width: 2.4; filter: drop-shadow(0 0 3px var(--hud-mid)); }
+#web-svg .n { cursor: pointer; }
+#web-svg .n .s { fill: rgba(12, 13, 16, .95); stroke: var(--nc); stroke-width: 1.4; vector-effect: non-scaling-stroke; transition: fill .2s; }
+#web-svg .n .halo { fill: none; stroke: none; }
+#web-svg .n.far { opacity: .34; }
+#web-svg .n.shut .s { stroke-dasharray: 2 2; opacity: .6; }
+#web-svg .n.lock .s { stroke: var(--ink-3); }
+#web-svg .n.can .s { stroke-width: 2; }
+#web-svg .n.open .s { stroke-width: 2.2; fill: var(--violet-ghost); }
+#web-svg .n.open .halo { stroke: var(--nc); stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .5; transform-box: fill-box; transform-origin: center; animation: web-breathe 1.6s ease-in-out infinite; }
+#web-svg .n.fit .s { fill: var(--nc); filter: drop-shadow(0 0 4px var(--nc)); }
+#web-svg .n .core-in { fill: var(--void); stroke: var(--hud); stroke-width: 2; vector-effect: non-scaling-stroke; }
+#web-svg .n.just .halo { stroke: var(--nc); stroke-width: 2; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: web-pop .7s var(--ez) forwards; }
+#web-svg .n.no .s { animation: web-shake .36s linear; }
+#web-svg .lbl { display: none; fill: var(--ink-2); font: 500 calc(9px / var(--k, 1)) var(--font-mono); letter-spacing: .06em; text-anchor: middle; pointer-events: none; }
+#web-svg.z-mid .n:is([data-k="system"], [data-k="spec"], [data-k="synergy"]) .lbl,
+#web-svg.z-near .n:not([data-k="core"]) .lbl, #web-svg .n.sel .lbl, #web-svg .n.sug .lbl { display: block; }
+#web-svg .n.fit .lbl, #web-svg .n.sel .lbl { fill: var(--ink); }
+#web-svg .qn { fill: transparent; font: 700 calc(10px / var(--k, 1)) var(--font-mono); pointer-events: none; }
+#web-svg .n.sug .qn { fill: var(--amber); paint-order: stroke; stroke: var(--void); stroke-width: calc(3px / var(--k, 1)); }
+#web-svg .reticle { fill: none; stroke: var(--ink); stroke-width: 2; vector-effect: non-scaling-stroke; pointer-events: none; }
+@keyframes web-breathe { 50% { transform: scale(1.18); opacity: .15; } }
+@keyframes web-pop { from { transform: scale(.6); opacity: 1; } to { transform: scale(2.4); opacity: 0; } }
+@keyframes web-shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.wzoom { position: absolute; right: 12px; top: 12px; display: grid; gap: 6px; }
+.wzoom button { width: 32px; height: 32px; cursor: pointer; background: var(--glass); border: 1px solid var(--line); color: var(--ink); font: 500 16px/1 var(--font-mono); }
+.wzoom button:hover { border-color: var(--violet); }
+.wlegend { position: absolute; left: 14px; bottom: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; pointer-events: none;
+  font: 500 calc(var(--fs) * .82)/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.wlegend span { display: inline-flex; align-items: center; gap: 5px; }
+.wlegend i { display: inline-block; width: 8px; height: 8px; border: 1px solid var(--ink-2); }
+.wlegend .lg-minor { width: 5px; height: 5px; border-radius: 50%; }
+.wlegend .lg-stat { border-radius: 50%; }
+.wlegend .lg-system { clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); background: var(--ink-2); }
+.wlegend .lg-spec { transform: rotate(45deg) scale(.85); border-color: var(--amber); }
+.wlegend .lg-syn { transform: rotate(45deg) scale(.7); border-color: #e9c9ff; }
+.wlegend .lg-tech { clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); background: var(--amber); }
+.winsp { --c: 12px; --edge: var(--line); --lit: var(--nc, var(--hud)); --fill: rgba(11, 12, 15, .93); --cat: var(--nc, var(--hud));
+  min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: 8px; padding: 14px 16px 14px 20px; }
+.winsp h3 { margin: 0; font: 700 19px/1.15 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--ink); }
+.winsp .ben { margin: 0; font: 400 13px/1.45 var(--font-display); color: var(--ink); }
+.winsp .cav { margin: 0; font: 400 11px/1.4 var(--font-display); color: var(--ink-2); }
+.winsp .figs { display: grid; gap: 3px; padding-top: 8px; border-top: 1px solid var(--line); }
+.winsp .figs span { display: flex; justify-content: space-between; gap: 8px; font: 500 calc(var(--fs) * 1.02)/1.3 var(--font-mono); letter-spacing: .04em; color: var(--ink-2); }
+.winsp .figs b { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.winsp .figs b em { font-style: normal; color: var(--nc); }
+.winsp .figs .cost b em { color: var(--alert); }
+.wi-path { display: flex; align-items: center; gap: 8px; font: 500 calc(var(--fs) * .9)/1 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
+.wi-path > span:first-of-type { flex: 1; }
+.wi-path > span:first-of-type b { color: var(--nc); font-weight: 600; }
+.wi-tag { padding: 3px 6px; font: 600 calc(var(--fs) * .82)/1 var(--font-mono); letter-spacing: .18em; color: #160606; background: var(--ink-2); }
+.wi-tag.spec { background: var(--amber); }
+.wi-tag.synergy { background: #e9c9ff; }
+.wi-tag.system { background: var(--hud); }
+.wi-tag.tech { background: var(--nc); }
+.wi-lv { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 500 calc(var(--fs) * 1.02)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--violet); }
+.wi-sub { font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); padding-top: 4px; }
+.wi-why { margin: 0; padding: 8px 10px; font: 500 calc(var(--fs) * 1.02)/1.45 var(--font-mono); letter-spacing: .04em; color: var(--ink-2); background: rgba(236, 230, 225, .05); border-left: 2px solid var(--ink-3); }
+.wi-why.tech, .wi-why.locked { border-left-color: var(--amber); }
+.wi-fit { --c: 9px; --edge: var(--violet); --lit: var(--violet); --fill: rgba(60, 30, 80, .55); border: 0; background: none; height: 40px; margin-top: 4px;
+  display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; color: var(--ink); font: 700 12px/1 var(--font-display); letter-spacing: .2em; text-transform: uppercase; }
+.wi-fit:hover:not(:disabled) { --fill: rgba(199, 125, 255, .36); }
+.wi-fit:disabled { cursor: default; --edge: var(--line); --lit: var(--line); --fill: var(--glass); color: var(--ink-3); }
+.wf { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; }
+.wf .keys { font: 500 calc(var(--fs) * .9)/1.6 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); max-width: 560px; }
+.wquick-box { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.wquick-box.empty { display: none; }
+.wquick { display: flex; gap: 8px; overflow-x: auto; }
+.wq { --c: 8px; --edge: rgba(236, 230, 225, .16); --lit: var(--nc); --fill: rgba(24, 26, 30, .9); border: 0; background: none;
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 8px; row-gap: 3px; align-items: center; min-width: 160px; padding: 7px 10px 7px 12px;
+  text-align: left; cursor: pointer; color: var(--ink); }
+.wq:hover { --edge: var(--violet); --fill: rgba(40, 32, 50, .92); }
+.wq kbd { grid-row: span 2; }
+.wq .nm { font: 700 12px/1.1 var(--font-display); letter-spacing: .04em; text-transform: uppercase; }
+.wq .rg { font: 500 calc(var(--fs) * .82)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+.touch-ui .wq kbd, .touch-ui #web-x kbd, .touch-ui .wi-fit kbd { display: none; }
+.touch-ui .wq { grid-template-columns: minmax(0, 1fr); }
+.miniweb { width: 100%; max-width: 300px; aspect-ratio: 1; display: block; margin: 0 auto; }
+.miniweb line { stroke: rgba(236, 230, 225, .09); stroke-width: 6; }
+.miniweb line.on { stroke: var(--hud); stroke-width: 10; }
+.miniweb .n.far { opacity: .25; }
+.miniweb .n circle, .miniweb .n polygon { fill: rgba(236, 230, 225, .3); }
+.miniweb .n.fit circle, .miniweb .n.fit polygon { fill: var(--nc); }
+/* a phone held upright: the map on top, the inspector under it */
+@media (max-width: 760px) {
+  .webp { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 8px; padding-left: max(10px, var(--safe-l)); padding-right: max(10px, var(--safe-r)); }
+  .wh { gap: 10px; padding-bottom: 8px; }
+  .wh .ph .kick, .wh .loadout { display: none; }
+  .wh .ph h2 { font-size: 15px; }
+  .wpts { padding: 4px 8px; gap: 6px; }
+  .wpts b { font-size: 16px; }
+  .wpts .pips { display: none; }
+  #web-x { margin-left: auto; height: 32px; padding: 0 10px; font-size: 11px; letter-spacing: .12em; }
+  #web-x kbd { display: none; }
+  .winsp { max-height: 34vh; padding: 10px 12px 10px 16px; gap: 6px; }
+  .winsp h3 { font-size: 16px; }
+  .winsp .ben { font-size: 12px; }
+  .wf .keys, .wlegend, .wquick-box > .k { display: none; }
+  .wq { min-width: 132px; }
+}
+/* a phone on its side: a narrow inspector, no legend or key help */
+@media (max-height: 520px) {
+  .webp { grid-template-columns: minmax(0, 1fr) minmax(220px, 270px); grid-template-rows: auto minmax(0, 1fr) auto; gap: 6px 10px; padding-top: max(6px, var(--safe-t)); padding-bottom: max(6px, var(--safe-b)); }
+  .wh { padding-bottom: 6px; }
+  .wh .ph .kick, .wh .loadout { display: none; }
+  .wh .ph h2 { font-size: 15px; }
+  .wpts { padding: 3px 8px; }
+  .wpts b { font-size: 16px; }
+  .winsp { max-height: none; padding: 8px 10px 8px 14px; gap: 5px; }
+  .winsp h3 { font-size: 14px; }
+  .winsp .ben { font-size: 11px; }
+  .winsp .cav { display: none; }
+  .wf .keys, .wlegend, .wquick-box > .k { display: none; }
+  .wq { padding: 4px 8px 4px 10px; min-width: 120px; }
+  .wq .rg { display: none; }
+}
+
 /* ── start ────────────────────────────────────────────────────────────── */
 #start { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 24px;
   background: radial-gradient(ellipse at 50% 45%, rgba(3, 5, 9, .3), rgba(3, 5, 9, .88) 72%); }
@@ -693,29 +824,15 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   .sum-top, .sum-mid { grid-template-columns: 1fr; }
   .tiles { grid-template-columns: repeat(2, 1fr); }
 }
-/* narrow and tall (a phone held upright): one column of compact cards */
+/* narrow and tall (a phone held upright): a tighter panel */
 @media (max-width: 640px) and (min-height: 521px) {
   .panel { padding: 14px 14px 12px 18px; gap: 12px; }
-  .cards { grid-template-columns: 1fr; gap: 8px; }
-  .card { grid-template-rows: auto auto auto auto; padding: 10px 12px 10px 14px; gap: 5px; }
-  .card .figs { grid-template-columns: 1fr 1fr; column-gap: 12px; }
-  .card h3 { font-size: 15px; }
-  .card .ben { font-size: 12px; }
-  .card .cav, .loadout { display: none; }
 }
-/* short (a phone on its side): three short columns, the essentials only */
+/* short (a phone on its side): the essentials only */
 @media (max-height: 520px) {
   .panel { gap: 8px; padding: 10px 14px 10px 18px; }
   .ph h2 { font-size: 18px; }
   .ph .sub { display: none; }
-  .cards { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .card { gap: 4px; padding: 8px 10px 8px 12px; grid-template-rows: auto auto auto 1fr auto; }
-  .card h3 { font-size: 13px; }
-  .card .ben { font-size: 11px; line-height: 1.3; }
-  .card .cav, .card .figs span:nth-child(n+3), .card .tag, .loadout { display: none; }
-  .card .cat { font-size: 8px; letter-spacing: .12em; }
-  .card .figs { padding-top: 4px; }
-  .card .figs span { font-size: 9px; flex-direction: column; gap: 1px; }
   .pf .keys { display: none; }
   #sum-chart { height: 50px; }
   .sum-mid { display: none; }
@@ -729,12 +846,12 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* touch: key hints mean nothing under a thumb */
 .touch-ui .pf .keys, .touch-ui .card kbd, .touch-ui .opt kbd { display: none; }
 @media (max-width: 640px) and (min-height: 521px) {
-  .touch-ui #refit .pf, .touch-ui #hail .pf { display: none; }
+  .touch-ui #hail .pf { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #sys-oc.hot > .ticks { animation: none; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
   #log-lines p.new, #banner.on, #sys-hull.hit, #ship-id.new, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel { animation: none; }
-  .card { transition: none; }
+  #web-svg .n.open .halo, #web-svg .n.just .halo, #web-svg .n.no .s, #threats .thr.close i { animation: none; }
 }

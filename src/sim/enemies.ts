@@ -256,8 +256,9 @@ export interface Alien {
   cloak: number; canCloak: boolean;
   /** Plasma afterburn: seconds left and damage per second. */
   burn: number; burnDps: number;
-  /** Seconds left on a target painter's mark. */
+  /** Seconds left on a target painter's mark, and on a snare (Tholian tech). */
   mark: number;
+  snare: number;
   /** Seconds since it last took damage (regeneration waits for quiet). */
   calm: number;
   /** Seconds before it can count as a near miss again. */
@@ -367,7 +368,7 @@ export function spawnAlien(kind: AlienKind, ship: ShipState, t: number, rng: Rng
     ax: 0, az: 0, cruiseY: at ? at.y : cruiseY, jink: 0, runs: 0, beamT: 0, beamAng: 0, soaked: 0, hitT: 0, escort: !!at, extra: false,
     spK: F.speed * (E?.speed ?? 1), cdK, rgK: F.range, shotK: E?.shotSpeed ?? 1,
     shots: (v.kind === kind ? v.shots : undefined) ?? T.shots + (E?.extraShots ?? 0), split: !!(v.kind === kind && v.split),
-    cloak: canCloak && !at ? 1 : 0, canCloak, burn: 0, burnDps: 0, mark: 0, calm: 99, grazeT: 0,
+    cloak: canCloak && !at ? 1 : 0, canCloak, burn: 0, burnDps: 0, mark: 0, snare: 0, calm: 99, grazeT: 0,
     xp: Math.round(T.xp * (E ? 2 : 1)),
   };
 }

@@ -11,7 +11,9 @@ import { World } from './sim/world';
 import { grants, loadProfile, recordRun, saveProfile } from './meta/profile';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
-import { buildView, HailPanel, PadNav, RefitPanel, StartOptions, SummaryPanel } from './ui/panels';
+import { PadNav } from './ui/dom';
+import { buildView, HailPanel, StartOptions, SummaryPanel } from './ui/panels';
+import { WebPanel } from './ui/web';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -46,9 +48,13 @@ function boot(): void {
   motion.addEventListener('change', (e) => { sector.reduceMotion = e.matches; });
 
   // ── zoom ───────────────────────────────────────────────────────────────
+  // the middle distance by default: room to see what is coming; the choice is remembered
+  sector.rig.zoom = clamp(Math.round(profile.zoom), 0, ZOOMS.length - 1);
   const zoom = (dir: number) => {
     sector.rig.zoom = clamp(sector.rig.zoom + dir, 0, ZOOMS.length - 1);
     hud.showZoom(sector.rig.zoom);
+    profile.zoom = sector.rig.zoom;
+    saveProfile(profile);
   };
   const hud = new Hud(zoom);
   hud.showZoom(sector.rig.zoom);
@@ -70,13 +76,15 @@ function boot(): void {
   document.fonts?.ready.then(fit);
 
   // ── the run's stops: refit, hail, report ───────────────────────────────
-  // The world pauses itself at each and waits; the panels answer it.
-  const refit = new RefitPanel();
+  // The world pauses itself at each and waits; the panels answer it. The
+  // refit web also opens between refits (R, the rail's Web button, a pad's
+  // Back), to look or to spend banked points.
+  const web = new WebPanel();
   const hail = new HailPanel();
   const summary = new SummaryPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => refit.open || hail.open || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => web.open || hail.open || !el('summary').hidden || startOpts.logbookOpen;
   const startOpts = new StartOptions(profile, () => {
     saveProfile(profile);
     sector.setCosmetic(profile.cosmetic);
@@ -84,9 +92,10 @@ function boot(): void {
     if (!started) world.restart({ modifiers: profile.modifiers });
   });
   const stops = () => {
-    if (world.phase === 'refit' && world.offer && !refit.open) {
+    if (world.phase === 'refit' && !web.open) {
+      // opened by the world: a full rail or battle salvage
       input.reset();
-      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); });
+      web.show(world, true, () => input.reset());
     } else if (world.phase === 'hail' && world.command.pending && !hail.open) {
       input.reset();
       hail.show(world.command.pending, (engage) => { world.answerHail(engage); input.reset(); });
@@ -103,15 +112,25 @@ function boot(): void {
       });
     }
     // a gamepad answers the open panel
-    if (refit.open || hail.open || !el('summary').hidden) {
+    if (web.open || hail.open || !el('summary').hidden) {
       const p = padNav.poll();
-      if (refit.open) refit.padInput(p);
+      if (web.open) web.padInput(p);
       else if (hail.open) hail.padInput(p);
       else summary.padInput(p);
-    } else padNav.poll();
+    } else if (padNav.poll().back) openWeb();
     // a full rail: a beat of slow motion before the panel
     loop.timeScale = world.celebrate > 0 ? 0.3 : 1;
   };
+
+  const openWeb = () => {
+    if (!started || panelOpen()) return;
+    if (loop.paused) setPaused(false);
+    if (!world.openRefit()) return;
+    input.reset();
+    web.show(world, false, () => input.reset());
+  };
+  el('rail-web').addEventListener('pointerdown', (e) => e.stopPropagation());
+  el('rail-web').addEventListener('click', (e) => { e.stopPropagation(); openWeb(); });
 
   // ── start, pause ───────────────────────────────────────────────────────
   // The run waits behind the start card, so the first key or tap is the one
@@ -203,6 +222,7 @@ function boot(): void {
       return;
     }
     if (panelOpen()) return;
+    if (e.code === 'KeyR' || e.code === 'Tab') { e.preventDefault(); openWeb(); return; }
     // Any key resumes, except the pause keys themselves: Input has already
     // toggled on those, and answering them here as well would undo it.
     if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);

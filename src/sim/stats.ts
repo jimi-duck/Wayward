@@ -131,6 +131,32 @@ export interface Stats {
   ocPhase: number;
   /** A release refills the torpedo rack and lays a ring of mines. */
   ocRefill: boolean;
+
+  // the whole ship
+  /** Multiplier on every weapon's damage. */
+  dmgAll: number;
+  /** Rides on the plasma vent: plasma wreathes the hull while you thrust. */
+  plasmaCorona: boolean;
+  /** A ram discharges an arc into the hulls near its target. */
+  ramArc: boolean;
+  /** Near misses at speed count double. */
+  speedGraze: boolean;
+
+  // the economy (utility)
+  /** Multipliers: rock's chance of dilithium, hull repairs' chance, power-up time, rare rock's frequency, an elite's dilithium. */
+  crystalChance: number;
+  repairChance: number;
+  powerTime: number;
+  rareRate: number;
+  eliteLoot: number;
+
+  // salvaged tech (from capital ships)
+  /** Every nth phaser shot is a disruptor bolt at triple damage; 0 for none. */
+  disruptor: number;
+  /** Seconds a barrel roll hides you from enemy guns. */
+  rollCloak: number;
+  /** Seconds a blast snares the hulls it catches. */
+  snare: number;
 }
 
 export const BASE: Readonly<Stats> = Object.freeze({
@@ -142,12 +168,12 @@ export const BASE: Readonly<Stats> = Object.freeze({
   torpTurn: TORP_TURN, torpSeek: TORP_SEEK, torpCone: TORP_CONE, torpMax: TORP_MAX, torpAccel: TORP_ACCEL,
   torpSalvo: 1, torpCluster: 0, torpVsShips: 1, markBonus: 1, torpPlasma: false, torpArc: 0,
 
-  mines: false, mineInterval: 2.6, mineMax: 5, mineLife: 16, mineDamage: 7, mineBlast: 6.5, mineTrigger: 3.5,
+  mines: false, mineInterval: 2.2, mineMax: 5, mineLife: 16, mineDamage: 7, mineBlast: 6.5, mineTrigger: 4.2,
   mineSeek: 0, mineChain: false, mineGravity: false, mineDetonate: false,
 
   plasma: false, plasmaDps: 10, plasmaLife: 1.5, plasmaRadius: 1.9, plasmaBurn: 0, rollBurst: false,
 
-  arc: false, arcInterval: 0.9, arcRange: 9, arcDamage: 2.5, arcTargets: 2, arcJumps: 0, arcShield: false,
+  arc: false, arcInterval: 1.05, arcRange: 8.5, arcDamage: 2.5, arcTargets: 2, arcJumps: 0, arcShield: false,
 
   ramDamage: 3, ramSafe: false, ramjet: false,
 
@@ -157,6 +183,10 @@ export const BASE: Readonly<Stats> = Object.freeze({
   maxPlates: HULL.plates, shieldMax: 0, shieldRecharge: 20, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
 
   tractor: 165 * PX, xpMult: 1, ocGain: 1, ocRadius: 20, ocDamage: 10, ocOverload: 4, ocPhase: 0, ocRefill: false,
+
+  dmgAll: 1, plasmaCorona: false, ramArc: false, speedGraze: false,
+  crystalChance: 1, repairChance: 1, powerTime: 1, rareRate: 1, eliteLoot: 1,
+  disruptor: 0, rollCloak: 0, snare: 0,
 });
 
 export const newStats = (): Stats => ({ ...BASE });
@@ -177,12 +207,12 @@ export const CAPS = {
   mineInterval: 0.7,
   mineMax: 16,
   mineBlast: 13,
-  arcInterval: 0.32,
+  arcInterval: 0.5,
   arcTargets: 6,
   arcRange: 16,
   maxPlates: 5,
   shieldMax: 2,
-  shieldRecharge: 9,
+  shieldRecharge: 12,
   grace: 2.2,
   tractor: 42,
   xpMult: 1.5,
@@ -191,6 +221,12 @@ export const CAPS = {
   rollCooldown: 0.45,
   ocRadius: 34,
   ocGain: 2.2,
+  dmgAll: 1.6,
+  /** A ram that kills costs no hull, and the arc fires by itself, so both have a ceiling. */
+  ramDamage: 18,
+  arcDamage: 5,
+  crystalChance: 2,
+  repairChance: 2.5,
 } as const;
 
 /** Clamp a finished block. Mutates and returns it. */
@@ -223,6 +259,11 @@ export function capStats(s: Stats): Stats {
   s.rollCooldown = Math.max(s.rollCooldown, CAPS.rollCooldown);
   s.ocRadius = Math.min(s.ocRadius, CAPS.ocRadius);
   s.ocGain = Math.min(s.ocGain, CAPS.ocGain);
+  s.dmgAll = Math.min(s.dmgAll, CAPS.dmgAll);
+  s.ramDamage = Math.min(s.ramDamage, CAPS.ramDamage);
+  s.arcDamage = Math.min(s.arcDamage, CAPS.arcDamage);
+  s.crystalChance = Math.min(s.crystalChance, CAPS.crystalChance);
+  s.repairChance = Math.min(s.repairChance, CAPS.repairChance);
   return s;
 }
 

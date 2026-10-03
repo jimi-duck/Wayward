@@ -44,11 +44,11 @@ input ──InputFrame──▶ sim (fixed 60Hz) ──state──▶ render (ev
 src/
   core/      loop (fixed step, interpolation, freeze, clamp), math
   input/     keyboard, touch stick, gamepad → one InputFrame per step
-  content/   data: the hull, the refit tree, long-term unlocks and modifiers
+  content/   data: the hull, the upgrades, the refit web, long-term unlocks and modifiers
   sim/       game state and rules (never imports Three.js)
   meta/      the profile between runs (localStorage)
   render/    renderer, quality governor, scene
-  ui/        DOM overlays: HUD, panels (refit, hail, report, logbook), debug
+  ui/        DOM overlays: HUD, the refit web, panels (hail, report, logbook), debug
   styles/    CSS, tokens carried over from the original
 tests/       unit tests (Vitest)
 tools/       the scripted pilot and the balance report (npm run pilot)
@@ -110,14 +110,17 @@ everything above (the flight model, camera, HUD and look are unchanged).
 [DESIGN.md](DESIGN.md) is the game as designed; in code:
 
 - The world pauses itself at the run's decisions: `World.phase` is
-  `refit` (three cards in `offer`), `hail` (a capital ship's contact) or
-  `over` (the record in `run`), and `choose`, `answerHail` and `restart`
-  answer it. The app shows a panel for each (`ui/panels.ts`); the scripted
-  pilot calls the same three.
-- `content/upgrades.ts` is the refit tree as data; `sim/stats.ts` is the
-  one stat block every system reads, rebuilt from the build and capped
-  after every multiplier; `sim/build.ts` makes the build-aware offers,
-  the cards' figures and the ship's name.
+  `refit` (points to spend on the refit web), `hail` (a capital ship's
+  contact) or `over` (the record in `run`), and `fit` / `closeRefit`,
+  `answerHail` and `restart` answer it; `openRefit` opens the web between
+  refits. The app shows a panel for each (`ui/web.ts` for the web,
+  `ui/panels.ts` for the rest); the scripted pilot calls the same.
+- `content/upgrades.ts` is every upgrade as data; `content/web.ts` places
+  them on the refit web (nine regions round a core, bridges, salvaged tech)
+  and `sim/web.ts` holds its rules (what can be fitted and why not, the
+  quick picks); `sim/stats.ts` is the one stat block every system reads,
+  rebuilt from the build and capped after every multiplier; `sim/build.ts`
+  makes the figures and the ship's name.
 - `sim/director.ts` holds every difficulty curve. `sim/field.ts` gains
   rock kinds and formations, `sim/pickups.ts` dilithium and power-ups,
   `sim/arsenal.ts` the systems that fire themselves (mines, plasma, the
@@ -164,13 +167,15 @@ found the first version cluttered:
   centre mark light when a lance fired now would hit. Marks: brackets on
   other hulls, the capital ship by name, the nearest dilithium-rich or
   rare rock, repairs, power-ups, the objective; edge pointers when the
-  capital ship or the objective is off screen.
+  capital ship or the objective is off screen, and a small chevron in its
+  faction's colour for each hull out of view.
 - `ui/radar.ts`: ship-up, a compass bezel that turns with the ship, the
   camera's field of view, contacts by kind, and a bezel ring that lights
   toward any hostile in firing range.
-- `ui/panels.ts`: refit cards read as modules for this ship (system path,
-  change, level blocks, figures with the new value lit), over a loadout of
-  every system fitted with the selected card's system lit.
+- The refit web (`ui/web.ts`, which replaced the refit cards) is drawn in
+  the same parts: a cut-frame map and inspector, the module's level as
+  blocks, figures with the new value lit, and the loadout (`ui/loadout.ts`)
+  across its header with the system under the cursor lit.
 - Touch: octagon buttons that each carry their gauge (bank, rack, core);
   on a phone the panel tightens and the scope moves to the top left.
 
@@ -221,7 +226,8 @@ Coming in later milestones: `audio/`, three sectors and a win state.
 | M5b | Roguelite pass: refit tree, weapon systems, rock kinds, factions, elites, director, capital-ship phases and telegraphs, sector events, run report, long-term unlocks, scripted-pilot balancing | done |
 | M5c | HUD pass: one tactical UI language for the HUD and every panel, ship systems with refit levels, targeting with mining readouts, a compass scope, module refit cards, a decluttered phone layout | done |
 | M6 | Three sectors and a win state | |
-| M7 | LCARS UI: start, HUD, refit cards, pause, summary | done in the gritty style (roguelite pass) |
+| M5d | The refit web: two hundred nodes in nine regions, points per refit, salvaged faction tech, quick picks, the map with pan, zoom and inspector | done |
+| M7 | LCARS UI: start, HUD, refit web, pause, summary | done in the gritty style (roguelite pass) |
 | M8 | Spatial audio and music | |
 | M9 | Mobile polish, installable web app, performance pass, launch | |
 

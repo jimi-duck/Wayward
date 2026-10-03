@@ -362,7 +362,7 @@ export class ShipView {
   }
 
   /** The visible state the build adds: shield charges up, phased, weapons overloaded. */
-  status = { charged: 0, phased: false, overload: false };
+  status = { charged: 0, phased: false, overload: false, cloaked: false };
 
   update(s: ShipState, dt: number, reduceMotion: boolean): void {
     this.time += dt;
@@ -403,13 +403,13 @@ export class ShipView {
 
     this.hit = Math.max(0, this.hit - dt * 2.2);
     const st = this.status;
-    const grace = st.phased ? 1 : s.invuln > 0 && s.rollT < 0 ? Math.min(1, s.invuln) : 0;
+    const grace = st.phased || st.cloaked ? 1 : s.invuln > 0 && s.rollT < 0 ? Math.min(1, s.invuln) : 0;
     const u = this.shieldMat.uniforms;
     u.uHit!.value = this.hit;
     u.uGrace!.value = grace;
     u.uTime!.value = this.time;
     u.uCharge!.value = st.charged;
-    const tint: [number, number, number] = st.phased ? [2.2, 0.8, 3.6] : this.absorbed || (st.charged > 0 && this.hit <= 0) ? [0.7, 1.5, 3.4] : [2.6, 0.9, 0.35];
+    const tint: [number, number, number] = st.phased ? [2.2, 0.8, 3.6] : st.cloaked ? [0.6, 2.4, 1.3] : this.absorbed || (st.charged > 0 && this.hit <= 0) ? [0.7, 1.5, 3.4] : [2.6, 0.9, 0.35];
     (u.uColor!.value as Color).setRGB(...tint);
     this.shield.visible = this.hit > 0 || grace > 0 || st.charged > 0;
 

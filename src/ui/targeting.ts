@@ -7,6 +7,7 @@ import { ROCK_KINDS, type Rock } from '../sim/field';
 import { POWER_LABEL } from '../sim/pickups';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
+import { NEON_CSS } from './colors';
 
 // ── targeting, in the world ───────────────────────────────────────────────
 // What the targeting computer is looking at, drawn where it is:
@@ -22,13 +23,18 @@ import type { World } from '../sim/world';
 //                  rare rock, repairs and power-ups to go and get, the
 //                  objective. Only the things worth flying to get a word.
 //   pointers     · the capital ship and the objective, pinned to the edge
-//                  when they are off screen
+//                  when they are off screen; a small chevron for each hull
+//                  out of view, in its faction's colour, brighter the closer
+//                  it is, blinking when one is close behind
 
 type Kind = 'hull' | 'boss' | 'rock';
 
 interface Pick { kind: Kind; id: number; x: number; y: number; z: number; r: number; ref: Alien | Boss | Rock; }
 
 const MAX_MARKS = 18;
+/** Chevrons for hulls out of view, and how far out they reach. */
+const MAX_THREATS = 10;
+const THREAT_RANGE = 110;
 /** Hull targets win over rock at the same range: rock counts this much further away. */
 const ROCK_BIAS = 1.6;
 /** A new candidate must beat the current target by this much to take over. */
@@ -52,6 +58,7 @@ export class Targeting {
   target: number | null = null;
 
   private readonly marks: HTMLSpanElement[] = [];
+  private readonly threats: HTMLElement[] = [];
   private readonly markState: Array<{ cls: string; t: string }> = [];
   private readonly box = $('tgt');
   private readonly ret = $('reticle');
@@ -71,6 +78,15 @@ export class Targeting {
       host.append(s);
       this.marks.push(s);
       this.markState.push({ cls: 'm', t: '' });
+    }
+    const th = $('threats');
+    for (let i = 0; i < MAX_THREATS; i++) {
+      const d = document.createElement('div');
+      d.className = 'thr';
+      d.hidden = true;
+      d.append(document.createElement('i'));
+      th.append(d);
+      this.threats.push(d);
     }
   }
 
@@ -97,6 +113,7 @@ export class Targeting {
     this.drawTarget(world, sector, t, arc, dt);
     this.drawMarks(world, sector, t, live);
     this.drawPointers(world, sector, live);
+    this.drawThreats(world, sector, live);
   }
 
   // ── choosing the target ─────────────────────────────────────────────────
@@ -319,6 +336,38 @@ export class Targeting {
     const showObj = live && !!e && !e.done && e.r > 0;
     this.pointer($('ptr-obj'), $('ptr-obj-t'), sector, s.x, s.z, s.heading, showObj ? { x: e!.x, y: 0.5, z: e!.z } : null,
       showObj ? `${ENCOUNTERS[e!.id].name} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
+  }
+
+  /** Hulls out of view: the nearest first, each pinned to the edge along its bearing. */
+  private drawThreats(world: World, sector: Sector, live: boolean): void {
+    const s = sector.shipNow, m = 30;
+    let n = 0;
+    if (live) {
+      const out = world.aliens
+        .filter((a) => !cloaked(a))
+        .map((a) => ({ a, d: Math.hypot(a.x - s.x, a.z - s.z) }))
+        .filter(({ a, d }) => {
+          if (d > THREAT_RANGE) return false;
+          const p = sector.project(a.x, a.y, a.z);
+          return !p || p.x < 0 || p.y < 0 || p.x > this.w || p.y > this.h;
+        })
+        .sort((x, y) => x.d - y.d);
+      const cx = this.w / 2, cy = this.h / 2;
+      for (const { a, d } of out) {
+        if (n >= MAX_THREATS) break;
+        const rel = angleDelta(s.heading, Math.atan2(-(a.z - s.z), a.x - s.x));
+        const dx = -Math.sin(rel), dy = -Math.cos(rel);
+        const k = Math.min((cx - m) / Math.max(1e-3, Math.abs(dx)), (cy - m - 30) / Math.max(1e-3, Math.abs(dy)));
+        const el = this.threats[n++]!;
+        el.hidden = false;
+        el.className = `thr${a.elite ? ' elite' : ''}${d < 30 && dy > 0.3 ? ' close' : ''}`;
+        el.style.setProperty('--pc', NEON_CSS[a.faction]);
+        el.style.setProperty('--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
+        el.style.opacity = clamp(1.25 - d / THREAT_RANGE, 0.45, 1).toFixed(2);
+        el.style.transform = `translate(${(cx + dx * k).toFixed(1)}px, ${(cy + dy * k).toFixed(1)}px)`;
+      }
+    }
+    for (; n < MAX_THREATS; n++) if (!this.threats[n]!.hidden) this.threats[n]!.hidden = true;
   }
 
   private pointer(el: HTMLElement, label: HTMLElement, sector: Sector, sx: number, sz: number, heading: number, o: { x: number; y: number; z: number } | null, t: string): void {

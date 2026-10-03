@@ -73,6 +73,8 @@ export function laySystems(sys: Systems, ship: ShipState, s: Stats, dt: number, 
       for (const side of [-1, 1]) {
         const ox = Math.sin(ship.heading) * 0.55 * side, oz = Math.cos(ship.heading) * 0.55 * side;
         sys.burns.push({ x: ship.x - hx * STERN + ox, z: ship.z - hz * STERN + oz, r: s.plasmaRadius, life: s.plasmaLife, max: s.plasmaLife, dps: s.plasmaDps, trail: true });
+        // the corona: plasma wreathes the bow and flanks, briefly
+        if (s.plasmaCorona) sys.burns.push({ x: ship.x + hx * 0.6 + ox * 2.6, z: ship.z + hz * 0.6 + oz * 2.6, r: s.plasmaRadius * 0.85, life: 0.35, max: 0.35, dps: s.plasmaDps, trail: true });
       }
     }
   }
@@ -177,16 +179,18 @@ export function arcTargets<A extends Reachable, B extends Reachable>(ship: ShipS
   const out: ArcHit<T>[] = [];
   const first = [...near(hulls, ship.x, 0.3, ship.z, reach, hit), ...near(rocks, ship.x, 0, ship.z, reach, hit)].slice(0, s.arcTargets);
   const dmg = s.arcDamage * (overload ? 1.5 : 1);
+  // lightning is for hulls: rock takes half
+  const rock = new Set<T>(rocks);
   for (const t of first) {
     hit.add(t.id);
-    out.push({ target: t, dmg, from: [ship.x, 0.4, ship.z] });
+    out.push({ target: t, dmg: rock.has(t) ? dmg * 0.5 : dmg, from: [ship.x, 0.4, ship.z] });
     let from: T = t, d = dmg;
     for (let j = 0; j < s.arcJumps; j++) {
       const next = near(hulls, from.x, from.y, from.z, reach * 0.8, hit)[0] ?? near(rocks, from.x, from.y, from.z, reach * 0.6, hit)[0];
       if (!next) break;
-      d *= 0.7;
+      d *= 0.6;
       hit.add(next.id);
-      out.push({ target: next, dmg: d, from: [from.x, from.y, from.z] });
+      out.push({ target: next, dmg: rock.has(next) ? d * 0.5 : d, from: [from.x, from.y, from.z] });
       from = next;
     }
   }

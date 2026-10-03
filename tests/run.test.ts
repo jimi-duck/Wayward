@@ -6,6 +6,9 @@ import { ENCOUNTERS, startEncounter } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';
 import { CRYSTAL_LIFE, dropCrystals } from '../src/sim/pickups';
 import { CHAIN_WINDOW, OC_MAX, SHIP_R, xpFor } from '../src/sim/tuning';
+import { WEB_NODE } from '../src/content/web';
+import { POINTS_PER_REFIT } from '../src/sim/web';
+import { launchTorpedo } from '../src/sim/weapons';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
@@ -53,31 +56,58 @@ describe('dilithium and the refit rail', () => {
     expect(w.pickups.length).toBe(0);
   });
 
-  it('fills the rail, celebrates, then pauses the world on three cards', () => {
+  it('fills the rail, celebrates, then pauses the world on the refit web with points to spend', () => {
     const w = quiet();
     dropCrystals(w.pickups, 1, 0, xpFor(0), w.rng, 0);
     run(w, 1);
     expect(w.refit).toBe(1);
     expect(w.phase).toBe('refit');
-    expect(w.offer!.cards.length).toBe(3);
+    expect(w.points).toBe(POINTS_PER_REFIT);
     const t = w.runTime;
     run(w, 1);
     expect(w.runTime).toBe(t); // the world waits
-    const pick = w.offer!.cards[0]!;
-    w.choose(0);
-    expect(w.levels[pick.id]).toBe(1);
+    expect(w.fit('phaser.E')).toBe(true);
+    expect(w.levels[WEB_NODE.get('phaser.E')!.up!]).toBe(1);
+    expect(w.points).toBe(POINTS_PER_REFIT - 1);
+    // a node not joined to anything fitted is refused, and costs nothing
+    expect(w.fit('phaser.H')).toBe(false);
+    expect(w.points).toBe(POINTS_PER_REFIT - 1);
+    // the next node up the arm is joined now
+    expect(w.fit('phaser.S')).toBe(true);
+    expect(w.points).toBe(0);
+    w.closeRefit();
     expect(w.phase).toBe('play');
   });
 
-  it('queues refits earned together, one panel after another', () => {
+  it('pools refits earned together into one visit to the web', () => {
     const w = quiet();
     dropCrystals(w.pickups, 1, 0, xpFor(0) + xpFor(1) + 1, w.rng, 0);
     run(w, 1.5);
     expect(w.refit).toBe(2);
-    w.choose(0);
     expect(w.phase).toBe('refit');
-    w.choose(0);
+    expect(w.points).toBe(POINTS_PER_REFIT * 2);
+  });
+
+  it('banks what is not spent, and opens between refits to spend it', () => {
+    const w = quiet();
+    expect(w.fit('phaser.E')).toBe(false); // not while flying
+    dropCrystals(w.pickups, 1, 0, xpFor(0), w.rng, 0);
+    run(w, 1);
+    w.fit('torpedo.E');
+    w.closeRefit();
+    expect(w.points).toBe(POINTS_PER_REFIT - 1);
+    run(w, 1);
     expect(w.phase).toBe('play');
+    expect(w.openRefit()).toBe(true);
+    expect(w.fit('torpedo.S')).toBe(true);
+    expect(w.levels.tp_bay).toBe(1);
+    expect(w.fitted.has('torpedo.S')).toBe(true);
+    w.closeRefit();
+    // a new run starts from the core again
+    w.restart();
+    expect([...w.fitted]).toEqual(['core']);
+    expect(w.points).toBe(0);
+    expect(w.levels).toEqual({});
   });
 });
 
@@ -248,7 +278,7 @@ describe('power-ups', () => {
 });
 
 describe('capital ships: the hail', () => {
-  const toHail = (w: World) => { for (let i = 0; i < (BOSS_FIRST + 5) * 60 && w.phase !== 'hail'; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.choose(0); w.step(STEP, input()); } };
+  const toHail = (w: World) => { for (let i = 0; i < (BOSS_FIRST + 5) * 60 && w.phase !== 'hail'; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.closeRefit(); w.step(STEP, input()); } };
 
   it('opens before a contact; evading sends the next one sooner, and you cannot evade twice running', () => {
     const w = quiet(7);
@@ -314,9 +344,54 @@ describe('sector events', () => {
     for (const id of Object.keys(ENCOUNTERS) as Array<keyof typeof ENCOUNTERS>) {
       const w = quiet();
       w.encounter = startEncounter(id, w);
-      for (let i = 0; i < (ENCOUNTERS[id].duration + 1) * 60; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.choose(0); w.step(STEP, input()); }
+      for (let i = 0; i < (ENCOUNTERS[id].duration + 1) * 60; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.closeRefit(); w.step(STEP, input()); }
       expect(w.encounter, id).toBeNull();
       expect(w.field.richBoost).toBe(0);
     }
+  });
+});
+
+describe('salvaged tech and the web\'s ship-wide stats', () => {
+  it('Klingon disruptors: every fourth phaser shot is a heavy bolt at triple damage', () => {
+    const w = quiet();
+    w.setLevels({ tech_klingon: 1 });
+    const seen: Array<{ heavy: boolean; dmg: number }> = [];
+    for (let i = 0; i < 120; i++) {
+      const before = new Set(w.bolts);
+      w.step(STEP, input({ fire: true }));
+      for (const b of w.bolts) if (!before.has(b)) seen.push({ heavy: !!b.heavy, dmg: b.dmg });
+    }
+    const heavy = seen.filter((b) => b.heavy), light = seen.filter((b) => !b.heavy);
+    expect(heavy.length).toBeGreaterThan(0);
+    expect(light.length).toBeCloseTo(heavy.length * 3, -1);
+    expect(heavy[0]!.dmg).toBeCloseTo(light[0]!.dmg * 3);
+  });
+
+  it('Tholian snares: a torpedo blast that does not kill slows the hull it catches', () => {
+    const w = quiet();
+    w.setLevels({ tp_bay: 1, tech_tholian: 1 });
+    const al = parked(w, 20, 0);
+    al.hp = al.maxHp = 1000;
+    launchTorpedo(w.torps, w.stats, 17, 0, 0, 10, null, 1);
+    run(w, 0.3);
+    expect(al.snare).toBeGreaterThan(0);
+    al.vx = 20;
+    run(w, 0.5);
+    expect(Math.abs(al.vx)).toBeLessThan(10);
+  });
+
+  it('Romulan cloak: a barrel roll hides the ship for a moment', () => {
+    const w = quiet();
+    w.setLevels({ tech_romulan: 1 });
+    w.step(STEP, input({ roll: true }));
+    expect(w.cloakT).toBeGreaterThan(1);
+    expect(w.drain().some((e) => e.type === 'cloak')).toBe(true);
+  });
+
+  it('fire control multiplies every weapon; the economy nodes move the drops', () => {
+    const w = quiet();
+    w.setLevels({ mi_all_damage: 5, ut_prospector: 1 });
+    expect(w.dmgMult).toBeCloseTo(1.04 ** 5);
+    expect(w.stats.crystalChance).toBeCloseTo(1.5);
   });
 });

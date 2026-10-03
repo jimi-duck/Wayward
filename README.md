@@ -4,10 +4,13 @@ The Star Trek roguelite from [jciclitira.com](https://www.jciclitira.com)'s
 lab, rebuilt in 3D with Three.js, for desktop and mobile browsers.
 
 Everyone launches in the same ship. Fly, break rock and hulls, collect
-dilithium, and every time the rail fills, refit: three cards, one pick,
-from a branching tree of weapons, systems, specialisations and synergies.
-Capital ships hail; engage for the salvage or evade and pay in tempo. When
-the hull goes, the run report says what you built and how it went.
+dilithium, and every time the rail fills, refit: spend points on the
+**refit web**, about two hundred nodes of weapons, systems, stats,
+specialisations, synergies and salvaged alien tech, each joined to what you
+have already fitted, so every build is a route out from the core. Capital
+ships hail; engage for the salvage (points and that faction's tech) or
+evade and pay in tempo. When the hull goes, the run report says what you
+built, draws your route and shows how it went.
 
 - The game as designed, where each system lives and how to add to it:
   [docs/DESIGN.md](docs/DESIGN.md).
@@ -45,7 +48,10 @@ on the phone.
 | Torpedo (once fitted) | 2, F or K | Torpedo button | X |
 | Overcharge (when full) | E | Release button | Y |
 | Barrel roll | Shift | Roll button, or a second finger | B or RB |
-| Refit: take a card | 1 2 3, or Tab and Enter | tap a card | d-pad ◀ ▶, A |
+| Refit web: open | R or Tab (anytime) | the rail's Web button | Back |
+| Refit web: fit | click a node twice, Enter, or 1 2 3 for a quick pick | tap a node, tap again | stick to move, A |
+| Refit web: move, zoom | arrows, Tab; wheel, drag, + − | drag, pinch | LB RB, Y frames |
+| Refit web: launch | Esc (unspent points bank) | Launch | B |
 | Hail: engage / evade | 1 or F / 2 or E | tap | A / B |
 | Camera distance | Z (cycles), or − and = | pause screen | |
 | Pause | Esc or P | leave the app | Start |

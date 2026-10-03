@@ -30,6 +30,8 @@ export interface Bolt {
   hit: number[];
   /** Radians per second it bends toward the hull nearest its nose. */
   homing: number;
+  /** A disruptor bolt (Klingon tech): drawn heavier. */
+  heavy?: boolean;
 }
 
 export interface Torpedo {
@@ -57,10 +59,12 @@ export interface Arms {
   spacing: number;
   /** The trigger was refused for an empty bank this press (so it is said once). */
   dryFired: boolean;
+  /** Phaser shots fired, for the disruptor's count. */
+  shots: number;
 }
 
 export function newArms(s: Stats = BASE): Arms {
-  return { bank: s.bankMax, bankWait: 0, cooldown: 0, side: 1, rack: s.torpRack, reload: 0, spacing: 0, dryFired: false };
+  return { bank: s.bankMax, bankWait: 0, cooldown: 0, side: 1, rack: s.torpRack, reload: 0, spacing: 0, dryFired: false, shots: 0 };
 }
 
 /** What changes how the guns fire this step, beyond the build. */
@@ -160,7 +164,9 @@ export function fireWeapons(
       const ox = cone ? 0 : Math.sin(ship.heading) * EMITTER * arms.side, oz = cone ? 0 : Math.cos(ship.heading) * EMITTER * arms.side;
       const x = ship.x + hx * NOSE + ox, z = ship.z + hz * NOSE + oz;
       const reach = s.phaserSpeed * s.phaserLife;
-      const dmg = s.phaserDamage * m.damage * (m.drifting ? s.driftBonus : 1);
+      // every nth shot a disruptor bolt, with salvaged Klingon tech
+      const heavy = s.disruptor > 0 && ++arms.shots % s.disruptor === 0;
+      const dmg = s.phaserDamage * m.damage * (m.drifting ? s.driftBonus : 1) * (heavy ? 3 : 1);
       for (let i = 0; i < n; i++) {
         const a = ship.heading + (i - (n - 1) / 2) * s.phaserSpread;
         const ax = Math.cos(a), az = -Math.sin(a);
@@ -168,7 +174,7 @@ export function fireWeapons(
         const vy = el ? el.y / (el.d / s.phaserSpeed) : 0;
         bolts.push({
           x, y: 0, z, vx: ax * s.phaserSpeed + ship.vx, vy, vz: az * s.phaserSpeed + ship.vz, life: s.phaserLife,
-          dmg, pierce: s.phaserPierce, hit: [], homing: s.phaserHoming,
+          dmg, pierce: s.phaserPierce, hit: [], homing: s.phaserHoming, heavy,
         });
       }
       events.push({ type: 'bolt', x, z, heading: ship.heading });

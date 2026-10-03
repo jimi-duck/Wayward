@@ -36,7 +36,7 @@
     </svg>
 
     <!-- The HUD, laid over the view, never a dashboard round it:
-           top edge     · the refit rail: dilithium toward the next refit
+           top edge     · the refit rail: dilithium toward the next refit, and the web's banked points
            top right    · ship systems: the build, weapons, warp core, hull, score
            top centre   · a capital ship or a sector event, while there is one
            in the world · the gunsight, the target, marks on what matters
@@ -58,11 +58,14 @@
         </div>
         <div class="ptr" id="ptr-cap"><i></i><span id="ptr-cap-t">Capital</span></div>
         <div class="ptr" id="ptr-obj"><i></i><span id="ptr-obj-t">Objective</span></div>
+        <!-- hulls out of view: a chevron each at the edge, pointing the way -->
+        <div id="threats"></div>
       </div>
 
       <div id="rail" class="hud-block" aria-label="Dilithium to the next refit">
         <span class="lbl">Refit<b id="refit-n">00</b></span><i class="ticks" id="xp"></i>
         <span id="xp-gain"></span><span class="gem"><svg class="ico"><use href="#i-rock"/></svg><b id="xp-v">0</b><span class="lbl">/ <span id="xp-n">0</span></span></span>
+        <button type="button" id="rail-web" aria-label="Open the refit web"><span class="lbl">Web</span><b id="rail-pts">0</b><kbd class="only-desktop">R</kbd></button>
       </div>
 
       <section id="systems" class="hud-block cut" aria-label="Ship systems">
@@ -142,6 +145,7 @@
           <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
           <div><dt><kbd>E</kbd></dt><dd>Overcharge</dd></div>
           <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
+          <div><dt><kbd>R</kbd></dt><dd>Refit web</dd></div>
           <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
         </dl>
         <p class="meta only-touch">Drag to steer · hold Phaser · tap Release when the core is full</p>
@@ -167,12 +171,25 @@
       </div>
     </div>
 
-    <!-- The refit panel: three cards, one pick. Keys 1 2 3, Tab and Enter. -->
-    <div id="refit" class="sheet" role="dialog" aria-labelledby="refit-t" hidden>
-      <div class="panel">
-        <header class="ph"><span class="kick" id="refit-k">Field refit</span><h2 id="refit-t">Choose an upgrade</h2><span class="sub" id="refit-s"></span></header>
-        <div class="cards" id="cards"></div>
-        <footer class="pf"><div class="loadout" id="refit-ship"></div><span class="keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> take a card · <kbd>Tab</kbd> moves · <kbd>Enter</kbd> takes · pad ◀ ▶ and <kbd>A</kbd></span></footer>
+    <!-- The refit web: spend points on nodes joined to what is fitted. Tap to look, tap again to fit. -->
+    <div id="web" class="sheet" role="dialog" aria-labelledby="web-t" hidden>
+      <div class="webp">
+        <header class="wh">
+          <div class="ph"><span class="kick" id="web-k">Field refit</span><h2 id="web-t">Refit web</h2></div>
+          <div class="wpts" id="web-pts" aria-live="polite"></div>
+          <div class="loadout" id="web-ship"></div>
+          <button type="button" id="web-x" class="cut">Launch <kbd>Esc</kbd></button>
+        </header>
+        <div class="wmap cut" id="web-map">
+          <svg id="web-svg" aria-label="The refit web"></svg>
+          <div class="wzoom"><button type="button" id="web-zin" aria-label="Closer">+</button><button type="button" id="web-zout" aria-label="Further">−</button><button type="button" id="web-zfit" aria-label="Frame the route">◎</button></div>
+          <div class="wlegend" aria-hidden="true"><span><i class="lg-minor"></i>Minor</span><span><i class="lg-stat"></i>Upgrade</span><span><i class="lg-system"></i>System</span><span><i class="lg-spec"></i>Specialisation</span><span><i class="lg-syn"></i>Synergy</span><span><i class="lg-tech"></i>Salvaged tech</span></div>
+        </div>
+        <aside class="winsp cut" id="web-insp" aria-live="polite"></aside>
+        <footer class="wf">
+          <div class="wquick-box"><span class="k">Quick pick</span><div class="wquick" id="web-quick"></div></div>
+          <span class="keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> quick pick · arrows move · <kbd>Tab</kbd> next open node · <kbd>Enter</kbd> fit · drag, wheel or pinch the map · pad: stick, <kbd>A</kbd> fit, <kbd>LB</kbd> <kbd>RB</kbd>, <kbd>B</kbd> launch</span>
+        </footer>
       </div>
     </div>
 
@@ -210,7 +227,7 @@
       <div class="pause-card panel">
         <div class="pause-t">All stop</div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
-        <div class="pause-h only-desktop">Click or press any key to resume</div>
+        <div class="pause-h only-desktop">Click or press any key to resume · R opens the refit web</div>
         <div class="pause-h only-touch">Tap to resume</div>
         <div class="pause-build" id="pause-build"></div>
       </div>

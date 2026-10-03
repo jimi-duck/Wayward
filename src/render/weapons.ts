@@ -26,6 +26,8 @@ export class WeaponView {
   private readonly p = new Vector3();
   private readonly d = new Vector3();
   private readonly one = new Vector3(1, 1, 1);
+  /** A disruptor bolt: longer and twice as thick. */
+  private readonly heavy = new Vector3(1.2, 2.2, 2.2);
 
   constructor(scene: Scene, glow: Texture) {
     this.cores = new InstancedMesh(new BoxGeometry(3.6, 0.13, 0.13),
@@ -53,7 +55,7 @@ export class WeaponView {
     for (const b of bolts) {
       if (n >= MAX_BOLTS) break;
       this.q.setFromUnitVectors(X, this.d.set(b.vx, b.vy, b.vz).normalize());
-      this.m.compose(this.p.set(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back), this.q, this.one);
+      this.m.compose(this.p.set(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back), this.q, b.heavy ? this.heavy : this.one);
       this.cores.setMatrixAt(n, this.m);
       this.sheaths.setMatrixAt(n, this.m);
       n++;

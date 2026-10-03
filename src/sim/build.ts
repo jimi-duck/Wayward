@@ -1,13 +1,13 @@
-import { BRANCHES, UPGRADE, UPGRADES, upgradeText, type Branch, type UpgradeDef, type UpgradeKind } from '../content/upgrades';
-import type { Rng } from './rng';
+import { BRANCHES, UPGRADE, UPGRADES, type Branch, type UpgradeDef } from '../content/upgrades';
 import { flightHull, capStats, newStats, type Stats } from './stats';
 import { topSpeed, turnPerStep } from './ship';
 import { HZ, PX } from './tuning';
 
 // ── the build ─────────────────────────────────────────────────────────────
-// What the player has made of the ship: a level per upgrade id. Everything
-// else (the stat block, the cards on offer, the name the ship ends up with)
-// is worked out from it, so a build can be saved, compared or replayed.
+// What the player has made of the ship: a level per upgrade id (each node
+// fitted in the refit web adds one). Everything else (the stat block, the
+// figures a node would change, the name the ship ends up with) is worked
+// out from it, so a build can be saved, compared or replayed.
 
 export type Levels = Record<string, number>;
 
@@ -58,135 +58,16 @@ export function available(u: UpgradeDef, levels: Levels, unlocked: ReadonlySet<s
   return true;
 }
 
-export type CardTag = 'new' | 'up' | 'spec' | 'synergy' | 'wild';
-
-export interface Card {
-  id: string;
-  /** The level this card takes the upgrade to. */
-  level: number;
-  kind: UpgradeKind;
-  tag: CardTag;
-  name: string;
-  text: string;
-  note: string;
-  branch: Branch;
-  /** "Label  before → after" lines for every number the card changes. */
-  figs: Fig[];
-}
-
 export interface Fig { label: string; from: string; to: string; cost: boolean; }
 
-export type OfferKind = 'refit' | 'spec' | 'salvage';
-
-export interface Offer {
-  kind: OfferKind;
-  /** The refit number (salvage keeps the current one). */
-  refit: number;
-  cards: Card[];
-  /** For a specialisation refit: the branch being specialised. */
-  branch?: Branch;
-}
-
-export interface OfferContext {
-  levels: Levels;
-  unlocked: ReadonlySet<string>;
-  /** Specialisation groups already presented (each gets its moment once). */
-  presented: Set<string>;
-  refit: number;
-  kind?: OfferKind;
-}
-
-const SPEC_GROUPS = [...new Set(UPGRADES.filter((u) => u.group).map((u) => u.group!))];
-
-/**
- * Roll three cards for the build. The panel is meant to feel like help, not a
- * slot machine:
- *  · the first two lean toward what the build already is (tag affinity);
- *  · the third is usually a wildcard from a direction the build has not taken,
- *    so there is always a way to change course;
- *  · while the ship has fewer than two systems, a system card is always there;
- *  · when a branch is deep enough to specialise, that refit is the
- *    specialisation, once.
- */
-export function makeOffer(ctx: OfferContext, rng: Rng): Offer {
-  const { levels, unlocked } = ctx;
-  const pool = UPGRADES.filter((u) => available(u, levels, unlocked));
-
-  // a specialisation moment
-  if (ctx.kind !== 'salvage') {
-    for (const g of SPEC_GROUPS) {
-      if (ctx.presented.has(g)) continue;
-      const specs = pool.filter((u) => u.group === g);
-      if (specs.length === 0) continue;
-      ctx.presented.add(g);
-      const cards = specs.map((u) => card(u, levels, 'spec'));
-      // a group with only two open specs gets one ordinary card alongside
-      const rest = pool.filter((u) => !u.group);
-      while (cards.length < 3 && rest.length) cards.push(card(takeWeighted(rest, (u) => weight(u, levels), rng), levels));
-      return { kind: 'spec', refit: ctx.refit, cards, branch: specs[0]!.branch };
-    }
-  }
-
-  const ordinary = pool.filter((u) => !u.group);
-  const affinity = tagWeights(levels);
-  const aff = (u: UpgradeDef) => u.tags.reduce((a, t) => a + (affinity.get(t) ?? 0), 0);
-  const chosen: Array<{ u: UpgradeDef; wild: boolean }> = [];
-  const left = [...ordinary];
-
-  const systems = UPGRADES.filter((u) => u.kind === 'system' && (levels[u.id] ?? 0) > 0).length;
-  if (systems < 2) {
-    const sys = left.filter((u) => u.kind === 'system');
-    if (sys.length) chosen.push({ u: takeWeighted(sys, (u) => u.weight ?? 1, rng, left), wild: false });
-  }
-  while (chosen.length < 2 && left.length) chosen.push({ u: takeWeighted(left, (u) => weight(u, levels) * (1 + 0.45 * aff(u)), rng), wild: false });
-  if (left.length) {
-    const fresh = left.filter((u) => aff(u) === 0);
-    const owned = Object.values(levels).some((v) => v > 0);
-    if (owned && fresh.length && rng.next() < 0.7) chosen.push({ u: takeWeighted(fresh, (u) => weight(u, levels), rng, left), wild: true });
-    else chosen.push({ u: takeWeighted(left, (u) => weight(u, levels) * (1 + 0.45 * aff(u)), rng), wild: false });
-  }
-  // shuffle, so the wildcard is not always on the right
-  for (let i = chosen.length - 1; i > 0; i--) {
-    const j = rng.int(i + 1), tmp = chosen[i]!;
-    chosen[i] = chosen[j]!;
-    chosen[j] = tmp;
-  }
-  return { kind: ctx.kind ?? 'refit', refit: ctx.refit, cards: chosen.map(({ u, wild }) => card(u, levels, wild ? 'wild' : undefined)) };
-}
-
-function weight(u: UpgradeDef, levels: Levels): number {
-  let w = u.weight ?? 1;
-  if (u.kind === 'synergy') w *= 1.8;
-  // a stat card already well up its ladder comes round a little less
-  w *= 1 - 0.08 * (levels[u.id] ?? 0);
-  return Math.max(0.05, w);
-}
-
-/** Remove and return one item, by weight. `also` is another list to remove it from. */
-function takeWeighted<T>(list: T[], w: (t: T) => number, rng: Rng, also?: T[]): T {
-  let total = 0;
-  for (const t of list) total += w(t);
-  let roll = rng.next() * total;
-  let pick: T = list[list.length - 1] as T;
-  for (const t of list) { roll -= w(t); if (roll <= 0) { pick = t; break; } }
-  list.splice(list.indexOf(pick), 1);
-  if (also && also !== list) { const i = also.indexOf(pick); if (i >= 0) also.splice(i, 1); }
-  return pick;
-}
-
-export function card(u: UpgradeDef, levels: Levels, force?: CardTag): Card {
-  const lv = (levels[u.id] ?? 0) + 1;
-  const tag: CardTag = force ?? (u.kind === 'synergy' ? 'synergy' : u.kind === 'spec' ? 'spec' : lv === 1 ? 'new' : 'up');
-  const before = computeStats(levels), after = computeStats({ ...levels, [u.id]: lv });
-  return {
-    id: u.id, level: lv, kind: u.kind, tag, name: u.name, text: upgradeText(u, lv), note: u.note ?? '', branch: u.branch,
-    figs: figures(before, after),
-  };
+/** What one more level of an upgrade would change, as figures. */
+export function upgradeFigures(levels: Levels, id: string): Fig[] {
+  return figures(computeStats(levels), computeStats({ ...levels, [id]: (levels[id] ?? 0) + 1 }));
 }
 
 // ── figures ───────────────────────────────────────────────────────────────
-// Every number a card can change, how to read it and which way is better.
-// A card shows the rows whose value it changes, as "before → after".
+// Every number a node can change, how to read it and which way is better.
+// The web shows the rows whose value a node changes, as "before → after".
 
 interface FigDef { label: string; get: (s: Stats) => number; fmt: (v: number) => string; lower?: boolean; }
 
@@ -245,6 +126,15 @@ export const FIGURES: FigDef[] = [
   { label: 'Release radius', get: (s) => s.ocRadius, fmt: m },
   { label: 'Release damage', get: (s) => s.ocDamage, fmt: f0 },
   { label: 'Overload', get: (s) => s.ocOverload, fmt: sec },
+  { label: 'All weapon damage', get: (s) => s.dmgAll, fmt: pct },
+  { label: 'Dilithium from rock', get: (s) => s.crystalChance, fmt: pct },
+  { label: 'Repair drops', get: (s) => s.repairChance, fmt: pct },
+  { label: 'Power-up time', get: (s) => s.powerTime, fmt: pct },
+  { label: 'Rare rock', get: (s) => s.rareRate, fmt: pct },
+  { label: 'Elite dilithium', get: (s) => s.eliteLoot, fmt: pct },
+  { label: 'Disruptor bolt every', get: (s) => s.disruptor, fmt: dash((v) => `${v} shots`), lower: true },
+  { label: 'Roll cloak', get: (s) => s.rollCloak, fmt: dash(sec) },
+  { label: 'Snare', get: (s) => s.snare, fmt: dash(sec) },
 ];
 
 export function figures(before: Stats, after: Stats): Fig[] {
@@ -275,11 +165,13 @@ const SPEC_PREFIX: Record<string, string> = {
   mn_field: 'Minefield', mn_chain: 'Chain-reaction', mn_gravity: 'Graviton', pl_ignite: 'Incendiary', pl_wake: 'Afterburner',
   cl_storm: 'Storm', cl_juggernaut: 'Juggernaut', mo_drift: 'Drift', mo_evasion: 'Evasive', df_fortress: 'Fortress',
   df_reactive: 'Reactive', df_regenerative: 'Regenerative', oc_nova: 'Nova', oc_overload: 'Overload', oc_phase: 'Phase',
+  pl_corona: 'Corona', cl_shock: 'Shock', mo_afterburner: 'Redline', ut_prospector: 'Deep-core', ut_salvager: 'Salvager',
+  ut_scanner: 'Scanner',
 };
 
 export function identity(levels: Levels): Identity {
   const branches = (Object.keys(BRANCHES) as Branch[])
-    .filter((b) => b !== 'synergy')
+    .filter((b) => b !== 'synergy' && b !== 'salvage')
     .map((branch) => ({ branch, levels: branchLevels(levels, branch) }))
     .filter((b) => b.levels > 0)
     .sort((a, b) => b.levels - a.levels);
@@ -294,4 +186,3 @@ export function identity(levels: Levels): Identity {
   return { title, branches, specs: specs.map((u) => u.name) };
 }
 
-export { UPGRADE };
