@@ -6,7 +6,7 @@ import {
 import { STEP } from '../core/loop';
 import type { Boss } from '../sim/bosses';
 import {
-  BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type EliteId, type Faction, type Shot, type Web,
+  ALIEN_ORDER, ALIEN_TYPES, BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type EliteId, type Faction, type Shot, type Web,
 } from '../sim/enemies';
 import { Kit, metal, seeded, type V3 } from './kit';
 
@@ -289,6 +289,20 @@ export class EnemyView {
       scene.add(w);
       this.webs.push(w);
     }
+  }
+
+  /**
+   * One of every hull, and the hit flash, for warming the shaders up before
+   * a run: a program compiled mid-fight is a stall on a phone.
+   */
+  gallery(): Group {
+    const g = new Group();
+    for (const kind of ALIEN_ORDER) {
+      const f = ALIEN_TYPES[kind].faction;
+      g.add(new HullView(kind, this.model(kind, f), this.glowTex, NEON[f]).root);
+    }
+    g.add(new Mesh(new BoxGeometry(1, 1, 1), FLASH));
+    return g;
   }
 
   private model(kind: AlienKind, faction: Faction): Model {

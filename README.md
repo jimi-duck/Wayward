@@ -52,16 +52,16 @@ game opens with no bars at all.
 
 | | Desktop | Touch | Gamepad |
 |---|---|---|---|
-| Steer | ← → or A D | drag anywhere: across steers | left stick, d-pad |
-| Thrust | ↑ or W | push the stick up | right trigger, d-pad up |
-| Phasers (hold) | 1, Space or J | Phaser button | A |
+| Steer | ← → or A D | drag on the left half: across steers | left stick, d-pad |
+| Thrust | ↑ or W | any push opens the throttle; pull back to coast | right trigger, d-pad up |
+| Phasers (hold) | 1, Space or J | hold anywhere on the right half | A |
 | Torpedo (once fitted) | 2, F or K | Torpedo button | X |
-| Overcharge (when full) | E | Release button | Y |
-| Barrel roll | Shift | Roll button, or a second finger | B or RB |
+| Overcharge (when full) | E | Core button | Y |
+| Barrel roll | Shift | a second finger on the left half | B or RB |
 | Refit: take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
 | Hail: engage / evade | 1 or F / 2 or E | tap | A / B |
 | Camera distance | Z (cycles), or − and = | pause screen | |
-| Pause | Esc or P | leave the app | Start |
+| Pause | Esc or P | the pause button, bottom centre | Start |
 
 The camera rides low behind the ship. You steer on a flat plane; everything
 else uses the whole sky. Phasers draw on the phaser bank and refill when you

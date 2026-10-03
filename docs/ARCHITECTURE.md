@@ -172,8 +172,9 @@ found the first version cluttered:
 - `ui/radar.ts`: ship-up, a compass bezel that turns with the ship, the
   camera's field of view, contacts by kind, and a bezel ring that lights
   toward any hostile in firing range.
-- Touch: octagon buttons that each carry their gauge (bank, rack, core);
-  on a phone the panel tightens and the scope moves to the top left.
+- Touch: octagon buttons that each carry their gauge (bank, rack, core),
+  clustered round the right thumb; on a phone the panel tightens and the
+  scope moves to the top left.
 
 The Starfleet pass answers three notes from the user, with a new reference
 frame (a saucer-and-nacelles ship in hazard yellow over an asteroid field,
@@ -238,9 +239,21 @@ Coming in later milestones: `audio/`, three sectors and a win state.
   up, and it treats a steady 30fps as a display cap (iOS Low Power Mode), not
   as overload. `?quality=low|medium|high` pins a tier.
 - Device pixel ratio is capped per tier (1.0 / 1.25 / 1.5), as in the original.
-- Touch: one floating stick (the whole screen is its catchment) and a Release
-  button, both ported from the original. Controls appear on first touch, so a
+- Touch (`input/touch.ts`): the screen splits down the middle. The left half
+  is a floating stick: the ring centres exactly under the thumb (a touch
+  never steers by itself) and follows the thumb past its rim. It drives like
+  a racing game: across steers on an eased curve, any push opens the
+  throttle, pulling back coasts. The right half is the trigger: Torpedo and
+  Core are hit-tested with slack round them, and any other touch there holds
+  the phasers, so a thumb that misses a button still fires. A second finger
+  on the left is a barrel roll. The layer does all the hit-testing; a
+  `touchend` with no fingers left releases everything, whatever pointer
+  events a system gesture swallowed. Controls appear on first touch, so a
   touchscreen laptop gets them only once it is used that way.
+- Every shader is compiled behind the start card (`Sector.warm`), including
+  the hidden effect pools and one of every hull, so nothing compiles mid-run.
+  The low tier also drops the four thrown point lights. On a short landscape
+  screen the camera stands 12% further off.
 - No scrolling, zooming, pull-to-refresh or text selection anywhere.
 
 ## Milestones

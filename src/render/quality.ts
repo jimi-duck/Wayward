@@ -32,7 +32,9 @@ export const TIERS: readonly QualityTier[] = [
 
 const EMA = 0.05;
 const SETTLE = 180; // samples before a verdict: three seconds at 60fps
-const STALL = 0.05; // longer frames are stalls, not measurements
+// Longer frames are stalls (a tab switch, a notification), not measurements.
+// Generous, so a phone that really runs at 15fps still gets measured.
+const STALL = 0.1;
 const SLOW = 0.021; // ~48fps
 const CAP_30 = 1 / 30;
 

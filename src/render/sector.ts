@@ -1,4 +1,4 @@
-import { Scene, Vector3, type WebGLRenderer } from 'three';
+import { Scene, Vector3, type Object3D, type WebGLRenderer } from 'three';
 import { COSMETICS } from '../content/unlocks';
 import { lerp } from '../core/math';
 import type { GameEvent } from '../sim/events';
@@ -92,6 +92,7 @@ export class Sector {
     this.tier = tier;
     this.post?.composer?.dispose();
     this.post = new Post(this.renderer, this.scene, this.rig.camera, tier);
+    this.fx.setLights(tier.name !== 'low');
   }
 
   resize(width: number, height: number, dpr: number, offsetY: number): void {
@@ -100,6 +101,27 @@ export class Sector {
     this.fx.setViewportHeight(height * dpr);
     if (!this.post) this.setTier(this.tier);
     this.post!.setSize(width, height);
+  }
+
+  /**
+   * Compile every shader the run will need, now, while the start card is
+   * up. Pooled effects sit hidden until their first explosion, and three only
+   * compiles what is visible, so without this the first rock broken, the
+   * first hit and each new kind of hull would each stall a frame on a phone
+   * while its program compiles.
+   */
+  warm(): void {
+    const hidden: Object3D[] = [];
+    this.scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
+    const gallery = this.enemies.gallery();
+    gallery.add(wreck());
+    this.scene.add(gallery);
+    try {
+      this.renderer.compile(this.scene, this.rig.camera);
+    } finally {
+      gallery.removeFromParent();
+      for (const o of hidden) o.visible = false;
+    }
   }
 
   /** Where a world point lands on screen, in CSS pixels; null when behind the camera. */

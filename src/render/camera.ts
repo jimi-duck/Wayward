@@ -27,6 +27,14 @@ const YAW_FOLLOW = 0.26;
 const BASE_VFOV = 52;
 const FOV_KICK = 6;
 
+/**
+ * A phone on its side is a small, short window: there the camera stands a
+ * little further off, so a hull coming in is on screen a beat sooner and the
+ * thumbs in the bottom corners never cover the ship.
+ */
+const COMPACT_H = 500;
+const COMPACT_PULL = 1.12;
+
 /** Zoom steps, as multiples of the closest framing. The first is the reference's. */
 export const ZOOMS = [1, 1.45, 2.1] as const;
 
@@ -61,6 +69,7 @@ export class CameraRig {
   private w = 1;
   private h = 1;
   private offsetY = 0;
+  private pull = 1;
 
   /** `offsetY` lifts the centre of the picture by that many CSS pixels. */
   resize(width: number, height: number, offsetY: number): void {
@@ -68,6 +77,7 @@ export class CameraRig {
     this.h = height;
     this.aspect = width / Math.max(1, height);
     this.offsetY = offsetY;
+    this.pull = height > 0 && height < COMPACT_H ? COMPACT_PULL : 1;
     this.camera.aspect = this.aspect;
     this.applyOffset();
   }
@@ -106,7 +116,7 @@ export class CameraRig {
       this.applyOffset();
     }
     const tanV = Math.tan(MathUtils.degToRad(vfov) / 2);
-    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow;
+    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull;
 
     // forward along the yaw, and the camera behind and above
     const fx = Math.cos(this.yaw), fz = -Math.sin(this.yaw);

@@ -77,6 +77,8 @@ function boot(): void {
   fit();
   // the console's text sizes change once the web fonts arrive
   document.fonts?.ready.then(fit);
+  // compile every shader behind the start card, once it has painted
+  setTimeout(() => sector.warm(), 60);
 
   // ── the run's stops: refit, hail, report ───────────────────────────────
   // The world pauses itself at each and waits; the panels answer it.
@@ -173,8 +175,7 @@ function boot(): void {
 
   const input = new Input(
     {
-      layer: el('touch'), stick: el('stick'), knob: el('knob'), release: el('release'),
-      roll: el('roll'), fire: el('fire'), torpedo: el('torp'),
+      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'),
     },
     () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch()),
   );
@@ -201,6 +202,7 @@ function boot(): void {
         matchTier(renderer, quality.tier);
         sector.setTier(quality.tier);
         fit();
+        sector.warm();
       }
     },
   });
@@ -275,6 +277,12 @@ function boot(): void {
   window.addEventListener('blur', away);
   // so does a swipe out of fullscreen, and the tap that resumes takes it back
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) away(); });
+  // touch has no key to pause with: a small button, out of both thumbs' way
+  el('pause-b').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (started && !panelOpen()) setPaused(true);
+  });
   el('pause').addEventListener('pointerdown', (e) => {
     e.preventDefault();
     setPaused(false);

@@ -34,9 +34,9 @@ export class Input {
   sample(): InputFrame {
     const pad = this.pads.poll(this.press, () => this.use('gamepad'));
     const frame: InputFrame = {
-      turn: Math.max(-1, Math.min(1, this.keyboard.turn() + pad.turn)),
-      thrust: Math.max(this.keyboard.thrust(), pad.thrust),
-      aim: this.touch.aim ?? pad.aim,
+      turn: Math.max(-1, Math.min(1, this.keyboard.turn() + pad.turn + this.touch.turn)),
+      thrust: Math.max(this.keyboard.thrust(), pad.thrust, this.touch.thrust),
+      aim: pad.aim,
       fire: this.keyboard.fire() || pad.fire || this.touch.firing,
       torpedo: this.presses.has('torpedo'),
       roll: this.presses.has('roll'),

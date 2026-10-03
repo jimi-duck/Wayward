@@ -84,6 +84,7 @@ export class Hud {
   private lv: Record<string, number> = {};
   private seed = -1;
   private modeKey = '';
+  private headingShown = true;
 
   constructor(onZoom: (dir: 1 | -1) => void) {
     for (const [id, dir] of [['zoom-in', -1], ['zoom-out', 1]] as const) {
@@ -143,7 +144,7 @@ export class Hud {
         case 'shieldUp': this.note(world, `Shield up · ${e.charges}`, 'gain'); break;
         case 'regen': this.note(world, `Hull regrown · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'damageControl': this.banner('Damage control', 'Hull held', 'One plate · two seconds of grace', 2, 'caution'); break;
-        case 'overchargeReady': this.note(world, 'Warp core charged · E to release', 'gain'); break;
+        case 'overchargeReady': this.note(world, `Warp core charged · ${document.documentElement.classList.contains('touch-ui') ? 'tap Core' : 'E'} to release`, 'gain'); break;
         case 'overcharge': this.note(world, `Overcharge released · ${e.hits} hit${e.hits === 1 ? '' : 's'}`, 'gain'); break;
         case 'chain': this.note(world, `Chain ${e.count} · score ×${e.mult}`, 'gain'); break;
         case 'squad': this.note(world, `${e.label} inbound`, 'hit'); break;
@@ -181,9 +182,12 @@ export class Hud {
   update(world: World, sector: Sector, dt: number): void {
     this.aim.update(world, sector, dt);
     // the heading: a compass bearing (north is up the screen at the start), the tape sliding under it
-    const deg = (((90 - (sector.shipNow.heading * 180) / Math.PI) % 360) + 360) % 360;
-    text($('hdg'), String(Math.round(deg) % 360).padStart(3, '0'));
-    $('hdg-tape').style.setProperty('--o', `${(-deg * 2).toFixed(1)}px`);
+    // (skipped while the layout hides it, as it does on phones: a style write a frame is not free there)
+    if (this.headingShown) {
+      const deg = (((90 - (sector.shipNow.heading * 180) / Math.PI) % 360) + 360) % 360;
+      text($('hdg'), String(Math.round(deg) % 360).padStart(3, '0'));
+      $('hdg-tape').style.setProperty('--o', `${(-deg * 2).toFixed(1)}px`);
+    }
     if (this.bannerT > 0 && (this.bannerT -= dt) <= 0) $('banner').classList.remove('on');
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
     this.textClock += dt;
@@ -425,9 +429,10 @@ export class Hud {
   // ── helpers ─────────────────────────────────────────────────────────────
 
   private measure(): void {
+    this.headingShown = $('heading').offsetWidth > 0;
     const h = $('systems').offsetHeight;
     if (h) $('hud').style.setProperty('--sys-h', `${h}px`);
-    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre')]);
+    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('fire'), $('torp'), $('release')]);
   }
 
   private retrigger(el: HTMLElement, cls: string): void {
