@@ -1,40 +1,31 @@
-import { angleDelta, clamp } from '../core/math';
+import { HULLS, type Hull, type HullId } from '../content/hulls';
 import type { InputFrame } from '../input/types';
+import { flightControls, type CameraMode } from './controls';
+import { newShip, stepShip, type ShipState } from './ship';
 
-// ── M0 stand-in ────────────────────────────────────────────────────────────
-// One ship that can only turn: enough to prove the whole path from a key or a
-// thumb, through the fixed step, to an interpolated frame. M1 replaces this
-// with the original's flight model.
+// The simulation's root. M1 has one ship in an empty sector; the field,
+// enemies and progression join it in M2 and M5. It never touches Three.js,
+// so it can run headless for the scripted pilot.
 //
-// Conventions every later system keeps. The game is played on the XZ plane.
-// Heading 0 faces +X and PI/2 faces -Z, which is "up" on screen with the
-// camera behind the ship, so a stick's screen angle and a heading are the same
-// number. Headings are never wrapped, so interpolating between two steps is a
-// plain lerp; only differences go through angleDelta.
-
-export interface ShipState {
-  x: number;
-  z: number;
-  heading: number;
-}
-
-// About 205 degrees a second: the Defiant's helm in the original.
-const TURN_RATE = 3.6;
-// Below this a stick is resting, not steering (the original's 0.18).
-const AIM_DEAD = 0.18;
+// Conventions every system keeps: play is on the XZ plane, heading 0 faces +X
+// and PI/2 faces -Z ("up" on screen), headings are never wrapped.
 
 export class World {
-  readonly ship: ShipState = { x: 0, z: 0, heading: Math.PI / 2 };
-  /** The ship as it was one step ago, for interpolation. */
-  readonly prev: ShipState = { ...this.ship };
+  ship: ShipState = newShip();
+  /** The ship one step ago, for interpolation. */
+  prev: ShipState = newShip();
+  hull: Hull = HULLS.escort;
+  mode: CameraMode = 'tactical';
+  /** Seconds of simulated time. */
+  time = 0;
+
+  setHull(id: HullId): void {
+    this.hull = HULLS[id];
+  }
 
   step(dt: number, input: InputFrame): void {
     Object.assign(this.prev, this.ship);
-    const max = TURN_RATE * dt;
-    let turn = -input.turn * max;
-    if (input.aim && input.aim.mag > AIM_DEAD) {
-      turn = clamp(angleDelta(this.ship.heading, input.aim.angle), -max, max);
-    }
-    this.ship.heading += turn;
+    stepShip(this.ship, flightControls(input, this.mode, this.ship.heading), this.hull, dt);
+    this.time += dt;
   }
 }

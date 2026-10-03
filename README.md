@@ -30,18 +30,22 @@ on the phone.
 
 | | Desktop | Touch | Gamepad |
 |---|---|---|---|
-| Steer | ← → or A D | drag anywhere | left stick, d-pad |
-| Thrust | ↑ or W | push the stick further | right trigger, d-pad up |
-| Overcharge | Space | Release button | A |
-| Barrel roll | Shift | (M1) | B or RB |
-| Pause | Esc or P | (M7) | Start |
+| Steer | ← → or A D | drag anywhere (tactical: point where to go; chase: across steers) | left stick, d-pad |
+| Thrust | ↑ or W | push the stick further (chase: push it up) | right trigger, d-pad up |
+| Barrel roll | Shift | Roll button, or tap with a second finger | B or RB |
+| Camera | C | panel | |
+| Zoom | Z | panel | |
+| Hull | 1 2 3 | panel | |
+| Overcharge | Space | (M5) | A |
+| Pause | Esc or P | leave the app | Start |
 
-M0 only turns the ship. Thrust, roll and overcharge arrive with M1 and later.
+M1 is a flight test: three hulls, two cameras, drifting rock to fly past. The
+rock is scenery; collisions, weapons and the field arrive in M2.
 
 ## Debug
 
 - `` ` `` toggles the debug readout (frame rate, quality tier, draw calls, input).
-- `?debug=0` starts with it hidden.
+- `?debug=1` starts with it open.
 - `?quality=low|medium|high` pins a quality tier.
 
 ## Checks

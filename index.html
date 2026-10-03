@@ -2,30 +2,69 @@
 <html lang="en-GB">
 <head>
   <meta charset="utf-8">
-  <!-- viewport-fit=cover lets the canvas run under the notch; the touch
-       controls pull themselves back inside the safe area in CSS. -->
+  <!-- viewport-fit=cover lets the canvas run under the notch; the controls
+       pull themselves back inside the safe area in CSS. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#04060b">
+  <meta name="theme-color" content="#03060B">
   <meta name="color-scheme" content="dark">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Asteroid Blaster, in 3D. Fly, dodge and refit your way through the sector.">
   <title>Asteroid Blaster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Martian+Mono:wdth,wght@75..112.5,300..700&family=Tektur:wdth,wght@75..100,400..900&display=swap">
   <link rel="stylesheet" href="./src/styles/main.css">
 </head>
 <body>
   <div id="app">
     <canvas id="view" aria-label="Game view"></canvas>
-    <!-- Touch controls. Hidden on fine pointers by CSS; input/touch.ts wires
-         them. The whole layer is the stick's catchment, as in the original:
-         the ring comes to the thumb instead of the thumb hunting for it. -->
+    <div id="frame" aria-hidden="true"></div>
+
+    <!-- Flight test (M1): pick a hull and a camera. Replaced by the
+         shakedown panel and settings in later milestones. -->
+    <div id="panel" class="hud">
+      <div class="seg" role="radiogroup" aria-label="Hull">
+        <button type="button" data-hull="escort" role="radio"><span class="k">1</span>Defiant</button>
+        <button type="button" data-hull="cruiser" role="radio"><span class="k">2</span>Sovereign</button>
+        <button type="button" data-hull="scout" role="radio"><span class="k">3</span>Nova</button>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Camera">
+        <button type="button" data-cam="tactical" role="radio"><span class="k">C</span>Tactical</button>
+        <button type="button" data-cam="chase" role="radio">Chase</button>
+        <button type="button" id="zoom" aria-label="Zoom"><span class="k">Z</span><span id="zoom-v">1×</span></button>
+      </div>
+    </div>
+
+    <div id="telemetry" class="hud" aria-live="off">
+      <span id="t-hull">Defiant class · Escort</span>
+      <span id="t-data">VEL 0 · HDG 000</span>
+    </div>
+    <div id="hint" class="hud">
+      <span class="only-desktop"><b>←→</b> helm · <b>↑</b> impulse · <b>Shift</b> roll · <b>C</b> camera · <b>Z</b> zoom · <b>1 2 3</b> hull · <b>Esc</b> all stop</span>
+      <span class="only-touch">Drag to fly · Roll, or tap with a second finger</span>
+    </div>
+
+    <!-- Touch controls. The whole layer is the stick's catchment, as in the
+         original: the ring comes to the thumb. -->
     <div id="touch" aria-hidden="true">
       <div id="stick"><div id="knob"></div></div>
+      <button type="button" id="roll">Roll</button>
       <button type="button" id="release">Release</button>
     </div>
-    <!-- Copy from COPY-game.md § 07. Placeholder chrome until the LCARS
-         pass (M7). -->
+
+    <div id="start" role="dialog" aria-labelledby="start-t">
+      <div class="start-card">
+        <svg class="wm" viewBox="0 0 146.5 46" role="img" aria-label="Asteroid Blaster"><g class="wm-a"><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(0.00 0.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(20.50 0.00)"/><path d="M0 2H16M8 2V20" transform="translate(41.00 0.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(61.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(81.00 0.00)"/><path d="M5 2H11L14 5V15L11 18H5L2 15V5Z" transform="translate(101.50 0.00)"/><path d="M2 0V20" transform="translate(122.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(130.50 0.00)"/></g><g class="wm-b"><path d="M2 2H11L14 5V7.5L12 10L14 12.5V15L11 18H2ZM2 10H12" transform="translate(0.00 26.00)"/><path d="M2 0V18H15" transform="translate(20.50 26.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(40.00 26.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(60.50 26.00)"/><path d="M0 2H16M8 2V20" transform="translate(81.00 26.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(101.50 26.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(121.00 26.00)"/></g></svg>
+        <p id="start-t" class="tag">Hold the sector.</p>
+        <p class="meta">Flight test · M1 · three hulls, two cameras</p>
+        <button type="button" id="launch">Launch</button>
+        <p class="hint-l"><span class="only-desktop">Click or press Space</span><span class="only-touch">Tap to launch</span></p>
+      </div>
+    </div>
+
+    <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
       <div class="pause-t">All stop</div>
       <div class="pause-h only-desktop">Click or press any key to resume</div>

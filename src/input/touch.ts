@@ -14,6 +14,7 @@ export interface TouchElements {
   stick: HTMLElement;
   knob: HTMLElement;
   release: HTMLElement;
+  roll: HTMLElement;
 }
 
 export class TouchStick {
@@ -25,7 +26,7 @@ export class TouchStick {
     private readonly onPress: (p: Press) => void,
     private readonly onActive: () => void,
   ) {
-    const { layer, release } = el;
+    const { layer, release, roll } = el;
     layer.addEventListener('pointerdown', this.down);
     layer.addEventListener('pointermove', this.move);
     layer.addEventListener('pointerup', this.up);
@@ -38,6 +39,12 @@ export class TouchStick {
       e.stopPropagation();
       this.onActive();
       this.onPress('overcharge');
+    });
+    roll.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onActive();
+      this.onPress('roll');
     });
   }
 
@@ -52,7 +59,13 @@ export class TouchStick {
   }
 
   private down = (e: PointerEvent): void => {
-    if (e.pointerType === 'mouse' || this.pointer !== null) return;
+    if (e.pointerType === 'mouse') return;
+    // A second finger while the stick is held is a barrel roll.
+    if (this.pointer !== null) {
+      e.preventDefault();
+      this.onPress('roll');
+      return;
+    }
     e.preventDefault();
     this.onActive();
     this.pointer = e.pointerId;

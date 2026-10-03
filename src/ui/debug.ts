@@ -3,7 +3,7 @@ import type { Input } from '../input/input';
 import type { QualityGovernor } from '../render/quality';
 
 // A readout for development milestones: frame rate, quality tier, render cost
-// and live input. Toggle with the ` key, or start hidden with ?debug=0.
+// and live input. Toggle with the ` key; ?debug=1 starts with it open.
 // Written to the DOM four times a second, not every frame.
 
 const EVERY = 0.25;
@@ -47,15 +47,12 @@ export class DebugOverlay {
     const f = input.last;
     const aim = f?.aim ? `${deg(f.aim.angle)}° × ${f.aim.mag.toFixed(2)}` : '—';
     this.el.textContent = [
-      `M0 · debug${paused ? ' · PAUSED' : ''}`,
+      `debug${paused ? ' · PAUSED' : ''}`,
       `fps ${this.fps.toFixed(0)} · sim ${stepsPerSec.toFixed(0)}/s · avg ${(quality.average * 1000).toFixed(1)}ms`,
       `tier ${quality.tier.name} · dpr ${renderer.getPixelRatio()} · ${c.width}×${c.height}`,
       `draws ${calls} · tris ${triangles}`,
       `input ${input.device} · turn ${f?.turn ?? 0} · thrust ${(f?.thrust ?? 0).toFixed(2)}`,
       `aim ${aim}`,
-      input.device === 'touch'
-        ? 'drag anywhere to steer'
-        : '←/→ or A/D to steer · Esc to pause · ` to hide',
     ].join('\n');
   }
 }

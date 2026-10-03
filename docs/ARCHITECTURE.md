@@ -52,6 +52,12 @@ tests/       unit tests (Vitest)
 docs/        this file
 ```
 
+M1 adds `content/hulls.ts` (the three hulls), `sim/ship.ts` (the flight
+model, ported step for step from the original), `sim/controls.ts` (what a
+stick means under each camera), `render/camera.ts` (the tactical and chase
+rigs), `render/ships.ts` (stand-in models, banking, roll, trails),
+`render/environment.ts` and `render/scenery.ts`.
+
 Coming in later milestones: `sim/` grows the field, enemies, bosses and
 progression; `weapons/`, `audio/` and `content/` (tuning constants, factions,
 upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
@@ -66,6 +72,9 @@ upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
   differences go through `angleDelta`.
 - **Time.** Simulation code only ever sees the fixed `dt`. Real-time things
   (UI tweens, the debug readout) use the frame's `frameDt`.
+- **The flight model** keeps the original's per-frame numbers: one step is
+  one 60Hz frame, so thrust, turn rate and drag port unchanged. Top speeds
+  are 450, 316 and 384 px/s, as measured in the original.
 - **Presses** (roll, overcharge) are queued and consumed by the next step.
   Pause is answered immediately by the app: a paused loop runs no steps.
 
@@ -87,7 +96,7 @@ upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
 | # | Milestone | Status |
 |---|---|---|
 | M0 | Project setup: loop, input, quality tiers, deploy pipeline | done |
-| M1 | Flight model and chase camera | |
+| M1 | Flight model and chase camera | done |
 | M2 | Combat core: asteroids, phasers, torpedoes, collision, splitting, hull, game over | |
 | M3 | Combat feel and effects: trails, sparks, shield dome, explosions, shake | |
 | M4 | Space environment: starfield, nebulae, sun, shadows, bloom | |

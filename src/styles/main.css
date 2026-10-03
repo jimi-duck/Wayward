@@ -1,16 +1,30 @@
-/* Tokens carried over from the original's css/game.css, so the LCARS pass
-   (M7) starts from the same palette rather than a new one. */
+/* Tokens from the brand system (brand/system/tokens.json, Bridge theme).
+   The full component stylesheet arrives with the interface pass (M7); this
+   file carries only what the flight test needs. */
 :root {
-  --space: #04060b;
-  --cyan: #00f0ff;
-  --hot: #ff2d78;
-  --amber: #ff9f43;
-  --violet: #c77dff;
-  --frame: #4dffa6;
-  --ink: #e8ebff;
-  --mute: #7c85b8;
-  --mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, monospace;
+  --void: #03060B;
+  --hull: #08101A;
+  --hull-2: #0E1925;
+  --rule: #8CE3F21F;
+  --rule-2: #8CE3F247;
+  --edge: #3E8798;
+  --ink: #E8F3F7;
+  --ink-2: #93A9B8;
+  --ink-3: #6F8798;
+  --signal: #00F0FF;
+  --signal-ghost: #00F0FF29;
+  --command: #FF9F43;
+  --on-command: #1C0E00;
+  --dilithium: #C77DFF;
+  --alert: #FF2D78;
+  --font-display: Tektur, "Eurostile Extended", "Arial Black", sans-serif;
+  --font-rail: Antonio, "Arial Narrow", sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --ez: cubic-bezier(.2, .7, .2, 1);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
   color-scheme: dark;
 }
 
@@ -20,9 +34,9 @@ html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--space);
+  background: var(--void);
   color: var(--ink);
-  font-family: var(--mono);
+  font-family: var(--font-display);
   /* A game, not a page: no scrolling, no pull-to-refresh, no rubber band,
      no text selection or callout menu under a held thumb. */
   overscroll-behavior: none;
@@ -33,118 +47,155 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-#app {
-  position: fixed;
-  inset: 0;
+#app { position: fixed; inset: 0; }
+#view { display: block; width: 100%; height: 100%; }
+
+.only-touch { display: none; }
+.touch-ui .only-touch { display: inline; }
+.touch-ui .only-desktop { display: none; }
+
+/* ── the viewscreen frame: four brackets, open sides ─────────────────── */
+#frame {
+  --b: var(--rule-2); --l: 16px; --t: 1.5px;
+  position: absolute; pointer-events: none;
+  inset: calc(12px + var(--safe-t)) calc(12px + var(--safe-r)) calc(12px + var(--safe-b)) calc(12px + var(--safe-l));
+  background:
+    linear-gradient(var(--b), var(--b)) left top / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) left top / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) right top / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) right top / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) left bottom / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) left bottom / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) right bottom / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) right bottom / var(--t) var(--l) no-repeat;
 }
 
-#view {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
+/* ── HUD text ─────────────────────────────────────────────────────────── */
+.hud { position: absolute; font: 500 10px/1.4 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
 
-/* ── touch controls ─────────────────────────────────────────────────────
-   Ported from the original. The layer catches every touch; the ring rests
-   bottom-left as an affordance and jumps to the thumb when one lands. */
-#touch {
-  position: absolute;
-  inset: 0;
-  touch-action: none;
-}
+#telemetry { left: calc(28px + var(--safe-l)); bottom: calc(26px + var(--safe-b)); display: grid; gap: 4px; pointer-events: none; }
+#t-hull { font: 600 15px/1 var(--font-rail); letter-spacing: .16em; color: var(--ink); }
+#t-data { color: var(--signal); font-variant-numeric: tabular-nums; }
 
-#stick, #release { display: none; }
-.touch-ui #stick, .touch-ui #release { display: block; }
+#hint { left: 50%; transform: translateX(-50%); bottom: calc(26px + var(--safe-b)); white-space: nowrap; color: var(--ink-3); pointer-events: none; }
+#hint b { color: var(--ink); font-weight: 500; }
+
+/* ── flight-test panel: cut segmented buttons ─────────────────────────── */
+#panel { z-index: 2; right: calc(28px + var(--safe-r)); top: calc(26px + var(--safe-t)); display: grid; gap: 8px; justify-items: end; }
+.seg { display: flex; gap: 4px; }
+.seg button {
+  --c: 6px;
+  position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 7px;
+  height: 30px; padding: 0 12px; border: 0; background: none; cursor: pointer;
+  font: 600 10px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2);
+}
+.seg button::before, .seg button::after {
+  content: ""; position: absolute; z-index: -1;
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+}
+.seg button::before { inset: 0; background: var(--rule-2); }
+.seg button::after { inset: 1px; background: color-mix(in srgb, var(--hull) 85%, transparent); }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-checked="true"] { color: var(--on-command); }
+.seg button[aria-checked="true"]::before, .seg button[aria-checked="true"]::after { background: var(--command); }
+.seg button:focus-visible { outline: none; }
+.seg button:focus-visible::before { background: var(--command); inset: -3px; }
+.seg .k { opacity: .6; }
+.touch-ui .seg .k { display: none; }
+
+/* ── touch controls ───────────────────────────────────────────────────── */
+#touch { position: absolute; inset: 0; z-index: 1; touch-action: none; }
+#stick, #roll { display: none; }
+.touch-ui #stick, .touch-ui #roll { display: block; }
+/* Release (the overcharge) arrives with M5. */
+#release { display: none; }
 
 #stick {
   position: absolute;
-  left: calc(clamp(1rem, 5vw, 2rem) + env(safe-area-inset-left));
-  bottom: calc(clamp(1.4rem, 7vh, 3rem) + env(safe-area-inset-bottom));
-  width: clamp(118px, 34vw, 168px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(3, 9, 17, .42);
-  border: 1px solid rgba(0, 240, 255, .3);
-  pointer-events: none;
-  opacity: .6;
+  left: calc(clamp(1rem, 5vw, 2rem) + var(--safe-l));
+  bottom: calc(clamp(3.4rem, 9vh, 4.6rem) + var(--safe-b));
+  width: clamp(118px, 34vw, 160px); aspect-ratio: 1; border-radius: 50%;
+  background: rgba(3, 9, 17, .42); border: 1px solid rgba(0, 240, 255, .3);
+  pointer-events: none; opacity: .6;
   transition: opacity .18s var(--ez), background .18s var(--ez);
 }
-/* While a thumb is down the ring is anchored to it by inline left/top. */
 #stick.free { left: 0; bottom: auto; top: 0; transform: translate(-50%, -50%); }
 #stick.on { opacity: 1; background: rgba(3, 9, 17, .6); border-color: rgba(0, 240, 255, .65); }
-
 #knob {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 44%;
-  height: 44%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: rgba(0, 240, 255, .2);
-  border: 1px solid rgba(0, 240, 255, .75);
+  position: absolute; left: 50%; top: 50%; width: 44%; height: 44%; transform: translate(-50%, -50%);
+  border-radius: 50%; background: rgba(0, 240, 255, .2); border: 1px solid rgba(0, 240, 255, .75);
   transition: transform .07s linear;
 }
 #stick.on #knob { background: rgba(0, 240, 255, .4); }
 
-#release {
+/* An octagon: in this system only dots, the stick and orbits are round. */
+#roll {
   position: absolute;
-  right: calc(clamp(1rem, 5vw, 2rem) + env(safe-area-inset-right));
-  bottom: calc(clamp(1.4rem, 7vh, 3rem) + env(safe-area-inset-bottom));
-  width: clamp(74px, 20vw, 104px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 240, 255, .2);
-  background: rgba(6, 3, 10, .5);
-  color: var(--mute);
-  font: 600 clamp(9px, 2.4vw, 11px) / 1 var(--mono);
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  touch-action: none;
-  opacity: .32;
+  right: calc(clamp(1rem, 5vw, 2rem) + var(--safe-r));
+  bottom: calc(clamp(3.4rem, 9vh, 4.6rem) + var(--safe-b));
+  width: clamp(76px, 21vw, 100px); aspect-ratio: 1; border: 0; padding: 0; background: none;
+  font: 600 11px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink);
+  touch-action: none; isolation: isolate;
 }
+#roll::before, #roll::after {
+  content: ""; position: absolute; z-index: -1;
+  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+}
+#roll::before { inset: 0; background: var(--edge); }
+#roll::after { inset: 1.5px; background: rgba(8, 16, 26, .7); }
+#roll:active::before { background: var(--signal); }
 
-/* ── pause ──────────────────────────────────────────────────────────── */
+/* Nothing of the run shows until launch. */
+.prelaunch #panel, .prelaunch #telemetry, .prelaunch #hint, .prelaunch #touch, .prelaunch #frame { visibility: hidden; }
+
+/* ── start ────────────────────────────────────────────────────────────── */
+#start {
+  position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 24px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(3, 6, 11, .35), rgba(3, 6, 11, .82) 70%);
+}
+#start[hidden] { display: none; }
+.start-card { display: grid; justify-items: center; gap: 14px; text-align: center; }
+.wm { width: min(420px, 78vw); height: auto; fill: none; stroke-width: 4; stroke-linecap: butt; stroke-linejoin: miter; }
+.wm-a { stroke: var(--ink); }
+.wm-b { stroke: var(--signal); }
+.tag { margin: 6px 0 0; font: 500 20px/1 var(--font-display); letter-spacing: .06em; color: var(--ink-2); }
+.meta { margin: 0; font: 500 10px/1.4 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+#launch {
+  --tip: 15px;
+  position: relative; isolation: isolate; margin-top: 10px; height: 52px; padding: 0 54px; border: 0; background: none; cursor: pointer;
+  font: 700 16px/1 var(--font-display); letter-spacing: .26em; text-transform: uppercase; color: var(--on-command);
+}
+#launch::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; background: var(--command);
+  clip-path: polygon(var(--tip) 0, calc(100% - var(--tip)) 0, 100% 50%, calc(100% - var(--tip)) 100%, var(--tip) 100%, 0 50%);
+}
+#launch:hover { filter: drop-shadow(0 0 16px rgba(255, 159, 67, .45)); }
+#launch:focus-visible { outline: none; filter: drop-shadow(0 0 0 2px var(--void)) drop-shadow(0 0 0 2px var(--command)); }
+.hint-l { margin: 0; font: 500 10px/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+
+/* ── pause ────────────────────────────────────────────────────────────── */
 #pause {
-  position: absolute;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: .6rem;
-  background: rgba(4, 6, 11, .55);
+  position: absolute; inset: 0; z-index: 3; display: none; flex-direction: column; align-items: center; justify-content: center; gap: .7rem;
+  background: rgba(3, 6, 11, .6);
 }
 .paused #pause { display: flex; }
-.pause-t {
-  color: var(--cyan);
-  font-size: clamp(22px, 5vw, 34px);
-  font-weight: 700;
-  letter-spacing: .3em;
-  text-transform: uppercase;
-}
-.pause-h {
-  color: var(--mute);
-  font-size: clamp(10px, 2.6vw, 12px);
-  letter-spacing: .2em;
-  text-transform: uppercase;
-}
-.only-touch { display: none; }
-.touch-ui .only-touch { display: block; }
-.touch-ui .only-desktop { display: none; }
+.pause-t { color: var(--signal); font: 700 clamp(24px, 5vw, 34px)/1 var(--font-display); letter-spacing: .3em; text-transform: uppercase; }
+.pause-h { color: var(--ink-2); font: 500 11px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; }
+.touch-ui .pause-h.only-touch { display: block; }
 
-/* ── debug readout ──────────────────────────────────────────────────── */
+/* ── debug readout (` to toggle, ?debug=1 to start open) ─────────────── */
 #debug {
-  position: absolute;
-  top: calc(.5rem + env(safe-area-inset-top));
-  left: calc(.5rem + env(safe-area-inset-left));
-  padding: .5rem .65rem;
-  background: rgba(4, 6, 11, .7);
-  border: 1px solid rgba(0, 240, 255, .2);
-  color: var(--ink);
-  font-size: 11px;
-  line-height: 1.5;
-  white-space: pre;
-  pointer-events: none;
+  position: absolute; z-index: 5; top: calc(.5rem + var(--safe-t)); left: calc(.5rem + var(--safe-l));
+  padding: .5rem .65rem; background: rgba(3, 6, 11, .75); border: 1px solid var(--rule-2);
+  color: var(--ink); font: 11px/1.5 var(--font-mono); white-space: pre; pointer-events: none;
 }
 #debug[hidden] { display: none; }
+
+/* ── phones ───────────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  #hint { bottom: calc(14px + var(--safe-b)); white-space: normal; text-align: center; width: 90%; font-size: 9px; }
+  #telemetry { left: calc(20px + var(--safe-l)); bottom: auto; top: calc(96px + var(--safe-t)); }
+  #panel { left: calc(16px + var(--safe-l)); right: calc(16px + var(--safe-r)); top: calc(16px + var(--safe-t)); justify-items: stretch; }
+  .seg { justify-content: center; }
+  .seg button { flex: 1; justify-content: center; padding: 0 6px; }
+}
