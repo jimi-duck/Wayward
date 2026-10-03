@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { UPGRADE, UPGRADES } from '../src/content/upgrades';
-import { available, card, computeStats, identity, makeOffer, tagWeights, type Levels } from '../src/sim/build';
+import { available, computeStats, identity, tagWeights, upgradeFigures, type Levels } from '../src/sim/build';
 import { pressure } from '../src/sim/director';
-import { Rng } from '../src/sim/rng';
 import { BASE, CAPS } from '../src/sim/stats';
 
 const none = new Set<string>();
-const all = new Set(UPGRADES.map((u) => u.id));
-const offer = (levels: Levels, seed = 1, presented = new Set<string>(), unlocked: ReadonlySet<string> = none) =>
-  makeOffer({ levels, unlocked, presented, refit: 1 }, new Rng(seed));
 
 describe('the refit tree', () => {
   it('starts from the stock ship: twin phasers, three plates, no systems', () => {
@@ -49,64 +45,21 @@ describe('the refit tree', () => {
     expect(available(UPGRADE.tp_precision!, { tp_bay: 1, tp_yield: 2, tp_heavy: 1 }, none)).toBe(false);
   });
 
-  it('keeps locked cards out until long-term progression opens them', () => {
+  it('keeps locked upgrades out until long-term progression opens them', () => {
     const deep = { tp_bay: 1, tp_yield: 2 };
     expect(available(UPGRADE.tp_swarm!, deep, none)).toBe(false);
     expect(available(UPGRADE.tp_swarm!, deep, new Set(['tp_swarm']))).toBe(true);
   });
 });
 
-describe('the offer', () => {
-  it('always offers three different cards', () => {
-    for (let seed = 1; seed < 40; seed++) {
-      const o = offer({ ph_emitters: 1 }, seed);
-      expect(o.cards.length).toBe(3);
-      expect(new Set(o.cards.map((c) => c.id)).size).toBe(3);
-    }
-  });
-
-  it('puts a system on the table while the ship has fewer than two', () => {
-    for (let seed = 1; seed < 40; seed++) expect(offer({}, seed).cards.some((c) => c.kind === 'system')).toBe(true);
-  });
-
-  it('leans toward the build: a torpedo ship sees torpedo cards far more often than a phaser ship does', () => {
-    const count = (levels: Levels) => {
-      let n = 0;
-      for (let seed = 1; seed <= 300; seed++) n += offer(levels, seed, new Set(['torpedo', 'phaser', 'defence', 'mine', 'mobility'])).cards.filter((c) => UPGRADE[c.id]!.tags.includes('torpedo')).length;
-      return n;
-    };
-    const torp = count({ tp_bay: 1, tp_yield: 2, tp_magazine: 1, mn_layer: 1 });
-    const phaser = count({ tp_bay: 1, ph_emitters: 3, ph_capacitors: 2, mn_layer: 1 });
-    expect(torp).toBeGreaterThan(phaser * 1.5);
-  });
-
-  it('usually leaves one card for a new direction', () => {
-    let wild = 0;
-    for (let seed = 1; seed <= 200; seed++) if (offer({ tp_bay: 1, tp_yield: 2, mn_layer: 1 }, seed, new Set(['torpedo'])).cards.some((c) => c.tag === 'wild')) wild++;
-    expect(wild).toBeGreaterThan(100);
-  });
-
-  it('turns a refit into the specialisation, once, when a branch is deep enough', () => {
-    const presented = new Set<string>();
-    const deep = { tp_bay: 1, tp_yield: 1, tp_tracking: 1 };
-    const first = offer(deep, 3, presented);
-    expect(first.kind).toBe('spec');
-    expect(first.branch).toBe('torpedo');
-    expect(first.cards.filter((c) => c.kind === 'spec').map((c) => c.id).sort()).toEqual(['tp_heavy', 'tp_precision']);
-    // the swarm is locked here, so an ordinary card fills the third place
-    expect(first.cards.length).toBe(3);
-    expect(offer(deep, 4, presented).kind).toBe('refit');
-    expect(offer(deep, 5, new Set(), all).cards.map((c) => c.id)).toContain('tp_swarm');
-  });
-
-  it('shows every number a card changes, before and after', () => {
-    const c = card(UPGRADE.ph_capacitors!, {});
-    expect(c.figs.map((f) => f.label)).toContain('Phaser shots/sec');
-    const heavy = card(UPGRADE.tp_heavy!, { tp_bay: 1, tp_yield: 1, tp_tracking: 1 });
-    const rack = heavy.figs.find((f) => f.label === 'Torpedo rack');
+describe('the figures', () => {
+  it('shows every number a node changes, before and after', () => {
+    expect(upgradeFigures({}, 'ph_capacitors').map((f) => f.label)).toContain('Phaser shots/sec');
+    const rack = upgradeFigures({ tp_bay: 1, tp_yield: 1, tp_tracking: 1 }, 'tp_heavy').find((f) => f.label === 'Torpedo rack');
     expect(rack?.cost).toBe(true);
-    const bay = card(UPGRADE.tp_bay!, {});
-    expect(bay.figs.find((f) => f.label === 'Torpedo rack')).toMatchObject({ from: '—', cost: false });
+    // a system switched on is never a cost
+    expect(upgradeFigures({}, 'tp_bay').find((f) => f.label === 'Torpedo rack')).toMatchObject({ from: '—', cost: false });
+    expect(upgradeFigures({}, 'mi_all_damage').map((f) => f.label)).toContain('All weapon damage');
   });
 });
 

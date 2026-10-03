@@ -2,10 +2,12 @@ import { angleDelta, clamp } from '../src/core/math';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { UPGRADE, type Branch } from '../src/content/upgrades';
+import type { WebNode } from '../src/content/web';
 import { beamLive, cloaked, rayDist } from '../src/sim/enemies';
 import { identity } from '../src/sim/build';
 import { thrustPerStep, topSpeed, turnPerStep } from '../src/sim/ship';
 import { OC_MAX, SHIP_R } from '../src/sim/tuning';
+import { open, REGION_DISTANCE, suggest } from '../src/sim/web';
 import { World } from '../src/sim/world';
 import type { RunStats } from '../src/sim/run';
 
@@ -18,9 +20,9 @@ import type { RunStats } from '../src/sim/run';
 // circles will be, and takes the safest that still serves the goal. It sees
 // new fire only after a person's reaction time, shoots what is in front of
 // it, rolls when the look-ahead finds no clean line, releases the
-// overcharge into a crowd, and builds the ship to a strategy. It plays
-// through the same API the app does (step, choose, answerHail), so a
-// balance number here is a number in the game.
+// overcharge into a crowd, and builds the ship to a strategy across the
+// refit web. It plays through the same API the app does (step, fit,
+// closeRefit, answerHail), so a balance number here is a number in the game.
 
 export type Strategy =
   | { kind: 'random' }
@@ -54,24 +56,42 @@ export function stratName(s: Strategy): string {
   return s.kind === 'random' ? 'random' : `${s.branch}${s.second ? `+${s.second}` : ''}`;
 }
 
-/** Choose a card: the strategy's branch first, then its second, then defence, then anything. */
-function pick(w: World, s: Strategy, rngPick: () => number): number {
-  const cards = w.offer!.cards;
-  if (s.kind === 'random') return Math.floor(rngPick() * cards.length);
-  const score = (i: number) => {
-    const c = cards[i]!, u = UPGRADE[c.id]!;
-    let v = 0;
-    if (u.branch === s.branch || u.tags.includes(s.branch)) v += 10;
-    if (s.second && (u.branch === s.second || u.tags.includes(s.second))) v += 6;
-    if (u.branch === 'defence') v += 3;
-    if (c.kind === 'system' && u.branch !== s.branch && u.branch !== s.second) v -= 2;
-    if (c.kind === 'spec') v += 2;
-    if (c.kind === 'synergy') v += 4;
-    return v + rngPick();
+const KIND_BONUS: Record<string, number> = { system: 4, spec: 5, synergy: 4, tech: 5, stat: 1, minor: 0 };
+
+/**
+ * The next node to fit. 'random' takes one of the three quick picks, as a
+ * player who never opens the map would. A focus routes out along its branch
+ * (and its second), toward the big nodes, keeps a little defence, and takes
+ * salvaged tech and synergies on the way.
+ */
+function pickNode(w: World, s: Strategy, rngPick: () => number): string | null {
+  if (s.kind === 'random') {
+    const q = suggest(w.web, Math.floor(rngPick() * 1e9));
+    return q.length ? q[Math.floor(rngPick() * q.length)]! : null;
+  }
+  const pool = open(w.web);
+  if (!pool.length) return null;
+  const score = (n: WebNode) => {
+    const u = UPGRADE[n.up!]!, d = REGION_DISTANCE.get(n.id)!;
+    const toward = (b: Branch, k: number) => (n.region === b ? k : Math.max(0, k * (0.7 - 0.25 * (d[b] ?? 9))));
+    let v = toward(s.branch, 10) + (s.second ? toward(s.second, 6) : 0);
+    if (n.region === 'defence') v += 3;
+    if (n.region === s.branch || n.region === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
+    else if (u.kind === 'system') v -= 3;
+    return v + rngPick() * 2;
   };
-  let best = 0;
-  for (let i = 1; i < cards.length; i++) if (score(i) > score(best)) best = i;
-  return best;
+  let best = pool[0]!, bestV = -Infinity;
+  for (const n of pool) { const v = score(n); if (v > bestV) { bestV = v; best = n; } }
+  return best.id;
+}
+
+/** Spend every point the web will take, then fly on. */
+function refit(w: World, s: Strategy, rngPick: () => number): void {
+  while (w.points > 0) {
+    const id = pickNode(w, s, rngPick);
+    if (!id || !w.fit(id)) break;
+  }
+  w.closeRefit();
 }
 
 /** Reaction time to new fire: a shot is invisible to the pilot until it has existed this long. */
@@ -355,7 +375,7 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
   const memo: Memo = { seen: new Map(), plan: null };
   const seen = memo.seen;
   while (w.phase !== 'over' && w.runTime < maxTime) {
-    if (w.phase === 'refit') { w.choose(pick(w, strategy, rngPick)); continue; }
+    if (w.phase === 'refit') { refit(w, strategy, rngPick); continue; }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     // react a beat late, as a person does
     queue.push(control(w, close, memo));
@@ -388,6 +408,7 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
     w.run.time = Math.round(w.runTime);
     w.run.score = w.score;
     w.run.build = { ...w.levels };
+    w.run.nodes = [...w.fitted];
     w.run.cause = 'survived';
   }
   return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights };

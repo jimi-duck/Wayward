@@ -5,7 +5,11 @@ import { ALIEN_TYPES, alienLabel, cloaked } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX, PX } from '../sim/tuning';
+import { POINTS_PER_REFIT } from '../sim/web';
+import { NEON_CSS } from './colors';
 import type { World } from '../sim/world';
+
+const FACTION_NAME: Record<string, string> = { klingon: 'Klingon', cardassian: 'Cardassian', romulan: 'Romulan', borg: 'Borg', tholian: 'Tholian' };
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // Laid out as in the reference frame, in red on dark grey:
@@ -26,6 +30,9 @@ import type { World } from '../sim/world';
 const RADAR_RANGE = 90;
 const STATUS_LIFE = 6;
 const MAX_MARKS = 12;
+/** Chevrons at the screen's edge for hulls out of view, and how far out they reach. */
+const MAX_EDGES = 10;
+const EDGE_RANGE = 110;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
 const metres = (u: number) => Math.round(u / PX);
@@ -45,6 +52,7 @@ export class Hud {
   private plateKey = '';
   private rackKey = '';
   private mineKey = '';
+  private readonly edges: HTMLElement[] = [];
   private powerKey = '';
 
   constructor(onZoom: (dir: 1 | -1) => void) {
@@ -59,6 +67,14 @@ export class Hud {
       s.hidden = true;
       host.append(s);
       this.marks.push(s);
+    }
+    const edges = $('edges');
+    for (let i = 0; i < MAX_EDGES; i++) {
+      const s = document.createElement('span');
+      s.hidden = true;
+      s.append(document.createElement('i'));
+      edges.append(s);
+      this.edges.push(s);
     }
   }
 
@@ -104,7 +120,9 @@ export class Hud {
         case 'overcharge': this.note(world, `Overcharge released · ${e.hits} hit${e.hits === 1 ? '' : 's'}`); break;
         case 'chain': this.note(world, `Chain ${e.count} · score ×${e.mult}`); break;
         case 'squad': this.note(world, `${e.label} inbound`, 'hit'); break;
-        case 'levelUp': this.banner('Dilithium', `Refit ${pad(e.refit, 2)}`, 'Rail full', 0.9, 'gain'); break;
+        case 'levelUp': this.banner('Dilithium', `Refit ${pad(e.refit, 2)}`, `+${POINTS_PER_REFIT} points for the web`, 0.9, 'gain'); break;
+        case 'salvage': this.note(world, `Salvage · +${e.points} web points${e.tech ? ` · ${FACTION_NAME[e.faction] ?? e.faction} tech open` : ''}`); break;
+        case 'cloak': this.note(world, 'Cloaked · hulls hold fire'); break;
         case 'shipHit':
           this.note(world, `Hull struck · ${e.source.split(':')[0]}`, 'hit');
           this.flashHit();
@@ -152,6 +170,8 @@ export class Hud {
     $('xp-n').textContent = String(world.xpNext);
     $('xp').style.width = `${clamp(world.xp / world.xpNext, 0, 1) * 100}%`;
     $('rail').classList.toggle('full', world.celebrate > 0);
+    $('rail-pts').textContent = String(world.points);
+    $('rail-web').classList.toggle('has', world.points > 0);
 
     // torpedoes: offline until the bay is fitted
     const torp = $('row-torp');
@@ -316,6 +336,7 @@ export class Hud {
       m.style.transform = `translate(${p.x}px, ${p.y}px)`;
     }
     for (; n < MAX_MARKS; n++) this.marks[n]!.hidden = true;
+    this.drawEdges(world, sector, tracked);
 
     // the objective: a diamond on the beacon, the hulk or the well
     const e = world.encounter, om = $('objmark');
@@ -327,6 +348,52 @@ export class Hud {
       $('objmark-d').textContent = range(Math.hypot(e.x - s.x, e.z - s.z));
       ($('objmark-d') as HTMLElement).style.transform = 'rotate(-45deg)';
     }
+  }
+
+  /**
+   * Hulls out of view: a chevron at the edge of the screen, pointing the way,
+   * in the faction's colour; brighter the closer it is, pulsing when it is
+   * close behind. A capital ship's is bigger and carries its range.
+   */
+  private drawEdges(world: World, sector: Sector, tracked: Tracked[]): void {
+    const s = sector.shipNow, me = sector.project(s.x, 0, s.z);
+    let n = 0;
+    if (me && world.alive) {
+      const W = innerWidth, H = innerHeight, m = 26;
+      const fx = Math.cos(s.heading), fz = -Math.sin(s.heading), rx = Math.sin(s.heading), rz = Math.cos(s.heading);
+      const list = tracked
+        .map((t) => ({ t, d: Math.hypot(t.x - s.x, t.z - s.z) }))
+        .filter(({ t, d }) => {
+          if (d > EDGE_RANGE && t.label !== 'Capital ship') return false;
+          const p = sector.project(t.x, t.y, t.z);
+          return !p || p.x < 0 || p.y < 0 || p.x > W || p.y > H;
+        })
+        .sort((a, b) => a.d - b.d);
+      for (const { t, d } of list) {
+        if (n >= MAX_EDGES) break;
+        const dx = t.x - s.x, dz = t.z - s.z;
+        // the way on screen: the chase camera looks along the heading, so forward is up
+        let vx = dx * rx + dz * rz, vy = -(dx * fx + dz * fz);
+        const len = Math.hypot(vx, vy) || 1;
+        vx /= len; vy /= len;
+        const kx = vx > 0 ? (W - m - me.x) / vx : vx < 0 ? (m - me.x) / vx : Infinity;
+        const ky = vy > 0 ? (H - m - me.y) / vy : vy < 0 ? (m + 34 - me.y) / vy : Infinity;
+        const k = Math.max(0, Math.min(kx, ky));
+        const x = clamp(me.x + vx * k, m, W - m), y = clamp(me.y + vy * k, m + 34, H - m);
+        const el = this.edges[n++]!;
+        const boss = t.label === 'Capital ship';
+        const al = boss ? null : world.aliens.find((a) => a.id === t.id);
+        el.hidden = false;
+        el.className = `${boss ? 'boss' : ''}${al?.elite ? ' elite' : ''}${d < 30 && vy > 0.3 ? ' close' : ''}`;
+        el.style.setProperty('--c', boss ? 'var(--red)' : NEON_CSS[al?.faction ?? 'klingon']);
+        el.style.opacity = String(boss ? 1 : clamp(1.25 - d / EDGE_RANGE, 0.5, 1));
+        const ang = Math.atan2(vy, vx);
+        el.style.transform = `translate(${x}px, ${y}px) rotate(${ang}rad)`;
+        el.style.setProperty('--r', `${ang}rad`);
+        el.firstElementChild!.textContent = boss ? range(d) : '';
+      }
+    }
+    for (; n < MAX_EDGES; n++) this.edges[n]!.hidden = true;
   }
 
   private screenBox(sector: Sector, t: Tracked): { x: number; y: number; r: number } | null {

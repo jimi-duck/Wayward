@@ -6,7 +6,7 @@ import {
   type Mine, type Reachable, type Systems,
 } from './arsenal';
 import { Command, type Strike, type Telegraph } from './bosses';
-import { computeStats, identity, makeOffer, type Levels, type Offer } from './build';
+import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, type Mods, type Pressure } from './director';
 import { pickEncounter, startEncounter, stepEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
@@ -18,6 +18,7 @@ import {
 import type { BlastKind, GameEvent, PowerKind } from './events';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Rock } from './field';
 import { Ids, useIds } from './ids';
+import { WEB_NODE } from '../content/web';
 import { dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
@@ -27,6 +28,7 @@ import {
   BREACH_GRACE, CELEBRATE, CHAIN_WINDOW, DYING, GRAZE, OC_GAIN, OC_MAX, OVERCHARGE_POINTS, PX, RARE_FIRST, REPAIR_CHANCE,
   REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult, xpFor,
 } from './tuning';
+import { canFit, open, POINTS_PER_REFIT, POINTS_PER_SALVAGE, type WebView } from './web';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -39,9 +41,11 @@ import {
 // A run is a loop: fly, fight, collect dilithium, fill the rail, refit, face
 // harder sky, meet capital ships, and in the end lose the hull. The world
 // pauses itself at the two decisions a run asks for, a refit (`phase`
-// 'refit': three cards in `offer`) and a hail ('hail': engage or evade), and
-// at the end ('over': the record in `run`). The app answers with choose(),
-// answerHail() and restart(); the scripted pilot calls the same three.
+// 'refit': points to spend on the refit web) and a hail ('hail': engage or
+// evade), and at the end ('over': the record in `run`). The app answers with
+// fit() and closeRefit(), answerHail() and restart(); the scripted pilot
+// calls the same. openRefit() opens the web between refits, to look or to
+// spend banked points.
 
 export type Phase = 'play' | 'refit' | 'hail' | 'over';
 
@@ -94,23 +98,24 @@ export class World implements EncounterHost {
   kills = 0;
   nextAlien = ALIEN_FIRST;
 
-  // the refit rail
+  // the refit rail and the refit web
   phase: Phase = 'play';
   xp = 0;
   refit = 0;
   xpNext = xpFor(0);
-  offer: Offer | null = null;
-  /** Refits earned and not yet taken; battle salvage owed. */
-  pendingRefits = 0;
-  pendingSalvage = 0;
-  /** Seconds of slow motion left before the refit panel opens. */
+  /** Points to spend on the web; the nodes fitted (the core always is); the factions whose tech has been salvaged. */
+  points = 0;
+  fitted = new Set<string>(['core']);
+  techs = new Set<string>();
+  /** Seconds of slow motion left before the refit web opens. */
   celebrate = 0;
 
   // the warp core, the chain, power-ups
   oc = 0;
-  /** Seconds of weapons overload left (after a release), and of phase cloak. */
+  /** Seconds of weapons overload left (after a release), of phase cloak, and of the roll cloak (Romulan tech). */
   overload = 0;
   phaseT = 0;
+  cloakT = 0;
   chain = 0;
   chainT = 0;
   powers: Record<PowerKind, number> = { shield: 0, rapid: 0, magnet: 0, overdrive: 0, charge: 0 };
@@ -121,9 +126,8 @@ export class World implements EncounterHost {
   readonly modifiers: string[];
   private mods: Mods = NO_MODS;
   private scoreMult = 1;
-  private dmgMult = 1;
+  private modDamage = 1;
   private noRepairs = false;
-  private presented = new Set<string>();
   private dying = 0;
   private dcUsed = false;
   private sinceHit = 0;
@@ -180,6 +184,16 @@ export class World implements EncounterHost {
     return chainMult(this.chain);
   }
 
+  /** What the refit web's rules need to know of this run. */
+  get web(): WebView {
+    return { levels: this.levels, fitted: this.fitted, unlocked: this.unlocked, techs: this.techs };
+  }
+
+  /** Every weapon's damage: the challenge modifiers and the build's fire control. */
+  get dmgMult(): number {
+    return this.modDamage * this.stats.dmgAll;
+  }
+
   /** Sensors are down (the nebula): shorter radar and locks. */
   get sensorsDown(): boolean {
     return this.encounter?.id === 'nebula' && !this.encounter.done;
@@ -198,6 +212,7 @@ export class World implements EncounterHost {
     stepShip(s, c, this.hull, dt);
     const rolling = s.rollT >= 0;
     if (rolling && !this.wasRolling && st.rollBurst) plasmaRing(this.sys, s, st);
+    if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
     this.wasRolling = rolling;
     this.tick(dt);
 
@@ -215,7 +230,7 @@ export class World implements EncounterHost {
     this.field.step(dt, s.x, s.z, p);
     if (t >= this.nextRare) {
       this.field.spawnRare(s.x, s.z, s.heading);
-      this.nextRare = t + this.rng.range(70, 110);
+      this.nextRare = t + this.rng.range(70, 110) / st.rareRate;
     }
     this.spawn(t, p);
     this.stepAliens(dt, t, p);
@@ -254,7 +269,7 @@ export class World implements EncounterHost {
     } else if ((this.dying -= dt) <= 0) this.finish();
 
     // the decisions: a full rail (after a beat of slow motion), and a hail
-    if (this.alive && this.celebrate > 0 && (this.celebrate -= dt) <= 0) this.openRefit();
+    if (this.alive && this.celebrate > 0 && (this.celebrate -= dt) <= 0) { if (open(this.web).length) this.phase = 'refit'; }
     else if (this.alive && this.command.hailing && this.phase === 'play') this.phase = 'hail';
   }
 
@@ -264,6 +279,7 @@ export class World implements EncounterHost {
     for (const k of POWERS) if (this.powers[k] > 0) this.powers[k] = Math.max(0, this.powers[k] - dt);
     if (this.overload > 0) this.overload = Math.max(0, this.overload - dt);
     if (this.phaseT > 0) this.phaseT = Math.max(0, this.phaseT - dt);
+    if (this.cloakT > 0) this.cloakT = Math.max(0, this.cloakT - dt);
     if (this.repairCd > 0) this.repairCd -= dt;
     if (this.chain > 0 && (this.chainT -= dt) <= 0) this.chain = 0;
     this.sinceHit += dt;
@@ -284,25 +300,30 @@ export class World implements EncounterHost {
 
   // ── decisions ─────────────────────────────────────────────────────────
 
-  private openRefit(): void {
-    const kind = this.pendingSalvage > 0 ? 'salvage' : undefined;
-    this.offer = makeOffer({ levels: this.levels, unlocked: this.unlocked, presented: this.presented, refit: this.refit, kind }, this.rng);
-    if (!this.offer.cards.length) { this.offer = null; this.pendingRefits = 0; this.pendingSalvage = 0; return; }
+  /** Open the refit web between refits: to look, or to spend banked points. False if the run is not in flight. */
+  openRefit(): boolean {
+    if (this.phase !== 'play' || !this.alive) return false;
     this.phase = 'refit';
+    this.celebrate = 0;
+    return true;
   }
 
-  /** Take card `i` from the current offer. */
-  choose(i: number): void {
+  /** Spend a point on a node of the web. False (and nothing changes) if it cannot be fitted now. */
+  fit(id: string): boolean {
     useIds(this.ids);
-    const card = this.offer?.cards[i];
-    if (this.phase !== 'refit' || !card) return;
-    if (this.offer!.kind === 'salvage') this.pendingSalvage--;
-    else this.pendingRefits--;
-    this.levels = { ...this.levels, [card.id]: (this.levels[card.id] ?? 0) + 1 };
+    const n = WEB_NODE.get(id);
+    if (this.phase !== 'refit' || this.points <= 0 || !n || !canFit(n, this.web)) return false;
+    this.points--;
+    this.fitted.add(id);
+    if (n.up) this.levels = { ...this.levels, [n.up]: (this.levels[n.up] ?? 0) + 1 };
     this.refreshStats();
-    this.offer = null;
-    this.phase = 'play';
-    if (this.pendingRefits > 0 || this.pendingSalvage > 0) this.openRefit();
+    this.events.push({ type: 'fitted', id, up: n.up ?? null });
+    return true;
+  }
+
+  /** Back to the fight; unspent points stay banked for the next refit. */
+  closeRefit(): void {
+    if (this.phase === 'refit') this.phase = 'play';
   }
 
   /** The hail: engage (true) or evade (false). Evade is refused when it is not on offer. */
@@ -349,7 +370,7 @@ export class World implements EncounterHost {
       noRepairs ||= !!d.noRepairs;
     }
     this.mods = { traffic, toughness };
-    this.dmgMult = damage;
+    this.modDamage = damage;
     this.scoreMult = score;
     this.noRepairs = noRepairs;
   }
@@ -423,7 +444,14 @@ export class World implements EncounterHost {
     for (let i = this.aliens.length - 1; i >= 0; i--) {
       const al = this.aliens[i]!;
       moveAlien(al, s, dt, arena, this.webs, this.rng, this.events);
-      if (this.alive) alienFire(al, s, t, this.shots, this.field.bulwarks, this.rng, this.events, p);
+      if (al.snare > 0) {
+        // snared (Tholian tech): the hull wades as if through a web
+        al.snare = Math.max(0, al.snare - dt);
+        const k = Math.exp(-4 * dt);
+        al.vx *= k; al.vy *= k; al.vz *= k;
+      }
+      // the roll cloak: hulls lose the ship and hold their fire
+      if (this.alive && this.cloakT <= 0) alienFire(al, s, t, this.shots, this.field.bulwarks, this.rng, this.events, p);
       stepBeam(al, s, dt);
       if (well) {
         const [ax, az] = wellPull(well, al.x, al.z, 10);
@@ -629,7 +657,7 @@ export class World implements EncounterHost {
         const kind = pk.kind as PowerKind;
         this.run.powerups++;
         if (kind === 'charge') this.addCharge(OC_MAX, pk.x, 0.3, pk.z, true);
-        else this.powers[kind] = POWER_TIME[kind];
+        else this.powers[kind] = POWER_TIME[kind] * this.stats.powerTime;
         this.events.push({ type: 'power', x: pk.x, z: pk.z, kind });
       }
     }
@@ -669,7 +697,7 @@ export class World implements EncounterHost {
       this.refit++;
       this.run.refit = this.refit;
       this.xpNext = xpFor(this.refit);
-      this.pendingRefits++;
+      this.points += POINTS_PER_REFIT;
       this.events.push({ type: 'levelUp', refit: this.refit });
       if (this.celebrate <= 0) this.celebrate = CELEBRATE;
     }
@@ -698,14 +726,15 @@ export class World implements EncounterHost {
    */
   private graze(dt: number): void {
     const s = this.ship, st = this.stats, rolling = s.rollT >= 0;
-    const k = st.evasion && rolling ? 2 : 1;
+    const speed = Math.hypot(s.vx, s.vz);
+    // the evasion suite doubles what a roll grazes; the afterburner what is grazed near top speed
+    const k = (st.evasion && rolling ? 2 : 1) * (st.speedGraze && speed > 0.8 * topSpeed(this.hull) ? 2 : 1);
     let any = false;
     for (const sh of this.shots) {
       if (sh.grazed) continue;
       const d = Math.hypot(sh.x - s.x, sh.y, sh.z - s.z), touch = sh.r + SHIP_R;
       if (d > touch && d < touch + GRAZE.shot) { sh.grazed = true; this.addCharge(OC_GAIN.shot * k, sh.x, sh.y, sh.z); any = true; }
     }
-    const speed = Math.hypot(s.vx, s.vz);
     for (const r of this.field.rocks) {
       if (r.grazeT > 0) continue;
       const rel = Math.hypot(s.vx - r.vx, s.vz - r.vz);
@@ -846,6 +875,7 @@ export class World implements EncounterHost {
       for (const al of [...this.aliens]) {
         if (al.calm < 0.4 || Math.hypot(s.x - al.x, al.y, s.z - al.z) >= al.r + SHIP_R) continue;
         this.hurtAlien(al, ramDmg * 1.5, 'ram', al.x, al.y, al.z);
+        if (st.ramArc) this.ramArc(al.x, al.y, al.z, al.id);
       }
       for (const r of [...rocks]) if (Math.hypot(s.x - r.x, s.z - r.z) < r.r * 0.88 + SHIP_R) this.damageRock(r, ramDmg * 1.5, 'ram', r.x, 0, r.z);
       return;
@@ -880,6 +910,7 @@ export class World implements EncounterHost {
       if (Math.hypot(s.x - al.x, al.y, s.z - al.z) >= al.r + SHIP_R) continue;
       if (al.calm < 0.3 && !vulnerable) continue;
       const killed = this.hurtAlien(al, ramDmg, 'ram', al.x, al.y, al.z);
+      if (st.ramArc) this.ramArc(al.x, al.y, al.z, al.id);
       if (!vulnerable) continue;
       if (killed && st.ramSafe) { s.invuln = Math.max(s.invuln, 0.25); continue; }
       return this.hitShip(`ram:${al.variant}`, al.x, al.z);
@@ -970,6 +1001,17 @@ export class World implements EncounterHost {
     if (pts.length) this.events.push({ type: 'arc', points: pts });
   }
 
+  /** The shock prow: a ram discharges into the hulls near what it struck. */
+  private ramArc(x: number, y: number, z: number, skip: number): void {
+    const pts: number[] = [];
+    for (const h of this.reachableHulls()) {
+      if (h.id === skip || Math.hypot(h.x - x, h.y - y, h.z - z) > 12) continue;
+      pts.push(x, y, z, h.x, h.y, h.z);
+      this.hurtReachable(h, this.stats.arcDamage * 2 * this.dmgMult, 'arc');
+    }
+    if (pts.length) this.events.push({ type: 'arc', points: pts });
+  }
+
   /** Returns true if the hull was destroyed. `quiet` skips the hit flash (damage over time). */
   private hurtAlien(al: Alien, dmg: number, src: Weapon, x: number, y: number, z: number, quiet = false): boolean {
     if (!this.aliens.includes(al)) return false;
@@ -1003,8 +1045,8 @@ export class World implements EncounterHost {
       type: 'alienDestroyed', x: al.x, y: al.y, z: al.z, kind: al.kind, faction: al.faction, points, r: al.r,
       elite: !!al.elite, label: alienLabel(al),
     });
-    this.dropCrystals(al.x, al.z, al.xp, 5, al.vx, al.vz);
-    const chance = al.elite ? REPAIR_CHANCE_ELITE : REPAIR_CHANCE;
+    this.dropCrystals(al.x, al.z, al.xp * (al.elite ? this.stats.eliteLoot : 1), 5, al.vx, al.vz);
+    const chance = (al.elite ? REPAIR_CHANCE_ELITE : REPAIR_CHANCE) * this.stats.repairChance;
     if (!this.noRepairs && this.repairCd <= 0 && this.plates < this.stats.maxPlates && this.rng.next() < chance) {
       this.dropItem('repair', al.x, al.z);
       this.repairCd = REPAIR_GAP;
@@ -1037,11 +1079,14 @@ export class World implements EncounterHost {
     this.run.killsBy[src]++;
     this.chainKill();
     this.events.push({ type: 'bossDestroyed', x: b.x, y: b.y, z: b.z, name: b.name, faction: b.faction, points: bounty });
-    // the salvage: dilithium, a hull repair, a power-up and a free refit
+    // the salvage: dilithium, a hull repair, a power-up, points for the web and the faction's tech
     this.dropCrystals(b.x, b.z, 26 + 8 * b.n, 12);
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
     this.dropItem(this.randomPower(), b.x, b.z);
-    this.pendingSalvage++;
+    this.points += POINTS_PER_SALVAGE;
+    const fresh = !this.techs.has(b.faction);
+    this.techs.add(b.faction);
+    this.events.push({ type: 'salvage', faction: b.faction, points: POINTS_PER_SALVAGE, tech: fresh });
     if (this.celebrate <= 0) this.celebrate = CELEBRATE * 2;
     // the wing breaks off when its flagship goes
     for (const al of this.aliens) if (al.escort) { al.fleeing = true; al.mode = 'leave'; al.vx = (al.x - b.x) * 2; al.vz = (al.z - b.z) * 2; }
@@ -1069,7 +1114,7 @@ export class World implements EncounterHost {
     this.run.rocks++;
     this.field.split(r, pressure(this.runTime, this.mods).rockHp);
     this.events.push({ type: 'rockDestroyed', x: r.x, z: r.z, size: r.size, points, kind: r.kind });
-    if (this.rng.next() < K.crystal[r.size]!) this.dropCrystals(r.x, r.z, K.crystals[r.size]!, 4, r.vx, r.vz);
+    if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.dropCrystals(r.x, r.z, K.crystals[r.size]!, 4, r.vx, r.vz);
     if (r.kind === 'rare') this.dropItem(this.randomPower(), r.x, r.z);
     if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, src === 'hazard' ? 'hazard' : src, 'volatile', 1, true);
   }
@@ -1082,7 +1127,11 @@ export class World implements EncounterHost {
     this.events.push({ type: 'blast', x, y, z, radius, kind });
     const inside = (ox: number, oy: number, oz: number, r: number) => (ox - x) ** 2 + (oy - y) ** 2 + (oz - z) ** 2 < (radius + r) ** 2;
     for (const r of [...this.field.rocks]) if (inside(r.x, 0, r.z, r.r)) this.damageRock(r, dmg, src, r.x, 0, r.z);
-    for (const al of [...this.aliens]) if (inside(al.x, al.y, al.z, al.r)) this.hurtAlien(al, dmg * vsShips, src, al.x, al.y, al.z);
+    const snare = (src === 'torpedo' || src === 'mine') ? this.stats.snare : 0;
+    for (const al of [...this.aliens]) {
+      if (!inside(al.x, al.y, al.z, al.r)) continue;
+      if (!this.hurtAlien(al, dmg * vsShips, src, al.x, al.y, al.z) && snare > 0) al.snare = snare;
+    }
     const boss = this.command.targetable();
     if (boss && !boss.arriving && inside(boss.x, boss.y, boss.z, boss.r)) this.hurtBoss(dmg * vsShips, src, boss.x, boss.y, boss.z);
     const s = this.ship;
@@ -1097,8 +1146,6 @@ export class World implements EncounterHost {
     this.alive = false;
     this.dying = DYING;
     this.celebrate = 0;
-    this.pendingRefits = 0;
-    this.pendingSalvage = 0;
     this.best = Math.max(this.best, this.score);
     this.events.push({ type: 'breach', x: s.x, z: s.z, score: this.score });
   }
@@ -1109,6 +1156,7 @@ export class World implements EncounterHost {
     r.score = this.score;
     r.refit = this.refit;
     r.build = { ...this.levels };
+    r.nodes = [...this.fitted];
     r.identity = identity(this.levels).title;
     r.capitalsEscaped = Math.max(0, this.command.count - this.command.kills - (this.command.boss ? 1 : 0));
     r.timeline.push({ t: Math.round(this.runTime), score: this.score, plates: 0, refit: this.refit });
@@ -1137,10 +1185,10 @@ export class World implements EncounterHost {
     this.plates = this.stats.maxPlates;
     this.shields = 0; this.shieldT = 0;
     this.arms = newArms(this.stats);
-    this.xp = 0; this.refit = 0; this.xpNext = xpFor(0); this.offer = null; this.pendingRefits = 0; this.pendingSalvage = 0; this.celebrate = 0;
-    this.oc = 0; this.overload = 0; this.phaseT = 0; this.chain = 0; this.chainT = 0;
+    this.xp = 0; this.refit = 0; this.xpNext = xpFor(0); this.celebrate = 0;
+    this.points = 0; this.fitted = new Set(['core']); this.techs = new Set();
+    this.oc = 0; this.overload = 0; this.phaseT = 0; this.cloakT = 0; this.chain = 0; this.chainT = 0;
     for (const k of POWERS) this.powers[k] = 0;
-    this.presented.clear();
     this.dcUsed = false; this.sinceHit = 0; this.repairCd = 0; this.nextRare = RARE_FIRST;
     this.theatre = 'klingon'; this.theatreT = 70; this.nextEvent = EVENT_FIRST; this.eventN = 0; this.lastEvent = null;
     this.timeScore = 0; this.nextSample = 0;

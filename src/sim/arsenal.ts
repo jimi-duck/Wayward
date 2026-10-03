@@ -73,6 +73,8 @@ export function laySystems(sys: Systems, ship: ShipState, s: Stats, dt: number, 
       for (const side of [-1, 1]) {
         const ox = Math.sin(ship.heading) * 0.55 * side, oz = Math.cos(ship.heading) * 0.55 * side;
         sys.burns.push({ x: ship.x - hx * STERN + ox, z: ship.z - hz * STERN + oz, r: s.plasmaRadius, life: s.plasmaLife, max: s.plasmaLife, dps: s.plasmaDps, trail: true });
+        // the corona: plasma wreathes the bow and flanks, briefly
+        if (s.plasmaCorona) sys.burns.push({ x: ship.x + hx * 0.6 + ox * 2.6, z: ship.z + hz * 0.6 + oz * 2.6, r: s.plasmaRadius * 0.85, life: 0.35, max: 0.35, dps: s.plasmaDps, trail: true });
       }
     }
   }

@@ -42,6 +42,8 @@ export interface RunStats {
   /** One sample every TIMELINE seconds. */
   timeline: Array<{ t: number; score: number; plates: number; refit: number }>;
   build: Levels;
+  /** The refit web's nodes fitted, the core among them. */
+  nodes: string[];
   identity: string;
   modifiers: string[];
   /** What ended it. */
@@ -58,7 +60,7 @@ export function newRun(seed: number, modifiers: string[] = []): RunStats {
     killsByKind: {}, elites: 0, rocks: 0, dilithium: 0, dropped: 0, refit: 0, overcharges: 0, grazes: 0, bestChain: 0,
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
     platesLost: 0, platesGained: 0, shieldsAbsorbed: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
-    timeline: [], build: {}, identity: '', modifiers, cause: '',
+    timeline: [], build: {}, nodes: [], identity: '', modifiers, cause: '',
   };
 }
 

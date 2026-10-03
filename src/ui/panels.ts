@@ -2,76 +2,23 @@ import { BRANCHES, UPGRADE, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
 import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
 import type { Contact } from '../sim/bosses';
-import { identity, type Card, type Levels, type Offer } from '../sim/build';
+import { identity, type Levels } from '../sim/build';
+import { POINTS_PER_SALVAGE } from '../sim/web';
+import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { NEON_CSS } from './colors';
+import { miniWeb } from './web';
 import { VARIANTS } from '../sim/enemies';
 import type { RunStats } from '../sim/run';
 
 // ── the panels ────────────────────────────────────────────────────────────
-// The run's three stops (a refit, a hail, the report) and the start screen's
-// options. Each stop is a modal sheet that the world waits on. Every panel
-// ignores input for its first moments and never answers a held key: a
-// refit opens with the trigger down, and a run ends with keys held.
-
-const GUARD = 400;
-const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-
-/** A small element builder: tag, class, text, children. */
-function h(tag: string, cls = '', text = '', ...kids: Array<Node | null>): HTMLElement {
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text) e.textContent = text;
-  for (const k of kids) if (k) e.append(k);
-  return e;
-}
+// Two of the run's three stops (the hail and the report; the refit web is
+// ui/web.ts) and the start screen's options. Each stop is a modal sheet that
+// the world waits on. Every panel ignores input for its first moments and
+// never answers a held key: a hail opens with the trigger down, and a run
+// ends with keys held.
 
 export const mmss = (s: number) => { const r = Math.max(0, Math.round(s)); return `${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')}`; };
 const fmt = (n: number) => Math.round(n).toLocaleString('en-GB');
-const pad2 = (n: number) => String(n).padStart(2, '0');
-const CAT_WORD = { weapons: 'Weapons', defence: 'Defence', ship: 'Ship' } as const;
-const TAG_WORD = { new: 'New', up: 'Upgrade', spec: 'Specialisation', synergy: 'Synergy', wild: 'New direction' } as const;
-
-/** Listen for keys while a panel is open, past the guard, ignoring repeats. Returns the remover. */
-function keys(onKey: (e: KeyboardEvent) => boolean): () => void {
-  const opened = performance.now();
-  const fn = (e: KeyboardEvent) => {
-    if (e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.repeat || performance.now() - opened < GUARD) { e.preventDefault(); e.stopImmediatePropagation(); return; }
-    if (onKey(e)) { e.preventDefault(); e.stopImmediatePropagation(); }
-  };
-  window.addEventListener('keydown', fn, true);
-  return () => window.removeEventListener('keydown', fn, true);
-}
-
-/** A click handler that only answers after the guard. */
-const guarded = (opened: number, fn: () => void) => (e: Event) => {
-  e.preventDefault();
-  e.stopPropagation();
-  if (performance.now() - opened >= GUARD) fn();
-};
-
-// ── a gamepad on the panels ───────────────────────────────────────────────
-// The flight input reads the pad while flying; while a panel is open this
-// reads it instead, by edges only, so a held button never answers.
-
-export interface PadEdges { left: boolean; right: boolean; a: boolean; b: boolean; }
-
-export class PadNav {
-  private prev: boolean[] = [];
-
-  poll(): PadEdges {
-    const pad = typeof navigator.getGamepads === 'function' ? navigator.getGamepads().find((p) => p && p.connected) : null;
-    const none = { left: false, right: false, a: false, b: false };
-    if (!pad) { this.prev.length = 0; return none; }
-    const now = pad.buttons.map((b) => b.pressed);
-    const x = pad.axes[0] ?? 0;
-    now[100] = x < -0.6; now[101] = x > 0.6;
-    const edge = (i: number) => !!now[i] && !this.prev[i];
-    const out = { left: edge(14) || edge(100), right: edge(15) || edge(101), a: edge(0), b: edge(1) };
-    this.prev = now;
-    return out;
-  }
-}
 
 // ── the build, drawn ──────────────────────────────────────────────────────
 
@@ -98,98 +45,6 @@ export function buildView(levels: Levels, named = true): HTMLElement {
   return wrap;
 }
 
-// ── the refit panel ───────────────────────────────────────────────────────
-
-export class RefitPanel {
-  private off: (() => void) | null = null;
-  private sel = 0;
-  private pad: { opened: number; n: number; pick: (i: number) => void } | null = null;
-
-  get open(): boolean {
-    return !$('refit').hidden;
-  }
-
-  show(offer: Offer, levels: Levels, onPick: (i: number) => void): void {
-    this.close();
-    const opened = performance.now();
-    const kind = offer.kind;
-    $('refit-k').textContent = kind === 'salvage' ? 'Battle salvage' : kind === 'spec' ? 'Specialisation' : `Field refit · ${pad2(offer.refit)}`;
-    $('refit-t').textContent = kind === 'salvage' ? 'Hull broken · take one upgrade' : kind === 'spec'
-      ? `${BRANCHES[offer.branch!].name}: choose your specialisation` : 'Choose an upgrade';
-    $('refit-s').textContent = kind === 'spec' ? 'One per branch, for the rest of the run. It decides what this ship is.' : '';
-    const ship = $('refit-ship');
-    ship.replaceChildren(h('span', '', 'Your ship · '), h('b', '', identity(levels).title));
-    const host = $('cards');
-    host.replaceChildren(...offer.cards.map((c, i) => this.card(c, i, guarded(opened, () => this.pick(i, onPick)))));
-    this.sel = 0;
-    this.mark();
-    this.pad = { opened, n: offer.cards.length, pick: onPick };
-    $('refit').hidden = false;
-    this.off = keys((e) => {
-      const n = offer.cards.length;
-      if (e.code === 'Digit1' || e.code === 'Numpad1') return this.pick(0, onPick), true;
-      if ((e.code === 'Digit2' || e.code === 'Numpad2') && n > 1) return this.pick(1, onPick), true;
-      if ((e.code === 'Digit3' || e.code === 'Numpad3') && n > 2) return this.pick(2, onPick), true;
-      if (e.code === 'Tab') { this.sel = (this.sel + (e.shiftKey ? n - 1 : 1)) % n; this.mark(); return true; }
-      if (e.code === 'Enter' || e.code === 'NumpadEnter') return this.pick(this.sel, onPick), true;
-      // the flight keys do nothing here; swallow them so nothing behind the panel answers
-      return ['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'KeyE', 'KeyF'].includes(e.code);
-    });
-  }
-
-  close(): void {
-    this.off?.();
-    this.off = null;
-    this.pad = null;
-    $('refit').hidden = true;
-  }
-
-  /** A gamepad: move the selection, or take it. */
-  padInput(p: PadEdges): void {
-    const pad = this.pad;
-    if (!pad || performance.now() - pad.opened < GUARD) return;
-    if (p.left || p.right) { this.sel = (this.sel + (p.right ? 1 : pad.n - 1)) % pad.n; this.mark(); }
-    else if (p.a) this.pick(this.sel, pad.pick);
-  }
-
-  private pick(i: number, onPick: (i: number) => void): void {
-    this.close();
-    onPick(i);
-  }
-
-  private mark(): void {
-    [...$('cards').children].forEach((c, i) => c.classList.toggle('sel', i === this.sel));
-  }
-
-  private card(c: Card, i: number, onClick: (e: Event) => void): HTMLElement {
-    const u = UPGRADE[c.id]!;
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'card';
-    b.dataset.cat = u.cat;
-    const path = c.kind === 'synergy'
-      ? (u.requires ?? []).map((r) => BRANCHES[UPGRADE[r.id]!.branch].name).join(' + ')
-      : `${CAT_WORD[u.cat]} › ${BRANCHES[u.branch].name}`;
-    const tag = c.tag === 'up' ? `Lv ${c.level - 1} → ${c.level}` : TAG_WORD[c.tag];
-    const figs = h('div', 'figs');
-    for (const f of c.figs.slice(0, 5)) {
-      figs.append(h('span', f.cost ? 'cost' : '', f.label, h('b', '', `${f.from} → ${f.to}`)));
-    }
-    if (!c.figs.length) figs.append(h('span', '', 'Behaviour', h('b', '', 'changed')));
-    const kbd = h('kbd', '', String(i + 1));
-    b.append(
-      h('span', 'cat', '', h('i'), h('span', 'path', path), kbd),
-      h('span', `tag ${c.tag}`, tag),
-      h('h3', '', c.name),
-      h('div', '', '', h('p', 'ben', c.text), c.note ? h('p', 'cav', c.note) : null),
-      figs,
-    );
-    b.addEventListener('click', onClick);
-    b.addEventListener('pointerdown', (e) => e.stopPropagation());
-    return b;
-  }
-}
-
 // ── the hail ──────────────────────────────────────────────────────────────
 
 export class HailPanel {
@@ -209,7 +64,7 @@ export class HailPanel {
     $('hail-s').textContent = `${c.faction} capital ship · on intercept course`;
     $('hail-eb').textContent = 'She will fight back, and her escort wing comes in with her. The sector clears for the duel.';
     const lines = (host: HTMLElement, ls: string[]) => host.replaceChildren(...ls.map((l) => h('span', '', l)));
-    lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Battle salvage · one free refit', 'Hull repair · dilithium · a power-up']);
+    lines($('hail-el'), [`+${fmt(c.bounty)} score`, `Salvage · ${POINTS_PER_SALVAGE} web points · her tech`, 'Hull repair · dilithium · a power-up']);
     const ev = $<HTMLButtonElement>('hail-evade');
     ev.disabled = !c.canEvade;
     if (c.canEvade) {
@@ -310,7 +165,7 @@ export class SummaryPanel {
       tile('Capital ships', r.capitals, p.capitals),
       h('div', 'tile', '', h('span', 'k', 'Sector events'), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', `${r.powerups} power-ups found`)),
     );
-    $('sum-build').replaceChildren(buildView(r.build, false));
+    $('sum-build').replaceChildren(miniWeb(r.nodes), buildView(r.build, false));
     $('sum-how').replaceChildren(this.how(r));
     this.chart(r, rec.previousCurve);
 

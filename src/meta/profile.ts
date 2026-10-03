@@ -43,6 +43,8 @@ export interface Profile {
   /** Challenge modifiers switched on for the next run, and the engine colour. */
   modifiers: string[];
   cosmetic: string;
+  /** The camera distance last chosen (an index into the zoom steps). */
+  zoom: number;
 }
 
 const fresh = (): Profile => ({
@@ -54,6 +56,7 @@ const fresh = (): Profile => ({
   earned: [],
   modifiers: [],
   cosmetic: 'engine-stock',
+  zoom: 1,
 });
 
 export function loadProfile(): Profile {

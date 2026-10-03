@@ -25,10 +25,12 @@
       <div id="vignette" aria-hidden="true"></div>
       <div id="reticle" aria-hidden="true"></div>
       <div id="marks" aria-hidden="true"></div>
+      <!-- hulls out of view: chevrons at the edge, pointing the way -->
+      <div id="edges" aria-hidden="true"></div>
       <div id="lock" aria-hidden="true"><span class="lk-t"><b id="lock-id">Interceptor</b> <span id="lock-d">0 m</span></span></div>
 
       <!-- top edge: the refit rail, the number a run is steered by -->
-      <div id="rail" aria-label="Dilithium to the next refit"><span class="k">Refit <b id="refit-n">00</b></span><div class="ticks"><i id="xp"></i></div><span class="gem"><b id="xp-v">0</b><span class="k">/ <span id="xp-n">0</span></span></span></div>
+      <div id="rail" aria-label="Dilithium to the next refit"><span class="k">Refit <b id="refit-n">00</b></span><div class="ticks"><i id="xp"></i></div><span class="gem"><b id="xp-v">0</b><span class="k">/ <span id="xp-n">0</span></span></span><button type="button" id="rail-web" aria-label="Open the refit web"><span class="k">Web</span><b id="rail-pts">0</b><kbd class="only-desktop">R</kbd></button></div>
 
       <!-- top right: weapons, then score and hull -->
       <section id="weapons" aria-label="Weapons">
@@ -68,7 +70,7 @@
       <div class="start-card">
         <svg class="wm" viewBox="0 0 146.5 46" role="img" aria-label="Asteroid Blaster"><g class="wm-a"><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(0.00 0.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(20.50 0.00)"/><path d="M0 2H16M8 2V20" transform="translate(41.00 0.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(61.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(81.00 0.00)"/><path d="M5 2H11L14 5V15L11 18H5L2 15V5Z" transform="translate(101.50 0.00)"/><path d="M2 0V20" transform="translate(122.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(130.50 0.00)"/></g><g class="wm-b"><path d="M2 2H11L14 5V7.5L12 10L14 12.5V15L11 18H2ZM2 10H12" transform="translate(0.00 26.00)"/><path d="M2 0V18H15" transform="translate(20.50 26.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(40.00 26.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(60.50 26.00)"/><path d="M0 2H16M8 2V20" transform="translate(81.00 26.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(101.50 26.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(121.00 26.00)"/></g></svg>
         <p id="start-t" class="tag">Hold the sector.</p>
-        <p class="meta">Phasers 1 · torpedoes 2 · overcharge E · roll Shift · zoom Z</p>
+        <p class="meta">Phasers 1 · torpedoes 2 · overcharge E · roll Shift · refit web R · zoom Z</p>
         <button type="button" id="launch">Launch</button>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
         <div id="records" class="records"></div>
@@ -89,12 +91,25 @@
       </div>
     </div>
 
-    <!-- The refit panel: three cards, one pick. Keys 1 2 3, Tab and Enter. -->
-    <div id="refit" class="sheet" role="dialog" aria-labelledby="refit-t" hidden>
-      <div class="panel">
-        <header class="ph"><span class="kick" id="refit-k">Field refit</span><h2 id="refit-t">Choose an upgrade</h2><span class="sub" id="refit-s"></span></header>
-        <div class="cards" id="cards"></div>
-        <footer class="pf"><span class="keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> take a card · <kbd>Tab</kbd> moves · <kbd>Enter</kbd> takes · pad ◀ ▶ and <kbd>A</kbd></span><span class="ship-id" id="refit-ship"></span></footer>
+    <!-- The refit web: spend points on nodes joined to what is fitted. Tap to look, tap again to fit. -->
+    <div id="web" class="sheet" role="dialog" aria-labelledby="web-t" hidden>
+      <div class="webp">
+        <header class="wh">
+          <div class="ph"><span class="kick" id="web-k">Field refit</span><h2 id="web-t">Refit web</h2></div>
+          <div class="wpts" id="web-pts" aria-live="polite"></div>
+          <span class="ship-id" id="web-ship"></span>
+          <button type="button" id="web-x">Launch <kbd>Esc</kbd></button>
+        </header>
+        <div class="wmap" id="web-map">
+          <svg id="web-svg" aria-label="The refit web"></svg>
+          <div class="wzoom"><button type="button" id="web-zin" aria-label="Closer">+</button><button type="button" id="web-zout" aria-label="Further">−</button><button type="button" id="web-zfit" aria-label="Frame the route">◎</button></div>
+          <div class="wlegend" aria-hidden="true"><span><i class="lg-minor"></i>Minor</span><span><i class="lg-stat"></i>Upgrade</span><span><i class="lg-system"></i>System</span><span><i class="lg-spec"></i>Specialisation</span><span><i class="lg-syn"></i>Synergy</span><span><i class="lg-tech"></i>Salvaged tech</span></div>
+        </div>
+        <aside class="winsp" id="web-insp" aria-live="polite"></aside>
+        <footer class="wf">
+          <div class="wquick-box"><span class="k">Quick pick</span><div class="wquick" id="web-quick"></div></div>
+          <span class="keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> quick pick · arrows move · <kbd>Tab</kbd> next open node · <kbd>Enter</kbd> fit · drag, wheel or pinch the map · pad: stick, <kbd>A</kbd> fit, <kbd>LB</kbd> <kbd>RB</kbd>, <kbd>B</kbd> launch</span>
+        </footer>
       </div>
     </div>
 
@@ -131,7 +146,7 @@
     <div id="pause" role="status">
       <div class="pause-t">All stop</div>
       <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
-      <div class="pause-h only-desktop">Click or press any key to resume</div>
+      <div class="pause-h only-desktop">Click or press any key to resume · R opens the refit web</div>
       <div class="pause-h only-touch">Tap to resume</div>
       <div class="pause-build" id="pause-build"></div>
     </div>

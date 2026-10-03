@@ -1,8 +1,10 @@
 import type { Stats } from '../sim/stats';
 
-// ── the refit tree ────────────────────────────────────────────────────────
-// One ship, many builds. Every upgrade is a card on the refit panel, and the
-// cards form a tree rather than a bag of numbers:
+// ── what can be fitted ────────────────────────────────────────────────────
+// One ship, many builds. Everything the ship can become is listed here, and
+// laid out as the refit web in content/web.ts: nine regions round the core,
+// each a few paths of small nodes between bigger ones, ending in three
+// specialisations, with synergies on the bridges between neighbours.
 //
 //   Weapons ─┬─ Phasers ──── emitters, capacitors, bank, lenses, pierce
 //            │                └─ specialise: Cone · Heavy lance · Targeting array
@@ -11,33 +13,37 @@ import type { Stats } from '../sim/stats';
 //            ├─ Mines ────── layer ─ yield, racks, seekers
 //            │                └─ specialise: Minefield · Chain reaction · Graviton
 //            ├─ Plasma ───── vent ─ heat, flow
-//            │                └─ specialise: Ignition · Afterburner wake
-//            └─ Close ────── hull arc ─ capacitors, reach · ram prow
-//                             └─ specialise: Arc storm · Juggernaut
+//            │                └─ specialise: Ignition · Afterburner wake · Corona
+//            └─ Close ────── ram prow · hull arc ─ capacitors, reach
+//                             └─ specialise: Arc storm · Juggernaut · Shock prow
 //   Ship ────┬─ Mobility ─── impulse, thrusters, dampers, jets
-//            │                └─ specialise: Drift drive · Evasive pattern
+//            │                └─ specialise: Drift drive · Evasive pattern · Afterburner
 //            ├─ Utility ──── tractor, dilithium matrix
+//            │                └─ specialise: Prospector · Salvage drones · Deep scanners
 //            └─ Warp core ── coils
 //                             └─ specialise: Warp nova · Weapons overload · Phase cloak
 //   Defence ──  Shields, armour, bulkheads, damage control
 //                             └─ specialise: Fortress · Reactive armour · Regenerative hull
-//   Synergies: cross-branch cards that only appear once you own both halves.
+//   Synergies on the bridges between regions, once you own both halves.
+//   Salvage: one piece of tech per faction, opened by destroying its capital
+//   ship in the run.
 //
-// A system card ('system') switches a new weapon or device on. A
-// specialisation ('spec') is offered as its own refit, once, when a branch
-// has enough levels in it; taking one closes the others in its group. Tags
-// are how the offer reads a build: the more levels you own with a tag, the
-// likelier the cards that share it.
+// Kinds: a 'minor' is a small step along a path (the web has many of each);
+// a 'stat' is a bigger node; a 'system' switches a weapon or device on; a
+// 'spec' is a specialisation (one per group; taking one closes the others);
+// a 'synergy' needs both halves; 'tech' needs its faction's capital ship
+// destroyed this run. Each node in the web adds one level of its upgrade.
 //
-// Card copy follows the brand: one short sentence in the second person,
-// ending in a full stop, and a caveat only where it answers "wait, how
-// does that work?". The figures on a card are computed, not written: the
-// panel shows every number the card changes (see FIGURES).
+// Copy follows the brand: one short sentence in the second person, ending
+// in a full stop, and a caveat only where it answers "wait, how does that
+// work?". The figures are computed, not written: the web shows every
+// number a node changes (see FIGURES in sim/build.ts).
 
 export type Branch =
-  | 'phaser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'overcharge' | 'synergy';
+  | 'phaser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'overcharge' | 'synergy' | 'salvage';
 export type Category = 'weapons' | 'defence' | 'ship';
-export type UpgradeKind = 'stat' | 'system' | 'spec' | 'synergy';
+export type UpgradeKind = 'minor' | 'stat' | 'system' | 'spec' | 'synergy' | 'tech';
+export type TechFaction = 'klingon' | 'cardassian' | 'romulan' | 'borg' | 'tholian';
 
 export interface Req { id: string; lv?: number; }
 
@@ -58,6 +64,8 @@ export interface UpgradeDef {
   weight?: number;
   /** Needs a long-term unlock (content/unlocks.ts) before it can be offered. */
   locked?: boolean;
+  /** Salvage: needs this faction's capital ship destroyed this run. */
+  tech?: TechFaction;
   /** The benefit, for the level about to be taken. */
   text: string | ((lv: number) => string);
   note?: string;
@@ -83,6 +91,7 @@ export const BRANCHES: Record<Branch, BranchDef> = {
   utility: { name: 'Utility', cat: 'ship', identity: 'Prospector' },
   overcharge: { name: 'Warp core', cat: 'ship', identity: 'Core diver' },
   synergy: { name: 'Synergy', cat: 'weapons', identity: 'Hybrid' },
+  salvage: { name: 'Salvage', cat: 'ship', identity: 'Raider' },
 };
 
 export const UPGRADES: UpgradeDef[] = [
@@ -497,7 +506,104 @@ export const UPGRADES: UpgradeDef[] = [
     text: 'Your overcharge release lays a ring of mines around you and refills your racks.',
     apply: (s) => { s.ocRefill = true; },
   },
+
+  // ── more specialisations ───────────────────────────────────────────────
+  {
+    id: 'pl_corona', name: 'Plasma corona', branch: 'plasma', cat: 'weapons', kind: 'spec', max: 1, group: 'plasma', needs: 2,
+    tags: ['plasma', 'close', 'damage'],
+    text: 'While you thrust, plasma wreathes your hull: anything you brush burns.',
+    apply: (s) => { s.plasmaCorona = true; s.plasmaDps *= 1.15; },
+  },
+  {
+    id: 'cl_shock', name: 'Shock prow', branch: 'close', cat: 'weapons', kind: 'spec', max: 1, group: 'close', needs: 3,
+    tags: ['close', 'ram', 'arc'],
+    text: 'Every ram discharges an arc into the hulls near what you hit.',
+    apply: (s) => { s.ramArc = true; s.ramDamage *= 1.2; },
+  },
+  {
+    id: 'mo_afterburner', name: 'Afterburner', branch: 'mobility', cat: 'ship', kind: 'spec', max: 1, group: 'mobility', needs: 4,
+    tags: ['mobility', 'speed', 'overcharge'],
+    text: 'A higher top speed, and near misses at speed charge the core twice as fast.',
+    apply: (s) => { s.thrust *= 1.12; s.speedGraze = true; },
+  },
+  {
+    id: 'ut_prospector', name: 'Prospector', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
+    tags: ['utility', 'xp'],
+    text: 'Rock gives up dilithium half again as often.',
+    apply: (s) => { s.crystalChance *= 1.5; s.tractor *= 1.1; },
+  },
+  {
+    id: 'ut_salvager', name: 'Salvage drones', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
+    tags: ['utility', 'defence'],
+    text: 'Hull repairs turn up more often, and power-ups last half again as long.',
+    note: 'Still no more than one repair every half minute.',
+    apply: (s) => { s.repairChance *= 1.8; s.powerTime *= 1.5; },
+  },
+  {
+    id: 'ut_scanner', name: 'Deep scanners', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
+    tags: ['utility', 'xp', 'damage'],
+    text: 'Rare rock turns up twice as often, and elites carry twice the dilithium.',
+    apply: (s) => { s.rareRate *= 2; s.eliteLoot *= 2; },
+  },
+
+  // ── salvage: tech from the capital ships you destroy ───────────────────
+  {
+    id: 'tech_klingon', name: 'Klingon disruptors', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'klingon', tags: ['phaser', 'damage'],
+    text: 'Every fourth phaser shot is a disruptor bolt at triple damage.',
+    apply: (s) => { s.disruptor = 4; },
+  },
+  {
+    id: 'tech_cardassian', name: 'Cardassian compressors', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'cardassian', tags: ['phaser', 'torpedo', 'range'],
+    text: 'Your lances reach further and pierce one more target; torpedo blasts widen.',
+    apply: (s) => { s.phaserLife *= 1.2; s.phaserPierce += 1; s.torpBlast *= 1.1; },
+  },
+  {
+    id: 'tech_romulan', name: 'Romulan cloak', branch: 'salvage', cat: 'ship', kind: 'tech', max: 1, tech: 'romulan', tags: ['mobility', 'evasion'],
+    text: 'A barrel roll cloaks you: hostile hulls hold their fire for a moment.',
+    note: 'Capital ships see through it.',
+    apply: (s) => { s.rollCloak = 1.6; s.rollIframes += 0.1; },
+  },
+  {
+    id: 'tech_borg', name: 'Borg adaptive shield', branch: 'salvage', cat: 'defence', kind: 'tech', max: 1, tech: 'borg', tags: ['defence', 'shield'],
+    text: 'One more shield charge, recharging faster.',
+    apply: (s) => { s.shieldMax += 1; s.shieldRecharge *= 0.85; },
+  },
+  {
+    id: 'tech_tholian', name: 'Tholian snares', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'tholian', tags: ['mine', 'torpedo', 'control'],
+    text: 'Your torpedo and mine blasts snare the hulls they catch, slowing them hard.',
+    apply: (s) => { s.snare = 3; },
+  },
+
+  // ── minor nodes: the small steps along the web's paths ─────────────────
+  ...minor('mi_phaser_dmg', 'Emitter tuning', 'phaser', 'weapons', ['phaser', 'damage'], 'Your lances hit a little harder.', (s) => { s.phaserDamage *= 1.08; }),
+  ...minor('mi_phaser_rate', 'Capacitor trim', 'phaser', 'weapons', ['phaser', 'rate'], 'Your phasers cycle a little faster.', (s) => { s.phaserCooldown *= 0.96; }),
+  ...minor('mi_bank', 'Bank cells', 'phaser', 'weapons', ['phaser', 'sustain'], 'Your phaser bank holds a little more.', (s) => { s.bankMax += 12; s.bankRefill *= 1.06; }),
+  ...minor('mi_reach', 'Lens polish', 'phaser', 'weapons', ['phaser', 'range'], 'Your lances fly a little faster.', (s) => { s.phaserSpeed *= 1.05; }),
+  ...minor('mi_torp_dmg', 'Warhead trim', 'torpedo', 'weapons', ['torpedo', 'damage'], 'Your torpedoes hit a little harder.', (s) => { s.torpDamage *= 1.08; }),
+  ...minor('mi_torp_reload', 'Loading drill', 'torpedo', 'weapons', ['torpedo', 'rate'], 'Your torpedoes reload a little faster.', (s) => { s.torpReload *= 0.95; }),
+  ...minor('mi_blast', 'Shaped charges', 'torpedo', 'weapons', ['torpedo', 'mine', 'area'], 'Your torpedo and mine blasts reach a little wider.', (s) => { s.torpBlast *= 1.04; s.mineBlast *= 1.04; }),
+  ...minor('mi_mine_dmg', 'Tricobalt grade', 'mine', 'weapons', ['mine', 'damage'], 'Your mines hit a little harder.', (s) => { s.mineDamage *= 1.08; }),
+  ...minor('mi_mine_rate', 'Rack drill', 'mine', 'weapons', ['mine', 'rate'], 'You lay mines a little more often, and they last longer.', (s) => { s.mineInterval *= 0.95; s.mineLife *= 1.05; }),
+  ...minor('mi_plasma_dps', 'Plasma injectors', 'plasma', 'weapons', ['plasma', 'damage'], 'Your plasma burns a little hotter.', (s) => { s.plasmaDps *= 1.1; }),
+  ...minor('mi_plasma_life', 'Plasma baffles', 'plasma', 'weapons', ['plasma', 'area'], 'Your trail lingers a little longer, a little wider.', (s) => { s.plasmaLife *= 1.08; s.plasmaRadius *= 1.04; }),
+  ...minor('mi_arc_dmg', 'Arc coils', 'close', 'weapons', ['close', 'arc'], 'Your arcs hit a little harder.', (s) => { s.arcDamage *= 1.1; }),
+  ...minor('mi_ram', 'Prow plating', 'close', 'weapons', ['close', 'ram'], 'Your rams hit a little harder.', (s) => { s.ramDamage += 1.5; }),
+  ...minor('mi_thrust', 'Impulse trim', 'mobility', 'ship', ['mobility', 'speed'], 'A little more thrust.', (s) => { s.thrust *= 1.03; }),
+  ...minor('mi_turn', 'Thruster trim', 'mobility', 'ship', ['mobility', 'turning'], 'You turn a little faster.', (s) => { s.turn *= 1.04; }),
+  ...minor('mi_roll', 'Jet trim', 'mobility', 'ship', ['mobility', 'evasion'], 'Your roll comes round a little sooner.', (s) => { s.rollCooldown *= 0.94; }),
+  ...minor('mi_shield', 'Shield cells', 'defence', 'defence', ['defence', 'shield'], 'Your shield recharges a little faster.', (s) => { s.shieldRecharge *= 0.94; }),
+  ...minor('mi_grace', 'Bracing', 'defence', 'defence', ['defence', 'armour'], 'You stay untouchable a little longer after a hit.', (s) => { s.grace += 0.08; }),
+  ...minor('mi_tractor', 'Tractor emitters', 'utility', 'ship', ['utility', 'tractor'], 'You pull dilithium in from a little further.', (s) => { s.tractor *= 1.1; }),
+  ...minor('mi_xp', 'Dilithium lattice', 'utility', 'ship', ['utility', 'xp'], 'Every crystal is worth a little more.', (s) => { s.xpMult *= 1.04; }),
+  ...minor('mi_oc_gain', 'Core sensors', 'overcharge', 'ship', ['overcharge', 'evasion'], 'Near misses charge the core a little faster.', (s) => { s.ocGain *= 1.08; }),
+  ...minor('mi_oc_dmg', 'Core focus', 'overcharge', 'ship', ['overcharge', 'damage'], 'Your overcharge release hits a little harder and wider.', (s) => { s.ocDamage *= 1.12; s.ocRadius *= 1.03; }),
+  ...minor('mi_all_damage', 'Fire control', 'synergy', 'weapons', ['damage'], 'All your weapons hit a little harder.', (s) => { s.dmgAll *= 1.04; }),
 ];
+
+/** A minor upgrade: a small step, owned up to ten times (one per node of it in the web). */
+function minor(id: string, name: string, branch: Branch, cat: Category, tags: string[], text: string, apply: (s: Stats) => void): UpgradeDef[] {
+  return [{ id, name, branch, cat, kind: 'minor', max: 10, tags, text, apply }];
+}
 
 export const UPGRADE: Record<string, UpgradeDef> = Object.fromEntries(UPGRADES.map((u) => [u.id, u]));
 
