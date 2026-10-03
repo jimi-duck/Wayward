@@ -20,6 +20,12 @@ export interface Hull {
   grip: number;
   /** Hull plates at the start of a run. */
   plates: number;
+  /** Barrel-roll overrides, from the build (tuning.ts has the defaults). */
+  rollCooldown?: number;
+  rollKick?: number;
+  rollIframes?: number;
+  /** Drift drive: off the throttle the hull keeps its speed and turns faster. */
+  drift?: boolean;
 }
 
 export const HULL: Hull = { name: 'Defiant class', role: 'Gunship', thrust: 1.965, rot: 1.10, drag: 0.961, grip: 0.05, plates: 3 };

@@ -6,8 +6,9 @@ import {
 import { STEP } from '../core/loop';
 import type { Boss } from '../sim/bosses';
 import {
-  ALIEN_TYPES, BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type Faction, type Pickup, type Shot, type Web,
+  ALIEN_TYPES, BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type Faction, type Shot, type Web,
 } from '../sim/enemies';
+import type { Pickup } from '../sim/pickups';
 import { Kit, metal, seeded, type V3 } from './kit';
 
 // ── the enemy ─────────────────────────────────────────────────────────────

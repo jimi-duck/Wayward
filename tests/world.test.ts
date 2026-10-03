@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import type { Rock } from '../src/sim/field';
-import { BANK_MAX, BANK_SHOT, ROCK_POINTS, SHOT_COOLDOWN, TORP_RACK, TORP_RELOAD, TORP_SPACING } from '../src/sim/tuning';
+import { BANK_MAX, BANK_SHOT, DYING, ROCK_POINTS, SHOT_COOLDOWN, TORP_RELOAD, TORP_SPACING } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
@@ -49,7 +49,7 @@ describe('phasers', () => {
     const { w, rock } = range(12, 2);
     run(w, 0.6, { fire: true });
     expect(w.field.rocks.includes(rock)).toBe(false);
-    expect(w.score).toBe(ROCK_POINTS[2]);
+    expect(w.run.scoreBy.rocks).toBe(ROCK_POINTS[2]);
   });
 
   it('split a large rock into two medium ones', () => {
@@ -63,8 +63,17 @@ describe('phasers', () => {
 });
 
 describe('torpedoes', () => {
+  it('are a refit, not standard: the stock ship has no bay', () => {
+    const w = new World(1);
+    w.field.rocks = [];
+    w.step(STEP, input({ torpedo: true }));
+    expect(w.torps.length).toBe(0);
+    expect(w.drain().some((e) => e.type === 'torpedo')).toBe(false);
+  });
+
   it('lock the rock ahead, steer onto it and blast it', () => {
     const { w, rock } = range(30, 1);
+    w.setLevels({ tp_bay: 1 });
     rock.x = 8; // off to one side: the torpedo has to turn
     w.step(STEP, input());
     expect(w.lock).toBe(rock.id);
@@ -74,14 +83,17 @@ describe('torpedoes', () => {
     expect(w.drain().some((e) => e.type === 'blast')).toBe(true);
   });
 
-  it('come three to a rack, one per press, and reload on the original clock', () => {
+  it('come from a rack, one per press, and reload on the original clock', () => {
     const w = new World(1);
     w.field.rocks = [];
-    for (let i = 0; i < 4; i++) { w.step(STEP, input({ torpedo: true })); run(w, TORP_SPACING + 0.05); }
+    w.setLevels({ tp_bay: 1, tp_magazine: 1 });
+    const rack = w.stats.torpRack;
+    expect(rack).toBe(3);
+    for (let i = 0; i < rack + 1; i++) { w.step(STEP, input({ torpedo: true })); run(w, TORP_SPACING + 0.05); }
     expect(w.arms.rack).toBe(0);
     expect(w.drain().some((e) => e.type === 'rackEmpty')).toBe(true);
-    run(w, TORP_RELOAD * TORP_RACK + 0.2);
-    expect(w.arms.rack).toBe(TORP_RACK);
+    run(w, TORP_RELOAD * rack + 0.2);
+    expect(w.arms.rack).toBe(rack);
   });
 });
 
@@ -95,7 +107,7 @@ describe('the hull', () => {
     expect(w.plates).toBe(after);
   });
 
-  it('breaches at zero plates, reports the run, and starts a new one', () => {
+  it('breaches at zero plates, reports the run, and starts a new one on request', () => {
     const { w, rock } = range(0.5, 0);
     w.score = 500;
     for (let i = 0; i < w.hull.plates; i++) {
@@ -107,6 +119,15 @@ describe('the hull', () => {
     const breach = w.drain().find((e) => e.type === 'breach');
     expect(breach && breach.type === 'breach' && breach.score).toBe(500);
     expect(w.best).toBe(500);
+    expect(w.alive).toBe(false);
+    // the wreck drifts a moment, then the run report
+    run(w, DYING + 0.1);
+    expect(w.phase).toBe('over');
+    expect(w.run.score).toBe(500);
+    expect(w.run.cause).toBe('rock');
+    expect(w.run.platesLost).toBe(3);
+    w.restart();
+    expect(w.phase).toBe('play');
     expect(w.score).toBe(0);
     expect(w.plates).toBe(w.hull.plates);
     expect(w.ship.invuln).toBeGreaterThan(2);

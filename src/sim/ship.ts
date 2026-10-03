@@ -76,9 +76,20 @@ function applyGrip(s: ShipState, g: number): void {
   s.vz = f * hz + nl * hx;
 }
 
+/** Drag kept per step while drifting: most of the speed carries. */
+const DRIFT_DRAG = 0.988;
+/** Turn rate while drifting, as a multiple of the hull's own. */
+const DRIFT_TURN = 1.3;
+
+/** True while the drift drive is carrying the ship: off the throttle, still moving. */
+export function drifting(s: ShipState, hull: Hull): boolean {
+  return !!hull.drift && s.thrust === 0 && Math.hypot(s.vx, s.vz) > topSpeed(hull) * 0.3;
+}
+
 export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number): void {
   const before = s.heading;
-  const turnRate = turnPerStep(hull);
+  const drift = !!hull.drift && c.thrust === 0 && Math.hypot(s.vx, s.vz) > topSpeed(hull) * 0.3;
+  const turnRate = turnPerStep(hull) * (drift ? DRIFT_TURN : 1);
 
   // The helm eases in over about a tenth of a second, so a tap nudges the
   // nose and a hold comes round at full rate.
@@ -99,9 +110,9 @@ export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number
   if (c.roll && s.rollCooldown === 0) {
     s.rollDir = c.rollDir === 0 ? (s.rollDir === 1 ? -1 : 1) : c.rollDir;
     s.rollT = 0;
-    s.rollCooldown = ROLL_COOLDOWN;
-    s.invuln = Math.max(s.invuln, ROLL_IFRAMES);
-    const kick = topSpeed(hull) * ROLL_KICK * s.rollDir;
+    s.rollCooldown = hull.rollCooldown ?? ROLL_COOLDOWN;
+    s.invuln = Math.max(s.invuln, hull.rollIframes ?? ROLL_IFRAMES);
+    const kick = topSpeed(hull) * (hull.rollKick ?? ROLL_KICK) * s.rollDir;
     // right of the nose is the heading turned a quarter clockwise
     s.vx += Math.sin(s.heading) * kick;
     s.vz += Math.cos(s.heading) * kick;
@@ -111,8 +122,9 @@ export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number
   }
   if (s.invuln > 0) s.invuln = Math.max(0, s.invuln - dt);
 
-  s.vx *= hull.drag;
-  s.vz *= hull.drag;
+  const drag = drift ? Math.max(hull.drag, DRIFT_DRAG) : hull.drag;
+  s.vx *= drag;
+  s.vz *= drag;
   s.x += s.vx * dt;
   s.z += s.vz * dt;
   s.yawRate = (s.heading - before) / dt;

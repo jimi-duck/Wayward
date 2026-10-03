@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { BOSS_FIRST, bossGap } from '../src/sim/bosses';
-import { ALIEN_FIRST, ALIEN_TYPES, SPAWN_NEAR, alienMax, spawnAlien } from '../src/sim/enemies';
+import { ALIEN_FIRST, SPAWN_NEAR, VARIANTS, alienMax, spawnAlien } from '../src/sim/enemies';
 import type { Bulwark } from '../src/sim/field';
 import { Rng } from '../src/sim/rng';
 import { newShip } from '../src/sim/ship';
 import { World } from '../src/sim/world';
 
 const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' };
+const bolt = (x: number, y: number, z: number, vx = 0, vy = 0, vz = 0, life = 1) => ({ x, y, z, vx, vy, vz, life, dmg: 1.4, pierce: 0, hit: [], homing: 0 });
 
 /** A world where nothing can hurt the ship, so the clock can run long. */
 function immortal(seed = 3): World {
@@ -28,8 +29,14 @@ function onStation(w: World) {
   for (let i = 0; i < 40 && w.command.boss?.arriving; i++) run(w, 0.5);
   expect(w.command.boss?.arriving).toBe(false);
 }
+/** Run the clock, answering the decisions a run asks for: engage every hail, take the first card. */
 function run(w: World, seconds: number) {
-  for (let i = 0; i < Math.round(seconds / STEP); i++) { w.ship.invuln = 1; w.step(STEP, idle); }
+  for (let i = 0; i < Math.round(seconds / STEP); i++) {
+    if (w.phase === 'hail') w.answerHail(true);
+    if (w.phase === 'refit') w.choose(0);
+    w.ship.invuln = 1;
+    w.step(STEP, idle);
+  }
 }
 
 describe('enemy pacing (the original curves)', () => {
@@ -45,12 +52,12 @@ describe('enemy pacing (the original curves)', () => {
   it('never exceeds the ceiling, and unlocks hulls on the clock', () => {
     const w = immortal();
     const seen = new Set<string>();
-    for (let s = 0; s < 200; s++) {
+    for (let s = 0; s < 260; s++) {
       run(w, 1);
-      if (!w.command.boss) expect(w.aliens.filter((a) => !a.escort).length).toBeLessThanOrEqual(alienMax(w.runTime));
+      if (!w.command.boss) expect(w.aliens.filter((a) => !a.escort && !a.extra).length).toBeLessThanOrEqual(alienMax(w.runTime));
       for (const a of w.aliens) {
         seen.add(a.kind);
-        if (!a.escort) expect(ALIEN_TYPES[a.kind].at).toBeLessThanOrEqual(w.runTime);
+        if (!a.escort && !a.extra) expect(VARIANTS[a.variant]!.at).toBeLessThanOrEqual(w.runTime);
       }
     }
     expect(seen.size).toBeGreaterThanOrEqual(5);
@@ -67,7 +74,7 @@ describe('capital ships', () => {
     expect(ev).toContain('bossWarn');
     expect(ev).toContain('bossArrive');
     expect(w.command.boss).not.toBeNull();
-    expect(['klingon', 'cardassian']).toContain(w.command.boss!.faction); // unlocked by 110s; never a Romulan first
+    expect(['klingon', 'cardassian']).toContain(w.command.boss!.faction); // unlocked by 135s; never a Romulan first
     expect(w.aliens.some((a) => a.escort)).toBe(true);
   });
 
@@ -81,17 +88,22 @@ describe('capital ships', () => {
     expect(w.targets().boss).toBeNull();
   });
 
-  it('pays the bounty and two plates when broken, then schedules the next', () => {
+  it('pays the bounty and the salvage when broken, then schedules the next', () => {
     const w = immortal(7);
     onStation(w);
     const b = w.command.boss!;
     w.plates = 1;
     b.hp = 1;
-    w.bolts.push({ x: b.x, y: b.y, z: b.z, vx: 0, vy: 0, vz: 0, life: 1 });
+    w.bolts.push(bolt(b.x, b.y, b.z));
     w.step(STEP, idle);
     expect(w.command.boss).toBeNull();
-    expect(w.plates).toBe(Math.min(w.hull.plates, 3));
     expect(w.drain().some((e) => e.type === 'bossDestroyed')).toBe(true);
+    expect(w.run.capitals).toBe(1);
+    expect(w.run.scoreBy.capitals).toBeGreaterThan(1000);
+    // a hull repair, a power-up and dilithium to collect, and a free refit owed
+    expect(w.pickups.some((p) => p.kind === 'repair')).toBe(true);
+    expect(w.pickups.filter((p) => p.kind === 'crystal').length).toBeGreaterThan(5);
+    expect(w.pendingSalvage).toBe(1);
     expect(w.command.next).toBeCloseTo(w.runTime + bossGap(1), 0);
   });
 
@@ -131,24 +143,27 @@ describe('the 3D sky', () => {
     expect(ahead).toBeGreaterThan(120);
   });
 
-  it('interceptors close to fighting range, then fly attack runs down to the plane', () => {
+  it('interceptors close to fighting range, then fly strafing runs down past the ship, not through it', () => {
     const w = immortal(4);
     w.nextAlien = 1e9;
     const al = spawnAlien('scout', w.ship, 0, w.rng);
     w.aliens.push(al);
     const modes = new Set<string>();
-    let low = Infinity;
+    let low = Infinity, closest = Infinity;
     for (let i = 0; i < 20 * 60; i++) {
       w.ship.invuln = 1;
       w.step(STEP, idle);
       if (!w.aliens.includes(al)) break;
       modes.add(al.mode);
       if (al.mode === 'run') low = Math.min(low, Math.abs(al.y));
+      closest = Math.min(closest, Math.hypot(al.x - w.ship.x, al.y, al.z - w.ship.z));
     }
     expect(modes).toContain('setup');
     expect(modes).toContain('run');
     expect(modes).toContain('extend');
-    expect(low).toBeLessThan(2);
+    expect(low).toBeLessThan(4);
+    // close enough to graze, never close enough to ram
+    expect(closest).toBeGreaterThan(al.r + 0.9);
   });
 
   it('interceptors jink out of the way of a lance they see coming', () => {
@@ -160,7 +175,7 @@ describe('the 3D sky', () => {
       al.escort = false;
       al.mode = 'setup';
       w.aliens.push(al);
-      w.bolts.push({ x: 0, y: 0, z: -18, vx: 0, vy: 0, vz: -80, life: 1 });
+      w.bolts.push(bolt(0, 0, -18, 0, 0, -80));
       w.step(STEP, idle);
       if (w.drain().some((e) => e.type === 'evade')) evaded++;
     }
@@ -216,6 +231,7 @@ describe('the 3D sky', () => {
 
   it('torpedoes climb after a target above the plane', () => {
     const w = immortal();
+    w.setLevels({ tp_bay: 1 });
     w.nextAlien = 1e9;
     const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 4, y: 9, z: -45 });
     al.escort = false;
