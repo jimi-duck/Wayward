@@ -156,8 +156,8 @@
         <p class="meta only-touch">Drag to steer · hold Phaser · tap Release when the core is full</p>
         <button type="button" id="launch">Launch</button>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
-        <!-- iPhone in a browser only: no page there can hide the browser's bars, a Home Screen app can -->
-        <p class="tip" id="ios-tip" hidden>For the whole screen, with no tabs or bars, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon.</p>
+        <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->
+        <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
         <div id="records" class="records"></div>
         <div class="start-opts">
           <div id="mods" class="mods" aria-label="Challenge modifiers"></div>
@@ -238,12 +238,21 @@
       </div>
     </div>
     <!-- A phone held upright: the game plays on its side only, and waits. -->
-    <div id="turn" role="alert">
-      <svg class="turn-i" viewBox="0 0 48 48" aria-hidden="true"><path class="was" d="M6 6h14v24H6z M11 26h4"/><path d="M18 26h24v14H18z M38 31v4"/><path d="M26 6h4l8 8v6 M35 17l3 3 3-3"/></svg>
-      <b class="turn-t">Turn your phone</b>
-      <span class="turn-s">Asteroid Blaster plays in landscape</span>
+    <div id="turn" class="cover" role="alert">
+      <svg class="cover-i" viewBox="0 0 48 48" aria-hidden="true"><path class="was" d="M6 6h14v24H6z M11 26h4"/><path d="M18 26h24v14H18z M38 31v4"/><path d="M26 6h4l8 8v6 M35 17l3 3 3-3"/></svg>
+      <b class="cover-t">Turn your phone</b>
+      <span class="cover-s">Asteroid Blaster plays in landscape</span>
     </div>
     <div id="debug" aria-hidden="true"></div>
+  </div>
+  <!-- An iPhone browser with its tabs and bars out. Outside the game, which
+       never scrolls the page: this is the one surface a swipe up scrolls, and
+       the scroll is what folds the bars away. -->
+  <div id="swipe" class="cover" role="alert">
+    <svg class="cover-i" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 24l12-12 12 12"/><path d="M12 36l12-12 12 12"/></svg>
+    <b class="cover-t">Swipe up</b>
+    <span class="cover-s">for the whole screen, with no tabs or bars</span>
+    <button type="button" id="swipe-x" class="ghost">Keep the bars</button>
   </div>
   <noscript>Asteroid Blaster needs JavaScript and WebGL to run.</noscript>
   <script type="module" src="./src/main.ts"></script>

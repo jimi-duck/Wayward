@@ -9,6 +9,7 @@ import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordRun, saveProfile } from './meta/profile';
+import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PadNav } from './ui/dom';
@@ -60,11 +61,13 @@ function boot(): void {
   hud.showZoom(sector.rig.zoom);
 
   // An iPhone gives a page in a browser no fullscreen, and the browser keeps
-  // its tabs and bars on screen. Opened from the Home Screen the game has none
-  // of them, so in a browser on an iPhone the start card says how to add it.
+  // its tabs and bars on screen until the page scrolls (the swipe screen,
+  // below). Opened from the Home Screen the game has none of them, so in a
+  // browser on an iPhone the start card also says how to add it.
   const homeScreen = (navigator as Navigator & { standalone?: boolean }).standalone === true
     || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
-  el('ios-tip').hidden = !/iPhone|iPod/.test(navigator.userAgent) || homeScreen;
+  const iphoneBrowser = /iPhone|iPod/.test(navigator.userAgent) && !homeScreen;
+  el('ios-tip').hidden = !iphoneBrowser;
   const fit = () => {
     const dpr = fitRenderer(renderer, quality.tier);
     const lift = hud.layout();
@@ -223,6 +226,33 @@ function boot(): void {
   };
   upright.addEventListener('change', turn);
   turn();
+
+  // ── the browser's bars ─────────────────────────────────────────────────
+  // An iPhone browser folds its tabs and bars away only when the page scrolls,
+  // so there the page scrolls under the game, which stays fixed. While the
+  // bars are out the swipe screen asks for the swipe up that folds them, and
+  // a run pauses under it. The game's own surfaces never scroll the page, so
+  // once folded the bars stay folded.
+  document.documentElement.classList.toggle('swipe', iphoneBrowser);
+  const probe = document.body.appendChild(document.createElement('div'));
+  probe.style.cssText = 'position:fixed;top:0;left:0;width:0;visibility:hidden;pointer-events:none';
+  const tall = (h: string) => { probe.style.height = h; return probe.offsetHeight; };
+  let small = 0;
+  let large = 0;
+  let out = false;
+  let kept = false; // the player chose to play with the bars
+  const bars = () => {
+    const now = iphoneBrowser && !kept && barsOut(innerHeight, small, large);
+    if (now === out) return;
+    out = now;
+    document.documentElement.classList.toggle('bars', out);
+    if (out && started && !panelOpen()) setPaused(true);
+  };
+  // the two heights change only with the window's shape; the bars, on every scroll
+  new ResizeObserver(() => { small = tall('100svh'); large = tall('100lvh'); bars(); }).observe(canvas);
+  window.addEventListener('scroll', bars, { passive: true });
+  window.visualViewport?.addEventListener('resize', bars);
+  el('swipe-x').addEventListener('click', () => { kept = true; bars(); });
 
   el('launch').addEventListener('click', launch);
   el('start').addEventListener('pointerdown', (e) => {
