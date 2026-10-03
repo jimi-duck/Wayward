@@ -38,6 +38,12 @@ npm run dev:phone
 Vite prints a `Network:` address such as `http://192.168.1.20:5173`. Open that
 on the phone.
 
+The game plays in landscape only: held upright, a phone gets a screen asking
+to turn it, and a run pauses. Android goes fullscreen at launch and locks to
+landscape. An iPhone browser cannot hide its bars or tabs, so on iPhone add
+the game to the Home Screen (Share › Add to Home Screen) and open it from
+there for the whole screen.
+
 ## Controls
 
 | | Desktop | Touch | Gamepad |
