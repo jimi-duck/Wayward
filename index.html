@@ -10,8 +10,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Asteroid Blaster">
   <meta name="description" content="Asteroid Blaster, in 3D. One ship, your build: fly, mine dilithium, refit and take on capital ships.">
   <title>Asteroid Blaster</title>
+  <!-- Added to the Home Screen, the game opens with no browser bars: on iPhone
+       that is the only way to the whole screen. -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Martian+Mono:wdth,wght@75..112.5,300..700&family=Tektur:wdth,wght@75..100,400..900&display=swap">
@@ -156,13 +161,13 @@
           <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
           <div><dt><kbd>E</kbd></dt><dd>Overcharge</dd></div>
           <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
-                    <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
+          <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
         </dl>
         <p class="meta only-touch">Drag to steer · hold Phaser · tap Release when the core is full</p>
         <button type="button" id="launch">Launch</button>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
-        <!-- iPhone Safari in landscape only: the page cannot hide Safari's tab strip, so say where the switch is -->
-        <p class="tip" id="ios-tip" hidden>In landscape, Safari shows your tabs across the top. For the whole screen, turn off Landscape Tab Bar in Settings › Apps › Safari.</p>
+        <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->
+        <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
       </div>
       <div class="start-foot">
         <div id="records" class="records"></div>
@@ -231,7 +236,22 @@
         <div class="pause-build" id="pause-build"></div>
       </div>
     </div>
+    <!-- A phone held upright: the game plays on its side only, and waits. -->
+    <div id="turn" class="cover" role="alert">
+      <svg class="cover-i" viewBox="0 0 48 48" aria-hidden="true"><path class="was" d="M6 6h14v24H6z M11 26h4"/><path d="M18 26h24v14H18z M38 31v4"/><path d="M26 6h4l8 8v6 M35 17l3 3 3-3"/></svg>
+      <b class="cover-t">Turn your phone</b>
+      <span class="cover-s">Asteroid Blaster plays in landscape</span>
+    </div>
     <div id="debug" aria-hidden="true"></div>
+  </div>
+  <!-- An iPhone browser with its tabs and bars out. Outside the game, which
+       never scrolls the page: this is the one surface a swipe up scrolls, and
+       the scroll is what folds the bars away. -->
+  <div id="swipe" class="cover" role="alert">
+    <svg class="cover-i" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 24l12-12 12 12"/><path d="M12 36l12-12 12 12"/></svg>
+    <b class="cover-t">Swipe up</b>
+    <span class="cover-s">for the whole screen, with no tabs or bars</span>
+    <button type="button" id="swipe-x" class="ghost">Keep the bars</button>
   </div>
   <noscript>Asteroid Blaster needs JavaScript and WebGL to run.</noscript>
   <script type="module" src="./src/main.ts"></script>
