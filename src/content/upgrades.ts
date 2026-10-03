@@ -346,23 +346,23 @@ export const UPGRADES: UpgradeDef[] = [
   // ── mobility ───────────────────────────────────────────────────────────
   {
     id: 'mo_impulse', name: 'Impulse engines', branch: 'mobility', cat: 'ship', kind: 'stat', max: 4, tags: ['mobility', 'speed'],
-    text: 'More thrust and a higher top speed.',
-    apply: (s) => { s.thrust *= 1.08; },
+    text: 'More thrust and a higher top speed, and near misses charge your core faster.',
+    apply: (s) => { s.thrust *= 1.08; s.ocGain *= 1.06; },
   },
   {
     id: 'mo_thrusters', name: 'Manoeuvring thrusters', branch: 'mobility', cat: 'ship', kind: 'stat', max: 3, tags: ['mobility', 'turning'],
-    text: 'You turn faster.',
-    apply: (s) => { s.turn *= 1.12; },
+    text: 'You turn faster, and near misses charge your core faster.',
+    apply: (s) => { s.turn *= 1.12; s.ocGain *= 1.06; },
   },
   {
     id: 'mo_dampers', name: 'Inertial dampers', branch: 'mobility', cat: 'ship', kind: 'stat', max: 2, tags: ['mobility', 'turning'],
-    text: 'You carve tighter turns under thrust, and slide less.',
-    apply: (s) => { s.grip += 0.04; },
+    text: 'You carve tighter turns and slide less, and near misses charge your core faster.',
+    apply: (s) => { s.grip += 0.04; s.ocGain *= 1.06; },
   },
   {
     id: 'mo_jets', name: 'Evasive jets', branch: 'mobility', cat: 'ship', kind: 'stat', max: 3, tags: ['mobility', 'evasion'],
-    text: 'Your barrel roll comes round sooner and throws you further.',
-    apply: (s) => { s.rollCooldown *= 0.8; s.rollKick *= 1.12; },
+    text: 'Your barrel roll comes round sooner, throws you further and covers you longer.',
+    apply: (s) => { s.rollCooldown *= 0.8; s.rollKick *= 1.12; s.rollIframes += 0.05; s.ocGain *= 1.06; },
   },
   {
     id: 'mo_drift', name: 'Drift drive', branch: 'mobility', cat: 'ship', kind: 'spec', max: 1, group: 'mobility', needs: 4,
@@ -590,7 +590,7 @@ export const UPGRADES: UpgradeDef[] = [
   ...minor('mi_ram', 'Prow plating', 'close', 'weapons', ['close', 'ram'], 'Your rams hit a little harder.', (s) => { s.ramDamage *= 1.05; }),
   ...minor('mi_thrust', 'Impulse trim', 'mobility', 'ship', ['mobility', 'speed'], 'A little more thrust.', (s) => { s.thrust *= 1.03; }),
   ...minor('mi_turn', 'Thruster trim', 'mobility', 'ship', ['mobility', 'turning'], 'You turn a little faster.', (s) => { s.turn *= 1.04; }),
-  ...minor('mi_roll', 'Jet trim', 'mobility', 'ship', ['mobility', 'evasion'], 'Your roll comes round a little sooner.', (s) => { s.rollCooldown *= 0.94; }),
+  ...minor('mi_roll', 'Jet trim', 'mobility', 'ship', ['mobility', 'evasion'], 'Your roll comes round a little sooner and covers you a little longer.', (s) => { s.rollCooldown *= 0.94; s.rollIframes += 0.02; }),
   ...minor('mi_shield', 'Shield cells', 'defence', 'defence', ['defence', 'shield'], 'Your shield recharges a little faster.', (s) => { s.shieldRecharge *= 0.94; }),
   ...minor('mi_grace', 'Bracing', 'defence', 'defence', ['defence', 'armour'], 'You stay untouchable a little longer after a hit.', (s) => { s.grace += 0.08; }),
   ...minor('mi_tractor', 'Tractor emitters', 'utility', 'ship', ['utility', 'tractor'], 'You pull dilithium in from a little further.', (s) => { s.tractor *= 1.1; }),

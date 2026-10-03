@@ -3,7 +3,9 @@ import { HULL, type Hull } from '../src/content/hulls';
 import { STEP } from '../src/core/loop';
 import { flightControls, type FlightControls } from '../src/sim/controls';
 import { newShip, stepShip, topSpeed, turnPerStep, type ShipState } from '../src/sim/ship';
-import { PX, ROLL_COOLDOWN } from '../src/sim/tuning';
+import { computeStats } from '../src/sim/build';
+import { flightHull } from '../src/sim/stats';
+import { PX, ROLL_COOLDOWN, ROLL_IFRAMES } from '../src/sim/tuning';
 import type { InputFrame } from '../src/input/types';
 
 const idle: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false };
@@ -96,6 +98,18 @@ describe('the barrel roll', () => {
     const before = s.vx;
     stepShip(s, ctl({ roll: true, rollDir: 1 }), HULL, STEP);
     expect(s.vx).toBeGreaterThan(before + 5);
+  });
+
+  it('always leaves a gap, even rolled on the cooldown with every jet and the evasive pattern', () => {
+    const hull = flightHull(computeStats({ mo_jets: 3, mi_roll: 10, mo_evasion: 1, pl_wake: 1, tech_romulan: 1 }));
+    expect(hull.rollIframes).toBeGreaterThanOrEqual(ROLL_IFRAMES);
+    const s = newShip();
+    let open = 0;
+    for (let i = 0; i < Math.round(5 / STEP); i++) {
+      stepShip(s, ctl({ roll: true }), hull, STEP);
+      if (s.invuln === 0) open++;
+    }
+    expect(open * STEP).toBeGreaterThan(0.5);
   });
 
   it('alternates direction when nothing says which way', () => {

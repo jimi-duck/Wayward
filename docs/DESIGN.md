@@ -123,7 +123,9 @@ The regions:
   on to one more hull),
   the **shock prow** (a ram discharges into the hulls near its target) or
   the **juggernaut** (unlockable).
-- **Mobility**: impulse, thrusters, dampers, evasive jets. Specialise into
+- **Mobility**: impulse, thrusters, dampers, evasive jets (the roll comes
+  round sooner and covers longer); each also charges the core a little
+  faster, since the interceptor's gun is the release. Specialise into
   the **drift drive** (keep speed off the throttle; lances fired while
   drifting hit a third harder), the **evasive pattern** (grazing fire
   mid-roll counts double and refunds the roll) or the **afterburner**
@@ -268,13 +270,14 @@ hint for every unlock still locked.
 ## Balance
 
 Balanced with telemetry, not intuition. `npm run pilot` flies the scripted
-pilot (`tools/pilot.ts`) through 96 seeded runs (12 per build strategy) and
+pilot (`tools/pilot.ts`) through 120 seeded runs (12 per build strategy) and
 writes [BALANCE.md](BALANCE.md): survival and refits per strategy, plates
 lost against plates gained per minute, every source of damage (down to the
 variant or the capital ship's attack), capital-ship fights, pacing and the
 builds made. The pilot plays through the same API as the app: it reacts to
 new fire a person's 0.2s late and keeps its goal safe with a 1.2s
-look-ahead.
+look-ahead. Twelve runs a strategy leave about a minute of noise on the
+long builds; settle a close call with more (`PILOT_RUNS=48`).
 
 What the telemetry changed, in order:
 
@@ -312,13 +315,36 @@ What the telemetry changed, in order:
     damage caps at 18.
 13. Builds with no weapon region starved; the pilot now keeps its phasers
     up in them, as a player would. Mines are laid a little more often.
+14. Close quarters with defence looked like the strongest build, but it was
+    the only weapon the matrix paired with defence. Paired the same way,
+    torpedoes and mines (about eleven minutes each) outlast the arc and
+    prow (eight to nine), and close quarters without defence lasts about
+    four, in the middle of the weapons. So close quarters was left
+    alone: the defence region is what multiplies survival, and the matrix
+    now carries torpedoes with defence and close quarters with phasers to
+    show it. The pilot also stopped flying its prow into hulls it would not
+    break: it judges a ram by what it does at the speed it is flying.
+15. Mobility gave a steady player almost nothing: the stock ship lasts
+    about 2:40, and a dozen points of mobility bought about forty seconds
+    more. Evasive jets and jet trim now lengthen the roll's cover, and the
+    four mobility stats charge the core a little faster on near misses.
+    A roll's cover now ends by four fifths of the way to the next roll:
+    with every jet and the evasive pattern, rolling on the cooldown kept
+    the ship covered without a gap, a strategy the pilot never finds.
 
-Where it stands (see BALANCE.md for the current report): survival runs from
-about three and a half minutes (mobility-led builds, which this pilot cannot
-fly to their strength) to about nine (close quarters with defence, still the
-strongest; two runs in twelve reach the cap), with the quick-pick player at
-about six. No damage source above about 11%; capital ships destroyed in
-about two fights of three; a calm opening (0.3 plates a minute) climbing to
-about one by minute five; refit 10 at about five minutes. Next: bring close
-quarters and mobility toward the middle. The pilot is a steady player, not a
+Where it stands (see BALANCE.md for the current report): what spreads the
+table is defence. Builds with defence last about five and a half to eleven
+minutes (torpedoes longest, a third of runs reaching the cap; close quarters
+about eight to nine; phasers, which the pilot aims a beat late, shortest);
+builds without it, three and a half to five. The quick-pick player lasts
+about seven. Mobility-led builds are up from about three and a half minutes
+to about four: the pilot rolls only when it must and never dives through
+fire, so it gets less from mobility than a person will. The mine and plasma
+rows with mobility second die before they reach it, so they measure mines
+and plasma alone. No damage source above about 10%; capital ships destroyed
+in about two fights of three; a calm opening (0.3 plates a minute) climbing
+to about one by minute five; refit 10 at about five minutes. Next: the
+defence region, where shields soak fifteen to eighteen hits a run in the
+long builds; brought toward the rest, the middle comes down to meet the
+mobility and single-weapon builds. The pilot is a steady player, not a
 strong one; expect people to last longer.
