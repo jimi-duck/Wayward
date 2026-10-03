@@ -1,0 +1,25 @@
+<!-- @dsCard group="Frames" height=230 -->
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Brackets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Martian+Mono:wdth,wght@75..112.5,300..700&family=Tektur:wdth,wght@75..100,400..900&display=swap">
+<style>
+.wrap { display: flex; flex-wrap: wrap; gap: 28px; padding: 24px; align-items: flex-end; }
+figure { margin: 0; display: grid; gap: 10px; }
+.view { width: 220px; height: 120px; padding: 10px; position: relative; }
+.view svg { width: 100%; height: 100%; display: block; }
+.target-wrap { position: relative; width: 120px; height: 120px; display: grid; place-items: center; }
+.target { position: absolute; inset: 22px; }
+.rock { width: 60px; height: 60px; --cat: var(--dilithium); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <figure><div class="ab-brackets view ab-cat--hull"><svg viewBox="0 0 240 112" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path class="ab-sch" d="M0 20h22l26 22v28l-26 22H0"/><path class="ab-sch-fill" d="M40 48l8 8-8 8-8-8z"/><path class="ab-sch" d="M40 48l8 8-8 8-8-8z"/><path class="ab-sch" d="M62.3 35.9A30 30 0 0 1 62.3 76.1"/><path class="ab-sch" d="M78.3 23.9A50 50 0 0 1 78.3 88.1"/><path class="ab-sch-dim" d="M96.7 11.7A72 72 0 0 1 96.7 100.3"/><path class="ab-sch-dim" d="M119.6 2.3A96 96 0 0 1 119.6 109.7"/><path class="ab-sch-rock" d="M168 22l12-4 9 7-2 12-12 3-8-7z"/><path class="ab-sch-rock" d="M196 60l13-3 8 9-4 12-13 2-7-10z"/><path class="ab-sch-rock" d="M150 80l9-2 5 7-3 8-9 1-4-7z"/><path class="ab-sch-dim" d="M192 18h14M202 24h12M222 66h14M228 72h10M170 86h12"/></svg></div><figcaption class="ab-anno">Viewport · rule-2</figcaption></figure>
+  <figure><div class="ab-brackets is-lit view ab-cat--gun"><svg viewBox="0 0 240 112" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path class="ab-sch" d="M30 50h40l6 6-6 6H30l-6-6z M38 50v12 M46 50v12 M54 50v12 M62 50v12"/><path class="ab-sch" d="M78 56L226 24 M78 56H226 M78 56L226 88"/><path class="ab-sch-dim" d="M78 56L226 36 M78 56L226 76 M78 56L226 12 M78 56L226 100"/><path class="ab-sch-rock" d="M206 46l12-3 8 8-3 11-12 2-7-9z"/><path class="ab-sch-dim" d="M228 40l8-6 M230 56h10 M228 70l8 6"/></svg></div><figcaption class="ab-anno">Viewport, lit · signal</figcaption></figure>
+  <figure><div class="target-wrap"><div class="ab-brackets is-target target"></div><svg viewBox="0 0 60 60" class="rock"><path class="ab-sch-rock" d="M18 12l16-4 12 10-2 16-16 6-12-10z"/></svg></div><figcaption class="ab-anno">Target lock · command</figcaption></figure>
+</div>
+</body>
+</html>

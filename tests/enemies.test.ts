@@ -1,0 +1,235 @@
+import { describe, expect, it } from 'vitest';
+import { STEP } from '../src/core/loop';
+import type { InputFrame } from '../src/input/types';
+import { BOSS_FIRST, bossGap } from '../src/sim/bosses';
+import { ALIEN_FIRST, ALIEN_TYPES, SPAWN_NEAR, alienMax, spawnAlien } from '../src/sim/enemies';
+import type { Bulwark } from '../src/sim/field';
+import { Rng } from '../src/sim/rng';
+import { newShip } from '../src/sim/ship';
+import { World } from '../src/sim/world';
+
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' };
+
+/** A world where nothing can hurt the ship, so the clock can run long. */
+function immortal(seed = 3): World {
+  const w = new World(seed);
+  w.field.rocks = [];
+  w.field.bulwarks = [];
+  w.field.step = () => {};
+  return w;
+}
+/** A still bulwark, for cover and blocking tests. */
+function bulwark(x: number, z: number, r = 9): Bulwark {
+  return { id: 999, x, z, vx: 0, vz: 0, r, variant: 0, ax: 0, ay: 1, az: 0, spin: 0, age: 10 };
+}
+/** Run until a capital ship is on station. */
+function onStation(w: World) {
+  run(w, BOSS_FIRST + 0.5);
+  for (let i = 0; i < 40 && w.command.boss?.arriving; i++) run(w, 0.5);
+  expect(w.command.boss?.arriving).toBe(false);
+}
+function run(w: World, seconds: number) {
+  for (let i = 0; i < Math.round(seconds / STEP); i++) { w.ship.invuln = 1; w.step(STEP, idle); }
+}
+
+describe('enemy pacing (the original curves)', () => {
+  it('sends the first hull on the clock, and only scouts at first', () => {
+    const w = immortal();
+    run(w, ALIEN_FIRST - 0.1);
+    expect(w.aliens.length).toBe(0);
+    run(w, 0.3);
+    expect(w.aliens.length).toBe(1);
+    expect(w.aliens[0]!.kind).toBe('scout');
+  });
+
+  it('never exceeds the ceiling, and unlocks hulls on the clock', () => {
+    const w = immortal();
+    const seen = new Set<string>();
+    for (let s = 0; s < 200; s++) {
+      run(w, 1);
+      if (!w.command.boss) expect(w.aliens.filter((a) => !a.escort).length).toBeLessThanOrEqual(alienMax(w.runTime));
+      for (const a of w.aliens) {
+        seen.add(a.kind);
+        if (!a.escort) expect(ALIEN_TYPES[a.kind].at).toBeLessThanOrEqual(w.runTime);
+      }
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(5);
+  });
+});
+
+describe('capital ships', () => {
+  it('warn, then arrive on the original clock with an escort wing', () => {
+    const w = immortal(7);
+    run(w, BOSS_FIRST - 3);
+    expect(w.command.boss).toBeNull();
+    run(w, 3.2);
+    const ev = w.drain().map((e) => e.type);
+    expect(ev).toContain('bossWarn');
+    expect(ev).toContain('bossArrive');
+    expect(w.command.boss).not.toBeNull();
+    expect(['klingon', 'cardassian']).toContain(w.command.boss!.faction); // unlocked by 110s; never a Romulan first
+    expect(w.aliens.some((a) => a.escort)).toBe(true);
+  });
+
+  it('drop in from far out and high, and cannot be hurt until on station', () => {
+    const w = immortal(7);
+    run(w, BOSS_FIRST + 0.2);
+    const b = w.command.boss!;
+    expect(b.arriving).toBe(true);
+    expect(b.y).toBeGreaterThan(10);
+    expect(Math.hypot(b.x - w.ship.x, b.z - w.ship.z)).toBeGreaterThan(100);
+    expect(w.targets().boss).toBeNull();
+  });
+
+  it('pays the bounty and two plates when broken, then schedules the next', () => {
+    const w = immortal(7);
+    onStation(w);
+    const b = w.command.boss!;
+    w.plates = 1;
+    b.hp = 1;
+    w.bolts.push({ x: b.x, y: b.y, z: b.z, vx: 0, vy: 0, vz: 0, life: 1 });
+    w.step(STEP, idle);
+    expect(w.command.boss).toBeNull();
+    expect(w.plates).toBe(Math.min(w.hull.plates, 3));
+    expect(w.drain().some((e) => e.type === 'bossDestroyed')).toBe(true);
+    expect(w.command.next).toBeCloseTo(w.runTime + bossGap(1), 0);
+  });
+
+  it('leave when the fuse runs out', () => {
+    const w = immortal(7);
+    run(w, BOSS_FIRST + 75);
+    expect(w.drain().some((e) => e.type === 'bossLeft')).toBe(true);
+  });
+});
+
+describe('enemy fire', () => {
+  it('costs a hull plate when it lands', () => {
+    const w = immortal();
+    w.shots.push({ id: 1, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.35, faction: 'klingon', hp: 0, seek: 0, split: 0 });
+    w.step(STEP, idle);
+    expect(w.plates).toBe(w.hull.plates - 1);
+  });
+
+  it('plasma can be shot down', () => {
+    const w = immortal();
+    w.shots.push({ id: 1, x: 0, y: 0, z: -12, vx: 0, vy: 0, vz: 0, life: 8, r: 0.8, faction: 'romulan', hp: 1, seek: 0, split: 0 });
+    for (let i = 0; i < 40; i++) w.step(STEP, { ...idle, fire: true });
+    expect(w.drain().some((e) => e.type === 'plasmaDown')).toBe(true);
+  });
+});
+
+describe('the 3D sky', () => {
+  it('sends hulls in from far out, mostly ahead, at altitude', () => {
+    const rng = new Rng(11), ship = newShip();
+    let ahead = 0;
+    for (let i = 0; i < 200; i++) {
+      const a = spawnAlien('scout', ship, 10, rng);
+      expect(Math.hypot(a.x, a.z)).toBeGreaterThanOrEqual(SPAWN_NEAR);
+      expect(a.mode).toBe('approach');
+      if (-a.z > Math.abs(a.x) * 0.5) ahead++;
+    }
+    expect(ahead).toBeGreaterThan(120);
+  });
+
+  it('interceptors close to fighting range, then fly attack runs down to the plane', () => {
+    const w = immortal(4);
+    w.nextAlien = 1e9;
+    const al = spawnAlien('scout', w.ship, 0, w.rng);
+    w.aliens.push(al);
+    const modes = new Set<string>();
+    let low = Infinity;
+    for (let i = 0; i < 20 * 60; i++) {
+      w.ship.invuln = 1;
+      w.step(STEP, idle);
+      if (!w.aliens.includes(al)) break;
+      modes.add(al.mode);
+      if (al.mode === 'run') low = Math.min(low, Math.abs(al.y));
+    }
+    expect(modes).toContain('setup');
+    expect(modes).toContain('run');
+    expect(modes).toContain('extend');
+    expect(low).toBeLessThan(2);
+  });
+
+  it('interceptors jink out of the way of a lance they see coming', () => {
+    let evaded = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const w = immortal(seed);
+      w.nextAlien = 1e9;
+      const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 0, y: 0, z: -30 });
+      al.escort = false;
+      al.mode = 'setup';
+      w.aliens.push(al);
+      w.bolts.push({ x: 0, y: 0, z: -18, vx: 0, vy: 0, vz: -80, life: 1 });
+      w.step(STEP, idle);
+      if (w.drain().some((e) => e.type === 'evade')) evaded++;
+    }
+    expect(evaded).toBeGreaterThan(8);
+    expect(evaded).toBeLessThan(20);
+  });
+
+  it('cruisers take cover behind a bulwark, on the far side from the ship', () => {
+    const w = immortal(2);
+    w.nextAlien = 1e9;
+    const rock = bulwark(0, -60);
+    w.field.bulwarks = [rock];
+    const al = spawnAlien('lancer', w.ship, 50, w.rng, { x: 20, y: 4, z: -90 });
+    al.escort = false;
+    w.aliens.push(al);
+    let covered = false;
+    for (let i = 0; i < 25 * 60 && !covered; i++) {
+      w.ship.invuln = 1;
+      w.step(STEP, idle);
+      covered = al.mode === 'cover' && Math.hypot(al.x - rock.x, al.z - rock.z) < rock.r + al.r + 6 && al.z < rock.z;
+    }
+    expect(covered).toBe(true);
+  });
+
+  it('a bulwark stops lances and enemy fire, and nothing breaks it', () => {
+    const w = immortal();
+    w.field.bulwarks = [bulwark(0, -25)];
+    for (let i = 0; i < 60; i++) w.step(STEP, { ...idle, fire: true });
+    w.shots.push({ id: 1, x: 0, y: 0, z: -50, vx: 0, vy: 0, vz: 30, life: 3, r: 0.45, faction: 'klingon', hp: 0, seek: 0, split: 0 });
+    for (let i = 0; i < 90; i++) w.step(STEP, idle);
+    expect(w.drain().filter((e) => e.type === 'bulwarkHit').length).toBeGreaterThan(2);
+    expect(w.plates).toBe(w.hull.plates);
+    expect(w.field.bulwarks.length).toBe(1);
+  });
+
+  it('the gunnery computer lifts a lance onto a hull flying above the plane', () => {
+    const w = immortal();
+    w.nextAlien = 1e9;
+    const al = spawnAlien('lancer', w.ship, 0, w.rng, { x: 0, y: 7, z: -40 });
+    al.escort = false;
+    al.mode = 'hold';
+    al.modeT = 99;
+    w.aliens.push(al);
+    let hits = 0;
+    for (let i = 0; i < 60; i++) {
+      al.x = 0; al.y = 7; al.z = -40; al.vx = al.vy = al.vz = 0;
+      w.ship.invuln = 1;
+      w.step(STEP, { ...idle, fire: true });
+      hits += w.drain().filter((e) => e.type === 'alienHit').length;
+    }
+    expect(hits).toBeGreaterThan(0);
+  });
+
+  it('torpedoes climb after a target above the plane', () => {
+    const w = immortal();
+    w.nextAlien = 1e9;
+    const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 4, y: 9, z: -45 });
+    al.escort = false;
+    al.mode = 'hold';
+    w.aliens.push(al);
+    w.step(STEP, { ...idle, torpedo: true });
+    let blast: { y: number } | undefined;
+    for (let i = 0; i < 180 && !blast; i++) {
+      al.x = 4; al.y = 9; al.z = -45; al.vx = al.vy = al.vz = 0;
+      w.ship.invuln = 1;
+      w.step(STEP, idle);
+      blast = w.drain().find((e) => e.type === 'blast') as { y: number } | undefined;
+    }
+    expect(blast).toBeDefined();
+    expect(blast!.y).toBeGreaterThan(5);
+  });
+});

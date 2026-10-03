@@ -1,0 +1,45 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Asteroid Blaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Martian+Mono:wdth,wght@75..112.5,300..700&family=Tektur:wdth,wght@75..100,400..900&display=swap">
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--void); color: var(--ink); font-family: var(--font-display); overflow: hidden; }
+  .cover { position: relative; width: 960px; height: 288px; overflow: hidden; background: var(--void); }
+  .art { position: absolute; top: 0; left: 480px; width: 480px; height: 288px; }
+  .art svg { display: block; width: 480px; height: 288px; }
+  .sweep { fill: var(--signal); }
+  .field { fill: var(--dilithium); }
+  .hand { fill: var(--command-fill); }
+  .dot { fill: var(--signal); }
+  .words { position: absolute; left: var(--space-8); bottom: var(--space-8); max-width: 440px; }
+  .name { margin: 0; font-size: 80px; line-height: .95; font-weight: 800; letter-spacing: .01em; color: var(--ink); }
+  .tag { margin: var(--space-3) 0 0 2px; font-size: 14px; line-height: 20px; color: var(--ink-2); letter-spacing: .04em; }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      signal: the elbow sweep, a space-12 bar down the box's left edge bleeding off the bottom and a space-6 rail bleeding off the right, outer corner cut-lg, inner bend space-6 · dilithium 216x168 bleeding right and bottom, cut-lg · command-fill 72x48, cut-md · about 30% of 960x288
+  arrangement the LCARS sweep as one slab across the top and down the left of the box, with the field and the player's hand as two satellites under the rail
+  pattern     dot grid, chosen because upgrade art is "schematic line art on a dot grid": 15 signal dots at a space-6 pitch inside the elbow's arm, the schematic viewport's grid
+  scales      sides in space-6 multiples (24, 48, 72, 168, 216); corners cut-lg (18) and cut-md (10); pitch space-6 (24)
+-->
+<polygon class="sweep" points="18,0 480,0 480,24 72,24 48,48 48,288 0,288 0,18"/>
+<polygon class="field" points="282,120 480,120 480,288 264,288 264,138"/>
+<polygon class="hand" points="178,216 240,216 240,254 230,264 168,264 168,226"/>
+<rect class="dot" x="94" y="70" width="4" height="4"/><rect class="dot" x="118" y="70" width="4" height="4"/><rect class="dot" x="142" y="70" width="4" height="4"/><rect class="dot" x="166" y="70" width="4" height="4"/><rect class="dot" x="190" y="70" width="4" height="4"/><rect class="dot" x="94" y="94" width="4" height="4"/><rect class="dot" x="118" y="94" width="4" height="4"/><rect class="dot" x="142" y="94" width="4" height="4"/><rect class="dot" x="166" y="94" width="4" height="4"/><rect class="dot" x="190" y="94" width="4" height="4"/><rect class="dot" x="94" y="118" width="4" height="4"/><rect class="dot" x="118" y="118" width="4" height="4"/><rect class="dot" x="142" y="118" width="4" height="4"/><rect class="dot" x="166" y="118" width="4" height="4"/><rect class="dot" x="190" y="118" width="4" height="4"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">Asteroid Blaster</h1>
+<p class="tag">Hold the sector.</p>
+</div>
+</div>
+</body>
+</html>
