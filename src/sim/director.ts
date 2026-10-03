@@ -94,8 +94,8 @@ export function pressure(t: number, mods: Mods = NO_MODS): Pressure {
 export const BOSS_FIRST = 210;
 export const bossGap = (n: number) => Math.max(50, 80 - n * 5);
 export const EVADE_GAP = 0.55;
-/** Hull points of the n-th capital ship of a run, before its faction's multiplier. */
-export const bossHp = (n: number, t: number) => (70 + n * 75 + n * n * 12) * (1 + 0.05 * (t / 60));
+/** Hull points of the n-th capital ship of a run, before its faction's multiplier. The first is a lighter introduction. */
+export const bossHp = (n: number, t: number) => (55 + n * 85 + n * n * 12) * (1 + 0.05 * (t / 60));
 
 // ── sector events ─────────────────────────────────────────────────────────
 export const EVENT_FIRST = 100;

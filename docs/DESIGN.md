@@ -306,13 +306,20 @@ What the telemetry changed, in order:
     damage caps at 18.
 13. Builds with no weapon region starved; the pilot now keeps its phasers
     up in them, as a player would. Mines are laid a little more often.
+14. The Starfleet pass (a slow-burn opening, three cards instead of the
+    web): the first minute now costs 0.02 plates (it was 0.26), but one
+    card a refit is less power than two web points, and the first capital
+    ship, now at 3:30, killed a third of the pilots that met it. Refits come
+    about a sixth sooner (refit 10 at about six minutes), and the first
+    capital ship carries a fifth less hull; later ones are unchanged.
 
-Where it stands (see BALANCE.md for the current report): survival runs from
-about three and a half minutes (mobility-led builds, which this pilot cannot
-fly to their strength) to about nine (close quarters with defence, still the
-strongest; two runs in twelve reach the cap), with the quick-pick player at
-about six. No damage source above about 11%; capital ships destroyed in
-about two fights of three; a calm opening (0.3 plates a minute) climbing to
-about one by minute five; refit 10 at about five minutes. Next: bring close
-quarters and mobility toward the middle. The pilot is a steady player, not a
-strong one; expect people to last longer.
+Where it stands (see BALANCE.md for the current report): a quiet opening
+(0.02 plates in the first minute, 0.3 to 0.45 in the next two) climbing to
+about 0.8 by minutes three to five and past one after that. Survival runs
+from about four and a half minutes (mines with mobility, mobility with the
+core) to about seven (defence with phasers), the builds much closer
+together than in the web era, with the random-card player at about six.
+No damage source above about 10%; capital ships destroyed in three fights
+of five; refit 1 at about ten seconds, refit 5 at 2:45, refit 10 at 6:15.
+The pilot is a steady player, not a strong one; expect people to last
+longer.
