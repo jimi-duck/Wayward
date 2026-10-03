@@ -815,6 +815,17 @@ html.webopen #hud { visibility: hidden; }
   .pause-t { font-size: 22px; }
 }
 
+/* ── turn: a phone held upright ───────────────────────────────────────── */
+/* over everything, the start card and the panels included: the game is only
+   laid out on its side, so upright it says so and waits */
+#turn { position: absolute; inset: 0; z-index: 6; display: none; place-content: center; justify-items: center; gap: 14px; padding: 24px;
+  background: var(--void); text-align: center; touch-action: none; }
+.upright #turn { display: grid; }
+.turn-i { width: 96px; height: 96px; fill: none; stroke: var(--hud); stroke-width: 2; stroke-linecap: square; stroke-linejoin: miter; }
+.turn-i .was { stroke: var(--ink-3); }
+.turn-t { color: var(--ink); font: 700 20px/1 var(--font-display); letter-spacing: .24em; text-transform: uppercase; padding-left: .24em; }
+.turn-s { color: var(--ink-2); font: 500 10px/1.4 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; }
+
 #debug { position: absolute; z-index: 5; top: calc(.5rem + var(--safe-t)); left: calc(.5rem + var(--safe-l)); padding: .5rem .65rem;
   background: rgba(3, 5, 9, .75); border: 1px solid var(--line); color: var(--ink); font: 11px/1.5 var(--font-mono); white-space: pre; pointer-events: none; }
 #debug[hidden] { display: none; }

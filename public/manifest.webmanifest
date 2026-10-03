@@ -1,0 +1,17 @@
+{
+  "name": "Asteroid Blaster",
+  "short_name": "Asteroid Blaster",
+  "description": "Asteroid Blaster, in 3D. One ship, your build: fly, mine dilithium, refit and take on capital ships.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#030509",
+  "theme_color": "#030509",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
