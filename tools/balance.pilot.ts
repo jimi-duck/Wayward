@@ -18,6 +18,8 @@ const STRATEGIES: Strategy[] = [
   { kind: 'focus', branch: 'torpedo', second: 'phaser' },
   { kind: 'focus', branch: 'mine', second: 'mobility' },
   { kind: 'focus', branch: 'close', second: 'defence' },
+  { kind: 'focus', branch: 'close', second: 'phaser' },
+  { kind: 'focus', branch: 'torpedo', second: 'defence' },
   { kind: 'focus', branch: 'plasma', second: 'mobility' },
   { kind: 'focus', branch: 'defence', second: 'phaser' },
   { kind: 'focus', branch: 'mobility', second: 'overcharge' },

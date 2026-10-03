@@ -219,6 +219,8 @@ export const CAPS = {
   thrust: 1.45,
   turn: 1.6,
   rollCooldown: 0.45,
+  /** A roll covers the ship for at most this share of the time until the next, so rolling on the cooldown always leaves a gap. */
+  rollCover: 0.8,
   ocRadius: 34,
   ocGain: 2.2,
   dmgAll: 1.6,
@@ -257,6 +259,7 @@ export function capStats(s: Stats): Stats {
   s.thrust = Math.min(s.thrust, CAPS.thrust);
   s.turn = Math.min(s.turn, CAPS.turn);
   s.rollCooldown = Math.max(s.rollCooldown, CAPS.rollCooldown);
+  s.rollIframes = Math.min(s.rollIframes, s.rollCooldown * CAPS.rollCover);
   s.ocRadius = Math.min(s.ocRadius, CAPS.ocRadius);
   s.ocGain = Math.min(s.ocGain, CAPS.ocGain);
   s.dmgAll = Math.min(s.dmgAll, CAPS.dmgAll);

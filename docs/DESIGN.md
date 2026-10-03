@@ -121,7 +121,9 @@ The branches:
   target costs no hull). Specialise into the **arc storm** (each arc jumps
   on to one more hull), the **shock prow** (a ram discharges into the hulls
   near its target) or the **juggernaut** (unlockable).
-- **Mobility**: impulse, thrusters, dampers, evasive jets. Specialise into
+- **Mobility**: impulse, thrusters, dampers, evasive jets (the roll comes
+  round sooner and covers longer); each also charges the core a little
+  faster, since the interceptor's gun is the release. Specialise into
   the **drift drive** (keep speed off the throttle; lances fired while
   drifting hit a third harder), the **evasive pattern** (grazing fire
   mid-roll counts double and refunds the roll) or the **afterburner**
@@ -262,13 +264,14 @@ hint for every unlock still locked.
 ## Balance
 
 Balanced with telemetry, not intuition. `npm run pilot` flies the scripted
-pilot (`tools/pilot.ts`) through 96 seeded runs (12 per build strategy) and
+pilot (`tools/pilot.ts`) through 120 seeded runs (12 per build strategy) and
 writes [BALANCE.md](BALANCE.md): survival and refits per strategy, plates
 lost against plates gained per minute, every source of damage (down to the
 variant or the capital ship's attack), capital-ship fights, pacing and the
 builds made. The pilot plays through the same API as the app: it reacts to
 new fire a person's 0.2s late and keeps its goal safe with a 1.2s
-look-ahead.
+look-ahead. Twelve runs a strategy leave about a minute of noise on the
+long builds; settle a close call with more (`PILOT_RUNS=48`).
 
 What the telemetry changed, in order:
 
@@ -312,14 +315,33 @@ What the telemetry changed, in order:
     ship, now at 3:30, killed a third of the pilots that met it. Refits come
     about a sixth sooner (refit 10 at about six minutes), and the first
     capital ship carries a fifth less hull; later ones are unchanged.
+15. Close quarters with defence was the build to beat in the web era, but
+    it was the only weapon the matrix paired with defence. Paired the same
+    way, torpedoes outlast it (eight to ten minutes against about six and
+    a half), and close quarters without defence lasts about four, the
+    shortest of the weapons. So close quarters was left alone: the defence
+    region is what multiplies survival, and the matrix now carries
+    torpedoes with defence and close quarters with phasers to show it. The
+    pilot also stopped flying its prow into hulls it would not break: it
+    judges a ram by what it does at the speed it is flying.
+16. Mobility gave a steady player little. Evasive jets now lengthen the
+    roll's cover, and the four mobility stats each charge the core a little
+    faster on near misses (the interceptor's gun is the release): mines with
+    mobility went from about four and a half minutes to five and a half or
+    six; mobility with the core moved only a few seconds. A roll's cover now
+    ends by four fifths of the way to the next roll: with every jet and the
+    evasive pattern, rolling on the cooldown kept the ship covered without a
+    gap, a strategy the pilot never finds.
 
 Where it stands (see BALANCE.md for the current report): a quiet opening
-(0.02 plates in the first minute, 0.3 to 0.45 in the next two) climbing to
-about 0.8 by minutes three to five and past one after that. Survival runs
-from about four and a half minutes (mines with mobility, mobility with the
-core) to about seven (defence with phasers), the builds much closer
-together than in the web era, with the random-card player at about six.
-No damage source above about 10%; capital ships destroyed in three fights
-of five; refit 1 at about ten seconds, refit 5 at 2:45, refit 10 at 6:15.
-The pilot is a steady player, not a strong one; expect people to last
-longer.
+(0.03 plates in the first minute, 0.3 to 0.5 in the next two) climbing to
+about 0.8 by minutes three to five and past one after that. What spreads the
+table is defence: builds with it last about six and a half to ten minutes
+(torpedoes longest, two runs in twelve reaching the cap), builds without it
+about four to six (close quarters with phasers shortest). The random-card
+player lasts about six; mobility with the core about four and three
+quarters, mines with mobility about five and a half. No damage source above
+about 10%; capital ships destroyed in three fights of five; refit 1 at about
+ten seconds, refit 5 at 2:40, refit 10 at 6:20. Next: the defence region,
+where shields soak about ten hits a run in the longest build. The pilot is a
+steady player, not a strong one; expect people to last longer.

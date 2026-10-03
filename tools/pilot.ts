@@ -5,6 +5,7 @@ import { UPGRADE, type Branch } from '../src/content/upgrades';
 import { beamLive, cloaked, rayDist } from '../src/sim/enemies';
 import { identity } from '../src/sim/build';
 import { thrustPerStep, topSpeed, turnPerStep } from '../src/sim/ship';
+import { BASE } from '../src/sim/stats';
 import { OC_MAX, SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 import type { RunStats } from '../src/sim/run';
@@ -80,6 +81,17 @@ function pickCard(w: World, s: Strategy, rngPick: () => number): number {
   return best;
 }
 
+/**
+ * What a ram would do right now, at this speed, with a little margin: a
+ * steady player knows a nudge from a ram, and does not fly into a hull the
+ * prow will not break.
+ */
+function ramNow(w: World): number {
+  const st = w.stats, s = w.ship;
+  const f = Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(w.hull));
+  return Math.max(BASE.ramDamage, st.ramDamage * (st.ramjet ? 0.5 + f : 0.5 + 0.5 * f)) * w.dmgMult * 0.9;
+}
+
 /** Reaction time to new fire: a shot is invisible to the pilot until it has existed this long. */
 const REACT = 0.2;
 
@@ -98,7 +110,7 @@ interface Obstacle { x: number; z: number; vx: number; vz: number; r: number; /*
  * the pilot wants. Returns the best, and the risk it still carries.
  */
 function plan(w: World, goal: number, goalThrust: number, seen: Map<number, number>, close: boolean): { heading: number; thrust: number; risk: number } {
-  const s = w.ship, hull = w.hull, st = w.stats;
+  const s = w.ship, hull = w.hull, st = w.stats, ram = ramNow(w);
   const obs: Obstacle[] = [];
   const near = (x: number, z: number, m: number) => Math.abs(x - s.x) < m && Math.abs(z - s.z) < m;
   for (const r of w.field.rocks) {
@@ -107,7 +119,7 @@ function plan(w: World, goal: number, goalThrust: number, seen: Map<number, numb
   }
   for (const b of w.field.bulwarks) if (near(b.x, b.z, 60)) obs.push({ x: b.x, z: b.z, vx: b.vx, vz: b.vz, r: b.r * 0.88, from: 0, to: 9 });
   for (const a of w.aliens) {
-    if (close && st.ramSafe && a.hp < st.ramDamage) continue;
+    if (close && st.ramSafe && a.hp < ram) continue;
     if (near(a.x, a.z, 40) && Math.abs(a.y + a.vy * 0.5) < 3.2) obs.push({ x: a.x, z: a.z, vx: a.vx, vz: a.vz, r: a.r, from: 0, to: 9 });
   }
   for (const sh of w.shots) {
@@ -259,10 +271,11 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
       if (t < 0.28 && miss < sh.r + SHIP_R + 0.4) dodge = true;
     }
   }
+  const ram = ramNow(w);
   for (const a of w.aliens) {
     if (cloaked(a)) continue;
     // where it will be: height too, since divers come down onto the plane
-    if (a.y + a.vy * 0.6 < 4 && !(close && st.ramSafe && a.hp < st.ramDamage)) avoid(a.x, a.z, a.vx, a.vz, a.r, 4.5, 0.9);
+    if (a.y + a.vy * 0.6 < 4 && !(close && st.ramSafe && a.hp < ram)) avoid(a.x, a.z, a.vx, a.vz, a.r, 4.5, 0.9);
     if (a.beamT > 0 && Math.abs(a.y) < 3) {
       const ang = a.beamAng, nx = -Math.sin(ang), nz = -Math.cos(ang);
       const side = Math.sign((s.x - a.x) * nx + (s.z - a.z) * nz) || 1;
