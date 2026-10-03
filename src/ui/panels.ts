@@ -50,6 +50,29 @@ const guarded = (opened: number, fn: () => void) => (e: Event) => {
   if (performance.now() - opened >= GUARD) fn();
 };
 
+// ── a gamepad on the panels ───────────────────────────────────────────────
+// The flight input reads the pad while flying; while a panel is open this
+// reads it instead, by edges only, so a held button never answers.
+
+export interface PadEdges { left: boolean; right: boolean; a: boolean; b: boolean; }
+
+export class PadNav {
+  private prev: boolean[] = [];
+
+  poll(): PadEdges {
+    const pad = typeof navigator.getGamepads === 'function' ? navigator.getGamepads().find((p) => p && p.connected) : null;
+    const none = { left: false, right: false, a: false, b: false };
+    if (!pad) { this.prev.length = 0; return none; }
+    const now = pad.buttons.map((b) => b.pressed);
+    const x = pad.axes[0] ?? 0;
+    now[100] = x < -0.6; now[101] = x > 0.6;
+    const edge = (i: number) => !!now[i] && !this.prev[i];
+    const out = { left: edge(14) || edge(100), right: edge(15) || edge(101), a: edge(0), b: edge(1) };
+    this.prev = now;
+    return out;
+  }
+}
+
 // ── the build, drawn ──────────────────────────────────────────────────────
 
 /** The ship as built: its name (unless `named` is false), then each branch with what was fitted in it. */
@@ -80,6 +103,7 @@ export function buildView(levels: Levels, named = true): HTMLElement {
 export class RefitPanel {
   private off: (() => void) | null = null;
   private sel = 0;
+  private pad: { opened: number; n: number; pick: (i: number) => void } | null = null;
 
   get open(): boolean {
     return !$('refit').hidden;
@@ -99,6 +123,7 @@ export class RefitPanel {
     host.replaceChildren(...offer.cards.map((c, i) => this.card(c, i, guarded(opened, () => this.pick(i, onPick)))));
     this.sel = 0;
     this.mark();
+    this.pad = { opened, n: offer.cards.length, pick: onPick };
     $('refit').hidden = false;
     this.off = keys((e) => {
       const n = offer.cards.length;
@@ -115,7 +140,16 @@ export class RefitPanel {
   close(): void {
     this.off?.();
     this.off = null;
+    this.pad = null;
     $('refit').hidden = true;
+  }
+
+  /** A gamepad: move the selection, or take it. */
+  padInput(p: PadEdges): void {
+    const pad = this.pad;
+    if (!pad || performance.now() - pad.opened < GUARD) return;
+    if (p.left || p.right) { this.sel = (this.sel + (p.right ? 1 : pad.n - 1)) % pad.n; this.mark(); }
+    else if (p.a) this.pick(this.sel, pad.pick);
   }
 
   private pick(i: number, onPick: (i: number) => void): void {
@@ -160,6 +194,7 @@ export class RefitPanel {
 
 export class HailPanel {
   private off: (() => void) | null = null;
+  private pad: { opened: number; answer: (engage: boolean) => void; canEvade: boolean } | null = null;
 
   get open(): boolean {
     return !$('hail').hidden;
@@ -191,6 +226,7 @@ export class HailPanel {
     en.onclick = guarded(opened, () => answer(true));
     ev.onclick = guarded(opened, () => { if (c.canEvade) answer(false); });
     for (const b of [en, ev]) b.onpointerdown = (e) => e.stopPropagation();
+    this.pad = { opened, answer, canEvade: c.canEvade };
     $('hail').hidden = false;
     this.off = keys((e) => {
       if (['Digit1', 'Numpad1', 'KeyF', 'Enter', 'NumpadEnter'].includes(e.code)) return answer(true), true;
@@ -202,7 +238,16 @@ export class HailPanel {
   close(): void {
     this.off?.();
     this.off = null;
+    this.pad = null;
     $('hail').hidden = true;
+  }
+
+  /** A gamepad: A engages, B evades. */
+  padInput(p: PadEdges): void {
+    const pad = this.pad;
+    if (!pad || performance.now() - pad.opened < GUARD) return;
+    if (p.a) pad.answer(true);
+    else if (p.b && pad.canEvade) pad.answer(false);
   }
 }
 
@@ -221,7 +266,7 @@ export function damageWord(src: string): string {
     case 'ram': return `Rammed by ${who === 'capital' ? 'a capital ship' : `a ${label(who)}`}`;
     case 'rock': return 'Rock';
     case 'bulwark': return 'Bulwarks';
-    case 'beam': return 'Cutting beams';
+    case 'beam': return who === 'capital' ? 'A capital ship’s beams' : `${cap(label(who))} beams`;
     case 'web': return 'Tholian webs';
     case 'volatile': return 'Volatile rock';
     case 'blast': return 'Blasts';
@@ -235,6 +280,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export class SummaryPanel {
   private off: (() => void) | null = null;
+  private pad: { opened: number; go: () => void } | null = null;
 
   show(r: RunStats, rec: Recorded, onAgain: () => void): void {
     this.close();
@@ -278,6 +324,7 @@ export class SummaryPanel {
     $('summary').hidden = false;
     const again = $<HTMLButtonElement>('again');
     const go = () => { this.close(); onAgain(); };
+    this.pad = { opened, go };
     again.onclick = guarded(opened, go);
     again.onpointerdown = (e) => e.stopPropagation();
     setTimeout(() => again.focus({ preventScroll: true }), GUARD);
@@ -291,7 +338,14 @@ export class SummaryPanel {
   close(): void {
     this.off?.();
     this.off = null;
+    this.pad = null;
     $('summary').hidden = true;
+  }
+
+  /** A gamepad: A plays again (after a longer guard: a run ends with buttons held). */
+  padInput(p: PadEdges): void {
+    const pad = this.pad;
+    if (pad && p.a && performance.now() - pad.opened >= GUARD * 2) pad.go();
   }
 
   /** What did the killing, what did the damage, and one line on the run's shape. */

@@ -1,13 +1,15 @@
 import { angleDelta, clamp } from '../core/math';
 import { BOSS_FIRST, EVADE_GAP, bossGap, bossHp, pressure } from './director';
-import { BEAM_FIRE, BEAM_WIND, newId, spawnAlien, WEB_LIFE, type Alien, type AlienKind, type Faction, type Shot, type Web } from './enemies';
+import { BEAM_FIRE, BEAM_WIND, newId, spawnAlien, stepBeam, type Alien, type AlienKind, type Faction, type Shot, type Web } from './enemies';
 import type { GameEvent } from './events';
 import type { Rng } from './rng';
 import type { ShipState } from './ship';
 
 // ── capital ships ─────────────────────────────────────────────────────────
 // The original's BOSS_TYPES: each faction sends its own flagship, unlocked on
-// the run clock, never the same faction twice running. A contact is
+// the run clock, never the same faction twice running. The first contact is
+// always a Klingon or a Cardassian: the cube and the Tholians come later,
+// when a build has had time to answer them. A contact is
 // announced (yellow alert), then hails: the player chooses to engage or to
 // evade (see Command.engage / evade). Romulans never hail; they decloak and
 // the fight starts. A Borg cube cannot be outrun, and nobody can evade twice
@@ -57,22 +59,22 @@ export const FACTIONS: Record<Faction, FactionDef> = {
     station: 36, wing: 'scout', wingN: 3, wingHp: 0.85,
   },
   cardassian: {
-    at: 70, hull: 'lancer', names: ['Keldon-class Trager', 'Keldon-class Koranak', 'Keldon-class Prakesh', 'Keldon-class Rabol'], hp: 0.8, fuse: 62, bounty: 1,
+    at: 90, hull: 'lancer', names: ['Keldon-class Trager', 'Keldon-class Koranak', 'Keldon-class Prakesh', 'Keldon-class Rabol'], hp: 0.8, fuse: 62, bounty: 1,
     cycles: [['spiral', 'volley', 'ring'], ['spiral', 'artillery', 'volley', 'ring'], ['artillery', 'spiral', 'artillery', 'ring']],
     station: 46, wing: 'lancer', wingN: 3, wingHp: 0.85,
   },
   romulan: {
-    at: 95, hull: 'warbird', names: ['I.R.W. Khazara', 'I.R.W. Valdore', 'I.R.W. Haakona', 'I.R.W. T’Met'], hp: 0.85, fuse: 62, bounty: 1.1,
+    at: 120, hull: 'warbird', names: ['I.R.W. Khazara', 'I.R.W. Valdore', 'I.R.W. Haakona', 'I.R.W. T’Met'], hp: 0.85, fuse: 62, bounty: 1.1,
     cycles: [['cloak', 'salvo', 'volley'], ['flank', 'salvo', 'volley'], ['flank', 'salvo', 'ring', 'flank', 'salvo']],
     station: 38, wing: 'warbird', wingN: 2, wingHp: 0.85,
   },
   borg: {
-    at: 138, hull: 'drone', names: ['Tactical Cube 138', 'Tactical Cube 630', 'Tactical Cube 972', 'Tactical Cube 316'], hp: 1.15, fuse: 72, bounty: 1.3,
+    at: 230, hull: 'drone', names: ['Tactical Cube 138', 'Tactical Cube 630', 'Tactical Cube 972', 'Tactical Cube 316'], hp: 1.15, fuse: 72, bounty: 1.3,
     cycles: [['beams', 'tractor', 'ring'], ['beams', 'launch', 'tractor', 'ring'], ['beams', 'tractor', 'launch', 'beams', 'ring']],
     station: 34, wing: 'drone', wingN: 4, wingHp: 0.3,
   },
   tholian: {
-    at: 158, hull: 'weaver', names: ['Tholian Tarantula', 'Tholian Recluse', 'Tholian Widow', 'Tholian Orb-Weaver'], hp: 1, fuse: 62, bounty: 1.1,
+    at: 250, hull: 'weaver', names: ['Tholian Tarantula', 'Tholian Recluse', 'Tholian Widow', 'Tholian Orb-Weaver'], hp: 1, fuse: 62, bounty: 1.1,
     cycles: [['cage', 'shards', 'ring'], ['webline', 'shards', 'cage', 'ring'], ['cage', 'webline', 'shards', 'ring']],
     station: 32, wing: 'weaver', wingN: 3, wingHp: 1,
   },
@@ -375,6 +377,12 @@ export class Command {
     } else {
       const gx = hx - b.x, gz = hz - b.z;
       b.vx += gx * 1.6 * dt; b.vz += gz * 1.6 * dt;
+      // when the station swings across (you turned), go round you, not through you: only a charge rams
+      const clear = 18;
+      if (d < clear) {
+        const push = (1 - d / clear) * 90 * dt;
+        b.vx -= (dx / d) * push; b.vz -= (dz / d) * push;
+      }
       const k = Math.pow(0.93, dt * 60);
       b.vx *= k; b.vz *= k;
     }
@@ -436,9 +444,8 @@ export class Command {
       case 'tractor':
         for (const bm of b.beams) {
           bm.x = b.x; bm.z = b.z;
-          bm.beamT = Math.max(0, bm.beamT - dt);
-          const want = Math.atan2(-(s.z - b.z), s.x - b.x);
-          bm.beamAng += clamp(angleDelta(bm.beamAng, want), -(0.7 + rage * 0.12) * dt, (0.7 + rage * 0.12) * dt);
+          // aims while it winds up, sweeps slowly once it cuts
+          stepBeam(bm, s, dt, 0.85 + rage * 0.12);
         }
         if (b.attack === 'tractor' && d < 56) {
           // the tractor lock: thrust away from the cube to break it
@@ -566,6 +573,5 @@ export class Command {
         if (b.attack !== 'artillery') events.push({ type: 'webSet', x: s.x, z: s.z });
         break;
     }
-    void WEB_LIFE;
   }
 }

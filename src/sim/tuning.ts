@@ -127,7 +127,7 @@ export const OVERCHARGE_POINTS = 250;
 // Hull repairs are meant to be rare: a small chance from a kill, never more
 // than one every REPAIR_GAP seconds, never on a full hull, and one from each
 // capital ship killed.
-export const REPAIR_CHANCE = 0.05;
+export const REPAIR_CHANCE = 0.06;
 export const REPAIR_CHANCE_ELITE = 0.1;
 export const REPAIR_GAP = 35;
 /** Grace after a shield absorbs a hit: shorter than a plate's, so one charge never eats a volley. */

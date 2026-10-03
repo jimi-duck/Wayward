@@ -488,7 +488,7 @@ export class World implements EncounterHost {
     stepBurns(sys, dt);
     if (sys.burns.length) {
       for (const al of [...this.aliens]) {
-        if (Math.abs(al.y) > 3 || !this.aliens.includes(al)) continue;
+        if (Math.abs(al.y) > 4.5 || !this.aliens.includes(al)) continue;
         const dps = burnAt(sys, al.x, al.z, al.r);
         if (dps <= 0) continue;
         this.hurtAlien(al, dps * this.dmgMult * dt, 'plasma', al.x, al.y, al.z, true);
@@ -865,9 +865,12 @@ export class World implements EncounterHost {
         }
       }
       // beams: drones low enough to cut across the plane, and the cube
-      const beams = [...this.aliens.filter((a) => Math.abs(a.y) < 3), ...(this.command.boss?.beams ?? [])];
-      for (const bm of beams) {
-        if (beamLive(bm) && rayDist(s.x, s.z, bm.x, bm.z, bm.beamAng, BEAM_LEN) < BEAM_W + SHIP_R) return this.hitShip('beam');
+      // a beam discharges into the hull it cuts: one hit per beam, however long it would have burned
+      for (const al of this.aliens) {
+        if (Math.abs(al.y) < 3 && beamLive(al) && rayDist(s.x, s.z, al.x, al.z, al.beamAng, BEAM_LEN) < BEAM_W + SHIP_R) { al.beamT = 0; return this.hitShip(`beam:${al.variant}`); }
+      }
+      for (const bm of this.command.boss?.beams ?? []) {
+        if (beamLive(bm) && rayDist(s.x, s.z, bm.x, bm.z, bm.beamAng, BEAM_LEN) < BEAM_W + SHIP_R) { bm.beamT = 0; return this.hitShip('beam:capital'); }
       }
       // webs
       for (const w of this.webs) if (w.r > 1 && Math.hypot(s.x - w.x, s.z - w.z) < w.r * 0.92) return this.hitShip('web');

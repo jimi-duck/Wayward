@@ -3,8 +3,17 @@
 The Star Trek roguelite from [jciclitira.com](https://www.jciclitira.com)'s
 lab, rebuilt in 3D with Three.js, for desktop and mobile browsers.
 
-The plan, the decisions behind it and the milestone list are in
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Everyone launches in the same ship. Fly, break rock and hulls, collect
+dilithium, and every time the rail fills, refit: three cards, one pick,
+from a branching tree of weapons, systems, specialisations and synergies.
+Capital ships hail; engage for the salvage or evade and pay in tempo. When
+the hull goes, the run report says what you built and how it went.
+
+- The game as designed, where each system lives and how to add to it:
+  [docs/DESIGN.md](docs/DESIGN.md).
+- The plan, the decisions behind it and the milestone list:
+  [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+- The latest balance report from the scripted pilot: [docs/BALANCE.md](docs/BALANCE.md).
 
 ## Run it
 
@@ -33,31 +42,28 @@ on the phone.
 | Steer | ← → or A D | drag anywhere: across steers | left stick, d-pad |
 | Thrust | ↑ or W | push the stick up | right trigger, d-pad up |
 | Phasers (hold) | 1, Space or J | Phaser button | A |
-| Torpedo | 2, F or K | Torpedo button | X |
+| Torpedo (once fitted) | 2, F or K | Torpedo button | X |
+| Overcharge (when full) | E | Release button | Y |
 | Barrel roll | Shift | Roll button, or a second finger | B or RB |
+| Refit: take a card | 1 2 3, or Tab and Enter | tap a card | d-pad ◀ ▶, A |
+| Hail: engage / evade | 1 or F / 2 or E | tap | A / B |
 | Camera distance | Z (cycles), or − and = | pause screen | |
 | Pause | Esc or P | leave the app | Start |
 
 The camera rides low behind the ship. You steer on a flat plane; everything
 else uses the whole sky. Phasers draw on the phaser bank and refill when you
 let go, and the gunnery computer lifts or drops a lance onto a hull flying
-above or below you if it is in a narrow cone ahead. Torpedoes come three to a
-rack, launch slow and accelerate, lock the best target in a cone ahead (ships
-before rock), climb or dive after it, and reload one every 3.4s. Rock breaks
-large to medium to small. Bulwarks (massive asteroids) never break: they
-stop fire from both sides and hurt to fly into.
+above or below you if it is in a narrow cone ahead. Torpedoes, mines, the
+plasma trail, the hull arc and shields are refits, not standard. Rock breaks
+large to medium to small, sometimes into violet dilithium crystals that the
+tractor pulls in (they fade if left). Bulwarks (massive asteroids) never
+break: they stop fire from both sides and hurt to fly into.
 
-Enemies spawn 120 to 150 units out, mostly ahead and at altitude, and close
-in before they fight. Interceptors fly attack runs (out high to one side, a
-dive at where you will be, a climb out) and jink out of the way of lances
-they see coming; cruisers hold range and hide behind bulwarks, sliding out
-to fire broadsides. Seven kinds across five factions (Klingon, Cardassian,
-Romulan, Borg, Tholian) unlock over the first two and a half minutes, with the
-spawn rate, fire rate and cap all climbing with time. From 110s a capital
-ship warns, drops in from far out, then runs its faction's attack cycle with
-an escort wing until it is destroyed or its fuse runs out. Enemy fire, beams,
-webs, rams, rock and bulwarks each cost a hull plate; the last plate ends the
-run. Kills can drop hull repairs.
+Near misses (fire, rock, hulls, beams) charge the warp core; release it for
+a nova that clears fire and runs the guns hot. Enemies arrive from far out
+and fight by type and faction; from a few minutes in they come in squads,
+mixed factions and elite variants. From 2:40 capital ships hail. Every hit
+costs a hull plate (or a shield charge); the last plate ends the run.
 
 ## Debug
 
@@ -71,7 +77,11 @@ run. Kills can drop hull repairs.
 npm run check   # types + unit tests
 npm run build   # production build into dist/
 npm run preview # serve dist/ (also on the network)
+npm run pilot   # the scripted pilot's balance runs (a few minutes): writes docs/BALANCE.md
 ```
+
+`PILOT_RUNS` (default 12 per strategy) and `PILOT_TIME` (default 900s)
+trade precision for speed, e.g. `PILOT_RUNS=4 npm run pilot`.
 
 ## Deploy
 

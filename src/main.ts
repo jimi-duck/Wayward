@@ -11,7 +11,7 @@ import { World } from './sim/world';
 import { grants, loadProfile, recordRun, saveProfile } from './meta/profile';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
-import { buildView, HailPanel, RefitPanel, StartOptions, SummaryPanel } from './ui/panels';
+import { buildView, HailPanel, PadNav, RefitPanel, StartOptions, SummaryPanel } from './ui/panels';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -68,6 +68,7 @@ function boot(): void {
   const refit = new RefitPanel();
   const hail = new HailPanel();
   const summary = new SummaryPanel();
+  const padNav = new PadNav();
   let reported = false;
   const panelOpen = () => refit.open || hail.open || !el('summary').hidden || startOpts.logbookOpen;
   const startOpts = new StartOptions(profile, () => {
@@ -95,6 +96,13 @@ function boot(): void {
         input.reset();
       });
     }
+    // a gamepad answers the open panel
+    if (refit.open || hail.open || !el('summary').hidden) {
+      const p = padNav.poll();
+      if (refit.open) refit.padInput(p);
+      else if (hail.open) hail.padInput(p);
+      else summary.padInput(p);
+    } else padNav.poll();
     // a full rail: a beat of slow motion before the panel
     loop.timeScale = world.celebrate > 0 ? 0.3 : 1;
   };

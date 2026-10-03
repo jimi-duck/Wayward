@@ -86,10 +86,10 @@ export function pressure(t: number, mods: Mods = NO_MODS): Pressure {
 }
 
 // ── capital ships ─────────────────────────────────────────────────────────
-// The first arrives at 2:15, once a build has a shape. Then one every 80s,
+// The first arrives at 2:40, once a build has a shape. Then one every 80s,
 // closing by 5s a ship to a floor of 50s. Evading one brings the next one in
 // sooner: the gap is cut to EVADE_GAP of itself.
-export const BOSS_FIRST = 135;
+export const BOSS_FIRST = 160;
 export const bossGap = (n: number) => Math.max(50, 80 - n * 5);
 export const EVADE_GAP = 0.55;
 /** Hull points of the n-th capital ship of a run, before its faction's multiplier. */

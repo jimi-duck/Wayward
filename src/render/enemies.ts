@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BoxGeometry, Color, Float32BufferAttribute, Group, InstancedBufferAttribute, InstancedMesh,
-  LineBasicMaterial, LineSegments, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, OctahedronGeometry, Quaternion,
+  LineBasicMaterial, LineSegments, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, Quaternion,
   SphereGeometry, Sprite, SpriteMaterial, Vector3, BufferGeometry, type Material, type Scene, type Texture,
 } from 'three';
 import { STEP } from '../core/loop';

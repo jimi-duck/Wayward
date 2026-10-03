@@ -90,17 +90,17 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ph_emitters', name: 'Phaser emitters', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 5, tags: ['phaser', 'damage'],
     text: 'Your phaser lances hit harder.',
-    apply: (s) => { s.phaserDamage *= 1.22; },
+    apply: (s) => { s.phaserDamage *= 1.25; },
   },
   {
     id: 'ph_capacitors', name: 'Phaser capacitors', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 4, tags: ['phaser', 'rate'],
-    text: 'Your phasers fire faster.',
-    apply: (s) => { s.phaserCooldown *= 0.87; },
+    text: 'Your phasers fire faster, and draw less from the bank.',
+    apply: (s) => { s.phaserCooldown *= 0.86; s.bankShot *= 0.95; },
   },
   {
     id: 'ph_bank', name: 'Phaser bank', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 3, tags: ['phaser', 'sustain'],
     text: 'Your phaser bank holds more and refills faster.',
-    apply: (s) => { s.bankMax += 30; s.bankRefill *= 1.25; },
+    apply: (s) => { s.bankMax += 35; s.bankRefill *= 1.3; },
   },
   {
     id: 'ph_lenses', name: 'Focusing lenses', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 3, tags: ['phaser', 'range'],
@@ -380,7 +380,7 @@ export const UPGRADES: UpgradeDef[] = [
     id: 'df_regen', name: 'Shield regenerators', branch: 'defence', cat: 'defence', kind: 'stat', max: 3, tags: ['defence', 'shield'],
     requires: [{ id: 'df_shield' }],
     text: 'Your shield recharges faster.',
-    apply: (s) => { s.shieldRecharge *= 0.84; },
+    apply: (s) => { s.shieldRecharge *= 0.8; },
   },
   {
     id: 'df_armour', name: 'Ablative armour', branch: 'defence', cat: 'defence', kind: 'stat', max: 2, tags: ['defence', 'armour'],

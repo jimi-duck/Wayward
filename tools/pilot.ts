@@ -2,21 +2,25 @@ import { angleDelta, clamp } from '../src/core/math';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { UPGRADE, type Branch } from '../src/content/upgrades';
-import { beamLive, cloaked } from '../src/sim/enemies';
+import { beamLive, cloaked, rayDist } from '../src/sim/enemies';
 import { identity } from '../src/sim/build';
-import { topSpeed } from '../src/sim/ship';
+import { thrustPerStep, topSpeed, turnPerStep } from '../src/sim/ship';
 import { OC_MAX, SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 import type { RunStats } from '../src/sim/run';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
-// A competent, unspectacular player, for balancing: it flies a potential
-// field (pulled toward dilithium, pickups, objectives and a target at its
-// weapon's range; pushed away from rock, fire, beams, webs, circles and
-// rammers), shoots what is in front of it, rolls out of the way of fire it
-// sees coming, releases the overcharge into a crowd, and builds the ship
-// to a strategy. It plays through the same API the app does (step,
-// choose, answerHail), so a balance number here is a number in the game.
+// A competent, unspectacular player, for balancing. It picks a goal (nose
+// on a target at its weapon's range, leading it; else toward dilithium,
+// pickups and objectives), then keeps that goal safe with a short look-ahead:
+// ten times a second it flies a dozen candidate headings 1.2s forward
+// against where rock, hulls, fire, beams, telegraphed charges and landing
+// circles will be, and takes the safest that still serves the goal. It sees
+// new fire only after a person's reaction time, shoots what is in front of
+// it, rolls when the look-ahead finds no clean line, releases the
+// overcharge into a crowd, and builds the ship to a strategy. It plays
+// through the same API the app does (step, choose, answerHail), so a
+// balance number here is a number in the game.
 
 export type Strategy =
   | { kind: 'random' }
@@ -73,15 +77,101 @@ function pick(w: World, s: Strategy, rngPick: () => number): number {
 /** Reaction time to new fire: a shot is invisible to the pilot until it has existed this long. */
 const REACT = 0.2;
 
-/** One step of flying: the potential field, the trigger and the roll. `seen` is when each shot was first seen. */
-function control(w: World, close: boolean, seen: Map<number, number>): InputFrame {
+/** What the pilot remembers between steps: when each shot was first seen, and the current plan. */
+interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null; }
+
+const PLAN_DT = 0.1, PLAN_STEPS = 12, PLAN_EVERY = 5;
+const OFFSETS = [0, 0.4, -0.4, 0.8, -0.8, 1.25, -1.25, 1.7, -1.7, 2.3, -2.3, Math.PI];
+
+interface Obstacle { x: number; z: number; vx: number; vz: number; r: number; /** live from, until (seconds ahead) */ from: number; to: number; }
+
+/**
+ * A short look ahead: try a dozen headings, with and without thrust, fly
+ * each 1.2s forward against where everything will be, and score it by how
+ * close it comes to something that hurts, plus how far it strays from what
+ * the pilot wants. Returns the best, and the risk it still carries.
+ */
+function plan(w: World, goal: number, goalThrust: number, seen: Map<number, number>, close: boolean): { heading: number; thrust: number; risk: number } {
+  const s = w.ship, hull = w.hull, st = w.stats;
+  const obs: Obstacle[] = [];
+  const near = (x: number, z: number, m: number) => Math.abs(x - s.x) < m && Math.abs(z - s.z) < m;
+  for (const r of w.field.rocks) {
+    if (close && st.ramSafe && r.size > 0) continue;
+    if (near(r.x, r.z, 40)) obs.push({ x: r.x, z: r.z, vx: r.vx, vz: r.vz, r: r.r * 0.88, from: 0, to: 9 });
+  }
+  for (const b of w.field.bulwarks) if (near(b.x, b.z, 60)) obs.push({ x: b.x, z: b.z, vx: b.vx, vz: b.vz, r: b.r * 0.88, from: 0, to: 9 });
+  for (const a of w.aliens) {
+    if (close && st.ramSafe && a.hp < st.ramDamage) continue;
+    if (near(a.x, a.z, 40) && Math.abs(a.y + a.vy * 0.5) < 3.2) obs.push({ x: a.x, z: a.z, vx: a.vx, vz: a.vz, r: a.r, from: 0, to: 9 });
+  }
+  for (const sh of w.shots) {
+    const first = seen.get(sh.id) ?? w.time;
+    if (!seen.has(sh.id)) seen.set(sh.id, first);
+    if (w.time - first < REACT || !near(sh.x, sh.z, 45)) continue;
+    // only while it is down near the plane
+    const vy = sh.vy, y = sh.y;
+    let from = 0, to = 9;
+    if (Math.abs(vy) > 0.01) { const t0 = (-2 - y) / vy, t1 = (2 - y) / vy; from = Math.max(0, Math.min(t0, t1)); to = Math.max(t0, t1); }
+    else if (Math.abs(y) > 2) continue;
+    obs.push({ x: sh.x, z: sh.z, vx: sh.vx, vz: sh.vz, r: sh.r, from, to });
+  }
+  for (const wb of w.webs) if (wb.r > 1 && near(wb.x, wb.z, 40)) obs.push({ x: wb.x, z: wb.z, vx: 0, vz: 0, r: wb.r * 0.92, from: 0, to: wb.life });
+  for (const k of w.strikes) if (k.kind !== 'web' && near(k.x, k.z, 30)) obs.push({ x: k.x, z: k.z, vx: 0, vz: 0, r: k.r, from: k.t - 0.15, to: k.t + 0.1 });
+  const boss = w.command.boss;
+  if (boss && !boss.arriving && boss.cloak < 0.5) obs.push({ x: boss.x, z: boss.z, vx: boss.vx, vz: boss.vz, r: boss.r * 0.85, from: 0, to: 9 });
+  // a telegraphed charge or strafe: the capital ship will come down that line when the telegraph runs out
+  if (boss && boss.windT > 0 && (boss.attack === 'charge' || boss.attack === 'strafe')) {
+    const sp = boss.attack === 'charge' ? 44 : 30, ang = boss.aimLock;
+    obs.push({ x: boss.x, z: boss.z, vx: Math.cos(ang) * sp, vz: -Math.sin(ang) * sp, r: boss.r * 0.85 + 1, from: boss.windT, to: boss.windT + 1.3 });
+  }
+  // beams: the ray, while it burns (and a little before)
+  const beams: Array<{ x: number; z: number; a: number; from: number; to: number }> = [];
+  for (const a of w.aliens) if (a.beamT > 0 && Math.abs(a.y) < 3) beams.push({ x: a.x, z: a.z, a: a.beamAng, from: Math.max(0, a.beamT - 1.35 - 0.2), to: a.beamT });
+  for (const bm of boss?.beams ?? []) if (bm.beamT > 0) beams.push({ x: bm.x, z: bm.z, a: bm.beamAng, from: Math.max(0, bm.beamT - 1.35 - 0.2), to: bm.beamT });
+
+  const acc = thrustPerStep(hull) * 60, turn = turnPerStep(hull) * 60, drag = Math.pow(hull.drag, PLAN_DT * 60);
+  let best = { heading: goal, thrust: goalThrust, risk: Infinity }, bestCost = Infinity;
+  const candidates: Array<[number, number]> = [];
+  for (const o of OFFSETS) for (const t of [1, 0]) candidates.push([s.heading + o, t]);
+  for (const t of [1, 0]) candidates.push([goal, t]);
+  for (const [hc, thr] of candidates) {
+    let x = s.x, z = s.z, vx = s.vx, vz = s.vz, h = s.heading, risk = 0;
+    for (let i = 1; i <= PLAN_STEPS; i++) {
+      const t = i * PLAN_DT;
+      h += clamp(angleDelta(h, hc), -turn * PLAN_DT, turn * PLAN_DT);
+      if (thr) { vx += Math.cos(h) * acc * PLAN_DT * thr; vz -= Math.sin(h) * acc * PLAN_DT * thr; }
+      vx *= drag; vz *= drag;
+      x += vx * PLAN_DT; z += vz * PLAN_DT;
+      const wgt = 1 - 0.55 * (t / (PLAN_STEPS * PLAN_DT));
+      for (const o of obs) {
+        if (t < o.from || t > o.to) continue;
+        const c = Math.hypot(o.x + o.vx * t - x, o.z + o.vz * t - z) - o.r - SHIP_R;
+        if (c < 0) risk += 60 * wgt;
+        else if (c < 1.6) risk += (1.6 - c) * 8 * wgt;
+      }
+      for (const b of beams) {
+        if (t < b.from || t > b.to) continue;
+        const c = rayDist(x, z, b.x, b.z, b.a, 54) - 0.7 - SHIP_R;
+        if (c < 0) risk += 60 * wgt;
+        else if (c < 2) risk += (2 - c) * 6 * wgt;
+      }
+    }
+    const stray = Math.abs(angleDelta(hc, goal)) * 2.5 + (thr !== (goalThrust > 0.5 ? 1 : 0) ? 0.8 : 0);
+    const cost = risk + stray;
+    if (cost < bestCost) { bestCost = cost; best = { heading: hc, thrust: thr, risk }; }
+  }
+  return best;
+}
+
+/** One step of flying: the goal, the look-ahead that keeps it safe, the trigger and the roll. */
+function control(w: World, close: boolean, memo: Memo): InputFrame {
+  const seen = memo.seen;
   const f = blank();
   const s = w.ship, st = w.stats;
   let ax = 0, az = 0;
-  /** The pull of everything, and separately the push of what hurts (for deciding when to dodge). */
-  let dx2 = 0, dz2 = 0;
+  /** The pull of what it wants and the push of what hurts, summed into the goal direction. */
   const push = (dx: number, dz: number, k: number) => { ax += dx * k; az += dz * k; };
-  const flee = (dx: number, dz: number, k: number) => { ax += dx * k; az += dz * k; dx2 += dx * k; dz2 += dz * k; };
+  const flee = push;
 
   // pulled toward dilithium and pickups
   for (const p of w.pickups) {
@@ -200,17 +290,11 @@ function control(w: World, close: boolean, seen: Map<number, number>): InputFram
     if (d < 6) flee(dx / (d + wb.r || 1), dz / (d + wb.r || 1), 7 * (1 - d / 6));
   }
 
-  // steer: away from trouble if there is any; otherwise nose on a target in reach, leading it;
-  // otherwise toward whatever pulls (dilithium, pickups, objectives)
+  // the goal: nose on a target in reach, leading it; otherwise toward whatever pulls (dilithium, pickups, objectives)
   const speed = Math.hypot(s.vx, s.vz) / topSpeed(w.hull);
-  const urgent = Math.hypot(dx2, dz2) > 1.2;
-  const lanceSpeed = st.phaserSpeed;
   let want = s.heading, thrust = 0;
-  if (urgent) {
-    want = Math.atan2(-(az), ax);
-    thrust = 1;
-  } else if (aimAt && aimD < st.phaserSpeed * st.phaserLife * 0.85) {
-    const lead = aimD / lanceSpeed;
+  if (aimAt && aimD < st.phaserSpeed * st.phaserLife * 0.85) {
+    const lead = aimD / st.phaserSpeed;
     want = Math.atan2(-(aimAt.z + aimAt.vz * lead - s.z), aimAt.x + aimAt.vx * lead - s.x);
     // hold standoff: close in if far, coast if near
     thrust = aimD > prefer + 8 && speed < 0.5 ? 1 : speed < 0.12 ? 0.3 : 0;
@@ -218,6 +302,13 @@ function control(w: World, close: boolean, seen: Map<number, number>): InputFram
     want = Math.atan2(-az, ax);
     thrust = speed < 0.55 ? 1 : 0;
   }
+  // the look-ahead keeps the goal safe, ten times a second
+  if (!memo.plan || w.time >= memo.plan.until) {
+    const p = plan(w, want, thrust, seen, close);
+    memo.plan = p.risk > 0.5 ? { heading: p.heading, thrust: p.thrust, until: w.time + PLAN_EVERY / 60 } : null;
+    if (p.risk > 30 && s.rollCooldown === 0) dodge = true;
+  }
+  if (memo.plan) { want = memo.plan.heading; thrust = memo.plan.thrust; }
   const off = angleDelta(s.heading, want);
   f.turn = clamp(-off * 4, -1, 1);
   f.thrust = Math.abs(off) < 1.3 ? thrust : Math.min(thrust, 0.3);
@@ -261,12 +352,13 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
   let lastLost = 0, lastGained = 0;
   const lag = o.lag ?? 1;
   const queue: InputFrame[] = [];
-  const seen = new Map<number, number>();
+  const memo: Memo = { seen: new Map(), plan: null };
+  const seen = memo.seen;
   while (w.phase !== 'over' && w.runTime < maxTime) {
     if (w.phase === 'refit') { w.choose(pick(w, strategy, rngPick)); continue; }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     // react a beat late, as a person does
-    queue.push(control(w, close, seen));
+    queue.push(control(w, close, memo));
     if (seen.size > 2000) for (const id of [...seen.keys()]) if (!w.shots.some((sh) => sh.id === id)) seen.delete(id);
     const input = queue.length > lag ? queue.shift()! : blank();
     w.step(STEP, input);

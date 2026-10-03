@@ -237,6 +237,7 @@ export class Hud {
     // a sector event's objective
     const e = world.encounter, obj = $('objective');
     obj.classList.toggle('on', !!e && !e.done);
+    obj.classList.toggle('low', !!b);
     if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
       const left = Math.max(0, Math.ceil(e.dur - e.t));

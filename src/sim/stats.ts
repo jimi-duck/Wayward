@@ -145,7 +145,7 @@ export const BASE: Readonly<Stats> = Object.freeze({
   mines: false, mineInterval: 2.6, mineMax: 5, mineLife: 16, mineDamage: 7, mineBlast: 6.5, mineTrigger: 3.5,
   mineSeek: 0, mineChain: false, mineGravity: false, mineDetonate: false,
 
-  plasma: false, plasmaDps: 6, plasmaLife: 1.4, plasmaRadius: 1.3, plasmaBurn: 0, rollBurst: false,
+  plasma: false, plasmaDps: 10, plasmaLife: 1.5, plasmaRadius: 1.9, plasmaBurn: 0, rollBurst: false,
 
   arc: false, arcInterval: 0.9, arcRange: 9, arcDamage: 2.5, arcTargets: 2, arcJumps: 0, arcShield: false,
 
@@ -154,7 +154,7 @@ export const BASE: Readonly<Stats> = Object.freeze({
   thrust: 1, turn: 1, grip: HULL.grip, rollCooldown: ROLL_COOLDOWN, rollKick: ROLL_KICK, rollIframes: ROLL_IFRAMES,
   drift: false, evasion: false,
 
-  maxPlates: HULL.plates, shieldMax: 0, shieldRecharge: 24, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
+  maxPlates: HULL.plates, shieldMax: 0, shieldRecharge: 20, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
 
   tractor: 165 * PX, xpMult: 1, ocGain: 1, ocRadius: 20, ocDamage: 10, ocOverload: 4, ocPhase: 0, ocRefill: false,
 });

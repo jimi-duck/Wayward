@@ -256,7 +256,7 @@ kbd { display: inline-grid; place-items: center; min-width: 14px; height: 14px; 
 #powers span { font: 500 9px/1 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink); padding: 3px 7px; background: var(--grey); border-left: 2px solid var(--amber); }
 #objective { position: absolute; left: 50%; top: calc(var(--pad) + var(--safe-t) + 26px); transform: translateX(-50%); display: none; justify-items: center; gap: 5px; text-shadow: 0 1px 8px #000; }
 #objective.on { display: grid; }
-#bossbar.on ~ #objective { top: calc(var(--pad) + var(--safe-t) + 74px); }
+#objective.low { top: calc(var(--pad) + var(--safe-t) + 74px); }
 #obj-t { font: 500 10px/1 var(--font-mono); letter-spacing: .24em; text-transform: uppercase; color: var(--amber); }
 #objective .bar { width: clamp(150px, 20vw, 260px); height: 3px; }
 #objective .bar i { background: var(--amber); box-shadow: 0 0 8px rgba(255, 178, 63, .5); }

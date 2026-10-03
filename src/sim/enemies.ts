@@ -140,8 +140,8 @@ export const VARIANTS: Record<string, Variant> = {
   lancer:   { id: 'lancer',   kind: 'lancer',  faction: 'cardassian', label: 'Heavy cruiser',  at: 60,  weight: 2, cap: 2 },
   warbird:  { id: 'warbird',  kind: 'warbird', faction: 'romulan',    label: 'Plasma cruiser', at: 100, weight: 2, cap: 2 },
   stalker:  { id: 'stalker',  kind: 'stalker', faction: 'klingon',    label: 'Hunter',         at: 130, weight: 2, cap: 2 },
-  drone:    { id: 'drone',    kind: 'drone',   faction: 'borg',       label: 'Assimilator',    at: 175, weight: 2, cap: 2 },
-  weaver:   { id: 'weaver',   kind: 'weaver',  faction: 'tholian',    label: 'Web layer',      at: 210, weight: 2, cap: 1 },
+  drone:    { id: 'drone',    kind: 'drone',   faction: 'borg',       label: 'Assimilator',    at: 200, weight: 2, cap: 2 },
+  weaver:   { id: 'weaver',   kind: 'weaver',  faction: 'tholian',    label: 'Web layer',      at: 240, weight: 2, cap: 1 },
   hideki:   { id: 'hideki',   kind: 'scout',   faction: 'cardassian', label: 'Patrol fighter', at: 150, weight: 2, cap: 3, shots: 2 },
   scorpion: { id: 'scorpion', kind: 'scout',   faction: 'romulan',    label: 'Ambush fighter', at: 230, weight: 2, cap: 3 },
   probe:    { id: 'probe',    kind: 'stalker', faction: 'borg',       label: 'Borg probe',     at: 290, weight: 1.5, cap: 2 },
@@ -212,7 +212,8 @@ const FIRE_RANGE = 70;
 export const BORG_ADAPT = 6;
 const PLASMA_SPEED = 2.2 * V, PLASMA_TURN = 1.05, PLASMA_HP = 3;
 export const BEAM_WIND = 1.05, BEAM_FIRE = 1.35, BEAM_LEN = 540 * PX, BEAM_W = 0.7;
-const BEAM_TRACK = 0.85;
+/** Beams aim while they wind up, then sweep slowly once they cut: the wind-up is the tell, and a sidestep beats the cut. */
+const BEAM_TRACK = 0.85, BEAM_SWEEP = 0.32;
 export const WEB_R = 86 * PX, WEB_LIFE = 12, WEB_GROW = 0.55;
 const WEB_SPIN = 1.5;
 /** Seconds a jink's barrel roll takes. */
@@ -700,7 +701,7 @@ export function alienFire(al: Alien, s: ShipState, t: number, shots: Shot[], bul
       case 'ram': return al.mode === 'run';
       case 'hunt': return nose < 0.9;
       case 'broadside': case 'snipe': return al.mode === 'peek' || al.mode === 'hold';
-      case 'grind': return d < 44 && Math.abs(al.y) < 3;
+      case 'grind': return d < 38 && Math.abs(al.y) < 3;
       default: return false;
     }
   })();
@@ -751,12 +752,13 @@ export function alienFire(al: Alien, s: ShipState, t: number, shots: Shot[], bul
   events.push({ type: 'enemyFire', x: al.x, y: al.y, z: al.z, faction: al.faction });
 }
 
-/** Beams track toward the ship while winding up and firing. */
-export function stepBeam(al: { x: number; z: number; beamT: number; beamAng: number }, s: ShipState, dt: number): void {
+/** Beams track toward the ship while winding up, and sweep after it slowly while they cut. */
+export function stepBeam(al: { x: number; z: number; beamT: number; beamAng: number }, s: ShipState, dt: number, k = 1): void {
   if (al.beamT <= 0) return;
   al.beamT = Math.max(0, al.beamT - dt);
   const want = Math.atan2(-(s.z - al.z), s.x - al.x);
-  al.beamAng += clamp(angleDelta(al.beamAng, want), -BEAM_TRACK * dt, BEAM_TRACK * dt);
+  const rate = (al.beamT > BEAM_FIRE ? BEAM_TRACK : BEAM_SWEEP) * k;
+  al.beamAng += clamp(angleDelta(al.beamAng, want), -rate * dt, rate * dt);
 }
 
 /** True while a beam is live (past its wind-up). */

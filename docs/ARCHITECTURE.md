@@ -44,12 +44,15 @@ input ──InputFrame──▶ sim (fixed 60Hz) ──state──▶ render (ev
 src/
   core/      loop (fixed step, interpolation, freeze, clamp), math
   input/     keyboard, touch stick, gamepad → one InputFrame per step
-  sim/       game state and rules (M0: a ship that turns)
+  content/   data: the hull, the refit tree, long-term unlocks and modifiers
+  sim/       game state and rules (never imports Three.js)
+  meta/      the profile between runs (localStorage)
   render/    renderer, quality governor, scene
-  ui/        DOM overlays (M0: debug readout)
+  ui/        DOM overlays: HUD, panels (refit, hail, report, logbook), debug
   styles/    CSS, tokens carried over from the original
 tests/       unit tests (Vitest)
-docs/        this file
+tools/       the scripted pilot and the balance report (npm run pilot)
+docs/        this file, DESIGN.md (the game), BALANCE.md (the latest report)
 ```
 
 M1 adds `content/hulls.ts` (the three hulls), `sim/ship.ts` (the flight
@@ -102,9 +105,40 @@ the user supplied, and changes the shape of the fight:
   gain a gunnery computer (lances lift onto targets off the plane) and
   torpedoes accelerate and steer in 3D.
 
-Coming in later milestones: `sim/` grows the field, enemies, bosses and
-progression; `weapons/`, `audio/` and `content/` (tuning constants, factions,
-upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
+The roguelite pass turns the prototype into the full run loop, built on
+everything above (the flight model, camera, HUD and look are unchanged).
+[DESIGN.md](DESIGN.md) is the game as designed; in code:
+
+- The world pauses itself at the run's decisions: `World.phase` is
+  `refit` (three cards in `offer`), `hail` (a capital ship's contact) or
+  `over` (the record in `run`), and `choose`, `answerHail` and `restart`
+  answer it. The app shows a panel for each (`ui/panels.ts`); the scripted
+  pilot calls the same three.
+- `content/upgrades.ts` is the refit tree as data; `sim/stats.ts` is the
+  one stat block every system reads, rebuilt from the build and capped
+  after every multiplier; `sim/build.ts` makes the build-aware offers,
+  the cards' figures and the ship's name.
+- `sim/director.ts` holds every difficulty curve. `sim/field.ts` gains
+  rock kinds and formations, `sim/pickups.ts` dilithium and power-ups,
+  `sim/arsenal.ts` the systems that fire themselves (mines, plasma, the
+  hull arc), `sim/encounters.ts` the sector events, `sim/run.ts` the run's
+  record.
+- `sim/enemies.ts` layers archetype, faction traits and elite modifiers,
+  with variants and squads as data; `sim/bosses.ts` adds the hail, three
+  phases, telegraphs and per-faction movement.
+- `sim/ids.ts`: one id sequence per world, so a lock never resolves to
+  the wrong kind of thing and two worlds in one process stay
+  deterministic.
+- `meta/profile.ts` and `content/unlocks.ts`: bests, history and unlocks
+  between runs. Progression opens options, never permanent power.
+- `render/` gains `pickups.ts`, `arsenal.ts` and `hazards.ts` (telegraphs,
+  landing circles, event props); rocks, enemies, the ship and the
+  environment learn the new states.
+- `tools/pilot.ts` flies runs headless through the same API; `npm run
+  pilot` writes `docs/BALANCE.md`. Every balance change in this pass was
+  made from its numbers (DESIGN.md lists them).
+
+Coming in later milestones: `audio/`, three sectors and a win state.
 
 ## Conventions
 
@@ -144,12 +178,13 @@ upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
 | M1b | Console pass: chase camera only, phasers and torpedoes, breakable rock, hull damage, bloom, the bridge console | done (pulls parts of M2, M3, M4 and M7 forward) |
 | M1c | Cyberpunk pass: corner HUD, neon ships and exhaust, the original's enemies, wave pacing and capital ships | done (pulls the enemy half of M5 forward) |
 | M1d | Gritty pass: reference camera, weathered ships, lava rock, bulwarks, red HUD, 3D enemy AI, heavier weapons | done |
-| M2 | Combat core: asteroids, phasers, torpedoes, collision, splitting, hull, game over | |
+| M2 | Combat core: asteroids, phasers, torpedoes, collision, splitting, hull, game over | done (roguelite pass) |
 | M3 | Combat feel and effects: trails, sparks, shield dome, explosions, shake | |
 | M4 | Space environment: starfield, nebulae, sun, shadows, bloom | |
-| M5 | Roguelite systems: XP, upgrades, hull pick, overcharge, enemies, bosses, hails | |
+| M5 | Roguelite systems: XP, upgrades, hull pick, overcharge, enemies, bosses, hails | done (roguelite pass; no hull pick: one ship, many builds) |
+| M5b | Roguelite pass: refit tree, weapon systems, rock kinds, factions, elites, director, capital-ship phases and telegraphs, sector events, run report, long-term unlocks, scripted-pilot balancing | done |
 | M6 | Three sectors and a win state | |
-| M7 | LCARS UI: start, HUD, refit cards, pause, summary | |
+| M7 | LCARS UI: start, HUD, refit cards, pause, summary | done in the gritty style (roguelite pass) |
 | M8 | Spatial audio and music | |
 | M9 | Mobile polish, installable web app, performance pass, launch | |
 
