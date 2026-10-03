@@ -38,7 +38,7 @@ export interface CameraSubject {
 export class CameraRig {
   readonly camera = new PerspectiveCamera(BASE_VFOV, 1, 0.3, 4000);
   /** Index into ZOOMS. */
-  zoom = 0;
+  zoom = 1;
   /** The point on the plane the camera looks at, after smoothing. */
   readonly target = { x: 0, z: 0 };
 
@@ -47,7 +47,7 @@ export class CameraRig {
   private readonly vz = { v: 0 };
   private readonly vyaw = { v: 0 };
   private readonly vzoom = { v: 0 };
-  private zoomNow: number = ZOOMS[0];
+  private zoomNow: number = ZOOMS[1];
   private roll = 0;
   private trauma = 0;
   private t = 0;

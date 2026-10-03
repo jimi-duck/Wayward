@@ -22,93 +22,38 @@
     <canvas id="view" aria-label="Game view"></canvas>
 
     <div id="hud">
-      <svg id="bezel" aria-hidden="true"></svg>
       <div id="vignette" aria-hidden="true"></div>
-      <svg id="lines" aria-hidden="true"></svg>
       <div id="reticle" aria-hidden="true"></div>
-      <div id="lock" aria-hidden="true"><span class="lk-b"></span><span class="lk-t"><b id="lock-id">R-0000</b><span id="lock-d">0 M</span></span></div>
+      <div id="lock" aria-hidden="true"><span class="lk-b"></span><span class="lk-t"><b id="lock-id">Lock</b><span id="lock-d">0 m</span></span></div>
 
-      <div id="topline" class="hud-t">
-        <span class="tl-k">Score</span><b id="score">000000</b>
-        <span class="tl-sep"></span>
-        <span class="tl-k tl-best">Best</span><span id="best">000000</span>
-      </div>
-
-      <section id="sector" class="pnl" aria-label="Sector status">
-        <header class="pnl-h"><h2>Sector Status</h2><span class="anno">600 M · HDG UP</span></header>
-        <canvas id="radar"></canvas>
-        <dl class="stats">
-          <dt>Rocks</dt><dd id="st-rocks">0</dd><dd class="bar"><i id="sb-rocks"></i></dd>
-          <dt>Vel</dt><dd id="st-vel">0</dd><dd class="bar"><i id="sb-vel"></i></dd>
-          <dt>Power</dt><dd id="st-pow">100%</dd><dd class="bar"><i id="sb-pow"></i></dd>
-        </dl>
+      <!-- top left: what I'm scoring and what I'm flying -->
+      <section class="corner tl" aria-label="Score and hull">
+        <div class="score"><b id="score">000000</b><span class="k">Score</span></div>
+        <div class="sub"><span class="k">Best</span> <span id="best">000000</span> <span class="dot">·</span> <span id="hullname">Defiant class</span></div>
+        <div class="row"><span class="k">Hull</span><span class="plates" id="plates"></span><b id="hull-v">100%</b></div>
       </section>
 
-      <section id="controls" aria-label="Ship and camera">
-        <div class="hullsel" role="radiogroup" aria-label="Hull">
-          <button type="button" data-hull="escort" role="radio"><span>Defiant</span></button>
-          <button type="button" data-hull="cruiser" role="radio"><span>Sovereign</span></button>
-          <button type="button" data-hull="scout" role="radio"><span>Nova</span></button>
-        </div>
-        <div class="zoomsel" aria-label="Zoom">
-          <span class="zs-k">Chase</span>
-          <button type="button" id="zoom-out" aria-label="Zoom out">‹</button>
-          <b id="zoom-v">1</b>
-          <button type="button" id="zoom-in" aria-label="Zoom in">›</button>
+      <!-- top right: what I can do next -->
+      <section class="corner tr" aria-label="Weapons and ship">
+        <div class="row"><span class="k">Phasers <kbd>1</kbd></span><div class="bar"><i id="g-pow"></i></div></div>
+        <div class="row"><span class="k">Torpedoes <kbd>2</kbd></span><span class="pips" id="g-torp"><i></i><i></i><i></i></span><div class="bar thin"><i id="g-reload"></i></div></div>
+        <div id="controls">
+          <div class="hullsel" role="radiogroup" aria-label="Hull">
+            <button type="button" data-hull="escort" role="radio">Defiant</button>
+            <button type="button" data-hull="cruiser" role="radio">Sovereign</button>
+            <button type="button" data-hull="scout" role="radio">Nova</button>
+          </div>
+          <div class="zoomsel" aria-label="Zoom">
+            <button type="button" id="zoom-in" aria-label="Zoom in">‹</button><b id="zoom-v">1</b><button type="button" id="zoom-out" aria-label="Zoom out">›</button>
+          </div>
         </div>
       </section>
 
-      <section id="systems" class="pnl" aria-label="Performance and hull">
-        <div class="perf">
-          <header class="pnl-h"><h2>Performance</h2></header>
-          <figure><figcaption>Velocity <b id="pf-vel">0</b></figcaption><canvas id="spark-vel"></canvas></figure>
-          <figure><figcaption>Phaser bank <b id="pf-pow">100%</b></figcaption><canvas id="spark-pow"></canvas></figure>
-          <figure><figcaption>Threat <b id="pf-thr">0</b></figcaption><canvas id="spark-thr"></canvas></figure>
-        </div>
-        <div class="hullstat">
-          <header class="pnl-h"><h2>Hull Status</h2><span class="anno" id="hs-plates">3 / 3</span></header>
-          <div id="schematic"></div>
-          <p class="anno" id="hs-note">Integrity nominal</p>
-        </div>
-      </section>
+      <!-- top centre, only while a capital ship is in the sector -->
+      <div id="bossbar" aria-live="polite"><span id="boss-name">I.K.S. Vor’cha</span><div class="bar"><i id="boss-hp"></i></div><span class="k" id="boss-fuse"></span></div>
 
-      <footer id="console">
-        <section id="log" class="pnl" aria-label="Mission log">
-          <header class="pnl-h"><h2>[Mission Log]</h2></header>
-          <ol id="log-list"></ol>
-        </section>
-        <section id="ident" aria-label="Ship">
-          <h1 id="id-class">[Defiant class · Escort</h1>
-          <p class="id-reg"><span id="id-reg">NX-4720</span> · Tactical simulation · Stardate <span id="id-date">47634.0</span></p>
-          <dl class="grid">
-            <div><dt>Vel</dt><dd id="d-vel">0</dd></div>
-            <div><dt>Hdg</dt><dd id="d-hdg">000</dd></div>
-            <div><dt>Pos X</dt><dd id="d-x">0</dd></div>
-            <div><dt>Pos Z</dt><dd id="d-z">0</dd></div>
-            <div><dt>Broken</dt><dd id="d-kills">0</dd></div>
-            <div><dt>T+</dt><dd id="d-t">0.0</dd></div>
-          </dl>
-        </section>
-        <section id="gauges" aria-label="Hull and weapons">
-          <div class="gauge">
-            <div class="g-h"><span>Hull integrity %</span><b id="g-hull-v">100</b></div>
-            <div class="g-bar big"><i id="g-hull"></i></div>
-            <div class="g-scale"><span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span></div>
-          </div>
-          <div class="gauge">
-            <div class="g-h"><span>Phaser banks</span><b id="g-pow-v">100</b><span class="g-key">Hold 1</span></div>
-            <div class="g-bar"><i id="g-pow"></i></div>
-          </div>
-          <div class="gauge">
-            <div class="g-h"><span>Photon torpedoes</span><span class="pips" id="g-torp"><i></i><i></i><i></i></span><span class="g-key">Press 2</span></div>
-            <div class="g-bar thin"><i id="g-reload"></i></div>
-          </div>
-        </section>
-        <section id="comms" class="pnl" aria-label="Communications">
-          <header class="pnl-h"><h2>[Communications]</h2></header>
-          <ul id="comms-list"></ul>
-        </section>
-      </footer>
+      <canvas id="radar" aria-hidden="true"></canvas>
+      <ol id="log" aria-live="off"></ol>
 
       <div id="banner" role="status"><span class="bn-k" id="banner-k">Red alert</span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div>
     </div>
@@ -127,7 +72,7 @@
       <div class="start-card">
         <svg class="wm" viewBox="0 0 146.5 46" role="img" aria-label="Asteroid Blaster"><g class="wm-a"><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(0.00 0.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(20.50 0.00)"/><path d="M0 2H16M8 2V20" transform="translate(41.00 0.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(61.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(81.00 0.00)"/><path d="M5 2H11L14 5V15L11 18H5L2 15V5Z" transform="translate(101.50 0.00)"/><path d="M2 0V20" transform="translate(122.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(130.50 0.00)"/></g><g class="wm-b"><path d="M2 2H11L14 5V7.5L12 10L14 12.5V15L11 18H2ZM2 10H12" transform="translate(0.00 26.00)"/><path d="M2 0V18H15" transform="translate(20.50 26.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(40.00 26.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(60.50 26.00)"/><path d="M0 2H16M8 2V20" transform="translate(81.00 26.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(101.50 26.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(121.00 26.00)"/></g></svg>
         <p id="start-t" class="tag">Hold the sector.</p>
-        <p class="meta">Flight test · phasers on 1 · torpedoes on 2</p>
+        <p class="meta">Phasers on 1 · torpedoes on 2 · capital ships from 110s</p>
         <button type="button" id="launch">Launch</button>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
       </div>

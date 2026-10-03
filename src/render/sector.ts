@@ -10,7 +10,7 @@ import { Effects } from './fx';
 import { Post } from './post';
 import type { QualityTier } from './quality';
 import { RockView } from './rocks';
-import { Schematic } from './schematic';
+import { EnemyView, NEON } from './enemies';
 import { ShipView } from './ships';
 import { glowTexture, rockTexture } from './textures';
 import { WeaponView } from './weapons';
@@ -31,7 +31,7 @@ export class Sector {
   private readonly fx: Effects;
   private readonly weapons: WeaponView;
   private readonly ship: ShipView;
-  private readonly schematic: Schematic;
+  private readonly enemies: EnemyView;
   private post: Post;
   private readonly lerped = newShip();
   private readonly v = new Vector3();
@@ -44,7 +44,7 @@ export class Sector {
     this.fx = new Effects(this.scene, glow, rockTexture(11));
     this.weapons = new WeaponView(this.scene, glow);
     this.ship = new ShipView(hull);
-    this.schematic = new Schematic(hull);
+    this.enemies = new EnemyView(this.scene, glow);
     this.scene.add(this.ship.root);
     this.post = new Post(renderer, this.scene, this.rig.camera, tier);
   }
@@ -61,7 +61,6 @@ export class Sector {
 
   setHull(id: HullId): void {
     this.ship.setHull(id);
-    this.schematic.setHull(id);
   }
 
   resize(width: number, height: number, dpr: number, offsetY: number): void {
@@ -118,6 +117,49 @@ export class Sector {
           this.fx.burst(e.x, e.z, 30, ALERT, 14, 0.35, 0.6);
           this.rig.shake(0.6);
           break;
+        case 'alienHit':
+          this.fx.flash(e.x, 0.2, e.z, 1.4, HOT, 0.08);
+          this.fx.burst(e.x, e.z, 6, HOT, 8, 0.25, 0.3);
+          break;
+        case 'alienDestroyed': {
+          const c = NEON[e.faction as keyof typeof NEON];
+          const col: [number, number, number] = [c.r, c.g, c.b];
+          this.fx.flash(e.x, 0.3, e.z, 6, HOT, 0.2);
+          this.fx.flash(e.x, 0.3, e.z, 9, col, 0.35);
+          this.fx.ring(e.x, e.z, 6, col, 0.45);
+          this.fx.burst(e.x, e.z, 40, col, 18, 0.4, 0.8);
+          this.fx.rubble(e.x, e.z, 0, 0, 8, 0.35, 10);
+          this.rig.shake(0.25);
+          break;
+        }
+        case 'plasmaDown':
+          this.fx.flash(e.x, 0.2, e.z, 3, [0.5, 3, 1.4], 0.2);
+          this.fx.burst(e.x, e.z, 16, [0.5, 3, 1.4], 10, 0.3, 0.5);
+          break;
+        case 'pickup':
+          this.fx.flash(e.x, 0.3, e.z, 4, SIG, 0.3);
+          this.fx.burst(e.x, e.z, 20, SIG, 8, 0.3, 0.6);
+          break;
+        case 'bossHit':
+          this.fx.flash(e.x, 0.4, e.z, 1.8, HOT, 0.08);
+          this.fx.burst(e.x, e.z, 5, HOT, 10, 0.3, 0.3);
+          break;
+        case 'bossCharge':
+          this.rig.shake(0.2);
+          break;
+        case 'bossDestroyed': {
+          const c = NEON[e.faction as keyof typeof NEON];
+          const col: [number, number, number] = [c.r, c.g, c.b];
+          this.fx.flash(e.x, 0.5, e.z, 20, HOT, 0.5);
+          this.fx.flash(e.x, 0.5, e.z, 30, col, 0.8);
+          this.fx.ring(e.x, e.z, 22, col, 0.9);
+          this.fx.ring(e.x, e.z, 12, HOT, 0.6);
+          this.fx.burst(e.x, e.z, 160, col, 34, 0.6, 1.4);
+          this.fx.burst(e.x, e.z, 80, HOT, 24, 0.4, 1);
+          this.fx.rubble(e.x, e.z, 0, 0, 40, 0.8, 18);
+          this.rig.shake(1);
+          break;
+        }
         case 'breach':
           this.fx.flash(e.x, 0.3, e.z, 14, HOT, 0.45);
           this.fx.ring(e.x, e.z, 14, ALERT, 0.8);
@@ -130,7 +172,7 @@ export class Sector {
   }
 
   /** Place everything for this frame and draw it. `alpha` is how far past the previous step we are. */
-  frame(world: World, alpha: number, dt: number, shieldRect: DOMRect | null): void {
+  frame(world: World, alpha: number, dt: number): void {
     this.time += dt;
     const a = world.prev, b = world.ship, s = this.lerped;
     Object.assign(s, b);
@@ -147,11 +189,21 @@ export class Sector {
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, alpha);
     this.weapons.update(world.bolts, world.torps, alpha, this.fx, dt, this.time);
+    this.enemies.update(world.aliens, world.command.boss, world.shots, world.webs, world.pickups, alpha, dt);
+    // exhaust: sparks off the nozzles while the impulse engines burn
+    const ex = this.ship.exhaust();
+    if (dt > 0 && ex.heat > 0.2) {
+      for (const [x, y, z] of ex.points) {
+        if (Math.random() < ex.heat * 0.8) {
+          this.fx.mote(x, y, z, -Math.cos(s.heading) * 6 + (Math.random() - 0.5) * 3, Math.sin(s.heading) * 6 + (Math.random() - 0.5) * 3,
+            Math.random() < 0.5 ? [3, 0.5, 2.8] : [0.4, 2, 3], 0.22, 0.35);
+        }
+      }
+    }
     this.fx.update(dt);
     this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz);
 
     if (!this.post.render(dt)) this.renderer.render(this.scene, this.rig.camera);
-    this.schematic.render(this.renderer, shieldRect, world.plates / world.hull.plates, dt);
   }
 
   /** The interpolated ship, for the HUD. */

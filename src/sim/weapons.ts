@@ -1,7 +1,6 @@
 import { angleDelta, clamp } from '../core/math';
 import type { FlightControls } from './controls';
 import type { GameEvent } from './events';
-import type { Field, Rock } from './field';
 import type { ShipState } from './ship';
 import {
   BANK_DELAY, BANK_MAX, BANK_REFILL, BANK_SHOT, BOLT_LIFE, BOLT_SPEED, SHOT_COOLDOWN, TORP_CONE, TORP_LIFE, TORP_RACK,
@@ -43,28 +42,45 @@ export function newArms(): Arms {
 const NOSE = 1.5; // units ahead of the ship's centre that fire leaves from
 const EMITTER = 0.42; // units either side of the centreline
 
+/** Anything a torpedo can lock: a rock, an enemy hull or a capital ship. */
+export interface Target { id: number; x: number; z: number; vx: number; vz: number; }
+
+/** What the seeker can see: ships first, rock only when there is no ship. */
+export interface Targets { ships: readonly Target[]; boss: Target | null; rocks: readonly Target[]; }
+
 /**
  * The target a torpedo launched now would take: the original's scoring
- * (distance, made worse by how far off the nose), inside the seeker's range
- * and a cone ahead.
+ * (distance, made worse by how far off the nose; a capital ship counts as
+ * closer), inside the seeker's range and a cone ahead. Torpedoes hunt ships,
+ * as in the original; rock is a target only when no ship is in the cone.
  */
-export function acquire(field: Field, x: number, z: number, heading: number): Rock | null {
-  let best: Rock | null = null, bestScore = Infinity;
-  for (const r of field.rocks) {
-    const dx = r.x - x, dz = r.z - z, d = Math.hypot(dx, dz);
-    if (d > TORP_SEEK || d < 0.01) continue;
+export function acquire(t: Targets, x: number, z: number, heading: number): Target | null {
+  let best: Target | null = null, bestScore = Infinity;
+  const consider = (o: Target, bias: number) => {
+    const dx = o.x - x, dz = o.z - z, d = Math.hypot(dx, dz);
+    if (d > TORP_SEEK || d < 0.01) return;
     const off = Math.abs(angleDelta(heading, Math.atan2(-dz, dx)));
-    if (off > TORP_CONE) continue;
-    const score = d * (1 + off * 0.55);
-    if (score < bestScore) { bestScore = score; best = r; }
-  }
+    if (off > TORP_CONE) return;
+    const score = d * (1 + off * 0.55) * bias;
+    if (score < bestScore) { bestScore = score; best = o; }
+  };
+  for (const o of t.ships) consider(o, 1);
+  if (t.boss) consider(t.boss, 0.6);
+  if (best) return best;
+  for (const o of t.rocks) consider(o, 1);
   return best;
+}
+
+export function findTarget(t: Targets, id: number | null): Target | undefined {
+  if (id === null) return undefined;
+  if (t.boss && t.boss.id === id) return t.boss;
+  return t.ships.find((o) => o.id === id) ?? t.rocks.find((o) => o.id === id);
 }
 
 let torpId = 1;
 
 export function fireWeapons(
-  arms: Arms, ship: ShipState, c: FlightControls, field: Field,
+  arms: Arms, ship: ShipState, c: FlightControls, targets: Targets,
   bolts: Bolt[], torps: Torpedo[], events: GameEvent[], dt: number,
 ): void {
   arms.cooldown = Math.max(0, arms.cooldown - dt);
@@ -94,7 +110,7 @@ export function fireWeapons(
   // torpedoes
   if (c.torpedo) {
     if (arms.rack > 0 && arms.spacing === 0) {
-      const target = acquire(field, ship.x, ship.z, ship.heading);
+      const target = acquire(targets, ship.x, ship.z, ship.heading);
       const x = ship.x + hx * NOSE, z = ship.z + hz * NOSE;
       const forward = Math.max(0, ship.vx * hx + ship.vz * hz);
       const sp = TORP_SPEED + forward;
@@ -127,16 +143,16 @@ export function moveBolts(bolts: Bolt[], dt: number): void {
 }
 
 /** Steer each torpedo onto its target, leading a moving one. Returns those whose fuse ran out. */
-export function moveTorpedoes(torps: Torpedo[], field: Field, dt: number): Torpedo[] {
+export function moveTorpedoes(torps: Torpedo[], targets: Targets, dt: number): Torpedo[] {
   const spent: Torpedo[] = [];
   for (let i = torps.length - 1; i >= 0; i--) {
     const t = torps[i]!;
     const sp = Math.hypot(t.vx, t.vz);
     let heading = Math.atan2(-t.vz, t.vx);
-    let target = field.find(t.target);
+    let target = findTarget(targets, t.target);
     if (!target) {
       // a target that broke up hands the lock to the best of what is left
-      target = acquire(field, t.x, t.z, heading) ?? undefined;
+      target = acquire(targets, t.x, t.z, heading) ?? undefined;
       t.target = target ? target.id : null;
     }
     if (target) {

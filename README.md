@@ -35,14 +35,22 @@ on the phone.
 | Phasers (hold) | 1, Space or J | Phaser button | A |
 | Torpedo | 2, F or K | Torpedo button | X |
 | Barrel roll | Shift | Roll button, or a second finger | B or RB |
-| Zoom | Z, or − and = | ‹ › on the console | |
-| Hull | console buttons | console buttons | |
+| Zoom | Z, or − and = | ‹ › top right | |
+| Hull | buttons top right | buttons top right | |
 | Pause | Esc or P | leave the app | Start |
 
 The camera rides behind the ship. Phasers draw on the phaser bank and refill
 when you let go; torpedoes come three to a rack, lock the best rock in a cone
-ahead, and reload one every 3.4s. Rock breaks large to medium to small; rock
-also costs a hull plate if you fly into it, and the last plate ends the run.
+ahead (ships before rock), and reload one every 3.4s. Rock breaks large to
+medium to small.
+
+Enemies arrive from 4s, as in the original: seven kinds of fighter across five
+factions (Klingon, Cardassian, Romulan, Borg, Tholian), unlocking over the
+first two minutes, with the spawn rate, fire rate and cap all climbing with
+time. From 110s a capital ship warns, then arrives with an escort wing and
+runs its faction's attack cycle until it is destroyed or its fuse runs out.
+Enemy fire, beams, webs, rams and rock each cost a hull plate; the last plate
+ends the run. Kills can drop hull repairs.
 
 ## Debug
 

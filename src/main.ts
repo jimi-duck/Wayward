@@ -9,7 +9,7 @@ import { QualityGovernor, tierIndex } from './render/quality';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
-import { Console } from './ui/console';
+import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -53,7 +53,7 @@ function boot(): void {
     sector.rig.zoom = clamp(sector.rig.zoom + dir, 0, ZOOMS.length - 1);
     hud.showZoom(sector.rig.zoom);
   };
-  const hud = new Console(setHull, zoom);
+  const hud = new Hud(setHull, zoom);
   hud.showHull(world.hull.id);
   hud.showZoom(sector.rig.zoom);
 
@@ -107,7 +107,7 @@ function boot(): void {
       const events = world.drain();
       sector.react(events);
       hud.events(events, world);
-      sector.frame(world, alpha, dt, hud.shieldRect);
+      sector.frame(world, alpha, dt);
       hud.update(world, sector, frameDt);
       debug.frame(frameDt, renderer, quality, input, loop.paused);
     },

@@ -65,6 +65,15 @@ torpedoes), `sim/events.ts` (what happened, for effects and the log),
 startup) and `ui/console.ts` (the bridge console). The tactical camera is
 gone: the user chose the chase camera.
 
+The cyberpunk pass replaces the console with a corner HUD (`ui/hud.ts`:
+score and hull top left, weapons top right, radar and log bottom, boss bar
+top centre) and `render/schematic.ts` with the real enemy fleet:
+`sim/enemies.ts` (the original's seven alien types, their movement and
+fire patterns, wave pacing curves), `sim/bosses.ts` (five factions of
+capital ship, attack cycles, escorts, fuse, bounty), `render/enemies.ts`
+(procedural hulls, shots, beams, webs, pickups) and `render/neon.ts` (dark
+matte armour with HDR neon edges, baked to two draws per model).
+
 Coming in later milestones: `sim/` grows the field, enemies, bosses and
 progression; `weapons/`, `audio/` and `content/` (tuning constants, factions,
 upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
@@ -105,6 +114,7 @@ upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
 | M0 | Project setup: loop, input, quality tiers, deploy pipeline | done |
 | M1 | Flight model and chase camera | done |
 | M1b | Console pass: chase camera only, phasers and torpedoes, breakable rock, hull damage, bloom, the bridge console | done (pulls parts of M2, M3, M4 and M7 forward) |
+| M1c | Cyberpunk pass: corner HUD, neon ships and exhaust, the original's enemies, wave pacing and capital ships | done (pulls the enemy half of M5 forward) |
 | M2 | Combat core: asteroids, phasers, torpedoes, collision, splitting, hull, game over | |
 | M3 | Combat feel and effects: trails, sparks, shield dome, explosions, shake | |
 | M4 | Space environment: starfield, nebulae, sun, shadows, bloom | |
