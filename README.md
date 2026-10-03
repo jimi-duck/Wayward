@@ -3,14 +3,16 @@
 The Star Trek roguelite from [jciclitira.com](https://www.jciclitira.com)'s
 lab, rebuilt in 3D with Three.js, for desktop and mobile browsers.
 
-Everyone launches in the same ship. Fly, break rock and hulls, collect
-dilithium, and every time the rail fills, refit: spend points on the
-**refit web**, about two hundred nodes of weapons, systems, stats,
-specialisations, synergies and salvaged alien tech, each joined to what you
-have already fitted, so every build is a route out from the core. Capital
-ships hail; engage for the salvage (points and that faction's tech) or
-evade and pay in tempo. When the hull goes, the run report says what you
-built, draws your route and shows how it went.
+Everyone launches in the same ship, the U.S.S. Kestrel (NCC-1903): a
+Starfleet survey tender with a mining refit, saucer up front, hazard-yellow
+engineering hull, cyan nacelles. The sector starts quiet, so you can learn
+the ship and mine the first refit out of the rock before anything shoots
+back. Every time the dilithium gauge fills, **refit**: three cards, take
+one (a new system, the next level of one you have, or a specialisation),
+and fly on. Hostiles arrive one at a time, then in pairs, squads and
+factions; from 3:30 capital ships hail. Engage for the salvage (a refit and
+that faction's tech) or evade and pay in tempo. When the hull goes, the run
+report says what you built and how it went.
 
 - The game as designed, where each system lives and how to add to it:
   [docs/DESIGN.md](docs/DESIGN.md).
@@ -48,10 +50,7 @@ on the phone.
 | Torpedo (once fitted) | 2, F or K | Torpedo button | X |
 | Overcharge (when full) | E | Release button | Y |
 | Barrel roll | Shift | Roll button, or a second finger | B or RB |
-| Refit web: open | R or Tab (anytime) | the rail's Web button | Back |
-| Refit web: fit | click a node twice, Enter, or 1 2 3 for a quick pick | tap a node, tap again | stick to move, A |
-| Refit web: move, zoom | arrows, Tab; wheel, drag, + − | drag, pinch | LB RB, Y frames |
-| Refit web: launch | Esc (unspent points bank) | Launch | B |
+| Refit: take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
 | Hail: engage / evade | 1 or F / 2 or E | tap | A / B |
 | Camera distance | Z (cycles), or − and = | pause screen | |
 | Pause | Esc or P | leave the app | Start |
@@ -66,9 +65,10 @@ tractor pulls in (they fade if left). Bulwarks (massive asteroids) never
 break: they stop fire from both sides and hurt to fly into.
 
 Near misses (fire, rock, hulls, beams) charge the warp core; release it for
-a nova that clears fire and runs the guns hot. Enemies arrive from far out
-and fight by type and faction; from a few minutes in they come in squads,
-mixed factions and elite variants. From 2:40 capital ships hail. Every hit
+a nova that clears fire and runs the guns hot. The first forty seconds are
+yours alone; then enemies arrive from far out, one at a time, and fight by
+type and faction; from about four minutes in they come in squads, mixed
+factions and elite variants. From 3:30 capital ships hail. Every hit
 costs a hull plate (or a shield charge); the last plate ends the run.
 
 ## Debug

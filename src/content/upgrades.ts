@@ -1,10 +1,10 @@
 import type { Stats } from '../sim/stats';
 
 // ── what can be fitted ────────────────────────────────────────────────────
-// One ship, many builds. Everything the ship can become is listed here, and
-// laid out as the refit web in content/web.ts: nine regions round the core,
-// each a few paths of small nodes between bigger ones, ending in three
-// specialisations, with synergies on the bridges between neighbours.
+// One ship, many builds. Everything the ship can become is listed here; a
+// refit deals three of them as cards (sim/offers.ts) and you take one. Nine
+// branches, each a system or a few stat upgrades leading to three
+// specialisations, with synergies between neighbours.
 //
 //   Weapons ─┬─ Phasers ──── emitters, capacitors, bank, lenses, pierce
 //            │                └─ specialise: Cone · Heavy lance · Targeting array
@@ -28,21 +28,20 @@ import type { Stats } from '../sim/stats';
 //   Salvage: one piece of tech per faction, opened by destroying its capital
 //   ship in the run.
 //
-// Kinds: a 'minor' is a small step along a path (the web has many of each);
-// a 'stat' is a bigger node; a 'system' switches a weapon or device on; a
-// 'spec' is a specialisation (one per group; taking one closes the others);
-// a 'synergy' needs both halves; 'tech' needs its faction's capital ship
-// destroyed this run. Each node in the web adds one level of its upgrade.
+// Kinds: a 'stat' is a step up a ladder (each card adds one level); a
+// 'system' switches a weapon or device on; a 'spec' is a specialisation
+// (one per group; taking one closes the others); a 'synergy' needs both
+// halves; 'tech' needs its faction's capital ship destroyed this run.
 //
 // Copy follows the brand: one short sentence in the second person, ending
 // in a full stop, and a caveat only where it answers "wait, how does that
-// work?". The figures are computed, not written: the web shows every
-// number a node changes (see FIGURES in sim/build.ts).
+// work?". The figures are computed, not written: a card shows every number
+// it changes (see FIGURES in sim/build.ts).
 
 export type Branch =
   | 'phaser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'overcharge' | 'synergy' | 'salvage';
 export type Category = 'weapons' | 'defence' | 'ship';
-export type UpgradeKind = 'minor' | 'stat' | 'system' | 'spec' | 'synergy' | 'tech';
+export type UpgradeKind = 'stat' | 'system' | 'spec' | 'synergy' | 'tech';
 export type TechFaction = 'klingon' | 'cardassian' | 'romulan' | 'borg' | 'tholian';
 
 export interface Req { id: string; lv?: number; }
@@ -60,7 +59,7 @@ export interface UpgradeDef {
   group?: string;
   needs?: number;
   tags: string[];
-  /** Relative pull among the quick picks. Default 1. */
+  /** Relative pull among the cards. Default 1. */
   weight?: number;
   /** Needs a long-term unlock (content/unlocks.ts) before it can be fitted. */
   locked?: boolean;
@@ -442,6 +441,12 @@ export const UPGRADES: UpgradeDef[] = [
     text: 'Every crystal is worth more toward your next refit.',
     apply: (s) => { s.xpMult *= 1.12; },
   },
+  {
+    id: 'ut_tactical', name: 'Tactical computer', branch: 'utility', cat: 'weapons', kind: 'stat', max: 3, tags: ['damage'],
+    weight: 0.8,
+    text: 'All your weapons hit harder.',
+    apply: (s) => { s.dmgAll *= 1.07; },
+  },
 
   // ── the warp core ──────────────────────────────────────────────────────
   {
@@ -573,37 +578,7 @@ export const UPGRADES: UpgradeDef[] = [
     text: 'Your torpedo and mine blasts snare the hulls they catch, slowing them hard.',
     apply: (s) => { s.snare = 3; },
   },
-
-  // ── minor nodes: the small steps along the web's paths ─────────────────
-  ...minor('mi_phaser_dmg', 'Emitter tuning', 'phaser', 'weapons', ['phaser', 'damage'], 'Your lances hit a little harder.', (s) => { s.phaserDamage *= 1.1; }),
-  ...minor('mi_phaser_rate', 'Capacitor trim', 'phaser', 'weapons', ['phaser', 'rate'], 'Your phasers cycle a little faster.', (s) => { s.phaserCooldown *= 0.96; }),
-  ...minor('mi_bank', 'Bank cells', 'phaser', 'weapons', ['phaser', 'sustain'], 'Your phaser bank holds a little more.', (s) => { s.bankMax += 12; s.bankRefill *= 1.06; }),
-  ...minor('mi_reach', 'Lens polish', 'phaser', 'weapons', ['phaser', 'range'], 'Your lances fly a little faster.', (s) => { s.phaserSpeed *= 1.05; }),
-  ...minor('mi_torp_dmg', 'Warhead trim', 'torpedo', 'weapons', ['torpedo', 'damage'], 'Your torpedoes hit a little harder.', (s) => { s.torpDamage *= 1.08; }),
-  ...minor('mi_torp_reload', 'Loading drill', 'torpedo', 'weapons', ['torpedo', 'rate'], 'Your torpedoes reload a little faster.', (s) => { s.torpReload *= 0.95; }),
-  ...minor('mi_blast', 'Shaped charges', 'torpedo', 'weapons', ['torpedo', 'mine', 'area'], 'Your torpedo and mine blasts reach a little wider.', (s) => { s.torpBlast *= 1.04; s.mineBlast *= 1.04; }),
-  ...minor('mi_mine_dmg', 'Tricobalt grade', 'mine', 'weapons', ['mine', 'damage'], 'Your mines hit a little harder.', (s) => { s.mineDamage *= 1.08; }),
-  ...minor('mi_mine_rate', 'Rack drill', 'mine', 'weapons', ['mine', 'rate'], 'You lay mines a little more often, and they last longer.', (s) => { s.mineInterval *= 0.95; s.mineLife *= 1.05; }),
-  ...minor('mi_plasma_dps', 'Plasma injectors', 'plasma', 'weapons', ['plasma', 'damage'], 'Your plasma burns a little hotter.', (s) => { s.plasmaDps *= 1.1; }),
-  ...minor('mi_plasma_life', 'Plasma baffles', 'plasma', 'weapons', ['plasma', 'area'], 'Your trail lingers a little longer, a little wider.', (s) => { s.plasmaLife *= 1.08; s.plasmaRadius *= 1.04; }),
-  ...minor('mi_arc_dmg', 'Arc coils', 'close', 'weapons', ['close', 'arc'], 'Your arcs hit a little harder.', (s) => { s.arcDamage *= 1.04; }),
-  ...minor('mi_ram', 'Prow plating', 'close', 'weapons', ['close', 'ram'], 'Your rams hit a little harder.', (s) => { s.ramDamage *= 1.05; }),
-  ...minor('mi_thrust', 'Impulse trim', 'mobility', 'ship', ['mobility', 'speed'], 'A little more thrust.', (s) => { s.thrust *= 1.03; }),
-  ...minor('mi_turn', 'Thruster trim', 'mobility', 'ship', ['mobility', 'turning'], 'You turn a little faster.', (s) => { s.turn *= 1.04; }),
-  ...minor('mi_roll', 'Jet trim', 'mobility', 'ship', ['mobility', 'evasion'], 'Your roll comes round a little sooner.', (s) => { s.rollCooldown *= 0.94; }),
-  ...minor('mi_shield', 'Shield cells', 'defence', 'defence', ['defence', 'shield'], 'Your shield recharges a little faster.', (s) => { s.shieldRecharge *= 0.94; }),
-  ...minor('mi_grace', 'Bracing', 'defence', 'defence', ['defence', 'armour'], 'You stay untouchable a little longer after a hit.', (s) => { s.grace += 0.08; }),
-  ...minor('mi_tractor', 'Tractor emitters', 'utility', 'ship', ['utility', 'tractor'], 'You pull dilithium in from a little further.', (s) => { s.tractor *= 1.1; }),
-  ...minor('mi_xp', 'Dilithium lattice', 'utility', 'ship', ['utility', 'xp'], 'Every crystal is worth a little more.', (s) => { s.xpMult *= 1.04; }),
-  ...minor('mi_oc_gain', 'Core sensors', 'overcharge', 'ship', ['overcharge', 'evasion'], 'Near misses charge the core a little faster.', (s) => { s.ocGain *= 1.08; }),
-  ...minor('mi_oc_dmg', 'Core focus', 'overcharge', 'ship', ['overcharge', 'damage'], 'Your overcharge release hits a little harder and wider.', (s) => { s.ocDamage *= 1.12; s.ocRadius *= 1.03; }),
-  ...minor('mi_all_damage', 'Fire control', 'synergy', 'weapons', ['damage'], 'All your weapons hit a little harder.', (s) => { s.dmgAll *= 1.04; }),
 ];
-
-/** A minor upgrade: a small step, owned up to ten times (one per node of it in the web). */
-function minor(id: string, name: string, branch: Branch, cat: Category, tags: string[], text: string, apply: (s: Stats) => void): UpgradeDef[] {
-  return [{ id, name, branch, cat, kind: 'minor', max: 10, tags, text, apply }];
-}
 
 export const UPGRADE: Record<string, UpgradeDef> = Object.fromEntries(UPGRADES.map((u) => [u.id, u]));
 

@@ -102,7 +102,7 @@ export const FIELD_BAND = 240;
 // ── bulwarks ──────────────────────────────────────────────────────────────
 // Massive asteroids that nothing breaks. They stop fire from both sides,
 // they hurt to fly into, and the heavier enemy hulls hide behind them.
-export const BULWARK_COUNT = 7;
+export const BULWARK_COUNT = 5;
 export const BULWARK_R = [7, 12] as const;
 
 // ── the run ───────────────────────────────────────────────────────────────

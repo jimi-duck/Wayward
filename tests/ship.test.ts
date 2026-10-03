@@ -55,7 +55,7 @@ describe('flight model, ported from the original', () => {
     expect(s.heading).toBeLessThan(Math.PI / 2);
   });
 
-  it('carves turns on the Defiant: grip cuts the sideways slide under thrust', () => {
+  it('carves turns on the Kestrel: grip cuts the sideways slide under thrust', () => {
     const slide = (grip: number) => {
       const hull = { ...HULL, grip };
       const s = fly(newShip(), hull, ctl({ thrust: 1 }), 4);

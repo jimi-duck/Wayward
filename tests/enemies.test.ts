@@ -6,7 +6,6 @@ import { ALIEN_FIRST, SPAWN_NEAR, VARIANTS, alienMax, spawnAlien } from '../src/
 import type { Bulwark } from '../src/sim/field';
 import { Rng } from '../src/sim/rng';
 import { newShip } from '../src/sim/ship';
-import { POINTS_PER_SALVAGE } from '../src/sim/web';
 import { World } from '../src/sim/world';
 
 const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' };
@@ -30,11 +29,11 @@ function onStation(w: World) {
   for (let i = 0; i < 40 && w.command.boss?.arriving; i++) run(w, 0.5);
   expect(w.command.boss?.arriving).toBe(false);
 }
-/** Run the clock, answering the decisions a run asks for: engage every hail, bank every refit. */
+/** Run the clock, answering the decisions a run asks for: engage every hail, take the first card. */
 function run(w: World, seconds: number) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     if (w.phase === 'hail') w.answerHail(true);
-    if (w.phase === 'refit') w.closeRefit();
+    if (w.phase === 'refit') w.choose(0);
     w.ship.invuln = 1;
     w.step(STEP, idle);
   }
@@ -53,7 +52,7 @@ describe('enemy pacing (the original curves)', () => {
   it('never exceeds the ceiling, and unlocks hulls on the clock', () => {
     const w = immortal();
     const seen = new Set<string>();
-    for (let s = 0; s < 260; s++) {
+    for (let s = 0; s < 330; s++) {
       run(w, 1);
       if (!w.command.boss) expect(w.aliens.filter((a) => !a.escort && !a.extra).length).toBeLessThanOrEqual(alienMax(w.runTime));
       for (const a of w.aliens) {
@@ -95,7 +94,6 @@ describe('capital ships', () => {
     const b = w.command.boss!;
     w.plates = 1;
     b.hp = 1;
-    const points = w.points;
     w.bolts.push(bolt(b.x, b.y, b.z));
     w.step(STEP, idle);
     expect(w.command.boss).toBeNull();
@@ -104,10 +102,10 @@ describe('capital ships', () => {
     expect(evs.some((e) => e.type === 'salvage' && e.faction === b.faction && e.tech)).toBe(true);
     expect(w.run.capitals).toBe(1);
     expect(w.run.scoreBy.capitals).toBeGreaterThan(1000);
-    // a hull repair, a power-up and dilithium to collect, points for the web and her faction's tech
+    // a hull repair, a power-up and dilithium to collect, a salvage card and her faction's tech
     expect(w.pickups.some((p) => p.kind === 'repair')).toBe(true);
     expect(w.pickups.filter((p) => p.kind === 'crystal').length).toBeGreaterThan(5);
-    expect(w.points).toBe(points + POINTS_PER_SALVAGE);
+    expect(w.pendingSalvage).toEqual([b.faction]);
     expect(w.techs.has(b.faction)).toBe(true);
     expect(w.command.next).toBeCloseTo(w.runTime + bossGap(1), 0);
   });

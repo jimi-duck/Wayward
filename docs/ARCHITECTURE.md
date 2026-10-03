@@ -44,11 +44,11 @@ input ──InputFrame──▶ sim (fixed 60Hz) ──state──▶ render (ev
 src/
   core/      loop (fixed step, interpolation, freeze, clamp), math
   input/     keyboard, touch stick, gamepad → one InputFrame per step
-  content/   data: the hull, the upgrades, the refit web, long-term unlocks and modifiers
+  content/   data: the hull, the upgrades, long-term unlocks and modifiers
   sim/       game state and rules (never imports Three.js)
   meta/      the profile between runs (localStorage)
   render/    renderer, quality governor, scene
-  ui/        DOM overlays: HUD, the refit web, panels (hail, report, logbook), debug
+  ui/        DOM overlays: HUD, the refit cards, panels (hail, report, logbook), debug
   styles/    CSS, tokens carried over from the original
 tests/       unit tests (Vitest)
 tools/       the scripted pilot and the balance report (npm run pilot)
@@ -172,12 +172,45 @@ found the first version cluttered:
 - `ui/radar.ts`: ship-up, a compass bezel that turns with the ship, the
   camera's field of view, contacts by kind, and a bezel ring that lights
   toward any hostile in firing range.
-- The refit web (`ui/web.ts`, which replaced the refit cards) is drawn in
-  the same parts: a cut-frame map and inspector, the module's level as
-  blocks, figures with the new value lit, and the loadout (`ui/loadout.ts`)
-  across its header with the system under the cursor lit.
 - Touch: octagon buttons that each carry their gauge (bank, rack, core);
   on a phone the panel tightens and the scope moves to the top left.
+
+The Starfleet pass answers three notes from the user, with a new reference
+frame (a saucer-and-nacelles ship in hazard yellow over an asteroid field,
+under a thin orange-red HUD): the game did not feel like Star Trek, the
+refit web was too much, and the opening was too hectic to get hooked.
+
+- The ship is the U.S.S. Kestrel, NCC-1903 (`render/ships.ts`): a saucer
+  with a bridge, a ring of running lights and a phaser strip; a hazard-
+  yellow engineering hull with an impulse ring astern; two nacelles on
+  swept pylons, coils glowing inboard and cyan rings aft. Stencilled hull
+  numbers and the registry come from a small painted atlas laid on the
+  hull as decals (`Kit.decal`); the saucer is a lathe (`Kit.lathe`). Stock
+  engines burn Starfleet cyan; the engine-colour unlock that used to be ion
+  blue is now the old impulse red. The camera sits a little lower and
+  closer, so the stern and the engines face you as in the reference.
+- The refit is three cards again (`sim/offers.ts`, `ui/refit.ts`): two that
+  lean toward the build and a new direction, a system while the ship has
+  fewer than two, a branch's specialisations once when it is deep enough,
+  and a salvage hand led by the beaten faction's tech. `World.offer`,
+  `pendingRefits`, `pendingSalvage` and `choose(i)` replace the web's
+  points, `fit`, `openRefit` and `closeRefit`. `content/web.ts`,
+  `sim/web.ts`, `ui/web.ts`, `ui/loadout.ts` and the minor upgrades that
+  only existed to pave the web's paths are gone; the tactical computer
+  (utility) keeps a card for every-weapon damage.
+- The HUD follows the new reference: the sector and the dilithium gauge
+  top left (the full-width rail is gone), a heading tape top centre, a
+  leaner systems panel top right (weapon rows; hull, warp core and score
+  side by side), the target's label sitting on its bracket frame with its
+  integrity, mineral deposits marked with a hexagon and a two-line label,
+  the scope with its range, and a mode line bottom right (cruise, mining
+  mode, combat, yellow and red alert) over the last log line. Panel edges
+  are a true 1px ring (an even-odd clip), so the glass can be faint
+  without the edge colour showing through it. The HUD steps back while a
+  panel is open. The start screen frames the ship under the title.
+- The director opens on a slow burn (see DESIGN.md): half the rock, slower,
+  five bulwarks, no hostile for forty seconds, then one at a time; every
+  unlock, squad, elite and capital-ship time moves later.
 
 Coming in later milestones: `audio/`, three sectors and a win state.
 
@@ -226,8 +259,9 @@ Coming in later milestones: `audio/`, three sectors and a win state.
 | M5b | Roguelite pass: refit tree, weapon systems, rock kinds, factions, elites, director, capital-ship phases and telegraphs, sector events, run report, long-term unlocks, scripted-pilot balancing | done |
 | M5c | HUD pass: one tactical UI language for the HUD and every panel, ship systems with refit levels, targeting with mining readouts, a compass scope, module refit cards, a decluttered phone layout | done |
 | M6 | Three sectors and a win state | |
-| M5d | The refit web: two hundred nodes in nine regions, points per refit, salvaged faction tech, quick picks, the map with pan, zoom and inspector | done |
-| M7 | LCARS UI: start, HUD, refit web, pause, summary | done in the gritty style (roguelite pass) |
+| M5d | The refit web: two hundred nodes in nine regions, points per refit, salvaged faction tech, quick picks, the map with pan, zoom and inspector | done, then replaced by three cards (Starfleet pass) |
+| M5e | Starfleet pass: the Kestrel, the HUD after the new reference, three-card refits, a slow-burn opening | done |
+| M7 | LCARS UI: start, HUD, refit, pause, summary | done in the gritty style (roguelite pass), redrawn in the Starfleet pass |
 | M8 | Spatial audio and music | |
 | M9 | Mobile polish, installable web app, performance pass, launch | |
 

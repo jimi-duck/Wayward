@@ -1,6 +1,6 @@
 import {
-  BoxGeometry, BufferGeometry, CanvasTexture, Color, CylinderGeometry, Euler, ExtrudeGeometry, Group, Matrix4, Mesh,
-  MeshStandardMaterial, OctahedronGeometry, Quaternion, RepeatWrapping, SRGBColorSpace, Shape, TorusGeometry, Vector2,
+  BoxGeometry, BufferGeometry, CanvasTexture, Color, CylinderGeometry, Euler, ExtrudeGeometry, Group, LatheGeometry, Matrix4, Mesh,
+  MeshStandardMaterial, OctahedronGeometry, PlaneGeometry, Quaternion, RepeatWrapping, SRGBColorSpace, Shape, TorusGeometry, Vector2,
   Vector3, type Material, type Texture,
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -228,6 +228,36 @@ export class Kit {
     const list = this.parts.get(key) ?? [];
     list.push(g);
     this.parts.set(key, list);
+  }
+
+  /** A part placed by a whole matrix (for parts that need a basis, not angles). */
+  addMatrix(key: string, geo: BufferGeometry, m: Matrix4): void {
+    const g = geo.index ? geo.toNonIndexed() : geo.clone();
+    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
+    g.applyMatrix4(m);
+    const list = this.parts.get(key) ?? [];
+    list.push(g);
+    this.parts.set(key, list);
+  }
+
+  /** A solid of revolution round +Y from a profile of [radius, height] points (bottom to top), centred on pos. */
+  lathe(key: string, profile: Array<[number, number]>, pos: V3, seg = 48): void {
+    this.add(key, new LatheGeometry(profile.map(([r, y]) => new Vector2(r, y)), seg), pos);
+  }
+
+  /**
+   * A flat quad showing one cell of a texture atlas, laid on a surface: `normal`
+   * is the way the surface faces, `up` the way the top of the cell points.
+   * `uv` is the cell as [u0, v0, u1, v1].
+   */
+  decal(key: string, uv: [number, number, number, number], w: number, h: number, pos: V3, normal: V3, up: V3): void {
+    const g = new PlaneGeometry(w, h);
+    const a = g.attributes.uv!;
+    for (let i = 0; i < a.count; i++) a.setXY(i, uv[0] + a.getX(i) * (uv[2] - uv[0]), uv[1] + a.getY(i) * (uv[3] - uv[1]));
+    const n = new Vector3(...normal).normalize(), u = new Vector3(...up).normalize();
+    const r = new Vector3().crossVectors(u, n).normalize();
+    u.crossVectors(n, r).normalize();
+    this.addMatrix(key, g, new Matrix4().makeBasis(r, u, n).setPosition(...pos));
   }
 
   box(key: string, size: V3, pos: V3, rot: V3 = [0, 0, 0]): void {

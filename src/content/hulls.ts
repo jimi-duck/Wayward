@@ -28,4 +28,4 @@ export interface Hull {
   drift?: boolean;
 }
 
-export const HULL: Hull = { name: 'Defiant class', role: 'Gunship', thrust: 1.965, rot: 1.10, drag: 0.961, grip: 0.05, plates: 3 };
+export const HULL: Hull = { name: 'Kestrel class', role: 'Survey tender', thrust: 1.965, rot: 1.10, drag: 0.961, grip: 0.05, plates: 3 };
