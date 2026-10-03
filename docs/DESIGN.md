@@ -302,10 +302,23 @@ What the telemetry changed, in order:
 11. Focused phaser and defence builds trailed builds with systems; the
     phaser ladder and shield recharge were strengthened. Plasma, the
     weakest family, reaches a little higher and burns hotter.
+12. The refit web let a build take exactly what it wanted, and the first
+    pass found close-quarters builds lasting the whole fifteen minutes:
+    shields stacked to three charges on a nine-second recharge, and the
+    arc's damage minors stacked on its capacitors. Shields now cap at two
+    charges and twelve seconds (Borg tech speeds the recharge instead of
+    adding a charge); arc damage caps near the card era's best, the arc
+    storm jumps once, chains fall off faster and rock takes half; ram
+    damage caps at 18.
+13. Builds with no weapon region starved; the pilot now keeps its phasers
+    up in them, as a player would. Mines are laid a little more often.
 
-Where it stands (see BALANCE.md for the current report): every build
-strategy within about ±13% of the others, no damage source above about
-11%, capital ships destroyed in more than half of fights, a calm opening
-(0.3 plates a minute) climbing to about 1.3 by minute five, repairs about a
-tenth of losses, and the best runs past eleven minutes. The pilot is a
-steady player, not a strong one; expect people to last longer.
+Where it stands (see BALANCE.md for the current report): survival runs from
+about three and a half minutes (mobility-led builds, which this pilot cannot
+fly to their strength) to about nine (close quarters with defence, still the
+strongest; two runs in twelve reach the cap), with the quick-pick player at
+about six. No damage source above about 11%; capital ships destroyed in
+about two fights of three; a calm opening (0.3 plates a minute) climbing to
+about one by minute five; refit 10 at about five minutes. Next: bring close
+quarters and mobility toward the middle. The pilot is a steady player, not a
+strong one; expect people to last longer.
