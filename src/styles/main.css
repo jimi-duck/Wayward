@@ -451,6 +451,14 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #t-rack i { height: 6px; }
 #roll { right: calc(var(--tr) + 16px + var(--safe-r)); bottom: calc(var(--tb) + clamp(84px, 24vw, 108px) + 14px + var(--safe-b)); width: 64px; aspect-ratio: 1; font-size: 9px; --edge: rgba(236, 230, 225, .3); }
 #roll:active { --fill: rgba(236, 230, 225, .15); }
+/* a phone on its side, with the browser's bars taking height: the three
+   buttons in one row along the bottom edge, clear of the systems panel */
+@media (max-height: 420px) {
+  .touch-ui #fire { width: 88px; }
+  .touch-ui #torp { right: calc(var(--tr) + 98px + var(--safe-r)); bottom: calc(var(--tb) + 22px + var(--safe-b)); width: 72px; }
+  .touch-ui #roll { right: calc(var(--tr) + 180px + var(--safe-r)); bottom: calc(var(--tb) + var(--safe-b)); width: 58px; }
+  .touch-ui:not(.has-torps) #roll { right: calc(var(--tr) + 98px + var(--safe-r)); }
+}
 /* release: the warp core under the thumb, lit amber when it is full */
 #release { left: 50%; bottom: calc(clamp(1.2rem, 3vh, 2rem) + var(--safe-b)); translate: -50% 0; width: 112px; height: 40px; --c: 10px; --edge: var(--amber-dim); color: var(--ink-2); font-size: 9px; gap: 5px; }
 #release .ticks { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 64px; height: 4px; }
@@ -631,6 +639,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .meta { margin: 0; font: 500 9px/1.4 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
 #launch { padding: 0 58px; height: 46px; font-size: 15px; letter-spacing: .3em; margin-top: 4px; }
 .hint-l { margin: 0; font: 500 9px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
+.tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(255, 179, 61, .07);
+  font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
 .records { display: flex; gap: 18px; justify-content: center; font: 500 9px/1 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); }
 .records b { color: var(--ink); font: 600 12px/1 var(--font-rail); letter-spacing: .08em; margin-left: 6px; }
 .records:empty { display: none; }
@@ -640,6 +650,20 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .mods button { height: 26px; padding: 0 10px; cursor: pointer; border: 1px solid var(--line); background: var(--glass); color: var(--ink-2);
   font: 500 9px/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; }
 .mods button[aria-pressed="true"] { border-color: var(--amber); color: var(--ink); background: rgba(255, 179, 61, .14); }
+
+/* a phone on its side: the wordmark on the left, everything you press on the right */
+@media (max-height: 520px) and (orientation: landscape) {
+  #start { padding: 12px max(16px, var(--safe-r)) 12px max(16px, var(--safe-l)); }
+  .start-card { grid-template-columns: auto minmax(0, 320px); column-gap: 30px; row-gap: 10px; padding: 18px 26px 16px; justify-items: start; text-align: left; }
+  .start-card .wm { grid-area: 1 / 1 / 5 / 2; align-self: end; width: min(300px, 38vw); }
+  .start-card .tag { grid-area: 5 / 1 / 8 / 2; align-self: start; font-size: 15px; }
+  .start-card .keys-l, .start-card .meta { grid-area: 1 / 2; justify-content: flex-start; }
+  #launch { grid-area: 2 / 2; height: 40px; padding: 0 44px; }
+  .start-card .hint-l { grid-area: 3 / 2; }
+  .start-card .tip { grid-area: 4 / 2; font-size: 11px; }
+  .start-card .records { grid-area: 5 / 2; justify-content: flex-start; }
+  .start-card .start-opts { grid-area: 6 / 2; justify-items: start; }
+}
 
 /* ── pause ────────────────────────────────────────────────────────────── */
 #pause { position: absolute; inset: 0; z-index: 3; display: none; place-items: center; background: rgba(3, 5, 9, .62); }
@@ -655,6 +679,10 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .pause-build:empty { display: none; }
 .pause-build .sum-ship { text-align: center; }
 .pause-build .branch { grid-template-columns: 110px 1fr; }
+@media (max-height: 520px) {
+  .pause-card { max-height: calc(100% - 16px); overflow-y: auto; gap: .6rem; padding: 14px 22px 14px 26px; }
+  .pause-t { font-size: 22px; }
+}
 
 #debug { position: absolute; z-index: 5; top: calc(.5rem + var(--safe-t)); left: calc(.5rem + var(--safe-l)); padding: .5rem .65rem;
   background: rgba(3, 5, 9, .75); border: 1px solid var(--line); color: var(--ink); font: 11px/1.5 var(--font-mono); white-space: pre; pointer-events: none; }
