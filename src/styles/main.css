@@ -474,58 +474,71 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   .touch-ui .sys-foot .cell { padding-top: 6px; row-gap: 4px; }
   .touch-ui #score { font-size: calc(var(--fs) * 1.6); }
   .touch-ui #sector { width: min(190px, 28vw); }
-  #touch { --tb: 14px; }
 }
 
 /* ── touch controls ───────────────────────────────────────────────────── */
-#touch { position: absolute; inset: 0; z-index: 1; touch-action: none; --tb: clamp(2.4rem, 7vh, 3.6rem); --tr: clamp(1rem, 5vw, 2rem); }
-#stick, #fire, #torp, #roll, #release { display: none; }
-.touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #roll, .touch-ui #release { display: grid; }
+/* Laid out for two thumbs on a phone held on its side. The left thumb's
+   home is well in from the edge (clear of the notch and the browser's
+   back swipe); the right thumb rests on Phaser, with Torpedo and the warp
+   core one short reach away round it. The ring is only a hint at rest:
+   wherever the thumb lands on the left half, the stick comes to it. */
+#touch {
+  position: absolute; inset: 0; z-index: 1; touch-action: none;
+  --pb: calc(var(--safe-b) + clamp(12px, 4.5vh, 34px));
+  --in-l: calc(max(var(--safe-l), 10px) + clamp(44px, 8vw, 96px));
+  --in-r: calc(max(var(--safe-r), 10px) + clamp(22px, 4.5vw, 60px));
+  --sw: clamp(104px, 30vh, 132px);
+  --fw: clamp(80px, 24vh, 104px);
+  --bw: clamp(60px, 17vh, 72px);
+}
+#stick, #fire, #torp, #release, #pause-b { display: none; }
+.touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #release, .touch-ui #pause-b { display: grid; }
 .touch-ui:not(.has-torps) #torp { display: none; }
 #stick {
-  position: absolute; left: calc(var(--tr) + var(--safe-l)); bottom: calc(var(--tb) + var(--safe-b));
-  width: clamp(118px, 34vw, 160px); aspect-ratio: 1; border-radius: 50%;
-  background: rgba(14, 15, 18, .42); border: 1px solid var(--hud-dim); pointer-events: none; opacity: .6;
-  transition: opacity .18s var(--ez), background .18s var(--ez);
+  position: absolute; left: var(--in-l); bottom: var(--pb);
+  width: var(--sw); aspect-ratio: 1; border-radius: 50%;
+  background: rgba(14, 15, 18, .3); border: 1px solid var(--hud-dim); pointer-events: none; opacity: .5;
+  transition: opacity .15s var(--ez);
 }
-#stick.free { left: 0; bottom: auto; top: 0; transform: translate(-50%, -50%); }
-#stick.on { opacity: 1; background: rgba(14, 15, 18, .6); border-color: var(--hud-mid); }
-#knob { position: absolute; left: 50%; top: 50%; width: 44%; height: 44%; transform: translate(-50%, -50%);
-  border-radius: 50%; background: var(--hud-ghost); border: 1px solid var(--hud-mid); transition: transform .07s linear; }
-#stick.on #knob { background: var(--hud-dim); }
+#stick.free { left: 0; bottom: auto; top: 0; opacity: 1; background: rgba(14, 15, 18, .5); border-color: var(--hud-mid); transition: none; will-change: transform; }
+#knob { position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%, -50%);
+  border-radius: 50%; background: var(--hud-ghost); border: 1px solid var(--hud-mid); }
+#stick.on #knob { background: var(--hud-dim); will-change: transform; }
 /* the buttons are octagons, an edge and a glass like every panel, and each
-   carries its own gauge under the thumb that uses it */
-#fire, #torp, #roll, #release {
-  --c: 28%; --edge: var(--hud-mid); --fill: rgba(12, 13, 16, .62);
-  position: absolute; isolation: isolate; place-items: center; align-content: center; gap: 7px; border: 0; padding: 0; background: none; touch-action: none;
-  font: 600 10px/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink);
+   carries its own gauge under the thumb that uses it. The layer behind does
+   the hit-testing (generously), so the buttons themselves take no events. */
+#fire, #torp, #release {
+  --c: 28%; --edge: var(--hud-mid); --fill: rgba(12, 13, 16, .58);
+  position: absolute; isolation: isolate; place-items: center; align-content: center; gap: 6px; border: 0; padding: 0; background: none;
+  pointer-events: none; aspect-ratio: 1;
+  font: 600 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink);
 }
-:is(#fire, #torp, #roll, #release)::before, :is(#fire, #torp, #roll, #release)::after { content: ""; position: absolute; pointer-events: none;
+:is(#fire, #torp, #release)::before, :is(#fire, #torp, #release)::after { content: ""; position: absolute; pointer-events: none;
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); }
-:is(#fire, #torp, #roll, #release)::before { inset: 0; z-index: -2; background: var(--edge); }
-:is(#fire, #torp, #roll, #release)::after { inset: 1px; z-index: -1; background: var(--fill); }
-#fire { right: calc(var(--tr) + var(--safe-r)); bottom: calc(var(--tb) + var(--safe-b)); width: clamp(84px, 24vw, 108px); aspect-ratio: 1; --edge: var(--hud); }
-#fire.on { --fill: rgba(255, 90, 54, .3); }
+/* the edge is only the 1px ring (evenodd), so the glass inside lets the view through and never shows the edge colour */
+:is(#fire, #torp, #release)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
+  clip-path: polygon(evenodd, var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
+    var(--ci) 1px, calc(100% - var(--ci)) 1px, calc(100% - 1px) var(--ci), calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), var(--ci) calc(100% - 1px), 1px calc(100% - var(--ci)), 1px var(--ci), var(--ci) 1px); }
+:is(#fire, #torp, #release)::after { inset: 1px; z-index: -1; background: var(--fill); }
+#fire { right: var(--in-r); bottom: var(--pb); width: var(--fw); --edge: var(--hud); font-size: 10px; }
+#fire.on { --fill: rgba(255, 90, 54, .34); }
 #t-bank { --n: 10; width: 56%; height: 5px; }
 #fire.dry #t-bank { --on: var(--alert); --off: var(--alert-dim); }
-#torp { right: calc(var(--tr) + clamp(84px, 24vw, 108px) + 10px + var(--safe-r)); bottom: calc(var(--tb) + 34px + var(--safe-b)); width: clamp(70px, 19vw, 86px); aspect-ratio: 1; }
-#torp:active { --fill: rgba(255, 90, 54, .25); }
+/* torpedo: to the left of the trigger, a touch higher; the core: above it */
+#torp { right: calc(var(--in-r) + var(--fw) + 10px); bottom: calc(var(--pb) + var(--fw) * .3); width: var(--bw); }
+#torp.on { animation: tap-flash .22s var(--ez); }
 #t-rack { width: 58%; }
-#t-rack i { height: 6px; }
-#roll { right: calc(var(--tr) + 16px + var(--safe-r)); bottom: calc(var(--tb) + clamp(84px, 24vw, 108px) + 14px + var(--safe-b)); width: 64px; aspect-ratio: 1; font-size: 9px; --edge: rgba(236, 230, 225, .3); }
-#roll:active { --fill: rgba(236, 230, 225, .15); }
-/* a phone on its side, with the browser's bars taking height: the three
-   buttons in one row along the bottom edge, clear of the systems panel */
-@media (max-height: 420px) {
-  .touch-ui #fire { width: 88px; }
-  .touch-ui #torp { right: calc(var(--tr) + 98px + var(--safe-r)); bottom: calc(var(--tb) + 22px + var(--safe-b)); width: 72px; }
-  .touch-ui #roll { right: calc(var(--tr) + 180px + var(--safe-r)); bottom: calc(var(--tb) + var(--safe-b)); width: 58px; }
-  .touch-ui:not(.has-torps) #roll { right: calc(var(--tr) + 98px + var(--safe-r)); }
-}
-/* release: the warp core under the thumb, lit amber when it is full */
-#release { left: 50%; bottom: calc(clamp(1.2rem, 3vh, 2rem) + var(--safe-b)); translate: -50% 0; width: 112px; height: 40px; --c: 10px; --edge: var(--amber-dim); color: var(--ink-2); font-size: 9px; gap: 5px; }
-#release .ticks { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 64px; height: 4px; }
-#release.ready { --edge: var(--amber); --fill: rgba(255, 179, 61, .22); color: var(--ink); }
+#t-rack i { height: 5px; }
+#release { right: calc(var(--in-r) + (var(--fw) - var(--bw)) / 2); bottom: calc(var(--pb) + var(--fw) + 12px); width: var(--bw); --edge: var(--amber-dim); color: var(--ink-2); }
+#release .ticks { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 60%; height: 4px; }
+#release.ready { --edge: var(--amber); --fill: rgba(255, 179, 61, .24); color: var(--ink); animation: core-ready 1.2s ease-in-out infinite alternate; }
+#release.on { animation: tap-flash .22s var(--ez); }
+@keyframes tap-flash { from { scale: .88; } }
+@keyframes core-ready { to { scale: 1.05; } }
+/* pause: small, low and in the middle, out of both thumbs' way */
+#pause-b { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 6px); translate: -50% 0; width: 44px; height: 32px;
+  place-content: center; grid-auto-flow: column; gap: 5px; border: 0; padding: 0; background: none; opacity: .55; pointer-events: auto; touch-action: none; }
+#pause-b i { width: 3px; height: 12px; background: var(--ink-2); }
 
 /* ── panels: hail, run report, logbook (the refit cards are below) ────── */
 .sheet { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: max(12px, var(--safe-t)) max(12px, var(--safe-r)) max(12px, var(--safe-b)) max(12px, var(--safe-l));
@@ -848,7 +861,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #sys-oc.hot #g-oc, #mode.alert .stripes { animation: none; }
+  #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #sys-oc.hot #g-oc, #mode.alert .stripes, #release.ready, #release.on, #torp.on { animation: none; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
   #log-lines p.new, #banner.on, #sys-hull.hit, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel { animation: none; }
   .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path { animation: none; }

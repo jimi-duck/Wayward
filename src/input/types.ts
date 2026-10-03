@@ -25,7 +25,7 @@ export interface InputFrame {
   turn: number;
   /** Throttle, 0 to 1: keys and trigger. */
   thrust: number;
-  /** Touch stick or gamepad stick, or null when centred. */
+  /** The gamepad's stick, or null when centred. (The touch stick arrives as turn and thrust.) */
   aim: Aim | null;
   /** Phaser trigger held (button 1). */
   fire: boolean;

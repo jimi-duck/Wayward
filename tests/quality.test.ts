@@ -55,6 +55,12 @@ describe('QualityGovernor', () => {
     expect(q.tier.name).toBe('high');
   });
 
+  it('still measures a phone that only manages 15fps', () => {
+    const q = new QualityGovernor(HIGH);
+    feed(q, 1 / 15, 400);
+    expect(q.tier.name).not.toBe('high');
+  });
+
   it('never moves a pinned tier', () => {
     const q = new QualityGovernor(HIGH, true);
     feed(q, 1 / 25, 2000);

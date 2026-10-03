@@ -138,15 +138,16 @@
       <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Red alert</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
     </div>
 
-    <!-- Touch controls. The whole layer is the stick's catchment, as in the
-         original: the ring comes to the thumb. Each button carries its own
-         gauge, under the thumb that uses it. -->
+    <!-- Touch controls. The left half of the screen is the stick's catchment
+         (the ring comes to the thumb); the right half is the trigger's, with
+         Torpedo and Release in reach of the same thumb. Each button carries
+         its own gauge. -->
     <div id="touch" aria-hidden="true">
       <div id="stick"><div id="knob"></div></div>
-      <button type="button" id="fire"><span>Phaser</span><i class="ticks" id="t-bank"></i></button>
-      <button type="button" id="torp"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
-      <button type="button" id="roll">Roll</button>
-      <button type="button" id="release"><span>Release</span><i class="ticks" id="t-oc"></i></button>
+      <button type="button" id="fire" tabindex="-1"><span>Phaser</span><i class="ticks" id="t-bank"></i></button>
+      <button type="button" id="torp" tabindex="-1"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
+      <button type="button" id="release" tabindex="-1"><span>Core</span><i class="ticks" id="t-oc"></i></button>
+      <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
 
     <div id="start" role="dialog" aria-labelledby="start-t">
@@ -163,7 +164,7 @@
           <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
           <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
         </dl>
-        <p class="meta only-touch">Drag to steer · hold Phaser · tap Release when the core is full</p>
+        <p class="meta only-touch">Left thumb: drag to fly · right thumb: hold to fire · tap Core when it is full</p>
         <button type="button" id="launch">Launch</button>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
         <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->

@@ -181,7 +181,7 @@ answering a distress signal. Damage control saves the last plate once.
 
 Near misses charge the core: fire that passes close without hitting, rock
 skimmed at speed, hulls passed close aboard, beams and webs brushed (each
-counts once). Full, it releases on **E** (gamepad Y, touch **Release**): a
+counts once). Full, it releases on **E** (gamepad Y, touch **Core**): a
 nova that damages everything near (scaling with refits), clears enemy fire,
 and runs the guns hot for a few seconds. The **kill chain** is score only:
 each hull kill inside a short window adds one; breaking rock keeps it alive.

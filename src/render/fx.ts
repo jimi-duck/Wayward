@@ -168,7 +168,7 @@ export class Effects {
   private readonly glows: Glow[] = [];
   private readonly c = new Color();
 
-  constructor(scene: Scene, glow: Texture) {
+  constructor(private readonly scene: Scene, glow: Texture) {
     this.rock = new Debris(new TetrahedronGeometry(1, 0),
       new MeshStandardMaterial({ color: 0x2c2724, roughness: 0.9, flatShading: true, emissive: new Color(0.5, 0.08, 0.01) }));
     this.plating = new Debris(new BoxGeometry(1, 0.18, 0.7), metal({ tint: 0x6b6560, roughness: 0.55, metalness: 0.7, scale: 2 }));
@@ -202,6 +202,18 @@ export class Effects {
       const light = new PointLight(0xffa060, 0, 46, 2);
       scene.add(light);
       this.glows.push({ light, life: 0, decay: 1, peak: 0 });
+    }
+  }
+
+  /**
+   * The thrown lights on or off. Every lit surface pays for each point light
+   * in the scene on every pixel, lit or not, so the low tier goes without.
+   * Changing the count recompiles the lit shaders once.
+   */
+  setLights(on: boolean): void {
+    for (const g of this.glows) {
+      if (on && !g.light.parent) this.scene.add(g.light);
+      if (!on) { g.light.removeFromParent(); g.life = 0; g.light.intensity = 0; }
     }
   }
 
