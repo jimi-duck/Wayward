@@ -107,8 +107,8 @@ export const UNLOCKS: UnlockDef[] = [
     earned: (_r, life) => life.capitals >= 5,
   },
   {
-    id: 'u_ion', kind: 'cosmetic', name: 'Ion-blue engines', grants: ['engine-ion'],
-    text: 'A cosmetic: your engines burn ion blue.',
+    id: 'u_ion', kind: 'cosmetic', name: 'Impulse-red engines', grants: ['engine-ion'],
+    text: 'A cosmetic: your engines burn impulse red.',
     hint: 'Complete 5 runs.',
     earned: (_r, life) => life.runs >= 5,
   },
@@ -144,7 +144,8 @@ export const MODIFIERS: Record<string, ModifierDef> = {
 
 /** Engine colours (HDR): core and bell. */
 export const COSMETICS: Record<string, { name: string; core: [number, number, number]; bell: [number, number, number] }> = {
-  'engine-stock': { name: 'Stock red', core: [4.2, 2.2, 2.6], bell: [3.4, 0.45, 0.9] },
-  'engine-ion': { name: 'Ion blue', core: [2.4, 3.4, 4.4], bell: [0.4, 1.4, 3.8] },
+  'engine-stock': { name: 'Warp cyan', core: [2.6, 3.9, 4.4], bell: [0.3, 2.1, 3.4] },
+  // the id is kept from when stock burned red, so profiles that earned it keep it
+  'engine-ion': { name: 'Impulse red', core: [4.2, 2.2, 2.6], bell: [3.4, 0.45, 0.9] },
   'engine-gold': { name: 'Tricobalt gold', core: [4.4, 3.6, 2.2], bell: [3.6, 1.8, 0.3] },
 };

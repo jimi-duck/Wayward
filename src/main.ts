@@ -9,11 +9,12 @@ import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordRun, saveProfile } from './meta/profile';
+import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PadNav } from './ui/dom';
 import { buildView, HailPanel, StartOptions, SummaryPanel } from './ui/panels';
-import { WebPanel } from './ui/web';
+import { RefitPanel } from './ui/refit';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -60,11 +61,13 @@ function boot(): void {
   hud.showZoom(sector.rig.zoom);
 
   // An iPhone gives a page in a browser no fullscreen, and the browser keeps
-  // its tabs and bars on screen. Opened from the Home Screen the game has none
-  // of them, so in a browser on an iPhone the start card says how to add it.
+  // its tabs and bars on screen until the page scrolls (the swipe screen,
+  // below). Opened from the Home Screen the game has none of them, so in a
+  // browser on an iPhone the start card also says how to add it.
   const homeScreen = (navigator as Navigator & { standalone?: boolean }).standalone === true
     || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
-  el('ios-tip').hidden = !/iPhone|iPod/.test(navigator.userAgent) || homeScreen;
+  const iphoneBrowser = /iPhone|iPod/.test(navigator.userAgent) && !homeScreen;
+  el('ios-tip').hidden = !iphoneBrowser;
   const fit = () => {
     const dpr = fitRenderer(renderer, quality.tier);
     const lift = hud.layout();
@@ -76,15 +79,13 @@ function boot(): void {
   document.fonts?.ready.then(fit);
 
   // ── the run's stops: refit, hail, report ───────────────────────────────
-  // The world pauses itself at each and waits; the panels answer it. The
-  // refit web also opens between refits (R, the rail's Web button, a pad's
-  // Back), to look or to spend banked points.
-  const web = new WebPanel();
+  // The world pauses itself at each and waits; the panels answer it.
+  const refit = new RefitPanel();
   const hail = new HailPanel();
   const summary = new SummaryPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => web.open || hail.open || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => refit.open || hail.open || !el('summary').hidden || startOpts.logbookOpen;
   const startOpts = new StartOptions(profile, () => {
     saveProfile(profile);
     sector.setCosmetic(profile.cosmetic);
@@ -92,10 +93,10 @@ function boot(): void {
     if (!started) world.restart({ modifiers: profile.modifiers });
   });
   const stops = () => {
-    if (world.phase === 'refit' && !web.open) {
-      // opened by the world: a full rail or battle salvage
+    if (world.phase === 'refit' && world.offer && !refit.open) {
+      // a full rail or battle salvage: three cards
       input.reset();
-      web.show(world, true, () => input.reset());
+      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); });
     } else if (world.phase === 'hail' && world.command.pending && !hail.open) {
       input.reset();
       hail.show(world.command.pending, (engage) => { world.answerHail(engage); input.reset(); });
@@ -112,25 +113,17 @@ function boot(): void {
       });
     }
     // a gamepad answers the open panel
-    if (web.open || hail.open || !el('summary').hidden) {
+    if (refit.open || hail.open || !el('summary').hidden) {
       const p = padNav.poll();
-      if (web.open) web.padInput(p);
+      if (refit.open) refit.padInput(p);
       else if (hail.open) hail.padInput(p);
       else summary.padInput(p);
-    } else if (padNav.poll().back) openWeb();
+    }
     // a full rail: a beat of slow motion before the panel
     loop.timeScale = world.celebrate > 0 ? 0.3 : 1;
+    // a panel that stops the run takes the screen: the HUD steps back
+    document.documentElement.classList.toggle('panel-open', panelOpen());
   };
-
-  const openWeb = () => {
-    if (!started || panelOpen()) return;
-    if (loop.paused) setPaused(false);
-    if (!world.openRefit()) return;
-    input.reset();
-    web.show(world, false, () => input.reset());
-  };
-  el('rail-web').addEventListener('pointerdown', (e) => e.stopPropagation());
-  el('rail-web').addEventListener('click', (e) => { e.stopPropagation(); openWeb(); });
 
   // ── start, pause ───────────────────────────────────────────────────────
   // The run waits behind the start card, so the first key or tap is the one
@@ -224,6 +217,33 @@ function boot(): void {
   upright.addEventListener('change', turn);
   turn();
 
+  // ── the browser's bars ─────────────────────────────────────────────────
+  // An iPhone browser folds its tabs and bars away only when the page scrolls,
+  // so there the page scrolls under the game, which stays fixed. While the
+  // bars are out the swipe screen asks for the swipe up that folds them, and
+  // a run pauses under it. The game's own surfaces never scroll the page, so
+  // once folded the bars stay folded.
+  document.documentElement.classList.toggle('swipe', iphoneBrowser);
+  const probe = document.body.appendChild(document.createElement('div'));
+  probe.style.cssText = 'position:fixed;top:0;left:0;width:0;visibility:hidden;pointer-events:none';
+  const tall = (h: string) => { probe.style.height = h; return probe.offsetHeight; };
+  let small = 0;
+  let large = 0;
+  let out = false;
+  let kept = false; // the player chose to play with the bars
+  const bars = () => {
+    const now = iphoneBrowser && !kept && barsOut(innerHeight, small, large);
+    if (now === out) return;
+    out = now;
+    document.documentElement.classList.toggle('bars', out);
+    if (out && started && !panelOpen()) setPaused(true);
+  };
+  // the two heights change only with the window's shape; the bars, on every scroll
+  new ResizeObserver(() => { small = tall('100svh'); large = tall('100lvh'); bars(); }).observe(canvas);
+  window.addEventListener('scroll', bars, { passive: true });
+  window.visualViewport?.addEventListener('resize', bars);
+  el('swipe-x').addEventListener('click', () => { kept = true; bars(); });
+
   el('launch').addEventListener('click', launch);
   el('start').addEventListener('pointerdown', (e) => {
     if (e.target === el('launch') || startOpts.logbookOpen) return;
@@ -239,7 +259,7 @@ function boot(): void {
       return;
     }
     if (panelOpen()) return;
-    if (e.code === 'KeyR' || e.code === 'Tab') { e.preventDefault(); openWeb(); return; }
+    if (e.code === 'Tab') e.preventDefault();
     // Any key resumes, except the pause keys themselves: Input has already
     // toggled on those, and answering them here as well would undo it.
     if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);

@@ -101,7 +101,7 @@ const WEIGHT = [1, 0.45, 0.2] as const;
 /** What the field reads from the director each step. */
 export type FieldParams = Pick<Pressure, 'fieldTarget' | 'rockSpeed' | 'rockHp' | 'cluster' | 'shepherd' | 'iron' | 'volatile' | 'rich'>;
 
-export const CALM: FieldParams = { fieldTarget: FIELD_TARGET * 0.8, rockSpeed: 1, rockHp: 1, cluster: 0, shepherd: 0, iron: 0, volatile: 0, rich: 0 };
+export const CALM: FieldParams = { fieldTarget: FIELD_TARGET * 0.4, rockSpeed: 0.75, rockHp: 1, cluster: 0, shepherd: 0, iron: 0, volatile: 0, rich: 0 };
 
 export class Field {
   rocks: Rock[] = [];
@@ -126,7 +126,7 @@ export class Field {
       const z = cz + this.rng.range(-FIELD_BAND / 2, FIELD_BAND / 2);
       if (Math.hypot(x - cx, z - cz) < 18 || this.insideBulwark(x, z, ROCK_R[0])) continue;
       const big = this.rng.next() < 0.7;
-      const r = this.spawn(big ? 0 : 1, x, z);
+      const r = this.spawn(big ? 0 : 1, x, z, undefined, undefined, 'basalt', 1, CALM.rockSpeed);
       r.age = 10;
     }
   }

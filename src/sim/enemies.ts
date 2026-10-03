@@ -136,16 +136,16 @@ export interface Variant {
 
 export const VARIANTS: Record<string, Variant> = {
   scout:    { id: 'scout',    kind: 'scout',   faction: 'klingon',    label: 'Interceptor',    at: 0,   weight: 3, cap: 4 },
-  raptor:   { id: 'raptor',   kind: 'raptor',  faction: 'klingon',    label: 'Strike fighter', at: 30,  weight: 2, cap: 2 },
-  lancer:   { id: 'lancer',   kind: 'lancer',  faction: 'cardassian', label: 'Heavy cruiser',  at: 60,  weight: 2, cap: 2 },
-  warbird:  { id: 'warbird',  kind: 'warbird', faction: 'romulan',    label: 'Plasma cruiser', at: 100, weight: 2, cap: 2 },
-  stalker:  { id: 'stalker',  kind: 'stalker', faction: 'klingon',    label: 'Hunter',         at: 130, weight: 2, cap: 2 },
-  drone:    { id: 'drone',    kind: 'drone',   faction: 'borg',       label: 'Assimilator',    at: 200, weight: 2, cap: 2 },
-  weaver:   { id: 'weaver',   kind: 'weaver',  faction: 'tholian',    label: 'Web layer',      at: 240, weight: 2, cap: 1 },
-  hideki:   { id: 'hideki',   kind: 'scout',   faction: 'cardassian', label: 'Patrol fighter', at: 150, weight: 2, cap: 3, shots: 2 },
-  scorpion: { id: 'scorpion', kind: 'scout',   faction: 'romulan',    label: 'Ambush fighter', at: 230, weight: 2, cap: 3 },
-  probe:    { id: 'probe',    kind: 'stalker', faction: 'borg',       label: 'Borg probe',     at: 290, weight: 1.5, cap: 2 },
-  shard:    { id: 'shard',    kind: 'lancer',  faction: 'tholian',    label: 'Shard cruiser',  at: 330, weight: 1.5, cap: 1, split: true },
+  raptor:   { id: 'raptor',   kind: 'raptor',  faction: 'klingon',    label: 'Strike fighter', at: 75,  weight: 2, cap: 2 },
+  lancer:   { id: 'lancer',   kind: 'lancer',  faction: 'cardassian', label: 'Heavy cruiser',  at: 110,  weight: 2, cap: 2 },
+  warbird:  { id: 'warbird',  kind: 'warbird', faction: 'romulan',    label: 'Plasma cruiser', at: 150, weight: 2, cap: 2 },
+  stalker:  { id: 'stalker',  kind: 'stalker', faction: 'klingon',    label: 'Hunter',         at: 180, weight: 2, cap: 2 },
+  drone:    { id: 'drone',    kind: 'drone',   faction: 'borg',       label: 'Assimilator',    at: 250, weight: 2, cap: 2 },
+  weaver:   { id: 'weaver',   kind: 'weaver',  faction: 'tholian',    label: 'Web layer',      at: 290, weight: 2, cap: 1 },
+  hideki:   { id: 'hideki',   kind: 'scout',   faction: 'cardassian', label: 'Patrol fighter', at: 200, weight: 2, cap: 3, shots: 2 },
+  scorpion: { id: 'scorpion', kind: 'scout',   faction: 'romulan',    label: 'Ambush fighter', at: 270, weight: 2, cap: 3 },
+  probe:    { id: 'probe',    kind: 'stalker', faction: 'borg',       label: 'Borg probe',     at: 330, weight: 1.5, cap: 2 },
+  shard:    { id: 'shard',    kind: 'lancer',  faction: 'tholian',    label: 'Shard cruiser',  at: 370, weight: 1.5, cap: 1, split: true },
   freighter: { id: 'freighter', kind: 'freighter', faction: 'cardassian', label: 'Freighter', at: Infinity, weight: 0, cap: 0 },
 };
 export const VARIANT_ORDER = Object.keys(VARIANTS);
@@ -153,12 +153,12 @@ export const VARIANT_ORDER = Object.keys(VARIANTS);
 /** Squads: hulls that arrive together because together they are worse. Members are variant ids, leader first. */
 export interface Squad { id: string; label: string; at: number; members: string[]; }
 export const SQUADS: Squad[] = [
-  { id: 'raid',    label: 'Raiding party',   at: 180, members: ['raptor', 'scout', 'scout'] },
-  { id: 'battery', label: 'Gun line',        at: 240, members: ['lancer', 'hideki', 'hideki'] },
-  { id: 'snare',   label: 'Web and hammer',  at: 300, members: ['weaver', 'raptor', 'raptor'] },
-  { id: 'hunt',    label: 'Hunting pack',    at: 330, members: ['warbird', 'stalker', 'stalker'] },
-  { id: 'ambush',  label: 'Ambush',          at: 360, members: ['scorpion', 'scorpion', 'warbird'] },
-  { id: 'cube',    label: 'Borg detachment', at: 420, members: ['drone', 'probe', 'probe'] },
+  { id: 'raid',    label: 'Raiding party',   at: 240, members: ['raptor', 'scout', 'scout'] },
+  { id: 'battery', label: 'Gun line',        at: 290, members: ['lancer', 'hideki', 'hideki'] },
+  { id: 'snare',   label: 'Web and hammer',  at: 340, members: ['weaver', 'raptor', 'raptor'] },
+  { id: 'hunt',    label: 'Hunting pack',    at: 370, members: ['warbird', 'stalker', 'stalker'] },
+  { id: 'ambush',  label: 'Ambush',          at: 400, members: ['scorpion', 'scorpion', 'warbird'] },
+  { id: 'cube',    label: 'Borg detachment', at: 460, members: ['drone', 'probe', 'probe'] },
 ];
 
 // ── elites ────────────────────────────────────────────────────────────────
@@ -196,7 +196,7 @@ export const ELITES: Record<EliteId, EliteDef> = {
 export const ELITE_ORDER = Object.keys(ELITES) as EliteId[];
 export const ELITE_BLAST_DAMAGE = 5;
 
-export const ALIEN_FIRST = 2;
+export const ALIEN_FIRST = 40;
 /** Kept for the HUD and tests: the regular ceiling at time t. */
 export const alienMax = (t: number) => pressure(t).enemyCap;
 

@@ -33,8 +33,8 @@ export type GameEvent =
   | { type: 'crystal'; x: number; z: number; value: number }
   | { type: 'power'; x: number; z: number; kind: PowerKind }
   | { type: 'levelUp'; refit: number }
-  | { type: 'fitted'; id: string; up: string | null }
-  | { type: 'salvage'; faction: string; points: number; tech: boolean }
+  | { type: 'fitted'; id: string }
+  | { type: 'salvage'; faction: string; tech: boolean }
   | { type: 'cloak'; x: number; z: number }
   | { type: 'bossWarn'; name: string; faction: string; hails: boolean }
   | { type: 'hail'; name: string; faction: string }

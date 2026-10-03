@@ -3,16 +3,14 @@ import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
 import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
 import type { Contact } from '../sim/bosses';
 import { identity, type Levels } from '../sim/build';
-import { POINTS_PER_SALVAGE } from '../sim/web';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { NEON_CSS } from './colors';
-import { miniWeb } from './web';
 import { VARIANTS } from '../sim/enemies';
 import type { RunStats } from '../sim/run';
 
 // ── the panels ────────────────────────────────────────────────────────────
-// Two of the run's three stops (the hail and the report; the refit web is
-// ui/web.ts) and the start screen's options. Each stop is a modal sheet that
+// Two of the run's three stops (the hail and the report; the refit cards are
+// ui/refit.ts) and the start screen's options. Each stop is a modal sheet that
 // the world waits on. Every panel ignores input for its first moments and
 // never answers a held key: a hail opens with the trigger down, and a run
 // ends with keys held.
@@ -28,7 +26,7 @@ export function buildView(levels: Levels, named = true): HTMLElement {
   const wrap = h('div', 'build');
   if (named) wrap.append(h('div', 'sum-ship', id.title));
   const owned = UPGRADES.filter((u) => (levels[u.id] ?? 0) > 0);
-  if (!owned.length) { wrap.append(h('p', 'how-note', 'Stock: twin phasers, three plates, nothing else fitted.')); return wrap; }
+  if (!owned.length) { wrap.append(h('p', 'how-note', 'Stock: phaser banks, three plates, nothing else fitted.')); return wrap; }
   const order = [...id.branches.map((b) => b.branch), 'synergy' as Branch];
   for (const br of order) {
     const ups = owned.filter((u) => u.branch === br);
@@ -64,7 +62,7 @@ export class HailPanel {
     $('hail-s').textContent = `${c.faction} capital ship · on intercept course`;
     $('hail-eb').textContent = 'She will fight back, and her escort wing comes in with her. The sector clears for the duel.';
     const lines = (host: HTMLElement, ls: string[]) => host.replaceChildren(...ls.map((l) => h('span', '', l)));
-    lines($('hail-el'), [`+${fmt(c.bounty)} score`, `Salvage · ${POINTS_PER_SALVAGE} web points · her tech`, 'Hull repair · dilithium · a power-up']);
+    lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Hull repair · dilithium · a power-up']);
     const ev = $<HTMLButtonElement>('hail-evade');
     ev.disabled = !c.canEvade;
     if (c.canEvade) {
@@ -167,7 +165,7 @@ export class SummaryPanel {
       tile('Capital ships', r.capitals, p.capitals),
       h('div', 'tile', '', h('span', 'k', 'Sector events'), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', `${r.powerups} power-ups found`)),
     );
-    $('sum-build').replaceChildren(miniWeb(r.nodes), buildView(r.build, false));
+    $('sum-build').replaceChildren(buildView(r.build, false));
     $('sum-how').replaceChildren(this.how(r));
     this.chart(r, rec.previousCurve);
 

@@ -4,9 +4,9 @@ import { topSpeed, turnPerStep } from './ship';
 import { HZ, PX } from './tuning';
 
 // ── the build ─────────────────────────────────────────────────────────────
-// What the player has made of the ship: a level per upgrade id (each node
-// fitted in the refit web adds one). Everything else (the stat block, the
-// figures a node would change, the name the ship ends up with) is worked
+// What the player has made of the ship: a level per upgrade id (each card
+// taken at a refit adds one). Everything else (the stat block, the
+// figures a card would change, the name the ship ends up with) is worked
 // out from it, so a build can be saved, compared or replayed.
 
 export type Levels = Record<string, number>;
@@ -66,8 +66,8 @@ export function upgradeFigures(levels: Levels, id: string): Fig[] {
 }
 
 // ── figures ───────────────────────────────────────────────────────────────
-// Every number a node can change, how to read it and which way is better.
-// The web shows the rows whose value a node changes, as "before → after".
+// Every number a card can change, how to read it and which way is better.
+// A card shows the rows whose value it changes, as "before → after".
 
 interface FigDef { label: string; get: (s: Stats) => number; fmt: (v: number) => string; lower?: boolean; }
 
@@ -176,7 +176,7 @@ export function identity(levels: Levels): Identity {
     .filter((b) => b.levels > 0)
     .sort((a, b) => b.levels - a.levels);
   const specs = UPGRADES.filter((u) => u.kind === 'spec' && (levels[u.id] ?? 0) > 0);
-  if (!branches.length) return { title: 'Stock Defiant', branches, specs: [] };
+  if (!branches.length) return { title: 'Stock Kestrel', branches, specs: [] };
   const top = branches[0]!;
   const spec = specs.find((u) => u.branch === top.branch);
   let title = BRANCHES[top.branch].identity;

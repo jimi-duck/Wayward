@@ -54,8 +54,9 @@ function text(el: HTMLElement, t: string): void {
 }
 
 export class Targeting {
-  /** The current target's id, for the radar. */
+  /** The current target's id, for the radar, and what it is, for the mode line. */
   target: number | null = null;
+  targetKind: Kind | null = null;
 
   private readonly marks: HTMLSpanElement[] = [];
   private readonly threats: HTMLElement[] = [];
@@ -108,6 +109,7 @@ export class Targeting {
 
     const t = live ? this.pick(world, s.x, s.z, s.heading) : null;
     this.target = t ? t.id : null;
+    this.targetKind = t ? t.kind : null;
     const arc = !!t && this.inArc(world, t, s.x, s.z, s.heading);
     this.ret.classList.toggle('on', arc);
     this.drawTarget(world, sector, t, arc, dt);
@@ -197,29 +199,26 @@ export class Targeting {
     } else if (this.lockedNow && !wasLocked) this.retrigger(el, 'lockon', 'acq');
 
     // small things get a readable box, big things a box that does not swallow the screen
-    const half = clamp(Math.abs(c.y - top.y) * 1.3, 16, 64);
+    const half = clamp(Math.abs(c.y - top.y) * 1.4, 18, Math.min(120, this.h * 0.17));
     el.style.setProperty('--h', `${half.toFixed(0)}px`);
     el.style.transform = `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px)`;
-    // the readout goes beside the box, on whichever side has room (clear of the panel and the
-    // scope), or under it when neither has
-    const CARD = 190, CARD_H = 64, GAP = 12, EDGE = 10;
-    let maxX = this.w - EDGE, minX = EDGE;
-    const cardTop = c.y - half, cardBottom = cardTop + CARD_H;
+    // the label sits on the frame's top edge, as wide as the frame (and never narrower than its
+    // text), kept on screen; under the frame instead when the top would run off the screen or
+    // into a fixed block of the HUD
+    const CARD_W = Math.max(half * 2, this.lockedNow ? 300 : 270), CARD_H = 40, EDGE = 10;
+    const cardY = c.y - half - 7 - CARD_H;
+    let x0 = clamp(c.x - half, EDGE, Math.max(EDGE, this.w - EDGE - CARD_W));
+    // slide it clear of a block beside it on the same row before giving up the top edge
     for (const r of this.avoid) {
-      if (cardBottom < r.top || cardTop > r.bottom) continue;
-      if (r.left > c.x) maxX = Math.min(maxX, r.left - 8);
-      else if (r.right < c.x) minX = Math.max(minX, r.right + 8);
+      if (cardY + CARD_H < r.top || cardY > r.bottom) continue;
+      if (r.left > c.x) x0 = Math.min(x0, r.left - 8 - CARD_W);
+      else if (r.right < c.x) x0 = Math.max(x0, r.right + 8);
     }
-    const right = c.x + half + GAP + CARD <= maxX, left = c.x - half - GAP - CARD >= minX;
-    // and never off the top or the bottom of the screen
-    const dy = clamp(cardTop, 32, this.h - CARD_H - 10) - cardTop;
-    el.style.setProperty('--dy', `${dy.toFixed(0)}px`);
-    el.classList.toggle('flip', !right && left);
-    el.classList.toggle('below', !right && !left);
-    if (!right && !left) {
-      const dx = clamp(c.x, EDGE + CARD / 2, this.w - EDGE - CARD / 2) - c.x;
-      el.style.setProperty('--dx', `${dx.toFixed(0)}px`);
-    }
+    x0 = clamp(x0, EDGE, Math.max(EDGE, this.w - EDGE - CARD_W));
+    const hits = (y: number) => this.avoid.some((r) => !(y + CARD_H < r.top || y > r.bottom || x0 + CARD_W < r.left || x0 > r.right));
+    el.classList.toggle('below', cardY < 8 || hits(cardY));
+    el.style.setProperty('--dx', `${(x0 - (c.x - half)).toFixed(0)}px`);
+    el.style.setProperty('--cw', `${CARD_W.toFixed(0)}px`);
 
     const s = world.ship;
     const d = Math.hypot(t.x - s.x, t.y, t.z - s.z);
@@ -249,9 +248,7 @@ export class Targeting {
       name = `${r.kind === 'basalt' ? 'Asteroid' : `${cap(r.kind)} asteroid`} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
       const chance = K.crystal[r.size]!, n = K.crystals[r.size]!;
       const yieldWord = chance >= 1 ? `Yield <b>${n}</b>` : `Yield <b>${n}</b> · ${Math.round(chance * 100)}%`;
-      const extra = r.kind === 'rare' ? ' · power-up'
-        : r.kind === 'volatile' ? ' · unstable'
-        : K.splitsInto && r.size < 2 ? ` · splits ${r.kind === 'iron' ? 3 : 2}` : '';
+      const extra = r.kind === 'rare' ? ' · power-up' : r.kind === 'volatile' ? ' · unstable' : '';
       sub = `${yieldWord}${extra}`;
       intK = 'Integrity';
       hp = r.hp / r.maxHp;
@@ -261,9 +258,9 @@ export class Targeting {
     text($('tgt-name'), name);
     const subEl = $('tgt-sub');
     if (subEl.innerHTML !== sub) subEl.innerHTML = sub;
-    text($('tgt-int-k'), intK);
+    text($('tgt-int-k'), `${intK}:`);
     const v = clamp(hp, 0, 1);
-    $('tgt-int').style.setProperty('--v', String(Math.ceil(v * 10) / 10));
+    $('tgt-int').style.setProperty('--v', v.toFixed(2));
     text($('tgt-int-v'), `${Math.round(v * 100)}%`);
     const use = $('tgt-ico');
     if (use.getAttribute('href') !== ico) use.setAttribute('href', ico);
@@ -282,12 +279,19 @@ export class Targeting {
   private drawMarks(world: World, sector: Sector, t: Pick | null, live: boolean): void {
     let n = 0;
     const s = world.ship;
-    const put = (x: number, y: number, z: number, cls: string, label: string) => {
+    const put = (x: number, y: number, z: number, cls: string, label0: string) => {
+      let label = label0;
       if (n >= MAX_MARKS) return;
       const p = sector.project(x, y, z);
       if (!p || p.x < 8 || p.y < 8 || p.x > this.w - 8 || p.y > this.h - 8) return;
       const m = this.marks[n]!, st = this.markState[n]!;
       n++;
+      if (label) {
+        // the label's rough box: beside a hexagon, under anything else
+        const side = cls.includes('dia');
+        const lx0 = side ? p.x + 12 : p.x - 70, lx1 = side ? p.x + 170 : p.x + 70, ly0 = side ? p.y - 16 : p.y + 8, ly1 = side ? p.y + 16 : p.y + 34;
+        if (this.avoid.some((r) => !(lx1 < r.left || lx0 > r.right || ly1 < r.top || ly0 > r.bottom))) label = '';
+      }
       if (st.cls !== cls) { st.cls = cls; m.className = cls; }
       if (st.t !== label) { st.t = label; m.dataset.t = label; }
       m.hidden = false;
@@ -314,7 +318,7 @@ export class Targeting {
         const d = Math.hypot(r.x - s.x, r.z - s.z);
         if (d < depD) { depD = d; dep = r; }
       }
-      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', dep.kind === 'rich' ? 'Dilithium · rich' : 'Rare · power-up');
+      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', dep.kind === 'rich' ? 'Mineral deposit\nRich · dilithium' : 'Rare ore\nPower-up inside');
       // every other hull: brackets only, amber for an elite
       for (const a of world.aliens) {
         if (cloaked(a) || a.id === t?.id) continue;

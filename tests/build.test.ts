@@ -53,19 +53,19 @@ describe('the refit tree', () => {
 });
 
 describe('the figures', () => {
-  it('shows every number a node changes, before and after', () => {
+  it('shows every number a card changes, before and after', () => {
     expect(upgradeFigures({}, 'ph_capacitors').map((f) => f.label)).toContain('Phaser shots/sec');
     const rack = upgradeFigures({ tp_bay: 1, tp_yield: 1, tp_tracking: 1 }, 'tp_heavy').find((f) => f.label === 'Torpedo rack');
     expect(rack?.cost).toBe(true);
     // a system switched on is never a cost
     expect(upgradeFigures({}, 'tp_bay').find((f) => f.label === 'Torpedo rack')).toMatchObject({ from: '—', cost: false });
-    expect(upgradeFigures({}, 'mi_all_damage').map((f) => f.label)).toContain('All weapon damage');
+    expect(upgradeFigures({}, 'ut_tactical').map((f) => f.label)).toContain('All weapon damage');
   });
 });
 
 describe('what the ship became', () => {
   it('names a build by its deepest branch and its specialisation', () => {
-    expect(identity({}).title).toBe('Stock Defiant');
+    expect(identity({}).title).toBe('Stock Kestrel');
     expect(identity({ tp_bay: 1, tp_yield: 2, tp_swarm: 1 }).title).toBe('Swarm torpedo boat');
     expect(identity({ mn_layer: 1, mn_racks: 2, ph_emitters: 3, ph_capacitors: 1 }).title).toBe('Gunship / minelayer');
   });
