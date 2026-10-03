@@ -22,7 +22,7 @@ import { dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type Pickup, t
 import { Rng } from './rng';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
-import { flightHull, type Stats } from './stats';
+import { BASE, flightHull, type Stats } from './stats';
 import {
   BREACH_GRACE, CELEBRATE, CHAIN_WINDOW, DYING, GRAZE, OC_GAIN, OC_MAX, OVERCHARGE_POINTS, PX, RARE_FIRST, REPAIR_CHANCE,
   REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult, xpFor,
@@ -839,7 +839,8 @@ export class World implements EncounterHost {
     }
 
     const speedFrac = Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(this.hull));
-    const ramDmg = st.ramDamage * (st.ramjet ? 0.5 + speedFrac : 0.5 + 0.5 * speedFrac) * this.dmgMult;
+    // a ram at speed hits twice as hard as a nudge; never less than the stock hull's own weight
+    const ramDmg = Math.max(BASE.ramDamage, st.ramDamage * (st.ramjet ? 0.5 + speedFrac : 0.5 + 0.5 * speedFrac)) * this.dmgMult;
     // the phase cloak: nothing touches the ship, and it rams through what it meets
     if (this.phaseT > 0) {
       for (const al of [...this.aliens]) {
