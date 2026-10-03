@@ -1,7 +1,8 @@
-import { CanvasTexture, EquirectangularReflectionMapping, RepeatWrapping, SRGBColorSpace, type Texture } from 'three';
+import { CanvasTexture, EquirectangularReflectionMapping, SRGBColorSpace, type Texture } from 'three';
 
 // Textures painted on a canvas at startup, so the game downloads none. Each is
-// made once and shared.
+// made once and shared. (The hull plating lives in kit.ts; rock is shaded
+// procedurally in rocks.ts.)
 
 function canvas(w: number, h: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
   const c = document.createElement('canvas');
@@ -15,135 +16,126 @@ function rand(seed: number) {
   return () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646;
 }
 
-function finish(c: HTMLCanvasElement, srgb = true, repeat = false): Texture {
+function finish(c: HTMLCanvasElement, srgb = true): Texture {
   const t = new CanvasTexture(c);
   if (srgb) t.colorSpace = SRGBColorSpace;
-  if (repeat) t.wrapS = t.wrapT = RepeatWrapping;
   t.anisotropy = 4;
   return t;
 }
 
-/**
- * Hull plating: panels in a few greys, dark seams, the odd lit window and a
- * red stripe down the middle, as on the reference ship.
- */
-export function hullTexture(): Texture {
-  const [c, g] = canvas(512, 512), r = rand(7);
-  g.fillStyle = '#8b97a5';
-  g.fillRect(0, 0, 512, 512);
-  for (let i = 0; i < 140; i++) {
-    const w = 24 + r() * 120, h = 16 + r() * 70, x = r() * 512, y = r() * 512;
-    const v = 120 + r() * 60;
-    g.fillStyle = `rgb(${v - 6},${v + 4},${v + 16})`;
-    g.fillRect(x, y, w, h);
-    g.strokeStyle = 'rgba(20,28,38,.55)';
-    g.lineWidth = 1.2;
-    g.strokeRect(x + 0.5, y + 0.5, w, h);
-  }
-  // greebles: vents and hatches
-  for (let i = 0; i < 60; i++) {
-    const x = r() * 512, y = r() * 512;
-    g.fillStyle = 'rgba(30,38,50,.7)';
-    for (let k = 0; k < 4; k++) g.fillRect(x, y + k * 4, 18, 2);
-  }
-  // windows
-  for (let i = 0; i < 90; i++) {
-    const x = r() * 512, y = r() * 512;
-    g.fillStyle = r() < 0.7 ? 'rgba(255,236,200,.9)' : 'rgba(150,230,255,.8)';
-    g.fillRect(x, y, 3, 2);
-  }
-  // the red stripe
-  g.fillStyle = '#b8323a';
-  g.fillRect(250, 0, 5, 512);
-  g.fillRect(258, 0, 2, 512);
-  return finish(c, true, true);
-}
-
-/** Basalt: mottled dark grey-violet with pits and scratches. */
-export function rockTexture(seed: number): Texture {
-  const [c, g] = canvas(512, 256), r = rand(seed);
-  g.fillStyle = '#66666a';
-  g.fillRect(0, 0, 512, 256);
-  for (let i = 0; i < 900; i++) {
-    const x = r() * 512, y = r() * 256, rad = 2 + r() * 22, v = 70 + r() * 80;
-    const grad = g.createRadialGradient(x, y, 0, x, y, rad);
-    grad.addColorStop(0, `rgba(${v},${v},${v + 5},.55)`);
-    grad.addColorStop(1, `rgba(${v},${v},${v + 5},0)`);
-    g.fillStyle = grad;
-    g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
-  }
-  for (let i = 0; i < 260; i++) {
-    const x = r() * 512, y = r() * 256, rad = 1 + r() * 4;
-    g.fillStyle = 'rgba(20,16,26,.55)';
-    g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
-    g.fillStyle = 'rgba(190,180,200,.3)';
-    g.beginPath(); g.arc(x + rad * 0.4, y - rad * 0.4, rad * 0.5, 0, Math.PI * 2); g.fill();
-  }
-  return finish(c);
-}
-
-/**
- * Dilithium veins: black, with branching cracks and crystal clusters in
- * violet and magenta. Used as an emissive map, so the cracks glow and bloom.
- */
-export function veinTexture(seed: number): Texture {
-  const [c, g] = canvas(512, 256), r = rand(seed);
-  g.fillStyle = '#000';
-  g.fillRect(0, 0, 512, 256);
-  g.lineCap = 'round';
-  const colours = ['#c77dff', '#ff4fd8', '#9a6bff'];
-  const crack = (x: number, y: number, a: number, len: number, w: number, depth: number) => {
-    const col = colours[Math.floor(r() * colours.length)]!;
-    let px = x, py = y;
-    for (let i = 0; i < len; i++) {
-      a += (r() - 0.5) * 0.9;
-      const nx = px + Math.cos(a) * 9, ny = py + Math.sin(a) * 9;
-      g.strokeStyle = col; g.lineWidth = w; g.shadowColor = col; g.shadowBlur = 6;
-      g.beginPath(); g.moveTo(px, py); g.lineTo(nx, ny); g.stroke();
-      px = nx; py = ny;
-      if (depth > 0 && r() < 0.12) crack(px, py, a + (r() - 0.5) * 2, len * 0.5, w * 0.6, depth - 1);
-    }
-  };
-  for (let i = 0; i < 7; i++) crack(r() * 512, r() * 256, r() * Math.PI * 2, 10 + r() * 16, 1.6 + r() * 1.6, 2);
-  for (let i = 0; i < 26; i++) {
-    const x = r() * 512, y = r() * 256, col = colours[Math.floor(r() * colours.length)]!;
-    g.fillStyle = col; g.shadowColor = col; g.shadowBlur = 8;
-    for (let k = 0; k < 4; k++) g.fillRect(x + (r() - 0.5) * 10, y + (r() - 0.5) * 10, 2 + r() * 3, 2 + r() * 3);
-  }
-  return finish(c);
+const cache = new Map<string, Texture>();
+function once(key: string, paint: () => Texture): Texture {
+  let t = cache.get(key);
+  if (!t) { t = paint(); cache.set(key, t); }
+  return t;
 }
 
 /** A soft round glow for sprites, white so a material colour tints it. */
 export function glowTexture(): Texture {
-  const [c, g] = canvas(128, 128);
-  const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  grad.addColorStop(0, 'rgba(255,255,255,1)');
-  grad.addColorStop(0.18, 'rgba(255,255,255,.75)');
-  grad.addColorStop(0.45, 'rgba(255,255,255,.18)');
-  grad.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 128, 128);
-  return finish(c, false);
+  return once('glow', () => {
+    const [c, g] = canvas(128, 128);
+    const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.18, 'rgba(255,255,255,.75)');
+    grad.addColorStop(0.45, 'rgba(255,255,255,.18)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 128, 128);
+    return finish(c, false);
+  });
 }
 
-/** Deep space as an equirectangular backdrop: faint teal and violet cloud. */
-export function nebulaTexture(): Texture {
-  const [c, g] = canvas(2048, 1024), r = rand(31);
-  g.fillStyle = '#03060b';
-  g.fillRect(0, 0, 2048, 1024);
-  const cloud = (x: number, y: number, rad: number, col: string, a: number) => {
-    const grad = g.createRadialGradient(x, y, 0, x, y, rad);
-    grad.addColorStop(0, col.replace('A', String(a)));
-    grad.addColorStop(1, col.replace('A', '0'));
-    g.fillStyle = grad;
-    g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
-  };
-  for (let i = 0; i < 70; i++) {
-    const teal = r() < 0.55;
-    cloud(r() * 2048, 260 + r() * 560, 80 + r() * 320, teal ? 'rgba(10,70,92,A)' : 'rgba(60,24,96,A)', 0.05 + r() * 0.09);
-  }
-  for (let i = 0; i < 18; i++) cloud(r() * 2048, 380 + r() * 300, 30 + r() * 90, 'rgba(120,60,170,A)', 0.06 + r() * 0.06);
-  const t = finish(c);
-  t.mapping = EquirectangularReflectionMapping;
-  return t;
+/** A ragged ball of flame, white at the heart: tinted and grown for fireballs. */
+export function fireTexture(): Texture {
+  return once('fire', () => {
+    const [c, g] = canvas(128, 128), r = rand(17);
+    for (let i = 0; i < 26; i++) {
+      const a = r() * Math.PI * 2, d = r() * 30, x = 64 + Math.cos(a) * d, y = 64 + Math.sin(a) * d, rad = 14 + r() * 26;
+      const grad = g.createRadialGradient(x, y, 0, x, y, rad);
+      grad.addColorStop(0, 'rgba(255,255,255,.55)');
+      grad.addColorStop(0.5, 'rgba(255,255,255,.18)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = grad;
+      g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+    }
+    // fade the square's corners right out
+    g.globalCompositeOperation = 'destination-in';
+    const mask = g.createRadialGradient(64, 64, 20, 64, 64, 64);
+    mask.addColorStop(0, 'rgba(0,0,0,1)');
+    mask.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = mask;
+    g.fillRect(0, 0, 128, 128);
+    return finish(c, false);
+  });
+}
+
+/** A billow of smoke: grey, lumpy, soft-edged. Drawn with normal blending, so it darkens. */
+export function smokeTexture(): Texture {
+  return once('smoke', () => {
+    const [c, g] = canvas(128, 128), r = rand(29);
+    for (let i = 0; i < 40; i++) {
+      const a = r() * Math.PI * 2, d = r() * 34, x = 64 + Math.cos(a) * d, y = 64 + Math.sin(a) * d, rad = 10 + r() * 24;
+      const v = 150 + r() * 80;
+      const grad = g.createRadialGradient(x, y, 0, x, y, rad);
+      grad.addColorStop(0, `rgba(${v},${v},${v},.32)`);
+      grad.addColorStop(1, `rgba(${v},${v},${v},0)`);
+      g.fillStyle = grad;
+      g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+    }
+    g.globalCompositeOperation = 'destination-in';
+    const mask = g.createRadialGradient(64, 64, 16, 64, 64, 64);
+    mask.addColorStop(0, 'rgba(0,0,0,1)');
+    mask.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = mask;
+    g.fillRect(0, 0, 128, 128);
+    return finish(c, false);
+  });
+}
+
+/**
+ * Deep space as an equirectangular backdrop: near black, a faint galactic
+ * band of unresolved stars and blue-grey dust crossed by dark lanes, and a
+ * couple of far, dim nebulae. The resolved stars are points, drawn on top.
+ */
+export function spaceTexture(): Texture {
+  return once('space', () => {
+    const W = 2048, H = 1024;
+    const [c, g] = canvas(W, H), r = rand(31);
+    g.fillStyle = '#020307';
+    g.fillRect(0, 0, W, H);
+    const cloud = (x: number, y: number, rad: number, rgb: string, a: number) => {
+      for (const ox of [-W, 0, W]) {
+        if (x + ox + rad < 0 || x + ox - rad > W) continue;
+        const grad = g.createRadialGradient(x + ox, y, 0, x + ox, y, rad);
+        grad.addColorStop(0, `rgba(${rgb},${a})`);
+        grad.addColorStop(1, `rgba(${rgb},0)`);
+        g.fillStyle = grad;
+        g.fillRect(x + ox - rad, y - rad, rad * 2, rad * 2);
+      }
+    };
+    const band = (x: number) => H * 0.42 + Math.sin((x / W) * Math.PI * 2 + 0.6) * H * 0.2;
+    // the band: dust and unresolved stars
+    for (let i = 0; i < 520; i++) {
+      const x = r() * W, y = band(x) + (r() - 0.5) * (r() * 220);
+      const warm = r() < 0.3;
+      cloud(x, y, 30 + r() * 120, warm ? '78,62,58' : '62,72,98', 0.035 + r() * 0.05);
+    }
+    for (let i = 0; i < 9000; i++) {
+      const x = r() * W, y = band(x) + (r() + r() + r() - 1.5) * 150;
+      const v = 120 + r() * 120;
+      g.fillStyle = `rgba(${v},${v},${v + 15},${0.15 + r() * 0.3})`;
+      g.fillRect(x, y, 1, 1);
+    }
+    // dark lanes through it
+    for (let i = 0; i < 120; i++) {
+      const x = r() * W, y = band(x) + (r() - 0.5) * 60;
+      cloud(x, y, 20 + r() * 60, '2,3,7', 0.25 + r() * 0.3);
+    }
+    // far nebulae, very dim: one rust-red, one deep teal
+    for (let i = 0; i < 26; i++) cloud(1400 + (r() - 0.5) * 260, 300 + (r() - 0.5) * 180, 40 + r() * 140, '96,32,40', 0.03 + r() * 0.04);
+    for (let i = 0; i < 22; i++) cloud(380 + (r() - 0.5) * 240, 700 + (r() - 0.5) * 160, 40 + r() * 130, '24,56,72', 0.03 + r() * 0.04);
+    const t = finish(c);
+    t.mapping = EquirectangularReflectionMapping;
+    return t;
+  });
 }

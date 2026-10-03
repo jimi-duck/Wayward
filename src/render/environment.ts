@@ -1,80 +1,70 @@
 import {
-  AdditiveBlending, BufferAttribute, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, FogExp2, Group,
-  HemisphereLight, LineBasicMaterial, LineSegments, Mesh, PlaneGeometry, Points, PointsMaterial, ShaderMaterial,
-  type Camera, type Scene,
+  AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, FogExp2,
+  Group, HemisphereLight, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, PlaneGeometry, PMREMGenerator, Points,
+  Scene, ShaderMaterial, SphereGeometry, type Camera, type WebGLRenderer,
 } from 'three';
-import { nebulaTexture } from './textures';
+import { spaceTexture } from './textures';
 
 // ── deep space ────────────────────────────────────────────────────────────
-// Back to front: a nebula backdrop (painted once), stars at infinity, a hex
-// tactical grid on the play plane, space dust that streaks with the ship's
-// speed, and fog, so rock coming in from the edge of the field fades up out
-// of the dark instead of appearing. Lights: one hard key, a cool fill, and a
-// cyan rim from behind the camera that picks out every silhouette.
+// No grid and no floor: just the dark. Back to front: a painted backdrop (a
+// faint galactic band, two far nebulae), three layers of resolved stars at
+// infinity, and space dust that streaks with the ship's speed. Fog is thin,
+// so a hull 150 units out is still a silhouette with engines lit, but rock at
+// the edge of the field fades up out of the dark instead of appearing.
+//
+// Lights: a hard warm key from high on the left (the reference's sun), a
+// faint cold fill, and a dim rim from behind. Metal needs something to
+// reflect, so the scene also gets a small, dark environment map: a black
+// sky with a warm window where the key light is and a cold one opposite.
 
-const VOID = new Color('#03060B');
-const INK = new Color('#E8F3F7');
-const SIGNAL = new Color('#00F0FF');
+const VOID = new Color('#030509');
+const INK = new Color('#cfd6e0');
 const DUST_BOX = 130;
 
 export class Environment {
   readonly group = new Group();
   private readonly stars = new Group();
-  private readonly starMats: Array<{ mat: PointsMaterial; px: number }> = [];
-  private readonly grid: Mesh;
-  private readonly gridMat: ShaderMaterial;
   private readonly dustBase: Float32Array;
   private readonly dustPos: BufferAttribute;
   private readonly rim: DirectionalLight;
+  private readonly key: DirectionalLight;
+  private readonly starMat: ShaderMaterial;
 
-  constructor(scene: Scene) {
-    scene.background = nebulaTexture();
-    scene.fog = new FogExp2(VOID.getHex(), 0.0105);
+  constructor(scene: Scene, renderer: WebGLRenderer) {
+    scene.background = spaceTexture();
+    scene.backgroundIntensity = 1;
+    scene.fog = new FogExp2(VOID.getHex(), 0.0042);
+    scene.environment = reflections(renderer);
 
-    this.addStars(2600, 1.1, 0.55);
-    this.addStars(420, 2.0, 1);
-    this.group.add(this.stars);
-
-    this.gridMat = new ShaderMaterial({
-      transparent: true, depthWrite: false,
-      uniforms: { uColor: { value: SIGNAL }, uCenter: { value: [0, 0] }, uFade: { value: 70 }, uAlpha: { value: 0.13 } },
+    this.starMat = new ShaderMaterial({
+      transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false,
+      uniforms: { uDpr: { value: 1 } },
       vertexShader: /* glsl */ `
-        varying vec2 vWorld;
+        attribute float size; attribute vec3 color; varying vec3 vCol; uniform float uDpr;
         void main() {
-          vec4 w = modelMatrix * vec4(position, 1.0);
-          vWorld = w.xz;
-          gl_Position = projectionMatrix * viewMatrix * w;
+          vCol = color;
+          gl_PointSize = size * uDpr;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          gl_Position.z = gl_Position.w; // at infinity
         }`,
       fragmentShader: /* glsl */ `
-        uniform vec3 uColor; uniform vec2 uCenter; uniform float uFade; uniform float uAlpha;
-        varying vec2 vWorld;
-        // distance to the nearest hex edge, in cell units
-        float hexLine(vec2 p) {
-          vec2 r = vec2(1.0, 1.7320508), h = r * 0.5;
-          vec2 a = mod(p, r) - h, b = mod(p - h, r) - h;
-          vec2 g = dot(a, a) < dot(b, b) ? a : b;
-          g = abs(g);
-          float d = 0.5 - max(dot(g, normalize(r)), g.x);
-          float w = fwidth(p.x) * 1.2;
-          return 1.0 - smoothstep(0.0, w, d);
-        }
+        varying vec3 vCol;
         void main() {
-          float a = hexLine(vWorld / 3.2) * 0.55 + hexLine(vWorld / 16.0) * 0.6;
-          float d = length(vWorld - uCenter);
-          a *= 1.0 - smoothstep(uFade * 0.25, uFade, d);
-          gl_FragColor = vec4(uColor, a * uAlpha);
+          float d = length(gl_PointCoord - 0.5);
+          float a = smoothstep(0.5, 0.1, d);
+          gl_FragColor = vec4(vCol * a, a);
         }`,
     });
-    this.grid = new Mesh(new PlaneGeometry(400, 400).rotateX(-Math.PI / 2), this.gridMat);
-    this.grid.position.y = -2.6;
-    this.grid.renderOrder = -1;
-    this.group.add(this.grid);
+    this.addStars(7000, 1.2, 1.9, 0.5);
+    this.addStars(1100, 1.9, 2.8, 0.9);
+    this.addStars(90, 3.2, 5.0, 1.6);
+    this.group.add(this.stars);
 
-    const N = 260;
+    const N = 300;
     this.dustBase = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       this.dustBase[i * 3] = Math.random() * DUST_BOX;
-      this.dustBase[i * 3 + 1] = -10 + Math.random() * 14;
+      this.dustBase[i * 3 + 1] = -12 + Math.random() * 22;
       this.dustBase[i * 3 + 2] = Math.random() * DUST_BOX;
     }
     const g = new BufferGeometry();
@@ -82,7 +72,7 @@ export class Environment {
     g.setAttribute('position', this.dustPos);
     const col = new Float32Array(N * 6);
     for (let i = 0; i < N; i++) {
-      const b = 0.12 + Math.random() * 0.3;
+      const b = 0.1 + Math.random() * 0.25;
       col.set([INK.r * b, INK.g * b, INK.b * b, 0, 0, 0], i * 6);
     }
     g.setAttribute('color', new Float32BufferAttribute(col, 3));
@@ -90,23 +80,21 @@ export class Environment {
     dust.frustumCulled = false;
     this.group.add(dust);
 
-    const sun = new DirectionalLight(0xfff1dc, 2.6);
-    sun.position.set(-30, 50, 25);
-    this.rim = new DirectionalLight(0x6fe8ff, 1.4);
-    this.group.add(sun, new HemisphereLight(0x8fa8e0, 0x0a0d16, 1.0), this.rim);
+    this.key = new DirectionalLight(0xffe6c8, 4.4);
+    this.rim = new DirectionalLight(0x7f9cc8, 0.9);
+    this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.8), this.rim);
     scene.add(this.group);
   }
 
   setPixelRatio(dpr: number): void {
-    for (const s of this.starMats) s.mat.size = s.px * dpr;
+    this.starMat.uniforms.uDpr!.value = dpr;
   }
 
   update(camera: Camera, cx: number, cz: number, vx: number, vz: number): void {
     this.stars.position.copy(camera.position);
-    this.grid.position.x = cx;
-    this.grid.position.z = cz;
-    const c = this.gridMat.uniforms.uCenter!.value as number[];
-    c[0] = cx; c[1] = cz;
+    // the key light keeps its angle, wherever the ship goes
+    this.key.position.set(cx - 40, 55, cz - 10);
+    this.key.target.position.set(cx, 0, cz);
     this.rim.position.set(camera.position.x - cx, camera.position.y * 0.4, camera.position.z - cz).multiplyScalar(-1);
 
     const P = this.dustPos.array as Float32Array, B = this.dustBase;
@@ -121,26 +109,45 @@ export class Environment {
     this.dustPos.needsUpdate = true;
   }
 
-  private addStars(count: number, px: number, brightness: number): void {
-    const pos: number[] = [], col: number[] = [], c = new Color();
+  private addStars(count: number, min: number, max: number, brightness: number): void {
+    const pos: number[] = [], col: number[] = [], size: number[] = [], c = new Color();
     for (let i = 0; i < count; i++) {
       const u = Math.random() * 2 - 1, t = Math.random() * Math.PI * 2, r = Math.sqrt(1 - u * u);
-      pos.push(Math.cos(t) * r * 1500, u * 1500, Math.sin(t) * r * 1500);
+      pos.push(Math.cos(t) * r * 1000, u * 1000, Math.sin(t) * r * 1000);
       const tint = Math.random();
-      c.setHSL(tint < 0.15 ? 0.08 : tint > 0.85 ? 0.52 : 0, tint < 0.15 || tint > 0.85 ? 0.6 : 0, 1);
-      const b = brightness * (0.35 + Math.random() * 0.65);
+      c.setHSL(tint < 0.18 ? 0.07 : tint > 0.8 ? 0.6 : 0, tint < 0.18 || tint > 0.8 ? 0.45 : 0, 1);
+      const b = brightness * (0.3 + Math.pow(Math.random(), 2) * 0.7);
       col.push(c.r * b, c.g * b, c.b * b);
+      size.push(min + Math.random() * (max - min));
     }
     const geo = new BufferGeometry();
     geo.setAttribute('position', new Float32BufferAttribute(pos, 3));
     geo.setAttribute('color', new Float32BufferAttribute(col, 3));
-    const mat = new PointsMaterial({ size: px, sizeAttenuation: false, vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, fog: false });
-    const pts = new Points(geo, mat);
+    geo.setAttribute('size', new Float32BufferAttribute(size, 1));
+    const pts = new Points(geo, this.starMat);
     pts.frustumCulled = false;
     pts.renderOrder = -2;
-    this.starMats.push({ mat, px });
     this.stars.add(pts);
   }
+}
+
+/** A small, dark environment for metal to reflect: black sky, a warm window for the sun, a cold one opposite. */
+function reflections(renderer: WebGLRenderer) {
+  const env = new Scene();
+  env.add(new Mesh(new SphereGeometry(10, 16, 8), new MeshBasicMaterial({ color: 0x07080b, side: BackSide })));
+  const panel = (color: Color, w: number, h: number, x: number, y: number, z: number) => {
+    const m = new Mesh(new PlaneGeometry(w, h), new MeshBasicMaterial({ color, side: BackSide }));
+    m.position.set(x, y, z);
+    m.lookAt(0, 0, 0);
+    env.add(m);
+  };
+  panel(new Color(2.4, 2.0, 1.6), 5, 3, -6, 6, -1);
+  panel(new Color(0.25, 0.32, 0.48), 8, 4, 6, 2, 3);
+  panel(new Color(0.1, 0.1, 0.12), 14, 3, 0, -6, 0);
+  const pmrem = new PMREMGenerator(renderer);
+  const target = pmrem.fromScene(env, 0.04);
+  pmrem.dispose();
+  return target.texture;
 }
 
 function wrap(v: number, m: number): number {

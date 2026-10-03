@@ -1,207 +1,160 @@
 import {
-  AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide,
-  ExtrudeGeometry, Group, LineSegments, Mesh, MeshBasicMaterial, MeshStandardMaterial, ShaderMaterial, Shape, SphereGeometry, Sprite,
-  SpriteMaterial, Vector2, type Object3D, type Texture,
+  AdditiveBlending, BufferAttribute, BufferGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide, Group, Mesh,
+  MeshBasicMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, type Material, type Object3D,
+  type Texture,
 } from 'three';
-import { HULL_ORDER, type HullId } from '../content/hulls';
 import { clamp, lerp } from '../core/math';
 import type { ShipState } from '../sim/ship';
 import { ROLL_TIME } from '../sim/tuning';
-import { armour, bake, neonLine } from './neon';
+import { Kit, metal, seeded, type V3 } from './kit';
 import { glowTexture } from './textures';
 
-// ── the player's ships ────────────────────────────────────────────────────
-// Stand-in models, detailed enough for the chase camera: panelled plating
-// with lit windows and a red stripe, cyan nacelle strips, glowing impulse
-// ports at the stern (the part the camera looks at), port and starboard
-// running lights, and a hex shield that flares on a hit. Three silhouettes:
-// the escort a broad wedge with its nacelles built in, the cruiser a long cut
-// saucer on pylons, the scout a small saucer with nacelles slung low.
-// Generic Starfleet-era forms, none traced from a canon design.
+// ── the player's ship ─────────────────────────────────────────────────────
+// The Defiant: a broad gunship on two great engine pods. Heavy, industrial,
+// weathered: armoured blocks, stepped superstructure, a command tower, gun
+// turrets, pipes and vents, and engines the size of the ship's own beam,
+// burning red-hot. Somewhere between a gothic warship, a spice-hauler and a
+// rebel gunboat; not traced from any one design.
 //
-// Every model faces +X with +Y up, so its starboard side is +Z.
+// The model faces +X with +Y up, so its starboard side is +Z.
 
-const SIGNAL = new Color('#00F0FF');
-const COMMAND = new Color('#FF9F43');
-// cyberpunk: magenta-hot impulse ports, cyan edges and nacelles
-const PORT_CORE = new Color(3.6, 1.1, 3.9);
-const PORT_HALO = new Color(2.0, 0.35, 2.6);
-const EDGE = new Color(0.5, 2.8, 3.4);
+/** Engines: white-hot at the core, red-pink in the bell. */
+const CORE = new Color(4.2, 2.2, 2.6);
+const BELL = new Color(3.4, 0.45, 0.9);
+const HALO = new Color(2.2, 0.25, 0.55);
 
-let materials: { plate: MeshStandardMaterial; plateDark: MeshStandardMaterial; dish: MeshStandardMaterial; glow: Texture } | null = null;
-function mats() {
-  if (materials) return materials;
-  materials = {
-    // dark matte armour: the neon edges do the drawing
-    plate: armour(0xc4ccd8),
-    plateDark: armour(0x7d8592),
-    dish: new MeshStandardMaterial({ color: 0x1a0f05, emissive: COMMAND, emissiveIntensity: 2.2 }),
-    glow: glowTexture(),
+let mats: Record<string, Material> | null = null;
+function materials(): Record<string, Material> {
+  if (mats) return mats;
+  mats = {
+    hull: metal({ tint: 0xd8cebe, roughness: 0.55, metalness: 0.3 }),
+    dark: metal({ tint: 0x6e6964, roughness: 0.5, metalness: 0.6, scale: 1.4 }),
+    trim: metal({ tint: 0x7a2a22, roughness: 0.65, metalness: 0.35, scale: 1.2 }),
+    lamp: new MeshBasicMaterial({ color: new Color(3.2, 2.2, 1.2), toneMapped: false }),
   };
-  return materials;
+  return mats;
 }
 
-function nacelleGlow(): MeshStandardMaterial {
-  return new MeshStandardMaterial({ color: 0x041318, emissive: SIGNAL, emissiveIntensity: 1.4 });
-}
-
-/** Mark a mesh as light, so the edge bake leaves it out. */
-function lit<T extends Mesh>(m: T): T {
-  m.userData.glow = true;
-  return m;
-}
-
-/** Angular fins: a dorsal blade and a pair of swept vanes at the stern. */
-function fins(root: Group, x: number, span: number, height: number): void {
-  const { plateDark } = mats();
-  const dorsal = new Mesh(slab([[0.1, 0], [-0.5, 0.03], [-0.7, 0.03], [-0.45, 0]], 0.04, 0.01), plateDark);
-  dorsal.rotation.x = Math.PI / 2;
-  dorsal.position.set(x + 0.2, height, 0);
-  dorsal.scale.set(1, 1, 3.2);
-  root.add(dorsal);
-  for (const s of [-1, 1]) {
-    const vane = new Mesh(slab([[0, 0], [-0.5, s * span], [-0.75, s * span], [-0.4, 0]], 0.04, 0.01), plateDark);
-    vane.position.set(x, 0, 0);
-    vane.rotation.x = s * 0.35;
-    root.add(vane);
-  }
-}
-
-/** Trace the hull's hard edges in neon and add them to it. */
-function edged(b: BuiltHull): BuiltHull {
-  const { edges } = bake(b.root, 26);
-  b.root.add(new LineSegments(edges, neonLine(EDGE)));
-  return b;
-}
-
-/** A prism from a top-view outline (x forward, y to port), bevelled at the edges. */
-function slab(points: Array<[number, number]>, height: number, bevel = 0.04): BufferGeometry {
-  const g = new ExtrudeGeometry(new Shape(points.map(([x, y]) => new Vector2(x, y))),
-    { depth: height, bevelEnabled: true, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 1 });
-  g.rotateX(-Math.PI / 2);
-  g.translate(0, -height / 2, 0);
-  return g;
-}
+export interface Nozzle { p: V3; r: number; }
 
 export interface BuiltHull {
   root: Group;
-  glow: MeshStandardMaterial;
-  /** Stern ends of the nacelles, model space: where trails and impulse ports sit. */
-  tips: Array<[number, number, number]>;
+  /** Engine nozzles, model space: where the plumes, trails and halos sit. */
+  nozzles: Nozzle[];
   /** Wingtips, for running lights: port then starboard. */
-  wings: Array<[number, number, number]>;
+  wings: V3[];
   /** Shield ellipsoid radii (x, y, z). */
-  shield: [number, number, number];
+  shield: V3;
 }
 
-function nacelle(len: number, r: number, glow: MeshStandardMaterial): Group {
-  const { plate, plateDark } = mats();
-  const g = new Group();
-  const body = new Mesh(new CylinderGeometry(r, r * 1.1, len, 8), plate);
-  body.rotation.z = Math.PI / 2;
-  const strip = lit(new Mesh(new BoxGeometry(len * 0.8, r * 0.45, r * 2.2), glow));
-  strip.position.y = r * 0.4;
-  const cap = new Mesh(new CylinderGeometry(r * 0.75, r, len * 0.12, 8), plateDark);
-  cap.rotation.z = Math.PI / 2;
-  cap.position.x = -len / 2 - len * 0.05;
-  g.add(body, strip, cap);
-  return g;
+/** One engine pod along X: drum, armour bands, nose cone, flared bell. Returns its nozzle. */
+function pod(k: Kit, rnd: () => number, x: number, y: number, z: number, r: number, len: number): Nozzle {
+  const back = x - len / 2;
+  k.cyl('hull', r, r, len, [x, y, z], 'x', 18);
+  for (let i = 0; i < 4; i++) k.cyl('dark', r * 1.06, r * 1.06, len * 0.06, [back + len * (0.15 + i * 0.22), y, z], 'x', 18);
+  k.cyl('hull', r * 0.45, r, len * 0.24, [x + len / 2 + len * 0.12, y, z], 'x', 18);
+  k.cyl('dark', r * 0.18, r * 0.45, len * 0.08, [x + len / 2 + len * 0.28, y, z], 'x', 12);
+  k.cyl('dark', r * 0.98, r * 1.1, len * 0.2, [back - len * 0.1, y, z], 'x', 22, true);
+  k.ring('dark', r * 1.06, r * 0.1, [back - len * 0.2, y, z], 'x', 28);
+  k.greebles('dark', rnd, back + 0.1, x + len / 2 - 0.1, z - r * 0.45, z + r * 0.45, y + r * 0.92, Math.round(len * 6), r * 0.32);
+  for (let i = 0; i < 4; i++) k.box('dark', [len * 0.1, r * 0.12, r * 0.08], [back + len * (0.3 + i * 0.13), y, z + Math.sign(z || 1) * r * 1.02]);
+  return { p: [back - len * 0.18, y, z], r: r * 0.92 };
+}
+
+/** A gun turret: a housing and twin barrels. */
+function turret(k: Kit, x: number, y: number, z: number, s = 1): void {
+  k.box('dark', [0.3 * s, 0.14 * s, 0.3 * s], [x, y + 0.07 * s, z]);
+  k.cyl('dark', 0.1 * s, 0.13 * s, 0.08 * s, [x, y + 0.17 * s, z], 'y', 10);
+  for (const o of [-0.05, 0.05]) k.cyl('dark', 0.025 * s, 0.03 * s, 0.55 * s, [x + 0.3 * s, y + 0.17 * s, z + o * s], 'x', 6);
+}
+
+/** Lit windows: a row of small warm lights. */
+function windows(k: Kit, x0: number, x1: number, y: number, z: number, n: number): void {
+  for (let i = 0; i < n; i++) k.box('lamp', [0.045, 0.028, 0.012], [x0 + ((x1 - x0) * i) / Math.max(1, n - 1), y, z]);
 }
 
 function buildEscort(): BuiltHull {
-  const { plate, plateDark, dish } = mats();
-  const glow = nacelleGlow();
-  const root = new Group();
-  const hull = new Mesh(slab([[1.35, 0], [0.3, 0.5], [-0.7, 0.86], [-1.08, 0.66], [-1.08, -0.66], [-0.7, -0.86], [0.3, -0.5]], 0.3), plate);
-  const deck = new Mesh(slab([[0.8, 0], [0.05, 0.3], [-0.75, 0.38], [-0.75, -0.38], [0.05, -0.3]], 0.12, 0.02), plateDark);
-  deck.position.y = 0.21;
-  const bridge = new Mesh(new CylinderGeometry(0.16, 0.22, 0.1, 8), plate);
-  bridge.position.set(0.15, 0.31, 0);
-  root.add(hull, deck, bridge);
-  for (const side of [-1, 1]) {
-    const n = nacelle(1.0, 0.15, glow);
-    n.position.set(-0.55, 0.1, side * 0.9);
-    root.add(n);
+  const k = new Kit(), rnd = seeded(5);
+  // the main hull: a broad armoured wedge
+  k.wedge('hull', [[1.95, 0], [1.5, 0.42], [0.9, 0.62], [-1.2, 0.62], [-1.45, 0.45], [-1.45, -0.45], [-1.2, -0.62], [0.9, -0.62], [1.5, -0.42]], 0.5);
+  k.wedge('dark', [[1.7, 0], [1.3, 0.36], [0.7, 0.5], [-1.3, 0.5], [-1.3, -0.5], [0.7, -0.5], [1.3, -0.36]], 0.12, [0, -0.3, 0]);
+  // stepped superstructure and the command tower
+  k.box('hull', [2.0, 0.22, 0.86], [-0.2, 0.36, 0]);
+  k.box('dark', [1.6, 0.06, 0.92], [-0.2, 0.49, 0]);
+  k.box('hull', [1.15, 0.24, 0.58], [-0.4, 0.62, 0]);
+  k.box('hull', [0.44, 0.34, 0.42], [-0.55, 0.9, 0]);
+  k.box('dark', [0.52, 0.05, 0.5], [-0.55, 1.09, 0]);
+  k.box('dark', [0.08, 0.06, 0.3], [-0.3, 0.96, 0]);
+  k.cyl('dark', 0.018, 0.018, 0.55, [-0.65, 1.36, 0.1], 'y', 6);
+  k.cyl('dark', 0.014, 0.014, 0.38, [-0.45, 1.28, -0.12], 'y', 6);
+  windows(k, -0.72, -0.38, 0.95, 0.215, 5);
+  windows(k, -0.72, -0.38, 0.95, -0.215, 5);
+  windows(k, -0.9, 0.1, 0.62, 0.295, 9);
+  windows(k, -0.9, 0.1, 0.62, -0.295, 9);
+  // the prow: a keel and a red-painted spine
+  k.box('dark', [0.9, 0.18, 0.5], [1.25, -0.28, 0]);
+  k.wedge('trim', [[1.92, 0], [1.6, 0.13], [0.95, 0.13], [0.95, -0.13], [1.6, -0.13]], 0.05, [0, 0.27, 0]);
+  k.greebles('dark', rnd, -1.2, 0.85, -0.4, 0.4, 0.47, 34, 0.11);
+  k.greebles('hull', rnd, 0.25, 1.35, -0.32, 0.32, 0.25, 14, 0.12);
+  turret(k, 0.55, 0.47, 0.25);
+  turret(k, 0.55, 0.47, -0.25);
+  // sponsons out to the engine pods, and the pods themselves
+  const nozzles: Nozzle[] = [];
+  for (const s of [-1, 1]) {
+    k.box('hull', [1.3, 0.38, 0.62], [-0.55, 0.02, s * 0.84]);
+    k.box('dark', [1.1, 0.1, 0.66], [-0.5, 0.25, s * 0.84]);
+    k.box('trim', [0.5, 0.02, 0.4], [-0.25, 0.31, s * 0.84]);
+    nozzles.push(pod(k, rnd, -0.5, 0.06, s * 1.4, 0.5, 1.9));
   }
-  const d = lit(new Mesh(new BoxGeometry(0.06, 0.08, 0.24), dish));
-  d.position.set(1.0, -0.12, 0);
-  root.add(d);
-  fins(root, -0.55, 0.55, 0.32);
-  return edged({ root, glow, tips: [[-1.12, 0.1, -0.9], [-1.12, 0.1, 0.9]], wings: [[-0.75, 0.05, -1.08], [-0.75, 0.05, 1.08]], shield: [1.65, 0.75, 1.45] });
+  // the stern: an engine block between the pods
+  k.box('dark', [0.32, 0.42, 0.92], [-1.55, 0.06, 0]);
+  for (let i = 0; i < 5; i++) k.box('dark', [0.06, 0.32, 0.04], [-1.73, 0.06, -0.3 + i * 0.15]);
+  return { root: k.build(materials()), nozzles, wings: [[-0.3, 0.1, -2.0], [-0.3, 0.1, 2.0]], shield: [2.4, 1.2, 2.3] };
 }
 
-function buildCruiser(): BuiltHull {
-  const { plate, plateDark, dish } = mats();
-  const glow = nacelleGlow();
-  const root = new Group();
-  const saucer = new Mesh(new CylinderGeometry(1, 1.04, 0.16, 8), plate);
-  saucer.scale.set(1.18, 1, 0.95);
-  saucer.rotation.y = Math.PI / 8;
-  saucer.position.set(0.75, 0.18, 0);
-  const bridge = new Mesh(new CylinderGeometry(0.22, 0.3, 0.12, 8), plateDark);
-  bridge.position.set(0.75, 0.32, 0);
-  const neck = new Mesh(slab([[0.2, 0.12], [-0.3, 0.12], [-0.3, -0.12], [0.2, -0.12]], 0.3, 0.02), plateDark);
-  const body = new Mesh(slab([[0.1, 0.24], [-1.2, 0.2], [-1.35, 0], [-1.2, -0.2], [0.1, -0.24]], 0.34), plate);
-  body.position.y = -0.12;
-  root.add(saucer, bridge, neck, body);
-  for (const side of [-1, 1]) {
-    const n = nacelle(1.7, 0.14, glow);
-    n.position.set(-1.0, 0.32, side * 0.75);
-    const pylon = new Mesh(new BoxGeometry(0.34, 0.06, 0.6), plateDark);
-    pylon.position.set(-0.75, 0.12, side * 0.42);
-    pylon.rotation.x = side * 0.5;
-    root.add(n, pylon);
-  }
-  const d = lit(new Mesh(new CylinderGeometry(0.12, 0.12, 0.04, 8), dish));
-  d.rotation.z = Math.PI / 2;
-  d.position.set(0.12, -0.12, 0);
-  root.add(d);
-  fins(root, -0.9, 0.5, 0.1);
-  return edged({ root, glow, tips: [[-1.95, 0.32, -0.75], [-1.95, 0.32, 0.75]], wings: [[0.55, 0.2, -1.0], [0.55, 0.2, 1.0]], shield: [2.1, 0.8, 1.35] });
-}
+/** The model is built in kit units; this brings it to play scale (the hitbox is 0.9). */
+const MODEL_SCALE = 0.72;
 
-function buildScout(): BuiltHull {
-  const { plate, plateDark, dish } = mats();
-  const glow = nacelleGlow();
-  const root = new Group();
-  const saucer = new Mesh(new CylinderGeometry(0.72, 0.76, 0.16, 8), plate);
-  saucer.rotation.y = Math.PI / 8;
-  saucer.position.set(0.35, 0.08, 0);
-  const bridge = new Mesh(new CylinderGeometry(0.16, 0.22, 0.1, 8), plateDark);
-  bridge.position.set(0.35, 0.2, 0);
-  const body = new Mesh(slab([[0.1, 0.22], [-0.7, 0.18], [-0.85, 0], [-0.7, -0.18], [0.1, -0.22]], 0.26), plateDark);
-  body.position.set(0, -0.08, 0);
-  root.add(saucer, bridge, body);
-  for (const side of [-1, 1]) {
-    const n = nacelle(0.9, 0.12, glow);
-    n.position.set(-0.55, -0.16, side * 0.6);
-    const pylon = new Mesh(new BoxGeometry(0.26, 0.05, 0.42), plateDark);
-    pylon.position.set(-0.4, -0.1, side * 0.36);
-    root.add(n, pylon);
-  }
-  const d = lit(new Mesh(new BoxGeometry(0.05, 0.07, 0.18), dish));
-  d.position.set(1.1, 0.02, 0);
-  root.add(d);
-  fins(root, -0.5, 0.42, 0.18);
-  return edged({ root, glow, tips: [[-1.05, -0.16, -0.6], [-1.05, -0.16, 0.6]], wings: [[0.35, 0.08, -0.78], [0.35, 0.08, 0.78]], shield: [1.4, 0.65, 1.05] });
-}
-
-const BUILDERS: Record<HullId, () => BuiltHull> = { escort: buildEscort, cruiser: buildCruiser, scout: buildScout };
-
-/** A fresh copy of a hull's model, for the schematic. */
-export function buildHull(id: HullId): BuiltHull {
-  return BUILDERS[id]();
+// ── engine plumes ─────────────────────────────────────────────────────────
+// A cone of light out of each nozzle: dense and white-pink at the throat,
+// thinning to red, longer and brighter on the throttle, flickering.
+function plumeMaterial(): ShaderMaterial {
+  return new ShaderMaterial({
+    transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
+    uniforms: { uHeat: { value: 0 }, uTime: { value: 0 }, uCore: { value: CORE }, uBell: { value: BELL } },
+    vertexShader: /* glsl */ `
+      varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main() {
+        vUv = uv;
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform float uHeat; uniform float uTime; uniform vec3 uCore; uniform vec3 uBell;
+      varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main() {
+        float along = vUv.y; // 0 at the nozzle, 1 at the tip
+        float edge = pow(clamp(abs(dot(vN, vV)), 0.0, 1.0), 1.6);
+        float flick = 0.85 + 0.15 * sin(uTime * 63.0 + along * 20.0) * sin(uTime * 41.0);
+        float a = pow(1.0 - along, 1.7) * edge * flick * (0.35 + 0.65 * uHeat);
+        vec3 c = mix(uCore, uBell, smoothstep(0.0, 0.45, along));
+        gl_FragColor = vec4(c * a, a);
+      }`,
+  });
 }
 
 // ── engine trails ─────────────────────────────────────────────────────────
-const TRAIL_N = 30;
+const TRAIL_N = 18;
+/** World units of trail at most: the close camera sits only a few units behind the ship. */
+const TRAIL_LEN = 1.4;
 const TRAIL_EVERY = 1 / 60;
-const TRAIL_W = 0.2;
-const TRAIL_HEAD = new Color(3.0, 0.5, 2.8);
-const TRAIL_TAIL = new Color(0.2, 1.6, 2.6);
+const TRAIL_HEAD = new Color(2.6, 0.4, 0.8);
+const TRAIL_TAIL = new Color(0.6, 0.06, 0.12);
 
 class Trail {
   readonly mesh: Mesh;
+  width = 0.3;
   private readonly pts = new Float32Array(TRAIL_N * 3);
   private readonly heat = new Float32Array(TRAIL_N);
   private readonly pos: BufferAttribute;
@@ -231,14 +184,17 @@ class Trail {
   draw(x: number, y: number, z: number): void {
     this.pts[0] = x; this.pts[1] = y; this.pts[2] = z;
     const p = this.pts, P = this.pos.array as Float32Array, C = this.col.array as Float32Array;
+    let run = 0;
     for (let i = 0; i < TRAIL_N; i++) {
+      if (i > 0) run += Math.hypot(p[i * 3]! - p[i * 3 - 3]!, p[i * 3 + 1]! - p[i * 3 - 2]!, p[i * 3 + 2]! - p[i * 3 - 1]!);
+      const fade = Math.max(0, 1 - run / TRAIL_LEN);
       const j = Math.min(i + 1, TRAIL_N - 1), k = Math.max(i - 1, 0);
       let dx = p[k * 3]! - p[j * 3]!, dz = p[k * 3 + 2]! - p[j * 3 + 2]!;
       const len = Math.hypot(dx, dz) || 1; dx /= len; dz /= len;
-      const t = i / (TRAIL_N - 1), w = TRAIL_W * (1 - t) * 0.5;
+      const t = i / (TRAIL_N - 1), w = this.width * (1 - t * 0.7) * 0.5;
       const ox = -dz * w, oz = dx * w;
       P.set([p[i * 3]! + ox, p[i * 3 + 1]!, p[i * 3 + 2]! + oz, p[i * 3]! - ox, p[i * 3 + 1]!, p[i * 3 + 2]! - oz], i * 6);
-      const a = this.heat[i]! * (1 - t) * (1 - t * 0.6);
+      const a = this.heat[i]! * fade * fade * (1 - t) * 0.3;
       const r = (TRAIL_HEAD.r + (TRAIL_TAIL.r - TRAIL_HEAD.r) * t) * a;
       const gg = (TRAIL_HEAD.g + (TRAIL_TAIL.g - TRAIL_HEAD.g) * t) * a;
       const bb = (TRAIL_HEAD.b + (TRAIL_TAIL.b - TRAIL_HEAD.b) * t) * a;
@@ -250,10 +206,12 @@ class Trail {
 }
 
 // ── the shield ────────────────────────────────────────────────────────────
+// Unseen until it takes a hit: then a hex lattice flares, hot amber at the
+// rim. It also shimmers through the grace after a hit.
 function shieldMaterial(): ShaderMaterial {
   return new ShaderMaterial({
     transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
-    uniforms: { uHit: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uColor: { value: new Color(0.3, 1.8, 2.4) } },
+    uniforms: { uHit: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uColor: { value: new Color(2.6, 0.9, 0.35) } },
     vertexShader: /* glsl */ `
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       void main() {
@@ -278,27 +236,32 @@ function shieldMaterial(): ShaderMaterial {
         float fres = pow(clamp(1.0 - abs(dot(vN, vV)), 0.0, 1.0), 2.5);
         vec2 uv = vec2(atan(vP.z, vP.x) * 3.0, vP.y * 9.0);
         float hex = hexEdge(uv * 1.6 + vec2(0.0, uTime * 0.6));
-        float pulse = uGrace * (0.16 + 0.1 * sin(uTime * 18.0));
-        float a = (fres * 0.9 + hex * 0.55) * max(uHit, pulse);
+        float pulse = uGrace * (0.12 + 0.08 * sin(uTime * 18.0));
+        float a = (fres * 0.9 + hex * 0.5) * max(uHit, pulse);
         gl_FragColor = vec4(uColor * a, a);
       }`,
   });
 }
 
 // ── the view ──────────────────────────────────────────────────────────────
+interface Engine { nozzle: Nozzle; disc: Mesh; core: Mesh; rim: Mesh; plume: Mesh; halo: Sprite; trail: Trail; }
+
 export class ShipView {
   readonly root = new Group();
   private readonly yawG = new Group();
   private readonly pitchG = new Group();
   private readonly rollG = new Group();
-  private readonly models = new Map<HullId, BuiltHull>();
-  private current: BuiltHull;
-  private readonly trails = [new Trail(), new Trail()];
-  private readonly ports: Mesh[] = [];
-  private readonly halos: Sprite[] = [];
+  private readonly model: BuiltHull;
+  private readonly engines: Engine[] = [];
   private readonly lights: Sprite[] = [];
   private readonly shield: Mesh;
   private readonly shieldMat = shieldMaterial();
+  private readonly plumeMat = plumeMaterial();
+  private readonly discMat = new MeshBasicMaterial({ color: BELL.clone(), side: DoubleSide, toneMapped: false });
+  private readonly coreMat = new MeshBasicMaterial({ color: CORE.clone(), side: DoubleSide, toneMapped: false });
+  /** The engines light the ship's own stern and whatever is behind it. */
+  private readonly glowLight = new PointLight(0xff4a5a, 0, 7, 2);
+  private readonly rimMat = new MeshBasicMaterial({ color: BELL.clone(), toneMapped: false });
   private bank = 0;
   private pitch = 0;
   private heat = 0;
@@ -306,53 +269,65 @@ export class ShipView {
   private trailClock = 0;
   private time = 0;
 
-  constructor(hull: HullId) {
-    const { glow } = mats();
-    for (const id of HULL_ORDER) {
-      const b = BUILDERS[id]();
-      b.root.visible = false;
-      this.models.set(id, b);
-      this.rollG.add(b.root);
-    }
-    // impulse ports and their halos, moved to the current hull's sterns
-    const portGeo = new CircleGeometry(0.13, 16).rotateY(-Math.PI / 2);
-    for (let i = 0; i < 2; i++) {
-      const port = new Mesh(portGeo, new MeshBasicMaterial({ color: PORT_CORE.clone(), side: DoubleSide, toneMapped: false }));
-      const halo = new Sprite(new SpriteMaterial({ map: glow, color: PORT_HALO, blending: AdditiveBlending, depthWrite: false }));
-      this.ports.push(port);
-      this.halos.push(halo);
-      this.rollG.add(port, halo);
+  constructor(glow: Texture = glowTexture()) {
+    this.model = buildEscort();
+    this.model.root.scale.setScalar(MODEL_SCALE);
+    this.rollG.add(this.model.root);
+    const disc = new CircleGeometry(1, 24).rotateY(-Math.PI / 2);
+    const rimGeo = new TorusGeometry(1, 0.09, 6, 32).rotateY(Math.PI / 2);
+    const plumeGeo = new CylinderGeometry(0.15, 1, 1, 20, 1, true).translate(0, 0.5, 0).rotateZ(Math.PI / 2);
+    for (const n of this.model.nozzles) {
+      const e: Engine = {
+        nozzle: { p: [n.p[0] * MODEL_SCALE, n.p[1] * MODEL_SCALE, n.p[2] * MODEL_SCALE], r: n.r * MODEL_SCALE },
+        disc: new Mesh(disc, this.discMat),
+        core: new Mesh(disc, this.coreMat),
+        rim: new Mesh(rimGeo, this.rimMat),
+        plume: new Mesh(plumeGeo, this.plumeMat),
+        halo: new Sprite(new SpriteMaterial({ map: glow, color: HALO, blending: AdditiveBlending, depthWrite: false })),
+        trail: new Trail(),
+      };
+      e.plume.frustumCulled = false;
+      this.rollG.add(e.disc, e.core, e.rim, e.plume, e.halo);
+      this.root.add(e.trail.mesh);
+      this.engines.push(e);
     }
     for (const c of [new Color(3, 0.25, 0.25), new Color(0.25, 3, 0.6)]) {
       const s = new Sprite(new SpriteMaterial({ map: glow, color: c, blending: AdditiveBlending, depthWrite: false }));
-      s.scale.setScalar(0.32);
+      s.scale.setScalar(0.3);
       this.lights.push(s);
       this.rollG.add(s);
     }
     this.shield = new Mesh(new SphereGeometry(1, 40, 20), this.shieldMat);
-    this.rollG.add(this.shield);
-    this.current = this.models.get(hull)!;
-    this.setHull(hull);
+    this.rollG.add(this.shield, this.glowLight);
+    this.place();
     this.pitchG.add(this.rollG);
     this.yawG.add(this.pitchG);
-    this.root.add(this.yawG, ...this.trails.map((t) => t.mesh));
+    this.root.add(this.yawG);
   }
 
-  setHull(id: HullId): void {
-    this.current.root.visible = false;
-    this.current = this.models.get(id)!;
-    this.current.root.visible = true;
-    this.current.tips.forEach((t, i) => {
-      this.ports[i]!.position.set(t[0] - 0.02, t[1], t[2]);
-      this.halos[i]!.position.set(t[0] - 0.12, t[1], t[2]);
-    });
-    this.current.wings.forEach((w, i) => this.lights[i]!.position.set(...w));
-    this.shield.scale.set(...this.current.shield);
+  /** Put the engines, running lights and shield on the model. */
+  private place(): void {
+    const S = MODEL_SCALE;
+    for (const e of this.engines) {
+      const [x, y, z] = e.nozzle.p, r = e.nozzle.r;
+      e.disc.position.set(x + 0.04, y, z);
+      e.disc.scale.setScalar(r);
+      e.core.position.set(x + 0.02, y, z);
+      e.core.scale.setScalar(r * 0.36);
+      e.rim.position.set(x + 0.01, y, z);
+      e.rim.scale.setScalar(r * 0.93);
+      e.plume.position.set(x, y, z);
+      e.halo.position.set(x - r * 0.4, y, z);
+      e.trail.width = r * 0.3;
+    }
+    this.glowLight.position.set(Math.min(...this.model.nozzles.map((n) => n.p[0])) * S - 1.4, 0.2, 0);
+    this.model.wings.forEach((w, i) => this.lights[i]!.position.set(w[0] * S, w[1] * S, w[2] * S));
+    this.shield.scale.set(...(this.model.shield.map((v) => v * S) as V3));
   }
 
   /** World positions of the nozzles and how hard they are burning, for exhaust sparks. */
   exhaust(): { points: Array<[number, number, number]>; heat: number } {
-    return { points: this.current.tips.map((t) => [...tipWorld(this.current.root, t)] as [number, number, number]), heat: this.heat };
+    return { points: this.engines.map((e) => [...tipWorld(this.rollG, e.nozzle.p)] as [number, number, number]), heat: this.heat };
   }
 
   /** Flare the shield: a hit landed. */
@@ -366,11 +341,11 @@ export class ShipView {
     this.yawG.rotation.y = s.heading;
 
     const wantBank = clamp(-s.yawRate * 0.16, -0.6, 0.6);
-    const wantPitch = -0.09 * s.thrust;
-    const k = Math.min(1, 8 * dt);
+    const wantPitch = -0.07 * s.thrust;
+    const k = Math.min(1, 6 * dt);
     this.bank = lerp(this.bank, wantBank, k);
     this.pitch = lerp(this.pitch, wantPitch, k);
-    this.heat = lerp(this.heat, s.thrust, Math.min(1, 10 * dt));
+    this.heat = lerp(this.heat, s.thrust, Math.min(1, 8 * dt));
 
     let roll = 0;
     if (s.rollT >= 0 && !reduceMotion) {
@@ -379,9 +354,21 @@ export class ShipView {
     }
     this.pitchG.rotation.z = this.pitch;
     this.rollG.rotation.x = this.bank + roll;
-    this.current.glow.emissiveIntensity = 1.3 + 2.6 * this.heat;
-    for (const h of this.halos) h.scale.setScalar(0.55 + 0.9 * this.heat + Math.sin(this.time * 31) * 0.04);
-    for (const p of this.ports) (p.material as MeshBasicMaterial).color.copy(PORT_CORE).multiplyScalar(0.55 + 0.6 * this.heat);
+    // a slow heave, so a ship at rest still reads as afloat
+    this.pitchG.position.y = Math.sin(this.time * 1.3) * 0.03;
+
+    const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05;
+    this.discMat.color.copy(BELL).multiplyScalar(0.12 + 0.22 * h);
+    this.rimMat.color.copy(BELL).multiplyScalar((0.55 + 0.6 * h) * flick);
+    this.coreMat.color.copy(CORE).multiplyScalar((0.35 + 0.75 * h) * flick);
+    this.plumeMat.uniforms.uHeat!.value = h;
+    this.plumeMat.uniforms.uTime!.value = this.time;
+    for (const e of this.engines) {
+      const r = e.nozzle.r;
+      e.plume.scale.set(r * (1.2 + 3.2 * h) * flick, r * 0.95, r * 0.95);
+      e.halo.scale.setScalar(r * (1.7 + 1.1 * h) * flick);
+    }
+    this.glowLight.intensity = (1 + 4 * h) * flick;
     const blink = Math.sin(this.time * Math.PI * 2) > 0.6;
     for (const l of this.lights) l.visible = blink;
 
@@ -396,20 +383,19 @@ export class ShipView {
     this.trailClock += dt;
     const lay = this.trailClock >= TRAIL_EVERY;
     if (lay) this.trailClock %= TRAIL_EVERY;
-    this.current.tips.forEach((tip, i) => {
-      const v = tipWorld(this.current.root, tip);
-      const trail = this.trails[i]!;
-      if (lay) trail.push(v[0], v[1], v[2], 0.2 + 0.8 * this.heat);
-      trail.draw(v[0], v[1], v[2]);
-    });
+    for (const e of this.engines) {
+      const v = tipWorld(this.rollG, e.nozzle.p);
+      if (lay) e.trail.push(v[0], v[1], v[2], 0.15 + 0.85 * h);
+      e.trail.draw(v[0], v[1], v[2]);
+    }
   }
 }
 
 const tmp: [number, number, number] = [0, 0, 0];
-function tipWorld(o: Object3D, l: [number, number, number]): [number, number, number] {
+function tipWorld(o: Object3D, l: readonly number[]): [number, number, number] {
   const e = o.matrixWorld.elements;
-  tmp[0] = e[0]! * l[0] + e[4]! * l[1] + e[8]! * l[2] + e[12]!;
-  tmp[1] = e[1]! * l[0] + e[5]! * l[1] + e[9]! * l[2] + e[13]!;
-  tmp[2] = e[2]! * l[0] + e[6]! * l[1] + e[10]! * l[2] + e[14]!;
+  tmp[0] = e[0]! * l[0]! + e[4]! * l[1]! + e[8]! * l[2]! + e[12]!;
+  tmp[1] = e[1]! * l[0]! + e[5]! * l[1]! + e[9]! * l[2]! + e[13]!;
+  tmp[2] = e[2]! * l[0]! + e[6]! * l[1]! + e[10]! * l[2]! + e[14]!;
   return tmp;
 }

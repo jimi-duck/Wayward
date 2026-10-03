@@ -17,7 +17,7 @@ balanced with a scripted pilot and the reasoning lives in the code comments and
 
 | Area | Choice | Why |
 |---|---|---|
-| Flight model | Flat play plane, full 3D presentation | Keeps auto-fire, grazing and all the original tuning; touch stays one thumb. The ship banks (roll) and pitches visually; a barrel roll is the one 3D move with a gameplay effect. |
+| Flight model | Flat play plane for the ship, full 3D for everything else | Keeps all the original tuning; touch stays one thumb. The ship banks and pitches visually; a barrel roll is a dodge. Since the gritty pass, enemies and fire use altitude, and the gunnery computer and torpedoes reach them there. |
 | Rendering | Three.js, plain TypeScript | Light, mature, best custom-shader ecosystem; WebGL2 runs on every current phone. |
 | Build | Vite + TypeScript | Fast reloads; `npm run dev:phone` serves to a phone on the same Wi-Fi. |
 | Collision | Custom: spatial hash; sphere, ray and segment tests | The original is circles, rays and segments on a plane, with hand-tuned arcade handling. A rigid-body engine would add WASM weight and fight that tuning. |
@@ -74,6 +74,34 @@ capital ship, attack cycles, escorts, fuse, bounty), `render/enemies.ts`
 (procedural hulls, shots, beams, webs, pickups) and `render/neon.ts` (dark
 matte armour with HDR neon edges, baked to two draws per model).
 
+The gritty pass rebuilds the look and the enemy around a reference frame
+the user supplied, and changes the shape of the fight:
+
+- One ship: the Defiant gunship. The original's other two hulls (Sovereign,
+  Nova) and the hull picker are gone; `content/hulls.ts` holds one `HULL`.
+- `render/kit.ts` replaces `render/neon.ts`: a parts kit (boxes, drums,
+  wedges, greebles merged into one mesh per material) and weathered metal,
+  painted at startup and projected triplanar with a bump from a height map.
+  `render/ships.ts` and `render/enemies.ts` build every hull from it.
+- `render/rocks.ts` shades rock procedurally (basalt with lava fissures, in
+  the rock's own space) on cratered, noise-shaped icospheres, and draws the
+  bulwarks and a far backdrop of asteroids at every height.
+- `render/environment.ts` drops the hex grid for a starfield, a galactic band
+  and a small dark reflection map; `render/camera.ts` sits low behind the
+  ship with the horizon high in frame.
+- `render/fx.ts` layers kills: flash, real light, fireball, smoke, shockwave,
+  sparks, rock or plating debris; `render/sector.ts` returns a hit-stop for
+  the loop's freeze.
+- `ui/hud.ts` is the reference's HUD in red on dark grey: weapons and a
+  score/hull readout top right, a round radar with a sweep bottom left, one
+  status line bottom right, a red box on the target in the world.
+- The simulation gains altitude. Enemies, their fire and the player's fire
+  have a `y`; the ship and rock stay on the plane. `sim/enemies.ts` is a new
+  tactical AI (approach from far out, interceptor attack runs and jinks,
+  cruisers using bulwarks as cover); `sim/field.ts` adds bulwarks; phasers
+  gain a gunnery computer (lances lift onto targets off the plane) and
+  torpedoes accelerate and steer in 3D.
+
 Coming in later milestones: `sim/` grows the field, enemies, bosses and
 progression; `weapons/`, `audio/` and `content/` (tuning constants, factions,
 upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
@@ -115,6 +143,7 @@ upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
 | M1 | Flight model and chase camera | done |
 | M1b | Console pass: chase camera only, phasers and torpedoes, breakable rock, hull damage, bloom, the bridge console | done (pulls parts of M2, M3, M4 and M7 forward) |
 | M1c | Cyberpunk pass: corner HUD, neon ships and exhaust, the original's enemies, wave pacing and capital ships | done (pulls the enemy half of M5 forward) |
+| M1d | Gritty pass: reference camera, weathered ships, lava rock, bulwarks, red HUD, 3D enemy AI, heavier weapons | done |
 | M2 | Combat core: asteroids, phasers, torpedoes, collision, splitting, hull, game over | |
 | M3 | Combat feel and effects: trails, sparks, shield dome, explosions, shake | |
 | M4 | Space environment: starfield, nebulae, sun, shadows, bloom | |

@@ -5,7 +5,7 @@
   <!-- viewport-fit=cover lets the canvas run under the notch; the controls
        pull themselves back inside the safe area in CSS. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#03060B">
+  <meta name="theme-color" content="#030509">
   <meta name="color-scheme" content="dark">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,36 +24,21 @@
     <div id="hud">
       <div id="vignette" aria-hidden="true"></div>
       <div id="reticle" aria-hidden="true"></div>
-      <div id="lock" aria-hidden="true"><span class="lk-b"></span><span class="lk-t"><b id="lock-id">Lock</b><span id="lock-d">0 m</span></span></div>
+      <div id="marks" aria-hidden="true"></div>
+      <div id="lock" aria-hidden="true"><span class="lk-t"><b id="lock-id">Interceptor</b> <span id="lock-d">0 m</span></span></div>
 
-      <!-- top left: what I'm scoring and what I'm flying -->
-      <section class="corner tl" aria-label="Score and hull">
-        <div class="score"><b id="score">000000</b><span class="k">Score</span></div>
-        <div class="sub"><span class="k">Best</span> <span id="best">000000</span> <span class="dot">·</span> <span id="hullname">Defiant class</span></div>
-        <div class="row"><span class="k">Hull</span><span class="plates" id="plates"></span><b id="hull-v">100%</b></div>
-      </section>
-
-      <!-- top right: what I can do next -->
-      <section class="corner tr" aria-label="Weapons and ship">
-        <div class="row"><span class="k">Phasers <kbd>1</kbd></span><div class="bar"><i id="g-pow"></i></div></div>
-        <div class="row"><span class="k">Torpedoes <kbd>2</kbd></span><span class="pips" id="g-torp"><i></i><i></i><i></i></span><div class="bar thin"><i id="g-reload"></i></div></div>
-        <div id="controls">
-          <div class="hullsel" role="radiogroup" aria-label="Hull">
-            <button type="button" data-hull="escort" role="radio">Defiant</button>
-            <button type="button" data-hull="cruiser" role="radio">Sovereign</button>
-            <button type="button" data-hull="scout" role="radio">Nova</button>
-          </div>
-          <div class="zoomsel" aria-label="Zoom">
-            <button type="button" id="zoom-in" aria-label="Zoom in">‹</button><b id="zoom-v">1</b><button type="button" id="zoom-out" aria-label="Zoom out">›</button>
-          </div>
-        </div>
+      <!-- top right: weapons, then score and hull -->
+      <section id="weapons" aria-label="Weapons">
+        <div class="wrow"><span class="k">Phasers</span><kbd>1</kbd><div class="bar"><i id="g-pow"></i></div></div>
+        <div class="wrow"><span class="k">Torpedoes</span><kbd>2</kbd><span class="pips" id="g-torp"><i></i><i></i><i></i></span><div class="bar thin"><i id="g-reload"></i></div></div>
+        <div class="readout"><span class="k">Score</span><b id="score">000000</b><span class="cell" id="hull-cell" title="Hull plates"><span class="k">Hull</span><b id="plates">3</b></span></div>
       </section>
 
       <!-- top centre, only while a capital ship is in the sector -->
       <div id="bossbar" aria-live="polite"><span id="boss-name">I.K.S. Vor’cha</span><div class="bar"><i id="boss-hp"></i></div><span class="k" id="boss-fuse"></span></div>
 
       <canvas id="radar" aria-hidden="true"></canvas>
-      <ol id="log" aria-live="off"></ol>
+      <div id="status" aria-live="off"><span id="status-t">Run begins</span><i class="leader"></i></div>
 
       <div id="banner" role="status"><span class="bn-k" id="banner-k">Red alert</span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div>
     </div>
@@ -72,7 +57,7 @@
       <div class="start-card">
         <svg class="wm" viewBox="0 0 146.5 46" role="img" aria-label="Asteroid Blaster"><g class="wm-a"><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(0.00 0.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(20.50 0.00)"/><path d="M0 2H16M8 2V20" transform="translate(41.00 0.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(61.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(81.00 0.00)"/><path d="M5 2H11L14 5V15L11 18H5L2 15V5Z" transform="translate(101.50 0.00)"/><path d="M2 0V20" transform="translate(122.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(130.50 0.00)"/></g><g class="wm-b"><path d="M2 2H11L14 5V7.5L12 10L14 12.5V15L11 18H2ZM2 10H12" transform="translate(0.00 26.00)"/><path d="M2 0V18H15" transform="translate(20.50 26.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(40.00 26.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(60.50 26.00)"/><path d="M0 2H16M8 2V20" transform="translate(81.00 26.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(101.50 26.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(121.00 26.00)"/></g></svg>
         <p id="start-t" class="tag">Hold the sector.</p>
-        <p class="meta">Phasers on 1 · torpedoes on 2 · capital ships from 110s</p>
+        <p class="meta">Phasers 1 · torpedoes 2 · roll Shift · zoom Z</p>
         <button type="button" id="launch">Launch</button>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
       </div>
@@ -81,6 +66,7 @@
     <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
       <div class="pause-t">All stop</div>
+      <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
       <div class="pause-h only-desktop">Click or press any key to resume</div>
       <div class="pause-h only-touch">Tap to resume</div>
     </div>

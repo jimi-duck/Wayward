@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import type { Rock } from '../src/sim/field';
-import { BANK_MAX, BANK_SHOT, ROCK_POINTS, SHOT_COOLDOWN, TORP_RACK, TORP_RELOAD } from '../src/sim/tuning';
+import { BANK_MAX, BANK_SHOT, ROCK_POINTS, SHOT_COOLDOWN, TORP_RACK, TORP_RELOAD, TORP_SPACING } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
@@ -16,6 +16,7 @@ function run(w: World, seconds: number, f: Partial<InputFrame> = {}) {
 function range(ahead: number, size: 0 | 1 | 2 = 0): { w: World; rock: Rock } {
   const w = new World(1);
   w.field.rocks = [];
+  w.field.bulwarks = [];
   const rock = w.field.spawn(size, 0, -ahead, 0, 0);
   rock.age = 10;
   // keep the field from topping itself up during the test
@@ -76,7 +77,7 @@ describe('torpedoes', () => {
   it('come three to a rack, one per press, and reload on the original clock', () => {
     const w = new World(1);
     w.field.rocks = [];
-    for (let i = 0; i < 4; i++) { w.step(STEP, input({ torpedo: true })); run(w, 0.4); }
+    for (let i = 0; i < 4; i++) { w.step(STEP, input({ torpedo: true })); run(w, TORP_SPACING + 0.05); }
     expect(w.arms.rack).toBe(0);
     expect(w.drain().some((e) => e.type === 'rackEmpty')).toBe(true);
     run(w, TORP_RELOAD * TORP_RACK + 0.2);

@@ -35,22 +35,29 @@ on the phone.
 | Phasers (hold) | 1, Space or J | Phaser button | A |
 | Torpedo | 2, F or K | Torpedo button | X |
 | Barrel roll | Shift | Roll button, or a second finger | B or RB |
-| Zoom | Z, or − and = | ‹ › top right | |
-| Hull | buttons top right | buttons top right | |
+| Camera distance | Z (cycles), or − and = | pause screen | |
 | Pause | Esc or P | leave the app | Start |
 
-The camera rides behind the ship. Phasers draw on the phaser bank and refill
-when you let go; torpedoes come three to a rack, lock the best rock in a cone
-ahead (ships before rock), and reload one every 3.4s. Rock breaks large to
-medium to small.
+The camera rides low behind the ship. You steer on a flat plane; everything
+else uses the whole sky. Phasers draw on the phaser bank and refill when you
+let go, and the gunnery computer lifts or drops a lance onto a hull flying
+above or below you if it is in a narrow cone ahead. Torpedoes come three to a
+rack, launch slow and accelerate, lock the best target in a cone ahead (ships
+before rock), climb or dive after it, and reload one every 3.4s. Rock breaks
+large to medium to small. Bulwarks (massive asteroids) never break: they
+stop fire from both sides and hurt to fly into.
 
-Enemies arrive from 4s, as in the original: seven kinds of fighter across five
-factions (Klingon, Cardassian, Romulan, Borg, Tholian), unlocking over the
-first two minutes, with the spawn rate, fire rate and cap all climbing with
-time. From 110s a capital ship warns, then arrives with an escort wing and
-runs its faction's attack cycle until it is destroyed or its fuse runs out.
-Enemy fire, beams, webs, rams and rock each cost a hull plate; the last plate
-ends the run. Kills can drop hull repairs.
+Enemies spawn 120 to 150 units out, mostly ahead and at altitude, and close
+in before they fight. Interceptors fly attack runs (out high to one side, a
+dive at where you will be, a climb out) and jink out of the way of lances
+they see coming; cruisers hold range and hide behind bulwarks, sliding out
+to fire broadsides. Seven kinds across five factions (Klingon, Cardassian,
+Romulan, Borg, Tholian) unlock over the first two and a half minutes, with the
+spawn rate, fire rate and cap all climbing with time. From 110s a capital
+ship warns, drops in from far out, then runs its faction's attack cycle with
+an escort wing until it is destroyed or its fuse runs out. Enemy fire, beams,
+webs, rams, rock and bulwarks each cost a hull plate; the last plate ends the
+run. Kills can drop hull repairs.
 
 ## Debug
 

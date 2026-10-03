@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HULLS, type Hull } from '../src/content/hulls';
+import { HULL, type Hull } from '../src/content/hulls';
 import { STEP } from '../src/core/loop';
 import { flightControls, type FlightControls } from '../src/sim/controls';
 import { newShip, stepShip, topSpeed, turnPerStep, type ShipState } from '../src/sim/ship';
@@ -19,53 +19,45 @@ const speed = (s: ShipState) => Math.hypot(s.vx, s.vz);
 const pxPerSecond = (unitsPerSecond: number) => unitsPerSecond / PX;
 
 describe('flight model, ported from the original', () => {
-  it('reaches the original top speeds: about 450, 316 and 384 px/s', () => {
-    const want = { escort: 450, cruiser: 316, scout: 384 };
-    for (const hull of Object.values(HULLS)) {
-      const s = fly(newShip(), hull, ctl({ thrust: 1 }), 10);
-      expect(pxPerSecond(speed(s))).toBeCloseTo(want[hull.id], -1);
-      expect(speed(s)).toBeCloseTo(topSpeed(hull), 3);
-    }
+  it('reaches the original top speed: about 450 px/s', () => {
+    const s = fly(newShip(), HULL, ctl({ thrust: 1 }), 10);
+    expect(pxPerSecond(speed(s))).toBeCloseTo(450, -1);
+    expect(speed(s)).toBeCloseTo(topSpeed(HULL), 3);
   });
 
   it('flies straight up the screen from rest', () => {
-    const s = fly(newShip(), HULLS.escort, ctl({ thrust: 1 }), 1);
+    const s = fly(newShip(), HULL, ctl({ thrust: 1 }), 1);
     expect(s.z).toBeLessThan(-10);
     expect(Math.abs(s.x)).toBeLessThan(1e-6);
   });
 
   it('coasts to a stop on its own drag', () => {
-    const s = fly(newShip(), HULLS.scout, ctl({ thrust: 1 }), 3);
-    fly(s, HULLS.scout, idle, 4);
+    const s = fly(newShip(), HULL, ctl({ thrust: 1 }), 3);
+    fly(s, HULL, idle, 4);
     expect(speed(s)).toBeLessThan(0.01);
   });
 
   it('turns at the original rate once the helm has eased in', () => {
-    for (const hull of Object.values(HULLS)) {
-      const s = fly(newShip(), hull, ctl({ turn: 1 }), 1);
-      expect(s.yawRate).toBeCloseTo(-turnPerStep(hull) / STEP, 4);
-    }
-    // the Nova turns tightest, the Sovereign slowest
-    expect(turnPerStep(HULLS.scout)).toBeGreaterThan(turnPerStep(HULLS.escort));
-    expect(turnPerStep(HULLS.escort)).toBeGreaterThan(turnPerStep(HULLS.cruiser));
+    const s = fly(newShip(), HULL, ctl({ turn: 1 }), 1);
+    expect(s.yawRate).toBeCloseTo(-turnPerStep(HULL) / STEP, 4);
   });
 
   it('eases the helm in, so a one-step tap only nudges the nose', () => {
     const s = newShip();
-    stepShip(s, ctl({ turn: 1 }), HULLS.escort, STEP);
+    stepShip(s, ctl({ turn: 1 }), HULL, STEP);
     const tapped = Math.PI / 2 - s.heading;
     expect(tapped).toBeGreaterThan(0);
-    expect(tapped).toBeLessThan(turnPerStep(HULLS.escort) * 0.3);
+    expect(tapped).toBeLessThan(turnPerStep(HULL) * 0.3);
   });
 
   it('turns right with a right key: the heading falls', () => {
-    const s = fly(newShip(), HULLS.escort, ctl({ turn: 1 }), 0.25);
+    const s = fly(newShip(), HULL, ctl({ turn: 1 }), 0.25);
     expect(s.heading).toBeLessThan(Math.PI / 2);
   });
 
   it('carves turns on the Defiant: grip cuts the sideways slide under thrust', () => {
     const slide = (grip: number) => {
-      const hull = { ...HULLS.escort, grip };
+      const hull = { ...HULL, grip };
       const s = fly(newShip(), hull, ctl({ thrust: 1 }), 4);
       fly(s, hull, ctl({ thrust: 1, turn: 1 }), 0.4); // a hard turn at top speed
       const hx = Math.cos(s.heading), hz = -Math.sin(s.heading);
@@ -77,41 +69,41 @@ describe('flight model, ported from the original', () => {
 
 describe('the barrel roll', () => {
   it('kicks the ship sideways in the direction asked', () => {
-    const right = fly(newShip(), HULLS.escort, ctl({}), 0);
-    stepShip(right, ctl({ roll: true, rollDir: 1 }), HULLS.escort, STEP);
-    fly(right, HULLS.escort, idle, 1);
+    const right = fly(newShip(), HULL, ctl({}), 0);
+    stepShip(right, ctl({ roll: true, rollDir: 1 }), HULL, STEP);
+    fly(right, HULL, idle, 1);
     expect(right.x).toBeGreaterThan(3); // facing up the screen, right is +X
 
     const left = newShip();
-    stepShip(left, ctl({ roll: true, rollDir: -1 }), HULLS.escort, STEP);
-    fly(left, HULLS.escort, idle, 1);
+    stepShip(left, ctl({ roll: true, rollDir: -1 }), HULL, STEP);
+    fly(left, HULL, idle, 1);
     expect(left.x).toBeLessThan(-3);
   });
 
   it('grants a short invulnerability window', () => {
     const s = newShip();
-    stepShip(s, ctl({ roll: true, rollDir: 1 }), HULLS.escort, STEP);
+    stepShip(s, ctl({ roll: true, rollDir: 1 }), HULL, STEP);
     expect(s.invuln).toBeGreaterThan(0.3);
   });
 
   it('cannot be chained faster than the cooldown', () => {
     const s = newShip();
-    stepShip(s, ctl({ roll: true, rollDir: 1 }), HULLS.escort, STEP);
+    stepShip(s, ctl({ roll: true, rollDir: 1 }), HULL, STEP);
     const vx = s.vx;
-    stepShip(s, ctl({ roll: true, rollDir: 1 }), HULLS.escort, STEP);
+    stepShip(s, ctl({ roll: true, rollDir: 1 }), HULL, STEP);
     expect(s.vx).toBeLessThan(vx); // only drag acted, no second kick
-    fly(s, HULLS.escort, idle, ROLL_COOLDOWN);
+    fly(s, HULL, idle, ROLL_COOLDOWN);
     const before = s.vx;
-    stepShip(s, ctl({ roll: true, rollDir: 1 }), HULLS.escort, STEP);
+    stepShip(s, ctl({ roll: true, rollDir: 1 }), HULL, STEP);
     expect(s.vx).toBeGreaterThan(before + 5);
   });
 
   it('alternates direction when nothing says which way', () => {
     const s = newShip();
-    stepShip(s, ctl({ roll: true }), HULLS.escort, STEP);
+    stepShip(s, ctl({ roll: true }), HULL, STEP);
     const first = s.rollDir;
-    fly(s, HULLS.escort, idle, ROLL_COOLDOWN + STEP);
-    stepShip(s, ctl({ roll: true }), HULLS.escort, STEP);
+    fly(s, HULL, idle, ROLL_COOLDOWN + STEP);
+    stepShip(s, ctl({ roll: true }), HULL, STEP);
     expect(s.rollDir).toBe(-first);
   });
 });

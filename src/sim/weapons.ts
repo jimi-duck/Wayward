@@ -3,8 +3,8 @@ import type { FlightControls } from './controls';
 import type { GameEvent } from './events';
 import type { ShipState } from './ship';
 import {
-  BANK_DELAY, BANK_MAX, BANK_REFILL, BANK_SHOT, BOLT_LIFE, BOLT_SPEED, SHOT_COOLDOWN, TORP_CONE, TORP_LIFE, TORP_RACK,
-  TORP_RELOAD, TORP_SEEK, TORP_SPACING, TORP_SPEED, TORP_TURN,
+  BANK_DELAY, BANK_MAX, BANK_REFILL, BANK_SHOT, BOLT_ELEVATE_CONE, BOLT_LIFE, BOLT_SPEED, SHOT_COOLDOWN, TORP_ACCEL, TORP_CONE,
+  TORP_LIFE, TORP_MAX, TORP_RACK, TORP_RELOAD, TORP_SEEK, TORP_SPACING, TORP_SPEED, TORP_TURN,
 } from './tuning';
 
 // ── the two weapons ───────────────────────────────────────────────────────
@@ -13,9 +13,18 @@ import {
 // locking the best target in a cone ahead and steering onto it.
 // Both carry the ship's own velocity, as in the original: without it a ship at
 // full impulse outruns its own fire.
+//
+// The ship steers on the plane but its enemies fly above and below it, so
+// both weapons work in 3D: a lance fired with a hull in the narrow cone ahead
+// is lifted or dropped onto that hull's altitude (the gunnery computer), and
+// a torpedo climbs or dives after its target as it steers.
 
-export interface Bolt { x: number; z: number; vx: number; vz: number; life: number; }
-export interface Torpedo { id: number; x: number; z: number; vx: number; vz: number; life: number; target: number | null; }
+export interface Bolt { x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number; }
+export interface Torpedo {
+  id: number; x: number; y: number; z: number; vx: number; vy: number; vz: number;
+  /** Speed across the plane: it starts slow and the motor builds it. */
+  speed: number; life: number; target: number | null;
+}
 
 export interface Arms {
   /** Phaser bank energy, 0 to BANK_MAX. */
@@ -42,8 +51,8 @@ export function newArms(): Arms {
 const NOSE = 1.5; // units ahead of the ship's centre that fire leaves from
 const EMITTER = 0.42; // units either side of the centreline
 
-/** Anything a torpedo can lock: a rock, an enemy hull or a capital ship. */
-export interface Target { id: number; x: number; z: number; vx: number; vz: number; }
+/** Anything a torpedo can lock: a rock, an enemy hull or a capital ship. Rock has no altitude: it is on the plane. */
+export interface Target { id: number; x: number; y?: number; z: number; vx: number; vz: number; r: number; }
 
 /** What the seeker can see: ships first, rock only when there is no ship. */
 export interface Targets { ships: readonly Target[]; boss: Target | null; rocks: readonly Target[]; }
@@ -79,6 +88,25 @@ export function findTarget(t: Targets, id: number | null): Target | undefined {
 
 let torpId = 1;
 
+/**
+ * The gunnery computer: the altitude a lance fired now should climb or dive
+ * to, and how far away that is. The nearest hull inside a narrow cone ahead
+ * (widened by its size), within a lance's reach.
+ */
+export function elevation(t: Targets, x: number, z: number, heading: number): { y: number; d: number } | null {
+  let best: { y: number; d: number } | null = null;
+  const reach = BOLT_SPEED * BOLT_LIFE;
+  const consider = (o: Target) => {
+    const dx = o.x - x, dz = o.z - z, d = Math.hypot(dx, dz);
+    if (d > reach || d < 1 || (best && d > best.d)) return;
+    const off = Math.abs(angleDelta(heading, Math.atan2(-dz, dx)));
+    if (off < BOLT_ELEVATE_CONE + o.r / d) best = { y: o.y ?? 0, d };
+  };
+  for (const o of t.ships) consider(o);
+  if (t.boss) consider(t.boss);
+  return best;
+}
+
 export function fireWeapons(
   arms: Arms, ship: ShipState, c: FlightControls, targets: Targets,
   bolts: Bolt[], torps: Torpedo[], events: GameEvent[], dt: number,
@@ -92,7 +120,9 @@ export function fireWeapons(
     if (arms.bank >= BANK_SHOT) {
       const ox = Math.sin(ship.heading) * EMITTER * arms.side, oz = Math.cos(ship.heading) * EMITTER * arms.side;
       const x = ship.x + hx * NOSE + ox, z = ship.z + hz * NOSE + oz;
-      bolts.push({ x, z, vx: hx * BOLT_SPEED + ship.vx, vz: hz * BOLT_SPEED + ship.vz, life: BOLT_LIFE });
+      const el = elevation(targets, x, z, ship.heading);
+      const vy = el ? el.y / (el.d / BOLT_SPEED) : 0;
+      bolts.push({ x, y: 0, z, vx: hx * BOLT_SPEED + ship.vx, vy, vz: hz * BOLT_SPEED + ship.vz, life: BOLT_LIFE });
       events.push({ type: 'bolt', x, z, heading: ship.heading });
       arms.bank -= BANK_SHOT;
       arms.bankWait = BANK_DELAY;
@@ -114,7 +144,7 @@ export function fireWeapons(
       const x = ship.x + hx * NOSE, z = ship.z + hz * NOSE;
       const forward = Math.max(0, ship.vx * hx + ship.vz * hz);
       const sp = TORP_SPEED + forward;
-      torps.push({ id: torpId++, x, z, vx: hx * sp, vz: hz * sp, life: TORP_LIFE, target: target ? target.id : null });
+      torps.push({ id: torpId++, x, y: 0, z, vx: hx * sp, vy: 0, vz: hz * sp, speed: sp, life: TORP_LIFE, target: target ? target.id : null });
       events.push({ type: 'torpedo', x, z, heading: ship.heading, target: target ? target.id : null });
       if (arms.rack === TORP_RACK) arms.reload = TORP_RELOAD;
       arms.rack--;
@@ -136,6 +166,7 @@ export function moveBolts(bolts: Bolt[], dt: number): void {
   for (let i = bolts.length - 1; i >= 0; i--) {
     const b = bolts[i]!;
     b.x += b.vx * dt;
+    b.y += b.vy * dt;
     b.z += b.vz * dt;
     b.life -= dt;
     if (b.life <= 0) bolts.splice(i, 1);
@@ -147,7 +178,8 @@ export function moveTorpedoes(torps: Torpedo[], targets: Targets, dt: number): T
   const spent: Torpedo[] = [];
   for (let i = torps.length - 1; i >= 0; i--) {
     const t = torps[i]!;
-    const sp = Math.hypot(t.vx, t.vz);
+    t.speed = Math.min(TORP_MAX, t.speed + TORP_ACCEL * dt);
+    const sp = t.speed;
     let heading = Math.atan2(-t.vz, t.vx);
     let target = findTarget(targets, t.target);
     if (!target) {
@@ -162,10 +194,16 @@ export function moveTorpedoes(torps: Torpedo[], targets: Targets, dt: number): T
       const lead = clamp(d / Math.max(1, sp), 0, 0.5);
       const want = Math.atan2(-(target.z + target.vz * lead - t.z), target.x + target.vx * lead - t.x);
       heading += clamp(angleDelta(heading, want), -TORP_TURN * dt, TORP_TURN * dt);
-      t.vx = Math.cos(heading) * sp;
-      t.vz = -Math.sin(heading) * sp;
+      // and climb or dive onto it, arriving as it arrives
+      const wantVy = clamp(((target.y ?? 0) - t.y) / Math.max(0.25, d / sp), -sp * 0.8, sp * 0.8);
+      t.vy += clamp(wantVy - t.vy, -80 * dt, 80 * dt);
+    } else {
+      t.vy *= Math.pow(0.9, dt * 60);
     }
+    t.vx = Math.cos(heading) * sp;
+    t.vz = -Math.sin(heading) * sp;
     t.x += t.vx * dt;
+    t.y += t.vy * dt;
     t.z += t.vz * dt;
     t.life -= dt;
     if (t.life <= 0) { torps.splice(i, 1); spent.push(t); }

@@ -11,13 +11,16 @@ import type { ShipState } from './ship';
 // The original's BOSS_TYPES: each faction sends its own flagship, unlocked on
 // the run clock, never the same faction twice running. The first arrives at
 // 110s, then one every 68s, the gap closing by 4s a ship to a floor of 44s.
-// Each holds station ahead of you, cycles its faction's attacks, calls in an
-// escort wing, turns nastier at half hull, and leaves when its fuse runs out.
-// A kill pays the bounty and two hull plates.
+// Each one drops in from far out and high above, descends to hold station
+// ahead of you, cycles its faction's attacks, calls in an escort wing, turns
+// nastier at half hull, and leaves when its fuse runs out (the fuse only
+// burns once it is on station). A kill pays the bounty and two hull plates.
 
 export const BOSS_FIRST = 110;
 export const BOSS_WARN = 2.6;
-const BOSS_R = 4.4;
+const BOSS_R = 6;
+/** Where a capital ship drops in, and where it holds station: ahead of the ship. */
+const ARRIVE_AT = 150, ARRIVE_Y = 28, STATION = 36;
 export const bossGap = (n: number) => Math.max(44, 68 - n * 4);
 const bossHp = (n: number) => 110 + n * 80 + n * n * 10;
 export const bossBounty = (n: number, f: Faction) => Math.round((1800 + n * 700) * FACTIONS[f].bounty / 10) * 10;
@@ -40,7 +43,9 @@ const ORDER: Faction[] = ['klingon', 'cardassian', 'romulan', 'borg', 'tholian']
 
 export interface Boss {
   id: number; faction: Faction; name: string; n: number;
-  x: number; z: number; vx: number; vz: number; face: number;
+  x: number; y: number; z: number; vx: number; vy: number; vz: number; face: number;
+  /** Still coming in: no attacks, and the fuse does not burn. */
+  arriving: boolean;
   hp: number; maxHp: number; r: number;
   attack: Attack; attackT: number; cycleI: number; shotT: number; spin: number;
   fuse: number; leaving: boolean; cloak: number; hitT: number; soaked: number;
@@ -119,10 +124,10 @@ export class Command {
     const { faction, name } = this.pending!;
     const def = FACTIONS[faction];
     const hp = Math.round(bossHp(this.count) * def.hp);
-    // in front of the ship, so the chase camera sees it come in
-    const x = s.x + Math.cos(s.heading) * 60, z = s.z - Math.sin(s.heading) * 60;
+    // far out in front of the ship and high, so the chase camera sees it come in
+    const x = s.x + Math.cos(s.heading) * ARRIVE_AT, z = s.z - Math.sin(s.heading) * ARRIVE_AT, y = ARRIVE_Y;
     this.boss = {
-      id: newId(), faction, name, n: this.count, x, z, vx: 0, vz: 0, face: s.heading + Math.PI,
+      id: newId(), faction, name, n: this.count, x, y, z, vx: 0, vy: 0, vz: 0, face: s.heading + Math.PI, arriving: true,
       hp, maxHp: hp, r: BOSS_R, attack: def.cycle[0]!, attackT: 4, cycleI: 0, shotT: 0, spin: 0,
       fuse: def.fuse, leaving: false, cloak: 0, hitT: 0, soaked: 0, beams: [], chargeT: 0,
     };
@@ -133,7 +138,7 @@ export class Command {
     // the escort wing comes in with her, together
     for (let i = 0; i < def.wingN; i++) {
       const a = (i / def.wingN) * Math.PI * 2;
-      const e = spawnAlien(def.wing, s, t, rng, { x: x + Math.cos(a) * 9, z: z + Math.sin(a) * 9 });
+      const e = spawnAlien(def.wing, s, t, rng, { x: x + Math.cos(a) * 12, y: y - 4, z: z + Math.sin(a) * 12 });
       e.hp = e.maxHp = Math.max(1, Math.round(e.maxHp * def.wingHp));
       aliens.push(e);
     }
@@ -150,6 +155,20 @@ export class Command {
     if (b.hitT > 0) b.hitT = Math.max(0, b.hitT - dt);
     const dx = s.x - b.x, dz = s.z - b.z, d = Math.hypot(dx, dz) || 1;
     const aim = Math.atan2(-dz, dx);
+    const hx = s.x + Math.cos(s.heading) * STATION, hz = s.z - Math.sin(s.heading) * STATION;
+
+    if (b.arriving) {
+      // descend onto station: a long, heavy approach
+      const gx = hx - b.x, gz = hz - b.z, g = Math.hypot(gx, gz) || 1;
+      const sp = Math.min(26, g * 0.8 + 6);
+      b.vx += ((gx / g) * sp - b.vx) * Math.min(1, 1.5 * dt);
+      b.vz += ((gz / g) * sp - b.vz) * Math.min(1, 1.5 * dt);
+      b.vy = -b.y * 0.9;
+      b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+      b.face += clamp(angleDelta(b.face, aim), -0.8 * dt, 0.8 * dt);
+      if (g < 10 && b.y < 2) { b.arriving = false; b.attackT = 2; }
+      return;
+    }
 
     b.fuse -= dt;
     if (b.fuse <= 0 && !b.leaving) {
@@ -158,13 +177,14 @@ export class Command {
     }
     if (b.leaving) {
       b.vx += (-dx / d) * 30 * dt; b.vz += (-dz / d) * 30 * dt;
-      b.x += b.vx * dt; b.z += b.vz * dt;
-      if (d > 110) this.end(t);
+      b.vy = Math.min(14, b.vy + 8 * dt);
+      b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+      if (d > 160) this.end(t);
       return;
     }
 
-    // hold station ahead of the ship at about 26 units, sliding to keep it
-    const hx = s.x + Math.cos(s.heading) * 26, hz = s.z - Math.sin(s.heading) * 26;
+    // hold station ahead of the ship, sliding to keep it
+    b.y += -b.y * Math.min(1, 2 * dt);
     if (b.attack === 'charge' && b.chargeT > 0) {
       b.chargeT -= dt;
     } else {
@@ -191,7 +211,7 @@ export class Command {
     b.shotT -= dt;
     const sp = shotSpeed(t);
     const fire = (a: number, speed = sp, extra: Partial<Shot> = {}) => shots.push({
-      id: newId(), x: b.x, z: b.z, vx: Math.cos(a) * speed, vz: -Math.sin(a) * speed, life: 3.2, r: 0.45,
+      id: newId(), x: b.x, y: b.y, z: b.z, vx: Math.cos(a) * speed, vy: 0, vz: -Math.sin(a) * speed, life: 3.6, r: 0.55,
       faction: b.faction, hp: 0, seek: 0, split: 0, ...extra,
     });
     switch (b.attack) {
@@ -225,7 +245,7 @@ export class Command {
   private open(b: Boss, s: ShipState, aim: number, d: number, t: number, shots: Shot[], webs: Web[], rng: Rng, events: GameEvent[]): void {
     const sp = shotSpeed(t);
     const fire = (a: number, speed = sp, extra: Partial<Shot> = {}) => shots.push({
-      id: newId(), x: b.x, z: b.z, vx: Math.cos(a) * speed, vz: -Math.sin(a) * speed, life: 3.2, r: 0.45,
+      id: newId(), x: b.x, y: b.y, z: b.z, vx: Math.cos(a) * speed, vy: 0, vz: -Math.sin(a) * speed, life: 3.6, r: 0.55,
       faction: b.faction, hp: 0, seek: 0, split: 0, ...extra,
     });
     b.beams = [];

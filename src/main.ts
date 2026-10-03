@@ -1,5 +1,4 @@
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { HULLS, type HullId } from './content/hulls';
 import { clamp } from './core/math';
 import { FixedStepLoop } from './core/loop';
 import { Input } from './input/input';
@@ -34,27 +33,19 @@ function boot(): void {
 
   const world = new World(Math.floor(Math.random() * 1e9));
   const renderer = createRenderer(canvas, quality.tier);
-  const sector = new Sector(world.hull.id, renderer, quality.tier);
+  const sector = new Sector(renderer, quality.tier);
   const debug = new DebugOverlay(el('debug'), params.get('debug') === '1');
 
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   sector.reduceMotion = motion.matches;
   motion.addEventListener('change', (e) => { sector.reduceMotion = e.matches; });
 
-  // ── hull and zoom ──────────────────────────────────────────────────────
-  const setHull = (id: HullId) => {
-    if (id === world.hull.id) return;
-    world.setHull(id);
-    sector.setHull(id);
-    hud.showHull(id);
-    hud.note(world, `Hull changed · ${HULLS[id].name}`);
-  };
-  const zoom = (dir: 1 | -1) => {
+  // ── zoom ───────────────────────────────────────────────────────────────
+  const zoom = (dir: number) => {
     sector.rig.zoom = clamp(sector.rig.zoom + dir, 0, ZOOMS.length - 1);
     hud.showZoom(sector.rig.zoom);
   };
-  const hud = new Hud(setHull, zoom);
-  hud.showHull(world.hull.id);
+  const hud = new Hud(zoom);
   hud.showZoom(sector.rig.zoom);
 
   const fit = () => {
@@ -105,7 +96,9 @@ function boot(): void {
     render(alpha, frameDt) {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
-      sector.react(events);
+      // a kill lands harder for a beat of stillness (never with reduced motion)
+      const hold = sector.react(events);
+      if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
       sector.frame(world, alpha, dt);
       hud.update(world, sector, frameDt);
@@ -137,7 +130,7 @@ function boot(): void {
     // Any key resumes, except the pause keys themselves: Input has already
     // toggled on those, and answering them here as well would undo it.
     if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);
-    if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -1 : 1);
+    if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -sector.rig.zoom : 1); // cycles round
     if (e.code === 'Minus') zoom(1);
     if (e.code === 'Equal') zoom(-1);
   });

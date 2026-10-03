@@ -18,7 +18,7 @@ export interface QualityTier {
   name: TierName;
   /** Ceiling on devicePixelRatio. The original capped at 1.5 everywhere. */
   dprCap: number;
-  /** Multisampling. Fixed at startup: WebGL cannot drop it without a new context. */
+  /** Anti-aliasing (SMAA in the post chain). Only the high tier has it. */
   msaa: boolean;
 }
 

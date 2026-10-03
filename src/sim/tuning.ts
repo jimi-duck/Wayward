@@ -29,9 +29,8 @@ export const THROTTLE_SPAN = 0.55;
 // ── the barrel roll ───────────────────────────────────────────────────────
 // New in the 3D game: the one move that uses the third dimension. A full roll
 // with a sideways kick, so it is a dodge, and a short window in which nothing
-// can hit you (used from M2). The kick scales with the hull's top speed, and
-// the hull's own drag decides how far the slide carries: the Sovereign slides
-// furthest, as a heavy ship should.
+// can hit you. The kick scales with the hull's top speed, and the hull's own
+// drag decides how far the slide carries.
 export const ROLL_TIME = 0.45;
 export const ROLL_COOLDOWN = 1.0;
 export const ROLL_IFRAMES = 0.35;
@@ -47,35 +46,45 @@ export const BREACH_GRACE = 2.2;
 
 // ── phasers (button 1) ────────────────────────────────────────────────────
 // The original fired by itself. Here the player pulls the trigger, so the
-// rate is the original's and the limit is a bank of energy instead: hold the
-// trigger and it drains, let go and it refills.
-/** Seconds between shots: the original's SHOT_COOLDOWN. */
-export const SHOT_COOLDOWN = 0.235;
-/** Beam speed and life: 11px a frame for 1.35s. */
-export const BOLT_SPEED = 11 * PX * HZ;
-export const BOLT_LIFE = 1.35;
-export const BOLT_DAMAGE = 1;
+// limit is a bank of energy: hold the trigger and it drains, let go and it
+// refills. The gritty pass made them heavier: a slower cadence, a harder
+// hit and a longer reach, because enemies now come in from far out.
+/** Seconds between shots. */
+export const SHOT_COOLDOWN = 0.3;
+/** Lance speed and life: 80 units/s for 1.3s, about 100 units of reach. */
+export const BOLT_SPEED = 80;
+export const BOLT_LIFE = 1.3;
+export const BOLT_DAMAGE = 1.4;
+/**
+ * The gunnery computer: steering stays on the plane, so a lance fired with a
+ * hull inside this cone (radians either side of the nose, widened by the
+ * target's size) is lifted or dropped onto the target's altitude.
+ */
+export const BOLT_ELEVATE_CONE = 0.14;
 /** Phaser bank: energy per shot, refill per second, and the pause before it refills. */
 export const BANK_MAX = 100;
-export const BANK_SHOT = 7;
-export const BANK_REFILL = 22;
+export const BANK_SHOT = 9;
+export const BANK_REFILL = 24;
 export const BANK_DELAY = 0.35;
 
 // ── photon torpedoes (button 2) ───────────────────────────────────────────
-// The original's numbers: 324px/s, a 2.6s fuse, a 78px blast for 4 damage,
-// a 4.2 rad/s turn and a 520px seeker. Three in the rack, each reloading in
-// the original's 3.4s.
-export const TORP_SPEED = 5.4 * PX * HZ;
-export const TORP_LIFE = 2.6;
-export const TORP_TURN = 4.2;
-export const TORP_SEEK = 520 * PX;
-export const TORP_FUSE = 13 * PX;
-export const TORP_BLAST = 78 * PX;
-export const TORP_DAMAGE = 4;
+// Heavy ordnance: launched slow, they light their motor and accelerate onto
+// the target, then go off in a big blast. Three in the rack, each reloading
+// in the original's 3.4s. The seeker reaches far enough to lock a hull that
+// is still on its approach.
+export const TORP_SPEED = 16;
+export const TORP_ACCEL = 75;
+export const TORP_MAX = 64;
+export const TORP_LIFE = 3.4;
+export const TORP_TURN = 3.4;
+export const TORP_SEEK = 95;
+export const TORP_FUSE = 1.5;
+export const TORP_BLAST = 9;
+export const TORP_DAMAGE = 6;
 export const TORP_RACK = 3;
 export const TORP_RELOAD = 3.4;
 /** Seconds between two torpedoes from a full rack. */
-export const TORP_SPACING = 0.35;
+export const TORP_SPACING = 0.45;
 /** Half-angle of the cone a torpedo looks for a target in, radians. */
 export const TORP_CONE = 1.1;
 
@@ -89,3 +98,9 @@ export const ROCK_POINTS = [20, 50, 100] as const;
 export const FIELD_TARGET = 34;
 /** The field tiles in a square this wide around the ship. */
 export const FIELD_BAND = 240;
+
+// ── bulwarks ──────────────────────────────────────────────────────────────
+// Massive asteroids that nothing breaks. They stop fire from both sides,
+// they hurt to fly into, and the heavier enemy hulls hide behind them.
+export const BULWARK_COUNT = 7;
+export const BULWARK_R = [7, 12] as const;
