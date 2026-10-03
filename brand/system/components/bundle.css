@@ -1,0 +1,273 @@
+/* ══ Asteroid Blaster · components ══════════════════════════════════════════
+   Every rule reads the tokens. Class prefix ab-. Frames are drawn the way the
+   original game drew them: the element is never clipped, its ::before is the
+   edge and its ::after is the glass, both cut to the same notch. That keeps
+   the 45° diagonals carrying the hairline, and it lets a glow (a filter on the
+   unclipped element) follow the cut corners. */
+
+body { margin: 0; background: var(--void); color: var(--ink); font-family: var(--font-display); -webkit-font-smoothing: antialiased; }
+
+/* Glow strength. Drydock has none: paper does not emit light. */
+:root, [data-theme="bridge"] { --ab-glow: 1; }
+[data-theme="drydock"] { --ab-glow: 0; }
+
+/* ── type helpers ─────────────────────────────────────────────────────── */
+.ab-label { font: 500 11px/14px var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
+.ab-anno  { font: 400 9px/12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.ab-data  { font: 500 13px/18px var(--font-mono); color: var(--signal); font-variant-numeric: tabular-nums; }
+.ab-rail  { font: 600 15px/18px var(--font-rail); letter-spacing: .14em; text-transform: uppercase; }
+.ab-num   { font: 600 28px/28px var(--font-rail); font-variant-numeric: tabular-nums; color: var(--ink); }
+.ab-title { font: 700 28px/32px var(--font-display); letter-spacing: .12em; text-transform: uppercase; }
+.ab-head  { font: 700 18px/22px var(--font-display); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
+.ab-body  { font: 400 14px/20px var(--font-display); color: var(--ink-2); }
+.ab-small { font: 400 12px/17px var(--font-display); color: var(--ink-3); }
+.ab-jp    { font-family: var(--font-jp); font-weight: 700; letter-spacing: .1em; }
+
+/* ── the notch ────────────────────────────────────────────────────────── */
+/* key caps and tags are frames too, without needing the class */
+.ab-frame, .ab-key, .ab-tag {
+  --c: var(--cut-md);
+  --ci: calc(var(--c) - .4px);   /* the glass's cut, one hairline in */
+  --frame-edge: var(--rule-2);
+  --frame-fill: var(--hull-2);
+  position: relative; isolation: isolate;
+}
+.ab-frame::before, .ab-frame::after, .ab-key::before, .ab-key::after, .ab-tag::before, .ab-tag::after { content: ""; position: absolute; pointer-events: none; }
+.ab-frame::before, .ab-key::before, .ab-tag::before {
+  inset: 0; z-index: -2; background: var(--frame-edge);
+  clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)),
+                     calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
+}
+.ab-frame::after, .ab-key::after, .ab-tag::after {
+  inset: 1px; z-index: -1; background: var(--frame-fill);
+  clip-path: polygon(var(--ci) 0, calc(100% - var(--ci)) 0, 100% var(--ci), 100% calc(100% - var(--ci)),
+                     calc(100% - var(--ci)) 100%, var(--ci) 100%, 0 calc(100% - var(--ci)), 0 var(--ci));
+}
+.ab-frame.is-lit { --frame-edge: var(--signal); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--signal) calc(var(--ab-glow) * 30%), transparent)); }
+
+/* ── the elbow ────────────────────────────────────────────────────────── */
+/* An LCARS sweep cut at 45°: a bar down the left, a rail along the top, a
+   chamfered outer corner and a chamfered inner bend. Markup:
+   <section class="ab-elbow"><i class="ab-elbow-l"></i> … </section>      */
+.ab-elbow {
+  --elbow: var(--signal);
+  --bar: var(--stroke-bar);
+  --rail: var(--stroke-rail);
+  --c: var(--cut-lg);
+  --ci: calc(var(--c) - .4px);
+  --bend: 12px;
+  position: relative; isolation: isolate;
+  padding: calc(var(--rail) + var(--space-6)) var(--space-8) var(--space-6) calc(var(--bar) + var(--space-6));
+}
+.ab-elbow::before, .ab-elbow::after { content: ""; position: absolute; pointer-events: none; }
+.ab-elbow::before { inset: 0; z-index: -3; background: color-mix(in srgb, var(--elbow) 45%, transparent);
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.ab-elbow::after  { inset: 1px; z-index: -2; background: var(--hull);
+  clip-path: polygon(var(--ci) 0, 100% 0, 100% calc(100% - var(--ci)), calc(100% - var(--ci)) 100%, 0 100%, 0 var(--ci)); }
+.ab-elbow-l {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--elbow);
+  clip-path: polygon(var(--c) 0, 100% 0, 100% var(--rail), calc(var(--bar) + var(--bend)) var(--rail),
+                     var(--bar) calc(var(--rail) + var(--bend)), var(--bar) 100%, 0 100%, 0 var(--c));
+}
+.ab-elbow.is-command { --elbow: var(--command); }
+.ab-elbow.is-alert   { --elbow: var(--alert); filter: drop-shadow(0 0 22px color-mix(in srgb, var(--alert) calc(var(--ab-glow) * 28%), transparent)); }
+.ab-elbow.is-lit     { filter: drop-shadow(0 0 18px color-mix(in srgb, var(--signal) calc(var(--ab-glow) * 24%), transparent)); }
+
+/* the head of an elbow panel: a code on the left, the title set hard right */
+.ab-elbow-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-6); }
+.ab-elbow-title { text-align: right; }
+.ab-elbow-title .ab-title { color: var(--elbow); }
+.ab-elbow-title .ab-sub { margin-top: var(--space-1); font: 600 15px/18px var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.ab-elbow-title .ab-sub b { color: var(--ink); font-weight: 700; }
+.ab-elbow-code { display: flex; align-items: center; gap: var(--space-3); }
+
+/* ── corner brackets ──────────────────────────────────────────────────── */
+.ab-brackets {
+  --b: var(--rule-2); --l: 14px; --t: var(--stroke-bracket);
+  background:
+    linear-gradient(var(--b), var(--b)) left top / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) left top / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) right top / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) right top / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) left bottom / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) left bottom / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) right bottom / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) right bottom / var(--t) var(--l) no-repeat;
+}
+.ab-brackets.is-lit { --b: var(--signal); }
+.ab-brackets.is-target { --b: var(--command); --l: 10px; }
+
+/* ── tick meters ──────────────────────────────────────────────────────── */
+/* --v is the fill, 0 to 1. The segments are a mask, so any width works. */
+.ab-ticks {
+  --v: .5; --on: var(--signal); --off: var(--signal-ghost); --seg: 3px; --gap: 2px;
+  position: relative; height: 12px;
+  background: linear-gradient(90deg, var(--on) 0 calc(var(--v) * 100%), var(--off) 0);
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 var(--seg), transparent 0 calc(var(--seg) + var(--gap)));
+          mask: repeating-linear-gradient(90deg, #000 0 var(--seg), transparent 0 calc(var(--seg) + var(--gap)));
+}
+.ab-ticks-wrap { position: relative; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--on, var(--signal)) calc(var(--ab-glow) * 45%), transparent)); }
+.ab-ticks--command { --on: var(--command); --off: color-mix(in srgb, var(--command) 18%, transparent); }
+.ab-ticks--alert   { --on: var(--alert);   --off: color-mix(in srgb, var(--alert) 18%, transparent); }
+.ab-ticks--violet  { --on: var(--dilithium); --off: color-mix(in srgb, var(--dilithium) 18%, transparent); }
+.ab-ticks--tall    { height: 20px; --seg: 2px; --gap: 3px; }
+/* ten discrete pips, for ranked stats */
+.ab-pips {
+  --v: .5; --on: var(--signal); --off: var(--hull-3);
+  height: 8px;
+  background: linear-gradient(90deg, var(--on) 0 calc(var(--v) * 100%), var(--off) 0);
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 calc(10% - 3px), transparent 0 10%);
+          mask: repeating-linear-gradient(90deg, #000 0 calc(10% - 3px), transparent 0 10%);
+}
+/* the cursor: one tall tick at the fill line, as on the reference instruments */
+.ab-cursor { position: absolute; top: -4px; bottom: -4px; width: 2px; left: calc(var(--v) * 100%); background: var(--ink); }
+
+/* ── hull plates ──────────────────────────────────────────────────────── */
+.ab-plates { display: inline-flex; gap: 4px; }
+.ab-plates i {
+  width: 11px; height: 17px; background: var(--signal-ghost);
+  clip-path: polygon(var(--cut-xs) 0, 100% 0, 100% calc(100% - var(--cut-xs)), calc(100% - var(--cut-xs)) 100%, 0 100%, 0 var(--cut-xs));
+}
+.ab-plates i.on { background: var(--signal); }
+.ab-plates.is-alert i.on { background: var(--alert); animation: ab-pulse 1.1s steps(2, jump-none) infinite; }
+
+/* ── readouts ─────────────────────────────────────────────────────────── */
+.ab-readout { display: inline-flex; align-items: baseline; gap: var(--space-2); }
+.ab-readout .ab-num { color: var(--ink); }
+.ab-readout.is-signal .ab-num { color: var(--signal); }
+.ab-chip {
+  --c: var(--cut-sm); --frame-fill: color-mix(in srgb, var(--hull) 82%, transparent); --frame-edge: var(--rule-2);
+  display: inline-flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4);
+}
+
+/* ── key caps ─────────────────────────────────────────────────────────── */
+.ab-key {
+  --c: var(--cut-xs); --frame-edge: var(--edge); --frame-fill: var(--hull-2);
+  display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px;
+  font: 500 11px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink);
+}
+.ab-key.is-on { --frame-edge: var(--command-fill); --frame-fill: var(--command-fill); color: var(--on-command); }
+.ab-key.is-command { --frame-edge: var(--command); color: var(--command); }
+
+/* ── buttons ──────────────────────────────────────────────────────────── */
+/* A LCARS pill, cut: the ends are points, not radii. */
+.ab-btn {
+  --h: 44px; --tip: 14px; --tipi: calc(var(--tip) - .6px); --btn-edge: var(--edge); --btn-fill: var(--hull-2); --btn-ink: var(--ink);
+  position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  height: var(--h); padding: 0 calc(var(--tip) + var(--space-4)); border: 0; background: none; cursor: pointer;
+  font: 700 14px/1 var(--font-display); letter-spacing: .24em; text-transform: uppercase; color: var(--btn-ink);
+}
+.ab-btn::before, .ab-btn::after { content: ""; position: absolute; pointer-events: none; }
+.ab-btn::before { inset: 0; z-index: -2; background: var(--btn-edge);
+  clip-path: polygon(var(--tip) 0, calc(100% - var(--tip)) 0, 100% 50%, calc(100% - var(--tip)) 100%, var(--tip) 100%, 0 50%); }
+.ab-btn::after  { inset: 1.5px; z-index: -1; background: var(--btn-fill);
+  clip-path: polygon(var(--tipi) 0, calc(100% - var(--tipi)) 0, 100% 50%, calc(100% - var(--tipi)) 100%, var(--tipi) 100%, 0 50%); }
+.ab-btn--command { --btn-edge: var(--command-fill); --btn-fill: var(--command-fill); --btn-ink: var(--on-command); }
+.ab-btn--command:hover { filter: drop-shadow(0 0 16px color-mix(in srgb, var(--command) calc(var(--ab-glow) * 45%), transparent)); }
+.ab-btn--ghost:hover { --btn-edge: var(--signal); --btn-ink: var(--signal); }
+.ab-btn--alert { --btn-edge: var(--alert); --btn-ink: var(--alert); }
+.ab-btn--sm { --h: 32px; --tip: 10px; font-size: 11px; letter-spacing: .2em; padding: 0 calc(var(--tip) + var(--space-3)); }
+/* Focus: the clip would eat an outline, so the ring is drawn in the edge
+   layer: a 2px gap of void, then 2px of focus, solid. */
+.ab-btn:focus-visible { outline: none; }
+.ab-btn:focus-visible::before { background: var(--focus); inset: -4px; }
+.ab-btn:focus-visible::after { box-shadow: 0 0 0 2px var(--void); }
+
+/* ── tags and status ──────────────────────────────────────────────────── */
+.ab-tag {
+  --c: var(--cut-xs); --frame-edge: var(--rule-2); --frame-fill: var(--hull-2);
+  display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 8px;
+  font: 500 10px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink);
+}
+.ab-tag--new   { --frame-edge: var(--command); color: var(--command); }
+.ab-tag--up    { --frame-edge: var(--edge); color: var(--ink); }
+.ab-tag--max   { --frame-edge: var(--nominal); color: var(--nominal); }
+.ab-tag--once  { --frame-edge: var(--dilithium); color: var(--dilithium); }
+.ab-dot { width: 7px; height: 7px; border-radius: var(--radius-round); background: var(--ink-3); flex: none; }
+.ab-dot--nominal { background: var(--nominal); box-shadow: 0 0 calc(var(--ab-glow) * 8px) var(--nominal); }
+.ab-dot--caution { background: var(--caution); }
+.ab-dot--alert   { background: var(--alert); box-shadow: 0 0 calc(var(--ab-glow) * 8px) var(--alert); }
+.ab-dot--signal  { background: var(--signal); box-shadow: 0 0 calc(var(--ab-glow) * 8px) var(--signal); }
+.ab-reg { font: 500 10px/1 var(--font-mono); letter-spacing: .12em; color: var(--ink-3); text-transform: uppercase; }
+.ab-reg::before { content: "[ "; } .ab-reg::after { content: " ]"; }
+
+/* ── hazard placards ──────────────────────────────────────────────────── */
+.ab-placard { --c: var(--cut-sm); display: grid; grid-template-rows: auto 1fr; min-width: 0;
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.ab-placard-stripes { height: 14px; background: repeating-linear-gradient(-45deg, var(--stripe-a) 0 9px, var(--stripe-b) 9px 18px); background-size: 200% 100%; }
+.ab-placard-body { padding: var(--space-3) var(--space-4) var(--space-4); display: grid; gap: 2px; }
+.ab-placard-kicker { display: flex; justify-content: space-between; gap: var(--space-4); font: 500 9px/12px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+.ab-placard-title { font: 800 26px/28px var(--font-display); letter-spacing: .08em; text-transform: uppercase; }
+.ab-placard-text { font: 600 13px/18px var(--font-display); letter-spacing: .04em; }
+.ab-placard--caution { --stripe-a: var(--caution); --stripe-b: var(--on-caution); background: var(--caution); color: var(--on-caution); }
+.ab-placard--alert   { --stripe-a: var(--alert); --stripe-b: var(--void); background: var(--hull); color: var(--ink); box-shadow: inset 0 0 0 1px var(--alert); }
+.ab-placard--alert .ab-placard-title { color: var(--alert); }
+.ab-placard--signal  { --stripe-a: var(--signal); --stripe-b: var(--void); background: var(--hull); color: var(--ink); box-shadow: inset 0 0 0 1px var(--signal); }
+.ab-placard.is-live .ab-placard-stripes { animation: ab-stripes 1.5s linear infinite; }
+
+/* ── cards (refit, shakedown) ─────────────────────────────────────────── */
+.ab-card {
+  --c: var(--cut-md); --frame-edge: var(--rule-2); --frame-fill: var(--hull-2); --cat: var(--signal);
+  display: grid; grid-template-rows: auto auto auto 1fr auto; gap: var(--space-2); padding: var(--space-3) var(--space-3) var(--space-4);
+  transition: transform .14s cubic-bezier(.2,.7,.2,1), filter .14s;
+}
+.ab-card.is-selected { --frame-edge: var(--command); --frame-fill: color-mix(in srgb, var(--command) 7%, var(--hull-2));
+  transform: translateY(-3px); filter: drop-shadow(0 0 18px color-mix(in srgb, var(--command) calc(var(--ab-glow) * 30%), transparent)); }
+.ab-card .ab-view { position: relative; height: 112px; margin-bottom: var(--space-2); background:
+  radial-gradient(color-mix(in srgb, var(--cat) 22%, transparent) .8px, transparent 1px) 0 0 / 12px 12px, var(--hull); }
+.ab-card .ab-view svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ab-card .ab-view .ab-tag { position: absolute; top: 8px; right: 8px; }
+.ab-card .ab-view .ab-anno { position: absolute; left: 10px; bottom: 7px; }
+.ab-card-cat { display: flex; align-items: center; gap: var(--space-2); }
+.ab-card-cat .ab-label { color: var(--cat); }
+.ab-card-cat .ab-key { margin-left: auto; }
+.ab-card-figs { display: grid; gap: 2px; padding-top: var(--space-2); border-top: 1px solid var(--rule); align-self: end; }
+.ab-card-figs .ab-data::before { content: "— "; color: var(--ink-3); }
+.ab-card-figs .is-cost { color: var(--ink); }
+.ab-card-figs .is-cost::before { content: "↓ "; color: var(--alert); }
+.ab-cat--gun  { --cat: var(--command); }
+.ab-cat--hull { --cat: var(--signal); }
+.ab-cat--ship { --cat: var(--dilithium); }
+.ab-sch { fill: none; stroke: var(--cat); stroke-width: 1.5; stroke-linejoin: miter; vector-effect: non-scaling-stroke; }
+.ab-sch-dim { fill: none; stroke: color-mix(in srgb, var(--cat) 40%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.ab-sch-fill { fill: color-mix(in srgb, var(--cat) 16%, transparent); stroke: none; }
+.ab-sch-rock { fill: color-mix(in srgb, var(--dilithium) 12%, transparent); stroke: var(--dilithium); stroke-width: 1.25; vector-effect: non-scaling-stroke; }
+
+/* ── icons ─────────────────────────────────────────────────────────────── */
+/* Masks, so an icon takes its colour from `color` like text does. */
+.ab-i { display: inline-block; width: 1em; height: 1em; flex: none; background: currentColor;
+  -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; }
+
+/* ── motion ───────────────────────────────────────────────────────────── */
+@keyframes ab-stripes { to { background-position: -36px 0; } }
+@keyframes ab-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) {
+  .ab-placard.is-live .ab-placard-stripes, .ab-plates.is-alert i.on { animation: none; }
+  .ab-card { transition: none; }
+}
+
+/* ── identity, inline ─────────────────────────────────────────────────── */
+.ab-wm { display: block; fill: none; stroke-width: 4; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; }
+.ab-wm-a { stroke: var(--ink); }
+.ab-wm-b { stroke: var(--signal); }
+.ab-wm.is-mono .ab-wm-b { stroke: var(--ink); }
+.ab-mk { display: block; overflow: visible; }
+.ab-mk-rock { fill: none; stroke: var(--dilithium); stroke-width: 4; stroke-linejoin: miter; }
+.ab-mk-shard { fill: var(--dilithium); }
+.ab-mk-ship { fill: var(--signal); }
+.ab-mk.is-mono .ab-mk-rock { stroke: var(--ink); } .ab-mk.is-mono .ab-mk-shard, .ab-mk.is-mono .ab-mk-ship { fill: var(--ink); }
+
+/* icon masks (generated) */
+.ab-i--weapons { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M3 9h4v6H3z M7 12h14 M7 10l13-4 M7 14l13 4'/%3E%3C/svg%3E"); }
+.ab-i--defence { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 3l8 3v7l-3 5-5 3-5-3-3-5V6z'/%3E%3C/svg%3E"); }
+.ab-i--ship { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 3l7 18-7-5-7 5z'/%3E%3C/svg%3E"); }
+.ab-i--hull { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M7 4h13v13l-3 3H4V7z M8 10h8'/%3E%3C/svg%3E"); }
+.ab-i--dilithium { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 2l6 5v10l-6 5-6-5V7z M6 7l6 4 6-4 M12 11v11'/%3E%3C/svg%3E"); }
+.ab-i--overcharge { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M13 2L5 14h6l-1 8 8-12h-6l1-8z'/%3E%3C/svg%3E"); }
+.ab-i--chain { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M5 7l5 5-5 5 M12 7l5 5-5 5'/%3E%3C/svg%3E"); }
+.ab-i--capital { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M3 8V3h5 M16 3h5v5 M21 16v5h-5 M8 21H3v-5 M12 8l4 4-4 4-4-4z'/%3E%3C/svg%3E"); }
+.ab-i--stardate { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M9 3h6l6 6v6l-6 6H9l-6-6V9z M12 7v5h4'/%3E%3C/svg%3E"); }
+.ab-i--torpedo { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M4 9h10l5 3-5 3H4z M4 9L2 7 M4 15l-2 2 M8 9v6'/%3E%3C/svg%3E"); }
+.ab-i--mine { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5'/%3E%3C/svg%3E"); }
+.ab-i--alert { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 3l10 17H2z M12 9v6 M12 17v2'/%3E%3C/svg%3E"); }
+.ab-i--all-stop { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M8.5 5v14 M15.5 5v14'/%3E%3C/svg%3E"); }

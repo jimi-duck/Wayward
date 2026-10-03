@@ -1,0 +1,35 @@
+<!-- @dsCard group="Instruments" height=300 -->
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>TickMeter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Martian+Mono:wdth,wght@75..112.5,300..700&family=Tektur:wdth,wght@75..100,400..900&display=swap">
+<style>
+.wrap { display: grid; gap: 18px; padding: 24px; }
+.rail { display: flex; align-items: center; gap: 12px; }
+.rail .grow { flex: 1; }
+.cap { color: var(--ink-2); white-space: nowrap; }
+.cap b { color: var(--signal); }
+.gem { display: inline-flex; align-items: baseline; gap: 6px; color: var(--dilithium); }
+.gem .ab-i { align-self: center; }
+.s { font-size: 20px; line-height: 20px; color: var(--signal); }
+.line { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.stats { display: grid; grid-template-columns: 80px 160px; gap: 8px 14px; align-items: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="rail"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62"></div></div><span class="cap gem"><i class="ab-i ab-i--dilithium " aria-hidden="true"></i><span class="ab-num s">109</span><span class="ab-label">/ 176</span></span></div>
+  <div class="line"><span class="ab-label">Overcharge</span><div class="ab-ticks-wrap" style="width:180px"><div class="ab-ticks" style="--v:.62"></div></div><span class="ab-key">Space</span></div>
+  <div class="line"><span class="ab-label" style="color:var(--command)">Overcharge ready</span><div class="ab-ticks-wrap" style="width:180px;--on:var(--command)"><div class="ab-ticks ab-ticks--command" style="--v:1"></div></div><span class="ab-key is-on">Space</span></div>
+  <div class="line"><span class="ab-label" style="color:var(--faction-klingon)">I.K.S. Vor’cha</span><div class="ab-ticks-wrap" style="width:240px;--on:var(--alert)"><div class="ab-ticks ab-ticks--alert" style="--v:.44"></div></div><span class="ab-anno">Half hull · rage</span></div>
+  <div class="line"><div style="position:relative;width:260px"><div class="ab-ticks ab-ticks--tall" style="--v:.62;--off:var(--hull-3)"></div><i class="ab-cursor" style="--v:.62"></i></div><span class="ab-num s">62%</span><span class="ab-anno">Preparing refit…</span></div>
+  <div class="stats">
+    <span class="ab-label">Speed</span><div class="ab-pips" style="--v:1"></div>
+    <span class="ab-label">Turning</span><div class="ab-pips" style="--v:.6"></div>
+    <span class="ab-label">Phasers</span><div class="ab-pips" style="--v:.3"></div>
+  </div>
+</div>
+</body>
+</html>

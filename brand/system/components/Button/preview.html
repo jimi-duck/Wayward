@@ -1,0 +1,23 @@
+<!-- @dsCard group="Controls" height=170 -->
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Button</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Martian+Mono:wdth,wght@75..112.5,300..700&family=Tektur:wdth,wght@75..100,400..900&display=swap">
+<style>
+.wrap { display: flex; flex-wrap: wrap; gap: 18px; padding: 32px 24px; align-items: center; }
+.ab-btn.is-focus::before { background: var(--focus); inset: -4px; }
+.ab-btn.is-focus::after { box-shadow: 0 0 0 2px var(--void); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <button class="ab-btn ab-btn--command">Play again</button>
+  <button class="ab-btn ab-btn--command is-focus">Launch</button>
+  <button class="ab-btn ab-btn--ghost">How to fly</button>
+  <button class="ab-btn ab-btn--ghost ab-btn--sm"><i class="ab-i ab-i--all-stop " aria-hidden="true"></i> All stop</button>
+  <button class="ab-btn ab-btn--alert ab-btn--sm">Abandon run</button>
+</div>
+</body>
+</html>
