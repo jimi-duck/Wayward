@@ -8,8 +8,10 @@ import { QualityGovernor, tierIndex } from './render/quality';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
+import { grants, loadProfile, recordRun, saveProfile } from './meta/profile';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
+import { buildView, HailPanel, PadNav, RefitPanel, StartOptions, SummaryPanel } from './ui/panels';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -31,9 +33,12 @@ function boot(): void {
   const coarse = matchMedia('(pointer: coarse)').matches;
   const quality = new QualityGovernor(pinned >= 0 ? pinned : tierIndex(coarse ? 'medium' : 'high'), pinned >= 0);
 
-  const world = new World(Math.floor(Math.random() * 1e9));
+  // The pilot's record between runs: bests, unlocks, chosen modifiers.
+  const profile = loadProfile();
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), modifiers: profile.modifiers });
   const renderer = createRenderer(canvas, quality.tier);
   const sector = new Sector(renderer, quality.tier);
+  sector.setCosmetic(profile.cosmetic);
   const debug = new DebugOverlay(el('debug'), params.get('debug') === '1');
 
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -58,6 +63,50 @@ function boot(): void {
   // the console's text sizes change once the web fonts arrive
   document.fonts?.ready.then(fit);
 
+  // ── the run's stops: refit, hail, report ───────────────────────────────
+  // The world pauses itself at each and waits; the panels answer it.
+  const refit = new RefitPanel();
+  const hail = new HailPanel();
+  const summary = new SummaryPanel();
+  const padNav = new PadNav();
+  let reported = false;
+  const panelOpen = () => refit.open || hail.open || !el('summary').hidden || startOpts.logbookOpen;
+  const startOpts = new StartOptions(profile, () => {
+    saveProfile(profile);
+    sector.setCosmetic(profile.cosmetic);
+    // before the first launch nothing has happened yet, so the run can be re-made with the new modifiers
+    if (!started) world.restart({ modifiers: profile.modifiers });
+  });
+  const stops = () => {
+    if (world.phase === 'refit' && world.offer && !refit.open) {
+      input.reset();
+      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); });
+    } else if (world.phase === 'hail' && world.command.pending && !hail.open) {
+      input.reset();
+      hail.show(world.command.pending, (engage) => { world.answerHail(engage); input.reset(); });
+    } else if (world.phase === 'over' && !reported) {
+      reported = true;
+      input.reset();
+      const rec = recordRun(profile, world.run);
+      summary.show(world.run, rec, () => {
+        world.restart({ unlocked: grants(profile), modifiers: profile.modifiers });
+        reported = false;
+        startOpts.render();
+        hud.note(world, `Run begins · ${world.hull.name}`);
+        input.reset();
+      });
+    }
+    // a gamepad answers the open panel
+    if (refit.open || hail.open || !el('summary').hidden) {
+      const p = padNav.poll();
+      if (refit.open) refit.padInput(p);
+      else if (hail.open) hail.padInput(p);
+      else summary.padInput(p);
+    } else padNav.poll();
+    // a full rail: a beat of slow motion before the panel
+    loop.timeScale = world.celebrate > 0 ? 0.3 : 1;
+  };
+
   // ── start, pause ───────────────────────────────────────────────────────
   // The run waits behind the start card, so the first key or tap is the one
   // that launches, and in an embedded frame that click also gives the page
@@ -67,7 +116,10 @@ function boot(): void {
   const setPaused = (on: boolean) => {
     loop.paused = on;
     document.documentElement.classList.toggle('paused', on && started);
-    if (on) input.reset();
+    if (on) {
+      input.reset();
+      el('pause-build').replaceChildren(buildView(world.levels));
+    }
   };
   const launch = () => {
     if (started) return;
@@ -85,7 +137,7 @@ function boot(): void {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), release: el('release'),
       roll: el('roll'), fire: el('fire'), torpedo: el('torp'),
     },
-    () => (started ? setPaused(!loop.paused) : launch()),
+    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch()),
   );
 
   const loop = new FixedStepLoop({
@@ -102,6 +154,7 @@ function boot(): void {
       hud.events(events, world);
       sector.frame(world, alpha, dt);
       hud.update(world, sector, frameDt);
+      if (started) stops();
       debug.frame(frameDt, renderer, quality, input, loop.paused);
     },
     measure(dt) {
@@ -116,7 +169,7 @@ function boot(): void {
 
   el('launch').addEventListener('click', launch);
   el('start').addEventListener('pointerdown', (e) => {
-    if (e.target === el('launch')) return;
+    if (e.target === el('launch') || startOpts.logbookOpen) return;
     e.preventDefault();
     launch();
   });
@@ -124,9 +177,11 @@ function boot(): void {
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
     if (!started) {
+      if (startOpts.logbookOpen) { if (e.code === 'Escape') startOpts.logbook(false); return; }
       if (e.code === 'Enter' || e.code === 'Space') launch();
       return;
     }
+    if (panelOpen()) return;
     // Any key resumes, except the pause keys themselves: Input has already
     // toggled on those, and answering them here as well would undo it.
     if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);
@@ -149,7 +204,7 @@ function boot(): void {
 
   // Development only: lets an automated check step the loop while the tab is
   // hidden (no animation frames) and read the state back. Stripped from builds.
-  if (import.meta.env.DEV) Object.assign(window, { __ab: { world, loop, sector, renderer, input, launch, hud } });
+  if (import.meta.env.DEV) Object.assign(window, { __ab: { world, loop, sector, renderer, input, launch, hud, profile } });
 
   loop.start();
 }

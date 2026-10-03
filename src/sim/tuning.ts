@@ -104,3 +104,40 @@ export const FIELD_BAND = 240;
 // they hurt to fly into, and the heavier enemy hulls hide behind them.
 export const BULWARK_COUNT = 7;
 export const BULWARK_R = [7, 12] as const;
+
+// ── the run ───────────────────────────────────────────────────────────────
+// Dilithium to the next refit: the first in about fifteen seconds of steady
+// mining, then a climb, so refits come quickly early (a build takes shape
+// before the sector turns dangerous) and spread out late (each one counts).
+export const xpFor = (refit: number) => Math.round(7 + refit * 5 + Math.pow(refit, 1.8) * 0.85);
+/** Seconds of slow motion between a full rail and the refit panel. */
+export const CELEBRATE = 0.35;
+/** Seconds the wreck drifts before the run report. */
+export const DYING = 1.8;
+
+// The kill chain: score only. Each hull kill inside the window adds one;
+// breaking rock keeps it alive without adding. Every five is another 25%.
+export const CHAIN_WINDOW = 3.2;
+export const chainMult = (n: number) => 1 + Math.min(3, Math.floor(n / 5) * 0.25);
+
+export const SCORE_PER_SECOND = 8;
+export const SCORE_PER_CRYSTAL = 3;
+export const OVERCHARGE_POINTS = 250;
+
+// Hull repairs are meant to be rare: a small chance from a kill, never more
+// than one every REPAIR_GAP seconds, never on a full hull, and one from each
+// capital ship killed.
+export const REPAIR_CHANCE = 0.06;
+export const REPAIR_CHANCE_ELITE = 0.1;
+export const REPAIR_GAP = 35;
+/** Grace after a shield absorbs a hit: shorter than a plate's, so one charge never eats a volley. */
+export const SHIELD_GRACE = 0.7;
+
+// ── overcharge ────────────────────────────────────────────────────────────
+// The warp core charges from near misses: fire that passes close, rock
+// skimmed at speed, hulls passed close aboard, beams and webs brushed.
+export const OC_MAX = 100;
+export const OC_GAIN = { shot: 7, rock: 5, hull: 9, beam: 14, web: 6, strike: 8 } as const;
+/** How close counts as a near miss, beyond touching: units. */
+export const GRAZE = { shot: 1.6, rock: 1.4, hull: 2.6, beam: 1.6, web: 1.6, strike: 2.5 } as const;
+export const RARE_FIRST = 50;

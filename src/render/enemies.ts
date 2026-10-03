@@ -1,12 +1,12 @@
 import {
   AdditiveBlending, BoxGeometry, Color, Float32BufferAttribute, Group, InstancedBufferAttribute, InstancedMesh,
-  LineBasicMaterial, LineSegments, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, OctahedronGeometry, Quaternion,
+  LineBasicMaterial, LineSegments, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, Quaternion,
   SphereGeometry, Sprite, SpriteMaterial, Vector3, BufferGeometry, type Material, type Scene, type Texture,
 } from 'three';
 import { STEP } from '../core/loop';
 import type { Boss } from '../sim/bosses';
 import {
-  ALIEN_TYPES, BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type Faction, type Pickup, type Shot, type Web,
+  BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type EliteId, type Faction, type Shot, type Web,
 } from '../sim/enemies';
 import { Kit, metal, seeded, type V3 } from './kit';
 
@@ -25,8 +25,13 @@ import { Kit, metal, seeded, type V3 } from './kit';
 //   warbird · a double crescent around a central hull
 //   drone   · a cube, every face crusted with machinery, green slits
 //   weaver  · a crystal shard with blades
+//   freighter · a long spine of cargo pods, slow and fat
 //
-// Capital ships are their faction's hull at several times the size.
+// A variant is an archetype in another faction's metal and engines (a
+// Romulan scout is the Scorpion), so models are built per archetype and
+// faction. Capital ships are their faction's hull at several times the
+// size. Cloaking hulls get their own materials so each can fade on its own;
+// an elite carries a halo in its modifier's colour.
 
 export const NEON: Record<Faction, Color> = {
   klingon: new Color(3.6, 1.3, 0.25),
@@ -51,8 +56,19 @@ function lamp(c: Color): MeshBasicMaterial {
   return new MeshBasicMaterial({ color: c, toneMapped: false });
 }
 
-/** A hull of unit radius, nose +X. */
-function build(kind: AlienKind): Model {
+/** An elite's halo: the colour says which modifier. */
+const ELITE_GLOW: Record<EliteId, Color> = {
+  armoured: new Color(1.6, 1.6, 1.7),
+  swift: new Color(0.6, 2.2, 3.2),
+  volatile: new Color(3.6, 1.4, 0.3),
+  gunner: new Color(3.6, 0.5, 0.4),
+  cloaked: new Color(0.6, 2.8, 1.2),
+  regenerative: new Color(1, 3, 1.4),
+  spinner: new Color(2.4, 0.9, 3.4),
+};
+
+/** A hull of unit radius, nose +X, in a faction's metal. */
+function build(kind: AlienKind, faction: Faction): Model {
   const k = new Kit(), rnd = seeded(kind.length * 31 + kind.charCodeAt(0));
   const engines: V3[] = [];
   const engine = (x: number, y: number, z: number, r: number) => {
@@ -138,9 +154,31 @@ function build(kind: AlienKind): Model {
       k.crystal('lamp', 0.25, [0.2, 0, 0], [1.6, 0.6, 0.8]);
       engines.push([-0.8, 0, 0]);
       break;
+    case 'freighter': {
+      // a spine, a bridge forward, cargo pods slung either side
+      k.box('dark', [1.9, 0.12, 0.14], [-0.05, 0, 0]);
+      k.wedge('hull', [[1.05, 0], [0.85, 0.16], [0.6, 0.18], [0.6, -0.18], [0.85, -0.16]], 0.24, [0, 0.04, 0]);
+      for (let i = 0; i < 4; i++) {
+        for (const s of [-1, 1]) {
+          k.box('hull', [0.32, 0.26, 0.26], [0.35 - i * 0.36, 0, s * 0.22]);
+          k.box('dark', [0.33, 0.04, 0.27], [0.35 - i * 0.36, 0.14, s * 0.22]);
+        }
+      }
+      k.greebles('dark', rnd, -0.9, 0.5, -0.1, 0.1, 0.07, 10, 0.06);
+      for (const s of [-1, 1]) engine(-1.05, 0, s * 0.16, 0.1);
+      break;
+    }
   }
-  const faction = ALIEN_TYPES[kind].faction;
   return { root: k.build(factionMaterials(faction)), engines };
+}
+
+/** The derelict for the sector event: a lancer hull, dark and dead. */
+export function wreck(): Group {
+  const m = build('lancer', 'cardassian');
+  const dead = metal({ tint: 0x2e2a28, roughness: 0.8, metalness: 0.6, scale: 1.6 });
+  for (const c of m.root.children as Mesh[]) c.material = c.name === 'lamp' ? new MeshBasicMaterial({ color: new Color(0.6, 0.15, 0.05), toneMapped: false }) : dead;
+  m.root.scale.setScalar(4.5);
+  return m.root;
 }
 
 const factionMats = new Map<Faction, Record<string, Material>>();
@@ -169,9 +207,13 @@ class HullView {
   readonly meshes: Mesh[];
   readonly mats: Material[];
   readonly glows: Sprite[] = [];
-  constructor(readonly kind: AlienKind, model: Model, glowTex: Texture, c: Color) {
+  readonly halo: Sprite;
+  private cloaked = -1;
+  /** `own`: its own materials, so it can fade (cloak) without fading every hull of its kind. */
+  constructor(readonly key: string, model: Model, glowTex: Texture, c: Color, readonly own = false) {
     const copy = model.root.clone();
     this.meshes = copy.children as Mesh[];
+    if (own) for (const m of this.meshes) m.material = (m.material as Material).clone();
     this.mats = this.meshes.map((m) => m.material as Material);
     this.body.add(copy);
     for (const e of model.engines) {
@@ -181,11 +223,23 @@ class HullView {
       this.glows.push(g);
       this.body.add(g);
     }
-    this.root.add(this.body);
+    this.halo = new Sprite(new SpriteMaterial({ map: glowTex, color: 0xffffff, blending: AdditiveBlending, depthWrite: false, opacity: 0.6 }));
+    this.halo.visible = false;
+    this.root.add(this.body, this.halo);
   }
 
   flash(on: boolean): void {
     this.meshes.forEach((m, i) => { m.material = on ? FLASH : this.mats[i]!; });
+  }
+
+  /** Fade toward invisible as the cloak comes up: a shimmer, never quite nothing. */
+  cloak(k: number, time: number): void {
+    if (!this.own) return;
+    const vis = k <= 0 ? 1 : Math.max(0.04, 1 - k) + (k > 0.5 ? 0.04 * Math.sin(time * 9) : 0);
+    if (Math.abs(vis - this.cloaked) < 0.005) return;
+    this.cloaked = vis;
+    for (const m of this.mats) { m.transparent = vis < 0.99; m.opacity = vis; m.depthWrite = vis >= 0.99; }
+    for (const g of this.glows) g.visible = k < 0.5;
   }
 }
 
@@ -193,14 +247,13 @@ const MAX_SHOTS = 400;
 const X = new Vector3(1, 0, 0);
 
 export class EnemyView {
-  private readonly models = new Map<AlienKind, Model>();
-  private readonly pools = new Map<AlienKind, HullView[]>();
+  private readonly models = new Map<string, Model>();
+  private readonly pools = new Map<string, HullView[]>();
   private readonly live = new Map<number, HullView>();
   private readonly shots: InstancedMesh;
   private readonly shotGlow: InstancedMesh;
   private readonly beams: Mesh[] = [];
   private readonly webs: LineSegments[] = [];
-  private readonly picks: Group[] = [];
   private bossView: { id: number; root: Group; hull: HullView; mats: Material[] } | null = null;
   private readonly m = new Matrix4();
   private readonly q = new Quaternion();
@@ -213,10 +266,6 @@ export class EnemyView {
   readonly eye = new Vector3();
 
   constructor(private readonly scene: Scene, private readonly glowTex: Texture) {
-    for (const k of Object.keys(ALIEN_TYPES) as AlienKind[]) {
-      this.models.set(k, build(k));
-      this.pools.set(k, []);
-    }
     // enemy fire: a hot slug in a glow of its faction's colour, stretched along its flight
     this.shots = new InstancedMesh(new SphereGeometry(1, 10, 8), new MeshBasicMaterial({ color: 0xffffff, toneMapped: false }), MAX_SHOTS);
     this.shotGlow = new InstancedMesh(new SphereGeometry(1, 10, 8),
@@ -240,26 +289,25 @@ export class EnemyView {
       scene.add(w);
       this.webs.push(w);
     }
-    for (let i = 0; i < 8; i++) {
-      const g = new Group();
-      const crystal = new Mesh(new OctahedronGeometry(0.5, 0), new MeshBasicMaterial({ color: new Color(3, 2.6, 1.6), toneMapped: false }));
-      const halo = new Sprite(new SpriteMaterial({ map: glowTex, color: new Color(2, 1.4, 0.6), blending: AdditiveBlending, depthWrite: false }));
-      halo.scale.setScalar(2.4);
-      g.add(crystal, halo);
-      g.visible = false;
-      scene.add(g);
-      this.picks.push(g);
-    }
   }
 
-  private take(kind: AlienKind): HullView {
-    const pool = this.pools.get(kind)!;
-    const v = pool.pop() ?? new HullView(kind, this.models.get(kind)!, this.glowTex, NEON[ALIEN_TYPES[kind].faction]);
+  private model(kind: AlienKind, faction: Faction): Model {
+    const key = `${kind}:${faction}`;
+    let m = this.models.get(key);
+    if (!m) { m = build(kind, faction); this.models.set(key, m); }
+    return m;
+  }
+
+  private take(al: Alien): HullView {
+    const key = `${al.kind}:${al.faction}:${al.canCloak ? 1 : 0}`;
+    let pool = this.pools.get(key);
+    if (!pool) { pool = []; this.pools.set(key, pool); }
+    const v = pool.pop() ?? new HullView(key, this.model(al.kind, al.faction), this.glowTex, NEON[al.faction], al.canCloak);
     this.scene.add(v.root);
     return v;
   }
 
-  update(aliens: readonly Alien[], boss: Boss | null, shots: readonly Shot[], webs: readonly Web[], picks: readonly Pickup[], alpha: number, dt: number): void {
+  update(aliens: readonly Alien[], boss: Boss | null, shots: readonly Shot[], webs: readonly Web[], alpha: number, dt: number): void {
     this.time += dt;
     const back = (1 - alpha) * STEP;
 
@@ -268,7 +316,7 @@ export class EnemyView {
     for (const al of aliens) {
       seen.add(al.id);
       let v = this.live.get(al.id);
-      if (!v) { v = this.take(al.kind); this.live.set(al.id, v); }
+      if (!v) { v = this.take(al); this.live.set(al.id, v); }
       v.root.position.set(al.x - al.vx * back, al.y - al.vy * back, al.z - al.vz * back);
       v.root.scale.setScalar(al.r);
       if (al.kind === 'drone') {
@@ -280,7 +328,13 @@ export class EnemyView {
         const roll = al.roll >= 0 ? al.rollDir * Math.PI * 2 * smooth(al.roll / JINK_ROLL) : 0;
         v.body.rotation.set(al.bank + roll + Math.sin(this.time * 1.7 + al.id) * 0.04, al.face, pitch, 'YZX');
       }
-      v.flash(al.hitT > 0);
+      v.flash(al.hitT > 0 && al.cloak < 0.5);
+      v.cloak(al.cloak, this.time + al.id);
+      v.halo.visible = !!al.elite && al.cloak < 0.5;
+      if (al.elite) {
+        (v.halo.material as SpriteMaterial).color.copy(ELITE_GLOW[al.elite]).multiplyScalar(al.elite === 'volatile' ? 0.5 + 0.4 * Math.sin(this.time * 12) : 0.55);
+        v.halo.scale.setScalar(3.4 + Math.sin(this.time * 3 + al.id) * 0.3);
+      }
       const burn = 0.9 + Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30) * 0.9;
       // engines read from far off: the glow keeps a minimum size on screen as the hull shrinks with distance
       const far = Math.max(1, Math.hypot(v.root.position.x - this.eye.x, v.root.position.y - this.eye.y, v.root.position.z - this.eye.z) / 40);
@@ -289,7 +343,7 @@ export class EnemyView {
     for (const [id, v] of this.live) {
       if (seen.has(id)) continue;
       v.root.removeFromParent();
-      this.pools.get(v.kind)!.push(v);
+      this.pools.get(v.key)!.push(v);
       this.live.delete(id);
     }
 
@@ -358,21 +412,12 @@ export class EnemyView {
       (mesh.material as LineBasicMaterial).opacity = Math.min(1, w.life);
     });
 
-    // hull repairs
-    this.picks.forEach((g, i) => {
-      const p = picks[i];
-      g.visible = !!p;
-      if (!p) return;
-      g.position.set(p.x, 0.4 + Math.sin(this.time * 3 + p.id) * 0.15, p.z);
-      g.children[0]!.rotation.y = this.time * 2;
-      g.visible = p.life > 2 || Math.sin(this.time * 20) > 0;
-    });
   }
 
   private makeBoss(b: Boss): void {
     this.bossView?.root.removeFromParent();
     const kind = { klingon: 'raptor', cardassian: 'lancer', romulan: 'warbird', borg: 'drone', tholian: 'weaver' }[b.faction] as AlienKind;
-    const model = this.models.get(kind)!;
+    const model = this.model(kind, b.faction);
     // its own materials, so the cloak can fade them
     const own: Model = { root: model.root.clone(), engines: model.engines };
     const mats: Material[] = [];
