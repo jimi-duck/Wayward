@@ -315,13 +315,13 @@ export const UPGRADES: UpgradeDef[] = [
     id: 'cl_arc_power', name: 'Arc capacitors', branch: 'close', cat: 'weapons', kind: 'stat', max: 3, tags: ['close', 'arc', 'damage'],
     requires: [{ id: 'cl_arc' }],
     text: (lv) => (lv === 2 ? 'Your arcs hit harder and fork to one more target.' : 'Your arcs hit harder and fire faster.'),
-    apply: (s, lv) => { s.arcDamage *= 1.3; s.arcInterval *= 0.92; if (lv === 2) s.arcTargets += 1; },
+    apply: (s, lv) => { s.arcDamage *= 1.2; s.arcInterval *= 0.94; if (lv === 2) s.arcTargets += 1; },
   },
   {
     id: 'cl_arc_reach', name: 'Arc reach', branch: 'close', cat: 'weapons', kind: 'stat', max: 2, tags: ['close', 'arc', 'range'],
     requires: [{ id: 'cl_arc' }],
     text: 'Your arcs jump further.',
-    apply: (s) => { s.arcRange *= 1.25; },
+    apply: (s) => { s.arcRange *= 1.2; },
   },
   {
     id: 'cl_ram', name: 'Ram prow', branch: 'close', cat: 'weapons', kind: 'stat', max: 3, tags: ['close', 'ram', 'defence'],
@@ -332,8 +332,8 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'cl_storm', name: 'Arc storm', branch: 'close', cat: 'weapons', kind: 'spec', max: 1, group: 'close', needs: 3,
     tags: ['close', 'arc', 'area'],
-    text: 'Your arcs jump on from each target to two more.',
-    apply: (s) => { s.arcJumps += 2; s.arcInterval *= 0.85; },
+    text: 'Your arcs jump on from each target to one more.',
+    apply: (s) => { s.arcJumps += 1; },
   },
   {
     id: 'cl_juggernaut', name: 'Juggernaut', branch: 'close', cat: 'weapons', kind: 'spec', max: 1, group: 'close', needs: 3,
@@ -565,8 +565,8 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: 'tech_borg', name: 'Borg adaptive shield', branch: 'salvage', cat: 'defence', kind: 'tech', max: 1, tech: 'borg', tags: ['defence', 'shield'],
-    text: 'One more shield charge, recharging faster.',
-    apply: (s) => { s.shieldMax += 1; s.shieldRecharge *= 0.85; },
+    text: 'Your shield adapts: it recharges faster, and a ship with no shield gets one.',
+    apply: (s) => { s.shieldMax = Math.max(1, s.shieldMax); s.shieldRecharge *= 0.8; },
   },
   {
     id: 'tech_tholian', name: 'Tholian snares', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'tholian', tags: ['mine', 'torpedo', 'control'],
@@ -575,7 +575,7 @@ export const UPGRADES: UpgradeDef[] = [
   },
 
   // ── minor nodes: the small steps along the web's paths ─────────────────
-  ...minor('mi_phaser_dmg', 'Emitter tuning', 'phaser', 'weapons', ['phaser', 'damage'], 'Your lances hit a little harder.', (s) => { s.phaserDamage *= 1.08; }),
+  ...minor('mi_phaser_dmg', 'Emitter tuning', 'phaser', 'weapons', ['phaser', 'damage'], 'Your lances hit a little harder.', (s) => { s.phaserDamage *= 1.1; }),
   ...minor('mi_phaser_rate', 'Capacitor trim', 'phaser', 'weapons', ['phaser', 'rate'], 'Your phasers cycle a little faster.', (s) => { s.phaserCooldown *= 0.96; }),
   ...minor('mi_bank', 'Bank cells', 'phaser', 'weapons', ['phaser', 'sustain'], 'Your phaser bank holds a little more.', (s) => { s.bankMax += 12; s.bankRefill *= 1.06; }),
   ...minor('mi_reach', 'Lens polish', 'phaser', 'weapons', ['phaser', 'range'], 'Your lances fly a little faster.', (s) => { s.phaserSpeed *= 1.05; }),

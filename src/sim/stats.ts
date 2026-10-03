@@ -168,12 +168,12 @@ export const BASE: Readonly<Stats> = Object.freeze({
   torpTurn: TORP_TURN, torpSeek: TORP_SEEK, torpCone: TORP_CONE, torpMax: TORP_MAX, torpAccel: TORP_ACCEL,
   torpSalvo: 1, torpCluster: 0, torpVsShips: 1, markBonus: 1, torpPlasma: false, torpArc: 0,
 
-  mines: false, mineInterval: 2.6, mineMax: 5, mineLife: 16, mineDamage: 7, mineBlast: 6.5, mineTrigger: 3.5,
+  mines: false, mineInterval: 2.2, mineMax: 5, mineLife: 16, mineDamage: 7, mineBlast: 6.5, mineTrigger: 4.2,
   mineSeek: 0, mineChain: false, mineGravity: false, mineDetonate: false,
 
   plasma: false, plasmaDps: 10, plasmaLife: 1.5, plasmaRadius: 1.9, plasmaBurn: 0, rollBurst: false,
 
-  arc: false, arcInterval: 0.9, arcRange: 9, arcDamage: 2.5, arcTargets: 2, arcJumps: 0, arcShield: false,
+  arc: false, arcInterval: 1.05, arcRange: 8.5, arcDamage: 2.5, arcTargets: 2, arcJumps: 0, arcShield: false,
 
   ramDamage: 3, ramSafe: false, ramjet: false,
 
@@ -207,12 +207,12 @@ export const CAPS = {
   mineInterval: 0.7,
   mineMax: 16,
   mineBlast: 13,
-  arcInterval: 0.32,
+  arcInterval: 0.5,
   arcTargets: 6,
   arcRange: 16,
   maxPlates: 5,
-  shieldMax: 3,
-  shieldRecharge: 9,
+  shieldMax: 2,
+  shieldRecharge: 12,
   grace: 2.2,
   tractor: 42,
   xpMult: 1.5,
@@ -224,7 +224,7 @@ export const CAPS = {
   dmgAll: 1.6,
   /** A ram that kills costs no hull, and the arc fires by itself, so both have a ceiling. */
   ramDamage: 18,
-  arcDamage: 6,
+  arcDamage: 5,
   crystalChance: 2,
   repairChance: 2.5,
 } as const;

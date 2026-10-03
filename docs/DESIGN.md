@@ -119,7 +119,8 @@ The regions:
   wreathes the bow and flanks while you thrust).
 - **Close quarters**: the **hull arc** (lightning to anything close), arc
   capacitors and reach, and the **ram prow** (a ram that destroys its
-  target costs no hull). Specialise into the **arc storm** (arcs chain on),
+  target costs no hull). Specialise into the **arc storm** (each arc jumps
+  on to one more hull),
   the **shock prow** (a ram discharges into the hulls near its target) or
   the **juggernaut** (unlockable).
 - **Mobility**: impulse, thrusters, dampers, evasive jets. Specialise into
@@ -147,7 +148,7 @@ The regions:
 phaser shot a heavy bolt at triple damage), Cardassian **compressors**
 (longer, piercing lances; wider torpedo blasts), the Romulan **cloak** (a
 barrel roll hides you: hulls hold their fire for a moment), the Borg
-**adaptive shield** (one more shield charge, recharging faster) and
+**adaptive shield** (shields recharge faster; a ship with none gets one) and
 Tholian **snares** (torpedo and mine blasts slow the hulls they catch).
 
 ### On screen

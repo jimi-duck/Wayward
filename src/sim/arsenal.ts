@@ -179,16 +179,18 @@ export function arcTargets<A extends Reachable, B extends Reachable>(ship: ShipS
   const out: ArcHit<T>[] = [];
   const first = [...near(hulls, ship.x, 0.3, ship.z, reach, hit), ...near(rocks, ship.x, 0, ship.z, reach, hit)].slice(0, s.arcTargets);
   const dmg = s.arcDamage * (overload ? 1.5 : 1);
+  // lightning is for hulls: rock takes half
+  const rock = new Set<T>(rocks);
   for (const t of first) {
     hit.add(t.id);
-    out.push({ target: t, dmg, from: [ship.x, 0.4, ship.z] });
+    out.push({ target: t, dmg: rock.has(t) ? dmg * 0.5 : dmg, from: [ship.x, 0.4, ship.z] });
     let from: T = t, d = dmg;
     for (let j = 0; j < s.arcJumps; j++) {
       const next = near(hulls, from.x, from.y, from.z, reach * 0.8, hit)[0] ?? near(rocks, from.x, from.y, from.z, reach * 0.6, hit)[0];
       if (!next) break;
-      d *= 0.7;
+      d *= 0.6;
       hit.add(next.id);
-      out.push({ target: next, dmg: d, from: [from.x, from.y, from.z] });
+      out.push({ target: next, dmg: rock.has(next) ? d * 0.5 : d, from: [from.x, from.y, from.z] });
       from = next;
     }
   }

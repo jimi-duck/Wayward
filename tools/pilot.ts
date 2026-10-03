@@ -77,7 +77,7 @@ function pickNode(w: World, s: Strategy, rngPick: () => number): string | null {
     const toward = (b: Branch, k: number) => (n.region === b ? k : Math.max(0, k * (0.7 - 0.25 * (d[b] ?? 9))));
     let v = toward(s.branch, 10) + (s.second ? toward(s.second, 6) : 0);
     // a build with no weapon region still keeps its guns up, as a player would
-    if (!WEAPON_REGIONS.has(s.branch) && !(s.second && WEAPON_REGIONS.has(s.second))) v += toward('phaser', 4);
+    if (!WEAPON_REGIONS.has(s.branch) && !(s.second && WEAPON_REGIONS.has(s.second))) v += toward('phaser', 8);
     if (n.region === 'defence') v += 3;
     if (n.region === s.branch || n.region === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
     else if (u.kind === 'system') v -= 3;
