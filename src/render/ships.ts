@@ -155,6 +155,8 @@ const TRAIL_TAIL = new Color(0.6, 0.06, 0.12);
 class Trail {
   readonly mesh: Mesh;
   width = 0.3;
+  readonly head = TRAIL_HEAD.clone();
+  readonly tail = TRAIL_TAIL.clone();
   private readonly pts = new Float32Array(TRAIL_N * 3);
   private readonly heat = new Float32Array(TRAIL_N);
   private readonly pos: BufferAttribute;
@@ -195,9 +197,10 @@ class Trail {
       const ox = -dz * w, oz = dx * w;
       P.set([p[i * 3]! + ox, p[i * 3 + 1]!, p[i * 3 + 2]! + oz, p[i * 3]! - ox, p[i * 3 + 1]!, p[i * 3 + 2]! - oz], i * 6);
       const a = this.heat[i]! * fade * fade * (1 - t) * 0.3;
-      const r = (TRAIL_HEAD.r + (TRAIL_TAIL.r - TRAIL_HEAD.r) * t) * a;
-      const gg = (TRAIL_HEAD.g + (TRAIL_TAIL.g - TRAIL_HEAD.g) * t) * a;
-      const bb = (TRAIL_HEAD.b + (TRAIL_TAIL.b - TRAIL_HEAD.b) * t) * a;
+      const H = this.head, T = this.tail;
+      const r = (H.r + (T.r - H.r) * t) * a;
+      const gg = (H.g + (T.g - H.g) * t) * a;
+      const bb = (H.b + (T.b - H.b) * t) * a;
       C.set([r, gg, bb, r, gg, bb], i * 6);
     }
     this.pos.needsUpdate = true;
@@ -207,11 +210,13 @@ class Trail {
 
 // ── the shield ────────────────────────────────────────────────────────────
 // Unseen until it takes a hit: then a hex lattice flares, hot amber at the
-// rim. It also shimmers through the grace after a hit.
+// rim. It also shimmers through the grace after a hit. With deflector
+// charges up it stands faintly blue at the rim, and a hit it absorbs flares
+// blue instead of amber; phased, it shimmers violet.
 function shieldMaterial(): ShaderMaterial {
   return new ShaderMaterial({
     transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
-    uniforms: { uHit: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uColor: { value: new Color(2.6, 0.9, 0.35) } },
+    uniforms: { uHit: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uCharge: { value: 0 }, uColor: { value: new Color(2.6, 0.9, 0.35) } },
     vertexShader: /* glsl */ `
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       void main() {
@@ -220,7 +225,7 @@ function shieldMaterial(): ShaderMaterial {
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */ `
-      uniform float uHit; uniform float uGrace; uniform float uTime; uniform vec3 uColor;
+      uniform float uHit; uniform float uGrace; uniform float uTime; uniform float uCharge; uniform vec3 uColor;
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       float hexEdge(vec2 p) {
         vec2 r = vec2(1.0, 1.7320508), h = r * 0.5;
@@ -237,7 +242,9 @@ function shieldMaterial(): ShaderMaterial {
         vec2 uv = vec2(atan(vP.z, vP.x) * 3.0, vP.y * 9.0);
         float hex = hexEdge(uv * 1.6 + vec2(0.0, uTime * 0.6));
         float pulse = uGrace * (0.12 + 0.08 * sin(uTime * 18.0));
-        float a = (fres * 0.9 + hex * 0.5) * max(uHit, pulse);
+        // a charged shield stands faintly at the rim, so the player can see it is up
+        float standing = uCharge * (0.07 + 0.03 * sin(uTime * 2.4)) * (fres * 1.6 + hex * 0.3);
+        float a = (fres * 0.9 + hex * 0.5) * max(uHit, pulse) + standing;
         gl_FragColor = vec4(uColor * a, a);
       }`,
   });
@@ -262,6 +269,11 @@ export class ShipView {
   /** The engines light the ship's own stern and whatever is behind it. */
   private readonly glowLight = new PointLight(0xff4a5a, 0, 7, 2);
   private readonly rimMat = new MeshBasicMaterial({ color: BELL.clone(), toneMapped: false });
+  /** The engines' colours: stock red, or a cosmetic. */
+  private readonly core = CORE.clone();
+  private readonly bell = BELL.clone();
+  private readonly halo = HALO.clone();
+  private absorbed = false;
   private bank = 0;
   private pitch = 0;
   private heat = 0;
@@ -283,7 +295,7 @@ export class ShipView {
         core: new Mesh(disc, this.coreMat),
         rim: new Mesh(rimGeo, this.rimMat),
         plume: new Mesh(plumeGeo, this.plumeMat),
-        halo: new Sprite(new SpriteMaterial({ map: glow, color: HALO, blending: AdditiveBlending, depthWrite: false })),
+        halo: new Sprite(new SpriteMaterial({ map: glow, color: this.halo, blending: AdditiveBlending, depthWrite: false })),
         trail: new Trail(),
       };
       e.plume.frustumCulled = false;
@@ -330,10 +342,27 @@ export class ShipView {
     return { points: this.engines.map((e) => [...tipWorld(this.rollG, e.nozzle.p)] as [number, number, number]), heat: this.heat };
   }
 
-  /** Flare the shield: a hit landed. */
-  flareShield(): void {
+  /** Flare the shield: a hit landed. `absorbed` when a shield charge took it. */
+  flareShield(absorbed = false): void {
     this.hit = 1;
+    this.absorbed = absorbed;
   }
+
+  /** Engine colours, HDR: the bright core and the bell around it. */
+  setEngine(core: [number, number, number], bell: [number, number, number]): void {
+    this.core.setRGB(...core);
+    this.bell.setRGB(...bell);
+    this.halo.setRGB(bell[0] * 0.65, bell[1] * 0.65, bell[2] * 0.65);
+    this.plumeMat.uniforms.uCore!.value = this.core;
+    this.plumeMat.uniforms.uBell!.value = this.bell;
+    for (const e of this.engines) {
+      e.trail.head.setRGB(bell[0] * 0.78, bell[1] * 0.9, bell[2] * 0.9);
+      e.trail.tail.setRGB(bell[0] * 0.18, bell[1] * 0.14, bell[2] * 0.14);
+    }
+  }
+
+  /** The visible state the build adds: shield charges up, phased, weapons overloaded. */
+  status = { charged: 0, phased: false, overload: false };
 
   update(s: ShipState, dt: number, reduceMotion: boolean): void {
     this.time += dt;
@@ -357,10 +386,10 @@ export class ShipView {
     // a slow heave, so a ship at rest still reads as afloat
     this.pitchG.position.y = Math.sin(this.time * 1.3) * 0.03;
 
-    const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05;
-    this.discMat.color.copy(BELL).multiplyScalar(0.12 + 0.22 * h);
-    this.rimMat.color.copy(BELL).multiplyScalar((0.55 + 0.6 * h) * flick);
-    this.coreMat.color.copy(CORE).multiplyScalar((0.35 + 0.75 * h) * flick);
+    const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05, hot = this.status.overload ? 1.6 : 1;
+    this.discMat.color.copy(this.bell).multiplyScalar((0.12 + 0.22 * h) * hot);
+    this.rimMat.color.copy(this.bell).multiplyScalar((0.55 + 0.6 * h) * flick * hot);
+    this.coreMat.color.copy(this.core).multiplyScalar((0.35 + 0.75 * h) * flick * hot);
     this.plumeMat.uniforms.uHeat!.value = h;
     this.plumeMat.uniforms.uTime!.value = this.time;
     for (const e of this.engines) {
@@ -373,11 +402,16 @@ export class ShipView {
     for (const l of this.lights) l.visible = blink;
 
     this.hit = Math.max(0, this.hit - dt * 2.2);
-    const grace = s.invuln > 0 && s.rollT < 0 ? Math.min(1, s.invuln) : 0;
-    this.shieldMat.uniforms.uHit!.value = this.hit;
-    this.shieldMat.uniforms.uGrace!.value = grace;
-    this.shieldMat.uniforms.uTime!.value = this.time;
-    this.shield.visible = this.hit > 0 || grace > 0;
+    const st = this.status;
+    const grace = st.phased ? 1 : s.invuln > 0 && s.rollT < 0 ? Math.min(1, s.invuln) : 0;
+    const u = this.shieldMat.uniforms;
+    u.uHit!.value = this.hit;
+    u.uGrace!.value = grace;
+    u.uTime!.value = this.time;
+    u.uCharge!.value = st.charged;
+    const tint: [number, number, number] = st.phased ? [2.2, 0.8, 3.6] : this.absorbed || (st.charged > 0 && this.hit <= 0) ? [0.7, 1.5, 3.4] : [2.6, 0.9, 0.35];
+    (u.uColor!.value as Color).setRGB(...tint);
+    this.shield.visible = this.hit > 0 || grace > 0 || st.charged > 0;
 
     this.root.updateMatrixWorld(true);
     this.trailClock += dt;

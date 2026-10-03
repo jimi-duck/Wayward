@@ -19,6 +19,7 @@ import { spaceTexture } from './textures';
 
 const VOID = new Color('#030509');
 const INK = new Color('#cfd6e0');
+const NEBULA = new Color('#1b0e28');
 const DUST_BOX = 130;
 
 export class Environment {
@@ -29,11 +30,15 @@ export class Environment {
   private readonly rim: DirectionalLight;
   private readonly key: DirectionalLight;
   private readonly starMat: ShaderMaterial;
+  private readonly scene: Scene;
+  private readonly fog: FogExp2;
 
   constructor(scene: Scene, renderer: WebGLRenderer) {
     scene.background = spaceTexture();
     scene.backgroundIntensity = 1;
-    scene.fog = new FogExp2(VOID.getHex(), 0.0042);
+    this.scene = scene;
+    this.fog = new FogExp2(VOID.getHex(), 0.0042);
+    scene.fog = this.fog;
     scene.environment = reflections(renderer);
 
     this.starMat = new ShaderMaterial({
@@ -84,6 +89,18 @@ export class Environment {
     this.rim = new DirectionalLight(0x7f9cc8, 0.9);
     this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.8), this.rim);
     scene.add(this.group);
+  }
+
+  /**
+   * The sector's weather: `nebula` (0 to 1) thickens the fog to a violet murk
+   * and dims the sky; `flash` (0 to 1) is a lightning flash in an ion storm.
+   */
+  weather(nebula: number, flash: number): void {
+    this.fog.density = 0.0042 + nebula * 0.016;
+    this.fog.color.copy(VOID).lerp(NEBULA, nebula);
+    this.scene.backgroundIntensity = 1 - nebula * 0.55 + flash * 0.6;
+    this.key.intensity = 4.4 + flash * 9;
+    this.key.color.setRGB(1, 0.9 + flash * 0.1, 0.78 + flash * 0.22);
   }
 
   setPixelRatio(dpr: number): void {

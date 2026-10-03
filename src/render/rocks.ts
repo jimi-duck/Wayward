@@ -1,11 +1,11 @@
 import {
-  Color, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
-  Vector3, type BufferGeometry, type Scene,
+  AdditiveBlending, Color, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
+  Sprite, SpriteMaterial, Vector3, type BufferGeometry, type Scene, type Texture,
 } from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STEP } from '../core/loop';
 import { fbm } from '../core/noise';
-import { BULWARK_VARIANTS, ROCK_VARIANTS, type Bulwark, type Rock } from '../sim/field';
+import { BULWARK_VARIANTS, ROCK_VARIANTS, type Bulwark, type Rock, type RockKind } from '../sim/field';
 import { PERTURB, seeded } from './kit';
 
 // ── rock ──────────────────────────────────────────────────────────────────
@@ -74,25 +74,50 @@ const SIMPLEX = /* glsl */ `
 
 export const lavaTime = { value: 0 };
 
+/** How a kind of rock looks: its cracks' glow, the stone's tint, how much of it is veined, how fast it pulses. */
+interface RockLook {
+  id: string;
+  glow: [number, number, number];
+  tint: [number, number, number];
+  /** Added to the vein threshold: more of the rock is cracked. */
+  zone: number;
+  pulse: number;
+  metal: number;
+}
+
+const LOOKS: Record<RockKind, RockLook> = {
+  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1, 1, 1],         zone: 0,    pulse: 1.4, metal: 0.04 },
+  iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55 },
+  rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.85, 0.8, 1.05], zone: 0.3,  pulse: 2.2, metal: 0.1 },
+  volatile: { id: 'volatile', glow: [4.5, 2.4, 1.1],   tint: [1.2, 0.85, 0.75], zone: 0.45, pulse: 7,   metal: 0.04 },
+  rare:     { id: 'rare',     glow: [4.2, 3.2, 1.1],   tint: [1.2, 1.1, 0.85],  zone: 0.5,  pulse: 3,   metal: 0.35 },
+};
+const KINDS = Object.keys(LOOKS) as RockKind[];
+
 /**
  * The lava-veined basalt. `detail` is the noise frequency per model unit (a
  * model is a unit sphere, so a bulwark ten times the size needs ten times the
  * frequency for the same grain); `lava` scales the glow; `bump` is the
- * surface relief, in world units.
+ * surface relief, in world units. `look` recolours it by kind.
  */
-function lavaRock(detail: number, lava: number, bump: number): MeshStandardMaterial {
-  const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: 0.04, envMapIntensity: 0.35 });
+function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt): MeshStandardMaterial {
+  const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35 });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = lavaTime;
     shader.uniforms.uDetail = { value: detail };
     shader.uniforms.uLava = { value: lava };
     shader.uniforms.uBump = { value: bump };
+    shader.uniforms.uGlow = { value: new Color(...look.glow) };
+    shader.uniforms.uTint = { value: new Color(...look.tint) };
+    shader.uniforms.uZone = { value: look.zone };
+    shader.uniforms.uPulse = { value: look.pulse };
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         varying vec3 vRockP; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
+        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse;
         ${SIMPLEX}
         ${PERTURB}
         float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
@@ -104,15 +129,15 @@ function lavaRock(detail: number, lava: number, bump: number): MeshStandardMater
         float ridgeA = 1.0 - abs(snoise(rp * 0.55 + vec3(rn * 0.7)));
         float ridgeB = 1.0 - abs(snoise(rp * 1.35 + vec3(7.1, 2.3, 5.9) + vec3(rn * 0.4)));
         // lava only in some regions of a rock, and only in its thinnest cracks
-        float zone = smoothstep(0.15, 0.55, snoise(rp * 0.28 + 3.3));
+        float zone = smoothstep(0.15 - uZone, 0.55 - uZone, snoise(rp * 0.28 + 3.3));
         float crack = (smoothstep(0.972, 0.995, ridgeA) + smoothstep(0.982, 0.997, ridgeB) * 0.6) * zone;
         float heat = smoothstep(0.93, 0.99, max(ridgeA, ridgeB * 0.95)) * zone;
         vec3 stone = mix(vec3(0.05, 0.045, 0.042), vec3(0.2, 0.18, 0.16), smoothstep(-0.55, 0.65, rn + fine * 0.35));
         stone = mix(stone, vec3(0.32, 0.29, 0.26), smoothstep(0.55, 0.9, rn) * 0.6);
         stone = mix(stone, vec3(0.025, 0.018, 0.015), heat * 0.75);
-        diffuseColor.rgb *= stone;
-        float pulse = 0.78 + 0.22 * sin(uTime * 1.4 + rn * 9.0);
-        vec3 lavaGlow = (vec3(3.6, 0.55, 0.08) * crack * pulse + vec3(0.5, 0.06, 0.01) * heat * 0.4) * uLava;
+        diffuseColor.rgb *= stone * uTint;
+        float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
+        vec3 lavaGlow = (uGlow * crack * pulse + uGlow * 0.14 * heat * 0.4) * uLava;
         float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5;`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2, 0.4, 1.0);`)
@@ -121,7 +146,7 @@ function lavaRock(detail: number, lava: number, bump: number): MeshStandardMater
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance += lavaGlow;`);
   };
-  m.customProgramCacheKey = () => `lava-rock-${detail}-${lava}-${bump}`;
+  m.customProgramCacheKey = () => `lava-rock-${detail}-${lava}-${bump}-${look.id}`;
   return m;
 }
 
@@ -157,7 +182,9 @@ function rockGeometry(seed: number, detail: number, craters: number, rough = 0.4
 }
 
 export class RockView {
+  /** One instanced mesh per kind per shape: meshes[kind index * ROCK_VARIANTS + variant]. */
   private readonly meshes: InstancedMesh[] = [];
+  private readonly halos: Sprite[] = [];
   private readonly bulwarks = new Map<number, Mesh>();
   private readonly bulwarkGeo: BufferGeometry[] = [];
   private readonly bulwarkMat = lavaRock(4.5, 1, 0.3);
@@ -171,15 +198,25 @@ export class RockView {
   private readonly col = new Color();
   private time = 0;
 
-  constructor(private readonly scene: Scene) {
-    const mat = lavaRock(1.35, 1, 0.12);
-    for (let k = 0; k < ROCK_VARIANTS; k++) {
-      const mesh = new InstancedMesh(rockGeometry(k * 3.7 + 1, 4, 4 + k), mat, PER_VARIANT);
-      mesh.instanceColor = new InstancedBufferAttribute(new Float32Array(PER_VARIANT * 3).fill(1), 3);
-      mesh.count = 0;
-      mesh.frustumCulled = false;
-      this.meshes.push(mesh);
-      scene.add(mesh);
+  constructor(private readonly scene: Scene, glow: Texture) {
+    const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => rockGeometry(k * 3.7 + 1, 4, 4 + k));
+    for (const kind of KINDS) {
+      const mat = lavaRock(1.35, 1, 0.12, LOOKS[kind]);
+      for (let k = 0; k < ROCK_VARIANTS; k++) {
+        const mesh = new InstancedMesh(shapes[k]!, mat, PER_VARIANT);
+        mesh.instanceColor = new InstancedBufferAttribute(new Float32Array(PER_VARIANT * 3).fill(1), 3);
+        mesh.count = 0;
+        mesh.frustumCulled = false;
+        this.meshes.push(mesh);
+        scene.add(mesh);
+      }
+    }
+    // the rare rock carries a halo, so it reads as a find from far off
+    for (let i = 0; i < 4; i++) {
+      const h = new Sprite(new SpriteMaterial({ map: glow, color: new Color(2.4, 1.8, 0.5), blending: AdditiveBlending, depthWrite: false }));
+      h.visible = false;
+      scene.add(h);
+      this.halos.push(h);
     }
     for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, 5, 9 + k * 2, 0.36));
 
@@ -210,11 +247,19 @@ export class RockView {
     lavaTime.value = this.time;
     const counts = new Array<number>(this.meshes.length).fill(0);
     const back = (1 - alpha) * STEP;
+    let halo = 0;
     for (const r of rocks) {
-      const mesh = this.meshes[r.variant]!;
-      const i = counts[r.variant]!;
+      const slot = KINDS.indexOf(r.kind) * ROCK_VARIANTS + r.variant;
+      const mesh = this.meshes[slot]!;
+      const i = counts[slot]!;
       if (i >= PER_VARIANT) continue;
-      counts[r.variant] = i + 1;
+      counts[slot] = i + 1;
+      if (r.kind === 'rare' && halo < this.halos.length) {
+        const h = this.halos[halo++]!;
+        h.visible = true;
+        h.position.set(r.x - r.vx * back, 0.2, r.z - r.vz * back);
+        h.scale.setScalar(r.r * (5 + Math.sin(this.time * 3 + r.id) * 0.6));
+      }
       const grow = Math.min(1, r.age / 0.6);
       const s = r.r * (grow * grow * (3 - 2 * grow));
       this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.spin * r.age + r.id);
@@ -223,8 +268,10 @@ export class RockView {
       const flash = 1 + (r.hitT / 0.12) * 4;
       mesh.setColorAt(i, this.col.setRGB(flash, flash * 0.8, flash * 0.7));
     }
+    for (let i = halo; i < this.halos.length; i++) this.halos[i]!.visible = false;
     this.meshes.forEach((mesh, k) => {
       mesh.count = counts[k]!;
+      mesh.visible = mesh.count > 0;
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     });

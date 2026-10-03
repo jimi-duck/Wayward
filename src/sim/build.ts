@@ -232,6 +232,7 @@ export const FIGURES: FigDef[] = [
   { label: 'Ram damage', get: (s) => s.ramDamage, fmt: f0 },
   { label: 'Top speed', get: (s) => topSpeed(flightHull(s)), fmt: (v) => `${Math.round(v / PX)} m/s` },
   { label: 'Turn rate', get: (s) => (turnPerStep(flightHull(s)) * HZ * 180) / Math.PI, fmt: (v) => `${Math.round(v)}°/s` },
+  { label: 'Grip in turns', get: (s) => s.grip, fmt: (v) => `${Math.round(v * 1000) / 10}%/step` },
   { label: 'Roll every', get: (s) => s.rollCooldown, fmt: sec, lower: true },
   { label: 'Roll cover', get: (s) => s.rollIframes, fmt: sec },
   { label: 'Hull plates', get: (s) => s.maxPlates, fmt: f0 },
@@ -252,7 +253,8 @@ export function figures(before: Stats, after: Stats): Fig[] {
     const a = d.get(before), b = d.get(after);
     const fa = d.fmt(a), fb = d.fmt(b);
     if (fa === fb) continue;
-    out.push({ label: d.label, from: fa, to: fb, cost: d.lower ? b > a : b < a });
+    // a figure appearing from nothing (a system switched on) is never a cost
+    out.push({ label: d.label, from: fa, to: fb, cost: a !== 0 && (d.lower ? b > a : b < a) });
   }
   return out;
 }
