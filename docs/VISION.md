@@ -1,820 +1,924 @@
-# Kestrel: The Shoals
+# WAYWARD
 
-*A design vision for what the game becomes next.*
+*A design vision for what the game becomes next. Working title.*
 
-Status: proposal, for review. Nothing here is built yet. The current game
-(the fifteen-minute survival roguelite in [DESIGN.md](DESIGN.md)) stays
-playable throughout and becomes one mode of the larger game (see
+Status: proposal, second draft, for review. Nothing here is built yet. The
+current game (the fifteen-minute survival run in [DESIGN.md](DESIGN.md))
+stays playable and folds into the new one (see
 [What happens to the current game](#what-happens-to-the-current-game)).
 
----
-
-## The pitch, in one paragraph
-
-Past the last starbase lies **the Shoals**: a vast, shallow sea of subspace
-where the stars drift, the charts go stale every few weeks, and a tide no one
-understands washes dilithium up onto the rocks and drags ships down into the
-deep. Starfleet has sent one ship to chart it: the U.S.S. Kestrel, a survey
-tender with a mining refit, a crew of forty and no backup. You are her
-captain. Mine to pay your way, trade to make friends, fight when you have to,
-and chart what nobody has charted. Out here every hail is a question (trade,
-plea, threat or trap?) and every jump costs fuel you might not get back.
-Somewhere in the deep, something old is lighting the lanterns again.
-
-**Genre, in a line:** a frontier exploration, mining and trading game with
-real-time arcade combat, played in short sorties across a living star chart,
-building toward a story with more than one ending.
-
-**Touchstones:** *Star Trek* (the frontier, the hail, the moral choice, the
-away-team spirit); *FTL* (the chart, the event card, the fuel squeeze);
-*Sunless Sea* (a dark, mysterious sea, a captain's log, a story you uncover);
-*Elite* and *Freelancer* (trade runs, contracts, a reputation that follows
-you); *Shadow of Mordor* (enemies who remember you).
+This draft replaces the first one entirely. Every name is new: no franchise
+names, ships, species or terms carry over. The current code's names
+(the Kestrel, dilithium, the factions) are placeholders to be renamed when
+the work starts.
 
 ---
 
-## Why change, and what has to survive
+## The pitch
+
+Once there was the Accord: a hundred bright worlds, fabricators that could
+make anything, ships that went out to see what was there. That was a long
+time ago. Today the Accord's light is kept by **the Continuance**, which
+rations it out by loyalty. Your implant scores you; your score feeds you.
+The cities still glow, the anthems still play, and the cutters of the
+**Custody** patrol every lane.
+
+You were nobody: an ore-cutter on a company moon. Then you found a file you
+were never meant to see, and the Custody came for you. Now you have a stolen
+hauler, a handful of people who ran with you, a hold with nothing in it, and
+the only door out of the Continuance: the old lanes into **the Scatter**,
+the outer systems cut off seventy years ago and left to rot.
+
+Out there, nothing is the way the Continuance said. People survived. Some
+thrived. Some went strange. Something is reopening the lanes, and the
+Continuance is coming through them, right behind you.
+
+Stay one step ahead. Mine what you need. Manage what you have. Make friends
+where you can. And when you have to fight for it, fight.
+
+**In a line:** a fugitive's journey across a dangerous, unmapped frontier:
+exploring, mining and trading to stay alive, with real-time combat when it
+comes to that, and a hunter who never stops following.
+
+**Touchstones** (for tone and structure only): *The Expanse* (grit, physics
+you can feel, working people in a big indifferent space, a conspiracy behind
+it all); the best of classic exploration science fiction (the hail, the
+first contact, the moral choice); cyberpunk (surveillance, implants, a
+glossy authoritarian centre and a ragged edge); *FTL* (the chart, the event
+card, the pursuing fleet); *Sunless Sea* (a story you uncover a fragment at
+a time); *Shadow of Mordor* (enemies who remember you).
+
+---
+
+## Why change, and what survives
 
 The game today is a strong arcade shooter: the flight feels good, the refits
-are readable, the capital-ship fights telegraph well, and the simulation is
-cleanly separated from rendering, so it can be balanced by a scripted pilot.
-But it has one verb (*survive*) and one clock (*pressure rises until you
-die*). Everything else (mining, events, hails) is a garnish on that clock.
+read quickly, the boss fights telegraph well, and the simulation is cleanly
+separated from rendering, so a scripted pilot can balance it. But it has one
+verb (*survive*) and one clock (*pressure rises until you die*).
 
-The new game keeps the verbs and changes the clock. The ship, the flight
-model, the phasers, the barrel roll, the warp core and the capital-ship
-fights all survive, because they are good. What changes is **why you are out
-there**. You are not waiting to die; you are on a voyage, with somewhere to
-go, things to find and people to deal with, and combat is one of the ways a
-day can go, not the only one.
+The new game keeps the verbs and changes the clock. The flight model, the
+guns, the barrel roll, the core release and the boss fights all stay. What
+changes is **why you are out there**: you are running, you need to eat, and
+the only things that keep you alive are what you can dig out of the rock,
+what you can trade for, who will help you, and how well you can fight.
 
 ### Design pillars
 
-1. **The frontier is the protagonist.** The Shoals should feel bigger than
-   you, older than you and indifferent to you. Every system has a reason to
-   visit and a reason to leave.
-2. **Every hail is a decision.** Contact with other ships is the heart of the
-   game. Most meetings are not fights. The ones that become fights should feel
-   like they could have gone another way.
-3. **Scarcity makes meaning.** Dilithium is fuel, research and power, and
-   there is never quite enough. What you carry, what you burn and what you
-   sell are the real build.
-4. **Many roads, no wrong one.** Science, industry, trade and arms each make
-   a different captain with different options, not just bigger numbers.
-5. **Short sorties, long voyage.** A phone in a queue should get a complete,
-   satisfying five-minute sortie. A long evening should get a voyage that
-   remembers what you did.
-6. **Telemetry, not intuition.** The scripted pilot stays. Every new loop is
-   built so it can be played headless and balanced from numbers.
+1. **Always one step ahead.** The hunt is the clock. It is felt on the
+   chart, not as a timer bar: the Continuance spreads behind you, and a
+   named hunter follows your trail. Lingering has a cost; cleverness buys
+   time.
+2. **What you have is what you are.** Fuel, food, parts, ore, crystal,
+   crew, hull. Every one runs short. Managing them is the real build.
+3. **Every contact is a gamble.** Most ships you meet are not enemies, and
+   none of them are simply friends. Each hail is a read and a decision.
+4. **Everything is new.** The Scatter has had seventy years alone. Every
+   system should have something nobody back home has seen.
+5. **Earned, and worth defending.** Combat is not the point; it is what
+   happens when someone wants what you have built. It should feel like
+   protecting something.
+6. **Short sorties, long journey.** A complete, satisfying five-minute
+   sortie on a phone; a journey across an evening that remembers what you
+   did.
+7. **Telemetry, not intuition.** The scripted pilot stays. Every loop runs
+   headless and gets balanced from numbers.
 
 ---
 
-## The setting
+## The world
 
-### The Shoals
+### How it went wrong
 
-A region of space roughly a hundred light years across, where subspace is
-"shallow": thin, turbulent, and prone to tides. Warp drive works, but badly
-and expensively. Sensors see less far. Stars appear to drift on the charts
-because the routes between them open and close with the tide.
+**The Accord** (two hundred years ago to seventy years ago). A union of
+worlds linked by **fold lanes**: corridors where a ship's drive could fold
+space and cross light years in hours. Fabricators turned feedstock into
+anything. Nobody went hungry; plenty went exploring. The Accord's
+fabricators and fold drives both ran on one thing: **glass**.
 
-Ships have always come here for one reason: **the tide washes dilithium
-up**. Every surge leaves fresh crystal in the rock of the systems it touches,
-then recedes. Prospectors follow the tide like gold rushers follow rumours.
-Most go home rich or not at all.
+**Glass** (formally *eigenglass*) is a lattice crystal that holds a fold.
+It is found in rock, never made. Drives burn it to jump. Fabricators burn
+it to build. Weapons and shields run hotter with it. Everyone wants it, and
+there is less of it every year.
 
-The nautical metaphor runs through everything, deliberately:
+**The Thinning.** The glass ran short. A civilisation that had forgotten
+scarcity met it all at once. Riots, shortages, panics.
 
-| Thing | In the Shoals |
-|---|---|
-| The map | **The chart**: systems and the routes between them, which shift |
-| Routes that close | **Shallows**: routes that need more fuel, or a better drive, or the tide in your favour |
-| The deep interior | **The Deep**: the region at the centre that no ship has returned from |
-| Ancient beacons | **Lanterns**: alien structures that pulse when the tide turns |
-| Pirates | **Wreckers**: they light false beacons and loot the ships that come |
-| Your ship | **The Kestrel**: a shore bird, built to work the edge of the sea |
+**The Severance** (seventy years ago). The fold lanes to the outer colonies
+failed in a single night. The official story is a cascade accident: tragic,
+unpreventable, mourned every year with candles. The outer colonies, the
+Scatter, were written off as lost.
 
-### The mystery: the Lamplighters
+**The Continuance.** The emergency Directorate that took power during the
+Thinning, "to continue the Accord's light until the crisis passes". The
+crisis has not passed. Fabrication is rationed by **Standing**, a loyalty
+score kept in everyone's neural implant and read at every door, every
+ration counter, every lane gate. The Directorate deputised the great
+fabrication houses, which became the corporations that run everything that
+is not the Custody. It looks like the Accord: same flags, same anthems,
+brighter neon. It is not the Accord.
 
-Long ago, a species now called the **Lamplighters** built the Lanterns: a
-network of beacons across the Shoals that held subspace steady and let ships
-cross it safely. Then the Lamplighters vanished, the Lanterns went dark, and
-the Shoals became what they are now.
+**Now.** The outer lanes are reopening, one by one. Nobody in the
+Continuance knows why, and the Directorate wants the Scatter's untouched
+glass back before anyone finds out what happened to it.
 
-The dilithium is the clue. The tide is not natural: it is the Lantern network
-trying to restart itself, drawing on the crystal in the rock and depositing
-it elsewhere as it cycles. Dilithium is getting rarer each tide because the
-network is consuming it. Something in the Deep is relighting the Lanterns one
-by one.
+### The file
 
-The player uncovers this in fragments: Lantern ruins to scan, Driftfolk
-stories, Wrecker logs, a Starfleet survey team that went missing thirty years
-ago, a dying crystalline entity that is trying to say something. What they do
-about it is the ending (see [The Voyage and its endings](#the-voyage-and-its-endings)).
+You found the **Severance file** on a dead Custody officer's drive, in an
+ore crusher on Cerro, the company moon where you cut rock. It is the
+engineering record of the night the lanes failed. They did not fail. They
+were cut, on the Directorate's order, to keep the last of the glass for the
+core worlds and let the colonies starve.
 
-The mystery is the spine, not a gate. A player can ignore it entirely and
-spend a voyage as a hauler getting rich, and the game still works; the
-mystery just keeps knocking.
+The file is why the Custody is after you. It is also the most valuable
+thing in the Scatter: proof. Who you give it to, sell it to, or broadcast it
+to is the ending.
 
-### The tone
+### The Scatter
 
-*Star Trek* at its best: curious, humane, a little lonely, with real danger
-and real moral weight. The crew are professionals; the frontier is not
-evil, just indifferent; most people you meet have reasons. Tension comes
-from uncertainty more than from gore. Humour lives in the hails.
+The outer systems, cut off for seventy years. No fold lanes until now; no
+help; no news. They survived the way people do: badly, cleverly, cruelly,
+kindly. The Scatter is not one place but dozens of isolated pockets, each
+of which went its own way.
+
+- The lanes are unreliable: they open, close and drift as whatever is
+  reopening them works.
+- Sensors are poor; charts are rumours; old Accord beacons still broadcast
+  seventy-year-old warnings.
+- There is glass here: not much, but more than the core has seen in
+  decades.
+
+### Tone
+
+Lived-in and working-class. Ships are cramped, patched and loud. Neon and
+propaganda at the centre; rust, improvisation and hard bargains at the
+edge. People have reasons. The frontier is not evil, just indifferent, and
+the Continuance is evil mostly in the polite, procedural way: forms,
+scores, curfews, and very occasionally a cutter that opens fire on a
+refugee hauler because the paperwork said to. Humour lives in the hails.
+Hope lives in the people who help you anyway.
+
+---
+
+## The ship and her people
+
+### The ship
+
+You steal a Continuance ore hauler: **Obedience-class**, a blunt, ugly,
+reliable mining tug with a cargo spine, a cutting laser, a single point-
+defence turret and a fold drive rated for short hops. The Continuance names
+its ships after civic virtues: *Obedience*, *Diligence*, *Gratitude*,
+*Patience*.
+
+The first thing you do in the Scatter is scratch the name off the hull and
+paint a new one. The player names her. The suggested name is ***Wayward***,
+and it is the game's title because it is what she is.
+
+She is the character. You keep her all journey and she becomes something
+else as you rebuild her: a gunboat, a prospector, a ghost, a trader (see
+[The ship: four shops](#the-ship-four-shops)).
+
+### You
+
+An ore-cutter from Cerro with a Standing implant you cannot remove (yet),
+a price on your head and the file. The player chooses a background at the
+start (cutter, Custody deserter, corporate tech, smuggler), each with its
+own opening contacts, a skill and a problem.
+
+### The crew
+
+A handful who ran with you, more who join along the way. Each has a station
+(**helm, guns, rig, signals, contacts**), a trait, a past and a few story
+beats. They open options in hails and on the ship, and they cost food,
+space and sometimes trouble. A crew member with Continuance family might
+want to send a message home, which is exactly how they track you.
+
+Crew is lighter than a full RPG: a name, a portrait, a station, one or two
+traits, a loyalty that moves. But it is core to the fantasy: you are not
+just running for yourself.
 
 ---
 
 ## Who is out there
 
-The Shoals has its own people, original to this game, and visitors from the
-great powers. The locals give the game an identity of its own; the great
-powers keep the existing ships, models, factions and capital-ship fights in
-play.
+### The Continuance
 
-### The locals
+The empire at your back. Always polite, always procedural, always closer.
 
-**The Assay Guild.** A mining and trading consortium, corporate, polite and
-ruthless in the ledger. They own the stations, set ore prices, post contracts
-and lend money. They are the closest thing the Shoals has to a government.
-Good friends; terrible creditors.
-*Gives:* markets, contracts, loans, licences to mine claimed systems.
+- **The Custody**: the Continuance's navy and police. Pickets, cutters,
+  interdictors, carriers. They scan transponders, run checkpoints and
+  follow trails.
+- **The Quiet Office**: the Custody's intelligence arm. Cloaked ships,
+  informers in every port, bounties posted through third parties. They
+  never hail first.
+- **The Houses**: the deputised fabrication corporations (Halvard-Okoye,
+  Meridian Fabrication, the Kessel-Dray Combine). In the Scatter ahead of
+  the Custody, buying claims and stations. They will trade with you, and
+  sell you out the moment it pays.
 
-**The Driftfolk.** Nomads who have lived in the Shoals for generations, in
-convoys of patched-together ships. They read the tide like sailors read the
-weather. Proud, poor, suspicious of anyone with a uniform. They know where
-the Lanterns are.
-*Gives:* tide forecasts, route knowledge, rare goods, refugees who need help,
-the best story leads.
+### The hunter
 
-**The Wreckers.** Pirates, salvagers and opportunists who light false
-distress beacons and strip the ships that answer. Not one faction but a
-dozen crews with a shared code and a shared fence. Some are cruel; some are
-just broke Driftfolk who gave up.
-*Gives:* extortion, ambushes, black-market trade, the fence (sell anything,
-no questions), and their own nemesis captains.
+The Custody assigns your case to **Prefect Idris Calloway**: patient,
+courteous, relentless, and convinced she is the hero of this story. She
+never stops following your trail. She talks to you: a hail from three
+systems back, a message left at a station you just docked at, a family
+photograph of one of your crew sent without comment.
 
-**The Quiet.** Something crystalline that lives in the dense fields and eats
-dilithium. It does not answer hails. It is not hostile, exactly: it swarms
-anything carrying a lot of crystal. The science path learns to talk to it,
-and it turns out it has been trying to talk all along.
-*Gives:* a hazard, a puzzle, and the key to the mystery.
+Calloway is the game's recurring antagonist, and a person, not a timer.
+She can be fought, misled, outrun for a while, bargained with, and in one
+ending, turned.
 
-### The visitors
+### The Scatter
 
-The great powers are here for the dilithium, and they are the heavyweights:
+**Holdfasts.** The settlements that survived: domed rocks, spun habitats,
+ice moons. Each is its own small nation with its own rules: a mining
+democracy, a theocracy that worships the old Accord, a corporate remnant
+still issuing scrip for a company that died seventy years ago. Most are
+suspicious of anyone from the core; all of them need something.
 
-- **The Klingons**: prospecting houses, each wanting glory and claims.
-  Honourable in their way; a Klingon captain who announces a hunt will
-  actually come, and will respect you for fighting.
-- **The Cardassians**: a mining directorate that wants the Guild's stations.
-  Bureaucratic, patient, always running a survey of their own.
-- **The Romulans**: never hail first. They are watching the Lanterns. They
-  know more than they say.
-- **The Tholians**: territorial, precise, angry about anyone crossing their
-  shallows. Their webs mark borders.
-- **The Borg**: a late-voyage threat. A cube drawn by the Lanterns' signal.
-  Not a faction you deal with; a storm you survive.
-- **Starfleet**: your own side, months away by subspace relay. The
-  Admiralty sends orders, wants charts and first contacts, and is not always
-  right about what matters out here.
+**The Drift.** Ship-dwelling nomads who never settled after the Severance.
+Convoys of patched ships, generations aboard. They know the lanes better
+than anyone and trust nobody with an implant. Win them over and they are
+the best friends in the Scatter.
 
-### Reputation
+**Gutter crews.** Pirates, wreckers and salvagers who gut ships for parts.
+Fast, aggressive, loud; they extort before they kill, and some can be
+bargained with. Each crew has a captain, and the captains have names.
 
-Every faction has a standing with you, from **hostile** to **allied**, moved
-by what you do: who you trade with, whose ships you destroy, whose distress
-calls you answer, whose contracts you finish, whose secrets you sell. Standing
-changes prices, what hails you get, whether stations let you dock, and
-whether a faction's captains come to talk or to kill.
+**The Choir.** Machine minds. The Accord's fabricator control systems,
+abandoned in the Scatter, woke up during the Severance and kept building.
+Now they run whole systems of automated mines and foundries, speak in
+overlapping voices, and trade in ways nobody fully understands. They adapt
+to whatever you hit them with. Some Holdfasts worship them; some fight them.
+The Choir knows who is reopening the lanes.
 
-Standings pull against each other. The Guild loves you for breaking Wreckers;
-the Driftfolk notice the Wreckers you broke were somebody's cousins.
+**The Pale.** Not people. Something that lives in folded space, seen only
+where the lanes are thin: drifting lattices of light that spin webs across
+routes and swarm ships carrying glass. They have been in the Scatter longer
+than humans. They are the mystery.
+
+### Standing with each of them
+
+Every faction keeps a **standing** with you, from hostile to trusted, moved
+by what you do: who you trade with, whose ships you destroy, whose calls you
+answer, whose jobs you take, whose secrets you sell. Standing changes prices,
+which hails you get, who lets you dock, and whether their captains come to
+talk or to kill. Standings pull against each other: the Holdfast that loves
+you for breaking a Gutter crew does not know the crew's captain was the
+Drift elder's son.
 
 ---
 
 ## The three scales of play
 
-The game is three nested loops, each with its own decisions.
-
 ```
-  MOMENT  (seconds)   fly · shoot · mine · dodge · tractor · scan
+  MOMENT   (seconds)   fly · shoot · cut rock · dodge · tractor · scan · spoof
      │
-  SORTIE  (3–8 min)   arrive in a system → scan → choose what to visit →
-     │                mine / explore / trade / fight / answer hails →
-     │                warp out before the system turns on you
+  SORTIE   (3–8 min)   drop into a system → scan → choose what to visit →
+     │                 mine / salvage / trade / fight / answer hails →
+     │                 fold out before the system turns on you
      │
-  VOYAGE  (hours)     the chart · fuel and cargo · research and refits ·
-                      reputation · nemeses · the tide · the mystery · the ending
+  JOURNEY  (hours)     the chart · the hunt · fuel, food, parts, cargo ·
+                       crew · the ship's rebuild · standing · nemeses ·
+                       the file · the ending
 ```
 
 ### The moment
 
-This is the game as it is today, widened. Flight, phasers, torpedoes, the
-barrel roll and the warp core all stay. New verbs join them:
+The game as it plays today, widened. Flight, guns, the roll and the core
+release stay. New verbs join them:
 
-- **Scan** (a sensor pulse): reveals what is in range, at a cost of
-  revealing you. Rock shows its ore; ships show their strength and intent;
-  phenomena show their readings.
-- **Mine** (a mining beam, distinct from the phasers): hold the beam on a
-  rock to cut it. Each rock has a heat window; keep the cut in it and the
-  rock gives up its ore cleanly; overheat and it fractures, scattering a
-  fraction of the yield; volatile ore can go off. Blasting rock with
-  phasers still works, and is quick, but wastes most of what is inside.
-- **Tractor** (already in the game): pull in ore, crystal, salvage, pods,
-  people.
-- **Hail** (the comms panel): talk to anything in range that will listen.
+- **Scan**: a sensor pulse reveals what is near (rock composition, a ship's
+  loadout and intent, a phenomenon's readings) and reveals you too.
+- **Cut**: a mining laser distinct from the guns. Hold it on a rock; keep
+  the cut inside its heat window and the ore comes out clean; overheat and
+  the rock fractures and scatters; volatile ore can go off. Blasting rock
+  with the guns still works, quickly, and wastes most of what is in it.
+- **Tractor**: pull in ore, glass, salvage, pods, people.
+- **Spoof** (with the signals shop): flip the transponder to a stolen
+  identity, jam a picket's scan, drop a decoy.
+- **Hail**: talk to anything in range that will listen.
 
 ### The sortie: a system
 
 A **sortie** is one star system: one 3D scene, like the current play space,
-but with a shape and a purpose instead of endless waves.
+with a shape and a purpose instead of endless waves.
 
-When you drop out of warp, you see a system with a handful of **points of
-interest** (POIs), some known, some just "unknown signal":
+When you fold in you see a handful of **points of interest**, some known,
+some just "unresolved contact":
 
-- **Fields**: asteroid belts and clusters to mine, of different ore grades;
-  rare tide-washed fields with dilithium veins.
-- **Stations**: Guild outposts, Driftfolk convoys at anchor, Wrecker fences,
-  faction bases. Dock to trade, repair, refit, take contracts.
-- **Phenomena**: the cosmic events (see [The sky itself](#the-sky-itself)).
-- **Wrecks and derelicts**: salvage, logs, traps.
-- **Lanterns**: ancient ruins, the story's breadcrumbs.
-- **Signals**: unknowns. A scan turns an unknown into one of the above, or
-  into a ship.
+- **Fields** to mine, of different ore grades; rare fields with glass seams.
+- **Ports**: Holdfast stations, Drift convoys at anchor, Gutter fences,
+  Choir foundries, Continuance checkpoints. Dock to trade, repair, rebuild,
+  recruit, take jobs.
+- **Phenomena** (see [The sky](#the-sky)).
+- **Wrecks**: salvage, logs, traps.
+- **Accord ruins**: lane relays, abandoned stations, old beacons. Pieces of
+  the story.
+- **Unresolved contacts**: a scan turns one into any of the above, or into a
+  ship.
 
-Traffic moves through the system: traders, patrols, prospectors, Wreckers,
-the Quiet. Some of it will hail you.
+Traffic moves through the system: haulers, Holdfast patrols, prospectors,
+Gutter crews, Choir drones, Custody pickets. Some of it will hail you.
 
-**Attention.** Every system has a quiet **attention** gauge. Mining,
-fighting and scanning raise it; time raises it slowly. As it rises, the
-system notices you: Wreckers smell a full hold, patrols come asking
-questions, the Quiet drifts towards your crystal. It is the old pressure
-clock, but now it is local, readable and escapable: when it gets hot, warp
-out. This is what keeps a sortie short and pointed, and what keeps combat a
-consequence rather than a constant.
+**Heat.** Every system has a **heat** gauge: how much attention you have
+drawn here. Mining, fighting, scanning, docking under your own name and time
+all raise it. As it rises the system closes in: Gutter crews smell a full
+hold, the local patrol comes asking questions, a Custody informer sends a
+message. It is the current game's pressure clock, made local and readable:
+when it gets hot, fold out. It is what keeps a sortie short and makes combat
+a consequence rather than a constant.
 
-A sortie ends when you **warp out** (to an adjacent system on the chart) or
-**dock** (a safe save point).
+A sortie ends when you **fold out** to a neighbouring system, or **dock**
+(the save point).
 
-### The voyage: the chart
+### The journey: the chart and the hunt
 
-The chart is the strategic layer: a map of systems joined by routes, opened
-from the Shoals' edge towards the Deep.
+The chart is the strategic layer: systems joined by lanes, from the
+Continuance's edge out into the Scatter.
 
-- **Fuel.** Every jump burns dilithium. Short hops are cheap; shallows cost
-  more; the Deep costs a lot. Running dry leaves you limping on impulse to the
-  nearest system and calling for help, which is a hail you may not enjoy.
-- **Fog.** Systems you have not visited show only what your sensors or your
-  sources say: a class, a rumour, a threat estimate. Charts, bought or
-  scanned, lift the fog.
-- **The tide.** Every few hours of play (or every N jumps), the tide turns.
-  Some routes close, new ones open, new frontier systems appear at the edge
-  of the chart, and fresh dilithium washes into a few fields. Driftfolk can
-  forecast it. The tide is what keeps the chart from ever being finished.
-- **Threat.** Each system shows a threat band (quiet, contested, dangerous,
-  lawless) that comes from who is there and how they feel about you.
+- **Glass for every jump.** Short hops are cheap; thin lanes cost more;
+  the far Scatter costs a lot. Running dry leaves you crawling on thrusters
+  to the nearest port and broadcasting for help, which is a hail you may not
+  enjoy.
+- **Supplies.** Food and air for the crew, parts for the ship. Both run
+  down with each jump and each day; both can be bought, traded, salvaged or
+  grown (with the right rebuild).
+- **Fog.** Unvisited systems show only what your sensors or your sources say:
+  a class, a rumour, a danger estimate. Charts, bought or scanned, lift it.
+- **Danger.** Each system shows who holds it and how they feel about you.
+
+**The hunt** is the clock of the whole journey, and it works in two ways.
+
+**The front.** The Continuance spreads across the chart behind you, a few
+systems per day of travel. A system the front reaches becomes **lit**:
+checkpoints at the lane mouths, pickets on patrol, ports scanning implants,
+prices up, friends gone quiet. Lit systems can still be crossed, at a cost
+and a risk. The front does not move evenly: it follows glass and lanes, and
+the Scatter can **push it back** (help a Holdfast hold its lanes, arm the
+Drift, break a Custody supply line, and the front stalls there).
+
+**The trail.** Calloway follows *you*, not the front. Every jump leaves a
+trail; she is always some number of jumps behind, shown on the chart as a
+shadow. Lingering lets her close. You can lay **false trails** (a decoy
+transponder fired down a different lane), **go dark** (cold running, slow,
+no scans, no docking), **pay** a Drift convoy to run interference, or
+**turn and fight**. When she catches you, it is a boss encounter; when you
+beat her, she withdraws, rebuilds and comes back harder, never quite
+gone.
 
 The chart is where long decisions live: where to sell, where to refuel,
-which contract to chase, whether to push into a frontier system with half a
-tank.
+which job to chase, which friend to stop for, whether to push into an
+unmapped system with half a tank and Calloway two jumps back.
 
 ---
 
-## The economy
+## Keeping alive: the economy
 
-### Dilithium: rare again
+### Glass, rare and precious
 
-Dilithium stops being XP that falls out of everything. It becomes the most
-precious thing in the Shoals:
+Glass is not something that falls out of every rock any more. It is the most
+precious thing you can carry:
 
-- **Fuel** for warp jumps.
-- **Power** for the warp core's release and the top tier of research.
-- **Currency** in its own right: everyone takes crystal.
+- **Fuel** for every fold.
+- **Power** for the core release, the best weapons and the top tier of
+  rebuilds.
+- **Currency** everyone accepts.
 
-It comes from **dilithium veins** in tide-washed fields (rare, contested),
-from **capital ships and nemeses**, from **deep phenomena**, from **trade**,
-and occasionally from a lucky rock. Carrying a lot of it makes you a target.
+It comes from **glass seams** in a few fields (rare, contested), from
+**capital ships and nemeses**, from **deep phenomena**, from **trade**, and
+now and then from a lucky rock. A hold full of it makes you a target; the
+Pale can smell it.
 
-### Ore and cargo
+### Ore, salvage, goods, data
 
-The Kestrel has a **hold**: a few cargo slots to start, more with refits.
-Mining fills it with ore, in a small number of grades so the decision stays
-legible:
+The hold has a few slots to start, more with rebuilds. What goes in it:
 
-| Grade | Where | Value | Note |
+| Cargo | Where | Value | Note |
 |---|---|---|---|
 | Common ore | any rock | low | the bread and butter |
-| Rich ore | violet-veined rock (already in the game) | medium | |
-| Heavy ore | iron rock (already in the game) | medium | slow to cut, heavy |
-| Volatile ore | volatile rock (already in the game) | high | goes off if you overheat the cut, or take a hit with it aboard |
-| Exotics | phenomena, deep fields | very high | each one wanted by someone specific |
-| Dilithium | veins, bosses | precious | also fuel |
+| Rich ore | veined rock (in the game now) | medium | |
+| Heavy ore | dense rock (in the game now) | medium | slow to cut |
+| Volatile ore | volatile rock (in the game now) | high | goes off if overheated, or if you take a hit carrying it |
+| Exotics | phenomena, deep fields | very high | each wanted by someone particular |
+| Salvage | wrecks, kills | varies | parts for your own ship, or for sale |
+| Glass | seams, bosses | precious | also fuel |
+| Goods | ports | varies | food, medicine, machine parts, implants, weapons, contraband |
+| Data | scans, ruins, contacts | varies | charts, readings, secrets; weighs nothing |
+| People | rescues, fares | varies | passengers, refugees, prisoners; they eat |
 
-Plus **trade goods** bought and sold at stations (medicine, machine parts,
-luxuries, weapons, refugees' belongings, contraband) and **data** (survey
-charts, scans of phenomena, Lantern readings), which is cargo that weighs
-nothing and that the right buyer pays well for.
+### Markets and money
 
-### Markets
+Each port prices goods by what it makes, what it needs, who runs it, and
+events: a siege raises the price of food and weapons; a fresh seam crashes
+ore prices next door; the front arriving makes everything dear. Prices show
+on the chart once you have been there or bought the data, so trade routes
+are discovered, not given.
 
-Each station has prices that depend on what it produces, what it needs, who
-runs it, the tide, and events: a war raises the price of weapons and
-medicine; a fresh tide crashes ore prices near the surge; a blockade makes
-smuggling worth the risk. Prices are shown on the chart once you have been
-there or bought the data, so trade routes are something you discover.
+Not everyone buys everything. The Holdfasts barter; the Houses pay in House
+scrip; the Choir takes ore and pays in fabrication; the Gutter fence takes
+anything at half its worth. **Chits**, the Scatter's common currency, are
+honoured almost everywhere outside a lit system.
 
-Not everyone sells everything. The Guild will not touch contraband; the
-Wrecker fence takes anything at half its worth; Starfleet buys survey data
-but not ore; the Driftfolk barter.
-
-### Money
-
-Credits are the Guild's scrip, honoured almost everywhere. Debt is possible:
-the Guild lends, with interest, and collects.
+Debt is possible: Houses and some Holdfasts lend. They collect.
 
 ---
 
-## The hail: every contact is a decision
+## The hail: every contact is a gamble
 
-This is the system that turns a shooter into a frontier. Ships hail you;
-you hail them; stations broadcast; distress calls come in. Each contact is
-a short **comms card**: a portrait, a voice, a situation and two to four
-choices. The game pauses (as it does for refits now) or, for the time-critical
-ones, slows.
+This is what turns a shooter into a frontier. Ships hail you; you hail them;
+ports broadcast; calls for help come in. Each contact is a short **comms
+card**: a portrait, a voice, a situation and two to four choices. The game
+pauses for most of them (as it does for refits now) and slows for urgent
+ones.
 
 ### Kinds of contact
 
 | Contact | What happens | Example |
 |---|---|---|
-| **Trade** | A ship offers to buy or sell | "You've ore aboard, Kestrel. I'll take the heavy grade off your hands at twelve a ton. Saves you the run to Halyard." |
-| **Plea** | Someone asks for help | "Our coolant's gone, we've children aboard. Please." (Real, or a Wrecker lantern?) |
-| **Contract** | Someone offers a job | Escort, delivery, survey, salvage, bounty, rescue, smuggling |
-| **Extortion** | Pay or fight | "Thirty percent of your hold and you warp out whole. That's the toll." |
-| **Warning** | A territorial claim | "You are in Tholian space. You have sixty seconds." |
-| **Declaration** | A captain announces intent | "You destroyed eleven of my house's skiffs. I am coming for you, Kestrel. Three jumps. Make ready." |
-| **Ambush** | No hail at all | Decloak, fire, fight |
-| **Rumour** | Information, free or for a price | "There's a field past Corran nobody's mined since the last tide. For forty, I'll tell you which one." |
-| **First contact** | Someone new | The Quiet, a Lamplighter echo, a Driftfolk elder |
+| **Trade** | Buy or sell | "That's Cerro ore in your hold, I can smell it. I'll take the heavy at twelve a ton. Saves you a jump." |
+| **Plea** | Someone asks for help | "Air scrubbers are gone. We've got kids. Please." Real, or a Gutter lure? |
+| **Job** | Someone offers work | Haul, escort, salvage, survey, rescue, smuggle, bounty |
+| **Shakedown** | Pay or fight | "Thirty percent of your hold and you fold out whole. That's the toll." |
+| **Warning** | A claim | "This is Holdfast Teague. You are in our lane. You have sixty seconds." |
+| **Declaration** | A captain announces intent | "You burned eleven of my skiffs. I'm coming for you. Three jumps. Get ready." |
+| **Checkpoint** | The Continuance asks for your papers | "Transponder mismatch. Cut your drive and prepare to be boarded." |
+| **Ambush** | No hail at all | A decloak, a volley, a fight |
+| **Rumour** | Information, free or for a price | "There's a seam past Orrin nobody's cut since the lanes came back. Forty chits." |
+| **Message** | Calloway, or someone from home | "Your mother is well, Mr Osei. She asks after you. So do I." |
+| **First contact** | Something new | The Choir, the Pale, a Holdfast no one has heard from in seventy years |
 
-### Reading the other ship
+### Reading the other side
 
-Before you answer, your sensors give you a **read**: their hull and
-strength against yours, what they are carrying, and an **intent** estimate
-("hostile intent: likely"). How good the read is depends on your science
-refits. A bad read says "unknown". A good read catches a bluff: the
-extortionist who is hailing from a ship with no torpedoes, the plea from a
-ship whose life signs read zero.
+Before you answer, your sensors give you a **read**: their strength
+against yours, their loadout, what they are carrying, and an **intent**
+estimate ("hostile intent: likely"). How good the read is depends on your
+signals rebuilds and your crew. A bad read says "unknown". A good read
+catches the bluff: the toll-taker with no torpedoes, the plea from a ship
+with no life signs.
 
 ### Choices that depend on who you are
 
-Every card has the plain choices (agree, refuse, fight, leave) and
-**path choices** that only appear if your ship or your standing allows them.
-This is where the research paths show up in play:
+Every card has the plain choices (agree, refuse, fight, run) and **earned
+choices** that appear only if your ship, crew or standing allows them:
 
-- With **tactical** refits: *intimidate* ("Look at my torpedo bays and say
-  that again.")
-- With **science** refits: *call the bluff* ("Your reactor's cold. You're a
-  decoy.") or *analyse* their ship for a weakness before the fight starts
-- With **operations** refits: *negotiate*, *bribe*, *offer a counter-deal*,
-  *transport* goods or people across without docking
-- With **engineering** refits: *offer repairs* (a reputation gain for parts),
-  *jettison* a decoy cargo pod
-- With **standing**: *invoke the Guild*, *call in a Driftfolk debt*, *name
-  your Klingon friend's house*
+- **Guns**: *intimidate* ("Count my launch tubes and say that again.")
+- **Signals**: *call the bluff* ("Your reactor's cold. You're a decoy."),
+  *spoof* the checkpoint with a stolen identity, *hack* the drone
+- **Contacts**: *negotiate*, *bribe*, *counter-offer*, *hide* the
+  passengers in the smuggling hold
+- **Rig**: *offer repairs* for parts and goodwill, *jettison* a decoy pod
+- **Crew**: your ex-Custody gunner knows this picket's captain; your Drift
+  pilot speaks the cant
+- **Standing**: *invoke* the Holdfast, *call in* a Drift debt, *name* the
+  Gutter captain you spared
 
-Most cards should have a peaceful way through for at least one path, and a
-violent one for anyone.
+Most cards have a peaceful way through for someone, and a violent one for
+anyone.
 
-### How a card is built
+### Cards are data
 
-Cards are data, like upgrades are now: a trigger (who, where, what state), a
-text with slots ("{captain} of the {ship}"), choices with requirements and
-outcomes. Outcomes are a small vocabulary: change cargo, credits, fuel,
-standing, start a fight, spawn ships, set a flag, schedule a follow-up,
-give a contract. A content writer can add a hundred without touching the
-simulation. Follow-ups are what make it feel alive: the family you rescued
-turns up at a station three systems later with a gift; the extortioner you
-paid hails again, asking for more.
+Like upgrades now: a trigger (who, where, what state), text with slots, and
+choices with requirements and outcomes from a small vocabulary (cargo,
+chits, glass, supplies, standing, crew, heat, trail; start a fight, spawn
+ships, set a flag, schedule a follow-up, give a job). A writer can add a
+hundred without touching the simulation. Follow-ups make it alive: the
+family you saved is waiting at a port three systems on with a gift; the
+toll you paid brings the same crew back asking for more; the checkpoint you
+spoofed reports a discrepancy two days later, and Calloway's shadow on the
+chart jumps a system closer.
 
 ---
 
-## Combat, rethought
+## Fighting for what you have
 
-Combat stays real-time, skill-based and fun. It just stops being constant.
+Combat stays real-time, skill-based and fun. It stops being constant.
 
 ### Frequency and rhythm
 
-A typical sortie has zero, one or two fights, and most of them are the
-result of a choice: you took a bounty, refused a toll, mined in a claimed
-field, stayed too long. Quiet systems are genuinely quiet. Lawless ones
-are not. A good target: around a quarter to a third of play time is combat,
-the rest exploring, mining, trading and talking.
+A typical sortie has no fight, or one, or two, and most of them follow a
+choice: you took a bounty, refused a toll, cut rock in a claimed field,
+stayed too long, ran a checkpoint. Quiet systems are genuinely quiet. Lit
+and lawless ones are not. A target to start from: a quarter to a third of
+play time in combat, the rest flying, mining, trading and talking.
 
-### Asteroids
+### What you are protecting
 
-Rock stays destructible, and still splits large to medium to small. The
-difference is that now you usually *want* to mine it rather than shoot it,
-because mined rock gives ore and shot rock gives scraps. Volatile rock is a
-mining puzzle and a combat tool (shoot it next to an enemy).
+A full hold, a crew, a ship you rebuilt, the file. Losing a fight costs
+real things (see [When it goes wrong](#when-it-goes-wrong)), so fights feel
+like defence of something earned, and running away is a real and
+respectable option.
+
+### Rock
+
+Rock stays destructible and still splits large to medium to small. Now you
+usually want to cut it, not shoot it, because cut rock gives ore and shot
+rock gives scraps. Volatile rock is a mining puzzle and a weapon (shoot it
+next to an enemy).
 
 ### Notice, hunters and nemeses
 
 Every faction keeps a **notice** of you: how much harm you have done them.
-Destroy their scouts and skiffs and it climbs. At thresholds, they respond:
+Burn their skiffs and pickets and it climbs. At thresholds they respond:
 
-1. **A warning.** A hail: "That's the third of ours. Stop."
-2. **A hunter.** A heavier ship sent after you, sometimes announced,
+1. **A warning**: "That's the third of ours. Stop."
+2. **A hunter**: a heavier ship sent after you, sometimes announced,
    sometimes not.
-3. **A named captain.** A capital ship with a name, a face and a grudge.
-   This is the boss.
+3. **A named captain**: a capital ship with a name, a face and a grudge.
+   The boss.
 
 Named captains are **nemeses**, and they persist:
 
-- They **announce or ambush**, by personality. A Klingon declares the hunt
-  and gives you jumps to prepare. A Romulan never announces. A Wrecker
-  captain might send an offer first: "Pay me, and I'll forget the skiffs."
+- They **announce or ambush**, by personality. A Gutter captain declares the
+  hunt and gives you jumps to prepare. The Quiet Office never announces. A
+  House enforcer might send an offer first: "Sign over your claim and we'll
+  forget the skiffs."
 - They **do not always fight** the first time. A captain may hail, scan you,
-  decide you are not worth it yet (or are more useful alive), and leave. The
+  decide you are not worth it yet (or are worth more alive), and leave. The
   next meeting is coloured by the first.
-- They **remember**. Beat one and they may escape, scarred and angrier, with
-  new tech. Lose to one and they may spare you, taking your cargo, and
-  gloat next time. Bribe one and they may become a contact. Spare one and it
-  may come back as an ally when you need one.
-- They are **finite**. Each faction has a handful of named captains per
-  voyage, so beating one matters.
+- They **remember**. Beat one and they may escape, scarred, angrier and
+  refitted. Lose to one and they may spare you, take your hold, and gloat
+  next time. Bribe one and you have a contact. Spare one and they may turn up
+  when you need help.
+- They are **finite**: a handful per faction per journey, so each one
+  matters.
 
-The existing capital-ship fights (three phases, telegraphs, faction
-signature attacks, salvage tech) become these nemesis fights, unchanged at
-their core. The difference is the build-up: you know who she is, why she
-is coming and what she wants.
+The existing capital-ship fights (three phases, telegraphs, signature
+attacks, salvaged tech) become these nemesis fights, their core unchanged.
+The difference is the build-up: you know who she is, why she is coming and
+what she wants. Calloway is the nemesis of nemeses.
 
-### Losing a fight
+### When it goes wrong
 
-Getting beaten does not have to mean death. When the last plate is about to
-go, a fight can end in: **surrender** (they take cargo, maybe a module),
-**escape** (an emergency warp at a big fuel cost), or **destruction**. Some
-enemies accept surrender (Wreckers, Cardassians); some do not (the Borg,
-some Klingon houses, the Quiet).
+When the last plate is about to go, a fight can end three ways:
+**surrender** (they take cargo, maybe a module, maybe a crew member),
+**emergency fold** (escape, at a large glass cost and a long trail), or
+**destruction**. Gutters and Houses take surrenders; the Pale does not; the
+Custody takes surrenders only once, because the second time they take you.
 
 ---
 
-## The sky itself
+## The sky
 
-Cosmic phenomena are where exploration lives. Each one is a place to go,
-something to learn, something to risk, and something to bring back. The
-existing sector events (ion storm, nebula, anomaly, rich field, derelict,
-distress, convoy) all fold in.
+Phenomena are where exploring lives: each is a place to go, something to
+risk and something to bring back. The current sector events (ion storm,
+nebula, gravity well, rich field, derelict, distress call, convoy) all fold
+in.
 
-| Phenomenon | What it is in play | The risk | The reward |
+| Phenomenon | In play | The risk | The reward |
 |---|---|---|---|
-| **Nebula** (exists) | Sensors fail, fog | Ambushes; you can't read hails | A hiding place; the core charges faster; nebula gas to sell |
-| **Ion storm** (exists) | Lightning on telegraphed circles | Hull damage | Near misses charge double; storm readings for science |
-| **Gravity well** (exists) | Everything falls in | Crushed at the core | Exotic matter at the edge; rock compressed rich |
-| **Pulsar** | A beam sweeps the system on a clock | Timed hull damage | Pulsar readings; the sweep breaks rock and enemies too |
-| **Comet** | A fast ice body with a tail | Debris in the tail | Ice and deuterium, cut from a moving target |
-| **Subspace rift** | A tear that pulls and spits | Random displacement; things come through | A shortcut to a distant system; rift readings |
-| **Tide surge** | The tide arrives in this system, live | Rock and debris churn, the map shifts | Fresh dilithium veins, briefly unclaimed: everyone races for them |
-| **Crystal bloom** | The Quiet feeding | The swarm, if you carry crystal | Their shed crystal; first contact, with science |
-| **Lantern** | An ancient beacon | Defences that wake up; Romulan watchers | Story fragments, research, a piece of the map |
-| **Graveyard** | A field of wrecks from a battle long ago | Mines and automated defences still live | Salvage, old tech, logs |
-| **Dark system** | A star gone out; no light, cold | No sensors, no rescue | The Deep's edge; things nobody else has found |
+| **Dust shroud** (the nebula now) | Sensors fail, fog | Ambushes; no reads on hails | A place to hide from the hunt; the core charges faster |
+| **Arc storm** (the ion storm now) | Lightning on telegraphed circles | Hull damage | Near misses charge double; storm data |
+| **Gravity well** (in the game now) | Everything falls in | Crushed at the core | Exotics at the edge; rock compressed rich |
+| **Pulsar** | A beam sweeps the system on a clock | Timed damage | Readings; the sweep breaks rock and enemies too |
+| **Comet** | A fast ice body with a tail | Debris | Ice for air and water: supplies, cut from a moving target |
+| **Lane tear** | A torn fold that pulls and spits | Displacement; things come through | A shortcut far across the chart, off Calloway's trail |
+| **Seam bloom** | The lanes shifting live in this system | Rock churns, debris everywhere | Fresh glass, briefly unclaimed: everyone races for it |
+| **Pale web** | The Pale feeding | The swarm, if you carry glass | Their shed lattice; first contact, with signals and patience |
+| **Choir foundry** | A machine-run industrial system | Defences that adapt | Trade with the Choir; salvage; fabrication |
+| **Severance graveyard** | The fleet that was stranded the night the lanes were cut | Old mines and automated guns, still live | Salvage, Accord tech, the file's missing pages |
+| **Dead lane** | A lane that goes nowhere, or used to | No sensors, no rescue | The far Scatter; things nobody else has found |
 
-Phenomena feed **science data**, which feeds research, sells to Starfleet,
-and unlocks story.
+Phenomena give **data**: it sells, it feeds rebuilds, and it opens the story.
 
-### Frontiers
+### Regions
 
-Regions of the chart have their own rules, like biomes:
+The chart has regions with their own rules:
 
-- **The Edge**: Guild space, where you start. Lawful, cheap, thin pickings.
-- **The Reefs**: dense fields, rich ore, the Quiet, poor sensors.
-- **The Wrecking Coast**: Wrecker territory: false beacons, cheap black
-  market, bounties on everyone.
-- **The Tholian Shallows**: webs and borders; the best exotics; the
-  Tholians.
-- **The Burning Line**: pulsars and storms: punishing hulls, rich in science.
-- **The Deep**: the Lanterns' heart. Costly to reach, nearly impossible to
-  leave. The end of the story.
+- **The Rim**: the Continuance's edge, where you start. Lit, watched,
+  cheap; nothing to stay for.
+- **The Breakers**: the first Scatter systems; dense fields, Gutter crews,
+  ports that ask no questions.
+- **The Holdfast Reach**: the settled heart of the Scatter; politics,
+  markets, people who need things.
+- **The Foundry Belt**: Choir territory; strange trade, adaptive defences,
+  the best fabrication.
+- **The Pale Shallows**: thin lanes, webs and swarms; the richest glass and
+  the worst risk.
+- **The Far Dark**: dead lanes and the source of whatever is reopening
+  them. The end of the story.
 
-New frontiers open with the tide and with research (the Burning Line needs
-radiation shielding; the Deep needs a drive that can cross it).
+New regions open as you push outwards and as you rebuild (the Pale Shallows
+need lattice shielding; the Far Dark needs a drive that can cross a dead
+lane).
 
 ---
 
-## The ship: research and refits
+## The ship: four shops
 
-The three-card refit stays as a quick, in-sortie decision: it is a good
-mechanic. What changes is where power comes from and how many directions it
-can go.
+The current three-card refit stays as a quick, in-sortie decision; it is a
+good mechanic. What changes is where power comes from and how many
+directions it can go.
 
-### Four departments
+The *Wayward* has four **shops**, each a line of rebuilds with its own
+resource and above all **its own way of playing**:
 
-The Kestrel's crew has four departments, each a research path with its own
-tree, its own resources, and above all **its own way of playing**:
+**Guns** (red) — weapons and armour
+- Every current weapon branch lives here: beams, torpedoes, mines, the
+  plasma trail, the hull arc, shields, plates.
+- *Opens:* bounty jobs, intimidation in hails, standing your ground against
+  hunters, escort work, breaking checkpoints by force.
+- *Fed by:* salvage from kills, nemesis tech, chits.
 
-**Tactical** (weapons and defence: red)
-- Phasers, torpedoes, mines, plasma, the hull arc, shields, armour: all the
-  current branches live here.
-- *Opens:* bounty contracts, intimidation in hails, the hunter's life, fighting
-  nemeses on your terms, escort work.
-- *Fed by:* salvage from destroyed ships, faction tech from nemeses,
-  credits.
+**Rig** (amber) — mining and the hull
+- Cutting laser power and heat control, the hold, an onboard refinery
+  (ore to ingots: more value, less space), the tractor, mining drones,
+  hydroponics (grow food), damage control, drive efficiency (less glass per
+  jump), the drive that crosses thin and dead lanes.
+- *Opens:* mining jobs, claims (mark a field as yours), deep-field mining,
+  big salvage, field repairs for others, staying out longer between ports.
+- *Fed by:* ore, salvage, chits.
 
-**Engineering** (industry and the ship: gold)
-- Mining beam power and heat control, cargo hold, refinery (turn ore into
-  ingots aboard, higher value, less space), tractor, drones that mine while
-  you fly, damage control, warp drive efficiency (fuel), the drive that
-  crosses shallows.
-- *Opens:* mining contracts, claims (mark a field as yours), deep-field
-  mining, salvage of big wrecks, field repairs for others.
-- *Fed by:* ore, salvage, credits.
+**Signals** (cyan) — sensors, intrusion and ghosts
+- Sensor range and resolution, the read, probes, stolen identities,
+  transponder spoofing, jamming, decoys, intrusion (hack drones and
+  turrets), cold running, implant work (in the end, cutting out your own
+  Standing implant).
+- *Opens:* calling bluffs, slipping checkpoints, false trails, safe passage
+  through phenomena, first contact with the Choir and the Pale, the file's
+  hidden layers.
+- *Fed by:* data from scans, phenomena, ruins, intrusions.
 
-**Science** (sensors and knowledge: blue)
-- Sensor range and resolution, the read on other ships, probes, anomaly
-  shielding (radiation, gravity, subspace), xenolinguistics, Lantern
-  decoding.
-- *Opens:* reading bluffs, safe passage through phenomena, frontier
-  regions, first contact with the Quiet, the mystery's deeper endings,
-  Starfleet's survey bounties.
-- *Fed by:* science data from scans, phenomena, Lanterns.
+**Contacts** (green) — people and trade
+- Comms range, the smuggling hold, passenger berths, the trade computer
+  (prices across the chart), translators, a crew lounge (loyalty), the
+  broker's book (who owes you).
+- *Opens:* negotiation and bribery, smuggling, fares and rescues, trade
+  agreements, hired escorts, recruiting, uniting the Scatter.
+- *Fed by:* standing, chits, rescued people, trade.
 
-**Operations** (comms, people and trade: green)
-- Comms range, the transporter, cargo concealment, crew quarters (carry
-  passengers and refugees), the universal translator, trade computer
-  (prices across the chart), diplomatic protocols.
-- *Opens:* negotiation and bribery in hails, smuggling, passenger and
-  rescue work, trade agreements, hiring escorts, brokering truces.
-- *Fed by:* reputation, credits, rescued people, trade.
+### How rebuilding works
 
-### How research works
+- **Parts** come from each shop's own resource (salvage for guns, data for
+  signals, and so on), so how you play is what you rebuild; there is no
+  single pool.
+- **Projects** take jumps, not seconds: you choose what the crew is working
+  on and it completes while you fly. Faster at a port with the right yard.
+- **Rebuilds** (fitting a finished project) happen at ports, for chits and
+  parts. In a sortie, the existing three-card refit becomes **field
+  refits**: small or temporary gains dealt when the crew finds something (a
+  breakthrough from a scan, a jury-rig from salvage).
+- **Captured tech**: beat a nemesis or win a faction over and their tech
+  joins your options: Gutter rams, Quiet Office cloaks, House shield
+  harmonics, Choir adaptive plating, Pale lattice snares, Drift sails that
+  ride a lane on almost no glass.
 
-- **Research points** come from each department's own resource (salvage for
-  tactical, data for science, and so on), so how you play is what you
-  research; there is no single pool.
-- **Projects** take time measured in jumps, not seconds; you choose what the
-  crew is working on, and it completes while you fly. Starting a project at
-  a station with the right parts is faster.
-- **Refits** (fitting what you have researched) happen at stations, and
-  cost credits and parts. In a sortie, the existing three-card refit
-  becomes **field refits**: small, temporary or tuning upgrades dealt when
-  your crew finds something (a breakthrough from a scan, a jury-rig from
-  salvage).
-- **Faction tech** stays: beat a nemesis or befriend a faction and their
-  tech enters your tree (Klingon disruptors, Romulan cloak, Tholian snares,
-  Borg adaptation, Cardassian compressors), plus local tech: Wrecker false
-  beacons, Driftfolk tide sails, Guild refinery licences, and the Quiet's
-  crystal resonance.
+### Shops cross
 
-### Paths cross
-
-The best builds mix two departments, and mixes open things neither does
-alone:
+The best ships mix two shops, and mixes open things neither does alone:
 
 | Mix | What opens |
 |---|---|
-| Science + Operations | Diplomacy with the Quiet; peace-broker endings |
-| Engineering + Tactical | Mining under fire; claim defence; the gunboat-hauler |
-| Science + Engineering | Deep-field mining inside phenomena; exotic refining |
-| Tactical + Operations | Privateering: licensed raids, extortion of your own |
-| Science + Tactical | Analysed weaknesses; precision strikes on nemeses |
-| Engineering + Operations | The trade empire: refinery, cargo, prices, routes |
+| Signals + Contacts | Talking to the Pale; turning Calloway's informers |
+| Rig + Guns | Mining under fire; holding a claim; the armed prospector |
+| Signals + Rig | Cutting glass inside phenomena; refining exotics |
+| Guns + Contacts | Privateering: licensed raids on House shipping |
+| Signals + Guns | Analysed weak points; ambushing the hunters |
+| Rig + Contacts | A trading house of your own: refinery, hold, routes |
 
-### Hulls
+### The rebuild you can see
 
-The Kestrel remains your ship for the whole voyage (she is the character),
-but at major shipyards she can be **rebuilt** around a path: a survey cruiser
-refit (science), a heavy hauler refit (engineering), an escort refit
-(tactical), a liner refit (operations). A rebuild changes how she flies,
-how many slots each department gets, and how she looks. This is where the
-old three-hull shakedown can come back, earned rather than picked.
-
-### Crew (a later layer)
-
-Officers, recruited at stations or rescued from wrecks, each with a
-department and a trait: a Driftfolk navigator who reads the tide, an
-ex-Wrecker who knows the code, a Klingon gunner who will not let you
-surrender, a Guild accountant who gets better prices. They add hail options,
-small bonuses and their own story beats. Optional in the first version; a
-big source of character later.
+At the major yards she can be rebuilt around a shop: a gunboat spine, a
+prospector rig, a ghost hull, a liner. It changes how she flies, how many
+modules each shop gets and how she looks. This is where the old three-hull
+spec sheet can return, earned rather than picked.
 
 ---
 
-## The voyage and its endings
+## The journey and its endings
 
 ### Structure
 
-A **voyage** is a campaign: a single Kestrel, from the Edge to an ending.
-Target length: six to ten hours for a first voyage, played in sorties of a
-few minutes each, saved at every dock.
+A **journey** is the campaign: one ship, from the Rim to an ending. Target
+for a first journey: six to ten hours, in sorties of a few minutes, saved at
+every dock.
 
-It runs in three acts, gated by the tide and the mystery rather than by a
-clock:
+It runs in three acts, moved on by the hunt and the file rather than a clock:
 
-1. **Act I: The Edge.** Halyard Station, the last Guild outpost. Learn to
-   mine, sell, dock, hail and jump. The first contract. The first Wrecker
-   lantern. The first Lantern ruin. The first nemesis hears your name.
-2. **Act II: The Shoals.** The chart opens with the tide. Choose your
-   people, your path and your frontier. Nemeses rise. The mystery takes
-   shape: the Lanterns are waking, the dilithium is vanishing, the missing
-   Starfleet survey team was here first.
-3. **Act III: The Deep.** Cross into the Deep with everything you have
-   built. The Borg arrive, drawn by the signal. The Lamplighters' last
-   Lantern. A choice.
+1. **Act I: The Breakout.** The opening is a run: the Custody locking down
+   Cerro, the hauler stolen, a gauntlet across the home system to the old
+   lane mouth with the whole system coming for you (this is the current game,
+   see below). Then the Breakers: the first port, the first sale, the first
+   hail that is not what it seems, renaming the ship, the first time
+   Calloway speaks.
+2. **Act II: The Scatter.** The chart opens. Choose your friends, your
+   shops, your road. The front advances; nemeses rise; the crew grows. The
+   file's missing pages are out here, in a graveyard, a Choir archive, a
+   Holdfast's memorial. Something is reopening the lanes from the far side,
+   and the Pale are getting louder.
+3. **Act III: The Far Dark.** Cross the dead lanes with everything you have
+   built. Learn what is reopening the lanes and why. Calloway's last
+   approach, with everything the Continuance can spare behind her. A choice.
 
 ### Endings
 
-The ending is the last decision at the last Lantern, and what it offers
-depends on how you played:
+The ending is what you do with the file and with what you learn in the Far
+Dark, and what you can choose depends on how you played:
 
-- **Relight the Lanterns** (science, with the Quiet's help): the Shoals
-  calm and become navigable; dilithium stops vanishing; the frontier closes,
-  and the Driftfolk's way of life with it.
-- **Douse them** (tactical or engineering): the tide stops for good; the
-  remaining dilithium is fixed in place; the Guild and the great powers move
-  in to carve it up.
-- **Give them to someone**: the Romulans, the Klingons, the Guild, the
-  Driftfolk: whoever you have made your ally, with all that follows.
-- **Speak for the Quiet** (science and operations, first contact made): the
-  Quiet are what is left of the Lamplighters; the Lanterns were their minds.
-  Let them decide.
-- **Get rich and get out** (any path, enough credits and fuel): leave the
-  Shoals before the end, a legend in the Guild's ledgers. A real ending, not
-  a failure.
+- **Broadcast it.** Through a reopened lane, into the core. The Continuance
+  shakes; the Scatter rises; nothing is safe for a while. Needs signals and
+  the lane.
+- **Rally the Scatter.** Unite the Holdfasts, the Drift and whoever else you
+  have won, and stop the front at the lanes. Needs contacts and standing.
+- **Sell it.** To a House, for a fortune and a new name. The Continuance
+  changes owners, not character.
+- **Bargain with it.** Trade the file to Calloway for amnesty for your crew.
+  She keeps her word. The Directorate does not.
+- **Close the door.** Help whatever is reopening the lanes shut them again,
+  for good. The Scatter stays free and alone.
+- **Disappear.** Fold beyond the Far Dark with a full hold and a loyal crew,
+  and never come back. A real ending, not a failure.
 
-Every ending gets an epilogue in the captain's log: what became of the
-people you met, your nemeses, the frontier.
+Each ending gets an epilogue: what became of the crew, the friends, the
+nemeses, the Scatter, and Calloway.
 
 ### Death
 
-The Kestrel can be destroyed. Two settings, chosen at the start of a voyage:
+The *Wayward* can be destroyed. Two settings, chosen at the start:
 
-- **Captain** (default): destruction ends the sortie, not the voyage. The
-  crew escape in pods; the Guild tows the hull back to the last station you
-  docked at, and bills you. You lose your cargo, a module or two, and take
-  on debt. A nemesis who did it remembers.
-- **Ironman**: destruction ends the voyage. The run report, as now, says
-  what you built and how it went.
+- **Fugitive** (default): destruction ends the sortie, not the journey. The
+  crew get to the pods; a Drift convoy or a Holdfast tug drags what is left
+  to the last port you docked at. You lose your cargo, a module or two,
+  maybe a crew member, and you owe someone. Calloway's trail jumps closer.
+  The nemesis who did it remembers.
+- **Last Run**: destruction ends the journey. The run report, as now, says
+  what you built and how far you got.
 
-### Between voyages
+### Between journeys
 
-Meta progression keeps the current rule: **options, not power**. What
-carries over is **the Survey Archive**: species met, phenomena catalogued,
-Lanterns decoded, endings reached. It unlocks new starting conditions (a
-different Starfleet mission brief, a Driftfolk-born captain, an ex-Wrecker
-start), new frontiers in the generator, new crew, new hail chains. The
-existing logbook and its unlocks fold into the Archive.
+Progression between journeys keeps the current rule: **options, not
+power**. What carries over is **the Archive**: people met, phenomena
+catalogued, ruins decoded, endings reached. It opens new backgrounds, new
+crew, new regions in the generator, new hail chains. The current logbook and
+its unlocks fold into the Archive.
 
 ---
 
 ## A sortie, as it might play
 
-> *Kestrel's log, stardate unknown; the tide charts went bad a week ago.*
+> *Day 31 since Cerro. Calloway: two jumps back.*
 
-You drop out of warp in Corran, a red dwarf system at the edge of the
-Reefs. A quarter tank of dilithium. Hold two-thirds full of common ore from
-the last system; a Guild contract for twelve tons of heavy ore due at
-Halyard in four jumps.
+You fold into Orrin, a red dwarf at the edge of the Breakers. A quarter tank
+of glass. Four days of food for six people. The hold two-thirds full of
+common ore from the last system, and a job: twelve tons of heavy ore for a
+Holdfast foundry, four jumps away.
 
-The scan shows: two asteroid fields, one heavy; a Driftfolk convoy at anchor
-by the gas giant; an unknown signal on the far side of the star. A little
-yellow tick on the threat band: contested.
+The scan shows two fields, one heavy; a Drift convoy at anchor by the gas
+giant; an unresolved contact on the far side of the star. Heat: low. On the
+chart, a red shadow two systems behind you.
 
-You fly to the heavy field and start cutting. The mining beam's heat bar
-creeps; you ease off just before it fractures, and three tons of iron-grey
-ore tumble into the tractor. Two more rocks. Attention ticks up.
+You fly to the heavy field and start cutting. The heat bar creeps; you ease
+off just before the rock fractures, and three tons of grey ore tumble into
+the tractor. Two more rocks. Heat ticks up.
 
-A hail. A Wrecker skiff, two of them behind it.
+A hail. A Gutter skiff, two more behind it.
 
-> **"Fine haul, Kestrel. Thirty percent and we'll forget we saw you."**
+> **"Fine haul. Thirty percent and you fold out whole."**
 >
-> *Read: three Wrecker skiffs. Light phasers, no torpedoes. Hostile intent:
+> *Read: three Gutter skiffs. Light beams, no torpedoes. Hostile intent:
 > certain if refused.*
 >
-> 1. Pay. (Lose 30% of your ore.)
+> 1. Pay. (Lose 30% of the ore.)
 > 2. Refuse. (Fight.)
-> 3. *[Science]* "Your middle ship's running on a cracked plasma coil. Fire
->    one shot and she'll go up." (Call the bluff.)
-> 4. *[Standing: Driftfolk, friendly]* "Tell that to the convoy over there.
->    They're mine." (Invoke the Driftfolk.)
+> 3. *[Signals]* "Your middle ship's running a cracked coil. One shot and
+>    she goes up." (Call the bluff.)
+> 4. *[Standing: Drift, friendly]* "Tell that to the convoy over there.
+>    They're with me."
 
-You have the standing. The skiffs hesitate, then peel away. One of them
-sends a parting message: *"Vash will hear about this."* Vash is the Wrecker
-captain whose skiffs you destroyed two systems ago. Her notice of you just
-went up a bar.
+You have the standing. The skiffs hesitate, then peel away. One sends a
+parting message: *"Vash will hear about this."* Vash is the Gutter captain
+whose skiffs you burned two systems ago. Her notice of you goes up a bar.
 
-You dock at the Driftfolk convoy. They will not buy ore but they will trade
-fuel for medicine, and one of their elders has a story about the unknown
-signal: a Lantern. They will tell you where it is if you carry two of their
-young people to Halyard. Passengers take hold space: you would have to sell
-some ore cheap, here, to make room.
+You dock with the Drift. They will not buy ore, but they will trade glass
+for medicine, and an elder knows what the unresolved contact is: a
+Severance wreck, a Continuance cruiser stranded the night the lanes were
+cut. They will tell you where, if you carry two of their young people to the
+foundry. Passengers take hold space; you would have to sell ore cheap, here,
+to fit them in.
 
-You take the deal. You visit the Lantern. It is cold, but your scan pulls a
-fragment of something: a pattern that matches the tide forecast exactly,
-three tides ahead. Science data: plenty. A research breakthrough: the
-three-card field refit comes up, and you take the improved sensor read.
+You take it. The wreck's automated guns are still live. You thread them,
+cut into the hull, and pull a data core: a page of the file, and a name you
+did not expect. Your signals officer works it: the field refit comes up; you
+take the better read.
 
-Attention is high now; something big is moving out by the star. You do not
-wait to see what. Warp out, with eight minutes on the clock, a hold of ore,
-two passengers, a piece of the mystery and a Wrecker captain who knows your
-name.
+A message, routed through the Drift relay:
+
+> **"You stopped to help again. It's why I'll find you."**
+> *— I. Calloway*
+
+The shadow on the chart is one system back. Heat is high, and something big
+is moving out by the star. You fold out with eight minutes on the clock, a
+hold of ore, two passengers, a page of the truth and a Gutter captain who
+knows your name.
 
 ---
 
 ## What happens to the current game
 
-It stays, as a mode: **Shakedown**. The Kestrel on a fifteen-minute
-qualifying run before she is cleared for the Shoals: the survival
-roguelite, unchanged, with its score, its records and its balance report.
-It is the arcade in the game, the place to learn the flight and the guns,
-and its unlocks can feed the Archive.
+It becomes **the Breakout**: the opening of the journey and an arcade mode
+of its own. The home system in lockdown, the stolen hauler, wave after wave
+of Custody coming in, refits from the rock you crack on the way, a capital
+ship hailing at the lane mouth. Survive long enough to fold, and the journey
+begins. As a standalone mode it keeps its score, its records and its
+balance report, and its unlocks feed the Archive.
 
-Almost everything built so far carries into the voyage:
+Almost everything built so far carries into the journey:
 
-| Built today | In the voyage |
+| Built today | In the journey |
 |---|---|
-| Flight model, ship, camera, controls | Unchanged |
-| Phasers, torpedoes, mines, plasma, arc, shields | The tactical department |
+| Flight model, camera, controls | Unchanged |
+| The Kestrel | The stolen Obedience-class hauler, renamed by the player |
+| Phasers, torpedoes, mines, plasma, the arc, shields | The guns shop (renamed) |
 | The three-card refit | Field refits in a sortie |
-| Upgrades and branches | Research projects in the tactical tree, plus new trees |
+| Upgrades and branches | Projects in the guns shop, plus three new shops |
 | Rock kinds and formations | Fields in a system, with ore grades |
-| Dilithium crystals and the tractor | Dilithium veins; ore and salvage pickups |
-| Enemy archetypes, factions, variants, elites | Traffic and hunters in a system |
-| Capital ships, telegraphs, salvage tech | Named nemeses |
-| The hail (engage / evade) | The comms card, generalised |
-| Sector events | Phenomena and system POIs |
-| The director | Per-system threat and attention, instead of run time |
-| Unlocks and the logbook | The Survey Archive |
-| The scripted pilot | Still the balance tool: it learns to mine, trade and answer hails |
+| Dilithium and the tractor | Glass seams; ore, salvage and supply pickups |
+| Enemy archetypes, factions, variants, elites | Traffic and hunters, mapped to the new factions (below) |
+| Capital ships, telegraphs, salvaged tech | Named nemeses and captured tech |
+| The hail (engage or evade) | The comms card, generalised |
+| Sector events | Phenomena and points of interest |
+| The director | Per-system heat and the hunt, instead of run time |
+| Unlocks and the logbook | The Archive |
+| The scripted pilot | Still the balance tool: it learns to mine, trade, answer hails and run |
+
+The current factions map on by how they fight, so the AI and the boss
+patterns carry over:
+
+| Fights today like | Becomes |
+|---|---|
+| Fast, aggressive, fires more | Gutter crews |
+| Long range, wheels and holds off | The Custody |
+| Cloaks, decloaks to strike | The Quiet Office |
+| Adapts to what hits it | The Choir |
+| Webs | The Pale |
 
 ---
 
 ## How we get there
 
 Each milestone ends in something playable on a phone and balanced by the
-pilot, so the game is never broken for long. The simulation rule holds: no
-Three.js in `src/sim`, so every new loop runs headless.
+pilot. The simulation rule holds: no Three.js in `src/sim`, so every new loop
+runs headless.
 
-**M1. One system.** A sortie as a scene: a system with POIs (two fields, a
-station, a signal), no endless waves, the attention gauge driving traffic,
-warp out to end. The mining beam and its heat window. Ore in a hold. Dock at
-the station to sell. *The question it answers:* is a sortie fun with
-combat as an exception?
+**M0. The rename.** New names through the code, UI and docs; the Breakout
+framing on the current game. Small, and it makes everything after it feel
+like the new game.
 
-**M2. The comms card.** Generalise the hail into data-driven cards: trade,
-plea, extortion, contract, warning. The read. Path choices stubbed against
-fitted systems. A few dozen cards. *The question:* do contacts feel like
-decisions?
+**M1. One system.** A sortie as a scene: two fields, a port, an unresolved
+contact, no endless waves, heat driving traffic, fold out to end. The
+cutting laser and its heat window. Ore in a hold. Dock to sell. *Answers:* is
+a sortie fun with combat as the exception?
 
-**M3. The chart.** A handful of systems on a chart, fuel for jumps, fog,
-threat bands, prices that differ by station. A save at every dock.
-*The question:* does a route of five sorties make a satisfying session?
+**M2. The comms card.** The hail generalised into data-driven cards: trade,
+plea, shakedown, job, warning, checkpoint. The read. Earned choices stubbed
+against fitted modules. A few dozen cards. *Answers:* do contacts feel like
+gambles?
+
+**M3. The chart and the hunt.** A dozen systems, glass for jumps, supplies,
+fog, prices by port, the front, Calloway's trail. A save at every dock.
+*Answers:* does staying ahead across five sorties make a gripping session?
 
 **M4. Notice and nemeses.** Per-faction notice; warnings, hunters, named
-captains who announce, ambush, parley and remember. The existing capital
-fights as nemesis fights. *The question:* do bosses feel personal?
+captains who announce, ambush, parley and remember; Calloway as a boss. The
+current capital fights as nemesis fights. *Answers:* do bosses feel personal?
 
-**M5. Departments.** The four research trees, research points from play,
-station refits, field refits, faction tech. *The question:* do different
-paths make different captains?
+**M5. The shops.** Four lines of rebuilds, parts from play, port rebuilds,
+field refits, captured tech. *Answers:* do different roads make different
+ships?
 
-**M6. The sky.** Phenomena beyond today's events: pulsar, comet, rift,
-tide surge, crystal bloom, Lantern, graveyard. Frontier regions with their
-own rules. *The question:* is exploring worth the fuel?
+**M6. Crew.** Recruits, stations, traits, loyalty, their hail options and
+story beats. *Answers:* does it feel like running for someone?
 
-**M7. The tide and the story.** Tide cycles reshaping the chart, the three
-acts, the Lamplighter mystery, the endings, the epilogue. *The question:*
-does the voyage end well?
+**M7. The sky.** Phenomena beyond today's events, and the regions.
+*Answers:* is exploring worth the glass?
 
-**M8. The long tail.** Crew, hull rebuilds, more cards, more captains, the
-Survey Archive and new starts, the Borg in the Deep.
+**M8. The story.** The three acts, the file's pages, the Far Dark, the
+endings and epilogues.
 
-M1 and M2 together are the **vertical slice**: one system, a station, a
-handful of hails. If that slice is fun, the rest is content and scale.
+**M9. The long tail.** Hull rebuilds, more cards, more captains, more
+regions, the Archive and its backgrounds.
+
+M1 and M2 are the **vertical slice**: one system, a port and a handful of
+hails. If that slice is fun, the rest is content and scale.
 
 ---
 
 ## Open questions for you
 
-These are the calls I would like your read on before M1:
-
-1. **Voyage length and death.** Six to ten hours with "Captain" death (debt,
-   not game over) as the default: right, or should the voyage be shorter and
-   harsher, closer to a roguelite run of an hour or two?
-2. **Pause or real time for hails.** I propose pausing for most cards and
-   slow motion for urgent ones (an ambush, a declaration mid-fight). Too
-   gentle?
-3. **How Trek.** I have kept the great powers (they are in the game now) and
-   added original local factions so the Shoals is ours. If the game might go
-   public beyond the lab, the locals carry the story and the great powers can
-   be swapped for original equivalents without changing a mechanic. Keep as
-   is, or lean further one way?
-4. **The camera at a station.** Docking could be a menu (fast, phone-friendly)
-   or a short flown approach with the station in view (more atmosphere).
-   I lean menu with a flown arrival.
-5. **Crew.** Leave it for M8, or is it core to the fantasy for you?
+1. **Names.** *Wayward*, the Continuance, the Custody, the Scatter, glass,
+   Calloway: closer? Which still miss?
+2. **Journey length and death.** Six to ten hours, with "Fugitive" death
+   (lose cargo and owe someone, keep going) as the default: right, or
+   shorter and harsher, a run of an hour or two?
+3. **How hard the hunt pushes.** A front you can stall plus one hunter on
+   your trail: is that the right amount of breath on your neck, or should the
+   pressure be stronger (FTL-style, always moving) or gentler?
+4. **Crew weight.** I have made crew core rather than a late extra, because
+   running *for someone* is part of the fantasy. Agree?
+5. **Pause or real time for hails.** Pause for most cards, slow motion for
+   urgent ones. Too gentle?
 
 ---
 
-*Next step, if you are happy with the direction: a detailed M1 design (the
-sortie, the mining beam, the attention gauge, the station) in DESIGN.md
-terms, then build it.*
+*Next step, once the direction is right: a detailed M1 design (the sortie,
+the cutting laser, heat, the port) in DESIGN.md terms, then build it.*
