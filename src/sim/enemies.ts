@@ -206,7 +206,7 @@ export const SPAWN_FAR = 150;
 /** Hulls this far from the ship are gone. */
 export const CULL = 210;
 /** How far an enemy will shoot from. */
-const FIRE_RANGE = 70;
+export const FIRE_RANGE = 70;
 
 // Borg adaptation, plasma, beams and webs: the original's numbers.
 export const BORG_ADAPT = 6;

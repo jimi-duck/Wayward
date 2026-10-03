@@ -5,6 +5,7 @@ import { closed, suggest, type Closed, type WebView } from '../sim/web';
 import type { World } from '../sim/world';
 import { NEON_CSS } from './colors';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
+import { loadout } from './loadout';
 
 // ── the refit web, on screen ──────────────────────────────────────────────
 // A map of every node, to pan and zoom (drag, wheel, pinch, + and −), with
@@ -25,7 +26,8 @@ const KIND_WORD: Record<string, string> = {
 };
 /** Node radius, in web units, by kind. */
 const SIZE: Record<string, number> = { core: 0.5, minor: 0.15, stat: 0.23, system: 0.33, spec: 0.43, synergy: 0.31, tech: 0.3 };
-const CAT_COLOUR = { weapons: 'var(--red-2)', defence: 'var(--ink)', ship: 'var(--violet)' } as const;
+/** The category lights, as on the HUD: orange-red weapons, cyan defence, violet the ship. */
+const CAT_COLOUR = { weapons: 'var(--hud)', defence: 'var(--cy)', ship: 'var(--violet)' } as const;
 const SYNERGY = '#e9c9ff';
 const FACTION_WORD: Record<string, string> = { klingon: 'Klingon', cardassian: 'Cardassian', romulan: 'Romulan', borg: 'Borg', tholian: 'Tholian' };
 
@@ -109,10 +111,18 @@ function needs(u: UpgradeDef, v: WebView): string {
   return parts.length ? `Needs ${parts.join(' and ')}.` : 'Not yet.';
 }
 
-/** The figure rows, before → after. */
+/** The figure rows, before → after, the new value lit. */
 function figRows(figs: Fig[], max = 6): HTMLElement {
   const box = h('div', 'figs');
-  for (const f of figs.slice(0, max)) box.append(h('span', f.cost ? 'cost' : '', f.label, h('b', '', `${f.from} → ${f.to}`)));
+  for (const f of figs.slice(0, max)) box.append(h('span', f.cost ? 'cost' : '', f.label, h('b', '', `${f.from} → `, h('em', '', f.to))));
+  return box;
+}
+
+/** The upgrade's level as blocks: owned, and the one this node adds lit. */
+function levelBlocks(lv: number, max: number, adds: boolean): HTMLElement {
+  const box = h('span', 'lvl');
+  box.setAttribute('aria-label', `Level ${lv} of ${max}`);
+  for (let k = 1; k <= max; k++) box.append(h('i', k <= lv ? 'on' : adds && k === lv + 1 ? 'add' : ''));
   return box;
 }
 
@@ -217,7 +227,7 @@ export class WebPanel {
     for (const n of WEB) {
       const r = SIZE[n.kind]! * U;
       const g = el('g', { class: 'n', transform: `translate(${px(n).toFixed(1)} ${py(n).toFixed(1)})` });
-      g.style.setProperty('--c', nodeColour(n));
+      g.style.setProperty('--nc', nodeColour(n));
       g.dataset.k = n.kind;
       g.append(shape(n.kind, r * 1.9, 'halo'), shape(n.kind, r));
       if (n.kind === 'core') g.append(el('circle', { class: 'core-in', r: (r * 0.45).toFixed(1) }));
@@ -266,14 +276,13 @@ export class WebPanel {
     pts.classList.toggle('none', w.points === 0);
     $('web-k').textContent = this.auto ? `Field refit · ${String(w.refit).padStart(2, '0')}` : 'Refit web';
     $('web-t').textContent = w.points > 0 ? (w.points === 1 ? 'Fit one more node' : `Fit ${w.points} nodes`) : 'Your ship';
-    $('web-ship').replaceChildren(h('span', '', 'Your ship · '), h('b', '', identity(w.levels).title));
     $('web-x').firstChild!.textContent = w.points > 0 ? 'Bank and launch ' : 'Launch ';
     const quick = $('web-quick');
     quick.replaceChildren(...this.sugg.map((id, i) => {
       const n = WEB_NODE.get(id)!, u = UPGRADE[n.up!]!;
-      const b = h('button', 'wq', '', h('kbd', '', String(i + 1)), h('span', 'nm', u.name),
+      const b = h('button', 'wq cut', '', h('kbd', '', String(i + 1)), h('span', 'nm', u.name),
         h('span', 'rg', `${u.branch === 'synergy' ? 'Bridge' : BRANCHES[u.branch].name} · ${KIND_WORD[n.kind]}`));
-      b.style.setProperty('--c', nodeColour(n));
+      b.style.setProperty('--nc', nodeColour(n));
       b.setAttribute('type', 'button');
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', () => {
@@ -323,12 +332,15 @@ export class WebPanel {
     const n = WEB_NODE.get(this.hover ?? this.sel)!;
     const box = $('web-insp');
     const c = closed(n, v);
-    box.style.setProperty('--c', nodeColour(n));
+    // the loadout lights the system this node would add to
+    const hl = n.up && c === null ? UPGRADE[n.up]!.branch : null;
+    $('web-ship').replaceChildren(...loadout(w.levels, hl === 'salvage' ? null : hl));
+    box.style.setProperty('--nc', nodeColour(n));
     if (!n.up) {
       // the core: the ship as it stands, against the stock hull
       const figs = figures(computeStats({}), computeStats(w.levels));
       box.replaceChildren(...present(
-        h('div', 'wi-path', '', h('i'), h('span', '', 'Core')),
+        h('div', 'wi-path', '', h('span', '', '', h('b', '', 'Core'))),
         h('h3', '', identity(w.levels).title),
         h('p', 'ben', `${w.fitted.size - 1} node${w.fitted.size === 2 ? '' : 's'} fitted. Every route out starts here; salvaged tech rings the core.`),
         figs.length ? h('div', 'wi-sub k', 'Against the stock hull') : null,
@@ -342,19 +354,19 @@ export class WebPanel {
       ? (u.requires?.length ? u.requires.map((r) => BRANCHES[UPGRADE[r.id]!.branch].name).join(' + ') : 'Bridge')
       : BRANCHES[u.branch].name;
     const fitted = c === 'fitted';
-    const level = u.max > 1 ? (fitted ? `${u.name} at level ${lv} of ${u.max}` : `Level ${lv} → ${lv + 1} · of ${u.max}`) : fitted ? 'Fitted' : lv ? 'Fitted elsewhere' : 'One level';
+    const level = u.max > 1 ? (fitted ? `Level ${lv} of ${u.max}` : `Level ${lv} → ${lv + 1} of ${u.max}`) : fitted ? 'Fitted' : lv ? 'Fitted elsewhere' : 'One level';
     const why = reason(n, c, v, w.points);
     const can = c === null && w.points > 0;
-    const fit = h('button', 'wi-fit', can ? 'Fit · 1 point ' : fitted ? 'Fitted' : 'Cannot fit', can ? h('kbd', '', 'Enter') : null);
+    const fit = h('button', 'wi-fit cut', can ? 'Fit · 1 point ' : fitted ? 'Fitted' : 'Cannot fit', can ? h('kbd', '', 'Enter') : null);
     fit.setAttribute('type', 'button');
     (fit as HTMLButtonElement).disabled = !can;
     fit.addEventListener('pointerdown', (e) => e.stopPropagation());
     fit.addEventListener('click', () => { if (performance.now() - this.opened >= GUARD) this.fit(n.id); });
     const figs = !fitted && c !== 'maxed' ? upgradeFigures(v.levels, u.id) : [];
     box.replaceChildren(...present(
-      h('div', 'wi-path', '', h('i'), h('span', '', path), h('span', `wi-tag ${n.kind}`, KIND_WORD[n.kind] ?? '')),
+      h('div', 'wi-path', '', h('span', '', '', h('b', '', path)), h('span', `wi-tag ${n.kind}`, KIND_WORD[n.kind] ?? '')),
       h('h3', '', u.name),
-      h('div', 'wi-lv', level),
+      h('div', 'wi-lv', '', h('span', '', level), u.max > 1 ? levelBlocks(lv, u.max, !fitted && c !== 'maxed') : null),
       h('p', 'ben', upgradeText(u, fitted ? Math.max(1, lv) : lv + 1)),
       u.note ? h('p', 'cav', u.note) : null,
       figs.length ? figRows(figs) : null,
@@ -611,7 +623,7 @@ export function miniWeb(fitted: Iterable<string>): SVGSVGElement {
   const nodes = el('g', { class: 'nodes' });
   for (const n of WEB) {
     const g = el('g', { class: `n ${on.has(n.id) ? 'fit' : 'far'}`, transform: `translate(${px(n).toFixed(0)} ${py(n).toFixed(0)})` });
-    g.style.setProperty('--c', nodeColour(n));
+    g.style.setProperty('--nc', nodeColour(n));
     g.append(shape(n.kind, SIZE[n.kind]! * U * 1.15));
     nodes.append(g);
   }

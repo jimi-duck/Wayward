@@ -1,4 +1,4 @@
-import { BRANCHES, UPGRADE, UPGRADES, type Branch } from '../content/upgrades';
+import { BRANCHES, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
 import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
 import type { Contact } from '../sim/bosses';
@@ -142,7 +142,9 @@ export class SummaryPanel {
     const opened = performance.now();
     const p = rec.previous;
     $('sum-t').textContent = rec.newBest ? 'New best' : 'Run over';
-    $('sum-s').textContent = `Breached by ${damageWord(r.cause || 'rock').toLowerCase()}`;
+    // "Rammed by a raptor" already says how; everything else reads after "Breached by"
+    const cause = damageWord(r.cause || 'rock');
+    $('sum-s').textContent = /^rammed /i.test(cause) ? cause : `Breached by ${cause.toLowerCase()}`;
     $('sum-score').textContent = fmt(r.score);
     const line = $('sum-line');
     line.replaceChildren(h('span', '', `${mmss(r.time)} survived · refit ${r.refit} · ${r.kills} kills`), rec.newBest ? h('span', 'best', ' · new best') : h('span', '', ` · best ${fmt(p.score)}`));

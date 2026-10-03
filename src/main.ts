@@ -59,10 +59,16 @@ function boot(): void {
   const hud = new Hud(zoom);
   hud.showZoom(sector.rig.zoom);
 
+  // iPhone Safari has no fullscreen for a page and shows a strip of tabs across
+  // the top in landscape. The page cannot hide it, so the start card says where
+  // Safari's own switch is, only there and only on its side.
+  const ua = navigator.userAgent;
+  const iphoneSafari = /iPhone|iPod/.test(ua) && /Version\/[\d.]+.*Safari\//.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
   const fit = () => {
     const dpr = fitRenderer(renderer, quality.tier);
     const lift = hud.layout();
     sector.resize(canvas.clientWidth, canvas.clientHeight, dpr, lift);
+    el('ios-tip').hidden = !(iphoneSafari && innerWidth > innerHeight);
   };
   new ResizeObserver(fit).observe(canvas);
   fit();
@@ -140,11 +146,26 @@ function boot(): void {
       el('pause-build').replaceChildren(buildView(world.levels));
     }
   };
+  // Phones and tablets take the whole screen where the browser allows it
+  // (Android, iPad; never iPhone Safari). It needs a tap, and a touch only
+  // counts once it lifts, so a launch from a press tries again on the release.
+  const fullscreen = () => {
+    const root = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+    if (document.fullscreenElement || !document.documentElement.classList.contains('touch-ui')) return;
+    try {
+      const p = root.requestFullscreen ? root.requestFullscreen({ navigationUI: 'hide' }) : root.webkitRequestFullscreen?.();
+      if (p instanceof Promise) p.catch(() => {});
+    } catch {
+      // not allowed here: the game fits the window it has
+    }
+  };
   const launch = () => {
     if (started) return;
     started = true;
     el('start').hidden = true;
     document.documentElement.classList.remove('prelaunch');
+    fullscreen();
+    window.addEventListener('pointerup', fullscreen, { once: true });
     window.focus();
     fit();
     hud.note(world, `Run begins · ${world.hull.name}`);

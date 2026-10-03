@@ -141,6 +141,44 @@ everything above (the flight model, camera, HUD and look are unchanged).
   pilot` writes `docs/BALANCE.md`. Every balance change in this pass was
   made from its numbers (DESIGN.md lists them).
 
+The HUD pass redraws every screen in one tactical language, from three
+reference frames the user supplied (orange-red instrument lines, small cyan
+status, an industrial mining ship), and then cuts it back after the user
+found the first version cluttered:
+
+- One set of parts in `styles/main.css`: the cut frame (edge and glass cut
+  at 45°, scan lines in the glass only), the tick meter (`--v`, `--n`, read
+  as a count of lit segments), corner brackets, and five lights that each
+  mean one thing: orange-red the instrument, cyan the ship's own state,
+  violet dilithium, amber things to go and get (and the yellow alert), red
+  damage.
+- `ui/hud.ts` keeps only what earns its place while flying: the refit rail
+  across the top, one ship-systems panel (the build's name; phasers, then
+  torpedoes and mines once fitted, and the warp core, each with its key,
+  gauge, reading and the level the refits have taken it to; the hull with
+  its shield charges; the score and chain), a capital ship's or a sector
+  event's panel at the top centre, the scope, and two fading log lines.
+- `ui/targeting.ts`: the target is the torpedo lock, else the hull or the
+  rock nearest the line of fire (hulls count closer, and the current
+  target is kept unless something is clearly better). Its brackets close
+  in and a scan line runs down it; a readout beside it (or under it on a
+  narrow screen, clear of the panel and the scope) says what it is and
+  its integrity, and for rock what breaking it yields. The gunsight and a
+  centre mark light when a lance fired now would hit. Marks: brackets on
+  other hulls, the capital ship by name, the nearest dilithium-rich or
+  rare rock, repairs, power-ups, the objective; edge pointers when the
+  capital ship or the objective is off screen, and a small chevron in its
+  faction's colour for each hull out of view.
+- `ui/radar.ts`: ship-up, a compass bezel that turns with the ship, the
+  camera's field of view, contacts by kind, and a bezel ring that lights
+  toward any hostile in firing range.
+- The refit web (`ui/web.ts`, which replaced the refit cards) is drawn in
+  the same parts: a cut-frame map and inspector, the module's level as
+  blocks, figures with the new value lit, and the loadout (`ui/loadout.ts`)
+  across its header with the system under the cursor lit.
+- Touch: octagon buttons that each carry their gauge (bank, rack, core);
+  on a phone the panel tightens and the scope moves to the top left.
+
 Coming in later milestones: `audio/`, three sectors and a win state.
 
 ## Conventions
@@ -186,8 +224,9 @@ Coming in later milestones: `audio/`, three sectors and a win state.
 | M4 | Space environment: starfield, nebulae, sun, shadows, bloom | |
 | M5 | Roguelite systems: XP, upgrades, hull pick, overcharge, enemies, bosses, hails | done (roguelite pass; no hull pick: one ship, many builds) |
 | M5b | Roguelite pass: refit tree, weapon systems, rock kinds, factions, elites, director, capital-ship phases and telegraphs, sector events, run report, long-term unlocks, scripted-pilot balancing | done |
+| M5c | HUD pass: one tactical UI language for the HUD and every panel, ship systems with refit levels, targeting with mining readouts, a compass scope, module refit cards, a decluttered phone layout | done |
 | M6 | Three sectors and a win state | |
-| M5c | The refit web: two hundred nodes in nine regions, points per refit, salvaged faction tech, quick picks, the map with pan, zoom and inspector | done |
+| M5d | The refit web: two hundred nodes in nine regions, points per refit, salvaged faction tech, quick picks, the map with pan, zoom and inspector | done |
 | M7 | LCARS UI: start, HUD, refit web, pause, summary | done in the gritty style (roguelite pass) |
 | M8 | Spatial audio and music | |
 | M9 | Mobile polish, installable web app, performance pass, launch | |
