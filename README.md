@@ -40,9 +40,11 @@ on the phone.
 
 The game plays in landscape only: held upright, a phone gets a screen asking
 to turn it, and a run pauses. Android goes fullscreen at launch and locks to
-landscape. An iPhone browser cannot hide its bars or tabs, so on iPhone add
-the game to the Home Screen (Share › Add to Home Screen) and open it from
-there for the whole screen.
+landscape. An iPhone browser has no fullscreen, and folds its tabs and bars
+away only when the page scrolls, so there the page scrolls under the fixed
+game: while the bars are out a swipe screen asks for one swipe up, and a run
+pauses under it. Added to the Home Screen (Share › Add to Home Screen), the
+game opens with no bars at all.
 
 ## Controls
 

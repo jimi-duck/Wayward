@@ -815,16 +815,32 @@ html.webopen #hud { visibility: hidden; }
   .pause-t { font-size: 22px; }
 }
 
-/* ── turn: a phone held upright ───────────────────────────────────────── */
-/* over everything, the start card and the panels included: the game is only
-   laid out on its side, so upright it says so and waits */
-#turn { position: absolute; inset: 0; z-index: 6; display: none; place-content: center; justify-items: center; gap: 14px; padding: 24px;
-  background: var(--void); text-align: center; touch-action: none; }
+/* ── covers: what the game needs from the phone before it plays ───────── */
+.cover { display: none; place-content: center; justify-items: center; gap: 14px; padding: 24px; text-align: center; }
+.cover-i { width: 96px; height: 96px; fill: none; stroke: var(--hud); stroke-width: 2; stroke-linecap: square; stroke-linejoin: miter; }
+.cover-i .was { stroke: var(--ink-3); }
+.cover-t { color: var(--ink); font: 700 20px/1 var(--font-display); letter-spacing: .24em; text-transform: uppercase; padding-left: .24em; }
+.cover-s { color: var(--ink-2); font: 500 10px/1.4 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; }
+/* a phone held upright: over everything, the start card and the panels
+   included; the game is only laid out on its side, so it says so and waits */
+#turn { position: absolute; inset: 0; z-index: 6; background: var(--void); touch-action: none; }
 .upright #turn { display: grid; }
-.turn-i { width: 96px; height: 96px; fill: none; stroke: var(--hud); stroke-width: 2; stroke-linecap: square; stroke-linejoin: miter; }
-.turn-i .was { stroke: var(--ink-3); }
-.turn-t { color: var(--ink); font: 700 20px/1 var(--font-display); letter-spacing: .24em; text-transform: uppercase; padding-left: .24em; }
-.turn-s { color: var(--ink-2); font: 500 10px/1.4 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; }
+/* An iPhone browser folds its tabs and bars away only when the page scrolls.
+   There the page is tall enough to scroll a long way (near its end Safari
+   brings the bars back), the game stays fixed over it and never pans, and
+   the swipe screen is the one surface a swipe up scrolls. */
+html.swipe, html.swipe body { height: auto; overflow: visible; touch-action: pan-y; scrollbar-width: none; }
+html.swipe body { min-height: calc(100lvh + 20000px); }
+html.swipe #app { touch-action: none; }
+/* a panel scrolled to its end must not hand the scroll on to the page */
+html.swipe #app * { overscroll-behavior: contain; }
+#swipe { position: fixed; inset: 0; z-index: 7; gap: 12px; background: rgba(3, 5, 9, .95); touch-action: pan-y; }
+#swipe .cover-i { width: 64px; height: 64px; }
+.bars:not(.upright) #swipe { display: grid; }
+#swipe .cover-i path { animation: swipe-up 1.6s var(--ez) infinite; }
+#swipe .cover-i path + path { animation-delay: .2s; }
+#swipe-x { margin-top: 10px; }
+@keyframes swipe-up { 0% { translate: 0 8px; opacity: 0; } 35% { opacity: 1; } 100% { translate: 0 -8px; opacity: 0; } }
 
 #debug { position: absolute; z-index: 5; top: calc(.5rem + var(--safe-t)); left: calc(.5rem + var(--safe-l)); padding: .5rem .65rem;
   background: rgba(3, 5, 9, .75); border: 1px solid var(--line); color: var(--ink); font: 11px/1.5 var(--font-mono); white-space: pre; pointer-events: none; }
@@ -864,5 +880,5 @@ html.webopen #hud { visibility: hidden; }
   #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #sys-oc.hot > .ticks { animation: none; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
   #log-lines p.new, #banner.on, #sys-hull.hit, #ship-id.new, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel { animation: none; }
-  #web-svg .n.open .halo, #web-svg .n.just .halo, #web-svg .n.no .s, #threats .thr.close i { animation: none; }
+  #web-svg .n.open .halo, #web-svg .n.just .halo, #web-svg .n.no .s, #threats .thr.close i, #swipe .cover-i path { animation: none; }
 }
