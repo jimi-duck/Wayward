@@ -21,54 +21,130 @@
   <div id="app">
     <canvas id="view" aria-label="Game view"></canvas>
 
+    <!-- The HUD's icons: the brand's line set (24px grid, square caps, 45°). -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i-phaser" viewBox="0 0 24 24"><path d="M3 9h4v6H3z M7 12h14 M7 10l13-4 M7 14l13 4"/></symbol>
+      <symbol id="i-torp" viewBox="0 0 24 24"><path d="M4 9h10l5 3-5 3H4z M4 9L2 7 M4 15l-2 2 M8 9v6"/></symbol>
+      <symbol id="i-mine" viewBox="0 0 24 24"><path d="M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5"/></symbol>
+      <symbol id="i-core" viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 8-12h-6l1-8z"/></symbol>
+      <symbol id="i-hull" viewBox="0 0 24 24"><path d="M7 4h13v13l-3 3H4V7z M8 10h8"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 17H2z M12 9v6 M12 17v2"/></symbol>
+      <symbol id="i-capital" viewBox="0 0 24 24"><path d="M3 8V3h5 M16 3h5v5 M21 16v5h-5 M8 21H3v-5 M12 8l4 4-4 4-4-4z"/></symbol>
+      <symbol id="i-hostile" viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9z M12 8v3 M12 13v3 M8 12h3 M13 12h3"/></symbol>
+      <symbol id="i-rock" viewBox="0 0 24 24"><path d="M12 2l6 5v10l-6 5-6-5V7z M6 7l6 4 6-4 M12 11v11"/></symbol>
+      <symbol id="i-event" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z M12 7v6 M12 15v2"/></symbol>
+    </svg>
+
+    <!-- The HUD, laid over the view, never a dashboard round it:
+           top edge     · the refit rail: dilithium toward the next refit
+           top right    · ship systems: the build, weapons, warp core, hull, score
+           top centre   · a capital ship or a sector event, while there is one
+           in the world · the gunsight, the target, marks on what matters
+           bottom left  · the sensor scope
+           bottom right · the last two things that happened -->
     <div id="hud">
       <div id="vignette" aria-hidden="true"></div>
-      <div id="reticle" aria-hidden="true"></div>
-      <div id="marks" aria-hidden="true"></div>
-      <div id="lock" aria-hidden="true"><span class="lk-t"><b id="lock-id">Interceptor</b> <span id="lock-d">0 m</span></span></div>
 
-      <!-- top edge: the refit rail, the number a run is steered by -->
-      <div id="rail" aria-label="Dilithium to the next refit"><span class="k">Refit <b id="refit-n">00</b></span><div class="ticks"><i id="xp"></i></div><span class="gem"><b id="xp-v">0</b><span class="k">/ <span id="xp-n">0</span></span></span></div>
+      <div id="world" aria-hidden="true">
+        <div id="reticle"><i></i></div>
+        <div id="marks"></div>
+        <div id="tgt">
+          <div id="tgt-box"><i class="tgt-scan"></i><i class="tgt-x"></i><span id="tgt-d">0 m</span></div>
+          <div id="tgt-card">
+            <div class="tc-h"><svg class="ico"><use id="tgt-ico" href="#i-hostile"/></svg><b id="tgt-name">Interceptor</b><span id="tgt-lock">Lock</span></div>
+            <div class="tc-s" id="tgt-sub">Klingon</div>
+            <div class="tc-m"><span id="tgt-int-k">Hull</span><i class="ticks" id="tgt-int"></i><b id="tgt-int-v">100%</b></div>
+          </div>
+        </div>
+        <div class="ptr" id="ptr-cap"><i></i><span id="ptr-cap-t">Capital</span></div>
+        <div class="ptr" id="ptr-obj"><i></i><span id="ptr-obj-t">Objective</span></div>
+      </div>
 
-      <!-- top right: weapons, then score and hull -->
-      <section id="weapons" aria-label="Weapons">
-        <div class="wrow"><span class="k">Phasers</span><kbd>1</kbd><div class="bar"><i id="g-pow"></i></div></div>
-        <div class="wrow" id="row-torp"><span class="k">Torpedoes</span><kbd>2</kbd><span class="pips" id="g-torp"></span><div class="bar thin"><i id="g-reload"></i></div></div>
-        <div class="wrow" id="row-mines" hidden><span class="k">Mines</span><span class="pips small" id="g-mines"></span></div>
-        <div class="wrow" id="row-oc"><span class="k" id="oc-k">Overcharge</span><kbd>E</kbd><div class="bar oc"><i id="g-oc"></i></div></div>
-        <div class="readout"><span class="k">Score</span><b id="score">000000</b><span class="cell" id="hull-cell" title="Hull plates"><span class="k">Hull</span><span class="plates" id="plates" role="img" aria-label="Hull 3 of 3"></span></span></div>
-        <div class="chain" id="chain"><span class="k">Chain <b id="chain-n">0</b></span><b id="chain-x">×1</b><div class="bar thin"><i id="chain-t"></i></div></div>
-        <div id="powers" aria-live="polite"></div>
+      <div id="rail" class="hud-block" aria-label="Dilithium to the next refit">
+        <span class="lbl">Refit<b id="refit-n">00</b></span><i class="ticks" id="xp"></i>
+        <span id="xp-gain"></span><span class="gem"><svg class="ico"><use href="#i-rock"/></svg><b id="xp-v">0</b><span class="lbl">/ <span id="xp-n">0</span></span></span>
+      </div>
+
+      <section id="systems" class="hud-block cut" aria-label="Ship systems">
+        <div class="sys-h"><span class="lbl">Defiant</span><b id="ship-id">Stock</b></div>
+        <div class="sys-row" id="sys-ph">
+          <svg class="ico"><use href="#i-phaser"/></svg><span class="lbl">Phasers</span><kbd>1</kbd>
+          <i class="ticks" id="g-bank"></i><b class="val" id="v-bank">100<small>%</small></b><span class="lv" id="lv-ph">Lv 0</span>
+        </div>
+        <div class="sys-row" id="sys-tp" hidden>
+          <svg class="ico"><use href="#i-torp"/></svg><span class="lbl">Torpedoes</span><kbd>2</kbd>
+          <span class="rack" id="g-rack"></span><b class="val word" id="v-rack">Ready</b><span class="lv" id="lv-tp"></span>
+        </div>
+        <div class="sys-row" id="sys-mn" hidden>
+          <svg class="ico"><use href="#i-mine"/></svg><span class="lbl">Mines</span><span class="nokey"></span>
+          <span class="rack" id="g-mines"></span><b class="val" id="v-mines">0</b><span class="lv" id="lv-mn"></span>
+        </div>
+        <div class="sys-row" id="sys-oc">
+          <svg class="ico"><use href="#i-core"/></svg><span class="lbl">Core</span><kbd>E</kbd>
+          <i class="ticks" id="g-oc"></i><b class="val" id="v-oc">0<small>%</small></b><span class="lv" id="lv-oc"></span>
+        </div>
+        <div class="sys-foot">
+          <div class="cell" id="sys-hull">
+            <span class="lbl"><svg class="ico"><use href="#i-hull"/></svg>Hull</span><b class="val" id="v-hull">3/3</b>
+            <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span>
+          </div>
+          <div class="cell">
+            <span class="lbl">Score</span><b class="val" id="score">000000</b>
+            <span id="chain"><span class="lbl">Chain <span id="chain-n">0</span></span><b id="chain-x">×1</b><i class="ticks" id="chain-t"></i></span>
+          </div>
+        </div>
+      </section>
+      <div id="powers" aria-live="polite"></div>
+
+      <div id="centre">
+        <section id="boss" class="cut" aria-live="polite">
+          <div class="boss-h"><svg class="ico"><use href="#i-capital"/></svg><b id="boss-name">I.K.S. Vor’cha</b><span id="boss-cls">Klingon capital ship</span></div>
+          <div class="boss-bar"><i class="ticks" id="boss-hp"></i></div>
+          <div class="boss-f"><span id="boss-hull">Hull 100%</span><span id="boss-phase">Phase 1/3</span><span id="boss-fuse">Fuse 42s</span></div>
+        </section>
+        <section id="objective" class="cut" aria-live="polite">
+          <div class="obj-h"><svg class="ico"><use href="#i-event"/></svg><b id="obj-t">Distress signal</b><span id="obj-left">0s</span></div>
+          <i class="ticks" id="obj-p"></i>
+          <span id="obj-s"></span>
+        </section>
+      </div>
+
+      <section id="sensors" class="hud-block" aria-hidden="true">
+        <canvas id="radar"></canvas>
       </section>
 
-      <!-- top centre, under the rail: a sector event's objective -->
-      <div id="objective" aria-live="polite"><span id="obj-t">Distress signal</span><div class="bar"><i id="obj-p"></i></div><span class="k" id="obj-s"></span></div>
-      <div id="objmark" aria-hidden="true"><span id="objmark-d">0 m</span></div>
+      <section id="log" class="hud-block" aria-live="off">
+        <div id="log-lines"></div>
+      </section>
 
-      <!-- top centre, only while a capital ship is in the sector -->
-      <div id="bossbar" aria-live="polite"><span id="boss-name">I.K.S. Vor’cha</span><div class="bar"><i id="boss-hp"></i></div><span class="k" id="boss-fuse"></span></div>
-
-      <canvas id="radar" aria-hidden="true"></canvas>
-      <div id="status" aria-live="off"><span id="status-t">Run begins</span><i class="leader"></i></div>
-
-      <div id="banner" role="status"><span class="bn-k" id="banner-k">Red alert</span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div>
+      <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Red alert</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
     </div>
 
     <!-- Touch controls. The whole layer is the stick's catchment, as in the
-         original: the ring comes to the thumb. -->
+         original: the ring comes to the thumb. Each button carries its own
+         gauge, under the thumb that uses it. -->
     <div id="touch" aria-hidden="true">
       <div id="stick"><div id="knob"></div></div>
-      <button type="button" id="fire">Phaser<small>1</small></button>
-      <button type="button" id="torp">Torpedo<small>2</small></button>
+      <button type="button" id="fire"><span>Phaser</span><i class="ticks" id="t-bank"></i></button>
+      <button type="button" id="torp"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
       <button type="button" id="roll">Roll</button>
-      <button type="button" id="release"><span class="fill" id="release-f"></span><span>Release</span></button>
+      <button type="button" id="release"><span>Release</span><i class="ticks" id="t-oc"></i></button>
     </div>
 
     <div id="start" role="dialog" aria-labelledby="start-t">
       <div class="start-card">
         <svg class="wm" viewBox="0 0 146.5 46" role="img" aria-label="Asteroid Blaster"><g class="wm-a"><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(0.00 0.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(20.50 0.00)"/><path d="M0 2H16M8 2V20" transform="translate(41.00 0.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(61.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(81.00 0.00)"/><path d="M5 2H11L14 5V15L11 18H5L2 15V5Z" transform="translate(101.50 0.00)"/><path d="M2 0V20" transform="translate(122.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(130.50 0.00)"/></g><g class="wm-b"><path d="M2 2H11L14 5V7.5L12 10L14 12.5V15L11 18H2ZM2 10H12" transform="translate(0.00 26.00)"/><path d="M2 0V18H15" transform="translate(20.50 26.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(40.00 26.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(60.50 26.00)"/><path d="M0 2H16M8 2V20" transform="translate(81.00 26.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(101.50 26.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(121.00 26.00)"/></g></svg>
         <p id="start-t" class="tag">Hold the sector.</p>
-        <p class="meta">Phasers 1 · torpedoes 2 · overcharge E · roll Shift · zoom Z</p>
+        <dl class="keys-l only-desktop">
+          <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
+          <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
+          <div><dt><kbd>1</kbd></dt><dd>Phasers</dd></div>
+          <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
+          <div><dt><kbd>E</kbd></dt><dd>Overcharge</dd></div>
+          <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
+          <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
+        </dl>
+        <p class="meta only-touch">Drag to steer · hold Phaser · tap Release when the core is full</p>
         <button type="button" id="launch">Launch</button>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
         <div id="records" class="records"></div>
@@ -94,7 +170,7 @@
       <div class="panel">
         <header class="ph"><span class="kick" id="refit-k">Field refit</span><h2 id="refit-t">Choose an upgrade</h2><span class="sub" id="refit-s"></span></header>
         <div class="cards" id="cards"></div>
-        <footer class="pf"><span class="keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> take a card · <kbd>Tab</kbd> moves · <kbd>Enter</kbd> takes · pad ◀ ▶ and <kbd>A</kbd></span><span class="ship-id" id="refit-ship"></span></footer>
+        <footer class="pf"><div class="loadout" id="refit-ship"></div><span class="keys"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> take a card · <kbd>Tab</kbd> moves · <kbd>Enter</kbd> takes · pad ◀ ▶ and <kbd>A</kbd></span></footer>
       </div>
     </div>
 
@@ -129,11 +205,13 @@
 
     <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
-      <div class="pause-t">All stop</div>
-      <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
-      <div class="pause-h only-desktop">Click or press any key to resume</div>
-      <div class="pause-h only-touch">Tap to resume</div>
-      <div class="pause-build" id="pause-build"></div>
+      <div class="pause-card panel">
+        <div class="pause-t">All stop</div>
+        <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
+        <div class="pause-h only-desktop">Click or press any key to resume</div>
+        <div class="pause-h only-touch">Tap to resume</div>
+        <div class="pause-build" id="pause-build"></div>
+      </div>
     </div>
     <div id="debug" aria-hidden="true"></div>
   </div>

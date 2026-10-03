@@ -2,7 +2,7 @@ import { BRANCHES, UPGRADE, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
 import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
 import type { Contact } from '../sim/bosses';
-import { identity, type Card, type Levels, type Offer } from '../sim/build';
+import { branchLevels, identity, type Card, type Levels, type Offer } from '../sim/build';
 import { NEON_CSS } from './colors';
 import { VARIANTS } from '../sim/enemies';
 import type { RunStats } from '../sim/run';
@@ -98,12 +98,40 @@ export function buildView(levels: Levels, named = true): HTMLElement {
   return wrap;
 }
 
+// ── the loadout ───────────────────────────────────────────────────────────
+// The ship as fitted, one chip per system: what the refits so far have made
+// of it, read at a glance on the refit panel. The selected card's system is
+// lit with the level it would add, so a pick reads as fitting a module to
+// this ship rather than taking a perk. Phasers and the warp core are fitted
+// from the yard, so they count from level 1, as on the HUD.
+
+const STOCK = new Set<Branch>(['phaser', 'overcharge']);
+
+export function systemLevel(levels: Levels, b: Branch): number {
+  return branchLevels(levels, b) + (STOCK.has(b) ? 1 : 0);
+}
+
+function loadout(levels: Levels, hl: Branch | null): HTMLElement[] {
+  const out: HTMLElement[] = [h('span', 'lbl', 'Your ship · ', h('b', '', identity(levels).title))];
+  let lit = false;
+  for (const b of Object.keys(BRANCHES) as Branch[]) {
+    if (b === 'synergy') continue;
+    const n = systemLevel(levels, b);
+    if (n <= 0 && b !== hl) continue;
+    if (b === hl) lit = true;
+    out.push(h('span', `mod${b === hl ? ' hl' : ''}${n <= 0 ? ' new' : ''}`, BRANCHES[b].name, h('b', '', String(n))));
+  }
+  if (hl === 'synergy' && !lit) out.push(h('span', 'mod hl new', 'Synergy', h('b', '', '0')));
+  return out;
+}
+
 // ── the refit panel ───────────────────────────────────────────────────────
 
 export class RefitPanel {
   private off: (() => void) | null = null;
   private sel = 0;
   private pad: { opened: number; n: number; pick: (i: number) => void } | null = null;
+  private shown: { offer: Offer; levels: Levels } | null = null;
 
   get open(): boolean {
     return !$('refit').hidden;
@@ -117,8 +145,7 @@ export class RefitPanel {
     $('refit-t').textContent = kind === 'salvage' ? 'Hull broken · take one upgrade' : kind === 'spec'
       ? `${BRANCHES[offer.branch!].name}: choose your specialisation` : 'Choose an upgrade';
     $('refit-s').textContent = kind === 'spec' ? 'One per branch, for the rest of the run. It decides what this ship is.' : '';
-    const ship = $('refit-ship');
-    ship.replaceChildren(h('span', '', 'Your ship · '), h('b', '', identity(levels).title));
+    this.shown = { offer, levels };
     const host = $('cards');
     host.replaceChildren(...offer.cards.map((c, i) => this.card(c, i, guarded(opened, () => this.pick(i, onPick)))));
     this.sel = 0;
@@ -141,6 +168,7 @@ export class RefitPanel {
     this.off?.();
     this.off = null;
     this.pad = null;
+    this.shown = null;
     $('refit').hidden = true;
   }
 
@@ -159,8 +187,16 @@ export class RefitPanel {
 
   private mark(): void {
     [...$('cards').children].forEach((c, i) => c.classList.toggle('sel', i === this.sel));
+    const s = this.shown;
+    if (s) $('refit-ship').replaceChildren(...loadout(s.levels, s.offer.cards[this.sel] ? UPGRADE[s.offer.cards[this.sel]!.id]!.branch : null));
   }
 
+  /**
+   * One card, set as a module for the ship: the system it fits (category ›
+   * branch), what kind of change it is, the module's level as blocks (owned,
+   * and the one this card adds), the name, what it does, and every figure it
+   * changes, the new value in the category's colour.
+   */
   private card(c: Card, i: number, onClick: (e: Event) => void): HTMLElement {
     const u = UPGRADE[c.id]!;
     const b = document.createElement('button');
@@ -168,24 +204,29 @@ export class RefitPanel {
     b.className = 'card';
     b.dataset.cat = u.cat;
     const path = c.kind === 'synergy'
-      ? (u.requires ?? []).map((r) => BRANCHES[UPGRADE[r.id]!.branch].name).join(' + ')
-      : `${CAT_WORD[u.cat]} › ${BRANCHES[u.branch].name}`;
-    const tag = c.tag === 'up' ? `Lv ${c.level - 1} → ${c.level}` : TAG_WORD[c.tag];
+      ? h('span', 'path', '', h('b', '', 'Synergy'), document.createTextNode(` › ${(u.requires ?? []).map((r) => BRANCHES[UPGRADE[r.id]!.branch].name).join(' + ')}`))
+      : CAT_WORD[u.cat] === BRANCHES[u.branch].name ? h('span', 'path', '', h('b', '', BRANCHES[u.branch].name))
+      : h('span', 'path', `${CAT_WORD[u.cat]} › `, h('b', '', BRANCHES[u.branch].name));
+    const tag = c.tag === 'up' ? `Lv ${c.level - 1} → ${c.level}` : c.tag === 'new' && u.kind === 'system' ? 'New system' : TAG_WORD[c.tag];
+    const lvl = h('span', 'lvl');
+    lvl.setAttribute('aria-label', `Level ${c.level} of ${u.max}`);
+    for (let k = 1; k <= u.max; k++) lvl.append(h('i', k < c.level ? 'on' : k === c.level ? 'add' : ''));
     const figs = h('div', 'figs');
     for (const f of c.figs.slice(0, 5)) {
-      figs.append(h('span', f.cost ? 'cost' : '', f.label, h('b', '', `${f.from} → ${f.to}`)));
+      figs.append(h('span', f.cost ? 'cost' : '', f.label, h('b', '', `${f.from} → `, h('em', '', f.to))));
     }
-    if (!c.figs.length) figs.append(h('span', '', 'Behaviour', h('b', '', 'changed')));
-    const kbd = h('kbd', '', String(i + 1));
+    if (!c.figs.length) figs.append(h('span', '', 'Behaviour', h('b', '', '', h('em', '', 'changed'))));
     b.append(
-      h('span', 'cat', '', h('i'), h('span', 'path', path), kbd),
-      h('span', `tag ${c.tag}`, tag),
+      h('span', 'cat', '', path, h('kbd', '', String(i + 1))),
+      h('span', 'slot', '', h('span', `tag ${c.tag}`, tag), lvl),
       h('h3', '', c.name),
       h('div', '', '', h('p', 'ben', c.text), c.note ? h('p', 'cav', c.note) : null),
       figs,
     );
     b.addEventListener('click', onClick);
     b.addEventListener('pointerdown', (e) => e.stopPropagation());
+    // the mouse moves the selection too (a touch is already a pick)
+    b.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch' && this.sel !== i) { this.sel = i; this.mark(); } });
     return b;
   }
 }
@@ -287,7 +328,9 @@ export class SummaryPanel {
     const opened = performance.now();
     const p = rec.previous;
     $('sum-t').textContent = rec.newBest ? 'New best' : 'Run over';
-    $('sum-s').textContent = `Breached by ${damageWord(r.cause || 'rock').toLowerCase()}`;
+    // "Rammed by a raptor" already says how; everything else reads after "Breached by"
+    const cause = damageWord(r.cause || 'rock');
+    $('sum-s').textContent = /^rammed /i.test(cause) ? cause : `Breached by ${cause.toLowerCase()}`;
     $('sum-score').textContent = fmt(r.score);
     const line = $('sum-line');
     line.replaceChildren(h('span', '', `${mmss(r.time)} survived · refit ${r.refit} · ${r.kills} kills`), rec.newBest ? h('span', 'best', ' · new best') : h('span', '', ` · best ${fmt(p.score)}`));
