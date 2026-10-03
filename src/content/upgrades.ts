@@ -56,13 +56,13 @@ export interface UpgradeDef {
   max: number;
   /** All of these must be owned, at the level given (default 1). */
   requires?: Req[];
-  /** Specialisations: one per group, offered once the branch has `needs` levels. */
+  /** Specialisations: one per group, open once the branch has `needs` levels. */
   group?: string;
   needs?: number;
   tags: string[];
-  /** Relative chance on the panel. Default 1. */
+  /** Relative pull among the quick picks. Default 1. */
   weight?: number;
-  /** Needs a long-term unlock (content/unlocks.ts) before it can be offered. */
+  /** Needs a long-term unlock (content/unlocks.ts) before it can be fitted. */
   locked?: boolean;
   /** Salvage: needs this faction's capital ship destroyed this run. */
   tech?: TechFaction;
@@ -586,8 +586,8 @@ export const UPGRADES: UpgradeDef[] = [
   ...minor('mi_mine_rate', 'Rack drill', 'mine', 'weapons', ['mine', 'rate'], 'You lay mines a little more often, and they last longer.', (s) => { s.mineInterval *= 0.95; s.mineLife *= 1.05; }),
   ...minor('mi_plasma_dps', 'Plasma injectors', 'plasma', 'weapons', ['plasma', 'damage'], 'Your plasma burns a little hotter.', (s) => { s.plasmaDps *= 1.1; }),
   ...minor('mi_plasma_life', 'Plasma baffles', 'plasma', 'weapons', ['plasma', 'area'], 'Your trail lingers a little longer, a little wider.', (s) => { s.plasmaLife *= 1.08; s.plasmaRadius *= 1.04; }),
-  ...minor('mi_arc_dmg', 'Arc coils', 'close', 'weapons', ['close', 'arc'], 'Your arcs hit a little harder.', (s) => { s.arcDamage *= 1.1; }),
-  ...minor('mi_ram', 'Prow plating', 'close', 'weapons', ['close', 'ram'], 'Your rams hit a little harder.', (s) => { s.ramDamage += 1.5; }),
+  ...minor('mi_arc_dmg', 'Arc coils', 'close', 'weapons', ['close', 'arc'], 'Your arcs hit a little harder.', (s) => { s.arcDamage *= 1.04; }),
+  ...minor('mi_ram', 'Prow plating', 'close', 'weapons', ['close', 'ram'], 'Your rams hit a little harder.', (s) => { s.ramDamage *= 1.05; }),
   ...minor('mi_thrust', 'Impulse trim', 'mobility', 'ship', ['mobility', 'speed'], 'A little more thrust.', (s) => { s.thrust *= 1.03; }),
   ...minor('mi_turn', 'Thruster trim', 'mobility', 'ship', ['mobility', 'turning'], 'You turn a little faster.', (s) => { s.turn *= 1.04; }),
   ...minor('mi_roll', 'Jet trim', 'mobility', 'ship', ['mobility', 'evasion'], 'Your roll comes round a little sooner.', (s) => { s.rollCooldown *= 0.94; }),
@@ -607,7 +607,7 @@ function minor(id: string, name: string, branch: Branch, cat: Category, tags: st
 
 export const UPGRADE: Record<string, UpgradeDef> = Object.fromEntries(UPGRADES.map((u) => [u.id, u]));
 
-/** The card text for the level about to be taken. */
+/** The text for the level about to be fitted. */
 export function upgradeText(u: UpgradeDef, lv: number): string {
   return typeof u.text === 'function' ? u.text(lv) : u.text;
 }

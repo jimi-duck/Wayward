@@ -105,13 +105,18 @@ describe('the quick picks', () => {
 
   it('leans toward the build, and keeps one pick for a new direction', () => {
     const torp = view(['torpedo.E', 'torpedo.S', 'torpedo.L2', 'torpedo.R2']);
-    let lean = 0, fresh = 0;
-    for (let seed = 1; seed <= 200; seed++) {
-      const s = suggest(torp, seed).map((id) => UPGRADE[WEB_NODE.get(id)!.up!]!);
-      lean += s.slice(0, 2).filter((u) => u.tags.includes('torpedo')).length;
-      if (!s[2]!.tags.includes('torpedo')) fresh++;
-    }
-    expect(lean).toBeGreaterThan(200);
-    expect(fresh).toBeGreaterThan(150);
+    const phaser = view(['phaser.E', 'phaser.S', 'phaser.L2', 'phaser.R2']);
+    const lean = (v: WebView) => {
+      let n = 0, fresh = 0;
+      for (let seed = 1; seed <= 200; seed++) {
+        const s = suggest(v, seed).map((id) => UPGRADE[WEB_NODE.get(id)!.up!]!);
+        n += s.slice(0, 2).filter((u) => u.tags.includes('torpedo')).length;
+        if (!s[2]!.tags.includes('torpedo')) fresh++;
+      }
+      return { n, fresh };
+    };
+    const t = lean(torp), p = lean(phaser);
+    expect(t.n).toBeGreaterThan(p.n * 3);
+    expect(t.fresh).toBeGreaterThan(150);
   });
 });

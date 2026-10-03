@@ -57,6 +57,7 @@ export function stratName(s: Strategy): string {
 }
 
 const KIND_BONUS: Record<string, number> = { system: 4, spec: 5, synergy: 4, tech: 5, stat: 1, minor: 0 };
+const WEAPON_REGIONS = new Set<string>(['phaser', 'torpedo', 'mine', 'plasma', 'close']);
 
 /**
  * The next node to fit. 'random' takes one of the three quick picks, as a
@@ -75,6 +76,8 @@ function pickNode(w: World, s: Strategy, rngPick: () => number): string | null {
     const u = UPGRADE[n.up!]!, d = REGION_DISTANCE.get(n.id)!;
     const toward = (b: Branch, k: number) => (n.region === b ? k : Math.max(0, k * (0.7 - 0.25 * (d[b] ?? 9))));
     let v = toward(s.branch, 10) + (s.second ? toward(s.second, 6) : 0);
+    // a build with no weapon region still keeps its guns up, as a player would
+    if (!WEAPON_REGIONS.has(s.branch) && !(s.second && WEAPON_REGIONS.has(s.second))) v += toward('phaser', 4);
     if (n.region === 'defence') v += 3;
     if (n.region === s.branch || n.region === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
     else if (u.kind === 'system') v -= 3;

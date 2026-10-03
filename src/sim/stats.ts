@@ -222,6 +222,9 @@ export const CAPS = {
   ocRadius: 34,
   ocGain: 2.2,
   dmgAll: 1.6,
+  /** A ram that kills costs no hull, and the arc fires by itself, so both have a ceiling. */
+  ramDamage: 18,
+  arcDamage: 6,
   crystalChance: 2,
   repairChance: 2.5,
 } as const;
@@ -257,6 +260,8 @@ export function capStats(s: Stats): Stats {
   s.ocRadius = Math.min(s.ocRadius, CAPS.ocRadius);
   s.ocGain = Math.min(s.ocGain, CAPS.ocGain);
   s.dmgAll = Math.min(s.dmgAll, CAPS.dmgAll);
+  s.ramDamage = Math.min(s.ramDamage, CAPS.ramDamage);
+  s.arcDamage = Math.min(s.arcDamage, CAPS.arcDamage);
   s.crystalChance = Math.min(s.crystalChance, CAPS.crystalChance);
   s.repairChance = Math.min(s.repairChance, CAPS.repairChance);
   return s;

@@ -61,7 +61,7 @@ export function suggest(v: WebView, seed: number): string[] {
   if (!pool.length) return [];
   const affinity = tagWeights(v.levels);
   const aff = (n: WebNode) => UPGRADE[n.up!]!.tags.reduce((a, t) => a + (affinity.get(t) ?? 0), 0);
-  const weight = (n: WebNode) => KIND_PULL[UPGRADE[n.up!]!.kind]! * (1 + 0.8 * aff(n));
+  const weight = (n: WebNode) => { const u = UPGRADE[n.up!]!; return KIND_PULL[u.kind]! * (u.weight ?? 1) * (1 + 0.8 * aff(n)); };
   const out: WebNode[] = [];
   const take = (list: WebNode[], w: (n: WebNode) => number) => {
     const left = list.filter((n) => !out.includes(n));
