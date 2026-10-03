@@ -65,6 +65,7 @@ export class Hud {
   private readonly aim = new Targeting();
   private readonly log: LogLine[] = [];
   private textClock = 1;
+  private measureClock = 0;
   private radarClock = 1;
   private bannerT = 0;
   private gain = 0;
@@ -173,6 +174,9 @@ export class Hud {
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
     this.textClock += dt;
     if (this.textClock >= 0.1) { this.textClock = 0; this.updateText(world); }
+    // the fixed blocks move with rotation, rows appearing and the touch layout: keep the target's readout clear of them
+    this.measureClock += dt;
+    if (this.measureClock >= 0.5) { this.measureClock = 0; this.measure(); }
     this.radarClock += dt;
     if (this.radarClock >= 1 / 30) { this.radarClock = 0; this.radar.draw(world, sector, this.aim.target); }
   }
