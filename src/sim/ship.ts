@@ -61,7 +61,7 @@ export function turnPerStep(hull: Hull): number {
 }
 
 /**
- * The Defiant's grip: under thrust, the slide across the nose bleeds away
+ * The Kestrel's grip: under thrust, the slide across the nose bleeds away
  * and GRIP_CARVE of what it sheds comes back as speed along the nose, so the
  * ship carves a turn instead of skidding through it. Off the throttle it
  * drifts like every hull.

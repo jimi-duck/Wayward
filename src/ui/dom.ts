@@ -36,7 +36,7 @@ export const guarded = (opened: number, fn: () => void) => (e: Event) => {
 // ── a gamepad on the panels ───────────────────────────────────────────────
 // The flight input reads the pad while flying; while a panel is open this
 // reads it instead, by edges only, so a held button never answers. A held
-// direction repeats, for moving across the refit web.
+// direction repeats, for moving along the cards.
 
 export interface PadEdges {
   left: boolean; right: boolean; up: boolean; down: boolean;

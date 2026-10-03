@@ -1,31 +1,35 @@
 # Game design
 
-Everyone launches in the same Defiant. Over a run the ship becomes something
-else, depending on the route it takes across the refit web: a torpedo boat,
-a minelayer, a brawler that rams and arcs, a fortress, an interceptor that
-dives through fire to charge its core. Nothing is a class you pick; it is a
-ship you build. The run report names what you built and draws the route.
+Everyone launches in the same ship: the U.S.S. Kestrel, NCC-1903, a
+Starfleet survey tender refitted for mining. Over a run she becomes
+something else, depending on the cards you take at each refit: a torpedo
+boat, a minelayer, a brawler that rams and arcs, a fortress, an interceptor
+that dives through fire to charge its core. Nothing is a class you pick; it
+is a ship you build. The run report names what you built.
+
+The run is a slow burn. The first forty seconds are yours alone, a thin
+field of slow rock to learn the ship on and mine the first refit out of;
+the first hostile is a lone scout. The sky fills in from there, and the
+first capital ship hails at 3:30, once the build has a shape.
 
 ## The loop
 
-Fly, fight and break rock → collect dilithium → the rail fills → refit
-(two points to spend on the refit web) → harder sky → a capital ship hails
-(engage or evade) → her salvage: more points and her faction's tech →
-specialisations, synergies, the route out across the web → the hull goes
-→ the run report → play again.
+Fly, fight and break rock → collect dilithium → the gauge fills → refit
+(three cards, take one) → harder sky → a capital ship hails (engage or
+evade) → her salvage: a refit led by her faction's tech → specialisations,
+synergies → the hull goes → the run report → play again.
 
 The world pauses itself at each decision (`World.phase`: `refit`, `hail`,
-`over`), and the app or the scripted pilot answers it (`fit` and
-`closeRefit`, `answerHail`, `restart`). `openRefit` opens the web between
-refits, to look at it or to spend banked points. Everything else is the
-existing fixed-step simulation.
+`over`), and the app or the scripted pilot answers it (`choose`,
+`answerHail`, `restart`). Everything else is the existing fixed-step
+simulation.
 
 ## Where each system lives
 
 | System | Data | Behaviour |
 |---|---|---|
 | Upgrades | `content/upgrades.ts` | `sim/build.ts` (stats, figures, the build's name), `sim/stats.ts` (the stat block and caps) |
-| Refit web | `content/web.ts` (the nodes, their places and links) | `sim/web.ts` (what can be fitted and why not, quick picks), `World.fit`, `ui/web.ts` (the map) |
+| Refit cards | `content/upgrades.ts` | `sim/offers.ts` (which three cards a refit deals), `World.choose`, `ui/refit.ts` (the cards) |
 | Weapons | the stat block | `sim/weapons.ts` (phasers, torpedoes), `sim/arsenal.ts` (mines, plasma, hull arc) |
 | Asteroids | `ROCK_KINDS` in `sim/field.ts` | `Field.topUp` (formations), `World.destroyRock` |
 | Dilithium and pickups | `sim/pickups.ts` | `World.collect`, `World.gainXp` |
@@ -39,15 +43,11 @@ existing fixed-step simulation.
 ### Adding things
 
 - **An upgrade**: one entry in `UPGRADES`. Give it a branch, tags (what the
-  quick picks read to lean toward a build), requirements, and an `apply`
-  that changes the stat block. If it needs a new number, add it to `Stats`
-  and `BASE`, cap it in `capStats` if it can run away, and add a row to
-  `FIGURES` so the inspector shows it. A specialisation is `kind: 'spec'`
-  with a `group` and `needs`. Then put it on the web: name it in a slot of
-  its region in `content/web.ts` (`slots`, `follow`, `pockets`, or a
-  bridge). A node adds one level, so an upgrade can sit on as many nodes as
-  it has levels; the web tests check every upgrade is placed and none more
-  often than its maximum.
+  cards read to lean toward a build), requirements, and an `apply` that
+  changes the stat block. If it needs a new number, add it to `Stats` and
+  `BASE`, cap it in `capStats` if it can run away, and add a row to
+  `FIGURES` so its card shows it. A specialisation is `kind: 'spec'` with a
+  `group` and `needs`. Each card taken adds one level, up to `max`.
 - **An enemy**: a new faction pairing of an existing archetype is one row
   in `VARIANTS` (renderer and HUD pick it up). A new archetype is a row in
   `ALIEN_TYPES`, its tactic in `moveAlien`, and a model in
@@ -62,43 +62,42 @@ existing fixed-step simulation.
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 
-## The refit web
+## The refit: three cards
 
-Each refit gives **two points**; a destroyed capital ship gives two more.
-A point fits one node of the web, and a node can only be fitted when it is
-joined to one already fitted. The core (your ship) is always fitted, so a
-build is a route out from the middle: deep into one region, across a bridge
-into its neighbour, or a little of everything. About two hundred nodes; a
-long run fits fifty or sixty of them.
+The refit used to be a web of about two hundred nodes to route across. It
+was too much: a map, an inspector and points to bank, every thirty seconds.
+Now a full gauge deals **three cards** and you take one; that is the whole
+decision, made in a few seconds, and the run keeps its pace. The cards are
+meant to feel like help, not a slot machine:
 
-**Nine regions** sit round the core like the spokes of a wheel: phasers,
-torpedoes, warp plasma, utility, defence, close quarters, mobility, the
-warp core and mines. Each is the same shape, filled with its own upgrades:
-an entry joined to the core, a first big node, two paths that climb and
-cross in the middle (so there is more than one way up), pockets off the
-sides, a hub, then **three specialisations** at the top with follow-ups
-behind each. Bridges between neighbouring regions carry the synergies and
-shared stats (fire control, dilithium lattice, core sensors).
+- the first two lean toward what the build already is (by the tags it
+  carries); the third is usually a **new direction**, from a branch the
+  build has not taken, so there is always a way to change course;
+- while the ship has fewer than two **systems** (torpedoes, mines, plasma,
+  the hull arc, shields), one card is always a system: the early refits
+  are the ones that change how the ship plays;
+- when a branch is first deep enough, that refit is its
+  **specialisation**: its two or three specialisations side by side, once;
+- **battle salvage** (a capital ship destroyed) deals a hand led by her
+  faction's tech, while it is new.
 
-Node kinds, by shape on the map:
+Each card says what it fits (the branch and its icon), what kind of change
+it is (new system, upgrade, specialisation, synergy, salvaged tech, new
+direction), the name, one sentence, the module's level as blocks with the
+one it adds lit, and the numbers it changes, before → after.
 
-- **Minor** (small circles): a few percent of one stat, ten levels each,
-  the steps along the paths.
-- **Upgrade** (circles): the stat upgrades of the original tree.
-- **System** (hexagons): switches a weapon or device on (the torpedo bay,
-  the mine layer, the plasma vent, the hull arc, deflector shields).
-- **Specialisation** (amber diamonds): one per region per run, once the
-  region is deep enough; it decides what the ship is called.
-- **Synergy** (violet diamonds): on the bridges; they need both halves.
-- **Salvaged tech** (octagons in faction colours, round the core): shut
-  until that faction's capital ship is destroyed this run.
+Card kinds:
 
-A node can be **closed** for a reason the inspector names: out of reach,
-locked by long-term progression, tech not yet salvaged, another
-specialisation of its region taken, a synergy's other half missing, or the
-upgrade already at its maximum level. Points not spent stay banked.
+- **Upgrade**: a step up a stat ladder (up to five levels).
+- **System**: switches a weapon or device on (the torpedo bay, the mine
+  layer, the plasma vent, the hull arc, deflector shields).
+- **Specialisation**: one per branch per run, once the branch is deep
+  enough; it decides what the ship is called.
+- **Synergy**: needs both halves fitted.
+- **Salvaged tech**: dealt only once that faction's capital ship is
+  destroyed this run.
 
-The regions:
+The branches:
 
 - **Phasers**: damage, rate, bank, reach, pierce. Specialise into a
   **cone** (fans of three, then five or seven), the **heavy lance** (slow,
@@ -120,9 +119,8 @@ The regions:
 - **Close quarters**: the **hull arc** (lightning to anything close), arc
   capacitors and reach, and the **ram prow** (a ram that destroys its
   target costs no hull). Specialise into the **arc storm** (each arc jumps
-  on to one more hull),
-  the **shock prow** (a ram discharges into the hulls near its target) or
-  the **juggernaut** (unlockable).
+  on to one more hull), the **shock prow** (a ram discharges into the hulls
+  near its target) or the **juggernaut** (unlockable).
 - **Mobility**: impulse, thrusters, dampers, evasive jets. Specialise into
   the **drift drive** (keep speed off the throttle; lances fired while
   drifting hit a third harder), the **evasive pattern** (grazing fire
@@ -133,16 +131,17 @@ The regions:
   grace), damage control (one save). Specialise into the **fortress**,
   **reactive armour** (losing a plate or a shield blasts away nearby fire),
   or the **regenerative hull** (unlockable).
-- **Utility**: tractor reach, the dilithium matrix (more XP). Specialise
-  into the **prospector** (rock gives dilithium half as often again),
-  **salvage drones** (more hull repairs, longer power-ups) or **deep
-  scanners** (rare rock twice as often, elites carry twice the dilithium).
+- **Utility**: tractor reach, the dilithium matrix (more XP), the tactical
+  computer (every weapon hits harder). Specialise into the **prospector**
+  (rock gives dilithium half as often again), **salvage drones** (more hull
+  repairs, longer power-ups) or **deep scanners** (rare rock twice as
+  often, elites carry twice the dilithium).
 - **Warp core**: coils (more overcharge from near misses). Specialise into
   the **warp nova**, **weapons overload** (longer, and refills racks) or
   the **phase cloak** (unlockable).
-- **Synergies** (on the bridges, needing both halves): plasma warheads,
-  phaser detonators, the capacitor shield, arc warheads, core-charged
-  mines, and the ramjet (unlockable).
+- **Synergies** (needing both halves): plasma warheads, phaser detonators,
+  the capacitor shield, arc warheads, core-charged mines, and the ramjet
+  (unlockable).
 
 **Salvaged tech**, one per faction: Klingon **disruptors** (every fourth
 phaser shot a heavy bolt at triple damage), Cardassian **compressors**
@@ -153,28 +152,19 @@ Tholian **snares** (torpedo and mine blasts slow the hulls they catch).
 
 ### On screen
 
-The web opens by itself when the rail fills (after a beat of slow motion)
-and after battle salvage; R, Tab, the rail's Web button or a pad's Back
-opens it between refits. The map pans and zooms (drag, wheel, pinch, the
-+ − ◎ buttons); labels come in as you zoom. Hover or tap a node to see it
-in the inspector: what it does, the figures it changes (before → after),
-and why it is closed if it is. Tap it again (or Enter, or Fit) to fit it.
-
-For a quick refit there are always **three quick picks** (keys 1 2 3):
-two that lean toward the build (weighted by the tags you already own) and
-one in a direction the build has not taken. Arrows move across the web,
-Tab steps through the nodes that can be fitted, Esc launches (banking what
-is left). A pad: stick or d-pad to move, A to fit, LB and RB to step, Y
-to frame, B to launch. When a refit's points are spent the web closes
-itself.
+The cards come up by themselves when the gauge fills (after a beat of slow
+motion) and after battle salvage; refits earned together are dealt one
+after another. Keys 1 2 3 take a card outright; arrows or Tab move the
+selection and Enter takes it; a tap or a click takes one; a pad moves with
+the stick and takes with A. The HUD steps back while the cards are up.
 
 ### Numbers and caps
 
 Every upgrade changes one flat stat block, rebuilt from scratch whenever
 the build changes; `capStats` clamps it after every multiplier has run, so
-no stack of upgrades escapes a cap. The inspector shows the figures a node changes,
+no stack of upgrades escapes a cap. A card shows the figures it changes,
 computed by diffing the block before and after. A run touches a few
-ship-wide numbers too: all weapon damage (fire control, capped at +60%),
+ship-wide numbers too: all weapon damage (the tactical computer, capped at +60%),
 dilithium from rock, repair drops, power-up time, rare rock and elite
 loot.
 
@@ -199,8 +189,8 @@ each hull kill inside a short window adds one; breaking rock keeps it alive.
 ## The sector
 
 **Rock** comes in kinds and formations, mixed by the director: basalt;
-iron (from about 2:30, three times the hull, splits into more iron); rich
-(violet veins, a shower of dilithium); volatile (from about 4:30, goes off
+iron (from about 3:00, three times the hull, splits into more iron); rich
+(violet veins, a shower of dilithium); volatile (from about 5:00, goes off
 when broken, you included); rare (gold, a power-up inside, one every minute
 or two); singles, clusters, and a big rock in its own debris.
 
@@ -218,23 +208,27 @@ familiar hulls with a modifier: armoured, swift, volatile, gunner, cloaked,
 regenerative, web-spinner.
 
 **The director** (`sim/director.ts`) is the one place difficulty is
-decided, as smooth functions of run time: the opening is calm; density,
-speed and toughness climb; variety opens over four minutes; from three
-minutes elites and squads appear, and from four the factions mix. Late, the
+decided, as smooth functions of run time. The opening is a slow burn: the
+field starts at half its old density with slower rock (and five bulwarks,
+not seven), no hostile shows up for forty seconds, and then they come one
+at a time, scouts only, until about a minute and a half (interceptors pair
+up only after that). Two or three by two minutes; density, speed and
+toughness climb from there; variety opens over five minutes; from four
+minutes elites and squads appear, and from five the factions mix. Late, the
 enemy ceiling levels off while elites, squads and hazardous rock keep
 coming, so difficulty comes from combinations, not counts.
 
 ## Capital ships
 
-From 2:40, a contact every 50 to 80 seconds. A yellow alert, then the hail:
+From 3:30, a contact every 50 to 80 seconds. A yellow alert, then the hail:
 
 - **Engage**: regular traffic clears out; the capital ship drops in with
   its wing and fights in three phases (each adds its faction's signature
   attack, calls reinforcements and quickens the cycle). Every attack winds
   up behind a telegraph: lines where a charge or volley will go, rings
   where a nova bursts, circles where shells or webs will land. Destroy it
-  for the bounty, dilithium, a hull repair, a power-up, two web points and
-  her faction's tech.
+  for the bounty, dilithium, a hull repair, a power-up and a salvage refit
+  led by her faction's tech.
   Let its fuse run out and it leaves with nothing paid.
 - **Evade**: no fight, no reward, and the next contact comes sooner. You
   cannot evade twice running; a Borg cube cannot be evaded; Romulans never
@@ -312,13 +306,20 @@ What the telemetry changed, in order:
     damage caps at 18.
 13. Builds with no weapon region starved; the pilot now keeps its phasers
     up in them, as a player would. Mines are laid a little more often.
+14. The Starfleet pass (a slow-burn opening, three cards instead of the
+    web): the first minute now costs 0.02 plates (it was 0.26), but one
+    card a refit is less power than two web points, and the first capital
+    ship, now at 3:30, killed a third of the pilots that met it. Refits come
+    about a sixth sooner (refit 10 at about six minutes), and the first
+    capital ship carries a fifth less hull; later ones are unchanged.
 
-Where it stands (see BALANCE.md for the current report): survival runs from
-about three and a half minutes (mobility-led builds, which this pilot cannot
-fly to their strength) to about nine (close quarters with defence, still the
-strongest; two runs in twelve reach the cap), with the quick-pick player at
-about six. No damage source above about 11%; capital ships destroyed in
-about two fights of three; a calm opening (0.3 plates a minute) climbing to
-about one by minute five; refit 10 at about five minutes. Next: bring close
-quarters and mobility toward the middle. The pilot is a steady player, not a
-strong one; expect people to last longer.
+Where it stands (see BALANCE.md for the current report): a quiet opening
+(0.02 plates in the first minute, 0.3 to 0.45 in the next two) climbing to
+about 0.8 by minutes three to five and past one after that. Survival runs
+from about four and a half minutes (mines with mobility, mobility with the
+core) to about seven (defence with phasers), the builds much closer
+together than in the web era, with the random-card player at about six.
+No damage source above about 10%; capital ships destroyed in three fights
+of five; refit 1 at about ten seconds, refit 5 at 2:45, refit 10 at 6:15.
+The pilot is a steady player, not a strong one; expect people to last
+longer.

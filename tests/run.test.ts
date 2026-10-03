@@ -6,8 +6,6 @@ import { ENCOUNTERS, startEncounter } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';
 import { CRYSTAL_LIFE, dropCrystals } from '../src/sim/pickups';
 import { CHAIN_WINDOW, OC_MAX, SHIP_R, xpFor } from '../src/sim/tuning';
-import { WEB_NODE } from '../src/content/web';
-import { POINTS_PER_REFIT } from '../src/sim/web';
 import { launchTorpedo } from '../src/sim/weapons';
 import { World } from '../src/sim/world';
 
@@ -56,58 +54,47 @@ describe('dilithium and the refit rail', () => {
     expect(w.pickups.length).toBe(0);
   });
 
-  it('fills the rail, celebrates, then pauses the world on the refit web with points to spend', () => {
+  it('fills the rail, celebrates, then pauses the world on three cards; taking one fits it and flies on', () => {
     const w = quiet();
     dropCrystals(w.pickups, 1, 0, xpFor(0), w.rng, 0);
     run(w, 1);
     expect(w.refit).toBe(1);
     expect(w.phase).toBe('refit');
-    expect(w.points).toBe(POINTS_PER_REFIT);
+    expect(w.offer?.cards.length).toBe(3);
     const t = w.runTime;
     run(w, 1);
     expect(w.runTime).toBe(t); // the world waits
-    expect(w.fit('phaser.E')).toBe(true);
-    expect(w.levels[WEB_NODE.get('phaser.E')!.up!]).toBe(1);
-    expect(w.points).toBe(POINTS_PER_REFIT - 1);
-    // a node not joined to anything fitted is refused, and costs nothing
-    expect(w.fit('phaser.H')).toBe(false);
-    expect(w.points).toBe(POINTS_PER_REFIT - 1);
-    // the next node up the arm is joined now
-    expect(w.fit('phaser.S')).toBe(true);
-    expect(w.points).toBe(0);
-    w.closeRefit();
+    const card = w.offer!.cards[1]!;
+    expect(w.choose(1)).toBe(true);
+    expect(w.levels[card.id]).toBe(1);
     expect(w.phase).toBe('play');
+    expect(w.offer).toBeNull();
+    // nothing to take while flying
+    expect(w.choose(0)).toBe(false);
   });
 
-  it('pools refits earned together into one visit to the web', () => {
+  it('deals refits earned together one after another', () => {
     const w = quiet();
     dropCrystals(w.pickups, 1, 0, xpFor(0) + xpFor(1) + 1, w.rng, 0);
     run(w, 1.5);
     expect(w.refit).toBe(2);
     expect(w.phase).toBe('refit');
-    expect(w.points).toBe(POINTS_PER_REFIT * 2);
+    w.choose(0);
+    expect(w.phase).toBe('refit');
+    w.choose(0);
+    expect(w.phase).toBe('play');
+    expect(Object.values(w.levels).reduce((a, b) => a + b, 0)).toBe(2);
   });
 
-  it('banks what is not spent, and opens between refits to spend it', () => {
+  it('starts a new run from the stock ship', () => {
     const w = quiet();
-    expect(w.fit('phaser.E')).toBe(false); // not while flying
     dropCrystals(w.pickups, 1, 0, xpFor(0), w.rng, 0);
     run(w, 1);
-    w.fit('torpedo.E');
-    w.closeRefit();
-    expect(w.points).toBe(POINTS_PER_REFIT - 1);
-    run(w, 1);
-    expect(w.phase).toBe('play');
-    expect(w.openRefit()).toBe(true);
-    expect(w.fit('torpedo.S')).toBe(true);
-    expect(w.levels.tp_bay).toBe(1);
-    expect(w.fitted.has('torpedo.S')).toBe(true);
-    w.closeRefit();
-    // a new run starts from the core again
+    w.choose(0);
     w.restart();
-    expect([...w.fitted]).toEqual(['core']);
-    expect(w.points).toBe(0);
     expect(w.levels).toEqual({});
+    expect(w.offer).toBeNull();
+    expect(w.pendingRefits).toBe(0);
   });
 });
 
@@ -278,7 +265,7 @@ describe('power-ups', () => {
 });
 
 describe('capital ships: the hail', () => {
-  const toHail = (w: World) => { for (let i = 0; i < (BOSS_FIRST + 5) * 60 && w.phase !== 'hail'; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.closeRefit(); w.step(STEP, input()); } };
+  const toHail = (w: World) => { for (let i = 0; i < (BOSS_FIRST + 5) * 60 && w.phase !== 'hail'; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.choose(0); w.step(STEP, input()); } };
 
   it('opens before a contact; evading sends the next one sooner, and you cannot evade twice running', () => {
     const w = quiet(7);
@@ -344,14 +331,14 @@ describe('sector events', () => {
     for (const id of Object.keys(ENCOUNTERS) as Array<keyof typeof ENCOUNTERS>) {
       const w = quiet();
       w.encounter = startEncounter(id, w);
-      for (let i = 0; i < (ENCOUNTERS[id].duration + 1) * 60; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.closeRefit(); w.step(STEP, input()); }
+      for (let i = 0; i < (ENCOUNTERS[id].duration + 1) * 60; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.choose(0); w.step(STEP, input()); }
       expect(w.encounter, id).toBeNull();
       expect(w.field.richBoost).toBe(0);
     }
   });
 });
 
-describe('salvaged tech and the web\'s ship-wide stats', () => {
+describe('salvaged tech and the ship-wide stats', () => {
   it('Klingon disruptors: every fourth phaser shot is a heavy bolt at triple damage', () => {
     const w = quiet();
     w.setLevels({ tech_klingon: 1 });
@@ -388,10 +375,10 @@ describe('salvaged tech and the web\'s ship-wide stats', () => {
     expect(w.drain().some((e) => e.type === 'cloak')).toBe(true);
   });
 
-  it('fire control multiplies every weapon; the economy nodes move the drops', () => {
+  it('the tactical computer multiplies every weapon; the economy upgrades move the drops', () => {
     const w = quiet();
-    w.setLevels({ mi_all_damage: 5, ut_prospector: 1 });
-    expect(w.dmgMult).toBeCloseTo(1.04 ** 5);
+    w.setLevels({ ut_tactical: 3, ut_prospector: 1 });
+    expect(w.dmgMult).toBeCloseTo(1.07 ** 3);
     expect(w.stats.crystalChance).toBeCloseTo(1.5);
   });
 });

@@ -23,7 +23,7 @@ import { PERTURB, seeded } from './kit';
 // three-dimensional.
 
 const PER_VARIANT = 48;
-const BACKDROP = 150;
+const BACKDROP = 90;
 const BACK_BOX = 760;
 
 /** GLSL 3D simplex noise (after Ashima Arts / Stefan Gustavson, MIT). */

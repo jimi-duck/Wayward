@@ -1,38 +1,38 @@
 import { clamp } from '../core/math';
 import type { Branch } from '../content/upgrades';
 import type { Sector } from '../render/sector';
-import { identity, type Levels } from '../sim/build';
-import { ENCOUNTERS } from '../sim/encounters';
+import type { Levels } from '../sim/build';
+import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
+import { ALIEN_TYPES, cloaked, FIRE_RANGE } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
-import { POINTS_PER_REFIT } from '../sim/web';
 import type { World } from '../sim/world';
-import { systemLevel } from './loadout';
+import { systemLevel } from './refit';
 import { Radar } from './radar';
 import { range, Targeting } from './targeting';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
-// A tactical overlay on the view, as in the reference frames, with nothing
+// A tactical overlay on the view, after the reference frame, with nothing
 // on it that does not earn its place while flying:
-//   top edge     · the refit rail: dilithium toward the next refit, violet,
-//                  and the refit web's banked points (R or a tap opens it)
-//   top right    · ship systems, one panel: the build's name; phasers, then
-//                  torpedoes and mines once they are fitted, and the warp
-//                  core, each with its key, a gauge, a reading and the level
-//                  the refits have taken it to; then the hull (plates and
-//                  shield charges), the score and the chain. Power-ups
-//                  running sit under it.
-//   top centre   · a capital ship (hull with phase notches, fuse), or a
-//                  sector event's objective
+//   top left     · the sector (and the event in it), and dilithium toward
+//                  the next refit, violet
+//   top centre   · the heading; a capital ship (hull with phase notches,
+//                  fuse), or a sector event's objective
+//   top right    · ship systems, one panel: phasers, then torpedoes and
+//                  mines once they are fitted, each with its key, a gauge, a
+//                  reading and the level the refits have taken it to; then
+//                  the hull (plates and shield charges), the warp core, and
+//                  the score with its chain. Power-ups running sit under it.
 //   in the world · the gunsight, the target and marks (ui/targeting.ts)
-//   bottom left  · the sensor scope (ui/radar.ts)
-//   bottom right · the last two things that happened, fading
+//   bottom left  · the sensor scope and its range (ui/radar.ts)
+//   bottom right · the mode the ship is in (cruise, mining, combat, alerts)
+//                  and the last thing that happened, fading
 // Alerts are placards that come and go. Every figure is live. Text is
 // written ten times a second, the scope thirty, the world every frame.
 
 const FACTION_NAME: Record<string, string> = { klingon: 'Klingon', cardassian: 'Cardassian', romulan: 'Romulan', borg: 'Borg', tholian: 'Tholian' };
-const LOG_LINES = 2;
+const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
@@ -60,8 +60,12 @@ const ROWS: Array<{ id: string; branch: Branch }> = [
   { id: 'ph', branch: 'phaser' },
   { id: 'tp', branch: 'torpedo' },
   { id: 'mn', branch: 'mine' },
-  { id: 'oc', branch: 'overcharge' },
 ];
+/** What the top-left label calls the sector while an event is on. */
+const SECTOR_NAME: Record<EncounterId, string> = {
+  rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
+  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly',
+};
 
 export class Hud {
   private readonly radar = new Radar($<HTMLCanvasElement>('radar'));
@@ -78,7 +82,8 @@ export class Hud {
   private powerKey = '';
   private levels: Levels | null = null;
   private lv: Record<string, number> = {};
-  private title = '';
+  private seed = -1;
+  private modeKey = '';
 
   constructor(onZoom: (dir: 1 | -1) => void) {
     for (const [id, dir] of [['zoom-in', -1], ['zoom-out', 1]] as const) {
@@ -142,8 +147,8 @@ export class Hud {
         case 'overcharge': this.note(world, `Overcharge released · ${e.hits} hit${e.hits === 1 ? '' : 's'}`, 'gain'); break;
         case 'chain': this.note(world, `Chain ${e.count} · score ×${e.mult}`, 'gain'); break;
         case 'squad': this.note(world, `${e.label} inbound`, 'hit'); break;
-        case 'levelUp': this.banner('Dilithium hold full', `Refit ${pad(e.refit, 2)}`, `+${POINTS_PER_REFIT} points for the refit web`, 0.9, 'gain'); break;
-        case 'salvage': this.note(world, `Salvage · +${e.points} web points${e.tech ? ` · ${FACTION_NAME[e.faction] ?? e.faction} tech open` : ''}`, 'gain'); break;
+        case 'levelUp': this.banner('Dilithium hold full', `Refit ${pad(e.refit, 2)}`, 'Choose an upgrade', 0.9, 'gain'); break;
+        case 'salvage': this.note(world, `Salvage${e.tech ? ` · ${FACTION_NAME[e.faction] ?? e.faction} tech recovered` : ''}`, 'gain'); break;
         case 'cloak': this.note(world, 'Cloaked · hulls hold fire', 'gain'); break;
         case 'shipHit':
           this.note(world, `Hull struck · ${e.source.split(':')[0]}`, 'hit');
@@ -175,6 +180,10 @@ export class Hud {
 
   update(world: World, sector: Sector, dt: number): void {
     this.aim.update(world, sector, dt);
+    // the heading: a compass bearing (north is up the screen at the start), the tape sliding under it
+    const deg = (((90 - (sector.shipNow.heading * 180) / Math.PI) % 360) + 360) % 360;
+    text($('hdg'), String(Math.round(deg) % 360).padStart(3, '0'));
+    $('hdg-tape').style.setProperty('--o', `${(-deg * 2).toFixed(1)}px`);
     if (this.bannerT > 0 && (this.bannerT -= dt) <= 0) $('banner').classList.remove('on');
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
     this.textClock += dt;
@@ -183,14 +192,31 @@ export class Hud {
     this.measureClock += dt;
     if (this.measureClock >= 0.5) { this.measureClock = 0; this.measure(); }
     this.radarClock += dt;
-    if (this.radarClock >= 1 / 30) { this.radarClock = 0; this.radar.draw(world, sector, this.aim.target); }
+    if (this.radarClock >= 1 / 30) {
+      this.radarClock = 0;
+      this.radar.draw(world, sector, this.aim.target);
+      text($('radar-r'), range(this.radar.reach(world)));
+    }
   }
 
   private updateText(world: World): void {
+    this.updateSector(world);
     this.updateRail(world);
     this.updateSystems(world);
     this.updateCentre(world);
+    this.updateMode(world);
     this.updateLog(world);
+  }
+
+  // ── top left: the sector ────────────────────────────────────────────────
+
+  private updateSector(world: World): void {
+    if (world.seed !== this.seed) {
+      this.seed = world.seed;
+      text($('sec-code'), `Sector ${10 + (world.seed % 89)}-${String(Math.floor(world.seed / 89) % 97).padStart(2, '0')}`);
+    }
+    const e = world.encounter;
+    text($('sec-name'), e && !e.done ? SECTOR_NAME[e.id] : 'Asteroid field');
   }
 
   // ── the rail ────────────────────────────────────────────────────────────
@@ -199,10 +225,8 @@ export class Hud {
     text($('refit-n'), pad(world.refit, 2));
     text($('xp-v'), String(Math.floor(world.xp)));
     text($('xp-n'), String(world.xpNext));
-    ticks($('xp'), world.xp / world.xpNext, 60);
+    ticks($('xp'), world.xp / world.xpNext, 30);
     $('rail').classList.toggle('full', world.celebrate > 0);
-    text($('rail-pts'), String(world.points));
-    $('rail-web').classList.toggle('has', world.points > 0);
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
@@ -213,17 +237,10 @@ export class Hud {
   private updateSystems(world: World): void {
     const st = world.stats, arms = world.arms;
 
-    // the build: its name, and the level each system's refits have reached
+    // the level each system's refits have reached
     if (world.levels !== this.levels) {
       const first = this.levels === null;
       this.levels = world.levels;
-      const title = identity(world.levels).title;
-      const shown = title === 'Stock Defiant' ? 'Stock' : title;
-      if (shown !== this.title) {
-        this.title = shown;
-        text($('ship-id'), shown);
-        if (!first) this.retrigger($('ship-id'), 'new');
-      }
       for (const r of ROWS) {
         const n = systemLevel(world.levels, r.branch);
         const el = $(`lv-${r.id}`);
@@ -236,7 +253,7 @@ export class Hud {
     // phasers: the bank
     const bank = arms.bank / st.bankMax, hot = world.overload > 0 || world.powers.rapid > 0;
     const dry = arms.bank < st.bankShot && !hot;
-    ticks($('g-bank'), bank, 20);
+    ticks($('g-bank'), bank, 50);
     const ph = $('sys-ph');
     ph.classList.toggle('dry', dry);
     ph.classList.toggle('low', !dry && !hot && bank < 0.25);
@@ -272,7 +289,7 @@ export class Hud {
 
     // the warp core
     const oc = world.oc / OC_MAX, ready = oc >= 1;
-    ticks($('g-oc'), oc, 20);
+    ticks($('g-oc'), oc, 12);
     const ocRow = $('sys-oc');
     ocRow.classList.toggle('ready', ready && world.overload <= 0);
     ocRow.classList.toggle('hot', world.overload > 0 || world.phaseT > 0);
@@ -309,7 +326,6 @@ export class Hud {
     if (world.chain >= 2) {
       text($('chain-n'), String(world.chain));
       text($('chain-x'), `×${world.chainMult}`);
-      ticks($('chain-t'), world.chainLeft, 10, 'ceil');
     }
 
     // power-ups running
@@ -378,7 +394,24 @@ export class Hud {
     }
   }
 
-  // ── bottom right: the log ───────────────────────────────────────────────
+  // ── bottom right: the mode, and the log ─────────────────────────────────
+
+  /** What the ship is doing, in one word or two: an alert, an event, a fight, mining, or cruising. */
+  private updateMode(world: World): void {
+    const s = world.ship, cs = world.command.state, e = world.encounter;
+    let cls = 'cruise', word = 'Cruise';
+    if (!world.alive) { cls = 'alert'; word = 'Hull breach'; }
+    else if (cs === 'fight' && world.command.boss) { cls = 'alert'; word = 'Red alert'; }
+    else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Yellow alert'; }
+    else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat'; }
+    else if (e && !e.done) { cls = 'caution'; word = ENCOUNTERS[e.id].name; }
+    else if (this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }
+    const key = `${cls}${word}`;
+    if (key === this.modeKey) return;
+    this.modeKey = key;
+    $('mode').className = cls;
+    text($('mode-t'), word);
+  }
 
   private updateLog(world: World): void {
     for (const l of this.log) {
@@ -394,7 +427,7 @@ export class Hud {
   private measure(): void {
     const h = $('systems').offsetHeight;
     if (h) $('hud').style.setProperty('--sys-h', `${h}px`);
-    this.aim.layout([$('systems'), $('sensors')]);
+    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre')]);
   }
 
   private retrigger(el: HTMLElement, cls: string): void {

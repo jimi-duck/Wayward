@@ -17,10 +17,10 @@ import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 // widens its field of view with speed, leans into hard turns, shakes on
 // impacts, and recoils a touch on every shot.
 
-const ELEV = MathUtils.degToRad(24);
-const PITCH = MathUtils.degToRad(14);
-const VIEW_W = 8.2;
-const VIEW_H = 4.6;
+const ELEV = MathUtils.degToRad(19);
+const PITCH = MathUtils.degToRad(13);
+const VIEW_W = 7.0;
+const VIEW_H = 3.9;
 const LOOK_AHEAD = 0.6;
 const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
