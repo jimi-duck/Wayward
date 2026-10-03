@@ -30,17 +30,19 @@ on the phone.
 
 | | Desktop | Touch | Gamepad |
 |---|---|---|---|
-| Steer | ← → or A D | drag anywhere (tactical: point where to go; chase: across steers) | left stick, d-pad |
-| Thrust | ↑ or W | push the stick further (chase: push it up) | right trigger, d-pad up |
-| Barrel roll | Shift | Roll button, or tap with a second finger | B or RB |
-| Camera | C | panel | |
-| Zoom | Z | panel | |
-| Hull | 1 2 3 | panel | |
-| Overcharge | Space | (M5) | A |
+| Steer | ← → or A D | drag anywhere: across steers | left stick, d-pad |
+| Thrust | ↑ or W | push the stick up | right trigger, d-pad up |
+| Phasers (hold) | 1, Space or J | Phaser button | A |
+| Torpedo | 2, F or K | Torpedo button | X |
+| Barrel roll | Shift | Roll button, or a second finger | B or RB |
+| Zoom | Z, or − and = | ‹ › on the console | |
+| Hull | console buttons | console buttons | |
 | Pause | Esc or P | leave the app | Start |
 
-M1 is a flight test: three hulls, two cameras, drifting rock to fly past. The
-rock is scenery; collisions, weapons and the field arrive in M2.
+The camera rides behind the ship. Phasers draw on the phaser bank and refill
+when you let go; torpedoes come three to a rack, lock the best rock in a cone
+ahead, and reload one every 3.4s. Rock breaks large to medium to small; rock
+also costs a hull plate if you fly into it, and the last plate ends the run.
 
 ## Debug
 

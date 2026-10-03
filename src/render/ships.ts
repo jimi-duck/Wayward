@@ -1,72 +1,105 @@
 import {
-  AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, Color, CylinderGeometry, DoubleSide, ExtrudeGeometry,
-  Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Shape, Vector2, type Object3D,
+  AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide,
+  ExtrudeGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, ShaderMaterial, Shape, SphereGeometry, Sprite,
+  SpriteMaterial, Vector2, type Object3D, type Texture,
 } from 'three';
 import { HULL_ORDER, type HullId } from '../content/hulls';
 import { clamp, lerp } from '../core/math';
 import type { ShipState } from '../sim/ship';
 import { ROLL_TIME } from '../sim/tuning';
+import { glowTexture, hullTexture } from './textures';
 
 // ── the player's ships ────────────────────────────────────────────────────
-// Stand-in models in the brand's art direction: matte graphite plating cut at
-// 45°, cyan nacelle light (the brightest thing on the ship), one amber
-// deflector. Three silhouettes that differ at a glance: the escort is a
-// wedge, the cruiser a long cut saucer on pylons, the scout a small saucer
-// with nacelles slung low. Generic Starfleet-era forms; real models come later.
+// Stand-in models, detailed enough for the chase camera: panelled plating
+// with lit windows and a red stripe, cyan nacelle strips, glowing impulse
+// ports at the stern (the part the camera looks at), port and starboard
+// running lights, and a hex shield that flares on a hit. Three silhouettes:
+// the escort a broad wedge with its nacelles built in, the cruiser a long cut
+// saucer on pylons, the scout a small saucer with nacelles slung low.
+// Generic Starfleet-era forms, none traced from a canon design.
 //
 // Every model faces +X with +Y up, so its starboard side is +Z.
 
 const SIGNAL = new Color('#00F0FF');
 const COMMAND = new Color('#FF9F43');
+const PORT_CORE = new Color(2.6, 3.1, 4.2);
+const PORT_HALO = new Color(0.5, 0.75, 2.4);
 
-const plate = new MeshStandardMaterial({ color: 0x9aa9b9, roughness: 0.5, metalness: 0.08, flatShading: true });
-const plateDark = new MeshStandardMaterial({ color: 0x4a5869, roughness: 0.65, metalness: 0.08, flatShading: true });
-const dish = new MeshStandardMaterial({ color: 0x1a0f05, emissive: COMMAND, emissiveIntensity: 1.6 });
-
-function nacelleGlow(): MeshStandardMaterial {
-  return new MeshStandardMaterial({ color: 0x041318, emissive: SIGNAL, emissiveIntensity: 1.2 });
+let materials: { plate: MeshStandardMaterial; plateDark: MeshStandardMaterial; dish: MeshStandardMaterial; glow: Texture } | null = null;
+function mats() {
+  if (materials) return materials;
+  const map = hullTexture();
+  map.repeat.set(0.55, 0.55);
+  materials = {
+    plate: new MeshStandardMaterial({ map, color: 0xd8e0ea, roughness: 0.48, metalness: 0.12, flatShading: true }),
+    plateDark: new MeshStandardMaterial({ map, color: 0x6a7686, roughness: 0.6, metalness: 0.1, flatShading: true }),
+    dish: new MeshStandardMaterial({ color: 0x1a0f05, emissive: COMMAND, emissiveIntensity: 2.2 }),
+    glow: glowTexture(),
+  };
+  return materials;
 }
 
-/** A prism from a top-view outline (x forward, y to port), cut at the edges. */
+function nacelleGlow(): MeshStandardMaterial {
+  return new MeshStandardMaterial({ color: 0x041318, emissive: SIGNAL, emissiveIntensity: 1.4 });
+}
+
+/** A prism from a top-view outline (x forward, y to port), bevelled at the edges. */
 function slab(points: Array<[number, number]>, height: number, bevel = 0.04): BufferGeometry {
-  const shape = new Shape(points.map(([x, y]) => new Vector2(x, y)));
-  const g = new ExtrudeGeometry(shape, { depth: height, bevelEnabled: true, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 1 });
-  g.rotateX(-Math.PI / 2); // outline onto XZ, extrusion up +Y
+  const g = new ExtrudeGeometry(new Shape(points.map(([x, y]) => new Vector2(x, y))),
+    { depth: height, bevelEnabled: true, bevelSize: bevel, bevelThickness: bevel, bevelSegments: 1 });
+  g.rotateX(-Math.PI / 2);
   g.translate(0, -height / 2, 0);
   return g;
 }
 
-interface Built { root: Group; glow: MeshStandardMaterial; nacelleTips: Array<[number, number, number]>; }
+export interface BuiltHull {
+  root: Group;
+  glow: MeshStandardMaterial;
+  /** Stern ends of the nacelles, model space: where trails and impulse ports sit. */
+  tips: Array<[number, number, number]>;
+  /** Wingtips, for running lights: port then starboard. */
+  wings: Array<[number, number, number]>;
+  /** Shield ellipsoid radii (x, y, z). */
+  shield: [number, number, number];
+}
 
 function nacelle(len: number, r: number, glow: MeshStandardMaterial): Group {
+  const { plate, plateDark } = mats();
   const g = new Group();
-  const body = new Mesh(new CylinderGeometry(r, r, len, 8), plate);
+  const body = new Mesh(new CylinderGeometry(r, r * 1.1, len, 8), plate);
   body.rotation.z = Math.PI / 2;
-  const strip = new Mesh(new BoxGeometry(len * 0.82, r * 0.5, r * 2.15), glow);
-  strip.position.y = r * 0.35;
-  g.add(body, strip);
+  const strip = new Mesh(new BoxGeometry(len * 0.8, r * 0.45, r * 2.2), glow);
+  strip.position.y = r * 0.4;
+  const cap = new Mesh(new CylinderGeometry(r * 0.75, r, len * 0.12, 8), plateDark);
+  cap.rotation.z = Math.PI / 2;
+  cap.position.x = -len / 2 - len * 0.05;
+  g.add(body, strip, cap);
   return g;
 }
 
-function buildEscort(): Built {
+function buildEscort(): BuiltHull {
+  const { plate, plateDark, dish } = mats();
   const glow = nacelleGlow();
   const root = new Group();
-  const hull = new Mesh(slab([[1.35, 0], [0.25, 0.5], [-0.75, 0.82], [-1.05, 0.62], [-1.05, -0.62], [-0.75, -0.82], [0.25, -0.5]], 0.3), plate);
-  const deck = new Mesh(slab([[0.75, 0], [0.05, 0.28], [-0.7, 0.36], [-0.7, -0.36], [0.05, -0.28]], 0.12, 0.02), plateDark);
-  deck.position.y = 0.2;
-  root.add(hull, deck);
+  const hull = new Mesh(slab([[1.35, 0], [0.3, 0.5], [-0.7, 0.86], [-1.08, 0.66], [-1.08, -0.66], [-0.7, -0.86], [0.3, -0.5]], 0.3), plate);
+  const deck = new Mesh(slab([[0.8, 0], [0.05, 0.3], [-0.75, 0.38], [-0.75, -0.38], [0.05, -0.3]], 0.12, 0.02), plateDark);
+  deck.position.y = 0.21;
+  const bridge = new Mesh(new CylinderGeometry(0.16, 0.22, 0.1, 8), plate);
+  bridge.position.set(0.15, 0.31, 0);
+  root.add(hull, deck, bridge);
   for (const side of [-1, 1]) {
-    const n = nacelle(1.0, 0.14, glow);
+    const n = nacelle(1.0, 0.15, glow);
     n.position.set(-0.55, 0.1, side * 0.9);
     root.add(n);
   }
-  const d = new Mesh(new BoxGeometry(0.06, 0.08, 0.22), dish);
+  const d = new Mesh(new BoxGeometry(0.06, 0.08, 0.24), dish);
   d.position.set(1.0, -0.12, 0);
   root.add(d);
-  return { root, glow, nacelleTips: [[-1.08, 0.1, -0.9], [-1.08, 0.1, 0.9]] };
+  return { root, glow, tips: [[-1.12, 0.1, -0.9], [-1.12, 0.1, 0.9]], wings: [[-0.75, 0.05, -1.08], [-0.75, 0.05, 1.08]], shield: [1.65, 0.75, 1.45] };
 }
 
-function buildCruiser(): Built {
+function buildCruiser(): BuiltHull {
+  const { plate, plateDark, dish } = mats();
   const glow = nacelleGlow();
   const root = new Group();
   const saucer = new Mesh(new CylinderGeometry(1, 1.04, 0.16, 8), plate);
@@ -76,36 +109,38 @@ function buildCruiser(): Built {
   const bridge = new Mesh(new CylinderGeometry(0.22, 0.3, 0.12, 8), plateDark);
   bridge.position.set(0.75, 0.32, 0);
   const neck = new Mesh(slab([[0.2, 0.12], [-0.3, 0.12], [-0.3, -0.12], [0.2, -0.12]], 0.3, 0.02), plateDark);
-  neck.position.set(0, 0.02, 0);
   const body = new Mesh(slab([[0.1, 0.24], [-1.2, 0.2], [-1.35, 0], [-1.2, -0.2], [0.1, -0.24]], 0.34), plate);
   body.position.y = -0.12;
   root.add(saucer, bridge, neck, body);
   for (const side of [-1, 1]) {
-    const n = nacelle(1.7, 0.13, glow);
+    const n = nacelle(1.7, 0.14, glow);
     n.position.set(-1.0, 0.32, side * 0.75);
     const pylon = new Mesh(new BoxGeometry(0.34, 0.06, 0.6), plateDark);
     pylon.position.set(-0.75, 0.12, side * 0.42);
     pylon.rotation.x = side * 0.5;
     root.add(n, pylon);
   }
-  const d = new Mesh(new CylinderGeometry(0.11, 0.11, 0.04, 8), dish);
+  const d = new Mesh(new CylinderGeometry(0.12, 0.12, 0.04, 8), dish);
   d.rotation.z = Math.PI / 2;
   d.position.set(0.12, -0.12, 0);
   root.add(d);
-  return { root, glow, nacelleTips: [[-1.85, 0.32, -0.75], [-1.85, 0.32, 0.75]] };
+  return { root, glow, tips: [[-1.95, 0.32, -0.75], [-1.95, 0.32, 0.75]], wings: [[0.55, 0.2, -1.0], [0.55, 0.2, 1.0]], shield: [2.1, 0.8, 1.35] };
 }
 
-function buildScout(): Built {
+function buildScout(): BuiltHull {
+  const { plate, plateDark, dish } = mats();
   const glow = nacelleGlow();
   const root = new Group();
   const saucer = new Mesh(new CylinderGeometry(0.72, 0.76, 0.16, 8), plate);
   saucer.rotation.y = Math.PI / 8;
   saucer.position.set(0.35, 0.08, 0);
+  const bridge = new Mesh(new CylinderGeometry(0.16, 0.22, 0.1, 8), plateDark);
+  bridge.position.set(0.35, 0.2, 0);
   const body = new Mesh(slab([[0.1, 0.22], [-0.7, 0.18], [-0.85, 0], [-0.7, -0.18], [0.1, -0.22]], 0.26), plateDark);
   body.position.set(0, -0.08, 0);
-  root.add(saucer, body);
+  root.add(saucer, bridge, body);
   for (const side of [-1, 1]) {
-    const n = nacelle(0.9, 0.11, glow);
+    const n = nacelle(0.9, 0.12, glow);
     n.position.set(-0.55, -0.16, side * 0.6);
     const pylon = new Mesh(new BoxGeometry(0.26, 0.05, 0.42), plateDark);
     pylon.position.set(-0.4, -0.1, side * 0.36);
@@ -114,18 +149,21 @@ function buildScout(): Built {
   const d = new Mesh(new BoxGeometry(0.05, 0.07, 0.18), dish);
   d.position.set(1.1, 0.02, 0);
   root.add(d);
-  return { root, glow, nacelleTips: [[-1.0, -0.16, -0.6], [-1.0, -0.16, 0.6]] };
+  return { root, glow, tips: [[-1.05, -0.16, -0.6], [-1.05, -0.16, 0.6]], wings: [[0.35, 0.08, -0.78], [0.35, 0.08, 0.78]], shield: [1.4, 0.65, 1.05] };
 }
 
-const BUILDERS: Record<HullId, () => Built> = { escort: buildEscort, cruiser: buildCruiser, scout: buildScout };
+const BUILDERS: Record<HullId, () => BuiltHull> = { escort: buildEscort, cruiser: buildCruiser, scout: buildScout };
+
+/** A fresh copy of a hull's model, for the schematic. */
+export function buildHull(id: HullId): BuiltHull {
+  return BUILDERS[id]();
+}
 
 // ── engine trails ─────────────────────────────────────────────────────────
-// A ribbon per nacelle, sampled on a fixed clock so its length in time does
-// not change with the frame rate, and lit by how hard the engines were
-// burning when each sample was laid.
-const TRAIL_N = 30;
+const TRAIL_N = 24;
 const TRAIL_EVERY = 1 / 60;
-const TRAIL_W = 0.2;
+const TRAIL_W = 0.13;
+const TRAIL_COL = new Color(0.25, 1.1, 2.0);
 
 class Trail {
   readonly mesh: Mesh;
@@ -137,8 +175,8 @@ class Trail {
 
   constructor() {
     const g = new BufferGeometry();
-    this.pos = new BufferAttribute(new Float32Array(TRAIL_N * 2 * 3), 3);
-    this.col = new BufferAttribute(new Float32Array(TRAIL_N * 2 * 3), 3);
+    this.pos = new BufferAttribute(new Float32Array(TRAIL_N * 6), 3);
+    this.col = new BufferAttribute(new Float32Array(TRAIL_N * 6), 3);
     g.setAttribute('position', this.pos);
     g.setAttribute('color', this.col);
     const idx: number[] = [];
@@ -148,7 +186,6 @@ class Trail {
     this.mesh.frustumCulled = false;
   }
 
-  /** Lay a new sample at the head. */
   push(x: number, y: number, z: number, heat: number): void {
     if (!this.primed) { for (let i = 0; i < TRAIL_N; i++) this.pts.set([x, y, z], i * 3); this.primed = true; }
     this.pts.copyWithin(3, 0, (TRAIL_N - 1) * 3);
@@ -156,8 +193,7 @@ class Trail {
     this.pts[0] = x; this.pts[1] = y; this.pts[2] = z; this.heat[0] = heat;
   }
 
-  /** Move the head to the live nacelle position and rebuild the ribbon. */
-  draw(x: number, y: number, z: number, intensity: number): void {
+  draw(x: number, y: number, z: number): void {
     this.pts[0] = x; this.pts[1] = y; this.pts[2] = z;
     const p = this.pts, P = this.pos.array as Float32Array, C = this.col.array as Float32Array;
     for (let i = 0; i < TRAIL_N; i++) {
@@ -167,38 +203,98 @@ class Trail {
       const t = i / (TRAIL_N - 1), w = TRAIL_W * (1 - t) * 0.5;
       const ox = -dz * w, oz = dx * w;
       P.set([p[i * 3]! + ox, p[i * 3 + 1]!, p[i * 3 + 2]! + oz, p[i * 3]! - ox, p[i * 3 + 1]!, p[i * 3 + 2]! - oz], i * 6);
-      const a = this.heat[i]! * (1 - t) * (1 - t) * intensity;
-      C.set([SIGNAL.r * a, SIGNAL.g * a, SIGNAL.b * a, SIGNAL.r * a, SIGNAL.g * a, SIGNAL.b * a], i * 6);
+      const a = this.heat[i]! * (1 - t) * (1 - t);
+      C.set([TRAIL_COL.r * a, TRAIL_COL.g * a, TRAIL_COL.b * a, TRAIL_COL.r * a, TRAIL_COL.g * a, TRAIL_COL.b * a], i * 6);
     }
     this.pos.needsUpdate = true;
     this.col.needsUpdate = true;
   }
 }
 
+// ── the shield ────────────────────────────────────────────────────────────
+function shieldMaterial(): ShaderMaterial {
+  return new ShaderMaterial({
+    transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
+    uniforms: { uHit: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uColor: { value: new Color(0.3, 1.8, 2.4) } },
+    vertexShader: /* glsl */ `
+      varying vec3 vN; varying vec3 vV; varying vec3 vP;
+      void main() {
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform float uHit; uniform float uGrace; uniform float uTime; uniform vec3 uColor;
+      varying vec3 vN; varying vec3 vV; varying vec3 vP;
+      float hexEdge(vec2 p) {
+        vec2 r = vec2(1.0, 1.7320508), h = r * 0.5;
+        vec2 a = mod(p, r) - h, b = mod(p - h, r) - h;
+        vec2 g = dot(a, a) < dot(b, b) ? a : b;
+        g = abs(g);
+        float d = max(dot(g, normalize(r)), g.x);
+        return smoothstep(0.42, 0.5, d);
+      }
+      void main() {
+        // clamped: rounding can push the dot past 1, and pow of a negative is NaN,
+        // which bloom would smear across the whole frame
+        float fres = pow(clamp(1.0 - abs(dot(vN, vV)), 0.0, 1.0), 2.5);
+        vec2 uv = vec2(atan(vP.z, vP.x) * 3.0, vP.y * 9.0);
+        float hex = hexEdge(uv * 1.6 + vec2(0.0, uTime * 0.6));
+        float pulse = uGrace * (0.16 + 0.1 * sin(uTime * 18.0));
+        float a = (fres * 0.9 + hex * 0.55) * max(uHit, pulse);
+        gl_FragColor = vec4(uColor * a, a);
+      }`,
+  });
+}
+
 // ── the view ──────────────────────────────────────────────────────────────
 export class ShipView {
-  /** Add this to the scene once. */
   readonly root = new Group();
   private readonly yawG = new Group();
   private readonly pitchG = new Group();
   private readonly rollG = new Group();
-  private readonly models = new Map<HullId, Built>();
-  private current: Built;
+  private readonly models = new Map<HullId, BuiltHull>();
+  private current: BuiltHull;
   private readonly trails = [new Trail(), new Trail()];
+  private readonly ports: Mesh[] = [];
+  private readonly halos: Sprite[] = [];
+  private readonly lights: Sprite[] = [];
+  private readonly shield: Mesh;
+  private readonly shieldMat = shieldMaterial();
   private bank = 0;
   private pitch = 0;
   private heat = 0;
+  private hit = 0;
   private trailClock = 0;
+  private time = 0;
 
   constructor(hull: HullId) {
+    const { glow } = mats();
     for (const id of HULL_ORDER) {
       const b = BUILDERS[id]();
       b.root.visible = false;
       this.models.set(id, b);
       this.rollG.add(b.root);
     }
+    // impulse ports and their halos, moved to the current hull's sterns
+    const portGeo = new CircleGeometry(0.13, 16).rotateY(-Math.PI / 2);
+    for (let i = 0; i < 2; i++) {
+      const port = new Mesh(portGeo, new MeshBasicMaterial({ color: PORT_CORE.clone(), side: DoubleSide }));
+      const halo = new Sprite(new SpriteMaterial({ map: glow, color: PORT_HALO, blending: AdditiveBlending, depthWrite: false }));
+      this.ports.push(port);
+      this.halos.push(halo);
+      this.rollG.add(port, halo);
+    }
+    for (const c of [new Color(3, 0.25, 0.25), new Color(0.25, 3, 0.6)]) {
+      const s = new Sprite(new SpriteMaterial({ map: glow, color: c, blending: AdditiveBlending, depthWrite: false }));
+      s.scale.setScalar(0.32);
+      this.lights.push(s);
+      this.rollG.add(s);
+    }
+    this.shield = new Mesh(new SphereGeometry(1, 40, 20), this.shieldMat);
+    this.rollG.add(this.shield);
     this.current = this.models.get(hull)!;
-    this.current.root.visible = true;
+    this.setHull(hull);
     this.pitchG.add(this.rollG);
     this.yawG.add(this.pitchG);
     this.root.add(this.yawG, ...this.trails.map((t) => t.mesh));
@@ -208,16 +304,24 @@ export class ShipView {
     this.current.root.visible = false;
     this.current = this.models.get(id)!;
     this.current.root.visible = true;
+    this.current.tips.forEach((t, i) => {
+      this.ports[i]!.position.set(t[0] - 0.02, t[1], t[2]);
+      this.halos[i]!.position.set(t[0] - 0.12, t[1], t[2]);
+    });
+    this.current.wings.forEach((w, i) => this.lights[i]!.position.set(...w));
+    this.shield.scale.set(...this.current.shield);
   }
 
-  /** `s` is the interpolated ship; `dt` real seconds since the last frame. */
+  /** Flare the shield: a hit landed. */
+  flareShield(): void {
+    this.hit = 1;
+  }
+
   update(s: ShipState, dt: number, reduceMotion: boolean): void {
+    this.time += dt;
     this.yawG.position.set(s.x, 0, s.z);
     this.yawG.rotation.y = s.heading;
 
-    // Bank into the turn (right wing down for a right turn, which lowers the
-    // heading) and dip the nose under thrust. Both eased, so they read as
-    // weight rather than as a snap.
     const wantBank = clamp(-s.yawRate * 0.16, -0.6, 0.6);
     const wantPitch = -0.09 * s.thrust;
     const k = Math.min(1, 8 * dt);
@@ -232,27 +336,37 @@ export class ShipView {
     }
     this.pitchG.rotation.z = this.pitch;
     this.rollG.rotation.x = this.bank + roll;
-    this.current.glow.emissiveIntensity = 1.1 + 2.4 * this.heat;
+    this.current.glow.emissiveIntensity = 1.3 + 2.6 * this.heat;
+    for (const h of this.halos) h.scale.setScalar(0.55 + 0.9 * this.heat + Math.sin(this.time * 31) * 0.04);
+    for (const p of this.ports) (p.material as MeshBasicMaterial).color.copy(PORT_CORE).multiplyScalar(0.55 + 0.6 * this.heat);
+    const blink = Math.sin(this.time * Math.PI * 2) > 0.6;
+    for (const l of this.lights) l.visible = blink;
 
-    // trails: world positions of the nacelle tips
+    this.hit = Math.max(0, this.hit - dt * 2.2);
+    const grace = s.invuln > 0 && s.rollT < 0 ? Math.min(1, s.invuln) : 0;
+    this.shieldMat.uniforms.uHit!.value = this.hit;
+    this.shieldMat.uniforms.uGrace!.value = grace;
+    this.shieldMat.uniforms.uTime!.value = this.time;
+    this.shield.visible = this.hit > 0 || grace > 0;
+
     this.root.updateMatrixWorld(true);
     this.trailClock += dt;
     const lay = this.trailClock >= TRAIL_EVERY;
     if (lay) this.trailClock %= TRAIL_EVERY;
-    this.current.nacelleTips.forEach((tip, i) => {
+    this.current.tips.forEach((tip, i) => {
       const v = tipWorld(this.current.root, tip);
       const trail = this.trails[i]!;
-      if (lay) trail.push(v[0], v[1], v[2], 0.25 + 0.75 * this.heat);
-      trail.draw(v[0], v[1], v[2], 0.9);
+      if (lay) trail.push(v[0], v[1], v[2], 0.2 + 0.8 * this.heat);
+      trail.draw(v[0], v[1], v[2]);
     });
   }
 }
 
-const tmp = { x: 0, y: 0, z: 0 };
-function tipWorld(o: Object3D, local: [number, number, number]): [number, number, number] {
+const tmp: [number, number, number] = [0, 0, 0];
+function tipWorld(o: Object3D, l: [number, number, number]): [number, number, number] {
   const e = o.matrixWorld.elements;
-  tmp.x = e[0]! * local[0] + e[4]! * local[1] + e[8]! * local[2] + e[12]!;
-  tmp.y = e[1]! * local[0] + e[5]! * local[1] + e[9]! * local[2] + e[13]!;
-  tmp.z = e[2]! * local[0] + e[6]! * local[1] + e[10]! * local[2] + e[14]!;
-  return [tmp.x, tmp.y, tmp.z];
+  tmp[0] = e[0]! * l[0] + e[4]! * l[1] + e[8]! * l[2] + e[12]!;
+  tmp[1] = e[1]! * l[0] + e[5]! * l[1] + e[9]! * l[2] + e[13]!;
+  tmp[2] = e[2]! * l[0] + e[6]! * l[1] + e[10]! * l[2] + e[14]!;
+  return tmp;
 }

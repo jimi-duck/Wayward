@@ -1,16 +1,16 @@
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { HULL_ORDER, type HullId } from './content/hulls';
+import { HULLS, type HullId } from './content/hulls';
+import { clamp } from './core/math';
 import { FixedStepLoop } from './core/loop';
 import { Input } from './input/input';
 import { PAUSE_KEYS } from './input/keyboard';
-import { QualityGovernor, tierIndex } from './render/quality';
 import { ZOOMS } from './render/camera';
-import { createRenderer, fitRenderer } from './render/renderer';
+import { QualityGovernor, tierIndex } from './render/quality';
+import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
-import type { CameraMode } from './sim/controls';
 import { World } from './sim/world';
+import { Console } from './ui/console';
 import { DebugOverlay } from './ui/debug';
-import { FlightPanel, Telemetry } from './ui/flight';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -32,41 +32,40 @@ function boot(): void {
   const coarse = matchMedia('(pointer: coarse)').matches;
   const quality = new QualityGovernor(pinned >= 0 ? pinned : tierIndex(coarse ? 'medium' : 'high'), pinned >= 0);
 
-  const world = new World();
+  const world = new World(Math.floor(Math.random() * 1e9));
   const renderer = createRenderer(canvas, quality.tier);
-  const sector = new Sector(world.hull.id);
+  const sector = new Sector(world.hull.id, renderer, quality.tier);
   const debug = new DebugOverlay(el('debug'), params.get('debug') === '1');
-  const telemetry = new Telemetry(el('t-hull'), el('t-data'));
 
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   sector.reduceMotion = motion.matches;
   motion.addEventListener('change', (e) => { sector.reduceMotion = e.matches; });
 
+  // ── hull and zoom ──────────────────────────────────────────────────────
+  const setHull = (id: HullId) => {
+    if (id === world.hull.id) return;
+    world.setHull(id);
+    sector.setHull(id);
+    hud.showHull(id);
+    hud.note(world, `Hull changed · ${HULLS[id].name}`);
+  };
+  const zoom = (dir: 1 | -1) => {
+    sector.rig.zoom = clamp(sector.rig.zoom + dir, 0, ZOOMS.length - 1);
+    hud.showZoom(sector.rig.zoom);
+  };
+  const hud = new Console(setHull, zoom);
+  hud.showHull(world.hull.id);
+  hud.showZoom(sector.rig.zoom);
+
   const fit = () => {
     const dpr = fitRenderer(renderer, quality.tier);
-    sector.resize(canvas.clientWidth, canvas.clientHeight, dpr);
+    const lift = hud.layout();
+    sector.resize(canvas.clientWidth, canvas.clientHeight, dpr, lift);
   };
   new ResizeObserver(fit).observe(canvas);
   fit();
-
-  // ── hull and camera ────────────────────────────────────────────────────
-  const setHull = (id: HullId) => {
-    world.setHull(id);
-    sector.setHull(id);
-    telemetry.showHull(id);
-    panel.show(world.hull.id, world.mode);
-  };
-  const setCamera = (m: CameraMode) => {
-    world.mode = m;
-    sector.setMode(m);
-    panel.show(world.hull.id, world.mode);
-  };
-  const cycleZoom = () => {
-    sector.rig.zoom = (sector.rig.zoom + 1) % ZOOMS.length;
-    panel.showZoom(1 / ZOOMS[sector.rig.zoom]!);
-  };
-  const panel = new FlightPanel(el('panel'), setHull, setCamera, cycleZoom);
-  setHull(world.hull.id);
+  // the console's text sizes change once the web fonts arrive
+  document.fonts?.ready.then(fit);
 
   // ── start, pause ───────────────────────────────────────────────────────
   // The run waits behind the start card, so the first key or tap is the one
@@ -85,11 +84,16 @@ function boot(): void {
     el('start').hidden = true;
     document.documentElement.classList.remove('prelaunch');
     window.focus();
+    fit();
+    hud.note(world, `Run begins · ${world.hull.name}`);
     setPaused(false);
   };
 
   const input = new Input(
-    { layer: el('touch'), stick: el('stick'), knob: el('knob'), release: el('release'), roll: el('roll') },
+    {
+      layer: el('touch'), stick: el('stick'), knob: el('knob'), release: el('release'),
+      roll: el('roll'), fire: el('fire'), torpedo: el('torp'),
+    },
     () => (started ? setPaused(!loop.paused) : launch()),
   );
 
@@ -100,13 +104,19 @@ function boot(): void {
     },
     render(alpha, frameDt) {
       const dt = loop.paused ? 0 : frameDt;
-      sector.sync(world, alpha, dt);
-      renderer.render(sector.scene, sector.camera);
-      telemetry.update(world, frameDt);
+      const events = world.drain();
+      sector.react(events);
+      hud.events(events, world);
+      sector.frame(world, alpha, dt, hud.shieldRect);
+      hud.update(world, sector, frameDt);
       debug.frame(frameDt, renderer, quality, input, loop.paused);
     },
     measure(dt) {
-      if (!loop.paused && quality.sample(dt)) fit();
+      if (!loop.paused && quality.sample(dt)) {
+        matchTier(renderer, quality.tier);
+        sector.setTier(quality.tier);
+        fit();
+      }
     },
   });
   loop.paused = true;
@@ -121,16 +131,15 @@ function boot(): void {
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
     if (!started) {
-      if (e.code === 'Space' || e.code === 'Enter') launch();
+      if (e.code === 'Enter' || e.code === 'Space') launch();
       return;
     }
     // Any key resumes, except the pause keys themselves: Input has already
     // toggled on those, and answering them here as well would undo it.
     if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);
-    if (e.code === 'KeyC') setCamera(world.mode === 'tactical' ? 'chase' : 'tactical');
-    if (e.code === 'KeyZ') cycleZoom();
-    const n = ['Digit1', 'Digit2', 'Digit3'].indexOf(e.code);
-    if (n >= 0) setHull(HULL_ORDER[n]!);
+    if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -1 : 1);
+    if (e.code === 'Minus') zoom(1);
+    if (e.code === 'Equal') zoom(-1);
   });
 
   // Leaving the tab or the window pauses, as in the original. Coming back
@@ -147,7 +156,7 @@ function boot(): void {
 
   // Development only: lets an automated check step the loop while the tab is
   // hidden (no animation frames) and read the state back. Stripped from builds.
-  if (import.meta.env.DEV) Object.assign(window, { __ab: { world, loop, sector, renderer, input, launch } });
+  if (import.meta.env.DEV) Object.assign(window, { __ab: { world, loop, sector, renderer, input, launch, hud } });
 
   loop.start();
 }

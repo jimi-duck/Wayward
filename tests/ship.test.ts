@@ -6,10 +6,10 @@ import { newShip, stepShip, topSpeed, turnPerStep, type ShipState } from '../src
 import { PX, ROLL_COOLDOWN } from '../src/sim/tuning';
 import type { InputFrame } from '../src/input/types';
 
-const idle: FlightControls = { turn: 0, thrust: 0, heading: null, roll: false, rollDir: 0 };
+const idle: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false };
 const ctl = (c: Partial<FlightControls>): FlightControls => ({ ...idle, ...c });
 const input = (f: Partial<InputFrame>): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, roll: false, overcharge: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard', ...f });
 
 function fly(s: ShipState, hull: Hull, c: FlightControls, seconds: number): ShipState {
   for (let i = 0; i < Math.round(seconds / STEP); i++) stepShip(s, c, hull, STEP);
@@ -119,35 +119,28 @@ describe('the barrel roll', () => {
 describe('controls', () => {
   const up = Math.PI / 2;
 
-  it('reads a tactical stick as a heading, and throttles with the push', () => {
-    const c = flightControls(input({ aim: { angle: 0, mag: 1 } }), 'tactical', up);
-    expect(c.heading).toBe(0);
-    expect(c.thrust).toBe(1);
-    expect(c.rollDir).toBe(1); // the target is to the right
-  });
-
-  it('reads a chase stick like a car: across steers, forward throttles', () => {
-    const right = flightControls(input({ aim: { angle: 0, mag: 1 } }), 'chase', up);
-    expect(right.heading).toBeNull();
+  it('reads a stick like a car: across steers, forward throttles', () => {
+    const right = flightControls(input({ aim: { angle: 0, mag: 1 } }));
     expect(right.turn).toBe(1);
     expect(right.thrust).toBe(0);
-    const ahead = flightControls(input({ aim: { angle: up, mag: 1 } }), 'chase', up);
+    expect(right.rollDir).toBe(1);
+    const ahead = flightControls(input({ aim: { angle: up, mag: 1 } }));
     expect(ahead.thrust).toBe(1);
     expect(Math.abs(ahead.turn)).toBeLessThan(1e-9);
   });
 
   it('ignores a stick resting inside the dead zone', () => {
-    const c = flightControls(input({ aim: { angle: 0, mag: 0.1 } }), 'tactical', up);
-    expect(c.heading).toBeNull();
+    const c = flightControls(input({ aim: { angle: 0, mag: 0.1 } }));
+    expect(c.turn).toBe(0);
     expect(c.thrust).toBe(0);
   });
 
-  it('passes keys through unchanged in both camera styles', () => {
-    for (const mode of ['tactical', 'chase'] as const) {
-      const c = flightControls(input({ turn: -1, thrust: 1 }), mode, up);
-      expect(c.turn).toBe(-1);
-      expect(c.thrust).toBe(1);
-      expect(c.rollDir).toBe(-1);
-    }
+  it('passes keys and both triggers through', () => {
+    const c = flightControls(input({ turn: -1, thrust: 1, fire: true, torpedo: true }));
+    expect(c.turn).toBe(-1);
+    expect(c.thrust).toBe(1);
+    expect(c.rollDir).toBe(-1);
+    expect(c.fire).toBe(true);
+    expect(c.torpedo).toBe(true);
   });
 });

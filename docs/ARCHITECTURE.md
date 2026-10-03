@@ -58,6 +58,13 @@ stick means under each camera), `render/camera.ts` (the tactical and chase
 rigs), `render/ships.ts` (stand-in models, banking, roll, trails),
 `render/environment.ts` and `render/scenery.ts`.
 
+M1b adds `sim/field.ts` (rock that splits), `sim/weapons.ts` (phasers and
+torpedoes), `sim/events.ts` (what happened, for effects and the log),
+`render/rocks.ts`, `render/fx.ts`, `render/weapons.ts`, `render/post.ts`
+(bloom), `render/schematic.ts`, `render/textures.ts` (everything painted at
+startup) and `ui/console.ts` (the bridge console). The tactical camera is
+gone: the user chose the chase camera.
+
 Coming in later milestones: `sim/` grows the field, enemies, bosses and
 progression; `weapons/`, `audio/` and `content/` (tuning constants, factions,
 upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
@@ -97,6 +104,7 @@ upgrades, copy) appear; `tools/pilot.ts` runs the scripted pilot headless.
 |---|---|---|
 | M0 | Project setup: loop, input, quality tiers, deploy pipeline | done |
 | M1 | Flight model and chase camera | done |
+| M1b | Console pass: chase camera only, phasers and torpedoes, breakable rock, hull damage, bloom, the bridge console | done (pulls parts of M2, M3, M4 and M7 forward) |
 | M2 | Combat core: asteroids, phasers, torpedoes, collision, splitting, hull, game over | |
 | M3 | Combat feel and effects: trails, sparks, shield dome, explosions, shake | |
 | M4 | Space environment: starfield, nebulae, sun, shadows, bloom | |

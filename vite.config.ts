@@ -4,6 +4,9 @@ export default defineConfig({
   // Relative asset paths, so the same build works at a domain root
   // (play.example.com/) and under a project path (user.github.io/game/).
   base: './',
+  // postprocessing imports three itself; one copy, or its instanceof checks fail
+  resolve: { dedupe: ['three'] },
+  optimizeDeps: { include: ['three', 'postprocessing'] },
   build: {
     target: 'es2022',
     sourcemap: true,

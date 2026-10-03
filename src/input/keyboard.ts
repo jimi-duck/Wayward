@@ -3,12 +3,19 @@ import type { Press } from './types';
 const LEFT = ['ArrowLeft', 'KeyA'];
 const RIGHT = ['ArrowRight', 'KeyD'];
 const UP = ['ArrowUp', 'KeyW'];
+/** Button 1: phasers, held. */
+const FIRE = ['Digit1', 'Numpad1', 'Space', 'KeyJ'];
 
 /** Keys that toggle pause. Anything listening for "any key" must skip these. */
 export const PAUSE_KEYS: readonly string[] = ['Escape', 'KeyP'];
 
 const PRESSES: Record<string, Press> = {
-  Space: 'overcharge',
+  // button 2: one torpedo per press
+  Digit2: 'torpedo',
+  Numpad2: 'torpedo',
+  KeyF: 'torpedo',
+  KeyK: 'torpedo',
+  KeyE: 'overcharge',
   ShiftLeft: 'roll',
   ShiftRight: 'roll',
   ...Object.fromEntries(PAUSE_KEYS.map((k) => [k, 'pause' as const])),
@@ -16,7 +23,7 @@ const PRESSES: Record<string, Press> = {
 
 // Keys the game owns. Their default is always prevented: Space must never
 // scroll anything, and arrows must never move focus.
-const OWNED = new Set([...LEFT, ...RIGHT, ...UP, 'ArrowDown', 'KeyS', ...Object.keys(PRESSES)]);
+const OWNED = new Set([...LEFT, ...RIGHT, ...UP, ...FIRE, 'ArrowDown', 'KeyS', ...Object.keys(PRESSES)]);
 
 export class Keyboard {
   private held = new Set<string>();
@@ -39,6 +46,10 @@ export class Keyboard {
 
   thrust(): number {
     return this.any(UP) ? 1 : 0;
+  }
+
+  fire(): boolean {
+    return this.any(FIRE);
   }
 
   private any(codes: string[]): boolean {

@@ -15,18 +15,25 @@ export interface TouchElements {
   knob: HTMLElement;
   release: HTMLElement;
   roll: HTMLElement;
+  /** Button 1, held: phasers. */
+  fire: HTMLElement;
+  /** Button 2: a torpedo per tap. */
+  torpedo: HTMLElement;
 }
 
 export class TouchStick {
   aim: Aim | null = null;
+  /** The phaser button is held down. */
+  firing = false;
   private pointer: number | null = null;
+  private firePointer: number | null = null;
 
   constructor(
     private readonly el: TouchElements,
     private readonly onPress: (p: Press) => void,
     private readonly onActive: () => void,
   ) {
-    const { layer, release, roll } = el;
+    const { layer, release, roll, fire, torpedo } = el;
     layer.addEventListener('pointerdown', this.down);
     layer.addEventListener('pointermove', this.move);
     layer.addEventListener('pointerup', this.up);
@@ -46,12 +53,39 @@ export class TouchStick {
       this.onActive();
       this.onPress('roll');
     });
+    torpedo.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onActive();
+      this.onPress('torpedo');
+    });
+    // Phasers fire for as long as the thumb stays on the button.
+    fire.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onActive();
+      this.firePointer = e.pointerId;
+      this.firing = true;
+      fire.classList.add('on');
+      try { fire.setPointerCapture(e.pointerId); } catch { /* fine without */ }
+    });
+    const stop = (e: PointerEvent) => {
+      if (e.pointerId !== this.firePointer) return;
+      this.firePointer = null;
+      this.firing = false;
+      fire.classList.remove('on');
+    };
+    fire.addEventListener('pointerup', stop);
+    fire.addEventListener('pointercancel', stop);
   }
 
   /** Let go of the stick, e.g. when the game pauses under the thumb. */
   letGo(): void {
     this.pointer = null;
     this.aim = null;
+    this.firing = false;
+    this.firePointer = null;
+    this.el.fire.classList.remove('on');
     const { stick, knob } = this.el;
     stick.classList.remove('on', 'free');
     stick.style.left = stick.style.top = '';

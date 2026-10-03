@@ -3,6 +3,8 @@ import type { Aim, Press } from './types';
 // Standard-mapping button indices.
 const A = 0;
 const B = 1;
+const X = 2;
+const Y = 3;
 const RB = 5;
 const RT = 7;
 const START = 9;
@@ -11,7 +13,8 @@ const DPAD_LEFT = 14;
 const DPAD_RIGHT = 15;
 
 const PRESSES: Array<[number, Press]> = [
-  [A, 'overcharge'],
+  [X, 'torpedo'],
+  [Y, 'overcharge'],
   [B, 'roll'],
   [RB, 'roll'],
   [START, 'pause'],
@@ -24,9 +27,11 @@ export interface PadState {
   turn: number;
   thrust: number;
   aim: Aim | null;
+  /** A held: phasers. */
+  fire: boolean;
 }
 
-const IDLE: PadState = { turn: 0, thrust: 0, aim: null };
+const IDLE: PadState = { turn: 0, thrust: 0, aim: null, fire: false };
 
 export class Gamepads {
   private prev: boolean[] = [];
@@ -58,8 +63,9 @@ export class Gamepads {
     const turn = (down(DPAD_RIGHT) ? 1 : 0) - (down(DPAD_LEFT) ? 1 : 0);
     const thrust = Math.max(pad.buttons[RT]?.value ?? 0, down(DPAD_UP) ? 1 : 0);
 
-    if (aim || turn || thrust > 0.05) active = true;
+    const fire = down(A);
+    if (aim || turn || fire || thrust > 0.05) active = true;
     if (active) onActive();
-    return { turn, thrust, aim };
+    return { turn, thrust, aim, fire };
   }
 }

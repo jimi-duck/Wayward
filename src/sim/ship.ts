@@ -1,13 +1,12 @@
 import type { Hull } from '../content/hulls';
-import { angleDelta, clamp } from '../core/math';
 import type { FlightControls } from './controls';
 import {
-  GRIP_CARVE, HELM_EASE, HZ, PX, ROLL_COOLDOWN, ROLL_IFRAMES, ROLL_KICK, ROLL_TIME, ROT_SPEED, STICK_TURN, THRUST,
+  GRIP_CARVE, HELM_EASE, HZ, PX, ROLL_COOLDOWN, ROLL_IFRAMES, ROLL_KICK, ROLL_TIME, ROT_SPEED, THRUST,
 } from './tuning';
 
 // ── the flight model ──────────────────────────────────────────────────────
 // A port of the original's update() for the ship, step for step: helm, then
-// stick, then thrust (and grip), then drag, then position. One step is one of
+// thrust (and grip), then drag, then position. One step is one of
 // the original's 60Hz frames, so its per-frame numbers apply unchanged and
 // only distances convert (PX). The 3D game adds the barrel roll.
 //
@@ -86,12 +85,6 @@ export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number
   s.helm += (c.turn - s.helm) * Math.min(1, HELM_EASE * dt);
   if (!c.turn && Math.abs(s.helm) < 0.02) s.helm = 0;
   s.heading -= turnRate * s.helm;
-
-  // A stick swings the nose toward where it points, rather than snapping.
-  if (c.heading !== null) {
-    const step = turnRate * STICK_TURN;
-    s.heading += clamp(angleDelta(s.heading, c.heading), -step, step);
-  }
 
   s.thrust = c.thrust;
   if (c.thrust > 0) {
