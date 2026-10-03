@@ -14,6 +14,8 @@ factions; from 3:30 capital ships hail. Engage for the salvage (a refit and
 that faction's tech) or evade and pay in tempo. When the hull goes, the run
 report says what you built and how it went.
 
+- Where the game goes next, the Shoals (a proposal for review):
+  [docs/VISION.md](docs/VISION.md).
 - The game as designed, where each system lives and how to add to it:
   [docs/DESIGN.md](docs/DESIGN.md).
 - The plan, the decisions behind it and the milestone list:
