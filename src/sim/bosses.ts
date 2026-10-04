@@ -161,6 +161,9 @@ export class Command {
   private forcedHp = 1;
   private forcedHails = true;
   private forcedName: string | null = null;
+  /** Extra hulls in the summoned contact's wing (a named captain who learned to bring more). */
+  private forcedWing = 0;
+  private wingExtra = 0;
   private hpScale = 1;
   private last: Faction | null = null;
   private seen: Partial<Record<Faction, number>> = {};
@@ -172,9 +175,10 @@ export class Command {
   }
 
   /** Call a contact of this faction now (the Breakout's blockade). It can always be evaded. `hails` false: the decision was made on a comms card, and she simply comes. */
-  summon(t: number, faction: Faction, hp = 1, hails = true, name: string | null = null): void {
+  summon(t: number, faction: Faction, hp = 1, hails = true, name: string | null = null, wing = 0): void {
     if (this.state !== 'idle') return;
     this.forced = faction;
+    this.forcedWing = wing;
     this.forcedName = name;
     this.forcedHp = hp;
     this.forcedHails = hails;
@@ -282,6 +286,8 @@ export class Command {
       this.forced = null;
       this.hpScale = this.forcedHp;
       this.forcedHp = 1;
+      this.wingExtra = this.forcedWing;
+      this.forcedWing = 0;
       const name = this.forcedName ?? def.names[(this.seen[f] ?? 0) % def.names.length]!;
       this.forcedName = null;
       return { faction: f, name, n: this.count, bounty: bossBounty(this.count, f), hails: this.forcedHails, canEvade: true, evadeGap: 0 };
@@ -304,6 +310,8 @@ export class Command {
     const def = FACTIONS[faction];
     const hp = Math.round(bossHp(this.count, t) * def.hp * this.hpScale);
     this.hpScale = 1;
+    const wingN = def.wingN + this.wingExtra;
+    this.wingExtra = 0;
     // far out in front of the ship and high, so the chase camera sees it come in
     const x = s.x + Math.cos(s.heading) * ARRIVE_AT, z = s.z - Math.sin(s.heading) * ARRIVE_AT, y = ARRIVE_Y;
     this.boss = {
@@ -317,8 +325,8 @@ export class Command {
     this.pending = null;
     this.state = 'fight';
     // the escort wing comes in with her, together
-    for (let i = 0; i < def.wingN; i++) {
-      const a = (i / def.wingN) * Math.PI * 2;
+    for (let i = 0; i < wingN; i++) {
+      const a = (i / wingN) * Math.PI * 2;
       const e = spawnAlien(def.wing, s, t, rng, { x: x + Math.cos(a) * 12, y: y - 4, z: z + Math.sin(a) * 12 });
       e.hp = e.maxHp = Math.max(1, Math.round(e.maxHp * def.wingHp));
       aliens.push(e);

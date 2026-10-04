@@ -576,6 +576,10 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .panel.comms { width: min(920px, 100%); overflow-y: auto; gap: 12px; }
 .cm-sigil { --cc: var(--ink-2); width: 9px; height: 9px; background: var(--cc); box-shadow: 0 0 8px var(--cc); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
 .cm-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.cm-body.face { grid-template-columns: 76px minmax(0, 1.25fr) minmax(0, 1fr); }
+.cm-face { width: 76px; aspect-ratio: 64 / 72; box-shadow: 0 0 14px rgba(0, 0, 0, .5); }
+.cm-face[hidden] { display: none; }
+.cm-face svg { display: block; width: 100%; height: 100%; }
 .cm-text { margin: 0; font: 400 15px/1.5 var(--font-display); color: var(--ink); }
 .cm-read { display: grid; gap: 7px; padding: 10px 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, .02); }
 .cm-read[hidden] { display: none; }
@@ -886,6 +890,9 @@ html.swipe #app * { overscroll-behavior: contain; }
 }
 @media (max-width: 720px), (max-height: 520px) and (max-width: 1000px) {
   .cm-body { grid-template-columns: 1fr; gap: 8px; }
+  .cm-body.face { grid-template-columns: 52px minmax(0, 1fr); }
+  .cm-body.face .cm-read { grid-column: 1 / -1; }
+  .cm-face { width: 52px; }
 }
 /* touch: key hints mean nothing under a thumb */
 .touch-ui .pf .keys, .touch-ui .card kbd, .touch-ui .cm-c kbd { display: none; }

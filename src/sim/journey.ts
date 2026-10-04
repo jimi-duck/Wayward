@@ -205,7 +205,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const marked = noticeFromRun(res.run);
   for (const [f, v] of Object.entries(res.notice ?? {}) as Array<[Faction, number]>) marked[f] = (marked[f] ?? 0) + v;
   const heard: string[] = [];
-  if (res.captain) heard.push(...remember(j.notice, res.captain.id, res.captain.result, j.day, res.carry.standing));
+  if (res.captain) heard.push(...remember(j.notice, res.captain.id, res.captain.report, j.day, res.carry.standing, rng(j)));
   for (const [f, v] of Object.entries(marked) as Array<[Faction, number]>) heard.push(...raise(j.notice, f, v, res.carry.standing));
   for (const h of heard) note(j, h);
   lines.push(...heard);

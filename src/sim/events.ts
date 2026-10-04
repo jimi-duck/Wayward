@@ -46,6 +46,8 @@ export type GameEvent =
   | { type: 'bossFlank'; x: number; z: number }
   | { type: 'bossDestroyed'; x: number; y: number; z: number; name: string; faction: string; points: number }
   | { type: 'bossLeft'; name: string }
+  /** A named captain looked the Wayward over and turned away. */
+  | { type: 'captainLeft'; id: string; name: string; text: string }
   | { type: 'tractor' }
   | { type: 'mineLaid'; x: number; z: number }
   | { type: 'arc'; points: number[] }

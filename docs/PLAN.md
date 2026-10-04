@@ -383,8 +383,11 @@ should multiply each other; expand combinations before adding combat.
    journey folding each sortie's kills and cards into it, the save at
    version 2 with a migration, and the world playing it: bulletins and word
    in the Gutter at warning, dearer fees at toll, a harder pursuit at
-   hunters, and at the top a captain's card (announce, ambush or bargain)
-   and her ship under her name. Open: Calloway learning and making offers,
-   faces and more personality per captain, a chart readout of notice, and
-   a pilot report on how soon captains come.
+   hunters, and at the top a named captain (`content/captains.ts`,
+   `sim/captains.ts`): eight captains with a face on the comms card and one
+   of five personalities (announce, ambush, deal, turn away), whose ship
+   comes in under its name, and who come back changed by each meeting (a
+   grudge, bolder, a bigger wing, dearer, wise to running). Open: Calloway
+   learning and making offers, a chart readout of notice, and a pilot
+   report on how soon captains come.
 7. M5 to M8 in order, each with its pilot report.
