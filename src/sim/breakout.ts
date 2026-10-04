@@ -5,6 +5,7 @@ import type { JobDef, Standing } from './comms';
 import type { Faction } from './enemies';
 import type { RockKind, RockSize } from './field';
 import type { Report } from './captains';
+import type { Kit } from './modules';
 import { QUIET, type Pressure } from './notice';
 import type { RunStats } from './run';
 import type { Rng } from './rng';
@@ -164,6 +165,8 @@ export interface Carry {
   jobs: JobDef[];
   /** Cards already heard on this journey (the ones that come once). */
   seen: string[];
+  /** Each ship system's resource, for fitting modules at a port (sim/modules.ts). */
+  kit: Kit;
 }
 
 /** What a sortie hands back to the journey. */

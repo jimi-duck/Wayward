@@ -1,3 +1,4 @@
+import { noKit } from '../sim/modules';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
 
@@ -20,6 +21,9 @@ export function migrate(raw: unknown): Journey | null {
   // 1 → 2: the factions' notice (M4). A journey saved before it starts with nobody's notice.
   if (j.version < 2) j.notice = newNotice();
   if (!j.notice) return null;
+  // 2 → 3: the ship's systems (M5). A journey saved before it has earned nothing for them and fitted no modules.
+  if (j.version < 3) j.carry.kit = noKit();
+  if (!j.carry.kit) return null;
   j.version = VERSION;
   return j as Journey;
 }

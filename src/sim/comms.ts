@@ -3,6 +3,7 @@ import type { Tier } from '../content/factions';
 import type { SystemKind } from '../content/systems';
 import { UPGRADES } from '../content/upgrades';
 import type { Levels } from './build';
+import { countedBy, effects, hasFitted, systemMarks } from './modules';
 import type { Face } from './captains';
 import { ALIEN_TYPES, VARIANTS, type Faction } from './enemies';
 import { atLeast, type CaptainCall } from './notice';
@@ -310,7 +311,7 @@ export const SLOW = 0.2;
 export const CARD_BY_ID: Record<string, CardDef> = Object.fromEntries(CARDS.map((c) => [c.id, c]));
 
 const list = <T>(v: T | T[] | undefined): T[] => (v === undefined ? [] : Array.isArray(v) ? v : [v]);
-const fitted = (levels: Levels, ids: string | string[] | undefined) => list(ids).some((id) => (levels[id] ?? 0) > 0);
+const fitted = (levels: Levels, ids: string | string[] | undefined) => list(ids).some((id) => hasFitted(levels, id));
 
 export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (!c) return true;
@@ -366,6 +367,7 @@ export function sensors(levels: Levels): number {
   if ((levels.ut_scanner ?? 0) > 0) s += 0.2;
   if ((levels.tech_office ?? 0) > 0) s += 0.1;
   s += 0.02 * (levels.ut_tactical ?? 0);
+  s += effects(levels).sensors;
   return Math.min(0.95, s);
 }
 
@@ -375,7 +377,7 @@ const hullWeight = (variant: string) => {
   return v ? ALIEN_TYPES[v.kind].hp / 2 : 1;
 };
 
-/** The ship's weight in a fight, on the same scale: plates, the guns fitted, shields. */
+/** The ship's weight in a fight, on the same scale: plates, the guns fitted, shields, the Guns system's modules. */
 export function yourStrength(levels: Levels, plates: number): number {
   let s = 1 + plates;
   for (const u of UPGRADES) {
@@ -384,6 +386,8 @@ export function yourStrength(levels: Levels, plates: number): number {
     if (u.cat === 'weapons') s += lv * (u.kind === 'system' || u.kind === 'spec' ? 1.2 : 0.5);
     else if (u.branch === 'defence') s += lv * 0.6;
   }
+  // the Guns system's modules: heavier mounts, plate, faster loaders
+  s += systemMarks(levels).guns * 0.8;
   return Math.round(s * 10) / 10;
 }
 
@@ -407,7 +411,7 @@ export const standingName = (s: Standing) => STANDING_WORDS[s];
 export function oddsFor(o: Odds, x: Ctx): number {
   let p = o.base + (o.heat ?? 0) * x.heat;
   for (const [f, d] of Object.entries(o.flags ?? {})) if (x.flags.has(f)) p += d;
-  for (const [id, d] of Object.entries(o.fitted ?? {})) if ((x.levels[id] ?? 0) > 0) p += d;
+  for (const [id, d] of Object.entries(o.fitted ?? {})) if (hasFitted(x.levels, id)) p += d;
   for (const [s, d] of Object.entries(o.standing ?? {}) as Array<[Standing, number]>) p += d * (x.standing[s] ?? 0);
   return Math.min(0.95, Math.max(0.05, p));
 }
@@ -428,7 +432,11 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number): Cho
   const needs: string[] = [];
   const n = c.needs;
   if (n) {
-    if (n.fitted !== undefined && !fitted(x.levels, n.fitted)) needs.push(`Needs ${list(n.fitted).map(upgradeName).join(' or ')}`);
+    if (n.fitted !== undefined && !fitted(x.levels, n.fitted)) {
+      // what would open it: the upgrades it names, and any module that counts as one
+      const names = [...new Set([...list(n.fitted).map(upgradeName), ...list(n.fitted).flatMap((id) => countedBy(id).map((m) => m.name))])];
+      needs.push(`Needs ${names.join(' or ')}`);
+    }
     if (n.flag && !x.flags.has(n.flag)) needs.push(`Needs ${FLAGS[n.flag] ?? n.flag}`);
     if (n.standing && (x.standing[n.standing[0]] ?? 0) < n.standing[1]) needs.push(`Needs standing with ${standingName(n.standing[0])}`);
     if (n.krail !== undefined && x.krail < n.krail) needs.push(`Needs ${n.krail} Krail`);
