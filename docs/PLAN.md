@@ -20,6 +20,14 @@ question.
 - **Decisions pause the world.** The existing pattern (`World.phase` plus an
   answer method the app and the pilot both call) extends to every new
   decision: `comms`, `dock`, `chart`.
+- **Playable without reading** (decided 2026-10-04). A player who skips
+  every line of text still knows what to do. Goals sit on screen, choices
+  read at a glance (a verb, then chips for what it brings, what it costs and
+  a word for the odds), and no mechanic lives only in prose. Comms choices
+  get their chips from the outcome data (`sim/gains.ts`), the hidden truth
+  behind a card turns into the same odds word as a bluff, and the chart
+  names the goal and the lanes toward it. Card text stays as flavour, not as
+  instructions.
 - **Saves are versioned.** A journey lives longer than a run, so its save
   carries a version and a migration path from the first day.
 

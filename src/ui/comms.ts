@@ -8,8 +8,10 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 // Grown out of the hail panel: every channel opened to the ship, drawn the
 // same way. A header (who, what kind of call), what they say, the read
 // (their strength against yours, who is out there, their cargo, an intent
-// estimate as good as the sensors), and the choices as a list: each with
-// what it costs, a word for its odds, and, greyed out, what it still needs.
+// estimate), and the choices as a list: each with chips for what it brings,
+// what it costs, a word for its odds (the read's hidden truth folded in),
+// and, greyed out, what it still needs. The sentence under a choice shows on
+// the highlighted row only: the chips are enough to play by.
 // An ambush shows a draining bar: the world is slowed, not stopped.
 //
 // It draws a view, not the sim's types, so the arcade's capital-ship hail
@@ -24,6 +26,8 @@ export interface CommsChoice {
   lines: string[];
   /** Costs, then a word for the odds. */
   tags: string[];
+  /** What it brings if it comes off, in a few words each. */
+  gains: string[];
   ok: boolean;
   needs: string[];
 }
@@ -66,13 +70,12 @@ export function cardView(o: Open): CommsView {
     colour: CALLER_CSS[d.caller],
     alert: HOSTILE.has(d.kind) || o.slow > 0,
     text: o.text,
-    read: {
-      them: r.them, you: r.you,
-      rows: [['Contacts', r.ships], ['Cargo', r.cargo], ['Intent', r.intent], ['Sensors', `${Math.round(r.sure * 100)}% reliable`]],
-    },
+    // the read: strength as two bars, and the one line that matters (the
+    // choices' odds already carry how far it can be trusted)
+    read: { them: r.them, you: r.you, rows: [['Intent', r.intent]] },
     choices: o.choices.map((c) => ({
-      label: c.label, hint: c.hint, lines: [], ok: c.ok, needs: c.needs,
-      tags: [...c.cost, ...(c.odds !== null ? [oddsWord(c.odds)] : c.risky ? ['Trust the read'] : [])],
+      label: c.label, hint: c.hint, lines: [], ok: c.ok, needs: c.needs, gains: c.gains,
+      tags: [...c.cost, ...(c.chance !== null ? [oddsWord(c.chance)] : [])],
     })),
     face: d.face ? faceSvg(d.face, CALLER_CSS[d.caller], d.scars ?? 0) : null,
   };
@@ -83,19 +86,23 @@ const fmt = (n: number) => Math.round(n).toLocaleString('en-GB');
 /** The arcade's capital-ship hail: engage or evade. */
 export function hailView(c: Contact): CommsView {
   const evade: CommsChoice = c.canEvade
-    ? { label: 'Evade', hint: 'You get clear, but you cannot break away twice running.', lines: ['No bounty · no salvage', `Next contact in ${c.evadeGap}s`], tags: [], ok: true, needs: [] }
-    : { label: 'Evade', hint: 'Break away.', lines: [], tags: [], ok: false, needs: [c.faction === 'voice' ? 'There is no outrunning a foundry' : 'Not available: you broke away from the last one'] };
+    ? { label: 'Evade', hint: 'You get clear, but you cannot break away twice running.', lines: [], gains: ['No bounty', `Next in ${c.evadeGap}s`], tags: [], ok: true, needs: [] }
+    : { label: 'Evade', hint: 'Break away.', lines: [], gains: [], tags: [], ok: false, needs: [c.faction === 'voice' ? 'There is no outrunning a foundry' : 'Not available: you broke away from the last one'] };
   return {
     kick: 'Alarm', title: c.name, sub: `${c.faction} capital ship · on intercept course`, colour: NEON_CSS[c.faction], alert: true,
     text: 'She will fight back, and her escort wing comes in with her. The sector clears for the duel.',
     read: null,
     face: null,
     choices: [
-      { label: 'Engage', hint: 'Stand and fight.', lines: [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Hull repair · krail · a power-up'], tags: [], ok: true, needs: [] },
+      { label: 'Engage', hint: 'Stand and fight. Her salvage brings a refit, her tech, hull, Krail and a power-up.', lines: [], gains: ['Fight', `+${fmt(c.bounty)} score`, 'Refit'], tags: [], ok: true, needs: [] },
       evade,
     ],
   };
 }
+
+const THREAT = /^(Fight|Hostiles|Run the blockade|Calloway fights|Calloway chases|Calloway closer|Net spreads|Wanted ↑)$/;
+/** A chip's colour: red for trouble, amber for what it takes (like a cost), teal for what you get. */
+const gainClass = (g: string) => (THREAT.test(g) ? 'g-threat' : /^−/.test(g) ? 'g-loss' : 'g-gain');
 
 export class CommsPanel {
   private off: (() => void) | null = null;
@@ -204,9 +211,12 @@ export class CommsPanel {
     if (!v) return;
     $('cm-list').replaceChildren(...v.choices.map((c, i) => {
       const side = c.ok ? c.tags.map((t) => h('span', /^−/.test(t) ? 'cost' : 'odds', t)) : c.needs.map((n) => h('span', 'need', n));
-      const b = h('button', `cm-c${i === this.sel ? ' sel' : ''}`, '',
+      // what it brings, as chips beside the label; the sentence only on the highlighted row
+      const gains = c.gains.length ? h('span', 'cm-gains', '', ...c.gains.map((g) => h('span', gainClass(g), g))) : null;
+      const sel = i === this.sel;
+      const b = h('button', `cm-c${sel ? ' sel' : ''}`, '',
         h('kbd', '', String(i + 1)),
-        h('span', 'cm-main', '', h('span', 'cm-l', c.label), h('span', 'cm-h', c.hint), c.lines.length ? h('span', 'cm-lines', c.lines.join(' · ')) : null),
+        h('span', 'cm-main', '', h('span', 'cm-l', '', h('span', '', c.label), gains), sel || !c.gains.length ? h('span', 'cm-h', c.hint) : null, c.lines.length ? h('span', 'cm-lines', c.lines.join(' · ')) : null),
         h('span', 'cm-side', '', ...side),
       ) as HTMLButtonElement;
       b.type = 'button';
