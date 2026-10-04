@@ -387,7 +387,9 @@ should multiply each other; expand combinations before adding combat.
    `sim/captains.ts`): eight captains with a face on the comms card and one
    of five personalities (announce, ambush, deal, turn away), whose ship
    comes in under its name, and who come back changed by each meeting (a
-   grudge, bolder, a bigger wing, dearer, wise to running). Open: Calloway
-   learning and making offers, a chart readout of notice, and a pilot
-   report on how soon captains come.
+   grudge, bolder, a bigger wing, dearer, wise to running). The chart
+   reads the notice out under the stores: each faction that has marked
+   you, its tier and how far to the next, your standing with it, and its
+   captain, resting or hunting. Open: Calloway learning and making offers,
+   and a pilot report on how soon captains come.
 7. M5 to M8 in order, each with its pilot report.

@@ -2,6 +2,7 @@ import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
 import { krailKnown, lanesFrom, sysById, type StarSystem } from '../sim/chart';
 import { CREW, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
+import { readout, type NoticeLine } from '../sim/notice';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 
 // ── the chart ─────────────────────────────────────────────────────────────
@@ -10,7 +11,9 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 // by kind; the Net's edge is red (as of the day you last had news); your
 // trail is a line behind you; Calloway is a red shadow where she was last
 // seen. Pick a lane by its number, a tap on the list or on the map, or the
-// pad, and the next sortie begins. The same panel tells you when you are
+// pad, and the next sortie begins. Under the stores, each faction that has
+// marked you: its notice tier, how far to the next, your standing with it,
+// and its named captain (sim/notice.ts readout). The same panel tells you when you are
 // adrift after a wreck, and how the journey ended.
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -26,6 +29,16 @@ const px = (s: StarSystem) => PAD_X + s.x * (W - PAD_X * 2);
 const py = (s: StarSystem) => PAD_Y + s.y * (H - PAD_Y * 2);
 const days = (n: number) => `${n} day${n === 1 ? '' : 's'}`;
 const richWord = (k: number) => (k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
+const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
+
+/** A faction's notice in a line: its tier, how far to the next, standing, and its captain. */
+function noticeText(l: NoticeLine, day: number): string {
+  const name = l.name.replace(/^the /, '');
+  const parts = [`${name} · ${l.tier}`, l.next ? `${Math.floor(l.notice)}/${l.next.at} to ${l.next.tier}` : `${Math.floor(l.notice)} notice`];
+  if (l.standing !== null) parts.push(`standing ${signed(l.standing)}`);
+  if (l.captain) parts.push(`${l.captain.name}${l.captain.rest > day + 1e-9 ? `, resting till day ${Math.floor(l.captain.rest) + 1}` : ', hunting you'}`);
+  return parts.join(' · ');
+}
 
 function svg(tag: string, attrs: Record<string, string | number>, text = ''): SVGElement {
   const e = document.createElementNS(NS, tag);
@@ -192,6 +205,7 @@ export class ChartPanel {
         ? 'Calloway · not on your trail yet'
         : `Calloway · last seen ${seen ? sysById(j.chart, seen).name : 'unknown'}${ago ? `, ${ago} day${ago === 1 ? '' : 's'} ago` : ', today'} · ${gap === 0 ? 'in this system' : `about ${gap} jump${gap === 1 ? '' : 's'} behind`}`),
       h('p', 'ch-netl', `The Net · ${netN} system${netN === 1 ? '' : 's'} as of day ${Math.floor(j.chart.seenDay) + 1}`),
+      ...readout(j.notice, c.standing).map((l) => h('p', `ch-notice t-${l.tier}`, noticeText(l, j.day))),
     );
   }
 
