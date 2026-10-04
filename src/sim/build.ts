@@ -121,6 +121,7 @@ export const FIGURES: FigDef[] = [
   { label: 'Hull plates', get: (s) => s.maxPlates, fmt: f0 },
   { label: 'Shield charges', get: (s) => s.shieldMax, fmt: dash(f0) },
   { label: 'Shield recharge', get: (s) => off(s.shieldMax > 0, s.shieldRecharge), fmt: dash(sec), lower: true },
+  { label: 'Shield wait', get: (s) => off(s.shieldMax > 0, s.shieldDelay), fmt: dash(sec), lower: true },
   { label: 'Grace after a hit', get: (s) => s.grace, fmt: sec },
   { label: 'Tractor reach', get: (s) => s.tractor, fmt: m },
   { label: 'Krail yield', get: (s) => s.xpMult, fmt: pct },

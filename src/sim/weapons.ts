@@ -8,7 +8,8 @@ import { BOLT_ELEVATE_CONE, TORP_SPACING, TORP_SPEED } from './tuning';
 
 // ── lasers and torpedoes ─────────────────────────────────────────────────
 // Lasers (button 1): hold to fire, two emitters alternating, limited by the
-// laser bank. Torpedoes (button 2, once the bay is fitted): one press, one
+// laser bank: a full bank fires at the guns' own rate, an empty one at the
+// rate it refills. Torpedoes (button 2, once the bay is fitted): one press, one
 // launch from the rack (a salvo, with the swarm launcher), each locking the
 // best target in a cone ahead and steering onto it.
 // Both carry the ship's own velocity, as in the original: without it a ship at
@@ -46,8 +47,6 @@ export interface Torpedo {
 export interface Arms {
   /** Laser bank energy, 0 to the bank's size. */
   bank: number;
-  /** Seconds before the bank starts refilling. */
-  bankWait: number;
   /** Seconds before the next laser shot. */
   cooldown: number;
   /** Which emitter fires next: 1 starboard, -1 port. */
@@ -64,7 +63,7 @@ export interface Arms {
 }
 
 export function newArms(s: Stats = BASE): Arms {
-  return { bank: s.bankMax, bankWait: 0, cooldown: 0, side: 1, rack: s.torpRack, reload: 0, spacing: 0, dryFired: false, shots: 0 };
+  return { bank: s.bankMax, cooldown: 0, side: 1, rack: s.torpRack, reload: 0, spacing: 0, dryFired: false, shots: 0 };
 }
 
 /** What changes how the guns fire this step, beyond the build. */
@@ -179,7 +178,6 @@ export function fireWeapons(
       }
       events.push({ type: 'bolt', x, z, heading: ship.heading });
       if (!m.overload) arms.bank -= s.bankShot;
-      arms.bankWait = m.overload ? 0 : 0.35;
       arms.cooldown = s.laserCooldown * (m.overload ? 0.5 : 1);
       arms.side = arms.side === 1 ? -1 : 1;
     } else if (!arms.dryFired) {
@@ -188,8 +186,9 @@ export function fireWeapons(
     }
   }
   if (!c.fire) arms.dryFired = false;
-  if (arms.bankWait > 0) arms.bankWait = Math.max(0, arms.bankWait - dt);
-  else arms.bank = Math.min(s.bankMax, arms.bank + s.bankRefill * dt);
+  // the bank refills all the time, firing or not: a held trigger drains it
+  // slowly, and an empty bank fires at the rate it refills, never stutters
+  arms.bank = Math.min(s.bankMax, arms.bank + s.bankRefill * dt);
 
   if (!s.torpedoes) return;
   // torpedoes

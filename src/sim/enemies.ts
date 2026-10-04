@@ -82,13 +82,13 @@ export interface AlienType {
 }
 
 export const ALIEN_TYPES: Record<AlienKind, AlienType> = {
-  scout:     { label: 'Interceptor',    role: 'interceptor', tactic: 'dogfight',  fire: 'fan',    r: 1.5, hp: 2,  speed: 24, dash: 40, accel: 40, bonus: 150, xp: 3,  cd: 1,    shots: 1, faction: 'gutter',    ttl: 0,  evade: 0.7,  range: 50 },
-  raptor:    { label: 'Strike fighter', role: 'interceptor', tactic: 'ram',       fire: 'burst',  r: 1.7, hp: 4,  speed: 20, dash: 50, accel: 34, bonus: 300, xp: 4,  cd: 1,    shots: 2, faction: 'gutter',    ttl: 0,  evade: 0.45, range: 40 },
+  scout:     { label: 'Interceptor',    role: 'interceptor', tactic: 'dogfight',  fire: 'fan',    r: 1.5, hp: 2,  speed: 24, dash: 40, accel: 40, bonus: 150, xp: 3,  cd: 1,    shots: 1, faction: 'gutter',    ttl: 0,  evade: 0.6,  range: 50 },
+  raptor:    { label: 'Strike fighter', role: 'interceptor', tactic: 'ram',       fire: 'burst',  r: 1.7, hp: 4,  speed: 20, dash: 50, accel: 34, bonus: 300, xp: 4,  cd: 1,    shots: 2, faction: 'gutter',    ttl: 0,  evade: 0.35, range: 40 },
   lancer:    { label: 'Heavy cruiser',  role: 'cruiser',     tactic: 'broadside', fire: 'fan',    r: 2.8, hp: 9,  speed: 9,  dash: 14, accel: 8,  bonus: 420, xp: 7,  cd: 1.55, shots: 3, faction: 'custody', ttl: 50, evade: 0.15, range: 46 },
   warbird:   { label: 'Plasma cruiser', role: 'cruiser',     tactic: 'snipe',     fire: 'plasma', r: 2.8, hp: 9,  speed: 11, dash: 16, accel: 9,  bonus: 480, xp: 7,  cd: 2.3,  shots: 1, faction: 'office',    ttl: 34, evade: 0.2,  range: 56 },
-  stalker:   { label: 'Hunter',         role: 'interceptor', tactic: 'hunt',      fire: 'lead',   r: 1.6, hp: 4,  speed: 22, dash: 36, accel: 42, bonus: 340, xp: 5,  cd: 1.3,  shots: 1, faction: 'gutter',    ttl: 26, evade: 0.6,  range: 40 },
+  stalker:   { label: 'Hunter',         role: 'interceptor', tactic: 'hunt',      fire: 'lead',   r: 1.6, hp: 4,  speed: 22, dash: 36, accel: 42, bonus: 340, xp: 5,  cd: 1.3,  shots: 1, faction: 'gutter',    ttl: 26, evade: 0.45, range: 40 },
   drone:     { label: 'Grinder',    role: 'cruiser',     tactic: 'grind',     fire: 'beam',   r: 2.4, hp: 16, speed: 6,  dash: 9,  accel: 5,  bonus: 560, xp: 9,  cd: 1,    shots: 0, faction: 'voice',       ttl: 0,  evade: 0,    range: 44 },
-  weaver:    { label: 'Web layer',      role: 'special',     tactic: 'anchor',    fire: 'none',   r: 1.5, hp: 3,  speed: 18, dash: 28, accel: 30, bonus: 380, xp: 5,  cd: 1,    shots: 0, faction: 'thren',    ttl: 0,  evade: 0.5,  range: 30 },
+  weaver:    { label: 'Web layer',      role: 'special',     tactic: 'anchor',    fire: 'none',   r: 1.5, hp: 3,  speed: 18, dash: 28, accel: 30, bonus: 380, xp: 5,  cd: 1,    shots: 0, faction: 'thren',    ttl: 0,  evade: 0.4,  range: 30 },
   freighter: { label: 'Freighter',      role: 'special',     tactic: 'cross',     fire: 'none',   r: 3.4, hp: 26, speed: 7,  dash: 9,  accel: 4,  bonus: 600, xp: 16, cd: 1,    shots: 0, faction: 'custody', ttl: 46, evade: 0,    range: 0 },
 };
 export const ALIEN_ORDER = Object.keys(ALIEN_TYPES) as AlienKind[];

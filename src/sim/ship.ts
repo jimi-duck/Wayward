@@ -1,7 +1,7 @@
 import type { Hull } from '../content/hulls';
 import type { FlightControls } from './controls';
 import {
-  GRIP_CARVE, HELM_EASE, HZ, PX, ROLL_COOLDOWN, ROLL_IFRAMES, ROLL_KICK, ROLL_TIME, ROT_SPEED, THRUST,
+  COAST_DRAG, GRIP_CARVE, HELM_EASE, HZ, PX, ROLL_COOLDOWN, ROLL_IFRAMES, ROLL_KICK, ROLL_TIME, ROT_SPEED, THRUST,
 } from './tuning';
 
 // ── the flight model ──────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number
     const a = thrustPerStep(hull) * c.thrust;
     s.vx += Math.cos(s.heading) * a;
     s.vz -= Math.sin(s.heading) * a;
-    if (hull.grip) applyGrip(s, hull.grip * c.thrust);
+    if (hull.grip && s.rollT < 0) applyGrip(s, hull.grip * c.thrust);
   }
 
   // The barrel roll: a sideways kick at the start, then the hull's own drag.
@@ -122,7 +122,7 @@ export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number
   }
   if (s.invuln > 0) s.invuln = Math.max(0, s.invuln - dt);
 
-  const drag = drift ? Math.max(hull.drag, DRIFT_DRAG) : hull.drag;
+  const drag = drift ? Math.max(hull.drag, DRIFT_DRAG) : c.thrust === 0 ? Math.max(hull.drag, COAST_DRAG) : hull.drag;
   s.vx *= drag;
   s.vz *= drag;
   s.x += s.vx * dt;

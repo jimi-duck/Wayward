@@ -12,6 +12,7 @@ import { PATCH_COST } from '../src/sim/breakout';
 import { CUT_RANGE } from '../src/sim/mining';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
+import type { GameEvent } from '../src/sim/events';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
 // A competent, unspectacular player, for balancing. It picks a goal (nose
@@ -68,6 +69,8 @@ export interface PilotOptions {
   onDock?: (w: World) => void;
   /** An answer to take before the policy's, when it has one (the ship pilot uses what it built). */
   answer?: (w: World) => string | null;
+  /** Sees every event and the world after each step, for the measuring tools. */
+  watch?: (w: World, events: readonly GameEvent[]) => void;
 }
 
 export interface PilotResult {
@@ -491,7 +494,9 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     const input = queue.length > lag ? queue.shift()! : blank();
     w.step(STEP, input);
     if (w.command.state === 'fight' || w.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < FIRE_RANGE * a.rgK)) combat += STEP;
-    for (const ev of w.drain()) {
+    const evs = w.drain();
+    o.watch?.(w, evs);
+    for (const ev of evs) {
       if (ev.type === 'levelUp' && [1, 5, 10, 15, 20].includes(ev.refit)) refitAt[ev.refit] = Math.round(w.runTime);
       if (ev.type === 'bossArrive') { fightStart = w.runTime; fightFaction = ev.faction; }
       if (ev.type === 'bossDestroyed') { bossFights.push({ faction: ev.faction, outcome: 'killed', seconds: Math.round(w.runTime - fightStart), hpLeft: 0, refit: w.refit }); fightStart = -1; }

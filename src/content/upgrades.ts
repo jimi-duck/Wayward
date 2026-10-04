@@ -394,15 +394,14 @@ export const UPGRADES: UpgradeDef[] = [
   // ── defence ────────────────────────────────────────────────────────────
   {
     id: 'df_shield', name: 'Shield emitters', branch: 'defence', cat: 'defence', kind: 'system', max: 1, tags: ['defence', 'unlock', 'shield'],
-    text: 'A shield that takes one hit for you, then recharges.',
-    note: 'It recharges only after it breaks, and slowly.',
-    apply: (s) => { s.shieldMax = 1; },
+    text: 'A second shield charge, and it recharges sooner.',
+    apply: (s) => { s.shieldMax += 1; s.shieldDelay *= 0.8; },
   },
   {
     id: 'df_regen', name: 'Shield regenerators', branch: 'defence', cat: 'defence', kind: 'stat', max: 3, tags: ['defence', 'shield'],
     requires: [{ id: 'df_shield' }],
     text: 'Your shield recharges faster.',
-    apply: (s) => { s.shieldRecharge *= 0.8; },
+    apply: (s) => { s.shieldRecharge *= 0.8; s.shieldDelay *= 0.9; },
   },
   {
     id: 'df_armour', name: 'Ablative armour', branch: 'defence', cat: 'defence', kind: 'stat', max: 2, tags: ['defence', 'armour'],
@@ -584,8 +583,8 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: 'tech_voice', name: 'Voice adaptive shield', branch: 'salvage', cat: 'defence', kind: 'tech', max: 1, tech: 'voice', tags: ['defence', 'shield'],
-    text: 'Your shield adapts: it recharges faster, and a ship with no shield gets one.',
-    apply: (s) => { s.shieldMax = Math.max(1, s.shieldMax); s.shieldRecharge *= 0.8; },
+    text: 'Your shield adapts: it recharges sooner and faster.',
+    apply: (s) => { s.shieldRecharge *= 0.75; s.shieldDelay *= 0.75; },
   },
   {
     id: 'tech_thren', name: 'Thren snares', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'thren', tags: ['mine', 'torpedo', 'control'],

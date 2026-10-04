@@ -16,7 +16,8 @@
     "pilot:breakout": "vitest run --config tools/vitest.config.ts tools/breakout.pilot.ts",
     "pilot:journey": "vitest run --config tools/vitest.config.ts tools/journey.pilot.ts",
     "pilot:ship": "vitest run --config tools/vitest.config.ts tools/ship.pilot.ts",
-    "pilot:endings": "vitest run --config tools/vitest.config.ts tools/endings.pilot.ts"
+    "pilot:endings": "vitest run --config tools/vitest.config.ts tools/endings.pilot.ts",
+    "pilot:feel": "vitest run --config tools/vitest.config.ts tools/feel.pilot.ts"
   },
   "engines": {
     "node": ">=22"

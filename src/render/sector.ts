@@ -365,7 +365,8 @@ export class Sector {
     if (!this.snapped) { this.rig.snap(subject); this.snapped = true; }
     this.rig.update(subject, dt, this.reduceMotion);
     this.ship.root.visible = world.alive && !(world.bk && world.bk.jumpT >= 0 && world.bk.jumpT < 1.3);
-    this.ship.status.charged = world.shields > 0 || world.powers.shield > 0 ? 1 : 0;
+    // the shield stands at the rim as it fills, and fully once a charge is up
+    this.ship.status.charged = world.powers.shield > 0 ? 1 : Math.min(1, world.shields);
     this.ship.status.phased = world.phaseT > 0;
     this.ship.status.cloaked = world.cloakT > 0;
     this.ship.status.overload = world.overload > 0 || world.powers.rapid > 0;

@@ -35,7 +35,7 @@ describe('flight model, ported from the original', () => {
 
   it('coasts to a stop on its own drag', () => {
     const s = fly(newShip(), HULL, ctl({ thrust: 1 }), 3);
-    fly(s, HULL, idle, 4);
+    fly(s, HULL, idle, 6);
     expect(speed(s)).toBeLessThan(0.01);
   });
 

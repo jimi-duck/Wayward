@@ -95,7 +95,7 @@ export class World implements EncounterHost {
   stats: Stats;
   hull: Hull;
   plates: number;
-  /** Shield charges up, and seconds until the next recharges. */
+  /** The shield meter, in charges (fractional while it fills), and seconds until it starts filling. */
   shields = 0;
   shieldT = 0;
   arms: Arms;
@@ -247,6 +247,7 @@ export class World implements EncounterHost {
     this.stats = this.buildStats();
     this.hull = flightHull(this.stats);
     this.plates = this.stats.maxPlates;
+    this.shields = this.stats.shieldMax;
     this.arms = newArms(this.stats);
     this.field = new Field(this.rng);
     this.field.seed(0, 0);
@@ -786,12 +787,11 @@ export class World implements EncounterHost {
     if (this.repairCd > 0) this.repairCd -= dt;
     if (this.chain > 0 && (this.chainT -= dt) <= 0) this.chain = 0;
     this.sinceHit += dt;
-    if (this.shields < st.shieldMax && this.alive) {
-      if ((this.shieldT -= dt) <= 0) {
-        this.shields++;
-        this.shieldT = st.shieldRecharge;
-        this.events.push({ type: 'shieldUp', charges: this.shields });
-      }
+    if (this.shieldT > 0) this.shieldT = Math.max(0, this.shieldT - dt);
+    else if (this.shields < st.shieldMax && this.alive) {
+      const was = Math.floor(this.shields);
+      this.shields = Math.min(st.shieldMax, this.shields + dt / st.shieldRecharge);
+      if (Math.floor(this.shields) > was) this.events.push({ type: 'shieldUp', charges: Math.floor(this.shields) });
     }
     if (st.regen > 0 && this.alive && this.plates < st.maxPlates && this.sinceHit >= st.regen) {
       this.plates++;
@@ -1025,6 +1025,7 @@ export class World implements EncounterHost {
     if (this.stats.maxPlates > old.maxPlates) this.plates += this.stats.maxPlates - old.maxPlates;
     this.plates = Math.min(this.plates, this.stats.maxPlates);
     if (this.stats.shieldMax > old.shieldMax) this.shields += this.stats.shieldMax - old.shieldMax;
+    this.shields = Math.min(this.shields, this.stats.shieldMax);
     if (this.stats.torpedoes && !old.torpedoes) this.arms.rack = this.stats.torpRack;
     if (this.stats.torpRack > old.torpRack && old.torpedoes) this.arms.rack += this.stats.torpRack - old.torpRack;
     if (this.stats.bankMax > old.bankMax) this.arms.bank += this.stats.bankMax - old.bankMax;
@@ -1647,16 +1648,15 @@ export class World implements EncounterHost {
     }
     this.run.damageBy[source] = (this.run.damageBy[source] ?? 0) + 1;
     this.sinceHit = 0;
-    // an emergency shield (power-up) first, then the shields, then the hull
-    if (this.powers.shield > 0 || this.shields > 0) {
+    // any damage holds the shield's recharge off
+    this.shieldT = st.shieldDelay;
+    // an emergency shield (power-up) first, then a whole shield charge, then the hull
+    if (this.powers.shield > 0 || this.shields >= 1) {
       if (this.powers.shield > 0) this.powers.shield = 0;
-      else {
-        if (this.shields === st.shieldMax) this.shieldT = st.shieldRecharge;
-        this.shields--;
-      }
+      else this.shields -= 1;
       s.invuln = SHIELD_GRACE;
       this.run.shieldsAbsorbed++;
-      this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: this.shields, source });
+      this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source });
       if (st.reactive) this.reactive();
       if (st.arcShield) this.arcNova();
       return;
@@ -1900,7 +1900,7 @@ export class World implements EncounterHost {
     this.stats = this.buildStats();
     this.hull = flightHull(this.stats);
     this.plates = this.stats.maxPlates;
-    this.shields = 0; this.shieldT = 0;
+    this.shields = this.stats.shieldMax; this.shieldT = 0;
     this.arms = newArms(this.stats);
     this.xp = 0; this.refit = 0; this.xpNext = xpFor(0); this.celebrate = 0;
     this.offer = null; this.pendingRefits = 0; this.pendingSalvage = []; this.techs = new Set(); this.presented.clear();

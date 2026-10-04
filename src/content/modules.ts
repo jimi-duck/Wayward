@@ -103,6 +103,11 @@ export const MODULES: ModuleDef[] = [
     text: 'Lasers and torpedoes reload faster.',
     stats: (s) => { s.laserCooldown *= 0.9; s.torpReload *= 0.9; },
   },
+  {
+    id: 'md_projector', name: 'Shield projector', system: 'guns', max: 2, kit: marks(4, 7), chits: marks(15, 30),
+    text: 'One more shield charge.',
+    stats: (s) => { s.shieldMax += 1; },
+  },
 
   // ── rig ───────────────────────────────────────────────────────────────
   {
@@ -119,6 +124,11 @@ export const MODULES: ModuleDef[] = [
     id: 'md_tractor', name: 'Ore tractor', system: 'rig', max: 2, kit: marks(3, 6), chits: marks(10, 20),
     text: 'Pulls in pickups from further away.',
     stats: (s) => { s.tractor *= 1.3; },
+  },
+  {
+    id: 'md_capacitor', name: 'Capacitor bank', system: 'rig', max: 2, kit: marks(3, 6), chits: marks(10, 20),
+    text: 'Your shield recharges sooner and faster.',
+    stats: (s) => { s.shieldRecharge *= 0.8; s.shieldDelay *= 0.8; },
   },
 
   // ── signals ───────────────────────────────────────────────────────────
