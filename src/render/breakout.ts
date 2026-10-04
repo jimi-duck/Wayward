@@ -3,7 +3,6 @@ import {
   type Material, type Scene, type Texture,
 } from 'three';
 import { clamp } from '../core/math';
-import { JUMP_COST } from '../sim/breakout';
 import type { World } from '../sim/world';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded } from './kit';
@@ -124,12 +123,13 @@ export class BreakoutView {
   update(world: World, ship: { x: number; z: number; heading: number }, fx: Effects, dt: number): void {
     this.time += dt;
     const b = world.bk;
-    this.lane.visible = this.port.visible = !!b;
+    this.lane.visible = !!b;
+    this.port.visible = !!b?.port;
     if (!b) { this.beam.visible = this.bite.visible = false; return; }
     this.lane.position.set(b.lane.x, -1.5, b.lane.z);
-    this.port.position.set(b.port.x, -2, b.port.z);
+    if (b.port) this.port.position.set(b.port.x, -2, b.port.z);
     // the throat brightens as the tank fills and blazes while the drive spools
-    const ready = world.krail >= JUMP_COST ? 1 : 0.35;
+    const ready = world.krail >= b.jumpCost ? 1 : 0.35;
     const spool = b.spool / 5;
     this.throat.rotation.z += dt * (0.2 + spool * 3);
     (this.throat.material as MeshBasicMaterial).opacity = 0.015 + 0.025 * ready + 0.18 * spool + (b.jumpT >= 0 ? 0.4 : 0);

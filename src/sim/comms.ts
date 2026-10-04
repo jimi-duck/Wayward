@@ -1,4 +1,5 @@
 import { CARDS, FLAGS } from '../content/cards';
+import type { SystemKind } from '../content/systems';
 import { UPGRADES } from '../content/upgrades';
 import type { Levels } from './build';
 import { ALIEN_TYPES, VARIANTS } from './enemies';
@@ -31,6 +32,8 @@ export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refus
 export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' | 'miners';
 /** Who is on the channel, for the colour of the card. */
 export type Caller = Standing | 'office' | 'calloway' | 'unknown';
+/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, or with Calloway. */
+export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt';
 /** Where the ship is: open space, the port's approach, the lane mouth. */
 export type Place = 'open' | 'port' | 'lane';
 
@@ -54,6 +57,13 @@ export interface Ctx {
   place: Place;
   /** Hostile hulls within reach. */
   hostiles: number;
+  /** Food in the galley. */
+  food: number;
+  /** The system: its kind, and whether the Net holds it. */
+  kind: SystemKind;
+  netted: boolean;
+  /** Jumps Calloway is behind (Infinity before she has the trail). */
+  behind: number;
 }
 
 /** A condition on the ship and the run. Every field given must hold. */
@@ -82,6 +92,14 @@ export interface Cond {
   place?: Place;
   /** Hostiles about (true) or a clear sky (false). */
   hostiles?: boolean;
+  /** The galley has less than this much food. */
+  hungry?: number;
+  /** The system is one of these kinds. */
+  kind?: SystemKind | SystemKind[];
+  /** The Net holds the system (true) or not (false). */
+  netted?: boolean;
+  /** Calloway is at most this many jumps behind. */
+  hunted?: number;
 }
 
 /** A number, or a token read off the ship: the card's fee, all of it, half of it. */
@@ -109,6 +127,7 @@ export interface Outcome {
   ore?: Amount;
   chits?: Amount;
   parts?: Amount;
+  food?: Amount;
   plates?: number;
   heat?: number;
   score?: number;
@@ -130,6 +149,12 @@ export interface Outcome {
   sell?: number;
   /** Seconds of veined rock all round (a seam found). */
   seam?: number;
+  /** Days of delay for Calloway (a false trail, a lie she has to check). */
+  hunt?: number;
+  /** Days this system holds the Net out (a settlement helped, a relay broken). */
+  stall?: number;
+  /** Calloway's ship: she comes for a fight, or you run with her on your tail. */
+  calloway?: 'fight' | 'run';
 }
 
 /** What a choice asks to be possible. What it costs is in `cost`, and counts too. */
@@ -140,12 +165,13 @@ export interface Need {
   krail?: number;
   ore?: number;
   parts?: number;
+  food?: number;
 }
 
 /** What a choice takes: a number, the card's fee, all of it, or half of it. */
 export type Take = number | 'fee' | 'all' | 'half';
 /** What a choice takes whatever happens next (the fee is gone whether or not she honours it). */
-export interface Cost { chits?: Take; krail?: Take; ore?: Take; parts?: Take }
+export interface Cost { chits?: Take; krail?: Take; ore?: Take; parts?: Take; food?: Take }
 
 /** The chance a gamble comes off: a base, moved by heat, flags, systems and standing. */
 export interface Odds {
@@ -191,14 +217,16 @@ export interface CardDef {
   /** Who is speaking, and the card's title. */
   from: string;
   title: string;
-  /** What they say. Slots: {fee} {krail} {need} {short} {ore} {chits} {parts}. */
+  /** What they say. Slots: {fee} {krail} {need} {short} {ore} {chits} {parts} {food}. */
   text: string;
   /** Lines added when their condition holds: the same card reads differently with a full hold or a checkpoint ahead. */
   lines?: Array<{ if: Cond; text: string }>;
-  /** How it comes: by chance (the default), only as a follow-up, on the port's approach, or at the lane mouth. */
-  trigger?: 'chance' | 'follow' | 'port' | 'lane';
+  /** How it comes: by chance (the default), only as a follow-up, on the port's approach, at the lane mouth (a blockade's, or an open one: a toll), or with Calloway. */
+  trigger?: Trigger;
   when?: Cond;
   weight?: number;
+  /** Can come again in a later system (otherwise once a journey). */
+  repeat?: boolean;
   /** Who is on the channel, for the read (no ships: a voice on the radio). */
   ships?: Array<{ variant: string; n: number }>;
   cargo?: string;
@@ -286,6 +314,10 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.standing && (x.standing[c.standing[0]] ?? 0) < c.standing[1]) return false;
   if (c.place !== undefined && x.place !== c.place) return false;
   if (c.hostiles !== undefined && (x.hostiles > 0) !== c.hostiles) return false;
+  if (c.hungry !== undefined && x.food >= c.hungry) return false;
+  if (c.kind !== undefined && !list(c.kind).includes(x.kind)) return false;
+  if (c.netted !== undefined && x.netted !== c.netted) return false;
+  if (c.hunted !== undefined && !(x.behind <= c.hunted)) return false;
   return true;
 }
 
@@ -362,14 +394,14 @@ export function oddsFor(o: Odds, x: Ctx): number {
   return Math.min(0.95, Math.max(0.05, p));
 }
 
-const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'chits', krail: 'Krail', ore: 'ore', parts: 'parts' };
+const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'chits', krail: 'Krail', ore: 'ore', parts: 'parts', food: 'food' };
 
 const take = (a: Take, held: number, fee: number) => (a === 'fee' ? fee : a === 'all' ? held : a === 'half' ? Math.ceil(held / 2) : a);
 
 /** What a cost comes to, as numbers taken from the ship. */
 function costOf(c: Cost | undefined, x: Ctx, fee: number): Record<keyof Cost, number> {
-  const held = { chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts };
-  const out = { chits: 0, krail: 0, ore: 0, parts: 0 };
+  const held = { chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts, food: x.food };
+  const out = { chits: 0, krail: 0, ore: 0, parts: 0, food: 0 };
   for (const k of Object.keys(out) as Array<keyof Cost>) if (c?.[k] !== undefined) out[k] = take(c[k]!, held[k], fee);
   return out;
 }
@@ -384,9 +416,10 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number): Cho
     if (n.krail !== undefined && x.krail < n.krail) needs.push(`Needs ${n.krail} Krail`);
     if (n.ore !== undefined && x.ore < n.ore) needs.push(`Needs ${n.ore} ore`);
     if (n.parts !== undefined && x.parts < n.parts) needs.push(`Needs ${n.parts} parts`);
+    if (n.food !== undefined && x.food < n.food) needs.push(`Needs ${n.food} food`);
   }
   const cost = costOf(c.cost, x, fee);
-  const held = { chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts };
+  const held = { chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts, food: x.food };
   const costWords: string[] = [];
   for (const k of Object.keys(cost) as Array<keyof Cost>) {
     if (!c.cost || c.cost[k] === undefined) continue;
@@ -404,7 +437,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number): Cho
 export function cardText(def: CardDef, x: Ctx, fee: number): string {
   const slots: Record<string, string> = {
     fee: String(fee), krail: String(x.krail), need: String(x.need), short: String(Math.max(0, x.need - x.krail)),
-    ore: String(x.ore), chits: String(x.chits), parts: String(x.parts),
+    ore: String(x.ore), chits: String(x.chits), parts: String(x.parts), food: String(x.food),
   };
   const fill = (s: string) => s.replace(/\{(\w+)\}/g, (m, k: string) => slots[k] ?? m);
   const extra = (def.lines ?? []).filter((l) => condOk(l.if, x)).map((l) => fill(l.text));
@@ -462,7 +495,7 @@ export function resolve(o: Open, id: string, x: Ctx, rng: Rng): { choice: Choice
 }
 
 /** The next chance card: one the run has not seen, whose condition holds, by weight. */
-export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: 'chance' | 'port' | 'lane' = 'chance'): CardDef | null {
+export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: Exclude<Trigger, 'follow'> = 'chance'): CardDef | null {
   const pool = CARDS.filter((c) => (c.trigger ?? 'chance') === trigger && !seen.has(c.id) && condOk(c.when, x));
   if (!pool.length) return null;
   let roll = rng.next() * pool.reduce((a, c) => a + (c.weight ?? 1), 0);

@@ -1,8 +1,9 @@
 # Game design
 
-This describes the game as it plays today: the Breakout (M1 and M2 of
-[PLAN.md](PLAN.md)), and the arcade run it grew out of, which stays as a mode.
-See [VISION.md](VISION.md) for where it is going.
+This describes the game as it plays today: the journey (M1 to M3 of
+[PLAN.md](PLAN.md): the Breakout, the comms cards, the chart and the hunt),
+and the arcade run it grew out of, which stays as a mode. See
+[VISION.md](VISION.md) for where it is going.
 
 ## The Breakout
 
@@ -54,15 +55,90 @@ A sortie with a shape: get the stolen hauler out of the home system
 Balance: [BALANCE-BREAKOUT.md](BALANCE-BREAKOUT.md), from
 `npm run pilot:breakout`.
 
+## The journey
+
+The Breakout is the first sortie of a journey (`sim/journey.ts`), and the
+journey is the layer above the world: everything that lasts longer than one
+system. A journey crosses one region of about a dozen systems, from Cerro to
+the Threshold, the last lane the old charts know.
+
+- **Two steps, over and over.** A sortie (one system, flown in real time by
+  the world, as the Breakout is) and, on the far side of its lane, the chart
+  (`ui/chart.ts`), where you plot the next jump from the lanes out of where
+  you are. The journey hands the world a `SortieDef` and what the ship
+  carries (`Carry`); the world hands back a `SortieResult`.
+- **What carries over.** The build and the refit rail, the plates, the
+  tank, the hold, parts, chits, food, flags, standing, jobs not yet paid,
+  and the cards heard (a card comes once a journey unless it is marked
+  `repeat`). Pursuers, rock and capital ships do not: each system is new.
+- **The chart** (`sim/chart.ts`, `content/systems.ts`): six columns, Cerro
+  on the left, the Threshold on the right, two or three systems in each
+  column between, laid out from the journey's seed. Each system is a kind
+  (port, mining, transit, contested), a holder (Kellern, Frontier Supply,
+  the Dust Traders, the Gutter, nobody), a Krail richness, a food supply and
+  maybe a port with its own prices. Lanes run one column on, now and then
+  sideways; never back to Cerro. Every lane has a Krail cost (12 to 20)
+  and takes one or two days.
+- **Plotting.** The jump you plot sets the sortie's lane: the lane mouth
+  wants that lane's Krail. So the chart is where you decide how much
+  mining the next system will ask of you.
+- **What a system is like.** Its kind sets the lane's distance (transit is
+  short), the rock (mining systems are dense and veined), who flies there
+  besides the Custody (contested systems are half Gutter), how hard the
+  Custody already looks, how often people call, and whether there is a
+  port. A port's prices come from its holder.
+- **Days.** Every four minutes in a sortie is a day (`DAY`), and a lane
+  takes its days. The crew of three eat a unit of food a day each; the
+  drive wears two parts a jump. Short of food, the crew arrive weak; short
+  of parts, the hull takes the wear: a plate down either way. Food is sold
+  at ports (and by Drift traders), and the galley holds thirty.
+- **The Net** spreads from Cerro along the lanes, once you have left it, a
+  little every day, faster into systems with Krail to take (`spreadNet`).
+  A netted system has a blockade at its lane mouth (the checkpoint card),
+  starts a quarter hotter, heats faster, scans you at its port, marks its
+  prices up (Krail and food by 40%, less for ore) and gets fewer friendly
+  calls. Some answers stall it in a system for days (help a holdout, break
+  a survey relay). The chart shows the Net as it was when the news last
+  reached you (two jumps out, each arrival), or everywhere if you bought
+  news.
+- **Calloway** (`sim/hunt.ts`) follows the trail, the systems you flew in
+  order: she sets out when you leave Cerro, a day behind, crosses each lane
+  as long as it took you, then spends a third of a day asking questions
+  before she picks the trail up. So she gains only while you linger. When
+  she reaches your system she opens a channel (`calloway_here`): run for the
+  lane with her ship on your tail, dump the hold as a decoy, tell her the
+  file is out (she has to check), go dark (with deep scanners or Office
+  tech), or turn and fight (beaten, she loses four days to repairs). Lies,
+  false flight plans and friendly Drift fleets hold her up; failed lies
+  bring her closer. The chart shows where she was last seen: exactly when
+  she is a jump away or the news is fresh, otherwise as of the day you last
+  had it.
+- **Wrecks** are not the end. The hull goes, and the crew get her flying a
+  day later in the same system with the hold gone and half the Krail,
+  parts and chits. The third wreck ends the journey, and so does a wreck
+  with Calloway in the system (she takes you). In hardcore, the first.
+- **Through.** Reach the Threshold and the journey is over: into the
+  Scatter. The panel lists every system flown, how it ended, the Krail in
+  and out, and where Calloway caught up.
+- **The save** (`meta/save.ts`): versioned, in localStorage, written
+  whenever the chart is open and when you cast off from a port. Continue on
+  the start card starts the current system again with what the save
+  carries, or opens the chart if that is where you left off.
+
+Balance: [BALANCE-JOURNEY.md](BALANCE-JOURNEY.md), from
+`npm run pilot:journey`.
+
 ## Comms cards
 
 The Breakout's main interaction (`content/cards.ts`, `sim/comms.ts`,
 `World.answer`, `ui/comms.ts`). Someone opens a channel; the world waits
 (`phase: 'comms'`) while you read the card and answer. About thirty cards
 come by chance (the first at 24s, then every half minute or so, never in
-the middle of a fight, none twice in a run), one on the port's approach
-(the dock wants an implant scan), the checkpoint at the lane mouth, and six
-follow-ups that only come because of an earlier answer.
+the middle of a fight, none twice in a system, and the ones that tell a
+story once a journey), one on the port's approach (the dock wants an
+implant scan), the checkpoint at the lane mouth, and six follow-ups that
+only come because of an earlier answer. The journey adds ten more (see
+`calloway_here` to `false_trail` in `content/cards.ts`).
 
 - **Kinds.** Trade, plea, job, warning, shakedown, checkpoint, distress,
   rumour.
@@ -80,11 +156,19 @@ follow-ups that only come because of an earlier answer.
   shot). Choices that need a system, a flag or a standing are shown greyed
   out with what they need: the torpedo bay opens a bluff on a shakedown,
   forged codes open a spoof at the checkpoint.
-- **Outcomes.** Krail, ore, chits, parts, plates, heat, score, flags,
+- **Outcomes.** Krail, ore, chits, parts, food, plates, heat, score, flags,
   standing with six parties (the Custody, the Gutter, Frontier Supply, the
   Dust Traders, Kellern Mining, the miners), hulls that turn up, hulls
   that break off, the blockade (fight, run, pass), a follow-up card, a job,
-  a sold survey (veined rock all round for half a minute).
+  a sold survey (veined rock all round for half a minute), days of delay
+  for Calloway (`hunt`, negative brings her closer), days the system holds
+  the Net out (`stall`), and Calloway's ship (`calloway`: fight or run).
+- **Where.** A card can ask for a kind of system, a netted one or not,
+  Calloway within so many jumps, or a galley running low. Cerro's own
+  story (the foreman, the stowaways, the moon's port scan) asks for the
+  home system; the rest travel. Besides chance, follow-up, the port's
+  approach and the blockade, a card can come at an open lane mouth
+  (`toll`: the Lane Wardens) or with Calloway (`hunt`).
 - **Jobs** are paid where they say: at the port on docking (with the goods
   in the hold) or at the lane on the jump. The HUD lists them under the
   objective.
@@ -120,7 +204,9 @@ synergies → the hull goes → the run report → play again.
 The world pauses itself at each decision (`World.phase`: `refit`, `hail`,
 `comms`, `dock`, `over`), and the app or the scripted pilot answers it
 (`choose`, `answerHail`, `answer`, the port's calls, `restart`). Everything else is the existing fixed-step
-simulation.
+simulation. In a journey, `over` hands the sortie to the journey
+(`World.result`, `endSortie`), and the chart's answer (`plot`) starts the
+next one (`World.restart` with a `SortieDef` and the `Carry`).
 
 ## Where each system lives
 
@@ -136,6 +222,7 @@ simulation.
 | Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
 | Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
+| The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `meta/save.ts`, `ui/chart.ts` |
 | Score and the record | `sim/run.ts`, `sim/tuning.ts` | `World.addScore`, `World.finish` |
 | Between runs | `content/unlocks.ts` | `meta/profile.ts` (localStorage), `ui/panels.ts` |
 
@@ -164,6 +251,9 @@ simulation.
   hidden, and choices with a tone, a hint, `needs` and `cost`, `loseIf` or
   `odds`, and `win` (and `lose`) outcomes. A flag a choice needs gets words
   in `FLAGS`. The tests check every reference.
+- **A kind of system**: a row in `SYSTEMS` (`content/systems.ts`) and its
+  place in `COL_KINDS` (`sim/chart.ts`); a word and a colour in
+  `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`.
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 

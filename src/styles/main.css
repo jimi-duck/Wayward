@@ -615,15 +615,15 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .cm-side .need { color: var(--ink-3); white-space: normal; text-align: right; max-width: 26ch; }
 
 /* buttons: cut like everything else */
-#again, #launch, .ghost { --c: 10px; --edge: var(--hud); --fill: rgba(40, 14, 9, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+#again, #launch, #resume, #ch-go, .ghost { --c: 10px; --edge: var(--hud); --fill: rgba(40, 14, 9, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
   height: 44px; padding: 0 44px; font: 700 14px/1 var(--font-display); letter-spacing: .28em; text-transform: uppercase; color: var(--ink); }
-:is(#again, #launch, .ghost)::before, :is(#again, #launch, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
-:is(#again, #launch, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
+:is(#again, #launch, #resume, #ch-go, .ghost)::before, :is(#again, #launch, #resume, #ch-go, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
+:is(#again, #launch, #resume, #ch-go, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
   clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-:is(#again, #launch, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
+:is(#again, #launch, #resume, #ch-go, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
   clip-path: polygon(calc(var(--c) - .4px) 0, 100% 0, 100% calc(100% - var(--c) + .4px), calc(100% - var(--c) + .4px) 100%, 0 100%, 0 calc(var(--c) - .4px)); }
-:is(#again, #launch):hover, :is(#again, #launch):focus-visible { --fill: rgba(255, 90, 54, .3); }
-#again:focus-visible, #launch:focus-visible, .ghost:focus-visible, .zoomsel button:focus-visible, .mods button:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
+:is(#again, #launch, #resume, #ch-go):hover, :is(#again, #launch, #resume, #ch-go):focus-visible { --fill: rgba(255, 90, 54, .3); }
+#again:focus-visible, #launch:focus-visible, #resume:focus-visible, #ch-go:focus-visible, .ghost:focus-visible, .zoomsel button:focus-visible, .mods button:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
 .ghost { --c: 7px; --edge: var(--line); --fill: var(--glass); height: 30px; padding: 0 16px; font: 500 calc(var(--fs) * .9)/1 var(--font-mono); letter-spacing: .2em; }
 .ghost:hover { --edge: var(--hud); }
 
@@ -782,7 +782,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .keys-l dd { margin: 0; font: 500 9px/1 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
 .keys-l kbd { min-width: 19px; height: 19px; font-size: 9px; color: var(--ink); }
 .meta { margin: 0; font: 500 9px/1.4 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
-#launch { padding: 0 58px; height: 46px; font-size: 15px; letter-spacing: .3em; margin-top: 2px; }
+#launch, #resume { padding: 0 58px; height: 46px; font-size: 15px; letter-spacing: .3em; margin-top: 2px; }
 .hint-l { margin: 0; font: 500 9px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
 .tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(255, 179, 61, .07);
   font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
@@ -909,7 +909,7 @@ html.swipe #app * { overscroll-behavior: contain; }
   font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; }
 .vy-row b { font: 600 calc(var(--fs) * 1.35)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .vy-row .of { color: var(--ink-3); }
-.vy-cells { display: flex; gap: 14px; font: 500 calc(var(--fs) * .92)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.vy-cells { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 500 calc(var(--fs) * .92)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 .vy-cells b { margin-left: 6px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 .vy-cells .full { color: var(--amber); }
 .vy-row.heat { margin-top: 4px; }
@@ -968,7 +968,7 @@ html.swipe #app * { overscroll-behavior: contain; }
    tank) against the orange console; a threat card over the objective for the
    nearest pursuer; key hints under the log. */
 .plate { display: grid; gap: 3px; padding: 0 0 10px; border-bottom: 1px solid var(--line); text-shadow: 0 1px 6px #000; }
-.pl-n { font: 800 calc(var(--fs) * 2.6)/1 var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.plate .pl-n { font: 800 calc(var(--fs) * 2.6)/1 var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
 .pl-s, .pl-r { font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
 .pl-r { color: var(--ink-3); }
 .touch-ui .plate { display: none; }
@@ -993,3 +993,78 @@ html.swipe #app * { overscroll-behavior: contain; }
 #hints dd { margin: 0; }
 #hints.cutting div:first-child { color: var(--amber); }
 #hints.cutting div:first-child dt { border-color: var(--amber); color: var(--amber); }
+
+/* ── the journey: continue, and the chart ─────────────────────────────── */
+#resume[hidden], #ch-go[hidden] { display: none; }
+.resume-s { margin: 0; font: 500 9px/1.4 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
+.resume-s[hidden] { display: none; }
+.panel.chartp { width: min(1180px, 100%); overflow-y: auto; gap: 12px; }
+.ch-news { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font: 400 13px/1.35 var(--font-display); color: var(--ink); }
+.ch-news:empty { display: none; }
+.ch-news li { padding-left: 10px; border-left: 2px solid var(--amber); }
+.ch-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
+.ch-map { width: 100%; height: auto; max-height: 52vh; border: 1px solid var(--line); background:
+  radial-gradient(ellipse at 20% 50%, rgba(255, 90, 54, .05), transparent 60%), rgba(6, 7, 10, .6); }
+.ch-side { display: grid; gap: 10px; }
+.ch-list { display: grid; gap: 6px; }
+.ch-l { grid-template-columns: auto 1fr auto; row-gap: 4px; padding: 9px 14px; }
+.ch-l .pl-n { display: flex; align-items: baseline; gap: 2px; min-width: 0; }
+.ch-l .pl-n b { font: 600 calc(var(--fs) * 1.2)/1 var(--font-mono); letter-spacing: .12em; }
+.ch-kind { font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .12em; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-l .pl-note { grid-column: 2 / 3; justify-self: start; font-size: 12px; }
+.ch-l .pl-p { grid-row: 1 / 3; grid-column: 3; }
+.ch-l kbd { grid-row: 1 / 3; }
+.ch-l.net .pl-note { color: #ff8a93; }
+.ch-leg { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line);
+  font: 600 calc(var(--fs) * 1.05)/1.2 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+.ch-leg .pl-note { font: 400 12px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); justify-self: end; }
+.ch-leg.wreck b { color: var(--alert); }
+.ch-stat { display: grid; gap: 6px; }
+.ch-stat .port-stock { gap: 6px 16px; }
+.ch-stat .port-stock b { font-size: calc(var(--fs) * 1.25); margin-left: 6px; }
+.ch-hunt, .ch-netl { margin: 0; font: 500 calc(var(--fs) * .95)/1.35 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+.ch-hunt { color: #ff8a93; }
+.ch-netl { color: var(--ink-2); }
+.ch-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.ch-key i { display: inline-block; width: 9px; height: 9px; }
+.kc-net { border-radius: 50%; background: rgba(255, 46, 64, .25); border: 1px solid var(--alert); }
+.kc-cal { background: var(--alert); transform: rotate(45deg) scale(.8); }
+.kc-port { background: #5ad0e3; width: 6px !important; height: 6px !important; }
+/* the map */
+.ch-r { stroke: rgba(236, 230, 225, .14); stroke-width: 1.2; }
+.ch-r.live { stroke: rgba(255, 179, 61, .55); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.ch-r.sel { stroke: var(--amber); stroke-width: 2.4; stroke-dasharray: none; }
+.ch-trail { stroke: var(--ink-2); stroke-width: 2.4; stroke-linecap: round; opacity: .55; }
+.ch-cost { font: 600 10px var(--font-mono); fill: rgba(255, 179, 61, .75); }
+.ch-cost.sel { fill: var(--amber); font-size: 12px; }
+circle.ch-net { fill: rgba(255, 46, 64, .16); stroke: var(--alert); stroke-width: 1; }
+.ch-stall { fill: none; stroke: #7ee0a8; stroke-width: 1.2; stroke-dasharray: 2 3; }
+.ch-name { font: 500 9.5px var(--font-mono); letter-spacing: .06em; fill: var(--ink-2); text-transform: uppercase; }
+.ch-s.out .ch-name { fill: var(--ink); }
+.ch-s.sel .ch-name { fill: var(--amber); }
+.ch-num { font: 700 11px var(--font-mono); fill: var(--amber); }
+.ch-cal { fill: var(--alert); stroke: #160606; stroke-width: 1; }
+.ch-you { fill: var(--ink); }
+@media (max-width: 900px), (max-height: 520px) {
+  .ch-body { grid-template-columns: minmax(0, 1fr) minmax(260px, .9fr); gap: 10px; }
+  .ch-map { max-height: 60vh; }
+  .ch-l { padding: 6px 10px; }
+  .ch-l .pl-note { font-size: 11px; }
+  .ch-news { font-size: 12px; }
+  .chartp .pf { display: none; }
+}
+@media (max-width: 640px) and (min-height: 521px) {
+  .ch-body { grid-template-columns: 1fr; }
+}
+/* a phone on its side: three ways in on one row, and the port's five lines with room for Cast off */
+.launch-row { flex-wrap: wrap; justify-content: center; }
+@media (max-height: 520px) {
+  .launch-row { gap: 8px; }
+  .launch-row #launch, .launch-row #resume { height: 38px; padding: 0 20px; font-size: 12px; letter-spacing: .2em; white-space: nowrap; }
+  .launch-row #arcade { height: 38px; }
+  .port-list { gap: 5px; }
+  .port-l { padding: 7px 14px; font-size: calc(var(--fs) * 1.05); }
+  .port-l .pl-note { font-size: 12px; }
+  #port .pf { padding-top: 6px; }
+  #port-x { padding: 8px 18px; }
+}

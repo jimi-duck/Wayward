@@ -13,7 +13,8 @@
     "test": "vitest run",
     "check": "tsc --noEmit && vitest run",
     "pilot": "vitest run --config tools/vitest.config.ts tools/balance.pilot.ts",
-    "pilot:breakout": "vitest run --config tools/vitest.config.ts tools/breakout.pilot.ts"
+    "pilot:breakout": "vitest run --config tools/vitest.config.ts tools/breakout.pilot.ts",
+    "pilot:journey": "vitest run --config tools/vitest.config.ts tools/journey.pilot.ts"
   },
   "engines": {
     "node": ">=22"

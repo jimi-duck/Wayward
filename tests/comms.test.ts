@@ -13,7 +13,7 @@ const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seco
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
   t: 300, heat: 0.3, krail: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
-  levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, ...x,
+  levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, food: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
 /** A quiet Breakout: no rock, no pursuit, no chance cards unless asked. */
@@ -216,7 +216,7 @@ describe('comms in the Breakout', () => {
     w.answer('take');
     expect(w.jobs.length).toBe(1);
     const b = w.bk!;
-    w.ship.x = b.port.x; w.ship.z = b.port.z; w.ship.vx = w.ship.vz = 0;
+    w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
     w.ore = 5;
     run(w, 1.5);
     expect(w.phase).toBe('dock');
@@ -226,7 +226,7 @@ describe('comms in the Breakout', () => {
     w.ore = 20;
     w.ship.x += 40;
     run(w, 0.5);
-    w.ship.x = b.port.x; w.ship.vx = w.ship.vz = 0;
+    w.ship.x = b.port!.x; w.ship.vx = w.ship.vz = 0;
     run(w, 1.5);
     expect(w.jobs.length).toBe(0);
     expect(w.ore).toBe(5);

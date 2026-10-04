@@ -1,7 +1,7 @@
 import { angleDelta, clamp } from '../core/math';
 import type { Sector } from '../render/sector';
 import type { Boss } from '../sim/bosses';
-import { rockYield } from '../sim/breakout';
+import { places, rockYield } from '../sim/breakout';
 import { ENCOUNTERS } from '../sim/encounters';
 import { alienBonus, alienLabel, cloaked, type Alien } from '../sim/enemies';
 import { ROCK_KINDS, type Rock } from '../sim/field';
@@ -317,7 +317,7 @@ export class Targeting {
       }
       // the Breakout's two places, when they are in view
       if (world.bk) {
-        for (const wp of [world.bk.lane, world.bk.port]) {
+        for (const wp of places(world.bk)) {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
           if (d < 400) put(wp.x, 0.5, wp.z, 'm dia obj', `${wp.name} · ${range(d)}`);
         }
@@ -352,7 +352,8 @@ export class Targeting {
   private drawPointers(world: World, sector: Sector, live: boolean): void {
     const s = sector.shipNow;
     const bk = world.bk;
-    for (const wp of bk ? [bk.lane, bk.port] : []) {
+    if (bk && !bk.port) $('ptr-port').classList.remove('on');
+    for (const wp of bk ? places(bk) : []) {
       const id = wp.kind === 'lane' ? 'ptr-lane' : 'ptr-port';
       this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live ? { x: wp.x, y: 0.5, z: wp.z } : null,
         `${wp.name} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);

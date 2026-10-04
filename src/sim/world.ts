@@ -8,8 +8,8 @@ import {
 import { Command, type Strike, type Telegraph } from './bosses';
 import {
   BLOCKADE_AT, BLOCKADE_HP, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
-  PATCH_QUIET, PATCH_TIME, PRICE, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
-  ORE_XP, rockYield, type Breakout, type Mode,
+  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
+  ORE_XP, rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, commsGap, condOk, openCard, pickCard, refresh, resolve, type CardDef, type Ctx, type JobDef, type Open,
@@ -37,6 +37,7 @@ import {
   BREACH_GRACE, CELEBRATE, CHAIN_WINDOW, DYING, GRAZE, OC_GAIN, OC_MAX, OVERCHARGE_POINTS, PX, RARE_FIRST, REPAIR_CHANCE,
   REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult, xpFor,
 } from './tuning';
+import type { Prices } from '../content/systems';
 import { makeOffer, type Offer } from './offers';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
@@ -58,7 +59,9 @@ import {
 
 export type Phase = 'play' | 'refit' | 'hail' | 'comms' | 'dock' | 'over';
 /** What the port sells. */
-export type PortItem = 'krail' | 'plate' | 'refit';
+export type PortItem = 'krail' | 'plate' | 'refit' | 'food';
+/** Calloway's ship against an arcade run's first capital ship. */
+export const CALLOWAY_HP = 4;
 
 export interface WorldOptions {
   /** Upgrade, event and modifier ids opened by long-term progression. */
@@ -67,6 +70,9 @@ export interface WorldOptions {
   modifiers?: string[];
   /** The Breakout (a destination, a pursuit, the cutter and the hold) or the endless arcade run. Arcade unless asked. */
   mode?: Mode;
+  /** The system to fly, in the Breakout mode (Cerro unless given), and what the ship brings into it from the last. */
+  sortie?: SortieDef;
+  carry?: Carry | null;
 }
 
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
@@ -189,9 +195,25 @@ export class World implements EncounterHost {
   cardNext = COMMS_FIRST;
   portCalled = false;
   private cardsSeen = new Set<string>();
+  /** Cards heard earlier in the journey: the ones that come once do not come again. */
+  private heard = new Set<string>();
   private follows: Array<{ card: string; at: number }> = [];
   /** Seconds of a sold survey's veined rock left. */
   private seamT = 0;
+
+  // the journey: the system being flown, what came aboard with the ship, food, and what this sortie did to the hunt
+  sortie: SortieDef = HOME;
+  private carryIn: Carry | null = null;
+  food = 0;
+  /** Calloway: seconds into the sortie she arrives; whether she has, and whether her ship is the one fighting. */
+  callowayAt = Infinity;
+  callowayMet = false;
+  callowayBeaten = false;
+  private callowayShip = false;
+  /** Jumps she is behind, for the cards (Infinity: not on the trail yet). */
+  behind = Infinity;
+  huntDelay = 0;
+  stall = 0;
 
   constructor(seed = 47, opts: WorldOptions = {}) {
     useIds(this.ids);
@@ -207,6 +229,8 @@ export class World implements EncounterHost {
     this.field = new Field(this.rng);
     this.field.seed(0, 0);
     this.mode = opts.mode ?? 'arcade';
+    this.sortie = opts.sortie ?? HOME;
+    this.carryIn = opts.carry ?? null;
     this.run = newRun(seed, this.modifiers);
     this.begin();
   }
@@ -230,21 +254,79 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.seamT = 0;
-    if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; return; }
-    this.bk = newBreakout(this.ship.heading);
+    this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.huntDelay = 0; this.stall = 0;
+    if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity; return; }
+    const def = this.sortie;
+    this.bk = newBreakout(this.ship.heading, def);
+    this.callowayAt = def.calloway;
+    this.behind = def.behind;
+    this.heard = new Set();
     // the course is laid out from where the ship is now
     const b = this.bk, s = this.ship;
-    for (const w of [b.lane, b.port]) { w.x += s.x; w.z += s.z; }
+    for (const w of places(b)) { w.x += s.x; w.z += s.z; }
+    this.field.density = def.density;
     this.krail = START_KRAIL;
     this.ore = 0;
     this.holdMax = HOLD_START;
     this.parts = 0;
     this.chits = 0;
+    this.food = FOOD_START;
     // a few violet-veined rocks in the opening field: the first Krail is there to be cut
     let n = 0;
+    const most = Math.round(def.rich * 44);
     for (const r of this.field.rocks) {
-      if (r.size === 0 && this.rng.next() < 0.12 && n < 4) { r.kind = 'rich'; r.hp = r.maxHp = Math.round(r.maxHp * 1.6); n++; }
+      if (r.size === 0 && this.rng.next() < 0.12 && n < most) { r.kind = 'rich'; r.hp = r.maxHp = Math.round(r.maxHp * 1.6); n++; }
     }
+    if (this.carryIn) this.bringAboard(this.carryIn);
+  }
+
+  /** What the ship brings from the last system: the hold, the tank, the build and the rail, the plates, and what the comms set in motion. */
+  private bringAboard(c: Carry): void {
+    this.krail = Math.min(TANK_MAX, c.krail);
+    this.ore = Math.min(this.holdMax, c.ore);
+    this.parts = c.parts;
+    this.chits = c.chits;
+    this.food = Math.min(FOOD_MAX, c.food);
+    this.levels = { ...c.levels };
+    this.refreshStats();
+    this.plates = Math.max(1, Math.min(this.stats.maxPlates, c.plates));
+    this.xp = c.xp;
+    this.refit = c.refit;
+    this.xpNext = xpFor(c.refit);
+    this.techs = new Set(c.techs);
+    this.flags = new Set(c.flags);
+    this.standing = { ...c.standing };
+    this.jobs = c.jobs.map((j) => ({ ...j }));
+    this.heard = new Set(c.seen);
+  }
+
+  /** The cards that cannot come now: heard this sortie, or heard on the journey and not the kind that comes again. */
+  private blocked(): Set<string> {
+    const out = new Set(this.cardsSeen);
+    for (const id of this.heard) if (!CARD_BY_ID[id]?.repeat) out.add(id);
+    return out;
+  }
+
+  /** What the ship carries now, into the next system. */
+  carry(): Carry {
+    return {
+      krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
+      xp: this.xp, refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
+      seen: [...new Set([...this.heard, ...this.cardsSeen])],
+    };
+  }
+
+  /** The sortie, once it is over: what the journey needs to carry on. */
+  result(): SortieResult {
+    return {
+      ended: this.run.escaped ? 'jumped' : 'destroyed', time: this.runTime, carry: this.carry(), run: this.run,
+      calloway: this.callowayMet, callowayBeaten: this.callowayBeaten, huntDelay: this.huntDelay, stall: this.stall,
+    };
+  }
+
+  /** Krail the plotted jump takes (the Breakout's lane in Cerro). */
+  get jumpCost(): number {
+    return this.bk?.jumpCost ?? 0;
   }
 
   /** The clock the difficulty curve reads: run time in the arcade, heat in the Breakout. */
@@ -319,7 +401,7 @@ export class World implements EncounterHost {
     }
 
     // the sector
-    this.field.step(dt, s.x, s.z, this.bk ? { ...p, rich: 0.09 } : p);
+    this.field.step(dt, s.x, s.z, this.bk ? { ...p, rich: this.bk.def.rich } : p);
     if (t >= this.nextRare) {
       this.field.spawnRare(s.x, s.z, s.heading);
       this.nextRare = t + this.rng.range(70, 110) / st.rareRate;
@@ -375,9 +457,9 @@ export class World implements EncounterHost {
   /** Heat, the cutter, patching, the port and the lane mouth. */
   private stepBreakout(dt: number, cut: boolean): void {
     const b = this.bk!, s = this.ship;
-    b.heat = Math.min(1, b.heat + HEAT_RATE * dt);
+    b.heat = Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * dt);
     if (b.nagT > 0) b.nagT -= dt;
-    if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = 1; }
+    if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (this.holdNag > 0) this.holdNag -= dt;
     if (!this.alive || b.jumpT >= 0) return;
 
@@ -413,8 +495,8 @@ export class World implements EncounterHost {
       }
     } else this.patchT = 0;
 
-    // keep the two places clear: rock and bulwarks drift off them
-    for (const w of [b.port, b.lane]) {
+    // keep the places clear: rock and bulwarks drift off them
+    for (const w of places(b)) {
       const clear = w.kind === 'port' ? 30 : 24;
       for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
         const dx = o.x - w.x, dz = o.z - w.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
@@ -424,28 +506,41 @@ export class World implements EncounterHost {
 
     const speed = Math.hypot(s.vx, s.vz) / topSpeed(this.hull);
     // the port: slow inside its ring, and the clamps take you
-    const dp = Math.hypot(s.x - b.port.x, s.z - b.port.z);
-    if (dp < b.port.r && speed < 0.35 && this.command.state !== 'fight' && this.phase === 'play') {
+    const dp = b.port ? Math.hypot(s.x - b.port.x, s.z - b.port.z) : Infinity;
+    if (b.port && dp < b.port.r && speed < 0.35 && this.command.state !== 'fight' && this.phase === 'play') {
       if ((b.dockT += dt) >= DOCK_TIME) this.dock();
     } else b.dockT = Math.max(0, b.dockT - dt * 2);
 
-    // the blockade: a Custody capital ship holds the lane mouth, and her checkpoint is a comms card
+    // Calloway: once she reaches the system, she opens a channel, and the rest is up to you
+    if (!this.callowayMet && this.runTime >= this.callowayAt && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint') {
+      this.callowayMet = true;
+      const def = CARD_BY_ID.calloway_here;
+      if (def) return this.openComms(def);
+    }
+
+    // the lane mouth: a blockade's checkpoint is a comms card; an open lane may still have someone waiting
     const dl = Math.hypot(s.x - b.lane.x, s.z - b.lane.z);
     if (b.blockade === 'none' && dl < BLOCKADE_AT && this.command.state === 'idle' && this.phase === 'play') {
-      b.blockade = 'checkpoint';
-      this.openComms(CARD_BY_ID.checkpoint!);
+      if (b.def.blockade) {
+        b.blockade = 'checkpoint';
+        this.openComms(CARD_BY_ID.checkpoint!);
+      } else {
+        b.blockade = 'done';
+        const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll');
+        if (def) this.openComms(def);
+      }
     }
     if (b.blockade === 'called' && this.command.state === 'idle' && !this.command.boss) b.blockade = 'done';
 
     // the lane mouth: hold inside it with the Krail to jump while the drive spools
     if (dl < b.lane.r) {
-      if (this.krail >= JUMP_COST && this.phase === 'play') {
+      if (this.krail >= b.jumpCost && this.phase === 'play') {
         if (b.spool === 0) this.events.push({ type: 'spool' });
         b.spool += dt;
         if (b.spool >= b.spoolNeed) this.jump();
       } else if (b.nagT <= 0) {
         b.nagT = 6;
-        this.events.push({ type: 'needKrail', have: this.krail, need: JUMP_COST });
+        this.events.push({ type: 'needKrail', have: this.krail, need: b.jumpCost });
       }
     } else b.spool = Math.max(0, b.spool - dt * 2);
   }
@@ -457,7 +552,7 @@ export class World implements EncounterHost {
     if (cs === 'fight' || cs === 'inbound' || cs === 'hailing' || t < b.nextPursuit) return;
     const regular = this.aliens.filter((a) => !a.escort && !a.extra).length;
     if (regular < pursuitCap(b.heat)) {
-      const pick = pickPursuer(b.heat, this.rng);
+      const pick = pickPursuer(b.heat, this.rng, b.def.gutter);
       const v = VARIANTS[pick.variant]!;
       // behind: the bearing from the lane mouth back past the ship, spread a little
       const home = Math.atan2(-(s.z - b.lane.z), s.x - b.lane.x);
@@ -498,31 +593,38 @@ export class World implements EncounterHost {
     this.run.docked++;
     this.docked = true;
     this.phase = 'dock';
+    this.run.ports.push(b.port!.name);
     const s = this.ship;
     s.vx = s.vz = 0;
     if (!b.portCooled) { b.portCooled = true; b.heat = Math.max(0, b.heat - DOCK_COOL); }
     // the pickups in the tractor's reach come aboard with you
     for (const pk of [...this.pickups]) if (Math.hypot(pk.x - s.x, pk.z - s.z) < this.stats.tractor) { this.pickups.splice(this.pickups.indexOf(pk), 1); this.collect(pk); }
-    this.events.push({ type: 'docked', name: b.port.name });
+    this.events.push({ type: 'docked', name: b.port!.name });
     this.settleJobs('port');
   }
 
   /** At the port: sell the whole hold. Returns the chits it fetched. */
   sellOre(): number {
     if (this.phase !== 'dock' || this.ore <= 0) return 0;
-    const got = this.ore * PRICE.ore;
+    const got = this.ore * this.prices.ore;
     this.run.oreSold += this.ore;
     this.ore = 0;
     this.chits += got;
     return got;
   }
 
-  /** The price of a thing at the port, and whether it can be had now. */
+  /** What the port here charges (Cerro's prices outside a sortie). */
+  get prices(): Prices {
+    return this.bk?.prices ?? HOME.port!.prices;
+  }
+
+  /** Whether a thing can be had at the port now. */
   canBuy(item: PortItem): boolean {
     if (this.phase !== 'dock') return false;
-    if (this.chits < PRICE[item]) return false;
+    if (this.chits < this.prices[item]) return false;
     if (item === 'krail') return this.krail < TANK_MAX;
     if (item === 'plate') return this.plates < this.stats.maxPlates;
+    if (item === 'food') return this.food < FOOD_MAX;
     return true;
   }
 
@@ -530,8 +632,9 @@ export class World implements EncounterHost {
   buy(item: PortItem): boolean {
     useIds(this.ids);
     if (!this.canBuy(item)) return false;
-    this.chits -= PRICE[item];
+    this.chits -= this.prices[item];
     if (item === 'krail') this.krail++;
+    else if (item === 'food') this.food++;
     else if (item === 'plate') this.repair(1);
     else {
       this.pendingRefits++;
@@ -551,7 +654,7 @@ export class World implements EncounterHost {
   /** Into the lane: the drive takes the Krail and the ship is gone. */
   private jump(): void {
     const b = this.bk!, s = this.ship;
-    this.krail -= JUMP_COST;
+    this.krail -= b.jumpCost;
     this.settleJobs('lane');
     this.run.escaped = true;
     this.run.krailLeft = this.krail;
@@ -630,11 +733,12 @@ export class World implements EncounterHost {
   /** What a card can see of the ship and the run. */
   commsCtx(): Ctx {
     const b = this.bk, s = this.ship;
-    const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
+    const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
     return {
-      t: this.runTime, heat: b?.heat ?? 0, krail: this.krail, need: JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
+      t: this.runTime, heat: b?.heat ?? 0, krail: this.krail, need: b?.jumpCost ?? JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
       parts: this.parts, plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
+      food: this.food, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
     };
   }
 
@@ -648,17 +752,17 @@ export class World implements EncounterHost {
       const def = CARD_BY_ID[f!.card];
       if (def && !this.cardsSeen.has(def.id) && condOk(def.when, this.commsCtx())) return this.openComms(def);
     }
-    if (!this.portCalled && !this.docked && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
+    if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
       this.portCalled = true;
-      const def = pickCard(this.commsCtx(), this.cardsSeen, this.rng, 'port');
+      const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'port');
       if (def) return this.openComms(def);
     }
     if (t < this.cardNext) return;
     const x = this.commsCtx();
     // not in the middle of a fight, unless the card is about the fight
     if (x.hostiles > 1) { this.cardNext = t + 4; return; }
-    const def = pickCard(x, this.cardsSeen, this.rng);
-    this.cardNext = t + (def ? commsGap(b.heat, this.rng) : 10);
+    const def = pickCard(x, this.blocked(), this.rng);
+    this.cardNext = t + (def ? commsGap(b.heat, this.rng) * b.def.calls : 10);
     if (def) this.openComms(def);
   }
 
@@ -687,7 +791,7 @@ export class World implements EncounterHost {
     // a timed-out default the ship cannot afford falls to the first choice it can
     if (!res && timedOut) { const ok = o.choices.find((c) => c.ok); if (ok) res = resolve(o, ok.id, x, this.rng); }
     if (!res) return false;
-    this.krail -= res.cost.krail; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts;
+    this.krail -= res.cost.krail; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts; this.food -= res.cost.food;
     if (res.outcome.sell) this.chits += res.cost.ore * res.outcome.sell;
     this.comms = null;
     this.phase = 'play';
@@ -704,6 +808,9 @@ export class World implements EncounterHost {
     this.ore = Math.min(this.holdMax, Math.max(0, this.ore + amount(out.ore, this.ore, fee)));
     this.chits = Math.max(0, this.chits + amount(out.chits, this.chits, fee));
     this.parts = Math.max(0, this.parts + amount(out.parts, this.parts, fee));
+    this.food = Math.min(FOOD_MAX, Math.max(0, this.food + amount(out.food, this.food, fee)));
+    if (out.hunt) this.huntDelay += out.hunt;
+    if (out.stall) this.stall += out.stall;
     if (out.plates && out.plates > 0) this.repair(out.plates);
     if (out.score) this.addScore(out.score, 'events');
     if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
@@ -732,6 +839,12 @@ export class World implements EncounterHost {
         ids.push(this.spawnHostile(sp.variant, at, null, true).id);
       }
     }
+    if (b && out.calloway) {
+      // her ship comes in; running means the whole system with her, and her field on the drive
+      this.callowayShip = true;
+      this.command.summon(this.runTime, 'custody', CALLOWAY_HP, false, 'Calloway · CCV Patience');
+      if (out.calloway === 'run') { b.spoolNeed = Math.max(b.spoolNeed, SPOOL * SPOOL_RUN); b.heat = 1; b.nextPursuit = this.runTime; this.run.capitalsEvaded++; }
+    }
     if (b && out.blockade) {
       if (out.blockade === 'fight') { b.blockade = 'called'; this.command.summon(this.runTime, 'custody', BLOCKADE_HP, false); }
       else if (out.blockade === 'pass') b.blockade = 'done';
@@ -739,7 +852,7 @@ export class World implements EncounterHost {
         // running it: she and her wing come after you while her interdiction field drags on the drive,
         // and the whole system is on alert. Survive the spool and you are gone; nothing obliges you to kill her.
         b.blockade = 'done';
-        b.spoolNeed *= SPOOL_RUN;
+        b.spoolNeed = Math.max(b.spoolNeed, SPOOL * SPOOL_RUN);
         b.heat = 1;
         b.nextPursuit = this.runTime;
         this.run.capitalsEvaded++;
@@ -1532,6 +1645,7 @@ export class World implements EncounterHost {
     // the salvage: krail, a hull repair, a power-up, a refit card and the faction's tech
     this.dropCrystals(b.x, b.z, this.bk ? 22 : 26 + 8 * b.n, 12);
     if (this.bk) this.dropCrystals(b.x, b.z, 18, 10, 0, 0, 'parts');
+    if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
     this.dropItem(this.randomPower(), b.x, b.z);
     const fresh = !this.techs.has(b.faction);
@@ -1628,6 +1742,14 @@ export class World implements EncounterHost {
     if (opts.modifiers) { this.modifiers.length = 0; this.modifiers.push(...opts.modifiers.filter((m) => MODIFIERS[m])); }
     this.applyModifiers();
     this.field.rocks = this.field.rocks.filter((r) => Math.hypot(r.x - s.x, r.z - s.z) >= 18);
+    if (opts.sortie) {
+      // a new system: new rock all round
+      this.sortie = opts.sortie;
+      this.field.rocks = [];
+      this.field.bulwarks = [];
+      this.field.seed(s.x, s.z);
+    }
+    if (opts.carry !== undefined) this.carryIn = opts.carry;
     this.field.richBoost = 0;
     this.field.density = 1;
     this.aliens = []; this.shots = []; this.webs = []; this.pickups = []; this.bolts = []; this.torps = [];

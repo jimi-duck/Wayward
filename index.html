@@ -84,7 +84,7 @@
         </div>
         <!-- the Breakout: the tank (fuel for the jump), the hold, parts and chits, and how hard the Custody is looking -->
         <div id="voyage" aria-label="Fuel, hold and pursuit">
-          <div class="vy-cells"><span><span class="lbl">Hold</span><b id="vy-ore">0/40</b></span><span><span class="lbl">Parts</span><b id="vy-parts">0</b></span><span><span class="lbl">Chits</span><b id="vy-chits">0</b></span></div>
+          <div class="vy-cells"><span><span class="lbl">Hold</span><b id="vy-ore">0/40</b></span><span><span class="lbl">Parts</span><b id="vy-parts">0</b></span><span><span class="lbl">Chits</span><b id="vy-chits">0</b></span><span><span class="lbl">Food</span><b id="vy-food">0</b></span></div>
           <div class="vy-row heat"><span class="lbl">Hunt pressure</span><b id="vy-heat">Wanted Lv 1</b></div>
           <i class="ticks" id="vy-heat-t"></i>
         </div>
@@ -189,7 +189,8 @@
         </dl>
         <p class="meta only-touch">Left thumb: drag to fly · right thumb: hold to fire, hold Cut to mine · tap Core when it is full</p>
         <p class="brief" id="brief">The Custody are locking down the Kellern Mining yards on Cerro. Cut Krail out of the violet rock, reach the old lane mouth with enough in the tank to jump, and get out.</p>
-        <div class="launch-row"><button type="button" id="launch">Break out</button><button type="button" id="arcade" class="ghost">Arcade</button></div>
+        <div class="launch-row"><button type="button" id="resume" hidden>Continue</button><button type="button" id="launch">Break out</button><button type="button" id="arcade" class="ghost">Arcade</button></div>
+        <p class="resume-s" id="resume-s" hidden></p>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
         <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->
         <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
@@ -239,10 +240,23 @@
     <!-- The port: sell the hold, buy Krail, patch the hull, pay for a refit, cast off. -->
     <div id="port" class="sheet" role="dialog" aria-labelledby="port-t" hidden>
       <div class="panel narrow">
-        <header class="ph"><span class="kick">Docked</span><h2 id="port-t">Frontier Supply</h2><span class="sub">Refuel · repair · trade · no implant checks</span></header>
+        <header class="ph"><span class="kick">Docked</span><h2 id="port-t">Frontier Supply</h2><span class="sub" id="port-s">Refuel · repair · trade · no implant checks</span></header>
         <div class="port-stock" id="port-stock"></div>
         <div class="port-list" id="port-list"></div>
-        <footer class="pf"><span class="keys"><kbd>1</kbd>–<kbd>4</kbd> trade · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off</span><button type="button" id="port-x">Cast off</button></footer>
+        <footer class="pf"><span class="keys"><kbd>1</kbd>–<kbd>5</kbd> trade · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off</span><button type="button" id="port-x">Cast off</button></footer>
+      </div>
+    </div>
+
+    <!-- The chart: between systems, plot the next jump. Also adrift after a wreck, and a journey's end. -->
+    <div id="chart" class="sheet" role="dialog" aria-labelledby="ch-t" hidden>
+      <div class="panel wide chartp">
+        <header class="ph row"><div class="ph"><span class="kick" id="ch-k">The chart</span><h2 id="ch-t">Plot the next jump</h2><span class="sub" id="ch-s"></span></div><button type="button" id="ch-go" hidden>Fly on</button></header>
+        <ul id="ch-news" class="ch-news"></ul>
+        <div class="ch-body">
+          <svg id="ch-map" class="ch-map" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The region: systems, lanes, the Net and Calloway"></svg>
+          <div class="ch-side"><div id="ch-list" class="ch-list"></div><div id="ch-stat" class="ch-stat"></div></div>
+        </div>
+        <footer class="pf"><span class="keys"><kbd>1</kbd>–<kbd>5</kbd> plot a lane · arrows and <kbd>Enter</kbd> · pad <kbd>A</kbd></span><span class="ch-key"><i class="kc-net"></i>The Net <i class="kc-cal"></i>Calloway, last seen <i class="kc-port"></i>Port <span class="k">Numbers on lanes: Krail to jump</span></span></footer>
       </div>
     </div>
 

@@ -107,7 +107,7 @@ describe('the Breakout', () => {
     expect(Math.hypot(b.lane.x, b.lane.z)).toBeCloseTo(LANE_DIST, 0);
     // the ship starts facing up the screen (-Z): the lane is that way
     expect(b.lane.z).toBeLessThan(0);
-    expect(Math.hypot(b.port.x, b.port.z)).toBeLessThan(LANE_DIST * 0.6);
+    expect(Math.hypot(b.port!.x, b.port!.z)).toBeLessThan(LANE_DIST * 0.6);
     expect(w.krail).toBe(START_KRAIL);
     expect(b.heat).toBe(HEAT_START);
   });
@@ -145,7 +145,7 @@ describe('the Breakout', () => {
   it('docks when slow inside the port, sells the hold, sells Krail and plates, and casts off', () => {
     const w = quiet();
     const b = w.bk!;
-    w.ship.x = b.port.x; w.ship.z = b.port.z; w.ship.vx = w.ship.vz = 0;
+    w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
     w.ore = 30;
     w.plates = 1;
     run(w, 1.5);

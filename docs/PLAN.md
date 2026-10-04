@@ -108,7 +108,8 @@ Make it feel like WAYWARD before anything else changes.
 | M0 The rename | Done |
 | M1 The Breakout | First pass done: playable, tested, pilot-balanced (see below) |
 | M2 The comms card | First pass done: thirty cards and six follow-ups, the read, earned choices, the checkpoint, policy pilot (see below) |
-| M3 onwards | Not started |
+| M3 The chart and the hunt | First pass done: a seeded region of thirteen systems, lanes with Krail and day costs, food and wear, the Net, Calloway on the trail, wrecks that cost rather than end, the journey save, the chart panel, ten new cards, a journey pilot (see below) |
+| M4 onwards | Not started |
 
 ## From the concept boards
 
@@ -347,5 +348,23 @@ should multiply each other; expand combinations before adding combat.
    Open: combat is still over a third of the run; jobs pay too seldom to
    steer a route (half a job a run); the pilot never reads the intent
    estimate, so how much the read is worth is not yet measured.
-4. The slice's chart glimpse; playtest.
-5. M3 to M8 in order, each with its pilot report added to BALANCE.md.
+4. The slice's chart glimpse; playtest. Folded into M3: the chart after
+   the Breakout is the real one.
+5. M3 the chart and the hunt. First pass done: `content/systems.ts` (six
+   kinds of system), `sim/chart.ts` (the region, lanes, the Net and what
+   you know of it), `sim/hunt.ts` (Calloway on the trail), `sim/journey.ts`
+   (the persistent layer, `SortieDef` and `SortieResult`), `meta/save.ts`,
+   `ui/chart.ts`, the world flying any system, and ten cards for the road
+   (Calloway in the system and on the channel, the Lane Wardens at open
+   lanes, a netted port's scan, the dockmaster's news, Drift traders and a
+   Drift fleet, a holdout and a survey relay that stall the Net, a false
+   flight plan). Cerro's own cards stay in Cerro; generic ones repeat
+   across a journey, story ones come once.
+   Decisions taken on the recommended defaults: failure costs but rarely
+   ends it (adrift after a wreck; the third, or one with Calloway in the
+   system, ends it; hardcore ends at the first); the Net moves on a
+   schedule you can stall, and Calloway closes only when you linger; the
+   chart shows enough to plan, with the Net as of your last news, Krail
+   as a survey estimate until flown, and Calloway where last seen.
+   Where it stands: see BALANCE-JOURNEY.md.
+6. M4 to M8 in order, each with its pilot report.

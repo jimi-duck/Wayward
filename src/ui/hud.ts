@@ -1,11 +1,12 @@
 import { clamp } from '../core/math';
+import type { SystemKind } from '../content/systems';
 import type { Branch } from '../content/upgrades';
 import type { Sector } from '../render/sector';
 import type { Levels } from '../sim/build';
 import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
 import { ALIEN_TYPES, alienLabel, cloaked, FIRE_RANGE } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
-import { DOCK_TIME, JUMP_COST, LANE_DIST } from '../sim/breakout';
+import { DOCK_TIME } from '../sim/breakout';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
@@ -63,6 +64,10 @@ const ROWS: Array<{ id: string; branch: Branch }> = [
   { id: 'mn', branch: 'mine' },
 ];
 /** What the top-left label calls the sector while an event is on. */
+const KIND_NAME: Record<SystemKind, string> = {
+  home: 'Kellern yards', mining: 'Mining system', port: 'Port system', transit: 'Transit', contested: 'Contested', edge: 'The last lane',
+};
+
 const SECTOR_NAME: Record<EncounterId, string> = {
   rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
   derelict: 'Derelict hulk', anomaly: 'Spatial anomaly',
@@ -146,7 +151,7 @@ export class Hud {
         case 'jobShort': this.note(world, `Job open · ${e.text}`, 'hit'); break;
         case 'spool': this.banner('Lane mouth', 'Jump drive spooling', 'Hold inside the lane', 1.6, 'calm'); break;
         case 'needKrail': this.banner('Lane mouth', 'Not enough Krail', `${e.have} of ${e.need} in the tank`, 2.2, 'caution'); break;
-        case 'jumped': this.banner('Jump', 'Into the lane', 'Out of the home system', 2, 'calm'); break;
+        case 'jumped': this.banner('Jump', 'Into the lane', world.bk ? `Bound for ${world.bk.def.dest}` : 'Out of the system', 2, 'calm'); break;
         case 'pickup': this.note(world, `Hull repaired · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, `${POWER_LABEL[e.kind]}`, 'gain'); break;
         case 'plasmaDown': this.note(world, 'Plasma torpedo shot down'); break;
@@ -237,6 +242,14 @@ export class Hud {
       text($('sec-code'), `Sector ${10 + (world.seed % 89)}-${String(Math.floor(world.seed / 89) % 97).padStart(2, '0')}`);
     }
     const e = world.encounter;
+    if (world.bk) {
+      // a sortie: the system, and who holds it
+      const d = world.bk.def;
+      this.seed = -1;
+      text($('sec-code'), d.netted ? 'Netted · Custody control' : `${KIND_NAME[d.kind]}`);
+      text($('sec-name'), d.name);
+      return;
+    }
     text($('sec-name'), e && !e.done ? SECTOR_NAME[e.id] : 'Asteroid field');
   }
 
@@ -261,16 +274,19 @@ export class Hud {
     if (!b) { $('threat').classList.remove('on'); return; }
     const v = $('voyage');
     // the tank, in the systems panel: Krail toward the jump
-    const fuel = $('sys-fuel');
-    text($('v-fuel'), `${world.krail}/${JUMP_COST}`);
-    $('g-fuel').style.setProperty('--v', Math.min(1, world.krail / JUMP_COST).toFixed(2));
-    fuel.classList.toggle('ready', world.krail >= JUMP_COST);
-    text($('lv-fuel'), world.krail >= JUMP_COST ? 'Jump' : 'Tank');
+    const fuel = $('sys-fuel'), need = b.jumpCost;
+    text($('v-fuel'), `${world.krail}/${need}`);
+    $('g-fuel').style.setProperty('--v', Math.min(1, world.krail / need).toFixed(2));
+    fuel.classList.toggle('ready', world.krail >= need);
+    text($('lv-fuel'), world.krail >= need ? 'Jump' : 'Tank');
     const ore = $('vy-ore');
     text(ore, `${world.ore}/${world.holdMax}`);
     ore.classList.toggle('full', world.ore >= world.holdMax);
     text($('vy-parts'), String(world.parts));
     text($('vy-chits'), String(world.chits));
+    const food = $('vy-food');
+    text(food, String(world.food));
+    food.classList.toggle('full', world.food < 6);
     const heat = b.heat;
     text($('vy-heat'), `Wanted Lv ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}`);
     ticks($('vy-heat-t'), heat, 20, 'ceil');
@@ -287,7 +303,8 @@ export class Hud {
     for (const r of world.field.rocks) if (r.kind === 'rich' || r.kind === 'rare') trace = Math.min(trace, dist(r));
     const rows: Array<[string, number, string]> = [];
     if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
-    rows.push([b.port.name, dist(b.port), '#5ad0e3'], [b.lane.name, dist(b.lane), 'var(--amber)']);
+    if (b.port) rows.push([b.port.name, dist(b.port), '#5ad0e3']);
+    rows.push([b.lane.name, dist(b.lane), 'var(--amber)']);
     if (trace < Infinity) rows.push(['Krail trace', trace, 'var(--violet)']);
     const key = rows.map(([n, d]) => `${n}${Math.round(d / 10)}`).join();
     if (key !== this.contactKey) {
@@ -303,10 +320,10 @@ export class Hud {
     }
 
     // the objective, as steps
-    const docked = b.docks > 0, ready = world.krail >= JUMP_COST;
+    const docked = b.docks > 0, ready = world.krail >= b.jumpCost;
     const steps: Array<[string, 'done' | 'now' | '']> = [
-      [`Krail for the jump · <b>${world.krail}/${JUMP_COST}</b>`, ready ? 'done' : 'now'],
-      [`Dock at ${b.port.name}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`} (optional)`, docked ? 'done' : ''],
+      [`Krail for the jump to ${b.def.dest} · <b>${world.krail}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
+      ...(b.port ? [[`Dock at ${b.port.name}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`} (optional)`, docked ? 'done' : ''] as [string, 'done' | '']] : []),
       [`Reach the lane mouth · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
       // jobs taken on comms cards, paid where they say
       ...world.jobs.map((j): [string, ''] => [`Job · ${j.text}`, '']),
@@ -498,12 +515,12 @@ export class Hud {
         text($('obj-t'), 'Jump drive'); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
         ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), 'Spooling · hold inside the lane');
       } else if (bk.dockT > 0) {
-        text($('obj-t'), bk.port.name); text($('obj-left'), '');
+        text($('obj-t'), bk.port?.name ?? ''); text($('obj-left'), '');
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), 'Docking clamps');
       } else {
         text($('obj-t'), 'Make for the lane mouth'); text($('obj-left'), range(dl));
-        ticks($('obj-p'), 1 - dl / LANE_DIST, 30);
-        text($('obj-s'), world.krail >= JUMP_COST ? `Krail ${world.krail}/${JUMP_COST} · enough to jump` : `Krail ${world.krail}/${JUMP_COST} · cut the violet rock`);
+        ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
+        text($('obj-s'), world.krail >= bk.jumpCost ? `Krail ${world.krail}/${bk.jumpCost} · enough to jump` : `Krail ${world.krail}/${bk.jumpCost} · cut the violet rock`);
       }
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];

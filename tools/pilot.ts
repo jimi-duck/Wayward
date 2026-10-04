@@ -8,7 +8,7 @@ import { thrustPerStep, topSpeed, turnPerStep } from '../src/sim/ship';
 import { BASE } from '../src/sim/stats';
 import { OC_MAX, SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
-import { JUMP_COST, PATCH_COST, PRICE } from '../src/sim/breakout';
+import { PATCH_COST } from '../src/sim/breakout';
 import { CUT_RANGE } from '../src/sim/mining';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
@@ -248,8 +248,11 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   // the Breakout: the course. Port when the hold is nearly full or the hull wants patching and there is
   // money for it; the lane mouth once the tank holds the jump; drifting lane-ward meanwhile
   const bk = w.bk;
-  const need = !!bk && w.krail < JUMP_COST;
-  const goPort = !!bk && bk.docks === 0 && (w.ore >= w.holdMax * 0.8 || (w.plates < st.maxPlates && w.parts < PATCH_COST && (w.chits + w.ore * PRICE.ore) >= PRICE.plate));
+  const need = !!bk && w.krail < bk.jumpCost;
+  const pr = w.prices;
+  const hungry = !!bk && w.food < 9 && w.chits + w.ore * pr.ore >= pr.food * 6;
+  const goPort = !!bk && !!bk.port && bk.docks === 0
+    && (w.ore >= w.holdMax * 0.8 || hungry || (w.plates < st.maxPlates && w.parts < PATCH_COST && (w.chits + w.ore * pr.ore) >= pr.plate));
   const dest = bk ? (goPort ? bk.port : !need ? bk.lane : null) : null;
   if (bk) {
     const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;
@@ -433,6 +436,11 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
 /** Fly one run to the end (or maxTime) and report it. */
 export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): PilotResult {
   const w = new World(seed, { unlocked: o.unlocked ?? [], modifiers: o.modifiers ?? [], mode: o.breakout ? 'breakout' : 'arcade' });
+  return flyWorld(w, seed, strategy, o);
+}
+
+/** Fly a world already set up (a sortie of a journey) to the end, or maxTime. */
+export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOptions = {}): PilotResult {
   const maxTime = o.maxTime ?? 900;
   let r = seed * 9301 + 49297;
   const rngPick = () => ((r = (r * 9301 + 49297) % 233280) / 233280);
@@ -462,9 +470,10 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
       continue;
     }
     if (w.phase === 'dock') {
-      // the port: sell, top the tank up toward the jump, patch, and a refit if there is money left
+      // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, and a refit if there is money left
       w.sellOre();
-      while (w.krail < JUMP_COST && w.buy('krail'));
+      while (w.krail < w.jumpCost && w.buy('krail'));
+      while (w.food < 12 && w.buy('food'));
       while (w.plates < w.stats.maxPlates && w.buy('plate'));
       if (w.buy('refit')) continue;
       w.undock();

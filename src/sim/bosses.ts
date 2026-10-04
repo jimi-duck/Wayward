@@ -160,6 +160,7 @@ export class Command {
   /** Hull multiplier for the next summoned contact (the Breakout's blockade is no introduction). */
   private forcedHp = 1;
   private forcedHails = true;
+  private forcedName: string | null = null;
   private hpScale = 1;
   private last: Faction | null = null;
   private seen: Partial<Record<Faction, number>> = {};
@@ -171,9 +172,10 @@ export class Command {
   }
 
   /** Call a contact of this faction now (the Breakout's blockade). It can always be evaded. `hails` false: the decision was made on a comms card, and she simply comes. */
-  summon(t: number, faction: Faction, hp = 1, hails = true): void {
+  summon(t: number, faction: Faction, hp = 1, hails = true, name: string | null = null): void {
     if (this.state !== 'idle') return;
     this.forced = faction;
+    this.forcedName = name;
     this.forcedHp = hp;
     this.forcedHails = hails;
     this.next = t + BOSS_WARN;
@@ -280,7 +282,9 @@ export class Command {
       this.forced = null;
       this.hpScale = this.forcedHp;
       this.forcedHp = 1;
-      return { faction: f, name: def.names[(this.seen[f] ?? 0) % def.names.length]!, n: this.count, bounty: bossBounty(this.count, f), hails: this.forcedHails, canEvade: true, evadeGap: 0 };
+      const name = this.forcedName ?? def.names[(this.seen[f] ?? 0) % def.names.length]!;
+      this.forcedName = null;
+      return { faction: f, name, n: this.count, bounty: bossBounty(this.count, f), hails: this.forcedHails, canEvade: true, evadeGap: 0 };
     }
     // the first contact of a run is never the Office ambush (the original's rule)
     let pool = ORDER.filter((f) => FACTIONS[f].at <= t && f !== this.last && !(this.count === 0 && f === 'office'));

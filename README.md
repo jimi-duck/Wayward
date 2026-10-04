@@ -10,8 +10,11 @@ Continuance wants her, and you, back.
 
 Two ways in from the start screen:
 
-- **Break out** (milestone M1 of [the plan](docs/PLAN.md)): get out of the
-  home system. The old lane mouth is about a minute's flight away, flat out.
+- **Break out** (milestones M1 to M3 of [the plan](docs/PLAN.md)): a
+  journey across a region of about a dozen systems, from Cerro to the
+  Threshold, with the Continuance's **Net** spreading behind you and
+  **Prefect Calloway** following your trail. It starts with the Breakout,
+  getting out of the home system. The old lane mouth is about a minute's flight away, flat out.
   Reach it with 20 Krail in the tank and hold inside it while the drive
   spools. Krail is scarce: hold the **cutter** (3 or C) on violet-veined rock,
   easing off before it overheats, and it comes apart clean. Ordinary rock gives
@@ -26,6 +29,17 @@ Two ways in from the start screen:
   they really want, as good as your sensors), and choices that cost, gamble
   or need something you may not have. At the lane, her checkpoint: run it,
   spoof it, pay it, talk through it, or fight her.
+
+  On the far side of every lane, the **chart**: plot the next jump. Each
+  lane costs Krail (the lane mouth wants it) and days; the crew eat food
+  every day and the drive wears parts every jump. Systems differ: ports to
+  trade at, mining systems with rich rock, quick empty transits, contested
+  space full of Gutter crews. A netted system has a blockade at its lane
+  and dearer prices. Linger, and Calloway catches up: then it is a comms
+  card, not the end, though a wreck with her in the system is. A wreck
+  otherwise leaves you adrift, a day later, with the hold gone; the third
+  is the end. The journey is saved between systems and at every port:
+  **Continue** carries on.
 - **Arcade**: the endless run. The system starts quiet; every time the
   Krail gauge fills, **refit** (three cards, take one); hostiles arrive one
   at a time, then in pairs, squads and factions; from 3:30 capital ships
@@ -38,7 +52,9 @@ Two ways in from the start screen:
   [docs/DESIGN.md](docs/DESIGN.md).
 - The plan, the decisions behind it and the milestone list:
   [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-- The latest balance report from the scripted pilot: [docs/BALANCE.md](docs/BALANCE.md).
+- The latest balance reports from the scripted pilot: [docs/BALANCE.md](docs/BALANCE.md)
+  (the arcade), [docs/BALANCE-BREAKOUT.md](docs/BALANCE-BREAKOUT.md) and
+  [docs/BALANCE-JOURNEY.md](docs/BALANCE-JOURNEY.md).
 
 ## Run it
 
@@ -115,6 +131,7 @@ npm run build   # production build into dist/
 npm run preview # serve dist/ (also on the network)
 npm run pilot   # the scripted pilot's balance runs (a few minutes): writes docs/BALANCE.md
 npm run pilot:breakout  # the pilot through the Breakout: writes docs/BALANCE-BREAKOUT.md
+npm run pilot:journey   # whole journeys, chart and all: writes docs/BALANCE-JOURNEY.md
 ```
 
 `PILOT_RUNS` (default 12 per strategy) and `PILOT_TIME` (default 900s)

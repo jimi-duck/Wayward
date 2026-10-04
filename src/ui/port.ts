@@ -1,12 +1,13 @@
-import { JUMP_COST, PRICE, TANK_MAX } from '../sim/breakout';
+import { FOOD_MAX, TANK_MAX } from '../sim/breakout';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 
 // ── the port ──────────────────────────────────────────────────────────────
-// Docked at Frontier Supply: the world waits while you trade. Four things to
-// do and a way out: sell the hold, buy Krail a unit at a time, patch a
-// plate, pay for a refit (three cards there and then), cast off. The list
-// is redrawn after every trade, so every price and every "can't" is live.
+// Docked: the world waits while you trade. Five things to do and a way out:
+// sell the hold, buy Krail and food a unit at a time, patch a plate, pay for
+// a refit (three cards there and then), cast off. Every port sets its own
+// prices, and the Net marks them up. The list is redrawn after every trade,
+// so every price and every "can't" is live.
 
 type Line = { key: 'sell' | PortItem; label: string; price: string; note: string; ok: boolean };
 
@@ -31,14 +32,15 @@ export class PortPanel {
     this.onRefit = onRefit;
     this.opened = performance.now();
     this.sel = 0;
-    $('port-t').textContent = world.bk?.port.name ?? 'Port';
+    $('port-t').textContent = world.bk?.port?.name ?? 'Port';
+    $('port-s').textContent = world.bk?.def.netted ? 'Refuel · repair · trade · under Continuance order' : 'Refuel · repair · trade · no implant checks';
     const x = $('port-x');
     x.onclick = guarded(this.opened, () => this.leave());
     x.onpointerdown = (e) => e.stopPropagation();
     this.render();
     $('port').hidden = false;
     this.off = keys((e) => {
-      const n = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(e.code);
+      const n = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].indexOf(e.code);
       if (n >= 0) return this.act(n), true;
       if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Escape') return this.leave(), true;
       if (e.code === 'ArrowUp' || e.code === 'ArrowDown') { this.move(e.code === 'ArrowUp' ? -1 : 1); return true; }
@@ -100,15 +102,16 @@ export class PortPanel {
 
   private render(): void {
     const w = this.world!;
-    const need = Math.max(0, JUMP_COST - w.krail);
+    const P = w.prices, need = Math.max(0, w.jumpCost - w.krail);
     this.lines = [
-      { key: 'sell', label: 'Sell the hold', price: w.ore ? `+${w.ore * PRICE.ore}` : '—', note: `${w.ore} ore at ${PRICE.ore} chits`, ok: w.ore > 0 },
-      { key: 'krail', label: 'Buy Krail', price: `${PRICE.krail}`, note: w.krail >= TANK_MAX ? 'Tank full' : need ? `${need} short of the jump` : 'Enough to jump', ok: w.canBuy('krail') },
-      { key: 'plate', label: 'Patch a plate', price: `${PRICE.plate}`, note: w.plates >= w.stats.maxPlates ? 'Hull whole' : `Hull ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
-      { key: 'refit', label: 'Pay for a refit', price: `${PRICE.refit}`, note: 'Three cards, take one', ok: w.canBuy('refit') },
+      { key: 'sell', label: 'Sell the hold', price: w.ore ? `+${w.ore * P.ore}` : '—', note: `${w.ore} ore at ${P.ore} chits`, ok: w.ore > 0 },
+      { key: 'krail', label: 'Buy Krail', price: `${P.krail}`, note: w.krail >= TANK_MAX ? 'Tank full' : need ? `${need} short of the jump` : 'Enough to jump', ok: w.canBuy('krail') },
+      { key: 'food', label: 'Buy food', price: `${P.food}`, note: w.food >= FOOD_MAX ? 'Galley full' : `${w.food} in the galley · the crew eat 3 a day`, ok: w.canBuy('food') },
+      { key: 'plate', label: 'Patch a plate', price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? 'Hull whole' : `Hull ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
+      { key: 'refit', label: 'Pay for a refit', price: `${P.refit}`, note: 'Three cards, take one', ok: w.canBuy('refit') },
     ];
     $('port-stock').replaceChildren(
-      ...[['Chits', String(w.chits)], ['Tank', `${w.krail}/${JUMP_COST}`], ['Hold', `${w.ore}/${w.holdMax}`], ['Hull', `${w.plates}/${w.stats.maxPlates}`]]
+      ...[['Chits', String(w.chits)], ['Tank', `${w.krail}/${w.jumpCost}`], ['Food', String(w.food)], ['Hold', `${w.ore}/${w.holdMax}`], ['Hull', `${w.plates}/${w.stats.maxPlates}`]]
         .map(([k, v]) => h('span', '', '', h('span', 'k', k!), h('b', '', v!))),
     );
     $('port-list').replaceChildren(...this.lines.map((l, i) => {

@@ -1,5 +1,9 @@
 import { clamp, lerp } from '../core/math';
+import { BASE_PRICES, type Prices, type SystemKind } from '../content/systems';
+import type { Levels } from './build';
+import type { JobDef, Standing } from './comms';
 import type { RockKind, RockSize } from './field';
+import type { RunStats } from './run';
 import type { Rng } from './rng';
 
 // ── the Breakout ──────────────────────────────────────────────────────────
@@ -72,8 +76,8 @@ export const DOCK_TIME = 1;
 /** Docking quiets the pursuit by this much, once per port. */
 export const DOCK_COOL = 0.2;
 
-/** The port's prices, in chits. */
-export const PRICE = { ore: 2, krail: 5, plate: 30, refit: 60 } as const;
+/** Cerro's port's prices, in chits (other ports set their own: SortieDef.port). */
+export const PRICE = BASE_PRICES;
 
 // ── heat ──────────────────────────────────────────────────────────────────
 export const HEAT_START = 0.1;
@@ -93,6 +97,90 @@ export const pursuitInterval = (heat: number) => lerp(38, 10, clamp(heat, 0, 1))
 export const pursuitCap = (heat: number) => Math.round(lerp(1, 3, clamp(heat, 0, 1)));
 export const pursuitElite = (heat: number) => clamp((heat - 0.7) * 0.6, 0, 0.2);
 
+// ── a sortie ──────────────────────────────────────────────────────────────
+// One system, flown in real time: what the journey (sim/journey.ts) hands
+// the world when the Wayward arrives somewhere. The Breakout is the first
+// sortie, in Cerro; an unconfigured Breakout world flies HOME.
+
+export interface SortieDef {
+  /** The chart's id for the system, its name and kind. */
+  system: string;
+  name: string;
+  kind: SystemKind;
+  /** Where the plotted lane goes, and the Krail it takes to jump. */
+  dest: string;
+  jumpCost: number;
+  /** Distance to the lane mouth. */
+  lane: number;
+  /** The port, if there is one: its name and today's prices. */
+  port: { name: string; prices: Prices } | null;
+  /** Heat at arrival, and a multiplier on how fast it climbs. */
+  heat: number;
+  heatRate: number;
+  /** The rock: veined share and density. */
+  rich: number;
+  density: number;
+  /** Of the pursuit, the share that is Gutter crews from ahead. */
+  gutter: number;
+  /** A multiplier on the gap between chance calls. */
+  calls: number;
+  /** A Custody blockade holds the lane mouth (Cerro, and every netted system). */
+  blockade: boolean;
+  netted: boolean;
+  /** Seconds into the sortie that Calloway arrives (Infinity: not in this sortie), and jumps she is behind at arrival. */
+  calloway: number;
+  behind: number;
+  /** The Breakout's opening: veined rock round the start, the yards behind you. */
+  home: boolean;
+}
+
+export const HOME: SortieDef = {
+  system: 'home', name: 'Cerro', kind: 'home', dest: 'the Scatter', jumpCost: 20, lane: 2600, port: { name: 'Frontier Supply', prices: BASE_PRICES },
+  heat: 0.1, heatRate: 1, rich: 0.09, density: 1, gutter: 0.22, calls: 1, blockade: true, netted: true, calloway: Infinity, behind: Infinity, home: true,
+};
+
+/** What the Wayward carries from one sortie into the next. */
+export interface Carry {
+  krail: number;
+  ore: number;
+  parts: number;
+  chits: number;
+  food: number;
+  /** Plates whole (never more than the build allows). */
+  plates: number;
+  levels: Levels;
+  /** The refit rail. */
+  xp: number;
+  refit: number;
+  /** Factions whose tech has been salvaged. */
+  techs: string[];
+  flags: string[];
+  standing: Partial<Record<Standing, number>>;
+  jobs: JobDef[];
+  /** Cards already heard on this journey (the ones that come once). */
+  seen: string[];
+}
+
+/** What a sortie hands back to the journey. */
+export interface SortieResult {
+  /** Out through the lane, or the hull went. */
+  ended: 'jumped' | 'destroyed';
+  /** Seconds flown. */
+  time: number;
+  carry: Carry;
+  run: RunStats;
+  /** Calloway came for you here, and whether her ship was beaten. */
+  calloway: boolean;
+  callowayBeaten: boolean;
+  /** Days of delay the sortie's choices put on her, and days this system now holds the Net out. */
+  huntDelay: number;
+  stall: number;
+}
+
+/** Food: what the galley holds at most, and at the start. */
+export const FOOD_MAX = 30;
+export const FOOD_START = 12;
+
 /** The pursuers, by the heat they need. Gutter crews work the belt ahead and do not care who you are. */
 const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [
   { variant: 'picket', from: 0, weight: 3 },
@@ -103,8 +191,8 @@ const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [
 const GUTTER = ['scout', 'scout', 'raptor'];
 
 /** Which hull comes next, and whether it is Custody from behind or a Gutter crew from ahead. */
-export function pickPursuer(heat: number, rng: Rng): { variant: string; ahead: boolean } {
-  if (heat < 0.6 && rng.next() < 0.22) return { variant: GUTTER[rng.int(GUTTER.length)]!, ahead: true };
+export function pickPursuer(heat: number, rng: Rng, gutter = 0.22): { variant: string; ahead: boolean } {
+  if (heat < 0.6 && rng.next() < gutter) return { variant: GUTTER[rng.int(GUTTER.length)]!, ahead: true };
   const pool = PURSUERS.filter((p) => p.from <= heat);
   let roll = rng.next() * pool.reduce((a, p) => a + p.weight, 0);
   for (const p of pool) if ((roll -= p.weight) <= 0) return { variant: p.variant, ahead: false };
@@ -140,19 +228,28 @@ export function rockYield(kind: RockKind, size: RockSize, clean: boolean): Yield
 
 // ── the course ────────────────────────────────────────────────────────────
 
-/** The Breakout's two places, laid out from the start along the ship's heading. */
-export function course(heading: number, x = 0, z = 0): { lane: Waypoint; port: Waypoint } {
+/** A sortie's places, laid out from the start along the ship's heading: the lane mouth ahead, the port (if any) off the line about halfway. */
+export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { lane: Waypoint; port: Waypoint | null } {
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
+  const along = def.lane * (PORT_ALONG / LANE_DIST);
   return {
-    lane: { kind: 'lane', name: 'Lane mouth', x: x + fx * LANE_DIST, z: z + fz * LANE_DIST, r: LANE_R },
-    port: { kind: 'port', name: 'Frontier Supply', x: x + fx * PORT_ALONG + rx * PORT_OFF, z: z + fz * PORT_ALONG + rz * PORT_OFF, r: PORT_R },
+    lane: { kind: 'lane', name: 'Lane mouth', x: x + fx * def.lane, z: z + fz * def.lane, r: LANE_R },
+    port: def.port ? { kind: 'port', name: def.port.name, x: x + fx * along + rx * PORT_OFF, z: z + fz * along + rz * PORT_OFF, r: PORT_R } : null,
   };
 }
 
+/** The places in a sortie: the lane mouth, and the port if there is one. */
+export const places = (b: Breakout): Waypoint[] => (b.port ? [b.lane, b.port] : [b.lane]);
+
 /** The Breakout's state while it runs. */
 export interface Breakout {
+  def: SortieDef;
   lane: Waypoint;
-  port: Waypoint;
+  port: Waypoint | null;
+  /** Krail the plotted jump takes. */
+  jumpCost: number;
+  /** The port's prices today. */
+  prices: Prices;
   heat: number;
   nextPursuit: number;
   /** Seconds the drive has spooled inside the lane mouth, and the seconds it needs. */
@@ -172,10 +269,10 @@ export interface Breakout {
   nagT: number;
 }
 
-export function newBreakout(heading: number): Breakout {
-  const c = course(heading);
+export function newBreakout(heading: number, def: SortieDef = HOME): Breakout {
+  const c = course(heading, 0, 0, def);
   return {
-    lane: c.lane, port: c.port, heat: HEAT_START, nextPursuit: PURSUIT_FIRST, spool: 0, spoolNeed: SPOOL, dockT: 0, portCooled: false, docks: 0,
+    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: PURSUIT_FIRST, spool: 0, spoolNeed: SPOOL, dockT: 0, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }

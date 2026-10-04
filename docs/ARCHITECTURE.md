@@ -44,11 +44,11 @@ input ──InputFrame──▶ sim (fixed 60Hz) ──state──▶ render (ev
 src/
   core/      loop (fixed step, interpolation, freeze, clamp), math
   input/     keyboard, touch stick, gamepad → one InputFrame per step
-  content/   data: the hull, the upgrades, long-term unlocks and modifiers
-  sim/       game state and rules (never imports Three.js)
-  meta/      the profile between runs (localStorage)
+  content/   data: the hull, the upgrades, comms cards, system kinds, long-term unlocks and modifiers
+  sim/       game state and rules (never imports Three.js): the world (one system), the journey above it
+  meta/      the profile between runs, and the journey save (localStorage)
   render/    renderer, quality governor, scene
-  ui/        DOM overlays: HUD, the refit cards, panels (hail, report, logbook), debug
+  ui/        DOM overlays: HUD, the refit cards, panels (comms, port, chart, report, logbook), debug
   styles/    CSS, tokens carried over from the original
 tests/       unit tests (Vitest)
 tools/       the scripted pilot and the balance report (npm run pilot)
@@ -307,3 +307,29 @@ docs and the brand moved together:
 `meta/profile.ts` `migrate` carries old profiles across (Krail totals and
 the capital-ship tally by faction); the storage key keeps the old name so
 nothing is lost.
+
+## The journey (M3 of [PLAN.md](PLAN.md))
+
+`World` was the whole game; now it is one system. Above it:
+
+- `sim/journey.ts`: the persistent state (the ship's `Carry`, the day, the
+  trail, wrecks) and the loop: `sortieDef` builds the `SortieDef` the world
+  flies, `endSortie` folds the world's `SortieResult` back in (days pass,
+  the Net spreads, Calloway moves, the lane eats food and parts), and
+  `plot` takes the chart's answer.
+- `sim/chart.ts`: the region laid out from a seed and `content/systems.ts`;
+  lanes, the Net (`spreadNet`, stalls, marked-up prices), and what you know
+  of it (`arrive`, `seenNet`, the survey's Krail estimate).
+- `sim/hunt.ts`: Calloway on the trail; `daysUntil` is what turns lingering
+  into her arrival time inside the next sortie.
+- `meta/save.ts`: the journey in localStorage, versioned, with `migrate`.
+- `ui/chart.ts`: the chart panel (an SVG map and the lanes out), which also
+  shows a wreck's notice and the journey's end.
+
+The world reads a `SortieDef` instead of the Breakout's constants (lane
+distance, the port or none, prices, heat, rock, the Gutter's share, the
+blockade, Calloway's arrival), takes a `Carry` in `restart`, and gives
+`carry()` and `result()` back. The Breakout is the `HOME` sortie, so an
+unconfigured Breakout world plays exactly as before. The journey never
+imports the world either: the app (and `tools/journey.pilot.ts`) moves the
+two between each other.
