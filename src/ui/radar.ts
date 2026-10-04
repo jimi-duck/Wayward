@@ -4,6 +4,7 @@ import { ALIEN_TYPES, cloaked, FIRE_RANGE } from '../sim/enemies';
 import { places } from '../sim/breakout';
 import { LOOSE } from '../sim/pickups';
 import type { World } from '../sim/world';
+import { FONT, INK, RGB, rgba } from './palette';
 
 // ── the sensor scope ──────────────────────────────────────────────────────
 // Ship-up, so left on the scope is left on the screen. Inside the scope:
@@ -22,7 +23,7 @@ const BEZEL = 15;
 const ARCS = 24;
 
 const ROCK_DOT: Record<string, string> = {
-  basalt: 'rgba(236,230,225,.34)', iron: 'rgba(160,172,190,.55)', rich: 'rgba(199,125,255,.9)', volatile: 'rgba(255,90,60,.85)', rare: '#ffc95a',
+  basalt: 'rgba(236,230,225,.34)', iron: 'rgba(160,172,190,.55)', rich: INK.krail, volatile: 'rgba(255,90,60,.85)', rare: INK.amberHi,
 };
 
 export class Radar {
@@ -57,7 +58,7 @@ export class Radar {
       if (out) { px *= pin / d; py *= pin / d; }
       return [C + px, C + py, out];
     };
-    const HUD = '255,90,54';
+    const HUD = RGB.teal;
     g.clearRect(0, 0, W, W);
 
     // ── the bezel: compass ticks that turn with the ship, N/E/S/W, the threat ring
@@ -74,7 +75,7 @@ export class Radar {
       g.lineWidth = (big ? 1.4 : 1) * dpr;
       g.beginPath(); g.moveTo(Math.cos(a) * r0, Math.sin(a) * r0); g.lineTo(Math.cos(a) * r1, Math.sin(a) * r1); g.stroke();
     }
-    g.font = `600 ${7.5 * dpr}px "Martian Mono", ui-monospace, monospace`;
+    g.font = `${8.5 * dpr}px ${FONT.mono}`;
     g.textAlign = 'center'; g.textBaseline = 'middle';
     for (const [label, bearing] of [['N', Math.PI / 2], ['E', 0], ['S', -Math.PI / 2], ['W', Math.PI]] as const) {
       const a = at(bearing) - Math.PI / 2, r = Rb - 6 * dpr;
@@ -103,16 +104,16 @@ export class Radar {
     for (let i = 0; i < ARCS; i++) {
       const v = this.threat[i]!;
       const a = (i / ARCS) * Math.PI * 2 - Math.PI / 2, half = Math.PI / ARCS - 0.03;
-      g.strokeStyle = v > 0 ? `rgba(${HUD},${0.35 + v * 0.6})` : 'rgba(236,230,225,.07)';
+      g.strokeStyle = v > 0 ? rgba(RGB.red, 0.35 + v * 0.6) : 'rgba(236,230,225,.07)';
       g.beginPath(); g.arc(0, 0, Rb + 9.5 * dpr, a - half, a + half); g.stroke();
     }
-    // the Breakout's two places, always: a diamond on the ring along each one's bearing (amber the lane, cyan the port)
+    // the Breakout's two places, always: a diamond on the ring along each one's bearing (amber the lane, teal the port)
     const bk = world.bk;
     if (bk) {
       for (const wp of places(bk)) {
         const a = at(Math.atan2(-(wp.z - s.z), wp.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 4 * dpr;
         g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(Math.PI / 4);
-        g.fillStyle = wp.kind === 'lane' ? '#ffb33d' : '#5ad0e3';
+        g.fillStyle = wp.kind === 'lane' ? INK.amber : INK.teal;
         g.fillRect(-sz / 2, -sz / 2, sz, sz);
         g.restore();
       }
@@ -126,9 +127,9 @@ export class Radar {
     g.save();
     g.beginPath(); g.arc(C, C, R, 0, Math.PI * 2); g.clip();
     const bg = g.createRadialGradient(C, C, 0, C, C, R);
-    bg.addColorStop(0, 'rgba(20,22,26,.72)'); bg.addColorStop(1, 'rgba(8,9,12,.8)');
+    bg.addColorStop(0, 'rgba(14,24,25,.72)'); bg.addColorStop(1, 'rgba(8,13,14,.82)');
     g.fillStyle = bg; g.fillRect(0, 0, W, W);
-    g.strokeStyle = 'rgba(236,230,225,.08)'; g.lineWidth = dpr;
+    g.strokeStyle = rgba(RGB.teal, 0.14); g.lineWidth = dpr;
     for (const f of [1 / 3, 2 / 3]) { g.beginPath(); g.arc(C, C, R * f, 0, Math.PI * 2); g.stroke(); }
     g.beginPath(); g.moveTo(C, C - R); g.lineTo(C, C + R); g.moveTo(C - R, C); g.lineTo(C + R, C); g.stroke();
 
@@ -156,7 +157,7 @@ export class Radar {
     for (const p of world.pickups) {
       if (!LOOSE.has(p.kind)) continue;
       const [x, y, out] = to(p.x, p.z);
-      g.fillStyle = p.kind === 'crystal' ? 'rgba(199,125,255,.9)' : p.kind === 'ore' ? 'rgba(236,200,160,.8)' : 'rgba(90,208,227,.8)';
+      g.fillStyle = p.kind === 'crystal' ? INK.krail : p.kind === 'ore' ? 'rgba(236,200,160,.8)' : rgba(RGB.teal, 0.8);
       if (!out) g.fillRect(x - 0.8 * dpr, y - 0.8 * dpr, 1.6 * dpr, 1.6 * dpr);
     }
     // the port and the lane mouth, when they are in the scope's reach
@@ -164,28 +165,28 @@ export class Radar {
       for (const wp of places(bk)) {
         const [x, y, out] = to(wp.x, wp.z);
         if (out) continue;
-        g.strokeStyle = wp.kind === 'lane' ? '#ffb33d' : '#5ad0e3'; g.lineWidth = 1.5 * dpr;
+        g.strokeStyle = wp.kind === 'lane' ? INK.amber : INK.teal; g.lineWidth = 1.5 * dpr;
         g.beginPath(); g.moveTo(x, y - 5 * dpr); g.lineTo(x + 5 * dpr, y); g.lineTo(x, y + 5 * dpr); g.lineTo(x - 5 * dpr, y); g.closePath(); g.stroke();
         g.beginPath(); g.arc(x, y, Math.max(3 * dpr, wp.r * k), 0, Math.PI * 2); g.stroke();
       }
     }
-    g.fillStyle = `rgba(${HUD},.16)`;
+    g.fillStyle = rgba(RGB.red, 0.16);
     for (const w of world.webs) { const [x, y] = to(w.x, w.z); g.beginPath(); g.arc(x, y, w.r * k, 0, Math.PI * 2); g.fill(); }
-    g.strokeStyle = 'rgba(255,179,61,.6)'; g.lineWidth = dpr;
+    g.strokeStyle = rgba(RGB.red, 0.6); g.lineWidth = dpr;
     for (const st of world.strikes) {
       const [x, y, out] = to(st.x, st.z);
       if (!out) { g.beginPath(); g.arc(x, y, Math.max(2 * dpr, st.r * k), 0, Math.PI * 2); g.stroke(); }
     }
-    g.fillStyle = 'rgba(90,208,227,.8)';
+    g.fillStyle = rgba(RGB.amber, 0.85);
     for (const m of world.sys.mines) { const [x, y, out] = to(m.x, m.z); if (!out) g.fillRect(x - dpr, y - dpr, 2 * dpr, 2 * dpr); }
 
     // the objective: a diamond, and the circle that matters
     const e = world.encounter;
     if (e && !e.done && e.r > 0) {
       const [x, y] = to(e.x, e.z);
-      g.strokeStyle = '#ffb33d'; g.lineWidth = 1.5 * dpr;
+      g.strokeStyle = INK.amber; g.lineWidth = 1.5 * dpr;
       g.beginPath(); g.moveTo(x, y - 5 * dpr); g.lineTo(x + 5 * dpr, y); g.lineTo(x, y + 5 * dpr); g.lineTo(x - 5 * dpr, y); g.closePath(); g.stroke();
-      g.strokeStyle = 'rgba(255,179,61,.35)'; g.lineWidth = dpr;
+      g.strokeStyle = rgba(RGB.amber, 0.35); g.lineWidth = dpr;
       g.beginPath(); g.arc(x, y, e.r * k, 0, Math.PI * 2); g.stroke();
     }
 
@@ -193,20 +194,20 @@ export class Radar {
     for (const a of world.aliens) {
       if (cloaked(a)) continue;
       const [x, y, out] = to(a.x, a.z);
-      g.fillStyle = out ? `rgba(${HUD},.5)` : a.elite ? '#ffb33d' : a.kind === 'freighter' ? '#e8a050' : `rgb(${HUD})`;
+      g.fillStyle = out ? rgba(RGB.red, 0.5) : a.elite ? '#f08a7e' : a.kind === 'freighter' ? INK.white2 : INK.red;
       g.save(); g.translate(x, y); g.rotate(-(a.face - h));
       const role = ALIEN_TYPES[a.kind].role;
       const sz = (role === 'cruiser' || a.kind === 'freighter' ? 4.6 : 3.4) * dpr;
       g.beginPath(); g.moveTo(sz * 1.35, 0); g.lineTo(-sz, sz * 0.9); g.lineTo(-sz * 0.5, 0); g.lineTo(-sz, -sz * 0.9); g.closePath(); g.fill();
       g.restore();
-      if (a.id === target && !out) this.bracket(g, x, y, 6 * dpr, dpr, `rgb(${HUD})`);
+      if (a.id === target && !out) this.bracket(g, x, y, 6 * dpr, dpr, INK.red);
     }
     const b = world.command.boss;
     if (b && b.cloak < 0.5) {
       const [x, y] = to(b.x, b.z);
-      g.strokeStyle = '#ff2e40'; g.lineWidth = 2 * dpr;
+      g.strokeStyle = INK.red; g.lineWidth = 2 * dpr;
       g.strokeRect(x - 5.5 * dpr, y - 5.5 * dpr, 11 * dpr, 11 * dpr);
-      g.fillStyle = 'rgba(255,46,64,.35)';
+      g.fillStyle = rgba(RGB.red, 0.35);
       g.fillRect(x - 3 * dpr, y - 3 * dpr, 6 * dpr, 6 * dpr);
     }
     g.fillStyle = 'rgba(255,170,150,.85)';
@@ -214,7 +215,7 @@ export class Radar {
     for (const p of world.pickups) {
       if (LOOSE.has(p.kind)) continue;
       const [x, y] = to(p.x, p.z);
-      g.fillStyle = p.kind === 'repair' ? '#5ad0e3' : '#ffb33d';
+      g.fillStyle = p.kind === 'repair' ? INK.teal : INK.amber;
       g.save(); g.translate(x, y); g.rotate(Math.PI / 4); g.fillRect(-2.2 * dpr, -2.2 * dpr, 4.4 * dpr, 4.4 * dpr); g.restore();
     }
     // the target, if it is rock (hulls are bracketed above)
@@ -235,7 +236,7 @@ export class Radar {
     // the rim, and our ship in the middle
     g.strokeStyle = `rgba(${HUD},.55)`; g.lineWidth = 1.2 * dpr;
     g.beginPath(); g.arc(C, C, R, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = '#5ad0e3';
+    g.fillStyle = INK.amber;
     g.beginPath(); g.moveTo(C, C - 6 * dpr); g.lineTo(C + 4 * dpr, C + 4.5 * dpr); g.lineTo(C, C + 2 * dpr); g.lineTo(C - 4 * dpr, C + 4.5 * dpr); g.closePath(); g.fill();
   }
 

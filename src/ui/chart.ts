@@ -6,6 +6,7 @@ import { jumps, krailKnown, lanesFrom, placeAt, sysById, type Chart, type Place,
 import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
+import { INK } from './palette';
 
 // ── the chart ─────────────────────────────────────────────────────────────
 // Between systems the drive cools and the chart comes up: the region as you
@@ -25,7 +26,7 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 const NS = 'http://www.w3.org/2000/svg';
 const W = 640, H = 300, PAD_X = 44, PAD_Y = 34;
 const KIND_COLOUR: Record<SystemKind, string> = {
-  home: '#ece6e1', port: '#5ad0e3', mining: '#c77dff', contested: '#ff5a36', transit: '#8f8984', edge: '#ffb33d',
+  home: INK.white, port: INK.teal, mining: INK.krail, contested: INK.red, transit: INK.dust, edge: INK.amber,
 };
 const KIND_WORD: Record<SystemKind, string> = {
   home: 'Home', port: 'Port', mining: 'Mining', contested: 'Contested', transit: 'Transit', edge: 'The last lane',
@@ -258,7 +259,7 @@ export class ChartPanel {
       if (net) g.append(svg('circle', { cx: x, cy: y, r: 15, class: 'ch-net' }));
       if (j.chart.stall[s.id]) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-stall' }));
       g.append(svg('circle', { cx: x, cy: y, r: s.kind === 'edge' || s.kind === 'home' ? 8 : 6.5, fill: visited ? KIND_COLOUR[s.kind] : 'rgba(11,12,15,.9)', stroke: KIND_COLOUR[s.kind], 'stroke-width': 2 }));
-      if (s.port) g.append(svg('rect', { x: x + 6, y: y - 11, width: 5, height: 5, fill: '#5ad0e3' }));
+      if (s.port) g.append(svg('rect', { x: x + 6, y: y - 11, width: 5, height: 5, fill: INK.teal }));
       const place = placeAt(c, s.id);
       if (place) {
         const m = svg('path', { d: `M${x - 9} ${y - 14}l3 3l-3 3l-3-3z`, class: 'ch-place' });
