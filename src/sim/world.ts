@@ -9,7 +9,7 @@ import { Command, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import { OFFER_AT } from '../content/calloway';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
+  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_KRAIL, CAPITAL_PARTS, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   ORE_XP, rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
@@ -41,6 +41,8 @@ import {
 } from './tuning';
 import type { Prices } from '../content/systems';
 import { makeOffer, type Offer } from './offers';
+import { addKit, discounted, earned, effects, fitNeeds, noKit, type Effects, type Kit } from './modules';
+import { MODULE_BY_ID } from '../content/modules';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -77,6 +79,9 @@ export interface WorldOptions {
 
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const BOSS_PLATES = 1;
+
+/** Seconds into a sortie before the system's place shows itself. */
+export const PLACE_AT = 30;
 
 export class World implements EncounterHost {
   readonly rng: Rng;
@@ -183,6 +188,11 @@ export class World implements EncounterHost {
   cutting: number | null = null;
   /** Docked at the port: `phase` is 'dock', or 'refit' while a bought card is on the table. */
   docked = false;
+  /** What the fitted modules do (sim/modules.ts), worked out with the stats. */
+  fx: Effects = effects({});
+  /** The systems' resources brought aboard, and spent at this sortie's ports; what this sortie earns is read off the run. */
+  private kitIn: Kit = noKit();
+  private kitSpent: Kit = noKit();
   private holdNag = 0;
 
   // the comms: the card on the table, what the run has set in motion, and who thinks what of you
@@ -223,6 +233,9 @@ export class World implements EncounterHost {
   private captainEnd: Report | null = null;
   /** Notice the sortie's cards moved, by faction. */
   noticeDelta: Partial<Record<Faction, number>> = {};
+  /** The system's place (SortieDef.place): still to come, and how it went once it has. */
+  private placeDue = false;
+  placeWon: boolean | null = null;
 
   constructor(seed = 47, opts: WorldOptions = {}) {
     useIds(this.ids);
@@ -265,6 +278,8 @@ export class World implements EncounterHost {
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
+    this.kitIn = noKit(); this.kitSpent = noKit();
+    this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity; return; }
     const def = this.sortie;
     this.bk = newBreakout(this.ship.heading, def);
@@ -289,17 +304,24 @@ export class World implements EncounterHost {
       if (r.size === 0 && this.rng.next() < 0.12 && n < most) { r.kind = 'rich'; r.hp = r.maxHp = Math.round(r.maxHp * 1.6); n++; }
     }
     if (this.carryIn) this.bringAboard(this.carryIn);
+    this.fitAboard();
+  }
+
+  /** What the fitted modules set up at the start of a sortie, or when one is fitted: the hold's racks, the flags they open in the comms. */
+  private fitAboard(): void {
+    this.holdMax = HOLD_START + this.fx.hold;
+    for (const f of this.fx.flags) this.flags.add(f);
   }
 
   /** What the ship brings from the last system: the hold, the tank, the build and the rail, the plates, and what the comms set in motion. */
   private bringAboard(c: Carry): void {
     this.krail = Math.min(TANK_MAX, c.krail);
-    this.ore = Math.min(this.holdMax, c.ore);
     this.parts = c.parts;
     this.chits = c.chits;
     this.food = Math.min(FOOD_MAX, c.food);
     this.levels = { ...c.levels };
     this.refreshStats();
+    this.ore = Math.min(HOLD_START + this.fx.hold, c.ore);
     this.plates = Math.max(1, Math.min(this.stats.maxPlates, c.plates));
     this.xp = c.xp;
     this.refit = c.refit;
@@ -309,6 +331,7 @@ export class World implements EncounterHost {
     this.standing = { ...c.standing };
     this.jobs = c.jobs.map((j) => ({ ...j }));
     this.heard = new Set(c.seen);
+    this.kitIn = { ...noKit(), ...c.kit };
   }
 
   /** The cards that cannot come now: heard this sortie, or heard on the journey and not the kind that comes again. */
@@ -323,7 +346,7 @@ export class World implements EncounterHost {
     return {
       krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
       xp: this.xp, refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
-      seen: [...new Set([...this.heard, ...this.cardsSeen])],
+      seen: [...new Set([...this.heard, ...this.cardsSeen])], kit: this.kit,
     };
   }
 
@@ -332,7 +355,7 @@ export class World implements EncounterHost {
     return {
       ended: this.run.escaped ? 'jumped' : 'destroyed', time: this.runTime, carry: this.carry(), run: this.run,
       calloway: this.callowayMet, callowayBeaten: this.callowayBeaten, huntDelay: this.huntDelay, stall: this.stall,
-      captain: this.captainResult(), notice: { ...this.noticeDelta },
+      captain: this.captainResult(), notice: { ...this.noticeDelta }, place: this.placeWon,
     };
   }
 
@@ -479,7 +502,7 @@ export class World implements EncounterHost {
   /** Heat, the cutter, patching, the port and the lane mouth. */
   private stepBreakout(dt: number, cut: boolean): void {
     const b = this.bk!, s = this.ship;
-    b.heat = Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * dt);
+    b.heat = Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * this.fx.heat * dt);
     if (b.nagT > 0) b.nagT -= dt;
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (this.holdNag > 0) this.holdNag -= dt;
@@ -508,10 +531,10 @@ export class World implements EncounterHost {
     coolRocks(this.field.rocks, this.cutting, dt);
 
     // patching: parts into a plate, once the ship has been left alone for a while
-    if (this.plates < this.stats.maxPlates && this.parts >= PATCH_COST && this.sinceHit >= PATCH_QUIET) {
+    if (this.plates < this.stats.maxPlates && this.parts >= this.patchCost && this.sinceHit >= PATCH_QUIET) {
       if ((this.patchT += dt) >= PATCH_TIME) {
         this.patchT = 0;
-        this.parts -= PATCH_COST;
+        this.parts -= this.patchCost;
         this.repair(1);
         this.events.push({ type: 'patched', plates: this.plates });
       }
@@ -643,7 +666,7 @@ export class World implements EncounterHost {
     this.run.ports.push(b.port!.name);
     const s = this.ship;
     s.vx = s.vz = 0;
-    if (!b.portCooled) { b.portCooled = true; b.heat = Math.max(0, b.heat - DOCK_COOL); }
+    if (!b.portCooled) { b.portCooled = true; b.heat = Math.max(0, b.heat - DOCK_COOL - this.fx.dockCool); }
     // the pickups in the tractor's reach come aboard with you
     for (const pk of [...this.pickups]) if (Math.hypot(pk.x - s.x, pk.z - s.z) < this.stats.tractor) { this.pickups.splice(this.pickups.indexOf(pk), 1); this.collect(pk); }
     this.events.push({ type: 'docked', name: b.port!.name });
@@ -660,9 +683,41 @@ export class World implements EncounterHost {
     return got;
   }
 
-  /** What the port here charges (Cerro's prices outside a sortie). */
+  /** What the port here charges (Cerro's prices outside a sortie), less what the ship's contacts knock off. */
   get prices(): Prices {
-    return this.bk?.prices ?? HOME.port!.prices;
+    return discounted(this.bk?.prices ?? HOME.port!.prices, this.levels);
+  }
+
+  /** Parts a patch takes: the machine shop saves some. */
+  get patchCost(): number {
+    return Math.max(1, PATCH_COST - this.fx.patch);
+  }
+
+  /** Each system's resource aboard: what came aboard, what this sortie has earned so far, less what its ports took. */
+  get kit(): Kit {
+    const k = addKit(this.kitIn, earned(this.run));
+    for (const s of Object.keys(k) as Array<keyof Kit>) k[s] -= this.kitSpent[s];
+    return k;
+  }
+
+  /** Why a module's next mark cannot be fitted here and now, in words (empty when it can). */
+  fitNeeds(id: string): string[] {
+    if (this.phase !== 'dock') return ['Only at a port'];
+    return fitNeeds(this.levels, this.kit, this.chits, id);
+  }
+
+  /** At the port: fit the next mark of a module, paid in its system's resource and chits. */
+  fitModule(id: string): boolean {
+    const m = MODULE_BY_ID[id];
+    if (!m || this.fitNeeds(id).length) return false;
+    const mk = this.levels[id] ?? 0;
+    this.kitSpent[m.system] += m.kit[mk]!;
+    this.chits -= m.chits[mk]!;
+    this.levels = { ...this.levels, [id]: mk + 1 };
+    this.refreshStats();
+    this.fitAboard();
+    this.events.push({ type: 'fitted', id, name: m.name, mark: mk + 1 });
+    return true;
   }
 
   /** Whether a thing can be had at the port now. */
@@ -687,6 +742,15 @@ export class World implements EncounterHost {
       this.pendingRefits++;
       this.openOffer();
     }
+    return true;
+  }
+
+  /** Docked: the journey plotted another lane out of here (sim/journey.ts replot). The lane mouth stays where it is. */
+  replot(dest: string, jumpCost: number): boolean {
+    const b = this.bk;
+    if (!b || this.phase !== 'dock') return false;
+    b.def = this.sortie = { ...b.def, dest, jumpCost };
+    b.jumpCost = jumpCost;
     return true;
   }
 
@@ -946,6 +1010,7 @@ export class World implements EncounterHost {
   }
 
   private buildStats(): Stats {
+    this.fx = effects(this.levels);
     const s = computeStats(this.levels);
     const m = this.modifiers.map((id) => MODIFIERS[id]!);
     for (const d of m) if (d.plates) s.maxPlates = Math.max(1, s.maxPlates + d.plates);
@@ -1078,9 +1143,19 @@ export class World implements EncounterHost {
       if (stepEncounter(e, this, dt)) {
         this.run.events++;
         if (e.success) this.run.eventsWon++;
+        if (e.place) this.placeWon = e.success;
         this.encounter = null;
         this.nextEvent = t + eventGap(this.eventN);
       }
+      return;
+    }
+    // the system's own place comes first, a little after arrival, when the sky is clear; the sector's chance events wait for it
+    const place = this.sortie.place;
+    if (this.placeDue && place) {
+      if (this.runTime < PLACE_AT || this.command.state !== 'idle') return;
+      this.placeDue = false;
+      this.encounter = startEncounter(place.plays, this, place);
+      this.lastEvent = place.plays;
       return;
     }
     // only in open sky: no capital ship about, and not just before one
@@ -1705,8 +1780,8 @@ export class World implements EncounterHost {
     this.chainKill();
     this.events.push({ type: 'bossDestroyed', x: b.x, y: b.y, z: b.z, name: b.name, faction: b.faction, points: bounty });
     // the salvage: krail, a hull repair, a power-up, a refit card and the faction's tech
-    this.dropCrystals(b.x, b.z, this.bk ? 22 : 26 + 8 * b.n, 12);
-    if (this.bk) this.dropCrystals(b.x, b.z, 18, 10, 0, 0, 'parts');
+    this.dropCrystals(b.x, b.z, this.bk ? CAPITAL_KRAIL : 26 + 8 * b.n, 12);
+    if (this.bk) this.dropCrystals(b.x, b.z, CAPITAL_PARTS, 10, 0, 0, 'parts');
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);

@@ -21,7 +21,7 @@ export type Holder = 'kellern' | 'frontier' | 'guild' | 'gutter' | 'none';
 /** What a port charges, in chits (ore is what it pays). */
 export interface Prices { ore: number; krail: number; plate: number; refit: number; food: number }
 
-export const BASE_PRICES: Prices = { ore: 2, krail: 5, plate: 30, refit: 60, food: 3 };
+export const BASE_PRICES: Prices = { ore: 2, krail: 5, plate: 30, refit: 60, food: 9 };
 
 export interface SystemTemplate {
   kind: SystemKind;

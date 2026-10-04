@@ -1,4 +1,5 @@
 import { BRANCHES, UPGRADE, UPGRADES, type Branch, type UpgradeDef } from '../content/upgrades';
+import { applyModules } from './modules';
 import { flightHull, capStats, newStats, type Stats } from './stats';
 import { topSpeed, turnPerStep } from './ship';
 import { HZ, PX } from './tuning';
@@ -11,13 +12,14 @@ import { HZ, PX } from './tuning';
 
 export type Levels = Record<string, number>;
 
-/** The stat block for a build: base, every owned level in tree order, then the caps. */
+/** The stat block for a build: base, every owned level in tree order, the fitted modules (sim/modules.ts), then the caps. */
 export function computeStats(levels: Levels): Stats {
   const s = newStats();
   for (const u of UPGRADES) {
     const lv = levels[u.id] ?? 0;
     for (let i = 1; i <= lv; i++) u.apply(s, i);
   }
+  applyModules(s, levels);
   return capStats(s);
 }
 

@@ -65,7 +65,7 @@ export const NOTICE: Record<Faction, FactionNotice> = {
   custody: {
     name: 'the Custody', standing: 'custody',
     kill: { interceptor: 1, cruiser: 2, special: 2, capital: 6 }, decay: 0.8,
-    at: { warning: 4, toll: 9, hunters: 15, captain: 22 }, standingPer: 6, toll: 1.5, hunt: 0.75, elite: 0.08,
+    at: { warning: 4, toll: 9, hunters: 20, captain: 30 }, standingPer: 6, toll: 1.5, hunt: 0.75, elite: 0.08,
     lines: {
       warning: 'The Custody has posted a bulletin on your hull',
       toll: 'Custody fees are up for a hull like yours',
@@ -77,7 +77,7 @@ export const NOTICE: Record<Faction, FactionNotice> = {
   gutter: {
     name: 'the Gutter', standing: 'gutter',
     kill: { interceptor: 1, cruiser: 2, special: 2, capital: 5 }, decay: 1,
-    at: { warning: 4, toll: 8, hunters: 13, captain: 20 }, standingPer: 5, toll: 1.6, hunt: 0.8, elite: 0.06,
+    at: { warning: 4, toll: 8, hunters: 18, captain: 27 }, standingPer: 5, toll: 1.6, hunt: 0.8, elite: 0.06,
     lines: {
       warning: 'Word in the Gutter: a hauler is killing crews',
       toll: 'The Lane Wardens have put your toll up',
@@ -89,7 +89,7 @@ export const NOTICE: Record<Faction, FactionNotice> = {
   office: {
     name: 'the Office of Peace', standing: null,
     kill: { interceptor: 2, cruiser: 3, special: 3, capital: 8 }, decay: 0.5,
-    at: { warning: 3, toll: 7, hunters: 12, captain: 18 }, standingPer: Infinity, toll: 1.4, hunt: 0.8, elite: 0.1,
+    at: { warning: 3, toll: 7, hunters: 16, captain: 24 }, standingPer: Infinity, toll: 1.4, hunt: 0.8, elite: 0.1,
     lines: {
       warning: 'The Office of Peace has opened a file',
       toll: 'Office clerks have your name on their fee schedule',
@@ -101,7 +101,7 @@ export const NOTICE: Record<Faction, FactionNotice> = {
   voice: {
     name: 'the Voice', standing: null,
     kill: { interceptor: 1, cruiser: 2, special: 2, capital: 6 }, decay: 0.6,
-    at: { warning: 5, toll: 10, hunters: 16, captain: 24 }, standingPer: Infinity, toll: 1, hunt: 0.8, elite: 0.06,
+    at: { warning: 5, toll: 10, hunters: 22, captain: 32 }, standingPer: Infinity, toll: 1, hunt: 0.8, elite: 0.06,
     lines: {
       warning: 'The Voice has learned your hull',
       toll: 'The Voice asks more of you',
@@ -113,7 +113,7 @@ export const NOTICE: Record<Faction, FactionNotice> = {
   thren: {
     name: 'the Thren', standing: null,
     kill: { interceptor: 1, cruiser: 2, special: 2, capital: 6 }, decay: 0.7,
-    at: { warning: 5, toll: 10, hunters: 16, captain: 24 }, standingPer: Infinity, toll: 1, hunt: 0.8, elite: 0.06,
+    at: { warning: 5, toll: 10, hunters: 22, captain: 32 }, standingPer: Infinity, toll: 1, hunt: 0.8, elite: 0.06,
     lines: {
       warning: 'The Thren have tasted your Krail',
       toll: 'Thren webs thicken on your lanes',

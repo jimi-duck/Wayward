@@ -30,6 +30,7 @@ export const TRICKS: Record<string, Trick> = {
   'calloway_here:dark': 'dark',
   'calloway_here:fight': 'fight',
   'false_trail:pay': 'plan',
+  'false_trail:ore': 'plan',
   'drift_fleet:trail': 'fleet',
   'offer_tank:lie': 'lie',
   'offer_home:think': 'lie',
@@ -134,7 +135,7 @@ export const OFFERS: CardDef[] = [
   }),
   offer({
     id: 'offer_home', from: 'Prefect Idris Calloway · Office of Peace', title: 'The best there is',
-    text: '“Come home, Juno. I can promise your crew walk free. Not you. I am sorry. That is the best there is, and it will not be offered again.”',
+    text: '“Come home, Juno. Bring the archive and I can promise you a hearing, not a cell. I am sorry it is not more. That is the best there is, and it will not be offered again.”',
     choices: [
       { id: 'think', label: 'Say you will think about it', tone: 'bluff', hint: 'She waits for an answer, if she believes you.', odds: { base: 0.55, learn: 'lie' },
         win: { text: 'She gives you a day to think. You use it to run.', hunt: 1.5 },

@@ -10,7 +10,7 @@ import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordRun, saveProfile } from './meta/profile';
 import { clearJourney, loadJourney, saveJourney } from './meta/save';
-import { checkpoint, endSortie, here, newJourney, plot, sortieDef, type Journey } from './sim/journey';
+import { checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey } from './sim/journey';
 import { sysById } from './sim/chart';
 import { ChartPanel } from './ui/chart';
 import { barsOut } from './ui/bars';
@@ -137,6 +137,18 @@ function boot(): void {
       startSortie();
     });
   };
+  /** Docked: the lanes out of here, to plot again with the dockmaster's news in hand. */
+  const courseFor = (j: Journey) => {
+    if (world.carry().flags.includes('news')) hearNews(j);
+    return {
+      lanes: () => options(j).map((o) => ({
+        id: o.to.id, name: o.to.name, krail: o.route.krail, days: o.route.days,
+        note: [o.netted ? 'the Net holds it' : '', o.shadow ? 'Calloway last seen there' : '', o.to.kind === 'edge' ? 'the way out' : ''].filter(Boolean).join(' · '),
+      })),
+      current: () => j.dest,
+      pick: (id: string) => { const r = replot(j, id); if (r) world.replot(r.dest, r.jumpCost); },
+    };
+  };
   /** The sortie is over: fold it into the journey, then the chart, a notice, or the end. */
   const sortieOver = () => {
     const j = journey!;
@@ -182,7 +194,7 @@ function boot(): void {
         hud.note(world, 'Cast off');
         // the save at the port: a load starts this system again with the hold as it is now
         if (journey && world.mode === 'breakout') { checkpoint(journey, world.carry()); saveJourney(journey); }
-      }, () => {});
+      }, () => {}, journey && world.mode === 'breakout' && world.bk?.def.port ? courseFor(journey) : null);
     } else if (world.phase === 'over' && !reported && world.mode === 'breakout' && journey) {
       reported = true;
       sortieOver();

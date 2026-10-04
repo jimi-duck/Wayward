@@ -1033,6 +1033,9 @@ html.swipe #app * { overscroll-behavior: contain; }
 .ch-hunt { color: #ff8a93; }
 .ch-file { margin: 0; font: 400 calc(var(--fs) * .85)/1.35 var(--font-mono); letter-spacing: .06em; color: #c98a90; }
 .ch-netl { color: var(--ink-2); }
+.ch-notice { margin: 0; font: 500 calc(var(--fs) * .85)/1.35 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.ch-notice.t-toll, .ch-notice.t-hunters { color: #ffb33d; }
+.ch-notice.t-captain { color: #ff8a93; }
 .ch-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .ch-key i { display: inline-block; width: 9px; height: 9px; }
 .kc-net { border-radius: 50%; background: rgba(255, 46, 64, .25); border: 1px solid var(--alert); }
@@ -1051,6 +1054,7 @@ circle.ch-net { fill: rgba(255, 46, 64, .16); stroke: var(--alert); stroke-width
 .ch-s.out .ch-name { fill: var(--ink); }
 .ch-s.sel .ch-name { fill: var(--amber); }
 .ch-num { font: 700 11px var(--font-mono); fill: var(--amber); }
+.ch-place { fill: #ffd76a; stroke: #1a1408; stroke-width: 0.8; }
 .ch-cal { fill: var(--alert); stroke: #160606; stroke-width: 1; }
 .ch-you { fill: var(--ink); }
 @media (max-width: 900px), (max-height: 520px) {

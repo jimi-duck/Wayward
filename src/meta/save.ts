@@ -1,4 +1,6 @@
 import { hunchOf, newDossier } from '../sim/calloway';
+import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
+import { noKit } from '../sim/modules';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
 
@@ -21,8 +23,17 @@ export function migrate(raw: unknown): Journey | null {
   // 1 → 2: the factions' notice (M4). A journey saved before it starts with nobody's notice.
   if (j.version < 2) j.notice = newNotice();
   if (!j.notice) return null;
-  // 2 → 3: Calloway's file (M4). She starts it now, and reads the route already flown.
-  if (j.version < 3) { j.calloway = newDossier(); j.hunt.hunch = hunchOf(j.chart, j.trail); }
+  // 2 → 3: the ship's systems (M5). A journey saved before it has earned nothing for them and fitted no modules.
+  if (j.version < 3) j.carry.kit = noKit();
+  if (!j.carry.kit) return null;
+  // 3 → 4: places (M7). A journey saved before them gets the ones its seed would have dealt, seen from where it has been.
+  if (j.version < 4) {
+    j.chart.places = layPlaces(j.chart, j.seed ?? 0);
+    for (const id of j.chart.visited) sightPlaces(j.chart, id, SIGHT);
+  }
+  if (!j.chart.places) return null;
+  // 4 → 5: Calloway's file (M4). She starts it now, and reads the route already flown.
+  if (j.version < 5) { j.calloway = newDossier(); j.hunt.hunch = hunchOf(j.chart, j.trail); }
   if (!j.calloway) return null;
   j.version = VERSION;
   return j as Journey;

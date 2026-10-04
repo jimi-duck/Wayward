@@ -2,10 +2,12 @@ import { clamp, lerp } from '../core/math';
 import { BASE_PRICES, type Prices, type SystemKind } from '../content/systems';
 import type { Levels } from './build';
 import type { JobDef, Standing } from './comms';
+import type { EncounterId } from './encounters';
 import type { Faction } from './enemies';
 import type { RockKind, RockSize } from './field';
 import type { Report } from './captains';
 import { NO_NEMESIS, type Nemesis } from './calloway';
+import type { Kit } from './modules';
 import { QUIET, type Pressure } from './notice';
 import type { RunStats } from './run';
 import type { Rng } from './rng';
@@ -33,7 +35,7 @@ import type { Rng } from './rng';
 // from the rare gold rock, from the port and from a capital ship's wreck.
 // Ore is what the cutter takes out of ordinary rock: it fills the hold, it
 // pays for refits on the rail, and it sells at the port. Parts are salvage
-// from wrecks; the crew patch a plate out of them when the ship is left
+// from wrecks; you patch a plate out of them when the ship is left
 // alone for a few seconds.
 
 export type Mode = 'breakout' | 'arcade';
@@ -69,6 +71,9 @@ export const SPOOL_RUN = 2.2;
 export const BLOCKADE_AT = 420;
 /** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
 export const BLOCKADE_HP = 3;
+/** Krail and parts a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
+export const CAPITAL_KRAIL = 6;
+export const CAPITAL_PARTS = 18;
 
 /** Parts to patch a plate, the quiet it needs, and how long the patch takes. */
 export const PATCH_COST = 6;
@@ -140,6 +145,8 @@ export interface SortieDef {
   notice: Pressure;
   /** What Calloway knows of you here (sim/calloway.ts): the tricks she is wise to, her ship, an offer, and whether she waits at the lane mouth for the last time. */
   nemesis: Nemesis;
+  /** The place in this system still to be dealt with (content/phenomena.ts): the event it plays, a little after arrival. */
+  place?: { name: string; text: string; plays: EncounterId } | null;
 }
 
 export const HOME: SortieDef = {
@@ -167,6 +174,8 @@ export interface Carry {
   jobs: JobDef[];
   /** Cards already heard on this journey (the ones that come once). */
   seen: string[];
+  /** Each ship system's resource, for fitting modules at a port (sim/modules.ts). */
+  kit: Kit;
 }
 
 /** What a sortie hands back to the journey. */
@@ -180,18 +189,20 @@ export interface SortieResult {
   /** Calloway came for you here, and whether her ship was beaten. */
   calloway: boolean;
   callowayBeaten: boolean;
-  /** Days of delay the sortie's choices put on her, and days this system now holds the Net out. */
+  /** Days of delay the sortie's choices put on her, and days this system now holds the Net out (negative: days the Net gains here). */
   huntDelay: number;
   stall: number;
   /** The named captain who called here, if one did, and how it ended. */
   captain: { id: string; report: Report } | null;
   /** Notice the sortie's choices moved, by faction (the kills are counted from the run). */
   notice: Partial<Record<Faction, number>>;
+  /** The system's place: dealt with (true), tried and lost (false), or not met (null or absent). */
+  place?: boolean | null;
 }
 
-/** Food: what the galley holds at most, and at the start. */
-export const FOOD_MAX = 30;
-export const FOOD_START = 12;
+/** Food, in days for the one aboard: what the galley holds at most, and at the start. */
+export const FOOD_MAX = 10;
+export const FOOD_START = 4;
 
 /** The pursuers, by the heat they need. Gutter crews work the belt ahead and do not care who you are. */
 const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [

@@ -1,0 +1,874 @@
+Absolutely. Based on the current game image, the direction you described, and the WAYWARD script, I would define the brand as **industrial cyberpunk rather than neon cyberpunk**: a worn, utilitarian world where technology is everywhere, but it is old, regulated, patched, repurposed and controlled by institutions.
+
+# WAYWARD — Brand & Visual Direction
+
+## 1. Brand essence
+
+**WAYWARD**
+
+**A fugitive survival game in a dying frontier.**
+
+The visual identity should communicate:
+
+**Industrial · Oppressive · Scrappy · Mysterious · Human · Dangerous**
+
+The player should feel that they are operating a piece of working equipment, not piloting a pristine science-fiction spacecraft.
+
+The technology is advanced, but the *world* is exhausted.
+
+Everything has a previous owner.
+Everything carries a warning label.
+Everything is being repaired.
+Everything has a serial number.
+
+That is the core visual idea.
+
+---
+
+# 2. The three visual worlds
+
+WAYWARD should sit between three influences:
+
+### INDUSTRIAL
+
+Mining equipment, freight machinery, warning labels, maintenance manuals, shipping containers, electrical panels, military hardware, refinery infrastructure.
+
+Think:
+
+**ore hauler + industrial control room + old military equipment**
+
+rather than:
+
+**NASA + luxury spaceship + sleek holographic interface**
+
+### CYBERPUNK
+
+The cyberpunk element comes from information, surveillance and corporate/state control.
+
+The world is full of:
+
+**IDs · registries · checkpoints · tracking · signals · tariffs · sanctions · restricted areas · corporate branding · propaganda**
+
+The cyberpunk should therefore exist in the *systems and society*, not just through neon lights.
+
+### DYSTOPIAN FRONTIER
+
+The Scatter should feel like civilisation has been stretched too thin.
+
+Ports are overcrowded.
+Ships are patched together.
+Mining installations are gigantic but exhausted.
+Infrastructure is functional rather than beautiful.
+
+The further away from civilisation you travel, the stranger and less controlled everything becomes.
+
+---
+
+# 3. The most important rule
+
+## Technology should look USED.
+
+Avoid the feeling of:
+
+> “This was designed for a video game.”
+
+Instead aim for:
+
+> “Someone had to keep this thing running for another 14 years.”
+
+Surfaces should have:
+
+* scratches
+* dirt
+* faded paint
+* replacement panels
+* exposed fasteners
+* cable runs
+* warning stickers
+* serial numbers
+* inspection markings
+* maintenance labels
+* mismatched components
+
+Even new technology should feel like it belongs in an industrial ecosystem.
+
+---
+
+# 4. Core colour palette
+
+The current yellow ship is a good foundation. I would **keep the yellow**, but make it part of a much stricter system.
+
+| Colour               | Purpose                                    | Approx.   |
+| -------------------- | ------------------------------------------ | --------- |
+| **Void Black**       | Backgrounds, space, major UI fields        | `#080D0E` |
+| **Industrial White** | Primary text, ship markings                | `#D8D5C6` |
+| **Wayward Amber**    | Primary brand / ship identification        | `#D99A27` |
+| **Signal Teal**      | Friendly systems, navigation, information  | `#39AEB7` |
+| **Alert Red**        | Continuance, danger, pursuit, failure      | `#C94A3F` |
+| **Dust Grey**        | Secondary UI, inactive elements            | `#596160` |
+| **Hazard Green**     | Mining/resource/industrial systems         | `#748841` |
+| **Deep Brown**       | Rust, worn machinery, environmental detail | `#4A3A27` |
+
+### Colour ratio
+
+The game should be overwhelmingly dark and desaturated.
+
+Approximately:
+
+**65% black / dark grey**
+**20% off-white / grey**
+**8% amber**
+**5% teal**
+**2% red**
+
+This is important.
+
+**Red should mean something.**
+
+It should not simply be another decorative colour.
+
+---
+
+# 5. Wayward Amber
+
+The amber/yellow of the ship becomes the game's strongest visual signature.
+
+It should feel like:
+
+**construction equipment + hazard paint + old industrial machinery**
+
+rather than racing yellow or futuristic gold.
+
+Use it for:
+
+* Wayward ship panels
+* player-owned equipment
+* interactable objects
+* mining equipment
+* selected UI states
+* important resources
+* player identification
+
+The amber should become recognisable enough that a screenshot containing the ship is immediately identifiable as WAYWARD.
+
+---
+
+# 6. Teal is information
+
+Teal is the opposite of red.
+
+It represents things that are:
+
+**known · detected · operational · navigational · informational**
+
+Use teal for:
+
+* radar
+* navigation
+* scan information
+* ship systems
+* target information
+* mining information
+* route indicators
+* friendly/neutral contacts
+
+Do **not** use teal as general decoration.
+
+---
+
+# 7. Red is the threat
+
+Red belongs primarily to:
+
+**The Continuance.**
+
+That gives the colour enormous psychological weight.
+
+Continuance UI should therefore have a distinct visual identity:
+
+### Continuance
+
+**Red · black · white**
+
+Hard geometric symbols.
+
+Authority.
+
+Warning triangles.
+
+Large identification numbers.
+
+Brutalist typography.
+
+Official language.
+
+Examples:
+
+**CONTINUANCE**
+**NOTICE OF VIOLATION**
+**VESSEL FLAGGED**
+**CHECKPOINT ACTIVE**
+**PURSUIT PROTOCOL**
+**SURRENDER REQUIRED**
+
+The Continuance should visually feel like bureaucracy weaponised.
+
+---
+
+# 8. Typography
+
+The typography should feel like something that exists on machinery.
+
+Use three levels.
+
+### Display
+
+A highly geometric, condensed, industrial grotesque.
+
+The WAYWARD logo can be wide, heavy and slightly distorted.
+
+It should feel like:
+
+**shipping crate stencil + government department + industrial manufacturer**
+
+rather than a typical gaming logo.
+
+### Interface
+
+A clean condensed sans-serif.
+
+Prefer:
+
+* uppercase
+* tight spacing
+* compact labels
+* numerical information
+* short phrases
+
+Examples:
+
+**HULL 78%**
+**FUEL 41%**
+**KRAIL 2.3t**
+**SIGNAL DETECTED**
+**CHECKPOINT 1.2 AU**
+
+### Data
+
+Monospaced typography for:
+
+* serial numbers
+* coordinates
+* ship IDs
+* timestamps
+* cargo IDs
+* system information
+
+This creates the feeling that the UI is assembled from actual equipment.
+
+---
+
+# 9. WAYWARD logo
+
+The logo should be:
+
+**bold, horizontal, industrial and imperfect.**
+
+Avoid:
+
+* futuristic cursive
+* glossy chrome
+* excessive sci-fi bevels
+* spaceship silhouettes
+* elaborate logos
+
+The word itself is the identity.
+
+A useful visual treatment would be:
+
+**WAYWARD**
+
+with small supporting terminology beneath it:
+
+**OBEDIENCE-CLASS / ORE HAULER**
+**SERIAL 0B-7731-A**
+
+The logo should be capable of appearing on:
+
+* the hull
+* menus
+* ship documentation
+* loading screens
+* stickers
+* advertisements
+* faction documents
+* UI headers
+
+---
+
+# 10. Ship design language
+
+The Wayward should be one of the strongest pieces of visual storytelling.
+
+It is not a purpose-built military vessel.
+
+It is a **stolen ore hauler**.
+
+That means the silhouette should communicate:
+
+**cargo + machinery + propulsion + modularity**
+
+before it communicates combat.
+
+Large industrial engines.
+External equipment.
+Mining machinery.
+Cargo pods.
+Fuel tanks.
+Replacement armour.
+
+Weapons should look bolted on afterward.
+
+That distinction is important.
+
+The player hasn't bought a badass combat ship.
+
+They have **turned a working machine into a vehicle for survival.**
+
+---
+
+# 11. Ship markings
+
+Use persistent physical markings throughout the game.
+
+For example:
+
+**WAYWARD**
+**OBEDIENCE CLASS**
+**0B-7731-A**
+
+Then:
+
+**KRAIL HANDLING**
+**MAX LOAD**
+**FIELD REFIT**
+**AUTHORIZED PERSONNEL**
+**HAZARD**
+**PRESSURE**
+**SERVICE PORT**
+
+The ship should feel almost like a truck, tugboat or mining vehicle translated into space.
+
+---
+
+# 12. Gameplay UI direction
+
+This is the biggest update from the current image.
+
+The reference gameplay screenshot you provided is a good foundation for **composition**, but the new WAYWARD UI should feel more systemic and industrial.
+
+### Gameplay view
+
+The ship occupies the centre of the screen.
+
+Behind it:
+
+**asteroids · mining structures · stations · debris · distant ships · signal sources**
+
+The HUD sits *around* the world rather than covering it.
+
+---
+
+## Left side
+
+### NAVIGATION / RADAR
+
+Circular or semi-circular scanner.
+
+Information:
+
+**CONTACTS**
+**DISTANCE**
+**BEARING**
+**SIGNAL**
+
+Use teal for detected information.
+
+Red contacts appear only when relevant.
+
+---
+
+## Top centre
+
+### TARGET / OBJECTIVE
+
+A small targeting box.
+
+Example:
+
+**ASTEROID M-372**
+**KRAIL TRACE**
+**YIELD 84%**
+
+or:
+
+**CONTINUANCE PATROL**
+**3.1 AU**
+**THREAT: HIGH**
+
+Keep it compact.
+
+The player should still be looking at space.
+
+---
+
+## Top right
+
+### SHIP STATUS
+
+Something like:
+
+**HULL 87%**
+**FUEL 42%**
+**ENERGY 78%**
+**KRAIL 1.8t**
+**DAMAGE 12%**
+
+This is where the game communicates the survival fantasy.
+
+Not:
+
+**HP 87**
+
+but:
+
+**HULL 87%**
+
+Not:
+
+**ammo**
+
+but:
+
+**MISSILES 4/6**
+
+The terminology should always feel like ship equipment.
+
+---
+
+# 13. Bottom right
+
+This area should communicate the ship's current operating mode.
+
+For example:
+
+**MINING MODE**
+
+or:
+
+**COMBAT MODE**
+
+or:
+
+**SCAN MODE**
+
+or:
+
+**SILENT RUN**
+
+Then provide a small set of actions.
+
+Example:
+
+**[LMB] FIRE**
+**[RMB] SCAN**
+**[Q] SIGNAL**
+**[E] EXTRACT**
+
+The UI should feel like the ship is being operated, not like the player is navigating a videogame menu.
+
+---
+
+# 14. Communications UI
+
+This should be one of WAYWARD's strongest visual systems.
+
+Comms should feel like **receiving a transmission**, not opening a conversation window.
+
+Example:
+
+---
+
+**INCOMING TRANSMISSION**
+
+**TERRAN UNION CHECKPOINT**
+
+> Vessel ID does not match registry.
+
+**01 — RUN IT**
+**02 — SPOOF REGISTRATION**
+**03 — PAY INSPECTION**
+**04 — TALK**
+**05 — FIGHT**
+
+---
+
+The interface should have strong hierarchy.
+
+The player should understand the situation in roughly two seconds.
+
+This is where the game becomes very distinct from traditional RPG dialogue systems.
+
+---
+
+# 15. UI language
+
+Use short, functional language.
+
+Instead of:
+
+> “You have encountered a patrol ship belonging to the Continuance.”
+
+Use:
+
+**CONTINUANCE PATROL**
+
+Instead of:
+
+> “Your ship is running low on fuel.”
+
+Use:
+
+**FUEL CRITICAL**
+
+Instead of:
+
+> “The asteroid appears to contain a valuable mineral.”
+
+Use:
+
+**KRAIL TRACE DETECTED**
+
+This keeps the game feeling like equipment and systems are communicating with the player.
+
+---
+
+# 16. Faction branding
+
+Every major faction should look like a real institution.
+
+Not just a different colour.
+
+### THE CONTINUANCE
+
+**Red / black / white**
+
+Institutional.
+
+Governmental.
+
+Strict.
+
+Highly standardised.
+
+Their graphics should look mass-produced.
+
+---
+
+### MINING / INDUSTRIAL COMPANIES
+
+**Amber / cream / dark grey**
+
+Heavy machinery.
+
+Shipping.
+
+Industrial logos.
+
+Barcode systems.
+
+Warning symbols.
+
+---
+
+### FRONTIER INDEPENDENTS
+
+More inconsistent.
+
+Hand-painted marks.
+
+Modified equipment.
+
+Different colours.
+
+Old logos painted over.
+
+---
+
+### THREN
+
+Completely different visual language.
+
+Their graphics should NOT look like another human faction.
+
+Avoid simply giving them alien text.
+
+Instead use:
+
+**geometry · asymmetry · biological shapes · unfamiliar repetition · strange light**
+
+Their technology should feel difficult to understand.
+
+The player shouldn't immediately know:
+
+**“Oh, that's an alien spaceship.”**
+
+They should initially think:
+
+**“What the hell am I looking at?”**
+
+---
+
+# 17. Environment
+
+### Human space
+
+Use:
+
+**industrial density**
+
+Stations should look enormous, dirty and functional.
+
+Mining rigs.
+
+Fuel depots.
+
+Docking arms.
+
+Cargo lifts.
+
+Communications towers.
+
+Maintenance gantries.
+
+Refinery structures.
+
+Ships should constantly be moving through these spaces.
+
+The frontier should feel busy because everyone is trying to survive economically.
+
+---
+
+### Deeper Scatter
+
+Gradually remove human order.
+
+Less traffic.
+
+Less signage.
+
+More abandoned machinery.
+
+Strange signals.
+
+Broken infrastructure.
+
+Asteroids.
+
+Impossible structures.
+
+Unknown phenomena.
+
+The visual progression should be:
+
+**Civilisation → decay → isolation → uncertainty → alien**
+
+---
+
+# 18. Lighting
+
+The basic recipe should be:
+
+**dark space + hard industrial light + selective colour**
+
+Use:
+
+* amber work lights
+* cold teal equipment lights
+* red warning lights
+* white moon/starlight
+* occasional sodium-orange industrial lighting
+
+Avoid constant rainbow neon.
+
+A single red beacon in a dark mining facility is much more powerful than twenty neon signs.
+
+---
+
+# 19. Visual effects
+
+The effects should feel physical.
+
+Prefer:
+
+* sparks
+* exhaust
+* dust
+* electrical arcs
+* warning lights
+* impact flashes
+* debris
+* engine glow
+* particulate clouds
+
+Avoid excessive:
+
+* holographic particles
+* magic-looking shields
+* giant lens flares
+* colourful energy explosions
+
+WAYWARD should feel closer to **machinery breaking** than a space opera.
+
+---
+
+# 20. Graphic design language
+
+The brand should borrow heavily from:
+
+**industrial manuals + freight labels + government forms + military documentation + mining equipment + old computer interfaces**
+
+This is especially important for menus and marketing art.
+
+Use:
+
+* boxes
+* registration numbers
+* barcode strips
+* technical diagrams
+* stamps
+* warning triangles
+* serial numbers
+* inspection marks
+* underlines
+* measurement ticks
+* schematic arrows
+* coordinate grids
+
+This creates a coherent visual universe without needing constant decoration.
+
+---
+
+# 21. Image composition
+
+For promotional images and moodboards, aim for a hierarchy:
+
+### 1. SHIP
+
+The Wayward is the hero.
+
+### 2. WORLD
+
+Asteroids, industrial stations, mining operations, damaged infrastructure.
+
+### 3. UI
+
+Gameplay information frames the scene.
+
+### 4. THREAT
+
+Continuance ships, warning signals, distant patrols.
+
+### 5. MYSTERY
+
+Something strange in the distance.
+
+That last element is important.
+
+There should almost always be something the player doesn't completely understand.
+
+---
+
+# 22. What WAYWARD should NOT look like
+
+This is just as important.
+
+### Don't become generic neon cyberpunk.
+
+No endless pink/purple cityscape.
+
+### Don't become military sci-fi.
+
+The Wayward is not a battleship.
+
+### Don't become Star Trek / Star Wars style space opera.
+
+The world should feel smaller, harsher and more economically grounded.
+
+### Don't become pure horror.
+
+The game has mystery and danger, but the frontier is also lived-in.
+
+### Don't make everything futuristic.
+
+Old technology is one of the game's strongest aesthetic tools.
+
+---
+
+# 23. The visual test
+
+Every asset should pass this question:
+
+> **Could this plausibly have existed for twenty years, been used by fifty different people, repaired six times and still be operating?**
+
+If yes, it belongs in WAYWARD.
+
+And for every beautiful object, add something that makes it feel **used**.
+
+---
+
+# 24. The gameplay screenshot target
+
+For the specific UI image you're trying to develop from your current screenshot, I'd use this as the definitive art direction:
+
+**CAMERA**
+
+Third-person, slightly behind and above the Wayward.
+
+**WORLD**
+
+Dense asteroid field / mining environment.
+
+**SHIP**
+
+Yellow/cream industrial Wayward, heavily worn and modular.
+
+**HUD**
+
+Thin industrial frames, mostly transparent.
+
+**COLOUR**
+
+Black + off-white + amber + teal.
+
+**RED**
+
+Reserved almost entirely for immediate danger / Continuance.
+
+**TEXT**
+
+Condensed uppercase technical typography.
+
+**INFORMATION**
+
+Hull, fuel, energy, Krail, target, scanner, distance, mode.
+
+**UI**
+
+Minimal enough that the world remains visible.
+
+**MOOD**
+
+*“This is the dashboard of a stolen machine that absolutely cannot afford to break.”*
+
+That, to me, is the visual identity WAYWARD should build around.

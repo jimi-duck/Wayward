@@ -141,7 +141,7 @@ are what push the game beyond "space pirates versus evil government".
 
 Krail is everything: fuel, power, currency, trade, weapons, repairs. Every
 jump costs it; every upgrade costs it; every mistake costs it. You also keep
-the crew alive: food, parts, cargo, fuel, people. Sometimes you have enough.
+yourself alive: food, parts, cargo, fuel. Sometimes you have enough.
 Usually you don't.
 
 Every contact is a choice: a trader's deal, a settlement asking for help, a
@@ -208,8 +208,8 @@ enough to carry it somewhere.
    ambushes and strangers, all with uncertain consequences.
 3. **Build your own way out.** Guns, Rig, Signals, Contacts: different
    investments, meaningfully different ways of surviving.
-4. **People matter.** The crew are not stat bonuses. They are the people
-   you are trying to get out.
+4. **People matter.** You fly alone, but the people you meet are not stat
+   bonuses: who you help and who you leave behind follows you.
 5. **The frontier is alive.** Unpredictable, strange, occasionally hostile;
    not a collection of missions.
 
@@ -224,7 +224,7 @@ The full build plan, file by file, is in [PLAN.md](PLAN.md). In short:
 | M3 | The chart and the hunt | Does staying ahead across several sorties make a compelling session? |
 | M4 | Notice and nemeses | Do important enemies, Calloway above all, feel personal? |
 | M5 | The ship | Do different builds create different ways through the game? |
-| M6 | Crew | Does the player feel responsible for the crew? |
+| M6 | Crew (dropped: a one-person ship) | |
 | M7 | The Scatter | Does exploration create curiosity as well as risk? |
 | M8 | The story | Do the endings feel earned? |
 
@@ -241,8 +241,7 @@ hunt. It proves one thing: **is it fun to be a fugitive in space?**
    the story, or a harsher 1–2 hour roguelite? This affects almost everything.
 3. **How hard the hunt pushes.** The Net plus Calloway; pressure should force
    decisions, not just movement.
-4. **How central the crew is.** Early, not bolted on: the premise works
-   better with something to lose beyond the ship.
+4. **The crew.** Decided: there is none. The Wayward is a one-person ship.
 5. **How much the player knows.** Enough to plan, never certain. Prices,
    routes and positions can be wrong; Signals reveals more; Contacts can lie.
 6. **How strange the Scatter becomes.** Human at first, less so the further

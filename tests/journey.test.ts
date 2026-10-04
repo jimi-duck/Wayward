@@ -4,11 +4,11 @@ import type { InputFrame } from '../src/input/types';
 import { CARDS } from '../src/content/cards';
 import { HOME, TANK_MAX, type SortieResult } from '../src/sim/breakout';
 import {
-  arrive, COLS, jumps, lanesFrom, makeChart, NET_MARKUP, netted, pricesAt, spreadNet, sysById, type Chart,
+  arrive, COLS, jumps, lanesFrom, makeChart, NET_MARKUP, NET_RATE, netted, pricesAt, pushNet, spreadNet, sysById, type Chart,
 } from '../src/sim/chart';
 import { behind, daysUntil, huntOn, newHunt, SEARCH } from '../src/sim/hunt';
 import {
-  ADRIFT, CREW, DAY, endSortie, here, newJourney, options, plot, sortieDef, START_PARTS, WAITING, WEAR, WRECKS, type Journey,
+  ADRIFT, DAY, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, START_PARTS, WAITING, WEAR, WRECKS, type Journey,
 } from '../src/sim/journey';
 import { Rng } from '../src/sim/rng';
 import { newRun } from '../src/sim/run';
@@ -72,6 +72,37 @@ describe('the chart', () => {
     for (const id of first.slice(1)) expect(netted(c, id)).toBe(true);
   });
 
+  it('presses harder where the front is broad', () => {
+    // a system with two netted neighbours falls faster than with one
+    let one = 0, two = 0;
+    for (let seed = 1; seed < 30; seed++) {
+      const c = makeChart(seed);
+      const s = c.systems.find((x) => x.col === 2 && lanesFrom(c, x.id).filter((l) => l.to.col === 1).length >= 2);
+      if (!s) continue;
+      const [a, b] = lanesFrom(c, s.id).filter((l) => l.to.col === 1).map((l) => l.to.id);
+      const c1 = structuredClone(c), c2 = structuredClone(c);
+      c1.net[a!] = 1;
+      c2.net[a!] = 1; c2.net[b!] = 1;
+      spreadNet(c1, 1, new Rng(seed));
+      spreadNet(c2, 1, new Rng(seed));
+      one += c1.net[s.id] ?? 0;
+      two += c2.net[s.id] ?? 0;
+    }
+    expect(one).toBeGreaterThan(0);
+    expect(two).toBeGreaterThan(one * 1.3);
+  });
+
+  it('lets a survey relay bring the Net in at a stroke, ahead of the front, unless the system holds out', () => {
+    const c = makeChart(4);
+    const far = c.systems.find((s) => s.col === 3)!;
+    pushNet(c, far.id, 4);
+    expect(c.net[far.id]).toBeCloseTo(Math.min(1, 4 * NET_RATE * (0.5 + far.krail)), 5);
+    const held = c.systems.find((s) => s.col === 2)!;
+    c.stall[held.id] = 2;
+    pushNet(c, held.id, 4);
+    expect(c.net[held.id] ?? 0).toBe(0);
+  });
+
   it('marks a netted port’s prices up', () => {
     const c = makeChart(3);
     const s = c.systems.find((x) => x.port && x.kind !== 'home')!;
@@ -132,7 +163,7 @@ describe('the journey', () => {
     expect(j.at).toBe(dest);
     expect(j.trail).toEqual([j.chart.home, dest]);
     expect(j.day).toBeCloseTo(0.5 + days, 5);
-    expect(j.carry.food).toBe(12 - days * CREW);
+    expect(j.carry.food).toBe(12 - days * RATION);
     expect(j.carry.parts).toBe(6 - WEAR);
     expect(j.carry.krail).toBe(5);
     expect(j.chart.visited).toContain(dest);
@@ -160,6 +191,7 @@ describe('the journey', () => {
   it('flies a netted system under a blockade, hotter, at a dearer port', () => {
     const j = pastBreakout();
     plot(j, options(j)[0]!.to.id);
+    delete j.chart.net[j.at];
     const free = sortieDef(j);
     j.chart.net[j.at] = 1;
     const held = sortieDef(j);
@@ -182,6 +214,7 @@ describe('the journey', () => {
     const j = pastBreakout();
     plot(j, options(j)[0]!.to.id);
     const at = j.at;
+    delete j.chart.net[at];
     const same = structuredClone(j);
     endSortie(j, result(j, { huntDelay: 2, stall: 3, time: 0 }));
     endSortie(same, result(same, { time: 0 }));
@@ -228,6 +261,41 @@ describe('the journey', () => {
     expect(j.at).toBe(j.chart.edge);
   });
 
+  it('re-plots from a port while docked, and only from a port', () => {
+    let j: Journey | null = null;
+    for (let seed = 1; seed < 60 && !j; seed++) {
+      const k = pastBreakout(seed);
+      if (here(k).port && options(k).length >= 2) j = k;
+    }
+    plot(j!, options(j!)[0]!.to.id);
+    const other = options(j!)[1]!;
+    expect(replot(j!, j!.chart.home)).toBe(false);
+    expect(replot(j!, other.to.id)).toEqual({ dest: other.to.name, jumpCost: other.route.krail });
+    expect(j!.dest).toBe(other.to.id);
+    expect(sortieDef(j!).jumpCost).toBe(other.route.krail);
+    // between systems there is nothing to re-plot: the chart is open
+    const at = structuredClone(j!);
+    at.status = 'chart';
+    expect(replot(at, other.to.id)).toBe(false);
+    // and a system without a port has no dock to do it from
+    for (let seed = 1; seed < 60; seed++) {
+      const k = pastBreakout(seed);
+      if (here(k).port) continue;
+      plot(k, options(k)[0]!.to.id);
+      expect(replot(k, options(k)[0]!.to.id)).toBe(false);
+      break;
+    }
+  });
+
+  it('brings the Net into a system whose survey relay was left to finish', () => {
+    const j = pastBreakout();
+    plot(j, options(j)[0]!.to.id);
+    const at = j.at;
+    delete j.chart.net[at];
+    endSortie(j, result(j, { stall: -4, time: 0 }));
+    expect(j.chart.net[at]).toBeGreaterThan(0.5);
+  });
+
   it('brings the chart up to date when news was bought', () => {
     const j = pastBreakout();
     for (const s of j.chart.systems) j.chart.net[s.id] = 1;
@@ -270,6 +338,17 @@ describe('a sortie in the world', () => {
     expect(w.refit).toBe(2);
     expect(w.flags.has('codes')).toBe(true);
     expect(w.carry()).toMatchObject({ krail: 17, ore: 9, parts: 3, chits: 44, food: 7, plates: 2, xp: 5, refit: 2, flags: ['codes'] });
+  });
+
+  it('takes a new lane plotted at the dock, and only while docked', () => {
+    const j = pastBreakout();
+    plot(j, options(j)[0]!.to.id);
+    const w = sortie(j);
+    expect(w.replot('Elsewhere', 17)).toBe(false);
+    w.phase = 'dock';
+    expect(w.replot('Elsewhere', 17)).toBe(true);
+    expect(w.jumpCost).toBe(17);
+    expect(w.bk!.def.dest).toBe('Elsewhere');
   });
 
   it('jumps on the plotted lane’s Krail, and has a port only where the system has one', () => {
@@ -327,6 +406,8 @@ describe('a sortie in the world', () => {
     for (let seed = 1; seed < 12; seed++) {
       const j = pastBreakout(seed);
       plot(j, options(j)[0]!.to.id);
+      // an open lane: the Net may already hold the first system at its pace
+      delete j.chart.net[j.at];
       const w = sortie(j);
       const b = w.bk!;
       w.ship.x = b.lane.x + 300; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0;
