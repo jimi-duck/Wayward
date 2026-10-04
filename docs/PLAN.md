@@ -118,6 +118,7 @@ Make it feel like WAYWARD before anything else changes.
 | M3 The chart and the hunt | First pass done: a seeded region of thirteen systems, lanes with Krail and day costs, food and wear, the Net, Calloway on the trail, wrecks that cost rather than end, the journey save, the chart panel, ten new cards, a journey pilot (see below) |
 | M4 Notice and nemeses | First pass done: per-faction notice and standing, the four tiers, named captains with a memory, Calloway's file (tricks she learns, your route, offers, the last meeting at the Threshold) (see below) |
 | M5 The ship | First pass done: four systems, fourteen modules, their own resources and comms choices, the ghost echo, the refit rail under the systems, a ship pilot (see below) |
+| M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | UI Look and feel | Pass 1 (the foundation) up for review; passes 2 to 7 to come (see below) |
 
 ## From the concept boards
@@ -375,6 +376,33 @@ cards, contacts and modules.
   move, swarming, distorting signals and navigation.
 - **Regions** that grow less human the further out they are.
 - **Answers:** does exploration create curiosity as well as risk?
+- **First pass done.** `content/regions.ts`: the way out is three regions,
+  each through a single gate. The Reach (Kellern space, the Net) out
+  through the Narrows; the Marches (Holdfast claims, Drift fleets, the
+  Gutter) out through the Rift; the Hollows (Voice foundries, Thren space,
+  few docks) out through the Threshold. The Net slows the further out it
+  gets and crawls into a Holdfast; the Custody's heat climbs slower; more
+  comes from ahead, and in the Hollows it is Voice hulls or Thren. No lane
+  leads back through a gate. The chart panel shows one region at a time
+  and the goal is the region's gate. `sim/scatter.ts` moves the factions
+  every day, whether or not you are near: Drift fleets cross the chart
+  (their card comes where a fleet is), Gutter crews raid next door (a
+  raided port is dearer, a raid card, sometimes the system becomes
+  theirs), a Holdfast on the Net's edge throws it back, Voice foundries
+  build out, and the Thren drift between systems, burn off where the Net
+  is, and are drawn to Krail on the move. News within sight shows on the
+  chart. In a sortie the Thren swarm (`mote` hulls, a web layer where they
+  are thick), sooner the fuller the tank, and near them the scope fills
+  with static, the lane mouth swims and the drive spools slower. Three
+  cards: the Thren smell Krail (vent some, fight, run), a Voice foundry
+  asks (ore, parts, or its keepers), a Gutter raid (join, keep out, drive
+  them off). Places now sit by region. Save version 6. Journey pilot
+  (BALANCE-JOURNEY.md, 18 journeys): 16 through, about ten systems and
+  21 days a journey, sorties about three and a half minutes, nobody went
+  hungry. Open: the pilot does not yet report the Thren or the factions;
+  the new cards and the Hollows want a playtest for whether they read
+  without text; Calloway is waiting at the Threshold more often now the
+  route is longer.
 
 ## M8. The story
 
