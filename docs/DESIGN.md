@@ -224,6 +224,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Krail and pickups | `sim/pickups.ts` | `World.collect`, `World.gainXp` |
 | Enemies | `ALIEN_TYPES`, `FACTION_TRAITS`, `VARIANTS`, `SQUADS`, `ELITES` in `sim/enemies.ts` | the existing tactical AI, `World.spawn` |
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
+| Named captains | `CAPTAINS`, `PERSONALITIES` in `content/captains.ts`; who names whom in `content/factions.ts` | `sim/captains.ts` (how they come, the card, memory), `sim/notice.ts` (when, the roster), `World` (the meeting), `ui/face.ts` |
 | Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
 | Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
@@ -248,6 +249,11 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 - **A capital ship**: one row in `FACTIONS` (cycles per phase, station,
   wing). A new attack is a telegraph in `Command.telegraph` and an effect
   in `Command.open`.
+- **A named captain**: one entry in `CAPTAINS` (a name, rank, ship, the
+  faction whose capital ship they fly, a personality, a face, and every
+  line: the hail, the ambush, the bargain, turning away, and coming back
+  after each kind of meeting), and its id in that faction's `captains` in
+  `content/factions.ts`. The tests check every line is there.
 - **A sector event**: a row in `ENCOUNTERS` and a case in `startEncounter`,
   `stepEncounter` and `finish`.
 - **A comms card**: one entry in `CARDS`. Give it a kind, a caller, a
@@ -440,6 +446,29 @@ From 3:30, a contact every 50 to 80 seconds. A yellow alert, then the hail:
 Each faction moves its own way: Gutter crews sway across your bow and charge,
 Custody cutters hold long range and wheel, Office ships vanish and reappear on your
 quarter, the foundry grinds closer, the Thren circle.
+
+### Named captains
+
+On the journey, once a faction has noticed the Wayward enough (its notice at
+the captain tier, `sim/notice.ts`), it names someone: one of the capital
+ships above, under a captain with a name, a face and a memory. They find you
+a minute or so into a system, once they have rested after the last meeting.
+Beaten twice, or killed, and they are gone: the faction's next captain takes
+up your file.
+
+- **How they come** is their personality: a duelist or a zealot announces
+  and fights; a broker would rather be paid; an ambusher comes out of the
+  rock (the card slows the world, and doing nothing is a fight); a cautious
+  captain may look at a ship that outguns theirs and turn away without a
+  word. The card shows their face, and choices to fight, run for it (a
+  gamble), pay them off (if they deal) or run out the guns (if they can be
+  made to leave).
+- **What they remember** changes them: a captain who wrecked you comes back
+  bolder and dearer; one whose ship you broke and who got off it comes back
+  with a grudge (an ambush, a heavier ship, no deals, a scar on the face);
+  one who broke off comes back with a bigger wing; running works less each
+  time; the price goes up every time you pay; and nobody turns away twice.
+  A captain who goes down with the ship is gone, and someone else comes.
 
 ## Sector events
 

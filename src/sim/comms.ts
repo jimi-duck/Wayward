@@ -1,8 +1,11 @@
 import { CARDS, FLAGS } from '../content/cards';
+import type { Tier } from '../content/factions';
 import type { SystemKind } from '../content/systems';
 import { UPGRADES } from '../content/upgrades';
 import type { Levels } from './build';
-import { ALIEN_TYPES, VARIANTS } from './enemies';
+import type { Face } from './captains';
+import { ALIEN_TYPES, VARIANTS, type Faction } from './enemies';
+import { atLeast, type CaptainCall } from './notice';
 import type { Rng } from './rng';
 
 // ── the comms card ────────────────────────────────────────────────────────
@@ -25,13 +28,13 @@ import type { Rng } from './rng';
 //                  bait) or to the odds (a bluff), and the odds move with
 //                  heat, flags, standing and fitted systems.
 
-export type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour';
+export type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour' | 'captain';
 /** What kind of answer a choice is, for the pilot's policies and the report. */
 export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refuse';
 /** Who you can stand well or badly with. */
 export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' | 'miners';
 /** Who is on the channel, for the colour of the card. */
-export type Caller = Standing | 'office' | 'calloway' | 'unknown';
+export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
 /** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, or with Calloway. */
 export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt';
 /** Where the ship is: open space, the port's approach, the lane mouth. */
@@ -64,6 +67,10 @@ export interface Ctx {
   netted: boolean;
   /** Jumps Calloway is behind (Infinity before she has the trail). */
   behind: number;
+  /** Each faction's notice tier, the fee multipliers it brings, and the named captain in the system (sim/notice.ts). */
+  notice?: Partial<Record<Faction, Tier>>;
+  toll?: Partial<Record<Faction, number>>;
+  captain?: CaptainCall | null;
 }
 
 /** A condition on the ship and the run. Every field given must hold. */
@@ -100,6 +107,8 @@ export interface Cond {
   netted?: boolean;
   /** Calloway is at most this many jumps behind. */
   hunted?: number;
+  /** The faction's notice is at least this tier. */
+  notice?: [Faction, Tier];
 }
 
 /** A number, or a token read off the ship: the card's fee, all of it, half of it. */
@@ -155,6 +164,10 @@ export interface Outcome {
   stall?: number;
   /** Calloway's ship: she comes for a fight, or you run with her on your tail. */
   calloway?: 'fight' | 'run';
+  /** Notice moved, by faction (a bribe that buries a report, a broadcast that makes one). */
+  notice?: Partial<Record<Faction, number>>;
+  /** A named captain's card (sim/captains.ts): fight, run past, pay off, or see them leave. */
+  captain?: 'fight' | 'run' | 'pay' | 'leave';
 }
 
 /** What a choice asks to be possible. What it costs is in `cost`, and counts too. */
@@ -217,7 +230,7 @@ export interface CardDef {
   /** Who is speaking, and the card's title. */
   from: string;
   title: string;
-  /** What they say. Slots: {fee} {krail} {need} {short} {ore} {chits} {parts} {food}. */
+  /** What they say. Slots: {fee} {krail} {need} {short} {ore} {chits} {parts} {food}, and {captain} {ship} (also in `from` and `title`). */
   text: string;
   /** Lines added when their condition holds: the same card reads differently with a full hold or a checkpoint ahead. */
   lines?: Array<{ if: Cond; text: string }>;
@@ -234,6 +247,9 @@ export interface CardDef {
   truths?: Truth[];
   /** Ambushes and declarations do not wait: the world slows instead of stopping, and after `timeout` seconds of it the default is taken. */
   slow?: { timeout: number; default: string };
+  /** A named captain's portrait, and the scars they have picked up since. */
+  face?: Face;
+  scars?: number;
   /** Applied as the card opens (the ambushers decloak). */
   arrive?: Outcome;
   choices: ChoiceDef[];
@@ -318,15 +334,17 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.kind !== undefined && !list(c.kind).includes(x.kind)) return false;
   if (c.netted !== undefined && x.netted !== c.netted) return false;
   if (c.hunted !== undefined && !(x.behind <= c.hunted)) return false;
+  if (c.notice && !atLeast(x.notice?.[c.notice[0]], c.notice[1])) return false;
   return true;
 }
 
-/** The card's fee for this ship, now. */
+/** The card's fee for this ship, now: a faction that has marked you charges more. */
 export function feeFor(def: CardDef, x: Ctx): number {
   const f = def.fee;
   if (!f) return 0;
   let v = f.base + (f.heat ?? 0) * x.heat;
   for (const [flag, m] of Object.entries(f.flags ?? {})) if (x.flags.has(flag)) v *= m;
+  v *= x.toll?.[def.caller as Faction] ?? 1;
   return Math.max(1, Math.round(v / 5) * 5);
 }
 
@@ -369,7 +387,7 @@ export function yourStrength(levels: Levels, plates: number): number {
   return Math.round(s * 10) / 10;
 }
 
-export function theirStrength(def: CardDef): number {
+export function theirStrength(def: Pick<CardDef, 'ships'>): number {
   return Math.round((def.ships ?? []).reduce((a, s) => a + hullWeight(s.variant) * s.n, 0) * 10) / 10;
 }
 
@@ -433,13 +451,18 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number): Cho
   };
 }
 
+const slotFill = (x: Ctx, slots: Record<string, string> = {}) => {
+  const all: Record<string, string> = { captain: x.captain?.name ?? 'the captain', ship: x.captain?.ship ?? 'their ship', ...slots };
+  return (s: string) => s.replace(/\{(\w+)\}/g, (m, k: string) => all[k] ?? m);
+};
+
 /** Fill a card's text: its slots, then the lines that hold. */
 export function cardText(def: CardDef, x: Ctx, fee: number): string {
   const slots: Record<string, string> = {
     fee: String(fee), krail: String(x.krail), need: String(x.need), short: String(Math.max(0, x.need - x.krail)),
     ore: String(x.ore), chits: String(x.chits), parts: String(x.parts), food: String(x.food),
   };
-  const fill = (s: string) => s.replace(/\{(\w+)\}/g, (m, k: string) => slots[k] ?? m);
+  const fill = slotFill(x, slots);
   const extra = (def.lines ?? []).filter((l) => condOk(l.if, x)).map((l) => fill(l.text));
   return [fill(def.text), ...extra].join(' ');
 }
@@ -466,6 +489,11 @@ export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
       shown = others[rng.int(others.length)]!.id;
     }
     intent = def.truths.find((t) => t.id === shown)!.read;
+  }
+  // a card that names the captain on your file: the def on the table carries the filled name and title
+  if (def.from.includes('{') || def.title.includes('{')) {
+    const fill = slotFill(x);
+    def = { ...def, from: fill(def.from), title: fill(def.title) };
   }
   const fee = feeFor(def, x);
   return {

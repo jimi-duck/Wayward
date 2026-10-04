@@ -4,8 +4,10 @@ import {
   arrive, jumps, lanesFrom, makeChart, netted, pricesAt, pushNet, routeBetween, spreadNet, sysById, type Chart, type StarSystem,
 } from './chart';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
+import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
 import { Rng } from './rng';
 import { sensors } from './comms';
+import type { Faction } from './enemies';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -28,6 +30,11 @@ import { sensors } from './comms';
 // third wreck, a wreck with Calloway in the system, or any wreck in
 // hardcore, and the journey is over. Reaching the Threshold ends the
 // region: out into the Scatter.
+//
+// Every faction keeps notice of the Wayward (sim/notice.ts): the kills of
+// each sortie raise it, the days let it fade, and what it has risen to goes
+// into the next sortie's SortieDef: cards that know you, dearer fees, a
+// harder pursuit, and at the top a named captain who remembers.
 
 /** Seconds of a sortie that make a day. */
 export const DAY = 240;
@@ -43,7 +50,7 @@ export const ADRIFT = 1;
 /** Seconds into a sortie before Calloway can call, if she was already waiting. */
 export const WAITING = 40;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 1;
+export const VERSION = 2;
 
 export type JourneyEnd = 'through' | 'captured' | 'wrecked';
 
@@ -75,6 +82,8 @@ export interface Journey {
   /** Every system flown, in order: what Calloway follows. */
   trail: string[];
   hunt: Hunt;
+  /** Every faction's notice of you, and the captains it has sent. */
+  notice: Notice;
   /** What the ship carries into the next sortie. */
   carry: Carry;
   /** Wrecks so far, and jumps in a row without enough food. */
@@ -102,7 +111,7 @@ export function startCarry(): Carry {
 export function newJourney(seed: number, hardcore = false): Journey {
   const chart = makeChart(seed);
   const j: Journey = {
-    version: VERSION, seed, hardcore, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), carry: startCarry(),
+    version: VERSION, seed, hardcore, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), notice: newNotice(), carry: startCarry(),
     wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
   };
   const out = lanesFrom(chart, chart.home);
@@ -119,7 +128,8 @@ export const here = (j: Journey): StarSystem => sysById(j.chart, j.at);
 /** What the world needs to fly the current system. */
 export function sortieDef(j: Journey): SortieDef {
   const s = here(j);
-  if (s.kind === 'home') return { ...HOME, system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity };
+  const notice = pressure(j.notice, j.day);
+  if (s.kind === 'home') return { ...HOME, system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice };
   const t = SYSTEMS[s.kind];
   const net = netted(j.chart, s.id);
   const route = j.dest ? routeBetween(j.chart, s.id, j.dest) : null;
@@ -129,8 +139,8 @@ export function sortieDef(j: Journey): SortieDef {
     system: s.id, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.krail ?? JUMP_COST, lane: s.lane,
     port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
     heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : 1),
-    rich: t.rich * (0.6 + s.krail * 0.8), density: t.density, gutter: net ? t.gutter * 0.5 : t.gutter, calls: t.calls,
-    blockade: net, netted: net, calloway: until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false,
+    rich: t.rich * (0.6 + s.krail * 0.8), density: t.density, gutter: Math.min(0.8, (net ? t.gutter * 0.5 : t.gutter) + notice.gutter), calls: t.calls,
+    blockade: net, netted: net, calloway: until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
   };
 }
 
@@ -178,6 +188,7 @@ export function hearNews(j: Journey): void {
 function pass(j: Journey, days: number): string[] {
   j.day += days;
   huntOn(j.hunt, j.chart, j.trail, days);
+  cool(j.notice, days);
   // the Net moves once you are out of Cerro: it is the Continuance answering the escape
   return j.trail.length > 1 ? spreadNet(j.chart, days, rng(j)) : [];
 }
@@ -213,6 +224,14 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const news = flags.delete('news');
   flags.delete('calloway_beaten');
   res.carry.flags = [...flags];
+  // the factions take note of what you broke and what you said; a captain remembers how it went
+  const marked = noticeFromRun(res.run);
+  for (const [f, v] of Object.entries(res.notice ?? {}) as Array<[Faction, number]>) marked[f] = (marked[f] ?? 0) + v;
+  const heard: string[] = [];
+  if (res.captain) heard.push(...remember(j.notice, res.captain.id, res.captain.report, j.day, res.carry.standing, rng(j)));
+  for (const [f, v] of Object.entries(marked) as Array<[Faction, number]>) heard.push(...raise(j.notice, f, v, res.carry.standing));
+  for (const h of heard) note(j, h);
+  lines.push(...heard);
   const fell = pass(j, res.time / DAY);
   const leg: Leg = {
     system: s.id, name: s.name, day: Math.round(j.day * 10) / 10, krailIn, krailOut: res.carry.krail, time: Math.round(res.time), ended: res.ended,

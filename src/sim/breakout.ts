@@ -2,7 +2,10 @@ import { clamp, lerp } from '../core/math';
 import { BASE_PRICES, type Prices, type SystemKind } from '../content/systems';
 import type { Levels } from './build';
 import type { JobDef, Standing } from './comms';
+import type { Faction } from './enemies';
 import type { RockKind, RockSize } from './field';
+import type { Report } from './captains';
+import { QUIET, type Pressure } from './notice';
 import type { RunStats } from './run';
 import type { Rng } from './rng';
 
@@ -132,11 +135,13 @@ export interface SortieDef {
   behind: number;
   /** The Breakout's opening: veined rock round the start, the yards behind you. */
   home: boolean;
+  /** What the factions' notice brings here: tiers the cards read, fees, the pursuit, a captain. */
+  notice: Pressure;
 }
 
 export const HOME: SortieDef = {
   system: 'home', name: 'Cerro', kind: 'home', dest: 'the Scatter', jumpCost: 20, lane: 2600, port: { name: 'Frontier Supply', prices: BASE_PRICES },
-  heat: 0.1, heatRate: 1, rich: 0.09, density: 1, gutter: 0.22, calls: 1, blockade: true, netted: true, calloway: Infinity, behind: Infinity, home: true,
+  heat: 0.1, heatRate: 1, rich: 0.09, density: 1, gutter: 0.22, calls: 1, blockade: true, netted: true, calloway: Infinity, behind: Infinity, home: true, notice: QUIET,
 };
 
 /** What the Wayward carries from one sortie into the next. */
@@ -175,6 +180,10 @@ export interface SortieResult {
   /** Days of delay the sortie's choices put on her, and days this system now holds the Net out (negative: days the Net gains here). */
   huntDelay: number;
   stall: number;
+  /** The named captain who called here, if one did, and how it ended. */
+  captain: { id: string; report: Report } | null;
+  /** Notice the sortie's choices moved, by faction (the kills are counted from the run). */
+  notice: Partial<Record<Faction, number>>;
 }
 
 /** Food: what the galley holds at most, and at the start. */

@@ -109,7 +109,8 @@ Make it feel like WAYWARD before anything else changes.
 | M1 The Breakout | First pass done: playable, tested, pilot-balanced (see below) |
 | M2 The comms card | First pass done: thirty cards and six follow-ups, the read, earned choices, the checkpoint, policy pilot (see below) |
 | M3 The chart and the hunt | First pass done: a seeded region of thirteen systems, lanes with Krail and day costs, food and wear, the Net, Calloway on the trail, wrecks that cost rather than end, the journey save, the chart panel, ten new cards, a journey pilot (see below) |
-| M4 onwards | Not started |
+| M4 Notice and nemeses | Started: per-faction notice and standing, the four tiers, named captains with a memory (see below); Calloway as nemesis not yet |
+| M5 onwards | Not started |
 
 ## From the concept boards
 
