@@ -5,6 +5,7 @@ import {
 } from './chart';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
+import { noKit } from './modules';
 import { Rng } from './rng';
 import { sensors } from './comms';
 import type { Faction } from './enemies';
@@ -50,7 +51,7 @@ export const ADRIFT = 1;
 /** Seconds into a sortie before Calloway can call, if she was already waiting. */
 export const WAITING = 40;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 2;
+export const VERSION = 3;
 
 export type JourneyEnd = 'through' | 'captured' | 'wrecked';
 
@@ -103,7 +104,7 @@ const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 
 export function startCarry(): Carry {
   return {
-    krail: START_KRAIL, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: {}, xp: 0, refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [],
+    krail: START_KRAIL, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: {}, xp: 0, refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], kit: noKit(),
   };
 }
 
@@ -297,7 +298,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
 
 /** At a port: the journey keeps what the ship has, so a load starts the system again from here. */
 export function checkpoint(j: Journey, c: Carry): void {
-  j.carry = { ...c, flags: [...c.flags], jobs: c.jobs.map((x) => ({ ...x })), seen: [...c.seen] };
+  j.carry = { ...c, flags: [...c.flags], jobs: c.jobs.map((x) => ({ ...x })), seen: [...c.seen], kit: { ...c.kit } };
 }
 
 /** Jumps from here to the Threshold by the shortest way. */

@@ -257,6 +257,21 @@ going further. **Is it fun to be a fugitive in space?**
 - **Pilot.** One strategy per system. Report: how each gets through the
   journey, and that each does in a different way.
 - **Answers:** do different builds create different ways through?
+- **Started.** `content/modules.ts` and `sim/modules.ts`: the four systems,
+  each with three or four modules fitted in marks at a port's yard (the
+  port's seventh line), paid in the system's own resource and chits. Guns
+  grows from salvage (kills, capital wrecks), Rig from rig parts (rock cut
+  clean, ore hauled), Signals from signal kit (bluffs that come off, Office
+  and Voice wrecks), Contacts from favours (help, trade, jobs). Modules live
+  in the build's levels, so they save with it; the resources ride in the
+  carry (save version 3). What they do: Guns hits harder, carries plate and
+  reloads faster, and weighs more in the read; Rig carries more ore, patches
+  cheaper and tractors further; Signals lets heat climb slower, sharpens the
+  read and the sightings, jams like a scanner suite and spoofs with its own
+  codes; Contacts makes ports cheaper, puts a friend in the Gutter and cools
+  the pursuit at the dock. Open: new comms choices written for each system,
+  Signals making the chart lie, the refit rail moved under the four systems,
+  and the pilot report (one strategy per system).
 
 ## M6. Crew
 
