@@ -1,7 +1,7 @@
 import { CanvasTexture, Color, Group, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
 import {
-  block, bolts, bracket, frameRing, hatch, lamp, oct, octFaces, octFrame, panel, pipeRun, vent, type Face,
+  bevelGeo, block, bolts, bracket, frameRing, hatch, lamp, oct, octFaces, octFrame, panel, pipeRun, vent, type Face,
 } from './parts';
 
 // ── the Wayward ───────────────────────────────────────────────────────────
@@ -21,16 +21,20 @@ import {
 // The model faces +X with +Y up, so its starboard side is +Z.
 
 let mats: Record<string, Material> | null = null;
-function materials(): Record<string, Material> {
+function materials(hits: Hit[]): Record<string, Material> {
   if (mats) return mats;
-  const amber = (tint: number) => metal({ tint, roughness: 0.6, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(0.02, 0.01, 0) });
+  // all of her worn by hard use (wear.ts), sooted astern by her own drives
+  const used = { worn: 1, soot: [2.15, 2.95] as [number, number], hits };
+  const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(0.008, 0.004, 0), ...used });
   mats = {
     paint: amber(0xd98a1c),
     paint2: amber(0xb86a18),
     paint3: amber(0xdc9228),
-    hull: metal({ tint: 0x6e7378, roughness: 0.55, metalness: 0.5 }),
-    dark: metal({ tint: 0x3a3d40, roughness: 0.5, metalness: 0.6, scale: 1.5 }),
-    pipe: metal({ tint: 0x2a2928, roughness: 0.4, metalness: 0.8, scale: 2 }),
+    // field repairs: plate patched on in grey primer, never painted over
+    primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
+    hull: metal({ tint: 0x6e7378, roughness: 0.55, metalness: 0.5, ...used }),
+    dark: metal({ tint: 0x4a4e52, roughness: 0.55, metalness: 0.35, scale: 1.5, ...used }),
+    pipe: metal({ tint: 0x34322f, roughness: 0.45, metalness: 0.55, scale: 2, ...used }),
     rubber: new MeshStandardMaterial({ color: 0x141414, roughness: 0.95, metalness: 0 }),
     window: new MeshStandardMaterial({ color: 0x0b1416, roughness: 0.12, metalness: 0.9, emissive: new Color(0.02, 0.09, 0.11) }),
     red: new MeshBasicMaterial({ color: new Color(3.2, 0.35, 0.25), toneMapped: false }),
@@ -113,6 +117,8 @@ export interface BuiltHull {
 const UP: V3 = [0, 1, 0], FWD: V3 = [1, 0, 0];
 
 type Rnd = () => number;
+/** Its own stream, so which plates are knocked askew leaves the layout alone. */
+let knock = seeded(4471);
 const pickAmber = (rnd: Rnd): string => { const r = rnd(); return r < 0.55 ? 'paint' : r < 0.8 ? 'paint2' : 'paint3'; };
 
 // ── armour ────────────────────────────────────────────────────────────────
@@ -141,7 +147,9 @@ function armour(k: Kit, rnd: Rnd, xs: number[], faces: Face[], y0: number, z0: n
   for (let j = 0; j < xs.length - 1; j++) {
     const a = xs[j]! + 0.045, b = xs[j + 1]! - 0.045, len = b - a, mid = (a + b) / 2;
     for (const [i, role] of plan) {
-      const face = faces[i]!, wid = face.wid * 0.92, r = rnd(), [pa, pd] = ODDS[role];
+      const r = rnd(), [pa, pd] = ODDS[role];
+      // now and then a plate knocked askew
+      const face = knock() < 0.08 ? { ...faces[i]!, f: faces[i]!.f + (knock() - 0.5) * 0.14, rad: faces[i]!.rad + 0.012 } : faces[i]!, wid = face.wid * 0.92;
       if (r < pa) {
         const key = pickAmber(rnd), q = rnd(), t = 0.07;
         if (q < 0.4) {
@@ -170,6 +178,49 @@ function armour(k: Kit, rnd: Rnd, xs: number[], faces: Face[], y0: number, z0: n
         else if (rnd() < 0.4) vent(k, face, y0, z0, mid, 0, len * 0.5, wid * 0.5, lift + 0.06);
       } else bay(k, rnd, face, y0, z0, mid, len);
     }
+  }
+}
+
+// ── damage and repairs ────────────────────────────────────────────────────
+
+/** An old hit: where it struck (model space) and how far the scorch spreads. The hull shader burns round it. */
+export type Hit = [number, number, number, number];
+
+/** A point on a face of a body at (y0, z0): `x` along it, `v` across, `lift` off it. */
+function onFace(face: Face, y0: number, z0: number, x: number, v: number, lift: number): V3 {
+  const c = Math.cos(face.f), s = Math.sin(face.f), d = face.rad + lift;
+  return [x, y0 + d * c - v * s, z0 + d * s + v * c];
+}
+
+/**
+ * A blast crater: a charred hole punched through the plate, torn shards of
+ * it curled outward round the rim. Returns the hit for the scorch.
+ */
+function crater(k: Kit, rnd: Rnd, face: Face, y0: number, z0: number, x: number, v: number, r: number): Hit {
+  const lift = 0.07;
+  for (const spin of [0, Math.PI / 4]) k.add('rubber', bevelGeo(r * 0.9, 0.03, r * 0.9, 0.01), onFace(face, y0, z0, x, v, lift - 0.005), [face.f, spin, 0]);
+  k.add('dark', bevelGeo(r * 0.5, 0.03, r * 0.42, 0.01), onFace(face, y0, z0, x + (rnd() - 0.5) * r * 0.3, v, lift - 0.01), [face.f, rnd(), 0]);
+  const n = 7 + Math.floor(rnd() * 4);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + rnd() * 0.4, rr = r * (0.5 + rnd() * 0.12), tilt = 0.4 + rnd() * 0.7;
+    const len = r * (0.25 + rnd() * 0.25), wid = r * (0.2 + rnd() * 0.25);
+    const p = onFace(face, y0, z0, x + Math.cos(a) * rr, v - Math.sin(a) * rr, lift + Math.sin(tilt) * len * 0.4);
+    k.add(rnd() < 0.7 ? 'paint2' : 'dark', bevelGeo(len, 0.012, wid, 0.004), p, [face.f, a, tilt]);
+  }
+  const [hx, hy, hz] = onFace(face, y0, z0, x, v, lift);
+  return [hx, hy, hz, r * 2.6];
+}
+
+/** A field repair: a plate of primer slapped over damage, a little askew, bolted all round. */
+function patch(k: Kit, rnd: Rnd, face: Face, y0: number, z0: number, x: number, v: number): void {
+  const len = 0.14 + rnd() * 0.16, wid = Math.min(face.wid * 0.7, 0.1 + rnd() * 0.14), lift = 0.07, spin = (rnd() - 0.5) * 0.3;
+  k.add('primer', bevelGeo(len, 0.018, wid, 0.006), onFace(face, y0, z0, x, v, lift + 0.009), [face.f, spin, 0]);
+  const n = Math.max(3, Math.round((len + wid) / 0.05));
+  for (let i = 0; i < n * 2; i++) {
+    const t = (i / (n * 2)) * Math.PI * 2, c = Math.cos(t), sn = Math.sin(t);
+    const lx = Math.sign(c) * Math.min(1, Math.abs(c) * 1.6) * (len / 2 - 0.015), lz = Math.sign(sn) * Math.min(1, Math.abs(sn) * 1.6) * (wid / 2 - 0.015);
+    const px = lx * Math.cos(spin) + lz * Math.sin(spin), pz = -lx * Math.sin(spin) + lz * Math.cos(spin);
+    k.add('hull', bevelGeo(0.014, 0.01, 0.014, 0.003), onFace(face, y0, z0, x + px, v - pz, lift + 0.02), [face.f, 0, 0]);
   }
 }
 
@@ -392,12 +443,29 @@ export const MODEL_SCALE = 0.56;
 
 export function buildWayward(): BuiltHull {
   const k = new Kit(), rnd = seeded(7731);
+  knock = seeded(4471);
   hull(k, rnd);
   const nozzles = [nacelle(k, rnd, -PZ), nacelle(k, rnd, PZ)];
   mounting(k, rnd, -PZ);
   mounting(k, rnd, PZ);
-  const root = k.build(materials());
+  // years of it: old hits on the hull and nacelles, and the patches over older ones
+  const hf = octFaces(HW, HH), pf = octFaces(PW, PH);
+  const hits: Hit[] = [
+    crater(k, rnd, hf[1]!, HY, 0, -0.95, 0.02, 0.17),
+    crater(k, rnd, hf[6]!, HY, 0, 0.9, -0.08, 0.15),
+    crater(k, rnd, hf[0]!, HY, 0, 1.0, -0.47, 0.12),
+    crater(k, rnd, pf[0]!, PY, PZ, -0.82, 0.12, 0.16),
+    crater(k, rnd, pf[6]!, PY, -PZ, -1.35, 0.04, 0.17),
+    crater(k, rnd, pf[1]!, PY, PZ, 0.4, 0.0, 0.11),
+  ];
+  for (let i = 0; i < 16; i++) {
+    const onHull = rnd() < 0.55, faces = onHull ? hf : pf, z0 = onHull ? 0 : (rnd() < 0.5 ? -PZ : PZ);
+    const pick = onHull ? [0, 1, 7, 2, 6] : [0, z0 > 0 ? 1 : 7, z0 > 0 ? 2 : 6];
+    const face = faces[pick[Math.floor(rnd() * pick.length)]!]!;
+    const x = onHull ? -2.1 + rnd() * 3.8 : -1.9 + rnd() * 2.5;
+    patch(k, rnd, face, onHull ? HY : PY, z0, x, (rnd() - 0.5) * face.wid * 0.4);
+  }
+  const root = k.build(materials(hits));
   const tip = PZ + PW * 0.6;
   return { root, nozzles, wings: [[0.9, PY + PH / 2 - 0.05, -tip], [0.9, PY + PH / 2 - 0.05, tip]], shield: [3.1, 1.2, 2.45] };
 }
-

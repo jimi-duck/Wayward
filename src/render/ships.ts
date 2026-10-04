@@ -203,6 +203,12 @@ export class ShipView {
   private readonly coreMat = new MeshBasicMaterial({ color: CORE.clone(), side: DoubleSide, toneMapped: false });
   /** The engines light the ship's own stern and whatever is behind it. */
   private readonly glowLight = new PointLight(0xbfeaff, 0, 7, 2);
+  /**
+   * Her work lights: a warm fill from above and astern, close in, so the
+   * hull the chase camera looks at always reads, plates, wear and all,
+   * whichever way the sector's sun falls.
+   */
+  private readonly workLight = new PointLight(0xffd9a8, 5, 6, 1.6);
   private readonly rimMat = new MeshBasicMaterial({ color: BELL.clone(), toneMapped: false });
   /** The engines' colours: stock red, or a cosmetic. */
   private readonly core = CORE.clone();
@@ -245,7 +251,7 @@ export class ShipView {
       this.rollG.add(s);
     }
     this.shield = new Mesh(new SphereGeometry(1, 40, 20), this.shieldMat);
-    this.rollG.add(this.shield, this.glowLight);
+    this.rollG.add(this.shield, this.glowLight, this.workLight);
     this.place();
     this.pitchG.add(this.rollG);
     this.yawG.add(this.pitchG);
@@ -268,6 +274,7 @@ export class ShipView {
       e.trail.width = r * 0.3;
     }
     this.glowLight.position.set(Math.min(...this.model.nozzles.map((n) => n.p[0])) * S - 1.4, 0.2, 0);
+    this.workLight.position.set(-2.6, 2.2, 0.9);
     this.model.wings.forEach((w, i) => this.lights[i]!.position.set(w[0] * S, w[1] * S, w[2] * S));
     this.shield.scale.set(...(this.model.shield.map((v) => v * S) as V3));
   }

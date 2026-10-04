@@ -1,4 +1,4 @@
-import { BufferGeometry, CylinderGeometry, ExtrudeGeometry, Shape } from 'three';
+import { BufferAttribute, BufferGeometry, CylinderGeometry, ExtrudeGeometry, Shape, Vector3 } from 'three';
 import type { Kit, V3 } from './kit';
 
 // ── industrial parts ──────────────────────────────────────────────────────
@@ -24,6 +24,20 @@ export function bevelGeo(len: number, thick: number, wid: number, bevel = 0.02):
   const depth = Math.max(0.001, wid - 2 * b);
   const g = new ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelSize: b, bevelThickness: b, bevelSegments: 1 });
   g.translate(0, 0, -depth / 2);
+  return markEdges(g);
+}
+
+/** Flag the chamfers of a geometry as edges (wear.x = 1): any face not square to an axis. Worn paint starts there. */
+function markEdges(g: BufferGeometry): BufferGeometry {
+  const p = g.attributes.position!, n = p.count, wear = new Float32Array(n * 2);
+  const a = new Vector3(), b = new Vector3(), c = new Vector3();
+  for (let i = 0; i + 2 < n; i += 3) {
+    a.fromBufferAttribute(p, i); b.fromBufferAttribute(p, i + 1); c.fromBufferAttribute(p, i + 2);
+    const f = b.sub(a).cross(c.sub(a)).normalize();
+    const edge = Math.max(Math.abs(f.x), Math.abs(f.y), Math.abs(f.z)) < 0.98 ? 1 : 0;
+    for (let j = 0; j < 3; j++) wear[(i + j) * 2] = edge;
+  }
+  g.setAttribute('wear', new BufferAttribute(wear, 2));
   return g;
 }
 
