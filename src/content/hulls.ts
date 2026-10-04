@@ -4,7 +4,7 @@
 // thrust, rot and drag are the original's own multipliers and per-frame
 // values (one frame = one 60Hz step). Measured with the original's scripted
 // pilot, they give a top speed of about 450 px/s. The original's other two
-// hulls (the Sovereign and the Nova) were dropped in the gritty pass: the
+// hulls (two heavier classes) were dropped in the gritty pass: the
 // game has one ship.
 
 export interface Hull {
@@ -28,4 +28,4 @@ export interface Hull {
   drift?: boolean;
 }
 
-export const HULL: Hull = { name: 'Kestrel class', role: 'Survey tender', thrust: 1.965, rot: 1.10, drag: 0.961, grip: 0.05, plates: 3 };
+export const HULL: Hull = { name: 'Obedience class', role: 'Ore hauler', thrust: 1.965, rot: 1.10, drag: 0.961, grip: 0.05, plates: 3 };

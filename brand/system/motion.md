@@ -33,7 +33,7 @@ Tick meters light one segment at a time at Snap speed, never as a smooth slide, 
 
 ## The language of impact
 
-From the original game, unchanged: three effects that make a phaser hit, a warbird going up and a capital ship breaking apart read as the same event at three volumes.
+From the original game, unchanged: three effects that make a laser hit, a warbird going up and a capital ship breaking apart read as the same event at three volumes.
 
 | Effect | What it is | Small hit | Kill | Capital ship |
 |---|---|---|---|---|

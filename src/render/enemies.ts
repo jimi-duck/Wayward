@@ -23,29 +23,29 @@ import { Kit, metal, seeded, type V3 } from './kit';
 //   lancer  · the heavy cruiser: a spine, a fan for a head, side hulls,
 //             towers and batteries, three engines
 //   warbird · a double crescent around a central hull
-//   drone   · a cube, every face crusted with machinery, green slits
+//   drone   · a foundry, every face crusted with machinery, green slits
 //   weaver  · a crystal shard with blades
 //   freighter · a long spine of cargo pods, slow and fat
 //
 // A variant is an archetype in another faction's metal and engines (a
-// Romulan scout is the Scorpion), so models are built per archetype and
+// Office scout is the Whisper), so models are built per archetype and
 // faction. Capital ships are their faction's hull at several times the
 // size. Cloaking hulls get their own materials so each can fade on its own;
 // an elite carries a halo in its modifier's colour.
 
 export const NEON: Record<Faction, Color> = {
-  klingon: new Color(3.6, 1.3, 0.25),
-  cardassian: new Color(3.4, 2.5, 0.5),
-  romulan: new Color(0.5, 3.4, 1.2),
-  borg: new Color(0.7, 3.6, 0.6),
-  tholian: new Color(3.0, 1.0, 3.4),
+  gutter: new Color(3.6, 1.3, 0.25),
+  custody: new Color(3.4, 2.5, 0.5),
+  office: new Color(0.5, 3.4, 1.2),
+  voice: new Color(0.7, 3.6, 0.6),
+  thren: new Color(3.0, 1.0, 3.4),
 };
 const FACTION_METAL: Record<Faction, number> = {
-  klingon: 0x7a5646,
-  cardassian: 0x8f805c,
-  romulan: 0x5c7466,
-  borg: 0x3b403d,
-  tholian: 0x9a7a52,
+  gutter: 0x7a5646,
+  custody: 0x8f805c,
+  office: 0x5c7466,
+  voice: 0x3b403d,
+  thren: 0x9a7a52,
 };
 const WEB = new Color(2.2, 0.9, 3.4);
 const WHITE = new Color(3.5, 3.5, 3.5);
@@ -174,7 +174,7 @@ function build(kind: AlienKind, faction: Faction): Model {
 
 /** The derelict for the sector event: a lancer hull, dark and dead. */
 export function wreck(): Group {
-  const m = build('lancer', 'cardassian');
+  const m = build('lancer', 'custody');
   const dead = metal({ tint: 0x2e2a28, roughness: 0.8, metalness: 0.6, scale: 1.6 });
   for (const c of m.root.children as Mesh[]) c.material = c.name === 'lamp' ? new MeshBasicMaterial({ color: new Color(0.6, 0.15, 0.05), toneMapped: false }) : dead;
   m.root.scale.setScalar(4.5);
@@ -189,7 +189,7 @@ function factionMaterials(f: Faction): Record<string, Material> {
     m = {
       hull: metal({ tint, roughness: 0.6, metalness: 0.55, scale: 1.6 }),
       dark: metal({ tint: new Color(tint).multiplyScalar(0.55), roughness: 0.5, metalness: 0.7, scale: 2.2 }),
-      trim: f === 'tholian'
+      trim: f === 'thren'
         ? new MeshStandardMaterial({ color: 0x5a3a14, emissive: new Color(1.4, 0.7, 0.1), roughness: 0.25, metalness: 0.2 })
         : metal({ tint: 0x6a2220, roughness: 0.65, metalness: 0.35, scale: 2 }),
       lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
@@ -277,7 +277,7 @@ export class EnemyView {
       scene.add(im);
     }
     for (let i = 0; i < 8; i++) {
-      const b = new Mesh(new BoxGeometry(1, 1, 1).translate(0.5, 0, 0), new MeshBasicMaterial({ color: NEON.borg.clone(), transparent: true, blending: AdditiveBlending, depthWrite: false }));
+      const b = new Mesh(new BoxGeometry(1, 1, 1).translate(0.5, 0, 0), new MeshBasicMaterial({ color: NEON.voice.clone(), transparent: true, blending: AdditiveBlending, depthWrite: false }));
       b.visible = false;
       scene.add(b);
       this.beams.push(b);
@@ -369,7 +369,7 @@ export class EnemyView {
       bv.root.position.set(boss.x - boss.vx * back, boss.y - boss.vy * back, boss.z - boss.vz * back);
       const pitch = boss.arriving ? Math.atan2(boss.vy, Math.max(6, Math.hypot(boss.vx, boss.vz))) * 0.5 : 0;
       bv.hull.body.rotation.set(Math.sin(this.time * 0.6) * 0.03, boss.face, pitch, 'YZX');
-      if (boss.faction === 'borg') bv.hull.body.rotation.y = this.time * 0.15;
+      if (boss.faction === 'voice') bv.hull.body.rotation.y = this.time * 0.15;
       const vis = 1 - boss.cloak * 0.92;
       for (const m of bv.mats) { m.opacity = vis; m.transparent = vis < 1; }
       for (const g of bv.hull.glows) g.visible = boss.cloak < 0.6;
@@ -430,7 +430,7 @@ export class EnemyView {
 
   private makeBoss(b: Boss): void {
     this.bossView?.root.removeFromParent();
-    const kind = { klingon: 'raptor', cardassian: 'lancer', romulan: 'warbird', borg: 'drone', tholian: 'weaver' }[b.faction] as AlienKind;
+    const kind = { gutter: 'raptor', custody: 'lancer', office: 'warbird', voice: 'drone', thren: 'weaver' }[b.faction] as AlienKind;
     const model = this.model(kind, b.faction);
     // its own materials, so the cloak can fade them
     const own: Model = { root: model.root.clone(), engines: model.engines };
@@ -451,7 +451,7 @@ function smooth(t: number): number {
   return c < 0.5 ? 2 * c * c : 1 - Math.pow(-2 * c + 2, 2) / 2;
 }
 
-/** A Tholian web of unit radius: three rings and eight spokes. */
+/** A Thren web of unit radius: three rings and eight spokes. */
 function webGeometry(): BufferGeometry {
   const pts: number[] = [];
   for (const r of [0.35, 0.68, 1]) {

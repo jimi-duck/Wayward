@@ -16,7 +16,7 @@ def scene(spec):
 # ═══ IDENTITY ═══════════════════════════════════════════════════════════════
 APP_ICON = ('<svg viewBox="0 0 64 64" width="88" height="88" aria-label="App icon"><path d="M10 0H54L64 10V54L54 64H10L0 54V10Z" fill="#03060B"/>'
             '<path d="M10.6 1.5H53.4L62.5 10.6V53.4L53.4 62.5H10.6L1.5 53.4V10.6Z" fill="none" stroke="#00F0FF" stroke-opacity=".35" stroke-width=".6"/>'
-            '<g transform="translate(9.6 9.6) scale(.7)" style="--dilithium:#C77DFF;--signal:#00F0FF">' + mark(64).replace('<svg class="ab-mk "', '<svg class="ab-mk"').replace('width="64" height="64" ', '', 1) + '</g></svg>')
+            '<g transform="translate(9.6 9.6) scale(.7)" style="--krail:#C77DFF;--signal:#00F0FF">' + mark(64).replace('<svg class="ab-mk "', '<svg class="ab-mk"').replace('width="64" height="64" ', '', 1) + '</g></svg>')
 doc('Lockup', 'group="Identity" height=380', f'''
 <div class="wrap">
   <div class="primary">
@@ -47,11 +47,11 @@ figure.mini figcaption { grid-column: 1 / 3; }
 
 The mark and the constructed wordmark, and the four ways they go together. Use the primary lockup on the title screen and the lab page; the stacked lockup where width is short; the mark alone at 32px and under.
 
-**The mark, Breach.** A dilithium crystal with an arrowhead punching out through its upper face, debris following. It says the brand's one colour rule in a single picture: cyan is ours, violet is the field.
+**The mark, Breach.** A krail crystal with an arrowhead punching out through its upper face, debris following. It says the brand's one colour rule in a single picture: cyan is ours, violet is the field.
 
-**The wordmark** is constructed on a grid: square stems, bowls cut at 45°, a stroke one fifth of the cap height. Never retype it in Tektur or any font. ASTEROID sits in `ink`, BLASTER in `signal`.
+**The wordmark** is constructed on a grid: square stems, bowls cut at 45°, a stroke one fifth of the cap height. Never retype it in Tektur or any font. WAY sits in `ink`, WARD in `signal`.
 
-Provide: nothing but a ground. The inline SVG classes (`ab-wm`, `ab-mk`) take `ink`, `signal` and `dilithium` from the theme; add `is-mono` for a one-ink version. Files for other uses are in the Logos asset group.
+Provide: nothing but a ground. The inline SVG classes (`ab-wm`, `ab-mk`) take `ink`, `signal` and `krail` from the theme; add `is-mono` for a one-ink version. Files for other uses are in the Logos asset group.
 
 - Clear space: the width of the arrowhead (a quarter of the mark) on every side.
 - Minimum: the mark at 16px, the one-line wordmark at 160px wide, the stacked at 96px.
@@ -59,14 +59,14 @@ Provide: nothing but a ground. The inline SVG classes (`ab-wm`, `ab-mk`) take `i
 - Don't: recolour the two words, outline the wordmark, put the mark inside a circle, set it over a busy part of the field without a `hull` panel behind it.
 ''')
 
-ICON_NAMES = ['weapons','defence','ship','hull','dilithium','overcharge','chain','capital','stardate','torpedo','mine','alert','all-stop']
+ICON_NAMES = ['weapons','defence','ship','hull','krail','overcharge','chain','capital','score','torpedo','mine','alert','all-stop']
 doc('Icons', 'group="Identity" height=260', '<div class="grid">' + ''.join(
     f'<div class="cell{" c-gun" if n=="weapons" else " c-hull" if n=="defence" else " c-ship" if n=="ship" else ""}">{icon(n)}<span class="ab-anno">{n}</span></div>' for n in ICON_NAMES)
     + '</div>', style='''
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 1px; padding: 24px; }
 .cell { display: grid; justify-items: center; gap: 10px; padding: 18px 8px 14px; background: var(--hull); color: var(--ink); font-size: 28px; }
 .cell .ab-anno { font-size: 9px; }
-.c-gun { color: var(--command); } .c-hull { color: var(--signal); } .c-ship { color: var(--dilithium); }
+.c-gun { color: var(--command); } .c-hull { color: var(--signal); } .c-ship { color: var(--krail); }
 ''', readme='''
 # Icons
 
@@ -74,7 +74,7 @@ Thirteen line icons on a 24px grid: 1.75 stroke, square caps, miter joins, every
 
 Provide: `<i class="ab-i ab-i--weapons"></i>` inside anything with a `color`. Size with `font-size` (an icon is 1em square).
 
-- The three category icons wear their category colour on cards: `weapons` in `command`, `defence` in `signal`, `ship` in `dilithium`. Everywhere else an icon takes the colour of the text beside it.
+- The three category icons wear their category colour on cards: `weapons` in `command`, `defence` in `signal`, `ship` in `krail`. Everywhere else an icon takes the colour of the text beside it.
 - 16px is the smallest size; at 16px use `stroke-bracket` weight in any new icon.
 - New icons follow the same grid and the same rule as the frames: cut, never round.
 - No emoji, anywhere.
@@ -104,7 +104,7 @@ doc('Elbow', 'group="Frames" height=330', f'''
 ''', readme='''
 # Elbow
 
-The signature frame: an LCARS sweep re-cut at 45°. A 12px bar down the left (`stroke-bar`), a 3px rail along the top (`stroke-rail`), a chamfered outer corner (`cut-lg`) and a chamfered bend where they meet. The other two corners are a hairline at 45% of the elbow's colour, with the bottom-right cut to match.
+The signature frame: an industrial console sweep cut at 45°. A 12px bar down the left (`stroke-bar`), a 3px rail along the top (`stroke-rail`), a chamfered outer corner (`cut-lg`) and a chamfered bend where they meet. The other two corners are a hairline at 45% of the elbow's colour, with the bottom-right cut to match.
 
 Provide: `<section class="ab-elbow"><i class="ab-elbow-l"></i> … </section>`. The `<i>` draws the sweep. Put the head in `ab-elbow-head`: a code or the mark on the left, the title hard right in `ab-elbow-title` (`display` style, caps, in the elbow's colour) with the sub-line under it.
 
@@ -116,14 +116,14 @@ Provide: `<section class="ab-elbow"><i class="ab-elbow-l"></i> … </section>`. 
 | `is-lit` | adds `glow-signal` | The one panel on screen that is waiting for a decision |
 
 - One elbow on screen at a time. It means "the run has stopped and a decision is owed".
-- The title is set hard right, the way LCARS sets titles; the left end holds the mark or a code.
+- The title is set hard right, the way a console sets titles; the left end holds the mark or a code.
 - Don't nest an elbow in an elbow, or use one for a HUD element.
 ''')
 
 doc('Brackets', 'group="Frames" height=230', f'''
 <div class="wrap">
   <figure><div class="ab-brackets view ab-cat--hull">{SCH['deflector']}</div><figcaption class="ab-anno">Viewport · rule-2</figcaption></figure>
-  <figure><div class="ab-brackets is-lit view ab-cat--gun">{SCH['phaser']}</div><figcaption class="ab-anno">Viewport, lit · signal</figcaption></figure>
+  <figure><div class="ab-brackets is-lit view ab-cat--gun">{SCH['laser']}</div><figcaption class="ab-anno">Viewport, lit · signal</figcaption></figure>
   <figure><div class="target-wrap"><div class="ab-brackets is-target target"></div><svg viewBox="0 0 60 60" class="rock"><path class="ab-sch-rock" d="M18 12l16-4 12 10-2 16-16 6-12-10z"/></svg></div><figcaption class="ab-anno">Target lock · command</figcaption></figure>
 </div>''', style='''
 .wrap { display: flex; flex-wrap: wrap; gap: 28px; padding: 24px; align-items: flex-end; }
@@ -132,7 +132,7 @@ figure { margin: 0; display: grid; gap: 10px; }
 .view svg { width: 100%; height: 100%; display: block; }
 .target-wrap { position: relative; width: 120px; height: 120px; display: grid; place-items: center; }
 .target { position: absolute; inset: 22px; }
-.rock { width: 60px; height: 60px; --cat: var(--dilithium); }
+.rock { width: 60px; height: 60px; --cat: var(--krail); }
 ''', readme='''
 # Brackets
 
@@ -149,7 +149,7 @@ doc('Placard', 'group="Frames" height=200', f'''
 <div class="wrap">
   <div class="ab-placard ab-placard--caution is-live"><div class="ab-placard-stripes"></div><div class="ab-placard-body">
     <div class="ab-placard-kicker"><span><span class="ab-jp">警告</span> Yellow alert</span><span>CAP-01 · 2.6S</span></div>
-    <div class="ab-placard-title">I.K.S. Vor’cha approaching</div><div class="ab-placard-text">Klingon capital ship · hail in 2.6s</div></div></div>
+    <div class="ab-placard-title">I.K.S. Vor’cha approaching</div><div class="ab-placard-text">Gutter capital ship · hail in 2.6s</div></div></div>
   <div class="ab-placard ab-placard--alert"><div class="ab-placard-stripes"></div><div class="ab-placard-body">
     <div class="ab-placard-kicker"><span><span class="ab-jp">警報</span> Red alert</span><span>HULL 1 / 5</span></div>
     <div class="ab-placard-title">Hull critical</div><div class="ab-placard-text">One plate left. Damage control is on the next card.</div></div></div>
@@ -177,11 +177,11 @@ doc('Tag', 'group="Status" height=160', f'''
   <div class="row"><span class="ab-tag ab-tag--new">New</span><span class="ab-tag ab-tag--up">Lv 2 → 3</span><span class="ab-tag ab-tag--max">Lv 4 → Max</span><span class="ab-tag ab-tag--once">One use</span><span class="ab-tag">Hull</span></div>
   <div class="row">
     <span class="ab-tag"><i class="ab-dot ab-dot--nominal"></i>Shields 6s</span>
-    <span class="ab-tag"><i class="ab-dot ab-dot--signal"></i>Phasers 4s</span>
+    <span class="ab-tag"><i class="ab-dot ab-dot--signal"></i>Lasers 4s</span>
     <span class="ab-tag"><i class="ab-dot ab-dot--alert"></i>Tractor lock</span>
-    <span class="ab-reg">NCC-4733</span><span class="ab-reg">Sector 001 · Sol belt</span>
+    <span class="ab-reg">OBH-4733</span><span class="ab-reg">Cerro yards</span>
   </div>
-  <div class="row"><span class="ab-tag" style="color:var(--faction-klingon)"><i class="ab-dot" style="background:var(--faction-klingon)"></i>Klingon</span><span class="ab-tag" style="color:var(--faction-cardassian)"><i class="ab-dot" style="background:var(--faction-cardassian)"></i>Cardassian</span><span class="ab-tag" style="color:var(--faction-romulan)"><i class="ab-dot" style="background:var(--faction-romulan)"></i>Romulan</span><span class="ab-tag" style="color:var(--faction-borg)"><i class="ab-dot" style="background:var(--faction-borg)"></i>Borg</span><span class="ab-tag" style="color:var(--faction-tholian)"><i class="ab-dot" style="background:var(--faction-tholian)"></i>Tholian</span></div>
+  <div class="row"><span class="ab-tag" style="color:var(--faction-gutter)"><i class="ab-dot" style="background:var(--faction-gutter)"></i>Gutter</span><span class="ab-tag" style="color:var(--faction-custody)"><i class="ab-dot" style="background:var(--faction-custody)"></i>Custody</span><span class="ab-tag" style="color:var(--faction-office)"><i class="ab-dot" style="background:var(--faction-office)"></i>Office</span><span class="ab-tag" style="color:var(--faction-voice)"><i class="ab-dot" style="background:var(--faction-voice)"></i>Voice</span><span class="ab-tag" style="color:var(--faction-thren)"><i class="ab-dot" style="background:var(--faction-thren)"></i>Thren</span></div>
 </div>''', style='''
 .wrap { display: grid; gap: 14px; padding: 24px; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
@@ -197,9 +197,9 @@ Provide: `<span class="ab-tag">` with one to three words. Add a variant for card
 | `ab-tag--new` | You don't own this upgrade yet (`command`) |
 | `ab-tag--up` | You own it; this takes it up a level |
 | `ab-tag--max` | This pick finishes the system (`nominal`) |
-| `ab-tag--once` | Damage Control: one use, doesn't stack (`dilithium`) |
+| `ab-tag--once` | Damage Control: one use, doesn't stack (`krail`) |
 
-- A dot means something is running right now. `nominal` for shields, `signal` for overloaded phasers, `alert` for a tractor lock.
+- A dot means something is running right now. `nominal` for shields, `signal` for overloaded lasers, `alert` for a tractor lock.
 - Faction tags take the faction token for both the dot and the word.
 - Registry codes (`ab-reg`) are annotation, in `ink-3`. They carry a 47 where a number is free.
 ''')
@@ -207,15 +207,15 @@ Provide: `<span class="ab-tag">` with one to three words. Add a variant for card
 # ═══ INSTRUMENTS ════════════════════════════════════════════════════════════
 doc('TickMeter', 'group="Instruments" height=300', f'''
 <div class="wrap">
-  <div class="rail"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62"></div></div><span class="cap gem">{icon('dilithium')}<span class="ab-num s">109</span><span class="ab-label">/ 176</span></span></div>
+  <div class="rail"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62"></div></div><span class="cap gem">{icon('krail')}<span class="ab-num s">109</span><span class="ab-label">/ 176</span></span></div>
   <div class="line"><span class="ab-label">Overcharge</span><div class="ab-ticks-wrap" style="width:180px"><div class="ab-ticks" style="--v:.62"></div></div><span class="ab-key">Space</span></div>
   <div class="line"><span class="ab-label" style="color:var(--command)">Overcharge ready</span><div class="ab-ticks-wrap" style="width:180px;--on:var(--command)"><div class="ab-ticks ab-ticks--command" style="--v:1"></div></div><span class="ab-key is-on">Space</span></div>
-  <div class="line"><span class="ab-label" style="color:var(--faction-klingon)">I.K.S. Vor’cha</span><div class="ab-ticks-wrap" style="width:240px;--on:var(--alert)"><div class="ab-ticks ab-ticks--alert" style="--v:.44"></div></div><span class="ab-anno">Half hull · rage</span></div>
+  <div class="line"><span class="ab-label" style="color:var(--faction-gutter)">I.K.S. Vor’cha</span><div class="ab-ticks-wrap" style="width:240px;--on:var(--alert)"><div class="ab-ticks ab-ticks--alert" style="--v:.44"></div></div><span class="ab-anno">Half hull · rage</span></div>
   <div class="line"><div style="position:relative;width:260px"><div class="ab-ticks ab-ticks--tall" style="--v:.62;--off:var(--hull-3)"></div><i class="ab-cursor" style="--v:.62"></i></div><span class="ab-num s">62%</span><span class="ab-anno">Preparing refit…</span></div>
   <div class="stats">
     <span class="ab-label">Speed</span><div class="ab-pips" style="--v:1"></div>
     <span class="ab-label">Turning</span><div class="ab-pips" style="--v:.6"></div>
-    <span class="ab-label">Phasers</span><div class="ab-pips" style="--v:.3"></div>
+    <span class="ab-label">Lasers</span><div class="ab-pips" style="--v:.3"></div>
   </div>
 </div>''', style='''
 .wrap { display: grid; gap: 18px; padding: 24px; }
@@ -223,7 +223,7 @@ doc('TickMeter', 'group="Instruments" height=300', f'''
 .rail .grow { flex: 1; }
 .cap { color: var(--ink-2); white-space: nowrap; }
 .cap b { color: var(--signal); }
-.gem { display: inline-flex; align-items: baseline; gap: 6px; color: var(--dilithium); }
+.gem { display: inline-flex; align-items: baseline; gap: 6px; color: var(--krail); }
 .gem .ab-i { align-self: center; }
 .s { font-size: 20px; line-height: 20px; color: var(--signal); }
 .line { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
@@ -265,25 +265,25 @@ The player's health, as five cut plates: lit plates are hull you have, unlit pla
 
 Provide: `<span class="ab-plates">` with one `<i>` per plate up to `MAX_LIVES`, `class="on"` on the plates you have. Add `is-alert` at one plate: the last plate turns `alert` and blinks at 1.1s (steady under reduced motion).
 
-- Sits beside the stardate in the bottom-left HUD chip, and on the shakedown cards.
-- Ablative armour shows as a sixth plate drawn in `dilithium` outline while it is charged.
+- Sits beside the score in the bottom-left HUD chip, and on the shakedown cards.
+- Ablative armour shows as a sixth plate drawn in `krail` outline while it is charged.
 - Give the group an `aria-label` such as "Hull 3 of 5"; the plates carry no text of their own.
 ''')
 
 doc('Readout', 'group="Instruments" height=150', f'''
 <div class="wrap">
-  <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Stardate</span><span class="ab-num">1142</span></span><span class="ab-plates"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+  <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Score</span><span class="ab-num">1142</span></span><span class="ab-plates"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
   <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Chain</span><span class="ab-num" style="color:var(--signal)">×1.16</span></span></div>
-  <div class="ab-frame ab-chip is-lit"><span class="ab-readout"><span class="ab-label">{icon('dilithium')} Dilithium</span><span class="ab-num">115</span><span class="ab-label" style="color:var(--nominal)">▲ +23</span></span></div>
+  <div class="ab-frame ab-chip is-lit"><span class="ab-readout"><span class="ab-label">{icon('krail')} Krail</span><span class="ab-num">115</span><span class="ab-label" style="color:var(--nominal)">▲ +23</span></span></div>
 </div>''', style='''
 .wrap { display: flex; flex-wrap: wrap; gap: 18px; padding: 28px 24px; align-items: center; }
-.ab-label .ab-i { vertical-align: -2px; color: var(--dilithium); }
+.ab-label .ab-i { vertical-align: -2px; color: var(--krail); }
 ''', readme='''
 # Readout
 
 A label and a figure, the unit of the HUD: a quiet `label` word (it never changes) and a loud `numeral` figure (the only part worth a glance).
 
-Provide: `<span class="ab-readout"><span class="ab-label">Stardate</span><span class="ab-num">1142</span></span>`. Put readouts in an `ab-frame ab-chip` when they sit over the field; the chip's glass keeps them legible over a lit rock or a nebula.
+Provide: `<span class="ab-readout"><span class="ab-label">Score</span><span class="ab-num">1142</span></span>`. Put readouts in an `ab-frame ab-chip` when they sit over the field; the chip's glass keeps them legible over a lit rock or a nebula.
 
 - Figures use tabular numerals so a counting score does not jitter.
 - A change against last run is a `label` with a sign and `nominal` (gain) or `ink-3` (loss): ▲ +23, ▼ −19. Never colour alone.
@@ -305,7 +305,7 @@ doc('Button', 'group="Controls" height=170', f'''
 ''', readme='''
 # Button
 
-An LCARS pill with its ends cut to points. One primary action per screen.
+A console pill with its ends cut to points. One primary action per screen.
 
 Provide: a `<button class="ab-btn">` with a variant, one to three words of label, an optional leading icon.
 
@@ -339,9 +339,9 @@ Provide: `<span class="ab-key">Space</span>`. `is-on` fills it (`command-fill`):
 ''')
 
 CARDS = [
-  ('gun', 'weapons', 'torpedo', 'TRP-04', 'Photon torpedo bay', 'Adds torpedoes that chase their target.', 'They fire and reload on their own.', ['4 blast damage', 'Reloads every 3.4s'], 'new', '1', True),
+  ('gun', 'weapons', 'torpedo', 'TRP-04', 'Torpedo bay', 'Adds torpedoes that chase their target.', 'They fire and reload on their own.', ['4 blast damage', 'Reloads every 3.4s'], 'new', '1', True),
   ('hull', 'defence', 'deflector', 'DFL-02', 'Navigational deflector', 'Push asteroids away from your bow.', '', ['Always on'], 'new', '2', False),
-  ('gun', 'weapons', 'phaser', 'PHA-07', 'Phaser array', 'Your phasers fire faster.', '', ['3.5 → 4.1 shots/sec'], 'up', '3', False),
+  ('gun', 'weapons', 'laser', 'PHA-07', 'Laser array', 'Your lasers fire faster.', '', ['3.5 → 4.1 shots/sec'], 'up', '3', False),
 ]
 def card(c, selected=None):
     cat, ic, sch, code, name, ben, cav, figs, badge, key, sel = c
@@ -392,7 +392,7 @@ doc('TitleScreen', 'group="Screens" height=540 width=960', f'''
   <div class="ab-brackets frame-b"></div>
   <header class="top">
     <span class="ab-anno">AB-47 · Tactical simulation · Build 0.1</span>
-    <span class="ab-anno">Stardate 47634.4 · Sector 001</span>
+    <span class="ab-anno">Day 31 · Cerro yards</span>
   </header>
   <main class="hero">
     {wordmark(stacked=True, width=420)}
@@ -400,14 +400,14 @@ doc('TitleScreen', 'group="Screens" height=540 width=960', f'''
     <div class="cta"><button class="ab-btn ab-btn--command">Launch</button><span class="hint"><span class="ab-key">Space</span><span class="ab-label">or tap</span></span></div>
     <div class="sec"><button class="ab-btn ab-btn--ghost ab-btn--sm">How to fly</button><button class="ab-btn ab-btn--ghost ab-btn--sm">Settings</button></div>
   </main>
-  <div class="callout"><span class="ab-anno">Target · C-type</span><span class="ab-label">Dilithium 0.47 kt</span></div>
+  <div class="callout"><span class="ab-anno">Target · C-type</span><span class="ab-label">Krail 0.47 kt</span></div>
   <aside class="scale" aria-hidden="true">
     <span class="ab-jp jp">小惑星</span>
     <ul><li class="ab-anno">47°12′N</li><li class="ab-anno">31°06′N</li><li class="ab-anno">VEL 0</li><li class="ab-anno">HDG 047</li><li class="ab-anno">R 1.4 AU</li></ul>
   </aside>
   <footer class="bot">
     <span class="keys"><span class="ab-key">←</span><span class="ab-key">→</span><span class="ab-label">Helm</span><span class="ab-key">↑</span><span class="ab-label">Impulse</span><span class="ab-key">Space</span><span class="ab-label">Overcharge</span></span>
-    <span class="ab-rail sector">Sector 001 · Sol belt</span>
+    <span class="ab-rail sector">Cerro yards</span>
   </footer>
 </div>''', style=SCREEN + '''
 .top, .bot { position: absolute; left: 40px; right: 40px; display: flex; justify-content: space-between; align-items: center; }
@@ -434,7 +434,7 @@ readme='''
 
 The first screen: the stacked wordmark, the tagline, one command button. Behind it a single crystal asteroid sits inside a tilted orbit, the moment before the first shot.
 
-Composition: the wordmark hard left at 420px; the tagline in Tektur at 22px, `ink-2`; LAUNCH as the only `command` element on screen; secondary actions as small ghost buttons under it. The right edge carries a measured scale with the label script set vertically, as on a technical drawing. Every annotation is true for this screen: stardate, sector, heading, the target rock's dilithium yield.
+Composition: the wordmark hard left at 420px; the tagline in Tektur at 22px, `ink-2`; LAUNCH as the only `command` element on screen; secondary actions as small ghost buttons under it. The right edge carries a measured scale with the label script set vertically, as on a technical drawing. Every annotation is true for this screen: score, sector, heading, the target rock's krail yield.
 
 - The scene is the 3D sector, rendered live. The canvas here is a stand-in.
 - One callout, with a leader line, on the hero rock. It names the thing; it does not decorate it.
@@ -445,16 +445,16 @@ doc('HUD', 'group="Screens" height=540 width=960', f'''
 <div class="screen">
   <canvas class="scene" aria-hidden="true"></canvas>
   <div class="ab-brackets frame-b"></div>
-  <div class="xp"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62"></div></div><span class="cap gem">{icon('dilithium')}<span class="ab-num s">109</span><span class="ab-label">/ 176</span></span></div>
+  <div class="xp"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62"></div></div><span class="cap gem">{icon('krail')}<span class="ab-num s">109</span><span class="ab-label">/ 176</span></span></div>
   <button class="ab-btn ab-btn--ghost ab-btn--sm stop">{icon('all-stop')} All stop <span class="ab-key">Esc</span></button>
   <div class="boss ab-brackets is-target">
-    <div class="bname"><i class="ab-dot" style="background:var(--faction-klingon)"></i><span class="ab-label" style="color:var(--faction-klingon)">I.K.S. Vor’cha</span></div>
+    <div class="bname"><i class="ab-dot" style="background:var(--faction-gutter)"></i><span class="ab-label" style="color:var(--faction-gutter)">I.K.S. Vor’cha</span></div>
     <div class="ab-ticks-wrap" style="--on:var(--alert)"><div class="ab-ticks ab-ticks--alert" style="--v:.7;height:8px"></div></div>
-    <span class="ab-anno">Klingon · capital · 31s</span>
+    <span class="ab-anno">Gutter · capital · 31s</span>
   </div>
   <span class="ab-anno telemetry">VEL 312 · HDG 047 · 47°12′N · Graze ×3</span>
   <div class="hud">
-    <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Stardate</span><span class="ab-num">1142</span></span><span class="ab-plates" aria-label="Hull 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+    <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Score</span><span class="ab-num">1142</span></span><span class="ab-plates" aria-label="Hull 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
     <div class="ab-frame ab-chip"><span class="ab-label">{icon('overcharge')} Overcharge</span><div class="ab-ticks-wrap" style="width:150px"><div class="ab-ticks" style="--v:.62"></div></div><span class="ab-key">Space</span></div>
     <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Chain</span><span class="ab-num" style="color:var(--signal)">×1.16</span></span></div>
   </div>
@@ -464,7 +464,7 @@ doc('HUD', 'group="Screens" height=540 width=960', f'''
 .xp .grow { flex: 1; }
 .cap { color: var(--ink-2); white-space: nowrap; }
 .cap b { color: var(--signal); }
-.gem { display: inline-flex; align-items: baseline; gap: 6px; color: var(--dilithium); }
+.gem { display: inline-flex; align-items: baseline; gap: 6px; color: var(--krail); }
 .gem .ab-i { align-self: center; }
 .s { font-size: 20px; line-height: 20px; color: var(--signal); }
 .stop { position: absolute; right: 30px; top: 50px; }
@@ -475,14 +475,14 @@ doc('HUD', 'group="Screens" height=540 width=960', f'''
 .telemetry { position: absolute; left: 32px; bottom: 76px; }
 .hud { position: absolute; left: 24px; right: 24px; bottom: 22px; display: flex; justify-content: space-between; align-items: center; }
 .ab-label .ab-i { vertical-align: -2px; color: var(--signal); }
-''', script=scene("{seed: 9, rocks: [[0.12, 0.3, 30], [0.2, 0.7, 18], [0.36, 0.22, 14], [0.33, 0.6, 24], [0.62, 0.82, 16], [0.86, 0.66, 28], [0.75, 0.47, 12], [0.05, 0.58, 22], [0.48, 0.12, 20]], shards: [[0.28, 0.48], [0.3, 0.52], [0.27, 0.53]], burst: [0.3, 0.5], enemies: [[0.66, 0.2, 1.9, 2.6, 'faction-klingon', 1], [0.2, 0.46, 1, 1.2, 'faction-klingon'], [0.9, 0.52, 1, -1.9, 'faction-klingon', 1]], ship: {x: 0.5, y: 0.56, scale: 1.4, orbit: 0.62, bolts: [[-2, -40, 0, -16], [-2, -72, 0, -16], [6, -54, 4, -14]]}, leaders: [[0.66, 0.2, 0.71, 0.28, 0.729]]}"),
+''', script=scene("{seed: 9, rocks: [[0.12, 0.3, 30], [0.2, 0.7, 18], [0.36, 0.22, 14], [0.33, 0.6, 24], [0.62, 0.82, 16], [0.86, 0.66, 28], [0.75, 0.47, 12], [0.05, 0.58, 22], [0.48, 0.12, 20]], shards: [[0.28, 0.48], [0.3, 0.52], [0.27, 0.53]], burst: [0.3, 0.5], enemies: [[0.66, 0.2, 1.9, 2.6, 'faction-gutter', 1], [0.2, 0.46, 1, 1.2, 'faction-gutter'], [0.9, 0.52, 1, -1.9, 'faction-gutter', 1]], ship: {x: 0.5, y: 0.56, scale: 1.4, orbit: 0.62, bolts: [[-2, -40, 0, -16], [-2, -72, 0, -16], [6, -54, 4, -14]]}, leaders: [[0.66, 0.2, 0.71, 0.28, 0.729]]}"),
 readme='''
 # HUD
 
 The in-run heads-up display. Three rules decide where everything goes: progress across the top, what's in your hand along the bottom, and only the capital ship gets a label in the world.
 
-- **Top: the refit rail.** Full width, because progress to the next upgrade is the number a run is steered by. REFIT in `rail-label`, the meter in `signal`, the dilithium count in `dilithium` and `signal`.
-- **Bottom: three chips.** What I'm flying (stardate and hull plates), what I can do next (overcharge and its key), what I'm scoring (chain). Each sits on `hull` glass so it stays legible over a lit rock or a nebula.
+- **Top: the refit rail.** Full width, because progress to the next upgrade is the number a run is steered by. REFIT in `rail-label`, the meter in `signal`, the krail count in `krail` and `signal`.
+- **Bottom: three chips.** What I'm flying (score and hull plates), what I can do next (overcharge and its key), what I'm scoring (chain). Each sits on `hull` glass so it stays legible over a lit rock or a nebula.
 - **In the world: one callout.** The capital ship carries its name, hull meter and fuse on a tag with a leader line, in target-lock brackets. Off screen, the tag pins to the nearest edge with an arrow. Ordinary enemies are never labelled.
 - **The overcharge ring** lives under the ship in the world as well as in the bottom chip: 28 segments on a tilted orbit that light as near misses charge it. The player's eyes are on the ship, so the gauge goes there too.
 - **Telemetry** in `annotation` above the bottom-left chip shows true values: velocity, heading, graze count. It is texture that rewards a look.
@@ -535,14 +535,14 @@ doc('Hail', 'group="Screens" height=540 width=960', f'''
     <div class="ab-placard-stripes band" style="--stripe-a:var(--alert);--stripe-b:var(--hull)"></div>
     <div class="ab-elbow-head">
       <div class="ab-elbow-code">{icon('capital', 'cap-i')}<span class="ab-anno">Contact 02<br>Bearing 047 · 2.6 AU</span></div>
-      <div class="ab-elbow-title"><div class="ab-title">Red alert <span class="ab-jp">警報</span></div><div class="ab-sub"><b style="color:var(--faction-klingon)">I.K.S. Vor’cha</b> · on intercept course</div></div>
+      <div class="ab-elbow-title"><div class="ab-title">Red alert <span class="ab-jp">警報</span></div><div class="ab-sub"><b style="color:var(--faction-gutter)">I.K.S. Vor’cha</b> · on intercept course</div></div>
     </div>
     <div class="opts">
       <button class="ab-frame opt is-selected">
         <span class="verb"><em>Engage</em><span class="ab-key is-on">1</span></span>
         <span class="ab-head">Stand and fight</span>
         <span class="ab-body">She’ll fight back, and her escorts attack together.</span>
-        <span class="lines"><span class="ab-data">+1800 stardate</span><span class="ab-data">Battle salvage · one upgrade</span><span class="ab-data">+2 hull · dilithium · a power-up</span></span>
+        <span class="lines"><span class="ab-data">+1800 score</span><span class="ab-data">Battle salvage · one upgrade</span><span class="ab-data">+2 hull · krail · a power-up</span></span>
       </button>
       <button class="ab-frame opt">
         <span class="verb"><em>Evade</em><span class="ab-key">2</span></span>
@@ -568,7 +568,7 @@ doc('Hail', 'group="Screens" height=540 width=960', f'''
 .opt:not(.is-selected) .verb em { color: var(--ink); }
 .lines { display: grid; gap: 3px; padding-top: 10px; border-top: 1px solid var(--rule); }
 .foot { display: flex; align-items: center; gap: 8px; }
-''', script=scene("{seed: 9, rocks: [[0.12, 0.3, 30], [0.86, 0.66, 28]], enemies: [[0.7, 0.24, 2.4, 2.6, 'faction-klingon']], ship: {x: 0.5, y: 0.6, scale: 1.4}, dim: 0.58}"),
+''', script=scene("{seed: 9, rocks: [[0.12, 0.3, 30], [0.86, 0.66, 28]], enemies: [[0.7, 0.24, 2.4, 2.6, 'faction-gutter']], ship: {x: 0.5, y: 0.6, scale: 1.4}, dim: 0.58}"),
 readme='''
 # Hail
 
@@ -577,8 +577,8 @@ The one decision in a run that is not an upgrade. A capital ship is announced (y
 Built from an `ab-elbow is-alert`, an alert stripe band along the rail, RED ALERT hard right with the ship's name in its faction token, and two option buttons as `ab-frame`s. The fight option is selected by default and carries the `command` treatment; Evade sits at rest.
 
 - The two sides stay uneven in opposite directions, and the copy says so plainly: the bounty on one side, the cost in tempo on the other. The figures are this contact's real figures.
-- When Evade is locked (just fled, or a Borg cube) its card drops to `ink-3`, its key cap goes, and its lines read "Not available · Recharges after a fight" or "No escape from a cube".
-- Romulans never hail: their warning placard reads "decloaking" and the fight starts.
+- When Evade is locked (just fled, or a Voice foundry) its card drops to `ink-3`, its key cap goes, and its lines read "Not available · Recharges after a fight" or "No escape from a foundry".
+- Office ships never hail: their warning placard reads "decloaking" and the fight starts.
 - Keys: 1 or F engages, 2 or E evades. Held keys never answer.
 ''')
 
@@ -590,7 +590,7 @@ def hull_card(n, role, cls, reg, length, sch, speed, turn, phas, plates, weapon_
             f'<div class="hc-view ab-brackets ab-cat--hull">{SCH[sch]}<span class="ab-anno len">L {length} M</span></div>'
             f'<div class="hc-stats"><span class="ab-label">Speed</span><div class="ab-pips" style="--v:{speed}"></div>'
             f'<span class="ab-label">Turning</span><div class="ab-pips" style="--v:{turn}"></div>'
-            f'<span class="ab-label">Phasers</span><div class="ab-pips" style="--v:{phas}"></div>'
+            f'<span class="ab-label">Lasers</span><div class="ab-pips" style="--v:{phas}"></div>'
             f'<span class="ab-label">Hull</span><span class="ab-plates">{plates_html}</span></div>'
             f'<p class="ab-body opens">{icon(weapon_icon)} {opens}</p><div class="hc-figs">{figs_html}</div>'
             f'<p class="ab-small tl">{tagline}</p></article>')
@@ -605,8 +605,8 @@ doc('Shakedown', 'group="Screens" height=540 width=960', f'''
     </div>
     <div class="hulls">
       {hull_card('01', 'Escort', 'Defiant class', 'NX-4720', '170', 'escort', 1, .6, .6, 3, 'torpedo', 'You start with torpedoes that chase their target.', ['4 blast damage', 'Reloads every 3.4s'], 'Quick, thin-skinned, built to close the distance.')}
-      {hull_card('02', 'Cruiser', 'Sovereign class', 'NCC-4733', '685', 'cruiser', .3, .3, 1, 4, 'weapons', 'You start with a wide spread of beams.', ['3 beams per shot', '3.5 shots/sec'], 'Heavy, patient, hard to put a hole in.', True)}
-      {hull_card('03', 'Scout', 'Nova class', 'NCC-4747', '165', 'scout', .7, 1, .3, 2, 'mine', 'You start with mines that wait in your wake.', ['5 blast damage', 'Lays every 4.2s'], 'Turns on a coin. Two plates and no second chances.')}
+      {hull_card('02', 'Cruiser', 'Diligence class', 'OBH-4733', '685', 'cruiser', .3, .3, 1, 4, 'weapons', 'You start with a wide spread of beams.', ['3 beams per shot', '3.5 shots/sec'], 'Heavy, patient, hard to put a hole in.', True)}
+      {hull_card('03', 'Scout', 'Patience class', 'OBH-4747', '165', 'scout', .7, 1, .3, 2, 'mine', 'You start with mines that wait in your wake.', ['5 blast damage', 'Lays every 4.2s'], 'Turns on a coin. Two plates and no second chances.')}
     </div>
     <footer class="foot"><span class="ab-label">Choose a hull</span><span class="ab-key">1</span><span class="ab-key is-on">2</span><span class="ab-key">3</span></footer>
   </section>
@@ -645,7 +645,7 @@ Each column is an `ab-frame`: an outlined index numeral in `rail` (01 02 03), ro
 
 - The panel uses `ab-elbow is-command`: this is the one panel about the ship itself.
 - Colour stays categorical here. The selected hull takes `command`; the schematics are `signal` because they are ours.
-- Lengths are the classes' canon lengths. Registries are invented and carry a 47.
+- Lengths are the classes' spec-sheet lengths. Registries are invented and carry a 47.
 - The Nova opens on two plates, so its card says so twice: in the plate row and in its tag line.
 ''')
 
@@ -656,20 +656,20 @@ doc('HullBreach', 'group="Screens" height=540 width=960', f'''
     <div class="top">
       <div class="hero">
         <div class="ab-title t">Hull breach <span class="ab-jp">船体損傷</span></div>
-        <span class="ab-label">Stardate</span>
+        <span class="ab-label">Score</span>
         <span class="big">7072</span>
         <span class="ab-label sub">145s adrift · refit 4 · <b>new best</b></span>
       </div>
       <div class="tiles">
         <div class="ab-frame tile"><span class="ab-label">{icon('chain')} Best chain</span><span class="ab-num">13</span><span class="ab-anno">▼ −19 · best 32</span></div>
-        <div class="ab-frame tile is-up"><span class="ab-label">{icon('dilithium')} Dilithium</span><span class="ab-num">115</span><span class="ab-anno up">▲ +23 · best 92</span></div>
+        <div class="ab-frame tile is-up"><span class="ab-label">{icon('krail')} Krail</span><span class="ab-num">115</span><span class="ab-anno up">▲ +23 · best 92</span></div>
         <div class="ab-frame tile"><span class="ab-label">{icon('overcharge')} Overcharges</span><span class="ab-num">2</span><span class="ab-anno">▲ +2 · best 0</span></div>
         <div class="ab-frame tile"><span class="ab-label">{icon('capital')} Capital ships</span><span class="ab-num">1</span><span class="ab-anno">Matched · best 1</span></div>
       </div>
     </div>
     <figure class="chart">
       <figcaption><span class="ab-label">Run performance</span><span class="key"><i class="k-run"></i><span class="ab-anno">This run</span><i class="k-best"></i><span class="ab-anno">Previous best</span></span></figcaption>
-      <svg viewBox="0 0 820 130" preserveAspectRatio="none" aria-label="Stardate over time: this run 7072 at 145s, previous best 4203 at 82s">
+      <svg viewBox="0 0 820 130" preserveAspectRatio="none" aria-label="Score over time: this run 7072 at 145s, previous best 4203 at 82s">
         <g class="grid"><line x1="40" x2="810" y1="10" y2="10"/><line x1="40" x2="810" y1="47" y2="47"/><line x1="40" x2="810" y1="84" y2="84"/><line x1="40" x2="810" y1="121" y2="121"/></g>
         <g class="ax"><text x="32" y="13">8k</text><text x="32" y="50">6k</text><text x="32" y="87">3k</text><text x="32" y="124">0</text>
           <text x="40" y="130" class="t0">0</text><text x="290" y="130">50s</text><text x="540" y="130">100s</text><text x="790" y="130">150s</text></g>
@@ -712,9 +712,9 @@ doc('HullBreach', 'group="Screens" height=540 width=960', f'''
 readme='''
 # HullBreach
 
-The end of a run, as a report: the final stardate, four tiles that compare this run with your best, the run's curve against the best run's curve, and one button.
+The end of a run, as a report: the final score, four tiles that compare this run with your best, the run's curve against the best run's curve, and one button.
 
-Built from an `ab-elbow is-alert`. HULL BREACH in `alert` with the label script; STARDATE as a `label`; the figure in `numeral-xl`; the summary line in `signal` with "new best" in `nominal`. Tiles are `ab-frame`s with `cut-sm`; a tile that beat its best takes a `nominal` edge and a ▲ figure. The chart draws this run in `signal` and the previous best dashed in `ink-3`, on `rule` gridlines.
+Built from an `ab-elbow is-alert`. HULL BREACH in `alert` with the label script; SCORE as a `label`; the figure in `numeral-xl`; the summary line in `signal` with "new best" in `nominal`. Tiles are `ab-frame`s with `cut-sm`; a tile that beat its best takes a `nominal` edge and a ▲ figure. The chart draws this run in `signal` and the previous best dashed in `ink-3`, on `rule` gridlines.
 
 - Play again is the only way out, and it is a real button. A run ends with keys held, so "press any key" would start the next run before this one was read.
 - Focus lands on Play again when the panel opens; the panel ignores input for 0.4s.
@@ -724,9 +724,9 @@ Built from an `ab-elbow is-alert`. HULL BREACH in `alert` with the label script;
 doc('MobileHUD', 'group="Screens" height=760 width=390', f'''
 <div class="phone">
   <canvas class="scene" aria-hidden="true"></canvas>
-  <div class="xp"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62;height:10px"></div></div><span class="cap gem">{icon('dilithium')}<span class="ab-label n">109</span></span></div>
+  <div class="xp"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62;height:10px"></div></div><span class="cap gem">{icon('krail')}<span class="ab-label n">109</span></span></div>
   <div class="row">
-    <div class="ab-frame ab-chip c"><span class="ab-readout"><span class="ab-label">Stardate</span><span class="ab-num">1142</span></span><span class="ab-plates"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+    <div class="ab-frame ab-chip c"><span class="ab-readout"><span class="ab-label">Score</span><span class="ab-num">1142</span></span><span class="ab-plates"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
     <div class="right">
       <button class="ab-frame stop" aria-label="All stop">{icon('all-stop')}</button>
       <div class="ab-frame ab-chip c"><span class="ab-readout"><span class="ab-label">Chain</span><span class="ab-num" style="color:var(--signal)">×1.16</span></span></div>
@@ -745,7 +745,7 @@ body { overflow: hidden; }
 .xp .grow { flex: 1; }
 .cap { color: var(--ink-2); white-space: nowrap; font-size: 13px; }
 .cap b { color: var(--signal); }
-.gem { display: inline-flex; align-items: center; gap: 4px; color: var(--dilithium); }
+.gem { display: inline-flex; align-items: center; gap: 4px; color: var(--krail); }
 .gem .n { color: var(--signal); letter-spacing: .06em; }
 .row { position: absolute; left: 12px; right: 12px; top: 52px; display: flex; justify-content: space-between; align-items: flex-start; }
 .c { padding: 6px 10px; gap: 10px; }
@@ -769,13 +769,13 @@ body { overflow: hidden; }
 .lbl { position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 4px; font: 500 10px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; }
 .lbl .ab-i { font-size: 18px; color: var(--signal); }
 .hint { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; }
-''', script=scene("{seed: 12, stars: 200, rocks: [[0.18, 0.3, 26], [0.8, 0.22, 18], [0.3, 0.62, 16], [0.84, 0.55, 30], [0.12, 0.66, 14]], enemies: [[0.66, 0.36, 1.2, 2.4, 'faction-klingon', 1]], shards: [[0.45, 0.3], [0.48, 0.33]], ship: {x: 0.5, y: 0.5, scale: 1.3, orbit: 0.62, bolts: [[-2, -40, 0, -14], [-2, -66, 0, -14]]}}"),
+''', script=scene("{seed: 12, stars: 200, rocks: [[0.18, 0.3, 26], [0.8, 0.22, 18], [0.3, 0.62, 16], [0.84, 0.55, 30], [0.12, 0.66, 14]], enemies: [[0.66, 0.36, 1.2, 2.4, 'faction-gutter', 1]], shards: [[0.45, 0.3], [0.48, 0.33]], ship: {x: 0.5, y: 0.5, scale: 1.3, orbit: 0.62, bolts: [[-2, -40, 0, -14], [-2, -66, 0, -14]]}}"),
 readme='''
 # MobileHUD
 
 The HUD at phone size, portrait. The thumbs own the bottom third, so everything you read moves to the top and everything you press moves to the bottom.
 
-- **Top:** the refit rail at 40px, then the stardate and hull chip on the left and All stop over the chain chip on the right. Respect the top safe-area inset.
+- **Top:** the refit rail at 40px, then the score and hull chip on the left and All stop over the chain chip on the right. Respect the top safe-area inset.
 - **Bottom left: the stick.** It floats: the whole screen is its catchment, so the ring comes to the thumb. It rests here as an affordance. It is one of the three round things in the system.
 - **Bottom right: Release.** An octagon, and it doubles as the overcharge gauge: 30 segments round its face fill as you graze, and the button turns `command` with a filled label when the gauge is full. One control, one gauge, under the thumb that uses it.
 - Barrel roll on touch is a quick swipe with the stick thumb (decided in M1).

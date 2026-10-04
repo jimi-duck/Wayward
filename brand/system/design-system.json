@@ -5,7 +5,7 @@
     "v": 1,
     "at": "2026-10-03T04:59:01Z"
   },
-  "title": "Asteroid Blaster Brand",
+  "title": "Wayward Brand",
   "namespace": "AsteroidBlaster",
   "libraries": [],
   "sections": {},
@@ -18,60 +18,60 @@
       "name": "Logos",
       "tile": "l",
       "order": [
-        "asteroid-blaster-mark.svg",
-        "asteroid-blaster-mark-ink.svg",
-        "asteroid-blaster-mark-paper.svg",
-        "asteroid-blaster-wordmark.svg",
-        "asteroid-blaster-wordmark-paper.svg",
-        "asteroid-blaster-stacked.svg",
-        "asteroid-blaster-stacked-paper.svg",
-        "asteroid-blaster-app-icon.svg"
+        "wayward-mark.svg",
+        "wayward-mark-ink.svg",
+        "wayward-mark-paper.svg",
+        "wayward-wordmark.svg",
+        "wayward-wordmark-paper.svg",
+        "wayward-stacked.svg",
+        "wayward-stacked-paper.svg",
+        "wayward-app-icon.svg"
       ],
       "files": {
-        "asteroid-blaster-mark.svg": {
-          "name": "asteroid-blaster-mark.svg",
+        "wayward-mark.svg": {
+          "name": "wayward-mark.svg",
           "blob": "9c6ab37218cf30b0b7e4365b507a9d4f",
           "size": 930,
           "type": "image/svg+xml"
         },
-        "asteroid-blaster-mark-ink.svg": {
-          "name": "asteroid-blaster-mark-ink.svg",
+        "wayward-mark-ink.svg": {
+          "name": "wayward-mark-ink.svg",
           "blob": "0a9ecc5c6da9215b6fee26ac9dc0b588",
           "size": 930,
           "type": "image/svg+xml"
         },
-        "asteroid-blaster-mark-paper.svg": {
-          "name": "asteroid-blaster-mark-paper.svg",
+        "wayward-mark-paper.svg": {
+          "name": "wayward-mark-paper.svg",
           "blob": "b4ddd07a64ca8ea8f9e5800d543f2121",
           "size": 930,
           "type": "image/svg+xml"
         },
-        "asteroid-blaster-wordmark.svg": {
-          "name": "asteroid-blaster-wordmark.svg",
+        "wayward-wordmark.svg": {
+          "name": "wayward-wordmark.svg",
           "blob": "dd68846ff454d0b158a33b0490b74bd4",
           "size": 1551,
           "type": "image/svg+xml"
         },
-        "asteroid-blaster-wordmark-paper.svg": {
-          "name": "asteroid-blaster-wordmark-paper.svg",
+        "wayward-wordmark-paper.svg": {
+          "name": "wayward-wordmark-paper.svg",
           "blob": "136e4c3e74ed389d5b12de9a9a97c164",
           "size": 1551,
           "type": "image/svg+xml"
         },
-        "asteroid-blaster-stacked.svg": {
-          "name": "asteroid-blaster-stacked.svg",
+        "wayward-stacked.svg": {
+          "name": "wayward-stacked.svg",
           "blob": "b547c918fa4cf8363fd028efd80ac044",
           "size": 1552,
           "type": "image/svg+xml"
         },
-        "asteroid-blaster-stacked-paper.svg": {
-          "name": "asteroid-blaster-stacked-paper.svg",
+        "wayward-stacked-paper.svg": {
+          "name": "wayward-stacked-paper.svg",
           "blob": "95c2d7bf69a9aa8d1bee09beb34c8675",
           "size": 1552,
           "type": "image/svg+xml"
         },
-        "asteroid-blaster-app-icon.svg": {
-          "name": "asteroid-blaster-app-icon.svg",
+        "wayward-app-icon.svg": {
+          "name": "wayward-app-icon.svg",
           "blob": "c1c40db415eb2baa9390653686804516",
           "size": 1191,
           "type": "image/svg+xml"
@@ -86,11 +86,11 @@
         "defence.svg",
         "ship.svg",
         "hull.svg",
-        "dilithium.svg",
+        "krail.svg",
         "overcharge.svg",
         "chain.svg",
         "capital.svg",
-        "stardate.svg",
+        "score.svg",
         "torpedo.svg",
         "mine.svg",
         "alert.svg",
@@ -121,8 +121,8 @@
           "size": 232,
           "type": "image/svg+xml"
         },
-        "dilithium.svg": {
-          "name": "dilithium.svg",
+        "krail.svg": {
+          "name": "krail.svg",
           "blob": "63f86691091fc97aa39e430c02b40f71",
           "size": 251,
           "type": "image/svg+xml"
@@ -145,8 +145,8 @@
           "size": 264,
           "type": "image/svg+xml"
         },
-        "stardate.svg": {
-          "name": "stardate.svg",
+        "score.svg": {
+          "name": "score.svg",
           "blob": "5e371140bac469d8d00508a0d914b09e",
           "size": 241,
           "type": "image/svg+xml"

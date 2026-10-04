@@ -1,17 +1,19 @@
 import { angleDelta, clamp } from '../core/math';
 import type { Sector } from '../render/sector';
 import type { Boss } from '../sim/bosses';
+import { places, rockYield } from '../sim/breakout';
 import { ENCOUNTERS } from '../sim/encounters';
 import { alienBonus, alienLabel, cloaked, type Alien } from '../sim/enemies';
 import { ROCK_KINDS, type Rock } from '../sim/field';
-import { POWER_LABEL } from '../sim/pickups';
+import { LOOSE, POWER_LABEL } from '../sim/pickups';
+import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
 import { NEON_CSS } from './colors';
 
 // ── targeting, in the world ───────────────────────────────────────────────
 // What the targeting computer is looking at, drawn where it is:
-//   the gunsight · where the phasers go; it lights, and the target shows a
+//   the gunsight · where the lasers go; it lights, and the target shows a
 //                  centre mark, when a lance fired now would hit
 //   the target   · the torpedo lock if there is one; otherwise the hull or
 //                  the rock nearest the line of fire (hulls count closer).
@@ -19,7 +21,7 @@ import { NEON_CSS } from './colors';
 //                  range under it, and a readout beside it: what it is, its
 //                  integrity, and for rock what breaking it yields
 //   marks        · brackets on every other hull in view (amber for elites),
-//                  the capital ship by name, the nearest dilithium-rich or
+//                  the capital ship by name, the nearest krail-rich or
 //                  rare rock, repairs and power-ups to go and get, the
 //                  objective. Only the things worth flying to get a word.
 //   pointers     · the capital ship and the objective, pinned to the edge
@@ -139,7 +141,7 @@ export class Targeting {
     }
 
     // otherwise the best of: hulls toward the nose, the rock in the line of fire
-    const reach = world.stats.phaserSpeed * world.stats.phaserLife;
+    const reach = world.stats.laserSpeed * world.stats.laserLife;
     const scoreOf = (p: Pick): number => {
       const dx = p.x - x, dz = p.z - z, d = Math.hypot(dx, dz);
       const off = Math.abs(angleDelta(heading, Math.atan2(-dz, dx)));
@@ -169,7 +171,7 @@ export class Targeting {
   /** Would a lance fired now hit it? The gunnery computer lifts lances onto hulls in a narrow cone. */
   private inArc(world: World, t: Pick, x: number, z: number, heading: number): boolean {
     const dx = t.x - x, dz = t.z - z, d = Math.hypot(dx, dz);
-    if (d > world.stats.phaserSpeed * world.stats.phaserLife || d < 0.5) return false;
+    if (d > world.stats.laserSpeed * world.stats.laserLife || d < 0.5) return false;
     const off = Math.abs(angleDelta(heading, Math.atan2(-dz, dx)));
     if (t.kind === 'rock') return off < Math.PI / 2 && Math.sin(off) * d < t.r + 0.3;
     return off < BOLT_ELEVATE_CONE + t.r / d;
@@ -246,12 +248,22 @@ export class Targeting {
       // mining: what the rock is, what breaking it yields, what it breaks into
       const r = t.ref as Rock, K = ROCK_KINDS[r.kind];
       name = `${r.kind === 'basalt' ? 'Asteroid' : `${cap(r.kind)} asteroid`} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
-      const chance = K.crystal[r.size]!, n = K.crystals[r.size]!;
-      const yieldWord = chance >= 1 ? `Yield <b>${n}</b>` : `Yield <b>${n}</b> · ${Math.round(chance * 100)}%`;
       const extra = r.kind === 'rare' ? ' · power-up' : r.kind === 'volatile' ? ' · unstable' : '';
-      sub = `${yieldWord}${extra}`;
-      intK = 'Integrity';
-      hp = r.hp / r.maxHp;
+      if (world.bk) {
+        // the Breakout: what a clean cut gives, and how the cut is going
+        const y = rockYield(r.kind, r.size, true);
+        sub = `Ore <b>${y.ore}</b>${y.krail ? ` · Krail <b>${y.krail}</b>` : ''}${extra}`;
+        if ((r.cut ?? 0) > 0 || (r.heat ?? 0) > 0) {
+          intK = (r.heat ?? 0) > 0.8 ? 'Too hot · cut' : 'Cut';
+          hp = r.cut ?? 0;
+        } else { intK = 'Integrity'; hp = r.hp / r.maxHp; }
+      } else {
+        const chance = K.crystal[r.size]!, n = K.crystals[r.size]!;
+        const yieldWord = chance >= 1 ? `Yield <b>${n}</b>` : `Yield <b>${n}</b> · ${Math.round(chance * 100)}%`;
+        sub = `${yieldWord}${extra}`;
+        intK = 'Integrity';
+        hp = r.hp / r.maxHp;
+      }
       ico = '#i-rock';
       cls = `rock ${r.kind}`;
     }
@@ -303,22 +315,29 @@ export class Targeting {
       if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy')) {
         put(e.x, 0.5, e.z, 'm dia obj', `${ENCOUNTERS[e.id].name} · ${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
       }
+      // the Breakout's two places, when they are in view
+      if (world.bk) {
+        for (const wp of places(world.bk)) {
+          const d = Math.hypot(wp.x - s.x, wp.z - s.z);
+          if (d < 400) put(wp.x, 0.5, wp.z, 'm dia obj', `${wp.name} · ${range(d)}`);
+        }
+      }
       const boss = world.command.boss;
       if (boss && !boss.leaving && boss.cloak < 0.5 && boss.id !== t?.id) put(boss.x, boss.y, boss.z, 'm cap', boss.name);
       // things to go and get
       for (const p of world.pickups) {
-        if (p.kind === 'crystal') continue;
+        if (LOOSE.has(p.kind)) continue;
         if (Math.hypot(p.x - s.x, p.z - s.z) > NEAR) continue;
-        put(p.x, 0.4, p.z, 'm dia', p.kind === 'repair' ? 'Hull repair' : POWER_LABEL[p.kind]);
+        put(p.x, 0.4, p.z, 'm dia', p.kind === 'repair' ? 'Hull repair' : POWER_LABEL[p.kind as PowerKind]);
       }
-      // the nearest dilithium-rich or rare rock: a deposit worth the detour
+      // the nearest krail-rich or rare rock: a deposit worth the detour
       let dep: Rock | null = null, depD = NEAR;
       for (const r of world.field.rocks) {
         if ((r.kind !== 'rich' && r.kind !== 'rare') || r.id === t?.id) continue;
         const d = Math.hypot(r.x - s.x, r.z - s.z);
         if (d < depD) { depD = d; dep = r; }
       }
-      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', dep.kind === 'rich' ? 'Mineral deposit\nRich · dilithium' : 'Rare ore\nPower-up inside');
+      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', dep.kind === 'rich' ? 'Mineral deposit\nRich · krail' : 'Rare ore\nPower-up inside');
       // every other hull: brackets only, amber for an elite
       for (const a of world.aliens) {
         if (cloaked(a) || a.id === t?.id) continue;
@@ -332,6 +351,14 @@ export class Targeting {
 
   private drawPointers(world: World, sector: Sector, live: boolean): void {
     const s = sector.shipNow;
+    const bk = world.bk;
+    if (bk && !bk.port) $('ptr-port').classList.remove('on');
+    for (const wp of bk ? places(bk) : []) {
+      const id = wp.kind === 'lane' ? 'ptr-lane' : 'ptr-port';
+      this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live ? { x: wp.x, y: 0.5, z: wp.z } : null,
+        `${wp.name} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);
+    }
+    if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); }
     const boss = world.command.boss;
     const showBoss = live && !!boss && !boss.leaving && boss.cloak < 0.5;
     this.pointer($('ptr-cap'), $('ptr-cap-t'), sector, s.x, s.z, s.heading, showBoss ? boss! : null,

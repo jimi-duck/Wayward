@@ -5,7 +5,9 @@ const A = 0;
 const B = 1;
 const X = 2;
 const Y = 3;
+const LB = 4;
 const RB = 5;
+const LT = 6;
 const RT = 7;
 const START = 9;
 const DPAD_UP = 12;
@@ -27,11 +29,13 @@ export interface PadState {
   turn: number;
   thrust: number;
   aim: Aim | null;
-  /** A held: phasers. */
+  /** A held: lasers. */
   fire: boolean;
+  /** LB or the left trigger held: the cutter. */
+  cut: boolean;
 }
 
-const IDLE: PadState = { turn: 0, thrust: 0, aim: null, fire: false };
+const IDLE: PadState = { turn: 0, thrust: 0, aim: null, fire: false, cut: false };
 
 export class Gamepads {
   private prev: boolean[] = [];
@@ -64,8 +68,9 @@ export class Gamepads {
     const thrust = Math.max(pad.buttons[RT]?.value ?? 0, down(DPAD_UP) ? 1 : 0);
 
     const fire = down(A);
-    if (aim || turn || fire || thrust > 0.05) active = true;
+    const cut = down(LB) || (pad.buttons[LT]?.value ?? 0) > 0.3;
+    if (aim || turn || fire || cut || thrust > 0.05) active = true;
     if (active) onActive();
-    return { turn, thrust, aim, fire };
+    return { turn, thrust, aim, fire, cut };
   }
 }

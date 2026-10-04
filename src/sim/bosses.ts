@@ -8,11 +8,11 @@ import type { ShipState } from './ship';
 // ── capital ships ─────────────────────────────────────────────────────────
 // The original's BOSS_TYPES: each faction sends its own flagship, unlocked on
 // the run clock, never the same faction twice running. The first contact is
-// always a Klingon or a Cardassian: the cube and the Tholians come later,
+// always the Gutter or the Custody: the foundry and the Thren come later,
 // when a build has had time to answer them. A contact is
-// announced (yellow alert), then hails: the player chooses to engage or to
-// evade (see Command.engage / evade). Romulans never hail; they decloak and
-// the fight starts. A Borg cube cannot be outrun, and nobody can evade twice
+// announced (a contact warning), then hails: the player chooses to engage or to
+// evade (see Command.engage / evade). Office ships never hail; they decloak and
+// the fight starts. A Voice foundry cannot be outrun, and nobody can evade twice
 // running.
 //
 // An engaged capital ship drops in from far out and high above, descends to
@@ -21,9 +21,9 @@ import type { ShipState } from './ship';
 // in reinforcements and runs the cycle faster. Every attack winds up first
 // behind a telegraph (a line where a charge or volley will go, a ring where
 // a nova will burst, circles where shells or webs will land), so a fight is
-// read, not guessed. Each faction moves its own way: Klingons sway and
-// charge, Cardassians hold long range and wheel, Romulans vanish and
-// reappear on your flank, the cube grinds closer, Tholians circle.
+// read, not guessed. Each faction moves its own way: Gutter crews sway and
+// charge, Custody cutters hold long range and wheel, Office ships vanish and
+// reappear on your flank, the foundry grinds closer, the Thren circle.
 //
 // It leaves when its fuse runs out (the fuse burns only on station). A kill
 // pays the bounty; the world adds the salvage.
@@ -53,33 +53,33 @@ interface FactionDef {
 }
 
 export const FACTIONS: Record<Faction, FactionDef> = {
-  klingon: {
-    at: 0, hull: 'raptor', names: ['I.K.S. Vor’cha', 'I.K.S. Negh’Var', 'I.K.S. Qu’Vat', 'I.K.S. Gr’oth'], hp: 1.2, fuse: 60, bounty: 1,
+  gutter: {
+    at: 0, hull: 'raptor', names: ['Ironmaw', 'Red Tithe', 'Butcher’s Due', 'Last Mercy'], hp: 1.2, fuse: 60, bounty: 1,
     cycles: [['volley', 'ring', 'charge'], ['volley', 'strafe', 'charge', 'ring'], ['strafe', 'charge', 'volley', 'charge', 'ring']],
     station: 36, wing: 'scout', wingN: 3, wingHp: 0.85,
   },
-  cardassian: {
-    at: 90, hull: 'lancer', names: ['Keldon-class Trager', 'Keldon-class Koranak', 'Keldon-class Prakesh', 'Keldon-class Rabol'], hp: 0.8, fuse: 62, bounty: 1,
+  custody: {
+    at: 90, hull: 'lancer', names: ['CCV Diligence', 'CCV Vigilance', 'CCV Patience', 'CCV Temperance'], hp: 0.8, fuse: 62, bounty: 1,
     cycles: [['spiral', 'volley', 'ring'], ['spiral', 'artillery', 'volley', 'ring'], ['artillery', 'spiral', 'artillery', 'ring']],
     station: 46, wing: 'lancer', wingN: 3, wingHp: 0.85,
   },
-  romulan: {
-    at: 120, hull: 'warbird', names: ['I.R.W. Khazara', 'I.R.W. Valdore', 'I.R.W. Haakona', 'I.R.W. T’Met'], hp: 0.85, fuse: 62, bounty: 1.1,
+  office: {
+    at: 120, hull: 'warbird', names: ['Quiet Hand', 'Kind Regard', 'Gentle Inquiry', 'Silent Witness'], hp: 0.85, fuse: 62, bounty: 1.1,
     cycles: [['cloak', 'salvo', 'volley'], ['flank', 'salvo', 'volley'], ['flank', 'salvo', 'ring', 'flank', 'salvo']],
     station: 38, wing: 'warbird', wingN: 2, wingHp: 0.85,
   },
-  borg: {
-    at: 230, hull: 'drone', names: ['Tactical Cube 138', 'Tactical Cube 630', 'Tactical Cube 972', 'Tactical Cube 316'], hp: 1.15, fuse: 72, bounty: 1.3,
+  voice: {
+    at: 230, hull: 'drone', names: ['Foundry Seven', 'Mother Lathe', 'Foundry Thirty', 'The Hesse Choir'], hp: 1.15, fuse: 72, bounty: 1.3,
     cycles: [['beams', 'tractor', 'ring'], ['beams', 'launch', 'tractor', 'ring'], ['beams', 'tractor', 'launch', 'beams', 'ring']],
     station: 34, wing: 'drone', wingN: 4, wingHp: 0.3,
   },
-  tholian: {
-    at: 250, hull: 'weaver', names: ['Tholian Tarantula', 'Tholian Recluse', 'Tholian Widow', 'Tholian Orb-Weaver'], hp: 1, fuse: 62, bounty: 1.1,
+  thren: {
+    at: 250, hull: 'weaver', names: ['Thren Lattice', 'Thren Bloom', 'Thren Hollow', 'Thren Knot'], hp: 1, fuse: 62, bounty: 1.1,
     cycles: [['cage', 'shards', 'ring'], ['webline', 'shards', 'cage', 'ring'], ['cage', 'webline', 'shards', 'ring']],
     station: 32, wing: 'weaver', wingN: 3, wingHp: 1,
   },
 };
-const ORDER: Faction[] = ['klingon', 'cardassian', 'romulan', 'borg', 'tholian'];
+const ORDER: Faction[] = ['gutter', 'custody', 'office', 'voice', 'thren'];
 
 /** How long each attack winds up behind its telegraph, seconds. */
 const WINDUP: Partial<Record<Attack, number>> = {
@@ -122,7 +122,7 @@ export interface Boss {
   /** Where a charge or a volley was aimed when it was telegraphed. */
   aimLock: number;
   fuse: number; leaving: boolean; cloak: number; hitT: number; soaked: number;
-  /** two beams for the Borg; the charge vector for the Klingon */
+  /** two beams for the Voice; the charge vector for the Gutter */
   beams: Array<{ x: number; z: number; beamT: number; beamAng: number }>;
   chargeT: number;
   /** Seconds on station, and the station angle around the ship for the circling factions. */
@@ -136,7 +136,7 @@ export interface Contact {
   name: string;
   n: number;
   bounty: number;
-  /** Romulans never hail. */
+  /** Office ships never hail. */
   hails: boolean;
   canEvade: boolean;
   /** Seconds until the next contact if this one is evaded. */
@@ -154,12 +154,31 @@ export class Command {
   state: CommandState = 'idle';
   pending: Contact | null = null;
   evadedLast = false;
+  /** Contacts come by themselves on the run clock. Off in the Breakout, where the one capital ship is summoned. */
+  auto = true;
+  private forced: Faction | null = null;
+  /** Hull multiplier for the next summoned contact (the Breakout's blockade is no introduction). */
+  private forcedHp = 1;
+  private forcedHails = true;
+  private forcedName: string | null = null;
+  private hpScale = 1;
   private last: Faction | null = null;
   private seen: Partial<Record<Faction, number>> = {};
 
   reset(): void {
     this.boss = null; this.next = BOSS_FIRST; this.count = 0; this.kills = 0; this.evades = 0;
-    this.last = null; this.state = 'idle'; this.seen = {}; this.pending = null; this.evadedLast = false;
+    this.last = null; this.state = 'idle'; this.seen = {}; this.pending = null; this.evadedLast = false; this.forced = null;
+    if (!this.auto) this.next = Infinity;
+  }
+
+  /** Call a contact of this faction now (the Breakout's blockade). It can always be evaded. `hails` false: the decision was made on a comms card, and she simply comes. */
+  summon(t: number, faction: Faction, hp = 1, hails = true, name: string | null = null): void {
+    if (this.state !== 'idle') return;
+    this.forced = faction;
+    this.forcedName = name;
+    this.forcedHp = hp;
+    this.forcedHails = hails;
+    this.next = t + BOSS_WARN;
   }
 
   /** True while the hail is open and waiting for the player. */
@@ -183,7 +202,7 @@ export class Command {
     this.state = 'idle';
     this.evadedLast = true;
     this.evades++;
-    this.next = t + c.evadeGap;
+    this.next = this.auto ? t + c.evadeGap : Infinity;
     return true;
   }
 
@@ -218,8 +237,8 @@ export class Command {
   hurt(dmg: number, aliens: Alien[], s: ShipState, t: number, rng: Rng, events: GameEvent[]): boolean {
     const b = this.boss;
     if (!b || b.leaving || b.cloak > 0.5 || b.arriving) return false;
-    // the cube adapts, as its drones do: once it has soaked enough, half damage
-    if (b.faction === 'borg' && b.soaked >= 30) dmg *= 0.5;
+    // the foundry adapts, as its drones do: once it has soaked enough, half damage
+    if (b.faction === 'voice' && b.soaked >= 30) dmg *= 0.5;
     b.soaked += dmg;
     b.hp -= dmg;
     b.hitT = 0.1;
@@ -258,23 +277,33 @@ export class Command {
   }
 
   private pick(t: number, rng: Rng): Contact {
-    // the first contact of a run is never the Romulan ambush (the original's rule)
-    let pool = ORDER.filter((f) => FACTIONS[f].at <= t && f !== this.last && !(this.count === 0 && f === 'romulan'));
-    if (!pool.length) pool = ['klingon'];
+    if (this.forced) {
+      const f = this.forced, def = FACTIONS[f];
+      this.forced = null;
+      this.hpScale = this.forcedHp;
+      this.forcedHp = 1;
+      const name = this.forcedName ?? def.names[(this.seen[f] ?? 0) % def.names.length]!;
+      this.forcedName = null;
+      return { faction: f, name, n: this.count, bounty: bossBounty(this.count, f), hails: this.forcedHails, canEvade: true, evadeGap: 0 };
+    }
+    // the first contact of a run is never the Office ambush (the original's rule)
+    let pool = ORDER.filter((f) => FACTIONS[f].at <= t && f !== this.last && !(this.count === 0 && f === 'office'));
+    if (!pool.length) pool = ['gutter'];
     const f = pool[rng.int(pool.length)]!;
     const k = this.seen[f] ?? 0;
     const def = FACTIONS[f];
     const base = def.names[k % def.names.length]!, mk = Math.floor(k / def.names.length);
     return {
       faction: f, name: mk ? `${base} MK${mk + 1}` : base, n: this.count, bounty: bossBounty(this.count, f),
-      hails: f !== 'romulan', canEvade: f !== 'borg' && !this.evadedLast, evadeGap: Math.round(bossGap(this.count) * EVADE_GAP),
+      hails: f !== 'office', canEvade: f !== 'voice' && !this.evadedLast, evadeGap: Math.round(bossGap(this.count) * EVADE_GAP),
     };
   }
 
   private arrive(t: number, s: ShipState, aliens: Alien[], rng: Rng, events: GameEvent[]): void {
     const { faction, name } = this.pending!;
     const def = FACTIONS[faction];
-    const hp = Math.round(bossHp(this.count, t) * def.hp);
+    const hp = Math.round(bossHp(this.count, t) * def.hp * this.hpScale);
+    this.hpScale = 1;
     // far out in front of the ship and high, so the chase camera sees it come in
     const x = s.x + Math.cos(s.heading) * ARRIVE_AT, z = s.z - Math.sin(s.heading) * ARRIVE_AT, y = ARRIVE_Y;
     this.boss = {
@@ -301,7 +330,7 @@ export class Command {
     this.boss = null;
     this.state = 'idle';
     this.evadedLast = false;
-    this.next = t + bossGap(this.count);
+    this.next = this.auto ? t + bossGap(this.count) : Infinity;
   }
 
   /** Where it wants to be: its faction's way of holding station around the ship. */
@@ -309,22 +338,22 @@ export class Command {
     const def = FACTIONS[b.faction];
     const fx = Math.cos(s.heading), fz = -Math.sin(s.heading), rx = Math.sin(s.heading), rz = Math.cos(s.heading);
     switch (b.faction) {
-      case 'klingon': {
+      case 'gutter': {
         // ahead, swaying across your bow
         const sway = Math.sin(b.fightT * 0.55) * 16;
         return [s.x + fx * def.station + rx * sway, s.z + fz * def.station + rz * sway];
       }
-      case 'cardassian': {
+      case 'custody': {
         // long range, wheeling slowly round you
         const a = s.heading + Math.sin(b.fightT * 0.22) * 0.9;
         return [s.x + Math.cos(a) * def.station, s.z - Math.sin(a) * def.station];
       }
-      case 'borg': {
+      case 'voice': {
         // grinds in: the station closes as the fight goes on, and it comes at you, not ahead of you
         const dx = b.x - s.x, dz = b.z - s.z, d = Math.hypot(dx, dz) || 1, near = Math.max(18, def.station - b.fightT * 0.35);
         return [s.x + (dx / d) * near, s.z + (dz / d) * near];
       }
-      case 'tholian': {
+      case 'thren': {
         // circles you
         b.orbit += dt * (b.phase === 2 ? 0.5 : 0.34);
         const a = s.heading + b.orbit;
@@ -448,7 +477,7 @@ export class Command {
           stepBeam(bm, s, dt, 0.85 + rage * 0.12);
         }
         if (b.attack === 'tractor' && d < 56) {
-          // the tractor lock: thrust away from the cube to break it
+          // the tractor lock: thrust away from the foundry to break it
           s.vx += (-dx / d) * 16 * dt;
           s.vz += (-dz / d) * 16 * dt;
         }
@@ -559,7 +588,7 @@ export class Command {
         if (d < 56) events.push({ type: 'tractor' });
         break;
       case 'launch': {
-        // the cube opens and sends drones out
+        // the foundry opens and sends drones out
         for (let i = 0; i < 2; i++) {
           const a = aim + (i ? 1 : -1) * 0.8;
           const e = spawnAlien('drone', s, t, rng, { x: b.x + Math.cos(a) * 7, y: 1, z: b.z - Math.sin(a) * 7 });

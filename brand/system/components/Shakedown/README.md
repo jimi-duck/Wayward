@@ -6,5 +6,5 @@ Each column is an `ab-frame`: an outlined index numeral in `rail` (01 02 03), ro
 
 - The panel uses `ab-elbow is-command`: this is the one panel about the ship itself.
 - Colour stays categorical here. The selected hull takes `command`; the schematics are `signal` because they are ours.
-- Lengths are the classes' canon lengths. Registries are invented and carry a 47.
+- Lengths are the classes' spec-sheet lengths. Registries are invented and carry a 47.
 - The Nova opens on two plates, so its card says so twice: in the plate row and in its tag line.

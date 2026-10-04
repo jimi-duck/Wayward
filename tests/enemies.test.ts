@@ -8,7 +8,7 @@ import { Rng } from '../src/sim/rng';
 import { newShip } from '../src/sim/ship';
 import { World } from '../src/sim/world';
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' };
 const bolt = (x: number, y: number, z: number, vx = 0, vy = 0, vz = 0, life = 1) => ({ x, y, z, vx, vy, vz, life, dmg: 1.4, pierce: 0, hit: [], homing: 0 });
 
 /** A world where nothing can hurt the ship, so the clock can run long. */
@@ -74,7 +74,7 @@ describe('capital ships', () => {
     expect(ev).toContain('bossWarn');
     expect(ev).toContain('bossArrive');
     expect(w.command.boss).not.toBeNull();
-    expect(['klingon', 'cardassian']).toContain(w.command.boss!.faction); // unlocked by 135s; never a Romulan first
+    expect(['gutter', 'custody']).toContain(w.command.boss!.faction); // unlocked by 135s; never a Office first
     expect(w.aliens.some((a) => a.escort)).toBe(true);
   });
 
@@ -102,7 +102,7 @@ describe('capital ships', () => {
     expect(evs.some((e) => e.type === 'salvage' && e.faction === b.faction && e.tech)).toBe(true);
     expect(w.run.capitals).toBe(1);
     expect(w.run.scoreBy.capitals).toBeGreaterThan(1000);
-    // a hull repair, a power-up and dilithium to collect, a salvage card and her faction's tech
+    // a hull repair, a power-up and krail to collect, a salvage card and her faction's tech
     expect(w.pickups.some((p) => p.kind === 'repair')).toBe(true);
     expect(w.pickups.filter((p) => p.kind === 'crystal').length).toBeGreaterThan(5);
     expect(w.pendingSalvage).toEqual([b.faction]);
@@ -120,14 +120,14 @@ describe('capital ships', () => {
 describe('enemy fire', () => {
   it('costs a hull plate when it lands', () => {
     const w = immortal();
-    w.shots.push({ id: 1, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.35, faction: 'klingon', hp: 0, seek: 0, split: 0 });
+    w.shots.push({ id: 1, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.35, faction: 'gutter', hp: 0, seek: 0, split: 0 });
     w.step(STEP, idle);
     expect(w.plates).toBe(w.hull.plates - 1);
   });
 
   it('plasma can be shot down', () => {
     const w = immortal();
-    w.shots.push({ id: 1, x: 0, y: 0, z: -12, vx: 0, vy: 0, vz: 0, life: 8, r: 0.8, faction: 'romulan', hp: 1, seek: 0, split: 0 });
+    w.shots.push({ id: 1, x: 0, y: 0, z: -12, vx: 0, vy: 0, vz: 0, life: 8, r: 0.8, faction: 'office', hp: 1, seek: 0, split: 0 });
     for (let i = 0; i < 40; i++) w.step(STEP, { ...idle, fire: true });
     expect(w.drain().some((e) => e.type === 'plasmaDown')).toBe(true);
   });
@@ -207,7 +207,7 @@ describe('the 3D sky', () => {
     const w = immortal();
     w.field.bulwarks = [bulwark(0, -25)];
     for (let i = 0; i < 60; i++) w.step(STEP, { ...idle, fire: true });
-    w.shots.push({ id: 1, x: 0, y: 0, z: -50, vx: 0, vy: 0, vz: 30, life: 3, r: 0.45, faction: 'klingon', hp: 0, seek: 0, split: 0 });
+    w.shots.push({ id: 1, x: 0, y: 0, z: -50, vx: 0, vy: 0, vz: 30, life: 3, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
     for (let i = 0; i < 90; i++) w.step(STEP, idle);
     expect(w.drain().filter((e) => e.type === 'bulwarkHit').length).toBeGreaterThan(2);
     expect(w.plates).toBe(w.hull.plates);

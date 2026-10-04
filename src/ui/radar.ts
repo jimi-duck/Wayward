@@ -1,14 +1,16 @@
 import { angleDelta } from '../core/math';
 import type { Sector } from '../render/sector';
 import { ALIEN_TYPES, cloaked, FIRE_RANGE } from '../sim/enemies';
+import { places } from '../sim/breakout';
+import { LOOSE } from '../sim/pickups';
 import type { World } from '../sim/world';
 
 // ── the sensor scope ──────────────────────────────────────────────────────
 // Ship-up, so left on the scope is left on the screen. Inside the scope:
 // range rings, the camera's field of view as a faint wedge, and every
 // contact by kind: hostiles as arrowheads pointing where they fly
-// (elites amber), the capital ship as a square, rock by kind (dilithium-rich
-// violet, rare gold, volatile red), bulwarks as shadows, dilithium crystals,
+// (elites amber), the capital ship as a square, rock by kind (krail-rich
+// violet, rare gold, volatile red), bulwarks as shadows, krail crystals,
 // repairs and power-ups, our mines, enemy fire, webs, the objective.
 // Round the outside, a compass bezel turns with the ship (N stays north),
 // and the bezel lights orange-red toward any hostile close enough to fire.
@@ -104,6 +106,17 @@ export class Radar {
       g.strokeStyle = v > 0 ? `rgba(${HUD},${0.35 + v * 0.6})` : 'rgba(236,230,225,.07)';
       g.beginPath(); g.arc(0, 0, Rb + 9.5 * dpr, a - half, a + half); g.stroke();
     }
+    // the Breakout's two places, always: a diamond on the ring along each one's bearing (amber the lane, cyan the port)
+    const bk = world.bk;
+    if (bk) {
+      for (const wp of places(bk)) {
+        const a = at(Math.atan2(-(wp.z - s.z), wp.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 4 * dpr;
+        g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(Math.PI / 4);
+        g.fillStyle = wp.kind === 'lane' ? '#ffb33d' : '#5ad0e3';
+        g.fillRect(-sz / 2, -sz / 2, sz, sz);
+        g.restore();
+      }
+    }
     // the heading index: a notch at the top, where the nose points
     g.fillStyle = `rgb(${HUD})`;
     g.beginPath(); g.moveTo(0, -Rb + 1 * dpr); g.lineTo(-3.5 * dpr, -Rb - 5 * dpr); g.lineTo(3.5 * dpr, -Rb - 5 * dpr); g.closePath(); g.fill();
@@ -140,11 +153,21 @@ export class Radar {
       g.fillStyle = ROCK_DOT[r.kind] ?? ROCK_DOT.basalt!;
       g.beginPath(); g.arc(x, y, Math.max((r.kind === 'rare' || r.kind === 'rich' ? 2.2 : 1.2) * dpr, r.r * k), 0, Math.PI * 2); g.fill();
     }
-    g.fillStyle = 'rgba(199,125,255,.9)';
     for (const p of world.pickups) {
-      if (p.kind !== 'crystal') continue;
+      if (!LOOSE.has(p.kind)) continue;
       const [x, y, out] = to(p.x, p.z);
+      g.fillStyle = p.kind === 'crystal' ? 'rgba(199,125,255,.9)' : p.kind === 'ore' ? 'rgba(236,200,160,.8)' : 'rgba(90,208,227,.8)';
       if (!out) g.fillRect(x - 0.8 * dpr, y - 0.8 * dpr, 1.6 * dpr, 1.6 * dpr);
+    }
+    // the port and the lane mouth, when they are in the scope's reach
+    if (bk) {
+      for (const wp of places(bk)) {
+        const [x, y, out] = to(wp.x, wp.z);
+        if (out) continue;
+        g.strokeStyle = wp.kind === 'lane' ? '#ffb33d' : '#5ad0e3'; g.lineWidth = 1.5 * dpr;
+        g.beginPath(); g.moveTo(x, y - 5 * dpr); g.lineTo(x + 5 * dpr, y); g.lineTo(x, y + 5 * dpr); g.lineTo(x - 5 * dpr, y); g.closePath(); g.stroke();
+        g.beginPath(); g.arc(x, y, Math.max(3 * dpr, wp.r * k), 0, Math.PI * 2); g.stroke();
+      }
     }
     g.fillStyle = `rgba(${HUD},.16)`;
     for (const w of world.webs) { const [x, y] = to(w.x, w.z); g.beginPath(); g.arc(x, y, w.r * k, 0, Math.PI * 2); g.fill(); }
@@ -189,7 +212,7 @@ export class Radar {
     g.fillStyle = 'rgba(255,170,150,.85)';
     for (const sh of world.shots) { const [x, y, out] = to(sh.x, sh.z); if (!out) g.fillRect(x - 0.9 * dpr, y - 0.9 * dpr, 1.8 * dpr, 1.8 * dpr); }
     for (const p of world.pickups) {
-      if (p.kind === 'crystal') continue;
+      if (LOOSE.has(p.kind)) continue;
       const [x, y] = to(p.x, p.z);
       g.fillStyle = p.kind === 'repair' ? '#5ad0e3' : '#ffb33d';
       g.save(); g.translate(x, y); g.rotate(Math.PI / 4); g.fillRect(-2.2 * dpr, -2.2 * dpr, 4.4 * dpr, 4.4 * dpr); g.restore();

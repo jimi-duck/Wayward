@@ -1,4 +1,4 @@
-/* ══ Asteroid Blaster · components ══════════════════════════════════════════
+/* ══ Wayward · components ══════════════════════════════════════════
    Every rule reads the tokens. Class prefix ab-. Frames are drawn the way the
    original game drew them: the element is never clipped, its ::before is the
    edge and its ::after is the glass, both cut to the same notch. That keeps
@@ -46,7 +46,7 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-frame.is-lit { --frame-edge: var(--signal); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--signal) calc(var(--ab-glow) * 30%), transparent)); }
 
 /* ── the elbow ────────────────────────────────────────────────────────── */
-/* An LCARS sweep cut at 45°: a bar down the left, a rail along the top, a
+/* A console sweep cut at 45°: a bar down the left, a rail along the top, a
    chamfered outer corner and a chamfered inner bend. Markup:
    <section class="ab-elbow"><i class="ab-elbow-l"></i> … </section>      */
 .ab-elbow {
@@ -109,7 +109,7 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-ticks-wrap { position: relative; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--on, var(--signal)) calc(var(--ab-glow) * 45%), transparent)); }
 .ab-ticks--command { --on: var(--command); --off: color-mix(in srgb, var(--command) 18%, transparent); }
 .ab-ticks--alert   { --on: var(--alert);   --off: color-mix(in srgb, var(--alert) 18%, transparent); }
-.ab-ticks--violet  { --on: var(--dilithium); --off: color-mix(in srgb, var(--dilithium) 18%, transparent); }
+.ab-ticks--violet  { --on: var(--krail); --off: color-mix(in srgb, var(--krail) 18%, transparent); }
 .ab-ticks--tall    { height: 20px; --seg: 2px; --gap: 3px; }
 /* ten discrete pips, for ranked stats */
 .ab-pips {
@@ -150,7 +150,7 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-key.is-command { --frame-edge: var(--command); color: var(--command); }
 
 /* ── buttons ──────────────────────────────────────────────────────────── */
-/* A LCARS pill, cut: the ends are points, not radii. */
+/* A console pill, cut: the ends are points, not radii. */
 .ab-btn {
   --h: 44px; --tip: 14px; --tipi: calc(var(--tip) - .6px); --btn-edge: var(--edge); --btn-fill: var(--hull-2); --btn-ink: var(--ink);
   position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
@@ -182,7 +182,7 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-tag--new   { --frame-edge: var(--command); color: var(--command); }
 .ab-tag--up    { --frame-edge: var(--edge); color: var(--ink); }
 .ab-tag--max   { --frame-edge: var(--nominal); color: var(--nominal); }
-.ab-tag--once  { --frame-edge: var(--dilithium); color: var(--dilithium); }
+.ab-tag--once  { --frame-edge: var(--krail); color: var(--krail); }
 .ab-dot { width: 7px; height: 7px; border-radius: var(--radius-round); background: var(--ink-3); flex: none; }
 .ab-dot--nominal { background: var(--nominal); box-shadow: 0 0 calc(var(--ab-glow) * 8px) var(--nominal); }
 .ab-dot--caution { background: var(--caution); }
@@ -227,11 +227,11 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-card-figs .is-cost::before { content: "↓ "; color: var(--alert); }
 .ab-cat--gun  { --cat: var(--command); }
 .ab-cat--hull { --cat: var(--signal); }
-.ab-cat--ship { --cat: var(--dilithium); }
+.ab-cat--ship { --cat: var(--krail); }
 .ab-sch { fill: none; stroke: var(--cat); stroke-width: 1.5; stroke-linejoin: miter; vector-effect: non-scaling-stroke; }
 .ab-sch-dim { fill: none; stroke: color-mix(in srgb, var(--cat) 40%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .ab-sch-fill { fill: color-mix(in srgb, var(--cat) 16%, transparent); stroke: none; }
-.ab-sch-rock { fill: color-mix(in srgb, var(--dilithium) 12%, transparent); stroke: var(--dilithium); stroke-width: 1.25; vector-effect: non-scaling-stroke; }
+.ab-sch-rock { fill: color-mix(in srgb, var(--krail) 12%, transparent); stroke: var(--krail); stroke-width: 1.25; vector-effect: non-scaling-stroke; }
 
 /* ── icons ─────────────────────────────────────────────────────────────── */
 /* Masks, so an icon takes its colour from `color` like text does. */
@@ -252,8 +252,8 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-wm-b { stroke: var(--signal); }
 .ab-wm.is-mono .ab-wm-b { stroke: var(--ink); }
 .ab-mk { display: block; overflow: visible; }
-.ab-mk-rock { fill: none; stroke: var(--dilithium); stroke-width: 4; stroke-linejoin: miter; }
-.ab-mk-shard { fill: var(--dilithium); }
+.ab-mk-rock { fill: none; stroke: var(--krail); stroke-width: 4; stroke-linejoin: miter; }
+.ab-mk-shard { fill: var(--krail); }
 .ab-mk-ship { fill: var(--signal); }
 .ab-mk.is-mono .ab-mk-rock { stroke: var(--ink); } .ab-mk.is-mono .ab-mk-shard, .ab-mk.is-mono .ab-mk-ship { fill: var(--ink); }
 
@@ -262,11 +262,11 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-i--defence { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 3l8 3v7l-3 5-5 3-5-3-3-5V6z'/%3E%3C/svg%3E"); }
 .ab-i--ship { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 3l7 18-7-5-7 5z'/%3E%3C/svg%3E"); }
 .ab-i--hull { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M7 4h13v13l-3 3H4V7z M8 10h8'/%3E%3C/svg%3E"); }
-.ab-i--dilithium { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 2l6 5v10l-6 5-6-5V7z M6 7l6 4 6-4 M12 11v11'/%3E%3C/svg%3E"); }
+.ab-i--krail { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 2l6 5v10l-6 5-6-5V7z M6 7l6 4 6-4 M12 11v11'/%3E%3C/svg%3E"); }
 .ab-i--overcharge { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M13 2L5 14h6l-1 8 8-12h-6l1-8z'/%3E%3C/svg%3E"); }
 .ab-i--chain { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M5 7l5 5-5 5 M12 7l5 5-5 5'/%3E%3C/svg%3E"); }
 .ab-i--capital { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M3 8V3h5 M16 3h5v5 M21 16v5h-5 M8 21H3v-5 M12 8l4 4-4 4-4-4z'/%3E%3C/svg%3E"); }
-.ab-i--stardate { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M9 3h6l6 6v6l-6 6H9l-6-6V9z M12 7v5h4'/%3E%3C/svg%3E"); }
+.ab-i--score { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M9 3h6l6 6v6l-6 6H9l-6-6V9z M12 7v5h4'/%3E%3C/svg%3E"); }
 .ab-i--torpedo { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M4 9h10l5 3-5 3H4z M4 9L2 7 M4 15l-2 2 M8 9v6'/%3E%3C/svg%3E"); }
 .ab-i--mine { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5'/%3E%3C/svg%3E"); }
 .ab-i--alert { --i: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M12 3l10 17H2z M12 9v6 M12 17v2'/%3E%3C/svg%3E"); }

@@ -1,4 +1,4 @@
-"""Shared pieces for the Asteroid Blaster design system: icons, the wordmark
+"""Shared pieces for the Wayward design system: icons, the wordmark
 and mark as inline SVG bound to tokens, card schematics and the scene painter
 the screen previews draw their backdrop with."""
 import math, sys, urllib.parse
@@ -12,17 +12,17 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
 
 # ── icons: 24 grid, 1.75 stroke, square caps, miter joins, 45° only ──────
 ICONS = {
-  'weapons':    ('Weapons category; phaser figures.', 'M3 9h4v6H3z M7 12h14 M7 10l13-4 M7 14l13 4'),
+  'weapons':    ('Weapons category; laser figures.', 'M3 9h4v6H3z M7 12h14 M7 10l13-4 M7 14l13 4'),
   'defence':    ('Defence category; shields.', 'M12 3l8 3v7l-3 5-5 3-5-3-3-5V6z'),
-  'ship':       ('Ship category; impulse and helm.', 'M12 3l7 18-7-5-7 5z'),
+  'ship':       ('Ship category; drive and helm.', 'M12 3l7 18-7-5-7 5z'),
   'hull':       ('A hull plate; damage control.', 'M7 4h13v13l-3 3H4V7z M8 10h8'),
-  'dilithium':  ('Dilithium (XP) and the refit rail.', 'M12 2l6 5v10l-6 5-6-5V7z M6 7l6 4 6-4 M12 11v11'),
+  'krail':  ('Krail (XP) and the refit rail.', 'M12 2l6 5v10l-6 5-6-5V7z M6 7l6 4 6-4 M12 11v11'),
   'overcharge': ('The overcharge gauge and Release.', 'M13 2L5 14h6l-1 8 8-12h-6l1-8z'),
   'chain':      ('The kill-chain multiplier.', 'M5 7l5 5-5 5 M12 7l5 5-5 5'),
   'capital':    ('Capital ships: bosses, the hail, summary tiles.', 'M3 8V3h5 M16 3h5v5 M21 16v5h-5 M8 21H3v-5 M12 8l4 4-4 4-4-4z'),
-  'stardate':   ('Stardate: score and run time.', 'M9 3h6l6 6v6l-6 6H9l-6-6V9z M12 7v5h4'),
-  'torpedo':    ('Photon torpedo bay.', 'M4 9h10l5 3-5 3H4z M4 9L2 7 M4 15l-2 2 M8 9v6'),
-  'mine':       ('Tricobalt mine layer.', 'M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5'),
+  'score':   ('Score: score and run time.', 'M9 3h6l6 6v6l-6 6H9l-6-6V9z M12 7v5h4'),
+  'torpedo':    ('Torpedo bay.', 'M4 9h10l5 3-5 3H4z M4 9L2 7 M4 15l-2 2 M8 9v6'),
+  'mine':       ('Seismic mine layer.', 'M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5'),
   'alert':      ('Yellow and red alert placards.', 'M12 3l10 17H2z M12 9v6 M12 17v2'),
   'all-stop':   ('All stop (pause).', 'M8.5 5v14 M15.5 5v14'),
 }
@@ -50,23 +50,23 @@ WM_CSS = '''
 .ab-wm-b { stroke: var(--signal); }
 .ab-wm.is-mono .ab-wm-b { stroke: var(--ink); }
 .ab-mk { display: block; overflow: visible; }
-.ab-mk-rock { fill: none; stroke: var(--dilithium); stroke-width: 4; stroke-linejoin: miter; }
-.ab-mk-shard { fill: var(--dilithium); }
+.ab-mk-rock { fill: none; stroke: var(--krail); stroke-width: 4; stroke-linejoin: miter; }
+.ab-mk-shard { fill: var(--krail); }
 .ab-mk-ship { fill: var(--signal); }
 .ab-mk.is-mono .ab-mk-rock { stroke: var(--ink); } .ab-mk.is-mono .ab-mk-shard, .ab-mk.is-mono .ab-mk-ship { fill: var(--ink); }
 '''
 
 def wordmark(stacked=False, cls='', width=None):
     if stacked:
-        a, wa = word('ASTEROID')
-        b, wb = word('BLASTER', y0=26)
+        a, wa = word('WAY')
+        b, wb = word('WARD', y0=26)
         vw, vh = max(wa, wb), 46
     else:
-        a, wa = word('ASTEROID')
-        b, wb = word('BLASTER', x0=wa + 12)
-        vw, vh = wa + 12 + wb, 20
+        a, wa = word('WAY')
+        b, wb = word('WARD', x0=wa + 9)
+        vw, vh = wa + 9 + wb, 20
     w = f' width="{width}"' if width else ''
-    return (f'<svg class="ab-wm {cls}" viewBox="0 0 {vw:.1f} {vh}"{w} role="img" aria-label="Asteroid Blaster">'
+    return (f'<svg class="ab-wm {cls}" viewBox="0 0 {vw:.1f} {vh}"{w} role="img" aria-label="Wayward">'
             f'<g class="ab-wm-a">{"".join(a)}</g><g class="ab-wm-b">{"".join(b)}</g></svg>')
 
 def _rot(pts, deg, cx, cy):
@@ -85,7 +85,7 @@ def mark(size=64, cls=''):
     _mk_n[0] += 1
     mid = f'abBreach{_mk_n[0]}'
     sh = ''.join(f'<polygon class="ab-mk-shard" points="{_P(s)}"/>' for s in SHARDS)
-    return (f'<svg class="ab-mk {cls}" viewBox="0 0 64 64" width="{size}" height="{size}" role="img" aria-label="Asteroid Blaster mark">'
+    return (f'<svg class="ab-mk {cls}" viewBox="0 0 64 64" width="{size}" height="{size}" role="img" aria-label="Wayward mark">'
             f'<defs><mask id="{mid}" maskUnits="userSpaceOnUse" x="-8" y="-8" width="80" height="80">'
             f'<rect x="-8" y="-8" width="80" height="80" fill="#fff"/>'
             f'<polygon points="{_P(ARROW)}" fill="#000" stroke="#000" stroke-width="6" stroke-linejoin="miter" stroke-miterlimit="2"/></mask></defs>'
@@ -103,9 +103,9 @@ def mark_file(ship, rock, size=256):
 
 def wordmark_file(ink, sig, stacked=False):
     if stacked:
-        a, wa = word('ASTEROID'); b, wb = word('BLASTER', y0=26); vw, vh = max(wa, wb), 46
+        a, wa = word('WAY'); b, wb = word('WARD', y0=26); vw, vh = max(wa, wb), 46
     else:
-        a, wa = word('ASTEROID'); b, wb = word('BLASTER', x0=wa + 12); vw, vh = wa + 12 + wb, 20
+        a, wa = word('WAY'); b, wb = word('WARD', x0=wa + 9); vw, vh = wa + 9 + wb, 20
     g = 'fill="none" stroke-width="4" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4"'
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {vw:.1f} {vh}" width="{vw*4:.0f}" height="{vh*4}">'
             f'<g {g} stroke="{ink}">{"".join(a)}</g><g {g} stroke="{sig}">{"".join(b)}</g></svg>')
@@ -144,14 +144,14 @@ SCH['deflector'] = ('<svg viewBox="0 0 240 112" preserveAspectRatio="xMidYMid me
   '<path class="ab-sch-rock" d="M168 22l12-4 9 7-2 12-12 3-8-7z"/><path class="ab-sch-rock" d="M196 60l13-3 8 9-4 12-13 2-7-10z"/><path class="ab-sch-rock" d="M150 80l9-2 5 7-3 8-9 1-4-7z"/>'
   '<path class="ab-sch-dim" d="M192 18h14M202 24h12M222 66h14M228 72h10M170 86h12"/>'
   '</svg>')
-SCH['phaser'] = ('<svg viewBox="0 0 240 112" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
+SCH['laser'] = ('<svg viewBox="0 0 240 112" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
   '<path class="ab-sch" d="M30 50h40l6 6-6 6H30l-6-6z M38 50v12 M46 50v12 M54 50v12 M62 50v12"/>'
   '<path class="ab-sch" d="M78 56L226 24 M78 56H226 M78 56L226 88"/>'
   '<path class="ab-sch-dim" d="M78 56L226 36 M78 56L226 76 M78 56L226 12 M78 56L226 100"/>'
   '<path class="ab-sch-rock" d="M206 46l12-3 8 8-3 11-12 2-7-9z"/>'
   '<path class="ab-sch-dim" d="M228 40l8-6 M230 56h10 M228 70l8 6"/>'
   '</svg>')
-# plan views, nose up: generic Starfleet-era silhouettes, not traced from any canon design
+# plan views, nose up: generic silhouettes, not traced from any canon design
 SCH['escort'] = ('<svg viewBox="0 0 200 150" aria-hidden="true">'
   '<path class="ab-sch-dim" d="M100 10v130 M22 22v108 M18 22h8 M18 130h8"/>'
   '<path class="ab-sch-fill" d="M60 96l8-24 2 54h-12z M140 96l-8-24-2 54h12z"/>'
@@ -207,7 +207,7 @@ function abScene(canvas, spec) {
     var dpr = Math.min(2, window.devicePixelRatio || 1), w = canvas.clientWidth, h = canvas.clientHeight;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var lit = (getComputedStyle(root).getPropertyValue('--ab-glow').trim() || '1') !== '0';
-    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('dilithium'), CMD = tok('command');
+    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('krail'), CMD = tok('command');
     ctx.fillStyle = VOID; ctx.fillRect(0, 0, w, h);
     if (lit) {
       [[0.22, 0.3, 0.55, VIO, 0.13], [0.8, 0.75, 0.6, SIG, 0.07], [0.6, 0.15, 0.4, VIO, 0.06]].forEach(function (n) {
@@ -247,7 +247,7 @@ function abScene(canvas, spec) {
       ctx.fill();
       if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = big ? 26 : 14; }
       ctx.strokeStyle = VIO; ctx.lineWidth = big ? 2 : 1.5; ctx.stroke(); ctx.shadowBlur = 0;
-      if (big) {  // facets from an off-centre apex, and two dilithium seams that glow
+      if (big) {  // facets from an off-centre apex, and two krail seams that glow
         var ax = cx - r[2] * 0.18, ay = cy - r[2] * 0.12;
         pts.forEach(function (p, i) { ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(p[0], p[1]); ctx.strokeStyle = rgba(VIO, i % 3 ? 0.18 : 0.42); ctx.lineWidth = 1; ctx.stroke(); });
         [[2, 6, 0.5], [8, 4, 0.35]].forEach(function (sm) {
@@ -255,7 +255,7 @@ function abScene(canvas, spec) {
           ctx.lineTo(ax + (pts[sm[1]][0] - ax) * sm[2], ay + (pts[sm[1]][1] - ay) * sm[2]); ctx.lineTo(pts[sm[1]][0], pts[sm[1]][1]);
           ctx.strokeStyle = rgba(INK, lit ? 0.75 : 0.5); ctx.lineWidth = 1.4; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 12; } ctx.stroke(); ctx.shadowBlur = 0;
         });
-      } else if (r[2] > 26) {  // a dilithium seam
+      } else if (r[2] > 26) {  // a krail seam
         ctx.beginPath(); ctx.moveTo(pts[0][0] * 0.6 + pts[3][0] * 0.4, pts[0][1] * 0.6 + pts[3][1] * 0.4);
         ctx.lineTo(cx, cy); ctx.lineTo(pts[2][0] * 0.5 + pts[5][0] * 0.5, pts[2][1] * 0.5 + pts[5][1] * 0.5);
         ctx.strokeStyle = rgba(VIO, 0.6); ctx.lineWidth = 1; ctx.stroke();
@@ -267,7 +267,7 @@ function abScene(canvas, spec) {
       ctx.fillStyle = VIO; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 8; } ctx.fillRect(-2.2, -2.2, 4.4, 4.4); ctx.restore();
     });
     (spec.enemies || []).forEach(function (e) {
-      var col = tok(e[4] || 'faction-klingon'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
+      var col = tok(e[4] || 'faction-gutter'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
       raider(e[0] * w, e[1] * h, e[2], e[3], col); ctx.shadowBlur = 0;
       if (e[5]) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
         ctx.moveTo(e[0] * w + Math.sin(e[3]) * 22 * e[2], e[1] * h - Math.cos(e[3]) * 22 * e[2]);

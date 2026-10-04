@@ -8,9 +8,9 @@ import type { Press } from './types';
 // the ring follows the thumb, so reversing a turn is always one ring's
 // width away however far the thumb has wandered.
 //
-// The right half is the trigger's. A thumb on Torpedo or Release (or close
-// to either) presses it; a thumb anywhere else on the right holds the
-// phasers. A thumb that misses a button still fires, rather than doing
+// The right half is the trigger's. A thumb on Torpedo, Cut or Release (or
+// close to one) presses it (Cut is held, like the trigger); a thumb anywhere else on the right holds the
+// lasers. A thumb that misses a button still fires, rather than doing
 // nothing or, worse, anchoring the stick under the wrong thumb.
 //
 // Steering drives like a racing game: across turns the nose, any push away
@@ -28,12 +28,14 @@ export interface TouchElements {
   layer: HTMLElement;
   stick: HTMLElement;
   knob: HTMLElement;
-  /** The trigger: phasers, held. */
+  /** The trigger: lasers, held. */
   fire: HTMLElement;
   /** A torpedo per tap. */
   torpedo: HTMLElement;
-  /** The warp core, when it is full. */
+  /** The reactor, when it is full. */
   release: HTMLElement;
+  /** The cutter, held. */
+  cut: HTMLElement;
 }
 
 /**
@@ -52,7 +54,7 @@ export function driveStick(x: number, y: number): { turn: number; thrust: number
   return { turn, thrust };
 }
 
-type Role = 'stick' | 'fire' | 'torpedo' | 'release' | 'roll';
+type Role = 'stick' | 'fire' | 'torpedo' | 'release' | 'roll' | 'cut';
 
 export class TouchStick {
   /** The helm, -1 to 1, and the throttle, 0 to 1, from the stick. */
@@ -60,6 +62,8 @@ export class TouchStick {
   thrust = 0;
   /** The trigger is held. */
   firing = false;
+  /** The cutter is held. */
+  cutting = false;
 
   private readonly roles = new Map<number, Role>();
   private stickId: number | null = null;
@@ -89,7 +93,9 @@ export class TouchStick {
     this.roles.clear();
     this.releaseStick();
     this.firing = false;
+    this.cutting = false;
     this.el.fire.classList.remove('on');
+    this.el.cut.classList.remove('on');
   }
 
   private down = (e: PointerEvent): void => {
@@ -105,6 +111,7 @@ export class TouchStick {
       case 'fire': this.firing = true; this.el.fire.classList.add('on'); break;
       case 'torpedo': this.onPress('torpedo'); this.blink(this.el.torpedo); break;
       case 'release': this.onPress('overcharge'); this.blink(this.el.release); break;
+      case 'cut': this.cutting = true; this.el.cut.classList.add('on'); break;
     }
   };
 
@@ -119,6 +126,10 @@ export class TouchStick {
     if (!role) return;
     this.roles.delete(e.pointerId);
     if (role === 'stick') this.releaseStick();
+    if (role === 'cut' && ![...this.roles.values()].includes('cut')) {
+      this.cutting = false;
+      this.el.cut.classList.remove('on');
+    }
     if (role === 'fire' && ![...this.roles.values()].includes('fire')) {
       this.firing = false;
       this.el.fire.classList.remove('on');
@@ -130,7 +141,7 @@ export class TouchStick {
     if (x < window.innerWidth / 2) return this.stickId === null ? 'stick' : 'roll';
     if (inside(this.el.fire, x, y, 0)) return 'fire';
     let best: Role = 'fire', bestD = SLACK;
-    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.release, 'release']] as const) {
+    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.release, 'release'], [this.el.cut, 'cut']] as const) {
       const d = edgeDistance(node, x, y);
       if (d < bestD) { bestD = d; best = role; }
     }

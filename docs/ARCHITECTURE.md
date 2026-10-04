@@ -1,12 +1,12 @@
 # Architecture
 
-Asteroid Blaster in 3D: a rebuild of the canvas game hidden in the portfolio
+Wayward in 3D: a rebuild of the canvas game hidden in the portfolio
 (`Portfolio-Frog/js/game.js`), playable on desktop and mobile from a website.
 
 ## The original, in one paragraph
 
-A survivors-style roguelite. Phasers fire themselves, so steering is the only
-control. Kills drop dilithium; a full rail opens a refit card (one of three from
+A survivors-style roguelite. Lasers fire themselves, so steering is the only
+control. Kills drop krail; a full rail opens a refit card (one of three from
 17 upgrades). Near misses charge an overcharge that Space releases. Every ~68s a
 capital ship hails and you choose to fight or flee. Pressure rises every second
 until the hull reaches zero. There is no win state and no audio. Its tuning was
@@ -44,11 +44,11 @@ input ──InputFrame──▶ sim (fixed 60Hz) ──state──▶ render (ev
 src/
   core/      loop (fixed step, interpolation, freeze, clamp), math
   input/     keyboard, touch stick, gamepad → one InputFrame per step
-  content/   data: the hull, the upgrades, long-term unlocks and modifiers
-  sim/       game state and rules (never imports Three.js)
-  meta/      the profile between runs (localStorage)
+  content/   data: the hull, the upgrades, comms cards, system kinds, long-term unlocks and modifiers
+  sim/       game state and rules (never imports Three.js): the world (one system), the journey above it
+  meta/      the profile between runs, and the journey save (localStorage)
   render/    renderer, quality governor, scene
-  ui/        DOM overlays: HUD, the refit cards, panels (hail, report, logbook), debug
+  ui/        DOM overlays: HUD, the refit cards, panels (comms, port, chart, report, logbook), debug
   styles/    CSS, tokens carried over from the original
 tests/       unit tests (Vitest)
 tools/       the scripted pilot and the balance report (npm run pilot)
@@ -61,7 +61,7 @@ stick means under each camera), `render/camera.ts` (the tactical and chase
 rigs), `render/ships.ts` (stand-in models, banking, roll, trails),
 `render/environment.ts` and `render/scenery.ts`.
 
-M1b adds `sim/field.ts` (rock that splits), `sim/weapons.ts` (phasers and
+M1b adds `sim/field.ts` (rock that splits), `sim/weapons.ts` (lasers and
 torpedoes), `sim/events.ts` (what happened, for effects and the log),
 `render/rocks.ts`, `render/fx.ts`, `render/weapons.ts`, `render/post.ts`
 (bloom), `render/schematic.ts`, `render/textures.ts` (everything painted at
@@ -80,8 +80,7 @@ matte armour with HDR neon edges, baked to two draws per model).
 The gritty pass rebuilds the look and the enemy around a reference frame
 the user supplied, and changes the shape of the fight:
 
-- One ship: the Defiant gunship. The original's other two hulls (Sovereign,
-  Nova) and the hull picker are gone; `content/hulls.ts` holds one `HULL`.
+- One ship: a gunship. The original's other two hulls and the hull picker are gone; `content/hulls.ts` holds one `HULL`.
 - `render/kit.ts` replaces `render/neon.ts`: a parts kit (boxes, drums,
   wedges, greebles merged into one mesh per material) and weathered metal,
   painted at startup and projected triplanar with a bump from a height map.
@@ -101,7 +100,7 @@ the user supplied, and changes the shape of the fight:
 - The simulation gains altitude. Enemies, their fire and the player's fire
   have a `y`; the ship and rock stay on the plane. `sim/enemies.ts` is a new
   tactical AI (approach from far out, interceptor attack runs and jinks,
-  cruisers using bulwarks as cover); `sim/field.ts` adds bulwarks; phasers
+  cruisers using bulwarks as cover); `sim/field.ts` adds bulwarks; lasers
   gain a gunnery computer (lances lift onto targets off the plane) and
   torpedoes accelerate and steer in 3D.
 
@@ -122,7 +121,7 @@ everything above (the flight model, camera, HUD and look are unchanged).
   rebuilt from the build and capped after every multiplier; `sim/build.ts`
   makes the figures and the ship's name.
 - `sim/director.ts` holds every difficulty curve. `sim/field.ts` gains
-  rock kinds and formations, `sim/pickups.ts` dilithium and power-ups,
+  rock kinds and formations, `sim/pickups.ts` krail and power-ups,
   `sim/arsenal.ts` the systems that fire themselves (mines, plasma, the
   hull arc), `sim/encounters.ts` the sector events, `sim/run.ts` the run's
   record.
@@ -150,11 +149,11 @@ found the first version cluttered:
   at 45°, scan lines in the glass only), the tick meter (`--v`, `--n`, read
   as a count of lit segments), corner brackets, and five lights that each
   mean one thing: orange-red the instrument, cyan the ship's own state,
-  violet dilithium, amber things to go and get (and the yellow alert), red
+  violet krail, amber things to go and get (and the yellow alert), red
   damage.
 - `ui/hud.ts` keeps only what earns its place while flying: the refit rail
-  across the top, one ship-systems panel (the build's name; phasers, then
-  torpedoes and mines once fitted, and the warp core, each with its key,
+  across the top, one ship-systems panel (the build's name; lasers, then
+  torpedoes and mines once fitted, and the reactor, each with its key,
   gauge, reading and the level the refits have taken it to; the hull with
   its shield charges; the score and chain), a capital ship's or a sector
   event's panel at the top centre, the scope, and two fading log lines.
@@ -165,7 +164,7 @@ found the first version cluttered:
   narrow screen, clear of the panel and the scope) says what it is and
   its integrity, and for rock what breaking it yields. The gunsight and a
   centre mark light when a lance fired now would hit. Marks: brackets on
-  other hulls, the capital ship by name, the nearest dilithium-rich or
+  other hulls, the capital ship by name, the nearest krail-rich or
   rare rock, repairs, power-ups, the objective; edge pointers when the
   capital ship or the objective is off screen, and a small chevron in its
   faction's colour for each hull out of view.
@@ -176,19 +175,19 @@ found the first version cluttered:
   clustered round the right thumb; on a phone the panel tightens and the
   scope moves to the top left.
 
-The Starfleet pass answers three notes from the user, with a new reference
-frame (a saucer-and-nacelles ship in hazard yellow over an asteroid field,
-under a thin orange-red HUD): the game did not feel like Star Trek, the
-refit web was too much, and the opening was too hectic to get hooked.
+The slow-burn pass answers three notes from the user, with a new reference
+frame (a mining ship over an asteroid field, under a thin orange-red HUD):
+the ship lacked character, the refit web was too much, and the opening was
+too hectic to get hooked.
 
-- The ship is the U.S.S. Kestrel, NCC-1903 (`render/ships.ts`): a saucer
-  with a bridge, a ring of running lights and a phaser strip; a hazard-
-  yellow engineering hull with an impulse ring astern; two nacelles on
-  swept pylons, coils glowing inboard and cyan rings aft. Stencilled hull
-  numbers and the registry come from a small painted atlas laid on the
-  hull as decals (`Kit.decal`); the saucer is a lathe (`Kit.lathe`). Stock
-  engines burn Starfleet cyan; the engine-colour unlock that used to be ion
-  blue is now the old impulse red. The camera sits a little lower and
+- The ship (`render/ships.ts`; since the WAYWARD rename, the Wayward,
+  OB-7731-A): a blunt cutting head with a bridge and the cutting laser; a
+  rust-red engine block with a drive ring astern and containers on its
+  spine; two drive pods on swept pylons, coils glowing inboard and cyan
+  rings aft. Stencilled hull numbers and the registry come from a small
+  painted atlas laid on the hull as decals (`Kit.decal`). Stock
+  engines burn drive cyan; the engine-colour unlock that used to be ion
+  blue is now the old drive red. The camera sits a little lower and
   closer, so the stern and the engines face you as in the reference.
 - The refit is three cards again (`sim/offers.ts`, `ui/refit.ts`): two that
   lean toward the build and a new direction, a system while the ship has
@@ -199,9 +198,9 @@ refit web was too much, and the opening was too hectic to get hooked.
   `sim/web.ts`, `ui/web.ts`, `ui/loadout.ts` and the minor upgrades that
   only existed to pave the web's paths are gone; the tactical computer
   (utility) keeps a card for every-weapon damage.
-- The HUD follows the new reference: the sector and the dilithium gauge
+- The HUD follows the new reference: the sector and the krail gauge
   top left (the full-width rail is gone), a heading tape top centre, a
-  leaner systems panel top right (weapon rows; hull, warp core and score
+  leaner systems panel top right (weapon rows; hull, reactor and score
   side by side), the target's label sitting on its bracket frame with its
   integrity, mineral deposits marked with a hexagon and a two-line label,
   the scope with its range, and a mode line bottom right (cruise, mining
@@ -245,7 +244,7 @@ Coming in later milestones: `audio/`, three sectors and a win state.
   a racing game: across steers on an eased curve, any push opens the
   throttle, pulling back coasts. The right half is the trigger: Torpedo and
   Core are hit-tested with slack round them, and any other touch there holds
-  the phasers, so a thumb that misses a button still fires. A second finger
+  the lasers, so a thumb that misses a button still fires. A second finger
   on the left is a barrel roll. The layer does all the hit-testing; a
   `touchend` with no fingers left releases everything, whatever pointer
   events a system gesture swallowed. Controls appear on first touch, so a
@@ -262,30 +261,75 @@ Coming in later milestones: `audio/`, three sectors and a win state.
 |---|---|---|
 | M0 | Project setup: loop, input, quality tiers, deploy pipeline | done |
 | M1 | Flight model and chase camera | done |
-| M1b | Console pass: chase camera only, phasers and torpedoes, breakable rock, hull damage, bloom, the bridge console | done (pulls parts of M2, M3, M4 and M7 forward) |
+| M1b | Console pass: chase camera only, lasers and torpedoes, breakable rock, hull damage, bloom, the bridge console | done (pulls parts of M2, M3, M4 and M7 forward) |
 | M1c | Cyberpunk pass: corner HUD, neon ships and exhaust, the original's enemies, wave pacing and capital ships | done (pulls the enemy half of M5 forward) |
 | M1d | Gritty pass: reference camera, weathered ships, lava rock, bulwarks, red HUD, 3D enemy AI, heavier weapons | done |
-| M2 | Combat core: asteroids, phasers, torpedoes, collision, splitting, hull, game over | done (roguelite pass) |
+| M2 | Combat core: asteroids, lasers, torpedoes, collision, splitting, hull, game over | done (roguelite pass) |
 | M3 | Combat feel and effects: trails, sparks, shield dome, explosions, shake | |
 | M4 | Space environment: starfield, nebulae, sun, shadows, bloom | |
 | M5 | Roguelite systems: XP, upgrades, hull pick, overcharge, enemies, bosses, hails | done (roguelite pass; no hull pick: one ship, many builds) |
 | M5b | Roguelite pass: refit tree, weapon systems, rock kinds, factions, elites, director, capital-ship phases and telegraphs, sector events, run report, long-term unlocks, scripted-pilot balancing | done |
 | M5c | HUD pass: one tactical UI language for the HUD and every panel, ship systems with refit levels, targeting with mining readouts, a compass scope, module refit cards, a decluttered phone layout | done |
 | M6 | Three sectors and a win state | |
-| M5d | The refit web: two hundred nodes in nine regions, points per refit, salvaged faction tech, quick picks, the map with pan, zoom and inspector | done, then replaced by three cards (Starfleet pass) |
-| M5e | Starfleet pass: the Kestrel, the HUD after the new reference, three-card refits, a slow-burn opening | done |
-| M7 | LCARS UI: start, HUD, refit, pause, summary | done in the gritty style (roguelite pass), redrawn in the Starfleet pass |
+| M5d | The refit web: two hundred nodes in nine regions, points per refit, salvaged faction tech, quick picks, the map with pan, zoom and inspector | done, then replaced by three cards (slow-burn pass) |
+| M5e | slow-burn pass: the Wayward, the HUD after the new reference, three-card refits, a slow-burn opening | done |
+| M7 | Console UI: start, HUD, refit, pause, summary | done in the gritty style (roguelite pass), redrawn in the slow-burn pass |
 | M8 | Spatial audio and music | |
 | M9 | Mobile polish, installable web app, performance pass, launch | |
 
 ## Open questions
 
 - **Phase 4 brief** arrived cut off. Working assumption until confirmed: three
-  sectors, each ending in a flagship fight (asteroid belt / Klingon; ion-storm
-  nebula / Cardassian and Romulan; gravity well / Borg and Tholian). Clearing
+  sectors, each ending in a flagship fight (asteroid belt / Gutter; ion-storm
+  nebula / Custody and Office; gravity well / Voice and Thren). Clearing
   sector 3 wins and unlocks endless mode. Needed by M6.
-- **Star Trek names** on a public site carry more trademark exposure than an
-  easter egg. All names and copy will live in one content file, so a rename is
-  a one-file change.
+- **Franchise names**: settled by the WAYWARD rename below; the game's world
+  is its own.
 - **Address.** GitHub Pages from `jimi-duck/game`; a subdomain such as
   `play.jciclitira.com` needs one DNS record. Needed by M9.
+
+## The WAYWARD rename (M0 of [PLAN.md](PLAN.md))
+
+The game took its own world: no franchise names remain. Display names, ids,
+docs and the brand moved together:
+
+- the ship: the Wayward, an Obedience-class ore hauler (`render/ships.ts`
+  rebuilt round a cutting head and containers, repainted grey and rust);
+- dilithium → Krail; phasers → lasers; the warp core → the reactor; photon
+  and tricobalt → plain torpedoes and seismic mines;
+- the factions, by how they fight: Klingon → the Gutter, Cardassian → the
+  Custody, Romulan → the Office of Peace, Borg → the Voice, Tholian → the
+  Thren; their variants, squads, capital ships and salvaged tech followed;
+- yellow and red alert → contact and alarm;
+- the wordmark and the logo files (`brand/`), with W and Y added to the
+  constructed letterforms.
+
+`meta/profile.ts` `migrate` carries old profiles across (Krail totals and
+the capital-ship tally by faction); the storage key keeps the old name so
+nothing is lost.
+
+## The journey (M3 of [PLAN.md](PLAN.md))
+
+`World` was the whole game; now it is one system. Above it:
+
+- `sim/journey.ts`: the persistent state (the ship's `Carry`, the day, the
+  trail, wrecks) and the loop: `sortieDef` builds the `SortieDef` the world
+  flies, `endSortie` folds the world's `SortieResult` back in (days pass,
+  the Net spreads, Calloway moves, the lane eats food and parts), and
+  `plot` takes the chart's answer.
+- `sim/chart.ts`: the region laid out from a seed and `content/systems.ts`;
+  lanes, the Net (`spreadNet`, stalls, marked-up prices), and what you know
+  of it (`arrive`, `seenNet`, the survey's Krail estimate).
+- `sim/hunt.ts`: Calloway on the trail; `daysUntil` is what turns lingering
+  into her arrival time inside the next sortie.
+- `meta/save.ts`: the journey in localStorage, versioned, with `migrate`.
+- `ui/chart.ts`: the chart panel (an SVG map and the lanes out), which also
+  shows a wreck's notice and the journey's end.
+
+The world reads a `SortieDef` instead of the Breakout's constants (lane
+distance, the port or none, prices, heat, rock, the Gutter's share, the
+blockade, Calloway's arrival), takes a `Carry` in `restart`, and gives
+`carry()` and `result()` back. The Breakout is the `HOME` sortie, so an
+unconfigured Breakout world plays exactly as before. The journey never
+imports the world either: the app (and `tools/journey.pilot.ts`) moves the
+two between each other.

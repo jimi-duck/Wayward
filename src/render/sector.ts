@@ -5,6 +5,7 @@ import type { GameEvent } from '../sim/events';
 import { newShip, topSpeed } from '../sim/ship';
 import type { World } from '../sim/world';
 import { ArsenalView } from './arsenal';
+import { BreakoutView } from './breakout';
 import { CameraRig } from './camera';
 import { Environment } from './environment';
 import { Effects, type RGB } from './fx';
@@ -54,6 +55,7 @@ export class Sector {
   private readonly pickups: PickupView;
   private readonly arsenal: ArsenalView;
   private readonly hazards: HazardView;
+  private readonly breakout: BreakoutView;
   private post: Post | null = null;
   private readonly lerped = newShip();
   private readonly v = new Vector3();
@@ -74,6 +76,7 @@ export class Sector {
     this.pickups = new PickupView(this.scene, glow);
     this.arsenal = new ArsenalView(this.scene);
     this.hazards = new HazardView(this.scene, glow, wreck);
+    this.breakout = new BreakoutView(this.scene, glow);
     this.scene.add(this.ship.root);
   }
 
@@ -298,6 +301,42 @@ export class Sector {
           hold = Math.max(hold, 0.11);
           break;
         }
+        case 'rockCut': {
+          const big = [1, 0.62, 0.38][e.size]!;
+          this.fx.flash(e.x, 0.3, e.z, 3 * big + 1, AMBER, 0.25);
+          this.fx.ring(e.x, 0.1, e.z, 6 * big + 2, e.krail ? VIOLET : AMBER, 0.45);
+          this.fx.rubble('rock', e.x, 0, e.z, big, 0.3, 14);
+          this.fx.burst(e.x, 0.3, e.z, 24, e.krail ? VIOLET : AMBER, 6, 0.3, 0.6);
+          this.rig.shake(0.08);
+          break;
+        }
+        case 'fracture':
+          this.fx.flash(e.x, 0.3, e.z, 5, [4.2, 0.8, 0.3], 0.2);
+          this.rig.shake(0.25);
+          break;
+        case 'ore':
+          this.fx.burst(e.x, 0.3, e.z, 2 + e.value, DUST, 4, 0.16, 0.25);
+          break;
+        case 'parts':
+          this.fx.burst(e.x, 0.3, e.z, 2 + e.value, SHIELD, 4, 0.16, 0.25);
+          break;
+        case 'patched': {
+          const s = this.lerped;
+          this.fx.burst(s.x, 0.4, s.z, 26, SHIELD, 6, 0.25, 0.5);
+          break;
+        }
+        case 'docked': {
+          const s = this.lerped;
+          this.fx.ring(s.x, 0, s.z, 9, [0.4, 2.4, 3.2], 0.6);
+          break;
+        }
+        case 'jumped':
+          this.fx.flash(e.x, 0.5, e.z, 30, [4, 3, 1.4], 0.8);
+          this.fx.ring(e.x, 0.2, e.z, 40, AMBER, 1.2);
+          this.fx.light(e.x, 1, e.z, [1, 0.7, 0.3], 4000, 1.4);
+          this.rig.shake(0.8);
+          hold = Math.max(hold, 0.1);
+          break;
         case 'breach':
           this.fx.explode(e.x, 0.2, e.z, 4, ALERT, 'metal');
           this.fx.explode(e.x + 1, 0.4, e.z - 1, 2.5, FIRE, 'metal');
@@ -325,7 +364,7 @@ export class Sector {
     const subject = { x: s.x, z: s.z, heading: s.heading, yawRate: s.yawRate, speedFrac: Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(world.hull)) };
     if (!this.snapped) { this.rig.snap(subject); this.snapped = true; }
     this.rig.update(subject, dt, this.reduceMotion);
-    this.ship.root.visible = world.alive;
+    this.ship.root.visible = world.alive && !(world.bk && world.bk.jumpT >= 0 && world.bk.jumpT < 1.3);
     this.ship.status.charged = world.shields > 0 || world.powers.shield > 0 ? 1 : 0;
     this.ship.status.phased = world.phaseT > 0;
     this.ship.status.cloaked = world.cloakT > 0;
@@ -338,6 +377,7 @@ export class Sector {
     this.pickups.update(world.pickups, alpha, dt);
     this.arsenal.update(world.sys, dt);
     this.hazards.update(world.tele, world.strikes, world.encounter, dt);
+    this.breakout.update(world, s, this.fx, dt);
     if (dt > 0) this.ambient(world, s.heading);
     this.fx.update(dt);
     this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz);

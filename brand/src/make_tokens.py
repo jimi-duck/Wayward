@@ -25,8 +25,8 @@ colors = [
   c('command', '#FF9F43', '#B54700', 'Amber: the player\'s hand. Selection, focus, the primary action, key caps you can press now. As text on void, hull and hull-2.'),
   c('command-fill', '#FF9F43', '#FF6A1F', 'Amber as a fill: the primary button, a filled key cap, the cover block. Always with on-command text.'),
   c('on-command', '#1C0E00', '#1C0E00', 'Text on command-fill, both themes.'),
-  c('dilithium', '#C77DFF', '#7434C2', 'Violet: the field. Asteroid edges, dilithium crystals, the XP gem icon, the Ship upgrade category. As text on void, hull and hull-2.'),
-  c('on-dilithium', '#14051F', '#FFFFFF', 'Text on a dilithium fill.'),
+  c('krail', '#C77DFF', '#7434C2', 'Violet: the field. Asteroid edges, krail crystals, the XP gem icon, the Ship upgrade category. As text on void, hull and hull-2.'),
+  c('on-krail', '#14051F', '#FFFFFF', 'Text on a krail fill.'),
   # alert levels
   c('caution', '#FFD23F', '#FFC21A', 'Yellow alert: a capital ship inbound, hazard placards. Only ever a fill, with on-caution text; never text on its own.'),
   c('on-caution', '#121008', '#121008', 'Text and stripes on caution.'),
@@ -34,17 +34,17 @@ colors = [
   c('on-alert', '#1A0009', '#FFFFFF', 'Text on an alert fill.'),
   c('nominal', '#4DFFA6', '#06703D', 'A gain against last run (▲ +23) and a ready state. Always with a sign or word, never colour alone.'),
   # factions: the field's warm side
-  c('faction-klingon',    '#FF7A63', '#C2381F', 'Klingon hulls, fire and capital-ship name. Text on void, hull and hull-2.'),
-  c('faction-cardassian', '#F0A848', '#88530A', 'Cardassian hulls, fire and capital-ship name.'),
-  c('faction-romulan',    '#7FD6A6', '#16704A', 'Romulan hulls, plasma and capital-ship name.'),
-  c('faction-borg',       '#8FB4C9', '#4A6679', 'Borg hull plating and name. Its cutting beam and emissives use nominal green.'),
-  c('faction-tholian',    '#FFB347', '#925200', 'Tholian hulls and shards. Their webs use dilithium violet.'),
+  c('faction-gutter',    '#FF7A63', '#C2381F', 'Gutter hulls, fire and capital-ship name. Text on void, hull and hull-2.'),
+  c('faction-custody', '#F0A848', '#88530A', 'Custody hulls, fire and capital-ship name.'),
+  c('faction-office',    '#7FD6A6', '#16704A', 'Office hulls, plasma and capital-ship name.'),
+  c('faction-voice',       '#8FB4C9', '#4A6679', 'Voice hull plating and name. Its cutting beam and emissives use nominal green.'),
+  c('faction-thren',    '#FFB347', '#925200', 'Thren hulls and shards. Their webs use krail violet.'),
   # focus
   c('focus', '#FF9F43', '#B54700', 'Keyboard focus ring: 2px solid, 2px gap. 8.7:1 or better on Bridge grounds, 4.5:1 or better on Drydock.'),
 ]
 
 tokens = {
-  "name": "Asteroid Blaster",
+  "name": "Wayward",
   "version": 1,
   "color": {"themes": [{"id": B, "name": "Bridge"}, {"id": D, "name": "Drydock"}], "tokens": colors},
   "type": {
@@ -63,14 +63,14 @@ tokens = {
         {"name": "body", "fontSize": "14px", "lineHeight": "20px", "fontWeight": 400, "sample": "Adds torpedoes that chase their target.", "usage": "Benefit sentences and anything read as a sentence. Sentence case."},
         {"name": "body-sm", "fontSize": "12px", "lineHeight": "17px", "fontWeight": 400, "sample": "They fire and reload on their own.", "usage": "Caveats under a benefit, in ink-3."}
       ]},
-      {"name": "Rail", "family": "rail", "note": "Antonio, the free cut closest to LCARS's ultra-compressed grotesk. Structure and numerals.", "styles": [
-        {"name": "numeral-xl", "fontSize": "120px", "lineHeight": "104px", "fontWeight": 700, "sample": "7072", "usage": "The one figure a screen exists for: the final stardate."},
+      {"name": "Rail", "family": "rail", "note": "Antonio, a free ultra-compressed grotesk. Structure and numerals.", "styles": [
+        {"name": "numeral-xl", "fontSize": "120px", "lineHeight": "104px", "fontWeight": 700, "sample": "7072", "usage": "The one figure a screen exists for: the final score."},
         {"name": "numeral", "fontSize": "28px", "lineHeight": "28px", "fontWeight": 600, "sample": "1142", "usage": "HUD values and tile figures."},
         {"name": "rail-label", "fontSize": "15px", "lineHeight": "18px", "fontWeight": 600, "letterSpacing": "0.14em", "sample": "SECTOR 001", "usage": "Labels on the elbow's bar and rail, navigation, the refit number. Caps."}
       ]},
       {"name": "Mono", "family": "mono", "note": "Martian Mono. Instruments: figures, key caps, codes and the annotation texture.", "styles": [
         {"name": "data", "fontSize": "13px", "lineHeight": "18px", "fontWeight": 500, "sample": "4 blast damage", "usage": "Figures on cards, in signal. Sentence case, numbers as figures."},
-        {"name": "label", "fontSize": "11px", "lineHeight": "14px", "fontWeight": 500, "letterSpacing": "0.16em", "sample": "STARDATE", "usage": "Micro labels over values, category words, key caps. Caps."},
+        {"name": "label", "fontSize": "11px", "lineHeight": "14px", "fontWeight": 500, "letterSpacing": "0.16em", "sample": "SCORE", "usage": "Micro labels over values, category words, key caps. Caps."},
         {"name": "annotation", "fontSize": "9px", "lineHeight": "12px", "fontWeight": 400, "letterSpacing": "0.08em", "sample": "47°12′N · VEL 312 · HDG 047", "usage": "Texture that is still true: coordinates, velocity, registry codes. ink-3, caps."}
       ]}
     ]

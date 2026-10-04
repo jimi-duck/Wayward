@@ -15,7 +15,7 @@ export interface Lifetime {
   runs: number;
   kills: number;
   capitals: number;
-  dilithium: number;
+  krail: number;
   /** Capital-ship kills by faction. */
   capitalsBy: Record<string, number>;
   bestTime: number;
@@ -54,9 +54,9 @@ export const UNLOCKS: UnlockDef[] = [
   },
   {
     id: 'u_regenerative', kind: 'specialisation', name: 'Regenerative hull', grants: ['df_regenerative'],
-    text: 'A defence specialisation, salvaged from the Borg: a plate that grows back.',
-    hint: 'Destroy a Borg cube.',
-    earned: (r) => r.capitalFactions.includes('borg'),
+    text: 'A defence specialisation, salvaged from the Voice: a plate that grows back.',
+    hint: 'Destroy a Voice foundry.',
+    earned: (r) => r.capitalFactions.includes('voice'),
   },
   {
     id: 'u_juggernaut', kind: 'specialisation', name: 'Juggernaut', grants: ['cl_juggernaut'],
@@ -66,13 +66,13 @@ export const UNLOCKS: UnlockDef[] = [
   },
   {
     id: 'u_phase', kind: 'specialisation', name: 'Phase cloak', grants: ['oc_phase'],
-    text: 'A warp-core specialisation: release to phase out and ram through anything.',
+    text: 'A reactor specialisation: release to phase out and ram through anything.',
     hint: 'Release 6 overcharges in one run.',
     earned: (r) => r.overcharges >= 6,
   },
   {
     id: 'u_ramjet', kind: 'synergy', name: 'Ramjet', grants: ['sy_ramjet'],
-    text: 'A synergy of ram prow and impulse engines: roll into hulls to ram them untouched.',
+    text: 'A synergy of ram prow and main drive: roll into hulls to ram them untouched.',
     hint: 'Reach refit 12.',
     earned: (r) => r.refit >= 12,
   },
@@ -107,16 +107,16 @@ export const UNLOCKS: UnlockDef[] = [
     earned: (_r, life) => life.capitals >= 5,
   },
   {
-    id: 'u_ion', kind: 'cosmetic', name: 'Impulse-red engines', grants: ['engine-ion'],
-    text: 'A cosmetic: your engines burn impulse red.',
+    id: 'u_ion', kind: 'cosmetic', name: 'Drive-red engines', grants: ['engine-ion'],
+    text: 'A cosmetic: your engines burn drive red.',
     hint: 'Complete 5 runs.',
     earned: (_r, life) => life.runs >= 5,
   },
   {
-    id: 'u_gold', kind: 'cosmetic', name: 'Tricobalt-gold engines', grants: ['engine-gold'],
+    id: 'u_gold', kind: 'cosmetic', name: 'Krail-gold engines', grants: ['engine-gold'],
     text: 'A cosmetic: your engines burn gold.',
-    hint: 'Collect 1,500 dilithium, across all your runs.',
-    earned: (_r, life) => life.dilithium >= 1500,
+    hint: 'Collect 1,500 krail, across all your runs.',
+    earned: (_r, life) => life.krail >= 1500,
   },
 ];
 
@@ -144,8 +144,8 @@ export const MODIFIERS: Record<string, ModifierDef> = {
 
 /** Engine colours (HDR): core and bell. */
 export const COSMETICS: Record<string, { name: string; core: [number, number, number]; bell: [number, number, number] }> = {
-  'engine-stock': { name: 'Warp cyan', core: [2.6, 3.9, 4.4], bell: [0.3, 2.1, 3.4] },
+  'engine-stock': { name: 'Drive cyan', core: [2.6, 3.9, 4.4], bell: [0.3, 2.1, 3.4] },
   // the id is kept from when stock burned red, so profiles that earned it keep it
-  'engine-ion': { name: 'Impulse red', core: [4.2, 2.2, 2.6], bell: [3.4, 0.45, 0.9] },
-  'engine-gold': { name: 'Tricobalt gold', core: [4.4, 3.6, 2.2], bell: [3.6, 1.8, 0.3] },
+  'engine-ion': { name: 'Drive red', core: [4.2, 2.2, 2.6], bell: [3.4, 0.45, 0.9] },
+  'engine-gold': { name: 'Krail gold', core: [4.4, 3.6, 2.2], bell: [3.6, 1.8, 0.3] },
 };

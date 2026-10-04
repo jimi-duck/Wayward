@@ -56,4 +56,18 @@ export type GameEvent =
   | { type: 'strike'; x: number; z: number; r: number; kind: string }
   | { type: 'sectorEvent'; id: string; name: string; text: string }
   | { type: 'sectorEventEnd'; id: string; name: string; text: string; success: boolean }
-  | { type: 'squad'; label: string };
+  | { type: 'squad'; label: string }
+  | { type: 'ore'; x: number; z: number; value: number }
+  | { type: 'parts'; x: number; z: number; value: number }
+  | { type: 'holdFull' }
+  | { type: 'rockCut'; x: number; z: number; size: number; kind: string; ore: number; krail: number; points: number }
+  | { type: 'fracture'; x: number; z: number; kind: string }
+  | { type: 'patched'; plates: number }
+  | { type: 'docked'; name: string }
+  | { type: 'spool' }
+  | { type: 'needKrail'; have: number; need: number }
+  | { type: 'jumped'; x: number; z: number }
+  | { type: 'comms'; id: string; kind: string; from: string; title: string; slow: boolean }
+  | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
+  | { type: 'jobDone'; id: string; text: string }
+  | { type: 'jobShort'; id: string; text: string };

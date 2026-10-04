@@ -38,22 +38,22 @@ body { overflow: hidden; }
   <div class="ab-brackets frame-b"></div>
   <header class="top">
     <span class="ab-anno">AB-47 · Tactical simulation · Build 0.1</span>
-    <span class="ab-anno">Stardate 47634.4 · Sector 001</span>
+    <span class="ab-anno">Day 31 · Cerro yards</span>
   </header>
   <main class="hero">
-    <svg class="ab-wm " viewBox="0 0 146.5 46" width="420" role="img" aria-label="Asteroid Blaster"><g class="ab-wm-a"><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(0.00 0.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(20.50 0.00)"/><path d="M0 2H16M8 2V20" transform="translate(41.00 0.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(61.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(81.00 0.00)"/><path d="M5 2H11L14 5V15L11 18H5L2 15V5Z" transform="translate(101.50 0.00)"/><path d="M2 0V20" transform="translate(122.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(130.50 0.00)"/></g><g class="ab-wm-b"><path d="M2 2H11L14 5V7.5L12 10L14 12.5V15L11 18H2ZM2 10H12" transform="translate(0.00 26.00)"/><path d="M2 0V18H15" transform="translate(20.50 26.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(40.00 26.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(60.50 26.00)"/><path d="M0 2H16M8 2V20" transform="translate(81.00 26.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(101.50 26.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(121.00 26.00)"/></g></svg>
+    <svg class="ab-wm " viewBox="0 0 81.5 46" width="420" role="img" aria-label="Wayward"><g class="ab-wm-a"><path d="M2 0V15L5 18H15L18 15V0M10 6V18" transform="translate(0.00 0.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(24.50 0.00)"/><path d="M2 0V7L5 10H11L14 7V0M8 10V20" transform="translate(45.00 0.00)"/></g><g class="ab-wm-b"><path d="M2 0V15L5 18H15L18 15V0M10 6V18" transform="translate(0.00 26.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(24.50 26.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(45.00 26.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(65.50 26.00)"/></g></svg>
     <p class="tag">Hold the sector.</p>
     <div class="cta"><button class="ab-btn ab-btn--command">Launch</button><span class="hint"><span class="ab-key">Space</span><span class="ab-label">or tap</span></span></div>
     <div class="sec"><button class="ab-btn ab-btn--ghost ab-btn--sm">How to fly</button><button class="ab-btn ab-btn--ghost ab-btn--sm">Settings</button></div>
   </main>
-  <div class="callout"><span class="ab-anno">Target · C-type</span><span class="ab-label">Dilithium 0.47 kt</span></div>
+  <div class="callout"><span class="ab-anno">Target · C-type</span><span class="ab-label">Krail 0.47 kt</span></div>
   <aside class="scale" aria-hidden="true">
     <span class="ab-jp jp">小惑星</span>
     <ul><li class="ab-anno">47°12′N</li><li class="ab-anno">31°06′N</li><li class="ab-anno">VEL 0</li><li class="ab-anno">HDG 047</li><li class="ab-anno">R 1.4 AU</li></ul>
   </aside>
   <footer class="bot">
     <span class="keys"><span class="ab-key">←</span><span class="ab-key">→</span><span class="ab-label">Helm</span><span class="ab-key">↑</span><span class="ab-label">Impulse</span><span class="ab-key">Space</span><span class="ab-label">Overcharge</span></span>
-    <span class="ab-rail sector">Sector 001 · Sol belt</span>
+    <span class="ab-rail sector">Cerro yards</span>
   </footer>
 </div>
 <script>
@@ -91,7 +91,7 @@ function abScene(canvas, spec) {
     var dpr = Math.min(2, window.devicePixelRatio || 1), w = canvas.clientWidth, h = canvas.clientHeight;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var lit = (getComputedStyle(root).getPropertyValue('--ab-glow').trim() || '1') !== '0';
-    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('dilithium'), CMD = tok('command');
+    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('krail'), CMD = tok('command');
     ctx.fillStyle = VOID; ctx.fillRect(0, 0, w, h);
     if (lit) {
       [[0.22, 0.3, 0.55, VIO, 0.13], [0.8, 0.75, 0.6, SIG, 0.07], [0.6, 0.15, 0.4, VIO, 0.06]].forEach(function (n) {
@@ -131,7 +131,7 @@ function abScene(canvas, spec) {
       ctx.fill();
       if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = big ? 26 : 14; }
       ctx.strokeStyle = VIO; ctx.lineWidth = big ? 2 : 1.5; ctx.stroke(); ctx.shadowBlur = 0;
-      if (big) {  // facets from an off-centre apex, and two dilithium seams that glow
+      if (big) {  // facets from an off-centre apex, and two krail seams that glow
         var ax = cx - r[2] * 0.18, ay = cy - r[2] * 0.12;
         pts.forEach(function (p, i) { ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(p[0], p[1]); ctx.strokeStyle = rgba(VIO, i % 3 ? 0.18 : 0.42); ctx.lineWidth = 1; ctx.stroke(); });
         [[2, 6, 0.5], [8, 4, 0.35]].forEach(function (sm) {
@@ -139,7 +139,7 @@ function abScene(canvas, spec) {
           ctx.lineTo(ax + (pts[sm[1]][0] - ax) * sm[2], ay + (pts[sm[1]][1] - ay) * sm[2]); ctx.lineTo(pts[sm[1]][0], pts[sm[1]][1]);
           ctx.strokeStyle = rgba(INK, lit ? 0.75 : 0.5); ctx.lineWidth = 1.4; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 12; } ctx.stroke(); ctx.shadowBlur = 0;
         });
-      } else if (r[2] > 26) {  // a dilithium seam
+      } else if (r[2] > 26) {  // a krail seam
         ctx.beginPath(); ctx.moveTo(pts[0][0] * 0.6 + pts[3][0] * 0.4, pts[0][1] * 0.6 + pts[3][1] * 0.4);
         ctx.lineTo(cx, cy); ctx.lineTo(pts[2][0] * 0.5 + pts[5][0] * 0.5, pts[2][1] * 0.5 + pts[5][1] * 0.5);
         ctx.strokeStyle = rgba(VIO, 0.6); ctx.lineWidth = 1; ctx.stroke();
@@ -151,7 +151,7 @@ function abScene(canvas, spec) {
       ctx.fillStyle = VIO; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 8; } ctx.fillRect(-2.2, -2.2, 4.4, 4.4); ctx.restore();
     });
     (spec.enemies || []).forEach(function (e) {
-      var col = tok(e[4] || 'faction-klingon'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
+      var col = tok(e[4] || 'faction-gutter'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
       raider(e[0] * w, e[1] * h, e[2], e[3], col); ctx.shadowBlur = 0;
       if (e[5]) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
         ctx.moveTo(e[0] * w + Math.sin(e[3]) * 22 * e[2], e[1] * h - Math.cos(e[3]) * 22 * e[2]);

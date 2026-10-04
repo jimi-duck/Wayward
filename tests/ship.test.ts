@@ -8,10 +8,10 @@ import { flightHull } from '../src/sim/stats';
 import { PX, ROLL_COOLDOWN, ROLL_IFRAMES } from '../src/sim/tuning';
 import type { InputFrame } from '../src/input/types';
 
-const idle: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false };
+const idle: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const ctl = (c: Partial<FlightControls>): FlightControls => ({ ...idle, ...c });
 const input = (f: Partial<InputFrame>): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard', ...f });
 
 function fly(s: ShipState, hull: Hull, c: FlightControls, seconds: number): ShipState {
   for (let i = 0; i < Math.round(seconds / STEP); i++) stepShip(s, c, hull, STEP);
@@ -57,7 +57,7 @@ describe('flight model, ported from the original', () => {
     expect(s.heading).toBeLessThan(Math.PI / 2);
   });
 
-  it('carves turns on the Kestrel: grip cuts the sideways slide under thrust', () => {
+  it('carves turns on the Wayward: grip cuts the sideways slide under thrust', () => {
     const slide = (grip: number) => {
       const hull = { ...HULL, grip };
       const s = fly(newShip(), hull, ctl({ thrust: 1 }), 4);
@@ -101,7 +101,7 @@ describe('the barrel roll', () => {
   });
 
   it('always leaves a gap, even rolled on the cooldown with every jet and the evasive pattern', () => {
-    const hull = flightHull(computeStats({ mo_jets: 3, mo_evasion: 1, pl_wake: 1, tech_romulan: 1 }));
+    const hull = flightHull(computeStats({ mo_jets: 3, mo_evasion: 1, pl_wake: 1, tech_office: 1 }));
     expect(hull.rollIframes).toBeGreaterThanOrEqual(ROLL_IFRAMES);
     const s = newShip();
     let open = 0;

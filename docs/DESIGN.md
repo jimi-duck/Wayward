@@ -1,7 +1,189 @@
 # Game design
 
-Everyone launches in the same ship: the U.S.S. Kestrel, NCC-1903, a
-Starfleet survey tender refitted for mining. Over a run she becomes
+This describes the game as it plays today: the journey (M1 to M3 of
+[PLAN.md](PLAN.md): the Breakout, the comms cards, the chart and the hunt),
+and the arcade run it grew out of, which stays as a mode. See
+[VISION.md](VISION.md) for where it is going.
+
+## The Breakout
+
+A sortie with a shape: get the stolen hauler out of the home system
+(`sim/breakout.ts`, `World` with `mode: 'breakout'`).
+
+- **The course.** The lane mouth is 2,600 units ahead of the start (about a
+  minute flat out); Frontier Supply, the port, is halfway and off the line.
+  The HUD carries both as pointers, radar diamonds, a contacts list and the
+  objective's steps.
+- **The jump.** Inside the lane mouth with 20 Krail in the tank (`JUMP_COST`),
+  the drive spools for five seconds; leave the ring and it winds down. The
+  jump takes the Krail and ends the run as an escape.
+- **Krail is fuel, and scarce.** Only veined (rich) rock and the rare gold
+  rock carry it, cut clean; the guns break a rock for 30% of what is in it
+  (`rockYield`). The tank starts at 6.
+- **The cutter** (`sim/mining.ts`), on its own held trigger: the rock under
+  it heats; once warm the cut goes in; past the line the rock fractures. A
+  small rock comes out clean in one hold; a large one needs the beam pulsed.
+  Heat and the cut belong to the rock. The lasers hold while it runs.
+- **Ore** fills the hold (40) and the refit rail (each unit counts 1.7), and
+  sells at the port. **Parts** come from wrecks; six of them patch a plate
+  once the ship has gone six seconds unhit. Random repair drops are off.
+- **The port.** Slow inside its ring for a second and the clamps take you
+  (`phase: 'dock'`): sell the hold (2 chits an ore), buy Krail (5), patch a
+  plate (30), pay for a refit (60, three cards there and then). The first
+  dock takes 0.2 off the hunt pressure.
+- **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
+  more) and the cutter's noise. It decides how often pursuers come, how
+  many at once and which: pickets, then cruisers, enforcers and, late,
+  interdictors, all Custody, from behind (38s apart down to 10s, one to
+  three at once); now and then
+  a Gutter crew from ahead. It is also the clock the difficulty curve reads
+  (heat 1 plays like seven minutes of the arcade).
+- **The checkpoint.** Within 420 units of the lane mouth a Custody capital
+  ship holds the lane, three times the hull of an arcade run's first capital
+  ship (`BLOCKADE_HP`), and her checkpoint is a comms card: "Your ID doesn't
+  match the registry". Run it (make for the lane under her guns: she and her wing
+  come after you, the hunt pressure goes to full, and her interdiction field
+  more than doubles the spool, eleven seconds in the lane mouth instead of
+  five; survive it and you are gone, with no need to kill her), spoof it (with forged codes, likely; or
+  rig the transponder from 8 parts, a long shot when the heat is up), pay the
+  fee (it rises with heat; a captain who goes by the book takes it and
+  scans you anyway), talk your way through (easier before they know your
+  face), or fight: the usual three-phase duel, and her wreck pays Krail,
+  parts and a salvage refit.
+- **Comms.** See below: everyone else who opens a channel.
+
+Balance: [BALANCE-BREAKOUT.md](BALANCE-BREAKOUT.md), from
+`npm run pilot:breakout`.
+
+## The journey
+
+The Breakout is the first sortie of a journey (`sim/journey.ts`), and the
+journey is the layer above the world: everything that lasts longer than one
+system. A journey crosses one region of about a dozen systems, from Cerro to
+the Threshold, the last lane the old charts know.
+
+- **Two steps, over and over.** A sortie (one system, flown in real time by
+  the world, as the Breakout is) and, on the far side of its lane, the chart
+  (`ui/chart.ts`), where you plot the next jump from the lanes out of where
+  you are. The journey hands the world a `SortieDef` and what the ship
+  carries (`Carry`); the world hands back a `SortieResult`.
+- **What carries over.** The build and the refit rail, the plates, the
+  tank, the hold, parts, chits, food, flags, standing, jobs not yet paid,
+  and the cards heard (a card comes once a journey unless it is marked
+  `repeat`). Pursuers, rock and capital ships do not: each system is new.
+- **The chart** (`sim/chart.ts`, `content/systems.ts`): six columns, Cerro
+  on the left, the Threshold on the right, two or three systems in each
+  column between, laid out from the journey's seed. Each system is a kind
+  (port, mining, transit, contested), a holder (Kellern, Frontier Supply,
+  the Dust Traders, the Gutter, nobody), a Krail richness, a food supply and
+  maybe a port with its own prices. Lanes run one column on, now and then
+  sideways; never back to Cerro. Every lane has a Krail cost (12 to 20)
+  and takes one or two days.
+- **Plotting.** The jump you plot sets the sortie's lane: the lane mouth
+  wants that lane's Krail. So the chart is where you decide how much
+  mining the next system will ask of you.
+- **What a system is like.** Its kind sets the lane's distance (transit is
+  short), the rock (mining systems are dense and veined), who flies there
+  besides the Custody (contested systems are half Gutter), how hard the
+  Custody already looks, how often people call, and whether there is a
+  port. A port's prices come from its holder.
+- **Days.** Every four minutes in a sortie is a day (`DAY`), and a lane
+  takes its days. The crew of three eat a unit of food a day each; the
+  drive wears two parts a jump. Short of food, the crew arrive weak; short
+  of parts, the hull takes the wear: a plate down either way. Food is sold
+  at ports (and by Drift traders), and the galley holds thirty.
+- **The Net** spreads from Cerro along the lanes, once you have left it, a
+  little every day, faster into systems with Krail to take (`spreadNet`).
+  A netted system has a blockade at its lane mouth (the checkpoint card),
+  starts a quarter hotter, heats faster, scans you at its port, marks its
+  prices up (Krail and food by 40%, less for ore) and gets fewer friendly
+  calls. Some answers stall it in a system for days (help a holdout, break
+  a survey relay). The chart shows the Net as it was when the news last
+  reached you (two jumps out, each arrival), or everywhere if you bought
+  news.
+- **Calloway** (`sim/hunt.ts`) follows the trail, the systems you flew in
+  order: she sets out when you leave Cerro, a day behind, crosses each lane
+  as long as it took you, then spends a third of a day asking questions
+  before she picks the trail up. So she gains only while you linger. When
+  she reaches your system she opens a channel (`calloway_here`): run for the
+  lane with her ship on your tail, dump the hold as a decoy, tell her the
+  file is out (she has to check), go dark (with deep scanners or Office
+  tech), or turn and fight (beaten, she loses four days to repairs). Lies,
+  false flight plans and friendly Drift fleets hold her up; failed lies
+  bring her closer. The chart shows where she was last seen: exactly when
+  she is a jump away or the news is fresh, otherwise as of the day you last
+  had it.
+- **Wrecks** are not the end. The hull goes, and the crew get her flying a
+  day later in the same system with the hold gone and half the Krail,
+  parts and chits. The third wreck ends the journey, and so does a wreck
+  with Calloway in the system (she takes you). In hardcore, the first.
+- **Through.** Reach the Threshold and the journey is over: into the
+  Scatter. The panel lists every system flown, how it ended, the Krail in
+  and out, and where Calloway caught up.
+- **The save** (`meta/save.ts`): versioned, in localStorage, written
+  whenever the chart is open and when you cast off from a port. Continue on
+  the start card starts the current system again with what the save
+  carries, or opens the chart if that is where you left off.
+
+Balance: [BALANCE-JOURNEY.md](BALANCE-JOURNEY.md), from
+`npm run pilot:journey`.
+
+## Comms cards
+
+The Breakout's main interaction (`content/cards.ts`, `sim/comms.ts`,
+`World.answer`, `ui/comms.ts`). Someone opens a channel; the world waits
+(`phase: 'comms'`) while you read the card and answer. About thirty cards
+come by chance (the first at 24s, then every half minute or so, never in
+the middle of a fight, none twice in a system, and the ones that tell a
+story once a journey), one on the port's approach (the dock wants an
+implant scan), the checkpoint at the lane mouth, and six follow-ups that
+only come because of an earlier answer. The journey adds ten more (see
+`calloway_here` to `false_trail` in `content/cards.ts`).
+
+- **Kinds.** Trade, plea, job, warning, shakedown, checkpoint, distress,
+  rumour.
+- **The read.** Their strength against yours (their hulls against your
+  plates and fitted guns), who is out there, their cargo, and an intent
+  estimate. Many cards have a hidden truth rolled as they open (a distress
+  call that is genuine or bait; a seller whose Krail is pure or cut); the
+  estimate names the right one as often as your sensors are good (65%
+  stock, more with deep scanners or Office tech), otherwise another.
+- **Choices.** Two to six, each a kind of answer (fight, run, pay, bluff,
+  trade, help, refuse). A choice can cost something whatever happens (the
+  fee is gone either way), can lose to the truth (the read is the only
+  guide), or can be a gamble on odds that move with heat, flags, standing
+  and fitted systems (shown as a word: likely, good odds, even odds, long
+  shot). Choices that need a system, a flag or a standing are shown greyed
+  out with what they need: the torpedo bay opens a bluff on a shakedown,
+  forged codes open a spoof at the checkpoint.
+- **Outcomes.** Krail, ore, chits, parts, food, plates, heat, score, flags,
+  standing with six parties (the Custody, the Gutter, Frontier Supply, the
+  Dust Traders, Kellern Mining, the miners), hulls that turn up, hulls
+  that break off, the blockade (fight, run, pass), a follow-up card, a job,
+  a sold survey (veined rock all round for half a minute), days of delay
+  for Calloway (`hunt`, negative brings her closer), days the system holds
+  the Net out (`stall`), and Calloway's ship (`calloway`: fight or run).
+- **Where.** A card can ask for a kind of system, a netted one or not,
+  Calloway within so many jumps, or a galley running low. Cerro's own
+  story (the foreman, the stowaways, the moon's port scan) asks for the
+  home system; the rest travel. Besides chance, follow-up, the port's
+  approach and the blockade, a card can come at an open lane mouth
+  (`toll`: the Lane Wardens) or with Calloway (`hunt`).
+- **Jobs** are paid where they say: at the port on docking (with the goods
+  in the hold) or at the lane on the jump. The HUD lists them under the
+  objective.
+- **Combining.** Lines are added to a card's text when their condition
+  holds, and choices appear or not: the same shakedown wants the hold if it
+  sits low, lets you pass if the Gutter owes you, and warns you when paying
+  would leave you short of the jump. A rumour about the lane captain makes
+  her fee cheaper and her more likely to take it; a bar rumour leads to a
+  forger, whose codes may be good.
+- **Ambushes** do not wait: the world runs at a fifth of its speed under
+  the card, and when the bar runs out the default (fight) is taken.
+- The arcade's capital-ship hail is drawn by the same panel.
+
+Everyone launches in the same ship: the Wayward, OB-7731-A, a stolen
+Obedience-class ore hauler. Over a run she becomes
 something else, depending on the cards you take at each refit: a torpedo
 boat, a minelayer, a brawler that rams and arcs, a fortress, an interceptor
 that dives through fire to charge its core. Nothing is a class you pick; it
@@ -14,15 +196,17 @@ first capital ship hails at 3:30, once the build has a shape.
 
 ## The loop
 
-Fly, fight and break rock → collect dilithium → the gauge fills → refit
+Fly, fight and break rock → collect krail → the gauge fills → refit
 (three cards, take one) → harder sky → a capital ship hails (engage or
 evade) → her salvage: a refit led by her faction's tech → specialisations,
 synergies → the hull goes → the run report → play again.
 
 The world pauses itself at each decision (`World.phase`: `refit`, `hail`,
-`over`), and the app or the scripted pilot answers it (`choose`,
-`answerHail`, `restart`). Everything else is the existing fixed-step
-simulation.
+`comms`, `dock`, `over`), and the app or the scripted pilot answers it
+(`choose`, `answerHail`, `answer`, the port's calls, `restart`). Everything else is the existing fixed-step
+simulation. In a journey, `over` hands the sortie to the journey
+(`World.result`, `endSortie`), and the chart's answer (`plot`) starts the
+next one (`World.restart` with a `SortieDef` and the `Carry`).
 
 ## Where each system lives
 
@@ -30,13 +214,15 @@ simulation.
 |---|---|---|
 | Upgrades | `content/upgrades.ts` | `sim/build.ts` (stats, figures, the build's name), `sim/stats.ts` (the stat block and caps) |
 | Refit cards | `content/upgrades.ts` | `sim/offers.ts` (which three cards a refit deals), `World.choose`, `ui/refit.ts` (the cards) |
-| Weapons | the stat block | `sim/weapons.ts` (phasers, torpedoes), `sim/arsenal.ts` (mines, plasma, hull arc) |
+| Weapons | the stat block | `sim/weapons.ts` (lasers, torpedoes), `sim/arsenal.ts` (mines, plasma, hull arc) |
 | Asteroids | `ROCK_KINDS` in `sim/field.ts` | `Field.topUp` (formations), `World.destroyRock` |
-| Dilithium and pickups | `sim/pickups.ts` | `World.collect`, `World.gainXp` |
+| Krail and pickups | `sim/pickups.ts` | `World.collect`, `World.gainXp` |
 | Enemies | `ALIEN_TYPES`, `FACTION_TRAITS`, `VARIANTS`, `SQUADS`, `ELITES` in `sim/enemies.ts` | the existing tactical AI, `World.spawn` |
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
 | Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
+| Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
+| The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `meta/save.ts`, `ui/chart.ts` |
 | Score and the record | `sim/run.ts`, `sim/tuning.ts` | `World.addScore`, `World.finish` |
 | Between runs | `content/unlocks.ts` | `meta/profile.ts` (localStorage), `ui/panels.ts` |
 
@@ -59,6 +245,15 @@ simulation.
   in `Command.open`.
 - **A sector event**: a row in `ENCOUNTERS` and a case in `startEncounter`,
   `stepEncounter` and `finish`.
+- **A comms card**: one entry in `CARDS`. Give it a kind, a caller, a
+  `when` (and `trigger: 'follow'` if only another card leads to it), text
+  and conditional lines, `ships` for the read, `truths` if something is
+  hidden, and choices with a tone, a hint, `needs` and `cost`, `loseIf` or
+  `odds`, and `win` (and `lose`) outcomes. A flag a choice needs gets words
+  in `FLAGS`. The tests check every reference.
+- **A kind of system**: a row in `SYSTEMS` (`content/systems.ts`) and its
+  place in `COL_KINDS` (`sim/chart.ts`); a word and a colour in
+  `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`.
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 
@@ -99,7 +294,7 @@ Card kinds:
 
 The branches:
 
-- **Phasers**: damage, rate, bank, reach, pierce. Specialise into a
+- **Lasers**: damage, rate, bank, reach, pierce. Specialise into a
   **cone** (fans of three, then five or seven), the **heavy lance** (slow,
   piercing, huge) or the **targeting array** (lances that bend onto the
   hull nearest the nose).
@@ -107,12 +302,12 @@ The branches:
   **heavy payload** (with cluster warheads), the **swarm** (three
   micro-torpedoes spread across targets; unlockable) or **precision
   guidance** (all-round locks, faster, harder on hulls; with a target
-  painter that marks phaser hits).
+  painter that marks laser hits).
 - **Mines** (laid in your wake): yield, racks, proximity seekers.
   Specialise into a **minefield**, **chain reaction** (blasts set off mines
   near them and leave a burning cloud) or **graviton mines** (pull targets
   in; unlockable).
-- **Warp plasma** (a burning trail while you thrust): heat, flow.
+- **Drive plasma** (a burning trail while you thrust): heat, flow.
   Specialise into **ignition** (targets keep burning), the **afterburner
   wake** (the roll dumps a ring of plasma) or the **plasma corona** (plasma
   wreathes the bow and flanks while you thrust).
@@ -121,7 +316,7 @@ The branches:
   target costs no hull). Specialise into the **arc storm** (each arc jumps
   on to one more hull), the **shock prow** (a ram discharges into the hulls
   near its target) or the **juggernaut** (unlockable).
-- **Mobility**: impulse, thrusters, dampers, evasive jets (the roll comes
+- **Mobility**: main drive, thrusters, dampers, evasive jets (the roll comes
   round sooner and covers longer); each also charges the core a little
   faster, since the interceptor's gun is the release. Specialise into
   the **drift drive** (keep speed off the throttle; lances fired while
@@ -133,24 +328,24 @@ The branches:
   grace), damage control (one save). Specialise into the **fortress**,
   **reactive armour** (losing a plate or a shield blasts away nearby fire),
   or the **regenerative hull** (unlockable).
-- **Utility**: tractor reach, the dilithium matrix (more XP), the tactical
+- **Utility**: tractor reach, the krail matrix (more XP), the tactical
   computer (every weapon hits harder). Specialise into the **prospector**
-  (rock gives dilithium half as often again), **salvage drones** (more hull
+  (rock gives krail half as often again), **salvage drones** (more hull
   repairs, longer power-ups) or **deep scanners** (rare rock twice as
-  often, elites carry twice the dilithium).
-- **Warp core**: coils (more overcharge from near misses). Specialise into
-  the **warp nova**, **weapons overload** (longer, and refills racks) or
+  often, elites carry twice the krail).
+- **Reactor**: coils (more overcharge from near misses). Specialise into
+  the **core nova**, **weapons overload** (longer, and refills racks) or
   the **phase cloak** (unlockable).
-- **Synergies** (needing both halves): plasma warheads, phaser detonators,
+- **Synergies** (needing both halves): plasma warheads, laser detonators,
   the capacitor shield, arc warheads, core-charged mines, and the ramjet
   (unlockable).
 
-**Salvaged tech**, one per faction: Klingon **disruptors** (every fourth
-phaser shot a heavy bolt at triple damage), Cardassian **compressors**
-(longer, piercing lances; wider torpedo blasts), the Romulan **cloak** (a
-barrel roll hides you: hulls hold their fire for a moment), the Borg
+**Salvaged tech**, one per faction: Gutter **disruptors** (every fourth
+laser shot a heavy bolt at triple damage), Custody **compressors**
+(longer, piercing lances; wider torpedo blasts), the Office **cloak** (a
+barrel roll hides you: hulls hold their fire for a moment), the Voice
 **adaptive shield** (shields recharge faster; a ship with none gets one) and
-Tholian **snares** (torpedo and mine blasts slow the hulls they catch).
+Thren **snares** (torpedo and mine blasts slow the hulls they catch).
 
 ### On screen
 
@@ -167,7 +362,7 @@ the build changes; `capStats` clamps it after every multiplier has run, so
 no stack of upgrades escapes a cap. A card shows the figures it changes,
 computed by diffing the block before and after. A run touches a few
 ship-wide numbers too: all weapon damage (the tactical computer, capped at +60%),
-dilithium from rock, repair drops, power-up time, rare rock and elite
+krail from rock, repair drops, power-up time, rare rock and elite
 loot.
 
 ## Defence, damage and repair
@@ -179,7 +374,7 @@ purpose: a small chance from a kill, never on a full hull, never more than
 one every 35 seconds, one from each capital ship destroyed, and one for
 answering a distress signal. Damage control saves the last plate once.
 
-## The warp core and the chain
+## The reactor and the chain
 
 Near misses charge the core: fire that passes close without hitting, rock
 skimmed at speed, hulls passed close aboard, beams and webs brushed (each
@@ -192,7 +387,7 @@ each hull kill inside a short window adds one; breaking rock keeps it alive.
 
 **Rock** comes in kinds and formations, mixed by the director: basalt;
 iron (from about 3:00, three times the hull, splits into more iron); rich
-(violet veins, a shower of dilithium); volatile (from about 5:00, goes off
+(violet veins, a shower of krail); volatile (from about 5:00, goes off
 when broken, you included); rare (gold, a power-up inside, one every minute
 or two); singles, clusters, and a big rock in its own debris.
 
@@ -200,11 +395,11 @@ or two); singles, clusters, and a big rock in its own debris.
 strafe past, raptors line up and ram, lancers broadside from cover,
 warbirds snipe with plasma that can be shot down, stalkers sit on your tail
 and lead, drones grind in and cut with beams, weavers lay webs), plus a
-freighter for convoys. **Faction traits** apply to any hull: Klingons are
-faster and fire more, Cardassians reach further, Romulans cloak while they
-reposition and decloak to attack, the Borg adapt, Tholians leave webs.
-**Variants** cross them (the Romulan Scorpion, the Cardassian Hideki, the
-Borg probe, the Tholian shard cruiser). **Squads** arrive together because
+freighter for convoys. **Faction traits** apply to any hull: Gutter crews are
+faster and fire more, Custody cutters reach further, Office ships cloak while they
+reposition and decloak to attack, the Voice adapt, the Thren leave webs.
+**Variants** cross them (the Office Whisper, the Custody Picket, the
+Voice probe, the Thren shard cruiser). **Squads** arrive together because
 together they are worse (a weaver with two raptors). **Elites** are
 familiar hulls with a modifier: armoured, swift, volatile, gunner, cloaked,
 regenerative, web-spinner.
@@ -229,23 +424,23 @@ From 3:30, a contact every 50 to 80 seconds. A yellow alert, then the hail:
   attack, calls reinforcements and quickens the cycle). Every attack winds
   up behind a telegraph: lines where a charge or volley will go, rings
   where a nova bursts, circles where shells or webs will land. Destroy it
-  for the bounty, dilithium, a hull repair, a power-up and a salvage refit
+  for the bounty, krail, a hull repair, a power-up and a salvage refit
   led by her faction's tech.
   Let its fuse run out and it leaves with nothing paid.
 - **Evade**: no fight, no reward, and the next contact comes sooner. You
-  cannot evade twice running; a Borg cube cannot be evaded; Romulans never
+  cannot evade twice running; a Voice foundry cannot be evaded; Office ships never
   hail (they decloak and the fight starts). The first contact of a run is
-  always Klingon or Cardassian.
+  always Gutter or Custody.
 
-Each faction moves its own way: Klingons sway across your bow and charge,
-Cardassians hold long range and wheel, Romulans vanish and reappear on your
-quarter, the cube grinds closer, Tholians circle.
+Each faction moves its own way: Gutter crews sway across your bow and charge,
+Custody cutters hold long range and wheel, Office ships vanish and reappear on your
+quarter, the foundry grinds closer, the Thren circle.
 
 ## Sector events
 
 When no capital ship is about, roughly once a minute: a mineral-rich field,
 a distress signal (hold the beacon circle for a repair), an enemy convoy
-(freighters heavy with dilithium), an ion storm (lightning on the circles;
+(freighters heavy with krail), an ion storm (lightning on the circles;
 near misses charge double), a nebula (sensors down; the core charges
 faster), and, once unlocked, a derelict hulk (salvage, then an ambush) and
 a spatial anomaly (a gravity well that crushes what reaches its core).
@@ -253,7 +448,7 @@ a spatial anomaly (a gravity well that crushes what reaches its core).
 ## The run report and progression
 
 The report compares the run with your best (survival, refits, kills, chain,
-dilithium, overcharges, capital ships, events), shows the ship as built,
+krail, overcharges, capital ships, events), shows the ship as built,
 what did the killing and what did the damage, the score curve against your
 best run's, and any unlocks earned. Long-term progression opens options,
 never power: locked specialisations, a synergy, two sector events, three
@@ -275,7 +470,7 @@ long builds; settle a close call with more (`PILOT_RUNS=48`).
 
 What the telemetry changed, in order:
 
-1. Dilithium income was a third of what the pacing needed; rock and hulls
+1. Krail income was a third of what the pacing needed; rock and hulls
    now yield more and the first refits come sooner.
 2. Scouts flew their attack runs through the ship; they now strafe past
    just above it (ramming is the raptor's job).
@@ -289,27 +484,27 @@ What the telemetry changed, in order:
    spiral was thinned for the low chase camera.
 7. The opening wore the ship down before the first fight; the field starts
    thinner and thickens over the run.
-8. Moving the first contact later let the Borg cube be the first capital
+8. Moving the first contact later let the Voice foundry be the first capital
    ship; faction order now follows contact order.
 9. Beams kept tracking at full rate while cutting and could hit twice per
    cut; they aim during the wind-up, sweep slowly while cutting, and
    discharge on the hull they hit.
 10. A capital ship's station swung through you when you turned; it now goes
     round you unless it is charging.
-11. Focused phaser and defence builds trailed builds with systems; the
-    phaser ladder and shield recharge were strengthened. Plasma, the
+11. Focused laser and defence builds trailed builds with systems; the
+    laser ladder and shield recharge were strengthened. Plasma, the
     weakest family, reaches a little higher and burns hotter.
 12. The refit web let a build take exactly what it wanted, and the first
     pass found close-quarters builds lasting the whole fifteen minutes:
     shields stacked to three charges on a nine-second recharge, and the
     arc's damage minors stacked on its capacitors. Shields now cap at two
-    charges and twelve seconds (Borg tech speeds the recharge instead of
+    charges and twelve seconds (Voice tech speeds the recharge instead of
     adding a charge); arc damage caps near the card era's best, the arc
     storm jumps once, chains fall off faster and rock takes half; ram
     damage caps at 18.
-13. Builds with no weapon region starved; the pilot now keeps its phasers
+13. Builds with no weapon region starved; the pilot now keeps its lasers
     up in them, as a player would. Mines are laid a little more often.
-14. The Starfleet pass (a slow-burn opening, three cards instead of the
+14. The slow-burn pass (a slow-burn opening, three cards instead of the
     web): the first minute now costs 0.02 plates (it was 0.26), but one
     card a refit is less power than two web points, and the first capital
     ship, now at 3:30, killed a third of the pilots that met it. Refits come
@@ -321,7 +516,7 @@ What the telemetry changed, in order:
     a half), and close quarters without defence lasts about four, the
     shortest of the weapons. So close quarters was left alone: the defence
     region is what multiplies survival, and the matrix now carries
-    torpedoes with defence and close quarters with phasers to show it. The
+    torpedoes with defence and close quarters with lasers to show it. The
     pilot also stopped flying its prow into hulls it would not break: it
     judges a ram by what it does at the speed it is flying.
 16. Mobility gave a steady player little. Evasive jets now lengthen the
@@ -338,7 +533,7 @@ Where it stands (see BALANCE.md for the current report): a quiet opening
 about 0.8 by minutes three to five and past one after that. What spreads the
 table is defence: builds with it last about six and a half to ten minutes
 (torpedoes longest, two runs in twelve reaching the cap), builds without it
-about four to six (close quarters with phasers shortest). The random-card
+about four to six (close quarters with lasers shortest). The random-card
 player lasts about six; mobility with the core about four and three
 quarters, mines with mobility about five and a half. No damage source above
 about 10%; capital ships destroyed in three fights of five; refit 1 at about

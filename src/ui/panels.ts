@@ -1,16 +1,14 @@
 import { BRANCHES, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
 import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
-import type { Contact } from '../sim/bosses';
 import { identity, type Levels } from '../sim/build';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
-import { NEON_CSS } from './colors';
 import { VARIANTS } from '../sim/enemies';
 import type { RunStats } from '../sim/run';
 
 // ── the panels ────────────────────────────────────────────────────────────
-// Two of the run's three stops (the hail and the report; the refit cards are
-// ui/refit.ts) and the start screen's options. Each stop is a modal sheet that
+// The run report (the refit cards are ui/refit.ts, comms cards and the hail
+// ui/comms.ts, the port ui/port.ts) and the start screen's options. Each stop is a modal sheet that
 // the world waits on. Every panel ignores input for its first moments and
 // never answers a held key: a hail opens with the trigger down, and a run
 // ends with keys held.
@@ -26,7 +24,7 @@ export function buildView(levels: Levels, named = true): HTMLElement {
   const wrap = h('div', 'build');
   if (named) wrap.append(h('div', 'sum-ship', id.title));
   const owned = UPGRADES.filter((u) => (levels[u.id] ?? 0) > 0);
-  if (!owned.length) { wrap.append(h('p', 'how-note', 'Stock: phaser banks, three plates, nothing else fitted.')); return wrap; }
+  if (!owned.length) { wrap.append(h('p', 'how-note', 'Stock: laser banks, three plates, nothing else fitted.')); return wrap; }
   const order = [...id.branches.map((b) => b.branch), 'synergy' as Branch];
   for (const br of order) {
     const ups = owned.filter((u) => u.branch === br);
@@ -43,71 +41,10 @@ export function buildView(levels: Levels, named = true): HTMLElement {
   return wrap;
 }
 
-// ── the hail ──────────────────────────────────────────────────────────────
-
-export class HailPanel {
-  private off: (() => void) | null = null;
-  private pad: { opened: number; answer: (engage: boolean) => void; canEvade: boolean } | null = null;
-
-  get open(): boolean {
-    return !$('hail').hidden;
-  }
-
-  show(c: Contact, onAnswer: (engage: boolean) => void): void {
-    this.close();
-    const opened = performance.now();
-    const name = $('hail-t');
-    name.textContent = c.name;
-    name.style.color = NEON_CSS[c.faction];
-    $('hail-s').textContent = `${c.faction} capital ship · on intercept course`;
-    $('hail-eb').textContent = 'She will fight back, and her escort wing comes in with her. The sector clears for the duel.';
-    const lines = (host: HTMLElement, ls: string[]) => host.replaceChildren(...ls.map((l) => h('span', '', l)));
-    lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Hull repair · dilithium · a power-up']);
-    const ev = $<HTMLButtonElement>('hail-evade');
-    ev.disabled = !c.canEvade;
-    if (c.canEvade) {
-      $('hail-vb').textContent = 'You get clear, but you cannot break away twice running.';
-      lines($('hail-vl'), ['No bounty · no salvage', `Next contact in ${c.evadeGap}s`]);
-    } else {
-      $('hail-vb').textContent = c.faction === 'borg' ? 'There is no outrunning a cube.' : 'Not available: you broke away from the last one.';
-      lines($('hail-vl'), [c.faction === 'borg' ? 'No escape from a cube' : 'Recharges after a fight']);
-    }
-    const en = $('hail-engage');
-    en.classList.add('sel');
-    ev.classList.remove('sel');
-    const answer = (engage: boolean) => { this.close(); onAnswer(engage); };
-    en.onclick = guarded(opened, () => answer(true));
-    ev.onclick = guarded(opened, () => { if (c.canEvade) answer(false); });
-    for (const b of [en, ev]) b.onpointerdown = (e) => e.stopPropagation();
-    this.pad = { opened, answer, canEvade: c.canEvade };
-    $('hail').hidden = false;
-    this.off = keys((e) => {
-      if (['Digit1', 'Numpad1', 'KeyF', 'Enter', 'NumpadEnter'].includes(e.code)) return answer(true), true;
-      if (['Digit2', 'Numpad2', 'KeyE'].includes(e.code) && c.canEvade) return answer(false), true;
-      return ['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.code);
-    });
-  }
-
-  close(): void {
-    this.off?.();
-    this.off = null;
-    this.pad = null;
-    $('hail').hidden = true;
-  }
-
-  /** A gamepad: A engages, B evades. */
-  padInput(p: PadEdges): void {
-    const pad = this.pad;
-    if (!pad || performance.now() - pad.opened < GUARD) return;
-    if (p.a) pad.answer(true);
-    else if (p.b && pad.canEvade) pad.answer(false);
-  }
-}
-
 // ── the run report ────────────────────────────────────────────────────────
 
 const WEAPON_WORD: Record<string, string> = {
-  phaser: 'Phasers', torpedo: 'Torpedoes', mine: 'Mines', plasma: 'Plasma', arc: 'Hull arc', ram: 'Ramming', overcharge: 'Overcharge', hazard: 'The sector',
+  laser: 'Lasers', torpedo: 'Torpedoes', mine: 'Mines', plasma: 'Plasma', arc: 'Hull arc', ram: 'Ramming', overcharge: 'Overcharge', hazard: 'The sector',
 };
 
 /** What hurt, in words: "rock", "fire:scout" or "ram:raptor" to a phrase. */
@@ -120,7 +57,7 @@ export function damageWord(src: string): string {
     case 'rock': return 'Rock';
     case 'bulwark': return 'Bulwarks';
     case 'beam': return who === 'capital' ? 'A capital ship’s beams' : `${cap(label(who))} beams`;
-    case 'web': return 'Tholian webs';
+    case 'web': return 'Thren webs';
     case 'volatile': return 'Volatile rock';
     case 'blast': return 'Blasts';
     case 'lightning': return 'Lightning';
@@ -139,13 +76,16 @@ export class SummaryPanel {
     this.close();
     const opened = performance.now();
     const p = rec.previous;
-    $('sum-t').textContent = rec.newBest ? 'New best' : 'Run over';
+    const breakout = r.mode === 'breakout';
+    $('summary').classList.toggle('alert', !r.escaped);
+    $('summary').querySelector('.kick')!.textContent = r.escaped ? 'Escaped' : 'Hull breach';
+    $('sum-t').textContent = r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run over';
     // "Rammed by a raptor" already says how; everything else reads after "Breached by"
     const cause = damageWord(r.cause || 'rock');
-    $('sum-s').textContent = /^rammed /i.test(cause) ? cause : `Breached by ${cause.toLowerCase()}`;
+    $('sum-s').textContent = r.escaped ? `Out of the home system with ${r.krailLeft} Krail to spare` : /^rammed /i.test(cause) ? cause : `Breached by ${cause.toLowerCase()}`;
     $('sum-score').textContent = fmt(r.score);
     const line = $('sum-line');
-    line.replaceChildren(h('span', '', `${mmss(r.time)} survived · refit ${r.refit} · ${r.kills} kills`), rec.newBest ? h('span', 'best', ' · new best') : h('span', '', ` · best ${fmt(p.score)}`));
+    line.replaceChildren(h('span', '', `${mmss(r.time)} ${r.escaped ? 'to the lane' : 'survived'} · refit ${r.refit} · ${r.kills} kills`), rec.newBest ? h('span', 'best', ' · new best') : h('span', '', ` · best ${fmt(p.score)}`));
     $('sum-ship').textContent = r.identity;
 
     // tiles: this run against the best before it
@@ -155,12 +95,24 @@ export class SummaryPanel {
       return h('div', `tile${up ? ' up' : ''}`, '', h('span', 'k', label), h('b', '', show(v)),
         h('span', 'cmp', best <= 0 ? 'First record' : d === 0 ? `Matched · best ${show(best)}` : `${d > 0 ? '▲ +' : '▼ −'}${show(Math.abs(d))} · best ${show(best)}`));
     };
-    $('sum-tiles').replaceChildren(
+    if (breakout) {
+      const plain = (label: string, v: string, note: string) => h('div', 'tile', '', h('span', 'k', label), h('b', '', v), h('span', 'cmp', note));
+      $('sum-tiles').replaceChildren(
+        plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), r.escaped ? 'Through the lane mouth' : 'Short of the lane'),
+        plain('Krail', String(r.krail), r.escaped ? `${r.krailLeft} left after the jump` : 'Gathered'),
+        plain('Ore', String(r.ore), `${r.oreSold} sold at the port`),
+        plain('Rock cut clean', String(r.cut), `${r.fractured} fractured`),
+        tile('Refits', r.refit, p.refit),
+        tile('Kills', r.kills, p.kills),
+        plain('Parts', String(r.parts), `${r.platesGained} plates mended`),
+        plain('Port', r.docked ? `${r.docked}×` : '—', r.docked ? 'Docked at Frontier Supply' : 'Never docked'),
+      );
+    } else $('sum-tiles').replaceChildren(
       tile('Survived', r.time, p.time, mmss),
       tile('Refits', r.refit, p.refit),
       tile('Kills', r.kills, p.kills),
       tile('Best chain', r.bestChain, p.chain),
-      tile('Dilithium', r.dilithium, p.dilithium),
+      tile('Krail', r.krail, p.krail),
       tile('Overcharges', r.overcharges, p.overcharges),
       tile('Capital ships', r.capitals, p.capitals),
       h('div', 'tile', '', h('span', 'k', 'Sector events'), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', `${r.powerups} power-ups found`)),
@@ -229,7 +181,7 @@ export class SummaryPanel {
     if (met) notes.push(`You met ${met} capital ship${met > 1 ? 's' : ''}: ${r.capitals} destroyed, ${r.capitalsEvaded} evaded, ${r.capitalsEscaped} got away.`);
     if (r.shieldsAbsorbed) notes.push(`Shields took ${r.shieldsAbsorbed} hit${r.shieldsAbsorbed > 1 ? 's' : ''} for you.`);
     if (r.platesGained) notes.push(`You mended ${r.platesGained} plate${r.platesGained > 1 ? 's' : ''}.`);
-    if (r.dropped) notes.push(`You collected ${Math.round((r.dilithium / r.dropped) * 100)}% of the dilithium you shook loose.`);
+    if (r.dropped) notes.push(`You collected ${Math.round((r.krail / r.dropped) * 100)}% of the krail you shook loose.`);
     box.append(h('p', 'how-note', notes.join(' ')));
     return box;
   }

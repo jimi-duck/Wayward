@@ -2,10 +2,10 @@
    each mean one thing:
      orange-red · the instrument itself: frames, weapons, targeting
      cyan       · the ship's own state: hull, shields, our ship on the scope
-     violet     · dilithium, the field's currency: the rail, mining yield
+     violet     · krail, the field's currency: the rail, mining yield
      amber      · things to go and get (repairs, power-ups, objectives),
-                  the warp core, and the yellow alert
-     hard red   · damage and the red alert
+                  the reactor, and the contact warning
+     hard red   · damage and the alarm
    The brand's fonts stay: Antonio for numerals, Martian Mono for labels and
    data, Tektur for the few words that are a voice. */
 :root {
@@ -144,7 +144,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   background: repeating-linear-gradient(180deg, var(--hair) 0 1px, transparent 1px 12px) right top / 5px 100% no-repeat,
               linear-gradient(var(--hair), var(--hair)) right top / 1px 100% no-repeat; }
 
-/* ── top left: the sector, and dilithium toward the next refit ────────── */
+/* ── top left: the sector, and krail toward the next refit ────────── */
 #sector { position: absolute; left: var(--left); top: var(--top); width: clamp(210px, 17vw, 260px); display: grid; gap: 12px; text-shadow: 0 1px 6px #000; }
 .sec-id { position: relative; display: grid; gap: 6px; padding-bottom: 12px;
   font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
@@ -181,7 +181,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 
 /* ── top right: ship systems ──────────────────────────────────────────── */
 /* As in the reference: a row per weapon (icon, name, key, gauge, reading,
-   the level the refits have taken it to), then hull, warp core and score
+   the level the refits have taken it to), then hull, reactor and score
    side by side. Rows for systems not yet fitted stay away. */
 #systems {
   --edge: rgba(255, 90, 54, .4); --lit: var(--hud-mid); --fill: rgba(8, 8, 10, .42); --c: 12px;
@@ -198,7 +198,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .sys-row .val.word { font: 600 calc(var(--fs) * .88)/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
 .sys-row .lv { justify-self: end; font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
 .sys-row .lv.up { animation: hud-flash .9s var(--ez); }
-/* the phaser bank: one solid bar, as in the reference */
+/* the laser bank: one solid bar, as in the reference */
 .bar { --v: 1; display: block; height: 7px; min-width: 0;
   background: linear-gradient(90deg, var(--hud) 0 calc(var(--v) * 100%), rgba(255, 90, 54, .15) 0);
   clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%); }
@@ -238,7 +238,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #sys-hull.crit .plates i.on:not(.sh) { background: var(--alert); animation: hud-blink 1.1s ease-in-out infinite; }
 #sys-hull.crit #v-hull { color: var(--alert); }
 #sys-hull.hit { animation: hud-hit .6s ease-out; }
-/* the warp core: near misses charge it; full, it releases on E */
+/* the reactor: near misses charge it; full, it releases on E */
 #g-oc { grid-column: 1 / -1; --n: 12; --on: var(--cy); --off: var(--cy-ghost); height: 5px; }
 #sys-oc.ready #g-oc { --on: #c8f6ff; filter: drop-shadow(0 0 5px var(--cy)); }
 #sys-oc.ready .val { color: var(--cy); }
@@ -288,7 +288,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* ── in the world: the gunsight, the target, marks ────────────────────── */
 #world { position: absolute; inset: 0; overflow: hidden; }
 
-/* where the phasers go; it lights when the target is in the line of fire */
+/* where the lasers go; it lights when the target is in the line of fire */
 #reticle { position: absolute; left: 0; top: 0; width: 26px; height: 26px; margin: -13px 0 0 -13px; opacity: .5;
   --b: var(--hud);
   background:
@@ -479,7 +479,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* ── touch controls ───────────────────────────────────────────────────── */
 /* Laid out for two thumbs on a phone held on its side. The left thumb's
    home is well in from the edge (clear of the notch and the browser's
-   back swipe); the right thumb rests on Phaser, with Torpedo and the warp
+   back swipe); the right thumb rests on Laser, with Torpedo and the reactor
    core one short reach away round it. The ring is only a hint at rest:
    wherever the thumb lands on the left half, the stick comes to it. */
 #touch {
@@ -491,8 +491,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   --fw: clamp(80px, 24vh, 104px);
   --bw: clamp(60px, 17vh, 72px);
 }
-#stick, #fire, #torp, #release, #pause-b { display: none; }
+#stick, #fire, #torp, #release, #cut, #pause-b { display: none; }
 .touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #release, .touch-ui #pause-b { display: grid; }
+.touch-ui.breakout #cut { display: grid; }
 .touch-ui:not(.has-torps) #torp { display: none; }
 #stick {
   position: absolute; left: var(--in-l); bottom: var(--pb);
@@ -507,19 +508,19 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* the buttons are octagons, an edge and a glass like every panel, and each
    carries its own gauge under the thumb that uses it. The layer behind does
    the hit-testing (generously), so the buttons themselves take no events. */
-#fire, #torp, #release {
+#fire, #torp, #release, #cut {
   --c: 28%; --edge: var(--hud-mid); --fill: rgba(12, 13, 16, .58);
   position: absolute; isolation: isolate; place-items: center; align-content: center; gap: 6px; border: 0; padding: 0; background: none;
   pointer-events: none; aspect-ratio: 1;
   font: 600 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink);
 }
-:is(#fire, #torp, #release)::before, :is(#fire, #torp, #release)::after { content: ""; position: absolute; pointer-events: none;
+:is(#fire, #torp, #release, #cut)::before, :is(#fire, #torp, #release, #cut)::after { content: ""; position: absolute; pointer-events: none;
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); }
 /* the edge is only the 1px ring (evenodd), so the glass inside lets the view through and never shows the edge colour */
-:is(#fire, #torp, #release)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
+:is(#fire, #torp, #release, #cut)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
   clip-path: polygon(evenodd, var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
     var(--ci) 1px, calc(100% - var(--ci)) 1px, calc(100% - 1px) var(--ci), calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), var(--ci) calc(100% - 1px), 1px calc(100% - var(--ci)), 1px var(--ci), var(--ci) 1px); }
-:is(#fire, #torp, #release)::after { inset: 1px; z-index: -1; background: var(--fill); }
+:is(#fire, #torp, #release, #cut)::after { inset: 1px; z-index: -1; background: var(--fill); }
 #fire { right: var(--in-r); bottom: var(--pb); width: var(--fw); --edge: var(--hud); font-size: 10px; }
 #fire.on { --fill: rgba(255, 90, 54, .34); }
 #t-bank { --n: 10; width: 56%; height: 5px; }
@@ -533,6 +534,12 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #release .ticks { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 60%; height: 4px; }
 #release.ready { --edge: var(--amber); --fill: rgba(255, 179, 61, .24); color: var(--ink); animation: core-ready 1.2s ease-in-out infinite alternate; }
 #release.on { animation: tap-flash .22s var(--ez); }
+/* the cutter: further left again, on the bottom line, amber like the beam */
+#cut { right: calc(var(--in-r) + var(--fw) + var(--bw) + 22px); bottom: var(--pb); width: var(--bw); --edge: var(--amber-dim); }
+#cut.on { --edge: var(--amber); --fill: rgba(255, 179, 61, .28); }
+.touch-ui:not(.has-torps) #cut { right: calc(var(--in-r) + var(--fw) + 10px); }
+#t-heat { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 56%; height: 4px; }
+#cut.hot #t-heat { --on: var(--alert); }
 @keyframes tap-flash { from { scale: .88; } }
 @keyframes core-ready { to { scale: 1.05; } }
 /* pause: small, low and in the middle, out of both thumbs' way */
@@ -540,7 +547,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   place-content: center; grid-auto-flow: column; gap: 5px; border: 0; padding: 0; background: none; opacity: .55; pointer-events: auto; touch-action: none; }
 #pause-b i { width: 3px; height: 12px; background: var(--ink-2); }
 
-/* ── panels: hail, run report, logbook (the refit cards are below) ────── */
+/* ── panels: comms, run report, logbook (the refit cards are below) ───── */
 .sheet { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: max(12px, var(--safe-t)) max(12px, var(--safe-r)) max(12px, var(--safe-b)) max(12px, var(--safe-l));
   background: radial-gradient(ellipse at 50% 50%, rgba(3, 5, 9, .3), rgba(3, 5, 9, .84) 75%); animation: ab-in .18s var(--ez); }
 .sheet[hidden] { display: none; }
@@ -565,35 +572,58 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .pf { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--line); }
 .pf .keys { font: 500 calc(var(--fs) * .9)/1.6 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 
-/* the hail: engage or evade */
-.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.opt { --c: 10px; --edge: rgba(236, 230, 225, .16); --fill: rgba(24, 26, 30, .9); position: relative; isolation: isolate;
-  display: grid; align-content: start; gap: 10px; padding: 16px 18px; text-align: left; cursor: pointer; color: inherit; font: inherit; border: 0; background: none; }
-.opt::before, .opt::after { content: ""; position: absolute; pointer-events: none;
+/* comms: a channel open to the ship (and the arcade's hail) */
+.panel.comms { width: min(920px, 100%); overflow-y: auto; gap: 12px; }
+.cm-sigil { --cc: var(--ink-2); width: 9px; height: 9px; background: var(--cc); box-shadow: 0 0 8px var(--cc); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.cm-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.cm-text { margin: 0; font: 400 15px/1.5 var(--font-display); color: var(--ink); }
+.cm-read { display: grid; gap: 7px; padding: 10px 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, .02); }
+.cm-read[hidden] { display: none; }
+.cm-read:empty { display: none; }
+.cm-str { display: grid; gap: 5px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.cm-bar { display: grid; grid-template-columns: 5ch 1fr 3ch; align-items: center; gap: 8px; font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.cm-bar i { height: 5px; background: linear-gradient(90deg, var(--bc) var(--w, 0%), rgba(255, 255, 255, .06) var(--w, 0%)); }
+.cm-bar.them { --bc: var(--alert); }
+.cm-bar.you { --bc: var(--amber); }
+.cm-bar b { font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); color: var(--ink); text-align: right; }
+.cm-row { display: grid; grid-template-columns: 9ch 1fr; gap: 8px; font: 400 13px/1.3 var(--font-display); color: var(--ink-2); }
+.cm-row .k { font: 500 var(--fs)/1.5 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.cm-row.intent .v { color: var(--ink); }
+.cm-timer { height: 3px; background: var(--alert-dim); }
+.cm-timer[hidden] { display: none; }
+.cm-timer i { display: block; height: 100%; width: 100%; background: var(--alert); }
+.cm-list { display: grid; gap: 6px; }
+.cm-c { --c: 8px; --edge: rgba(236, 230, 225, .16); --fill: rgba(24, 26, 30, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 10px 14px; text-align: left; color: var(--ink); font: inherit; }
+.cm-c::before, .cm-c::after { content: ""; position: absolute; pointer-events: none;
   clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-.opt::before { inset: 0; z-index: -2; background: var(--edge); }
-.opt::after { inset: 1px; z-index: -1; background: var(--fill); }
-.opt.sel, .opt:hover:not(:disabled) { --edge: var(--alert); --fill: rgba(46, 22, 24, .92); }
-.opt:disabled { cursor: not-allowed; opacity: .45; }
-.opt .verb { display: flex; justify-content: space-between; align-items: center; }
-.opt em { font: 800 clamp(22px, 3vw, 30px)/1 var(--font-display); font-style: normal; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
-.opt.sel em { color: var(--alert); }
-.opt.sel kbd { background: var(--alert); color: #160606; border-color: var(--alert); }
-.opt .oh { font: 600 calc(var(--fs) * 1.2)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
-.opt .ob { font: 400 13px/1.4 var(--font-display); color: var(--ink-2); }
-.opt .lines { display: grid; gap: 4px; padding-top: 10px; border-top: 1px solid var(--line); font: 500 calc(var(--fs) * 1.02)/1.3 var(--font-mono); letter-spacing: .06em; color: var(--ink); }
-.opt .lines span::before { content: "› "; color: var(--ink-3); }
+.cm-c::before { inset: 0; z-index: -2; background: var(--edge); }
+.cm-c::after { inset: 1px; z-index: -1; background: var(--fill); }
+.cm-c.sel, .cm-c:hover:not([aria-disabled="true"]) { --edge: var(--hud); --fill: rgba(40, 14, 9, .9); }
+.sheet.alert .cm-c.sel, .sheet.alert .cm-c:hover:not([aria-disabled="true"]) { --edge: var(--alert); --fill: rgba(46, 22, 24, .92); }
+.cm-c[aria-disabled="true"] { cursor: not-allowed; }
+.cm-c[aria-disabled="true"] .cm-main { opacity: .45; }
+.cm-c.sel kbd { background: var(--hud); color: #160606; border-color: var(--hud); }
+.sheet.alert .cm-c.sel kbd { background: var(--alert); border-color: var(--alert); }
+.cm-main { display: grid; gap: 3px; }
+.cm-l { font: 600 calc(var(--fs) * 1.25)/1.1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+.cm-h { font: 400 13px/1.3 var(--font-display); color: var(--ink-2); }
+.cm-lines { font: 500 calc(var(--fs) * 1.02)/1.3 var(--font-mono); letter-spacing: .06em; color: var(--ink); }
+.cm-side { display: grid; justify-items: end; gap: 3px; font: 500 calc(var(--fs) * 1.02)/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.cm-side .cost { color: var(--amber); }
+.cm-side .odds { color: var(--hud-hi); }
+.cm-side .need { color: var(--ink-3); white-space: normal; text-align: right; max-width: 26ch; }
 
 /* buttons: cut like everything else */
-#again, #launch, .ghost { --c: 10px; --edge: var(--hud); --fill: rgba(40, 14, 9, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+#again, #launch, #resume, #ch-go, .ghost { --c: 10px; --edge: var(--hud); --fill: rgba(40, 14, 9, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
   height: 44px; padding: 0 44px; font: 700 14px/1 var(--font-display); letter-spacing: .28em; text-transform: uppercase; color: var(--ink); }
-:is(#again, #launch, .ghost)::before, :is(#again, #launch, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
-:is(#again, #launch, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
+:is(#again, #launch, #resume, #ch-go, .ghost)::before, :is(#again, #launch, #resume, #ch-go, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
+:is(#again, #launch, #resume, #ch-go, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
   clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-:is(#again, #launch, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
+:is(#again, #launch, #resume, #ch-go, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
   clip-path: polygon(calc(var(--c) - .4px) 0, 100% 0, 100% calc(100% - var(--c) + .4px), calc(100% - var(--c) + .4px) 100%, 0 100%, 0 calc(var(--c) - .4px)); }
-:is(#again, #launch):hover, :is(#again, #launch):focus-visible { --fill: rgba(255, 90, 54, .3); }
-#again:focus-visible, #launch:focus-visible, .ghost:focus-visible, .zoomsel button:focus-visible, .mods button:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
+:is(#again, #launch, #resume, #ch-go):hover, :is(#again, #launch, #resume, #ch-go):focus-visible { --fill: rgba(255, 90, 54, .3); }
+#again:focus-visible, #launch:focus-visible, #resume:focus-visible, #ch-go:focus-visible, .ghost:focus-visible, .zoomsel button:focus-visible, .mods button:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
 .ghost { --c: 7px; --edge: var(--line); --fill: var(--glass); height: 30px; padding: 0 16px; font: 500 calc(var(--fs) * .9)/1 var(--font-mono); letter-spacing: .2em; }
 .ghost:hover { --edge: var(--hud); }
 
@@ -752,7 +782,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .keys-l dd { margin: 0; font: 500 9px/1 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
 .keys-l kbd { min-width: 19px; height: 19px; font-size: 9px; color: var(--ink); }
 .meta { margin: 0; font: 500 9px/1.4 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
-#launch { padding: 0 58px; height: 46px; font-size: 15px; letter-spacing: .3em; margin-top: 2px; }
+#launch, #resume { padding: 0 58px; height: 46px; font-size: 15px; letter-spacing: .3em; margin-top: 2px; }
 .hint-l { margin: 0; font: 500 9px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
 .tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(255, 179, 61, .07);
   font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
@@ -848,16 +878,19 @@ html.swipe #app * { overscroll-behavior: contain; }
   #sum-chart { height: 50px; }
   .sum-mid { display: none; }
   #sum-score { font-size: 40px; }
-  .opt { padding: 10px 12px; gap: 6px; }
-  .opt .ob { display: none; }
+  .cm-text { font-size: 13px; line-height: 1.35; }
+  .cm-h, .cm-str, .cm-row:not(.intent) { display: none; }
+  .cm-read { padding: 6px 10px; }
+  .cm-c { padding: 7px 12px; }
+  .panel.comms .pf { display: none; }
 }
-@media (max-width: 560px) {
-  .opts { grid-template-columns: 1fr; }
+@media (max-width: 720px), (max-height: 520px) and (max-width: 1000px) {
+  .cm-body { grid-template-columns: 1fr; gap: 8px; }
 }
 /* touch: key hints mean nothing under a thumb */
-.touch-ui .pf .keys, .touch-ui .card kbd, .touch-ui .opt kbd { display: none; }
+.touch-ui .pf .keys, .touch-ui .card kbd, .touch-ui .cm-c kbd { display: none; }
 @media (max-width: 640px) and (min-height: 521px) {
-  .touch-ui #hail .pf { display: none; }
+  .touch-ui #comms .pf { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -865,4 +898,173 @@ html.swipe #app * { overscroll-behavior: contain; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
   #log-lines p.new, #banner.on, #sys-hull.hit, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel { animation: none; }
   .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path { animation: none; }
+}
+
+/* ── the Breakout ─────────────────────────────────────────────────────────
+   Top left, under the rail: the tank toward the jump, the hold, parts and
+   chits, and the Custody alert. Shown only in the Breakout. */
+#voyage { display: none; gap: 6px; }
+.breakout #voyage { display: grid; }
+.vy-row { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; color: var(--ink-2);
+  font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; }
+.vy-row b { font: 600 calc(var(--fs) * 1.35)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.vy-row .of { color: var(--ink-3); }
+.vy-cells { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 500 calc(var(--fs) * .92)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.vy-cells b { margin-left: 6px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.vy-cells .full { color: var(--amber); }
+.vy-row.heat { margin-top: 4px; }
+#vy-heat-t { --n: 20; --on: var(--amber); --off: var(--amber-dim); height: 4px; }
+#voyage.hot #vy-heat-t { --on: var(--alert); --off: var(--alert-dim); }
+#voyage.hot #vy-heat { color: var(--alert); }
+#ptr-lane { --pc: var(--amber); }
+#ptr-port { --pc: var(--hud-hi, #5ad0e3); }
+
+/* the start card: the brief and the two ways in */
+.brief { max-width: 46ch; margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink-2); }
+.launch-row { display: flex; gap: 12px; align-items: center; }
+#arcade { height: auto; align-self: stretch; padding: 0 18px; }
+
+/* the port */
+.port-stock { display: flex; flex-wrap: wrap; gap: 22px; font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.port-stock b { margin-left: 8px; font: 600 calc(var(--fs) * 1.5)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); }
+.port-list { display: grid; gap: 8px; }
+.port-l { --c: 8px; --edge: rgba(236, 230, 225, .16); --fill: rgba(24, 26, 30, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+  display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 14px; padding: 12px 16px; text-align: left; color: var(--ink);
+  font: 600 calc(var(--fs) * 1.15)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+.port-l::before, .port-l::after { content: ""; position: absolute; pointer-events: none; }
+.port-l::before { inset: 0; z-index: -2; background: var(--edge); }
+.port-l::after { inset: 1px; z-index: -1; background: var(--fill); }
+.port-l.sel, .port-l:hover:not(:disabled) { --edge: var(--hud); --fill: rgba(40, 14, 9, .9); }
+.port-l:disabled { cursor: not-allowed; opacity: .45; }
+.port-l .pl-note { font: 400 13px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); justify-self: end; }
+.port-l .pl-p { font: 600 calc(var(--fs) * 1.4)/1 var(--font-rail); color: var(--amber); min-width: 3ch; text-align: right; }
+#port-x { --c: 10px; --edge: var(--hud); --fill: rgba(40, 14, 9, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+  padding: 10px 22px; font: 600 calc(var(--fs) * 1.1)/1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ink); }
+#port-x::before, #port-x::after { content: ""; position: absolute; pointer-events: none; }
+#port-x::before { inset: 0; z-index: -2; background: var(--edge); }
+#port-x::after { inset: 1px; z-index: -1; background: var(--fill); }
+
+/* the Breakout's objective, as steps; and the contacts beside the scope (after the gameplay view) */
+#obj-list { display: none; margin: 2px 0 0; padding: 0; list-style: none; gap: 4px; font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+#objective.course #obj-list { display: grid; }
+#obj-list li::before { content: "○ "; color: var(--ink-3); }
+#obj-list li.done { color: var(--ink-3); }
+#obj-list li.done::before { content: "● "; color: var(--amber); }
+#obj-list li.now { color: var(--ink); }
+#obj-list li.now::before { content: "› "; color: var(--amber); }
+#obj-list b { color: var(--ink); font-weight: 600; }
+#contacts { display: none; align-self: flex-end; gap: 6px; padding: 0 0 16px 10px; text-shadow: 0 1px 6px #000; min-width: 190px; }
+.breakout #contacts { display: grid; }
+.touch-ui #contacts { display: none; }
+#contacts .lbl { color: var(--hud); }
+#contacts-l { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+#contacts-l li { display: flex; justify-content: space-between; gap: 14px; }
+#contacts-l li::before { content: "◆"; margin-right: 6px; color: var(--c, var(--ink-3)); }
+#contacts-l li span { flex: 1; }
+#contacts-l b { color: var(--ink); font-weight: 600; }
+
+/* ── the HUD pass, after the gameplay view ────────────────────────────────
+   A brand plate top left; the ship's levels as teal bars (energy, the Krail
+   tank) against the orange console; a threat card over the objective for the
+   nearest pursuer; key hints under the log. */
+.plate { display: grid; gap: 3px; padding: 0 0 10px; border-bottom: 1px solid var(--line); text-shadow: 0 1px 6px #000; }
+.plate .pl-n { font: 800 calc(var(--fs) * 2.6)/1 var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.pl-s, .pl-r { font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
+.pl-r { color: var(--ink-3); }
+.touch-ui .plate { display: none; }
+@media (max-width: 760px) { .plate { display: none; } }
+.breakout #sys-ph .bar, #sys-fuel .bar { background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
+#sys-fuel .ico { color: var(--violet); }
+#sys-fuel.ready .bar { background: linear-gradient(90deg, #ecd6ff 0 calc(var(--v) * 100%), var(--violet-ghost) 0); filter: drop-shadow(0 0 4px var(--violet)); }
+#sys-fuel.ready .val { color: var(--violet); }
+.breakout .plates i.on:not(.sh) { background: var(--cy); }
+#threat { display: none; grid-template-columns: auto 1fr; align-items: center; gap: 12px; width: clamp(220px, 22vw, 300px); padding: 8px 14px;
+  --edge: var(--alert-dim); --lit: var(--alert); --fill: rgba(30, 6, 9, .6); }
+#threat.on { display: grid; }
+#threat .ico { width: 26px; height: 26px; color: var(--alert); }
+#threat .th-b { display: grid; gap: 3px; font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+#th-n { font: 700 calc(var(--fs) * 1.1)/1 var(--font-mono); letter-spacing: .14em; color: var(--alert); }
+#threat.high #th-l { color: var(--alert); }
+.touch-ui #threat { display: none; }
+#hints { display: none; margin: 0; gap: 4px 14px; grid-template-columns: repeat(2, auto); justify-content: end; font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.breakout:not(.touch-ui) #hints { display: grid; }
+#hints div { display: flex; gap: 8px; align-items: center; }
+#hints dt { min-width: 18px; padding: 2px 4px; border: 1px solid var(--line); text-align: center; color: var(--ink-2); }
+#hints dd { margin: 0; }
+#hints.cutting div:first-child { color: var(--amber); }
+#hints.cutting div:first-child dt { border-color: var(--amber); color: var(--amber); }
+
+/* ── the journey: continue, and the chart ─────────────────────────────── */
+#resume[hidden], #ch-go[hidden] { display: none; }
+.resume-s { margin: 0; font: 500 9px/1.4 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
+.resume-s[hidden] { display: none; }
+.panel.chartp { width: min(1180px, 100%); overflow-y: auto; gap: 12px; }
+.ch-news { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font: 400 13px/1.35 var(--font-display); color: var(--ink); }
+.ch-news:empty { display: none; }
+.ch-news li { padding-left: 10px; border-left: 2px solid var(--amber); }
+.ch-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
+.ch-map { width: 100%; height: auto; max-height: 52vh; border: 1px solid var(--line); background:
+  radial-gradient(ellipse at 20% 50%, rgba(255, 90, 54, .05), transparent 60%), rgba(6, 7, 10, .6); }
+.ch-side { display: grid; gap: 10px; }
+.ch-list { display: grid; gap: 6px; }
+.ch-l { grid-template-columns: auto 1fr auto; row-gap: 4px; padding: 9px 14px; }
+.ch-l .pl-n { display: flex; align-items: baseline; gap: 2px; min-width: 0; }
+.ch-l .pl-n b { font: 600 calc(var(--fs) * 1.2)/1 var(--font-mono); letter-spacing: .12em; }
+.ch-kind { font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .12em; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-l .pl-note { grid-column: 2 / 3; justify-self: start; font-size: 12px; }
+.ch-l .pl-p { grid-row: 1 / 3; grid-column: 3; }
+.ch-l kbd { grid-row: 1 / 3; }
+.ch-l.net .pl-note { color: #ff8a93; }
+.ch-leg { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line);
+  font: 600 calc(var(--fs) * 1.05)/1.2 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+.ch-leg .pl-note { font: 400 12px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); justify-self: end; }
+.ch-leg.wreck b { color: var(--alert); }
+.ch-stat { display: grid; gap: 6px; }
+.ch-stat .port-stock { gap: 6px 16px; }
+.ch-stat .port-stock b { font-size: calc(var(--fs) * 1.25); margin-left: 6px; }
+.ch-hunt, .ch-netl { margin: 0; font: 500 calc(var(--fs) * .95)/1.35 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+.ch-hunt { color: #ff8a93; }
+.ch-netl { color: var(--ink-2); }
+.ch-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.ch-key i { display: inline-block; width: 9px; height: 9px; }
+.kc-net { border-radius: 50%; background: rgba(255, 46, 64, .25); border: 1px solid var(--alert); }
+.kc-cal { background: var(--alert); transform: rotate(45deg) scale(.8); }
+.kc-port { background: #5ad0e3; width: 6px !important; height: 6px !important; }
+/* the map */
+.ch-r { stroke: rgba(236, 230, 225, .14); stroke-width: 1.2; }
+.ch-r.live { stroke: rgba(255, 179, 61, .55); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.ch-r.sel { stroke: var(--amber); stroke-width: 2.4; stroke-dasharray: none; }
+.ch-trail { stroke: var(--ink-2); stroke-width: 2.4; stroke-linecap: round; opacity: .55; }
+.ch-cost { font: 600 10px var(--font-mono); fill: rgba(255, 179, 61, .75); }
+.ch-cost.sel { fill: var(--amber); font-size: 12px; }
+circle.ch-net { fill: rgba(255, 46, 64, .16); stroke: var(--alert); stroke-width: 1; }
+.ch-stall { fill: none; stroke: #7ee0a8; stroke-width: 1.2; stroke-dasharray: 2 3; }
+.ch-name { font: 500 9.5px var(--font-mono); letter-spacing: .06em; fill: var(--ink-2); text-transform: uppercase; }
+.ch-s.out .ch-name { fill: var(--ink); }
+.ch-s.sel .ch-name { fill: var(--amber); }
+.ch-num { font: 700 11px var(--font-mono); fill: var(--amber); }
+.ch-cal { fill: var(--alert); stroke: #160606; stroke-width: 1; }
+.ch-you { fill: var(--ink); }
+@media (max-width: 900px), (max-height: 520px) {
+  .ch-body { grid-template-columns: minmax(0, 1fr) minmax(260px, .9fr); gap: 10px; }
+  .ch-map { max-height: 60vh; }
+  .ch-l { padding: 6px 10px; }
+  .ch-l .pl-note { font-size: 11px; }
+  .ch-news { font-size: 12px; }
+  .chartp .pf { display: none; }
+}
+@media (max-width: 640px) and (min-height: 521px) {
+  .ch-body { grid-template-columns: 1fr; }
+}
+/* a phone on its side: three ways in on one row, and the port's five lines with room for Cast off */
+.launch-row { flex-wrap: wrap; justify-content: center; }
+@media (max-height: 520px) {
+  .launch-row { gap: 8px; }
+  .launch-row #launch, .launch-row #resume { height: 38px; padding: 0 20px; font-size: 12px; letter-spacing: .2em; white-space: nowrap; }
+  .launch-row #arcade { height: 38px; }
+  .port-list { gap: 5px; }
+  .port-l { padding: 7px 14px; font-size: calc(var(--fs) * 1.05); }
+  .port-l .pl-note { font-size: 12px; }
+  #port .pf { padding-top: 6px; }
+  #port-x { padding: 8px 18px; }
 }

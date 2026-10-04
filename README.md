@@ -1,24 +1,60 @@
-# Asteroid Blaster 3D
+# WAYWARD
 
-The Star Trek roguelite from [jciclitira.com](https://www.jciclitira.com)'s
-lab, rebuilt in 3D with Three.js, for desktop and mobile browsers.
+A cyberpunk space survival game from [jciclitira.com](https://www.jciclitira.com)'s
+lab, in 3D with Three.js, for desktop and mobile browsers.
 
-Everyone launches in the same ship, the U.S.S. Kestrel (NCC-1903): a
-Starfleet survey tender with a mining refit, saucer up front, hazard-yellow
-engineering hull, cyan nacelles. The sector starts quiet, so you can learn
-the ship and mine the first refit out of the rock before anything shoots
-back. Every time the dilithium gauge fills, **refit**: three cards, take
-one (a new system, the next level of one you have, or a specialisation),
-and fly on. Hostiles arrive one at a time, then in pairs, squads and
-factions; from 3:30 capital ships hail. Engage for the salvage (a refit and
-that faction's tech) or evade and pay in tempo. When the hull goes, the run
-report says what you built and how it went.
+You are a contract miner who found the wrong file and stole the wrong ship:
+the Wayward (OB-7731-A), an Obedience-class ore hauler, blunt cutting head
+up front, rust-red engine block, two drive pods on pylons. The
+Continuance wants her, and you, back.
 
+Two ways in from the start screen:
+
+- **Break out** (milestones M1 to M3 of [the plan](docs/PLAN.md)): a
+  journey across a region of about a dozen systems, from Cerro to the
+  Threshold, with the Continuance's **Net** spreading behind you and
+  **Prefect Calloway** following your trail. It starts with the Breakout,
+  getting out of the home system. The old lane mouth is about a minute's flight away, flat out.
+  Reach it with 20 Krail in the tank and hold inside it while the drive
+  spools. Krail is scarce: hold the **cutter** (3 or C) on violet-veined rock,
+  easing off before it overheats, and it comes apart clean. Ordinary rock gives
+  ore, which fills the hold and the refit rail and sells at **Frontier
+  Supply**, the dock about halfway, where you can also buy Krail, patch a
+  plate or pay for a refit. Wrecks give parts, and the crew patch a plate out
+  of them when you are left alone. The Custody pursue from behind, harder as
+  the **hunt pressure** rises, and a capital ship blockades the lane mouth.
+  Along the way, people call: traders, miners asking for help, jobs,
+  warnings, raiders, a Prefect. Each **comms card** pauses the game and
+  shows a read of them (their strength against yours, and a guess at what
+  they really want, as good as your sensors), and choices that cost, gamble
+  or need something you may not have. At the lane, her checkpoint: run it,
+  spoof it, pay it, talk through it, or fight her.
+
+  On the far side of every lane, the **chart**: plot the next jump. Each
+  lane costs Krail (the lane mouth wants it) and days; the crew eat food
+  every day and the drive wears parts every jump. Systems differ: ports to
+  trade at, mining systems with rich rock, quick empty transits, contested
+  space full of Gutter crews. A netted system has a blockade at its lane
+  and dearer prices. Linger, and Calloway catches up: then it is a comms
+  card, not the end, though a wreck with her in the system is. A wreck
+  otherwise leaves you adrift, a day later, with the hold gone; the third
+  is the end. The journey is saved between systems and at every port:
+  **Continue** carries on.
+- **Arcade**: the endless run. The system starts quiet; every time the
+  Krail gauge fills, **refit** (three cards, take one); hostiles arrive one
+  at a time, then in pairs, squads and factions; from 3:30 capital ships
+  hail. When the hull goes, the run report says what you built and how it
+  went.
+
+- Where the game goes next, WAYWARD: [docs/VISION.md](docs/VISION.md),
+  and the build plan: [docs/PLAN.md](docs/PLAN.md).
 - The game as designed, where each system lives and how to add to it:
   [docs/DESIGN.md](docs/DESIGN.md).
 - The plan, the decisions behind it and the milestone list:
   [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-- The latest balance report from the scripted pilot: [docs/BALANCE.md](docs/BALANCE.md).
+- The latest balance reports from the scripted pilot: [docs/BALANCE.md](docs/BALANCE.md)
+  (the arcade), [docs/BALANCE-BREAKOUT.md](docs/BALANCE-BREAKOUT.md) and
+  [docs/BALANCE-JOURNEY.md](docs/BALANCE-JOURNEY.md).
 
 ## Run it
 
@@ -54,25 +90,27 @@ game opens with no bars at all.
 |---|---|---|---|
 | Steer | ← → or A D | drag on the left half: across steers | left stick, d-pad |
 | Thrust | ↑ or W | any push opens the throttle; pull back to coast | right trigger, d-pad up |
-| Phasers (hold) | 1, Space or J | hold anywhere on the right half | A |
+| Lasers (hold) | 1, Space or J | hold anywhere on the right half | A |
 | Torpedo (once fitted) | 2, F or K | Torpedo button | X |
+| Cutter (Breakout, hold) | 3, C or L | Cut button | LB or left trigger |
 | Overcharge (when full) | E | Core button | Y |
 | Barrel roll | Shift | a second finger on the left half | B or RB |
 | Refit: take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
-| Hail: engage / evade | 1 or F / 2 or E | tap | A / B |
+| Comms: answer | 1–6, or arrows and Enter | tap | stick, A |
+| Hail (arcade): engage / evade | 1 or F / 2 or E | tap | A / B |
 | Camera distance | Z (cycles), or − and = | pause screen | |
 | Pause | Esc or P | the pause button, bottom centre | Start |
 
 The camera rides low behind the ship. You steer on a flat plane; everything
-else uses the whole sky. Phasers draw on the phaser bank and refill when you
+else uses the whole sky. Lasers draw on the laser bank and refill when you
 let go, and the gunnery computer lifts or drops a lance onto a hull flying
 above or below you if it is in a narrow cone ahead. Torpedoes, mines, the
 plasma trail, the hull arc and shields are refits, not standard. Rock breaks
-large to medium to small, sometimes into violet dilithium crystals that the
+large to medium to small, sometimes into violet krail crystals that the
 tractor pulls in (they fade if left). Bulwarks (massive asteroids) never
 break: they stop fire from both sides and hurt to fly into.
 
-Near misses (fire, rock, hulls, beams) charge the warp core; release it for
+Near misses (fire, rock, hulls, beams) charge the reactor; release it for
 a nova that clears fire and runs the guns hot. The first forty seconds are
 yours alone; then enemies arrive from far out, one at a time, and fight by
 type and faction; from about four minutes in they come in squads, mixed
@@ -92,6 +130,8 @@ npm run check   # types + unit tests
 npm run build   # production build into dist/
 npm run preview # serve dist/ (also on the network)
 npm run pilot   # the scripted pilot's balance runs (a few minutes): writes docs/BALANCE.md
+npm run pilot:breakout  # the pilot through the Breakout: writes docs/BALANCE-BREAKOUT.md
+npm run pilot:journey   # whole journeys, chart and all: writes docs/BALANCE-JOURNEY.md
 ```
 
 `PILOT_RUNS` (default 12 per strategy) and `PILOT_TIME` (default 900s)

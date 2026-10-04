@@ -9,11 +9,17 @@ import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordRun, saveProfile } from './meta/profile';
+import { clearJourney, loadJourney, saveJourney } from './meta/save';
+import { checkpoint, endSortie, here, newJourney, plot, sortieDef, type Journey } from './sim/journey';
+import { sysById } from './sim/chart';
+import { ChartPanel } from './ui/chart';
 import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PadNav } from './ui/dom';
-import { buildView, HailPanel, StartOptions, SummaryPanel } from './ui/panels';
+import { cardView, CommsPanel, hailView } from './ui/comms';
+import { buildView, StartOptions, SummaryPanel } from './ui/panels';
+import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -38,7 +44,9 @@ function boot(): void {
 
   // The pilot's record between runs: bests, unlocks, chosen modifiers.
   const profile = loadProfile();
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), modifiers: profile.modifiers });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), modifiers: profile.modifiers, mode: profile.mode });
+  const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
+  showMode();
   const renderer = createRenderer(canvas, quality.tier);
   const sector = new Sector(renderer, quality.tier);
   sector.setCosmetic(profile.cosmetic);
@@ -80,45 +88,130 @@ function boot(): void {
   // compile every shader behind the start card, once it has painted
   setTimeout(() => sector.warm(), 60);
 
-  // ── the run's stops: refit, hail, report ───────────────────────────────
-  // The world pauses itself at each and waits; the panels answer it.
+  // ── the run's stops: refit, comms, port, report ────────────────────────
+  // The world pauses itself at each and waits (an ambush only slows it); the
+  // panels answer it. The comms panel draws both a Breakout card and the
+  // arcade's capital-ship hail.
   const refit = new RefitPanel();
-  const hail = new HailPanel();
+  const comms = new CommsPanel();
+  /** The card the comms panel is showing, so a slowed card that timed out can be taken down. */
+  let shown: object | null = null;
   const summary = new SummaryPanel();
+  const port = new PortPanel();
+  const chart = new ChartPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => refit.open || hail.open || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => refit.open || comms.open || port.open || chart.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+
+  // ── the journey ────────────────────────────────────────────────────────
+  // The Breakout mode is a journey: system after system, with the chart
+  // between them. It is saved between systems and at every port, so the
+  // start card can carry on where the last session left off.
+  let journey: Journey | null = loadJourney();
+  const showResume = () => {
+    const j = journey && journey.status !== 'over' ? journey : null;
+    el('resume').hidden = !j;
+    el('resume-s').hidden = !j;
+    el('launch').textContent = j ? 'New journey' : 'Break out';
+    if (j) el('resume-s').textContent = `Day ${Math.floor(j.day) + 1} · ${here(j).name}${j.dest ? ` · bound for ${sysById(j.chart, j.dest).name}` : ''}${j.wrecks ? ` · ${j.wrecks} wreck${j.wrecks === 1 ? '' : 's'}` : ''}`;
+  };
+  showResume();
+  /** Fly the journey's current system. */
+  const startSortie = () => {
+    const j = journey!;
+    world.restart({ unlocked: grants(profile), modifiers: profile.modifiers, mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+    showMode();
+    reported = false;
+    setPaused(false);
+    const d = world.sortie;
+    hud.note(world, d.home ? 'Clear of the yards · make for the lane mouth' : `${d.name} · the lane to ${d.dest} takes ${d.jumpCost} Krail`);
+  };
+  /** Between systems: the chart, to plot the next jump. */
+  const openChart = (lines: string[]) => {
+    const j = journey!;
+    loop.paused = true;
+    input.reset();
+    chart.plot(j, lines, (id) => {
+      plot(j, id);
+      saveJourney(j);
+      startSortie();
+    });
+  };
+  /** The sortie is over: fold it into the journey, then the chart, a notice, or the end. */
+  const sortieOver = () => {
+    const j = journey!;
+    const rec = recordRun(profile, world.run);
+    const out = endSortie(j, world.result());
+    saveJourney(j);
+    const lines = [...out.lines, ...rec.unlocked.map((u) => `Unlocked · ${u.name}`)];
+    if (out.kind === 'jumped') return openChart(lines);
+    loop.paused = true;
+    input.reset();
+    chart.notice(j, { ...out, lines }, () => {
+      if (j.status === 'over') {
+        journey = newJourney(Math.floor(Math.random() * 1e9));
+        saveJourney(journey);
+      }
+      startSortie();
+    });
+  };
   const startOpts = new StartOptions(profile, () => {
     saveProfile(profile);
     sector.setCosmetic(profile.cosmetic);
     // before the first launch nothing has happened yet, so the run can be re-made with the new modifiers
-    if (!started) world.restart({ modifiers: profile.modifiers });
+    if (!started) world.restart({ modifiers: profile.modifiers, mode: profile.mode });
   });
   const stops = () => {
     if (world.phase === 'refit' && world.offer && !refit.open) {
       // a full rail or battle salvage: three cards
       input.reset();
       refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); });
-    } else if (world.phase === 'hail' && world.command.pending && !hail.open) {
+    } else if (world.phase === 'hail' && world.command.pending && !comms.open) {
       input.reset();
-      hail.show(world.command.pending, (engage) => { world.answerHail(engage); input.reset(); });
+      shown = world.command.pending;
+      comms.show(hailView(world.command.pending), (i) => { world.answerHail(i === 0); input.reset(); });
+    } else if (world.phase === 'comms' && world.comms && !comms.open) {
+      input.reset();
+      shown = world.comms;
+      comms.show(cardView(world.comms), (i) => { world.answer(i); input.reset(); });
+    } else if (world.phase === 'dock' && !port.open) {
+      // docked at the port, or back from a refit bought there
+      input.reset();
+      port.show(world, () => {
+        input.reset();
+        hud.note(world, 'Cast off');
+        // the save at the port: a load starts this system again with the hold as it is now
+        if (journey && world.mode === 'breakout') { checkpoint(journey, world.carry()); saveJourney(journey); }
+      }, () => {});
+    } else if (world.phase === 'over' && !reported && world.mode === 'breakout' && journey) {
+      reported = true;
+      sortieOver();
     } else if (world.phase === 'over' && !reported) {
       reported = true;
       input.reset();
       const rec = recordRun(profile, world.run);
       summary.show(world.run, rec, () => {
-        world.restart({ unlocked: grants(profile), modifiers: profile.modifiers });
+        world.restart({ unlocked: grants(profile), modifiers: profile.modifiers, mode: profile.mode });
+        showMode();
         reported = false;
         startOpts.render();
         hud.note(world, `Run begins · ${world.hull.name}`);
         input.reset();
       });
     }
+    // an ambush's clock runs down on the panel; if it ran out, the world has answered for you
+    if (comms.open) {
+      const o = world.comms;
+      if (o && o === shown) comms.timer(o.slow > 0 ? o.slow / o.def.slow!.timeout : 0);
+      else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
+    }
     // a gamepad answers the open panel
-    if (refit.open || hail.open || !el('summary').hidden) {
+    if (refit.open || comms.open || port.open || chart.open || !el('summary').hidden) {
       const p = padNav.poll();
       if (refit.open) refit.padInput(p);
-      else if (hail.open) hail.padInput(p);
+      else if (comms.open) comms.padInput(p);
+      else if (port.open) port.padInput(p);
+      else if (chart.open && journey) chart.padInput(p, journey);
       else summary.padInput(p);
     }
     // a full rail: a beat of slow motion before the panel
@@ -161,23 +254,37 @@ function boot(): void {
     o?.lock?.('landscape').catch(() => {});
   };
   window.addEventListener('pointerup', fullscreen, true);
-  const launch = () => {
+  /** Launch from the start card: the arcade, a new journey, or (`resume`) the saved one. */
+  const launch = (mode: 'breakout' | 'arcade' = 'breakout', resume = false) => {
     if (started) return;
+    if (mode !== profile.mode) {
+      profile.mode = mode;
+      saveProfile(profile);
+    }
     started = true;
     el('start').hidden = true;
     document.documentElement.classList.remove('prelaunch');
     fullscreen();
     window.focus();
     fit();
-    hud.note(world, `Run begins · ${world.hull.name}`);
     setPaused(false);
+    if (mode === 'arcade') {
+      if (world.mode !== 'arcade') { world.restart({ modifiers: profile.modifiers, mode, carry: null }); showMode(); }
+      hud.note(world, `Run begins · ${world.hull.name}`);
+      return;
+    }
+    if (!resume || !journey || journey.status === 'over') {
+      journey = newJourney(Math.floor(Math.random() * 1e9));
+      saveJourney(journey);
+    } else if (journey.status === 'chart') return openChart(['Journey resumed · the drive is cool, plot the next jump']);
+    startSortie();
   };
 
   const input = new Input(
     {
-      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'),
+      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'), cut: el('cut'),
     },
-    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch()),
+    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch(profile.mode, profile.mode === 'breakout')),
   );
 
   const loop = new FixedStepLoop({
@@ -246,18 +353,23 @@ function boot(): void {
   window.visualViewport?.addEventListener('resize', bars);
   el('swipe-x').addEventListener('click', () => { kept = true; bars(); });
 
-  el('launch').addEventListener('click', launch);
+  el('launch').addEventListener('click', (e) => { e.stopPropagation(); launch('breakout'); });
+  el('launch').addEventListener('pointerdown', (e) => e.stopPropagation());
+  el('resume').addEventListener('click', (e) => { e.stopPropagation(); launch('breakout', true); });
+  el('resume').addEventListener('pointerdown', (e) => e.stopPropagation());
+  el('arcade').addEventListener('click', (e) => { e.stopPropagation(); launch('arcade'); });
+  el('arcade').addEventListener('pointerdown', (e) => e.stopPropagation());
   el('start').addEventListener('pointerdown', (e) => {
     if (e.target === el('launch') || startOpts.logbookOpen) return;
     e.preventDefault();
-    launch();
+    launch(profile.mode, profile.mode === 'breakout');
   });
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
     if (!started) {
       if (startOpts.logbookOpen) { if (e.code === 'Escape') startOpts.logbook(false); return; }
-      if (e.code === 'Enter' || e.code === 'Space') launch();
+      if (e.code === 'Enter' || e.code === 'Space') launch(profile.mode, profile.mode === 'breakout');
       return;
     }
     if (panelOpen()) return;
@@ -292,7 +404,7 @@ function boot(): void {
 
   // Development only: lets an automated check step the loop while the tab is
   // hidden (no animation frames) and read the state back. Stripped from builds.
-  if (import.meta.env.DEV) Object.assign(window, { __ab: { world, loop, sector, renderer, input, launch, hud, profile } });
+  if (import.meta.env.DEV) Object.assign(window, { __ab: { world, loop, sector, renderer, input, launch, hud, profile, journey: () => journey, clearJourney } });
 
   loop.start();
 }

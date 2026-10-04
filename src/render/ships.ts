@@ -10,18 +10,18 @@ import { Kit, metal, seeded, type V3 } from './kit';
 import { glowTexture } from './textures';
 
 // ── the player's ship ─────────────────────────────────────────────────────
-// The U.S.S. Kestrel, NCC-1903: a Starfleet survey tender refitted for
-// mining work, after the reference frame. A broad primary hull (the saucer)
-// with the bridge on top and a ring of running lights at the rim; under and
-// behind it a chunky engineering hull in worn hazard yellow, its stern one
-// great impulse ring; and two warp nacelles out on swept pylons, their
-// coils glowing along the inboard side and their after ends burning cyan.
-// Numbers are stencilled on the plating (03, 9F, 17) and the registry on
-// the saucer. Weathered, practical, unmistakably Starfleet.
+// The Wayward: a stolen Obedience-class ore hauler, registry OB-7731-A,
+// after the concept boards. A long spine carrying two tiers of ore
+// containers in hazard yellow and bare plate; a blunt cutting head up
+// front, its jaws round the cutting laser and a low bridge on top; two
+// long engine drums clamped to the flanks and a heavy main drive low on the
+// stern: three cyan bells. Numbers stencilled on the plating (03 big on the
+// rearmost container), the registry on the cheeks and her new name, painted
+// over the old one, on the head. Ugly, worn, barely worth stealing.
 //
 // The model faces +X with +Y up, so its starboard side is +Z.
 
-/** Engines: white-hot at the core, Starfleet cyan in the bell. */
+/** Engines: white-hot at the core, drive cyan in the bell. */
 const CORE = new Color(2.6, 3.9, 4.4);
 const BELL = new Color(0.3, 2.1, 3.4);
 const HALO = new Color(0.2, 1.4, 2.2);
@@ -30,13 +30,13 @@ let mats: Record<string, Material> | null = null;
 function materials(): Record<string, Material> {
   if (mats) return mats;
   mats = {
-    hull: metal({ tint: 0xe4e1da, roughness: 0.52, metalness: 0.18 }),
-    paint: metal({ tint: 0xffc23a, roughness: 0.58, metalness: 0.04, scale: 1.1, emissive: new Color(0.045, 0.026, 0) }),
+    hull: metal({ tint: 0x8d9094, roughness: 0.62, metalness: 0.35 }),
+    paint: metal({ tint: 0xf2b21f, roughness: 0.62, metalness: 0.06, scale: 1.1, emissive: new Color(0.04, 0.024, 0) }),
     dark: metal({ tint: 0x5e5a56, roughness: 0.5, metalness: 0.6, scale: 1.4 }),
     lamp: new MeshBasicMaterial({ color: new Color(3.2, 2.4, 1.5), toneMapped: false }),
     glow: new MeshBasicMaterial({ color: new Color(0.6, 2.6, 3.4), toneMapped: false }),
     coil: new MeshBasicMaterial({ color: new Color(0.12, 0.85, 1.3), toneMapped: false }),
-    phaser: new MeshBasicMaterial({ color: new Color(1.5, 0.5, 0.14), toneMapped: false }),
+    laser: new MeshBasicMaterial({ color: new Color(1.5, 0.5, 0.14), toneMapped: false }),
     decal: new MeshStandardMaterial({
       map: decalTexture(), transparent: true, alphaTest: 0.35, roughness: 0.8, metalness: 0.1,
       polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
@@ -53,7 +53,7 @@ const AW = 1024, AH = 512;
 const cell = (x0: number, y0: number, x1: number, y1: number): Cell => [x0 / AW, 1 - y1 / AH, x1 / AW, 1 - y0 / AH];
 const DECAL = {
   n03: cell(0, 0, 256, 256), n9f: cell(256, 0, 512, 256), n17: cell(512, 0, 768, 256), hazard: cell(768, 0, 1024, 256),
-  ncc: cell(0, 256, 1024, 384), name: cell(0, 384, 1024, 512),
+  reg: cell(0, 256, 1024, 384), name: cell(0, 384, 1024, 512),
 };
 
 let decals: Texture | null = null;
@@ -78,9 +78,9 @@ function decalTexture(): Texture {
   g.restore();
   g.lineWidth = 8; g.strokeStyle = ink; g.strokeRect(780, 76, 232, 104);
   g.font = '800 92px "Arial Black", Impact, "Helvetica Neue", sans-serif';
-  g.fillText('NCC-1903', 512, 322);
+  g.fillText('OB-7731-A', 512, 322);
   g.font = '700 70px "Arial Black", Impact, "Helvetica Neue", sans-serif';
-  g.fillText('U.S.S. KESTREL', 512, 450);
+  g.fillText('WAYWARD', 512, 450);
   // wear: chips and scratches through the paint
   g.globalCompositeOperation = 'destination-out';
   for (let i = 0; i < 900; i++) {
@@ -100,7 +100,7 @@ function decalTexture(): Texture {
   return t;
 }
 
-/** The impulse ring's vanes: white on black, tinted by the engine colour. */
+/** The drive ring's vanes: white on black, tinted by the engine colour. */
 let vanes: Texture | null = null;
 function vaneTexture(): Texture {
   if (vanes) return vanes;
@@ -152,109 +152,105 @@ function ringOf(k: Kit, key: string, cx: number, y: number, r: number, n: number
   }
 }
 
-/** The primary hull: the saucer, its rim, the bridge and the registry. */
-function saucer(k: Kit, rnd: () => number, cx: number, cy: number): void {
-  // the disc: a shallow lens, its top rising to the bridge
-  k.lathe('hull', [[0.001, -0.17], [0.45, -0.16], [1.0, -0.11], [1.36, -0.05], [1.46, -0.012], [1.47, 0.02], [1.4, 0.06], [1.05, 0.12], [0.55, 0.17], [0.001, 0.19]], [cx, cy, 0], 64);
-  // the rim: a dark band and a ring of running lights
-  k.cyl('dark', 1.474, 1.474, 0.045, [cx, cy + 0.004, 0], 'y', 72, true);
-  ringOf(k, 'glow', cx, cy + 0.004, 1.48, 64, [0.035, 0.016, 0.02]);
-  ringOf(k, 'lamp', cx, cy - 0.075, 1.3, 40, [0.03, 0.014, 0.012]);
-  // plating rings and radial ribs on the upper surface
-  k.ring('dark', 0.6, 0.016, [cx, cy + 0.17, 0], 'y', 48);
-  k.ring('dark', 0.94, 0.014, [cx, cy + 0.13, 0], 'y', 56);
-  for (let i = 0; i < 18; i++) {
-    const a = (i / 18) * Math.PI * 2;
-    k.box('dark', [0.34, 0.022, 0.03], [cx + Math.cos(a) * 1.2, cy + 0.095, Math.sin(a) * 1.2], [0, -a, -0.17]);
-  }
-  // the phaser strip, dull orange-red until it fires
-  k.ring('phaser', 1.12, 0.011, [cx, cy + 0.108, 0], 'y', 64);
-  // the bridge: stacked decks, a dome, an antenna
-  k.cyl('hull', 0.3, 0.37, 0.08, [cx - 0.06, cy + 0.22, 0], 'y', 32);
-  ringOf(k, 'lamp', cx - 0.06, cy + 0.225, 0.335, 24, [0.035, 0.016, 0.012]);
-  k.cyl('dark', 0.2, 0.26, 0.05, [cx - 0.06, cy + 0.285, 0], 'y', 28);
-  k.add('hull', new SphereGeometry(0.17, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2), [cx - 0.06, cy + 0.305, 0], [0, 0, 0], [1, 0.55, 1]);
-  k.cyl('dark', 0.012, 0.012, 0.22, [cx - 0.12, cy + 0.44, 0], 'y', 6);
-  // aft of the bridge: sensor housings and vents down toward the neck
-  k.greebles('hull', rnd, cx - 0.95, cx - 0.4, -0.22, 0.22, cy + 0.15, 10, 0.09);
-  // the registry, port and starboard of the bridge
-  for (const z of [-0.78, 0.78]) k.decal('decal', DECAL.ncc, 0.78, 0.098, [cx + 0.02, cy + 0.156, z], [-0.03, 1, z * 0.06], FWD);
-  k.decal('decal', DECAL.name, 0.56, 0.07, [cx + 0.62, cy + 0.13, 0], [0.12, 1, 0], FWD);
-}
-
-/** One warp nacelle along X at (y, z): a yellow after body, ribbed grey forward, coils inboard. Returns its nozzle. */
-function nacelle(k: Kit, y: number, z: number, number: Cell): Nozzle {
-  const side = Math.sign(z);
-  k.cyl('paint', 0.25, 0.25, 0.62, [-1.3, y, z], 'x', 24);
-  k.cyl('dark', 0.275, 0.275, 0.07, [-1.6, y, z], 'x', 24);
-  k.cyl('dark', 0.262, 0.262, 0.05, [-0.99, y, z], 'x', 24);
-  k.cyl('hull', 0.232, 0.232, 1.2, [-0.38, y, z], 'x', 24);
-  for (let i = 0; i < 6; i++) k.cyl('dark', 0.242, 0.242, 0.028, [-0.9 + i * 0.2, y, z], 'x', 24);
-  k.cyl('paint', 0.12, 0.232, 0.3, [0.37, y, z], 'x', 20);
-  k.cyl('dark', 0.03, 0.12, 0.08, [0.56, y, z], 'x', 12);
-  // the coils: a glowing strip down the inboard flank, and a fainter one under
-  k.box('coil', [1.08, 0.075, 0.02], [-0.38, y, z - side * 0.232]);
-  k.box('coil', [1.08, 0.02, 0.06], [-0.38, y - 0.232, z]);
-  // a spine along the top, housings, and the hull number on the after body
-  k.box('paint', [1.0, 0.05, 0.09], [-0.85, y + 0.265, z]);
-  k.box('dark', [0.22, 0.08, 0.12], [-0.2, y + 0.25, z]);
-  k.box('dark', [0.5, 0.05, 0.05], [-1.25, y, z + side * 0.25]);
-  k.decal('decal', number, 0.26, 0.26, [-1.26, y + 0.252, z], UP, FWD);
-  k.decal('decal', DECAL.hazard, 0.2, 0.1, [-1.62, y + 0.12, z], AFT, UP);
-  return { p: [-1.66, y, z], r: 0.215 };
-}
-
-/** The engineering hull: armoured blocks in hazard yellow, the impulse ring astern. Returns its nozzle. */
-function engineering(k: Kit, rnd: () => number): Nozzle {
-  // the core block, its upper deck, and the armoured pods either side
-  k.box('paint', [1.72, 0.6, 0.92], [-0.62, 0.02, 0]);
-  k.box('hull', [1.25, 0.13, 0.72], [-0.78, 0.38, 0]);
-  k.box('dark', [1.0, 0.05, 0.76], [-0.78, 0.46, 0]);
+/** The bow: a blunt cutting head with the bridge on top, the cutting jaws ahead and the registry on the cheeks. */
+function bow(k: Kit, rnd: () => number, cx: number, cy: number): void {
+  // the head: a broad armoured block, chamfered toward the jaws
+  k.box('hull', [1.1, 0.34, 1.5], [cx, cy, 0]);
+  k.wedge('hull', [[cx + 0.55, 0.75], [cx + 1.05, 0.42], [cx + 1.05, -0.42], [cx + 0.55, -0.75]], 0.3, [0, cy - 0.15, 0]);
+  k.box('dark', [1.12, 0.05, 1.52], [cx, cy - 0.15, 0]);
+  // the cutting jaws: two prongs either side of the laser emitter
   for (const s of [-1, 1]) {
-    const pod: Array<[number, number]> = [[-1.48, 0.42], [-0.3, 0.42], [-0.05, 0.5], [-0.05, 0.74], [-0.3, 0.78], [-1.48, 0.78]];
-    k.wedge('paint', pod.map(([x, zz]) => [x, zz * s]), 0.5, [0, -0.04, 0]);
-    k.box('hull', [0.7, 0.05, 0.28], [-0.95, 0.235, s * 0.6]);
-    // rear grilles on the pods
-    for (let i = 0; i < 5; i++) k.box('dark', [0.04, 0.05, 0.28], [-1.49, -0.2 + i * 0.085, s * 0.6]);
-    // pipes along the flanks
-    k.cyl('dark', 0.028, 0.028, 1.5, [-0.7, 0.28, s * 0.47], 'x', 8);
-    k.cyl('dark', 0.022, 0.022, 1.2, [-0.75, -0.12, s * 0.79], 'x', 8);
+    k.box('dark', [0.55, 0.12, 0.12], [cx + 1.25, cy - 0.04, s * 0.3]);
+    k.box('paint', [0.18, 0.13, 0.13], [cx + 1.5, cy - 0.04, s * 0.3]);
   }
-  // the bow, tapering under the saucer
-  k.wedge('paint', [[0.2, 0.46], [0.82, 0.24], [0.82, -0.24], [0.2, -0.46]], 0.42, [0, 0.0, 0]);
-  k.box('dark', [0.5, 0.06, 0.5], [0.4, 0.23, 0]);
-  // the keel
-  k.box('dark', [1.5, 0.1, 0.52], [-0.6, -0.32, 0]);
-  // machinery on the upper deck
-  k.greebles('hull', rnd, -1.3, -0.25, -0.3, 0.3, 0.485, 14, 0.1);
-  k.greebles('dark', rnd, -1.2, -0.4, -0.25, 0.25, 0.485, 6, 0.08);
-  // the stern: a frame round the impulse ring
-  k.box('dark', [0.08, 0.6, 0.86], [-1.5, 0.02, 0]);
-  k.cyl('dark', 0.33, 0.33, 0.16, [-1.56, -0.02, 0], 'x', 32, true);
-  k.ring('hull', 0.33, 0.045, [-1.64, -0.02, 0], 'x', 36);
-  k.decal('decal', DECAL.hazard, 0.34, 0.12, [-1.545, 0.25, 0], AFT, UP);
-  // the hull numbers, as on the reference: 03 to port, 9F to starboard, 17 on the bow
-  k.decal('decal', DECAL.n03, 0.3, 0.3, [-0.7, 0.212, -0.6], UP, FWD);
-  k.decal('decal', DECAL.n9f, 0.3, 0.3, [-0.7, 0.212, 0.6], UP, FWD);
-  k.decal('decal', DECAL.n17, 0.22, 0.22, [0.5, 0.215, 0], UP, FWD);
-  return { p: [-1.66, -0.02, 0], r: 0.27 };
+  k.cyl('dark', 0.08, 0.11, 0.3, [cx + 1.15, cy - 0.04, 0], 'x', 16);
+  k.ring('laser', 0.1, 0.02, [cx + 1.3, cy - 0.04, 0], 'x', 20);
+  // floodlights along the leading edge
+  for (let i = -3; i <= 3; i++) k.box('lamp', [0.02, 0.03, 0.06], [cx + 1.06, cy + 0.04, i * 0.12]);
+  // the bridge: a low block set back, a strip of windows, an antenna mast
+  k.box('hull', [0.46, 0.18, 0.62], [cx - 0.2, cy + 0.26, 0]);
+  k.box('glow', [0.02, 0.04, 0.5], [cx + 0.035, cy + 0.29, 0]);
+  k.box('dark', [0.3, 0.06, 0.4], [cx - 0.25, cy + 0.38, 0]);
+  k.cyl('dark', 0.012, 0.012, 0.3, [cx - 0.32, cy + 0.55, 0.12], 'y', 6);
+  ringOf(k, 'lamp', cx - 0.2, cy + 0.2, 0.36, 12, [0.03, 0.014, 0.012]);
+  // plating seams and machinery on the head
+  for (const z of [-0.5, 0.5]) k.box('dark', [1.0, 0.02, 0.03], [cx, cy + 0.175, z]);
+  k.greebles('hull', rnd, cx - 0.5, cx + 0.4, -0.65, -0.35, cy + 0.17, 6, 0.08);
+  k.greebles('hull', rnd, cx - 0.5, cx + 0.4, 0.35, 0.65, cy + 0.17, 6, 0.08);
+  // the registry and the name, port and starboard
+  for (const z of [-0.752, 0.752]) k.decal('decal', DECAL.reg, 0.8, 0.1, [cx + 0.05, cy + 0.02, z], [0, 0, Math.sign(z)], FWD);
+  k.decal('decal', DECAL.name, 0.56, 0.07, [cx + 0.3, cy + 0.172, 0], UP, FWD);
 }
 
-function buildKestrel(): BuiltHull {
-  const k = new Kit(), rnd = seeded(1903);
-  const impulse = engineering(k, rnd);
-  // the neck: the saucer sits on the bow of the engineering hull
-  k.wedge('dark', [[-0.35, 0.26], [0.75, 0.2], [0.75, -0.2], [-0.35, -0.26]], 0.12, [0, 0.25, 0]);
-  saucer(k, rnd, 0.72, 0.42);
-  // the pylons: a flat strut and a pipe each side, swept a little aft
-  const nozzles: Nozzle[] = [impulse];
-  for (const s of [-1, 1]) {
-    k.box('dark', [0.34, 0.055, 1.12], [-0.72, 0.13, s * 1.2], [0, s * 0.12, 0]);
-    k.box('hull', [0.2, 0.04, 1.08], [-1.15, 0.17, s * 1.2], [0, s * 0.08, 0]);
-    k.cyl('dark', 0.03, 0.03, 1.1, [-0.5, 0.06, s * 1.2], 'z', 8);
-    nozzles.push(nacelle(k, 0.17, s * 1.78, s < 0 ? DECAL.n03 : DECAL.n9f));
+/** The cargo spine: two tiers of ore containers racked along the top, hazard yellow and bare plate, ribbed. */
+function containers(k: Kit, rnd: () => number): void {
+  for (let tier = 0; tier < 2; tier++) {
+    const y = 0.42 + tier * 0.3, n = tier === 0 ? 4 : 3;
+    for (let i = 0; i < n; i++) {
+      for (const s of [-1, 1]) {
+        if (tier === 1 && rnd() < 0.2) continue; // a gap where a container was lost or sold
+        const x = -1.25 + i * 0.56 + tier * 0.28;
+        const key = rnd() < 0.62 ? 'paint' : 'hull';
+        k.box(key, [0.52, 0.28, 0.4], [x, y, s * 0.22]);
+        // ribs and a lid seam
+        for (const dx of [-0.2, 0, 0.2]) k.box('dark', [0.03, 0.29, 0.41], [x + dx, y, s * 0.22]);
+        k.box('dark', [0.53, 0.025, 0.41], [x, y + 0.15, s * 0.22]);
+      }
+    }
   }
-  return { root: k.build(materials()), nozzles, wings: [[0.72, 0.43, -1.49], [0.72, 0.43, 1.49]], shield: [2.45, 1.05, 2.4] };
+  // the big hull number on the rearmost container, as on the boards
+  k.decal('decal', DECAL.n03, 0.34, 0.34, [-1.25, 0.565, -0.22], UP, FWD);
+  k.decal('decal', DECAL.hazard, 0.3, 0.1, [-1.515, 0.42, 0.22], AFT, UP);
+  k.greebles('dark', rnd, -1.4, 0.2, -0.05, 0.05, 0.86, 6, 0.06);
+}
+
+/** A side drum: a long engine module clamped to the flank, clad in yellow and plate, its bell astern. Returns its nozzle. */
+function sideDrum(k: Kit, rnd: () => number, z: number): Nozzle {
+  const y = 0.06, r = 0.34;
+  // the barrel, in clad segments
+  for (let i = 0; i < 5; i++) {
+    const x = -1.25 + i * 0.44;
+    k.cyl(i % 2 === 0 || rnd() < 0.3 ? 'paint' : 'hull', r, r, 0.4, [x, y, z], 'x', 22);
+    k.cyl('dark', r + 0.02, r + 0.02, 0.04, [x + 0.22, y, z], 'x', 22);
+  }
+  // the nose cap and the bell
+  k.cyl('dark', 0.16, r, 0.22, [0.82, y, z], 'x', 22);
+  k.cyl('dark', r + 0.04, r - 0.02, 0.3, [-1.6, y, z], 'x', 24, true);
+  k.ring('hull', r, 0.05, [-1.76, y, z], 'x', 30);
+  // clamps to the spine, and a fuel line along the top
+  for (const x of [-1.0, -0.2, 0.5]) k.box('dark', [0.18, 0.16, Math.abs(z) - 0.3], [x, y + 0.05, z / 2 + Math.sign(z) * 0.15]);
+  k.cyl('dark', 0.03, 0.03, 2.1, [-0.4, y + r + 0.02, z], 'x', 6);
+  k.decal('decal', DECAL.n9f, 0.24, 0.24, [-0.37, y + r + 0.005, z], UP, FWD);
+  return { p: [-1.78, y, z], r: 0.28 };
+}
+
+/** The spine and the main drive under the containers. Returns the main nozzle. */
+function spine(k: Kit, rnd: () => number): Nozzle {
+  k.box('hull', [2.9, 0.42, 0.86], [-0.2, 0.06, 0]);
+  k.box('dark', [2.9, 0.08, 0.9], [-0.2, 0.3, 0]);
+  k.box('dark', [2.4, 0.12, 0.6], [-0.3, -0.2, 0]);
+  // flank plating and pipes
+  for (const s of [-1, 1]) {
+    k.box('paint', [1.6, 0.22, 0.04], [-0.3, 0.08, s * 0.44]);
+    k.cyl('dark', 0.025, 0.025, 2.6, [-0.2, -0.08, s * 0.45], 'x', 6);
+  }
+  // the main drive: a heavy drum low on the stern
+  k.cyl('dark', 0.4, 0.4, 0.5, [-1.58, -0.04, 0], 'x', 28);
+  k.cyl('paint', 0.42, 0.42, 0.12, [-1.38, -0.04, 0], 'x', 28);
+  k.cyl('dark', 0.44, 0.36, 0.22, [-1.9, -0.04, 0], 'x', 28, true);
+  k.ring('hull', 0.4, 0.05, [-2.0, -0.04, 0], 'x', 32);
+  k.greebles('hull', rnd, -1.5, 0.9, -0.38, 0.38, -0.27, 10, 0.08);
+  return { p: [-2.02, -0.04, 0], r: 0.33 };
+}
+
+function buildWayward(): BuiltHull {
+  const k = new Kit(), rnd = seeded(7731);
+  const nozzles: Nozzle[] = [spine(k, rnd)];
+  containers(k, rnd);
+  // the cutting head on the bow, the bridge on it
+  bow(k, rnd, 1.6, 0.12);
+  for (const s of [-1, 1]) nozzles.push(sideDrum(k, rnd, s * 0.92));
+  return { root: k.build(materials()), nozzles, wings: [[0.6, 0.1, -1.3], [0.6, 0.1, 1.3]], shield: [2.7, 1.1, 1.9] };
 }
 
 /** The model is built in kit units; this brings it to play scale (the hitbox is 0.9). */
@@ -355,7 +351,7 @@ class Trail {
 
 // ── the shield ────────────────────────────────────────────────────────────
 // Unseen until it takes a hit: then a hex lattice flares, hot amber at the
-// rim. It also shimmers through the grace after a hit. With deflector
+// rim. It also shimmers through the grace after a hit. With shield
 // charges up it stands faintly blue at the rim, and a hit it absorbs flares
 // blue instead of amber; phased, it shimmers violet.
 function shieldMaterial(): ShaderMaterial {
@@ -427,7 +423,7 @@ export class ShipView {
   private time = 0;
 
   constructor(glow: Texture = glowTexture()) {
-    this.model = buildKestrel();
+    this.model = buildWayward();
     this.model.root.scale.setScalar(MODEL_SCALE);
     this.rollG.add(this.model.root);
     const disc = new CircleGeometry(1, 24).rotateY(-Math.PI / 2);

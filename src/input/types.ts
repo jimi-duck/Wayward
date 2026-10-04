@@ -27,8 +27,10 @@ export interface InputFrame {
   thrust: number;
   /** The gamepad's stick, or null when centred. (The touch stick arrives as turn and thrust.) */
   aim: Aim | null;
-  /** Phaser trigger held (button 1). */
+  /** Laser trigger held (button 1). */
   fire: boolean;
+  /** Cutter held (button 3): the mining laser. */
+  cut: boolean;
   /** Torpedo pressed since the last step (button 2). */
   torpedo: boolean;
   roll: boolean;

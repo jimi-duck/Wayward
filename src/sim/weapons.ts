@@ -6,13 +6,13 @@ import type { ShipState } from './ship';
 import { BASE, type Stats } from './stats';
 import { BOLT_ELEVATE_CONE, TORP_SPACING, TORP_SPEED } from './tuning';
 
-// ── phasers and torpedoes ─────────────────────────────────────────────────
-// Phasers (button 1): hold to fire, two emitters alternating, limited by the
-// phaser bank. Torpedoes (button 2, once the bay is fitted): one press, one
+// ── lasers and torpedoes ─────────────────────────────────────────────────
+// Lasers (button 1): hold to fire, two emitters alternating, limited by the
+// laser bank. Torpedoes (button 2, once the bay is fitted): one press, one
 // launch from the rack (a salvo, with the swarm launcher), each locking the
 // best target in a cone ahead and steering onto it.
 // Both carry the ship's own velocity, as in the original: without it a ship at
-// full impulse outruns its own fire.
+// full thrust outruns its own fire.
 //
 // The ship steers on the plane but its enemies fly above and below it, so
 // both weapons work in 3D: a lance fired with a hull in the narrow cone ahead
@@ -20,7 +20,7 @@ import { BOLT_ELEVATE_CONE, TORP_SPACING, TORP_SPEED } from './tuning';
 // a torpedo climbs or dives after its target as it steers.
 //
 // Every number comes from the build's stat block (sim/stats.ts), so the
-// same code fires a stock twin phaser, a seven-lance cone or a heavy lance.
+// same code fires a stock twin laser, a seven-lance cone or a heavy lance.
 
 export interface Bolt {
   x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number;
@@ -30,7 +30,7 @@ export interface Bolt {
   hit: number[];
   /** Radians per second it bends toward the hull nearest its nose. */
   homing: number;
-  /** A disruptor bolt (Klingon tech): drawn heavier. */
+  /** A disruptor bolt (Gutter tech): drawn heavier. */
   heavy?: boolean;
 }
 
@@ -44,11 +44,11 @@ export interface Torpedo {
 }
 
 export interface Arms {
-  /** Phaser bank energy, 0 to the bank's size. */
+  /** Laser bank energy, 0 to the bank's size. */
   bank: number;
   /** Seconds before the bank starts refilling. */
   bankWait: number;
-  /** Seconds before the next phaser shot. */
+  /** Seconds before the next laser shot. */
   cooldown: number;
   /** Which emitter fires next: 1 starboard, -1 port. */
   side: 1 | -1;
@@ -59,7 +59,7 @@ export interface Arms {
   spacing: number;
   /** The trigger was refused for an empty bank this press (so it is said once). */
   dryFired: boolean;
-  /** Phaser shots fired, for the disruptor's count. */
+  /** Laser shots fired, for the disruptor's count. */
   shots: number;
 }
 
@@ -124,7 +124,7 @@ export function findTarget(t: Targets, id: number | null): Target | undefined {
  * to, and how far away that is. The nearest hull inside a narrow cone ahead
  * (widened by its size), within a lance's reach.
  */
-export function elevation(t: Targets, x: number, z: number, heading: number, reach = BASE.phaserSpeed * BASE.phaserLife): { y: number; d: number } | null {
+export function elevation(t: Targets, x: number, z: number, heading: number, reach = BASE.laserSpeed * BASE.laserLife): { y: number; d: number } | null {
   let best: { y: number; d: number } | null = null;
   const consider = (o: Target) => {
     const dx = o.x - x, dz = o.z - z, d = Math.hypot(dx, dz);
@@ -157,30 +157,30 @@ export function fireWeapons(
   if (arms.rack > s.torpRack) arms.rack = s.torpRack;
   const hx = Math.cos(ship.heading), hz = -Math.sin(ship.heading);
 
-  // phasers
+  // lasers
   if (c.fire && arms.cooldown === 0) {
     if (m.overload || arms.bank >= s.bankShot) {
-      const n = s.phaserLances, cone = n > 1;
+      const n = s.laserLances, cone = n > 1;
       const ox = cone ? 0 : Math.sin(ship.heading) * EMITTER * arms.side, oz = cone ? 0 : Math.cos(ship.heading) * EMITTER * arms.side;
       const x = ship.x + hx * NOSE + ox, z = ship.z + hz * NOSE + oz;
-      const reach = s.phaserSpeed * s.phaserLife;
-      // every nth shot a disruptor bolt, with salvaged Klingon tech
+      const reach = s.laserSpeed * s.laserLife;
+      // every nth shot a disruptor bolt, with salvaged Gutter tech
       const heavy = s.disruptor > 0 && ++arms.shots % s.disruptor === 0;
-      const dmg = s.phaserDamage * m.damage * (m.drifting ? s.driftBonus : 1) * (heavy ? 3 : 1);
+      const dmg = s.laserDamage * m.damage * (m.drifting ? s.driftBonus : 1) * (heavy ? 3 : 1);
       for (let i = 0; i < n; i++) {
-        const a = ship.heading + (i - (n - 1) / 2) * s.phaserSpread;
+        const a = ship.heading + (i - (n - 1) / 2) * s.laserSpread;
         const ax = Math.cos(a), az = -Math.sin(a);
         const el = elevation(targets, x, z, a, reach);
-        const vy = el ? el.y / (el.d / s.phaserSpeed) : 0;
+        const vy = el ? el.y / (el.d / s.laserSpeed) : 0;
         bolts.push({
-          x, y: 0, z, vx: ax * s.phaserSpeed + ship.vx, vy, vz: az * s.phaserSpeed + ship.vz, life: s.phaserLife,
-          dmg, pierce: s.phaserPierce, hit: [], homing: s.phaserHoming, heavy,
+          x, y: 0, z, vx: ax * s.laserSpeed + ship.vx, vy, vz: az * s.laserSpeed + ship.vz, life: s.laserLife,
+          dmg, pierce: s.laserPierce, hit: [], homing: s.laserHoming, heavy,
         });
       }
       events.push({ type: 'bolt', x, z, heading: ship.heading });
       if (!m.overload) arms.bank -= s.bankShot;
       arms.bankWait = m.overload ? 0 : 0.35;
-      arms.cooldown = s.phaserCooldown * (m.overload ? 0.5 : 1);
+      arms.cooldown = s.laserCooldown * (m.overload ? 0.5 : 1);
       arms.side = arms.side === 1 ? -1 : 1;
     } else if (!arms.dryFired) {
       arms.dryFired = true;

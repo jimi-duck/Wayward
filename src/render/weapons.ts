@@ -6,7 +6,7 @@ import { STEP } from '../core/loop';
 import type { Bolt, Torpedo } from '../sim/weapons';
 import type { Effects } from './fx';
 
-// Phaser lances: a white-hot core in a red sheath, long and heavy, pointed
+// Laser lances: a white-hot core in a red sheath, long and heavy, pointed
 // along their flight (they climb and dive onto targets off the plane).
 // Torpedoes: a hot core in a red-orange halo, its motor flaring as it builds
 // speed, shedding embers. Ours burn red; enemy fire burns its faction's

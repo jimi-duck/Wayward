@@ -1,20 +1,20 @@
-Asteroid Blaster is a survivors-style roguelite flown from a starship's tactical console, in 3D, on desktop and phone. The brand looks like Starfleet engineering hardware that has seen hard service: spec-sheet type, registry codes, hazard placards, and a neon that only lights when something is live.
+Wayward is a fugitive's survival game flown from the cockpit of a stolen ore hauler, in 3D, on desktop and phone. The brand looks like corporate mining hardware that has seen hard service: spec-sheet type, registry codes, hazard placards, and a neon that only lights when something is live.
 
-**Tagline:** Hold the sector.
+**Tagline:** Get out alive.
 
-It grows out of the original canvas game in the portfolio: the same cyan ship, violet rocks, amber selection and hot-pink hull breach, the same notched console frames and tracked mono labels. What it adds comes from industrial product design and from Star Trek's own technical manuals: the LCARS sweep, cut sharp; schematics in place of paintings; warnings that look like warning labels.
+It grows out of the original canvas game in the portfolio: the same cyan ship, violet rocks, amber selection and hot-pink hull breach, the same notched console frames and tracked mono labels. What it adds comes from industrial product design and from technical manuals: the console sweep, cut sharp; schematics in place of paintings; warnings that look like warning labels.
 
 ## Four rules
 
-1. **Cyan is ours, warm is theirs, violet is the field.** Everything the player owns is `signal`: the ship, its fire, its meters, its schematics. Every hostile ship and its fire wears a warm `faction-*` token. Asteroids and dilithium are `dilithium`. A player who sees a colour knows whose it is before they know what it is. `command` amber belongs to the player's hand in the UI (selection, focus, the primary button) and never appears in the field.
+1. **Cyan is ours, warm is theirs, violet is the field.** Everything the player owns is `signal`: the ship, its fire, its meters, its schematics. Every hostile ship and its fire wears a warm `faction-*` token. Asteroids and krail are `krail`. A player who sees a colour knows whose it is before they know what it is. `command` amber belongs to the player's hand in the UI (selection, focus, the primary button) and never appears in the field.
 2. **Light means live.** Glow is a state: the selected card, the full gauge, the panel waiting for a decision. At rest, edges sit at `rule-2` and nothing blooms. Drydock has no glow at all.
 3. **Cut every corner.** Frames, buttons, chips, plates and the wordmark's bowls are cut at 45° (`cut-xs` to `cut-lg`). Only three things are round: status dots, the thumbstick, and orbits.
-4. **Every label is true.** Annotations show real values: stardate, sector, heading, velocity, a rock's dilithium yield, a ship's registry. Texture that is also information rewards a second look; decoration does not. Where a number is free, it is 47.
+4. **Every label is true.** Annotations show real values: score, sector, heading, velocity, a rock's krail yield, a ship's registry. Texture that is also information rewards a second look; decoration does not. Where a number is free, it is 47.
 
 ## Identity
 
-- **The mark, Breach:** a dilithium crystal with an arrowhead punching out of its upper face, debris following. It is rule 1 in one picture. Use it alone at 32px and under, on the app icon, and at the left end of an elbow panel.
-- **The wordmark** is constructed on a 20-unit grid: square stems, bowls cut at 45°, a stroke one fifth of the cap height. ASTEROID in `ink`, BLASTER in `signal`. Never retype it in a font.
+- **The mark, Breach:** a krail crystal with an arrowhead punching out of its upper face, debris following. It is rule 1 in one picture. Use it alone at 32px and under, on the app icon, and at the left end of an elbow panel.
+- **The wordmark** is constructed on a 20-unit grid: square stems, bowls cut at 45°, a stroke one fifth of the cap height. WAY in `ink`, WARD in `signal`. Never retype it in a font.
 - **Lockups:** primary (mark, wordmark, designation line), stacked, one ink. See the Lockup component and the Logos assets.
 - Clear space is a quarter of the mark's width on every side. Minimums: mark 16px, one-line wordmark 160px wide, stacked 96px wide.
 
@@ -29,14 +29,14 @@ Two themes share every token name. **Bridge** is the game: deep space and lit gl
 | Text | `ink`, `ink-2`, `ink-3` | Primary; secondary (benefits, hints); tertiary (caveats, annotation, never under 9px) |
 | Ours | `signal`, `on-signal`, `signal-ghost` | The ship, its fire, XP, lit edges, figures; unlit ticks |
 | Your hand | `command`, `command-fill`, `on-command`, `focus` | Selection, the primary action, filled key caps, the focus ring |
-| The field | `dilithium`, `on-dilithium` | Asteroids, dilithium crystals, the Ship upgrade category |
+| The field | `krail`, `on-krail` | Asteroids, krail crystals, the Ship upgrade category |
 | Alerts | `caution`, `on-caution`, `alert`, `on-alert` | Yellow alert (fill only); red alert, damage, hull breach |
 | Gains | `nominal` | A gain against last run, a ready state, always with a sign or a word |
-| Factions | `faction-klingon`, `-cardassian`, `-romulan`, `-borg`, `-tholian` | Hostile hulls, their fire, a capital ship's name |
+| Factions | `faction-gutter`, `-custody`, `-office`, `-voice`, `-thren` | Hostile hulls, their fire, a capital ship's name |
 
 **Alert levels work as they do on a starship.** Yellow alert is the warning: a capital ship inbound, as a `caution` placard. Red alert is the engagement and the emergency: the hail, one hull plate left, hull breach, in `alert`. Yellow always comes first.
 
-**Upgrade categories** keep the original game's three hues: Weapons in `command`, Defence in `signal`, Ship in `dilithium`. The category colour is worn by one word and one icon on a card, nowhere else.
+**Upgrade categories** keep the original game's three hues: Weapons in `command`, Defence in `signal`, Ship in `krail`. The category colour is worn by one word and one icon on a card, nowhere else.
 
 **Never** put `caution` text on a dark ground (it is a fill), use `command` in the field, use a faction colour for anything the player owns, or tell two states apart by colour alone.
 
@@ -47,17 +47,17 @@ Three faces, three jobs. All three are on Google Fonts.
 | Face | Family token | Job | Styles |
 |---|---|---|---|
 | Tektur | `display` | The voice: titles, card names, every sentence the player reads | `display-xl`, `display`, `heading`, `body`, `body-sm` |
-| Antonio | `rail` | Structure and numerals: rail labels, the refit number, HUD values, the final stardate | `numeral-xl`, `numeral`, `rail-label` |
+| Antonio | `rail` | Structure and numerals: rail labels, the refit number, HUD values, the final score | `numeral-xl`, `numeral`, `rail-label` |
 | Martian Mono | `mono` | Instruments: figures, key caps, micro labels, codes, annotation | `data`, `label`, `annotation` |
 
-- Antonio is the closest free cut to LCARS's ultra-compressed grotesk. It carries the Star Trek link in type; use it for structure, never for sentences.
+- Antonio is a free ultra-compressed grotesk. It carries the console voice in type; use it for structure, never for sentences.
 - Caps for titles, names, labels and rails, tracked: `display` 0.12em, `rail-label` 0.14em, `label` 0.16em. Sentence case for benefits, caveats and hints.
 - Figures in `data` and `numeral` use tabular numerals.
 - **The label script.** A few labels carry a Japanese term beside the English, set in the `jp` family, in `ink-3`, at 60% of the label's size: 小惑星 asteroid, 改装 refit, 警告 warning, 警報 alert, 船体損傷 hull damage, 艦橋 bridge, 全停止 all stop. It is industrial texture, so it never replaces English, never carries information alone, and only uses terms from this list.
 
 ## Frames and layout
 
-- **The elbow** frames anything that stops the run (refit, hail, shakedown, all stop, hull breach): a bar down the left, a rail along the top, a chamfered bend. One on screen at a time. The title sits hard right, as LCARS sets titles.
+- **The elbow** frames anything that stops the run (refit, hail, shakedown, all stop, hull breach): a bar down the left, a rail along the top, a chamfered bend. One on screen at a time. The title sits hard right, as console sets titles.
 - **The notch** (`ab-frame`) is every other container: cards, tiles, chips, key caps, tags. The edge is a layer and the glass is a layer, both cut, so the hairline runs along the diagonals.
 - **Brackets** frame things to look at: the viewscreen, a schematic, a target lock.
 - **Placards** carry alerts. **Tick meters** carry every quantity.
@@ -74,7 +74,7 @@ Upgrade art is **schematic line art** in the category colour on a dot grid, draw
 
 The game's copy deck (`COPY-game.md` in the portfolio) is the source for every string, and its rules stand:
 
-- Report what happens. "Your phasers fire faster." "Next contact in 37s."
+- Report what happens. "Your lasers fire faster." "Next contact in 37s."
 - Second person, one short sentence, a full stop.
 - Five nouns, never a synonym: **shot, beam, torpedo, mine, hull.**
 - Numbers are computed, never typed, so a card cannot promise a figure the ship does not get.

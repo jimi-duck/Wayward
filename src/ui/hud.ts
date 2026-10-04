@@ -1,10 +1,12 @@
 import { clamp } from '../core/math';
+import type { SystemKind } from '../content/systems';
 import type { Branch } from '../content/upgrades';
 import type { Sector } from '../render/sector';
 import type { Levels } from '../sim/build';
 import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
-import { ALIEN_TYPES, cloaked, FIRE_RANGE } from '../sim/enemies';
+import { ALIEN_TYPES, alienLabel, cloaked, FIRE_RANGE } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
+import { DOCK_TIME } from '../sim/breakout';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
@@ -15,14 +17,14 @@ import { range, Targeting } from './targeting';
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view, after the reference frame, with nothing
 // on it that does not earn its place while flying:
-//   top left     · the sector (and the event in it), and dilithium toward
+//   top left     · the sector (and the event in it), and krail toward
 //                  the next refit, violet
 //   top centre   · the heading; a capital ship (hull with phase notches,
 //                  fuse), or a sector event's objective
-//   top right    · ship systems, one panel: phasers, then torpedoes and
+//   top right    · ship systems, one panel: lasers, then torpedoes and
 //                  mines once they are fitted, each with its key, a gauge, a
 //                  reading and the level the refits have taken it to; then
-//                  the hull (plates and shield charges), the warp core, and
+//                  the hull (plates and shield charges), the reactor, and
 //                  the score with its chain. Power-ups running sit under it.
 //   in the world · the gunsight, the target and marks (ui/targeting.ts)
 //   bottom left  · the sensor scope and its range (ui/radar.ts)
@@ -31,7 +33,7 @@ import { range, Targeting } from './targeting';
 // Alerts are placards that come and go. Every figure is live. Text is
 // written ten times a second, the scope thirty, the world every frame.
 
-const FACTION_NAME: Record<string, string> = { klingon: 'Klingon', cardassian: 'Cardassian', romulan: 'Romulan', borg: 'Borg', tholian: 'Tholian' };
+const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody: 'Custody', office: 'Office', voice: 'Voice', thren: 'Thren' };
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -57,11 +59,15 @@ interface LogLine { el: HTMLParagraphElement; text: string; at: number; kind: st
 
 /** The rows that carry a system level, and the branch each one reads. */
 const ROWS: Array<{ id: string; branch: Branch }> = [
-  { id: 'ph', branch: 'phaser' },
+  { id: 'ph', branch: 'laser' },
   { id: 'tp', branch: 'torpedo' },
   { id: 'mn', branch: 'mine' },
 ];
 /** What the top-left label calls the sector while an event is on. */
+const KIND_NAME: Record<SystemKind, string> = {
+  home: 'Kellern yards', mining: 'Mining system', port: 'Port system', transit: 'Transit', contested: 'Contested', edge: 'The last lane',
+};
+
 const SECTOR_NAME: Record<EncounterId, string> = {
   rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
   derelict: 'Derelict hulk', anomaly: 'Spatial anomaly',
@@ -85,6 +91,8 @@ export class Hud {
   private seed = -1;
   private modeKey = '';
   private headingShown = true;
+  private contactKey = '';
+  private centreKey = '';
 
   constructor(onZoom: (dir: 1 | -1) => void) {
     for (const [id, dir] of [['zoom-in', -1], ['zoom-out', 1]] as const) {
@@ -130,12 +138,25 @@ export class Hud {
       switch (e.type) {
         case 'rockDestroyed': this.note(world, `${e.kind === 'basalt' ? 'Rock' : `${e.kind} rock`} broken · +${e.points}`, '', 'rock', e.points); break;
         case 'alienDestroyed': this.note(world, `${e.label} destroyed · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
-        case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
+        case 'crystal': if (!world.bk) { this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; } break;
+        case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
+        case 'rockCut': this.note(world, `Cut clean · ${e.ore} ore${e.krail ? ` · ${e.krail} Krail` : ''}`, 'gain'); break;
+        case 'fracture': this.note(world, e.kind === 'volatile' ? 'Volatile rock · it went up' : 'Rock fractured · too hot', 'hit'); break;
+        case 'holdFull': this.note(world, 'Hold full · sell at the port', 'hit'); break;
+        case 'patched': this.note(world, `Plate patched from parts · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'docked': this.note(world, `Docked · ${e.name}`, 'gain'); break;
+        case 'comms': this.note(world, `${e.slow ? 'Ambush' : 'Channel open'} · ${e.from}`, e.slow ? 'hit' : undefined); break;
+        case 'commsAnswer': this.note(world, e.text, e.won ? undefined : 'hit'); break;
+        case 'jobDone': this.note(world, `Job done · ${e.text}`, 'gain'); break;
+        case 'jobShort': this.note(world, `Job open · ${e.text}`, 'hit'); break;
+        case 'spool': this.banner('Lane mouth', 'Jump drive spooling', 'Hold inside the lane', 1.6, 'calm'); break;
+        case 'needKrail': this.banner('Lane mouth', 'Not enough Krail', `${e.have} of ${e.need} in the tank`, 2.2, 'caution'); break;
+        case 'jumped': this.banner('Jump', 'Into the lane', world.bk ? `Bound for ${world.bk.def.dest}` : 'Out of the system', 2, 'calm'); break;
         case 'pickup': this.note(world, `Hull repaired · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, `${POWER_LABEL[e.kind]}`, 'gain'); break;
         case 'plasmaDown': this.note(world, 'Plasma torpedo shot down'); break;
         case 'tractor': this.note(world, 'Tractor lock · thrust away', 'hit'); break;
-        case 'bankEmpty': this.note(world, 'Phaser bank dry', 'hit'); break;
+        case 'bankEmpty': this.note(world, 'Laser bank dry', 'hit'); break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':
           this.note(world, e.left > 0 ? `Shield took it · ${e.left} left` : 'Shield down · recharging', 'hit');
@@ -144,22 +165,22 @@ export class Hud {
         case 'shieldUp': this.note(world, `Shield up · ${e.charges}`, 'gain'); break;
         case 'regen': this.note(world, `Hull regrown · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'damageControl': this.banner('Damage control', 'Hull held', 'One plate · two seconds of grace', 2, 'caution'); break;
-        case 'overchargeReady': this.note(world, `Warp core charged · ${document.documentElement.classList.contains('touch-ui') ? 'tap Core' : 'E'} to release`, 'gain'); break;
+        case 'overchargeReady': this.note(world, `Reactor charged · ${document.documentElement.classList.contains('touch-ui') ? 'tap Core' : 'E'} to release`, 'gain'); break;
         case 'overcharge': this.note(world, `Overcharge released · ${e.hits} hit${e.hits === 1 ? '' : 's'}`, 'gain'); break;
         case 'chain': this.note(world, `Chain ${e.count} · score ×${e.mult}`, 'gain'); break;
         case 'squad': this.note(world, `${e.label} inbound`, 'hit'); break;
-        case 'levelUp': this.banner('Dilithium hold full', `Refit ${pad(e.refit, 2)}`, 'Choose an upgrade', 0.9, 'gain'); break;
+        case 'levelUp': this.banner('Krail hold full', `Refit ${pad(e.refit, 2)}`, 'Choose an upgrade', 0.9, 'gain'); break;
         case 'salvage': this.note(world, `Salvage${e.tech ? ` · ${FACTION_NAME[e.faction] ?? e.faction} tech recovered` : ''}`, 'gain'); break;
         case 'cloak': this.note(world, 'Cloaked · hulls hold fire', 'gain'); break;
         case 'shipHit':
           this.note(world, `Hull struck · ${e.source.split(':')[0]}`, 'hit');
           this.flashHit();
           this.retrigger($('sys-hull'), 'hit');
-          if (e.plates === 1) this.banner('Red alert', 'Hull critical', 'One plate left', 1.8);
+          if (e.plates === 1) this.banner('Alarm', 'Hull critical', 'One plate left', 1.8);
           break;
         case 'bossWarn':
           this.note(world, `${e.name} inbound`, 'hit');
-          this.banner('Yellow alert', `${e.name}`, e.hails ? 'Capital ship inbound' : 'Decloaking · no hail', 2.6, 'caution');
+          this.banner('Contact', `${e.name}`, e.hails ? 'Capital ship inbound' : 'Decloaking · no hail', 2.6, 'caution');
           break;
         case 'bossEvaded': this.note(world, `Broke away from ${e.name}`); break;
         case 'bossArrive': this.note(world, `${e.name} on intercept`, 'hit'); break;
@@ -173,7 +194,7 @@ export class Hud {
         case 'sectorEventEnd': this.note(world, `${e.name} · ${e.text}`, e.success ? 'gain' : 'hit'); break;
         case 'breach':
           this.note(world, `Hull breach · run ${fmt(e.score)}`, 'hit');
-          this.banner('Red alert', 'Hull breach', `Run ${fmt(e.score)}`, 1.6);
+          this.banner('Alarm', 'Hull breach', `Run ${fmt(e.score)}`, 1.6);
           break;
       }
     }
@@ -206,6 +227,7 @@ export class Hud {
   private updateText(world: World): void {
     this.updateSector(world);
     this.updateRail(world);
+    this.updateVoyage(world);
     this.updateSystems(world);
     this.updateCentre(world);
     this.updateMode(world);
@@ -220,12 +242,21 @@ export class Hud {
       text($('sec-code'), `Sector ${10 + (world.seed % 89)}-${String(Math.floor(world.seed / 89) % 97).padStart(2, '0')}`);
     }
     const e = world.encounter;
+    if (world.bk) {
+      // a sortie: the system, and who holds it
+      const d = world.bk.def;
+      this.seed = -1;
+      text($('sec-code'), d.netted ? 'Netted · Custody control' : `${KIND_NAME[d.kind]}`);
+      text($('sec-name'), d.name);
+      return;
+    }
     text($('sec-name'), e && !e.done ? SECTOR_NAME[e.id] : 'Asteroid field');
   }
 
   // ── the rail ────────────────────────────────────────────────────────────
 
   private updateRail(world: World): void {
+    text($('xp-l'), world.bk ? 'Ore' : 'Krail');
     text($('refit-n'), pad(world.refit, 2));
     text($('xp-v'), String(Math.floor(world.xp)));
     text($('xp-n'), String(world.xpNext));
@@ -234,6 +265,94 @@ export class Hud {
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
+  }
+
+  // ── the Breakout: tank, hold, parts, chits, the Custody alert ───────────
+
+  private updateVoyage(world: World): void {
+    const b = world.bk;
+    if (!b) { $('threat').classList.remove('on'); return; }
+    const v = $('voyage');
+    // the tank, in the systems panel: Krail toward the jump
+    const fuel = $('sys-fuel'), need = b.jumpCost;
+    text($('v-fuel'), `${world.krail}/${need}`);
+    $('g-fuel').style.setProperty('--v', Math.min(1, world.krail / need).toFixed(2));
+    fuel.classList.toggle('ready', world.krail >= need);
+    text($('lv-fuel'), world.krail >= need ? 'Jump' : 'Tank');
+    const ore = $('vy-ore');
+    text(ore, `${world.ore}/${world.holdMax}`);
+    ore.classList.toggle('full', world.ore >= world.holdMax);
+    text($('vy-parts'), String(world.parts));
+    text($('vy-chits'), String(world.chits));
+    const food = $('vy-food');
+    text(food, String(world.food));
+    food.classList.toggle('full', world.food < 6);
+    const heat = b.heat;
+    text($('vy-heat'), `Wanted Lv ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}`);
+    ticks($('vy-heat-t'), heat, 20, 'ceil');
+    v.classList.toggle('hot', heat >= 0.8);
+    // the contacts beside the scope: the two places, the nearest hostile, the nearest Krail trace
+    const s = world.ship, dist = (o: { x: number; z: number }) => Math.hypot(o.x - s.x, o.z - s.z);
+    let hostile: { label: string; d: number; faction: string } | null = null;
+    for (const a of world.aliens) {
+      if (cloaked(a)) continue;
+      const d = dist(a);
+      if (!hostile || d < hostile.d) hostile = { label: alienLabel(a), d, faction: a.faction };
+    }
+    let trace = Infinity;
+    for (const r of world.field.rocks) if (r.kind === 'rich' || r.kind === 'rare') trace = Math.min(trace, dist(r));
+    const rows: Array<[string, number, string]> = [];
+    if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
+    if (b.port) rows.push([b.port.name, dist(b.port), '#5ad0e3']);
+    rows.push([b.lane.name, dist(b.lane), 'var(--amber)']);
+    if (trace < Infinity) rows.push(['Krail trace', trace, 'var(--violet)']);
+    const key = rows.map(([n, d]) => `${n}${Math.round(d / 10)}`).join();
+    if (key !== this.contactKey) {
+      this.contactKey = key;
+      $('contacts-l').replaceChildren(...rows.map(([n, d, c]) => {
+        const li = document.createElement('li');
+        li.style.setProperty('--c', c);
+        const name = document.createElement('span'); name.textContent = n;
+        const v = document.createElement('b'); v.textContent = range(d);
+        li.append(name, v);
+        return li;
+      }));
+    }
+
+    // the objective, as steps
+    const docked = b.docks > 0, ready = world.krail >= b.jumpCost;
+    const steps: Array<[string, 'done' | 'now' | '']> = [
+      [`Krail for the jump to ${b.def.dest} · <b>${world.krail}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
+      ...(b.port ? [[`Dock at ${b.port.name}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`} (optional)`, docked ? 'done' : ''] as [string, 'done' | '']] : []),
+      [`Reach the lane mouth · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
+      // jobs taken on comms cards, paid where they say
+      ...world.jobs.map((j): [string, ''] => [`Job · ${j.text}`, '']),
+    ];
+    const html = steps.map(([t, c]) => `<li class="${c}">${t}</li>`).join('');
+    $('hints').classList.toggle('cutting', world.cutting !== null);
+    // the threat card: the nearest pursuer, how close and how bad
+    const th = $('threat');
+    const near = hostile && hostile.d < 320 ? hostile : null;
+    const thOn = !!near && world.command.state !== 'fight';
+    th.classList.toggle('on', thOn);
+    // the centre grew or shrank: the target card must re-measure what it keeps clear of
+    const cKey = `${thOn}${$('objective').className}`;
+    if (cKey !== this.centreKey) { this.centreKey = cKey; this.measure(); }
+    if (near) {
+      const level = near.d < 45 ? 'high' : near.d < 110 ? 'medium' : 'low';
+      th.classList.toggle('high', level === 'high');
+      text($('th-n'), near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact');
+      text($('th-s'), `${near.label} · ${range(near.d)}`);
+      text($('th-l'), `Threat: ${level}`);
+    }
+    const list = $('obj-list');
+    if (list.innerHTML !== html) list.innerHTML = html;
+
+    // touch: the cutter's heat in the rock under the beam
+    const r = world.field.find(world.cutting);
+    const h = r?.heat ?? 0;
+    ticks($('t-heat'), h, 10);
+    $('cut').classList.toggle('hot', h > 0.8);
   }
 
   // ── top right: ship systems ─────────────────────────────────────────────
@@ -254,7 +373,7 @@ export class Hud {
       }
     }
 
-    // phasers: the bank
+    // lasers: the bank
     const bank = arms.bank / st.bankMax, hot = world.overload > 0 || world.powers.rapid > 0;
     const dry = arms.bank < st.bankShot && !hot;
     ticks($('g-bank'), bank, 50);
@@ -283,6 +402,8 @@ export class Hud {
       text(vr, arms.rack === 0 ? `${Math.max(0, arms.reload).toFixed(1)}s` : locked ? 'Lock' : 'Ready');
     }
 
+    $('sys-fuel').hidden = !world.bk;
+
     // mines: laid by themselves, out of a rack
     const mn = $('sys-mn');
     mn.hidden = !st.mines;
@@ -291,7 +412,7 @@ export class Hud {
       text($('v-mines'), `${world.sys.mines.length}/${st.mineMax}`);
     }
 
-    // the warp core
+    // the reactor
     const oc = world.oc / OC_MAX, ready = oc >= 1;
     ticks($('g-oc'), oc, 12);
     const ocRow = $('sys-oc');
@@ -358,7 +479,7 @@ export class Hud {
     $('release').classList.toggle('ready', ready);
 
     // the panel's height places the power-ups under it, and the centre block on narrow screens
-    const sysKey = `${st.torpedoes}${st.mines}${shields}`;
+    const sysKey = `${st.torpedoes}${st.mines}${shields}${!!world.bk}`;
     if (sysKey !== this.sysKey) { this.sysKey = sysKey; this.measure(); }
   }
 
@@ -380,8 +501,28 @@ export class Hud {
     }
 
     const e = world.encounter, obj = $('objective');
-    obj.classList.toggle('on', !!e && !e.done);
-    if (e && !e.done) {
+    const bk = world.bk;
+    obj.classList.toggle('on', (!!e && !e.done) || (!!bk && world.alive));
+    const course = !!bk && world.alive && (!e || e.done || bk.spool > 0 || bk.dockT > 0);
+    obj.classList.toggle('course', course && bk.spool === 0 && bk.dockT === 0 && bk.jumpT < 0);
+    if (bk && course) {
+      // the Breakout's course: the lane mouth, or what is happening at one of the two places
+      const s = world.ship;
+      const dl = Math.hypot(bk.lane.x - s.x, bk.lane.z - s.z);
+      if (bk.jumpT >= 0) {
+        text($('obj-t'), 'Jump'); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), 'Into the lane');
+      } else if (bk.spool > 0) {
+        text($('obj-t'), 'Jump drive'); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
+        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), 'Spooling · hold inside the lane');
+      } else if (bk.dockT > 0) {
+        text($('obj-t'), bk.port?.name ?? ''); text($('obj-left'), '');
+        ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), 'Docking clamps');
+      } else {
+        text($('obj-t'), 'Make for the lane mouth'); text($('obj-left'), range(dl));
+        ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
+        text($('obj-s'), world.krail >= bk.jumpCost ? `Krail ${world.krail}/${bk.jumpCost} · enough to jump` : `Krail ${world.krail}/${bk.jumpCost} · cut the violet rock`);
+      }
+    } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
       const left = Math.max(0, Math.ceil(e.dur - e.t));
       text($('obj-t'), def.name);
@@ -405,10 +546,11 @@ export class Hud {
     const s = world.ship, cs = world.command.state, e = world.encounter;
     let cls = 'cruise', word = 'Cruise';
     if (!world.alive) { cls = 'alert'; word = 'Hull breach'; }
-    else if (cs === 'fight' && world.command.boss) { cls = 'alert'; word = 'Red alert'; }
-    else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Yellow alert'; }
+    else if (cs === 'fight' && world.command.boss) { cls = 'alert'; word = 'Alarm'; }
+    else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Contact'; }
     else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat'; }
     else if (e && !e.done) { cls = 'caution'; word = ENCOUNTERS[e.id].name; }
+    else if (world.cutting !== null) { cls = 'mining'; word = 'Cutting'; }
     else if (this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }
     const key = `${cls}${word}`;
     if (key === this.modeKey) return;

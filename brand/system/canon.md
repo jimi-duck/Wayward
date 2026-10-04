@@ -1,26 +1,34 @@
-# The Star Trek link
+# The world's voice
 
-The game is set in the Star Trek universe and should feel like it to anyone who knows the shows, through how a starship's systems look and talk. The link is carried by the world's systems: its clocks, alerts, displays and language.
+WAYWARD is its own setting: the Continuance, the Scatter, Krail and everyone
+in between (see `docs/VISION.md` in the game). Nothing is borrowed from any
+franchise. The brand carries the world through how a working ship's systems
+look and talk.
 
-## What we borrow
+## What the interface speaks
 
-- **Stardates** for the score and every timestamp.
-- **Sector 001**, which in canon is Sol's home sector, so the first sector really is the Sol asteroid belt.
-- **Yellow alert and red alert**, used the way a starship uses them.
-- **LCARS geometry**: the sweep that becomes the elbow, the ultra-compressed grotesk that Antonio stands in for, titles set hard right. The geometry is re-cut at 45° and the colours are this system's own.
-- **Technical-manual cutaways**: plan-view schematics with deck lines and lengths, in the manner of the shows' ship displays.
-- **Ship classes and their canon lengths**, the five factions, and the names of their capital ships, as the original game already uses them.
-- **47**, the number the shows' art department hid everywhere. It goes in registry codes and annotations wherever a number is free.
-- The language of the bridge: impulse, helm, all stop, hail, shakedown, refit, hull breach.
+- **Corporate and Continuance hardware**: spec-sheet type, registry codes,
+  hazard placards, compliance stencils. The ship was built by a company and
+  stolen from it; the interface still wears the company's labels.
+- **Registries** in the Continuance's form: a class code and a number
+  (OB-7731-A, the Wayward's). Invented numbers carry a 47.
+- **Contact and alarm** for the two levels of warning.
+- **Technical-manual cutaways**: plan-view schematics with deck lines and
+  lengths.
+- **Virtue names** for Continuance ships (*Obedience*, *Diligence*,
+  *Patience*); crews in the Scatter paint over them.
+- The language of the cockpit: helm, all stop, hail, refit, hull breach,
+  core.
 
 ## What we leave alone
 
-- **The Starfleet delta.** The mark is an arrowhead breaking out of a crystal. It must never be drawn inside an ellipse or a circle, or standing upright alone.
-- **Canon ship designs.** Hull silhouettes are generic and new. Nothing is traced from a model or a screenshot.
-- **The LCARS palette.** Peach, lavender and butterscotch blocks belong to the shows.
-- **Real registries.** No NCC-1701 or any other canon registry. Invented registries carry a 47.
-- **Logos and title treatments** from any Paramount property.
+- **Any franchise's names, insignia, ship designs, palettes or title
+  treatments.** Hull silhouettes are generic and new; nothing is traced from
+  a model or a screenshot.
+- **The mark** is an arrowhead breaking out of a crystal. It must never be
+  drawn inside an ellipse or a circle, or standing upright alone.
 
 ## Keeping it adjustable
 
-Every name, faction and line of copy lives in one content file in the game, mirroring the copy deck. If the game ever needs to stand without the licence, a rename touches that file and this page and nothing else.
+Names, factions and copy live in the game's content files. A rename touches
+those and this system's previews, nothing else.

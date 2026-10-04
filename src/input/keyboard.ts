@@ -3,8 +3,10 @@ import type { Press } from './types';
 const LEFT = ['ArrowLeft', 'KeyA'];
 const RIGHT = ['ArrowRight', 'KeyD'];
 const UP = ['ArrowUp', 'KeyW'];
-/** Button 1: phasers, held. */
+/** Button 1: lasers, held. */
 const FIRE = ['Digit1', 'Numpad1', 'Space', 'KeyJ'];
+/** Button 3: the cutter, held. */
+const CUT = ['Digit3', 'Numpad3', 'KeyC', 'KeyL'];
 
 /** Keys that toggle pause. Anything listening for "any key" must skip these. */
 export const PAUSE_KEYS: readonly string[] = ['Escape', 'KeyP'];
@@ -23,7 +25,7 @@ const PRESSES: Record<string, Press> = {
 
 // Keys the game owns. Their default is always prevented: Space must never
 // scroll anything, and arrows must never move focus.
-const OWNED = new Set([...LEFT, ...RIGHT, ...UP, ...FIRE, 'ArrowDown', 'KeyS', ...Object.keys(PRESSES)]);
+const OWNED = new Set([...LEFT, ...RIGHT, ...UP, ...FIRE, ...CUT, 'ArrowDown', 'KeyS', ...Object.keys(PRESSES)]);
 
 export class Keyboard {
   private held = new Set<string>();
@@ -50,6 +52,10 @@ export class Keyboard {
 
   fire(): boolean {
     return this.any(FIRE);
+  }
+
+  cut(): boolean {
+    return this.any(CUT);
   }
 
   private any(codes: string[]): boolean {

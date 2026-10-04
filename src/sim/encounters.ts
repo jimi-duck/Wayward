@@ -15,10 +15,10 @@ import type { ShipState } from './ship';
 //   Mineral-rich field · rich rock everywhere for half a minute: go mining.
 //   Distress signal    · a beacon ahead; hold position in its circle while
 //                        the sector comes for you. Pays a hull repair.
-//   Derelict hulk      · salvage it for a power-up and dilithium, and spring
+//   Derelict hulk      · salvage it for a power-up and krail, and spring
 //                        the ambush waiting for whoever does.
 //   Enemy convoy       · freighters crossing under escort, heavy with
-//                        dilithium. They will not stop for you.
+//                        krail. They will not stop for you.
 //   Ion storm          · lightning lands where the circles are drawn, on
 //                        anything; near misses charge the core twice as fast.
 //   Nebula             · sensors fail: short radar, short torpedo locks, a
@@ -42,9 +42,9 @@ export interface EncounterDef {
 }
 
 export const ENCOUNTERS: Record<EncounterId, EncounterDef> = {
-  rich_field: { id: 'rich_field', name: 'Mineral-rich field', at: 60,  weight: 1.2, duration: 32, text: 'Dilithium readings off the scale' },
+  rich_field: { id: 'rich_field', name: 'Mineral-rich field', at: 60,  weight: 1.2, duration: 32, text: 'Krail readings off the scale' },
   distress:   { id: 'distress',   name: 'Distress signal',    at: 90,  weight: 1,   duration: 42, text: 'Hold position at the beacon' },
-  convoy:     { id: 'convoy',     name: 'Enemy convoy',       at: 150, weight: 1,   duration: 46, text: 'Freighters crossing, heavy with dilithium' },
+  convoy:     { id: 'convoy',     name: 'Enemy convoy',       at: 150, weight: 1,   duration: 46, text: 'Freighters crossing, heavy with krail' },
   ion_storm:  { id: 'ion_storm',  name: 'Ion storm',          at: 200, weight: 1,   duration: 26, text: 'Lightning on the circles · grazes charge double' },
   nebula:     { id: 'nebula',     name: 'Nebula',             at: 240, weight: 0.9, duration: 30, text: 'Sensors down · the core charges faster' },
   derelict:   { id: 'derelict',   name: 'Derelict hulk',      at: 120, weight: 1,   duration: 45, locked: true, text: 'Salvage it, if you dare' },
@@ -131,7 +131,7 @@ export function startEncounter(id: EncounterId, h: EncounterHost): Encounter {
         al.face = Math.atan2(-dz, dx);
         e.ids.push(al.id);
       }
-      for (let i = 0; i < 2; i++) h.spawnHostile('hideki', { x: cx + rng.range(-8, 8), y: 6, z: cz + rng.range(-8, 8) }, null, true);
+      for (let i = 0; i < 2; i++) h.spawnHostile('picket', { x: cx + rng.range(-8, 8), y: 6, z: cz + rng.range(-8, 8) }, null, true);
       e.x = cx; e.z = cz;
       break;
     }
@@ -175,10 +175,10 @@ export function stepEncounter(e: Encounter, h: EncounterHost, dt: number): boole
           h.dropItem(h.randomPower(), e.x, e.z);
           h.dropCrystals(e.x, e.z, 30);
           h.addScore(1000);
-          // a Romulan ambush, decloaking round the hulk
+          // an Office of Peace ambush, decloaking round the hulk
           for (let i = 0; i < 3; i++) {
             const a = (i / 3) * Math.PI * 2 + rng.range(-0.4, 0.4);
-            h.spawnHostile(rng.next() < 0.6 ? 'scorpion' : 'scout', { x: e.x + Math.cos(a) * 32, y: rng.range(2, 10), z: e.z + Math.sin(a) * 32 }, null, true);
+            h.spawnHostile(rng.next() < 0.6 ? 'whisper' : 'scout', { x: e.x + Math.cos(a) * 32, y: rng.range(2, 10), z: e.z + Math.sin(a) * 32 }, null, true);
           }
           return finish(e, h, true);
         }
@@ -224,7 +224,7 @@ function finish(e: Encounter, h: EncounterHost, success: boolean): true {
         if (!fixed) h.dropCrystals(e.x, e.z, 25);
         h.dropItem(h.randomPower(), e.x, e.z);
         h.addScore(1500);
-        text = fixed ? 'Survivors aboard · hull repaired' : 'Survivors aboard · dilithium transferred';
+        text = fixed ? 'Survivors aboard · hull repaired' : 'Survivors aboard · krail transferred';
       } else text = 'Signal lost';
       break;
     case 'derelict': text = success ? 'Salvage aboard · contacts closing' : 'The hulk drifts off'; break;
