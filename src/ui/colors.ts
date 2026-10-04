@@ -1,10 +1,16 @@
 import type { Faction } from '../sim/enemies';
 
-/** Faction colours for text, from the brand's tokens (the dark theme's values). */
+/**
+ * Faction colours for text and marks (brand v1.1, § 16). The Continuance's
+ * arms wear its red, black and white: the Custody in alert red, the Office of
+ * Peace in a paler official red. The Gutter are frontier independents, in
+ * faded rust; the Voice in cold steel; the Thren in a biological green that
+ * is not any human faction's.
+ */
 export const NEON_CSS: Record<Faction, string> = {
-  gutter: '#FF7A63',
-  custody: '#F0A848',
-  office: '#7FD6A6',
+  gutter: '#C9845A',
+  custody: '#E0574B',
+  office: '#EFA59B',
   voice: '#8FB4C9',
-  thren: '#FFB347',
+  thren: '#5CC3A2',
 };

@@ -1,3 +1,8 @@
+> **Superseded for the game's look** by brand v1.1 in `branding/`
+> (amber for the Wayward, teal for information, red for the threat). See
+> "UI. Look and feel" in `docs/PLAN.md`. This folder is kept for its
+> generator and history.
+
 # Brand
 
 Source for the Wayward design system, published at

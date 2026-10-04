@@ -110,6 +110,7 @@ Make it feel like WAYWARD before anything else changes.
 | M3 The chart and the hunt | First pass done: a seeded region of thirteen systems, lanes with Krail and day costs, food and wear, the Net, Calloway on the trail, wrecks that cost rather than end, the journey save, the chart panel, ten new cards, a journey pilot (see below) |
 | M4 Notice and nemeses | Started: per-faction notice and standing, the four tiers, named captains with a memory (see below); Calloway as nemesis not yet |
 | M5 onwards | Not started |
+| UI Look and feel | Pass 1 (the foundation) up for review; passes 2 to 7 to come (see below) |
 
 ## From the concept boards
 
@@ -134,6 +135,73 @@ these, and later milestones build to them:
   mining-mode key hints. M1 took the objective steps and the contacts list.
 - **The chart** (M3): systems as nodes, Krail richness, Continuance control
   and expansion in red, Calloway's estimated route, your position.
+
+## UI. Look and feel (brand v1.1)
+
+A track that runs beside the milestones, owned by one thread, so the game
+looks like one thing while the features land. The source is
+`branding/WAYWARD_Brand_Visual_Direction_v1.1.md` and its boards in
+`branding/`; it replaces the cyan-and-violet `brand/system/` of M0.
+
+The rules, short: industrial cyberpunk, a stolen ore hauler's dashboard.
+Overwhelmingly dark (65% black, 20% off-white, 8% amber, 5% teal, 2% red).
+**Amber** is the Wayward and the player's hand (selection, the primary
+action, weapons, Krail and what is worth taking). **Teal** is information
+(the ship's systems, navigation, the scope, scans, known contacts). **Red**
+is the threat and nothing else (the Continuance, hostiles, damage, the
+hunt). Thin frames, mostly transparent glass, short uppercase labels, data
+in mono. The HUD answers four questions (where am I, what am I doing, what
+threatens me, what condition is the ship in) and leaves the centre to the
+ship. It should be playable without reading (Jimi, 2026-10-04): icons,
+numbers and a visible current goal carry the play, and the words are there
+for whoever wants them (the reading itself is the "Slim down the reading"
+thread's; this track gives it the visual means).
+
+Faction colours: the Custody alert red, the Office of Peace a paler
+official red (both the Continuance's arms: red, black, white), the Gutter
+faded rust, the Voice cold steel, the Thren a biological green.
+
+- **Pass 1, the foundation** (branch claude/project-thread-jzppqc):
+  the palette as tokens at the top of `styles/main.css` and
+  `ui/palette.ts` for canvas and SVG; the type, self-hosted so the Home
+  Screen app works offline (Barlow Condensed for titles, labels and
+  figures, Barlow Semi Condensed for sentences, Share Tech Mono for data);
+  neutral hairline frames with an amber lit corner; the lockup on the start
+  screen (the amber mark, the word, the ship's papers, the four verbs) and
+  the mark on the HUD plate; every screen recoloured to the rules (a hull
+  in the bracket, the edge chevrons, the hunt and Continuance control in
+  red; the scope and contacts in teal; refit categories amber, teal and
+  hazard green); the scope no longer overlaps the sector block on a phone.
+- **Pass 2, the HUD to the six zones**: the objective as steps top left; a
+  single target or threat card top centre; ship status top right as
+  labelled bars (hull, Krail tank, energy, munitions); the scope and
+  contacts bottom left; an operating-mode card bottom right (Mining, Combat,
+  Silent run) with only that mode's actions. Density low in cruise, higher
+  only when the situation is.
+- **Pass 3, comms as a transmission**: "Incoming transmission", the caller's
+  sigil, a short message, numbered options (01–05) with known consequences
+  beside them; the Continuance's cards in red, black and white with the
+  stamped, bureaucratic language (NOTICE OF VIOLATION, VESSEL FLAGGED).
+- **Pass 4, the chart as a regional map**: Continuance control and expansion
+  as red hatched territory, Calloway's estimated route dashed, Krail
+  richness and phenomena as legend symbols, "your position" marked.
+- **Pass 5, the port and the refit as equipment**: the port as a dockside
+  terminal (cargo manifest, barcode, registry), the refit and modules
+  around a schematic of the ship (the Guns / Rig / Signals / Contacts tabs
+  of the boards).
+- **Pass 6, the world** (render, with care for the feature threads): the
+  Wayward to the v1.1 silhouette (long, low, layered, side engine pods, no
+  big central engine); the shield dome out of red (red now means threat);
+  Krail veins and pick-ups toward the amber-glow rock of the boards;
+  Continuance hulls in red, black and white; sparks, dust and arcs over
+  holographic effects.
+- **Pass 7, the texture**: worn paint, stencils, serials, barcode strips,
+  warning placards, used sparingly in panel chrome and loading screens;
+  store and press art from the boards.
+
+Each pass keeps to shared styles and new components where it can, so the
+feature threads' files merge cleanly; screenshots at desktop and phone
+sizes go with every pass.
 
 ## M1. The Breakout
 
