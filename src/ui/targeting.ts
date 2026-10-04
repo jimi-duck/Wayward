@@ -65,6 +65,7 @@ export class Targeting {
   private readonly markState: Array<{ cls: string; t: string }> = [];
   private readonly box = $('tgt');
   private readonly ret = $('reticle');
+  private readonly card = $('tgt-card');
   private lockedNow = false;
   private cardClock = 1;
   private w = 1;
@@ -183,9 +184,14 @@ export class Targeting {
     const el = this.box;
     const c = t ? sector.project(t.x, t.y, t.z) : null;
     const top = t && c ? sector.project(t.x, t.y + t.r, t.z) : null;
+    const card = this.card;
+    // the readout is the HUD's upper-centre card: it follows the target, not the brackets on screen
+    card.classList.toggle('on', !!t);
+    card.classList.toggle('locked', !!t && this.lockedNow);
     if (!t || !c || !top || c.x < -40 || c.y < -40 || c.x > this.w + 40 || c.y > this.h + 40) {
       el.classList.remove('on');
       el.dataset.id = '';
+      if (t) this.drawCard(world, t, dt);
       return;
     }
     // a new target: the brackets close in and a scan line runs down it; a new lock: they snap
@@ -204,29 +210,16 @@ export class Targeting {
     const half = clamp(Math.abs(c.y - top.y) * 1.4, 18, Math.min(120, this.h * 0.17));
     el.style.setProperty('--h', `${half.toFixed(0)}px`);
     el.style.transform = `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px)`;
-    // the label sits on the frame's top edge, as wide as the frame (and never narrower than its
-    // text), kept on screen; under the frame instead when the top would run off the screen or
-    // into a fixed block of the HUD
-    const CARD_W = Math.max(half * 2, this.lockedNow ? 300 : 270), CARD_H = 40, EDGE = 10;
-    const cardY = c.y - half - 7 - CARD_H;
-    let x0 = clamp(c.x - half, EDGE, Math.max(EDGE, this.w - EDGE - CARD_W));
-    // slide it clear of a block beside it on the same row before giving up the top edge
-    for (const r of this.avoid) {
-      if (cardY + CARD_H < r.top || cardY > r.bottom) continue;
-      if (r.left > c.x) x0 = Math.min(x0, r.left - 8 - CARD_W);
-      else if (r.right < c.x) x0 = Math.max(x0, r.right + 8);
-    }
-    x0 = clamp(x0, EDGE, Math.max(EDGE, this.w - EDGE - CARD_W));
-    const hits = (y: number) => this.avoid.some((r) => !(y + CARD_H < r.top || y > r.bottom || x0 + CARD_W < r.left || x0 > r.right));
-    el.classList.toggle('below', cardY < 8 || hits(cardY));
-    el.style.setProperty('--dx', `${(x0 - (c.x - half)).toFixed(0)}px`);
-    el.style.setProperty('--cw', `${CARD_W.toFixed(0)}px`);
-
     const s = world.ship;
     const d = Math.hypot(t.x - s.x, t.y, t.z - s.z);
     const alt = t.kind === 'rock' ? '' : t.y > 1 ? ` · ▲ ${metres(t.y)} m` : t.y < -1 ? ` · ▼ ${metres(-t.y)} m` : '';
     text($('tgt-d'), `${range(d)}${alt}`);
 
+    this.drawCard(world, t, dt);
+  }
+
+  /** The target's readout: what it is, what it is worth, how much of it is left. */
+  private drawCard(world: World, t: Pick, dt: number): void {
     // the readout changes slowly; ten times a second is plenty
     this.cardClock += dt;
     if (this.cardClock < 0.1) return;
@@ -267,6 +260,9 @@ export class Targeting {
       ico = '#i-rock';
       cls = `rock ${r.kind}`;
     }
+    // how far: the brackets carry it on screen, the card everywhere
+    const d = Math.hypot(t.x - world.ship.x, t.y, t.z - world.ship.z);
+    sub = `<b>${range(d)}</b> · ${sub}`;
     text($('tgt-name'), name);
     const subEl = $('tgt-sub');
     if (subEl.innerHTML !== sub) subEl.innerHTML = sub;
@@ -277,7 +273,12 @@ export class Targeting {
     const use = $('tgt-ico');
     if (use.getAttribute('href') !== ico) use.setAttribute('href', ico);
     if (t.kind === 'boss') cls = 'boss';
-    for (const k of ['rock', 'basalt', 'iron', 'rich', 'volatile', 'rare', 'elite', 'boss']) el.classList.toggle(k, cls.split(' ').includes(k));
+    const card = this.card;
+    for (const k of ['rock', 'basalt', 'iron', 'rich', 'volatile', 'rare', 'elite', 'boss']) {
+      const on = cls.split(' ').includes(k);
+      this.box.classList.toggle(k, on);
+      card.classList.toggle(k, on);
+    }
   }
 
   private retrigger(el: HTMLElement, on: string, off: string): void {

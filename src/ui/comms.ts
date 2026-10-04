@@ -7,12 +7,15 @@ import { INK } from './palette';
 
 // ── the comms panel ───────────────────────────────────────────────────────
 // Grown out of the hail panel: every channel opened to the ship, drawn the
-// same way. A header (who, what kind of call), what they say, the read
+// same way, as a transmission received rather than a dialogue box. A header
+// (incoming transmission; the caller's sigil, name and the kind of call,
+// stamped red when they mean harm), what they say, kept short; the read
 // (their strength against yours, who is out there, their cargo, an intent
 // estimate), and the choices as a list: each with chips for what it brings,
 // what it costs, a word for its odds (the read's hidden truth folded in),
-// and, greyed out, what it still needs. The sentence under a choice shows on
-// the highlighted row only: the chips are enough to play by.
+// and, greyed out, what it still needs. The choices are numbered 01 on, the
+// highlighted one on an amber bar. The sentence under a choice shows on the
+// highlighted row only: the chips are enough to play by.
 // An ambush shows a draining bar: the world is slowed, not stopped.
 //
 // It draws a view, not the sim's types, so the arcade's capital-ship hail
@@ -124,14 +127,16 @@ export class CommsPanel {
     this.sel = Math.max(0, view.choices.findIndex((c) => c.ok));
     $('comms').classList.toggle('alert', view.alert);
     $('cm-k').textContent = view.kick;
-    const t = $('cm-t');
-    t.textContent = view.title;
-    $('cm-s').textContent = view.sub;
-    $('cm-s').style.color = view.colour;
+    $('cm-t').textContent = view.title;
+    // the caller: who, then what they are, from the line under the title
+    const [who, ...what] = view.sub.split(' · ');
+    $('cm-who').textContent = who ?? '';
+    $('cm-who').style.color = view.colour;
+    $('cm-s').textContent = what.join(' · ');
     $('cm-text').textContent = view.text;
     $('cm-face').hidden = !view.face;
     $('cm-face').innerHTML = view.face ?? '';
-    $('cm-body').classList.toggle('face', !!view.face);
+    $('cm-sigil').hidden = !!view.face;
     $('cm-sigil').style.setProperty('--cc', view.colour);
     this.drawRead(view);
     this.timer(0);
@@ -216,7 +221,7 @@ export class CommsPanel {
       const gains = c.gains.length ? h('span', 'cm-gains', '', ...c.gains.map((g) => h('span', gainClass(g), g))) : null;
       const sel = i === this.sel;
       const b = h('button', `cm-c${sel ? ' sel' : ''}`, '',
-        h('kbd', '', String(i + 1)),
+        h('kbd', '', String(i + 1).padStart(2, '0')),
         h('span', 'cm-main', '', h('span', 'cm-l', '', h('span', '', c.label), gains), sel || !c.gains.length ? h('span', 'cm-h', c.hint) : null, c.lines.length ? h('span', 'cm-lines', c.lines.join(' · ')) : null),
         h('span', 'cm-side', '', ...side),
       ) as HTMLButtonElement;

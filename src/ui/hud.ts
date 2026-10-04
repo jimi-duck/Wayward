@@ -16,21 +16,24 @@ import { range, Targeting } from './targeting';
 import { INK } from './palette';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
-// A tactical overlay on the view, after the reference frame, with nothing
-// on it that does not earn its place while flying:
-//   top left     · the sector (and the event in it), and krail toward
-//                  the next refit, violet
-//   top centre   · the heading; a capital ship (hull with phase notches,
-//                  fuse), or a sector event's objective
-//   top right    · ship systems, one panel: lasers, then torpedoes and
-//                  mines once they are fitted, each with its key, a gauge, a
-//                  reading and the level the refits have taken it to; then
-//                  the hull (plates and shield charges), the reactor, and
-//                  the score with its chain. Power-ups running sit under it.
-//   in the world · the gunsight, the target and marks (ui/targeting.ts)
-//   bottom left  · the sensor scope and its range (ui/radar.ts)
-//   bottom right · the mode the ship is in (cruise, mining, combat, alerts)
-//                  and the last thing that happened, fading
+// A tactical overlay on the view in the brand's six zones, with nothing on
+// it that does not earn its place while flying. It answers four questions:
+// what am I doing, what is threatening me, what condition is the ship in,
+// where am I.
+//   upper left   · the current objective as short steps: a sector event,
+//                  the Breakout's course, or Krail toward the next refit
+//   upper centre · the heading, and one card: the capital ship, else the
+//                  nearest pursuer (red), else the target (what it is, how
+//                  far, what it yields, how much is left)
+//   upper right  · ship status, a row each (icon, name, key, gauge,
+//                  reading): hull, fuel, energy, core, Krail, hold, then
+//                  torpedoes and mines once fitted; the score under them.
+//                  Power-ups running sit below.
+//   centre       · the world: the gunsight, the target's brackets and marks
+//                  (ui/targeting.ts)
+//   lower left   · the scope (ui/radar.ts), the contacts, the hunt, the sector
+//   lower right  · the operating mode and only the keys that mode uses,
+//                  the last thing that happened fading above it
 // Alerts are placards that come and go. Every figure is live. Text is
 // written ten times a second, the scope thirty, the world every frame.
 
@@ -68,6 +71,9 @@ const ROWS: Array<{ id: string; branch: Branch }> = [
 const KIND_NAME: Record<SystemKind, string> = {
   home: 'Kellern yards', mining: 'Mining system', port: 'Port system', transit: 'Transit', contested: 'Contested', gate: 'Gate', edge: 'The last lane',
 };
+
+/** The actions each operating mode puts under the thumb: [key, what it does]. */
+type Hint = [string, string];
 
 const SECTOR_NAME: Record<EncounterId, string> = {
   rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
@@ -276,6 +282,9 @@ export class Hud {
 
   private updateVoyage(world: World): void {
     const b = world.bk;
+    $('sys-hold').hidden = !b;
+    $('vy-cells').hidden = !b;
+    $('voyage').hidden = !b;
     if (!b) { $('threat').classList.remove('on'); return; }
     const v = $('voyage');
     // the tank, in the systems panel: Krail toward the jump
@@ -286,14 +295,15 @@ export class Hud {
     text($('lv-fuel'), world.krail >= need ? 'Jump' : 'Tank');
     const ore = $('vy-ore');
     text(ore, `${world.ore}/${world.holdMax}`);
-    ore.classList.toggle('full', world.ore >= world.holdMax);
+    $('g-hold').style.setProperty('--v', Math.min(1, world.ore / world.holdMax).toFixed(2));
+    $('sys-hold').classList.toggle('full', world.ore >= world.holdMax);
     text($('vy-parts'), String(world.parts));
     text($('vy-chits'), String(world.chits));
     const food = $('vy-food');
     text(food, String(world.food));
     food.classList.toggle('full', world.food < 6);
     const heat = b.heat;
-    text($('vy-heat'), `Wanted Lv ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}`);
+    text($('vy-heat'), `Wanted ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}/4`);
     ticks($('vy-heat-t'), heat, 20, 'ceil');
     v.classList.toggle('hot', heat >= 0.8);
     // the contacts beside the scope: the two places, the nearest hostile, the nearest Krail trace
@@ -334,21 +344,19 @@ export class Hud {
       ...world.jobs.map((j): [string, ''] => [`Job · ${j.text}`, '']),
     ];
     const html = steps.map(([t, c]) => `<li class="${c}">${t}</li>`).join('');
-    $('hints').classList.toggle('cutting', world.cutting !== null);
     // the threat card: the nearest pursuer, how close and how bad
     const th = $('threat');
     const near = hostile && hostile.d < 320 ? hostile : null;
     const thOn = !!near && world.command.state !== 'fight';
     th.classList.toggle('on', thOn);
-    // the centre grew or shrank: the target card must re-measure what it keeps clear of
-    const cKey = `${thOn}${$('objective').className}`;
+    const cKey = `${thOn}`;
     if (cKey !== this.centreKey) { this.centreKey = cKey; this.measure(); }
     if (near) {
       const level = near.d < 45 ? 'high' : near.d < 110 ? 'medium' : 'low';
       th.classList.toggle('high', level === 'high');
       text($('th-n'), near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact');
       text($('th-s'), `${near.label} · ${range(near.d)}`);
-      text($('th-l'), `Threat: ${level}`);
+      text($('th-l'), `Threat ${level}`);
     }
     const list = $('obj-list');
     if (list.innerHTML !== html) list.innerHTML = html;
@@ -509,9 +517,11 @@ export class Hud {
 
     const e = world.encounter, obj = $('objective');
     const bk = world.bk;
-    obj.classList.toggle('on', (!!e && !e.done) || (!!bk && world.alive));
+    obj.classList.toggle('on', world.alive);
     const course = !!bk && world.alive && (!e || e.done || bk.spool > 0 || bk.dockT > 0);
-    obj.classList.toggle('course', course && bk.spool === 0 && bk.dockT === 0 && bk.jumpT < 0);
+    const event = !!e && !e.done;
+    obj.classList.toggle('course', (course && bk.spool === 0 && bk.dockT === 0 && bk.jumpT < 0) || (!bk && !event));
+    obj.classList.toggle('event', event && !course);
     if (bk && course) {
       // the Breakout's course: the lane mouth, or what is happening at one of the two places
       const s = world.ship;
@@ -543,6 +553,15 @@ export class Hud {
         : e.id === 'convoy' ? `${Math.round(e.progress * 3)}/3 freighters`
         : e.id === 'anomaly' ? 'Keep clear of the core'
         : def.text);
+    } else if (!bk) {
+      // the arcade between events: break rock, fill the hold, refit
+      text($('obj-t'), 'Extract Krail');
+      text($('obj-left'), '');
+      ticks($('obj-p'), world.xp / world.xpNext, 30);
+      text($('obj-s'), '');
+      const html = `<li class="now">Break rock · <b>${Math.floor(world.xp)}/${world.xpNext}</b></li><li>Refit ${pad(world.refit + 1, 2)} at full</li>`;
+      const list = $('obj-list');
+      if (list.innerHTML !== html) list.innerHTML = html;
     }
   }
 
@@ -551,19 +570,35 @@ export class Hud {
   /** What the ship is doing, in one word or two: an alert, an event, a fight, mining, or cruising. */
   private updateMode(world: World): void {
     const s = world.ship, cs = world.command.state, e = world.encounter;
-    let cls = 'cruise', word = 'Cruise';
+    let cls = 'cruise', word = 'Cruise mode';
     if (!world.alive) { cls = 'alert'; word = 'Hull breach'; }
     else if (cs === 'fight' && world.command.boss) { cls = 'alert'; word = 'Alarm'; }
     else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Contact'; }
-    else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat'; }
+    else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat mode'; }
     else if (e && !e.done) { cls = 'caution'; word = ENCOUNTERS[e.id].name; }
-    else if (world.cutting !== null) { cls = 'mining'; word = 'Cutting'; }
-    else if (this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }
-    const key = `${cls}${word}`;
+    else if (world.cutting !== null || this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }
+    // only what this mode uses, the one in use lit
+    const st = world.stats, ready = world.oc >= OC_MAX;
+    const hints: Hint[] = cls === 'mining'
+      ? (world.bk ? [['3', 'Cut'], ['1', 'Break']] : [['1', 'Break rock']])
+      : cls === 'cruise'
+        ? [['W', 'Thrust'], ['Shift', 'Roll'], ['Z', 'Zoom']]
+        : [['1', 'Lasers'], ...(st.torpedoes ? [['2', 'Torpedo'] as Hint] : []), ['Shift', 'Roll']];
+    if (cls !== 'cruise' && ready) hints.push(['E', 'Core']);
+    const lit = world.cutting !== null ? 'Cut' : ready ? 'Core' : '';
+    const key = `${cls}${word}${hints.join()}${lit}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
-    $('mode').className = cls;
+    $('mode').className = `cut ${cls}`;
     text($('mode-t'), word);
+    $('hints').replaceChildren(...hints.map(([k, a]) => {
+      const d = document.createElement('div');
+      if (a === lit) d.className = 'lit';
+      const dt = document.createElement('dt'); dt.textContent = k;
+      const dd = document.createElement('dd'); dd.textContent = a;
+      d.append(dt, dd);
+      return d;
+    }));
   }
 
   private updateLog(world: World): void {
