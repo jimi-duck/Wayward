@@ -8,7 +8,7 @@ import { CARD_BY_ID, condOk, feeFor, openCard, type Ctx } from '../src/sim/comms
 import { ALIEN_TYPES, VARIANTS } from '../src/sim/enemies';
 import { endSortie, newJourney, options, plot, sortieDef, VERSION, type Journey } from '../src/sim/journey';
 import {
-  captainOf, cool, GUTTER_HUNT, newNotice, noticeFromRun, noticeOf, pressure, raise, remember, tier, tierOf, type Notice,
+  captainOf, cool, GUTTER_HUNT, newNotice, noticeFromRun, noticeOf, pressure, raise, readout, remember, tier, tierOf, type Notice,
 } from '../src/sim/notice';
 import { Rng } from '../src/sim/rng';
 import { newRun } from '../src/sim/run';
@@ -311,5 +311,27 @@ describe('a captain in the world', () => {
     w.openComms(CARD_BY_ID.gutter_word!);
     expect(w.answer('pay')).toBe(true);
     expect(w.result().notice).toEqual({ gutter: -4 });
+  });
+});
+
+describe('the chart readout', () => {
+  it('lists only factions that have marked you, most marked first, with standing and the next tier', () => {
+    const n = newNotice();
+    expect(readout(n, {})).toEqual([]);
+    const standing = { custody: -1 };
+    raise(n, 'gutter', NOTICE.gutter.at.warning, {});
+    raise(n, 'custody', NOTICE.custody.at.toll + 1, standing);
+    const [a, b] = readout(n, standing);
+    expect(a).toMatchObject({ faction: 'custody', tier: 'toll', next: { tier: 'hunters', at: NOTICE.custody.at.hunters }, standing: standing.custody, captain: null });
+    expect(b).toMatchObject({ faction: 'gutter', tier: 'warning', standing: 0 });
+    raise(n, 'office', 1, {});
+    expect(readout(n, standing).find((l) => l.faction === 'office')).toMatchObject({ tier: 'quiet', standing: null });
+  });
+
+  it('names the captain on the file at the top tier, with no tier above', () => {
+    const n = marked('custody');
+    const [l] = readout(n, {});
+    const c = captainOf(n, 'custody')!;
+    expect(l).toMatchObject({ tier: 'captain', next: null, captain: { name: CAPTAIN_BY_ID[c.id]!.name, rest: c.rest } });
   });
 });

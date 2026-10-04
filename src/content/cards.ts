@@ -731,7 +731,8 @@ export const CARDS: CardDef[] = [
     choices: [
       { id: 'break', label: 'Break the relay', tone: 'fight', hint: 'The Net stalls here, and every patrol in the system hears it.', win: { text: 'Relay broken · the pickets come for you', stall: 2.5, heat: 0.18, spawn: [{ variant: 'picket', n: 2, from: 'ahead' }] } },
       { id: 'jam', label: 'Jam it', tone: 'bluff', hint: 'Garble its survey. Quieter, and shorter.', needs: { fitted: ['ut_scanner', 'tech_office', 'tech_custody'] }, odds: { base: 0.75 }, win: { text: 'The survey reads garbage · the Net will wait', stall: 1.5 }, lose: { text: 'The relay flags the jamming', heat: 0.12 } },
-      { id: 'leave', label: 'Leave it', tone: 'refuse', hint: 'Not your fight.', win: { text: 'You leave the relay to its work' } },
+      { id: 'gutter', label: 'Point the Gutter at it', tone: 'trade', hint: 'Eight ore, and a Gutter crew strips it for salvage. Slower than doing it yourself.', cost: { ore: 8 }, win: { text: 'A Gutter crew takes the relay apart · the Net will wait', stall: 1.5, standing: { gutter: 1 } } },
+      { id: 'leave', label: 'Leave it', tone: 'refuse', hint: 'Not your fight. When the survey finishes, the Net comes here.', win: { text: 'You leave the relay to its work · the Net is coming', stall: -4 } },
     ],
   },
   {
@@ -746,6 +747,7 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       { id: 'pay', label: 'File the false plan', tone: 'pay', hint: 'A day and a half, if the clerk is honest.', cost: { chits: 'fee' }, loseIf: ['informer'], win: { text: 'Plan filed · a false trail', hunt: 1.5, standing: { guild: 1 } }, lose: { text: 'The plan is filed, and your real heading with it', hunt: -0.5, heat: 0.1 } },
+      { id: 'ore', label: 'Pay in ore', tone: 'trade', hint: 'The Guild takes ore at its own rate: ten for the plan.', cost: { ore: 10 }, loseIf: ['informer'], win: { text: 'Ore across, plan filed · a false trail', hunt: 1.5 }, lose: { text: 'The plan is filed, and your real heading with it', hunt: -0.5, heat: 0.1 } },
       { id: 'no', label: 'No need', tone: 'refuse', hint: 'Keep the chits.', win: { text: 'The clerk shrugs' } },
     ],
   },

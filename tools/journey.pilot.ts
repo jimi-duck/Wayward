@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { krailKnown, netted, sysById } from '../src/sim/chart';
 import { behind } from '../src/sim/hunt';
-import { CREW, endSortie, newJourney, options, plot, sortieDef, toEdge, type Journey } from '../src/sim/journey';
+import { CREW, endSortie, hearNews, newJourney, options, plot, replot, sortieDef, toEdge, type Journey } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { flyWorld, stratName, type Policy, type Strategy } from './pilot';
 
@@ -28,8 +28,7 @@ const POLICIES: Policy[] = ['run', 'bluff', 'fight'];
  * Calloway was last seen, toward a port when the galley or the purse is
  * thin, toward Krail when the tank is. A cautious player who reads the chart.
  */
-function planRoute(j: Journey): string {
-  const c = j.carry;
+function planRoute(j: Journey, c = j.carry): string {
   const left = toEdge(j);
   let best = '', bestV = -Infinity;
   for (const o of options(j)) {
@@ -64,12 +63,14 @@ interface JourneyRun {
   nettedArrivals: number;
   callowayCalls: number;
   callowayFights: number;
+  /** Times it docked and plotted a different lane. */
+  replots: number;
   answers: Array<{ card: string; choice: string }>;
 }
 
 function flyJourney(seed: number, strat: Strategy, policy: Policy): JourneyRun {
   const j = newJourney(seed);
-  const out: JourneyRun = { j, stuck: false, combat: 0, hungryJumps: 0, nettedArrivals: 0, callowayCalls: 0, callowayFights: 0, answers: [] };
+  const out: JourneyRun = { j, stuck: false, combat: 0, hungryJumps: 0, nettedArrivals: 0, callowayCalls: 0, callowayFights: 0, replots: 0, answers: [] };
   let n = 0;
   while (j.status !== 'over' && n < MAX_LEGS) {
     if (j.status === 'chart') {
@@ -78,7 +79,13 @@ function flyJourney(seed: number, strat: Strategy, policy: Policy): JourneyRun {
     }
     const def = sortieDef(j);
     const w = new World(seed * 31 + n * 7 + 1, { mode: 'breakout', sortie: def, carry: j.carry });
-    const res = flyWorld(w, seed * 31 + n, strat, { maxTime: 1200, breakout: true, policy });
+    // docked: with the news (if bought) in hand, plot again from here
+    const onDock = (w: World) => {
+      if (w.carry().flags.includes('news')) hearNews(j);
+      const was = j.dest, r = replot(j, planRoute(j, w.carry()));
+      if (r && j.dest !== was) { w.replot(r.dest, r.jumpCost); out.replots++; }
+    };
+    const res = flyWorld(w, seed * 31 + n, strat, { maxTime: 1200, breakout: true, policy, onDock });
     out.combat += res.combat;
     out.answers.push(...res.answers.map((a) => ({ card: a.card, choice: a.choice })));
     for (const a of res.answers) if (a.card === 'calloway_here') { out.callowayCalls++; if (a.choice === 'fight' || a.fight) out.callowayFights++; }
@@ -180,6 +187,7 @@ ${kindRows.join('\n')}
 | Jumps without enough food | ${mean(all.map((r) => r.hungryJumps)).toFixed(1)} |
 | Calloway's ship fought | ${mean(all.map((r) => r.callowayFights)).toFixed(1)} |
 | Calloway beaten | ${mean(all.map((r) => r.j.hunt.beaten)).toFixed(1)} |
+| Lanes re-plotted at a port | ${mean(all.map((r) => r.replots)).toFixed(1)} |
 | Jumps she was behind at the end | ${mean(all.map((r) => Math.min(9, behind(r.j.hunt, r.j.trail)))).toFixed(1)} |
 
 ## The journey's cards
