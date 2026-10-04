@@ -9,7 +9,8 @@ import type { Rng } from './rng';
 //   the lane mouth · far across the system, the old jump lane out. Reach it
 //                    with enough Krail in the tank, hold inside it while the
 //                    drive spools, and you are gone. A Custody capital ship
-//                    blockades it: fight her, or run the blockade.
+//                    blockades it, and her checkpoint is a comms card: run
+//                    it, spoof it, pay it, talk through it, or fight her.
 //   the port       · a fuel dock off the direct line, roughly halfway, that
 //                    does not check implants. Dock to sell ore, buy Krail,
 //                    patch the hull and pay for a refit. Docking quiets the
@@ -53,9 +54,10 @@ export const TANK_MAX = 40;
 export const HOLD_START = 40;
 /** Each unit of ore is worth this much on the refit rail: a Breakout is short, and a build should take shape in it. */
 export const ORE_XP = 1.7;
-/** Seconds inside the lane mouth for the drive to spool. */
+/** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
-/** Within this distance of the lane mouth, the blockade calls. */
+export const SPOOL_RUN = 2.2;
+/** Within this distance of the lane mouth, the blockade's checkpoint calls. */
 export const BLOCKADE_AT = 420;
 /** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
 export const BLOCKADE_HP = 3;
@@ -153,16 +155,17 @@ export interface Breakout {
   port: Waypoint;
   heat: number;
   nextPursuit: number;
-  /** Seconds the drive has spooled inside the lane mouth. */
+  /** Seconds the drive has spooled inside the lane mouth, and the seconds it needs. */
   spool: number;
+  spoolNeed: number;
   /** Seconds slow inside the port's ring. */
   dockT: number;
   /** The port's one-off quieting is spent. */
   portCooled: boolean;
   /** Times docked. */
   docks: number;
-  /** The blockade: not yet called, called (a capital ship on the way or fighting), or behind you. */
-  blockade: 'none' | 'called' | 'done';
+  /** The blockade: not yet met, at the checkpoint (her card on the table), called (a capital ship on the way or fighting), or behind you. */
+  blockade: 'none' | 'checkpoint' | 'called' | 'done';
   /** Seconds of the jump's flash before the report; -1 until the jump. */
   jumpT: number;
   /** Seconds until the next "not enough Krail" reminder. */
@@ -172,7 +175,7 @@ export interface Breakout {
 export function newBreakout(heading: number): Breakout {
   const c = course(heading);
   return {
-    lane: c.lane, port: c.port, heat: HEAT_START, nextPursuit: PURSUIT_FIRST, spool: 0, dockT: 0, portCooled: false, docks: 0,
+    lane: c.lane, port: c.port, heat: HEAT_START, nextPursuit: PURSUIT_FIRST, spool: 0, spoolNeed: SPOOL, dockT: 0, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }

@@ -13,7 +13,8 @@ import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PadNav } from './ui/dom';
-import { buildView, HailPanel, StartOptions, SummaryPanel } from './ui/panels';
+import { cardView, CommsPanel, hailView } from './ui/comms';
+import { buildView, StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
 
@@ -83,15 +84,19 @@ function boot(): void {
   // compile every shader behind the start card, once it has painted
   setTimeout(() => sector.warm(), 60);
 
-  // ── the run's stops: refit, hail, report ───────────────────────────────
-  // The world pauses itself at each and waits; the panels answer it.
+  // ── the run's stops: refit, comms, port, report ────────────────────────
+  // The world pauses itself at each and waits (an ambush only slows it); the
+  // panels answer it. The comms panel draws both a Breakout card and the
+  // arcade's capital-ship hail.
   const refit = new RefitPanel();
-  const hail = new HailPanel();
+  const comms = new CommsPanel();
+  /** The card the comms panel is showing, so a slowed card that timed out can be taken down. */
+  let shown: object | null = null;
   const summary = new SummaryPanel();
   const port = new PortPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => refit.open || hail.open || port.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => refit.open || comms.open || port.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   const startOpts = new StartOptions(profile, () => {
     saveProfile(profile);
     sector.setCosmetic(profile.cosmetic);
@@ -103,9 +108,14 @@ function boot(): void {
       // a full rail or battle salvage: three cards
       input.reset();
       refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); });
-    } else if (world.phase === 'hail' && world.command.pending && !hail.open) {
+    } else if (world.phase === 'hail' && world.command.pending && !comms.open) {
       input.reset();
-      hail.show(world.command.pending, (engage) => { world.answerHail(engage); input.reset(); }, world.mode === 'breakout');
+      shown = world.command.pending;
+      comms.show(hailView(world.command.pending), (i) => { world.answerHail(i === 0); input.reset(); });
+    } else if (world.phase === 'comms' && world.comms && !comms.open) {
+      input.reset();
+      shown = world.comms;
+      comms.show(cardView(world.comms), (i) => { world.answer(i); input.reset(); });
     } else if (world.phase === 'dock' && !port.open) {
       // docked at the port, or back from a refit bought there
       input.reset();
@@ -123,11 +133,17 @@ function boot(): void {
         input.reset();
       });
     }
+    // an ambush's clock runs down on the panel; if it ran out, the world has answered for you
+    if (comms.open) {
+      const o = world.comms;
+      if (o && o === shown) comms.timer(o.slow > 0 ? o.slow / o.def.slow!.timeout : 0);
+      else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
+    }
     // a gamepad answers the open panel
-    if (refit.open || hail.open || port.open || !el('summary').hidden) {
+    if (refit.open || comms.open || port.open || !el('summary').hidden) {
       const p = padNav.poll();
       if (refit.open) refit.padInput(p);
-      else if (hail.open) hail.padInput(p);
+      else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else summary.padInput(p);
     }

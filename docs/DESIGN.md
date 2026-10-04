@@ -1,6 +1,6 @@
 # Game design
 
-This describes the game as it plays today: the Breakout (M1 of
+This describes the game as it plays today: the Breakout (M1 and M2 of
 [PLAN.md](PLAN.md)), and the arcade run it grew out of, which stays as a mode.
 See [VISION.md](VISION.md) for where it is going.
 
@@ -37,14 +37,66 @@ A sortie with a shape: get the stolen hauler out of the home system
   three at once); now and then
   a Gutter crew from ahead. It is also the clock the difficulty curve reads
   (heat 1 plays like seven minutes of the arcade).
-- **The blockade.** Within 420 units of the lane mouth a Custody capital ship
-  hails, with three times the hull of an arcade run's first capital ship
-  (`BLOCKADE_HP`). Engage: the usual three-phase fight, and her wreck pays Krail, parts
-  and a salvage refit. Run it: no fight, but the hunt pressure goes to full
-  and four more hulls come at once.
+- **The checkpoint.** Within 420 units of the lane mouth a Custody capital
+  ship holds the lane, three times the hull of an arcade run's first capital
+  ship (`BLOCKADE_HP`), and her checkpoint is a comms card: "Your ID doesn't
+  match the registry". Run it (make for the lane under her guns: she and her wing
+  come after you, the hunt pressure goes to full, and her interdiction field
+  more than doubles the spool, eleven seconds in the lane mouth instead of
+  five; survive it and you are gone, with no need to kill her), spoof it (with forged codes, likely; or
+  rig the transponder from 8 parts, a long shot when the heat is up), pay the
+  fee (it rises with heat; a captain who goes by the book takes it and
+  scans you anyway), talk your way through (easier before they know your
+  face), or fight: the usual three-phase duel, and her wreck pays Krail,
+  parts and a salvage refit.
+- **Comms.** See below: everyone else who opens a channel.
 
 Balance: [BALANCE-BREAKOUT.md](BALANCE-BREAKOUT.md), from
 `npm run pilot:breakout`.
+
+## Comms cards
+
+The Breakout's main interaction (`content/cards.ts`, `sim/comms.ts`,
+`World.answer`, `ui/comms.ts`). Someone opens a channel; the world waits
+(`phase: 'comms'`) while you read the card and answer. About thirty cards
+come by chance (the first at 24s, then every half minute or so, never in
+the middle of a fight, none twice in a run), one on the port's approach
+(the dock wants an implant scan), the checkpoint at the lane mouth, and six
+follow-ups that only come because of an earlier answer.
+
+- **Kinds.** Trade, plea, job, warning, shakedown, checkpoint, distress,
+  rumour.
+- **The read.** Their strength against yours (their hulls against your
+  plates and fitted guns), who is out there, their cargo, and an intent
+  estimate. Many cards have a hidden truth rolled as they open (a distress
+  call that is genuine or bait; a seller whose Krail is pure or cut); the
+  estimate names the right one as often as your sensors are good (65%
+  stock, more with deep scanners or Office tech), otherwise another.
+- **Choices.** Two to six, each a kind of answer (fight, run, pay, bluff,
+  trade, help, refuse). A choice can cost something whatever happens (the
+  fee is gone either way), can lose to the truth (the read is the only
+  guide), or can be a gamble on odds that move with heat, flags, standing
+  and fitted systems (shown as a word: likely, good odds, even odds, long
+  shot). Choices that need a system, a flag or a standing are shown greyed
+  out with what they need: the torpedo bay opens a bluff on a shakedown,
+  forged codes open a spoof at the checkpoint.
+- **Outcomes.** Krail, ore, chits, parts, plates, heat, score, flags,
+  standing with six parties (the Custody, the Gutter, Frontier Supply, the
+  Dust Traders, Kellern Mining, the miners), hulls that turn up, hulls
+  that break off, the blockade (fight, run, pass), a follow-up card, a job,
+  a sold survey (veined rock all round for half a minute).
+- **Jobs** are paid where they say: at the port on docking (with the goods
+  in the hold) or at the lane on the jump. The HUD lists them under the
+  objective.
+- **Combining.** Lines are added to a card's text when their condition
+  holds, and choices appear or not: the same shakedown wants the hold if it
+  sits low, lets you pass if the Gutter owes you, and warns you when paying
+  would leave you short of the jump. A rumour about the lane captain makes
+  her fee cheaper and her more likely to take it; a bar rumour leads to a
+  forger, whose codes may be good.
+- **Ambushes** do not wait: the world runs at a fifth of its speed under
+  the card, and when the bar runs out the default (fight) is taken.
+- The arcade's capital-ship hail is drawn by the same panel.
 
 Everyone launches in the same ship: the Wayward, OB-7731-A, a stolen
 Obedience-class ore hauler. Over a run she becomes
@@ -66,8 +118,8 @@ evade) → her salvage: a refit led by her faction's tech → specialisations,
 synergies → the hull goes → the run report → play again.
 
 The world pauses itself at each decision (`World.phase`: `refit`, `hail`,
-`over`), and the app or the scripted pilot answers it (`choose`,
-`answerHail`, `restart`). Everything else is the existing fixed-step
+`comms`, `dock`, `over`), and the app or the scripted pilot answers it
+(`choose`, `answerHail`, `answer`, the port's calls, `restart`). Everything else is the existing fixed-step
 simulation.
 
 ## Where each system lives
@@ -83,6 +135,7 @@ simulation.
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
 | Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
+| Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
 | Score and the record | `sim/run.ts`, `sim/tuning.ts` | `World.addScore`, `World.finish` |
 | Between runs | `content/unlocks.ts` | `meta/profile.ts` (localStorage), `ui/panels.ts` |
 
@@ -105,6 +158,12 @@ simulation.
   in `Command.open`.
 - **A sector event**: a row in `ENCOUNTERS` and a case in `startEncounter`,
   `stepEncounter` and `finish`.
+- **A comms card**: one entry in `CARDS`. Give it a kind, a caller, a
+  `when` (and `trigger: 'follow'` if only another card leads to it), text
+  and conditional lines, `ships` for the read, `truths` if something is
+  hidden, and choices with a tone, a hint, `needs` and `cost`, `loseIf` or
+  `odds`, and `win` (and `lose`) outcomes. A flag a choice needs gets words
+  in `FLAGS`. The tests check every reference.
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 

@@ -107,7 +107,8 @@ Make it feel like WAYWARD before anything else changes.
 |---|---|
 | M0 The rename | Done |
 | M1 The Breakout | First pass done: playable, tested, pilot-balanced (see below) |
-| M2 onwards | Not started |
+| M2 The comms card | First pass done: thirty cards and six follow-ups, the read, earned choices, the checkpoint, policy pilot (see below) |
+| M3 onwards | Not started |
 
 ## From the concept boards
 
@@ -330,6 +331,21 @@ should multiply each other; expand combinations before adding combat.
    lasers. Running is the safe choice and fighting pays only in score for
    now: her salvage starts to matter when the journey carries the ship on
    (M3).
-3. M2 comms cards and the checkpoint.
+3. M2 comms cards and the checkpoint. First pass done: `content/cards.ts`
+   (thirty chance cards, the port's scan, the checkpoint, six follow-ups),
+   `sim/comms.ts` (the read, hidden truths, earned choices, odds, outcomes,
+   jobs), `World.phase = 'comms'` and `World.answer`, ambushes that slow the
+   world, `ui/comms.ts` (which also draws the arcade's hail), and a pilot
+   that answers by policy.
+   Where it stands (BALANCE-BREAKOUT.md, 8 seeds per strategy and policy):
+   always fight escapes 75%, always run 75%, always pay 88%, bluff when it
+   can 83%; about nine cards a run. At the checkpoint, running (she chases
+   you while her field doubles the spool) gets out 86% of the time, fighting
+   her 78%. Paying, spoofing and talking are rare for the pilot, because
+   heat is usually high by the lane and the fee with it; a player who keeps
+   the heat down, buys codes or hears the captain takes fees gets them.
+   Open: combat is still over a third of the run; jobs pay too seldom to
+   steer a route (half a job a run); the pilot never reads the intent
+   estimate, so how much the read is worth is not yet measured.
 4. The slice's chart glimpse; playtest.
 5. M3 to M8 in order, each with its pilot report added to BALANCE.md.

@@ -19,8 +19,13 @@ Two ways in from the start screen:
   Supply**, the dock about halfway, where you can also buy Krail, patch a
   plate or pay for a refit. Wrecks give parts, and the crew patch a plate out
   of them when you are left alone. The Custody pursue from behind, harder as
-  the **hunt pressure** rises, and a capital ship blockades the lane mouth:
-  break her, or run past her with everything they have on your tail.
+  the **hunt pressure** rises, and a capital ship blockades the lane mouth.
+  Along the way, people call: traders, miners asking for help, jobs,
+  warnings, raiders, a Prefect. Each **comms card** pauses the game and
+  shows a read of them (their strength against yours, and a guess at what
+  they really want, as good as your sensors), and choices that cost, gamble
+  or need something you may not have. At the lane, her checkpoint: run it,
+  spoof it, pay it, talk through it, or fight her.
 - **Arcade**: the endless run. The system starts quiet; every time the
   Krail gauge fills, **refit** (three cards, take one); hostiles arrive one
   at a time, then in pairs, squads and factions; from 3:30 capital ships
@@ -75,7 +80,8 @@ game opens with no bars at all.
 | Overcharge (when full) | E | Core button | Y |
 | Barrel roll | Shift | a second finger on the left half | B or RB |
 | Refit: take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
-| Hail: engage / evade | 1 or F / 2 or E | tap | A / B |
+| Comms: answer | 1–6, or arrows and Enter | tap | stick, A |
+| Hail (arcade): engage / evade | 1 or F / 2 or E | tap | A / B |
 | Camera distance | Z (cycles), or − and = | pause screen | |
 | Pause | Esc or P | the pause button, bottom centre | Start |
 
