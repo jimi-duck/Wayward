@@ -14,7 +14,7 @@ question.
 - **The one rule stays.** `src/sim` never imports Three.js. Every new loop
   (mining, comms, the chart, the hunt) runs headless, so the scripted pilot
   can play it and tests can drive it.
-- **Data over code.** Comms cards, systems, factions, crew, modules and
+- **Data over code.** Comms cards, systems, factions, modules and
   phenomena are rows in `src/content`, like upgrades are now. Writers add
   content without touching the simulation.
 - **Decisions pause the world.** The existing pattern (`World.phase` plus an
@@ -29,7 +29,7 @@ Today `World` is the whole game. The new game needs a layer above it.
 
 ```
 Journey  (persistent, saved at every port)              src/sim/journey.ts
-  ship (hull, modules, plates)  cargo and Krail  crew   standing and notice
+  ship (hull, modules, plates)  cargo and Krail  standing and notice
   chart (systems, routes, the Net)  the hunt (Calloway's trail)  flags
         │ starts a sortie with a SortieDef            ▲ returns a SortieResult
         ▼                                             │
@@ -61,11 +61,10 @@ New sim modules, each with its own tests:
 | `sim/chart.ts` | systems, routes, fog, prices, the Net's spread |
 | `sim/hunt.ts` | Calloway's trail and decisions |
 | `sim/notice.ts` | per-faction notice, standing, nemeses |
-| `sim/crew.ts` | crew, stations, loyalty |
 | `meta/save.ts` | journey save and load (localStorage), versioned |
 
 New content: `content/cards.ts`, `content/systems.ts`, `content/factions.ts`,
-`content/modules.ts`, `content/crew.ts`, `content/phenomena.ts`.
+`content/modules.ts`, `content/phenomena.ts`.
 
 New UI: `ui/comms.ts` (grown from the hail panel), `ui/port.ts`,
 `ui/chart.ts`, a cargo and Krail readout in `ui/hud.ts`.
@@ -123,9 +122,8 @@ these, and later milestones build to them:
 - **Names**: Kellern Mining (owns the home moon), Frontier Supply Co. (the
   port), the Dust Traders Guild, Ares Drive (parts and services), Obedience
   Heavy Lift, Continuance Enforcement.
-- **Crew** (M6): Juno (pilot, the player), Bram or Marcus Vale (mechanic),
-  Tess (scavenger, comms), Varik or Kaldor Santos (fixer), each with a
-  loyalty meter.
+- **The pilot**: Juno, the player, alone aboard the Wayward. There is no
+  crew (decided 2026-10-04).
 - **The checkpoint card** (M2): "Your ID doesn't match the registry": Run it,
   Spoof the registration, Pay the inspection fee, Talk your way through,
   Fight.
@@ -181,8 +179,8 @@ The hail becomes the game's main interaction.
   rumour.
 - **The read.** Before answering, the panel shows their strength against
   yours, their cargo and an intent estimate, as reliable as your sensors.
-- **Earned choices.** Choices that need a module, a standing or (later) a
-  crew member show greyed out with what they need, so the player sees what
+- **Earned choices.** Choices that need a module or a standing
+  show greyed out with what they need, so the player sees what
   a build would open.
 - **The checkpoint.** The first set piece: the lane mouth is guarded. Run
   it, spoof it, pay it, talk through it, fight it.
@@ -273,18 +271,12 @@ going further. **Is it fun to be a fugitive in space?**
   Signals making the chart lie, the refit rail moved under the four systems,
   and the pilot report (one strategy per system).
 
-## M6. Crew
+## M6. Crew (dropped)
 
-- **`sim/crew.ts`, `content/crew.ts`.** Each crew member: skills, traits, a
-  station, relationships, faction ties, a personal problem, and responses to
-  certain cards.
-- **Crew act outside combat**: open a checkpoint choice, recognise a signal,
-  keep a failing system alive, sometimes choose differently from you.
-- **Loyalty, conflict, story beats.** Crew can be hurt, captured, leave, or
-  be left behind. Food is per head.
-- Two or three crew arrive in the Breakout, so this deepens what is already
-  there rather than bolting it on.
-- **Answers:** does the player feel responsible for the crew?
+Dropped on 2026-10-04: the Wayward is a one-person ship. Juno flies her
+alone; there is no crew, no loyalty and no per-head food. What M6 would
+have carried (people to lose, choices opened by someone aboard) is left to
+cards, contacts and modules.
 
 ## M7. The Scatter
 
@@ -307,7 +299,7 @@ going further. **Is it fun to be a fugitive in space?**
   chart, alliances, the Severance's history, the Net spreading, Calloway
   closing), the Choice.
 - **The endings**: Broadcast, Unite, Sell, Trade, Seal, Vanish, each
-  gated by what the journey built (standing, crew, systems, flags), each with
+  gated by what the journey built (standing, systems, flags), each with
   an epilogue.
 - **The Archive** replaces the logbook: recovered files, records, people and
   history carried between journeys. Options, not power, as now.
@@ -326,7 +318,7 @@ BALANCE-ENDINGS.md: on 24 journeys every ending opened on some (Seal on
 
 ## The long tail
 
-More cards, crew, captains, factions, Holdfasts, Drifts, regions,
+More cards, captains, factions, Holdfasts, Drifts, regions,
 phenomena, modules, Thren encounters, story events and endings. The systems
 should multiply each other; expand combinations before adding combat.
 
@@ -338,7 +330,7 @@ should multiply each other; expand combinations before adding combat.
 |---|---|---|
 | Run length | A 6–10 hour journey; failure costs cargo, parts and time but rarely ends it; an optional hardcore setting | M3 (the save) |
 | How hard the hunt pushes | The Net moves on a schedule you can slow; Calloway closes only when you linger or leave a trail | M3 |
-| Crew from the start | Yes: two or three in the Breakout | M1 (light) / M6 |
+| Crew | None: the Wayward is a one-person ship (decided 2026-10-04) | Done |
 | How much the chart tells you | Enough to plan; prices and positions age; Signals sharpens them | M3 |
 | Hails pause or slow | Pause, except ambushes and declarations, which slow | M2 |
 | Combat's role | Available everywhere, never required; every set piece has a non-violent way through for some build | M1, M2 |
@@ -399,10 +391,26 @@ should multiply each other; expand combinations before adding combat.
    systems and eleven days a journey, sorties of about three minutes after
    the Breakout's five. Calloway reaches 10% of third systems, 30% of
    fourth, about half of fifth: pressure that builds across the session.
-   Open: the pilot never lands in a netted system (the Net stays a column
+   Open after the first pass: the pilot never lands in a netted system (the Net stays a column
    behind a pilot that keeps moving, so the netted port scan never came);
    the journey is easy for a steady pilot; a false flight plan and the
    survey relay are rarely taken; re-plotting from a port is not built.
+   Loose ends, second pass (BALANCE-JOURNEY.md, 48 journeys): the Net is
+   quicker (0.45 a day, harder on a broad front), so a steady pilot lands
+   in a netted system about once a journey and the netted port's scan
+   comes up; a survey relay left alone brings the Net in at once, and the
+   Gutter will break one for ore; a false flight plan can be paid in ore;
+   a port can re-plot the lane out. Relays are now acted on 15 times in
+   22, false plans filed 19 times in 28. 43 of 48 get through.
+   Then the salvage: a capital ship's wreck in a sortie (a blockade, a
+   captain, Calloway) left 22 Krail, so a netted system paid rather than
+   cost. It now leaves six (`CAPITAL_KRAIL`). On today's main, with M4's
+   notice and captains, that takes 47 of 48 through down to 45 of 48 (2
+   captured, 1 wrecked out), Krail aboard after the jump from about 17 to
+   about 12 in the middle systems, and Calloway reaches 49% of fourth
+   systems instead of 42%, since a thinner tank means more time mining.
+   Open: still easy for a steady pilot, though no longer a payday at the
+   Net. The first system after the Breakout can already be netted.
 6. M4 notice and nemeses. Started: `content/factions.ts` (each faction's
    notice per kill, fade a day, tier thresholds, fees, hunters, captains),
    `sim/notice.ts` (notice and standing across the journey, the tiers, named
@@ -418,16 +426,3 @@ should multiply each other; expand combinations before adding combat.
    learning and making offers, a chart readout of notice, and a pilot
    report on how soon captains come.
 7. M5 to M8 in order, each with its pilot report.
-   Loose ends, second pass (BALANCE-JOURNEY.md, 48 journeys): the Net is
-   quicker (0.45 a day, harder on a broad front), so a steady pilot lands
-   in a netted system about once a journey and the netted port's scan
-   comes up; a survey relay left alone brings the Net in at once, and the
-   Gutter will break one for ore; a false flight plan can be paid in ore;
-   a port can re-plot the lane out. Relays are now acted on 15 times in
-   22, false plans filed 19 times in 28. 43 of 48 get through.
-   Open: the journey is still easy for a steady pilot. A netted system
-   pays rather than costs: beating its blockade drops 22 Krail and 18
-   parts of salvage, so Krail aboard rises once the Net is close (inferred
-   from the Krail curve; a call for M4's notice and blockades). The first
-   system after the Breakout can already be netted.
-6. M4 to M8 in order, each with its pilot report.

@@ -1,7 +1,8 @@
+import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
-import { krailKnown, lanesFrom, sysById, type StarSystem } from '../sim/chart';
-import { CREW, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
+import { krailKnown, lanesFrom, placeAt, sysById, type Place, type StarSystem } from '../sim/chart';
+import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 
@@ -13,7 +14,9 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 // seen. Pick a lane by its number, a tap on the list or on the map, or the
 // pad, and the next sortie begins. Under the stores, each faction that has
 // marked you: its notice tier, how far to the next, your standing with it,
-// and its named captain (sim/notice.ts readout). The same panel tells you when you are
+// and its named captain (sim/notice.ts readout). A small diamond marks a
+// system with a place in it you know of (content/phenomena.ts), and the
+// lane list says what it is. The same panel tells you when you are
 // adrift after a wreck, and how the journey ended.
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -30,6 +33,8 @@ const py = (s: StarSystem) => PAD_Y + s.y * (H - PAD_Y * 2);
 const days = (n: number) => `${n} day${n === 1 ? '' : 's'}`;
 const richWord = (k: number) => (k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
+/** A place in a few words: what it is, and what it pays (a strange signal's is not known till it is read). */
+const placeText = (p: Place) => `${PLACES[p.id].name}, ${REWARD_WORD[PLACES[p.id].reward === 'unknown' ? 'unknown' : p.reward]}`;
 
 /** A faction's notice in a line: its tier, how far to the next, standing, and its captain. */
 function noticeText(l: NoticeLine, day: number): string {
@@ -96,7 +101,7 @@ export class ChartPanel {
     const legs = j.legs.filter((l) => l.ended === 'jumped').length;
     $('ch-s').textContent = end
       ? `${legs} jump${legs === 1 ? '' : 's'} · ${Math.round(j.day)} days · ${j.wrecks} wreck${j.wrecks === 1 ? '' : 's'} · Calloway caught up ${j.hunt.caught} time${j.hunt.caught === 1 ? '' : 's'} · score ${j.score.toLocaleString('en-GB')}`
-      : 'The crew got her flying again. Same system, a day later, and the hold is gone.';
+      : 'You got her flying again. Same system, a day later, and the hold is gone.';
     this.onPick = null;
     this.onGo = onGo;
     const go = $('ch-go');
@@ -173,6 +178,7 @@ export class ChartPanel {
       const notes = [
         days(o.route.days), `food ${o.food}`, s.port ? s.port.name : 'no port', `Krail ${richWord(krailKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
       ];
+      if (o.place) notes.push(placeText(o.place));
       if (o.netted) notes.push('netted');
       if (o.shadow) notes.push('Calloway last seen');
       const b = h('button', `port-l ch-l${i === this.sel ? ' sel' : ''}${o.netted ? ' net' : ''}`, '',
@@ -197,7 +203,7 @@ export class ChartPanel {
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
     const cells: Array<[string, string]> = [
-      ['Tank', `${c.krail}/${TANK_MAX}`], ['Food', `${c.food} · ${CREW}/day`], ['Parts', String(c.parts)], ['Chits', String(c.chits)], ['Hold', `${c.ore} ore`],
+      ['Tank', `${c.krail}/${TANK_MAX}`], ['Food', `${c.food} · ${RATION}/day`], ['Parts', String(c.parts)], ['Chits', String(c.chits)], ['Hold', `${c.ore} ore`],
     ];
     $('ch-stat').replaceChildren(
       h('div', 'port-stock', '', ...cells.map(([k, v]) => h('span', '', '', h('span', 'k', k), h('b', '', v)))),
@@ -236,6 +242,12 @@ export class ChartPanel {
       if (j.chart.stall[s.id]) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-stall' }));
       g.append(svg('circle', { cx: x, cy: y, r: s.kind === 'edge' || s.kind === 'home' ? 8 : 6.5, fill: visited ? KIND_COLOUR[s.kind] : 'rgba(11,12,15,.9)', stroke: KIND_COLOUR[s.kind], 'stroke-width': 2 }));
       if (s.port) g.append(svg('rect', { x: x + 6, y: y - 11, width: 5, height: 5, fill: '#5ad0e3' }));
+      const place = placeAt(c, s.id);
+      if (place) {
+        const m = svg('path', { d: `M${x - 9} ${y - 14}l3 3l-3 3l-3-3z`, class: 'ch-place' });
+        m.append(svg('title', {}, placeText(place)));
+        g.append(m);
+      }
       g.append(svg('text', { x, y: y + 20, 'text-anchor': 'middle', class: 'ch-name' }, s.name));
       const n = this.ids.indexOf(s.id);
       if (n >= 0) g.append(svg('text', { x, y: y - 13, 'text-anchor': 'middle', class: 'ch-num' }, String(n + 1)));

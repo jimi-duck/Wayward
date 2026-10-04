@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { krailKnown, netted, sysById } from '../src/sim/chart';
 import { behind } from '../src/sim/hunt';
-import { CREW, endSortie, hearNews, newJourney, options, plot, replot, sortieDef, toEdge, type Journey } from '../src/sim/journey';
+import { RATION, endSortie, hearNews, newJourney, options, plot, replot, sortieDef, toEdge, type Journey } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { flyWorld, stratName, type Policy, type Strategy } from './pilot';
 
@@ -39,7 +39,7 @@ function planRoute(j: Journey, c = j.carry): string {
     v -= o.route.krail * 1.2;
     if (o.netted) v -= 35;
     if (o.shadow) v -= 30;
-    if (c.food < 2 * CREW * 2 && s.port) v += 25;
+    if (c.food < 2 * RATION * 2 && s.port) v += 25;
     if (c.krail < 15) v += krailKnown(j.chart, s) * 30;
     if (s.port && c.plates < 3) v += 10;
     if (v > bestV) { bestV = v; best = s.id; }

@@ -48,8 +48,8 @@ A sortie with a shape: get the stolen hauler out of the home system
   rig the transponder from 8 parts, a long shot when the heat is up), pay the
   fee (it rises with heat; a captain who goes by the book takes it and
   scans you anyway), talk your way through (easier before they know your
-  face), or fight: the usual three-phase duel, and her wreck pays Krail,
-  parts and a salvage refit.
+  face), or fight: the usual three-phase duel, and her wreck pays a little
+  Krail (six, a top-up rather than a jump), parts and a salvage refit.
 - **Comms.** See below: everyone else who opens a channel.
 
 Balance: [BALANCE-BREAKOUT.md](BALANCE-BREAKOUT.md), from
@@ -88,10 +88,10 @@ the Threshold, the last lane the old charts know.
   Custody already looks, how often people call, and whether there is a
   port. A port's prices come from its holder.
 - **Days.** Every four minutes in a sortie is a day (`DAY`), and a lane
-  takes its days. The crew of three eat a unit of food a day each; the
-  drive wears two parts a jump. Short of food, the crew arrive weak; short
+  takes its days. Juno flies alone and eats a unit of food a day; the
+  drive wears two parts a jump. Short of food, you arrive weak; short
   of parts, the hull takes the wear: a plate down either way. Food is sold
-  at ports (and by Drift traders), and the galley holds thirty.
+  at ports (and by Drift traders), and the galley holds ten.
 - **The Net** spreads from Cerro along the lanes, once you have left it, a
   little every day, faster into systems with Krail to take and harder
   where two or three netted systems press on one (`spreadNet`). Its pace
@@ -118,7 +118,7 @@ the Threshold, the last lane the old charts know.
   bring her closer. The chart shows where she was last seen: exactly when
   she is a jump away or the news is fresh, otherwise as of the day you last
   had it.
-- **Wrecks** are not the end. The hull goes, and the crew get her flying a
+- **Wrecks** are not the end. The hull goes, and you get her flying a
   day later in the same system with the hold gone and half the Krail,
   parts and chits. The third wreck ends the journey, and so does a wreck
   with Calloway in the system (she takes you). In hardcore, the first.

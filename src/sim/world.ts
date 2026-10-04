@@ -8,7 +8,7 @@ import {
 import { Command, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
+  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_KRAIL, CAPITAL_PARTS, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   ORE_XP, rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
@@ -80,6 +80,9 @@ export interface WorldOptions {
 
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const BOSS_PLATES = 1;
+
+/** Seconds into a sortie before the system's place shows itself. */
+export const PLACE_AT = 30;
 
 export class World implements EncounterHost {
   readonly rng: Rng;
@@ -229,6 +232,9 @@ export class World implements EncounterHost {
   private captainEnd: Report | null = null;
   /** Notice the sortie's cards moved, by faction. */
   noticeDelta: Partial<Record<Faction, number>> = {};
+  /** The system's place (SortieDef.place): still to come, and how it went once it has. */
+  private placeDue = false;
+  placeWon: boolean | null = null;
 
   constructor(seed = 47, opts: WorldOptions = {}) {
     useIds(this.ids);
@@ -272,6 +278,7 @@ export class World implements EncounterHost {
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.kitIn = noKit(); this.kitSpent = noKit();
+    this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity; return; }
     const def = this.sortie;
     this.bk = newBreakout(this.ship.heading, def);
@@ -347,7 +354,7 @@ export class World implements EncounterHost {
     return {
       ended: this.run.escaped ? 'jumped' : 'destroyed', time: this.runTime, carry: this.carry(), run: this.run,
       calloway: this.callowayMet, callowayBeaten: this.callowayBeaten, huntDelay: this.huntDelay, stall: this.stall,
-      captain: this.captainResult(), notice: { ...this.noticeDelta },
+      captain: this.captainResult(), notice: { ...this.noticeDelta }, place: this.placeWon,
     };
   }
 
@@ -1121,9 +1128,19 @@ export class World implements EncounterHost {
       if (stepEncounter(e, this, dt)) {
         this.run.events++;
         if (e.success) this.run.eventsWon++;
+        if (e.place) this.placeWon = e.success;
         this.encounter = null;
         this.nextEvent = t + eventGap(this.eventN);
       }
+      return;
+    }
+    // the system's own place comes first, a little after arrival, when the sky is clear; the sector's chance events wait for it
+    const place = this.sortie.place;
+    if (this.placeDue && place) {
+      if (this.runTime < PLACE_AT || this.command.state !== 'idle') return;
+      this.placeDue = false;
+      this.encounter = startEncounter(place.plays, this, place);
+      this.lastEvent = place.plays;
       return;
     }
     // only in open sky: no capital ship about, and not just before one
@@ -1748,8 +1765,8 @@ export class World implements EncounterHost {
     this.chainKill();
     this.events.push({ type: 'bossDestroyed', x: b.x, y: b.y, z: b.z, name: b.name, faction: b.faction, points: bounty });
     // the salvage: krail, a hull repair, a power-up, a refit card and the faction's tech
-    this.dropCrystals(b.x, b.z, this.bk ? 22 : 26 + 8 * b.n, 12);
-    if (this.bk) this.dropCrystals(b.x, b.z, 18, 10, 0, 0, 'parts');
+    this.dropCrystals(b.x, b.z, this.bk ? CAPITAL_KRAIL : 26 + 8 * b.n, 12);
+    if (this.bk) this.dropCrystals(b.x, b.z, CAPITAL_PARTS, 10, 0, 0, 'parts');
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
