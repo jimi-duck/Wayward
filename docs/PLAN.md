@@ -198,8 +198,11 @@ faded rust, the Voice cold steel, the Thren a biological green.
   around a schematic of the ship (the Guns / Rig / Signals / Contacts tabs
   of the boards).
 - **Pass 6, the world** (render, with care for the feature threads): the
-  Wayward to the v1.1 silhouette (long, low, layered, side engine pods, no
-  big central engine); the shield dome out of red (red now means threat);
+  Wayward to the v1.1 silhouette (done: a long octagonal hull of layered
+  plating, a wedge prow with a recessed bridge, two engine pods on pylons,
+  a cargo stern with "03" on its plates, worn amber paint; `tools/ship.html`
+  is the bench for it); the shield dome out of red (done: it shimmers teal,
+  and only a hit that gets through flares red);
   Krail veins and pick-ups toward the amber-glow rock of the boards;
   Continuance hulls in red, black and white; sparks, dust and arcs over
   holographic effects.

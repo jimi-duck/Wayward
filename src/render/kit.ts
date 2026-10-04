@@ -18,7 +18,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 // seams and rivets catch the light.
 
 const SIZE = 1024;
-let plating: { map: Texture; bump: Texture } | null = null;
+let plating: { map: Texture; bump: Texture; paint: Texture } | null = null;
 
 function rand(seed: number) {
   let s = seed;
@@ -26,7 +26,7 @@ function rand(seed: number) {
 }
 
 /** The plating, painted once: albedo and height. */
-export function platingTextures(): { map: Texture; bump: Texture } {
+export function platingTextures(): { map: Texture; bump: Texture; paint: Texture } {
   if (plating) return plating;
   const make = () => {
     const c = document.createElement('canvas');
@@ -98,6 +98,62 @@ export function platingTextures(): { map: Texture; bump: Texture } {
     }
   }
 
+  // the paint: the same panels in a light coat (the material's tint makes it
+  // hazard amber), chipped through to dark metal along the edges and in
+  // scuffed patches, as on the boards. The seams match the height map.
+  const [cp, p] = make();
+  p.fillStyle = '#d9d4cb';
+  p.fillRect(0, 0, SIZE, SIZE);
+  const pr = rand(9031);
+  for (const [x, y, w, h] of panels) {
+    const v = 205 + pr() * 40;
+    p.fillStyle = `rgb(${v},${v - 4},${v - 10})`;
+    p.fillRect(x + 2, y + 2, w - 4, h - 4);
+    p.strokeStyle = 'rgba(24,20,18,.6)'; p.lineWidth = 2; p.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+    // edge wear: the paint gone along a panel edge or two
+    for (let e = 0; e < 4; e++) {
+      if (pr() > 0.45) continue;
+      const along = e % 2 === 0 ? w : h, n = Math.floor(along / 6);
+      for (let i = 0; i < n; i++) {
+        if (pr() < 0.35) continue;
+        const t = i * 6 + pr() * 4, depth = 2 + pr() * pr() * 16, wd = 3 + pr() * 9;
+        p.fillStyle = `rgba(${38 + pr() * 20},${34 + pr() * 16},${30 + pr() * 12},${0.75 + pr() * 0.25})`;
+        if (e === 0) p.fillRect(x + t, y + 3, wd, depth);
+        else if (e === 2) p.fillRect(x + t, y + h - 3 - depth, wd, depth);
+        else if (e === 1) p.fillRect(x + w - 3 - depth, y + t, depth, wd);
+        else p.fillRect(x + 3, y + t, depth, wd);
+      }
+    }
+    // a scuffed patch: a cluster of chips, the dark camouflage of hard use
+    if (pr() < 0.4) {
+      const cx = x + pr() * w, cy = y + pr() * h, rad = 12 + pr() * 50;
+      for (let i = 0; i < 40 + rad; i++) {
+        const a2 = pr() * Math.PI * 2, d2 = Math.sqrt(pr()) * rad;
+        const px = cx + Math.cos(a2) * d2, py = cy + Math.sin(a2) * d2 * 0.6, sz = 2 + pr() * 9;
+        p.fillStyle = `rgba(40,36,32,${0.6 + pr() * 0.4})`;
+        p.beginPath(); p.moveTo(px, py); p.lineTo(px + sz, py + pr() * 3); p.lineTo(px + sz * 0.6, py + sz * 0.7); p.lineTo(px - pr() * 3, py + sz * 0.5); p.fill();
+      }
+    }
+    // stencilled marks and a faded old coat
+    if (pr() < 0.08 && w > 70) { p.fillStyle = 'rgba(30,26,22,.85)'; p.fillRect(x + 10, y + 10, Math.min(w - 20, 30 + pr() * 60), 5 + pr() * 6); }
+    if (pr() < 0.12) { p.fillStyle = 'rgba(255,250,235,.12)'; p.fillRect(x + 4, y + 4, w - 8, h * (0.2 + pr() * 0.5)); }
+  }
+  for (let i = 0; i < 220; i++) {
+    const x = pr() * SIZE, y = pr() * SIZE, len = 30 + pr() * 170, wd = 2 + pr() * 12;
+    const g = p.createLinearGradient(x, y, x, y + len);
+    g.addColorStop(0, `rgba(40,30,20,${0.2 + pr() * 0.35})`);
+    g.addColorStop(1, 'rgba(40,30,20,0)');
+    p.fillStyle = g;
+    p.fillRect(x, y, wd, len);
+  }
+  p.lineCap = 'round';
+  for (let i = 0; i < 500; i++) {
+    const x = pr() * SIZE, y = pr() * SIZE, ang = pr() * Math.PI, len = 4 + pr() * 30;
+    p.strokeStyle = `rgba(50,44,38,${0.35 + pr() * 0.4})`;
+    p.lineWidth = 0.7 + pr() * 1.6;
+    p.beginPath(); p.moveTo(x, y); p.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len); p.stroke();
+  }
+
   // grime: streaks running down from seams
   for (let i = 0; i < 260; i++) {
     const x = r() * SIZE, y = r() * SIZE, len = 30 + r() * 160, wd = 2 + r() * 14;
@@ -136,8 +192,10 @@ export function platingTextures(): { map: Texture; bump: Texture } {
   const map = new CanvasTexture(ca);
   map.colorSpace = SRGBColorSpace;
   const bump = new CanvasTexture(cb);
-  for (const t of [map, bump]) { t.wrapS = t.wrapT = RepeatWrapping; t.anisotropy = 8; }
-  plating = { map, bump };
+  const paintMap = new CanvasTexture(cp);
+  paintMap.colorSpace = SRGBColorSpace;
+  for (const t of [map, bump, paintMap]) { t.wrapS = t.wrapT = RepeatWrapping; t.anisotropy = 8; }
+  plating = { map, bump, paint: paintMap };
   return plating;
 }
 
@@ -164,11 +222,14 @@ export interface MetalOptions {
   /** Strength of the seams and rivets. */
   bump?: number;
   emissive?: Color;
+  /** Painted plate (the worn coat) instead of bare metal. */
+  painted?: boolean;
 }
 
 /** Weathered metal: the plating, triplanar in model space, with bump from the height map. */
 export function metal(o: MetalOptions): MeshStandardMaterial {
-  const { map, bump } = platingTextures();
+  const { map: bare, bump, paint } = platingTextures();
+  const map = o.painted ? paint : bare;
   const m = new MeshStandardMaterial({
     color: o.tint, map, roughness: o.roughness ?? 0.62, metalness: o.metalness ?? 0.55, envMapIntensity: 0.9,
     emissive: o.emissive ?? new Color(0, 0, 0),
