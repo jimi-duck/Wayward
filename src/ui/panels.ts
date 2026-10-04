@@ -26,7 +26,7 @@ export function buildView(levels: Levels, named = true): HTMLElement {
   const wrap = h('div', 'build');
   if (named) wrap.append(h('div', 'sum-ship', id.title));
   const owned = UPGRADES.filter((u) => (levels[u.id] ?? 0) > 0);
-  if (!owned.length) { wrap.append(h('p', 'how-note', 'Stock: phaser banks, three plates, nothing else fitted.')); return wrap; }
+  if (!owned.length) { wrap.append(h('p', 'how-note', 'Stock: laser banks, three plates, nothing else fitted.')); return wrap; }
   const order = [...id.branches.map((b) => b.branch), 'synergy' as Branch];
   for (const br of order) {
     const ups = owned.filter((u) => u.branch === br);
@@ -62,15 +62,15 @@ export class HailPanel {
     $('hail-s').textContent = `${c.faction} capital ship · on intercept course`;
     $('hail-eb').textContent = 'She will fight back, and her escort wing comes in with her. The sector clears for the duel.';
     const lines = (host: HTMLElement, ls: string[]) => host.replaceChildren(...ls.map((l) => h('span', '', l)));
-    lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Hull repair · dilithium · a power-up']);
+    lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Hull repair · krail · a power-up']);
     const ev = $<HTMLButtonElement>('hail-evade');
     ev.disabled = !c.canEvade;
     if (c.canEvade) {
       $('hail-vb').textContent = 'You get clear, but you cannot break away twice running.';
       lines($('hail-vl'), ['No bounty · no salvage', `Next contact in ${c.evadeGap}s`]);
     } else {
-      $('hail-vb').textContent = c.faction === 'borg' ? 'There is no outrunning a cube.' : 'Not available: you broke away from the last one.';
-      lines($('hail-vl'), [c.faction === 'borg' ? 'No escape from a cube' : 'Recharges after a fight']);
+      $('hail-vb').textContent = c.faction === 'voice' ? 'There is no outrunning a foundry.' : 'Not available: you broke away from the last one.';
+      lines($('hail-vl'), [c.faction === 'voice' ? 'No escape from a foundry' : 'Recharges after a fight']);
     }
     const en = $('hail-engage');
     en.classList.add('sel');
@@ -107,7 +107,7 @@ export class HailPanel {
 // ── the run report ────────────────────────────────────────────────────────
 
 const WEAPON_WORD: Record<string, string> = {
-  phaser: 'Phasers', torpedo: 'Torpedoes', mine: 'Mines', plasma: 'Plasma', arc: 'Hull arc', ram: 'Ramming', overcharge: 'Overcharge', hazard: 'The sector',
+  laser: 'Lasers', torpedo: 'Torpedoes', mine: 'Mines', plasma: 'Plasma', arc: 'Hull arc', ram: 'Ramming', overcharge: 'Overcharge', hazard: 'The sector',
 };
 
 /** What hurt, in words: "rock", "fire:scout" or "ram:raptor" to a phrase. */
@@ -120,7 +120,7 @@ export function damageWord(src: string): string {
     case 'rock': return 'Rock';
     case 'bulwark': return 'Bulwarks';
     case 'beam': return who === 'capital' ? 'A capital ship’s beams' : `${cap(label(who))} beams`;
-    case 'web': return 'Tholian webs';
+    case 'web': return 'Thren webs';
     case 'volatile': return 'Volatile rock';
     case 'blast': return 'Blasts';
     case 'lightning': return 'Lightning';
@@ -160,7 +160,7 @@ export class SummaryPanel {
       tile('Refits', r.refit, p.refit),
       tile('Kills', r.kills, p.kills),
       tile('Best chain', r.bestChain, p.chain),
-      tile('Dilithium', r.dilithium, p.dilithium),
+      tile('Krail', r.krail, p.krail),
       tile('Overcharges', r.overcharges, p.overcharges),
       tile('Capital ships', r.capitals, p.capitals),
       h('div', 'tile', '', h('span', 'k', 'Sector events'), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', `${r.powerups} power-ups found`)),
@@ -229,7 +229,7 @@ export class SummaryPanel {
     if (met) notes.push(`You met ${met} capital ship${met > 1 ? 's' : ''}: ${r.capitals} destroyed, ${r.capitalsEvaded} evaded, ${r.capitalsEscaped} got away.`);
     if (r.shieldsAbsorbed) notes.push(`Shields took ${r.shieldsAbsorbed} hit${r.shieldsAbsorbed > 1 ? 's' : ''} for you.`);
     if (r.platesGained) notes.push(`You mended ${r.platesGained} plate${r.platesGained > 1 ? 's' : ''}.`);
-    if (r.dropped) notes.push(`You collected ${Math.round((r.dilithium / r.dropped) * 100)}% of the dilithium you shook loose.`);
+    if (r.dropped) notes.push(`You collected ${Math.round((r.krail / r.dropped) * 100)}% of the krail you shook loose.`);
     box.append(h('p', 'how-note', notes.join(' ')));
     return box;
   }

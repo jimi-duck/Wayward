@@ -1,6 +1,6 @@
 # Brand
 
-Source for the Asteroid Blaster design system, published at
+Source for the Wayward design system, published at
 https://claude.ai/artifact/WdTTCZEzY5s15ytUBkdWpg (private to the owner).
 
 - `system/` is what the design system holds: the brand book (`README.md` and

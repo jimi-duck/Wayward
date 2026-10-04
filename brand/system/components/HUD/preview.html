@@ -17,7 +17,7 @@ body { overflow: hidden; }
 .xp .grow { flex: 1; }
 .cap { color: var(--ink-2); white-space: nowrap; }
 .cap b { color: var(--signal); }
-.gem { display: inline-flex; align-items: baseline; gap: 6px; color: var(--dilithium); }
+.gem { display: inline-flex; align-items: baseline; gap: 6px; color: var(--krail); }
 .gem .ab-i { align-self: center; }
 .s { font-size: 20px; line-height: 20px; color: var(--signal); }
 .stop { position: absolute; right: 30px; top: 50px; }
@@ -34,16 +34,16 @@ body { overflow: hidden; }
 <div class="screen">
   <canvas class="scene" aria-hidden="true"></canvas>
   <div class="ab-brackets frame-b"></div>
-  <div class="xp"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62"></div></div><span class="cap gem"><i class="ab-i ab-i--dilithium " aria-hidden="true"></i><span class="ab-num s">109</span><span class="ab-label">/ 176</span></span></div>
+  <div class="xp"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62"></div></div><span class="cap gem"><i class="ab-i ab-i--krail " aria-hidden="true"></i><span class="ab-num s">109</span><span class="ab-label">/ 176</span></span></div>
   <button class="ab-btn ab-btn--ghost ab-btn--sm stop"><i class="ab-i ab-i--all-stop " aria-hidden="true"></i> All stop <span class="ab-key">Esc</span></button>
   <div class="boss ab-brackets is-target">
-    <div class="bname"><i class="ab-dot" style="background:var(--faction-klingon)"></i><span class="ab-label" style="color:var(--faction-klingon)">I.K.S. Vor’cha</span></div>
+    <div class="bname"><i class="ab-dot" style="background:var(--faction-gutter)"></i><span class="ab-label" style="color:var(--faction-gutter)">I.K.S. Vor’cha</span></div>
     <div class="ab-ticks-wrap" style="--on:var(--alert)"><div class="ab-ticks ab-ticks--alert" style="--v:.7;height:8px"></div></div>
-    <span class="ab-anno">Klingon · capital · 31s</span>
+    <span class="ab-anno">Gutter · capital · 31s</span>
   </div>
   <span class="ab-anno telemetry">VEL 312 · HDG 047 · 47°12′N · Graze ×3</span>
   <div class="hud">
-    <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Stardate</span><span class="ab-num">1142</span></span><span class="ab-plates" aria-label="Hull 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+    <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Score</span><span class="ab-num">1142</span></span><span class="ab-plates" aria-label="Hull 3 of 5"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
     <div class="ab-frame ab-chip"><span class="ab-label"><i class="ab-i ab-i--overcharge " aria-hidden="true"></i> Overcharge</span><div class="ab-ticks-wrap" style="width:150px"><div class="ab-ticks" style="--v:.62"></div></div><span class="ab-key">Space</span></div>
     <div class="ab-frame ab-chip"><span class="ab-readout"><span class="ab-label">Chain</span><span class="ab-num" style="color:var(--signal)">×1.16</span></span></div>
   </div>
@@ -83,7 +83,7 @@ function abScene(canvas, spec) {
     var dpr = Math.min(2, window.devicePixelRatio || 1), w = canvas.clientWidth, h = canvas.clientHeight;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var lit = (getComputedStyle(root).getPropertyValue('--ab-glow').trim() || '1') !== '0';
-    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('dilithium'), CMD = tok('command');
+    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('krail'), CMD = tok('command');
     ctx.fillStyle = VOID; ctx.fillRect(0, 0, w, h);
     if (lit) {
       [[0.22, 0.3, 0.55, VIO, 0.13], [0.8, 0.75, 0.6, SIG, 0.07], [0.6, 0.15, 0.4, VIO, 0.06]].forEach(function (n) {
@@ -123,7 +123,7 @@ function abScene(canvas, spec) {
       ctx.fill();
       if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = big ? 26 : 14; }
       ctx.strokeStyle = VIO; ctx.lineWidth = big ? 2 : 1.5; ctx.stroke(); ctx.shadowBlur = 0;
-      if (big) {  // facets from an off-centre apex, and two dilithium seams that glow
+      if (big) {  // facets from an off-centre apex, and two krail seams that glow
         var ax = cx - r[2] * 0.18, ay = cy - r[2] * 0.12;
         pts.forEach(function (p, i) { ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(p[0], p[1]); ctx.strokeStyle = rgba(VIO, i % 3 ? 0.18 : 0.42); ctx.lineWidth = 1; ctx.stroke(); });
         [[2, 6, 0.5], [8, 4, 0.35]].forEach(function (sm) {
@@ -131,7 +131,7 @@ function abScene(canvas, spec) {
           ctx.lineTo(ax + (pts[sm[1]][0] - ax) * sm[2], ay + (pts[sm[1]][1] - ay) * sm[2]); ctx.lineTo(pts[sm[1]][0], pts[sm[1]][1]);
           ctx.strokeStyle = rgba(INK, lit ? 0.75 : 0.5); ctx.lineWidth = 1.4; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 12; } ctx.stroke(); ctx.shadowBlur = 0;
         });
-      } else if (r[2] > 26) {  // a dilithium seam
+      } else if (r[2] > 26) {  // a krail seam
         ctx.beginPath(); ctx.moveTo(pts[0][0] * 0.6 + pts[3][0] * 0.4, pts[0][1] * 0.6 + pts[3][1] * 0.4);
         ctx.lineTo(cx, cy); ctx.lineTo(pts[2][0] * 0.5 + pts[5][0] * 0.5, pts[2][1] * 0.5 + pts[5][1] * 0.5);
         ctx.strokeStyle = rgba(VIO, 0.6); ctx.lineWidth = 1; ctx.stroke();
@@ -143,7 +143,7 @@ function abScene(canvas, spec) {
       ctx.fillStyle = VIO; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 8; } ctx.fillRect(-2.2, -2.2, 4.4, 4.4); ctx.restore();
     });
     (spec.enemies || []).forEach(function (e) {
-      var col = tok(e[4] || 'faction-klingon'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
+      var col = tok(e[4] || 'faction-gutter'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
       raider(e[0] * w, e[1] * h, e[2], e[3], col); ctx.shadowBlur = 0;
       if (e[5]) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
         ctx.moveTo(e[0] * w + Math.sin(e[3]) * 22 * e[2], e[1] * h - Math.cos(e[3]) * 22 * e[2]);
@@ -186,7 +186,7 @@ function abScene(canvas, spec) {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
 }
 
-abScene(document.querySelector(".scene"), {seed: 9, rocks: [[0.12, 0.3, 30], [0.2, 0.7, 18], [0.36, 0.22, 14], [0.33, 0.6, 24], [0.62, 0.82, 16], [0.86, 0.66, 28], [0.75, 0.47, 12], [0.05, 0.58, 22], [0.48, 0.12, 20]], shards: [[0.28, 0.48], [0.3, 0.52], [0.27, 0.53]], burst: [0.3, 0.5], enemies: [[0.66, 0.2, 1.9, 2.6, 'faction-klingon', 1], [0.2, 0.46, 1, 1.2, 'faction-klingon'], [0.9, 0.52, 1, -1.9, 'faction-klingon', 1]], ship: {x: 0.5, y: 0.56, scale: 1.4, orbit: 0.62, bolts: [[-2, -40, 0, -16], [-2, -72, 0, -16], [6, -54, 4, -14]]}, leaders: [[0.66, 0.2, 0.71, 0.28, 0.729]]});
+abScene(document.querySelector(".scene"), {seed: 9, rocks: [[0.12, 0.3, 30], [0.2, 0.7, 18], [0.36, 0.22, 14], [0.33, 0.6, 24], [0.62, 0.82, 16], [0.86, 0.66, 28], [0.75, 0.47, 12], [0.05, 0.58, 22], [0.48, 0.12, 20]], shards: [[0.28, 0.48], [0.3, 0.52], [0.27, 0.53]], burst: [0.3, 0.5], enemies: [[0.66, 0.2, 1.9, 2.6, 'faction-gutter', 1], [0.2, 0.46, 1, 1.2, 'faction-gutter'], [0.9, 0.52, 1, -1.9, 'faction-gutter', 1]], ship: {x: 0.5, y: 0.56, scale: 1.4, orbit: 0.62, bolts: [[-2, -40, 0, -16], [-2, -72, 0, -16], [6, -54, 4, -14]]}, leaders: [[0.66, 0.2, 0.71, 0.28, 0.729]]});
 </script>
 </body>
 </html>

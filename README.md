@@ -1,19 +1,25 @@
-# Asteroid Blaster 3D
+# WAYWARD
 
-The Star Trek roguelite from [jciclitira.com](https://www.jciclitira.com)'s
-lab, rebuilt in 3D with Three.js, for desktop and mobile browsers.
+A cyberpunk space survival game from [jciclitira.com](https://www.jciclitira.com)'s
+lab, in 3D with Three.js, for desktop and mobile browsers.
 
-Everyone launches in the same ship, the U.S.S. Kestrel (NCC-1903): a
-Starfleet survey tender with a mining refit, saucer up front, hazard-yellow
-engineering hull, cyan nacelles. The sector starts quiet, so you can learn
-the ship and mine the first refit out of the rock before anything shoots
-back. Every time the dilithium gauge fills, **refit**: three cards, take
-one (a new system, the next level of one you have, or a specialisation),
-and fly on. Hostiles arrive one at a time, then in pairs, squads and
-factions; from 3:30 capital ships hail. Engage for the salvage (a refit and
-that faction's tech) or evade and pay in tempo. When the hull goes, the run
-report says what you built and how it went.
+You are a contract miner who found the wrong file and stole the wrong ship:
+the Wayward (OBH-4471), an Obedience-class ore hauler, blunt cutting head
+up front, rust-red engine block, two drive pods on pylons. The
+Continuance wants her, and you, back.
 
+What plays today is **the Breakout**, the arcade escape that opens the
+larger game. The system starts quiet, so you can learn the ship and mine
+the first refit out of the rock before anything shoots back. Every time the
+Krail gauge fills, **refit**: three cards, take one (a new system, the next
+level of one you have, or a specialisation), and fly on. Hostiles arrive one
+at a time, then in pairs, squads and factions (the Gutter, the Custody, the
+Office of Peace, the Voice, the Thren); from 3:30 capital ships hail. Engage
+for the salvage (a refit and that faction's tech) or evade and pay in tempo.
+When the hull goes, the run report says what you built and how it went.
+
+- Where the game goes next, WAYWARD: [docs/VISION.md](docs/VISION.md),
+  and the build plan: [docs/PLAN.md](docs/PLAN.md).
 - The game as designed, where each system lives and how to add to it:
   [docs/DESIGN.md](docs/DESIGN.md).
 - The plan, the decisions behind it and the milestone list:
@@ -54,7 +60,7 @@ game opens with no bars at all.
 |---|---|---|---|
 | Steer | ← → or A D | drag on the left half: across steers | left stick, d-pad |
 | Thrust | ↑ or W | any push opens the throttle; pull back to coast | right trigger, d-pad up |
-| Phasers (hold) | 1, Space or J | hold anywhere on the right half | A |
+| Lasers (hold) | 1, Space or J | hold anywhere on the right half | A |
 | Torpedo (once fitted) | 2, F or K | Torpedo button | X |
 | Overcharge (when full) | E | Core button | Y |
 | Barrel roll | Shift | a second finger on the left half | B or RB |
@@ -64,15 +70,15 @@ game opens with no bars at all.
 | Pause | Esc or P | the pause button, bottom centre | Start |
 
 The camera rides low behind the ship. You steer on a flat plane; everything
-else uses the whole sky. Phasers draw on the phaser bank and refill when you
+else uses the whole sky. Lasers draw on the laser bank and refill when you
 let go, and the gunnery computer lifts or drops a lance onto a hull flying
 above or below you if it is in a narrow cone ahead. Torpedoes, mines, the
 plasma trail, the hull arc and shields are refits, not standard. Rock breaks
-large to medium to small, sometimes into violet dilithium crystals that the
+large to medium to small, sometimes into violet krail crystals that the
 tractor pulls in (they fade if left). Bulwarks (massive asteroids) never
 break: they stop fire from both sides and hurt to fly into.
 
-Near misses (fire, rock, hulls, beams) charge the warp core; release it for
+Near misses (fire, rock, hulls, beams) charge the reactor; release it for
 a nova that clears fire and runs the guns hot. The first forty seconds are
 yours alone; then enemies arrive from far out, one at a time, and fight by
 type and faction; from about four minutes in they come in squads, mixed

@@ -1,7 +1,7 @@
 {
-  "name": "Asteroid Blaster",
-  "short_name": "Asteroid Blaster",
-  "description": "Asteroid Blaster, in 3D. One ship, your build: fly, mine dilithium, refit and take on capital ships.",
+  "name": "Wayward",
+  "short_name": "Wayward",
+  "description": "A stolen ore hauler, a file the Continuance wants back, and the way out.",
   "id": "./",
   "start_url": "./",
   "scope": "./",

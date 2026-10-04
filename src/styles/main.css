@@ -2,10 +2,10 @@
    each mean one thing:
      orange-red · the instrument itself: frames, weapons, targeting
      cyan       · the ship's own state: hull, shields, our ship on the scope
-     violet     · dilithium, the field's currency: the rail, mining yield
+     violet     · krail, the field's currency: the rail, mining yield
      amber      · things to go and get (repairs, power-ups, objectives),
-                  the warp core, and the yellow alert
-     hard red   · damage and the red alert
+                  the reactor, and the contact warning
+     hard red   · damage and the alarm
    The brand's fonts stay: Antonio for numerals, Martian Mono for labels and
    data, Tektur for the few words that are a voice. */
 :root {
@@ -144,7 +144,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   background: repeating-linear-gradient(180deg, var(--hair) 0 1px, transparent 1px 12px) right top / 5px 100% no-repeat,
               linear-gradient(var(--hair), var(--hair)) right top / 1px 100% no-repeat; }
 
-/* ── top left: the sector, and dilithium toward the next refit ────────── */
+/* ── top left: the sector, and krail toward the next refit ────────── */
 #sector { position: absolute; left: var(--left); top: var(--top); width: clamp(210px, 17vw, 260px); display: grid; gap: 12px; text-shadow: 0 1px 6px #000; }
 .sec-id { position: relative; display: grid; gap: 6px; padding-bottom: 12px;
   font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
@@ -181,7 +181,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 
 /* ── top right: ship systems ──────────────────────────────────────────── */
 /* As in the reference: a row per weapon (icon, name, key, gauge, reading,
-   the level the refits have taken it to), then hull, warp core and score
+   the level the refits have taken it to), then hull, reactor and score
    side by side. Rows for systems not yet fitted stay away. */
 #systems {
   --edge: rgba(255, 90, 54, .4); --lit: var(--hud-mid); --fill: rgba(8, 8, 10, .42); --c: 12px;
@@ -198,7 +198,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .sys-row .val.word { font: 600 calc(var(--fs) * .88)/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
 .sys-row .lv { justify-self: end; font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
 .sys-row .lv.up { animation: hud-flash .9s var(--ez); }
-/* the phaser bank: one solid bar, as in the reference */
+/* the laser bank: one solid bar, as in the reference */
 .bar { --v: 1; display: block; height: 7px; min-width: 0;
   background: linear-gradient(90deg, var(--hud) 0 calc(var(--v) * 100%), rgba(255, 90, 54, .15) 0);
   clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%); }
@@ -238,7 +238,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #sys-hull.crit .plates i.on:not(.sh) { background: var(--alert); animation: hud-blink 1.1s ease-in-out infinite; }
 #sys-hull.crit #v-hull { color: var(--alert); }
 #sys-hull.hit { animation: hud-hit .6s ease-out; }
-/* the warp core: near misses charge it; full, it releases on E */
+/* the reactor: near misses charge it; full, it releases on E */
 #g-oc { grid-column: 1 / -1; --n: 12; --on: var(--cy); --off: var(--cy-ghost); height: 5px; }
 #sys-oc.ready #g-oc { --on: #c8f6ff; filter: drop-shadow(0 0 5px var(--cy)); }
 #sys-oc.ready .val { color: var(--cy); }
@@ -288,7 +288,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* ── in the world: the gunsight, the target, marks ────────────────────── */
 #world { position: absolute; inset: 0; overflow: hidden; }
 
-/* where the phasers go; it lights when the target is in the line of fire */
+/* where the lasers go; it lights when the target is in the line of fire */
 #reticle { position: absolute; left: 0; top: 0; width: 26px; height: 26px; margin: -13px 0 0 -13px; opacity: .5;
   --b: var(--hud);
   background:
@@ -479,7 +479,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* ── touch controls ───────────────────────────────────────────────────── */
 /* Laid out for two thumbs on a phone held on its side. The left thumb's
    home is well in from the edge (clear of the notch and the browser's
-   back swipe); the right thumb rests on Phaser, with Torpedo and the warp
+   back swipe); the right thumb rests on Laser, with Torpedo and the reactor
    core one short reach away round it. The ring is only a hint at rest:
    wherever the thumb lands on the left half, the stick comes to it. */
 #touch {

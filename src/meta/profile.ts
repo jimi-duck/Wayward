@@ -8,6 +8,7 @@ import type { RunStats } from '../sim/run';
 // Storage can be missing or refuse (private windows, blocked site data), so
 // every read and write is guarded and the game plays the same without it.
 
+// The storage key keeps the game's old name, so saved profiles carry over.
 const KEY = 'asteroid-blaster.profile.v1';
 const HISTORY = 20;
 
@@ -15,7 +16,7 @@ export interface Best {
   score: number;
   time: number;
   chain: number;
-  dilithium: number;
+  krail: number;
   overcharges: number;
   capitals: number;
   kills: number;
@@ -49,9 +50,9 @@ export interface Profile {
 
 const fresh = (): Profile => ({
   version: 1,
-  best: { score: 0, time: 0, chain: 0, dilithium: 0, overcharges: 0, capitals: 0, kills: 0, refit: 0 },
+  best: { score: 0, time: 0, chain: 0, krail: 0, overcharges: 0, capitals: 0, kills: 0, refit: 0 },
   bestCurve: [],
-  life: { runs: 0, kills: 0, capitals: 0, dilithium: 0, capitalsBy: {}, bestTime: 0, bestScore: 0 },
+  life: { runs: 0, kills: 0, capitals: 0, krail: 0, capitalsBy: {}, bestTime: 0, bestScore: 0 },
   history: [],
   earned: [],
   modifiers: [],
@@ -63,12 +64,40 @@ export function loadProfile(): Profile {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return fresh();
-    const p = JSON.parse(raw) as Partial<Profile>;
+    const p = migrate(JSON.parse(raw) as Record<string, any>) as Partial<Profile>;
     const f = fresh();
     return { ...f, ...p, best: { ...f.best, ...p.best }, life: { ...f.life, ...p.life } } as Profile;
   } catch {
     return fresh();
   }
+}
+
+/** Faction ids before the WAYWARD rename, and what they became. */
+const OLD_FACTIONS: Record<string, string> = { klingon: 'gutter', cardassian: 'custody', romulan: 'office', borg: 'voice', tholian: 'thren' };
+
+/**
+ * Profiles saved before the WAYWARD rename carry the old names: dilithium
+ * for Krail, and the old faction ids in the capital-ship tally. Move them across,
+ * so bests and unlocks survive. A profile already renamed passes through.
+ */
+export function migrate(p: Record<string, any>): Record<string, any> {
+  for (const k of ['best', 'life']) {
+    const o = p[k];
+    if (o && 'dilithium' in o) {
+      o.krail = Math.max(o.krail ?? 0, o.dilithium);
+      delete o.dilithium;
+    }
+  }
+  const by = p.life?.capitalsBy;
+  if (by) {
+    for (const [old, now] of Object.entries(OLD_FACTIONS)) {
+      if (old in by) {
+        by[now] = (by[now] ?? 0) + by[old];
+        delete by[old];
+      }
+    }
+  }
+  return p;
 }
 
 export function saveProfile(p: Profile): void {
@@ -106,7 +135,7 @@ export function recordRun(p: Profile, r: RunStats): Recorded {
   b.score = Math.max(b.score, r.score);
   b.time = Math.max(b.time, r.time);
   b.chain = Math.max(b.chain, r.bestChain);
-  b.dilithium = Math.max(b.dilithium, r.dilithium);
+  b.krail = Math.max(b.krail, r.krail);
   b.overcharges = Math.max(b.overcharges, r.overcharges);
   b.capitals = Math.max(b.capitals, r.capitals);
   b.kills = Math.max(b.kills, r.kills);
@@ -116,7 +145,7 @@ export function recordRun(p: Profile, r: RunStats): Recorded {
   l.runs++;
   l.kills += r.kills;
   l.capitals += r.capitals;
-  l.dilithium += r.dilithium;
+  l.krail += r.krail;
   for (const f of r.capitalFactions) l.capitalsBy[f] = (l.capitalsBy[f] ?? 0) + 1;
   l.bestTime = b.time;
   l.bestScore = b.score;

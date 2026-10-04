@@ -6,7 +6,7 @@ import type { Stats } from '../sim/stats';
 // branches, each a system or a few stat upgrades leading to three
 // specialisations, with synergies between neighbours.
 //
-//   Weapons ─┬─ Phasers ──── emitters, capacitors, bank, lenses, pierce
+//   Weapons ─┬─ Lasers ──── emitters, capacitors, bank, lenses, pierce
 //            │                └─ specialise: Cone · Heavy lance · Targeting array
 //            ├─ Torpedoes ── bay ─ magazine, yield, tracking
 //            │                └─ specialise: Heavy payload · Swarm · Precision
@@ -16,12 +16,12 @@ import type { Stats } from '../sim/stats';
 //            │                └─ specialise: Ignition · Afterburner wake · Corona
 //            └─ Close ────── ram prow · hull arc ─ capacitors, reach
 //                             └─ specialise: Arc storm · Juggernaut · Shock prow
-//   Ship ────┬─ Mobility ─── impulse, thrusters, dampers, jets
+//   Ship ────┬─ Mobility ─── drive, thrusters, dampers, jets
 //            │                └─ specialise: Drift drive · Evasive pattern · Afterburner
-//            ├─ Utility ──── tractor, dilithium matrix
+//            ├─ Utility ──── tractor, krail matrix
 //            │                └─ specialise: Prospector · Salvage drones · Deep scanners
-//            └─ Warp core ── coils
-//                             └─ specialise: Warp nova · Weapons overload · Phase cloak
+//            └─ Reactor ── coils
+//                             └─ specialise: Core nova · Weapons overload · Phase cloak
 //   Defence ──  Shields, armour, bulkheads, damage control
 //                             └─ specialise: Fortress · Reactive armour · Regenerative hull
 //   Synergies on the bridges between regions, once you own both halves.
@@ -39,10 +39,10 @@ import type { Stats } from '../sim/stats';
 // it changes (see FIGURES in sim/build.ts).
 
 export type Branch =
-  | 'phaser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'overcharge' | 'synergy' | 'salvage';
+  | 'laser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'overcharge' | 'synergy' | 'salvage';
 export type Category = 'weapons' | 'defence' | 'ship';
 export type UpgradeKind = 'stat' | 'system' | 'spec' | 'synergy' | 'tech';
-export type TechFaction = 'klingon' | 'cardassian' | 'romulan' | 'borg' | 'tholian';
+export type TechFaction = 'gutter' | 'custody' | 'office' | 'voice' | 'thren';
 
 export interface Req { id: string; lv?: number; }
 
@@ -80,89 +80,89 @@ export interface BranchDef {
 }
 
 export const BRANCHES: Record<Branch, BranchDef> = {
-  phaser: { name: 'Phasers', cat: 'weapons', identity: 'Gunship' },
+  laser: { name: 'Lasers', cat: 'weapons', identity: 'Gunship' },
   torpedo: { name: 'Torpedoes', cat: 'weapons', identity: 'Torpedo boat' },
   mine: { name: 'Mines', cat: 'weapons', identity: 'Minelayer' },
-  plasma: { name: 'Warp plasma', cat: 'weapons', identity: 'Plasma runner' },
+  plasma: { name: 'Drive plasma', cat: 'weapons', identity: 'Plasma runner' },
   close: { name: 'Close quarters', cat: 'weapons', identity: 'Brawler' },
   mobility: { name: 'Mobility', cat: 'ship', identity: 'Interceptor' },
   defence: { name: 'Defence', cat: 'defence', identity: 'Bulwark' },
   utility: { name: 'Utility', cat: 'ship', identity: 'Prospector' },
-  overcharge: { name: 'Warp core', cat: 'ship', identity: 'Core diver' },
+  overcharge: { name: 'Reactor', cat: 'ship', identity: 'Core diver' },
   synergy: { name: 'Synergy', cat: 'weapons', identity: 'Hybrid' },
   salvage: { name: 'Salvage', cat: 'ship', identity: 'Raider' },
 };
 
 export const UPGRADES: UpgradeDef[] = [
-  // ── phasers ────────────────────────────────────────────────────────────
+  // ── lasers ────────────────────────────────────────────────────────────
   {
-    id: 'ph_emitters', name: 'Phaser emitters', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 5, tags: ['phaser', 'damage'],
-    text: 'Your phaser lances hit harder.',
-    apply: (s) => { s.phaserDamage *= 1.25; },
+    id: 'ph_emitters', name: 'Laser emitters', branch: 'laser', cat: 'weapons', kind: 'stat', max: 5, tags: ['laser', 'damage'],
+    text: 'Your laser lances hit harder.',
+    apply: (s) => { s.laserDamage *= 1.25; },
   },
   {
-    id: 'ph_capacitors', name: 'Phaser capacitors', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 4, tags: ['phaser', 'rate'],
-    text: 'Your phasers fire faster, and draw less from the bank.',
-    apply: (s) => { s.phaserCooldown *= 0.86; s.bankShot *= 0.95; },
+    id: 'ph_capacitors', name: 'Laser capacitors', branch: 'laser', cat: 'weapons', kind: 'stat', max: 4, tags: ['laser', 'rate'],
+    text: 'Your lasers fire faster, and draw less from the bank.',
+    apply: (s) => { s.laserCooldown *= 0.86; s.bankShot *= 0.95; },
   },
   {
-    id: 'ph_bank', name: 'Phaser bank', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 3, tags: ['phaser', 'sustain'],
-    text: 'Your phaser bank holds more and refills faster.',
+    id: 'ph_bank', name: 'Laser bank', branch: 'laser', cat: 'weapons', kind: 'stat', max: 3, tags: ['laser', 'sustain'],
+    text: 'Your laser bank holds more and refills faster.',
     apply: (s) => { s.bankMax += 35; s.bankRefill *= 1.3; },
   },
   {
-    id: 'ph_lenses', name: 'Focusing lenses', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 3, tags: ['phaser', 'range'],
+    id: 'ph_lenses', name: 'Focusing lenses', branch: 'laser', cat: 'weapons', kind: 'stat', max: 3, tags: ['laser', 'range'],
     text: 'Your lances fly faster and reach further.',
-    apply: (s) => { s.phaserSpeed *= 1.14; s.phaserLife *= 1.06; },
+    apply: (s) => { s.laserSpeed *= 1.14; s.laserLife *= 1.06; },
   },
   {
-    id: 'ph_pierce', name: 'Piercing lances', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 3, tags: ['phaser', 'pierce'],
+    id: 'ph_pierce', name: 'Piercing lances', branch: 'laser', cat: 'weapons', kind: 'stat', max: 3, tags: ['laser', 'pierce'],
     requires: [{ id: 'ph_emitters' }],
     text: 'Each lance passes through one more target.',
-    apply: (s) => { s.phaserPierce += 1; },
+    apply: (s) => { s.laserPierce += 1; },
   },
   {
-    id: 'ph_cone', name: 'Phaser cone', branch: 'phaser', cat: 'weapons', kind: 'spec', max: 1, group: 'phaser', needs: 4,
-    tags: ['phaser', 'spread', 'close'],
+    id: 'ph_cone', name: 'Laser cone', branch: 'laser', cat: 'weapons', kind: 'spec', max: 1, group: 'laser', needs: 4,
+    tags: ['laser', 'spread', 'close'],
     text: 'Every shot becomes a fan of three lances.',
     note: 'Shorter reach, and each lance is a little lighter.',
-    apply: (s) => { s.phaserLances += 2; s.phaserSpread = 0.13; s.phaserLife *= 0.72; s.phaserDamage *= 0.82; },
+    apply: (s) => { s.laserLances += 2; s.laserSpread = 0.13; s.laserLife *= 0.72; s.laserDamage *= 0.82; },
   },
   {
-    id: 'ph_cone_wide', name: 'Wide-angle cone', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 2, tags: ['phaser', 'spread'],
+    id: 'ph_cone_wide', name: 'Wide-angle cone', branch: 'laser', cat: 'weapons', kind: 'stat', max: 2, tags: ['laser', 'spread'],
     requires: [{ id: 'ph_cone' }],
     text: 'Your fan gains two more lances.',
-    apply: (s) => { s.phaserLances += 2; s.phaserSpread += 0.015; s.bankShot *= 1.1; },
+    apply: (s) => { s.laserLances += 2; s.laserSpread += 0.015; s.bankShot *= 1.1; },
   },
   {
-    id: 'ph_lance', name: 'Heavy lance', branch: 'phaser', cat: 'weapons', kind: 'spec', max: 1, group: 'phaser', needs: 4,
-    tags: ['phaser', 'pierce', 'range'],
+    id: 'ph_lance', name: 'Heavy lance', branch: 'laser', cat: 'weapons', kind: 'spec', max: 1, group: 'laser', needs: 4,
+    tags: ['laser', 'pierce', 'range'],
     text: 'Slow, heavy lances that punch through a line of targets.',
-    apply: (s) => { s.phaserCooldown *= 1.9; s.phaserDamage *= 2.7; s.phaserPierce += 2; s.phaserSpeed *= 1.3; s.bankShot *= 1.55; },
+    apply: (s) => { s.laserCooldown *= 1.9; s.laserDamage *= 2.7; s.laserPierce += 2; s.laserSpeed *= 1.3; s.bankShot *= 1.55; },
   },
   {
-    id: 'ph_lance_cap', name: 'Lance capacitor', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 2, tags: ['phaser', 'damage'],
+    id: 'ph_lance_cap', name: 'Lance capacitor', branch: 'laser', cat: 'weapons', kind: 'stat', max: 2, tags: ['laser', 'damage'],
     requires: [{ id: 'ph_lance' }],
     text: 'Your heavy lances charge faster and hit harder.',
-    apply: (s) => { s.phaserDamage *= 1.18; s.phaserCooldown *= 0.88; },
+    apply: (s) => { s.laserDamage *= 1.18; s.laserCooldown *= 0.88; },
   },
   {
-    id: 'ph_array', name: 'Targeting array', branch: 'phaser', cat: 'weapons', kind: 'spec', max: 1, group: 'phaser', needs: 4,
-    tags: ['phaser', 'rate', 'sustain'],
+    id: 'ph_array', name: 'Targeting array', branch: 'laser', cat: 'weapons', kind: 'spec', max: 1, group: 'laser', needs: 4,
+    tags: ['laser', 'rate', 'sustain'],
     text: 'Your lances bend onto the hull nearest your nose.',
     note: 'They track inside a narrow cone, so you still have to point the ship.',
-    apply: (s) => { s.phaserHoming = 2.4; s.phaserCooldown *= 0.88; },
+    apply: (s) => { s.laserHoming = 2.4; s.laserCooldown *= 0.88; },
   },
   {
-    id: 'ph_fire_control', name: 'Fire control', branch: 'phaser', cat: 'weapons', kind: 'stat', max: 2, tags: ['phaser', 'sustain'],
+    id: 'ph_fire_control', name: 'Fire control', branch: 'laser', cat: 'weapons', kind: 'stat', max: 2, tags: ['laser', 'sustain'],
     requires: [{ id: 'ph_array' }],
     text: 'Your lances cost less energy and track harder.',
-    apply: (s) => { s.bankShot *= 0.75; s.phaserHoming += 0.9; s.phaserDamage *= 1.1; },
+    apply: (s) => { s.bankShot *= 0.75; s.laserHoming += 0.9; s.laserDamage *= 1.1; },
   },
 
   // ── torpedoes ──────────────────────────────────────────────────────────
   {
-    id: 'tp_bay', name: 'Photon torpedo bay', branch: 'torpedo', cat: 'weapons', kind: 'system', max: 1, tags: ['torpedo', 'unlock'],
+    id: 'tp_bay', name: 'Torpedo bay', branch: 'torpedo', cat: 'weapons', kind: 'system', max: 1, tags: ['torpedo', 'unlock'],
     weight: 1.4,
     text: 'Adds torpedoes on button 2 that chase their target.',
     note: 'They lock the best target in a cone ahead: ships before rock.',
@@ -175,7 +175,7 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.torpRack += 1; s.torpReload *= 0.9; },
   },
   {
-    id: 'tp_yield', name: 'Photon yield', branch: 'torpedo', cat: 'weapons', kind: 'stat', max: 4, tags: ['torpedo', 'damage', 'area'],
+    id: 'tp_yield', name: 'Warhead yield', branch: 'torpedo', cat: 'weapons', kind: 'stat', max: 4, tags: ['torpedo', 'damage', 'area'],
     requires: [{ id: 'tp_bay' }],
     text: 'Your torpedoes hit harder, over a wider blast.',
     apply: (s) => { s.torpDamage *= 1.25; s.torpBlast *= 1.07; },
@@ -219,22 +219,22 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.torpCone = Math.PI; s.torpSeek *= 1.35; s.torpMax *= 1.4; s.torpAccel *= 1.5; s.torpTurn *= 1.8; s.torpVsShips *= 1.5; },
   },
   {
-    id: 'tp_painter', name: 'Target painter', branch: 'torpedo', cat: 'weapons', kind: 'stat', max: 1, tags: ['torpedo', 'phaser'],
+    id: 'tp_painter', name: 'Target painter', branch: 'torpedo', cat: 'weapons', kind: 'stat', max: 1, tags: ['torpedo', 'laser'],
     requires: [{ id: 'tp_precision' }],
-    text: 'Phaser hits paint a target; torpedoes lock it first and hit it harder.',
+    text: 'Laser hits paint a target; torpedoes lock it first and hit it harder.',
     apply: (s) => { s.painter = true; s.markBonus = 1.6; },
   },
 
   // ── mines ──────────────────────────────────────────────────────────────
   {
-    id: 'mn_layer', name: 'Tricobalt mine layer', branch: 'mine', cat: 'weapons', kind: 'system', max: 1, tags: ['mine', 'unlock', 'area'],
+    id: 'mn_layer', name: 'Seismic mine layer', branch: 'mine', cat: 'weapons', kind: 'system', max: 1, tags: ['mine', 'unlock', 'area'],
     weight: 1.2,
     text: 'Lays mines in your wake that wait for anything that follows you.',
     note: 'They lay themselves. Where you fly is where they go.',
     apply: (s) => { s.mines = true; },
   },
   {
-    id: 'mn_yield', name: 'Tricobalt yield', branch: 'mine', cat: 'weapons', kind: 'stat', max: 4, tags: ['mine', 'damage', 'area'],
+    id: 'mn_yield', name: 'Charge yield', branch: 'mine', cat: 'weapons', kind: 'stat', max: 4, tags: ['mine', 'damage', 'area'],
     requires: [{ id: 'mn_layer' }],
     text: 'Your mines hit harder, over a wider blast.',
     apply: (s) => { s.mineDamage *= 1.25; s.mineBlast *= 1.1; },
@@ -271,9 +271,9 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.mineGravity = true; s.mineDamage *= 1.3; },
   },
 
-  // ── warp plasma ────────────────────────────────────────────────────────
+  // ── drive plasma ────────────────────────────────────────────────────────
   {
-    id: 'pl_vent', name: 'Warp plasma vent', branch: 'plasma', cat: 'weapons', kind: 'system', max: 1, tags: ['plasma', 'unlock', 'area'],
+    id: 'pl_vent', name: 'Drive plasma vent', branch: 'plasma', cat: 'weapons', kind: 'system', max: 1, tags: ['plasma', 'unlock', 'area'],
     text: 'Your engines leave a burning trail while you thrust.',
     note: 'Lead what chases you through it.',
     apply: (s) => { s.plasma = true; },
@@ -344,7 +344,7 @@ export const UPGRADES: UpgradeDef[] = [
 
   // ── mobility ───────────────────────────────────────────────────────────
   {
-    id: 'mo_impulse', name: 'Impulse engines', branch: 'mobility', cat: 'ship', kind: 'stat', max: 4, tags: ['mobility', 'speed'],
+    id: 'mo_impulse', name: 'Main drive', branch: 'mobility', cat: 'ship', kind: 'stat', max: 4, tags: ['mobility', 'speed'],
     text: 'More thrust and a higher top speed, and near misses charge your core faster.',
     apply: (s) => { s.thrust *= 1.08; s.ocGain *= 1.06; },
   },
@@ -365,7 +365,7 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: 'mo_drift', name: 'Drift drive', branch: 'mobility', cat: 'ship', kind: 'spec', max: 1, group: 'mobility', needs: 4,
-    tags: ['mobility', 'speed', 'phaser'],
+    tags: ['mobility', 'speed', 'laser'],
     text: 'Off the throttle you keep your speed and turn faster, and your lances hit harder.',
     note: 'Lances fired while drifting deal a third more.',
     apply: (s) => { s.drift = true; s.driftBonus = 1.33; },
@@ -379,7 +379,7 @@ export const UPGRADES: UpgradeDef[] = [
 
   // ── defence ────────────────────────────────────────────────────────────
   {
-    id: 'df_shield', name: 'Deflector shields', branch: 'defence', cat: 'defence', kind: 'system', max: 1, tags: ['defence', 'unlock', 'shield'],
+    id: 'df_shield', name: 'Shield emitters', branch: 'defence', cat: 'defence', kind: 'system', max: 1, tags: ['defence', 'unlock', 'shield'],
     text: 'A shield that takes one hit for you, then recharges.',
     note: 'It recharges only after it breaks, and slowly.',
     apply: (s) => { s.shieldMax = 1; },
@@ -424,7 +424,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'df_regenerative', name: 'Regenerative hull', branch: 'defence', cat: 'defence', kind: 'spec', max: 1, group: 'defence', needs: 3,
     tags: ['defence', 'armour'], locked: true,
-    text: 'Borg alloy: one plate grows back after a long spell without damage.',
+    text: 'Voice alloy: one plate grows back after a long spell without damage.',
     note: 'A minute without a hit, and only below full hull.',
     apply: (s) => { s.regen = 60; },
   },
@@ -432,11 +432,11 @@ export const UPGRADES: UpgradeDef[] = [
   // ── utility ────────────────────────────────────────────────────────────
   {
     id: 'ut_tractor', name: 'Tractor beam', branch: 'utility', cat: 'ship', kind: 'stat', max: 3, tags: ['utility', 'tractor'],
-    text: 'You pull dilithium in from further away.',
+    text: 'You pull krail in from further away.',
     apply: (s) => { s.tractor *= 1.35; },
   },
   {
-    id: 'ut_matrix', name: 'Dilithium matrix', branch: 'utility', cat: 'ship', kind: 'stat', max: 2, tags: ['utility', 'xp'],
+    id: 'ut_matrix', name: 'Krail matrix', branch: 'utility', cat: 'ship', kind: 'stat', max: 2, tags: ['utility', 'xp'],
     weight: 0.8,
     text: 'Every crystal is worth more toward your next refit.',
     apply: (s) => { s.xpMult *= 1.12; },
@@ -448,14 +448,14 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.dmgAll *= 1.07; },
   },
 
-  // ── the warp core ──────────────────────────────────────────────────────
+  // ── the reactor ──────────────────────────────────────────────────────
   {
-    id: 'oc_coils', name: 'Warp core coils', branch: 'overcharge', cat: 'ship', kind: 'stat', max: 3, tags: ['overcharge', 'evasion'],
+    id: 'oc_coils', name: 'Reactor coils', branch: 'overcharge', cat: 'ship', kind: 'stat', max: 3, tags: ['overcharge', 'evasion'],
     text: 'Near misses charge your overcharge faster.',
     apply: (s) => { s.ocGain *= 1.25; },
   },
   {
-    id: 'oc_nova', name: 'Warp nova', branch: 'overcharge', cat: 'ship', kind: 'spec', max: 1, group: 'overcharge', needs: 2,
+    id: 'oc_nova', name: 'Core nova', branch: 'overcharge', cat: 'ship', kind: 'spec', max: 1, group: 'overcharge', needs: 2,
     tags: ['overcharge', 'area', 'damage'],
     text: 'Your overcharge release is a much bigger, harder blast.',
     apply: (s) => { s.ocRadius *= 1.45; s.ocDamage *= 1.8; },
@@ -482,8 +482,8 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.torpPlasma = true; },
   },
   {
-    id: 'sy_detonator', name: 'Phaser detonators', branch: 'synergy', cat: 'weapons', kind: 'synergy', max: 1,
-    requires: [{ id: 'mn_layer' }, { id: 'ph_emitters', lv: 2 }], tags: ['mine', 'phaser'],
+    id: 'sy_detonator', name: 'Laser detonators', branch: 'synergy', cat: 'weapons', kind: 'synergy', max: 1,
+    requires: [{ id: 'mn_layer' }, { id: 'ph_emitters', lv: 2 }], tags: ['mine', 'laser'],
     text: 'Shoot your own mines to set them off early, harder.',
     apply: (s) => { s.mineDetonate = true; },
   },
@@ -534,7 +534,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ut_prospector', name: 'Prospector', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'xp'],
-    text: 'Rock gives up dilithium half again as often.',
+    text: 'Rock gives up krail half again as often.',
     apply: (s) => { s.crystalChance *= 1.5; s.tractor *= 1.1; },
   },
   {
@@ -547,34 +547,34 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ut_scanner', name: 'Deep scanners', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'xp', 'damage'],
-    text: 'Rare rock turns up twice as often, and elites carry twice the dilithium.',
+    text: 'Rare rock turns up twice as often, and elites carry twice the krail.',
     apply: (s) => { s.rareRate *= 2; s.eliteLoot *= 2; },
   },
 
   // ── salvage: tech from the capital ships you destroy ───────────────────
   {
-    id: 'tech_klingon', name: 'Klingon disruptors', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'klingon', tags: ['phaser', 'damage'],
-    text: 'Every fourth phaser shot is a disruptor bolt at triple damage.',
+    id: 'tech_gutter', name: 'Gutter scatterguns', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'gutter', tags: ['laser', 'damage'],
+    text: 'Every fourth laser shot is a scattergun slug at triple damage.',
     apply: (s) => { s.disruptor = 4; },
   },
   {
-    id: 'tech_cardassian', name: 'Cardassian compressors', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'cardassian', tags: ['phaser', 'torpedo', 'range'],
+    id: 'tech_custody', name: 'Custody compressors', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'custody', tags: ['laser', 'torpedo', 'range'],
     text: 'Your lances reach further and pierce one more target; torpedo blasts widen.',
-    apply: (s) => { s.phaserLife *= 1.2; s.phaserPierce += 1; s.torpBlast *= 1.1; },
+    apply: (s) => { s.laserLife *= 1.2; s.laserPierce += 1; s.torpBlast *= 1.1; },
   },
   {
-    id: 'tech_romulan', name: 'Romulan cloak', branch: 'salvage', cat: 'ship', kind: 'tech', max: 1, tech: 'romulan', tags: ['mobility', 'evasion'],
+    id: 'tech_office', name: 'Office of Peace cloak', branch: 'salvage', cat: 'ship', kind: 'tech', max: 1, tech: 'office', tags: ['mobility', 'evasion'],
     text: 'A barrel roll cloaks you: hostile hulls hold their fire for a moment.',
     note: 'Capital ships see through it.',
     apply: (s) => { s.rollCloak = 1.6; s.rollIframes += 0.1; },
   },
   {
-    id: 'tech_borg', name: 'Borg adaptive shield', branch: 'salvage', cat: 'defence', kind: 'tech', max: 1, tech: 'borg', tags: ['defence', 'shield'],
+    id: 'tech_voice', name: 'Voice adaptive shield', branch: 'salvage', cat: 'defence', kind: 'tech', max: 1, tech: 'voice', tags: ['defence', 'shield'],
     text: 'Your shield adapts: it recharges faster, and a ship with no shield gets one.',
     apply: (s) => { s.shieldMax = Math.max(1, s.shieldMax); s.shieldRecharge *= 0.8; },
   },
   {
-    id: 'tech_tholian', name: 'Tholian snares', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'tholian', tags: ['mine', 'torpedo', 'control'],
+    id: 'tech_thren', name: 'Thren snares', branch: 'salvage', cat: 'weapons', kind: 'tech', max: 1, tech: 'thren', tags: ['mine', 'torpedo', 'control'],
     text: 'Your torpedo and mine blasts snare the hulls they catch, slowing them hard.',
     apply: (s) => { s.snare = 3; },
   },

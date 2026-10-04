@@ -57,7 +57,7 @@ describe('flight model, ported from the original', () => {
     expect(s.heading).toBeLessThan(Math.PI / 2);
   });
 
-  it('carves turns on the Kestrel: grip cuts the sideways slide under thrust', () => {
+  it('carves turns on the Wayward: grip cuts the sideways slide under thrust', () => {
     const slide = (grip: number) => {
       const hull = { ...HULL, grip };
       const s = fly(newShip(), hull, ctl({ thrust: 1 }), 4);
@@ -101,7 +101,7 @@ describe('the barrel roll', () => {
   });
 
   it('always leaves a gap, even rolled on the cooldown with every jet and the evasive pattern', () => {
-    const hull = flightHull(computeStats({ mo_jets: 3, mo_evasion: 1, pl_wake: 1, tech_romulan: 1 }));
+    const hull = flightHull(computeStats({ mo_jets: 3, mo_evasion: 1, pl_wake: 1, tech_office: 1 }));
     expect(hull.rollIframes).toBeGreaterThanOrEqual(ROLL_IFRAMES);
     const s = newShip();
     let open = 0;

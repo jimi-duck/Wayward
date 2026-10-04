@@ -8,15 +8,15 @@ Play happens on a flat plane; the presentation is full 3D. The camera sits above
 
 ## The player's ships
 
-- **Hard-surface and faceted.** Low polygon count with crisp bevels, matte graphite hull plating (around `#2B3440` albedo), panel lines, a registry decal on the saucer. No gloss, no chrome.
-- **Light is `signal`.** Nacelle strips, the impulse glow and the trail are emissive cyan; they are the brightest thing on the ship and the only part that blooms. The deflector dish is the one `command` point of light, as on the mark.
-- **Three silhouettes that differ at 30px.** Escort: a compact wedge with integrated nacelles. Cruiser: a long cut saucer, nacelles on pylons. Scout: a small saucer, nacelles slung low. These are generic Starfleet-era forms; none is traced from a canon design.
+- **Hard-surface and faceted.** Low polygon count with crisp bevels, matte graphite hull plating (around `#2B3440` albedo), panel lines, a registry decal on the cutting head's cheeks. No gloss, no chrome.
+- **Light is `signal`.** Drive-pod coils, the drive ring and the trail are emissive cyan; they are the brightest thing on the ship and the only part that blooms. The cutting laser is the one `command` point of light, as on the mark.
+- **The Wayward's silhouette at 30px**: a blunt cutting head, a boxy engine block with containers on the spine, and two drive pods on swept pylons. Rebuilds change it (a gunboat spine, a prospector rig, a ghost hull); each must still read at 30px.
 - Shields read as a hex-cell fresnel dome in `signal` that is invisible at rest and ripples outward from the impact point.
 
 ## Asteroids
 
-- **Dark basalt with dilithium seams.** Faceted low-poly rock in near-black (`#1A1622`), split by emissive `dilithium` veins. The silhouette edge carries a thin violet rim light, so rocks read against deep space at a glance.
-- **Breaking one shows what it was for.** A fracture splits a rock into two or three smaller rocks along its seams and throws out glowing violet crystal shards; the shards are the dilithium the player collects. The XP economy is visible in the rock itself.
+- **Dark basalt with krail seams.** Faceted low-poly rock in near-black (`#1A1622`), split by emissive `krail` veins. The silhouette edge carries a thin violet rim light, so rocks read against deep space at a glance.
+- **Breaking one shows what it was for.** A fracture splits a rock into two or three smaller rocks along its seams and throws out glowing violet crystal shards; the shards are the krail the player collects. The XP economy is visible in the rock itself.
 - Rocks harden over a run (2 to 5 hits). A hardened rock shows more crystal and less basalt.
 
 ## Hostile factions
@@ -25,11 +25,11 @@ Warm, and each asks a different question. Hull colour, emissive colour and silho
 
 | Faction | Hull and light | Silhouette | Signature |
 |---|---|---|---|
-| Klingon | Bronze-green hull, `faction-klingon` light | Swept wings, forward head | Pincer wing that dives together |
-| Cardassian | Ochre hull, `faction-cardassian` light | Long spine, fan of emitters | Fans of fire, a wall of escorts |
-| Romulan | Teal-green hull, `faction-romulan` light | Wide double wings | Cloak shimmer, a plasma torpedo you can shoot down |
-| Borg | Black lattice cube, `nominal` light | A cube with a lit grid | Cutting beam, tractor lock, adaptation glow |
-| Tholian | Crystalline amber, `faction-tholian` light | Faceted shard | Webs in `dilithium` violet |
+| Gutter | Bronze-green hull, `faction-gutter` light | Swept wings, forward head | Pincer wing that dives together |
+| Custody | Ochre hull, `faction-custody` light | Long spine, fan of emitters | Fans of fire, a wall of escorts |
+| Office | Teal-green hull, `faction-office` light | Wide double wings | Cloak shimmer, a plasma torpedo you can shoot down |
+| Voice | Black lattice foundry, `nominal` light | A foundry with a lit grid | Cutting beam, tractor lock, adaptation glow |
+| Thren | Crystalline amber, `faction-thren` light | Faceted shard | Webs in `krail` violet |
 
 ## Sectors
 
@@ -44,7 +44,7 @@ Three sectors, each ending in a flagship fight. These are working proposals unti
 ## Lighting and post-processing
 
 - One key light per sector (the sun or the ring), a cool `signal`-tinted rim light from behind the camera, and very little ambient: space is dark and contrast is the point.
-- Bloom applies only above a high threshold, so only emissives bloom: ship lights, fire, dilithium seams, shards, explosions. Panels and hulls never do.
+- Bloom applies only above a high threshold, so only emissives bloom: ship lights, fire, krail seams, shards, explosions. Panels and hulls never do.
 - Tone mapping keeps whites from clipping; the ship's cyan must stay cyan at full brightness.
 - Phones run the medium or low quality tier: half-resolution bloom, no shadows on rocks, fewer shards.
 
@@ -52,7 +52,7 @@ Three sectors, each ending in a flagship fight. These are working proposals unti
 
 | Event | Look |
 |---|---|
-| Phaser shot | A short `signal` beam with a white core, 2 to 3 frames of muzzle flash |
+| Laser shot | A short `signal` beam with a white core, 2 to 3 frames of muzzle flash |
 | Torpedo | A white-cyan point with a trailing ring every few frames; a spherical shockwave on detonation |
 | Hostile fire | The faction colour, always warm, never cyan |
 | Rock destroyed | White flash, violet bloom, crystal shards, a small shake |
@@ -65,5 +65,5 @@ Three sectors, each ending in a flagship fight. These are working proposals unti
 Some instruments live in the 3D scene, because the player is looking at the ship and not at the corners:
 
 - **The overcharge ring:** 28 segments on a tilted orbit under the ship, lighting as near misses charge it.
-- **The tractor radius:** a faint dashed ring at the dilithium pull radius, shown only while shards are moving toward you.
+- **The tractor radius:** a faint dashed ring at the krail pull radius, shown only while shards are moving toward you.
 - **The capital ship's tag:** name, hull meter and fuse, on a leader line in target-lock brackets.

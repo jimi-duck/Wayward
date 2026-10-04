@@ -37,7 +37,7 @@ import {
 // PI/2 faces -Z ("up" on screen), headings are never wrapped. Enemies, their
 // fire and the player's fire move in 3D; rock and bulwarks sit on the plane.
 //
-// A run is a loop: fly, fight, collect dilithium, fill the rail, refit, face
+// A run is a loop: fly, fight, collect krail, fill the rail, refit, face
 // harder sky, meet capital ships, and in the end lose the hull. The world
 // pauses itself at the two decisions a run asks for, a refit (`phase`
 // 'refit': three cards in `offer`) and a hail ('hail': engage or evade),
@@ -110,9 +110,9 @@ export class World implements EncounterHost {
   /** Seconds of slow motion left before the cards come up. */
   celebrate = 0;
 
-  // the warp core, the chain, power-ups
+  // the reactor, the chain, power-ups
   oc = 0;
-  /** Seconds of weapons overload left (after a release), of phase cloak, and of the roll cloak (Romulan tech). */
+  /** Seconds of weapons overload left (after a release), of phase cloak, and of the roll cloak (Office tech). */
   overload = 0;
   phaseT = 0;
   cloakT = 0;
@@ -133,7 +133,7 @@ export class World implements EncounterHost {
   private sinceHit = 0;
   private repairCd = 0;
   private nextRare = RARE_FIRST;
-  private theatre: Faction = 'klingon';
+  private theatre: Faction = 'gutter';
   private theatreT = 70;
   private nextEvent = EVENT_FIRST;
   private eventN = 0;
@@ -437,7 +437,7 @@ export class World implements EncounterHost {
       const al = this.aliens[i]!;
       moveAlien(al, s, dt, arena, this.webs, this.rng, this.events);
       if (al.snare > 0) {
-        // snared (Tholian tech): the hull wades as if through a web
+        // snared (Thren tech): the hull wades as if through a web
         al.snare = Math.max(0, al.snare - dt);
         const k = Math.exp(-4 * dt);
         al.vx *= k; al.vy *= k; al.vz *= k;
@@ -635,8 +635,8 @@ export class World implements EncounterHost {
   private collect(pk: Pickup): void {
     switch (pk.kind) {
       case 'crystal': {
-        this.run.dilithium += pk.value;
-        this.addScore(pk.value * SCORE_PER_CRYSTAL, 'dilithium');
+        this.run.krail += pk.value;
+        this.addScore(pk.value * SCORE_PER_CRYSTAL, 'krail');
         this.events.push({ type: 'crystal', x: pk.x, z: pk.z, value: pk.value });
         this.gainXp(pk.value * this.stats.xpMult);
         break;
@@ -695,7 +695,7 @@ export class World implements EncounterHost {
     }
   }
 
-  // ── the warp core ─────────────────────────────────────────────────────
+  // ── the reactor ─────────────────────────────────────────────────────
 
   private addCharge(amount: number, x: number, y: number, z: number, raw = false): void {
     const before = this.oc;
@@ -786,7 +786,7 @@ export class World implements EncounterHost {
     const inBulwark = (x: number, y: number, z: number, r: number) =>
       bulwarks.find((b) => (x - b.x) ** 2 + y * y + (z - b.z) ** 2 < (b.r * 0.9 + r) ** 2);
 
-    // phaser lances: plasma torpedoes first (they can be shot down), then our own mines (the
+    // laser lances: plasma torpedoes first (they can be shot down), then our own mines (the
     // detonator), hulls, the boss, rock, bulwarks. A piercing lance carries on through.
     for (let i = this.bolts.length - 1; i >= 0; i--) {
       const b = this.bolts[i]!;
@@ -815,15 +815,15 @@ export class World implements EncounterHost {
         if (cloaked(al) || b.hit.includes(al.id) || !hit(al.x, al.y, al.z, al.r)) continue;
         land(al.id);
         if (st.painter) al.mark = 4;
-        this.hurtAlien(al, b.dmg, 'phaser', b.x, b.y, b.z);
+        this.hurtAlien(al, b.dmg, 'laser', b.x, b.y, b.z);
       }
       const boss = this.command.targetable();
-      if (!spent && boss && !b.hit.includes(boss.id) && hit(boss.x, boss.y, boss.z, boss.r * 0.85)) { land(boss.id); this.hurtBoss(b.dmg, 'phaser', b.x, b.y, b.z); }
+      if (!spent && boss && !b.hit.includes(boss.id) && hit(boss.x, boss.y, boss.z, boss.r * 0.85)) { land(boss.id); this.hurtBoss(b.dmg, 'laser', b.x, b.y, b.z); }
       for (const r of [...rocks]) {
         if (spent) break;
         if (b.hit.includes(r.id) || !hit(r.x, 0, r.z, r.r)) continue;
         land(r.id);
-        this.damageRock(r, b.dmg, 'phaser', b.x, b.y, b.z);
+        this.damageRock(r, b.dmg, 'laser', b.x, b.y, b.z);
       }
       if (!spent && inBulwark(b.x, b.y, b.z, 0.2)) { spent = true; this.events.push({ type: 'bulwarkHit', x: b.x, y: b.y, z: b.z }); }
       if (spent) this.bolts.splice(i, 1);
@@ -886,7 +886,7 @@ export class World implements EncounterHost {
           return this.hitShip(sh.hp > 0 ? 'fire:plasma' : sh.from ? `fire:${sh.from}` : 'fire');
         }
       }
-      // beams: drones low enough to cut across the plane, and the cube
+      // beams: drones low enough to cut across the plane, and the foundry
       // a beam discharges into the hull it cuts: one hit per beam, however long it would have burned
       for (const al of this.aliens) {
         if (Math.abs(al.y) < 3 && beamLive(al) && rayDist(s.x, s.z, al.x, al.z, al.beamAng, BEAM_LEN) < BEAM_W + SHIP_R) { al.beamT = 0; return this.hitShip(`beam:${al.variant}`); }
@@ -943,7 +943,7 @@ export class World implements EncounterHost {
     }
     this.run.damageBy[source] = (this.run.damageBy[source] ?? 0) + 1;
     this.sinceHit = 0;
-    // an emergency shield (power-up) first, then the deflectors, then the hull
+    // an emergency shield (power-up) first, then the shields, then the hull
     if (this.powers.shield > 0 || this.shields > 0) {
       if (this.powers.shield > 0) this.powers.shield = 0;
       else {
@@ -1007,7 +1007,7 @@ export class World implements EncounterHost {
   /** Returns true if the hull was destroyed. `quiet` skips the hit flash (damage over time). */
   private hurtAlien(al: Alien, dmg: number, src: Weapon, x: number, y: number, z: number, quiet = false): boolean {
     if (!this.aliens.includes(al)) return false;
-    // the Borg adapt: past a share of their hull soaked (the original's 6 of 16), half damage
+    // Voice hulls adapt: past a share of their hull soaked (the original's 6 of 16), half damage
     if (FACTION_TRAITS[al.faction].adapt && al.soaked >= al.maxHp * (BORG_ADAPT / 16)) dmg *= 0.5;
     if (src === 'torpedo' && al.mark > 0) dmg *= this.stats.markBonus;
     al.soaked += dmg;
@@ -1071,7 +1071,7 @@ export class World implements EncounterHost {
     this.run.killsBy[src]++;
     this.chainKill();
     this.events.push({ type: 'bossDestroyed', x: b.x, y: b.y, z: b.z, name: b.name, faction: b.faction, points: bounty });
-    // the salvage: dilithium, a hull repair, a power-up, a refit card and the faction's tech
+    // the salvage: krail, a hull repair, a power-up, a refit card and the faction's tech
     this.dropCrystals(b.x, b.z, 26 + 8 * b.n, 12);
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
     this.dropItem(this.randomPower(), b.x, b.z);
@@ -1181,7 +1181,7 @@ export class World implements EncounterHost {
     this.oc = 0; this.overload = 0; this.phaseT = 0; this.cloakT = 0; this.chain = 0; this.chainT = 0;
     for (const k of POWERS) this.powers[k] = 0;
     this.dcUsed = false; this.sinceHit = 0; this.repairCd = 0; this.nextRare = RARE_FIRST;
-    this.theatre = 'klingon'; this.theatreT = 70; this.nextEvent = EVENT_FIRST; this.eventN = 0; this.lastEvent = null;
+    this.theatre = 'gutter'; this.theatreT = 70; this.nextEvent = EVENT_FIRST; this.eventN = 0; this.lastEvent = null;
     this.timeScore = 0; this.nextSample = 0;
     this.alive = true; this.dying = 0;
     s.vx = s.vz = 0;

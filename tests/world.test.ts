@@ -26,7 +26,7 @@ function range(ahead: number, size: 0 | 1 | 2 = 0): { w: World; rock: Rock } {
   return { w, rock };
 }
 
-describe('phasers', () => {
+describe('lasers', () => {
   it('fire at the original rate while the trigger is held (every 15th step at 60Hz, as the original did)', () => {
     const w = new World(1);
     w.field.rocks = [];

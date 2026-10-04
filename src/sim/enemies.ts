@@ -15,36 +15,36 @@ import { HZ, PX } from './tuning';
 //   interceptors · fast, light, evasive. They fly attack runs: swing out
 //                  high to one side, dive on the plane at where you will be,
 //                  fire as they pass, climb out and come round again. They
-//                  jink (a barrel roll up or down and across) when a phaser
+//                  jink (a barrel roll up or down and across) when a laser
 //                  lance is about to hit them.
-//     scout      · Bird-of-Prey. Strafing runs, a pot shot on each.
-//     raptor     · K'Tinga. Lines up on the plane, then commits to a run
+//     scout      · Gutter skiff. Strafing runs, a pot shot on each.
+//     raptor     · Gutter ram-ship. Lines up on the plane, then commits to a run
 //                  straight through you, guns blazing, and climbs away.
-//     stalker    · Heavy Bird-of-Prey. Sits on your tail and leads its shots.
+//     stalker    · Gutter hunter. Sits on your tail and leads its shots.
 //   cruisers     · slow, heavy, armoured. They hold range and use the
 //                  bulwarks as cover: tuck in behind one, slide out to fire
 //                  a broadside, then back in. With no cover, they hold range
 //                  and slide.
-//     lancer     · Galor. Fans of three, broadside on.
-//     warbird    · Romulan. Long range; a plasma torpedo that follows you and
-//                  that your phasers can shoot down.
-//     drone      · Borg cube. Grinds straight at you on the plane and cuts
+//     lancer     · Custody cutter. Fans of three, broadside on.
+//     warbird    · Office. Long range; a plasma torpedo that follows you and
+//                  that your lasers can shoot down.
+//     drone      · Voice foundry. Grinds straight at you on the plane and cuts
 //                  with a tracking beam; adapts (half damage) once it has
 //                  soaked enough.
 //   special
-//     weaver     · Tholian. Flies to a point, spins a web, leaves.
+//     weaver     · Thren. Flies to a point, spins a web, leaves.
 //     freighter  · a convoy hull for the sector events: crosses, never fires.
 //
 // A hull is three things layered: its archetype (above: how it flies and
 // fights), its faction (FACTION_TRAITS: what every hull of that faction
-// does: Klingons press harder, Cardassians reach further, Romulans cloak,
-// the Borg adapt, Tholians leave their webs behind), and, later in a run,
+// does: Gutter crews press harder, Custody cutters reach further, Office of Peace ships cloak,
+// Voice hulls adapt, the Thren leave their webs behind), and, later in a run,
 // an elite modifier (ELITES). VARIANTS pairs archetypes with factions for
 // the spawner, so a new enemy is usually one row there, not new code.
 //
 // Everything is deterministic: every random draw comes from the world's rng.
 
-export type Faction = 'klingon' | 'cardassian' | 'romulan' | 'borg' | 'tholian';
+export type Faction = 'gutter' | 'custody' | 'office' | 'voice' | 'thren';
 export type AlienKind = 'scout' | 'raptor' | 'lancer' | 'warbird' | 'stalker' | 'drone' | 'weaver' | 'freighter';
 export type Role = 'interceptor' | 'cruiser' | 'special';
 type Tactic = 'dogfight' | 'ram' | 'hunt' | 'broadside' | 'snipe' | 'grind' | 'anchor' | 'cross';
@@ -67,7 +67,7 @@ export interface AlienType {
   dash: number;
   accel: number;
   bonus: number;
-  /** Dilithium it drops when destroyed. */
+  /** Krail it drops when destroyed. */
   xp: number;
   /** Cooldown multiplier and shots per volley. */
   cd: number;
@@ -82,14 +82,14 @@ export interface AlienType {
 }
 
 export const ALIEN_TYPES: Record<AlienKind, AlienType> = {
-  scout:     { label: 'Interceptor',    role: 'interceptor', tactic: 'dogfight',  fire: 'fan',    r: 1.5, hp: 2,  speed: 24, dash: 40, accel: 40, bonus: 150, xp: 3,  cd: 1,    shots: 1, faction: 'klingon',    ttl: 0,  evade: 0.7,  range: 50 },
-  raptor:    { label: 'Strike fighter', role: 'interceptor', tactic: 'ram',       fire: 'burst',  r: 1.7, hp: 4,  speed: 20, dash: 50, accel: 34, bonus: 300, xp: 4,  cd: 1,    shots: 2, faction: 'klingon',    ttl: 0,  evade: 0.45, range: 40 },
-  lancer:    { label: 'Heavy cruiser',  role: 'cruiser',     tactic: 'broadside', fire: 'fan',    r: 2.8, hp: 9,  speed: 9,  dash: 14, accel: 8,  bonus: 420, xp: 7,  cd: 1.55, shots: 3, faction: 'cardassian', ttl: 50, evade: 0.15, range: 46 },
-  warbird:   { label: 'Plasma cruiser', role: 'cruiser',     tactic: 'snipe',     fire: 'plasma', r: 2.8, hp: 9,  speed: 11, dash: 16, accel: 9,  bonus: 480, xp: 7,  cd: 2.3,  shots: 1, faction: 'romulan',    ttl: 34, evade: 0.2,  range: 56 },
-  stalker:   { label: 'Hunter',         role: 'interceptor', tactic: 'hunt',      fire: 'lead',   r: 1.6, hp: 4,  speed: 22, dash: 36, accel: 42, bonus: 340, xp: 5,  cd: 1.3,  shots: 1, faction: 'klingon',    ttl: 26, evade: 0.6,  range: 40 },
-  drone:     { label: 'Assimilator',    role: 'cruiser',     tactic: 'grind',     fire: 'beam',   r: 2.4, hp: 16, speed: 6,  dash: 9,  accel: 5,  bonus: 560, xp: 9,  cd: 1,    shots: 0, faction: 'borg',       ttl: 0,  evade: 0,    range: 44 },
-  weaver:    { label: 'Web layer',      role: 'special',     tactic: 'anchor',    fire: 'none',   r: 1.5, hp: 3,  speed: 18, dash: 28, accel: 30, bonus: 380, xp: 5,  cd: 1,    shots: 0, faction: 'tholian',    ttl: 0,  evade: 0.5,  range: 30 },
-  freighter: { label: 'Freighter',      role: 'special',     tactic: 'cross',     fire: 'none',   r: 3.4, hp: 26, speed: 7,  dash: 9,  accel: 4,  bonus: 600, xp: 16, cd: 1,    shots: 0, faction: 'cardassian', ttl: 46, evade: 0,    range: 0 },
+  scout:     { label: 'Interceptor',    role: 'interceptor', tactic: 'dogfight',  fire: 'fan',    r: 1.5, hp: 2,  speed: 24, dash: 40, accel: 40, bonus: 150, xp: 3,  cd: 1,    shots: 1, faction: 'gutter',    ttl: 0,  evade: 0.7,  range: 50 },
+  raptor:    { label: 'Strike fighter', role: 'interceptor', tactic: 'ram',       fire: 'burst',  r: 1.7, hp: 4,  speed: 20, dash: 50, accel: 34, bonus: 300, xp: 4,  cd: 1,    shots: 2, faction: 'gutter',    ttl: 0,  evade: 0.45, range: 40 },
+  lancer:    { label: 'Heavy cruiser',  role: 'cruiser',     tactic: 'broadside', fire: 'fan',    r: 2.8, hp: 9,  speed: 9,  dash: 14, accel: 8,  bonus: 420, xp: 7,  cd: 1.55, shots: 3, faction: 'custody', ttl: 50, evade: 0.15, range: 46 },
+  warbird:   { label: 'Plasma cruiser', role: 'cruiser',     tactic: 'snipe',     fire: 'plasma', r: 2.8, hp: 9,  speed: 11, dash: 16, accel: 9,  bonus: 480, xp: 7,  cd: 2.3,  shots: 1, faction: 'office',    ttl: 34, evade: 0.2,  range: 56 },
+  stalker:   { label: 'Hunter',         role: 'interceptor', tactic: 'hunt',      fire: 'lead',   r: 1.6, hp: 4,  speed: 22, dash: 36, accel: 42, bonus: 340, xp: 5,  cd: 1.3,  shots: 1, faction: 'gutter',    ttl: 26, evade: 0.6,  range: 40 },
+  drone:     { label: 'Grinder',    role: 'cruiser',     tactic: 'grind',     fire: 'beam',   r: 2.4, hp: 16, speed: 6,  dash: 9,  accel: 5,  bonus: 560, xp: 9,  cd: 1,    shots: 0, faction: 'voice',       ttl: 0,  evade: 0,    range: 44 },
+  weaver:    { label: 'Web layer',      role: 'special',     tactic: 'anchor',    fire: 'none',   r: 1.5, hp: 3,  speed: 18, dash: 28, accel: 30, bonus: 380, xp: 5,  cd: 1,    shots: 0, faction: 'thren',    ttl: 0,  evade: 0.5,  range: 30 },
+  freighter: { label: 'Freighter',      role: 'special',     tactic: 'cross',     fire: 'none',   r: 3.4, hp: 26, speed: 7,  dash: 9,  accel: 4,  bonus: 600, xp: 16, cd: 1,    shots: 0, faction: 'custody', ttl: 46, evade: 0,    range: 0 },
 };
 export const ALIEN_ORDER = Object.keys(ALIEN_TYPES) as AlienKind[];
 
@@ -109,11 +109,11 @@ export interface FactionTraits {
 }
 
 export const FACTION_TRAITS: Record<Faction, FactionTraits> = {
-  klingon:    { speed: 1.08, fireCd: 0.9, range: 1,    cloak: false, adapt: false, web: false },
-  cardassian: { speed: 1,    fireCd: 1,   range: 1.12, cloak: false, adapt: false, web: false },
-  romulan:    { speed: 1,    fireCd: 1,   range: 1,    cloak: true,  adapt: false, web: false },
-  borg:       { speed: 0.95, fireCd: 1,   range: 1,    cloak: false, adapt: true,  web: false },
-  tholian:    { speed: 1,    fireCd: 1,   range: 1,    cloak: false, adapt: false, web: true },
+  gutter:    { speed: 1.08, fireCd: 0.9, range: 1,    cloak: false, adapt: false, web: false },
+  custody: { speed: 1,    fireCd: 1,   range: 1.12, cloak: false, adapt: false, web: false },
+  office:    { speed: 1,    fireCd: 1,   range: 1,    cloak: true,  adapt: false, web: false },
+  voice:       { speed: 0.95, fireCd: 1,   range: 1,    cloak: false, adapt: true,  web: false },
+  thren:    { speed: 1,    fireCd: 1,   range: 1,    cloak: false, adapt: false, web: true },
 };
 
 // ── variants: what the spawner can send ───────────────────────────────────
@@ -130,23 +130,23 @@ export interface Variant {
   cap: number;
   /** Shots per volley, if not the archetype's. */
   shots?: number;
-  /** Its fire splits in three after a beat (Tholian shards). */
+  /** Its fire splits in three after a beat (Thren shards). */
   split?: boolean;
 }
 
 export const VARIANTS: Record<string, Variant> = {
-  scout:    { id: 'scout',    kind: 'scout',   faction: 'klingon',    label: 'Interceptor',    at: 0,   weight: 3, cap: 4 },
-  raptor:   { id: 'raptor',   kind: 'raptor',  faction: 'klingon',    label: 'Strike fighter', at: 75,  weight: 2, cap: 2 },
-  lancer:   { id: 'lancer',   kind: 'lancer',  faction: 'cardassian', label: 'Heavy cruiser',  at: 110,  weight: 2, cap: 2 },
-  warbird:  { id: 'warbird',  kind: 'warbird', faction: 'romulan',    label: 'Plasma cruiser', at: 150, weight: 2, cap: 2 },
-  stalker:  { id: 'stalker',  kind: 'stalker', faction: 'klingon',    label: 'Hunter',         at: 180, weight: 2, cap: 2 },
-  drone:    { id: 'drone',    kind: 'drone',   faction: 'borg',       label: 'Assimilator',    at: 250, weight: 2, cap: 2 },
-  weaver:   { id: 'weaver',   kind: 'weaver',  faction: 'tholian',    label: 'Web layer',      at: 290, weight: 2, cap: 1 },
-  hideki:   { id: 'hideki',   kind: 'scout',   faction: 'cardassian', label: 'Patrol fighter', at: 200, weight: 2, cap: 3, shots: 2 },
-  scorpion: { id: 'scorpion', kind: 'scout',   faction: 'romulan',    label: 'Ambush fighter', at: 270, weight: 2, cap: 3 },
-  probe:    { id: 'probe',    kind: 'stalker', faction: 'borg',       label: 'Borg probe',     at: 330, weight: 1.5, cap: 2 },
-  shard:    { id: 'shard',    kind: 'lancer',  faction: 'tholian',    label: 'Shard cruiser',  at: 370, weight: 1.5, cap: 1, split: true },
-  freighter: { id: 'freighter', kind: 'freighter', faction: 'cardassian', label: 'Freighter', at: Infinity, weight: 0, cap: 0 },
+  scout:    { id: 'scout',    kind: 'scout',   faction: 'gutter',    label: 'Interceptor',    at: 0,   weight: 3, cap: 4 },
+  raptor:   { id: 'raptor',   kind: 'raptor',  faction: 'gutter',    label: 'Strike fighter', at: 75,  weight: 2, cap: 2 },
+  lancer:   { id: 'lancer',   kind: 'lancer',  faction: 'custody', label: 'Heavy cruiser',  at: 110,  weight: 2, cap: 2 },
+  warbird:  { id: 'warbird',  kind: 'warbird', faction: 'office',    label: 'Plasma cruiser', at: 150, weight: 2, cap: 2 },
+  stalker:  { id: 'stalker',  kind: 'stalker', faction: 'gutter',    label: 'Hunter',         at: 180, weight: 2, cap: 2 },
+  drone:    { id: 'drone',    kind: 'drone',   faction: 'voice',       label: 'Grinder',    at: 250, weight: 2, cap: 2 },
+  weaver:   { id: 'weaver',   kind: 'weaver',  faction: 'thren',    label: 'Web layer',      at: 290, weight: 2, cap: 1 },
+  picket:   { id: 'picket',   kind: 'scout',   faction: 'custody', label: 'Patrol fighter', at: 200, weight: 2, cap: 3, shots: 2 },
+  whisper: { id: 'whisper', kind: 'scout',   faction: 'office',    label: 'Ambush fighter', at: 270, weight: 2, cap: 3 },
+  probe:    { id: 'probe',    kind: 'stalker', faction: 'voice',       label: 'Voice probe',     at: 330, weight: 1.5, cap: 2 },
+  shard:    { id: 'shard',    kind: 'lancer',  faction: 'thren',    label: 'Shard cruiser',  at: 370, weight: 1.5, cap: 1, split: true },
+  freighter: { id: 'freighter', kind: 'freighter', faction: 'custody', label: 'Freighter', at: Infinity, weight: 0, cap: 0 },
 };
 export const VARIANT_ORDER = Object.keys(VARIANTS);
 
@@ -154,11 +154,11 @@ export const VARIANT_ORDER = Object.keys(VARIANTS);
 export interface Squad { id: string; label: string; at: number; members: string[]; }
 export const SQUADS: Squad[] = [
   { id: 'raid',    label: 'Raiding party',   at: 240, members: ['raptor', 'scout', 'scout'] },
-  { id: 'battery', label: 'Gun line',        at: 290, members: ['lancer', 'hideki', 'hideki'] },
+  { id: 'battery', label: 'Gun line',        at: 290, members: ['lancer', 'picket', 'picket'] },
   { id: 'snare',   label: 'Web and hammer',  at: 340, members: ['weaver', 'raptor', 'raptor'] },
   { id: 'hunt',    label: 'Hunting pack',    at: 370, members: ['warbird', 'stalker', 'stalker'] },
-  { id: 'ambush',  label: 'Ambush',          at: 400, members: ['scorpion', 'scorpion', 'warbird'] },
-  { id: 'cube',    label: 'Borg detachment', at: 460, members: ['drone', 'probe', 'probe'] },
+  { id: 'ambush',  label: 'Ambush',          at: 400, members: ['whisper', 'whisper', 'warbird'] },
+  { id: 'foundry',    label: 'Voice detachment', at: 460, members: ['drone', 'probe', 'probe'] },
 ];
 
 // ── elites ────────────────────────────────────────────────────────────────
@@ -208,7 +208,7 @@ export const CULL = 210;
 /** How far an enemy will shoot from. */
 export const FIRE_RANGE = 70;
 
-// Borg adaptation, plasma, beams and webs: the original's numbers.
+// Voice adaptation, plasma, beams and webs: the original's numbers.
 export const BORG_ADAPT = 6;
 const PLASMA_SPEED = 2.2 * V, PLASMA_TURN = 1.05, PLASMA_HP = 3;
 export const BEAM_WIND = 1.05, BEAM_FIRE = 1.35, BEAM_LEN = 540 * PX, BEAM_W = 0.7;
@@ -242,7 +242,7 @@ export interface Alien {
   runs: number;
   /** beam: seconds left (wind then fire) and its angle */
   beamT: number; beamAng: number;
-  /** damage soaked (Borg adaptation) */
+  /** damage soaked (Voice adaptation) */
   soaked: number;
   hitT: number;
   /** part of a capital ship's escort wing */
@@ -256,7 +256,7 @@ export interface Alien {
   cloak: number; canCloak: boolean;
   /** Plasma afterburn: seconds left and damage per second. */
   burn: number; burnDps: number;
-  /** Seconds left on a target painter's mark, and on a snare (Tholian tech). */
+  /** Seconds left on a target painter's mark, and on a snare (Thren tech). */
   mark: number;
   snare: number;
   /** Seconds since it last took damage (regeneration waits for quiet). */
@@ -281,7 +281,7 @@ export interface Shot {
 
 export interface Web { id: number; x: number; z: number; life: number; r: number; max?: number; age?: number; }
 
-/** A phaser lance, as far as an enemy watching it is concerned. */
+/** A laser lance, as far as an enemy watching it is concerned. */
 export interface Incoming { x: number; y: number; z: number; vx: number; vy: number; vz: number; }
 
 /** What an enemy can see around it. */
@@ -588,7 +588,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
         steer(al, gx, 2.5, gz, d > 25 ? dash : speed * 1.4, acc, dt, 8);
         if (d < 40) faceTo = aim;
       } else {
-        // the cube: straight at you, on the plane
+        // the foundry: straight at you, on the plane
         steer(al, s.x, 0, s.z, speed, acc, dt, 0.1);
         faceTo = aim;
       }
@@ -784,7 +784,7 @@ export function moveShots(shots: Shot[], s: ShipState, dt: number): void {
       b.vy += clamp(-b.y * 2 - b.vy, -12 * dt, 12 * dt);
     }
     if (b.split > 0 && (b.split -= dt) <= 0) {
-      // Tholian shards break in three
+      // Thren shards break in three
       const sp = Math.hypot(b.vx, b.vz), a = Math.atan2(-b.vz, b.vx);
       for (const o of [-0.45, 0.45]) shots.push({ ...b, id: newId(), split: 0, vx: Math.cos(a + o) * sp, vz: -Math.sin(a + o) * sp });
       b.split = 0;

@@ -3,7 +3,7 @@ import type { Press } from './types';
 const LEFT = ['ArrowLeft', 'KeyA'];
 const RIGHT = ['ArrowRight', 'KeyD'];
 const UP = ['ArrowUp', 'KeyW'];
-/** Button 1: phasers, held. */
+/** Button 1: lasers, held. */
 const FIRE = ['Digit1', 'Numpad1', 'Space', 'KeyJ'];
 
 /** Keys that toggle pause. Anything listening for "any key" must skip these. */

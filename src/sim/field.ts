@@ -5,7 +5,7 @@ import { BULWARK_COUNT, BULWARK_R, FIELD_BAND, FIELD_TARGET, ROCK_HP, ROCK_R } f
 
 // ── the field ─────────────────────────────────────────────────────────────
 // Rock is the game's ground truth: the thing you thread, the thing you break,
-// and where the dilithium comes from. Three sizes; a large rock splits into
+// and where the krail comes from. Three sizes; a large rock splits into
 // two medium and a medium into two small, as in the original's shardOf. The
 // field tiles in a band around the ship and is topped back up as it is
 // cleared, so on-screen density is what is governed.
@@ -14,7 +14,7 @@ import { BULWARK_COUNT, BULWARK_R, FIELD_BAND, FIELD_TARGET, ROCK_HP, ROCK_R } f
 //   basalt   · the common rock. Sometimes carries a crystal.
 //   iron     · from about 2:30: dark and dense, three times the hull, splits
 //              into more iron. Better odds of a crystal.
-//   rich     · violet-veined and rare all run: a shower of dilithium.
+//   rich     · violet-veined and rare all run: a shower of krail.
 //   volatile · from about 4:30: glows white-hot and goes off when broken,
 //              hurting anything close, you included.
 //   rare     · one every minute or two, gold, never split: a power-up inside.
@@ -27,7 +27,7 @@ export type RockKind = 'basalt' | 'iron' | 'rich' | 'volatile' | 'rare';
 export interface RockKindDef {
   /** Hull multiplier. */
   hp: number;
-  /** Chance of dilithium, by size (large, medium, small), and how much when it does. */
+  /** Chance of krail, by size (large, medium, small), and how much when it does. */
   crystal: readonly [number, number, number];
   crystals: readonly [number, number, number];
   /** Breaks into smaller rock of this kind, or none. */

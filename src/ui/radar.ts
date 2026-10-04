@@ -7,8 +7,8 @@ import type { World } from '../sim/world';
 // Ship-up, so left on the scope is left on the screen. Inside the scope:
 // range rings, the camera's field of view as a faint wedge, and every
 // contact by kind: hostiles as arrowheads pointing where they fly
-// (elites amber), the capital ship as a square, rock by kind (dilithium-rich
-// violet, rare gold, volatile red), bulwarks as shadows, dilithium crystals,
+// (elites amber), the capital ship as a square, rock by kind (krail-rich
+// violet, rare gold, volatile red), bulwarks as shadows, krail crystals,
 // repairs and power-ups, our mines, enemy fire, webs, the objective.
 // Round the outside, a compass bezel turns with the ship (N stays north),
 // and the bezel lights orange-red toward any hostile close enough to fire.

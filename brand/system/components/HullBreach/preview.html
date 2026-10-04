@@ -48,20 +48,20 @@ body { overflow: hidden; }
     <div class="top">
       <div class="hero">
         <div class="ab-title t">Hull breach <span class="ab-jp">船体損傷</span></div>
-        <span class="ab-label">Stardate</span>
+        <span class="ab-label">Score</span>
         <span class="big">7072</span>
         <span class="ab-label sub">145s adrift · refit 4 · <b>new best</b></span>
       </div>
       <div class="tiles">
         <div class="ab-frame tile"><span class="ab-label"><i class="ab-i ab-i--chain " aria-hidden="true"></i> Best chain</span><span class="ab-num">13</span><span class="ab-anno">▼ −19 · best 32</span></div>
-        <div class="ab-frame tile is-up"><span class="ab-label"><i class="ab-i ab-i--dilithium " aria-hidden="true"></i> Dilithium</span><span class="ab-num">115</span><span class="ab-anno up">▲ +23 · best 92</span></div>
+        <div class="ab-frame tile is-up"><span class="ab-label"><i class="ab-i ab-i--krail " aria-hidden="true"></i> Krail</span><span class="ab-num">115</span><span class="ab-anno up">▲ +23 · best 92</span></div>
         <div class="ab-frame tile"><span class="ab-label"><i class="ab-i ab-i--overcharge " aria-hidden="true"></i> Overcharges</span><span class="ab-num">2</span><span class="ab-anno">▲ +2 · best 0</span></div>
         <div class="ab-frame tile"><span class="ab-label"><i class="ab-i ab-i--capital " aria-hidden="true"></i> Capital ships</span><span class="ab-num">1</span><span class="ab-anno">Matched · best 1</span></div>
       </div>
     </div>
     <figure class="chart">
       <figcaption><span class="ab-label">Run performance</span><span class="key"><i class="k-run"></i><span class="ab-anno">This run</span><i class="k-best"></i><span class="ab-anno">Previous best</span></span></figcaption>
-      <svg viewBox="0 0 820 130" preserveAspectRatio="none" aria-label="Stardate over time: this run 7072 at 145s, previous best 4203 at 82s">
+      <svg viewBox="0 0 820 130" preserveAspectRatio="none" aria-label="Score over time: this run 7072 at 145s, previous best 4203 at 82s">
         <g class="grid"><line x1="40" x2="810" y1="10" y2="10"/><line x1="40" x2="810" y1="47" y2="47"/><line x1="40" x2="810" y1="84" y2="84"/><line x1="40" x2="810" y1="121" y2="121"/></g>
         <g class="ax"><text x="32" y="13">8k</text><text x="32" y="50">6k</text><text x="32" y="87">3k</text><text x="32" y="124">0</text>
           <text x="40" y="130" class="t0">0</text><text x="290" y="130">50s</text><text x="540" y="130">100s</text><text x="790" y="130">150s</text></g>
@@ -108,7 +108,7 @@ function abScene(canvas, spec) {
     var dpr = Math.min(2, window.devicePixelRatio || 1), w = canvas.clientWidth, h = canvas.clientHeight;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var lit = (getComputedStyle(root).getPropertyValue('--ab-glow').trim() || '1') !== '0';
-    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('dilithium'), CMD = tok('command');
+    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('krail'), CMD = tok('command');
     ctx.fillStyle = VOID; ctx.fillRect(0, 0, w, h);
     if (lit) {
       [[0.22, 0.3, 0.55, VIO, 0.13], [0.8, 0.75, 0.6, SIG, 0.07], [0.6, 0.15, 0.4, VIO, 0.06]].forEach(function (n) {
@@ -148,7 +148,7 @@ function abScene(canvas, spec) {
       ctx.fill();
       if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = big ? 26 : 14; }
       ctx.strokeStyle = VIO; ctx.lineWidth = big ? 2 : 1.5; ctx.stroke(); ctx.shadowBlur = 0;
-      if (big) {  // facets from an off-centre apex, and two dilithium seams that glow
+      if (big) {  // facets from an off-centre apex, and two krail seams that glow
         var ax = cx - r[2] * 0.18, ay = cy - r[2] * 0.12;
         pts.forEach(function (p, i) { ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(p[0], p[1]); ctx.strokeStyle = rgba(VIO, i % 3 ? 0.18 : 0.42); ctx.lineWidth = 1; ctx.stroke(); });
         [[2, 6, 0.5], [8, 4, 0.35]].forEach(function (sm) {
@@ -156,7 +156,7 @@ function abScene(canvas, spec) {
           ctx.lineTo(ax + (pts[sm[1]][0] - ax) * sm[2], ay + (pts[sm[1]][1] - ay) * sm[2]); ctx.lineTo(pts[sm[1]][0], pts[sm[1]][1]);
           ctx.strokeStyle = rgba(INK, lit ? 0.75 : 0.5); ctx.lineWidth = 1.4; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 12; } ctx.stroke(); ctx.shadowBlur = 0;
         });
-      } else if (r[2] > 26) {  // a dilithium seam
+      } else if (r[2] > 26) {  // a krail seam
         ctx.beginPath(); ctx.moveTo(pts[0][0] * 0.6 + pts[3][0] * 0.4, pts[0][1] * 0.6 + pts[3][1] * 0.4);
         ctx.lineTo(cx, cy); ctx.lineTo(pts[2][0] * 0.5 + pts[5][0] * 0.5, pts[2][1] * 0.5 + pts[5][1] * 0.5);
         ctx.strokeStyle = rgba(VIO, 0.6); ctx.lineWidth = 1; ctx.stroke();
@@ -168,7 +168,7 @@ function abScene(canvas, spec) {
       ctx.fillStyle = VIO; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 8; } ctx.fillRect(-2.2, -2.2, 4.4, 4.4); ctx.restore();
     });
     (spec.enemies || []).forEach(function (e) {
-      var col = tok(e[4] || 'faction-klingon'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
+      var col = tok(e[4] || 'faction-gutter'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
       raider(e[0] * w, e[1] * h, e[2], e[3], col); ctx.shadowBlur = 0;
       if (e[5]) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
         ctx.moveTo(e[0] * w + Math.sin(e[3]) * 22 * e[2], e[1] * h - Math.cos(e[3]) * 22 * e[2]);

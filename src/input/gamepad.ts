@@ -27,7 +27,7 @@ export interface PadState {
   turn: number;
   thrust: number;
   aim: Aim | null;
-  /** A held: phasers. */
+  /** A held: lasers. */
   fire: boolean;
 }
 

@@ -6,7 +6,7 @@ import { STEP } from '../core/loop';
 import type { Pickup } from '../sim/pickups';
 
 // ── things to pick up ─────────────────────────────────────────────────────
-// Dilithium is violet, the brand's colour for the field: a long shard of
+// Krail is violet, the brand's colour for the field: a long shard of
 // crystal, HDR so it blooms, spinning, sized by what it holds. Hull repairs
 // are a warm amber crystal in a halo; power-ups are a ring round a core in
 // their own colour, turning, so a find reads as a find from across the

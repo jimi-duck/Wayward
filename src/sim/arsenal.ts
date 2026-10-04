@@ -19,7 +19,7 @@ export interface Mine {
   arm: number;
   /** Seconds to detonation once triggered, or -1 while waiting. */
   fuse: number;
-  /** Damage multiplier when it goes (set off by a phaser: harder). */
+  /** Damage multiplier when it goes (set off by a laser: harder). */
   boost: number;
 }
 

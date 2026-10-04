@@ -1,4 +1,4 @@
-/* ══ Asteroid Blaster · components ══════════════════════════════════════════
+/* ══ Wayward · components ══════════════════════════════════════════
    Every rule reads the tokens. Class prefix ab-. Frames are drawn the way the
    original game drew them: the element is never clipped, its ::before is the
    edge and its ::after is the glass, both cut to the same notch. That keeps
@@ -46,7 +46,7 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-frame.is-lit { --frame-edge: var(--signal); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--signal) calc(var(--ab-glow) * 30%), transparent)); }
 
 /* ── the elbow ────────────────────────────────────────────────────────── */
-/* An LCARS sweep cut at 45°: a bar down the left, a rail along the top, a
+/* A console sweep cut at 45°: a bar down the left, a rail along the top, a
    chamfered outer corner and a chamfered inner bend. Markup:
    <section class="ab-elbow"><i class="ab-elbow-l"></i> … </section>      */
 .ab-elbow {
@@ -109,7 +109,7 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-ticks-wrap { position: relative; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--on, var(--signal)) calc(var(--ab-glow) * 45%), transparent)); }
 .ab-ticks--command { --on: var(--command); --off: color-mix(in srgb, var(--command) 18%, transparent); }
 .ab-ticks--alert   { --on: var(--alert);   --off: color-mix(in srgb, var(--alert) 18%, transparent); }
-.ab-ticks--violet  { --on: var(--dilithium); --off: color-mix(in srgb, var(--dilithium) 18%, transparent); }
+.ab-ticks--violet  { --on: var(--krail); --off: color-mix(in srgb, var(--krail) 18%, transparent); }
 .ab-ticks--tall    { height: 20px; --seg: 2px; --gap: 3px; }
 /* ten discrete pips, for ranked stats */
 .ab-pips {
@@ -150,7 +150,7 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-key.is-command { --frame-edge: var(--command); color: var(--command); }
 
 /* ── buttons ──────────────────────────────────────────────────────────── */
-/* A LCARS pill, cut: the ends are points, not radii. */
+/* A console pill, cut: the ends are points, not radii. */
 .ab-btn {
   --h: 44px; --tip: 14px; --tipi: calc(var(--tip) - .6px); --btn-edge: var(--edge); --btn-fill: var(--hull-2); --btn-ink: var(--ink);
   position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
@@ -182,7 +182,7 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-tag--new   { --frame-edge: var(--command); color: var(--command); }
 .ab-tag--up    { --frame-edge: var(--edge); color: var(--ink); }
 .ab-tag--max   { --frame-edge: var(--nominal); color: var(--nominal); }
-.ab-tag--once  { --frame-edge: var(--dilithium); color: var(--dilithium); }
+.ab-tag--once  { --frame-edge: var(--krail); color: var(--krail); }
 .ab-dot { width: 7px; height: 7px; border-radius: var(--radius-round); background: var(--ink-3); flex: none; }
 .ab-dot--nominal { background: var(--nominal); box-shadow: 0 0 calc(var(--ab-glow) * 8px) var(--nominal); }
 .ab-dot--caution { background: var(--caution); }
@@ -227,11 +227,11 @@ body { margin: 0; background: var(--void); color: var(--ink); font-family: var(-
 .ab-card-figs .is-cost::before { content: "↓ "; color: var(--alert); }
 .ab-cat--gun  { --cat: var(--command); }
 .ab-cat--hull { --cat: var(--signal); }
-.ab-cat--ship { --cat: var(--dilithium); }
+.ab-cat--ship { --cat: var(--krail); }
 .ab-sch { fill: none; stroke: var(--cat); stroke-width: 1.5; stroke-linejoin: miter; vector-effect: non-scaling-stroke; }
 .ab-sch-dim { fill: none; stroke: color-mix(in srgb, var(--cat) 40%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .ab-sch-fill { fill: color-mix(in srgb, var(--cat) 16%, transparent); stroke: none; }
-.ab-sch-rock { fill: color-mix(in srgb, var(--dilithium) 12%, transparent); stroke: var(--dilithium); stroke-width: 1.25; vector-effect: non-scaling-stroke; }
+.ab-sch-rock { fill: color-mix(in srgb, var(--krail) 12%, transparent); stroke: var(--krail); stroke-width: 1.25; vector-effect: non-scaling-stroke; }
 
 /* ── icons ─────────────────────────────────────────────────────────────── */
 /* Masks, so an icon takes its colour from `color` like text does. */

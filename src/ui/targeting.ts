@@ -11,7 +11,7 @@ import { NEON_CSS } from './colors';
 
 // ── targeting, in the world ───────────────────────────────────────────────
 // What the targeting computer is looking at, drawn where it is:
-//   the gunsight · where the phasers go; it lights, and the target shows a
+//   the gunsight · where the lasers go; it lights, and the target shows a
 //                  centre mark, when a lance fired now would hit
 //   the target   · the torpedo lock if there is one; otherwise the hull or
 //                  the rock nearest the line of fire (hulls count closer).
@@ -19,7 +19,7 @@ import { NEON_CSS } from './colors';
 //                  range under it, and a readout beside it: what it is, its
 //                  integrity, and for rock what breaking it yields
 //   marks        · brackets on every other hull in view (amber for elites),
-//                  the capital ship by name, the nearest dilithium-rich or
+//                  the capital ship by name, the nearest krail-rich or
 //                  rare rock, repairs and power-ups to go and get, the
 //                  objective. Only the things worth flying to get a word.
 //   pointers     · the capital ship and the objective, pinned to the edge
@@ -139,7 +139,7 @@ export class Targeting {
     }
 
     // otherwise the best of: hulls toward the nose, the rock in the line of fire
-    const reach = world.stats.phaserSpeed * world.stats.phaserLife;
+    const reach = world.stats.laserSpeed * world.stats.laserLife;
     const scoreOf = (p: Pick): number => {
       const dx = p.x - x, dz = p.z - z, d = Math.hypot(dx, dz);
       const off = Math.abs(angleDelta(heading, Math.atan2(-dz, dx)));
@@ -169,7 +169,7 @@ export class Targeting {
   /** Would a lance fired now hit it? The gunnery computer lifts lances onto hulls in a narrow cone. */
   private inArc(world: World, t: Pick, x: number, z: number, heading: number): boolean {
     const dx = t.x - x, dz = t.z - z, d = Math.hypot(dx, dz);
-    if (d > world.stats.phaserSpeed * world.stats.phaserLife || d < 0.5) return false;
+    if (d > world.stats.laserSpeed * world.stats.laserLife || d < 0.5) return false;
     const off = Math.abs(angleDelta(heading, Math.atan2(-dz, dx)));
     if (t.kind === 'rock') return off < Math.PI / 2 && Math.sin(off) * d < t.r + 0.3;
     return off < BOLT_ELEVATE_CONE + t.r / d;
@@ -311,14 +311,14 @@ export class Targeting {
         if (Math.hypot(p.x - s.x, p.z - s.z) > NEAR) continue;
         put(p.x, 0.4, p.z, 'm dia', p.kind === 'repair' ? 'Hull repair' : POWER_LABEL[p.kind]);
       }
-      // the nearest dilithium-rich or rare rock: a deposit worth the detour
+      // the nearest krail-rich or rare rock: a deposit worth the detour
       let dep: Rock | null = null, depD = NEAR;
       for (const r of world.field.rocks) {
         if ((r.kind !== 'rich' && r.kind !== 'rare') || r.id === t?.id) continue;
         const d = Math.hypot(r.x - s.x, r.z - s.z);
         if (d < depD) { depD = d; dep = r; }
       }
-      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', dep.kind === 'rich' ? 'Mineral deposit\nRich · dilithium' : 'Rare ore\nPower-up inside');
+      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', dep.kind === 'rich' ? 'Mineral deposit\nRich · krail' : 'Rare ore\nPower-up inside');
       // every other hull: brackets only, amber for an elite
       for (const a of world.aliens) {
         if (cloaked(a) || a.id === t?.id) continue;

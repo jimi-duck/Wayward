@@ -15,14 +15,14 @@ import { range, Targeting } from './targeting';
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view, after the reference frame, with nothing
 // on it that does not earn its place while flying:
-//   top left     · the sector (and the event in it), and dilithium toward
+//   top left     · the sector (and the event in it), and krail toward
 //                  the next refit, violet
 //   top centre   · the heading; a capital ship (hull with phase notches,
 //                  fuse), or a sector event's objective
-//   top right    · ship systems, one panel: phasers, then torpedoes and
+//   top right    · ship systems, one panel: lasers, then torpedoes and
 //                  mines once they are fitted, each with its key, a gauge, a
 //                  reading and the level the refits have taken it to; then
-//                  the hull (plates and shield charges), the warp core, and
+//                  the hull (plates and shield charges), the reactor, and
 //                  the score with its chain. Power-ups running sit under it.
 //   in the world · the gunsight, the target and marks (ui/targeting.ts)
 //   bottom left  · the sensor scope and its range (ui/radar.ts)
@@ -31,7 +31,7 @@ import { range, Targeting } from './targeting';
 // Alerts are placards that come and go. Every figure is live. Text is
 // written ten times a second, the scope thirty, the world every frame.
 
-const FACTION_NAME: Record<string, string> = { klingon: 'Klingon', cardassian: 'Cardassian', romulan: 'Romulan', borg: 'Borg', tholian: 'Tholian' };
+const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody: 'Custody', office: 'Office', voice: 'Voice', thren: 'Thren' };
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -57,7 +57,7 @@ interface LogLine { el: HTMLParagraphElement; text: string; at: number; kind: st
 
 /** The rows that carry a system level, and the branch each one reads. */
 const ROWS: Array<{ id: string; branch: Branch }> = [
-  { id: 'ph', branch: 'phaser' },
+  { id: 'ph', branch: 'laser' },
   { id: 'tp', branch: 'torpedo' },
   { id: 'mn', branch: 'mine' },
 ];
@@ -135,7 +135,7 @@ export class Hud {
         case 'power': this.note(world, `${POWER_LABEL[e.kind]}`, 'gain'); break;
         case 'plasmaDown': this.note(world, 'Plasma torpedo shot down'); break;
         case 'tractor': this.note(world, 'Tractor lock · thrust away', 'hit'); break;
-        case 'bankEmpty': this.note(world, 'Phaser bank dry', 'hit'); break;
+        case 'bankEmpty': this.note(world, 'Laser bank dry', 'hit'); break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':
           this.note(world, e.left > 0 ? `Shield took it · ${e.left} left` : 'Shield down · recharging', 'hit');
@@ -144,22 +144,22 @@ export class Hud {
         case 'shieldUp': this.note(world, `Shield up · ${e.charges}`, 'gain'); break;
         case 'regen': this.note(world, `Hull regrown · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'damageControl': this.banner('Damage control', 'Hull held', 'One plate · two seconds of grace', 2, 'caution'); break;
-        case 'overchargeReady': this.note(world, `Warp core charged · ${document.documentElement.classList.contains('touch-ui') ? 'tap Core' : 'E'} to release`, 'gain'); break;
+        case 'overchargeReady': this.note(world, `Reactor charged · ${document.documentElement.classList.contains('touch-ui') ? 'tap Core' : 'E'} to release`, 'gain'); break;
         case 'overcharge': this.note(world, `Overcharge released · ${e.hits} hit${e.hits === 1 ? '' : 's'}`, 'gain'); break;
         case 'chain': this.note(world, `Chain ${e.count} · score ×${e.mult}`, 'gain'); break;
         case 'squad': this.note(world, `${e.label} inbound`, 'hit'); break;
-        case 'levelUp': this.banner('Dilithium hold full', `Refit ${pad(e.refit, 2)}`, 'Choose an upgrade', 0.9, 'gain'); break;
+        case 'levelUp': this.banner('Krail hold full', `Refit ${pad(e.refit, 2)}`, 'Choose an upgrade', 0.9, 'gain'); break;
         case 'salvage': this.note(world, `Salvage${e.tech ? ` · ${FACTION_NAME[e.faction] ?? e.faction} tech recovered` : ''}`, 'gain'); break;
         case 'cloak': this.note(world, 'Cloaked · hulls hold fire', 'gain'); break;
         case 'shipHit':
           this.note(world, `Hull struck · ${e.source.split(':')[0]}`, 'hit');
           this.flashHit();
           this.retrigger($('sys-hull'), 'hit');
-          if (e.plates === 1) this.banner('Red alert', 'Hull critical', 'One plate left', 1.8);
+          if (e.plates === 1) this.banner('Alarm', 'Hull critical', 'One plate left', 1.8);
           break;
         case 'bossWarn':
           this.note(world, `${e.name} inbound`, 'hit');
-          this.banner('Yellow alert', `${e.name}`, e.hails ? 'Capital ship inbound' : 'Decloaking · no hail', 2.6, 'caution');
+          this.banner('Contact', `${e.name}`, e.hails ? 'Capital ship inbound' : 'Decloaking · no hail', 2.6, 'caution');
           break;
         case 'bossEvaded': this.note(world, `Broke away from ${e.name}`); break;
         case 'bossArrive': this.note(world, `${e.name} on intercept`, 'hit'); break;
@@ -173,7 +173,7 @@ export class Hud {
         case 'sectorEventEnd': this.note(world, `${e.name} · ${e.text}`, e.success ? 'gain' : 'hit'); break;
         case 'breach':
           this.note(world, `Hull breach · run ${fmt(e.score)}`, 'hit');
-          this.banner('Red alert', 'Hull breach', `Run ${fmt(e.score)}`, 1.6);
+          this.banner('Alarm', 'Hull breach', `Run ${fmt(e.score)}`, 1.6);
           break;
       }
     }
@@ -254,7 +254,7 @@ export class Hud {
       }
     }
 
-    // phasers: the bank
+    // lasers: the bank
     const bank = arms.bank / st.bankMax, hot = world.overload > 0 || world.powers.rapid > 0;
     const dry = arms.bank < st.bankShot && !hot;
     ticks($('g-bank'), bank, 50);
@@ -291,7 +291,7 @@ export class Hud {
       text($('v-mines'), `${world.sys.mines.length}/${st.mineMax}`);
     }
 
-    // the warp core
+    // the reactor
     const oc = world.oc / OC_MAX, ready = oc >= 1;
     ticks($('g-oc'), oc, 12);
     const ocRow = $('sys-oc');
@@ -405,8 +405,8 @@ export class Hud {
     const s = world.ship, cs = world.command.state, e = world.encounter;
     let cls = 'cruise', word = 'Cruise';
     if (!world.alive) { cls = 'alert'; word = 'Hull breach'; }
-    else if (cs === 'fight' && world.command.boss) { cls = 'alert'; word = 'Red alert'; }
-    else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Yellow alert'; }
+    else if (cs === 'fight' && world.command.boss) { cls = 'alert'; word = 'Alarm'; }
+    else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Contact'; }
     else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat'; }
     else if (e && !e.done) { cls = 'caution'; word = ENCOUNTERS[e.id].name; }
     else if (this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }

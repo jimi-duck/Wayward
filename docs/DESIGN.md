@@ -1,7 +1,10 @@
 # Game design
 
-Everyone launches in the same ship: the U.S.S. Kestrel, NCC-1903, a
-Starfleet survey tender refitted for mining. Over a run she becomes
+This describes the game as it plays today: the Breakout, the arcade escape
+that opens WAYWARD (see [VISION.md](VISION.md) and [PLAN.md](PLAN.md)).
+
+Everyone launches in the same ship: the Wayward, OBH-4471, a stolen
+Obedience-class ore hauler. Over a run she becomes
 something else, depending on the cards you take at each refit: a torpedo
 boat, a minelayer, a brawler that rams and arcs, a fortress, an interceptor
 that dives through fire to charge its core. Nothing is a class you pick; it
@@ -14,7 +17,7 @@ first capital ship hails at 3:30, once the build has a shape.
 
 ## The loop
 
-Fly, fight and break rock → collect dilithium → the gauge fills → refit
+Fly, fight and break rock → collect krail → the gauge fills → refit
 (three cards, take one) → harder sky → a capital ship hails (engage or
 evade) → her salvage: a refit led by her faction's tech → specialisations,
 synergies → the hull goes → the run report → play again.
@@ -30,9 +33,9 @@ simulation.
 |---|---|---|
 | Upgrades | `content/upgrades.ts` | `sim/build.ts` (stats, figures, the build's name), `sim/stats.ts` (the stat block and caps) |
 | Refit cards | `content/upgrades.ts` | `sim/offers.ts` (which three cards a refit deals), `World.choose`, `ui/refit.ts` (the cards) |
-| Weapons | the stat block | `sim/weapons.ts` (phasers, torpedoes), `sim/arsenal.ts` (mines, plasma, hull arc) |
+| Weapons | the stat block | `sim/weapons.ts` (lasers, torpedoes), `sim/arsenal.ts` (mines, plasma, hull arc) |
 | Asteroids | `ROCK_KINDS` in `sim/field.ts` | `Field.topUp` (formations), `World.destroyRock` |
-| Dilithium and pickups | `sim/pickups.ts` | `World.collect`, `World.gainXp` |
+| Krail and pickups | `sim/pickups.ts` | `World.collect`, `World.gainXp` |
 | Enemies | `ALIEN_TYPES`, `FACTION_TRAITS`, `VARIANTS`, `SQUADS`, `ELITES` in `sim/enemies.ts` | the existing tactical AI, `World.spawn` |
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
 | Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
@@ -99,7 +102,7 @@ Card kinds:
 
 The branches:
 
-- **Phasers**: damage, rate, bank, reach, pierce. Specialise into a
+- **Lasers**: damage, rate, bank, reach, pierce. Specialise into a
   **cone** (fans of three, then five or seven), the **heavy lance** (slow,
   piercing, huge) or the **targeting array** (lances that bend onto the
   hull nearest the nose).
@@ -107,12 +110,12 @@ The branches:
   **heavy payload** (with cluster warheads), the **swarm** (three
   micro-torpedoes spread across targets; unlockable) or **precision
   guidance** (all-round locks, faster, harder on hulls; with a target
-  painter that marks phaser hits).
+  painter that marks laser hits).
 - **Mines** (laid in your wake): yield, racks, proximity seekers.
   Specialise into a **minefield**, **chain reaction** (blasts set off mines
   near them and leave a burning cloud) or **graviton mines** (pull targets
   in; unlockable).
-- **Warp plasma** (a burning trail while you thrust): heat, flow.
+- **Drive plasma** (a burning trail while you thrust): heat, flow.
   Specialise into **ignition** (targets keep burning), the **afterburner
   wake** (the roll dumps a ring of plasma) or the **plasma corona** (plasma
   wreathes the bow and flanks while you thrust).
@@ -121,7 +124,7 @@ The branches:
   target costs no hull). Specialise into the **arc storm** (each arc jumps
   on to one more hull), the **shock prow** (a ram discharges into the hulls
   near its target) or the **juggernaut** (unlockable).
-- **Mobility**: impulse, thrusters, dampers, evasive jets (the roll comes
+- **Mobility**: main drive, thrusters, dampers, evasive jets (the roll comes
   round sooner and covers longer); each also charges the core a little
   faster, since the interceptor's gun is the release. Specialise into
   the **drift drive** (keep speed off the throttle; lances fired while
@@ -133,24 +136,24 @@ The branches:
   grace), damage control (one save). Specialise into the **fortress**,
   **reactive armour** (losing a plate or a shield blasts away nearby fire),
   or the **regenerative hull** (unlockable).
-- **Utility**: tractor reach, the dilithium matrix (more XP), the tactical
+- **Utility**: tractor reach, the krail matrix (more XP), the tactical
   computer (every weapon hits harder). Specialise into the **prospector**
-  (rock gives dilithium half as often again), **salvage drones** (more hull
+  (rock gives krail half as often again), **salvage drones** (more hull
   repairs, longer power-ups) or **deep scanners** (rare rock twice as
-  often, elites carry twice the dilithium).
-- **Warp core**: coils (more overcharge from near misses). Specialise into
-  the **warp nova**, **weapons overload** (longer, and refills racks) or
+  often, elites carry twice the krail).
+- **Reactor**: coils (more overcharge from near misses). Specialise into
+  the **core nova**, **weapons overload** (longer, and refills racks) or
   the **phase cloak** (unlockable).
-- **Synergies** (needing both halves): plasma warheads, phaser detonators,
+- **Synergies** (needing both halves): plasma warheads, laser detonators,
   the capacitor shield, arc warheads, core-charged mines, and the ramjet
   (unlockable).
 
-**Salvaged tech**, one per faction: Klingon **disruptors** (every fourth
-phaser shot a heavy bolt at triple damage), Cardassian **compressors**
-(longer, piercing lances; wider torpedo blasts), the Romulan **cloak** (a
-barrel roll hides you: hulls hold their fire for a moment), the Borg
+**Salvaged tech**, one per faction: Gutter **disruptors** (every fourth
+laser shot a heavy bolt at triple damage), Custody **compressors**
+(longer, piercing lances; wider torpedo blasts), the Office **cloak** (a
+barrel roll hides you: hulls hold their fire for a moment), the Voice
 **adaptive shield** (shields recharge faster; a ship with none gets one) and
-Tholian **snares** (torpedo and mine blasts slow the hulls they catch).
+Thren **snares** (torpedo and mine blasts slow the hulls they catch).
 
 ### On screen
 
@@ -167,7 +170,7 @@ the build changes; `capStats` clamps it after every multiplier has run, so
 no stack of upgrades escapes a cap. A card shows the figures it changes,
 computed by diffing the block before and after. A run touches a few
 ship-wide numbers too: all weapon damage (the tactical computer, capped at +60%),
-dilithium from rock, repair drops, power-up time, rare rock and elite
+krail from rock, repair drops, power-up time, rare rock and elite
 loot.
 
 ## Defence, damage and repair
@@ -179,7 +182,7 @@ purpose: a small chance from a kill, never on a full hull, never more than
 one every 35 seconds, one from each capital ship destroyed, and one for
 answering a distress signal. Damage control saves the last plate once.
 
-## The warp core and the chain
+## The reactor and the chain
 
 Near misses charge the core: fire that passes close without hitting, rock
 skimmed at speed, hulls passed close aboard, beams and webs brushed (each
@@ -192,7 +195,7 @@ each hull kill inside a short window adds one; breaking rock keeps it alive.
 
 **Rock** comes in kinds and formations, mixed by the director: basalt;
 iron (from about 3:00, three times the hull, splits into more iron); rich
-(violet veins, a shower of dilithium); volatile (from about 5:00, goes off
+(violet veins, a shower of krail); volatile (from about 5:00, goes off
 when broken, you included); rare (gold, a power-up inside, one every minute
 or two); singles, clusters, and a big rock in its own debris.
 
@@ -200,11 +203,11 @@ or two); singles, clusters, and a big rock in its own debris.
 strafe past, raptors line up and ram, lancers broadside from cover,
 warbirds snipe with plasma that can be shot down, stalkers sit on your tail
 and lead, drones grind in and cut with beams, weavers lay webs), plus a
-freighter for convoys. **Faction traits** apply to any hull: Klingons are
-faster and fire more, Cardassians reach further, Romulans cloak while they
-reposition and decloak to attack, the Borg adapt, Tholians leave webs.
-**Variants** cross them (the Romulan Scorpion, the Cardassian Hideki, the
-Borg probe, the Tholian shard cruiser). **Squads** arrive together because
+freighter for convoys. **Faction traits** apply to any hull: Gutter crews are
+faster and fire more, Custody cutters reach further, Office ships cloak while they
+reposition and decloak to attack, the Voice adapt, the Thren leave webs.
+**Variants** cross them (the Office Whisper, the Custody Picket, the
+Voice probe, the Thren shard cruiser). **Squads** arrive together because
 together they are worse (a weaver with two raptors). **Elites** are
 familiar hulls with a modifier: armoured, swift, volatile, gunner, cloaked,
 regenerative, web-spinner.
@@ -229,23 +232,23 @@ From 3:30, a contact every 50 to 80 seconds. A yellow alert, then the hail:
   attack, calls reinforcements and quickens the cycle). Every attack winds
   up behind a telegraph: lines where a charge or volley will go, rings
   where a nova bursts, circles where shells or webs will land. Destroy it
-  for the bounty, dilithium, a hull repair, a power-up and a salvage refit
+  for the bounty, krail, a hull repair, a power-up and a salvage refit
   led by her faction's tech.
   Let its fuse run out and it leaves with nothing paid.
 - **Evade**: no fight, no reward, and the next contact comes sooner. You
-  cannot evade twice running; a Borg cube cannot be evaded; Romulans never
+  cannot evade twice running; a Voice foundry cannot be evaded; Office ships never
   hail (they decloak and the fight starts). The first contact of a run is
-  always Klingon or Cardassian.
+  always Gutter or Custody.
 
-Each faction moves its own way: Klingons sway across your bow and charge,
-Cardassians hold long range and wheel, Romulans vanish and reappear on your
-quarter, the cube grinds closer, Tholians circle.
+Each faction moves its own way: Gutter crews sway across your bow and charge,
+Custody cutters hold long range and wheel, Office ships vanish and reappear on your
+quarter, the foundry grinds closer, the Thren circle.
 
 ## Sector events
 
 When no capital ship is about, roughly once a minute: a mineral-rich field,
 a distress signal (hold the beacon circle for a repair), an enemy convoy
-(freighters heavy with dilithium), an ion storm (lightning on the circles;
+(freighters heavy with krail), an ion storm (lightning on the circles;
 near misses charge double), a nebula (sensors down; the core charges
 faster), and, once unlocked, a derelict hulk (salvage, then an ambush) and
 a spatial anomaly (a gravity well that crushes what reaches its core).
@@ -253,7 +256,7 @@ a spatial anomaly (a gravity well that crushes what reaches its core).
 ## The run report and progression
 
 The report compares the run with your best (survival, refits, kills, chain,
-dilithium, overcharges, capital ships, events), shows the ship as built,
+krail, overcharges, capital ships, events), shows the ship as built,
 what did the killing and what did the damage, the score curve against your
 best run's, and any unlocks earned. Long-term progression opens options,
 never power: locked specialisations, a synergy, two sector events, three
@@ -275,7 +278,7 @@ long builds; settle a close call with more (`PILOT_RUNS=48`).
 
 What the telemetry changed, in order:
 
-1. Dilithium income was a third of what the pacing needed; rock and hulls
+1. Krail income was a third of what the pacing needed; rock and hulls
    now yield more and the first refits come sooner.
 2. Scouts flew their attack runs through the ship; they now strafe past
    just above it (ramming is the raptor's job).
@@ -289,27 +292,27 @@ What the telemetry changed, in order:
    spiral was thinned for the low chase camera.
 7. The opening wore the ship down before the first fight; the field starts
    thinner and thickens over the run.
-8. Moving the first contact later let the Borg cube be the first capital
+8. Moving the first contact later let the Voice foundry be the first capital
    ship; faction order now follows contact order.
 9. Beams kept tracking at full rate while cutting and could hit twice per
    cut; they aim during the wind-up, sweep slowly while cutting, and
    discharge on the hull they hit.
 10. A capital ship's station swung through you when you turned; it now goes
     round you unless it is charging.
-11. Focused phaser and defence builds trailed builds with systems; the
-    phaser ladder and shield recharge were strengthened. Plasma, the
+11. Focused laser and defence builds trailed builds with systems; the
+    laser ladder and shield recharge were strengthened. Plasma, the
     weakest family, reaches a little higher and burns hotter.
 12. The refit web let a build take exactly what it wanted, and the first
     pass found close-quarters builds lasting the whole fifteen minutes:
     shields stacked to three charges on a nine-second recharge, and the
     arc's damage minors stacked on its capacitors. Shields now cap at two
-    charges and twelve seconds (Borg tech speeds the recharge instead of
+    charges and twelve seconds (Voice tech speeds the recharge instead of
     adding a charge); arc damage caps near the card era's best, the arc
     storm jumps once, chains fall off faster and rock takes half; ram
     damage caps at 18.
-13. Builds with no weapon region starved; the pilot now keeps its phasers
+13. Builds with no weapon region starved; the pilot now keeps its lasers
     up in them, as a player would. Mines are laid a little more often.
-14. The Starfleet pass (a slow-burn opening, three cards instead of the
+14. The slow-burn pass (a slow-burn opening, three cards instead of the
     web): the first minute now costs 0.02 plates (it was 0.26), but one
     card a refit is less power than two web points, and the first capital
     ship, now at 3:30, killed a third of the pilots that met it. Refits come
@@ -321,7 +324,7 @@ What the telemetry changed, in order:
     a half), and close quarters without defence lasts about four, the
     shortest of the weapons. So close quarters was left alone: the defence
     region is what multiplies survival, and the matrix now carries
-    torpedoes with defence and close quarters with phasers to show it. The
+    torpedoes with defence and close quarters with lasers to show it. The
     pilot also stopped flying its prow into hulls it would not break: it
     judges a ram by what it does at the speed it is flying.
 16. Mobility gave a steady player little. Evasive jets now lengthen the
@@ -338,7 +341,7 @@ Where it stands (see BALANCE.md for the current report): a quiet opening
 about 0.8 by minutes three to five and past one after that. What spreads the
 table is defence: builds with it last about six and a half to ten minutes
 (torpedoes longest, two runs in twelve reaching the cap), builds without it
-about four to six (close quarters with phasers shortest). The random-card
+about four to six (close quarters with lasers shortest). The random-card
 player lasts about six; mobility with the core about four and three
 quarters, mines with mobility about five and a half. No damage source above
 about 10%; capital ships destroyed in three fights of five; refit 1 at about

@@ -44,7 +44,7 @@ export const SHIP_R = 9 * PX;
 export const HIT_GRACE = 1.1;
 export const BREACH_GRACE = 2.2;
 
-// ── phasers (button 1) ────────────────────────────────────────────────────
+// ── lasers (button 1) ────────────────────────────────────────────────────
 // The original fired by itself. Here the player pulls the trigger, so the
 // limit is a bank of energy: hold the trigger and it drains, let go and it
 // refills. The gritty pass made them heavier: a slower cadence, a harder
@@ -61,13 +61,13 @@ export const BOLT_DAMAGE = 1.4;
  * target's size) is lifted or dropped onto the target's altitude.
  */
 export const BOLT_ELEVATE_CONE = 0.14;
-/** Phaser bank: energy per shot, refill per second, and the pause before it refills. */
+/** Laser bank: energy per shot, refill per second, and the pause before it refills. */
 export const BANK_MAX = 100;
 export const BANK_SHOT = 9;
 export const BANK_REFILL = 24;
 export const BANK_DELAY = 0.35;
 
-// ── photon torpedoes (button 2) ───────────────────────────────────────────
+// ── torpedoes (button 2) ───────────────────────────────────────────
 // Heavy ordnance: launched slow, they light their motor and accelerate onto
 // the target, then go off in a big blast. Three in the rack, each reloading
 // in the original's 3.4s. The seeker reaches far enough to lock a hull that
@@ -106,7 +106,7 @@ export const BULWARK_COUNT = 5;
 export const BULWARK_R = [7, 12] as const;
 
 // ── the run ───────────────────────────────────────────────────────────────
-// Dilithium to the next refit: the first in about ten seconds of steady
+// Krail to the next refit: the first in about ten seconds of steady
 // mining (the first card is the hook), then a climb, so refits come quickly
 // early (a build takes shape before the sector turns dangerous) and spread
 // out late (each one counts). A refit is one card, so they come a little
@@ -136,7 +136,7 @@ export const REPAIR_GAP = 35;
 export const SHIELD_GRACE = 0.7;
 
 // ── overcharge ────────────────────────────────────────────────────────────
-// The warp core charges from near misses: fire that passes close, rock
+// The reactor charges from near misses: fire that passes close, rock
 // skimmed at speed, hulls passed close aboard, beams and webs brushed.
 export const OC_MAX = 100;
 export const OC_GAIN = { shot: 7, rock: 5, hull: 9, beam: 14, web: 6, strike: 8 } as const;

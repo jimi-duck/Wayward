@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { availableModifiers, grants, loadProfile, recordRun } from '../src/meta/profile';
+import { availableModifiers, grants, loadProfile, migrate, recordRun } from '../src/meta/profile';
 import { newRun } from '../src/sim/run';
 
 // a small in-memory localStorage, so the profile can be tested in node
@@ -34,7 +34,7 @@ describe('the profile between runs', () => {
   it('earns unlocks by doing things, and they open options, not power', () => {
     const p = loadProfile();
     expect(grants(p)).toEqual([]);
-    const r = recordRun(p, runWith({ time: 310, overcharges: 6, capitalFactions: ['borg'], capitals: 1 }));
+    const r = recordRun(p, runWith({ time: 310, overcharges: 6, capitalFactions: ['voice'], capitals: 1 }));
     const ids = r.unlocked.map((u) => u.id);
     expect(ids).toContain('u_derelict');
     expect(ids).toContain('u_phase');
@@ -57,5 +57,23 @@ describe('the profile between runs', () => {
     const p = loadProfile();
     expect(() => recordRun(p, runWith({ score: 5 }))).not.toThrow();
     Object.assign(globalThis, { localStorage: real });
+  });
+});
+
+describe('the WAYWARD rename', () => {
+  it('moves dilithium to krail and the old faction ids to the new ones', () => {
+    const old = {
+      best: { score: 10, dilithium: 40 },
+      life: { runs: 3, dilithium: 120, capitalsBy: { klingon: 2, borg: 1, gutter: 1 } },
+    };
+    const p = migrate(old);
+    expect(p.best).toEqual({ score: 10, krail: 40 });
+    expect(p.life.krail).toBe(120);
+    expect(p.life.capitalsBy).toEqual({ gutter: 3, voice: 1 });
+  });
+
+  it('leaves a renamed profile alone', () => {
+    const now = { best: { krail: 5 }, life: { krail: 9, capitalsBy: { thren: 1 } } };
+    expect(migrate(structuredClone(now))).toEqual(now);
   });
 });

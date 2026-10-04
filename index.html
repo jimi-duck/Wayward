@@ -10,9 +10,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Asteroid Blaster">
-  <meta name="description" content="Asteroid Blaster, in 3D. One ship, your build: fly, mine dilithium, refit and take on capital ships.">
-  <title>Asteroid Blaster</title>
+  <meta name="apple-mobile-web-app-title" content="Wayward">
+  <meta name="description" content="Wayward: a stolen ore hauler, a file the Continuance wants back, and the way out. Mine Krail, refit, and stay one step ahead.">
+  <title>Wayward</title>
   <!-- Added to the Home Screen, the game opens with no browser bars: on iPhone
        that is the only way to the whole screen. -->
   <link rel="manifest" href="/manifest.webmanifest">
@@ -28,7 +28,7 @@
 
     <!-- The HUD's icons: the brand's line set (24px grid, square caps, 45°). -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-      <symbol id="i-phaser" viewBox="0 0 24 24"><path d="M3 9h4v6H3z M7 12h14 M7 10l13-4 M7 14l13 4"/></symbol>
+      <symbol id="i-laser" viewBox="0 0 24 24"><path d="M3 9h4v6H3z M7 12h14 M7 10l13-4 M7 14l13 4"/></symbol>
       <symbol id="i-torp" viewBox="0 0 24 24"><path d="M4 9h10l5 3-5 3H4z M4 9L2 7 M4 15l-2 2 M8 9v6"/></symbol>
       <symbol id="i-mine" viewBox="0 0 24 24"><path d="M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5"/></symbol>
       <symbol id="i-core" viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 8-12h-6l1-8z"/></symbol>
@@ -46,9 +46,9 @@
     </svg>
 
     <!-- The HUD, after the reference frame: thin instrument lines laid over the view, never a dashboard round it.
-           top left     · the sector, and dilithium toward the next refit
+           top left     · the sector, and krail toward the next refit
            top centre   · the heading; a capital ship or a sector event, while there is one
-           top right    · ship systems: phasers, torpedoes (and mines) once fitted; hull, warp core, score
+           top right    · ship systems: lasers, torpedoes (and mines) once fitted; hull, reactor, score
            in the world · the gunsight, the target in its bracket frame, marks on what matters
            bottom left  · the sensor scope and its range
            bottom right · the mode the ship is in, and the last thing that happened -->
@@ -62,7 +62,7 @@
         <div id="tgt">
           <div id="tgt-box"><i class="tgt-scan"></i><i class="tgt-x"></i><span id="tgt-d">0 m</span></div>
           <div id="tgt-card">
-            <div class="tc-id"><svg class="ico"><use id="tgt-ico" href="#i-hostile"/></svg><span><span class="tc-n"><b id="tgt-name">Interceptor</b><span id="tgt-lock">Lock</span></span><span class="tc-s" id="tgt-sub">Klingon</span></span></div>
+            <div class="tc-id"><svg class="ico"><use id="tgt-ico" href="#i-hostile"/></svg><span><span class="tc-n"><b id="tgt-name">Interceptor</b><span id="tgt-lock">Lock</span></span><span class="tc-s" id="tgt-sub">Gutter</span></span></div>
             <div class="tc-int"><span><span id="tgt-int-k">Hull</span> <b id="tgt-int-v">100%</b></span><i id="tgt-int"></i></div>
           </div>
         </div>
@@ -72,10 +72,10 @@
         <div id="threats"></div>
       </div>
 
-      <section id="sector" class="hud-block" aria-label="Sector and dilithium">
+      <section id="sector" class="hud-block" aria-label="Sector and krail">
         <div class="sec-id"><span><i class="x"></i><b id="sec-code">Sector 83-37</b></span><span><i class="x"></i><span id="sec-name">Asteroid field</span></span></div>
-        <div id="rail" aria-label="Dilithium to the next refit">
-          <div class="rail-h"><svg class="ico"><use href="#i-rock"/></svg><span class="lbl">Dilithium</span><b id="xp-v">0</b><span class="lbl of">/ <span id="xp-n">0</span></span><span id="xp-gain"></span><span class="lbl rf">Refit <b id="refit-n">00</b></span></div>
+        <div id="rail" aria-label="Krail to the next refit">
+          <div class="rail-h"><svg class="ico"><use href="#i-rock"/></svg><span class="lbl">Krail</span><b id="xp-v">0</b><span class="lbl of">/ <span id="xp-n">0</span></span><span id="xp-gain"></span><span class="lbl rf">Refit <b id="refit-n">00</b></span></div>
           <i class="ticks" id="xp"></i>
         </div>
       </section>
@@ -84,7 +84,7 @@
 
       <section id="systems" class="hud-block cut" aria-label="Ship systems">
         <div class="sys-row" id="sys-ph">
-          <svg class="ico"><use href="#i-phaser"/></svg><span class="lbl">Phasers</span><kbd>1</kbd>
+          <svg class="ico"><use href="#i-laser"/></svg><span class="lbl">Lasers</span><kbd>1</kbd>
           <i class="bar" id="g-bank"></i><b class="val" id="v-bank">100<small>%</small></b><span class="lv" id="lv-ph">Lv 1</span>
         </div>
         <div class="sys-row" id="sys-tp" hidden>
@@ -114,7 +114,7 @@
 
       <div id="centre">
         <section id="boss" class="cut" aria-live="polite">
-          <div class="boss-h"><svg class="ico"><use href="#i-capital"/></svg><b id="boss-name">I.K.S. Vor’cha</b><span id="boss-cls">Klingon capital ship</span></div>
+          <div class="boss-h"><svg class="ico"><use href="#i-capital"/></svg><b id="boss-name">I.K.S. Vor’cha</b><span id="boss-cls">Gutter capital ship</span></div>
           <div class="boss-bar"><i class="ticks" id="boss-hp"></i></div>
           <div class="boss-f"><span id="boss-hull">Hull 100%</span><span id="boss-phase">Phase 1/3</span><span id="boss-fuse">Fuse 42s</span></div>
         </section>
@@ -135,7 +135,7 @@
         <div id="log-lines"></div>
       </section>
 
-      <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Red alert</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
+      <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
     </div>
 
     <!-- Touch controls. The left half of the screen is the stick's catchment
@@ -144,7 +144,7 @@
          its own gauge. -->
     <div id="touch" aria-hidden="true">
       <div id="stick"><div id="knob"></div></div>
-      <button type="button" id="fire" tabindex="-1"><span>Phaser</span><i class="ticks" id="t-bank"></i></button>
+      <button type="button" id="fire" tabindex="-1"><span>Laser</span><i class="ticks" id="t-bank"></i></button>
       <button type="button" id="torp" tabindex="-1"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
       <button type="button" id="release" tabindex="-1"><span>Core</span><i class="ticks" id="t-oc"></i></button>
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
@@ -152,13 +152,13 @@
 
     <div id="start" role="dialog" aria-labelledby="start-t">
       <div class="start-card">
-        <svg class="wm" viewBox="0 0 146.5 46" role="img" aria-label="Asteroid Blaster"><g class="wm-a"><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(0.00 0.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(20.50 0.00)"/><path d="M0 2H16M8 2V20" transform="translate(41.00 0.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(61.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(81.00 0.00)"/><path d="M5 2H11L14 5V15L11 18H5L2 15V5Z" transform="translate(101.50 0.00)"/><path d="M2 0V20" transform="translate(122.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(130.50 0.00)"/></g><g class="wm-b"><path d="M2 2H11L14 5V7.5L12 10L14 12.5V15L11 18H2ZM2 10H12" transform="translate(0.00 26.00)"/><path d="M2 0V18H15" transform="translate(20.50 26.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(40.00 26.00)"/><path d="M16 2H5L2 5V7.5L4.5 10H11.5L14 12.5V15L11 18H0" transform="translate(60.50 26.00)"/><path d="M0 2H16M8 2V20" transform="translate(81.00 26.00)"/><path d="M15 2H2V18H15M2 10H12" transform="translate(101.50 26.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(121.00 26.00)"/></g></svg>
-        <p class="reg"><span>U.S.S. Kestrel</span><span>NCC-1903</span><span>Survey tender, mining refit</span></p>
-        <p id="start-t" class="tag">Hold the sector.</p>
+        <svg class="wm" viewBox="0 0 151.5 22" role="img" aria-label="Wayward"><g class="wm-a"><path d="M2 0V15L5 18H15L18 15V0M10 6V18" transform="translate(0.00 0.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(24.50 0.00)"/><path d="M2 0V7L5 10H11L14 7V0M8 10V20" transform="translate(45.00 0.00)"/></g><g class="wm-b"><path d="M2 0V15L5 18H15L18 15V0M10 6V18" transform="translate(70.00 0.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(94.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(115.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(135.50 0.00)"/></g></svg>
+        <p class="reg"><span>Wayward</span><span>OBH-4471</span><span>Ore hauler, mining refit</span></p>
+        <p id="start-t" class="tag">Get out alive.</p>
         <dl class="keys-l only-desktop">
           <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
           <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
-          <div><dt><kbd>1</kbd></dt><dd>Phasers</dd></div>
+          <div><dt><kbd>1</kbd></dt><dd>Lasers</dd></div>
           <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
           <div><dt><kbd>E</kbd></dt><dd>Overcharge</dd></div>
           <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
@@ -201,7 +201,7 @@
     <!-- The hail: a capital ship, and the one decision in a run that is not a refit. -->
     <div id="hail" class="sheet alert" role="dialog" aria-labelledby="hail-t" hidden>
       <div class="panel">
-        <header class="ph"><span class="kick">Red alert</span><h2 id="hail-t">Capital ship</h2><span class="sub" id="hail-s">On intercept course</span></header>
+        <header class="ph"><span class="kick">Alarm</span><h2 id="hail-t">Capital ship</h2><span class="sub" id="hail-s">On intercept course</span></header>
         <div class="opts">
           <button type="button" class="opt" id="hail-engage"><span class="verb"><em>Engage</em><kbd>1</kbd></span><span class="oh">Stand and fight</span><span class="ob" id="hail-eb"></span><span class="lines" id="hail-el"></span></button>
           <button type="button" class="opt" id="hail-evade"><span class="verb"><em>Evade</em><kbd>2</kbd></span><span class="oh">Break away</span><span class="ob" id="hail-vb"></span><span class="lines" id="hail-vl"></span></button>
@@ -241,7 +241,7 @@
     <div id="turn" class="cover" role="alert">
       <svg class="cover-i" viewBox="0 0 48 48" aria-hidden="true"><path class="was" d="M6 6h14v24H6z M11 26h4"/><path d="M18 26h24v14H18z M38 31v4"/><path d="M26 6h4l8 8v6 M35 17l3 3 3-3"/></svg>
       <b class="cover-t">Turn your phone</b>
-      <span class="cover-s">Asteroid Blaster plays in landscape</span>
+      <span class="cover-s">Wayward plays in landscape</span>
     </div>
     <div id="debug" aria-hidden="true"></div>
   </div>
@@ -254,7 +254,7 @@
     <span class="cover-s">for the whole screen, with no tabs or bars</span>
     <button type="button" id="swipe-x" class="ghost">Keep the bars</button>
   </div>
-  <noscript>Asteroid Blaster needs JavaScript and WebGL to run.</noscript>
+  <noscript>Wayward needs JavaScript and WebGL to run.</noscript>
   <script type="module" src="./src/main.ts"></script>
 </body>
 </html>

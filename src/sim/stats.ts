@@ -13,27 +13,27 @@ import {
 // no cap at all once three upgrades multiply the same number.
 
 export interface Stats {
-  // phasers (button 1)
-  phaserDamage: number;
-  phaserCooldown: number;
-  phaserSpeed: number;
-  phaserLife: number;
+  // lasers (button 1)
+  laserDamage: number;
+  laserCooldown: number;
+  laserSpeed: number;
+  laserLife: number;
   /** Extra targets a lance passes through. */
-  phaserPierce: number;
+  laserPierce: number;
   /** Lances per shot (the cone), and the angle between them. */
-  phaserLances: number;
-  phaserSpread: number;
+  laserLances: number;
+  laserSpread: number;
   /** Radians per second a lance bends toward the hull nearest the nose (the array). */
-  phaserHoming: number;
+  laserHoming: number;
   bankMax: number;
   bankShot: number;
   bankRefill: number;
   /** Damage multiplier on lances fired while drifting (off the throttle). */
   driftBonus: number;
-  /** Phaser hits paint their target for the torpedoes. */
+  /** Laser hits paint their target for the torpedoes. */
   painter: boolean;
 
-  // photon torpedoes (button 2)
+  // torpedoes (button 2)
   torpedoes: boolean;
   torpRack: number;
   torpReload: number;
@@ -57,7 +57,7 @@ export interface Stats {
   /** Blasts arc to this many nearby hulls. */
   torpArc: number;
 
-  // tricobalt mines (laid by themselves)
+  // seismic mines (laid by themselves)
   mines: boolean;
   mineInterval: number;
   mineMax: number;
@@ -72,7 +72,7 @@ export interface Stats {
   /** Lances that hit a mine set it off, harder. */
   mineDetonate: boolean;
 
-  // warp plasma (laid while thrusting)
+  // drive plasma (laid while thrusting)
   plasma: boolean;
   plasmaDps: number;
   plasmaLife: number;
@@ -120,7 +120,7 @@ export interface Stats {
   /** Seconds without damage before a plate is repaired; 0 for never. */
   regen: number;
 
-  // utility and the warp core
+  // utility and the reactor
   tractor: number;
   xpMult: number;
   ocGain: number;
@@ -143,7 +143,7 @@ export interface Stats {
   speedGraze: boolean;
 
   // the economy (utility)
-  /** Multipliers: rock's chance of dilithium, hull repairs' chance, power-up time, rare rock's frequency, an elite's dilithium. */
+  /** Multipliers: rock's chance of krail, hull repairs' chance, power-up time, rare rock's frequency, an elite's krail. */
   crystalChance: number;
   repairChance: number;
   powerTime: number;
@@ -151,7 +151,7 @@ export interface Stats {
   eliteLoot: number;
 
   // salvaged tech (from capital ships)
-  /** Every nth phaser shot is a disruptor bolt at triple damage; 0 for none. */
+  /** Every nth laser shot is a disruptor bolt at triple damage; 0 for none. */
   disruptor: number;
   /** Seconds a barrel roll hides you from enemy guns. */
   rollCloak: number;
@@ -160,8 +160,8 @@ export interface Stats {
 }
 
 export const BASE: Readonly<Stats> = Object.freeze({
-  phaserDamage: BOLT_DAMAGE, phaserCooldown: SHOT_COOLDOWN, phaserSpeed: BOLT_SPEED, phaserLife: BOLT_LIFE,
-  phaserPierce: 0, phaserLances: 1, phaserSpread: 0.11, phaserHoming: 0,
+  laserDamage: BOLT_DAMAGE, laserCooldown: SHOT_COOLDOWN, laserSpeed: BOLT_SPEED, laserLife: BOLT_LIFE,
+  laserPierce: 0, laserLances: 1, laserSpread: 0.11, laserHoming: 0,
   bankMax: BANK_MAX, bankShot: BANK_SHOT, bankRefill: BANK_REFILL, driftBonus: 1, painter: false,
 
   torpedoes: false, torpRack: 2, torpReload: TORP_RELOAD, torpDamage: TORP_DAMAGE, torpBlast: TORP_BLAST,
@@ -193,11 +193,11 @@ export const newStats = (): Stats => ({ ...BASE });
 
 /** The hard limits, applied once every upgrade has had its say. */
 export const CAPS = {
-  phaserDamageMult: 5,
-  phaserCooldown: 0.09,
-  phaserLances: 7,
-  phaserPierce: 4,
-  phaserReach: 190,
+  laserDamageMult: 5,
+  laserCooldown: 0.09,
+  laserLances: 7,
+  laserPierce: 4,
+  laserReach: 190,
   bankShotMin: 3,
   torpRack: 6,
   torpReload: 1.1,
@@ -233,11 +233,11 @@ export const CAPS = {
 
 /** Clamp a finished block. Mutates and returns it. */
 export function capStats(s: Stats): Stats {
-  s.phaserDamage = Math.min(s.phaserDamage, BASE.phaserDamage * CAPS.phaserDamageMult);
-  s.phaserCooldown = Math.max(s.phaserCooldown, CAPS.phaserCooldown);
-  s.phaserLances = Math.min(Math.round(s.phaserLances), CAPS.phaserLances);
-  s.phaserPierce = Math.min(Math.round(s.phaserPierce), CAPS.phaserPierce);
-  if (s.phaserSpeed * s.phaserLife > CAPS.phaserReach) s.phaserLife = CAPS.phaserReach / s.phaserSpeed;
+  s.laserDamage = Math.min(s.laserDamage, BASE.laserDamage * CAPS.laserDamageMult);
+  s.laserCooldown = Math.max(s.laserCooldown, CAPS.laserCooldown);
+  s.laserLances = Math.min(Math.round(s.laserLances), CAPS.laserLances);
+  s.laserPierce = Math.min(Math.round(s.laserPierce), CAPS.laserPierce);
+  if (s.laserSpeed * s.laserLife > CAPS.laserReach) s.laserLife = CAPS.laserReach / s.laserSpeed;
   s.bankShot = Math.max(s.bankShot, CAPS.bankShotMin);
   s.torpRack = Math.max(1, Math.min(Math.round(s.torpRack), CAPS.torpRack));
   s.torpReload = Math.max(s.torpReload, CAPS.torpReload);

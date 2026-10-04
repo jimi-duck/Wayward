@@ -16,11 +16,11 @@ const TAG_WORD: Record<CardTag, string> = {
 };
 /** The HUD's icon for each branch. */
 const ICON: Record<Branch, string> = {
-  phaser: 'i-phaser', torpedo: 'i-torp', mine: 'i-mine', plasma: 'i-plasma', close: 'i-arc', mobility: 'i-engine',
+  laser: 'i-laser', torpedo: 'i-torp', mine: 'i-mine', plasma: 'i-plasma', close: 'i-arc', mobility: 'i-engine',
   defence: 'i-shield', utility: 'i-rock', overcharge: 'i-core', synergy: 'i-link', salvage: 'i-capital',
 };
-/** Phasers and the warp core come fitted from the yard, so they count from level 1, as on the HUD. */
-const STOCK = new Set<Branch>(['phaser', 'overcharge']);
+/** Lasers and the reactor come fitted from the yard, so they count from level 1, as on the HUD. */
+const STOCK = new Set<Branch>(['laser', 'overcharge']);
 const MAX_FIGS = 3;
 const pad2 = (n: number) => String(n).padStart(2, '0');
 

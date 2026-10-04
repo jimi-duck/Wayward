@@ -12,7 +12,7 @@ import type { RunStats } from '../src/sim/run';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
 // A competent, unspectacular player, for balancing. It picks a goal (nose
-// on a target at its weapon's range, leading it; else toward dilithium,
+// on a target at its weapon's range, leading it; else toward krail,
 // pickups and objectives), then keeps that goal safe with a short look-ahead:
 // ten times a second it flies a dozen candidate headings 1.2s forward
 // against where rock, hulls, fire, beams, telegraphed charges and landing
@@ -56,7 +56,7 @@ export function stratName(s: Strategy): string {
 }
 
 const KIND_BONUS: Record<string, number> = { system: 4, spec: 5, synergy: 4, tech: 5, stat: 1 };
-const WEAPON_BRANCHES = new Set<string>(['phaser', 'torpedo', 'mine', 'plasma', 'close']);
+const WEAPON_BRANCHES = new Set<string>(['laser', 'torpedo', 'mine', 'plasma', 'close']);
 
 /**
  * The card to take. 'random' takes any of the three, as a player who reads
@@ -70,7 +70,7 @@ function pickCard(w: World, s: Strategy, rngPick: () => number): number {
     const u = UPGRADE[id]!;
     let v = u.branch === s.branch ? 10 : u.branch === s.second ? 6 : 0;
     // a build with no weapon branch still keeps its guns up, as a player would
-    if (!WEAPON_BRANCHES.has(s.branch) && !(s.second && WEAPON_BRANCHES.has(s.second)) && u.branch === 'phaser') v += 8;
+    if (!WEAPON_BRANCHES.has(s.branch) && !(s.second && WEAPON_BRANCHES.has(s.second)) && u.branch === 'laser') v += 8;
     if (u.branch === 'defence') v += 3;
     if (u.branch === s.branch || u.branch === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
     else if (u.kind === 'system') v -= 3;
@@ -191,7 +191,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   const push = (dx: number, dz: number, k: number) => { ax += dx * k; az += dz * k; };
   const flee = push;
 
-  // pulled toward dilithium and pickups
+  // pulled toward krail and pickups
   for (const p of w.pickups) {
     const dx = p.x - s.x, dz = p.z - s.z, d = Math.hypot(dx, dz) || 1;
     if (d > 45) continue;
@@ -309,11 +309,11 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     if (d < 6) flee(dx / (d + wb.r || 1), dz / (d + wb.r || 1), 7 * (1 - d / 6));
   }
 
-  // the goal: nose on a target in reach, leading it; otherwise toward whatever pulls (dilithium, pickups, objectives)
+  // the goal: nose on a target in reach, leading it; otherwise toward whatever pulls (krail, pickups, objectives)
   const speed = Math.hypot(s.vx, s.vz) / topSpeed(w.hull);
   let want = s.heading, thrust = 0;
-  if (aimAt && aimD < st.phaserSpeed * st.phaserLife * 0.85) {
-    const lead = aimD / st.phaserSpeed;
+  if (aimAt && aimD < st.laserSpeed * st.laserLife * 0.85) {
+    const lead = aimD / st.laserSpeed;
     want = Math.atan2(-(aimAt.z + aimAt.vz * lead - s.z), aimAt.x + aimAt.vx * lead - s.x);
     // hold standoff: close in if far, coast if near
     thrust = aimD > prefer + 8 && speed < 0.5 ? 1 : speed < 0.12 ? 0.3 : 0;
@@ -334,10 +334,10 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   if (dodge && s.rollCooldown === 0) f.roll = true;
 
   // fire: whatever is in front, within reach
-  const reach = st.phaserSpeed * st.phaserLife;
+  const reach = st.laserSpeed * st.laserLife;
   const inFront = (x: number, z: number, r: number, range: number) => {
     const dx = x - s.x, dz = z - s.z, d = Math.hypot(dx, dz);
-    return d < range && Math.abs(angleDelta(s.heading, Math.atan2(-dz, dx))) < Math.max(0.06, st.phaserLances > 1 ? 0.3 : 0.05) + r / Math.max(1, d);
+    return d < range && Math.abs(angleDelta(s.heading, Math.atan2(-dz, dx))) < Math.max(0.06, st.laserLances > 1 ? 0.3 : 0.05) + r / Math.max(1, d);
   };
   f.fire = targets.ships.some((a) => inFront(a.x, a.z, a.r, reach)) || (!!targets.boss && inFront(targets.boss.x, targets.boss.z, targets.boss.r, reach))
     || w.field.rocks.some((r) => inFront(r.x, r.z, r.r, reach * 0.7));

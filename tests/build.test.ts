@@ -7,7 +7,7 @@ import { BASE, CAPS } from '../src/sim/stats';
 const none = new Set<string>();
 
 describe('the refit tree', () => {
-  it('starts from the stock ship: twin phasers, three plates, no systems', () => {
+  it('starts from the stock ship: twin lasers, three plates, no systems', () => {
     const s = computeStats({});
     expect(s).toEqual(BASE);
     expect(s.torpedoes || s.mines || s.plasma || s.arc).toBe(false);
@@ -27,11 +27,11 @@ describe('the refit tree', () => {
     const levels: Levels = {};
     for (const u of UPGRADES) levels[u.id] = u.max;
     const s = computeStats(levels);
-    expect(s.phaserCooldown).toBeGreaterThanOrEqual(CAPS.phaserCooldown);
-    expect(s.phaserLances).toBeLessThanOrEqual(CAPS.phaserLances);
+    expect(s.laserCooldown).toBeGreaterThanOrEqual(CAPS.laserCooldown);
+    expect(s.laserLances).toBeLessThanOrEqual(CAPS.laserLances);
     expect(s.maxPlates).toBeLessThanOrEqual(CAPS.maxPlates);
     expect(s.shieldMax).toBeLessThanOrEqual(CAPS.shieldMax);
-    expect(s.phaserSpeed * s.phaserLife).toBeLessThanOrEqual(CAPS.phaserReach + 1e-6);
+    expect(s.laserSpeed * s.laserLife).toBeLessThanOrEqual(CAPS.laserReach + 1e-6);
     expect(s.torpRack).toBeLessThanOrEqual(CAPS.torpRack);
     expect(s.thrust).toBeLessThanOrEqual(CAPS.thrust);
   });
@@ -54,7 +54,7 @@ describe('the refit tree', () => {
 
 describe('the figures', () => {
   it('shows every number a card changes, before and after', () => {
-    expect(upgradeFigures({}, 'ph_capacitors').map((f) => f.label)).toContain('Phaser shots/sec');
+    expect(upgradeFigures({}, 'ph_capacitors').map((f) => f.label)).toContain('Laser shots/sec');
     const rack = upgradeFigures({ tp_bay: 1, tp_yield: 1, tp_tracking: 1 }, 'tp_heavy').find((f) => f.label === 'Torpedo rack');
     expect(rack?.cost).toBe(true);
     // a system switched on is never a cost
@@ -65,7 +65,7 @@ describe('the figures', () => {
 
 describe('what the ship became', () => {
   it('names a build by its deepest branch and its specialisation', () => {
-    expect(identity({}).title).toBe('Stock Kestrel');
+    expect(identity({}).title).toBe('Stock Wayward');
     expect(identity({ tp_bay: 1, tp_yield: 2, tp_swarm: 1 }).title).toBe('Swarm torpedo boat');
     expect(identity({ mn_layer: 1, mn_racks: 2, ph_emitters: 3, ph_capacitors: 1 }).title).toBe('Gunship / minelayer');
   });

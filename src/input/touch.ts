@@ -10,7 +10,7 @@ import type { Press } from './types';
 //
 // The right half is the trigger's. A thumb on Torpedo or Release (or close
 // to either) presses it; a thumb anywhere else on the right holds the
-// phasers. A thumb that misses a button still fires, rather than doing
+// lasers. A thumb that misses a button still fires, rather than doing
 // nothing or, worse, anchoring the stick under the wrong thumb.
 //
 // Steering drives like a racing game: across turns the nose, any push away
@@ -28,11 +28,11 @@ export interface TouchElements {
   layer: HTMLElement;
   stick: HTMLElement;
   knob: HTMLElement;
-  /** The trigger: phasers, held. */
+  /** The trigger: lasers, held. */
   fire: HTMLElement;
   /** A torpedo per tap. */
   torpedo: HTMLElement;
-  /** The warp core, when it is full. */
+  /** The reactor, when it is full. */
   release: HTMLElement;
 }
 

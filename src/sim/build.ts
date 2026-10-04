@@ -80,12 +80,12 @@ const off = (on: boolean, v: number) => (on ? v : 0);
 const dash = (fmt: (v: number) => string) => (v: number) => (v === 0 ? '—' : fmt(v));
 
 export const FIGURES: FigDef[] = [
-  { label: 'Lance damage', get: (s) => s.phaserDamage, fmt: f1 },
-  { label: 'Phaser shots/sec', get: (s) => 1 / s.phaserCooldown, fmt: f1 },
-  { label: 'Lances per shot', get: (s) => s.phaserLances, fmt: f0 },
-  { label: 'Lance reach', get: (s) => s.phaserSpeed * s.phaserLife, fmt: m },
-  { label: 'Targets pierced', get: (s) => s.phaserPierce, fmt: f0 },
-  { label: 'Phaser bank', get: (s) => s.bankMax, fmt: f0 },
+  { label: 'Lance damage', get: (s) => s.laserDamage, fmt: f1 },
+  { label: 'Laser shots/sec', get: (s) => 1 / s.laserCooldown, fmt: f1 },
+  { label: 'Lances per shot', get: (s) => s.laserLances, fmt: f0 },
+  { label: 'Lance reach', get: (s) => s.laserSpeed * s.laserLife, fmt: m },
+  { label: 'Targets pierced', get: (s) => s.laserPierce, fmt: f0 },
+  { label: 'Laser bank', get: (s) => s.bankMax, fmt: f0 },
   { label: 'Bank refill/sec', get: (s) => s.bankRefill, fmt: f0 },
   { label: 'Energy per shot', get: (s) => s.bankShot, fmt: f1, lower: true },
   { label: 'Torpedo rack', get: (s) => off(s.torpedoes, s.torpRack), fmt: dash(f0) },
@@ -121,17 +121,17 @@ export const FIGURES: FigDef[] = [
   { label: 'Shield recharge', get: (s) => off(s.shieldMax > 0, s.shieldRecharge), fmt: dash(sec), lower: true },
   { label: 'Grace after a hit', get: (s) => s.grace, fmt: sec },
   { label: 'Tractor reach', get: (s) => s.tractor, fmt: m },
-  { label: 'Dilithium yield', get: (s) => s.xpMult, fmt: pct },
+  { label: 'Krail yield', get: (s) => s.xpMult, fmt: pct },
   { label: 'Overcharge gain', get: (s) => s.ocGain, fmt: pct },
   { label: 'Release radius', get: (s) => s.ocRadius, fmt: m },
   { label: 'Release damage', get: (s) => s.ocDamage, fmt: f0 },
   { label: 'Overload', get: (s) => s.ocOverload, fmt: sec },
   { label: 'All weapon damage', get: (s) => s.dmgAll, fmt: pct },
-  { label: 'Dilithium from rock', get: (s) => s.crystalChance, fmt: pct },
+  { label: 'Krail from rock', get: (s) => s.crystalChance, fmt: pct },
   { label: 'Repair drops', get: (s) => s.repairChance, fmt: pct },
   { label: 'Power-up time', get: (s) => s.powerTime, fmt: pct },
   { label: 'Rare rock', get: (s) => s.rareRate, fmt: pct },
-  { label: 'Elite dilithium', get: (s) => s.eliteLoot, fmt: pct },
+  { label: 'Elite krail', get: (s) => s.eliteLoot, fmt: pct },
   { label: 'Disruptor bolt every', get: (s) => s.disruptor, fmt: dash((v) => `${v} shots`), lower: true },
   { label: 'Roll cloak', get: (s) => s.rollCloak, fmt: dash(sec) },
   { label: 'Snare', get: (s) => s.snare, fmt: dash(sec) },
@@ -176,7 +176,7 @@ export function identity(levels: Levels): Identity {
     .filter((b) => b.levels > 0)
     .sort((a, b) => b.levels - a.levels);
   const specs = UPGRADES.filter((u) => u.kind === 'spec' && (levels[u.id] ?? 0) > 0);
-  if (!branches.length) return { title: 'Stock Kestrel', branches, specs: [] };
+  if (!branches.length) return { title: 'Stock Wayward', branches, specs: [] };
   const top = branches[0]!;
   const spec = specs.find((u) => u.branch === top.branch);
   let title = BRANCHES[top.branch].identity;

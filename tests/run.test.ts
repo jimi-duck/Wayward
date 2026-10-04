@@ -42,13 +42,13 @@ const hold = (w: World, al: { x: number; y: number; z: number; vx: number; vy: n
   al.x = x; al.y = y; al.z = z; al.vx = al.vy = al.vz = 0;
 };
 
-describe('dilithium and the refit rail', () => {
+describe('krail and the refit rail', () => {
   it('pulls crystals in from the tractor radius, and lets the rest fade', () => {
     const w = quiet();
     dropCrystals(w.pickups, 10, 0, 1, w.rng, 0);
     dropCrystals(w.pickups, 60, 0, 1, w.rng, 0);
     run(w, 2);
-    expect(w.run.dilithium).toBe(1);
+    expect(w.run.krail).toBe(1);
     expect(w.pickups.length).toBe(1);
     run(w, CRYSTAL_LIFE);
     expect(w.pickups.length).toBe(0);
@@ -98,10 +98,10 @@ describe('dilithium and the refit rail', () => {
   });
 });
 
-describe('the warp core', () => {
+describe('the reactor', () => {
   it('charges from fire that passes close without hitting', () => {
     const w = quiet();
-    w.shots.push({ id: 1, x: 2.8, y: 0, z: -6, vx: 0, vy: 0, vz: 20, life: 2, r: 0.45, faction: 'klingon', hp: 0, seek: 0, split: 0 });
+    w.shots.push({ id: 1, x: 2.8, y: 0, z: -6, vx: 0, vy: 0, vz: 20, life: 2, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
     run(w, 0.6);
     expect(w.plates).toBe(w.stats.maxPlates);
     expect(w.oc).toBeGreaterThan(0);
@@ -112,7 +112,7 @@ describe('the warp core', () => {
     const w = quiet();
     const al = parked(w, 8, -8);
     al.hp = al.maxHp = 3;
-    for (let i = 0; i < 12; i++) w.shots.push({ id: 100 + i, x: 10, y: 0, z: 10 + i, vx: 0, vy: 0, vz: 0, life: 9, r: 0.45, faction: 'klingon', hp: 0, seek: 0, split: 0 });
+    for (let i = 0; i < 12; i++) w.shots.push({ id: 100 + i, x: 10, y: 0, z: 10 + i, vx: 0, vy: 0, vz: 0, life: 9, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
     w.oc = OC_MAX;
     w.step(STEP, input({ overcharge: true }));
     expect(w.aliens.includes(al)).toBe(false);
@@ -144,7 +144,7 @@ describe('the kill chain', () => {
     expect(w.chain).toBe(6);
     expect(w.chainMult).toBe(1.25);
     expect(w.run.bestChain).toBe(6);
-    w.pickups = []; // their dilithium would open a refit, and the world would wait on it
+    w.pickups = []; // their krail would open a refit, and the world would wait on it
     run(w, CHAIN_WINDOW + 0.1);
     expect(w.chain).toBe(0);
   });
@@ -155,7 +155,7 @@ describe('defence', () => {
     const w = quiet();
     w.setLevels({ df_shield: 1 });
     expect(w.shields).toBe(1);
-    w.shots.push({ id: 1, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.45, faction: 'klingon', hp: 0, seek: 0, split: 0 });
+    w.shots.push({ id: 1, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
     w.step(STEP, input());
     expect(w.plates).toBe(w.stats.maxPlates);
     expect(w.shields).toBe(0);
@@ -170,7 +170,7 @@ describe('defence', () => {
     w.plates = 1;
     const hit = () => {
       w.ship.invuln = 0;
-      w.shots.push({ id: 9, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.45, faction: 'klingon', hp: 0, seek: 0, split: 0 });
+      w.shots.push({ id: 9, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
       w.step(STEP, input());
     };
     hit();
@@ -339,9 +339,9 @@ describe('sector events', () => {
 });
 
 describe('salvaged tech and the ship-wide stats', () => {
-  it('Klingon disruptors: every fourth phaser shot is a heavy bolt at triple damage', () => {
+  it('Gutter scatterguns: every fourth laser shot is a heavy bolt at triple damage', () => {
     const w = quiet();
-    w.setLevels({ tech_klingon: 1 });
+    w.setLevels({ tech_gutter: 1 });
     const seen: Array<{ heavy: boolean; dmg: number }> = [];
     for (let i = 0; i < 120; i++) {
       const before = new Set(w.bolts);
@@ -354,9 +354,9 @@ describe('salvaged tech and the ship-wide stats', () => {
     expect(heavy[0]!.dmg).toBeCloseTo(light[0]!.dmg * 3);
   });
 
-  it('Tholian snares: a torpedo blast that does not kill slows the hull it catches', () => {
+  it('Thren snares: a torpedo blast that does not kill slows the hull it catches', () => {
     const w = quiet();
-    w.setLevels({ tp_bay: 1, tech_tholian: 1 });
+    w.setLevels({ tp_bay: 1, tech_thren: 1 });
     const al = parked(w, 20, 0);
     al.hp = al.maxHp = 1000;
     launchTorpedo(w.torps, w.stats, 17, 0, 0, 10, null, 1);
@@ -367,9 +367,9 @@ describe('salvaged tech and the ship-wide stats', () => {
     expect(Math.abs(al.vx)).toBeLessThan(10);
   });
 
-  it('Romulan cloak: a barrel roll hides the ship for a moment', () => {
+  it('Office cloak: a barrel roll hides the ship for a moment', () => {
     const w = quiet();
-    w.setLevels({ tech_romulan: 1 });
+    w.setLevels({ tech_office: 1 });
     w.step(STEP, input({ roll: true }));
     expect(w.cloakT).toBeGreaterThan(1);
     expect(w.drain().some((e) => e.type === 'cloak')).toBe(true);

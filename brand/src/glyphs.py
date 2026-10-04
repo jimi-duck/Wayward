@@ -1,4 +1,4 @@
-# Constructed letterforms for the Asteroid Blaster wordmark.
+# Constructed letterforms for the WAYWARD wordmark.
 # Grid: cap height 20, stroke 4 (butt caps, miter joins). Stems keep square
 # corners; bowls and arches are cut at 45 degrees. Open ends run to the box edge.
 S = 4
@@ -13,6 +13,8 @@ G = {
   'D': (16, "M2 2H11L14 5V15L11 18H2Z"),
   'B': (16, "M2 2H11L14 5V7.5L12 10L14 12.5V15L11 18H2ZM2 10H12"),
   'L': (15, "M2 0V18H15"),
+  'W': (20, "M2 0V15L5 18H15L18 15V0M10 6V18"),
+  'Y': (16, "M2 0V7L5 10H11L14 7V0M8 10V20"),
   ' ': (8, ""),
 }
 GAP = 4.5

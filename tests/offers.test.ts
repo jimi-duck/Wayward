@@ -23,15 +23,15 @@ describe('the refit cards', () => {
     for (let seed = 1; seed < 40; seed++) expect(offer({}, seed).cards.some((c) => UPGRADE[c.id]!.kind === 'system')).toBe(true);
   });
 
-  it('leans toward the build: a torpedo ship sees torpedo cards far more often than a phaser ship does', () => {
+  it('leans toward the build: a torpedo ship sees torpedo cards far more often than a laser ship does', () => {
     const count = (levels: Levels) => {
       let n = 0;
-      for (let seed = 1; seed <= 300; seed++) n += offer(levels, seed, new Set(['torpedo', 'phaser', 'defence', 'mine', 'mobility'])).cards.filter((c) => UPGRADE[c.id]!.tags.includes('torpedo')).length;
+      for (let seed = 1; seed <= 300; seed++) n += offer(levels, seed, new Set(['torpedo', 'laser', 'defence', 'mine', 'mobility'])).cards.filter((c) => UPGRADE[c.id]!.tags.includes('torpedo')).length;
       return n;
     };
     const torp = count({ tp_bay: 1, tp_yield: 2, tp_magazine: 1, mn_layer: 1 });
-    const phaser = count({ tp_bay: 1, ph_emitters: 3, ph_capacitors: 2, mn_layer: 1 });
-    expect(torp).toBeGreaterThan(phaser * 1.5);
+    const laser = count({ tp_bay: 1, ph_emitters: 3, ph_capacitors: 2, mn_layer: 1 });
+    expect(torp).toBeGreaterThan(laser * 1.5);
   });
 
   it('usually leaves one card for a new direction', () => {
@@ -54,14 +54,14 @@ describe('the refit cards', () => {
 
   it('never deals a faction’s tech before her capital ship is destroyed; salvage leads with it', () => {
     for (let seed = 1; seed < 60; seed++) expect(offer({ ph_emitters: 2 }, seed).cards.some((c) => UPGRADE[c.id]!.kind === 'tech')).toBe(false);
-    const techs = new Set(['klingon']);
-    const salvage = offer({ ph_emitters: 2 }, 7, new Set(), { techs, kind: 'salvage', faction: 'klingon' });
+    const techs = new Set(['gutter']);
+    const salvage = offer({ ph_emitters: 2 }, 7, new Set(), { techs, kind: 'salvage', faction: 'gutter' });
     expect(salvage.kind).toBe('salvage');
-    expect(salvage.cards[0]).toMatchObject({ id: 'tech_klingon', tag: 'tech' });
+    expect(salvage.cards[0]).toMatchObject({ id: 'tech_gutter', tag: 'tech' });
     expect(salvage.cards.length).toBe(3);
     // once fitted, her tech is not dealt again
-    const again = offer({ ph_emitters: 2, tech_klingon: 1 }, 7, new Set(), { techs, kind: 'salvage', faction: 'klingon' });
-    expect(again.cards.map((c) => c.id)).not.toContain('tech_klingon');
+    const again = offer({ ph_emitters: 2, tech_gutter: 1 }, 7, new Set(), { techs, kind: 'salvage', faction: 'gutter' });
+    expect(again.cards.map((c) => c.id)).not.toContain('tech_gutter');
   });
 
   it('says what each card is: a new system, the next level of an upgrade', () => {

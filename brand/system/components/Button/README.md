@@ -1,6 +1,6 @@
 # Button
 
-An LCARS pill with its ends cut to points. One primary action per screen.
+A console pill with its ends cut to points. One primary action per screen.
 
 Provide: a `<button class="ab-btn">` with a variant, one to three words of label, an optional leading icon.
 

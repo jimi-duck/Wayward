@@ -11,14 +11,14 @@ steady player", not as a ceiling.
 | Strategy | Mean survival | Middle half | Refits | Mean score | Plates lost / gained | Capital ships killed (mean fight) | Survived the cap |
 |---|---|---|---|---|---|---|---|
 | random | 6:12 | 5:15–7:29 | 9.5 | 53,738 | 4.0 / 0.3 | 18/26 (31s) | 0/12 |
-| phaser+defence | 7:19 | 5:42–9:12 | 8.6 | 42,841 | 4.7 / 0.3 | 15/28 (39s) | 0/12 |
-| torpedo+phaser | 5:45 | 5:20–6:40 | 9.0 | 51,284 | 4.0 / 0.5 | 18/24 (24s) | 0/12 |
+| laser+defence | 7:19 | 5:42–9:12 | 8.6 | 42,841 | 4.7 / 0.3 | 15/28 (39s) | 0/12 |
+| torpedo+laser | 5:45 | 5:20–6:40 | 9.0 | 51,284 | 4.0 / 0.5 | 18/24 (24s) | 0/12 |
 | mine+mobility | 5:39 | 3:55–6:15 | 8.2 | 38,154 | 4.3 / 0.7 | 10/21 (38s) | 0/12 |
 | close+defence | 6:42 | 5:11–8:39 | 11.1 | 58,579 | 5.3 / 1.0 | 19/29 (25s) | 0/12 |
-| close+phaser | 3:55 | 3:17–5:06 | 7.2 | 25,489 | 3.8 / 0.3 | 4/10 (13s) | 0/12 |
+| close+laser | 3:55 | 3:17–5:06 | 7.2 | 25,489 | 3.8 / 0.3 | 4/10 (13s) | 0/12 |
 | torpedo+defence | 9:48 | 7:56–12:58 | 12.8 | 120,020 | 5.6 / 1.3 | 30/46 (32s) | 2/12 |
 | plasma+mobility | 5:03 | 3:49–5:46 | 7.3 | 27,407 | 3.8 / 0.3 | 7/17 (30s) | 0/12 |
-| defence+phaser | 7:46 | 5:29–9:12 | 9.0 | 44,917 | 4.9 / 0.6 | 16/30 (41s) | 1/12 |
+| defence+laser | 7:46 | 5:29–9:12 | 9.0 | 44,917 | 4.9 / 0.6 | 16/30 (41s) | 1/12 |
 | mobility+overcharge | 4:47 | 4:11–5:15 | 6.5 | 21,019 | 3.9 / 0.4 | 9/13 (34s) | 0/12 |
 
 ## Capital-ship fights
@@ -56,18 +56,18 @@ Plates and shield charges lost, by source, across every run.
 | fire:capital:strafe | 20 | 2% |
 | ram:stalker | 20 | 2% |
 | ram:scout | 11 | 1% |
-| fire:hideki | 9 | 1% |
-| fire:scorpion | 6 | 1% |
+| fire:picket | 9 | 1% |
+| fire:whisper | 6 | 1% |
 | blast | 5 | 0% |
 | fire:shard | 4 | 0% |
-| ram:scorpion | 3 | 0% |
+| ram:whisper | 3 | 0% |
 | ram:weaver | 3 | 0% |
 | ram:lancer | 3 | 0% |
 | volatile | 2 | 0% |
 | ram:freighter | 2 | 0% |
 | lightning | 2 | 0% |
 | ram:probe | 1 | 0% |
-| ram:hideki | 1 | 0% |
+| ram:picket | 1 | 0% |
 | ram:warbird | 1 | 0% |
 
 ## Health over time
@@ -97,6 +97,6 @@ Mean plates lost and gained per minute, among the runs still alive in that minut
 
 Refit 1 at 0:09, refit 5 at 2:41, refit 10 at 6:20, refit 15 at 10:17 (mean, of runs that got there).
 
-Kills by weapon: torpedo 29% · overcharge 26% · phaser 21% · arc 11% · mine 9% · plasma 2% · hazard 1% · ram 1%.
+Kills by weapon: torpedo 29% · overcharge 26% · laser 21% · arc 11% · mine 9% · plasma 2% · hazard 1% · ram 1%.
 
 Ships built: Reactive bulwark (16) · Interceptor (14) · Gunship (13) · Fortress bulwark (10) · Bulwark (7) · Shock brawler (7) · Storm brawler (5) · Minelayer (4) · Fortress bulwark / brawler (3) · Gunship / interceptor (3) · Torpedo boat (3) · Precision torpedo boat / bulwark (3) · Heavy torpedo boat (3) · Gunship / bulwark (2) · Heavy-lance gunship (2) · Precision torpedo boat (2) · Cone gunship (2) · Shock brawler / bulwark (2) · Heavy torpedo boat / bulwark (2) · Incendiary plasma runner (2) · Reactive bulwark / gunship (1) · Gunship / plasma runner (1) · Prospector (1) · Array gunship (1) · Fortress bulwark / interceptor (1) · Chain-reaction minelayer / interceptor (1) · Evasive interceptor (1) · Chain-reaction minelayer (1) · Reactive bulwark / brawler (1) · Storm brawler / bulwark (1) · Reactive bulwark / torpedo boat (1) · Afterburner plasma runner / interceptor (1) · Afterburner plasma runner (1) · Brawler (1) · Drift interceptor (1).

@@ -7,8 +7,8 @@ import type { Levels } from './build';
 // the scripted pilot reads it to balance the game (plates lost against
 // plates gained, the real sources of damage, how long builds survive).
 
-export type Weapon = 'phaser' | 'torpedo' | 'mine' | 'plasma' | 'arc' | 'ram' | 'overcharge' | 'hazard';
-export type ScoreSource = 'time' | 'kills' | 'rocks' | 'dilithium' | 'capitals' | 'events' | 'overcharge';
+export type Weapon = 'laser' | 'torpedo' | 'mine' | 'plasma' | 'arc' | 'ram' | 'overcharge' | 'hazard';
+export type ScoreSource = 'time' | 'kills' | 'rocks' | 'krail' | 'capitals' | 'events' | 'overcharge';
 
 export interface RunStats {
   seed: number;
@@ -20,8 +20,8 @@ export interface RunStats {
   killsByKind: Record<string, number>;
   elites: number;
   rocks: number;
-  /** Dilithium collected (crystal value, before the matrix), and dropped in all. */
-  dilithium: number;
+  /** Krail collected (crystal value, before the matrix), and dropped in all. */
+  krail: number;
   dropped: number;
   refit: number;
   overcharges: number;
@@ -53,9 +53,9 @@ export const TIMELINE = 10;
 export function newRun(seed: number, modifiers: string[] = []): RunStats {
   return {
     seed, time: 0, score: 0,
-    scoreBy: { time: 0, kills: 0, rocks: 0, dilithium: 0, capitals: 0, events: 0, overcharge: 0 },
-    kills: 0, killsBy: { phaser: 0, torpedo: 0, mine: 0, plasma: 0, arc: 0, ram: 0, overcharge: 0, hazard: 0 },
-    killsByKind: {}, elites: 0, rocks: 0, dilithium: 0, dropped: 0, refit: 0, overcharges: 0, grazes: 0, bestChain: 0,
+    scoreBy: { time: 0, kills: 0, rocks: 0, krail: 0, capitals: 0, events: 0, overcharge: 0 },
+    kills: 0, killsBy: { laser: 0, torpedo: 0, mine: 0, plasma: 0, arc: 0, ram: 0, overcharge: 0, hazard: 0 },
+    killsByKind: {}, elites: 0, rocks: 0, krail: 0, dropped: 0, refit: 0, overcharges: 0, grazes: 0, bestChain: 0,
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
     platesLost: 0, platesGained: 0, shieldsAbsorbed: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
     timeline: [], build: {}, identity: '', modifiers, cause: '',
@@ -64,7 +64,7 @@ export function newRun(seed: number, modifiers: string[] = []): RunStats {
 
 /** The weapon that did most of the killing, and its share. */
 export function mainWeapon(r: RunStats): { weapon: Weapon; share: number } {
-  let best: Weapon = 'phaser', n = -1, total = 0;
+  let best: Weapon = 'laser', n = -1, total = 0;
   for (const [w, k] of Object.entries(r.killsBy) as Array<[Weapon, number]>) {
     total += k;
     if (k > n) { n = k; best = w; }

@@ -14,14 +14,14 @@ const UNLOCKED = (process.env.PILOT_UNLOCKED ?? '').split(',').filter(Boolean);
 
 const STRATEGIES: Strategy[] = [
   { kind: 'random' },
-  { kind: 'focus', branch: 'phaser', second: 'defence' },
-  { kind: 'focus', branch: 'torpedo', second: 'phaser' },
+  { kind: 'focus', branch: 'laser', second: 'defence' },
+  { kind: 'focus', branch: 'torpedo', second: 'laser' },
   { kind: 'focus', branch: 'mine', second: 'mobility' },
   { kind: 'focus', branch: 'close', second: 'defence' },
-  { kind: 'focus', branch: 'close', second: 'phaser' },
+  { kind: 'focus', branch: 'close', second: 'laser' },
   { kind: 'focus', branch: 'torpedo', second: 'defence' },
   { kind: 'focus', branch: 'plasma', second: 'mobility' },
-  { kind: 'focus', branch: 'defence', second: 'phaser' },
+  { kind: 'focus', branch: 'defence', second: 'laser' },
   { kind: 'focus', branch: 'mobility', second: 'overcharge' },
 ];
 

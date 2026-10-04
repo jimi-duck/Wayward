@@ -15,7 +15,7 @@ body { overflow: hidden; }
 .xp .grow { flex: 1; }
 .cap { color: var(--ink-2); white-space: nowrap; font-size: 13px; }
 .cap b { color: var(--signal); }
-.gem { display: inline-flex; align-items: center; gap: 4px; color: var(--dilithium); }
+.gem { display: inline-flex; align-items: center; gap: 4px; color: var(--krail); }
 .gem .n { color: var(--signal); letter-spacing: .06em; }
 .row { position: absolute; left: 12px; right: 12px; top: 52px; display: flex; justify-content: space-between; align-items: flex-start; }
 .c { padding: 6px 10px; gap: 10px; }
@@ -44,9 +44,9 @@ body { overflow: hidden; }
 <body>
 <div class="phone">
   <canvas class="scene" aria-hidden="true"></canvas>
-  <div class="xp"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62;height:10px"></div></div><span class="cap gem"><i class="ab-i ab-i--dilithium " aria-hidden="true"></i><span class="ab-label n">109</span></span></div>
+  <div class="xp"><span class="ab-rail cap">Refit <b>07</b></span><div class="ab-ticks-wrap grow"><div class="ab-ticks" style="--v:.62;height:10px"></div></div><span class="cap gem"><i class="ab-i ab-i--krail " aria-hidden="true"></i><span class="ab-label n">109</span></span></div>
   <div class="row">
-    <div class="ab-frame ab-chip c"><span class="ab-readout"><span class="ab-label">Stardate</span><span class="ab-num">1142</span></span><span class="ab-plates"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+    <div class="ab-frame ab-chip c"><span class="ab-readout"><span class="ab-label">Score</span><span class="ab-num">1142</span></span><span class="ab-plates"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
     <div class="right">
       <button class="ab-frame stop" aria-label="All stop"><i class="ab-i ab-i--all-stop " aria-hidden="true"></i></button>
       <div class="ab-frame ab-chip c"><span class="ab-readout"><span class="ab-label">Chain</span><span class="ab-num" style="color:var(--signal)">×1.16</span></span></div>
@@ -91,7 +91,7 @@ function abScene(canvas, spec) {
     var dpr = Math.min(2, window.devicePixelRatio || 1), w = canvas.clientWidth, h = canvas.clientHeight;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var lit = (getComputedStyle(root).getPropertyValue('--ab-glow').trim() || '1') !== '0';
-    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('dilithium'), CMD = tok('command');
+    var VOID = tok('void'), INK = tok('ink'), SIG = tok('signal'), VIO = tok('krail'), CMD = tok('command');
     ctx.fillStyle = VOID; ctx.fillRect(0, 0, w, h);
     if (lit) {
       [[0.22, 0.3, 0.55, VIO, 0.13], [0.8, 0.75, 0.6, SIG, 0.07], [0.6, 0.15, 0.4, VIO, 0.06]].forEach(function (n) {
@@ -131,7 +131,7 @@ function abScene(canvas, spec) {
       ctx.fill();
       if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = big ? 26 : 14; }
       ctx.strokeStyle = VIO; ctx.lineWidth = big ? 2 : 1.5; ctx.stroke(); ctx.shadowBlur = 0;
-      if (big) {  // facets from an off-centre apex, and two dilithium seams that glow
+      if (big) {  // facets from an off-centre apex, and two krail seams that glow
         var ax = cx - r[2] * 0.18, ay = cy - r[2] * 0.12;
         pts.forEach(function (p, i) { ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(p[0], p[1]); ctx.strokeStyle = rgba(VIO, i % 3 ? 0.18 : 0.42); ctx.lineWidth = 1; ctx.stroke(); });
         [[2, 6, 0.5], [8, 4, 0.35]].forEach(function (sm) {
@@ -139,7 +139,7 @@ function abScene(canvas, spec) {
           ctx.lineTo(ax + (pts[sm[1]][0] - ax) * sm[2], ay + (pts[sm[1]][1] - ay) * sm[2]); ctx.lineTo(pts[sm[1]][0], pts[sm[1]][1]);
           ctx.strokeStyle = rgba(INK, lit ? 0.75 : 0.5); ctx.lineWidth = 1.4; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 12; } ctx.stroke(); ctx.shadowBlur = 0;
         });
-      } else if (r[2] > 26) {  // a dilithium seam
+      } else if (r[2] > 26) {  // a krail seam
         ctx.beginPath(); ctx.moveTo(pts[0][0] * 0.6 + pts[3][0] * 0.4, pts[0][1] * 0.6 + pts[3][1] * 0.4);
         ctx.lineTo(cx, cy); ctx.lineTo(pts[2][0] * 0.5 + pts[5][0] * 0.5, pts[2][1] * 0.5 + pts[5][1] * 0.5);
         ctx.strokeStyle = rgba(VIO, 0.6); ctx.lineWidth = 1; ctx.stroke();
@@ -151,7 +151,7 @@ function abScene(canvas, spec) {
       ctx.fillStyle = VIO; if (lit) { ctx.shadowColor = VIO; ctx.shadowBlur = 8; } ctx.fillRect(-2.2, -2.2, 4.4, 4.4); ctx.restore();
     });
     (spec.enemies || []).forEach(function (e) {
-      var col = tok(e[4] || 'faction-klingon'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
+      var col = tok(e[4] || 'faction-gutter'); if (lit) { ctx.shadowColor = col; ctx.shadowBlur = 10; }
       raider(e[0] * w, e[1] * h, e[2], e[3], col); ctx.shadowBlur = 0;
       if (e[5]) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath();
         ctx.moveTo(e[0] * w + Math.sin(e[3]) * 22 * e[2], e[1] * h - Math.cos(e[3]) * 22 * e[2]);
@@ -194,7 +194,7 @@ function abScene(canvas, spec) {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
 }
 
-abScene(document.querySelector(".scene"), {seed: 12, stars: 200, rocks: [[0.18, 0.3, 26], [0.8, 0.22, 18], [0.3, 0.62, 16], [0.84, 0.55, 30], [0.12, 0.66, 14]], enemies: [[0.66, 0.36, 1.2, 2.4, 'faction-klingon', 1]], shards: [[0.45, 0.3], [0.48, 0.33]], ship: {x: 0.5, y: 0.5, scale: 1.3, orbit: 0.62, bolts: [[-2, -40, 0, -14], [-2, -66, 0, -14]]}});
+abScene(document.querySelector(".scene"), {seed: 12, stars: 200, rocks: [[0.18, 0.3, 26], [0.8, 0.22, 18], [0.3, 0.62, 16], [0.84, 0.55, 30], [0.12, 0.66, 14]], enemies: [[0.66, 0.36, 1.2, 2.4, 'faction-gutter', 1]], shards: [[0.45, 0.3], [0.48, 0.33]], ship: {x: 0.5, y: 0.5, scale: 1.3, orbit: 0.62, bolts: [[-2, -40, 0, -14], [-2, -66, 0, -14]]}});
 </script>
 </body>
 </html>
