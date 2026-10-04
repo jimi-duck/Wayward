@@ -33,6 +33,7 @@ export const CARDS: CardDef[] = [
       { if: { flag: 'passengers' }, text: 'The family in the hold will not survive a scan.' },
       { if: { flag: 'codes' }, text: 'The forged codes are loaded.' },
       { if: { flag: 'fee_known' }, text: 'They say she takes a fee.' },
+      { if: { notice: ['custody', 'toll'] }, text: 'Your file has a surcharge on it.' },
     ],
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'picket', n: 2 }], cargo: 'Custody blockade cutter, full magazines',
     fee: { base: 40, heat: 60, flags: { fee_known: 0.6 } },
@@ -635,6 +636,7 @@ export const CARDS: CardDef[] = [
     lines: [
       { if: { standing: ['gutter', 1] }, text: '“You are the one who helped the Leaky Tin. Maybe half.”' },
       { if: { kind: 'contested' }, text: 'Two more raiders sit in the lane’s shadow.' },
+      { if: { notice: ['gutter', 'toll'] }, text: '“And the price is up for a crew-killer.”' },
     ],
     ships: [{ variant: 'raptor', n: 1 }, { variant: 'scout', n: 2 }], cargo: 'Raiders · light hulls, heavy guns',
     fee: { base: 25 },
@@ -810,6 +812,81 @@ export const CARDS: CardDef[] = [
     choices: [
       { id: 'hull', label: 'Patch the hull', tone: 'help', hint: 'A plate, and some parts saved.', win: { text: 'Hull patched by your passenger', plates: 1, parts: 4 } },
       { id: 'drop', label: 'Drop them at the dock', tone: 'help', hint: 'Ares Drive will be grateful.', win: { text: 'They will wait for the dock', standing: { frontier: 2 }, job: { id: 'tech', text: 'Take the technician to the dock', at: 'port', pay: { text: 'Technician home · Ares Drive pays', chits: 40, standing: { frontier: 1 } } } } },
+    ],
+  },
+
+  // ── notice: the factions that have marked you, and their captains ──────
+  {
+    id: 'custody_bulletin', kind: 'warning', caller: 'custody', when: { after: 30, notice: ['custody', 'warning'] }, weight: 1.2, repeat: true,
+    from: 'Custody bulletin · all channels', title: 'Report this hull',
+    text: '“All traffic: an Obedience-class hauler, stolen, crew armed and dangerous. Report any sighting to the nearest Custody vessel.”',
+    lines: [
+      { if: { notice: ['custody', 'hunters'] }, text: 'The bulletin carries a bounty now, and the names of the hunters who will collect it.' },
+      { if: { notice: ['custody', 'captain'] }, text: 'It is signed by {captain}.' },
+    ],
+    cargo: 'A broadcast · every receiver in the system',
+    choices: [
+      { id: 'quiet', label: 'Go quiet', tone: 'refuse', hint: 'Kill the chatter and let it pass.', win: { text: 'Running quiet', heat: -0.05 } },
+      { id: 'jam', label: 'Garble the bulletin', tone: 'bluff', hint: 'Scramble the relay so the next system hears less of you.', needs: { fitted: ['ut_scanner', 'tech_office'] }, win: { text: 'The bulletin goes out as noise', notice: { custody: -3 } } },
+      { id: 'answer', label: 'Answer it', tone: 'help', hint: 'Tell every receiver what Kellern did. The miners will hear. So will the Custody.', win: { text: 'Your answer goes out on every channel', standing: { miners: 1 }, notice: { custody: 2 }, heat: 0.08 } },
+    ],
+  },
+  {
+    id: 'gutter_word', kind: 'warning', caller: 'gutter', when: { after: 30, notice: ['gutter', 'warning'] }, weight: 1.2, repeat: true,
+    from: 'The Gutter band · a voice you do not know', title: 'Crews talk',
+    text: '“So you are the hauler that has been killing crews. Somebody will want paying for that, one way or another.”',
+    lines: [
+      { if: { notice: ['gutter', 'hunters'] }, text: '“There is a price on your hull in every bar from here to the Threshold.”' },
+      { if: { standing: ['gutter', 1] }, text: '“Some say you did right by the Leaky Tin. Not enough of them.”' },
+    ],
+    cargo: 'The Gutter band · rumour and threat',
+    choices: [
+      { id: 'pay', label: 'Pay blood money', tone: 'pay', hint: 'Chits to the families. It buys some quiet.', cost: { chits: 20 }, win: { text: 'Blood money paid', notice: { gutter: -4 }, standing: { gutter: 1 } } },
+      { id: 'boast', label: '“Tell them to come and try”', tone: 'fight', hint: 'They will.', win: { text: 'The band goes quiet · then very busy', notice: { gutter: 2 }, spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }] } },
+      { id: 'ignore', label: 'Say nothing', tone: 'refuse', hint: 'Words are cheap.', win: { text: 'Channel closed' } },
+    ],
+  },
+  {
+    id: 'captain', kind: 'warning', caller: 'captain', trigger: 'captain', repeat: true,
+    from: '{captain} · {ship}', title: 'A name on your file',
+    text: '“Wayward. I have read everything they have on you. I wanted to see you for myself.”',
+    lines: [
+      { if: { captain: 'announce' }, text: 'She gives her name and her ship, as if it were a courtesy.' },
+      { if: { captain: 'bargain' }, text: '“Everything has a price, hauler. Even my patience. {fee} chits, and I was never here.”' },
+      { if: { met: 'escaped' }, text: 'Her ship carries new plating since you last ran from her.' },
+      { if: { met: 'beaten' }, text: 'The scars you gave her ship are still there. So is the grudge.' },
+      { if: { met: 'won' }, text: '“I broke you once. You remember.”' },
+      { if: { met: 'parted' }, text: '“We had an arrangement. Let us see if it holds.”' },
+    ],
+    cargo: 'A named captain · her own ship, her own crew', fee: { base: 40, heat: 30 },
+    truths: [
+      { id: 'proud', weight: 1.5, read: 'Her guns are already warm · she wants it settled' },
+      { id: 'tired', weight: 1, read: 'Her ship is running on patches · she would rather not', boost: { if: { met: 'beaten' }, mult: 2.5 } },
+    ],
+    choices: [
+      { id: 'fight', label: 'Turn and fight', tone: 'fight', hint: 'Break her ship and her faction eases off. She will come back, unless you break her twice.', win: { text: 'Weapons hot on her ship', captain: 'fight' } },
+      { id: 'run', label: 'Run for the lane', tone: 'run', hint: 'She comes after you with the system on alert. Get through and she remembers it.', win: { text: 'Running · she is on your tail', captain: 'run' } },
+      { id: 'pay', label: 'Pay her price', tone: 'pay', hint: 'She takes it and goes, and her faction cools a little.', show: { captain: 'bargain' }, cost: { chits: 'fee' }, win: { text: 'Paid · she breaks off', captain: 'parley' } },
+      {
+        id: 'talk', label: '“Not today, Captain”', tone: 'bluff', hint: 'She knows you now. Maybe she has had enough of you.', show: { met: true }, loseIf: ['proud'], odds: { base: 0.6 },
+        win: { text: 'A long silence · then she turns away', captain: 'parley' }, lose: { text: '“Today.” · she opens fire', captain: 'fight' },
+      },
+    ],
+  },
+  {
+    id: 'captain_ambush', kind: 'warning', caller: 'captain', trigger: 'captain', repeat: true,
+    from: '{captain} · {ship}', title: 'Out of the dark',
+    text: '“Hello, Wayward.” Her ship is already on you.',
+    lines: [
+      { if: { met: 'escaped' }, text: '“You ran last time. Not this time.”' },
+      { if: { met: 'beaten' }, text: 'She has patched the holes you put in her, and added guns.' },
+      { if: { met: 'won' }, text: '“Still flying that wreck?”' },
+    ],
+    cargo: 'A named captain · weapons hot',
+    slow: { timeout: 5, default: 'fight' },
+    choices: [
+      { id: 'fight', label: 'Fight', tone: 'fight', hint: 'No time for anything else.', win: { text: 'Weapons hot on her ship', captain: 'fight' } },
+      { id: 'run', label: 'Break for the lane', tone: 'run', hint: 'She follows, and the whole system with her.', win: { text: 'Running · she is on your tail', captain: 'run' } },
     ],
   },
 ];

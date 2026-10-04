@@ -41,7 +41,7 @@ export interface CommsView {
 
 const CALLER_CSS: Record<Caller, string> = {
   custody: NEON_CSS.custody, gutter: NEON_CSS.gutter, office: NEON_CSS.office,
-  frontier: '#5ad0e3', guild: '#ffb33d', kellern: '#d9c27a', miners: '#ece6e1', calloway: '#ff2e40', unknown: '#aaa39d',
+  frontier: '#5ad0e3', guild: '#ffb33d', kellern: '#d9c27a', miners: '#ece6e1', calloway: '#ff2e40', captain: '#ff2e40', unknown: '#aaa39d',
 };
 const KIND_WORD: Record<string, string> = {
   trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', shakedown: 'Shakedown', checkpoint: 'Checkpoint', distress: 'Distress call', rumour: 'Rumour',
