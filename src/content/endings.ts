@@ -115,7 +115,7 @@ export const ENDINGS: EndingDef[] = [
       { text: 'Calloway meets you at the Threshold with a pardon already signed. She does not look at the file.' },
       { if: { flags: ['stalled'] }, text: 'Foreman Draper writes that you were coerced, as he said he would. It is almost true.' },
       { if: { beaten: 1 }, text: 'Her ship still carries the scars you gave it. She mentions them once.' },
-      { if: { flags: ['passengers', 'pod'] }, text: 'You make them put the people you carried on the amnesty too. They do.' },
+      { if: { flags: ['passengers', 'pod'] }, text: 'You make them put the people who helped you on the amnesty too. They do.' },
       { text: 'You go home to Cerro under another name. The lanes stay dark. You try not to think about it.' },
     ],
   },
