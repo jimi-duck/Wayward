@@ -1,7 +1,7 @@
 import { SYSTEMS } from '../content/systems';
 import { FOOD_START, HOME, JUMP_COST, START_KRAIL, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
-  arrive, jumps, lanesFrom, makeChart, netted, pricesAt, routeBetween, spreadNet, sysById, type Chart, type StarSystem,
+  arrive, jumps, lanesFrom, makeChart, netted, pricesAt, pushNet, routeBetween, spreadNet, sysById, type Chart, type StarSystem,
 } from './chart';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { Rng } from './rng';
@@ -152,6 +152,28 @@ export function plot(j: Journey, to: string): boolean {
   return true;
 }
 
+/**
+ * At a port, plot again: the lane out of here can change while you are
+ * docked, with what the dockmaster told you in mind. The world needs the
+ * new destination and its Krail (World.replot). False if not docked at a
+ * port here, or there is no such lane.
+ */
+export function replot(j: Journey, to: string): { dest: string; jumpCost: number } | false {
+  const s = here(j);
+  if (j.status !== 'sortie' || !s.port || s.kind === 'home' || to === j.chart.home) return false;
+  const route = routeBetween(j.chart, s.id, to);
+  if (!route) return false;
+  if (to !== j.dest) note(j, `Re-plotted for ${sysById(j.chart, to).name}`);
+  j.dest = to;
+  return { dest: sysById(j.chart, to).name, jumpCost: route.krail };
+}
+
+/** News bought (the dockmaster, a Drift fleet): the Net's edge as it is now, and where she is. */
+export function hearNews(j: Journey): void {
+  j.chart.seenNet = j.chart.systems.filter((x) => netted(j.chart, x.id)).map((x) => x.id);
+  sight(j, true);
+}
+
 /** Time passes: the Net spreads, Calloway moves. Returns the systems the Net took. */
 function pass(j: Journey, days: number): string[] {
   j.day += days;
@@ -184,6 +206,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (res.huntDelay > 0) j.hunt.delay += res.huntDelay;
   else if (res.huntDelay < 0) huntOn(j.hunt, j.chart, j.trail, -res.huntDelay);
   if (res.stall > 0 && !netted(j.chart, s.id)) j.chart.stall[s.id] = (j.chart.stall[s.id] ?? 0) + res.stall;
+  else if (res.stall < 0) pushNet(j.chart, s.id, -res.stall);
   if (res.calloway) j.hunt.caught++;
   if (res.callowayBeaten) { j.hunt.beaten++; j.hunt.delay += BEATEN_DELAY; lines.push(`Calloway’s ship is crippled · ${BEATEN_DELAY} days of repairs`); }
   const flags = new Set(res.carry.flags);
@@ -236,10 +259,9 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   fell.push(...pass(j, days));
   arrive(j.chart, to, j.day);
   if (news) {
-    j.chart.seenNet = j.chart.systems.filter((x) => netted(j.chart, x.id)).map((x) => x.id);
+    hearNews(j);
     lines.push('The news you bought: the Net’s edge and the Prefect’s last port');
-  }
-  sight(j, news);
+  } else sight(j, false);
   leg.krailOut = c.krail;
   const there = sysById(j.chart, to);
   note(j, `Jumped to ${there.name}`);

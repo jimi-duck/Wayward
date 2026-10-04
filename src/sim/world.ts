@@ -643,6 +643,15 @@ export class World implements EncounterHost {
     return true;
   }
 
+  /** Docked: the journey plotted another lane out of here (sim/journey.ts replot). The lane mouth stays where it is. */
+  replot(dest: string, jumpCost: number): boolean {
+    const b = this.bk;
+    if (!b || this.phase !== 'dock') return false;
+    b.def = this.sortie = { ...b.def, dest, jumpCost };
+    b.jumpCost = jumpCost;
+    return true;
+  }
+
   /** Cast off. A moment of grace to get clear. */
   undock(): void {
     if (this.phase !== 'dock') return;

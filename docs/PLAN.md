@@ -371,8 +371,16 @@ should multiply each other; expand combinations before adding combat.
    systems and eleven days a journey, sorties of about three minutes after
    the Breakout's five. Calloway reaches 10% of third systems, 30% of
    fourth, about half of fifth: pressure that builds across the session.
-   Open: the pilot never lands in a netted system (the Net stays a column
-   behind a pilot that keeps moving, so the netted port scan never came);
-   the journey is easy for a steady pilot; a false flight plan and the
-   survey relay are rarely taken; re-plotting from a port is not built.
+   Loose ends, second pass (BALANCE-JOURNEY.md, 48 journeys): the Net is
+   quicker (0.45 a day, harder on a broad front), so a steady pilot lands
+   in a netted system about once a journey and the netted port's scan
+   comes up; a survey relay left alone brings the Net in at once, and the
+   Gutter will break one for ore; a false flight plan can be paid in ore;
+   a port can re-plot the lane out. Relays are now acted on 15 times in
+   22, false plans filed 19 times in 28. 43 of 48 get through.
+   Open: the journey is still easy for a steady pilot. A netted system
+   pays rather than costs: beating its blockade drops 22 Krail and 18
+   parts of salvage, so Krail aboard rises once the Net is close (inferred
+   from the Krail curve; a call for M4's notice and blockades). The first
+   system after the Breakout can already be netted.
 6. M4 to M8 in order, each with its pilot report.

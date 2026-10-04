@@ -172,7 +172,7 @@ export interface SortieResult {
   /** Calloway came for you here, and whether her ship was beaten. */
   calloway: boolean;
   callowayBeaten: boolean;
-  /** Days of delay the sortie's choices put on her, and days this system now holds the Net out. */
+  /** Days of delay the sortie's choices put on her, and days this system now holds the Net out (negative: days the Net gains here). */
   huntDelay: number;
   stall: number;
 }
