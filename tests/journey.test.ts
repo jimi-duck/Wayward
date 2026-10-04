@@ -22,7 +22,7 @@ const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seco
 function result(j: Journey, o: Partial<SortieResult> = {}, c: Partial<Journey['carry']> = {}): SortieResult {
   const r = newRun(1);
   r.escaped = (o.ended ?? 'jumped') === 'jumped';
-  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, ...c }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, ...o };
+  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, ...c }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
 }
 
 /** Out of Cerro and onto the chart in the first system. */

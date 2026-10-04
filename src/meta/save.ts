@@ -1,3 +1,4 @@
+import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
 
 // ── the journey save ──────────────────────────────────────────────────────
@@ -15,8 +16,11 @@ export function migrate(raw: unknown): Journey | null {
   if (!raw || typeof raw !== 'object') return null;
   const j = raw as Partial<Journey>;
   if (typeof j.version !== 'number' || j.version > VERSION) return null;
-  // version 1 is the first: nothing to migrate yet
   if (!j.chart || !j.carry || !j.hunt || !Array.isArray(j.trail)) return null;
+  // 1 → 2: the factions' notice (M4). A journey saved before it starts with nobody's notice.
+  if (j.version < 2) j.notice = newNotice();
+  if (!j.notice) return null;
+  j.version = VERSION;
   return j as Journey;
 }
 

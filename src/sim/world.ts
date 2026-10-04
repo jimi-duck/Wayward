@@ -39,6 +39,7 @@ import {
 } from './tuning';
 import type { Prices } from '../content/systems';
 import { makeOffer, type Offer } from './offers';
+import type { CaptainResult } from './notice';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -214,6 +215,13 @@ export class World implements EncounterHost {
   behind = Infinity;
   huntDelay = 0;
   stall = 0;
+  /** A named captain (sim/notice.ts): seconds into the sortie she calls; whether she has, her ship is the one fighting, and how it went. */
+  captainAt = Infinity;
+  captainMet = false;
+  private captainShip: string | null = null;
+  private captainEnd: CaptainResult | null = null;
+  /** Notice the sortie's cards moved, by faction. */
+  noticeDelta: Partial<Record<Faction, number>> = {};
 
   constructor(seed = 47, opts: WorldOptions = {}) {
     useIds(this.ids);
@@ -255,10 +263,12 @@ export class World implements EncounterHost {
     this.portCalled = false;
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.huntDelay = 0; this.stall = 0;
+    this.captainMet = false; this.captainShip = null; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity; return; }
     const def = this.sortie;
     this.bk = newBreakout(this.ship.heading, def);
     this.callowayAt = def.calloway;
+    this.captainAt = def.notice.captain?.at ?? Infinity;
     this.behind = def.behind;
     this.heard = new Set();
     // the course is laid out from where the ship is now
@@ -321,7 +331,15 @@ export class World implements EncounterHost {
     return {
       ended: this.run.escaped ? 'jumped' : 'destroyed', time: this.runTime, carry: this.carry(), run: this.run,
       calloway: this.callowayMet, callowayBeaten: this.callowayBeaten, huntDelay: this.huntDelay, stall: this.stall,
+      captain: this.captainResult(), notice: { ...this.noticeDelta },
     };
+  }
+
+  /** How the meeting with the named captain went, if she called: beaten, parted, or else whether the Wayward got out. */
+  private captainResult(): { id: string; result: CaptainResult } | null {
+    const c = this.sortie.notice.captain;
+    if (!c || !this.captainMet) return null;
+    return { id: c.id, result: this.captainEnd ?? (this.run.escaped ? 'escaped' : 'won') };
   }
 
   /** Krail the plotted jump takes (the Breakout's lane in Cerro). */
@@ -518,6 +536,14 @@ export class World implements EncounterHost {
       if (def) return this.openComms(def);
     }
 
+    // a named captain: she calls once, in her own way
+    const cap = b.def.notice.captain;
+    if (cap && !this.captainMet && this.runTime >= this.captainAt && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint') {
+      this.captainMet = true;
+      const def = CARD_BY_ID[cap.personality === 'ambush' ? 'captain_ambush' : 'captain'];
+      if (def) return this.openComms(def);
+    }
+
     // the lane mouth: a blockade's checkpoint is a comms card; an open lane may still have someone waiting
     const dl = Math.hypot(s.x - b.lane.x, s.z - b.lane.z);
     if (b.blockade === 'none' && dl < BLOCKADE_AT && this.command.state === 'idle' && this.phase === 'play') {
@@ -559,7 +585,7 @@ export class World implements EncounterHost {
       const a = (pick.ahead ? home + Math.PI : home) + this.rng.range(-0.7, 0.7);
       const d = this.rng.range(115, 145);
       const at = { x: s.x + Math.cos(a) * d, y: ALIEN_TYPES[v.kind].role === 'cruiser' ? this.rng.range(-3, 8) : this.rng.range(-4, 16), z: s.z - Math.sin(a) * d };
-      const elite = this.rng.next() < pursuitElite(b.heat) ? pickElite(v.kind, v.faction, this.rng) : null;
+      const elite = this.rng.next() < pursuitElite(b.heat) + b.def.notice.elite ? pickElite(v.kind, v.faction, this.rng) : null;
       const lead = this.spawnHostile(v.id, at, elite);
       // a pair, once the heat is up
       if (b.heat > 0.35 && regular + 1 < pursuitCap(b.heat) && ALIEN_TYPES[v.kind].role === 'interceptor' && this.rng.next() < 0.5) {
@@ -567,7 +593,8 @@ export class World implements EncounterHost {
         wing.modeT = lead.modeT + 0.6;
       }
     }
-    b.nextPursuit = t + pursuitInterval(b.heat) * this.rng.range(0.8, 1.2);
+    // hunters: a faction that has marked you sends its pursuit oftener
+    b.nextPursuit = t + pursuitInterval(b.heat) * b.def.notice.pursuit * this.rng.range(0.8, 1.2);
   }
 
   /** A rock cut clean: everything in it falls out for the tractor, and nothing is left to split. */
@@ -739,6 +766,7 @@ export class World implements EncounterHost {
       parts: this.parts, plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       food: this.food, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
+      notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, captain: this.sortie.notice.captain,
     };
   }
 
@@ -776,7 +804,7 @@ export class World implements EncounterHost {
     this.phase = 'comms';
     if (def.arrive) o.brought.push(...this.applyOutcome(def.arrive, o.fee, []));
     refresh(o, this.commsCtx());
-    this.events.push({ type: 'comms', id: def.id, kind: def.kind, from: def.from, title: def.title, slow: o.slow > 0 });
+    this.events.push({ type: 'comms', id: def.id, kind: def.kind, from: o.def.from, title: o.def.title, slow: o.slow > 0 });
   }
 
   /** Answer the card on the table with choice `id` (or its index). False if it cannot be taken. `timedOut`: the slowed card ran out of time. */
@@ -817,6 +845,7 @@ export class World implements EncounterHost {
     for (const f of [out.flag ?? []].flat()) this.flags.add(f);
     for (const f of [out.unflag ?? []].flat()) this.flags.delete(f);
     for (const [k, v] of Object.entries(out.standing ?? {}) as Array<[Standing, number]>) this.standing[k] = (this.standing[k] ?? 0) + v;
+    for (const [k, v] of Object.entries(out.notice ?? {}) as Array<[Faction, number]>) this.noticeDelta[k] = (this.noticeDelta[k] ?? 0) + v;
     if (out.follow) this.follows.push({ card: out.follow.card, at: this.runTime + out.follow.after });
     if (out.job && !this.jobs.some((j) => j.id === out.job!.id)) this.jobs.push(out.job);
     if (out.drop) this.jobs = this.jobs.filter((j) => j.id !== out.drop);
@@ -844,6 +873,16 @@ export class World implements EncounterHost {
       this.callowayShip = true;
       this.command.summon(this.runTime, 'custody', CALLOWAY_HP, false, 'Calloway · CCV Patience');
       if (out.calloway === 'run') { b.spoolNeed = Math.max(b.spoolNeed, SPOOL * SPOOL_RUN); b.heat = 1; b.nextPursuit = this.runTime; this.run.capitalsEvaded++; }
+    }
+    const cap = this.sortie.notice.captain;
+    if (b && cap && out.captain) {
+      // her ship comes in; running means the system on alert and her on your tail; terms mean she goes
+      if (out.captain === 'parley') this.captainEnd = 'parted';
+      else {
+        this.captainShip = `${cap.name} · ${cap.ship}`;
+        this.command.summon(this.runTime, cap.faction, cap.hp, false, this.captainShip);
+        if (out.captain === 'run') { b.spoolNeed = Math.max(b.spoolNeed, SPOOL * SPOOL_RUN); b.heat = Math.max(b.heat, 0.8); b.nextPursuit = this.runTime; this.run.capitalsEvaded++; }
+      }
     }
     if (b && out.blockade) {
       if (out.blockade === 'fight') { b.blockade = 'called'; this.command.summon(this.runTime, 'custody', BLOCKADE_HP, false); }
@@ -1646,6 +1685,7 @@ export class World implements EncounterHost {
     this.dropCrystals(b.x, b.z, this.bk ? 22 : 26 + 8 * b.n, 12);
     if (this.bk) this.dropCrystals(b.x, b.z, 18, 10, 0, 0, 'parts');
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
+    if (this.captainShip && b.name === this.captainShip) { this.captainShip = null; this.captainEnd = 'beaten'; }
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
     this.dropItem(this.randomPower(), b.x, b.z);
     const fresh = !this.techs.has(b.faction);
