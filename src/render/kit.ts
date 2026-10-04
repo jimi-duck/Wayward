@@ -1,9 +1,10 @@
 import {
-  BoxGeometry, BufferGeometry, CanvasTexture, Color, CylinderGeometry, Euler, ExtrudeGeometry, Group, LatheGeometry, Matrix4, Mesh,
+  BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, CylinderGeometry, Euler, ExtrudeGeometry, Group, LatheGeometry, Matrix4, Mesh,
   MeshStandardMaterial, OctahedronGeometry, PlaneGeometry, Quaternion, RepeatWrapping, SRGBColorSpace, Shape, TorusGeometry, Vector2,
-  Vector3, type Material, type Texture,
+  Vector3, Vector4, type Material, type Texture,
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { scratchTexture, WEAR_NOISE } from './wear';
 
 // ── the industrial kit ────────────────────────────────────────────────────
 // Every hull in the game, ours and theirs, is built from this kit: boxes,
@@ -224,6 +225,15 @@ export interface MetalOptions {
   emissive?: Color;
   /** Painted plate (the worn coat) instead of bare metal. */
   painted?: boolean;
+  /**
+   * Hard use, 0 to 1 (wear.ts): chipped edges, scratches, dents, grime,
+   * scorches. Needs the kit's `wear` attribute, so only for kit-built meshes.
+   */
+  worn?: number;
+  /** With `worn`: soot from the drives, rising from nothing at x = soot[0] to full at soot[1] (model units, aft is -X). */
+  soot?: [number, number];
+  /** With `worn`: old hits, [x, y, z, reach] in model space, up to six: scorched, the paint burnt back round each. */
+  hits?: Array<[number, number, number, number]>;
 }
 
 /** Weathered metal: the plating, triplanar in model space, with bump from the height map. */
@@ -234,9 +244,17 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
     color: o.tint, map, roughness: o.roughness ?? 0.62, metalness: o.metalness ?? 0.55, envMapIntensity: 0.9,
     emissive: o.emissive ?? new Color(0, 0, 0),
   });
-  const scale = o.scale ?? 0.9, strength = o.bump ?? 0.004;
+  const scale = o.scale ?? 0.9, strength = o.bump ?? 0.004, worn = o.worn ?? 0, painted = o.painted ? 1 : 0;
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uKitBump = { value: bump };
+    if (worn > 0) {
+      shader.uniforms.uWearTex = { value: scratchTexture() };
+      shader.uniforms.uWorn = { value: worn };
+      shader.uniforms.uSoot = { value: o.soot ? new Vector2(...o.soot) : new Vector2(-1e4, -1e4 - 1) };
+      const hits = (o.hits ?? []).slice(0, 6).map((h) => new Vector4(...h));
+      while (hits.length < 6) hits.push(new Vector4(0, -1e4, 0, 0.001));
+      shader.uniforms.uHits = { value: hits };
+    }
     shader.uniforms.uKitScale = { value: scale };
     shader.uniforms.uKitStrength = { value: strength };
     shader.vertexShader = shader.vertexShader
@@ -255,9 +273,68 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);`);
+    if (worn > 0) wearShader(shader, painted);
   };
-  m.customProgramCacheKey = () => `kit-metal-${scale}-${strength}`;
+  m.customProgramCacheKey = () => `kit-metal-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}`;
   return m;
+}
+
+/**
+ * Layer hard use onto a kit metal shader (after metal() has patched it):
+ * see wear.ts. `painted` decides what wear does to the colour: paint comes
+ * off to bright steel; bare metal only scuffs lighter.
+ */
+function wearShader(shader: { vertexShader: string; fragmentShader: string }, painted: number): void {
+  shader.vertexShader = shader.vertexShader
+    .replace('varying vec3 vKitP;', 'varying vec3 vKitP; attribute vec2 wear; varying vec2 vWear; varying vec3 vKitM;')
+    .replace('vKitP = position * uKitScale;', 'vKitP = position * uKitScale; vKitM = position; vWear = wear;');
+  shader.fragmentShader = shader.fragmentShader
+    .replace('varying vec3 vKitP;', `varying vec3 vKitP; varying vec3 vKitM; varying vec2 vWear;
+      uniform sampler2D uWearTex; uniform float uWorn; uniform vec2 uSoot; uniform vec4 uHits[6];
+      ${WEAR_NOISE}`)
+    .replace('diffuseColor *= kitC;', `diffuseColor *= kitC;
+      vec3 wp = vKitM;
+      float wEdge = vWear.x, wTone = vWear.y;
+      float wScr = texture2D(uWearTex, wp.zy * 0.9).r * kitW.x + texture2D(uWearTex, wp.xz * 0.9).r * kitW.y + texture2D(uWearTex, wp.xy * 0.9).r * kitW.z;
+      vec2 wDent = wCells(wp * 2.8, 0.55);
+      float wN = wFbm(wp * 7.0);
+      float wLow = wFbm(wp * 1.4 + 1.7);
+      // paint lost: along the edges, round the dents, in scrapes, in chipped patches
+      float wChip = smoothstep(0.7, 0.76, wN + (wLow - 0.5) * 0.3) + wEdge * smoothstep(0.5, 0.58, wFbm(wp * 22.0) + (wLow - 0.5) * 0.4);
+      float wScrape = smoothstep(0.25, 0.6, wScr) * smoothstep(0.25, 0.5, wLow);
+      // paint worn thin to the dark undercoat in patches, round the dents too
+      float wThin = smoothstep(0.64, 0.7, wN * 0.6 + wFbm(wp * 2.2 + 5.3) * 0.6 + wDent.x * 0.25 + wEdge * 0.1);
+      float wBare = clamp(max(wChip, wScrape) * uWorn, 0.0, 1.0);
+      // rust and dirt run down from the seams in streaks
+      float wStreak = smoothstep(0.5, 0.85, wFbm(wp * vec3(7.0, 0.7, 7.0) + 2.3)) * smoothstep(0.35, 0.6, wLow);
+      vec3 wSteel = vec3(0.45, 0.44, 0.42) * (0.7 + 0.5 * wN);
+      // each plate its own shade; a few sun-faded
+      diffuseColor.rgb *= ${painted ? '0.84 + 0.3 * wTone' : '0.88 + 0.24 * wTone'};
+      ${painted ? 'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11))) * 1.2, step(0.85, wTone) * 0.16 * uWorn);' : ''}
+      // grime worked in, heaviest in the dents; soot astern; scorch marks from old hits
+      float wGrime = smoothstep(0.38, 0.78, wFbm(wp * vec3(0.8, 3.2, 3.2) + 3.7)) * 0.6 + wDent.x * 0.45 + wStreak * 0.35;
+      float wSoot = smoothstep(uSoot.x, uSoot.y, -wp.x) * (0.45 + 0.7 * wFbm(wp * 2.6));
+      vec2 wBurn = wCells(wp * 0.85 + 4.0, 0.78);
+      float wScorch = wBurn.x * smoothstep(0.35, 0.65, wFbm(wp * 5.0 + 9.0));
+      // the old hits: charred at the heart, paint blistered and burnt back round them
+      for (int i = 0; i < 6; i++) {
+        float d = length(wp - uHits[i].xyz) / uHits[i].w * (0.8 + 0.4 * wN);
+        wScorch = max(wScorch, 1.0 - smoothstep(0.15, 0.75, d));
+        wBare = max(wBare, (smoothstep(0.3, 0.5, d) - smoothstep(0.5, 0.75, d)) * step(0.45, wN) * uWorn);
+      }
+      vec3 wCol = ${painted ? 'mix(diffuseColor.rgb, vec3(0.24, 0.2, 0.15), wThin * 0.8 * uWorn)' : 'diffuseColor.rgb'};
+      wCol = mix(wCol, ${painted ? 'wSteel' : 'wSteel * 1.15'}, wBare * ${painted ? '1.0' : '0.4'});
+      wCol *= 1.0 - min(wGrime + step(0.62, fract(wTone * 7.3)) * 0.3, 0.65) * uWorn;
+      ${painted ? 'wCol = mix(wCol, vec3(0.2, 0.09, 0.04), wStreak * 0.45 * uWorn * (1.0 - wBare));' : ''}
+      wCol = mix(wCol, vec3(0.04, 0.035, 0.03), clamp(wSoot * 0.6 + wScorch * 0.9, 0.0, 0.92) * uWorn);
+      diffuseColor.rgb = wCol;
+      float wDirt = (wGrime + wSoot + wScorch) * uWorn;`)
+    .replace('roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);', `roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);
+      roughnessFactor = clamp(mix(roughnessFactor, 0.46, wBare) + wDirt * 0.3, 0.25, 1.0);`)
+    .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+      metalnessFactor = mix(metalnessFactor, 0.7, wBare * ${painted ? '1.0' : '0.5'});`)
+    .replace('normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);',
+      'normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength - (wDent.x * 0.03 + wScr * 0.0008) * uWorn, faceDirection);');
 }
 
 // ── building ──────────────────────────────────────────────────────────────
@@ -266,6 +343,12 @@ export type V3 = [number, number, number];
 type Axis = 'x' | 'y' | 'z';
 
 const M = new Matrix4(), Q = new Quaternion(), E = new Euler(), P = new Vector3(), S = new Vector3();
+
+/** A part's own tone, 0 to 1, from its place in the build: stable from run to run. */
+function toneOf(i: number): number {
+  const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
 
 /** Turn a geometry built along +Y to lie along an axis (+X or +Z). */
 function along(g: BufferGeometry, axis: Axis): BufferGeometry {
@@ -281,20 +364,25 @@ function along(g: BufferGeometry, axis: Axis): BufferGeometry {
 export class Kit {
   private readonly parts = new Map<string, BufferGeometry[]>();
 
+  private count = 0;
+
   add(key: string, geo: BufferGeometry, pos: V3 = [0, 0, 0], rot: V3 = [0, 0, 0], scale: V3 = [1, 1, 1]): void {
-    let g = geo.index ? geo.toNonIndexed() : geo.clone();
-    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
-    M.compose(P.set(...pos), Q.setFromEuler(E.set(...rot)), S.set(...scale));
-    g.applyMatrix4(M);
-    const list = this.parts.get(key) ?? [];
-    list.push(g);
-    this.parts.set(key, list);
+    this.addMatrix(key, geo, M.compose(P.set(...pos), Q.setFromEuler(E.set(...rot)), S.set(...scale)));
   }
 
-  /** A part placed by a whole matrix (for parts that need a basis, not angles). */
+  /**
+   * A part placed by a whole matrix (for parts that need a basis, not angles).
+   * Every part carries a `wear` attribute: x is how much of an edge the
+   * surface is (a part's own geometry may set it: bevels are edges), y a tone
+   * of its own, so the plates of one material are not all one shade.
+   */
   addMatrix(key: string, geo: BufferGeometry, m: Matrix4): void {
     const g = geo.index ? geo.toNonIndexed() : geo.clone();
-    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
+    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'wear'].includes(k)) g.deleteAttribute(k);
+    const n = g.attributes.position!.count, tone = toneOf(this.count++);
+    const wear = new Float32Array(n * 2), edge = g.attributes.wear;
+    for (let i = 0; i < n; i++) { wear[i * 2] = edge ? edge.getX(i) : 0; wear[i * 2 + 1] = tone; }
+    g.setAttribute('wear', new BufferAttribute(wear, 2));
     g.applyMatrix4(m);
     const list = this.parts.get(key) ?? [];
     list.push(g);
