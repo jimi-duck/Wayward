@@ -640,6 +640,13 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .cm-main { display: grid; gap: 3px; }
 .cm-l { font: 600 calc(var(--fs) * 1.25 * 1.18)/1.1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .cm-h { font: 400 13px/1.3 var(--font-display); color: var(--ink-2); }
+/* what a choice brings: teal for what you get, amber for what it takes, red for trouble */
+.cm-l { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.cm-gains { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; font: 500 calc(var(--fs) * .95)/1 var(--font-mono); letter-spacing: .08em; }
+.cm-gains > span { padding: 3px 6px; border: 1px solid currentColor; border-radius: 2px; }
+.cm-gains .g-gain { color: var(--cy); }
+.cm-gains .g-loss { color: var(--amber); }
+.cm-gains .g-threat { color: var(--alert); }
 .cm-lines { font: 500 calc(var(--fs) * 1.02)/1.3 var(--font-mono); letter-spacing: .06em; color: var(--ink); }
 .cm-side { display: grid; justify-items: end; gap: 3px; font: 600 calc(var(--fs) * 1.02 * 1.18)/1.2 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; white-space: nowrap; }
 .cm-side .cost { color: var(--amber); }
@@ -986,6 +993,14 @@ html.swipe #app * { overscroll-behavior: contain; }
 
 /* the start card: the brief and the two ways in */
 .brief { max-width: 46ch; margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink-2); }
+/* the goal as three steps, read in a glance */
+.brief.steps { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; max-width: none; padding: 0; list-style: none; counter-reset: st;
+  font: 500 calc(var(--fs) * 1.1)/1.3 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+.brief.steps li { counter-increment: st; }
+.brief.steps li::before { content: counter(st); display: inline-block; min-width: 1.6em; margin-right: 6px; border: 1px solid var(--ink-3); text-align: center; color: var(--ink); }
+.brief.steps b { font-weight: 600; }
+.brief.steps .v { color: var(--violet); }
+.brief.steps .a { color: var(--amber); }
 .launch-row { display: flex; gap: 12px; align-items: center; }
 #arcade { height: auto; align-self: stretch; padding: 0 18px; }
 
@@ -1090,6 +1105,10 @@ html.swipe #app * { overscroll-behavior: contain; }
 .ch-hunt, .ch-netl { margin: 0; font: 600 calc(var(--fs) * .95 * 1.18)/1.35 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .ch-hunt { color: #ef8a7f; }
 .ch-file { margin: 0; font: 400 calc(var(--fs) * .85)/1.35 var(--font-mono); letter-spacing: .06em; color: var(--ink-2); }
+/* the goal: where the journey is going, and the lanes that get you nearer */
+.ch-goal { margin: 0; font: 600 calc(var(--fs) * 1.05 * 1.18)/1.35 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); }
+.ch-goal-c { margin: 0 6px; padding: 2px 5px; border: 1px solid currentColor; border-radius: 2px; font: 500 calc(var(--fs) * .8)/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--cy); white-space: nowrap; }
+.ch-goalm { font: 600 9px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; fill: var(--cy); }
 .ch-netl { color: var(--ink-2); }
 .ch-notice { margin: 0; font: 600 calc(var(--fs) * .85 * 1.18)/1.35 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; color: var(--ink-2); }
 .ch-notice.t-toll, .ch-notice.t-hunters { color: var(--amber); }
