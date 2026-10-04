@@ -35,6 +35,7 @@ const VIEWS: Record<string, [number, number, number, number, number, number]> = 
   side: [0, 0.3, 5.2, 0, 0, 0],
   top: [0.01, 6, 0, 0, 0, 0],
   front: [4.6, 0.8, 0.6, 0, 0, 0],
+  drive: [-3.3, 0.5, 1.4, -1.6, 0, 0.9],
 };
 const fit = () => {
   fitRenderer(renderer, tier);
