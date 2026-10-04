@@ -48,8 +48,8 @@ A sortie with a shape: get the stolen hauler out of the home system
   rig the transponder from 8 parts, a long shot when the heat is up), pay the
   fee (it rises with heat; a captain who goes by the book takes it and
   scans you anyway), talk your way through (easier before they know your
-  face), or fight: the usual three-phase duel, and her wreck pays Krail,
-  parts and a salvage refit.
+  face), or fight: the usual three-phase duel, and her wreck pays a little
+  Krail (six, a top-up rather than a jump), parts and a salvage refit.
 - **Comms.** See below: everyone else who opens a channel.
 
 Balance: [BALANCE-BREAKOUT.md](BALANCE-BREAKOUT.md), from

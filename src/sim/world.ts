@@ -8,7 +8,7 @@ import {
 import { Command, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
+  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_KRAIL, CAPITAL_PARTS, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   ORE_XP, rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
@@ -1699,8 +1699,8 @@ export class World implements EncounterHost {
     this.chainKill();
     this.events.push({ type: 'bossDestroyed', x: b.x, y: b.y, z: b.z, name: b.name, faction: b.faction, points: bounty });
     // the salvage: krail, a hull repair, a power-up, a refit card and the faction's tech
-    this.dropCrystals(b.x, b.z, this.bk ? 22 : 26 + 8 * b.n, 12);
-    if (this.bk) this.dropCrystals(b.x, b.z, 18, 10, 0, 0, 'parts');
+    this.dropCrystals(b.x, b.z, this.bk ? CAPITAL_KRAIL : 26 + 8 * b.n, 12);
+    if (this.bk) this.dropCrystals(b.x, b.z, CAPITAL_PARTS, 10, 0, 0, 'parts');
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);

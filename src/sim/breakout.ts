@@ -68,6 +68,9 @@ export const SPOOL_RUN = 2.2;
 export const BLOCKADE_AT = 420;
 /** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
 export const BLOCKADE_HP = 3;
+/** Krail and parts a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
+export const CAPITAL_KRAIL = 6;
+export const CAPITAL_PARTS = 18;
 
 /** Parts to patch a plate, the quiet it needs, and how long the patch takes. */
 export const PATCH_COST = 6;
