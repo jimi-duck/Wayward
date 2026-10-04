@@ -13,12 +13,12 @@ toward Krail when the tank is. It answers every comms card by one policy.
 
 | Strategy | Policy | Through | Captured | Wrecked out | Stuck | Systems flown | Days | Wrecks | Calloway calls | Time in combat | Sortie length |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| random | run | 5/8 | 2 | 1 | 0 | 5.1 | 10.6 | 1.1 | 1.1 | 34% | 3:28 |
-| random | bluff | 7/8 | 1 | 0 | 0 | 5.0 | 10.8 | 0.1 | 1.0 | 31% | 3:15 |
-| random | fight | 7/8 | 1 | 0 | 0 | 5.3 | 10.5 | 0.4 | 0.6 | 26% | 2:58 |
-| torpedo+defence | run | 8/8 | 0 | 0 | 0 | 5.1 | 11.2 | 0.1 | 1.5 | 30% | 3:15 |
-| torpedo+defence | bluff | 8/8 | 0 | 0 | 0 | 5.5 | 12.0 | 0.5 | 1.1 | 29% | 3:23 |
-| torpedo+defence | fight | 8/8 | 0 | 0 | 0 | 5.4 | 11.1 | 0.4 | 0.6 | 29% | 3:20 |
+| random | run | 7/8 | 1 | 0 | 0 | 5.5 | 12.4 | 0.6 | 1.5 | 41% | 3:52 |
+| random | bluff | 8/8 | 0 | 0 | 0 | 5.0 | 11.1 | 0.0 | 1.3 | 37% | 3:40 |
+| random | fight | 8/8 | 0 | 0 | 0 | 5.4 | 11.5 | 0.4 | 1.0 | 39% | 3:33 |
+| torpedo+defence | run | 7/8 | 1 | 0 | 0 | 5.0 | 11.0 | 0.3 | 1.4 | 37% | 3:41 |
+| torpedo+defence | bluff | 7/8 | 0 | 1 | 0 | 5.0 | 11.2 | 0.6 | 0.9 | 34% | 3:38 |
+| torpedo+defence | fight | 8/8 | 0 | 0 | 0 | 5.4 | 11.7 | 0.4 | 1.3 | 37% | 3:31 |
 
 "Through" reached the Threshold. "Captured": wrecked with Calloway in the
 system. "Wrecked out": the third wreck. "Stuck": a sortie ran out the
@@ -28,53 +28,54 @@ pilot's clock (twenty minutes) without a jump or a wreck.
 
 | End | Journeys |
 |---|---|
-| through | 43 |
-| captured | 4 |
+| through | 45 |
+| captured | 2 |
 | wrecked | 1 |
 
 ## The Krail curve, system by system
 
 | System | Journeys still going | Krail arriving | Krail after the jump | Sortie | Day | Calloway came | Wrecked |
 |---|---|---|---|---|---|---|---|
-| 1 | 48 | 6.0 | 20.2 | 4:55 | 1.2 | 0% | 21% |
-| 2 | 48 | 17.8 | 14.5 | 2:42 | 3.4 | 0% | 8% |
-| 3 | 48 | 13.6 | 13.2 | 3:00 | 5.2 | 8% | 2% |
-| 4 | 47 | 13.0 | 13.9 | 2:54 | 7.2 | 36% | 2% |
-| 5 | 47 | 13.6 | 16.1 | 2:52 | 9.2 | 40% | 9% |
-| 6 | 11 | 12.6 | 16.9 | 3:20 | 11.2 | 64% | 9% |
+| 1 | 48 | 6.0 | 16.3 | 4:55 | 1.2 | 0% | 21% |
+| 2 | 48 | 13.9 | 11.8 | 3:00 | 3.5 | 0% | 8% |
+| 3 | 48 | 10.8 | 11.5 | 3:26 | 5.4 | 17% | 4% |
+| 4 | 47 | 10.6 | 15.6 | 3:27 | 7.5 | 49% | 2% |
+| 5 | 46 | 15.5 | 16.9 | 3:28 | 9.6 | 46% | 2% |
+| 6 | 10 | 17.9 | 18.2 | 3:44 | 11.7 | 50% | 0% |
+| 7 | 3 | 23.0 | 19.7 | 3:25 | 14.1 | 33% | 0% |
 
 ## By kind of system
 
 | Kind | Sorties | Mean length | Wrecked |
 |---|---|---|---|
-| home | 61 | 4:52 | 23% |
-| mining | 85 | 2:53 | 4% |
-| contested | 48 | 3:09 | 4% |
-| transit | 24 | 1:48 | 8% |
-| port | 33 | 2:36 | 0% |
+| home | 62 | 4:53 | 24% |
+| mining | 83 | 3:23 | 1% |
+| contested | 48 | 3:32 | 4% |
+| transit | 23 | 2:32 | 0% |
+| port | 34 | 3:00 | 0% |
 
 ## The Net and the galley
 
 | | Per journey |
 |---|---|
-| Arrivals in a netted system | 1.2 |
-| Jumps without enough food | 0.2 |
-| Calloway's ship fought | 0.2 |
+| Arrivals in a netted system | 1.7 |
+| Jumps without enough food | 0.1 |
+| Calloway's ship fought | 0.4 |
 | Calloway beaten | 0.6 |
-| Lanes re-plotted at a port | 0.1 |
+| Lanes re-plotted at a port | 0.0 |
 | Jumps she was behind at the end | 1.8 |
 
 ## The journey's cards
 
 | Card | Answered | Choices |
 |---|---|---|
-| calloway_here | 48 | run 21, talk 16, fight 10, decoy 1 |
-| calloway_word | 52 | silence 18, ask 32, lie 2 |
-| lane_toll | 127 | krail 49, talk 29, fight 49 |
-| port_scan | 30 | refuse 19, scan 11 |
-| port_news | 71 | no 36, buy 35 |
-| food_trader | 37 | no 13, ore 23, parts 1 |
-| drift_fleet | 21 | food 12, news 4, trail 3, no 2 |
-| holdout | 27 | no 11, krail 16 |
-| relay | 22 | leave 7, jam 3, gutter 7, break 5 |
-| false_trail | 28 | no 9, ore 19 |
+| calloway_here | 58 | run 23, talk 15, decoy 2, fight 18 |
+| calloway_word | 50 | silence 23, ask 24, lie 3 |
+| lane_toll | 107 | krail 59, talk 6, fight 42 |
+| port_scan | 47 | refuse 33, scan 14 |
+| port_news | 58 | no 24, buy 34 |
+| food_trader | 18 | no 4, ore 13, parts 1 |
+| drift_fleet | 30 | no 9, news 4, food 11, trail 6 |
+| holdout | 15 | no 8, krail 7 |
+| relay | 21 | leave 5, gutter 2, jam 4, break 10 |
+| false_trail | 32 | no 16, ore 16 |
