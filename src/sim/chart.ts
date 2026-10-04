@@ -2,6 +2,7 @@ import { clamp } from '../core/math';
 import {
   BASE_PRICES, EDGE_NAME, HOLDER_PRICES, HOME_NAME, NAMES, PORT_NAMES, SYSTEMS, type Holder, type Prices, type SystemKind,
 } from '../content/systems';
+import { PLACE_CHANCE, PLACE_ORDER, PLACES, SIGNAL_REWARDS, type PlaceId, type Reward } from '../content/phenomena';
 import { Rng } from './rng';
 
 // ── the chart ─────────────────────────────────────────────────────────────
@@ -23,6 +24,10 @@ import { Rng } from './rng';
 //              (the systems within two jumps of you, each arrival), prices
 //              only where you have been, Krail as a survey estimate that
 //              can be out by a quarter until you have flown the system.
+//   places   · most systems past Cerro have something in them (content/
+//              phenomena.ts): a storm, a wreck, a beacon, a Thren lane.
+//              Storms and nebulae show from anywhere; the rest once you
+//              are within sight of them. Each is there until dealt with.
 
 export interface StarSystem {
   id: string;
@@ -52,6 +57,14 @@ export interface Route {
   days: number;
 }
 
+/** A place in a system: which, whether you know of it, whether it is dealt with, and what a strange signal will turn out to be. */
+export interface Place {
+  id: PlaceId;
+  seen: boolean;
+  done: boolean;
+  reward: Reward;
+}
+
 export interface Chart {
   systems: StarSystem[];
   routes: Route[];
@@ -65,6 +78,8 @@ export interface Chart {
   visited: string[];
   seenNet: string[];
   seenDay: number;
+  /** The places, by system. */
+  places: Record<string, Place>;
 }
 
 export const COLS = 6;
@@ -148,7 +163,62 @@ export function makeChart(seed: number): Chart {
     for (let i = 0; i + 1 < next.length; i++) if (col + 1 < COLS - 1 && rng.next() < 0.35) link(next[i]!, next[i + 1]!);
   }
   const home = systems[0]!.id, edge = systems[systems.length - 1]!.id;
-  return { systems, routes, home, edge, net: { [home]: 1 }, stall: {}, visited: [home], seenNet: [home], seenDay: 0 };
+  const c: Chart = { systems, routes, home, edge, net: { [home]: 1 }, stall: {}, visited: [home], seenNet: [home], seenDay: 0, places: {} };
+  c.places = layPlaces(c, seed);
+  arrive(c, home, 0);
+  return c;
+}
+
+/**
+ * Deal the places out over a laid-out chart. Its own generator, so the
+ * systems and lanes of a seed are the same as they were before places, and
+ * a save from before them can be given the same ones.
+ */
+export function layPlaces(c: Chart, seed: number): Record<string, Place> {
+  const rng = new Rng(seed ^ 0x91ace);
+  const out: Record<string, Place> = {};
+  const used = new Map<PlaceId, number>();
+  for (const s of c.systems) {
+    if (rng.next() >= (PLACE_CHANCE[s.kind] ?? 0)) continue;
+    // the ones that fit here, less likely each time one has been dealt already
+    const pool = PLACE_ORDER.filter((id) => { const d = PLACES[id]; return d.kinds.includes(s.kind) && s.col >= d.cols[0] && s.col <= d.cols[1]; });
+    if (!pool.length) continue;
+    const w = (id: PlaceId) => PLACES[id].weight / (1 + 1.5 * (used.get(id) ?? 0));
+    let roll = rng.next() * pool.reduce((t, id) => t + w(id), 0);
+    let id = pool[pool.length - 1]!;
+    for (const p of pool) { roll -= w(p); if (roll <= 0) { id = p; break; } }
+    used.set(id, (used.get(id) ?? 0) + 1);
+    const d = PLACES[id];
+    out[s.id] = { id, seen: d.far, done: false, reward: d.reward === 'unknown' ? SIGNAL_REWARDS[rng.int(SIGNAL_REWARDS.length)]! : d.reward };
+  }
+  return out;
+}
+
+/** The place in a system you know of and have not dealt with, if any. */
+export function placeAt(c: Chart, id: string): Place | null {
+  const p = c.places[id];
+  return p && p.seen && !p.done ? p : null;
+}
+
+/** Bring the places within `n` jumps of a system onto the chart. */
+export function sightPlaces(c: Chart, id: string, n: number): void {
+  for (const s of c.systems) { const p = c.places[s.id]; if (p && jumps(c, id, s.id) <= n) p.seen = true; }
+}
+
+/**
+ * A lane the charts never had: from `id` to the nearest system two columns
+ * on (one, at the far side) that it has no lane to. Cheap, and a day.
+ * Returns the system it reaches, or null if there is nowhere for one to go.
+ */
+export function openShortcut(c: Chart, id: string): StarSystem | null {
+  const s = sysById(c, id);
+  const col = Math.min(COLS - 1, s.col + 2);
+  const by = c.systems.filter((t) => (t.col === col || t.col === s.col + 1) && t.kind !== 'home' && !routeBetween(c, id, t.id))
+    .sort((p, q) => (q.col - p.col) || Math.abs(p.y - s.y) - Math.abs(q.y - s.y));
+  const to = by[0];
+  if (!to) return null;
+  c.routes.push({ a: id, b: to.id, krail: 10, days: 1 });
+  return to;
 }
 
 export const sysById = (c: Chart, id: string): StarSystem => {
@@ -221,6 +291,7 @@ export function arrive(c: Chart, id: string, day: number): void {
   const near = c.systems.filter((s) => jumps(c, id, s.id) <= SIGHT).map((s) => s.id);
   c.seenNet = [...c.seenNet.filter((s) => !near.includes(s)), ...near.filter((s) => netted(c, s))];
   c.seenDay = day;
+  sightPlaces(c, id, SIGHT);
 }
 
 /** What a port charges now: its own prices, marked up once the Net holds the system. */

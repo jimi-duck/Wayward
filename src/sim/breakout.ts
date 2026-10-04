@@ -2,6 +2,7 @@ import { clamp, lerp } from '../core/math';
 import { BASE_PRICES, type Prices, type SystemKind } from '../content/systems';
 import type { Levels } from './build';
 import type { JobDef, Standing } from './comms';
+import type { EncounterId } from './encounters';
 import type { Faction } from './enemies';
 import type { RockKind, RockSize } from './field';
 import type { Report } from './captains';
@@ -138,6 +139,8 @@ export interface SortieDef {
   home: boolean;
   /** What the factions' notice brings here: tiers the cards read, fees, the pursuit, a captain. */
   notice: Pressure;
+  /** The place in this system still to be dealt with (content/phenomena.ts): the event it plays, a little after arrival. */
+  place?: { name: string; text: string; plays: EncounterId } | null;
 }
 
 export const HOME: SortieDef = {
@@ -187,6 +190,8 @@ export interface SortieResult {
   captain: { id: string; report: Report } | null;
   /** Notice the sortie's choices moved, by faction (the kills are counted from the run). */
   notice: Partial<Record<Faction, number>>;
+  /** The system's place: dealt with (true), tried and lost (false), or not met (null or absent). */
+  place?: boolean | null;
 }
 
 /** Food, in days for the one aboard: what the galley holds at most, and at the start. */
