@@ -3,6 +3,7 @@ import type { Caller, Open } from '../sim/comms';
 import { NEON_CSS } from './colors';
 import { faceSvg } from './face';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
+import { INK } from './palette';
 
 // ── the comms panel ───────────────────────────────────────────────────────
 // Grown out of the hail panel: every channel opened to the ship, drawn the
@@ -44,7 +45,7 @@ export interface CommsView {
 
 const CALLER_CSS: Record<Caller, string> = {
   custody: NEON_CSS.custody, gutter: NEON_CSS.gutter, office: NEON_CSS.office,
-  frontier: '#5ad0e3', guild: '#ffb33d', kellern: '#d9c27a', miners: '#ece6e1', calloway: '#ff2e40', captain: '#ff2e40', unknown: '#aaa39d',
+  frontier: INK.teal, guild: INK.amber, kellern: '#d9c27a', miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2,
 };
 const KIND_WORD: Record<string, string> = {
   captain: 'Named captain', trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', shakedown: 'Shakedown', checkpoint: 'Checkpoint', distress: 'Distress call', rumour: 'Rumour', offer: 'Offer',
