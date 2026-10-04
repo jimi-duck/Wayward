@@ -13,6 +13,7 @@ import type { World } from '../sim/world';
 import { systemLevel } from './refit';
 import { Radar } from './radar';
 import { range, Targeting } from './targeting';
+import { INK } from './palette';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view, after the reference frame, with nothing
@@ -95,6 +96,9 @@ export class Hud {
   private centreKey = '';
 
   constructor(onZoom: (dir: 1 | -1) => void) {
+    // on a phone the scope hangs under the sector block, whose height follows what the run shows
+    const sector = $('sector');
+    new ResizeObserver(() => document.documentElement.style.setProperty('--sector-b', `${Math.round(sector.getBoundingClientRect().bottom)}px`)).observe(sector);
     for (const [id, dir] of [['zoom-in', -1], ['zoom-out', 1]] as const) {
       const b = $(id);
       b.addEventListener('click', () => onZoom(dir));
@@ -304,7 +308,7 @@ export class Hud {
     for (const r of world.field.rocks) if (r.kind === 'rich' || r.kind === 'rare') trace = Math.min(trace, dist(r));
     const rows: Array<[string, number, string]> = [];
     if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
-    if (b.port) rows.push([b.port.name, dist(b.port), '#5ad0e3']);
+    if (b.port) rows.push([b.port.name, dist(b.port), INK.teal]);
     rows.push([b.lane.name, dist(b.lane), 'var(--amber)']);
     if (trace < Infinity) rows.push(['Krail trace', trace, 'var(--violet)']);
     const key = rows.map(([n, d]) => `${n}${Math.round(d / 10)}`).join();

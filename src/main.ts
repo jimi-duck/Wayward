@@ -349,6 +349,8 @@ function boot(): void {
     },
   });
   loop.paused = true;
+  // dev server only: a handle for tools/shots.mjs to put any screen up
+  if (import.meta.env.DEV) Object.assign(window, { wayward: { world, loop, launch, openChart, get journey() { return journey; } } });
 
   // ── landscape only ─────────────────────────────────────────────────────
   // A phone held upright gets the turn screen over everything, and a run

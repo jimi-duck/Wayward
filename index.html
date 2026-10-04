@@ -5,7 +5,7 @@
   <!-- viewport-fit=cover lets the canvas run under the notch; the controls
        pull themselves back inside the safe area in CSS. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#030509">
+  <meta name="theme-color" content="#080d0e">
   <meta name="color-scheme" content="dark">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,9 +17,6 @@
        that is the only way to the whole screen. -->
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Martian+Mono:wdth,wght@75..112.5,300..700&family=Tektur:wdth,wght@75..100,400..900&display=swap">
   <link rel="stylesheet" href="./src/styles/main.css">
 </head>
 <body>
@@ -174,9 +171,13 @@
 
     <div id="start" role="dialog" aria-labelledby="start-t">
       <div class="start-card">
-        <svg class="wm" viewBox="0 0 151.5 22" role="img" aria-label="Wayward"><g class="wm-a"><path d="M2 0V15L5 18H15L18 15V0M10 6V18" transform="translate(0.00 0.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(24.50 0.00)"/><path d="M2 0V7L5 10H11L14 7V0M8 10V20" transform="translate(45.00 0.00)"/></g><g class="wm-b"><path d="M2 0V15L5 18H15L18 15V0M10 6V18" transform="translate(70.00 0.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(94.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(115.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(135.50 0.00)"/></g></svg>
-        <p class="reg"><span>Wayward</span><span>OB-7731-A</span><span>Ore hauler, mining refit</span></p>
-        <p id="start-t" class="tag">Get out alive.</p>
+        <!-- the lockup (brand v1.1, § 9): the mark, the word, the ship's papers -->
+        <div class="lockup" role="img" aria-label="Wayward, Obedience-class ore hauler, serial OB-7731-A">
+          <svg class="mark" viewBox="0 0 40 34" aria-hidden="true"><path d="M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z"/></svg>
+          <span class="lk-t"><b class="lk-w">Wayward</b><span class="lk-d">Obedience-class ore hauler</span><span class="lk-s">Serial OB-7731-A</span></span>
+          <span class="lk-v" aria-hidden="true"><span>Survive</span><span>Trade</span><span>Extract</span><span>Return</span></span>
+        </div>
+        <p id="start-t" class="tag">Stolen ship. Broken system. Still moving.</p>
         <dl class="keys-l only-desktop">
           <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
           <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
