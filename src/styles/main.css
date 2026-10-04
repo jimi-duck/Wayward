@@ -1031,6 +1031,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 .ch-stat .port-stock b { font-size: calc(var(--fs) * 1.25); margin-left: 6px; }
 .ch-hunt, .ch-netl { margin: 0; font: 500 calc(var(--fs) * .95)/1.35 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
 .ch-hunt { color: #ff8a93; }
+.ch-file { margin: 0; font: 400 calc(var(--fs) * .85)/1.35 var(--font-mono); letter-spacing: .06em; color: #c98a90; }
 .ch-netl { color: var(--ink-2); }
 .ch-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .ch-key i { display: inline-block; width: 9px; height: 9px; }

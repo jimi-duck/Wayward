@@ -1,3 +1,4 @@
+import { hunchOf, newDossier } from '../sim/calloway';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
 
@@ -20,6 +21,9 @@ export function migrate(raw: unknown): Journey | null {
   // 1 → 2: the factions' notice (M4). A journey saved before it starts with nobody's notice.
   if (j.version < 2) j.notice = newNotice();
   if (!j.notice) return null;
+  // 2 → 3: Calloway's file (M4). She starts it now, and reads the route already flown.
+  if (j.version < 3) { j.calloway = newDossier(); j.hunt.hunch = hunchOf(j.chart, j.trail); }
+  if (!j.calloway) return null;
   j.version = VERSION;
   return j as Journey;
 }

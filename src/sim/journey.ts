@@ -3,6 +3,7 @@ import { FOOD_START, HOME, JUMP_COST, START_KRAIL, type Carry, type SortieDef, t
 import {
   arrive, jumps, lanesFrom, makeChart, netted, pricesAt, routeBetween, spreadNet, sysById, type Chart, type StarSystem,
 } from './chart';
+import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
 import { Rng } from './rng';
@@ -35,6 +36,12 @@ import type { Faction } from './enemies';
 // each sortie raise it, the days let it fade, and what it has risen to goes
 // into the next sortie's SortieDef: cards that know you, dearer fees, a
 // harder pursuit, and at the top a named captain who remembers.
+//
+// Calloway keeps a file on you (sim/calloway.ts): every trick you use on
+// her, your habits on the chart, what your answers say you care about, and
+// how far she can trust you. It makes her harder to fool, sends her offers,
+// and when you plot the jump to the Threshold she is waiting at the lane
+// mouth for a last meeting built from all of it.
 
 /** Seconds of a sortie that make a day. */
 export const DAY = 240;
@@ -50,7 +57,7 @@ export const ADRIFT = 1;
 /** Seconds into a sortie before Calloway can call, if she was already waiting. */
 export const WAITING = 40;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 2;
+export const VERSION = 3;
 
 export type JourneyEnd = 'through' | 'captured' | 'wrecked';
 
@@ -82,6 +89,8 @@ export interface Journey {
   /** Every system flown, in order: what Calloway follows. */
   trail: string[];
   hunt: Hunt;
+  /** What Calloway knows of you (sim/calloway.ts). */
+  calloway: Dossier;
   /** Every faction's notice of you, and the captains it has sent. */
   notice: Notice;
   /** What the ship carries into the next sortie. */
@@ -111,7 +120,7 @@ export function startCarry(): Carry {
 export function newJourney(seed: number, hardcore = false): Journey {
   const chart = makeChart(seed);
   const j: Journey = {
-    version: VERSION, seed, hardcore, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), notice: newNotice(), carry: startCarry(),
+    version: VERSION, seed, hardcore, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry: startCarry(),
     wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
   };
   const out = lanesFrom(chart, chart.home);
@@ -135,12 +144,16 @@ export function sortieDef(j: Journey): SortieDef {
   const route = j.dest ? routeBetween(j.chart, s.id, j.dest) : null;
   // Calloway: here already (she calls once you are clear of the arrival), or due in so many days of lingering
   const until = daysUntil(j.hunt, j.chart, j.trail);
+  // the jump to the Threshold: she is not behind you, she is waiting at the lane mouth
+  const finale = j.dest === j.chart.edge;
+  const offer = offerFor(j.calloway, { day: j.day, behind: behind(j.hunt, j.trail), caught: j.hunt.caught, flown: j.trail.length - 1, flags: j.carry.flags });
   return {
     system: s.id, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.krail ?? JUMP_COST, lane: s.lane,
     port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
     heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : 1),
     rich: t.rich * (0.6 + s.krail * 0.8), density: t.density, gutter: Math.min(0.8, (net ? t.gutter * 0.5 : t.gutter) + notice.gutter), calls: t.calls,
-    blockade: net, netted: net, calloway: until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
+    blockade: net, netted: net, calloway: finale ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
+    nemesis: nemesis(j.calloway, j.hunt, { finale, offer }),
   };
 }
 
@@ -205,6 +218,9 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const marked = noticeFromRun(res.run);
   for (const [f, v] of Object.entries(res.notice ?? {}) as Array<[Faction, number]>) marked[f] = (marked[f] ?? 0) + v;
   const heard: string[] = [];
+  // Calloway studies what you did: her own people killed after you gave your word, the tricks, the truths, the offers
+  const killed = noticeFromRun(res.run);
+  heard.push(...study(j.calloway, res.run.cards, (killed.custody ?? 0) > 0 || (killed.office ?? 0) > 0, j.day));
   if (res.captain) heard.push(...remember(j.notice, res.captain.id, res.captain.report, j.day, res.carry.standing, rng(j)));
   for (const [f, v] of Object.entries(marked) as Array<[Faction, number]>) heard.push(...raise(j.notice, f, v, res.carry.standing));
   for (const h of heard) note(j, h);
@@ -266,9 +282,13 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (there.kind === 'edge') {
     j.status = 'over';
     j.end = 'through';
+    const how = ending(res.run.cards, res.callowayBeaten);
+    if (how) { j.calloway.ending = how; note(j, ENDING_LINES[how]); lines.unshift(ENDING_LINES[how]); }
     note(j, 'Through the Threshold · into the Scatter');
     return { kind: 'through', lines: ['The old lane opens. Beyond it, the Scatter.', ...lines] };
   }
+  // with every system flown she reads your route a little better
+  j.hunt.hunch = hunchOf(j.chart, j.trail);
   j.status = 'chart';
   return { kind: 'jumped', lines };
 }

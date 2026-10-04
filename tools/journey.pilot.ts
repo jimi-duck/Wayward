@@ -2,6 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
 import { krailKnown, netted, sysById } from '../src/sim/chart';
 import { behind } from '../src/sim/hunt';
+import { OFFERS } from '../src/content/calloway';
 import { CREW, endSortie, newJourney, options, plot, sortieDef, toEdge, type Journey } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { flyWorld, stratName, type Policy, type Strategy } from './pilot';
@@ -11,7 +12,8 @@ import { flyWorld, stratName, type Policy, type Strategy } from './pilot';
 // after system across the chart, plotting each jump with a simple route
 // planner, until the Threshold, a capture or the third wreck. It writes
 // docs/BALANCE-JOURNEY.md: how far journeys get and why they end, the
-// Krail curve, the days, the Net, and how often Calloway catches up.
+// Krail curve, the days, the Net, how often Calloway catches up, and what
+// her file on you comes to (her offers, the tricks she learns, the last meeting).
 // JOURNEY_RUNS trades precision for speed.
 
 const RUNS = Number(process.env.JOURNEY_RUNS ?? 8);
@@ -124,13 +126,18 @@ it('flies whole journeys', { timeout: 7_200_000 }, () => {
   }
   const kindRows = [...kinds.entries()].map(([k, v]) => `| ${k} | ${v.length} | ${mmss(mean(v.map((x) => x.time)))} | ${pct(v.filter((x) => x.wrecked).length / v.length)} |`);
   // the Prefect's choices, and the M3 cards
-  const m3 = ['calloway_here', 'calloway_word', 'lane_toll', 'port_scan', 'port_news', 'food_trader', 'drift_fleet', 'holdout', 'relay', 'false_trail'];
+  const m3 = ['calloway_here', 'calloway_word', 'lane_toll', 'port_scan', 'port_news', 'food_trader', 'drift_fleet', 'holdout', 'relay', 'false_trail', ...OFFERS.map((o) => o.id), 'calloway_last'];
   const cardRows = m3.map((id) => {
     const v = all.flatMap((r) => r.answers.filter((a) => a.card === id));
     const by: Record<string, number> = {};
     for (const a of v) by[a.choice] = (by[a.choice] ?? 0) + 1;
     return `| ${id} | ${v.length} | ${Object.entries(by).map(([c, n]) => `${c} ${n}`).join(', ') || '—'} |`;
   });
+  // her file: how the last meeting went, and what she had learned by the end
+  const lastMet = all.filter((r) => r.answers.some((a) => a.card === 'calloway_last'));
+  const endings: Record<string, number> = {};
+  for (const r of lastMet) { const k = r.j.calloway.ending ?? (r.j.end === 'captured' ? 'taken at the Threshold' : 'wrecked out at the Threshold'); endings[k] = (endings[k] ?? 0) + 1; }
+  const tricksSeen = (r: JourneyRun) => Object.values(r.j.calloway.tricks).reduce((a, n) => a + (n ?? 0), 0);
   const ends: Record<string, number> = {};
   for (const r of all) { const k = r.stuck ? 'stuck (timed out)' : r.j.end ?? 'unfinished'; ends[k] = (ends[k] ?? 0) + 1; }
   const md = `# Journey balance report
@@ -181,6 +188,23 @@ ${kindRows.join('\n')}
 | Calloway's ship fought | ${mean(all.map((r) => r.callowayFights)).toFixed(1)} |
 | Calloway beaten | ${mean(all.map((r) => r.j.hunt.beaten)).toFixed(1)} |
 | Jumps she was behind at the end | ${mean(all.map((r) => Math.min(9, behind(r.j.hunt, r.j.trail)))).toFixed(1)} |
+
+## Calloway's file
+
+| | Per journey |
+|---|---|
+| Offers she made | ${mean(all.map((r) => r.j.calloway.offers.length)).toFixed(1)} |
+| Offers taken | ${mean(all.map((r) => r.j.calloway.took.length)).toFixed(1)} |
+| Tricks she saw | ${mean(all.map(tricksSeen)).toFixed(1)} |
+| Truths told her | ${mean(all.map((r) => r.j.calloway.told)).toFixed(1)} |
+| Read your route by the end | ${pct(all.filter((r) => r.j.hunt.hunch?.kind || r.j.hunt.hunch?.straight).length / all.length)} |
+| Met her at the Threshold | ${lastMet.length} of ${all.length} |
+
+How the last meeting ended:
+
+| Ending | Journeys |
+|---|---|
+${Object.entries(endings).sort((a, b) => b[1] - a[1]).map(([k, v]) => `| ${k} | ${v} |`).join('\n') || '| none reached | 0 |'}
 
 ## The journey's cards
 
