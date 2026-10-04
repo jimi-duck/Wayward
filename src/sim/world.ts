@@ -6,13 +6,14 @@ import {
   type Mine, type Reachable, type Systems,
 } from './arsenal';
 import { Command, type Strike, type Telegraph } from './bosses';
+import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import {
   BLOCKADE_AT, BLOCKADE_HP, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   ORE_XP, rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
-  CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, commsGap, condOk, openCard, pickCard, refresh, resolve, type CardDef, type Ctx, type JobDef, type Open,
+  CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, commsGap, condOk, openCard, pickCard, refresh, resolve, theirStrength, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
 } from './comms';
 import { coolRocks, cutRock, cutTarget, newCutter, type Cutter } from './mining';
@@ -39,7 +40,6 @@ import {
 } from './tuning';
 import type { Prices } from '../content/systems';
 import { makeOffer, type Offer } from './offers';
-import type { CaptainResult } from './notice';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -215,11 +215,11 @@ export class World implements EncounterHost {
   behind = Infinity;
   huntDelay = 0;
   stall = 0;
-  /** A named captain (sim/notice.ts): seconds into the sortie she calls; whether she has, her ship is the one fighting, and how it went. */
+  /** A named captain (sim/captains.ts): seconds into the sortie they find you; whether they have, their ship is the one fighting, and how it went. */
   captainAt = Infinity;
   captainMet = false;
-  private captainShip: string | null = null;
-  private captainEnd: CaptainResult | null = null;
+  private captainFighting = false;
+  private captainEnd: Report | null = null;
   /** Notice the sortie's cards moved, by faction. */
   noticeDelta: Partial<Record<Faction, number>> = {};
 
@@ -263,7 +263,7 @@ export class World implements EncounterHost {
     this.portCalled = false;
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.huntDelay = 0; this.stall = 0;
-    this.captainMet = false; this.captainShip = null; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
+    this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity; return; }
     const def = this.sortie;
     this.bk = newBreakout(this.ship.heading, def);
@@ -335,11 +335,12 @@ export class World implements EncounterHost {
     };
   }
 
-  /** How the meeting with the named captain went, if she called: beaten, parted, or else whether the Wayward got out. */
-  private captainResult(): { id: string; result: CaptainResult } | null {
+  /** What came of the named captain, if they found you: a fight still on when the sortie ends is theirs if the Wayward did not get out, and slipped if it jumped. */
+  private captainResult(): { id: string; report: Report } | null {
     const c = this.sortie.notice.captain;
     if (!c || !this.captainMet) return null;
-    return { id: c.id, result: this.captainEnd ?? (this.run.escaped ? 'escaped' : 'won') };
+    const report = this.captainEnd ?? (this.captainFighting ? (this.run.escaped ? 'evaded' : 'won') : null);
+    return report ? { id: c.id, report } : null;
   }
 
   /** Krail the plotted jump takes (the Breakout's lane in Cerro). */
@@ -433,6 +434,8 @@ export class World implements EncounterHost {
       // engaged: the regular traffic clears out for the capital ship and her wing
       for (const al of this.aliens) if (!al.escort && !al.extra) leave(al);
     }
+    // a captain whose ship is gone without being beaten left the fight on their own terms
+    if (this.captainFighting && this.command.state === 'idle' && !this.command.boss) { this.captainFighting = false; this.captainEnd = 'escaped'; }
     this.stepEncounter(dt, t);
     moveShots(this.shots, s, dt);
     stepWebs(this.webs, dt);
@@ -536,12 +539,15 @@ export class World implements EncounterHost {
       if (def) return this.openComms(def);
     }
 
-    // a named captain: she calls once, in her own way
-    const cap = b.def.notice.captain;
-    if (cap && !this.captainMet && this.runTime >= this.captainAt && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint') {
+    // a named captain: they find you once, and come their own way
+    const cap = b.def.notice.captain, cdef = cap && CAPTAIN_BY_ID[cap.id];
+    if (cap && cdef && !this.captainMet && this.runTime >= this.captainAt && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.captainMet = true;
-      const def = CARD_BY_ID[cap.personality === 'ambush' ? 'captain_ambush' : 'captain'];
-      if (def) return this.openComms(def);
+      const you = yourStrength(this.levels, this.plates), them = theirStrength({ ships: captainShips(cdef, form(cdef, cap.memory)) });
+      if (turnsAway(cdef, cap.memory, you, them, this.rng)) {
+        this.captainEnd = 'left';
+        this.events.push({ type: 'captainLeft', id: cdef.id, name: cdef.name, text: cdef.lines.leave });
+      } else return this.openComms(captainCard(cdef, cap.memory, you, them));
     }
 
     // the lane mouth: a blockade's checkpoint is a comms card; an open lane may still have someone waiting
@@ -874,14 +880,16 @@ export class World implements EncounterHost {
       this.command.summon(this.runTime, 'custody', CALLOWAY_HP, false, 'Calloway · CCV Patience');
       if (out.calloway === 'run') { b.spoolNeed = Math.max(b.spoolNeed, SPOOL * SPOOL_RUN); b.heat = 1; b.nextPursuit = this.runTime; this.run.capitalsEvaded++; }
     }
-    const cap = this.sortie.notice.captain;
-    if (b && cap && out.captain) {
-      // her ship comes in; running means the system on alert and her on your tail; terms mean she goes
-      if (out.captain === 'parley') this.captainEnd = 'parted';
-      else {
-        this.captainShip = `${cap.name} · ${cap.ship}`;
-        this.command.summon(this.runTime, cap.faction, cap.hp, false, this.captainShip);
-        if (out.captain === 'run') { b.spoolNeed = Math.max(b.spoolNeed, SPOOL * SPOOL_RUN); b.heat = Math.max(b.heat, 0.8); b.nextPursuit = this.runTime; this.run.capitalsEvaded++; }
+    const cap = this.sortie.notice.captain, cdef = cap && CAPTAIN_BY_ID[cap.id];
+    if (b && cap && cdef && out.captain) {
+      // their ship comes in under their name; or you slipped them, paid them, or they thought better of it
+      if (out.captain === 'fight') {
+        const f = form(cdef, cap.memory);
+        this.captainFighting = true;
+        this.command.summon(this.runTime, cap.faction, f.hp, false, cap.ship, f.wing);
+      } else {
+        this.captainEnd = out.captain === 'run' ? 'evaded' : out.captain === 'pay' ? 'bargained' : 'left';
+        if (out.captain === 'run') this.run.capitalsEvaded++;
       }
     }
     if (b && out.blockade) {
@@ -1685,7 +1693,7 @@ export class World implements EncounterHost {
     this.dropCrystals(b.x, b.z, this.bk ? 22 : 26 + 8 * b.n, 12);
     if (this.bk) this.dropCrystals(b.x, b.z, 18, 10, 0, 0, 'parts');
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
-    if (this.captainShip && b.name === this.captainShip) { this.captainShip = null; this.captainEnd = 'beaten'; }
+    if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
     this.dropItem(this.randomPower(), b.x, b.z);
     const fresh = !this.techs.has(b.faction);

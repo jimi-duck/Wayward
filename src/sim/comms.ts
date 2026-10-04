@@ -1,10 +1,11 @@
 import { CARDS, FLAGS } from '../content/cards';
-import type { Personality, Tier } from '../content/factions';
+import type { Tier } from '../content/factions';
 import type { SystemKind } from '../content/systems';
 import { UPGRADES } from '../content/upgrades';
 import type { Levels } from './build';
+import type { Face } from './captains';
 import { ALIEN_TYPES, VARIANTS, type Faction } from './enemies';
-import { atLeast, type CaptainCall, type CaptainResult } from './notice';
+import { atLeast, type CaptainCall } from './notice';
 import type { Rng } from './rng';
 
 // ── the comms card ────────────────────────────────────────────────────────
@@ -27,15 +28,15 @@ import type { Rng } from './rng';
 //                  bait) or to the odds (a bluff), and the odds move with
 //                  heat, flags, standing and fitted systems.
 
-export type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour';
+export type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour' | 'captain';
 /** What kind of answer a choice is, for the pilot's policies and the report. */
 export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refuse';
 /** Who you can stand well or badly with. */
 export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' | 'miners';
 /** Who is on the channel, for the colour of the card. */
 export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
-/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, with Calloway, or with a named captain. */
-export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'captain';
+/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, or with Calloway. */
+export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt';
 /** Where the ship is: open space, the port's approach, the lane mouth. */
 export type Place = 'open' | 'port' | 'lane';
 
@@ -108,10 +109,6 @@ export interface Cond {
   hunted?: number;
   /** The faction's notice is at least this tier. */
   notice?: [Faction, Tier];
-  /** The captain in the system opens this way. */
-  captain?: Personality | Personality[];
-  /** The captain has met you before, or has had this from you at least once. */
-  met?: true | CaptainResult;
 }
 
 /** A number, or a token read off the ship: the card's fee, all of it, half of it. */
@@ -169,8 +166,8 @@ export interface Outcome {
   calloway?: 'fight' | 'run';
   /** Notice moved, by faction (a bribe that buries a report, a broadcast that makes one). */
   notice?: Partial<Record<Faction, number>>;
-  /** The named captain: her ship comes for a fight, you run with her on your tail, or she leaves on terms. */
-  captain?: 'fight' | 'run' | 'parley';
+  /** A named captain's card (sim/captains.ts): fight, run past, pay off, or see them leave. */
+  captain?: 'fight' | 'run' | 'pay' | 'leave';
 }
 
 /** What a choice asks to be possible. What it costs is in `cost`, and counts too. */
@@ -250,6 +247,9 @@ export interface CardDef {
   truths?: Truth[];
   /** Ambushes and declarations do not wait: the world slows instead of stopping, and after `timeout` seconds of it the default is taken. */
   slow?: { timeout: number; default: string };
+  /** A named captain's portrait, and the scars they have picked up since. */
+  face?: Face;
+  scars?: number;
   /** Applied as the card opens (the ambushers decloak). */
   arrive?: Outcome;
   choices: ChoiceDef[];
@@ -335,20 +335,7 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.netted !== undefined && x.netted !== c.netted) return false;
   if (c.hunted !== undefined && !(x.behind <= c.hunted)) return false;
   if (c.notice && !atLeast(x.notice?.[c.notice[0]], c.notice[1])) return false;
-  if (c.captain !== undefined && !(x.captain && list(c.captain).includes(x.captain.personality))) return false;
-  if (c.met !== undefined && !metOk(c.met, x.captain)) return false;
   return true;
-}
-
-function metOk(m: true | CaptainResult, c: CaptainCall | null | undefined): boolean {
-  if (!c) return false;
-  switch (m) {
-    case true: return c.rematch;
-    case 'beaten': return c.beaten > 0;
-    case 'escaped': return c.escapes > 0;
-    case 'won': return c.wins > 0;
-    case 'parted': return c.rematch && c.beaten + c.escapes + c.wins === 0;
-  }
 }
 
 /** The card's fee for this ship, now: a faction that has marked you charges more. */
@@ -400,7 +387,7 @@ export function yourStrength(levels: Levels, plates: number): number {
   return Math.round(s * 10) / 10;
 }
 
-export function theirStrength(def: CardDef): number {
+export function theirStrength(def: Pick<CardDef, 'ships'>): number {
   return Math.round((def.ships ?? []).reduce((a, s) => a + hullWeight(s.variant) * s.n, 0) * 10) / 10;
 }
 
@@ -465,7 +452,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number): Cho
 }
 
 const slotFill = (x: Ctx, slots: Record<string, string> = {}) => {
-  const all: Record<string, string> = { captain: x.captain?.name ?? 'the captain', ship: x.captain?.ship ?? 'her ship', ...slots };
+  const all: Record<string, string> = { captain: x.captain?.name ?? 'the captain', ship: x.captain?.ship ?? 'their ship', ...slots };
   return (s: string) => s.replace(/\{(\w+)\}/g, (m, k: string) => all[k] ?? m);
 };
 
@@ -503,12 +490,10 @@ export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
     }
     intent = def.truths.find((t) => t.id === shown)!.read;
   }
-  // a captain's card names her and speaks for her faction: the def on the table carries the filled name, title and caller
-  if (def.caller === 'captain' || def.from.includes('{') || def.title.includes('{')) {
+  // a card that names the captain on your file: the def on the table carries the filled name and title
+  if (def.from.includes('{') || def.title.includes('{')) {
     const fill = slotFill(x);
-    const f = x.captain?.faction;
-    const caller: Caller = def.caller !== 'captain' ? def.caller : f === 'custody' || f === 'gutter' || f === 'office' ? f : 'unknown';
-    def = { ...def, from: fill(def.from), title: fill(def.title), caller };
+    def = { ...def, from: fill(def.from), title: fill(def.title) };
   }
   const fee = feeFor(def, x);
   return {
