@@ -69,7 +69,9 @@ export interface Chart {
 
 export const COLS = 6;
 /** The Net's pace: progress a day into a system next to a netted one, before richness. */
-export const NET_RATE = 0.3;
+export const NET_RATE = 0.45;
+/** How much harder each further netted neighbour presses a system. */
+export const NET_PRESS = 0.5;
 /** How far the news reaches: the Net is seen this many jumps out, each arrival. */
 export const SIGHT = 2;
 /** What the Net does to a port: dearer Krail, food and plates, less for ore. */
@@ -196,13 +198,21 @@ export function spreadNet(c: Chart, days: number, rng: Rng): string[] {
     const dt = Math.min(0.25, left);
     left -= dt;
     for (const id of Object.keys(c.stall)) if ((c.stall[id]! -= dt) <= 0) delete c.stall[id];
-    const front = c.systems.filter((s) => !netted(c, s.id) && !c.stall[s.id] && lanesFrom(c, s.id).some((l) => netted(c, l.to.id)));
-    for (const s of front) {
-      c.net[s.id] = (c.net[s.id] ?? 0) + dt * NET_RATE * (0.5 + s.krail) * rng.range(0.7, 1.3);
+    // the front, and how many netted systems press on each part of it: a broad front pushes harder
+    const front = c.systems.filter((s) => !netted(c, s.id) && !c.stall[s.id]).map((s) => ({ s, n: lanesFrom(c, s.id).filter((l) => netted(c, l.to.id)).length })).filter((f) => f.n > 0);
+    for (const { s, n } of front) {
+      c.net[s.id] = (c.net[s.id] ?? 0) + dt * NET_RATE * (0.5 + s.krail) * (1 + NET_PRESS * (Math.min(n, 3) - 1)) * rng.range(0.7, 1.3);
       if (netted(c, s.id)) { c.net[s.id] = 1; fell.push(s.id); }
     }
   }
   return fell;
+}
+
+/** The Net gains `days` of its spread in one system at a stroke, front or not (a survey relay left to finish). */
+export function pushNet(c: Chart, id: string, days: number): void {
+  if (netted(c, id) || c.stall[id]) return;
+  const s = sysById(c, id);
+  c.net[id] = Math.min(1, (c.net[id] ?? 0) + days * NET_RATE * (0.5 + s.krail));
 }
 
 /** Arriving somewhere: the system is flown (its Krail is known, its prices too), and the news brings the Net's edge up to date nearby. */

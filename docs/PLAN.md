@@ -393,3 +393,16 @@ should multiply each other; expand combinations before adding combat.
    captain, resting or hunting. Open: Calloway learning and making offers,
    and a pilot report on how soon captains come.
 7. M5 to M8 in order, each with its pilot report.
+   Loose ends, second pass (BALANCE-JOURNEY.md, 48 journeys): the Net is
+   quicker (0.45 a day, harder on a broad front), so a steady pilot lands
+   in a netted system about once a journey and the netted port's scan
+   comes up; a survey relay left alone brings the Net in at once, and the
+   Gutter will break one for ore; a false flight plan can be paid in ore;
+   a port can re-plot the lane out. Relays are now acted on 15 times in
+   22, false plans filed 19 times in 28. 43 of 48 get through.
+   Open: the journey is still easy for a steady pilot. A netted system
+   pays rather than costs: beating its blockade drops 22 Krail and 18
+   parts of salvage, so Krail aboard rises once the Net is close (inferred
+   from the Krail curve; a call for M4's notice and blockades). The first
+   system after the Breakout can already be netted.
+6. M4 to M8 in order, each with its pilot report.

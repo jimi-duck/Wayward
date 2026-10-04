@@ -93,14 +93,19 @@ the Threshold, the last lane the old charts know.
   of parts, the hull takes the wear: a plate down either way. Food is sold
   at ports (and by Drift traders), and the galley holds thirty.
 - **The Net** spreads from Cerro along the lanes, once you have left it, a
-  little every day, faster into systems with Krail to take (`spreadNet`).
+  little every day, faster into systems with Krail to take and harder
+  where two or three netted systems press on one (`spreadNet`). Its pace
+  is set to catch a pilot who keeps moving now and then.
   A netted system has a blockade at its lane mouth (the checkpoint card),
   starts a quarter hotter, heats faster, scans you at its port, marks its
   prices up (Krail and food by 40%, less for ore) and gets fewer friendly
   calls. Some answers stall it in a system for days (help a holdout, break
-  a survey relay). The chart shows the Net as it was when the news last
-  reached you (two jumps out, each arrival), or everywhere if you bought
-  news.
+  a survey relay, or pay ore to have the Gutter break it). A survey relay
+  left to finish brings the Net into that system at once, even ahead of
+  the front (`pushNet`). The chart shows the Net as it was when the news
+  last reached you (two jumps out, each arrival), or everywhere if you
+  bought news. Docked at a port, you can plot another lane out (the port's
+  sixth line), with that news in hand.
 - **Calloway** (`sim/hunt.ts`) follows the trail, the systems you flew in
   order: she sets out when you leave Cerro, a day behind, crosses each lane
   as long as it took you, then spends a third of a day asking questions
@@ -109,7 +114,7 @@ the Threshold, the last lane the old charts know.
   lane with her ship on your tail, dump the hold as a decoy, tell her the
   file is out (she has to check), go dark (with deep scanners or Office
   tech), or turn and fight (beaten, she loses four days to repairs). Lies,
-  false flight plans and friendly Drift fleets hold her up; failed lies
+  false flight plans (paid in chits or ore) and friendly Drift fleets hold her up; failed lies
   bring her closer. The chart shows where she was last seen: exactly when
   she is a jump away or the news is fresh, otherwise as of the day you last
   had it.

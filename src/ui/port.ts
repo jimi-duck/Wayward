@@ -7,9 +7,17 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 // sell the hold, buy Krail and food a unit at a time, patch a plate, pay for
 // a refit (three cards there and then), cast off. Every port sets its own
 // prices, and the Net marks them up. The list is redrawn after every trade,
-// so every price and every "can't" is live.
+// so every price and every "can't" is live. On a journey a sixth line plots
+// again: each press turns to the next lane out of here.
 
-type Line = { key: 'sell' | PortItem; label: string; price: string; note: string; ok: boolean };
+type Line = { key: 'sell' | 'course' | PortItem; label: string; price: string; note: string; ok: boolean };
+
+/** The lanes out of a port, for re-plotting while docked: `pick` plots one and the world's jump follows it. */
+export interface Course {
+  lanes: () => Array<{ id: string; name: string; krail: number; days: number; note: string }>;
+  current: () => string | null;
+  pick: (id: string) => void;
+}
 
 export class PortPanel {
   private off: (() => void) | null = null;
@@ -19,15 +27,17 @@ export class PortPanel {
   private world: World | null = null;
   private onLeave: (() => void) | null = null;
   private onRefit: (() => void) | null = null;
+  private course: Course | null = null;
 
   get open(): boolean {
     return !$('port').hidden;
   }
 
   /** Open on the world's dock. `onRefit` is called when a bought refit puts cards on the table. */
-  show(world: World, onLeave: () => void, onRefit: () => void): void {
+  show(world: World, onLeave: () => void, onRefit: () => void, course: Course | null = null): void {
     this.close();
     this.world = world;
+    this.course = course;
     this.onLeave = onLeave;
     this.onRefit = onRefit;
     this.opened = performance.now();
@@ -40,7 +50,7 @@ export class PortPanel {
     this.render();
     $('port').hidden = false;
     this.off = keys((e) => {
-      const n = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].indexOf(e.code);
+      const n = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'].indexOf(e.code);
       if (n >= 0) return this.act(n), true;
       if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Escape') return this.leave(), true;
       if (e.code === 'ArrowUp' || e.code === 'ArrowDown') { this.move(e.code === 'ArrowUp' ? -1 : 1); return true; }
@@ -80,7 +90,11 @@ export class PortPanel {
     if (!w || !l || !l.ok) return;
     this.sel = i;
     if (l.key === 'sell') w.sellOre();
-    else {
+    else if (l.key === 'course') {
+      // the next lane out of here, round and round
+      const c = this.course!, lanes = c.lanes(), at = lanes.findIndex((x) => x.id === c.current());
+      c.pick(lanes[(at + 1) % lanes.length]!.id);
+    } else {
       w.buy(l.key);
       if (l.key === 'refit' && w.phase === 'refit') {
         // the cards take the screen; the dock comes back when they are done
@@ -110,6 +124,14 @@ export class PortPanel {
       { key: 'plate', label: 'Patch a plate', price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? 'Hull whole' : `Hull ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
       { key: 'refit', label: 'Pay for a refit', price: `${P.refit}`, note: 'Three cards, take one', ok: w.canBuy('refit') },
     ];
+    const c = this.course, lanes = c?.lanes() ?? [];
+    if (c && lanes.length) {
+      const now = lanes.find((x) => x.id === c.current()) ?? lanes[0]!;
+      this.lines.push({
+        key: 'course', label: lanes.length > 1 ? 'Plot another lane' : 'The lane out', price: `${now.krail}K`,
+        note: `Bound for ${now.name} · ${now.days} day${now.days === 1 ? '' : 's'}${now.note ? ` · ${now.note}` : ''}`, ok: lanes.length > 1,
+      });
+    }
     $('port-stock').replaceChildren(
       ...[['Chits', String(w.chits)], ['Tank', `${w.krail}/${w.jumpCost}`], ['Food', String(w.food)], ['Hold', `${w.ore}/${w.holdMax}`], ['Hull', `${w.plates}/${w.stats.maxPlates}`]]
         .map(([k, v]) => h('span', '', '', h('span', 'k', k!), h('b', '', v!))),
