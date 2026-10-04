@@ -2,11 +2,13 @@ import {
   DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
 } from '../content/phenomena';
 import { SYSTEMS } from '../content/systems';
+import { REGIONS } from '../content/regions';
 import { FOOD_START, HOME, JUMP_COST, START_KRAIL, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
-  arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, routeBetween, sightPlaces, spreadNet, sysById,
-  type Chart, type StarSystem,
+  arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
+  viewOf, type Chart, type StarSystem,
 } from './chart';
+import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './scatter';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
@@ -72,7 +74,11 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 5;
+export const VERSION = 6;
+/** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
+export const AHEAD: Partial<Record<string, string[]>> = { voice: ['drone', 'probe', 'drone'], thren: ['mote', 'mote', 'weaver'] };
+/** A Gutter raid adds this to the share of the pursuit from ahead. */
+export const RAID_AHEAD = 0.25;
 
 export type JourneyEnd = 'through' | 'captured' | 'wrecked';
 
@@ -165,11 +171,15 @@ export function sortieDef(j: Journey): SortieDef {
   const finale = j.dest === j.chart.edge;
   const offer = offerFor(j.calloway, { day: j.day, behind: behind(j.hunt, j.trail), caught: j.hunt.caught, flown: j.trail.length - 1, flags: j.carry.flags });
   const p = placeAt(j.chart, s.id), pd = p && PLACES[p.id];
+  // further out the Custody is far from home, and whoever holds the system comes at you from ahead
+  const R = REGIONS[regionOf(s)] ?? REGIONS[0]!, raid = raided(j.chart, s.id);
+  const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0);
   return {
     system: s.id, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.krail ?? JUMP_COST, lane: s.lane,
     port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
-    heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : 1),
-    rich: t.rich * (0.6 + s.krail * 0.8), density: t.density, gutter: Math.min(0.8, (net ? t.gutter * 0.5 : t.gutter) + notice.gutter), calls: t.calls,
+    heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
+    rich: t.rich * (0.6 + s.krail * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls,
+    ahead: raid ? undefined : AHEAD[s.holder], thren: threnAt(j.chart, s.id), here: presence(j.chart, s.id),
     blockade: net, netted: net, calloway: finale ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
     place: pd ? { name: pd.name, text: pd.text, plays: pd.plays } : null,
     nemesis: nemesis(j.calloway, j.hunt, { finale, offer }),
@@ -178,8 +188,8 @@ export function sortieDef(j: Journey): SortieDef {
 
 /** The lanes on offer from here, with what each costs and what is known at the other end. */
 export function options(j: Journey) {
-  // never back to Cerro: the yards are the Continuance's
-  return lanesFrom(j.chart, j.at).filter(({ to }) => to.kind !== 'home').map(({ to, route }) => ({
+  // never back to Cerro (the yards are the Continuance's), nor back through a gate
+  return lanesFrom(j.chart, j.at).filter(({ to }) => onward(j, to)).map(({ to, route }) => ({
     to, route, food: route.days * RATION, netted: j.chart.seenNet.includes(to.id),
     /** Calloway was last seen there (as far as you know). */
     shadow: j.trail[j.hunt.seenIdx] === to.id,
@@ -188,9 +198,16 @@ export function options(j: Journey) {
   }));
 }
 
+/** A lane you may take from here: not to Cerro, and never back through a gate (from one, only on into the region beyond). */
+function onward(j: Journey, to: StarSystem): boolean {
+  if (to.kind === 'home') return false;
+  const s = here(j);
+  return s.kind === 'gate' ? regionOf(to) > regionOf(s) : regionOf(to) >= regionOf(s);
+}
+
 /** Plot the next jump. False if there is no lane there from here. */
 export function plot(j: Journey, to: string): boolean {
-  if (j.status !== 'chart' || !routeBetween(j.chart, j.at, to) || to === j.chart.home) return false;
+  if (j.status !== 'chart' || !routeBetween(j.chart, j.at, to) || !onward(j, sysById(j.chart, to))) return false;
   j.dest = to;
   j.status = 'sortie';
   return true;
@@ -204,7 +221,7 @@ export function plot(j: Journey, to: string): boolean {
  */
 export function replot(j: Journey, to: string): { dest: string; jumpCost: number } | false {
   const s = here(j);
-  if (j.status !== 'sortie' || !s.port || s.kind === 'home' || to === j.chart.home) return false;
+  if (j.status !== 'sortie' || !s.port || s.kind === 'home' || !routeBetween(j.chart, s.id, to) || !onward(j, sysById(j.chart, to))) return false;
   const route = routeBetween(j.chart, s.id, to);
   if (!route) return false;
   if (to !== j.dest) note(j, `Re-plotted for ${sysById(j.chart, to).name}`);
@@ -218,13 +235,26 @@ export function hearNews(j: Journey): void {
   sight(j, true);
 }
 
-/** Time passes: the Net spreads, Calloway moves. Returns the systems the Net took. */
-function pass(j: Journey, days: number): string[] {
+/**
+ * Time passes: the Net spreads, Calloway moves, the factions go about
+ * their business. Returns the systems the Net took; what the factions did
+ * within sight goes into `heard`.
+ */
+function pass(j: Journey, days: number, heard: string[] = []): string[] {
   j.day += days;
   huntOn(j.hunt, j.chart, j.trail, days);
   cool(j.notice, days);
   // the Net moves once you are out of Cerro: it is the Continuance answering the escape
-  return j.trail.length > 1 ? spreadNet(j.chart, days, rng(j)) : [];
+  if (j.trail.length < 2) return [];
+  const fell = spreadNet(j.chart, days, rng(j));
+  // the Thren follow the Krail: in a lane, to where it is going (the Wayward is already set down there)
+  const at = j.at;
+  for (const n of stepScatter(j.chart, days, rng(j), { at, krail: j.carry.krail, tank: TANK_MAX })) {
+    if (jumps(j.chart, at, n.id) > SIGHT) continue;
+    note(j, n.text);
+    heard.push(n.text);
+  }
+  return fell;
 }
 
 /** Where Calloway is believed to be: seen exactly when she is close, the news is fresh, or the sensors catch her. */
@@ -304,7 +334,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   for (const [f, v] of Object.entries(marked) as Array<[Faction, number]>) heard.push(...raise(j.notice, f, v, res.carry.standing));
   for (const h of heard) note(j, h);
   lines.push(...heard);
-  const fell = pass(j, res.time / DAY);
+  const fell = pass(j, res.time / DAY, lines);
   const leg: Leg = {
     system: s.id, name: s.name, day: Math.round(j.day * 10) / 10, krailIn, krailOut: res.carry.krail, time: Math.round(res.time), ended: res.ended,
     cards: res.run.cards.length, kills: res.run.kills, calloway: res.calloway, score: res.run.score,
@@ -347,7 +377,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   j.dest = null;
   j.trail.push(to);
   // she crosses after you: the lane's days count on her trail too
-  fell.push(...pass(j, days));
+  fell.push(...pass(j, days, lines));
   arrive(j.chart, to, j.day);
   if (news) {
     hearNews(j);
@@ -359,6 +389,11 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   for (const id of fell) if (j.chart.seenNet.includes(id)) lines.push(`The Net has taken ${sysById(j.chart, id).name}`);
   const place = placeAt(j.chart, to);
   if (place && there.kind !== 'edge') lines.push(`${PLACES[place.id].name} here · ${PLACES[place.id].blurb}`);
+  // through a gate: a new region
+  if (there.kind === 'gate') { const R = REGIONS[viewOf(j.chart, to)]; if (R) { lines.unshift(`${R.name} · ${R.blurb}`); note(j, `Through ${there.name} into ${R.name}`); } }
+  const fleet = fleetAt(j.chart, to);
+  if (fleet) lines.push(`A Drift fleet is here · ${fleet.name} trades food and news`);
+  if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push('Thren here · they come for Krail');
   if (there.kind === 'edge') {
     j.status = 'over';
     j.end = 'through';

@@ -737,7 +737,7 @@ export const CARDS: CardDef[] = [
     ],
   },
   {
-    id: 'drift_fleet', kind: 'trade', caller: 'miners', when: { after: 40, kind: ['transit', 'mining', 'contested'] }, repeat: true,
+    id: 'drift_fleet', kind: 'trade', caller: 'miners', when: { after: 40, here: 'drift' }, weight: 4, repeat: true,
     from: 'Drift fleet · the Long Walk', title: 'Forty ships, going nowhere fast',
     text: '“A Drift crossing, hauler. We trade, we talk, we do not fight. What do you need?”',
     lines: [
@@ -753,7 +753,7 @@ export const CARDS: CardDef[] = [
     ],
   },
   {
-    id: 'holdout', kind: 'plea', caller: 'miners', when: { after: 60, netted: false, kind: ['mining', 'port', 'contested'] }, weight: 1.2, repeat: true,
+    id: 'holdout', kind: 'plea', caller: 'miners', when: { after: 60, netted: false, kind: ['mining', 'port', 'contested'] }, weight: 1.2, boost: { if: { here: 'holdfast' }, mult: 3 }, repeat: true,
     from: 'A claim settlement · the Holdfast', title: 'Help us hold out',
     text: '“The Custody survey boats were here this morning. When the Net reaches us, we lose the claim and everyone on it. Krail for our shield generator would keep them out a while.”',
     lines: [{ if: { standing: ['miners', 2] }, text: '“The miners say you are one of us.”' }],
@@ -766,6 +766,40 @@ export const CARDS: CardDef[] = [
       { id: 'krail', label: 'Give six Krail', tone: 'help', hint: 'The Net stalls here for days. The Krail is gone.', cost: { krail: 6 }, loseIf: ['sold'], win: { text: 'The generator lights · the Net will stall here', stall: 3, standing: { miners: 2 }, score: 1500 }, lose: { text: 'They take the Krail and sell your position', heat: 0.2, hunt: -0.5 } },
       { id: 'parts', label: 'Give eight parts', tone: 'help', hint: 'Not as good as Krail, but it holds a while.', cost: { parts: 8 }, win: { text: 'Parts across · they will hold a little longer', stall: 1.5, standing: { miners: 1 } } },
       { id: 'no', label: 'You cannot help', tone: 'refuse', hint: 'Everybody out here needs something.', win: { text: 'The channel closes' } },
+    ],
+  },
+  // the Scatter's own (sim/scatter.ts): who is in the system decides
+  {
+    id: 'thren_smell', kind: 'warning', caller: 'unknown', when: { after: 25, here: 'thren', krail: 8 }, weight: 2.5, repeat: true,
+    from: 'Your own sensors', title: 'The Thren smell Krail',
+    text: 'Something is closing on the Krail in your tank.',
+    ships: [{ variant: 'mote', n: 4 }], cargo: 'A Thren swarm · drawn to Krail',
+    choices: [
+      { id: 'vent', label: 'Vent five Krail', tone: 'pay', hint: 'They take it and leave you be a while.', cost: { krail: 5 }, win: { text: 'The swarm feeds on the Krail and drifts off', calm: 90 } },
+      { id: 'fight', label: 'Meet them', tone: 'fight', hint: 'They come now.', win: { text: 'The swarm comes', spawn: [{ variant: 'mote', n: 4, from: 'ahead' }] } },
+      { id: 'run', label: 'Burn for the lane', tone: 'run', hint: 'They will follow.', win: { text: 'The Thren follow your wake' } },
+    ],
+  },
+  {
+    id: 'voice_ask', kind: 'shakedown', caller: 'unknown', when: { after: 40, here: 'voice' }, weight: 2, repeat: true,
+    from: 'The Voice', title: 'A foundry asks',
+    text: '“Ore. For passage.”',
+    ships: [{ variant: 'drone', n: 1 }, { variant: 'probe', n: 1 }], cargo: 'A foundry · its keepers',
+    choices: [
+      { id: 'ore', label: 'Give ten ore', tone: 'pay', hint: 'They let you pass.', needs: { ore: 10 }, cost: { ore: 10 }, win: { text: 'The foundry takes the ore · you may pass', notice: { voice: -3 } } },
+      { id: 'parts', label: 'Give four parts', tone: 'trade', hint: 'They want what you are made of.', cost: { parts: 4 }, win: { text: 'The foundry takes the parts · you may pass', notice: { voice: -3 } } },
+      { id: 'no', label: 'Refuse', tone: 'fight', hint: 'The keepers come for you.', win: { text: 'The keepers come', spawn: [{ variant: 'drone', n: 1, from: 'ahead' }, { variant: 'probe', n: 1, from: 'ahead' }] } },
+    ],
+  },
+  {
+    id: 'gutter_raid', kind: 'shakedown', caller: 'gutter', when: { after: 35, here: 'raid' }, weight: 2, repeat: true,
+    from: 'Gutter raiders', title: 'A raid on',
+    text: '“Keep out of it, hauler. Or join in.”',
+    ships: [{ variant: 'raptor', n: 1 }, { variant: 'scout', n: 2 }], cargo: 'A raiding party · fresh plunder',
+    choices: [
+      { id: 'join', label: 'Join in', tone: 'trade', hint: 'A cut of the plunder. The locals will remember.', win: { text: 'Your cut: thirty chits and some stores', chits: 30, food: 1, standing: { gutter: 1, miners: -1 } } },
+      { id: 'out', label: 'Keep out', tone: 'refuse', hint: 'Not your fight.', win: { text: 'The raiders let you be' } },
+      { id: 'fight', label: 'Drive them off', tone: 'fight', hint: 'The locals will thank you.', win: { text: 'The raiders turn on you', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }], standing: { miners: 1, gutter: -1 } } },
     ],
   },
   {

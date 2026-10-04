@@ -129,8 +129,14 @@ export interface SortieDef {
   /** The rock: veined share and density. */
   rich: number;
   density: number;
-  /** Of the pursuit, the share that is Gutter crews from ahead. */
+  /** Of the pursuit, the share that comes from ahead: Gutter crews, or whoever holds the system. */
   gutter: number;
+  /** Who comes from ahead, as variant ids, where it is not the Gutter (a Voice system, Thren space). */
+  ahead?: string[];
+  /** Thren in the system, 0 to 1: they swarm, drawn by the Krail aboard (sim/world.ts). */
+  thren?: number;
+  /** Who else is here, for the cards (sim/scatter.ts presence): 'drift', 'holdfast', 'raid', 'voice', 'thren'. */
+  here?: string[];
   /** A multiplier on the gap between chance calls. */
   calls: number;
   /** A Custody blockade holds the lane mouth (Cerro, and every netted system). */
@@ -213,14 +219,31 @@ const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [
 ];
 const GUTTER = ['scout', 'scout', 'raptor'];
 
-/** Which hull comes next, and whether it is Custody from behind or a Gutter crew from ahead. */
-export function pickPursuer(heat: number, rng: Rng, gutter = 0.22): { variant: string; ahead: boolean } {
-  if (heat < 0.6 && rng.next() < gutter) return { variant: GUTTER[rng.int(GUTTER.length)]!, ahead: true };
+/** Which hull comes next, and whether it is Custody from behind or a crew from ahead (the Gutter's, or `ahead`'s). */
+export function pickPursuer(heat: number, rng: Rng, gutter = 0.22, ahead: readonly string[] = GUTTER): { variant: string; ahead: boolean } {
+  if (heat < 0.6 && rng.next() < gutter) return { variant: ahead[rng.int(ahead.length)]!, ahead: true };
   const pool = PURSUERS.filter((p) => p.from <= heat);
   let roll = rng.next() * pool.reduce((a, p) => a + p.weight, 0);
   for (const p of pool) if ((roll -= p.weight) <= 0) return { variant: p.variant, ahead: false };
   return { variant: pool[pool.length - 1]!.variant, ahead: false };
 }
+
+// ── the Thren ─────────────────────────────────────────────────────────────
+// Where the chart has Thren (sim/scatter.ts), they swarm: a knot of motes,
+// with a web layer once they are thick, drawn by the Krail aboard. The
+// fuller the tank, the sooner and the oftener they come. Near them,
+// sensors and navigation go strange: the scope fills with static and the
+// lane mouth will not hold still (World.navNoise).
+
+/** Seconds to the first swarm, and between swarms, with an empty tank in thin Thren and a full one in thick; Krail aboard divides it. */
+export const SWARM_FIRST = 50;
+export const swarmGap = (thren: number, krail: number) => lerp(110, 40, clamp(thren, 0, 1)) / (0.5 + clamp(krail / TANK_MAX, 0, 1));
+/** Motes in a swarm, and the Thren at which a web layer leads it. */
+export const swarmSize = (thren: number) => 3 + Math.round(clamp(thren, 0, 1) * 3);
+export const SWARM_WEAVER = 0.6;
+/** Within this of a Thren hull, sensors and navigation scramble; the drive spools this much slower at full noise. */
+export const THREN_JAM = 80;
+export const JAM_SPOOL = 0.5;
 
 // ── what rock gives ───────────────────────────────────────────────────────
 // Cut clean, a rock gives all of this; broken by the guns, only scraps.
@@ -275,6 +298,8 @@ export interface Breakout {
   prices: Prices;
   heat: number;
   nextPursuit: number;
+  /** When the next Thren swarm comes (Infinity: no Thren here). */
+  nextSwarm: number;
   /** Seconds the drive has spooled inside the lane mouth, and the seconds it needs. */
   spool: number;
   spoolNeed: number;
@@ -295,7 +320,7 @@ export interface Breakout {
 export function newBreakout(heading: number, def: SortieDef = HOME): Breakout {
   const c = course(heading, 0, 0, def);
   return {
-    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: PURSUIT_FIRST, spool: 0, spoolNeed: SPOOL, dockT: 0, portCooled: false, docks: 0,
+    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: PURSUIT_FIRST, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }

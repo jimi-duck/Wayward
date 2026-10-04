@@ -1,7 +1,6 @@
 import { angleDelta } from '../core/math';
 import type { Sector } from '../render/sector';
 import { ALIEN_TYPES, cloaked, FIRE_RANGE } from '../sim/enemies';
-import { places } from '../sim/breakout';
 import { LOOSE } from '../sim/pickups';
 import type { World } from '../sim/world';
 import { FONT, INK, RGB, rgba } from './palette';
@@ -110,7 +109,7 @@ export class Radar {
     // the Breakout's two places, always: a diamond on the ring along each one's bearing (amber the lane, teal the port)
     const bk = world.bk;
     if (bk) {
-      for (const wp of places(bk)) {
+      for (const wp of world.seenPlaces()) {
         const a = at(Math.atan2(-(wp.z - s.z), wp.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 4 * dpr;
         g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(Math.PI / 4);
         g.fillStyle = wp.kind === 'lane' ? INK.amber : INK.teal;
@@ -162,7 +161,7 @@ export class Radar {
     }
     // the port and the lane mouth, when they are in the scope's reach
     if (bk) {
-      for (const wp of places(bk)) {
+      for (const wp of world.seenPlaces()) {
         const [x, y, out] = to(wp.x, wp.z);
         if (out) continue;
         g.strokeStyle = wp.kind === 'lane' ? INK.amber : INK.teal; g.lineWidth = 1.5 * dpr;

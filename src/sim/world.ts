@@ -10,7 +10,7 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_KRAIL, CAPITAL_PARTS, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
-  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
+  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   ORE_XP, rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
@@ -403,9 +403,21 @@ export class World implements EncounterHost {
     return this.modDamage * this.stats.dmgAll;
   }
 
-  /** Sensors are down (the nebula): shorter radar and locks. */
+  /** Sensors are down (the nebula, or the Thren close by): shorter radar and locks. */
   get sensorsDown(): boolean {
-    return this.encounter?.id === 'nebula' && !this.encounter.done;
+    return (this.encounter?.id === 'nebula' && !this.encounter.done) || this.navNoise > 0.3;
+  }
+
+  /** How scrambled navigation is, 0 to 1: Thren hulls close by make the lane mouth swim on the scope and the drive spool slow. */
+  navNoise = 0;
+
+  /** The places as the scope shows them: the lane mouth wanders while the Thren scramble navigation. */
+  seenPlaces(): Waypoint[] {
+    const b = this.bk;
+    if (!b) return [];
+    if (this.navNoise <= 0) return places(b);
+    const t = this.runTime, n = this.navNoise * 60;
+    return places(b).map((w) => (w.kind === 'lane' ? { ...w, x: w.x + Math.sin(t * 1.3) * n, z: w.z + Math.cos(t * 0.9) * n } : w));
   }
 
   // ── the step ──────────────────────────────────────────────────────────
@@ -450,7 +462,7 @@ export class World implements EncounterHost {
       this.field.spawnRare(s.x, s.z, s.heading);
       this.nextRare = t + this.rng.range(70, 110) / st.rareRate;
     }
-    if (this.bk) this.pursue(t);
+    if (this.bk) { this.pursue(t); this.swarm(t); this.jam(dt); }
     else this.spawn(t, p);
     this.stepAliens(dt, t, p);
     const before = this.command.state;
@@ -606,7 +618,7 @@ export class World implements EncounterHost {
     if (dl < b.lane.r) {
       if (this.krail >= b.jumpCost && this.phase === 'play') {
         if (b.spool === 0) this.events.push({ type: 'spool' });
-        b.spool += dt;
+        b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
         if (b.spool >= b.spoolNeed) this.jump();
       } else if (b.nagT <= 0) {
         b.nagT = 6;
@@ -622,7 +634,7 @@ export class World implements EncounterHost {
     if (cs === 'fight' || cs === 'inbound' || cs === 'hailing' || t < b.nextPursuit) return;
     const regular = this.aliens.filter((a) => !a.escort && !a.extra).length;
     if (regular < pursuitCap(b.heat)) {
-      const pick = pickPursuer(b.heat, this.rng, b.def.gutter);
+      const pick = pickPursuer(b.heat, this.rng, b.def.gutter, b.def.ahead);
       const v = VARIANTS[pick.variant]!;
       // behind: the bearing from the lane mouth back past the ship, spread a little
       const home = Math.atan2(-(s.z - b.lane.z), s.x - b.lane.x);
@@ -639,6 +651,36 @@ export class World implements EncounterHost {
     }
     // hunters: a faction that has marked you sends its pursuit oftener
     b.nextPursuit = t + pursuitInterval(b.heat) * b.def.notice.pursuit * this.rng.range(0.8, 1.2);
+  }
+
+  /**
+   * The Thren, where the chart has them: a knot of motes (and a web layer
+   * leading, where they are thick), from any side, sooner and oftener the
+   * more Krail is aboard. They hold off while a capital ship is engaged.
+   */
+  private swarm(t: number): void {
+    const b = this.bk!, s = this.ship, thren = b.def.thren ?? 0;
+    if (t < b.nextSwarm) return;
+    const cs = this.command.state;
+    if (cs === 'fight' || cs === 'inbound' || cs === 'hailing') { b.nextSwarm = t + 10; return; }
+    const a = this.rng.range(0, Math.PI * 2), d = this.rng.range(120, 150);
+    const at = { x: s.x + Math.cos(a) * d, y: this.rng.range(-2, 10), z: s.z - Math.sin(a) * d };
+    const lead = thren >= SWARM_WEAVER ? this.spawnHostile('weaver', at) : null;
+    const n = swarmSize(thren);
+    for (let i = 0; i < n; i++) {
+      const k = (i / n) * Math.PI * 2;
+      const m = this.spawnHostile('mote', { x: at.x + Math.cos(k) * 7, y: at.y + this.rng.range(-2, 3), z: at.z + Math.sin(k) * 7 }, null, true);
+      m.modeT = (lead?.modeT ?? 0) + i * 0.25;
+    }
+    this.events.push({ type: 'squad', label: 'Thren swarm' });
+    b.nextSwarm = t + swarmGap(thren, this.krail) * this.rng.range(0.8, 1.2);
+  }
+
+  /** Navigation scrambles near Thren hulls, and settles once they are gone. */
+  private jam(dt: number): void {
+    const s = this.ship;
+    const near = this.aliens.some((a) => a.faction === 'thren' && Math.hypot(a.x - s.x, a.z - s.z) < THREN_JAM);
+    this.navNoise = near ? Math.min(1, this.navNoise + dt * 0.8) : Math.max(0, this.navNoise - dt * 0.5);
   }
 
   /** A rock cut clean: everything in it falls out for the tractor, and nothing is left to split. */
@@ -851,7 +893,7 @@ export class World implements EncounterHost {
       hostiles: this.aliens.filter((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       food: this.food, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
       notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, captain: this.sortie.notice.captain,
-      wise: this.sortie.nemesis.wise, hunch: this.sortie.nemesis.hunch,
+      wise: this.sortie.nemesis.wise, hunch: this.sortie.nemesis.hunch, here: this.sortie.here,
     };
   }
 
@@ -924,6 +966,7 @@ export class World implements EncounterHost {
     this.food = Math.min(FOOD_MAX, Math.max(0, this.food + amount(out.food, this.food, fee)));
     if (out.hunt) this.huntDelay += out.hunt;
     if (out.stall) this.stall += out.stall;
+    if (b && out.calm) b.nextSwarm = Math.max(b.nextSwarm, this.runTime + out.calm);
     if (out.plates && out.plates > 0) this.repair(out.plates);
     if (out.score) this.addScore(out.score, 'events');
     if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
