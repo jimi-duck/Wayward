@@ -1,7 +1,11 @@
-import { SYSTEMS } from '../content/systems';
-import { FOOD_START, HOME, JUMP_COST, START_KRAIL, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
-  arrive, jumps, lanesFrom, makeChart, netted, pricesAt, pushNet, routeBetween, spreadNet, sysById, type Chart, type StarSystem,
+  DANGER_DAYS, PLACE_COVER, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD, SURVIVORS,
+} from '../content/phenomena';
+import { SYSTEMS } from '../content/systems';
+import { FOOD_START, HOME, JUMP_COST, START_KRAIL, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
+import {
+  arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, routeBetween, sightPlaces, spreadNet, sysById,
+  type Chart, type StarSystem,
 } from './chart';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
@@ -36,6 +40,11 @@ import type { Faction } from './enemies';
 // each sortie raise it, the days let it fade, and what it has risen to goes
 // into the next sortie's SortieDef: cards that know you, dearer fees, a
 // harder pursuit, and at the top a named captain who remembers.
+//
+// Most systems have a place in them (content/phenomena.ts). The sortie
+// plays it once; dealt with, it pays here, in whatever it pays: Krail,
+// salvage, cover from Calloway, a new lane, a survivor, news, or a find
+// that someone else hears about.
 
 /** Seconds of a sortie that make a day. */
 export const DAY = 240;
@@ -51,7 +60,7 @@ export const ADRIFT = 1;
 /** Seconds into a sortie before Calloway can call, if she was already waiting. */
 export const WAITING = 40;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 3;
+export const VERSION = 4;
 
 export type JourneyEnd = 'through' | 'captured' | 'wrecked';
 
@@ -96,6 +105,8 @@ export interface Journey {
   score: number;
   legs: Leg[];
   log: Array<{ day: number; text: string }>;
+  /** The people brought aboard from places (a name and what they do). */
+  people: string[];
   /** Draws from the journey's own generator, so a loaded journey carries on exactly. */
   rolls: number;
 }
@@ -113,7 +124,7 @@ export function newJourney(seed: number, hardcore = false): Journey {
   const chart = makeChart(seed);
   const j: Journey = {
     version: VERSION, seed, hardcore, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), notice: newNotice(), carry: startCarry(),
-    wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
+    wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], people: [], rolls: 0,
   };
   const out = lanesFrom(chart, chart.home);
   j.dest = out[rng(j).int(out.length)]!.to.id;
@@ -136,12 +147,14 @@ export function sortieDef(j: Journey): SortieDef {
   const route = j.dest ? routeBetween(j.chart, s.id, j.dest) : null;
   // Calloway: here already (she calls once you are clear of the arrival), or due in so many days of lingering
   const until = daysUntil(j.hunt, j.chart, j.trail);
+  const p = placeAt(j.chart, s.id), pd = p && PLACES[p.id];
   return {
     system: s.id, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.krail ?? JUMP_COST, lane: s.lane,
     port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
     heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : 1),
     rich: t.rich * (0.6 + s.krail * 0.8), density: t.density, gutter: Math.min(0.8, (net ? t.gutter * 0.5 : t.gutter) + notice.gutter), calls: t.calls,
     blockade: net, netted: net, calloway: until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
+    place: pd ? { name: pd.name, text: pd.text, plays: pd.plays } : null,
   };
 }
 
@@ -152,6 +165,8 @@ export function options(j: Journey) {
     to, route, food: route.days * CREW, netted: j.chart.seenNet.includes(to.id),
     /** Calloway was last seen there (as far as you know). */
     shadow: j.trail[j.hunt.seenIdx] === to.id,
+    /** The place there, as far as you know. */
+    place: placeAt(j.chart, to.id),
   }));
 }
 
@@ -202,6 +217,44 @@ function sight(j: Journey, sure: boolean): void {
   }
 }
 
+/**
+ * The place in `s` was dealt with: mark it and pay it, into the carry `c`.
+ * A new lane opens from `from` (where the Wayward goes next, so it can be
+ * used). Returns lines for the panel.
+ */
+function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
+  const p = j.chart.places[s.id];
+  if (!p || p.done) return [];
+  p.done = true;
+  const d = PLACES[p.id];
+  const head = d.reward === 'unknown' ? `${d.name} · ${d.done}: ${REWARD_WORD[p.reward]}` : `${d.name} · ${d.done}`;
+  const lines = [head];
+  switch (p.reward) {
+    case 'krail': c.krail = Math.min(TANK_MAX, c.krail + PLACE_KRAIL); lines.push(`+${PLACE_KRAIL} Krail`); break;
+    case 'parts': c.parts += PLACE_PARTS; c.kit = { ...c.kit, rig: c.kit.rig + 2, guns: c.kit.guns + 1 }; lines.push(`+${PLACE_PARTS} parts · rig parts and salvage for the yard`); break;
+    case 'cover': j.hunt.delay += PLACE_COVER; lines.push('Calloway loses your trail for a while'); break;
+    case 'shortcut': {
+      const to = openShortcut(j.chart, from);
+      lines.push(to ? `A new lane from ${sysById(j.chart, from).name} to ${to.name}` : 'The lane it showed leads nowhere new');
+      break;
+    }
+    case 'person': {
+      const free = SURVIVORS.filter((n) => !j.people.includes(n));
+      const who = free.length ? free[rng(j).int(free.length)]! : null;
+      if (who) { j.people.push(who); lines.push(`${who} joins the crew`); } else lines.push('They ask to be set down at the next port');
+      break;
+    }
+    case 'info': hearNews(j); sightPlaces(j.chart, s.id, 3); lines.push('The Net’s edge as it is, and the places three jumps round'); break;
+    case 'danger':
+      c.parts += PLACE_PARTS; c.kit = { ...c.kit, signals: c.kit.signals + 2, guns: c.kit.guns + 2 };
+      huntOn(j.hunt, j.chart, j.trail, DANGER_DAYS);
+      lines.push(`+${PLACE_PARTS} parts · signal kit and salvage`, 'Word of it travels · Calloway closes a day');
+      break;
+  }
+  note(j, head);
+  return lines;
+}
+
 export interface Outcome {
   kind: 'jumped' | 'adrift' | JourneyEnd;
   /** What happened, in lines for the panel. */
@@ -221,6 +274,8 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   else if (res.stall < 0) pushNet(j.chart, s.id, -res.stall);
   if (res.calloway) j.hunt.caught++;
   if (res.callowayBeaten) { j.hunt.beaten++; j.hunt.delay += BEATEN_DELAY; lines.push(`Calloway’s ship is crippled · ${BEATEN_DELAY} days of repairs`); }
+  // the system's place, dealt with: it pays now, and any new lane opens from where you go next
+  if (res.place) lines.push(...claim(j, s, res.carry, res.ended === 'jumped' && j.dest ? j.dest : s.id));
   const flags = new Set(res.carry.flags);
   const news = flags.delete('news');
   flags.delete('calloway_beaten');
@@ -286,6 +341,8 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const there = sysById(j.chart, to);
   note(j, `Jumped to ${there.name}`);
   for (const id of fell) if (j.chart.seenNet.includes(id)) lines.push(`The Net has taken ${sysById(j.chart, id).name}`);
+  const place = placeAt(j.chart, to);
+  if (place && there.kind !== 'edge') lines.push(`${PLACES[place.id].name} here · ${PLACES[place.id].blurb}`);
   if (there.kind === 'edge') {
     j.status = 'over';
     j.end = 'through';

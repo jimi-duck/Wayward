@@ -81,6 +81,9 @@ export interface WorldOptions {
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const BOSS_PLATES = 1;
 
+/** Seconds into a sortie before the system's place shows itself. */
+export const PLACE_AT = 30;
+
 export class World implements EncounterHost {
   readonly rng: Rng;
   readonly ids = new Ids();
@@ -229,6 +232,9 @@ export class World implements EncounterHost {
   private captainEnd: Report | null = null;
   /** Notice the sortie's cards moved, by faction. */
   noticeDelta: Partial<Record<Faction, number>> = {};
+  /** The system's place (SortieDef.place): still to come, and how it went once it has. */
+  private placeDue = false;
+  placeWon: boolean | null = null;
 
   constructor(seed = 47, opts: WorldOptions = {}) {
     useIds(this.ids);
@@ -272,6 +278,7 @@ export class World implements EncounterHost {
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.kitIn = noKit(); this.kitSpent = noKit();
+    this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity; return; }
     const def = this.sortie;
     this.bk = newBreakout(this.ship.heading, def);
@@ -347,7 +354,7 @@ export class World implements EncounterHost {
     return {
       ended: this.run.escaped ? 'jumped' : 'destroyed', time: this.runTime, carry: this.carry(), run: this.run,
       calloway: this.callowayMet, callowayBeaten: this.callowayBeaten, huntDelay: this.huntDelay, stall: this.stall,
-      captain: this.captainResult(), notice: { ...this.noticeDelta },
+      captain: this.captainResult(), notice: { ...this.noticeDelta }, place: this.placeWon,
     };
   }
 
@@ -1121,9 +1128,19 @@ export class World implements EncounterHost {
       if (stepEncounter(e, this, dt)) {
         this.run.events++;
         if (e.success) this.run.eventsWon++;
+        if (e.place) this.placeWon = e.success;
         this.encounter = null;
         this.nextEvent = t + eventGap(this.eventN);
       }
+      return;
+    }
+    // the system's own place comes first, a little after arrival, when the sky is clear; the sector's chance events wait for it
+    const place = this.sortie.place;
+    if (this.placeDue && place) {
+      if (this.runTime < PLACE_AT || this.command.state !== 'idle') return;
+      this.placeDue = false;
+      this.encounter = startEncounter(place.plays, this, place);
+      this.lastEvent = place.plays;
       return;
     }
     // only in open sky: no capital ship about, and not just before one
