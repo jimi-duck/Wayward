@@ -169,123 +169,158 @@ function oct(k: Kit, key: string, x0: number, x1: number, w: number, h: number, 
   k.add(key, octGeo(x1 - x0, w, h, taper), [(x0 + x1) / 2, y, z]);
 }
 
-/** A run of plating along X from x0 to x1: segments with dark seams between, mostly painted. */
-function plated(k: Kit, rnd: () => number, x0: number, x1: number, n: number, w: number, h: number, y: number, z: number, bare = 0.25): void {
+/**
+ * A run of armoured skin along X: a charcoal octagonal body, and on the
+ * faces named (angles round X from the top, toward starboard) painted plates
+ * hung on it, segment by segment, framed by the dark body showing between
+ * them. Some plates carry a second plate on top, some faces a recessed
+ * hatch, some are left bare. Proud frames ring the body between segments.
+ */
+function skin(k: Kit, rnd: () => number, x0: number, x1: number, n: number, w: number, h: number, y: number, z: number,
+  faces: readonly number[], paint = 0.7, frames = true, wide = 1): void {
+  oct(k, 'dark', x0, x1, w, h, y, z);
   const step = (x1 - x0) / n;
   for (let i = 0; i < n; i++) {
-    const a = x0 + i * step + 0.02, b = x0 + (i + 1) * step - 0.02;
-    const grow = 1 + (rnd() - 0.5) * 0.06;
-    const pick = rnd();
-    oct(k, pick < bare * 0.55 ? 'dark' : pick < bare ? 'hull' : 'paint', a, b, w * grow, h * grow, y, z);
-    // between segments: a recessed seam, or every so often a frame standing proud
-    const frame = i % 2 === 1;
-    oct(k, 'dark', b - 0.01, b + 0.05, w * (frame ? 1.05 : 0.95), h * (frame ? 1.05 : 0.95), y, z);
-    // a hatch, vent or service plate set into the top
-    if (rnd() < 0.4) {
-      const iw = (b - a) * (0.3 + rnd() * 0.4), id = w * (0.2 + rnd() * 0.3);
-      k.box(rnd() < 0.5 ? 'dark' : 'pipe', [iw, 0.03, id], [a + (b - a) * (0.25 + rnd() * 0.5), y + (h * grow) / 2, z + (rnd() - 0.5) * w * 0.3]);
+    const a = x0 + i * step, b = a + step;
+    if (frames && i > 0 && (i % 2 === 0 || rnd() < 0.3)) oct(k, 'dark', a - 0.035, a + 0.035, w * 1.07, h * 1.07, y, z);
+    for (const f of faces) {
+      const c = Math.cos(f), sn = Math.sin(f);
+      // distance from the axis to that face, and the face's width, on the (non-regular) octagon
+      const rad = Math.hypot((h / 2) * c, (w / 2) * sn), faceW = 0.82 * Math.min(w, h) * Math.tan(Math.PI / 8) * (Math.abs(c) > 0.9 ? w / Math.min(w, h) : Math.abs(sn) > 0.9 ? h / Math.min(w, h) : 1) * wide;
+      const at = (lift: number): V3 => [0, y + (rad + lift) * c, z + (rad + lift) * sn];
+      const pick = rnd();
+      const len = step - 0.07 - rnd() * 0.05, mid = (a + b) / 2 + (rnd() - 0.5) * 0.03;
+      if (pick < paint) {
+        const [, py, pz] = at(0.02);
+        k.box(rnd() < 0.86 ? 'paint' : 'hull', [len, 0.04, faceW], [mid, py, pz], [f, 0, 0]);
+        if (rnd() < 0.3) {
+          const [, qy, qz] = at(0.05);
+          k.box('paint', [len * (0.3 + rnd() * 0.4), 0.03, faceW * 0.6], [mid + (rnd() - 0.5) * len * 0.3, qy, qz], [f, 0, 0]);
+        } else if (rnd() < 0.35) {
+          // a dark service plate or vent set into the paint
+          const [, qy, qz] = at(0.042);
+          k.box(rnd() < 0.5 ? 'pipe' : 'dark', [len * (0.2 + rnd() * 0.25), 0.01, faceW * (0.3 + rnd() * 0.35)], [mid + (rnd() - 0.5) * len * 0.4, qy, qz], [f, 0, 0]);
+        }
+      } else if (pick < paint + 0.15) {
+        const [, py, pz] = at(0.012);
+        k.box('hull', [len * 0.8, 0.025, faceW * 0.85], [mid, py, pz], [f, 0, 0]);
+        for (let g = 0; g < 3; g++) {
+          const [, qy, qz] = at(0.03);
+          k.box('pipe', [len * 0.7, 0.02, faceW * 0.12], [mid, qy - sn * (g - 1) * faceW * 0.25, qz + c * (g - 1) * faceW * 0.25], [f, 0, 0]);
+        }
+      }
     }
   }
 }
 
-/** The central hull: spine, layered deck plating, flank armour, the prow and the bridge. */
+/** Machinery: a cluster of dark housings, tanks and pipe runs at (x, y, z), `size` across. */
+function machinery(k: Kit, rnd: () => number, x: number, y: number, z: number, size: number): void {
+  for (let i = 0; i < 4; i++) {
+    const w = size * (0.3 + rnd() * 0.5), h = size * (0.25 + rnd() * 0.5), d = size * (0.3 + rnd() * 0.5);
+    const p: V3 = [x + (rnd() - 0.5) * size, y + (rnd() - 0.5) * size * 0.5, z + (rnd() - 0.5) * size * 0.6];
+    if (rnd() < 0.3) k.cyl(rnd() < 0.3 ? 'paint' : 'hull', h * 0.5, h * 0.5, w * 1.6, p, 'x', 10);
+    else k.box(rnd() < 0.2 ? 'paint' : 'dark', [w, h, d], p);
+  }
+  k.cyl('pipe', 0.018, 0.018, size * 1.4, [x, y + size * 0.3, z], 'x', 6);
+}
+
+const AROUND = [0, -Math.PI / 4, Math.PI / 4, -Math.PI / 2, Math.PI / 2];
+
+/** The central hull: spine, layered deck plating, flank armour, machinery, the prow and the bridge. */
 function hull(k: Kit, rnd: () => number): void {
   const y = 0.1;
-  // the spine: charcoal structure the plating hangs on
-  oct(k, 'dark', -2.0, 1.55, 1.0, 0.6, y, 0);
-  oct(k, 'hull', -1.85, 1.3, 0.78, 0.3, y - 0.3, 0);
-  // the deck: two layers of painted plate, the upper one narrower, stepped like the boards
-  plated(k, rnd, -1.95, 1.45, 7, 0.92, 0.2, y + 0.3, 0, 0.35);
-  plated(k, rnd, -1.7, 0.95, 5, 0.56, 0.18, y + 0.46, 0, 0.5);
-  // on top of the spine: housings, a heat exchanger, a mast
-  for (const [x, w] of [[-1.45, 0.34], [-0.85, 0.26], [-0.2, 0.3], [0.45, 0.22]] as const) {
-    k.box(rnd() < 0.5 ? 'paint' : 'dark', [w, 0.1 + rnd() * 0.06, 0.3], [x, y + 0.6, (rnd() - 0.5) * 0.1]);
+  // the body: armoured all round, a lighter belly under it
+  skin(k, rnd, -2.0, 1.55, 7, 1.0, 0.64, y, 0, AROUND, 0.62);
+  oct(k, 'hull', -1.85, 1.3, 0.76, 0.3, y - 0.32, 0);
+  // the deck: two stepped tiers on the body, the upper narrower, then the ridge
+  skin(k, rnd, -1.9, 1.35, 6, 0.86, 0.22, y + 0.38, 0, [0], 0.85, true, 1.95);
+  skin(k, rnd, -1.65, 0.95, 5, 0.54, 0.2, y + 0.56, 0, [0], 0.75, true, 1.8);
+  // the ridge: a row of modules down the spine, painted and bare, some stacked
+  for (let x = -1.55; x < 0.8; x += 0.26 + rnd() * 0.12) {
+    const w = 0.16 + rnd() * 0.12, hh = 0.07 + rnd() * 0.1, d = 0.18 + rnd() * 0.14;
+    k.box(rnd() < 0.5 ? 'paint' : 'dark', [w, hh, d], [x, y + 0.66 + hh / 2, (rnd() - 0.5) * 0.08]);
+    if (rnd() < 0.35) k.box('dark', [w * 0.6, 0.05, d * 0.6], [x, y + 0.69 + hh, 0]);
   }
-  for (let i = 0; i < 6; i++) k.box('pipe', [0.03, 0.05, 0.42], [-1.15 + i * 0.07, y + 0.57, 0]);
-  k.greebles('dark', rnd, -1.6, 0.8, -0.2, 0.2, y + 0.55, 14, 0.07);
-  k.cyl('pipe', 0.012, 0.016, 0.42, [-0.55, y + 0.78, 0.12], 'y', 6);
-  k.cyl('pipe', 0.01, 0.01, 0.3, [0.3, y + 0.72, -0.1], 'y', 6);
-  // flank armour: painted plates, some hung slightly proud, with dark gaps
+  for (let i = 0; i < 7; i++) k.box('pipe', [0.03, 0.05, 0.36], [-1.2 + i * 0.07, y + 0.68, 0]);
+  k.greebles('dark', rnd, -1.6, 0.8, -0.22, 0.22, y + 0.66, 18, 0.06);
+  k.cyl('pipe', 0.012, 0.016, 0.46, [-0.55, y + 0.9, 0.12], 'y', 6);
+  k.cyl('pipe', 0.01, 0.01, 0.34, [0.3, y + 0.84, -0.1], 'y', 6);
+  // flank detail: conduit, and machinery hung where the pods' pylons meet
   for (const s of [-1, 1]) {
-    for (let i = 0; i < 6; i++) {
-      const x = -1.75 + i * 0.52 + rnd() * 0.04, len = 0.4 + rnd() * 0.08;
-      k.box(rnd() < 0.72 ? 'paint' : 'hull', [len, 0.26, 0.05], [x, y + 0.04, s * (0.5 + rnd() * 0.02)], [s * 0.08, 0, 0]);
-      if (rnd() < 0.5) k.box('dark', [len * 0.5, 0.06, 0.03], [x, y - 0.14, s * 0.52]);
-    }
-    // conduit along the flank, under the armour
-    k.cyl('pipe', 0.025, 0.025, 3.3, [-0.2, y - 0.17, s * 0.47], 'x', 6);
-    k.cyl('pipe', 0.018, 0.018, 3.0, [-0.3, y - 0.22, s * 0.44], 'x', 6);
+    k.cyl('pipe', 0.025, 0.025, 3.3, [-0.2, y - 0.2, s * 0.47], 'x', 6);
+    k.cyl('pipe', 0.018, 0.018, 3.0, [-0.3, y - 0.25, s * 0.43], 'x', 6);
+    for (const x of [-1.55, -0.85, -0.15, 0.6]) machinery(k, rnd, x, y - 0.02, s * 0.6, 0.28);
   }
-  // the prow: a long wedge, painted plate over a dark chin
-  oct(k, 'paint', 1.5, 2.25, 0.96, 0.56, y + 0.04, 0, 0.42);
-  oct(k, 'dark', 1.5, 2.2, 0.8, 0.3, y - 0.18, 0, 0.5);
-  k.wedge('paint', [[1.45, 0.42], [2.15, 0.16], [2.15, -0.16], [1.45, -0.42]], 0.12, [0, y + 0.32, 0]);
+  // the prow: a long wedge of plate over a dark chin, a sensor nose
+  oct(k, 'paint', 1.5, 2.25, 0.96, 0.6, y + 0.04, 0, 0.42);
+  oct(k, 'dark', 1.55, 2.0, 0.98, 0.5, y + 0.0, 0, 0.5);
+  oct(k, 'dark', 1.5, 2.2, 0.8, 0.3, y - 0.2, 0, 0.5);
+  k.wedge('paint', [[1.45, 0.42], [2.15, 0.16], [2.15, -0.16], [1.45, -0.42]], 0.12, [0, y + 0.34, 0]);
+  k.wedge('dark', [[1.5, 0.3], [2.0, 0.1], [2.0, -0.1], [1.5, -0.3]], 0.08, [0, y + 0.42, 0]);
   oct(k, 'dark', 2.22, 2.42, 0.4, 0.22, y + 0.02, 0, 0.6);
+  for (const s of [-1, 1]) k.box('paint', [0.5, 0.2, 0.04], [1.82, y + 0.04, s * 0.38], [0, s * 0.33, 0]);
   // the bridge: recessed into the prow, a band of dark glass under a brow
-  k.box('dark', [0.34, 0.12, 0.66], [1.3, y + 0.45, 0]);
-  k.box('window', [0.06, 0.07, 0.58], [1.49, y + 0.42, 0], [0, 0, -0.5]);
-  for (const z of [-0.2, 0, 0.2]) k.box('dark', [0.07, 0.08, 0.02], [1.49, y + 0.42, z], [0, 0, -0.5]);
-  k.box('paint', [0.3, 0.04, 0.7], [1.36, y + 0.52, 0]);
-  // floodlights under the prow
-  for (const z of [-0.18, 0.18]) k.box('lamp', [0.03, 0.03, 0.08], [2.1, y - 0.12, z]);
+  k.box('dark', [0.34, 0.14, 0.66], [1.3, y + 0.5, 0]);
+  k.box('window', [0.06, 0.07, 0.58], [1.49, y + 0.48, 0], [0, 0, -0.5]);
+  for (const z of [-0.2, 0, 0.2]) k.box('dark', [0.07, 0.08, 0.02], [1.49, y + 0.48, z], [0, 0, -0.5]);
+  k.box('paint', [0.3, 0.04, 0.7], [1.36, y + 0.58, 0]);
+  for (const z of [-0.18, 0.18]) k.box('lamp', [0.03, 0.03, 0.08], [2.1, y - 0.14, z]);
   // the stern: a cargo face, no drive: three plates, the big hull number on each
-  k.box('dark', [0.14, 0.62, 1.04], [-2.04, y, 0]);
-  k.box('dark', [0.16, 0.3, 0.32], [-2.1, y + 0.02, 0]);
-  for (const z of [-0.34, 0.34]) k.box('paint', [0.06, 0.4, 0.3], [-2.13, y + 0.02, z]);
-  k.box('paint', [0.04, 0.24, 0.26], [-2.19, y + 0.02, 0]);
-  for (const z of [-0.34, 0, 0.34]) k.decal('decal', DECAL.n03, 0.2, 0.2, [z === 0 ? -2.216 : -2.165, y + 0.04, z], AFT, UP);
-  k.box('paint', [0.06, 0.08, 0.98], [-2.08, y + 0.35, 0]);
-  k.decal('decal', DECAL.hazard, 0.5, 0.06, [-2.112, y + 0.35, 0], AFT, UP);
-  // the name on the prow's shoulders, the registry under the bridge
-  k.decal('decal', DECAL.name, 0.62, 0.09, [1.82, y + 0.385, 0], UP, FWD);
-  for (const s of [-1, 1]) k.decal('decal', DECAL.reg, 0.7, 0.09, [0.4, y + 0.04, s * 0.531], [0, 0, s], UP);
-  k.decal('decal', DECAL.n17, 0.2, 0.2, [-0.95, y + 0.561, 0], UP, FWD);
+  k.box('dark', [0.16, 0.7, 1.06], [-2.05, y + 0.02, 0]);
+  k.box('dark', [0.16, 0.34, 0.32], [-2.11, y + 0.02, 0]);
+  for (const z of [-0.34, 0.34]) k.box('paint', [0.06, 0.42, 0.3], [-2.14, y + 0.02, z]);
+  k.box('paint', [0.04, 0.26, 0.26], [-2.2, y + 0.02, 0]);
+  for (const z of [-0.34, 0, 0.34]) k.decal('decal', DECAL.n03, 0.2, 0.2, [z === 0 ? -2.226 : -2.175, y + 0.04, z], AFT, UP);
+  k.box('paint', [0.06, 0.08, 0.98], [-2.09, y + 0.4, 0]);
+  k.decal('decal', DECAL.hazard, 0.5, 0.06, [-2.122, y + 0.4, 0], AFT, UP);
+  for (const z of [-0.42, 0.42]) k.box('dark', [0.1, 0.5, 0.06], [-2.15, y + 0.02, z * 1.18]);
+  // the name on the prow's shoulders, the registry on the flanks
+  k.decal('decal', DECAL.name, 0.62, 0.09, [1.82, y + 0.405, 0], UP, FWD);
+  for (const s of [-1, 1]) k.decal('decal', DECAL.reg, 0.6, 0.08, [0.35, y + 0.0, s * 0.565], [0, 0, s], UP);
+  k.decal('decal', DECAL.n17, 0.18, 0.18, [-0.95, y + 0.695, 0.02], UP, FWD);
   // red marker lamps along the spine and on the stern corners
-  for (const [x, yy, z] of [[-2.1, y + 0.3, 0.5], [-2.1, y + 0.3, -0.5], [0.95, y + 0.58, 0.24], [-0.1, y + 0.66, 0], [-2.1, y - 0.28, 0]] as const) {
+  for (const [x, yy, z] of [[-2.12, y + 0.34, 0.5], [-2.12, y + 0.34, -0.5], [0.95, y + 0.68, 0.24], [-0.1, y + 0.82, 0], [-2.12, y - 0.3, 0]] as const) {
     k.box('red', [0.035, 0.035, 0.035], [x, yy, z]);
   }
 }
 
-/** An engine pod on its pylons: long, octagonal, plated, its drive astern. Returns the nozzle. */
+/** An engine pod on its pylons: long, octagonal, armoured, its drive astern in a heavy housing. Returns the nozzle. */
 function pod(k: Kit, rnd: () => number, z: number): Nozzle {
-  const s = Math.sign(z), y = 0.02, w = 0.82, h = 0.78;
-  // the barrel: plated segments, the nose cap tapered
-  plated(k, rnd, -1.55, 0.7, 5, w, h, y, z, 0.45);
+  const s = Math.sign(z), y = 0.02, w = 0.84, h = 0.8;
+  // the barrel: plates on the top, the upper chamfers and the outboard flank; the inboard side left to the machinery
+  skin(k, rnd, -1.5, 0.7, 5, w, h, y, z, [0, -Math.PI / 4, Math.PI / 4, s * Math.PI / 2, s * Math.PI * 0.75], 0.68);
   oct(k, 'dark', 0.7, 1.05, w * 0.94, h * 0.94, y, z, 0.62);
   oct(k, 'hull', 1.05, 1.13, w * 0.56, h * 0.56, y, z, 0.8);
-  // an armoured spine of plates along the top and the outboard flank
-  for (let i = 0; i < 4; i++) {
-    const x = -1.35 + i * 0.52;
-    k.box(rnd() < 0.7 ? 'paint' : 'dark', [0.44, 0.06, 0.34], [x, y + h / 2 + 0.03, z]);
-    k.box(rnd() < 0.6 ? 'paint' : 'hull', [0.44, 0.3, 0.05], [x + 0.04, y, z + s * (w / 2 + 0.02)]);
+  for (const x of [0.78, 0.92]) oct(k, 'pipe', x - 0.015, x + 0.015, w * 0.92, h * 0.92, y, z, 0.9);
+  k.greebles('dark', rnd, -1.4, 0.5, z - 0.12, z + 0.12, y + h / 2 + 0.05, 10, 0.07);
+  k.cyl('pipe', 0.022, 0.022, 2.1, [-0.45, y + h / 2 + 0.03, z - s * 0.26], 'x', 6);
+  // the drive housing: heavier than the barrel, ribbed, the throat deep in it
+  oct(k, 'dark', -2.05, -1.5, w * 1.16, h * 1.18, y, z);
+  for (const x of [-1.56, -1.7, -1.84, -1.98]) oct(k, 'hull', x - 0.025, x + 0.025, w * 1.24, h * 1.26, y, z);
+  for (const f of [0, -Math.PI / 4, Math.PI / 4]) {
+    const rad = (h * 1.26) / 2 + 0.01;
+    k.box('paint', [0.1, 0.03, w * 0.34], [-1.77, y + rad * Math.cos(f), z + rad * Math.sin(f)], [f, 0, 0]);
   }
-  k.greebles('dark', rnd, -1.45, 0.5, z - 0.12, z + 0.12, y + h / 2 + 0.06, 8, 0.07);
-  k.cyl('pipe', 0.022, 0.022, 2.1, [-0.45, y + h / 2 + 0.02, z - s * 0.24], 'x', 6);
-  // the drive housing: heavier, dark, ribbed, the bell recessed in it
-  oct(k, 'dark', -2.0, -1.55, w * 1.1, h * 1.12, y, z);
-  for (const x of [-1.62, -1.78, -1.93]) oct(k, 'hull', x - 0.02, x + 0.02, w * 1.15, h * 1.17, y, z);
-  const r = 0.35;
-  k.cyl('dark', r * 0.92, r * 1.08, 0.24, [-2.0, y, z], 'x', 32, true);
-  k.ring('hull', r * 1.06, 0.035, [-2.11, y, z], 'x', 36);
-  k.ring('dark', r * 0.7, 0.02, [-2.03, y, z], 'x', 30);
-  // hazard bands by the drive, the registry on the outboard side
-  k.decal('decal', DECAL.hazard, 0.36, 0.08, [-1.42, y + 0.15, z + s * (w / 2 + 0.046)], [0, 0, s], UP);
-  k.decal('decal', DECAL.n9f, 0.2, 0.2, [-0.55, y + h / 2 + 0.065, z], UP, FWD);
-  // the pylons: two heavy struts and a pipe bundle to the hull
+  const r = 0.3;
+  oct(k, 'pipe', -2.13, -2.03, w * 1.02, h * 1.04, y, z);
+  k.cyl('dark', r * 1.1, r * 1.25, 0.3, [-2.02, y, z], 'x', 32, true);
+  k.ring('dark', r * 1.22, 0.05, [-2.17, y, z], 'x', 36);
+  k.ring('pipe', r * 0.82, 0.025, [-2.06, y, z], 'x', 30);
+  k.ring('pipe', r * 0.55, 0.02, [-2.03, y, z], 'x', 24);
+  // hazard bands by the drive, a number on the top
+  k.decal('decal', DECAL.hazard, 0.36, 0.08, [-1.36, y + 0.12, z + s * (w / 2 + 0.065)], [0, 0, s], UP);
+  k.decal('decal', DECAL.n9f, 0.18, 0.18, [-0.55, y + h / 2 + 0.045, z], UP, FWD);
+  // the pylons: two heavy struts and a pipe bundle to the hull, machinery on them
   const span = Math.abs(z) - w / 2 - 0.46;
   for (const x of [-1.1, 0.15]) {
-    k.box('dark', [0.26, 0.12, span + 0.1], [x, y + 0.08, s * (0.46 + span / 2)]);
-    k.box('hull', [0.18, 0.06, span + 0.1], [x, y + 0.17, s * (0.46 + span / 2)]);
+    k.box('dark', [0.28, 0.14, span + 0.12], [x, y + 0.08, s * (0.46 + span / 2)]);
+    k.box('hull', [0.2, 0.06, span + 0.12], [x, y + 0.18, s * (0.46 + span / 2)]);
   }
-  k.cyl('pipe', 0.03, 0.03, span + 0.1, [-0.48, y - 0.05, s * (0.46 + span / 2)], 'z', 6);
-  k.cyl('pipe', 0.03, 0.03, span + 0.1, [-0.4, y - 0.05, s * (0.46 + span / 2)], 'z', 6);
-  // machinery on the pylons: tanks, a pump housing, the drive's feed
-  k.box('dark', [0.5, 0.2, span * 0.6], [-0.48, y + 0.2, s * (0.48 + span * 0.45)]);
-  k.cyl('hull', 0.09, 0.09, 0.5, [-0.48, y + 0.36, s * (0.5 + span * 0.3)], 'x', 10);
-  k.cyl('paint', 0.07, 0.07, 0.34, [0.15, y + 0.3, s * (0.5 + span * 0.5)], 'x', 10);
-  // a red lamp on the drive housing, top outboard
-  k.box('red', [0.035, 0.035, 0.035], [-1.75, y + h / 2 + 0.06, z + s * 0.2]);
-  return { p: [-2.12, y, z], r: r * 0.95 };
+  for (const dx of [-0.08, 0, 0.08]) k.cyl('pipe', 0.025, 0.025, span + 0.12, [-0.45 + dx, y - 0.06, s * (0.46 + span / 2)], 'z', 6);
+  machinery(k, rnd, -0.45, y + 0.2, s * (0.48 + span / 2), 0.3);
+  k.box('red', [0.035, 0.035, 0.035], [-1.77, y + (h * 1.26) / 2 + 0.03, z + s * 0.22]);
+  k.box('red', [0.03, 0.03, 0.03], [0.95, y + 0.1, z + s * (w / 2)]);
+  return { p: [-2.16, y, z], r: r * 1.05 };
 }
 
 const STRETCH = 1.2;
@@ -577,7 +612,7 @@ export class ShipView {
 
     const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05, hot = this.status.overload ? 1.6 : 1;
     this.discMat.color.copy(this.bell).multiplyScalar((0.3 + 0.35 * h) * hot);
-    this.rimMat.color.copy(this.bell).multiplyScalar((0.55 + 0.6 * h) * flick * hot);
+    this.rimMat.color.copy(this.bell).multiplyScalar((0.22 + 0.3 * h) * flick * hot);
     this.coreMat.color.copy(this.core).multiplyScalar((0.22 + 0.5 * h) * flick * hot);
     this.plumeMat.uniforms.uHeat!.value = h;
     this.plumeMat.uniforms.uTime!.value = this.time;
