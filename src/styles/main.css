@@ -1053,6 +1053,7 @@ circle.ch-net { fill: rgba(255, 46, 64, .16); stroke: var(--alert); stroke-width
 .ch-s.out .ch-name { fill: var(--ink); }
 .ch-s.sel .ch-name { fill: var(--amber); }
 .ch-num { font: 700 11px var(--font-mono); fill: var(--amber); }
+.ch-place { fill: #ffd76a; stroke: #1a1408; stroke-width: 0.8; }
 .ch-cal { fill: var(--alert); stroke: #160606; stroke-width: 1; }
 .ch-you { fill: var(--ink); }
 @media (max-width: 900px), (max-height: 520px) {

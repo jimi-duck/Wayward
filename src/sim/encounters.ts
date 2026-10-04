@@ -65,6 +65,8 @@ export interface Encounter {
   /** Seconds to the next lightning strike, the hulk's drift, convoy ids. */
   timer: number;
   ids: number[];
+  /** A place on the chart playing this event (content/phenomena.ts): its name on the banners. */
+  place?: string;
 }
 
 /** What an event needs from the world it runs in. */
@@ -101,9 +103,10 @@ export function pickEncounter(t: number, last: EncounterId | null, unlocked: Rea
   return pool[pool.length - 1]!;
 }
 
-export function startEncounter(id: EncounterId, h: EncounterHost): Encounter {
+/** Start an event; `place`, a place on the chart playing it, with its own name and banner line. */
+export function startEncounter(id: EncounterId, h: EncounterHost, place?: { name: string; text: string }): Encounter {
   const def = ENCOUNTERS[id], s = h.ship, rng = h.rng;
-  const e: Encounter = { id, t: 0, dur: def.duration, x: s.x, z: s.z, r: 0, progress: 0, done: false, success: false, timer: 1, ids: [] };
+  const e: Encounter = { id, t: 0, dur: def.duration, x: s.x, z: s.z, r: 0, progress: 0, done: false, success: false, timer: 1, ids: [], place: place?.name };
   switch (id) {
     case 'rich_field':
       h.field.richBoost = 0.35;
@@ -145,7 +148,7 @@ export function startEncounter(id: EncounterId, h: EncounterHost): Encounter {
       e.r = 3.5;
       break;
   }
-  h.events.push({ type: 'sectorEvent', id, name: def.name, text: def.text });
+  h.events.push({ type: 'sectorEvent', id, name: place?.name ?? def.name, text: place?.text ?? def.text });
   return e;
 }
 
@@ -236,7 +239,7 @@ function finish(e: Encounter, h: EncounterHost, success: boolean): true {
     case 'nebula': text = 'Sensors restored'; break;
     case 'anomaly': text = 'The anomaly collapses'; h.addScore(600); break;
   }
-  h.events.push({ type: 'sectorEventEnd', id: e.id, name: def.name, text, success });
+  h.events.push({ type: 'sectorEventEnd', id: e.id, name: e.place ?? def.name, text, success });
   return true;
 }
 

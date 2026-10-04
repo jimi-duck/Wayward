@@ -7,7 +7,7 @@ import { UPGRADES } from '../src/content/upgrades';
 import { HOLD_START, PATCH_COST, PRICE } from '../src/sim/breakout';
 import { computeStats } from '../src/sim/build';
 import { CARD_BY_ID as CARDS_BY_ID, choiceView, sensors, yourStrength, type Ctx } from '../src/sim/comms';
-import { newJourney } from '../src/sim/journey';
+import { newJourney, VERSION } from '../src/sim/journey';
 import {
   CAPITAL_SALVAGE, discounted, earned, effects, fitCost, fitNeeds, hasFitted, JOB_FAVOURS, LISTENER_KIT, mainSystem, noKit, systemMarks,
 } from '../src/sim/modules';
@@ -174,7 +174,7 @@ describe('the save', () => {
     j.version = 2;
     delete j.carry.kit;
     const m = migrate(JSON.parse(JSON.stringify(j)));
-    expect(m?.version).toBe(3);
+    expect(m?.version).toBe(VERSION);
     expect(m?.carry.kit).toEqual(noKit());
     expect(MODULE_BY_ID.md_racks).toBeDefined();
   });
