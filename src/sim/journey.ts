@@ -1,5 +1,5 @@
 import {
-  DANGER_DAYS, PLACE_COVER, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD, SURVIVORS,
+  DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
 } from '../content/phenomena';
 import { SYSTEMS } from '../content/systems';
 import { FOOD_START, HOME, JUMP_COST, START_KRAIL, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
@@ -43,7 +43,7 @@ import type { Faction } from './enemies';
 //
 // Most systems have a place in them (content/phenomena.ts). The sortie
 // plays it once; dealt with, it pays here, in whatever it pays: Krail,
-// salvage, cover from Calloway, a new lane, a survivor, news, or a find
+// salvage, cover from Calloway, a new lane, a favour owed, news, or a find
 // that someone else hears about.
 
 /** Seconds of a sortie that make a day. */
@@ -105,8 +105,6 @@ export interface Journey {
   score: number;
   legs: Leg[];
   log: Array<{ day: number; text: string }>;
-  /** The people brought aboard from places (a name and what they do). */
-  people: string[];
   /** Draws from the journey's own generator, so a loaded journey carries on exactly. */
   rolls: number;
 }
@@ -124,7 +122,7 @@ export function newJourney(seed: number, hardcore = false): Journey {
   const chart = makeChart(seed);
   const j: Journey = {
     version: VERSION, seed, hardcore, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), notice: newNotice(), carry: startCarry(),
-    wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], people: [], rolls: 0,
+    wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
   };
   const out = lanesFrom(chart, chart.home);
   j.dest = out[rng(j).int(out.length)]!.to.id;
@@ -238,12 +236,7 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
       lines.push(to ? `A new lane from ${sysById(j.chart, from).name} to ${to.name}` : 'The lane it showed leads nowhere new');
       break;
     }
-    case 'person': {
-      const free = SURVIVORS.filter((n) => !j.people.includes(n));
-      const who = free.length ? free[rng(j).int(free.length)]! : null;
-      if (who) { j.people.push(who); lines.push(`${who} joins the crew`); } else lines.push('They ask to be set down at the next port');
-      break;
-    }
+    case 'favour': c.chits += PLACE_CHITS; c.kit = { ...c.kit, contacts: c.kit.contacts + 2 }; lines.push(`+${PLACE_CHITS} chits · favours owed for the yard`); break;
     case 'info': hearNews(j); sightPlaces(j.chart, s.id, 3); lines.push('The Net’s edge as it is, and the places three jumps round'); break;
     case 'danger':
       c.parts += PLACE_PARTS; c.kit = { ...c.kit, signals: c.kit.signals + 2, guns: c.kit.guns + 2 };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
-import { PLACES, PLACE_KRAIL, type PlaceId, type Reward } from '../src/content/phenomena';
+import { PLACES, PLACE_CHITS, PLACE_KRAIL, type PlaceId, type Reward } from '../src/content/phenomena';
 import { TANK_MAX, type SortieResult } from '../src/sim/breakout';
 import { layPlaces, makeChart, openShortcut, placeAt, routeBetween, sysById } from '../src/sim/chart';
 import { endSortie, newJourney, options, plot, sortieDef, VERSION, type Journey } from '../src/sim/journey';
@@ -61,7 +61,7 @@ describe('places on the chart', () => {
     }
     expect(empty / total).toBeGreaterThan(0.15);
     expect(empty / total).toBeLessThan(0.6);
-    expect([...rewards].sort()).toEqual(['cover', 'danger', 'info', 'krail', 'parts', 'person', 'shortcut']);
+    expect([...rewards].sort()).toEqual(['cover', 'danger', 'favour', 'info', 'krail', 'parts', 'shortcut']);
   });
 
   it('show far ones from the start, and the rest once within sight', () => {
@@ -123,11 +123,12 @@ describe('a place in a sortie', () => {
     expect(options(j).some((o) => o.to.id === r.b)).toBe(true);
   });
 
-  it('can bring someone aboard', () => {
-    const j = atPlace('person', 'distress');
+  it('can leave a favour owed', () => {
+    const j = atPlace('favour', 'distress');
     plot(j, options(j)[0]!.to.id);
+    const chits = j.carry.chits;
     endSortie(j, result(j, { place: true }));
-    expect(j.people.length).toBe(1);
+    expect(j.carry.chits).toBe(chits + PLACE_CHITS);
   });
 });
 
@@ -152,10 +153,8 @@ describe('the save', () => {
     const raw = JSON.parse(JSON.stringify(j)) as Record<string, unknown> & { chart: Record<string, unknown> };
     raw.version = 3;
     delete raw.chart.places;
-    delete raw.people;
     const m = migrate(raw);
     expect(m?.version).toBe(VERSION);
-    expect(m?.people).toEqual([]);
     expect(Object.keys(m!.chart.places)).toEqual(Object.keys(j.chart.places));
     expect(m!.chart.places[m!.at]?.seen ?? true).toBe(true);
   });

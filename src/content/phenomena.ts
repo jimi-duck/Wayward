@@ -15,7 +15,8 @@ import type { SystemKind } from './systems';
 //   parts    · salvage: drive parts and kit for the ship's systems.
 //   cover    · somewhere to lose the trail: Calloway is held up.
 //   shortcut · a lane the charts never had, from here two columns on.
-//   person   · someone to bring aboard: a name that stays with the ship.
+//   favour   · someone set safe, and the people who owe you for it: chits
+//              and contacts.
 //   info     · the Net's edge as it is, and the places around you.
 //   danger   · a find worth having, that someone else hears about.
 //
@@ -27,7 +28,7 @@ export type PlaceId =
   | 'ion_storm' | 'nebula' | 'gravity_well' | 'derelict' | 'convoy' | 'distress'
   | 'relay_ruin' | 'strange_signal' | 'voice_foundry' | 'thren_lane';
 
-export type Reward = 'krail' | 'parts' | 'cover' | 'shortcut' | 'person' | 'info' | 'danger';
+export type Reward = 'krail' | 'parts' | 'cover' | 'shortcut' | 'favour' | 'info' | 'danger';
 
 export interface PlaceDef {
   id: PlaceId;
@@ -78,7 +79,7 @@ export const PLACES: Record<PlaceId, PlaceDef> = {
   },
   distress: {
     id: 'distress', name: 'Distress beacon', blurb: 'Someone is still broadcasting. Help comes with company.', plays: 'distress',
-    text: 'Hold position at the beacon', reward: 'person', done: 'A survivor comes aboard',
+    text: 'Hold position at the beacon', reward: 'favour', done: 'Survivors set safe · their people owe you',
     kinds: ['transit', 'mining', 'contested', 'port'], cols: [1, 4], weight: 1, far: false,
   },
   relay_ruin: {
@@ -105,25 +106,20 @@ export const PLACES: Record<PlaceId, PlaceDef> = {
 export const PLACE_ORDER = Object.keys(PLACES) as PlaceId[];
 
 /** What a strange signal turns out to be. */
-export const SIGNAL_REWARDS: Reward[] = ['info', 'person', 'shortcut', 'danger'];
+export const SIGNAL_REWARDS: Reward[] = ['info', 'favour', 'shortcut', 'danger'];
 
 /** The share of systems (besides Cerro and the Threshold) with a place in them; ports are busy enough already. */
 export const PLACE_CHANCE: Partial<Record<SystemKind, number>> = { mining: 0.7, transit: 0.75, contested: 0.65, port: 0.4 };
 
 /** What each reward pays, in one word for the chart. */
 export const REWARD_WORD: Record<Reward | 'unknown', string> = {
-  krail: 'Krail', parts: 'salvage', cover: 'cover', shortcut: 'a shortcut', person: 'a survivor', info: 'news', danger: 'a find', unknown: 'unknown',
+  krail: 'Krail', parts: 'salvage', cover: 'cover', shortcut: 'a shortcut', favour: 'a favour', info: 'news', danger: 'a find', unknown: 'unknown',
 };
-
-/** The people a distress call (or a signal) can bring aboard. Names only for now; the crew (M6) gives them work. */
-export const SURVIVORS = [
-  'Ines Varga, a pilot', 'Teodor Hask, a drive fitter', 'Mara Quell, a medic', 'Old Bennick, a prospector', 'Sefa Orrin, a signaller',
-  'Jun Takeda, a gunner', 'Rhoswen Pell, a cook', 'Dace Imbrie, a smuggler',
-];
 
 /** Rewards, in amounts. */
 export const PLACE_KRAIL = 14;
 export const PLACE_PARTS = 3;
 export const PLACE_COVER = 1.5;
+export const PLACE_CHITS = 40;
 /** Calloway's days gained on a find that travels. */
 export const DANGER_DAYS = 1;

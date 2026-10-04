@@ -29,9 +29,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 4) {
     j.chart.places = layPlaces(j.chart, j.seed ?? 0);
     for (const id of j.chart.visited) sightPlaces(j.chart, id, SIGHT);
-    j.people = [];
   }
-  if (!j.chart.places || !Array.isArray(j.people)) return null;
+  if (!j.chart.places) return null;
   j.version = VERSION;
   return j as Journey;
 }
