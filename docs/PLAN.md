@@ -317,9 +317,14 @@ should multiply each other; expand combinations before adding combat.
 
 1. M0 rename (one branch). Done.
 2. M1 Breakout: the cutter, pursuit spawning, the exit, the port. First pass done.
-   Next on it: the HUD pass and the ship model from the concept boards, then
-   tune combat time down toward a third (the pilot spends 35–55% of a run
-   with a hostile in range).
+   Where it stands (BALANCE-BREAKOUT.md): the pilot gets out in 62 runs of
+   64, in four and a half to five and a half minutes, with four to five
+   refits; it destroys the blockade every time it fights her. That is easy
+   for an opening, and fighting is not yet costly enough to make running it
+   a real choice. Next on it: the HUD pass and the ship model from the
+   concept boards; a tougher blockade; and combat time down toward a third
+   (the pilot spends a third of a run with a hostile in range on torpedoes,
+   nearer 60% on lasers).
 3. M2 comms cards and the checkpoint.
 4. The slice's chart glimpse; playtest.
 5. M3 to M8 in order, each with its pilot report added to BALANCE.md.

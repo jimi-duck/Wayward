@@ -10,14 +10,14 @@ lane mouth once the tank holds the jump. A steady player, not a strong one.
 
 | Strategy | Blockade | Escaped | Time to escape | Lasted, if caught | Time in combat | Refits | Ore | Krail | Cut / fractured | Docked | Plates lost / gained |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| random | fight | 6/8 | 4:44 | 3:42 | 49% | 3.0 | 46 | 26 | 6.9 / 0.0 | 88% | 3.0 / 2.1 |
-| random | run it | 7/8 | 4:37 | 2:11 | 47% | 2.5 | 37 | 8 | 6.9 / 0.0 | 88% | 2.4 / 1.9 |
-| laser+defence | fight | 8/8 | 5:26 | — | 55% | 3.1 | 46 | 33 | 8.3 / 0.0 | 88% | 2.5 / 2.3 |
-| laser+defence | run it | 6/8 | 5:29 | 3:55 | 52% | 3.0 | 43 | 11 | 8.3 / 0.0 | 88% | 2.5 / 1.8 |
-| torpedo+defence | fight | 8/8 | 4:43 | — | 37% | 3.3 | 50 | 34 | 7.1 / 0.0 | 88% | 2.6 / 2.4 |
-| torpedo+defence | run it | 7/8 | 4:44 | 2:48 | 36% | 2.9 | 46 | 12 | 7.1 / 0.0 | 88% | 2.3 / 1.9 |
-| mobility+laser | fight | 7/8 | 5:25 | 2:11 | 57% | 3.0 | 41 | 26 | 7.5 / 0.0 | 88% | 2.8 / 2.3 |
-| mobility+laser | run it | 6/8 | 5:01 | 3:55 | 55% | 2.8 | 39 | 7 | 7.5 / 0.0 | 88% | 2.5 / 1.8 |
+| random | fight | 8/8 | 4:49 | — | 45% | 4.5 | 54 | 34 | 7.9 / 0.1 | 100% | 0.9 / 0.9 |
+| random | run it | 7/8 | 4:37 | 4:49 | 45% | 4.8 | 57 | 14 | 7.9 / 0.1 | 100% | 1.3 / 0.9 |
+| laser+defence | fight | 8/8 | 5:39 | — | 60% | 4.0 | 39 | 35 | 7.9 / 0.1 | 100% | 2.3 / 2.3 |
+| laser+defence | run it | 8/8 | 5:24 | — | 58% | 3.8 | 38 | 12 | 7.9 / 0.1 | 100% | 1.8 / 1.6 |
+| torpedo+defence | fight | 8/8 | 4:21 | — | 32% | 4.9 | 61 | 36 | 6.9 / 0.0 | 100% | 0.6 / 0.6 |
+| torpedo+defence | run it | 8/8 | 4:17 | — | 33% | 4.6 | 59 | 13 | 6.9 / 0.0 | 100% | 0.5 / 0.5 |
+| mobility+laser | fight | 8/8 | 5:24 | — | 59% | 3.8 | 39 | 32 | 8.3 / 0.3 | 100% | 2.6 / 2.5 |
+| mobility+laser | run it | 7/8 | 5:00 | 4:49 | 55% | 3.6 | 36 | 10 | 8.3 / 0.3 | 100% | 2.1 / 1.6 |
 
 "Time in combat" is the share of the run with a hostile in firing range of
 the ship.
@@ -26,34 +26,31 @@ the ship.
 
 | Outcome | Fights |
 |---|---|
-| killed | 29 |
+| killed | 32 |
 | escaped (she left) | 0 |
-| died | 1 |
+| died | 0 |
 
 ## What caught the ones who did not get out
 
 | Cause | Runs |
 |---|---|
-| ram:raptor | 4 |
-| ram:interdictor | 2 |
-| fire:interdictor | 2 |
-| fire:lancer | 1 |
+| rock | 2 |
 
 ## Where the damage comes from
 
 | Source | Hits | Share |
 |---|---|---|
-| fire:interdictor | 70 | 30% |
-| rock | 47 | 20% |
-| ram:raptor | 21 | 9% |
-| fire:raptor | 15 | 6% |
-| fire:lancer | 12 | 5% |
-| fire:capital:volley | 12 | 5% |
-| ram:interdictor | 12 | 5% |
-| fire:capital:spiral | 10 | 4% |
-| ram:enforcer | 8 | 3% |
-| ram:capital | 6 | 3% |
-| fire:scout | 6 | 3% |
+| rock | 51 | 29% |
+| fire:interdictor | 47 | 27% |
+| fire:capital:spiral | 20 | 12% |
+| fire:lancer | 11 | 6% |
+| ram:enforcer | 9 | 5% |
+| ram:capital | 7 | 4% |
 | fire:picket | 6 | 3% |
+| ram:raptor | 5 | 3% |
+| fire:enforcer | 4 | 2% |
+| fire:raptor | 3 | 2% |
+| fire:capital:volley | 2 | 1% |
 | ram:scout | 2 | 1% |
-| fire:enforcer | 2 | 1% |
+| fire:scout | 2 | 1% |
+| ram:lancer | 1 | 1% |
