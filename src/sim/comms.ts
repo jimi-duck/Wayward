@@ -8,6 +8,7 @@ import { countedBy, effects, hasFitted, systemMarks } from './modules';
 import type { Face } from './captains';
 import { ALIEN_TYPES, VARIANTS, type Faction } from './enemies';
 import { atLeast, type CaptainCall } from './notice';
+import { gains } from './gains';
 import type { Rng } from './rng';
 
 // ── the comms card ────────────────────────────────────────────────────────
@@ -282,6 +283,10 @@ export interface ChoiceView {
   odds: number | null;
   /** It can lose to the truth: the read is the only guide. */
   risky: boolean;
+  /** The chance it comes off, all told: the odds, and the read's best guess at the truth; null when nothing is left to chance. */
+  chance: number | null;
+  /** What it brings if it comes off, in a few words each (sim/gains). */
+  gains: string[];
 }
 
 export interface Read {
@@ -294,6 +299,8 @@ export interface Read {
   /** The intent estimate (one truth's read line), and how far sensors can be trusted. */
   intent: string;
   sure: number;
+  /** The truth the read shows (null: nothing hidden). */
+  shown: string | null;
 }
 
 /** A card on the table. */
@@ -441,7 +448,23 @@ function costOf(c: Cost | undefined, x: Ctx, fee: number): Record<keyof Cost, nu
   return out;
 }
 
-export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number): ChoiceView {
+/**
+ * What the truth really is, given what the read shows: the truths' weights,
+ * and a read that is right as often as the sensors are good (and otherwise
+ * names one of the other stories at random).
+ */
+export function truthOdds(def: CardDef, x: Ctx, shown: string | null, sure: number): Record<string, number> {
+  const ts = def.truths ?? [];
+  if (!ts.length) return {};
+  const prior = ts.map((t) => t.weight * (t.boost && condOk(t.boost.if, x) ? t.boost.mult : 1));
+  const n = ts.length;
+  const like = ts.map((t) => (shown === null || n === 1 ? 1 : t.id === shown ? sure : (1 - sure) / (n - 1)));
+  const w = prior.map((p, i) => p * like[i]!);
+  const sum = w.reduce((a, b) => a + b, 0) || 1;
+  return Object.fromEntries(ts.map((t, i) => [t.id, w[i]! / sum]));
+}
+
+export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read?: Pick<Read, 'shown' | 'sure'>): ChoiceView {
   const needs: string[] = [];
   const n = c.needs;
   if (n) {
@@ -466,9 +489,17 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number): Cho
     else if (cost[k] === 0) needs.push(`No ${AMOUNT_WORDS[k]} to give`);
     costWords.push(`−${cost[k]} ${AMOUNT_WORDS[k]}`);
   }
+  const odds = c.odds ? oddsFor(c.odds, x) : null;
+  const risky = !!(c.loseIf?.length && def.truths?.some((t) => c.loseIf!.includes(t.id)));
+  let chance = odds;
+  if (risky) {
+    const p = truthOdds(def, x, read?.shown ?? null, read?.sure ?? sensors(x.levels));
+    const safe = 1 - c.loseIf!.reduce((a, id) => a + (p[id] ?? 0), 0);
+    chance = (odds ?? 1) * safe;
+  }
   return {
     id: c.id, label: c.label, tone: c.tone, hint: c.hint, ok: needs.length === 0, needs, cost: costWords,
-    odds: c.odds ? oddsFor(c.odds, x) : null, risky: !!(c.loseIf?.length && def.truths?.some((t) => c.loseIf!.includes(t.id))),
+    odds, risky, chance, gains: gains(c.win, x, fee, cost),
   };
 }
 
@@ -502,9 +533,10 @@ export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
   const truth = rollTruth(def, x, rng);
   const sure = sensors(x.levels);
   let intent = 'Means what they say';
+  let shown: string | null = null;
   if (def.truths?.length && truth) {
     // right as often as the sensors are good; otherwise one of the other stories
-    let shown = truth;
+    shown = truth;
     if (def.truths.length > 1 && rng.next() >= sure) {
       const others = def.truths.filter((t) => t.id !== truth);
       shown = others[rng.int(others.length)]!.id;
@@ -517,18 +549,18 @@ export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
     def = { ...def, from: fill(def.from), title: fill(def.title) };
   }
   const fee = feeFor(def, x);
+  const read: Read = { them: theirStrength(def), you: yourStrength(x.levels, x.plates), ships: shipsWords(def), cargo: def.cargo ?? 'Unknown', intent, sure, shown };
   return {
-    def, truth, fee, brought: [],
-    read: { them: theirStrength(def), you: yourStrength(x.levels, x.plates), ships: shipsWords(def), cargo: def.cargo ?? 'Unknown', intent, sure },
+    def, truth, fee, brought: [], read,
     text: cardText(def, x, fee),
-    choices: def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, def, x, fee)),
+    choices: def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, def, x, fee, read)),
     slow: def.slow ? def.slow.timeout : 0,
   };
 }
 
 /** Re-evaluate the choices against the ship as it is now (a slowed card, or after something changed). */
 export function refresh(o: Open, x: Ctx): void {
-  o.choices = o.def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, o.def, x, o.fee));
+  o.choices = o.def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, o.def, x, o.fee, o.read));
 }
 
 /** Answer: did it come off, and what follows. Costs are paid either way; the caller applies `cost` and `outcome`. */

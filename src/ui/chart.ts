@@ -2,7 +2,7 @@ import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
 import { fileLines } from '../sim/calloway';
-import { krailKnown, lanesFrom, placeAt, sysById, type Place, type StarSystem } from '../sim/chart';
+import { jumps, krailKnown, lanesFrom, placeAt, sysById, type Chart, type Place, type StarSystem } from '../sim/chart';
 import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -18,7 +18,9 @@ import { INK } from './palette';
 // marked you: its notice tier, how far to the next, your standing with it,
 // and its named captain (sim/notice.ts readout). A small diamond marks a
 // system with a place in it you know of (content/phenomena.ts), and the
-// lane list says what it is. The same panel tells you when you are
+// lane list says what it is. The goal (the region's last lane) is named over
+// the stores and on the map, and when the lanes differ, the ones that bring
+// it nearer are marked and the highlight starts on one. The same panel tells you when you are
 // adrift after a wreck, and how the journey ended.
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -37,6 +39,11 @@ const richWord = (k: number) => (k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor')
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
 /** A place in a few words: what it is, and what it pays (a strange signal's is not known till it is read). */
 const placeText = (p: Place) => `${PLACES[p.id].name}, ${REWARD_WORD[PLACES[p.id].reward === 'unknown' ? 'unknown' : p.reward]}`;
+
+/** The way out of the region: the goal of every journey. */
+const goalOf = (c: Chart) => c.systems.find((x) => x.kind === 'edge') ?? null;
+/** Jumps from a system to the goal (Infinity with no goal or no way). */
+const toGoal = (c: Chart, id: string) => { const g = goalOf(c); return g ? jumps(c, id, g.id) : Infinity; };
 
 /** A faction's notice in a line: its tier, how far to the next, standing, and its captain. */
 function noticeText(l: NoticeLine, day: number): string {
@@ -78,7 +85,9 @@ export class ChartPanel {
     $('ch-go').hidden = true;
     const opts = options(j);
     this.ids = opts.map((o) => o.to.id);
-    this.sel = 0;
+    // the highlight starts on a lane toward the goal, so Enter alone keeps the journey moving
+    const now = toGoal(j.chart, j.at);
+    this.sel = Math.max(0, opts.findIndex((o) => toGoal(j.chart, o.to.id) < now));
     this.renderList(j);
     this.draw(j);
     this.off = keys((e) => {
@@ -174,9 +183,13 @@ export class ChartPanel {
   }
 
   private renderList(j: Journey): void {
-    const opts = options(j);
+    const opts = options(j), now = toGoal(j.chart, j.at);
+    // marked only where it tells lanes apart: when every lane closes on the goal, the goal line says enough
+    const near = opts.map((o) => toGoal(j.chart, o.to.id) < now), some = near.some((n) => !n);
     $('ch-list').replaceChildren(...opts.map((o, i) => {
       const s = o.to;
+      // a lane that brings the goal a jump nearer says so, at a glance
+      const left = toGoal(j.chart, s.id), closer = some && near[i]!;
       const notes = [
         days(o.route.days), `food ${o.food}`, s.port ? s.port.name : 'no port', `Krail ${richWord(krailKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
       ];
@@ -185,7 +198,7 @@ export class ChartPanel {
       if (o.shadow) notes.push('Calloway last seen');
       const b = h('button', `port-l ch-l${i === this.sel ? ' sel' : ''}${o.netted ? ' net' : ''}`, '',
         h('kbd', '', String(i + 1)),
-        h('span', 'pl-n', '', h('b', '', s.name), h('span', 'ch-kind', ` ${KIND_WORD[s.kind]}${s.kind === 'edge' ? '' : ` · ${HOLDER_NAMES[s.holder]}`}`)),
+        h('span', 'pl-n', '', h('b', '', s.name), left === 0 ? h('span', 'ch-goal-c', 'Goal') : closer ? h('span', 'ch-goal-c', 'Toward goal') : null, h('span', 'ch-kind', ` ${KIND_WORD[s.kind]}${s.kind === 'edge' ? '' : ` · ${HOLDER_NAMES[s.holder]}`}`)),
         h('span', 'pl-note', notes.join(' · ')),
         h('b', 'pl-p', String(o.route.krail)),
       ) as HTMLButtonElement;
@@ -207,7 +220,9 @@ export class ChartPanel {
     const cells: Array<[string, string]> = [
       ['Tank', `${c.krail}/${TANK_MAX}`], ['Food', `${c.food} · ${RATION}/day`], ['Parts', String(c.parts)], ['Chits', String(c.chits)], ['Hold', `${c.ore} ore`],
     ];
+    const goal = goalOf(j.chart), left = toGoal(j.chart, j.at);
     $('ch-stat').replaceChildren(
+      ...(goal && left > 0 && left < Infinity ? [h('p', 'ch-goal', `Goal · reach ${goal.name} · ${left} jump${left === 1 ? '' : 's'}`)] : []),
       h('div', 'port-stock', '', ...cells.map(([k, v]) => h('span', '', '', h('span', 'k', k), h('b', '', v)))),
       h('p', 'ch-hunt', j.trail.length < 2
         ? 'Calloway · not on your trail yet'
@@ -252,6 +267,7 @@ export class ChartPanel {
         g.append(m);
       }
       g.append(svg('text', { x, y: y + 20, 'text-anchor': 'middle', class: 'ch-name' }, s.name));
+      if (s.kind === 'edge') g.append(svg('text', { x, y: y + 31, 'text-anchor': 'middle', class: 'ch-goalm' }, 'Goal'));
       const n = this.ids.indexOf(s.id);
       if (n >= 0) g.append(svg('text', { x, y: y - 13, 'text-anchor': 'middle', class: 'ch-num' }, String(n + 1)));
       if (n >= 0 && this.onPick) {
