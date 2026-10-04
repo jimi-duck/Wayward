@@ -10,8 +10,9 @@ import type { Stats } from '../sim/stats';
 //   Rig       · rig parts out of rock cut clean. Racks, a machine shop, a
 //               cutter head. A Rig ship stays out longer and carries more.
 //   Signals   · signal kit from bluffs that came off and the tech of ships
-//               that listen. Baffles, an array, a jammer, a spoofer. A Signals
-//               ship goes dark, spoofs, jams and sees further.
+//               that listen. Baffles, an array, a jammer, a spoofer, a ghost
+//               echo. A Signals ship goes dark, spoofs, jams, sees further
+//               and makes the chart lie to whoever follows it.
 //   Contacts  · favours from deals kept and people helped. A guild ledger,
 //               names in the Gutter, friends on the docks. A Contacts ship
 //               opens doors.
@@ -43,10 +44,10 @@ export interface SystemDef {
 }
 
 export const SYSTEM_DEFS: Record<ShipSystem, SystemDef> = {
-  guns: { name: 'Guns', resource: 'salvage', source: 'Wrecks: four kills, or a capital ship', identity: 'Gunboat' },
-  rig: { name: 'Rig', resource: 'rig parts', source: 'Rock cut clean, and ore hauled', identity: 'Deep hauler' },
-  signals: { name: 'Signals', resource: 'signal kit', source: 'Bluffs that come off, and listening ships broken', identity: 'Ghost' },
-  contacts: { name: 'Contacts', resource: 'favours', source: 'Deals, help given, and jobs done', identity: 'Fixer' },
+  guns: { name: 'Guns', resource: 'salvage', source: 'Kills and wrecks', identity: 'Gunboat' },
+  rig: { name: 'Rig', resource: 'rig parts', source: 'Clean cuts and ore', identity: 'Deep hauler' },
+  signals: { name: 'Signals', resource: 'signal kit', source: 'Bluffs, Office and Voice kills', identity: 'Ghost' },
+  contacts: { name: 'Contacts', resource: 'favours', source: 'Help, trade and jobs', identity: 'Fixer' },
 };
 
 export interface ModuleDef {
@@ -74,6 +75,8 @@ export interface ModuleDef {
   discount?: number;
   /** Docking quiets the pursuit this much more. */
   dockCool?: number;
+  /** A false echo left in the lane behind every jump, per mark: the chart lies to whoever follows it. */
+  echo?: number;
   /** Flags set aboard at the start of every sortie: what the module opens in the comms. */
   flags?: string[];
   /** Upgrade ids it counts as when a card asks what is fitted. */
@@ -85,75 +88,80 @@ const marks = (...n: number[]) => n;
 export const MODULES: ModuleDef[] = [
   // ── guns ──────────────────────────────────────────────────────────────
   {
-    id: 'md_hardpoints', name: 'Hardpoints', system: 'guns', max: 3, kit: marks(3, 5, 8), chits: marks(30, 50, 80),
-    text: 'Heavier mounts: every weapon hits harder, and a launcher you can show counts as a torpedo bay.',
+    id: 'md_hardpoints', name: 'Hardpoints', system: 'guns', max: 3, kit: marks(3, 5, 8), chits: marks(10, 20, 30),
+    text: 'Every weapon hits harder. Counts as a torpedo bay.',
     stats: (s) => { s.dmgAll *= 1.1; },
     counts: ['tp_bay'],
   },
   {
-    id: 'md_plate', name: 'Armour plate', system: 'guns', max: 2, kit: marks(4, 7), chits: marks(40, 70),
-    text: 'Plate bolted over the spine: one more plate of hull.',
+    id: 'md_plate', name: 'Armour plate', system: 'guns', max: 2, kit: marks(4, 7), chits: marks(15, 30),
+    text: 'One more plate of hull.',
     stats: (s) => { s.maxPlates += 1; },
   },
   {
-    id: 'md_gunnery', name: 'Gunnery rig', system: 'guns', max: 2, kit: marks(4, 6), chits: marks(30, 60),
-    text: 'Faster loaders: lasers cycle and torpedoes reload a tenth quicker.',
+    id: 'md_gunnery', name: 'Gunnery rig', system: 'guns', max: 2, kit: marks(4, 6), chits: marks(10, 25),
+    text: 'Lasers and torpedoes reload faster.',
     stats: (s) => { s.laserCooldown *= 0.9; s.torpReload *= 0.9; },
   },
 
   // ── rig ───────────────────────────────────────────────────────────────
   {
-    id: 'md_racks', name: 'Cargo racks', system: 'rig', max: 3, kit: marks(3, 5, 7), chits: marks(25, 45, 70),
-    text: 'More racks in the hold: fifteen more ore.',
+    id: 'md_racks', name: 'Cargo racks', system: 'rig', max: 3, kit: marks(3, 5, 7), chits: marks(10, 20, 30),
+    text: 'Holds 15 more ore.',
     hold: 15,
   },
   {
-    id: 'md_shop', name: 'Machine shop', system: 'rig', max: 2, kit: marks(4, 6), chits: marks(30, 50),
-    text: 'A lathe and a welder aboard: patching a plate takes two parts fewer.',
+    id: 'md_shop', name: 'Machine shop', system: 'rig', max: 2, kit: marks(4, 6), chits: marks(10, 20),
+    text: 'Patching costs 2 parts less.',
     patch: 2,
   },
   {
-    id: 'md_tractor', name: 'Ore tractor', system: 'rig', max: 2, kit: marks(3, 6), chits: marks(25, 50),
-    text: 'A wider tractor: loose ore and salvage come to you from further off.',
+    id: 'md_tractor', name: 'Ore tractor', system: 'rig', max: 2, kit: marks(3, 6), chits: marks(10, 20),
+    text: 'Pulls in pickups from further away.',
     stats: (s) => { s.tractor *= 1.3; },
   },
 
   // ── signals ───────────────────────────────────────────────────────────
   {
-    id: 'md_baffles', name: 'Baffles', system: 'signals', max: 2, kit: marks(3, 6), chits: marks(30, 60),
-    text: 'Emissions baffled: the Custody’s attention climbs an eighth slower.',
+    id: 'md_baffles', name: 'Baffles', system: 'signals', max: 2, kit: marks(3, 6), chits: marks(10, 25),
+    text: 'Heat builds slower.',
     quiet: 0.125,
   },
   {
-    id: 'md_array', name: 'Long-range array', system: 'signals', max: 1, kit: marks(4), chits: marks(50),
-    text: 'A dish that hears further: the read is surer, and Calloway is sighted more often.',
+    id: 'md_array', name: 'Long-range array', system: 'signals', max: 1, kit: marks(4), chits: marks(20),
+    text: 'Better reads. Spots Calloway more often.',
     sensors: 0.15,
   },
   {
-    id: 'md_jammer', name: 'Jammer', system: 'signals', max: 1, kit: marks(5), chits: marks(50),
-    text: 'A jammer that does what a scanner suite does: relays, bulletins and surveys can be garbled.',
+    id: 'md_jammer', name: 'Jammer', system: 'signals', max: 1, kit: marks(5), chits: marks(20),
+    text: 'Opens jam choices.',
     counts: ['ut_scanner'],
   },
   {
-    id: 'md_spoofer', name: 'Transponder spoofer', system: 'signals', max: 1, kit: marks(6), chits: marks(60),
-    text: 'Writes its own registry: you carry clean codes into every system.',
+    id: 'md_spoofer', name: 'Transponder spoofer', system: 'signals', max: 1, kit: marks(6), chits: marks(25),
+    text: 'Forged codes, every system.',
     flags: ['codes'],
+  },
+  {
+    id: 'md_ghost', name: 'Ghost echo', system: 'signals', max: 2, kit: marks(5, 8), chits: marks(20, 30),
+    text: 'Slows Calloway at every jump. Mk 2 hides your route.',
+    echo: 1,
   },
 
   // ── contacts ──────────────────────────────────────────────────────────
   {
-    id: 'md_ledger', name: 'Guild ledger', system: 'contacts', max: 2, kit: marks(3, 6), chits: marks(20, 40),
-    text: 'An account with the Dust Traders: ports charge a tenth less.',
+    id: 'md_ledger', name: 'Guild ledger', system: 'contacts', max: 2, kit: marks(3, 6), chits: marks(10, 15),
+    text: 'Ports cost 10% less.',
     discount: 0.1,
   },
   {
-    id: 'md_names', name: 'Names in the Gutter', system: 'contacts', max: 1, kit: marks(4), chits: marks(30),
-    text: 'Someone in the Gutter will vouch for you.',
+    id: 'md_names', name: 'Names in the Gutter', system: 'contacts', max: 1, kit: marks(4), chits: marks(10),
+    text: 'A friend in the Gutter.',
     flags: ['gutter_friend'],
   },
   {
-    id: 'md_dock', name: 'Friends on the docks', system: 'contacts', max: 1, kit: marks(4), chits: marks(40),
-    text: 'Dock crews who look the other way: docking cools the pursuit twice as much.',
+    id: 'md_dock', name: 'Friends on the docks', system: 'contacts', max: 1, kit: marks(4), chits: marks(15),
+    text: 'Docking cools heat more.',
     dockCool: 0.2,
   },
 ];

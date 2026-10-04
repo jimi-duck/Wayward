@@ -2,6 +2,7 @@ import { CARDS } from '../content/cards';
 import { MODULE_BY_ID, MODULES, SHIP_SYSTEMS, SYSTEM_DEFS, type ModuleDef, type ShipSystem } from '../content/modules';
 import type { Prices } from '../content/systems';
 import type { Levels } from './build';
+import { VARIANTS } from './enemies';
 import type { RunStats } from './run';
 import type { Stats } from './stats';
 
@@ -27,12 +28,14 @@ export const marksOf = (levels: Levels, id: string): number => (MODULE_BY_ID[id]
 // and the pilot can see what each way of playing earns.
 
 /** Kills to a piece of salvage; rock cut clean to a rig part; ore hauled to a rig part. */
-export const KILLS_PER_SALVAGE = 4;
-export const CUTS_PER_PART = 3;
-export const ORE_PER_PART = 25;
+export const KILLS_PER_SALVAGE = 6;
+export const CUTS_PER_PART = 1;
+export const ORE_PER_PART = 12;
 /** A capital ship's wreck, in salvage; one that listened (the Office, the Voice), in signal kit too. */
 export const CAPITAL_SALVAGE = 3;
 export const LISTENER_KIT = 2;
+/** A bluff that came off, in signal kit. */
+export const BLUFF_KIT = 2;
 /** A job done, in favours. */
 export const JOB_FAVOURS = 2;
 
@@ -47,11 +50,13 @@ export function earned(run: RunStats): Kit {
   k.guns = Math.floor(run.kills / KILLS_PER_SALVAGE) + run.capitals * CAPITAL_SALVAGE;
   k.rig = Math.floor(run.cut / CUTS_PER_PART) + Math.floor(run.ore / ORE_PER_PART);
   k.signals = run.capitalFactions.filter((f) => LISTENERS.has(f)).length * LISTENER_KIT;
+  // a listening hull's set, off every Office or Voice wreck
+  for (const [v, n] of Object.entries(run.killsByKind)) if (LISTENERS.has(VARIANTS[v]?.faction ?? '')) k.signals += n;
   k.contacts = run.jobsDone * JOB_FAVOURS;
   for (const a of run.cards) {
     if (!a.won) continue;
     const tone = tones.get(`${a.id}/${a.choice}`);
-    if (tone === 'bluff') k.signals++;
+    if (tone === 'bluff') k.signals += BLUFF_KIT;
     else if (tone === 'help' || tone === 'trade') k.contacts++;
   }
   return k;
@@ -90,6 +95,8 @@ export interface Effects {
   /** Multiplier on what a port charges (not on what it pays for ore). */
   price: number;
   dockCool: number;
+  /** Marks of false echo left behind each jump. */
+  echo: number;
   flags: string[];
   /** Upgrade ids the fitted modules count as. */
   counts: string[];
@@ -103,7 +110,7 @@ function each(levels: Levels, f: (m: ModuleDef, mk: number) => void): void {
 }
 
 export function effects(levels: Levels): Effects {
-  const e: Effects = { hold: 0, patch: 0, heat: 1, sensors: 0, price: 1, dockCool: 0, flags: [], counts: [] };
+  const e: Effects = { hold: 0, patch: 0, heat: 1, sensors: 0, price: 1, dockCool: 0, echo: 0, flags: [], counts: [] };
   each(levels, (m, mk) => {
     e.hold += (m.hold ?? 0) * mk;
     e.patch += (m.patch ?? 0) * mk;
@@ -111,6 +118,7 @@ export function effects(levels: Levels): Effects {
     e.sensors += m.sensors ?? 0;
     e.price *= (1 - (m.discount ?? 0)) ** mk;
     e.dockCool += m.dockCool ?? 0;
+    e.echo += (m.echo ?? 0) * mk;
     e.flags.push(...(m.flags ?? []));
     e.counts.push(...(m.counts ?? []));
   });

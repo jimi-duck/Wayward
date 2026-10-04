@@ -1,11 +1,12 @@
 import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
-import { krailKnown, netted, sysById } from '../src/sim/chart';
+import { netted, sysById } from '../src/sim/chart';
 import { behind } from '../src/sim/hunt';
 import { OFFERS } from '../src/content/calloway';
-import { RATION, endSortie, hearNews, newJourney, options, plot, replot, sortieDef, toEdge, type Journey } from '../src/sim/journey';
+import { endSortie, hearNews, newJourney, plot, replot, sortieDef, type Journey } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { flyWorld, stratName, type Policy, type Strategy } from './pilot';
+import { planRoute } from './route';
 
 // ── the journey's balance report ──────────────────────────────────────────
 // `npm run pilot:journey` flies whole journeys: the Breakout, then system
@@ -24,38 +25,6 @@ const STRATEGIES: Strategy[] = [
   { kind: 'focus', branch: 'torpedo', second: 'defence' },
 ];
 const POLICIES: Policy[] = ['run', 'bluff', 'fight'];
-
-/**
- * The route planner: toward the Threshold, away from the Net and from where
- * Calloway was last seen, toward a port when the galley or the purse is
- * thin, toward Krail when the tank is. A cautious player who reads the chart.
- */
-function planRoute(j: Journey, c = j.carry): string {
-  const left = toEdge(j);
-  let best = '', bestV = -Infinity;
-  for (const o of options(j)) {
-    const s = o.to;
-    let v = 0;
-    const closer = left - (s.kind === 'edge' ? 0 : toEdgeFrom(j, s.id));
-    v += closer * 40;
-    v -= o.route.krail * 1.2;
-    if (o.netted) v -= 35;
-    if (o.shadow) v -= 30;
-    if (c.food < 2 * RATION * 2 && s.port) v += 25;
-    if (c.krail < 15) v += krailKnown(j.chart, s) * 30;
-    if (s.port && c.plates < 3) v += 10;
-    if (v > bestV) { bestV = v; best = s.id; }
-  }
-  return best;
-}
-
-function toEdgeFrom(j: Journey, id: string): number {
-  const at = j.at;
-  j.at = id;
-  const n = toEdge(j);
-  j.at = at;
-  return n;
-}
 
 interface JourneyRun {
   j: Journey;

@@ -1,5 +1,6 @@
-import { UPGRADES, type TechFaction, type UpgradeDef } from '../content/upgrades';
+import { upgradeSystem, UPGRADES, type TechFaction, type UpgradeDef } from '../content/upgrades';
 import { available, tagWeights, type Levels } from './build';
+import { systemMarks } from './modules';
 import type { Rng } from './rng';
 
 // ── the refit: three cards ────────────────────────────────────────────────
@@ -15,7 +16,10 @@ import type { Rng } from './rng';
 //  · when a branch is first deep enough to specialise, that refit is the
 //    specialisation, once;
 //  · battle salvage (a capital ship destroyed) leads with her faction's
-//    tech, while it is new.
+//    tech, while it is new;
+//  · every card belongs to one of the ship's four systems, and each module
+//    mark fitted in a system (sim/modules.ts) brings its cards round a
+//    fifth more often, so the field refit follows the port's.
 
 export type OfferKind = 'refit' | 'spec' | 'salvage';
 export type CardTag = 'new' | 'up' | 'spec' | 'synergy' | 'tech' | 'wild';
@@ -117,12 +121,17 @@ export function makeOffer(ctx: OfferContext, rng: Rng): Offer {
   return { kind, refit: ctx.refit, cards: chosen.map(({ u, wild }) => card(u, levels, wild ? 'wild' : undefined)) };
 }
 
+/** How much more often a system's cards come round, per module mark fitted in it. */
+export const SYSTEM_PULL = 0.2;
+
 function weight(u: UpgradeDef, levels: Levels): number {
   let w = u.weight ?? 1;
   if (u.kind === 'synergy') w *= 1.8;
   if (u.kind === 'tech') w *= 1.6;
   // a stat card already well up its ladder comes round a little less
   w *= 1 - 0.08 * (levels[u.id] ?? 0);
+  // the system the ship is built on brings its own cards round more
+  w *= 1 + SYSTEM_PULL * systemMarks(levels)[upgradeSystem(u)];
   return Math.max(0.05, w);
 }
 

@@ -252,6 +252,11 @@ export const CARDS: CardDef[] = [
         win: { text: 'The Leaky Tin limps off · the Gutter will remember', standing: { gutter: 2 }, flag: 'gutter_friend' },
         lose: { text: 'They take it and come about, guns up', spawn: [{ variant: 'scout', n: 2, from: 'ahead' }] },
       },
+      {
+        id: 'shop', label: 'Fix their recycler', tone: 'help', hint: 'Two parts, not Krail.', needs: { fitted: 'md_shop' }, cost: { parts: 2 }, loseIf: ['bait'],
+        win: { text: 'Fixed · a friend in the Gutter', standing: { gutter: 2 }, flag: 'gutter_friend' },
+        lose: { text: 'Bait · they rush you', spawn: [{ variant: 'scout', n: 2, from: 'ahead' }] },
+      },
       { id: 'no', label: 'Keep your Krail', tone: 'refuse', hint: 'You need every unit.', win: { text: 'The Leaky Tin drifts on' } },
       { id: 'fight', label: 'Finish them', tone: 'fight', hint: 'Two easy kills and whatever they carry.', win: { text: 'Weapons hot on the Leaky Tin', spawn: [{ variant: 'scout', n: 2, from: 'ahead' }], standing: { gutter: -1 } } },
     ],
@@ -411,9 +416,19 @@ export const CARDS: CardDef[] = [
       { id: 'pay', label: 'Pay the fine', tone: 'pay', hint: 'He goes away happy.', cost: { chits: 'fee' }, win: { text: 'Fine paid · PF-226 moves on', standing: { custody: 1 } } },
       { id: 'ore', label: 'Pay in ore', tone: 'pay', hint: 'Half the hold.', cost: { ore: 'half' }, show: { ore: 4 }, win: { text: 'He takes the ore and moves on' } },
       {
+        id: 'licence', label: 'Send a licence', tone: 'bluff', hint: 'Spoof one.', needs: { fitted: 'md_spoofer' }, odds: { base: 0.85, heat: -0.3 },
+        win: { text: 'Licence accepted' },
+        lose: { text: 'Fake spotted · weapons hot', spawn: [{ variant: 'picket', n: 2 }], heat: 0.06 },
+      },
+      {
         id: 'bluff', label: '“You are out of your sector”', tone: 'bluff', hint: 'Pull rank you do not have.', odds: { base: 0.55, heat: -0.6, standing: { custody: 0.1 } },
         win: { text: 'PF-226 checks his chart and backs off' },
         lose: { text: 'He checks your hull instead · weapons hot', spawn: [{ variant: 'picket', n: 2 }], heat: 0.08 },
+      },
+      {
+        id: 'mounts', label: 'Run out the hardpoints', tone: 'fight', hint: 'Show your guns.', needs: { fitted: 'md_hardpoints' }, odds: { base: 0.7, heat: -0.2, fitted: { md_plate: 0.1 } },
+        win: { text: 'He backs off', heat: 0.02 },
+        lose: { text: 'Weapons hot', spawn: [{ variant: 'picket', n: 2 }], heat: 0.06 },
       },
       { id: 'fight', label: 'Fight', tone: 'fight', hint: 'Two fighters. Everyone will hear.', win: { text: 'Weapons hot on PF-226', spawn: [{ variant: 'picket', n: 2 }], heat: 0.06 } },
     ],
@@ -426,6 +441,7 @@ export const CARDS: CardDef[] = [
     fee: { base: 30, heat: 30 },
     choices: [
       { id: 'hand', label: 'Hand it over', tone: 'pay', hint: 'The whole hold, and they forget you.', cost: { ore: 'all' }, win: { text: 'Ore surrendered · logged as recovered', heat: -0.05, standing: { kellern: 1 } } },
+      { id: 'racks', label: 'Hand over half', tone: 'pay', hint: 'Half the hold.', needs: { fitted: 'md_racks' }, cost: { ore: 'half' }, win: { text: 'Half handed over', heat: -0.05, standing: { kellern: 1 } } },
       { id: 'bribe', label: 'Pay them off', tone: 'pay', hint: 'Company men are paid badly.', cost: { chits: 'fee' }, win: { text: 'Paid off · they never saw you' } },
       { id: 'fight', label: 'Fight', tone: 'fight', hint: 'An enforcer and a picket.', win: { text: 'Weapons hot on the claim enforcers', spawn: [{ variant: 'enforcer', n: 1 }, { variant: 'picket', n: 1 }], heat: 0.05, standing: { kellern: -1 } } },
     ],
@@ -440,6 +456,15 @@ export const CARDS: CardDef[] = [
     choices: [
       { id: 'surrender', label: 'Surrender half the Krail', tone: 'pay', hint: 'They take it and vanish. You may not make the jump.', cost: { krail: 'half' }, win: { text: 'Krail surrendered · they cloak and go', dismiss: true } },
       { id: 'fight', label: 'Fight', tone: 'fight', hint: 'Three fighters that hit from cloak.', win: { text: 'Weapons hot' } },
+      {
+        id: 'plate', label: 'Take it on the plate', tone: 'fight', hint: 'Soak it and burn away.', needs: { fitted: 'md_plate' },
+        win: { text: 'Burned clear', heat: 0.04, dismiss: true },
+      },
+      {
+        id: 'jam', label: 'Jam their targeting', tone: 'bluff', hint: 'Blind them.', needs: { fitted: 'md_jammer' }, odds: { base: 0.7, fitted: { md_array: 0.1 } },
+        win: { text: 'Jammed · they leave', dismiss: true },
+        lose: { text: 'Jam failed · weapons hot' },
+      },
       { id: 'run', label: 'Burn for it', tone: 'run', hint: 'They follow, and they call it in.', win: { text: 'Burning hard · they are calling it in', heat: 0.12 } },
     ],
   },
@@ -464,6 +489,11 @@ export const CARDS: CardDef[] = [
         id: 'drone', label: 'Send a repair drone', tone: 'help', hint: 'Costs parts; you never get close enough to be caught.', cost: { parts: 3 }, loseIf: ['ambush'],
         win: { text: 'The drone patches them up · they send Krail', krail: 3, standing: { miners: 1 } },
         lose: { text: 'The drone is shot to pieces · nobody was dying' },
+      },
+      {
+        id: 'tow', label: 'Tow them clear', tone: 'help', hint: 'Tractor them out.', needs: { fitted: 'md_tractor' }, loseIf: ['ambush'],
+        win: { text: 'Towed clear · parts and ore', parts: 4, ore: 8, standing: { miners: 2 } },
+        lose: { text: 'Bait · raiders', spawn: [{ variant: 'scout', n: 1, from: 'ahead' }] },
       },
       { id: 'no', label: 'Keep going', tone: 'refuse', hint: 'Not your problem.', win: { text: 'The call fades behind you' } },
     ],
@@ -609,7 +639,7 @@ export const CARDS: CardDef[] = [
       },
       {
         id: 'dark', label: 'Go dark', tone: 'bluff', hint: 'Kill the drive and the transponder, drift, and let her lose you.',
-        needs: { fitted: ['ut_scanner', 'tech_office'] }, odds: { base: 0.7, heat: -0.3, learn: 'dark' },
+        needs: { fitted: ['ut_scanner', 'tech_office', 'md_baffles'] }, odds: { base: 0.7, heat: -0.3, fitted: { md_baffles: 0.1 }, learn: 'dark' },
         win: { text: 'Dark · she sweeps past you', hunt: 1, heat: -0.3 },
         lose: { text: 'Her sweep finds the heat of your reactor', calloway: 'fight' },
       },
@@ -658,6 +688,7 @@ export const CARDS: CardDef[] = [
       { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Chits, and through.', cost: { chits: 'fee' }, loseIf: ['hungry'], win: { text: 'Toll paid · the Wardens wave you on', standing: { gutter: 1 } }, lose: { text: 'They take the chits and the guns come up anyway', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }] } },
       { id: 'krail', label: 'Pay in Krail', tone: 'trade', hint: 'Four Krail, if you can spare it.', cost: { krail: 4 }, win: { text: 'Four Krail across · through', standing: { gutter: 1 } } },
       { id: 'talk', label: 'Name a friend', tone: 'bluff', hint: 'Someone in the Gutter owes you, maybe.', odds: { base: 0.3, standing: { gutter: 0.25 }, flags: { gutter_friend: 0.3 } }, win: { text: '“Go on, then.” · through for nothing' }, lose: { text: '“Never heard of them.” · weapons hot', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }] } },
+      { id: 'account', label: 'Bill the Guild', tone: 'trade', hint: 'Free passage.', needs: { fitted: 'md_ledger' }, win: { text: 'Billed · through', standing: { guild: 1 } } },
       { id: 'fight', label: 'Clear the lane', tone: 'fight', hint: 'Three light hulls between you and the jump.', win: { text: 'Clearing the lane', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }], standing: { gutter: -1 } } },
     ],
   },
@@ -678,6 +709,7 @@ export const CARDS: CardDef[] = [
       { id: 'scan', label: 'Take the scan', tone: 'bluff', hint: 'If the clerk is lazy, nothing happens.', loseIf: ['sharp'], win: { text: 'Scan logged as clean · clamps on' }, lose: { text: 'Your face comes up on the scanner', heat: 0.2 } },
       { id: 'bribe', label: 'Pay the clerk', tone: 'pay', hint: 'A Custody clerk on a frontier wage.', cost: { chits: 'fee' }, odds: { base: 0.8, heat: -0.3 }, win: { text: 'Paid · the scan is lost' }, lose: { text: 'The clerk takes it and reports you anyway', heat: 0.15 } },
       { id: 'spoof', label: 'Send the forged codes', tone: 'bluff', hint: 'A clean ID for a scanner that wants one.', needs: { flag: 'codes' }, odds: { base: 0.8, flags: { codes_bad: -0.6 } }, win: { text: 'Codes accepted · clamps on' }, lose: { text: 'The codes bounce', heat: 0.15 } },
+      { id: 'friends', label: 'Call a dock friend', tone: 'trade', hint: 'Clean scan.', needs: { fitted: 'md_dock' }, win: { text: 'Scan swapped · docked' } },
       { id: 'refuse', label: 'Refuse the scan', tone: 'refuse', hint: 'Dock anyway and let them make a fuss.', win: { text: 'Docking unscanned · the fuss goes up the line', heat: 0.12 } },
     ],
   },

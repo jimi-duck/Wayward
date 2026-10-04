@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { CARDS, FLAGS } from '../src/content/cards';
+import { MODULES } from '../src/content/modules';
 import { UPGRADES } from '../src/content/upgrades';
 import { CARD_BY_ID, COMMS_FIRST, SLOW, condOk, openCard, resolve, sensors, type Ctx } from '../src/sim/comms';
 import { VARIANTS } from '../src/sim/enemies';
@@ -36,7 +37,7 @@ describe('the cards', () => {
   });
 
   it('only refer to things that exist', () => {
-    const ups = new Set(UPGRADES.map((u) => u.id));
+    const ups = new Set([...UPGRADES.map((u) => u.id), ...MODULES.map((m) => m.id)]);
     for (const c of CARDS) {
       expect(c.choices.length, c.id).toBeGreaterThanOrEqual(2);
       expect(c.choices.length, c.id).toBeLessThanOrEqual(6);
