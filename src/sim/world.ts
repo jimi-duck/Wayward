@@ -7,7 +7,7 @@ import {
 } from './arsenal';
 import { Command, type Strike, type Telegraph } from './bosses';
 import {
-  BLOCKADE_AT, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
+  BLOCKADE_AT, BLOCKADE_HP, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, PRICE, SPOOL, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   ORE_XP, rockYield, type Breakout, type Mode,
 } from './breakout';
@@ -394,7 +394,7 @@ export class World implements EncounterHost {
     const dl = Math.hypot(s.x - b.lane.x, s.z - b.lane.z);
     if (b.blockade === 'none' && dl < BLOCKADE_AT && this.command.state === 'idle') {
       b.blockade = 'called';
-      this.command.summon(this.runTime, 'custody');
+      this.command.summon(this.runTime, 'custody', BLOCKADE_HP);
     }
     if (b.blockade === 'called' && this.command.state === 'idle' && !this.command.boss) b.blockade = 'done';
 

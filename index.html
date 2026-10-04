@@ -75,6 +75,8 @@
       </div>
 
       <section id="sector" class="hud-block" aria-label="Sector and krail">
+        <!-- the brand plate: the ship as the boards name her -->
+        <div class="plate"><b class="pl-n">Wayward</b><span class="pl-s">Obedience-class ore hauler</span><span class="pl-r">Serial OB-7731-A</span></div>
         <div class="sec-id"><span><i class="x"></i><b id="sec-code">Sector 83-37</b></span><span><i class="x"></i><span id="sec-name">Asteroid field</span></span></div>
         <div id="rail" aria-label="Krail to the next refit">
           <div class="rail-h"><svg class="ico"><use href="#i-rock"/></svg><span class="lbl" id="xp-l">Krail</span><b id="xp-v">0</b><span class="lbl of">/ <span id="xp-n">0</span></span><span id="xp-gain"></span><span class="lbl rf">Refit <b id="refit-n">00</b></span></div>
@@ -82,8 +84,6 @@
         </div>
         <!-- the Breakout: the tank (fuel for the jump), the hold, parts and chits, and how hard the Custody is looking -->
         <div id="voyage" aria-label="Fuel, hold and pursuit">
-          <div class="vy-row"><span class="lbl">Tank</span><b id="vy-krail">0</b><span class="lbl of">/ <span id="vy-need">24</span> Krail to jump</span></div>
-          <i class="ticks" id="vy-tank"></i>
           <div class="vy-cells"><span><span class="lbl">Hold</span><b id="vy-ore">0/40</b></span><span><span class="lbl">Parts</span><b id="vy-parts">0</b></span><span><span class="lbl">Chits</span><b id="vy-chits">0</b></span></div>
           <div class="vy-row heat"><span class="lbl">Hunt pressure</span><b id="vy-heat">Wanted Lv 1</b></div>
           <i class="ticks" id="vy-heat-t"></i>
@@ -96,6 +96,10 @@
         <div class="sys-row" id="sys-ph">
           <svg class="ico"><use href="#i-laser"/></svg><span class="lbl">Lasers</span><kbd>1</kbd>
           <i class="bar" id="g-bank"></i><b class="val" id="v-bank">100<small>%</small></b><span class="lv" id="lv-ph">Lv 1</span>
+        </div>
+        <div class="sys-row" id="sys-fuel" hidden>
+          <svg class="ico"><use href="#i-rock"/></svg><span class="lbl">Krail</span><span class="nokey"></span>
+          <i class="bar" id="g-fuel"></i><b class="val" id="v-fuel">6/20</b><span class="lv" id="lv-fuel">Tank</span>
         </div>
         <div class="sys-row" id="sys-tp" hidden>
           <svg class="ico"><use href="#i-torp"/></svg><span class="lbl">Torpedoes</span><kbd>2</kbd>
@@ -123,6 +127,10 @@
       <div id="powers" aria-live="polite"></div>
 
       <div id="centre">
+        <section id="threat" class="cut" aria-live="polite">
+          <svg class="ico"><use href="#i-alert"/></svg>
+          <span class="th-b"><b id="th-n">Custody patrol</b><span id="th-s">Picket · 400 m</span><span id="th-l">Threat: low</span></span>
+        </section>
         <section id="boss" class="cut" aria-live="polite">
           <div class="boss-h"><svg class="ico"><use href="#i-capital"/></svg><b id="boss-name">Ironmaw</b><span id="boss-cls">Gutter capital ship</span></div>
           <div class="boss-bar"><i class="ticks" id="boss-hp"></i></div>
@@ -145,6 +153,7 @@
       <section id="log" class="hud-block" aria-live="off">
         <div id="mode"><i class="stripes"></i><span id="mode-t">Cruise</span><i class="rule"></i><svg class="hex" viewBox="0 0 24 24"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7z"/><path d="M12 8l3.46 2v4L12 16l-3.46-2v-4z"/></svg></div>
         <div id="log-lines"></div>
+        <dl id="hints"><div><dt>3</dt><dd>Cut</dd></div><div><dt>1</dt><dd>Lasers</dd></div><div><dt>2</dt><dd>Torpedo</dd></div><div><dt>E</dt><dd>Core</dd></div></dl>
       </section>
 
       <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>

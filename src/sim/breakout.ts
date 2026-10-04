@@ -57,6 +57,8 @@ export const ORE_XP = 1.7;
 export const SPOOL = 5;
 /** Within this distance of the lane mouth, the blockade calls. */
 export const BLOCKADE_AT = 420;
+/** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
+export const BLOCKADE_HP = 3;
 
 /** Parts to patch a plate, the quiet it needs, and how long the patch takes. */
 export const PATCH_COST = 6;
@@ -85,8 +87,8 @@ export const HEAT_CLOCK = 420;
 /** The first pursuer, seconds in. */
 export const PURSUIT_FIRST = 45;
 
-export const pursuitInterval = (heat: number) => lerp(34, 9, clamp(heat, 0, 1));
-export const pursuitCap = (heat: number) => Math.round(lerp(1, 4, clamp(heat, 0, 1)));
+export const pursuitInterval = (heat: number) => lerp(38, 10, clamp(heat, 0, 1));
+export const pursuitCap = (heat: number) => Math.round(lerp(1, 3, clamp(heat, 0, 1)));
 export const pursuitElite = (heat: number) => clamp((heat - 0.7) * 0.6, 0, 0.2);
 
 /** The pursuers, by the heat they need. Gutter crews work the belt ahead and do not care who you are. */

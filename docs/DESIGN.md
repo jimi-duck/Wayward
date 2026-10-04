@@ -31,13 +31,15 @@ A sortie with a shape: get the stolen hauler out of the home system
   plate (30), pay for a refit (60, three cards there and then). The first
   dock takes 0.2 off the hunt pressure.
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
-  more) and the cutter's noise. It decides how often pursuers come (34s
-  down to 9s), how many at once (1 to 4) and which: pickets, then cruisers,
-  enforcers and, late, interdictors, all Custody, from behind; now and then
+  more) and the cutter's noise. It decides how often pursuers come, how
+  many at once and which: pickets, then cruisers, enforcers and, late,
+  interdictors, all Custody, from behind (38s apart down to 10s, one to
+  three at once); now and then
   a Gutter crew from ahead. It is also the clock the difficulty curve reads
   (heat 1 plays like seven minutes of the arcade).
 - **The blockade.** Within 420 units of the lane mouth a Custody capital ship
-  hails. Engage: the usual three-phase fight, and her wreck pays Krail, parts
+  hails, with three times the hull of an arcade run's first capital ship
+  (`BLOCKADE_HP`). Engage: the usual three-phase fight, and her wreck pays Krail, parts
   and a salvage refit. Run it: no fight, but the hunt pressure goes to full
   and four more hulls come at once.
 

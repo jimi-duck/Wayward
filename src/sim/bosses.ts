@@ -157,6 +157,9 @@ export class Command {
   /** Contacts come by themselves on the run clock. Off in the Breakout, where the one capital ship is summoned. */
   auto = true;
   private forced: Faction | null = null;
+  /** Hull multiplier for the next summoned contact (the Breakout's blockade is no introduction). */
+  private forcedHp = 1;
+  private hpScale = 1;
   private last: Faction | null = null;
   private seen: Partial<Record<Faction, number>> = {};
 
@@ -167,9 +170,10 @@ export class Command {
   }
 
   /** Call a contact of this faction now (the Breakout's blockade). It can always be evaded. */
-  summon(t: number, faction: Faction): void {
+  summon(t: number, faction: Faction, hp = 1): void {
     if (this.state !== 'idle') return;
     this.forced = faction;
+    this.forcedHp = hp;
     this.next = t + BOSS_WARN;
   }
 
@@ -272,6 +276,8 @@ export class Command {
     if (this.forced) {
       const f = this.forced, def = FACTIONS[f];
       this.forced = null;
+      this.hpScale = this.forcedHp;
+      this.forcedHp = 1;
       return { faction: f, name: def.names[(this.seen[f] ?? 0) % def.names.length]!, n: this.count, bounty: bossBounty(this.count, f), hails: true, canEvade: true, evadeGap: 0 };
     }
     // the first contact of a run is never the Office ambush (the original's rule)
@@ -290,7 +296,8 @@ export class Command {
   private arrive(t: number, s: ShipState, aliens: Alien[], rng: Rng, events: GameEvent[]): void {
     const { faction, name } = this.pending!;
     const def = FACTIONS[faction];
-    const hp = Math.round(bossHp(this.count, t) * def.hp);
+    const hp = Math.round(bossHp(this.count, t) * def.hp * this.hpScale);
+    this.hpScale = 1;
     // far out in front of the ship and high, so the chase camera sees it come in
     const x = s.x + Math.cos(s.heading) * ARRIVE_AT, z = s.z - Math.sin(s.heading) * ARRIVE_AT, y = ARRIVE_Y;
     this.boss = {

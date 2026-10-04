@@ -317,14 +317,19 @@ should multiply each other; expand combinations before adding combat.
 
 1. M0 rename (one branch). Done.
 2. M1 Breakout: the cutter, pursuit spawning, the exit, the port. First pass done.
-   Where it stands (BALANCE-BREAKOUT.md): the pilot gets out in 62 runs of
-   64, in four and a half to five and a half minutes, with four to five
-   refits; it destroys the blockade every time it fights her. That is easy
-   for an opening, and fighting is not yet costly enough to make running it
-   a real choice. Next on it: the HUD pass and the ship model from the
-   concept boards; a tougher blockade; and combat time down toward a third
-   (the pilot spends a third of a run with a hostile in range on torpedoes,
-   nearer 60% on lasers).
+   Second pass done: the hauler rebuilt after the concept boards (three
+   cyan bells, two clamped drums, two tiers of containers); the HUD after
+   the gameplay view (a brand plate, teal ship bars with the Krail tank, a
+   threat card for the nearest pursuer, the objective as steps, contacts by
+   the scope, key hints); the blockade three times as tough, the pursuit
+   sparser (one to three at once).
+   Where it stands (BALANCE-BREAKOUT.md): fighting the blockade, the pilot
+   gets out 19 times in 24 (she kills 4, and 4 times she leaves first);
+   running it, 24 in 24, in four to five minutes, with four or five refits.
+   Combat is about a third of the run on torpedoes, more than half on
+   lasers. Running is the safe choice and fighting pays only in score for
+   now: her salvage starts to matter when the journey carries the ship on
+   (M3).
 3. M2 comms cards and the checkpoint.
 4. The slice's chart glimpse; playtest.
 5. M3 to M8 in order, each with its pilot report added to BALANCE.md.

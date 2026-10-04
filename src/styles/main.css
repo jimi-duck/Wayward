@@ -883,8 +883,6 @@ html.swipe #app * { overscroll-behavior: contain; }
   font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; }
 .vy-row b { font: 600 calc(var(--fs) * 1.35)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .vy-row .of { color: var(--ink-3); }
-#vy-tank { --n: 24; --on: var(--violet); --off: var(--violet-ghost); height: 4px; }
-#voyage.ready #vy-tank { --on: #ecd6ff; filter: drop-shadow(0 0 5px var(--violet)); }
 .vy-cells { display: flex; gap: 14px; font: 500 calc(var(--fs) * .92)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 .vy-cells b { margin-left: 6px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 .vy-cells .full { color: var(--amber); }
@@ -938,3 +936,34 @@ html.swipe #app * { overscroll-behavior: contain; }
 #contacts-l li::before { content: "◆"; margin-right: 6px; color: var(--c, var(--ink-3)); }
 #contacts-l li span { flex: 1; }
 #contacts-l b { color: var(--ink); font-weight: 600; }
+
+/* ── the HUD pass, after the gameplay view ────────────────────────────────
+   A brand plate top left; the ship's levels as teal bars (energy, the Krail
+   tank) against the orange console; a threat card over the objective for the
+   nearest pursuer; key hints under the log. */
+.plate { display: grid; gap: 3px; padding: 0 0 10px; border-bottom: 1px solid var(--line); text-shadow: 0 1px 6px #000; }
+.pl-n { font: 800 calc(var(--fs) * 2.6)/1 var(--font-display); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.pl-s, .pl-r { font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
+.pl-r { color: var(--ink-3); }
+.touch-ui .plate { display: none; }
+@media (max-width: 760px) { .plate { display: none; } }
+.breakout #sys-ph .bar, #sys-fuel .bar { background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
+#sys-fuel .ico { color: var(--violet); }
+#sys-fuel.ready .bar { background: linear-gradient(90deg, #ecd6ff 0 calc(var(--v) * 100%), var(--violet-ghost) 0); filter: drop-shadow(0 0 4px var(--violet)); }
+#sys-fuel.ready .val { color: var(--violet); }
+.breakout .plates i.on:not(.sh) { background: var(--cy); }
+#threat { display: none; grid-template-columns: auto 1fr; align-items: center; gap: 12px; width: clamp(220px, 22vw, 300px); padding: 8px 14px;
+  --edge: var(--alert-dim); --lit: var(--alert); --fill: rgba(30, 6, 9, .6); }
+#threat.on { display: grid; }
+#threat .ico { width: 26px; height: 26px; color: var(--alert); }
+#threat .th-b { display: grid; gap: 3px; font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+#th-n { font: 700 calc(var(--fs) * 1.1)/1 var(--font-mono); letter-spacing: .14em; color: var(--alert); }
+#threat.high #th-l { color: var(--alert); }
+.touch-ui #threat { display: none; }
+#hints { display: none; margin: 0; gap: 4px 14px; grid-template-columns: repeat(2, auto); justify-content: end; font: 500 calc(var(--fs) * .85)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.breakout:not(.touch-ui) #hints { display: grid; }
+#hints div { display: flex; gap: 8px; align-items: center; }
+#hints dt { min-width: 18px; padding: 2px 4px; border: 1px solid var(--line); text-align: center; color: var(--ink-2); }
+#hints dd { margin: 0; }
+#hints.cutting div:first-child { color: var(--amber); }
+#hints.cutting div:first-child dt { border-color: var(--amber); color: var(--amber); }

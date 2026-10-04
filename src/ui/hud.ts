@@ -87,6 +87,7 @@ export class Hud {
   private modeKey = '';
   private headingShown = true;
   private contactKey = '';
+  private centreKey = '';
 
   constructor(onZoom: (dir: 1 | -1) => void) {
     for (const [id, dir] of [['zoom-in', -1], ['zoom-out', 1]] as const) {
@@ -253,12 +254,14 @@ export class Hud {
 
   private updateVoyage(world: World): void {
     const b = world.bk;
-    if (!b) return;
+    if (!b) { $('threat').classList.remove('on'); return; }
     const v = $('voyage');
-    text($('vy-krail'), String(world.krail));
-    text($('vy-need'), String(JUMP_COST));
-    ticks($('vy-tank'), world.krail / JUMP_COST, 24);
-    v.classList.toggle('ready', world.krail >= JUMP_COST);
+    // the tank, in the systems panel: Krail toward the jump
+    const fuel = $('sys-fuel');
+    text($('v-fuel'), `${world.krail}/${JUMP_COST}`);
+    $('g-fuel').style.setProperty('--v', Math.min(1, world.krail / JUMP_COST).toFixed(2));
+    fuel.classList.toggle('ready', world.krail >= JUMP_COST);
+    text($('lv-fuel'), world.krail >= JUMP_COST ? 'Jump' : 'Tank');
     const ore = $('vy-ore');
     text(ore, `${world.ore}/${world.holdMax}`);
     ore.classList.toggle('full', world.ore >= world.holdMax);
@@ -270,11 +273,11 @@ export class Hud {
     v.classList.toggle('hot', heat >= 0.8);
     // the contacts beside the scope: the two places, the nearest hostile, the nearest Krail trace
     const s = world.ship, dist = (o: { x: number; z: number }) => Math.hypot(o.x - s.x, o.z - s.z);
-    let hostile: { label: string; d: number } | null = null;
+    let hostile: { label: string; d: number; faction: string } | null = null;
     for (const a of world.aliens) {
       if (cloaked(a)) continue;
       const d = dist(a);
-      if (!hostile || d < hostile.d) hostile = { label: alienLabel(a), d };
+      if (!hostile || d < hostile.d) hostile = { label: alienLabel(a), d, faction: a.faction };
     }
     let trace = Infinity;
     for (const r of world.field.rocks) if (r.kind === 'rich' || r.kind === 'rare') trace = Math.min(trace, dist(r));
@@ -303,6 +306,22 @@ export class Hud {
       [`Reach the lane mouth · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
     ];
     const html = steps.map(([t, c]) => `<li class="${c}">${t}</li>`).join('');
+    $('hints').classList.toggle('cutting', world.cutting !== null);
+    // the threat card: the nearest pursuer, how close and how bad
+    const th = $('threat');
+    const near = hostile && hostile.d < 320 ? hostile : null;
+    const thOn = !!near && world.command.state !== 'fight';
+    th.classList.toggle('on', thOn);
+    // the centre grew or shrank: the target card must re-measure what it keeps clear of
+    const cKey = `${thOn}${$('objective').className}`;
+    if (cKey !== this.centreKey) { this.centreKey = cKey; this.measure(); }
+    if (near) {
+      const level = near.d < 45 ? 'high' : near.d < 110 ? 'medium' : 'low';
+      th.classList.toggle('high', level === 'high');
+      text($('th-n'), near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact');
+      text($('th-s'), `${near.label} · ${range(near.d)}`);
+      text($('th-l'), `Threat: ${level}`);
+    }
     const list = $('obj-list');
     if (list.innerHTML !== html) list.innerHTML = html;
 
@@ -359,6 +378,8 @@ export class Hud {
       tp.classList.toggle('empty', arms.rack === 0);
       text(vr, arms.rack === 0 ? `${Math.max(0, arms.reload).toFixed(1)}s` : locked ? 'Lock' : 'Ready');
     }
+
+    $('sys-fuel').hidden = !world.bk;
 
     // mines: laid by themselves, out of a rack
     const mn = $('sys-mn');
@@ -435,7 +456,7 @@ export class Hud {
     $('release').classList.toggle('ready', ready);
 
     // the panel's height places the power-ups under it, and the centre block on narrow screens
-    const sysKey = `${st.torpedoes}${st.mines}${shields}`;
+    const sysKey = `${st.torpedoes}${st.mines}${shields}${!!world.bk}`;
     if (sysKey !== this.sysKey) { this.sysKey = sysKey; this.measure(); }
   }
 
