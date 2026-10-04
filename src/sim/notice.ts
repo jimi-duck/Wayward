@@ -203,3 +203,35 @@ export function pressure(n: Notice, day: number): Pressure {
   }
   return p;
 }
+
+/** One faction's line on the chart's notice readout. */
+export interface NoticeLine {
+  faction: Faction;
+  name: string;
+  tier: Tier;
+  notice: number;
+  /** The next tier up and the notice it begins at (null at the top). */
+  next: { tier: Tier; at: number } | null;
+  /** Standing with whoever the faction answers to (null: nobody you can stand with). */
+  standing: number | null;
+  /** The captain on the faction's file, and the day they can come again. */
+  captain: { name: string; ship: string; rest: number } | null;
+}
+
+/** What the chart shows of the notice: every faction that has marked you, most marked first. */
+export function readout(n: Notice, standing: Partial<Record<Standing, number>>): NoticeLine[] {
+  const out: NoticeLine[] = [];
+  for (const f of Object.keys(n.by) as Faction[]) {
+    const v = noticeOf(n, f), t = tier(n, f), c = captainOf(n, f), row = NOTICE[f];
+    if (v <= 0 && t === 'quiet' && !c) continue;
+    const up = TIERS[rank(t) + 1];
+    const def = c ? CAPTAIN_BY_ID[c.id] : undefined;
+    out.push({
+      faction: f, name: row.name, tier: t, notice: v,
+      next: up && up !== 'quiet' ? { tier: up, at: row.at[up] } : null,
+      standing: row.standing ? standing[row.standing] ?? 0 : null,
+      captain: c && def ? { name: def.name, ship: form(def, c).ship, rest: c.rest } : null,
+    });
+  }
+  return out.sort((a, b) => rank(b.tier) - rank(a.tier) || b.notice / NOTICE[b.faction].at.captain - a.notice / NOTICE[a.faction].at.captain);
+}

@@ -372,6 +372,27 @@ should multiply each other; expand combinations before adding combat.
    systems and eleven days a journey, sorties of about three minutes after
    the Breakout's five. Calloway reaches 10% of third systems, 30% of
    fourth, about half of fifth: pressure that builds across the session.
+   Open: the pilot never lands in a netted system (the Net stays a column
+   behind a pilot that keeps moving, so the netted port scan never came);
+   the journey is easy for a steady pilot; a false flight plan and the
+   survey relay are rarely taken; re-plotting from a port is not built.
+6. M4 notice and nemeses. Started: `content/factions.ts` (each faction's
+   notice per kill, fade a day, tier thresholds, fees, hunters, captains),
+   `sim/notice.ts` (notice and standing across the journey, the tiers, named
+   captains who rest between meetings and remember how each went), the
+   journey folding each sortie's kills and cards into it, the save at
+   version 2 with a migration, and the world playing it: bulletins and word
+   in the Gutter at warning, dearer fees at toll, a harder pursuit at
+   hunters, and at the top a named captain (`content/captains.ts`,
+   `sim/captains.ts`): eight captains with a face on the comms card and one
+   of five personalities (announce, ambush, deal, turn away), whose ship
+   comes in under its name, and who come back changed by each meeting (a
+   grudge, bolder, a bigger wing, dearer, wise to running). The chart
+   reads the notice out under the stores: each faction that has marked
+   you, its tier and how far to the next, your standing with it, and its
+   captain, resting or hunting. Open: Calloway learning and making offers,
+   and a pilot report on how soon captains come.
+7. M5 to M8 in order, each with its pilot report.
    Loose ends, second pass (BALANCE-JOURNEY.md, 48 journeys): the Net is
    quicker (0.45 a day, harder on a broad front), so a steady pilot lands
    in a netted system about once a journey and the netted port's scan
