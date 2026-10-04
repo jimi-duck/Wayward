@@ -160,7 +160,7 @@ export interface Outcome {
   seam?: number;
   /** Days of delay for Calloway (a false trail, a lie she has to check). */
   hunt?: number;
-  /** Days this system holds the Net out (a settlement helped, a relay broken). */
+  /** Days this system holds the Net out (a settlement helped, a relay broken); negative, days the Net gains here (a relay left to finish). */
   stall?: number;
   /** Calloway's ship: she comes for a fight, or you run with her on your tail. */
   calloway?: 'fight' | 'run';

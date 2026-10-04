@@ -64,6 +64,8 @@ export interface PilotOptions {
   breakout?: boolean;
   /** How to answer comms cards (the Breakout). Bluff by default. */
   policy?: Policy;
+  /** Docked at a port (once a dock, before trading): the journey's chance to plot again. */
+  onDock?: (w: World) => void;
 }
 
 export interface PilotResult {
@@ -456,6 +458,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   const queue: InputFrame[] = [];
   const memo: Memo = { seen: new Map(), plan: null };
   const seen = memo.seen;
+  let docks = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
     if (w.phase === 'refit') { w.choose(pickCard(w, strategy, rngPick)); continue; }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
@@ -470,6 +473,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
       continue;
     }
     if (w.phase === 'dock') {
+      if (w.bk && w.bk.docks > docks) { docks = w.bk.docks; o.onDock?.(w); }
       // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, and a refit if there is money left
       w.sellOre();
       while (w.krail < w.jumpCost && w.buy('krail'));
