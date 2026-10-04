@@ -1,6 +1,7 @@
 import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
+import { fileLines } from '../sim/calloway';
 import { krailKnown, lanesFrom, placeAt, sysById, type Place, type StarSystem } from '../sim/chart';
 import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
@@ -210,6 +211,7 @@ export class ChartPanel {
       h('p', 'ch-hunt', j.trail.length < 2
         ? 'Calloway · not on your trail yet'
         : `Calloway · last seen ${seen ? sysById(j.chart, seen).name : 'unknown'}${ago ? `, ${ago} day${ago === 1 ? '' : 's'} ago` : ', today'} · ${gap === 0 ? 'in this system' : `about ${gap} jump${gap === 1 ? '' : 's'} behind`}`),
+      ...fileLines(j.calloway, j.hunt.hunch).map((l) => h('p', 'ch-file', l)),
       h('p', 'ch-netl', `The Net · ${netN} system${netN === 1 ? '' : 's'} as of day ${Math.floor(j.chart.seenDay) + 1}`),
       ...readout(j.notice, c.standing).map((l) => h('p', `ch-notice t-${l.tier}`, noticeText(l, j.day))),
     );

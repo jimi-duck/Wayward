@@ -224,6 +224,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Krail and pickups | `sim/pickups.ts` | `World.collect`, `World.gainXp` |
 | Enemies | `ALIEN_TYPES`, `FACTION_TRAITS`, `VARIANTS`, `SQUADS`, `ELITES` in `sim/enemies.ts` | the existing tactical AI, `World.spawn` |
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
+| Calloway's file | `content/calloway.ts` (tricks, numbers, offers, her face) | `sim/calloway.ts` (the file, her read on your route, offers, the last meeting), `sim/hunt.ts` (the hunch), `World` (the offer, the lane mouth) |
 | Named captains | `CAPTAINS`, `PERSONALITIES` in `content/captains.ts`; who names whom in `content/factions.ts` | `sim/captains.ts` (how they come, the card, memory), `sim/notice.ts` (when, the roster), `World` (the meeting), `ui/face.ts` |
 | Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
@@ -254,6 +255,11 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   line: the hail, the ambush, the bargain, turning away, and coming back
   after each kind of meeting), and its id in that faction's `captains` in
   `content/factions.ts`. The tests check every line is there.
+- **A trick Calloway learns**: `learn: '<trick>'` on the choice's odds,
+  the `card:choice` in `TRICKS` in `content/calloway.ts`, and a `wise`
+  line on the card if she should say so.
+- **An offer of Calloway's**: one entry in `OFFERS` in
+  `content/calloway.ts`, and a rule for when she makes it in `offerFor`.
 - **A sector event**: a row in `ENCOUNTERS` and a case in `startEncounter`,
   `stepEncounter` and `finish`.
 - **A comms card**: one entry in `CARDS`. Give it a kind, a caller, a
@@ -469,6 +475,44 @@ up your file.
   one who broke off comes back with a bigger wing; running works less each
   time; the price goes up every time you pay; and nobody turns away twice.
   A captain who goes down with the ship is gone, and someone else comes.
+
+### Calloway's file
+
+Calloway is the nemesis above the captains: she follows the trail
+(`sim/hunt.ts`) for the whole journey, and keeps a file on you
+(`sim/calloway.ts`, numbers and offers in `content/calloway.ts`). The chart
+shows what is in it.
+
+- **Tricks.** Every way you get away from her is counted, won or lost: a
+  false heading, "the file is out", the ore pods, going dark, a false
+  flight plan, a Drift fleet lying for you, running, fighting. Each one she
+  has seen takes 15 points off its odds the next time (a choice's
+  `odds.learn`), and her cards say so ("I know what ore pods look like
+  now"). Running from her twice brings a bigger wing; every beating her
+  ship takes, a heavier ship.
+- **Your route.** After three systems she reads your habits: the kind of
+  system you keep stopping in (half of them or more), and whether you go
+  straight for the Threshold. Where you are predictable she skips the
+  third of a day she spends asking questions, so she gains on you there.
+- **What you care about.** Your answers to everyone else (help, trade,
+  fight) say what matters to you. With what you have told her and who you
+  know, that picks her offers: to meet (if you have told her the truth),
+  a name in the Gutter for three days (if you have a friend there), a
+  truce on Custody and Office kills (a fighter), a full tank for your
+  heading (a trader), or a way home with a hearing, not a cell (anyone). One every four
+  days at most, each once a journey, a minute into a sortie once you have
+  flown two systems and she is two jumps behind or has caught you.
+- **Trust.** The truth told her and offers taken, less lies and any word
+  broken (kill her people after promising not to, and she says so).
+- **The last meeting.** Plot the jump to the Threshold and she is waiting
+  at the lane mouth instead of following. The card is built from the file:
+  what she says (never met, the lies she counted, the word you kept or
+  broke, the route she read, the ship rebuilt for you), the ship she
+  brings, and the ways past: fight, spool under her guns, show her the
+  archive (if you ever told her the truth; the odds are her trust), remind
+  her how the fights went (if her ship was beaten twice), and the bluff or
+  the dark run if you used them on her before, at the odds she has learned.
+  How it ended goes in the log and on the end panel.
 
 ## Sector events
 

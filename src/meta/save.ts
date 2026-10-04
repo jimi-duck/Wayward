@@ -1,3 +1,4 @@
+import { hunchOf, newDossier } from '../sim/calloway';
 import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
 import { noKit } from '../sim/modules';
 import { newNotice } from '../sim/notice';
@@ -33,6 +34,9 @@ export function migrate(raw: unknown): Journey | null {
     for (const id of j.chart.visited) sightPlaces(j.chart, id, SIGHT);
   }
   if (!j.chart.places) return null;
+  // 4 → 5: Calloway's file (M4). She starts it now, and reads the route already flown.
+  if (j.version < 5) { j.calloway = newDossier(); j.hunt.hunch = hunchOf(j.chart, j.trail); }
+  if (!j.calloway) return null;
   j.version = VERSION;
   return j as Journey;
 }

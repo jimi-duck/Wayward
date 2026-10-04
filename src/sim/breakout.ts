@@ -6,6 +6,7 @@ import type { EncounterId } from './encounters';
 import type { Faction } from './enemies';
 import type { RockKind, RockSize } from './field';
 import type { Report } from './captains';
+import { NO_NEMESIS, type Nemesis } from './calloway';
 import type { Kit } from './modules';
 import { QUIET, type Pressure } from './notice';
 import type { RunStats } from './run';
@@ -142,13 +143,15 @@ export interface SortieDef {
   home: boolean;
   /** What the factions' notice brings here: tiers the cards read, fees, the pursuit, a captain. */
   notice: Pressure;
+  /** What Calloway knows of you here (sim/calloway.ts): the tricks she is wise to, her ship, an offer, and whether she waits at the lane mouth for the last time. */
+  nemesis: Nemesis;
   /** The place in this system still to be dealt with (content/phenomena.ts): the event it plays, a little after arrival. */
   place?: { name: string; text: string; plays: EncounterId } | null;
 }
 
 export const HOME: SortieDef = {
   system: 'home', name: 'Cerro', kind: 'home', dest: 'the Scatter', jumpCost: 20, lane: 2600, port: { name: 'Frontier Supply', prices: BASE_PRICES },
-  heat: 0.1, heatRate: 1, rich: 0.09, density: 1, gutter: 0.22, calls: 1, blockade: true, netted: true, calloway: Infinity, behind: Infinity, home: true, notice: QUIET,
+  heat: 0.1, heatRate: 1, rich: 0.09, density: 1, gutter: 0.22, calls: 1, blockade: true, netted: true, calloway: Infinity, behind: Infinity, home: true, notice: QUIET, nemesis: NO_NEMESIS,
 };
 
 /** What the Wayward carries from one sortie into the next. */
