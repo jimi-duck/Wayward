@@ -42,8 +42,8 @@ describe('places on the chart', () => {
       for (const [id, p] of Object.entries(c.places)) {
         const s = sysById(c, id), d = PLACES[p.id];
         expect(d.kinds).toContain(s.kind);
-        expect(s.col).toBeGreaterThanOrEqual(d.cols[0]);
-        expect(s.col).toBeLessThanOrEqual(d.cols[1]);
+        expect(s.region ?? 0).toBeGreaterThanOrEqual(d.regions[0]);
+        expect(s.region ?? 0).toBeLessThanOrEqual(d.regions[1]);
         expect(p.done).toBe(false);
       }
     }

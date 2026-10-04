@@ -78,6 +78,8 @@ export interface Ctx {
   /** Calloway's file (sim/calloway.ts): times she has seen each trick, and her read on your route. */
   wise?: Readonly<Partial<Record<string, number>>>;
   hunch?: readonly string[];
+  /** Who else is in the system (sim/scatter.ts): 'drift', 'holdfast', 'raid', 'voice', 'thren'. */
+  here?: readonly string[];
 }
 
 /** A condition on the ship and the run. Every field given must hold. */
@@ -120,6 +122,8 @@ export interface Cond {
   wise?: [string, number];
   /** Calloway's read on your route says this: a system kind, or 'straight'. */
   hunch?: string;
+  /** Someone is in the system (sim/scatter.ts presence): a Drift fleet, a Holdfast, a raid, the Voice, the Thren. */
+  here?: string;
 }
 
 /** A number, or a token read off the ship: the card's fee, all of it, half of it. */
@@ -171,6 +175,8 @@ export interface Outcome {
   seam?: number;
   /** Days of delay for Calloway (a false trail, a lie she has to check). */
   hunt?: number;
+  /** Seconds the Thren hold off before they swarm again (Krail vented for them). */
+  calm?: number;
   /** Days this system holds the Net out (a settlement helped, a relay broken); negative, days the Net gains here (a relay left to finish). */
   stall?: number;
   /** Calloway's ship: she comes for a fight, or you run with her on your tail. */
@@ -251,6 +257,8 @@ export interface CardDef {
   trigger?: Trigger;
   when?: Cond;
   weight?: number;
+  /** More likely when this holds (a Holdfast's plea, in a Holdfast). */
+  boost?: { if: Cond; mult: number };
   /** Can come again in a later system (otherwise once a journey). */
   repeat?: boolean;
   /** Who is on the channel, for the read (no ships: a voice on the radio). */
@@ -356,6 +364,7 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.notice && !atLeast(x.notice?.[c.notice[0]], c.notice[1])) return false;
   if (c.wise && (x.wise?.[c.wise[0]] ?? 0) < c.wise[1]) return false;
   if (c.hunch !== undefined && !x.hunch?.includes(c.hunch)) return false;
+  if (c.here !== undefined && !x.here?.includes(c.here)) return false;
   return true;
 }
 
@@ -580,7 +589,8 @@ export function resolve(o: Open, id: string, x: Ctx, rng: Rng): { choice: Choice
 export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: Exclude<Trigger, 'follow' | 'offer'> = 'chance'): CardDef | null {
   const pool = CARDS.filter((c) => (c.trigger ?? 'chance') === trigger && !seen.has(c.id) && condOk(c.when, x));
   if (!pool.length) return null;
-  let roll = rng.next() * pool.reduce((a, c) => a + (c.weight ?? 1), 0);
-  for (const c of pool) if ((roll -= c.weight ?? 1) <= 0) return c;
+  const w = (c: CardDef) => (c.weight ?? 1) * (c.boost && condOk(c.boost.if, x) ? c.boost.mult : 1);
+  let roll = rng.next() * pool.reduce((a, c) => a + w(c), 0);
+  for (const c of pool) if ((roll -= w(c)) <= 0) return c;
   return pool[pool.length - 1]!;
 }

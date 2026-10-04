@@ -146,6 +146,8 @@ export const VARIANTS: Record<string, Variant> = {
   whisper: { id: 'whisper', kind: 'scout',   faction: 'office',    label: 'Ambush fighter', at: 270, weight: 2, cap: 3 },
   probe:    { id: 'probe',    kind: 'stalker', faction: 'voice',       label: 'Voice probe',     at: 330, weight: 1.5, cap: 2 },
   shard:    { id: 'shard',    kind: 'lancer',  faction: 'thren',    label: 'Shard cruiser',  at: 370, weight: 1.5, cap: 1, split: true },
+  // Thren swarms on the chart (sim/scatter.ts): motes come in knots, drawn by the Krail aboard
+  mote:     { id: 'mote',     kind: 'scout',   faction: 'thren',    label: 'Thren mote',     at: Infinity, weight: 0, cap: 8 },
   // the Breakout's pursuers: Custody hulls that come only after the stolen hauler
   enforcer: { id: 'enforcer', kind: 'raptor',  faction: 'custody',     label: 'Enforcer',       at: Infinity, weight: 0, cap: 2 },
   interdictor: { id: 'interdictor', kind: 'stalker', faction: 'custody', label: 'Interdictor', at: Infinity, weight: 0, cap: 2 },
