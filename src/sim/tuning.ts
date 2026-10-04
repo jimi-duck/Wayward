@@ -16,6 +16,12 @@ export const ROT_SPEED = 0.06;
 export const THRUST = 0.155;
 /** Of the slide grip removes, the share that comes back as forward speed. */
 export const GRIP_CARVE = 0.6;
+/**
+ * Drag kept per step off the throttle. Lighter than the hull's own (which
+ * sets the top speed under thrust), so letting go carries the ship on for a
+ * second and a half instead of stopping it dead: it flies like a ship.
+ */
+export const COAST_DRAG = 0.974;
 
 /** The helm eases in at this rate per second, so a tap nudges and a hold turns. */
 export const HELM_EASE = 14;
@@ -30,12 +36,13 @@ export const THROTTLE_SPAN = 0.55;
 // New in the 3D game: the one move that uses the third dimension. A full roll
 // with a sideways kick, so it is a dodge, and a short window in which nothing
 // can hit you. The kick scales with the hull's top speed, and the hull's own
-// drag decides how far the slide carries.
+// drag decides how far the slide carries: grip lets go for the roll, so it
+// is a real sidestep of a few ship lengths.
 export const ROLL_TIME = 0.45;
 export const ROLL_COOLDOWN = 1.0;
 export const ROLL_IFRAMES = 0.35;
 /** Sideways kick as a fraction of the hull's top speed. */
-export const ROLL_KICK = 0.4;
+export const ROLL_KICK = 0.5;
 
 // ── the ship ──────────────────────────────────────────────────────────────
 /** Collision radius: the original's 9px. */
@@ -46,14 +53,15 @@ export const BREACH_GRACE = 2.2;
 
 // ── lasers (button 1) ────────────────────────────────────────────────────
 // The original fired by itself. Here the player pulls the trigger, so the
-// limit is a bank of energy: hold the trigger and it drains, let go and it
-// refills. The gritty pass made them heavier: a slower cadence, a harder
-// hit and a longer reach, because enemies now come in from far out.
+// limit is a bank of energy that refills all the time: a full bank fires
+// four lances a second, and a held trigger drains it over about five
+// seconds down to the two a second the refill keeps up. The bank never
+// stops the guns, so holding fire always fires.
 /** Seconds between shots. */
-export const SHOT_COOLDOWN = 0.3;
-/** Lance speed and life: 80 units/s for 1.3s, about 100 units of reach. */
-export const BOLT_SPEED = 80;
-export const BOLT_LIFE = 1.3;
+export const SHOT_COOLDOWN = 0.25;
+/** Lance speed and life: 95 units/s for 1.1s, about 100 units of reach. */
+export const BOLT_SPEED = 95;
+export const BOLT_LIFE = 1.1;
 export const BOLT_DAMAGE = 1.4;
 /**
  * The gunnery computer: steering stays on the plane, so a lance fired with a
@@ -61,11 +69,10 @@ export const BOLT_DAMAGE = 1.4;
  * target's size) is lifted or dropped onto the target's altitude.
  */
 export const BOLT_ELEVATE_CONE = 0.14;
-/** Laser bank: energy per shot, refill per second, and the pause before it refills. */
+/** Laser bank: energy per shot, and refill per second. */
 export const BANK_MAX = 100;
 export const BANK_SHOT = 9;
-export const BANK_REFILL = 24;
-export const BANK_DELAY = 0.35;
+export const BANK_REFILL = 18;
 
 // ── torpedoes (button 2) ───────────────────────────────────────────
 // Heavy ordnance: launched slow, they light their motor and accelerate onto
@@ -132,6 +139,14 @@ export const OVERCHARGE_POINTS = 250;
 export const REPAIR_CHANCE = 0.06;
 export const REPAIR_CHANCE_ELITE = 0.1;
 export const REPAIR_GAP = 35;
+// ── the shield ───────────────────────────────────────────────────────────
+// Every ship flies with one. It is a meter, not a count: a hit takes a whole
+// charge, and once the ship has gone SHIELD_DELAY seconds without damage the
+// meter fills again, a charge every SHIELD_RECHARGE seconds. So pulling out
+// of a fight builds it back up, and pressing on with it down costs plate.
+export const SHIELD_MAX = 1;
+export const SHIELD_RECHARGE = 10;
+export const SHIELD_DELAY = 5;
 /** Grace after a shield absorbs a hit: shorter than a plate's, so one charge never eats a volley. */
 export const SHIELD_GRACE = 0.7;
 

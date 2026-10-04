@@ -160,13 +160,13 @@ export class Hud {
         case 'power': this.note(world, `${POWER_LABEL[e.kind]}`, 'gain'); break;
         case 'plasmaDown': this.note(world, 'Plasma torpedo shot down'); break;
         case 'tractor': this.note(world, 'Tractor lock · thrust away', 'hit'); break;
-        case 'bankEmpty': this.note(world, 'Laser bank dry', 'hit'); break;
+        case 'bankEmpty': this.note(world, 'Laser bank low · slower fire', 'hit'); break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':
-          this.note(world, e.left > 0 ? `Shield took it · ${e.left} left` : 'Shield down · recharging', 'hit');
+          this.note(world, e.left > 0 ? `Shield took it · ${e.left} left` : 'Shield down', 'hit');
           this.flashHit();
           break;
-        case 'shieldUp': this.note(world, `Shield up · ${e.charges}`, 'gain'); break;
+        case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, 'Shield up', 'gain'); break;
         case 'regen': this.note(world, `Hull regrown · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'damageControl': this.banner('Damage control', 'Hull held', 'One plate · two seconds of grace', 2, 'caution'); break;
         case 'overchargeReady': this.note(world, `Reactor charged · ${document.documentElement.classList.contains('touch-ui') ? 'tap Core' : 'E'} to release`, 'gain'); break;
@@ -388,7 +388,7 @@ export class Hud {
     ph.classList.toggle('hot', hot);
     const vb = $('v-bank');
     const pct = `${Math.round(bank * 100)}`;
-    if (dry) text(vb, 'Dry');
+    if (dry) text(vb, 'Low');
     else if (vb.firstChild?.nodeValue !== pct || vb.childNodes.length !== 2) vb.replaceChildren(pct, Object.assign(document.createElement('small'), { textContent: '%' }));
 
     // torpedoes: the rack, the next round filling as it reloads, and the lock
@@ -429,9 +429,10 @@ export class Hud {
     if (word) text(vo, word);
     else if (vo.firstChild?.nodeValue !== `${Math.round(oc * 100)}` || vo.childNodes.length !== 2) vo.replaceChildren(`${Math.round(oc * 100)}`, Object.assign(document.createElement('small'), { textContent: '%' }));
 
-    // the hull: plates, then shield charges
+    // the hull: plates, then shield charges, the one filling drawn part full
     const shields = st.shieldMax + (world.powers.shield > 0 ? 1 : 0);
-    const key = `${world.plates}/${st.maxPlates}/${world.shields}/${shields}`;
+    const fill = Math.round((world.shields % 1) * 10) / 10;
+    const key = `${world.plates}/${st.maxPlates}/${world.shields | 0}/${fill}/${shields}`;
     if (key !== this.plateKey) {
       this.plateKey = key;
       const host = $('g-plates');
@@ -439,11 +440,12 @@ export class Hud {
       for (let i = 0; i < st.maxPlates; i++) { const p = document.createElement('i'); if (i < world.plates) p.className = 'on'; kids.push(p); }
       for (let i = 0; i < shields; i++) {
         const p = document.createElement('i');
-        p.className = `sh${i < world.shields || (i >= st.shieldMax && world.powers.shield > 0) ? ' on' : ''}`;
+        p.className = `sh${i < (world.shields | 0) || (i >= st.shieldMax && world.powers.shield > 0) ? ' on' : ''}`;
+        if (i === (world.shields | 0) && i < st.shieldMax && fill > 0) p.style.setProperty('--fill', `${fill * 100}%`);
         kids.push(p);
       }
       host.replaceChildren(...kids);
-      host.setAttribute('aria-label', `Hull ${world.plates} of ${st.maxPlates}${shields ? `, shields ${world.shields}` : ''}`);
+      host.setAttribute('aria-label', `Hull ${world.plates} of ${st.maxPlates}${shields ? `, shields ${world.shields | 0}` : ''}`);
       text($('v-hull'), `${world.plates}/${st.maxPlates}`);
     }
     $('sys-hull').classList.toggle('crit', world.plates <= 1 && world.alive);

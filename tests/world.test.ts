@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import type { Rock } from '../src/sim/field';
-import { BANK_MAX, BANK_SHOT, DYING, ROCK_POINTS, SHOT_COOLDOWN, TORP_RELOAD, TORP_SPACING } from '../src/sim/tuning';
+import { BANK_MAX, BANK_REFILL, BANK_SHOT, DYING, ROCK_POINTS, SHOT_COOLDOWN, TORP_RELOAD, TORP_SPACING } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
@@ -35,12 +35,16 @@ describe('lasers', () => {
     expect(shots).toBe(Math.ceil(60 / Math.ceil(SHOT_COOLDOWN / STEP - 1e-9)));
   });
 
-  it('drain the bank, refuse when it is empty, and refill after the trigger is released', () => {
+  it('drain the bank on a held trigger, keep firing at the refill rate once it is low, and refill', () => {
     const w = new World(1);
     w.field.rocks = [];
-    run(w, 6, { fire: true });
+    run(w, 20, { fire: true });
     expect(w.arms.bank).toBeLessThan(BANK_SHOT);
     expect(w.drain().some((e) => e.type === 'bankEmpty')).toBe(true);
+    // a low bank still fires, steadily, as fast as it refills
+    let shots = 0;
+    for (let i = 0; i < 240; i++) { w.step(STEP, input({ fire: true })); shots += w.drain().filter((e) => e.type === 'bolt').length; }
+    expect(shots).toBeGreaterThanOrEqual(Math.floor((4 * BANK_REFILL) / BANK_SHOT) - 1);
     run(w, 6);
     expect(w.arms.bank).toBe(BANK_MAX);
   });
@@ -100,6 +104,7 @@ describe('torpedoes', () => {
 describe('the hull', () => {
   it('loses a plate to rock, then gets a moment of grace', () => {
     const { w } = range(0.5, 0);
+    w.shields = 0;
     w.step(STEP, input());
     expect(w.plates).toBe(w.hull.plates - 1);
     const after = w.plates;
@@ -110,6 +115,7 @@ describe('the hull', () => {
   it('breaches at zero plates, reports the run, and starts a new one on request', () => {
     const { w, rock } = range(0.5, 0);
     w.score = 500;
+    w.shields = 0;
     for (let i = 0; i < w.hull.plates; i++) {
       w.ship.invuln = 0;
       rock.x = w.ship.x; rock.z = w.ship.z; rock.vx = rock.vz = 0;

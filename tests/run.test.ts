@@ -151,23 +151,41 @@ describe('the kill chain', () => {
 });
 
 describe('defence', () => {
-  it('a shield charge takes a hit instead of the hull, then recharges', () => {
+  it('a shield charge takes a hit instead of the hull, then builds back up once the ship is left alone', () => {
     const w = quiet();
-    w.setLevels({ df_shield: 1 });
     expect(w.shields).toBe(1);
+    w.setLevels({ df_shield: 1 });
+    expect(w.shields).toBe(2);
     w.shots.push({ id: 1, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
     w.step(STEP, input());
     expect(w.plates).toBe(w.stats.maxPlates);
-    expect(w.shields).toBe(0);
-    expect(w.run.shieldsAbsorbed).toBe(1);
-    run(w, w.stats.shieldRecharge + 0.1);
     expect(w.shields).toBe(1);
+    expect(w.run.shieldsAbsorbed).toBe(1);
+    // nothing comes back until the delay has passed, then it fills smoothly
+    run(w, w.stats.shieldDelay - 0.1);
+    expect(w.shields).toBe(1);
+    run(w, 0.1 + w.stats.shieldRecharge / 2);
+    expect(w.shields).toBeGreaterThan(1.4);
+    expect(w.shields).toBeLessThan(1.6);
+    run(w, w.stats.shieldRecharge);
+    expect(w.shields).toBe(2);
+  });
+
+  it('a hit with only part of a charge built goes to the hull and starts the wait again', () => {
+    const w = quiet();
+    w.shields = 0.8;
+    w.shots.push({ id: 1, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
+    w.step(STEP, input());
+    expect(w.plates).toBe(w.stats.maxPlates - 1);
+    expect(w.shields).toBeCloseTo(0.8);
+    expect(w.shieldT).toBeGreaterThan(w.stats.shieldDelay - 0.1);
   });
 
   it('damage control saves the last plate, once', () => {
     const w = quiet();
     w.setLevels({ df_control: 1 });
     w.plates = 1;
+    w.shields = 0;
     const hit = () => {
       w.ship.invuln = 0;
       w.shots.push({ id: 9, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
@@ -192,6 +210,7 @@ describe('defence', () => {
     for (const prow of [false, true]) {
       const w = quiet();
       if (prow) w.setLevels({ cl_ram: 1 });
+      w.shields = 0;
       const al = parked(w, 0, -SHIP_R - 1);
       al.hp = 2;
       w.step(STEP, input());

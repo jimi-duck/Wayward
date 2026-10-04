@@ -7,11 +7,11 @@ import { BASE, CAPS } from '../src/sim/stats';
 const none = new Set<string>();
 
 describe('the refit tree', () => {
-  it('starts from the stock ship: twin lasers, three plates, no systems', () => {
+  it('starts from the stock ship: twin lasers, three plates, one shield charge, no systems', () => {
     const s = computeStats({});
     expect(s).toEqual(BASE);
     expect(s.torpedoes || s.mines || s.plasma || s.arc).toBe(false);
-    expect(s.shieldMax).toBe(0);
+    expect(s.shieldMax).toBe(1);
   });
 
   it('is consistent: every requirement and group points at a real upgrade', () => {

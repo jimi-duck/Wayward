@@ -118,8 +118,9 @@ describe('capital ships', () => {
 });
 
 describe('enemy fire', () => {
-  it('costs a hull plate when it lands', () => {
+  it('costs a hull plate when it lands on a ship with its shield down', () => {
     const w = immortal();
+    w.shields = 0;
     w.shots.push({ id: 1, x: w.ship.x, y: 0, z: w.ship.z, vx: 0, vy: 0, vz: 0, life: 1, r: 0.35, faction: 'gutter', hp: 0, seek: 0, split: 0 });
     w.step(STEP, idle);
     expect(w.plates).toBe(w.hull.plates - 1);
@@ -182,8 +183,8 @@ describe('the 3D sky', () => {
       w.step(STEP, idle);
       if (w.drain().some((e) => e.type === 'evade')) evaded++;
     }
-    expect(evaded).toBeGreaterThan(8);
-    expect(evaded).toBeLessThan(20);
+    expect(evaded).toBeGreaterThan(4);
+    expect(evaded).toBeLessThan(17);
   });
 
   it('cruisers take cover behind a bulwark, on the far side from the ship', () => {

@@ -1,7 +1,7 @@
 import { HULL, type Hull } from '../content/hulls';
 import {
   BANK_MAX, BANK_REFILL, BANK_SHOT, BOLT_DAMAGE, BOLT_LIFE, BOLT_SPEED, HIT_GRACE, PX, ROLL_COOLDOWN, ROLL_IFRAMES, ROLL_KICK,
-  SHOT_COOLDOWN, TORP_ACCEL, TORP_BLAST, TORP_CONE, TORP_DAMAGE, TORP_MAX, TORP_RELOAD, TORP_SEEK, TORP_TURN,
+  SHIELD_DELAY, SHIELD_MAX, SHIELD_RECHARGE, SHOT_COOLDOWN, TORP_ACCEL, TORP_BLAST, TORP_CONE, TORP_DAMAGE, TORP_MAX, TORP_RELOAD, TORP_SEEK, TORP_TURN,
 } from './tuning';
 
 // ── the ship's numbers ────────────────────────────────────────────────────
@@ -112,8 +112,12 @@ export interface Stats {
 
   // defence
   maxPlates: number;
+  /** Shield charges the meter holds; a hit takes a whole charge. */
   shieldMax: number;
+  /** Seconds the meter takes to fill one charge, once it is recharging. */
   shieldRecharge: number;
+  /** Seconds without damage before the meter starts to fill. */
+  shieldDelay: number;
   grace: number;
   damageControl: number;
   reactive: boolean;
@@ -180,7 +184,7 @@ export const BASE: Readonly<Stats> = Object.freeze({
   thrust: 1, turn: 1, grip: HULL.grip, rollCooldown: ROLL_COOLDOWN, rollKick: ROLL_KICK, rollIframes: ROLL_IFRAMES,
   drift: false, evasion: false,
 
-  maxPlates: HULL.plates, shieldMax: 0, shieldRecharge: 20, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
+  maxPlates: HULL.plates, shieldMax: SHIELD_MAX, shieldRecharge: SHIELD_RECHARGE, shieldDelay: SHIELD_DELAY, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
 
   tractor: 165 * PX, xpMult: 1, ocGain: 1, ocRadius: 20, ocDamage: 10, ocOverload: 4, ocPhase: 0, ocRefill: false,
 
@@ -211,8 +215,9 @@ export const CAPS = {
   arcTargets: 6,
   arcRange: 16,
   maxPlates: 5,
-  shieldMax: 2,
-  shieldRecharge: 12,
+  shieldMax: 3,
+  shieldRecharge: 2.5,
+  shieldDelay: 1.2,
   grace: 2.2,
   tractor: 42,
   xpMult: 1.5,
@@ -253,6 +258,7 @@ export function capStats(s: Stats): Stats {
   s.maxPlates = Math.min(Math.round(s.maxPlates), CAPS.maxPlates);
   s.shieldMax = Math.min(Math.round(s.shieldMax), CAPS.shieldMax);
   s.shieldRecharge = Math.max(s.shieldRecharge, CAPS.shieldRecharge);
+  s.shieldDelay = Math.max(s.shieldDelay, CAPS.shieldDelay);
   s.grace = Math.min(s.grace, CAPS.grace);
   s.tractor = Math.min(s.tractor, CAPS.tractor);
   s.xpMult = Math.min(s.xpMult, CAPS.xpMult);
