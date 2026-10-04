@@ -2,12 +2,14 @@ import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
 import { noKit } from '../sim/modules';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
+import { pending } from '../sim/endings';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
 // the chart is open (between systems) and at every dock (the hold as it was
 // when the clamps went on). A load starts the current system's sortie from
-// the top with what the save carries. The save carries a version, and
+// the top with what the save carries. Through the Threshold it is kept until
+// the Severance file's fate is chosen, so a reload comes back to the choice. The save carries a version, and
 // `migrate` brings an old one up to date, or refuses it if it cannot.
 // Storage can be missing or refuse, so every read and write is guarded.
 
@@ -46,7 +48,7 @@ export function loadJourney(): Journey | null {
 
 export function saveJourney(j: Journey): void {
   try {
-    if (j.status === 'over') localStorage.removeItem(KEY);
+    if (j.status === 'over' && !pending(j)) localStorage.removeItem(KEY);
     else localStorage.setItem(KEY, JSON.stringify(j));
   } catch {
     // storage refused: the journey lasts as long as the tab

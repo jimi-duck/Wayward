@@ -13,6 +13,7 @@ import { noKit } from './modules';
 import { Rng } from './rng';
 import { sensors } from './comms';
 import type { Faction } from './enemies';
+import type { EndingId } from '../content/endings';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -34,7 +35,8 @@ import type { Faction } from './enemies';
 // system with the hold gone and half of everything else, a day later; a
 // third wreck, a wreck with Calloway in the system, or any wreck in
 // hardcore, and the journey is over. Reaching the Threshold ends the
-// region: out into the Scatter.
+// region: out into the Scatter, with one choice left, what the Severance
+// file is worth (sim/endings.ts).
 //
 // Every faction keeps notice of the Wayward (sim/notice.ts): the kills of
 // each sortie raise it, the days let it fade, and what it has risen to goes
@@ -102,6 +104,8 @@ export interface Journey {
   /** Between sorties, plotting ('chart'); in a sortie ('sortie'); or done. */
   status: 'chart' | 'sortie' | 'over';
   end: JourneyEnd | null;
+  /** Through the Threshold: the ending chosen (sim/endings.ts), or not yet. */
+  ending?: EndingId | null;
   score: number;
   legs: Leg[];
   log: Array<{ day: number; text: string }>;
@@ -340,6 +344,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     j.status = 'over';
     j.end = 'through';
     note(j, 'Through the Threshold · into the Scatter');
+    j.ending = null;
     return { kind: 'through', lines: ['The old lane opens. Beyond it, the Scatter.', ...lines] };
   }
   j.status = 'chart';

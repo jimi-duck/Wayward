@@ -1,0 +1,150 @@
+import type { ShipSystem } from './modules';
+import type { Standing } from '../sim/comms';
+import type { Faction } from '../sim/enemies';
+
+// ── the endings ───────────────────────────────────────────────────────────
+// At the Threshold the chase stops being about escape, and you decide what
+// the Severance file is worth. Six answers, as data: each is opened by what
+// the journey built (standing, the ship's systems, flags from the cards,
+// how the hunt went), and each has an epilogue. sim/endings.ts reads the
+// journey against these rows; the Threshold panel shows every ending, the
+// open ones to choose and the shut ones with what they still need.
+//
+// An ending opens if any one of its `ways` is met. A way is met when all of
+// its parts are. Vanish has an empty way: it is always open.
+//
+// Epilogue lines with an `if` show only when it is met, so the same ending
+// reads differently for a gunship that beat Calloway twice and a quiet
+// hauler that talked its way through.
+
+export type EndingId = 'broadcast' | 'unite' | 'sell' | 'trade' | 'seal' | 'vanish';
+
+/** The Scatter's own people: the standings that count as friends for Unite. */
+export const SCATTER: readonly Standing[] = ['miners', 'frontier', 'guild', 'gutter'];
+/** Standing at which someone counts as a friend. */
+export const FRIEND = 2;
+
+/** One way to open an ending, or a condition on an epilogue line. Every part given must hold. */
+export interface Need {
+  /** Standing with each at least this much. */
+  standing?: Partial<Record<Standing, number>>;
+  /** Friends (standing FRIEND or more) among the Scatter's people, at least. */
+  friends?: number;
+  /** Marks fitted in each ship system, at least. */
+  marks?: Partial<Record<ShipSystem, number>>;
+  /** Each system's resource aboard (the kit: salvage, parts, signal gear, favours), at least. */
+  kit?: Partial<Record<ShipSystem, number>>;
+  /** Any one of these flags set on the cards. */
+  flags?: string[];
+  /** Every one of these flags set. */
+  allFlags?: string[];
+  /** Any one of these modules fitted. */
+  module?: string[];
+  /** None of these factions at the hunters tier or above. */
+  calm?: Faction[];
+  /** Calloway beaten at least this many times. */
+  beaten?: number;
+  /** Chits aboard, at least. */
+  chits?: number;
+  /** Wrecks survived, at least / at most. */
+  wrecksMin?: number;
+  wrecksMax?: number;
+  hardcore?: boolean;
+}
+
+export interface EndingDef {
+  id: EndingId;
+  name: string;
+  /** One line: what the choice is. */
+  pitch: string;
+  /** What opens it, in words, for the panel while it is shut. */
+  needs: string;
+  ways: Need[];
+  /** The Archive's entry for the file, once this ending is reached. */
+  file: string;
+  epilogue: Array<{ if?: Need; text: string }>;
+}
+
+export const ENDINGS: EndingDef[] = [
+  {
+    id: 'broadcast', name: 'Broadcast', pitch: 'Send the file to the core worlds and hope the truth is enough.',
+    needs: 'A voice loud enough: Signals built up (2 marks) or the long-range array, signal gear aboard (5), or the Office’s frequencies and Calloway listening.',
+    ways: [{ marks: { signals: 2 } }, { module: ['md_array'] }, { kit: { signals: 5 } }, { allFlags: ['freqs', 'calloway_told'] }, { flags: ['freqs'], marks: { signals: 1 } }],
+    file: 'SEVERANCE · the broadcast copy',
+    epilogue: [
+      { text: 'The Wayward’s array points back down the old lane, and the file goes out on every band the Continuance ever used.' },
+      { text: 'For a day nothing happens. Then the core worlds start asking where seventy years of Krail went.' },
+      { if: { flags: ['calloway_told'] }, text: 'Idris Calloway resigns her commission on an open channel. She reads the file aloud first.' },
+      { if: { calm: ['office'] }, text: 'The Office of Peace calls it a forgery, then stops calling it anything.' },
+      { text: 'The lanes stay dark. But now everyone knows who turned them off.' },
+    ],
+  },
+  {
+    id: 'unite', name: 'Unite', pitch: 'Bring the Holdfasts, the Drifts and the rest together into something that can resist.',
+    needs: 'People who will stand with you: friends (standing 2) with two of the miners, Frontier, the Guild and the Gutter, or one and a Contacts network (2 marks).',
+    ways: [{ friends: 2 }, { friends: 1, marks: { contacts: 2 } }],
+    file: 'SEVERANCE · the copy read at the Threshold moot',
+    epilogue: [
+      { text: 'Word goes out from the Threshold, and for once the Scatter comes when called.' },
+      { if: { standing: { miners: 2 } }, text: 'The miners bring their cutters. Kellern’s yards go quiet for the first time in seventy years.' },
+      { if: { standing: { gutter: 2 } }, text: 'The Gutter sends ships, and an invoice. Both arrive.' },
+      { if: { standing: { guild: 2 } }, text: 'The Guild keeps the books. Nobody starves that winter.' },
+      { if: { flags: ['passengers'] }, text: 'The Okafor family speak first at the moot. They were there; they say so.' },
+      { text: 'The Continuance sends a fleet to the Threshold. It finds the lane held.' },
+    ],
+  },
+  {
+    id: 'sell', name: 'Sell', pitch: 'To whoever offers most. Become rich enough to disappear.',
+    needs: 'A buyer: standing 2 with the Guild or the Gutter, a friend in the Gutter, or names in the Gutter fitted.',
+    ways: [{ standing: { guild: 2 } }, { standing: { gutter: 2 } }, { flags: ['gutter_friend'] }, { module: ['md_names'] }],
+    file: 'SEVERANCE · a receipt, and nothing else',
+    epilogue: [
+      { text: 'The auction takes four hours. The file goes for more Krail than Kellern Mining cut in a decade.' },
+      { if: { standing: { gutter: 2 } }, text: 'The Gutter win it. Within a month there are new lanes on their charts, and tolls on all of them.' },
+      { if: { standing: { guild: 2 } }, text: 'The Guild win it, and sit on it. Leverage keeps better than truth.' },
+      { if: { flags: ['owes_runner'] }, text: 'Tallow takes the favour you owed out of the money. It is a large favour.' },
+      { text: 'The Wayward gets new plates, a new name and a new registry. Nobody asks where you went.' },
+    ],
+  },
+  {
+    id: 'trade', name: 'Trade', pitch: 'Give it back to the Continuance, for amnesty, a new name, maybe a way home.',
+    needs: 'Someone who will deal: Calloway told the truth, Draper given time, or standing with the Custody; and the Office of Peace not hunting you.',
+    ways: [{ flags: ['calloway_told', 'stalled'], calm: ['office'] }, { standing: { custody: 1 }, calm: ['office'] }],
+    file: 'SEVERANCE · a receipt stamped by the Office of Peace',
+    epilogue: [
+      { text: 'Calloway meets you at the Threshold with a pardon already signed. She does not look at the file.' },
+      { if: { flags: ['stalled'] }, text: 'Foreman Draper writes that you were coerced, as he said he would. It is almost true.' },
+      { if: { beaten: 1 }, text: 'Her ship still carries the scars you gave it. She mentions them once.' },
+      { if: { flags: ['passengers', 'pod'] }, text: 'You make them put the people who helped you on the amnesty too. They do.' },
+      { text: 'You go home to Cerro under another name. The lanes stay dark. You try not to think about it.' },
+    ],
+  },
+  {
+    id: 'seal', name: 'Seal', pitch: 'Destroy the lanes again. The Scatter stays free; the core stays in the dark.',
+    needs: 'The means to break a lane: Guns or the Rig built up (3 marks), salvage (25) or rig parts (12) aboard for charges, or Calloway beaten and a mark of Guns.',
+    ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { kit: { guns: 25 } }, { kit: { rig: 12 } }, { beaten: 1, marks: { guns: 1 } }],
+    file: 'SEVERANCE · burned; this is what was left',
+    epilogue: [
+      { text: 'The Threshold lane takes all the charges in the hold and most of the Wayward’s paint.' },
+      { text: 'When the light fades the lane is gone, and the file with it. Nobody will come through from the core again.' },
+      { if: { kit: { rig: 12 } }, text: 'The charges were cut from Kellern ore. It seemed fitting.' },
+      { if: { beaten: 2 }, text: 'Calloway watches from the far side, and does not follow.' },
+      { text: 'The Scatter stays the Scatter: poor, cut off, and nobody’s.' },
+    ],
+  },
+  {
+    id: 'vanish', name: 'Vanish', pitch: 'Take the Wayward beyond the known routes, and let everyone else decide.',
+    needs: 'Always open.',
+    ways: [{}],
+    file: 'SEVERANCE · a copy left in a dead drop',
+    epilogue: [
+      { text: 'You leave a copy in a dead drop at the Threshold and point the Wayward at the dark between the charts.' },
+      { if: { wrecksMin: 2 }, text: 'She has been wrecked twice and patched three times. She holds.' },
+      { if: { flags: ['pod'] }, text: 'You left the Ares Drive survivor at the last port. They will tell the story their own way.' },
+      { if: { hardcore: true }, text: 'One life, one ship, all the way through.' },
+      { text: 'Someone will find the file, someday. It will be their choice then.' },
+    ],
+  },
+];
+
+export const ENDING_BY_ID = Object.fromEntries(ENDINGS.map((e) => [e.id, e])) as Record<EndingId, EndingDef>;

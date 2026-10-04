@@ -1,5 +1,6 @@
 import { BRANCHES, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
+import { ENDING_BY_ID, ENDINGS } from '../content/endings';
 import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -203,7 +204,9 @@ export class SummaryPanel {
   }
 }
 
-// ── the start screen: records, challenge modifiers, engine colour, logbook ─
+// ── the start screen: records, challenge modifiers, engine colour, Archive ─
+// The Archive replaces the logbook: the file (the endings reached, and what
+// the Archive kept of it), the journeys, the people met, and the unlocks.
 
 export class StartOptions {
   constructor(private readonly profile: Profile, private readonly onChange: () => void) {
@@ -260,12 +263,21 @@ export class StartOptions {
   logbook(on: boolean): void {
     const p = this.profile;
     if (on) {
+      const a = p.archive;
+      $('ar-e').replaceChildren(...ENDINGS.map((e) => {
+        const got = a.endings.includes(e.id);
+        return h('li', got ? 'on' : '', '', h('b', '', got ? e.name : '???'), h('span', 'kind', got ? 'reached' : 'ending'), h('p', '', got ? e.file : e.pitch));
+      }));
+      $('ar-j').replaceChildren(...a.journeys.slice(0, 12).map((r) => h('li', r.end === 'through' ? '' : 'lost', '',
+        h('b', '', r.ending ? ENDING_BY_ID[r.ending].name : r.end === 'through' ? 'Through' : r.end === 'captured' ? 'Taken' : 'Lost'),
+        h('span', '', `${r.jumps} jump${r.jumps === 1 ? '' : 's'} · ${r.days} days · ${r.wrecks} wreck${r.wrecks === 1 ? '' : 's'}${r.hardcore ? ' · hardcore' : ''}`))));
+      $('ar-p').textContent = a.people.join(' · ');
       const list = $('logbook-l');
       list.replaceChildren(...UNLOCKS.map((u) => {
         const got = p.earned.includes(u.id);
         return h('li', got ? 'on' : '', '', h('b', '', got ? u.name : '???'), h('span', 'kind', u.kind), h('p', '', got ? u.text : u.hint));
       }));
-      $('logbook-s').textContent = `${p.earned.length} of ${UNLOCKS.length} · nothing here makes the ship stronger; it gives you more ways to build it`;
+      $('logbook-s').textContent = `${a.journeys.length} journey${a.journeys.length === 1 ? '' : 's'} · ${a.endings.length} of ${ENDINGS.length} endings · ${p.earned.length} of ${UNLOCKS.length} unlocks · nothing here makes the ship stronger`;
     }
     $('logbook').hidden = !on;
   }

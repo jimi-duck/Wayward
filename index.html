@@ -200,16 +200,21 @@
         <div class="start-opts">
           <div id="mods" class="mods" aria-label="Challenge modifiers"></div>
           <div id="paint" class="mods" aria-label="Engine colour"></div>
-          <button type="button" id="logbook-b" class="ghost">Logbook</button>
+          <button type="button" id="logbook-b" class="ghost">Archive</button>
         </div>
       </div>
     </div>
 
-    <!-- The logbook: what long-term progression has opened, and how to open the rest. -->
+    <!-- The Archive (once the logbook): journeys, endings, files and people carried between journeys, and what progression has opened. -->
     <div id="logbook" class="sheet" role="dialog" aria-labelledby="logbook-t" hidden>
-      <div class="panel narrow">
-        <header class="ph"><span class="kick">Logbook</span><h2 id="logbook-t">Unlocks</h2><span class="sub" id="logbook-s"></span></header>
-        <ul id="logbook-l" class="unlocks"></ul>
+      <div class="panel narrow archive">
+        <header class="ph"><span class="kick">Archive</span><h2 id="logbook-t">What you carry</h2><span class="sub" id="logbook-s"></span></header>
+        <div class="ar-body">
+          <h3>The file</h3><ul id="ar-e" class="unlocks"></ul>
+          <h3>Journeys</h3><ul id="ar-j" class="ar-j"></ul>
+          <h3>People</h3><p id="ar-p" class="ar-p"></p>
+          <h3>Unlocks</h3><ul id="logbook-l" class="unlocks"></ul>
+        </div>
         <footer class="pf"><button type="button" id="logbook-x" class="ghost">Close</button></footer>
       </div>
     </div>
@@ -245,6 +250,16 @@
         <div class="port-stock" id="port-stock"></div>
         <div class="port-list" id="port-list"></div>
         <footer class="pf"><span class="keys"><kbd>1</kbd>–<kbd>7</kbd> trade, plot, fit · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off</span><button type="button" id="port-x">Cast off</button></footer>
+      </div>
+    </div>
+
+    <!-- The Threshold: what the Severance file is worth, then the epilogue. -->
+    <div id="ending" class="sheet" role="dialog" aria-labelledby="en-t" hidden>
+      <div class="panel narrow ending">
+        <header class="ph row"><div class="ph"><span class="kick" id="en-k">The Threshold</span><h2 id="en-t">What is the file worth?</h2><span class="sub" id="en-s"></span></div><button type="button" id="en-go" hidden>Go on</button></header>
+        <ul id="en-l" class="unlocks ends"></ul>
+        <div id="en-epi" class="en-epi"></div>
+        <footer class="pf"><span class="keys"><kbd>1</kbd>–<kbd>6</kbd> choose · arrows and <kbd>Enter</kbd> · pad <kbd>A</kbd></span></footer>
       </div>
     </div>
 

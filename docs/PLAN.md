@@ -304,6 +304,18 @@ cards, contacts and modules.
 - **The Archive** replaces the logbook: recovered files, records, people and
   history carried between journeys. Options, not power, as now.
 
+First pass (skeleton): through the Threshold the journey ends with the file
+still aboard; the Threshold panel shows all six endings, the open ones to
+choose and the shut ones with what they need (content/endings.ts, read by
+sim/endings.ts against standing, fitted marks, the kit aboard, card flags,
+the Office's notice and Calloway beaten). Vanish is always open. Each ending
+has an epilogue whose lines depend on the journey. The save is kept until
+the choice is made. The Archive (meta/profile.ts, the start screen's
+Archive button) keeps every journey, the endings reached, their files and
+the people met, with the unlocks below. `npm run pilot:endings` writes
+BALANCE-ENDINGS.md: on 24 journeys every ending opened on some (Seal on
+18, Broadcast on 6); the gates are first guesses.
+
 ## The long tail
 
 More cards, captains, factions, Holdfasts, Drifts, regions,
