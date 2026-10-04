@@ -1,5 +1,6 @@
 import { hunchOf, newDossier } from '../sim/calloway';
 import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
+import { layScatter } from '../sim/scatter';
 import { noKit } from '../sim/modules';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
@@ -37,6 +38,9 @@ export function migrate(raw: unknown): Journey | null {
   // 4 → 5: Calloway's file (M4). She starts it now, and reads the route already flown.
   if (j.version < 5) { j.calloway = newDossier(); j.hunt.hunch = hunchOf(j.chart, j.trail); }
   if (!j.calloway) return null;
+  // 5 → 6: the factions on the move (M7). A journey saved before keeps its one region, and gets its Drift fleet and its Thren now.
+  if (j.version < 6) layScatter(j.chart, j.seed ?? 0);
+  if (!j.chart.thren || !j.chart.drifts || !j.chart.raid) return null;
   j.version = VERSION;
   return j as Journey;
 }

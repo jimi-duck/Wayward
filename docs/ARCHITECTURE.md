@@ -317,9 +317,15 @@ nothing is lost.
   flies, `endSortie` folds the world's `SortieResult` back in (days pass,
   the Net spreads, Calloway moves, the lane eats food and parts), and
   `plot` takes the chart's answer.
-- `sim/chart.ts`: the region laid out from a seed and `content/systems.ts`;
-  lanes, the Net (`spreadNet`, stalls, marked-up prices), and what you know
-  of it (`arrive`, `seenNet`, the survey's Krail estimate).
+- `sim/chart.ts`: the three regions (`content/regions.ts`) laid out from a
+  seed and `content/systems.ts`, each out through one gate; lanes, the Net
+  (`spreadNet`, stalls, marked-up prices), and what you know of it
+  (`arrive`, `seenNet`, the survey's Krail estimate).
+- `sim/scatter.ts`: the factions acting on their own, stepped with the days
+  (`stepScatter`): Drift fleets on the move, Gutter raids, Holdfasts
+  throwing the Net back, the Voice building out, the Thren drifting and
+  drawn to Krail on the move. `presence` is who is in a system, for the
+  `SortieDef` (`here`, `thren`, `ahead`) and the cards (`Cond.here`).
 - `sim/hunt.ts`: Calloway on the trail; `daysUntil` is what turns lingering
   into her arrival time inside the next sortie.
 - `meta/save.ts`: the journey in localStorage, versioned, with `migrate`.

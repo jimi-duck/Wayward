@@ -12,11 +12,12 @@
 //   port      · a station: trade, food, a refit; busy, so the Custody looks.
 //   transit   · an empty crossing: thin rock, a short run, few calls.
 //   contested · Gutter crews and Custody patrols, both; more calls, more fire.
-//   edge      · the region's far lane, out into the Scatter.
+//   gate      · the one way from a region into the next (content/regions.ts).
+//   edge      · the last lane the old charts know, out into the Scatter.
 
-export type SystemKind = 'home' | 'mining' | 'port' | 'transit' | 'contested' | 'edge';
-/** Who runs a system before the Net reaches it. */
-export type Holder = 'kellern' | 'frontier' | 'guild' | 'gutter' | 'none';
+export type SystemKind = 'home' | 'mining' | 'port' | 'transit' | 'contested' | 'gate' | 'edge';
+/** Who runs a system before the Net reaches it: the companies, the Holdfasts' claims, the Gutter, the Voice's foundries, Thren space, or nobody. */
+export type Holder = 'kellern' | 'frontier' | 'guild' | 'gutter' | 'holdfast' | 'voice' | 'thren' | 'none';
 
 /** What a port charges, in chits (ore is what it pays). */
 export interface Prices { ore: number; krail: number; plate: number; refit: number; food: number }
@@ -68,6 +69,10 @@ export const SYSTEMS: Record<SystemKind, SystemTemplate> = {
     kind: 'contested', blurb: 'Gutter crews and Custody patrols, both looking for a prize.', holders: ['gutter'],
     krail: [0.35, 0.75], food: [0.2, 0.5], port: 0.5, lane: [2300, 2800], rich: 0.1, density: 1.05, gutter: 0.55, heat: 0.18, heatRate: 1.15, calls: 0.8,
   },
+  gate: {
+    kind: 'gate', blurb: 'The one way through to the next region. Everyone passes here.', holders: ['none'],
+    krail: [0.25, 0.45], food: [0, 0.2], port: 0.5, lane: [2200, 2500], rich: 0.08, density: 0.9, gutter: 0.35, heat: 0.12, heatRate: 1.05, calls: 0.9,
+  },
   edge: {
     kind: 'edge', blurb: 'The last lane the old charts know. Beyond it, the Scatter.', holders: ['none'],
     krail: [0.2, 0.4], food: [0, 0], port: 0, lane: [2400, 2400], rich: 0.08, density: 0.9, gutter: 0.3, heat: 0.1, heatRate: 1, calls: 1,
@@ -88,6 +93,9 @@ export const PORT_NAMES: Record<Holder, string[]> = {
   frontier: ['Frontier Supply', 'Frontier Supply Depot'],
   guild: ['Dust Traders Exchange', 'Guild Hall'],
   gutter: ['The Bent Nail', 'Salvage Barge'],
+  holdfast: ['Holdfast Stores', 'The Claim Hall'],
+  voice: [],
+  thren: [],
   none: ['Free Dock', 'Claim Shack'],
 };
 
@@ -97,9 +105,13 @@ export const HOLDER_PRICES: Record<Holder, Partial<Record<keyof Prices, number>>
   frontier: {},
   guild: { ore: 1.25, refit: 0.9 },
   gutter: { ore: 0.75, krail: 0.8, plate: 0.8, food: 1.3 },
+  holdfast: { ore: 1.1, krail: 1.15, food: 0.8, refit: 1.1 },
+  voice: {},
+  thren: {},
   none: { krail: 1.2, food: 1.2 },
 };
 
 export const HOLDER_NAMES: Record<Holder, string> = {
-  kellern: 'Kellern Mining', frontier: 'Frontier Supply', guild: 'the Dust Traders', gutter: 'the Gutter', none: 'nobody',
+  kellern: 'Kellern Mining', frontier: 'Frontier Supply', guild: 'the Dust Traders', gutter: 'the Gutter', holdfast: 'a Holdfast',
+  voice: 'the Voice', thren: 'the Thren', none: 'nobody',
 };

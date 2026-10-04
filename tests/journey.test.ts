@@ -36,8 +36,9 @@ describe('the chart', () => {
   it('lays out the same region for the same seed, Cerro to the Threshold', () => {
     const a = makeChart(11), b = makeChart(11);
     expect(a).toEqual(b);
-    expect(a.systems.length).toBeGreaterThanOrEqual(11);
-    expect(a.systems.length).toBeLessThanOrEqual(14);
+    // three regions: Cerro, nine systems and the Narrows; six and the Rift; four and the Threshold
+    expect(a.systems.length).toBe(23);
+    expect(a.systems.filter((s) => s.kind === 'gate').map((s) => s.name)).toEqual(['The Narrows', 'The Rift']);
     expect(sysById(a, a.home).kind).toBe('home');
     expect(sysById(a, a.edge).kind).toBe('edge');
     expect(sysById(a, a.edge).col).toBe(COLS - 1);

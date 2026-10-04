@@ -66,7 +66,7 @@ const ROWS: Array<{ id: string; branch: Branch }> = [
 ];
 /** What the top-left label calls the sector while an event is on. */
 const KIND_NAME: Record<SystemKind, string> = {
-  home: 'Kellern yards', mining: 'Mining system', port: 'Port system', transit: 'Transit', contested: 'Contested', edge: 'The last lane',
+  home: 'Kellern yards', mining: 'Mining system', port: 'Port system', transit: 'Transit', contested: 'Contested', gate: 'Gate', edge: 'The last lane',
 };
 
 const SECTOR_NAME: Record<EncounterId, string> = {
