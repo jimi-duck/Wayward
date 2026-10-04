@@ -194,7 +194,7 @@ export class PortPanel {
     this.lines = [
       { key: 'sell', label: 'Sell the hold', price: w.ore ? `+${w.ore * P.ore}` : '—', note: `${w.ore} ore at ${P.ore} chits`, ok: w.ore > 0 },
       { key: 'krail', label: 'Buy Krail', price: `${P.krail}`, note: w.krail >= TANK_MAX ? 'Tank full' : need ? `${need} short of the jump` : 'Enough to jump', ok: w.canBuy('krail') },
-      { key: 'food', label: 'Buy food', price: `${P.food}`, note: w.food >= FOOD_MAX ? 'Galley full' : `${w.food} in the galley · the crew eat 3 a day`, ok: w.canBuy('food') },
+      { key: 'food', label: 'Buy food', price: `${P.food}`, note: w.food >= FOOD_MAX ? 'Galley full' : `${w.food} in the galley · a day each`, ok: w.canBuy('food') },
       { key: 'plate', label: 'Patch a plate', price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? 'Hull whole' : `Hull ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
       { key: 'refit', label: 'Pay for a refit', price: `${P.refit}`, note: 'Three cards, take one', ok: w.canBuy('refit') },
     ];

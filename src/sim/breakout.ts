@@ -34,7 +34,7 @@ import type { Rng } from './rng';
 // from the rare gold rock, from the port and from a capital ship's wreck.
 // Ore is what the cutter takes out of ordinary rock: it fills the hold, it
 // pays for refits on the rail, and it sells at the port. Parts are salvage
-// from wrecks; the crew patch a plate out of them when the ship is left
+// from wrecks; you patch a plate out of them when the ship is left
 // alone for a few seconds.
 
 export type Mode = 'breakout' | 'arcade';
@@ -194,9 +194,9 @@ export interface SortieResult {
   place?: boolean | null;
 }
 
-/** Food: what the galley holds at most, and at the start. */
-export const FOOD_MAX = 30;
-export const FOOD_START = 12;
+/** Food, in days for the one aboard: what the galley holds at most, and at the start. */
+export const FOOD_MAX = 10;
+export const FOOD_START = 4;
 
 /** The pursuers, by the heat they need. Gutter crews work the belt ahead and do not care who you are. */
 const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [

@@ -8,7 +8,7 @@ import {
 } from '../src/sim/chart';
 import { behind, daysUntil, huntOn, newHunt, SEARCH } from '../src/sim/hunt';
 import {
-  ADRIFT, CREW, DAY, endSortie, here, newJourney, options, plot, replot, sortieDef, START_PARTS, WAITING, WEAR, WRECKS, type Journey,
+  ADRIFT, DAY, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, START_PARTS, WAITING, WEAR, WRECKS, type Journey,
 } from '../src/sim/journey';
 import { Rng } from '../src/sim/rng';
 import { newRun } from '../src/sim/run';
@@ -163,7 +163,7 @@ describe('the journey', () => {
     expect(j.at).toBe(dest);
     expect(j.trail).toEqual([j.chart.home, dest]);
     expect(j.day).toBeCloseTo(0.5 + days, 5);
-    expect(j.carry.food).toBe(12 - days * CREW);
+    expect(j.carry.food).toBe(12 - days * RATION);
     expect(j.carry.parts).toBe(6 - WEAR);
     expect(j.carry.krail).toBe(5);
     expect(j.chart.visited).toContain(dest);

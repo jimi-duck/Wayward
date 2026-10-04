@@ -261,7 +261,7 @@ export const CARDS: CardDef[] = [
     text: 'A pod tumbles out of the dust, its beacon on a loop: one survivor, injured, an Ares Drive tag on the hatch.',
     cargo: 'One person, one tag',
     choices: [
-      { id: 'take', label: 'Bring the pod aboard', tone: 'help', hint: 'It takes a minute, and the crew will have to look after them.', win: { text: 'Pod aboard · the survivor is stable', flag: 'pod', follow: { card: 'pod_thanks', after: 45 } } },
+      { id: 'take', label: 'Bring the pod aboard', tone: 'help', hint: 'It takes a minute, and you will have to look after them.', win: { text: 'Pod aboard · the survivor is stable', flag: 'pod', follow: { card: 'pod_thanks', after: 45 } } },
       { id: 'strip', label: 'Strip the pod', tone: 'trade', hint: 'Parts are parts.', win: { text: 'Pod stripped · four parts', parts: 4, standing: { miners: -1 } } },
       { id: 'leave', label: 'Leave it', tone: 'refuse', hint: 'Someone else will come.', win: { text: 'The beacon fades behind you' } },
     ],
@@ -683,14 +683,14 @@ export const CARDS: CardDef[] = [
     ],
   },
   {
-    id: 'food_trader', kind: 'trade', caller: 'guild', when: { after: 30, hungry: 12, kind: ['port', 'contested', 'mining', 'transit'] }, weight: 1.4, repeat: true,
+    id: 'food_trader', kind: 'trade', caller: 'guild', when: { after: 30, hungry: 4, kind: ['port', 'contested', 'mining', 'transit'] }, weight: 1.4, repeat: true,
     from: 'Drift trader · the Kindly Ann', title: 'Stores for sale',
-    text: '“Fresh stores off a garden ship, two lanes over. You look thin, hauler.” Your galley has {food} days of food for the crew.',
+    text: '“Fresh stores off a garden ship, two lanes over. You look thin, hauler.” Your galley has {food} days of food.',
     ships: [{ variant: 'freighter', n: 1 }], cargo: 'Drift trader · sealed food crates',
     choices: [
-      { id: 'chits', label: 'Buy eight', tone: 'pay', hint: 'Twenty-five chits for eight.', cost: { chits: 25 }, win: { text: 'Eight crates aboard', food: 8, standing: { guild: 1 } } },
-      { id: 'ore', label: 'Trade ore', tone: 'trade', hint: 'Ten ore for eight.', cost: { ore: 10 }, win: { text: 'Ore across, eight crates aboard', food: 8 } },
-      { id: 'parts', label: 'Trade parts', tone: 'trade', hint: 'Five parts for six.', cost: { parts: 5 }, win: { text: 'Parts across, six crates aboard', food: 6 } },
+      { id: 'chits', label: 'Buy three', tone: 'pay', hint: 'Twenty-five chits for three.', cost: { chits: 25 }, win: { text: 'Three crates aboard', food: 3, standing: { guild: 1 } } },
+      { id: 'ore', label: 'Trade ore', tone: 'trade', hint: 'Ten ore for three.', cost: { ore: 10 }, win: { text: 'Ore across, three crates aboard', food: 3 } },
+      { id: 'parts', label: 'Trade parts', tone: 'trade', hint: 'Five parts for two.', cost: { parts: 5 }, win: { text: 'Parts across, two crates aboard', food: 2 } },
       { id: 'no', label: 'Not today', tone: 'refuse', hint: 'Make do.', win: { text: 'The Kindly Ann sails on' } },
     ],
   },
@@ -701,7 +701,7 @@ export const CARDS: CardDef[] = [
     lines: [{ if: { hunted: 2 }, text: '“A Prefect has been asking the fleets about a yellow hauler.”' }],
     ships: [{ variant: 'freighter', n: 2 }], cargo: 'A Drift fleet · stores, parts, rumours',
     choices: [
-      { id: 'food', label: 'Ore for food', tone: 'trade', hint: 'Eight ore for six days of food.', cost: { ore: 8 }, win: { text: 'Six crates aboard', food: 6, standing: { miners: 1 } } },
+      { id: 'food', label: 'Ore for food', tone: 'trade', hint: 'Eight ore for two days of food.', cost: { ore: 8 }, win: { text: 'Two crates aboard', food: 2, standing: { miners: 1 } } },
       { id: 'news', label: 'Ask about the lanes', tone: 'trade', hint: 'Five chits: where the Net is, and who follows you.', cost: { chits: 5 }, win: { text: 'The Drift tell you what they have seen', flag: 'news' } },
       { id: 'trail', label: 'Ask them to lie for you', tone: 'help', hint: 'If the Prefect asks the fleet, they send her the wrong way.', needs: { standing: ['miners', 2] }, win: { text: 'The Long Walk will tell her you went the other way', hunt: 1 } },
       { id: 'no', label: 'Pass by', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
@@ -821,7 +821,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'custody_bulletin', kind: 'warning', caller: 'custody', when: { after: 30, notice: ['custody', 'warning'] }, weight: 1.2, repeat: true,
     from: 'Custody bulletin · all channels', title: 'Report this hull',
-    text: '“All traffic: an Obedience-class hauler, stolen, crew armed and dangerous. Report any sighting to the nearest Custody vessel.”',
+    text: '“All traffic: an Obedience-class hauler, stolen, pilot armed and dangerous. Report any sighting to the nearest Custody vessel.”',
     lines: [
       { if: { notice: ['custody', 'hunters'] }, text: 'The bulletin carries a bounty now, and the names of the hunters who will collect it.' },
       { if: { notice: ['custody', 'captain'] }, text: 'It is signed by {captain}.' },

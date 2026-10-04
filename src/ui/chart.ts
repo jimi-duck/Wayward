@@ -2,7 +2,7 @@ import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
 import { krailKnown, lanesFrom, placeAt, sysById, type Place, type StarSystem } from '../sim/chart';
-import { CREW, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
+import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 
@@ -101,7 +101,7 @@ export class ChartPanel {
     const legs = j.legs.filter((l) => l.ended === 'jumped').length;
     $('ch-s').textContent = end
       ? `${legs} jump${legs === 1 ? '' : 's'} · ${Math.round(j.day)} days · ${j.wrecks} wreck${j.wrecks === 1 ? '' : 's'} · Calloway caught up ${j.hunt.caught} time${j.hunt.caught === 1 ? '' : 's'} · score ${j.score.toLocaleString('en-GB')}`
-      : 'The crew got her flying again. Same system, a day later, and the hold is gone.';
+      : 'You got her flying again. Same system, a day later, and the hold is gone.';
     this.onPick = null;
     this.onGo = onGo;
     const go = $('ch-go');
@@ -203,7 +203,7 @@ export class ChartPanel {
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
     const cells: Array<[string, string]> = [
-      ['Tank', `${c.krail}/${TANK_MAX}`], ['Food', `${c.food} · ${CREW}/day`], ['Parts', String(c.parts)], ['Chits', String(c.chits)], ['Hold', `${c.ore} ore`],
+      ['Tank', `${c.krail}/${TANK_MAX}`], ['Food', `${c.food} · ${RATION}/day`], ['Parts', String(c.parts)], ['Chits', String(c.chits)], ['Hold', `${c.ore} ore`],
     ];
     $('ch-stat').replaceChildren(
       h('div', 'port-stock', '', ...cells.map(([k, v]) => h('span', '', '', h('span', 'k', k), h('b', '', v)))),

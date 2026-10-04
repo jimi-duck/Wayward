@@ -20,7 +20,7 @@ Two ways in from the start screen:
   easing off before it overheats, and it comes apart clean. Ordinary rock gives
   ore, which fills the hold and the refit rail and sells at **Frontier
   Supply**, the dock about halfway, where you can also buy Krail, patch a
-  plate or pay for a refit. Wrecks give parts, and the crew patch a plate out
+  plate or pay for a refit. Wrecks give parts, and you patch a plate out
   of them when you are left alone. The Custody pursue from behind, harder as
   the **hunt pressure** rises, and a capital ship blockades the lane mouth.
   Along the way, people call: traders, miners asking for help, jobs,
@@ -31,7 +31,7 @@ Two ways in from the start screen:
   spoof it, pay it, talk through it, or fight her.
 
   On the far side of every lane, the **chart**: plot the next jump. Each
-  lane costs Krail (the lane mouth wants it) and days; the crew eat food
+  lane costs Krail (the lane mouth wants it) and days; you eat food
   every day and the drive wears parts every jump. Systems differ: ports to
   trade at, mining systems with rich rock, quick empty transits, contested
   space full of Gutter crews. A netted system has a blockade at its lane
