@@ -39,8 +39,8 @@ import type { Faction } from './enemies';
 
 /** Seconds of a sortie that make a day. */
 export const DAY = 240;
-/** Mouths in the galley: food a day. */
-export const CREW = 3;
+/** Food a day: the Wayward is flown by one person. */
+export const RATION = 1;
 /** Parts the drive wears through a jump, and the spares aboard when you steal her. */
 export const WEAR = 2;
 export const START_PARTS = 4;
@@ -149,7 +149,7 @@ export function sortieDef(j: Journey): SortieDef {
 export function options(j: Journey) {
   // never back to Cerro: the yards are the Continuance's
   return lanesFrom(j.chart, j.at).filter(({ to }) => to.kind !== 'home').map(({ to, route }) => ({
-    to, route, food: route.days * CREW, netted: j.chart.seenNet.includes(to.id),
+    to, route, food: route.days * RATION, netted: j.chart.seenNet.includes(to.id),
     /** Calloway was last seen there (as far as you know). */
     shadow: j.trail[j.hunt.seenIdx] === to.id,
   }));
@@ -249,12 +249,12 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
       note(j, res.calloway ? `Taken by Calloway in ${s.name}` : `The Wayward breaks up in ${s.name}`);
       return { kind: j.end, lines: [res.calloway ? 'Calloway’s boarding party cuts through the airlock.' : 'The Wayward is beyond saving.'] };
     }
-    // adrift: the crew patch her enough to fly, and the hold is gone
+    // adrift: you patch her enough to fly, and the hold is gone
     const c = res.carry;
     j.carry = { ...c, ore: 0, parts: Math.floor(c.parts / 2), krail: Math.floor(c.krail / 2), chits: Math.floor(c.chits / 2), plates: 2 };
     pass(j, ADRIFT);
     note(j, `Wrecked in ${s.name} · adrift a day`);
-    lines.push('The hull went. The crew got her flying again, a day later.', 'The hold is lost; half the Krail, parts and chits with it.', `${WRECKS - j.wrecks} more and she will not fly again.`);
+    lines.push('The hull went. You got her flying again, a day later.', 'The hold is lost; half the Krail, parts and chits with it.', `${WRECKS - j.wrecks} more and she will not fly again.`);
     j.status = 'sortie';
     return { kind: 'adrift', lines };
   }
@@ -264,10 +264,10 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const route = routeBetween(j.chart, s.id, to);
   const days = route?.days ?? 1;
   const c = { ...res.carry };
-  const eat = days * CREW;
+  const eat = days * RATION;
   let penalty = 0;
   if (c.food >= eat) { c.food -= eat; j.hungry = 0; }
-  else { c.food = 0; j.hungry++; penalty++; lines.push(`The galley ran out in the lane · the crew are weak (a plate down)`); }
+  else { c.food = 0; j.hungry++; penalty++; lines.push(`The galley ran out in the lane · you arrive weak (a plate down)`); }
   if (c.parts >= WEAR) c.parts -= WEAR;
   else { c.parts = 0; penalty++; lines.push(`No parts for the drive’s wear · the hull took it (a plate down)`); }
   c.plates = Math.max(1, c.plates - penalty);
