@@ -186,11 +186,22 @@ faded rust, the Voice cold steel, the Thren a biological green.
   labelled bars (hull, Krail tank, energy, munitions); the scope and
   contacts bottom left; an operating-mode card bottom right (Mining, Combat,
   Silent run) with only that mode's actions. Density low in cruise, higher
-  only when the situation is.
+  only when the situation is. (Done: the objective under the plate as
+  steps, Krail toward the refit in the arcade; one card top centre, the
+  capital ship over a pursuer over the target, which moved there from
+  beside its brackets; status rows for hull, fuel, energy, core, Krail,
+  hold and munitions with the score under them; the hunt and the sector
+  under the contacts; a mode card for Cruise, Mining and Combat with the
+  keys that mode uses, the one in use lit. Silent run waits on a mechanic.)
 - **Pass 3, comms as a transmission**: "Incoming transmission", the caller's
   sigil, a short message, numbered options (01–05) with known consequences
   beside them; the Continuance's cards in red, black and white with the
   stamped, bureaucratic language (NOTICE OF VIOLATION, VESSEL FLAGGED).
+  (Done: the panel comes in at the side of the view with the world dimmed
+  behind it; the caller's sigil (or face), name and what they are; the
+  card's title as the message's lead line; options 01 on, the highlighted
+  one on an amber bar; hostile calls in red with the kind of call stamped
+  on. The cards' own words are still to be rewritten in the stamped style.)
 - **Pass 4, the chart as a regional map**: Continuance control and expansion
   as red hatched territory, Calloway's estimated route dashed, Krail
   richness and phenomena as legend symbols, "your position" marked.

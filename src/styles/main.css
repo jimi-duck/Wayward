@@ -172,29 +172,21 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   background: repeating-linear-gradient(180deg, var(--hair) 0 1px, transparent 1px 12px) right top / 5px 100% no-repeat,
               linear-gradient(var(--hair), var(--hair)) right top / 1px 100% no-repeat; }
 
-/* ── top left: the sector, and krail toward the next refit ────────── */
-#sector { position: absolute; left: var(--left); top: var(--top); width: clamp(210px, 17vw, 260px); display: grid; gap: 12px; text-shadow: 0 1px 6px #000; }
-.sec-id { position: relative; display: grid; gap: 6px; padding-bottom: 12px;
-  font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
-.sec-id > span { display: flex; align-items: center; gap: 9px; }
-.sec-id b { font-weight: 600; color: var(--ink); }
-.sec-id .x { width: 7px; height: 7px; flex: none;
-  background: linear-gradient(45deg, transparent 43%, var(--hud) 43% 57%, transparent 57%), linear-gradient(-45deg, transparent 43%, var(--hud) 43% 57%, transparent 57%); }
-/* the bracket under it: a hairline that steps up at the end */
-.sec-id::after { content: ""; position: absolute; left: -2px; right: 0; bottom: 0; height: 8px; background: no-repeat 0 0 / 100% 100%
-  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 8' preserveAspectRatio='none'%3E%3Cpath d='M0 7.5H150L157 0.5H200' fill='none' stroke='%23d8d5c6' stroke-opacity='.3' stroke-width='1' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E"); }
-#rail { display: grid; gap: 6px; }
-.rail-h { display: flex; align-items: baseline; gap: 6px; color: var(--violet); white-space: nowrap; }
-.rail-h .ico { width: 11px; height: 11px; align-self: center; }
-.rail-h .lbl { color: var(--ink-2); }
-#xp-v { font: 600 calc(var(--fs) * 1.45)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); font-variant-numeric: tabular-nums; margin-left: 4px; }
-.rail-h .of { color: var(--ink-3); }
-.rail-h .rf { margin-left: auto; color: var(--ink-3); }
-.rail-h .rf b { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); letter-spacing: .08em; color: var(--violet); margin-left: 4px; }
-#xp { --n: 30; --on: var(--violet); --off: var(--violet-ghost); height: 5px; }
-#xp-gain { font: 600 calc(var(--fs) * .95)/1 var(--font-mono); letter-spacing: .1em; color: var(--violet); opacity: 0; transition: opacity .5s; }
-#xp-gain.on { opacity: 1; transition: none; }
-#rail.full #xp { --on: #f6e2b4; filter: drop-shadow(0 0 6px var(--violet)); }
+/* ── upper left: the plate, then the current objective as short steps ── */
+#sector { position: absolute; left: var(--left); top: var(--top); width: clamp(230px, 19vw, 290px); display: grid; gap: 14px; text-shadow: 0 1px 6px #000; }
+#objective { display: none; gap: 7px; padding-left: 12px; border-left: 1px solid var(--amber-dim); }
+#objective.on { display: grid; }
+.obj-k { display: flex; align-items: center; gap: 8px; font: 600 calc(var(--fs) * 1.05 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--amber); }
+.obj-k .stripes { flex: none; width: 14px; height: 10px; background: repeating-linear-gradient(-60deg, var(--amber) 0 2px, transparent 2px 5px); }
+.obj-h { display: flex; align-items: center; gap: 8px; color: var(--amber); }
+.obj-h .ico { width: 13px; height: 13px; flex: none; }
+#obj-t { font: 600 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+#obj-left { margin-left: auto; white-space: nowrap; font: 600 calc(var(--fs) * 1.15)/1 var(--font-rail); letter-spacing: .06em; color: var(--amber); }
+#obj-p { --n: 30; --on: var(--amber); --off: var(--amber-dim); height: 4px; }
+#objective.course #obj-p, #objective.course #obj-s { display: none; }
+#obj-s { font: 600 calc(var(--fs) * .9 * 1.18)/1.25 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+#obj-s:empty { display: none; }
+#objective.event { border-left-color: var(--amber); }
 
 /* ── top centre: the heading ──────────────────────────────────────────── */
 #heading { position: absolute; left: 50%; top: calc(var(--safe-t) + 8px); translate: -50% 0; width: 170px; display: grid; justify-items: center; gap: 4px; }
@@ -208,13 +200,14 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #heading::after { content: ""; position: absolute; left: 50%; bottom: -3px; width: 1px; height: 10px; background: var(--hud); }
 
 /* ── top right: ship systems ──────────────────────────────────────────── */
-/* As in the reference: a row per weapon (icon, name, key, gauge, reading,
-   the level the refits have taken it to), then hull, reactor and score
-   side by side. Rows for systems not yet fitted stay away. */
+/* Ship status, as in the brand's gameplay view: a row each (icon, name,
+   key, gauge, reading, the level the refits have taken it to), the ship's
+   condition first and the munitions last, the score under them. Rows for
+   systems not fitted, and the Breakout's own rows outside it, stay away. */
 #systems {
-  --edge: var(--frame); --lit: var(--hud-mid); --fill: rgba(8, 13, 14, .42); --c: 12px;
+  --edge: var(--frame); --lit: var(--hud-mid); --fill: rgba(8, 13, 14, .62); --c: 12px;
   position: absolute; right: var(--right); top: var(--top); width: clamp(300px, 25vw, 372px);
-  display: grid; grid-template-columns: 14px max-content 15px minmax(60px, 1fr) 42px 30px; align-items: center;
+  display: grid; grid-template-columns: 14px max-content 15px minmax(60px, 1fr) minmax(42px, max-content) minmax(30px, max-content); align-items: center;
   column-gap: 8px; row-gap: 10px; padding: 12px 14px 12px 15px;
 }
 .sys-row { display: contents; }
@@ -248,18 +241,16 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #sys-tp.empty #v-rack { color: var(--amber); }
 #sys-tp.dry .rack { animation: hud-blink .5s ease-in-out 2; }
 
-.sys-foot { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 1.15fr; margin-top: 1px; border-top: 1px solid rgba(217, 154, 39, .24); }
-.sys-foot .cell { display: grid; grid-template-columns: 1fr auto; align-items: end; row-gap: 7px; padding: 10px 10px 0; min-width: 0; }
-.sys-foot .cell:first-child { padding-left: 0; }
-.sys-foot .cell:last-child { padding-right: 0; }
-.sys-foot .cell + .cell { border-left: 1px solid rgba(217, 154, 39, .24); }
-.sys-foot .lbl { display: flex; align-items: center; gap: 5px; color: var(--ink-2); }
-.sys-foot .lbl kbd { min-width: 13px; height: 13px; font-size: 7px; }
-.sys-foot .val { font-size: calc(var(--fs) * 1.35); }
-.sys-foot .val small { font-size: .7em; color: var(--ink-2); margin-left: 1px; }
+.sys-foot { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 9px; border-top: 1px solid rgba(217, 154, 39, .24); }
+.vy-cells { display: flex; gap: 12px; }
+.vy-cells[hidden] { display: none; }
+.vy-cells > span, #sys-score { display: flex; align-items: baseline; gap: 6px; }
+.vy-cells .lbl, #sys-score > .lbl { font-size: calc(var(--fs) * .85 * 1.18); color: var(--ink-3); }
+.vy-cells b { font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .04em; color: var(--ink); }
+#sys-score { margin-left: auto; }
 /* the hull: a plate a segment, white, then shield charges in cyan */
-.plates { grid-column: 1 / -1; display: flex; gap: 2px; }
-.plates i { flex: 1; max-width: 22px; height: 5px; background: rgba(216, 213, 198, .14); }
+.plates { display: flex; gap: 2px; min-width: 0; }
+.plates i { flex: 1; max-width: 26px; height: 7px; background: rgba(216, 213, 198, .14); }
 .plates i.on { background: var(--ink); }
 .plates i.sh { max-width: 10px; margin-left: 3px; background: linear-gradient(to top, rgba(57, 174, 183, .3) var(--fill, 0%), transparent var(--fill, 0%)); outline: 1px solid var(--cy-dim); outline-offset: -1px; transform: skewX(-20deg); }
 .plates i.sh.on { background: rgba(57, 174, 183, .55); outline-color: var(--cy); box-shadow: 0 0 6px var(--cy-dim); }
@@ -267,20 +258,32 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #sys-hull.crit #v-hull { color: var(--alert); }
 #sys-hull.hit { animation: hud-hit .6s ease-out; }
 /* the reactor: near misses charge it; full, it releases on E */
-#g-oc { grid-column: 1 / -1; --n: 12; --on: var(--cy); --off: var(--cy-ghost); height: 5px; }
+#g-oc { --n: 12; --on: var(--cy); --off: var(--cy-ghost); height: 5px; }
 #sys-oc.ready #g-oc { --on: #c9f0f2; filter: drop-shadow(0 0 5px var(--cy)); }
 #sys-oc.ready .val { color: var(--cy); }
 #sys-oc.ready kbd { color: #041416; background: var(--cy); border-color: var(--cy); }
 #sys-oc.hot #g-oc { animation: hud-blink .3s ease-in-out infinite; }
+#sys-oc .ico { color: var(--cy); }
 #sys-oc.hot .val { color: var(--cy); }
 #v-oc.word { font: 600 calc(var(--fs) * .88 * 1.18)/1 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; }
-/* the score: the big number, the chain beside its label */
-#sys-score { grid-template-columns: auto 1fr; }
-#score { grid-column: 1 / -1; grid-row: 2; justify-self: start; font-size: calc(var(--fs) * 2.15); letter-spacing: .1em; }
-#chain { justify-self: end; display: flex; align-items: center; gap: 5px; }
+/* the score: one line under the rows, the chain beside it */
+#score { font-size: calc(var(--fs) * 1.45); letter-spacing: .1em; }
+#chain { display: flex; align-items: center; gap: 5px; }
 #chain .lbl { font-size: calc(var(--fs) * .8); color: var(--ink-3); }
 #chain b { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .06em; color: var(--amber); }
-#chain:not(.on) { visibility: hidden; }
+#chain:not(.on) { display: none; }
+/* Krail toward the next refit, in the colour of the rock it comes from */
+#rail .ico { color: var(--violet); }
+#xp { --n: 30; --on: var(--violet); --off: var(--violet-ghost); height: 7px; }
+#rail .lv { position: relative; }
+#rail .lv b { font-weight: 600; color: var(--violet); }
+#xp-gain { position: absolute; right: 0; bottom: calc(100% + 3px); font: 600 calc(var(--fs) * .95)/1 var(--font-mono); letter-spacing: .1em; color: var(--violet); opacity: 0; transition: opacity .5s; }
+#xp-gain.on { opacity: 1; transition: none; }
+#rail.full #xp { --on: #f6e2b4; filter: drop-shadow(0 0 6px var(--violet)); }
+/* the hold: ore toward the port, amber when it is full */
+#sys-hold .ico { color: var(--violet); }
+#sys-hold.full .bar { background: var(--amber); }
+#sys-hold.full .val { color: var(--amber); }
 
 /* power-ups running: a chip each, under the panel */
 #powers { position: absolute; right: var(--right); top: calc(var(--top) + var(--sys-h, 150px) + 8px); display: grid; gap: 4px; justify-items: end; }
@@ -288,7 +291,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   font: 600 calc(var(--fs) * .9 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
 #powers span b { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); color: var(--amber); }
 
-/* ── top centre: a capital ship, a sector event ───────────────────────── */
+/* ── upper centre: one card, the most important thing out there ──────── */
 #centre { position: absolute; left: 50%; top: calc(var(--safe-t) + 42px); translate: -50% 0; display: grid; gap: 8px; justify-items: center; }
 #boss { width: clamp(260px, 30vw, 400px); display: none; gap: 7px; padding: 9px 14px; --edge: var(--alert-dim); --lit: var(--alert); --fill: rgba(8, 13, 14, .5); }
 #boss.on { display: grid; }
@@ -305,13 +308,34 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #boss.inbound #boss-hp { --on: transparent; animation: hud-blink 1s ease-in-out infinite; }
 #boss.cloaked #boss-hp { opacity: .35; }
 
-#objective { width: clamp(240px, 26vw, 340px); display: none; gap: 6px; padding: 8px 13px; --edge: var(--amber-dim); --lit: var(--amber); --fill: rgba(8, 13, 14, .5); }
-#objective.on { display: grid; }
-.obj-h { display: flex; align-items: center; gap: 8px; color: var(--amber); }
-#obj-t { font: 600 calc(var(--fs) * 1.02 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
-#obj-left { margin-left: auto; font: 600 calc(var(--fs) * 1.15)/1 var(--font-rail); letter-spacing: .06em; color: var(--amber); }
-#obj-p { --n: 30; --on: var(--amber); --off: var(--amber-dim); height: 4px; }
-#obj-s { font: 600 calc(var(--fs) * .85 * 1.18)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+/* the target: what it is, how far, what it yields, how much is left. It
+   gives way to the capital ship and to a pursuer: one card at a time. */
+#tgt-card { display: none; grid-template-columns: auto 1fr; align-items: center; gap: 12px; width: clamp(250px, 23vw, 320px); padding: 8px 14px;
+  --edge: var(--frame); --lit: var(--cy); --fill: rgba(8, 13, 14, .5); }
+#tgt-card.on { display: grid; }
+#threat.on ~ #tgt-card, #boss.on ~ #tgt-card, #tgt-card.boss { display: none; }
+#tgt-card > .ico { width: 24px; height: 24px; color: var(--cy); }
+.tc-b { display: grid; gap: 4px; min-width: 0; }
+.tc-n { display: flex; align-items: center; gap: 7px; min-width: 0; }
+#tgt-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 600 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+.tc-s { font: 600 calc(var(--fs) * .85 * 1.18)/1.1 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-s b { font-weight: 600; color: var(--ink); }
+.tc-int { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; font: 600 calc(var(--fs) * .85 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+#tgt-int-v { font: 600 calc(var(--fs) * .95)/1 var(--font-mono); color: var(--cy); }
+#tgt-int { --v: 1; display: block; height: 4px; background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
+#tgt-lock { display: none; flex: none; padding: 2px 4px; font: 600 calc(var(--fs) * .76 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase;
+  color: #1a1104; background: var(--hud); }
+#tgt-card.locked #tgt-lock { display: inline-block; }
+/* rock reads in the colour of what it yields */
+#tgt-card.rock > .ico, #tgt-card.rock .tc-s b { color: var(--violet); }
+#tgt-card.rare > .ico, #tgt-card.rare .tc-s b { color: var(--amber); }
+#tgt-card.volatile > .ico { color: var(--alert); }
+/* a hull is a threat: red, as every threat is */
+#tgt-card:not(.rock) { --edge: var(--alert-dim); --lit: var(--alert); --fill: rgba(40, 12, 10, .5); }
+#tgt-card:not(.rock) > .ico, #tgt-card:not(.rock) #tgt-int-v { color: var(--alert); }
+#tgt-card:not(.rock) #tgt-int { background: linear-gradient(90deg, var(--alert) 0 calc(var(--v) * 100%), var(--alert-dim) 0); }
+#tgt-card.elite > .ico { color: #f08a7e; }
 
 /* ── in the world: the gunsight, the target, marks ────────────────────── */
 #world { position: absolute; inset: 0; overflow: hidden; }
@@ -348,34 +372,6 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #tgt.arc .tgt-x { display: block; }
 #tgt-d { position: absolute; left: 0; top: calc(100% + 5px); white-space: nowrap; text-shadow: 0 1px 5px #000;
   font: 600 calc(var(--fs) * .88 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--hud-hi); }
-/* the label: what it is on the left, its integrity on the right, a hairline along the top of the frame */
-#tgt-card { position: absolute; left: calc(var(--h) * -1 + var(--dx, 0px)); bottom: calc(var(--h) + 7px); width: var(--cw, 250px);
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-bottom: 5px; text-shadow: 0 1px 6px #000;
-  border-bottom: 1px solid var(--hud-mid); }
-#tgt.below #tgt-card { bottom: auto; top: calc(var(--h) + 24px); border-bottom: 0; border-top: 1px solid var(--hud-mid); padding: 5px 0 0; }
-.tc-id { display: flex; align-items: flex-start; gap: 7px; min-width: 0; color: var(--hud); }
-.tc-id .ico { width: 13px; height: 13px; margin-top: 0; }
-.tc-id > span { display: grid; gap: 4px; min-width: 0; }
-#tgt-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font: 600 calc(var(--fs) * 1.05 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
-.tc-s { font: 600 calc(var(--fs) * .82 * 1.18)/1.1 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tc-s b { font-weight: 600; color: var(--ink); }
-.tc-int { flex: none; display: grid; gap: 5px; justify-items: end; }
-.tc-int > span { font: 600 calc(var(--fs) * .85 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--hud-hi); white-space: nowrap; }
-#tgt-int-v { font: 600 calc(var(--fs) * .95)/1 var(--font-mono); color: var(--hud-hi); }
-#tgt-int { --v: 1; display: block; width: 96px; height: 4px; background: linear-gradient(90deg, var(--hud) 0 calc(var(--v) * 100%), var(--hud-ghost) 0); }
-.tc-n { display: flex; align-items: center; gap: 7px; min-width: 0; }
-#tgt-lock { display: none; flex: none; padding: 2px 4px; font: 600 calc(var(--fs) * .76 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase;
-  color: #1a1104; background: var(--hud); }
-#tgt.locked #tgt-lock { display: inline-block; }
-/* mining: rock reads in the colour of what it yields */
-#tgt.rock .tc-id, #tgt.rock .tc-s b { color: var(--violet); }
-#tgt.rare .tc-id, #tgt.rare .tc-s b { color: var(--amber); }
-#tgt.volatile .tc-id, #tgt.volatile .tc-s b { color: var(--alert); }
-#tgt.elite .tc-id { color: var(--amber); }
-/* the capital ship already has its panel at the top: here, only brackets and range */
-#tgt.boss #tgt-card { display: none; }
-
 /* everything else worth seeing: hostiles, the capital ship, deposits, pickups, the objective */
 #marks .m { position: absolute; left: 0; top: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px; --b: var(--hud-mid); --l: 4px; }
 #marks .m[hidden] { display: none; }
@@ -408,26 +404,47 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #threats .thr.close i { animation: thr-blink .5s steps(2, jump-none) infinite; }
 @keyframes thr-blink { 50% { opacity: .3; } }
 
-/* ── bottom left: sensors and their range ─────────────────────────────── */
+/* ── lower left: the scope, the contacts, the hunt, the sector ────────── */
 #sensors { position: absolute; left: calc(var(--left) - 8px); bottom: calc(var(--bottom) - 8px); display: flex; align-items: flex-end; gap: 4px; }
 #radar { display: block; width: clamp(150px, 13vw, 190px); aspect-ratio: 1; }
 #sensors .range { display: grid; gap: 5px; padding: 0 0 16px; text-shadow: 0 1px 6px #000; }
 #sensors .range .lbl { font-size: calc(var(--fs) * .85); }
 #radar-r { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); letter-spacing: .08em; color: var(--ink); white-space: nowrap; }
+.sens-side { display: grid; gap: 10px; align-self: flex-end; padding: 0 0 16px 10px; min-width: 200px; text-shadow: 0 1px 6px #000; }
+#voyage { display: grid; gap: 5px; }
+#voyage[hidden] { display: none; }
+.vy-row { display: flex; justify-content: space-between; gap: 10px; }
+#vy-heat { font: 600 calc(var(--fs) * 1.0 * 1.18)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; }
+#vy-heat-t { --n: 20; height: 4px; }
+#voyage.hot #vy-heat-t { animation: hud-blink 1.1s ease-in-out infinite; }
+.sec-id { display: flex; flex-wrap: wrap; gap: 4px 10px; padding-top: 7px; border-top: 1px solid var(--line);
+  font: 600 calc(var(--fs) * .9 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.sec-id b { font-weight: 600; color: var(--ink-2); }
 
-/* ── bottom right: the mode the ship is in, and the last thing that happened ── */
-#log { position: absolute; right: var(--right); bottom: var(--bottom); width: clamp(250px, 22vw, 320px); display: grid; gap: 8px; }
-#mode { --mc: var(--cy); display: flex; align-items: center; gap: 10px; color: var(--mc); text-shadow: 0 1px 6px #000; }
-#mode .stripes { flex: none; width: 24px; height: 9px; background: repeating-linear-gradient(-55deg, var(--mc) 0 2px, transparent 2px 5px); }
-#mode-t { font: 600 calc(var(--fs) * 1.02 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
-#mode .rule { flex: 1; height: 1px; background: var(--mc); opacity: .55; }
-#mode .hex { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--mc); stroke-width: 1.5; }
+/* ── lower right: the operating mode, and only that mode's actions ───── */
+/* The interface of a machine being worked, not a menu: the mode in a card,
+   its keys under it, the one in use lit; the last thing that happened
+   fades above. */
+#log { position: absolute; right: var(--right); bottom: var(--bottom); width: clamp(220px, 17vw, 260px); display: grid; gap: 8px; justify-items: end; }
+#mode { --mc: var(--cy); --edge: var(--frame); --lit: var(--mc); --fill: rgba(8, 13, 14, .5); justify-self: stretch; display: grid; gap: 9px; padding: 10px 14px 11px 16px; }
+.md-h { display: flex; align-items: center; gap: 10px; }
+.md-i { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--mc); stroke-width: 1.6; }
+#mode-t { font: 600 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--mc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#mode .stripes { flex: none; margin-left: auto; width: 22px; height: 9px; background: repeating-linear-gradient(-55deg, var(--mc) 0 2px, transparent 2px 5px); opacity: .7; }
 #mode.mining { --mc: var(--violet); }
 #mode.combat { --mc: var(--hud); }
 #mode.caution { --mc: var(--amber); }
 #mode.alert { --mc: var(--alert); }
 #mode.alert .stripes { animation: hud-blink .7s ease-in-out infinite; }
-#log-lines { display: grid; justify-items: start; gap: 5px; min-height: 1.3em; padding-left: 34px; }
+#hints { margin: 0; display: grid; gap: 5px; font: 600 calc(var(--fs) * .95 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+#hints div { display: grid; grid-template-columns: 8ch 1fr; align-items: center; }
+#hints dt { font: 500 calc(var(--fs) * .95)/1 var(--font-mono); letter-spacing: .04em; color: var(--ink-3); }
+#hints dt::before { content: "["; }
+#hints dt::after { content: "]"; }
+#hints dd { margin: 0; }
+#hints .lit, #hints .lit dt { color: var(--mc); }
+#hints:empty { display: none; }
+#log-lines { display: grid; justify-items: end; gap: 5px; min-height: 1.3em; }
 #log-lines p { margin: 0; white-space: nowrap; text-shadow: 0 1px 6px #000; transition: opacity .6s;
   font: 600 calc(var(--fs) * .92 * 1.18)/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 #log-lines p.new { animation: log-in .18s var(--ez); }
@@ -467,10 +484,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   .fr-bl, .fr-ladder { display: none; }
 }
 @media (max-width: 760px) {
-  #systems { width: min(262px, 62vw); padding: 9px 10px 10px 11px; column-gap: 6px; row-gap: 8px; grid-template-columns: 12px max-content minmax(36px, 1fr) 38px; }
+  #systems { width: min(262px, 62vw); padding: 9px 10px 10px 11px; column-gap: 6px; row-gap: 8px; grid-template-columns: 12px max-content minmax(36px, 1fr) minmax(38px, max-content); }
   #systems kbd, #systems .nokey, .sys-row .lv { display: none; }
   #sector { width: min(200px, 34vw); }
-  .sec-id { display: none; }
   #heading { display: none; }
   #centre { top: calc(var(--top) + var(--sys-h, 150px) + 10px); }
   #radar { width: clamp(104px, 30vw, 132px); }
@@ -483,7 +499,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* touch: the stick owns the bottom left and the buttons the bottom right,
    so everything you read moves up and everything you press moves down */
 .touch-ui #log, .touch-ui #systems kbd, .touch-ui #systems .nokey, .touch-ui .sys-row .lv, .touch-ui #frame, .touch-ui .sec-id, .touch-ui #sensors .range { display: none; }
-.touch-ui #systems { grid-template-columns: 12px max-content minmax(40px, 1fr) 38px; }
+.touch-ui #systems { grid-template-columns: 12px max-content minmax(40px, 1fr) minmax(38px, max-content); }
 .touch-ui #sensors { left: calc(var(--left) - 8px); bottom: auto; top: calc(var(--sector-b, calc(var(--top) + 38px)) + 8px); }
 .touch-ui #radar { width: clamp(104px, 22vmin, 140px); }
 /* a phone held upright: the scope and the systems share the top edge */
@@ -496,12 +512,13 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   #banner { top: 16%; }
   #heading { display: none; }
   .touch-ui #centre { top: var(--top); }
-  .touch-ui #boss, .touch-ui #objective { width: min(300px, 40vw); }
+  .touch-ui #boss, .touch-ui #threat, .touch-ui #tgt-card { width: min(280px, 36vw); }
   /* a phone on its side: a tighter panel, and the thumbs' buttons down to the edge */
   .touch-ui #systems { width: min(250px, 34vw); row-gap: 6px; padding: 7px 10px 7px 11px; }
-  .touch-ui .sys-foot .cell { padding-top: 6px; row-gap: 4px; }
-  .touch-ui #score { font-size: calc(var(--fs) * 1.6); }
-  .touch-ui #sector { width: min(190px, 28vw); }
+  .touch-ui .sys-foot { padding-top: 5px; }
+  .touch-ui #sector { width: min(250px, 31vw); }
+  .touch-ui #objective { gap: 5px; }
+  .touch-ui #obj-list { gap: 3px; }
 }
 
 /* ── touch controls ───────────────────────────────────────────────────── */
@@ -600,16 +617,49 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .pf { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--line); }
 .pf .keys { font: 600 calc(var(--fs) * .9 * 1.18)/1.6 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 
-/* comms: a channel open to the ship (and the arcade's hail) */
-.panel.comms { width: min(920px, 100%); overflow-y: auto; gap: 12px; }
-.cm-sigil { --cc: var(--ink-2); width: 9px; height: 9px; background: var(--cc); box-shadow: 0 0 8px var(--cc); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
-.cm-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-.cm-body.face { grid-template-columns: 76px minmax(0, 1.25fr) minmax(0, 1fr); }
-.cm-face { width: 76px; aspect-ratio: 64 / 72; box-shadow: 0 0 14px rgba(0, 0, 0, .5); }
+/* comms: a transmission received (and the arcade's hail). It comes in at
+   the side of the view, as in the brand's gameplay frame, the world dimmed
+   behind it and still there. */
+#comms { place-items: center end; background: linear-gradient(90deg, rgba(8, 13, 14, .12), rgba(8, 13, 14, .5) 45%, rgba(8, 13, 14, .86)); }
+.panel.comms { width: min(600px, 100%); overflow-y: auto; gap: 12px; padding: 14px 20px 14px 24px; }
+/* the header: a signal trace, the words, a hazard band */
+.tx-h { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.tx-wave { flex: none; width: 34px; height: 12px; background: var(--cy);
+  -webkit-mask: no-repeat center / 100% 100% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 12'%3E%3Cpath d='M0 6h6l2-4 3 8 3-10 3 12 3-9 2 5 2-2h10' fill='none' stroke='%23000' stroke-width='1.3'/%3E%3C/svg%3E");
+          mask: no-repeat center / 100% 100% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 12'%3E%3Cpath d='M0 6h6l2-4 3 8 3-10 3 12 3-9 2 5 2-2h10' fill='none' stroke='%23000' stroke-width='1.3'/%3E%3C/svg%3E"); }
+.tx-k { font: 600 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--cy); }
+.tx-stripes { flex: 1; height: 8px; max-width: 120px; margin-left: auto; background: repeating-linear-gradient(-55deg, var(--cy) 0 2px, transparent 2px 6px); opacity: .45; }
+/* who is calling: their sigil (or face), their name in their colour, what they are, and a stamp for the kind of call */
+.tx-id { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; }
+.cm-sigil { --cc: var(--ink-2); display: grid; place-items: center; width: 46px; height: 46px; border: 1px solid var(--cc); background: rgba(8, 13, 14, .6);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--cc) 30%, transparent); }
+.cm-sigil[hidden] { display: none; }
+.cm-sigil svg { width: 28px; height: 28px; fill: none; stroke: var(--cc); stroke-width: 1.6; }
+.cm-sigil .sg-alert { display: none; }
+.sheet.alert .cm-sigil { --cc: var(--alert) !important; }
+.sheet.alert .cm-sigil .sg-alert { display: inline; }
+.sheet.alert .cm-sigil .sg-calm { display: none; }
+.cm-face { width: 46px; aspect-ratio: 64 / 72; box-shadow: 0 0 14px rgba(0, 0, 0, .5); }
 .cm-face[hidden] { display: none; }
 .cm-face svg { display: block; width: 100%; height: 100%; }
-.cm-text { margin: 0; font: 400 15px/1.5 var(--font-display); color: var(--ink); }
-.cm-read { display: grid; gap: 7px; padding: 10px 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, .02); }
+.tx-who { display: grid; gap: 5px; min-width: 0; }
+#cm-who { font: 700 clamp(18px, 1.7vw, 24px)/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; }
+#cm-s { font: 600 calc(var(--fs) * .95 * 1.18)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+#cm-s:empty { display: none; }
+.tx-stamp { padding: 5px 9px 4px; border: 1.5px solid var(--ink-3); font: 700 calc(var(--fs) * 1.0 * 1.18)/1 var(--font-head); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
+/* someone means harm: red, black and white, the stamp pressed on at an angle */
+.sheet.alert .tx-h { border-bottom-color: var(--alert-dim); }
+.sheet.alert .tx-k { color: var(--alert); }
+.sheet.alert .tx-stripes { background: repeating-linear-gradient(-55deg, var(--alert) 0 3px, transparent 3px 7px); opacity: .8; }
+.sheet.alert .tx-wave { background: var(--alert); }
+.sheet.alert .tx-stamp { border-color: var(--alert); color: var(--alert); rotate: -4deg; background: rgba(40, 12, 10, .5); }
+/* the message: one line that says what is happening, a little more under it */
+.cm-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, .62fr); gap: 16px; align-items: start; }
+.tx-msg { display: grid; gap: 6px; padding-left: 12px; border-left: 2px solid var(--line); }
+.sheet.alert .tx-msg { border-left-color: var(--alert-dim); }
+.tx-msg h2 { margin: 0; font: 600 calc(var(--fs) * 1.25 * 1.18)/1.2 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+.cm-text { margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink-2); }
+.cm-read { display: grid; gap: 7px; padding: 9px 11px; border: 1px solid var(--line); background: rgba(255, 255, 255, .02); }
 .cm-read[hidden] { display: none; }
 .cm-read:empty { display: none; }
 .cm-str { display: grid; gap: 5px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
@@ -618,30 +668,26 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .cm-bar.them { --bc: var(--alert); }
 .cm-bar.you { --bc: var(--amber); }
 .cm-bar b { font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); color: var(--ink); text-align: right; }
-.cm-row { display: grid; grid-template-columns: 9ch 1fr; gap: 8px; font: 400 13px/1.3 var(--font-display); color: var(--ink-2); }
-.cm-row .k { font: 600 calc(var(--fs) * 1.18)/1.5 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.cm-row { display: grid; gap: 4px; font: 400 12px/1.3 var(--font-display); color: var(--ink-2); }
+.cm-row .k { font: 600 calc(var(--fs) * 1.18)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .cm-row.intent .v { color: var(--ink); }
 .cm-timer { height: 3px; background: var(--alert-dim); }
 .cm-timer[hidden] { display: none; }
 .cm-timer i { display: block; height: 100%; width: 100%; background: var(--alert); }
-.cm-list { display: grid; gap: 6px; }
-.cm-c { --c: 8px; --edge: rgba(216, 213, 198, .16); --fill: rgba(20, 26, 26, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
-  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 10px 14px; text-align: left; color: var(--ink); font: inherit; }
-.cm-c::before, .cm-c::after { content: ""; position: absolute; pointer-events: none;
-  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-.cm-c::before { inset: 0; z-index: -2; background: var(--edge); }
-.cm-c::after { inset: 1px; z-index: -1; background: var(--fill); }
-.cm-c.sel, .cm-c:hover:not([aria-disabled="true"]) { --edge: var(--hud); --fill: var(--hud-fill); }
-.sheet.alert .cm-c.sel, .sheet.alert .cm-c:hover:not([aria-disabled="true"]) { --edge: var(--alert); --fill: rgba(52, 20, 17, .92); }
+/* the options: numbered, one a row, a hairline under each; the highlighted one on an amber bar */
+.cm-list { display: grid; gap: 0; }
+.cm-c { position: relative; border: 0; border-bottom: 1px solid var(--line); background: none; cursor: pointer;
+  display: grid; grid-template-columns: 3ch minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 9px 10px; text-align: left; color: var(--ink); }
+.cm-c kbd { min-width: 0; height: auto; padding: 0; border: 0; font: 500 calc(var(--fs) * 1.2)/1 var(--font-mono); letter-spacing: .04em; color: var(--ink-3); }
+.cm-c.sel { background: linear-gradient(90deg, var(--amber) 0 4px, rgba(229, 169, 58, .2) 4px); box-shadow: inset 0 0 0 1px rgba(229, 169, 58, .55); }
+.cm-c:hover:not(.sel):not([aria-disabled="true"]) { background: rgba(229, 169, 58, .07); }
+.cm-c.sel kbd { color: var(--amber); }
 .cm-c[aria-disabled="true"] { cursor: not-allowed; }
-.cm-c[aria-disabled="true"] .cm-main { opacity: .45; }
-.cm-c.sel kbd { background: var(--hud); color: #1a1104; border-color: var(--hud); }
-.sheet.alert .cm-c.sel kbd { background: var(--alert); border-color: var(--alert); }
-.cm-main { display: grid; gap: 3px; }
-.cm-l { font: 600 calc(var(--fs) * 1.25 * 1.18)/1.1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
+.cm-c[aria-disabled="true"] .cm-main, .cm-c[aria-disabled="true"] kbd { opacity: .45; }
+.cm-main { display: grid; gap: 4px; }
+.cm-l { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font: 600 calc(var(--fs) * 1.2 * 1.18)/1.1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .cm-h { font: 400 13px/1.3 var(--font-display); color: var(--ink-2); }
-/* what a choice brings: teal for what you get, amber for what it takes, red for trouble */
-.cm-l { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.cm-c.sel .cm-h { color: var(--ink); }
 .cm-gains { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; font: 500 calc(var(--fs) * .95)/1 var(--font-mono); letter-spacing: .08em; }
 .cm-gains > span { padding: 3px 6px; border: 1px solid currentColor; border-radius: 2px; }
 .cm-gains .g-gain { color: var(--cy); }
@@ -650,8 +696,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .cm-lines { font: 500 calc(var(--fs) * 1.02)/1.3 var(--font-mono); letter-spacing: .06em; color: var(--ink); }
 .cm-side { display: grid; justify-items: end; gap: 3px; font: 600 calc(var(--fs) * 1.02 * 1.18)/1.2 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; white-space: nowrap; }
 .cm-side .cost { color: var(--amber); }
-.cm-side .odds { color: var(--hud-hi); }
-.cm-side .need { color: var(--ink-3); white-space: normal; text-align: right; max-width: 26ch; }
+.cm-side .odds { color: var(--cy); }
+.cm-side .need { color: var(--ink-3); white-space: normal; text-align: right; max-width: 18ch; }
 
 /* buttons: cut like everything else */
 #again, #launch, #resume, #ch-go, #en-go, .ghost { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
@@ -947,20 +993,24 @@ html.swipe #app * { overscroll-behavior: contain; }
   #sum-chart { height: 50px; }
   .sum-mid { display: none; }
   #sum-score { font-size: 40px; }
-  .cm-text { font-size: 13px; line-height: 1.35; }
+  .cm-text { font-size: 12px; line-height: 1.3; }
   .cm-h, .cm-str, .cm-row:not(.intent) { display: none; }
   .cm-read { padding: 6px 10px; }
-  .cm-c { padding: 7px 12px; }
+  .cm-c { padding: 5px 10px; }
+  .panel.comms { gap: 7px; }
+  .tx-h { padding-bottom: 5px; }
   .panel.comms .pf { display: none; }
 }
 @media (max-width: 720px), (max-height: 520px) and (max-width: 1000px) {
-  .cm-body { grid-template-columns: 1fr; gap: 8px; }
-  .cm-body.face { grid-template-columns: 52px minmax(0, 1fr); }
-  .cm-body.face .cm-read { grid-column: 1 / -1; }
-  .cm-face { width: 52px; }
+  #comms { place-items: center; }
+  .panel.comms { width: min(720px, 100%); }
+  .cm-body { grid-template-columns: minmax(0, 1fr) minmax(130px, .5fr); gap: 10px; }
+  .cm-sigil { width: 36px; height: 36px; }
+  .cm-sigil svg { width: 22px; height: 22px; }
+  .cm-face { width: 36px; }
 }
 /* touch: key hints mean nothing under a thumb */
-.touch-ui .pf .keys, .touch-ui .card kbd, .touch-ui .cm-c kbd { display: none; }
+.touch-ui .pf .keys, .touch-ui .card kbd { display: none; }
 @media (max-width: 640px) and (min-height: 521px) {
   .touch-ui #comms .pf { display: none; }
 }
@@ -987,6 +1037,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 .vy-row.heat { margin-top: 4px; }
 #vy-heat-t { --n: 20; --on: var(--amber); --off: var(--amber-dim); height: 4px; }
 #voyage.hot #vy-heat-t { --on: var(--alert); --off: var(--alert-dim); }
+.touch-ui .sens-side { display: none; }
 #voyage.hot #vy-heat { color: var(--alert); }
 #ptr-lane { --pc: var(--amber); }
 #ptr-port { --pc: var(--hud-hi, var(--cy)); }
@@ -1025,15 +1076,15 @@ html.swipe #app * { overscroll-behavior: contain; }
 #port-x::after { inset: 1px; z-index: -1; background: var(--fill); }
 
 /* the Breakout's objective, as steps; and the contacts beside the scope (after the gameplay view) */
-#obj-list { display: none; margin: 2px 0 0; padding: 0; list-style: none; gap: 4px; font: 600 calc(var(--fs) * .85 * 1.18)/1.2 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; color: var(--ink-2); }
+#obj-list { display: none; margin: 0; padding: 0; list-style: none; gap: 5px; font: 600 calc(var(--fs) * .95 * 1.18)/1.25 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; color: var(--ink-2); }
 #objective.course #obj-list { display: grid; }
-#obj-list li::before { content: "○ "; color: var(--ink-3); }
+#obj-list li::before { content: "› "; color: var(--ink-3); }
 #obj-list li.done { color: var(--ink-3); }
 #obj-list li.done::before { content: "● "; color: var(--amber); }
 #obj-list li.now { color: var(--ink); }
 #obj-list li.now::before { content: "› "; color: var(--amber); }
 #obj-list b { color: var(--ink); font-weight: 600; }
-#contacts { display: none; align-self: flex-end; gap: 6px; padding: 0 0 16px 10px; text-shadow: 0 1px 6px #000; min-width: 190px; }
+#contacts { display: none; gap: 6px; }
 .breakout #contacts { display: grid; }
 .touch-ui #contacts { display: none; }
 #contacts .lbl { color: var(--hud); }
@@ -1065,14 +1116,6 @@ html.swipe #app * { overscroll-behavior: contain; }
 #threat .th-b { display: grid; gap: 3px; font: 600 calc(var(--fs) * .85 * 1.18)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 #th-n { font: 600 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .12em; color: var(--alert); }
 #threat.high #th-l { color: var(--alert); }
-.touch-ui #threat { display: none; }
-#hints { display: none; margin: 0; gap: 4px 14px; grid-template-columns: repeat(2, auto); justify-content: end; font: 600 calc(var(--fs) * .85 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
-.breakout:not(.touch-ui) #hints { display: grid; }
-#hints div { display: flex; gap: 8px; align-items: center; }
-#hints dt { min-width: 18px; padding: 2px 4px; border: 1px solid var(--line); text-align: center; color: var(--ink-2); }
-#hints dd { margin: 0; }
-#hints.cutting div:first-child { color: var(--amber); }
-#hints.cutting div:first-child dt { border-color: var(--amber); color: var(--amber); }
 
 /* ── the journey: continue, and the chart ─────────────────────────────── */
 #resume[hidden], #ch-go[hidden], #en-go[hidden] { display: none; }
@@ -1170,14 +1213,9 @@ circle.ch-thren { fill: rgba(92, 195, 162, .22); stroke: #5CC3A2; stroke-width: 
    at the edge, Continuance control, the hunt. Amber stays on rock, which is
    work, and teal on what the scope knows. */
 #tgt:not(.rock) #tgt-box { --b: var(--threat); outline-color: rgba(201, 74, 63, .2); }
-#tgt:not(.rock) .tc-id, #tgt:not(.rock) .tgt-x { color: var(--alert); }
-#tgt:not(.rock) .tc-int > span, #tgt:not(.rock) #tgt-int-v { color: var(--alert); }
-#tgt:not(.rock) #tgt-int { background: linear-gradient(90deg, var(--alert) 0 calc(var(--v) * 100%), var(--alert-dim) 0); }
-#tgt:not(.rock) #tgt-card { border-color: rgba(201, 74, 63, .55); }
-#tgt.elite .tc-id { color: #f08a7e; }
+#tgt:not(.rock) .tgt-x { color: var(--alert); }
 #threats .thr i { --pc: var(--alert); }
 #threats .thr.elite i { --pc: #f08a7e; }
-.sec-id .x { background: linear-gradient(45deg, transparent 43%, var(--alert) 43% 57%, transparent 57%), linear-gradient(-45deg, transparent 43%, var(--alert) 43% 57%, transparent 57%); }
 #vy-heat-t { --on: var(--alert); --off: var(--alert-dim); }
 #vy-heat { color: var(--alert); }
 #contacts .lbl { color: var(--cy); }

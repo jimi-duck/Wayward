@@ -42,13 +42,13 @@
       <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 7H5l-3 5 3 5h4 M15 7h4l3 5-3 5h-4 M8 12h8"/></symbol>
     </svg>
 
-    <!-- The HUD, after the reference frame: thin instrument lines laid over the view, never a dashboard round it.
-           top left     · the sector, and krail toward the next refit
-           top centre   · the heading; a capital ship or a sector event, while there is one
-           top right    · ship systems: lasers, torpedoes (and mines) once fitted; hull, reactor, score
-           in the world · the gunsight, the target in its bracket frame, marks on what matters
-           bottom left  · the sensor scope and its range
-           bottom right · the mode the ship is in, and the last thing that happened -->
+    <!-- The HUD, in the brand's six zones (v1.1, section 12): instrument lines laid over the view, never a dashboard round it.
+           upper left   · the current objective, as short steps
+           upper centre · one card: the threat, the capital ship, or the target
+           upper right  · ship status, a row each: hull, fuel, energy, core, Krail, hold, munitions
+           centre       · the world: the gunsight and the target's brackets, nothing else
+           lower left   · the scope and its contacts, where you are, how hard you are hunted
+           lower right  · the operating mode and only that mode's actions -->
     <div id="hud">
       <div id="vignette" aria-hidden="true"></div>
       <div id="frame" aria-hidden="true"><i class="fr-tl"></i><i class="fr-bl"></i><i class="fr-br"></i><i class="fr-ladder"></i></div>
@@ -58,10 +58,6 @@
         <div id="marks"></div>
         <div id="tgt">
           <div id="tgt-box"><i class="tgt-scan"></i><i class="tgt-x"></i><span id="tgt-d">0 m</span></div>
-          <div id="tgt-card">
-            <div class="tc-id"><svg class="ico"><use id="tgt-ico" href="#i-hostile"/></svg><span><span class="tc-n"><b id="tgt-name">Interceptor</b><span id="tgt-lock">Lock</span></span><span class="tc-s" id="tgt-sub">Gutter</span></span></div>
-            <div class="tc-int"><span><span id="tgt-int-k">Hull</span> <b id="tgt-int-v">100%</b></span><i id="tgt-int"></i></div>
-          </div>
         </div>
         <div class="ptr" id="ptr-cap"><i></i><span id="ptr-cap-t">Capital</span></div>
         <div class="ptr" id="ptr-obj"><i></i><span id="ptr-obj-t">Objective</span></div>
@@ -71,32 +67,46 @@
         <div id="threats"></div>
       </div>
 
-      <section id="sector" class="hud-block" aria-label="Sector and krail">
+      <!-- upper left: the ship's plate, then what to do now -->
+      <section id="sector" class="hud-block" aria-label="Current objective">
         <!-- the brand plate: the ship as the boards name her -->
         <div class="plate"><b class="pl-n">Wayward</b><span class="pl-s">Obedience-class ore hauler</span><span class="pl-r">Serial OB-7731-A</span></div>
-        <div class="sec-id"><span><i class="x"></i><b id="sec-code">Sector 83-37</b></span><span><i class="x"></i><span id="sec-name">Asteroid field</span></span></div>
-        <div id="rail" aria-label="Krail to the next refit">
-          <div class="rail-h"><svg class="ico"><use href="#i-rock"/></svg><span class="lbl" id="xp-l">Krail</span><b id="xp-v">0</b><span class="lbl of">/ <span id="xp-n">0</span></span><span id="xp-gain"></span><span class="lbl rf">Refit <b id="refit-n">00</b></span></div>
-          <i class="ticks" id="xp"></i>
-        </div>
-        <!-- the Breakout: the tank (fuel for the jump), the hold, parts and chits, and how hard the Custody is looking -->
-        <div id="voyage" aria-label="Fuel, hold and pursuit">
-          <div class="vy-cells"><span><span class="lbl">Hold</span><b id="vy-ore">0/40</b></span><span><span class="lbl">Parts</span><b id="vy-parts">0</b></span><span><span class="lbl">Chits</span><b id="vy-chits">0</b></span><span><span class="lbl">Food</span><b id="vy-food">0</b></span></div>
-          <div class="vy-row heat"><span class="lbl">Hunt pressure</span><b id="vy-heat">Wanted Lv 1</b></div>
-          <i class="ticks" id="vy-heat-t"></i>
-        </div>
+        <section id="objective" aria-live="polite">
+          <span class="obj-k"><i class="stripes"></i>Current objective</span>
+          <div class="obj-h"><svg class="ico"><use href="#i-event"/></svg><b id="obj-t">Extract Krail</b><span id="obj-left"></span></div>
+          <i class="ticks" id="obj-p"></i>
+          <span id="obj-s"></span>
+          <ul id="obj-list"></ul>
+        </section>
       </section>
 
       <div id="heading" class="hud-block" aria-hidden="true"><b id="hdg">000</b><i id="hdg-tape"></i></div>
 
-      <section id="systems" class="hud-block cut" aria-label="Ship systems">
-        <div class="sys-row" id="sys-ph">
-          <svg class="ico"><use href="#i-laser"/></svg><span class="lbl">Lasers</span><kbd>1</kbd>
-          <i class="bar" id="g-bank"></i><b class="val" id="v-bank">100<small>%</small></b><span class="lv" id="lv-ph">Lv 1</span>
+      <!-- upper right: the ship's condition, a row each, read at a glance -->
+      <section id="systems" class="hud-block cut" aria-label="Ship status">
+        <div class="sys-row" id="sys-hull">
+          <svg class="ico"><use href="#i-hull"/></svg><span class="lbl">Hull</span><span class="nokey"></span>
+          <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span><b class="val" id="v-hull">3/3</b><span class="lv"></span>
         </div>
         <div class="sys-row" id="sys-fuel" hidden>
-          <svg class="ico"><use href="#i-rock"/></svg><span class="lbl">Krail</span><span class="nokey"></span>
+          <svg class="ico"><use href="#i-engine"/></svg><span class="lbl">Fuel</span><span class="nokey"></span>
           <i class="bar" id="g-fuel"></i><b class="val" id="v-fuel">6/20</b><span class="lv" id="lv-fuel">Tank</span>
+        </div>
+        <div class="sys-row" id="sys-ph">
+          <svg class="ico"><use href="#i-laser"/></svg><span class="lbl">Energy</span><kbd>1</kbd>
+          <i class="bar" id="g-bank"></i><b class="val" id="v-bank">100<small>%</small></b><span class="lv" id="lv-ph">Lv 1</span>
+        </div>
+        <div class="sys-row" id="sys-oc">
+          <svg class="ico"><use href="#i-core"/></svg><span class="lbl">Core</span><kbd>E</kbd>
+          <i class="ticks" id="g-oc"></i><b class="val" id="v-oc">0<small>%</small></b><span class="lv"></span>
+        </div>
+        <div class="sys-row" id="rail" aria-label="Krail to the next refit">
+          <svg class="ico"><use href="#i-rock"/></svg><span class="lbl" id="xp-l">Krail</span><span class="nokey"></span>
+          <i class="ticks" id="xp"></i><b class="val"><span id="xp-v">0</span><small>/<span id="xp-n">0</span></small></b><span class="lv">Refit <b id="refit-n">00</b><span id="xp-gain"></span></span>
+        </div>
+        <div class="sys-row" id="sys-hold" hidden>
+          <svg class="ico"><use href="#i-capital"/></svg><span class="lbl">Hold</span><span class="nokey"></span>
+          <i class="bar" id="g-hold"></i><b class="val" id="vy-ore">0/40</b><span class="lv"></span>
         </div>
         <div class="sys-row" id="sys-tp" hidden>
           <svg class="ico"><use href="#i-torp"/></svg><span class="lbl">Torpedoes</span><kbd>2</kbd>
@@ -107,22 +117,13 @@
           <span class="rack" id="g-mines"></span><b class="val" id="v-mines">0</b><span class="lv" id="lv-mn"></span>
         </div>
         <div class="sys-foot">
-          <div class="cell" id="sys-hull">
-            <span class="lbl">Hull</span><b class="val" id="v-hull">3/3</b>
-            <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span>
-          </div>
-          <div class="cell" id="sys-oc">
-            <span class="lbl">Core <kbd>E</kbd></span><b class="val" id="v-oc">0<small>%</small></b>
-            <i class="ticks" id="g-oc"></i>
-          </div>
-          <div class="cell" id="sys-score">
-            <span class="lbl">Score</span><b class="val" id="score">000000</b>
-            <span id="chain"><span class="lbl">Chain <span id="chain-n">0</span></span><b id="chain-x">×1</b></span>
-          </div>
+          <span class="vy-cells" id="vy-cells"><span><span class="lbl">Parts</span><b id="vy-parts">0</b></span><span><span class="lbl">Chits</span><b id="vy-chits">0</b></span><span><span class="lbl">Food</span><b id="vy-food">0</b></span></span>
+          <span id="sys-score"><span class="lbl">Score</span><b class="val" id="score">000000</b><span id="chain"><span class="lbl">Chain <span id="chain-n">0</span></span><b id="chain-x">×1</b></span></span>
         </div>
       </section>
       <div id="powers" aria-live="polite"></div>
 
+      <!-- upper centre: one card, the most important thing out there -->
       <div id="centre">
         <section id="threat" class="cut" aria-live="polite">
           <svg class="ico"><use href="#i-alert"/></svg>
@@ -133,24 +134,34 @@
           <div class="boss-bar"><i class="ticks" id="boss-hp"></i></div>
           <div class="boss-f"><span id="boss-hull">Hull 100%</span><span id="boss-phase">Phase 1/3</span><span id="boss-fuse">Fuse 42s</span></div>
         </section>
-        <section id="objective" class="cut" aria-live="polite">
-          <div class="obj-h"><svg class="ico"><use href="#i-event"/></svg><b id="obj-t">Distress signal</b><span id="obj-left">0s</span></div>
-          <i class="ticks" id="obj-p"></i>
-          <span id="obj-s"></span>
-          <ul id="obj-list"></ul>
+        <section id="tgt-card" class="cut">
+          <svg class="ico"><use id="tgt-ico" href="#i-hostile"/></svg>
+          <span class="tc-b"><span class="tc-n"><b id="tgt-name">Interceptor</b><span id="tgt-lock">Lock</span></span><span class="tc-s" id="tgt-sub">Gutter</span>
+            <span class="tc-int"><span id="tgt-int-k">Hull</span><i id="tgt-int"></i><b id="tgt-int-v">100%</b></span></span>
         </section>
       </div>
 
+      <!-- lower left: the scope, who is out there, where you are -->
       <section id="sensors" class="hud-block" aria-hidden="true">
         <canvas id="radar"></canvas>
         <span class="range"><span class="lbl">Range</span><b id="radar-r">1.0 km</b></span>
-        <div id="contacts"><span class="lbl">Contacts</span><ul id="contacts-l"></ul></div>
+        <div class="sens-side">
+          <div id="contacts"><span class="lbl">Contacts</span><ul id="contacts-l"></ul></div>
+          <div id="voyage" aria-label="Pursuit">
+            <div class="vy-row heat"><span class="lbl">Hunt</span><b id="vy-heat">Wanted Lv 1</b></div>
+            <i class="ticks" id="vy-heat-t"></i>
+          </div>
+          <div class="sec-id"><b id="sec-code">Sector 83-37</b><span id="sec-name">Asteroid field</span></div>
+        </div>
       </section>
 
+      <!-- lower right: the last thing that happened, then the mode and its actions -->
       <section id="log" class="hud-block" aria-live="off">
-        <div id="mode"><i class="stripes"></i><span id="mode-t">Cruise</span><i class="rule"></i><svg class="hex" viewBox="0 0 24 24"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7z"/><path d="M12 8l3.46 2v4L12 16l-3.46-2v-4z"/></svg></div>
         <div id="log-lines"></div>
-        <dl id="hints"><div><dt>3</dt><dd>Cut</dd></div><div><dt>1</dt><dd>Lasers</dd></div><div><dt>2</dt><dd>Torpedo</dd></div><div><dt>E</dt><dd>Core</dd></div></dl>
+        <div id="mode" class="cut">
+          <div class="md-h"><svg class="md-i" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z"/><path d="M12 7l5 5-5 5-5-5z"/></svg><span id="mode-t">Cruise</span><i class="stripes"></i></div>
+          <dl id="hints"></dl>
+        </div>
       </section>
 
       <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
@@ -229,13 +240,20 @@
       </div>
     </div>
 
-    <!-- Comms: whoever opens a channel to the ship (a Breakout card), and the arcade's capital-ship hail. -->
+    <!-- Comms: whoever opens a channel to the ship (a Breakout card), and the arcade's capital-ship hail,
+         as a transmission received (brand v1.1, section 14): who is calling, a short message, numbered options
+         with what each one brings beside it. Red, with a stamp, when the caller means harm. -->
     <div id="comms" class="sheet" role="dialog" aria-labelledby="cm-t" hidden>
       <div class="panel comms">
-        <header class="ph"><span class="kick"><i id="cm-sigil" class="cm-sigil"></i><span id="cm-k">Incoming</span></span><h2 id="cm-t">Channel open</h2><span class="sub" id="cm-s"></span></header>
-        <div id="cm-body" class="cm-body">
+        <header class="tx-h"><i class="tx-wave" aria-hidden="true"></i><span class="tx-k">Incoming transmission</span><i class="tx-stripes" aria-hidden="true"></i></header>
+        <div class="tx-id">
+          <span id="cm-sigil" class="cm-sigil" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="sg-calm" d="M12 2l10 10-10 10L2 12z M12 7l5 5-5 5-5-5z"/><path class="sg-alert" d="M12 3l10 17H2z M12 9v5 M12 16.5v1.5"/></svg></span>
           <div id="cm-face" class="cm-face" hidden></div>
-          <p id="cm-text" class="cm-text"></p>
+          <span class="tx-who"><b id="cm-who">Channel open</b><span id="cm-s"></span></span>
+          <span class="tx-stamp" id="cm-k">Incoming</span>
+        </div>
+        <div id="cm-body" class="cm-body">
+          <div class="tx-msg"><h2 id="cm-t">Channel open</h2><p id="cm-text" class="cm-text"></p></div>
           <div id="cm-read" class="cm-read"></div>
         </div>
         <div id="cm-timer" class="cm-timer" hidden><i></i></div>
