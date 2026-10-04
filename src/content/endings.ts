@@ -140,7 +140,7 @@ export const ENDINGS: EndingDef[] = [
     epilogue: [
       { text: 'You leave a copy in a dead drop at the Threshold and point the Wayward at the dark between the charts.' },
       { if: { wrecksMin: 2 }, text: 'She has been wrecked twice and patched three times. She holds.' },
-      { if: { flags: ['pod'] }, text: 'The Ares Drive survivor stays aboard. They say they have nowhere better to be.' },
+      { if: { flags: ['pod'] }, text: 'You left the Ares Drive survivor at the last port. They will tell the story their own way.' },
       { if: { hardcore: true }, text: 'One life, one ship, all the way through.' },
       { text: 'Someone will find the file, someday. It will be their choice then.' },
     ],
