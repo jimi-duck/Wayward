@@ -366,5 +366,13 @@ should multiply each other; expand combinations before adding combat.
    schedule you can stall, and Calloway closes only when you linger; the
    chart shows enough to plan, with the Net as of your last news, Krail
    as a survey estimate until flown, and Calloway where last seen.
-   Where it stands: see BALANCE-JOURNEY.md.
+   Where it stands (BALANCE-JOURNEY.md, 48 journeys): 44 reach the
+   Threshold, 3 are taken by Calloway, 1 is wrecked out; about five
+   systems and eleven days a journey, sorties of about three minutes after
+   the Breakout's five. Calloway reaches 10% of third systems, 30% of
+   fourth, about half of fifth: pressure that builds across the session.
+   Open: the pilot never lands in a netted system (the Net stays a column
+   behind a pilot that keeps moving, so the netted port scan never came);
+   the journey is easy for a steady pilot; a false flight plan and the
+   survey relay are rarely taken; re-plotting from a port is not built.
 6. M4 to M8 in order, each with its pilot report.
