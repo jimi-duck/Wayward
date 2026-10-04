@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
-import { CAPTAIN_AT, CAPTAIN_HP, CAPTAIN_LIVES, CAPTAIN_REST, NOTICE, NOTICE_CAP, STANDING_FLOOR, TIERS } from '../src/content/factions';
+import { CAPTAIN_AT, CAPTAIN_LIVES, CAPTAIN_REST, NOTICE, NOTICE_CAP, STANDING_FLOOR, TIERS } from '../src/content/factions';
+import { CAPTAIN_BY_ID, form } from '../src/sim/captains';
 import type { SortieResult } from '../src/sim/breakout';
 import { CARD_BY_ID, condOk, feeFor, openCard, type Ctx } from '../src/sim/comms';
 import { ALIEN_TYPES, VARIANTS } from '../src/sim/enemies';
@@ -44,8 +45,10 @@ describe('the factions’ data', () => {
       expect(row.kill.capital).toBeGreaterThan(row.kill.cruiser);
       expect(row.decay).toBeGreaterThan(0);
     }
-    const ids = Object.values(NOTICE).flatMap((r) => r.captains.map((c) => c.id));
+    const ids = Object.values(NOTICE).flatMap((r) => r.captains);
     expect(new Set(ids).size).toBe(ids.length);
+    // every captain on a faction's file exists, and flies that faction's ship
+    for (const [f, row] of Object.entries(NOTICE)) for (const id of row.captains) expect(CAPTAIN_BY_ID[id]?.faction, id).toBe(f);
   });
 });
 
@@ -69,8 +72,8 @@ describe('notice', () => {
     const lines = raise(n, 'custody', at.captain, {});
     expect(lines.slice(0, 3)).toEqual([NOTICE.custody.lines.toll, NOTICE.custody.lines.hunters, NOTICE.custody.lines.captain]);
     const c = captainOf(n, 'custody')!;
-    expect(c.name).toBe(NOTICE.custody.captains[0]!.name);
-    expect(lines[3]).toContain(c.name);
+    expect(c.id).toBe(NOTICE.custody.captains[0]);
+    expect(lines[3]).toContain(CAPTAIN_BY_ID[c.id]!.name);
     expect(tierOf('custody', at.hunters)).toBe('hunters');
   });
 
@@ -125,46 +128,49 @@ describe('notice', () => {
     raise(n, 'custody', NOTICE.custody.at.captain, {});
     const q = pressure(n, 0);
     expect(q.pursuit).toBe(NOTICE.custody.hunt);
-    expect(q.captain).toMatchObject({ faction: 'custody', at: CAPTAIN_AT, hp: CAPTAIN_HP, rematch: false });
+    expect(q.captain).toMatchObject({ id: NOTICE.custody.captains[0], faction: 'custody', at: CAPTAIN_AT, memory: { met: 0 } });
   });
 });
 
 describe('named captains', () => {
-  it('rest between meetings, and come back tougher after you get away', () => {
+  it('rest between meetings, and come back changed after you slip them', () => {
     const n = marked();
     const c = captainOf(n, 'custody')!;
-    expect(remember(n, c.id, 'escaped', 3, {})[0]).toContain(c.name);
+    const def = CAPTAIN_BY_ID[c.id]!;
+    const fresh = form(def, c).hp;
+    expect(remember(n, c.id, 'evaded', 3, {}, new Rng(1))[0]).toContain(def.name);
     expect(pressure(n, 3).captain).toBeNull();
     expect(pressure(n, 3 + CAPTAIN_REST - 0.1).captain).toBeNull();
     const back = pressure(n, 3 + CAPTAIN_REST).captain!;
-    expect(back.rematch).toBe(true);
-    expect(back.escapes).toBe(1);
-    expect(back.hp).toBeGreaterThan(CAPTAIN_HP);
+    expect(back.memory).toMatchObject({ met: 1, evaded: 1, last: 'evaded' });
+    expect(form(def, back.memory).hp).toBeGreaterThan(fresh);
   });
 
-  it('beaten, ease the faction off, and are gone after enough beatings; the next takes up the file', () => {
-    const n = marked();
-    const first = captainOf(n, 'custody')!;
-    const before = noticeOf(n, 'custody');
-    remember(n, first.id, 'beaten', 1, {});
-    expect(noticeOf(n, 'custody')).toBeLessThan(before);
-    expect(captainOf(n, 'custody')!.beaten).toBe(1);
-    for (let i = 1; i < CAPTAIN_LIVES; i++) remember(n, first.id, 'beaten', 1, {});
-    expect(n.fallen).toContain(first.id);
-    expect(captainOf(n, 'custody')).toBeNull();
-    // still marked enough: the second captain takes it up
-    raise(n, 'custody', NOTICE.custody.at.captain, {});
-    expect(captainOf(n, 'custody')!.id).toBe(NOTICE.custody.captains[1]!.id);
+  it('beaten, ease the faction off, and are gone once killed or scarred enough; the next takes up the file', () => {
+    for (let seed = 1; seed < 20; seed++) {
+      const n = marked();
+      const first = captainOf(n, 'custody')!;
+      const before = noticeOf(n, 'custody');
+      remember(n, first.id, 'beaten', 1, {}, new Rng(seed));
+      expect(noticeOf(n, 'custody')).toBeLessThan(before);
+      for (let i = 0; i < CAPTAIN_LIVES && !n.fallen.includes(first.id); i++) remember(n, first.id, 'beaten', 1, {}, new Rng(seed + i));
+      expect(n.fallen).toContain(first.id);
+      expect(first.scarred).toBeLessThanOrEqual(CAPTAIN_LIVES);
+      expect(captainOf(n, 'custody')?.id ?? null).not.toBe(first.id);
+      // still marked enough: the second captain takes it up
+      raise(n, 'custody', NOTICE.custody.at.captain, {});
+      expect(captainOf(n, 'custody')!.id).toBe(NOTICE.custody.captains[1]);
+    }
   });
 
-  it('remember a win and terms too', () => {
+  it('remember a win, and terms too', () => {
     const n = marked();
     const c = captainOf(n, 'custody')!;
-    remember(n, c.id, 'won', 0, {});
-    expect(c.wins).toBe(1);
+    remember(n, c.id, 'won', 0, {}, new Rng(1));
+    expect(c.won).toBe(1);
     const before = noticeOf(n, 'custody');
-    remember(n, c.id, 'parted', 0, {});
-    expect(c.parted).toBe(1);
+    remember(n, c.id, 'bargained', 0, {}, new Rng(1));
+    expect(c.bargained).toBe(1);
     expect(noticeOf(n, 'custody')).toBeLessThan(before);
     expect(c.met).toBe(2);
   });
@@ -181,20 +187,11 @@ describe('notice on the channel', () => {
     expect(condOk({ notice: ['custody', 'captain'] }, ctx({ notice: { custody: 'hunters' } }))).toBe(false);
   });
 
-  it('opens a captain’s card in her name, with her price only if she bargains', () => {
+  it('names the captain on your file in a card’s slots', () => {
     const n = marked('custody');
-    remember(n, captainOf(n, 'custody')!.id, 'escaped', -10, {});
     const call = pressure(n, 0).captain!;
-    const o = openCard(CARD_BY_ID.captain!, ctx({ captain: call, chits: 500 }), new Rng(1));
-    expect(o.def.from).toContain(call.name);
-    expect(o.def.caller).toBe('custody');
-    expect(o.text).toContain('new plating');
-    const ids = o.choices.map((c) => c.id);
-    expect(ids).toContain('talk');
-    expect(ids).not.toContain('pay');
-    const b = openCard(CARD_BY_ID.captain!, ctx({ captain: { ...call, personality: 'bargain', rematch: false }, chits: 500 }), new Rng(1));
-    expect(b.choices.map((c) => c.id)).toEqual(['fight', 'run', 'pay']);
-    expect(b.text).toContain(`${b.fee} chits`);
+    const o = openCard(CARD_BY_ID.custody_bulletin!, ctx({ captain: call, notice: { custody: 'captain' }, t: 300 }), new Rng(1));
+    expect(o.text).toContain(`signed by ${call.name}`);
   });
 });
 
@@ -227,8 +224,8 @@ describe('notice on the journey', () => {
     expect(def.notice.captain?.faction).toBe('gutter');
     expect(def.notice.tiers.gutter).toBe('captain');
     const id = def.notice.captain!.id;
-    endSortie(j, result(j, { captain: { id, result: 'escaped' } }));
-    expect(captainOf(j.notice, 'gutter')!.escapes).toBe(1);
+    endSortie(j, result(j, { captain: { id, report: 'escaped' } }));
+    expect(captainOf(j.notice, 'gutter')!.escaped).toBe(1);
     expect(sortieDef(j).notice.captain).toBeNull();
   });
 
@@ -265,37 +262,36 @@ describe('a captain in the world', () => {
     return j;
   }
 
-  it('calls once she is due, and her ship comes in under her name', () => {
+  it('find you once due, and their ship comes in under its name', () => {
     const j = hunted('custody');
     const w = sortie(j);
     w.captainAt = 1;
     run(w, 1.2);
     expect(w.phase).toBe('comms');
-    expect(w.comms!.def.id).toBe('captain');
+    const id = NOTICE.custody.captains[0]!;
+    expect(w.comms!.def.id).toBe(`captain:${id}`);
     expect(w.answer('fight')).toBe(true);
     run(w, 6);
-    expect(w.command.boss?.name).toBe(`${NOTICE.custody.captains[0]!.name} · ${NOTICE.custody.captains[0]!.ship}`);
-    // the hull went with her still in the system: she won
-    expect(w.result().captain).toEqual({ id: NOTICE.custody.captains[0]!.id, result: 'won' });
+    expect(w.command.boss?.name).toBe(CAPTAIN_BY_ID[id]!.ship);
+    // the sortie ended short of the lane with them still fighting: theirs
+    expect(w.result().captain).toEqual({ id, report: 'won' });
   });
 
-  it('ambushes, if that is her way, and leaves on terms if she bargains', () => {
-    const g = hunted('gutter');
-    const w = sortie(g);
-    w.captainAt = 1;
-    run(w, 1.2);
-    expect(w.comms!.def.id).toBe('captain_ambush');
-    expect(w.comms!.slow).toBeGreaterThan(0);
-
-    const j = hunted('custody');
-    const c = captainOf(j.notice, 'custody')!;
-    c.personality = 'bargain';
+  it('ambush, if that is their way, and stand off when paid, if they deal', () => {
+    const j = hunted('gutter');
+    // the Gutter's first captain is a broker
     const v = sortie(j, 500);
     v.captainAt = 1;
     run(v, 1.2);
     expect(v.answer('pay')).toBe(true);
     expect(v.chits).toBeLessThan(500);
-    expect(v.result().captain).toEqual({ id: c.id, result: 'parted' });
+    expect(v.result().captain).toEqual({ id: 'kade', report: 'bargained' });
+    // a scarred captain ambushes, whatever they were
+    captainOf(j.notice, 'gutter')!.scarred = 1;
+    const w = sortie(j);
+    w.captainAt = 1;
+    run(w, 1.2);
+    expect(w.comms!.slow).toBeGreaterThan(0);
   });
 
   it('sends hunters oftener', () => {

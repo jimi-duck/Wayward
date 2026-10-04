@@ -815,7 +815,7 @@ export const CARDS: CardDef[] = [
     ],
   },
 
-  // ── notice: the factions that have marked you, and their captains ──────
+  // ── notice: the factions that have marked you ──────────────────────────
   {
     id: 'custody_bulletin', kind: 'warning', caller: 'custody', when: { after: 30, notice: ['custody', 'warning'] }, weight: 1.2, repeat: true,
     from: 'Custody bulletin · all channels', title: 'Report this hull',
@@ -846,47 +846,5 @@ export const CARDS: CardDef[] = [
       { id: 'ignore', label: 'Say nothing', tone: 'refuse', hint: 'Words are cheap.', win: { text: 'Channel closed' } },
     ],
   },
-  {
-    id: 'captain', kind: 'warning', caller: 'captain', trigger: 'captain', repeat: true,
-    from: '{captain} · {ship}', title: 'A name on your file',
-    text: '“Wayward. I have read everything they have on you. I wanted to see you for myself.”',
-    lines: [
-      { if: { captain: 'announce' }, text: 'She gives her name and her ship, as if it were a courtesy.' },
-      { if: { captain: 'bargain' }, text: '“Everything has a price, hauler. Even my patience. {fee} chits, and I was never here.”' },
-      { if: { met: 'escaped' }, text: 'Her ship carries new plating since you last ran from her.' },
-      { if: { met: 'beaten' }, text: 'The scars you gave her ship are still there. So is the grudge.' },
-      { if: { met: 'won' }, text: '“I broke you once. You remember.”' },
-      { if: { met: 'parted' }, text: '“We had an arrangement. Let us see if it holds.”' },
-    ],
-    cargo: 'A named captain · her own ship, her own crew', fee: { base: 40, heat: 30 },
-    truths: [
-      { id: 'proud', weight: 1.5, read: 'Her guns are already warm · she wants it settled' },
-      { id: 'tired', weight: 1, read: 'Her ship is running on patches · she would rather not', boost: { if: { met: 'beaten' }, mult: 2.5 } },
-    ],
-    choices: [
-      { id: 'fight', label: 'Turn and fight', tone: 'fight', hint: 'Break her ship and her faction eases off. She will come back, unless you break her twice.', win: { text: 'Weapons hot on her ship', captain: 'fight' } },
-      { id: 'run', label: 'Run for the lane', tone: 'run', hint: 'She comes after you with the system on alert. Get through and she remembers it.', win: { text: 'Running · she is on your tail', captain: 'run' } },
-      { id: 'pay', label: 'Pay her price', tone: 'pay', hint: 'She takes it and goes, and her faction cools a little.', show: { captain: 'bargain' }, cost: { chits: 'fee' }, win: { text: 'Paid · she breaks off', captain: 'parley' } },
-      {
-        id: 'talk', label: '“Not today, Captain”', tone: 'bluff', hint: 'She knows you now. Maybe she has had enough of you.', show: { met: true }, loseIf: ['proud'], odds: { base: 0.6 },
-        win: { text: 'A long silence · then she turns away', captain: 'parley' }, lose: { text: '“Today.” · she opens fire', captain: 'fight' },
-      },
-    ],
-  },
-  {
-    id: 'captain_ambush', kind: 'warning', caller: 'captain', trigger: 'captain', repeat: true,
-    from: '{captain} · {ship}', title: 'Out of the dark',
-    text: '“Hello, Wayward.” Her ship is already on you.',
-    lines: [
-      { if: { met: 'escaped' }, text: '“You ran last time. Not this time.”' },
-      { if: { met: 'beaten' }, text: 'She has patched the holes you put in her, and added guns.' },
-      { if: { met: 'won' }, text: '“Still flying that wreck?”' },
-    ],
-    cargo: 'A named captain · weapons hot',
-    slow: { timeout: 5, default: 'fight' },
-    choices: [
-      { id: 'fight', label: 'Fight', tone: 'fight', hint: 'No time for anything else.', win: { text: 'Weapons hot on her ship', captain: 'fight' } },
-      { id: 'run', label: 'Break for the lane', tone: 'run', hint: 'She follows, and the whole system with her.', win: { text: 'Running · she is on your tail', captain: 'run' } },
-    ],
-  },
+  // the captains themselves speak on cards built from content/captains.ts (sim/captains.ts captainCard)
 ];

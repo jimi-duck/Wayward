@@ -4,7 +4,8 @@ import type { Levels } from './build';
 import type { JobDef, Standing } from './comms';
 import type { Faction } from './enemies';
 import type { RockKind, RockSize } from './field';
-import { QUIET, type CaptainResult, type Pressure } from './notice';
+import type { Report } from './captains';
+import { QUIET, type Pressure } from './notice';
 import type { RunStats } from './run';
 import type { Rng } from './rng';
 
@@ -180,7 +181,7 @@ export interface SortieResult {
   huntDelay: number;
   stall: number;
   /** The named captain who called here, if one did, and how it ended. */
-  captain: { id: string; result: CaptainResult } | null;
+  captain: { id: string; report: Report } | null;
   /** Notice the sortie's choices moved, by faction (the kills are counted from the run). */
   notice: Partial<Record<Faction, number>>;
 }

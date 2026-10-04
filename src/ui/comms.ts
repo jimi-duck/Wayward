@@ -1,6 +1,7 @@
 import type { Contact } from '../sim/bosses';
 import type { Caller, Open } from '../sim/comms';
 import { NEON_CSS } from './colors';
+import { faceSvg } from './face';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 
 // ── the comms panel ───────────────────────────────────────────────────────
@@ -37,6 +38,8 @@ export interface CommsView {
   text: string;
   read: { them: number; you: number; rows: Array<[string, string]> } | null;
   choices: CommsChoice[];
+  /** A named captain's portrait, as SVG (null: nobody to show). */
+  face: string | null;
 }
 
 const CALLER_CSS: Record<Caller, string> = {
@@ -44,9 +47,9 @@ const CALLER_CSS: Record<Caller, string> = {
   frontier: '#5ad0e3', guild: '#ffb33d', kellern: '#d9c27a', miners: '#ece6e1', calloway: '#ff2e40', captain: '#ff2e40', unknown: '#aaa39d',
 };
 const KIND_WORD: Record<string, string> = {
-  trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', shakedown: 'Shakedown', checkpoint: 'Checkpoint', distress: 'Distress call', rumour: 'Rumour',
+  captain: 'Named captain', trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', shakedown: 'Shakedown', checkpoint: 'Checkpoint', distress: 'Distress call', rumour: 'Rumour',
 };
-const HOSTILE = new Set(['shakedown', 'checkpoint']);
+const HOSTILE = new Set(['shakedown', 'checkpoint', 'captain']);
 
 /** A word for a chance, never a number: a gamble should feel like one. */
 export function oddsWord(p: number): string {
@@ -71,6 +74,7 @@ export function cardView(o: Open): CommsView {
       label: c.label, hint: c.hint, lines: [], ok: c.ok, needs: c.needs,
       tags: [...c.cost, ...(c.odds !== null ? [oddsWord(c.odds)] : c.risky ? ['Trust the read'] : [])],
     })),
+    face: d.face ? faceSvg(d.face, CALLER_CSS[d.caller], d.scars ?? 0) : null,
   };
 }
 
@@ -85,6 +89,7 @@ export function hailView(c: Contact): CommsView {
     kick: 'Alarm', title: c.name, sub: `${c.faction} capital ship · on intercept course`, colour: NEON_CSS[c.faction], alert: true,
     text: 'She will fight back, and her escort wing comes in with her. The sector clears for the duel.',
     read: null,
+    face: null,
     choices: [
       { label: 'Engage', hint: 'Stand and fight.', lines: [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Hull repair · krail · a power-up'], tags: [], ok: true, needs: [] },
       evade,
@@ -116,6 +121,9 @@ export class CommsPanel {
     $('cm-s').textContent = view.sub;
     $('cm-s').style.color = view.colour;
     $('cm-text').textContent = view.text;
+    $('cm-face').hidden = !view.face;
+    $('cm-face').innerHTML = view.face ?? '';
+    $('cm-body').classList.toggle('face', !!view.face);
     $('cm-sigil').style.setProperty('--cc', view.colour);
     this.drawRead(view);
     this.timer(0);

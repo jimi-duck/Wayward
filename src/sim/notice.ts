@@ -1,9 +1,10 @@
 import {
-  BEATEN_RELIEF, CAPTAIN_AT, CAPTAIN_HP, CAPTAIN_HP_BEATEN, CAPTAIN_HP_ESCAPE, CAPTAIN_LIVES, CAPTAIN_REST, NOTICE, NOTICE_CAP, PARLEY_RELIEF, STANDING_FLOOR, TIERS,
-  type Personality, type Tier,
+  BEATEN_RELIEF, CAPTAIN_AT, CAPTAIN_LIVES, CAPTAIN_REST, NOTICE, NOTICE_CAP, PARLEY_RELIEF, STANDING_FLOOR, TIERS, type Tier,
 } from '../content/factions';
+import { CAPTAIN_BY_ID, form, meet, meetingLine, newMemory, type CaptainCall, type CaptainMemory, type Report } from './captains';
 import type { Standing } from './comms';
 import { ALIEN_TYPES, VARIANTS, type Faction } from './enemies';
+import type { Rng } from './rng';
 import type { RunStats } from './run';
 
 // ── notice and nemeses ────────────────────────────────────────────────────
@@ -16,13 +17,12 @@ import type { RunStats } from './run';
 //             cards that know you, dearer fees, a harder pursuit.
 //   standing · kills cost standing with whoever the faction answers to, a
 //             point for every so much notice, down to a floor.
-//   captains · at the top tier the faction names a captain. She is a capital
-//             ship with a name, a personality and a memory: she comes once a
-//             system (after a rest between meetings), and every meeting is
-//             remembered. Get away from her and she comes back tougher; beat
-//             her and she limps off to come back with a grudge, until she
-//             has been beaten enough and is gone; bargain and she leaves you
-//             be a while; win, and she knows it.
+//   captains · at the top tier the faction names a captain (sim/captains.ts:
+//             a capital ship with a name, a face, a personality and a
+//             memory). They come into a system after a rest between
+//             meetings, and every meeting is remembered and changes them.
+//             Beaten CAPTAIN_LIVES times, or killed, and they are gone, and
+//             the faction's next captain takes up your file.
 
 /** Gutter crews hunting you: this much more of the pursuit comes from ahead. */
 export const GUTTER_HUNT = 0.15;
@@ -34,24 +34,8 @@ export interface FactionState {
   owed: number;
 }
 
-/** What a meeting with a captain came to: you beat her, got away from her, she beat you, or you parted on terms. */
-export type CaptainResult = 'beaten' | 'escaped' | 'won' | 'parted';
-
-export interface Captain {
-  id: string;
-  faction: Faction;
-  name: string;
-  ship: string;
-  personality: Personality;
-  /** Meetings, and how each kind ended. */
-  met: number;
-  beaten: number;
-  escapes: number;
-  wins: number;
-  parted: number;
-  /** The day before which she does not come again. */
-  rest: number;
-}
+/** A named captain on your file, and what they remember (sim/captains.ts). */
+export type Captain = CaptainMemory;
 
 export interface Notice {
   by: Partial<Record<Faction, FactionState>>;
@@ -61,22 +45,7 @@ export interface Notice {
   fallen: string[];
 }
 
-/** A captain's call in a sortie: who, when, and how hard. */
-export interface CaptainCall {
-  id: string;
-  faction: Faction;
-  name: string;
-  ship: string;
-  personality: Personality;
-  /** Seconds into the sortie she calls, and her hull against a blockade's. */
-  at: number;
-  hp: number;
-  /** She has met you before, and how it went. */
-  rematch: boolean;
-  beaten: number;
-  escapes: number;
-  wins: number;
-}
+export type { CaptainCall };
 
 /** What a sortie feels of the notice it flies under. */
 export interface Pressure {
@@ -111,7 +80,8 @@ const state = (n: Notice, f: Faction): FactionState => (n.by[f] ??= { notice: 0,
 
 export const noticeOf = (n: Notice, f: Faction) => n.by[f]?.notice ?? 0;
 export const tier = (n: Notice, f: Faction): Tier => n.by[f]?.tier ?? 'quiet';
-export const captainOf = (n: Notice, f: Faction) => n.captains.find((c) => c.faction === f) ?? null;
+/** The captain on a faction's file, if one is named. */
+export const captainOf = (n: Notice, f: Faction) => n.captains.find((c) => CAPTAIN_BY_ID[c.id]?.faction === f) ?? null;
 
 /** The notice a sortie's kills come to, by faction: each hull by its role, each capital ship by its faction. */
 export function noticeFromRun(run: Pick<RunStats, 'killsByKind' | 'capitalFactions'>): Partial<Record<Faction, number>> {
@@ -128,9 +98,9 @@ export function noticeFromRun(run: Pick<RunStats, 'killsByKind' | 'capitalFactio
 
 /** The next captain on a faction's roster, if it has one left. */
 function nameCaptain(n: Notice, f: Faction): Captain | null {
-  const def = NOTICE[f].captains.find((c) => !n.fallen.includes(c.id) && !n.captains.some((x) => x.id === c.id));
-  if (!def) return null;
-  const c: Captain = { ...def, faction: f, met: 0, beaten: 0, escapes: 0, wins: 0, parted: 0, rest: 0 };
+  const id = NOTICE[f].captains.find((x) => CAPTAIN_BY_ID[x] && !n.fallen.includes(x) && !n.captains.some((c) => c.id === x));
+  if (!id) return null;
+  const c = newMemory(id);
   n.captains.push(c);
   return c;
 }
@@ -144,7 +114,7 @@ function retier(n: Notice, f: Faction): string[] {
   for (const t of TIERS.slice(rank(was) + 1, rank(s.tier) + 1)) if (t !== 'quiet') lines.push(NOTICE[f].lines[t]);
   if (s.tier === 'captain' && !captainOf(n, f)) {
     const c = nameCaptain(n, f);
-    if (c) lines.push(`${c.name} of the ${c.ship} is coming for you`);
+    if (c) lines.push(`${CAPTAIN_BY_ID[c.id]!.name} of the ${CAPTAIN_BY_ID[c.id]!.ship} is coming for you`);
   }
   return lines;
 }
@@ -177,49 +147,31 @@ export function cool(n: Notice, days: number): void {
   }
 }
 
-/** A captain's hull: tougher for every time you got away from her, and every time she came back from a beating. */
-export const captainHp = (c: Captain) => CAPTAIN_HP * (1 + CAPTAIN_HP_ESCAPE * c.escapes + CAPTAIN_HP_BEATEN * c.beaten);
-
 /**
- * What a meeting came to, remembered. Returns the log lines. Beaten
- * `CAPTAIN_LIVES` times and she is gone (the faction's notice eases with
- * her); beaten or bargained with, the faction's notice eases.
+ * What a meeting came to, remembered. Returns the log lines. A beaten ship
+ * is a scar or a death, by the captain's luck; beaten CAPTAIN_LIVES times
+ * or killed and they are gone. Beaten, paid or turned away, the faction's
+ * notice eases.
  */
-export function remember(n: Notice, id: string, result: CaptainResult, day: number, standing: Partial<Record<Standing, number>>): string[] {
+export function remember(n: Notice, id: string, report: Report, day: number, standing: Partial<Record<Standing, number>>, rng: Rng): string[] {
   const c = n.captains.find((x) => x.id === id);
-  if (!c) return [];
-  c.met++;
+  const def = CAPTAIN_BY_ID[id];
+  if (!c || !def) return [];
+  const met = meet(c, report, day, rng);
   c.rest = round(day + CAPTAIN_REST);
-  const f = c.faction;
-  const lines: string[] = [];
-  switch (result) {
-    case 'beaten':
-      c.beaten++;
-      raise(n, f, -noticeOf(n, f) * BEATEN_RELIEF, standing);
-      if (c.beaten >= CAPTAIN_LIVES) {
-        n.captains.splice(n.captains.indexOf(c), 1);
-        n.fallen.push(c.id);
-        lines.push(`${c.name} will not come again`);
-      } else lines.push(`${c.name} limps away · she will be back, and she will remember`);
-      break;
-    case 'escaped':
-      c.escapes++;
-      lines.push(`You got away from ${c.name} · she is refitting for the next time`);
-      break;
-    case 'won':
-      c.wins++;
-      lines.push(`${c.name} broke the Wayward · she will tell it in every bar`);
-      break;
-    case 'parted':
-      c.parted++;
-      raise(n, f, -noticeOf(n, f) * PARLEY_RELIEF, standing);
-      lines.push(`${c.name} takes her terms and lets you be, for now`);
-      break;
+  const f = def.faction;
+  const lines = [meetingLine(id, met)];
+  if (met === 'scarred' || met === 'killed') raise(n, f, -noticeOf(n, f) * BEATEN_RELIEF, standing);
+  else if (met === 'bargained' || met === 'left') raise(n, f, -noticeOf(n, f) * PARLEY_RELIEF, standing);
+  if (met === 'killed' || c.scarred >= CAPTAIN_LIVES) {
+    n.captains.splice(n.captains.indexOf(c), 1);
+    n.fallen.push(c.id);
+    if (met !== 'killed') lines.push(`${def.name} will not come again`);
   }
   // a fall can leave the faction still at the top: the next captain takes it up
   if (tier(n, f) === 'captain' && !captainOf(n, f)) {
     const next = nameCaptain(n, f);
-    if (next) lines.push(`${next.name} of the ${next.ship} takes up your file`);
+    if (next) lines.push(`${CAPTAIN_BY_ID[next.id]!.name} of the ${CAPTAIN_BY_ID[next.id]!.ship} takes up your file`);
   }
   return lines;
 }
@@ -246,10 +198,8 @@ export function pressure(n: Notice, day: number): Pressure {
     }
   }
   if (best) {
-    p.captain = {
-      id: best.id, faction: best.faction, name: best.name, ship: best.ship, personality: best.personality, at: CAPTAIN_AT, hp: round(captainHp(best)),
-      rematch: best.met > 0, beaten: best.beaten, escapes: best.escapes, wins: best.wins,
-    };
+    const def = CAPTAIN_BY_ID[best.id]!;
+    p.captain = { id: best.id, faction: def.faction, name: def.name, ship: form(def, best).ship, at: CAPTAIN_AT, memory: { ...best } };
   }
   return p;
 }

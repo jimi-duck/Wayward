@@ -186,6 +186,7 @@ export class Hud {
         case 'bossArrive': this.note(world, `${e.name} on intercept`, 'hit'); break;
         case 'bossPhase': this.banner('Capital ship', e.phase === 2 ? 'Last stand' : 'Hull buckling', e.phase === 2 ? 'Everything she has left' : 'Reinforcements inbound', 1.6); break;
         case 'bossLeft': this.note(world, 'Capital ship breaking off'); break;
+        case 'captainLeft': this.note(world, e.text); this.banner('Contact', e.name, 'Turning away', 2, 'calm'); break;
         case 'bossDestroyed':
           this.note(world, `${e.name} destroyed · +${fmt(e.points)}`, 'gain');
           this.banner('Kill confirmed', `${e.name}`, `+${fmt(e.points)} · battle salvage`, 2.4, 'calm');
