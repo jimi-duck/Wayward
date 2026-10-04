@@ -46,6 +46,8 @@ export interface Profile {
   cosmetic: string;
   /** The camera distance last chosen (an index into the zoom steps). */
   zoom: number;
+  /** The way in last chosen: the Breakout or the arcade. */
+  mode: 'breakout' | 'arcade';
 }
 
 const fresh = (): Profile => ({
@@ -58,6 +60,7 @@ const fresh = (): Profile => ({
   modifiers: [],
   cosmetic: 'engine-stock',
   zoom: 1,
+  mode: 'breakout',
 });
 
 export function loadProfile(): Profile {

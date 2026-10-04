@@ -68,6 +68,8 @@
         </div>
         <div class="ptr" id="ptr-cap"><i></i><span id="ptr-cap-t">Capital</span></div>
         <div class="ptr" id="ptr-obj"><i></i><span id="ptr-obj-t">Objective</span></div>
+        <div class="ptr" id="ptr-lane"><i></i><span id="ptr-lane-t">Lane mouth</span></div>
+        <div class="ptr" id="ptr-port"><i></i><span id="ptr-port-t">Port</span></div>
         <!-- hulls out of view: a chevron each at the edge, pointing the way -->
         <div id="threats"></div>
       </div>
@@ -75,8 +77,16 @@
       <section id="sector" class="hud-block" aria-label="Sector and krail">
         <div class="sec-id"><span><i class="x"></i><b id="sec-code">Sector 83-37</b></span><span><i class="x"></i><span id="sec-name">Asteroid field</span></span></div>
         <div id="rail" aria-label="Krail to the next refit">
-          <div class="rail-h"><svg class="ico"><use href="#i-rock"/></svg><span class="lbl">Krail</span><b id="xp-v">0</b><span class="lbl of">/ <span id="xp-n">0</span></span><span id="xp-gain"></span><span class="lbl rf">Refit <b id="refit-n">00</b></span></div>
+          <div class="rail-h"><svg class="ico"><use href="#i-rock"/></svg><span class="lbl" id="xp-l">Krail</span><b id="xp-v">0</b><span class="lbl of">/ <span id="xp-n">0</span></span><span id="xp-gain"></span><span class="lbl rf">Refit <b id="refit-n">00</b></span></div>
           <i class="ticks" id="xp"></i>
+        </div>
+        <!-- the Breakout: the tank (fuel for the jump), the hold, parts and chits, and how hard the Custody is looking -->
+        <div id="voyage" aria-label="Fuel, hold and pursuit">
+          <div class="vy-row"><span class="lbl">Tank</span><b id="vy-krail">0</b><span class="lbl of">/ <span id="vy-need">24</span> Krail to jump</span></div>
+          <i class="ticks" id="vy-tank"></i>
+          <div class="vy-cells"><span><span class="lbl">Hold</span><b id="vy-ore">0/40</b></span><span><span class="lbl">Parts</span><b id="vy-parts">0</b></span><span><span class="lbl">Chits</span><b id="vy-chits">0</b></span></div>
+          <div class="vy-row heat"><span class="lbl">Hunt pressure</span><b id="vy-heat">Wanted Lv 1</b></div>
+          <i class="ticks" id="vy-heat-t"></i>
         </div>
       </section>
 
@@ -114,7 +124,7 @@
 
       <div id="centre">
         <section id="boss" class="cut" aria-live="polite">
-          <div class="boss-h"><svg class="ico"><use href="#i-capital"/></svg><b id="boss-name">I.K.S. Vor’cha</b><span id="boss-cls">Gutter capital ship</span></div>
+          <div class="boss-h"><svg class="ico"><use href="#i-capital"/></svg><b id="boss-name">Ironmaw</b><span id="boss-cls">Gutter capital ship</span></div>
           <div class="boss-bar"><i class="ticks" id="boss-hp"></i></div>
           <div class="boss-f"><span id="boss-hull">Hull 100%</span><span id="boss-phase">Phase 1/3</span><span id="boss-fuse">Fuse 42s</span></div>
         </section>
@@ -122,12 +132,14 @@
           <div class="obj-h"><svg class="ico"><use href="#i-event"/></svg><b id="obj-t">Distress signal</b><span id="obj-left">0s</span></div>
           <i class="ticks" id="obj-p"></i>
           <span id="obj-s"></span>
+          <ul id="obj-list"></ul>
         </section>
       </div>
 
       <section id="sensors" class="hud-block" aria-hidden="true">
         <canvas id="radar"></canvas>
         <span class="range"><span class="lbl">Range</span><b id="radar-r">1.0 km</b></span>
+        <div id="contacts"><span class="lbl">Contacts</span><ul id="contacts-l"></ul></div>
       </section>
 
       <section id="log" class="hud-block" aria-live="off">
@@ -147,25 +159,28 @@
       <button type="button" id="fire" tabindex="-1"><span>Laser</span><i class="ticks" id="t-bank"></i></button>
       <button type="button" id="torp" tabindex="-1"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
       <button type="button" id="release" tabindex="-1"><span>Core</span><i class="ticks" id="t-oc"></i></button>
+      <button type="button" id="cut" tabindex="-1"><span>Cut</span><i class="ticks" id="t-heat"></i></button>
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
 
     <div id="start" role="dialog" aria-labelledby="start-t">
       <div class="start-card">
         <svg class="wm" viewBox="0 0 151.5 22" role="img" aria-label="Wayward"><g class="wm-a"><path d="M2 0V15L5 18H15L18 15V0M10 6V18" transform="translate(0.00 0.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(24.50 0.00)"/><path d="M2 0V7L5 10H11L14 7V0M8 10V20" transform="translate(45.00 0.00)"/></g><g class="wm-b"><path d="M2 0V15L5 18H15L18 15V0M10 6V18" transform="translate(70.00 0.00)"/><path d="M2 20V5L5 2H11L14 5V20M2 11.5H14" transform="translate(94.50 0.00)"/><path d="M2 20V2H11L14 5V8L12 10H2M9 10L14 15V20" transform="translate(115.00 0.00)"/><path d="M2 2H11L14 5V15L11 18H2Z" transform="translate(135.50 0.00)"/></g></svg>
-        <p class="reg"><span>Wayward</span><span>OBH-4471</span><span>Ore hauler, mining refit</span></p>
+        <p class="reg"><span>Wayward</span><span>OB-7731-A</span><span>Ore hauler, mining refit</span></p>
         <p id="start-t" class="tag">Get out alive.</p>
         <dl class="keys-l only-desktop">
           <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
           <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
           <div><dt><kbd>1</kbd></dt><dd>Lasers</dd></div>
           <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
+          <div><dt><kbd>3</kbd></dt><dd>Cutter</dd></div>
           <div><dt><kbd>E</kbd></dt><dd>Overcharge</dd></div>
           <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
           <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
         </dl>
-        <p class="meta only-touch">Left thumb: drag to fly · right thumb: hold to fire · tap Core when it is full</p>
-        <button type="button" id="launch">Launch</button>
+        <p class="meta only-touch">Left thumb: drag to fly · right thumb: hold to fire, hold Cut to mine · tap Core when it is full</p>
+        <p class="brief" id="brief">The Custody are locking down the Kellern Mining yards on Cerro. Cut Krail out of the violet rock, reach the old lane mouth with enough in the tank to jump, and get out.</p>
+        <div class="launch-row"><button type="button" id="launch">Break out</button><button type="button" id="arcade" class="ghost">Arcade</button></div>
         <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
         <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->
         <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
@@ -207,6 +222,16 @@
           <button type="button" class="opt" id="hail-evade"><span class="verb"><em>Evade</em><kbd>2</kbd></span><span class="oh">Break away</span><span class="ob" id="hail-vb"></span><span class="lines" id="hail-vl"></span></button>
         </div>
         <footer class="pf"><span class="keys"><kbd>1</kbd> or <kbd>F</kbd> engage · <kbd>2</kbd> or <kbd>E</kbd> evade · pad <kbd>A</kbd> / <kbd>B</kbd></span></footer>
+      </div>
+    </div>
+
+    <!-- The port: sell the hold, buy Krail, patch the hull, pay for a refit, cast off. -->
+    <div id="port" class="sheet" role="dialog" aria-labelledby="port-t" hidden>
+      <div class="panel narrow">
+        <header class="ph"><span class="kick">Docked</span><h2 id="port-t">Frontier Supply</h2><span class="sub">Refuel · repair · trade · no implant checks</span></header>
+        <div class="port-stock" id="port-stock"></div>
+        <div class="port-list" id="port-list"></div>
+        <footer class="pf"><span class="keys"><kbd>1</kbd>–<kbd>4</kbd> trade · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off</span><button type="button" id="port-x">Cast off</button></footer>
       </div>
     </div>
 

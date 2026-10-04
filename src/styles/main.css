@@ -491,8 +491,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   --fw: clamp(80px, 24vh, 104px);
   --bw: clamp(60px, 17vh, 72px);
 }
-#stick, #fire, #torp, #release, #pause-b { display: none; }
+#stick, #fire, #torp, #release, #cut, #pause-b { display: none; }
 .touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #release, .touch-ui #pause-b { display: grid; }
+.touch-ui.breakout #cut { display: grid; }
 .touch-ui:not(.has-torps) #torp { display: none; }
 #stick {
   position: absolute; left: var(--in-l); bottom: var(--pb);
@@ -507,19 +508,19 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* the buttons are octagons, an edge and a glass like every panel, and each
    carries its own gauge under the thumb that uses it. The layer behind does
    the hit-testing (generously), so the buttons themselves take no events. */
-#fire, #torp, #release {
+#fire, #torp, #release, #cut {
   --c: 28%; --edge: var(--hud-mid); --fill: rgba(12, 13, 16, .58);
   position: absolute; isolation: isolate; place-items: center; align-content: center; gap: 6px; border: 0; padding: 0; background: none;
   pointer-events: none; aspect-ratio: 1;
   font: 600 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink);
 }
-:is(#fire, #torp, #release)::before, :is(#fire, #torp, #release)::after { content: ""; position: absolute; pointer-events: none;
+:is(#fire, #torp, #release, #cut)::before, :is(#fire, #torp, #release, #cut)::after { content: ""; position: absolute; pointer-events: none;
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); }
 /* the edge is only the 1px ring (evenodd), so the glass inside lets the view through and never shows the edge colour */
-:is(#fire, #torp, #release)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
+:is(#fire, #torp, #release, #cut)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
   clip-path: polygon(evenodd, var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
     var(--ci) 1px, calc(100% - var(--ci)) 1px, calc(100% - 1px) var(--ci), calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), var(--ci) calc(100% - 1px), 1px calc(100% - var(--ci)), 1px var(--ci), var(--ci) 1px); }
-:is(#fire, #torp, #release)::after { inset: 1px; z-index: -1; background: var(--fill); }
+:is(#fire, #torp, #release, #cut)::after { inset: 1px; z-index: -1; background: var(--fill); }
 #fire { right: var(--in-r); bottom: var(--pb); width: var(--fw); --edge: var(--hud); font-size: 10px; }
 #fire.on { --fill: rgba(255, 90, 54, .34); }
 #t-bank { --n: 10; width: 56%; height: 5px; }
@@ -533,6 +534,12 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #release .ticks { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 60%; height: 4px; }
 #release.ready { --edge: var(--amber); --fill: rgba(255, 179, 61, .24); color: var(--ink); animation: core-ready 1.2s ease-in-out infinite alternate; }
 #release.on { animation: tap-flash .22s var(--ez); }
+/* the cutter: further left again, on the bottom line, amber like the beam */
+#cut { right: calc(var(--in-r) + var(--fw) + var(--bw) + 22px); bottom: var(--pb); width: var(--bw); --edge: var(--amber-dim); }
+#cut.on { --edge: var(--amber); --fill: rgba(255, 179, 61, .28); }
+.touch-ui:not(.has-torps) #cut { right: calc(var(--in-r) + var(--fw) + 10px); }
+#t-heat { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 56%; height: 4px; }
+#cut.hot #t-heat { --on: var(--alert); }
 @keyframes tap-flash { from { scale: .88; } }
 @keyframes core-ready { to { scale: 1.05; } }
 /* pause: small, low and in the middle, out of both thumbs' way */
@@ -866,3 +873,68 @@ html.swipe #app * { overscroll-behavior: contain; }
   #log-lines p.new, #banner.on, #sys-hull.hit, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel { animation: none; }
   .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path { animation: none; }
 }
+
+/* ── the Breakout ─────────────────────────────────────────────────────────
+   Top left, under the rail: the tank toward the jump, the hold, parts and
+   chits, and the Custody alert. Shown only in the Breakout. */
+#voyage { display: none; gap: 6px; }
+.breakout #voyage { display: grid; }
+.vy-row { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; color: var(--ink-2);
+  font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; }
+.vy-row b { font: 600 calc(var(--fs) * 1.35)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.vy-row .of { color: var(--ink-3); }
+#vy-tank { --n: 24; --on: var(--violet); --off: var(--violet-ghost); height: 4px; }
+#voyage.ready #vy-tank { --on: #ecd6ff; filter: drop-shadow(0 0 5px var(--violet)); }
+.vy-cells { display: flex; gap: 14px; font: 500 calc(var(--fs) * .92)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.vy-cells b { margin-left: 6px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.vy-cells .full { color: var(--amber); }
+.vy-row.heat { margin-top: 4px; }
+#vy-heat-t { --n: 20; --on: var(--amber); --off: var(--amber-dim); height: 4px; }
+#voyage.hot #vy-heat-t { --on: var(--alert); --off: var(--alert-dim); }
+#voyage.hot #vy-heat { color: var(--alert); }
+#ptr-lane { --pc: var(--amber); }
+#ptr-port { --pc: var(--hud-hi, #5ad0e3); }
+
+/* the start card: the brief and the two ways in */
+.brief { max-width: 46ch; margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink-2); }
+.launch-row { display: flex; gap: 12px; align-items: center; }
+#arcade { height: auto; align-self: stretch; padding: 0 18px; }
+
+/* the port */
+.port-stock { display: flex; flex-wrap: wrap; gap: 22px; font: 500 var(--fs)/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.port-stock b { margin-left: 8px; font: 600 calc(var(--fs) * 1.5)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); }
+.port-list { display: grid; gap: 8px; }
+.port-l { --c: 8px; --edge: rgba(236, 230, 225, .16); --fill: rgba(24, 26, 30, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+  display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 14px; padding: 12px 16px; text-align: left; color: var(--ink);
+  font: 600 calc(var(--fs) * 1.15)/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+.port-l::before, .port-l::after { content: ""; position: absolute; pointer-events: none; }
+.port-l::before { inset: 0; z-index: -2; background: var(--edge); }
+.port-l::after { inset: 1px; z-index: -1; background: var(--fill); }
+.port-l.sel, .port-l:hover:not(:disabled) { --edge: var(--hud); --fill: rgba(40, 14, 9, .9); }
+.port-l:disabled { cursor: not-allowed; opacity: .45; }
+.port-l .pl-note { font: 400 13px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); justify-self: end; }
+.port-l .pl-p { font: 600 calc(var(--fs) * 1.4)/1 var(--font-rail); color: var(--amber); min-width: 3ch; text-align: right; }
+#port-x { --c: 10px; --edge: var(--hud); --fill: rgba(40, 14, 9, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+  padding: 10px 22px; font: 600 calc(var(--fs) * 1.1)/1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ink); }
+#port-x::before, #port-x::after { content: ""; position: absolute; pointer-events: none; }
+#port-x::before { inset: 0; z-index: -2; background: var(--edge); }
+#port-x::after { inset: 1px; z-index: -1; background: var(--fill); }
+
+/* the Breakout's objective, as steps; and the contacts beside the scope (after the gameplay view) */
+#obj-list { display: none; margin: 2px 0 0; padding: 0; list-style: none; gap: 4px; font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+#objective.course #obj-list { display: grid; }
+#obj-list li::before { content: "○ "; color: var(--ink-3); }
+#obj-list li.done { color: var(--ink-3); }
+#obj-list li.done::before { content: "● "; color: var(--amber); }
+#obj-list li.now { color: var(--ink); }
+#obj-list li.now::before { content: "› "; color: var(--amber); }
+#obj-list b { color: var(--ink); font-weight: 600; }
+#contacts { display: none; align-self: flex-end; gap: 6px; padding: 0 0 16px 10px; text-shadow: 0 1px 6px #000; min-width: 190px; }
+.breakout #contacts { display: grid; }
+.touch-ui #contacts { display: none; }
+#contacts .lbl { color: var(--hud); }
+#contacts-l { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font: 500 calc(var(--fs) * .85)/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+#contacts-l li { display: flex; justify-content: space-between; gap: 14px; }
+#contacts-l li::before { content: "◆"; margin-right: 6px; color: var(--c, var(--ink-3)); }
+#contacts-l li span { flex: 1; }
+#contacts-l b { color: var(--ink); font-weight: 600; }

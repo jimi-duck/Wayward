@@ -181,7 +181,7 @@ the ship lacked character, the refit web was too much, and the opening was
 too hectic to get hooked.
 
 - The ship (`render/ships.ts`; since the WAYWARD rename, the Wayward,
-  OBH-4471): a blunt cutting head with a bridge and the cutting laser; a
+  OB-7731-A): a blunt cutting head with a bridge and the cutting laser; a
   rust-red engine block with a drive ring astern and containers on its
   spine; two drive pods on swept pylons, coils glowing inboard and cyan
   rings aft. Stencilled hull numbers and the registry come from a small

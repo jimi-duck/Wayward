@@ -154,12 +154,23 @@ export class Command {
   state: CommandState = 'idle';
   pending: Contact | null = null;
   evadedLast = false;
+  /** Contacts come by themselves on the run clock. Off in the Breakout, where the one capital ship is summoned. */
+  auto = true;
+  private forced: Faction | null = null;
   private last: Faction | null = null;
   private seen: Partial<Record<Faction, number>> = {};
 
   reset(): void {
     this.boss = null; this.next = BOSS_FIRST; this.count = 0; this.kills = 0; this.evades = 0;
-    this.last = null; this.state = 'idle'; this.seen = {}; this.pending = null; this.evadedLast = false;
+    this.last = null; this.state = 'idle'; this.seen = {}; this.pending = null; this.evadedLast = false; this.forced = null;
+    if (!this.auto) this.next = Infinity;
+  }
+
+  /** Call a contact of this faction now (the Breakout's blockade). It can always be evaded. */
+  summon(t: number, faction: Faction): void {
+    if (this.state !== 'idle') return;
+    this.forced = faction;
+    this.next = t + BOSS_WARN;
   }
 
   /** True while the hail is open and waiting for the player. */
@@ -183,7 +194,7 @@ export class Command {
     this.state = 'idle';
     this.evadedLast = true;
     this.evades++;
-    this.next = t + c.evadeGap;
+    this.next = this.auto ? t + c.evadeGap : Infinity;
     return true;
   }
 
@@ -258,6 +269,11 @@ export class Command {
   }
 
   private pick(t: number, rng: Rng): Contact {
+    if (this.forced) {
+      const f = this.forced, def = FACTIONS[f];
+      this.forced = null;
+      return { faction: f, name: def.names[(this.seen[f] ?? 0) % def.names.length]!, n: this.count, bounty: bossBounty(this.count, f), hails: true, canEvade: true, evadeGap: 0 };
+    }
     // the first contact of a run is never the Office ambush (the original's rule)
     let pool = ORDER.filter((f) => FACTIONS[f].at <= t && f !== this.last && !(this.count === 0 && f === 'office'));
     if (!pool.length) pool = ['gutter'];
@@ -301,7 +317,7 @@ export class Command {
     this.boss = null;
     this.state = 'idle';
     this.evadedLast = false;
-    this.next = t + bossGap(this.count);
+    this.next = this.auto ? t + bossGap(this.count) : Infinity;
   }
 
   /** Where it wants to be: its faction's way of holding station around the ship. */

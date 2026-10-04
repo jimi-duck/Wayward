@@ -4,19 +4,28 @@ A cyberpunk space survival game from [jciclitira.com](https://www.jciclitira.com
 lab, in 3D with Three.js, for desktop and mobile browsers.
 
 You are a contract miner who found the wrong file and stole the wrong ship:
-the Wayward (OBH-4471), an Obedience-class ore hauler, blunt cutting head
+the Wayward (OB-7731-A), an Obedience-class ore hauler, blunt cutting head
 up front, rust-red engine block, two drive pods on pylons. The
 Continuance wants her, and you, back.
 
-What plays today is **the Breakout**, the arcade escape that opens the
-larger game. The system starts quiet, so you can learn the ship and mine
-the first refit out of the rock before anything shoots back. Every time the
-Krail gauge fills, **refit**: three cards, take one (a new system, the next
-level of one you have, or a specialisation), and fly on. Hostiles arrive one
-at a time, then in pairs, squads and factions (the Gutter, the Custody, the
-Office of Peace, the Voice, the Thren); from 3:30 capital ships hail. Engage
-for the salvage (a refit and that faction's tech) or evade and pay in tempo.
-When the hull goes, the run report says what you built and how it went.
+Two ways in from the start screen:
+
+- **Break out** (milestone M1 of [the plan](docs/PLAN.md)): get out of the
+  home system. The old lane mouth is about a minute's flight away, flat out.
+  Reach it with 20 Krail in the tank and hold inside it while the drive
+  spools. Krail is scarce: hold the **cutter** (3 or C) on violet-veined rock,
+  easing off before it overheats, and it comes apart clean. Ordinary rock gives
+  ore, which fills the hold and the refit rail and sells at **Frontier
+  Supply**, the dock about halfway, where you can also buy Krail, patch a
+  plate or pay for a refit. Wrecks give parts, and the crew patch a plate out
+  of them when you are left alone. The Custody pursue from behind, harder as
+  the **hunt pressure** rises, and a capital ship blockades the lane mouth:
+  break her, or run past her with everything they have on your tail.
+- **Arcade**: the endless run. The system starts quiet; every time the
+  Krail gauge fills, **refit** (three cards, take one); hostiles arrive one
+  at a time, then in pairs, squads and factions; from 3:30 capital ships
+  hail. When the hull goes, the run report says what you built and how it
+  went.
 
 - Where the game goes next, WAYWARD: [docs/VISION.md](docs/VISION.md),
   and the build plan: [docs/PLAN.md](docs/PLAN.md).
@@ -62,6 +71,7 @@ game opens with no bars at all.
 | Thrust | ↑ or W | any push opens the throttle; pull back to coast | right trigger, d-pad up |
 | Lasers (hold) | 1, Space or J | hold anywhere on the right half | A |
 | Torpedo (once fitted) | 2, F or K | Torpedo button | X |
+| Cutter (Breakout, hold) | 3, C or L | Cut button | LB or left trigger |
 | Overcharge (when full) | E | Core button | Y |
 | Barrel roll | Shift | a second finger on the left half | B or RB |
 | Refit: take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
@@ -98,6 +108,7 @@ npm run check   # types + unit tests
 npm run build   # production build into dist/
 npm run preview # serve dist/ (also on the network)
 npm run pilot   # the scripted pilot's balance runs (a few minutes): writes docs/BALANCE.md
+npm run pilot:breakout  # the pilot through the Breakout: writes docs/BALANCE-BREAKOUT.md
 ```
 
 `PILOT_RUNS` (default 12 per strategy) and `PILOT_TIME` (default 900s)

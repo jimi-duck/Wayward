@@ -2,12 +2,14 @@ import { angleDelta, clamp } from '../src/core/math';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { UPGRADE, type Branch } from '../src/content/upgrades';
-import { beamLive, cloaked, rayDist } from '../src/sim/enemies';
+import { ALIEN_TYPES, beamLive, cloaked, FIRE_RANGE, rayDist } from '../src/sim/enemies';
 import { identity } from '../src/sim/build';
 import { thrustPerStep, topSpeed, turnPerStep } from '../src/sim/ship';
 import { BASE } from '../src/sim/stats';
 import { OC_MAX, SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
+import { JUMP_COST, PATCH_COST, PRICE } from '../src/sim/breakout';
+import { CUT_RANGE } from '../src/sim/mining';
 import type { RunStats } from '../src/sim/run';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
@@ -35,6 +37,8 @@ export interface PilotOptions {
   modifiers?: string[];
   /** Input lag in steps (reaction to new fire is modelled separately, REACT). */
   lag?: number;
+  /** Fly the Breakout instead of the endless arcade run. */
+  breakout?: boolean;
 }
 
 export interface PilotResult {
@@ -47,9 +51,11 @@ export interface PilotResult {
   /** Run time at which refits 1, 5, 10 and 15 came. */
   refitAt: Record<number, number>;
   bossFights: Array<{ faction: string; outcome: 'killed' | 'escaped' | 'died'; seconds: number; hpLeft: number; refit: number }>;
+  /** Seconds with a hostile in firing range, or a capital ship fighting. */
+  combat: number;
 }
 
-const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' });
+const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' });
 
 export function stratName(s: Strategy): string {
   return s.kind === 'random' ? 'random' : `${s.branch}${s.second ? `+${s.second}` : ''}`;
@@ -96,7 +102,7 @@ function ramNow(w: World): number {
 const REACT = 0.2;
 
 /** What the pilot remembers between steps: when each shot was first seen, and the current plan. */
-interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null; }
+interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null; cutting?: boolean; }
 
 const PLAN_DT = 0.1, PLAN_STEPS = 12, PLAN_EVERY = 5;
 const OFFSETS = [0, 0.4, -0.4, 0.8, -0.8, 1.25, -1.25, 1.7, -1.7, 2.3, -2.3, Math.PI];
@@ -198,6 +204,16 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     const want = p.kind === 'crystal' ? 0.6 : p.kind === 'repair' ? (w.plates < st.maxPlates ? 4 : 0.3) : 2.5;
     push(dx / d, dz / d, want * (1 - d / 50));
   }
+  // the Breakout: the course. Port when the hold is nearly full or the hull wants patching and there is
+  // money for it; the lane mouth once the tank holds the jump; drifting lane-ward meanwhile
+  const bk = w.bk;
+  const need = !!bk && w.krail < JUMP_COST;
+  const goPort = !!bk && bk.docks === 0 && (w.ore >= w.holdMax * 0.8 || (w.plates < st.maxPlates && w.parts < PATCH_COST && (w.chits + w.ore * PRICE.ore) >= PRICE.plate));
+  const dest = bk ? (goPort ? bk.port : !need ? bk.lane : null) : null;
+  if (bk) {
+    const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;
+    push(dx / d, dz / d, dest ? 3 : 0.5);
+  }
   // objectives
   const e = w.encounter;
   if (e && !e.done && (e.id === 'distress' || e.id === 'derelict')) {
@@ -216,21 +232,26 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   let td = tgt ? Math.hypot(tgt.x - s.x, tgt.z - s.z) : Infinity;
   for (const a of targets.ships) {
     const d = Math.hypot(a.x - s.x, a.z - s.z);
-    if (d < td && d < 55 && Math.abs(a.y ?? 0) < 12) { td = d; tgt = a; }
+    if (d < td && d < (bk ? 32 : 55) && Math.abs(a.y ?? 0) < 12) { td = d; tgt = a; }
   }
   // no hull in reach: mine the field, nearest first, the rich and the rare before the rest
-  if (!tgt) {
+  // (the Breakout: only while there is mining to do; on the way to a berth it keeps going)
+  let mining: (typeof w.field.rocks)[number] | null = null;
+  if (!tgt && !(bk && dest)) {
     let best = Infinity;
     for (const r of w.field.rocks) {
       const d = Math.hypot(r.x - s.x, r.z - s.z);
-      const k = d * (r.kind === 'rich' || r.kind === 'rare' ? 0.4 : r.kind === 'volatile' ? 2 : 1);
-      if (k < best && d < 50) { best = k; td = d; tgt = r; }
+      const veined = r.kind === 'rich' || r.kind === 'rare';
+      const k = d * (veined ? (need ? 0.25 : 0.6) : r.kind === 'volatile' ? 2 : 1);
+      if (bk && !veined && w.ore >= w.holdMax) continue;
+      if (k < best && d < 50) { best = k; td = d; tgt = r; mining = r; }
     }
   }
   const aimAt = tgt, aimD = td;
+  const standoff = bk && mining ? mining.r + 6 : prefer;
   if (tgt) {
     const dx = tgt.x - s.x, dz = tgt.z - s.z, d = Math.hypot(dx, dz) || 1;
-    push(dx / d, dz / d, d > prefer ? 0.8 : -0.8);
+    push(dx / d, dz / d, d > standoff ? 0.8 : -0.8);
   }
 
   // pushed away from what hurts: rock and hulls by where they will be, not where they are
@@ -312,11 +333,16 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   // the goal: nose on a target in reach, leading it; otherwise toward whatever pulls (krail, pickups, objectives)
   const speed = Math.hypot(s.vx, s.vz) / topSpeed(w.hull);
   let want = s.heading, thrust = 0;
-  if (aimAt && aimD < st.laserSpeed * st.laserLife * 0.85) {
+  const berth = dest ? Math.hypot(dest.x - s.x, dest.z - s.z) : Infinity;
+  if (dest && berth < 70) {
+    // coming in to a berth: point at it and come in slowly, to stop inside the ring
+    want = Math.atan2(-(dest.z - s.z), dest.x - s.x);
+    thrust = berth > dest.r * 0.5 && speed < Math.min(0.3, berth / 160) ? 1 : 0;
+  } else if (aimAt && aimD < st.laserSpeed * st.laserLife * 0.85) {
     const lead = aimD / st.laserSpeed;
     want = Math.atan2(-(aimAt.z + aimAt.vz * lead - s.z), aimAt.x + aimAt.vx * lead - s.x);
     // hold standoff: close in if far, coast if near
-    thrust = aimD > prefer + 8 && speed < 0.5 ? 1 : speed < 0.12 ? 0.3 : 0;
+    thrust = aimD > standoff + 8 && speed < 0.5 ? 1 : speed < 0.12 ? 0.3 : 0;
   } else if (Math.hypot(ax, az) > 0.05) {
     want = Math.atan2(-az, ax);
     thrust = speed < 0.55 ? 1 : 0;
@@ -340,7 +366,13 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     return d < range && Math.abs(angleDelta(s.heading, Math.atan2(-dz, dx))) < Math.max(0.06, st.laserLances > 1 ? 0.3 : 0.05) + r / Math.max(1, d);
   };
   f.fire = targets.ships.some((a) => inFront(a.x, a.z, a.r, reach)) || (!!targets.boss && inFront(targets.boss.x, targets.boss.z, targets.boss.r, reach))
-    || w.field.rocks.some((r) => inFront(r.x, r.z, r.r, reach * 0.7));
+    || w.field.rocks.some((r) => inFront(r.x, r.z, r.r, bk ? 9 : reach * 0.7));
+  // the cutter: on the rock it is mining once in reach, pulsed under the line
+  if (bk && mining && Math.hypot(mining.x - s.x, mining.z - s.z) - mining.r < CUT_RANGE - 2) {
+    const heat = mining.heat ?? 0;
+    memo.cutting = memo.cutting ? heat < 0.86 : heat < 0.45;
+    if (memo.cutting && inFront(mining.x, mining.z, mining.r, CUT_RANGE + mining.r)) { f.cut = true; f.fire = false; }
+  } else memo.cutting = false;
   if (w.arms.bank < st.bankShot * 2 && !f.fire) f.fire = false;
   // torpedoes at hulls, or rock when the rack is full
   if (st.torpedoes && w.lock !== null) {
@@ -359,7 +391,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
 
 /** Fly one run to the end (or maxTime) and report it. */
 export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): PilotResult {
-  const w = new World(seed, { unlocked: o.unlocked ?? [], modifiers: o.modifiers ?? [] });
+  const w = new World(seed, { unlocked: o.unlocked ?? [], modifiers: o.modifiers ?? [], mode: o.breakout ? 'breakout' : 'arcade' });
   const maxTime = o.maxTime ?? 900;
   let r = seed * 9301 + 49297;
   const rngPick = () => ((r = (r * 9301 + 49297) % 233280) / 233280);
@@ -368,6 +400,7 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
   const refitAt: Record<number, number> = {};
   const bossFights: PilotResult['bossFights'] = [];
   let fightStart = -1, fightFaction = '';
+  let combat = 0;
   let lastLost = 0, lastGained = 0;
   const lag = o.lag ?? 1;
   const queue: InputFrame[] = [];
@@ -376,11 +409,21 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
   while (w.phase !== 'over' && w.runTime < maxTime) {
     if (w.phase === 'refit') { w.choose(pickCard(w, strategy, rngPick)); continue; }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
+    if (w.phase === 'dock') {
+      // the port: sell, top the tank up toward the jump, patch, and a refit if there is money left
+      w.sellOre();
+      while (w.krail < JUMP_COST && w.buy('krail'));
+      while (w.plates < w.stats.maxPlates && w.buy('plate'));
+      if (w.buy('refit')) continue;
+      w.undock();
+      continue;
+    }
     // react a beat late, as a person does
     queue.push(control(w, close, memo));
     if (seen.size > 2000) for (const id of [...seen.keys()]) if (!w.shots.some((sh) => sh.id === id)) seen.delete(id);
     const input = queue.length > lag ? queue.shift()! : blank();
     w.step(STEP, input);
+    if (w.command.state === 'fight' || w.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < FIRE_RANGE * a.rgK)) combat += STEP;
     for (const ev of w.drain()) {
       if (ev.type === 'levelUp' && [1, 5, 10, 15, 20].includes(ev.refit)) refitAt[ev.refit] = Math.round(w.runTime);
       if (ev.type === 'bossArrive') { fightStart = w.runTime; fightFaction = ev.faction; }
@@ -409,5 +452,5 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
     w.run.build = { ...w.levels };
     w.run.cause = 'survived';
   }
-  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights };
+  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat };
 }

@@ -3,7 +3,7 @@ import {
   Quaternion, Sprite, SpriteMaterial, TorusGeometry, Vector3, type Scene, type Texture,
 } from 'three';
 import { STEP } from '../core/loop';
-import type { Pickup } from '../sim/pickups';
+import { LOOSE, type Pickup } from '../sim/pickups';
 
 // ── things to pick up ─────────────────────────────────────────────────────
 // Krail is violet, the brand's colour for the field: a long shard of
@@ -15,6 +15,9 @@ import type { Pickup } from '../sim/pickups';
 const MAX_CRYSTALS = 320;
 const MAX_ITEMS = 10;
 const VIOLET = new Color(2.2, 0.9, 3.6);
+/** Ore: a dull warm grit; parts: salvage, cold cyan. */
+const ORE = new Color(1.4, 1.05, 0.7);
+const PARTS = new Color(0.5, 1.9, 2.6);
 const ITEM_COLOR: Record<string, Color> = {
   repair: new Color(3, 2.4, 1.2),
   shield: new Color(0.9, 1.8, 3.8),
@@ -66,13 +69,13 @@ export class PickupView {
       const pop = Math.min(1, pk.age / 0.25);
       const blink = pk.life < 2 && Math.sin(this.time * 22) < 0;
       const x = pk.x - pk.vx * back, z = pk.z - pk.vz * back;
-      if (pk.kind === 'crystal') {
+      if (LOOSE.has(pk.kind)) {
         if (n >= MAX_CRYSTALS) continue;
         const size = (0.32 + pk.value * 0.07) * pop * (blink ? 0.4 : 1);
         this.q.setFromAxisAngle(this.axis, this.time * 2.2 + pk.id);
         this.m.compose(this.p.set(x, 0.35 + Math.sin(this.time * 3 + pk.id) * 0.12, z), this.q, this.s.set(size, size, size));
         this.crystals.setMatrixAt(n, this.m);
-        this.crystals.setColorAt(n, this.c.copy(VIOLET).multiplyScalar(0.8 + pk.value * 0.12));
+        this.crystals.setColorAt(n, pk.kind === 'crystal' ? this.c.copy(VIOLET).multiplyScalar(0.8 + pk.value * 0.12) : this.c.copy(pk.kind === 'ore' ? ORE : PARTS));
         n++;
         continue;
       }

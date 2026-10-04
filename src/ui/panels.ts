@@ -53,7 +53,8 @@ export class HailPanel {
     return !$('hail').hidden;
   }
 
-  show(c: Contact, onAnswer: (engage: boolean) => void): void {
+  /** `blockade`: the Breakout's capital ship at the lane mouth, where evading means running past her. */
+  show(c: Contact, onAnswer: (engage: boolean) => void, blockade = false): void {
     this.close();
     const opened = performance.now();
     const name = $('hail-t');
@@ -65,7 +66,16 @@ export class HailPanel {
     lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Hull repair · krail · a power-up']);
     const ev = $<HTMLButtonElement>('hail-evade');
     ev.disabled = !c.canEvade;
-    if (c.canEvade) {
+    $('hail-evade').querySelector('em')!.textContent = blockade ? 'Run it' : 'Evade';
+    $('hail-evade').querySelector('.oh')!.textContent = blockade ? 'Run the blockade' : 'Break away';
+    $('hail-engage').querySelector('.oh')!.textContent = blockade ? 'Break the blockade' : 'Stand and fight';
+    if (blockade) {
+      $('hail-s').textContent = 'Custody blockade · holding the lane mouth';
+      $('hail-eb').textContent = 'She holds the lane with her wing. Break her and the way is clear, with her wreck to pick over.';
+      lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Krail · parts · a hull repair']);
+      $('hail-vb').textContent = 'No fight with her, but every Custody hull in the system comes for you while the drive spools.';
+      lines($('hail-vl'), ['No salvage', 'Custody alert to full']);
+    } else if (c.canEvade) {
       $('hail-vb').textContent = 'You get clear, but you cannot break away twice running.';
       lines($('hail-vl'), ['No bounty · no salvage', `Next contact in ${c.evadeGap}s`]);
     } else {
@@ -139,13 +149,16 @@ export class SummaryPanel {
     this.close();
     const opened = performance.now();
     const p = rec.previous;
-    $('sum-t').textContent = rec.newBest ? 'New best' : 'Run over';
+    const breakout = r.mode === 'breakout';
+    $('summary').classList.toggle('alert', !r.escaped);
+    $('summary').querySelector('.kick')!.textContent = r.escaped ? 'Escaped' : 'Hull breach';
+    $('sum-t').textContent = r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run over';
     // "Rammed by a raptor" already says how; everything else reads after "Breached by"
     const cause = damageWord(r.cause || 'rock');
-    $('sum-s').textContent = /^rammed /i.test(cause) ? cause : `Breached by ${cause.toLowerCase()}`;
+    $('sum-s').textContent = r.escaped ? `Out of the home system with ${r.krailLeft} Krail to spare` : /^rammed /i.test(cause) ? cause : `Breached by ${cause.toLowerCase()}`;
     $('sum-score').textContent = fmt(r.score);
     const line = $('sum-line');
-    line.replaceChildren(h('span', '', `${mmss(r.time)} survived · refit ${r.refit} · ${r.kills} kills`), rec.newBest ? h('span', 'best', ' · new best') : h('span', '', ` · best ${fmt(p.score)}`));
+    line.replaceChildren(h('span', '', `${mmss(r.time)} ${r.escaped ? 'to the lane' : 'survived'} · refit ${r.refit} · ${r.kills} kills`), rec.newBest ? h('span', 'best', ' · new best') : h('span', '', ` · best ${fmt(p.score)}`));
     $('sum-ship').textContent = r.identity;
 
     // tiles: this run against the best before it
@@ -155,7 +168,19 @@ export class SummaryPanel {
       return h('div', `tile${up ? ' up' : ''}`, '', h('span', 'k', label), h('b', '', show(v)),
         h('span', 'cmp', best <= 0 ? 'First record' : d === 0 ? `Matched · best ${show(best)}` : `${d > 0 ? '▲ +' : '▼ −'}${show(Math.abs(d))} · best ${show(best)}`));
     };
-    $('sum-tiles').replaceChildren(
+    if (breakout) {
+      const plain = (label: string, v: string, note: string) => h('div', 'tile', '', h('span', 'k', label), h('b', '', v), h('span', 'cmp', note));
+      $('sum-tiles').replaceChildren(
+        plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), r.escaped ? 'Through the lane mouth' : 'Short of the lane'),
+        plain('Krail', String(r.krail), r.escaped ? `${r.krailLeft} left after the jump` : 'Gathered'),
+        plain('Ore', String(r.ore), `${r.oreSold} sold at the port`),
+        plain('Rock cut clean', String(r.cut), `${r.fractured} fractured`),
+        tile('Refits', r.refit, p.refit),
+        tile('Kills', r.kills, p.kills),
+        plain('Parts', String(r.parts), `${r.platesGained} plates mended`),
+        plain('Port', r.docked ? `${r.docked}×` : '—', r.docked ? 'Docked at Frontier Supply' : 'Never docked'),
+      );
+    } else $('sum-tiles').replaceChildren(
       tile('Survived', r.time, p.time, mmss),
       tile('Refits', r.refit, p.refit),
       tile('Kills', r.kills, p.kills),

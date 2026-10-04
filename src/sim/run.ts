@@ -46,6 +46,19 @@ export interface RunStats {
   modifiers: string[];
   /** What ended it. */
   cause: string;
+  /** The Breakout or the arcade. */
+  mode: 'breakout' | 'arcade';
+  /** The Breakout: out through the lane mouth, and the Krail left in the tank when it jumped. */
+  escaped: boolean;
+  krailLeft: number;
+  /** Ore taken aboard and sold; parts salvaged; rocks cut clean and fractured; seconds of cutting; times docked. */
+  ore: number;
+  oreSold: number;
+  parts: number;
+  cut: number;
+  fractured: number;
+  cutTime: number;
+  docked: number;
 }
 
 export const TIMELINE = 10;
@@ -59,6 +72,7 @@ export function newRun(seed: number, modifiers: string[] = []): RunStats {
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
     platesLost: 0, platesGained: 0, shieldsAbsorbed: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
     timeline: [], build: {}, identity: '', modifiers, cause: '',
+    mode: 'arcade', escaped: false, krailLeft: 0, ore: 0, oreSold: 0, parts: 0, cut: 0, fractured: 0, cutTime: 0, docked: 0,
   };
 }
 

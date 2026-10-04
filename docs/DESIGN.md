@@ -1,9 +1,50 @@
 # Game design
 
-This describes the game as it plays today: the Breakout, the arcade escape
-that opens WAYWARD (see [VISION.md](VISION.md) and [PLAN.md](PLAN.md)).
+This describes the game as it plays today: the Breakout (M1 of
+[PLAN.md](PLAN.md)), and the arcade run it grew out of, which stays as a mode.
+See [VISION.md](VISION.md) for where it is going.
 
-Everyone launches in the same ship: the Wayward, OBH-4471, a stolen
+## The Breakout
+
+A sortie with a shape: get the stolen hauler out of the home system
+(`sim/breakout.ts`, `World` with `mode: 'breakout'`).
+
+- **The course.** The lane mouth is 2,600 units ahead of the start (about a
+  minute flat out); Frontier Supply, the port, is halfway and off the line.
+  The HUD carries both as pointers, radar diamonds, a contacts list and the
+  objective's steps.
+- **The jump.** Inside the lane mouth with 20 Krail in the tank (`JUMP_COST`),
+  the drive spools for five seconds; leave the ring and it winds down. The
+  jump takes the Krail and ends the run as an escape.
+- **Krail is fuel, and scarce.** Only veined (rich) rock and the rare gold
+  rock carry it, cut clean; the guns break a rock for 30% of what is in it
+  (`rockYield`). The tank starts at 6.
+- **The cutter** (`sim/mining.ts`), on its own held trigger: the rock under
+  it heats; once warm the cut goes in; past the line the rock fractures. A
+  small rock comes out clean in one hold; a large one needs the beam pulsed.
+  Heat and the cut belong to the rock. The lasers hold while it runs.
+- **Ore** fills the hold (40) and the refit rail (each unit counts 1.7), and
+  sells at the port. **Parts** come from wrecks; six of them patch a plate
+  once the ship has gone six seconds unhit. Random repair drops are off.
+- **The port.** Slow inside its ring for a second and the clamps take you
+  (`phase: 'dock'`): sell the hold (2 chits an ore), buy Krail (5), patch a
+  plate (30), pay for a refit (60, three cards there and then). The first
+  dock takes 0.2 off the hunt pressure.
+- **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
+  more) and the cutter's noise. It decides how often pursuers come (34s
+  down to 9s), how many at once (1 to 4) and which: pickets, then cruisers,
+  enforcers and, late, interdictors, all Custody, from behind; now and then
+  a Gutter crew from ahead. It is also the clock the difficulty curve reads
+  (heat 1 plays like seven minutes of the arcade).
+- **The blockade.** Within 420 units of the lane mouth a Custody capital ship
+  hails. Engage: the usual three-phase fight, and her wreck pays Krail, parts
+  and a salvage refit. Run it: no fight, but the hunt pressure goes to full
+  and four more hulls come at once.
+
+Balance: [BALANCE-BREAKOUT.md](BALANCE-BREAKOUT.md), from
+`npm run pilot:breakout`.
+
+Everyone launches in the same ship: the Wayward, OB-7731-A, a stolen
 Obedience-class ore hauler. Over a run she becomes
 something else, depending on the cards you take at each refit: a torpedo
 boat, a minelayer, a brawler that rams and arcs, a fortress, an interceptor

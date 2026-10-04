@@ -38,6 +38,7 @@ export class Input {
       thrust: Math.max(this.keyboard.thrust(), pad.thrust, this.touch.thrust),
       aim: pad.aim,
       fire: this.keyboard.fire() || pad.fire || this.touch.firing,
+      cut: this.keyboard.cut() || pad.cut || this.touch.cutting,
       torpedo: this.presses.has('torpedo'),
       roll: this.presses.has('roll'),
       overcharge: this.presses.has('overcharge'),

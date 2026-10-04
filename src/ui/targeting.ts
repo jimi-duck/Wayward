@@ -1,10 +1,12 @@
 import { angleDelta, clamp } from '../core/math';
 import type { Sector } from '../render/sector';
 import type { Boss } from '../sim/bosses';
+import { rockYield } from '../sim/breakout';
 import { ENCOUNTERS } from '../sim/encounters';
 import { alienBonus, alienLabel, cloaked, type Alien } from '../sim/enemies';
 import { ROCK_KINDS, type Rock } from '../sim/field';
-import { POWER_LABEL } from '../sim/pickups';
+import { LOOSE, POWER_LABEL } from '../sim/pickups';
+import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
 import { NEON_CSS } from './colors';
@@ -246,12 +248,22 @@ export class Targeting {
       // mining: what the rock is, what breaking it yields, what it breaks into
       const r = t.ref as Rock, K = ROCK_KINDS[r.kind];
       name = `${r.kind === 'basalt' ? 'Asteroid' : `${cap(r.kind)} asteroid`} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
-      const chance = K.crystal[r.size]!, n = K.crystals[r.size]!;
-      const yieldWord = chance >= 1 ? `Yield <b>${n}</b>` : `Yield <b>${n}</b> · ${Math.round(chance * 100)}%`;
       const extra = r.kind === 'rare' ? ' · power-up' : r.kind === 'volatile' ? ' · unstable' : '';
-      sub = `${yieldWord}${extra}`;
-      intK = 'Integrity';
-      hp = r.hp / r.maxHp;
+      if (world.bk) {
+        // the Breakout: what a clean cut gives, and how the cut is going
+        const y = rockYield(r.kind, r.size, true);
+        sub = `Ore <b>${y.ore}</b>${y.krail ? ` · Krail <b>${y.krail}</b>` : ''}${extra}`;
+        if ((r.cut ?? 0) > 0 || (r.heat ?? 0) > 0) {
+          intK = (r.heat ?? 0) > 0.8 ? 'Too hot · cut' : 'Cut';
+          hp = r.cut ?? 0;
+        } else { intK = 'Integrity'; hp = r.hp / r.maxHp; }
+      } else {
+        const chance = K.crystal[r.size]!, n = K.crystals[r.size]!;
+        const yieldWord = chance >= 1 ? `Yield <b>${n}</b>` : `Yield <b>${n}</b> · ${Math.round(chance * 100)}%`;
+        sub = `${yieldWord}${extra}`;
+        intK = 'Integrity';
+        hp = r.hp / r.maxHp;
+      }
       ico = '#i-rock';
       cls = `rock ${r.kind}`;
     }
@@ -303,13 +315,20 @@ export class Targeting {
       if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy')) {
         put(e.x, 0.5, e.z, 'm dia obj', `${ENCOUNTERS[e.id].name} · ${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
       }
+      // the Breakout's two places, when they are in view
+      if (world.bk) {
+        for (const wp of [world.bk.lane, world.bk.port]) {
+          const d = Math.hypot(wp.x - s.x, wp.z - s.z);
+          if (d < 400) put(wp.x, 0.5, wp.z, 'm dia obj', `${wp.name} · ${range(d)}`);
+        }
+      }
       const boss = world.command.boss;
       if (boss && !boss.leaving && boss.cloak < 0.5 && boss.id !== t?.id) put(boss.x, boss.y, boss.z, 'm cap', boss.name);
       // things to go and get
       for (const p of world.pickups) {
-        if (p.kind === 'crystal') continue;
+        if (LOOSE.has(p.kind)) continue;
         if (Math.hypot(p.x - s.x, p.z - s.z) > NEAR) continue;
-        put(p.x, 0.4, p.z, 'm dia', p.kind === 'repair' ? 'Hull repair' : POWER_LABEL[p.kind]);
+        put(p.x, 0.4, p.z, 'm dia', p.kind === 'repair' ? 'Hull repair' : POWER_LABEL[p.kind as PowerKind]);
       }
       // the nearest krail-rich or rare rock: a deposit worth the detour
       let dep: Rock | null = null, depD = NEAR;
@@ -332,6 +351,13 @@ export class Targeting {
 
   private drawPointers(world: World, sector: Sector, live: boolean): void {
     const s = sector.shipNow;
+    const bk = world.bk;
+    for (const wp of bk ? [bk.lane, bk.port] : []) {
+      const id = wp.kind === 'lane' ? 'ptr-lane' : 'ptr-port';
+      this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live ? { x: wp.x, y: 0.5, z: wp.z } : null,
+        `${wp.name} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);
+    }
+    if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); }
     const boss = world.command.boss;
     const showBoss = live && !!boss && !boss.leaving && boss.cloak < 0.5;
     this.pointer($('ptr-cap'), $('ptr-cap-t'), sector, s.x, s.z, s.heading, showBoss ? boss! : null,

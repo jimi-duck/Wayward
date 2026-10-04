@@ -1,0 +1,176 @@
+import { clamp, lerp } from '../core/math';
+import type { RockKind, RockSize } from './field';
+import type { Rng } from './rng';
+
+// ── the Breakout ──────────────────────────────────────────────────────────
+// The opening of WAYWARD: get the stolen hauler out of the home system. The
+// sortie has a shape instead of an endless clock:
+//
+//   the lane mouth · far across the system, the old jump lane out. Reach it
+//                    with enough Krail in the tank, hold inside it while the
+//                    drive spools, and you are gone. A Custody capital ship
+//                    blockades it: fight her, or run the blockade.
+//   the port       · a fuel dock off the direct line, roughly halfway, that
+//                    does not check implants. Dock to sell ore, buy Krail,
+//                    patch the hull and pay for a refit. Docking quiets the
+//                    pursuit a little, once.
+//   heat           · how hard the Custody is looking for you, 0 to 1. It
+//                    climbs with time, with every kill and with the noise of
+//                    the cutter. It decides how often pursuers come, how many,
+//                    and which: pickets first, then cruisers, enforcers and
+//                    interdictors. They come from behind, from home.
+//
+// Krail is fuel now, and scarce: it comes from violet-veined rock cut clean,
+// from the rare gold rock, from the port and from a capital ship's wreck.
+// Ore is what the cutter takes out of ordinary rock: it fills the hold, it
+// pays for refits on the rail, and it sells at the port. Parts are salvage
+// from wrecks; the crew patch a plate out of them when the ship is left
+// alone for a few seconds.
+
+export type Mode = 'breakout' | 'arcade';
+
+export interface Waypoint {
+  kind: 'port' | 'lane';
+  name: string;
+  x: number;
+  z: number;
+  /** Inside this radius: docking range, or the lane's throat. */
+  r: number;
+}
+
+/** Straight-line distance from the start to the lane mouth: about a minute flat out. */
+export const LANE_DIST = 2600;
+/** The port: this far along the line, this far off it. */
+export const PORT_ALONG = 1250;
+export const PORT_OFF = 260;
+export const LANE_R = 16;
+export const PORT_R = 9;
+
+/** Krail it takes to jump, what the tank holds at the start, and the hold's capacity. */
+export const JUMP_COST = 20;
+export const START_KRAIL = 6;
+export const TANK_MAX = 40;
+export const HOLD_START = 40;
+/** Each unit of ore is worth this much on the refit rail: a Breakout is short, and a build should take shape in it. */
+export const ORE_XP = 1.7;
+/** Seconds inside the lane mouth for the drive to spool. */
+export const SPOOL = 5;
+/** Within this distance of the lane mouth, the blockade calls. */
+export const BLOCKADE_AT = 420;
+
+/** Parts to patch a plate, the quiet it needs, and how long the patch takes. */
+export const PATCH_COST = 6;
+export const PATCH_QUIET = 6;
+export const PATCH_TIME = 4;
+
+/** Seconds docking takes once slow inside the port's ring. */
+export const DOCK_TIME = 1;
+/** Docking quiets the pursuit by this much, once per port. */
+export const DOCK_COOL = 0.2;
+
+/** The port's prices, in chits. */
+export const PRICE = { ore: 2, krail: 5, plate: 30, refit: 60 } as const;
+
+// ── heat ──────────────────────────────────────────────────────────────────
+export const HEAT_START = 0.1;
+/** Per second: about 0.13 a minute, so heat alone tops out after about seven minutes. */
+export const HEAT_RATE = 0.0022;
+export const HEAT_KILL = 0.008;
+/** Custody hulls are missed more. */
+export const HEAT_KILL_CUSTODY = 0.014;
+/** Per second the cutter runs. */
+export const HEAT_CUT = 0.002;
+/** The heat a run's difficulty curve reads as its clock: heat 1 plays like seven minutes of the arcade. */
+export const HEAT_CLOCK = 420;
+/** The first pursuer, seconds in. */
+export const PURSUIT_FIRST = 45;
+
+export const pursuitInterval = (heat: number) => lerp(34, 9, clamp(heat, 0, 1));
+export const pursuitCap = (heat: number) => Math.round(lerp(1, 4, clamp(heat, 0, 1)));
+export const pursuitElite = (heat: number) => clamp((heat - 0.7) * 0.6, 0, 0.2);
+
+/** The pursuers, by the heat they need. Gutter crews work the belt ahead and do not care who you are. */
+const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [
+  { variant: 'picket', from: 0, weight: 3 },
+  { variant: 'lancer', from: 0.25, weight: 2 },
+  { variant: 'enforcer', from: 0.4, weight: 2 },
+  { variant: 'interdictor', from: 0.65, weight: 1 },
+];
+const GUTTER = ['scout', 'scout', 'raptor'];
+
+/** Which hull comes next, and whether it is Custody from behind or a Gutter crew from ahead. */
+export function pickPursuer(heat: number, rng: Rng): { variant: string; ahead: boolean } {
+  if (heat < 0.6 && rng.next() < 0.22) return { variant: GUTTER[rng.int(GUTTER.length)]!, ahead: true };
+  const pool = PURSUERS.filter((p) => p.from <= heat);
+  let roll = rng.next() * pool.reduce((a, p) => a + p.weight, 0);
+  for (const p of pool) if ((roll -= p.weight) <= 0) return { variant: p.variant, ahead: false };
+  return { variant: pool[pool.length - 1]!.variant, ahead: false };
+}
+
+// ── what rock gives ───────────────────────────────────────────────────────
+// Cut clean, a rock gives all of this; broken by the guns, only scraps.
+
+export interface Yield { ore: number; krail: number }
+
+const ORE: Record<RockKind, readonly [number, number, number]> = {
+  basalt: [6, 3, 1],
+  iron: [10, 5, 2],
+  rich: [3, 2, 1],
+  volatile: [12, 6, 3],
+  rare: [4, 4, 4],
+};
+const KRAIL: Record<RockKind, readonly [number, number, number]> = {
+  basalt: [0, 0, 0],
+  iron: [0, 0, 0],
+  rich: [12, 7, 4],
+  volatile: [0, 0, 0],
+  rare: [6, 6, 6],
+};
+/** Of a clean cut, what the guns leave behind. */
+export const SCRAP = 0.3;
+
+export function rockYield(kind: RockKind, size: RockSize, clean: boolean): Yield {
+  const k = clean ? 1 : SCRAP;
+  return { ore: Math.round(ORE[kind][size] * k), krail: Math.round(KRAIL[kind][size] * k) };
+}
+
+// ── the course ────────────────────────────────────────────────────────────
+
+/** The Breakout's two places, laid out from the start along the ship's heading. */
+export function course(heading: number, x = 0, z = 0): { lane: Waypoint; port: Waypoint } {
+  const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
+  return {
+    lane: { kind: 'lane', name: 'Lane mouth', x: x + fx * LANE_DIST, z: z + fz * LANE_DIST, r: LANE_R },
+    port: { kind: 'port', name: 'Frontier Supply', x: x + fx * PORT_ALONG + rx * PORT_OFF, z: z + fz * PORT_ALONG + rz * PORT_OFF, r: PORT_R },
+  };
+}
+
+/** The Breakout's state while it runs. */
+export interface Breakout {
+  lane: Waypoint;
+  port: Waypoint;
+  heat: number;
+  nextPursuit: number;
+  /** Seconds the drive has spooled inside the lane mouth. */
+  spool: number;
+  /** Seconds slow inside the port's ring. */
+  dockT: number;
+  /** The port's one-off quieting is spent. */
+  portCooled: boolean;
+  /** Times docked. */
+  docks: number;
+  /** The blockade: not yet called, called (a capital ship on the way or fighting), or behind you. */
+  blockade: 'none' | 'called' | 'done';
+  /** Seconds of the jump's flash before the report; -1 until the jump. */
+  jumpT: number;
+  /** Seconds until the next "not enough Krail" reminder. */
+  nagT: number;
+}
+
+export function newBreakout(heading: number): Breakout {
+  const c = course(heading);
+  return {
+    lane: c.lane, port: c.port, heat: HEAT_START, nextPursuit: PURSUIT_FIRST, spool: 0, dockT: 0, portCooled: false, docks: 0,
+    blockade: 'none', jumpT: -1, nagT: 0,
+  };
+}

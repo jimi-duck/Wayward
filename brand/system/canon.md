@@ -11,7 +11,7 @@ look and talk.
   hazard placards, compliance stencils. The ship was built by a company and
   stolen from it; the interface still wears the company's labels.
 - **Registries** in the Continuance's form: a class code and a number
-  (OBH-4471, the Wayward's). Invented numbers carry a 47.
+  (OB-7731-A, the Wayward's). Invented numbers carry a 47.
 - **Contact and alarm** for the two levels of warning.
 - **Technical-manual cutaways**: plan-view schematics with deck lines and
   lengths.

@@ -14,6 +14,7 @@ import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PadNav } from './ui/dom';
 import { buildView, HailPanel, StartOptions, SummaryPanel } from './ui/panels';
+import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -38,7 +39,9 @@ function boot(): void {
 
   // The pilot's record between runs: bests, unlocks, chosen modifiers.
   const profile = loadProfile();
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), modifiers: profile.modifiers });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), modifiers: profile.modifiers, mode: profile.mode });
+  const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
+  showMode();
   const renderer = createRenderer(canvas, quality.tier);
   const sector = new Sector(renderer, quality.tier);
   sector.setCosmetic(profile.cosmetic);
@@ -85,14 +88,15 @@ function boot(): void {
   const refit = new RefitPanel();
   const hail = new HailPanel();
   const summary = new SummaryPanel();
+  const port = new PortPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => refit.open || hail.open || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => refit.open || hail.open || port.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   const startOpts = new StartOptions(profile, () => {
     saveProfile(profile);
     sector.setCosmetic(profile.cosmetic);
     // before the first launch nothing has happened yet, so the run can be re-made with the new modifiers
-    if (!started) world.restart({ modifiers: profile.modifiers });
+    if (!started) world.restart({ modifiers: profile.modifiers, mode: profile.mode });
   });
   const stops = () => {
     if (world.phase === 'refit' && world.offer && !refit.open) {
@@ -101,13 +105,18 @@ function boot(): void {
       refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); });
     } else if (world.phase === 'hail' && world.command.pending && !hail.open) {
       input.reset();
-      hail.show(world.command.pending, (engage) => { world.answerHail(engage); input.reset(); });
+      hail.show(world.command.pending, (engage) => { world.answerHail(engage); input.reset(); }, world.mode === 'breakout');
+    } else if (world.phase === 'dock' && !port.open) {
+      // docked at the port, or back from a refit bought there
+      input.reset();
+      port.show(world, () => { input.reset(); hud.note(world, 'Cast off'); }, () => {});
     } else if (world.phase === 'over' && !reported) {
       reported = true;
       input.reset();
       const rec = recordRun(profile, world.run);
       summary.show(world.run, rec, () => {
-        world.restart({ unlocked: grants(profile), modifiers: profile.modifiers });
+        world.restart({ unlocked: grants(profile), modifiers: profile.modifiers, mode: profile.mode });
+        showMode();
         reported = false;
         startOpts.render();
         hud.note(world, `Run begins · ${world.hull.name}`);
@@ -115,10 +124,11 @@ function boot(): void {
       });
     }
     // a gamepad answers the open panel
-    if (refit.open || hail.open || !el('summary').hidden) {
+    if (refit.open || hail.open || port.open || !el('summary').hidden) {
       const p = padNav.poll();
       if (refit.open) refit.padInput(p);
       else if (hail.open) hail.padInput(p);
+      else if (port.open) port.padInput(p);
       else summary.padInput(p);
     }
     // a full rail: a beat of slow motion before the panel
@@ -161,23 +171,29 @@ function boot(): void {
     o?.lock?.('landscape').catch(() => {});
   };
   window.addEventListener('pointerup', fullscreen, true);
-  const launch = () => {
+  const launch = (mode: 'breakout' | 'arcade' = 'breakout') => {
     if (started) return;
+    if (mode !== profile.mode || world.mode !== mode) {
+      profile.mode = mode;
+      saveProfile(profile);
+      world.restart({ modifiers: profile.modifiers, mode });
+      showMode();
+    }
     started = true;
     el('start').hidden = true;
     document.documentElement.classList.remove('prelaunch');
     fullscreen();
     window.focus();
     fit();
-    hud.note(world, `Run begins · ${world.hull.name}`);
+    hud.note(world, world.mode === 'breakout' ? 'Clear of the yards · make for the lane mouth' : `Run begins · ${world.hull.name}`);
     setPaused(false);
   };
 
   const input = new Input(
     {
-      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'),
+      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'), cut: el('cut'),
     },
-    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch()),
+    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch(profile.mode)),
   );
 
   const loop = new FixedStepLoop({
@@ -246,18 +262,20 @@ function boot(): void {
   window.visualViewport?.addEventListener('resize', bars);
   el('swipe-x').addEventListener('click', () => { kept = true; bars(); });
 
-  el('launch').addEventListener('click', launch);
+  el('launch').addEventListener('click', () => launch('breakout'));
+  el('arcade').addEventListener('click', (e) => { e.stopPropagation(); launch('arcade'); });
+  el('arcade').addEventListener('pointerdown', (e) => e.stopPropagation());
   el('start').addEventListener('pointerdown', (e) => {
     if (e.target === el('launch') || startOpts.logbookOpen) return;
     e.preventDefault();
-    launch();
+    launch(profile.mode);
   });
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
     if (!started) {
       if (startOpts.logbookOpen) { if (e.code === 'Escape') startOpts.logbook(false); return; }
-      if (e.code === 'Enter' || e.code === 'Space') launch();
+      if (e.code === 'Enter' || e.code === 'Space') launch(profile.mode);
       return;
     }
     if (panelOpen()) return;

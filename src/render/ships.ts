@@ -10,10 +10,10 @@ import { Kit, metal, seeded, type V3 } from './kit';
 import { glowTexture } from './textures';
 
 // ── the player's ship ─────────────────────────────────────────────────────
-// The Wayward: a stolen Obedience-class ore hauler, registry OBH-4471. A
+// The Wayward: a stolen Obedience-class ore hauler, registry OB-7731-A. A
 // blunt cutting head up front, its jaws round the cutting laser and a low
 // bridge set back on top; behind it a chunky engine block in faded
-// corporate rust, its stern one great drive ring, ore containers racked
+// hazard yellow, its stern one great drive ring, ore containers racked
 // along its spine; and two drive pods out on swept pylons, their coils
 // glowing along the inboard side. Numbers are stencilled on the plating
 // (03, 9F, 17), the registry on the cheeks and her new name, painted over
@@ -31,7 +31,7 @@ function materials(): Record<string, Material> {
   if (mats) return mats;
   mats = {
     hull: metal({ tint: 0x8d9094, roughness: 0.62, metalness: 0.35 }),
-    paint: metal({ tint: 0xb4542a, roughness: 0.7, metalness: 0.05, scale: 1.1, emissive: new Color(0.03, 0.008, 0) }),
+    paint: metal({ tint: 0xf2b21f, roughness: 0.62, metalness: 0.06, scale: 1.1, emissive: new Color(0.04, 0.024, 0) }),
     dark: metal({ tint: 0x5e5a56, roughness: 0.5, metalness: 0.6, scale: 1.4 }),
     lamp: new MeshBasicMaterial({ color: new Color(3.2, 2.4, 1.5), toneMapped: false }),
     glow: new MeshBasicMaterial({ color: new Color(0.6, 2.6, 3.4), toneMapped: false }),
@@ -78,7 +78,7 @@ function decalTexture(): Texture {
   g.restore();
   g.lineWidth = 8; g.strokeStyle = ink; g.strokeRect(780, 76, 232, 104);
   g.font = '800 92px "Arial Black", Impact, "Helvetica Neue", sans-serif';
-  g.fillText('OBH-4471', 512, 322);
+  g.fillText('OB-7731-A', 512, 322);
   g.font = '700 70px "Arial Black", Impact, "Helvetica Neue", sans-serif';
   g.fillText('WAYWARD', 512, 450);
   // wear: chips and scratches through the paint

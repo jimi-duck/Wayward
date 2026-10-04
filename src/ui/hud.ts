@@ -3,8 +3,9 @@ import type { Branch } from '../content/upgrades';
 import type { Sector } from '../render/sector';
 import type { Levels } from '../sim/build';
 import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
-import { ALIEN_TYPES, cloaked, FIRE_RANGE } from '../sim/enemies';
+import { ALIEN_TYPES, alienLabel, cloaked, FIRE_RANGE } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
+import { DOCK_TIME, JUMP_COST, LANE_DIST, SPOOL } from '../sim/breakout';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
@@ -85,6 +86,7 @@ export class Hud {
   private seed = -1;
   private modeKey = '';
   private headingShown = true;
+  private contactKey = '';
 
   constructor(onZoom: (dir: 1 | -1) => void) {
     for (const [id, dir] of [['zoom-in', -1], ['zoom-out', 1]] as const) {
@@ -130,7 +132,16 @@ export class Hud {
       switch (e.type) {
         case 'rockDestroyed': this.note(world, `${e.kind === 'basalt' ? 'Rock' : `${e.kind} rock`} broken · +${e.points}`, '', 'rock', e.points); break;
         case 'alienDestroyed': this.note(world, `${e.label} destroyed · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
-        case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
+        case 'crystal': if (!world.bk) { this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; } break;
+        case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
+        case 'rockCut': this.note(world, `Cut clean · ${e.ore} ore${e.krail ? ` · ${e.krail} Krail` : ''}`, 'gain'); break;
+        case 'fracture': this.note(world, e.kind === 'volatile' ? 'Volatile rock · it went up' : 'Rock fractured · too hot', 'hit'); break;
+        case 'holdFull': this.note(world, 'Hold full · sell at the port', 'hit'); break;
+        case 'patched': this.note(world, `Plate patched from parts · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'docked': this.note(world, `Docked · ${e.name}`, 'gain'); break;
+        case 'spool': this.banner('Lane mouth', 'Jump drive spooling', 'Hold inside the lane', 1.6, 'calm'); break;
+        case 'needKrail': this.banner('Lane mouth', 'Not enough Krail', `${e.have} of ${e.need} in the tank`, 2.2, 'caution'); break;
+        case 'jumped': this.banner('Jump', 'Into the lane', 'Out of the home system', 2, 'calm'); break;
         case 'pickup': this.note(world, `Hull repaired · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, `${POWER_LABEL[e.kind]}`, 'gain'); break;
         case 'plasmaDown': this.note(world, 'Plasma torpedo shot down'); break;
@@ -206,6 +217,7 @@ export class Hud {
   private updateText(world: World): void {
     this.updateSector(world);
     this.updateRail(world);
+    this.updateVoyage(world);
     this.updateSystems(world);
     this.updateCentre(world);
     this.updateMode(world);
@@ -226,6 +238,7 @@ export class Hud {
   // ── the rail ────────────────────────────────────────────────────────────
 
   private updateRail(world: World): void {
+    text($('xp-l'), world.bk ? 'Ore' : 'Krail');
     text($('refit-n'), pad(world.refit, 2));
     text($('xp-v'), String(Math.floor(world.xp)));
     text($('xp-n'), String(world.xpNext));
@@ -234,6 +247,70 @@ export class Hud {
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
+  }
+
+  // ── the Breakout: tank, hold, parts, chits, the Custody alert ───────────
+
+  private updateVoyage(world: World): void {
+    const b = world.bk;
+    if (!b) return;
+    const v = $('voyage');
+    text($('vy-krail'), String(world.krail));
+    text($('vy-need'), String(JUMP_COST));
+    ticks($('vy-tank'), world.krail / JUMP_COST, 24);
+    v.classList.toggle('ready', world.krail >= JUMP_COST);
+    const ore = $('vy-ore');
+    text(ore, `${world.ore}/${world.holdMax}`);
+    ore.classList.toggle('full', world.ore >= world.holdMax);
+    text($('vy-parts'), String(world.parts));
+    text($('vy-chits'), String(world.chits));
+    const heat = b.heat;
+    text($('vy-heat'), `Wanted Lv ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}`);
+    ticks($('vy-heat-t'), heat, 20, 'ceil');
+    v.classList.toggle('hot', heat >= 0.8);
+    // the contacts beside the scope: the two places, the nearest hostile, the nearest Krail trace
+    const s = world.ship, dist = (o: { x: number; z: number }) => Math.hypot(o.x - s.x, o.z - s.z);
+    let hostile: { label: string; d: number } | null = null;
+    for (const a of world.aliens) {
+      if (cloaked(a)) continue;
+      const d = dist(a);
+      if (!hostile || d < hostile.d) hostile = { label: alienLabel(a), d };
+    }
+    let trace = Infinity;
+    for (const r of world.field.rocks) if (r.kind === 'rich' || r.kind === 'rare') trace = Math.min(trace, dist(r));
+    const rows: Array<[string, number, string]> = [];
+    if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
+    rows.push([b.port.name, dist(b.port), '#5ad0e3'], [b.lane.name, dist(b.lane), 'var(--amber)']);
+    if (trace < Infinity) rows.push(['Krail trace', trace, 'var(--violet)']);
+    const key = rows.map(([n, d]) => `${n}${Math.round(d / 10)}`).join();
+    if (key !== this.contactKey) {
+      this.contactKey = key;
+      $('contacts-l').replaceChildren(...rows.map(([n, d, c]) => {
+        const li = document.createElement('li');
+        li.style.setProperty('--c', c);
+        const name = document.createElement('span'); name.textContent = n;
+        const v = document.createElement('b'); v.textContent = range(d);
+        li.append(name, v);
+        return li;
+      }));
+    }
+
+    // the objective, as steps
+    const docked = b.docks > 0, ready = world.krail >= JUMP_COST;
+    const steps: Array<[string, 'done' | 'now' | '']> = [
+      [`Krail for the jump · <b>${world.krail}/${JUMP_COST}</b>`, ready ? 'done' : 'now'],
+      [`Dock at ${b.port.name}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`} (optional)`, docked ? 'done' : ''],
+      [`Reach the lane mouth · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
+    ];
+    const html = steps.map(([t, c]) => `<li class="${c}">${t}</li>`).join('');
+    const list = $('obj-list');
+    if (list.innerHTML !== html) list.innerHTML = html;
+
+    // touch: the cutter's heat in the rock under the beam
+    const r = world.field.find(world.cutting);
+    const h = r?.heat ?? 0;
+    ticks($('t-heat'), h, 10);
+    $('cut').classList.toggle('hot', h > 0.8);
   }
 
   // ── top right: ship systems ─────────────────────────────────────────────
@@ -380,8 +457,28 @@ export class Hud {
     }
 
     const e = world.encounter, obj = $('objective');
-    obj.classList.toggle('on', !!e && !e.done);
-    if (e && !e.done) {
+    const bk = world.bk;
+    obj.classList.toggle('on', (!!e && !e.done) || (!!bk && world.alive));
+    const course = !!bk && world.alive && (!e || e.done || bk.spool > 0 || bk.dockT > 0);
+    obj.classList.toggle('course', course && bk.spool === 0 && bk.dockT === 0 && bk.jumpT < 0);
+    if (bk && course) {
+      // the Breakout's course: the lane mouth, or what is happening at one of the two places
+      const s = world.ship;
+      const dl = Math.hypot(bk.lane.x - s.x, bk.lane.z - s.z);
+      if (bk.jumpT >= 0) {
+        text($('obj-t'), 'Jump'); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), 'Into the lane');
+      } else if (bk.spool > 0) {
+        text($('obj-t'), 'Jump drive'); text($('obj-left'), `${Math.max(0, SPOOL - bk.spool).toFixed(1)}s`);
+        ticks($('obj-p'), bk.spool / SPOOL, 30); text($('obj-s'), 'Spooling · hold inside the lane');
+      } else if (bk.dockT > 0) {
+        text($('obj-t'), bk.port.name); text($('obj-left'), '');
+        ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), 'Docking clamps');
+      } else {
+        text($('obj-t'), 'Make for the lane mouth'); text($('obj-left'), range(dl));
+        ticks($('obj-p'), 1 - dl / LANE_DIST, 30);
+        text($('obj-s'), world.krail >= JUMP_COST ? `Krail ${world.krail}/${JUMP_COST} · enough to jump` : `Krail ${world.krail}/${JUMP_COST} · cut the violet rock`);
+      }
+    } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
       const left = Math.max(0, Math.ceil(e.dur - e.t));
       text($('obj-t'), def.name);
@@ -409,6 +506,7 @@ export class Hud {
     else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Contact'; }
     else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat'; }
     else if (e && !e.done) { cls = 'caution'; word = ENCOUNTERS[e.id].name; }
+    else if (world.cutting !== null) { cls = 'mining'; word = 'Cutting'; }
     else if (this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }
     const key = `${cls}${word}`;
     if (key === this.modeKey) return;

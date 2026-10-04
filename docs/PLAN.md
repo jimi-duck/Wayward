@@ -101,6 +101,39 @@ Make it feel like WAYWARD before anything else changes.
 - **Done when** a search for the old names in `src/`, `index.html` and the
   docs finds nothing, and a profile from before still loads.
 
+## Status
+
+| Milestone | State |
+|---|---|
+| M0 The rename | Done |
+| M1 The Breakout | First pass done: playable, tested, pilot-balanced (see below) |
+| M2 onwards | Not started |
+
+## From the concept boards
+
+The user's concept boards (the WAYWARD sheet, the gameplay view) settle
+these, and later milestones build to them:
+
+- **The ship**: OB-7731-A, an Obedience-class ore hauler, hazard yellow over
+  gunmetal, stacked cargo modules, cyan engines, "03" stencilled; a bulkier,
+  three-engine silhouette than the M0 model (a model pass is due).
+- **Names**: Kellern Mining (owns the home moon), Frontier Supply Co. (the
+  port), the Dust Traders Guild, Ares Drive (parts and services), Obedience
+  Heavy Lift, Continuance Enforcement.
+- **Crew** (M6): Juno (pilot, the player), Bram or Marcus Vale (mechanic),
+  Tess (scavenger, comms), Varik or Kaldor Santos (fixer), each with a
+  loyalty meter.
+- **The checkpoint card** (M2): "Your ID doesn't match the registry": Run it,
+  Spoof the registration, Pay the inspection fee, Talk your way through,
+  Fight.
+- **The HUD** (a HUD pass after M1): a brand plate top left (name, class,
+  serial); the current objective as steps; a threat card for the nearest
+  patrol; hull, fuel, energy, Krail and missiles as teal bars top right; the
+  scope with a contacts list beside it; the transmission card bottom right;
+  mining-mode key hints. M1 took the objective steps and the contacts list.
+- **The chart** (M3): systems as nodes, Krail richness, Continuance control
+  and expansion in red, Calloway's estimated route, your position.
+
 ## M1. The Breakout
 
 The current run becomes a goal: get out of the home system alive with
@@ -282,8 +315,11 @@ should multiply each other; expand combinations before adding combat.
 
 ## Order of work
 
-1. M0 rename (one branch).
-2. M1 Breakout: `poi`, `mining`, pursuit spawning, the exit, the port.
+1. M0 rename (one branch). Done.
+2. M1 Breakout: the cutter, pursuit spawning, the exit, the port. First pass done.
+   Next on it: the HUD pass and the ship model from the concept boards, then
+   tune combat time down toward a third (the pilot spends 35–55% of a run
+   with a hostile in range).
 3. M2 comms cards and the checkpoint.
 4. The slice's chart glimpse; playtest.
 5. M3 to M8 in order, each with its pilot report added to BALANCE.md.
