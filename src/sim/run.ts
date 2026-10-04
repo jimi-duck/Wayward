@@ -59,6 +59,9 @@ export interface RunStats {
   fractured: number;
   cutTime: number;
   docked: number;
+  /** Every comms card answered: which, how, and whether it came off. Jobs finished. */
+  cards: Array<{ id: string; choice: string; won: boolean; t: number }>;
+  jobsDone: number;
 }
 
 export const TIMELINE = 10;
@@ -73,6 +76,7 @@ export function newRun(seed: number, modifiers: string[] = []): RunStats {
     platesLost: 0, platesGained: 0, shieldsAbsorbed: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
     timeline: [], build: {}, identity: '', modifiers, cause: '',
     mode: 'arcade', escaped: false, krailLeft: 0, ore: 0, oreSold: 0, parts: 0, cut: 0, fractured: 0, cutTime: 0, docked: 0,
+    cards: [], jobsDone: 0,
   };
 }
 

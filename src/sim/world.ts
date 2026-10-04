@@ -8,9 +8,13 @@ import {
 import { Command, type Strike, type Telegraph } from './bosses';
 import {
   BLOCKADE_AT, BLOCKADE_HP, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
-  PATCH_QUIET, PATCH_TIME, PRICE, SPOOL, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
+  PATCH_QUIET, PATCH_TIME, PRICE, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   ORE_XP, rockYield, type Breakout, type Mode,
 } from './breakout';
+import {
+  CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, commsGap, condOk, openCard, pickCard, refresh, resolve, type CardDef, type Ctx, type JobDef, type Open,
+  type Outcome, type Standing,
+} from './comms';
 import { coolRocks, cutRock, cutTarget, newCutter, type Cutter } from './mining';
 import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
@@ -45,12 +49,14 @@ import {
 //
 // A run is a loop: fly, fight, collect krail, fill the rail, refit, face
 // harder sky, meet capital ships, and in the end lose the hull. The world
-// pauses itself at the two decisions a run asks for, a refit (`phase`
-// 'refit': three cards in `offer`) and a hail ('hail': engage or evade),
-// and at the end ('over': the record in `run`). The app answers with
-// choose(), answerHail() and restart(); the scripted pilot calls the same.
+// pauses itself at the decisions a run asks for, a refit (`phase` 'refit':
+// three cards in `offer`), a hail ('hail': engage or evade), a comms card
+// in the Breakout ('comms': the card in `comms`; an ambush slows the world
+// instead of stopping it), a dock ('dock'), and at the end ('over': the
+// record in `run`). The app answers with choose(), answerHail(), answer(),
+// the port's calls and restart(); the scripted pilot calls the same.
 
-export type Phase = 'play' | 'refit' | 'hail' | 'dock' | 'over';
+export type Phase = 'play' | 'refit' | 'hail' | 'comms' | 'dock' | 'over';
 /** What the port sells. */
 export type PortItem = 'krail' | 'plate' | 'refit';
 
@@ -173,6 +179,20 @@ export class World implements EncounterHost {
   docked = false;
   private holdNag = 0;
 
+  // the comms: the card on the table, what the run has set in motion, and who thinks what of you
+  comms: Open | null = null;
+  flags = new Set<string>();
+  standing: Partial<Record<Standing, number>> = {};
+  /** Jobs taken and not yet paid. */
+  jobs: JobDef[] = [];
+  /** Run time of the next chance card (Infinity: none), and whether the port's approach has called. */
+  cardNext = COMMS_FIRST;
+  portCalled = false;
+  private cardsSeen = new Set<string>();
+  private follows: Array<{ card: string; at: number }> = [];
+  /** Seconds of a sold survey's veined rock left. */
+  private seamT = 0;
+
   constructor(seed = 47, opts: WorldOptions = {}) {
     useIds(this.ids);
     this.seed = seed;
@@ -201,6 +221,15 @@ export class World implements EncounterHost {
     this.docked = false;
     this.patchT = 0;
     this.holdNag = 0;
+    this.comms = null;
+    this.flags = new Set();
+    this.standing = {};
+    this.jobs = [];
+    this.cardNext = COMMS_FIRST;
+    this.cardsSeen = new Set();
+    this.follows = [];
+    this.portCalled = false;
+    this.seamT = 0;
     if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; return; }
     this.bk = newBreakout(this.ship.heading);
     // the course is laid out from where the ship is now
@@ -257,11 +286,18 @@ export class World implements EncounterHost {
 
   step(dt: number, input: InputFrame): void {
     useIds(this.ids);
-    if (this.phase !== 'play') return;
+    // an ambush on the table slows the world rather than stopping it, and does not wait for ever
+    const slowed = this.phase === 'comms' && !!this.comms && this.comms.slow > 0;
+    if (this.phase !== 'play' && !slowed) return;
+    if (slowed) {
+      dt *= SLOW;
+      const o = this.comms!;
+      if ((o.slow = Math.max(0, o.slow - dt)) <= 0) { this.answer(o.def.slow!.default, true); return; }
+    }
     Object.assign(this.prev, this.ship);
     const s = this.ship, t = this.runTime, st = this.stats;
     const p = pressure(this.clock, this.mods);
-    const c = this.alive && (!this.bk || this.bk.jumpT < 0) ? flightControls(input) : IDLE;
+    const c = this.alive && !slowed && (!this.bk || this.bk.jumpT < 0) ? flightControls(input) : IDLE;
     // the cutter and the lasers share the bow: while the beam runs, the guns hold
     if (this.bk && c.cut) c.fire = false;
 
@@ -312,6 +348,7 @@ export class World implements EncounterHost {
       if (input.overcharge) this.release();
     }
     if (this.bk) this.stepBreakout(dt, c.cut);
+    if (this.bk && !slowed) this.stepComms();
     const lock = acquire(this.targets(), s.x, s.z, s.heading, fireStats.torpCone, fireStats.torpSeek);
     this.lock = lock ? lock.id : null;
 
@@ -328,6 +365,7 @@ export class World implements EncounterHost {
     if (this.bk && this.bk.jumpT >= 0 && (this.bk.jumpT -= dt) <= 0) this.finish();
 
     // the decisions: a full rail (after a beat of slow motion), and a hail
+    if (this.phase !== 'play') return;
     if (this.alive && this.celebrate > 0 && (this.celebrate -= dt) <= 0) this.openOffer();
     else if (this.alive && this.command.hailing && this.phase === 'play') this.phase = 'hail';
   }
@@ -339,6 +377,7 @@ export class World implements EncounterHost {
     const b = this.bk!, s = this.ship;
     b.heat = Math.min(1, b.heat + HEAT_RATE * dt);
     if (b.nagT > 0) b.nagT -= dt;
+    if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = 1; }
     if (this.holdNag > 0) this.holdNag -= dt;
     if (!this.alive || b.jumpT >= 0) return;
 
@@ -386,24 +425,24 @@ export class World implements EncounterHost {
     const speed = Math.hypot(s.vx, s.vz) / topSpeed(this.hull);
     // the port: slow inside its ring, and the clamps take you
     const dp = Math.hypot(s.x - b.port.x, s.z - b.port.z);
-    if (dp < b.port.r && speed < 0.35 && this.command.state !== 'fight') {
+    if (dp < b.port.r && speed < 0.35 && this.command.state !== 'fight' && this.phase === 'play') {
       if ((b.dockT += dt) >= DOCK_TIME) this.dock();
     } else b.dockT = Math.max(0, b.dockT - dt * 2);
 
-    // the blockade: a Custody capital ship holds the lane mouth
+    // the blockade: a Custody capital ship holds the lane mouth, and her checkpoint is a comms card
     const dl = Math.hypot(s.x - b.lane.x, s.z - b.lane.z);
-    if (b.blockade === 'none' && dl < BLOCKADE_AT && this.command.state === 'idle') {
-      b.blockade = 'called';
-      this.command.summon(this.runTime, 'custody', BLOCKADE_HP);
+    if (b.blockade === 'none' && dl < BLOCKADE_AT && this.command.state === 'idle' && this.phase === 'play') {
+      b.blockade = 'checkpoint';
+      this.openComms(CARD_BY_ID.checkpoint!);
     }
     if (b.blockade === 'called' && this.command.state === 'idle' && !this.command.boss) b.blockade = 'done';
 
     // the lane mouth: hold inside it with the Krail to jump while the drive spools
     if (dl < b.lane.r) {
-      if (this.krail >= JUMP_COST) {
+      if (this.krail >= JUMP_COST && this.phase === 'play') {
         if (b.spool === 0) this.events.push({ type: 'spool' });
         b.spool += dt;
-        if (b.spool >= SPOOL) this.jump();
+        if (b.spool >= b.spoolNeed) this.jump();
       } else if (b.nagT <= 0) {
         b.nagT = 6;
         this.events.push({ type: 'needKrail', have: this.krail, need: JUMP_COST });
@@ -465,6 +504,7 @@ export class World implements EncounterHost {
     // the pickups in the tractor's reach come aboard with you
     for (const pk of [...this.pickups]) if (Math.hypot(pk.x - s.x, pk.z - s.z) < this.stats.tractor) { this.pickups.splice(this.pickups.indexOf(pk), 1); this.collect(pk); }
     this.events.push({ type: 'docked', name: b.port.name });
+    this.settleJobs('port');
   }
 
   /** At the port: sell the whole hold. Returns the chits it fetched. */
@@ -512,6 +552,7 @@ export class World implements EncounterHost {
   private jump(): void {
     const b = this.bk!, s = this.ship;
     this.krail -= JUMP_COST;
+    this.settleJobs('lane');
     this.run.escaped = true;
     this.run.krailLeft = this.krail;
     this.run.cause = 'escaped';
@@ -579,17 +620,148 @@ export class World implements EncounterHost {
     useIds(this.ids);
     if (this.phase !== 'hail') return;
     if (engage) this.command.engage(this.runTime);
-    else if (this.command.evade(this.runTime, this.events)) {
-      this.run.capitalsEvaded++;
-      // the Breakout: running the blockade brings everything the Custody has
-      if (this.bk) {
-        this.bk.heat = 1;
-        this.bk.blockade = 'done';
-        this.bk.nextPursuit = this.runTime;
-        for (const v of ['interdictor', 'enforcer', 'lancer', 'picket']) this.spawnHostile(v);
-      }
-    } else this.command.engage(this.runTime);
+    else if (this.command.evade(this.runTime, this.events)) this.run.capitalsEvaded++;
+    else this.command.engage(this.runTime);
     this.phase = 'play';
+  }
+
+  // ── comms ─────────────────────────────────────────────────────────────
+
+  /** What a card can see of the ship and the run. */
+  commsCtx(): Ctx {
+    const b = this.bk, s = this.ship;
+    const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
+    return {
+      t: this.runTime, heat: b?.heat ?? 0, krail: this.krail, need: JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
+      parts: this.parts, plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
+      hostiles: this.aliens.filter((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
+    };
+  }
+
+  /** Who calls, and when: follow-ups when due, the port's approach once, then a card by chance every half minute or so. */
+  private stepComms(): void {
+    const b = this.bk!, t = this.runTime, s = this.ship;
+    if (!this.alive || this.phase !== 'play' || b.jumpT >= 0 || this.command.state !== 'idle' || b.blockade === 'checkpoint') return;
+    const due = this.follows.findIndex((f) => f.at <= t);
+    if (due >= 0) {
+      const [f] = this.follows.splice(due, 1);
+      const def = CARD_BY_ID[f!.card];
+      if (def && !this.cardsSeen.has(def.id) && condOk(def.when, this.commsCtx())) return this.openComms(def);
+    }
+    if (!this.portCalled && !this.docked && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
+      this.portCalled = true;
+      const def = pickCard(this.commsCtx(), this.cardsSeen, this.rng, 'port');
+      if (def) return this.openComms(def);
+    }
+    if (t < this.cardNext) return;
+    const x = this.commsCtx();
+    // not in the middle of a fight, unless the card is about the fight
+    if (x.hostiles > 1) { this.cardNext = t + 4; return; }
+    const def = pickCard(x, this.cardsSeen, this.rng);
+    this.cardNext = t + (def ? commsGap(b.heat, this.rng) : 10);
+    if (def) this.openComms(def);
+  }
+
+  /** Put a card on the table: the world waits (or slows), and anyone it brings arrives. */
+  openComms(def: CardDef): void {
+    useIds(this.ids);
+    const x = this.commsCtx();
+    const o = openCard(def, x, this.rng);
+    this.cardsSeen.add(def.id);
+    this.comms = o;
+    this.phase = 'comms';
+    if (def.arrive) o.brought.push(...this.applyOutcome(def.arrive, o.fee, []));
+    refresh(o, this.commsCtx());
+    this.events.push({ type: 'comms', id: def.id, kind: def.kind, from: def.from, title: def.title, slow: o.slow > 0 });
+  }
+
+  /** Answer the card on the table with choice `id` (or its index). False if it cannot be taken. `timedOut`: the slowed card ran out of time. */
+  answer(id: string | number, timedOut = false): boolean {
+    useIds(this.ids);
+    const o = this.comms;
+    if (this.phase !== 'comms' || !o) return false;
+    const key = typeof id === 'number' ? o.choices[id]?.id : id;
+    if (!key) return false;
+    const x = this.commsCtx();
+    let res = resolve(o, key, x, this.rng);
+    // a timed-out default the ship cannot afford falls to the first choice it can
+    if (!res && timedOut) { const ok = o.choices.find((c) => c.ok); if (ok) res = resolve(o, ok.id, x, this.rng); }
+    if (!res) return false;
+    this.krail -= res.cost.krail; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts;
+    if (res.outcome.sell) this.chits += res.cost.ore * res.outcome.sell;
+    this.comms = null;
+    this.phase = 'play';
+    this.applyOutcome(res.outcome, o.fee, o.brought);
+    this.run.cards.push({ id: o.def.id, choice: res.choice.id, won: res.won, t: Math.round(this.runTime) });
+    this.events.push({ type: 'commsAnswer', id: o.def.id, choice: res.choice.id, text: res.outcome.text, won: res.won });
+    return true;
+  }
+
+  /** Do what an outcome says, at the card's fee. `brought`: the hulls the card brought in, for a dismissal. Returns the ids of any hulls it brings. */
+  private applyOutcome(out: Outcome, fee: number, brought: number[]): number[] {
+    const b = this.bk;
+    this.krail = Math.min(TANK_MAX, Math.max(0, this.krail + amount(out.krail, this.krail, fee)));
+    this.ore = Math.min(this.holdMax, Math.max(0, this.ore + amount(out.ore, this.ore, fee)));
+    this.chits = Math.max(0, this.chits + amount(out.chits, this.chits, fee));
+    this.parts = Math.max(0, this.parts + amount(out.parts, this.parts, fee));
+    if (out.plates && out.plates > 0) this.repair(out.plates);
+    if (out.score) this.addScore(out.score, 'events');
+    if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
+    for (const f of [out.flag ?? []].flat()) this.flags.add(f);
+    for (const f of [out.unflag ?? []].flat()) this.flags.delete(f);
+    for (const [k, v] of Object.entries(out.standing ?? {}) as Array<[Standing, number]>) this.standing[k] = (this.standing[k] ?? 0) + v;
+    if (out.follow) this.follows.push({ card: out.follow.card, at: this.runTime + out.follow.after });
+    if (out.job && !this.jobs.some((j) => j.id === out.job!.id)) this.jobs.push(out.job);
+    if (out.drop) this.jobs = this.jobs.filter((j) => j.id !== out.drop);
+    if (out.seam) { this.seamT = out.seam; this.field.richBoost = 0.35; this.field.density = 1.2; }
+    if (out.dismiss) for (const al of this.aliens) if (brought.includes(al.id)) leave(al);
+    const ids: number[] = [];
+    const s = this.ship;
+    for (const sp of out.spawn ?? []) {
+      for (let i = 0; i < sp.n; i++) {
+        let at: { x: number; y: number; z: number } | undefined;
+        if (sp.from === 'around') {
+          const a = this.rng.range(0, Math.PI * 2), d = this.rng.range(26, 34);
+          at = { x: s.x + Math.cos(a) * d, y: this.rng.range(2, 9), z: s.z + Math.sin(a) * d };
+        } else if (b) {
+          // ahead: from the lane's side; behind: from home
+          const toward = Math.atan2(-(b.lane.z - s.z), b.lane.x - s.x) + (sp.from === 'behind' ? Math.PI : 0) + this.rng.range(-0.5, 0.5);
+          const d = this.rng.range(80, 100);
+          at = { x: s.x + Math.cos(toward) * d, y: this.rng.range(-2, 10), z: s.z - Math.sin(toward) * d };
+        }
+        ids.push(this.spawnHostile(sp.variant, at, null, true).id);
+      }
+    }
+    if (b && out.blockade) {
+      if (out.blockade === 'fight') { b.blockade = 'called'; this.command.summon(this.runTime, 'custody', BLOCKADE_HP, false); }
+      else if (out.blockade === 'pass') b.blockade = 'done';
+      else {
+        // running it: she and her wing come after you while her interdiction field drags on the drive,
+        // and the whole system is on alert. Survive the spool and you are gone; nothing obliges you to kill her.
+        b.blockade = 'done';
+        b.spoolNeed *= SPOOL_RUN;
+        b.heat = 1;
+        b.nextPursuit = this.runTime;
+        this.run.capitalsEvaded++;
+        this.command.summon(this.runTime, 'custody', BLOCKADE_HP, false);
+      }
+    }
+    return ids;
+  }
+
+  /** Jobs paid where the ship is now: the port on docking, the lane on the jump. */
+  private settleJobs(at: 'port' | 'lane'): void {
+    for (const j of [...this.jobs]) {
+      if (j.at !== at) continue;
+      const g = j.give ?? {};
+      if ((g.ore ?? 0) > this.ore || (g.parts ?? 0) > this.parts) { this.events.push({ type: 'jobShort', id: j.id, text: j.text }); continue; }
+      this.ore -= g.ore ?? 0;
+      this.parts -= g.parts ?? 0;
+      this.jobs.splice(this.jobs.indexOf(j), 1);
+      this.run.jobsDone++;
+      this.applyOutcome(j.pay, 0, []);
+      this.events.push({ type: 'jobDone', id: j.id, text: j.pay.text });
+    }
   }
 
   /** Fit a build outright (tests, the scripted pilot, debugging). */
@@ -1443,6 +1615,7 @@ export class World implements EncounterHost {
     r.identity = identity(this.levels).title;
     r.capitalsEscaped = Math.max(0, this.command.count - this.command.kills - (this.command.boss ? 1 : 0));
     r.timeline.push({ t: Math.round(this.runTime), score: this.score, plates: this.run.escaped ? this.plates : 0, refit: this.refit });
+    this.comms = null;
     this.phase = 'over';
   }
 

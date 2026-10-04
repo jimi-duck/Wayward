@@ -10,6 +10,7 @@ import { OC_MAX, SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 import { JUMP_COST, PATCH_COST, PRICE } from '../src/sim/breakout';
 import { CUT_RANGE } from '../src/sim/mining';
+import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
@@ -22,12 +23,34 @@ import type { RunStats } from '../src/sim/run';
 // new fire only after a person's reaction time, shoots what is in front of
 // it, rolls when the look-ahead finds no clean line, releases the
 // overcharge into a crowd, and builds the ship to a strategy from the cards
-// it is dealt. It plays through the same API the app does (step, choose,
-// answerHail), so a balance number here is a number in the game.
+// it is dealt, and answers comms cards by a policy. It plays through the same
+// API the app does (step, choose, answerHail, answer), so a balance number
+// here is a number in the game.
 
 export type Strategy =
   | { kind: 'random' }
   | { kind: 'focus'; branch: Branch; second?: Branch };
+
+/** How the pilot answers comms cards: by the kind of answer it reaches for first. */
+export type Policy = 'fight' | 'run' | 'pay' | 'bluff';
+const PREFER: Record<Policy, Tone[]> = {
+  fight: ['fight', 'help', 'trade', 'refuse', 'pay', 'bluff', 'run'],
+  run: ['run', 'refuse', 'trade', 'pay', 'help', 'bluff', 'fight'],
+  pay: ['pay', 'trade', 'help', 'refuse', 'bluff', 'run', 'fight'],
+  bluff: ['bluff', 'trade', 'help', 'pay', 'refuse', 'run', 'fight'],
+};
+
+/** One answered card, and what it did to the ship there and then. */
+export interface Answer {
+  card: string;
+  choice: string;
+  won: boolean;
+  krail: number;
+  chits: number;
+  heat: number;
+  /** Hostile hulls it brought, or the blockade it started. */
+  fight: boolean;
+}
 
 export interface PilotOptions {
   maxTime?: number;
@@ -39,6 +62,8 @@ export interface PilotOptions {
   lag?: number;
   /** Fly the Breakout instead of the endless arcade run. */
   breakout?: boolean;
+  /** How to answer comms cards (the Breakout). Bluff by default. */
+  policy?: Policy;
 }
 
 export interface PilotResult {
@@ -53,6 +78,22 @@ export interface PilotResult {
   bossFights: Array<{ faction: string; outcome: 'killed' | 'escaped' | 'died'; seconds: number; hpLeft: number; refit: number }>;
   /** Seconds with a hostile in firing range, or a capital ship fighting. */
   combat: number;
+  answers: Answer[];
+}
+
+/**
+ * The comms answer. The policy's favourite kind of answer the ship can take
+ * (a bluff only if the odds are at least even), then the next kind. It never
+ * reads the intent estimate: the report shows what a player who always
+ * answers the same way gets.
+ */
+export function pickAnswer(w: World, policy: Policy): string {
+  const o = w.comms!;
+  for (const tone of PREFER[policy]) {
+    const c = o.choices.find((ch) => ch.ok && ch.tone === tone && (tone !== 'bluff' || ch.odds === null || ch.odds >= 0.4));
+    if (c) return c.id;
+  }
+  return o.choices.find((ch) => ch.ok)!.id;
 }
 
 const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' });
@@ -399,6 +440,7 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
   const lostByMinute: number[] = [], gainedByMinute: number[] = [];
   const refitAt: Record<number, number> = {};
   const bossFights: PilotResult['bossFights'] = [];
+  const answers: Answer[] = [];
   let fightStart = -1, fightFaction = '';
   let combat = 0;
   let lastLost = 0, lastGained = 0;
@@ -409,6 +451,16 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
   while (w.phase !== 'over' && w.runTime < maxTime) {
     if (w.phase === 'refit') { w.choose(pickCard(w, strategy, rngPick)); continue; }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
+    if (w.phase === 'comms') {
+      const before = { krail: w.krail, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
+      w.answer(pickAnswer(w, o.policy ?? 'bluff'));
+      const last = w.run.cards[w.run.cards.length - 1]!;
+      answers.push({
+        card: before.card, choice: last.choice, won: last.won, krail: w.krail - before.krail, chits: w.chits - before.chits,
+        heat: (w.bk?.heat ?? 0) - before.heat, fight: w.aliens.length > before.aliens || w.bk?.blockade === 'called',
+      });
+      continue;
+    }
     if (w.phase === 'dock') {
       // the port: sell, top the tank up toward the jump, patch, and a refit if there is money left
       w.sellOre();
@@ -452,5 +504,5 @@ export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): Pil
     w.run.build = { ...w.levels };
     w.run.cause = 'survived';
   }
-  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat };
+  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, answers };
 }

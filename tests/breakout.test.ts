@@ -23,7 +23,17 @@ function quiet(seed = 3): World {
   w.field.bulwarks = [];
   w.field.step = (dt: number) => { for (const r of w.field.rocks) { r.x += r.vx * dt; r.z += r.vz * dt; } };
   w.bk!.nextPursuit = Infinity;
+  w.cardNext = Infinity;
+  w.portCalled = true;
   return w;
+}
+
+/** Answer every comms card by turning it down (or with the first choice there is), and fly on. */
+function runDeclining(w: World, seconds: number) {
+  for (let i = 0; i < Math.round(seconds / STEP); i++) {
+    if (w.phase === 'comms') w.answer(w.comms!.choices.find((c) => c.tone === 'refuse' && c.ok)?.id ?? w.comms!.choices.findIndex((c) => c.ok));
+    w.step(STEP, input());
+  }
 }
 
 /** One still rock straight ahead of the bow. */
@@ -104,9 +114,9 @@ describe('the Breakout', () => {
 
   it('starts quiet, then the pursuit comes from behind, Custody first', () => {
     const w = new World(4, { mode: 'breakout' });
-    run(w, PURSUIT_FIRST - 1);
+    runDeclining(w, PURSUIT_FIRST - 1);
     expect(w.aliens.length).toBe(0);
-    run(w, 3);
+    runDeclining(w, 3);
     expect(w.aliens.length).toBeGreaterThan(0);
     const b = w.bk!;
     const fwd = [b.lane.x - w.ship.x, b.lane.z - w.ship.z];
@@ -182,16 +192,32 @@ describe('the Breakout', () => {
     expect(w.run.cause).toBe('escaped');
   });
 
-  it('calls the blockade near the lane mouth, and running it brings the whole pursuit', () => {
+  it('calls the checkpoint near the lane mouth, and running it brings her after you', () => {
     const w = quiet();
     const b = w.bk!;
     w.ship.x = b.lane.x; w.ship.z = b.lane.z + 300;
-    run(w, 4);
-    expect(w.phase).toBe('hail');
-    expect(w.command.pending?.faction).toBe('custody');
-    w.answerHail(false);
+    run(w, 1);
+    expect(w.phase).toBe('comms');
+    expect(w.comms?.def.id).toBe('checkpoint');
+    expect(w.answer('run')).toBe(true);
+    expect(b.blockade).toBe('done');
     expect(b.heat).toBe(1);
-    expect(w.aliens.length).toBeGreaterThanOrEqual(4);
+    run(w, 4);
+    expect(w.command.state).toBe('fight');
+    expect(b.spoolNeed).toBeGreaterThan(SPOOL * 2);
+  });
+
+  it('fights the blockade from the checkpoint without a second hail', () => {
+    const w = quiet();
+    const b = w.bk!;
+    w.ship.x = b.lane.x; w.ship.z = b.lane.z + 300;
+    run(w, 1);
+    w.answer('fight');
+    expect(b.blockade).toBe('called');
+    run(w, 4);
+    expect(w.phase).toBe('play');
+    expect(w.command.state).toBe('fight');
+    expect(w.command.boss?.faction).toBe('custody');
   });
 
   it('leaves the arcade as it was', () => {

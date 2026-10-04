@@ -66,4 +66,8 @@ export type GameEvent =
   | { type: 'docked'; name: string }
   | { type: 'spool' }
   | { type: 'needKrail'; have: number; need: number }
-  | { type: 'jumped'; x: number; z: number };
+  | { type: 'jumped'; x: number; z: number }
+  | { type: 'comms'; id: string; kind: string; from: string; title: string; slow: boolean }
+  | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
+  | { type: 'jobDone'; id: string; text: string }
+  | { type: 'jobShort'; id: string; text: string };

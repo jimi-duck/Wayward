@@ -222,15 +222,17 @@
       </div>
     </div>
 
-    <!-- The hail: a capital ship, and the one decision in a run that is not a refit. -->
-    <div id="hail" class="sheet alert" role="dialog" aria-labelledby="hail-t" hidden>
-      <div class="panel">
-        <header class="ph"><span class="kick">Alarm</span><h2 id="hail-t">Capital ship</h2><span class="sub" id="hail-s">On intercept course</span></header>
-        <div class="opts">
-          <button type="button" class="opt" id="hail-engage"><span class="verb"><em>Engage</em><kbd>1</kbd></span><span class="oh">Stand and fight</span><span class="ob" id="hail-eb"></span><span class="lines" id="hail-el"></span></button>
-          <button type="button" class="opt" id="hail-evade"><span class="verb"><em>Evade</em><kbd>2</kbd></span><span class="oh">Break away</span><span class="ob" id="hail-vb"></span><span class="lines" id="hail-vl"></span></button>
+    <!-- Comms: whoever opens a channel to the ship (a Breakout card), and the arcade's capital-ship hail. -->
+    <div id="comms" class="sheet" role="dialog" aria-labelledby="cm-t" hidden>
+      <div class="panel comms">
+        <header class="ph"><span class="kick"><i id="cm-sigil" class="cm-sigil"></i><span id="cm-k">Incoming</span></span><h2 id="cm-t">Channel open</h2><span class="sub" id="cm-s"></span></header>
+        <div class="cm-body">
+          <p id="cm-text" class="cm-text"></p>
+          <div id="cm-read" class="cm-read"></div>
         </div>
-        <footer class="pf"><span class="keys"><kbd>1</kbd> or <kbd>F</kbd> engage · <kbd>2</kbd> or <kbd>E</kbd> evade · pad <kbd>A</kbd> / <kbd>B</kbd></span></footer>
+        <div id="cm-timer" class="cm-timer" hidden><i></i></div>
+        <div id="cm-list" class="cm-list"></div>
+        <footer class="pf"><span class="keys"><kbd>1</kbd>–<kbd>6</kbd> answer · <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>Enter</kbd> · pad <kbd>A</kbd></span></footer>
       </div>
     </div>
 

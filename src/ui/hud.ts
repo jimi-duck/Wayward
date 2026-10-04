@@ -5,7 +5,7 @@ import type { Levels } from '../sim/build';
 import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
 import { ALIEN_TYPES, alienLabel, cloaked, FIRE_RANGE } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
-import { DOCK_TIME, JUMP_COST, LANE_DIST, SPOOL } from '../sim/breakout';
+import { DOCK_TIME, JUMP_COST, LANE_DIST } from '../sim/breakout';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
@@ -140,6 +140,10 @@ export class Hud {
         case 'holdFull': this.note(world, 'Hold full · sell at the port', 'hit'); break;
         case 'patched': this.note(world, `Plate patched from parts · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'docked': this.note(world, `Docked · ${e.name}`, 'gain'); break;
+        case 'comms': this.note(world, `${e.slow ? 'Ambush' : 'Channel open'} · ${e.from}`, e.slow ? 'hit' : undefined); break;
+        case 'commsAnswer': this.note(world, e.text, e.won ? undefined : 'hit'); break;
+        case 'jobDone': this.note(world, `Job done · ${e.text}`, 'gain'); break;
+        case 'jobShort': this.note(world, `Job open · ${e.text}`, 'hit'); break;
         case 'spool': this.banner('Lane mouth', 'Jump drive spooling', 'Hold inside the lane', 1.6, 'calm'); break;
         case 'needKrail': this.banner('Lane mouth', 'Not enough Krail', `${e.have} of ${e.need} in the tank`, 2.2, 'caution'); break;
         case 'jumped': this.banner('Jump', 'Into the lane', 'Out of the home system', 2, 'calm'); break;
@@ -304,6 +308,8 @@ export class Hud {
       [`Krail for the jump · <b>${world.krail}/${JUMP_COST}</b>`, ready ? 'done' : 'now'],
       [`Dock at ${b.port.name}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`} (optional)`, docked ? 'done' : ''],
       [`Reach the lane mouth · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
+      // jobs taken on comms cards, paid where they say
+      ...world.jobs.map((j): [string, ''] => [`Job · ${j.text}`, '']),
     ];
     const html = steps.map(([t, c]) => `<li class="${c}">${t}</li>`).join('');
     $('hints').classList.toggle('cutting', world.cutting !== null);
@@ -489,8 +495,8 @@ export class Hud {
       if (bk.jumpT >= 0) {
         text($('obj-t'), 'Jump'); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), 'Into the lane');
       } else if (bk.spool > 0) {
-        text($('obj-t'), 'Jump drive'); text($('obj-left'), `${Math.max(0, SPOOL - bk.spool).toFixed(1)}s`);
-        ticks($('obj-p'), bk.spool / SPOOL, 30); text($('obj-s'), 'Spooling · hold inside the lane');
+        text($('obj-t'), 'Jump drive'); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
+        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), 'Spooling · hold inside the lane');
       } else if (bk.dockT > 0) {
         text($('obj-t'), bk.port.name); text($('obj-left'), '');
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), 'Docking clamps');

@@ -1,0 +1,471 @@
+import { CARDS, FLAGS } from '../content/cards';
+import { UPGRADES } from '../content/upgrades';
+import type { Levels } from './build';
+import { ALIEN_TYPES, VARIANTS } from './enemies';
+import type { Rng } from './rng';
+
+// ── the comms card ────────────────────────────────────────────────────────
+// The game's main interaction: someone opens a channel, and the world waits
+// while you decide. A card is a row in content/cards.ts: who is calling, what
+// they say (with slots and lines that change with your state), what is
+// really going on (a hidden truth, rolled when the card opens), and two to
+// five choices. This module is the headless half: which card comes, what the
+// read shows, which choices are earned, and what an answer does. The world
+// applies the outcome; the panel draws the view; the pilot answers through
+// the same calls.
+//
+//   the read     · their strength against yours, their cargo, and an
+//                  estimate of their intent, right as often as your sensors
+//                  are good (the estimate is a guess at the hidden truth).
+//   earned       · a choice that needs a system, a standing or a flag is shown
+//                  greyed out with what it needs, so the player sees what a
+//                  build would open.
+//   gambles      · a choice can lose: to the truth (a distress call that was
+//                  bait) or to the odds (a bluff), and the odds move with
+//                  heat, flags, standing and fitted systems.
+
+export type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour';
+/** What kind of answer a choice is, for the pilot's policies and the report. */
+export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refuse';
+/** Who you can stand well or badly with. */
+export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' | 'miners';
+/** Who is on the channel, for the colour of the card. */
+export type Caller = Standing | 'office' | 'calloway' | 'unknown';
+/** Where the ship is: open space, the port's approach, the lane mouth. */
+export type Place = 'open' | 'port' | 'lane';
+
+/** What a card can see of the ship and the run. */
+export interface Ctx {
+  t: number;
+  heat: number;
+  krail: number;
+  /** Krail the jump needs, and what the tank holds. */
+  need: number;
+  tank: number;
+  ore: number;
+  holdMax: number;
+  chits: number;
+  parts: number;
+  plates: number;
+  maxPlates: number;
+  levels: Levels;
+  flags: ReadonlySet<string>;
+  standing: Readonly<Partial<Record<Standing, number>>>;
+  place: Place;
+  /** Hostile hulls within reach. */
+  hostiles: number;
+}
+
+/** A condition on the ship and the run. Every field given must hold. */
+export interface Cond {
+  /** Not before this many seconds into the run. */
+  after?: number;
+  heatMin?: number;
+  heatMax?: number;
+  /** At least this much in the hold, the tank, the purse, the parts bin. */
+  ore?: number;
+  krail?: number;
+  chits?: number;
+  parts?: number;
+  /** The tank is short of the jump. */
+  short?: boolean;
+  /** The hold is four-fifths full. */
+  holdFull?: boolean;
+  /** A plate is missing. */
+  hurt?: boolean;
+  /** Every flag set, none of these set. */
+  flag?: string | string[];
+  noFlag?: string | string[];
+  /** Any of these systems fitted. */
+  fitted?: string | string[];
+  standing?: [Standing, number];
+  place?: Place;
+  /** Hostiles about (true) or a clear sky (false). */
+  hostiles?: boolean;
+}
+
+/** A number, or a token read off the ship: the card's fee, all of it, half of it. */
+export type Amount = number | 'fee' | '-fee' | '-all' | '-half';
+
+export interface Spawn { variant: string; n: number; from?: 'ahead' | 'behind' | 'around' }
+
+/** A job: carry something somewhere, and be paid on arrival. */
+export interface JobDef {
+  id: string;
+  /** The objective line. */
+  text: string;
+  /** Paid at the port (on docking) or at the lane mouth (on the jump). */
+  at: 'port' | 'lane';
+  /** What has to be handed over there. */
+  give?: { ore?: number; parts?: number };
+  pay: Outcome;
+}
+
+/** What an answer does. Amounts are deltas; heat is the Custody's attention. */
+export interface Outcome {
+  /** The log line. */
+  text: string;
+  krail?: Amount;
+  ore?: Amount;
+  chits?: Amount;
+  parts?: Amount;
+  plates?: number;
+  heat?: number;
+  score?: number;
+  flag?: string | string[];
+  unflag?: string | string[];
+  standing?: Partial<Record<Standing, number>>;
+  /** Hulls that turn up now. */
+  spawn?: Spawn[];
+  /** The hulls the card brought in break off. */
+  dismiss?: boolean;
+  /** The lane mouth: fight her, run past her, or be let through. */
+  blockade?: 'fight' | 'run' | 'pass';
+  /** Another card, this many seconds on. */
+  follow?: { card: string; after: number };
+  job?: JobDef;
+  /** A job given up. */
+  drop?: string;
+  /** Chits paid for each unit of ore the choice's cost took (a sale). */
+  sell?: number;
+  /** Seconds of veined rock all round (a seam found). */
+  seam?: number;
+}
+
+/** What a choice asks to be possible. What it costs is in `cost`, and counts too. */
+export interface Need {
+  fitted?: string | string[];
+  flag?: string;
+  standing?: [Standing, number];
+  krail?: number;
+  ore?: number;
+  parts?: number;
+}
+
+/** What a choice takes: a number, the card's fee, all of it, or half of it. */
+export type Take = number | 'fee' | 'all' | 'half';
+/** What a choice takes whatever happens next (the fee is gone whether or not she honours it). */
+export interface Cost { chits?: Take; krail?: Take; ore?: Take; parts?: Take }
+
+/** The chance a gamble comes off: a base, moved by heat, flags, systems and standing. */
+export interface Odds {
+  base: number;
+  /** Added per unit of heat (usually negative: the more they are looking, the less a lie holds). */
+  heat?: number;
+  flags?: Record<string, number>;
+  fitted?: Record<string, number>;
+  standing?: Partial<Record<Standing, number>>;
+}
+
+export interface ChoiceDef {
+  id: string;
+  label: string;
+  tone: Tone;
+  /** One line on what it means. */
+  hint: string;
+  /** Offered only when this holds (otherwise not shown at all). */
+  show?: Cond;
+  needs?: Need;
+  cost?: Cost;
+  /** The truth decides: if it is one of these, the choice loses. */
+  loseIf?: string[];
+  odds?: Odds;
+  win: Outcome;
+  lose?: Outcome;
+}
+
+/** What could really be going on, and how the read describes it. */
+export interface Truth {
+  id: string;
+  weight: number;
+  /** The read's line for it. */
+  read: string;
+  /** More (or less) likely when a condition holds. */
+  boost?: { if: Cond; mult: number };
+}
+
+export interface CardDef {
+  id: string;
+  kind: CardKind;
+  caller: Caller;
+  /** Who is speaking, and the card's title. */
+  from: string;
+  title: string;
+  /** What they say. Slots: {fee} {krail} {need} {short} {ore} {chits} {parts}. */
+  text: string;
+  /** Lines added when their condition holds: the same card reads differently with a full hold or a checkpoint ahead. */
+  lines?: Array<{ if: Cond; text: string }>;
+  /** How it comes: by chance (the default), only as a follow-up, on the port's approach, or at the lane mouth. */
+  trigger?: 'chance' | 'follow' | 'port' | 'lane';
+  when?: Cond;
+  weight?: number;
+  /** Who is on the channel, for the read (no ships: a voice on the radio). */
+  ships?: Array<{ variant: string; n: number }>;
+  cargo?: string;
+  fee?: { base: number; heat?: number; flags?: Record<string, number> };
+  truths?: Truth[];
+  /** Ambushes and declarations do not wait: the world slows instead of stopping, and after `timeout` seconds of it the default is taken. */
+  slow?: { timeout: number; default: string };
+  /** Applied as the card opens (the ambushers decloak). */
+  arrive?: Outcome;
+  choices: ChoiceDef[];
+}
+
+/** One choice as the panel shows it. */
+export interface ChoiceView {
+  id: string;
+  label: string;
+  tone: Tone;
+  hint: string;
+  /** Can be taken now. */
+  ok: boolean;
+  /** What it still needs, in words (empty when ok). */
+  needs: string[];
+  /** What it costs, in words. */
+  cost: string[];
+  /** The chance it comes off, if it is a gamble on the odds; null if the odds do not decide it. */
+  odds: number | null;
+  /** It can lose to the truth: the read is the only guide. */
+  risky: boolean;
+}
+
+export interface Read {
+  /** Strength on the same scale: theirs (0 for a voice on the radio) and yours. */
+  them: number;
+  you: number;
+  /** Who is out there, in words. */
+  ships: string;
+  cargo: string;
+  /** The intent estimate (one truth's read line), and how far sensors can be trusted. */
+  intent: string;
+  sure: number;
+}
+
+/** A card on the table. */
+export interface Open {
+  def: CardDef;
+  truth: string | null;
+  read: Read;
+  text: string;
+  choices: ChoiceView[];
+  fee: number;
+  /** Hulls the card brought in. */
+  brought: number[];
+  /** Seconds of slow motion left before the default is taken; 0 when the world simply waits. */
+  slow: number;
+}
+
+/** Seconds into a Breakout before the first card, and the gap between chance cards. */
+export const COMMS_FIRST = 24;
+export const commsGap = (heat: number, rng: Rng) => rng.range(30, 46) + (1 - heat) * 8;
+/** Within this distance of the port, its approach calls (once). */
+export const PORT_CALL = 150;
+/** The world's speed while an ambush or a declaration waits. */
+export const SLOW = 0.2;
+
+export const CARD_BY_ID: Record<string, CardDef> = Object.fromEntries(CARDS.map((c) => [c.id, c]));
+
+const list = <T>(v: T | T[] | undefined): T[] => (v === undefined ? [] : Array.isArray(v) ? v : [v]);
+const fitted = (levels: Levels, ids: string | string[] | undefined) => list(ids).some((id) => (levels[id] ?? 0) > 0);
+
+export function condOk(c: Cond | undefined, x: Ctx): boolean {
+  if (!c) return true;
+  if (c.after !== undefined && x.t < c.after) return false;
+  if (c.heatMin !== undefined && x.heat < c.heatMin) return false;
+  if (c.heatMax !== undefined && x.heat > c.heatMax) return false;
+  if (c.ore !== undefined && x.ore < c.ore) return false;
+  if (c.krail !== undefined && x.krail < c.krail) return false;
+  if (c.chits !== undefined && x.chits < c.chits) return false;
+  if (c.parts !== undefined && x.parts < c.parts) return false;
+  if (c.short !== undefined && (x.krail < x.need) !== c.short) return false;
+  if (c.holdFull !== undefined && (x.ore >= x.holdMax * 0.8) !== c.holdFull) return false;
+  if (c.hurt !== undefined && (x.plates < x.maxPlates) !== c.hurt) return false;
+  if (!list(c.flag).every((f) => x.flags.has(f))) return false;
+  if (list(c.noFlag).some((f) => x.flags.has(f))) return false;
+  if (c.fitted !== undefined && !fitted(x.levels, c.fitted)) return false;
+  if (c.standing && (x.standing[c.standing[0]] ?? 0) < c.standing[1]) return false;
+  if (c.place !== undefined && x.place !== c.place) return false;
+  if (c.hostiles !== undefined && (x.hostiles > 0) !== c.hostiles) return false;
+  return true;
+}
+
+/** The card's fee for this ship, now. */
+export function feeFor(def: CardDef, x: Ctx): number {
+  const f = def.fee;
+  if (!f) return 0;
+  let v = f.base + (f.heat ?? 0) * x.heat;
+  for (const [flag, m] of Object.entries(f.flags ?? {})) if (x.flags.has(flag)) v *= m;
+  return Math.max(1, Math.round(v / 5) * 5);
+}
+
+/** What an amount comes to against what is held: a delta. */
+export function amount(a: Amount | undefined, held: number, fee: number): number {
+  if (a === undefined) return 0;
+  if (typeof a === 'number') return a;
+  switch (a) {
+    case 'fee': return fee;
+    case '-fee': return -fee;
+    case '-all': return -held;
+    case '-half': return -Math.ceil(held / 2);
+  }
+}
+
+/** How far the read can be trusted: stock sensors guess right about two times in three. */
+export function sensors(levels: Levels): number {
+  let s = 0.65;
+  if ((levels.ut_scanner ?? 0) > 0) s += 0.2;
+  if ((levels.tech_office ?? 0) > 0) s += 0.1;
+  s += 0.02 * (levels.ut_tactical ?? 0);
+  return Math.min(0.95, s);
+}
+
+/** A hull's weight in a fight, for the read. */
+const hullWeight = (variant: string) => {
+  const v = VARIANTS[variant];
+  return v ? ALIEN_TYPES[v.kind].hp / 2 : 1;
+};
+
+/** The ship's weight in a fight, on the same scale: plates, the guns fitted, shields. */
+export function yourStrength(levels: Levels, plates: number): number {
+  let s = 1 + plates;
+  for (const u of UPGRADES) {
+    const lv = levels[u.id] ?? 0;
+    if (!lv) continue;
+    if (u.cat === 'weapons') s += lv * (u.kind === 'system' || u.kind === 'spec' ? 1.2 : 0.5);
+    else if (u.branch === 'defence') s += lv * 0.6;
+  }
+  return Math.round(s * 10) / 10;
+}
+
+export function theirStrength(def: CardDef): number {
+  return Math.round((def.ships ?? []).reduce((a, s) => a + hullWeight(s.variant) * s.n, 0) * 10) / 10;
+}
+
+const shipsWords = (def: CardDef) => {
+  const s = def.ships ?? [];
+  if (!s.length) return 'No ship in range · a voice on the channel';
+  return s.map((x) => `${x.n > 1 ? `${x.n} × ` : ''}${VARIANTS[x.variant]?.label ?? x.variant}`).join(' · ');
+};
+
+const upgradeName = (id: string) => UPGRADES.find((u) => u.id === id)?.name ?? id;
+const STANDING_WORDS: Record<Standing, string> = {
+  custody: 'the Custody', gutter: 'the Gutter', frontier: 'Frontier Supply', guild: 'the Dust Traders', kellern: 'Kellern Mining', miners: 'the miners',
+};
+export const standingName = (s: Standing) => STANDING_WORDS[s];
+
+/** The chance a choice's odds give, clamped to a gamble (never certain, never hopeless). */
+export function oddsFor(o: Odds, x: Ctx): number {
+  let p = o.base + (o.heat ?? 0) * x.heat;
+  for (const [f, d] of Object.entries(o.flags ?? {})) if (x.flags.has(f)) p += d;
+  for (const [id, d] of Object.entries(o.fitted ?? {})) if ((x.levels[id] ?? 0) > 0) p += d;
+  for (const [s, d] of Object.entries(o.standing ?? {}) as Array<[Standing, number]>) p += d * (x.standing[s] ?? 0);
+  return Math.min(0.95, Math.max(0.05, p));
+}
+
+const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'chits', krail: 'Krail', ore: 'ore', parts: 'parts' };
+
+const take = (a: Take, held: number, fee: number) => (a === 'fee' ? fee : a === 'all' ? held : a === 'half' ? Math.ceil(held / 2) : a);
+
+/** What a cost comes to, as numbers taken from the ship. */
+function costOf(c: Cost | undefined, x: Ctx, fee: number): Record<keyof Cost, number> {
+  const held = { chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts };
+  const out = { chits: 0, krail: 0, ore: 0, parts: 0 };
+  for (const k of Object.keys(out) as Array<keyof Cost>) if (c?.[k] !== undefined) out[k] = take(c[k]!, held[k], fee);
+  return out;
+}
+
+export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number): ChoiceView {
+  const needs: string[] = [];
+  const n = c.needs;
+  if (n) {
+    if (n.fitted !== undefined && !fitted(x.levels, n.fitted)) needs.push(`Needs ${list(n.fitted).map(upgradeName).join(' or ')}`);
+    if (n.flag && !x.flags.has(n.flag)) needs.push(`Needs ${FLAGS[n.flag] ?? n.flag}`);
+    if (n.standing && (x.standing[n.standing[0]] ?? 0) < n.standing[1]) needs.push(`Needs standing with ${standingName(n.standing[0])}`);
+    if (n.krail !== undefined && x.krail < n.krail) needs.push(`Needs ${n.krail} Krail`);
+    if (n.ore !== undefined && x.ore < n.ore) needs.push(`Needs ${n.ore} ore`);
+    if (n.parts !== undefined && x.parts < n.parts) needs.push(`Needs ${n.parts} parts`);
+  }
+  const cost = costOf(c.cost, x, fee);
+  const held = { chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts };
+  const costWords: string[] = [];
+  for (const k of Object.keys(cost) as Array<keyof Cost>) {
+    if (!c.cost || c.cost[k] === undefined) continue;
+    if (cost[k] > held[k]) needs.push(`Needs ${cost[k]} ${AMOUNT_WORDS[k]}`);
+    else if (cost[k] === 0) needs.push(`No ${AMOUNT_WORDS[k]} to give`);
+    costWords.push(`−${cost[k]} ${AMOUNT_WORDS[k]}`);
+  }
+  return {
+    id: c.id, label: c.label, tone: c.tone, hint: c.hint, ok: needs.length === 0, needs, cost: costWords,
+    odds: c.odds ? oddsFor(c.odds, x) : null, risky: !!(c.loseIf?.length && def.truths?.some((t) => c.loseIf!.includes(t.id))),
+  };
+}
+
+/** Fill a card's text: its slots, then the lines that hold. */
+export function cardText(def: CardDef, x: Ctx, fee: number): string {
+  const slots: Record<string, string> = {
+    fee: String(fee), krail: String(x.krail), need: String(x.need), short: String(Math.max(0, x.need - x.krail)),
+    ore: String(x.ore), chits: String(x.chits), parts: String(x.parts),
+  };
+  const fill = (s: string) => s.replace(/\{(\w+)\}/g, (m, k: string) => slots[k] ?? m);
+  const extra = (def.lines ?? []).filter((l) => condOk(l.if, x)).map((l) => fill(l.text));
+  return [fill(def.text), ...extra].join(' ');
+}
+
+function rollTruth(def: CardDef, x: Ctx, rng: Rng): string | null {
+  const ts = def.truths;
+  if (!ts?.length) return null;
+  const w = ts.map((t) => t.weight * (t.boost && condOk(t.boost.if, x) ? t.boost.mult : 1));
+  let roll = rng.next() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < ts.length; i++) if ((roll -= w[i]!) <= 0) return ts[i]!.id;
+  return ts[ts.length - 1]!.id;
+}
+
+/** Put a card on the table: roll what is really going on, and take the read. */
+export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
+  const truth = rollTruth(def, x, rng);
+  const sure = sensors(x.levels);
+  let intent = 'Means what they say';
+  if (def.truths?.length && truth) {
+    // right as often as the sensors are good; otherwise one of the other stories
+    let shown = truth;
+    if (def.truths.length > 1 && rng.next() >= sure) {
+      const others = def.truths.filter((t) => t.id !== truth);
+      shown = others[rng.int(others.length)]!.id;
+    }
+    intent = def.truths.find((t) => t.id === shown)!.read;
+  }
+  const fee = feeFor(def, x);
+  return {
+    def, truth, fee, brought: [],
+    read: { them: theirStrength(def), you: yourStrength(x.levels, x.plates), ships: shipsWords(def), cargo: def.cargo ?? 'Unknown', intent, sure },
+    text: cardText(def, x, fee),
+    choices: def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, def, x, fee)),
+    slow: def.slow ? def.slow.timeout : 0,
+  };
+}
+
+/** Re-evaluate the choices against the ship as it is now (a slowed card, or after something changed). */
+export function refresh(o: Open, x: Ctx): void {
+  o.choices = o.def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, o.def, x, o.fee));
+}
+
+/** Answer: did it come off, and what follows. Costs are paid either way; the caller applies `cost` and `outcome`. */
+export function resolve(o: Open, id: string, x: Ctx, rng: Rng): { choice: ChoiceDef; won: boolean; cost: Record<keyof Cost, number>; outcome: Outcome } | null {
+  const c = o.def.choices.find((ch) => ch.id === id);
+  const v = o.choices.find((ch) => ch.id === id);
+  if (!c || !v || !v.ok) return null;
+  let won = true;
+  if (c.loseIf && o.truth && c.loseIf.includes(o.truth)) won = false;
+  else if (c.odds) won = rng.next() < oddsFor(c.odds, x);
+  const outcome = won || !c.lose ? c.win : c.lose;
+  return { choice: c, won: won || !c.lose, cost: costOf(c.cost, x, o.fee), outcome };
+}
+
+/** The next chance card: one the run has not seen, whose condition holds, by weight. */
+export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: 'chance' | 'port' | 'lane' = 'chance'): CardDef | null {
+  const pool = CARDS.filter((c) => (c.trigger ?? 'chance') === trigger && !seen.has(c.id) && condOk(c.when, x));
+  if (!pool.length) return null;
+  let roll = rng.next() * pool.reduce((a, c) => a + (c.weight ?? 1), 0);
+  for (const c of pool) if ((roll -= c.weight ?? 1) <= 0) return c;
+  return pool[pool.length - 1]!;
+}

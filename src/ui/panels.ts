@@ -1,16 +1,14 @@
 import { BRANCHES, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
 import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
-import type { Contact } from '../sim/bosses';
 import { identity, type Levels } from '../sim/build';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
-import { NEON_CSS } from './colors';
 import { VARIANTS } from '../sim/enemies';
 import type { RunStats } from '../sim/run';
 
 // ── the panels ────────────────────────────────────────────────────────────
-// Two of the run's three stops (the hail and the report; the refit cards are
-// ui/refit.ts) and the start screen's options. Each stop is a modal sheet that
+// The run report (the refit cards are ui/refit.ts, comms cards and the hail
+// ui/comms.ts, the port ui/port.ts) and the start screen's options. Each stop is a modal sheet that
 // the world waits on. Every panel ignores input for its first moments and
 // never answers a held key: a hail opens with the trigger down, and a run
 // ends with keys held.
@@ -41,77 +39,6 @@ export function buildView(levels: Levels, named = true): HTMLElement {
     wrap.append(row);
   }
   return wrap;
-}
-
-// ── the hail ──────────────────────────────────────────────────────────────
-
-export class HailPanel {
-  private off: (() => void) | null = null;
-  private pad: { opened: number; answer: (engage: boolean) => void; canEvade: boolean } | null = null;
-
-  get open(): boolean {
-    return !$('hail').hidden;
-  }
-
-  /** `blockade`: the Breakout's capital ship at the lane mouth, where evading means running past her. */
-  show(c: Contact, onAnswer: (engage: boolean) => void, blockade = false): void {
-    this.close();
-    const opened = performance.now();
-    const name = $('hail-t');
-    name.textContent = c.name;
-    name.style.color = NEON_CSS[c.faction];
-    $('hail-s').textContent = `${c.faction} capital ship · on intercept course`;
-    $('hail-eb').textContent = 'She will fight back, and her escort wing comes in with her. The sector clears for the duel.';
-    const lines = (host: HTMLElement, ls: string[]) => host.replaceChildren(...ls.map((l) => h('span', '', l)));
-    lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Hull repair · krail · a power-up']);
-    const ev = $<HTMLButtonElement>('hail-evade');
-    ev.disabled = !c.canEvade;
-    $('hail-evade').querySelector('em')!.textContent = blockade ? 'Run it' : 'Evade';
-    $('hail-evade').querySelector('.oh')!.textContent = blockade ? 'Run the blockade' : 'Break away';
-    $('hail-engage').querySelector('.oh')!.textContent = blockade ? 'Break the blockade' : 'Stand and fight';
-    if (blockade) {
-      $('hail-s').textContent = 'Custody blockade · holding the lane mouth';
-      $('hail-eb').textContent = 'She holds the lane with her wing. Break her and the way is clear, with her wreck to pick over.';
-      lines($('hail-el'), [`+${fmt(c.bounty)} score`, 'Salvage · a refit · her tech', 'Krail · parts · a hull repair']);
-      $('hail-vb').textContent = 'No fight with her, but every Custody hull in the system comes for you while the drive spools.';
-      lines($('hail-vl'), ['No salvage', 'Custody alert to full']);
-    } else if (c.canEvade) {
-      $('hail-vb').textContent = 'You get clear, but you cannot break away twice running.';
-      lines($('hail-vl'), ['No bounty · no salvage', `Next contact in ${c.evadeGap}s`]);
-    } else {
-      $('hail-vb').textContent = c.faction === 'voice' ? 'There is no outrunning a foundry.' : 'Not available: you broke away from the last one.';
-      lines($('hail-vl'), [c.faction === 'voice' ? 'No escape from a foundry' : 'Recharges after a fight']);
-    }
-    const en = $('hail-engage');
-    en.classList.add('sel');
-    ev.classList.remove('sel');
-    const answer = (engage: boolean) => { this.close(); onAnswer(engage); };
-    en.onclick = guarded(opened, () => answer(true));
-    ev.onclick = guarded(opened, () => { if (c.canEvade) answer(false); });
-    for (const b of [en, ev]) b.onpointerdown = (e) => e.stopPropagation();
-    this.pad = { opened, answer, canEvade: c.canEvade };
-    $('hail').hidden = false;
-    this.off = keys((e) => {
-      if (['Digit1', 'Numpad1', 'KeyF', 'Enter', 'NumpadEnter'].includes(e.code)) return answer(true), true;
-      if (['Digit2', 'Numpad2', 'KeyE'].includes(e.code) && c.canEvade) return answer(false), true;
-      return ['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.code);
-    });
-  }
-
-  close(): void {
-    this.off?.();
-    this.off = null;
-    this.pad = null;
-    $('hail').hidden = true;
-  }
-
-  /** A gamepad: A engages, B evades. */
-  padInput(p: PadEdges): void {
-    const pad = this.pad;
-    if (!pad || performance.now() - pad.opened < GUARD) return;
-    if (p.a) pad.answer(true);
-    else if (p.b && pad.canEvade) pad.answer(false);
-  }
 }
 
 // ── the run report ────────────────────────────────────────────────────────
