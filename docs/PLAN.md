@@ -108,7 +108,7 @@ Make it feel like WAYWARD before anything else changes.
 | M1 The Breakout | First pass done: playable, tested, pilot-balanced (see below) |
 | M2 The comms card | First pass done: thirty cards and six follow-ups, the read, earned choices, the checkpoint, policy pilot (see below) |
 | M3 The chart and the hunt | First pass done: a seeded region of thirteen systems, lanes with Krail and day costs, food and wear, the Net, Calloway on the trail, wrecks that cost rather than end, the journey save, the chart panel, ten new cards, a journey pilot (see below) |
-| M4 Notice and nemeses | Started: per-faction notice and standing, the four tiers, named captains with a memory (see below); Calloway as nemesis not yet |
+| M4 Notice and nemeses | First pass done: per-faction notice and standing, the four tiers, named captains with a memory, Calloway's file (tricks she learns, your route, offers, the last meeting at the Threshold) (see below) |
 | M5 onwards | Not started |
 | UI Look and feel | Pass 1 (the foundation) up for review; passes 2 to 7 to come (see below) |
 
@@ -372,6 +372,18 @@ cards, contacts and modules.
 - **The Archive** replaces the logbook: recovered files, records, people and
   history carried between journeys. Options, not power, as now.
 
+First pass (skeleton): through the Threshold the journey ends with the file
+still aboard; the Threshold panel shows all six endings, the open ones to
+choose and the shut ones with what they need (content/endings.ts, read by
+sim/endings.ts against standing, fitted marks, the kit aboard, card flags,
+the Office's notice and Calloway beaten). Vanish is always open. Each ending
+has an epilogue whose lines depend on the journey. The save is kept until
+the choice is made. The Archive (meta/profile.ts, the start screen's
+Archive button) keeps every journey, the endings reached, their files and
+the people met, with the unlocks below. `npm run pilot:endings` writes
+BALANCE-ENDINGS.md: on 24 journeys every ending opened on some (Seal on
+18, Broadcast on 6); the gates are first guesses.
+
 ## The long tail
 
 More cards, captains, factions, Holdfasts, Drifts, regions,
@@ -478,7 +490,13 @@ should multiply each other; expand combinations before adding combat.
    `sim/captains.ts`): eight captains with a face on the comms card and one
    of five personalities (announce, ambush, deal, turn away), whose ship
    comes in under its name, and who come back changed by each meeting (a
-   grudge, bolder, a bigger wing, dearer, wise to running). Open: Calloway
-   learning and making offers, a chart readout of notice, and a pilot
-   report on how soon captains come.
+   grudge, bolder, a bigger wing, dearer, wise to running). Calloway's file
+   (`content/calloway.ts`, `sim/calloway.ts`, save version 5): every trick
+   used on her counted and worth less the next time, her read on your route
+   (the kind of system you stop in, straight for the Threshold) letting her
+   skip her questions there, offers chosen from what you told her, who you
+   know and what you care about, trust and broken words, and a last meeting
+   at the Threshold's lane mouth built from all of it, with her face on her
+   cards and her file on the chart. Open: the last meeting is too easy for
+   a steady pilot, who mostly breaks her ship or spools past her.
 7. M5 to M8 in order, each with its pilot report.

@@ -8,10 +8,12 @@ import { QualityGovernor, tierIndex } from './render/quality';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
-import { grants, loadProfile, recordRun, saveProfile } from './meta/profile';
+import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { clearJourney, loadJourney, saveJourney } from './meta/save';
-import { checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey } from './sim/journey';
+import { checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
 import { sysById } from './sim/chart';
+import { journeyRecord, pending } from './sim/endings';
+import { EndingPanel } from './ui/ending';
 import { ChartPanel } from './ui/chart';
 import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
@@ -99,9 +101,10 @@ function boot(): void {
   const summary = new SummaryPanel();
   const port = new PortPanel();
   const chart = new ChartPanel();
+  const ending = new EndingPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => refit.open || comms.open || port.open || chart.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => refit.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
 
   // ── the journey ────────────────────────────────────────────────────────
   // The Breakout mode is a journey: system after system, with the chart
@@ -109,11 +112,12 @@ function boot(): void {
   // start card can carry on where the last session left off.
   let journey: Journey | null = loadJourney();
   const showResume = () => {
-    const j = journey && journey.status !== 'over' ? journey : null;
+    const j = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
     el('resume').hidden = !j;
     el('resume-s').hidden = !j;
     el('launch').textContent = j ? 'New journey' : 'Break out';
-    if (j) el('resume-s').textContent = `Day ${Math.floor(j.day) + 1} · ${here(j).name}${j.dest ? ` · bound for ${sysById(j.chart, j.dest).name}` : ''}${j.wrecks ? ` · ${j.wrecks} wreck${j.wrecks === 1 ? '' : 's'}` : ''}`;
+    if (j && pending(j)) el('resume-s').textContent = `Day ${Math.floor(j.day) + 1} · through the Threshold · the file is still aboard`;
+    else if (j) el('resume-s').textContent = `Day ${Math.floor(j.day) + 1} · ${here(j).name}${j.dest ? ` · bound for ${sysById(j.chart, j.dest).name}` : ''}${j.wrecks ? ` · ${j.wrecks} wreck${j.wrecks === 1 ? '' : 's'}` : ''}`;
   };
   showResume();
   /** Fly the journey's current system. */
@@ -149,7 +153,29 @@ function boot(): void {
       pick: (id: string) => { const r = replot(j, id); if (r) world.replot(r.dest, r.jumpCost); },
     };
   };
-  /** The sortie is over: fold it into the journey, then the chart, a notice, or the end. */
+  /** A notice with one way on: adrift, or the journey's end (into the Archive, then a new journey). */
+  const noticeOf = (j: Journey, out: Outcome) => {
+    loop.paused = true;
+    input.reset();
+    if (j.status === 'over') recordJourney(profile, journeyRecord(j));
+    chart.notice(j, out, () => {
+      if (j.status === 'over') {
+        journey = newJourney(Math.floor(Math.random() * 1e9));
+        saveJourney(journey);
+      }
+      startSortie();
+    });
+  };
+  /** Through the Threshold: what the file is worth, its epilogue, then how the journey went. */
+  const threshold = (j: Journey, lines: string[]) => {
+    loop.paused = true;
+    input.reset();
+    ending.show(j, () => {
+      saveJourney(j);
+      noticeOf(j, { kind: 'through', lines: [...j.log.slice(-1).map((l) => l.text), ...lines] });
+    });
+  };
+  /** The sortie is over: fold it into the journey, then the chart, a notice, the Threshold, or the end. */
   const sortieOver = () => {
     const j = journey!;
     const rec = recordRun(profile, world.run);
@@ -157,15 +183,8 @@ function boot(): void {
     saveJourney(j);
     const lines = [...out.lines, ...rec.unlocked.map((u) => `Unlocked · ${u.name}`)];
     if (out.kind === 'jumped') return openChart(lines);
-    loop.paused = true;
-    input.reset();
-    chart.notice(j, { ...out, lines }, () => {
-      if (j.status === 'over') {
-        journey = newJourney(Math.floor(Math.random() * 1e9));
-        saveJourney(journey);
-      }
-      startSortie();
-    });
+    if (pending(j)) return threshold(j, lines);
+    noticeOf(j, { ...out, lines });
   };
   const startOpts = new StartOptions(profile, () => {
     saveProfile(profile);
@@ -218,12 +237,13 @@ function boot(): void {
       else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
     }
     // a gamepad answers the open panel
-    if (refit.open || comms.open || port.open || chart.open || !el('summary').hidden) {
+    if (refit.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
       const p = padNav.poll();
       if (refit.open) refit.padInput(p);
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p, journey);
+      else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
     }
     // a full rail: a beat of slow motion before the panel
@@ -285,10 +305,13 @@ function boot(): void {
       hud.note(world, `Run begins · ${world.hull.name}`);
       return;
     }
-    if (!resume || !journey || journey.status === 'over') {
+    if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
+      // a journey left at the Threshold still goes into the Archive, the file unchosen
+      if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
       journey = newJourney(Math.floor(Math.random() * 1e9));
       saveJourney(journey);
-    } else if (journey.status === 'chart') return openChart(['Journey resumed · the drive is cool, plot the next jump']);
+    } else if (pending(journey)) return threshold(journey, ['Journey resumed · the Threshold is behind you']);
+    else if (journey.status === 'chart') return openChart(['Journey resumed · the drive is cool, plot the next jump']);
     startSortie();
   };
 

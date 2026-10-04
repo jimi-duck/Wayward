@@ -1,4 +1,5 @@
-import { routeBetween, type Chart } from './chart';
+import type { Hunch } from './calloway';
+import { routeBetween, sysById, type Chart } from './chart';
 
 // ── the hunt ──────────────────────────────────────────────────────────────
 // Prefect Idris Calloway follows the Wayward personally. She does not guess:
@@ -16,6 +17,10 @@ import { routeBetween, type Chart } from './chart';
 //              while she is in the system ends the journey.
 //   the shadow · the chart shows where she was last seen, which is only
 //              where she is when she is close or your sensors are good.
+//   the hunch · once she has a read on your route (sim/calloway.ts), she
+//              does not stop to ask questions where you are predictable:
+//              in the kind of system you always stop in, or anywhere at all
+//              if you always go straight for the Threshold.
 
 /** Days she spends in each system before she picks the trail up. */
 export const SEARCH = 0.3;
@@ -36,18 +41,26 @@ export interface Hunt {
   /** Times she has caught up, and times her ship was beaten. */
   caught: number;
   beaten: number;
+  /** Her read on your route (sim/calloway.ts hunchOf), once she has one. */
+  hunch?: Hunch;
 }
 
 export function newHunt(): Hunt {
   return { idx: 0, progress: 0, delay: HUNT_START, seenIdx: 0, seenDay: 0, caught: 0, beaten: 0 };
 }
 
+/** Days she spends asking questions on arriving in system `id`: none where her hunch already says why you were there. */
+export function search(c: Chart, id: string, hunch?: Hunch): number {
+  if (hunch?.straight || (hunch?.kind && sysById(c, id).kind === hunch.kind)) return 0;
+  return SEARCH;
+}
+
 /** Days it takes her to cover the trail from index i to i + 1 and take up the scent. */
-export function leg(c: Chart, trail: readonly string[], i: number): number {
+export function leg(c: Chart, trail: readonly string[], i: number, hunch?: Hunch): number {
   const a = trail[i], b = trail[i + 1];
   if (!a || !b) return Infinity;
-  if (a === b) return SEARCH;
-  return (routeBetween(c, a, b)?.days ?? 1) + SEARCH;
+  if (a === b) return search(c, b, hunch);
+  return (routeBetween(c, a, b)?.days ?? 1) + search(c, b, hunch);
 }
 
 /** She moves on for `days`. Returns true if she reaches the end of the trail (your system) on the way. */
@@ -57,7 +70,7 @@ export function huntOn(h: Hunt, c: Chart, trail: readonly string[], days: number
   let left = days;
   if (h.delay > 0) { const d = Math.min(h.delay, left); h.delay -= d; left -= d; }
   while (left > 1e-9 && h.idx < trail.length - 1) {
-    const need = leg(c, trail, h.idx) - h.progress;
+    const need = leg(c, trail, h.idx, h.hunch) - h.progress;
     if (left < need) { h.progress += left; left = 0; break; }
     left -= need;
     h.idx++;
@@ -72,6 +85,6 @@ export const behind = (h: Hunt, trail: readonly string[]) => Math.max(0, trail.l
 /** Days until she reaches your system, if you stay put (0: she is here). */
 export function daysUntil(h: Hunt, c: Chart, trail: readonly string[]): number {
   let d = h.delay - h.progress;
-  for (let i = h.idx; i < trail.length - 1; i++) d += leg(c, trail, i);
+  for (let i = h.idx; i < trail.length - 1; i++) d += leg(c, trail, i, h.hunch);
   return Math.max(0, h.idx >= trail.length - 1 ? 0 : d);
 }

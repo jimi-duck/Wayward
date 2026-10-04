@@ -647,15 +647,15 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .cm-side .need { color: var(--ink-3); white-space: normal; text-align: right; max-width: 26ch; }
 
 /* buttons: cut like everything else */
-#again, #launch, #resume, #ch-go, .ghost { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+#again, #launch, #resume, #ch-go, #en-go, .ghost { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
   height: 44px; padding: 0 44px; font: 700 14px/1 var(--font-head); letter-spacing: .28em; text-transform: uppercase; color: var(--ink); }
-:is(#again, #launch, #resume, #ch-go, .ghost)::before, :is(#again, #launch, #resume, #ch-go, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
-:is(#again, #launch, #resume, #ch-go, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
+:is(#again, #launch, #resume, #ch-go, #en-go, .ghost)::before, :is(#again, #launch, #resume, #ch-go, #en-go, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
+:is(#again, #launch, #resume, #ch-go, #en-go, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
   clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-:is(#again, #launch, #resume, #ch-go, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
+:is(#again, #launch, #resume, #ch-go, #en-go, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
   clip-path: polygon(calc(var(--c) - .4px) 0, 100% 0, 100% calc(100% - var(--c) + .4px), calc(100% - var(--c) + .4px) 100%, 0 100%, 0 calc(var(--c) - .4px)); }
-:is(#again, #launch, #resume, #ch-go):hover, :is(#again, #launch, #resume, #ch-go):focus-visible { --fill: rgba(217, 154, 39, .3); }
-#again:focus-visible, #launch:focus-visible, #resume:focus-visible, #ch-go:focus-visible, .ghost:focus-visible, .zoomsel button:focus-visible, .mods button:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
+:is(#again, #launch, #resume, #ch-go, #en-go):hover, :is(#again, #launch, #resume, #ch-go, #en-go):focus-visible { --fill: rgba(217, 154, 39, .3); }
+#again:focus-visible, #launch:focus-visible, #resume:focus-visible, #ch-go:focus-visible, #en-go:focus-visible, .ghost:focus-visible, .zoomsel button:focus-visible, .mods button:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
 .ghost { --c: 7px; --edge: var(--line); --fill: var(--glass); height: 30px; padding: 0 16px; font: 600 calc(var(--fs) * .9 * 1.18)/1 var(--font-rail); letter-spacing: .12em; }
 .ghost:hover { --edge: var(--hud); }
 
@@ -709,6 +709,27 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .unlocks li:not(.on) b { color: var(--ink-2); }
 .unlocks .kind { font: 600 calc(var(--fs) * .82 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); align-self: center; }
 .unlocks p { grid-column: 1 / -1; margin: 0; font: 400 11px/1.4 var(--font-display); color: var(--ink-2); }
+
+/* the Archive: the file, journeys, people, unlocks, one scroll */
+.archive .ar-body { display: grid; gap: 8px; max-height: 66vh; overflow-y: auto; }
+.archive .ar-body .unlocks { max-height: none; overflow: visible; }
+.archive h3 { margin: 6px 0 0; font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.ar-j { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ar-j li { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line); font: 400 12px/1.3 var(--font-display); color: var(--ink-2); }
+.ar-j li b { font: 600 calc(var(--fs) * 1.02)/1.2 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+.ar-j li.lost b { color: var(--alert); }
+.ar-p { margin: 0; font: 400 12px/1.5 var(--font-display); color: var(--ink-2); }
+.ar-j:empty::after, .ar-p:empty::after { content: 'Nothing yet.'; font: 400 12px/1.4 var(--font-display); color: var(--ink-3); }
+
+/* the Threshold: six endings, the shut ones dimmed, then the epilogue */
+.ends li.on { cursor: pointer; }
+.ends li.sel { border-left-color: var(--hud); background: rgba(217, 154, 39, .08); }
+.ends li.shut { opacity: .55; }
+.ends li .need { color: var(--ink-3); font-style: italic; }
+.ends:empty { display: none; }
+.en-epi { display: grid; gap: 10px; }
+.en-epi:empty { display: none; }
+.en-epi p { margin: 0; padding-left: 10px; border-left: 2px solid var(--amber); font: 400 14px/1.5 var(--font-display); color: var(--ink); }
 
 /* ── the refit: three cards ───────────────────────────────────────────── */
 /* Three modules for the ship, side by side, in the HUD's line language.
@@ -1039,7 +1060,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 #hints.cutting div:first-child dt { border-color: var(--amber); color: var(--amber); }
 
 /* ── the journey: continue, and the chart ─────────────────────────────── */
-#resume[hidden], #ch-go[hidden] { display: none; }
+#resume[hidden], #ch-go[hidden], #en-go[hidden] { display: none; }
 .resume-s { margin: 0; font: 600 calc(9px * 1.18)/1.4 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 .resume-s[hidden] { display: none; }
 .panel.chartp { width: min(1180px, 100%); overflow-y: auto; gap: 12px; }
@@ -1068,6 +1089,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 .ch-stat .port-stock b { font-size: calc(var(--fs) * 1.25); margin-left: 6px; }
 .ch-hunt, .ch-netl { margin: 0; font: 600 calc(var(--fs) * .95 * 1.18)/1.35 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .ch-hunt { color: #ef8a7f; }
+.ch-file { margin: 0; font: 400 calc(var(--fs) * .85)/1.35 var(--font-mono); letter-spacing: .06em; color: var(--ink-2); }
 .ch-netl { color: var(--ink-2); }
 .ch-notice { margin: 0; font: 600 calc(var(--fs) * .85 * 1.18)/1.35 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; color: var(--ink-2); }
 .ch-notice.t-toll, .ch-notice.t-hunters { color: var(--amber); }

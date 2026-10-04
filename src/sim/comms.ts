@@ -1,3 +1,4 @@
+import { LEARN } from '../content/calloway';
 import { CARDS, FLAGS } from '../content/cards';
 import type { Tier } from '../content/factions';
 import type { SystemKind } from '../content/systems';
@@ -29,15 +30,15 @@ import type { Rng } from './rng';
 //                  bait) or to the odds (a bluff), and the odds move with
 //                  heat, flags, standing and fitted systems.
 
-export type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour' | 'captain';
+export type CardKind = 'trade' | 'plea' | 'job' | 'warning' | 'shakedown' | 'checkpoint' | 'distress' | 'rumour' | 'captain' | 'offer';
 /** What kind of answer a choice is, for the pilot's policies and the report. */
 export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refuse';
 /** Who you can stand well or badly with. */
 export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' | 'miners';
 /** Who is on the channel, for the colour of the card. */
 export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
-/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, or with Calloway. */
-export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt';
+/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, with Calloway, or as her offer (from her file). */
+export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer';
 /** Where the ship is: open space, the port's approach, the lane mouth. */
 export type Place = 'open' | 'port' | 'lane';
 
@@ -72,6 +73,9 @@ export interface Ctx {
   notice?: Partial<Record<Faction, Tier>>;
   toll?: Partial<Record<Faction, number>>;
   captain?: CaptainCall | null;
+  /** Calloway's file (sim/calloway.ts): times she has seen each trick, and her read on your route. */
+  wise?: Readonly<Partial<Record<string, number>>>;
+  hunch?: readonly string[];
 }
 
 /** A condition on the ship and the run. Every field given must hold. */
@@ -110,6 +114,10 @@ export interface Cond {
   hunted?: number;
   /** The faction's notice is at least this tier. */
   notice?: [Faction, Tier];
+  /** Calloway has seen this trick at least so many times. */
+  wise?: [string, number];
+  /** Calloway's read on your route says this: a system kind, or 'straight'. */
+  hunch?: string;
 }
 
 /** A number, or a token read off the ship: the card's fee, all of it, half of it. */
@@ -195,6 +203,8 @@ export interface Odds {
   flags?: Record<string, number>;
   fitted?: Record<string, number>;
   standing?: Partial<Record<Standing, number>>;
+  /** A trick Calloway learns (content/calloway.ts): LEARN off for every time she has seen it. */
+  learn?: string;
 }
 
 export interface ChoiceDef {
@@ -336,6 +346,8 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.netted !== undefined && x.netted !== c.netted) return false;
   if (c.hunted !== undefined && !(x.behind <= c.hunted)) return false;
   if (c.notice && !atLeast(x.notice?.[c.notice[0]], c.notice[1])) return false;
+  if (c.wise && (x.wise?.[c.wise[0]] ?? 0) < c.wise[1]) return false;
+  if (c.hunch !== undefined && !x.hunch?.includes(c.hunch)) return false;
   return true;
 }
 
@@ -413,6 +425,7 @@ export function oddsFor(o: Odds, x: Ctx): number {
   for (const [f, d] of Object.entries(o.flags ?? {})) if (x.flags.has(f)) p += d;
   for (const [id, d] of Object.entries(o.fitted ?? {})) if (hasFitted(x.levels, id)) p += d;
   for (const [s, d] of Object.entries(o.standing ?? {}) as Array<[Standing, number]>) p += d * (x.standing[s] ?? 0);
+  if (o.learn) p -= LEARN * (x.wise?.[o.learn] ?? 0);
   return Math.min(0.95, Math.max(0.05, p));
 }
 
@@ -531,7 +544,7 @@ export function resolve(o: Open, id: string, x: Ctx, rng: Rng): { choice: Choice
 }
 
 /** The next chance card: one the run has not seen, whose condition holds, by weight. */
-export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: Exclude<Trigger, 'follow'> = 'chance'): CardDef | null {
+export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: Exclude<Trigger, 'follow' | 'offer'> = 'chance'): CardDef | null {
   const pool = CARDS.filter((c) => (c.trigger ?? 'chance') === trigger && !seen.has(c.id) && condOk(c.when, x));
   if (!pool.length) return null;
   let roll = rng.next() * pool.reduce((a, c) => a + (c.weight ?? 1), 0);

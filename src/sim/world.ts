@@ -7,6 +7,7 @@ import {
 } from './arsenal';
 import { Command, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
+import { OFFER_AT } from '../content/calloway';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_KRAIL, CAPITAL_PARTS, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
@@ -63,8 +64,6 @@ import {
 export type Phase = 'play' | 'refit' | 'hail' | 'comms' | 'dock' | 'over';
 /** What the port sells. */
 export type PortItem = 'krail' | 'plate' | 'refit' | 'food';
-/** Calloway's ship against an arcade run's first capital ship. */
-export const CALLOWAY_HP = 4;
 
 export interface WorldOptions {
   /** Upgrade, event and modifier ids opened by long-term progression. */
@@ -221,6 +220,8 @@ export class World implements EncounterHost {
   callowayMet = false;
   callowayBeaten = false;
   private callowayShip = false;
+  /** Her offer (sim/calloway.ts): made this sortie. */
+  offerMade = false;
   /** Jumps she is behind, for the cards (Infinity: not on the trail yet). */
   behind = Infinity;
   huntDelay = 0;
@@ -275,7 +276,7 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.seamT = 0;
-    this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.huntDelay = 0; this.stall = 0;
+    this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.kitIn = noKit(); this.kitSpent = noKit();
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
@@ -562,6 +563,14 @@ export class World implements EncounterHost {
       if (def) return this.openComms(def);
     }
 
+    // her offer: once a sortie at most, when she has one to make (and is not here in person)
+    const offer = b.def.nemesis.offer;
+    if (offer && !this.offerMade && !this.callowayMet && this.runTime >= OFFER_AT && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
+      this.offerMade = true;
+      const def = CARD_BY_ID[offer];
+      if (def) return this.openComms(def);
+    }
+
     // a named captain: they find you once, and come their own way
     const cap = b.def.notice.captain, cdef = cap && CAPTAIN_BY_ID[cap.id];
     if (cap && cdef && !this.captainMet && this.runTime >= this.captainAt && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
@@ -576,7 +585,12 @@ export class World implements EncounterHost {
     // the lane mouth: a blockade's checkpoint is a comms card; an open lane may still have someone waiting
     const dl = Math.hypot(s.x - b.lane.x, s.z - b.lane.z);
     if (b.blockade === 'none' && dl < BLOCKADE_AT && this.command.state === 'idle' && this.phase === 'play') {
-      if (b.def.blockade) {
+      if (b.def.nemesis.finale) {
+        // the last meeting: Calloway holds the lane to the Threshold herself
+        b.blockade = 'checkpoint';
+        this.callowayMet = true;
+        this.openComms(b.def.nemesis.finale);
+      } else if (b.def.blockade) {
         b.blockade = 'checkpoint';
         this.openComms(CARD_BY_ID.checkpoint!);
       } else {
@@ -837,6 +851,7 @@ export class World implements EncounterHost {
       hostiles: this.aliens.filter((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       food: this.food, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
       notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, captain: this.sortie.notice.captain,
+      wise: this.sortie.nemesis.wise, hunch: this.sortie.nemesis.hunch,
     };
   }
 
@@ -941,7 +956,7 @@ export class World implements EncounterHost {
     if (b && out.calloway) {
       // her ship comes in; running means the whole system with her, and her field on the drive
       this.callowayShip = true;
-      this.command.summon(this.runTime, 'custody', CALLOWAY_HP, false, 'Calloway · CCV Patience');
+      this.command.summon(this.runTime, 'custody', this.sortie.nemesis.hp, false, 'Calloway · CCV Patience', this.sortie.nemesis.wing);
       if (out.calloway === 'run') { b.spoolNeed = Math.max(b.spoolNeed, SPOOL * SPOOL_RUN); b.heat = 1; b.nextPursuit = this.runTime; this.run.capitalsEvaded++; }
     }
     const cap = this.sortie.notice.captain, cdef = cap && CAPTAIN_BY_ID[cap.id];
