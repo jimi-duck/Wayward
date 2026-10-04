@@ -2,6 +2,7 @@ import { LEARN } from '../content/calloway';
 import { CARDS, FLAGS } from '../content/cards';
 import type { Tier } from '../content/factions';
 import type { SystemKind } from '../content/systems';
+import { MODULE_BY_ID } from '../content/modules';
 import { UPGRADES } from '../content/upgrades';
 import type { Levels } from './build';
 import { countedBy, effects, hasFitted, systemMarks } from './modules';
@@ -420,7 +421,7 @@ const shipsWords = (def: CardDef) => {
   return s.map((x) => `${x.n > 1 ? `${x.n} × ` : ''}${VARIANTS[x.variant]?.label ?? x.variant}`).join(' · ');
 };
 
-const upgradeName = (id: string) => UPGRADES.find((u) => u.id === id)?.name ?? id;
+const upgradeName = (id: string) => UPGRADES.find((u) => u.id === id)?.name ?? MODULE_BY_ID[id]?.name ?? id;
 const STANDING_WORDS: Record<Standing, string> = {
   custody: 'the Custody', gutter: 'the Gutter', frontier: 'Frontier Supply', guild: 'the Dust Traders', kellern: 'Kellern Mining', miners: 'the miners',
 };

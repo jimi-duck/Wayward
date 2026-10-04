@@ -1,3 +1,4 @@
+import type { ShipSystem } from './modules';
 import type { Stats } from '../sim/stats';
 
 // ── what can be fitted ────────────────────────────────────────────────────
@@ -25,6 +26,12 @@ import type { Stats } from '../sim/stats';
 //   Defence ──  Shields, armour, bulkheads, damage control
 //                             └─ specialise: Fortress · Reactive armour · Regenerative hull
 //   Synergies on the bridges between regions, once you own both halves.
+//
+// The rail is the field refit, under the ship's four systems
+// (content/modules.ts): weapons, defence and the reactor are Guns; the drive
+// and the utility rigs are Rig; deep scanners, the phase cloak and the
+// evasive pattern are Signals. Contacts has no cards: it grows from favours
+// at a port. Modules fitted in a system bring its cards round more often.
 //   Salvage: one piece of tech per faction, opened by destroying its capital
 //   ship in the run.
 //
@@ -65,6 +72,8 @@ export interface UpgradeDef {
   locked?: boolean;
   /** Salvage: needs this faction's capital ship destroyed this run. */
   tech?: TechFaction;
+  /** The ship system it belongs to, where it is not its branch's (content/modules.ts). */
+  system?: ShipSystem;
   /** The benefit, for the level about to be taken. */
   text: string | ((lv: number) => string);
   note?: string;
@@ -77,21 +86,26 @@ export interface BranchDef {
   cat: Category;
   /** What a ship built mostly from this branch is called. */
   identity: string;
+  /** The ship system its cards belong to (content/modules.ts): modules fitted there bring its cards round more often. */
+  system: ShipSystem;
 }
 
 export const BRANCHES: Record<Branch, BranchDef> = {
-  laser: { name: 'Lasers', cat: 'weapons', identity: 'Gunship' },
-  torpedo: { name: 'Torpedoes', cat: 'weapons', identity: 'Torpedo boat' },
-  mine: { name: 'Mines', cat: 'weapons', identity: 'Minelayer' },
-  plasma: { name: 'Drive plasma', cat: 'weapons', identity: 'Plasma runner' },
-  close: { name: 'Close quarters', cat: 'weapons', identity: 'Brawler' },
-  mobility: { name: 'Mobility', cat: 'ship', identity: 'Interceptor' },
-  defence: { name: 'Defence', cat: 'defence', identity: 'Bulwark' },
-  utility: { name: 'Utility', cat: 'ship', identity: 'Prospector' },
-  overcharge: { name: 'Reactor', cat: 'ship', identity: 'Core diver' },
-  synergy: { name: 'Synergy', cat: 'weapons', identity: 'Hybrid' },
-  salvage: { name: 'Salvage', cat: 'ship', identity: 'Raider' },
+  laser: { name: 'Lasers', cat: 'weapons', identity: 'Gunship', system: 'guns' },
+  torpedo: { name: 'Torpedoes', cat: 'weapons', identity: 'Torpedo boat', system: 'guns' },
+  mine: { name: 'Mines', cat: 'weapons', identity: 'Minelayer', system: 'guns' },
+  plasma: { name: 'Drive plasma', cat: 'weapons', identity: 'Plasma runner', system: 'guns' },
+  close: { name: 'Close quarters', cat: 'weapons', identity: 'Brawler', system: 'guns' },
+  mobility: { name: 'Mobility', cat: 'ship', identity: 'Interceptor', system: 'rig' },
+  defence: { name: 'Defence', cat: 'defence', identity: 'Bulwark', system: 'guns' },
+  utility: { name: 'Utility', cat: 'ship', identity: 'Prospector', system: 'rig' },
+  overcharge: { name: 'Reactor', cat: 'ship', identity: 'Core diver', system: 'guns' },
+  synergy: { name: 'Synergy', cat: 'weapons', identity: 'Hybrid', system: 'guns' },
+  salvage: { name: 'Salvage', cat: 'ship', identity: 'Raider', system: 'guns' },
 };
+
+/** The ship system an upgrade's card belongs to. */
+export const upgradeSystem = (u: UpgradeDef): ShipSystem => u.system ?? BRANCHES[u.branch].system;
 
 export const UPGRADES: UpgradeDef[] = [
   // ── lasers ────────────────────────────────────────────────────────────
@@ -371,7 +385,7 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.drift = true; s.driftBonus = 1.33; },
   },
   {
-    id: 'mo_evasion', name: 'Evasive pattern', branch: 'mobility', cat: 'ship', kind: 'spec', max: 1, group: 'mobility', needs: 4,
+    id: 'mo_evasion', name: 'Evasive pattern', branch: 'mobility', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'mobility', needs: 4,
     tags: ['mobility', 'evasion', 'overcharge'],
     text: 'A longer roll, and grazing fire mid-roll counts double and refunds it.',
     apply: (s) => { s.evasion = true; s.rollIframes += 0.2; },
@@ -467,7 +481,7 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.ocOverload = 7; s.ocRefill = true; },
   },
   {
-    id: 'oc_phase', name: 'Phase cloak', branch: 'overcharge', cat: 'ship', kind: 'spec', max: 1, group: 'overcharge', needs: 2,
+    id: 'oc_phase', name: 'Phase cloak', branch: 'overcharge', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'overcharge', needs: 2,
     tags: ['overcharge', 'evasion', 'ram'], locked: true,
     text: 'A release phases you out: nothing touches you, and you ram through anything.',
     note: 'For three seconds.',
@@ -545,7 +559,7 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.repairChance *= 1.8; s.powerTime *= 1.5; },
   },
   {
-    id: 'ut_scanner', name: 'Deep scanners', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
+    id: 'ut_scanner', name: 'Deep scanners', branch: 'utility', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'xp', 'damage'],
     text: 'Rare rock turns up twice as often, and elites carry twice the krail.',
     apply: (s) => { s.rareRate *= 2; s.eliteLoot *= 2; },

@@ -10,7 +10,7 @@ import {
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
-import { noKit } from './modules';
+import { effects, noKit } from './modules';
 import { Rng } from './rng';
 import { sensors } from './comms';
 import type { Faction } from './enemies';
@@ -68,6 +68,9 @@ export const WRECKS = 3;
 export const ADRIFT = 1;
 /** Seconds into a sortie before Calloway can call, if she was already waiting. */
 export const WAITING = 40;
+/** Days a ghost echo holds Calloway up, per mark, at every jump; the mark at which she cannot read your route. */
+export const ECHO_DELAY = 0.5;
+export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
 export const VERSION = 5;
 
@@ -365,8 +368,10 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     j.ending = null;
     return { kind: 'through', lines: ['The old lane opens. Beyond it, the Scatter.', ...lines] };
   }
-  // with every system flown she reads your route a little better
-  j.hunt.hunch = hunchOf(j.chart, j.trail);
+  // with every system flown she reads your route a little better, unless the echoes left behind make it lie
+  const echo = effects(c.levels).echo;
+  if (echo > 0) { j.hunt.delay += ECHO_DELAY * echo; lines.push('A ghost echo burns down another lane behind you'); }
+  j.hunt.hunch = echo >= ECHO_BLIND ? undefined : hunchOf(j.chart, j.trail);
   j.status = 'chart';
   return { kind: 'jumped', lines };
 }

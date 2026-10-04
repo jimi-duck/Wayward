@@ -66,6 +66,8 @@ export interface PilotOptions {
   policy?: Policy;
   /** Docked at a port (once a dock, before trading): the journey's chance to plot again. */
   onDock?: (w: World) => void;
+  /** An answer to take before the policy's, when it has one (the ship pilot uses what it built). */
+  answer?: (w: World) => string | null;
 }
 
 export interface PilotResult {
@@ -464,7 +466,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms') {
       const before = { krail: w.krail, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
-      w.answer(pickAnswer(w, o.policy ?? 'bluff'));
+      w.answer(o.answer?.(w) ?? pickAnswer(w, o.policy ?? 'bluff'));
       const last = w.run.cards[w.run.cards.length - 1]!;
       answers.push({
         card: before.card, choice: last.choice, won: last.won, krail: w.krail - before.krail, chits: w.chits - before.chits,

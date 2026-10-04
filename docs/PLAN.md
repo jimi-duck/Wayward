@@ -117,7 +117,7 @@ Make it feel like WAYWARD before anything else changes.
 | M2 The comms card | First pass done: thirty cards and six follow-ups, the read, earned choices, the checkpoint, policy pilot (see below) |
 | M3 The chart and the hunt | First pass done: a seeded region of thirteen systems, lanes with Krail and day costs, food and wear, the Net, Calloway on the trail, wrecks that cost rather than end, the journey save, the chart panel, ten new cards, a journey pilot (see below) |
 | M4 Notice and nemeses | First pass done: per-faction notice and standing, the four tiers, named captains with a memory, Calloway's file (tricks she learns, your route, offers, the last meeting at the Threshold) (see below) |
-| M5 onwards | Not started |
+| M5 The ship | First pass done: four systems, fourteen modules, their own resources and comms choices, the ghost echo, the refit rail under the systems, a ship pilot (see below) |
 | UI Look and feel | Pass 1 (the foundation) up for review; passes 2 to 7 to come (see below) |
 
 ## From the concept boards
@@ -331,21 +331,25 @@ going further. **Is it fun to be a fugitive in space?**
 - **Pilot.** One strategy per system. Report: how each gets through the
   journey, and that each does in a different way.
 - **Answers:** do different builds create different ways through?
-- **Started.** `content/modules.ts` and `sim/modules.ts`: the four systems,
-  each with three or four modules fitted in marks at a port's yard (the
-  port's seventh line), paid in the system's own resource and chits. Guns
-  grows from salvage (kills, capital wrecks), Rig from rig parts (rock cut
-  clean, ore hauled), Signals from signal kit (bluffs that come off, Office
-  and Voice wrecks), Contacts from favours (help, trade, jobs). Modules live
-  in the build's levels, so they save with it; the resources ride in the
-  carry (save version 3). What they do: Guns hits harder, carries plate and
-  reloads faster, and weighs more in the read; Rig carries more ore, patches
-  cheaper and tractors further; Signals lets heat climb slower, sharpens the
-  read and the sightings, jams like a scanner suite and spoofs with its own
-  codes; Contacts makes ports cheaper, puts a friend in the Gutter and cools
-  the pursuit at the dock. Open: new comms choices written for each system,
-  Signals making the chart lie, the refit rail moved under the four systems,
-  and the pilot report (one strategy per system).
+- **First pass done.** `content/modules.ts` and `sim/modules.ts`: four
+  systems, fourteen modules fitted in marks at a port's yard, each paid in
+  its system's resource (salvage from kills, rig parts from clean cuts and
+  ore, signal kit from bluffs and Office and Voice kills, favours from help,
+  trade and jobs) and a few chits. Modules change the ship, the hold, the
+  heat, the prices, and open eleven comms choices of their own (show your
+  guns, tow a tug, send a licence, go dark, bill the Guild...). Signals' ghost
+  echo makes the chart lie: it slows Calloway at every jump, and at the
+  second mark she cannot read your route. The refit rail sits under the
+  systems: every card belongs to one, and modules fitted there deal its
+  cards more often (Contacts has no cards; it grows only at a port).
+  Pilot (BALANCE-SHIP.md, `npm run pilot:ship`, 6 journeys a build): every
+  build gets through in 4 to 6 of 6. Guns fights most (93 kills) and fits
+  three marks; Contacts fights least (31% of the time) and takes its own
+  choices (billing the Guild, a friend at the dock) twice a journey; Signals
+  flies furthest (six systems), goes dark on Calloway and ends with the most
+  chits. Open: Signals earns too little kit for a pilot that bluffs (eight a
+  journey, so it fits less than a mark); Rig earns plenty but fits in only
+  half its journeys; the Guns and Rig choices rarely come up for the pilot.
 
 ## M6. Crew (dropped)
 

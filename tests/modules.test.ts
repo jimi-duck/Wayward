@@ -3,13 +3,15 @@ import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { CARDS } from '../src/content/cards';
 import { MODULES, MODULE_BY_ID, SHIP_SYSTEMS } from '../src/content/modules';
-import { UPGRADES } from '../src/content/upgrades';
+import { upgradeSystem, UPGRADES } from '../src/content/upgrades';
 import { HOLD_START, PATCH_COST, PRICE } from '../src/sim/breakout';
 import { computeStats } from '../src/sim/build';
 import { CARD_BY_ID as CARDS_BY_ID, choiceView, sensors, yourStrength, type Ctx } from '../src/sim/comms';
-import { newJourney, VERSION } from '../src/sim/journey';
+import { ECHO_DELAY, endSortie, newJourney, VERSION } from '../src/sim/journey';
+import { makeOffer } from '../src/sim/offers';
+import { Rng } from '../src/sim/rng';
 import {
-  CAPITAL_SALVAGE, discounted, earned, effects, fitCost, fitNeeds, hasFitted, JOB_FAVOURS, LISTENER_KIT, mainSystem, noKit, systemMarks,
+  BLUFF_KIT, CAPITAL_SALVAGE, discounted, earned, effects, fitCost, fitNeeds, hasFitted, JOB_FAVOURS, LISTENER_KIT, mainSystem, noKit, systemMarks,
 } from '../src/sim/modules';
 import { newRun } from '../src/sim/run';
 import { World } from '../src/sim/world';
@@ -55,7 +57,7 @@ describe('the ship’s systems', () => {
   it('earns each system’s resource from its own way of playing', () => {
     const r = newRun(1);
     expect(earned(r)).toEqual(noKit());
-    r.kills = 9; r.capitals = 1; r.capitalFactions = ['office'];
+    r.kills = 13; r.capitals = 1; r.capitalFactions = ['office']; r.killsByKind = { warbird: 2, scout: 11 };
     r.cut = 7; r.ore = 30;
     r.jobsDone = 1;
     const bluff = CARDS.find((c) => c.choices.some((x) => x.tone === 'bluff'))!;
@@ -65,16 +67,16 @@ describe('the ship’s systems', () => {
       { id: bluff.id, choice: bluff.choices.find((x) => x.tone === 'bluff')!.id, won: false, t: 2 },
       { id: help.id, choice: help.choices.find((x) => x.tone === 'help')!.id, won: true, t: 3 },
     ];
-    expect(earned(r)).toEqual({ guns: 2 + CAPITAL_SALVAGE, rig: 2 + 1, signals: LISTENER_KIT + 1, contacts: JOB_FAVOURS + 1 });
+    expect(earned(r)).toEqual({ guns: 2 + CAPITAL_SALVAGE, rig: 7 + 2, signals: LISTENER_KIT + 2 + BLUFF_KIT, contacts: JOB_FAVOURS + 1 });
   });
 
   it('prices each mark dearer, stops at the last, and says what is missing', () => {
-    expect(fitCost({}, 'md_racks')).toEqual({ kit: 3, chits: 25 });
-    expect(fitCost({ md_racks: 1 }, 'md_racks')).toEqual({ kit: 5, chits: 45 });
+    expect(fitCost({}, 'md_racks')).toEqual({ kit: 3, chits: 10 });
+    expect(fitCost({ md_racks: 1 }, 'md_racks')).toEqual({ kit: 5, chits: 20 });
     expect(fitCost({ md_racks: 3 }, 'md_racks')).toBeNull();
     expect(fitCost({}, 'ph_emitters')).toBeNull();
-    expect(fitNeeds({}, { ...noKit(), rig: 3 }, 25, 'md_racks')).toEqual([]);
-    expect(fitNeeds({}, { ...noKit(), guns: 9 }, 10, 'md_racks')).toEqual(['Needs 3 rig parts', 'Needs 25 chits']);
+    expect(fitNeeds({}, { ...noKit(), rig: 3 }, 10, 'md_racks')).toEqual([]);
+    expect(fitNeeds({}, { ...noKit(), guns: 9 }, 5, 'md_racks')).toEqual(['Needs 3 rig parts', 'Needs 10 chits']);
     expect(fitNeeds({ md_spoofer: 1 }, { ...noKit(), signals: 99 }, 999, 'md_spoofer')).toEqual(['Fully fitted']);
   });
 
@@ -113,17 +115,17 @@ describe('the ship’s systems', () => {
 
 describe('the yard', () => {
   it('fits a module at a port, paid in its resource and chits, and nowhere else', () => {
-    const w = docked(100);
+    const w = docked(40);
     expect(w.phase).toBe('dock');
     expect(w.fitModule('md_racks')).toBe(true);
     expect(w.levels.md_racks).toBe(1);
-    expect(w.chits).toBe(75);
+    expect(w.chits).toBe(30);
     expect(w.kit.rig).toBe(17);
     expect(w.holdMax).toBe(HOLD_START + 15);
     expect(w.fitModule('md_spoofer')).toBe(true);
     expect(w.flags.has('codes')).toBe(true);
     // out of chits
-    expect(w.fitNeeds('md_plate')).toEqual(['Needs 40 chits']);
+    expect(w.fitNeeds('md_plate')).toEqual(['Needs 15 chits']);
     expect(w.fitModule('md_plate')).toBe(false);
     w.undock();
     w.chits = 500;
@@ -162,7 +164,7 @@ describe('the yard', () => {
   it('adds what a sortie earns to what came aboard', () => {
     const j = newJourney(3);
     const w = new World(5, { mode: 'breakout', carry: { ...j.carry, kit: { guns: 1, rig: 0, signals: 0, contacts: 0 } } });
-    w.run.kills = 8;
+    w.run.kills = 12;
     expect(w.kit.guns).toBe(3);
     expect(w.result().carry.kit.guns).toBe(3);
   });
@@ -177,5 +179,69 @@ describe('the save', () => {
     expect(m?.version).toBe(VERSION);
     expect(m?.carry.kit).toEqual(noKit());
     expect(MODULE_BY_ID.md_racks).toBeDefined();
+  });
+});
+
+describe('what each system opens', () => {
+  const view = (card: string, choice: string, levels: Record<string, number>, x: Partial<Ctx> = {}) => {
+    const c = CARDS_BY_ID[card]!, ch = c.choices.find((y) => y.id === choice)!;
+    return choiceView(ch, c, ctx({ levels, ore: 20, parts: 5, ...x }), 0);
+  };
+
+  it('gives every system choices of its own on the cards, greyed out until a module is fitted', () => {
+    const opened = new Map<string, number>();
+    for (const c of CARDS) for (const ch of c.choices) {
+      for (const id of [ch.needs?.fitted ?? []].flat()) {
+        const m = MODULE_BY_ID[id];
+        if (m) opened.set(m.system, (opened.get(m.system) ?? 0) + 1);
+      }
+    }
+    for (const s of SHIP_SYSTEMS) expect(opened.get(s) ?? 0, s).toBeGreaterThanOrEqual(2);
+    for (const [card, choice, id] of [
+      ['picket_fine', 'mounts', 'md_hardpoints'], ['office_ambush', 'plate', 'md_plate'], ['office_ambush', 'jam', 'md_jammer'], ['picket_fine', 'licence', 'md_spoofer'],
+      ['claim_jumpers', 'racks', 'md_racks'], ['distress_tug', 'tow', 'md_tractor'], ['hungry_crew', 'shop', 'md_shop'],
+      ['port_scan', 'friends', 'md_dock'], ['lane_toll', 'account', 'md_ledger'], ['calloway_here', 'dark', 'md_baffles'],
+    ] as const) {
+      const shut = view(card, choice, {});
+      expect(shut.ok, `${card}.${choice}`).toBe(false);
+      expect(shut.needs.join(' '), `${card}.${choice}`).toContain(MODULE_BY_ID[id]!.name);
+      expect(view(card, choice, { [id]: 1 }).ok, `${card}.${choice}`).toBe(true);
+    }
+  });
+});
+
+describe('the ghost echo', () => {
+  /** Through the Breakout and over the first lane, with `levels` fitted. */
+  const jumped = (levels: Record<string, number>) => {
+    const j = newJourney(7);
+    const r = newRun(1);
+    r.escaped = true;
+    endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, krail: 20, food: 12, parts: 6, plates: 3, levels }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
+    return j;
+  };
+
+  it('holds Calloway up at every jump, and at the second mark hides your route from her', () => {
+    const plain = jumped({}), one = jumped({ md_ghost: 1 }), two = jumped({ md_ghost: 2 });
+    expect(one.hunt.delay - plain.hunt.delay).toBeCloseTo(ECHO_DELAY);
+    expect(two.hunt.delay - plain.hunt.delay).toBeCloseTo(2 * ECHO_DELAY);
+    expect(plain.hunt.hunch).toBeDefined();
+    expect(one.hunt.hunch).toBeDefined();
+    expect(two.hunt.hunch).toBeUndefined();
+  });
+});
+
+describe('the field refit under the four systems', () => {
+  it('puts every upgrade under a system, and deals a system’s cards more often once its modules are fitted', () => {
+    for (const u of UPGRADES) expect(SHIP_SYSTEMS).toContain(upgradeSystem(u));
+    expect(upgradeSystem(UPGRADES.find((u) => u.id === 'ut_scanner')!)).toBe('signals');
+    const share = (levels: Record<string, number>) => {
+      let rig = 0, all = 0;
+      for (let seed = 1; seed <= 400; seed++) {
+        const o = makeOffer({ levels, unlocked: new Set(), techs: new Set(), presented: new Set(UPGRADES.filter((u) => u.group).map((u) => u.group!)), refit: 3 }, new Rng(seed));
+        for (const c of o.cards) { all++; if (upgradeSystem(UPGRADES.find((u) => u.id === c.id)!) === 'rig') rig++; }
+      }
+      return rig / all;
+    };
+    expect(share({ md_racks: 3, md_shop: 2, md_tractor: 2 })).toBeGreaterThan(share({}) * 1.3);
   });
 });
