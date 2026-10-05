@@ -1259,3 +1259,6 @@ circle.ch-thren { fill: rgba(92, 195, 162, .22); stroke: #5CC3A2; stroke-width: 
 /* refit categories: weapons in amber (the hand), defence in teal (the
    ship's systems), the ship's industrial kit in hazard green */
 .card.ship { --cat: var(--green); }
+
+/* the cut, fill and jump steps are the story's; the arcade pause card goes without */
+html:not(.breakout) .pause-card #brief { display: none; }
