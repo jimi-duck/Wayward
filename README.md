@@ -139,9 +139,7 @@ trade precision for speed, e.g. `PILOT_RUNS=4 npm run pilot`.
 
 ## Deploy
 
-Every push to `main` builds and publishes to GitHub Pages
-(`.github/workflows/deploy.yml`). Pull requests run the same checks without
-deploying (`ci.yml`).
-
-One-time setup: in the GitHub repo, **Settings → Pages → Build and deployment →
-Source: GitHub Actions**.
+Cloudflare Workers Builds deploys the game as a static-assets Worker
+(`wrangler.jsonc`): every push to `main` runs `npm run build` and uploads
+`dist/`, and pull requests get a preview build. Pull requests also run types,
+tests and a build in GitHub Actions (`ci.yml`).
