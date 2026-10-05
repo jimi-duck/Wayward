@@ -46,6 +46,8 @@ export interface Archive {
   endings: EndingId[];
   files: string[];
   people: string[];
+  /** The pieces of the Severance's history found on any journey (content/story.ts), by flag. */
+  records: string[];
 }
 
 export interface Profile {
@@ -78,7 +80,7 @@ const fresh = (): Profile => ({
   cosmetic: 'engine-stock',
   zoom: 1,
   mode: 'breakout',
-  archive: { journeys: [], endings: [], files: [], people: [] },
+  archive: { journeys: [], endings: [], files: [], people: [], records: [] },
 });
 
 export function loadProfile(): Profile {
@@ -186,5 +188,6 @@ export function recordJourney(p: Profile, r: JourneyRecord): void {
   if (r.ending && !a.endings.includes(r.ending)) a.endings.push(r.ending);
   if (r.file && !a.files.includes(r.file)) a.files.push(r.file);
   for (const who of r.people) if (!a.people.includes(who)) a.people.push(who);
+  for (const id of r.records ?? []) if (!a.records.includes(id)) a.records.push(id);
   saveProfile(p);
 }

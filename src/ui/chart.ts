@@ -7,6 +7,7 @@ import { REGIONS } from '../content/regions';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
 import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
+import { act, actLine, fileCount } from '../sim/story';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
 
@@ -236,7 +237,9 @@ export class ChartPanel {
       ['Tank', `${c.krail}/${TANK_MAX}`], ['Food', `${c.food} · ${RATION}/day`], ['Parts', String(c.parts)], ['Chits', String(c.chits)], ['Hold', `${c.ore} ore`],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
+    const file = fileCount(c.flags);
     $('ch-stat').replaceChildren(
+      h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', `File ${file.found}/${file.of}`)),
       ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `Goal · reach ${goal.name} · ${left} jump${left === 1 ? '' : 's'}`)] : []),
       h('div', 'port-stock', '', ...cells.map(([k, v]) => h('span', '', '', h('span', 'k', k), h('b', '', v)))),
       h('p', 'ch-hunt', j.trail.length < 2

@@ -182,7 +182,7 @@ describe('Calloway makes offers', () => {
     plot(j, options(j)[0]!.to.id);
     const def = sortieDef(j);
     expect(def.nemesis.offer).toBe('offer_home');
-    const w = new World(5, { mode: 'breakout', sortie: { ...def, calloway: Infinity, notice: { ...def.notice, captain: null } }, carry: j.carry });
+    const w = new World(5, { mode: 'breakout', sortie: { ...def, calloway: Infinity, notice: { ...def.notice, captain: null }, story: null }, carry: j.carry });
     w.cardNext = Infinity;
     w.portCalled = true;
     w.bk!.nextPursuit = Infinity;

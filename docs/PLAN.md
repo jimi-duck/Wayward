@@ -119,7 +119,8 @@ Make it feel like WAYWARD before anything else changes.
 | M4 Notice and nemeses | First pass done: per-faction notice and standing, the four tiers, named captains with a memory, Calloway's file (tricks she learns, your route, offers, the last meeting at the Threshold) (see below) |
 | M5 The ship | First pass done: four systems, fourteen modules, their own resources and comms choices, the ghost echo, the refit rail under the systems, a ship pilot (see below) |
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
-| UI Look and feel | Pass 1 (the foundation) up for review; passes 2 to 7 to come (see below) |
+| M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
+| UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
 
 ## From the concept boards
 
