@@ -200,14 +200,13 @@ export class SummaryPanel {
   }
 }
 
-// ── the start screen: records, challenge modifiers, engine colour, Archive ─
+// ── the start screen: records, challenge modifiers, engine colour; the Archive ─
 // The Archive replaces the logbook: the file (the endings reached, and what
 // the Archive kept of it), the journeys, the people met, and the unlocks.
+// The title no longer has a button for it; logbook(true) still opens it.
 
 export class StartOptions {
   constructor(private readonly profile: Profile, private readonly onChange: () => void) {
-    $('logbook-b').addEventListener('click', (e) => { e.stopPropagation(); this.logbook(true); });
-    $('logbook-b').addEventListener('pointerdown', (e) => e.stopPropagation());
     $('logbook-x').addEventListener('click', () => this.logbook(false));
     $('logbook').addEventListener('pointerdown', (e) => e.stopPropagation());
     this.render();

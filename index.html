@@ -180,30 +180,22 @@
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
 
-    <div id="start" role="dialog" aria-labelledby="start-t">
+    <!-- The title: the lockup, the two ways to play, the one button that starts
+         the chosen one, over the key art. Options sit quietly along the foot. -->
+    <div id="start" role="dialog" aria-label="Wayward">
       <div class="start-card">
         <!-- the lockup (brand v1.1, § 9): the mark, the word, the ship's papers -->
-        <div class="lockup" role="img" aria-label="Wayward, Obedience-class ore hauler, serial OB-7731-A">
+        <div class="lockup" role="img" aria-label="Wayward, Obedience-class ore hauler">
           <svg class="mark" viewBox="0 0 40 34" aria-hidden="true"><path d="M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z"/></svg>
-          <span class="lk-t"><b class="lk-w">Wayward</b><span class="lk-d">Obedience-class ore hauler</span><span class="lk-s">Serial OB-7731-A</span></span>
-          <span class="lk-v" aria-hidden="true"><span>Survive</span><span>Trade</span><span>Extract</span><span>Return</span></span>
+          <span class="lk-t"><b class="lk-w">Wayward</b><span class="lk-d">Obedience-class ore hauler</span></span>
         </div>
-        <p id="start-t" class="tag">Stolen ship. Broken system. Still moving.</p>
-        <dl class="keys-l only-desktop">
-          <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
-          <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
-          <div><dt><kbd>1</kbd></dt><dd>Lasers</dd></div>
-          <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
-          <div><dt><kbd>3</kbd></dt><dd>Cutter</dd></div>
-          <div><dt><kbd>E</kbd></dt><dd>Overcharge</dd></div>
-          <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
-          <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
-        </dl>
-        <p class="meta only-touch">Left thumb: drag to fly · right thumb: hold to fire, hold Cut to mine · tap Core when it is full</p>
-        <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
-        <div class="launch-row"><button type="button" id="resume" hidden>Continue</button><button type="button" id="launch">Break out</button><button type="button" id="arcade" class="ghost">Arcade</button></div>
+        <div class="modes" role="radiogroup" aria-label="Game mode">
+          <button type="button" role="radio" id="mode-arcade" class="mode" aria-checked="true"><b class="mo-t">Arcade</b><span class="mo-s">Freefly • Score • Explore</span></button>
+          <button type="button" role="radio" id="mode-story" class="mode" aria-checked="false"><b class="mo-t">Story mode</b><span class="mo-s">Survive • Trade • Extract • Return</span></button>
+        </div>
+        <div class="launch-row"><button type="button" id="launch">Start arcade</button></div>
         <p class="resume-s" id="resume-s" hidden></p>
-        <p class="hint-l"><span class="only-desktop">Click or press Enter</span><span class="only-touch">Tap to launch</span></p>
+        <button type="button" id="fresh" class="ghost" hidden>New journey</button>
         <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->
         <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
       </div>
@@ -213,7 +205,6 @@
           <div id="lang" class="mods lang" aria-label="Language"></div>
           <div id="mods" class="mods" aria-label="Challenge modifiers"></div>
           <div id="paint" class="mods" aria-label="Engine colour"></div>
-          <button type="button" id="logbook-b" class="ghost">Archive</button>
         </div>
       </div>
     </div>
@@ -319,8 +310,21 @@
       <div class="pause-card panel">
         <div class="pause-t">All stop</div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
+        <!-- how to play: shown as the run starts, in either mode, and whenever you stop -->
+        <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
         <div class="pause-h only-desktop">Click or press any key to resume</div>
         <div class="pause-h only-touch">Tap to resume</div>
+        <!-- the keys, here rather than on the title: a look whenever you stop -->
+        <dl class="keys-l only-desktop">
+          <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
+          <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
+          <div><dt><kbd>1</kbd></dt><dd>Lasers</dd></div>
+          <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
+          <div><dt><kbd>3</kbd></dt><dd>Cutter</dd></div>
+          <div><dt><kbd>E</kbd></dt><dd>Overcharge</dd></div>
+          <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
+          <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
+        </dl>
         <div class="pause-build" id="pause-build"></div>
       </div>
     </div>

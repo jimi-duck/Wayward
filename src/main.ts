@@ -115,15 +115,21 @@ function boot(): void {
   // between them. It is saved between systems and at every port, so the
   // start card can carry on where the last session left off.
   let journey: Journey | null = loadJourney();
+  // The title offers two ways to play, Arcade picked whenever the game opens;
+  // Story mode carries on a saved journey, with a fresh one a click below.
+  let pick: 'arcade' | 'breakout' = 'arcade';
   const showResume = () => {
-    const j = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
-    el('resume').hidden = !j;
+    const j = pick === 'breakout' && journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
+    el('mode-arcade').setAttribute('aria-checked', String(pick === 'arcade'));
+    el('mode-story').setAttribute('aria-checked', String(pick === 'breakout'));
+    el('fresh').hidden = !j;
     el('resume-s').hidden = !j;
-    el('launch').textContent = j ? t('New journey') : t('Break out');
+    el('launch').textContent = pick === 'arcade' ? t('Start arcade') : j ? t('Continue story') : t('Start story');
     const day = t('Day {n}', { n: Math.floor(j?.day ?? 0) + 1 });
     if (j && pending(j)) el('resume-s').textContent = `${day} · ${t('through the Threshold · the file is still aboard')}`;
     else if (j) el('resume-s').textContent = [day, here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
   };
+  const choose = (mode: 'arcade' | 'breakout') => { pick = mode; showResume(); };
   showResume();
   /** Fly the journey's current system. */
   const startSortie = () => {
@@ -310,6 +316,8 @@ function boot(): void {
     if (mode === 'arcade') {
       if (world.mode !== 'arcade') { world.restart({ modifiers: profile.modifiers, mode, carry: null }); showMode(); }
       hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
+      // how to play first: the pause card, until any key or tap
+      setPaused(true);
       return;
     }
     if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
@@ -320,13 +328,14 @@ function boot(): void {
     } else if (pending(journey)) return threshold(journey, [t('Journey resumed · the Threshold is behind you')]);
     else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cool, plot the next jump')]);
     startSortie();
+    setPaused(true);
   };
 
   const input = new Input(
     {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'), cut: el('cut'),
     },
-    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch(profile.mode, profile.mode === 'breakout')),
+    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
   );
 
   const loop = new FixedStepLoop({
@@ -397,23 +406,28 @@ function boot(): void {
   window.visualViewport?.addEventListener('resize', bars);
   el('swipe-x').addEventListener('click', () => { kept = true; bars(); });
 
-  el('launch').addEventListener('click', (e) => { e.stopPropagation(); launch('breakout'); });
-  el('launch').addEventListener('pointerdown', (e) => e.stopPropagation());
-  el('resume').addEventListener('click', (e) => { e.stopPropagation(); launch('breakout', true); });
-  el('resume').addEventListener('pointerdown', (e) => e.stopPropagation());
-  el('arcade').addEventListener('click', (e) => { e.stopPropagation(); launch('arcade'); });
-  el('arcade').addEventListener('pointerdown', (e) => e.stopPropagation());
+  const go = () => launch(pick, pick === 'breakout');
+  const press = (id: string, f: () => void) => {
+    el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
+    el(id).addEventListener('pointerdown', (e) => e.stopPropagation());
+  };
+  press('launch', go);
+  press('fresh', () => launch('breakout'));
+  press('mode-arcade', () => choose('arcade'));
+  press('mode-story', () => choose('breakout'));
   el('start').addEventListener('pointerdown', (e) => {
-    if (e.target === el('launch') || startOpts.logbookOpen) return;
+    if (startOpts.logbookOpen) return;
     e.preventDefault();
-    launch(profile.mode, profile.mode === 'breakout');
+    go();
   });
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
     if (!started) {
       if (startOpts.logbookOpen) { if (e.code === 'Escape') startOpts.logbook(false); return; }
-      if (e.code === 'Enter' || e.code === 'Space') launch(profile.mode, profile.mode === 'breakout');
+      if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { choose(pick === 'arcade' ? 'breakout' : 'arcade'); el(pick === 'arcade' ? 'mode-arcade' : 'mode-story').focus(); return; }
+      // Enter on a focused button presses that button; anywhere else it starts the picked mode
+      if ((e.code === 'Enter' || e.code === 'Space') && !(e.target instanceof HTMLButtonElement)) go();
       return;
     }
     if (panelOpen()) return;
