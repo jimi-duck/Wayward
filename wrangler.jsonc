@@ -1,0 +1,12 @@
+// Cloudflare Workers Builds deploys the game as a static-assets-only Worker.
+// With this file present, `wrangler deploy` uploads dist/ as-is instead of
+// trying to auto-configure the project (which fails on our Vite config).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "game",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
