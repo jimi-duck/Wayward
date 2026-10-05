@@ -6,6 +6,8 @@ import type { Faction } from './enemies';
 import type { Journey } from './journey';
 import { hasFitted, systemMarks, type Kit } from './modules';
 import { atLeast, tier } from './notice';
+import { fileCount, fragmentsFound } from './story';
+import { STORY_PEOPLE } from '../content/story';
 
 // ── the Choice ────────────────────────────────────────────────────────────
 // The third act. Through the Threshold, the journey is over (status 'over',
@@ -26,6 +28,8 @@ export interface Ledger {
   notice: (f: Faction) => boolean;
   beaten: number;
   chits: number;
+  /** Pieces of the Severance's history in the file. */
+  fragments: number;
   wrecks: number;
   hardcore: boolean;
 }
@@ -42,6 +46,7 @@ export function ledger(j: Journey): Ledger {
     notice: (f) => atLeast(tier(j.notice, f), 'hunters'),
     beaten: j.hunt.beaten,
     chits: j.carry.chits,
+    fragments: fileCount(j.carry.flags).found,
     wrecks: j.wrecks,
     hardcore: j.hardcore,
   };
@@ -59,6 +64,7 @@ export function meets(l: Ledger, n: Need): boolean {
   if (n.calm && n.calm.some((f) => l.notice(f))) return false;
   if (n.beaten !== undefined && l.beaten < n.beaten) return false;
   if (n.chits !== undefined && l.chits < n.chits) return false;
+  if (n.fragments !== undefined && l.fragments < n.fragments) return false;
   if (n.wrecksMin !== undefined && l.wrecks < n.wrecksMin) return false;
   if (n.wrecksMax !== undefined && l.wrecks > n.wrecksMax) return false;
   if (n.hardcore !== undefined && l.hardcore !== n.hardcore) return false;
@@ -107,6 +113,8 @@ export interface JourneyRecord {
   people: string[];
   /** The file, as the Archive keeps it, if an ending was reached. */
   file: string | null;
+  /** The pieces of the Severance's history found (content/story.ts), by flag. */
+  records: string[];
 }
 
 export function journeyRecord(j: Journey): JourneyRecord {
@@ -122,9 +130,11 @@ export function journeyRecord(j: Journey): JourneyRecord {
   if (f.has('owes_runner')) people.push('Tallow, a fuel runner');
   if (f.has('passengers')) people.push('The Okafor family');
   if (f.has('pod')) people.push('An Ares Drive survivor');
+  for (const p of STORY_PEOPLE) if (p.flags.some((x) => f.has(x))) people.push(p.name);
   const ending = j.ending ?? null;
   return {
     seed: j.seed, end: j.end ?? 'wrecked', ending, days: Math.round(j.day), jumps: j.legs.filter((l) => l.ended === 'jumped').length,
     wrecks: j.wrecks, score: j.score, hardcore: j.hardcore, people, file: ending ? ENDING_BY_ID[ending].file : null,
+    records: fragmentsFound(f),
   };
 }

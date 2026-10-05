@@ -19,6 +19,11 @@ const STANDING_SHORT: Record<Standing, string> = {
 const FLAG_SHORT: Record<string, string> = {
   codes: 'Forged codes', freqs: 'Office codes', news: 'Lane news', fee_known: 'Intel', forger_known: 'Intel', gutter_friend: 'Gutter friend',
 };
+/** The story's flags (content/story.ts): what a beat's answer puts in your hands, named first. */
+const STORY_SHORT: Record<string, string> = {
+  frag_order: 'File +1', frag_ledger: 'File +1', frag_manifests: 'File +1', frag_keys: 'File +1',
+  pact_holdfast: 'Ally', pact_drift: 'Ally', broker: 'Buyer', lane_keys: 'Lane keys', copy_warden: 'Copy out', voice_read: 'Copy out',
+};
 const WHAT: Array<[keyof Cost, string]> = [['krail', 'Krail'], ['chits', 'chits'], ['ore', 'ore'], ['parts', 'parts'], ['food', 'food']];
 
 const held = (x: Ctx, k: keyof Cost) => ({ chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts, food: x.food })[k];
@@ -33,6 +38,8 @@ function delta(a: Amount | undefined, have: number, fee: number): number {
 /** What an outcome brings, most telling first. `paid`: what the choice's cost took (a sale is paid per ore taken). */
 export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyof Cost, number>> = {}): string[] {
   const out: string[] = [];
+  // the story first: a piece of the file, an ally, a buyer
+  for (const f of [o.flag ?? []].flat()) if (STORY_SHORT[f] && !out.includes(STORY_SHORT[f]!)) out.push(STORY_SHORT[f]!);
   // where it leaves you: the lane mouth, Calloway, a named captain, a fight
   if (o.blockade) out.push(o.blockade === 'pass' ? 'Through the lane' : o.blockade === 'run' ? 'Run the blockade' : 'Fight');
   if (o.calloway) out.push(o.calloway === 'fight' ? 'Calloway fights' : 'Calloway chases');

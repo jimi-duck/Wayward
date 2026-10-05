@@ -7,6 +7,7 @@ import { REGIONS } from '../content/regions';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
 import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
+import { act, actLine, fileCount } from '../sim/story';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
@@ -237,7 +238,9 @@ export class ChartPanel {
       [t('Tank'), `${c.krail}/${TANK_MAX}`], [t('Food'), `${c.food} · ${t('{n}/day', { n: RATION })}`], [t('Parts'), String(c.parts)], [t('Chits'), String(c.chits)], [t('Hold'), t('{n} ore', { n: c.ore })],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
+    const file = fileCount(c.flags);
     $('ch-stat').replaceChildren(
+      h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', t('File {n}/{of}', { n: file.found, of: file.of }))),
       ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `${t('Goal')} · ${t('reach {name}', { name: goal.name })} · ${plural(left, '{n} jump', '{n} jumps')}`)] : []),
       h('div', 'port-stock', '', ...cells.map(([k, v]) => h('span', '', '', h('span', 'k', k), h('b', '', v)))),
       h('p', 'ch-hunt', j.trail.length < 2

@@ -40,8 +40,8 @@ export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refus
 export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' | 'miners';
 /** Who is on the channel, for the colour of the card. */
 export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
-/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, with Calloway, or as her offer (from her file). */
-export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer';
+/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, with Calloway, as her offer (from her file), or as a story beat (sim/story.ts). */
+export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer' | 'story';
 /** Where the ship is: open space, the port's approach, the lane mouth. */
 export type Place = 'open' | 'port' | 'lane';
 
@@ -588,7 +588,7 @@ export function resolve(o: Open, id: string, x: Ctx, rng: Rng): { choice: Choice
 }
 
 /** The next chance card: one the run has not seen, whose condition holds, by weight. */
-export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: Exclude<Trigger, 'follow' | 'offer'> = 'chance'): CardDef | null {
+export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: Exclude<Trigger, 'follow' | 'offer' | 'story'> = 'chance'): CardDef | null {
   const pool = CARDS.filter((c) => (c.trigger ?? 'chance') === trigger && !seen.has(c.id) && condOk(c.when, x));
   if (!pool.length) return null;
   const w = (c: CardDef) => (c.weight ?? 1) * (c.boost && condOk(c.boost.if, x) ? c.boost.mult : 1);
