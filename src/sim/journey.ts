@@ -17,6 +17,8 @@ import { Rng } from './rng';
 import { sensors } from './comms';
 import type { Faction } from './enemies';
 import type { EndingId } from '../content/endings';
+import { ACTS, CHOICE_REGION } from '../content/story';
+import { actLine, dueBeat } from './story';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -183,6 +185,7 @@ export function sortieDef(j: Journey): SortieDef {
     blockade: net, netted: net, calloway: finale ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
     place: pd ? { name: pd.name, text: pd.text, plays: pd.plays } : null,
     nemesis: nemesis(j.calloway, j.hunt, { finale, offer }),
+    story: dueBeat(j),
   };
 }
 
@@ -391,6 +394,9 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (place && there.kind !== 'edge') lines.push(`${PLACES[place.id].name} here · ${PLACES[place.id].blurb}`);
   // through a gate: a new region
   if (there.kind === 'gate') { const R = REGIONS[viewOf(j.chart, to)]; if (R) { lines.unshift(`${R.name} · ${R.blurb}`); note(j, `Through ${there.name} into ${R.name}`); } }
+  // a new act: out of Cerro, the Run; into the Hollows, the Choice
+  const turn = j.trail.length === 2 ? ACTS[1] : there.kind === 'gate' && viewOf(j.chart, to) === CHOICE_REGION ? ACTS[2] : null;
+  if (turn) { lines.unshift(actLine(turn)); note(j, actLine(turn)); }
   const fleet = fleetAt(j.chart, to);
   if (fleet) lines.push(`A Drift fleet is here · ${fleet.name} trades food and news`);
   if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push('Thren here · they come for Krail');

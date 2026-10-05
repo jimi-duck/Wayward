@@ -46,6 +46,8 @@ export interface Need {
   beaten?: number;
   /** Chits aboard, at least. */
   chits?: number;
+  /** Pieces of the Severance's history in the file (content/story.ts), at least. */
+  fragments?: number;
   /** Wrecks survived, at least / at most. */
   wrecksMin?: number;
   wrecksMax?: number;
@@ -68,12 +70,18 @@ export interface EndingDef {
 export const ENDINGS: EndingDef[] = [
   {
     id: 'broadcast', name: 'Broadcast', pitch: 'Send the file to the core worlds and hope the truth is enough.',
-    needs: 'A voice loud enough: Signals built up (2 marks) or the long-range array, signal gear aboard (5), or the Office’s frequencies and Calloway listening.',
-    ways: [{ marks: { signals: 2 } }, { module: ['md_array'] }, { kit: { signals: 5 } }, { allFlags: ['freqs', 'calloway_told'] }, { flags: ['freqs'], marks: { signals: 1 } }],
+    needs: 'A voice loud enough: Signals built up (2 marks) or the long-range array, signal gear aboard (5), the Office’s frequencies and Calloway listening, the whole file (all four pieces), or the Voice to carry it.',
+    ways: [
+      { marks: { signals: 2 } }, { module: ['md_array'] }, { kit: { signals: 5 } }, { allFlags: ['freqs', 'calloway_told'] }, { flags: ['freqs'], marks: { signals: 1 } },
+      { fragments: 4 }, { flags: ['voice_read'] }, { flags: ['copy_warden'], marks: { signals: 1 } },
+    ],
     file: 'SEVERANCE · the broadcast copy',
     epilogue: [
       { text: 'The Wayward’s array points back down the old lane, and the file goes out on every band the Continuance ever used.' },
       { text: 'For a day nothing happens. Then the core worlds start asking where seventy years of Krail went.' },
+      { if: { fragments: 4 }, text: 'It goes out whole: the order, the ledger, the manifests and the keys. Nobody can call it a forgery.' },
+      { if: { flags: ['copy_warden'] }, text: 'Ilse Marrow reads the order aloud on the Narrows relay, where she first heard it.' },
+      { if: { flags: ['voice_read'] }, text: 'The Voice carries it into every terminal that still listens.' },
       { if: { flags: ['calloway_told'] }, text: 'Idris Calloway resigns her commission on an open channel. She reads the file aloud first.' },
       { if: { calm: ['office'] }, text: 'The Office of Peace calls it a forgery, then stops calling it anything.' },
       { text: 'The lanes stay dark. But now everyone knows who turned them off.' },
@@ -81,11 +89,13 @@ export const ENDINGS: EndingDef[] = [
   },
   {
     id: 'unite', name: 'Unite', pitch: 'Bring the Holdfasts, the Drifts and the rest together into something that can resist.',
-    needs: 'People who will stand with you: friends (standing 2) with two of the miners, Frontier, the Guild and the Gutter, or one and a Contacts network (2 marks).',
-    ways: [{ friends: 2 }, { friends: 1, marks: { contacts: 2 } }],
+    needs: 'People who will stand with you: friends (standing 2) with two of the miners, Frontier, the Guild and the Gutter, or one and a Contacts network (2 marks) or an ally; or Kessel Hold and the Long Walk.',
+    ways: [{ friends: 2 }, { friends: 1, marks: { contacts: 2 } }, { allFlags: ['pact_holdfast', 'pact_drift'] }, { friends: 1, flags: ['pact_holdfast', 'pact_drift'] }],
     file: 'SEVERANCE · the copy read at the Threshold moot',
     epilogue: [
       { text: 'Word goes out from the Threshold, and for once the Scatter comes when called.' },
+      { if: { flags: ['pact_holdfast'] }, text: 'Kessel Hold opens its yards first, as Speaker Oduya promised.' },
+      { if: { flags: ['pact_drift'] }, text: 'The Long Walk brings the Drift, and reads the names of the ships they lost.' },
       { if: { standing: { miners: 2 } }, text: 'The miners bring their cutters. Kellern’s yards go quiet for the first time in seventy years.' },
       { if: { standing: { gutter: 2 } }, text: 'The Gutter sends ships, and an invoice. Both arrive.' },
       { if: { standing: { guild: 2 } }, text: 'The Guild keeps the books. Nobody starves that winter.' },
@@ -95,13 +105,14 @@ export const ENDINGS: EndingDef[] = [
   },
   {
     id: 'sell', name: 'Sell', pitch: 'To whoever offers most. Become rich enough to disappear.',
-    needs: 'A buyer: standing 2 with the Guild or the Gutter, a friend in the Gutter, or names in the Gutter fitted.',
-    ways: [{ standing: { guild: 2 } }, { standing: { gutter: 2 } }, { flags: ['gutter_friend'] }, { module: ['md_names'] }],
+    needs: 'A buyer: standing 2 with the Guild or the Gutter, a friend in the Gutter, names in the Gutter fitted, or Vell’s advance taken.',
+    ways: [{ standing: { guild: 2 } }, { standing: { gutter: 2 } }, { flags: ['gutter_friend', 'broker'] }, { module: ['md_names'] }],
     file: 'SEVERANCE · a receipt, and nothing else',
     epilogue: [
       { text: 'The auction takes four hours. The file goes for more Krail than Kellern Mining cut in a decade.' },
       { if: { standing: { gutter: 2 } }, text: 'The Gutter win it. Within a month there are new lanes on their charts, and tolls on all of them.' },
       { if: { standing: { guild: 2 } }, text: 'The Guild win it, and sit on it. Leverage keeps better than truth.' },
+      { if: { flags: ['broker'] }, text: 'Vell pays what she said she would, to the chit. That is the frightening part.' },
       { if: { flags: ['owes_runner'] }, text: 'Tallow takes the favour you owed out of the money. It is a large favour.' },
       { text: 'The Wayward gets new plates, a new name and a new registry. Nobody asks where you went.' },
     ],
@@ -121,10 +132,11 @@ export const ENDINGS: EndingDef[] = [
   },
   {
     id: 'seal', name: 'Seal', pitch: 'Destroy the lanes again. The Scatter stays free; the core stays in the dark.',
-    needs: 'The means to break a lane: Guns or the Rig built up (3 marks), salvage (25) or rig parts (12) aboard for charges, or Calloway beaten and a mark of Guns.',
-    ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { kit: { guns: 25 } }, { kit: { rig: 12 } }, { beaten: 1, marks: { guns: 1 } }],
+    needs: 'The means to break a lane: Guns or the Rig built up (3 marks), salvage (25) or rig parts (12) aboard for charges, Calloway beaten and a mark of Guns, or the Voice’s keys.',
+    ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { kit: { guns: 25 } }, { kit: { rig: 12 } }, { beaten: 1, marks: { guns: 1 } }, { flags: ['lane_keys'] }],
     file: 'SEVERANCE · burned; this is what was left',
     epilogue: [
+      { if: { flags: ['lane_keys'] }, text: 'The Voice turns the keys it kept for seventy years. It does not say why.' },
       { text: 'The Threshold lane takes all the charges in the hold and most of the Wayward’s paint.' },
       { text: 'When the light fades the lane is gone, and the file with it. Nobody will come through from the core again.' },
       { if: { kit: { rig: 12 } }, text: 'The charges were cut from Kellern ore. It seemed fitting.' },
@@ -142,6 +154,7 @@ export const ENDINGS: EndingDef[] = [
       { if: { wrecksMin: 2 }, text: 'She has been wrecked twice and patched three times. She holds.' },
       { if: { flags: ['pod'] }, text: 'You left the Ares Drive survivor at the last port. They will tell the story their own way.' },
       { if: { hardcore: true }, text: 'One life, one ship, all the way through.' },
+      { if: { fragments: 1 }, text: 'You keep what you pieced together of the Severance. Someone should remember how it happened.' },
       { text: 'Someone will find the file, someday. It will be their choice then.' },
     ],
   },

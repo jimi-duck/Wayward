@@ -1,5 +1,6 @@
 import type { CardDef } from '../sim/comms';
 import { CALLOWAY_FACE, OFFERS } from './calloway';
+import { STORY_CARDS } from './story';
 
 // ── comms cards ───────────────────────────────────────────────────────────
 // Everyone who opens a channel to the Wayward in the home system. A card is
@@ -934,4 +935,7 @@ export const CARDS: CardDef[] = [
 
   // Calloway's offers (content/calloway.ts); her last meeting is built from her file (sim/calloway.ts finaleCard)
   ...OFFERS,
+
+  // the story beats, one a sortie through the Run (content/story.ts)
+  ...STORY_CARDS,
 ];

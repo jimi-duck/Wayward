@@ -119,7 +119,8 @@ Make it feel like WAYWARD before anything else changes.
 | M4 Notice and nemeses | First pass done: per-faction notice and standing, the four tiers, named captains with a memory, Calloway's file (tricks she learns, your route, offers, the last meeting at the Threshold) (see below) |
 | M5 The ship | First pass done: four systems, fourteen modules, their own resources and comms choices, the ghost echo, the refit rail under the systems, a ship pilot (see below) |
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
-| UI Look and feel | Pass 1 (the foundation) up for review; passes 2 to 7 to come (see below) |
+| M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
+| UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
 
 ## From the concept boards
 
@@ -437,6 +438,32 @@ Archive button) keeps every journey, the endings reached, their files and
 the people met, with the unlocks below. `npm run pilot:endings` writes
 BALANCE-ENDINGS.md: on 24 journeys every ending opened on some (Seal on
 18, Broadcast on 6); the gates are first guesses.
+
+Second pass (the acts and the Run): `content/story.ts` and `sim/story.ts`.
+The journey has three acts: the Breakout until the first jump, the Run
+through the Reach and the Marches, the Choice from the Hollows on. The chart
+names the act and counts the file ("Act II · The Run · File 1/4"), and the
+jump that starts an act says so. Six story beats, one a sortie, each a comms
+card in its region (a missed one comes later): Ilse Marrow, a Lane Warden
+who heard the shutdown order; Ansel Brook with Kellern's real ledger; the
+moot at Kessel Hold; Mother Saffi of the Long Walk with the lost ships'
+manifests; Vell, a Gutter broker; and the Voice, which kept the lane keys.
+Their answers add the four pieces of the Severance's history (the order,
+the ledger, the manifests, the keys), allies (Kessel Hold, the Long Walk),
+a buyer and the keys, and each costs something (Calloway gains, heat, ore
+or chits). They open endings: the whole file or the Voice for Broadcast,
+both allies for Unite, Vell for Sell, the keys for Seal, with epilogue lines
+of their own. The choices show what they give as chips (File +1, Ally,
+Buyer, Lane keys). The Archive keeps the pieces found across journeys, and
+the people. Pilots: every beat comes up on the endings pilot's journeys; a
+pilot that says yes to every beat opens most endings (Broadcast 14 of 18,
+Unite 13, Sell 14, Trade 14, Seal 18), one that refuses them all opens only
+Seal and Vanish. On main the gates were already loose (Broadcast 17 of 22
+before the beats) since M7's longer journey brings more kit. The journey
+pilot gets 45 of 48 through (3 captured, 2 of them a pilot that refuses
+every beat) against 48 of 48 on main. Open: tighten the older ending gates
+(salvage alone opens Seal for everyone), keep the beats' text short for the
+German pass, and playtest whether the beats read without the text.
 
 ## The long tail
 

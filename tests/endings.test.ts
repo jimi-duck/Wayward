@@ -122,6 +122,6 @@ describe('the Archive', () => {
 
   it('gives a profile from before the Archive an empty one', () => {
     mem.set('asteroid-blaster.profile.v1', JSON.stringify({ version: 1, earned: [] }));
-    expect(loadProfile().archive).toEqual({ journeys: [], endings: [], files: [], people: [] });
+    expect(loadProfile().archive).toEqual({ journeys: [], endings: [], files: [], people: [], records: [] });
   });
 });

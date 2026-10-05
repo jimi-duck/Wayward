@@ -8,6 +8,7 @@ import {
 import { Command, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import { OFFER_AT } from '../content/calloway';
+import { STORY_AT } from '../content/story';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_KRAIL, CAPITAL_PARTS, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
@@ -222,6 +223,8 @@ export class World implements EncounterHost {
   private callowayShip = false;
   /** Her offer (sim/calloway.ts): made this sortie. */
   offerMade = false;
+  /** The story beat (sim/story.ts): played this sortie. */
+  storyMade = false;
   /** Jumps she is behind, for the cards (Infinity: not on the trail yet). */
   behind = Infinity;
   huntDelay = 0;
@@ -277,7 +280,7 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.seamT = 0;
-    this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.huntDelay = 0; this.stall = 0;
+    this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.kitIn = noKit(); this.kitSpent = noKit();
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
@@ -574,6 +577,14 @@ export class World implements EncounterHost {
       this.callowayMet = true;
       const def = CARD_BY_ID.calloway_here;
       if (def) return this.openComms(def);
+    }
+
+    // the story beat: once, a little after arrival, if the journey has one due here
+    const beat = b.def.story;
+    if (beat && !this.storyMade && this.runTime >= STORY_AT && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
+      this.storyMade = true;
+      const def = CARD_BY_ID[beat];
+      if (def && !this.heard.has(def.id) && !this.cardsSeen.has(def.id)) return this.openComms(def);
     }
 
     // her offer: once a sortie at most, when she has one to make (and is not here in person)

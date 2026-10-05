@@ -153,6 +153,8 @@ export interface SortieDef {
   nemesis: Nemesis;
   /** The place in this system still to be dealt with (content/phenomena.ts): the event it plays, a little after arrival. */
   place?: { name: string; text: string; plays: EncounterId } | null;
+  /** The story beat due here (content/story.ts): its card calls a little after arrival. */
+  story?: string | null;
 }
 
 export const HOME: SortieDef = {
