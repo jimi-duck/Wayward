@@ -376,7 +376,7 @@ export class Sector {
     this.enemies.eye.copy(this.rig.camera.position);
     this.enemies.update(world.aliens, world.command.boss, world.shots, world.webs, alpha, dt);
     this.pickups.update(world.pickups, alpha, dt);
-    this.arsenal.update(world.sys, dt);
+    this.arsenal.update(world.sys, dt, this.rig.camera.position);
     this.hazards.update(world.tele, world.strikes, world.encounter, dt);
     this.breakout.update(world, s, this.fx, dt);
     if (dt > 0) this.ambient(world, s.heading);

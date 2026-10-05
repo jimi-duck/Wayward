@@ -6,6 +6,10 @@
 // pilot, they give a top speed of about 450 px/s. The original's other two
 // hulls (two heavier classes) were dropped in the gritty pass: the
 // game has one ship.
+//
+// Calmed in the handling pass: a softer engine and a little more drag (so
+// it builds speed over a longer beat and tops out about an eighth slower),
+// and a slower helm, so the hull feels heavy rather than twitchy.
 
 export interface Hull {
   name: string;
@@ -28,4 +32,4 @@ export interface Hull {
   drift?: boolean;
 }
 
-export const HULL: Hull = { name: 'Obedience class', role: 'Ore hauler', thrust: 1.965, rot: 1.10, drag: 0.961, grip: 0.05, plates: 3 };
+export const HULL: Hull = { name: 'Obedience class', role: 'Ore hauler', thrust: 1.48, rot: 0.92, drag: 0.966, grip: 0.05, plates: 3 };

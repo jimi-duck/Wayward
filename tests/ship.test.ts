@@ -21,9 +21,9 @@ const speed = (s: ShipState) => Math.hypot(s.vx, s.vz);
 const pxPerSecond = (unitsPerSecond: number) => unitsPerSecond / PX;
 
 describe('flight model, ported from the original', () => {
-  it('reaches the original top speed: about 450 px/s', () => {
+  it('reaches its top speed: about 390 px/s, calmer than the original 450', () => {
     const s = fly(newShip(), HULL, ctl({ thrust: 1 }), 10);
-    expect(pxPerSecond(speed(s))).toBeCloseTo(450, -1);
+    expect(pxPerSecond(speed(s))).toBeCloseTo(390, -1);
     expect(speed(s)).toBeCloseTo(topSpeed(HULL), 3);
   });
 
@@ -40,7 +40,7 @@ describe('flight model, ported from the original', () => {
   });
 
   it('turns at the original rate once the helm has eased in', () => {
-    const s = fly(newShip(), HULL, ctl({ turn: 1 }), 1);
+    const s = fly(newShip(), HULL, ctl({ turn: 1 }), 2);
     expect(s.yawRate).toBeCloseTo(-turnPerStep(HULL) / STEP, 4);
   });
 
