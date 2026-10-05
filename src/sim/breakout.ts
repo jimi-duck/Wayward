@@ -114,6 +114,8 @@ export const pursuitElite = (heat: number) => clamp((heat - 0.7) * 0.6, 0, 0.2);
 export interface SortieDef {
   /** The chart's id for the system, its name and kind. */
   system: string;
+  /** Its region (content/regions.ts), for the sky; the Reach unless given. */
+  region?: number;
   name: string;
   kind: SystemKind;
   /** Where the plotted lane goes, and the Krail it takes to jump. */

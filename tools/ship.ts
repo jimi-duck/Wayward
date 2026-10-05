@@ -58,7 +58,7 @@ const frame = (now: number) => {
   camera.position.set(x * c - z * sn, y, x * sn + z * c);
   camera.lookAt(lx, ly, lz);
   ship.update(s, dt, true);
-  env.update(camera, 0, 0, 0, 0);
+  env.update(camera, 0, 0, 0, 0, dt);
   if (!post.render(dt)) renderer.render(scene, camera);
   requestAnimationFrame(frame);
 };

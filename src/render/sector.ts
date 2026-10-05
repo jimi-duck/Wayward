@@ -16,6 +16,7 @@ import type { QualityTier } from './quality';
 import { RockView } from './rocks';
 import { EnemyView, NEON, wreck } from './enemies';
 import { ShipView } from './ships';
+import { hashSeed, skyFor } from './sky';
 import { glowTexture } from './textures';
 import { WeaponView } from './weapons';
 
@@ -63,6 +64,8 @@ export class Sector {
   private time = 0;
   private nebula = 0;
   private flash = 0;
+  /** The run or system the sky was painted for. */
+  private skyFor: unknown = null;
   reduceMotion = false;
 
   constructor(private readonly renderer: WebGLRenderer, private tier: QualityTier) {
@@ -352,6 +355,7 @@ export class Sector {
   /** Place everything for this frame and draw it. `alpha` is how far past the previous step we are. */
   frame(world: World, alpha: number, dt: number): void {
     this.time += dt;
+    this.paintSky(world);
     const a = world.prev, b = world.ship, s = this.lerped;
     Object.assign(s, b);
     s.x = lerp(a.x, b.x, alpha);
@@ -381,7 +385,7 @@ export class Sector {
     this.breakout.update(world, s, this.fx, dt);
     if (dt > 0) this.ambient(world, s.heading);
     this.fx.update(dt);
-    this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz);
+    this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz, dt);
     // the weather: a nebula thickens the fog; an ion storm flickers
     const e = world.encounter;
     const fog = e && !e.done && e.id === 'nebula' ? Math.min(1, e.t / 3, (e.dur - e.t) / 3) : 0;
@@ -392,6 +396,18 @@ export class Sector {
     this.env.weather(this.nebula, this.reduceMotion ? 0 : this.flash);
 
     if (!this.post?.render(dt)) this.renderer.render(this.scene, this.rig.camera);
+  }
+
+  /**
+   * The Breakout's sky belongs to the system (the same one each visit, in its
+   * region's colours); the arcade's is new every run.
+   */
+  private paintSky(world: World): void {
+    const breakout = world.mode === 'breakout';
+    const key = breakout ? `${world.sortie.system}:${world.sortie.region ?? 0}` : world.run;
+    if (key === this.skyFor) return;
+    this.skyFor = key;
+    this.env.setSky(breakout ? skyFor(hashSeed(world.sortie.system), world.sortie.region ?? 0) : skyFor(Math.floor(Math.random() * 1e9), null));
   }
 
   /** Particles that come from state rather than events: exhaust, burning hulls, the anomaly's pull. */
