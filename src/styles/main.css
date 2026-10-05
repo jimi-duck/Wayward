@@ -872,7 +872,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
    little dark along the top and foot. Options sit quietly along the foot. */
 #start { position: absolute; inset: 0; z-index: 4; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: 12px;
   padding: max(clamp(24px, 6vh, 72px), calc(var(--safe-t) + 14px)) 24px max(14px, calc(var(--safe-b) + 10px));
-  --pool-x: 40%; --pool-y: 20%;
+  --pool-x: 50%; --pool-y: 20%;
   background:
     radial-gradient(ellipse 42% 38% at var(--pool-x) var(--pool-y), rgba(5, 8, 12, .62), rgba(5, 8, 12, .3) 55%, rgba(5, 8, 12, 0)),
     linear-gradient(180deg, rgba(5, 8, 12, .5) 0%, rgba(5, 8, 12, 0) 34%, rgba(5, 8, 12, 0) 78%, rgba(5, 8, 12, .62) 100%),
@@ -883,8 +883,6 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .prelaunch #hud, .prelaunch #touch { visibility: hidden; }
 .panel-open #hud, .panel-open #touch { visibility: hidden; }
 .start-card { display: grid; justify-items: center; gap: clamp(18px, 3.2vh, 30px); text-align: center; }
-/* on a screen wide enough, the menu sits in the dark left of the station */
-@media (min-aspect-ratio: 4/3) { .start-card { margin-right: clamp(0px, 19vw, 420px); } #start { --pool-x: calc(50% - clamp(0px, 9.5vw, 210px)); } }
 /* The lockup: the amber mark, the word in heavy condensed industrial white,
    the ship's papers under it. */
 .lockup { display: grid; grid-template-columns: auto auto; align-items: center; gap: 0 clamp(12px, 1.4vw, 18px); text-align: left;
