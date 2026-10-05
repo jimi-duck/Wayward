@@ -74,6 +74,8 @@ export interface UpgradeDef {
   tech?: TechFaction;
   /** The ship system it belongs to, where it is not its branch's (content/modules.ts). */
   system?: ShipSystem;
+  /** Only dealt in the arcade: what it changes (self-repair, encounters) has no part in the Story mode. */
+  arcade?: boolean;
   /** The benefit, for the level about to be taken. */
   text: string | ((lv: number) => string);
   note?: string;
@@ -422,6 +424,13 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.damageControl = 1; },
   },
   {
+    id: 'df_repair', name: 'Repair drones', branch: 'defence', cat: 'defence', kind: 'stat', max: 3, tags: ['defence', 'armour', 'repair'],
+    arcade: true,
+    text: (lv) => (lv === 1 ? 'Self-repair starts sooner, works faster, and mends a second plate in a quiet spell.' : 'Self-repair starts sooner and works faster.'),
+    note: 'Self-repair still waits for quiet: nothing hostile close, no fire near.',
+    apply: (s, lv) => { s.repairDelay *= 0.8; s.repairRate *= 1.25; if (lv === 1) s.repairMax += 1; },
+  },
+  {
     id: 'df_fortress', name: 'Fortress', branch: 'defence', cat: 'defence', kind: 'spec', max: 1, group: 'defence', needs: 3,
     tags: ['defence', 'armour', 'shield'],
     text: 'Another hull plate and a second shield charge.',
@@ -437,9 +446,9 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'df_regenerative', name: 'Regenerative hull', branch: 'defence', cat: 'defence', kind: 'spec', max: 1, group: 'defence', needs: 3,
     tags: ['defence', 'armour'], locked: true,
-    text: 'Voice alloy: one plate grows back after a long spell without damage.',
-    note: 'A minute without a hit, and only below full hull.',
-    apply: (s) => { s.regen = 60; },
+    text: 'Voice alloy: your hull mends itself faster, even with hostiles close.',
+    note: 'In the Story mode, a plate grows back after a minute without a hit.',
+    apply: (s) => { s.regen = 60; s.repairUnderFire = true; s.repairRate *= 1.5; },
   },
 
   // ── utility ────────────────────────────────────────────────────────────
@@ -453,6 +462,12 @@ export const UPGRADES: UpgradeDef[] = [
     weight: 0.8,
     text: 'Every crystal is worth more toward your next refit.',
     apply: (s) => { s.xpMult *= 1.12; },
+  },
+  {
+    id: 'ut_quiet', name: 'Quiet running', branch: 'utility', cat: 'ship', kind: 'stat', system: 'signals', max: 2, tags: ['utility', 'stealth'],
+    arcade: true,
+    text: 'Patrols and lookouts spot you from closer in, and the quiet between fights lasts longer.',
+    apply: (s) => { s.notice *= 0.8; s.lull *= 1.15; },
   },
   {
     id: 'ut_tactical', name: 'Tactical computer', branch: 'utility', cat: 'weapons', kind: 'stat', max: 3, tags: ['damage'],

@@ -41,9 +41,9 @@ Two ways in from the start screen:
   is the end. The journey is saved between systems and at every port:
   **Continue** carries on.
 - **Arcade**: the endless run. The system starts quiet; every time the
-  Krail gauge fills, **refit** (three cards, take one); hostiles arrive one
-  at a time, then in pairs, squads and factions; from 3:30 capital ships
-  hail. When the hull goes, the run report says what you built and how it
+  Krail gauge fills, **refit** (three cards, take one); hostiles arrive in
+  encounters with quiet spells between, where the hull mends itself; from
+  3:30 capital ships hail. When the hull goes, the run report says what you built and how it
   went.
 
 - Where the game goes next, WAYWARD: [docs/VISION.md](docs/VISION.md),
@@ -112,10 +112,17 @@ break: they stop fire from both sides and hurt to fly into.
 
 Near misses (fire, rock, hulls, beams) charge the reactor; release it for
 a nova that clears fire and runs the guns hot. The first forty seconds are
-yours alone; then enemies arrive from far out, one at a time, and fight by
-type and faction; from about four minutes in they come in squads, mixed
-factions and elite variants. From 3:30 capital ships hail. Every hit
-costs a hull plate (or a shield charge); the last plate ends the run.
+yours alone. In the arcade, enemies then come in encounters with quiet
+between: a group arrives from far out, never dead ahead, and each hull
+closes its own way (patrols that only turn on you if you come close,
+lookouts that hold off before they commit, flankers, interceptors) before
+it fights by type and faction; beat or shake off the group and the sector
+goes quiet for a while. Groups grow with the clock and your refits; from
+about four minutes in they bring squads, mixed factions and elite
+variants. From 3:30 capital ships hail. Every hit costs a hull plate (or a
+shield charge); the last plate ends the run. Left alone for a few seconds,
+with nothing hostile close, the hull slowly mends itself, a plate a quiet
+spell.
 
 ## Debug
 

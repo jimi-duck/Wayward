@@ -227,6 +227,8 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Calloway's file | `content/calloway.ts` (tricks, numbers, offers, her face) | `sim/calloway.ts` (the file, her read on your route, offers, the last meeting), `sim/hunt.ts` (the hunch), `World` (the offer, the lane mouth) |
 | Named captains | `CAPTAINS`, `PERSONALITIES` in `content/captains.ts`; who names whom in `content/factions.ts` | `sim/captains.ts` (how they come, the card, memory), `sim/notice.ts` (when, the roster), `World` (the meeting), `ui/face.ts` |
 | Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
+| Encounters (arcade) | `PACING`, `APPROACHES` in `sim/pacing.ts`; `groupSize`, `lull`, `enemyInterval`, `enemyCap` in `sim/director.ts` | `World.spawn` / `arrive` / `sendHostile`, the approach modes in `moveAlien` |
+| Self-repair (arcade) | `SELF_REPAIR` in `sim/repair.ts`; `repair*` in `Stats` | `stepMend` from `World.tick`, the hull row and mode card in `ui/hud.ts` |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
 | Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
 | The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `meta/save.ts`, `ui/chart.ts` |
@@ -260,6 +262,11 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   line on the card if she should say so.
 - **An offer of Calloway's**: one entry in `OFFERS` in
   `content/calloway.ts`, and a rule for when she makes it in `offerFor`.
+- **An approach** (how an arcade hull closes in): a row in `APPROACHES`
+  (`sim/pacing.ts`: when it opens, its weight by role, its bearings, how it
+  fades late) and its goal in the `approach` case of `moveAlien`, or a mode
+  of its own beside `patrol` and `watch`. Keep it from firing until it
+  commits.
 - **A sector event**: a row in `ENCOUNTERS` and a case in `startEncounter`,
   `stepEncounter` and `finish`.
 - **A comms card**: one entry in `CARDS`. Give it a kind, a caller, a
@@ -391,6 +398,20 @@ purpose: a small chance from a kill, never on a full hull, never more than
 one every 35 seconds, one from each capital ship destroyed, and one for
 answering a distress signal. Damage control saves the last plate once.
 
+**Self-repair** (the arcade, `sim/repair.ts`): once the ship has gone
+`repairDelay` seconds without damage, the next plate fills slowly (one in
+`1 / repairRate` seconds), up to `repairMax` plates in one quiet spell. Danger
+near (a hostile that has committed to a fight inside `SELF_REPAIR.danger`,
+enemy fire close by, a capital ship engaged) holds it where it is; a hit
+throws the plate in progress away. It is a reason to break off a fight and
+look for quiet, not a substitute for pickups or the shield: at stock, about
+one plate per lull. On screen the plate fills in teal and pulses, the mode
+card says Self-repair, sparks fly off the plating, and the log says when a
+plate is done. Repair drones (defence, three levels) make it start sooner,
+work faster and mend a second plate a spell; the regenerative hull works
+with hostiles close. The Story mode keeps its own repair: parts patched into
+a plate when you are left alone.
+
 ## The reactor and the chain
 
 Near misses charge the core: fire that passes close without hitting, rock
@@ -424,13 +445,35 @@ regenerative, web-spinner.
 **The director** (`sim/director.ts`) is the one place difficulty is
 decided, as smooth functions of run time. The opening is a slow burn: the
 field starts at half its old density with slower rock (and five bulwarks,
-not seven), no hostile shows up for forty seconds, and then they come one
-at a time, scouts only, until about a minute and a half (interceptors pair
-up only after that). Two or three by two minutes; density, speed and
+not seven), and no hostile shows up for forty seconds. Density, speed and
 toughness climb from there; variety opens over five minutes; from four
 minutes elites and squads appear, and from five the factions mix. Late, the
 enemy ceiling levels off while elites, squads and hazardous rock keep
 coming, so difficulty comes from combinations, not counts.
+
+**Encounters** (`sim/pacing.ts`, the arcade): hostiles come in groups with
+quiet between, not as a steady stream. A group is `groupSize` hulls (one at
+first, growing with the clock, and a tenth of a hull more per refit taken),
+arriving `enemyInterval` seconds apart (a pair of interceptors or a squad
+counts as several). Once every one of them is destroyed, gone, or left
+behind past the cull ring, the sector goes quiet for `lull` seconds (about
+20 at the start, 9 from nine minutes; Quiet running stretches it). A group that
+drags on 45 seconds past its last arrival breaks off. A capital ship's fight
+is an encounter too, with a quiet spell after it. The log says when contacts
+are inbound and when the sector is quiet again.
+
+No hull arrives in front of the ship: each comes from a bearing at least
+`noseClear` off the nose, 120 to 150 units out. How it closes is its
+**approach**: *patrol* (flies its own beat across the space ahead, turns on
+you only if you come within `notice` units or shoot it, leaves after a
+while), *investigate* (holds beyond gun range, facing you, for a few
+seconds, then commits, or, if never shot at, sometimes moves on), *circle*
+(orbits at that distance, then commits), *flank* (comes round to your beam
+or quarter first), *intercept* (heads for where you will be) and *direct*.
+None fires before it commits. The opening minute is only patrols and
+investigators; the committing approaches open over the next two minutes,
+and the lookers thin out as the run goes on. The mode card reads "Being
+watched" and "Patrol near", and the log names a hull that has seen you.
 
 ## Capital ships
 

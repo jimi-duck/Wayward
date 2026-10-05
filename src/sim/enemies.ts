@@ -7,6 +7,7 @@ import type { Bulwark, Rock } from './field';
 import type { Rng } from './rng';
 import type { ShipState } from './ship';
 import { HZ, PX } from './tuning';
+import { PACING, type Approach } from './pacing';
 
 // ── the enemy roster ──────────────────────────────────────────────────────
 // The original's seven hulls and five factions, rebuilt for a 3D sky. The
@@ -36,6 +37,15 @@ import { HZ, PX } from './tuning';
 //     weaver     · Thren. Flies to a point, spins a web, leaves.
 //     freighter  · a convoy hull for the sector events: crosses, never fires.
 //
+// Before any of that, in the arcade, a hull has an approach (sim/pacing.ts):
+// how it closes. 'direct' flies straight to its fighting range; 'flank'
+// comes round to your beam or quarter first; 'intercept' heads for where you
+// will be; 'investigate' holds off beyond gun range and looks you over
+// ('watch'), then commits or moves on; 'circle' orbits at that distance a
+// while first; 'patrol' flies its own beat across the sector and only turns
+// on you if you come close or shoot it. None of them fires before it
+// commits.
+//
 // A hull is three things layered: its archetype (above: how it flies and
 // fights), its faction (FACTION_TRAITS: what every hull of that faction
 // does: Gutter crews press harder, Custody cutters reach further, Office of Peace ships cloak,
@@ -51,7 +61,8 @@ export type Role = 'interceptor' | 'cruiser' | 'special';
 type Tactic = 'dogfight' | 'ram' | 'hunt' | 'broadside' | 'snipe' | 'grind' | 'anchor' | 'cross';
 type Fire = 'fan' | 'burst' | 'plasma' | 'lead' | 'beam' | 'none';
 export type Mode =
-  | 'approach' | 'setup' | 'run' | 'extend' | 'line' | 'hold' | 'cover' | 'peek' | 'seek' | 'spin' | 'leave' | 'cross';
+  | 'approach' | 'setup' | 'run' | 'extend' | 'line' | 'hold' | 'cover' | 'peek' | 'seek' | 'spin' | 'leave' | 'cross'
+  | 'patrol' | 'watch';
 
 const V = PX * HZ; // the original's px/frame → units/second
 
@@ -270,6 +281,8 @@ export interface Alien {
   /** Seconds before it can count as a near miss again. */
   grazeT: number;
   xp: number;
+  /** How it closes on the ship before it fights (sim/pacing.ts). */
+  approach: Approach;
 }
 
 export interface Shot {
@@ -296,6 +309,8 @@ export interface Arena {
   rocks: readonly Rock[];
   aliens: readonly Alien[];
   bolts: readonly Incoming[];
+  /** Multiplier on how far off a patrol or watcher notices the ship (Stats.notice). */
+  notice?: number;
 }
 
 export { newId };
@@ -345,6 +360,8 @@ export interface SpawnOptions {
   elite?: EliteId | null;
   /** Hull multiplier from the director. */
   hp?: number;
+  /** How it closes (the arcade's encounters); straight in unless given. */
+  approach?: Approach;
 }
 
 /**
@@ -375,7 +392,7 @@ export function spawnAlien(kind: AlienKind, ship: ShipState, t: number, rng: Rng
     spK: F.speed * (E?.speed ?? 1), cdK, rgK: F.range, shotK: E?.shotSpeed ?? 1,
     shots: (v.kind === kind ? v.shots : undefined) ?? T.shots + (E?.extraShots ?? 0), split: !!(v.kind === kind && v.split),
     cloak: canCloak && !at ? 1 : 0, canCloak, burn: 0, burnDps: 0, mark: 0, snare: 0, calm: 99, grazeT: 0,
-    xp: Math.round(T.xp * (E ? 2 : 1)),
+    xp: Math.round(T.xp * (E ? 2 : 1)), approach: T.tactic === 'cross' ? 'direct' : o.approach ?? 'direct',
   };
 }
 
@@ -523,6 +540,21 @@ function engage(al: Alien, T: AlienType, s: ShipState, rng: Rng): void {
   }
 }
 
+/** Done looking: close in and fight, straight in from here. */
+function commit(al: Alien, events: GameEvent[]): void {
+  al.mode = 'approach';
+  al.approach = 'direct';
+  al.modeT = 10;
+  events.push({ type: 'noticed', id: al.id, x: al.x, y: al.y, z: al.z });
+}
+
+/** A patrol's next waypoint: on along its beat, turning a little. */
+function nextLeg(al: Alien, rng: Rng): void {
+  const h = Math.atan2(-(al.az - al.z), al.ax - al.x) + rng.range(-0.8, 0.8);
+  al.ax = al.x + Math.cos(h) * PACING.patrolLeg;
+  al.az = al.z - Math.sin(h) * PACING.patrolLeg;
+}
+
 /** Modes a cloaking hull stays hidden in: everything but the attack itself. */
 const HIDDEN: ReadonlySet<Mode> = new Set(['approach', 'setup', 'extend', 'cover', 'leave', 'seek']);
 
@@ -555,12 +587,56 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
   /** Where the nose should point, if not along the velocity. */
   let faceTo: number | null = null;
 
+  const seen = PACING.notice * (arena.notice ?? 1);
+
   switch (al.mode) {
-    case 'approach':
-      // close to fighting range at cruise altitude, from the side it came in on
-      steer(al, s.x - ux * range, al.cruiseY, s.z - uz * range, speed * 1.3, acc, dt, 12);
-      if (d < range + 14 || al.modeT <= 0) engage(al, T, s, rng);
+    case 'approach': {
+      // close to fighting range at cruise altitude: by default from the side it came in on
+      let gx = s.x - ux * range, gz = s.z - uz * range;
+      const ap = al.approach;
+      if (ap === 'investigate' || ap === 'circle') {
+        // to the edge of gun range, to look the ship over
+        gx = s.x - ux * PACING.standoff; gz = s.z - uz * PACING.standoff;
+        if (d < PACING.standoff + 12) { al.mode = 'watch'; al.modeT = rng.range(PACING.watch[0], PACING.watch[1]); break; }
+      } else if (ap === 'flank') {
+        // round to the beam or the quarter on the side it came in, then in
+        gx = s.x + (rx * al.slide * 0.85 - fx * 0.35) * range; gz = s.z + (rz * al.slide * 0.85 - fz * 0.35) * range;
+        if (Math.hypot(gx - al.x, gz - al.z) < 14) { engage(al, T, s, rng); break; }
+      } else if (ap === 'intercept') {
+        // onto your course: where you will be when it gets there
+        const lead = clamp(d / (speed * 1.3), 0, 3);
+        gx = s.x + s.vx * lead - ux * range; gz = s.z + s.vz * lead - uz * range;
+      }
+      steer(al, gx, al.cruiseY, gz, speed * 1.3, acc, dt, 12);
+      if (al.modeT <= 0 || ((ap === 'direct' || ap === 'intercept') && d < range + 14)) engage(al, T, s, rng);
       break;
+    }
+
+    // the arcade's patrols: their own beat across the sector, until they see you
+    case 'patrol':
+      steer(al, al.ax, al.cruiseY, al.az, speed * 0.8, acc, dt, 6);
+      if (Math.hypot(al.ax - al.x, al.az - al.z) < 8) nextLeg(al, rng);
+      if (d < seen || al.calm < 1) commit(al, events);
+      else if (al.modeT <= 0) leave(al);
+      break;
+
+    // looking you over from beyond gun range: holding off, or circling, then in (or away)
+    case 'watch': {
+      if (al.approach === 'circle') {
+        const a = Math.atan2(-(al.z - s.z), al.x - s.x) + al.slide * 0.5, R = PACING.standoff * 0.85;
+        steer(al, s.x + Math.cos(a) * R, al.cruiseY, s.z - Math.sin(a) * R, speed * 1.2, acc, dt, 2);
+      } else {
+        steer(al, s.x - ux * PACING.standoff - uz * al.slide * 8, al.cruiseY, s.z - uz * PACING.standoff + ux * al.slide * 8, speed, acc, dt, 8);
+        faceTo = aim;
+      }
+      if (d < seen * 0.6 || al.calm < 1) commit(al, events);
+      else if (al.modeT <= 0) {
+        // never shot at: some decide you are not worth it
+        if (al.approach === 'investigate' && al.calm > 90 && rng.next() < PACING.moveOn) leave(al);
+        else commit(al, events);
+      }
+      break;
+    }
 
     case 'leave':
       steer(al, al.x - ux * 100, 30, al.z - uz * 100, dash, acc, dt);
@@ -698,7 +774,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
 /** Fire when the type's way of fighting says so and the cooldown is up. */
 export function alienFire(al: Alien, s: ShipState, t: number, shots: Shot[], bulwarks: readonly Bulwark[], rng: Rng, events: GameEvent[], p: Pressure = pressure(t)): void {
   const T = ALIEN_TYPES[al.kind];
-  if (T.fire === 'none' || al.fleeing || al.mode === 'approach' || t < al.nextShot) return;
+  if (T.fire === 'none' || al.fleeing || al.mode === 'approach' || al.mode === 'patrol' || al.mode === 'watch' || t < al.nextShot) return;
   // a cloaked hull decloaks before it fires: the shimmer is the warning
   if (al.cloak > 0.25) { al.nextShot = t + 0.1; return; }
   const dx = s.x - al.x, dz = s.z - al.z, d = Math.hypot(dx, dz);

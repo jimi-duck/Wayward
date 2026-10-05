@@ -33,7 +33,11 @@ export interface RunStats {
   capitalFactions: string[];
   platesLost: number;
   platesGained: number;
+  /** Of the plates gained, those the self-repair mended (the arcade). */
+  platesMended: number;
   shieldsAbsorbed: number;
+  /** Encounters sent (the arcade). */
+  waves: number;
   /** Plates and shield charges lost, by what did it. */
   damageBy: Record<string, number>;
   events: number;
@@ -75,7 +79,7 @@ export function newRun(seed: number, modifiers: string[] = []): RunStats {
     kills: 0, killsBy: { laser: 0, torpedo: 0, mine: 0, plasma: 0, arc: 0, ram: 0, overcharge: 0, hazard: 0 },
     killsByKind: {}, elites: 0, rocks: 0, krail: 0, dropped: 0, refit: 0, overcharges: 0, grazes: 0, bestChain: 0,
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
-    platesLost: 0, platesGained: 0, shieldsAbsorbed: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
+    platesLost: 0, platesGained: 0, platesMended: 0, shieldsAbsorbed: 0, waves: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
     timeline: [], build: {}, identity: '', modifiers, cause: '',
     mode: 'arcade', escaped: false, krailLeft: 0, ore: 0, oreSold: 0, parts: 0, cut: 0, fractured: 0, cutTime: 0, docked: 0,
     cards: [], jobsDone: 0, ports: [],

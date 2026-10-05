@@ -51,6 +51,7 @@ describe('enemy pacing (the original curves)', () => {
 
   it('never exceeds the ceiling, and unlocks hulls on the clock', () => {
     const w = immortal();
+    w.command.next = 1e9; // regular traffic only: a capital ship's fight holds it
     const seen = new Set<string>();
     for (let s = 0; s < 330; s++) {
       run(w, 1);
@@ -59,6 +60,8 @@ describe('enemy pacing (the original curves)', () => {
         seen.add(a.kind);
         if (!a.escort && !a.extra) expect(VARIANTS[a.variant]!.at).toBeLessThanOrEqual(w.runTime);
       }
+      // the ship wins its fights: a hull that has been about a while is gone, so the encounters keep coming
+      w.aliens = w.aliens.filter((a) => a.escort || a.extra || a.age < 8);
     }
     expect(seen.size).toBeGreaterThanOrEqual(5);
   });
@@ -149,7 +152,7 @@ describe('the 3D sky', () => {
 
   it('interceptors close to fighting range, then fly strafing runs down past the ship, not through it', () => {
     const w = immortal(4);
-    w.nextAlien = 1e9;
+    w.pace.until = 1e9;
     const al = spawnAlien('scout', w.ship, 0, w.rng);
     w.aliens.push(al);
     const modes = new Set<string>();
@@ -174,7 +177,7 @@ describe('the 3D sky', () => {
     let evaded = 0;
     for (let seed = 1; seed <= 20; seed++) {
       const w = immortal(seed);
-      w.nextAlien = 1e9;
+      w.pace.until = 1e9;
       const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 0, y: 0, z: -30 });
       al.escort = false;
       al.mode = 'setup';
@@ -189,7 +192,7 @@ describe('the 3D sky', () => {
 
   it('cruisers take cover behind a bulwark, on the far side from the ship', () => {
     const w = immortal(2);
-    w.nextAlien = 1e9;
+    w.pace.until = 1e9;
     const rock = bulwark(0, -60);
     w.field.bulwarks = [rock];
     const al = spawnAlien('lancer', w.ship, 50, w.rng, { x: 20, y: 4, z: -90 });
@@ -217,7 +220,7 @@ describe('the 3D sky', () => {
 
   it('the gunnery computer lifts a lance onto a hull flying above the plane', () => {
     const w = immortal();
-    w.nextAlien = 1e9;
+    w.pace.until = 1e9;
     const al = spawnAlien('lancer', w.ship, 0, w.rng, { x: 0, y: 7, z: -40 });
     al.escort = false;
     al.mode = 'hold';
@@ -236,7 +239,7 @@ describe('the 3D sky', () => {
   it('torpedoes climb after a target above the plane', () => {
     const w = immortal();
     w.setLevels({ tp_bay: 1 });
-    w.nextAlien = 1e9;
+    w.pace.until = 1e9;
     const al = spawnAlien('scout', w.ship, 0, w.rng, { x: 4, y: 9, z: -45 });
     al.escort = false;
     al.mode = 'hold';

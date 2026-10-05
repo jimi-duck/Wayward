@@ -24,7 +24,7 @@ import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, type Mods, type Pressure } from './director';
 import { pickEncounter, startEncounter, stepEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import {
-  ALIEN_FIRST, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SQUADS, VARIANTS,
+  ALIEN_FIRST, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SPAWN_FAR, SPAWN_NEAR, SQUADS, VARIANTS,
   WEB_R, alienBonus, alienFire, alienLabel, beamLive, cloaked, leave, moveAlien, moveShots, pickElite, pickVariant, rayDist,
   spawnAlien, stepBeam, stepWebs, type Alien, type Arena, type EliteId, type Faction, type Shot, type Web,
 } from './enemies';
@@ -42,6 +42,8 @@ import {
 } from './tuning';
 import type { Prices } from '../content/systems';
 import { makeOffer, type Offer } from './offers';
+import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
+import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { addKit, discounted, earned, effects, fitNeeds, noKit, type Effects, type Kit } from './modules';
 import { MODULE_BY_ID } from '../content/modules';
 import {
@@ -121,7 +123,10 @@ export class World implements EncounterHost {
   runTime = 0;
   /** Rocks and hulls broken this run. */
   kills = 0;
-  nextAlien = ALIEN_FIRST;
+  /** The arcade's encounters: a wave on its way or being fought, or the quiet between (sim/pacing.ts). */
+  pace: Pace = newPace(ALIEN_FIRST);
+  /** The arcade's self-repair (sim/repair.ts). */
+  mend: Mend = newMend();
 
   // the refit rail and the cards
   phase: Phase = 'play';
@@ -846,12 +851,33 @@ export class World implements EncounterHost {
       this.shields = Math.min(st.shieldMax, this.shields + dt / st.shieldRecharge);
       if (Math.floor(this.shields) > was) this.events.push({ type: 'shieldUp', charges: Math.floor(this.shields) });
     }
-    if (st.regen > 0 && this.alive && this.plates < st.maxPlates && this.sinceHit >= st.regen) {
+    // the arcade mends itself (below); the Story mode's regenerative hull grows a plate back
+    if (st.regen > 0 && this.bk && this.alive && this.plates < st.maxPlates && this.sinceHit >= st.regen) {
       this.plates++;
       this.sinceHit = 0;
       this.run.platesGained++;
       this.events.push({ type: 'regen', plates: this.plates });
     }
+    if (!this.bk && this.alive) {
+      const news = stepMend(this.mend, { sinceHit: this.sinceHit, plates: this.plates, maxPlates: st.maxPlates, danger: this.inDanger(), stats: st }, dt);
+      if (news === 'start') this.events.push({ type: 'mendStart' });
+      else if (news === 'plate' && this.repair(1)) {
+        this.run.platesMended++;
+        this.events.push({ type: 'mended', plates: this.plates });
+      }
+    }
+  }
+
+  /** Is anything dangerous near: a hostile that has committed to a fight inside SELF_REPAIR.danger, fire close by, or a capital ship? */
+  inDanger(): boolean {
+    const s = this.ship, cs = this.command.state;
+    if (cs === 'fight' || cs === 'inbound') return true;
+    for (const a of this.aliens) {
+      if (a.fleeing || ALIEN_TYPES[a.kind].fire === 'none' || a.mode === 'patrol' || a.mode === 'watch') continue;
+      if (Math.hypot(a.x - s.x, a.z - s.z) < SELF_REPAIR.danger) return true;
+    }
+    for (const sh of this.shots) if (Math.hypot(sh.x - s.x, sh.z - s.z) < SELF_REPAIR.fireDanger) return true;
+    return false;
   }
 
   // ── decisions ─────────────────────────────────────────────────────────
@@ -861,7 +887,7 @@ export class World implements EncounterHost {
     const faction = this.pendingSalvage[0];
     const kind = faction ? 'salvage' : 'refit';
     if (!faction && this.pendingRefits <= 0) return;
-    this.offer = makeOffer({ levels: this.levels, unlocked: this.unlocked, techs: this.techs, presented: this.presented, refit: this.refit, kind, faction }, this.rng);
+    this.offer = makeOffer({ levels: this.levels, unlocked: this.unlocked, techs: this.techs, presented: this.presented, refit: this.refit, kind, faction, arcade: !this.bk }, this.rng);
     if (!this.offer.cards.length) { this.offer = null; this.pendingRefits = 0; this.pendingSalvage = []; if (this.docked) this.phase = 'dock'; return; }
     this.phase = 'refit';
   }
@@ -1100,32 +1126,94 @@ export class World implements EncounterHost {
 
   // ── the sector: spawning, hulls, events ───────────────────────────────
 
-  /** The director's pacing: a hull (or a squad) every few seconds, under a ceiling, except while a capital ship is engaged. */
+  /**
+   * The arcade's encounters (sim/pacing.ts): a quiet spell, then a group
+   * arriving a hull (or a pair, or a squad) at a time, from clear of the
+   * nose; once the group is beaten or shaken off, quiet again. A capital
+   * ship's fight holds everything, and is followed by a quiet spell.
+   */
   private spawn(t: number, p: Pressure): void {
     if ((this.theatreT -= 1 / 60) <= 0) this.rotateTheatre(t);
+    const pc = this.pace, lull = p.lull * this.stats.lull;
     const cs = this.command.state;
-    if (cs === 'fight' || cs === 'inbound' || cs === 'hailing') return;
-    if (t < this.nextAlien) return;
-    const regular = this.aliens.filter((a) => !a.escort && !a.extra).length;
-    if (regular < p.enemyCap) {
-      const squads = SQUADS.filter((q) => q.at <= t && regular + q.members.length <= p.enemyCap);
-      if (squads.length && this.rng.next() < p.squadChance) this.spawnSquad(squads[this.rng.int(squads.length)]!, p);
-      else {
-        const v = pickVariant(t, this.aliens, this.rng, this.theatre, p.theatre);
-        if (v) {
-          const lead = this.spawnHostile(v.id, undefined, this.rollElite(v.kind, v.faction, p));
-          // interceptors past the opening come in pairs: a wingman in echelon
-          const T = ALIEN_TYPES[v.kind];
-          if (T.role === 'interceptor' && t > 90 && regular + 1 < p.enemyCap && this.rng.next() < 0.6) {
-            const wing = this.spawnHostile(v.id, { x: lead.x + Math.sin(lead.face) * 5, y: lead.y + 1.5, z: lead.z + Math.cos(lead.face) * 5 });
-            wing.slide = lead.slide;
-            wing.modeT = lead.modeT + 0.6;
-          }
-        }
-      }
+    if (cs === 'fight' || cs === 'inbound' || cs === 'hailing') {
+      pc.state = 'quiet';
+      pc.left = 0;
+      pc.until = Math.max(pc.until, t + lull);
+      return;
     }
-    const busy = this.encounter?.id === 'distress' && !this.encounter.done ? 0.7 : 1;
-    this.nextAlien = t + p.enemyInterval * this.rng.range(0.8, 1.2) * busy;
+    if (pc.state === 'quiet') {
+      if (t < pc.until) return;
+      pc.state = 'wave';
+      pc.left = waveSize(p, this.refit);
+      pc.next = t;
+      pc.last = t;
+      pc.ids.clear();
+      pc.n++;
+      this.run.waves++;
+      this.events.push({ type: 'contacts', n: pc.left });
+    }
+    const regular = this.aliens.filter((a) => !a.escort && !a.extra).length;
+    if (pc.left > 0 && t >= pc.next && regular < p.enemyCap) this.arrive(t, p, regular);
+    // gone means destroyed, leaving, or left behind past the cull ring
+    const live = this.aliens.filter((a) => pc.ids.has(a.id) && !a.fleeing);
+    if (pc.left <= 0 && !live.length) {
+      pc.state = 'quiet';
+      pc.until = t + lull;
+      this.events.push({ type: 'quiet' });
+    } else if (t - pc.last > PACING.maxLength) {
+      // dragged on: the survivors break off, and the next group waits its turn
+      for (const a of live) leave(a);
+      pc.left = 0;
+    }
+  }
+
+  /** The wave's next arrival: a squad, a pair of interceptors, or one hull, each with its way of closing in. */
+  private arrive(t: number, p: Pressure, regular: number): void {
+    const pc = this.pace;
+    pc.next = t + p.enemyInterval * this.rng.range(0.8, 1.2);
+    const squads = SQUADS.filter((q) => q.at <= t && q.members.length <= pc.left && regular + q.members.length <= p.enemyCap);
+    if (squads.length && this.rng.next() < p.squadChance) {
+      const q = squads[this.rng.int(squads.length)]!;
+      // the squad closes as its leader would
+      const ap = pickApproach(ALIEN_TYPES[VARIANTS[q.members[0]!]!.kind].role, t, this.rng);
+      for (const al of this.spawnSquad(q, p, ap)) pc.ids.add(al.id);
+      pc.left -= q.members.length;
+      pc.last = t;
+      return;
+    }
+    const v = pickVariant(t, this.aliens, this.rng, this.theatre, p.theatre);
+    if (!v) { pc.next = t + 1; return; }
+    const T = ALIEN_TYPES[v.kind];
+    const lead = this.sendHostile(v.id, pickApproach(T.role, t, this.rng), this.rollElite(v.kind, v.faction, p));
+    pc.ids.add(lead.id);
+    pc.left--;
+    pc.last = t;
+    // interceptors past the opening often come in pairs: a wingman in echelon
+    if (T.role === 'interceptor' && t > 90 && pc.left > 0 && regular + 1 < p.enemyCap && this.rng.next() < 0.6) {
+      const wing = this.spawnHostile(v.id, { x: lead.x + Math.sin(lead.face) * 5, y: lead.y + 1.5, z: lead.z + Math.cos(lead.face) * 5 });
+      Object.assign(wing, { approach: lead.approach, mode: lead.mode, ax: lead.ax, az: lead.az, slide: lead.slide, modeT: lead.modeT + 0.6 });
+      pc.ids.add(wing.id);
+      pc.left--;
+    }
+  }
+
+  /** A hostile from far out, clear of the nose, closing its own way (sim/pacing.ts). */
+  private sendHostile(variant: string, approach: Approach, elite: EliteId | null = null): Alien {
+    const v = VARIANTS[variant] ?? VARIANTS.scout!, s = this.ship;
+    const at = arrival(s, approach, this.rng, this.rng.range(SPAWN_NEAR, SPAWN_FAR));
+    const y = ALIEN_TYPES[v.kind].role === 'cruiser' ? this.rng.range(-4, 9) : this.rng.range(-6, 18);
+    const al = this.spawnHostile(v.id, { x: at.x, y, z: at.z }, elite);
+    al.approach = approach;
+    // it flanks on the side it came in, and patrols cross from that side to the other
+    al.slide = at.off > 0 ? -1 : 1;
+    if (approach === 'patrol') {
+      const w = patrolStart(s, at.off);
+      al.mode = 'patrol';
+      al.ax = w.x; al.az = w.z;
+      al.modeT = PACING.patrolTime;
+    }
+    return al;
   }
 
   private rollElite(kind: Alien['kind'], faction: Faction, p: Pressure): EliteId | null {
@@ -1139,14 +1227,18 @@ export class World implements EncounterHost {
     this.theatreT = 70;
   }
 
-  private spawnSquad(q: (typeof SQUADS)[number], p: Pressure): void {
-    const first = this.spawnHostile(q.members[0]!, undefined, this.rollElite(VARIANTS[q.members[0]!]!.kind, VARIANTS[q.members[0]!]!.faction, p));
+  private spawnSquad(q: (typeof SQUADS)[number], p: Pressure, approach: Approach): Alien[] {
+    const first = this.sendHostile(q.members[0]!, approach, this.rollElite(VARIANTS[q.members[0]!]!.kind, VARIANTS[q.members[0]!]!.faction, p));
+    const out = [first];
     for (let i = 1; i < q.members.length; i++) {
       const a = (i / q.members.length) * Math.PI * 2;
       const m = this.spawnHostile(q.members[i]!, { x: first.x + Math.cos(a) * 8, y: first.y + this.rng.range(-2, 3), z: first.z + Math.sin(a) * 8 });
-      m.modeT = first.modeT + i * 0.4;
+      // the squad closes as one: the leader's way, its waypoint, its side
+      Object.assign(m, { approach: first.approach, mode: first.mode, ax: first.ax, az: first.az, slide: first.slide, modeT: first.modeT + i * 0.4 });
+      out.push(m);
     }
     this.events.push({ type: 'squad', label: q.label });
+    return out;
   }
 
   /** A hostile of a variant, from the spawn ring or at a given point, as regular traffic. */
@@ -1162,7 +1254,7 @@ export class World implements EncounterHost {
 
   private stepAliens(dt: number, t: number, p: Pressure): void {
     const s = this.ship;
-    const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts };
+    const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
     const well = this.encounter?.id === 'anomaly' && !this.encounter.done ? this.encounter : null;
     for (let i = this.aliens.length - 1; i >= 0; i--) {
       const al = this.aliens[i]!;
@@ -1702,6 +1794,7 @@ export class World implements EncounterHost {
     }
     this.run.damageBy[source] = (this.run.damageBy[source] ?? 0) + 1;
     this.sinceHit = 0;
+    hurtMend(this.mend);
     // any damage holds the shield's recharge off
     this.shieldT = st.shieldDelay;
     // an emergency shield (power-up) first, then a whole shield charge, then the hull
@@ -1948,7 +2041,8 @@ export class World implements EncounterHost {
     this.tele = []; this.strikes = []; this.sys = newSystems();
     this.command.reset();
     this.encounter = null;
-    this.nextAlien = ALIEN_FIRST;
+    this.pace = newPace(ALIEN_FIRST);
+    this.mend = newMend();
     this.score = 0; this.kills = 0; this.runTime = 0;
     this.levels = {};
     this.stats = this.buildStats();

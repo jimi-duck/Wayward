@@ -50,13 +50,16 @@ export interface OfferContext {
   kind?: OfferKind;
   /** For salvage: the faction just beaten. */
   faction?: TechFaction;
+  /** The arcade: its own cards (self-repair, encounters) can be dealt. */
+  arcade?: boolean;
 }
 
 const SPEC_GROUPS = [...new Set(UPGRADES.filter((u) => u.group).map((u) => u.group!))];
 
 /** Can this upgrade be a card now? Everything `available` says, and tech only once its faction is salvaged. */
-function offerable(u: UpgradeDef, levels: Levels, unlocked: ReadonlySet<string>, techs: ReadonlySet<string>): boolean {
+function offerable(u: UpgradeDef, levels: Levels, unlocked: ReadonlySet<string>, techs: ReadonlySet<string>, arcade: boolean): boolean {
   if (u.tech && !techs.has(u.tech)) return false;
+  if (u.arcade && !arcade) return false;
   return available(u, levels, unlocked);
 }
 
@@ -68,7 +71,7 @@ function card(u: UpgradeDef, levels: Levels, tag?: CardTag): Card {
 
 export function makeOffer(ctx: OfferContext, rng: Rng): Offer {
   const { levels, unlocked, techs } = ctx;
-  const pool = UPGRADES.filter((u) => offerable(u, levels, unlocked, techs));
+  const pool = UPGRADES.filter((u) => offerable(u, levels, unlocked, techs, !!ctx.arcade));
   const kind = ctx.kind ?? 'refit';
 
   // battle salvage: her tech first, while it is new

@@ -64,6 +64,8 @@ export class Sector {
   private time = 0;
   private nebula = 0;
   private flash = 0;
+  /** Seconds to the next self-repair spark. */
+  private weld = 0;
   /** The run or system the sky was painted for. */
   private skyFor: unknown = null;
   reduceMotion = false;
@@ -323,6 +325,7 @@ export class Sector {
         case 'parts':
           this.fx.burst(e.x, 0.3, e.z, 2 + e.value, SHIELD, 4, 0.16, 0.25);
           break;
+        case 'mended':
         case 'patched': {
           const s = this.lerped;
           this.fx.burst(s.x, 0.4, s.z, 26, SHIELD, 6, 0.25, 0.5);
@@ -384,6 +387,12 @@ export class Sector {
     this.hazards.update(world.tele, world.strikes, world.encounter, dt);
     this.breakout.update(world, s, this.fx, dt);
     if (dt > 0) this.ambient(world, s.heading);
+    // self-repair: the odd welding spark off the plating while it works
+    if (dt > 0 && !world.bk && world.alive && world.mend.state === 'repairing' && (this.weld -= dt) <= 0) {
+      this.weld = 0.18 + Math.random() * 0.22;
+      const a = Math.random() * Math.PI * 2;
+      this.fx.burst(s.x + Math.cos(a) * 0.9, 0.5, s.z - Math.sin(a) * 0.9, 3, SHIELD, 3, 0.12, 0.35);
+    }
     this.fx.update(dt);
     this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz, dt);
     // the weather: a nebula thickens the fog; an ion storm flickers

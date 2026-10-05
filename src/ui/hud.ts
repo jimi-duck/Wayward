@@ -43,6 +43,10 @@ export const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody:
 const faction = (f: string) => t(FACTION_NAME[f] ?? f);
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
+/** A patrol this close (units) puts the mode card on caution. */
+const PATROL_NEAR = 110;
+/** Seconds before the log says again that the self-repair has started. */
+const MEND_QUIET = 10;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron rock broken', rich: 'Rich rock broken', volatile: 'Volatile rock broken', rare: 'Rare rock broken' };
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
@@ -101,6 +105,8 @@ export class Hud {
   private lv: Record<string, number> = {};
   private seed = -1;
   private modeKey = '';
+  /** When the log last said the self-repair had started, so a flicker of danger does not repeat it. */
+  private mendNoted = -Infinity;
   private headingShown = true;
   private contactKey = '';
   private centreKey = '';
@@ -185,6 +191,15 @@ export class Hud {
           break;
         case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, t('Shield up'), 'gain'); break;
         case 'regen': this.note(world, `${t('Hull regrown')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'mendStart': if (world.time - this.mendNoted > MEND_QUIET) { this.mendNoted = world.time; this.note(world, t('Self-repair under way')); } break;
+        case 'mended': this.note(world, `${t('Hull mended')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); this.retrigger($('sys-hull'), 'mended'); break;
+        case 'contacts': this.note(world, plural(e.n, '{n} contact inbound', '{n} contacts inbound'), 'hit'); break;
+        case 'quiet': this.note(world, t('Sector quiet'), 'gain'); break;
+        case 'noticed': {
+          const al = world.aliens.find((a) => a.id === e.id);
+          if (al) this.note(world, t('{name} has seen you', { name: alienLabel(al) }), 'hit');
+          break;
+        }
         case 'damageControl': this.banner(t('Damage control'), t('Hull held'), t('One plate · two seconds of grace'), 2, 'caution'); break;
         case 'overchargeReady': this.note(world, t(document.documentElement.classList.contains('touch-ui') ? 'Core charged · tap Core' : 'Core charged · press E'), 'gain'); break;
         case 'overcharge': this.note(world, `${t('Overcharge')} · ${plural(e.hits, '{n} hit', '{n} hits')}`, 'gain'); break;
@@ -448,15 +463,27 @@ export class Hud {
     if (word) text(vo, word);
     else if (vo.firstChild?.nodeValue !== `${Math.round(oc * 100)}` || vo.childNodes.length !== 2) vo.replaceChildren(`${Math.round(oc * 100)}`, Object.assign(document.createElement('small'), { textContent: '%' }));
 
-    // the hull: plates, then shield charges, the one filling drawn part full
+    // the hull: plates, then shield charges, the one filling drawn part full;
+    // in the arcade the plate the self-repair is on fills too, and pulses while it works
     const shields = st.shieldMax + (world.powers.shield > 0 ? 1 : 0);
     const fill = Math.round((world.shields % 1) * 10) / 10;
-    const key = `${world.plates}/${st.maxPlates}/${world.shields | 0}/${fill}/${shields}`;
+    const mend = world.bk ? null : world.mend;
+    const mendFill = mend ? Math.round(mend.progress * 20) / 20 : 0;
+    const mending = mend?.state === 'repairing';
+    const key = `${world.plates}/${st.maxPlates}/${world.shields | 0}/${fill}/${shields}/${mendFill}/${mending}`;
     if (key !== this.plateKey) {
       this.plateKey = key;
       const host = $('g-plates');
       const kids: HTMLElement[] = [];
-      for (let i = 0; i < st.maxPlates; i++) { const p = document.createElement('i'); if (i < world.plates) p.className = 'on'; kids.push(p); }
+      for (let i = 0; i < st.maxPlates; i++) {
+        const p = document.createElement('i');
+        if (i < world.plates) p.className = 'on';
+        else if (i === world.plates && (mendFill > 0 || mending)) {
+          p.className = mending ? 'mend live' : 'mend';
+          p.style.setProperty('--fill', `${mendFill * 100}%`);
+        }
+        kids.push(p);
+      }
       for (let i = 0; i < shields; i++) {
         const p = document.createElement('i');
         p.className = `sh${i < (world.shields | 0) || (i >= st.shieldMax && world.powers.shield > 0) ? ' on' : ''}`;
@@ -468,6 +495,7 @@ export class Hud {
       text($('v-hull'), `${world.plates}/${st.maxPlates}`);
     }
     $('sys-hull').classList.toggle('crit', world.plates <= 1 && world.alive);
+    $('sys-hull').classList.toggle('mending', mending);
     $('vignette').classList.toggle('critical', world.plates <= 1 && world.alive);
 
     // score and the chain
@@ -587,12 +615,15 @@ export class Hud {
     else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Contact'; }
     else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat mode'; }
     else if (e && !e.done) { cls = 'caution'; word = ENCOUNTERS[e.id].name; }
+    else if (world.aliens.some((a) => a.mode === 'watch')) { cls = 'caution'; word = 'Being watched'; }
+    else if (world.aliens.some((a) => a.mode === 'patrol' && Math.hypot(a.x - s.x, a.z - s.z) < PATROL_NEAR)) { cls = 'caution'; word = 'Patrol near'; }
+    else if (!world.bk && world.mend.state === 'repairing') { cls = 'repair'; word = 'Self-repair'; }
     else if (world.cutting !== null || this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }
     // only what this mode uses, the one in use lit
     const st = world.stats, ready = world.oc >= OC_MAX;
     const hints: Hint[] = cls === 'mining'
       ? (world.bk ? [['3', 'Cut'], ['1', 'Break']] : [['1', 'Break rock']])
-      : cls === 'cruise'
+      : cls === 'cruise' || cls === 'repair'
         ? [['W', 'Thrust'], ['Shift', 'Roll'], ['Z', 'Zoom']]
         : [['1', 'Lasers'], ...(st.torpedoes ? [['2', 'Torpedo'] as Hint] : []), ['Shift', 'Roll']];
     if (cls !== 'cruise' && ready) hints.push(['E', 'Core']);
