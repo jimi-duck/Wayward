@@ -23,7 +23,7 @@ balanced with a scripted pilot and the reasoning lives in the code comments and
 | Collision | Custom: spatial hash; sphere, ray and segment tests | The original is circles, rays and segments on a plane, with hand-tuned arcade handling. A rigid-body engine would add WASM weight and fight that tuning. |
 | UI | DOM/CSS over the canvas | Ports `game.css` and the copy deck; sharp text; accessible. |
 | Audio | Web Audio | Spatial panning and generated SFX, small download. |
-| Hosting | GitHub Pages via Actions | Same host as the portfolio; built on every push to `main`. |
+| Hosting | Cloudflare Workers (static assets) | Workers Builds deploys on every push to `main`, with previews on PRs. |
 
 ## The one rule
 
@@ -285,8 +285,8 @@ Coming in later milestones: `audio/`, three sectors and a win state.
   sector 3 wins and unlocks endless mode. Needed by M6.
 - **Franchise names**: settled by the WAYWARD rename below; the game's world
   is its own.
-- **Address.** GitHub Pages from `jimi-duck/game`; a subdomain such as
-  `play.jciclitira.com` needs one DNS record. Needed by M9.
+- **Address.** Cloudflare Worker `game`; a subdomain such as
+  `play.jciclitira.com` is a custom domain on that Worker. Needed by M9.
 
 ## The WAYWARD rename (M0 of [PLAN.md](PLAN.md))
 
