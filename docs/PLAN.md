@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Planned (decided 2026-10-05): building only in a bay you can open almost any time, a web of modules in tabs, power, mass and heat budgets, no refunds, one structure for both modes (see below) |
+| R The refit bay | Step 1 done: the web as data and rules (`content/web.ts`, `sim/bay.ts`), not yet on screen; steps 2 to 5 to come (see below) |
 
 ## From the concept boards
 
@@ -490,6 +490,11 @@ budgets beside them.
   real choice; the bay has to show what an install will leave you with.
 - **One structure for both modes.** Built with the Story mode in mind; the
   arcade uses the same bay, tabs and web.
+- **One currency, Scrap, in both modes** (2026-10-05): mined or won, from
+  rock and from the wrecks of what you destroy. Not Krail, which stays the
+  arcade's score and the Story mode's fuel.
+- **Fewer installs than cards today**, each worth more.
+- **Heat is a fixed budget**, like power and mass, not a live meter.
 
 **Lessons it keeps.** The refit web (M5d) was cut because it was a map and
 points to bank every thirty seconds, mid-fight. The bay is the player's
@@ -505,11 +510,11 @@ nodes in five tiers), not one map of two hundred.
   engaged), nor during a comms card. In the arcade the quiet spells are
   the natural moment; in the Story mode, anywhere quiet in a sortie, and
   at a port.
-- **Paying.** Each node costs more by tier. The arcade pays in Krail (the
-  gauge becomes a stock to spend, no longer a rail that fills to a card).
-  The Story mode pays in the module economy it has: the system's resource
-  (salvage, rig parts, signal kit, favours) and chits. The HUD says when
-  something is affordable, so the bay is never a surprise.
+- **Paying.** Each node costs Scrap, more by tier and by level. Scrap comes
+  from rock broken or cut and from wrecks, in both modes; in the Story mode
+  it takes the place of today's parts (and patching a plate costs Scrap
+  too). The rail that fills to a card goes. The HUD says when something is
+  affordable, so the bay is never a surprise.
 - **Tabs**, after the reference: Hull, Weapons, Engines, Defence, Utility,
   Reactor, and Synergies and salvage. Today's 103 upgrade levels become
   about sixty modules with levels (the pips of the reference);
@@ -573,12 +578,24 @@ nodes in five tiers), not one map of two hundred.
 5. **Finish.** Module art (rendered from the ship kit, as the reference's
    thumbnails), icons from `brand/`, German throughout, DESIGN.md.
 
+**Step 1, done.** `content/web.ts` lays every upgrade out as a node (82:
+the 79 upgrades and three fittings that raise the ratings: the reactor
+core for power, heat exchangers, the structural frame for mass) in eight
+tabs of six to seventeen, at most four tiers deep. Each level costs Scrap
+(40, 60, 90, 130 by tier, half as much again each level) and draws power,
+mass or heat; the stock ship (lasers, a shield charge, the torpedo bay)
+draws 5 of 10 power, 3 of 10 heat and 1 of 10 mass. `sim/bay.ts` says what
+can be fitted and why not (full, mode, locked, tech, path, the upgrade's
+own rules, yard, power, Scrap), installs a level, and works out the
+budgets. Tests: every upgrade placed once, every node reachable from the
+stock ship, power never exceeded, and random builds never stuck for power
+while the core has room. The game still deals cards; the stock torpedo bay
+arrives with the bay in step 2, so the arcade is balanced once.
+
 ### Open
 
-- Arcade cost curve: how many installs a run should afford (about as many
-  as cards today, or fewer and bigger).
-- Whether heat is a fixed budget (as above) or a live meter that weapons
-  fill in a fight.
+- The arcade's Scrap: how much rock and kills give, against the costs
+  above, for fewer installs than today's cards.
 - Which modules are yard-only.
 
 ## The long tail
