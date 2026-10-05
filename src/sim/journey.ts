@@ -178,7 +178,7 @@ export function sortieDef(j: Journey): SortieDef {
   const R = REGIONS[regionOf(s)] ?? REGIONS[0]!, raid = raided(j.chart, s.id);
   const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0);
   return {
-    system: s.id, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.krail ?? JUMP_COST, lane: s.lane,
+    system: s.id, region: regionOf(s), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.krail ?? JUMP_COST, lane: s.lane,
     port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
     heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
     rich: t.rich * (0.6 + s.krail * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls,

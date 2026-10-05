@@ -1,14 +1,16 @@
 import {
   AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, FogExp2,
   Group, HemisphereLight, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, PlaneGeometry, PMREMGenerator, Points,
-  Scene, ShaderMaterial, SphereGeometry, type Camera, type WebGLRenderer,
+  Scene, ShaderMaterial, SphereGeometry, Vector3, type Camera, type WebGLRenderer, type WebGLRenderTarget,
 } from 'three';
-import { spaceTexture } from './textures';
+import { bakeSky, FarBodies, Parallax, skyFor, type Sky } from './sky';
 
 // ── deep space ────────────────────────────────────────────────────────────
-// No grid and no floor: just the dark. Back to front: a painted backdrop (a
-// faint galactic band, two far nebulae), three layers of resolved stars at
-// infinity, and space dust that streaks with the ship's speed. Fog is thin,
+// No grid and no floor: just the dark. Back to front: the sky (render/sky.ts:
+// a painted backdrop of galactic band and nebulae, a planet and a bright
+// star, all picked per system), three layers of resolved stars at infinity,
+// wisps and debris that slide past at their own depth, and space dust that
+// streaks with the ship's speed. Fog is thin,
 // so a hull 150 units out is still a silhouette with engines lit, but rock at
 // the edge of the field fades up out of the dark instead of appearing.
 //
@@ -32,9 +34,11 @@ export class Environment {
   private readonly starMat: ShaderMaterial;
   private readonly scene: Scene;
   private readonly fog: FogExp2;
+  private readonly parallax = new Parallax();
+  private far: FarBodies | null = null;
+  private baked: WebGLRenderTarget | null = null;
 
-  constructor(scene: Scene, renderer: WebGLRenderer) {
-    scene.background = spaceTexture();
+  constructor(scene: Scene, private readonly renderer: WebGLRenderer) {
     scene.backgroundIntensity = 1;
     this.scene = scene;
     this.fog = new FogExp2(VOID.getHex(), 0.0042);
@@ -88,7 +92,22 @@ export class Environment {
     this.key = new DirectionalLight(0xffe6c8, 4.4);
     this.rim = new DirectionalLight(0x7f9cc8, 0.9);
     this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.8), this.rim);
+    this.group.add(this.parallax.group);
     scene.add(this.group);
+    this.setSky(skyFor(1, 0));
+  }
+
+  /** A new sky: repaint the backdrop and put up its far bodies. */
+  setSky(sky: Sky): void {
+    const old = this.baked;
+    this.baked = bakeSky(this.renderer, sky);
+    this.scene.background = this.baked.texture;
+    old?.dispose();
+    if (this.far) { this.far.group.removeFromParent(); this.far.dispose(); }
+    // the planet takes its light from the key's quarter of the sky
+    this.far = new FarBodies(sky, new Vector3(-40, 55, -10));
+    this.stars.add(this.far.group);
+    this.parallax.setSky(sky);
   }
 
   /**
@@ -99,6 +118,8 @@ export class Environment {
     this.fog.density = 0.0042 + nebula * 0.016;
     this.fog.color.copy(VOID).lerp(NEBULA, nebula);
     this.scene.backgroundIntensity = 1 - nebula * 0.55 + flash * 0.6;
+    this.far?.dim(1 - nebula * 0.7);
+    this.parallax.dim(1 - nebula * 0.6);
     this.key.intensity = 4.4 + flash * 9;
     this.key.color.setRGB(1, 0.9 + flash * 0.1, 0.78 + flash * 0.22);
   }
@@ -107,8 +128,9 @@ export class Environment {
     this.starMat.uniforms.uDpr!.value = dpr;
   }
 
-  update(camera: Camera, cx: number, cz: number, vx: number, vz: number): void {
+  update(camera: Camera, cx: number, cz: number, vx: number, vz: number, dt: number): void {
     this.stars.position.copy(camera.position);
+    this.parallax.update(cx, cz, dt);
     // the key light keeps its angle, wherever the ship goes
     this.key.position.set(cx - 40, 55, cz - 10);
     this.key.target.position.set(cx, 0, cz);

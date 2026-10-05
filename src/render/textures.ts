@@ -1,4 +1,4 @@
-import { CanvasTexture, EquirectangularReflectionMapping, SRGBColorSpace, type Texture } from 'three';
+import { CanvasTexture, SRGBColorSpace, type Texture } from 'three';
 
 // Textures painted on a canvas at startup, so the game downloads none. Each is
 // made once and shared. (The hull plating lives in kit.ts; rock is shaded
@@ -89,53 +89,5 @@ export function smokeTexture(): Texture {
     g.fillStyle = mask;
     g.fillRect(0, 0, 128, 128);
     return finish(c, false);
-  });
-}
-
-/**
- * Deep space as an equirectangular backdrop: near black, a faint galactic
- * band of unresolved stars and blue-grey dust crossed by dark lanes, and a
- * couple of far, dim nebulae. The resolved stars are points, drawn on top.
- */
-export function spaceTexture(): Texture {
-  return once('space', () => {
-    const W = 2048, H = 1024;
-    const [c, g] = canvas(W, H), r = rand(31);
-    g.fillStyle = '#020307';
-    g.fillRect(0, 0, W, H);
-    const cloud = (x: number, y: number, rad: number, rgb: string, a: number) => {
-      for (const ox of [-W, 0, W]) {
-        if (x + ox + rad < 0 || x + ox - rad > W) continue;
-        const grad = g.createRadialGradient(x + ox, y, 0, x + ox, y, rad);
-        grad.addColorStop(0, `rgba(${rgb},${a})`);
-        grad.addColorStop(1, `rgba(${rgb},0)`);
-        g.fillStyle = grad;
-        g.fillRect(x + ox - rad, y - rad, rad * 2, rad * 2);
-      }
-    };
-    const band = (x: number) => H * 0.42 + Math.sin((x / W) * Math.PI * 2 + 0.6) * H * 0.2;
-    // the band: dust and unresolved stars
-    for (let i = 0; i < 520; i++) {
-      const x = r() * W, y = band(x) + (r() - 0.5) * (r() * 220);
-      const warm = r() < 0.3;
-      cloud(x, y, 30 + r() * 120, warm ? '78,62,58' : '62,72,98', 0.035 + r() * 0.05);
-    }
-    for (let i = 0; i < 9000; i++) {
-      const x = r() * W, y = band(x) + (r() + r() + r() - 1.5) * 150;
-      const v = 120 + r() * 120;
-      g.fillStyle = `rgba(${v},${v},${v + 15},${0.15 + r() * 0.3})`;
-      g.fillRect(x, y, 1, 1);
-    }
-    // dark lanes through it
-    for (let i = 0; i < 120; i++) {
-      const x = r() * W, y = band(x) + (r() - 0.5) * 60;
-      cloud(x, y, 20 + r() * 60, '2,3,7', 0.25 + r() * 0.3);
-    }
-    // far nebulae, very dim: one rust-red, one deep teal
-    for (let i = 0; i < 26; i++) cloud(1400 + (r() - 0.5) * 260, 300 + (r() - 0.5) * 180, 40 + r() * 140, '96,32,40', 0.03 + r() * 0.04);
-    for (let i = 0; i < 22; i++) cloud(380 + (r() - 0.5) * 240, 700 + (r() - 0.5) * 160, 40 + r() * 130, '24,56,72', 0.03 + r() * 0.04);
-    const t = finish(c);
-    t.mapping = EquirectangularReflectionMapping;
-    return t;
   });
 }
