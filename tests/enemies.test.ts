@@ -51,6 +51,7 @@ describe('enemy pacing (the original curves)', () => {
 
   it('never exceeds the ceiling, and unlocks hulls on the clock', () => {
     const w = immortal();
+    w.command.next = 1e9; // regular traffic only: a capital ship's fight holds it
     const seen = new Set<string>();
     for (let s = 0; s < 330; s++) {
       run(w, 1);

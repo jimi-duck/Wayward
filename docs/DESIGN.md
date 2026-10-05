@@ -456,8 +456,8 @@ quiet between, not as a steady stream. A group is `groupSize` hulls (one at
 first, growing with the clock, and a tenth of a hull more per refit taken),
 arriving `enemyInterval` seconds apart (a pair of interceptors or a squad
 counts as several). Once every one of them is destroyed, gone, or left
-behind past the cull ring, the sector goes quiet for `lull` seconds (22 at
-the start, 10 by ten minutes; Quiet running stretches it). A group that
+behind past the cull ring, the sector goes quiet for `lull` seconds (about
+20 at the start, 9 from nine minutes; Quiet running stretches it). A group that
 drags on 45 seconds past its last arrival breaks off. A capital ship's fight
 is an encounter too, with a quiet spell after it. The log says when contacts
 are inbound and when the sector is quiet again.
