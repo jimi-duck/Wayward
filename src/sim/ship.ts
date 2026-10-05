@@ -91,7 +91,7 @@ export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number
   const drift = !!hull.drift && c.thrust === 0 && Math.hypot(s.vx, s.vz) > topSpeed(hull) * 0.3;
   const turnRate = turnPerStep(hull) * (drift ? DRIFT_TURN : 1);
 
-  // The helm eases in over about a tenth of a second, so a tap nudges the
+  // The helm eases in over about a fifth of a second, so a tap nudges the
   // nose and a hold comes round at full rate.
   s.helm += (c.turn - s.helm) * Math.min(1, HELM_EASE * dt);
   if (!c.turn && Math.abs(s.helm) < 0.02) s.helm = 0;

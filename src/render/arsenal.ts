@@ -1,6 +1,6 @@
 import {
-  AdditiveBlending, BufferAttribute, BufferGeometry, Color, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, LineBasicMaterial,
-  LineSegments, Matrix4, MeshBasicMaterial, Quaternion, SphereGeometry, Vector3, type Scene,
+  AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, Color, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, LineBasicMaterial,
+  LineSegments, Matrix4, MeshBasicMaterial, PlaneGeometry, Quaternion, SphereGeometry, Vector3, type Scene,
 } from 'three';
 import type { Systems } from '../sim/arsenal';
 import { metal } from './kit';
@@ -9,7 +9,10 @@ import { metal } from './kit';
 // Mines: a dark spiked shell with an amber lamp that blinks slowly while it
 // arms, steadily once armed, and fast once something sets it off. Plasma:
 // hot pink patches where the engines vented, cooling as they fade; clouds
-// from a chain reaction or a plasma warhead burn orange. Arcs: jagged
+// from a chain reaction or a plasma warhead burn orange. The trail is laid
+// between the ship and the chase camera, so its patches lie flat on the
+// plane and fade out as they near the lens: otherwise they swell over the
+// lower screen and the bloom washes out the HUD. Arcs: jagged
 // blue-white lightning, redrawn every frame so it crawls, gone in a blink.
 
 const MAX_MINES = 40;
@@ -19,6 +22,9 @@ const ARC_LIFE = 0.16;
 const TRAIL = new Color(3.2, 0.9, 1.7);
 const CLOUD = new Color(3.4, 1.3, 0.3);
 const ARC = new Color(2.4, 3.2, 4.6);
+/** Plasma within NEAR of the camera is invisible, and full strength from FAR out. */
+const BURN_NEAR = 3.5;
+const BURN_FAR = 8;
 
 interface Arc { pts: number[]; life: number; }
 
@@ -40,8 +46,8 @@ export class ArsenalView {
     this.shells = new InstancedMesh(spiked(), metal({ tint: 0x4a4440, roughness: 0.45, metalness: 0.8, scale: 3 }), MAX_MINES);
     this.lamps = new InstancedMesh(new SphereGeometry(1, 8, 6), new MeshBasicMaterial({ color: 0xffffff, toneMapped: false }), MAX_MINES);
     this.lamps.instanceColor = new InstancedBufferAttribute(new Float32Array(MAX_MINES * 3), 3);
-    this.burns = new InstancedMesh(new SphereGeometry(1, 10, 6),
-      new MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, blending: AdditiveBlending, depthWrite: false, toneMapped: false }), MAX_BURNS);
+    this.burns = new InstancedMesh(new PlaneGeometry(2, 2).rotateX(-Math.PI / 2),
+      new MeshBasicMaterial({ color: 0xffffff, map: glow(), transparent: true, opacity: 0.55, blending: AdditiveBlending, depthWrite: false, toneMapped: false }), MAX_BURNS);
     this.burns.instanceColor = new InstancedBufferAttribute(new Float32Array(MAX_BURNS * 3), 3);
     for (const im of [this.shells, this.lamps, this.burns]) {
       im.count = 0;
@@ -61,7 +67,8 @@ export class ArsenalView {
     this.arcs.push({ pts: points, life: ARC_LIFE });
   }
 
-  update(sys: Systems, dt: number): void {
+  /** `eye` is the camera position, so plasma near the lens can fade out. */
+  update(sys: Systems, dt: number, eye: Vector3): void {
     this.time += dt;
     // mines
     let n = 0;
@@ -89,9 +96,10 @@ export class ArsenalView {
       if (b >= MAX_BURNS) break;
       const f = Math.max(0, br.life / br.max);
       const r = br.r * (br.trail ? 0.55 + 0.45 * f : 0.7 + 0.3 * Math.sin(this.time * 9 + b));
-      this.m.compose(this.p.set(br.x, 0.25, br.z), this.q.identity(), this.s.set(r, r * 0.45, r));
+      const near = smoothstep(BURN_NEAR, BURN_FAR, Math.hypot(br.x - eye.x, br.z - eye.z));
+      this.m.compose(this.p.set(br.x, br.trail ? 0.05 : 0.2, br.z), this.q.identity(), this.s.set(r * 1.3, 1, r * 1.3));
       this.burns.setMatrixAt(b, this.m);
-      this.burns.setColorAt(b, this.c.copy(br.trail ? TRAIL : CLOUD).multiplyScalar(0.15 + 0.5 * f));
+      this.burns.setColorAt(b, this.c.copy(br.trail ? TRAIL : CLOUD).multiplyScalar((0.15 + 0.5 * f) * near));
       b++;
     }
     this.burns.count = b;
@@ -139,4 +147,23 @@ function spiked(): BufferGeometry {
   }
   g.computeVertexNormals();
   return g;
+}
+
+/** A soft round glow, hot in the middle and gone at the rim. */
+function glow(): CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d')!;
+  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.45, 'rgba(255,255,255,0.6)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 64, 64);
+  return new CanvasTexture(c);
+}
+
+function smoothstep(a: number, b: number, x: number): number {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
 }

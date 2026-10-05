@@ -7,12 +7,12 @@ flying the model; fights come from the scripted pilot's arcade runs (8 runs, up 
 
 | Measure | Value |
 |---|---|
-| Top speed | 45.0 u/s |
-| Rest to half / 90% speed | 0.30s / 0.97s |
-| Let go at top speed: carries | 25.3 u over 1.47s (to 10%) |
-| Half turn from rest | 0.85s |
-| Full circle at full throttle | 1.65s, 19.9 u across |
-| Barrel roll at speed: sideways | 7.2 u |
+| Top speed | 39.1 u/s |
+| Rest to half / 90% speed | 0.35s / 1.12s |
+| Let go at top speed: carries | 22.0 u over 1.47s (to 10%) |
+| Half turn from rest | 1.07s |
+| Full circle at full throttle | 2.02s, 21.4 u across |
+| Barrel roll at speed: sideways | 6.7 u |
 
 ## Laser on a held trigger (stock)
 
@@ -25,27 +25,27 @@ flying the model; fights come from the scripted pilot's arcade runs (8 runs, up 
 
 | Measure | Value |
 |---|---|
-| Lances fired per minute | 149.3 |
-| Hull hits per lance (accuracy) | 25% |
-| Jinks per minute | 9.5 |
-| Kills per minute | 10.2 |
-| Median seconds between kills | 3.5 |
-| Hits taken per minute (plates / shields) | 0.23 / 0.81 |
-| First hit taken at (median) | 157.0s |
-| Median seconds between hits taken | 14.0 |
+| Lances fired per minute | 144.9 |
+| Hull hits per lance (accuracy) | 23% |
+| Jinks per minute | 6.8 |
+| Kills per minute | 11.3 |
+| Median seconds between kills | 3.0 |
+| Hits taken per minute (plates / shields) | 0.08 / 0.63 |
+| First hit taken at (median) | 218.1s |
+| Median seconds between hits taken | 31.6 |
 
 ### Time to kill, from first hit to dead
 
 | Hull | Kills | Median | Mean |
 |---|---|---|---|
-| scout | 173 | 0.6s | 3.4s |
-| one-hit kills | 149 | 0.0s | 0.0s |
-| lancer | 77 | 4.9s | 6.6s |
-| raptor | 51 | 5.7s | 5.6s |
-| stalker | 24 | 1.8s | 2.0s |
-| drone | 23 | 1.8s | 5.2s |
-| weaver | 13 | 0.6s | 1.4s |
-| warbird | 11 | 6.6s | 10.4s |
-| freighter | 7 | 5.9s | 7.9s |
+| one-hit kills | 260 | 0.0s | 0.0s |
+| scout | 107 | 0.8s | 2.6s |
+| lancer | 73 | 2.9s | 5.4s |
+| raptor | 56 | 0.8s | 3.2s |
+| warbird | 26 | 15.6s | 12.0s |
+| stalker | 17 | 1.1s | 1.5s |
+| weaver | 14 | 1.3s | 1.8s |
+| drone | 11 | 8.5s | 11.0s |
+| freighter | 9 | 9.7s | 11.0s |
 
-Stock hull: Obedience class, thrust 1.965, turn 1.1, drag 0.961, grip 0.05.
+Stock hull: Obedience class, thrust 1.48, turn 0.92, drag 0.966, grip 0.05.

@@ -24,7 +24,7 @@ export const GRIP_CARVE = 0.6;
 export const COAST_DRAG = 0.974;
 
 /** The helm eases in at this rate per second, so a tap nudges and a hold turns. */
-export const HELM_EASE = 14;
+export const HELM_EASE = 8;
 /** A stick steers once pushed this far. */
 export const AIM_DEAD = 0.18;
 /** A stick throttles from this far out... */
