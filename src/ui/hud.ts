@@ -14,6 +14,8 @@ import { systemLevel } from './refit';
 import { Radar } from './radar';
 import { range, Targeting } from './targeting';
 import { INK } from './palette';
+import { num, plural, t } from '../i18n';
+import { damageWord } from './panels';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view in the brand's six zones, with nothing on
@@ -37,12 +39,14 @@ import { INK } from './palette';
 // Alerts are placards that come and go. Every figure is live. Text is
 // written ten times a second, the scope thirty, the world every frame.
 
-const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody: 'Custody', office: 'Office', voice: 'Voice', thren: 'Thren' };
+export const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody: 'Custody', office: 'Office', voice: 'Voice', thren: 'Thren' };
+const faction = (f: string) => t(FACTION_NAME[f] ?? f);
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron rock broken', rich: 'Rich rock broken', volatile: 'Volatile rock broken', rare: 'Rare rock broken' };
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
-const fmt = (n: number) => Math.round(n).toLocaleString('en-GB');
+const fmt = num;
 
 /** Set a node's text only when it changed. */
 function text(el: HTMLElement, t: string): void {
@@ -119,6 +123,13 @@ export class Hud {
     return 0;
   }
 
+  /** The language changed: redraw what is only written when it changes. */
+  relabel(): void {
+    this.modeKey = this.contactKey = this.powerKey = this.plateKey = '';
+    this.levels = null;
+    this.seed = -1;
+  }
+
   showZoom(level: number): void {
     $('zoom-v').textContent = String(level + 1);
   }
@@ -128,7 +139,7 @@ export class Hud {
     const last = this.log[this.log.length - 1];
     if (kind && last && last.kind === kind && world.time - last.at < 1.6) {
       last.n++; last.pts += points; last.at = world.time;
-      last.text = `${last.n} ${kind === 'rock' ? 'rocks broken' : 'kills'} · +${fmt(last.pts)}`;
+      last.text = `${t(kind === 'rock' ? '{n} rocks broken' : '{n} kills', { n: last.n })} · +${fmt(last.pts)}`;
       (last.el.lastChild as HTMLElement).textContent = last.text;
       last.el.classList.remove('old', 'gone');
       return;
@@ -146,66 +157,66 @@ export class Hud {
   events(evts: GameEvent[], world: World): void {
     for (const e of evts) {
       switch (e.type) {
-        case 'rockDestroyed': this.note(world, `${e.kind === 'basalt' ? 'Rock' : `${e.kind} rock`} broken · +${e.points}`, '', 'rock', e.points); break;
-        case 'alienDestroyed': this.note(world, `${e.label} destroyed · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
+        case 'rockDestroyed': this.note(world, `${t(ROCK_BROKEN[e.kind] ?? 'Rock broken')} · +${e.points}`, '', 'rock', e.points); break;
+        case 'alienDestroyed': this.note(world, `${t('{name} destroyed', { name: t(e.label) })} · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
         case 'crystal': if (!world.bk) { this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; } break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
-        case 'rockCut': this.note(world, `Cut clean · ${e.ore} ore${e.krail ? ` · ${e.krail} Krail` : ''}`, 'gain'); break;
-        case 'fracture': this.note(world, e.kind === 'volatile' ? 'Volatile rock · it went up' : 'Rock fractured · too hot', 'hit'); break;
-        case 'holdFull': this.note(world, 'Hold full · sell at the port', 'hit'); break;
-        case 'patched': this.note(world, `Plate patched from parts · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
-        case 'docked': this.note(world, `Docked · ${e.name}`, 'gain'); break;
-        case 'comms': this.note(world, `${e.slow ? 'Ambush' : 'Channel open'} · ${e.from}`, e.slow ? 'hit' : undefined); break;
-        case 'commsAnswer': this.note(world, e.text, e.won ? undefined : 'hit'); break;
-        case 'jobDone': this.note(world, `Job done · ${e.text}`, 'gain'); break;
-        case 'jobShort': this.note(world, `Job open · ${e.text}`, 'hit'); break;
-        case 'spool': this.banner('Lane mouth', 'Jump drive spooling', 'Hold inside the lane', 1.6, 'calm'); break;
-        case 'needKrail': this.banner('Lane mouth', 'Not enough Krail', `${e.have} of ${e.need} in the tank`, 2.2, 'caution'); break;
-        case 'jumped': this.banner('Jump', 'Into the lane', world.bk ? `Bound for ${world.bk.def.dest}` : 'Out of the system', 2, 'calm'); break;
-        case 'pickup': this.note(world, `Hull repaired · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
-        case 'power': this.note(world, `${POWER_LABEL[e.kind]}`, 'gain'); break;
-        case 'plasmaDown': this.note(world, 'Plasma torpedo shot down'); break;
-        case 'tractor': this.note(world, 'Tractor lock · thrust away', 'hit'); break;
-        case 'bankEmpty': this.note(world, 'Laser bank low · slower fire', 'hit'); break;
+        case 'rockCut': this.note(world, `${t('Cut clean')} · ${t('{n} ore', { n: e.ore })}${e.krail ? ` · ${e.krail} Krail` : ''}`, 'gain'); break;
+        case 'fracture': this.note(world, t(e.kind === 'volatile' ? 'Volatile rock · it blew' : 'Rock cracked · too hot'), 'hit'); break;
+        case 'holdFull': this.note(world, t('Hold full · sell at the port'), 'hit'); break;
+        case 'patched': this.note(world, `${t('Plate patched')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;
+        case 'comms': this.note(world, `${t(e.slow ? 'Ambush' : 'Channel open')} · ${t(e.from)}`, e.slow ? 'hit' : undefined); break;
+        case 'commsAnswer': this.note(world, t(e.text), e.won ? undefined : 'hit'); break;
+        case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
+        case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
+        case 'spool': this.banner(t('Lane mouth'), t('Jump drive spooling'), t('Stay in the lane'), 1.6, 'calm'); break;
+        case 'needKrail': this.banner(t('Lane mouth'), t('Not enough Krail'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
+        case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
+        case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'power': this.note(world, t(POWER_LABEL[e.kind]), 'gain'); break;
+        case 'plasmaDown': this.note(world, t('Plasma torpedo shot down')); break;
+        case 'tractor': this.note(world, t('Tractor lock · thrust away'), 'hit'); break;
+        case 'bankEmpty': this.note(world, t('Laser bank low · slower fire'), 'hit'); break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':
-          this.note(world, e.left > 0 ? `Shield took it · ${e.left} left` : 'Shield down', 'hit');
+          this.note(world, e.left > 0 ? t('Shield took it · {n} left', { n: e.left }) : t('Shield down'), 'hit');
           this.flashHit();
           break;
-        case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, 'Shield up', 'gain'); break;
-        case 'regen': this.note(world, `Hull regrown · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
-        case 'damageControl': this.banner('Damage control', 'Hull held', 'One plate · two seconds of grace', 2, 'caution'); break;
-        case 'overchargeReady': this.note(world, `Reactor charged · ${document.documentElement.classList.contains('touch-ui') ? 'tap Core' : 'E'} to release`, 'gain'); break;
-        case 'overcharge': this.note(world, `Overcharge released · ${e.hits} hit${e.hits === 1 ? '' : 's'}`, 'gain'); break;
-        case 'chain': this.note(world, `Chain ${e.count} · score ×${e.mult}`, 'gain'); break;
-        case 'squad': this.note(world, `${e.label} inbound`, 'hit'); break;
-        case 'levelUp': this.banner('Krail hold full', `Refit ${pad(e.refit, 2)}`, 'Choose an upgrade', 0.9, 'gain'); break;
-        case 'salvage': this.note(world, `Salvage${e.tech ? ` · ${FACTION_NAME[e.faction] ?? e.faction} tech recovered` : ''}`, 'gain'); break;
-        case 'cloak': this.note(world, 'Cloaked · hulls hold fire', 'gain'); break;
+        case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, t('Shield up'), 'gain'); break;
+        case 'regen': this.note(world, `${t('Hull regrown')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'damageControl': this.banner(t('Damage control'), t('Hull held'), t('One plate · two seconds of grace'), 2, 'caution'); break;
+        case 'overchargeReady': this.note(world, t(document.documentElement.classList.contains('touch-ui') ? 'Core charged · tap Core' : 'Core charged · press E'), 'gain'); break;
+        case 'overcharge': this.note(world, `${t('Overcharge')} · ${plural(e.hits, '{n} hit', '{n} hits')}`, 'gain'); break;
+        case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
+        case 'squad': this.note(world, t('{name} inbound', { name: t(e.label) }), 'hit'); break;
+        case 'levelUp': this.banner(t('Krail hold full'), `${t('Refit')} ${pad(e.refit, 2)}`, t('Pick an upgrade'), 0.9, 'gain'); break;
+        case 'salvage': this.note(world, `${t('Salvage')}${e.tech ? ` · ${t('{f} tech recovered', { f: faction(e.faction) })}` : ''}`, 'gain'); break;
+        case 'cloak': this.note(world, t('Cloaked · they hold fire'), 'gain'); break;
         case 'shipHit':
-          this.note(world, `Hull struck · ${e.source.split(':')[0]}`, 'hit');
+          this.note(world, `${t('Hull hit')} · ${damageWord(e.source)}`, 'hit');
           this.flashHit();
           this.retrigger($('sys-hull'), 'hit');
-          if (e.plates === 1) this.banner('Alarm', 'Hull critical', 'One plate left', 1.8);
+          if (e.plates === 1) this.banner(t('Alarm'), t('Hull critical'), t('One plate left'), 1.8);
           break;
         case 'bossWarn':
-          this.note(world, `${e.name} inbound`, 'hit');
-          this.banner('Contact', `${e.name}`, e.hails ? 'Capital ship inbound' : 'Decloaking · no hail', 2.6, 'caution');
+          this.note(world, t('{name} inbound', { name: t(e.name) }), 'hit');
+          this.banner(t('Contact'), t(e.name), t(e.hails ? 'Capital ship inbound' : 'Decloaking · no hail'), 2.6, 'caution');
           break;
-        case 'bossEvaded': this.note(world, `Broke away from ${e.name}`); break;
-        case 'bossArrive': this.note(world, `${e.name} on intercept`, 'hit'); break;
-        case 'bossPhase': this.banner('Capital ship', e.phase === 2 ? 'Last stand' : 'Hull buckling', e.phase === 2 ? 'Everything she has left' : 'Reinforcements inbound', 1.6); break;
-        case 'bossLeft': this.note(world, 'Capital ship breaking off'); break;
-        case 'captainLeft': this.note(world, e.text); this.banner('Contact', e.name, 'Turning away', 2, 'calm'); break;
+        case 'bossEvaded': this.note(world, t('Broke away from {name}', { name: t(e.name) })); break;
+        case 'bossArrive': this.note(world, t('{name} on intercept', { name: t(e.name) }), 'hit'); break;
+        case 'bossPhase': this.banner(t('Capital ship'), t(e.phase === 2 ? 'Last stand' : 'Hull buckling'), t(e.phase === 2 ? 'Everything she has left' : 'Reinforcements inbound'), 1.6); break;
+        case 'bossLeft': this.note(world, t('Capital ship breaking off')); break;
+        case 'captainLeft': this.note(world, t(e.text)); this.banner(t('Contact'), t(e.name), t('Turning away'), 2, 'calm'); break;
         case 'bossDestroyed':
-          this.note(world, `${e.name} destroyed · +${fmt(e.points)}`, 'gain');
-          this.banner('Kill confirmed', `${e.name}`, `+${fmt(e.points)} · battle salvage`, 2.4, 'calm');
+          this.note(world, `${t('{name} destroyed', { name: t(e.name) })} · +${fmt(e.points)}`, 'gain');
+          this.banner(t('Kill confirmed'), t(e.name), `+${fmt(e.points)} · ${t('battle salvage')}`, 2.4, 'calm');
           break;
-        case 'sectorEvent': this.banner('Sector event', e.name, e.text, 2.4, 'caution'); this.note(world, e.name); break;
-        case 'sectorEventEnd': this.note(world, `${e.name} · ${e.text}`, e.success ? 'gain' : 'hit'); break;
+        case 'sectorEvent': this.banner(t('Sector event'), t(e.name), t(e.text), 2.4, 'caution'); this.note(world, t(e.name)); break;
+        case 'sectorEventEnd': this.note(world, `${t(e.name)} · ${t(e.text)}`, e.success ? 'gain' : 'hit'); break;
         case 'breach':
-          this.note(world, `Hull breach · run ${fmt(e.score)}`, 'hit');
-          this.banner('Alarm', 'Hull breach', `Run ${fmt(e.score)}`, 1.6);
+          this.note(world, `${t('Hull breach')} · ${t('run {n}', { n: fmt(e.score) })}`, 'hit');
+          this.banner(t('Alarm'), t('Hull breach'), t('Run {n}', { n: fmt(e.score) }), 1.6);
           break;
       }
     }
@@ -250,24 +261,24 @@ export class Hud {
   private updateSector(world: World): void {
     if (world.seed !== this.seed) {
       this.seed = world.seed;
-      text($('sec-code'), `Sector ${10 + (world.seed % 89)}-${String(Math.floor(world.seed / 89) % 97).padStart(2, '0')}`);
+      text($('sec-code'), `${t('Sector')} ${10 + (world.seed % 89)}-${String(Math.floor(world.seed / 89) % 97).padStart(2, '0')}`);
     }
     const e = world.encounter;
     if (world.bk) {
       // a sortie: the system, and who holds it
       const d = world.bk.def;
       this.seed = -1;
-      text($('sec-code'), d.netted ? 'Netted · Custody control' : `${KIND_NAME[d.kind]}`);
+      text($('sec-code'), t(d.netted ? 'Netted · Custody control' : KIND_NAME[d.kind]));
       text($('sec-name'), d.name);
       return;
     }
-    text($('sec-name'), e && !e.done ? SECTOR_NAME[e.id] : 'Asteroid field');
+    text($('sec-name'), t(e && !e.done ? SECTOR_NAME[e.id] : 'Asteroid field'));
   }
 
   // ── the rail ────────────────────────────────────────────────────────────
 
   private updateRail(world: World): void {
-    text($('xp-l'), world.bk ? 'Ore' : 'Krail');
+    text($('xp-l'), t(world.bk ? 'Ore' : 'Krail'));
     text($('refit-n'), pad(world.refit, 2));
     text($('xp-v'), String(Math.floor(world.xp)));
     text($('xp-n'), String(world.xpNext));
@@ -292,7 +303,7 @@ export class Hud {
     text($('v-fuel'), `${world.krail}/${need}`);
     $('g-fuel').style.setProperty('--v', Math.min(1, world.krail / need).toFixed(2));
     fuel.classList.toggle('ready', world.krail >= need);
-    text($('lv-fuel'), world.krail >= need ? 'Jump' : 'Tank');
+    text($('lv-fuel'), t(world.krail >= need ? 'Jump' : 'Tank'));
     const ore = $('vy-ore');
     text(ore, `${world.ore}/${world.holdMax}`);
     $('g-hold').style.setProperty('--v', Math.min(1, world.ore / world.holdMax).toFixed(2));
@@ -303,7 +314,7 @@ export class Hud {
     text(food, String(world.food));
     food.classList.toggle('full', world.food < 6);
     const heat = b.heat;
-    text($('vy-heat'), `Wanted ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}/4`);
+    text($('vy-heat'), `${t('Wanted')} ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}/4`);
     ticks($('vy-heat-t'), heat, 20, 'ceil');
     v.classList.toggle('hot', heat >= 0.8);
     // the contacts beside the scope: the two places, the nearest hostile, the nearest Krail trace
@@ -312,15 +323,15 @@ export class Hud {
     for (const a of world.aliens) {
       if (cloaked(a)) continue;
       const d = dist(a);
-      if (!hostile || d < hostile.d) hostile = { label: alienLabel(a), d, faction: a.faction };
+      if (!hostile || d < hostile.d) hostile = { label: t(alienLabel(a)), d, faction: a.faction };
     }
     let trace = Infinity;
     for (const r of world.field.rocks) if (r.kind === 'rich' || r.kind === 'rare') trace = Math.min(trace, dist(r));
     const rows: Array<[string, number, string]> = [];
     if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
     if (b.port) rows.push([b.port.name, dist(b.port), INK.teal]);
-    rows.push([b.lane.name, dist(b.lane), 'var(--amber)']);
-    if (trace < Infinity) rows.push(['Krail trace', trace, 'var(--violet)']);
+    rows.push([t(b.lane.name), dist(b.lane), 'var(--amber)']);
+    if (trace < Infinity) rows.push([t('Krail trace'), trace, 'var(--violet)']);
     const key = rows.map(([n, d]) => `${n}${Math.round(d / 10)}`).join();
     if (key !== this.contactKey) {
       this.contactKey = key;
@@ -337,11 +348,11 @@ export class Hud {
     // the objective, as steps
     const docked = b.docks > 0, ready = world.krail >= b.jumpCost;
     const steps: Array<[string, 'done' | 'now' | '']> = [
-      [`Krail for the jump to ${b.def.dest} · <b>${world.krail}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
-      ...(b.port ? [[`Dock at ${b.port.name}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`} (optional)`, docked ? 'done' : ''] as [string, 'done' | '']] : []),
-      [`Reach the lane mouth · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
+      [`${t('Krail to jump')} · <b>${world.krail}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
+      ...(b.port ? [[`${t('Dock at {port} (optional)', { port: b.port.name })}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`}`, docked ? 'done' : ''] as [string, 'done' | '']] : []),
+      [`${t('Reach the lane mouth')} · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
       // jobs taken on comms cards, paid where they say
-      ...world.jobs.map((j): [string, ''] => [`Job · ${j.text}`, '']),
+      ...world.jobs.map((j): [string, ''] => [`${t('Job')} · ${t(j.text)}`, '']),
     ];
     const html = steps.map(([t, c]) => `<li class="${c}">${t}</li>`).join('');
     // the threat card: the nearest pursuer, how close and how bad
@@ -354,9 +365,9 @@ export class Hud {
     if (near) {
       const level = near.d < 45 ? 'high' : near.d < 110 ? 'medium' : 'low';
       th.classList.toggle('high', level === 'high');
-      text($('th-n'), near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact');
+      text($('th-n'), t(near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact'));
       text($('th-s'), `${near.label} · ${range(near.d)}`);
-      text($('th-l'), `Threat ${level}`);
+      text($('th-l'), t(level === 'high' ? 'Threat high' : level === 'medium' ? 'Threat medium' : 'Threat low'));
     }
     const list = $('obj-list');
     if (list.innerHTML !== html) list.innerHTML = html;
@@ -380,7 +391,7 @@ export class Hud {
       for (const r of ROWS) {
         const n = systemLevel(world.levels, r.branch);
         const el = $(`lv-${r.id}`);
-        text(el, n > 0 ? `Lv ${n}` : '');
+        text(el, n > 0 ? `${t('Lv')} ${n}` : '');
         if (!first && n > (this.lv[r.id] ?? 0)) this.retrigger(el, 'up');
         this.lv[r.id] = n;
       }
@@ -396,7 +407,7 @@ export class Hud {
     ph.classList.toggle('hot', hot);
     const vb = $('v-bank');
     const pct = `${Math.round(bank * 100)}`;
-    if (dry) text(vb, 'Low');
+    if (dry) text(vb, t('Low'));
     else if (vb.firstChild?.nodeValue !== pct || vb.childNodes.length !== 2) vb.replaceChildren(pct, Object.assign(document.createElement('small'), { textContent: '%' }));
 
     // torpedoes: the rack, the next round filling as it reloads, and the lock
@@ -412,7 +423,7 @@ export class Hud {
       const locked = world.lock !== null;
       tp.classList.toggle('lock', locked && arms.rack > 0);
       tp.classList.toggle('empty', arms.rack === 0);
-      text(vr, arms.rack === 0 ? `${Math.max(0, arms.reload).toFixed(1)}s` : locked ? 'Lock' : 'Ready');
+      text(vr, arms.rack === 0 ? `${Math.max(0, arms.reload).toFixed(1)}s` : t(locked ? 'Lock' : 'Ready'));
     }
 
     $('sys-fuel').hidden = !world.bk;
@@ -432,7 +443,7 @@ export class Hud {
     ocRow.classList.toggle('ready', ready && world.overload <= 0);
     ocRow.classList.toggle('hot', world.overload > 0 || world.phaseT > 0);
     const vo = $('v-oc');
-    const word = world.phaseT > 0 ? `${Math.ceil(world.phaseT)}s` : world.overload > 0 ? `${Math.ceil(world.overload)}s` : ready ? 'Ready' : '';
+    const word = world.phaseT > 0 ? `${Math.ceil(world.phaseT)}s` : world.overload > 0 ? `${Math.ceil(world.overload)}s` : ready ? t('Ready') : '';
     vo.classList.toggle('word', !!word);
     if (word) text(vo, word);
     else if (vo.firstChild?.nodeValue !== `${Math.round(oc * 100)}` || vo.childNodes.length !== 2) vo.replaceChildren(`${Math.round(oc * 100)}`, Object.assign(document.createElement('small'), { textContent: '%' }));
@@ -453,7 +464,7 @@ export class Hud {
         kids.push(p);
       }
       host.replaceChildren(...kids);
-      host.setAttribute('aria-label', `Hull ${world.plates} of ${st.maxPlates}${shields ? `, shields ${world.shields | 0}` : ''}`);
+      host.setAttribute('aria-label', `${t('Hull {n} of {max}', { n: world.plates, max: st.maxPlates })}${shields ? `, ${t('shields {n}', { n: world.shields | 0 })}` : ''}`);
       text($('v-hull'), `${world.plates}/${st.maxPlates}`);
     }
     $('sys-hull').classList.toggle('crit', world.plates <= 1 && world.alive);
@@ -481,9 +492,9 @@ export class Hud {
         s.append(label, b);
         return s;
       };
-      const chips = live.map((k) => chip(POWER_LABEL[k], world.powers[k]));
-      if (world.phaseT > 0) chips.push(chip('Phase cloak', world.phaseT));
-      if (world.cloakT > 0) chips.push(chip('Cloak', world.cloakT));
+      const chips = live.map((k) => chip(t(POWER_LABEL[k]), world.powers[k]));
+      if (world.phaseT > 0) chips.push(chip(t('Phase cloak'), world.phaseT));
+      if (world.cloakT > 0) chips.push(chip(t('Cloak'), world.cloakT));
       $('powers').replaceChildren(...chips);
     }
 
@@ -506,13 +517,13 @@ export class Hud {
     if (b) {
       boss.classList.toggle('cloaked', b.cloak > 0.5);
       boss.classList.toggle('inbound', b.arriving);
-      text($('boss-name'), b.name);
-      text($('boss-cls'), `${b.faction} capital ship`);
+      text($('boss-name'), t(b.name));
+      text($('boss-cls'), t('{f} capital ship', { f: faction(b.faction) }));
       ticks($('boss-hp'), b.hp / b.maxHp, 45, 'ceil');
       const d = Math.hypot(b.x - world.ship.x, b.z - world.ship.z);
-      text($('boss-hull'), b.arriving ? 'Inbound' : `Hull ${Math.max(0, Math.round((b.hp / b.maxHp) * 100))}%`);
-      text($('boss-phase'), b.arriving ? range(d) : b.leaving ? 'Breaking off' : `Phase ${b.phase + 1}/3`);
-      text($('boss-fuse'), b.arriving || b.leaving ? '' : `Fuse ${Math.ceil(b.fuse)}s`);
+      text($('boss-hull'), b.arriving ? t('Inbound') : `${t('Hull')} ${Math.max(0, Math.round((b.hp / b.maxHp) * 100))}%`);
+      text($('boss-phase'), b.arriving ? range(d) : b.leaving ? t('Breaking off') : `${t('Phase')} ${b.phase + 1}/3`);
+      text($('boss-fuse'), b.arriving || b.leaving ? '' : `${t('Fuse')} ${Math.ceil(b.fuse)}s`);
     }
 
     const e = world.encounter, obj = $('objective');
@@ -527,39 +538,39 @@ export class Hud {
       const s = world.ship;
       const dl = Math.hypot(bk.lane.x - s.x, bk.lane.z - s.z);
       if (bk.jumpT >= 0) {
-        text($('obj-t'), 'Jump'); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), 'Into the lane');
+        text($('obj-t'), t('Jump')); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), t('Into the lane'));
       } else if (bk.spool > 0) {
-        text($('obj-t'), 'Jump drive'); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
-        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), 'Spooling · hold inside the lane');
+        text($('obj-t'), t('Jump drive')); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
+        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), t('Spooling · stay in the lane'));
       } else if (bk.dockT > 0) {
         text($('obj-t'), bk.port?.name ?? ''); text($('obj-left'), '');
-        ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), 'Docking clamps');
+        ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));
       } else {
-        text($('obj-t'), 'Make for the lane mouth'); text($('obj-left'), range(dl));
+        text($('obj-t'), t('Make for the lane mouth')); text($('obj-left'), range(dl));
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
-        text($('obj-s'), world.krail >= bk.jumpCost ? `Krail ${world.krail}/${bk.jumpCost} · enough to jump` : `Krail ${world.krail}/${bk.jumpCost} · cut the violet rock`);
+        text($('obj-s'), `Krail ${world.krail}/${bk.jumpCost} · ${t(world.krail >= bk.jumpCost ? 'enough to jump' : 'cut the violet rock')}`);
       }
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
       const left = Math.max(0, Math.ceil(e.dur - e.t));
-      text($('obj-t'), def.name);
+      text($('obj-t'), t(def.name));
       text($('obj-left'), `${left}s`);
       const p = e.id === 'distress' || e.id === 'derelict' || e.id === 'convoy' ? e.progress : 1 - e.t / e.dur;
       ticks($('obj-p'), p, 30);
       const d = Math.hypot(e.x - world.ship.x, e.z - world.ship.z);
       const inside = d < e.r;
-      text($('obj-s'), e.id === 'distress' ? (inside ? 'Holding at the beacon' : `Reach the beacon · ${range(d)}`)
-        : e.id === 'derelict' ? (inside ? 'Salvaging' : `Close to salvage · ${range(d)}`)
-        : e.id === 'convoy' ? `${Math.round(e.progress * 3)}/3 freighters`
-        : e.id === 'anomaly' ? 'Keep clear of the core'
-        : def.text);
+      text($('obj-s'), e.id === 'distress' ? (inside ? t('Holding at the beacon') : `${t('Reach the beacon')} · ${range(d)}`)
+        : e.id === 'derelict' ? (inside ? t('Salvaging') : `${t('Get close to salvage')} · ${range(d)}`)
+        : e.id === 'convoy' ? t('{n}/3 freighters', { n: Math.round(e.progress * 3) })
+        : e.id === 'anomaly' ? t('Keep clear of the core')
+        : t(def.text));
     } else if (!bk) {
       // the arcade between events: break rock, fill the hold, refit
-      text($('obj-t'), 'Extract Krail');
+      text($('obj-t'), t('Extract Krail'));
       text($('obj-left'), '');
       ticks($('obj-p'), world.xp / world.xpNext, 30);
       text($('obj-s'), '');
-      const html = `<li class="now">Break rock · <b>${Math.floor(world.xp)}/${world.xpNext}</b></li><li>Refit ${pad(world.refit + 1, 2)} at full</li>`;
+      const html = `<li class="now">${t('Break rock')} · <b>${Math.floor(world.xp)}/${world.xpNext}</b></li><li>${t('Refit {n} when full', { n: pad(world.refit + 1, 2) })}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
     }
@@ -590,12 +601,12 @@ export class Hud {
     if (key === this.modeKey) return;
     this.modeKey = key;
     $('mode').className = `cut ${cls}`;
-    text($('mode-t'), word);
+    text($('mode-t'), t(word));
     $('hints').replaceChildren(...hints.map(([k, a]) => {
       const d = document.createElement('div');
       if (a === lit) d.className = 'lit';
       const dt = document.createElement('dt'); dt.textContent = k;
-      const dd = document.createElement('dd'); dd.textContent = a;
+      const dd = document.createElement('dd'); dd.textContent = t(a);
       d.append(dt, dd);
       return d;
     }));

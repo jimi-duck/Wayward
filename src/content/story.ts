@@ -84,18 +84,18 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_warden', kind: 'rumour', caller: 'miners',
     from: 'Ilse Marrow · retired Lane Warden', title: 'I was on the relay that night',
-    text: '“I heard about your file. Seventy years ago I sat the Narrows relay. The lanes did not fail, Juno. Someone told us to turn them off.”',
+    text: '“I heard about your file. Seventy years ago I ran the Narrows relay. The lanes didn’t fail, Juno. We were told to turn them off.”',
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
       { id: 'hear', label: 'Hear her out', tone: 'help', hint: 'Her account goes in the file. She talks for a long time.', win: { text: 'The order, in her words · it goes in the file', flag: 'frag_order', standing: { miners: 1 }, hunt: -0.5 } },
-      { id: 'copy', label: 'Send her a copy', tone: 'help', hint: 'Her account in the file, and a second voice who can tell it.', win: { text: 'She has a copy now · two voices', flag: ['frag_order', 'copy_warden'], heat: 0.08 } },
+      { id: 'copy', label: 'Send her a copy', tone: 'help', hint: 'Her account in the file, and a second voice to tell it.', win: { text: 'She has a copy now · two voices', flag: ['frag_order', 'copy_warden'], heat: 0.08 } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'It could be a trap.', win: { text: 'Channel closed' } },
     ],
   }),
   story({
     id: 'story_ledger', kind: 'trade', caller: 'kellern',
     from: 'Ansel Brook · Kellern Mining, accounts', title: 'The real books',
-    text: '“I keep Kellern’s ledgers. The real ones. Every unit of Krail the Scatter never got is in here. Make it worth my job.”',
+    text: '“I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Make it worth my job.”',
     cargo: 'A clerk’s shuttle · a data spike',
     truths: [
       { id: 'honest', weight: 3, read: 'His channel is a private one · nobody listening' },
@@ -119,7 +119,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_moot', kind: 'plea', caller: 'miners',
     from: 'Speaker Oduya · Kessel Hold', title: 'Read it to the moot',
-    text: '“The claims council wants to hear your file for itself. Read it to us, and Kessel Hold stands with you when the time comes.”',
+    text: '“The council wants to hear your file. Read it to us and Kessel Hold stands with you.”',
     cargo: 'Kessel Hold · twelve claims, one council',
     choices: [
       { id: 'read', label: 'Read it to them', tone: 'help', hint: 'An ally. Everyone on the channel hears it too.', win: { text: 'Kessel Hold will stand with you', flag: 'pact_holdfast', standing: { miners: 1, frontier: 1 }, heat: 0.06, hunt: -0.5 } },
@@ -130,10 +130,10 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_drift', kind: 'trade', caller: 'miners',
     from: 'Mother Saffi · the Long Walk', title: 'The ships we lost',
-    text: '“The Long Walk kept the manifests of every ship lost the night the lanes went dark. Our dead belong in your file.”',
+    text: '“We kept the manifests of every ship lost the night the lanes went dark. Our dead belong in your file.”',
     cargo: 'Drift fleet · forty hulls, lashed together',
     choices: [
-      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests for the file, and the Drift will stand with you. Copies get talked about.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift'], heat: 0.08, hunt: -0.5 } },
+      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests, and the Drift stand with you. Copies get talked about.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift'], heat: 0.08, hunt: -0.5 } },
       { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Ten ore. Just the manifests, quietly.', cost: { ore: 10 }, win: { text: 'The manifests go in the file', flag: 'frag_manifests' } },
       { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
     ],
@@ -141,7 +141,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_broker', kind: 'trade', caller: 'gutter',
     from: 'Vell · a broker of the Gutter', title: 'Name your price',
-    text: '“Everyone knows what you carry. When you reach the Threshold, I buy it. Here is something on account.”',
+    text: '“Everyone knows what you carry. At the Threshold, I buy it. Here’s something on account.”',
     cargo: 'A broker’s yacht · very clean guns',
     choices: [
       { id: 'take', label: 'Take the advance', tone: 'trade', hint: 'Forty chits, and a buyer at the end.', win: { text: 'Forty chits · Vell will be waiting', chits: 40, flag: 'broker', standing: { gutter: 1 } } },
@@ -157,7 +157,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“WE BUILT THE BREAKERS THAT CLOSED THE LANES. THEY TOLD US TO FORGET. WE DID NOT.”',
     cargo: 'No ship · a voice in the machines',
     choices: [
-      { id: 'keys', label: 'Ask for the keys', tone: 'help', hint: 'Who built the breakers goes in the file, and the means to close a lane again.', win: { text: 'The keys are in the file · and in your hands', flag: ['frag_keys', 'lane_keys'] } },
+      { id: 'keys', label: 'Ask for the keys', tone: 'help', hint: 'Who built the breakers goes in the file, and a way to close a lane.', win: { text: 'The keys are in the file · and in your hands', flag: ['frag_keys', 'lane_keys'] } },
       { id: 'read', label: 'Let it read the file', tone: 'help', hint: 'The keys go in the file. The Voice can carry it everywhere.', win: { text: 'The Voice has read it all · it is listening now', flag: ['frag_keys', 'voice_read'], notice: { voice: -3 } } },
       { id: 'cut', label: 'Cut every terminal', tone: 'refuse', hint: 'Whatever it is, it is not yours.', win: { text: 'The terminals go dark' } },
     ],

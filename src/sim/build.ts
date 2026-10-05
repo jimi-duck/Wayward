@@ -3,6 +3,7 @@ import { applyModules } from './modules';
 import { flightHull, capStats, newStats, type Stats } from './stats';
 import { topSpeed, turnPerStep } from './ship';
 import { HZ, PX } from './tuning';
+import { midSentence, t } from '../i18n';
 
 // ── the build ─────────────────────────────────────────────────────────────
 // What the player has made of the ship: a level per upgrade id (each card
@@ -179,13 +180,13 @@ export function identity(levels: Levels): Identity {
     .filter((b) => b.levels > 0)
     .sort((a, b) => b.levels - a.levels);
   const specs = UPGRADES.filter((u) => u.kind === 'spec' && (levels[u.id] ?? 0) > 0);
-  if (!branches.length) return { title: 'Stock Wayward', branches, specs: [] };
+  if (!branches.length) return { title: t('Stock Wayward'), branches, specs: [] };
   const top = branches[0]!;
   const spec = specs.find((u) => u.branch === top.branch);
-  let title = BRANCHES[top.branch].identity;
-  if (spec) title = `${SPEC_PREFIX[spec.id] ?? spec.name} ${title.toLowerCase()}`;
+  let title = t(BRANCHES[top.branch].identity);
+  if (spec) title = t('{spec} {ship}', { spec: t(SPEC_PREFIX[spec.id] ?? spec.name), ship: midSentence(title) });
   const second = branches[1];
-  if (second && second.levels >= top.levels * 0.6 && second.levels >= 3) title += ` / ${BRANCHES[second.branch].identity.toLowerCase()}`;
+  if (second && second.levels >= top.levels * 0.6 && second.levels >= 3) title += ` / ${midSentence(t(BRANCHES[second.branch].identity))}`;
   return { title, branches, specs: specs.map((u) => u.name) };
 }
 

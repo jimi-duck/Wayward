@@ -10,6 +10,7 @@ import { readout, type NoticeLine } from '../sim/notice';
 import { act, actLine, fileCount } from '../sim/story';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
+import { num, plural, t } from '../i18n';
 
 // ── the chart ─────────────────────────────────────────────────────────────
 // Between systems the drive cools and the chart comes up: the region you
@@ -44,25 +45,25 @@ function project(shown: StarSystem[]): Proj {
   const lo = Math.min(...shown.map((s) => s.col)), hi = Math.max(lo + 1, ...shown.map((s) => s.col));
   return { px: (s) => PAD_X + ((s.col - lo) / (hi - lo)) * (W - PAD_X * 2), py: (s) => PAD_Y + s.y * (H - PAD_Y * 2) };
 }
-const days = (n: number) => `${n} day${n === 1 ? '' : 's'}`;
-const richWord = (k: number) => (k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
+const days = (n: number) => plural(n, '{n} day', '{n} days');
+const richWord = (k: number) => t(k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
 /** A place in a few words: what it is, and what it pays (a strange signal's is not known till it is read). */
-const placeText = (p: Place) => `${PLACES[p.id].name}, ${REWARD_WORD[PLACES[p.id].reward === 'unknown' ? 'unknown' : p.reward]}`;
+const placeText = (p: Place) => `${t(PLACES[p.id].name)}, ${t(REWARD_WORD[PLACES[p.id].reward === 'unknown' ? 'unknown' : p.reward])}`;
 
 /** The goal from where you are: the way out of the region you are in (its gate, or the Threshold). */
 const goalOf = (c: Chart, at: string) => gateOf(c, viewOf(c, at));
 /** Jumps from a system to the goal (Infinity with no way). */
 const toGoal = (c: Chart, at: string, id: string) => jumps(c, id, goalOf(c, at).id);
 /** The region's name, when the chart has more than one. */
-const regionName = (c: Chart, at: string) => (regionCount(c) > 1 ? REGIONS[viewOf(c, at)]?.name ?? '' : '');
+const regionName = (c: Chart, at: string) => (regionCount(c) > 1 ? t(REGIONS[viewOf(c, at)]?.name ?? '') : '');
 
 /** A faction's notice in a line: its tier, how far to the next, standing, and its captain. */
 function noticeText(l: NoticeLine, day: number): string {
-  const name = l.name.replace(/^the /, '');
-  const parts = [`${name} · ${l.tier}`, l.next ? `${Math.floor(l.notice)}/${l.next.at} to ${l.next.tier}` : `${Math.floor(l.notice)} notice`];
-  if (l.standing !== null) parts.push(`standing ${signed(l.standing)}`);
-  if (l.captain) parts.push(`${l.captain.name}${l.captain.rest > day + 1e-9 ? `, resting till day ${Math.floor(l.captain.rest) + 1}` : ', hunting you'}`);
+  const name = t(l.name.replace(/^the /, ''));
+  const parts = [`${name} · ${t(l.tier)}`, l.next ? t('{n}/{at} to {tier}', { n: Math.floor(l.notice), at: l.next.at, tier: t(l.next.tier) }) : t('{n} notice', { n: Math.floor(l.notice) })];
+  if (l.standing !== null) parts.push(`${t('standing')} ${signed(l.standing)}`);
+  if (l.captain) parts.push(`${l.captain.name}, ${l.captain.rest > day + 1e-9 ? t('resting till day {n}', { n: Math.floor(l.captain.rest) + 1 }) : t('hunting you')}`);
   return parts.join(' · ');
 }
 
@@ -90,9 +91,9 @@ export class ChartPanel {
     this.begin(j, lines);
     const s = here(j);
     const rn = regionName(j.chart, j.at);
-    $('ch-k').textContent = `The chart${rn ? ` · ${rn}` : ''} · day ${Math.floor(j.day) + 1}`;
-    $('ch-t').textContent = j.legs.length ? `Arrived · ${s.name}` : s.name;
-    $('ch-s').textContent = `${KIND_WORD[s.kind]} · ${SYSTEMS[s.kind].blurb}`;
+    $('ch-k').textContent = [t('The chart'), rn, t('day {n}', { n: Math.floor(j.day) + 1 })].filter(Boolean).join(' · ');
+    $('ch-t').textContent = j.legs.length ? `${t('Arrived')} · ${s.name}` : s.name;
+    $('ch-s').textContent = `${t(KIND_WORD[s.kind])} · ${t(SYSTEMS[s.kind].blurb)}`;
     this.onPick = onPick;
     this.onGo = null;
     $('ch-go').hidden = true;
@@ -120,17 +121,17 @@ export class ChartPanel {
     const s = here(j);
     const end = out.kind === 'through' || out.kind === 'captured' || out.kind === 'wrecked';
     $('chart').classList.toggle('alert', out.kind !== 'through');
-    $('ch-k').textContent = end ? `Journey over · day ${Math.floor(j.day) + 1}` : `Wreck ${j.wrecks} of ${WRECKS}`;
-    $('ch-t').textContent = out.kind === 'through' ? 'Into the Scatter' : out.kind === 'captured' ? 'Taken by Calloway' : out.kind === 'wrecked' ? 'The Wayward is lost' : `Adrift · ${s.name}`;
+    $('ch-k').textContent = end ? `${t('Journey over')} · ${t('day {n}', { n: Math.floor(j.day) + 1 })}` : t('Wreck {n} of {of}', { n: j.wrecks, of: WRECKS });
+    $('ch-t').textContent = out.kind === 'through' ? t('Into the Scatter') : out.kind === 'captured' ? t('Taken by Calloway') : out.kind === 'wrecked' ? t('The Wayward is lost') : `${t('Adrift')} · ${s.name}`;
     const legs = j.legs.filter((l) => l.ended === 'jumped').length;
     $('ch-s').textContent = end
-      ? `${legs} jump${legs === 1 ? '' : 's'} · ${Math.round(j.day)} days · ${j.wrecks} wreck${j.wrecks === 1 ? '' : 's'} · Calloway caught up ${j.hunt.caught} time${j.hunt.caught === 1 ? '' : 's'} · score ${j.score.toLocaleString('en-GB')}`
-      : 'You got her flying again. Same system, a day later, and the hold is gone.';
+      ? [plural(legs, '{n} jump', '{n} jumps'), days(Math.round(j.day)), plural(j.wrecks, '{n} wreck', '{n} wrecks'), plural(j.hunt.caught, 'Calloway caught you once', 'Calloway caught you {n} times'), `${t('score')} ${num(j.score)}`].join(' · ')
+      : t('She flies again. Same system, a day later, hold empty.');
     this.onPick = null;
     this.onGo = onGo;
     const go = $('ch-go');
     go.hidden = false;
-    go.textContent = end ? 'New journey' : 'Fly on';
+    go.textContent = t(end ? 'New journey' : 'Fly on');
     go.onclick = guarded(this.opened, () => this.go());
     go.onpointerdown = (e) => e.stopPropagation();
     this.ids = [];
@@ -138,7 +139,7 @@ export class ChartPanel {
       // the journey, system by system
       $('ch-list').replaceChildren(...j.legs.map((l, i) => h('div', `ch-leg${l.ended === 'destroyed' ? ' wreck' : ''}`, '',
         h('span', 'k', String(i + 1).padStart(2, '0')), h('b', '', l.name),
-        h('span', 'pl-note', `${l.ended === 'destroyed' ? 'Wrecked' : 'Jumped'} · ${Math.floor(l.time / 60)}:${String(l.time % 60).padStart(2, '0')} · Krail ${l.krailIn}→${l.krailOut}${l.calloway ? ' · Calloway' : ''}`))));
+        h('span', 'pl-note', `${t(l.ended === 'destroyed' ? 'Wrecked' : 'Jumped')} · ${Math.floor(l.time / 60)}:${String(l.time % 60).padStart(2, '0')} · Krail ${l.krailIn}→${l.krailOut}${l.calloway ? ' · Calloway' : ''}`))));
     } else $('ch-list').replaceChildren();
     this.draw(j);
     this.off = keys((e) => {
@@ -165,7 +166,7 @@ export class ChartPanel {
   private begin(j: Journey, lines: string[]): void {
     this.close();
     this.opened = performance.now();
-    $('ch-news').replaceChildren(...lines.map((l) => h('li', '', l)));
+    $('ch-news').replaceChildren(...lines.map((l) => h('li', '', t(l))));
     this.renderStat(j);
     $('chart').hidden = false;
   }
@@ -204,22 +205,22 @@ export class ChartPanel {
       // a lane that brings the goal a jump nearer says so, at a glance
       const left = toGoal(j.chart, j.at, s.id), closer = some && near[i]!;
       const notes = [
-        days(o.route.days), `food ${o.food}`, s.port ? s.port.name : 'no port', `Krail ${richWord(krailKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
+        days(o.route.days), `${t('food')} ${o.food}`, s.port ? s.port.name : t('no port'), `Krail ${richWord(krailKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
       ];
       if (o.place) notes.push(placeText(o.place));
-      if (fleetAt(j.chart, s.id)) notes.push('Drift fleet');
+      if (fleetAt(j.chart, s.id)) notes.push(t('Drift fleet'));
       if (threnAt(j.chart, s.id) >= THREN_ABOUT) notes.push('Thren');
-      if (raided(j.chart, s.id)) notes.push('raided');
-      if (o.netted) notes.push('netted');
-      if (o.shadow) notes.push('Calloway last seen');
+      if (raided(j.chart, s.id)) notes.push(t('raided'));
+      if (o.netted) notes.push(t('netted'));
+      if (o.shadow) notes.push(t('Calloway last seen'));
       const b = h('button', `port-l ch-l${i === this.sel ? ' sel' : ''}${o.netted ? ' net' : ''}`, '',
         h('kbd', '', String(i + 1)),
-        h('span', 'pl-n', '', h('b', '', s.name), left === 0 ? h('span', 'ch-goal-c', 'Goal') : closer ? h('span', 'ch-goal-c', 'Toward goal') : null, h('span', 'ch-kind', ` ${KIND_WORD[s.kind]}${s.kind === 'edge' || s.kind === 'gate' ? '' : ` · ${HOLDER_NAMES[s.holder]}`}`)),
+        h('span', 'pl-n', '', h('b', '', s.name), left === 0 ? h('span', 'ch-goal-c', t('Goal')) : closer ? h('span', 'ch-goal-c', t('Toward goal')) : null, h('span', 'ch-kind', ` ${t(KIND_WORD[s.kind])}${s.kind === 'edge' || s.kind === 'gate' ? '' : ` · ${t(HOLDER_NAMES[s.holder])}`}`)),
         h('span', 'pl-note', notes.join(' · ')),
         h('b', 'pl-p', String(o.route.krail)),
       ) as HTMLButtonElement;
       b.type = 'button';
-      b.title = `${o.route.krail} Krail to jump`;
+      b.title = t('{n} Krail to jump', { n: o.route.krail });
       b.onclick = guarded(this.opened, () => this.pick(i));
       b.onpointerdown = (e) => e.stopPropagation();
       // hover marks it in place: a tap must not replace the button it is landing on
@@ -234,19 +235,19 @@ export class ChartPanel {
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
     const cells: Array<[string, string]> = [
-      ['Tank', `${c.krail}/${TANK_MAX}`], ['Food', `${c.food} · ${RATION}/day`], ['Parts', String(c.parts)], ['Chits', String(c.chits)], ['Hold', `${c.ore} ore`],
+      [t('Tank'), `${c.krail}/${TANK_MAX}`], [t('Food'), `${c.food} · ${t('{n}/day', { n: RATION })}`], [t('Parts'), String(c.parts)], [t('Chits'), String(c.chits)], [t('Hold'), t('{n} ore', { n: c.ore })],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
     const file = fileCount(c.flags);
     $('ch-stat').replaceChildren(
-      h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', `File ${file.found}/${file.of}`)),
-      ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `Goal · reach ${goal.name} · ${left} jump${left === 1 ? '' : 's'}`)] : []),
+      h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', t('File {n}/{of}', { n: file.found, of: file.of }))),
+      ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `${t('Goal')} · ${t('reach {name}', { name: goal.name })} · ${plural(left, '{n} jump', '{n} jumps')}`)] : []),
       h('div', 'port-stock', '', ...cells.map(([k, v]) => h('span', '', '', h('span', 'k', k), h('b', '', v)))),
       h('p', 'ch-hunt', j.trail.length < 2
-        ? 'Calloway · not on your trail yet'
-        : `Calloway · last seen ${seen ? sysById(j.chart, seen).name : 'unknown'}${ago ? `, ${ago} day${ago === 1 ? '' : 's'} ago` : ', today'} · ${gap === 0 ? 'in this system' : `about ${gap} jump${gap === 1 ? '' : 's'} behind`}`),
-      ...fileLines(j.calloway, j.hunt.hunch).map((l) => h('p', 'ch-file', l)),
-      h('p', 'ch-netl', `The Net · ${netN} system${netN === 1 ? '' : 's'} as of day ${Math.floor(j.chart.seenDay) + 1}`),
+        ? `Calloway · ${t('not on your trail yet')}`
+        : `Calloway · ${t('last seen {where}', { where: seen ? sysById(j.chart, seen).name : t('unknown') })}, ${ago ? plural(ago, '{n} day ago', '{n} days ago') : t('today')} · ${gap === 0 ? t('in this system') : plural(gap, 'about {n} jump behind', 'about {n} jumps behind')}`),
+      ...fileLines(j.calloway, j.hunt.hunch).map((l) => h('p', 'ch-file', t(l))),
+      h('p', 'ch-netl', `${t('The Net')} · ${plural(netN, '{n} system', '{n} systems')} · ${t('as of day {n}', { n: Math.floor(j.chart.seenDay) + 1 })}`),
       ...readout(j.notice, c.standing).map((l) => h('p', `ch-notice t-${l.tier}`, noticeText(l, j.day))),
     );
   }
@@ -298,7 +299,7 @@ export class ChartPanel {
         g.append(m);
       }
       g.append(svg('text', { x, y: y + 20, 'text-anchor': 'middle', class: 'ch-name' }, s.name));
-      if (s.id === goal.id) g.append(svg('text', { x, y: y + 31, 'text-anchor': 'middle', class: 'ch-goalm' }, 'Goal'));
+      if (s.id === goal.id) g.append(svg('text', { x, y: y + 31, 'text-anchor': 'middle', class: 'ch-goalm' }, t('Goal')));
       const n = this.ids.indexOf(s.id);
       if (n >= 0) g.append(svg('text', { x, y: y - 13, 'text-anchor': 'middle', class: 'ch-num' }, String(n + 1)));
       if (n >= 0 && this.onPick) {

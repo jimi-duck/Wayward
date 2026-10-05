@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENTS, type Act } from '../content/story';
 import { viewOf } from './chart';
 import type { Journey } from './journey';
@@ -15,7 +16,7 @@ export function act(j: Journey): Act {
 }
 
 /** The act as a heading: "Act II · The Run". */
-export const actLine = (a: Act): string => `Act ${['I', 'II', 'III'][a.n - 1]} · ${a.name}`;
+export const actLine = (a: Act): string => t('Act {n} · {name}', { n: ['I', 'II', 'III'][a.n - 1]!, name: t(a.name) });
 
 /** Pieces of the file found, out of all of them. */
 export function fileCount(flags: Iterable<string>): { found: number; of: number } {

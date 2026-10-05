@@ -4,6 +4,8 @@ import { NEON_CSS } from './colors';
 import { faceSvg } from './face';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
+import { num, t } from '../i18n';
+import { FACTION_NAME } from './hud';
 
 // ── the comms panel ───────────────────────────────────────────────────────
 // Grown out of the hail panel: every channel opened to the ship, drawn the
@@ -61,44 +63,44 @@ const HOSTILE = new Set(['shakedown', 'checkpoint', 'captain']);
 
 /** A word for a chance, never a number: a gamble should feel like one. */
 export function oddsWord(p: number): string {
-  return p >= 0.8 ? 'Likely' : p >= 0.6 ? 'Good odds' : p >= 0.4 ? 'Even odds' : p >= 0.2 ? 'Long shot' : 'Hopeless';
+  return t(p >= 0.8 ? 'Likely' : p >= 0.6 ? 'Good odds' : p >= 0.4 ? 'Even odds' : p >= 0.2 ? 'Long shot' : 'Hopeless');
 }
 
 /** A card on the table, as the panel draws it. */
 export function cardView(o: Open): CommsView {
   const d = o.def, r = o.read;
   return {
-    kick: o.slow > 0 ? 'Ambush · act now' : KIND_WORD[d.kind] ?? d.kind,
-    title: d.title,
-    sub: d.from,
+    kick: t(o.slow > 0 ? 'Ambush · act now' : KIND_WORD[d.kind] ?? d.kind),
+    title: t(d.title),
+    sub: t(d.from),
     colour: CALLER_CSS[d.caller],
     alert: HOSTILE.has(d.kind) || o.slow > 0,
     text: o.text,
     // the read: strength as two bars, and the one line that matters (the
     // choices' odds already carry how far it can be trusted)
-    read: { them: r.them, you: r.you, rows: [['Intent', r.intent]] },
+    read: { them: r.them, you: r.you, rows: [[t('Intent'), t(r.intent)]] },
     choices: o.choices.map((c) => ({
-      label: c.label, hint: c.hint, lines: [], ok: c.ok, needs: c.needs, gains: c.gains,
+      label: t(c.label), hint: t(c.hint), lines: [], ok: c.ok, needs: c.needs.map((n) => t(n)), gains: c.gains,
       tags: [...c.cost, ...(c.chance !== null ? [oddsWord(c.chance)] : [])],
     })),
     face: d.face ? faceSvg(d.face, CALLER_CSS[d.caller], d.scars ?? 0) : null,
   };
 }
 
-const fmt = (n: number) => Math.round(n).toLocaleString('en-GB');
+const fmt = num;
 
 /** The arcade's capital-ship hail: engage or evade. */
 export function hailView(c: Contact): CommsView {
   const evade: CommsChoice = c.canEvade
-    ? { label: 'Evade', hint: 'You get clear, but you cannot break away twice running.', lines: [], gains: ['No bounty', `Next in ${c.evadeGap}s`], tags: [], ok: true, needs: [] }
-    : { label: 'Evade', hint: 'Break away.', lines: [], gains: [], tags: [], ok: false, needs: [c.faction === 'voice' ? 'There is no outrunning a foundry' : 'Not available: you broke away from the last one'] };
+    ? { label: t('Evade'), hint: t('You get away, but not twice in a row.'), lines: [], gains: ['No bounty', t('Next in {n}s', { n: c.evadeGap })], tags: [], ok: true, needs: [] }
+    : { label: t('Evade'), hint: t('Break away.'), lines: [], gains: [], tags: [], ok: false, needs: [t(c.faction === 'voice' ? 'You can’t outrun a foundry' : 'Not now: you dodged the last one')] };
   return {
-    kick: 'Alarm', title: c.name, sub: `${c.faction} capital ship · on intercept course`, colour: NEON_CSS[c.faction], alert: true,
-    text: 'She will fight back, and her escort wing comes in with her. The sector clears for the duel.',
+    kick: t('Alarm'), title: t(c.name), sub: `${t('{f} capital ship', { f: t(FACTION_NAME[c.faction] ?? c.faction) })} · ${t('on intercept')}`, colour: NEON_CSS[c.faction], alert: true,
+    text: t('She fights back, with her escort. The sector clears for the duel.'),
     read: null,
     face: null,
     choices: [
-      { label: 'Engage', hint: 'Stand and fight. Her salvage brings a refit, her tech, hull, Krail and a power-up.', lines: [], gains: ['Fight', `+${fmt(c.bounty)} score`, 'Refit'], tags: [], ok: true, needs: [] },
+      { label: t('Engage'), hint: t('Fight her. Her wreck pays a refit, her tech, hull, Krail and a power-up.'), lines: [], gains: ['Fight', t('+{n} score', { n: fmt(c.bounty) }), 'Refit'], tags: [], ok: true, needs: [] },
       evade,
     ],
   };
@@ -207,8 +209,8 @@ export class CommsPanel {
       return b;
     };
     box.replaceChildren(
-      h('div', 'cm-str', '', bar('Them', r.them, 'them'), bar('You', r.you, 'you')),
-      ...r.rows.map(([k, val]) => h('div', `cm-row${k === 'Intent' ? ' intent' : ''}`, '', h('span', 'k', k), h('span', 'v', val))),
+      h('div', 'cm-str', '', bar(t('Them'), r.them, 'them'), bar(t('You'), r.you, 'you')),
+      ...r.rows.map(([k, val], i) => h('div', `cm-row${i === 0 ? ' intent' : ''}`, '', h('span', 'k', k), h('span', 'v', val))),
     );
   }
 
@@ -218,7 +220,7 @@ export class CommsPanel {
     $('cm-list').replaceChildren(...v.choices.map((c, i) => {
       const side = c.ok ? c.tags.map((t) => h('span', /^−/.test(t) ? 'cost' : 'odds', t)) : c.needs.map((n) => h('span', 'need', n));
       // what it brings, as chips beside the label; the sentence only on the highlighted row
-      const gains = c.gains.length ? h('span', 'cm-gains', '', ...c.gains.map((g) => h('span', gainClass(g), g))) : null;
+      const gains = c.gains.length ? h('span', 'cm-gains', '', ...c.gains.map((g) => h('span', gainClass(g), t(g)))) : null;
       const sel = i === this.sel;
       const b = h('button', `cm-c${sel ? ' sel' : ''}`, '',
         h('kbd', '', String(i + 1).padStart(2, '0')),

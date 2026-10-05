@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { ENDING_BY_ID, ENDINGS, FRIEND, SCATTER, type EndingDef, type EndingId, type Need } from '../content/endings';
 import { CAPTAIN_BY_ID } from './captains';
 import type { Standing } from './comms';
@@ -94,7 +95,7 @@ export function epilogue(j: Journey, id: EndingId): string[] {
 export function choose(j: Journey, id: EndingId): string[] | null {
   if (!pending(j) || !choices(j).find((c) => c.def.id === id)?.open) return null;
   j.ending = id;
-  j.log.push({ day: Math.round(j.day * 10) / 10, text: `The Severance file · ${ENDING_BY_ID[id].name}` });
+  j.log.push({ day: Math.round(j.day * 10) / 10, text: `${t('The Severance file')} · ${t(ENDING_BY_ID[id].name)}` });
   return epilogue(j, id);
 }
 

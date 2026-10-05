@@ -1,3 +1,4 @@
+import { t as tr } from '../i18n';
 import { FLEETS, REGIONS } from '../content/regions';
 import { lanesFrom, netted, regionOf, sysById, type Chart, type StarSystem } from './chart';
 import { Rng } from './rng';
@@ -128,21 +129,21 @@ export function stepScatter(c: Chart, days: number, rng: Rng, ship: { at: string
         const t = pool.length ? pool[rng.int(pool.length)]! : null;
         if (t) {
           c.raid[t.id] = RAID_DAYS;
-          if (t.holder === 'none' && rng.next() < RAID_TAKE) { t.holder = 'gutter'; news.push({ id: t.id, text: `The Gutter has taken ${t.name}` }); }
-          else news.push({ id: t.id, text: `Gutter raiders hit ${t.name}` });
+          if (t.holder === 'none' && rng.next() < RAID_TAKE) { t.holder = 'gutter'; news.push({ id: t.id, text: tr('The Gutter has taken {name}', { name: t.name }) }); }
+          else news.push({ id: t.id, text: tr('Gutter raiders hit {name}', { name: t.name }) });
         }
       }
       // a Holdfast on the Net's edge throws it back
       if (s.holder === 'holdfast' && !c.stall[s.id] && (c.net[s.id] ?? 0) > 0 && rng.next() < HOLD_CHANCE * dt) {
         c.stall[s.id] = HOLD_DAYS;
         c.net[s.id] = Math.max(0, (c.net[s.id] ?? 0) - 0.2);
-        news.push({ id: s.id, text: `The Holdfast at ${s.name} throws the Net back` });
+        news.push({ id: s.id, text: tr('The Holdfast at {name} throws the Net back', { name: s.name }) });
       }
       // the Voice builds out
       if (s.holder === 'voice' && rng.next() < VOICE_GROW * dt) {
         const pool = near.filter((t) => (t.holder === 'none' || t.holder === 'thren') && regionOf(t) === regionOf(s) && t.kind !== 'gate' && !t.port);
         const t = pool.length ? pool[rng.int(pool.length)]! : null;
-        if (t) { t.holder = 'voice'; news.push({ id: t.id, text: `The Voice has built a foundry in ${t.name}` }); }
+        if (t) { t.holder = 'voice'; news.push({ id: t.id, text: tr('The Voice built a foundry in {name}', { name: t.name }) }); }
       }
     }
 
@@ -169,7 +170,7 @@ export function stepScatter(c: Chart, days: number, rng: Rng, ship: { at: string
     for (const [id, v] of Object.entries(next)) {
       const r = Math.min(1, Math.round(v * 1000) / 1000);
       if (r > 0.01) c.thren[id] = r;
-      if (r >= THREN_THICK && (was[id] ?? 0) < THREN_THICK) news.push({ id, text: `The Thren are gathering in ${name(id)}` });
+      if (r >= THREN_THICK && (was[id] ?? 0) < THREN_THICK) news.push({ id, text: tr('The Thren are gathering in {name}', { name: name(id) }) });
     }
 
     // the Drift fleets move on
@@ -179,7 +180,7 @@ export function stepScatter(c: Chart, days: number, rng: Rng, ship: { at: string
       f.stay = rng.range(DRIFT_STAY[0], DRIFT_STAY[1]);
       if (!pool.length) continue;
       f.at = pool[rng.int(pool.length)]!.id;
-      news.push({ id: f.at, text: `A Drift fleet, ${f.name}, is crossing ${name(f.at)}` });
+      news.push({ id: f.at, text: tr('Drift fleet {fleet} is crossing {name}', { fleet: f.name, name: name(f.at) }) });
     }
   }
   return news;
