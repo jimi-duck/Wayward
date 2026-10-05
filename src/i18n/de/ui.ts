@@ -9,6 +9,8 @@
 
 export const UI: Record<string, string> = {
   // ── the start card ──
+  '<li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li>':
+    '<li>Schneid den <b class="v">violetten Fels</b> für Krail</li><li>Tank füllen</li><li>Spring am <b class="a">Sprungpunkt</b></li>',
   'Obedience-class ore hauler': 'Erzfrachter der Obedience-Klasse',
   'Wayward, Obedience-class ore hauler': 'Wayward, Erzfrachter der Obedience-Klasse',
   'Game mode': 'Spielmodus',

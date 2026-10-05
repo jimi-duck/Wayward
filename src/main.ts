@@ -316,6 +316,8 @@ function boot(): void {
     if (mode === 'arcade') {
       if (world.mode !== 'arcade') { world.restart({ modifiers: profile.modifiers, mode, carry: null }); showMode(); }
       hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
+      // how to play first: the pause card, until any key or tap
+      setPaused(true);
       return;
     }
     if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
@@ -326,6 +328,7 @@ function boot(): void {
     } else if (pending(journey)) return threshold(journey, [t('Journey resumed · the Threshold is behind you')]);
     else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cool, plot the next jump')]);
     startSortie();
+    setPaused(true);
   };
 
   const input = new Input(
