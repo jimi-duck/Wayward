@@ -3,7 +3,7 @@
 // trying to auto-configure the project (which fails on our Vite config).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "game",
+  "name": "wayward",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist",
