@@ -125,6 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
+| R The refit bay | Planned (decided 2026-10-05): building only in a bay you can open almost any time, a web of modules in tabs, power, mass and heat budgets, no refunds, one structure for both modes (see below) |
 
 ## From the concept boards
 
@@ -468,6 +469,117 @@ pilot gets 45 of 48 through (3 captured, 2 of them a pilot that refuses
 every beat) against 48 of 48 on main. Open: tighten the older ending gates
 (salvage alone opens Seal for everyone), keep the beats' text short for the
 German pass, and playtest whether the beats read without the text.
+
+## R. The refit bay
+
+Replaces the three refit cards and, in the Story mode, the port's module
+yard. The reference is `branding/0da16126-9be4-42f6-9675-785961f6cdfd.png`:
+system tabs down the left, a small tiered web per tab, an inspector with the
+figures and the cost, the fitted modules along the bottom, the ship's
+budgets beside them.
+
+**Decided (Jimi, 2026-10-05):**
+
+- **Building happens only in the bay.** No cards mid-flight. The bay opens
+  almost any time; upgrades cost more than a card did, so each is a
+  considered choice.
+- **The ship starts with the basics**: lasers, torpedoes and one shield
+  charge, fitted.
+- **Budgets**: power, mass and heat.
+- **No refunds.** What is fitted stays fitted. The budgets make that a
+  real choice; the bay has to show what an install will leave you with.
+- **One structure for both modes.** Built with the Story mode in mind; the
+  arcade uses the same bay, tabs and web.
+
+**Lessons it keeps.** The refit web (M5d) was cut because it was a map and
+points to bank every thirty seconds, mid-fight. The bay is the player's
+call, never forced on them, and each tab is a small web (ten to fourteen
+nodes in five tiers), not one map of two hundred.
+
+### How it plays
+
+- **Opening it.** A key, the pad's Back, or a HUD button. It pauses the
+  world like any decision (`World.phase` 'bay', answered by `install(id)`
+  and `closeBay()`). It will not open in danger: the same test the
+  self-repair uses (a committed hostile close, fire near, a capital ship
+  engaged), nor during a comms card. In the arcade the quiet spells are
+  the natural moment; in the Story mode, anywhere quiet in a sortie, and
+  at a port.
+- **Paying.** Each node costs more by tier. The arcade pays in Krail (the
+  gauge becomes a stock to spend, no longer a rail that fills to a card).
+  The Story mode pays in the module economy it has: the system's resource
+  (salvage, rig parts, signal kit, favours) and chits. The HUD says when
+  something is affordable, so the bay is never a surprise.
+- **Tabs**, after the reference: Hull, Weapons, Engines, Defence, Utility,
+  Reactor, and Synergies and salvage. Today's 103 upgrade levels become
+  about sixty modules with levels (the pips of the reference);
+  specialisations are tier-five capstones, one per tab; synergies link two
+  tabs; a capital ship destroyed opens her faction's tech in the last tab.
+  Story-only modules (the Signals and Contacts kit, the cutter head) are
+  marked `story`, as arcade-only cards are marked `arcade` today.
+- **Yard-only modules** (Story): the heaviest (hull frames, the big
+  reactor) fit only at a port, so ports keep their pull.
+- **The inspector** shows the module, its level, one sentence, the figures
+  before and after (`sim/build.ts` already works these out), the cost, and
+  the budgets after install, with any line it would push past.
+
+### Budgets
+
+- **Power**: every module draws some; the reactor's output is the ceiling.
+  Hard: an install that needs more power than is free cannot be made.
+  Reactor modules raise it.
+- **Mass**: plating, racks and heavy weapons weigh. Over the frame's rating
+  the ship gets slower to turn and to speed up, smoothly. Hull frames raise
+  the rating.
+- **Heat**: weapons and the drive make it; cooling sinks it. Over the
+  sinks, the laser bank refills slower and the torpedoes reload slower.
+  Cooling modules (Engines and Reactor) add sinks.
+- With no refunds a build must never paint itself into a corner: every
+  tab has a way to raise one budget, and a test checks that from any
+  reachable build some install is still possible while there is money.
+
+### Code
+
+- `content/web.ts`: the nodes as rows (tab, tier, links, levels, cost per
+  level, power, mass, heat, `story`/`arcade`/`yard`). The upgrade defs keep
+  their `apply`; a node points at one.
+- `sim/bay.ts`: what can be installed and why not, costs, the budgets and
+  their effects on the stat block (applied after the upgrades, before
+  `capStats`), the danger gate.
+- `World`: phase 'bay', `openBay`, `install`, `closeBay`; the stock fit at
+  `restart`; Krail as a stock in the arcade. `sim/offers.ts`,
+  `ui/refit.ts` and the 'refit' phase go once the bay replaces them.
+- `ui/bay.ts`: the screen, from the reference. Desktop: tabs left, web
+  centre, inspector right, fitted modules and budgets along the bottom.
+  Phone (landscape): tabs as a strip, the web fills the screen, the
+  inspector as a sheet. Keyboard, pad and touch throughout.
+- Old code to mine: `29a6819` (the M5d web: `content/web.ts`, `sim/web.ts`,
+  `ui/web.ts`).
+- The pilot plans purchases per strategy and opens the bay in quiet; the
+  report adds spend, budget use and how often a budget blocked an install.
+
+### Steps (each leaves the game playable)
+
+1. **The web as data and rules.** `content/web.ts`, `sim/bay.ts`, the stock
+   fit, the budgets computed (not yet felt); tests. The cards stay for now.
+2. **The bay in the arcade.** `ui/bay.ts`, opening, paying in Krail, the
+   HUD's affordable hint; the cards and the rail go. Screenshots at both
+   sizes.
+3. **Budgets felt.** Mass and heat change the flight and the guns; power
+   blocks. Balanced from the arcade pilot.
+4. **The Story mode.** The bay in sorties and at ports, the module yard
+   folded in, costs in the systems' resources and chits, yard-only modules,
+   the save migrated. Balanced from the Breakout, ship and journey pilots.
+5. **Finish.** Module art (rendered from the ship kit, as the reference's
+   thumbnails), icons from `brand/`, German throughout, DESIGN.md.
+
+### Open
+
+- Arcade cost curve: how many installs a run should afford (about as many
+  as cards today, or fewer and bigger).
+- Whether heat is a fixed budget (as above) or a live meter that weapons
+  fill in a fight.
+- Which modules are yard-only.
 
 ## The long tail
 
