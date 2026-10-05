@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import {
   ARCHIVE_BASE, ARCHIVE_TRUST, BROKEN, CALLOWAY_FACE, CALLOWAY_HP, HABIT, HP_BEATEN, HUNCH_LINES, KEPT, OFFER_FLOWN, OFFER_GAP, OFFER_NEAR, READ_AT, STRAIGHT,
   TOLD, TRICKS, TRICK_WORDS, WING_RUNS, type Trick,
@@ -119,7 +120,7 @@ export function study(d: Dossier, cards: readonly Answer[], killedHers: boolean,
   if (d.promise && killedHers) {
     d.promise = false;
     d.broken++;
-    lines.push('You broke your word to Calloway · she will remember it');
+    lines.push(t('You broke your word to Calloway · she will remember it'));
   }
   for (const a of cards) {
     const key = `${a.id}:${a.choice}`;
@@ -192,49 +193,49 @@ export function nemesis(d: Dossier, hunt: { caught: number; beaten: number; hunc
   };
 }
 
-const times = (n: number) => (n === 1 ? 'once' : n === 2 ? 'twice' : `${n} times`);
+const times = (n: number) => (n === 1 ? t('once') : n === 2 ? t('twice') : t('{n} times', { n }));
 
 /** The last meeting: at the lane mouth to the Threshold, built from everything between you. */
 export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }): CardDef {
-  const t = trust(d), lied = lies(d), runs = uses(d, 'run');
+  const trusted = trust(d), lied = lies(d), runs = uses(d, 'run');
   const wing = Math.min(3, Math.floor(runs / WING_RUNS));
-  const said: string[] = [hunt.caught === 0
-    ? '“We have never spoken face to face, Juno. I thought we should, once, before the end.”'
-    : '“I did not follow you here, Juno. I knew where you had to come.”'];
-  for (const h of hunchWords(hunt.hunch)) if (HUNCH_LINES[h]) said.push(HUNCH_LINES[h]!);
-  if (d.broken) said.push('“You gave me your word, and you broke it.”');
-  else if (d.took.length) said.push('“You took what I offered, and I kept my word. Remember that.”');
-  if (lied >= 2) said.push(`“You lied to me ${lied} times. I counted.”`);
-  else if (lied === 1) said.push('“You lied to me once. Only once. I noticed that too.”');
-  if (d.told && t > 0) said.push('“You told me the truth when it cost you. I have not forgotten it.”');
-  if (hunt.beaten) said.push(`The Patience has been rebuilt ${times(hunt.beaten)} for you, heavier each time.`);
-  if (wing) said.push('An interdictor flies with her. She has watched you run too often.');
-  said.push('“The Threshold is behind me. Power down.”');
+  const said: string[] = [t(hunt.caught === 0
+    ? '“We’ve never spoken face to face, Juno. I thought we should, once.”'
+    : '“I didn’t follow you here, Juno. I knew where you had to come.”')];
+  for (const h of hunchWords(hunt.hunch)) if (HUNCH_LINES[h]) said.push(t(HUNCH_LINES[h]!));
+  if (d.broken) said.push(t('“You gave me your word, and you broke it.”'));
+  else if (d.took.length) said.push(t('“You took what I offered, and I kept my word.”'));
+  if (lied >= 2) said.push(t('“You lied to me {n} times. I counted.”', { n: lied }));
+  else if (lied === 1) said.push(t('“You lied to me once. I noticed.”'));
+  if (d.told && trusted > 0) said.push(t('“You told me the truth when it cost you. I remember.”'));
+  if (hunt.beaten) said.push(t('The Patience was rebuilt {times}, heavier each time.', { times: times(hunt.beaten) }));
+  if (wing) said.push(t('An interdictor flies with her. You ran too often.'));
+  said.push(t('“The Threshold is behind me. Power down.”'));
 
   const fight = { text: 'Weapons hot on the Patience, one last time', calloway: 'fight' as const, blockade: 'pass' as const };
   const choices: ChoiceDef[] = [
     {
       id: 'fight', label: 'Fight her', tone: 'fight',
-      hint: `The Patience${hunt.beaten ? `, refitted after ${times(hunt.beaten)} beaten` : ''}${wing ? `, and ${wing} more in her wing` : ''}. Or spool out under her guns.`,
+      hint: [t('The Patience'), hunt.beaten ? t('beaten {times}, refitted', { times: times(hunt.beaten) }) : '', wing ? t('{n} more in her wing', { n: wing }) : ''].filter(Boolean).join(', ') + '.',
       win: fight,
     },
     {
-      id: 'run', label: 'Spool under her guns', tone: 'run', hint: 'Her field drags on the drive and the whole system comes. Survive the spool and you are through.',
+      id: 'run', label: 'Spool under her guns', tone: 'run', hint: 'Her field slows the drive and the whole system comes. Survive the spool and you’re through.',
       win: { text: 'Spooling · the Patience is on you', calloway: 'run', blockade: 'pass' },
     },
   ];
   if (d.told > 0) {
     choices.push({
       id: 'archive', label: 'Show her the archive', tone: 'help',
-      hint: t > 1 ? 'She has listened before. She might now.' : t > 0 ? 'She might read it. She might not.' : 'Too many lies between you. She may not believe it.',
-      odds: { base: ARCHIVE_BASE + ARCHIVE_TRUST * t },
+      hint: trusted > 1 ? 'She has listened before. She might now.' : trusted > 0 ? 'She might read it. She might not.' : 'Too many lies between you. She may not buy it.',
+      odds: { base: ARCHIVE_BASE + ARCHIVE_TRUST * trusted },
       win: { text: 'She reads it all the way through. Then the Patience stands aside.', blockade: 'pass', score: 5000 },
       lose: { text: '“It changes nothing.” · weapons hot', calloway: 'fight', blockade: 'pass' },
     });
   }
   if (hunt.beaten >= 2) {
     choices.push({
-      id: 'remind', label: 'Remind her how it went', tone: 'bluff', hint: `You have broken her ship ${times(hunt.beaten)}. Her crew know it.`,
+      id: 'remind', label: 'Remind her how it went', tone: 'bluff', hint: t('You’ve broken her ship {times}. Her crew know it.', { times: times(hunt.beaten) }),
       odds: { base: 0.2 + 0.15 * hunt.beaten },
       win: { text: 'Her crew will not fight you again · she holds her fire', blockade: 'pass', score: 2500 },
       lose: { text: '“Once more, then.” · weapons hot', calloway: 'fight', blockade: 'pass' },
@@ -242,7 +243,7 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
   }
   if (uses(d, 'bluff')) {
     choices.push({
-      id: 'bluff', label: 'Tell her the file is already out', tone: 'bluff', hint: `She has heard it ${times(uses(d, 'bluff'))}.`,
+      id: 'bluff', label: 'Tell her the file is already out', tone: 'bluff', hint: t('She’s heard it {times}.', { times: times(uses(d, 'bluff')) }),
       odds: { base: 0.5, learn: 'bluff' },
       win: { text: '“If that is true, there is nothing left to stop.” · she lets you go to find out', blockade: 'pass' },
       lose: { text: '“Not again, Juno.” · weapons hot', calloway: 'fight', blockade: 'pass' },
@@ -250,20 +251,20 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
   }
   if (uses(d, 'dark')) {
     choices.push({
-      id: 'dark', label: 'Go dark in the lane’s shadow', tone: 'bluff', hint: `You have done it ${times(uses(d, 'dark'))}. Her sweep is tuned for it.`,
+      id: 'dark', label: 'Go dark in the lane’s shadow', tone: 'bluff', hint: t('You’ve done it {times}. Her sweep is tuned for it.', { times: times(uses(d, 'dark')) }),
       needs: { fitted: ['ut_scanner', 'tech_office'] }, odds: { base: 0.6, heat: -0.2, learn: 'dark' },
       win: { text: 'Dark · you drift into the lane and spool cold', blockade: 'pass' },
       lose: { text: 'Her sweep finds you at once · weapons hot', calloway: 'fight', blockade: 'pass' },
     });
   }
-  const known = (Object.keys(d.tricks) as Trick[]).filter((k) => uses(d, k) > 0).map((k) => TRICK_WORDS[k]);
+  const known = (Object.keys(d.tricks) as Trick[]).filter((k) => uses(d, k) > 0).map((k) => t(TRICK_WORDS[k]));
   return {
     id: 'calloway_last', kind: 'warning', caller: 'calloway', trigger: 'follow',
     from: 'Prefect Idris Calloway · CCV Patience', title: 'The Threshold',
     text: said.join(' '), face: CALLOWAY_FACE, scars: Math.min(3, hunt.beaten),
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'enforcer', n: 2 + wing }],
-    cargo: `Office of Peace cutter · met ${times(Math.max(1, hunt.caught))}`,
-    truths: [{ id: 'file', weight: 1, read: known.length ? `Her file on you: ${known.join(', ')}` : 'Her file on you is thin · she has never seen you run' }],
+    cargo: `${t('Office of Peace cutter')} · ${t('met {times}', { times: times(Math.max(1, hunt.caught)) })}`,
+    truths: [{ id: 'file', weight: 1, read: known.length ? t('Her file on you: {list}', { list: known.join(', ') }) : 'Her file on you is thin · she has never seen you run' }],
     choices,
   };
 }
@@ -272,10 +273,10 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
 export function fileLines(d: Dossier, hunch?: Hunch): string[] {
   const out: string[] = [];
   const known = (Object.keys(d.tricks) as Trick[]).filter((k) => uses(d, k) > 0);
-  if (known.length) out.push(`Wise to ${known.map((k) => `${TRICK_WORDS[k]}${uses(d, k) > 1 ? ` (${uses(d, k)})` : ''}`).join(', ')}`);
+  if (known.length) out.push(t('Wise to {list}', { list: known.map((k) => `${t(TRICK_WORDS[k])}${uses(d, k) > 1 ? ` (${uses(d, k)})` : ''}`).join(', ') }));
   const h = hunchWords(hunch);
-  if (h.length) out.push(`Reads your route: ${h.map((x) => (x === 'straight' ? 'straight for the Threshold' : `you stop at ${x === 'port' ? 'ports' : `${x} systems`}`)).join(', ')}`);
-  if (d.broken) out.push('You broke your word to her');
-  else if (d.promise) out.push('Your word given: no Custody or Office kills');
+  if (h.length) out.push(t('Reads your route: {list}', { list: h.map((x) => t(x === 'straight' ? 'straight for the Threshold' : x === 'port' ? 'you stop at ports' : x === 'mining' ? 'you stop at mining systems' : x === 'transit' ? 'you stop at transit systems' : x === 'contested' ? 'you stop at contested systems' : 'you stop at gate systems')).join(', ') }));
+  if (d.broken) out.push(t('You broke your word to her'));
+  else if (d.promise) out.push(t('Your word given: no Custody or Office kills'));
   return out;
 }

@@ -1,4 +1,5 @@
 import { LEARN } from '../content/calloway';
+import { t } from '../i18n';
 import { CARDS, FLAGS } from '../content/cards';
 import type { Tier } from '../content/factions';
 import type { SystemKind } from '../content/systems';
@@ -447,6 +448,7 @@ export function oddsFor(o: Odds, x: Ctx): number {
 }
 
 const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'chits', krail: 'Krail', ore: 'ore', parts: 'parts', food: 'food' };
+const NONE_WORDS: Record<keyof Cost, string> = { chits: 'No chits to give', krail: 'No Krail to give', ore: 'No ore to give', parts: 'No parts to give', food: 'No food to give' };
 
 const take = (a: Take, held: number, fee: number) => (a === 'fee' ? fee : a === 'all' ? held : a === 'half' ? Math.ceil(held / 2) : a);
 
@@ -481,23 +483,23 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
     if (n.fitted !== undefined && !fitted(x.levels, n.fitted)) {
       // what would open it: the upgrades it names, and any module that counts as one
       const names = [...new Set([...list(n.fitted).map(upgradeName), ...list(n.fitted).flatMap((id) => countedBy(id).map((m) => m.name))])];
-      needs.push(`Needs ${names.join(' or ')}`);
+      needs.push(t('Needs {what}', { what: names.map((n) => t(n)).join(t(' or ')) }));
     }
-    if (n.flag && !x.flags.has(n.flag)) needs.push(`Needs ${FLAGS[n.flag] ?? n.flag}`);
-    if (n.standing && (x.standing[n.standing[0]] ?? 0) < n.standing[1]) needs.push(`Needs standing with ${standingName(n.standing[0])}`);
-    if (n.krail !== undefined && x.krail < n.krail) needs.push(`Needs ${n.krail} Krail`);
-    if (n.ore !== undefined && x.ore < n.ore) needs.push(`Needs ${n.ore} ore`);
-    if (n.parts !== undefined && x.parts < n.parts) needs.push(`Needs ${n.parts} parts`);
-    if (n.food !== undefined && x.food < n.food) needs.push(`Needs ${n.food} food`);
+    if (n.flag && !x.flags.has(n.flag)) needs.push(t('Needs {what}', { what: t(FLAGS[n.flag] ?? n.flag) }));
+    if (n.standing && (x.standing[n.standing[0]] ?? 0) < n.standing[1]) needs.push(t('Needs standing with {who}', { who: t(standingName(n.standing[0])) }));
+    if (n.krail !== undefined && x.krail < n.krail) needs.push(t('Needs {n} Krail', { n: n.krail }));
+    if (n.ore !== undefined && x.ore < n.ore) needs.push(t('Needs {n} ore', { n: n.ore }));
+    if (n.parts !== undefined && x.parts < n.parts) needs.push(t('Needs {n} parts', { n: n.parts }));
+    if (n.food !== undefined && x.food < n.food) needs.push(t('Needs {n} food', { n: n.food }));
   }
   const cost = costOf(c.cost, x, fee);
   const held = { chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts, food: x.food };
   const costWords: string[] = [];
   for (const k of Object.keys(cost) as Array<keyof Cost>) {
     if (!c.cost || c.cost[k] === undefined) continue;
-    if (cost[k] > held[k]) needs.push(`Needs ${cost[k]} ${AMOUNT_WORDS[k]}`);
-    else if (cost[k] === 0) needs.push(`No ${AMOUNT_WORDS[k]} to give`);
-    costWords.push(`−${cost[k]} ${AMOUNT_WORDS[k]}`);
+    if (cost[k] > held[k]) needs.push(`${t('Needs')} ${cost[k]} ${t(AMOUNT_WORDS[k])}`);
+    else if (cost[k] === 0) needs.push(t(NONE_WORDS[k]));
+    costWords.push(`−${cost[k]} ${t(AMOUNT_WORDS[k])}`);
   }
   const odds = c.odds ? oddsFor(c.odds, x) : null;
   const risky = !!(c.loseIf?.length && def.truths?.some((t) => c.loseIf!.includes(t.id)));
@@ -514,7 +516,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
 }
 
 const slotFill = (x: Ctx, slots: Record<string, string> = {}) => {
-  const all: Record<string, string> = { captain: x.captain?.name ?? 'the captain', ship: x.captain?.ship ?? 'their ship', ...slots };
+  const all: Record<string, string> = { captain: x.captain?.name ?? t('the captain'), ship: x.captain?.ship ?? t('their ship'), ...slots };
   return (s: string) => s.replace(/\{(\w+)\}/g, (m, k: string) => all[k] ?? m);
 };
 
@@ -525,8 +527,8 @@ export function cardText(def: CardDef, x: Ctx, fee: number): string {
     ore: String(x.ore), chits: String(x.chits), parts: String(x.parts), food: String(x.food),
   };
   const fill = slotFill(x, slots);
-  const extra = (def.lines ?? []).filter((l) => condOk(l.if, x)).map((l) => fill(l.text));
-  return [fill(def.text), ...extra].join(' ');
+  const extra = (def.lines ?? []).filter((l) => condOk(l.if, x)).map((l) => fill(t(l.text)));
+  return [fill(t(def.text)), ...extra].join(' ');
 }
 
 function rollTruth(def: CardDef, x: Ctx, rng: Rng): string | null {
@@ -556,7 +558,7 @@ export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
   // a card that names the captain on your file: the def on the table carries the filled name and title
   if (def.from.includes('{') || def.title.includes('{')) {
     const fill = slotFill(x);
-    def = { ...def, from: fill(def.from), title: fill(def.title) };
+    def = { ...def, from: fill(t(def.from)), title: fill(t(def.title)) };
   }
   const fee = feeFor(def, x);
   const read: Read = { them: theirStrength(def), you: yourStrength(x.levels, x.plates), ships: shipsWords(def), cargo: def.cargo ?? 'Unknown', intent, sure, shown };

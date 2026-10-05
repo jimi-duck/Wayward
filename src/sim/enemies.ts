@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { angleDelta, clamp } from '../core/math';
 import { pressure, type Pressure } from './director';
 import type { GameEvent } from './events';
@@ -381,7 +382,10 @@ export function spawnAlien(kind: AlienKind, ship: ShipState, t: number, rng: Rng
 /** Points a kill is worth: elites pay double. */
 export const alienBonus = (al: Alien) => ALIEN_TYPES[al.kind].bonus * (al.elite ? 2 : 1);
 /** What the HUD calls a hull. */
-export const alienLabel = (al: Alien) => `${al.elite ? `${ELITES[al.elite].label} ` : ''}${VARIANTS[al.variant]?.label ?? ALIEN_TYPES[al.kind].label}`;
+export const alienLabel = (al: Alien) => {
+  const name = t(VARIANTS[al.variant]?.label ?? ALIEN_TYPES[al.kind].label);
+  return al.elite ? t('{elite} {name}', { elite: t(ELITES[al.elite].label), name }) : name;
+};
 
 // ── steering ──────────────────────────────────────────────────────────────
 

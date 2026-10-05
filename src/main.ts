@@ -23,6 +23,7 @@ import { cardView, CommsPanel, hailView } from './ui/comms';
 import { buildView, StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
+import { detect, localize, onLang, plural, setLang, t } from './i18n';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -31,6 +32,9 @@ function el<T extends HTMLElement = HTMLElement>(id: string): T {
 }
 
 function boot(): void {
+  // the language first: everything after draws its text in it
+  setLang(detect(), false);
+  localize();
   const canvas = el<HTMLCanvasElement>('view');
   if (!WebGL.isWebGL2Available()) {
     el('app').replaceChildren(WebGL.getWebGL2ErrorMessage());
@@ -115,9 +119,10 @@ function boot(): void {
     const j = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
     el('resume').hidden = !j;
     el('resume-s').hidden = !j;
-    el('launch').textContent = j ? 'New journey' : 'Break out';
-    if (j && pending(j)) el('resume-s').textContent = `Day ${Math.floor(j.day) + 1} · through the Threshold · the file is still aboard`;
-    else if (j) el('resume-s').textContent = `Day ${Math.floor(j.day) + 1} · ${here(j).name}${j.dest ? ` · bound for ${sysById(j.chart, j.dest).name}` : ''}${j.wrecks ? ` · ${j.wrecks} wreck${j.wrecks === 1 ? '' : 's'}` : ''}`;
+    el('launch').textContent = j ? t('New journey') : t('Break out');
+    const day = t('Day {n}', { n: Math.floor(j?.day ?? 0) + 1 });
+    if (j && pending(j)) el('resume-s').textContent = `${day} · ${t('through the Threshold · the file is still aboard')}`;
+    else if (j) el('resume-s').textContent = [day, here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
   };
   showResume();
   /** Fly the journey's current system. */
@@ -128,7 +133,7 @@ function boot(): void {
     reported = false;
     setPaused(false);
     const d = world.sortie;
-    hud.note(world, d.home ? 'Clear of the yards · make for the lane mouth' : `${d.name} · the lane to ${d.dest} takes ${d.jumpCost} Krail`);
+    hud.note(world, d.home ? t('Clear of the yards · make for the lane mouth') : `${d.name} · ${t('{n} Krail to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
   const openChart = (lines: string[]) => {
@@ -147,7 +152,7 @@ function boot(): void {
     return {
       lanes: () => options(j).map((o) => ({
         id: o.to.id, name: o.to.name, krail: o.route.krail, days: o.route.days,
-        note: [o.netted ? 'the Net holds it' : '', o.shadow ? 'Calloway last seen there' : '', o.to.kind === 'edge' ? 'the way out' : ''].filter(Boolean).join(' · '),
+        note: [o.netted ? t('the Net holds it') : '', o.shadow ? t('Calloway last seen there') : '', o.to.kind === 'edge' ? t('the way out') : ''].filter(Boolean).join(' · '),
       })),
       current: () => j.dest,
       pick: (id: string) => { const r = replot(j, id); if (r) world.replot(r.dest, r.jumpCost); },
@@ -181,7 +186,7 @@ function boot(): void {
     const rec = recordRun(profile, world.run);
     const out = endSortie(j, world.result());
     saveJourney(j);
-    const lines = [...out.lines, ...rec.unlocked.map((u) => `Unlocked · ${u.name}`)];
+    const lines = [...out.lines, ...rec.unlocked.map((u) => `${t('Unlocked')} · ${t(u.name)}`)];
     if (out.kind === 'jumped') return openChart(lines);
     if (pending(j)) return threshold(j, lines);
     noticeOf(j, { ...out, lines });
@@ -192,6 +197,8 @@ function boot(): void {
     // before the first launch nothing has happened yet, so the run can be re-made with the new modifiers
     if (!started) world.restart({ modifiers: profile.modifiers, mode: profile.mode });
   });
+  // a new language: the page, then whatever the start card drew itself
+  onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
   const stops = () => {
     if (world.phase === 'refit' && world.offer && !refit.open) {
       // a full rail or battle salvage: three cards
@@ -210,7 +217,7 @@ function boot(): void {
       input.reset();
       port.show(world, () => {
         input.reset();
-        hud.note(world, 'Cast off');
+        hud.note(world, t('Cast off'));
         // the save at the port: a load starts this system again with the hold as it is now
         if (journey && world.mode === 'breakout') { checkpoint(journey, world.carry()); saveJourney(journey); }
       }, () => {}, journey && world.mode === 'breakout' && world.bk?.def.port ? courseFor(journey) : null);
@@ -226,7 +233,7 @@ function boot(): void {
         showMode();
         reported = false;
         startOpts.render();
-        hud.note(world, `Run begins · ${world.hull.name}`);
+        hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
         input.reset();
       });
     }
@@ -302,7 +309,7 @@ function boot(): void {
     setPaused(false);
     if (mode === 'arcade') {
       if (world.mode !== 'arcade') { world.restart({ modifiers: profile.modifiers, mode, carry: null }); showMode(); }
-      hud.note(world, `Run begins · ${world.hull.name}`);
+      hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
       return;
     }
     if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
@@ -310,8 +317,8 @@ function boot(): void {
       if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
       journey = newJourney(Math.floor(Math.random() * 1e9));
       saveJourney(journey);
-    } else if (pending(journey)) return threshold(journey, ['Journey resumed · the Threshold is behind you']);
-    else if (journey.status === 'chart') return openChart(['Journey resumed · the drive is cool, plot the next jump']);
+    } else if (pending(journey)) return threshold(journey, [t('Journey resumed · the Threshold is behind you')]);
+    else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cool, plot the next jump')]);
     startSortie();
   };
 

@@ -28,6 +28,10 @@ question.
   behind a card turns into the same odds word as a bluff, and the chart
   names the goal and the lanes toward it. Card text stays as flavour, not as
   instructions.
+- **English and German** (decided 2026-10-05). Every line the player sees
+  has a German twin in `src/i18n/de/`, keyed by the English. Both stay short
+  and informal (German says du). Code shows text through `t()`; the i18n
+  test fails on any new English line without German.
 - **Saves are versioned.** A journey lives longer than a run, so its save
   carries a version and a migration path from the first day.
 

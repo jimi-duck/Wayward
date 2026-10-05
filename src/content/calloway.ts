@@ -74,11 +74,11 @@ export const CALLOWAY_FACE: Face = { skin: '#d9b59c', hair: 'swept', hairColour:
 
 /** What she says about what she has learned (the last meeting, and her file on the chart). */
 export const HUNCH_LINES: Record<string, string> = {
-  port: '“You always stop where there is a dock, Juno. So I stopped asking where you had gone and asked where the docks were.”',
+  port: '“You always stop at a dock, Juno. So I just watch the docks.”',
   mining: '“You never pass up a rock field. Neither do I, now.”',
   transit: '“You like the quiet lanes. They are quiet for me too.”',
-  contested: '“You fly into every fight in the region. It makes you very easy to find.”',
-  straight: '“You never turn aside, Juno. I knew where you were going before you did.”',
+  contested: '“You fly into every fight. That makes you easy to find.”',
+  straight: '“You never turn aside, Juno. I knew where you were going.”',
 };
 
 const offer = (o: Omit<CardDef, 'kind' | 'caller' | 'trigger' | 'repeat' | 'face' | 'cargo'>): CardDef => ({
@@ -93,10 +93,10 @@ const offer = (o: Omit<CardDef, 'kind' | 'caller' | 'trigger' | 'repeat' | 'face
 export const OFFERS: CardDef[] = [
   offer({
     id: 'offer_meet', from: 'Prefect Idris Calloway · Office of Peace', title: 'Meet me',
-    text: '“What you told me. I cannot stop thinking about it. Meet me: one ship each, no guns, the quiet side of this system. I will listen. I promise nothing else.”',
+    text: '“I can’t stop thinking about what you told me. Meet me. One ship each, no guns. I’ll listen. That’s all I promise.”',
     truths: [{ id: 'listening', weight: 3, read: 'She is alone on the channel · no wing on the scope' }, { id: 'stalling', weight: 1, read: 'Her wing is moving while she talks' }],
     choices: [
-      { id: 'accept', label: 'Agree to meet', tone: 'help', hint: 'She learns where you are. You learn whether she can be reached.', loseIf: ['stalling'],
+      { id: 'accept', label: 'Agree to meet', tone: 'help', hint: 'She learns where you are. You learn if she can be reached.', loseIf: ['stalling'],
         win: { text: 'She came alone. She listened. She did not say what she believed.', score: 800, hunt: -1 },
         lose: { text: 'Her wing was already moving · you break off before it closes', hunt: -1.5, heat: 0.1 } },
       { id: 'refuse', label: 'Not yet', tone: 'refuse', hint: 'Keep the distance.', win: { text: '“Then at the end, Juno.”' } },
@@ -104,7 +104,7 @@ export const OFFERS: CardDef[] = [
   }),
   offer({
     id: 'offer_name', from: 'Prefect Idris Calloway · Office of Peace', title: 'A name for three days',
-    text: '“Your friend on the Leaky Tin. Give me the name of their fence and you have three days. Nobody in the Gutter needs to know where I got it.”',
+    text: '“Your friend on the Leaky Tin. Give me their fence’s name and you get three days. The Gutter won’t know it was you.”',
     truths: [{ id: 'quiet', weight: 2, read: 'Office channel, encrypted · she keeps her sources' }, { id: 'leaks', weight: 1, read: 'The channel is open · anyone could be listening' }],
     choices: [
       { id: 'accept', label: 'Give her the name', tone: 'trade', hint: 'Three days, and a friend sold.', loseIf: ['leaks'],
@@ -115,10 +115,10 @@ export const OFFERS: CardDef[] = [
   }),
   offer({
     id: 'offer_tank', from: 'Prefect Idris Calloway · Office of Peace', title: 'A full tank',
-    text: '“You are always short of Krail, Juno. I have watched you count it. Tell me your heading, and an Office tender fills your tank here and now. No tricks: I want you alive, and I want to know where you are.”',
+    text: '“You’re always short of Krail, Juno. Tell me your heading and a tender fills you up. No tricks. I want you alive, and I want to know where you are.”',
     choices: [
       { id: 'accept', label: 'Take the Krail', tone: 'trade', hint: 'Twenty Krail. She knows your heading.', win: { text: 'The tender pumps Krail aboard · she knows where you are going', krail: 20, heat: -0.2, hunt: -1.5 } },
-      { id: 'lie', label: 'Take it, with a false heading', tone: 'bluff', hint: 'The Krail, and the wrong lane. If she has heard your lies before, she checks.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
+      { id: 'lie', label: 'Take it, with a false heading', tone: 'bluff', hint: 'The Krail, and the wrong lane. If you’ve lied before, she checks.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
         win: { text: 'The Krail, and she turns for the wrong lane', krail: 20, hunt: 0.5 },
         lose: { text: '“That is not where you are going.” · the tender pulls away', hunt: -1 } },
       { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'You will find your own.', win: { text: '“Then count it carefully.”' } },
@@ -126,16 +126,16 @@ export const OFFERS: CardDef[] = [
   }),
   offer({
     id: 'offer_truce', from: 'Prefect Idris Calloway · Office of Peace', title: 'Stop, and I stop',
-    text: '“Every Custody hull you break, I write to a family. Stop killing them, and I stop sending them after you. You have my word. I want yours.”',
+    text: '“Every Custody ship you break, I write to a family. Stop killing them and I stop sending them. My word for yours.”',
     choices: [
-      { id: 'accept', label: 'Give her your word', tone: 'help', hint: 'The Custody and the Office ease off. Break a Custody or Office hull later and she will know.',
+      { id: 'accept', label: 'Give her your word', tone: 'help', hint: 'Custody and Office ease off. Kill one later and she’ll know.',
         win: { text: 'Your word, and hers · the bulletins come down', notice: { custody: -8, office: -6 } } },
       { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'They shoot first.', win: { text: '“Then I will keep writing letters.”' } },
     ],
   }),
   offer({
     id: 'offer_home', from: 'Prefect Idris Calloway · Office of Peace', title: 'The best there is',
-    text: '“Come home, Juno. Bring the archive and I can promise you a hearing, not a cell. I am sorry it is not more. That is the best there is, and it will not be offered again.”',
+    text: '“Come home, Juno. Bring the archive and you get a hearing, not a cell. It’s the best there is. I won’t offer it twice.”',
     choices: [
       { id: 'think', label: 'Say you will think about it', tone: 'bluff', hint: 'She waits for an answer, if she believes you.', odds: { base: 0.55, learn: 'lie' },
         win: { text: 'She gives you a day to think. You use it to run.', hunt: 1.5 },

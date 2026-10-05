@@ -10,6 +10,7 @@ import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
 import { NEON_CSS } from './colors';
+import { t as tr } from '../i18n';
 
 // ── targeting, in the world ───────────────────────────────────────────────
 // What the targeting computer is looking at, drawn where it is:
@@ -49,6 +50,7 @@ const metres = (u: number) => Math.round(u / PX);
 export const range = (u: number) => (metres(u) >= 1000 ? `${(metres(u) / 1000).toFixed(1)} km` : `${metres(u)} m`);
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SIZE = ['L', 'M', 'S'] as const;
+const ASTEROID: Record<string, string> = { basalt: 'Asteroid', iron: 'Iron asteroid', rich: 'Rich asteroid', volatile: 'Volatile asteroid', rare: 'Rare asteroid' };
 
 /** Set a node's text only when it changed. */
 function text(el: HTMLElement, t: string): void {
@@ -224,37 +226,37 @@ export class Targeting {
     this.cardClock += dt;
     if (this.cardClock < 0.1) return;
     this.cardClock = 0;
-    let name = '', sub = '', intK = 'Hull', ico = '#i-hostile', hp = 1, cls = '';
+    let name = '', sub = '', intK = tr('Hull'), ico = '#i-hostile', hp = 1, cls = '';
     if (t.kind === 'hull') {
       const a = t.ref as Alien;
-      name = alienLabel(a);
-      sub = `<b>${cap(a.faction)}</b> · +${alienBonus(a)}`;
+      name = tr(alienLabel(a));
+      sub = `<b>${tr(cap(a.faction))}</b> · +${alienBonus(a)}`;
       hp = a.hp / a.maxHp;
       if (a.elite) cls = 'elite';
     } else if (t.kind === 'boss') {
       const b = t.ref as Boss;
-      name = b.name;
-      sub = `<b>${cap(b.faction)} capital</b> · phase ${b.phase + 1}/3`;
+      name = tr(b.name);
+      sub = `<b>${tr('{f} capital', { f: tr(cap(b.faction)) })}</b> · ${tr('phase')} ${b.phase + 1}/3`;
       hp = b.hp / b.maxHp;
       ico = '#i-capital';
     } else {
       // mining: what the rock is, what breaking it yields, what it breaks into
       const r = t.ref as Rock, K = ROCK_KINDS[r.kind];
-      name = `${r.kind === 'basalt' ? 'Asteroid' : `${cap(r.kind)} asteroid`} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
-      const extra = r.kind === 'rare' ? ' · power-up' : r.kind === 'volatile' ? ' · unstable' : '';
+      name = `${tr(ASTEROID[r.kind] ?? 'Asteroid')} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
+      const extra = r.kind === 'rare' ? ` · ${tr('power-up')}` : r.kind === 'volatile' ? ` · ${tr('unstable')}` : '';
       if (world.bk) {
         // the Breakout: what a clean cut gives, and how the cut is going
         const y = rockYield(r.kind, r.size, true);
-        sub = `Ore <b>${y.ore}</b>${y.krail ? ` · Krail <b>${y.krail}</b>` : ''}${extra}`;
+        sub = `${tr('Ore')} <b>${y.ore}</b>${y.krail ? ` · Krail <b>${y.krail}</b>` : ''}${extra}`;
         if ((r.cut ?? 0) > 0 || (r.heat ?? 0) > 0) {
-          intK = (r.heat ?? 0) > 0.8 ? 'Too hot · cut' : 'Cut';
+          intK = tr((r.heat ?? 0) > 0.8 ? 'Too hot · cut' : 'Cut');
           hp = r.cut ?? 0;
-        } else { intK = 'Integrity'; hp = r.hp / r.maxHp; }
+        } else { intK = tr('Integrity'); hp = r.hp / r.maxHp; }
       } else {
         const chance = K.crystal[r.size]!, n = K.crystals[r.size]!;
-        const yieldWord = chance >= 1 ? `Yield <b>${n}</b>` : `Yield <b>${n}</b> · ${Math.round(chance * 100)}%`;
+        const yieldWord = chance >= 1 ? `${tr('Yield')} <b>${n}</b>` : `${tr('Yield')} <b>${n}</b> · ${Math.round(chance * 100)}%`;
         sub = `${yieldWord}${extra}`;
-        intK = 'Integrity';
+        intK = tr('Integrity');
         hp = r.hp / r.maxHp;
       }
       ico = '#i-rock';
@@ -314,22 +316,22 @@ export class Targeting {
       // the objective first: it must never be crowded out
       const e = world.encounter;
       if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy')) {
-        put(e.x, 0.5, e.z, 'm dia obj', `${ENCOUNTERS[e.id].name} · ${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
+        put(e.x, 0.5, e.z, 'm dia obj', `${tr(ENCOUNTERS[e.id].name)} · ${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
       }
       // the Breakout's two places, when they are in view
       if (world.bk) {
         for (const wp of world.seenPlaces()) {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
-          if (d < 400) put(wp.x, 0.5, wp.z, 'm dia obj', `${wp.name} · ${range(d)}`);
+          if (d < 400) put(wp.x, 0.5, wp.z, 'm dia obj', `${tr(wp.name)} · ${range(d)}`);
         }
       }
       const boss = world.command.boss;
-      if (boss && !boss.leaving && boss.cloak < 0.5 && boss.id !== t?.id) put(boss.x, boss.y, boss.z, 'm cap', boss.name);
+      if (boss && !boss.leaving && boss.cloak < 0.5 && boss.id !== t?.id) put(boss.x, boss.y, boss.z, 'm cap', tr(boss.name));
       // things to go and get
       for (const p of world.pickups) {
         if (LOOSE.has(p.kind)) continue;
         if (Math.hypot(p.x - s.x, p.z - s.z) > NEAR) continue;
-        put(p.x, 0.4, p.z, 'm dia', p.kind === 'repair' ? 'Hull repair' : POWER_LABEL[p.kind as PowerKind]);
+        put(p.x, 0.4, p.z, 'm dia', tr(p.kind === 'repair' ? 'Hull repair' : POWER_LABEL[p.kind as PowerKind]));
       }
       // the nearest krail-rich or rare rock: a deposit worth the detour
       let dep: Rock | null = null, depD = NEAR;
@@ -338,7 +340,7 @@ export class Targeting {
         const d = Math.hypot(r.x - s.x, r.z - s.z);
         if (d < depD) { depD = d; dep = r; }
       }
-      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', dep.kind === 'rich' ? 'Mineral deposit\nRich · krail' : 'Rare ore\nPower-up inside');
+      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', tr(dep.kind === 'rich' ? 'Mineral deposit\nRich · krail' : 'Rare ore\nPower-up inside'));
       // every other hull: brackets only, amber for an elite
       for (const a of world.aliens) {
         if (cloaked(a) || a.id === t?.id) continue;
@@ -357,17 +359,17 @@ export class Targeting {
     for (const wp of world.seenPlaces()) {
       const id = wp.kind === 'lane' ? 'ptr-lane' : 'ptr-port';
       this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live ? { x: wp.x, y: 0.5, z: wp.z } : null,
-        `${wp.name} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);
+        `${tr(wp.name)} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);
     }
     if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); }
     const boss = world.command.boss;
     const showBoss = live && !!boss && !boss.leaving && boss.cloak < 0.5;
     this.pointer($('ptr-cap'), $('ptr-cap-t'), sector, s.x, s.z, s.heading, showBoss ? boss! : null,
-      showBoss ? `${boss!.name} · ${range(Math.hypot(boss!.x - s.x, boss!.z - s.z))}` : '');
+      showBoss ? `${tr(boss!.name)} · ${range(Math.hypot(boss!.x - s.x, boss!.z - s.z))}` : '');
     const e = world.encounter;
     const showObj = live && !!e && !e.done && e.r > 0;
     this.pointer($('ptr-obj'), $('ptr-obj-t'), sector, s.x, s.z, s.heading, showObj ? { x: e!.x, y: 0.5, z: e!.z } : null,
-      showObj ? `${ENCOUNTERS[e!.id].name} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
+      showObj ? `${tr(ENCOUNTERS[e!.id].name)} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
   }
 
   /** Hulls out of view: the nearest first, each pinned to the edge along its bearing. */

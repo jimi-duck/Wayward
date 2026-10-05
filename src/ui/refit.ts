@@ -2,6 +2,7 @@ import { BRANCHES, UPGRADE, upgradeText, type Branch } from '../content/upgrades
 import { branchLevels, upgradeFigures, type Levels } from '../sim/build';
 import type { Card, CardTag, Offer } from '../sim/offers';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
+import { t } from '../i18n';
 
 // ── the refit: three cards ────────────────────────────────────────────────
 // A full rail stops the run on three cards. Read them, take one, fly on:
@@ -51,10 +52,10 @@ export class RefitPanel {
     this.close();
     const opened = performance.now();
     const kind = offer.kind;
-    $('refit-k').textContent = kind === 'salvage' ? 'Battle salvage' : kind === 'spec' ? 'Specialisation' : `Field refit · ${pad2(offer.refit)}`;
+    $('refit-k').textContent = kind === 'salvage' ? t('Battle salvage') : kind === 'spec' ? t('Specialisation') : `${t('Field refit')} · ${pad2(offer.refit)}`;
     const spec = kind === 'spec' ? UPGRADE[offer.cards[0]!.id]! : null;
-    $('refit-t').textContent = kind === 'salvage' ? 'Take one from the wreck' : spec ? `${BRANCHES[spec.branch].name}: specialise` : 'Choose an upgrade';
-    $('refit-s').textContent = kind === 'spec' ? 'One per system, for the rest of the run. It decides what this ship is.' : '';
+    $('refit-t').textContent = kind === 'salvage' ? t('Take one from the wreck') : spec ? t('{system}: specialise', { system: t(BRANCHES[spec.branch].name) }) : t('Pick an upgrade');
+    $('refit-s').textContent = kind === 'spec' ? t('One per system, for the whole run. It makes the ship what she is.') : '';
     const pick = (i: number) => { this.close(); onPick(i); };
     $('cards').replaceChildren(...offer.cards.map((c, i) => this.card(c, i, levels, guarded(opened, () => pick(i)))));
     this.sel = 0;
@@ -106,27 +107,27 @@ export class RefitPanel {
     b.addEventListener('pointerdown', (e) => e.stopPropagation());
     b.addEventListener('pointerenter', () => { this.sel = i; this.mark(); });
 
-    const sys = u.branch === 'salvage' && u.tech ? `${u.tech.charAt(0).toUpperCase()}${u.tech.slice(1)} salvage` : BRANCHES[u.branch].name;
-    const top = h('span', 'c-top', '', icon(ICON[u.branch]), h('span', 'c-sys', sys), h('span', 'c-tag', TAG_WORD[c.tag]), h('kbd', 'only-desktop', String(i + 1)));
-    const name = h('span', 'c-name', u.name);
+    const sys = u.branch === 'salvage' && u.tech ? t('{f} salvage', { f: t(`${u.tech.charAt(0).toUpperCase()}${u.tech.slice(1)}`) }) : t(BRANCHES[u.branch].name);
+    const top = h('span', 'c-top', '', icon(ICON[u.branch]), h('span', 'c-sys', sys), h('span', 'c-tag', t(TAG_WORD[c.tag])), h('kbd', 'only-desktop', String(i + 1)));
+    const name = h('span', 'c-name', t(u.name));
 
     // the module's level: owned blocks, then the one this card adds
     const lv = h('span', 'lvl');
     if (u.max > 1) {
       for (let k = 1; k <= u.max; k++) lv.append(h('i', k < c.level ? 'on' : k === c.level ? 'add' : ''));
-      lv.append(h('span', 'lvl-n', `Lv ${c.level}/${u.max}`));
+      lv.append(h('span', 'lvl-n', `${t('Lv')} ${c.level}/${u.max}`));
     } else {
       const sl = systemLevel(levels, u.branch);
-      lv.append(h('span', 'lvl-n', u.kind === 'spec' ? 'Once per run' : u.kind === 'tech' ? 'Her faction’s tech' : u.kind === 'synergy' ? 'Both halves fitted' : sl > 0 ? `${BRANCHES[u.branch].name} Lv ${sl}` : 'Fits a new system'));
+      lv.append(h('span', 'lvl-n', u.kind === 'spec' ? t('Once per run') : u.kind === 'tech' ? t('Her faction’s tech') : u.kind === 'synergy' ? t('Both halves fitted') : sl > 0 ? `${t(BRANCHES[u.branch].name)} ${t('Lv')} ${sl}` : t('Fits a new system')));
     }
 
-    const text = h('span', 'c-text', upgradeText(u, c.level));
+    const text = h('span', 'c-text', t(upgradeText(u, c.level)));
     const figs = h('span', 'c-figs');
     for (const f of upgradeFigures(levels, c.id).slice(0, MAX_FIGS)) {
-      figs.append(h('span', `fig${f.cost ? ' cost' : ''}`, '', h('span', 'f-l', f.label), h('span', 'f-v', '', h('s', '', f.from), document.createTextNode(' → '), h('b', '', f.to))));
+      figs.append(h('span', `fig${f.cost ? ' cost' : ''}`, '', h('span', 'f-l', t(f.label)), h('span', 'f-v', '', h('s', '', t(f.from)), document.createTextNode(' → '), h('b', '', t(f.to)))));
     }
     b.append(top, name, lv, text, figs);
-    if (u.note) b.append(h('span', 'c-note', u.note));
+    if (u.note) b.append(h('span', 'c-note', t(u.note)));
     return b;
   }
 }

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { CARDS } from '../content/cards';
 import { MODULE_BY_ID, MODULES, SHIP_SYSTEMS, SYSTEM_DEFS, type ModuleDef, type ShipSystem } from '../content/modules';
 import type { Prices } from '../content/systems';
@@ -77,10 +78,10 @@ export function fitCost(levels: Levels, id: string): { kit: number; chits: numbe
 export function fitNeeds(levels: Levels, kit: Kit, chits: number, id: string): string[] {
   const m = MODULE_BY_ID[id];
   const cost = fitCost(levels, id);
-  if (!m || !cost) return ['Fully fitted'];
+  if (!m || !cost) return [t('Fully fitted')];
   const out: string[] = [];
-  if (kit[m.system] < cost.kit) out.push(`Needs ${cost.kit} ${SYSTEM_DEFS[m.system].resource}`);
-  if (chits < cost.chits) out.push(`Needs ${cost.chits} chits`);
+  if (kit[m.system] < cost.kit) out.push(`${t('Needs')} ${cost.kit} ${t(SYSTEM_DEFS[m.system].resource)}`);
+  if (chits < cost.chits) out.push(t('Needs {n} chits', { n: cost.chits }));
   return out;
 }
 

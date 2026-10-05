@@ -3,6 +3,7 @@ import { FOOD_MAX, TANK_MAX } from '../sim/breakout';
 import { fitCost } from '../sim/modules';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
+import { plural, t } from '../i18n';
 
 // ── the port ──────────────────────────────────────────────────────────────
 // Docked: the world waits while you trade. Five things to do and a way out:
@@ -53,8 +54,8 @@ export class PortPanel {
     this.opened = performance.now();
     this.sel = 0;
     this.view = 'trade';
-    $('port-t').textContent = world.bk?.port?.name ?? 'Port';
-    $('port-s').textContent = world.bk?.def.netted ? 'Refuel · repair · trade · under Continuance order' : 'Refuel · repair · trade · no implant checks';
+    $('port-t').textContent = world.bk?.port?.name ?? t('Port');
+    $('port-s').textContent = t(world.bk?.def.netted ? 'Refuel · repair · trade · under Continuance order' : 'Refuel · repair · trade · no implant checks');
     const x = $('port-x');
     x.onclick = guarded(this.opened, () => this.leave());
     x.onpointerdown = (e) => e.stopPropagation();
@@ -146,8 +147,8 @@ export class PortPanel {
     this.sel = Math.min(this.sel, this.lines.length - 1);
     const kit = w.kit;
     const stock = this.view === 'trade'
-      ? [['Chits', String(w.chits)], ['Tank', `${w.krail}/${w.jumpCost}`], ['Food', String(w.food)], ['Hold', `${w.ore}/${w.holdMax}`], ['Hull', `${w.plates}/${w.stats.maxPlates}`]]
-      : [['Chits', String(w.chits)], ...SHIP_SYSTEMS.map((s) => [SYSTEM_DEFS[s].name, String(kit[s])])];
+      ? [[t('Chits'), String(w.chits)], [t('Tank'), `${w.krail}/${w.jumpCost}`], [t('Food'), String(w.food)], [t('Hold'), `${w.ore}/${w.holdMax}`], [t('Hull'), `${w.plates}/${w.stats.maxPlates}`]]
+      : [[t('Chits'), String(w.chits)], ...SHIP_SYSTEMS.map((s) => [t(SYSTEM_DEFS[s].name), String(kit[s])])];
     $('port-stock').replaceChildren(...stock.map(([k, v]) => h('span', '', '', h('span', 'k', k!), h('b', '', v!))));
     $('port-list').replaceChildren(...this.lines.map((l, i) => {
       const b = h('button', `port-l${i === this.sel ? ' sel' : ''}`, '', h('kbd', '', String(i + 1)), h('span', 'pl-n', l.label), h('span', 'pl-note', l.note), h('b', 'pl-p', l.price)) as HTMLButtonElement;
@@ -167,22 +168,22 @@ export class PortPanel {
   private yard(w: World): void {
     const kit = w.kit;
     this.lines = [
-      { key: 'back', label: 'Back to the dock', price: '', note: '', ok: true, go: () => this.go('trade') },
+      { key: 'back', label: t('Back to the dock'), price: '', note: '', ok: true, go: () => this.go('trade') },
       ...SHIP_SYSTEMS.map((s): Line => {
         const d = SYSTEM_DEFS[s], n = this.fittable(w, s);
-        return { key: 'yard', label: d.name, price: n ? String(n) : '—', note: `${kit[s]} ${d.resource} · ${d.source}`, ok: true, go: () => this.go(s) };
+        return { key: 'yard', label: t(d.name), price: n ? String(n) : '—', note: `${kit[s]} ${t(d.resource)} · ${t(d.source)}`, ok: true, go: () => this.go(s) };
       }),
     ];
   }
 
   private system(w: World, sys: ShipSystem): void {
     this.lines = [
-      { key: 'back', label: 'Back to the systems', price: '', note: '', ok: true, go: () => this.go('yard') },
+      { key: 'back', label: t('Back to the systems'), price: '', note: '', ok: true, go: () => this.go('yard') },
       ...MODULES.filter((m) => m.system === sys).map((m): Line => {
         const mk = w.levels[m.id] ?? 0, cost = fitCost(w.levels, m.id), needs = w.fitNeeds(m.id);
-        const label = m.max > 1 ? `${m.name} ${cost ? `Mk ${mk + 1}` : `Mk ${mk}`}` : m.name;
+        const label = m.max > 1 ? `${t(m.name)} ${cost ? `Mk ${mk + 1}` : `Mk ${mk}`}` : t(m.name);
         return {
-          key: 'fit', label, price: cost ? `${cost.kit} ${SYSTEM_DEFS[sys].name} · ${cost.chits}c` : 'Fitted', note: cost && needs.length ? needs.join(' · ') : m.text, ok: !needs.length,
+          key: 'fit', label, price: cost ? `${cost.kit} ${t(SYSTEM_DEFS[sys].name)} · ${cost.chits}c` : t('Fitted'), note: cost && needs.length ? needs.map((n) => t(n)).join(' · ') : t(m.text), ok: !needs.length,
           go: () => { w.fitModule(m.id); this.render(); },
         };
       }),
@@ -192,22 +193,22 @@ export class PortPanel {
   private trade(w: World): void {
     const P = w.prices, need = Math.max(0, w.jumpCost - w.krail);
     this.lines = [
-      { key: 'sell', label: 'Sell the hold', price: w.ore ? `+${w.ore * P.ore}` : '—', note: `${w.ore} ore at ${P.ore} chits`, ok: w.ore > 0 },
-      { key: 'krail', label: 'Buy Krail', price: `${P.krail}`, note: w.krail >= TANK_MAX ? 'Tank full' : need ? `${need} short of the jump` : 'Enough to jump', ok: w.canBuy('krail') },
-      { key: 'food', label: 'Buy food', price: `${P.food}`, note: w.food >= FOOD_MAX ? 'Galley full' : `${w.food} in the galley · a day each`, ok: w.canBuy('food') },
-      { key: 'plate', label: 'Patch a plate', price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? 'Hull whole' : `Hull ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
-      { key: 'refit', label: 'Pay for a refit', price: `${P.refit}`, note: 'Three cards, take one', ok: w.canBuy('refit') },
+      { key: 'sell', label: t('Sell the hold'), price: w.ore ? `+${w.ore * P.ore}` : '—', note: t('{n} ore at {p} chits', { n: w.ore, p: P.ore }), ok: w.ore > 0 },
+      { key: 'krail', label: t('Buy Krail'), price: `${P.krail}`, note: w.krail >= TANK_MAX ? t('Tank full') : need ? t('{n} short of the jump', { n: need }) : t('Enough to jump'), ok: w.canBuy('krail') },
+      { key: 'food', label: t('Buy food'), price: `${P.food}`, note: w.food >= FOOD_MAX ? t('Galley full') : t('{n} in the galley · a day each', { n: w.food }), ok: w.canBuy('food') },
+      { key: 'plate', label: t('Patch a plate'), price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? t('Hull whole') : `${t('Hull')} ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
+      { key: 'refit', label: t('Pay for a refit'), price: `${P.refit}`, note: t('Three cards, take one'), ok: w.canBuy('refit') },
     ];
     const c = this.course, lanes = c?.lanes() ?? [];
     if (c && lanes.length) {
       const now = lanes.find((x) => x.id === c.current()) ?? lanes[0]!;
       this.lines.push({
-        key: 'course', label: lanes.length > 1 ? 'Plot another lane' : 'The lane out', price: `${now.krail}K`,
-        note: `Bound for ${now.name} · ${now.days} day${now.days === 1 ? '' : 's'}${now.note ? ` · ${now.note}` : ''}`, ok: lanes.length > 1,
+        key: 'course', label: t(lanes.length > 1 ? 'Plot another lane' : 'The lane out'), price: `${now.krail}K`,
+        note: [t('Bound for {dest}', { dest: now.name }), plural(now.days, '{n} day', '{n} days'), now.note].filter(Boolean).join(' · '), ok: lanes.length > 1,
       });
     }
     // the yard, after the trade: modules for the four systems
     const n = this.fittable(w);
-    this.lines.push({ key: 'yard', label: 'Fit modules', price: n ? String(n) : '—', note: n ? `${n} ready to fit` : 'Guns · Rig · Signals · Contacts', ok: true, go: () => this.go('yard') });
+    this.lines.push({ key: 'yard', label: t('Fit modules'), price: n ? String(n) : '—', note: n ? t('{n} ready to fit', { n }) : SHIP_SYSTEMS.map((s) => t(SYSTEM_DEFS[s].name)).join(' · '), ok: true, go: () => this.go('yard') });
   }
 }

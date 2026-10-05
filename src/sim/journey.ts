@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import {
   DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
 } from '../content/phenomena';
@@ -148,7 +149,7 @@ export function newJourney(seed: number, hardcore = false): Journey {
   };
   const out = lanesFrom(chart, chart.home);
   j.dest = out[rng(j).int(out.length)]!.to.id;
-  note(j, 'Breakout · the Kellern yards are locked down');
+  note(j, t('Breakout · the Kellern yards are locked down'));
   return j;
 }
 
@@ -224,7 +225,7 @@ export function replot(j: Journey, to: string): { dest: string; jumpCost: number
   if (j.status !== 'sortie' || !s.port || s.kind === 'home' || !routeBetween(j.chart, s.id, to) || !onward(j, sysById(j.chart, to))) return false;
   const route = routeBetween(j.chart, s.id, to);
   if (!route) return false;
-  if (to !== j.dest) note(j, `Re-plotted for ${sysById(j.chart, to).name}`);
+  if (to !== j.dest) note(j, t('Re-plotted for {name}', { name: sysById(j.chart, to).name }));
   j.dest = to;
   return { dest: sysById(j.chart, to).name, jumpCost: route.krail };
 }
@@ -275,23 +276,23 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
   if (!p || p.done) return [];
   p.done = true;
   const d = PLACES[p.id];
-  const head = d.reward === 'unknown' ? `${d.name} · ${d.done}: ${REWARD_WORD[p.reward]}` : `${d.name} · ${d.done}`;
+  const head = d.reward === 'unknown' ? `${t(d.name)} · ${t(d.done)}: ${t(REWARD_WORD[p.reward])}` : `${t(d.name)} · ${t(d.done)}`;
   const lines = [head];
   switch (p.reward) {
     case 'krail': c.krail = Math.min(TANK_MAX, c.krail + PLACE_KRAIL); lines.push(`+${PLACE_KRAIL} Krail`); break;
-    case 'parts': c.parts += PLACE_PARTS; c.kit = { ...c.kit, rig: c.kit.rig + 2, guns: c.kit.guns + 1 }; lines.push(`+${PLACE_PARTS} parts · rig parts and salvage for the yard`); break;
-    case 'cover': j.hunt.delay += PLACE_COVER; lines.push('Calloway loses your trail for a while'); break;
+    case 'parts': c.parts += PLACE_PARTS; c.kit = { ...c.kit, rig: c.kit.rig + 2, guns: c.kit.guns + 1 }; lines.push(t('+{n} parts · rig parts and salvage for the yard', { n: PLACE_PARTS })); break;
+    case 'cover': j.hunt.delay += PLACE_COVER; lines.push(t('Calloway loses your trail for a while')); break;
     case 'shortcut': {
       const to = openShortcut(j.chart, from);
-      lines.push(to ? `A new lane from ${sysById(j.chart, from).name} to ${to.name}` : 'The lane it showed leads nowhere new');
+      lines.push(to ? t('New lane: {a} to {b}', { a: sysById(j.chart, from).name, b: to.name }) : t('The lane it showed leads nowhere new'));
       break;
     }
-    case 'favour': c.chits += PLACE_CHITS; c.kit = { ...c.kit, contacts: c.kit.contacts + 2 }; lines.push(`+${PLACE_CHITS} chits · favours owed for the yard`); break;
-    case 'info': hearNews(j); sightPlaces(j.chart, s.id, 3); lines.push('The Net’s edge as it is, and the places three jumps round'); break;
+    case 'favour': c.chits += PLACE_CHITS; c.kit = { ...c.kit, contacts: c.kit.contacts + 2 }; lines.push(t('+{n} chits · favours owed for the yard', { n: PLACE_CHITS })); break;
+    case 'info': hearNews(j); sightPlaces(j.chart, s.id, 3); lines.push(t('The Net’s edge, and the places three jumps round')); break;
     case 'danger':
       c.parts += PLACE_PARTS; c.kit = { ...c.kit, signals: c.kit.signals + 2, guns: c.kit.guns + 2 };
       huntOn(j.hunt, j.chart, j.trail, DANGER_DAYS);
-      lines.push(`+${PLACE_PARTS} parts · signal kit and salvage`, 'Word of it travels · Calloway closes a day');
+      lines.push(t('+{n} parts · signal kit and salvage', { n: PLACE_PARTS }), t('Word gets out · Calloway gains a day'));
       break;
   }
   note(j, head);
@@ -316,7 +317,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (res.stall > 0 && !netted(j.chart, s.id)) j.chart.stall[s.id] = (j.chart.stall[s.id] ?? 0) + res.stall;
   else if (res.stall < 0) pushNet(j.chart, s.id, -res.stall);
   if (res.calloway) j.hunt.caught++;
-  if (res.callowayBeaten) { j.hunt.beaten++; j.hunt.delay += BEATEN_DELAY; lines.push(`Calloway’s ship is crippled · ${BEATEN_DELAY} days of repairs`); }
+  if (res.callowayBeaten) { j.hunt.beaten++; j.hunt.delay += BEATEN_DELAY; lines.push(t('Calloway’s ship is crippled · {n} days of repairs', { n: BEATEN_DELAY })); }
   // the system's place, dealt with: it pays now, and any new lane opens from where you go next
   if (res.place) lines.push(...claim(j, s, res.carry, res.ended === 'jumped' && j.dest ? j.dest : s.id));
   const flags = new Set(res.carry.flags);
@@ -347,15 +348,15 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
       j.status = 'over';
       j.end = res.calloway ? 'captured' : 'wrecked';
       j.carry = res.carry;
-      note(j, res.calloway ? `Taken by Calloway in ${s.name}` : `The Wayward breaks up in ${s.name}`);
-      return { kind: j.end, lines: [res.calloway ? 'Calloway’s boarding party cuts through the airlock.' : 'The Wayward is beyond saving.'] };
+      note(j, t(res.calloway ? 'Taken by Calloway in {name}' : 'The Wayward breaks up in {name}', { name: s.name }));
+      return { kind: j.end, lines: [t(res.calloway ? 'Calloway’s boarders cut through the airlock.' : 'The Wayward is beyond saving.')] };
     }
     // adrift: you patch her enough to fly, and the hold is gone
     const c = res.carry;
     j.carry = { ...c, ore: 0, parts: Math.floor(c.parts / 2), krail: Math.floor(c.krail / 2), chits: Math.floor(c.chits / 2), plates: 2 };
     pass(j, ADRIFT);
-    note(j, `Wrecked in ${s.name} · adrift a day`);
-    lines.push('The hull went. You got her flying again, a day later.', 'The hold is lost; half the Krail, parts and chits with it.', `${WRECKS - j.wrecks} more and she will not fly again.`);
+    note(j, t('Wrecked in {name} · adrift a day', { name: s.name }));
+    lines.push(t('The hull went. She flies again, a day later.'), t('Hold lost, and half your Krail, parts and chits.'), t('{n} more and she won’t fly again.', { n: WRECKS - j.wrecks }));
     j.status = 'sortie';
     return { kind: 'adrift', lines };
   }
@@ -368,9 +369,9 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const eat = days * RATION;
   let penalty = 0;
   if (c.food >= eat) { c.food -= eat; j.hungry = 0; }
-  else { c.food = 0; j.hungry++; penalty++; lines.push(`The galley ran out in the lane · you arrive weak (a plate down)`); }
+  else { c.food = 0; j.hungry++; penalty++; lines.push(t('Out of food in the lane · a plate down')); }
   if (c.parts >= WEAR) c.parts -= WEAR;
-  else { c.parts = 0; penalty++; lines.push(`No parts for the drive’s wear · the hull took it (a plate down)`); }
+  else { c.parts = 0; penalty++; lines.push(t('No parts for the drive · a plate down')); }
   c.plates = Math.max(1, c.plates - penalty);
   j.carry = c;
   j.at = to;
@@ -381,31 +382,31 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   arrive(j.chart, to, j.day);
   if (news) {
     hearNews(j);
-    lines.push('The news you bought: the Net’s edge and the Prefect’s last port');
+    lines.push(t('Your news: the Net’s edge and the Prefect’s last port'));
   } else sight(j, false);
   leg.krailOut = c.krail;
   const there = sysById(j.chart, to);
-  note(j, `Jumped to ${there.name}`);
-  for (const id of fell) if (j.chart.seenNet.includes(id)) lines.push(`The Net has taken ${sysById(j.chart, id).name}`);
+  note(j, t('Jumped to {name}', { name: there.name }));
+  for (const id of fell) if (j.chart.seenNet.includes(id)) lines.push(t('The Net has taken {name}', { name: sysById(j.chart, id).name }));
   const place = placeAt(j.chart, to);
-  if (place && there.kind !== 'edge') lines.push(`${PLACES[place.id].name} here · ${PLACES[place.id].blurb}`);
+  if (place && there.kind !== 'edge') lines.push(`${t('{name} here', { name: t(PLACES[place.id].name) })} · ${t(PLACES[place.id].blurb)}`);
   // through a gate: a new region
-  if (there.kind === 'gate') { const R = REGIONS[viewOf(j.chart, to)]; if (R) { lines.unshift(`${R.name} · ${R.blurb}`); note(j, `Through ${there.name} into ${R.name}`); } }
+  if (there.kind === 'gate') { const R = REGIONS[viewOf(j.chart, to)]; if (R) { lines.unshift(`${t(R.name)} · ${t(R.blurb)}`); note(j, t('Through {gate} into {region}', { gate: there.name, region: t(R.name) })); } }
   const fleet = fleetAt(j.chart, to);
-  if (fleet) lines.push(`A Drift fleet is here · ${fleet.name} trades food and news`);
-  if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push('Thren here · they come for Krail');
+  if (fleet) lines.push(t('Drift fleet here · {name} trades food and news', { name: fleet.name }));
+  if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push(t('Thren here · they come for Krail'));
   if (there.kind === 'edge') {
     j.status = 'over';
     j.end = 'through';
     const how = ending(res.run.cards, res.callowayBeaten);
-    if (how) { j.calloway.ending = how; note(j, ENDING_LINES[how]); lines.unshift(ENDING_LINES[how]); }
-    note(j, 'Through the Threshold · into the Scatter');
+    if (how) { j.calloway.ending = how; note(j, t(ENDING_LINES[how])); lines.unshift(t(ENDING_LINES[how])); }
+    note(j, t('Through the Threshold · into the Scatter'));
     j.ending = null;
-    return { kind: 'through', lines: ['The old lane opens. Beyond it, the Scatter.', ...lines] };
+    return { kind: 'through', lines: [t('The old lane opens. Beyond it, the Scatter.'), ...lines] };
   }
   // with every system flown she reads your route a little better, unless the echoes left behind make it lie
   const echo = effects(c.levels).echo;
-  if (echo > 0) { j.hunt.delay += ECHO_DELAY * echo; lines.push('A ghost echo burns down another lane behind you'); }
+  if (echo > 0) { j.hunt.delay += ECHO_DELAY * echo; lines.push(t('A ghost echo lays a false trail behind you')); }
   j.hunt.hunch = echo >= ECHO_BLIND ? undefined : hunchOf(j.chart, j.trail);
   j.status = 'chart';
   return { kind: 'jumped', lines };

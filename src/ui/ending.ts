@@ -1,6 +1,7 @@
 import { choices, choose, type Choice } from '../sim/endings';
 import type { Journey } from '../sim/journey';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
+import { t } from '../i18n';
 
 // ── the Threshold ─────────────────────────────────────────────────────────
 // Through the last lane, the Severance file is still aboard. The panel shows
@@ -28,9 +29,9 @@ export class EndingPanel {
     this.opened = performance.now();
     this.list = choices(j);
     this.sel = Math.max(0, this.list.findIndex((c) => c.open));
-    $('en-k').textContent = `The Threshold · day ${Math.floor(j.day) + 1}`;
-    $('en-t').textContent = 'What is the file worth?';
-    $('en-s').textContent = 'The chase is over. The Severance file is still aboard.';
+    $('en-k').textContent = `${t('The Threshold')} · ${t('day {n}', { n: Math.floor(j.day) + 1 })}`;
+    $('en-t').textContent = t('What is the file worth?');
+    $('en-s').textContent = t('The chase is over. The Severance file is still aboard.');
     $('en-go').hidden = true;
     $('en-epi').replaceChildren();
     $('ending').hidden = false;
@@ -62,8 +63,8 @@ export class EndingPanel {
   private render(): void {
     $('en-l').replaceChildren(...this.list.map((c, i) => {
       const li = h('li', `${c.open ? 'on' : 'shut'}${i === this.sel ? ' sel' : ''}`, '',
-        h('b', '', `${i + 1} · ${c.def.name}`), h('span', 'kind', c.open ? 'open' : 'shut'),
-        h('p', '', c.def.pitch), c.open ? null : h('p', 'need', c.def.needs));
+        h('b', '', `${i + 1} · ${t(c.def.name)}`), h('span', 'kind', t(c.open ? 'open' : 'shut')),
+        h('p', '', t(c.def.pitch)), c.open ? null : h('p', 'need', t(c.def.needs)));
       if (c.open) {
         li.setAttribute('role', 'button');
         li.onclick = guarded(this.opened, () => this.pick(i));
@@ -89,11 +90,11 @@ export class EndingPanel {
     if (!lines) return;
     this.off?.();
     this.opened = performance.now();
-    $('en-k').textContent = 'Epilogue';
-    $('en-t').textContent = c.def.name;
-    $('en-s').textContent = c.def.pitch;
+    $('en-k').textContent = t('Epilogue');
+    $('en-t').textContent = t(c.def.name);
+    $('en-s').textContent = t(c.def.pitch);
     $('en-l').replaceChildren();
-    $('en-epi').replaceChildren(...lines.map((l) => h('p', '', l)));
+    $('en-epi').replaceChildren(...lines.map((l) => h('p', '', t(l))));
     const go = $('en-go');
     go.hidden = false;
     go.onclick = guarded(this.opened, () => this.done());

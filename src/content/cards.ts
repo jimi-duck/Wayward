@@ -44,7 +44,7 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       {
-        id: 'run', label: 'Run it', tone: 'run', hint: 'Make for the lane under her guns. She and her wing chase you, and her interdiction field doubles the spool.',
+        id: 'run', label: 'Run it', tone: 'run', hint: 'Make for the lane under her guns. She chases, and her field slows your jump.',
         win: { text: 'Running the blockade · the whole system is coming', blockade: 'run' },
       },
       {
@@ -72,7 +72,7 @@ export const CARDS: CardDef[] = [
         lose: { text: '“Nice try, Wayward.” · she opens fire', blockade: 'fight', heat: 0.05 },
       },
       {
-        id: 'fight', label: 'Fight', tone: 'fight', hint: 'She holds the lane with her wing. Break her and the way is clear, with her wreck to pick over.',
+        id: 'fight', label: 'Fight', tone: 'fight', hint: 'She holds the lane with her wing. Break her for a clear lane and a wreck to strip.',
         win: { text: 'Weapons hot · breaking the blockade', blockade: 'fight' },
       },
     ],
@@ -82,7 +82,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'port_check', kind: 'checkpoint', caller: 'frontier', trigger: 'port', when: { kind: 'home' },
     from: 'Frontier Supply · dock control', title: 'Implant scan before docking',
-    text: '“New rule from the moon, hauler. Everyone gets scanned before the clamps go on.” The dockmaster does not sound happy about it.',
+    text: '“New rule from the moon, hauler. Everyone gets scanned before the clamps go on.” The dockmaster isn’t happy about it.',
     lines: [
       { if: { heatMin: 0.5 }, text: 'There is a Custody notice on their board. It has your hull on it.' },
       { if: { standing: ['frontier', 1] }, text: '“You did right by us. Maybe the scanner has a fault today.”' },
@@ -168,7 +168,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'ares_tender', kind: 'trade', caller: 'frontier', when: { after: 90, ore: 8 }, repeat: true,
     from: 'Ares Drive · service tender', title: 'Parts for ore',
-    text: '“Ares Drive, parts and services. We are short of feedstock and long on spares. Ten ore gets you six parts, or forty chits patches a plate here and now.”',
+    text: '“Ares Drive, parts and service. Ten ore gets you six parts, or forty chits patches a plate right now.”',
     lines: [{ if: { hurt: true }, text: 'Your hull is open to space in two places. They can see it from here.' }],
     ships: [{ variant: 'freighter', n: 1 }], cargo: 'Service tender · spares racks',
     choices: [
@@ -315,7 +315,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'decoy', kind: 'job', caller: 'gutter', when: { kind: 'home', after: 140, heatMax: 0.75 },
     from: 'Gutter fixer · Mags', title: 'Light up and draw them off',
-    text: '“We have a run going past the moon. Light your transponder for a minute, draw the patrols off it. Ten Krail.”',
+    text: '“We’ve got a run past the moon. Light your transponder, pull the patrols off. Ten Krail.”',
     lines: [{ if: { flag: 'gutter_friend' }, text: '“The Leaky Tin says you are good for it.”' }],
     cargo: 'Fixer’s channel',
     choices: [
@@ -328,7 +328,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'sweep_warning', kind: 'warning', caller: 'miners', when: { kind: 'home', after: 45, heatMin: 0.15 },
     from: 'An old shift partner', title: 'A sweep is coming',
-    text: '“Juno, it’s Sol. There is a sweep coming off the moon. I can send you their pattern, if you can spare something for it.”',
+    text: '“Juno, it’s Sol. A sweep is coming off the moon. I can send you their pattern, for a little something.”',
     cargo: 'A private channel',
     truths: [
       { id: 'true', weight: 3, read: 'Sol’s channel is clean' },
@@ -351,7 +351,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'office_watch', kind: 'warning', caller: 'unknown', when: { after: 110, noFlag: 'freqs' },
     from: 'A scrambled voice', title: 'The Office is listening',
-    text: '“The Office of Peace sits on every channel near the lane mouth. I sell the list of their frequencies. Twenty chits.”',
+    text: '“The Office listens on every channel near the lane mouth. I sell their frequencies. Twenty chits.”',
     cargo: 'A scrambled channel',
     truths: [
       { id: 'real', weight: 3, read: 'Carrier wave from the port’s own antenna' },
@@ -369,10 +369,10 @@ export const CARDS: CardDef[] = [
   {
     id: 'calloway', kind: 'warning', caller: 'calloway', when: { after: 150 }, weight: 2, face: CALLOWAY_FACE,
     from: 'Prefect Idris Calloway · Office of Peace', title: 'Come home, Juno',
-    text: '“Juno. This is Idris Calloway. I am not your enemy. Whatever you found in that archive, it is not worth your life. Tell me where you are going.”',
+    text: '“Juno, Idris Calloway. I’m not your enemy. That archive isn’t worth your life. Tell me where you’re going.”',
     lines: [
       { if: { flag: 'passengers' }, text: '“And the Okafors. They have children, Juno.”' },
-      { if: { heatMin: 0.7 }, text: '“You are making a great deal of noise for someone who wants to disappear.”' },
+      { if: { heatMin: 0.7 }, text: '“That’s a lot of noise for someone who wants to disappear.”' },
     ],
     cargo: 'A Prefect’s channel · priority override',
     choices: [
@@ -408,8 +408,8 @@ export const CARDS: CardDef[] = [
   {
     id: 'picket_fine', kind: 'shakedown', caller: 'custody', when: { after: 60, heatMax: 0.55, netted: true }, repeat: true,
     from: 'Custody picket · PF-226', title: 'Unlicensed cutting',
-    text: '“Hauler, you are cutting rock without a Kellern licence. That is a {fee}-chit fine, payable now. Or we can do this at the moon.”',
-    lines: [{ if: { heatMax: 0.25 }, text: 'He has not matched your hull to the notice. He just wants the money.' }],
+    text: '“You’re mining without a Kellern licence. {fee} chits, now. Or we do this at the moon.”',
+    lines: [{ if: { heatMax: 0.25 }, text: 'He hasn’t matched your ship to the notice. He just wants money.' }],
     ships: [{ variant: 'picket', n: 2 }], cargo: 'Patrol pair · a pilot with a quota',
     fee: { base: 20, heat: 40 },
     choices: [
@@ -436,7 +436,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'claim_jumpers', kind: 'shakedown', caller: 'kellern', when: { kind: 'home', ore: 15, after: 90 },
     from: 'Kellern claim enforcement', title: 'That ore is company property',
-    text: '“Every rock in this belt belongs to Kellern Mining. Hand over the ore and we log it as recovered. Refuse, and we log you.”',
+    text: '“Every rock here is Kellern’s. Hand over the ore and we log it as recovered. Or we log you.”',
     ships: [{ variant: 'enforcer', n: 1 }, { variant: 'picket', n: 1 }], cargo: 'Claim enforcers · company colours',
     fee: { base: 30, heat: 30 },
     choices: [
@@ -486,7 +486,7 @@ export const CARDS: CardDef[] = [
         lose: { text: 'Bait · raiders out from behind the rock', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 1, from: 'ahead' }] },
       },
       {
-        id: 'drone', label: 'Send a repair drone', tone: 'help', hint: 'Costs parts; you never get close enough to be caught.', cost: { parts: 3 }, loseIf: ['ambush'],
+        id: 'drone', label: 'Send a repair drone', tone: 'help', hint: 'Costs parts. You never get close enough to be caught.', cost: { parts: 3 }, loseIf: ['ambush'],
         win: { text: 'The drone patches them up · they send Krail', krail: 3, standing: { miners: 1 } },
         lose: { text: 'The drone is shot to pieces · nobody was dying' },
       },
@@ -512,7 +512,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'distress_custody', kind: 'distress', caller: 'custody', when: { after: 130 }, repeat: true,
     from: 'Custody picket · PF-301, crippled', title: 'Help us',
-    text: '“Any ship. PF-301, drive gone, life support failing. Two crew.” They are Custody. They are dying.',
+    text: '“Any ship. PF-301, drive gone, air failing. Two aboard.” They’re Custody. They’re dying.',
     cargo: 'A crippled patrol fighter',
     truths: [
       { id: 'grateful', weight: 1, read: 'The pilot’s voice is shaking' },
@@ -531,7 +531,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'beacon_cache', kind: 'distress', caller: 'unknown', when: { after: 85 }, repeat: true,
     from: 'Automated beacon', title: 'Cache, unclaimed',
-    text: 'An old company beacon, still broadcasting a cache code: emergency Krail, for any miner in need.',
+    text: 'An old company beacon with a cache code: emergency Krail for any miner.',
     cargo: 'A cache marker, forty years old',
     truths: [
       { id: 'real', weight: 1.6, read: 'The beacon’s clock has not been reset in forty years' },
@@ -551,7 +551,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'rumour_seam', kind: 'rumour', caller: 'miners', when: { after: 20, heatMax: 0.5 }, weight: 1.4, repeat: true,
     from: 'A prospector on the open band', title: 'A seam off the line',
-    text: '“Violet in the rock all round here, if you know where to cut. I will sell you the survey for ten chits.”',
+    text: '“There’s violet in the rock round here, if you know where. Survey’s ten chits.”',
     cargo: 'A survey file',
     truths: [
       { id: 'true', weight: 2, read: 'The survey matches the field around you' },
@@ -577,7 +577,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'rumour_captain', kind: 'rumour', caller: 'guild', when: { kind: 'home', after: 65, noFlag: 'fee_known' },
     from: 'A Guild pilot', title: 'The lane captain',
-    text: '“The captain on the lane mouth? Word is she takes fees. Word is also she hanged the last one who tried it. Depends who you ask.”',
+    text: '“The captain at the lane mouth? Some say she takes fees. Some say she hanged the last one who tried.”',
     cargo: 'Gossip',
     truths: [
       { id: 'true', weight: 2, read: 'Two other pilots tell it the same way' },
@@ -591,7 +591,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'rumour_prefect', kind: 'rumour', caller: 'miners', when: { kind: 'home', after: 95 },
     from: 'Ore buyer’s chatter', title: 'A Prefect came through',
-    text: '“A Prefect came down to the moon this morning. Office of Peace. She asked about you by name. Calloway.”',
+    text: '“A Prefect came to the moon this morning. Office of Peace. Asked for you by name. Calloway.”',
     cargo: 'Gossip, frightened',
     choices: [
       { id: 'ask', label: 'Ask what she asked', tone: 'trade', hint: 'Five chits loosens a tongue.', cost: { chits: 5 }, win: { text: 'She asked where your family lives', flag: 'calloway_known' } },
@@ -603,17 +603,17 @@ export const CARDS: CardDef[] = [
   {
     id: 'calloway_here', kind: 'warning', caller: 'calloway', trigger: 'hunt', repeat: true, face: CALLOWAY_FACE,
     from: 'Prefect Idris Calloway · CCV Patience', title: 'There you are',
-    text: '“Juno. I have been one system behind you for days, and I am tired. Power down, and nobody else needs to be hurt.”',
+    text: '“Juno. I’ve been one system behind you for days. I’m tired. Power down and nobody else gets hurt.”',
     lines: [
       { if: { flag: 'calloway_beaten' }, text: 'Her ship still carries the scars of the last time.' },
       { if: { flag: 'calloway_told' }, text: '“I read what you sent me. I want to hear it from you, in person.”' },
       { if: { flag: 'calloway_lied' }, text: '“You sent me the wrong way once. Not again.”' },
       { if: { netted: true }, text: 'The Net holds this system. Every buoy is hers.' },
       { if: { holdFull: true }, text: 'Your hold sits heavy. Ore might draw her eye for a moment.' },
-      { if: { wise: ['decoy', 1] }, text: '“And do not dump your hold at me again. I know what ore pods look like now.”' },
+      { if: { wise: ['decoy', 1] }, text: '“And don’t dump your hold at me again. I know what ore pods look like.”' },
       { if: { wise: ['dark', 1] }, text: 'Her sweep is tuned for a cold reactor this time.' },
       { if: { wise: ['run', 2] }, text: 'An interdictor flies with her. She has watched you run too often.' },
-      { if: { hunch: 'straight' }, text: '“You never turn aside. I stopped following you and started waiting for you.”' },
+      { if: { hunch: 'straight' }, text: '“You never turn aside. So I stopped following and started waiting.”' },
     ],
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'enforcer', n: 2 }], cargo: 'Office of Peace cutter · full magazines · a Prefect aboard',
     truths: [
@@ -622,29 +622,29 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       {
-        id: 'run', label: 'Run for the lane', tone: 'run', hint: 'She and her wing come after you, and her field drags on the drive. Get through and she is still a system behind.',
+        id: 'run', label: 'Run for the lane', tone: 'run', hint: 'She chases you and her field slows your drive. Get through and she’s still a system behind.',
         win: { text: 'Running · the Patience is on your tail', calloway: 'run' },
       },
       {
-        id: 'decoy', label: 'Dump the hold as a decoy', tone: 'pay', hint: 'Ore pods spread a hauler’s signature. If she chases the pods, you gain a day.',
+        id: 'decoy', label: 'Dump the hold as a decoy', tone: 'pay', hint: 'Ore pods look like a ship. If she chases them, you gain a day.',
         cost: { ore: 'all' }, needs: { ore: 8 }, odds: { base: 0.6, flags: { calloway_lied: -0.2 }, fitted: { ut_scanner: 0.15 }, learn: 'decoy' },
         win: { text: 'She takes the pods · a day’s start', hunt: 1.5, heat: -0.2 },
         lose: { text: 'She ignores the pods and opens fire', calloway: 'fight' },
       },
       {
-        id: 'talk', label: 'Tell her the file is already out', tone: 'bluff', hint: 'If she believes it, she has to stop and check. If not, she knows you are bluffing.',
+        id: 'talk', label: 'Tell her the file is already out', tone: 'bluff', hint: 'If she buys it, she has to stop and check. If not, she knows you’re bluffing.',
         loseIf: ['patient'], odds: { base: 0.5, flags: { calloway_told: 0.2 }, learn: 'bluff' },
         win: { text: '“If that is true…” · she breaks off to check', hunt: 2, flag: 'calloway_lied' },
         lose: { text: '“No, Juno. You still have it.” · she opens fire', calloway: 'fight', flag: 'calloway_lied' },
       },
       {
-        id: 'dark', label: 'Go dark', tone: 'bluff', hint: 'Kill the drive and the transponder, drift, and let her lose you.',
+        id: 'dark', label: 'Go dark', tone: 'bluff', hint: 'Kill drive and transponder. Drift and let her lose you.',
         needs: { fitted: ['ut_scanner', 'tech_office', 'md_baffles'] }, odds: { base: 0.7, heat: -0.3, fitted: { md_baffles: 0.1 }, learn: 'dark' },
         win: { text: 'Dark · she sweeps past you', hunt: 1, heat: -0.3 },
         lose: { text: 'Her sweep finds the heat of your reactor', calloway: 'fight' },
       },
       {
-        id: 'fight', label: 'Turn and fight', tone: 'fight', hint: 'Break her ship and she loses days to repairs. She knows it too.',
+        id: 'fight', label: 'Turn and fight', tone: 'fight', hint: 'Break her ship and she loses days to repairs. She knows it.',
         win: { text: 'Weapons hot on the Patience', calloway: 'fight' },
       },
     ],
@@ -652,19 +652,19 @@ export const CARDS: CardDef[] = [
   {
     id: 'calloway_word', kind: 'warning', caller: 'calloway', when: { after: 40, hunted: 1 }, weight: 2, repeat: true, face: CALLOWAY_FACE,
     from: 'Prefect Idris Calloway · Office of Peace', title: 'One system behind',
-    text: '“I am one lane behind you, Juno. I can see where you have been. Every system you stop in, I stop in.”',
+    text: '“I’m one lane behind you, Juno. Every system you stop in, I stop in.”',
     lines: [
-      { if: { flag: 'calloway_told' }, text: '“I keep thinking about what you told me. It does not change what I have to do.”' },
+      { if: { flag: 'calloway_told' }, text: '“I keep thinking about what you told me. It doesn’t change my job.”' },
       { if: { netted: true }, text: '“And the Net is already here. Where do you think you are going?”' },
-      { if: { wise: ['lie', 2] }, text: '“And whatever heading you send me, I will check twice. You have lied to me before.”' },
+      { if: { wise: ['lie', 2] }, text: '“Whatever heading you send, I’ll check twice. You’ve lied before.”' },
       { if: { hunch: 'port' }, text: '“You like ports, Juno. So do I. I have been reading their dock logs.”' },
       { if: { hunch: 'mining' }, text: '“Another rock field? You are a creature of habit.”' },
-      { if: { hunch: 'contested' }, text: '“You always go where the shooting is. It is like following a flare.”' },
+      { if: { hunch: 'contested' }, text: '“You always go where the shooting is. Like following a flare.”' },
       { if: { hunch: 'transit' }, text: '“The quiet lanes again. I have stopped asking where you went.”' },
     ],
     cargo: 'A Prefect’s channel · priority override',
     choices: [
-      { id: 'lie', label: 'Send her a false heading', tone: 'bluff', hint: 'She checks what you tell her. Every lie costs her a day if it holds.', odds: { base: 0.45, heat: -0.2, learn: 'lie' }, win: { text: 'She turns for the wrong lane', hunt: 1, flag: 'calloway_lied' }, lose: { text: '“Wrong lane, Juno.” · she pushes harder', hunt: -0.5, flag: 'calloway_lied' } },
+      { id: 'lie', label: 'Send her a false heading', tone: 'bluff', hint: 'She checks it. Each lie that holds costs her a day.', odds: { base: 0.45, heat: -0.2, learn: 'lie' }, win: { text: 'She turns for the wrong lane', hunt: 1, flag: 'calloway_lied' }, lose: { text: '“Wrong lane, Juno.” · she pushes harder', hunt: -0.5, flag: 'calloway_lied' } },
       { id: 'ask', label: 'Ask what she believes', tone: 'help', hint: 'She might tell you. She might be stalling.', win: { text: '“That it holds. That it has to.” · a long silence', score: 400, flag: 'calloway_told', heat: 0.04 } },
       { id: 'silence', label: 'Cut the channel', tone: 'refuse', hint: 'Every second you listen, she triangulates.', win: { text: 'Channel cut' } },
     ],
@@ -672,7 +672,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'lane_toll', kind: 'shakedown', caller: 'gutter', trigger: 'toll', when: { netted: false, kind: ['contested', 'mining', 'transit', 'port'] }, repeat: true,
     from: 'Raiders · the Lane Wardens', title: 'This lane has a keeper',
-    text: '“Nobody uses the old lane without paying the keepers, hauler. {fee} chits, or four Krail, and you go through.”',
+    text: '“Nobody uses the old lane without paying. {fee} chits or four Krail, and you’re through.”',
     lines: [
       { if: { standing: ['gutter', 1] }, text: '“You are the one who helped the Leaky Tin. Maybe half.”' },
       { if: { kind: 'contested' }, text: 'Two more raiders sit in the lane’s shadow.' },
@@ -695,7 +695,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'port_scan', kind: 'checkpoint', caller: 'custody', trigger: 'port', when: { netted: true, kind: ['port', 'mining', 'contested'] }, repeat: true,
     from: 'Custody port authority', title: 'Scan before the clamps',
-    text: '“Under Continuance order this port scans every hull before docking. Hold position.”',
+    text: '“Continuance order: every ship gets scanned before docking. Hold position.”',
     lines: [
       { if: { heatMin: 0.5 }, text: 'Your hull is on their board already.' },
       { if: { flag: 'codes' }, text: 'The forged codes are loaded.' },
@@ -716,7 +716,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'port_news', kind: 'rumour', caller: 'frontier', trigger: 'port', when: { netted: false, kind: ['port', 'mining', 'contested'] }, repeat: true,
     from: 'Dockmaster', title: 'Who came through',
-    text: '“Welcome in, hauler. You look like someone who wants to know who has been asking about haulers.”',
+    text: '“Welcome in. You look like you want to know who’s been asking around.”',
     lines: [{ if: { hunted: 1 }, text: '“A Prefect’s cutter came through the next system over. Yesterday, maybe.”' }],
     cargo: 'Dock office · the gossip of every lane',
     choices: [
@@ -727,7 +727,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'food_trader', kind: 'trade', caller: 'guild', when: { after: 30, hungry: 4, kind: ['port', 'contested', 'mining', 'transit'] }, weight: 1.4, repeat: true,
     from: 'Drift trader · the Kindly Ann', title: 'Stores for sale',
-    text: '“Fresh stores off a garden ship, two lanes over. You look thin, hauler.” Your galley has {food} days of food.',
+    text: '“Fresh stores off a garden ship. You look thin.” You have {food} days of food.',
     ships: [{ variant: 'freighter', n: 1 }], cargo: 'Drift trader · sealed food crates',
     choices: [
       { id: 'chits', label: 'Buy three', tone: 'pay', hint: 'Twenty-five chits for three.', cost: { chits: 25 }, win: { text: 'Three crates aboard', food: 3, standing: { guild: 1 } } },
@@ -739,10 +739,10 @@ export const CARDS: CardDef[] = [
   {
     id: 'drift_fleet', kind: 'trade', caller: 'miners', when: { after: 40, here: 'drift' }, weight: 4, repeat: true,
     from: 'Drift fleet · the Long Walk', title: 'Forty ships, going nowhere fast',
-    text: '“A Drift crossing, hauler. We trade, we talk, we do not fight. What do you need?”',
+    text: '“A Drift crossing. We trade, we talk, we don’t fight. What do you need?”',
     lines: [
       { if: { hunted: 2 }, text: '“A Prefect has been asking the fleets about a yellow hauler.”' },
-      { if: { wise: ['fleet', 1] }, text: '“She does not believe the fleets any more. Somebody lied to her for you.”' },
+      { if: { wise: ['fleet', 1] }, text: '“She doesn’t believe the fleets any more. Somebody lied for you.”' },
     ],
     ships: [{ variant: 'freighter', n: 2 }], cargo: 'A Drift fleet · stores, parts, rumours',
     choices: [
@@ -755,7 +755,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'holdout', kind: 'plea', caller: 'miners', when: { after: 60, netted: false, kind: ['mining', 'port', 'contested'] }, weight: 1.2, boost: { if: { here: 'holdfast' }, mult: 3 }, repeat: true,
     from: 'A claim settlement · the Holdfast', title: 'Help us hold out',
-    text: '“The Custody survey boats were here this morning. When the Net reaches us, we lose the claim and everyone on it. Krail for our shield generator would keep them out a while.”',
+    text: '“Custody surveyors came this morning. When the Net gets here, we lose everything. Krail for our shield would keep them out a while.”',
     lines: [{ if: { standing: ['miners', 2] }, text: '“The miners say you are one of us.”' }],
     cargo: 'A settlement · forty people, one generator',
     truths: [
@@ -805,19 +805,19 @@ export const CARDS: CardDef[] = [
   {
     id: 'relay', kind: 'warning', caller: 'custody', when: { after: 50, netted: false, kind: ['mining', 'transit', 'contested', 'port'] }, repeat: true,
     from: 'Your own sensors', title: 'A survey relay',
-    text: 'A Custody survey relay is mapping this system for the Net, and a picket pair is guarding it. When it finishes, the Net comes.',
+    text: 'A Custody relay is mapping this system for the Net. Two pickets guard it. When it’s done, the Net comes.',
     ships: [{ variant: 'picket', n: 2 }], cargo: 'Survey relay · two pickets',
     choices: [
       { id: 'break', label: 'Break the relay', tone: 'fight', hint: 'The Net stalls here, and every patrol in the system hears it.', win: { text: 'Relay broken · the pickets come for you', stall: 2.5, heat: 0.18, spawn: [{ variant: 'picket', n: 2, from: 'ahead' }] } },
       { id: 'jam', label: 'Jam it', tone: 'bluff', hint: 'Garble its survey. Quieter, and shorter.', needs: { fitted: ['ut_scanner', 'tech_office', 'tech_custody'] }, odds: { base: 0.75 }, win: { text: 'The survey reads garbage · the Net will wait', stall: 1.5 }, lose: { text: 'The relay flags the jamming', heat: 0.12 } },
-      { id: 'gutter', label: 'Point the Gutter at it', tone: 'trade', hint: 'Eight ore, and a Gutter crew strips it for salvage. Slower than doing it yourself.', cost: { ore: 8 }, win: { text: 'A Gutter crew takes the relay apart · the Net will wait', stall: 1.5, standing: { gutter: 1 } } },
-      { id: 'leave', label: 'Leave it', tone: 'refuse', hint: 'Not your fight. When the survey finishes, the Net comes here.', win: { text: 'You leave the relay to its work · the Net is coming', stall: -4 } },
+      { id: 'gutter', label: 'Point the Gutter at it', tone: 'trade', hint: 'Eight ore and a Gutter crew strips it. Slower than doing it yourself.', cost: { ore: 8 }, win: { text: 'A Gutter crew takes the relay apart · the Net will wait', stall: 1.5, standing: { gutter: 1 } } },
+      { id: 'leave', label: 'Leave it', tone: 'refuse', hint: 'Not your fight. When it’s done, the Net comes here.', win: { text: 'You leave the relay to its work · the Net is coming', stall: -4 } },
     ],
   },
   {
     id: 'false_trail', kind: 'trade', caller: 'guild', when: { after: 45, kind: ['port', 'contested', 'mining'] }, repeat: true,
     from: 'Dust Traders Guild · flight clerk', title: 'A flight plan, filed',
-    text: '“For {fee} chits I file a flight plan with your hull on it, for a lane you are not taking. Anyone asking after you gets the wrong answer.”',
+    text: '“{fee} chits and I file a flight plan for a lane you’re not taking. Anyone asking gets the wrong answer.”',
     lines: [
       { if: { hunted: 1 }, text: '“Someone is asking after you already.”' },
       { if: { wise: ['plan', 1] }, text: '“A Prefect came through checking our filings. She knows the trick.”' },
@@ -838,18 +838,18 @@ export const CARDS: CardDef[] = [
   {
     id: 'runner_favour', kind: 'job', caller: 'gutter', trigger: 'follow',
     from: 'Fuel runner · call sign Tallow', title: 'The favour',
-    text: '“Time to settle up, Wayward. I need ten parts, or you carry something for me to the dock. Your choice. Not paying is also a choice.”',
+    text: '“Time to settle up, Wayward. Ten parts, or carry something to the dock for me. Not paying is also a choice.”',
     cargo: 'Runner’s channel',
     choices: [
       { id: 'parts', label: 'Give ten parts', tone: 'pay', hint: 'Settled.', cost: { parts: 10 }, win: { text: 'Debt settled with Tallow', unflag: 'owes_runner', standing: { gutter: 1 } } },
-      { id: 'carry', label: 'Carry it to the dock', tone: 'help', hint: 'A package, delivered at Frontier Supply. Do not ask.', win: { text: 'Package aboard for the dock', unflag: 'owes_runner', heat: 0.05, job: { id: 'package', text: 'Tallow’s package to the dock', at: 'port', pay: { text: 'Package delivered · Tallow is satisfied', standing: { gutter: 1 } } } } },
+      { id: 'carry', label: 'Carry it to the dock', tone: 'help', hint: 'A package for Frontier Supply. Don’t ask.', win: { text: 'Package aboard for the dock', unflag: 'owes_runner', heat: 0.05, job: { id: 'package', text: 'Tallow’s package to the dock', at: 'port', pay: { text: 'Package delivered · Tallow is satisfied', standing: { gutter: 1 } } } } },
       { id: 'stiff', label: 'Stiff him', tone: 'refuse', hint: 'He will sell you to the Custody.', win: { text: 'Tallow sells your position', heat: 0.15, standing: { gutter: -2 } } },
     ],
   },
   {
     id: 'custody_demand', kind: 'warning', caller: 'custody', trigger: 'follow', when: { flag: 'passengers' },
     from: 'Custody patrol command', title: 'Return the Okafors',
-    text: '“Wayward, you are carrying three absconded Kellern employees. Hand them over at the moon and the charge drops to theft.”',
+    text: '“Wayward, you’re carrying three runaway Kellern workers. Hand them over at the moon and the charge drops to theft.”',
     cargo: 'Patrol command',
     choices: [
       { id: 'deny', label: 'Deny it', tone: 'bluff', hint: 'There is nobody aboard.', odds: { base: 0.5, heat: -0.4 }, win: { text: 'Patrol command loses interest', heat: -0.05 }, lose: { text: 'They do not believe you', heat: 0.12 } },
@@ -870,10 +870,10 @@ export const CARDS: CardDef[] = [
   {
     id: 'tracker_found', kind: 'warning', caller: 'unknown', trigger: 'follow', when: { flag: 'case' },
     from: 'Your own sensors', title: 'The case is transmitting',
-    text: 'The sealed case is pinging a Custody band every twelve seconds. Someone sold the Guild a tracker, or sold you.',
+    text: 'The sealed case pings a Custody band every twelve seconds. Someone planted a tracker.',
     cargo: 'One sealed case',
     choices: [
-      { id: 'dump', label: 'Dump the case', tone: 'refuse', hint: 'Keep the Krail; lose the job.', win: { text: 'Case jettisoned · the tracker goes with it', unflag: 'case', drop: 'case', heat: -0.05 } },
+      { id: 'dump', label: 'Dump the case', tone: 'refuse', hint: 'Keep the Krail, lose the job.', win: { text: 'Case jettisoned · the tracker goes with it', unflag: 'case', drop: 'case', heat: -0.05 } },
       { id: 'open', label: 'Open it and pull the tracker', tone: 'bluff', hint: 'The Guild will know you looked.', odds: { base: 0.6, fitted: { ut_scanner: 0.25 } }, win: { text: 'Tracker pulled · the case is quiet', standing: { guild: -1 } }, lose: { text: 'Pulling it sets off an alarm · the case is slag', heat: 0.15, unflag: 'case', drop: 'case' } },
       { id: 'keep', label: 'Keep it as it is', tone: 'help', hint: 'You made a promise.', win: { text: 'The case keeps pinging', heat: 0.18 } },
     ],
@@ -881,7 +881,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'freighter_thanks', kind: 'trade', caller: 'guild', trigger: 'follow',
     from: 'Guild freighter · Long Reckoning', title: 'The Guild pays its debts',
-    text: '“Long Reckoning, still in one piece thanks to you. Take this. And the Guild will hear your name.”',
+    text: '“Long Reckoning, still in one piece thanks to you. Take this. The Guild will hear your name.”',
     cargo: 'A freighter, grateful',
     choices: [
       { id: 'krail', label: 'Take the Krail', tone: 'trade', hint: 'Eight Krail.', win: { text: 'Eight Krail from the Long Reckoning', krail: 8, standing: { guild: 2 } } },
@@ -891,7 +891,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'pod_thanks', kind: 'plea', caller: 'frontier', trigger: 'follow', when: { flag: 'pod' },
     from: 'The survivor · Ares Drive technician', title: 'Let me help',
-    text: '“You did not have to stop. I fix drives for a living. Let me look at your hull.”',
+    text: '“You didn’t have to stop. I fix drives for a living. Let me look at your ship.”',
     cargo: 'One technician, recovering',
     choices: [
       { id: 'hull', label: 'Patch the hull', tone: 'help', hint: 'A plate, and some parts saved.', win: { text: 'Hull patched by your passenger', plates: 1, parts: 4 } },
@@ -903,24 +903,24 @@ export const CARDS: CardDef[] = [
   {
     id: 'custody_bulletin', kind: 'warning', caller: 'custody', when: { after: 30, notice: ['custody', 'warning'] }, weight: 1.2, repeat: true,
     from: 'Custody bulletin · all channels', title: 'Report this hull',
-    text: '“All traffic: an Obedience-class hauler, stolen, pilot armed and dangerous. Report any sighting to the nearest Custody vessel.”',
+    text: '“All traffic: stolen Obedience-class hauler. Pilot armed and dangerous. Report sightings to Custody.”',
     lines: [
-      { if: { notice: ['custody', 'hunters'] }, text: 'The bulletin carries a bounty now, and the names of the hunters who will collect it.' },
+      { if: { notice: ['custody', 'hunters'] }, text: 'There’s a bounty on it now, and the names of the hunters after it.' },
       { if: { notice: ['custody', 'captain'] }, text: 'It is signed by {captain}.' },
     ],
     cargo: 'A broadcast · every receiver in the system',
     choices: [
       { id: 'quiet', label: 'Go quiet', tone: 'refuse', hint: 'Kill the chatter and let it pass.', win: { text: 'Running quiet', heat: -0.05 } },
-      { id: 'jam', label: 'Garble the bulletin', tone: 'bluff', hint: 'Scramble the relay so the next system hears less of you.', needs: { fitted: ['ut_scanner', 'tech_office'] }, win: { text: 'The bulletin goes out as noise', notice: { custody: -3 } } },
-      { id: 'answer', label: 'Answer it', tone: 'help', hint: 'Tell every receiver what Kellern did. The miners will hear. So will the Custody.', win: { text: 'Your answer goes out on every channel', standing: { miners: 1 }, notice: { custody: 2 }, heat: 0.08 } },
+      { id: 'jam', label: 'Garble the bulletin', tone: 'bluff', hint: 'Scramble the relay so the next system hears less.', needs: { fitted: ['ut_scanner', 'tech_office'] }, win: { text: 'The bulletin goes out as noise', notice: { custody: -3 } } },
+      { id: 'answer', label: 'Answer it', tone: 'help', hint: 'Tell everyone what Kellern did. The miners will hear. So will the Custody.', win: { text: 'Your answer goes out on every channel', standing: { miners: 1 }, notice: { custody: 2 }, heat: 0.08 } },
     ],
   },
   {
     id: 'gutter_word', kind: 'warning', caller: 'gutter', when: { after: 30, notice: ['gutter', 'warning'] }, weight: 1.2, repeat: true,
     from: 'The Gutter band · a voice you do not know', title: 'Crews talk',
-    text: '“So you are the hauler that has been killing crews. Somebody will want paying for that, one way or another.”',
+    text: '“So you’re the one killing crews. Somebody will want paying for that.”',
     lines: [
-      { if: { notice: ['gutter', 'hunters'] }, text: '“There is a price on your hull in every bar from here to the Threshold.”' },
+      { if: { notice: ['gutter', 'hunters'] }, text: '“There’s a price on your ship in every bar from here to the Threshold.”' },
       { if: { standing: ['gutter', 1] }, text: '“Some say you did right by the Leaky Tin. Not enough of them.”' },
     ],
     cargo: 'The Gutter band · rumour and threat',

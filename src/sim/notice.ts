@@ -1,3 +1,4 @@
+import { t as tr } from '../i18n';
 import {
   BEATEN_RELIEF, CAPTAIN_AT, CAPTAIN_LIVES, CAPTAIN_REST, NOTICE, NOTICE_CAP, PARLEY_RELIEF, STANDING_FLOOR, TIERS, type Tier,
 } from '../content/factions';
@@ -111,10 +112,10 @@ function retier(n: Notice, f: Faction): string[] {
   const was = s.tier;
   s.tier = tierOf(f, s.notice);
   const lines: string[] = [];
-  for (const t of TIERS.slice(rank(was) + 1, rank(s.tier) + 1)) if (t !== 'quiet') lines.push(NOTICE[f].lines[t]);
+  for (const t of TIERS.slice(rank(was) + 1, rank(s.tier) + 1)) if (t !== 'quiet') lines.push(tr(NOTICE[f].lines[t]));
   if (s.tier === 'captain' && !captainOf(n, f)) {
     const c = nameCaptain(n, f);
-    if (c) lines.push(`${CAPTAIN_BY_ID[c.id]!.name} of the ${CAPTAIN_BY_ID[c.id]!.ship} is coming for you`);
+    if (c) lines.push(tr('{name} of the {ship} is coming for you', { name: CAPTAIN_BY_ID[c.id]!.name, ship: CAPTAIN_BY_ID[c.id]!.ship }));
   }
   return lines;
 }
@@ -166,12 +167,12 @@ export function remember(n: Notice, id: string, report: Report, day: number, sta
   if (met === 'killed' || c.scarred >= CAPTAIN_LIVES) {
     n.captains.splice(n.captains.indexOf(c), 1);
     n.fallen.push(c.id);
-    if (met !== 'killed') lines.push(`${def.name} will not come again`);
+    if (met !== 'killed') lines.push(tr('{name} won’t come again', { name: def.name }));
   }
   // a fall can leave the faction still at the top: the next captain takes it up
   if (tier(n, f) === 'captain' && !captainOf(n, f)) {
     const next = nameCaptain(n, f);
-    if (next) lines.push(`${CAPTAIN_BY_ID[next.id]!.name} of the ${CAPTAIN_BY_ID[next.id]!.ship} takes up your file`);
+    if (next) lines.push(tr('{name} of the {ship} takes up your file', { name: CAPTAIN_BY_ID[next.id]!.name, ship: CAPTAIN_BY_ID[next.id]!.ship }));
   }
   return lines;
 }

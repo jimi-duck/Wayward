@@ -6,6 +6,7 @@ import { identity, type Levels } from '../sim/build';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { VARIANTS } from '../sim/enemies';
 import type { RunStats } from '../sim/run';
+import { LANG_NAME, LANGS, current, num, plural, setLang, t } from '../i18n';
 
 // ── the panels ────────────────────────────────────────────────────────────
 // The run report (the refit cards are ui/refit.ts, comms cards and the hail
@@ -15,7 +16,7 @@ import type { RunStats } from '../sim/run';
 // ends with keys held.
 
 export const mmss = (s: number) => { const r = Math.max(0, Math.round(s)); return `${Math.floor(r / 60)}:${String(r % 60).padStart(2, '0')}`; };
-const fmt = (n: number) => Math.round(n).toLocaleString('en-GB');
+const fmt = num;
 
 // ── the build, drawn ──────────────────────────────────────────────────────
 
@@ -23,18 +24,18 @@ const fmt = (n: number) => Math.round(n).toLocaleString('en-GB');
 export function buildView(levels: Levels, named = true): HTMLElement {
   const id = identity(levels);
   const wrap = h('div', 'build');
-  if (named) wrap.append(h('div', 'sum-ship', id.title));
+  if (named) wrap.append(h('div', 'sum-ship', t(id.title)));
   const owned = UPGRADES.filter((u) => (levels[u.id] ?? 0) > 0);
-  if (!owned.length) { wrap.append(h('p', 'how-note', 'Stock: laser banks, three plates, nothing else fitted.')); return wrap; }
+  if (!owned.length) { wrap.append(h('p', 'how-note', t('Stock: lasers, three plates, nothing else.'))); return wrap; }
   const order = [...id.branches.map((b) => b.branch), 'synergy' as Branch];
   for (const br of order) {
     const ups = owned.filter((u) => u.branch === br);
     if (!ups.length) continue;
-    const row = h('div', 'branch', '', h('span', 'k', BRANCHES[br].name));
+    const row = h('div', 'branch', '', h('span', 'k', t(BRANCHES[br].name)));
     const list = h('div', 'ups');
     for (const u of ups) {
       const lv = levels[u.id]!;
-      list.append(h('span', u.kind === 'spec' ? 'spec' : u.kind === 'synergy' ? 'syn' : '', u.max > 1 ? `${u.name} ${lv}` : u.name));
+      list.append(h('span', u.kind === 'spec' ? 'spec' : u.kind === 'synergy' ? 'syn' : '', u.max > 1 ? `${t(u.name)} ${lv}` : t(u.name)));
     }
     row.append(list);
     wrap.append(row);
@@ -51,23 +52,18 @@ const WEAPON_WORD: Record<string, string> = {
 /** What hurt, in words: "rock", "fire:scout" or "ram:raptor" to a phrase. */
 export function damageWord(src: string): string {
   const [kind, who, how] = src.split(':');
-  const label = (v?: string) => (v === 'capital' ? 'capital ship' : (v && VARIANTS[v]?.label.toLowerCase()) || 'enemy');
+  const name = () => t((who && VARIANTS[who]?.label) || 'Enemy');
   switch (kind) {
-    case 'fire': return who === 'plasma' ? 'Plasma torpedoes' : who === 'capital' ? `Capital ship ${how ?? 'fire'}` : `${cap(label(who))} fire`;
-    case 'ram': return `Rammed by ${who === 'capital' ? 'a capital ship' : `a ${label(who)}`}`;
-    case 'rock': return 'Rock';
-    case 'bulwark': return 'Bulwarks';
-    case 'beam': return who === 'capital' ? 'A capital ship’s beams' : `${cap(label(who))} beams`;
-    case 'web': return 'Thren webs';
-    case 'volatile': return 'Volatile rock';
-    case 'blast': return 'Blasts';
-    case 'lightning': return 'Lightning';
-    case 'artillery': return 'Shells';
-    case 'anomaly': return 'The anomaly';
-    default: return cap(kind ?? src);
+    case 'fire': return who === 'plasma' ? t('Plasma torpedoes') : who === 'capital' ? t('Capital ship fire') : t('{name} fire', { name: name() });
+    case 'ram': return who === 'capital' ? t('Rammed by a capital ship') : t('Rammed by: {name}', { name: name() });
+    case 'beam': return who === 'capital' ? t('Capital ship beams') : t('{name} beams', { name: name() });
+    default: return t(DAMAGE_WORD[kind ?? ''] ?? cap(kind ?? src));
   }
 }
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const DAMAGE_WORD: Record<string, string> = {
+  rock: 'Rock', bulwark: 'Bulwarks', web: 'Thren webs', volatile: 'Volatile rock', blast: 'Blasts', lightning: 'Lightning', artillery: 'Shells', anomaly: 'The anomaly',
+};
 
 export class SummaryPanel {
   private off: (() => void) | null = null;
@@ -79,34 +75,33 @@ export class SummaryPanel {
     const p = rec.previous;
     const breakout = r.mode === 'breakout';
     $('summary').classList.toggle('alert', !r.escaped);
-    $('summary').querySelector('.kick')!.textContent = r.escaped ? 'Escaped' : 'Hull breach';
-    $('sum-t').textContent = r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run over';
-    // "Rammed by a raptor" already says how; everything else reads after "Breached by"
-    const cause = damageWord(r.cause || 'rock');
-    $('sum-s').textContent = r.escaped ? `Out of the home system with ${r.krailLeft} Krail to spare` : /^rammed /i.test(cause) ? cause : `Breached by ${cause.toLowerCase()}`;
+    $('summary').querySelector('.kick')!.textContent = t(r.escaped ? 'Escaped' : 'Hull breach');
+    $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run over');
+    // what did it: the kicker already says hull breach
+    $('sum-s').textContent = r.escaped ? t('Out with {n} Krail to spare', { n: r.krailLeft }) : damageWord(r.cause || 'rock');
     $('sum-score').textContent = fmt(r.score);
     const line = $('sum-line');
-    line.replaceChildren(h('span', '', `${mmss(r.time)} ${r.escaped ? 'to the lane' : 'survived'} · refit ${r.refit} · ${r.kills} kills`), rec.newBest ? h('span', 'best', ' · new best') : h('span', '', ` · best ${fmt(p.score)}`));
-    $('sum-ship').textContent = r.identity;
+    line.replaceChildren(h('span', '', `${mmss(r.time)} ${t(r.escaped ? 'to the lane' : 'survived')} · ${t('refit')} ${r.refit} · ${t('{n} kills', { n: r.kills })}`), rec.newBest ? h('span', 'best', ` · ${t('new best')}`) : h('span', '', ` · ${t('best')} ${fmt(p.score)}`));
+    $('sum-ship').textContent = t(r.identity);
 
     // tiles: this run against the best before it
     const tile = (label: string, v: number, best: number, show = (n: number) => fmt(n)) => {
       const up = v > best && best > 0;
       const d = v - best;
-      return h('div', `tile${up ? ' up' : ''}`, '', h('span', 'k', label), h('b', '', show(v)),
-        h('span', 'cmp', best <= 0 ? 'First record' : d === 0 ? `Matched · best ${show(best)}` : `${d > 0 ? '▲ +' : '▼ −'}${show(Math.abs(d))} · best ${show(best)}`));
+      return h('div', `tile${up ? ' up' : ''}`, '', h('span', 'k', t(label)), h('b', '', show(v)),
+        h('span', 'cmp', best <= 0 ? t('First record') : d === 0 ? `${t('Matched')} · ${t('best')} ${show(best)}` : `${d > 0 ? '▲ +' : '▼ −'}${show(Math.abs(d))} · ${t('best')} ${show(best)}`));
     };
     if (breakout) {
-      const plain = (label: string, v: string, note: string) => h('div', 'tile', '', h('span', 'k', label), h('b', '', v), h('span', 'cmp', note));
+      const plain = (label: string, v: string, note: string) => h('div', 'tile', '', h('span', 'k', t(label)), h('b', '', v), h('span', 'cmp', note));
       $('sum-tiles').replaceChildren(
-        plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), r.escaped ? 'Through the lane mouth' : 'Short of the lane'),
-        plain('Krail', String(r.krail), r.escaped ? `${r.krailLeft} left after the jump` : 'Gathered'),
-        plain('Ore', String(r.ore), `${r.oreSold} sold at the port`),
-        plain('Rock cut clean', String(r.cut), `${r.fractured} fractured`),
+        plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Through the lane mouth' : 'Short of the lane')),
+        plain('Krail', String(r.krail), r.escaped ? t('{n} left after the jump', { n: r.krailLeft }) : t('Gathered')),
+        plain('Ore', String(r.ore), t('{n} sold at the port', { n: r.oreSold })),
+        plain('Rock cut clean', String(r.cut), t('{n} cracked', { n: r.fractured })),
         tile('Refits', r.refit, p.refit),
         tile('Kills', r.kills, p.kills),
-        plain('Parts', String(r.parts), `${r.platesGained} plates mended`),
-        plain('Port', r.docked ? `${r.docked}×` : '—', r.docked ? 'Docked at Frontier Supply' : 'Never docked'),
+        plain('Parts', String(r.parts), t('{n} plates mended', { n: r.platesGained })),
+        plain('Port', r.docked ? `${r.docked}×` : '—', t(r.docked ? 'Docked at Frontier Supply' : 'Never docked')),
       );
     } else $('sum-tiles').replaceChildren(
       tile('Survived', r.time, p.time, mmss),
@@ -116,7 +111,7 @@ export class SummaryPanel {
       tile('Krail', r.krail, p.krail),
       tile('Overcharges', r.overcharges, p.overcharges),
       tile('Capital ships', r.capitals, p.capitals),
-      h('div', 'tile', '', h('span', 'k', 'Sector events'), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', `${r.powerups} power-ups found`)),
+      h('div', 'tile', '', h('span', 'k', t('Sector events')), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', t('{n} power-ups found', { n: r.powerups }))),
     );
     $('sum-build').replaceChildren(buildView(r.build, false));
     $('sum-how').replaceChildren(this.how(r));
@@ -125,8 +120,8 @@ export class SummaryPanel {
     const un = $('sum-unlocks');
     un.replaceChildren();
     if (rec.unlocked.length) {
-      un.append(h('span', 'k', `Unlocked · ${rec.unlocked.length}`));
-      for (const u of rec.unlocked) un.append(h('p', '', '', h('b', '', `${u.name}. `), document.createTextNode(u.text)));
+      un.append(h('span', 'k', `${t('Unlocked')} · ${rec.unlocked.length}`));
+      for (const u of rec.unlocked) un.append(h('p', '', '', h('b', '', `${t(u.name)}. `), document.createTextNode(t(u.text))));
     }
 
     $('summary').hidden = false;
@@ -164,7 +159,7 @@ export class SummaryPanel {
     const totalK = kills.reduce((a, [, v]) => a + v, 0) || 1;
     for (const [w, v] of kills.slice(0, 4)) {
       const bar = h('div', 'hb'); bar.append(h('i')); (bar.firstChild as HTMLElement).style.width = `${(v / totalK) * 100}%`;
-      grid.append(h('span', '', WEAPON_WORD[w] ?? w), bar, h('b', '', String(v)));
+      grid.append(h('span', '', t(WEAPON_WORD[w] ?? w)), bar, h('b', '', String(v)));
     }
     const dmg = Object.entries(r.damageBy).sort((a, b) => b[1] - a[1]);
     const totalD = dmg.reduce((a, [, v]) => a + v, 0) || 1;
@@ -175,14 +170,14 @@ export class SummaryPanel {
     box.append(grid);
     const notes: string[] = [];
     const top = kills[0];
-    if (top) notes.push(`${WEAPON_WORD[top[0]]} did ${Math.round((top[1] / totalK) * 100)}% of the killing.`);
+    if (top) notes.push(t('{w}: {p}% of kills.', { w: t(WEAPON_WORD[top[0]] ?? top[0]), p: Math.round((top[1] / totalK) * 100) }));
     const worst = dmg[0];
-    if (worst) notes.push(`${damageWord(worst[0])} did the most damage.`);
+    if (worst) notes.push(t('Worst damage: {what}.', { what: damageWord(worst[0]) }));
     const met = r.capitals + r.capitalsEvaded + r.capitalsEscaped;
-    if (met) notes.push(`You met ${met} capital ship${met > 1 ? 's' : ''}: ${r.capitals} destroyed, ${r.capitalsEvaded} evaded, ${r.capitalsEscaped} got away.`);
-    if (r.shieldsAbsorbed) notes.push(`Shields took ${r.shieldsAbsorbed} hit${r.shieldsAbsorbed > 1 ? 's' : ''} for you.`);
-    if (r.platesGained) notes.push(`You mended ${r.platesGained} plate${r.platesGained > 1 ? 's' : ''}.`);
-    if (r.dropped) notes.push(`You collected ${Math.round((r.krail / r.dropped) * 100)}% of the krail you shook loose.`);
+    if (met) notes.push(t('Capital ships: {a} killed, {b} evaded, {c} got away.', { a: r.capitals, b: r.capitalsEvaded, c: r.capitalsEscaped }));
+    if (r.shieldsAbsorbed) notes.push(plural(r.shieldsAbsorbed, 'Shields took {n} hit.', 'Shields took {n} hits.'));
+    if (r.platesGained) notes.push(plural(r.platesGained, 'You mended {n} plate.', 'You mended {n} plates.'));
+    if (r.dropped) notes.push(t('Krail picked up: {p}%.', { p: Math.round((r.krail / r.dropped) * 100) }));
     box.append(h('p', 'how-note', notes.join(' ')));
     return box;
   }
@@ -200,7 +195,7 @@ export class SummaryPanel {
     for (let i = 0; i <= 3; i++) svg.append(el('line', { class: 'grid', x1: '0', x2: String(W), y1: String(P + (i / 3) * (H - 2 * P)), y2: String(P + (i / 3) * (H - 2 * P)) }));
     if (best.length > 1) svg.append(el('path', { class: 'best', d: path(best) }));
     if (r.timeline.length > 1) svg.append(el('path', { class: 'run', d: path([{ t: 0, score: 0 }, ...r.timeline]) }));
-    svg.setAttribute('aria-label', `Score over time: this run ${fmt(r.score)} at ${mmss(r.time)}${best.length ? `, best run ${fmt(best[best.length - 1]!.score)}` : ''}`);
+    svg.setAttribute('aria-label', `${t('Score over the run')}: ${fmt(r.score)}${best.length ? ` · ${t('best')} ${fmt(best[best.length - 1]!.score)}` : ''}`);
   }
 }
 
@@ -226,15 +221,15 @@ export class StartOptions {
     const rec = $('records');
     rec.replaceChildren();
     if (p.life.runs) {
-      rec.append(h('span', '', 'Best', h('b', '', fmt(p.best.score))), h('span', '', 'Longest', h('b', '', mmss(p.best.time))), h('span', '', 'Runs', h('b', '', String(p.life.runs))));
+      rec.append(h('span', '', t('Best'), h('b', '', fmt(p.best.score))), h('span', '', t('Longest'), h('b', '', mmss(p.best.time))), h('span', '', t('Runs'), h('b', '', String(p.life.runs))));
     }
     const mods = $('mods');
     mods.replaceChildren();
     for (const id of availableModifiers(p)) {
       const d = MODIFIERS[id]!;
-      const b = h('button', '', `${d.name} ×${d.score}`) as HTMLButtonElement;
+      const b = h('button', '', `${t(d.name)} ×${d.score}`) as HTMLButtonElement;
       b.type = 'button';
-      b.title = d.text;
+      b.title = t(d.text);
       b.setAttribute('aria-pressed', String(p.modifiers.includes(id)));
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => {
@@ -245,12 +240,22 @@ export class StartOptions {
       });
       mods.append(b);
     }
+    // the language: English or German, remembered
+    $('lang').replaceChildren(...LANGS.map((l) => {
+      const b = h('button', '', LANG_NAME[l]) as HTMLButtonElement;
+      b.type = 'button';
+      b.lang = l;
+      b.setAttribute('aria-pressed', String(current() === l));
+      b.addEventListener('pointerdown', (e) => e.stopPropagation());
+      b.addEventListener('click', (e) => { e.stopPropagation(); if (current() !== l) setLang(l); });
+      return b;
+    }));
     const paint = $('paint');
     paint.replaceChildren();
     const owned = ['engine-stock', ...grants(p).filter((g) => COSMETICS[g])];
     if (owned.length > 1) {
       for (const id of owned) {
-        const b = h('button', '', COSMETICS[id]!.name) as HTMLButtonElement;
+        const b = h('button', '', t(COSMETICS[id]!.name)) as HTMLButtonElement;
         b.type = 'button';
         b.setAttribute('aria-pressed', String(p.cosmetic === id));
         b.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -266,18 +271,18 @@ export class StartOptions {
       const a = p.archive;
       $('ar-e').replaceChildren(...ENDINGS.map((e) => {
         const got = a.endings.includes(e.id);
-        return h('li', got ? 'on' : '', '', h('b', '', got ? e.name : '???'), h('span', 'kind', got ? 'reached' : 'ending'), h('p', '', got ? e.file : e.pitch));
+        return h('li', got ? 'on' : '', '', h('b', '', got ? t(e.name) : '???'), h('span', 'kind', t(got ? 'reached' : 'ending')), h('p', '', t(got ? e.file : e.pitch)));
       }));
       $('ar-j').replaceChildren(...a.journeys.slice(0, 12).map((r) => h('li', r.end === 'through' ? '' : 'lost', '',
-        h('b', '', r.ending ? ENDING_BY_ID[r.ending].name : r.end === 'through' ? 'Through' : r.end === 'captured' ? 'Taken' : 'Lost'),
-        h('span', '', `${r.jumps} jump${r.jumps === 1 ? '' : 's'} · ${r.days} days · ${r.wrecks} wreck${r.wrecks === 1 ? '' : 's'}${r.hardcore ? ' · hardcore' : ''}`))));
-      $('ar-p').textContent = a.people.join(' · ');
+        h('b', '', t(r.ending ? ENDING_BY_ID[r.ending].name : r.end === 'through' ? 'Through' : r.end === 'captured' ? 'Taken' : 'Lost')),
+        h('span', '', [plural(r.jumps, '{n} jump', '{n} jumps'), plural(r.days, '{n} day', '{n} days'), plural(r.wrecks, '{n} wreck', '{n} wrecks'), r.hardcore ? t('hardcore') : ''].filter(Boolean).join(' · ')))));
+      $('ar-p').textContent = a.people.map((p) => t(p)).join(' · ');
       const list = $('logbook-l');
       list.replaceChildren(...UNLOCKS.map((u) => {
         const got = p.earned.includes(u.id);
-        return h('li', got ? 'on' : '', '', h('b', '', got ? u.name : '???'), h('span', 'kind', u.kind), h('p', '', got ? u.text : u.hint));
+        return h('li', got ? 'on' : '', '', h('b', '', got ? t(u.name) : '???'), h('span', 'kind', t(u.kind)), h('p', '', t(got ? u.text : u.hint)));
       }));
-      $('logbook-s').textContent = `${a.journeys.length} journey${a.journeys.length === 1 ? '' : 's'} · ${a.endings.length} of ${ENDINGS.length} endings · ${p.earned.length} of ${UNLOCKS.length} unlocks · nothing here makes the ship stronger`;
+      $('logbook-s').textContent = [plural(a.journeys.length, '{n} journey', '{n} journeys'), t('{n} of {of} endings', { n: a.endings.length, of: ENDINGS.length }), t('{n} of {of} unlocks', { n: p.earned.length, of: UNLOCKS.length }), t('none of it makes the ship stronger')].join(' · ');
     }
     $('logbook').hidden = !on;
   }

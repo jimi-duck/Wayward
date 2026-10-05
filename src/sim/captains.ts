@@ -1,3 +1,4 @@
+import { plural, t } from '../i18n';
 import { CAPTAINS, PERSONALITIES } from '../content/captains';
 import { CAPTAIN_HP } from '../content/factions';
 import { FACTIONS } from './bosses';
@@ -160,12 +161,12 @@ export function form(def: CaptainDef, m: CaptainMemory): Form {
   let fee = p.fee;
   if (fee !== null) fee = Math.round((fee * (1 + FEE_RISE * m.bargained) * (bold ? 1.5 : 1)) / 5) * 5;
   const moods: string[] = [];
-  if (grudge) moods.push('a grudge: no deals, no warning');
-  if (bold) moods.push('bold: they beat you once');
-  if (m.escaped) moods.push('wary: a bigger wing');
-  if (m.evaded) moods.push('wise to running');
-  if (m.bargained && !grudge) moods.push('expects paying');
-  if (m.left && !grudge && !bold) moods.push('will not turn away twice');
+  if (grudge) moods.push(t('a grudge: no deals, no warning'));
+  if (bold) moods.push(t('bold: they beat you once'));
+  if (m.escaped) moods.push(t('wary: a bigger wing'));
+  if (m.evaded) moods.push(t('wise to running'));
+  if (m.bargained && !grudge) moods.push(t('expects paying'));
+  if (m.left && !grudge && !bold) moods.push(t('won’t turn away twice'));
   return {
     approach: grudge ? 'ambush' : p.approach,
     fee: grudge ? null : fee,
@@ -174,7 +175,7 @@ export function form(def: CaptainDef, m: CaptainMemory): Form {
     wing: Math.min(3, m.escaped + m.scarred),
     run: Math.max(0.1, p.run - RUN_LEARN * m.evaded),
     ship: m.scarred ? `${def.ship} MK${m.scarred + 1}` : def.ship,
-    mood: moods.length ? moods.join(' · ') : m.met ? 'Remembers you' : `${p.word} · never met`,
+    mood: moods.length ? moods.join(' · ') : m.met ? t('Remembers you') : `${t(p.word)} · ${t('never met')}`,
   };
 }
 
@@ -191,41 +192,41 @@ export function captainCard(def: CaptainDef, m: CaptainMemory, you: number, them
   const f = form(def, m);
   const back = m.last && m.last !== 'killed' ? def.lines.back[m.last] : null;
   const opening = f.approach === 'ambush' ? def.lines.ambush : back ?? def.lines.hail;
-  const text = [opening, f.approach === 'ambush' && back ? back : null, f.fee !== null ? def.lines.bargain : null].filter(Boolean).join(' ');
+  const text = [opening, f.approach === 'ambush' && back ? back : null, f.fee !== null ? def.lines.bargain : null].filter((l): l is string => !!l).map((l) => t(l)).join(' ');
   const choices: ChoiceDef[] = [
     {
-      id: 'fight', label: 'Fight', tone: 'fight', hint: `The ${f.ship} and its wing. Break it and there is a wreck to pick over; ${def.name} may not be aboard by then.`,
-      win: { text: `Weapons hot on the ${f.ship}`, captain: 'fight' },
+      id: 'fight', label: 'Fight', tone: 'fight', hint: t('The {ship} and its wing. Break it for a wreck to pick over.', { ship: f.ship }),
+      win: { text: t('Weapons hot on the {ship}', { ship: f.ship }), captain: 'fight' },
     },
     {
       id: 'run', label: f.approach === 'ambush' ? 'Break out of the trap' : 'Run for it', tone: 'run',
-      hint: m.evaded ? `${def.name} has seen this before.` : `Lose the ${f.ship} in the rock before it closes.`,
+      hint: m.evaded ? t('{name} has seen this before.', { name: def.name }) : t('Lose the {ship} in the rock before it closes.', { ship: f.ship }),
       odds: { base: f.run, heat: -0.15 },
-      win: { text: `You lose the ${f.ship} in the rock`, captain: 'run', heat: 0.05 },
-      lose: { text: `The ${f.ship} cuts you off · weapons hot`, captain: 'fight', heat: 0.05 },
+      win: { text: t('You lose the {ship} in the rock', { ship: f.ship }), captain: 'run', heat: 0.05 },
+      lose: { text: t('The {ship} cuts you off · weapons hot', { ship: f.ship }), captain: 'fight', heat: 0.05 },
     },
   ];
   if (f.fee !== null) {
     choices.push({
-      id: 'pay', label: 'Pay them off', tone: 'pay', hint: m.bargained ? 'The price went up. It will again.' : `Chits, and ${def.name} finds somewhere else to be.`,
-      cost: { chits: 'fee' }, win: { text: `${def.name} takes the chits and stands off`, captain: 'pay' },
+      id: 'pay', label: 'Pay them off', tone: 'pay', hint: m.bargained ? 'The price went up. It will again.' : t('Chits, and {name} goes away.', { name: def.name }),
+      cost: { chits: 'fee' }, win: { text: t('{name} takes the chits and stands off', { name: def.name }), captain: 'pay' },
     });
   }
   if (f.nerve < Infinity) {
     // the stronger you are against the ship, the likelier the captain turns away
     const base = Math.min(0.85, Math.max(0.1, 0.25 + 0.3 * (you / Math.max(1, them) - f.nerve)));
     choices.push({
-      id: 'stare', label: 'Run out the guns', tone: 'bluff', hint: `Let ${def.name} count them and think again.`,
+      id: 'stare', label: 'Run out the guns', tone: 'bluff', hint: t('Let {name} count them and think again.', { name: def.name }),
       odds: { base },
-      win: { text: `${def.name} thinks better of it`, captain: 'leave' },
-      lose: { text: `${def.name} is not impressed · weapons hot`, captain: 'fight' },
+      win: { text: t('{name} thinks better of it', { name: def.name }), captain: 'leave' },
+      lose: { text: t('{name} isn’t impressed · weapons hot', { name: def.name }), captain: 'fight' },
     });
   }
   return {
     id: `captain:${def.id}`, kind: 'captain', caller: CALLER[def.faction] ?? 'captain', trigger: 'follow', repeat: true,
-    from: `${def.rank} ${def.name} · ${f.ship}`, title: m.met ? `${def.name} again` : `${def.rank} ${def.name}`,
+    from: `${t(def.rank)} ${def.name} · ${f.ship}`, title: m.met ? t('{name} again', { name: def.name }) : `${t(def.rank)} ${def.name}`,
     text, face: def.face, scars: m.scarred,
-    ships: captainShips(def, f), cargo: `${PERSONALITIES[def.personality].word} · met ${m.met} ${m.met === 1 ? 'time' : 'times'}`,
+    ships: captainShips(def, f), cargo: `${t(PERSONALITIES[def.personality].word)} · ${plural(m.met, 'met once', 'met {n} times')}`,
     fee: f.fee !== null ? { base: f.fee } : undefined,
     truths: [{ id: 'mood', weight: 1, read: f.mood }],
     slow: f.approach === 'ambush' ? { timeout: 6, default: 'fight' } : undefined,
@@ -258,12 +259,12 @@ export function meetingLine(id: string, meeting: Meeting): string {
   const def = CAPTAIN_BY_ID[id];
   const n = def?.name ?? id, s = def?.ship ?? 'ship';
   switch (meeting) {
-    case 'won': return `${n} broke the Wayward · and will remember it`;
-    case 'scarred': return `The ${s} is wreckage · ${n}’s lifeboat got clear`;
-    case 'killed': return `${n} went down with the ${s}`;
-    case 'escaped': return `${n} broke off the fight · and will be back`;
-    case 'evaded': return `You slipped ${n} · who knows the trick now`;
-    case 'bargained': return `${n} was paid off · for now`;
-    case 'left': return `${n} turned away`;
+    case 'won': return t('{n} broke the Wayward · and will remember it', { n });
+    case 'scarred': return t('The {s} is wreckage · {n}’s lifeboat got clear', { n, s });
+    case 'killed': return t('{n} went down with the {s}', { n, s });
+    case 'escaped': return t('{n} broke off the fight · and will be back', { n });
+    case 'evaded': return t('You slipped {n} · who knows the trick now', { n });
+    case 'bargained': return t('{n} was paid off · for now', { n });
+    case 'left': return t('{n} turned away', { n });
   }
 }
