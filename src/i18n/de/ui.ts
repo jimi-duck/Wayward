@@ -9,16 +9,17 @@
 
 export const UI: Record<string, string> = {
   // ── the start card ──
-  '<li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li>':
-    '<li>Schneid den <b class="v">violetten Fels</b> für Krail</li><li>Tank füllen</li><li>Spring am <b class="a">Sprungpunkt</b></li>',
   'Obedience-class ore hauler': 'Erzfrachter der Obedience-Klasse',
-  'Serial OB-7731-A': 'Seriennr. OB-7731-A',
-  'Wayward, Obedience-class ore hauler, serial OB-7731-A': 'Wayward, Erzfrachter der Obedience-Klasse, Seriennr. OB-7731-A',
-  'Survive': 'Überleben',
+  'Wayward, Obedience-class ore hauler': 'Wayward, Erzfrachter der Obedience-Klasse',
+  'Game mode': 'Spielmodus',
+  'Story mode': 'Story-Modus',
+  'Freefly • Score • Explore': 'Freiflug • Punkte • Erkunden',
+  'Survive • Trade • Extract • Return': 'Überleben • Handeln • Abbauen • Heimkehren',
+  'Start arcade': 'Arcade starten',
+  'Start story': 'Story starten',
+  'Continue story': 'Story fortsetzen',
   'Trade': 'Handeln',
-  'Extract': 'Abbauen',
-  'Return': 'Heimkehren',
-  'Stolen ship. Broken system. Still moving.': 'Geklautes Schiff. Kaputtes System. Weiter geht’s.',
+  'Serial OB-7731-A': 'Seriennr. OB-7731-A',
   'Steer': 'Lenken',
   'Thrust': 'Schub',
   'Lasers': 'Laser',
@@ -27,14 +28,10 @@ export const UI: Record<string, string> = {
   'Overcharge': 'Überladung',
   'Roll': 'Rolle',
   'Camera': 'Kamera',
-  'Left thumb: drag to fly · right thumb: hold to fire, hold Cut to mine · tap Core when it is full':
-    'Linker Daumen: ziehen zum Fliegen · rechter Daumen: halten zum Feuern, Schneiden halten zum Abbauen · Kern tippen, wenn voll',
   'Continue': 'Weiter',
   'Break out': 'Ausbrechen',
   'New journey': 'Neue Reise',
   'Arcade': 'Arcade',
-  'Click or press Enter': 'Klick oder drück Enter',
-  'Tap to launch': 'Tippen zum Start',
   'To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.':
     'Ohne Wischen: Leg das Spiel auf deinen Home-Bildschirm (Teilen, dann Zum Home-Bildschirm) und starte es vom neuen Icon. Dann ohne Tabs und Leisten.',
   'Archive': 'Archiv',

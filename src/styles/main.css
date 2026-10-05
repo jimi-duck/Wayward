@@ -127,7 +127,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 }
 
 /* Corner brackets, from eight gradients: --b colour, --l arm, --t weight. */
-#tgt-box, #marks .m, .start-card {
+#tgt-box, #marks .m {
   --b: var(--hud); --l: 10px; --t: 1px;
   background:
     linear-gradient(var(--b), var(--b)) left top / var(--l) var(--t) no-repeat,
@@ -700,15 +700,15 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .cm-side .need { color: var(--ink-3); white-space: normal; text-align: right; max-width: 18ch; }
 
 /* buttons: cut like everything else */
-#again, #launch, #resume, #ch-go, #en-go, .ghost { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+#again, #launch, #ch-go, #en-go, .ghost { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
   height: 44px; padding: 0 44px; font: 700 14px/1 var(--font-head); letter-spacing: .28em; text-transform: uppercase; color: var(--ink); }
-:is(#again, #launch, #resume, #ch-go, #en-go, .ghost)::before, :is(#again, #launch, #resume, #ch-go, #en-go, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
-:is(#again, #launch, #resume, #ch-go, #en-go, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
+:is(#again, #launch, #ch-go, #en-go, .ghost)::before, :is(#again, #launch, #ch-go, #en-go, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
+:is(#again, #launch, #ch-go, #en-go, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
   clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-:is(#again, #launch, #resume, #ch-go, #en-go, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
+:is(#again, #launch, #ch-go, #en-go, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
   clip-path: polygon(calc(var(--c) - .4px) 0, 100% 0, 100% calc(100% - var(--c) + .4px), calc(100% - var(--c) + .4px) 100%, 0 100%, 0 calc(var(--c) - .4px)); }
-:is(#again, #launch, #resume, #ch-go, #en-go):hover, :is(#again, #launch, #resume, #ch-go, #en-go):focus-visible { --fill: rgba(217, 154, 39, .3); }
-#again:focus-visible, #launch:focus-visible, #resume:focus-visible, #ch-go:focus-visible, #en-go:focus-visible, .ghost:focus-visible, .zoomsel button:focus-visible, .mods button:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
+:is(#again, #launch, #ch-go, #en-go):hover, :is(#again, #launch, #ch-go, #en-go):focus-visible { --fill: rgba(217, 154, 39, .3); }
+#again:focus-visible, #launch:focus-visible, #ch-go:focus-visible, #en-go:focus-visible, .ghost:focus-visible, .zoomsel button:focus-visible, .mods button:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
 .ghost { --c: 7px; --edge: var(--line); --fill: var(--glass); height: 30px; padding: 0 16px; font: 600 calc(var(--fs) * .9 * 1.18)/1 var(--font-rail); letter-spacing: .12em; }
 .ghost:hover { --edge: var(--hud); }
 
@@ -866,41 +866,67 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 }
 
 /* ── start ────────────────────────────────────────────────────────────── */
-/* The title and the launch up top, the ship in the middle of the picture
-   where it will fly, records and options along the foot. */
+/* The key art fills the screen; the title, the two ways to play and the one
+   button sit in the open dark above the ship, a little left of the station.
+   Only soft shade for reading: a pool behind the menu, a light vignette, a
+   little dark along the top and foot. Options sit quietly along the foot. */
 #start { position: absolute; inset: 0; z-index: 4; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: 12px;
-  padding: max(20px, calc(var(--safe-t) + 14px)) 24px max(16px, calc(var(--safe-b) + 12px));
-  background: linear-gradient(180deg, rgba(8, 13, 14, .88) 0%, rgba(8, 13, 14, .55) 36%, rgba(8, 13, 14, .05) 58%, rgba(8, 13, 14, .35) 86%, rgba(8, 13, 14, .8) 100%); }
+  padding: max(clamp(24px, 6vh, 72px), calc(var(--safe-t) + 14px)) 24px max(14px, calc(var(--safe-b) + 10px));
+  --pool-x: 40%; --pool-y: 20%;
+  background:
+    radial-gradient(ellipse 42% 38% at var(--pool-x) var(--pool-y), rgba(5, 8, 12, .62), rgba(5, 8, 12, .3) 55%, rgba(5, 8, 12, 0)),
+    linear-gradient(180deg, rgba(5, 8, 12, .5) 0%, rgba(5, 8, 12, 0) 34%, rgba(5, 8, 12, 0) 78%, rgba(5, 8, 12, .62) 100%),
+    radial-gradient(ellipse 80% 75% at 50% 48%, rgba(0, 0, 0, 0) 58%, rgba(0, 0, 0, .5) 100%),
+    url("../assets/wayward-menu-background.jpg") 55% 42% / cover no-repeat,
+    var(--void); }
 #start[hidden] { display: none; }
 .prelaunch #hud, .prelaunch #touch { visibility: hidden; }
 .panel-open #hud, .panel-open #touch { visibility: hidden; }
-.start-card { display: grid; justify-items: center; gap: 13px; text-align: center; padding: 20px clamp(20px, 4vw, 44px) 18px; --b: rgba(216, 213, 198, .2); --l: 16px; }
+.start-card { display: grid; justify-items: center; gap: clamp(18px, 3.2vh, 30px); text-align: center; }
+/* on a screen wide enough, the menu sits in the dark left of the station */
+@media (min-aspect-ratio: 4/3) { .start-card { margin-right: clamp(0px, 19vw, 420px); } #start { --pool-x: calc(50% - clamp(0px, 9.5vw, 210px)); } }
 /* The lockup: the amber mark, the word in heavy condensed industrial white,
-   the ship's papers under it, and the four verbs on a ruled column. */
-.lockup { display: grid; grid-template-columns: auto auto auto; align-items: center; gap: 0 clamp(12px, 1.6vw, 20px); text-align: left; }
-.mark { width: clamp(46px, 6vw, 74px); height: auto; fill: var(--wayward-amber); }
+   the ship's papers under it. */
+.lockup { display: grid; grid-template-columns: auto auto; align-items: center; gap: 0 clamp(12px, 1.4vw, 18px); text-align: left;
+  filter: drop-shadow(0 2px 14px rgba(0, 0, 0, .55)); }
+.mark { width: clamp(46px, 5.4vw, 70px); height: auto; fill: var(--wayward-amber); }
 .lk-t { display: grid; gap: 4px; }
-.lk-w { font: 800 clamp(48px, 7.4vw, 92px)/.82 var(--font-head); letter-spacing: .015em; text-transform: uppercase; color: var(--industrial-white); }
-.lk-d, .lk-s { font: 600 clamp(11px, 1.15vw, 15px)/1 var(--font-rail); letter-spacing: .28em; text-transform: uppercase; color: var(--ink); }
-.lk-d { margin-top: 6px; }
-.lk-s { font-family: var(--font-mono); font-weight: 400; letter-spacing: .2em; color: var(--ink-2); }
-.lk-v { display: grid; gap: 7px; padding-left: clamp(12px, 1.6vw, 20px); border-left: 1px solid var(--frame);
-  font: 600 clamp(10px, .9vw, 12px)/1 var(--font-rail); letter-spacing: .24em; text-transform: uppercase; color: var(--ink-3); }
-.lk-v span:first-child { color: var(--ink); }
-@media (max-width: 560px), (max-height: 520px) { .lk-v { display: none; } }
-.tag { margin: 0; font: 600 clamp(13px, 1.3vw, 16px)/1 var(--font-rail); letter-spacing: .3em; text-transform: uppercase; color: var(--hud); }
-.keys-l { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; margin: 2px 0 0; max-width: 580px; }
-.keys-l div { display: flex; align-items: center; gap: 7px; }
-.keys-l dt { display: flex; gap: 3px; }
-.keys-l dd { margin: 0; font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
-.keys-l kbd { min-width: 19px; height: 19px; font-size: 9px; color: var(--ink); }
-.meta { margin: 0; font: 600 calc(9px * 1.18)/1.4 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
-#launch, #resume { padding: 0 58px; height: 46px; font-size: 15px; letter-spacing: .3em; margin-top: 2px; }
-.hint-l { margin: 0; font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
-.tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(229, 169, 58, .07);
+.lk-w { font: 800 clamp(52px, 7.2vw, 96px)/.82 var(--font-head); letter-spacing: .015em; text-transform: uppercase; color: var(--industrial-white); }
+.lk-d { margin-top: 6px; font: 600 clamp(11px, 1.05vw, 14px)/1 var(--font-rail); letter-spacing: .3em; text-transform: uppercase; color: var(--ink-2); }
+
+/* The two ways to play: cut steel plates. The picked one is lit amber, brighter
+   and glowing a little; the other stays dark but plainly there to take. */
+.modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(10px, 1.2vw, 16px); width: min(600px, 100%); }
+.mode { --c: 12px; --edge: rgba(216, 213, 198, .22); --fill: rgba(8, 12, 15, .58); position: relative; isolation: isolate; display: grid; gap: 8px; justify-items: start;
+  padding: clamp(14px, 2vh, 20px) 20px clamp(13px, 1.9vh, 18px) 24px; border: 0; background: none; cursor: pointer; text-align: left; color: var(--ink-2);
+  transition: color .2s var(--ez), filter .25s var(--ez); }
+.mode::before, .mode::after { content: ""; position: absolute; pointer-events: none; transition: background .2s var(--ez), opacity .2s var(--ez); }
+.mode::before { inset: 0; z-index: -2; background: var(--edge);
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.mode::after { inset: 1px; z-index: -1; background: var(--fill);
+  clip-path: polygon(calc(var(--c) - .4px) 0, 100% 0, 100% calc(100% - var(--c) + .4px), calc(100% - var(--c) + .4px) 100%, 0 100%, 0 calc(var(--c) - .4px)); }
+.mo-t { position: relative; font: 800 clamp(22px, 2.2vw, 30px)/.9 var(--font-head); letter-spacing: .08em; text-transform: uppercase; }
+/* the lit bar down the left of the picked plate */
+.mo-t::before { content: ""; position: absolute; left: -14px; top: 1px; bottom: 1px; width: 3px; background: var(--hud); opacity: 0; transform: scaleY(.4); transition: opacity .2s var(--ez), transform .25s var(--ez); }
+.mo-s { font: 600 clamp(10px, .85vw, 12px)/1.2 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); transition: color .2s var(--ez); }
+.mode:hover { --edge: rgba(216, 213, 198, .4); --fill: rgba(14, 18, 20, .66); color: var(--ink); }
+.mode[aria-checked="true"] { --edge: var(--hud); --fill: linear-gradient(180deg, rgba(74, 52, 14, .72), rgba(36, 25, 8, .7)); color: var(--industrial-white);
+  filter: drop-shadow(0 0 16px rgba(217, 154, 39, .28)); }
+.mode[aria-checked="true"] .mo-s { color: var(--hud-hi); }
+.mode[aria-checked="true"] .mo-t::before { opacity: 1; transform: none; }
+.mode:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
+
+/* the one button: what it starts, and it starts it */
+#launch { min-width: min(320px, 100%); height: 52px; padding: 0 48px; font-size: 16px; letter-spacing: .32em; --fill: linear-gradient(180deg, rgba(92, 63, 14, .92), rgba(52, 35, 8, .92));
+  filter: drop-shadow(0 0 14px rgba(217, 154, 39, .2)); }
+#launch:hover, #launch:focus-visible { --fill: linear-gradient(180deg, rgba(122, 84, 18, .95), rgba(70, 47, 10, .95)); }
+.start-card .resume-s { margin-top: calc(clamp(18px, 3.2vh, 30px) * -.6); text-shadow: 0 1px 6px rgba(0, 0, 0, .8); }
+#fresh { margin-top: calc(clamp(18px, 3.2vh, 30px) * -.5); }
+#fresh[hidden] { display: none; }
+.tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(8, 13, 14, .7);
   font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
-.start-foot { grid-row: 3; display: grid; justify-items: center; gap: 10px; }
-.records { display: flex; gap: 18px; justify-content: center; font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.start-foot { grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 22px; }
+.records { display: flex; gap: 18px; justify-content: center; font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 1px 6px #000; }
 .records b { color: var(--ink); font: 600 12px/1 var(--font-rail); letter-spacing: .08em; margin-left: 6px; }
 .records:empty { display: none; }
 .start-opts { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
@@ -910,19 +936,29 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .mods button[aria-pressed="true"] { border-color: var(--amber); color: var(--ink); background: rgba(229, 169, 58, .14); }
 
-/* a phone on its side: the wordmark on the left, everything you press on the right */
-@media (max-height: 520px) and (orientation: landscape) {
-  #start { padding: 10px max(16px, var(--safe-r)) 10px max(16px, var(--safe-l)); gap: 6px; }
-  .start-card { grid-template-columns: auto minmax(0, 300px); column-gap: 28px; row-gap: 8px; padding: 12px 22px 12px; justify-items: start; text-align: left; }
-  .start-card .lockup { grid-area: 1 / 1 / 4 / 2; align-self: center; }
-  .start-card .mark { width: 40px; }
-  .start-card .lk-w { font-size: 46px; }
-  .start-card .lk-d, .start-card .lk-s { font-size: 9px; }
-  .start-card .tag { grid-area: 4 / 1 / 5 / 2; font-size: 11px; letter-spacing: .2em; }
-  .start-card .keys-l, .start-card .meta { grid-area: 1 / 2; justify-content: flex-start; }
-  #launch { grid-area: 2 / 2; height: 40px; padding: 0 44px; }
-  .start-card .hint-l { grid-area: 3 / 2; }
-  .start-card .tip { grid-area: 4 / 2 / 6 / 3; font-size: 11px; }
+/* the keys, on the pause card */
+.keys-l { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; margin: 0; max-width: 580px; }
+.keys-l div { display: flex; align-items: center; gap: 7px; }
+.keys-l dt { display: flex; gap: 3px; }
+.keys-l dd { margin: 0; font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.keys-l kbd { min-width: 19px; height: 19px; font-size: 9px; color: var(--ink); }
+.touch-ui .keys-l { display: none; }
+
+/* a short screen (a phone on its side, a small laptop window): all of it tighter */
+@media (max-height: 620px) {
+  #start { padding-top: max(14px, calc(var(--safe-t) + 10px)); gap: 6px; }
+  .start-card { gap: 12px; }
+  .lk-w { font-size: clamp(40px, 11vh, 64px); }
+  .mark { width: clamp(34px, 8vh, 50px); }
+  .lk-d { font-size: 10px; margin-top: 4px; }
+  .modes { width: min(480px, 100%); gap: 10px; }
+  .mode { padding: 10px 14px 10px 20px; gap: 6px; }
+  .mo-t { font-size: 20px; }
+  .mo-s { font-size: 9.5px; letter-spacing: .14em; }
+  .mo-t::before { left: -11px; }
+  #launch { height: 42px; font-size: 13px; padding: 0 34px; min-width: 240px; }
+  .start-card .resume-s, #fresh { margin-top: -6px; }
+  .tip { font-size: 11px; }
 }
 
 /* ── pause ────────────────────────────────────────────────────────────── */
@@ -1053,7 +1089,6 @@ html.swipe #app * { overscroll-behavior: contain; }
 .brief.steps .v { color: var(--violet); }
 .brief.steps .a { color: var(--amber); }
 .launch-row { display: flex; gap: 12px; align-items: center; }
-#arcade { height: auto; align-self: stretch; padding: 0 18px; }
 
 /* the port */
 .port-stock { display: flex; flex-wrap: wrap; gap: 22px; font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
@@ -1118,7 +1153,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 #threat.high #th-l { color: var(--alert); }
 
 /* ── the journey: continue, and the chart ─────────────────────────────── */
-#resume[hidden], #ch-go[hidden], #en-go[hidden] { display: none; }
+#ch-go[hidden], #en-go[hidden] { display: none; }
 .resume-s { margin: 0; font: 600 calc(9px * 1.18)/1.4 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 .resume-s[hidden] { display: none; }
 .panel.chartp { width: min(1180px, 100%); overflow-y: auto; gap: 12px; }
@@ -1197,12 +1232,10 @@ circle.ch-thren { fill: rgba(92, 195, 162, .22); stroke: #5CC3A2; stroke-width: 
 @media (max-width: 640px) and (min-height: 521px) {
   .ch-body { grid-template-columns: 1fr; }
 }
-/* a phone on its side: three ways in on one row, and the port's five lines with room for Cast off */
+/* a phone on its side: the port's five lines with room for Cast off */
 .launch-row { flex-wrap: wrap; justify-content: center; }
 @media (max-height: 520px) {
   .launch-row { gap: 8px; }
-  .launch-row #launch, .launch-row #resume { height: 38px; padding: 0 20px; font-size: 12px; letter-spacing: .2em; white-space: nowrap; }
-  .launch-row #arcade { height: 38px; }
   .port-list { gap: 5px; }
   .port-l { padding: 7px 14px; font-size: calc(var(--fs) * 1.05); }
   .port-l .pl-note { font-size: 12px; }
