@@ -257,6 +257,13 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #sys-hull.crit .plates i.on:not(.sh) { background: var(--alert); animation: hud-blink 1.1s ease-in-out infinite; }
 #sys-hull.crit #v-hull { color: var(--alert); }
 #sys-hull.hit { animation: hud-hit .6s ease-out; }
+/* self-repair (the arcade): the plate being mended fills in teal, pulsing while it works */
+.plates i.mend { background: linear-gradient(to right, rgba(57, 174, 183, .55) var(--fill, 0%), rgba(216, 213, 198, .14) var(--fill, 0%)); outline: 1px solid var(--cy-dim); outline-offset: -1px; }
+.plates i.mend.live { animation: mend-pulse 1.1s ease-in-out infinite; }
+#sys-hull.mending #v-hull { color: var(--cy); }
+#sys-hull.mended { animation: mend-done .7s ease-out; }
+@keyframes mend-pulse { 50% { outline-color: var(--cy); box-shadow: 0 0 7px var(--cy-dim); } }
+@keyframes mend-done { 0% { background: rgba(57, 174, 183, .28); } }
 /* the reactor: near misses charge it; full, it releases on E */
 #g-oc { --n: 12; --on: var(--cy); --off: var(--cy-ghost); height: 5px; }
 #sys-oc.ready #g-oc { --on: #c9f0f2; filter: drop-shadow(0 0 5px var(--cy)); }
@@ -432,6 +439,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #mode-t { font: 600 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--mc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #mode .stripes { flex: none; margin-left: auto; width: 22px; height: 9px; background: repeating-linear-gradient(-55deg, var(--mc) 0 2px, transparent 2px 5px); opacity: .7; }
 #mode.mining { --mc: var(--violet); }
+#mode.repair { --mc: var(--cy); }
 #mode.combat { --mc: var(--hud); }
 #mode.caution { --mc: var(--amber); }
 #mode.alert { --mc: var(--alert); }
@@ -1052,7 +1060,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 @media (prefers-reduced-motion: reduce) {
   #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #sys-oc.hot #g-oc, #mode.alert .stripes, #release.ready, #release.on, #torp.on { animation: none; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
-  #log-lines p.new, #banner.on, #sys-hull.hit, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel { animation: none; }
+  #log-lines p.new, #banner.on, #sys-hull.hit, #sys-hull.mended, .plates i.mend.live, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel { animation: none; }
   .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path { animation: none; }
 }
 

@@ -22,7 +22,7 @@ function quiet(seed = 1): World {
   w.field.rocks = [];
   w.field.bulwarks = [];
   w.field.step = () => {};
-  w.nextAlien = 1e9;
+  w.pace.until = 1e9;
   w.command.next = 1e9;
   (w as unknown as { nextEvent: number }).nextEvent = 1e9;
   return w;

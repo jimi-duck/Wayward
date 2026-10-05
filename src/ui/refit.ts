@@ -48,7 +48,7 @@ export class RefitPanel {
     return !$('refit').hidden;
   }
 
-  show(offer: Offer, levels: Levels, onPick: (i: number) => void): void {
+  show(offer: Offer, levels: Levels, onPick: (i: number) => void, arcade = true): void {
     this.close();
     const opened = performance.now();
     const kind = offer.kind;
@@ -57,7 +57,7 @@ export class RefitPanel {
     $('refit-t').textContent = kind === 'salvage' ? t('Take one from the wreck') : spec ? t('{system}: specialise', { system: t(BRANCHES[spec.branch].name) }) : t('Pick an upgrade');
     $('refit-s').textContent = kind === 'spec' ? t('One per system, for the whole run. It makes the ship what she is.') : '';
     const pick = (i: number) => { this.close(); onPick(i); };
-    $('cards').replaceChildren(...offer.cards.map((c, i) => this.card(c, i, levels, guarded(opened, () => pick(i)))));
+    $('cards').replaceChildren(...offer.cards.map((c, i) => this.card(c, i, levels, arcade, guarded(opened, () => pick(i)))));
     this.sel = 0;
     this.mark();
     this.pad = { opened, n: offer.cards.length, pick };
@@ -99,7 +99,7 @@ export class RefitPanel {
    * does, the module's level as blocks (owned, and the one this card adds),
    * and the numbers it changes.
    */
-  private card(c: Card, i: number, levels: Levels, onClick: (e: Event) => void): HTMLElement {
+  private card(c: Card, i: number, levels: Levels, arcade: boolean, onClick: (e: Event) => void): HTMLElement {
     const u = UPGRADE[c.id]!;
     const b = h('button', `card ${c.tag} ${u.cat}`) as HTMLButtonElement;
     b.type = 'button';
@@ -123,7 +123,7 @@ export class RefitPanel {
 
     const text = h('span', 'c-text', t(upgradeText(u, c.level)));
     const figs = h('span', 'c-figs');
-    for (const f of upgradeFigures(levels, c.id).slice(0, MAX_FIGS)) {
+    for (const f of upgradeFigures(levels, c.id, arcade).slice(0, MAX_FIGS)) {
       figs.append(h('span', `fig${f.cost ? ' cost' : ''}`, '', h('span', 'f-l', t(f.label)), h('span', 'f-v', '', h('s', '', t(f.from)), document.createTextNode(' → '), h('b', '', t(f.to)))));
     }
     b.append(top, name, lv, text, figs);

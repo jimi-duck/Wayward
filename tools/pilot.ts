@@ -85,6 +85,9 @@ export interface PilotResult {
   bossFights: Array<{ faction: string; outcome: 'killed' | 'escaped' | 'died'; seconds: number; hpLeft: number; refit: number }>;
   /** Seconds with a hostile in firing range, or a capital ship fighting. */
   combat: number;
+  /** Seconds with three or more hostiles in firing range at once, and the most there ever were. */
+  crowd: number;
+  peak: number;
   answers: Answer[];
 }
 
@@ -457,7 +460,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   const bossFights: PilotResult['bossFights'] = [];
   const answers: Answer[] = [];
   let fightStart = -1, fightFaction = '';
-  let combat = 0;
+  let combat = 0, crowd = 0, peak = 0;
   let lastLost = 0, lastGained = 0;
   const lag = o.lag ?? 1;
   const queue: InputFrame[] = [];
@@ -493,7 +496,10 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     if (seen.size > 2000) for (const id of [...seen.keys()]) if (!w.shots.some((sh) => sh.id === id)) seen.delete(id);
     const input = queue.length > lag ? queue.shift()! : blank();
     w.step(STEP, input);
-    if (w.command.state === 'fight' || w.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < FIRE_RANGE * a.rgK)) combat += STEP;
+    const near = w.aliens.filter((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < FIRE_RANGE * a.rgK).length;
+    if (w.command.state === 'fight' || near > 0) combat += STEP;
+    if (near >= 3) crowd += STEP;
+    peak = Math.max(peak, near);
     const evs = w.drain();
     o.watch?.(w, evs);
     for (const ev of evs) {
@@ -524,5 +530,5 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     w.run.build = { ...w.levels };
     w.run.cause = 'survived';
   }
-  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, answers };
+  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, answers };
 }

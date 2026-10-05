@@ -209,7 +209,7 @@ function boot(): void {
     if (world.phase === 'refit' && world.offer && !refit.open) {
       // a full rail or battle salvage: three cards
       input.reset();
-      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); });
+      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); }, !world.bk);
     } else if (world.phase === 'hail' && world.command.pending && !comms.open) {
       input.reset();
       shown = world.command.pending;

@@ -3,6 +3,7 @@ import {
   BANK_MAX, BANK_REFILL, BANK_SHOT, BOLT_DAMAGE, BOLT_LIFE, BOLT_SPEED, HIT_GRACE, PX, ROLL_COOLDOWN, ROLL_IFRAMES, ROLL_KICK,
   SHIELD_DELAY, SHIELD_MAX, SHIELD_RECHARGE, SHOT_COOLDOWN, TORP_ACCEL, TORP_BLAST, TORP_CONE, TORP_DAMAGE, TORP_MAX, TORP_RELOAD, TORP_SEEK, TORP_TURN,
 } from './tuning';
+import { SELF_REPAIR } from './repair';
 
 // ── the ship's numbers ────────────────────────────────────────────────────
 // Everyone flies the same hull, so everything an upgrade can change lives in
@@ -121,8 +122,13 @@ export interface Stats {
   grace: number;
   damageControl: number;
   reactive: boolean;
-  /** Seconds without damage before a plate is repaired; 0 for never. */
+  /** Story mode: seconds without damage before a plate grows back; 0 for never. */
   regen: number;
+  /** Self-repair (the arcade, sim/repair.ts): seconds without damage before it starts, plates a second, plates a quiet spell, and whether danger near holds it. */
+  repairDelay: number;
+  repairRate: number;
+  repairMax: number;
+  repairUnderFire: boolean;
 
   // utility and the reactor
   tractor: number;
@@ -161,6 +167,12 @@ export interface Stats {
   rollCloak: number;
   /** Seconds a blast snares the hulls it catches. */
   snare: number;
+
+  // encounter control (sim/pacing.ts)
+  /** Multiplier on how far off patrols and watchers notice you: lower is quieter. */
+  notice: number;
+  /** Multiplier on the quiet spells between encounters. */
+  lull: number;
 }
 
 export const BASE: Readonly<Stats> = Object.freeze({
@@ -185,12 +197,14 @@ export const BASE: Readonly<Stats> = Object.freeze({
   drift: false, evasion: false,
 
   maxPlates: HULL.plates, shieldMax: SHIELD_MAX, shieldRecharge: SHIELD_RECHARGE, shieldDelay: SHIELD_DELAY, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
+  repairDelay: SELF_REPAIR.delay, repairRate: 1 / SELF_REPAIR.perPlate, repairMax: SELF_REPAIR.max, repairUnderFire: false,
 
   tractor: 165 * PX, xpMult: 1, ocGain: 1, ocRadius: 20, ocDamage: 10, ocOverload: 4, ocPhase: 0, ocRefill: false,
 
   dmgAll: 1, plasmaCorona: false, ramArc: false, speedGraze: false,
   crystalChance: 1, repairChance: 1, powerTime: 1, rareRate: 1, eliteLoot: 1,
   disruptor: 0, rollCloak: 0, snare: 0,
+  notice: 1, lull: 1,
 });
 
 export const newStats = (): Stats => ({ ...BASE });
@@ -234,6 +248,13 @@ export const CAPS = {
   arcDamage: 5,
   crystalChance: 2,
   repairChance: 2.5,
+  /** Self-repair: never sooner than this, never faster than a plate in this many seconds, never more plates a spell than this. */
+  repairDelay: 2.5,
+  repairPlate: 8,
+  repairMax: 3,
+  /** Quiet running: patrols still see you this close, and quiet spells stretch this far at most. */
+  notice: 0.55,
+  lull: 1.6,
 } as const;
 
 /** Clamp a finished block. Mutates and returns it. */
@@ -273,6 +294,11 @@ export function capStats(s: Stats): Stats {
   s.arcDamage = Math.min(s.arcDamage, CAPS.arcDamage);
   s.crystalChance = Math.min(s.crystalChance, CAPS.crystalChance);
   s.repairChance = Math.min(s.repairChance, CAPS.repairChance);
+  s.repairDelay = Math.max(s.repairDelay, CAPS.repairDelay);
+  s.repairRate = Math.min(s.repairRate, 1 / CAPS.repairPlate);
+  s.repairMax = Math.min(Math.round(s.repairMax), CAPS.repairMax);
+  s.notice = Math.max(s.notice, CAPS.notice);
+  s.lull = Math.min(s.lull, CAPS.lull);
   return s;
 }
 

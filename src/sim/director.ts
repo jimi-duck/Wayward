@@ -9,13 +9,16 @@ import { FIELD_TARGET, HZ, PX } from './tuning';
 //
 // The shape is a slow burn. The first forty seconds are yours alone: a thin
 // field of slow rock to learn the ship on and mine the first refit out of.
-// Then one hostile at a time, scouts only, until about a minute and a half;
-// two or three by two minutes. Density, speed and toughness climb steadily
-// from there; enemy variety opens up over the first five minutes; from four
-// minutes elites and squads start to appear, and from five the factions mix.
-// Late difficulty leans on combinations (squads, elites, faction mixes,
-// hazardous rock) more than on raw numbers: the counts level off while the
-// combinations keep coming.
+// Then the arcade's hulls come in encounters (sim/pacing.ts): a group,
+// one or two at first, arriving a few seconds apart, then a quiet spell once
+// it is beaten or shaken off. The groups grow with the clock (and the
+// refits, in the pacing), the quiet spells shorten, and the ceiling holds the
+// most hulls at once. Density, speed and toughness climb steadily; enemy
+// variety opens up over the first five minutes; from four minutes elites and
+// squads start to appear, and from five the factions mix. Late difficulty
+// leans on combinations (squads, elites, faction mixes, hazardous rock) more
+// than on raw numbers: the counts level off while the combinations keep
+// coming.
 //
 // Every curve is in minutes, m. `Mods` scales the whole thing for the
 // challenge modifiers a player can switch on between runs.
@@ -33,10 +36,14 @@ const V = PX * HZ;
 
 export interface Pressure {
   m: number;
-  /** Seconds between enemy spawns. */
+  /** Seconds between the hulls of one encounter arriving. */
   enemyInterval: number;
   /** Most regular hulls at once. */
   enemyCap: number;
+  /** Hulls an encounter brings, before the refits add to it (sim/pacing.ts rounds it). */
+  groupSize: number;
+  /** Seconds of quiet after an encounter, before the next. */
+  lull: number;
   /** Multiplier on enemy hull points. */
   enemyHp: number;
   /** Base seconds between an enemy's volleys (each type scales it). */
@@ -67,8 +74,10 @@ export function pressure(t: number, mods: Mods = NO_MODS): Pressure {
   const late = Math.max(0, m - 8);
   return {
     m,
-    enemyInterval: Math.max(1.35, 9 - 0.9 * m) / mods.traffic,
-    enemyCap: Math.round(clamp(1.35 * m - 0.2, 1, 13) * mods.traffic),
+    enemyInterval: Math.max(1.2, 3.4 - 0.22 * m) / mods.traffic,
+    enemyCap: Math.round(clamp(1.1 * m + 0.2, 1, 10) * mods.traffic),
+    groupSize: clamp(1 + 0.42 * m, 1, 7) * mods.traffic,
+    lull: Math.max(10, 20 - 1.1 * m) / mods.traffic,
     enemyHp: (1 + 0.17 * m + 0.06 * late) * mods.toughness,
     fireCd: Math.max(0.62, 2.2 - 0.17 * m),
     shotSpeed: Math.min(5.6, 3.1 + 0.42 * m) * V,

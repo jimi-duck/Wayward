@@ -3,6 +3,7 @@ import { applyModules } from './modules';
 import { flightHull, capStats, newStats, type Stats } from './stats';
 import { topSpeed, turnPerStep } from './ship';
 import { HZ, PX } from './tuning';
+import { PACING } from './pacing';
 import { midSentence, t } from '../i18n';
 
 // ── the build ─────────────────────────────────────────────────────────────
@@ -63,16 +64,16 @@ export function available(u: UpgradeDef, levels: Levels, unlocked: ReadonlySet<s
 
 export interface Fig { label: string; from: string; to: string; cost: boolean; }
 
-/** What one more level of an upgrade would change, as figures. */
-export function upgradeFigures(levels: Levels, id: string): Fig[] {
-  return figures(computeStats(levels), computeStats({ ...levels, [id]: (levels[id] ?? 0) + 1 }));
+/** What one more level of an upgrade would change, as figures (in the Story mode, `arcade` false, without the arcade's own). */
+export function upgradeFigures(levels: Levels, id: string, arcade = true): Fig[] {
+  return figures(computeStats(levels), computeStats({ ...levels, [id]: (levels[id] ?? 0) + 1 }), arcade);
 }
 
 // ── figures ───────────────────────────────────────────────────────────────
 // Every number a card can change, how to read it and which way is better.
 // A card shows the rows whose value it changes, as "before → after".
 
-interface FigDef { label: string; get: (s: Stats) => number; fmt: (v: number) => string; lower?: boolean; }
+interface FigDef { label: string; get: (s: Stats) => number; fmt: (v: number) => string; lower?: boolean; /** Only means something in the arcade. */ arcade?: boolean; }
 
 const f1 = (v: number) => v.toFixed(1);
 const f0 = (v: number) => String(Math.round(v));
@@ -124,6 +125,11 @@ export const FIGURES: FigDef[] = [
   { label: 'Shield recharge', get: (s) => off(s.shieldMax > 0, s.shieldRecharge), fmt: dash(sec), lower: true },
   { label: 'Shield wait', get: (s) => off(s.shieldMax > 0, s.shieldDelay), fmt: dash(sec), lower: true },
   { label: 'Grace after a hit', get: (s) => s.grace, fmt: sec },
+  { label: 'Self-repair, a plate', get: (s) => 1 / s.repairRate, fmt: sec, lower: true, arcade: true },
+  { label: 'Self-repair waits', get: (s) => s.repairDelay, fmt: sec, lower: true, arcade: true },
+  { label: 'Plates a quiet spell', get: (s) => s.repairMax, fmt: f0, arcade: true },
+  { label: 'Spotted from', get: (s) => PACING.notice * s.notice, fmt: m, lower: true, arcade: true },
+  { label: 'Quiet between fights', get: (s) => s.lull, fmt: pct, arcade: true },
   { label: 'Tractor reach', get: (s) => s.tractor, fmt: m },
   { label: 'Krail yield', get: (s) => s.xpMult, fmt: pct },
   { label: 'Overcharge gain', get: (s) => s.ocGain, fmt: pct },
@@ -141,9 +147,10 @@ export const FIGURES: FigDef[] = [
   { label: 'Snare', get: (s) => s.snare, fmt: dash(sec) },
 ];
 
-export function figures(before: Stats, after: Stats): Fig[] {
+export function figures(before: Stats, after: Stats, arcade = true): Fig[] {
   const out: Fig[] = [];
   for (const d of FIGURES) {
+    if (d.arcade && !arcade) continue;
     const a = d.get(before), b = d.get(after);
     const fa = d.fmt(a), fb = d.fmt(b);
     if (fa === fb) continue;

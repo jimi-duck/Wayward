@@ -19,6 +19,9 @@ export type GameEvent =
   | { type: 'shieldUp'; charges: number }
   | { type: 'damageControl'; x: number; z: number }
   | { type: 'regen'; plates: number }
+  /** Self-repair (the arcade): a plate begun, and a plate done. */
+  | { type: 'mendStart' }
+  | { type: 'mended'; plates: number }
   | { type: 'breach'; x: number; z: number; score: number }
   | { type: 'bankEmpty' }
   | { type: 'rackEmpty' }
@@ -59,6 +62,10 @@ export type GameEvent =
   | { type: 'sectorEvent'; id: string; name: string; text: string }
   | { type: 'sectorEventEnd'; id: string; name: string; text: string; success: boolean }
   | { type: 'squad'; label: string }
+  /** The arcade's encounters: a group on its way, a hull that has made up its mind, and the quiet after. */
+  | { type: 'contacts'; n: number }
+  | { type: 'noticed'; id: number; x: number; y: number; z: number }
+  | { type: 'quiet' }
   | { type: 'ore'; x: number; z: number; value: number }
   | { type: 'parts'; x: number; z: number; value: number }
   | { type: 'holdFull' }
