@@ -9,7 +9,7 @@
 // A node opens once any node it comes `from` is fitted (a node with none is
 // open from the start), and then by the upgrade's own rules: what it
 // requires, one specialisation per group, a branch deep enough
-// (sim/build.ts `available`). Each level costs Scrap, more by tier, and
+// (sim/build.ts `available`). Each level costs Krail, more by tier, and
 // draws on the ship's budgets:
 //
 //   power · drawn by what runs: guns, drives, shields, kit. A hard ceiling:
@@ -49,7 +49,7 @@ export const STOCK_DRAW: Readonly<Budget> = Object.freeze({ power: 3, mass: 0, h
 /** Fitted on every ship from the start: the torpedo bay. */
 export const STOCK: Readonly<Record<string, number>> = Object.freeze({ tp_bay: 1 });
 
-/** Scrap for the first level of a node, by tier (1 to 4); each further level costs LEVEL_STEP more of it. */
+/** Krail for the first level of a node, by tier (1 to 4); each further level costs LEVEL_STEP more of it. */
 export const TIER_COST = [0, 40, 60, 90, 130] as const;
 export const LEVEL_STEP = 0.5;
 

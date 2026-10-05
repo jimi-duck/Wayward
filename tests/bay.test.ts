@@ -6,7 +6,7 @@ import { computeStats } from '../src/sim/build';
 import { Rng } from '../src/sim/rng';
 
 const ALL = new Set(UPGRADES.map((u) => u.id));
-const ctx = (o: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: ALL, techs: new Set(), arcade: true, scrap: 1e9, ...o });
+const ctx = (o: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: ALL, techs: new Set(), arcade: true, krail: 1e9, ...o });
 
 describe('the web', () => {
   it('places every upgrade and every fitting exactly once, and nothing else', () => {
@@ -36,7 +36,7 @@ describe('the web', () => {
     }
   });
 
-  it('can reach every node from the stock ship, given Scrap, power and the unlocks', () => {
+  it('can reach every node from the stock ship, given Krail, power and the unlocks', () => {
     const techs = new Set(['gutter', 'custody', 'office', 'voice', 'thren']);
     /** What a node needs fitted first: where it comes from, and what its upgrade requires, all the way back. */
     const before = (id: string, out = new Set<string>()): Set<string> => {
@@ -84,8 +84,8 @@ describe('the bay’s rules', () => {
   it('charges more for deeper nodes and later levels', () => {
     expect(cost('ph_lance', 1)).toBeGreaterThan(cost('ph_emitters', 1));
     expect(cost('ph_emitters', 2)).toBeGreaterThan(cost('ph_emitters', 1));
-    expect(blockOf('ph_emitters', ctx({ scrap: cost('ph_emitters', 1) - 1 }))).toBe('scrap');
-    expect(blockOf('ph_emitters', ctx({ scrap: cost('ph_emitters', 1) }))).toBeNull();
+    expect(blockOf('ph_emitters', ctx({ krail: cost('ph_emitters', 1) - 1 }))).toBe('krail');
+    expect(blockOf('ph_emitters', ctx({ krail: cost('ph_emitters', 1) }))).toBeNull();
   });
 
   it('keeps the upgrades’ own rules: one specialisation per group, a deep enough branch', () => {
@@ -133,8 +133,8 @@ describe('the bay’s rules', () => {
     }
   });
 
-  it('lights what could be fitted with Scrap enough, power or not', () => {
-    const lit = reachable(ctx({ scrap: 0 })).map((w) => w.id);
+  it('lights what could be fitted with Krail enough, power or not', () => {
+    const lit = reachable(ctx({ krail: 0 })).map((w) => w.id);
     expect(lit).toContain('ph_emitters');
     expect(lit).toContain('rx_core');
     expect(lit).not.toContain('ph_pierce');

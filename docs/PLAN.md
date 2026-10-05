@@ -490,9 +490,13 @@ budgets beside them.
   real choice; the bay has to show what an install will leave you with.
 - **One structure for both modes.** Built with the Story mode in mind; the
   arcade uses the same bay, tabs and web.
-- **One currency, Scrap, in both modes** (2026-10-05): mined or won, from
-  rock and from the wrecks of what you destroy. Not Krail, which stays the
-  arcade's score and the Story mode's fuel.
+- **Krail pays for upgrades, in both modes** (2026-10-05): mined from rock
+  and won from the wrecks of what you destroy. It is what the fabricators
+  build from (VISION.md already says so).
+- **A new mineral for jumping, in the Story mode**: the lanes burn it, not
+  Krail. Mined or won the same way. Working name **Cyrite**, to be
+  renamed freely; VISION.md's line that Krail powers the jump drives moves
+  to it.
 - **Fewer installs than cards today**, each worth more.
 - **Heat is a fixed budget**, like power and mass, not a live meter.
 
@@ -510,10 +514,11 @@ nodes in five tiers), not one map of two hundred.
   engaged), nor during a comms card. In the arcade the quiet spells are
   the natural moment; in the Story mode, anywhere quiet in a sortie, and
   at a port.
-- **Paying.** Each node costs Scrap, more by tier and by level. Scrap comes
-  from rock broken or cut and from wrecks, in both modes; in the Story mode
-  it takes the place of today's parts (and patching a plate costs Scrap
-  too). The rail that fills to a card goes. The HUD says when something is
+- **Paying.** Each node costs Krail, more by tier and by level. Krail comes
+  from rock broken or cut and from wrecks, in both modes. In the arcade the
+  rail that fills to a card goes: Krail is a stock to spend. In the Story
+  mode the tank holds Cyrite for the jump, and Krail goes to the bay
+  (today's parts stay for patching plates). The HUD says when something is
   affordable, so the bay is never a surprise.
 - **Tabs**, after the reference: Hull, Weapons, Engines, Defence, Utility,
   Reactor, and Synergies and salvage. Today's 103 upgrade levels become
@@ -581,12 +586,12 @@ nodes in five tiers), not one map of two hundred.
 **Step 1, done.** `content/web.ts` lays every upgrade out as a node (82:
 the 79 upgrades and three fittings that raise the ratings: the reactor
 core for power, heat exchangers, the structural frame for mass) in eight
-tabs of six to seventeen, at most four tiers deep. Each level costs Scrap
+tabs of six to seventeen, at most four tiers deep. Each level costs Krail
 (40, 60, 90, 130 by tier, half as much again each level) and draws power,
 mass or heat; the stock ship (lasers, a shield charge, the torpedo bay)
 draws 5 of 10 power, 3 of 10 heat and 1 of 10 mass. `sim/bay.ts` says what
 can be fitted and why not (full, mode, locked, tech, path, the upgrade's
-own rules, yard, power, Scrap), installs a level, and works out the
+own rules, yard, power, Krail), installs a level, and works out the
 budgets. Tests: every upgrade placed once, every node reachable from the
 stock ship, power never exceeded, and random builds never stuck for power
 while the core has room. The game still deals cards; the stock torpedo bay
@@ -594,8 +599,11 @@ arrives with the bay in step 2, so the arcade is balanced once.
 
 ### Open
 
-- The arcade's Scrap: how much rock and kills give, against the costs
+- The arcade's Krail: how much rock and kills give, against the costs
   above, for fewer installs than today's cards.
+- Cyrite (Story): where it shows in rock, what wrecks carry, the tank, and
+  every card and line that says Krail where it means fuel (step 4, with a
+  save migration).
 - Which modules are yard-only.
 
 ## The long tail
