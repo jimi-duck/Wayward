@@ -70,10 +70,10 @@ export interface EndingDef {
 export const ENDINGS: EndingDef[] = [
   {
     id: 'broadcast', name: 'Broadcast', pitch: 'Send the file to the core worlds and hope the truth is enough.',
-    needs: 'A voice loud enough: Signals built up (2 marks) or the long-range array, signal gear aboard (5), the Office’s frequencies and Calloway listening, three pieces of the file, or the Voice to carry it.',
+    needs: 'A voice loud enough: Signals built up (2 marks) or the long-range array, signal gear aboard (5), the Office’s frequencies and Calloway listening, the whole file (all four pieces), or the Voice to carry it.',
     ways: [
       { marks: { signals: 2 } }, { module: ['md_array'] }, { kit: { signals: 5 } }, { allFlags: ['freqs', 'calloway_told'] }, { flags: ['freqs'], marks: { signals: 1 } },
-      { fragments: 3 }, { flags: ['voice_read'] }, { flags: ['copy_warden'], marks: { signals: 1 } },
+      { fragments: 4 }, { flags: ['voice_read'] }, { flags: ['copy_warden'], marks: { signals: 1 } },
     ],
     file: 'SEVERANCE · the broadcast copy',
     epilogue: [

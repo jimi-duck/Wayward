@@ -87,7 +87,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“I heard about your file. Seventy years ago I sat the Narrows relay. The lanes did not fail, Juno. Someone told us to turn them off.”',
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
-      { id: 'hear', label: 'Hear her out', tone: 'help', hint: 'Her account goes in the file.', win: { text: 'The order, in her words · it goes in the file', flag: 'frag_order', standing: { miners: 1 } } },
+      { id: 'hear', label: 'Hear her out', tone: 'help', hint: 'Her account goes in the file. She talks for a long time.', win: { text: 'The order, in her words · it goes in the file', flag: 'frag_order', standing: { miners: 1 }, hunt: -0.5 } },
       { id: 'copy', label: 'Send her a copy', tone: 'help', hint: 'Her account in the file, and a second voice who can tell it.', win: { text: 'She has a copy now · two voices', flag: ['frag_order', 'copy_warden'], heat: 0.08 } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'It could be a trap.', win: { text: 'Channel closed' } },
     ],
@@ -122,7 +122,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“The claims council wants to hear your file for itself. Read it to us, and Kessel Hold stands with you when the time comes.”',
     cargo: 'Kessel Hold · twelve claims, one council',
     choices: [
-      { id: 'read', label: 'Read it to them', tone: 'help', hint: 'An ally. Everyone on the channel hears it too.', win: { text: 'Kessel Hold will stand with you', flag: 'pact_holdfast', standing: { miners: 1, frontier: 1 }, heat: 0.06 } },
+      { id: 'read', label: 'Read it to them', tone: 'help', hint: 'An ally. Everyone on the channel hears it too.', win: { text: 'Kessel Hold will stand with you', flag: 'pact_holdfast', standing: { miners: 1, frontier: 1 }, heat: 0.06, hunt: -0.5 } },
       { id: 'stores', label: 'Ask for stores', tone: 'trade', hint: 'Food and parts, and no promises.', win: { text: 'Stores across · no promises', food: 3, parts: 4 } },
       { id: 'no', label: 'Not yet', tone: 'refuse', hint: 'The file stays aboard.', win: { text: 'Oduya closes the moot' } },
     ],
@@ -133,8 +133,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“The Long Walk kept the manifests of every ship lost the night the lanes went dark. Our dead belong in your file.”',
     cargo: 'Drift fleet · forty hulls, lashed together',
     choices: [
-      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests for the file. The Drift will stand with you.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift'], standing: { miners: 1 } } },
-      { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Ten ore. Just the manifests.', cost: { ore: 10 }, win: { text: 'The manifests go in the file', flag: 'frag_manifests' } },
+      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests for the file, and the Drift will stand with you. Copies get talked about.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift'], heat: 0.08, hunt: -0.5 } },
+      { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Ten ore. Just the manifests, quietly.', cost: { ore: 10 }, win: { text: 'The manifests go in the file', flag: 'frag_manifests' } },
       { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
     ],
   }),

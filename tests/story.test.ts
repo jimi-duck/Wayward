@@ -127,8 +127,8 @@ describe('the file', () => {
       return j;
     };
     expect(opened(through([]))).toEqual(['vanish']);
-    expect(opened(through(['frag_order', 'frag_ledger', 'frag_manifests']))).toContain('broadcast');
-    expect(opened(through(['frag_order', 'frag_ledger']))).not.toContain('broadcast');
+    expect(opened(through(['frag_order', 'frag_ledger', 'frag_manifests', 'frag_keys']))).toContain('broadcast');
+    expect(opened(through(['frag_order', 'frag_ledger', 'frag_manifests']))).not.toContain('broadcast');
     expect(opened(through(['voice_read']))).toContain('broadcast');
     expect(opened(through(['pact_holdfast', 'pact_drift']))).toContain('unite');
     expect(opened(through(['pact_holdfast']))).not.toContain('unite');
