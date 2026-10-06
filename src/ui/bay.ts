@@ -230,6 +230,7 @@ export class BayPanel {
   private render(): void {
     const w = this.world;
     if (!w) return;
+    $('bay-voice').textContent = `${t(w.voice())}`;
     const o = opsOf(w);
     $('bay-ops').className = `ops ${o}`;
     $('bay-ops').textContent = opsText(o);

@@ -23,6 +23,7 @@ export function showBriefing(w: World): void {
     to(),
     step('03', 'Survive', `${opsText(ops)} · ${t(OPS_NOTE[ops])}`, ops === 'battle' || ops === 'critical' ? 'red' : 'teal'),
   );
+  $('pause-voice').textContent = `› ${t(w.voice())}`;
   $('pause-foot').replaceChildren(
     h('span', '', t('Obedience class')),
     h('span', '', `${t('Krail')} ${num(k)}`),

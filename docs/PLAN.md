@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done, and console steps 1 to 9 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths, type hierarchy, a sample of wear; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 3 done, and console steps 1 to 10 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths, type hierarchy, a sample of wear, the voice; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
 
 ## From the concept boards
 
@@ -676,13 +676,15 @@ DESIGN.md.
    breaks every 11 to 14 seconds. Still under reduced motion; the stamp and
    serial are hidden on phones. Jimi to say whether it spreads to the HUD,
    comms and the port.
-10. **The ship's voice.** Short environmental lines in the bay, the pause
-    card and the log: MAINTENANCE REQUIRED, UNAUTHORIZED CONFIGURATION, LOAD
-    LIMIT EXCEEDED, OBEDIENCE PROTOCOL: ACTIVE. Rows in `content/`, each
-    tied to a real state (over a rating, a stock build, a fresh fit), with
-    German twins.
+10. **Done: the ship's voice.** `content/voice.ts` holds six lines, firmest
+    first (Load limit exceeded, Maintenance required, Unauthorised
+    configuration, Automated refit enabled, Obedience protocol: active,
+    Crew absent); `sim/voice.ts` picks the first whose state holds (over the
+    mass rating, plates at half or less, a build beyond the yard's, Krail
+    enough for a module, a stock ship). One line shows under the bay's title
+    and on the pause card. Not in the log yet. Tests in `tests/advice.test.ts`.
 
-Order: 10 last, and 9 spreads on Jimi's word. Open: the HUD's
+Open: 9 spreads on Jimi's word. Open: the HUD's
 state word could also colour the frame; whether the Story mode's port and
 chart screens take the same console frame.
 

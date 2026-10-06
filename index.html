@@ -254,7 +254,7 @@
     <div id="bay" class="sheet" role="dialog" aria-labelledby="bay-t" hidden>
       <div class="bay">
         <header class="bay-h">
-          <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><span><b id="bay-t">Refit bay</b><small>Choose a module to fit</small></span></span>
+          <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><span><b id="bay-t">Refit bay</b><small id="bay-voice">Choose a module to fit</small></span></span>
           <span class="ops" id="bay-ops"></span>
           <span class="bay-krail" id="bay-krail"></span>
           <button type="button" id="bay-x"><kbd class="only-desktop">B</kbd> Launch</button>
@@ -352,6 +352,7 @@
         <div class="pause-rule"><span>Ship system</span><span>Operational briefing</span></div>
         <div class="pause-t">All stop</div>
         <ol class="pause-flow" id="pause-flow"></ol>
+        <div class="voice" id="pause-voice"></div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
         <!-- how to play: shown as the run starts, in either mode, and whenever you stop -->
         <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>

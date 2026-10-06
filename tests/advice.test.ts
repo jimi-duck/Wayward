@@ -4,6 +4,7 @@ import { NODE, WEB } from '../src/content/web';
 import { reasonOf, type AdviceCtx } from '../src/sim/advice';
 import { install, stockLevels, type BayCtx } from '../src/sim/bay';
 import { profileOf } from '../src/sim/profile';
+import { voiceId } from '../src/sim/voice';
 
 const ALL = new Set(UPGRADES.map((u) => u.id));
 const bctx = (levels: Record<string, number>): BayCtx => ({ levels, unlocked: ALL, techs: new Set(), arcade: true, krail: 1e9 });
@@ -50,5 +51,21 @@ describe('the build profile', () => {
     expect(p.axes.ordnance).toBe(1);
     expect(p.lines.length).toBeGreaterThan(0);
     expect(p.lines.length).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('the ship\'s voice', () => {
+  const v = (levels: Record<string, number>, o: { plates?: number; krail?: number } = {}) =>
+    voiceId({ bay: { ...bctx(levels), krail: o.krail ?? 0 }, plates: o.plates ?? 3, maxPlates: 3 });
+
+  it('speaks obedience on a stock ship, and refit when Krail is enough', () => {
+    expect(v(stockLevels())).toBe('obedience');
+    expect(v(stockLevels(), { krail: 1000 })).toBe('refit');
+  });
+
+  it('calls a modified ship unauthorised, and worn plates maintenance, firmer first', () => {
+    const l = fit(stockLevels(), 'ph_emitters', 1);
+    expect(v(l)).toBe('unauthorised');
+    expect(v(l, { plates: 1 })).toBe('maintenance');
   });
 });

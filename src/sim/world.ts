@@ -46,6 +46,7 @@ import { install as bayInstall, stockLevels, type BayCtx, type Block } from './b
 import { feelBudgets } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { reasonOf, type Advice } from './advice';
+import { voiceId, voiceText } from './voice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { addKit, discounted, earned, effects, fitNeeds, noKit, type Effects, type Kit } from './modules';
 import { MODULE_BY_ID } from '../content/modules';
@@ -943,6 +944,11 @@ export class World implements EncounterHost {
   /** Why a module is worth fitting now, in a few words (sim/advice.ts), or null. */
   advise(id: string): Advice | null {
     return reasonOf(id, { levels: this.levels, plates: this.plates, maxPlates: this.stats.maxPlates, pressure: this.closePressed });
+  }
+
+  /** What the ship says about itself now (sim/voice.ts), in English. */
+  voice(): string {
+    return voiceText(voiceId({ bay: this.bayCtx(), plates: this.plates, maxPlates: this.stats.maxPlates }));
   }
 
   bayCtx(): BayCtx {
