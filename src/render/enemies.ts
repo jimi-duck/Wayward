@@ -50,7 +50,10 @@ const FACTION_METAL: Record<Faction, number> = {
 };
 const WEB = new Color(2.2, 0.9, 3.4);
 
-interface Model { root: Group; engines: V3[]; }
+/** A light on the hull, in model space: position, then length and width (a slit if they differ, a point if not). */
+type Lamp = [number, number, number, number, number];
+
+interface Model { root: Group; engines: V3[]; lamps: Lamp[]; }
 
 function lamp(c: Color): MeshBasicMaterial {
   return new MeshBasicMaterial({ color: c, toneMapped: false });
@@ -71,6 +74,10 @@ const ELITE_GLOW: Record<EliteId, Color> = {
 function build(kind: AlienKind, faction: Faction): Model {
   const k = new Kit(), rnd = seeded(kind.length * 31 + kind.charCodeAt(0));
   const engines: V3[] = [];
+  // Running lights and windows are not geometry: they are drawn as light
+  // (HullView.flare), in the same draw as the drives and the shots.
+  const lamps: Lamp[] = [];
+  const lamp = (x: number, y: number, z: number, len = 0.06, wid = len) => lamps.push([x, y, z, len, wid]);
   const engine = (x: number, y: number, z: number, r: number) => {
     k.cyl('dark', r, r * 1.15, r * 2.2, [x + r, y, z], 'x', 12);
     k.cyl('dark', r * 0.95, r * 1.25, r * 0.6, [x - r * 0.3, y, z], 'x', 12, true);
@@ -88,6 +95,8 @@ function build(kind: AlienKind, faction: Faction): Model {
         k.box('trim', [0.3, 0.02, 0.12], [fwd - 0.12, 0.0, s * 0.7]);
       }
       k.cyl('dark', 0.12, 0.16, 0.36, [0.85, 0.02, 0], 'x', 8);
+      lamp(0.3, 0.285, 0, 0.22, 0.05);
+      for (const s of [-1, 1]) lamp(fwd - 0.2, 0.03, s * 1.02);
       k.greebles('dark', rnd, -0.5, 0.4, -0.15, 0.15, 0.14, 8, 0.1);
       for (const s of [-1, 1]) engine(-0.75, 0, s * 0.16, 0.11);
       break;
@@ -97,6 +106,8 @@ function build(kind: AlienKind, faction: Faction): Model {
       k.wedge('hull', [[1.25, 0], [1.05, 0.2], [0.9, 0.2], [0.9, -0.2], [1.05, -0.2]], 0.22);
       k.wedge('hull', [[0.25, 0.14], [-0.4, 0.8], [-0.9, 0.8], [-0.9, -0.8], [-0.4, -0.8], [0.25, -0.14]], 0.2);
       k.box('dark', [0.8, 0.1, 1.5], [-0.55, 0.14, 0]);
+      lamp(1.13, 0.12, 0, 0.1, 0.04);
+      for (const s of [-1, 1]) lamp(-0.9, 0.03, s * 0.82);
       k.greebles('dark', rnd, -0.85, -0.2, -0.7, 0.7, 0.19, 18, 0.1);
       for (const s of [-1, 1]) { k.cyl('dark', 0.05, 0.05, 0.55, [-0.4, -0.05, s * 0.82], 'x', 6); engine(-1.0, 0, s * 0.45, 0.12); }
       break;
@@ -110,6 +121,8 @@ function build(kind: AlienKind, faction: Faction): Model {
       }
       k.box('hull', [0.22, 0.32, 0.18], [-0.35, 0.42, 0]);
       k.box('dark', [0.28, 0.04, 0.24], [-0.35, 0.6, 0]);
+      lamp(-0.23, 0.5, 0, 0.03, 0.12);
+      for (const s of [-1, 1]) for (let i = 0; i < 4; i++) lamp(-0.1 - i * 0.2, 0.04, s * 0.49, 0.05);
       k.cyl('dark', 0.012, 0.012, 0.3, [-0.4, 0.75, 0], 'y', 5);
       k.box('trim', [0.6, 0.02, 0.5], [0.75, 0.12, 0]);
       k.greebles('dark', rnd, -0.95, 0.5, -0.18, 0.18, 0.29, 22, 0.08);
@@ -122,6 +135,8 @@ function build(kind: AlienKind, faction: Faction): Model {
       }
       k.wedge('hull', [[1.1, 0], [0.4, 0.16], [-0.6, 0.13], [-0.6, -0.13], [0.4, -0.16]], 0.3);
       k.box('trim', [0.5, 0.02, 0.12], [0.3, 0.16, 0]);
+      lamp(0.78, 0.12, 0, 0.18, 0.04);
+      for (const s of [-1, 1]) lamp(-0.55, s * 0.17, s * 1.03);
       k.greebles('dark', rnd, -0.5, 0.5, -0.12, 0.12, 0.15, 10, 0.08);
       engine(-0.75, 0, 0, 0.13);
       for (const s of [-1, 1]) engine(-0.65, s * 0.16, s * 0.9, 0.07);
@@ -162,6 +177,7 @@ function build(kind: AlienKind, faction: Faction): Model {
         for (const s of [-1, 1]) {
           k.box('hull', [0.32, 0.26, 0.26], [0.35 - i * 0.36, 0, s * 0.22]);
           k.box('dark', [0.33, 0.04, 0.27], [0.35 - i * 0.36, 0.14, s * 0.22]);
+          if (i % 2 === 0) lamp(0.35 - i * 0.36, 0.02, s * 0.37, 0.05);
         }
       }
       k.greebles('dark', rnd, -0.9, 0.5, -0.1, 0.1, 0.07, 10, 0.06);
@@ -169,7 +185,7 @@ function build(kind: AlienKind, faction: Faction): Model {
       break;
     }
   }
-  return { root: k.build(factionMaterials(faction)), engines };
+  return { root: k.build(factionMaterials(faction)), engines, lamps };
 }
 
 /** The derelict for the sector event: a lancer hull, dark and dead. */
@@ -208,11 +224,13 @@ class HullView {
   readonly mats: Material[];
   /** Engine nozzles in model space, and whether the flares show. */
   readonly engines: V3[];
+  readonly lamps: Lamp[];
   flaring = true;
   readonly halo: Sprite;
   private cloaked = -1;
   private readonly back = new Vector3();
   private readonly nozzle = new Vector3();
+  private readonly fwd = new Vector3();
   /** `own`: its own materials, so it can fade (cloak) without fading every hull of its kind. */
   constructor(readonly key: string, model: Model, glowTex: Texture, readonly colour: Color, readonly own = false) {
     const copy = model.root.clone();
@@ -221,6 +239,7 @@ class HullView {
     this.mats = this.meshes.map((m) => m.material as Material);
     this.body.add(copy);
     this.engines = model.engines;
+    this.lamps = model.lamps;
     this.halo = new Sprite(new SpriteMaterial({ map: glowTex, color: 0xffffff, blending: AdditiveBlending, depthWrite: false, opacity: 0.6 }));
     this.halo.visible = false;
     this.root.add(this.body, this.halo);
@@ -241,7 +260,7 @@ class HullView {
   }
 
   /**
-   * The drives, as streaks (streaks.ts): a white-hot nozzle and a flame
+   * The drives and running lights, as streaks (streaks.ts): a white-hot nozzle and a flame
    * astern along the hull's own axis, so the plume points where the ship
    * is not going. `size` is the hull's scale in the world; `far` grows the
    * flare with distance so a drive still shows from across the sky.
@@ -252,6 +271,16 @@ class HullView {
     const m = this.body.matrixWorld;
     const flick = 1 + Math.sin(time * 31 + id) * 0.06;
     this.back.set(-1, 0, 0).transformDirection(m);
+    // running lights: a few points that blink out of step, windows that stay lit
+    for (let i = 0; i < this.lamps.length; i++) {
+      const [lx, ly, lz, len, wid] = this.lamps[i]!;
+      this.nozzle.set(lx, ly, lz).applyMatrix4(m);
+      const slit = len !== wid, blink = slit ? 1 : 0.35 + 0.65 * Math.max(0, Math.sin(time * 2.4 + id * 1.7 + i * 2.1) * 3 - 1.2);
+      this.fwd.set(1, 0, 0).transformDirection(m);
+      if (!slit && blink < 0.05) continue;
+      streaks.push(this.nozzle.x, this.nozzle.y, this.nozzle.z, this.fwd.x, this.fwd.y, this.fwd.z,
+        Math.max(len * size, 0.05) * far, Math.max(wid * size, 0.05) * far, slit ? STREAK.slug : STREAK.orb, this.colour, blink * (slit ? 0.9 : 1.1), 0);
+    }
     for (const e of this.engines) {
       this.nozzle.set(e[0], e[1], e[2]).applyMatrix4(m);
       const x = this.nozzle.x, y = this.nozzle.y, z = this.nozzle.z;
@@ -420,7 +449,7 @@ export class EnemyView {
     const kind = { gutter: 'raptor', custody: 'lancer', office: 'warbird', voice: 'drone', thren: 'weaver' }[b.faction] as AlienKind;
     const model = this.model(kind, b.faction);
     // its own materials, so the cloak can fade them
-    const own: Model = { root: model.root.clone(), engines: model.engines };
+    const own: Model = { root: model.root.clone(), engines: model.engines, lamps: model.lamps };
     const mats: Material[] = [];
     for (const m of own.root.children as Mesh[]) { m.material = (m.material as Material).clone(); mats.push(m.material); }
     const hull = new HullView(kind, own, this.glowTex, NEON[b.faction]);
