@@ -1,6 +1,6 @@
 import { t } from '../i18n';
 import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENTS, YARD_BEAT, type Act } from '../content/story';
-import { viewOf } from './chart';
+import { tierOf, viewOf } from './chart';
 import type { Journey } from './journey';
 
 // ── the story ─────────────────────────────────────────────────────────────
@@ -12,7 +12,7 @@ import type { Journey } from './journey';
 /** The act: the Breakout until the first jump, the Run, then the Choice from the Hollows on. */
 export function act(j: Journey): Act {
   if (j.trail.length < 2) return ACTS[0]!;
-  return viewOf(j.chart, j.at) >= CHOICE_REGION || j.end === 'through' ? ACTS[2]! : ACTS[1]!;
+  return tierOf(j.chart, viewOf(j.chart, j.at)) >= CHOICE_REGION || j.end === 'through' ? ACTS[2]! : ACTS[1]!;
 }
 
 /** The act as a heading: "Act II · The Run". */
@@ -33,7 +33,7 @@ export const fragmentsFound = (flags: Iterable<string>): string[] => {
 /** The story beat due in this system's sortie, if any: the yard's call before the first jump, then this region's first and any missed before. */
 export function dueBeat(j: Journey): string | null {
   if (j.trail.length < 2) return j.carry.seen.includes(YARD_BEAT) ? null : YARD_BEAT;
-  const seen = new Set(j.carry.seen), r = viewOf(j.chart, j.at);
+  const seen = new Set(j.carry.seen), r = tierOf(j.chart, viewOf(j.chart, j.at));
   const open = BEATS.filter((b) => b.region <= r && !seen.has(b.card));
   return (open.find((b) => b.region === r) ?? open[0])?.card ?? null;
 }

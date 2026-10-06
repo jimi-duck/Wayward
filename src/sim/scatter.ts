@@ -1,6 +1,6 @@
 import { t as tr } from '../i18n';
-import { FLEETS, REGIONS } from '../content/regions';
-import { lanesFrom, netted, regionOf, sysById, type Chart, type StarSystem } from './chart';
+import { FLEETS } from '../content/regions';
+import { lanesFrom, netted, regionDef, regionOf, regionsOf, sysById, type Chart, type StarSystem } from './chart';
 import { Rng } from './rng';
 
 // ── the Scatter: factions acting on their own ─────────────────────────────
@@ -71,12 +71,13 @@ export function layScatter(c: Chart, seed: number): void {
   c.raid = {};
   c.drifts = [];
   for (const s of c.systems) {
-    let v = (REGIONS[regionOf(s)]?.thren[s.holder] ?? 0) * rng.range(0.6, 1.2);
+    let v = (regionDef(c, regionOf(s))?.thren[s.holder] ?? 0) * rng.range(0.6, 1.2);
     if (c.places[s.id]?.id === 'thren_lane') v = Math.max(v, THREN_LANE);
     if (v > 0.02 && wild(s)) c.thren[s.id] = Math.min(1, Math.round(v * 100) / 100);
   }
-  const names = [...FLEETS];
-  REGIONS.forEach((r, i) => {
+  // the long journey has more fleets to name; the first five are the three-region chart's, so its draws do not move
+  const names = c.regionSet ? [...FLEETS] : FLEETS.slice(0, 5);
+  regionsOf(c).forEach((r, i) => {
     const pool = c.systems.filter((s) => regionOf(s) === i && wild(s) && s.kind !== 'gate');
     for (let k = 0; k < r.drifts && pool.length && names.length; k++) {
       const s = pool.splice(rng.int(pool.length), 1)[0]!;

@@ -27,6 +27,9 @@ import { showConsole } from './ui/briefing';
 import { blockOf, quickPicks } from './sim/bay';
 import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
+/** The long journey (eight regions, docs/SCALE-UP.md) is for testing until the clocks are tuned: open the game with ?long. */
+const LONG_JOURNEY = new URLSearchParams(location.search).has('long');
+
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
   if (!node) throw new Error(`#${id} is missing from index.html`);
@@ -230,7 +233,7 @@ function boot(): void {
     if (j.status === 'over') recordJourney(profile, journeyRecord(j));
     chart.notice(j, out, () => {
       if (j.status === 'over') {
-        journey = newJourney(Math.floor(Math.random() * 1e9));
+        journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three');
         saveJourney(journey);
       }
       startSortie();
@@ -426,7 +429,7 @@ function boot(): void {
     if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
       // a journey left at the Threshold still goes into the Archive, the file unchosen
       if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
-      journey = newJourney(Math.floor(Math.random() * 1e9));
+      journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three');
       saveJourney(journey);
     } else if (pending(journey)) return threshold(journey, [t('Journey resumed · the Threshold is behind you')]);
     else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cool, plot the next jump')]);
