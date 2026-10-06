@@ -618,6 +618,19 @@ when an install runs the ship over. The pilot report gains a table of Krail
 spent and the budgets at the end: laser builds buy heat exchangers, close
 quarters runs heavy, everyone buys reactor cores.
 
+**A UI pass on the bay and the HUD (2026-10-06, Jimi's notes).** The mode
+card is an alert in three steps: clear (nothing shown; the bay opens),
+caution in yellow (ships near or scanning, not attacking) and red alert
+(under attack); the bay stays shut on yellow and red, and saying no is one
+line. An upgrades
+badge (clickable, B) counts the suggestions you can pay for and pulses when
+one comes in. The bay opens on three suggested modules with the price on the
+button; the tabs are a step further in, with prices on the web. Auto-refit
+fits the suggestions by itself. The target's brackets close tight with its
+health as a bar under them; the upper-centre card is for hostile hulls only.
+The pause card is the briefing: three steps (mine, upgrade, survive), the
+two states, the controls for the device in hand, the bay and Auto-refit.
+
 ### The console pass (design feedback, 2026-10-06)
 
 A UI thread on the bay and the briefing, from a design review: make the
@@ -627,11 +640,11 @@ state, red danger, grey unavailable. Each step ships on its own, with
 screenshots at desktop and phone sizes, German lines and a note in
 DESIGN.md.
 
-1. **Done: the state word, the briefing frame, the bay's feedback.** One
-   `◆ Observation / Contact / Battle / Critical` word on the HUD, pause card
-   and bay; the pause card as a console (rule, readings, Mine → Upgrade →
-   Survive with chips); tab dots as state; large before → after; Krail and
-   the budgets as the ship overview; Install with its price; a flash on fit.
+1. **Done: the state word, the briefing frame, the bay's feedback.** The
+   alert's word (`ui/ops.ts`: Clear, Caution, Red alert, and Critical at one
+   plate) on the bay and pause card; the pause card as a console (rule,
+   voice line, readings); tab marks as state; large before → after; Install
+   with its price; a flash on fit.
 2. **Done: the ship as the protagonist.** In the bay the camera comes in on
    the ship and the open tab lights its part in amber (prow guns, torpedo
    belly, nacelles, spine modules, core, shield); the pause card wakes a
@@ -684,10 +697,15 @@ DESIGN.md.
     enough for a module, a stock ship). One line shows under the bay's title
     and on the pause card. Not in the log yet. Tests in `tests/advice.test.ts`.
 
-Open: 9 spreads on Jimi's word. Open: the HUD's
-state word could also colour the frame; whether the Story mode's port and
-chart screens take the same console frame.
+Open: 9 spreads on Jimi's word; whether the Story mode's port and chart
+screens take the same console frame.
 
+Merged with the alert and briefing pass above: the HUD's alert (clear,
+caution, red alert) is the one source of the state word, which the bay and
+the pause card show beside it with one more step, critical (one plate left);
+the pause card keeps that pass's three steps and states, with the console's
+rule, voice line and readings around them. Suggestions come from that pass;
+the reasons of step 5 ride on its cards and on the web.
 ### Open
 
 - Builds that save for deep modules (torpedoes, mines) fit six or seven in

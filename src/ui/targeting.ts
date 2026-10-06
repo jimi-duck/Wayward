@@ -181,6 +181,9 @@ export class Targeting {
   }
 
   // ── the target: brackets, range, readout ────────────────────────────────
+  // Brackets close round it with its health as a thin bar and its range
+  // under them: that is all a rock needs. A hostile hull also gets the
+  // upper-centre card (what it is, whose, what it is worth).
 
   private drawTarget(world: World, sector: Sector, t: Pick | null, arc: boolean, dt: number): void {
     const el = this.box;
@@ -208,8 +211,8 @@ export class Targeting {
       this.cardClock = 1;
     } else if (this.lockedNow && !wasLocked) this.retrigger(el, 'lockon', 'acq');
 
-    // small things get a readable box, big things a box that does not swallow the screen
-    const half = clamp(Math.abs(c.y - top.y) * 1.4, 18, Math.min(120, this.h * 0.17));
+    // close round what it is: small things a readable box, big things one that never swallows the view
+    const half = clamp(Math.abs(c.y - top.y) * 1.15, 12, Math.min(46, this.h * 0.08));
     el.style.setProperty('--h', `${half.toFixed(0)}px`);
     el.style.transform = `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px)`;
     const s = world.ship;
@@ -271,6 +274,7 @@ export class Targeting {
     text($('tgt-int-k'), `${intK}:`);
     const v = clamp(hp, 0, 1);
     $('tgt-int').style.setProperty('--v', v.toFixed(2));
+    $('tgt-hp').style.setProperty('--v', v.toFixed(2));
     text($('tgt-int-v'), `${Math.round(v * 100)}%`);
     const use = $('tgt-ico');
     if (use.getAttribute('href') !== ico) use.setAttribute('href', ico);
