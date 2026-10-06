@@ -326,7 +326,8 @@ and the lights ease out on resume. Ratings read from 80% (a tick, then
 Krail down and runs a line from the module to the ship's lit part
 (`BayPanel.installFx`). The ship's computer picks (`sim/advice.ts`: the
 firmest three get a ◆ and a reason) and the build's profile (`sim/profile.ts`)
-sit in the bay; the Story's cards carry the reason too. The rest is in PLAN.md (the console pass).
+sit in the bay; the Story's cards carry the reason too. The web's links are
+conduits with forks and joins drawn as junctions (`BayPanel.web`). The rest is in PLAN.md (the console pass).
 
 
 ## The refit: three cards (the Story mode)

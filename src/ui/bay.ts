@@ -292,21 +292,33 @@ export class BayPanel {
     const Y = (n: WebNode) => ((n.row + 0.5) / Math.max(rows, 3)) * 100;
     $('bay-tab-h').replaceChildren(icon(TAB_ICON[this.tab]), h('span', 'bw-n', t(TABS[this.tab].name)), h('span', 'bw-s', t(TABS[this.tab].sub)));
 
-    // the links behind, lit where both ends are fitted
+    // the links behind, as hardware: a bus a parent's children share (a fork, drawn as a junction),
+    // a bus into a child with two parents (a join), conduits under the live wire, lit where both ends are fitted
     const ns = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(ns, 'svg');
     svg.setAttribute('class', 'bay-links');
     svg.setAttribute('viewBox', '0 0 100 100');
     svg.setAttribute('preserveAspectRatio', 'none');
+    const kids = new Map<string, WebNode[]>();
+    for (const n of nodes) for (const f of n.from ?? []) kids.set(f, [...(kids.get(f) ?? []), n]);
+    /** Where a parent's children branch off (a fork), and where a child's parents come together (a join). */
+    const forkX = (a: WebNode) => X(a) + 0.45 * Math.min(...kids.get(a.id)!.map((c) => X(c) - X(a)));
+    const joinX = (n: WebNode) => X(n) - 0.45 * Math.min(...(n.from ?? []).map((f) => X(n) - X(NODE[f]!)));
+    const junctions: Array<[number, number, string]> = [];
     for (const n of nodes) {
-      for (const f of n.from ?? []) {
-        const a = NODE[f]!;
-        const line = document.createElementNS(ns, 'path');
-        const mx = (X(a) + X(n)) / 2;
-        line.setAttribute('d', `M${X(a)} ${Y(a)} H${mx} V${Y(n)} H${X(n)}`);
-        line.setAttribute('class', (w.levels[f] ?? 0) > 0 ? ((w.levels[n.id] ?? 0) > 0 ? 'lit' : 'open') : '');
-        line.setAttribute('vector-effect', 'non-scaling-stroke');
-        svg.append(line);
+      const parents = (n.from ?? []).map((f) => NODE[f]!);
+      if (parents.length > 1) junctions.push([joinX(n), Y(n), 'join']);
+      for (const a of parents) {
+        const mx = parents.length > 1 ? joinX(n) : kids.get(a.id)!.length > 1 ? forkX(a) : (X(a) + X(n)) / 2;
+        if (parents.length === 1 && kids.get(a.id)!.length > 1 && !junctions.some((j) => j[0] === mx && j[1] === Y(a))) junctions.push([mx, Y(a), 'fork']);
+        const d = `M${X(a)} ${Y(a)} H${mx} V${Y(n)} H${X(n)}`, st = (w.levels[a.id] ?? 0) > 0 ? ((w.levels[n.id] ?? 0) > 0 ? 'lit' : 'open') : '';
+        for (const cls of ['conduit', 'wire']) {
+          const line = document.createElementNS(ns, 'path');
+          line.setAttribute('d', d);
+          line.setAttribute('class', `${cls} ${st}`);
+          line.setAttribute('vector-effect', 'non-scaling-stroke');
+          svg.append(line);
+        }
       }
     }
     // tier marks along the bottom
@@ -314,6 +326,12 @@ export class BayPanel {
     for (let i = 1; i <= Math.max(tiers, 3); i++) marks.append(h('span', '', `${t('Tier')} ${i}`));
 
     const field = h('div', 'bay-nodes');
+    for (const [x, y, kind] of junctions) {
+      const j = h('i', `bay-junc ${kind}`);
+      j.style.left = `${x}%`;
+      j.style.top = `${y}%`;
+      field.append(j);
+    }
     for (const n of nodes) {
       const st = stateOf(w, n.id), lv = w.levels[n.id] ?? 0, max = maxLevel(n.id);
       const b = h('button', `bay-node ${st}${recs.has(n.id) ? ' rec' : ''}${n.id === this.sel ? ' sel' : ''}${n.id === this.fresh?.id ? ' fresh' : ''}`) as HTMLButtonElement;

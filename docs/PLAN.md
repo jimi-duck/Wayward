@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done, and console steps 1 to 6 (the state word, the ship lit by tab, thresholds, the install, advice, the profile; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 3 done, and console steps 1 to 7 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
 
 ## From the concept boards
 
@@ -657,10 +657,13 @@ DESIGN.md.
    ordnance, range, defence), a name for the leading one (Rammer,
    Bombardier, Lancer, Bulwark, Hybrid, Stock hauler), up to three plain
    lines, and the weights as bars, under the bay's tabs (hidden on phones).
-7. **Hardware paths.** The web's links become engineering: a trunk per
-   system, branches that fork and rejoin, junction marks where a path
-   needs two parents. Layout is data in `content/web.ts` (tier and row
-   stay); the render draws the trunks. Check every tab at phone size.
+7. **Done: hardware paths.** The web's links are drawn as hardware: a
+   conduit under a live wire, a bus a parent's children share with a diamond
+   junction where it forks, a bus into a child with two parents with a round
+   junction where it joins, amber where both ends are fitted and teal where
+   the way is open. Drawn from the data as it is (`BayPanel.web`); no layout
+   change was needed. Checked on the Weapons, Engines and Utility tabs, and
+   Utility at phone size.
 8. **Type hierarchy.** Name, effect, stats, flavour, cost, in that order
    and weight; labels on the web dimmed to a third level (level pips
    secondary, a short effect tag tertiary). A sweep of `main.css`, no new
@@ -675,7 +678,7 @@ DESIGN.md.
     tied to a real state (over a rating, a stock build, a fresh fit), with
     German twins.
 
-Order: 7 and 8 next, with 9 and 10 last. Open: the HUD's
+Order: 8 next, with 9 and 10 last. Open: the HUD's
 state word could also colour the frame; whether the Story mode's port and
 chart screens take the same console frame.
 
