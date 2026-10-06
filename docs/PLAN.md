@@ -731,6 +731,13 @@ DESIGN.md.
     and ratings, and (9 spread, on Jimi's word) on the HUD's status block, the comms panel, the port and the pause card, which gets its "Service overdue" stamp back. A few marks each, no scanline on the HUD.
     The bay's structure is untouched pending the 8-tab or 4-view decision.
 
+12. **Done: the briefing as a terminal readout** (Jimi, 2026-10-06): the pause
+    card reads top down like the ship's own printout (an id line and the state
+    word, the title, the ship's line at a prompt, then Orders, Status and
+    Controls as ruled sections, then what to press). No icons; the order
+    numbers and rules carry the hierarchy. Same ids, same Story steps. On a
+    phone on its side it drops the headings and keeps one screen.
+
 Open: 9 spreads on Jimi's word; whether the Story mode's port and chart
 screens take the same console frame.
 
