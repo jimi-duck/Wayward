@@ -219,7 +219,7 @@ first capital ship hails at 3:30, once the build has a shape.
 ## The loop
 
 Fly, fight and break rock → collect krail → fit modules in the refit bay
-(or let Auto-refit) → harder sky → a capital ship hails (engage or evade)
+→ harder sky → a capital ship hails (engage or evade)
 → her salvage: her faction's tech opens in the bay → specialisations,
 synergies → the hull goes → the run report → play again.
 
@@ -327,16 +327,17 @@ the torpedo bay. Krail (crystals from rock and wrecks, times the krail
 matrix) is a stock to spend there.
 
 **When it opens.** The ship has an alert in three steps (`World.alert`):
-clear (nothing hostile about; the HUD shows nothing), caution in yellow
-(a hull within 85 units, a watcher looking you over, a capital ship on its
-way, none of them attacking) and red alert (under attack, `World.inDanger`:
-a committed hostile within 60 units, fire close by, a capital ship engaged).
+clear (nothing hostile about; the HUD shows nothing), yellow alert (you are
+being observed: a hull within 85 units, a watcher looking you over, a
+capital ship on its way, none of them attacking) and red alert (you are
+being directly targeted, `World.inDanger`: a committed hostile within 60
+units, fire close by, a capital ship engaged).
 The bay opens in flight only when clear, and always when docked at a port
 (the port's list has a line for it, and closing it goes back to the dock),
 by B, a pad's Back, the upgrades badge (lower right; under the ship panel
-on touch) or the pause card's button, and the world waits on it. On caution or red alert it stays shut and the log
-says why in one line ("Bay locked · ships nearby", "Bay locked · under
-attack") while the badge shakes. The badge is dim with nothing to fit, amber
+on touch) or the pause card's button, and the world waits on it. On yellow or red alert it stays shut and the log
+says why in one line ("Bay locked · yellow alert", "Bay locked · red
+alert") while the badge shakes. The badge is dim with nothing to fit, amber
 with a count of the suggestions you can pay for, yellow or red when locked,
 and pulses when one becomes affordable.
 
@@ -344,10 +345,7 @@ and pulses when one becomes affordable.
 modules that suit the build (by its tags), a reactor core, heat exchangers
 or frame when that budget runs short, cheaper favoured, from different tabs,
 at most one new system. Each is a card with one line, the number that
-matters and the price on its button: one tap, or 1 2 3. **Auto-refit** (a
-switch in the bay and on the pause card, saved in the profile) fits the
-first affordable suggestion by itself after two seconds of clear, and
-the log names it. A player who never opens the bay still gets a coherent
+matters and the price on its button: one tap, or 1 2 3. A player who never opens the bay still gets a coherent
 ship; one who wants to plan opens a tab: Hull, Weapons, Ordnance, Engines,
 Defence, Utility, Signals (the Story mode's), Reactor and Synergies, each a
 small web left to right by tier. A module opens
@@ -380,8 +378,9 @@ port they show "Fitted only at a port". The marks fitted in each system
 still name the ship and open endings.
 
 **The ship's console** (`ui/ops.ts`, `ui/briefing.ts`). The bay and the
-pause card show the HUD's alert as one word (`◆ Clear`, `◆ Caution`,
-`◆ Red alert`, and `◆ Critical` at one plate), the pause card wraps the
+pause card show the HUD's alert as one word (`◆ Clear`, `◆ Yellow alert`,
+`◆ Red alert`, and `◆ Critical` at one plate; the pause card shows only the
+two alerts), the pause card wraps the
 briefing in a rule, a line of the ship's voice and a line of readings. In the
 bay the tabs carry marks (amber fitted, red over a rating through something
 fitted there), Install names its price, the figures read as large

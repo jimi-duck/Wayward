@@ -41,7 +41,7 @@ import {
   REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import type { Prices } from '../content/systems';
-import { autoPick, install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
+import { install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
 import { feelBudgets } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { planStop, type Stop } from './stop';
@@ -86,14 +86,11 @@ export interface WorldOptions {
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const BOSS_PLATES = 1;
 
-/** The ship's alert (World.alert). */
-export type Alert = 'clear' | 'caution' | 'alert';
-/** A hostile hull this close (units) puts the ship on caution: a little outside its guns' reach (FIRE_RANGE 70), well inside where hulls arrive. */
-export const CAUTION_RANGE = 85;
+/** The ship's alert (World.alert): clear, yellow (observed) or red (targeted). */
+export type Alert = 'clear' | 'yellow' | 'red';
+/** A hostile hull this close (units) puts the ship on yellow alert: a little outside its guns' reach (FIRE_RANGE 70), well inside where hulls arrive. */
+export const WATCH_RANGE = 85;
 
-/** Auto-refit waits this long with the alert clear before it fits, and this long again between fits. */
-export const AUTO_QUIET = 2;
-export const AUTO_GAP = 1;
 
 /** Seconds into a sortie before the system's place shows itself. */
 export const PLACE_AT = 30;
@@ -139,9 +136,6 @@ export class World implements EncounterHost {
   pace: Pace = newPace(ALIEN_FIRST);
   /** The arcade's self-repair (sim/repair.ts). */
   mend: Mend = newMend();
-  /** Auto-refit: the bay's suggestions fitted as you fly, in quiet moments. The player's choice; off unless set. */
-  autoFit = false;
-  private autoQuiet = 0;
 
   // the decisions, and the bay
   phase: Phase = 'play';
@@ -870,7 +864,6 @@ export class World implements EncounterHost {
       for (const a of this.aliens) if (!a.fleeing && Math.hypot(a.x - sh.x, a.z - sh.z) < 60) close++;
       this.closePressed = Math.max(close, this.closePressed * (1 - dt / 40));
     }
-    this.autoRefit(dt);
     if (!this.bk && this.alive) {
       const news = stepMend(this.mend, { sinceHit: this.sinceHit, plates: this.plates, maxPlates: st.maxPlates, danger: this.inDanger(), stats: st }, dt);
       if (news === 'start') this.events.push({ type: 'mendStart' });
@@ -896,19 +889,19 @@ export class World implements EncounterHost {
   /**
    * The ship's alert, three steps, what the HUD shows and what the refit bay
    * opens on:
-   *   clear   · nothing hostile about: the HUD stays quiet, the bay opens
-   *   caution · (yellow) hulls nearby, a watcher looking you over, a capital
-   *             ship on its way: not attacking yet, but the bay stays shut
-   *   alert   · (red) under attack: a committed hostile close, fire near, a
-   *             capital ship engaged (inDanger)
+   *   clear  · nothing hostile about: the HUD stays quiet, the bay opens
+   *   yellow · you are being observed: a hull close by or looking you over, a
+   *            capital ship on its way; nobody has committed yet, the bay stays shut
+   *   red    · you are being directly targeted: a committed hostile close, fire
+   *            near, a capital ship engaged (inDanger)
    */
   alert(): Alert {
-    if (!this.alive || this.inDanger()) return 'alert';
+    if (!this.alive || this.inDanger()) return 'red';
     const s = this.ship, cs = this.command.state;
-    if (cs !== 'idle') return 'caution';
+    if (cs !== 'idle') return 'yellow';
     for (const a of this.aliens) {
       if (a.fleeing || ALIEN_TYPES[a.kind].fire === 'none') continue;
-      if (a.mode === 'watch' || Math.hypot(a.x - s.x, a.z - s.z) < CAUTION_RANGE) return 'caution';
+      if (a.mode === 'watch' || Math.hypot(a.x - s.x, a.z - s.z) < WATCH_RANGE) return 'yellow';
     }
     return 'clear';
   }
@@ -947,7 +940,7 @@ export class World implements EncounterHost {
    * the alert clear, or docked at a port. The HUD shows the alert, so it
    * always says whether the bay will open: yellow and red keep it shut.
    */
-  bayClosed(): 'busy' | 'caution' | 'alert' | null {
+  bayClosed(): 'busy' | 'yellow' | 'red' | null {
     if (!this.alive) return 'busy';
     if (this.phase === 'dock') return null;
     if (this.phase !== 'play') return 'busy';
@@ -966,19 +959,10 @@ export class World implements EncounterHost {
   install(id: string): Block | 'closed' | null {
     useIds(this.ids);
     if (this.phase !== 'bay') return 'closed';
-    return this.fit(id, false);
+    return this.fit(id);
   }
 
-  /** Auto-refit: fit the bay's first affordable suggestion by itself, once nothing hostile is close. */
-  private autoRefit(dt: number): void {
-    if (!this.autoFit || !this.alive || this.phase !== 'play') return;
-    this.autoQuiet = this.alert() !== 'clear' ? 0 : this.autoQuiet + dt;
-    if (this.autoQuiet < AUTO_QUIET) return;
-    const id = autoPick(this.bayCtx());
-    if (id) { this.fit(id, true); this.autoQuiet = AUTO_QUIET - AUTO_GAP; }
-  }
-
-  private fit(id: string, auto: boolean): Block | null {
+  private fit(id: string): Block | null {
     const r = bayInstall(id, this.bayCtx());
     if (typeof r === 'string') return r;
     this.krail -= r.cost;
@@ -989,7 +973,7 @@ export class World implements EncounterHost {
     this.refit++;
     this.run.refit++;
     this.run.krailSpent += r.cost;
-    this.events.push({ type: 'fitted', id, auto });
+    this.events.push({ type: 'fitted', id });
     return null;
   }
 

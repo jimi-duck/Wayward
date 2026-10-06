@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { UPGRADES, UPGRADE } from '../src/content/upgrades';
 import { MODULES } from '../src/content/modules';
 import { FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
-import { autoPick, blockOf, budgets, cost, install, maxLevel, PICKS, quickPicks, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
+import { blockOf, budgets, cost, install, maxLevel, PICKS, quickPicks, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
 import { computeStats, upgradeFigures } from '../src/sim/build';
 import { feelBudgets, overload, OVERLOAD } from '../src/sim/budgets';
 import { World } from '../src/sim/world';
@@ -203,12 +203,5 @@ describe('suggestions', () => {
     expect(quickPicks(ctx({ levels: hot })).map((p) => p.id)).toContain('rx_sinks');
     const flat = { ...stockLevels(), df_shield: 1 }; // 7 of 8 power
     expect(quickPicks(ctx({ levels: flat })).map((p) => p.id)).toContain('rx_core');
-  });
-
-  it('Auto-refit picks only what it can pay for', () => {
-    expect(autoPick(ctx({ krail: 10 }))).toBeNull();
-    const id = autoPick(ctx({ krail: 60 }));
-    expect(id).not.toBeNull();
-    expect(blockOf(id!, ctx({ krail: 60 }))).toBeNull();
   });
 });

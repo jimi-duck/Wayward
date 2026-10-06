@@ -83,4 +83,4 @@ prompt; the other buttons are flat. The foot is a status line. Fonts are the
 same three; mono is used a little more. On a phone on its side the id line and
 the headings go and the orders sit in a row.
 
-Trimmed on Jimi's word: the order sentences are a few words each, and the status key and the id line's state word speak only for caution (amber) and red alert; a clear sky says nothing.
+Trimmed on Jimi's word: the order sentences are a few words each, and the status key and the id line's state word speak only for yellow alert (amber, you are observed) and red alert (red, you are targeted); a clear sky says nothing.
