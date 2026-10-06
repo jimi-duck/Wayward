@@ -212,6 +212,9 @@
         <div class="launch-row"><button type="button" id="launch">Start arcade</button></div>
         <p class="resume-s" id="resume-s" hidden></p>
         <button type="button" id="fresh" class="ghost" hidden>New journey</button>
+        <!-- a save the game could not read: say so, and offer the safety copy if there is one -->
+        <p class="resume-s warn" id="save-problem" hidden>Your saved journey could not be read.</p>
+        <button type="button" id="restore" class="ghost" hidden>Restore last save</button>
         <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->
         <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
       </div>
@@ -221,6 +224,7 @@
           <div id="lang" class="mods lang" aria-label="Language"></div>
           <div id="mods" class="mods" aria-label="Challenge modifiers"></div>
           <div id="paint" class="mods" aria-label="Engine colour"></div>
+          <div id="saves" class="mods" aria-label="Saved journey"></div>
         </div>
       </div>
     </div>

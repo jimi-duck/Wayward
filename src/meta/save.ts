@@ -14,9 +14,15 @@ import { stockLevels } from '../sim/bay';
 // the top with what the save carries. Through the Threshold it is kept until
 // the Severance file's fate is chosen, so a reload comes back to the choice. The save carries a version, and
 // `migrate` brings an old one up to date, or refuses it if it cannot.
-// Storage can be missing or refuse, so every read and write is guarded.
+// Each write first keeps the save it replaces (if it still reads) as a safety
+// copy, and a save that cannot be read is reported, not silently dropped, so
+// the title can offer the copy. The save can also be exported to a file and
+// imported back. Storage can be missing or refuse, so every read and write
+// is guarded.
 
 const KEY = 'wayward.journey';
+/** The save before the latest write, kept while it still reads: the way back if the latest cannot be read. */
+const BAK = 'wayward.journey.bak';
 
 /** Older saves, brought up to the current shape. Returns null for one that cannot be read. */
 export function migrate(raw: unknown): Journey | null {
@@ -80,19 +86,78 @@ function toCyrite(j: Old): void {
   for (const l of j.legs ?? []) { move(l, 'krailIn', 'cyriteIn'); move(l, 'krailOut', 'cyriteOut'); }
 }
 
+/** The last load found a save it could not read (corrupt, or from a newer game). */
+let unreadable = false;
+export const saveUnreadable = (): boolean => unreadable;
+
 export function loadJourney(): Journey | null {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? migrate(JSON.parse(raw)) : null;
+    unreadable = false;
+    if (!raw) return null;
+    const j = migrate(JSON.parse(raw));
+    unreadable = !j;
+    return j;
+  } catch {
+    unreadable = true;
+    return null;
+  }
+}
+
+/** The safety copy, made the current save (for when the latest could not be read). Null if there is none or it cannot be read either. */
+export function restoreJourney(): Journey | null {
+  try {
+    const raw = localStorage.getItem(BAK);
+    const j = raw ? migrate(JSON.parse(raw)) : null;
+    if (!j) return null;
+    localStorage.setItem(KEY, JSON.stringify(j));
+    unreadable = false;
+    return j;
   } catch {
     return null;
   }
 }
 
+/** Whether a safety copy is there to restore. */
+export function hasBackup(): boolean {
+  try {
+    return !!localStorage.getItem(BAK);
+  } catch {
+    return false;
+  }
+}
+
+/** Ask the browser not to clear the saves when space runs short (once; it may say no). */
+let asked = false;
+function keep(): void {
+  if (asked) return;
+  asked = true;
+  try {
+    void navigator.storage?.persist?.().catch(() => {});
+  } catch {
+    // not offered here
+  }
+}
+
 export function saveJourney(j: Journey): void {
   try {
-    if (j.status === 'over' && !pending(j)) localStorage.removeItem(KEY);
-    else localStorage.setItem(KEY, JSON.stringify(j));
+    const prev = localStorage.getItem(KEY);
+    if (prev) {
+      try {
+        JSON.parse(prev);
+        localStorage.setItem(BAK, prev);
+      } catch {
+        // the one being replaced is already broken: the copy already there stays
+      }
+    }
+    if (j.status === 'over' && !pending(j)) {
+      localStorage.removeItem(KEY);
+      localStorage.removeItem(BAK);
+    } else {
+      localStorage.setItem(KEY, JSON.stringify(j));
+      unreadable = false;
+      keep();
+    }
   } catch {
     // storage refused: the journey lasts as long as the tab
   }
@@ -101,7 +166,24 @@ export function saveJourney(j: Journey): void {
 export function clearJourney(): void {
   try {
     localStorage.removeItem(KEY);
+    localStorage.removeItem(BAK);
   } catch {
     // nothing to clear
   }
+}
+
+/** The journey as text, for a file the player keeps. */
+export const exportJourney = (j: Journey): string => JSON.stringify(j);
+
+/** A journey from an exported file, saved as the current one. Null if the text is not a save this game can read. */
+export function importJourney(text: string): Journey | null {
+  let j: Journey | null = null;
+  try {
+    j = migrate(JSON.parse(text));
+  } catch {
+    return null;
+  }
+  if (!j) return null;
+  saveJourney(j);
+  return j;
 }
