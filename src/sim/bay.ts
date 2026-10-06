@@ -42,7 +42,7 @@ export const maxLevel = (id: string): number => UPGRADE[id]?.max ?? FITTING[id]?
 export function cost(id: string, lv: number): number {
   const node = NODE[id];
   if (!node) return Infinity;
-  const base = TIER_COST[Math.min(node.tier, TIER_COST.length - 1)]!;
+  const base = TIER_COST[Math.min(node.tier, TIER_COST.length - 1)]! * (node.price ?? 1);
   return Math.round((base * (1 + LEVEL_STEP * (lv - 1))) / 5) * 5;
 }
 

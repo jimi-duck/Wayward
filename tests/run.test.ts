@@ -89,7 +89,7 @@ describe('krail and the refit bay', () => {
     expect(w.alert()).toBe('clear');
     expect(w.bayClosed()).toBeNull();
     // a hull close by, not attacking: caution
-    const near = parked(w, 0, -95, 0, 'scout');
+    const near = parked(w, 0, -78, 0, 'scout');
     near.mode = 'patrol';
     expect(w.alert()).toBe('caution');
     expect(w.bayClosed()).toBe('caution');

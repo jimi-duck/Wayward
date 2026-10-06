@@ -66,6 +66,8 @@ export interface WebNode {
   draw: Partial<Budget>;
   /** What each level adds to the ship's ratings (fittings). */
   gives?: Partial<Budget>;
+  /** A multiplier on its price, where the tier's alone would be too dear for what it does. */
+  price?: number;
   /** Story mode only; or fitted only at a port's yard (Story). */
   story?: boolean;
   yard?: boolean;
@@ -116,19 +118,20 @@ export const WEB: WebNode[] = [
   n('tp_magazine', 'ordnance', 2, 0, ['tp_bay'], { mass: 1 }),
   n('tp_yield', 'ordnance', 2, 1, ['tp_bay'], { heat: 1 }),
   n('tp_tracking', 'ordnance', 2, 2, ['tp_bay'], { power: 1 }),
-  n('tp_heavy', 'ordnance', 3, 0, ['tp_magazine', 'tp_yield'], { mass: 1, heat: 1 }),
-  n('tp_swarm', 'ordnance', 3, 1, ['tp_yield'], { power: 1, heat: 1 }),
-  n('tp_precision', 'ordnance', 3, 2, ['tp_tracking'], { power: 1 }),
-  n('tp_cluster', 'ordnance', 4, 0, ['tp_heavy'], { mass: 1 }),
-  n('tp_swarm_volley', 'ordnance', 4, 1, ['tp_swarm'], { heat: 1 }),
-  n('tp_painter', 'ordnance', 4, 2, ['tp_precision'], { power: 1 }),
+  // the torpedo and mine specialisations cost less than their tier: those builds have to save past more of the ladder
+  n('tp_heavy', 'ordnance', 3, 0, ['tp_magazine', 'tp_yield'], { mass: 1, heat: 1 }, { price: 0.7 }),
+  n('tp_swarm', 'ordnance', 3, 1, ['tp_yield'], { power: 1, heat: 1 }, { price: 0.7 }),
+  n('tp_precision', 'ordnance', 3, 2, ['tp_tracking'], { power: 1 }, { price: 0.7 }),
+  n('tp_cluster', 'ordnance', 4, 0, ['tp_heavy'], { mass: 1 }, { price: 0.65 }),
+  n('tp_swarm_volley', 'ordnance', 4, 1, ['tp_swarm'], { heat: 1 }, { price: 0.65 }),
+  n('tp_painter', 'ordnance', 4, 2, ['tp_precision'], { power: 1 }, { price: 0.65 }),
   n('mn_layer', 'ordnance', 1, 4, null, { power: 1, mass: 2 }),
   n('mn_yield', 'ordnance', 2, 3, ['mn_layer'], { heat: 1 }),
   n('mn_racks', 'ordnance', 2, 4, ['mn_layer'], { mass: 1 }),
   n('mn_seekers', 'ordnance', 2, 5, ['mn_layer'], { power: 1 }),
-  n('mn_field', 'ordnance', 3, 3, ['mn_yield', 'mn_racks'], { mass: 2 }),
-  n('mn_chain', 'ordnance', 3, 4, ['mn_yield', 'mn_racks'], { heat: 1 }),
-  n('mn_gravity', 'ordnance', 3, 5, ['mn_seekers'], { power: 2 }),
+  n('mn_field', 'ordnance', 3, 3, ['mn_yield', 'mn_racks'], { mass: 2 }, { price: 0.7 }),
+  n('mn_chain', 'ordnance', 3, 4, ['mn_yield', 'mn_racks'], { heat: 1 }, { price: 0.7 }),
+  n('mn_gravity', 'ordnance', 3, 5, ['mn_seekers'], { power: 2 }, { price: 0.7 }),
 
   // ── engines: the drive and handling above, drive plasma below ───────────
   n('mo_impulse', 'engines', 1, 0, null, { power: 1, heat: 1 }),

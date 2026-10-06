@@ -89,8 +89,8 @@ const BOSS_PLATES = 1;
 
 /** The ship's alert (World.alert). */
 export type Alert = 'clear' | 'caution' | 'alert';
-/** A hostile hull this close (units) puts the ship on caution: a little inside where they arrive. */
-export const CAUTION_RANGE = 110;
+/** A hostile hull this close (units) puts the ship on caution: a little outside its guns' reach (FIRE_RANGE 70), well inside where hulls arrive. */
+export const CAUTION_RANGE = 85;
 
 /** Auto-refit waits this long with the alert clear before it fits, and this long again between fits. */
 export const AUTO_QUIET = 2;
