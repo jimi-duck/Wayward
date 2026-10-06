@@ -248,6 +248,8 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   `BASE`, cap it in `capStats` if it can run away, and add a row to
   `FIGURES` so its card shows it. A specialisation is `kind: 'spec'` with a
   `group` and `needs`. Each card taken adds one level, up to `max`.
+- **A stamp on a module**: one line in `ORIGIN` in `content/papers.ts`,
+  with its German in `i18n/de/ui.ts`. Keep it a minority.
 - **An enemy**: a new faction pairing of an existing archetype is one row
   in `VARIANTS` (renderer and HUD pick it up). A new archetype is a row in
   `ALIEN_TYPES`, its tactic in `moveAlien`, and a model in
@@ -364,6 +366,22 @@ firmest three get a ◆ and a reason) and the build's profile (`sim/profile.ts`)
 sit in the bay; the Story's cards carry the reason too. The ship speaks one line (`content/voice.ts`, picked in `sim/voice.ts`)
 under the bay's title and on the pause card. The web's links are
 conduits with forks and joins drawn as junctions (`BayPanel.web`). The rest is in PLAN.md (the console pass).
+
+**Used, not dirty** (`docs/ART-PASS.md`). History in small doses on top of the
+console. A module can carry a stamp for where it came from (`content/papers.ts`
+`ORIGIN`: Obedience spec, Salvaged, Field mod, Non-OEM, Aftermarket, Repaired,
+Unknown origin, Continuance property); about a quarter of the web has one, a
+test keeps it a minority, and no rule reads it. Each tab carries one mark for
+its state (`sim/papers.ts` `tabMark`: ▲ overloaded, ! damaged, ◐ upgrade
+ready, ● stable, — offline), and its word heads the tab's web. A fit makes
+the changed ratings tick from their old figure (`ui/tick.ts`) with the old one
+struck beside it for a moment, and the ship answers in its voice line
+(`Module compatibility: accepted`, or `Component: not factory spec` for a
+stamped part). The ship's papers sit in small print along the web and on the
+pause card (registry flagged, operator unregistered, factory against current
+profile, a repair log that no longer reads). Pop-up kickers speak as the ship
+(`Ship system`, `Warning`, `Continuance signal`). The wordmark is stencilled
+with ties and a ghost of its first paint; no new fonts.
 
 
 ## The upgrades
