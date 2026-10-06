@@ -126,7 +126,7 @@ believes it because it's true, or because she needs it to be.
   machines, abandoned factories and things never meant to speak. It may be
   helping. It may be waiting.
 - **The Thren**: nobody knows where they came from. They inhabit the old
-  lanes and appear where large amounts of Krail are moving: vast coordinated
+  lanes and appear where large amounts of Cyrite are moving: vast coordinated
   swarms in which ships vanish, signals distort and navigation fails. A
   species, an organism, or something much larger. People call them the Pale,
   the Swarm, the Thren. Nobody knows what they call themselves.
@@ -158,7 +158,7 @@ her into something else:
 - **Guns**: weapons, armour, direct combat. Harder to kill, or very good at
   killing first.
 - **Rig**: mining, cargo, fuel efficiency, extraction. Carry more, mine
-  faster, waste less Krail, stay out longer.
+  faster, waste less Cyrite, stay out longer.
 - **Signals**: sensors, hacking, spoofing, communications. Hide who you are,
   manipulate checkpoints, find things first, make the map lie.
 - **Contacts**: trade, smuggling, faction relationships, people. Safer

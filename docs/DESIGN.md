@@ -14,23 +14,26 @@ A sortie with a shape: get the stolen hauler out of the home system
   minute flat out); Frontier Supply, the port, is halfway and off the line.
   The HUD carries both as pointers, radar diamonds, a contacts list and the
   objective's steps.
-- **The jump.** Inside the lane mouth with 20 Krail in the tank (`JUMP_COST`),
+- **The jump.** Inside the lane mouth with 20 Cyrite in the tank (`JUMP_COST`),
   the drive spools for five seconds; leave the ring and it winds down. The
-  jump takes the Krail and ends the run as an escape.
-- **Krail is fuel, and scarce.** Only veined (rich) rock and the rare gold
-  rock carry it, cut clean; the guns break a rock for 30% of what is in it
-  (`rockYield`). The tank starts at 6.
+  jump takes the Cyrite and ends the run as an escape.
+- **Cyrite is fuel, and scarce.** Only veined (rich, violet) rock and the
+  rare gold rock carry it, cut clean; the guns break a rock for 30% of what
+  is in it (`rockYield`). The tank starts at 6.
+- **Krail builds the ship**, as in the arcade: pale gold crystals out of
+  ordinary rock (`ROCK_KRAIL` of the arcade's: sure when cut clean, by chance
+  when broken) and the wrecks of what you destroy (`WRECK_KRAIL`), and 40
+  from a capital ship. It is spent in the refit bay (below).
 - **The cutter** (`sim/mining.ts`), on its own held trigger: the rock under
   it heats; once warm the cut goes in; past the line the rock fractures. A
   small rock comes out clean in one hold; a large one needs the beam pulsed.
   Heat and the cut belong to the rock. The lasers hold while it runs.
-- **Ore** fills the hold (40) and the refit rail (each unit counts 1.7), and
-  sells at the port. **Parts** come from wrecks; six of them patch a plate
+- **Ore** fills the hold (40) and sells at the port. **Parts** come from wrecks; six of them patch a plate
   once the ship has gone six seconds unhit. Random repair drops are off.
 - **The port.** Slow inside its ring for a second and the clamps take you
-  (`phase: 'dock'`): sell the hold (2 chits an ore), buy Krail (5), patch a
-  plate (30), pay for a refit (60, three cards there and then). The first
-  dock takes 0.2 off the hunt pressure.
+  (`phase: 'dock'`): sell the hold (2 chits an ore), buy Cyrite (5), patch a
+  plate (30), or open the refit bay, where the yard's work is done. The
+  first dock takes 0.2 off the hunt pressure.
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
   more) and the cutter's noise. It decides how often pursuers come, how
   many at once and which: pickets, then cruisers, enforcers and, late,
@@ -49,7 +52,8 @@ A sortie with a shape: get the stolen hauler out of the home system
   fee (it rises with heat; a captain who goes by the book takes it and
   scans you anyway), talk your way through (easier before they know your
   face), or fight: the usual three-phase duel, and her wreck pays a little
-  Krail (six, a top-up rather than a jump), parts and a salvage refit.
+  Cyrite (six, a top-up rather than a jump), parts and Krail, and opens her
+  faction's tech in the bay.
 - **Comms.** See below: everyone else who opens a channel.
 
 Balance: [BALANCE-BREAKOUT.md](BALANCE-BREAKOUT.md), from
@@ -67,20 +71,20 @@ the Threshold, the last lane the old charts know.
   (`ui/chart.ts`), where you plot the next jump from the lanes out of where
   you are. The journey hands the world a `SortieDef` and what the ship
   carries (`Carry`); the world hands back a `SortieResult`.
-- **What carries over.** The build and the refit rail, the plates, the
-  tank, the hold, parts, chits, food, flags, standing, jobs not yet paid,
+- **What carries over.** The build and the Krail for the bay, the plates,
+  the tank, the hold, parts, chits, food, flags, standing, jobs not yet paid,
   and the cards heard (a card comes once a journey unless it is marked
   `repeat`). Pursuers, rock and capital ships do not: each system is new.
 - **The chart** (`sim/chart.ts`, `content/systems.ts`): six columns, Cerro
   on the left, the Threshold on the right, two or three systems in each
   column between, laid out from the journey's seed. Each system is a kind
   (port, mining, transit, contested), a holder (Kellern, Frontier Supply,
-  the Dust Traders, the Gutter, nobody), a Krail richness, a food supply and
+  the Dust Traders, the Gutter, nobody), a Cyrite richness, a food supply and
   maybe a port with its own prices. Lanes run one column on, now and then
-  sideways; never back to Cerro. Every lane has a Krail cost (12 to 20)
+  sideways; never back to Cerro. Every lane has a Cyrite cost (12 to 20)
   and takes one or two days.
 - **Plotting.** The jump you plot sets the sortie's lane: the lane mouth
-  wants that lane's Krail. So the chart is where you decide how much
+  wants that lane's Cyrite. So the chart is where you decide how much
   mining the next system will ask of you.
 - **What a system is like.** Its kind sets the lane's distance (transit is
   short), the rock (mining systems are dense and veined), who flies there
@@ -93,12 +97,12 @@ the Threshold, the last lane the old charts know.
   of parts, the hull takes the wear: a plate down either way. Food is sold
   at ports (and by Drift traders), and the galley holds ten.
 - **The Net** spreads from Cerro along the lanes, once you have left it, a
-  little every day, faster into systems with Krail to take and harder
+  little every day, faster into systems with Cyrite to take and harder
   where two or three netted systems press on one (`spreadNet`). Its pace
   is set to catch a pilot who keeps moving now and then.
   A netted system has a blockade at its lane mouth (the checkpoint card),
   starts a quarter hotter, heats faster, scans you at its port, marks its
-  prices up (Krail and food by 40%, less for ore) and gets fewer friendly
+  prices up (Cyrite and food by 40%, less for ore) and gets fewer friendly
   calls. Some answers stall it in a system for days (help a holdout, break
   a survey relay, or pay ore to have the Gutter break it). A survey relay
   left to finish brings the Net into that system at once, even ahead of
@@ -119,11 +123,11 @@ the Threshold, the last lane the old charts know.
   she is a jump away or the news is fresh, otherwise as of the day you last
   had it.
 - **Wrecks** are not the end. The hull goes, and you get her flying a
-  day later in the same system with the hold gone and half the Krail,
-  parts and chits. The third wreck ends the journey, and so does a wreck
+  day later in the same system with the hold gone and half the Cyrite,
+  parts and chits (the Krail for the bay stays). The third wreck ends the journey, and so does a wreck
   with Calloway in the system (she takes you). In hardcore, the first.
 - **Through.** Reach the Threshold and the journey is over: into the
-  Scatter. The panel lists every system flown, how it ended, the Krail in
+  Scatter. The panel lists every system flown, how it ended, the Cyrite in
   and out, and where Calloway caught up.
 - **The save** (`meta/save.ts`): versioned, in localStorage, written
   whenever the chart is open and when you cast off from a port. Continue on
@@ -150,7 +154,7 @@ only come because of an earlier answer. The journey adds ten more (see
 - **The read.** Their strength against yours (their hulls against your
   plates and fitted guns), who is out there, their cargo, and an intent
   estimate. Many cards have a hidden truth rolled as they open (a distress
-  call that is genuine or bait; a seller whose Krail is pure or cut); the
+  call that is genuine or bait; a seller whose Cyrite is pure or cut); the
   estimate names the right one as often as your sensors are good (65%
   stock, more with deep scanners or Office tech), otherwise another.
 - **Choices.** Two to six, each a kind of answer (fight, run, pay, bluff,
@@ -161,7 +165,7 @@ only come because of an earlier answer. The journey adds ten more (see
   shot). Choices that need a system, a flag or a standing are shown greyed
   out with what they need: the torpedo bay opens a bluff on a shakedown,
   forged codes open a spoof at the checkpoint.
-- **Outcomes.** Krail, ore, chits, parts, food, plates, heat, score, flags,
+- **Outcomes.** Cyrite, ore, chits, parts, food, plates, heat, score, flags,
   standing with six parties (the Custody, the Gutter, Frontier Supply, the
   Dust Traders, Kellern Mining, the miners), hulls that turn up, hulls
   that break off, the blockade (fight, run, pass), a follow-up card, a job,
@@ -189,26 +193,27 @@ only come because of an earlier answer. The journey adds ten more (see
 
 Everyone launches in the same ship: the Wayward, OB-7731-A, a stolen
 Obedience-class ore hauler. Over a run she becomes
-something else, depending on the cards you take at each refit: a torpedo
+something else, depending on what you fit in the refit bay: a torpedo
 boat, a minelayer, a brawler that rams and arcs, a fortress, an interceptor
 that dives through fire to charge its core. Nothing is a class you pick; it
 is a ship you build. The run report names what you built.
 
 The run is a slow burn. The first forty seconds are yours alone, a thin
-field of slow rock to learn the ship on and mine the first refit out of;
+field of slow rock to learn the ship on and mine the first module out of;
 the first hostile is a lone scout. The sky fills in from there, and the
 first capital ship hails at 3:30, once the build has a shape.
 
 ## The loop
 
-Fly, fight and break rock → collect krail → the gauge fills → refit
-(three cards, take one) → harder sky → a capital ship hails (engage or
-evade) → her salvage: a refit led by her faction's tech → specialisations,
+Fly, fight and break rock → collect krail → fit modules in the refit bay
+(or let Auto-refit) → harder sky → a capital ship hails (engage or evade)
+→ her salvage: her faction's tech opens in the bay → specialisations,
 synergies → the hull goes → the run report → play again.
 
-The world pauses itself at each decision (`World.phase`: `refit`, `hail`,
-`comms`, `dock`, `over`), and the app or the scripted pilot answers it
-(`choose`, `answerHail`, `answer`, the port's calls, `restart`). Everything else is the existing fixed-step
+The world pauses itself at each decision (`World.phase`: `hail`, `comms`,
+`dock`, `bay`, `over`), and the app or the scripted pilot answers it
+(`answerHail`, `answer`, the port's calls, `install` and `closeBay`,
+`restart`). Everything else is the existing fixed-step
 simulation. In a journey, `over` hands the sortie to the journey
 (`World.result`, `endSortie`), and the chart's answer (`plot`) starts the
 next one (`World.restart` with a `SortieDef` and the `Carry`).
@@ -218,10 +223,10 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | System | Data | Behaviour |
 |---|---|---|
 | Upgrades | `content/upgrades.ts` | `sim/build.ts` (stats, figures, the build's name), `sim/stats.ts` (the stat block and caps) |
-| Refit cards | `content/upgrades.ts` | `sim/offers.ts` (which three cards a refit deals), `World.choose`, `ui/refit.ts` (the cards) |
+| The refit bay | `content/web.ts` (the web, costs, ratings), `content/modules.ts` (the yard's modules) | `sim/bay.ts` (what can be fitted, suggestions), `sim/budgets.ts`, `World.openBay` / `install`, `ui/bay.ts` |
 | Weapons | the stat block | `sim/weapons.ts` (lasers, torpedoes), `sim/arsenal.ts` (mines, plasma, hull arc) |
 | Asteroids | `ROCK_KINDS` in `sim/field.ts` | `Field.topUp` (formations), `World.destroyRock` |
-| Krail and pickups | `sim/pickups.ts` | `World.collect`, `World.gainXp` |
+| Krail, Cyrite and pickups | `sim/pickups.ts`, `rockYield` in `sim/breakout.ts` | `World.collect` |
 | Enemies | `ALIEN_TYPES`, `FACTION_TRAITS`, `VARIANTS`, `SQUADS`, `ELITES` in `sim/enemies.ts` | the existing tactical AI, `World.spawn` |
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
 | Calloway's file | `content/calloway.ts` (tricks, numbers, offers, her face) | `sim/calloway.ts` (the file, her read on your route, offers, the last meeting), `sim/hunt.ts` (the hunch), `World` (the offer, the lane mouth) |
@@ -281,21 +286,22 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 
-## The refit bay (the arcade)
+## The refit bay
 
-The arcade builds the ship in the **refit bay** (PLAN.md, R; `content/web.ts`,
+Both modes build the ship in the **refit bay** (PLAN.md, R; `content/web.ts`,
 `sim/bay.ts`, `ui/bay.ts`). The ship leaves with lasers, a shield charge and
 the torpedo bay. Krail (crystals from rock and wrecks, times the krail
-matrix) is a stock, no longer a rail to a card.
+matrix) is a stock to spend there.
 
 **When it opens.** The ship has an alert in three steps (`World.alert`):
 clear (nothing hostile about; the HUD shows nothing), caution in yellow
 (a hull within 85 units, a watcher looking you over, a capital ship on its
 way, none of them attacking) and red alert (under attack, `World.inDanger`:
 a committed hostile within 60 units, fire close by, a capital ship engaged).
-The bay opens only when clear, by B, a pad's Back, the upgrades badge
-(lower right; under the ship panel on touch) or the pause card's button, and
-the world waits on it. On caution or red alert it stays shut and the log
+The bay opens in flight only when clear, and always when docked at a port
+(the port's list has a line for it, and closing it goes back to the dock),
+by B, a pad's Back, the upgrades badge (lower right; under the ship panel
+on touch) or the pause card's button, and the world waits on it. On caution or red alert it stays shut and the log
 says why in one line ("Bay locked · ships nearby", "Bay locked · under
 attack") while the badge shakes. The badge is dim with nothing to fit, amber
 with a count of the suggestions you can pay for, yellow or red when locked,
@@ -309,8 +315,9 @@ matters and the price on its button: one tap, or 1 2 3. **Auto-refit** (a
 switch in the bay and on the pause card, saved in the profile) fits the
 first affordable suggestion by itself after two seconds of clear, and
 the log names it. A player who never opens the bay still gets a coherent
-ship; one who wants to plan opens a tab: eight tabs (Hull, Weapons, Ordnance, Engines, Defence, Utility,
-Reactor, Synergies), each a small web left to right by tier. A module opens
+ship; one who wants to plan opens a tab: Hull, Weapons, Ordnance, Engines,
+Defence, Utility, Signals (the Story mode's), Reactor and Synergies, each a
+small web left to right by tier. A module opens
 once something it comes from is fitted, then by the upgrade's own rules
 (requires, one specialisation per group, a deep enough system). Each level
 costs Krail by tier (40, 60, 90, 130; half as much again a level; the deep
@@ -330,34 +337,22 @@ saying what running over costs. A capital ship destroyed opens her faction's tec
 HUD's Krail row counts toward the cheapest module in reach and lights the
 bay's key when one can be fitted.
 
-## The refit: three cards (the Story mode)
+**The yard (the Story mode).** The ship's four systems' modules
+(`content/modules.ts`: Guns, Rig, Signals, Contacts) are nodes of the same
+web, marked `story` and `yard`: fitted only while docked, for Krail and the
+yard's fee in chits (each module's own, 10 to 30 a mark). The structural
+frame, and the reactor core's third level, are yard work in the Story mode
+too (`YARD_FEE`, 15 chits a level), so ports keep their pull. Away from a
+port they show "Fitted only at a port". The marks fitted in each system
+still name the ship and open endings.
 
-The Story mode still refits by cards until the bay reaches it (PLAN.md, R,
-step 4).
+## The upgrades
 
-The refit used to be a web of about two hundred nodes to route across. It
-was too much: a map, an inspector and points to bank, every thirty seconds.
-Now a full gauge deals **three cards** and you take one; that is the whole
-decision, made in a few seconds, and the run keeps its pace. The cards are
-meant to feel like help, not a slot machine:
+What the bay's nodes do (`content/upgrades.ts`; their rules in
+`sim/build.ts`). Each says what it fits (the branch and its icon), the name,
+one sentence, its level as pips, and the numbers it changes, before → after.
 
-- the first two lean toward what the build already is (by the tags it
-  carries); the third is usually a **new direction**, from a branch the
-  build has not taken, so there is always a way to change course;
-- while the ship has fewer than two **systems** (torpedoes, mines, plasma,
-  the hull arc, shields), one card is always a system: the early refits
-  are the ones that change how the ship plays;
-- when a branch is first deep enough, that refit is its
-  **specialisation**: its two or three specialisations side by side, once;
-- **battle salvage** (a capital ship destroyed) deals a hand led by her
-  faction's tech, while it is new.
-
-Each card says what it fits (the branch and its icon), what kind of change
-it is (new system, upgrade, specialisation, synergy, salvaged tech, new
-direction), the name, one sentence, the module's level as blocks with the
-one it adds lit, and the numbers it changes, before → after.
-
-Card kinds:
+Kinds:
 
 - **Upgrade**: a step up a stat ladder (up to five levels).
 - **System**: switches a weapon or device on (the torpedo bay, the mine
@@ -365,8 +360,8 @@ Card kinds:
 - **Specialisation**: one per branch per run, once the branch is deep
   enough; it decides what the ship is called.
 - **Synergy**: needs both halves fitted.
-- **Salvaged tech**: dealt only once that faction's capital ship is
-  destroyed this run.
+- **Salvaged tech**: opens only once that faction's capital ship is
+  destroyed this run (in the Story mode, this journey).
 
 The branches:
 
@@ -423,20 +418,12 @@ barrel roll hides you: hulls hold their fire for a moment), the Voice
 **adaptive shield** (shields recharge faster; a ship with none gets one) and
 Thren **snares** (torpedo and mine blasts slow the hulls they catch).
 
-### On screen
-
-The cards come up by themselves when the gauge fills (after a beat of slow
-motion) and after battle salvage; refits earned together are dealt one
-after another. Keys 1 2 3 take a card outright; arrows or Tab move the
-selection and Enter takes it; a tap or a click takes one; a pad moves with
-the stick and takes with A. The HUD steps back while the cards are up.
-
 ### Numbers and caps
 
 Every upgrade changes one flat stat block, rebuilt from scratch whenever
 the build changes; `capStats` clamps it after every multiplier has run, so
-no stack of upgrades escapes a cap. A card shows the figures it changes,
-computed by diffing the block before and after. A run touches a few
+no stack of upgrades escapes a cap. The bay shows the figures a level
+changes, computed by diffing the block before and after. A run touches a few
 ship-wide numbers too: all weapon damage (the tactical computer, capped at +60%),
 krail from rock, repair drops, power-up time, rare rock and elite
 loot.
@@ -536,8 +523,8 @@ From 3:30, a contact every 50 to 80 seconds. A yellow alert, then the hail:
   attack, calls reinforcements and quickens the cycle). Every attack winds
   up behind a telegraph: lines where a charge or volley will go, rings
   where a nova bursts, circles where shells or webs will land. Destroy it
-  for the bounty, krail, a hull repair, a power-up and a salvage refit
-  led by her faction's tech.
+  for the bounty, krail, a hull repair and a power-up, and her faction's
+  tech opens in the bay.
   Let its fuse run out and it leaves with nothing paid.
 - **Evade**: no fight, no reward, and the next contact comes sooner. You
   cannot evade twice running; a Voice foundry cannot be evaded; Office ships never

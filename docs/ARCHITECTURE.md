@@ -48,7 +48,7 @@ src/
   sim/       game state and rules (never imports Three.js): the world (one system), the journey above it
   meta/      the profile between runs, and the journey save (localStorage)
   render/    renderer, quality governor, scene
-  ui/        DOM overlays: HUD, the refit cards, panels (comms, port, chart, report, logbook), debug
+  ui/        DOM overlays: HUD, the refit bay, panels (comms, port, chart, report, logbook), debug
   styles/    CSS, tokens carried over from the original
 tests/       unit tests (Vitest)
 tools/       the scripted pilot and the balance report (npm run pilot)
@@ -189,7 +189,7 @@ too hectic to get hooked.
   engines burn drive cyan; the engine-colour unlock that used to be ion
   blue is now the old drive red. The camera sits a little lower and
   closer, so the stern and the engines face you as in the reference.
-- The refit is three cards again (`sim/offers.ts`, `ui/refit.ts`): two that
+- (Since replaced by the refit bay, PLAN.md R.) The refit is three cards again (`sim/offers.ts`, `ui/refit.ts`): two that
   lean toward the build and a new direction, a system while the ship has
   fewer than two, a branch's specialisations once when it is deep enough,
   and a salvage hand led by the beaten faction's tech. `World.offer`,
@@ -320,11 +320,11 @@ nothing is lost.
 - `sim/chart.ts`: the three regions (`content/regions.ts`) laid out from a
   seed and `content/systems.ts`, each out through one gate; lanes, the Net
   (`spreadNet`, stalls, marked-up prices), and what you know of it
-  (`arrive`, `seenNet`, the survey's Krail estimate).
+  (`arrive`, `seenNet`, the survey's Cyrite estimate).
 - `sim/scatter.ts`: the factions acting on their own, stepped with the days
   (`stepScatter`): Drift fleets on the move, Gutter raids, Holdfasts
   throwing the Net back, the Voice building out, the Thren drifting and
-  drawn to Krail on the move. `presence` is who is in a system, for the
+  drawn to Cyrite on the move. `presence` is who is in a system, for the
   `SortieDef` (`here`, `thren`, `ahead`) and the cards (`Cond.here`).
 - `sim/hunt.ts`: Calloway on the trail; `daysUntil` is what turns lingering
   into her arrival time inside the next sortie.

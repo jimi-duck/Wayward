@@ -305,7 +305,7 @@ function boot(): void {
   /** The briefing's live parts: its title, the bay's count, Auto-refit. */
   const showBrief = () => {
     el('pause-t').textContent = t(!world.bk && !profile.briefed ? 'Briefing' : 'All stop');
-    const n = world.bk ? 0 : quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
+    const n = quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
     el('p-bay').classList.toggle('ready', n > 0);
     el('p-bay-n').textContent = n ? String(n) : '';
     el('p-auto').classList.toggle('on', world.autoFit);
