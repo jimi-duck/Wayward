@@ -723,6 +723,14 @@ DESIGN.md.
     enough for a module, a stock ship). One line shows under the bay's title
     and on the pause card. Not in the log yet. Tests in `tests/advice.test.ts`.
 
+11. **Done: the art pass** (`docs/ART-PASS.md`): stamps for where a module
+    came from, the tab marks as ship state, ratings that tick with the old
+    figure struck beside them, the ship's papers in small print, the ship's
+    answer to a fit, pop-up kickers in the ship's voice, a stencilled wordmark
+    with `OB-7731-A`, and a repair patch and scuffs on the inspector, tab list
+    and ratings, and (9 spread, on Jimi's word) on the HUD's status block, the comms panel, the port and the pause card, which gets its "Service overdue" stamp back. A few marks each, no scanline on the HUD.
+    The bay's structure is untouched pending the 8-tab or 4-view decision.
+
 Open: 9 spreads on Jimi's word; whether the Story mode's port and chart
 screens take the same console frame.
 
