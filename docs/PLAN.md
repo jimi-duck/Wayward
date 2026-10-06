@@ -624,16 +624,15 @@ quarters runs heavy, everyone buys reactor cores.
 
 **A UI pass on the bay and the HUD (2026-10-06, Jimi's notes).** The mode
 card is an alert in three steps: clear (nothing shown; the bay opens),
-caution in yellow (ships near or scanning, not attacking) and red alert
-(under attack); the bay stays shut on yellow and red, and saying no is one
+yellow alert (you are being observed: ships near or scanning) and red
+alert (you are being directly targeted); the bay stays shut on yellow and red, and saying no is one
 line. An upgrades
 badge (clickable, B) counts the suggestions you can pay for and pulses when
 one comes in. The bay opens on three suggested modules with the price on the
-button; the tabs are a step further in, with prices on the web. Auto-refit
-fits the suggestions by itself. The target's brackets close tight with its
+button; the tabs are a step further in, with prices on the web. The target's brackets close tight with its
 health as a bar under them; the upper-centre card is for hostile hulls only.
 The pause card is the briefing: three steps (mine, upgrade, survive), the
-three alert states, the controls for the device in hand, the bay and Auto-refit.
+controls for the device in hand, the bay and Settings (sound, buzz, camera). Auto-refit was removed; refits are manual.
 
 **Step 4, done (2026-10-06).** The Story mode builds in the bay, as
 the arcade does:
@@ -646,7 +645,7 @@ the arcade does:
   rock cut drop it. Ore stays cargo, sold for chits.
 - **The cards and the rail go.** The ship leaves Cerro with the stock fit;
   the bay opens on the same three alert states in a sortie, and always
-  when docked. Suggestions and Auto-refit as in the arcade.
+  when docked. Suggestions as in the arcade.
 - **The module yard folds into the web**, paid in Krail only: its modules
   are nodes marked `story`; the four resources (salvage, rig parts,
   signal kit, favours) go. **Yard-only** (fitted docked, plus chits): the
@@ -671,7 +670,7 @@ screenshots at desktop and phone sizes, German lines and a note in
 DESIGN.md.
 
 1. **Done: the state word, the briefing frame, the bay's feedback.** The
-   alert's word (`ui/ops.ts`: Clear, Caution, Red alert, and Critical at one
+   alert's word (`ui/ops.ts`: Clear, Yellow alert, Red alert, and Critical at one
    plate) on the bay and pause card; the pause card as a console (rule,
    voice line, readings); tab marks as state; large before → after; Install
    with its price; a flash on fit.
@@ -746,10 +745,11 @@ Open: 9 spreads on Jimi's word; whether the Story mode's port and chart
 screens take the same console frame.
 
 Merged with the alert and briefing pass above: the HUD's alert (clear,
-caution, red alert) is the one source of the state word, which the bay and
+yellow alert, red alert) is the one source of the state word, which the bay and
 the pause card show beside it with one more step, critical (one plate left);
-the pause card keeps that pass's three steps and states, with the console's
-rule, voice line and readings around them. Suggestions come from that pass;
+the pause card keeps that pass's three steps, with the console's rule, voice
+line and readings around them; the state key is gone, and sound, buzz and
+camera moved to its Settings view. Suggestions come from that pass;
 the reasons of step 5 ride on its cards and on the web.
 ### Open
 

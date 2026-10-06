@@ -17,8 +17,7 @@ import { num, t } from '../i18n';
 // Where the ship is built (PLAN.md, R). Two ways in, for two kinds of player:
 //
 //   Suggested · the default: three modules that suit the ship as it is, as
-//               big cards, one tap (or 1 2 3) to fit. Nothing to plan. With
-//               Auto-refit on, the ship fits these by itself as you fly.
+//               big cards, one tap (or 1 2 3) to fit. Nothing to plan.
 //   the tabs  · for whoever wants to build: each part of the ship as a small
 //               web, left to right by tier (fitted amber, ready teal with its
 //               price, the rest dimmed), and an inspector on the right.
@@ -31,8 +30,7 @@ import { num, t } from '../i18n';
 // core's last level) is fitted only at a port, for chits as well as Krail.
 //
 // Keys: Q E (or Tab) change view, arrows move, Enter fits, 1 2 3 fit a
-// suggestion, A toggles Auto-refit, Esc or B launches. A pad: bumpers,
-// stick, A, Y for Auto-refit, B. Touch: tap.
+// suggestion, Esc or B launches. A pad: bumpers, stick, A, B. Touch: tap.
 
 type View = 'picks' | Tab;
 
@@ -124,9 +122,6 @@ export class BayPanel {
   private pick = 0;
   /** The inspector's details (the paragraph, the advice, every figure, the note) are open. */
   private more = false;
-  /** Auto-refit, and what to tell when it is switched. */
-  auto = false;
-  onAuto: (on: boolean) => void = () => {};
   /** Rings over the ship: one per part, set on the art by percent (see ZONE_AT). */
   private rings = new Map<string, HTMLButtonElement>();
   /** The module just fitted and the budgets it moved: lit for a moment (see install). */
@@ -138,7 +133,6 @@ export class BayPanel {
 
   constructor() {
     $('bay-x').addEventListener('click', (e) => { e.stopPropagation(); if (this.open) this.launch(); });
-    $('bay-auto').addEventListener('click', (e) => { e.stopPropagation(); this.toggleAuto(); });
     // a tap on the bay never reaches the flight controls behind it
     $('bay').addEventListener('pointerdown', (e) => e.stopPropagation());
     addEventListener('resize', () => { if (this.open) this.placeArt(); });
@@ -172,7 +166,6 @@ export class BayPanel {
       if (c === 'Escape' || c === 'KeyB') return this.launch(), true;
       if (c === 'KeyQ' || (c === 'Tab' && e.shiftKey)) return this.step(-1), true;
       if (c === 'KeyE' || c === 'Tab') return this.step(1), true;
-      if (c === 'KeyA' && this.view === 'picks') return this.toggleAuto(), true;
       const d = c === 'ArrowLeft' ? [-1, 0] : c === 'ArrowRight' ? [1, 0] : c === 'ArrowUp' || c === 'KeyW' ? [0, -1] : c === 'ArrowDown' || c === 'KeyS' ? [0, 1] : null;
       if (d) return this.move(d[0]!, d[1]!), true;
       if (c === 'Enter' || c === 'NumpadEnter' || c === 'Space') return this.fit(), true;
@@ -190,14 +183,13 @@ export class BayPanel {
     $('bay').hidden = true;
   }
 
-  /** A gamepad: bumpers change view, the stick moves, A fits, Y switches Auto-refit, B launches. */
+  /** A gamepad: bumpers change view, the stick moves, A fits, B launches. */
   padInput(p: PadEdges): void {
     if (!this.world || performance.now() - this.opened < GUARD) return;
     if (p.lb) this.step(-1);
     else if (p.rb) this.step(1);
     else if (p.left || p.right || p.up || p.down) this.move(p.left ? -1 : p.right ? 1 : 0, p.up ? -1 : p.down ? 1 : 0);
     else if (p.a) this.fit();
-    else if (p.y) this.toggleAuto();
     else if (p.b || p.back) this.launch();
   }
 
@@ -205,12 +197,6 @@ export class BayPanel {
     const done = this.onClose;
     this.close();
     done?.();
-  }
-
-  private toggleAuto(): void {
-    this.auto = !this.auto;
-    this.onAuto(this.auto);
-    this.render();
   }
 
   private go(view: View): void {
@@ -388,10 +374,6 @@ export class BayPanel {
     $('bay-ops').className = `ops ${o}`;
     $('bay-ops').textContent = opsText(o);
     $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.krail))), h('span', '', 'Krail'));
-    const auto = $('bay-auto');
-    auto.classList.toggle('on', this.auto);
-    auto.setAttribute('aria-pressed', String(this.auto));
-    $('bay-auto-v').textContent = t(this.auto ? 'On' : 'Off');
     this.papers(w);
     $('bay').classList.toggle('picks', this.view === 'picks');
     $('bay').classList.toggle('arcade', isArcade(w));
