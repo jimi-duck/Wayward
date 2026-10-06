@@ -337,7 +337,8 @@ export class Hud {
     this.bayReady = ready;
     // the badge: dim with nothing to fit, amber with a count when something can be, red and locked in battle
     const badge = $('upg');
-    badge.hidden = false;
+    // the Arcade bay opens by itself, so only the Story mode shows the badge
+    badge.hidden = !world.bk;
     badge.classList.toggle('ready', n > 0 && !locked);
     badge.classList.toggle('locked', n > 0 && locked);
     badge.classList.toggle('red', alert === 'red');

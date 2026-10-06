@@ -168,8 +168,21 @@ describe('krail and the refit bay', () => {
     expect(w.install('ph_emitters')).toBeNull();
     expect(w.install('ph_capacitors')).toBeNull();
     expect(w.krail).toBe(start + P - 3 * P);
+    expect(w.krail).toBeLessThan(P);
     w.closeBay();
     w.krail = P;
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
+  });
+
+  it('asks again at once for what is left after a pick, since that is a new pick and not a skipped one', () => {
+    const w = quiet();
+    w.krail = ARCADE_PRICE * 2;
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
+    expect(w.install('ph_emitters')).toBeNull();
+    w.closeBay(); // the bay shuts itself after a pick
+    expect(w.krail).toBe(ARCADE_PRICE);
     run(w, BAY_QUIET + 0.5);
     expect(w.phase).toBe('bay');
   });
