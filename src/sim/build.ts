@@ -4,6 +4,7 @@ import { flightHull, capStats, newStats, type Stats } from './stats';
 import { topSpeed, turnPerStep } from './ship';
 import { HZ, PX } from './tuning';
 import { PACING } from './pacing';
+import { feelBudgets } from './budgets';
 import { midSentence, t } from '../i18n';
 
 // ── the build ─────────────────────────────────────────────────────────────
@@ -66,7 +67,10 @@ export interface Fig { label: string; from: string; to: string; cost: boolean; }
 
 /** What one more level of an upgrade would change, as figures (in the Story mode, `arcade` false, without the arcade's own). */
 export function upgradeFigures(levels: Levels, id: string, arcade = true): Fig[] {
-  return figures(computeStats(levels), computeStats({ ...levels, [id]: (levels[id] ?? 0) + 1 }), arcade);
+  const next = { ...levels, [id]: (levels[id] ?? 0) + 1 };
+  // the arcade feels the budgets (sim/budgets.ts): a module that runs the ship hot or heavy shows it
+  const at = (lv: Levels) => (arcade ? feelBudgets(computeStats(lv), lv) : computeStats(lv));
+  return figures(at(levels), at(next), arcade);
 }
 
 // ── figures ───────────────────────────────────────────────────────────────

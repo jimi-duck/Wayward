@@ -16,7 +16,7 @@ const TAG_WORD: Record<CardTag, string> = {
   new: 'New system', up: 'Upgrade', spec: 'Specialisation', synergy: 'Synergy', tech: 'Salvaged tech', wild: 'New direction',
 };
 /** The HUD's icon for each branch. */
-const ICON: Record<Branch, string> = {
+export const ICON: Record<Branch, string> = {
   laser: 'i-laser', torpedo: 'i-torp', mine: 'i-mine', plasma: 'i-plasma', close: 'i-arc', mobility: 'i-engine',
   defence: 'i-shield', utility: 'i-rock', overcharge: 'i-core', synergy: 'i-link', salvage: 'i-capital',
 };
@@ -29,7 +29,7 @@ export function systemLevel(levels: Levels, b: Branch): number {
   return branchLevels(levels, b) + (STOCK.has(b) ? 1 : 0);
 }
 
-function icon(id: string): SVGSVGElement {
+export function icon(id: string): SVGSVGElement {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('class', 'ico');

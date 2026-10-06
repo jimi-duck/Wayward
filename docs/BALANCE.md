@@ -10,16 +10,16 @@ steady player", not as a ceiling.
 
 | Strategy | Mean survival | Middle half | Refits | Mean score | Plates lost / gained | Capital ships killed (mean fight) | Survived the cap |
 |---|---|---|---|---|---|---|---|
-| random | 10:39 | 7:15–15:00 | 13.0 | 102,203 | 4.1 / 1.4 | 28/50 (33s) | 4/12 |
-| laser+defence | 10:56 | 7:46–15:00 | 12.8 | 255,761 | 4.3 / 1.7 | 31/56 (30s) | 4/12 |
-| torpedo+laser | 11:06 | 7:39–15:00 | 13.4 | 227,660 | 3.8 / 1.8 | 37/56 (33s) | 6/12 |
-| mine+mobility | 9:13 | 7:06–11:30 | 10.9 | 63,466 | 4.0 / 0.9 | 18/42 (32s) | 2/12 |
-| close+defence | 10:13 | 6:16–15:00 | 12.7 | 90,539 | 4.3 / 0.9 | 30/51 (35s) | 4/12 |
-| close+laser | 9:12 | 5:44–13:33 | 13.3 | 240,640 | 4.8 / 1.8 | 34/46 (31s) | 2/12 |
-| torpedo+defence | 12:20 | 9:32–15:00 | 12.6 | 111,236 | 3.1 / 0.9 | 29/63 (31s) | 8/12 |
-| plasma+mobility | 10:52 | 6:06–15:00 | 12.4 | 93,166 | 3.7 / 1.4 | 24/51 (37s) | 5/12 |
-| defence+laser | 11:16 | 6:16–15:00 | 12.8 | 214,609 | 4.3 / 1.7 | 28/55 (32s) | 6/12 |
-| mobility+overcharge | 9:34 | 6:04–15:00 | 10.7 | 128,854 | 4.3 / 1.4 | 23/45 (35s) | 3/12 |
+| random | 9:31 | 5:36–15:00 | 12.2 | 84,335 | 4.4 / 1.3 | 24/46 (31s) | 3/12 |
+| laser+defence | 8:59 | 7:00–10:52 | 11.1 | 143,574 | 3.6 / 0.8 | 35/48 (28s) | 1/12 |
+| torpedo+laser | 8:49 | 7:32–10:53 | 6.7 | 83,534 | 4.2 / 1.3 | 29/44 (30s) | 1/12 |
+| mine+mobility | 9:23 | 5:59–11:31 | 7.3 | 82,842 | 3.6 / 0.8 | 26/46 (31s) | 1/12 |
+| close+defence | 10:39 | 9:05–15:00 | 14.8 | 122,454 | 4.0 / 1.3 | 34/56 (28s) | 3/12 |
+| close+laser | 8:05 | 5:36–11:02 | 11.6 | 97,267 | 4.4 / 1.4 | 27/40 (26s) | 0/12 |
+| torpedo+defence | 9:49 | 7:25–13:41 | 7.4 | 79,541 | 3.5 / 0.8 | 28/49 (29s) | 2/12 |
+| plasma+mobility | 8:31 | 7:41–9:31 | 7.6 | 72,151 | 4.4 / 1.4 | 23/41 (31s) | 0/12 |
+| defence+laser | 10:55 | 7:29–14:06 | 9.7 | 77,099 | 6.5 / 2.3 | 24/53 (30s) | 2/12 |
+| mobility+overcharge | 9:24 | 5:46–13:56 | 8.3 | 68,530 | 3.9 / 1.3 | 21/45 (29s) | 2/12 |
 
 ## Pacing
 
@@ -30,24 +30,44 @@ plates the self-repair mended.
 
 | Strategy | In a fight | In a crowd | Peak at once | Encounters | Plates self-repaired |
 |---|---|---|---|---|---|
-| random | 56% | 10% | 6.5 | 12.3 | 1.2 |
-| laser+defence | 60% | 15% | 6.8 | 11.3 | 1.2 |
-| torpedo+laser | 52% | 9% | 6.2 | 13.4 | 1.3 |
-| mine+mobility | 59% | 11% | 5.9 | 9.8 | 0.8 |
-| close+defence | 59% | 12% | 6.5 | 10.6 | 0.5 |
-| close+laser | 55% | 11% | 5.8 | 10.6 | 0.8 |
-| torpedo+defence | 56% | 9% | 5.8 | 13.3 | 0.8 |
-| plasma+mobility | 61% | 11% | 6.0 | 11.7 | 0.9 |
-| defence+laser | 63% | 14% | 7.0 | 11.3 | 1.3 |
-| mobility+overcharge | 62% | 15% | 6.8 | 10.0 | 1.2 |
+| random | 50% | 8% | 5.8 | 11.7 | 1.1 |
+| laser+defence | 46% | 9% | 6.0 | 11.8 | 0.4 |
+| torpedo+laser | 44% | 5% | 4.9 | 12.3 | 0.9 |
+| mine+mobility | 47% | 6% | 5.4 | 11.8 | 0.7 |
+| close+defence | 52% | 9% | 6.1 | 13.1 | 0.8 |
+| close+laser | 45% | 6% | 5.8 | 11.3 | 0.8 |
+| torpedo+defence | 49% | 7% | 5.8 | 12.9 | 0.6 |
+| plasma+mobility | 47% | 6% | 5.9 | 11.0 | 1.0 |
+| defence+laser | 56% | 10% | 5.9 | 12.2 | 2.2 |
+| mobility+overcharge | 53% | 10% | 5.9 | 11.5 | 0.9 |
+
+## The refit bay
+
+What the builds spent of the Krail they earned, the three budgets at the
+end (drawn / rated, means), and how many runs ended over the mass or the
+heat rating (heavy ships turn and speed up slower; hot ones recharge and
+reload slower).
+
+| Strategy | Krail spent / earned | Power | Mass | Heat | Over mass | Over heat |
+|---|---|---|---|---|---|---|
+| random | 543 / 623 | 9.7/11.0 | 7.1/11.0 | 8.9/11.7 | 8% | 0% |
+| laser+defence | 612 / 709 | 9.8/12.5 | 2.0/8.0 | 10.7/12.0 | 0% | 17% |
+| torpedo+laser | 497 / 612 | 6.8/9.8 | 3.7/8.0 | 6.0/8.0 | 0% | 0% |
+| mine+mobility | 488 / 601 | 7.3/10.3 | 5.8/8.0 | 5.7/8.0 | 0% | 0% |
+| close+defence | 918 / 1025 | 12.9/15.3 | 8.8/10.0 | 9.0/10.7 | 17% | 0% |
+| close+laser | 703 / 813 | 10.3/12.8 | 6.8/9.0 | 8.8/9.7 | 0% | 8% |
+| torpedo+defence | 480 / 591 | 8.9/11.8 | 2.8/8.0 | 6.1/8.0 | 0% | 0% |
+| plasma+mobility | 469 / 573 | 7.3/11.0 | 2.0/8.0 | 11.2/12.0 | 0% | 17% |
+| defence+laser | 552 / 627 | 11.2/13.5 | 8.2/8.0 | 4.8/8.0 | 67% | 0% |
+| mobility+overcharge | 480 / 552 | 10.7/12.8 | 2.1/8.0 | 7.8/9.0 | 0% | 8% |
 
 ## Capital-ship fights
 
 | Outcome | Fights | Mean length | Hull left at the end | Refit at the end |
 |---|---|---|---|---|
-| killed | 282 | 33s | 0% | 9.4 |
-| escaped | 149 | 69s | 46% | 12.6 |
-| died | 84 | 41s | 55% | 11.5 |
+| killed | 271 | 29s | 0% | 5.7 |
+| escaped | 97 | 69s | 45% | 10.3 |
+| died | 100 | 36s | 54% | 9.2 |
 
 ## Where the damage comes from
 
@@ -55,39 +75,38 @@ Plates and shield charges lost, by source, across every run.
 
 | Source | Hits | Share |
 |---|---|---|
-| rock | 293 | 16% |
-| beam:capital | 188 | 10% |
-| beam:drone | 179 | 10% |
-| web | 143 | 8% |
-| fire:capital:spiral | 113 | 6% |
-| ram:capital | 111 | 6% |
-| fire:capital:volley | 103 | 6% |
-| fire:capital:ring | 99 | 5% |
-| fire:stalker | 86 | 5% |
-| bulwark | 68 | 4% |
-| fire:plasma | 64 | 3% |
-| fire:probe | 60 | 3% |
-| ram:drone | 54 | 3% |
-| fire:capital:shards | 49 | 3% |
-| fire:capital:strafe | 35 | 2% |
-| ram:raptor | 32 | 2% |
-| volatile | 29 | 2% |
-| fire:lancer | 28 | 2% |
-| fire:raptor | 27 | 1% |
-| fire:scout | 24 | 1% |
-| ram:scout | 10 | 1% |
-| fire:shard | 8 | 0% |
-| ram:lancer | 6 | 0% |
-| ram:freighter | 6 | 0% |
-| fire:whisper | 6 | 0% |
-| ram:weaver | 6 | 0% |
-| ram:stalker | 5 | 0% |
+| rock | 268 | 17% |
+| beam:drone | 138 | 9% |
+| web | 124 | 8% |
+| beam:capital | 121 | 8% |
+| fire:capital:volley | 111 | 7% |
+| fire:capital:spiral | 99 | 6% |
+| fire:capital:ring | 92 | 6% |
+| ram:capital | 90 | 6% |
+| fire:stalker | 74 | 5% |
+| bulwark | 57 | 4% |
+| fire:capital:shards | 56 | 4% |
+| fire:probe | 53 | 3% |
+| fire:plasma | 48 | 3% |
+| ram:drone | 46 | 3% |
+| fire:capital:strafe | 38 | 2% |
+| fire:lancer | 32 | 2% |
+| fire:raptor | 28 | 2% |
+| ram:raptor | 19 | 1% |
+| volatile | 18 | 1% |
+| fire:scout | 12 | 1% |
+| ram:freighter | 8 | 1% |
+| blast | 6 | 0% |
+| fire:shard | 5 | 0% |
+| ram:scout | 4 | 0% |
+| ram:lancer | 4 | 0% |
+| ram:weaver | 4 | 0% |
 | ram:probe | 3 | 0% |
-| ram:warbird | 3 | 0% |
-| lightning | 3 | 0% |
+| artillery | 2 | 0% |
 | fire:picket | 2 | 0% |
-| ram:whisper | 1 | 0% |
-| blast | 1 | 0% |
+| fire:whisper | 2 | 0% |
+| ram:stalker | 1 | 0% |
+| lightning | 1 | 0% |
 | ram:picket | 1 | 0% |
 
 ## Health over time
@@ -97,26 +116,26 @@ Mean plates lost and gained per minute, among the runs still alive in that minut
 | Minute | Runs alive | Lost | Gained |
 |---|---|---|---|
 | 0–1 | 120 | 0.00 | 0.00 |
-| 1–2 | 120 | 0.02 | 0.00 |
+| 1–2 | 120 | 0.01 | 0.00 |
 | 2–3 | 120 | 0.01 | 0.02 |
-| 3–4 | 120 | 0.17 | 0.02 |
-| 4–5 | 120 | 0.11 | 0.14 |
-| 5–6 | 120 | 1.27 | 0.14 |
-| 6–7 | 97 | 0.67 | 0.33 |
-| 7–8 | 81 | 0.73 | 0.20 |
-| 8–9 | 71 | 0.42 | 0.21 |
-| 9–10 | 67 | 0.73 | 0.30 |
-| 10–11 | 62 | 0.37 | 0.18 |
-| 11–12 | 56 | 0.38 | 0.07 |
-| 12–13 | 53 | 0.43 | 0.32 |
-| 13–14 | 50 | 0.38 | 0.14 |
-| 14–15 | 45 | 0.22 | 0.13 |
-| 15–16 | 44 | 0.00 | 0.00 |
+| 3–4 | 120 | 0.13 | 0.03 |
+| 4–5 | 120 | 0.05 | 0.13 |
+| 5–6 | 120 | 1.25 | 0.20 |
+| 6–7 | 88 | 0.31 | 0.32 |
+| 7–8 | 87 | 0.99 | 0.13 |
+| 8–9 | 67 | 0.54 | 0.19 |
+| 9–10 | 62 | 0.92 | 0.21 |
+| 10–11 | 48 | 0.71 | 0.33 |
+| 11–12 | 39 | 0.97 | 0.15 |
+| 12–13 | 28 | 1.04 | 0.54 |
+| 13–14 | 21 | 0.95 | 0.10 |
+| 14–15 | 17 | 0.53 | 0.18 |
+| 15–16 | 15 | 0.00 | 0.00 |
 
 ## Pacing
 
-Refit 1 at 0:10, refit 5 at 1:49, refit 10 at 5:53, refit 15 at 11:35 (mean, of runs that got there).
+Refit 1 at 0:46, refit 5 at 4:06, refit 10 at 8:21, refit 15 at 10:01 (mean, of runs that got there).
 
-Kills by weapon: laser 36% · torpedo 23% · overcharge 18% · arc 9% · mine 7% · plasma 5% · hazard 1% · ram 1%.
+Kills by weapon: torpedo 64% · laser 14% · overcharge 8% · arc 5% · mine 4% · plasma 2% · ram 2% · hazard 0%.
 
-Ships built: Fortress bulwark (12) · Cone gunship (9) · Shock brawler (9) · Reactive bulwark (7) · Interceptor (4) · Drift interceptor (4) · Shock brawler / bulwark (4) · Gunship / bulwark (3) · Heavy-lance gunship / bulwark (3) · Reactive bulwark / gunship (3) · Precision torpedo boat (3) · Redline interceptor (3) · Minefield minelayer (3) · Redline interceptor / gunship (3) · Evasive interceptor (2) · Corona plasma runner / bulwark (2) · Corona plasma runner (2) · Bulwark / gunship (2) · Evasive interceptor / plasma runner (2) · Gunship (2) · Array gunship / bulwark (2) · Salvager prospector / bulwark (2) · Cone gunship / bulwark (2) · Bulwark (2) · Fortress bulwark / torpedo boat (2) · Precision torpedo boat / plasma runner (1) · Minefield minelayer / gunship (1) · Fortress bulwark / gunship (1) · Heavy torpedo boat (1) · Heavy torpedo boat / bulwark (1) · Heavy-lance gunship (1) · Reactive bulwark / torpedo boat (1) · Cone gunship / torpedo boat (1) · Redline interceptor / bulwark (1) · Evasive interceptor / bulwark (1) · Chain-reaction minelayer / gunship (1) · Chain-reaction minelayer (1) · Fortress bulwark / brawler (1) · Storm brawler / gunship (1) · Array gunship / brawler (1) · Precision torpedo boat / gunship (1) · Precision torpedo boat / bulwark (1) · Core diver (1) · Gunship / torpedo boat (1) · Incendiary plasma runner / interceptor (1) · Afterburner plasma runner / bulwark (1) · Redline interceptor / plasma runner (1) · Drift interceptor / plasma runner (1) · Heavy-lance gunship / plasma runner (1) · Corona plasma runner / interceptor (1) · Incendiary plasma runner (1) · Reactive bulwark / interceptor (1) · Gunship / interceptor (1).
+Ships built: Shock brawler (14) · Heavy torpedo boat (13) · Gunship (10) · Precision torpedo boat (9) · Storm brawler (8) · Corona plasma runner (8) · Cone gunship (7) · Minefield minelayer (7) · Bulwark (5) · Chain-reaction minelayer (5) · Reactive bulwark (5) · Redline interceptor (5) · Afterburner plasma runner (3) · Fortress bulwark (3) · Drift interceptor (3) · Brawler (2) · Torpedo boat (2) · Interceptor (2) · Evasive interceptor (2) · Torpedo boat / brawler (1) · Gunship / core diver (1) · Heavy-lance gunship (1) · Array gunship (1) · Storm brawler / bulwark (1) · Shock brawler / bulwark (1) · Incendiary plasma runner (1).

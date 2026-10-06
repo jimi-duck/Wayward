@@ -13,6 +13,8 @@ import { CUT_RANGE } from '../src/sim/mining';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
+import { blockOf, budgets, reachable } from '../src/sim/bay';
+import { FITTING } from '../src/content/web';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
 // A competent, unspectacular player, for balancing. It picks a goal (nose
@@ -88,6 +90,8 @@ export interface PilotResult {
   /** Seconds with three or more hostiles in firing range at once, and the most there ever were. */
   crowd: number;
   peak: number;
+  /** The arcade's refit bay at the end: the budgets drawn against the ratings. */
+  budget: { use: { power: number; mass: number; heat: number }; cap: { power: number; mass: number; heat: number } };
   answers: Answer[];
 }
 
@@ -136,6 +140,51 @@ function pickCard(w: World, s: Strategy, rngPick: () => number): number {
   let best = 0, bestV = -Infinity;
   cards.forEach((c, i) => { const v = score(c.id); if (v > bestV) { bestV = v; best = i; } });
   return best;
+}
+
+/** How much the strategy wants a module of the bay (upgrades as pickCard scores them; fittings when their budget is short). */
+function want(w: World, s: Strategy, id: string): number {
+  if (FITTING[id]) {
+    // a fitting when its budget is short: power nearly gone, or the ship run hot or heavy
+    const { use, cap } = budgets(w.levels);
+    if (id === 'rx_core') return cap.power - use.power < 2 ? 14 : 0.5;
+    if (id === 'rx_sinks') return use.heat > cap.heat ? 13 : 0.5;
+    return use.mass > cap.mass ? 12 : 0.5;
+  }
+  const u = UPGRADE[id]!;
+  if (s.kind === 'random') return 1;
+  let v = u.branch === s.branch ? 10 : u.branch === s.second ? 6 : 0;
+  if (!WEAPON_BRANCHES.has(s.branch) && !(s.second && WEAPON_BRANCHES.has(s.second)) && u.branch === 'laser') v += 8;
+  if (u.branch === 'defence') v += 3;
+  if (u.branch === s.branch || u.branch === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
+  else if (u.kind === 'system') v -= 3;
+  return v;
+}
+
+/**
+ * The refit bay, in a quiet moment: the module the strategy wants most of
+ * those it could fit with Krail enough. Bought if the Krail is there; if
+ * power is what stops it, the reactor core first; otherwise the pilot saves
+ * for it. A random pilot buys whatever it can afford, at random.
+ */
+function shop(w: World, s: Strategy, rngPick: () => number): void {
+  if (!w.openBay()) return;
+  for (let i = 0; i < 6; i++) {
+    const ctx = w.bayCtx();
+    const open = reachable(ctx);
+    if (!open.length) break;
+    let pick: string | null;
+    if (s.kind === 'random') {
+      const now = open.filter((n) => blockOf(n.id, ctx) === null);
+      pick = now.length ? now[Math.floor(rngPick() * now.length)]!.id : null;
+    } else {
+      const best = open.map((n) => ({ id: n.id, v: want(w, s, n.id) + rngPick() })).sort((a, b) => b.v - a.v)[0]!;
+      const why = blockOf(best.id, ctx);
+      pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
+    }
+    if (!pick || w.install(pick)) break;
+  }
+  w.closeBay();
 }
 
 /**
@@ -467,8 +516,11 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   const memo: Memo = { seen: new Map(), plan: null };
   const seen = memo.seen;
   let docks = 0;
+  let nextShop = 0, fitted = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
     if (w.phase === 'refit') { w.choose(pickCard(w, strategy, rngPick)); continue; }
+    // the arcade: a look into the bay every couple of seconds, when it will open
+    if (!w.bk && w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick); }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms') {
       const before = { krail: w.krail, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
@@ -504,6 +556,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     o.watch?.(w, evs);
     for (const ev of evs) {
       if (ev.type === 'levelUp' && [1, 5, 10, 15, 20].includes(ev.refit)) refitAt[ev.refit] = Math.round(w.runTime);
+      if (ev.type === 'fitted' && !w.bk && [1, 5, 10, 15, 20].includes(++fitted)) refitAt[fitted] = Math.round(w.runTime);
       if (ev.type === 'bossArrive') { fightStart = w.runTime; fightFaction = ev.faction; }
       if (ev.type === 'bossDestroyed') { bossFights.push({ faction: ev.faction, outcome: 'killed', seconds: Math.round(w.runTime - fightStart), hpLeft: 0, refit: w.refit }); fightStart = -1; }
       if (ev.type === 'bossLeft') {
@@ -530,5 +583,5 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     w.run.build = { ...w.levels };
     w.run.cause = 'survived';
   }
-  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, answers };
+  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, budget: budgets(w.levels), answers };
 }

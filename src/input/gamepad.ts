@@ -9,6 +9,7 @@ const LB = 4;
 const RB = 5;
 const LT = 6;
 const RT = 7;
+const BACK = 8;
 const START = 9;
 const DPAD_UP = 12;
 const DPAD_LEFT = 14;
@@ -20,6 +21,7 @@ const PRESSES: Array<[number, Press]> = [
   [B, 'roll'],
   [RB, 'roll'],
   [START, 'pause'],
+  [BACK, 'bay'],
 ];
 
 // Hardware deadzone only: enough to stop a worn stick drifting the ship.

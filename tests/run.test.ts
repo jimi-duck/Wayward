@@ -6,6 +6,8 @@ import { ENCOUNTERS, startEncounter } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';
 import { CRYSTAL_LIFE, dropCrystals } from '../src/sim/pickups';
 import { CHAIN_WINDOW, OC_MAX, SHIP_R, xpFor } from '../src/sim/tuning';
+import { cost } from '../src/sim/bay';
+import { ORE_XP } from '../src/sim/breakout';
 import { launchTorpedo } from '../src/sim/weapons';
 import { World } from '../src/sim/world';
 
@@ -42,7 +44,7 @@ const hold = (w: World, al: { x: number; y: number; z: number; vx: number; vy: n
   al.x = x; al.y = y; al.z = z; al.vx = al.vy = al.vz = 0;
 };
 
-describe('krail and the refit rail', () => {
+describe('krail and the refit bay', () => {
   it('pulls crystals in from the tractor radius, and lets the rest fade', () => {
     const w = quiet();
     dropCrystals(w.pickups, 10, 0, 1, w.rng, 0);
@@ -54,47 +56,67 @@ describe('krail and the refit rail', () => {
     expect(w.pickups.length).toBe(0);
   });
 
-  it('fills the rail, celebrates, then pauses the world on three cards; taking one fits it and flies on', () => {
+  it('in the arcade, krail is a stock to spend in the refit bay', () => {
     const w = quiet();
-    dropCrystals(w.pickups, 1, 0, xpFor(0), w.rng, 0);
+    dropCrystals(w.pickups, 1, 0, 50, w.rng, 0);
     run(w, 1);
-    expect(w.refit).toBe(1);
-    expect(w.phase).toBe('refit');
-    expect(w.offer?.cards.length).toBe(3);
+    expect(w.krail).toBe(50);
+    expect(w.phase).toBe('play'); // no rail, no cards
+    expect(w.refit).toBe(0);
+  });
+
+  it('opens the bay when it is quiet; the world waits; a level is paid for in krail', () => {
+    const w = quiet();
+    w.krail = cost('ph_emitters', 1);
+    expect(w.openBay()).toBe(true);
+    expect(w.phase).toBe('bay');
     const t = w.runTime;
     run(w, 1);
     expect(w.runTime).toBe(t); // the world waits
+    expect(w.install('ph_pierce')).toBe('path');
+    expect(w.install('ph_emitters')).toBeNull();
+    expect(w.levels.ph_emitters).toBe(1);
+    expect(w.krail).toBe(0);
+    expect(w.refit).toBe(1);
+    expect(w.install('ph_capacitors')).toBe('krail');
+    w.closeBay();
+    expect(w.phase).toBe('play');
+    expect(w.install('ph_capacitors')).toBe('closed');
+  });
+
+  it('will not open with danger near', () => {
+    const w = quiet();
+    const al = parked(w, 0, -30, 0, 'lancer');
+    al.mode = 'hold';
+    expect(w.bayClosed()).toBe('danger');
+    expect(w.openBay()).toBe(false);
+  });
+
+  it('starts a new run from the stock ship: lasers, a shield charge and the torpedo bay', () => {
+    const w = quiet();
+    w.krail = 999;
+    w.openBay();
+    w.install('ph_emitters');
+    w.closeBay();
+    w.restart();
+    expect(w.levels).toEqual({ tp_bay: 1 });
+    expect(w.krail).toBe(0);
+    expect(w.stats.torpedoes).toBe(true);
+    expect(w.stats.shieldMax).toBe(1);
+  });
+
+  it('the Story mode still deals three cards when the rail fills with ore', () => {
+    const w = new World(1, { mode: 'breakout' });
+    w.field.rocks = [];
+    w.field.step = () => {};
+    w.dropCrystals(w.ship.x, w.ship.z, Math.ceil(xpFor(0) / ORE_XP) + 1, 0, 0, 0, 'ore');
+    for (let i = 0; i < 90 && w.phase !== 'refit'; i++) w.step(STEP, input());
+    expect(w.phase).toBe('refit');
+    expect(w.offer?.cards.length).toBe(3);
     const card = w.offer!.cards[1]!;
     expect(w.choose(1)).toBe(true);
     expect(w.levels[card.id]).toBe(1);
-    expect(w.phase).toBe('play');
-    expect(w.offer).toBeNull();
-    // nothing to take while flying
     expect(w.choose(0)).toBe(false);
-  });
-
-  it('deals refits earned together one after another', () => {
-    const w = quiet();
-    dropCrystals(w.pickups, 1, 0, xpFor(0) + xpFor(1) + 1, w.rng, 0);
-    run(w, 1.5);
-    expect(w.refit).toBe(2);
-    expect(w.phase).toBe('refit');
-    w.choose(0);
-    expect(w.phase).toBe('refit');
-    w.choose(0);
-    expect(w.phase).toBe('play');
-    expect(Object.values(w.levels).reduce((a, b) => a + b, 0)).toBe(2);
-  });
-
-  it('starts a new run from the stock ship', () => {
-    const w = quiet();
-    dropCrystals(w.pickups, 1, 0, xpFor(0), w.rng, 0);
-    run(w, 1);
-    w.choose(0);
-    w.restart();
-    expect(w.levels).toEqual({});
-    expect(w.offer).toBeNull();
-    expect(w.pendingRefits).toBe(0);
   });
 });
 

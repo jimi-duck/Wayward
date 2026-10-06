@@ -23,6 +23,7 @@ import { cardView, CommsPanel, hailView } from './ui/comms';
 import { buildView, StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
+import { BayPanel } from './ui/bay';
 import { detect, localize, onLang, plural, setLang, t } from './i18n';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -106,9 +107,10 @@ function boot(): void {
   const port = new PortPanel();
   const chart = new ChartPanel();
   const ending = new EndingPanel();
+  const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => refit.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => refit.open || bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
 
   // ── the journey ────────────────────────────────────────────────────────
   // The Breakout mode is a journey: system after system, with the chart
@@ -210,6 +212,10 @@ function boot(): void {
       // a full rail or battle salvage: three cards
       input.reset();
       refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); }, !world.bk);
+    } else if (world.phase === 'bay' && !bay.open) {
+      // the refit bay: the player opened it, and the world waits until they launch
+      input.reset();
+      bay.show(world, () => { world.closeBay(); input.reset(); hud.note(world, t('Launched')); });
     } else if (world.phase === 'hail' && world.command.pending && !comms.open) {
       input.reset();
       shown = world.command.pending;
@@ -250,9 +256,10 @@ function boot(): void {
       else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
     }
     // a gamepad answers the open panel
-    if (refit.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
+    if (refit.open || bay.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
       const p = padNav.poll();
       if (refit.open) refit.padInput(p);
+      else if (bay.open) bay.padInput(p);
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p, journey);
@@ -263,6 +270,18 @@ function boot(): void {
     loop.timeScale = world.celebrate > 0 ? 0.3 : 1;
     // a panel that stops the run takes the screen: the HUD steps back
     document.documentElement.classList.toggle('panel-open', panelOpen());
+  };
+
+  // ── the refit bay ──────────────────────────────────────────────────────
+  // B, a pad's Back, or the touch button. The arcade only, never mid-fight:
+  // the HUD says why when it will not open.
+  const openBay = () => {
+    if (!started || panelOpen() || world.bk) return;
+    const why = world.bayClosed();
+    if (why === 'danger') { hud.note(world, t('Not with hostiles close'), 'hit'); return; }
+    if (why) return;
+    setPaused(false);
+    world.openBay();
   };
 
   // ── start, pause ───────────────────────────────────────────────────────
@@ -336,6 +355,7 @@ function boot(): void {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'), cut: el('cut'),
     },
     () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
+    () => openBay(),
   );
 
   const loop = new FixedStepLoop({
@@ -435,6 +455,7 @@ function boot(): void {
     // Any key resumes, except the pause keys themselves: Input has already
     // toggled on those, and answering them here as well would undo it.
     if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);
+    if (e.code === 'KeyB') openBay();
     if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -sector.rig.zoom : 1); // cycles round
     if (e.code === 'Minus') zoom(1);
     if (e.code === 'Equal') zoom(-1);
@@ -452,6 +473,11 @@ function boot(): void {
     e.preventDefault();
     e.stopPropagation();
     if (started && !panelOpen()) setPaused(true);
+  });
+  el('bay-b').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openBay();
   });
   el('pause').addEventListener('pointerdown', (e) => {
     e.preventDefault();

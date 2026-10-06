@@ -14,7 +14,7 @@ export class Input {
   /** The most recent frame handed to the simulation, for the debug readout. */
   last: InputFrame | null = null;
 
-  private readonly presses = new Set<Exclude<Press, 'pause'>>();
+  private readonly presses = new Set<Exclude<Press, 'pause' | 'bay'>>();
   private readonly keyboard: Keyboard;
   private readonly touch: TouchStick;
   private readonly pads = new Gamepads();
@@ -22,6 +22,8 @@ export class Input {
   constructor(
     touchEls: TouchElements,
     private readonly onPause: () => void,
+    /** The pad's Back: the refit bay. */
+    private readonly onBay: () => void = () => {},
   ) {
     const coarse = matchMedia('(pointer: coarse)').matches;
     this.device = coarse ? 'touch' : 'keyboard';
@@ -57,6 +59,7 @@ export class Input {
 
   private press = (p: Press): void => {
     if (p === 'pause') this.onPause();
+    else if (p === 'bay') this.onBay();
     else this.presses.add(p);
   };
 

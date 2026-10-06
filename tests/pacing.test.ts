@@ -313,15 +313,21 @@ describe('the whole loop', () => {
     seen.length = 0;
     fly(60, {}, () => seen.includes('contacts'));
     expect(seen).toContain('contacts');
-    // mining: rock ahead breaks under the lasers, and krail fills the rail to a refit
+    // mining: rock ahead breaks under the lasers; the krail goes to the bay, opened in the quiet
     const r = w.field.spawn(0, w.ship.x + Math.cos(w.ship.heading) * 14, w.ship.z - Math.sin(w.ship.heading) * 14, 0, 0, 'rich');
     r.hp = 0.1;
     fly(1.5, { fire: true });
     expect(w.run.rocks).toBeGreaterThan(0);
-    const refit = w.refit;
-    w.dropCrystals(w.ship.x, w.ship.z, w.xpNext, 0);
+    w.aliens = w.aliens.filter((a) => a.escort || a.extra);
+    w.shots = [];
+    w.dropCrystals(w.ship.x, w.ship.z, 60, 0);
     fly(2);
-    expect(w.refit).toBe(refit + 1);
+    expect(w.krail).toBeGreaterThanOrEqual(60);
+    expect(w.openBay()).toBe(true);
+    expect(w.install('df_armour')).toBeNull();
+    w.closeBay();
+    expect(w.refit).toBe(1);
+    expect(w.stats.maxPlates).toBe(4);
   });
 });
 
