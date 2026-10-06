@@ -1551,6 +1551,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 /* ── the bay, second pass: Suggested first, fewer words ─────────────────── */
 #bay.picks .bay { grid-template-columns: minmax(150px, 190px) minmax(0, 1fr); grid-template-areas: "h h" "tabs web" "foot foot"; }
 #bay.picks .bay-insp, #bay.picks .bay-legend { display: none; }
+/* a phone on its side: the suggestions go back to one column, tabs across the top (this rule comes after the media block above, so it needs its own) */
+@media (max-height: 520px) { #bay.picks .bay { grid-template: auto auto minmax(0, 1fr) auto / 1fr; grid-template-areas: "h" "tabs" "web" "foot"; } }
 #rail.stock .lv { display: none; }
 .bay-k b { font-size: clamp(18px, 2vw, 24px); }
 #bay-auto { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); background: rgba(11, 16, 17, .7); color: var(--ink-2); cursor: pointer;
@@ -1645,40 +1647,4 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-width: 600px) { .howto { grid-template-columns: 1fr; } }
 @media (max-height: 800px) { .pf-bars { display: none; } }
 @media (max-height: 660px) { .bay-prof { display: none; } }
-
-/* ── the pause card, calm: a title, the one thing to do, the keys ────────
-   Resume leads. How to play is the first stop's alone (.first); every
-   later pause is the card, the keys and two side doors. The card sits over
-   a dimmed, blurred world and the HUD steps out, so nothing shows through
-   it; and it is never drawn behind the bay or a refit (.panel-open). */
-#pause { z-index: 5; background: rgba(6, 10, 11, .5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
-.panel-open #pause { display: none; }
-.paused #hud, .paused #touch { visibility: hidden; }
-.pause-card { --fill: rgba(9, 14, 15, .96); width: min(520px, 92vw); gap: 16px; padding: 26px 30px 22px; }
-.pause-t { padding-left: .32em; }
-.pause-card .voice { color: var(--ink-2); text-align: center; }
-.pause-card .howto, .pause-card .states { display: none; }
-#pause.first .howto { display: grid; }
-#pause.first .states { display: flex; }
-#pause.first .pause-card { width: min(720px, 94vw); }
-.pause-card .keys-l { gap: 8px 16px; padding-top: 14px; border-top: 1px solid var(--line); }
-.pause-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-.pause-acts button { justify-content: center; }
-#p-go { grid-column: 1 / -1; padding: 14px; font-size: 1.05em; letter-spacing: .14em; background: var(--hud-ghost) !important; }
-.pause-foot { display: flex; justify-content: space-between; gap: 12px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);
-  font: 600 calc(10px * 1.1)/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); }
-.pause-foot span:first-child { color: var(--ink-2); }
-@media (max-height: 520px) {
-  .pause-card { gap: 8px; padding: 12px 20px 12px; }
-  .pause-card .keys-l { padding-top: 8px; }
-  .pause-acts { grid-template-columns: 1.4fr 1fr 1fr; }
-  #p-go { grid-column: auto; padding: 10px; }
-  .pause-foot { display: none; }
-}
-
-/* the bay over a dimmed, blurred world, as the pause card is: the cards are the scene */
-#bay { background: radial-gradient(ellipse at 50% 55%, rgba(8, 13, 14, .5), rgba(8, 13, 14, .9) 80%); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
-.bt-s { top: 50%; bottom: auto; translate: 0 -50%; }
-.pause-acts button span { white-space: nowrap; }
-/* on a phone on its side the Suggested view keeps the tabs in a row on top, as the web does */
-@media (max-height: 520px) { #bay.picks .bay { grid-template: auto auto minmax(0, 1fr) auto / minmax(0, 1fr); grid-template-areas: "h" "tabs" "web" "foot"; } #bay.picks #bay-tab-h { display: none; } #bay.picks .bay-web { margin-bottom: 0; } }
+@media (max-width: 900px), (max-height: 520px) { .bt-s { display: none; } }
