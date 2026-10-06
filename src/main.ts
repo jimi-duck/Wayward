@@ -25,6 +25,7 @@ import { PortPanel } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
 import { blockOf, quickPicks } from './sim/bay';
+import { Feel } from './audio/audio';
 import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -60,9 +61,10 @@ function boot(): void {
   sector.setCosmetic(profile.cosmetic);
   const debug = new DebugOverlay(el('debug'), params.get('debug') === '1');
 
+  const feel = new Feel();
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  sector.reduceMotion = motion.matches;
-  motion.addEventListener('change', (e) => { sector.reduceMotion = e.matches; });
+  sector.reduceMotion = feel.reduceMotion = motion.matches;
+  motion.addEventListener('change', (e) => { sector.reduceMotion = feel.reduceMotion = e.matches; });
 
   // ── zoom ───────────────────────────────────────────────────────────────
   // the middle distance by default: room to see what is coming; the choice is remembered
@@ -240,6 +242,7 @@ function boot(): void {
   const threshold = (j: Journey, lines: string[]) => {
     loop.paused = true;
     input.reset();
+    feel.win();
     ending.show(j, () => {
       saveJourney(j);
       noticeOf(j, { kind: 'through', lines: [...j.log.slice(-1).map((l) => l.text), ...lines] });
@@ -381,6 +384,12 @@ function boot(): void {
     el('p-auto').classList.toggle('on', world.autoFit);
     el('p-auto').setAttribute('aria-pressed', String(world.autoFit));
     el('p-auto-v').textContent = t(world.autoFit ? 'On' : 'Off');
+    for (const [id, on] of [['p-sound', feel.prefs.sound], ['p-buzz', feel.prefs.haptics]] as const) {
+      el(id).classList.toggle('on', on);
+      el(id).setAttribute('aria-pressed', String(on));
+      el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
+    }
+    el('p-buzz').hidden = !feel.canBuzz;
   };
   // Phones and tablets take the whole screen where the browser allows it
   // (Android, iPad; never an iPhone browser), and on its side where it can
@@ -454,6 +463,7 @@ function boot(): void {
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
+      feel.events(events);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);
@@ -576,6 +586,8 @@ function boot(): void {
   };
   act('p-bay', () => openBay());
   act('p-auto', () => setAuto(!world.autoFit));
+  act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
+  act('p-buzz', () => { feel.setHaptics(!feel.prefs.haptics); showBrief(); });
   act('p-go', () => setPaused(false));
   // Story mode: the journey is saved as it stands (the last chart or dock), and the page reloads to the title
   act('p-exit', () => {

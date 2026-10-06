@@ -325,6 +325,8 @@ export const UI: Record<string, string> = {
   'Auto-refit off': 'Auto-Umbau aus',
   'Auto-refit on': 'Auto-Umbau an',
   'Auto-refit': 'Auto-Umbau',
+  'Sound': 'Ton',
+  'Buzz': 'Vibration',
   'Briefing': 'Einweisung',
   'Fit the one before it first': 'Erst das davor einbauen',
   'New': 'Neu',
