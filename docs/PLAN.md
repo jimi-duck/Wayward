@@ -597,6 +597,17 @@ stock ship, power never exceeded, and random builds never stuck for power
 while the core has room. The game still deals cards; the stock torpedo bay
 arrives with the bay in step 2, so the arcade is balanced once.
 
+**Step 2, done.** The arcade builds only in the bay (`ui/bay.ts`): the ship
+leaves with lasers, a shield charge and the torpedo bay; Krail is a stock;
+B, a pad's Back or the touch button opens the bay when nothing hostile is
+close; the HUD counts toward the cheapest module in reach and lights the
+key when one can be fitted; a capital ship destroyed opens her tech. The
+pilot shops in the bay (BALANCE.md, 120 runs): about ten installs a run
+against twelve or thirteen cards before, the tenth at 8:36 (cards: about
+six minutes); a fifth of runs reach the cap, against a third with cards.
+Builds that wait for a system (mines, drive plasma) fit only five or six
+and trail; step 3 balances that with the budgets.
+
 ### Open
 
 - The arcade's Krail: how much rock and kills give, against the costs
