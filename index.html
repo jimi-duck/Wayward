@@ -212,6 +212,11 @@
           <button type="button" role="radio" id="mode-story" class="mode" aria-checked="false"><b class="mo-t">Story mode</b><span class="mo-s">Survive • Trade • Extract • Return</span></button>
         </div>
         <div class="launch-row"><button type="button" id="launch">Start arcade</button></div>
+        <div class="diff">
+          <span class="diff-k">Difficulty</span>
+          <div id="mods" class="mods" role="group" aria-label="Difficulty"></div>
+          <span class="diff-s" id="diff-s"></span>
+        </div>
         <p class="resume-s" id="resume-s" hidden></p>
         <button type="button" id="fresh" class="ghost" hidden>New journey</button>
         <!-- a save the game could not read: say so, and offer the safety copy if there is one -->
@@ -222,11 +227,6 @@
       </div>
       <div class="start-foot">
         <div id="records" class="records"></div>
-        <div class="diff">
-          <span class="diff-k">Difficulty</span>
-          <div id="mods" class="mods" role="group" aria-label="Difficulty"></div>
-          <span class="diff-s" id="diff-s"></span>
-        </div>
         <div id="saves" class="mods" aria-label="Saved journey"></div>
       </div>
       <div id="lang" class="mods lang" aria-label="Language"></div>
