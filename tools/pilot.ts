@@ -15,6 +15,7 @@ import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
 import { blockOf, budgets, reachable } from '../src/sim/bay';
 import { FITTING } from '../src/content/web';
+import { MODULE_BY_ID } from '../src/content/modules';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
 // A competent, unspectacular player, for balancing. It picks a goal (nose
@@ -73,6 +74,8 @@ export interface PilotOptions {
   answer?: (w: World) => string | null;
   /** Sees every event and the world after each step, for the measuring tools. */
   watch?: (w: World, events: readonly GameEvent[]) => void;
+  /** The yard's modules the pilot wants at a port (the Story mode), most wanted first; others it leaves. */
+  modules?: string[];
 }
 
 export interface PilotResult {
@@ -119,8 +122,9 @@ export function stratName(s: Strategy): string {
 const KIND_BONUS: Record<string, number> = { system: 4, spec: 5, synergy: 4, tech: 5, stat: 1 };
 const WEAPON_BRANCHES = new Set<string>(['laser', 'torpedo', 'mine', 'plasma', 'close']);
 
-/** How much the strategy wants a module of the bay: its branch, then its second, a little defence, tech and synergies; fittings when their budget is short. */
-function want(w: World, s: Strategy, id: string): number {
+/** How much the strategy wants a module of the bay: its branch, then its second, a little defence, tech and synergies; fittings when their budget is short; the yard's modules it was told to want. */
+function want(w: World, s: Strategy, id: string, modules: readonly string[] = []): number {
+  if (MODULE_BY_ID[id]) { const i = modules.indexOf(id); return i < 0 ? -1 : 16 - i; }
   if (FITTING[id]) {
     // a fitting when its budget is short: power nearly gone, or the ship run hot or heavy
     const { use, cap } = budgets(w.levels);
@@ -144,18 +148,21 @@ function want(w: World, s: Strategy, id: string): number {
  * power is what stops it, the reactor core first; otherwise the pilot saves
  * for it. A random pilot buys whatever it can afford, at random.
  */
-function shop(w: World, s: Strategy, rngPick: () => number): void {
+function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly string[] = []): void {
   if (!w.openBay()) return;
   for (let i = 0; i < 6; i++) {
     const ctx = w.bayCtx();
     const open = reachable(ctx);
     if (!open.length) break;
     let pick: string | null;
-    if (s.kind === 'random') {
-      const now = open.filter((n) => blockOf(n.id, ctx) === null);
+    // the yard's modules it was told to want come first, whenever one can be fitted
+    const wanted = modules.find((id) => blockOf(id, ctx) === null);
+    if (wanted) pick = wanted;
+    else if (s.kind === 'random') {
+      const now = open.filter((n) => blockOf(n.id, ctx) === null && !MODULE_BY_ID[n.id]);
       pick = now.length ? now[Math.floor(rngPick() * now.length)]!.id : null;
     } else {
-      const best = open.map((n) => ({ id: n.id, v: want(w, s, n.id) + rngPick() })).sort((a, b) => b.v - a.v)[0]!;
+      const best = open.map((n) => ({ id: n.id, v: want(w, s, n.id, modules) + rngPick() })).sort((a, b) => b.v - a.v)[0]!;
       const why = blockOf(best.id, ctx);
       pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
     }
@@ -496,7 +503,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   let nextShop = 0, fitted = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
     // a look into the bay every couple of seconds, when it will open
-    if (w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick); }
+    if (w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms') {
       const before = { krail: w.cyrite, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
@@ -515,7 +522,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
       while (w.cyrite < w.jumpCost && w.buy('cyrite'));
       while (w.food < 12 && w.buy('food'));
       while (w.plates < w.stats.maxPlates && w.buy('plate'));
-      shop(w, strategy, rngPick);
+      shop(w, strategy, rngPick, o.modules);
       w.undock();
       continue;
     }

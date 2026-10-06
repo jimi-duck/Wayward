@@ -120,6 +120,8 @@ export const REWARD_WORD: Record<Reward | 'unknown', string> = {
 /** Rewards, in amounts. */
 export const PLACE_CYRITE = 14;
 export const PLACE_PARTS = 3;
+/** Krail for the bay that salvage brings (twice as much from a find). */
+export const PLACE_KRAIL = 30;
 export const PLACE_COVER = 1.5;
 export const PLACE_CHITS = 40;
 /** Calloway's days gained on a find that travels. */

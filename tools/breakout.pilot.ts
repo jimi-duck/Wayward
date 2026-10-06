@@ -83,7 +83,7 @@ way.
 
 ## Escapes
 
-| Strategy | Policy | Escaped | Time to escape | Lasted, if caught | Time in combat | Refits | Ore | Krail | Cut / fractured | Docked | Plates lost / gained |
+| Strategy | Policy | Escaped | Time to escape | Lasted, if caught | Time in combat | Installs | Ore | Cyrite | Cut / fractured | Docked | Plates lost / gained |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 ${rows.join('\n')}
 

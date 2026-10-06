@@ -1,7 +1,6 @@
 import { hunchOf, newDossier } from '../sim/calloway';
 import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
 import { layScatter } from '../sim/scatter';
-import { noKit } from '../sim/modules';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
 import { pending } from '../sim/endings';
@@ -27,9 +26,7 @@ export function migrate(raw: unknown): Journey | null {
   // 1 → 2: the factions' notice (M4). A journey saved before it starts with nobody's notice.
   if (j.version < 2) j.notice = newNotice();
   if (!j.notice) return null;
-  // 2 → 3: the ship's systems (M5). A journey saved before it has earned nothing for them and fitted no modules.
-  if (j.version < 3) j.carry.kit = noKit();
-  if (!j.carry.kit) return null;
+  // 2 → 3: the ship's systems (M5): nothing to bring up now, their resources went with version 7.
   // 3 → 4: places (M7). A journey saved before them gets the ones its seed would have dealt, seen from where it has been.
   if (j.version < 4) {
     j.chart.places = layPlaces(j.chart, j.seed ?? 0);
@@ -55,6 +52,8 @@ type Old = {
   chart: { systems: Array<Record<string, unknown>>; routes: Array<Record<string, unknown>>; places: Record<string, { reward: string }> };
   legs: Array<Record<string, unknown>>;
 };
+/** Krail for each unit of a system's old resource: a mark cost three to eight of them, about a tier-one module's worth. */
+const KIT_KRAIL = 8;
 const move = (o: Record<string, unknown> | null | undefined, from: string, to: string) => {
   if (o && from in o) { o[to] = o[from]; delete o[from]; }
 };
@@ -65,9 +64,15 @@ function toCyrite(j: Old): void {
   j.carry.krail = Math.round(Number(j.carry.xp) || 0);
   delete j.carry.xp;
   j.carry.levels = { ...stockLevels(), ...(j.carry.levels as Record<string, number>) };
+  // the four systems' resources (salvage, rig parts, signal kit, favours) went into the yard's modules: what was left is Krail now
+  const kit = (j.carry.kit ?? {}) as Record<string, number>;
+  j.carry.krail = Number(j.carry.krail) + Object.values(kit).reduce((a, v) => a + (Number(v) || 0), 0) * KIT_KRAIL;
+  delete j.carry.kit;
   for (const s of j.chart.systems) {
     move(s, 'krail', 'cyrite');
-    move((s.port as { prices?: Record<string, unknown> } | null)?.prices, 'krail', 'cyrite');
+    const prices = (s.port as { prices?: Record<string, unknown> } | null)?.prices;
+    move(prices, 'krail', 'cyrite');
+    if (prices) delete prices.refit;
   }
   for (const r of j.chart.routes) move(r, 'krail', 'cyrite');
   for (const p of Object.values(j.chart.places)) if (p.reward === 'krail') p.reward = 'cyrite';

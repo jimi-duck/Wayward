@@ -3,15 +3,14 @@ import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { CARDS } from '../src/content/cards';
 import { MODULES, MODULE_BY_ID, SHIP_SYSTEMS } from '../src/content/modules';
+import { NODE } from '../src/content/web';
 import { upgradeSystem, UPGRADES } from '../src/content/upgrades';
 import { HOLD_START, PATCH_COST, PRICE } from '../src/sim/breakout';
+import { blockOf, cost, fee, stockLevels, type BayCtx } from '../src/sim/bay';
 import { computeStats } from '../src/sim/build';
 import { CARD_BY_ID as CARDS_BY_ID, choiceView, sensors, yourStrength, type Ctx } from '../src/sim/comms';
 import { ECHO_DELAY, endSortie, newJourney, VERSION } from '../src/sim/journey';
-import { Rng } from '../src/sim/rng';
-import {
-  BLUFF_KIT, CAPITAL_SALVAGE, discounted, earned, effects, fitCost, fitNeeds, hasFitted, JOB_FAVOURS, LISTENER_KIT, mainSystem, noKit, systemMarks,
-} from '../src/sim/modules';
+import { discounted, effects, hasFitted, mainSystem, systemMarks } from '../src/sim/modules';
 import { newRun } from '../src/sim/run';
 import { World } from '../src/sim/world';
 import { migrate } from '../src/meta/save';
@@ -24,10 +23,10 @@ const ctx = (x: Partial<Ctx> = {}): Ctx => ({
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, food: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
-/** A quiet Breakout docked at the port, with `chits` and `kit` aboard. */
-function docked(chits = 500, kit = { guns: 20, rig: 20, signals: 20, contacts: 20 }): World {
+/** A quiet Breakout docked at the port, with `chits` and `krail` aboard. */
+function docked(chits = 500, krail = 500): World {
   const j = newJourney(3);
-  const w = new World(5, { mode: 'breakout', carry: { ...j.carry, chits, kit } });
+  const w = new World(5, { mode: 'breakout', carry: { ...j.carry, chits, krail } });
   w.field.rocks = [];
   w.field.bulwarks = [];
   w.field.step = () => {};
@@ -41,42 +40,34 @@ function docked(chits = 500, kit = { guns: 20, rig: 20, signals: 20, contacts: 2
 }
 
 describe('the ship’s systems', () => {
-  it('lists modules for all four systems, each priced for every mark, with ids that collide with nothing', () => {
+  it('lists modules for all four systems, each a Story node of the bay\'s web fitted at the yard, with a fee for every mark', () => {
     for (const s of SHIP_SYSTEMS) expect(MODULES.filter((m) => m.system === s).length).toBeGreaterThanOrEqual(3);
     const ups = new Set(UPGRADES.map((u) => u.id));
     expect(new Set(MODULES.map((m) => m.id)).size).toBe(MODULES.length);
     for (const m of MODULES) {
       expect(ups.has(m.id)).toBe(false);
-      expect(m.kit.length).toBe(m.max);
       expect(m.chits.length).toBe(m.max);
+      expect(NODE[m.id], m.id).toMatchObject({ story: true, yard: 1 });
       for (const id of m.counts ?? []) expect(ups.has(id)).toBe(true);
     }
   });
 
-  it('earns each system’s resource from its own way of playing', () => {
-    const r = newRun(1);
-    expect(earned(r)).toEqual(noKit());
-    r.kills = 13; r.capitals = 1; r.capitalFactions = ['office']; r.killsByKind = { warbird: 2, scout: 11 };
-    r.cut = 7; r.ore = 30;
-    r.jobsDone = 1;
-    const bluff = CARDS.find((c) => c.choices.some((x) => x.tone === 'bluff'))!;
-    const help = CARDS.find((c) => c.choices.some((x) => x.tone === 'help'))!;
-    r.cards = [
-      { id: bluff.id, choice: bluff.choices.find((x) => x.tone === 'bluff')!.id, won: true, t: 1 },
-      { id: bluff.id, choice: bluff.choices.find((x) => x.tone === 'bluff')!.id, won: false, t: 2 },
-      { id: help.id, choice: help.choices.find((x) => x.tone === 'help')!.id, won: true, t: 3 },
-    ];
-    expect(earned(r)).toEqual({ guns: 2 + CAPITAL_SALVAGE, rig: 7 + 2, signals: LISTENER_KIT + 2 + BLUFF_KIT, contacts: JOB_FAVOURS + 1 });
-  });
-
-  it('prices each mark dearer, stops at the last, and says what is missing', () => {
-    expect(fitCost({}, 'md_racks')).toEqual({ kit: 3, chits: 10 });
-    expect(fitCost({ md_racks: 1 }, 'md_racks')).toEqual({ kit: 5, chits: 20 });
-    expect(fitCost({ md_racks: 3 }, 'md_racks')).toBeNull();
-    expect(fitCost({}, 'ph_emitters')).toBeNull();
-    expect(fitNeeds({}, { ...noKit(), rig: 3 }, 10, 'md_racks')).toEqual([]);
-    expect(fitNeeds({}, { ...noKit(), guns: 9 }, 5, 'md_racks')).toEqual(['Needs 3 rig parts', 'Needs 10 chits']);
-    expect(fitNeeds({ md_spoofer: 1 }, { ...noKit(), signals: 99 }, 999, 'md_spoofer')).toEqual(['Fully fitted']);
+  it('prices the yard\'s work in Krail and chits, only at a port, and only in the Story mode', () => {
+    const story = (x: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: new Set(), techs: new Set(), arcade: false, krail: 1000, chits: 1000, ...x });
+    expect(blockOf('md_racks', story())).toBe('yard');
+    expect(blockOf('md_racks', story({ docked: true }))).toBeNull();
+    expect(blockOf('md_racks', story({ docked: true, chits: 5 }))).toBe('chits');
+    expect(blockOf('md_racks', { ...story({ docked: true }), arcade: true })).toBe('mode');
+    expect(fee('md_racks', 1, false)).toBe(10);
+    expect(fee('md_racks', 2, false)).toBe(20);
+    expect(cost('md_racks', 2)).toBeGreaterThan(cost('md_racks', 1));
+    expect(blockOf('md_racks', story({ docked: true, levels: { ...stockLevels(), md_racks: 3 } }))).toBe('full');
+    // the frame is yard work in the Story mode, never in the arcade; the core only from its last level
+    expect(blockOf('hl_frame', story())).toBe('yard');
+    expect(blockOf('hl_frame', { ...story(), arcade: true })).toBeNull();
+    expect(fee('hl_frame', 1, true)).toBe(0);
+    expect(blockOf('rx_core', story({ levels: { ...stockLevels(), rx_core: 1 } }))).toBeNull();
+    expect(blockOf('rx_core', story({ levels: { ...stockLevels(), rx_core: 2 } }))).toBe('yard');
   });
 
   it('changes the stat block, the hold, the heat, the prices and what the comms open', () => {
@@ -90,7 +81,7 @@ describe('the ship’s systems', () => {
     expect(e.patch).toBe(2);
     expect(e.flags).toEqual(['codes']);
     expect(e.counts).toEqual(['ut_scanner']);
-    expect(discounted(PRICE, { md_ledger: 1 })).toEqual({ ...PRICE, cyrite: Math.round(PRICE.cyrite * 0.9), food: Math.round(PRICE.food * 0.9), plate: 27, refit: 54 });
+    expect(discounted(PRICE, { md_ledger: 1 })).toEqual({ ...PRICE, cyrite: Math.round(PRICE.cyrite * 0.9), food: Math.round(PRICE.food * 0.9), plate: 27 });
     expect(discounted(PRICE, {})).toBe(PRICE);
   });
 
@@ -113,27 +104,33 @@ describe('the ship’s systems', () => {
 });
 
 describe('the yard', () => {
-  it('fits a module at a port, paid in its resource and chits, and nowhere else', () => {
-    const w = docked(40);
+  it('fits a module in the bay at a port, paid in Krail and the yard\'s chits, and not at sea', () => {
+    const w = docked(40 + 10 + 25 - 5);
     expect(w.phase).toBe('dock');
-    expect(w.fitModule('md_racks')).toBe(true);
+    expect(w.openBay()).toBe(true);
+    expect(w.install('md_racks')).toBeNull();
     expect(w.levels.md_racks).toBe(1);
-    expect(w.chits).toBe(30);
-    expect(w.kit.rig).toBe(17);
+    expect(w.chits).toBe(60);
+    expect(w.krail).toBe(500 - cost('md_racks', 1));
     expect(w.holdMax).toBe(HOLD_START + 15);
-    expect(w.fitModule('md_spoofer')).toBe(true);
+    // the spoofer comes after the baffles on the web
+    expect(w.install('md_spoofer')).toBe('path');
+    expect(w.install('md_baffles')).toBeNull();
+    expect(w.install('md_spoofer')).toBeNull();
     expect(w.flags.has('codes')).toBe(true);
     // out of chits
-    expect(w.fitNeeds('md_plate')).toEqual(['Needs 15 chits']);
-    expect(w.fitModule('md_plate')).toBe(false);
+    expect(w.chits).toBe(60 - 10 - 25);
+    w.chits = 10;
+    expect(w.install('md_plate')).toBe('chits');
+    w.closeBay();
+    expect(w.phase).toBe('dock');
     w.undock();
     w.chits = 500;
-    expect(w.fitNeeds('md_plate')).toEqual(['Only at a port']);
-    expect(w.fitModule('md_plate')).toBe(false);
-    // the fitted modules and what is left of the resources go on with the ship
-    const c = w.carry();
-    expect(c.levels).toMatchObject({ md_racks: 1, md_spoofer: 1 });
-    expect(c.kit).toEqual({ guns: 20, rig: 17, signals: 14, contacts: 20 });
+    w.aliens = [];
+    expect(w.openBay()).toBe(true);
+    expect(w.install('md_plate')).toBe('yard');
+    w.closeBay();
+    expect(w.carry().levels).toMatchObject({ md_racks: 1, md_spoofer: 1 });
   });
 
   it('brings the modules aboard in the next system: racks, flags, a cheaper patch, a cheaper port', () => {
@@ -143,7 +140,7 @@ describe('the yard', () => {
     expect(w.ore).toBe(50);
     expect(w.flags.has('gutter_friend')).toBe(true);
     expect(w.patchCost).toBe(PATCH_COST - 2);
-    expect(w.prices.refit).toBe(54);
+    expect(w.prices.food).toBeLessThan(w.sortie.port!.prices.food);
   });
 
   it('lets heat climb slower behind baffles', () => {
@@ -159,24 +156,19 @@ describe('the yard', () => {
     run(a, 20); run(b, 20);
     expect(b.bk!.heat - h0).toBeCloseTo((a.bk!.heat - h0) * 0.875 ** 2, 4);
   });
-
-  it('adds what a sortie earns to what came aboard', () => {
-    const j = newJourney(3);
-    const w = new World(5, { mode: 'breakout', carry: { ...j.carry, kit: { guns: 1, rig: 0, signals: 0, contacts: 0 } } });
-    w.run.kills = 12;
-    expect(w.kit.guns).toBe(3);
-    expect(w.result().carry.kit.guns).toBe(3);
-  });
 });
 
 describe('the save', () => {
-  it('brings a version 2 journey up with nothing earned for the systems', () => {
-    const j = newJourney(4) as unknown as Record<string, unknown> & { carry: Record<string, unknown> };
-    j.version = 2;
-    delete j.carry.kit;
+  it('brings an old journey\'s systems\' resources back as Krail', () => {
+    const j = JSON.parse(JSON.stringify(newJourney(4)).replace(/cyrite/g, 'krail')) as Record<string, unknown> & { carry: Record<string, unknown> };
+    j.version = 6;
+    j.carry.krail = 20;
+    j.carry.kit = { guns: 3, rig: 2, signals: 0, contacts: 1 };
     const m = migrate(JSON.parse(JSON.stringify(j)));
     expect(m?.version).toBe(VERSION);
-    expect(m?.carry.kit).toEqual(noKit());
+    expect(m?.carry.cyrite).toBe(20);
+    expect(m?.carry.krail).toBe(6 * 8);
+    expect('kit' in m!.carry).toBe(false);
     expect(MODULE_BY_ID.md_racks).toBeDefined();
   });
 });

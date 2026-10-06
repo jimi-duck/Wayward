@@ -73,7 +73,6 @@ export type GameEvent =
   | { type: 'fracture'; x: number; z: number; kind: string }
   | { type: 'patched'; plates: number }
   | { type: 'docked'; name: string }
-  | { type: 'fitted'; id: string; name: string; mark: number }
   | { type: 'spool' }
   | { type: 'needCyrite'; have: number; need: number }
   | { type: 'jumped'; x: number; z: number }

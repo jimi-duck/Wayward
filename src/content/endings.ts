@@ -32,8 +32,6 @@ export interface Need {
   friends?: number;
   /** Marks fitted in each ship system, at least. */
   marks?: Partial<Record<ShipSystem, number>>;
-  /** Each system's resource aboard (the kit: salvage, parts, signal gear, favours), at least. */
-  kit?: Partial<Record<ShipSystem, number>>;
   /** Any one of these flags set on the cards. */
   flags?: string[];
   /** Every one of these flags set. */
@@ -70,9 +68,9 @@ export interface EndingDef {
 export const ENDINGS: EndingDef[] = [
   {
     id: 'broadcast', name: 'Broadcast', pitch: 'Send the file to the core worlds. Hope the truth is enough.',
-    needs: 'Needs: Signals 2 or the long-range array, 5 signal gear, Office frequencies and Calloway listening, the whole file, or the Voice.',
+    needs: 'Needs: Signals 2 or the long-range array, Office frequencies and Calloway listening, the whole file, or the Voice.',
     ways: [
-      { marks: { signals: 2 } }, { module: ['md_array'] }, { kit: { signals: 5 } }, { allFlags: ['freqs', 'calloway_told'] }, { flags: ['freqs'], marks: { signals: 1 } },
+      { marks: { signals: 2 } }, { module: ['md_array'] }, { allFlags: ['freqs', 'calloway_told'] }, { flags: ['freqs'], marks: { signals: 1 } },
       { fragments: 4 }, { flags: ['voice_read'] }, { flags: ['copy_warden'], marks: { signals: 1 } },
     ],
     file: 'SEVERANCE · the broadcast copy',
@@ -132,14 +130,14 @@ export const ENDINGS: EndingDef[] = [
   },
   {
     id: 'seal', name: 'Seal', pitch: 'Destroy the lanes again. The Scatter stays free, the core stays dark.',
-    needs: 'Needs: Guns or Rig 3, 25 salvage or 12 rig parts, Calloway beaten and Guns 1, or the Voice’s keys.',
-    ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { kit: { guns: 25 } }, { kit: { rig: 12 } }, { beaten: 1, marks: { guns: 1 } }, { flags: ['lane_keys'] }],
+    needs: 'Needs: Guns or Rig 3, Guns and Rig 2, Calloway beaten and Guns 1, or the Voice’s keys.',
+    ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { marks: { guns: 2, rig: 2 } }, { beaten: 1, marks: { guns: 1 } }, { flags: ['lane_keys'] }],
     file: 'SEVERANCE · burned; this is what was left',
     epilogue: [
       { if: { flags: ['lane_keys'] }, text: 'The Voice turns the keys it kept for seventy years. It does not say why.' },
       { text: 'The Threshold lane takes all the charges in the hold and most of the Wayward’s paint.' },
       { text: 'When the light fades, the lane is gone, and the file too. Nobody comes through from the core again.' },
-      { if: { kit: { rig: 12 } }, text: 'The charges were cut from Kellern ore. It seemed fitting.' },
+      { if: { marks: { rig: 2 } }, text: 'The charges were cut from Kellern ore. It seemed fitting.' },
       { if: { beaten: 2 }, text: 'Calloway watches from the far side, and does not follow.' },
       { text: 'The Scatter stays the Scatter: poor, cut off, and nobody’s.' },
     ],

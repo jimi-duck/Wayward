@@ -1,6 +1,6 @@
 import { t } from '../i18n';
 import {
-  DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_CYRITE, PLACE_PARTS, PLACES, REWARD_WORD,
+  DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_CYRITE, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
 } from '../content/phenomena';
 import { SYSTEMS } from '../content/systems';
 import { REGIONS } from '../content/regions';
@@ -13,7 +13,7 @@ import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
-import { effects, noKit } from './modules';
+import { effects } from './modules';
 import { stockLevels } from './bay';
 import { Rng } from './rng';
 import { sensors } from './comms';
@@ -139,7 +139,7 @@ const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 
 export function startCarry(): Carry {
   return {
-    cyrite: START_CYRITE, krail: 0, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], kit: noKit(),
+    cyrite: START_CYRITE, krail: 0, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [],
   };
 }
 
@@ -284,19 +284,19 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
   const lines = [head];
   switch (p.reward) {
     case 'cyrite': c.cyrite = Math.min(TANK_MAX, c.cyrite + PLACE_CYRITE); lines.push(`+${PLACE_CYRITE} Cyrite`); break;
-    case 'parts': c.parts += PLACE_PARTS; c.kit = { ...c.kit, rig: c.kit.rig + 2, guns: c.kit.guns + 1 }; lines.push(t('+{n} parts · rig parts and salvage for the yard', { n: PLACE_PARTS })); break;
+    case 'parts': c.parts += PLACE_PARTS; c.krail += PLACE_KRAIL; lines.push(t('+{n} parts · +{k} Krail', { n: PLACE_PARTS, k: PLACE_KRAIL })); break;
     case 'cover': j.hunt.delay += PLACE_COVER; lines.push(t('Calloway loses your trail for a while')); break;
     case 'shortcut': {
       const to = openShortcut(j.chart, from);
       lines.push(to ? t('New lane: {a} to {b}', { a: sysById(j.chart, from).name, b: to.name }) : t('The lane it showed leads nowhere new'));
       break;
     }
-    case 'favour': c.chits += PLACE_CHITS; c.kit = { ...c.kit, contacts: c.kit.contacts + 2 }; lines.push(t('+{n} chits · favours owed for the yard', { n: PLACE_CHITS })); break;
+    case 'favour': c.chits += PLACE_CHITS; lines.push(t('+{n} chits · favours owed', { n: PLACE_CHITS })); break;
     case 'info': hearNews(j); sightPlaces(j.chart, s.id, 3); lines.push(t('The Net’s edge, and the places three jumps round')); break;
     case 'danger':
-      c.parts += PLACE_PARTS; c.kit = { ...c.kit, signals: c.kit.signals + 2, guns: c.kit.guns + 2 };
+      c.parts += PLACE_PARTS; c.krail += PLACE_KRAIL * 2;
       huntOn(j.hunt, j.chart, j.trail, DANGER_DAYS);
-      lines.push(t('+{n} parts · signal kit and salvage', { n: PLACE_PARTS }), t('Word gets out · Calloway gains a day'));
+      lines.push(t('+{n} parts · +{k} Krail', { n: PLACE_PARTS, k: PLACE_KRAIL * 2 }), t('Word gets out · Calloway gains a day'));
       break;
   }
   note(j, head);
@@ -421,7 +421,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
 
 /** At a port: the journey keeps what the ship has, so a load starts the system again from here. */
 export function checkpoint(j: Journey, c: Carry): void {
-  j.carry = { ...c, flags: [...c.flags], jobs: c.jobs.map((x) => ({ ...x })), seen: [...c.seen], kit: { ...c.kit } };
+  j.carry = { ...c, flags: [...c.flags], jobs: c.jobs.map((x) => ({ ...x })), seen: [...c.seen] };
 }
 
 /** Jumps from here to the Threshold by the shortest way. */

@@ -68,8 +68,8 @@ export interface Fig { label: string; from: string; to: string; cost: boolean; }
 /** What one more level of an upgrade would change, as figures (in the Story mode, `arcade` false, without the arcade's own). */
 export function upgradeFigures(levels: Levels, id: string, arcade = true): Fig[] {
   const next = { ...levels, [id]: (levels[id] ?? 0) + 1 };
-  // the arcade feels the budgets (sim/budgets.ts): a module that runs the ship hot or heavy shows it
-  const at = (lv: Levels) => (arcade ? feelBudgets(computeStats(lv), lv) : computeStats(lv));
+  // the ship feels the budgets (sim/budgets.ts): a module that runs it hot or heavy shows it
+  const at = (lv: Levels) => feelBudgets(computeStats(lv), lv);
   return figures(at(levels), at(next), arcade);
 }
 

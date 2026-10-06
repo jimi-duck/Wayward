@@ -19,11 +19,15 @@
 //   heat  · made by weapons and the drive. Over the sinks' rating the guns
 //           recharge and reload slower.
 //
+// In the Story mode the yard's modules (content/modules.ts) sit here too,
+// and the heaviest work (the frame, the core's last level) needs a port:
+// those are fitted only while docked, for a fee in chits as well.
+//
 // Nothing comes out once it is in, so the bay shows what an install leaves.
 // The reactor core draws no power and is open from the start, so a build
 // can always find more power until the core is full.
 
-export type Tab = 'hull' | 'weapons' | 'ordnance' | 'engines' | 'defence' | 'utility' | 'reactor' | 'synergies';
+export type Tab = 'hull' | 'weapons' | 'ordnance' | 'engines' | 'defence' | 'utility' | 'signals' | 'reactor' | 'synergies';
 
 export interface TabDef { name: string; /** Three words, as the reference's header. */ sub: string; }
 
@@ -34,6 +38,7 @@ export const TABS: Record<Tab, TabDef> = {
   engines: { name: 'Engines', sub: 'Drive · handling · plasma' },
   defence: { name: 'Defence', sub: 'Shields · the hull arc' },
   utility: { name: 'Utility', sub: 'Tractor · scanners · krail' },
+  signals: { name: 'Signals', sub: 'Stealth · sensors · contacts' },
   reactor: { name: 'Reactor', sub: 'Power · heat · the core' },
   synergies: { name: 'Synergies', sub: 'Pairings · salvaged tech' },
 };
@@ -52,6 +57,8 @@ export const STOCK: Readonly<Record<string, number>> = Object.freeze({ tp_bay: 1
 /** Krail for the first level of a node, by tier (1 to 4); each further level costs LEVEL_STEP more of it. */
 export const TIER_COST = [0, 40, 60, 90, 130] as const;
 export const LEVEL_STEP = 0.5;
+/** The yard's fee in chits for a level of yard work that is not a module (a module has its own, content/modules.ts). */
+export const YARD_FEE = 15;
 
 export interface WebNode {
   id: string;
@@ -68,9 +75,10 @@ export interface WebNode {
   gives?: Partial<Budget>;
   /** A multiplier on its price, where the tier's alone would be too dear for what it does. */
   price?: number;
-  /** Story mode only; or fitted only at a port's yard (Story). */
+  /** Story mode only. */
   story?: boolean;
-  yard?: boolean;
+  /** The Story mode: from this level on it is fitted only at a port's yard (1: every level), for Krail and a fee in chits. */
+  yard?: number;
 }
 
 /** Nodes of the bay's own, with no upgrade behind them: they raise the ratings. */
@@ -88,7 +96,7 @@ const n = (id: string, tab: Tab, tier: number, row: number, from: string[] | nul
 
 export const WEB: WebNode[] = [
   // ── hull: the frame, plating, the prow, and what keeps it together ──────
-  n('hl_frame', 'hull', 1, 0, null, {}, { gives: { mass: 4 } }),
+  n('hl_frame', 'hull', 1, 0, null, {}, { gives: { mass: 4 }, yard: 1 }),
   n('df_armour', 'hull', 1, 1, null, { mass: 3 }),
   n('cl_ram', 'hull', 1, 2, null, { mass: 2 }),
   n('df_repair', 'hull', 1, 4, null, { power: 1 }),
@@ -99,6 +107,9 @@ export const WEB: WebNode[] = [
   n('cl_shock', 'hull', 3, 2, ['cl_ram'], { power: 1, mass: 1 }),
   n('cl_juggernaut', 'hull', 3, 3, ['cl_ram'], { mass: 4 }),
   n('df_regenerative', 'hull', 3, 4, ['df_repair'], { power: 1 }),
+  // the yard (the Story mode)
+  n('md_plate', 'hull', 2, 2, null, { mass: 2 }, { story: true, yard: 1 }),
+  n('md_shop', 'hull', 2, 4, null, { mass: 1 }, { story: true, yard: 1 }),
 
   // ── weapons: the lasers ─────────────────────────────────────────────────
   n('ph_emitters', 'weapons', 1, 0, null, { heat: 1 }),
@@ -112,6 +123,9 @@ export const WEB: WebNode[] = [
   n('ph_lance_cap', 'weapons', 4, 0, ['ph_lance'], { heat: 1 }),
   n('ph_cone_wide', 'weapons', 4, 1, ['ph_cone'], { heat: 1 }),
   n('ph_fire_control', 'weapons', 4, 2, ['ph_array'], { power: 1 }),
+  // the yard (the Story mode)
+  n('md_hardpoints', 'weapons', 2, 3, null, { power: 1, mass: 1 }, { story: true, yard: 1 }),
+  n('md_gunnery', 'weapons', 2, 4, null, { heat: 1 }, { story: true, yard: 1 }),
 
   // ── ordnance: torpedoes above, mines below ──────────────────────────────
   n('tp_bay', 'ordnance', 1, 1, null, { power: 2, heat: 1, mass: 1 }),
@@ -155,6 +169,9 @@ export const WEB: WebNode[] = [
   n('cl_arc_power', 'defence', 2, 1, ['cl_arc'], { heat: 1 }),
   n('cl_arc_reach', 'defence', 2, 2, ['cl_arc'], { power: 1 }),
   n('cl_storm', 'defence', 3, 2, ['cl_arc_power', 'cl_arc_reach'], { power: 1, heat: 1 }),
+  // the yard (the Story mode)
+  n('md_projector', 'defence', 2, 3, null, { power: 2 }, { story: true, yard: 1 }),
+  n('md_capacitor', 'defence', 2, 4, null, { power: 1 }, { story: true, yard: 1 }),
 
   // ── utility ─────────────────────────────────────────────────────────────
   n('ut_tractor', 'utility', 1, 0, null, { power: 1 }),
@@ -164,9 +181,22 @@ export const WEB: WebNode[] = [
   n('ut_prospector', 'utility', 3, 0, ['ut_tractor'], { power: 1 }),
   n('ut_salvager', 'utility', 3, 1, ['ut_matrix'], { power: 1 }),
   n('ut_scanner', 'utility', 3, 2, ['ut_quiet', 'ut_matrix'], { power: 2 }),
+  // the yard (the Story mode)
+  n('md_racks', 'utility', 1, 3, null, { mass: 2 }, { story: true, yard: 1 }),
+  n('md_tractor', 'utility', 2, 3, ['md_racks'], { power: 1 }, { story: true, yard: 1 }),
+
+  // ── signals: the yard's quiet kit and the people you know (the Story mode) ──
+  n('md_baffles', 'signals', 1, 0, null, { mass: 1 }, { story: true, yard: 1 }),
+  n('md_array', 'signals', 1, 1, null, { power: 1 }, { story: true, yard: 1 }),
+  n('md_jammer', 'signals', 2, 1, ['md_array'], { power: 1 }, { story: true, yard: 1 }),
+  n('md_spoofer', 'signals', 2, 0, ['md_baffles'], { power: 1 }, { story: true, yard: 1 }),
+  n('md_ghost', 'signals', 3, 0, ['md_spoofer', 'md_jammer'], { power: 1 }, { story: true, yard: 1 }),
+  n('md_ledger', 'signals', 1, 3, null, {}, { story: true, yard: 1 }),
+  n('md_names', 'signals', 2, 3, ['md_ledger'], {}, { story: true, yard: 1 }),
+  n('md_dock', 'signals', 2, 4, ['md_ledger'], {}, { story: true, yard: 1 }),
 
   // ── reactor: power, heat, and the core's release ────────────────────────
-  n('rx_core', 'reactor', 1, 0, null, { heat: 1 }, { gives: { power: 3 } }),
+  n('rx_core', 'reactor', 1, 0, null, { heat: 1 }, { gives: { power: 3 }, yard: 3 }),
   n('rx_sinks', 'reactor', 1, 1, null, { mass: 1 }, { gives: { heat: 4 } }),
   n('oc_coils', 'reactor', 1, 2, null, { heat: 1 }),
   n('oc_nova', 'reactor', 2, 1, ['oc_coils'], { heat: 2 }),

@@ -20,9 +20,9 @@ export type SystemKind = 'home' | 'mining' | 'port' | 'transit' | 'contested' | 
 export type Holder = 'kellern' | 'frontier' | 'guild' | 'gutter' | 'holdfast' | 'voice' | 'thren' | 'none';
 
 /** What a port charges, in chits (ore is what it pays). */
-export interface Prices { ore: number; cyrite: number; plate: number; refit: number; food: number }
+export interface Prices { ore: number; cyrite: number; plate: number; food: number }
 
-export const BASE_PRICES: Prices = { ore: 2, cyrite: 5, plate: 30, refit: 60, food: 9 };
+export const BASE_PRICES: Prices = { ore: 2, cyrite: 5, plate: 30, food: 9 };
 
 export interface SystemTemplate {
   kind: SystemKind;
@@ -99,13 +99,13 @@ export const PORT_NAMES: Record<Holder, string[]> = {
   none: ['Free Dock', 'Claim Shack'],
 };
 
-/** Price multipliers by holder (cyrite, plate, refit and food; ore is what they pay). */
+/** Price multipliers by holder (Cyrite, plates and food; ore is what they pay). */
 export const HOLDER_PRICES: Record<Holder, Partial<Record<keyof Prices, number>>> = {
   kellern: { ore: 1, cyrite: 1.1 },
   frontier: {},
-  guild: { ore: 1.25, refit: 0.9 },
+  guild: { ore: 1.25 },
   gutter: { ore: 0.75, cyrite: 0.8, plate: 0.8, food: 1.3 },
-  holdfast: { ore: 1.1, cyrite: 1.15, food: 0.8, refit: 1.1 },
+  holdfast: { ore: 1.1, cyrite: 1.15, food: 0.8 },
   voice: {},
   thren: {},
   none: { cyrite: 1.2, food: 1.2 },

@@ -45,8 +45,7 @@ import { autoPick, install as bayInstall, stockLevels, type BayCtx, type Block }
 import { feelBudgets } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
-import { addKit, discounted, earned, effects, fitNeeds, noKit, type Effects, type Kit } from './modules';
-import { MODULE_BY_ID } from '../content/modules';
+import { discounted, effects, type Effects } from './modules';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -201,9 +200,6 @@ export class World implements EncounterHost {
   docked = false;
   /** What the fitted modules do (sim/modules.ts), worked out with the stats. */
   fx: Effects = effects({});
-  /** The systems' resources brought aboard, and spent at this sortie's ports; what this sortie earns is read off the run. */
-  private kitIn: Kit = noKit();
-  private kitSpent: Kit = noKit();
   private holdNag = 0;
 
   // the comms: the card on the table, what the run has set in motion, and who thinks what of you
@@ -292,7 +288,6 @@ export class World implements EncounterHost {
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
-    this.kitIn = noKit(); this.kitSpent = noKit();
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     if (this.mode !== 'breakout') {
       this.bk = null; this.krail = 0; this.cyrite = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
@@ -355,7 +350,6 @@ export class World implements EncounterHost {
     this.standing = { ...c.standing };
     this.jobs = c.jobs.map((j) => ({ ...j }));
     this.heard = new Set(c.seen);
-    this.kitIn = { ...noKit(), ...c.kit };
   }
 
   /** The cards that cannot come now: heard this sortie, or heard on the journey and not the kind that comes again. */
@@ -370,7 +364,7 @@ export class World implements EncounterHost {
     return {
       cyrite: this.cyrite, krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
-      seen: [...new Set([...this.heard, ...this.cardsSeen])], kit: this.kit,
+      seen: [...new Set([...this.heard, ...this.cardsSeen])],
     };
   }
 
@@ -769,33 +763,6 @@ export class World implements EncounterHost {
     return Math.max(1, PATCH_COST - this.fx.patch);
   }
 
-  /** Each system's resource aboard: what came aboard, what this sortie has earned so far, less what its ports took. */
-  get kit(): Kit {
-    const k = addKit(this.kitIn, earned(this.run));
-    for (const s of Object.keys(k) as Array<keyof Kit>) k[s] -= this.kitSpent[s];
-    return k;
-  }
-
-  /** Why a module's next mark cannot be fitted here and now, in words (empty when it can). */
-  fitNeeds(id: string): string[] {
-    if (this.phase !== 'dock') return ['Only at a port'];
-    return fitNeeds(this.levels, this.kit, this.chits, id);
-  }
-
-  /** At the port: fit the next mark of a module, paid in its system's resource and chits. */
-  fitModule(id: string): boolean {
-    const m = MODULE_BY_ID[id];
-    if (!m || this.fitNeeds(id).length) return false;
-    const mk = this.levels[id] ?? 0;
-    this.kitSpent[m.system] += m.kit[mk]!;
-    this.chits -= m.chits[mk]!;
-    this.levels = { ...this.levels, [id]: mk + 1 };
-    this.refreshStats();
-    this.fitAboard();
-    this.events.push({ type: 'fitted', id, name: m.name, mark: mk + 1 });
-    return true;
-  }
-
   /** Whether a thing can be had at the port now. */
   canBuy(item: PortItem): boolean {
     if (this.phase !== 'dock') return false;
@@ -930,7 +897,7 @@ export class World implements EncounterHost {
 
   /** What the bay's rules see of the ship. */
   bayCtx(): BayCtx {
-    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.krail };
+    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.krail, chits: this.chits };
   }
 
   /**
@@ -953,7 +920,7 @@ export class World implements EncounterHost {
     return true;
   }
 
-  /** Fit one more level of `id`, paid in Krail. Null when fitted, else why not (sim/bay.ts). */
+  /** Fit one more level of `id`, paid in Krail (and the yard's chits). Null when fitted, else why not (sim/bay.ts). */
   install(id: string): Block | 'closed' | null {
     useIds(this.ids);
     if (this.phase !== 'bay') return 'closed';
@@ -973,6 +940,7 @@ export class World implements EncounterHost {
     const r = bayInstall(id, this.bayCtx());
     if (typeof r === 'string') return r;
     this.krail -= r.cost;
+    this.chits -= r.fee;
     this.levels = r.levels;
     this.refreshStats();
     this.fitAboard();

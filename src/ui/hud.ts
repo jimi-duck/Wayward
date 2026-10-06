@@ -16,9 +16,7 @@ import { range, Targeting } from './targeting';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
-import { blockOf, cheapest, quickPicks } from '../sim/bay';
-import { FITTING } from '../content/web';
-import { UPGRADE } from '../content/upgrades';
+import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view in the brand's six zones, with nothing on
@@ -215,7 +213,7 @@ export class Hud {
         case 'regen': this.note(world, `${t('Hull regrown')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'fitted':
           // Auto-refit says what it fitted; what you fit yourself you saw
-          if ('auto' in e && e.auto) this.note(world, `${t('Auto-refit')} · ${t(UPGRADE[e.id]?.name ?? FITTING[e.id]?.name ?? e.id)}`, 'gain');
+          if ('auto' in e && e.auto) this.note(world, `${t('Auto-refit')} · ${t(nodeName(e.id))}`, 'gain');
           break;
         case 'mendStart': if (world.time - this.mendNoted > MEND_QUIET) { this.mendNoted = world.time; this.note(world, t('Self-repair under way')); } break;
         case 'mended': this.note(world, `${t('Hull mended')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); this.retrigger($('sys-hull'), 'mended'); break;

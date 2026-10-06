@@ -1,6 +1,7 @@
-import { UPGRADE, upgradeText } from '../content/upgrades';
-import { FITTING, NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
-import { blockOf, budgets, cost, maxLevel, quickPicks, type Block } from '../sim/bay';
+import { MODULE_BY_ID, type ShipSystem } from '../content/modules';
+import { UPGRADE } from '../content/upgrades';
+import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
+import { blockOf, budgets, cost, fee, maxLevel, nodeName, nodeText, quickPicks, type Block } from '../sim/bay';
 import { upgradeFigures } from '../sim/build';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
@@ -18,19 +19,21 @@ import { num, t } from '../i18n';
 //               price, the rest dimmed), and an inspector on the right.
 //
 // Along the bottom, the ship's three budgets. The world waits while the bay
-// is open, so it opens any time.
+// is open. In the Story mode the yard's work (its modules, the frame, the
+// core's last level) is fitted only at a port, for chits as well as Krail.
 //
 // Keys: Q E (or Tab) change view, arrows move, Enter fits, 1 2 3 fit a
 // suggestion, A toggles Auto-refit, Esc or B launches. A pad: bumpers,
 // stick, A, Y for Auto-refit, B. Touch: tap.
 
 type View = 'picks' | Tab;
-const VIEWS: View[] = ['picks', ...TAB_ORDER];
 
 const TAB_ICON: Record<View, string> = {
-  picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', reactor: 'i-core', synergies: 'i-link',
+  picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-event', reactor: 'i-core', synergies: 'i-link',
 };
 const FIT_ICON: Record<string, string> = { rx_core: 'i-core', rx_sinks: 'i-plasma', hl_frame: 'i-hull' };
+/** The yard's modules wear their system's icon. */
+const SYSTEM_ICON: Record<ShipSystem, string> = { guns: 'i-laser', rig: 'i-rock', signals: 'i-event', contacts: 'i-link' };
 
 /** Why a module cannot be fitted, in a few words. */
 const WHY: Record<Block, string> = {
@@ -43,21 +46,37 @@ const WHY: Record<Block, string> = {
   yard: 'Fitted only at a port',
   power: 'Not enough power · fit a reactor core',
   krail: 'Not enough Krail',
+  chits: 'Not enough chits for the yard',
 };
 const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass', heat: 'Heat' };
 /** What running over a soft rating costs (sim/budgets.ts). */
 const OVER_WORD = { mass: 'Over the mass rating: slower to turn and to speed up', heat: 'Over the heat rating: the guns recharge and reload slower' } as const;
 
-const nameOf = (id: string) => t(UPGRADE[id]?.name ?? FITTING[id]?.name ?? id);
-const iconOf = (id: string) => FIT_ICON[id] ?? ICON[UPGRADE[id]?.branch ?? 'utility'];
-const textOf = (id: string, lv: number) => t(UPGRADE[id] ? upgradeText(UPGRADE[id]!, lv) : FITTING[id]!.text);
+const nameOf = (id: string) => t(nodeName(id));
+const iconOf = (id: string) => FIT_ICON[id] ?? (MODULE_BY_ID[id] ? SYSTEM_ICON[MODULE_BY_ID[id]!.system] : ICON[UPGRADE[id]?.branch ?? 'utility']);
+const textOf = (id: string, lv: number) => t(nodeText(id, lv));
+
+/** The price of the next level: Krail, and the yard's chits where it charges. */
+function priceWord(w: World, id: string): string {
+  const lv = (w.levels[id] ?? 0) + 1, f = fee(id, lv, !w.bk);
+  return `${num(cost(id, lv))} Krail${f ? ` · ${num(f)} ${t('chits')}` : ''}`;
+}
+
+/** What the Fit button says: the price, how much Krail is missing, or why not. */
+function fitWord(w: World, id: string, why: Block | null): string {
+  if (why === 'krail') return t('{n} more Krail', { n: num(Math.ceil(cost(id, (w.levels[id] ?? 0) + 1) - w.krail)) });
+  return why ? t(WHY[why]) : `${t('Fit')} · ${priceWord(w, id)}`;
+}
+
+/** The views: the suggestions, then every tab with something for this mode (Signals is the Story mode's). */
+const viewsOf = (w: World): View[] => ['picks', ...TAB_ORDER.filter((tab) => WEB.some((n) => n.tab === tab && blockOf(n.id, { ...w.bayCtx(), krail: Infinity }) !== 'mode'))];
 
 /** A module's look: fitted (all, or some), ready to fit, in reach but short of Krail or power, or not yet open. */
 function stateOf(world: World, id: string): 'max' | 'owned' | 'open' | 'short' | 'locked' {
   const lv = world.levels[id] ?? 0, b = blockOf(id, world.bayCtx());
   if (lv >= maxLevel(id)) return 'max';
   if (b === null) return lv ? 'owned' : 'open';
-  if (b === 'krail' || b === 'power') return lv ? 'owned' : 'short';
+  if (b === 'krail' || b === 'chits' || b === 'power') return lv ? 'owned' : 'short';
   return lv ? 'owned' : 'locked';
 }
 
@@ -157,8 +176,8 @@ export class BayPanel {
   }
 
   private step(d: number): void {
-    const i = VIEWS.indexOf(this.view);
-    this.go(VIEWS[(i + d + VIEWS.length) % VIEWS.length]!);
+    const views = viewsOf(this.world!), i = views.indexOf(this.view);
+    this.go(views[(i + d + views.length) % views.length]!);
   }
 
   /** The module to start on in a tab: the first ready to fit, else the first. */
@@ -232,7 +251,7 @@ export class BayPanel {
   }
 
   private tabs(w: World): void {
-    $('bay-tabs').replaceChildren(...VIEWS.map((v) => {
+    $('bay-tabs').replaceChildren(...viewsOf(w).map((v) => {
       const ready = v === 'picks' ? 0 : WEB.filter((n) => n.tab === v && blockOf(n.id, w.bayCtx()) === null).length;
       const name = v === 'picks' ? t('Suggested') : t(TABS[v].name);
       const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}`, '', icon(TAB_ICON[v]), h('span', 'bt-n', name), ready ? h('b', 'bt-c', String(ready)) : null) as HTMLButtonElement;
@@ -250,15 +269,13 @@ export class BayPanel {
     this.pick = Math.min(this.pick, Math.max(0, picks.length - 1));
     const ctx = w.bayCtx();
     const cards = picks.map((n, i) => {
-      const lv = w.levels[n.id] ?? 0, max = maxLevel(n.id), price = cost(n.id, lv + 1), why = blockOf(n.id, ctx);
+      const lv = w.levels[n.id] ?? 0, max = maxLevel(n.id), why = blockOf(n.id, ctx);
       const fig = upgradeFigures(w.levels, n.id, true).find((f) => !f.cost);
       const card = h('div', `pick-card${why ? ' short' : ' ready'}${i === this.pick ? ' sel' : ''}`);
       const go = h('button', 'pc-go', '') as HTMLButtonElement;
       go.type = 'button';
       go.disabled = !!why;
-      go.append(why === 'krail'
-        ? document.createTextNode(t('{n} more Krail', { n: num(Math.ceil(price - w.krail)) }))
-        : why ? document.createTextNode(t(WHY[why])) : document.createTextNode(`${t('Fit')} · ${num(price)} Krail`));
+      go.append(document.createTextNode(fitWord(w, n.id, why)));
       go.addEventListener('click', (e) => { e.stopPropagation(); this.pick = i; this.install(n.id); });
       card.addEventListener('click', () => { this.pick = i; this.render(); });
       card.append(
@@ -350,11 +367,10 @@ export class BayPanel {
       if (chips.childElementCount) out.push(chips);
       out.push(...warn.map((x) => h('p', 'bi-warn', x)));
     }
-    const price = lv < max ? cost(id, lv + 1) : 0;
     const btn = h('button', 'bi-go', '') as HTMLButtonElement;
     btn.type = 'button';
     btn.disabled = !!why;
-    btn.textContent = why === 'krail' ? t('{n} more Krail', { n: num(Math.ceil(price - w.krail)) }) : why ? t(WHY[why]) : `${t('Fit')} · ${num(price)} Krail`;
+    btn.textContent = fitWord(w, id, why);
     btn.addEventListener('click', (e) => { e.stopPropagation(); this.install(id); });
     out.push(btn);
     el.replaceChildren(...out);
