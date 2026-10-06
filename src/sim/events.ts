@@ -34,8 +34,8 @@ export type GameEvent =
   | { type: 'webSet'; x: number; z: number }
   | { type: 'pickup'; x: number; z: number; plates: number }
   | { type: 'crystal'; x: number; z: number; value: number }
+  | { type: 'cyrite'; x: number; z: number; value: number }
   | { type: 'power'; x: number; z: number; kind: PowerKind }
-  | { type: 'levelUp'; refit: number }
   | { type: 'fitted'; id: string; auto?: boolean }
   | { type: 'salvage'; faction: string; tech: boolean }
   | { type: 'cloak'; x: number; z: number }
@@ -69,13 +69,12 @@ export type GameEvent =
   | { type: 'ore'; x: number; z: number; value: number }
   | { type: 'parts'; x: number; z: number; value: number }
   | { type: 'holdFull' }
-  | { type: 'rockCut'; x: number; z: number; size: number; kind: string; ore: number; krail: number; points: number }
+  | { type: 'rockCut'; x: number; z: number; size: number; kind: string; ore: number; cyrite: number; points: number }
   | { type: 'fracture'; x: number; z: number; kind: string }
   | { type: 'patched'; plates: number }
   | { type: 'docked'; name: string }
-  | { type: 'fitted'; id: string; name: string; mark: number }
   | { type: 'spool' }
-  | { type: 'needKrail'; have: number; need: number }
+  | { type: 'needCyrite'; have: number; need: number }
   | { type: 'jumped'; x: number; z: number }
   | { type: 'comms'; id: string; kind: string; from: string; title: string; slow: boolean }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }

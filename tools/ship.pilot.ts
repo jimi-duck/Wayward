@@ -1,9 +1,9 @@
 import { writeFileSync } from 'node:fs';
 import { it } from 'vitest';
-import { MODULE_BY_ID, SHIP_SYSTEMS, SYSTEM_DEFS, type ShipSystem } from '../src/content/modules';
+import { MODULE_BY_ID, MODULES, SHIP_SYSTEMS, SYSTEM_DEFS, type ShipSystem } from '../src/content/modules';
 import { CARD_BY_ID } from '../src/sim/comms';
 import { endSortie, hearNews, newJourney, plot, replot, sortieDef, type Journey } from '../src/sim/journey';
-import { addKit, earned, noKit, systemMarks, type Kit } from '../src/sim/modules';
+import { systemMarks } from '../src/sim/modules';
 import { World } from '../src/sim/world';
 import { flyWorld, type Policy, type Strategy } from './pilot';
 import { planRoute } from './route';
@@ -11,11 +11,11 @@ import { planRoute } from './route';
 // ── the ship's balance report ─────────────────────────────────────────────
 // `npm run pilot:ship` flies whole journeys as the journey pilot does, once
 // for each of the ship's four systems and once with no modules at all. Each
-// system's pilot builds toward it: it fits that system's modules at every
-// port it can afford them (keeping the chits for the jump and the galley),
-// takes refit cards from the branches that system holds, answers the
-// comms the way that system plays, and takes a choice its modules opened
-// whenever one is on the table. It writes docs/BALANCE-SHIP.md: how each
+// system's pilot builds toward it: it fits that system's modules in the bay
+// at every port it can pay for them (after the Cyrite for the jump and the
+// galley), shops the rest of the bay for the branches that system holds,
+// answers the comms the way that system plays, and takes a choice its
+// modules opened whenever one is on the table. It writes docs/BALANCE-SHIP.md: how each
 // build gets through, and whether each gets through in its own way.
 // SHIP_RUNS trades precision for speed.
 
@@ -39,20 +39,6 @@ const BUILDS: Build[] = [
   { name: 'Contacts', system: 'contacts', strat: { kind: 'focus', branch: 'torpedo', second: 'defence' }, policy: 'pay', modules: ['md_ledger', 'md_dock', 'md_names'] },
 ];
 
-/** Chits held back at a yard: the Krail still owed to the jump, and two jumps of food. */
-const reserve = (w: World) => Math.max(0, w.jumpCost - w.krail) * w.prices.krail + Math.max(0, 12 - w.food) * w.prices.food;
-
-/** Fit what the build wants, cheapest first among the ones it can have now, while the purse allows. */
-function fitAt(w: World, b: Build, fitted: string[]): void {
-  w.sellOre();
-  for (let tries = 0; tries < 8; tries++) {
-    const can = b.modules.filter((id) => !w.fitNeeds(id).length);
-    const id = can.find((m) => w.chits - (MODULE_BY_ID[m]!.chits[w.levels[m] ?? 0] ?? Infinity) >= reserve(w));
-    if (!id || !w.fitModule(id)) return;
-    fitted.push(id);
-  }
-}
-
 /** A choice the build's modules opened, if one is on the table. */
 function ownChoice(w: World, b: Build): string | null {
   if (!b.system || !w.comms) return null;
@@ -71,8 +57,11 @@ interface ShipRun {
   combat: number;
   time: number;
   kills: number;
-  earned: Kit;
-  fitted: string[];
+  /** Krail taken aboard and spent in the bay. */
+  krail: number;
+  spent: number;
+  /** Marks of the yard's modules fitted. */
+  fitted: number;
   /** Choices its modules opened, taken. */
   own: Array<{ card: string; choice: string; won: boolean }>;
   callowayCalls: number;
@@ -80,7 +69,7 @@ interface ShipRun {
 
 function flyJourney(seed: number, b: Build): ShipRun {
   const j = newJourney(seed);
-  const out: ShipRun = { j, stuck: false, combat: 0, time: 0, kills: 0, earned: noKit(), fitted: [], own: [], callowayCalls: 0 };
+  const out: ShipRun = { j, stuck: false, combat: 0, time: 0, kills: 0, krail: 0, spent: 0, fitted: 0, own: [], callowayCalls: 0 };
   let n = 0;
   while (j.status !== 'over' && n < MAX_LEGS) {
     if (j.status === 'chart') plot(j, planRoute(j));
@@ -89,15 +78,15 @@ function flyJourney(seed: number, b: Build): ShipRun {
       if (w.carry().flags.includes('news')) hearNews(j);
       const was = j.dest, r = replot(j, planRoute(j, w.carry()));
       if (r && j.dest !== was) w.replot(r.dest, r.jumpCost);
-      fitAt(w, b, out.fitted);
     };
     const own = new Set<string>();
     const answer = (w: World) => { const id = ownChoice(w, b); if (id) own.add(`${w.comms!.def.id}:${id}`); return id; };
-    const res = flyWorld(w, seed * 31 + n, b.strat, { maxTime: 1200, breakout: true, policy: b.policy, onDock, answer });
+    const res = flyWorld(w, seed * 31 + n, b.strat, { maxTime: 1200, breakout: true, policy: b.policy, onDock, answer, modules: b.modules });
     out.combat += res.combat;
     out.time += res.run.time;
     out.kills += res.run.kills;
-    out.earned = addKit(out.earned, earned(res.run));
+    out.krail += res.run.krailEarned;
+    out.spent += res.run.krailSpent;
     for (const a of res.answers) {
       if (own.has(`${a.card}:${a.choice}`)) out.own.push({ card: a.card, choice: a.choice, won: a.won });
       if (a.card === 'calloway_here') out.callowayCalls++;
@@ -106,6 +95,7 @@ function flyJourney(seed: number, b: Build): ShipRun {
     endSortie(j, w.result());
     n++;
   }
+  out.fitted = MODULES.reduce((a, m) => a + (j.carry.levels[m.id] ?? 0), 0);
   return out;
 }
 
@@ -120,10 +110,10 @@ it('flies whole journeys, one build per system', { timeout: 7_200_000 }, () => {
     for (let i = 0; i < RUNS; i++) res.push(flyJourney(3000 + i * 13, b));
     const through = res.filter((r) => r.j.end === 'through').length;
     rows.push(`| ${b.name} | ${b.policy} | ${through}/${res.length} | ${res.filter((r) => r.j.end === 'captured').length} | ${res.filter((r) => r.j.end === 'wrecked').length} | ${res.filter((r) => r.stuck).length} | ${f1(mean(res.map((r) => r.j.legs.length)))} | ${f1(mean(res.map((r) => r.j.day)))} | ${f1(mean(res.map((r) => r.j.wrecks)))} | ${f1(mean(res.map((r) => r.callowayCalls)))} |`);
-    how.push(`| ${b.name} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.time))))} | ${f1(mean(res.map((r) => r.kills)))} | ${pct(res.filter((r) => r.j.hunt.hunch?.kind || r.j.hunt.hunch?.straight).length / res.length)} | ${f1(mean(res.map((r) => r.j.carry.chits)))} | ${f1(mean(res.map((r) => r.j.carry.krail)))} |`);
-    earnRows.push(`| ${b.name} | ${SHIP_SYSTEMS.map((s) => f1(mean(res.map((r) => r.earned[s])))).join(' | ')} |`);
+    how.push(`| ${b.name} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.time))))} | ${f1(mean(res.map((r) => r.kills)))} | ${pct(res.filter((r) => r.j.hunt.hunch?.kind || r.j.hunt.hunch?.straight).length / res.length)} | ${f1(mean(res.map((r) => r.j.carry.chits)))} | ${f1(mean(res.map((r) => r.j.carry.cyrite)))} |`);
+    earnRows.push(`| ${b.name} | ${f1(mean(res.map((r) => r.krail)))} | ${f1(mean(res.map((r) => r.spent)))} | ${f1(mean(res.map((r) => r.j.carry.refit)))} |`);
     const marks = SHIP_SYSTEMS.map((s) => f1(mean(res.map((r) => systemMarks(r.j.carry.levels)[s]))));
-    fitRows.push(`| ${b.name} | ${marks.join(' | ')} | ${f1(mean(res.map((r) => r.fitted.length)))} | ${res.filter((r) => r.fitted.length).length}/${res.length} |`);
+    fitRows.push(`| ${b.name} | ${marks.join(' | ')} | ${f1(mean(res.map((r) => r.fitted)))} | ${res.filter((r) => r.fitted).length}/${res.length} |`);
     const own: Record<string, { n: number; won: number }> = {};
     for (const r of res) for (const a of r.own) { const k = `${a.card}.${a.choice}`; own[k] ??= { n: 0, won: 0 }; own[k].n++; if (a.won) own[k].won++; }
     ownRows.push(`| ${b.name} | ${f1(mean(res.map((r) => r.own.length)))} | ${Object.entries(own).sort((x, y) => y[1].n - x[1].n).map(([k, v]) => `${k} ${v.won}/${v.n}`).join(', ') || '—'} |`);
@@ -134,10 +124,11 @@ Generated by \`npm run pilot:ship\`: the scripted pilot flew ${BUILDS.length * R
 whole journeys (${RUNS} seeds per build, the same seeds for every build), as
 the journey pilot flies them (docs/BALANCE-JOURNEY.md). Each build is one of
 the ship's four systems, plus one that fits no modules at all. A build fits
-its system's modules at every port it can afford them, keeping the chits
-for the jump and two jumps of food; takes refit cards from the branches its
-system holds; answers the comms by one policy; and takes a choice its
-modules opened whenever one is on the table at even odds or better.
+its system's modules in the bay at every port it can pay for them (Krail and
+the yard's chits), after the Cyrite for the jump and two jumps of food;
+shops the rest of the bay for the branches its system holds; answers the
+comms by one policy; and takes a choice its modules opened whenever one is
+on the table at even odds or better.
 
 | Build | Modules wanted |
 |---|---|
@@ -151,14 +142,14 @@ ${rows.join('\n')}
 
 ## In what way
 
-| Build | Time in combat | Kills a journey | She read the route | Chits at the end | Krail at the end |
+| Build | Time in combat | Kills a journey | She read the route | Chits at the end | Cyrite at the end |
 |---|---|---|---|---|---|
 ${how.join('\n')}
 
-## What each earns (per journey)
+## The bay (per journey)
 
-| Build | ${SHIP_SYSTEMS.map((s) => `${SYSTEM_DEFS[s].name} (${SYSTEM_DEFS[s].resource})`).join(' | ')} |
-|---|---|---|---|---|
+| Build | Krail taken aboard | Krail spent | Installs |
+|---|---|---|---|
 ${earnRows.join('\n')}
 
 ## What each fits

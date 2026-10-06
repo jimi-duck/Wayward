@@ -250,7 +250,7 @@ export class Targeting {
       if (world.bk) {
         // the Breakout: what a clean cut gives, and how the cut is going
         const y = rockYield(r.kind, r.size, true);
-        sub = `${tr('Ore')} <b>${y.ore}</b>${y.krail ? ` · Krail <b>${y.krail}</b>` : ''}${extra}`;
+        sub = `${tr('Ore')} <b>${y.ore}</b>${y.cyrite ? ` · Cyrite <b>${y.cyrite}</b>` : ''}${extra}`;
         if ((r.cut ?? 0) > 0 || (r.heat ?? 0) > 0) {
           intK = tr((r.heat ?? 0) > 0.8 ? 'Too hot · cut' : 'Cut');
           hp = r.cut ?? 0;

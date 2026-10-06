@@ -79,7 +79,7 @@ export class SummaryPanel {
     $('summary').querySelector('.kick')!.textContent = t(r.escaped ? 'Escaped' : 'Hull breach');
     $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run over');
     // what did it: the kicker already says hull breach
-    $('sum-s').textContent = r.escaped ? t('Out with {n} Krail to spare', { n: r.krailLeft }) : damageWord(r.cause || 'rock');
+    $('sum-s').textContent = r.escaped ? t('Out with {n} Cyrite to spare', { n: r.cyriteLeft }) : damageWord(r.cause || 'rock');
     $('sum-score').textContent = fmt(r.score);
     const line = $('sum-line');
     line.replaceChildren(h('span', '', `${mmss(r.time)} ${t(r.escaped ? 'to the lane' : 'survived')} · ${t('refit')} ${r.refit} · ${t('{n} kills', { n: r.kills })}`), rec.newBest ? h('span', 'best', ` · ${t('new best')}`) : h('span', '', ` · ${t('best')} ${fmt(p.score)}`));
@@ -96,7 +96,7 @@ export class SummaryPanel {
       const plain = (label: string, v: string, note: string) => h('div', 'tile', '', h('span', 'k', t(label)), h('b', '', v), h('span', 'cmp', note));
       $('sum-tiles').replaceChildren(
         plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Through the lane mouth' : 'Short of the lane')),
-        plain('Krail', String(r.krail), r.escaped ? t('{n} left after the jump', { n: r.krailLeft }) : t('Gathered')),
+        plain('Cyrite', String(r.cyrite), r.escaped ? t('{n} left after the jump', { n: r.cyriteLeft }) : t('Gathered')),
         plain('Ore', String(r.ore), t('{n} sold at the port', { n: r.oreSold })),
         plain('Rock cut clean', String(r.cut), t('{n} cracked', { n: r.fractured })),
         tile('Refits', r.refit, p.refit),

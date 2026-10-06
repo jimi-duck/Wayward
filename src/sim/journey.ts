@@ -1,10 +1,10 @@
 import { t } from '../i18n';
 import {
-  DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
+  DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_CYRITE, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
 } from '../content/phenomena';
 import { SYSTEMS } from '../content/systems';
 import { REGIONS } from '../content/regions';
-import { FOOD_START, HOME, JUMP_COST, START_KRAIL, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
+import { FOOD_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
   arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
   viewOf, type Chart, type StarSystem,
@@ -13,7 +13,8 @@ import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
-import { effects, noKit } from './modules';
+import { effects } from './modules';
+import { stockLevels } from './bay';
 import { Rng } from './rng';
 import { sensors } from './comms';
 import type { Faction } from './enemies';
@@ -34,7 +35,7 @@ import { actLine, dueBeat } from './story';
 //              SortieResult. Every DAY seconds flown is a day gone.
 //   the chart · on the far side of the lane, the drive cools and you plot
 //              the next jump from the lanes out of where you are. The jump
-//              costs the Krail on the lane, days in the lane, and food and
+//              costs the Cyrite on the lane, days in the lane, and food and
 //              parts for those days.
 //
 // Failure costs, but rarely ends it. A wreck leaves you adrift in the same
@@ -56,7 +57,7 @@ import { actLine, dueBeat } from './story';
 // mouth for a last meeting built from all of it.
 //
 // Most systems have a place in them (content/phenomena.ts). The sortie
-// plays it once; dealt with, it pays here, in whatever it pays: Krail,
+// plays it once; dealt with, it pays here, in whatever it pays: Cyrite,
 // salvage, cover from Calloway, a new lane, a favour owed, news, or a find
 // that someone else hears about.
 
@@ -77,7 +78,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 6;
+export const VERSION = 7;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
 export const AHEAD: Partial<Record<string, string[]>> = { voice: ['drone', 'probe', 'drone'], thren: ['mote', 'mote', 'weaver'] };
 /** A Gutter raid adds this to the share of the pursuit from ahead. */
@@ -89,9 +90,9 @@ export interface Leg {
   system: string;
   name: string;
   day: number;
-  /** Krail aboard arriving, and leaving (after the jump). */
-  krailIn: number;
-  krailOut: number;
+  /** Cyrite aboard arriving, and leaving (after the jump). */
+  cyriteIn: number;
+  cyriteOut: number;
   time: number;
   ended: 'jumped' | 'destroyed';
   cards: number;
@@ -138,7 +139,7 @@ const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 
 export function startCarry(): Carry {
   return {
-    krail: START_KRAIL, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: {}, xp: 0, refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], kit: noKit(),
+    cyrite: START_CYRITE, krail: 0, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [],
   };
 }
 
@@ -178,10 +179,10 @@ export function sortieDef(j: Journey): SortieDef {
   const R = REGIONS[regionOf(s)] ?? REGIONS[0]!, raid = raided(j.chart, s.id);
   const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0);
   return {
-    system: s.id, region: regionOf(s), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.krail ?? JUMP_COST, lane: s.lane,
+    system: s.id, region: regionOf(s), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
     port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
     heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
-    rich: t.rich * (0.6 + s.krail * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls,
+    rich: t.rich * (0.6 + s.cyrite * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls,
     ahead: raid ? undefined : AHEAD[s.holder], thren: threnAt(j.chart, s.id), here: presence(j.chart, s.id),
     blockade: net, netted: net, calloway: finale ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
     place: pd ? { name: pd.name, text: pd.text, plays: pd.plays } : null,
@@ -220,7 +221,7 @@ export function plot(j: Journey, to: string): boolean {
 /**
  * At a port, plot again: the lane out of here can change while you are
  * docked, with what the dockmaster told you in mind. The world needs the
- * new destination and its Krail (World.replot). False if not docked at a
+ * new destination and its Cyrite (World.replot). False if not docked at a
  * port here, or there is no such lane.
  */
 export function replot(j: Journey, to: string): { dest: string; jumpCost: number } | false {
@@ -230,7 +231,7 @@ export function replot(j: Journey, to: string): { dest: string; jumpCost: number
   if (!route) return false;
   if (to !== j.dest) note(j, t('Re-plotted for {name}', { name: sysById(j.chart, to).name }));
   j.dest = to;
-  return { dest: sysById(j.chart, to).name, jumpCost: route.krail };
+  return { dest: sysById(j.chart, to).name, jumpCost: route.cyrite };
 }
 
 /** News bought (the dockmaster, a Drift fleet): the Net's edge as it is now, and where she is. */
@@ -251,9 +252,9 @@ function pass(j: Journey, days: number, heard: string[] = []): string[] {
   // the Net moves once you are out of Cerro: it is the Continuance answering the escape
   if (j.trail.length < 2) return [];
   const fell = spreadNet(j.chart, days, rng(j));
-  // the Thren follow the Krail: in a lane, to where it is going (the Wayward is already set down there)
+  // the Thren follow the Cyrite: in a lane, to where it is going (the Wayward is already set down there)
   const at = j.at;
-  for (const n of stepScatter(j.chart, days, rng(j), { at, krail: j.carry.krail, tank: TANK_MAX })) {
+  for (const n of stepScatter(j.chart, days, rng(j), { at, cyrite: j.carry.cyrite, tank: TANK_MAX })) {
     if (jumps(j.chart, at, n.id) > SIGHT) continue;
     note(j, n.text);
     heard.push(n.text);
@@ -282,20 +283,20 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
   const head = d.reward === 'unknown' ? `${t(d.name)} · ${t(d.done)}: ${t(REWARD_WORD[p.reward])}` : `${t(d.name)} · ${t(d.done)}`;
   const lines = [head];
   switch (p.reward) {
-    case 'krail': c.krail = Math.min(TANK_MAX, c.krail + PLACE_KRAIL); lines.push(`+${PLACE_KRAIL} Krail`); break;
-    case 'parts': c.parts += PLACE_PARTS; c.kit = { ...c.kit, rig: c.kit.rig + 2, guns: c.kit.guns + 1 }; lines.push(t('+{n} parts · rig parts and salvage for the yard', { n: PLACE_PARTS })); break;
+    case 'cyrite': c.cyrite = Math.min(TANK_MAX, c.cyrite + PLACE_CYRITE); lines.push(`+${PLACE_CYRITE} Cyrite`); break;
+    case 'parts': c.parts += PLACE_PARTS; c.krail += PLACE_KRAIL; lines.push(t('+{n} parts · +{k} Krail', { n: PLACE_PARTS, k: PLACE_KRAIL })); break;
     case 'cover': j.hunt.delay += PLACE_COVER; lines.push(t('Calloway loses your trail for a while')); break;
     case 'shortcut': {
       const to = openShortcut(j.chart, from);
       lines.push(to ? t('New lane: {a} to {b}', { a: sysById(j.chart, from).name, b: to.name }) : t('The lane it showed leads nowhere new'));
       break;
     }
-    case 'favour': c.chits += PLACE_CHITS; c.kit = { ...c.kit, contacts: c.kit.contacts + 2 }; lines.push(t('+{n} chits · favours owed for the yard', { n: PLACE_CHITS })); break;
+    case 'favour': c.chits += PLACE_CHITS; lines.push(t('+{n} chits · favours owed', { n: PLACE_CHITS })); break;
     case 'info': hearNews(j); sightPlaces(j.chart, s.id, 3); lines.push(t('The Net’s edge, and the places three jumps round')); break;
     case 'danger':
-      c.parts += PLACE_PARTS; c.kit = { ...c.kit, signals: c.kit.signals + 2, guns: c.kit.guns + 2 };
+      c.parts += PLACE_PARTS; c.krail += PLACE_KRAIL * 2;
       huntOn(j.hunt, j.chart, j.trail, DANGER_DAYS);
-      lines.push(t('+{n} parts · signal kit and salvage', { n: PLACE_PARTS }), t('Word gets out · Calloway gains a day'));
+      lines.push(t('+{n} parts · +{k} Krail', { n: PLACE_PARTS, k: PLACE_KRAIL * 2 }), t('Word gets out · Calloway gains a day'));
       break;
   }
   note(j, head);
@@ -312,7 +313,7 @@ export interface Outcome {
 export function endSortie(j: Journey, res: SortieResult): Outcome {
   const lines: string[] = [];
   const s = here(j);
-  const krailIn = j.carry.krail;
+  const cyriteIn = j.carry.cyrite;
   j.score += res.run.score;
   // the sortie's own consequences: a held-up hunter, a system that will hold out
   if (res.huntDelay > 0) j.hunt.delay += res.huntDelay;
@@ -340,7 +341,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   lines.push(...heard);
   const fell = pass(j, res.time / DAY, lines);
   const leg: Leg = {
-    system: s.id, name: s.name, day: Math.round(j.day * 10) / 10, krailIn, krailOut: res.carry.krail, time: Math.round(res.time), ended: res.ended,
+    system: s.id, name: s.name, day: Math.round(j.day * 10) / 10, cyriteIn, cyriteOut: res.carry.cyrite, time: Math.round(res.time), ended: res.ended,
     cards: res.run.cards.length, kills: res.run.kills, calloway: res.calloway, score: res.run.score,
   };
   j.legs.push(leg);
@@ -356,10 +357,10 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     }
     // adrift: you patch her enough to fly, and the hold is gone
     const c = res.carry;
-    j.carry = { ...c, ore: 0, parts: Math.floor(c.parts / 2), krail: Math.floor(c.krail / 2), chits: Math.floor(c.chits / 2), plates: 2 };
+    j.carry = { ...c, ore: 0, parts: Math.floor(c.parts / 2), cyrite: Math.floor(c.cyrite / 2), chits: Math.floor(c.chits / 2), plates: 2 };
     pass(j, ADRIFT);
     note(j, t('Wrecked in {name} · adrift a day', { name: s.name }));
-    lines.push(t('The hull went. She flies again, a day later.'), t('Hold lost, and half your Krail, parts and chits.'), t('{n} more and she won’t fly again.', { n: WRECKS - j.wrecks }));
+    lines.push(t('The hull went. She flies again, a day later.'), t('Hold lost, and half your Cyrite, parts and chits.'), t('{n} more and she won’t fly again.', { n: WRECKS - j.wrecks }));
     j.status = 'sortie';
     return { kind: 'adrift', lines };
   }
@@ -387,7 +388,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     hearNews(j);
     lines.push(t('Your news: the Net’s edge and the Prefect’s last port'));
   } else sight(j, false);
-  leg.krailOut = c.krail;
+  leg.cyriteOut = c.cyrite;
   const there = sysById(j.chart, to);
   note(j, t('Jumped to {name}', { name: there.name }));
   for (const id of fell) if (j.chart.seenNet.includes(id)) lines.push(t('The Net has taken {name}', { name: sysById(j.chart, id).name }));
@@ -400,7 +401,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (turn) { lines.unshift(actLine(turn)); note(j, actLine(turn)); }
   const fleet = fleetAt(j.chart, to);
   if (fleet) lines.push(t('Drift fleet here · {name} trades food and news', { name: fleet.name }));
-  if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push(t('Thren here · they come for Krail'));
+  if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push(t('Thren here · they come for Cyrite'));
   if (there.kind === 'edge') {
     j.status = 'over';
     j.end = 'through';
@@ -420,7 +421,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
 
 /** At a port: the journey keeps what the ship has, so a load starts the system again from here. */
 export function checkpoint(j: Journey, c: Carry): void {
-  j.carry = { ...c, flags: [...c.flags], jobs: c.jobs.map((x) => ({ ...x })), seen: [...c.seen], kit: { ...c.kit } };
+  j.carry = { ...c, flags: [...c.flags], jobs: c.jobs.map((x) => ({ ...x })), seen: [...c.seen] };
 }
 
 /** Jumps from here to the Threshold by the shortest way. */

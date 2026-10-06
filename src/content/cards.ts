@@ -145,8 +145,8 @@ export const CARDS: CardDef[] = [
   },
   {
     id: 'krail_seller', kind: 'trade', caller: 'miners', when: { after: 60, short: true }, weight: 1.2, repeat: true,
-    from: 'Independent prospector · Old Hesketh', title: 'Krail, a little cut',
-    text: '“Four Krail, raw out of the vein. Twenty-five chits or a dozen ore. You look like you need it.” You are {short} short of the jump.',
+    from: 'Independent prospector · Old Hesketh', title: 'Cyrite, a little cut',
+    text: '“Four Cyrite, raw out of the vein. Twenty-five chits or a dozen ore. You look like you need it.” You are {short} short of the jump.',
     ships: [], cargo: 'Prospector’s tug · a few crates',
     truths: [
       { id: 'pure', weight: 2, read: 'Spectral read: clean violet, full grade' },
@@ -154,14 +154,14 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       {
-        id: 'chits', label: 'Pay chits', tone: 'pay', hint: 'Four Krail for twenty-five.', cost: { chits: 25 }, loseIf: ['cut'],
-        win: { text: 'Four Krail aboard', krail: 4, standing: { miners: 1 } },
-        lose: { text: 'Half of it is slag · two Krail', krail: 2 },
+        id: 'chits', label: 'Pay chits', tone: 'pay', hint: 'Four Cyrite for twenty-five.', cost: { chits: 25 }, loseIf: ['cut'],
+        win: { text: 'Four Cyrite aboard', cyrite: 4, standing: { miners: 1 } },
+        lose: { text: 'Half of it is slag · two Cyrite', cyrite: 2 },
       },
       {
         id: 'ore', label: 'Trade ore', tone: 'trade', hint: 'A dozen ore for the four.', cost: { ore: 12 }, loseIf: ['cut'],
-        win: { text: 'Four Krail aboard', krail: 4, standing: { miners: 1 } },
-        lose: { text: 'Half of it is slag · two Krail', krail: 2 },
+        win: { text: 'Four Cyrite aboard', cyrite: 4, standing: { miners: 1 } },
+        lose: { text: 'Half of it is slag · two Cyrite', cyrite: 2 },
       },
       { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Cut your own.', win: { text: 'Hesketh signs off' } },
     ],
@@ -181,14 +181,14 @@ export const CARDS: CardDef[] = [
   {
     id: 'fuel_runner', kind: 'trade', caller: 'gutter', when: { after: 120, short: true, heatMin: 0.2 }, repeat: true,
     from: 'Fuel runner · call sign Tallow', title: 'Topped up, at a price',
-    text: '“Heard a hauler’s running dry out here. Six Krail. Fifty chits, or a favour later. Your call, Wayward.”',
+    text: '“Heard a hauler’s running dry out here. Six Cyrite. Fifty chits, or a favour later. Your call, Wayward.”',
     lines: [{ if: { flag: 'gutter_friend' }, text: '“Friend of a friend. I will go easy.”' }],
     cargo: 'Runner’s skiff · tanks sloshing',
     choices: [
-      { id: 'pay', label: 'Fifty chits', tone: 'pay', hint: 'Clean, done.', cost: { chits: 50 }, win: { text: 'Six Krail aboard', krail: 6 } },
+      { id: 'pay', label: 'Fifty chits', tone: 'pay', hint: 'Clean, done.', cost: { chits: 50 }, win: { text: 'Six Cyrite aboard', cyrite: 6 } },
       {
-        id: 'favour', label: 'A favour later', tone: 'help', hint: 'Krail now. The bill comes when it comes.',
-        win: { text: 'Six Krail aboard · Tallow will call', krail: 6, flag: 'owes_runner', follow: { card: 'runner_favour', after: 60 } },
+        id: 'favour', label: 'A favour later', tone: 'help', hint: 'Cyrite now. The bill comes when it comes.',
+        win: { text: 'Six Cyrite aboard · Tallow will call', cyrite: 6, flag: 'owes_runner', follow: { card: 'runner_favour', after: 60 } },
       },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'You will find your own.', win: { text: 'Tallow laughs and cuts the channel' } },
     ],
@@ -239,9 +239,9 @@ export const CARDS: CardDef[] = [
     ],
   },
   {
-    id: 'hungry_crew', kind: 'plea', caller: 'gutter', when: { after: 50, krail: 4 }, repeat: true,
+    id: 'hungry_crew', kind: 'plea', caller: 'gutter', when: { after: 50, cyrite: 4 }, repeat: true,
     from: 'Gutter crew · the Leaky Tin', title: 'We are out of everything',
-    text: '“Reactor is dying and so are we. Three Krail would get us to the belt. We will remember it.”',
+    text: '“Reactor is dying and so are we. Three Cyrite would get us to the belt. We will remember it.”',
     ships: [{ variant: 'scout', n: 2 }], cargo: 'Two fighters running on fumes',
     truths: [
       { id: 'genuine', weight: 2, read: 'Their reactors read near cold' },
@@ -249,16 +249,16 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       {
-        id: 'give', label: 'Give them three Krail', tone: 'help', hint: 'A friend in the Gutter is worth something out here.', cost: { krail: 3 }, loseIf: ['bait'],
+        id: 'give', label: 'Give them three Cyrite', tone: 'help', hint: 'A friend in the Gutter is worth something out here.', cost: { cyrite: 3 }, loseIf: ['bait'],
         win: { text: 'The Leaky Tin limps off · the Gutter will remember', standing: { gutter: 2 }, flag: 'gutter_friend' },
         lose: { text: 'They take it and come about, guns up', spawn: [{ variant: 'scout', n: 2, from: 'ahead' }] },
       },
       {
-        id: 'shop', label: 'Fix their recycler', tone: 'help', hint: 'Two parts, not Krail.', needs: { fitted: 'md_shop' }, cost: { parts: 2 }, loseIf: ['bait'],
+        id: 'shop', label: 'Fix their recycler', tone: 'help', hint: 'Two parts, not Cyrite.', needs: { fitted: 'md_shop' }, cost: { parts: 2 }, loseIf: ['bait'],
         win: { text: 'Fixed · a friend in the Gutter', standing: { gutter: 2 }, flag: 'gutter_friend' },
         lose: { text: 'Bait · they rush you', spawn: [{ variant: 'scout', n: 2, from: 'ahead' }] },
       },
-      { id: 'no', label: 'Keep your Krail', tone: 'refuse', hint: 'You need every unit.', win: { text: 'The Leaky Tin drifts on' } },
+      { id: 'no', label: 'Keep your Cyrite', tone: 'refuse', hint: 'You need every unit.', win: { text: 'The Leaky Tin drifts on' } },
       { id: 'fight', label: 'Finish them', tone: 'fight', hint: 'Two easy kills and whatever they carry.', win: { text: 'Weapons hot on the Leaky Tin', spawn: [{ variant: 'scout', n: 2, from: 'ahead' }], standing: { gutter: -1 } } },
     ],
   },
@@ -298,7 +298,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'courier', kind: 'job', caller: 'guild', when: { after: 55 }, repeat: true,
     from: 'Dust Traders Guild · courier', title: 'A sealed case',
-    text: '“A case for the far side of the lane. Do not open it. Eight Krail now, the rest when you are through.”',
+    text: '“A case for the far side of the lane. Do not open it. Eight Cyrite now, the rest when you are through.”',
     cargo: 'A case, sealed, heavier than it looks',
     truths: [
       { id: 'clean', weight: 3, read: 'The case is dead to every band' },
@@ -306,9 +306,9 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       {
-        id: 'take', label: 'Carry it', tone: 'help', hint: 'Eight Krail now; paid again at the lane.', loseIf: ['tracker'],
-        win: { text: 'Case aboard · eight Krail', krail: 8, flag: 'case', job: { id: 'case', text: 'Carry the case through the lane', at: 'lane', pay: { text: 'The case is through · the Guild pays the rest', score: 2500, standing: { guild: 2 }, unflag: 'case' } } },
-        lose: { text: 'Case aboard · eight Krail', krail: 8, flag: 'case', follow: { card: 'tracker_found', after: 30 }, job: { id: 'case', text: 'Carry the case through the lane', at: 'lane', pay: { text: 'The case is through · the Guild pays the rest', score: 2500, standing: { guild: 2 }, unflag: 'case' } } },
+        id: 'take', label: 'Carry it', tone: 'help', hint: 'Eight Cyrite now; paid again at the lane.', loseIf: ['tracker'],
+        win: { text: 'Case aboard · eight Cyrite', cyrite: 8, flag: 'case', job: { id: 'case', text: 'Carry the case through the lane', at: 'lane', pay: { text: 'The case is through · the Guild pays the rest', score: 2500, standing: { guild: 2 }, unflag: 'case' } } },
+        lose: { text: 'Case aboard · eight Cyrite', cyrite: 8, flag: 'case', follow: { card: 'tracker_found', after: 30 }, job: { id: 'case', text: 'Carry the case through the lane', at: 'lane', pay: { text: 'The case is through · the Guild pays the rest', score: 2500, standing: { guild: 2 }, unflag: 'case' } } },
       },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Not your business.', win: { text: 'The courier finds someone else' } },
     ],
@@ -316,11 +316,11 @@ export const CARDS: CardDef[] = [
   {
     id: 'decoy', kind: 'job', caller: 'gutter', when: { kind: 'home', after: 140, heatMax: 0.75 },
     from: 'Gutter fixer · Mags', title: 'Light up and draw them off',
-    text: '“We’ve got a run past the moon. Light your transponder, pull the patrols off. Ten Krail.”',
+    text: '“We’ve got a run past the moon. Light your transponder, pull the patrols off. Ten Cyrite.”',
     lines: [{ if: { flag: 'gutter_friend' }, text: '“The Leaky Tin says you are good for it.”' }],
     cargo: 'Fixer’s channel',
     choices: [
-      { id: 'take', label: 'Light up', tone: 'help', hint: 'Ten Krail, and every patrol knows where you are.', win: { text: 'Transponder lit · ten Krail · they are coming', krail: 10, heat: 0.18, standing: { gutter: 1 } } },
+      { id: 'take', label: 'Light up', tone: 'help', hint: 'Ten Cyrite, and every patrol knows where you are.', win: { text: 'Transponder lit · ten Cyrite · they are coming', cyrite: 10, heat: 0.18, standing: { gutter: 1 } } },
       { id: 'no', label: 'Stay dark', tone: 'refuse', hint: 'You are not their decoy.', win: { text: 'Mags shrugs and cuts the channel' } },
     ],
   },
@@ -386,17 +386,17 @@ export const CARDS: CardDef[] = [
   // ── shakedowns ──────────────────────────────────────────────────────────
   {
     id: 'gutter_toll', kind: 'shakedown', caller: 'gutter', when: { after: 75 }, weight: 1.3, repeat: true,
-    from: 'Raiders · the Hollow Saints', title: 'Krail or your hull',
-    text: '“Nice hauler. Four Krail and you keep it.”',
+    from: 'Raiders · the Hollow Saints', title: 'Cyrite or your hull',
+    text: '“Nice hauler. Four Cyrite and you keep it.”',
     lines: [
       { if: { holdFull: true }, text: '“Or the hold. We can see how low you sit.”' },
       { if: { flag: 'gutter_friend' }, text: 'Their leader hesitates: the Leaky Tin vouched for you.' },
-      { if: { short: true }, text: 'You cannot spare Krail and still make the jump.' },
+      { if: { short: true }, text: 'You cannot spare Cyrite and still make the jump.' },
     ],
     ships: [{ variant: 'raptor', n: 2 }, { variant: 'scout', n: 1 }], cargo: 'Raiders · empty holds, full guns',
     choices: [
-      { id: 'pay', label: 'Pay four Krail', tone: 'pay', hint: 'Cheap, if you have it.', cost: { krail: 4 }, win: { text: 'The Saints take their toll and go' } },
-      { id: 'ore', label: 'Dump the hold', tone: 'pay', hint: 'Ore is heavier than Krail, and worth less to you.', cost: { ore: 'all' }, show: { ore: 1 }, win: { text: 'Hold dumped · the Saints scoop it up' } },
+      { id: 'pay', label: 'Pay four Cyrite', tone: 'pay', hint: 'Cheap, if you have it.', cost: { cyrite: 4 }, win: { text: 'The Saints take their toll and go' } },
+      { id: 'ore', label: 'Dump the hold', tone: 'pay', hint: 'Ore is heavier than Cyrite, and worth less to you.', cost: { ore: 'all' }, show: { ore: 1 }, win: { text: 'Hold dumped · the Saints scoop it up' } },
       { id: 'friend', label: 'Name the Leaky Tin', tone: 'bluff', hint: 'A friend in the Gutter vouches for you.', needs: { flag: 'gutter_friend' }, win: { text: 'The Saints let you pass', standing: { gutter: 1 } } },
       {
         id: 'bay', label: 'Open the torpedo bay', tone: 'bluff', hint: 'Show them what a hauler can carry.', needs: { fitted: 'tp_bay' }, odds: { base: 0.7, fitted: { tp_heavy: 0.15, tp_swarm: 0.15 } },
@@ -450,12 +450,12 @@ export const CARDS: CardDef[] = [
   {
     id: 'office_ambush', kind: 'shakedown', caller: 'office', when: { after: 160, heatMin: 0.35 }, repeat: true,
     from: 'Office of Peace · unregistered', title: 'Cut your drive',
-    text: 'Three hulls decloak around you. “Wayward. Cut your drive and surrender the Krail.”',
+    text: 'Three hulls decloak around you. “Wayward. Cut your drive and surrender the Cyrite.”',
     ships: [{ variant: 'whisper', n: 3 }], cargo: 'Ambush fighters · no markings',
     slow: { timeout: 2.5, default: 'fight' },
     arrive: { text: 'Ambush · three hulls decloak', spawn: [{ variant: 'whisper', n: 3, from: 'around' }] },
     choices: [
-      { id: 'surrender', label: 'Surrender half the Krail', tone: 'pay', hint: 'They take it and vanish. You may not make the jump.', cost: { krail: 'half' }, win: { text: 'Krail surrendered · they cloak and go', dismiss: true } },
+      { id: 'surrender', label: 'Surrender half the Cyrite', tone: 'pay', hint: 'They take it and vanish. You may not make the jump.', cost: { cyrite: 'half' }, win: { text: 'Cyrite surrendered · they cloak and go', dismiss: true } },
       { id: 'fight', label: 'Fight', tone: 'fight', hint: 'Three fighters that hit from cloak.', win: { text: 'Weapons hot' } },
       {
         id: 'plate', label: 'Take it on the plate', tone: 'fight', hint: 'Soak it and burn away.', needs: { fitted: 'md_plate' },
@@ -488,7 +488,7 @@ export const CARDS: CardDef[] = [
       },
       {
         id: 'drone', label: 'Send a repair drone', tone: 'help', hint: 'Costs parts. You never get close enough to be caught.', cost: { parts: 3 }, loseIf: ['ambush'],
-        win: { text: 'The drone patches them up · they send Krail', krail: 3, standing: { miners: 1 } },
+        win: { text: 'The drone patches them up · they send Cyrite', cyrite: 3, standing: { miners: 1 } },
         lose: { text: 'The drone is shot to pieces · nobody was dying' },
       },
       {
@@ -532,7 +532,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'beacon_cache', kind: 'distress', caller: 'unknown', when: { after: 85 }, repeat: true,
     from: 'Automated beacon', title: 'Cache, unclaimed',
-    text: 'An old company beacon with a cache code: emergency Krail for any miner.',
+    text: 'An old company beacon with a cache code: emergency Cyrite for any miner.',
     cargo: 'A cache marker, forty years old',
     truths: [
       { id: 'real', weight: 1.6, read: 'The beacon’s clock has not been reset in forty years' },
@@ -540,8 +540,8 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       {
-        id: 'go', label: 'Open the cache', tone: 'help', hint: 'Krail, if it is real.', loseIf: ['lure'],
-        win: { text: 'Cache open · six Krail', krail: 6 },
+        id: 'go', label: 'Open the cache', tone: 'help', hint: 'Cyrite, if it is real.', loseIf: ['lure'],
+        win: { text: 'Cache open · six Cyrite', cyrite: 6 },
         lose: { text: 'A lure · patrol fighters inbound', heat: 0.12, spawn: [{ variant: 'picket', n: 2, from: 'behind' }] },
       },
       { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Too good to be true.', win: { text: 'You leave the beacon calling' } },
@@ -673,7 +673,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'lane_toll', kind: 'shakedown', caller: 'gutter', trigger: 'toll', when: { netted: false, kind: ['contested', 'mining', 'transit', 'port'] }, repeat: true,
     from: 'Raiders · the Lane Wardens', title: 'This lane has a keeper',
-    text: '“Nobody uses the old lane without paying. {fee} chits or four Krail, and you’re through.”',
+    text: '“Nobody uses the old lane without paying. {fee} chits or four Cyrite, and you’re through.”',
     lines: [
       { if: { standing: ['gutter', 1] }, text: '“You are the one who helped the Leaky Tin. Maybe half.”' },
       { if: { kind: 'contested' }, text: 'Two more raiders sit in the lane’s shadow.' },
@@ -687,7 +687,7 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Chits, and through.', cost: { chits: 'fee' }, loseIf: ['hungry'], win: { text: 'Toll paid · the Wardens wave you on', standing: { gutter: 1 } }, lose: { text: 'They take the chits and the guns come up anyway', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }] } },
-      { id: 'krail', label: 'Pay in Krail', tone: 'trade', hint: 'Four Krail, if you can spare it.', cost: { krail: 4 }, win: { text: 'Four Krail across · through', standing: { gutter: 1 } } },
+      { id: 'krail', label: 'Pay in Cyrite', tone: 'trade', hint: 'Four Cyrite, if you can spare it.', cost: { cyrite: 4 }, win: { text: 'Four Cyrite across · through', standing: { gutter: 1 } } },
       { id: 'talk', label: 'Name a friend', tone: 'bluff', hint: 'Someone in the Gutter owes you, maybe.', odds: { base: 0.3, standing: { gutter: 0.25 }, flags: { gutter_friend: 0.3 } }, win: { text: '“Go on, then.” · through for nothing' }, lose: { text: '“Never heard of them.” · weapons hot', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }] } },
       { id: 'account', label: 'Bill the Guild', tone: 'trade', hint: 'Free passage.', needs: { fitted: 'md_ledger' }, win: { text: 'Billed · through', standing: { guild: 1 } } },
       { id: 'fight', label: 'Clear the lane', tone: 'fight', hint: 'Three light hulls between you and the jump.', win: { text: 'Clearing the lane', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }], standing: { gutter: -1 } } },
@@ -756,7 +756,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'holdout', kind: 'plea', caller: 'miners', when: { after: 60, netted: false, kind: ['mining', 'port', 'contested'] }, weight: 1.2, boost: { if: { here: 'holdfast' }, mult: 3 }, repeat: true,
     from: 'A claim settlement · the Holdfast', title: 'Help us hold out',
-    text: '“Custody surveyors came this morning. When the Net gets here, we lose everything. Krail for our shield would keep them out a while.”',
+    text: '“Custody surveyors came this morning. When the Net gets here, we lose everything. Cyrite for our shield would keep them out a while.”',
     lines: [{ if: { standing: ['miners', 2] }, text: '“The miners say you are one of us.”' }],
     cargo: 'A settlement · forty people, one generator',
     truths: [
@@ -764,19 +764,19 @@ export const CARDS: CardDef[] = [
       { id: 'sold', weight: 1, read: 'Their comms are full of Custody traffic' },
     ],
     choices: [
-      { id: 'krail', label: 'Give six Krail', tone: 'help', hint: 'The Net stalls here for days. The Krail is gone.', cost: { krail: 6 }, loseIf: ['sold'], win: { text: 'The generator lights · the Net will stall here', stall: 3, standing: { miners: 2 }, score: 1500 }, lose: { text: 'They take the Krail and sell your position', heat: 0.2, hunt: -0.5 } },
-      { id: 'parts', label: 'Give eight parts', tone: 'help', hint: 'Not as good as Krail, but it holds a while.', cost: { parts: 8 }, win: { text: 'Parts across · they will hold a little longer', stall: 1.5, standing: { miners: 1 } } },
+      { id: 'krail', label: 'Give six Cyrite', tone: 'help', hint: 'The Net stalls here for days. The Cyrite is gone.', cost: { cyrite: 6 }, loseIf: ['sold'], win: { text: 'The generator lights · the Net will stall here', stall: 3, standing: { miners: 2 }, score: 1500 }, lose: { text: 'They take the Cyrite and sell your position', heat: 0.2, hunt: -0.5 } },
+      { id: 'parts', label: 'Give eight parts', tone: 'help', hint: 'Not as good as Cyrite, but it holds a while.', cost: { parts: 8 }, win: { text: 'Parts across · they will hold a little longer', stall: 1.5, standing: { miners: 1 } } },
       { id: 'no', label: 'You cannot help', tone: 'refuse', hint: 'Everybody out here needs something.', win: { text: 'The channel closes' } },
     ],
   },
   // the Scatter's own (sim/scatter.ts): who is in the system decides
   {
-    id: 'thren_smell', kind: 'warning', caller: 'unknown', when: { after: 25, here: 'thren', krail: 8 }, weight: 2.5, repeat: true,
-    from: 'Your own sensors', title: 'The Thren smell Krail',
-    text: 'Something is closing on the Krail in your tank.',
-    ships: [{ variant: 'mote', n: 4 }], cargo: 'A Thren swarm · drawn to Krail',
+    id: 'thren_smell', kind: 'warning', caller: 'unknown', when: { after: 25, here: 'thren', cyrite: 8 }, weight: 2.5, repeat: true,
+    from: 'Your own sensors', title: 'The Thren smell Cyrite',
+    text: 'Something is closing on the Cyrite in your tank.',
+    ships: [{ variant: 'mote', n: 4 }], cargo: 'A Thren swarm · drawn to Cyrite',
     choices: [
-      { id: 'vent', label: 'Vent five Krail', tone: 'pay', hint: 'They take it and leave you be a while.', cost: { krail: 5 }, win: { text: 'The swarm feeds on the Krail and drifts off', calm: 90 } },
+      { id: 'vent', label: 'Vent five Cyrite', tone: 'pay', hint: 'They take it and leave you be a while.', cost: { cyrite: 5 }, win: { text: 'The swarm feeds on the Cyrite and drifts off', calm: 90 } },
       { id: 'fight', label: 'Meet them', tone: 'fight', hint: 'They come now.', win: { text: 'The swarm comes', spawn: [{ variant: 'mote', n: 4, from: 'ahead' }] } },
       { id: 'run', label: 'Burn for the lane', tone: 'run', hint: 'They will follow.', win: { text: 'The Thren follow your wake' } },
     ],
@@ -874,7 +874,7 @@ export const CARDS: CardDef[] = [
     text: 'The sealed case pings a Custody band every twelve seconds. Someone planted a tracker.',
     cargo: 'One sealed case',
     choices: [
-      { id: 'dump', label: 'Dump the case', tone: 'refuse', hint: 'Keep the Krail, lose the job.', win: { text: 'Case jettisoned · the tracker goes with it', unflag: 'case', drop: 'case', heat: -0.05 } },
+      { id: 'dump', label: 'Dump the case', tone: 'refuse', hint: 'Keep the Cyrite, lose the job.', win: { text: 'Case jettisoned · the tracker goes with it', unflag: 'case', drop: 'case', heat: -0.05 } },
       { id: 'open', label: 'Open it and pull the tracker', tone: 'bluff', hint: 'The Guild will know you looked.', odds: { base: 0.6, fitted: { ut_scanner: 0.25 } }, win: { text: 'Tracker pulled · the case is quiet', standing: { guild: -1 } }, lose: { text: 'Pulling it sets off an alarm · the case is slag', heat: 0.15, unflag: 'case', drop: 'case' } },
       { id: 'keep', label: 'Keep it as it is', tone: 'help', hint: 'You made a promise.', win: { text: 'The case keeps pinging', heat: 0.18 } },
     ],
@@ -885,7 +885,7 @@ export const CARDS: CardDef[] = [
     text: '“Long Reckoning, still in one piece thanks to you. Take this. The Guild will hear your name.”',
     cargo: 'A freighter, grateful',
     choices: [
-      { id: 'krail', label: 'Take the Krail', tone: 'trade', hint: 'Eight Krail.', win: { text: 'Eight Krail from the Long Reckoning', krail: 8, standing: { guild: 2 } } },
+      { id: 'krail', label: 'Take the Cyrite', tone: 'trade', hint: 'Eight Cyrite.', win: { text: 'Eight Cyrite from the Long Reckoning', cyrite: 8, standing: { guild: 2 } } },
       { id: 'chits', label: 'Take the chits', tone: 'trade', hint: 'Fifty chits.', win: { text: 'Fifty chits from the Long Reckoning', chits: 50, standing: { guild: 2 } } },
     ],
   },

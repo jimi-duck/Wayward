@@ -1,4 +1,4 @@
-import { krailKnown } from '../src/sim/chart';
+import { cyriteKnown } from '../src/sim/chart';
 import { RATION, options, toEdge, type Journey } from '../src/sim/journey';
 
 // ── the pilots' route planner ─────────────────────────────────────────────
@@ -17,11 +17,11 @@ export function planRoute(j: Journey, c = j.carry): string {
     let v = 0;
     const closer = left - (s.kind === 'edge' ? 0 : toEdgeFrom(j, s.id));
     v += closer * 40;
-    v -= o.route.krail * 1.2;
+    v -= o.route.cyrite * 1.2;
     if (o.netted) v -= 35;
     if (o.shadow) v -= 30;
     if (c.food < 2 * RATION * 2 && s.port) v += 25;
-    if (c.krail < 15) v += krailKnown(j.chart, s) * 30;
+    if (c.cyrite < 15) v += cyriteKnown(j.chart, s) * 30;
     if (s.port && c.plates < 3) v += 10;
     if (v > bestV) { bestV = v; best = s.id; }
   }

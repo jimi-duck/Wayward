@@ -67,7 +67,7 @@ describe('lasers', () => {
 });
 
 describe('torpedoes', () => {
-  it('come fitted in the arcade; the Story mode’s stock hauler has no bay yet', () => {
+  it('come fitted in both modes', () => {
     const w = new World(1);
     w.field.rocks = [];
     w.step(STEP, input({ torpedo: true }));
@@ -75,7 +75,7 @@ describe('torpedoes', () => {
     const s = new World(1, { mode: 'breakout' });
     s.field.rocks = [];
     s.step(STEP, input({ torpedo: true }));
-    expect(s.torps.length).toBe(0);
+    expect(s.torps.length).toBe(1);
   });
 
   it('lock the rock ahead, steer onto it and blast it', () => {

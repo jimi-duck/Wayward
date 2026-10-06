@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
-import { PLACES, PLACE_CHITS, PLACE_KRAIL, type PlaceId, type Reward } from '../src/content/phenomena';
+import { PLACES, PLACE_CHITS, PLACE_CYRITE, type PlaceId, type Reward } from '../src/content/phenomena';
 import { TANK_MAX, type SortieResult } from '../src/sim/breakout';
 import { layPlaces, makeChart, openShortcut, placeAt, routeBetween, sysById } from '../src/sim/chart';
 import { endSortie, newJourney, options, plot, sortieDef, VERSION, type Journey } from '../src/sim/journey';
@@ -27,7 +27,7 @@ function result(j: Journey, o: Partial<SortieResult> = {}, c: Partial<Journey['c
 /** A journey out of Cerro, in the first system, with a place there of the given kind and reward. */
 function atPlace(reward: Reward, id: PlaceId = 'convoy'): Journey {
   const j = newJourney(7);
-  endSortie(j, result(j, {}, { krail: 20, food: 12, parts: 6 }));
+  endSortie(j, result(j, {}, { cyrite: 20, food: 12, parts: 6 }));
   j.chart.places[j.at] = { id, reward, seen: true, done: false };
   return j;
 }
@@ -49,7 +49,7 @@ describe('places on the chart', () => {
     }
   });
 
-  it('leave some systems empty, and pay in more than Krail across a region', () => {
+  it('leave some systems empty, and pay in more than Cyrite across a region', () => {
     let empty = 0, total = 0;
     const rewards = new Set<string>();
     for (let seed = 1; seed < 60; seed++) {
@@ -61,7 +61,7 @@ describe('places on the chart', () => {
     }
     expect(empty / total).toBeGreaterThan(0.15);
     expect(empty / total).toBeLessThan(0.6);
-    expect([...rewards].sort()).toEqual(['cover', 'danger', 'favour', 'info', 'krail', 'parts', 'shortcut']);
+    expect([...rewards].sort()).toEqual(['cover', 'cyrite', 'danger', 'favour', 'info', 'parts', 'shortcut']);
   });
 
   it('show far ones from the start, and the rest once within sight', () => {
@@ -74,14 +74,14 @@ describe('places on the chart', () => {
   });
 
   it('are named in the lane list', () => {
-    const j = atPlace('krail');
+    const j = atPlace('cyrite');
     for (const o of options(j)) expect(o.place).toEqual(placeAt(j.chart, o.to.id));
   });
 });
 
 describe('a place in a sortie', () => {
   it('plays its event a little after arrival, under its own name', () => {
-    const j = atPlace('krail');
+    const j = atPlace('cyrite');
     const def = sortieDef(j);
     expect(def.place?.name).toBe(PLACES[j.chart.places[j.at]!.id].name);
     const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
@@ -93,17 +93,17 @@ describe('a place in a sortie', () => {
   });
 
   it('pays when dealt with, once', () => {
-    const j = atPlace('krail');
+    const j = atPlace('cyrite');
     plot(j, options(j)[0]!.to.id);
-    const here = j.at, krail = 10;
-    const out = endSortie(j, result(j, { place: true }, { krail }));
+    const here = j.at, cyrite = 10;
+    const out = endSortie(j, result(j, { place: true }, { cyrite }));
     expect(j.chart.places[here]!.done).toBe(true);
-    expect(out.lines.some((l) => l.includes(`+${PLACE_KRAIL} Krail`))).toBe(true);
-    expect(j.carry.krail).toBeLessThanOrEqual(TANK_MAX);
+    expect(out.lines.some((l) => l.includes(`+${PLACE_CYRITE} Cyrite`))).toBe(true);
+    expect(j.carry.cyrite).toBeLessThanOrEqual(TANK_MAX);
   });
 
   it('does not pay when lost, and is still there', () => {
-    const j = atPlace('krail');
+    const j = atPlace('cyrite');
     plot(j, options(j)[0]!.to.id);
     const here = j.at;
     endSortie(j, result(j, { place: false }));

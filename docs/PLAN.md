@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done, and console steps 1 to 10 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths, type hierarchy, a sample of wear, the voice; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 4 done, and console steps 1 to 10 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths, type hierarchy, a sample of wear, the voice; see the console pass): the web as data and rules, the bay on screen, the budgets felt, the Story mode in the bay with Cyrite as its fuel and the yard folded in; step 5 to come (see below) |
 
 ## From the concept boards
 
@@ -629,7 +629,33 @@ button; the tabs are a step further in, with prices on the web. Auto-refit
 fits the suggestions by itself. The target's brackets close tight with its
 health as a bar under them; the upper-centre card is for hostile hulls only.
 The pause card is the briefing: three steps (mine, upgrade, survive), the
-two states, the controls for the device in hand, the bay and Auto-refit.
+three alert states, the controls for the device in hand, the bay and Auto-refit.
+
+**Step 4, done (2026-10-06).** The Story mode builds in the bay, as
+the arcade does:
+
+- **Cyrite is the fuel.** The violet rock, the tank, a lane's cost, the
+  port's fuel, the storm's and the convoy's pay, and the Thren drawn to a
+  full tank all move from Krail to Cyrite (German: Cyrit). It keeps the
+  violet; Krail crystals take a tint of their own.
+- **Krail pays for the bay**, a stock as in the arcade: wrecks and ordinary
+  rock cut drop it. Ore stays cargo, sold for chits.
+- **The cards and the rail go.** The ship leaves Cerro with the stock fit;
+  the bay opens on the same three alert states in a sortie, and always
+  when docked. Suggestions and Auto-refit as in the arcade.
+- **The module yard folds into the web**, paid in Krail only: its modules
+  are nodes marked `story`; the four resources (salvage, rig parts,
+  signal kit, favours) go. **Yard-only** (fitted docked, plus chits): the
+  yard's modules, the structural frame and the reactor core's top levels.
+- **The save goes to version 7**: the tank's Krail becomes Cyrite; the
+  rail's progress and the four resources become Krail; fitted upgrades
+  stay (the web's nodes are the same ids), and the stock fit is added.
+- **Balanced** from the Breakout, journey, ship and endings pilots: two or
+  three installs in the Breakout, fuel as tight as today, fewer, bigger
+  installs over a journey than the cards gave. The arcade pilot confirms
+  the cheaper deep ordnance (caution at 85 units).
+- **Commits**, each playable: the fuel; the bay in a sortie; the port and
+  the yard; the save; balance, German, screenshots and the docs.
 
 ### The console pass (design feedback, 2026-10-06)
 
@@ -708,15 +734,16 @@ rule, voice line and readings around them. Suggestions come from that pass;
 the reasons of step 5 ride on its cards and on the web.
 ### Open
 
-- Builds that save for deep modules (torpedoes, mines) fit six or seven in
-  a run and trail the rest; the costs of tier 3 and 4, or what the pilot
-  saves for, want a look.
+- The deep ordnance at 0.65 to 0.7 of its tier lifted both torpedo builds
+  (torpedo+defence 9:49 to 11:22, torpedo+laser 8:49 to 9:18);
+  mine+mobility still trails (7:52, about seven installs).
+- The Rig build gets through 3 of 6 journeys (ship pilot; 4 of 6 with the
+  old yard), the weakest of the four; the yard's marks are back at or above
+  the old (Guns 3.5, Rig 2.7, Signals 4.0, Contacts 3.0 a journey).
+- Story sorties run about a minute longer than with the cards (journey
+  pilot, 3:00 to 4:00 a system); worth a look once players have it.
 - The arcade's Krail: how much rock and kills give, against the costs
   above, for fewer installs than today's cards.
-- Cyrite (Story): where it shows in rock, what wrecks carry, the tank, and
-  every card and line that says Krail where it means fuel (step 4, with a
-  save migration).
-- Which modules are yard-only.
 
 ## The long tail
 

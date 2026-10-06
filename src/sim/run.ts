@@ -23,7 +23,7 @@ export interface RunStats {
   /** Krail collected (crystal value, before the matrix), and dropped in all. */
   krail: number;
   dropped: number;
-  /** The arcade: Krail taken aboard for the refit bay (after the matrix), and spent there. */
+  /** Krail taken aboard for the refit bay (after the matrix), and spent there. */
   krailEarned: number;
   krailSpent: number;
   refit: number;
@@ -55,9 +55,10 @@ export interface RunStats {
   cause: string;
   /** The Breakout or the arcade. */
   mode: 'breakout' | 'arcade';
-  /** The Breakout: out through the lane mouth, and the Krail left in the tank when it jumped. */
+  /** The Story mode: out through the lane mouth; Cyrite collected, and left in the tank when it jumped. */
   escaped: boolean;
-  krailLeft: number;
+  cyrite: number;
+  cyriteLeft: number;
   /** Ore taken aboard and sold; parts salvaged; rocks cut clean and fractured; seconds of cutting; times docked. */
   ore: number;
   oreSold: number;
@@ -84,7 +85,7 @@ export function newRun(seed: number, modifiers: string[] = []): RunStats {
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
     platesLost: 0, platesGained: 0, platesMended: 0, shieldsAbsorbed: 0, waves: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
     timeline: [], build: {}, identity: '', modifiers, cause: '',
-    mode: 'arcade', escaped: false, krailLeft: 0, ore: 0, oreSold: 0, parts: 0, cut: 0, fractured: 0, cutTime: 0, docked: 0,
+    mode: 'arcade', escaped: false, cyrite: 0, cyriteLeft: 0, ore: 0, oreSold: 0, parts: 0, cut: 0, fractured: 0, cutTime: 0, docked: 0,
     cards: [], jobsDone: 0, ports: [],
   };
 }

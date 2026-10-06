@@ -237,16 +237,7 @@
       </div>
     </div>
 
-    <!-- The refit: three cards, take one, fly on. -->
-    <div id="refit" class="sheet" role="dialog" aria-labelledby="refit-t" hidden>
-      <div class="refit">
-        <header class="rh"><span class="kick" id="refit-k">Field refit</span><h2 id="refit-t">Choose an upgrade</h2><span class="sub" id="refit-s"></span></header>
-        <div id="cards"></div>
-        <footer class="rf" data-i18n="html"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> take a card · arrows and <kbd>Enter</kbd> · pad stick and <kbd>A</kbd></footer>
-      </div>
-    </div>
-
-    <!-- The refit bay (the arcade): building the ship, after the reference board. Tabs left, the tab's web
+    <!-- The refit bay: building the ship, after the reference board. Tabs left, the tab's web
          centre, the inspector right, what is fitted and the three budgets along the bottom. -->
     <div id="bay" class="sheet" role="dialog" aria-labelledby="bay-t" hidden>
       <div class="bay">
@@ -321,7 +312,7 @@
           <svg id="ch-map" class="ch-map" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The region: systems, lanes, the Net and Calloway"></svg>
           <div class="ch-side"><div id="ch-list" class="ch-list"></div><div id="ch-stat" class="ch-stat"></div></div>
         </div>
-        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>5</kbd> plot a lane · arrows and <kbd>Enter</kbd> · pad <kbd>A</kbd></span><span class="ch-key"><i class="kc-net"></i>The Net <i class="kc-cal"></i>Calloway, last seen <i class="kc-port"></i>Port <i class="kc-drift"></i>Drift fleet <i class="kc-thren"></i>Thren <span class="k">Numbers on lanes: Krail to jump</span></span></footer>
+        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>5</kbd> plot a lane · arrows and <kbd>Enter</kbd> · pad <kbd>A</kbd></span><span class="ch-key"><i class="kc-net"></i>The Net <i class="kc-cal"></i>Calloway, last seen <i class="kc-port"></i>Port <i class="kc-drift"></i>Drift fleet <i class="kc-thren"></i>Thren <span class="k">Numbers on lanes: Cyrite to jump</span></span></footer>
       </div>
     </div>
 
@@ -353,8 +344,8 @@
           <li><svg class="ico"><use href="#i-hostile"/></svg><b>Survive</b><span>Hostiles come in waves. In the quiet, the hull mends.</span></li>
         </ol>
         <div class="voice" id="pause-voice"></div>
-        <div class="states arcade-only"><span class="st clear"><i></i>Clear · the bay opens</span><span class="st obs"><i></i>Caution · ships nearby</span><span class="st battle"><i></i>Red alert · under attack</span></div>
-        <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
+        <div class="states"><span class="st clear"><i></i>Clear · the bay opens</span><span class="st obs"><i></i>Caution · ships nearby</span><span class="st battle"><i></i>Red alert · under attack</span></div>
+        <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Cyrite</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
         <!-- the controls for what you play with: keys, touch or a pad -->
         <dl class="keys-l only-keys">
           <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
@@ -364,14 +355,14 @@
           <div class="story-only"><dt><kbd>3</kbd></dt><dd>Cutter</dd></div>
           <div><dt><kbd>E</kbd></dt><dd>Overcharge</dd></div>
           <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
-          <div class="arcade-only"><dt><kbd>B</kbd></dt><dd>Refit bay</dd></div>
+          <div><dt><kbd>B</kbd></dt><dd>Refit bay</dd></div>
           <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
         </dl>
         <dl class="keys-l only-touch-l">
           <div><dt>Left thumb</dt><dd>Steer and thrust</dd></div>
           <div><dt>Right thumb</dt><dd>Lasers</dd></div>
           <div><dt>Second finger, left</dt><dd>Roll</dd></div>
-          <div class="arcade-only"><dt>Badge</dt><dd>Refit bay</dd></div>
+          <div><dt>Badge</dt><dd>Refit bay</dd></div>
         </dl>
         <dl class="keys-l only-pad">
           <div><dt><kbd>Stick</kbd></dt><dd>Steer</dd></div>
@@ -380,12 +371,12 @@
           <div><dt><kbd>X</kbd></dt><dd>Torpedo</dd></div>
           <div><dt><kbd>Y</kbd></dt><dd>Overcharge</dd></div>
           <div><dt><kbd>B</kbd></dt><dd>Roll</dd></div>
-          <div class="arcade-only"><dt><kbd>Back</kbd></dt><dd>Refit bay</dd></div>
+          <div><dt><kbd>Back</kbd></dt><dd>Refit bay</dd></div>
         </dl>
         <div class="pause-acts">
           <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
-          <button type="button" id="p-bay" class="arcade-only"><svg class="ico"><use href="#i-hull"/></svg><span>Refit bay</span><b id="p-bay-n"></b></button>
-          <button type="button" id="p-auto" class="arcade-only" aria-pressed="false"><i class="sw"></i><span>Auto-refit</span><b id="p-auto-v">Off</b></button>
+          <button type="button" id="p-bay"><svg class="ico"><use href="#i-hull"/></svg><span>Refit bay</span><b id="p-bay-n"></b></button>
+          <button type="button" id="p-auto" aria-pressed="false"><i class="sw"></i><span>Auto-refit</span><b id="p-auto-v">Off</b></button>
         </div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
         <div class="pause-foot" id="pause-foot"></div>

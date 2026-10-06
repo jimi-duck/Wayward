@@ -5,9 +5,8 @@ import { BOSS_FIRST } from '../src/sim/director';
 import { ENCOUNTERS, startEncounter } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';
 import { CRYSTAL_LIFE, dropCrystals } from '../src/sim/pickups';
-import { CHAIN_WINDOW, OC_MAX, SHIP_R, xpFor } from '../src/sim/tuning';
+import { CHAIN_WINDOW, OC_MAX, SHIP_R } from '../src/sim/tuning';
 import { cost } from '../src/sim/bay';
-import { ORE_XP } from '../src/sim/breakout';
 import { launchTorpedo } from '../src/sim/weapons';
 import { AUTO_QUIET, World } from '../src/sim/world';
 
@@ -103,8 +102,6 @@ describe('krail and the refit bay', () => {
     w.aliens = [];
     expect(w.openBay()).toBe(true);
     w.closeBay();
-    const s = new World(1, { mode: 'breakout' });
-    expect(s.bayClosed()).toBe('mode');
   });
 
   it('Auto-refit fits the first affordable suggestion once it is quiet, and says so', () => {
@@ -138,18 +135,30 @@ describe('krail and the refit bay', () => {
     expect(w.stats.shieldMax).toBe(1);
   });
 
-  it('the Story mode still deals three cards when the rail fills with ore', () => {
+  it('the Story mode builds in the bay too: stock fit, Krail from rock, the bay opens when clear and while docked', () => {
     const w = new World(1, { mode: 'breakout' });
     w.field.rocks = [];
     w.field.step = () => {};
-    w.dropCrystals(w.ship.x, w.ship.z, Math.ceil(xpFor(0) / ORE_XP) + 1, 0, 0, 0, 'ore');
-    for (let i = 0; i < 90 && w.phase !== 'refit'; i++) w.step(STEP, input());
-    expect(w.phase).toBe('refit');
-    expect(w.offer?.cards.length).toBe(3);
-    const card = w.offer!.cards[1]!;
-    expect(w.choose(1)).toBe(true);
-    expect(w.levels[card.id]).toBe(1);
-    expect(w.choose(0)).toBe(false);
+    w.aliens = [];
+    w.bk!.nextPursuit = Infinity;
+    w.cardNext = Infinity;
+    w.portCalled = true;
+    expect(w.levels).toEqual({ tp_bay: 1 });
+    w.dropCrystals(w.ship.x, w.ship.z, 50, 0);
+    for (let i = 0; i < 90; i++) w.step(STEP, input());
+    expect(w.krail).toBeGreaterThanOrEqual(50);
+    expect(w.phase).toBe('play');
+    expect(w.openBay()).toBe(true);
+    expect(w.install('ph_emitters')).toBeNull();
+    expect(w.levels.ph_emitters).toBe(1);
+    w.closeBay();
+    expect(w.phase).toBe('play');
+    // docked, the bay opens whatever is about, and closing it goes back to the dock
+    w.phase = 'dock'; w.docked = true;
+    parked(w, 0, -20, 0, 'lancer');
+    expect(w.openBay()).toBe(true);
+    w.closeBay();
+    expect(w.phase).toBe('dock');
   });
 });
 
@@ -339,7 +348,7 @@ describe('power-ups', () => {
 });
 
 describe('capital ships: the hail', () => {
-  const toHail = (w: World) => { for (let i = 0; i < (BOSS_FIRST + 5) * 60 && w.phase !== 'hail'; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.choose(0); w.step(STEP, input()); } };
+  const toHail = (w: World) => { for (let i = 0; i < (BOSS_FIRST + 5) * 60 && w.phase !== 'hail'; i++) { w.ship.invuln = 1; w.step(STEP, input()); } };
 
   it('opens before a contact; evading sends the next one sooner, and you cannot evade twice running', () => {
     const w = quiet(7);
@@ -405,7 +414,7 @@ describe('sector events', () => {
     for (const id of Object.keys(ENCOUNTERS) as Array<keyof typeof ENCOUNTERS>) {
       const w = quiet();
       w.encounter = startEncounter(id, w);
-      for (let i = 0; i < (ENCOUNTERS[id].duration + 1) * 60; i++) { w.ship.invuln = 1; if (w.phase === 'refit') w.choose(0); w.step(STEP, input()); }
+      for (let i = 0; i < (ENCOUNTERS[id].duration + 1) * 60; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
       expect(w.encounter, id).toBeNull();
       expect(w.field.richBoost).toBe(0);
     }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import {
-  HEAT_START, JUMP_COST, LANE_DIST, PATCH_COST, PATCH_QUIET, PATCH_TIME, PRICE, PURSUIT_FIRST, SPOOL, START_KRAIL, pickPursuer, rockYield,
+  HEAT_START, JUMP_COST, LANE_DIST, PATCH_COST, PATCH_QUIET, PATCH_TIME, PRICE, PURSUIT_FIRST, SPOOL, START_CYRITE, pickPursuer, rockYield,
 } from '../src/sim/breakout';
 import type { Rock } from '../src/sim/field';
 import { CUT_WORK, cutRock, WARM } from '../src/sim/mining';
@@ -89,7 +89,7 @@ describe('the cutter', () => {
     expect(w.run.cut).toBe(1);
     expect(w.run.fractured).toBe(0);
     run(w, 2);
-    expect(w.krail).toBe(START_KRAIL + rockYield('rich', 0, true).krail);
+    expect(w.cyrite).toBe(START_CYRITE + rockYield("rich", 0, true).cyrite);
   });
 
   it('holds the lasers while it runs', () => {
@@ -108,7 +108,7 @@ describe('the Breakout', () => {
     // the ship starts facing up the screen (-Z): the lane is that way
     expect(b.lane.z).toBeLessThan(0);
     expect(Math.hypot(b.port!.x, b.port!.z)).toBeLessThan(LANE_DIST * 0.6);
-    expect(w.krail).toBe(START_KRAIL);
+    expect(w.cyrite).toBe(START_CYRITE);
     expect(b.heat).toBe(HEAT_START);
   });
 
@@ -142,7 +142,7 @@ describe('the Breakout', () => {
     expect(w.bk!.heat).toBeGreaterThan(HEAT_START);
   });
 
-  it('docks when slow inside the port, sells the hold, sells Krail and plates, and casts off', () => {
+  it('docks when slow inside the port, sells the hold, sells Cyrite and plates, and casts off', () => {
     const w = quiet();
     const b = w.bk!;
     w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
@@ -152,15 +152,14 @@ describe('the Breakout', () => {
     expect(w.phase).toBe('dock');
     expect(w.sellOre()).toBe(30 * PRICE.ore);
     expect(w.ore).toBe(0);
-    const k = w.krail;
-    expect(w.buy('krail')).toBe(true);
-    expect(w.krail).toBe(k + 1);
+    const k = w.cyrite;
+    expect(w.buy("cyrite")).toBe(true);
+    expect(w.cyrite).toBe(k + 1);
     expect(w.buy('plate')).toBe(true);
     expect(w.plates).toBe(2);
-    w.chits = PRICE.refit;
-    expect(w.buy('refit')).toBe(true);
-    expect(w.phase).toBe('refit');
-    w.choose(0);
+    // the bay opens at the port, and closing it goes back to the dock
+    expect(w.openBay()).toBe(true);
+    w.closeBay();
     expect(w.phase).toBe('dock');
     w.undock();
     expect(w.phase).toBe('play');
@@ -175,20 +174,20 @@ describe('the Breakout', () => {
     expect(w.parts).toBe(0);
   });
 
-  it('will not jump without the Krail, and jumps once the drive has spooled', () => {
+  it('will not jump without the Cyrite, and jumps once the drive has spooled', () => {
     const w = quiet();
     const b = w.bk!;
     b.blockade = 'done';
     w.ship.x = b.lane.x; w.ship.z = b.lane.z;
-    w.krail = JUMP_COST - 1;
+    w.cyrite = JUMP_COST - 1;
     run(w, SPOOL + 1);
     expect(w.phase).toBe('play');
-    expect(w.drain().some((e) => e.type === 'needKrail')).toBe(true);
-    w.krail = JUMP_COST + 3;
+    expect(w.drain().some((e) => e.type === 'needCyrite')).toBe(true);
+    w.cyrite = JUMP_COST + 3;
     run(w, SPOOL + 2.5);
     expect(w.phase).toBe('over');
     expect(w.run.escaped).toBe(true);
-    expect(w.run.krailLeft).toBe(3);
+    expect(w.run.cyriteLeft).toBe(3);
     expect(w.run.cause).toBe('escaped');
   });
 
