@@ -16,6 +16,7 @@ import { range, Targeting } from './targeting';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
+import { cheapest } from '../sim/bay';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view in the brand's six zones, with nothing on
@@ -105,6 +106,10 @@ export class Hud {
   private lv: Record<string, number> = {};
   private seed = -1;
   private modeKey = '';
+  /** The arcade's refit bay: the cheapest module in reach, when it was last worked out, and whether one can be fitted now. */
+  private next = 0;
+  private stockAt = 0;
+  private bayReady = false;
   /** When the log last said the self-repair had started, so a flicker of danger does not repeat it. */
   private mendNoted = -Infinity;
   private headingShown = true;
@@ -292,7 +297,33 @@ export class Hud {
 
   // ── the rail ────────────────────────────────────────────────────────────
 
+  /**
+   * The arcade: Krail is a stock for the refit bay. The row counts toward
+   * the cheapest module that only wants Krail, and lights "Bay" (with its
+   * key) once something can be fitted and the bay will open.
+   */
+  private updateStock(world: World): void {
+    if (world.time >= this.stockAt) {
+      this.stockAt = world.time + 0.4;
+      this.next = cheapest(world.bayCtx())?.cost ?? 0;
+    }
+    const k = Math.floor(world.krail), next = this.next;
+    const ready = next > 0 && k >= next && world.bayClosed() === null;
+    text($('xp-l'), 'Krail');
+    text($('xp-v'), String(k));
+    text($('xp-n'), next ? String(next) : '—');
+    ticks($('xp'), next ? Math.min(1, k / next) : 1, 30);
+    text($('refit-n'), pad(world.refit, 2));
+    $('rail').classList.toggle('full', ready);
+    $('bay-b').classList.toggle('ready', ready);
+    this.bayReady = ready;
+    const g = $('xp-gain');
+    g.classList.toggle('on', this.gainT > 0.6);
+    if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
+  }
+
   private updateRail(world: World): void {
+    if (!world.bk) return this.updateStock(world);
     text($('xp-l'), t(world.bk ? 'Ore' : 'Krail'));
     text($('refit-n'), pad(world.refit, 2));
     text($('xp-v'), String(Math.floor(world.xp)));
@@ -596,9 +627,12 @@ export class Hud {
       // the arcade between events: break rock, fill the hold, refit
       text($('obj-t'), t('Extract Krail'));
       text($('obj-left'), '');
-      ticks($('obj-p'), world.xp / world.xpNext, 30);
+      ticks($('obj-p'), this.next ? Math.min(1, world.krail / this.next) : 1, 30);
       text($('obj-s'), '');
-      const html = `<li class="now">${t('Break rock')} · <b>${Math.floor(world.xp)}/${world.xpNext}</b></li><li>${t('Refit {n} when full', { n: pad(world.refit + 1, 2) })}</li>`;
+      const key = document.documentElement.classList.contains('touch-ui') ? '' : ' · B';
+      const html = this.bayReady
+        ? `<li class="done">${t('Break rock')} · <b>${Math.floor(world.krail)}</b></li><li class="now">${t('Refit bay')}${key}</li>`
+        : `<li class="now">${t('Break rock')} · <b>${Math.floor(world.krail)}/${this.next || '—'}</b></li><li>${t('Refit bay when it is quiet')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
     }
@@ -627,6 +661,7 @@ export class Hud {
         ? [['W', 'Thrust'], ['Shift', 'Roll'], ['Z', 'Zoom']]
         : [['1', 'Lasers'], ...(st.torpedoes ? [['2', 'Torpedo'] as Hint] : []), ['Shift', 'Roll']];
     if (cls !== 'cruise' && ready) hints.push(['E', 'Core']);
+    if (this.bayReady && (cls === 'cruise' || cls === 'repair' || cls === 'mining')) hints.push(['B', 'Refit bay']);
     const lit = world.cutting !== null ? 'Cut' : ready ? 'Core' : '';
     const key = `${cls}${word}${hints.join()}${lit}`;
     if (key === this.modeKey) return;

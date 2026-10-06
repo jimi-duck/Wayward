@@ -99,3 +99,15 @@ export function reachable(ctx: BayCtx, nodes: readonly WebNode[] = WEB): WebNode
 
 /** A new ship's levels: the stock fit. */
 export const stockLevels = (): Levels => ({ ...STOCK });
+
+/** The cheapest module that only wants Krail to be fitted: what the HUD counts toward. Null when nothing is in reach. */
+export function cheapest(ctx: BayCtx): { id: string; cost: number } | null {
+  let best: { id: string; cost: number } | null = null;
+  for (const w of WEB) {
+    const b = blockOf(w.id, ctx);
+    if (b !== null && b !== 'krail') continue;
+    const c = cost(w.id, (ctx.levels[w.id] ?? 0) + 1);
+    if (!best || c < best.cost) best = { id: w.id, cost: c };
+  }
+  return best;
+}

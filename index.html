@@ -192,6 +192,7 @@
       <button type="button" id="release" tabindex="-1"><span>Core</span><i class="ticks" id="t-oc"></i></button>
       <button type="button" id="cut" tabindex="-1"><span>Cut</span><i class="ticks" id="t-heat"></i></button>
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
+      <button type="button" id="bay-b" tabindex="-1" aria-label="Refit bay"><svg class="ico"><use href="#i-hull"/></svg></button>
     </div>
 
     <!-- The title: the lockup, the two ways to play, the one button that starts
@@ -244,6 +245,26 @@
         <header class="rh"><span class="kick" id="refit-k">Field refit</span><h2 id="refit-t">Choose an upgrade</h2><span class="sub" id="refit-s"></span></header>
         <div id="cards"></div>
         <footer class="rf" data-i18n="html"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> take a card · arrows and <kbd>Enter</kbd> · pad stick and <kbd>A</kbd></footer>
+      </div>
+    </div>
+
+    <!-- The refit bay (the arcade): building the ship, after the reference board. Tabs left, the tab's web
+         centre, the inspector right, what is fitted and the three budgets along the bottom. -->
+    <div id="bay" class="sheet" role="dialog" aria-labelledby="bay-t" hidden>
+      <div class="bay">
+        <header class="bay-h">
+          <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><span><b id="bay-t">Refit bay</b><small>Choose a module to fit</small></span></span>
+          <span class="bay-krail" id="bay-krail"></span>
+          <button type="button" id="bay-x"><kbd class="only-desktop">B</kbd> Launch</button>
+        </header>
+        <nav class="bay-tabs" id="bay-tabs" role="tablist"></nav>
+        <section class="bay-w">
+          <header class="bay-tab-h" id="bay-tab-h"></header>
+          <div class="bay-legend"><span class="lg owned">Fitted</span><span class="lg open">Ready</span><span class="lg locked">Out of reach</span></div>
+          <div class="bay-web" id="bay-web"></div>
+        </section>
+        <aside class="bay-insp" id="bay-insp" aria-live="polite"></aside>
+        <footer class="bay-f"><div class="bay-fitted" id="bay-fitted"></div><div class="bay-budget" id="bay-budget"></div></footer>
       </div>
     </div>
 

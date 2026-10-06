@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Step 1 done: the web as data and rules (`content/web.ts`, `sim/bay.ts`), not yet on screen; steps 2 to 5 to come (see below) |
+| R The refit bay | Steps 1 and 2 done: the web as data and rules, and the bay on screen in the arcade (no more cards there); steps 3 to 5 to come (see below) |
 
 ## From the concept boards
 

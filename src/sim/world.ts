@@ -42,6 +42,7 @@ import {
 } from './tuning';
 import type { Prices } from '../content/systems';
 import { makeOffer, type Offer } from './offers';
+import { install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { addKit, discounted, earned, effects, fitNeeds, noKit, type Effects, type Kit } from './modules';
@@ -60,11 +61,13 @@ import {
 // pauses itself at the decisions a run asks for, a refit (`phase` 'refit':
 // three cards in `offer`), a hail ('hail': engage or evade), a comms card
 // in the Breakout ('comms': the card in `comms`; an ambush slows the world
-// instead of stopping it), a dock ('dock'), and at the end ('over': the
-// record in `run`). The app answers with choose(), answerHail(), answer(),
-// the port's calls and restart(); the scripted pilot calls the same.
+// instead of stopping it), a dock ('dock'), the refit bay in the arcade
+// ('bay': the player opens it, sim/bay.ts says what can be fitted), and at
+// the end ('over': the record in `run`). The app answers with choose(),
+// answerHail(), answer(), the port's calls, install() and closeBay(), and
+// restart(); the scripted pilot calls the same.
 
-export type Phase = 'play' | 'refit' | 'hail' | 'comms' | 'dock' | 'over';
+export type Phase = 'play' | 'refit' | 'hail' | 'comms' | 'dock' | 'bay' | 'over';
 /** What the port sells. */
 export type PortItem = 'krail' | 'plate' | 'refit' | 'food';
 
@@ -289,7 +292,12 @@ export class World implements EncounterHost {
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.kitIn = noKit(); this.kitSpent = noKit();
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
-    if (this.mode !== 'breakout') { this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity; return; }
+    if (this.mode !== 'breakout') {
+      this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
+      // the arcade's ship leaves with the basics fitted: lasers, a shield charge, the torpedo bay
+      if (!Object.keys(this.levels).length) { this.levels = stockLevels(); this.refreshStats(); }
+      return;
+    }
     const def = this.sortie;
     this.bk = newBreakout(this.ship.heading, def);
     this.callowayAt = def.calloway;
@@ -918,6 +926,47 @@ export class World implements EncounterHost {
     this.phase = 'play';
   }
 
+  // ── the refit bay (the arcade) ────────────────────────────────────────
+
+  /** What the bay's rules see of the ship. */
+  bayCtx(): BayCtx {
+    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, krail: this.krail };
+  }
+
+  /** Why the bay will not open now, or null if it will: only in the arcade, only while flying, never with danger near. */
+  bayClosed(): 'mode' | 'busy' | 'danger' | null {
+    if (this.bk) return 'mode';
+    if (!this.alive || this.phase !== 'play' || this.celebrate > 0) return 'busy';
+    return this.inDanger() ? 'danger' : null;
+  }
+
+  /** Open the bay: the world waits while you fit. False if it cannot open now (see bayClosed). */
+  openBay(): boolean {
+    if (this.bayClosed()) return false;
+    this.phase = 'bay';
+    return true;
+  }
+
+  /** Fit one more level of `id`, paid in Krail. Null when fitted, else why not (sim/bay.ts). */
+  install(id: string): Block | 'closed' | null {
+    useIds(this.ids);
+    if (this.phase !== 'bay') return 'closed';
+    const r = bayInstall(id, this.bayCtx());
+    if (typeof r === 'string') return r;
+    this.krail -= r.cost;
+    this.levels = r.levels;
+    this.refreshStats();
+    this.refit++;
+    this.run.refit = this.refit;
+    this.run.krailSpent += r.cost;
+    this.events.push({ type: 'fitted', id });
+    return null;
+  }
+
+  closeBay(): void {
+    if (this.phase === 'bay') this.phase = 'play';
+  }
+
   // ── comms ─────────────────────────────────────────────────────────────
 
   /** What a card can see of the ship and the run. */
@@ -1471,9 +1520,9 @@ export class World implements EncounterHost {
         this.run.krail += pk.value;
         this.addScore(pk.value * SCORE_PER_CRYSTAL, 'krail');
         this.events.push({ type: 'crystal', x: pk.x, z: pk.z, value: pk.value });
-        // the Breakout: Krail is fuel, into the tank; in the arcade it fills the rail
+        // the Breakout: Krail is fuel, into the tank; in the arcade it is what the refit bay builds from
         if (this.bk) this.krail = Math.min(TANK_MAX, this.krail + pk.value);
-        else this.gainXp(pk.value * this.stats.xpMult);
+        else { this.krail += pk.value * this.stats.xpMult; this.run.krailEarned += pk.value * this.stats.xpMult; }
         break;
       }
       case 'ore': {
@@ -1935,9 +1984,12 @@ export class World implements EncounterHost {
     this.dropItem(this.randomPower(), b.x, b.z);
     const fresh = !this.techs.has(b.faction);
     this.techs.add(b.faction);
-    this.pendingSalvage.push(b.faction);
     this.events.push({ type: 'salvage', faction: b.faction, tech: fresh });
-    if (this.celebrate <= 0) this.celebrate = CELEBRATE * 2;
+    // the Story mode deals her salvage as cards; in the arcade her tech opens in the bay
+    if (this.bk) {
+      this.pendingSalvage.push(b.faction);
+      if (this.celebrate <= 0) this.celebrate = CELEBRATE * 2;
+    }
     // the wing breaks off when its flagship goes
     for (const al of this.aliens) if (al.escort) { al.fleeing = true; al.mode = 'leave'; al.vx = (al.x - b.x) * 2; al.vz = (al.z - b.z) * 2; }
   }

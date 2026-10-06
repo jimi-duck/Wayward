@@ -67,12 +67,15 @@ describe('lasers', () => {
 });
 
 describe('torpedoes', () => {
-  it('are a refit, not standard: the stock ship has no bay', () => {
+  it('come fitted in the arcade; the Story mode’s stock hauler has no bay yet', () => {
     const w = new World(1);
     w.field.rocks = [];
     w.step(STEP, input({ torpedo: true }));
-    expect(w.torps.length).toBe(0);
-    expect(w.drain().some((e) => e.type === 'torpedo')).toBe(false);
+    expect(w.torps.length).toBe(1);
+    const s = new World(1, { mode: 'breakout' });
+    s.field.rocks = [];
+    s.step(STEP, input({ torpedo: true }));
+    expect(s.torps.length).toBe(0);
   });
 
   it('lock the rock ahead, steer onto it and blast it', () => {

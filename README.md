@@ -40,10 +40,13 @@ Two ways in from the start screen:
   otherwise leaves you adrift, a day later, with the hold gone; the third
   is the end. The journey is saved between systems and at every port:
   **Continue** carries on.
-- **Arcade**: the endless run. The system starts quiet; every time the
-  Krail gauge fills, **refit** (three cards, take one); hostiles arrive in
-  encounters with quiet spells between, where the hull mends itself; from
-  3:30 capital ships hail. When the hull goes, the run report says what you built and how it
+- **Arcade**: the endless run. The ship leaves with lasers, torpedoes and a
+  shield charge. Krail from rock and wrecks is spent in the **refit bay**
+  (B): a web of modules in eight tabs, each level paid in Krail and drawing
+  on the ship's power, mass and heat; nothing comes out once fitted. It
+  opens whenever nothing hostile is close. Hostiles arrive in encounters
+  with quiet spells between, where the hull mends itself; from 3:30 capital
+  ships hail. When the hull goes, the run report says what you built and how it
   went.
 
 - Where the game goes next, WAYWARD: [docs/VISION.md](docs/VISION.md),
@@ -95,7 +98,9 @@ game opens with no bars at all.
 | Cutter (Breakout, hold) | 3, C or L | Cut button | LB or left trigger |
 | Overcharge (when full) | E | Core button | Y |
 | Barrel roll | Shift | a second finger on the left half | B or RB |
-| Refit: take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
+| Refit bay (arcade): open, launch | B; Esc or B to launch | the bay button, bottom centre | Back; B |
+| Refit bay: tab, module, install | Q E or 1–8, arrows, Enter | tap | bumpers, stick, A |
+| Refit (Story): take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
 | Comms: answer | 1–6, or arrows and Enter | tap | stick, A |
 | Hail (arcade): engage / evade | 1 or F / 2 or E | tap | A / B |
 | Camera distance | Z (cycles), or − and = | pause screen | |

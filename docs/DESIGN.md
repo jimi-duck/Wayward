@@ -281,7 +281,29 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 
-## The refit: three cards
+## The refit bay (the arcade)
+
+The arcade builds the ship in the **refit bay** (PLAN.md, R; `content/web.ts`,
+`sim/bay.ts`, `ui/bay.ts`). The ship leaves with lasers, a shield charge and
+the torpedo bay. Krail (crystals from rock and wrecks, times the krail
+matrix) is a stock, no longer a rail to a card. Press B (pad Back, the bay
+button on touch) when nothing hostile is close and the world waits on the
+bay: eight tabs (Hull, Weapons, Ordnance, Engines, Defence, Utility,
+Reactor, Synergies), each a small web left to right by tier. A module opens
+once something it comes from is fitted, then by the upgrade's own rules
+(requires, one specialisation per group, a deep enough system). Each level
+costs Krail by tier (40, 60, 90, 130; half as much again a level) and draws
+power, mass or heat. Power is a ceiling; the reactor core raises it and is
+always open until full, so a build never gets stuck, and nothing comes out
+once fitted. Mass and heat are ratings that steps 3 of the plan will make
+felt. A capital ship destroyed opens her faction's tech in Synergies. The
+HUD's Krail row counts toward the cheapest module in reach and lights the
+bay's key when one can be fitted.
+
+## The refit: three cards (the Story mode)
+
+The Story mode still refits by cards until the bay reaches it (PLAN.md, R,
+step 4).
 
 The refit used to be a web of about two hundred nodes to route across. It
 was too much: a map, an inspector and points to bank, every thirty seconds.
