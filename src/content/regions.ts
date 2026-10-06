@@ -36,6 +36,8 @@ export interface RegionDef {
   drifts: number;
   /** The chance of a port, against the system's own: fewer docks the further out. */
   port: number;
+  /** The share of its mining and transit systems that are quiet (breathers: no pursuit, no cards). None where not given. */
+  quiet?: number;
   /** The pursuit here: a multiplier on how fast heat climbs (the Custody is far from home), and on the share from ahead. */
   heatRate: number;
   ahead: number;

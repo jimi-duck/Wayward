@@ -177,17 +177,19 @@ export function sortieDef(j: Journey): SortieDef {
   const p = placeAt(j.chart, s.id), pd = p && PLACES[p.id];
   // further out the Custody is far from home, and whoever holds the system comes at you from ahead
   const R = REGIONS[regionOf(s)] ?? REGIONS[0]!, raid = raided(j.chart, s.id);
+  // a breather is quiet unless the Net has reached it: a blockade is not a rest
+  const quiet = !!s.quiet && !net;
   const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0);
   return {
     system: s.id, region: regionOf(s), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
     port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
     heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
-    rich: t.rich * (0.6 + s.cyrite * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls,
+    rich: t.rich * (0.6 + s.cyrite * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, quiet,
     ahead: raid ? undefined : AHEAD[s.holder], thren: threnAt(j.chart, s.id), here: presence(j.chart, s.id),
-    blockade: net, netted: net, calloway: finale ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
+    blockade: net, netted: net, calloway: finale || quiet ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
     place: pd ? { name: pd.name, text: pd.text, plays: pd.plays } : null,
-    nemesis: nemesis(j.calloway, j.hunt, { finale, offer }),
-    story: dueBeat(j),
+    nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer }),
+    story: quiet ? null : dueBeat(j),
   };
 }
 

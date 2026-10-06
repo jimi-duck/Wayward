@@ -578,6 +578,7 @@ export const UI: Record<string, string> = {
   'Jumped': 'Gesprungen',
   'no port': 'kein Hafen',
   'raided': 'überfallen',
+  'Quiet': 'Ruhig',
   'netted': 'im Netz',
   'Calloway last seen': 'Calloway zuletzt hier',
   'Goal': 'Ziel',

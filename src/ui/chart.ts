@@ -2,7 +2,7 @@ import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
 import { fileLines } from '../sim/calloway';
-import { gateOf, jumps, cyriteKnown, lanesFrom, placeAt, regionCount, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
+import { gateOf, jumps, cyriteKnown, lanesFrom, netted, placeAt, regionCount, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
 import { REGIONS } from '../content/regions';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
 import { RATION, WRECKS, here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
@@ -100,7 +100,7 @@ export class ChartPanel {
     const rn = regionName(j.chart, j.at);
     $('ch-k').textContent = [t('The chart'), rn, t('day {n}', { n: Math.floor(j.day) + 1 })].filter(Boolean).join(' · ');
     $('ch-t').textContent = j.legs.length ? `${t('Arrived')} · ${s.name}` : s.name;
-    $('ch-s').textContent = `${t(KIND_WORD[s.kind])} · ${t(SYSTEMS[s.kind].blurb)}`;
+    $('ch-s').textContent = `${t(KIND_WORD[s.kind])}${s.quiet && !netted(j.chart, s.id) ? ` · ${t('Quiet')}` : ''} · ${t(SYSTEMS[s.kind].blurb)}`;
     this.onPick = onPick;
     this.onGo = null;
     $('ch-go').hidden = true;
@@ -229,6 +229,7 @@ export class ChartPanel {
       if (fleetAt(j.chart, s.id)) notes.push(t('Drift fleet'));
       if (threnAt(j.chart, s.id) >= THREN_ABOUT) notes.push('Thren');
       if (raided(j.chart, s.id)) notes.push(t('raided'));
+      if (o.to.quiet && !o.netted) notes.push(t('Quiet'));
       if (o.netted) notes.push(t('netted'));
       if (o.shadow) notes.push(t('Calloway last seen'));
       const b = h('button', `port-l ch-l${i === this.sel ? ' sel' : ''}${o.netted ? ' net' : ''}`, '',
@@ -308,6 +309,7 @@ export class ChartPanel {
       if (j.chart.stall[s.id]) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-stall' }));
       if (fleetAt(c, s.id)) g.append(svg('path', { d: `M${x + 9} ${y + 4}l4 8h-8z`, class: 'ch-drift' }));
       if (raided(c, s.id)) g.append(svg('path', { d: `M${x - 13} ${y + 9}l5 -6M${x - 9} ${y + 11}l5 -6`, class: 'ch-raid' }));
+      if (s.quiet && !net) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-quiet' }));
       g.append(svg('circle', { cx: x, cy: y, r: s.kind === 'edge' || s.kind === 'home' || s.kind === 'gate' ? 8 : 6.5, fill: visited ? KIND_COLOUR[s.kind] : 'rgba(11,12,15,.9)', stroke: KIND_COLOUR[s.kind], 'stroke-width': 2 }));
       if (s.port) g.append(svg('rect', { x: x + 6, y: y - 11, width: 5, height: 5, fill: INK.teal }));
       const place = placeAt(c, s.id);

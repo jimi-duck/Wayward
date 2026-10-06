@@ -10,7 +10,7 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import { STORY_AT } from '../content/story';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
+  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
@@ -301,7 +301,7 @@ export class World implements EncounterHost {
     const def = this.sortie;
     this.bk = newBreakout(this.ship.heading, def);
     this.callowayAt = def.calloway;
-    this.captainAt = def.notice.captain?.at ?? Infinity;
+    this.captainAt = def.quiet ? Infinity : def.notice.captain?.at ?? Infinity;
     this.behind = def.behind;
     this.heard = new Set();
     // the course is laid out from where the ship is now
@@ -535,7 +535,7 @@ export class World implements EncounterHost {
   /** Heat, the cutter, patching, the port and the lane mouth. */
   private stepBreakout(dt: number, cut: boolean): void {
     const b = this.bk!, s = this.ship;
-    b.heat = Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * this.fx.heat * dt);
+    b.heat = b.def.quiet ? Math.max(0, b.heat - QUIET_COOL * dt) : Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * this.fx.heat * dt);
     if (b.nagT > 0) b.nagT -= dt;
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (this.holdNag > 0) this.holdNag -= dt;
@@ -550,7 +550,7 @@ export class World implements EncounterHost {
         this.cutting = r.id;
         this.cutter.time += dt;
         this.run.cutTime += dt;
-        b.heat = Math.min(1, b.heat + HEAT_CUT * dt);
+        if (!b.def.quiet) b.heat = Math.min(1, b.heat + HEAT_CUT * dt);
         const res = cutRock(r, dt);
         if (res === 'clean') this.cutClean(r);
         else if (res === 'fracture') {
@@ -659,7 +659,7 @@ export class World implements EncounterHost {
   private pursue(t: number): void {
     const b = this.bk!, s = this.ship;
     const cs = this.command.state;
-    if (cs === 'fight' || cs === 'inbound' || cs === 'hailing' || t < b.nextPursuit) return;
+    if (b.def.quiet || cs === 'fight' || cs === 'inbound' || cs === 'hailing' || t < b.nextPursuit) return;
     const regular = this.aliens.filter((a) => !a.escort && !a.extra).length;
     if (regular < pursuitCap(b.heat)) {
       const pick = pickPursuer(b.heat, this.rng, b.def.gutter, b.def.ahead);
@@ -688,7 +688,7 @@ export class World implements EncounterHost {
    */
   private swarm(t: number): void {
     const b = this.bk!, s = this.ship, thren = b.def.thren ?? 0;
-    if (t < b.nextSwarm) return;
+    if (b.def.quiet || t < b.nextSwarm) return;
     const cs = this.command.state;
     if (cs === 'fight' || cs === 'inbound' || cs === 'hailing') { b.nextSwarm = t + 10; return; }
     const a = this.rng.range(0, Math.PI * 2), d = this.rng.range(120, 150);
@@ -1007,7 +1007,7 @@ export class World implements EncounterHost {
       const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'port');
       if (def) return this.openComms(def);
     }
-    if (t < this.cardNext) return;
+    if (b.def.quiet || t < this.cardNext) return;
     const x = this.commsCtx();
     // not in the middle of a fight, unless the card is about the fight
     if (x.hostiles > 1) { this.cardNext = t + 4; return; }
@@ -1365,8 +1365,8 @@ export class World implements EncounterHost {
       this.lastEvent = place.plays;
       return;
     }
-    // only in open sky: no capital ship about, and not just before one
-    if (t < this.nextEvent || this.command.state !== 'idle' || this.command.next - t < 20) return;
+    // only in open sky: no capital ship about, and not just before one; a quiet system has no chance events
+    if (this.sortie.quiet || t < this.nextEvent || this.command.state !== 'idle' || this.command.next - t < 20) return;
     const id = pickEncounter(t, this.lastEvent, this.unlocked, this.rng);
     if (!id) { this.nextEvent = t + 20; return; }
     this.encounter = startEncounter(id, this);
