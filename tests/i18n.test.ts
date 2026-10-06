@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DE, KEEP } from '../src/i18n/de';
-import { num, plural, setLang, t } from '../src/i18n';
+import { loadDe, num, plural, setLang, t } from '../src/i18n';
 import { scanPage, scanSource } from './i18n-scan';
 
 // Every line the player can see has a German one (or is a name, the same in
@@ -10,6 +10,7 @@ const holes = (strings: Iterable<string>) => [...strings].filter((s) => DE[s] ==
 const slots = (s: string) => [...s.matchAll(/\{(\w+|#)\}/g)].map((m) => m[1]).sort();
 
 describe('German', () => {
+  beforeAll(loadDe);
   afterEach(() => setLang('en', false));
 
   it('covers every line of text in the code', () => {
