@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DoubleSide, Group, Mesh,
-  MeshBasicMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, TorusGeometry,
+  MeshBasicMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, TorusGeometry, Vector3,
   type Object3D, type Texture,
 } from 'three';
 import { clamp, lerp } from '../core/math';
@@ -185,6 +185,27 @@ function shieldMaterial(): ShaderMaterial {
   });
 }
 
+// ── the refit bay's lights ────────────────────────────────────────────────
+// While the bay is open the ship under the screen lights the part of itself
+// the open tab is about, in amber (the player's hand), softly and through the
+// plating, never a hologram. Model space, +X toward the bow: the prow's guns,
+// the belly where the torpedo bay sits, the nacelles, the spine's modules,
+// the core amidships. 'brief' (the pause card) wakes a little of each.
+
+const TOP = 0.72;
+const MARKS: Record<string, V3[]> = {
+  hull: [[-1.6, TOP, 0], [-0.4, TOP, 0], [0.8, TOP, 0], [1.9, TOP, 0], [0, 0.16, 1.3], [0, 0.16, -1.3]],
+  weapons: [[2.3, 0.2, 0.78], [2.3, 0.2, -0.78], [2.94, 0.18, 0]],
+  ordnance: [[2.3, -0.3, 0], [1.2, -0.5, 0], [0.2, -0.5, 0]],
+  engines: [[-2.64, -0.08, 1.5], [-2.64, -0.08, -1.5], [-1.4, -0.08, 1.5], [-1.4, -0.08, -1.5]],
+  defence: [[2.1, 0.5, 0.9], [2.1, 0.5, -0.9], [-0.2, 0.9, 1.9], [-0.2, 0.9, -1.9]],
+  utility: [[-1.4, TOP + 0.2, 0.3], [-0.2, TOP + 0.45, 0], [0.4, TOP + 0.2, -0.3], [1.6, TOP + 0.4, 0]],
+  reactor: [[-1.0, 0.2, 0], [-0.4, 0.2, 0], [-1.0, -0.08, 1.5], [-1.0, -0.08, -1.5]],
+  synergies: [[2.3, 0.2, 0], [-0.4, 0.4, 0], [-2.3, 0, 0]],
+};
+const BRIEF_ZONES: Record<string, number> = { weapons: 0.5, ordnance: 0.4, engines: 0.6, utility: 0.35, reactor: 0.35 };
+const MARK = new Color(3.2, 1.8, 0.35);
+
 // ── the view ──────────────────────────────────────────────────────────────
 interface Engine { nozzle: Nozzle; disc: Mesh; core: Mesh; rim: Mesh; plume: Mesh; halo: Sprite; trail: Trail; }
 
@@ -215,6 +236,11 @@ export class ShipView {
   private readonly bell = BELL.clone();
   private readonly halo = HALO.clone();
   private absorbed = false;
+  /** The bay's lights: a sprite a mark, eased in and out by zone. */
+  private readonly marks: Array<{ zone: string; sprite: Sprite; size: number }> = [];
+  private readonly zoneLevel: Record<string, number> = {};
+  /** A fit just landed on a zone: a brighter flash that dies away. */
+  private readonly kick: Record<string, number> = {};
   private bank = 0;
   private pitch = 0;
   private heat = 0;
@@ -250,6 +276,16 @@ export class ShipView {
       this.lights.push(s);
       this.rollG.add(s);
     }
+    for (const [zone, pts] of Object.entries(MARKS)) {
+      for (const p of pts) {
+        const sprite = new Sprite(new SpriteMaterial({ map: glow, color: MARK, blending: AdditiveBlending, depthWrite: false, depthTest: false, transparent: true, opacity: 0 }));
+        sprite.position.set(p[0] * MODEL_SCALE, p[1] * MODEL_SCALE, p[2] * MODEL_SCALE);
+        sprite.visible = false;
+        sprite.renderOrder = 5;
+        this.rollG.add(sprite);
+        this.marks.push({ zone, sprite, size: zone === 'hull' || zone === 'reactor' ? 3 : 2.4 });
+      }
+    }
     this.shield = new Mesh(new SphereGeometry(1, 40, 20), this.shieldMat);
     this.rollG.add(this.shield, this.glowLight, this.workLight);
     this.place();
@@ -277,6 +313,41 @@ export class ShipView {
     this.workLight.position.set(-2.6, 2.2, 0.9);
     this.model.wings.forEach((w, i) => this.lights[i]!.position.set(w[0] * S, w[1] * S, w[2] * S));
     this.shield.scale.set(...(this.model.shield.map((v) => v * S) as V3));
+  }
+
+  /**
+   * Light the part of the ship a bay tab is about (a tab id, 'brief' for the
+   * pause card, null for none), easing in and out over about half a second.
+   * `dt` is real time: the world may be waiting.
+   */
+  light(zone: string | null, dt: number): void {
+    const k = Math.min(1, 5 * dt), t = this.time;
+    for (const z of Object.keys(this.kick)) this.kick[z] = Math.max(0, this.kick[z]! - 1.6 * dt);
+    for (const z of Object.keys(MARKS)) {
+      const want = zone === 'brief' ? BRIEF_ZONES[z] ?? 0 : zone === z ? 1 : 0, cur = this.zoneLevel[z] ?? 0;
+      this.zoneLevel[z] = cur + (want - cur) * k;
+    }
+    for (const m of this.marks) {
+      const v = Math.min(1.6, (this.zoneLevel[m.zone] ?? 0) + (this.kick[m.zone] ?? 0) * 0.9);
+      m.sprite.visible = v > 0.01;
+      if (!m.sprite.visible) continue;
+      const pulse = 0.85 + 0.15 * Math.sin(t * 2.4 + m.sprite.position.x * 3);
+      (m.sprite.material as SpriteMaterial).opacity = Math.min(1, v * 0.95 * pulse);
+      m.sprite.scale.setScalar(m.size * MODEL_SCALE * (0.8 + 0.2 * v));
+    }
+    // the shield zone shows the ellipsoid itself, faintly
+    if (this.zoneLevel.defence! > 0.05) this.hit = Math.max(this.hit, this.zoneLevel.defence! * 0.3);
+  }
+
+  /** A fit landed on a zone: flash its lights. */
+  flashZone(zone: string): void {
+    this.kick[zone] = 1;
+  }
+
+  /** The world positions of a zone's lights. */
+  zonePoints(zone: string): Vector3[] {
+    this.rollG.updateWorldMatrix(true, false);
+    return this.marks.filter((m) => m.zone === zone).map((m) => m.sprite.getWorldPosition(new Vector3()));
   }
 
   /** World positions of the nozzles and how hard they are burning, for exhaust sparks. */

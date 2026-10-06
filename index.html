@@ -251,13 +251,16 @@
     <div id="bay" class="sheet" role="dialog" aria-labelledby="bay-t" hidden>
       <div class="bay">
         <header class="bay-h">
-          <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><b id="bay-t">Refit bay</b></span>
+          <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><span><b id="bay-t">Refit bay</b><small id="bay-voice"></small></span></span>
+          <span class="ops" id="bay-ops"></span>
           <span class="bay-krail" id="bay-krail"></span>
           <button type="button" id="bay-auto" aria-pressed="false"><i class="sw"></i><span>Auto-refit</span><b id="bay-auto-v">Off</b></button>
           <button type="button" id="bay-x"><kbd class="only-desktop">B</kbd> Launch</button>
         </header>
         <nav class="bay-tabs" id="bay-tabs" role="tablist"></nav>
         <section class="bay-w" id="bay-main">
+          <i class="wear" aria-hidden="true"></i>
+          <span class="wear-serial" aria-hidden="true">OB-7731-A · Fit bay 03 · Rev 14</span>
           <header class="bay-tab-h" id="bay-tab-h"></header>
           <div class="bay-legend"><span class="lg owned">Fitted</span><span class="lg open">Ready</span><span class="lg locked">Not yet</span></div>
           <div class="bay-web" id="bay-web"></div>
@@ -342,6 +345,9 @@
     <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
       <div class="pause-card panel">
+        <i class="wear" aria-hidden="true"></i>
+        <span class="wear-stamp" aria-hidden="true">Service overdue</span>
+        <div class="pause-rule"><span>Ship system</span><span>Operational briefing</span></div>
         <div class="pause-t" id="pause-t">All stop</div>
         <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
         <ol class="howto arcade-only">
@@ -349,6 +355,7 @@
           <li><svg class="ico"><use href="#i-hull"/></svg><b>Upgrade</b><span>Spend Krail in the refit bay, or let Auto-refit do it.</span></li>
           <li><svg class="ico"><use href="#i-hostile"/></svg><b>Survive</b><span>Hostiles come in waves. In the quiet, the hull mends.</span></li>
         </ol>
+        <div class="voice" id="pause-voice"></div>
         <div class="states arcade-only"><span class="st clear"><i></i>Clear · the bay opens</span><span class="st obs"><i></i>Caution · ships nearby</span><span class="st battle"><i></i>Red alert · under attack</span></div>
         <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
         <!-- the controls for what you play with: keys, touch or a pad -->
@@ -385,6 +392,7 @@
         </div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
         <div class="pause-build" id="pause-build"></div>
+        <div class="pause-rule pause-foot" id="pause-foot"></div>
       </div>
     </div>
     <!-- A phone held upright: the game plays on its side only, and waits. -->

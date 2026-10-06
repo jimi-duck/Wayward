@@ -330,6 +330,26 @@ saying what running over costs. A capital ship destroyed opens her faction's tec
 HUD's Krail row counts toward the cheapest module in reach and lights the
 bay's key when one can be fitted.
 
+**The ship's console** (`ui/ops.ts`, `ui/briefing.ts`). The bay and the
+pause card show the HUD's alert as one word (`◆ Clear`, `◆ Caution`,
+`◆ Red alert`, and `◆ Critical` at one plate), the pause card wraps the
+briefing in a rule, a line of the ship's voice and a line of readings. In the
+bay the tabs carry marks (amber fitted, red over a rating through something
+fitted there), Install names its price, the figures read as large
+before → after blocks, and a fit lights the module and bumps the figures it
+moved. The ship behind it is the protagonist: with the bay open the camera
+comes in and the tab lights its part of the ship in amber (`ShipView.light`,
+marks per tab in `render/ships.ts`); the pause card wakes a little of each
+and the lights ease out on resume. Ratings read from 80% (a tick, then
+`▲ Warning`, `▲ Over limit`, power `▲ Full`), and an install counts the
+Krail down and runs a line from the module to the ship's lit part
+(`BayPanel.installFx`). The ship's computer picks (`sim/advice.ts`: the
+firmest three get a ◆ and a reason) and the build's profile (`sim/profile.ts`)
+sit in the bay; the Story's cards carry the reason too. The ship speaks one line (`content/voice.ts`, picked in `sim/voice.ts`)
+under the bay's title and on the pause card. The web's links are
+conduits with forks and joins drawn as junctions (`BayPanel.web`). The rest is in PLAN.md (the console pass).
+
+
 ## The refit: three cards (the Story mode)
 
 The Story mode still refits by cards until the bay reaches it (PLAN.md, R,

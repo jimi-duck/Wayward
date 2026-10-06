@@ -356,8 +356,25 @@ export class Sector {
   }
 
   /** Place everything for this frame and draw it. `alpha` is how far past the previous step we are. */
-  frame(world: World, alpha: number, dt: number): void {
+  /** What the screen over the ship is about: a bay tab, 'brief' for the pause card, or none. Lights the ship (ShipView.light). */
+  console: string | null = null;
+  private bayK = 0;
+
+  /** Where a zone's lights are on the screen, as fractions of it (0,0 top left), for the bay's lines to the ship. */
+  zoneScreen(zone: string): Array<[number, number]> {
+    return this.ship.zonePoints(zone).map((v) => { v.project(this.rig.camera); return [(v.x + 1) / 2, (1 - v.y) / 2] as [number, number]; });
+  }
+
+  flashZone(zone: string): void {
+    this.ship.flashZone(zone);
+  }
+
+  frame(world: World, alpha: number, dt: number, uiDt = dt): void {
     this.time += dt;
+    const inBay = this.console !== null && this.console !== 'brief';
+    this.bayK += ((inBay ? 1 : 0) - this.bayK) * Math.min(1, 4 * uiDt);
+    this.rig.bay = this.bayK * this.bayK * (3 - 2 * this.bayK);
+    this.ship.light(this.console, uiDt);
     this.paintSky(world);
     const a = world.prev, b = world.ship, s = this.lerped;
     Object.assign(s, b);

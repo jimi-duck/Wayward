@@ -24,6 +24,7 @@ import { buildView, StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
 import { BayPanel } from './ui/bay';
+import { showConsole } from './ui/briefing';
 import { blockOf, quickPicks } from './sim/bay';
 import { detect, localize, onLang, plural, setLang, t } from './i18n';
 
@@ -109,6 +110,7 @@ function boot(): void {
   const chart = new ChartPanel();
   const ending = new EndingPanel();
   const bay = new BayPanel();
+  bay.ship = { points: (z) => sector.zoneScreen(z), flash: (z) => sector.flashZone(z) };
   const padNav = new PadNav();
   let reported = false;
   const panelOpen = () => refit.open || bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
@@ -212,7 +214,7 @@ function boot(): void {
     if (world.phase === 'refit' && world.offer && !refit.open) {
       // a full rail or battle salvage: three cards
       input.reset();
-      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); }, !world.bk);
+      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); }, !world.bk, (id) => world.advise(id));
     } else if (world.phase === 'bay' && !bay.open) {
       // the refit bay: the player opened it, and the world waits until they launch
       input.reset();
@@ -309,6 +311,7 @@ function boot(): void {
       input.reset();
       el('pause-build').replaceChildren(buildView(world.levels));
       showBrief();
+      showConsole(world);
     }
   };
   /** The briefing's live parts: its title, the bay's count, Auto-refit. */
@@ -393,7 +396,8 @@ function boot(): void {
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
-      sector.frame(world, alpha, dt);
+      sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
+      sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);
       if (started) stops();
       debug.frame(frameDt, renderer, quality, input, loop.paused);

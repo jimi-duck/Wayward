@@ -1,5 +1,6 @@
 import { BRANCHES, UPGRADE, upgradeText, type Branch } from '../content/upgrades';
 import { branchLevels, upgradeFigures, type Levels } from '../sim/build';
+import type { Advice } from '../sim/advice';
 import type { Card, CardTag, Offer } from '../sim/offers';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { t } from '../i18n';
@@ -56,7 +57,7 @@ export class RefitPanel {
     return !$('refit').hidden;
   }
 
-  show(offer: Offer, levels: Levels, onPick: (i: number) => void, arcade = true): void {
+  show(offer: Offer, levels: Levels, onPick: (i: number) => void, arcade = true, advise: (id: string) => Advice | null = () => null): void {
     this.close();
     const opened = performance.now();
     const kind = offer.kind;
@@ -65,7 +66,7 @@ export class RefitPanel {
     $('refit-t').textContent = kind === 'salvage' ? t('Take one from the wreck') : spec ? t('{system}: specialise', { system: t(BRANCHES[spec.branch].name) }) : t('Pick an upgrade');
     $('refit-s').textContent = kind === 'spec' ? t('One per system, for the whole run. It makes the ship what she is.') : '';
     const pick = (i: number) => { this.close(); onPick(i); };
-    $('cards').replaceChildren(...offer.cards.map((c, i) => this.card(c, i, levels, arcade, guarded(opened, () => pick(i)))));
+    $('cards').replaceChildren(...offer.cards.map((c, i) => this.card(c, i, levels, arcade, guarded(opened, () => pick(i)), advise(c.id))));
     this.sel = 0;
     this.mark();
     this.pad = { opened, n: offer.cards.length, pick };
@@ -107,7 +108,7 @@ export class RefitPanel {
    * does, the module's level as blocks (owned, and the one this card adds),
    * and the numbers it changes.
    */
-  private card(c: Card, i: number, levels: Levels, arcade: boolean, onClick: (e: Event) => void): HTMLElement {
+  private card(c: Card, i: number, levels: Levels, arcade: boolean, onClick: (e: Event) => void, why: Advice | null = null): HTMLElement {
     const u = UPGRADE[c.id]!;
     const b = h('button', `card ${c.tag} ${u.cat}`) as HTMLButtonElement;
     b.type = 'button';
@@ -134,7 +135,7 @@ export class RefitPanel {
     for (const f of upgradeFigures(levels, c.id, arcade).slice(0, MAX_FIGS)) {
       figs.append(h('span', `fig${f.cost ? ' cost' : ''}`, '', h('span', 'f-l', t(f.label)), h('span', 'f-v', '', h('s', '', t(f.from)), document.createTextNode(' → '), h('b', '', t(f.to)))));
     }
-    b.append(top, name, lv, text, figs);
+    b.append(top, name, ...(why ? [h('span', 'c-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why.text, why.vars)}`))] : []), lv, text, figs);
     if (u.note) b.append(h('span', 'c-note', t(u.note)));
     return b;
   }
