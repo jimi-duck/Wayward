@@ -3,11 +3,11 @@ import {
   DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_CYRITE, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
 } from '../content/phenomena';
 import { SYSTEMS } from '../content/systems';
-import { REGIONS } from '../content/regions';
+import type { RegionSet } from '../content/regions';
 import { FOOD_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
-  arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
-  viewOf, type Chart, type StarSystem,
+  arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
+  tierOf, viewOf, type Chart, type StarSystem,
 } from './chart';
 import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './scatter';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
@@ -144,8 +144,8 @@ export function startCarry(): Carry {
 }
 
 /** A new journey: the region laid out, the Breakout first. The old lane out of Cerro leads to one system of the next column. */
-export function newJourney(seed: number, hardcore = false): Journey {
-  const chart = makeChart(seed);
+export function newJourney(seed: number, hardcore = false, set: RegionSet = 'three'): Journey {
+  const chart = makeChart(seed, set);
   const j: Journey = {
     version: VERSION, seed, hardcore, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry: startCarry(),
     wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
@@ -176,12 +176,12 @@ export function sortieDef(j: Journey): SortieDef {
   const offer = offerFor(j.calloway, { day: j.day, behind: behind(j.hunt, j.trail), caught: j.hunt.caught, flown: j.trail.length - 1, flags: j.carry.flags });
   const p = placeAt(j.chart, s.id), pd = p && PLACES[p.id];
   // further out the Custody is far from home, and whoever holds the system comes at you from ahead
-  const R = REGIONS[regionOf(s)] ?? REGIONS[0]!, raid = raided(j.chart, s.id);
+  const R = regionDef(j.chart, regionOf(s)) ?? regionsOf(j.chart)[0]!, raid = raided(j.chart, s.id);
   // a breather is quiet unless the Net has reached it: a blockade is not a rest
   const quiet = !!s.quiet && !net;
   const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0);
   return {
-    system: s.id, region: regionOf(s), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
+    system: s.id, region: tierOf(j.chart, regionOf(s)), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
     port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
     heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
     rich: t.rich * (0.6 + s.cyrite * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, pace: t.pace, quiet,
@@ -397,9 +397,9 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const place = placeAt(j.chart, to);
   if (place && there.kind !== 'edge') lines.push(`${t('{name} here', { name: t(PLACES[place.id].name) })} · ${t(PLACES[place.id].blurb)}`);
   // through a gate: a new region
-  if (there.kind === 'gate') { const R = REGIONS[viewOf(j.chart, to)]; if (R) { lines.unshift(`${t(R.name)} · ${t(R.blurb)}`); note(j, t('Through {gate} into {region}', { gate: there.name, region: t(R.name) })); } }
+  if (there.kind === 'gate') { const R = regionDef(j.chart, viewOf(j.chart, to)); if (R) { lines.unshift(`${t(R.name)} · ${t(R.blurb)}`); note(j, t('Through {gate} into {region}', { gate: there.name, region: t(R.name) })); } }
   // a new act: out of Cerro, the Run; into the Hollows, the Choice
-  const turn = j.trail.length === 2 ? ACTS[1] : there.kind === 'gate' && viewOf(j.chart, to) === CHOICE_REGION ? ACTS[2] : null;
+  const turn = j.trail.length === 2 ? ACTS[1] : there.kind === 'gate' && tierOf(j.chart, viewOf(j.chart, to)) === CHOICE_REGION && tierOf(j.chart, regionOf(there)) < CHOICE_REGION ? ACTS[2] : null;
   if (turn) { lines.unshift(actLine(turn)); note(j, actLine(turn)); }
   const fleet = fleetAt(j.chart, to);
   if (fleet) lines.push(t('Drift fleet here · {name} trades food and news', { name: fleet.name }));

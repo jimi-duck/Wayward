@@ -2,8 +2,7 @@ import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
 import { fileLines } from '../sim/calloway';
-import { gateOf, jumps, cyriteKnown, lanesFrom, netted, placeAt, regionCount, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
-import { REGIONS } from '../content/regions';
+import { gateOf, jumps, cyriteKnown, lanesFrom, netted, placeAt, regionCount, regionDef, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
 import { stance, type Stance } from '../sim/lanes';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
 import { RATION, WRECKS, here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
@@ -60,7 +59,7 @@ const goalOf = (c: Chart, at: string) => gateOf(c, viewOf(c, at));
 /** Jumps from a system to the goal (Infinity with no way). */
 const toGoal = (c: Chart, at: string, id: string) => jumps(c, id, goalOf(c, at).id);
 /** The region's name, when the chart has more than one. */
-const regionName = (c: Chart, at: string) => (regionCount(c) > 1 ? t(REGIONS[viewOf(c, at)]?.name ?? '') : '');
+const regionName = (c: Chart, at: string) => (regionCount(c) > 1 ? t(regionDef(c, viewOf(c, at))?.name ?? '') : '');
 
 /** A faction's notice in a line: its tier, how far to the next, standing, and its captain. */
 function noticeText(l: NoticeLine, day: number): string {
