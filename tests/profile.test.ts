@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { availableModifiers, grants, loadProfile, migrate, recordRun } from '../src/meta/profile';
+import { grants, loadProfile, migrate, recordRun } from '../src/meta/profile';
 import { newRun } from '../src/sim/run';
 
 // a small in-memory localStorage, so the profile can be tested in node
@@ -44,11 +44,10 @@ describe('the profile between runs', () => {
     expect(recordRun(loadProfile(), runWith({ time: 310 })).unlocked.map((u) => u.id)).not.toContain('u_derelict');
   });
 
-  it('offers a challenge modifier only once it is earned', () => {
-    const p = loadProfile();
-    expect(availableModifiers(p)).toEqual([]);
-    recordRun(p, runWith({ time: 500 }));
-    expect(availableModifiers(loadProfile())).toContain('ironman');
+  it('folds the old challenge toggles into one difficulty', () => {
+    expect(migrate({ modifiers: ['ironman', 'hostile'] }).modifiers).toEqual(['hard']);
+    expect(migrate({ modifiers: ['glass'] }).modifiers).toEqual([]);
+    expect(migrate({ modifiers: ['easy'] }).modifiers).toEqual(['easy']);
   });
 
   it('plays on when storage refuses', () => {
