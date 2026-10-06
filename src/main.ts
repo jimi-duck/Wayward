@@ -25,7 +25,7 @@ import { PortPanel } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
 import { blockOf, quickPicks } from './sim/bay';
-import { detect, localize, onLang, plural, setLang, t } from './i18n';
+import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -590,4 +590,5 @@ function boot(): void {
   loop.start();
 }
 
-boot();
+// German players wait for their dictionary; everyone else starts at once
+(detect() === 'de' ? loadDe() : Promise.resolve()).then(boot);

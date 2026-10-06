@@ -1,4 +1,4 @@
-import { DE } from './de';
+type Dict = Record<string, string>;
 
 // ── languages ─────────────────────────────────────────────────────────────
 // The game speaks English and German. English is the source: every string is
@@ -20,6 +20,16 @@ import { DE } from './de';
 export type Lang = 'en' | 'de';
 export const LANGS: readonly Lang[] = ['en', 'de'];
 export const LANG_NAME: Record<Lang, string> = { en: 'English', de: 'Deutsch' };
+
+// The German dictionary is a separate download, fetched only for a player who
+// speaks German, so everyone else skips about a fifth of the game's code.
+let DE: Dict = {};
+let loading: Promise<void> | null = null;
+
+/** Fetch the German dictionary (once). The game waits for it before its first paint in German. */
+export function loadDe(): Promise<void> {
+  return (loading ??= import('./de').then((m) => { DE = m.DE; }));
+}
 
 const KEY = 'wayward.lang';
 let lang: Lang = 'en';
@@ -46,6 +56,8 @@ export function setLang(l: Lang, save = true): void {
   if (save) try { localStorage.setItem(KEY, l); } catch { /* not remembered */ }
   if (typeof document !== 'undefined') document.documentElement.lang = l === 'de' ? 'de' : 'en-GB';
   for (const fn of listeners) fn();
+  // switched to German mid-game: draw again once the dictionary lands
+  if (l === 'de' && !Object.keys(DE).length) void loadDe().then(() => { if (lang === 'de') for (const fn of listeners) fn(); });
 }
 
 /** Call `fn` whenever the language changes. */
