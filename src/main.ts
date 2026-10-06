@@ -24,7 +24,6 @@ import { StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
-import { blockOf, quickPicks } from './sim/bay';
 import { Feel } from './audio/audio';
 import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
@@ -384,9 +383,6 @@ function boot(): void {
     const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
     el('pause-t').textContent = t(settingsOpen() ? 'Settings' : first ? 'Briefing' : 'All stop');
-    const n = quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
-    el('p-bay').classList.toggle('ready', n > 0);
-    el('p-bay-n').textContent = n ? String(n) : '';
     for (const [id, on] of [['p-sound', feel.prefs.sound], ['p-buzz', feel.prefs.haptics]] as const) {
       el(id).classList.toggle('on', on);
       el(id).setAttribute('aria-pressed', String(on));
@@ -591,7 +587,6 @@ function boot(): void {
     el(id).addEventListener('pointerdown', (e) => e.stopPropagation());
     el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
   };
-  act('p-bay', () => openBay());
   act('p-set', () => showSettings(true));
   act('p-back', () => showSettings(false));
   act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
