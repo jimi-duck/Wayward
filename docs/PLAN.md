@@ -618,6 +618,17 @@ when an install runs the ship over. The pilot report gains a table of Krail
 spent and the budgets at the end: laser builds buy heat exchangers, close
 quarters runs heavy, everyone buys reactor cores.
 
+**A UI pass on the bay and the HUD (2026-10-06, Jimi's notes).** The mode
+card is two words: Observation (yellow) and Battle (red alert); the bay
+opens in the first, and saying no in the second is one line. An upgrades
+badge (clickable, B) counts the suggestions you can pay for and pulses when
+one comes in. The bay opens on three suggested modules with the price on the
+button; the tabs are a step further in, with prices on the web. Auto-refit
+fits the suggestions by itself. The target's brackets close tight with its
+health as a bar under them; the upper-centre card is for hostile hulls only.
+The pause card is the briefing: three steps (mine, upgrade, survive), the
+two states, the controls for the device in hand, the bay and Auto-refit.
+
 ### Open
 
 - Builds that save for deep modules (torpedoes, mines) fit six or seven in

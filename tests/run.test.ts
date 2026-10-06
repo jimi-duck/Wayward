@@ -9,7 +9,7 @@ import { CHAIN_WINDOW, OC_MAX, SHIP_R, xpFor } from '../src/sim/tuning';
 import { cost } from '../src/sim/bay';
 import { ORE_XP } from '../src/sim/breakout';
 import { launchTorpedo } from '../src/sim/weapons';
-import { World } from '../src/sim/world';
+import { AUTO_QUIET, World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
   ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard', ...f });
@@ -84,12 +84,37 @@ describe('krail and the refit bay', () => {
     expect(w.install('ph_capacitors')).toBe('closed');
   });
 
-  it('will not open with danger near', () => {
+  it('opens in observation, and is locked in battle (what the mode card shows)', () => {
     const w = quiet();
+    expect(w.bayClosed()).toBeNull();
     const al = parked(w, 0, -30, 0, 'lancer');
     al.mode = 'hold';
-    expect(w.bayClosed()).toBe('danger');
+    expect(w.inDanger()).toBe(true);
+    expect(w.bayClosed()).toBe('battle');
     expect(w.openBay()).toBe(false);
+    w.aliens = [];
+    expect(w.openBay()).toBe(true);
+    w.closeBay();
+    const s = new World(1, { mode: 'breakout' });
+    expect(s.bayClosed()).toBe('mode');
+  });
+
+  it('Auto-refit fits the first affordable suggestion once it is quiet, and says so', () => {
+    const w = quiet();
+    w.krail = 200;
+    run(w, 3);
+    expect(w.refit).toBe(0); // off unless the player switches it on
+    w.autoFit = true;
+    const al = parked(w, 0, -30, 0, 'lancer');
+    al.mode = 'hold';
+    run(w, 3);
+    expect(w.refit).toBe(0); // not with a hostile close
+    w.aliens = [];
+    w.drain();
+    run(w, AUTO_QUIET + 0.2);
+    expect(w.refit).toBe(1);
+    expect(w.drain().some((e) => e.type === 'fitted' && 'auto' in e && e.auto)).toBe(true);
+    expect(w.krail).toBeLessThan(200);
   });
 
   it('starts a new run from the stock ship: lasers, a shield charge and the torpedo bay', () => {

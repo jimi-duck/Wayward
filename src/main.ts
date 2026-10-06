@@ -24,6 +24,7 @@ import { buildView, StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
 import { BayPanel } from './ui/bay';
+import { blockOf, quickPicks } from './sim/bay';
 import { detect, localize, onLang, plural, setLang, t } from './i18n';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -273,16 +274,25 @@ function boot(): void {
   };
 
   // ── the refit bay ──────────────────────────────────────────────────────
-  // B, a pad's Back, or the touch button. The arcade only, never mid-fight:
-  // the HUD says why when it will not open.
+  // B, a pad's Back, the HUD's badge, or the pause card's button. The
+  // arcade, while flying; not in battle (the HUD's state says which), and
+  // when it will not open the HUD says why in a line.
   const openBay = () => {
-    if (!started || panelOpen() || world.bk) return;
+    if (!started || world.bk || refit.open || comms.open || port.open || chart.open || ending.open || bay.open) return;
     const why = world.bayClosed();
-    if (why === 'danger') { hud.note(world, t('Not with hostiles close'), 'hit'); return; }
-    if (why) return;
+    if (why) { hud.bayDenied(world, why); return; }
     setPaused(false);
     world.openBay();
   };
+  hud.onBay = openBay;
+  bay.auto = world.autoFit = profile.autoFit;
+  const setAuto = (on: boolean) => {
+    world.autoFit = profile.autoFit = bay.auto = on;
+    saveProfile(profile);
+    hud.note(world, t(on ? 'Auto-refit on' : 'Auto-refit off'));
+    showBrief();
+  };
+  bay.onAuto = setAuto;
 
   // ── start, pause ───────────────────────────────────────────────────────
   // The run waits behind the start card, so the first key or tap is the one
@@ -291,12 +301,25 @@ function boot(): void {
   let started = false;
   document.documentElement.classList.add('prelaunch');
   const setPaused = (on: boolean) => {
+    // the first stop of the first arcade run is the briefing; once read, it is the pause card
+    if (!on && loop.paused && started && !world.bk && !profile.briefed) { profile.briefed = true; saveProfile(profile); }
     loop.paused = on;
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
       input.reset();
       el('pause-build').replaceChildren(buildView(world.levels));
+      showBrief();
     }
+  };
+  /** The briefing's live parts: its title, the bay's count, Auto-refit. */
+  const showBrief = () => {
+    el('pause-t').textContent = t(!world.bk && !profile.briefed ? 'Briefing' : 'All stop');
+    const n = world.bk ? 0 : quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
+    el('p-bay').classList.toggle('ready', n > 0);
+    el('p-bay-n').textContent = n ? String(n) : '';
+    el('p-auto').classList.toggle('on', world.autoFit);
+    el('p-auto').setAttribute('aria-pressed', String(world.autoFit));
+    el('p-auto-v').textContent = t(world.autoFit ? 'On' : 'Off');
   };
   // Phones and tablets take the whole screen where the browser allows it
   // (Android, iPad; never an iPhone browser), and on its side where it can
@@ -474,15 +497,18 @@ function boot(): void {
     e.stopPropagation();
     if (started && !panelOpen()) setPaused(true);
   });
-  el('bay-b').addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    openBay();
-  });
   el('pause').addEventListener('pointerdown', (e) => {
     e.preventDefault();
     setPaused(false);
   });
+  // the briefing's buttons answer themselves, without resuming underneath
+  const act = (id: string, f: () => void) => {
+    el(id).addEventListener('pointerdown', (e) => e.stopPropagation());
+    el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
+  };
+  act('p-bay', () => openBay());
+  act('p-auto', () => setAuto(!world.autoFit));
+  act('p-go', () => setPaused(false));
   // iOS Safari ignores user-scalable=no for pinch zoom; this is what stops it.
   document.addEventListener('gesturestart', (e) => e.preventDefault());
 

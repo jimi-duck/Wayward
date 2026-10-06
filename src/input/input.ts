@@ -65,6 +65,8 @@ export class Input {
 
   private use(d: Device): void {
     this.device = d;
+    // the briefing shows the controls for what you play with
+    document.documentElement.classList.toggle('pad-ui', d === 'gamepad');
     // Touch controls appear the first time a finger lands, so a laptop with
     // a touchscreen gets them only once it is used that way.
     if (d === 'touch') document.documentElement.classList.add('touch-ui');

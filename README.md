@@ -98,8 +98,8 @@ game opens with no bars at all.
 | Cutter (Breakout, hold) | 3, C or L | Cut button | LB or left trigger |
 | Overcharge (when full) | E | Core button | Y |
 | Barrel roll | Shift | a second finger on the left half | B or RB |
-| Refit bay (arcade): open, launch | B; Esc or B to launch | the bay button, bottom centre | Back; B |
-| Refit bay: tab, module, install | Q E or 1–8, arrows, Enter | tap | bumpers, stick, A |
+| Refit bay (arcade, in Observation): open, launch | B; Esc or B to launch | the upgrades badge | Back; B |
+| Refit bay: fit a suggestion, change tab, move, fit | 1 2 3, Q E, arrows, Enter; A for Auto-refit | tap | stick, A, bumpers; Y for Auto-refit |
 | Refit (Story): take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
 | Comms: answer | 1–6, or arrows and Enter | tap | stick, A |
 | Hail (arcade): engage / evade | 1 or F / 2 or E | tap | A / B |

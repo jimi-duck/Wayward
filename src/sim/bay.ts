@@ -5,7 +5,8 @@ import { available, type Levels } from './build';
 
 // ── the refit bay: what can be fitted, what it costs, what it leaves ──────
 // The rules over content/web.ts. Building happens only in the bay (PLAN.md,
-// R): you open it when it is quiet, pay Krail, and fit one level at a time.
+// R): you open it (any time, in the arcade), pay Krail, and fit one level at
+// a time, or let Auto-refit fit the suggestions as you fly.
 // Nothing comes out again. This module only answers questions about a
 // build; the world keeps the Krail and the levels and calls `install`.
 
@@ -61,7 +62,7 @@ export function blockOf(id: string, ctx: BayCtx): Block | null {
   if (u && !available(u, ctx.levels, ctx.unlocked)) return 'needs';
   if (node.yard && !ctx.docked) return 'yard';
   const { use, cap } = budgets(ctx.levels);
-  if (use.power + (node.draw.power ?? 0) > cap.power) return 'power';
+  if ((node.draw.power ?? 0) > 0 && use.power + node.draw.power! > cap.power) return 'power';
   if (ctx.krail < cost(id, lv + 1)) return 'krail';
   return null;
 }
@@ -96,4 +97,58 @@ export function cheapest(ctx: BayCtx): { id: string; cost: number } | null {
     if (!best || c < best.cost) best = { id: w.id, cost: c };
   }
   return best;
+}
+
+// ── suggestions ───────────────────────────────────────────────────────────
+// What the bay puts first, and what Auto-refit fits: a few modules that suit
+// the ship as it is, so a player who does not want to plan never has to read
+// the web. Deterministic (no dice), so the same ship gets the same picks.
+
+/** How many suggestions the bay shows. */
+export const PICKS = 3;
+
+/** How much a module suits this build: leaning to what is fitted, a system early, and a fitting when its budget is short. */
+function suits(id: string, ctx: BayCtx, affinity: Map<string, number>, systems: number): number {
+  const { use, cap } = budgets(ctx.levels);
+  const node = NODE[id]!;
+  if (FITTING[id]) {
+    // the reactor core when power is nearly gone; cooling or a frame once the ship runs hot or heavy
+    if (id === 'rx_core') return cap.power - use.power < 2 ? 9 : 0.2;
+    if (id === 'rx_sinks') return use.heat >= cap.heat ? 8 : 0.2;
+    return use.mass >= cap.mass ? 7 : 0.2;
+  }
+  const u = UPGRADE[id]!;
+  let v = 1 + u.tags.reduce((a, t) => a + Math.min(4, affinity.get(t) ?? 0), 0) * 0.6;
+  if (u.kind === 'system' && systems < 2) v += 1.2;
+  if (u.kind === 'spec' || u.kind === 'synergy' || u.kind === 'tech') v += 2.5;
+  // a module that would run the ship over a soft rating counts for less
+  if (use.mass + (node.draw.mass ?? 0) > cap.mass || use.heat + (node.draw.heat ?? 0) > cap.heat) v *= 0.45;
+  return v;
+}
+
+/**
+ * The bay's suggestions: up to PICKS modules that can be fitted now or want
+ * only Krail, best first, each from a different tab where it can.
+ */
+export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
+  const affinity = new Map<string, number>();
+  for (const [id, lv] of Object.entries(ctx.levels)) for (const t of UPGRADE[id]?.tags ?? []) affinity.set(t, (affinity.get(t) ?? 0) + lv);
+  const systems = Object.keys(ctx.levels).filter((id) => UPGRADE[id]?.kind === 'system' && (ctx.levels[id] ?? 0) > 0).length;
+  const scored = WEB
+    .filter((w) => { const b = blockOf(w.id, ctx); return b === null || b === 'krail'; })
+    .map((w) => ({ w, v: suits(w.id, ctx, affinity, systems) / Math.sqrt(cost(w.id, (ctx.levels[w.id] ?? 0) + 1) / 40) }))
+    .sort((a, b) => b.v - a.v || a.w.id.localeCompare(b.w.id));
+  // a spread: different tabs, and no more than one new system at a time
+  const out: WebNode[] = [];
+  const isNew = (w: WebNode) => UPGRADE[w.id]?.kind === 'system' && !(ctx.levels[w.id] ?? 0);
+  const fits = (w: WebNode, spread: boolean) => !out.includes(w) && (!isNew(w) || !out.some(isNew)) && (!spread || !out.some((o) => o.tab === w.tab));
+  for (const { w } of scored) if (out.length < n && fits(w, true)) out.push(w);
+  for (const { w } of scored) if (out.length < n && fits(w, false)) out.push(w);
+  for (const { w } of scored) if (out.length < n && !out.includes(w)) out.push(w);
+  return out;
+}
+
+/** The suggestion Auto-refit would fit now, if one is affordable. */
+export function autoPick(ctx: BayCtx): string | null {
+  return quickPicks(ctx).find((w) => blockOf(w.id, ctx) === null)?.id ?? null;
 }
