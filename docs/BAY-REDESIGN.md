@@ -2,6 +2,13 @@
 
 Design document. No code has been changed. Based on the bay as it is on PR #58's branch (`claude/refit-bay-plan`): `src/ui/bay.ts`, `src/sim/bay.ts`, `src/content/web.ts`, `src/render/ships.ts`, with the Krail currency, Cyrite fuel and the Story yard in a Signals tab.
 
+## As built (step 1, PR #59)
+
+- **The ship is the title art.** The live 3D model reads blocky next to the painted Wayward, so the bay shows `src/assets/wayward-menu-background.jpg`, fitted to the room between the tabs and the cards (or the web), with its edges faded into the bay's dark. It is static. The 3D ship, camera, lights and renderer are untouched; the bay simply covers them.
+- **Rings** sit on the painted ship by picture coordinates (`ZONE_AT` in `ui/bay.ts`), in every view. Signals is the mast, Defence the turrets.
+- **Arcade is "Pick one"**: three suggestions, the tabs shown locked. The Story mode keeps "Suggested" and the free tabs, on the same screen.
+- Not built yet: buckets, progressive disclosure, delta chips, quick builds, the demo window (steps 2 to 6 below).
+
 ## 0. What the game already has, and what changes
 
 Your brief reads as if the bay were a flat web with nothing behind it. Most of the bones are already there, so this is a re-weighting more than a rebuild.

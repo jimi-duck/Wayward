@@ -40,11 +40,16 @@ const TAB_ICON: Record<View, string> = {
   picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-signal', reactor: 'i-core', synergies: 'i-link',
 };
 
-/** The parts of the ship that have lights to ring (render/ships.ts MARKS); Signals has none yet. */
-const RING_ZONES: Tab[] = ['weapons', 'ordnance', 'engines', 'defence', 'hull', 'utility', 'reactor', 'synergies'];
-
-/** The least distance between two rings, in pixels (a finger is about this wide). */
-const RING_GAP = 40;
+/**
+ * The ship in the bay is the painted Wayward of the title art (src/assets/wayward-menu-background.jpg,
+ * 1735 × 906): her middle and size in the picture, so the bay can fit her to the room it has,
+ * and where each part of the ship is on her, for the rings. Signals is the mast, Defence the turrets.
+ */
+const ART = { w: 1735, h: 906, cx: 952, cy: 580, sw: 985, sh: 440 };
+const ZONE_AT: Partial<Record<Tab, readonly [number, number]>> = {
+  weapons: [1415, 735], ordnance: [945, 622], engines: [737, 600], defence: [963, 433], hull: [1090, 615],
+  utility: [1230, 560], signals: [777, 367], reactor: [860, 520], synergies: [1000, 545],
+};
 
 /** Why a module cannot be fitted, in a few words. */
 const WHY: Record<Block, string> = {
@@ -112,11 +117,8 @@ export class BayPanel {
   /** Auto-refit, and what to tell when it is switched. */
   auto = false;
   onAuto: (on: boolean) => void = () => {};
-  /** The ship drawn behind: where a tab's lights are on screen (fractions), and a way to flash them. Set by the app. */
-  ship: { points: (zone: string) => Array<[number, number]>; flash: (zone: string) => void } | null = null;
-  /** Rings over the ship: one per zone, placed each frame from where the ship's lights are on screen. */
+  /** Rings over the ship: one per part, set on the art by percent (see ZONE_AT). */
   private rings = new Map<string, HTMLButtonElement>();
-  private ringRaf = 0;
   /** The module just fitted and the budgets it moved: lit for a moment (see install). */
   private fresh: { id: string; moved: Set<string> } | null = null;
   /** The budget readouts as last drawn, so a fit can tick from what they said (see budgetBar). */
@@ -129,6 +131,7 @@ export class BayPanel {
     $('bay-auto').addEventListener('click', (e) => { e.stopPropagation(); this.toggleAuto(); });
     // a tap on the bay never reaches the flight controls behind it
     $('bay').addEventListener('pointerdown', (e) => e.stopPropagation());
+    addEventListener('resize', () => { if (this.open) this.placeArt(); });
   }
 
   /** The view open, for the ship drawn behind (render/ships.ts lights its part). */
@@ -154,7 +157,6 @@ export class BayPanel {
     x.replaceChildren(h('kbd', 'only-desktop', 'B'), ` ${t(world.docked ? 'Back to the dock' : 'Launch')}`);
     $('bay').hidden = false;
     this.render();
-    this.ringRaf = requestAnimationFrame(() => this.placeRings());
     this.off = keys((e) => {
       const c = e.code;
       if (c === 'Escape' || c === 'KeyB') return this.launch(), true;
@@ -173,7 +175,6 @@ export class BayPanel {
   close(): void {
     this.off?.();
     this.off = null;
-    cancelAnimationFrame(this.ringRaf);
     $('bay-pts').replaceChildren();
     this.rings.clear();
     $('bay').hidden = true;
@@ -293,26 +294,23 @@ export class BayPanel {
   /**
    * The install, felt (400 to 700 ms): Krail counts down, the module flashes
    * (the fresh class), a line runs from it to the ship part it belongs to and
-   * that part flashes, the budgets bump. None of it blocks a second install,
+   * that part's ring pulses, the budgets bump. None of it blocks a second install,
    * and none of it with reduced motion.
    */
   private installFx(id: string, from: number, to: number): void {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     this.countKrail(from, to, 520);
     const zone = NODE[id]!.tab;
-    this.ship?.flash(zone);
     // a pulse leaves the part's ring
     const ring = this.rings.get(zone);
     if (ring) { ring.classList.remove('hit'); void ring.offsetWidth; ring.classList.add('hit'); setTimeout(() => ring.classList.remove('hit'), 700); }
-    const node = document.querySelector('.bay-node.fresh .bn-oct') ?? document.querySelector('.pick-card.sel .pc-oct'), pts = this.ship?.points(zone) ?? [];
+    const node = document.querySelector('.bay-node.fresh .bn-oct') ?? document.querySelector('.pick-card.sel .pc-oct');
     $('bay').querySelector('.bay-line')?.remove();
-    if (!node || !pts.length) return;
-    const box = $('bay').getBoundingClientRect(), r = node.getBoundingClientRect();
+    if (!node || !ring) return;
+    // a line from the module to the part of the ship it belongs to
+    const box = $('bay').getBoundingClientRect(), r = node.getBoundingClientRect(), g = ring.getBoundingClientRect();
     const x0 = r.left + r.width / 2 - box.left, y0 = r.top + r.height / 2 - box.top;
-    // to the nearest of the zone's lights
-    let best = pts[0]!, bd = Infinity;
-    for (const p of pts) { const d = Math.hypot(p[0] * innerWidth - box.left - x0, p[1] * innerHeight - box.top - y0); if (d < bd) { bd = d; best = p; } }
-    const x1 = best[0] * innerWidth - box.left, y1 = best[1] * innerHeight - box.top;
+    const x1 = g.left + g.width / 2 - box.left, y1 = g.top + g.height / 2 - box.top;
     const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
     svg.setAttribute('class', 'bay-line');
     svg.setAttribute('width', String(box.width));
@@ -386,6 +384,7 @@ export class BayPanel {
     $('bay-auto-v').textContent = t(this.auto ? 'On' : 'Off');
     this.papers(w);
     $('bay').classList.toggle('picks', this.view === 'picks');
+    $('bay').classList.toggle('arcade', isArcade(w));
     this.tabs(w);
     if (this.view === 'picks') this.suggested(w);
     else { this.web(w, this.view); this.inspector(w); }
@@ -401,10 +400,10 @@ export class BayPanel {
    */
   private ringsFor(w: World): void {
     const layer = $('bay-pts');
-    if (!this.ship) { layer.replaceChildren(); this.rings.clear(); return; }
-    const picks = this.picks(), live = new Set<string>();
-    for (const zone of RING_ZONES) {
-      if (!this.ship.points(zone).length) continue;
+    const picks = this.picks(), live = new Set<string>(), views = viewsOf(w);
+    for (const zone of Object.keys(ZONE_AT) as Tab[]) {
+      // the Signals tab is the Story mode's
+      if (!views.includes(zone)) continue;
       live.add(zone);
       const i = picks.findIndex((n) => n.tab === zone);
       let b = this.rings.get(zone);
@@ -412,11 +411,14 @@ export class BayPanel {
         b = h('button', 'bay-ring') as HTMLButtonElement;
         b.type = 'button';
         b.append(h('i', 'br-o'), h('span', 'br-l'));
+        const [x, y] = ZONE_AT[zone]!;
+        b.style.left = `${(x / ART.w) * 100}%`;
+        b.style.top = `${(y / ART.h) * 100}%`;
         b.addEventListener('click', (e) => {
           e.stopPropagation();
           if (this.world && isArcade(this.world) && !this.picks().some((n) => n.tab === zone)) return;
           const k = this.picks().findIndex((n) => n.tab === zone);
-          if (this.view === 'picks' && k >= 0) { this.pick = k; this.render(); } else this.go(zone as Tab);
+          if (this.view === 'picks' && k >= 0) { this.pick = k; this.render(); } else this.go(zone);
         });
         this.rings.set(zone, b);
         layer.append(b);
@@ -425,45 +427,42 @@ export class BayPanel {
       const still = isArcade(w) && i < 0;
       b.tabIndex = still ? -1 : 0;
       b.className = `bay-ring${still ? ' still' : ''}${i >= 0 ? ' sug' : ''}${(this.view === 'picks' ? i >= 0 && i === this.pick : zone === this.view) ? ' sel' : ''}${WEB.some((n) => n.tab === zone && (w.levels[n.id] ?? 0) > 0) ? ' fitted' : ''}`;
-      const name = t(TABS[zone as Tab].name);
+      const name = t(TABS[zone].name);
       b.setAttribute('aria-label', i >= 0 ? `${name} · ${nameOf(picks[i]!.id)}` : name);
       // the part's name beside its ring (on hover, focus and while it is the one open)
       b.lastElementChild!.textContent = i >= 0 && this.view === 'picks' ? nameOf(picks[i]!.id) : name;
     }
     for (const [zone, b] of this.rings) if (!live.has(zone)) { b.remove(); this.rings.delete(zone); }
+    this.placeArt();
   }
 
   /**
-   * Follow the ship: each ring sits on the centre of its zone's lights, every
-   * frame the bay is open. The camera looks along the ship, so several zones
-   * can land on one spot; rings closer than RING_GAP are pushed apart.
+   * Fit the ship to the room the screen leaves her: between the tabs and the
+   * inspector, from under the header to the cards (or the web). The art and
+   * the rings share one box, set as three custom properties on the bay.
    */
-  private placeRings(): void {
-    if (!this.open) return;
-    const at: Array<{ b: HTMLButtonElement; x: number; y: number }> = [];
-    for (const [zone, b] of this.rings) {
-      const pts = this.ship?.points(zone) ?? [];
-      if (!pts.length) continue;
-      let x = 0, y = 0;
-      for (const p of pts) { x += p[0]; y += p[1]; }
-      at.push({ b, x: (x / pts.length) * innerWidth, y: (y / pts.length) * innerHeight });
-    }
-    for (let pass = 0; pass < 6; pass++) {
-      for (let i = 0; i < at.length; i++) for (let j = i + 1; j < at.length; j++) {
-        const a = at[i]!, c = at[j]!;
-        let dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy);
-        if (d >= RING_GAP) continue;
-        if (d < 1) { dx = 0; dy = 1; d = 1; }
-        const push = (RING_GAP - d) / 2;
-        a.x -= (dx / d) * push; a.y -= (dy / d) * push;
-        c.x += (dx / d) * push; c.y += (dy / d) * push;
-      }
-    }
-    for (const r of at) {
-      r.b.style.left = `${(r.x / innerWidth) * 100}%`;
-      r.b.style.top = `${(r.y / innerHeight) * 100}%`;
-    }
-    this.ringRaf = requestAnimationFrame(() => this.placeRings());
+  private placeArt(): void {
+    const bay = $('bay'), box = bay.getBoundingClientRect(), r = (id: string) => $(id).getBoundingClientRect();
+    const nav = r('bay-tabs'), insp = r('bay-insp'), web = r('bay-main');
+    // the tabs are a column on the left, or (a phone on its side) a row across the top
+    const column = nav.width > 0 && nav.width < box.width * 0.6;
+    const left = column ? nav.right + 12 : box.left + 12;
+    // in the Suggested view the title of the view sits in the stage's top; in a tab it is part of the web's panel
+    const top = column ? (this.view === 'picks' ? r('bay-tab-h').bottom + 4 : (bay.querySelector('.bay-h') as HTMLElement).getBoundingClientRect().bottom + 8) : Math.max(nav.height ? nav.bottom : 0, (bay.querySelector('.bay-h') as HTMLElement).getBoundingClientRect().bottom) + 6;
+    const right = insp.width > 10 ? insp.left - 12 : box.right - 12;
+    const card = this.view === 'picks' ? document.querySelector('.pick-card, .pick-none') : null;
+    const bottom = (card ? card.getBoundingClientRect().top : web.top) - 8;
+    const aw = right - left, ah = bottom - top;
+    const art = bay.querySelector('.bay-art') as HTMLElement;
+    // too little room (a phone's tab, with the web alone): no ship
+    art.classList.toggle('none', ah < 80);
+    $('bay-pts').classList.toggle('none', ah < 80);
+    if (ah < 80) return;
+    const W = Math.max(340, Math.min(aw * 0.94 / (ART.sw / ART.w), ah * 0.94 / (ART.sh / ART.w), 1300));
+    const x = left + aw / 2 - (ART.cx / ART.w) * W - box.left, y = top + ah / 2 - (ART.cy / ART.w) * W - box.top;
+    bay.style.setProperty('--ax', `${x.toFixed(1)}px`);
+    bay.style.setProperty('--ay', `${y.toFixed(1)}px`);
+    bay.style.setProperty('--aw', `${W.toFixed(1)}px`);
   }
 
   private tabs(w: World): void {
@@ -552,6 +551,9 @@ export class BayPanel {
   private web(w: World, tab: Tab): void {
     const nodes = WEB.filter((n) => n.tab === tab);
     const tiers = Math.max(...nodes.map((n) => n.tier)), rows = Math.max(...nodes.map((n) => n.row)) + 1;
+    // the web takes the rows it needs from the bottom of the screen, the ship what is left above (see the CSS)
+    $('bay').style.setProperty('--rows', String(Math.max(rows, 3)));
+    $('bay').classList.toggle('dense', rows >= 4);
     const X = (n: WebNode) => ((n.tier - 0.5) / Math.max(tiers, 3)) * 100;
     const Y = (n: WebNode) => ((n.row + 0.5) / Math.max(rows, 3)) * 100;
     const mark = this.markOf(w, tab);

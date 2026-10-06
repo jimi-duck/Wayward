@@ -1226,7 +1226,19 @@ html:not(.breakout) .pause-card #brief { display: none; }
    Tabs left, the web centre, the inspector right, fitted and budgets below.
    Amber is what is fitted and the hand that fits it; teal is what is ready
    and the ship's readings; red only a budget run over. */
-#bay { background: radial-gradient(ellipse at 50% 55%, rgba(8, 13, 14, .22), rgba(8, 13, 14, .88) 80%); }
+/* the bay is its own place: deep space, with the painted Wayward in it (the title art, fitted by ui/bay.ts placeArt) */
+#bay { background: radial-gradient(ellipse 80% 70% at 56% 36%, #0b1219, var(--void) 92%); }
+.bay-art, .bay-pts { position: absolute; left: var(--ax, 0); top: var(--ay, 0); width: var(--aw, 0); aspect-ratio: 1735 / 906; pointer-events: none;
+  transition: left .35s var(--ez), top .35s var(--ez), width .35s var(--ez); }
+.bay-art { z-index: 0; background: url("../assets/wayward-menu-background.jpg") center / 100% 100% no-repeat;
+  -webkit-mask-image: radial-gradient(ellipse 58% 54% at 55% 64%, #000 58%, transparent 100%), linear-gradient(180deg, #000 78%, transparent 97%);
+  mask-image: radial-gradient(ellipse 58% 54% at 55% 64%, #000 58%, transparent 100%), linear-gradient(180deg, #000 78%, transparent 97%);
+  -webkit-mask-composite: source-in; mask-composite: intersect; }
+.bay-art.none, .bay-pts.none { display: none; }
+/* the header and the tabs stay legible over the art */
+#bay::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(5, 8, 12, .85) 0, rgba(5, 8, 12, .6) 84px, rgba(5, 8, 12, 0) 150px), linear-gradient(90deg, rgba(5, 8, 12, .8) 0, rgba(5, 8, 12, .5) 230px, rgba(5, 8, 12, 0) 330px); }
+#bay > .bay { position: relative; z-index: 2; }
 .bay { --edge: var(--frame); --lit: var(--hud); width: min(1240px, 100%); height: min(720px, 100%);
   display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(150px, 190px) minmax(0, 1fr) minmax(230px, 300px);
   grid-template-areas: "h h h" "tabs web insp" "foot foot foot"; gap: 12px; }
@@ -1354,16 +1366,21 @@ html:not(.breakout) .pause-card #brief { display: none; }
 #bay.picks .bay-w .wear, #bay.picks .wear-serial { display: none; }
 #bay.picks .pick-row { align-content: end; }
 #bay.picks .pc-text, #bay.picks .pick-more { display: none; }
-.bay-pts { position: absolute; inset: 0; pointer-events: none; }
+.bay-pts { z-index: 3; }
 /* in a tab the web takes the lower part of the screen and the ship the upper */
-#bay:not(.picks) .bay-w { margin-top: clamp(0px, 36vh - 60px, 300px); }
-.bay-ring { --c: var(--cy); position: absolute; translate: -50% -50%; width: 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
-.br-o { position: absolute; inset: 15px; border: 1.5px solid var(--c); border-radius: 50%; background: rgba(8, 13, 14, .55); opacity: .55; transition: inset .12s var(--ez), opacity .12s; }
-.bay-ring.fitted .br-o::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--c); }
+#bay:not(.picks) .bay-w { margin-top: clamp(0px, calc(100vh - 294px - var(--rows, 3) * 66px), 300px); }
+/* a tall web (four rows or more) draws its modules smaller, so the ship keeps room above it */
+#bay.dense .bn-oct { width: 34px; height: 34px; }
+#bay.dense .bn-oct .ico-img { width: 27px; height: 27px; }
+#bay.dense .bn-tag { display: none; }
+#bay.dense .bay-node { gap: 3px; }
+.bay-ring { --c: var(--cy); position: absolute; translate: -50% -50%; width: clamp(32px, calc(var(--aw, 1000px) * .042), 48px); aspect-ratio: 1; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
+.br-o { position: absolute; inset: 29%; border: 2px solid var(--c); border-radius: 50%; background: rgba(5, 8, 12, .6); box-shadow: 0 0 0 2px rgba(5, 8, 12, .6), 0 0 14px rgba(5, 8, 12, .9); opacity: .7; transition: inset .12s var(--ez), opacity .12s; }
+.bay-ring.fitted .br-o::after { content: ""; position: absolute; inset: 26%; border-radius: 50%; background: var(--c); }
 .bay-ring.sug { --c: var(--hud); }
 .bay-ring.sug .br-o { opacity: 1; animation: ring-pulse 1.2s ease-in-out infinite; }
-.bay-ring:hover .br-o, .bay-ring:focus-visible .br-o { inset: 11px; opacity: 1; }
-.bay-ring.sel .br-o { inset: 9px; opacity: 1; animation: none; box-shadow: 0 0 10px var(--hud-mid); }
+.bay-ring:hover .br-o, .bay-ring:focus-visible .br-o { inset: 23%; opacity: 1; }
+.bay-ring.sel .br-o { inset: 17%; opacity: 1; animation: none; box-shadow: 0 0 0 2px rgba(5, 8, 12, .6), 0 0 14px var(--hud-mid); }
 /* the Arcade: the tabs are shown, locked; the rings that are not suggestions only mark the part */
 .bay-tab.locked { opacity: .5; cursor: default; }
 .bay-tab.locked:hover { border-color: var(--line); }
@@ -1379,11 +1396,11 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-ring:hover .br-l, .bay-ring:focus-visible .br-l, .bay-ring.sel .br-l { opacity: 1; }
 .bay-ring.sel .br-l { border-color: var(--hud-mid); color: var(--hud-hi); }
 /* a fit lands: a ring spreads from the part and fades */
-.bay-ring.hit::after { content: ""; position: absolute; inset: 11px; border: 2px solid var(--hud-hi); border-radius: 50%; animation: ring-hit .6s var(--ez) forwards; pointer-events: none; }
+.bay-ring.hit::after { content: ""; position: absolute; inset: 23%; border: 2px solid var(--hud-hi); border-radius: 50%; animation: ring-hit .6s var(--ez) forwards; pointer-events: none; }
 @keyframes ring-hit { to { inset: -22px; opacity: 0; } }
-@keyframes ring-pulse { 50% { inset: 12px; opacity: .6; } }
+@keyframes ring-pulse { 50% { inset: 23%; opacity: .65; } }
 /* a phone has no room for both: in a tab the web has the screen */
-@media (max-height: 520px) { #bay:not(.picks) .bay-pts { display: none; } #bay:not(.picks) .bay-w { margin-top: 0; } }
+@media (max-height: 520px) { #bay:not(.picks) .bay-w { margin-top: 0; } }
 @media (prefers-reduced-motion: reduce) { .bay-ring.sug .br-o { animation: none; } .bay-ring.hit::after { animation: none; display: none; } }
 
 /* a phone on its side: tabs across the top, the web and the inspector side by side, the budgets only */
@@ -1410,7 +1427,9 @@ html:not(.breakout) .pause-card #brief { display: none; }
   .pc-text { font-size: 12.5px; }
   .pick-more { display: none; }
   /* the ship needs the room: the cards shrink to a glyph, a name and the price */
-  #bay.picks .pc-fig, #bay.picks .pc-tab, #bay.picks .pc-rec, #bay.picks .bay-tab-h, #bay.picks .bi-pips { display: none; }
+  #bay.picks .pc-fig, #bay.picks .pc-tab, #bay.picks .pc-rec, #bay.picks .bay-tab-h, #bay.picks .bi-pips, #bay.picks .pc-stamp, #bay.picks .pc-new { display: none; }
+  /* the Arcade has nothing in its tabs to show on a phone: the ship gets the row */
+  #bay.arcade .bay-tabs { display: none; }
   #bay.picks .pick-card { padding: 8px 10px; gap: 4px; }
   #bay.picks .bay-w { padding-top: 0; align-content: end; grid-template-rows: auto; }
 }
@@ -1714,6 +1733,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-height: 520px) { .pause-foot { display: none; } }
 .bw-m { margin-left: 18px; }
 #bay.picks .bay-web { margin-bottom: 46px; }
+@media (max-width: 900px), (max-height: 520px) { #bay.picks .bay-web { margin-bottom: 2px; } }
 #bay.picks .pick-more { bottom: -16px; }
 @media (max-width: 900px), (max-height: 520px) { .wear-papers, .pause-papers { display: none; } }
 

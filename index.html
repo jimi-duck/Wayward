@@ -245,6 +245,8 @@
     <!-- The refit bay: building the ship, after the reference board. Tabs left, the tab's web
          centre, the inspector right, what is fitted and the three budgets along the bottom. -->
     <div id="bay" class="sheet" role="dialog" aria-labelledby="bay-t" hidden>
+      <!-- the ship: the painted Wayward of the title art, fitted to the room (ui/bay.ts placeArt) -->
+      <div class="bay-art" aria-hidden="true"></div>
       <div class="bay">
         <header class="bay-h">
           <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><span><b id="bay-t">Refit bay</b><small id="bay-voice"></small></span></span>
@@ -264,7 +266,7 @@
         <aside class="bay-insp" id="bay-insp" aria-live="polite"></aside>
         <footer class="bay-f"><div class="bay-budget" id="bay-budget"></div></footer>
       </div>
-      <!-- rings over the ship's parts (the Suggested view): tap one to pick that part -->
+      <!-- rings over the ship's parts: tap one to pick that part -->
       <div class="bay-pts" id="bay-pts"></div>
     </div>
 
