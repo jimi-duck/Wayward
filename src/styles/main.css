@@ -1720,6 +1720,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .th-id b { font-weight: 500; color: var(--ink-2); }
 .th-id i { font-style: normal; color: var(--hud); opacity: .8; }
 .term-h .ops { font-size: 11px; }
+.term-h .ops.clear { display: none; } /* only amber or red speak up */
 .pause-card.term .pause-t { padding-left: 0; font-size: clamp(26px, 5vw, 38px); letter-spacing: .16em; line-height: .95; }
 .pause-card.term .voice { display: flex; align-items: center; gap: 8px; min-height: 1em; font: 500 12px/1.3 var(--font-mono); letter-spacing: .12em; color: var(--hud); opacity: .85; text-transform: none; }
 .pause-card.term .voice::before { content: ">"; color: var(--ink-3); }
