@@ -16,7 +16,9 @@ import { range, Targeting } from './targeting';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
-import { cheapest } from '../sim/bay';
+import { blockOf, cheapest, quickPicks } from '../sim/bay';
+import { FITTING } from '../content/web';
+import { UPGRADE } from '../content/upgrades';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view in the brand's six zones, with nothing on
@@ -110,6 +112,11 @@ export class Hud {
   private next = 0;
   private stockAt = 0;
   private bayReady = false;
+  /** Modules that can be fitted now, and how many the badge last showed (it pulses when there are more). */
+  private count = 0;
+  private shown = 0;
+  /** Opens the refit bay (main.ts), for the badge. */
+  onBay: () => void = () => {};
   /** When the log last said the self-repair had started, so a flicker of danger does not repeat it. */
   private mendNoted = -Infinity;
   private headingShown = true;
@@ -117,6 +124,9 @@ export class Hud {
   private centreKey = '';
 
   constructor(onZoom: (dir: 1 | -1) => void) {
+    // the refit bay's badge opens it, by tap or click; the flight controls behind never see the touch
+    const upg = $('upg');
+    upg.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); this.onBay(); });
     // on a phone the scope hangs under the sector block, whose height follows what the run shows
     const sector = $('sector');
     new ResizeObserver(() => document.documentElement.style.setProperty('--sector-b', `${Math.round(sector.getBoundingClientRect().bottom)}px`)).observe(sector);
@@ -139,6 +149,13 @@ export class Hud {
     this.modeKey = this.contactKey = this.powerKey = this.plateKey = '';
     this.levels = null;
     this.seed = -1;
+  }
+
+  /** The bay would not open: say why, short, and shake the badge. */
+  bayDenied(world: World, why: 'caution' | 'alert' | 'busy' | 'mode'): void {
+    if (why !== 'caution' && why !== 'alert') return;
+    this.note(world, t(why === 'alert' ? 'Bay locked · under attack' : 'Bay locked · ships nearby'), 'hit');
+    this.retrigger($('upg'), 'deny');
   }
 
   showZoom(level: number): void {
@@ -196,6 +213,10 @@ export class Hud {
           break;
         case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, t('Shield up'), 'gain'); break;
         case 'regen': this.note(world, `${t('Hull regrown')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'fitted':
+          // Auto-refit says what it fitted; what you fit yourself you saw
+          if ('auto' in e && e.auto) this.note(world, `${t('Auto-refit')} · ${t(UPGRADE[e.id]?.name ?? FITTING[e.id]?.name ?? e.id)}`, 'gain');
+          break;
         case 'mendStart': if (world.time - this.mendNoted > MEND_QUIET) { this.mendNoted = world.time; this.note(world, t('Self-repair under way')); } break;
         case 'mended': this.note(world, `${t('Hull mended')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); this.retrigger($('sys-hull'), 'mended'); break;
         case 'contacts': this.note(world, plural(e.n, '{n} contact inbound', '{n} contacts inbound'), 'hit'); break;
@@ -305,18 +326,32 @@ export class Hud {
   private updateStock(world: World): void {
     if (world.time >= this.stockAt) {
       this.stockAt = world.time + 0.4;
-      this.next = cheapest(world.bayCtx())?.cost ?? 0;
+      const ctx = world.bayCtx();
+      this.next = cheapest(ctx)?.cost ?? 0;
+      // the badge counts the bay's suggestions you can pay for: a few, never a list to read
+      this.count = quickPicks(ctx).filter((w) => blockOf(w.id, ctx) === null).length;
     }
-    const k = Math.floor(world.krail), next = this.next;
-    const ready = next > 0 && k >= next && world.bayClosed() === null;
+    const k = Math.floor(world.krail), next = this.next, n = this.count;
+    const alert = world.alert(), locked = alert !== 'clear';
+    const ready = n > 0 && !locked;
     text($('xp-l'), 'Krail');
     text($('xp-v'), String(k));
     text($('xp-n'), next ? String(next) : '—');
     ticks($('xp'), next ? Math.min(1, k / next) : 1, 30);
     text($('refit-n'), pad(world.refit, 2));
     $('rail').classList.toggle('full', ready);
-    $('bay-b').classList.toggle('ready', ready);
+    $('rail').classList.add('stock');
     this.bayReady = ready;
+    // the badge: dim with nothing to fit, amber with a count when something can be, red and locked in battle
+    const badge = $('upg');
+    badge.hidden = false;
+    badge.classList.toggle('ready', n > 0 && !locked);
+    badge.classList.toggle('locked', n > 0 && locked);
+    badge.classList.toggle('red', alert === 'alert');
+    text($('upg-n'), n ? String(n) : '');
+    text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : n > 0 ? 'Upgrade ready' : 'Refit bay'));
+    if (n > this.shown && !locked) this.retrigger(badge, 'new');
+    this.shown = n;
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
@@ -631,8 +666,8 @@ export class Hud {
       text($('obj-s'), '');
       const key = document.documentElement.classList.contains('touch-ui') ? '' : ' · B';
       const html = this.bayReady
-        ? `<li class="done">${t('Break rock')} · <b>${Math.floor(world.krail)}</b></li><li class="now">${t('Refit bay')}${key}</li>`
-        : `<li class="now">${t('Break rock')} · <b>${Math.floor(world.krail)}/${this.next || '—'}</b></li><li>${t('Refit bay when it is quiet')}</li>`;
+        ? `<li class="done">${t('Break rock')} · <b>${Math.floor(world.krail)}</b></li><li class="now">${t('Upgrade ready')}${key}</li>`
+        : `<li class="now">${t('Break rock')} · <b>${Math.floor(world.krail)}/${this.next || '—'}</b></li><li>${t('Upgrade in the refit bay')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
     }
@@ -640,42 +675,20 @@ export class Hud {
 
   // ── bottom right: the mode, and the log ─────────────────────────────────
 
-  /** What the ship is doing, in one word or two: an alert, an event, a fight, mining, or cruising. */
+  /**
+   * The ship's alert (World.alert), the same test the refit bay opens on:
+   * clear shows nothing at all; caution (yellow) when hulls are near or
+   * looking you over; red alert when you are under attack.
+   */
   private updateMode(world: World): void {
-    const s = world.ship, cs = world.command.state, e = world.encounter;
-    let cls = 'cruise', word = 'Cruise mode';
-    if (!world.alive) { cls = 'alert'; word = 'Hull breach'; }
-    else if (cs === 'fight' && world.command.boss) { cls = 'alert'; word = 'Alarm'; }
-    else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Contact'; }
-    else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat mode'; }
-    else if (e && !e.done) { cls = 'caution'; word = ENCOUNTERS[e.id].name; }
-    else if (world.aliens.some((a) => a.mode === 'watch')) { cls = 'caution'; word = 'Being watched'; }
-    else if (world.aliens.some((a) => a.mode === 'patrol' && Math.hypot(a.x - s.x, a.z - s.z) < PATROL_NEAR)) { cls = 'caution'; word = 'Patrol near'; }
-    else if (!world.bk && world.mend.state === 'repairing') { cls = 'repair'; word = 'Self-repair'; }
-    else if (world.cutting !== null || this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }
-    // only what this mode uses, the one in use lit
-    const st = world.stats, ready = world.oc >= OC_MAX;
-    const hints: Hint[] = cls === 'mining'
-      ? (world.bk ? [['3', 'Cut'], ['1', 'Break']] : [['1', 'Break rock']])
-      : cls === 'cruise' || cls === 'repair'
-        ? [['W', 'Thrust'], ['Shift', 'Roll'], ['Z', 'Zoom']]
-        : [['1', 'Lasers'], ...(st.torpedoes ? [['2', 'Torpedo'] as Hint] : []), ['Shift', 'Roll']];
-    if (cls !== 'cruise' && ready) hints.push(['E', 'Core']);
-    if (this.bayReady && (cls === 'cruise' || cls === 'repair' || cls === 'mining')) hints.push(['B', 'Refit bay']);
-    const lit = world.cutting !== null ? 'Cut' : ready ? 'Core' : '';
-    const key = `${cls}${word}${hints.join()}${lit}`;
+    const a = world.alert();
+    const word = !world.alive ? 'Hull breach' : a === 'alert' ? 'Red alert' : 'Caution';
+    const key = `${a}${word}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
-    $('mode').className = `cut ${cls}`;
+    $('mode').className = a;
+    $('mode').hidden = a === 'clear';
     text($('mode-t'), t(word));
-    $('hints').replaceChildren(...hints.map(([k, a]) => {
-      const d = document.createElement('div');
-      if (a === lit) d.className = 'lit';
-      const dt = document.createElement('dt'); dt.textContent = k;
-      const dd = document.createElement('dd'); dd.textContent = t(a);
-      d.append(dt, dd);
-      return d;
-    }));
   }
 
   private updateLog(world: World): void {

@@ -286,13 +286,36 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 The arcade builds the ship in the **refit bay** (PLAN.md, R; `content/web.ts`,
 `sim/bay.ts`, `ui/bay.ts`). The ship leaves with lasers, a shield charge and
 the torpedo bay. Krail (crystals from rock and wrecks, times the krail
-matrix) is a stock, no longer a rail to a card. Press B (pad Back, the bay
-button on touch) when nothing hostile is close and the world waits on the
-bay: eight tabs (Hull, Weapons, Ordnance, Engines, Defence, Utility,
+matrix) is a stock, no longer a rail to a card.
+
+**When it opens.** The ship has an alert in three steps (`World.alert`):
+clear (nothing hostile about; the HUD shows nothing), caution in yellow
+(a hull within 85 units, a watcher looking you over, a capital ship on its
+way, none of them attacking) and red alert (under attack, `World.inDanger`:
+a committed hostile within 60 units, fire close by, a capital ship engaged).
+The bay opens only when clear, by B, a pad's Back, the upgrades badge
+(lower right; under the ship panel on touch) or the pause card's button, and
+the world waits on it. On caution or red alert it stays shut and the log
+says why in one line ("Bay locked · ships nearby", "Bay locked · under
+attack") while the badge shakes. The badge is dim with nothing to fit, amber
+with a count of the suggestions you can pay for, yellow or red when locked,
+and pulses when one becomes affordable.
+
+**Suggested first.** The bay opens on three suggestions (`quickPicks`):
+modules that suit the build (by its tags), a reactor core, heat exchangers
+or frame when that budget runs short, cheaper favoured, from different tabs,
+at most one new system. Each is a card with one line, the number that
+matters and the price on its button: one tap, or 1 2 3. **Auto-refit** (a
+switch in the bay and on the pause card, saved in the profile) fits the
+first affordable suggestion by itself after two seconds of clear, and
+the log names it. A player who never opens the bay still gets a coherent
+ship; one who wants to plan opens a tab: eight tabs (Hull, Weapons, Ordnance, Engines, Defence, Utility,
 Reactor, Synergies), each a small web left to right by tier. A module opens
 once something it comes from is fitted, then by the upgrade's own rules
 (requires, one specialisation per group, a deep enough system). Each level
-costs Krail by tier (40, 60, 90, 130; half as much again a level) and draws
+costs Krail by tier (40, 60, 90, 130; half as much again a level; the deep
+torpedo and mine modules cost 0.65 to 0.7 of that, so ordnance builds keep
+pace) and draws
 power, mass or heat, against ratings of 8 each (the stock ship draws 5
 power, 3 heat, 1 mass). Power is a ceiling; the reactor core (+3 a level)
 raises it and is always open until full, so a build never gets stuck, and

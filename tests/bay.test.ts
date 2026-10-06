@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { UPGRADES, UPGRADE } from '../src/content/upgrades';
 import { FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
-import { blockOf, budgets, cost, install, maxLevel, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
+import { autoPick, blockOf, budgets, cost, install, maxLevel, PICKS, quickPicks, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
 import { computeStats, upgradeFigures } from '../src/sim/build';
 import { feelBudgets, overload, OVERLOAD } from '../src/sim/budgets';
 import { World } from '../src/sim/world';
@@ -183,5 +183,31 @@ describe('the budgets, felt (step 3)', () => {
     expect(s.stats.bankRefill).toBe(computeStats(hot).bankRefill);
     const fig = upgradeFigures({ ...stockLevels(), ph_emitters: 3, ph_capacitors: 2, ph_pierce: 1 }, 'ph_pierce').find((f) => f.label === 'Bank refill/sec');
     expect(fig?.cost).toBe(true);
+  });
+});
+
+describe('suggestions', () => {
+  it('offers a few modules that can be fitted (or want only Krail), from different tabs, the same each time', () => {
+    const picks = quickPicks(ctx({ krail: 0 }));
+    expect(picks.length).toBe(PICKS);
+    for (const p of picks) expect(['krail', null]).toContain(blockOf(p.id, ctx({ krail: 0 })));
+    expect(new Set(picks.map((p) => p.tab)).size).toBe(PICKS);
+    expect(quickPicks(ctx({ krail: 0 })).map((p) => p.id)).toEqual(picks.map((p) => p.id));
+  });
+
+  it('leans toward what the ship already is, and asks for power or cooling when they run short', () => {
+    const lasers = { ...stockLevels(), ph_emitters: 2, ph_capacitors: 1 };
+    expect(quickPicks(ctx({ levels: lasers })).map((p) => p.tab)).toContain('weapons');
+    const hot = { ...stockLevels(), ph_emitters: 3, ph_capacitors: 2, ph_pierce: 1 };
+    expect(quickPicks(ctx({ levels: hot })).map((p) => p.id)).toContain('rx_sinks');
+    const flat = { ...stockLevels(), df_shield: 1 }; // 7 of 8 power
+    expect(quickPicks(ctx({ levels: flat })).map((p) => p.id)).toContain('rx_core');
+  });
+
+  it('Auto-refit picks only what it can pay for', () => {
+    expect(autoPick(ctx({ krail: 10 }))).toBeNull();
+    const id = autoPick(ctx({ krail: 60 }));
+    expect(id).not.toBeNull();
+    expect(blockOf(id!, ctx({ krail: 60 }))).toBeNull();
   });
 });
