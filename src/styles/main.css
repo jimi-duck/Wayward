@@ -1205,6 +1205,12 @@ circle.ch-thren { fill: rgba(92, 195, 162, .22); stroke: #5CC3A2; stroke-width: 
 @media (max-width: 900px), (max-height: 520px) {
   .ch-body { grid-template-columns: minmax(0, 1fr) minmax(260px, .9fr); gap: 10px; }
   .ch-map { max-height: 60vh; }
+  /* the map is drawn in its own units and shrinks with the phone: its labels
+     grow to stay near 8px on screen */
+  .ch-name { font-size: 14px; letter-spacing: .03em; }
+  .ch-cost, .ch-cost.sel { font-size: 14px; }
+  .ch-goalm { font-size: 12px; }
+  .ch-region { font-size: 14px; }
   .ch-l { padding: 6px 10px; }
   .ch-l .pl-note { font-size: 11px; }
   .ch-news { font-size: 12px; }
