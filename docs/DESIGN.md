@@ -303,6 +303,13 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   in `FLAGS`. The tests check every reference, and `tests/reading.test.ts`
   holds each part to a word cap (text 24, hint 15, label 6, win and lose
   12); a few older lines sit over it with their own ceiling, listed there.
+- **A consequence of a story flag**: a row in `CONSEQUENCES`
+  (`content/consequences.ts`): the flag, the chips the choice shows (what it
+  brings, then what it costs, a minus sign for the cost), and what changes
+  in play: plate prices by holder, heat near a fleet, the pursuit from
+  ahead, days Calloway is held up, and the log lines where it bites. The
+  rules are in `sim/consequences.ts`; `sortieDef` and `endSortie` read them.
+  A cost makes things dearer or harder, and never shuts a way.
 - **A kind of system**: a row in `SYSTEMS` (`content/systems.ts`) and its
   place in `COL_KINDS` (`sim/chart.ts`); a word and a colour in
   `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`. Its

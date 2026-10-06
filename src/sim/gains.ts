@@ -1,5 +1,6 @@
 import type { Faction } from './enemies';
 import type { Amount, Cost, Ctx, Outcome, Standing } from './comms';
+import { chipsOf } from './consequences';
 
 // ── what a choice brings ──────────────────────────────────────────────────
 // A comms choice's outcome in a few short words, worked out from the data so
@@ -22,7 +23,7 @@ const FLAG_SHORT: Record<string, string> = {
 /** The story's flags (content/story.ts): what a beat's answer puts in your hands, named first. */
 const STORY_SHORT: Record<string, string> = {
   frag_order: 'File +1', frag_ledger: 'File +1', frag_manifests: 'File +1', frag_keys: 'File +1',
-  pact_holdfast: 'Ally', pact_drift: 'Ally', broker: 'Buyer', lane_keys: 'Lane keys', copy_warden: 'Copy out', voice_read: 'Copy out',
+  copy_warden: 'Copy out', voice_read: 'Copy out',
 };
 const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['chits', 'chits'], ['ore', 'ore'], ['parts', 'parts'], ['food', 'food']];
 
@@ -39,7 +40,8 @@ function delta(a: Amount | undefined, have: number, fee: number): number {
 export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyof Cost, number>> = {}): string[] {
   const out: string[] = [];
   // the story first: a piece of the file, an ally, a buyer
-  for (const f of [o.flag ?? []].flat()) if (STORY_SHORT[f] && !out.includes(STORY_SHORT[f]!)) out.push(STORY_SHORT[f]!);
+  // a flag with consequences names them (what it brings, then what it costs) in place of its short name
+  for (const f of [o.flag ?? []].flat()) for (const c of chipsOf(f) ?? [STORY_SHORT[f]]) if (c && !out.includes(c)) out.push(c);
   // where it leaves you: the lane mouth, Calloway, a named captain, a fight
   if (o.blockade) out.push(o.blockade === 'pass' ? 'Through the lane' : o.blockade === 'run' ? 'Run the blockade' : 'Fight');
   if (o.calloway) out.push(o.calloway === 'fight' ? 'Calloway fights' : 'Calloway chases');

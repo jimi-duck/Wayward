@@ -4,6 +4,7 @@ import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
 import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
 import { choices, epilogue, journeyRecord } from '../src/sim/endings';
+import { chipsOf } from '../src/sim/consequences';
 import { gains } from '../src/sim/gains';
 import { endSortie, newJourney, options, plot, sortieDef, type Journey } from '../src/sim/journey';
 import { Rng } from '../src/sim/rng';
@@ -131,7 +132,10 @@ describe('the story beats', () => {
   it('show what each answer gives before any other chip', () => {
     for (const c of STORY_CARDS) {
       const story = c.choices.filter((ch) => [ch.win.flag ?? []].flat().length);
-      for (const ch of story) expect(gains(ch.win, ctx(), 0)[0], `${c.id}.${ch.id}`).toMatch(/File \+1|Ally|Buyer|Lane keys|Copy out|Forged codes/);
+      for (const ch of story) {
+        const named = [ch.win.flag ?? []].flat().flatMap((f) => chipsOf(f) ?? []);
+        expect([...named, 'File +1', 'Copy out', 'Forged codes'], `${c.id}.${ch.id}`).toContain(gains(ch.win, ctx(), 0)[0]);
+      }
     }
   });
 });
