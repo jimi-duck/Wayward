@@ -520,6 +520,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   #banner { top: 16%; }
   #heading { display: none; }
   .touch-ui #centre { top: var(--top); }
+  /* on a narrow phone the middle cards slide left of centre, so they never reach the systems panel */
+  .touch-ui #centre { left: min(50%, calc(100vw - min(250px, 34vw) - var(--right) - 10px - min(280px, 36vw) / 2)); }
   .touch-ui #boss, .touch-ui #threat, .touch-ui #tgt-card { width: min(280px, 36vw); }
   /* a phone on its side: a tighter panel, and the thumbs' buttons down to the edge */
   .touch-ui #systems { width: min(250px, 34vw); row-gap: 6px; padding: 7px 10px 7px 11px; }

@@ -464,6 +464,10 @@ function boot(): void {
   // Leaving the tab or the window pauses, as in the original. Coming back
   // waits for the player: a key or a tap resumes.
   const away = () => { if (started) setPaused(true); };
+  // A phone can take the GPU back while the page sleeps. Without preventDefault
+  // the canvas stays black for good; with it, three.js rebuilds on restore.
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); away(); });
+  canvas.addEventListener('webglcontextrestored', fit);
   document.addEventListener('visibilitychange', () => { if (document.hidden) away(); });
   window.addEventListener('blur', away);
   // so does a swipe out of fullscreen, and the tap that resumes takes it back
