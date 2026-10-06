@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 and 2 done: the web as data and rules, and the bay on screen in the arcade (no more cards there); steps 3 to 5 to come (see below) |
+| R The refit bay | Steps 1 to 3 done: the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
 
 ## From the concept boards
 
@@ -608,8 +608,21 @@ six minutes); a fifth of runs reach the cap, against a third with cards.
 Builds that wait for a system (mines, drive plasma) fit only five or six
 and trail; step 3 balances that with the budgets.
 
+**Step 3, done.** `sim/budgets.ts`: over the mass rating the ship loses
+thrust and helm, over the heat rating the guns recharge and reload slower,
+each by the share over and down to a floor; the arcade's stat block and the
+bay's figures feel it (the Story mode will with its bay). The ratings start
+at 8 (stock: 5 power, 3 heat, 1 mass), so about ten installs make a build
+choose between weapons and the fittings that carry them. The inspector warns
+when an install runs the ship over. The pilot report gains a table of Krail
+spent and the budgets at the end: laser builds buy heat exchangers, close
+quarters runs heavy, everyone buys reactor cores.
+
 ### Open
 
+- Builds that save for deep modules (torpedoes, mines) fit six or seven in
+  a run and trail the rest; the costs of tier 3 and 4, or what the pilot
+  saves for, want a look.
 - The arcade's Krail: how much rock and kills give, against the costs
   above, for fewer installs than today's cards.
 - Cyrite (Story): where it shows in rock, what wrecks carry, the tank, and

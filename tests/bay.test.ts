@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { UPGRADES, UPGRADE } from '../src/content/upgrades';
 import { FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
 import { blockOf, budgets, cost, install, maxLevel, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
-import { computeStats } from '../src/sim/build';
+import { computeStats, upgradeFigures } from '../src/sim/build';
+import { feelBudgets, overload, OVERLOAD } from '../src/sim/budgets';
+import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
 
 const ALL = new Set(UPGRADES.map((u) => u.id));
@@ -139,5 +141,47 @@ describe('the bay’s rules', () => {
     expect(lit).toContain('rx_core');
     expect(lit).not.toContain('ph_pierce');
     expect(lit).not.toContain('tp_bay'); // fitted, and only one level
+  });
+});
+
+describe('the budgets, felt (step 3)', () => {
+  it('cost nothing within the ratings', () => {
+    const o = overload(stockLevels());
+    expect(o.handling).toEqual({ thrust: 1, turn: 1 });
+    expect(o.cooling).toBe(1);
+  });
+
+  it('a hot ship recharges and reloads slower; heat exchangers take it back', () => {
+    const hot = { ...stockLevels(), ph_emitters: 5, ph_capacitors: 4, ph_pierce: 3 };
+    const { use, cap } = budgets(hot);
+    expect(use.heat).toBeGreaterThan(cap.heat);
+    const s = feelBudgets(computeStats(hot), hot), base = computeStats(hot);
+    expect(s.bankRefill).toBeLessThan(base.bankRefill);
+    expect(s.torpReload).toBeGreaterThan(base.torpReload);
+    const cooled = { ...hot, rx_sinks: 2 };
+    expect(feelBudgets(computeStats(cooled), cooled).bankRefill).toBe(computeStats(cooled).bankRefill);
+  });
+
+  it('a heavy ship turns and speeds up slower, never below the floor; a frame takes it back', () => {
+    const heavy = { ...stockLevels(), df_armour: 2, cl_ram: 3, cl_juggernaut: 1 };
+    const s = feelBudgets(computeStats(heavy), heavy), base = computeStats(heavy);
+    expect(s.thrust).toBeLessThan(base.thrust);
+    expect(s.turn).toBeLessThan(base.turn);
+    const worst = overload({ ...heavy, df_armour: 50 });
+    expect(worst.handling.thrust).toBe(OVERLOAD.massFloor);
+    const framed = { ...heavy, hl_frame: 3 };
+    expect(overload(framed).handling.thrust).toBe(1);
+  });
+
+  it('the arcade flies with it and the card figures show it; the Story mode does not yet', () => {
+    const hot = { ...stockLevels(), ph_emitters: 5, ph_capacitors: 4, ph_pierce: 3 };
+    const w = new World(1);
+    w.setLevels(hot);
+    expect(w.stats.bankRefill).toBeLessThan(computeStats(hot).bankRefill);
+    const s = new World(1, { mode: 'breakout' });
+    s.setLevels(hot);
+    expect(s.stats.bankRefill).toBe(computeStats(hot).bankRefill);
+    const fig = upgradeFigures({ ...stockLevels(), ph_emitters: 3, ph_capacitors: 2, ph_pierce: 1 }, 'ph_pierce').find((f) => f.label === 'Bank refill/sec');
+    expect(fig?.cost).toBe(true);
   });
 });

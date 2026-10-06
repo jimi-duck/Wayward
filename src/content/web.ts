@@ -43,7 +43,7 @@ export interface Budget { power: number; mass: number; heat: number; }
 export const NO_BUDGET: Readonly<Budget> = Object.freeze({ power: 0, mass: 0, heat: 0 });
 
 /** The stock ship's ratings, before any fitting raises them. */
-export const RATINGS: Readonly<Budget> = Object.freeze({ power: 10, mass: 10, heat: 10 });
+export const RATINGS: Readonly<Budget> = Object.freeze({ power: 8, mass: 8, heat: 8 });
 /** What the stock ship draws before anything is fitted: the lasers and the shield. */
 export const STOCK_DRAW: Readonly<Budget> = Object.freeze({ power: 3, mass: 0, heat: 2 });
 /** Fitted on every ship from the start: the torpedo bay. */

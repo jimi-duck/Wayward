@@ -1,5 +1,6 @@
 import { UPGRADE } from '../content/upgrades';
-import { FITTING, LEVEL_STEP, NODE, RATINGS, STOCK, STOCK_DRAW, TIER_COST, WEB, type Budget, type WebNode } from '../content/web';
+import { FITTING, LEVEL_STEP, NODE, STOCK, TIER_COST, WEB, type WebNode } from '../content/web';
+import { budgets } from './budgets';
 import { available, type Levels } from './build';
 
 // ── the refit bay: what can be fitted, what it costs, what it leaves ──────
@@ -44,22 +45,7 @@ export function cost(id: string, lv: number): number {
   return Math.round((base * (1 + LEVEL_STEP * (lv - 1))) / 5) * 5;
 }
 
-const add = (b: Budget, d: Partial<Budget>, k = 1) => { b.power += (d.power ?? 0) * k; b.mass += (d.mass ?? 0) * k; b.heat += (d.heat ?? 0) * k; };
-
-/** What a build draws and what it is rated for. */
-export function budgets(levels: Levels): { use: Budget; cap: Budget } {
-  const use: Budget = { ...STOCK_DRAW }, cap: Budget = { ...RATINGS };
-  for (const node of WEB) {
-    const lv = levels[node.id] ?? 0;
-    if (!lv) continue;
-    add(use, node.draw, lv);
-    if (node.gives) add(cap, node.gives, lv);
-  }
-  return { use, cap };
-}
-
-/** Over a soft rating, as a share of it (0 when within): what step 3 turns into slower handling and slower guns. */
-export const overBy = (use: number, cap: number) => Math.max(0, use - cap) / Math.max(1, cap);
+export { budgets, overBy } from './budgets';
 
 /** Why `id` cannot be fitted now, or null if it can. */
 export function blockOf(id: string, ctx: BayCtx): Block | null {

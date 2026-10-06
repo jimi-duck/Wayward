@@ -43,6 +43,7 @@ import {
 import type { Prices } from '../content/systems';
 import { makeOffer, type Offer } from './offers';
 import { install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
+import { feelBudgets } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { addKit, discounted, earned, effects, fitNeeds, noKit, type Effects, type Kit } from './modules';
@@ -1141,6 +1142,8 @@ export class World implements EncounterHost {
   private buildStats(): Stats {
     this.fx = effects(this.levels);
     const s = computeStats(this.levels);
+    // the arcade feels its budgets: heavy is slow, hot is slow to reload (the Story mode's turn comes with its bay)
+    if (!this.bk) feelBudgets(s, this.levels);
     const m = this.modifiers.map((id) => MODIFIERS[id]!);
     for (const d of m) if (d.plates) s.maxPlates = Math.max(1, s.maxPlates + d.plates);
     return s;

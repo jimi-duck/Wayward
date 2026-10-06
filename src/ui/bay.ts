@@ -36,6 +36,8 @@ const WHY: Record<Block, string> = {
   krail: 'Not enough Krail',
 };
 const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass', heat: 'Heat' };
+/** What running over a soft rating costs (sim/budgets.ts). */
+const OVER_WORD = { mass: 'Over the mass rating: slower to turn and to speed up', heat: 'Over the heat rating: the guns recharge and reload slower' } as const;
 
 const nameOf = (id: string) => t(UPGRADE[id]?.name ?? FITTING[id]?.name ?? id);
 const iconOf = (id: string) => FIT_ICON[id] ?? ICON[UPGRADE[id]?.branch ?? 'utility'];
@@ -245,18 +247,21 @@ export class BayPanel {
     // what the next level changes: the figures, then the budgets
     if (lv < max) {
       const figs = h('div', 'bi-figs');
-      if (u) for (const f of upgradeFigures(w.levels, id, !w.bk).slice(0, 4)) {
+      for (const f of upgradeFigures(w.levels, id, !w.bk).slice(0, 4)) {
         figs.append(h('div', `fig${f.cost ? ' cost' : ''}`, '', h('span', 'f-l', t(f.label)), h('span', 'f-v', '', h('s', '', t(f.from)), document.createTextNode(' → '), h('b', '', t(f.to)))));
       }
       const { use, cap } = budgets(w.levels);
+      const warn: string[] = [];
       for (const k of ['power', 'mass', 'heat'] as const) {
         const d = node.draw[k] ?? 0, g = node.gives?.[k] ?? 0;
         if (!d && !g) continue;
         const after = g ? `${use[k]}/${cap[k] + g}` : `${use[k] + d}/${cap[k]}`;
         const over = !g && use[k] + d > cap[k];
         figs.append(h('div', `fig budget${over ? ' cost' : ''}`, '', h('span', 'f-l', t(BUDGET_WORD[k])), h('span', 'f-v', '', h('s', '', `${use[k]}/${cap[k]}`), document.createTextNode(' → '), h('b', '', after))));
+        // what running over will cost, in words
+        if (over && k !== 'power') warn.push(t(OVER_WORD[k]));
       }
-      out.push(figs);
+      out.push(figs, ...warn.map((x) => h('p', 'bi-warn', x)));
     }
 
     // the price, and the button

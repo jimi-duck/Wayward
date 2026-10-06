@@ -229,6 +229,8 @@ export const UI: Record<string, string> = {
   'fitted': 'eingebaut',
   'Nothing yet': 'Noch nichts',
   'Ship overview': 'Schiffsübersicht',
+  'Over the mass rating: slower to turn and to speed up': 'Über der Massengrenze: träger in Kurven und beim Beschleunigen',
+  'Over the heat rating: the guns recharge and reload slower': 'Über der Hitzegrenze: Waffen laden langsamer nach',
   'Self-repair under way': 'Selbstreparatur läuft',
   'Hull mended': 'Rumpf geflickt',
   '{n} contact inbound': '{n} Kontakt im Anflug',

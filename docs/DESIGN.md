@@ -293,10 +293,17 @@ Reactor, Synergies), each a small web left to right by tier. A module opens
 once something it comes from is fitted, then by the upgrade's own rules
 (requires, one specialisation per group, a deep enough system). Each level
 costs Krail by tier (40, 60, 90, 130; half as much again a level) and draws
-power, mass or heat. Power is a ceiling; the reactor core raises it and is
-always open until full, so a build never gets stuck, and nothing comes out
-once fitted. Mass and heat are ratings that steps 3 of the plan will make
-felt. A capital ship destroyed opens her faction's tech in Synergies. The
+power, mass or heat, against ratings of 8 each (the stock ship draws 5
+power, 3 heat, 1 mass). Power is a ceiling; the reactor core (+3 a level)
+raises it and is always open until full, so a build never gets stuck, and
+nothing comes out once fitted. Mass and heat can be run over, at a price
+(`sim/budgets.ts`): over the mass rating the ship loses thrust and helm
+(0.7 and 0.55 of the share over, never below 60%); over the heat rating the
+laser bank refills, and torpedoes, mines and the hull arc come round, slower
+(0.9 of the share over, never below half). The structural frame and the heat
+exchangers (+4 a level) raise the ratings. The bay shows it all before an
+install: the budgets after, the figures that would suffer in red, and a line
+saying what running over costs. A capital ship destroyed opens her faction's tech in Synergies. The
 HUD's Krail row counts toward the cheapest module in reach and lights the
 bay's key when one can be fitted.
 

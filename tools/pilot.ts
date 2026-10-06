@@ -90,6 +90,8 @@ export interface PilotResult {
   /** Seconds with three or more hostiles in firing range at once, and the most there ever were. */
   crowd: number;
   peak: number;
+  /** The arcade's refit bay at the end: the budgets drawn against the ratings. */
+  budget: { use: { power: number; mass: number; heat: number }; cap: { power: number; mass: number; heat: number } };
   answers: Answer[];
 }
 
@@ -143,8 +145,11 @@ function pickCard(w: World, s: Strategy, rngPick: () => number): number {
 /** How much the strategy wants a module of the bay (upgrades as pickCard scores them; fittings when their budget is short). */
 function want(w: World, s: Strategy, id: string): number {
   if (FITTING[id]) {
+    // a fitting when its budget is short: power nearly gone, or the ship run hot or heavy
     const { use, cap } = budgets(w.levels);
-    return id === 'rx_core' && cap.power - use.power < 2 ? 14 : 0.5;
+    if (id === 'rx_core') return cap.power - use.power < 2 ? 14 : 0.5;
+    if (id === 'rx_sinks') return use.heat > cap.heat ? 13 : 0.5;
+    return use.mass > cap.mass ? 12 : 0.5;
   }
   const u = UPGRADE[id]!;
   if (s.kind === 'random') return 1;
@@ -578,5 +583,5 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     w.run.build = { ...w.levels };
     w.run.cause = 'survived';
   }
-  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, answers };
+  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, budget: budgets(w.levels), answers };
 }

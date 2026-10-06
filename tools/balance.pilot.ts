@@ -74,6 +74,13 @@ it('flies the balance matrix', { timeout: 3_600_000 }, () => {
     const time = res.reduce((a, r) => a + r.run.time, 0) || 1;
     return `| ${name} | ${pct(res.reduce((a, r) => a + r.combat, 0) / time)} | ${pct(res.reduce((a, r) => a + r.crowd, 0) / time)} | ${mean(res.map((r) => r.peak)).toFixed(1)} | ${mean(res.map((r) => r.run.waves ?? 0)).toFixed(1)} | ${mean(res.map((r) => r.run.platesMended ?? 0)).toFixed(1)} |`;
   };
+  // the refit bay: what the builds spend, and how hard they press on their ratings
+  const bayRow = (name: string, res: PilotResult[]) => {
+    const b = (k: 'power' | 'mass' | 'heat') => `${mean(res.map((r) => r.budget.use[k])).toFixed(1)}/${mean(res.map((r) => r.budget.cap[k])).toFixed(1)}`;
+    const over = (k: 'mass' | 'heat') => pct(res.filter((r) => r.budget.use[k] > r.budget.cap[k]).length / Math.max(1, res.length));
+    return `| ${name} | ${Math.round(mean(res.map((r) => r.run.krailSpent ?? 0)))} / ${Math.round(mean(res.map((r) => r.run.krailEarned ?? 0)))} | ${b('power')} | ${b('mass')} | ${b('heat')} | ${over('mass')} | ${over('heat')} |`;
+  };
+  const bayRows = STRATEGIES.map((st) => bayRow(stratName(st), all.filter((r) => r.strategy === stratName(st))));
   const paceRows = STRATEGIES.map((st) => paceRow(stratName(st), all.filter((r) => r.strategy === stratName(st))));
 
   const md = `# Balance report
@@ -100,6 +107,17 @@ plates the self-repair mended.
 | Strategy | In a fight | In a crowd | Peak at once | Encounters | Plates self-repaired |
 |---|---|---|---|---|---|
 ${paceRows.join('\n')}
+
+## The refit bay
+
+What the builds spent of the Krail they earned, the three budgets at the
+end (drawn / rated, means), and how many runs ended over the mass or the
+heat rating (heavy ships turn and speed up slower; hot ones recharge and
+reload slower).
+
+| Strategy | Krail spent / earned | Power | Mass | Heat | Over mass | Over heat |
+|---|---|---|---|---|---|---|
+${bayRows.join('\n')}
 
 ## Capital-ship fights
 
