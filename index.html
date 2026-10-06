@@ -55,6 +55,7 @@
       <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2l8 3v7c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V5z M12 8v8"/></symbol>
       <symbol id="i-signal" viewBox="0 0 24 24"><path d="M12 12v9 M8 21h8 M7.5 7.5a6.4 6.4 0 000 9 M16.5 7.5a6.4 6.4 0 010 9 M4 4.5a11 11 0 000 15 M20 4.5a11 11 0 010 15"/></symbol>
       <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 7H5l-3 5 3 5h4 M15 7h4l3 5-3 5h-4 M8 12h8"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><path d="M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4 M12 15v2"/></symbol>
     </svg>
 
     <!-- The HUD, in the brand's six zones (v1.1, section 12): instrument lines laid over the view, never a dashboard round it.
@@ -248,6 +249,8 @@
     <!-- The refit bay: building the ship, after the reference board. Tabs left, the tab's web
          centre, the inspector right, what is fitted and the three budgets along the bottom. -->
     <div id="bay" class="sheet" role="dialog" aria-labelledby="bay-t" hidden>
+      <!-- the ship: the painted Wayward of the title art, fitted to the room (ui/bay.ts placeArt) -->
+      <div class="bay-art" aria-hidden="true"></div>
       <div class="bay">
         <header class="bay-h">
           <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><span><b id="bay-t">Refit bay</b><small id="bay-voice"></small></span></span>
@@ -267,6 +270,8 @@
         <aside class="bay-insp" id="bay-insp" aria-live="polite"></aside>
         <footer class="bay-f"><div class="bay-budget" id="bay-budget"></div></footer>
       </div>
+      <!-- rings over the ship's parts: tap one to pick that part -->
+      <div class="bay-pts" id="bay-pts"></div>
     </div>
 
     <!-- Comms: whoever opens a channel to the ship (a Breakout card), and the arcade's capital-ship hail,
