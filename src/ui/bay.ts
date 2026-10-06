@@ -1,11 +1,13 @@
-import { MODULE_BY_ID, type ShipSystem } from '../content/modules';
 import { UPGRADE } from '../content/upgrades';
 import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
 import { blockOf, budgets, cost, fee, maxLevel, nodeName, nodeText, quickPicks, type Block } from '../sim/bay';
+import type { Advice } from '../sim/advice';
 import { upgradeFigures } from '../sim/build';
+import { profileOf } from '../sim/profile';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
-import { icon, ICON } from './icons';
+import { icon, nodeIcon } from './icons';
+import { opsOf, opsText } from './ops';
 import { num, t } from '../i18n';
 
 // ── the refit bay ─────────────────────────────────────────────────────────
@@ -31,9 +33,6 @@ type View = 'picks' | Tab;
 const TAB_ICON: Record<View, string> = {
   picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-event', reactor: 'i-core', synergies: 'i-link',
 };
-const FIT_ICON: Record<string, string> = { rx_core: 'i-core', rx_sinks: 'i-plasma', hl_frame: 'i-hull' };
-/** The yard's modules wear their system's icon. */
-const SYSTEM_ICON: Record<ShipSystem, string> = { guns: 'i-laser', rig: 'i-rock', signals: 'i-event', contacts: 'i-link' };
 
 /** Why a module cannot be fitted, in a few words. */
 const WHY: Record<Block, string> = {
@@ -53,7 +52,6 @@ const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass'
 const OVER_WORD = { mass: 'Over the mass rating: slower to turn and to speed up', heat: 'Over the heat rating: the guns recharge and reload slower' } as const;
 
 const nameOf = (id: string) => t(nodeName(id));
-const iconOf = (id: string) => FIT_ICON[id] ?? (MODULE_BY_ID[id] ? SYSTEM_ICON[MODULE_BY_ID[id]!.system] : ICON[UPGRADE[id]?.branch ?? 'utility']);
 const textOf = (id: string, lv: number) => t(nodeText(id, lv));
 
 /** The price of the next level: Krail, and the yard's chits where it charges. */
@@ -99,12 +97,21 @@ export class BayPanel {
   /** Auto-refit, and what to tell when it is switched. */
   auto = false;
   onAuto: (on: boolean) => void = () => {};
+  /** The ship drawn behind: where a tab's lights are on screen (fractions), and a way to flash them. Set by the app. */
+  ship: { points: (zone: string) => Array<[number, number]>; flash: (zone: string) => void } | null = null;
+  /** The module just fitted and the budgets it moved: lit for a moment (see install). */
+  private fresh: { id: string; moved: Set<string> } | null = null;
 
   constructor() {
     $('bay-x').addEventListener('click', (e) => { e.stopPropagation(); if (this.open) this.launch(); });
     $('bay-auto').addEventListener('click', (e) => { e.stopPropagation(); this.toggleAuto(); });
     // a tap on the bay never reaches the flight controls behind it
     $('bay').addEventListener('pointerdown', (e) => e.stopPropagation());
+  }
+
+  /** The view open, for the ship drawn behind (render/ships.ts lights its part). */
+  get zone(): string {
+    return this.view;
   }
 
   get open(): boolean {
@@ -224,13 +231,98 @@ export class BayPanel {
   private install(id: string): void {
     const w = this.world;
     if (!w) return;
+    const before = budgets(w.levels), krailBefore = Math.floor(w.krail);
+    let fitted = false;
     if (w.install(id) === null) {
+      const after = budgets(w.levels), moved = new Set<string>(['krail']);
+      for (const k of ['power', 'mass', 'heat'] as const) if (after.use[k] !== before.use[k] || after.cap[k] !== before.cap[k]) moved.add(k);
+      this.fresh = { id, moved };
+      fitted = true;
       const el = $('bay-main');
       el.classList.remove('done');
       void el.offsetWidth;
       el.classList.add('done');
     }
     this.render();
+    if (fitted) this.installFx(id, krailBefore, Math.floor(w.krail));
+    this.fresh = null;
+  }
+
+  /**
+   * The install, felt (400 to 700 ms): Krail counts down, the module flashes
+   * (the fresh class), a line runs from it to the ship part it belongs to and
+   * that part flashes, the budgets bump. None of it blocks a second install,
+   * and none of it with reduced motion.
+   */
+  private installFx(id: string, from: number, to: number): void {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    this.countKrail(from, to, 520);
+    const zone = NODE[id]!.tab;
+    this.ship?.flash(zone);
+    const node = document.querySelector('.bay-node.fresh .bn-oct') ?? document.querySelector('.pick-card.sel .pc-oct'), pts = this.ship?.points(zone) ?? [];
+    $('bay').querySelector('.bay-line')?.remove();
+    if (!node || !pts.length) return;
+    const box = $('bay').getBoundingClientRect(), r = node.getBoundingClientRect();
+    const x0 = r.left + r.width / 2 - box.left, y0 = r.top + r.height / 2 - box.top;
+    // to the nearest of the zone's lights
+    let best = pts[0]!, bd = Infinity;
+    for (const p of pts) { const d = Math.hypot(p[0] * innerWidth - box.left - x0, p[1] * innerHeight - box.top - y0); if (d < bd) { bd = d; best = p; } }
+    const x1 = best[0] * innerWidth - box.left, y1 = best[1] * innerHeight - box.top;
+    const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'bay-line');
+    svg.setAttribute('width', String(box.width));
+    svg.setAttribute('height', String(box.height));
+    const line = document.createElementNS(ns, 'path');
+    line.setAttribute('d', `M${x0} ${y0} L${x1} ${y1}`);
+    line.setAttribute('pathLength', '1');
+    const dot = document.createElementNS(ns, 'circle');
+    dot.setAttribute('cx', String(x1));
+    dot.setAttribute('cy', String(y1));
+    dot.setAttribute('r', '5');
+    svg.append(line, dot);
+    $('bay').append(svg);
+    setTimeout(() => svg.remove(), 800);
+  }
+
+  /** Count the Krail readout from one value to another. */
+  private countKrail(from: number, to: number, ms: number): void {
+    const el = $('bay-krail').querySelector('b');
+    if (!el) return;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / ms), v = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      el.textContent = num(v);
+      if (k < 1 && this.open) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  /**
+   * The ship's computer's picks: the modules ready to fit that have a reason
+   * (sim/advice.ts), the three firmest across the whole bay. Recomputed per draw; cheap.
+   */
+  private advice(w: World): Map<string, Advice> {
+    const picks: Array<[string, Advice]> = [];
+    for (const n of WEB) {
+      const st = stateOf(w, n.id);
+      if (st !== 'open' && st !== 'owned') continue;
+      if (blockOf(n.id, w.bayCtx())) continue;
+      const a = w.advise(n.id);
+      if (a) picks.push([n.id, a]);
+    }
+    return new Map(picks.sort((a, b) => a[1].rank - b[1].rank).slice(0, 3));
+  }
+
+  /** The build's profile: a name, a few plain lines, and how it leans (close, ordnance, range, defence). */
+  private profile(w: World): HTMLElement {
+    const p = profileOf(w.levels), WAY: Record<string, string> = { close: 'Close range', ordnance: 'Ordnance', range: 'Range', defence: 'Defence' };
+    const bars = h('div', 'pf-bars');
+    for (const [a, v] of Object.entries(p.axes)) {
+      const i = h('i', 'pf-bar');
+      i.style.setProperty('--v', v.toFixed(2));
+      bars.append(h('span', 'pf-b', '', h('span', 'pf-l', t(WAY[a]!)), i));
+    }
+    return h('div', 'bay-prof', '', h('span', 'bf-h', t('Profile')), h('b', 'pf-name', t(p.name)), ...p.lines.map((l) => h('span', 'pf-line', t(l))), bars);
   }
 
   // ── drawing ─────────────────────────────────────────────────────────────
@@ -238,6 +330,10 @@ export class BayPanel {
   private render(): void {
     const w = this.world;
     if (!w) return;
+    $('bay-voice').textContent = t(w.voice());
+    const o = opsOf(w);
+    $('bay-ops').className = `ops ${o}`;
+    $('bay-ops').textContent = opsText(o);
     $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.krail))), h('span', '', 'Krail'));
     const auto = $('bay-auto');
     auto.classList.toggle('on', this.auto);
@@ -251,16 +347,21 @@ export class BayPanel {
   }
 
   private tabs(w: World): void {
+    const { use, cap } = budgets(w.levels);
     $('bay-tabs').replaceChildren(...viewsOf(w).map((v) => {
       const ready = v === 'picks' ? 0 : WEB.filter((n) => n.tab === v && blockOf(n.id, w.bayCtx()) === null).length;
       const name = v === 'picks' ? t('Suggested') : t(TABS[v].name);
-      const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}`, '', icon(TAB_ICON[v]), h('span', 'bt-n', name), ready ? h('b', 'bt-c', String(ready)) : null) as HTMLButtonElement;
+      // the tab's state, beside the ready count: over a soft rating through something fitted here (red ▲), or fitted (amber ●)
+      const nodes = v === 'picks' ? [] : WEB.filter((n) => n.tab === v), fitted = nodes.some((n) => (w.levels[n.id] ?? 0) > 0);
+      const over = (['mass', 'heat'] as const).some((k) => use[k] > cap[k] && nodes.some((n) => (w.levels[n.id] ?? 0) > 0 && (n.draw[k] ?? 0) > 0));
+      const dot = v === 'picks' ? '' : over ? 'over' : fitted ? 'fitted' : '';
+      const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}`, '', icon(TAB_ICON[v]), h('span', 'bt-n', name), ready ? h('b', 'bt-c', String(ready)) : null, dot ? h('i', `bt-s ${dot}`) : null) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', String(v === this.view));
       b.addEventListener('click', (e) => { e.stopPropagation(); this.go(v); });
       return b;
-    }));
+    }), this.profile(w));
   }
 
   /** The suggestions: three cards, what each does in a line, the number that matters, and the price on the button. */
@@ -271,6 +372,7 @@ export class BayPanel {
     const cards = picks.map((n, i) => {
       const lv = w.levels[n.id] ?? 0, max = maxLevel(n.id), why = blockOf(n.id, ctx);
       const fig = upgradeFigures(w.levels, n.id, true).find((f) => !f.cost);
+      const why1 = w.advise(n.id);
       const card = h('div', `pick-card${why ? ' short' : ' ready'}${i === this.pick ? ' sel' : ''}`);
       const go = h('button', 'pc-go', '') as HTMLButtonElement;
       go.type = 'button';
@@ -279,8 +381,9 @@ export class BayPanel {
       go.addEventListener('click', (e) => { e.stopPropagation(); this.pick = i; this.install(n.id); });
       card.addEventListener('click', () => { this.pick = i; this.render(); });
       card.append(
-        h('span', 'pc-top', '', h('span', 'pc-oct', '', icon(iconOf(n.id))), h('span', 'pc-tab', t(TABS[n.tab].name)), h('kbd', 'only-desktop', String(i + 1))),
+        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(TABS[n.tab].name)), h('kbd', 'only-desktop', String(i + 1))),
         h('span', 'pc-name', nameOf(n.id)),
+        ...(why1 ? [h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why1.text, why1.vars)}`))] : []),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
         h('span', 'pc-text', textOf(n.id, Math.min(max, lv + 1))),
         fig ? h('span', 'pc-fig', '', h('span', '', t(fig.label)), h('b', '', t(fig.to))) : h('span', 'pc-fig'),
@@ -302,35 +405,56 @@ export class BayPanel {
     const Y = (n: WebNode) => ((n.row + 0.5) / Math.max(rows, 3)) * 100;
     $('bay-tab-h').replaceChildren(icon(TAB_ICON[tab]), h('span', 'bw-n', t(TABS[tab].name)), h('span', 'bw-s', t(TABS[tab].sub)));
 
-    // the links behind, lit where both ends are fitted
+    // the links behind, as hardware: a bus a parent's children share (a fork, drawn as a junction),
+    // a bus into a child with two parents (a join), conduits under the live wire, lit where both ends are fitted
     const ns = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(ns, 'svg');
     svg.setAttribute('class', 'bay-links');
     svg.setAttribute('viewBox', '0 0 100 100');
     svg.setAttribute('preserveAspectRatio', 'none');
+    const kids = new Map<string, WebNode[]>();
+    for (const n of nodes) for (const f of n.from ?? []) kids.set(f, [...(kids.get(f) ?? []), n]);
+    /** Where a parent's children branch off (a fork), and where a child's parents come together (a join). */
+    const forkX = (a: WebNode) => X(a) + 0.45 * Math.min(...kids.get(a.id)!.map((c) => X(c) - X(a)));
+    const joinX = (n: WebNode) => X(n) - 0.45 * Math.min(...(n.from ?? []).map((f) => X(n) - X(NODE[f]!)));
+    const junctions: Array<[number, number, string]> = [];
     for (const n of nodes) {
-      for (const f of n.from ?? []) {
-        const a = NODE[f]!;
-        const line = document.createElementNS(ns, 'path');
-        const mx = (X(a) + X(n)) / 2;
-        line.setAttribute('d', `M${X(a)} ${Y(a)} H${mx} V${Y(n)} H${X(n)}`);
-        line.setAttribute('class', (w.levels[f] ?? 0) > 0 ? ((w.levels[n.id] ?? 0) > 0 ? 'lit' : 'open') : '');
-        line.setAttribute('vector-effect', 'non-scaling-stroke');
-        svg.append(line);
+      const parents = (n.from ?? []).map((f) => NODE[f]!);
+      if (parents.length > 1) junctions.push([joinX(n), Y(n), 'join']);
+      for (const a of parents) {
+        const mx = parents.length > 1 ? joinX(n) : kids.get(a.id)!.length > 1 ? forkX(a) : (X(a) + X(n)) / 2;
+        if (parents.length === 1 && kids.get(a.id)!.length > 1 && !junctions.some((j) => j[0] === mx && j[1] === Y(a))) junctions.push([mx, Y(a), 'fork']);
+        const d = `M${X(a)} ${Y(a)} H${mx} V${Y(n)} H${X(n)}`, st = (w.levels[a.id] ?? 0) > 0 ? ((w.levels[n.id] ?? 0) > 0 ? 'lit' : 'open') : '';
+        for (const cls of ['conduit', 'wire']) {
+          const line = document.createElementNS(ns, 'path');
+          line.setAttribute('d', d);
+          line.setAttribute('class', `${cls} ${st}`);
+          line.setAttribute('vector-effect', 'non-scaling-stroke');
+          svg.append(line);
+        }
       }
     }
+    const recs = this.advice(w);
     const field = h('div', 'bay-nodes');
+    for (const [x, y, kind] of junctions) {
+      const j = h('i', `bay-junc ${kind}`);
+      j.style.left = `${x}%`;
+      j.style.top = `${y}%`;
+      field.append(j);
+    }
     for (const n of nodes) {
       const st = stateOf(w, n.id), lv = w.levels[n.id] ?? 0, max = maxLevel(n.id);
-      const b = h('button', `bay-node ${st}${n.id === this.sel ? ' sel' : ''}`) as HTMLButtonElement;
+      const b = h('button', `bay-node ${st}${recs.has(n.id) ? ' rec' : ''}${n.id === this.sel ? ' sel' : ''}${n.id === this.fresh?.id ? ' fresh' : ''}`) as HTMLButtonElement;
       b.type = 'button';
       b.style.left = `${X(n)}%`;
       b.style.top = `${Y(n)}%`;
       b.setAttribute('aria-label', `${nameOf(n.id)} · ${t('Lv')} ${lv}/${max}`);
       // the price where it can be paid soon: fitted-or-ready modules say what the next level costs
       const price = st === 'open' || st === 'short' || st === 'owned' ? cost(n.id, lv + 1) : 0;
-      b.append(h('span', 'bn-oct', '', icon(iconOf(n.id))), max > 1 ? pips(lv, max) : h('span', 'bi-pips'), h('span', 'bn-name', nameOf(n.id)),
-        ...(price ? [h('span', 'bn-cost', num(price))] : []));
+      // three levels: the name, then the level pips, then what it moves (the first figure's label)
+      const first = lv < max && st !== 'locked' ? upgradeFigures(w.levels, n.id, !w.bk).find((f) => !f.cost)?.label : undefined;
+      b.append(h('span', 'bn-oct', '', nodeIcon(n.id)), max > 1 ? pips(lv, max) : h('span', 'bi-pips'), h('span', 'bn-name', nameOf(n.id)),
+        ...(first ? [h('span', 'bn-tag', t(first))] : []), ...(price ? [h('span', 'bn-cost', num(price))] : []));
       b.addEventListener('click', (e) => { e.stopPropagation(); this.sel = n.id; this.render(); });
       field.append(b);
     }
@@ -345,9 +469,10 @@ export class BayPanel {
     const node = NODE[id]!;
     const lv = w.levels[id] ?? 0, max = maxLevel(id), next = Math.min(max, lv + 1);
     const why = blockOf(id, w.bayCtx());
-    const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', icon(iconOf(id))),
+    const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', nodeIcon(id)),
       h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips(lv, max, lv < max))));
-    const out: HTMLElement[] = [head, h('p', 'bi-text', textOf(id, next))];
+    const adv = lv < max && !why ? this.advice(w).get(id) : undefined;
+    const out: HTMLElement[] = [head, ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(adv.text, adv.vars)}`))] : []), h('p', 'bi-text', textOf(id, next))];
     if (lv < max) {
       const figs = h('div', 'bi-figs');
       for (const f of upgradeFigures(w.levels, id, !w.bk).slice(0, 3)) {
@@ -367,6 +492,9 @@ export class BayPanel {
       if (chips.childElementCount) out.push(chips);
       out.push(...warn.map((x) => h('p', 'bi-warn', x)));
     }
+    // flavour comes after the numbers, then the price
+    const note = UPGRADE[id]?.note;
+    if (note) out.push(h('p', 'bi-note', t(note)));
     const btn = h('button', 'bi-go', '') as HTMLButtonElement;
     btn.type = 'button';
     btn.disabled = !!why;
@@ -383,10 +511,15 @@ export class BayPanel {
     const can = sel && (w.levels[sel.id] ?? 0) < maxLevel(sel.id);
     $('bay-budget').replaceChildren(...(['power', 'mass', 'heat'] as const).map((k) => {
       const add = can ? sel!.draw[k] ?? 0 : 0;
-      const bar = h('i', `bb-bar${use[k] > cap[k] ? ' over' : ''}`);
+      // the rating's state: a word from 80%, a louder one over (power is a ceiling: it fills, it never goes over)
+      const share = use[k] / cap[k], state = k === 'power' ? (share >= 1 ? 'warn' : '') : share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
+      const word = state === 'over' ? 'Over limit' : state === 'warn' ? (k === 'power' ? 'Full' : 'Warning') : '';
+      const bar = h('i', `bb-bar${state ? ` ${state}` : ''}`);
       bar.style.setProperty('--v', Math.min(1, use[k] / cap[k]).toFixed(3));
       bar.style.setProperty('--a', Math.min(1, (use[k] + add) / cap[k]).toFixed(3));
-      return h('span', `bb ${k}`, '', h('span', 'bb-l', t(BUDGET_WORD[k])), bar, h('b', 'bb-v', `${use[k]}/${cap[k]}`));
+      const val = h('b', `bb-v${this.fresh?.moved.has(k) ? ' bump' : ''}`, '', document.createTextNode(`${use[k]}/${cap[k]}`));
+      if (add) val.append(h('em', '', ` → ${use[k] + add}`));
+      return h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : [])), bar, val);
     }));
   }
 }

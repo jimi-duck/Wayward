@@ -20,9 +20,10 @@ import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PadNav } from './ui/dom';
 import { cardView, CommsPanel, hailView } from './ui/comms';
-import { buildView, StartOptions, SummaryPanel } from './ui/panels';
+import { StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { BayPanel } from './ui/bay';
+import { showConsole } from './ui/briefing';
 import { blockOf, quickPicks } from './sim/bay';
 import { detect, localize, onLang, plural, setLang, t } from './i18n';
 
@@ -107,6 +108,7 @@ function boot(): void {
   const chart = new ChartPanel();
   const ending = new EndingPanel();
   const bay = new BayPanel();
+  bay.ship = { points: (z) => sector.zoneScreen(z), flash: (z) => sector.flashZone(z) };
   const padNav = new PadNav();
   let reported = false;
   const panelOpen = () => bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
@@ -298,13 +300,15 @@ function boot(): void {
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
       input.reset();
-      el('pause-build').replaceChildren(buildView(world.levels));
       showBrief();
+      showConsole(world);
     }
   };
   /** The briefing's live parts: its title, the bay's count, Auto-refit. */
   const showBrief = () => {
-    el('pause-t').textContent = t(!world.bk && !profile.briefed ? 'Briefing' : 'All stop');
+    const first = !world.bk && !profile.briefed;
+    el('pause').classList.toggle('first', first);
+    el('pause-t').textContent = t(first ? 'Briefing' : 'All stop');
     const n = quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
     el('p-bay').classList.toggle('ready', n > 0);
     el('p-bay-n').textContent = n ? String(n) : '';
@@ -384,7 +388,8 @@ function boot(): void {
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
-      sector.frame(world, alpha, dt);
+      sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
+      sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);
       if (started) stops();
       debug.frame(frameDt, renderer, quality, input, loop.paused);

@@ -913,7 +913,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 }
 
 /* ── pause ────────────────────────────────────────────────────────────── */
-#pause { position: absolute; inset: 0; z-index: 3; display: none; place-items: center; background: rgba(8, 13, 14, .62); }
+#pause { position: absolute; inset: 0; z-index: 3; display: none; place-items: center; background: rgba(8, 13, 14, .46); }
 .paused #pause { display: grid; }
 .pause-card { display: grid; justify-items: center; gap: 1.1rem; width: min(600px, 92vw); padding: 24px 28px 22px 32px; }
 .pause-t { color: var(--hud); font: 700 clamp(22px, 5vw, 32px)/1 var(--font-head); letter-spacing: .32em; text-transform: uppercase; padding-left: .32em; }
@@ -922,10 +922,6 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .zoomsel { display: flex; align-items: center; gap: 10px; }
 .zoomsel button { width: 30px; height: 30px; cursor: pointer; background: var(--glass); border: 1px solid var(--line); color: var(--ink); font: 500 16px/1 var(--font-mono); }
 .zoomsel b { color: var(--ink); }
-.pause-build { width: 100%; display: grid; justify-items: center; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
-.pause-build:empty { display: none; }
-.pause-build .sum-ship { text-align: center; }
-.pause-build .branch { grid-template-columns: 110px 1fr; }
 @media (max-height: 520px) {
   .pause-card { max-height: calc(100% - 16px); overflow-y: auto; gap: .6rem; padding: 14px 22px 14px 26px; }
   .pause-t { font-size: 22px; }
@@ -1216,7 +1212,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
    Tabs left, the web centre, the inspector right, fitted and budgets below.
    Amber is what is fitted and the hand that fits it; teal is what is ready
    and the ship's readings; red only a budget run over. */
-#bay { background: radial-gradient(ellipse at 50% 40%, rgba(8, 13, 14, .62), rgba(8, 13, 14, .94) 70%); }
+#bay { background: radial-gradient(ellipse at 50% 55%, rgba(8, 13, 14, .22), rgba(8, 13, 14, .88) 80%); }
 .bay { --edge: var(--frame); --lit: var(--hud); width: min(1240px, 100%); height: min(720px, 100%);
   display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(150px, 190px) minmax(0, 1fr) minmax(230px, 300px);
   grid-template-areas: "h h h" "tabs web insp" "foot foot foot"; gap: 12px; }
@@ -1248,7 +1244,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-tab.on .ico, .bay-tab.on .bt-c { color: var(--hud-hi); border-color: var(--hud-mid); }
 
 .bay-w { grid-area: web; position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; padding: 12px 14px 8px; border: 1px solid var(--line);
-  background: repeating-linear-gradient(0deg, rgba(216, 213, 198, .02) 0 1px, transparent 1px 3px), rgba(8, 13, 14, .55); min-height: 0; }
+  background: repeating-linear-gradient(0deg, rgba(216, 213, 198, .02) 0 1px, transparent 1px 3px), rgba(8, 13, 14, .36); min-height: 0; }
 .bay-tab-h { display: flex; align-items: baseline; gap: 10px; color: var(--hud); }
 .bay-tab-h .ico { width: 18px; height: 18px; align-self: center; }
 .bw-n { font: 700 calc(var(--fs) * 1.8)/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
@@ -1259,9 +1255,16 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .lg.owned::before { background: var(--hud); } .lg.open::before { background: var(--cy); }
 .bay-web { position: relative; min-height: 0; margin: 6px 0 18px; }
 .bay-links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.bay-links path { fill: none; stroke: rgba(216, 213, 198, .16); stroke-width: 1.2; stroke-dasharray: 3 3; }
-.bay-links path.open { stroke: var(--cy-dim); stroke-dasharray: none; }
-.bay-links path.lit { stroke: var(--hud-mid); stroke-width: 1.6; stroke-dasharray: none; }
+.bay-links path { fill: none; stroke-linejoin: round; }
+.bay-links .conduit { stroke: rgba(216, 213, 198, .06); stroke-width: 7; }
+.bay-links .wire { stroke: rgba(216, 213, 198, .2); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.bay-links .conduit.open { stroke: rgba(76, 194, 203, .08); }
+.bay-links .wire.open { stroke: var(--cy-dim); stroke-dasharray: none; }
+.bay-links .conduit.lit { stroke: var(--hud-ghost); }
+.bay-links .wire.lit { stroke: var(--hud); stroke-width: 1.8; stroke-dasharray: none; filter: drop-shadow(0 0 3px var(--hud-mid)); }
+.bay-junc { position: absolute; translate: -50% -50%; width: 9px; height: 9px; border: 1px solid var(--ink-3); background: rgba(11, 16, 17, .95); pointer-events: none; }
+.bay-junc.fork { rotate: 45deg; }
+.bay-junc.join { border-radius: 50%; }
 .bay-nodes { position: absolute; inset: 0; }
 .bay-node { --c: var(--ink-3); position: absolute; translate: -50% -50%; display: grid; justify-items: center; gap: 4px; width: 92px; padding: 0; border: 0; background: none; cursor: pointer; color: inherit; font: inherit; }
 /* an octagon with a hairline edge: the edge colour behind, the dark glass inset over it */
@@ -1269,7 +1272,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bn-oct::before, .bi-oct::before { content: ""; position: absolute; inset: 1.5px; z-index: -1; clip-path: var(--oct);
   background: radial-gradient(circle, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%), rgba(11, 16, 17, .96); }
 .bn-oct { display: grid; place-items: center; width: 42px; height: 42px; color: var(--c); background: var(--c); }
-.bn-oct .ico { width: 20px; height: 20px; position: relative; }
+.ico-img { display: block; width: 100%; height: 100%; background: currentColor; mask: var(--img) center / contain no-repeat; -webkit-mask: var(--img) center / contain no-repeat; }
+.bn-oct .ico-img { width: 32px; height: 32px; position: relative; }
 .bn-pips { display: flex; gap: 2px; min-height: 4px; }
 .bn-pips i { width: 8px; height: 3px; background: rgba(216, 213, 198, .14); }
 .bn-pips i.on { background: var(--hud); }
@@ -1293,7 +1297,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @keyframes bay-done { 0% { box-shadow: inset 0 0 0 2px var(--hud-hi), 0 0 18px var(--hud-dim); } }
 .bi-h { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
 .bi-oct { --c: var(--hud); display: grid; place-items: center; width: 48px; height: 48px; color: var(--hud); background: var(--hud-mid); }
-.bi-oct .ico { width: 24px; height: 24px; }
+.bi-oct .ico-img { width: 40px; height: 40px; }
 .bi-hd { display: grid; gap: 5px; min-width: 0; }
 .bi-tab { justify-self: start; padding: 2px 6px; font: 600 calc(var(--fs) * .8 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: #1a1104; background: var(--hud); }
 .bi-name { font: 700 clamp(17px, 1.7vw, 21px)/1.1 var(--font-head); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
@@ -1323,7 +1327,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-budget { display: grid; grid-template-columns: auto 1fr auto auto 1fr auto auto 1fr auto; align-items: center; gap: 6px 12px; padding: 10px 14px; border: 1px solid var(--line); background: rgba(11, 16, 17, .7); }
 .bf-h { flex-basis: 100%; font: 600 calc(var(--fs) * .9 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--cy); }
 .bf-m { display: flex; align-items: center; gap: 6px; color: var(--hud); }
-.bf-m .ico { width: 14px; height: 14px; }
+.bf-m .ico-img { width: 18px; height: 18px; flex: none; }
 .bf-n { font: 600 calc(var(--fs) * 1.05 * 1.18)/1 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
 .bf-none { font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
 .bb { display: contents; }
@@ -1345,9 +1349,11 @@ html:not(.breakout) .pause-card #brief { display: none; }
   .bay-tiers, .bn-name { display: none; }
   .bay-node { width: 52px; }
   .bn-oct { width: 34px; height: 34px; }
+  .bn-oct .ico-img { width: 26px; height: 26px; }
   .bay-insp { padding: 10px; gap: 8px; }
   .bi-text { font-size: 12.5px; }
   .bi-oct { width: 38px; height: 38px; }
+  .bi-oct .ico-img { width: 32px; height: 32px; }
   .bi-go { padding: 9px; }
   .bay-budget { padding: 6px 10px; }
   #bay.picks .bay { grid-template: auto auto minmax(0, 1fr) auto / 1fr; grid-template-areas: "h" "tabs" "web" "foot"; }
@@ -1363,9 +1369,112 @@ html:not(.breakout) .pause-card #brief { display: none; }
   clip-path: polygon(0 0, 30% 0, 30% 2px, 2px 2px, 2px 30%, 0 30%, 0 70%, 2px 70%, 2px calc(100% - 2px), 30% calc(100% - 2px), 30% 100%, 70% 100%, 70% calc(100% - 2px), calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 70%, 100% 70%, 100% 30%, calc(100% - 2px) 30%, calc(100% - 2px) 2px, 70% 2px, 70% 0, 100% 0, 100% 100%, 0 100%); }
 @media (max-height: 520px) { .bay-node.sel::before { top: -4px; width: 42px; height: 42px; } }
 
+/* ── the ship's console: state word, briefing frame, bay feedback ────────
+   Teal is the ship's state, amber a thing to watch, red threat only. */
+.ops { display: inline-flex; align-items: center; font: 700 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--cy); }
+.ops.caution { color: var(--hud); }
+.ops.alert, .ops.critical { color: var(--alert); }
+.ops.critical { animation: hud-blink 1s ease-in-out infinite; }
+.bay-h .ops { margin-left: auto; }
+.bay-h .ops + .bay-krail { margin-left: 18px; }
+
+/* the bay: tab state, installing, the Before → After the player reads */
+.bay-tab { position: relative; }
+.bt-s { position: absolute; right: 10px; bottom: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); opacity: .5; }
+.bt-s.fitted { background: var(--hud); opacity: 1; right: 24px; }
+.bt-s.ready { background: linear-gradient(90deg, var(--cy) 50%, transparent 50%); box-shadow: inset 0 0 0 1px var(--cy); opacity: 1; }
+.bt-s.over { background: var(--alert); border-radius: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); opacity: 1; }
+.bay-insp .bi-figs { gap: 8px; }
+.bay-insp .fig { display: grid; grid-template-columns: 1fr; gap: 3px; padding: 8px 10px; background: rgba(76, 194, 203, .06); border-left: 2px solid var(--cy); }
+.bay-insp .fig.cost { border-left-color: var(--alert); background: rgba(201, 74, 63, .08); }
+.bay-insp .fig .f-l { font-size: calc(var(--fs) * .9 * 1.18); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.bay-insp .fig .f-v { display: flex; align-items: baseline; gap: 8px; font: 500 15px/1.1 var(--font-mono); }
+.bay-insp .fig .f-v s { color: var(--ink-3); }
+.bay-insp .fig .f-v b { font-size: 19px; font-weight: 700; color: var(--cy); }
+.bay-insp .fig.cost .f-v b { color: var(--alert); }
+.bb-v em { font-style: normal; color: var(--hud); }
+.bb-bar { transition: background .45s var(--ez); }
+.bb-v.bump, .bb.bump .bb-v { animation: bay-bump .7s var(--ez); }
+@keyframes bay-bump { 0% { color: var(--hud-hi); text-shadow: 0 0 10px var(--hud); } 100% { color: var(--ink); text-shadow: none; } }
+.bay-node.fresh .bn-oct { animation: bay-fit .7s var(--ez); }
+@keyframes bay-fit { 0% { filter: drop-shadow(0 0 14px var(--hud-hi)); transform: scale(1.3); } 100% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .bb-v.bump, .bb.bump .bb-v, .bay-node.fresh .bn-oct, .ops.critical { animation: none; } }
+
+/* thresholds on the bars: a tick at 80%, a word from there, a louder one over */
+.bb-bar { position: relative; }
+.bb-bar::after { content: ""; position: absolute; left: 80%; top: -2px; bottom: -2px; width: 1px; background: var(--ink-3); opacity: .7; }
+.bb-bar.warn { background: linear-gradient(90deg, var(--hud) calc(var(--v) * 100%), var(--hud-mid) calc(var(--v) * 100%) calc(var(--a) * 100%), rgba(216, 213, 198, .1) calc(var(--a) * 100%)); }
+.bb-l { display: flex; align-items: center; gap: 8px; }
+.bb-w { display: inline-flex; align-items: center; gap: 4px; font-size: calc(var(--fs) * .8 * 1.18); letter-spacing: .12em; color: var(--hud); }
+.bb-w i { font-style: normal; font-size: 9px; }
+.bb.over .bb-w { color: var(--alert); animation: hud-blink 1s ease-in-out infinite; }
+.bb.over .bb-v { color: var(--alert); }
+@media (max-width: 900px), (max-height: 520px) { .bb-wt { display: none; } }
+/* the install line: from the module to the ship part it belongs to */
+.bay-line { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 2; }
+.bay-line path { fill: none; stroke: var(--hud-hi); stroke-width: 1.5; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 4px var(--hud)); animation: bay-line .45s ease-out forwards; }
+.bay-line circle { fill: var(--hud-hi); opacity: 0; animation: bay-dot .6s ease-out .3s forwards; }
+@keyframes bay-line { to { stroke-dashoffset: 0; } }
+@keyframes bay-dot { 0% { opacity: 1; r: 3; } 100% { opacity: 0; r: 18; } }
+@media (prefers-reduced-motion: reduce) { .bay-line, .bb.over .bb-w { display: none; animation: none; } }
+
+/* the ship's computer's picks: amber, a diamond and a reason */
+.bi-rec, .c-rec { margin: 0; display: flex; flex-wrap: wrap; gap: 0 6px; font: 600 calc(var(--fs) * 1.05 * 1.18)/1.35 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.bi-rec b, .c-rec b { color: var(--hud-hi); font-weight: 700; }
+.bi-rec { padding: 6px 8px; border-left: 2px solid var(--hud); background: var(--hud-ghost); }
+.bay-node.rec::after { content: "◆"; position: absolute; top: -4px; left: calc(50% + 14px); color: var(--hud-hi); font-size: 11px; line-height: 1; text-shadow: 0 0 6px var(--hud); }
+
+/* the build's profile, under the tabs: a name, plain lines, how it leans */
+.bay-prof { display: grid; gap: 5px; margin-top: 8px; padding: 10px; border: 1px solid var(--line); background: rgba(11, 16, 17, .7); }
+.pf-name { font: 700 16px/1.1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--hud-hi); }
+.pf-line { font: 600 calc(var(--fs) * 1.05 * 1.18)/1.3 var(--font-rail); letter-spacing: .06em; color: var(--ink-2); }
+.pf-bars { display: grid; gap: 4px; margin-top: 4px; }
+.pf-b { display: grid; grid-template-columns: 62px 1fr; align-items: center; gap: 6px; }
+.pf-l { font: 600 calc(var(--fs) * .85 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.pf-bar { height: 4px; background: linear-gradient(90deg, var(--hud) calc(var(--v) * 100%), rgba(216, 213, 198, .1) 0); }
+@media (max-width: 900px), (max-height: 520px) { .bay-prof { display: none; } }
+
+/* type hierarchy: the name first, the level second, what it moves third; in the inspector
+   name, effect, figures, flavour, cost */
+.bay-node { gap: 3px; }
+.bn-name { font-weight: 700; letter-spacing: .06em; }
+.bay-node.locked .bn-name { font-weight: 600; }
+.bn-tag { max-width: 92px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 calc(var(--fs) * .72 * 1.18)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); opacity: .75; }
+.bay-node.sel .bn-tag, .bay-node:hover .bn-tag { color: var(--ink-2); opacity: 1; }
+.bay-node.max .bn-tag { display: none; }
+@media (max-width: 900px), (max-height: 520px) { .bn-tag { display: none; } }
+.bi-note { font-style: italic; color: var(--ink-3); }
+
+/* ── wear: thirty years of work, very lightly ────────────────────────────
+   A few scratches, chipped corners, a serial, an old stamp and, now and then,
+   a scanline that breaks. Industrial, never neon. Still under reduced motion. */
+.wear { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; opacity: .9;
+  background:
+    linear-gradient(112deg, transparent 0 18%, rgba(216, 213, 198, .07) 18.1% 18.3%, transparent 18.5% 100%),
+    linear-gradient(64deg, transparent 0 71%, rgba(216, 213, 198, .06) 71.1% 71.25%, transparent 71.4% 100%),
+    linear-gradient(97deg, transparent 0 43%, rgba(216, 213, 198, .045) 43.1% 43.2%, transparent 43.3% 100%),
+    radial-gradient(circle at 100% 100%, rgba(0, 0, 0, .55) 0 14px, transparent 15px),
+    radial-gradient(circle at 0 100%, rgba(0, 0, 0, .4) 0 9px, transparent 10px),
+    radial-gradient(ellipse at 100% 0, rgba(217, 154, 39, .05), transparent 40%); }
+.wear::after { content: ""; position: absolute; left: 0; right: 0; top: -6px; height: 3px; background: rgba(216, 213, 198, .07); box-shadow: 0 0 0 1px rgba(76, 194, 203, .04);
+  animation: wear-scan 11s linear infinite; }
+.bay-w .wear::after { animation-duration: 14s; animation-delay: 4s; }
+@keyframes wear-scan { 0%, 92% { top: -6px; opacity: 0; } 93% { opacity: 1; translate: 3px 0; } 96% { translate: -2px 0; } 100% { top: 100%; opacity: 0; translate: 0 0; } }
+.wear-serial { position: absolute; left: 12px; bottom: 6px; z-index: 1; pointer-events: none; font: 500 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); opacity: .5; }
+.wear-stamp { position: absolute; right: 22px; top: 62px; z-index: 1; pointer-events: none; padding: 3px 7px; border: 1px solid var(--hud-mid); rotate: 3deg;
+  font: 700 9px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--hud); opacity: .38; mask-image: linear-gradient(100deg, #000 60%, rgba(0, 0, 0, .55) 80%, #000); }
+.bay-w { isolation: isolate; }
+@media (max-width: 900px), (max-height: 520px) { .wear-stamp, .wear-serial { display: none; } }
+@media (prefers-reduced-motion: reduce) { .wear::after { animation: none; display: none; } }
+
+/* the ship's voice: flat, amber-grey, in the margin of the console */
+.voice { font: 600 calc(10px * 1.15)/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); }
+#bay-voice { color: var(--hud); opacity: .8; }
 /* ── the bay, second pass: Suggested first, fewer words ─────────────────── */
 #bay.picks .bay { grid-template-columns: minmax(150px, 190px) minmax(0, 1fr); grid-template-areas: "h h" "tabs web" "foot foot"; }
 #bay.picks .bay-insp, #bay.picks .bay-legend { display: none; }
+/* a phone on its side: the suggestions go back to one column, tabs across the top (this rule comes after the media block above, so it needs its own) */
+@media (max-height: 520px) { #bay.picks .bay { grid-template: auto auto minmax(0, 1fr) auto / 1fr; grid-template-areas: "h" "tabs" "web" "foot"; } }
 #rail.stock .lv { display: none; }
 .bay-k b { font-size: clamp(18px, 2vw, 24px); }
 #bay-auto { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); background: rgba(11, 16, 17, .7); color: var(--ink-2); cursor: pointer;
@@ -1391,7 +1500,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pc-top { display: flex; align-items: center; gap: 9px; }
 .pc-oct { --c2: var(--c); display: grid; place-items: center; width: 40px; height: 40px; color: var(--c); border: 1px solid var(--c);
   clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); background: rgba(8, 13, 14, .9); }
-.pc-oct .ico { width: 20px; height: 20px; }
+.pc-oct .ico-img { width: 28px; height: 28px; }
 .pc-tab { flex: 1; font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 .pc-name { font: 700 clamp(17px, 1.7vw, 22px)/1.1 var(--font-head); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
 .pc-new { font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--cy); }
@@ -1413,7 +1522,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .chip.over { color: var(--alert); border-color: var(--alert-dim); }
 .bi-name { font-size: clamp(16px, 1.6vw, 20px); }
 @media (max-width: 760px) { .pick-row { grid-template-columns: 1fr; } }
-@media (max-height: 520px) { .pick-row { gap: 8px; } .pc-name { font-size: 15px; } .pc-oct { width: 30px; height: 30px; } }
+@media (max-height: 520px) { .pick-row { gap: 8px; } .pc-name { font-size: 15px; } .pc-oct { width: 30px; height: 30px; } .pc-oct .ico-img { width: 21px; height: 21px; } }
 
 /* touch: the buttons own the bottom right, so the badge and the state sit under the ship panel */
 .touch-ui #log { top: calc(var(--top) + var(--sys-h, 150px) + 8px); bottom: auto; width: auto; justify-items: end; gap: 6px; }
@@ -1455,6 +1564,9 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-height: 520px) {
   .howto li { padding: 8px; }
   .howto span { font-size: 12px; }
-  .pause-build, .zoomsel { display: none !important; }
+  .zoomsel { display: none !important; }
 }
 @media (max-width: 600px) { .howto { grid-template-columns: 1fr; } }
+@media (max-height: 800px) { .pf-bars { display: none; } }
+@media (max-height: 660px) { .bay-prof { display: none; } }
+@media (max-width: 900px), (max-height: 520px) { .bt-s { display: none; } }
