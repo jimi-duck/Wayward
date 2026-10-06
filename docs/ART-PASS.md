@@ -70,3 +70,15 @@ pass, no new files).
 The brief keeps all eight categories; the bay redesign spec folds them into
 four views. Until that is decided the structure is untouched. Everything here
 (tab marks, stamps, wear) works with either set.
+
+## Follow-up: the briefing as a terminal (2026-10-06)
+
+Jimi found the briefing a little off: the icons did nothing and the hierarchy
+was flat. The pause card is now a readout. An id line (`Wayward OB-7731-A`)
+and the state word sit on top; then the title, left aligned and large; then the
+ship's line at a `>` prompt with a cursor (blinking; still under reduced motion). Orders,
+Status and Controls follow as ruled sections, with numbered order rows
+(`01`, `02`, `03`) in place of the three boxed icons. Resume carries a `>`
+prompt; the other buttons are flat. The foot is a status line. Fonts are the
+same three; mono is used a little more. On a phone on its side the id line and
+the headings go and the orders sit in a row.

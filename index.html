@@ -341,20 +341,30 @@
 
     <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
-      <div class="pause-card panel">
+      <div class="pause-card panel term">
         <i class="wear v3" aria-hidden="true"></i><span class="wear-stamp" aria-hidden="true">Service overdue</span>
+        <!-- a terminal readout: the ship's id and state, the title and the ship's one line, the orders, the status key, the controls, then what you can do -->
+        <header class="term-h"><span class="th-id"><b>Wayward</b><i>OB-7731-A</i></span><span class="ops" id="pause-ops"></span></header>
         <div class="pause-t" id="pause-t">All stop</div>
-        <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
-        <ol class="howto arcade-only">
-          <li><svg class="ico"><use href="#i-rock"/></svg><b>Mine Krail</b><span>Shoot rock. Fly over the crystals.</span></li>
-          <li><svg class="ico"><use href="#i-hull"/></svg><b>Upgrade</b><span>Spend Krail in the refit bay, or let Auto-refit do it.</span></li>
-          <li><svg class="ico"><use href="#i-hostile"/></svg><b>Survive</b><span>Hostiles come in waves. In the quiet, the hull mends.</span></li>
-        </ol>
         <div class="voice" id="pause-voice"></div>
-        <div class="states"><span class="st clear"><i></i>Clear · the bay opens</span><span class="st obs"><i></i>Caution · ships nearby</span><span class="st battle"><i></i>Red alert · under attack</span></div>
-        <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Cyrite</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
-        <!-- the controls for what you play with: keys, touch or a pad -->
-        <dl class="keys-l only-keys">
+        <section class="term-s">
+          <h3 class="th">Orders</h3>
+          <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
+          <ol class="howto arcade-only">
+            <li><b>Mine Krail</b><span>Shoot rock. Fly over the crystals.</span></li>
+            <li><b>Upgrade</b><span>Spend Krail in the refit bay, or let Auto-refit do it.</span></li>
+            <li><b>Survive</b><span>Hostiles come in waves. In the quiet, the hull mends.</span></li>
+          </ol>
+          <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Cyrite</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
+        </section>
+        <section class="term-s">
+          <h3 class="th">Status</h3>
+          <div class="states"><span class="st clear"><i></i>Clear · the bay opens</span><span class="st obs"><i></i>Caution · ships nearby</span><span class="st battle"><i></i>Red alert · under attack</span></div>
+        </section>
+        <section class="term-s">
+          <h3 class="th">Controls</h3>
+          <!-- the controls for what you play with: keys, touch or a pad -->
+          <dl class="keys-l only-keys">
           <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
           <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
           <div><dt><kbd>1</kbd></dt><dd>Lasers</dd></div>
@@ -380,11 +390,12 @@
           <div><dt><kbd>B</kbd></dt><dd>Roll</dd></div>
           <div><dt><kbd>Back</kbd></dt><dd>Refit bay</dd></div>
         </dl>
+        </section>
         <div class="pause-acts">
           <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
-          <button type="button" id="p-bay"><svg class="ico"><use href="#i-hull"/></svg><span>Refit bay</span><b id="p-bay-n"></b></button>
+          <button type="button" id="p-bay"><span>Refit bay</span><b id="p-bay-n"></b></button>
           <button type="button" id="p-auto" aria-pressed="false"><i class="sw"></i><span>Auto-refit</span><b id="p-auto-v">Off</b></button>
-          <button type="button" id="p-exit" class="story-only"><svg class="ico"><use href="#i-link"/></svg><span>Save and exit</span></button>
+          <button type="button" id="p-exit" class="story-only"><span>Save and exit</span></button>
         </div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
         <div class="pause-foot" id="pause-foot"></div>
