@@ -10,7 +10,7 @@ import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { clearJourney, loadJourney, saveJourney } from './meta/save';
-import { checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
+import { bankAnswer, checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
 import { sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
@@ -121,16 +121,29 @@ function boot(): void {
   // The title offers two ways to play, Arcade picked whenever the game opens;
   // Story mode carries on a saved journey, with a fresh one a click below.
   let pick: 'arcade' | 'breakout' = 'arcade';
+  /** Where a saved journey would carry on, in one line: the day, the system, the lane plotted, the wrecks. */
+  const resumeLine = (j: Journey) => {
+    const day = t('Day {n}', { n: Math.floor(j.day) + 1 });
+    if (pending(j)) return `${day} · ${t('through the Threshold · the file is still aboard')}`;
+    return [day, here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
+  };
   const showResume = () => {
-    const j = pick === 'breakout' && journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
+    const live = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
+    const j = pick === 'breakout' ? live : null;
     el('mode-arcade').setAttribute('aria-checked', String(pick === 'arcade'));
     el('mode-story').setAttribute('aria-checked', String(pick === 'breakout'));
     el('fresh').hidden = !j;
     el('resume-s').hidden = !j;
+    // under Arcade the saved journey is offered above the picker; under Story the launch button is its Continue
+    el('cont').hidden = !live || pick === 'breakout';
+    if (live) {
+      el('cont-s').textContent = resumeLine(live);
+      const last = live.log[live.log.length - 1]?.text;
+      el('cont-r').textContent = last ? `${t('Last time')} · ${t(last)}` : '';
+      el('cont-r').hidden = !last;
+    }
     el('launch').textContent = pick === 'arcade' ? t('Start arcade') : j ? t('Continue story') : t('Start story');
-    const day = t('Day {n}', { n: Math.floor(j?.day ?? 0) + 1 });
-    if (j && pending(j)) el('resume-s').textContent = `${day} · ${t('through the Threshold · the file is still aboard')}`;
-    else if (j) el('resume-s').textContent = [day, here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
+    if (j) el('resume-s').textContent = resumeLine(j);
   };
   const choose = (mode: 'arcade' | 'breakout') => { pick = mode; showResume(); };
   showResume();
@@ -220,13 +233,19 @@ function boot(): void {
     } else if (world.phase === 'comms' && world.comms && !comms.open) {
       input.reset();
       shown = world.comms;
-      comms.show(cardView(world.comms), (i) => { world.answer(i); input.reset(); });
+      comms.show(cardView(world.comms), (i) => {
+        // the answer is banked in the journey now, so a closed tab does not take it back
+        const before = world.carry();
+        world.answer(i);
+        if (journey && world.mode === 'breakout' && journey.status === 'sortie') { bankAnswer(journey, before, world.carry()); saveJourney(journey); }
+        input.reset();
+      });
     } else if (world.phase === 'dock' && !port.open) {
       // docked at the port, or back from its refit bay
       input.reset();
       port.show(world, () => {
         input.reset();
-        hud.note(world, t('Cast off'));
+        hud.note(world, `${t('Cast off')} · ${t('Saved')}`);
         // the save at the port: a load starts this system again with the hold as it is now
         if (journey && world.mode === 'breakout') { checkpoint(journey, world.carry()); saveJourney(journey); }
       }, () => { world.openBay(); input.reset(); }, journey && world.mode === 'breakout' && world.bk?.def.port ? courseFor(journey) : null);
@@ -452,6 +471,7 @@ function boot(): void {
   };
   press('launch', go);
   press('fresh', () => launch('breakout'));
+  press('cont', () => launch('breakout', true));
   press('mode-arcade', () => choose('arcade'));
   press('mode-story', () => choose('breakout'));
   el('start').addEventListener('pointerdown', (e) => {
@@ -505,6 +525,11 @@ function boot(): void {
   act('p-bay', () => openBay());
   act('p-auto', () => setAuto(!world.autoFit));
   act('p-go', () => setPaused(false));
+  // Story mode: the journey is saved as it stands (the last chart or dock), and the page reloads to the title
+  act('p-exit', () => {
+    if (journey && world.mode === 'breakout') saveJourney(journey);
+    location.reload();
+  });
   // iOS Safari ignores user-scalable=no for pinch zoom; this is what stops it.
   document.addEventListener('gesturestart', (e) => e.preventDefault());
 

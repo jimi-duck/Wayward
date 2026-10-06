@@ -14,4 +14,6 @@ export function showConsole(w: World): void {
     h('span', '', `${t('Krail')} ${num(Math.floor(w.krail))}`),
     h('span', '', `${t('Plates')} ${w.plates}/${w.stats.maxPlates}`),
   );
+  // the ship's papers, in small print: her designation, the registry, and a log that no longer reads
+  $('pause-papers').replaceChildren(h('span', '', `OB-7731-A · ${t('Registry')}: ${t('Flagged')}`), h('span', '', `${t('Repair log')}: `, h('i', 'corrupt', t('[corrupted]'))));
 }

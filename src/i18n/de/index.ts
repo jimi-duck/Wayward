@@ -15,7 +15,7 @@ export const DE: Record<string, string> = { ...UI, ...WORLD, ...CARDS, ...STORY 
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([
-  'Wayward', 'Ironmaw', '1.0 km',
+  'Wayward', 'OB-7731-A', 'Ironmaw', '1.0 km',
   // captains and their ships
   'Oriel Vance', 'Hale Sorensen', 'Brannoch Kade', 'Mr Ashgrove', 'Quiet Pell', 'CCV Reprimand', 'CCV Due Process', 'Last Mercy',
   'Kind Regard', 'Silent Witness', 'Foundry Nine', 'Thren Hollow',

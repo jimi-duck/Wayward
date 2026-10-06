@@ -197,7 +197,7 @@ export class Hud {
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
         case 'spool': this.banner(t('Lane mouth'), t('Jump drive spooling'), t('Stay in the lane'), 1.6, 'calm'); break;
-        case 'needCyrite': this.banner(t('Lane mouth'), t('Not enough Cyrite'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
+        case 'needCyrite': this.banner(t('Ship system'), t('Not enough Cyrite'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, t(POWER_LABEL[e.kind]), 'gain'); break;
@@ -224,7 +224,7 @@ export class Hud {
           if (al) this.note(world, t('{name} has seen you', { name: alienLabel(al) }), 'hit');
           break;
         }
-        case 'damageControl': this.banner(t('Damage control'), t('Hull held'), t('One plate · two seconds of grace'), 2, 'caution'); break;
+        case 'damageControl': this.banner(t('Ship system'), t('Hull held'), t('One plate · two seconds of grace'), 2, 'caution'); break;
         case 'overchargeReady': this.note(world, t(document.documentElement.classList.contains('touch-ui') ? 'Core charged · tap Core' : 'Core charged · press E'), 'gain'); break;
         case 'overcharge': this.note(world, `${t('Overcharge')} · ${plural(e.hits, '{n} hit', '{n} hits')}`, 'gain'); break;
         case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
@@ -235,11 +235,11 @@ export class Hud {
           this.note(world, `${t('Hull hit')} · ${damageWord(e.source)}`, 'hit');
           this.flashHit();
           this.retrigger($('sys-hull'), 'hit');
-          if (e.plates === 1) this.banner(t('Alarm'), t('Hull critical'), t('One plate left'), 1.8);
+          if (e.plates === 1) this.banner(t('Warning'), t('Hull critical'), t('One plate left'), 1.8);
           break;
         case 'bossWarn':
           this.note(world, t('{name} inbound', { name: t(e.name) }), 'hit');
-          this.banner(t('Contact'), t(e.name), t(e.hails ? 'Capital ship inbound' : 'Decloaking · no hail'), 2.6, 'caution');
+          this.banner(t(e.hails ? 'Continuance signal' : 'Contact'), t(e.name), t(e.hails ? 'Capital ship inbound' : 'Decloaking · no hail'), 2.6, e.hails ? 'caution corp' : 'caution');
           break;
         case 'bossEvaded': this.note(world, t('Broke away from {name}', { name: t(e.name) })); break;
         case 'bossArrive': this.note(world, t('{name} on intercept', { name: t(e.name) }), 'hit'); break;

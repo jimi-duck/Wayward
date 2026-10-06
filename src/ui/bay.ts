@@ -1,13 +1,16 @@
+import { LOG, STAMP } from '../content/papers';
 import { UPGRADE } from '../content/upgrades';
 import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
 import { blockOf, budgets, cost, fee, maxLevel, nodeName, nodeText, quickPicks, type Block } from '../sim/bay';
 import type { Advice } from '../sim/advice';
 import { upgradeFigures } from '../sim/build';
+import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
 import { profileOf } from '../sim/profile';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
 import { icon, nodeIcon } from './icons';
 import { opsOf, opsText } from './ops';
+import { tick } from './tick';
 import { num, t } from '../i18n';
 
 // ── the refit bay ─────────────────────────────────────────────────────────
@@ -34,7 +37,7 @@ import { num, t } from '../i18n';
 type View = 'picks' | Tab;
 
 const TAB_ICON: Record<View, string> = {
-  picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-event', reactor: 'i-core', synergies: 'i-link',
+  picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-signal', reactor: 'i-core', synergies: 'i-link',
 };
 
 /** The parts of the ship that have lights to ring (render/ships.ts MARKS); Signals has none yet. */
@@ -116,6 +119,10 @@ export class BayPanel {
   private ringRaf = 0;
   /** The module just fitted and the budgets it moved: lit for a moment (see install). */
   private fresh: { id: string; moved: Set<string> } | null = null;
+  /** The budget readouts as last drawn, so a fit can tick from what they said (see budgetBar). */
+  private shown: Record<string, string> = {};
+  /** The ship's answer to a fit, in the voice line, until this timer puts the voice back. */
+  private logT = 0;
 
   constructor() {
     $('bay-x').addEventListener('click', (e) => { e.stopPropagation(); if (this.open) this.launch(); });
@@ -138,6 +145,7 @@ export class BayPanel {
     this.world = world;
     this.onClose = onClose;
     this.opened = performance.now();
+    this.shown = {};
     // the bay opens on the suggestions; the tabs are a step further in
     this.view = 'picks';
     this.pick = 0;
@@ -265,8 +273,21 @@ export class BayPanel {
       el.classList.add('done');
     }
     this.render();
-    if (fitted) this.installFx(id, krailBefore, Math.floor(w.krail));
+    if (fitted) { this.installFx(id, krailBefore, Math.floor(w.krail)); this.answer(id); }
     this.fresh = null;
+  }
+
+  /** The ship answers a fit in the voice line for a few seconds: accepted, or not factory spec if the part has a stamp. */
+  private answer(id: string): void {
+    const o = originOf(id), off = !!o && o !== 'oem', el = $('bay-voice');
+    el.textContent = t(off ? LOG.offSpec : LOG.accepted);
+    el.classList.toggle('log', true);
+    el.classList.toggle('off', off);
+    clearTimeout(this.logT);
+    this.logT = window.setTimeout(() => {
+      el.classList.remove('log', 'off');
+      if (this.world && this.open) el.textContent = t(this.world.voice());
+    }, 3200);
   }
 
   /**
@@ -363,6 +384,7 @@ export class BayPanel {
     auto.classList.toggle('on', this.auto);
     auto.setAttribute('aria-pressed', String(this.auto));
     $('bay-auto-v').textContent = t(this.auto ? 'On' : 'Off');
+    this.papers(w);
     $('bay').classList.toggle('picks', this.view === 'picks');
     this.tabs(w);
     if (this.view === 'picks') this.suggested(w);
@@ -445,17 +467,15 @@ export class BayPanel {
   }
 
   private tabs(w: World): void {
-    const { use, cap } = budgets(w.levels);
     const arcade = isArcade(w);
     $('bay-tabs').replaceChildren(...viewsOf(w).map((v) => {
       const locked = arcade && v !== 'picks';
-      const ready = v === 'picks' || locked ? 0 : WEB.filter((n) => n.tab === v && blockOf(n.id, w.bayCtx()) === null).length;
       const name = v === 'picks' ? t(arcade ? 'Pick one' : 'Suggested') : t(TABS[v].name);
-      // the tab's state, beside the ready count: over a soft rating through something fitted here (red ▲), or fitted (amber ●)
-      const nodes = v === 'picks' ? [] : WEB.filter((n) => n.tab === v), fitted = nodes.some((n) => (w.levels[n.id] ?? 0) > 0);
-      const over = (['mass', 'heat'] as const).some((k) => use[k] > cap[k] && nodes.some((n) => (w.levels[n.id] ?? 0) > 0 && (n.draw[k] ?? 0) > 0));
-      const dot = v === 'picks' || locked ? '' : over ? 'over' : fitted ? 'fitted' : '';
-      const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}${locked ? ' locked' : ''}`, '', icon(TAB_ICON[v]), h('span', 'bt-n', name), locked ? icon('i-lock') : ready ? h('b', 'bt-c', String(ready)) : null, dot ? h('i', `bt-s ${dot}`) : null) as HTMLButtonElement;
+      // a locked tab (the Arcade's) shows a padlock where the others show their state mark
+      const mark = v === 'picks' || locked ? 'none' : this.markOf(w, v);
+      const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}${locked ? ' locked' : ''}${mark !== 'none' ? ` m-${mark}` : ''}`, '', icon(TAB_ICON[v]), h('span', 'bt-n', name),
+        locked ? icon('i-lock') : mark !== 'none' ? h('i', `bt-m ${mark}`, MARK_GLYPH[mark]) : null) as HTMLButtonElement;
+      if (mark !== 'none') b.setAttribute('aria-description', t(MARK_WORD[mark]));
       b.type = 'button';
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', String(v === this.view));
@@ -463,6 +483,35 @@ export class BayPanel {
       b.addEventListener('click', (e) => { e.stopPropagation(); this.go(v); });
       return b;
     }), ...(arcade ? [h('p', 'bay-lock-note', '', icon('i-lock'), document.createTextNode(` ${t('Story mode opens the whole build')}`))] : []), this.profile(w));
+  }
+
+  /** The ship's papers along the foot of the web: her designation, and what the registry says of her. Quiet; desktop only. */
+  private papers(w: World): void {
+    const p = papersOf(w.levels), field = (k: string, v: string) => `${t(k)}: ${t(v)}`;
+    $('bay-papers').replaceChildren(
+      h('span', '', `${t('OB-7731-A · Fit bay 03 · Rev 14')} · ${t('Service cycle')}: 19,842 h`),
+      h('span', '', [field('Registry', 'Flagged'), field('Operator', 'Unregistered'), field('Factory profile', 'Obedience / standard'), field('Current', p.modified ? 'Modified' : 'Standard')].join(' · ')),
+    );
+  }
+
+  /** The module's origin stamp (content/papers.ts), if it has one. */
+  private stamp(id: string, cls: string): HTMLElement[] {
+    const o = originOf(id);
+    return o ? [h('span', `stamp ${cls} ${o}`, t(STAMP[o]))] : [];
+  }
+
+  /** A tab's state as one mark (sim/papers.ts): the list reads like a systems console. */
+  private markOf(w: World, tab: Tab): Mark {
+    const { use, cap } = budgets(w.levels), ctx = w.bayCtx();
+    const nodes = WEB.filter((n) => n.tab === tab);
+    const blocks = nodes.map((n) => blockOf(n.id, ctx));
+    return tabMark({
+      over: (['mass', 'heat'] as const).some((k) => use[k] > cap[k] && nodes.some((n) => (w.levels[n.id] ?? 0) > 0 && (n.draw[k] ?? 0) > 0)),
+      damaged: tab === 'hull' && worn(w.plates, w.stats.maxPlates),
+      ready: blocks.filter((b) => b === null).length,
+      fitted: nodes.some((n) => (w.levels[n.id] ?? 0) > 0),
+      reachable: blocks.some((b) => b === null || b === 'krail' || b === 'power' || b === 'chits' || b === 'yard'),
+    });
   }
 
   /** The suggestions: three cards, what each does in a line, the number that matters, and the price on the button. */
@@ -482,7 +531,7 @@ export class BayPanel {
       go.addEventListener('click', (e) => { e.stopPropagation(); this.pick = i; this.install(n.id); });
       card.addEventListener('click', () => { this.pick = i; this.render(); });
       card.append(
-        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(TABS[n.tab].name)), h('kbd', 'only-desktop', String(i + 1))),
+        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(TABS[n.tab].name)), ...this.stamp(n.id, 'pc-stamp'), h('kbd', 'only-desktop', String(i + 1))),
         h('span', 'pc-name', nameOf(n.id)),
         ...(why1 ? [h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why1.text, why1.vars)}`))] : []),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
@@ -505,7 +554,9 @@ export class BayPanel {
     const tiers = Math.max(...nodes.map((n) => n.tier)), rows = Math.max(...nodes.map((n) => n.row)) + 1;
     const X = (n: WebNode) => ((n.tier - 0.5) / Math.max(tiers, 3)) * 100;
     const Y = (n: WebNode) => ((n.row + 0.5) / Math.max(rows, 3)) * 100;
-    $('bay-tab-h').replaceChildren(icon(TAB_ICON[tab]), h('span', 'bw-n', t(TABS[tab].name)), h('span', 'bw-s', t(TABS[tab].sub)));
+    const mark = this.markOf(w, tab);
+    $('bay-tab-h').replaceChildren(icon(TAB_ICON[tab]), h('span', 'bw-n', t(TABS[tab].name)), h('span', 'bw-s', t(TABS[tab].sub)),
+      ...(mark !== 'none' ? [h('span', `bw-m ${mark}`, '', h('i', '', MARK_GLYPH[mark]), h('span', '', t(MARK_WORD[mark])))] : []));
 
     // the links behind, as hardware: a bus a parent's children share (a fork, drawn as a junction),
     // a bus into a child with two parents (a join), conduits under the live wire, lit where both ends are fitted
@@ -574,7 +625,7 @@ export class BayPanel {
     const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', nodeIcon(id)),
       h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips(lv, max, lv < max))));
     const adv = lv < max && !why ? this.advice(w).get(id) : undefined;
-    const out: HTMLElement[] = [head, ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(adv.text, adv.vars)}`))] : []), h('p', 'bi-text', textOf(id, next))];
+    const out: HTMLElement[] = [head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(adv.text, adv.vars)}`))] : []), h('p', 'bi-text', textOf(id, next))];
     if (lv < max) {
       const figs = h('div', 'bi-figs');
       for (const f of upgradeFigures(w.levels, id, !w.bk).slice(0, 3)) {
@@ -619,8 +670,16 @@ export class BayPanel {
       const bar = h('i', `bb-bar${state ? ` ${state}` : ''}`);
       bar.style.setProperty('--v', Math.min(1, use[k] / cap[k]).toFixed(3));
       bar.style.setProperty('--a', Math.min(1, (use[k] + add) / cap[k]).toFixed(3));
-      const val = h('b', `bb-v${this.fresh?.moved.has(k) ? ' bump' : ''}`, '', document.createTextNode(`${use[k]}/${cap[k]}`));
-      if (add) val.append(h('em', '', ` → ${use[k] + add}`));
+      // a fit just moved this rating: it ticks from what it said to what it says now, with the old figure struck beside it
+      const now = `${use[k]}/${cap[k]}`, was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== now;
+      this.shown[k] = now;
+      const fig = h('span', 'bb-n', now);
+      const val = h('b', `bb-v${moved ? ' bump' : ''}`, '', fig);
+      if (moved) {
+        tick(fig, was!, now);
+        val.prepend(h('s', 'bb-was', was!));
+        setTimeout(() => this.open && this.world && this.budgetBar(this.world), 1500);
+      } else if (add) val.append(h('em', '', ` → ${use[k] + add}`));
       return h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : [])), bar, val);
     }));
   }

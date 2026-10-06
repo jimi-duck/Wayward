@@ -1,5 +1,6 @@
 import { VOICE, type VoiceId } from '../content/voice';
 import { budgets, cheapest, stockLevels, type BayCtx } from './bay';
+import { worn } from './papers';
 
 // ── what the ship says ────────────────────────────────────────────────────
 // The firmest line that is true now (content/voice.ts has the words, in
@@ -17,7 +18,7 @@ export function voiceId(c: VoiceCtx): VoiceId {
   const next = cheapest(c.bay);
   const holds: Record<VoiceId, boolean> = {
     overweight: use.mass > cap.mass,
-    maintenance: c.plates < c.maxPlates && c.plates <= Math.ceil(c.maxPlates / 2),
+    maintenance: worn(c.plates, c.maxPlates),
     unauthorised: modified,
     refit: !!next && c.bay.krail >= next.cost,
     obedience: !modified,

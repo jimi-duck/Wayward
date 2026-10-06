@@ -8,8 +8,9 @@ import { stockLevels } from '../sim/bay';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
-// the chart is open (between systems) and at every dock (the hold as it was
-// when the clamps went on). A load starts the current system's sortie from
+// the chart is open (between systems), at every dock (the hold as it was
+// when the clamps went on) and after every answered card (only what the
+// answer changed: sim/journey.ts bankAnswer). A load starts the current system's sortie from
 // the top with what the save carries. Through the Threshold it is kept until
 // the Severance file's fate is chosen, so a reload comes back to the choice. The save carries a version, and
 // `migrate` brings an old one up to date, or refuses it if it cannot.

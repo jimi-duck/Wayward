@@ -843,7 +843,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .mark { width: clamp(46px, 5.4vw, 70px); height: auto; fill: var(--wayward-amber); }
 .lk-t { display: grid; gap: 4px; }
 .lk-w { font: 800 clamp(52px, 7.2vw, 96px)/.82 var(--font-head); letter-spacing: .015em; text-transform: uppercase; color: var(--industrial-white); }
-.lk-d { margin-top: 6px; font: 600 clamp(11px, 1.05vw, 14px)/1 var(--font-rail); letter-spacing: .3em; text-transform: uppercase; color: var(--ink-2); }
+.lk-d { display: flex; justify-content: space-between; gap: 1.2em; margin-top: 6px; font: 600 clamp(11px, 1.05vw, 14px)/1 var(--font-rail); letter-spacing: .3em; text-transform: uppercase; color: var(--ink-2); }
 
 /* The two ways to play: cut steel plates. The picked one is lit amber, brighter
    and glowing a little; the other stays dark but plainly there to take. */
@@ -866,6 +866,17 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .mode[aria-checked="true"] .mo-s { color: var(--hud-hi); }
 .mode[aria-checked="true"] .mo-t::before { opacity: 1; transform: none; }
 .mode:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
+
+/* a journey in progress, offered above the picker while Arcade is picked: amber is the player's hand */
+.cont { display: grid; gap: 3px; justify-items: start; width: min(600px, 100%); padding: 10px 20px 10px 24px; cursor: pointer; text-align: left; color: var(--ink-2);
+  border: 1px solid var(--hud); border-left-width: 3px; background: linear-gradient(180deg, rgba(74, 52, 14, .62), rgba(36, 25, 8, .6)); }
+.cont[hidden] { display: none; }
+.cont:hover, .cont:focus-visible { background: linear-gradient(180deg, rgba(104, 72, 18, .72), rgba(52, 35, 8, .7)); outline: none; }
+.cont:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
+.ct-k { font: 800 clamp(16px, 1.5vw, 20px)/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--industrial-white); }
+.ct-s { font: 600 calc(9px * 1.18)/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--hud-hi); }
+.ct-r { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 400 12px/1.3 var(--font-display); color: var(--ink-2); }
+.ct-r[hidden] { display: none; }
 
 /* the one button: what it starts, and it starts it */
 #launch { min-width: min(320px, 100%); height: 52px; padding: 0 48px; font-size: 16px; letter-spacing: .32em; --fill: linear-gradient(180deg, rgba(92, 63, 14, .92), rgba(52, 35, 8, .92));
@@ -909,6 +920,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   .mo-t::before { left: -11px; }
   #launch { height: 42px; font-size: 13px; padding: 0 34px; min-width: 240px; }
   .start-card .resume-s, #fresh { margin-top: -6px; }
+  .cont { width: min(480px, 100%); padding: 7px 14px 7px 18px; gap: 2px; }
+  .ct-k { font-size: 15px; }
+  .ct-r { display: none; }
   .tip { font-size: 11px; }
 }
 
@@ -1233,20 +1247,18 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-tabs { grid-area: tabs; display: grid; align-content: start; gap: 6px; overflow-y: auto; }
 .bay-tab { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 9px; padding: 9px 10px; border: 1px solid var(--line); background: rgba(11, 16, 17, .7);
   color: var(--ink-2); cursor: pointer; text-align: left; font: inherit; }
-.bay-tab .ico { width: 16px; height: 16px; color: var(--ink-3); }
+.bay-tab .ico { width: 18px; height: 18px; stroke-width: 1.7; color: var(--ink-3); }
 .bt-n { font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
-.bt-c { min-width: 20px; padding: 2px 4px; text-align: center; font: 500 11px/1 var(--font-mono); color: var(--ink-3); border: 1px solid var(--line); }
 .bay-tab kbd { font-size: 10px; opacity: .6; }
 .bay-tab.ready .ico { color: var(--cy); }
-.bay-tab.ready .bt-c { border-color: var(--cy-dim); }
 .bay-tab:hover { border-color: var(--frame-hi); }
 .bay-tab.on { border-color: var(--hud); background: linear-gradient(90deg, var(--hud-ghost), rgba(11, 16, 17, .7)); color: var(--ink); box-shadow: inset 3px 0 0 var(--hud); }
-.bay-tab.on .ico, .bay-tab.on .bt-c { color: var(--hud-hi); border-color: var(--hud-mid); }
+.bay-tab.on .ico { color: var(--hud-hi); }
 
 .bay-w { grid-area: web; position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; padding: 12px 14px 8px; border: 1px solid var(--line);
   background: repeating-linear-gradient(0deg, rgba(216, 213, 198, .02) 0 1px, transparent 1px 3px), rgba(8, 13, 14, .36); min-height: 0; }
 .bay-tab-h { display: flex; align-items: baseline; gap: 10px; color: var(--hud); }
-.bay-tab-h .ico { width: 18px; height: 18px; align-self: center; }
+.bay-tab-h .ico { width: 22px; height: 22px; stroke-width: 1.6; align-self: center; }
 .bw-n { font: 700 calc(var(--fs) * 1.8)/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
 .bw-s { font: 600 calc(var(--fs) * .95 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .bay-legend { position: absolute; top: 12px; right: 14px; display: flex; gap: 12px; }
@@ -1421,10 +1433,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 
 /* the bay: tab state, installing, the Before → After the player reads */
 .bay-tab { position: relative; }
-.bt-s { position: absolute; right: 10px; bottom: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); opacity: .5; }
-.bt-s.fitted { background: var(--hud); opacity: 1; right: 24px; }
-.bt-s.ready { background: linear-gradient(90deg, var(--cy) 50%, transparent 50%); box-shadow: inset 0 0 0 1px var(--cy); opacity: 1; }
-.bt-s.over { background: var(--alert); border-radius: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); opacity: 1; }
 .bay-insp .bi-figs { gap: 8px; }
 .bay-insp .fig { display: grid; grid-template-columns: 1fr; gap: 3px; padding: 8px 10px; background: rgba(76, 194, 203, .06); border-left: 2px solid var(--cy); }
 .bay-insp .fig.cost { border-left-color: var(--alert); background: rgba(201, 74, 63, .08); }
@@ -1501,11 +1509,10 @@ html:not(.breakout) .pause-card #brief { display: none; }
   animation: wear-scan 11s linear infinite; }
 .bay-w .wear::after { animation-duration: 14s; animation-delay: 4s; }
 @keyframes wear-scan { 0%, 92% { top: -6px; opacity: 0; } 93% { opacity: 1; translate: 3px 0; } 96% { translate: -2px 0; } 100% { top: 100%; opacity: 0; translate: 0 0; } }
-.wear-serial { position: absolute; left: 12px; bottom: 6px; z-index: 1; pointer-events: none; font: 500 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); opacity: .5; }
 .wear-stamp { position: absolute; right: 22px; top: 62px; z-index: 1; pointer-events: none; padding: 3px 7px; border: 1px solid var(--hud-mid); rotate: 3deg;
   font: 700 9px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--hud); opacity: .38; mask-image: linear-gradient(100deg, #000 60%, rgba(0, 0, 0, .55) 80%, #000); }
 .bay-w { isolation: isolate; }
-@media (max-width: 900px), (max-height: 520px) { .wear-stamp, .wear-serial { display: none; } }
+@media (max-width: 900px), (max-height: 520px) { .wear-stamp, .wear-papers, .pause-papers { display: none; } }
 @media (prefers-reduced-motion: reduce) { .wear::after { animation: none; display: none; } }
 
 /* the ship's voice: flat, amber-grey, in the margin of the console */
@@ -1528,9 +1535,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 #bay-auto.on .sw::after { left: 14px; background: var(--cy); }
 #bay-auto.on b { color: var(--cy); }
 .bay-tab.sug { border-color: var(--hud-dim); }
-/* a tab with something ready to fit: a teal dot, not a number to read */
-.bay-tab .bt-c { width: 7px; height: 7px; min-width: 0; padding: 0; border: 0; border-radius: 50%; background: var(--cy); font-size: 0; }
-.bay-tab.on .bt-c { background: var(--cy); }
 .bay-tab { grid-template-columns: auto 1fr auto; }
 
 .pick-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-content: center; height: 100%; }
@@ -1610,4 +1614,135 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-width: 600px) { .howto { grid-template-columns: 1fr; } }
 @media (max-height: 800px) { .pf-bars { display: none; } }
 @media (max-height: 660px) { .bay-prof { display: none; } }
-@media (max-width: 900px), (max-height: 520px) { .bt-s { display: none; } }
+
+/* ── the art pass: the same console, but used (docs/ART-PASS.md) ─────────
+   History in small doses. A stamp on a module that is not factory, a mark on
+   each tab that says what state that part of the ship is in, the ratings
+   that tick, the ship's papers in small print, and wear only where hands
+   go. Amber is a change, teal what is stable, red the threat, grey what is
+   out of reach. */
+
+/* the tab's state: one glyph, in the slot the dots had */
+.bt-m { min-width: 12px; text-align: center; font: 600 12px/1 var(--font-mono); font-style: normal; color: var(--ink-3); }
+.bt-m.stable { color: var(--cy); }
+.bt-m.ready { color: var(--hud); }
+.bt-m.damaged { color: var(--hud-hi); animation: bt-flick 5.5s steps(1) infinite; }
+.bt-m.over { color: var(--alert); }
+.bt-m.offline { color: var(--ink-3); opacity: .6; }
+@keyframes bt-flick { 0%, 100% { opacity: 1; } 91% { opacity: .25; } 93% { opacity: 1; } 96% { opacity: .4; } }
+.bay-tab.m-offline .bt-n { color: var(--ink-3); }
+/* and the word for it, at the head of the tab's web: readable on a phone, no hover needed */
+.bw-m { margin-left: auto; align-self: center; display: inline-flex; gap: 6px; align-items: center; font: 600 calc(var(--fs) * 1.05 * 1.18)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.bw-m i { font: 600 12px/1 var(--font-mono); font-style: normal; }
+.bw-m.stable { color: var(--cy); }
+.bw-m.ready, .bw-m.damaged { color: var(--hud); }
+.bw-m.over { color: var(--alert); }
+
+/* a stamp: where the part came from, in small caps, a little crooked and a little worn */
+.stamp { display: inline-block; justify-self: start; padding: 3px 6px 2px; border: 1px solid currentColor; font: 500 10px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap;
+  color: var(--hud); opacity: .78; rotate: -1.2deg;
+  mask-image: linear-gradient(104deg, #000 0 58%, rgba(0, 0, 0, .62) 64%, #000 70%), repeating-linear-gradient(90deg, #000 0 7px, rgba(0, 0, 0, .86) 7px 8px); mask-composite: intersect; }
+.stamp.oem { color: var(--cy); opacity: .6; }
+.stamp.unknown { color: var(--ink-2); border-style: dashed; }
+.stamp.property { color: var(--hud-hi); }
+.bi-stamp { margin: -4px 0 -2px; }
+.pc-stamp { margin-left: auto; margin-right: 6px; font-size: 9px; padding: 2px 5px 1px; }
+.bay-insp { position: relative; }
+
+/* a rating that has just moved: the old figure struck beside it, the new one ticking in */
+.bb-v { display: inline-flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
+.bb-was { color: var(--ink-3); font-size: .85em; font-weight: 400; text-decoration-thickness: 1px; }
+.bb-n { display: inline-block; min-width: 3ch; }
+.bb-v.bump .bb-n { color: var(--hud-hi); }
+
+/* the ship answers a fit in the voice line: teal where she accepts it, amber where it is not hers */
+#bay-voice.log { color: var(--cy); opacity: 1; }
+#bay-voice.log.off { color: var(--hud-hi); }
+
+/* the ship's papers: her designation and the registry, in small print along the foot of the web */
+.wear-papers { position: absolute; left: 12px; right: 12px; bottom: 6px; z-index: 1; pointer-events: none; display: grid; gap: 3px; opacity: .5;
+  font: 500 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.wear-papers span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pause-papers { display: flex; justify-content: space-between; gap: 12px; width: 100%; margin-top: -.4rem; font: 500 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); opacity: .55; }
+/* a log that no longer reads: now and then a few of its letters drop out */
+.corrupt { font-style: normal; color: var(--ink-2); animation: corrupt 9s steps(1) infinite; }
+@keyframes corrupt { 0%, 100% { opacity: 1; letter-spacing: inherit; } 62% { opacity: .35; } 63% { opacity: 1; translate: 1px 0; } 64% { opacity: .5; translate: -1px 0; } 65% { translate: 0; opacity: 1; } }
+
+/* wear where hands go: the inspector, the tab list and the ratings. A few marks each, never more */
+.bay-insp {
+  background:
+    radial-gradient(circle at 100% 100%, rgba(0, 0, 0, .55) 0 11px, transparent 12px),
+    linear-gradient(118deg, transparent 0 62%, rgba(216, 213, 198, .06) 62.1% 62.3%, transparent 62.5% 100%),
+    linear-gradient(81deg, transparent 0 34%, rgba(216, 213, 198, .045) 34.1% 34.25%, transparent 34.4% 100%),
+    repeating-linear-gradient(-45deg, rgba(217, 154, 39, .2) 0 2px, transparent 2px 5px) right 10px bottom 12px / 30px 14px no-repeat,
+    linear-gradient(180deg, var(--hud-ghost), rgba(11, 16, 17, .92) 40%); }
+.bay-tab::after { content: ""; position: absolute; right: 7px; top: 5px; width: 18px; height: 1px; background: rgba(216, 213, 198, .09); rotate: -8deg; pointer-events: none; }
+.bay-tab:nth-child(3n+1)::after { right: 30px; top: auto; bottom: 6px; width: 11px; }
+.bay-tab:nth-child(4n)::after { display: none; }
+.bay-budget { background:
+    radial-gradient(circle at 0 100%, rgba(0, 0, 0, .5) 0 9px, transparent 10px),
+    linear-gradient(96deg, transparent 0 77%, rgba(216, 213, 198, .05) 77.1% 77.25%, transparent 77.4% 100%),
+    rgba(11, 16, 17, .7); }
+
+@media (max-height: 520px) {
+  .bay-tab { grid-template-columns: auto auto auto; }
+  .bw-m { font-size: 10px; }
+  .bay-tab::after, .bay-insp { background-image: none; }
+  .bay-insp { background: linear-gradient(180deg, var(--hud-ghost), rgba(11, 16, 17, .92) 40%); }
+}
+@media (prefers-reduced-motion: reduce) { .bt-m.damaged, .corrupt { animation: none; } }
+
+/* the wordmark, as it would be on a hull: stencilled once, the paint going toward the end, a ghost
+   of the first colour under it, and a few ties where the stencil held its letters together */
+.lk-w { color: transparent; -webkit-background-clip: text; background-clip: text;
+  background-image: linear-gradient(98deg, #dedbcb 0 44%, #d0ccba 44.4% 76%, #bfbba8 100%);
+  filter: drop-shadow(3px 2px 0 rgba(217, 154, 39, .3));
+  --tie: linear-gradient(#000 0 0);
+  -webkit-mask-image: var(--tie), var(--tie), var(--tie), var(--tie);
+  mask-image: var(--tie), var(--tie), var(--tie), var(--tie);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-size: 3.4% 5%, 3.4% 5%, 5% 5%, 100% 100%; mask-size: 3.4% 5%, 3.4% 5%, 5% 5%, 100% 100%;
+  -webkit-mask-position: 22% 46%, 79% 48%, 63% 46%, 0 0; mask-position: 22% 46%, 79% 48%, 63% 46%, 0 0;
+  -webkit-mask-composite: xor; mask-composite: exclude, exclude, exclude; }
+/* the ship's designation: stamped by hand, a little off the line, in the data face */
+.lk-id { font: 500 1em/1 var(--font-mono); letter-spacing: .2em; color: var(--hud); opacity: .8; rotate: -1deg; translate: 0 1px; }
+
+/* fixes found on the way: the pause card's foot lost its rule in a merge (it ran together as one line), the state word sat on the legend, the papers sat on the Suggested hint */
+.pause-foot { display: flex; justify-content: space-between; gap: 12px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);
+  font: 600 calc(10px * 1.1)/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); }
+.pause-foot span:first-child { color: var(--ink-2); }
+@media (max-height: 520px) { .pause-foot { display: none; } }
+.bw-m { margin-left: 18px; }
+#bay.picks .bay-web { margin-bottom: 46px; }
+#bay.picks .pick-more { bottom: -16px; }
+@media (max-width: 900px), (max-height: 520px) { .wear-papers, .pause-papers { display: none; } }
+
+/* ── wear, spread (Jimi, 2026-10-06): the ship's status display, the comms panel, the port and the pause card ──
+   Still a few marks each, where hands and heat are: a chipped corner, one or two scrapes, a repair patch where a
+   plate was swapped. The HUD's has no scanline: it is on screen all the time, and nothing there should move. */
+.panel > .wear, .cut > .wear { z-index: 0; }
+.wear.still::after { display: none; }
+.wear.hud { opacity: .8;
+  background:
+    radial-gradient(circle at 0 100%, rgba(0, 0, 0, .5) 0 10px, transparent 11px),
+    linear-gradient(121deg, transparent 0 58%, rgba(216, 213, 198, .06) 58.1% 58.3%, transparent 58.5% 100%),
+    linear-gradient(88deg, transparent 0 11%, rgba(216, 213, 198, .045) 11.1% 11.25%, transparent 11.4% 100%),
+    radial-gradient(ellipse at 100% 0, rgba(217, 154, 39, .06), transparent 38%); }
+.wear.v2 {
+  background:
+    linear-gradient(74deg, transparent 0 27%, rgba(216, 213, 198, .07) 27.1% 27.3%, transparent 27.5% 100%),
+    linear-gradient(108deg, transparent 0 83%, rgba(216, 213, 198, .055) 83.1% 83.25%, transparent 83.4% 100%),
+    radial-gradient(circle at 0 0, rgba(0, 0, 0, .5) 0 11px, transparent 12px),
+    radial-gradient(circle at 100% 100%, rgba(0, 0, 0, .45) 0 8px, transparent 9px); }
+.wear.v3 {
+  background:
+    linear-gradient(101deg, transparent 0 49%, rgba(216, 213, 198, .06) 49.1% 49.3%, transparent 49.5% 100%),
+    linear-gradient(59deg, transparent 0 88%, rgba(216, 213, 198, .05) 88.1% 88.25%, transparent 88.4% 100%),
+    radial-gradient(circle at 0 100%, rgba(0, 0, 0, .5) 0 12px, transparent 13px),
+    radial-gradient(ellipse at 0 0, rgba(217, 154, 39, .05), transparent 36%); }
+/* a patch where a plate was swapped: hatched amber, a little off square */
+.wear.patch::before { content: ""; position: absolute; right: 16px; bottom: 12px; width: 30px; height: 14px; rotate: -1.5deg;
+  background: repeating-linear-gradient(-45deg, rgba(217, 154, 39, .2) 0 2px, transparent 2px 5px); border: 1px solid rgba(217, 154, 39, .16); }
+@media (max-height: 520px) { .wear.patch::before { display: none; } }
+.pause-card .wear-stamp { top: 16px; right: 20px; }
+#port .wear.patch::before { bottom: auto; top: 16px; }
