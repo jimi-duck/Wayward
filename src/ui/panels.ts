@@ -2,7 +2,7 @@ import { BRANCHES, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
 import { ENDING_BY_ID, ENDINGS } from '../content/endings';
 import { FRAGMENTS } from '../content/story';
-import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
+import { grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { VARIANTS } from '../sim/enemies';
@@ -223,23 +223,23 @@ export class StartOptions {
     if (p.life.runs) {
       rec.append(h('span', '', t('Best'), h('b', '', fmt(p.best.score))), h('span', '', t('Longest'), h('b', '', mmss(p.best.time))), h('span', '', t('Runs'), h('b', '', String(p.life.runs))));
     }
+    // the difficulty: Easy, Mid or Hard, with what the one picked does written under it
     const mods = $('mods');
-    mods.replaceChildren();
-    for (const id of availableModifiers(p)) {
-      const d = MODIFIERS[id]!;
-      const b = h('button', '', `${t(d.name)} ×${d.score}`) as HTMLButtonElement;
+    const level = p.modifiers.includes('hard') ? 'hard' : p.modifiers.includes('easy') ? 'easy' : 'mid';
+    mods.replaceChildren(...(['easy', 'mid', 'hard'] as const).map((id) => {
+      const b = h('button', '', t(id === 'mid' ? 'Mid' : MODIFIERS[id]!.name)) as HTMLButtonElement;
       b.type = 'button';
-      b.title = t(d.text);
-      b.setAttribute('aria-pressed', String(p.modifiers.includes(id)));
+      b.setAttribute('aria-pressed', String(level === id));
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => {
         e.stopPropagation();
-        p.modifiers = p.modifiers.includes(id) ? p.modifiers.filter((m) => m !== id) : [...p.modifiers, id];
+        p.modifiers = id === 'mid' ? [] : [id];
         this.render();
         this.onChange();
       });
-      mods.append(b);
-    }
+      return b;
+    }));
+    $('diff-s').textContent = t(level === 'mid' ? 'The sky as designed. Score ×1.' : MODIFIERS[level]!.text);
     // the language: English or German, remembered
     $('lang').replaceChildren(...LANGS.map((l) => {
       const b = h('button', '', LANG_NAME[l]) as HTMLButtonElement;

@@ -693,9 +693,9 @@ The report compares the run with your best (survival, refits, kills, chain,
 krail, overcharges, capital ships, events), shows the ship as built,
 what did the killing and what did the damage, the score curve against your
 best run's, and any unlocks earned. Long-term progression opens options,
-never power: locked specialisations, a synergy, two sector events, three
-challenge modifiers (ironman, glass cannon, hostile skies, each with a score
-multiplier) and engine colours. The logbook on the start screen shows the
+never power: locked specialisations, a synergy, two sector events and
+engine colours. Difficulty (Easy, Mid, Hard on the start screen) is always
+open: Easy and Hard are modifiers with a score multiplier, Mid has none. The logbook on the start screen shows the
 hint for every unlock still locked.
 
 ## Balance

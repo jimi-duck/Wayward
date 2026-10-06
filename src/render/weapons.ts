@@ -4,17 +4,18 @@ import type { Bolt, Torpedo } from '../sim/weapons';
 import type { Effects } from './fx';
 import { STREAK, type Streaks } from './streaks';
 
-// Laser lances: a white-hot core in an amber sheath, long and heavy, pointed
+// Laser lances: a white-hot core in a red sheath with a soft glow round it, long and heavy, pointed
 // along their flight (they climb and dive onto targets off the plane).
 // Torpedoes: a hot core in an amber halo, its motor flaring as it builds
-// speed, shedding embers. Ours burn amber; enemy fire burns its faction's
-// colour. All of it is drawn as streaks (streaks.ts), in one draw call
+// speed, shedding embers. Our lances burn red, our torpedoes amber; enemy fire
+// burns its faction's colour. All of it is drawn as streaks (streaks.ts), in one draw call
 // shared with the enemy's fire.
 
 const MAX_TORPS = 12;
-// amber-white is the player's hand (brand v1.1); red is left for threat. Paler than
-// the Custody and Gutter fire (saturated gold, orange) so ours still reads at a glance.
-const LANCE = new Color(2.4, 1.55, 0.7);
+// Red, by request: the player's guns are red lasers. Brand v1.1 keeps red for threat,
+// so the enemy side stays off it: Gutter fire is orange-gold, the rest gold, green or magenta.
+const LANCE = new Color(4, 0.32, 0.28);
+const LANCE_GLOW = new Color(1.5, 0.12, 0.1);
 const TORP = new Color(2.5, 1.3, 0.5);
 const TORP_FLAME = new Color(3.2, 1.7, 0.4);
 
@@ -29,6 +30,9 @@ export class WeaponView {
       // a disruptor bolt: longer and twice as thick
       this.streaks.push(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back, b.vx, b.vy, b.vz,
         b.heavy ? 5.3 : 4.4, b.heavy ? 1.3 : 0.7, STREAK.lance, LANCE, 1);
+      // a wider, dimmer sheath over it: the glow, in the same draw
+      this.streaks.push(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back, b.vx, b.vy, b.vz,
+        b.heavy ? 6.5 : 5.4, b.heavy ? 3.4 : 2, STREAK.lance, LANCE_GLOW, 0);
     }
 
     for (let i = 0; i < MAX_TORPS; i++) {

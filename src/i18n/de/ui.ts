@@ -57,6 +57,8 @@ export const UI: Record<string, string> = {
   'through the Threshold · the file is still aboard': 'durch die Schwelle · die Akte ist noch an Bord',
   'bound for {dest}': 'Ziel: {dest}',
   'Best': 'Bestwert',
+  'Difficulty': 'Schwierigkeit',
+  'Engine': 'Triebwerk',
   'Longest': 'Am längsten',
   'Runs': 'Runden',
 

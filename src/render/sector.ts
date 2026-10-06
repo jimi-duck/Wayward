@@ -10,7 +10,7 @@ import { CameraRig } from './camera';
 import { Environment } from './environment';
 import { Effects, type RGB } from './fx';
 import { HazardView } from './hazards';
-import { PickupView } from './pickups';
+import { krailRGB, PickupView } from './pickups';
 import { Post } from './post';
 import type { QualityTier } from './quality';
 import { RockView } from './rocks';
@@ -23,14 +23,15 @@ import { WeaponView } from './weapons';
 
 // The scene root: reads the simulation and its events, never writes them.
 
-const OURS: RGB = [3.4, 0.5, 0.8];
+/** Our lances are red (the player's guns); enemy fire keeps its faction colours, none of them this red. */
+const OURS: RGB = [4, 0.35, 0.3];
+const LANCE_SPARK: RGB = [4.2, 1.1, 0.7];
 const HOT: RGB = [4, 3.4, 2.8];
 const FIRE: RGB = [3.4, 1.4, 0.35];
 const LAVA: RGB = [3.4, 0.7, 0.12];
 const ALERT: RGB = [3.6, 0.5, 0.4];
 const DUST: RGB = [1.1, 0.95, 0.85];
 const VIOLET: RGB = [2.2, 0.9, 3.6];
-const GOLD: RGB = [3, 2.1, 0.8];
 const AMBER: RGB = [3.8, 2.2, 0.5];
 const SHIELD: RGB = [0.8, 1.6, 3.6];
 const GRAZE: RGB = [1.6, 2.6, 3.8];
@@ -166,6 +167,7 @@ export class Sector {
         case 'rockHit':
           this.fx.flash(e.x, e.y, e.z, 1.6, LAVA, 0.1);
           this.fx.burst(e.x, e.y, e.z, 10, FIRE, 9, 0.28, 0.45);
+          this.fx.burst(e.x, e.y, e.z, 5, LANCE_SPARK, 15, 0.14, 0.25);
           this.fx.rubble('rock', e.x, e.y, e.z, 1, 0.14, 5);
           break;
         case 'bulwarkHit':
@@ -214,6 +216,7 @@ export class Sector {
         case 'alienHit':
           this.fx.flash(e.x, e.y, e.z, 1.1, FIRE, 0.07);
           this.fx.burst(e.x, e.y, e.z, 10, FIRE, 10, 0.26, 0.4);
+          this.fx.burst(e.x, e.y, e.z, 6, LANCE_SPARK, 16, 0.14, 0.25);
           this.fx.rubble('metal', e.x, e.y, e.z, 1, 0.12, 6);
           break;
         case 'alienDestroyed':
@@ -231,7 +234,7 @@ export class Sector {
           break;
         case 'crystal':
         case 'cyrite': {
-          const c = e.type === 'crystal' ? GOLD : VIOLET;
+          const c = e.type === 'crystal' ? krailRGB(e.value) : VIOLET;
           this.fx.flash(e.x, 0.3, e.z, 0.9 + e.value * 0.2, c, 0.12);
           this.fx.burst(e.x, 0.3, e.z, 3 + e.value, c, 5, 0.18, 0.3);
           break;
@@ -281,6 +284,7 @@ export class Sector {
         case 'bossHit':
           this.fx.flash(e.x, e.y, e.z, 1.6, FIRE, 0.07);
           this.fx.burst(e.x, e.y, e.z, 8, FIRE, 12, 0.3, 0.4);
+          this.fx.burst(e.x, e.y, e.z, 5, LANCE_SPARK, 16, 0.14, 0.25);
           this.fx.rubble('metal', e.x, e.y, e.z, 1, 0.2, 7);
           break;
         case 'bossPhase':
@@ -401,7 +405,7 @@ export class Sector {
     this.enemies.eye.copy(this.rig.camera.position);
     this.enemies.update(world.aliens, world.command.boss, world.shots, world.webs, alpha, dt);
     this.streaks.end();
-    this.pickups.update(world.pickups, alpha, dt);
+    this.pickups.update(world.pickups, alpha, dt, this.fx);
     this.arsenal.update(world.sys, dt, this.rig.camera.position);
     this.hazards.update(world.tele, world.strikes, world.encounter, dt);
     this.breakout.update(world, s, this.fx, dt);

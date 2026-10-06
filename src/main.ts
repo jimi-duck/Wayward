@@ -157,6 +157,8 @@ function boot(): void {
   /** Export the saved journey to a file, or bring one back from a file. */
   const renderSaves = (live: Journey | null) => {
     const box = el('saves');
+    // only the Story has a save to bring in or take out
+    box.hidden = pick !== 'breakout';
     const btn = (label: string, f: () => void) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -267,6 +269,7 @@ function boot(): void {
     sector.setCosmetic(profile.cosmetic);
     // before the first launch nothing has happened yet, so the run can be re-made with the new modifiers
     if (!started) world.restart({ modifiers: profile.modifiers, mode: profile.mode });
+    showBrief();
   });
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
@@ -386,6 +389,7 @@ function boot(): void {
       el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
     }
     el('p-buzz-r').hidden = !feel.canBuzz;
+    el('p-paint-r').hidden = !el('paint').childElementCount;
   };
   // Phones and tablets take the whole screen where the browser allows it
   // (Android, iPad; never an iPhone browser), and on its side where it can

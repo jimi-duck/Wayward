@@ -89,24 +89,6 @@ export const UNLOCKS: UnlockDef[] = [
     earned: (r) => r.capitals >= 3,
   },
   {
-    id: 'u_ironman', kind: 'modifier', name: 'Ironman', grants: ['ironman'],
-    text: 'A challenge: no hull repairs drop, for half again the score.',
-    hint: 'Survive 8 minutes.',
-    earned: (r) => r.time >= 480,
-  },
-  {
-    id: 'u_glass', kind: 'modifier', name: 'Glass cannon', grants: ['glass'],
-    text: 'A challenge: one plate fewer, harder-hitting weapons, more score.',
-    hint: 'Score 60,000 in one run.',
-    earned: (r) => r.score >= 60000,
-  },
-  {
-    id: 'u_hostile', kind: 'modifier', name: 'Hostile skies', grants: ['hostile'],
-    text: 'A challenge: more traffic, tougher hulls, more score.',
-    hint: 'Destroy 5 capital ships, across all your runs.',
-    earned: (_r, life) => life.capitals >= 5,
-  },
-  {
     id: 'u_ion', kind: 'cosmetic', name: 'Drive-red engines', grants: ['engine-ion'],
     text: 'A cosmetic: your engines burn drive red.',
     hint: 'Complete 5 runs.',
@@ -134,10 +116,10 @@ export interface ModifierDef {
   noRepairs?: boolean;
 }
 
+/** The three difficulties: Mid is no modifier at all, Easy and Hard are one each. */
 export const MODIFIERS: Record<string, ModifierDef> = {
-  ironman: { id: 'ironman', name: 'Ironman', text: 'No hull repairs drop.', score: 1.5, noRepairs: true },
-  glass: { id: 'glass', name: 'Glass cannon', text: 'One plate fewer; weapons hit 40% harder.', score: 1.3, damage: 1.4, plates: -1 },
-  hostile: { id: 'hostile', name: 'Hostile skies', text: 'More traffic, tougher hulls.', score: 1.4, traffic: 1.35, toughness: 1.2 },
+  easy: { id: 'easy', name: 'Easy', text: 'Fewer, softer hulls. Score ×0.8.', score: 0.8, traffic: 0.8, toughness: 0.85 },
+  hard: { id: 'hard', name: 'Hard', text: 'More traffic, tougher hulls. Score ×1.4.', score: 1.4, traffic: 1.35, toughness: 1.2 },
 };
 
 // ── cosmetics ─────────────────────────────────────────────────────────────

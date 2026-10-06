@@ -908,13 +908,23 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .resume-s.warn { color: var(--hud-hi); }
 .tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(8, 13, 14, .7);
   font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
-.start-foot { grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 22px; }
+.start-foot { grid-row: 3; width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 10px 22px; }
+.start-foot .records { justify-content: flex-start; }
+.start-foot #saves { justify-content: flex-end; }
+/* the difficulty: three buttons, and what the picked one does */
+.diff { display: grid; justify-items: center; gap: 6px; }
+.diff-k { font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 1px 6px #000; }
+.diff-s { font: 400 12px/1.3 var(--font-display); color: var(--ink-2); text-shadow: 0 1px 6px #000; text-align: center; }
+/* the language, top right */
+#start > #lang { position: absolute; top: max(14px, calc(var(--safe-t) + 10px)); right: max(16px, calc(var(--safe-r, 0px) + 12px)); }
+.swl li.paintrow { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; min-height: 44px; counter-increment: sw; }
+.swl li.paintrow::before { content: counter(sw, decimal-leading-zero); font: 500 11px/1 var(--font-mono); letter-spacing: .1em; color: var(--hud); }
 .records { display: flex; gap: 18px; justify-content: center; font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 1px 6px #000; }
 .records b { color: var(--ink); font: 600 12px/1 var(--font-rail); letter-spacing: .08em; margin-left: 6px; }
 .records:empty { display: none; }
 .start-opts { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
 .mods { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-.mods:empty { display: none; }
+.mods:empty, .mods[hidden] { display: none; }
 .mods button { height: 26px; padding: 0 10px; cursor: pointer; border: 1px solid var(--line); background: var(--glass); color: var(--ink-2);
   font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .mods button[aria-pressed="true"] { border-color: var(--amber); color: var(--ink); background: rgba(229, 169, 58, .14); }
@@ -929,6 +939,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 
 /* a short screen (a phone on its side, a small laptop window): all of it tighter */
 @media (max-height: 620px) {
+  .start-foot { gap: 6px 12px; }
+  .diff-s { font-size: 11px; }
   #start { padding-top: max(14px, calc(var(--safe-t) + 10px)); gap: 6px; }
   .start-card { gap: 12px; }
   .lk-w { font-size: clamp(40px, 11vh, 64px); }
@@ -1954,6 +1966,7 @@ html.breakout #pause:not(.first) .term-s.full { display: none; }
 .pause-card #p-back::before { content: "<"; margin-right: 8px; color: var(--hud); }
 @media (max-height: 520px) {
   .swl { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
+  .swl li.paintrow { grid-column: 1 / -1; }
   .swl li { border-bottom: 0; }
   .zoomrow { display: none !important; }
 }

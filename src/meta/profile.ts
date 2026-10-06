@@ -1,4 +1,4 @@
-import { MODIFIERS, UNLOCKS, type Lifetime, type UnlockDef } from '../content/unlocks';
+import { UNLOCKS, type Lifetime, type UnlockDef } from '../content/unlocks';
 import type { RunStats } from '../sim/run';
 import type { JourneyRecord } from '../sim/endings';
 import type { EndingId } from '../content/endings';
@@ -59,7 +59,7 @@ export interface Profile {
   history: RunRecord[];
   /** Unlock ids earned. */
   earned: string[];
-  /** Challenge modifiers switched on for the next run, and the engine colour. */
+  /** The difficulty for the next run (['easy'], [] for Mid, or ['hard']), and the engine colour. */
   modifiers: string[];
   cosmetic: string;
   /** The camera distance last chosen (an index into the zoom steps). */
@@ -108,6 +108,8 @@ const OLD_FACTIONS: Record<string, string> = { klingon: 'gutter', cardassian: 'c
  */
 export function migrate(p: Record<string, any>): Record<string, any> {
   delete p.autoFit; // Auto-refit is gone; a saved value is dropped
+  // the challenge toggles became one difficulty: Hostile skies is Hard, the others are dropped
+  if (Array.isArray(p.modifiers)) p.modifiers = p.modifiers.includes('hard') || p.modifiers.includes('hostile') ? ['hard'] : p.modifiers.includes('easy') ? ['easy'] : [];
   for (const k of ['best', 'life']) {
     const o = p[k];
     if (o && 'dilithium' in o) {
@@ -138,12 +140,6 @@ export function saveProfile(p: Profile): void {
 /** Every id the profile's unlocks open (upgrades, events, modifiers, cosmetics). */
 export function grants(p: Profile): string[] {
   return UNLOCKS.filter((u) => p.earned.includes(u.id)).flatMap((u) => u.grants);
-}
-
-/** Modifiers the player may switch on: earned ones only. */
-export function availableModifiers(p: Profile): string[] {
-  const g = new Set(grants(p));
-  return Object.keys(MODIFIERS).filter((m) => g.has(m));
 }
 
 export interface Recorded {

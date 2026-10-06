@@ -84,3 +84,15 @@ same three; mono is used a little more. On a phone on its side the id line and
 the headings go and the orders sit in a row.
 
 Trimmed on Jimi's word: the order sentences are a few words each, and the status key and the id line's state word speak only for yellow alert (amber, you are observed) and red alert (red, you are targeted); a clear sky says nothing.
+
+## Crystal colours, red lances, a little more juice
+
+Krail crystals show their worth in their colour: white for a 1, blue for a 3, purple
+for a 5, blended smoothly between (`krailColour` in `render/pickups.ts`, also used for the
+pickup flash and sparks). Rich ones pulse and glitter; any crystal being pulled in leaves a
+trail in its colour. Cyrite keeps its own deeper violet.
+
+Jimi asked for red player lasers, so the lances are red with a white-hot core and a soft glow
+sheath (second, dimmer streak, same draw). That sets aside "red is threat only" for our lances. To keep them apart
+from enemy fire, Gutter fire moved from red-orange to orange-gold; no faction fires red.
+Lance hits on rock, hulls and bosses add a few quick red-hot sparks. Torpedoes stay amber.
