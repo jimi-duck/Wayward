@@ -1651,3 +1651,13 @@ html:not(.breakout) .pause-card #brief { display: none; }
   -webkit-mask-composite: xor; mask-composite: exclude, exclude, exclude; }
 /* the ship's designation: stamped by hand, a little off the line, in the data face */
 .lk-id { font: 500 1em/1 var(--font-mono); letter-spacing: .2em; color: var(--hud); opacity: .8; rotate: -1deg; translate: 0 1px; }
+
+/* fixes found on the way: the pause card's foot lost its rule in a merge (it ran together as one line), the state word sat on the legend, the papers sat on the Suggested hint */
+.pause-foot { display: flex; justify-content: space-between; gap: 12px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);
+  font: 600 calc(10px * 1.1)/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); }
+.pause-foot span:first-child { color: var(--ink-2); }
+@media (max-height: 520px) { .pause-foot { display: none; } }
+.bw-m { margin-left: 18px; }
+#bay.picks .bay-web { margin-bottom: 46px; }
+#bay.picks .pick-more { bottom: -16px; }
+@media (max-width: 900px), (max-height: 520px) { .wear-papers, .pause-papers { display: none; } }
