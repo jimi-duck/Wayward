@@ -728,7 +728,7 @@ DESIGN.md.
     figure struck beside them, the ship's papers in small print, the ship's
     answer to a fit, pop-up kickers in the ship's voice, a stencilled wordmark
     with `OB-7731-A`, and a repair patch and scuffs on the inspector, tab list
-    and ratings (9 spreads this far; the HUD, comms and port are still clean).
+    and ratings, and (9 spread, on Jimi's word) on the HUD's status block, the comms panel, the port and the pause card, which gets its "Service overdue" stamp back. A few marks each, no scanline on the HUD.
     The bay's structure is untouched pending the 8-tab or 4-view decision.
 
 Open: 9 spreads on Jimi's word; whether the Story mode's port and chart

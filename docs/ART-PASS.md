@@ -49,7 +49,7 @@ Mono.
 | **Ship's papers**: a line along the bay's web (registry, operator, factory against current profile); the same registry line on the pause card | The stolen ship exists inside the interface | Mono microtext at half strength; hidden on phones | `sim/papers.ts` `papers`, `index.html`, `ui/briefing.ts` |
 | **Module log**: after a fit the voice line says `Module compatibility: accepted`, or `Component: not factory spec` for a stamped one, then returns | The ship answers the player | One line, three seconds | `ui/bay.ts` |
 | **Pop-up kickers in the ship's voice**: `Ship system`, `Warning`, `Continuance signal`; a ruled header line; Continuance in mono | Notices come from onboard systems | Kicker words and one hairline | `ui/hud.ts`, CSS |
-| **Wear where hands go**: a repair patch and scuffs on the inspector, tab list, ratings and pause card; nothing on the HUD, comms or port yet | Wear sits on what is touched | Two or three marks per panel, 6 to 14% ink | `.wear` classes in CSS |
+| **Wear where hands go**: a repair patch and scuffs on the inspector, tab list, ratings and pause card; the HUD's status block, the comms panel, the port and the pause card too, as Jimi asked; no scanline on the HUD | Wear sits on what is touched | Two or three marks per panel, 6 to 14% ink | `.wear` classes in CSS |
 | **Wordmark**: a stencil seam through the letters, one repainted half, the paint a little faded to the right, `OB-7731-A` under it | The name painted on a hull, then maintained | Legible at 40px; no new asset | CSS mask on `.lk-w`, `index.html` |
 
 Left alone: colours (amber is the player, teal information, red threat), the

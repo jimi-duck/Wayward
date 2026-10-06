@@ -98,6 +98,7 @@
 
       <!-- upper right: the ship's condition, a row each, read at a glance -->
       <section id="systems" class="hud-block cut" aria-label="Ship status">
+        <i class="wear hud still" aria-hidden="true"></i>
         <div class="sys-row" id="sys-hull">
           <svg class="ico"><use href="#i-hull"/></svg><span class="lbl">Hull</span><span class="nokey"></span>
           <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span><b class="val" id="v-hull">3/3</b><span class="lv"></span>
@@ -266,6 +267,7 @@
          with what each one brings beside it. Red, with a stamp, when the caller means harm. -->
     <div id="comms" class="sheet" role="dialog" aria-labelledby="cm-t" hidden>
       <div class="panel comms">
+        <i class="wear v2" aria-hidden="true"></i>
         <header class="tx-h"><i class="tx-wave" aria-hidden="true"></i><span class="tx-k">Incoming transmission</span><i class="tx-stripes" aria-hidden="true"></i></header>
         <div class="tx-id">
           <span id="cm-sigil" class="cm-sigil" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="sg-calm" d="M12 2l10 10-10 10L2 12z M12 7l5 5-5 5-5-5z"/><path class="sg-alert" d="M12 3l10 17H2z M12 9v5 M12 16.5v1.5"/></svg></span>
@@ -286,6 +288,7 @@
     <!-- The port: sell the hold, buy Krail, patch the hull, pay for a refit, cast off. -->
     <div id="port" class="sheet" role="dialog" aria-labelledby="port-t" hidden>
       <div class="panel narrow">
+        <i class="wear v3 patch" aria-hidden="true"></i>
         <header class="ph"><span class="kick">Docked</span><h2 id="port-t">Frontier Supply</h2><span class="sub" id="port-s">Refuel · repair · trade · no implant checks</span></header>
         <div class="port-stock" id="port-stock"></div>
         <div class="port-list" id="port-list"></div>
@@ -336,6 +339,7 @@
     <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
       <div class="pause-card panel">
+        <i class="wear v3" aria-hidden="true"></i><span class="wear-stamp" aria-hidden="true">Service overdue</span>
         <div class="pause-t" id="pause-t">All stop</div>
         <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
         <ol class="howto arcade-only">
