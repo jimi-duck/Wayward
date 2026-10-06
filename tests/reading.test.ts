@@ -11,7 +11,6 @@ import { CARDS } from '../src/content/cards';
 const CAP = { title: 7, from: 10, text: 24, line: 15, read: 13, label: 6, hint: 15, win: 12, lose: 12 };
 /** Lines already over their cap, held at today's length. */
 const LEGACY: Record<string, number> = {
-  'text offer_tank': 30, 'text krail_seller': 26, 'text story_warden': 25,
   'hint checkpoint:fight': 18, 'hint calloway_here:run': 17, 'hint calloway_here:talk': 16,
   'win offer_name:accept': 15, 'label calloway_here:talk': 7,
 };
