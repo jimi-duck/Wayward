@@ -146,7 +146,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'krail_seller', kind: 'trade', caller: 'miners', when: { after: 60, short: true }, weight: 1.2, repeat: true,
     from: 'Independent prospector · Old Hesketh', title: 'Cyrite, a little cut',
-    text: '“Four Cyrite, raw out of the vein. Twenty-five chits or a dozen ore. You look like you need it.” You are {short} short of the jump.',
+    text: '“Four Cyrite, raw out of the vein. Twenty-five chits or a dozen ore.” You are {short} short of the jump.',
     ships: [], cargo: 'Prospector’s tug · a few crates',
     truths: [
       { id: 'pure', weight: 2, read: 'Spectral read: clean violet, full grade' },

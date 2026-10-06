@@ -581,6 +581,7 @@ export const UI: Record<string, string> = {
   'no port': 'kein Hafen',
   'raided': 'überfallen',
   'Quiet': 'Ruhig',
+  'More': 'Mehr',
   'netted': 'im Netz',
   'Calloway last seen': 'Calloway zuletzt hier',
   'Goal': 'Ziel',

@@ -166,7 +166,7 @@ export const here = (j: Journey): StarSystem => sysById(j.chart, j.at);
 export function sortieDef(j: Journey): SortieDef {
   const s = here(j);
   const notice = pressure(j.notice, j.day);
-  if (s.kind === 'home') return { ...HOME, system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice };
+  if (s.kind === 'home') return { ...HOME, system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice, story: dueBeat(j) };
   const t = SYSTEMS[s.kind];
   const net = netted(j.chart, s.id);
   const route = j.dest ? routeBetween(j.chart, s.id, j.dest) : null;

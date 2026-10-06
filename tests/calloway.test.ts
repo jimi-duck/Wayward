@@ -82,7 +82,7 @@ describe('Calloway learns your tricks', () => {
     const def = sortieDef(j);
     expect(def.nemesis.wise).toEqual({ decoy: 1, run: 1 });
     const o = openCard(CARD_BY_ID.calloway_here!, ctx(def.nemesis.wise), new Rng(1));
-    expect(o.text).toContain('ore pods');
+    expect([o.text, ...o.more].join(' ')).toContain('ore pods');
     expect(o.choices.find((c) => c.id === 'decoy')!.odds).toBeCloseTo(oddsFor(CARD_BY_ID.calloway_here!.choices.find((c) => c.id === 'decoy')!.odds!, ctx()) - LEARN, 5);
   });
 
