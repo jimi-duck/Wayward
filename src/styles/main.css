@@ -1337,6 +1337,23 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bb-v { font: 500 12px/1 var(--font-mono); color: var(--ink); }
 
 
+/* the ship as the stage (Suggested view): the panel gives way, the cards sit low, rings on the ship's parts */
+#bay.picks .bay-w { background: none; border-color: transparent; }
+#bay.picks .bay-w .wear, #bay.picks .wear-serial { display: none; }
+#bay.picks .pick-row { align-content: end; }
+#bay.picks .pc-text, #bay.picks .pick-more { display: none; }
+.bay-pts { position: absolute; inset: 0; pointer-events: none; }
+.bay-pts[hidden], #bay:not(.picks) .bay-pts { display: none; }
+.bay-ring { --c: var(--cy); position: absolute; translate: -50% -50%; width: 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
+.br-o { position: absolute; inset: 15px; border: 1.5px solid var(--c); border-radius: 50%; background: rgba(8, 13, 14, .55); opacity: .55; transition: inset .12s var(--ez), opacity .12s; }
+.bay-ring.fitted .br-o { background: var(--c); box-shadow: 0 0 0 3px rgba(8, 13, 14, .55); }
+.bay-ring.sug { --c: var(--hud); }
+.bay-ring.sug .br-o { opacity: 1; animation: ring-pulse 1.2s ease-in-out infinite; }
+.bay-ring:hover .br-o, .bay-ring:focus-visible .br-o { inset: 11px; opacity: 1; }
+.bay-ring.sel .br-o { inset: 9px; opacity: 1; animation: none; box-shadow: 0 0 10px var(--hud-mid); }
+@keyframes ring-pulse { 50% { inset: 12px; opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .bay-ring.sug .br-o { animation: none; } }
+
 /* a phone on its side: tabs across the top, the web and the inspector side by side, the budgets only */
 @media (max-height: 520px) {
   .bay { grid-template: auto auto minmax(0, 1fr) auto / minmax(0, 1fr) minmax(200px, 260px); grid-template-areas: "h h" "tabs tabs" "web insp" "foot foot"; gap: 6px; }
@@ -1360,6 +1377,10 @@ html:not(.breakout) .pause-card #brief { display: none; }
   .pick-card { padding: 10px 12px; gap: 6px; }
   .pc-text { font-size: 12.5px; }
   .pick-more { display: none; }
+  /* the ship needs the room: the cards shrink to a glyph, a name and the price */
+  #bay.picks .pc-fig, #bay.picks .pc-tab, #bay.picks .pc-rec, #bay.picks .bay-tab-h, #bay.picks .bi-pips { display: none; }
+  #bay.picks .pick-card { padding: 8px 10px; gap: 4px; }
+  #bay.picks .bay-w { padding-top: 0; align-content: end; grid-template-rows: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   #bay-main.done, .bi-pips i.add { animation: none; }

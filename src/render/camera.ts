@@ -48,6 +48,11 @@ export interface CameraSubject {
   speedFrac: number;
 }
 
+/** How far the bay lifts the ship, as a share of the screen height. */
+const BAY_LIFT = 0.2;
+/** A phone on its side has less room above the cards. */
+const BAY_LIFT_SHORT = 0.3;
+
 export class CameraRig {
   readonly camera = new PerspectiveCamera(BASE_VFOV, 1, 0.2, 4000);
   /** Index into ZOOMS. */
@@ -69,6 +74,8 @@ export class CameraRig {
   private w = 1;
   private h = 1;
   private offsetY = 0;
+  /** Extra lift while the bay is open, in CSS pixels. */
+  private lift = 0;
   private pull = 1;
   /** 0 in flight, 1 with the refit bay open: the camera comes in on the ship. */
   bay = 0;
@@ -113,6 +120,9 @@ export class CameraRig {
     this.recoil = Math.max(0, this.recoil - this.recoil * 9 * dt - 0.2 * dt);
 
     const vfov = BASE_VFOV + FOV_KICK * s.speedFrac;
+    // the bay lifts the ship clear of the cards along the bottom
+    const lift = Math.round(this.bay * this.h * (this.h < 520 ? BAY_LIFT_SHORT : BAY_LIFT));
+    if (lift !== this.lift) { this.lift = lift; this.applyOffset(); }
     if (Math.abs(this.camera.fov - vfov) > 0.01) {
       this.camera.fov = vfov;
       this.applyOffset();
@@ -142,7 +152,8 @@ export class CameraRig {
   }
 
   private applyOffset(): void {
-    if (this.offsetY) this.camera.setViewOffset(this.w, this.h, 0, this.offsetY, this.w, this.h);
+    const y = this.offsetY + this.lift;
+    if (y) this.camera.setViewOffset(this.w, this.h, 0, y, this.w, this.h);
     else this.camera.clearViewOffset();
     this.camera.updateProjectionMatrix();
   }

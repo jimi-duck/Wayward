@@ -34,6 +34,12 @@ const TAB_ICON: Record<View, string> = {
   picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-event', reactor: 'i-core', synergies: 'i-link',
 };
 
+/** The parts of the ship that have lights to ring (render/ships.ts MARKS); Signals has none yet. */
+const RING_ZONES: Tab[] = ['weapons', 'ordnance', 'engines', 'defence', 'hull', 'utility', 'reactor', 'synergies'];
+
+/** The least distance between two rings, in pixels (a finger is about this wide). */
+const RING_GAP = 40;
+
 /** Why a module cannot be fitted, in a few words. */
 const WHY: Record<Block, string> = {
   full: 'Fully fitted',
@@ -99,6 +105,9 @@ export class BayPanel {
   onAuto: (on: boolean) => void = () => {};
   /** The ship drawn behind: where a tab's lights are on screen (fractions), and a way to flash them. Set by the app. */
   ship: { points: (zone: string) => Array<[number, number]>; flash: (zone: string) => void } | null = null;
+  /** Rings over the ship, in the Suggested view: one per zone, placed each frame from where the ship's lights are on screen. */
+  private rings = new Map<string, HTMLButtonElement>();
+  private ringRaf = 0;
   /** The module just fitted and the budgets it moved: lit for a moment (see install). */
   private fresh: { id: string; moved: Set<string> } | null = null;
 
@@ -131,6 +140,7 @@ export class BayPanel {
     x.replaceChildren(h('kbd', 'only-desktop', 'B'), ` ${t(world.docked ? 'Back to the dock' : 'Launch')}`);
     $('bay').hidden = false;
     this.render();
+    this.ringRaf = requestAnimationFrame(() => this.placeRings());
     this.off = keys((e) => {
       const c = e.code;
       if (c === 'Escape' || c === 'KeyB') return this.launch(), true;
@@ -149,6 +159,9 @@ export class BayPanel {
   close(): void {
     this.off?.();
     this.off = null;
+    cancelAnimationFrame(this.ringRaf);
+    $('bay-pts').replaceChildren();
+    this.rings.clear();
     $('bay').hidden = true;
   }
 
@@ -344,6 +357,73 @@ export class BayPanel {
     if (this.view === 'picks') this.suggested(w);
     else { this.web(w, this.view); this.inspector(w); }
     this.budgetBar(w);
+    this.ringsFor(w);
+  }
+
+  /**
+   * The ship as the stage: a ring on each part of the ship that has modules,
+   * in the Suggested view. Amber and pulsing where a suggestion is (a tap
+   * selects it), teal and still elsewhere (a tap opens that part's tab).
+   */
+  private ringsFor(w: World): void {
+    const layer = $('bay-pts');
+    if (this.view !== 'picks' || !this.ship) { layer.replaceChildren(); this.rings.clear(); return; }
+    const picks = this.picks(), live = new Set<string>();
+    for (const zone of RING_ZONES) {
+      if (!this.ship.points(zone).length) continue;
+      live.add(zone);
+      const i = picks.findIndex((n) => n.tab === zone);
+      let b = this.rings.get(zone);
+      if (!b) {
+        b = h('button', 'bay-ring') as HTMLButtonElement;
+        b.type = 'button';
+        b.append(h('i', 'br-o'));
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const k = this.picks().findIndex((n) => n.tab === zone);
+          if (k >= 0) { this.pick = k; this.render(); } else this.go(zone as Tab);
+        });
+        this.rings.set(zone, b);
+        layer.append(b);
+      }
+      b.className = `bay-ring${i >= 0 ? ' sug' : ''}${i >= 0 && i === this.pick ? ' sel' : ''}${WEB.some((n) => n.tab === zone && (w.levels[n.id] ?? 0) > 0) ? ' fitted' : ''}`;
+      const name = t(TABS[zone as Tab].name);
+      b.setAttribute('aria-label', i >= 0 ? `${name} · ${nameOf(picks[i]!.id)}` : name);
+    }
+    for (const [zone, b] of this.rings) if (!live.has(zone)) { b.remove(); this.rings.delete(zone); }
+  }
+
+  /**
+   * Follow the ship: each ring sits on the centre of its zone's lights, every
+   * frame the bay is open. The camera looks along the ship, so several zones
+   * can land on one spot; rings closer than RING_GAP are pushed apart.
+   */
+  private placeRings(): void {
+    if (!this.open) return;
+    const at: Array<{ b: HTMLButtonElement; x: number; y: number }> = [];
+    for (const [zone, b] of this.rings) {
+      const pts = this.ship?.points(zone) ?? [];
+      if (!pts.length) continue;
+      let x = 0, y = 0;
+      for (const p of pts) { x += p[0]; y += p[1]; }
+      at.push({ b, x: (x / pts.length) * innerWidth, y: (y / pts.length) * innerHeight });
+    }
+    for (let pass = 0; pass < 6; pass++) {
+      for (let i = 0; i < at.length; i++) for (let j = i + 1; j < at.length; j++) {
+        const a = at[i]!, c = at[j]!;
+        let dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy);
+        if (d >= RING_GAP) continue;
+        if (d < 1) { dx = 0; dy = 1; d = 1; }
+        const push = (RING_GAP - d) / 2;
+        a.x -= (dx / d) * push; a.y -= (dy / d) * push;
+        c.x += (dx / d) * push; c.y += (dy / d) * push;
+      }
+    }
+    for (const r of at) {
+      r.b.style.left = `${(r.x / innerWidth) * 100}%`;
+      r.b.style.top = `${(r.y / innerHeight) * 100}%`;
+    }
+    this.ringRaf = requestAnimationFrame(() => this.placeRings());
   }
 
   private tabs(w: World): void {
