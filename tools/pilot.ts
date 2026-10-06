@@ -93,6 +93,9 @@ export interface PilotResult {
   /** Seconds with three or more hostiles in firing range at once, and the most there ever were. */
   crowd: number;
   peak: number;
+  /** The longest stretch, in seconds, with no hostile in firing range and no capital ship fighting, and how many times a hostile came into range from nothing. */
+  longestCalm: number;
+  contacts: number;
   /** The arcade's refit bay at the end: the budgets drawn against the ratings. */
   budget: { use: { power: number; mass: number; heat: number }; cap: { power: number; mass: number; heat: number } };
   answers: Answer[];
@@ -505,6 +508,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   const answers: Answer[] = [];
   let fightStart = -1, fightFaction = '';
   let combat = 0, crowd = 0, peak = 0;
+  let calmRun = 0, longestCalm = 0, contacts = 0, wasNear = false;
   let lastLost = 0, lastGained = 0;
   const lag = o.lag ?? 1;
   const queue: InputFrame[] = [];
@@ -545,6 +549,9 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     const near = w.aliens.filter((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < FIRE_RANGE * a.rgK).length;
     if (w.command.state === 'fight' || near > 0) combat += STEP;
     if (near >= 3) crowd += STEP;
+    const hot = w.command.state === 'fight' || near > 0;
+    if (hot) { calmRun = 0; if (!wasNear) contacts++; } else { calmRun += STEP; longestCalm = Math.max(longestCalm, calmRun); }
+    wasNear = hot;
     peak = Math.max(peak, near);
     const evs = w.drain();
     o.watch?.(w, evs);
@@ -576,5 +583,5 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     w.run.build = { ...w.levels };
     w.run.cause = 'survived';
   }
-  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, budget: budgets(w.levels), answers };
+  return { run: w.run, strategy: stratName(strategy), identity: identity(w.levels).title, lostByMinute, gainedByMinute, refitAt, bossFights, combat, crowd, peak, longestCalm, contacts, budget: budgets(w.levels), answers };
 }

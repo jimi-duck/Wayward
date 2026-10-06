@@ -295,7 +295,10 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   12); a few older lines sit over it with their own ceiling, listed there.
 - **A kind of system**: a row in `SYSTEMS` (`content/systems.ts`) and its
   place in `COL_KINDS` (`sim/chart.ts`); a word and a colour in
-  `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`.
+  `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`. Its
+  `pace` row gives the pursuit room to breathe: seconds before the first
+  pursuer, and the quiet after an answered card or a beaten pursuer. A
+  quiet system (a breather) has no pursuit at all, whatever its pace.
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 
