@@ -165,6 +165,7 @@
             <div class="vy-row heat"><span class="lbl">Hunt</span><b id="vy-heat">Wanted Lv 1</b></div>
             <i class="ticks" id="vy-heat-t"></i>
           </div>
+          <div class="ops" id="ops" role="status"></div>
           <div class="sec-id"><b id="sec-code">Sector 83-37</b><span id="sec-name">Asteroid field</span></div>
         </div>
       </section>
@@ -254,6 +255,7 @@
       <div class="bay">
         <header class="bay-h">
           <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><span><b id="bay-t">Refit bay</b><small>Choose a module to fit</small></span></span>
+          <span class="ops" id="bay-ops"></span>
           <span class="bay-krail" id="bay-krail"></span>
           <button type="button" id="bay-x"><kbd class="only-desktop">B</kbd> Launch</button>
         </header>
@@ -343,7 +345,9 @@
     <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
       <div class="pause-card panel">
+        <div class="pause-rule"><span>Ship system</span><span>Operational briefing</span></div>
         <div class="pause-t">All stop</div>
+        <ol class="pause-flow" id="pause-flow"></ol>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
         <!-- how to play: shown as the run starts, in either mode, and whenever you stop -->
         <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
@@ -361,6 +365,7 @@
           <div><dt><kbd>Z</kbd></dt><dd>Camera</dd></div>
         </dl>
         <div class="pause-build" id="pause-build"></div>
+        <div class="pause-rule pause-foot" id="pause-foot"></div>
       </div>
     </div>
     <!-- A phone held upright: the game plays on its side only, and waits. -->

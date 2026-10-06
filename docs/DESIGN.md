@@ -307,6 +307,21 @@ saying what running over costs. A capital ship destroyed opens her faction's tec
 HUD's Krail row counts toward the cheapest module in reach and lights the
 bay's key when one can be fitted.
 
+**The ship's console** (`ui/ops.ts`, `ui/briefing.ts`). One word says how
+things stand, on the HUD, the pause card and the bay: `◆ Observation` (teal,
+nothing near, the bay opens), `◆ Contact` (amber, something awake inside
+130 m), `◆ Battle` (red, the bay is locked: `World.inDanger`) and
+`◆ Critical` (red, blinking, one plate left). The arcade's pause card is the
+briefing: a rule above, a line of readings below, and the loop as three
+steps (Mine, Upgrade, Survive) each with a chip of where you stand now. In
+the bay the tab dots are state (amber fitted, teal ready, red over a rating
+through something fitted there, grey empty), Install names its price, the
+figures read as large before → after blocks, the overview carries Krail and
+the budgets with the selected module's draw ahead of them, and a fit lights
+the module and bumps the figures it moved. Not yet: the ship lit behind the
+bay by tab, a reason on each suggested card, a build profile.
+
+
 ## The refit: three cards (the Story mode)
 
 The Story mode still refits by cards until the bay reaches it (PLAN.md, R,

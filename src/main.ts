@@ -24,6 +24,7 @@ import { buildView, StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
 import { BayPanel } from './ui/bay';
+import { showBriefing } from './ui/briefing';
 import { detect, localize, onLang, plural, setLang, t } from './i18n';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -296,6 +297,7 @@ function boot(): void {
     if (on) {
       input.reset();
       el('pause-build').replaceChildren(buildView(world.levels));
+      showBriefing(world);
     }
   };
   // Phones and tablets take the whole screen where the browser allows it

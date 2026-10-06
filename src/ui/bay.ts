@@ -5,6 +5,7 @@ import { upgradeFigures } from '../sim/build';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
 import { icon, ICON } from './refit';
+import { opsOf, opsText } from './ops';
 import { num, t } from '../i18n';
 
 // ── the refit bay ─────────────────────────────────────────────────────────
@@ -58,6 +59,8 @@ export class BayPanel {
   private opened = 0;
   private tab: Tab = 'weapons';
   private sel: string | null = null;
+  /** The module just fitted and the budgets it moved: lit for a moment (see fit). */
+  private fresh: { id: string; moved: Set<string> } | null = null;
 
   constructor() {
     $('bay-x').addEventListener('click', (e) => { e.stopPropagation(); if (this.open) this.launch(); });
@@ -149,13 +152,18 @@ export class BayPanel {
   private fit(): void {
     const w = this.world;
     if (!w || !this.sel) return;
-    if (w.install(this.sel) === null) {
+    const before = budgets(w.levels), id = this.sel;
+    if (w.install(id) === null) {
+      const after = budgets(w.levels), moved = new Set<string>(['krail']);
+      for (const k of ['power', 'mass', 'heat'] as const) if (after.use[k] !== before.use[k] || after.cap[k] !== before.cap[k]) moved.add(k);
+      this.fresh = { id, moved };
       const el = $('bay-insp');
       el.classList.remove('done');
       void el.offsetWidth;
       el.classList.add('done');
     }
     this.render();
+    this.fresh = null;
   }
 
   // ── drawing ─────────────────────────────────────────────────────────────
@@ -163,6 +171,9 @@ export class BayPanel {
   private render(): void {
     const w = this.world;
     if (!w) return;
+    const o = opsOf(w);
+    $('bay-ops').className = `ops ${o}`;
+    $('bay-ops').textContent = opsText(o);
     $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.krail))), h('span', '', 'Krail'));
     this.tabs(w);
     this.web(w);
@@ -171,11 +182,15 @@ export class BayPanel {
   }
 
   private tabs(w: World): void {
+    const { use, cap } = budgets(w.levels);
     $('bay-tabs').replaceChildren(...TAB_ORDER.map((tab, i) => {
       const nodes = WEB.filter((n) => n.tab === tab);
       const fitted = nodes.reduce((a, n) => a + (w.levels[n.id] ?? 0), 0);
       const ready = nodes.some((n) => stateOf(w, n.id) === 'open');
-      const b = h('button', `bay-tab${tab === this.tab ? ' on' : ''}${ready ? ' ready' : ''}`, '', icon(TAB_ICON[tab]), h('span', 'bt-n', t(TABS[tab].name)), h('b', 'bt-c', String(fitted)), h('kbd', 'only-desktop', String(i + 1))) as HTMLButtonElement;
+      // the tab's state: over a soft rating through something fitted here (▲), ready to fit (◐), fitted (●), empty (○)
+      const over = (['mass', 'heat'] as const).some((k) => use[k] > cap[k] && nodes.some((n) => (w.levels[n.id] ?? 0) > 0 && (n.draw[k] ?? 0) > 0));
+      const dot = over ? 'over' : ready ? 'ready' : fitted ? 'fitted' : 'idle';
+      const b = h('button', `bay-tab ${dot}${tab === this.tab ? ' on' : ''}`, '', icon(TAB_ICON[tab]), h('span', 'bt-n', t(TABS[tab].name)), h('b', 'bt-c', String(fitted)), h('i', `bt-s ${dot}`), h('kbd', 'only-desktop', String(i + 1))) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', String(tab === this.tab));
@@ -215,7 +230,7 @@ export class BayPanel {
     const field = h('div', 'bay-nodes');
     for (const n of nodes) {
       const st = stateOf(w, n.id), lv = w.levels[n.id] ?? 0, max = maxLevel(n.id);
-      const b = h('button', `bay-node ${st}${n.id === this.sel ? ' sel' : ''}`) as HTMLButtonElement;
+      const b = h('button', `bay-node ${st}${n.id === this.sel ? ' sel' : ''}${n.id === this.fresh?.id ? ' fresh' : ''}`) as HTMLButtonElement;
       b.type = 'button';
       b.style.left = `${X(n)}%`;
       b.style.top = `${Y(n)}%`;
@@ -267,7 +282,7 @@ export class BayPanel {
     // the price, and the button
     const price = lv < max ? cost(id, lv + 1) : 0;
     if (lv < max) out.push(h('div', `bi-cost${why === 'krail' ? ' short' : ''}`, '', h('span', 'bc-l', t('Cost')), icon('i-rock'), h('b', '', num(price)), h('span', '', 'Krail')));
-    const btn = h('button', 'bi-go', why ? t(WHY[why]) : t('Install')) as HTMLButtonElement;
+    const btn = h('button', 'bi-go', why ? t(WHY[why]) : `${t('Install')} · ${num(price)} Krail`) as HTMLButtonElement;
     btn.type = 'button';
     btn.disabled = !!why;
     btn.addEventListener('click', (e) => { e.stopPropagation(); this.fit(); });
@@ -290,12 +305,14 @@ export class BayPanel {
     // the three budgets, with what the selected module would take
     const { use, cap } = budgets(w.levels);
     const sel = this.sel ? NODE[this.sel] : null, can = sel && (w.levels[sel.id] ?? 0) < maxLevel(sel.id);
-    $('bay-budget').replaceChildren(h('span', 'bf-h', t('Ship overview')), ...(['power', 'mass', 'heat'] as const).map((k) => {
+    $('bay-budget').replaceChildren(h('span', 'bf-h', t('Ship overview')), h('span', `bb krail${this.fresh ? ' bump' : ''}`, '', h('span', 'bb-l', 'Krail'), h('i', 'bb-gap'), h('b', 'bb-v', num(Math.floor(w.krail)))), ...(['power', 'mass', 'heat'] as const).map((k) => {
       const add = can ? sel!.draw[k] ?? 0 : 0;
       const bar = h('i', `bb-bar${use[k] > cap[k] ? ' over' : ''}`);
+      const val = h('b', `bb-v${this.fresh?.moved.has(k) ? ' bump' : ''}`, '', document.createTextNode(`${use[k]}/${cap[k]}`));
+      if (add) val.append(h('em', '', ` → ${use[k] + add}`));
       bar.style.setProperty('--v', Math.min(1, use[k] / cap[k]).toFixed(3));
       bar.style.setProperty('--a', Math.min(1, (use[k] + add) / cap[k]).toFixed(3));
-      return h('span', `bb ${k}`, '', h('span', 'bb-l', t(BUDGET_WORD[k])), bar, h('b', 'bb-v', `${use[k]}/${cap[k]}`));
+      return h('span', `bb ${k}`, '', h('span', 'bb-l', t(BUDGET_WORD[k])), bar, val);
     }));
   }
 }

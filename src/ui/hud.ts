@@ -17,6 +17,7 @@ import { INK } from './palette';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
 import { cheapest } from '../sim/bay';
+import { opsOf, opsText } from './ops';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view in the brand's six zones, with nothing on
@@ -138,6 +139,7 @@ export class Hud {
   relabel(): void {
     this.modeKey = this.contactKey = this.powerKey = this.plateKey = '';
     this.levels = null;
+    this.ops = '';
     this.seed = -1;
   }
 
@@ -269,6 +271,7 @@ export class Hud {
   private updateText(world: World): void {
     this.updateSector(world);
     this.updateRail(world);
+    this.updateOps(world);
     this.updateVoyage(world);
     this.updateSystems(world);
     this.updateCentre(world);
@@ -320,6 +323,17 @@ export class Hud {
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
+  }
+
+  /** The operating state, one word (ui/ops.ts), set only when it changes. */
+  private ops = '';
+  private updateOps(world: World): void {
+    const o = opsOf(world);
+    if (o === this.ops) return;
+    this.ops = o;
+    const el = $('ops');
+    el.className = `ops ${o}`;
+    el.textContent = opsText(o);
   }
 
   private updateRail(world: World): void {
