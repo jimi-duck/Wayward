@@ -1122,6 +1122,19 @@ html.swipe #app * { overscroll-behavior: contain; }
 .resume-s[hidden] { display: none; }
 .panel.chartp { width: min(1180px, 100%); overflow-y: auto; gap: 12px; }
 .ch-news { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font: 400 13px/1.35 var(--font-display); color: var(--ink); }
+/* what the last system changed: teal for what came aboard, plain for what went (red is threat only) */
+.ch-chips { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.ch-chips:empty { display: none; }
+.ch-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border: 1px solid var(--line); background: rgba(8, 13, 14, .7); color: var(--ink-2);
+  font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
+.ch-chip b { font-weight: 600; color: var(--ink); }
+.ch-chip i { font-style: normal; font-size: 9px; }
+.ch-chip.up { border-color: var(--cy-dim); }
+.ch-chip.up i { color: var(--cy); }
+.ch-more { font: 400 12px/1.35 var(--font-display); color: var(--ink-2); }
+.ch-more[hidden] { display: none; }
+.ch-more summary { cursor: pointer; padding: 2px 0; font: 600 calc(9px * 1.18)/1.4 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
+.ch-more .ch-news { margin-top: 6px; }
 .ch-news:empty { display: none; }
 .ch-news li { padding-left: 10px; border-left: 2px solid var(--amber); }
 .ch-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr); gap: 16px; align-items: start; }

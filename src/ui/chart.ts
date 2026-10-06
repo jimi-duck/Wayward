@@ -5,7 +5,7 @@ import { fileLines } from '../sim/calloway';
 import { gateOf, jumps, cyriteKnown, lanesFrom, placeAt, regionCount, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
 import { REGIONS } from '../content/regions';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
-import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
+import { RATION, WRECKS, here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { act, actLine, fileCount } from '../sim/story';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -46,6 +46,7 @@ function project(shown: StarSystem[]): Proj {
   return { px: (s) => PAD_X + ((s.col - lo) / (hi - lo)) * (W - PAD_X * 2), py: (s) => PAD_Y + s.y * (H - PAD_Y * 2) };
 }
 const days = (n: number) => plural(n, '{n} day', '{n} days');
+const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { cyrite: 'Cyrite', krail: 'Krail', plates: 'Plates', parts: 'Parts', food: 'Food', chits: 'Chits' };
 const richWord = (k: number) => t(k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
 /** A place in a few words: what it is, and what it pays (a strange signal's is not known till it is read). */
@@ -81,9 +82,15 @@ export class ChartPanel {
   private ids: string[] = [];
   private onPick: ((id: string) => void) | null = null;
   private onGo: (() => void) | null = null;
+  private chips: Chip[] = [];
 
   get open(): boolean {
     return !$('chart').hidden;
+  }
+
+  /** What the last system changed, for the strip over the next chart or notice. */
+  debrief(chips: Chip[]): void {
+    this.chips = chips;
   }
 
   /** The chart, to plot the next jump. `lines`: what happened on the way here. */
@@ -166,7 +173,18 @@ export class ChartPanel {
   private begin(j: Journey, lines: string[]): void {
     this.close();
     this.opened = performance.now();
-    $('ch-news').replaceChildren(...lines.map((l) => h('li', '', t(l))));
+    // what the last system changed as chips, then the first two lines; the rest sit behind a tap
+    const shown = lines.slice(0, 2), rest = lines.slice(2);
+    $('ch-news').replaceChildren(...shown.map((l) => h('li', '', t(l))));
+    $('ch-more').hidden = !rest.length;
+    ($('ch-more') as HTMLDetailsElement).open = false;
+    $('ch-more-s').textContent = plural(rest.length, '{n} more line', '{n} more lines');
+    $('ch-more-l').replaceChildren(...rest.map((l) => h('li', '', t(l))));
+    $('ch-chips').replaceChildren(...this.chips.map((c) => {
+      const label = c.key === 'day' ? days(Math.abs(c.d)) : `${t(CHIP_WORD[c.key])} ${num(Math.abs(c.d))}`;
+      return h('span', `ch-chip ${c.key === 'day' ? 'day' : c.d > 0 ? 'up' : 'down'}`, '', c.key === 'day' ? null : h('i', '', c.d > 0 ? '▲' : '▼'), h('b', '', label));
+    }));
+    this.chips = [];
     this.renderStat(j);
     $('chart').hidden = false;
   }

@@ -10,7 +10,7 @@ import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
-import { bankAnswer, checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
+import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
@@ -188,9 +188,12 @@ function boot(): void {
   };
   const choose = (mode: 'arcade' | 'breakout') => { pick = mode; showResume(); };
   showResume();
+  /** The stocks and the day as this system began, to show what it changed. */
+  let sortieStart: Tally | null = null;
   /** Fly the journey's current system. */
   const startSortie = () => {
     const j = journey!;
+    sortieStart = tally(j);
     world.restart({ unlocked: grants(profile), modifiers: profile.modifiers, mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
     showMode();
     reported = false;
@@ -249,6 +252,7 @@ function boot(): void {
     const rec = recordRun(profile, world.run);
     const out = endSortie(j, world.result());
     saveJourney(j);
+    chart.debrief(sortieStart ? debrief(sortieStart, j) : []);
     const lines = [...out.lines, ...rec.unlocked.map((u) => `${t('Unlocked')} · ${t(u.name)}`)];
     if (out.kind === 'jumped') return openChart(lines);
     if (pending(j)) return threshold(j, lines);
@@ -465,7 +469,7 @@ function boot(): void {
   });
   loop.paused = true;
   // dev server only: a handle for tools/shots.mjs to put any screen up
-  if (import.meta.env.DEV) Object.assign(window, { wayward: { world, loop, launch, openChart, get journey() { return journey; } } });
+  if (import.meta.env.DEV) Object.assign(window, { wayward: { world, loop, launch, openChart, chart, get journey() { return journey; } } });
 
   // ── landscape only ─────────────────────────────────────────────────────
   // A phone held upright gets the turn screen over everything, and a run

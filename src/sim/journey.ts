@@ -445,5 +445,26 @@ export function bankAnswer(j: Journey, before: Carry, after: Carry): void {
   c.jobs = [...c.jobs.filter((x) => !had.has(key(x)) || has.has(key(x))), ...after.jobs.filter((x) => !had.has(key(x)) && !c.jobs.some((y) => key(y) === key(x)))];
 }
 
+/** The stocks and the day, taken at the start of a sortie, to show what it changed. */
+export interface Tally { cyrite: number; krail: number; plates: number; parts: number; food: number; chits: number; day: number }
+export const tally = (j: Journey): Tally => ({
+  cyrite: j.carry.cyrite, krail: j.carry.krail, plates: j.carry.plates, parts: j.carry.parts, food: j.carry.food, chits: j.carry.chits, day: j.day,
+});
+
+/** One change for the debrief strip: what moved, and by how much (days are tenths). */
+export interface Chip { key: keyof Tally; d: number }
+
+/** What a sortie changed, for the chart's strip: each stock that moved, then the days. Nothing that stayed the same. */
+export function debrief(was: Tally, j: Journey): Chip[] {
+  const now = tally(j), out: Chip[] = [];
+  for (const key of ['cyrite', 'krail', 'plates', 'parts', 'food', 'chits'] as const) {
+    const d = Math.round(now[key] - was[key]);
+    if (d) out.push({ key, d });
+  }
+  const d = Math.round((now.day - was.day) * 10) / 10;
+  if (d) out.push({ key: 'day', d });
+  return out;
+}
+
 /** Jumps from here to the Threshold by the shortest way. */
 export const toEdge = (j: Journey) => jumps(j.chart, j.at, j.chart.edge);

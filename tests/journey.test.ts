@@ -8,7 +8,7 @@ import {
 } from '../src/sim/chart';
 import { behind, daysUntil, huntOn, newHunt, SEARCH } from '../src/sim/hunt';
 import {
-  ADRIFT, bankAnswer, DAY, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, START_PARTS, WAITING, WEAR, WRECKS, type Journey,
+  ADRIFT, bankAnswer, DAY, debrief, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, START_PARTS, tally, WAITING, WEAR, WRECKS, type Journey,
 } from '../src/sim/journey';
 import { Rng } from '../src/sim/rng';
 import { newRun } from '../src/sim/run';
@@ -506,5 +506,24 @@ describe('banking an answer', () => {
     bankAnswer(j, before, after);
     expect(j.carry.food).toBe(0);
     expect(j.carry.flags).not.toContain('news');
+  });
+});
+
+describe('the debrief strip', () => {
+  it('lists only what a sortie changed, stocks first and the days last', () => {
+    const j = pastBreakout();
+    const was = tally(j);
+    j.carry.cyrite += 12;
+    j.carry.parts -= 2;
+    j.carry.plates -= 1;
+    j.day += 1.5;
+    expect(debrief(was, j)).toEqual([
+      { key: 'cyrite', d: 12 }, { key: 'plates', d: -1 }, { key: 'parts', d: -2 }, { key: 'day', d: 1.5 },
+    ]);
+  });
+
+  it('is empty when nothing moved', () => {
+    const j = pastBreakout();
+    expect(debrief(tally(j), j)).toEqual([]);
   });
 });
