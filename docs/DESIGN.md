@@ -287,7 +287,9 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   and conditional lines, `ships` for the read, `truths` if something is
   hidden, and choices with a tone, a hint, `needs` and `cost`, `loseIf` or
   `odds`, and `win` (and `lose`) outcomes. A flag a choice needs gets words
-  in `FLAGS`. The tests check every reference.
+  in `FLAGS`. The tests check every reference, and `tests/reading.test.ts`
+  holds each part to a word cap (text 24, hint 15, label 6, win and lose
+  12); a few older lines sit over it with their own ceiling, listed there.
 - **A kind of system**: a row in `SYSTEMS` (`content/systems.ts`) and its
   place in `COL_KINDS` (`sim/chart.ts`); a word and a colour in
   `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`.
