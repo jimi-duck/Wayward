@@ -9,7 +9,7 @@ import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
-import { clearJourney, loadJourney, saveJourney } from './meta/save';
+import { clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
 import { bankAnswer, checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
 import { sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
@@ -144,6 +144,47 @@ function boot(): void {
     }
     el('launch').textContent = pick === 'arcade' ? t('Start arcade') : j ? t('Continue story') : t('Start story');
     if (j) el('resume-s').textContent = resumeLine(j);
+    // a save that could not be read is said so, with the safety copy on offer if there is one
+    const bad = saveUnreadable() && !journey;
+    el('save-problem').textContent = t('Your saved journey could not be read.');
+    el('save-problem').hidden = !bad;
+    el('restore').hidden = !bad || !hasBackup();
+    renderSaves(live);
+  };
+  /** Export the saved journey to a file, or bring one back from a file. */
+  const renderSaves = (live: Journey | null) => {
+    const box = el('saves');
+    const btn = (label: string, f: () => void) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = t(label);
+      b.addEventListener('pointerdown', (e) => e.stopPropagation());
+      b.addEventListener('click', (e) => { e.stopPropagation(); f(); });
+      return b;
+    };
+    const out: HTMLElement[] = [];
+    if (live) {
+      out.push(btn('Export save', () => {
+        const url = URL.createObjectURL(new Blob([exportJourney(live)], { type: 'application/json' }));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wayward-day-${Math.floor(live.day) + 1}.json`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }));
+    }
+    out.push(btn('Import save', () => {
+      const pickFile = document.createElement('input');
+      pickFile.type = 'file';
+      pickFile.accept = 'application/json,.json';
+      pickFile.addEventListener('change', async () => {
+        const text = await pickFile.files?.[0]?.text();
+        const j = text ? importJourney(text) : null;
+        if (j) { journey = j; showResume(); } else el('save-problem').textContent = t('That file is not a Wayward save.'), el('save-problem').hidden = false;
+      });
+      pickFile.click();
+    }));
+    box.replaceChildren(...out);
   };
   const choose = (mode: 'arcade' | 'breakout') => { pick = mode; showResume(); };
   showResume();
@@ -472,6 +513,7 @@ function boot(): void {
   press('launch', go);
   press('fresh', () => launch('breakout'));
   press('cont', () => launch('breakout', true));
+  press('restore', () => { const j = restoreJourney(); if (j) { journey = j; pick = 'breakout'; showResume(); } });
   press('mode-arcade', () => choose('arcade'));
   press('mode-story', () => choose('breakout'));
   el('start').addEventListener('pointerdown', (e) => {

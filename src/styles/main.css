@@ -885,6 +885,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .start-card .resume-s { margin-top: calc(clamp(18px, 3.2vh, 30px) * -.6); text-shadow: 0 1px 6px rgba(0, 0, 0, .8); }
 #fresh { margin-top: calc(clamp(18px, 3.2vh, 30px) * -.5); }
 #fresh[hidden] { display: none; }
+#restore { margin-top: calc(clamp(18px, 3.2vh, 30px) * -.5); }
+#restore[hidden] { display: none; }
+.resume-s.warn { color: var(--hud-hi); }
 .tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(8, 13, 14, .7);
   font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
 .start-foot { grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 22px; }
