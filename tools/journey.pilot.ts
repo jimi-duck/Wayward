@@ -37,11 +37,13 @@ interface JourneyRun {
   /** Times it docked and plotted a different lane. */
   replots: number;
   answers: Array<{ card: string; choice: string }>;
+  /** Each system flown: its kind, whether it was a breather, its length, its longest quiet stretch and its hostile contacts (all in seconds). */
+  rest: Array<{ kind: string; quiet: boolean; time: number; calm: number; contacts: number; combat: number }>;
 }
 
 function flyJourney(seed: number, strat: Strategy, policy: Policy): JourneyRun {
   const j = newJourney(seed);
-  const out: JourneyRun = { j, stuck: false, combat: 0, hungryJumps: 0, nettedArrivals: 0, callowayCalls: 0, callowayFights: 0, replots: 0, answers: [] };
+  const out: JourneyRun = { j, stuck: false, combat: 0, hungryJumps: 0, nettedArrivals: 0, callowayCalls: 0, callowayFights: 0, replots: 0, answers: [], rest: [] };
   let n = 0;
   while (j.status !== 'over' && n < MAX_LEGS) {
     if (j.status === 'chart') {
@@ -58,6 +60,7 @@ function flyJourney(seed: number, strat: Strategy, policy: Policy): JourneyRun {
     };
     const res = flyWorld(w, seed * 31 + n, strat, { maxTime: 1200, breakout: true, policy, onDock });
     out.combat += res.combat;
+    out.rest.push({ kind: def.kind, quiet: !!def.quiet, time: w.runTime, calm: res.longestCalm, contacts: res.contacts, combat: res.combat });
     out.answers.push(...res.answers.map((a) => ({ card: a.card, choice: a.choice })));
     for (const a of res.answers) if (a.card === 'calloway_here') { out.callowayCalls++; if (a.choice === 'fight' || a.fight) out.callowayFights++; }
     if (w.phase !== 'over') { out.stuck = true; break; }
@@ -101,6 +104,12 @@ it('flies whole journeys', { timeout: 7_200_000 }, () => {
     kinds.get(k)!.push({ time: l.time, wrecked: l.ended === 'destroyed' });
   }
   const kindRows = [...kinds.entries()].map(([k, v]) => `| ${k} | ${v.length} | ${mmss(mean(v.map((x) => x.time)))} | ${pct(v.filter((x) => x.wrecked).length / v.length)} |`);
+  // rest: the longest stretch with nothing hostile in range, and how often something came
+  const restOf = (v: JourneyRun['rest']) => `${v.length} | ${mmss(mean(v.map((x) => x.calm)))} | ${mmss(mean(v.map((x) => x.time / Math.max(1, x.contacts))))} | ${pct(mean(v.map((x) => x.combat / Math.max(1, x.time))))}`;
+  const allRest = all.flatMap((r) => r.rest);
+  const restRows = [...new Set(allRest.map((x) => x.kind))].map((k) => `| ${k} | ${restOf(allRest.filter((x) => x.kind === k && !x.quiet))} |`);
+  const quietRest = allRest.filter((x) => x.quiet);
+  if (quietRest.length) restRows.push(`| breather | ${restOf(quietRest)} |`);
   // the Prefect's choices, and the M3 cards
   const m3 = ['calloway_here', 'calloway_word', 'lane_toll', 'port_scan', 'port_news', 'food_trader', 'drift_fleet', 'holdout', 'relay', 'false_trail', ...OFFERS.map((o) => o.id), 'calloway_last'];
   const cardRows = m3.map((id) => {
@@ -154,6 +163,17 @@ ${curve.join('\n')}
 | Kind | Sorties | Mean length | Wrecked |
 |---|---|---|---|
 ${kindRows.join('\n')}
+
+## Rest
+
+How much room the journey leaves between fights. "Longest quiet" is the
+longest stretch of a sortie with no hostile in firing range, "Between
+contacts" the sortie's length divided by the times something came into range.
+Breathers per journey: ${mean(all.map((r) => r.rest.filter((x) => x.quiet).length)).toFixed(1)}, ${pct(allRest.filter((x) => x.quiet).length / Math.max(1, allRest.length))} of the systems flown.
+
+| Kind | Sorties | Longest quiet | Between contacts | Time in combat |
+|---|---|---|---|---|
+${restRows.join('\n')}
 
 ## The Net and the galley
 

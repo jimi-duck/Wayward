@@ -46,36 +46,38 @@ export interface SystemTemplate {
   heatRate: number;
   /** Seconds before the first chance call, and a multiplier on the gap between them. */
   calls: number;
+  /** The pursuit's room to breathe: seconds before the first pursuer, and the quiet that follows an answered card or a beaten pursuer. */
+  pace: { first: number; calm: number };
 }
 
 export const SYSTEMS: Record<SystemKind, SystemTemplate> = {
   home: {
     kind: 'home', blurb: 'Kellern Mining’s yards. Home, until today.', holders: ['kellern'],
-    cyrite: [0.4, 0.4], food: [0, 0], port: 1, lane: [2600, 2600], rich: 0.09, density: 1, gutter: 0.22, heat: 0.1, heatRate: 1, calls: 1,
+    cyrite: [0.4, 0.4], food: [0, 0], port: 1, lane: [2600, 2600], rich: 0.09, density: 1, gutter: 0.22, heat: 0.1, heatRate: 1, calls: 1, pace: { first: 45, calm: 0 },
   },
   mining: {
     kind: 'mining', blurb: 'Veined rock and a few claim crews. Cyrite if you will cut for it.', holders: ['kellern', 'guild', 'none'],
-    cyrite: [0.6, 1], food: [0, 0.3], port: 0.4, lane: [2200, 2700], rich: 0.16, density: 1.15, gutter: 0.3, heat: 0.05, heatRate: 0.85, calls: 1.2,
+    cyrite: [0.6, 1], food: [0, 0.3], port: 0.4, lane: [2200, 2700], rich: 0.16, density: 1.15, gutter: 0.3, heat: 0.05, heatRate: 0.85, calls: 1.2, pace: { first: 75, calm: 18 },
   },
   port: {
     kind: 'port', blurb: 'A station with a market, a galley and a refit bay. Busy, and watched.', holders: ['frontier', 'guild'],
-    cyrite: [0.2, 0.5], food: [0.6, 1], port: 1, lane: [2200, 2600], rich: 0.07, density: 0.9, gutter: 0.15, heat: 0.12, heatRate: 1.1, calls: 0.85,
+    cyrite: [0.2, 0.5], food: [0.6, 1], port: 1, lane: [2200, 2600], rich: 0.07, density: 0.9, gutter: 0.15, heat: 0.12, heatRate: 1.1, calls: 0.85, pace: { first: 55, calm: 12 },
   },
   transit: {
     kind: 'transit', blurb: 'Empty space between lanes. Quick, quiet, and nothing to eat.', holders: ['none'],
-    cyrite: [0.1, 0.35], food: [0, 0], port: 0, lane: [1500, 1900], rich: 0.06, density: 0.65, gutter: 0.25, heat: 0.04, heatRate: 0.75, calls: 1.5,
+    cyrite: [0.1, 0.35], food: [0, 0], port: 0, lane: [1500, 1900], rich: 0.06, density: 0.65, gutter: 0.25, heat: 0.04, heatRate: 0.75, calls: 1.5, pace: { first: 60, calm: 14 },
   },
   contested: {
     kind: 'contested', blurb: 'Gutter crews and Custody patrols, both looking for a prize.', holders: ['gutter'],
-    cyrite: [0.35, 0.75], food: [0.2, 0.5], port: 0.5, lane: [2300, 2800], rich: 0.1, density: 1.05, gutter: 0.55, heat: 0.18, heatRate: 1.15, calls: 0.8,
+    cyrite: [0.35, 0.75], food: [0.2, 0.5], port: 0.5, lane: [2300, 2800], rich: 0.1, density: 1.05, gutter: 0.55, heat: 0.18, heatRate: 1.15, calls: 0.8, pace: { first: 38, calm: 8 },
   },
   gate: {
     kind: 'gate', blurb: 'The one way through to the next region. Everyone passes here.', holders: ['none'],
-    cyrite: [0.25, 0.45], food: [0, 0.2], port: 0.5, lane: [2200, 2500], rich: 0.08, density: 0.9, gutter: 0.35, heat: 0.12, heatRate: 1.05, calls: 0.9,
+    cyrite: [0.25, 0.45], food: [0, 0.2], port: 0.5, lane: [2200, 2500], rich: 0.08, density: 0.9, gutter: 0.35, heat: 0.12, heatRate: 1.05, calls: 0.9, pace: { first: 45, calm: 10 },
   },
   edge: {
     kind: 'edge', blurb: 'The last lane the old charts know. Beyond it, the Scatter.', holders: ['none'],
-    cyrite: [0.2, 0.4], food: [0, 0], port: 0, lane: [2400, 2400], rich: 0.08, density: 0.9, gutter: 0.3, heat: 0.1, heatRate: 1, calls: 1,
+    cyrite: [0.2, 0.4], food: [0, 0], port: 0, lane: [2400, 2400], rich: 0.08, density: 0.9, gutter: 0.3, heat: 0.1, heatRate: 1, calls: 1, pace: { first: 45, calm: 10 },
   },
 };
 

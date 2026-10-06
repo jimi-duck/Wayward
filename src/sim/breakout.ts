@@ -147,6 +147,8 @@ export interface SortieDef {
   quiet?: boolean;
   /** A multiplier on the gap between chance calls. */
   calls: number;
+  /** The pursuit's room to breathe (content/systems.ts): the first pursuer's time, and the quiet after an answered card or a beaten pursuer. The Breakout has none. */
+  pace?: { first: number; calm: number };
   /** A Custody blockade holds the lane mouth (Cerro, and every netted system). */
   blockade: boolean;
   netted: boolean;
@@ -330,7 +332,7 @@ export interface Breakout {
 export function newBreakout(heading: number, def: SortieDef = HOME): Breakout {
   const c = course(heading, 0, 0, def);
   return {
-    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: PURSUIT_FIRST, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, portCooled: false, docks: 0,
+    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }
