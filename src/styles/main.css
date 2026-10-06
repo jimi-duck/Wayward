@@ -1625,6 +1625,11 @@ html:not(.breakout) .pause-card #brief { display: none; }
   .bi-go:disabled { background: #0b1011; }
   .bi-note { display: none; }
 }
+/* a phone on its side: the words carry the header, the tabs and the inspector, so their icons go (the module glyphs on the cards and the web stay) */
+@media (max-height: 520px) {
+  .bay-k > .ico, .bay-krail .ico, .bay-tab > .ico:first-child, .bay-tab-h > .ico, .bi-oct { display: none; }
+  .bi-h { grid-template-columns: 1fr; }
+}
 
 /* touch: the buttons own the bottom right, so the badge and the state sit under the ship panel */
 .touch-ui #log { top: calc(var(--top) + var(--sys-h, 150px) + 8px); bottom: auto; width: auto; justify-items: end; gap: 6px; }
