@@ -355,10 +355,13 @@ function boot(): void {
   // that launches, and in an embedded frame that click also gives the page
   // keyboard focus.
   let started = false;
+  /** The pause card has been up since the launch: only a resume from it counts as the briefing read. */
+  let carded = false;
   document.documentElement.classList.add('prelaunch');
   const setPaused = (on: boolean) => {
-    // the first stop of the first arcade run is the briefing; once read, it is the pause card
-    if (!on && loop.paused && started && !world.bk && !profile.briefed) { profile.briefed = true; saveProfile(profile); }
+    // the first stop of the first run is the briefing; once read, it is the pause card
+    if (!on && loop.paused && started && carded && !profile.briefed) { profile.briefed = true; saveProfile(profile); }
+    if (on && started) carded = true;
     loop.paused = on;
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
@@ -369,7 +372,7 @@ function boot(): void {
   };
   /** The briefing's live parts: its title, the bay's count, Auto-refit. */
   const showBrief = () => {
-    const first = !world.bk && !profile.briefed;
+    const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
     el('pause-t').textContent = t(first ? 'Briefing' : 'All stop');
     const n = quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
