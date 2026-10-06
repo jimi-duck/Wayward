@@ -449,7 +449,10 @@ Second pass (the acts and the Run): `content/story.ts` and `sim/story.ts`.
 The journey has three acts: the Breakout until the first jump, the Run
 through the Reach and the Marches, the Choice from the Hollows on. The chart
 names the act and counts the file ("Act II · The Run · File 1/4"), and the
-jump that starts an act says so. Six story beats, one a sortie, each a comms
+jump that starts an act says so. Act I has one call of its own: Tam Okoro,
+the yard foreman in Cerro, offers forged codes (the checkpoint's spoof) for
+all your parts, or Cyrite for the first jump at a little heat, 40 s in.
+Six story beats, one a sortie, each a comms
 card in its region (a missed one comes later): Ilse Marrow, a Lane Warden
 who heard the shutdown order; Ansel Brook with Kellern's real ledger; the
 moot at Kessel Hold; Mother Saffi of the Long Walk with the lost ships'

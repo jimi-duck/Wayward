@@ -31,6 +31,8 @@ export const ACTS: Act[] = [
 export const CHOICE_REGION = 2;
 /** Seconds into a sortie before the story beat calls. */
 export const STORY_AT = 40;
+/** Act I's one beat: a call from the yard in Cerro, before the first jump. */
+export const YARD_BEAT = 'story_yard';
 
 /** A piece of the Severance's history: the flag that carries it, and how the Archive names it. */
 export interface Fragment {
@@ -80,6 +82,18 @@ const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: '
 
 /** The beats' cards. Short on words: what each answer is for shows in its chips (sim/gains.ts). */
 export const STORY_CARDS: CardDef[] = [
+  // ── Act I, the Breakout ─────────────────────────────────────────────────
+  story({
+    id: 'story_yard', kind: 'trade', caller: 'miners',
+    from: 'Tam Okoro · yard foreman', title: 'The gate crew owes you',
+    text: '“The gate crew looks away for a minute, Juno. I can get you codes, or fill your tank. Not both.”',
+    cargo: 'Cerro yard · one open bay',
+    choices: [
+      { id: 'codes', label: 'Take the codes', tone: 'pay', hint: 'A clean ID at the lane, if it passes the scan. Costs all your parts.', cost: { parts: 4 }, win: { text: 'Forged codes loaded', flag: 'codes' } },
+      { id: 'fuel', label: 'Fill the tank', tone: 'help', hint: 'Enough Cyrite for the first jump. The yard logs it.', win: { text: 'Tank topped up · the yard logs it', cyrite: 14, heat: 0.06 } },
+      { id: 'wave', label: 'Wave him off', tone: 'refuse', hint: 'Keep your parts and your record.', win: { text: 'Okoro closes the channel' } },
+    ],
+  }),
   // ── Act II, the Reach ───────────────────────────────────────────────────
   story({
     id: 'story_warden', kind: 'rumour', caller: 'miners',

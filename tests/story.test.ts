@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEATS, FRAGMENTS, STORY_AT, STORY_CARDS } from '../src/content/story';
+import { BEATS, FRAGMENTS, STORY_AT, STORY_CARDS, YARD_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
 import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
@@ -57,7 +57,7 @@ describe('the acts', () => {
 
 describe('the story beats', () => {
   it('are real cards, never dealt by chance', () => {
-    for (const b of BEATS) expect(CARD_BY_ID[b.card]?.trigger, b.card).toBe('story');
+    for (const card of [YARD_BEAT, ...BEATS.map((b) => b.card)]) expect(CARD_BY_ID[card]?.trigger, card).toBe('story');
     const seen = new Set<string>();
     for (let i = 0; i < 200; i++) {
       const c = pickCard(ctx(), seen, new Rng(i));
@@ -65,10 +65,12 @@ describe('the story beats', () => {
     }
   });
 
-  it('come one a sortie: none in Cerro, this region’s first, and a missed one later', () => {
+  it('come one a sortie: the yard’s call in Cerro, this region’s first, and a missed one later', () => {
     const j = newJourney(7);
+    expect(dueBeat(j)).toBe(YARD_BEAT);
+    expect(sortieDef(j).story).toBe(YARD_BEAT);
+    j.carry.seen.push(YARD_BEAT);
     expect(dueBeat(j)).toBeNull();
-    expect(sortieDef(j).story ?? null).toBeNull();
     endSortie(j, result(j));
     expect(dueBeat(j)).toBe('story_warden');
     expect(sortieDef(j).story).toBe('story_warden');
@@ -105,10 +107,31 @@ describe('the story beats', () => {
     expect(w.result().carry.seen).toContain('story_warden');
   });
 
+  it('open with the yard’s call in Cerro, whose answers set the first lane up', () => {
+    const play = (answer: string) => {
+      const j = newJourney(7);
+      const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
+      w.cardNext = Infinity;
+      w.bk!.nextPursuit = Infinity;
+      w.field.rocks = [];
+      for (let t = 0; t < (STORY_AT + 2) * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' }); }
+      expect(w.comms?.def.id).toBe(YARD_BEAT);
+      const before = w.result().carry;
+      w.answer(answer);
+      return { before, after: w.result().carry };
+    };
+    const fuel = play('fuel');
+    expect(fuel.after.cyrite).toBe(fuel.before.cyrite + 14);
+    const codes = play('codes');
+    expect(codes.after.flags).toContain('codes');
+    expect(codes.after.parts).toBe(codes.before.parts - 4);
+    expect(codes.after.seen).toContain(YARD_BEAT);
+  });
+
   it('show what each answer gives before any other chip', () => {
     for (const c of STORY_CARDS) {
       const story = c.choices.filter((ch) => [ch.win.flag ?? []].flat().length);
-      for (const ch of story) expect(gains(ch.win, ctx(), 0)[0], `${c.id}.${ch.id}`).toMatch(/File \+1|Ally|Buyer|Lane keys|Copy out/);
+      for (const ch of story) expect(gains(ch.win, ctx(), 0)[0], `${c.id}.${ch.id}`).toMatch(/File \+1|Ally|Buyer|Lane keys|Copy out|Forged codes/);
     }
   });
 });
