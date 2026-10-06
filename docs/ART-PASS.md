@@ -59,9 +59,7 @@ pass, no new files).
 
 ## Where it meets the open PRs
 
-- **#60 (tab icons)** is merged into `claude/refit-bay-plan`, which is behind
-  `main` since #58 merged. This branch merges that branch, so the new icons are
-  the base and #60's commit rides in this PR's diff until #60 is retargeted.
+- **#60 (tab icons)** is going to `main` as #61. This branch is on `main` without it, so the tab glyphs in the screenshots are today's; the new icons drop into the same slot and need no change here.
 - **#59 (step 1, rings on the ship)** edits `bay.ts` `render`/`show`, the
   camera rig and the Suggested CSS. This pass touches `tabs()`,
   `inspector()`, `budgetBar()` and new CSS blocks only, so the two should merge
