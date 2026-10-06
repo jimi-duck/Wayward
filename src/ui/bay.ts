@@ -3,7 +3,7 @@ import { UPGRADE } from '../content/upgrades';
 import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
 import { blockOf, budgets, cost, fee, maxLevel, nodeName, nodeText, quickPicks, type Block } from '../sim/bay';
 import type { Advice } from '../sim/advice';
-import { upgradeFigures } from '../sim/build';
+import { upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
 import { profileOf } from '../sim/profile';
 import type { World } from '../sim/world';
@@ -86,6 +86,14 @@ function fitWord(w: World, id: string, why: Block | null): string {
 /** The Arcade mode: three picks, no web (the Story mode has no bk of its own here, so `!w.bk` is the arcade, as for fee). */
 const isArcade = (w: World) => !w.bk;
 
+/** One figure as a chip: what it moves and by how much. Teal with an arrow for a gain, amber and no arrow for a cost; before and after are in the tooltip. */
+function deltaChip(f: Fig, cls = 'dl'): HTMLElement {
+  const chip = h('span', `${cls}${f.cost ? ' cost' : ''}`, '', h('span', 'dl-l', t(f.label)),
+    h('b', 'dl-v', '', ...(f.cost ? [] : [h('i', 'dl-a')]), document.createTextNode(t(f.delta))));
+  chip.title = `${t(f.label)}: ${t(f.from)} → ${t(f.to)}`;
+  return chip;
+}
+
 /** The views: the suggestions, then every tab with something for this mode (Signals is the Story mode's). */
 const viewsOf = (w: World): View[] => ['picks', ...TAB_ORDER.filter((tab) => WEB.some((n) => n.tab === tab && blockOf(n.id, { ...w.bayCtx(), krail: Infinity }) !== 'mode'))];
 
@@ -114,6 +122,8 @@ export class BayPanel {
   private sel: string | null = null;
   /** The suggestion selected, in the Suggested view. */
   private pick = 0;
+  /** The inspector's details (the paragraph, the advice, every figure, the note) are open. */
+  private more = false;
   /** Auto-refit, and what to tell when it is switched. */
   auto = false;
   onAuto: (on: boolean) => void = () => {};
@@ -535,7 +545,7 @@ export class BayPanel {
         ...(why1 ? [h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why1.text, why1.vars)}`))] : []),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
         h('span', 'pc-text', textOf(n.id, Math.min(max, lv + 1))),
-        fig ? h('span', 'pc-fig', '', h('span', '', t(fig.label)), h('b', '', t(fig.to))) : h('span', 'pc-fig'),
+        fig ? deltaChip(fig, 'dl pc-fig') : h('span', 'pc-fig'),
         go,
       );
       return card;
@@ -616,7 +626,7 @@ export class BayPanel {
     $('bay-web').replaceChildren(svg, field);
   }
 
-  /** The selected module: what it does, the numbers it changes, what it would leave the ship, and Fit with its price. */
+  /** The selected module: its name and level, what each figure changes, what it draws, and Fit with its price. The paragraph, the advice and the note sit behind (i). */
   private inspector(w: World): void {
     const id = this.sel;
     const el = $('bay-insp');
@@ -624,15 +634,19 @@ export class BayPanel {
     const node = NODE[id]!;
     const lv = w.levels[id] ?? 0, max = maxLevel(id), next = Math.min(max, lv + 1);
     const why = blockOf(id, w.bayCtx());
+    const info = h('button', `bi-i${this.more ? ' on' : ''}`, 'i') as HTMLButtonElement;
+    info.type = 'button';
+    info.title = t('Details');
+    info.setAttribute('aria-label', t('Details'));
+    info.setAttribute('aria-expanded', String(this.more));
+    info.addEventListener('click', (e) => { e.stopPropagation(); this.more = !this.more; this.render(); });
     const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', nodeIcon(id)),
-      h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips(lv, max, lv < max))));
+      h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips(lv, max, lv < max))), info);
     const adv = lv < max && !why ? this.advice(w).get(id) : undefined;
-    const out: HTMLElement[] = [head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(adv.text, adv.vars)}`))] : []), h('p', 'bi-text', textOf(id, next))];
+    const figs = lv < max ? upgradeFigures(w.levels, id, !w.bk) : [];
+    const out: HTMLElement[] = [head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`))] : [])];
     if (lv < max) {
-      const figs = h('div', 'bi-figs');
-      for (const f of upgradeFigures(w.levels, id, !w.bk).slice(0, 3)) {
-        figs.append(h('div', `fig${f.cost ? ' cost' : ''}`, '', h('span', 'f-l', t(f.label)), h('span', 'f-v', '', h('s', '', t(f.from)), document.createTextNode(' → '), h('b', '', t(f.to)))));
-      }
+      if (figs.length) out.push(h('div', 'bi-dl', '', ...figs.slice(0, 3).map((f) => deltaChip(f))));
       // what it draws, as chips: +1 power, +2 heat
       const { use, cap } = budgets(w.levels);
       const chips = h('div', 'bi-chips');
@@ -643,13 +657,17 @@ export class BayPanel {
         if (g) chips.append(h('span', `chip ${k} gives`, `${t(BUDGET_WORD[k])} ${t('limit')} +${g}`));
         if (d && k !== 'power' && use[k] + d > cap[k]) warn.push(t(OVER_WORD[k]));
       }
-      out.push(figs);
       if (chips.childElementCount) out.push(chips);
       out.push(...warn.map((x) => h('p', 'bi-warn', x)));
     }
-    // flavour comes after the numbers, then the price
-    const note = UPGRADE[id]?.note;
-    if (note) out.push(h('p', 'bi-note', t(note)));
+    if (this.more) {
+      const note = UPGRADE[id]?.note;
+      out.push(h('div', 'bi-more', '',
+        ...(adv ? [h('p', 'bi-why', t(adv.text, adv.vars))] : []),
+        h('p', 'bi-text', textOf(id, next)),
+        ...figs.map((f) => h('p', `bi-fl${f.cost ? ' cost' : ''}`, '', h('span', '', t(f.label)), h('span', '', `${t(f.from)} → ${t(f.to)}`))),
+        ...(note ? [h('p', 'bi-note', t(note))] : [])));
+    }
     const btn = h('button', 'bi-go', '') as HTMLButtonElement;
     btn.type = 'button';
     btn.disabled = !!why;

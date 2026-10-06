@@ -692,4 +692,5 @@ export const UI: Record<string, string> = {
   'Swipe up': 'Nach oben wischen',
   'for the whole screen, with no tabs or bars': 'für den ganzen Bildschirm, ohne Tabs und Leisten',
   'Keep the bars': 'Leisten behalten',
+  'Details': 'Details',
 };
