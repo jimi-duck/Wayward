@@ -33,7 +33,11 @@ A sortie with a shape: get the stolen hauler out of the home system
 - **The port.** Slow inside its ring for a second and the clamps take you
   (`phase: 'dock'`): sell the hold (2 chits an ore), buy Cyrite (5), patch a
   plate (30), or open the refit bay, where the yard's work is done. The
-  first dock takes 0.2 off the hunt pressure.
+  first dock takes 0.2 off the hunt pressure. The panel leads with one tap,
+  the **sensible stop** (`sim/stop.ts`): sell the hold, then buy what the
+  chits reach, most pressing first (Cyrite for the jump, food up to six, the
+  hull whole, Cyrite for a second jump). Its row shows what it will do as
+  chips; the one-at-a-time rows sit under "By hand".
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
   more) and the cutter's noise. It decides how often pursuers come, how
   many at once and which: pickets, then cruisers, enforcers and, late,

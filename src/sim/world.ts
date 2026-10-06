@@ -44,6 +44,7 @@ import type { Prices } from '../content/systems';
 import { autoPick, install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
 import { feelBudgets } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
+import { planStop, type Stop } from './stop';
 import { reasonOf, type Advice } from './advice';
 import { voiceId, voiceText } from './voice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
@@ -792,6 +793,20 @@ export class World implements EncounterHost {
     else if (item === 'food') this.food++;
     else this.repair(1);
     return true;
+  }
+
+  /** What the port would do for a sensible stop now (sim/stop.ts). */
+  planStop(): Stop {
+    return planStop({ ore: this.ore, chits: this.chits, prices: this.prices, cyrite: this.cyrite, jumpCost: this.jumpCost, food: this.food, plates: this.plates, maxPlates: this.stats.maxPlates });
+  }
+
+  /** At the port: the sensible stop. Returns what it did. */
+  sensibleStop(): Stop {
+    const plan = this.planStop();
+    if (this.phase !== 'dock') return { sell: false, cyrite: 0, food: 0, plate: 0, chits: 0 };
+    if (plan.sell) this.sellOre();
+    for (const item of ['cyrite', 'food', 'plate'] as const) for (let i = 0; i < plan[item]; i++) this.buy(item);
+    return plan;
   }
 
   /** Docked: the journey plotted another lane out of here (sim/journey.ts replot). The lane mouth stays where it is. */
