@@ -10,7 +10,7 @@ import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { clearJourney, loadJourney, saveJourney } from './meta/save';
-import { checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
+import { bankAnswer, checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
 import { sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
@@ -233,7 +233,13 @@ function boot(): void {
     } else if (world.phase === 'comms' && world.comms && !comms.open) {
       input.reset();
       shown = world.comms;
-      comms.show(cardView(world.comms), (i) => { world.answer(i); input.reset(); });
+      comms.show(cardView(world.comms), (i) => {
+        // the answer is banked in the journey now, so a closed tab does not take it back
+        const before = world.carry();
+        world.answer(i);
+        if (journey && world.mode === 'breakout' && journey.status === 'sortie') { bankAnswer(journey, before, world.carry()); saveJourney(journey); }
+        input.reset();
+      });
     } else if (world.phase === 'dock' && !port.open) {
       // docked at the port, or back from its refit bay
       input.reset();

@@ -424,5 +424,26 @@ export function checkpoint(j: Journey, c: Carry): void {
   j.carry = { ...c, flags: [...c.flags], jobs: c.jobs.map((x) => ({ ...x })), seen: [...c.seen] };
 }
 
+/**
+ * A comms or story answer, banked at once: what it changed in the ship's carry
+ * (stock spent or won, flags, standing, cards heard, jobs) is written into the
+ * journey, so a closed tab costs flight time and not the choice. Only the
+ * change is applied, so the stock mined so far this sortie is not banked with it.
+ */
+export function bankAnswer(j: Journey, before: Carry, after: Carry): void {
+  const c = j.carry;
+  for (const k of ['cyrite', 'krail', 'ore', 'parts', 'chits', 'food'] as const) c[k] = Math.max(0, c[k] + after[k] - before[k]);
+  const diff = (a: string[], b: string[]) => a.filter((x) => !b.includes(x));
+  c.flags = [...diff(c.flags, diff(before.flags, after.flags)), ...diff(diff(after.flags, before.flags), c.flags)];
+  c.seen = [...c.seen, ...diff(diff(after.seen, before.seen), c.seen)];
+  for (const k of Object.keys(after.standing) as Array<keyof Carry['standing']>) {
+    const d = (after.standing[k] ?? 0) - (before.standing[k] ?? 0);
+    if (d) c.standing[k] = (c.standing[k] ?? 0) + d;
+  }
+  const key = (x: Carry['jobs'][number]) => JSON.stringify(x);
+  const had = new Set(before.jobs.map(key)), has = new Set(after.jobs.map(key));
+  c.jobs = [...c.jobs.filter((x) => !had.has(key(x)) || has.has(key(x))), ...after.jobs.filter((x) => !had.has(key(x)) && !c.jobs.some((y) => key(y) === key(x)))];
+}
+
 /** Jumps from here to the Threshold by the shortest way. */
 export const toEdge = (j: Journey) => jumps(j.chart, j.at, j.chart.edge);
