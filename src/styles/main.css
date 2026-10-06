@@ -1876,3 +1876,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 }
 @media (max-width: 600px) and (min-height: 521px) { .pause-card .howto li { grid-template-columns: 2.4em minmax(0, 1fr); } .pause-card .howto span { grid-column: 2; } }
 @media (prefers-reduced-motion: reduce) { .pause-card.term .voice::after { animation: none; } }
+
+/* the Story pause card: the briefing once in full, then the three steps and the buttons */
+html.breakout #pause:not(.first) .term-s.full { display: none; }
