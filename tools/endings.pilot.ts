@@ -28,7 +28,7 @@ function planRoute(j: Journey): string {
     j.at = o.to.id;
     const left = o.to.kind === 'edge' ? 0 : toEdge(j);
     j.at = at;
-    const v = -left * 40 - o.route.krail * 1.2 - (o.netted ? 35 : 0) - (o.shadow ? 30 : 0);
+    const v = -left * 40 - o.route.cyrite * 1.2 - (o.netted ? 35 : 0) - (o.shadow ? 30 : 0);
     if (v > bestV) { bestV = v; best = o.to.id; }
   }
   return best;

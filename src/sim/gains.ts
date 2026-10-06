@@ -24,9 +24,9 @@ const STORY_SHORT: Record<string, string> = {
   frag_order: 'File +1', frag_ledger: 'File +1', frag_manifests: 'File +1', frag_keys: 'File +1',
   pact_holdfast: 'Ally', pact_drift: 'Ally', broker: 'Buyer', lane_keys: 'Lane keys', copy_warden: 'Copy out', voice_read: 'Copy out',
 };
-const WHAT: Array<[keyof Cost, string]> = [['krail', 'Krail'], ['chits', 'chits'], ['ore', 'ore'], ['parts', 'parts'], ['food', 'food']];
+const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['chits', 'chits'], ['ore', 'ore'], ['parts', 'parts'], ['food', 'food']];
 
-const held = (x: Ctx, k: keyof Cost) => ({ chits: x.chits, krail: x.krail, ore: x.ore, parts: x.parts, food: x.food })[k];
+const held = (x: Ctx, k: keyof Cost) => ({ chits: x.chits, cyrite: x.cyrite, ore: x.ore, parts: x.parts, food: x.food })[k];
 
 /** An amount as a delta, without the comms module (which imports this one). */
 function delta(a: Amount | undefined, have: number, fee: number): number {

@@ -9,9 +9,9 @@ import type { SystemKind } from './systems';
 // these rows; a sortie plays the row's event once, a little after arrival;
 // the journey (sim/journey.ts) pays the reward if it went well.
 //
-// Not every system has one, and not every place pays in Krail:
+// Not every system has one, and not every place pays in Cyrite:
 //
-//   krail    · Krail aboard, straight into the tank.
+//   cyrite    · Cyrite aboard, straight into the tank.
 //   parts    · salvage: drive parts and kit for the ship's systems.
 //   cover    · somewhere to lose the trail: Calloway is held up.
 //   shortcut · a lane the charts never had, from here two columns on.
@@ -29,7 +29,7 @@ export type PlaceId =
   | 'ion_storm' | 'nebula' | 'gravity_well' | 'derelict' | 'convoy' | 'distress'
   | 'relay_ruin' | 'strange_signal' | 'voice_foundry' | 'thren_lane';
 
-export type Reward = 'krail' | 'parts' | 'cover' | 'shortcut' | 'favour' | 'info' | 'danger';
+export type Reward = 'cyrite' | 'parts' | 'cover' | 'shortcut' | 'favour' | 'info' | 'danger';
 
 export interface PlaceDef {
   id: PlaceId;
@@ -55,7 +55,7 @@ export interface PlaceDef {
 export const PLACES: Record<PlaceId, PlaceDef> = {
   ion_storm: {
     id: 'ion_storm', name: 'Ion storm', blurb: 'A standing storm. The lightning charges whatever it misses.', plays: 'ion_storm',
-    text: 'Fly the storm · Krail condenses on the hull', reward: 'krail', done: 'Krail condensed from the storm',
+    text: 'Fly the storm · Cyrite condenses on the hull', reward: 'cyrite', done: 'Cyrite condensed from the storm',
     kinds: ['mining', 'transit', 'contested'], regions: [0, 1], weight: 1, far: true,
   },
   nebula: {
@@ -74,8 +74,8 @@ export const PLACES: Record<PlaceId, PlaceDef> = {
     kinds: ['mining', 'transit', 'contested', 'port'], regions: [0, 2], weight: 1.1, far: false,
   },
   convoy: {
-    id: 'convoy', name: 'Convoy lane', blurb: 'Freighters run through here on a schedule, heavy with Krail.', plays: 'convoy',
-    text: 'Freighters crossing, heavy with Krail', reward: 'krail', done: 'Krail from the convoy’s holds',
+    id: 'convoy', name: 'Convoy lane', blurb: 'Freighters run through here on a schedule, heavy with Cyrite.', plays: 'convoy',
+    text: 'Freighters crossing, heavy with Cyrite', reward: 'cyrite', done: 'Cyrite from the convoy’s holds',
     kinds: ['port', 'contested', 'mining'], regions: [0, 1], weight: 0.9, far: false,
   },
   distress: {
@@ -114,11 +114,11 @@ export const PLACE_CHANCE: Partial<Record<SystemKind, number>> = { mining: 0.7, 
 
 /** What each reward pays, in one word for the chart. */
 export const REWARD_WORD: Record<Reward | 'unknown', string> = {
-  krail: 'Krail', parts: 'salvage', cover: 'cover', shortcut: 'a shortcut', favour: 'a favour', info: 'news', danger: 'a find', unknown: 'unknown',
+  cyrite: 'Cyrite', parts: 'salvage', cover: 'cover', shortcut: 'a shortcut', favour: 'a favour', info: 'news', danger: 'a find', unknown: 'unknown',
 };
 
 /** Rewards, in amounts. */
-export const PLACE_KRAIL = 14;
+export const PLACE_CYRITE = 14;
 export const PLACE_PARTS = 3;
 export const PLACE_COVER = 1.5;
 export const PLACE_CHITS = 40;

@@ -21,7 +21,7 @@ Object.assign(globalThis, {
 function result(j: Journey, c: Partial<Journey['carry']> = {}): SortieResult {
   const r = newRun(1);
   r.escaped = true;
-  return { ended: 'jumped', time: 60, carry: { ...j.carry, plates: 3, food: 30, parts: 20, krail: 20, ...c }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} };
+  return { ended: 'jumped', time: 60, carry: { ...j.carry, plates: 3, food: 30, parts: 20, cyrite: 20, ...c }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} };
 }
 
 /** Fly the shortest way to the Threshold, with the carry changed by `c` on the way. */

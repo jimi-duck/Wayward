@@ -12,9 +12,9 @@ import { SHIP_R } from './tuning';
 // to collect a reward of its own. Hull repairs and power-ups are rarer and
 // are not tractored: you go and get them.
 
-export type PickupKind = 'crystal' | 'ore' | 'parts' | 'repair' | PowerKind;
-/** What the tractor pulls in by itself: Krail, ore and parts. */
-export const LOOSE: ReadonlySet<PickupKind> = new Set(['crystal', 'ore', 'parts']);
+export type PickupKind = 'crystal' | 'cyrite' | 'ore' | 'parts' | 'repair' | PowerKind;
+/** What the tractor pulls in by itself: Krail, Cyrite, ore and parts. */
+export const LOOSE: ReadonlySet<PickupKind> = new Set(['crystal', 'cyrite', 'ore', 'parts']);
 
 export interface Pickup {
   id: number;
@@ -38,8 +38,8 @@ export const POWER_LABEL: Record<PowerKind, string> = {
 };
 export const POWERS: PowerKind[] = ['shield', 'rapid', 'magnet', 'overdrive', 'charge'];
 
-/** Scatter `total` krail as crystals of 1, 3 and 5 (or ore or parts, as `kind`), thrown out from (x, z). */
-export function dropCrystals(out: Pickup[], x: number, z: number, total: number, rng: Rng, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'ore' | 'parts' = 'crystal'): void {
+/** Scatter `total` krail as crystals of 1, 3 and 5 (or Cyrite, ore or parts, as `kind`), thrown out from (x, z). */
+export function dropCrystals(out: Pickup[], x: number, z: number, total: number, rng: Rng, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'cyrite' | 'ore' | 'parts' = 'crystal'): void {
   let left = Math.max(0, Math.round(total));
   while (left > 0) {
     const v = left >= 10 ? 5 : left >= 4 ? 3 : 1;

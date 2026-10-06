@@ -18,7 +18,7 @@ import { Rng } from './rng';
 //               port, and one nobody held can become theirs.
 //   the Voice · foundries build out into the empty systems around them.
 //   the Thren · drift between systems, thin out where the Net burns them,
-//               and are drawn to Krail on the move: the fuller the Wayward's
+//               and are drawn to Cyrite on the move: the fuller the Wayward's
 //               tank, the more of them follow her into the next system.
 //               Where they are thick, they swarm (sim/world.ts) and scramble
 //               sensors and navigation.
@@ -43,7 +43,7 @@ export const DRIFT_STAY: [number, number] = [1, 2.5];
 export const RAID_CHANCE = 0.25;
 export const RAID_DAYS = 2;
 export const RAID_TAKE = 0.3;
-/** What a raid does to a port: Krail and food dearer. */
+/** What a raid does to a port: Cyrite and food dearer. */
 export const RAID_MARKUP = 1.3;
 /** A Holdfast next to the Net throws it back this often a day, for so many days. */
 export const HOLD_CHANCE = 0.2;
@@ -105,10 +105,10 @@ export function presence(c: Chart, id: string): string[] {
 
 /**
  * The factions act for `days`. `ship` is where the Wayward is (or is
- * headed, in the lane) and the Krail she carries: the Thren follow it.
+ * headed, in the lane) and the Cyrite she carries: the Thren follow it.
  * Returns what happened.
  */
-export function stepScatter(c: Chart, days: number, rng: Rng, ship: { at: string; krail: number; tank: number }): News[] {
+export function stepScatter(c: Chart, days: number, rng: Rng, ship: { at: string; cyrite: number; tank: number }): News[] {
   c.thren ??= {};
   c.raid ??= {};
   c.drifts ??= [];
@@ -147,7 +147,7 @@ export function stepScatter(c: Chart, days: number, rng: Rng, ship: { at: string
       }
     }
 
-    // the Thren drift, fade, and follow Krail
+    // the Thren drift, fade, and follow Cyrite
     const was = { ...c.thren };
     const next: Record<string, number> = {};
     for (const s of c.systems) {
@@ -157,7 +157,7 @@ export function stepScatter(c: Chart, days: number, rng: Rng, ship: { at: string
       for (const { to } of lanesFrom(c, s.id)) n += (was[to.id] ?? 0) * THREN_SPREAD * dt * (netted(c, s.id) ? 0.3 : 1) - v * THREN_SPREAD * dt * (wild(to) ? 1 : 0);
       next[s.id] = n;
     }
-    const pull = THREN_PULL * Math.min(1, ship.krail / Math.max(1, ship.tank)) * dt;
+    const pull = THREN_PULL * Math.min(1, ship.cyrite / Math.max(1, ship.tank)) * dt;
     if (pull > 0 && wild(sysById(c, ship.at))) {
       for (const { to } of lanesFrom(c, ship.at)) {
         const moved = (next[to.id] ?? 0) * pull;

@@ -10,8 +10,8 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import { STORY_AT } from '../content/story';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_KRAIL, CAPITAL_PARTS, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
-  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
+  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
+  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   ORE_XP, rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
@@ -70,7 +70,7 @@ import {
 
 export type Phase = 'play' | 'refit' | 'hail' | 'comms' | 'dock' | 'bay' | 'over';
 /** What the port sells. */
-export type PortItem = 'krail' | 'plate' | 'refit' | 'food';
+export type PortItem = 'cyrite' | 'plate' | 'refit' | 'food';
 
 export interface WorldOptions {
   /** Upgrade, event and modifier ids opened by long-term progression. */
@@ -197,8 +197,10 @@ export class World implements EncounterHost {
   // the Breakout: the course and the pursuit (null in the arcade), the tank, the hold, the cutter
   mode: Mode;
   bk: Breakout | null = null;
-  /** Krail in the tank: fuel for the jump. */
+  /** Krail aboard: what the refit bay builds from, in both modes. */
   krail = 0;
+  /** Cyrite in the tank: fuel for the jump (the Story mode). */
+  cyrite = 0;
   ore = 0;
   holdMax = HOLD_START;
   parts = 0;
@@ -306,7 +308,7 @@ export class World implements EncounterHost {
     this.kitIn = noKit(); this.kitSpent = noKit();
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     if (this.mode !== 'breakout') {
-      this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
+      this.bk = null; this.krail = 0; this.cyrite = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
       // the arcade's ship leaves with the basics fitted: lasers, a shield charge, the torpedo bay
       if (!Object.keys(this.levels).length) { this.levels = stockLevels(); this.refreshStats(); }
       return;
@@ -321,13 +323,14 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     for (const w of places(b)) { w.x += s.x; w.z += s.z; }
     this.field.density = def.density;
-    this.krail = START_KRAIL;
+    this.cyrite = START_CYRITE;
+    this.krail = 0;
     this.ore = 0;
     this.holdMax = HOLD_START;
     this.parts = 0;
     this.chits = 0;
     this.food = FOOD_START;
-    // a few violet-veined rocks in the opening field: the first Krail is there to be cut
+    // a few violet-veined rocks in the opening field: the first Cyrite is there to be cut
     let n = 0;
     const most = Math.round(def.rich * 44);
     for (const r of this.field.rocks) {
@@ -345,7 +348,8 @@ export class World implements EncounterHost {
 
   /** What the ship brings from the last system: the hold, the tank, the build and the rail, the plates, and what the comms set in motion. */
   private bringAboard(c: Carry): void {
-    this.krail = Math.min(TANK_MAX, c.krail);
+    this.cyrite = Math.min(TANK_MAX, c.cyrite);
+    this.krail = c.krail;
     this.parts = c.parts;
     this.chits = c.chits;
     this.food = Math.min(FOOD_MAX, c.food);
@@ -374,7 +378,7 @@ export class World implements EncounterHost {
   /** What the ship carries now, into the next system. */
   carry(): Carry {
     return {
-      krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
+      cyrite: this.cyrite, krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
       xp: this.xp, refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])], kit: this.kit,
     };
@@ -397,7 +401,7 @@ export class World implements EncounterHost {
     return report ? { id: c.id, report } : null;
   }
 
-  /** Krail the plotted jump takes (the Breakout's lane in Cerro). */
+  /** Cyrite the plotted jump takes (the Breakout's lane in Cerro). */
   get jumpCost(): number {
     return this.bk?.jumpCost ?? 0;
   }
@@ -651,15 +655,15 @@ export class World implements EncounterHost {
     }
     if (b.blockade === 'called' && this.command.state === 'idle' && !this.command.boss) b.blockade = 'done';
 
-    // the lane mouth: hold inside it with the Krail to jump while the drive spools
+    // the lane mouth: hold inside it with the Cyrite to jump while the drive spools
     if (dl < b.lane.r) {
-      if (this.krail >= b.jumpCost && this.phase === 'play') {
+      if (this.cyrite >= b.jumpCost && this.phase === 'play') {
         if (b.spool === 0) this.events.push({ type: 'spool' });
         b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
         if (b.spool >= b.spoolNeed) this.jump();
       } else if (b.nagT <= 0) {
         b.nagT = 6;
-        this.events.push({ type: 'needKrail', have: this.krail, need: b.jumpCost });
+        this.events.push({ type: 'needCyrite', have: this.cyrite, need: b.jumpCost });
       }
     } else b.spool = Math.max(0, b.spool - dt * 2);
   }
@@ -693,7 +697,7 @@ export class World implements EncounterHost {
   /**
    * The Thren, where the chart has them: a knot of motes (and a web layer
    * leading, where they are thick), from any side, sooner and oftener the
-   * more Krail is aboard. They hold off while a capital ship is engaged.
+   * more Cyrite is aboard. They hold off while a capital ship is engaged.
    */
   private swarm(t: number): void {
     const b = this.bk!, s = this.ship, thren = b.def.thren ?? 0;
@@ -710,7 +714,7 @@ export class World implements EncounterHost {
       m.modeT = (lead?.modeT ?? 0) + i * 0.25;
     }
     this.events.push({ type: 'squad', label: 'Thren swarm' });
-    b.nextSwarm = t + swarmGap(thren, this.krail) * this.rng.range(0.8, 1.2);
+    b.nextSwarm = t + swarmGap(thren, this.cyrite) * this.rng.range(0.8, 1.2);
   }
 
   /** Navigation scrambles near Thren hulls, and settles once they are gone. */
@@ -731,9 +735,12 @@ export class World implements EncounterHost {
     const points = Math.round(ROCK_POINTS[r.size] * ROCK_KINDS[r.kind].points * 1.5);
     this.addScore(points, 'rocks');
     if (y.ore) this.dropCrystals(r.x, r.z, y.ore, 3, r.vx, r.vz, 'ore');
-    if (y.krail) this.dropCrystals(r.x, r.z, y.krail, 3, r.vx, r.vz);
+    if (y.cyrite) this.dropCrystals(r.x, r.z, y.cyrite, 3, r.vx, r.vz, 'cyrite');
+    // Krail: what a break would give by chance, sure when cut clean
+    const K = ROCK_KINDS[r.kind];
+    this.dropCrystals(r.x, r.z, K.crystals[r.size]! * ROCK_KRAIL, 3, r.vx, r.vz);
     if (r.kind === 'rare') this.dropItem(this.randomPower(), r.x, r.z);
-    this.events.push({ type: 'rockCut', x: r.x, z: r.z, size: r.size, kind: r.kind, ore: y.ore, krail: y.krail, points });
+    this.events.push({ type: 'rockCut', x: r.x, z: r.z, size: r.size, kind: r.kind, ore: y.ore, cyrite: y.cyrite, points });
   }
 
   private dock(): void {
@@ -804,7 +811,7 @@ export class World implements EncounterHost {
   canBuy(item: PortItem): boolean {
     if (this.phase !== 'dock') return false;
     if (this.chits < this.prices[item]) return false;
-    if (item === 'krail') return this.krail < TANK_MAX;
+    if (item === 'cyrite') return this.cyrite < TANK_MAX;
     if (item === 'plate') return this.plates < this.stats.maxPlates;
     if (item === 'food') return this.food < FOOD_MAX;
     return true;
@@ -815,7 +822,7 @@ export class World implements EncounterHost {
     useIds(this.ids);
     if (!this.canBuy(item)) return false;
     this.chits -= this.prices[item];
-    if (item === 'krail') this.krail++;
+    if (item === 'cyrite') this.cyrite++;
     else if (item === 'food') this.food++;
     else if (item === 'plate') this.repair(1);
     else {
@@ -842,15 +849,15 @@ export class World implements EncounterHost {
     this.ship.invuln = Math.max(this.ship.invuln, 2);
   }
 
-  /** Into the lane: the drive takes the Krail and the ship is gone. */
+  /** Into the lane: the drive takes the Cyrite and the ship is gone. */
   private jump(): void {
     const b = this.bk!, s = this.ship;
-    this.krail -= b.jumpCost;
+    this.cyrite -= b.jumpCost;
     this.settleJobs('lane');
     this.run.escaped = true;
-    this.run.krailLeft = this.krail;
+    this.run.cyriteLeft = this.cyrite;
     this.run.cause = 'escaped';
-    this.addScore(5000 + this.krail * 50 + this.plates * 500, 'events');
+    this.addScore(5000 + this.cyrite * 50 + this.plates * 500, 'events');
     b.jumpT = 1.6;
     s.invuln = 99;
     this.events.push({ type: 'jumped', x: s.x, z: s.z });
@@ -1026,7 +1033,7 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
     return {
-      t: this.runTime, heat: b?.heat ?? 0, krail: this.krail, need: b?.jumpCost ?? JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
+      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, need: b?.jumpCost ?? JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
       parts: this.parts, plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       food: this.food, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
@@ -1084,7 +1091,7 @@ export class World implements EncounterHost {
     // a timed-out default the ship cannot afford falls to the first choice it can
     if (!res && timedOut) { const ok = o.choices.find((c) => c.ok); if (ok) res = resolve(o, ok.id, x, this.rng); }
     if (!res) return false;
-    this.krail -= res.cost.krail; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts; this.food -= res.cost.food;
+    this.cyrite -= res.cost.cyrite; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts; this.food -= res.cost.food;
     if (res.outcome.sell) this.chits += res.cost.ore * res.outcome.sell;
     this.comms = null;
     this.phase = 'play';
@@ -1097,7 +1104,7 @@ export class World implements EncounterHost {
   /** Do what an outcome says, at the card's fee. `brought`: the hulls the card brought in, for a dismissal. Returns the ids of any hulls it brings. */
   private applyOutcome(out: Outcome, fee: number, brought: number[]): number[] {
     const b = this.bk;
-    this.krail = Math.min(TANK_MAX, Math.max(0, this.krail + amount(out.krail, this.krail, fee)));
+    this.cyrite = Math.min(TANK_MAX, Math.max(0, this.cyrite + amount(out.cyrite, this.cyrite, fee)));
     this.ore = Math.min(this.holdMax, Math.max(0, this.ore + amount(out.ore, this.ore, fee)));
     this.chits = Math.max(0, this.chits + amount(out.chits, this.chits, fee));
     this.parts = Math.max(0, this.parts + amount(out.parts, this.parts, fee));
@@ -1574,11 +1581,17 @@ export class World implements EncounterHost {
         this.run.krail += pk.value;
         this.addScore(pk.value * SCORE_PER_CRYSTAL, 'krail');
         this.events.push({ type: 'crystal', x: pk.x, z: pk.z, value: pk.value });
-        // the Breakout: Krail is fuel, into the tank; in the arcade it is what the refit bay builds from
-        if (this.bk) this.krail = Math.min(TANK_MAX, this.krail + pk.value);
-        else { this.krail += pk.value * this.stats.xpMult; this.run.krailEarned += pk.value * this.stats.xpMult; }
+        // Krail, in both modes: what the refit bay builds from
+        this.krail += pk.value * this.stats.xpMult;
+        this.run.krailEarned += pk.value * this.stats.xpMult;
         break;
       }
+      case 'cyrite':
+        // the Story mode's fuel, into the tank
+        this.cyrite = Math.min(TANK_MAX, this.cyrite + pk.value);
+        this.run.cyrite += pk.value;
+        this.events.push({ type: 'cyrite', x: pk.x, z: pk.z, value: pk.value });
+        break;
       case 'ore': {
         const room = Math.max(0, this.holdMax - this.ore), got = Math.min(room, pk.value);
         if (got < pk.value && this.holdNag <= 0) { this.holdNag = 8; this.events.push({ type: 'holdFull' }); }
@@ -1617,7 +1630,7 @@ export class World implements EncounterHost {
     return this.plates > before;
   }
 
-  dropCrystals(x: number, z: number, total: number, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'ore' | 'parts' = 'crystal'): void {
+  dropCrystals(x: number, z: number, total: number, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'cyrite' | 'ore' | 'parts' = 'crystal'): void {
     if (kind === 'crystal') this.run.dropped += Math.round(total);
     dropCrystals(this.pickups, x, z, total, this.rng, spread, vx, vz, kind);
   }
@@ -1992,8 +2005,10 @@ export class World implements EncounterHost {
       elite: !!al.elite, label: alienLabel(al),
     });
     if (this.bk) {
-      // the Breakout: a wreck gives parts, and the Custody notices
-      this.dropCrystals(al.x, al.z, Math.max(1, Math.round(al.xp * 0.5 * (al.elite ? this.stats.eliteLoot : 1))), 5, al.vx, al.vz, 'parts');
+      // the Story mode: a wreck gives parts and some Krail, and the Custody notices
+      const loot = al.elite ? this.stats.eliteLoot : 1;
+      this.dropCrystals(al.x, al.z, Math.max(1, Math.round(al.xp * 0.5 * loot)), 5, al.vx, al.vz, 'parts');
+      this.dropCrystals(al.x, al.z, al.xp * WRECK_KRAIL * loot, 5, al.vx, al.vz);
       this.bk.heat = Math.min(1, this.bk.heat + (al.faction === 'custody' ? HEAT_KILL_CUSTODY : HEAT_KILL));
     } else this.dropCrystals(al.x, al.z, al.xp * (al.elite ? this.stats.eliteLoot : 1), 5, al.vx, al.vz);
     const chance = (al.elite ? REPAIR_CHANCE_ELITE : REPAIR_CHANCE) * this.stats.repairChance;
@@ -2029,9 +2044,9 @@ export class World implements EncounterHost {
     this.run.killsBy[src]++;
     this.chainKill();
     this.events.push({ type: 'bossDestroyed', x: b.x, y: b.y, z: b.z, name: b.name, faction: b.faction, points: bounty });
-    // the salvage: krail, a hull repair, a power-up, a refit card and the faction's tech
+    // the salvage: krail, a hull repair, a power-up, the faction's tech; in the Story mode a top-up of Cyrite and parts
     this.dropCrystals(b.x, b.z, this.bk ? CAPITAL_KRAIL : 26 + 8 * b.n, 12);
-    if (this.bk) this.dropCrystals(b.x, b.z, CAPITAL_PARTS, 10, 0, 0, 'parts');
+    if (this.bk) { this.dropCrystals(b.x, b.z, CAPITAL_CYRITE, 10, 0, 0, 'cyrite'); this.dropCrystals(b.x, b.z, CAPITAL_PARTS, 10, 0, 0, 'parts'); }
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
@@ -2074,8 +2089,10 @@ export class World implements EncounterHost {
       // broken, not cut: scraps of what was in it
       const y = rockYield(r.kind, r.size, false);
       if (y.ore) this.dropCrystals(r.x, r.z, y.ore, 4, r.vx, r.vz, 'ore');
-      if (y.krail) this.dropCrystals(r.x, r.z, y.krail, 4, r.vx, r.vz);
-    } else if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.dropCrystals(r.x, r.z, K.crystals[r.size]!, 4, r.vx, r.vz);
+      if (y.cyrite) this.dropCrystals(r.x, r.z, y.cyrite, 4, r.vx, r.vz, 'cyrite');
+    }
+    // Krail by chance, in both modes (less of it in the Story mode, where a cut gives it surely)
+    if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.dropCrystals(r.x, r.z, K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), 4, r.vx, r.vz);
     if (r.kind === 'rare') this.dropItem(this.randomPower(), r.x, r.z);
     if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, src === 'hazard' ? 'hazard' : src, 'volatile', 1, true);
   }

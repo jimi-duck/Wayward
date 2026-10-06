@@ -71,7 +71,7 @@ export interface ModuleDef {
   quiet?: number;
   /** How much the read and the chart's sightings sharpen. */
   sensors?: number;
-  /** Off what a port charges for Krail, food, plates and refits, per mark. */
+  /** Off what a port charges for Cyrite, food, plates and refits, per mark. */
   discount?: number;
   /** Docking quiets the pursuit this much more. */
   dockCool?: number;

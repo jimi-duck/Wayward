@@ -187,9 +187,9 @@ export class Hud {
       switch (e.type) {
         case 'rockDestroyed': this.note(world, `${t(ROCK_BROKEN[e.kind] ?? 'Rock broken')} · +${e.points}`, '', 'rock', e.points); break;
         case 'alienDestroyed': this.note(world, `${t('{name} destroyed', { name: t(e.label) })} · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
-        case 'crystal': if (!world.bk) { this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; } break;
+        case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
-        case 'rockCut': this.note(world, `${t('Cut clean')} · ${t('{n} ore', { n: e.ore })}${e.krail ? ` · ${e.krail} Krail` : ''}`, 'gain'); break;
+        case 'rockCut': this.note(world, `${t('Cut clean')} · ${t('{n} ore', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
         case 'fracture': this.note(world, t(e.kind === 'volatile' ? 'Volatile rock · it blew' : 'Rock cracked · too hot'), 'hit'); break;
         case 'holdFull': this.note(world, t('Hold full · sell at the port'), 'hit'); break;
         case 'patched': this.note(world, `${t('Plate patched')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
@@ -199,7 +199,7 @@ export class Hud {
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
         case 'spool': this.banner(t('Lane mouth'), t('Jump drive spooling'), t('Stay in the lane'), 1.6, 'calm'); break;
-        case 'needKrail': this.banner(t('Lane mouth'), t('Not enough Krail'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
+        case 'needCyrite': this.banner(t('Lane mouth'), t('Not enough Cyrite'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, t(POWER_LABEL[e.kind]), 'gain'); break;
@@ -379,12 +379,12 @@ export class Hud {
     $('voyage').hidden = !b;
     if (!b) { $('threat').classList.remove('on'); return; }
     const v = $('voyage');
-    // the tank, in the systems panel: Krail toward the jump
+    // the tank, in the systems panel: Cyrite toward the jump
     const fuel = $('sys-fuel'), need = b.jumpCost;
-    text($('v-fuel'), `${world.krail}/${need}`);
-    $('g-fuel').style.setProperty('--v', Math.min(1, world.krail / need).toFixed(2));
-    fuel.classList.toggle('ready', world.krail >= need);
-    text($('lv-fuel'), t(world.krail >= need ? 'Jump' : 'Tank'));
+    text($('v-fuel'), `${world.cyrite}/${need}`);
+    $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
+    fuel.classList.toggle('ready', world.cyrite >= need);
+    text($('lv-fuel'), t(world.cyrite >= need ? 'Jump' : 'Tank'));
     const ore = $('vy-ore');
     text(ore, `${world.ore}/${world.holdMax}`);
     $('g-hold').style.setProperty('--v', Math.min(1, world.ore / world.holdMax).toFixed(2));
@@ -398,7 +398,7 @@ export class Hud {
     text($('vy-heat'), `${t('Wanted')} ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}/4`);
     ticks($('vy-heat-t'), heat, 20, 'ceil');
     v.classList.toggle('hot', heat >= 0.8);
-    // the contacts beside the scope: the two places, the nearest hostile, the nearest Krail trace
+    // the contacts beside the scope: the two places, the nearest hostile, the nearest Cyrite trace
     const s = world.ship, dist = (o: { x: number; z: number }) => Math.hypot(o.x - s.x, o.z - s.z);
     let hostile: { label: string; d: number; faction: string } | null = null;
     for (const a of world.aliens) {
@@ -412,7 +412,7 @@ export class Hud {
     if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
     if (b.port) rows.push([b.port.name, dist(b.port), INK.teal]);
     rows.push([t(b.lane.name), dist(b.lane), 'var(--amber)']);
-    if (trace < Infinity) rows.push([t('Krail trace'), trace, 'var(--violet)']);
+    if (trace < Infinity) rows.push([t('Cyrite trace'), trace, 'var(--violet)']);
     const key = rows.map(([n, d]) => `${n}${Math.round(d / 10)}`).join();
     if (key !== this.contactKey) {
       this.contactKey = key;
@@ -427,9 +427,9 @@ export class Hud {
     }
 
     // the objective, as steps
-    const docked = b.docks > 0, ready = world.krail >= b.jumpCost;
+    const docked = b.docks > 0, ready = world.cyrite >= b.jumpCost;
     const steps: Array<[string, 'done' | 'now' | '']> = [
-      [`${t('Krail to jump')} · <b>${world.krail}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
+      [`${t('Cyrite to jump')} · <b>${world.cyrite}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
       ...(b.port ? [[`${t('Dock at {port} (optional)', { port: b.port.name })}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`}`, docked ? 'done' : ''] as [string, 'done' | '']] : []),
       [`${t('Reach the lane mouth')} · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
       // jobs taken on comms cards, paid where they say
@@ -642,7 +642,7 @@ export class Hud {
       } else {
         text($('obj-t'), t('Make for the lane mouth')); text($('obj-left'), range(dl));
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
-        text($('obj-s'), `Krail ${world.krail}/${bk.jumpCost} · ${t(world.krail >= bk.jumpCost ? 'enough to jump' : 'cut the violet rock')}`);
+        text($('obj-s'), `Cyrite ${world.cyrite}/${bk.jumpCost} · ${t(world.cyrite >= bk.jumpCost ? 'enough to jump' : 'cut the violet rock')}`);
       }
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];

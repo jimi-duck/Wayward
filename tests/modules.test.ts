@@ -21,7 +21,7 @@ const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, c
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, krail: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
+  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, food: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
@@ -91,7 +91,7 @@ describe('the ship’s systems', () => {
     expect(e.patch).toBe(2);
     expect(e.flags).toEqual(['codes']);
     expect(e.counts).toEqual(['ut_scanner']);
-    expect(discounted(PRICE, { md_ledger: 1 })).toEqual({ ...PRICE, krail: Math.round(PRICE.krail * 0.9), food: Math.round(PRICE.food * 0.9), plate: 27, refit: 54 });
+    expect(discounted(PRICE, { md_ledger: 1 })).toEqual({ ...PRICE, cyrite: Math.round(PRICE.cyrite * 0.9), food: Math.round(PRICE.food * 0.9), plate: 27, refit: 54 });
     expect(discounted(PRICE, {})).toBe(PRICE);
   });
 
@@ -216,7 +216,7 @@ describe('the ghost echo', () => {
     const j = newJourney(7);
     const r = newRun(1);
     r.escaped = true;
-    endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, krail: 20, food: 12, parts: 6, plates: 3, levels }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
+    endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 20, food: 12, parts: 6, plates: 3, levels }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
     return j;
   };
 

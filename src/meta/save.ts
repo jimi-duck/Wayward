@@ -41,8 +41,33 @@ export function migrate(raw: unknown): Journey | null {
   // 5 → 6: the factions on the move (M7). A journey saved before keeps its one region, and gets its Drift fleet and its Thren now.
   if (j.version < 6) layScatter(j.chart, j.seed ?? 0);
   if (!j.chart.thren || !j.chart.drifts || !j.chart.raid) return null;
+  // 6 → 7: Cyrite is the fuel (the refit bay, step 4). What was Krail in the tank, on the lanes, in the rock and at the ports is Cyrite now;
+  // Krail is the bay's, and starts at nothing.
+  if (j.version < 7) toCyrite(j as unknown as Old);
   j.version = VERSION;
   return j as Journey;
+}
+
+/** A journey from before Cyrite, where Krail was the fuel. */
+type Old = {
+  carry: Record<string, unknown>;
+  chart: { systems: Array<Record<string, unknown>>; routes: Array<Record<string, unknown>>; places: Record<string, { reward: string }> };
+  legs: Array<Record<string, unknown>>;
+};
+const move = (o: Record<string, unknown> | null | undefined, from: string, to: string) => {
+  if (o && from in o) { o[to] = o[from]; delete o[from]; }
+};
+
+function toCyrite(j: Old): void {
+  move(j.carry, 'krail', 'cyrite');
+  j.carry.krail = 0;
+  for (const s of j.chart.systems) {
+    move(s, 'krail', 'cyrite');
+    move((s.port as { prices?: Record<string, unknown> } | null)?.prices, 'krail', 'cyrite');
+  }
+  for (const r of j.chart.routes) move(r, 'krail', 'cyrite');
+  for (const p of Object.values(j.chart.places)) if (p.reward === 'krail') p.reward = 'cyrite';
+  for (const l of j.legs ?? []) { move(l, 'krailIn', 'cyriteIn'); move(l, 'krailOut', 'cyriteOut'); }
 }
 
 export function loadJourney(): Journey | null {

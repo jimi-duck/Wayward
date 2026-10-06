@@ -40,7 +40,7 @@ const BUILDS: Build[] = [
 ];
 
 /** Chits held back at a yard: the Krail still owed to the jump, and two jumps of food. */
-const reserve = (w: World) => Math.max(0, w.jumpCost - w.krail) * w.prices.krail + Math.max(0, 12 - w.food) * w.prices.food;
+const reserve = (w: World) => Math.max(0, w.jumpCost - w.cyrite) * w.prices.cyrite + Math.max(0, 12 - w.food) * w.prices.food;
 
 /** Fit what the build wants, cheapest first among the ones it can have now, while the purse allows. */
 function fitAt(w: World, b: Build, fitted: string[]): void {
@@ -120,7 +120,7 @@ it('flies whole journeys, one build per system', { timeout: 7_200_000 }, () => {
     for (let i = 0; i < RUNS; i++) res.push(flyJourney(3000 + i * 13, b));
     const through = res.filter((r) => r.j.end === 'through').length;
     rows.push(`| ${b.name} | ${b.policy} | ${through}/${res.length} | ${res.filter((r) => r.j.end === 'captured').length} | ${res.filter((r) => r.j.end === 'wrecked').length} | ${res.filter((r) => r.stuck).length} | ${f1(mean(res.map((r) => r.j.legs.length)))} | ${f1(mean(res.map((r) => r.j.day)))} | ${f1(mean(res.map((r) => r.j.wrecks)))} | ${f1(mean(res.map((r) => r.callowayCalls)))} |`);
-    how.push(`| ${b.name} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.time))))} | ${f1(mean(res.map((r) => r.kills)))} | ${pct(res.filter((r) => r.j.hunt.hunch?.kind || r.j.hunt.hunch?.straight).length / res.length)} | ${f1(mean(res.map((r) => r.j.carry.chits)))} | ${f1(mean(res.map((r) => r.j.carry.krail)))} |`);
+    how.push(`| ${b.name} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.time))))} | ${f1(mean(res.map((r) => r.kills)))} | ${pct(res.filter((r) => r.j.hunt.hunch?.kind || r.j.hunt.hunch?.straight).length / res.length)} | ${f1(mean(res.map((r) => r.j.carry.chits)))} | ${f1(mean(res.map((r) => r.j.carry.cyrite)))} |`);
     earnRows.push(`| ${b.name} | ${SHIP_SYSTEMS.map((s) => f1(mean(res.map((r) => r.earned[s])))).join(' | ')} |`);
     const marks = SHIP_SYSTEMS.map((s) => f1(mean(res.map((r) => systemMarks(r.j.carry.levels)[s]))));
     fitRows.push(`| ${b.name} | ${marks.join(' | ')} | ${f1(mean(res.map((r) => r.fitted.length)))} | ${res.filter((r) => r.fitted.length).length}/${res.length} |`);

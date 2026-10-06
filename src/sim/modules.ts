@@ -149,7 +149,7 @@ export function discounted(p: Prices, levels: Levels): Prices {
   const f = effects(levels).price;
   if (f === 1) return p;
   const off = (v: number) => Math.max(1, Math.round(v * f));
-  return { ore: p.ore, krail: off(p.krail), food: off(p.food), plate: off(p.plate), refit: off(p.refit) };
+  return { ore: p.ore, cyrite: off(p.cyrite), food: off(p.food), plate: off(p.plate), refit: off(p.refit) };
 }
 
 /** Marks fitted in each system. */

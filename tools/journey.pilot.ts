@@ -91,7 +91,7 @@ it('flies whole journeys', { timeout: 7_200_000 }, () => {
   for (let i = 0; i < depth; i++) {
     const legs = all.map((r) => r.j.legs[i]).filter((l) => !!l);
     if (legs.length < 3) break;
-    curve.push(`| ${i + 1} | ${legs.length} | ${mean(legs.map((l) => l.krailIn)).toFixed(1)} | ${mean(legs.map((l) => l.krailOut)).toFixed(1)} | ${mmss(mean(legs.map((l) => l.time)))} | ${mean(legs.map((l) => l.day)).toFixed(1)} | ${pct(legs.filter((l) => l.calloway).length / legs.length)} | ${pct(legs.filter((l) => l.ended === 'destroyed').length / legs.length)} |`);
+    curve.push(`| ${i + 1} | ${legs.length} | ${mean(legs.map((l) => l.cyriteIn)).toFixed(1)} | ${mean(legs.map((l) => l.cyriteOut)).toFixed(1)} | ${mmss(mean(legs.map((l) => l.time)))} | ${mean(legs.map((l) => l.day)).toFixed(1)} | ${pct(legs.filter((l) => l.calloway).length / legs.length)} | ${pct(legs.filter((l) => l.ended === 'destroyed').length / legs.length)} |`);
   }
   // by kind of system: how long it took, how often it wrecked
   const kinds = new Map<string, Array<{ time: number; wrecked: boolean }>>();

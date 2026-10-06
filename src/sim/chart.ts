@@ -15,17 +15,17 @@ import { layScatter, RAID_MARKUP, type Fleet } from './scatter';
 // lanes. Laid out from a seed and the templates in content/systems.ts, so a
 // journey's map is the same every time it loads.
 //
-//   lanes    · every lane costs Krail to jump and days to cross; most run
+//   lanes    · every lane costs Cyrite to jump and days to cross; most run
 //              one column on, a few run sideways.
 //   the Net  · Continuance control, spreading from Cerro along the lanes a
-//              little every day, faster into systems with Krail to take.
+//              little every day, faster into systems with Cyrite to take.
 //              A netted system has a blockade at its lane mouth, a Custody
 //              that starts out looking for you, dearer markets and fewer
 //              friendly calls. A stall holds it out of one system for a
 //              while.
 //   what you know · the Net's edge as it was when you last had news of it
 //              (the systems within two jumps of you, each arrival), prices
-//              only where you have been, Krail as a survey estimate that
+//              only where you have been, Cyrite as a survey estimate that
 //              can be out by a quarter until you have flown the system.
 //   places   · most systems past Cerro have something in them (content/
 //              phenomena.ts): a storm, a wreck, a beacon, a Thren lane.
@@ -45,22 +45,22 @@ export interface StarSystem {
   x: number;
   y: number;
   holder: Holder;
-  /** Krail richness and food supply, 0 to 1. */
-  krail: number;
+  /** Cyrite richness and food supply, 0 to 1. */
+  cyrite: number;
   food: number;
   /** The port's name and prices (before the Net's mark-up), or no port. */
   port: { name: string; prices: Prices } | null;
   /** World units from the arrival point to the lane mouth. */
   lane: number;
-  /** The survey's estimate of `krail`, until it has been flown. */
+  /** The survey's estimate of `cyrite`, until it has been flown. */
   survey: number;
 }
 
 export interface Route {
   a: string;
   b: string;
-  /** Krail to jump it, and days in the lane. */
-  krail: number;
+  /** Cyrite to jump it, and days in the lane. */
+  cyrite: number;
   days: number;
 }
 
@@ -103,8 +103,8 @@ export const NET_PRESS = 0.5;
 export const HOLDFAST_HOLD = 0.4;
 /** How far the news reaches: the Net is seen this many jumps out, each arrival. */
 export const SIGHT = 2;
-/** What the Net does to a port: dearer Krail, food and plates, less for ore. */
-export const NET_MARKUP: Partial<Record<keyof Prices, number>> = { ore: 0.75, krail: 1.4, food: 1.4, plate: 1.25 };
+/** What the Net does to a port: dearer Cyrite, food and plates, less for ore. */
+export const NET_MARKUP: Partial<Record<keyof Prices, number>> = { ore: 0.75, cyrite: 1.4, food: 1.4, plate: 1.25 };
 
 /** The chart's columns: Cerro, then for each region its columns and its gate, with the region each belongs to. */
 const LAYOUT: Array<{ kinds: SystemKind[]; n: number; region: number }> = [
@@ -136,7 +136,7 @@ function pricesFor(holder: Holder, rng: Rng): Prices {
   const p = { ...BASE_PRICES };
   for (const k of Object.keys(p) as Array<keyof Prices>) {
     const v = BASE_PRICES[k] * (m[k] ?? 1) * rng.range(0.9, 1.1);
-    p[k] = k === 'ore' || k === 'krail' || k === 'food' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;
+    p[k] = k === 'ore' || k === 'cyrite' || k === 'food' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;
   }
   return p;
 }
@@ -158,17 +158,17 @@ export function makeChart(seed: number): Chart {
       const pool = R.holders[kind] ?? t.holders;
       const holder = pool[rng.int(pool.length)]!;
       const name = kind === 'home' ? HOME_NAME : kind === 'edge' ? EDGE_NAME : kind === 'gate' ? R.gate : names.splice(rng.int(names.length), 1)[0]!;
-      const krail = Math.round(rng.range(t.krail[0], t.krail[1]) * 100) / 100;
+      const cyrite = Math.round(rng.range(t.cyrite[0], t.cyrite[1]) * 100) / 100;
       // the Voice and the Thren keep no docks
       const portNames = PORT_NAMES[holder];
       const hasPort = rng.next() < t.port * (kind === 'home' ? 1 : R.port) && portNames.length > 0;
       const y = n === 1 ? 0.5 : clamp((i + 0.5) / n + rng.range(-0.08, 0.08), 0.08, 0.92);
       systems.push({
-        id: `s${systems.length}`, name, kind, col, region, x: col / 5, y, holder, krail,
+        id: `s${systems.length}`, name, kind, col, region, x: col / 5, y, holder, cyrite,
         food: Math.round(rng.range(t.food[0], t.food[1]) * 100) / 100,
         port: hasPort ? { name: kind === 'home' ? 'Frontier Supply' : portNames[rng.int(portNames.length)]!, prices: kind === 'home' ? { ...BASE_PRICES } : pricesFor(holder, rng) } : null,
         lane: Math.round(rng.range(t.lane[0], t.lane[1]) / 50) * 50,
-        survey: clamp(Math.round((krail + rng.range(-0.25, 0.25)) * 100) / 100, 0, 1),
+        survey: clamp(Math.round((cyrite + rng.range(-0.25, 0.25)) * 100) / 100, 0, 1),
       });
     }
   }
@@ -176,7 +176,7 @@ export function makeChart(seed: number): Chart {
   const link = (a: StarSystem, b: StarSystem) => {
     if (routes.some((r) => (r.a === a.id && r.b === b.id) || (r.a === b.id && r.b === a.id))) return;
     const d = Math.hypot((a.x - b.x) * 1.6, a.y - b.y);
-    routes.push({ a: a.id, b: b.id, krail: round5(12 + 9 * d + rng.range(-1, 2)), days: d > 0.42 ? 2 : 1 });
+    routes.push({ a: a.id, b: b.id, cyrite: round5(12 + 9 * d + rng.range(-1, 2)), days: d > 0.42 ? 2 : 1 });
   };
   for (let col = 0; col < COLS - 1; col++) {
     const here = systems.filter((s) => s.col === col), next = systems.filter((s) => s.col === col + 1);
@@ -249,7 +249,7 @@ export function openShortcut(c: Chart, id: string): StarSystem | null {
     .sort((p, q) => (q.col - p.col) || Math.abs(p.y - s.y) - Math.abs(q.y - s.y));
   const to = by[0];
   if (!to) return null;
-  c.routes.push({ a: id, b: to.id, krail: 10, days: 1 });
+  c.routes.push({ a: id, b: to.id, cyrite: 10, days: 1 });
   return to;
 }
 
@@ -289,7 +289,7 @@ export function jumps(c: Chart, from: string, to: string): number {
 
 /**
  * The Net spreads for `days`: every system next to a netted one, and not
- * holding it out, falls a little further, faster where there is Krail to
+ * holding it out, falls a little further, faster where there is Cyrite to
  * take. Stepped in quarter days, so a system netted at noon pushes on by
  * evening. Returns the systems newly netted.
  */
@@ -316,12 +316,12 @@ export function pushNet(c: Chart, id: string, days: number): void {
   c.net[id] = Math.min(1, (c.net[id] ?? 0) + days * netPace(sysById(c, id)));
 }
 
-/** The Net's pace into a system a day: faster for Krail, slower the further out, slower into a Holdfast's claim. */
+/** The Net's pace into a system a day: faster for Cyrite, slower the further out, slower into a Holdfast's claim. */
 function netPace(s: StarSystem): number {
-  return NET_RATE * (0.5 + s.krail) * (REGIONS[regionOf(s)]?.net ?? 1) * (s.holder === 'holdfast' ? HOLDFAST_HOLD : 1);
+  return NET_RATE * (0.5 + s.cyrite) * (REGIONS[regionOf(s)]?.net ?? 1) * (s.holder === 'holdfast' ? HOLDFAST_HOLD : 1);
 }
 
-/** Arriving somewhere: the system is flown (its Krail is known, its prices too), and the news brings the Net's edge up to date nearby. */
+/** Arriving somewhere: the system is flown (its Cyrite is known, its prices too), and the news brings the Net's edge up to date nearby. */
 export function arrive(c: Chart, id: string, day: number): void {
   if (!c.visited.includes(id)) c.visited.push(id);
   const near = c.systems.filter((s) => jumps(c, id, s.id) <= SIGHT).map((s) => s.id);
@@ -337,13 +337,13 @@ export function pricesAt(c: Chart, id: string): Prices | null {
   const net = netted(c, id), raid = (c.raid?.[id] ?? 0) > 0;
   if (!net && !raid) return s.port.prices;
   const p = { ...s.port.prices };
-  const marks: Array<[keyof Prices, number]> = [...(net ? Object.entries(NET_MARKUP) as Array<[keyof Prices, number]> : []), ...(raid ? [['krail', RAID_MARKUP], ['food', RAID_MARKUP]] as Array<[keyof Prices, number]> : [])];
+  const marks: Array<[keyof Prices, number]> = [...(net ? Object.entries(NET_MARKUP) as Array<[keyof Prices, number]> : []), ...(raid ? [['cyrite', RAID_MARKUP], ['food', RAID_MARKUP]] as Array<[keyof Prices, number]> : [])];
   for (const [k, m] of marks) {
     const v = p[k] * m;
-    p[k] = k === 'ore' || k === 'krail' || k === 'food' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;
+    p[k] = k === 'ore' || k === 'cyrite' || k === 'food' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;
   }
   return p;
 }
 
-/** The Krail you believe is there: the truth once flown, the survey before. */
-export const krailKnown = (c: Chart, s: StarSystem) => (c.visited.includes(s.id) ? s.krail : s.survey);
+/** The Cyrite you believe is there: the truth once flown, the survey before. */
+export const cyriteKnown = (c: Chart, s: StarSystem) => (c.visited.includes(s.id) ? s.cyrite : s.survey);

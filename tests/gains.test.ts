@@ -5,7 +5,7 @@ import { MAX_GAINS, gains } from '../src/sim/gains';
 import { Rng } from '../src/sim/rng';
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, krail: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
+  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, food: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
@@ -52,7 +52,7 @@ describe('the read as odds', () => {
 
   it('gives every gamble on a card a chance, and nothing else one', () => {
     for (const def of CARDS) {
-      const o = openCard(def, ctx({ chits: 999, ore: 30, parts: 30, krail: 30 }), new Rng(3));
+      const o = openCard(def, ctx({ chits: 999, ore: 30, parts: 30, cyrite: 30 }), new Rng(3));
       for (const v of o.choices) {
         const ch = def.choices.find((c) => c.id === v.id)!;
         expect(v.chance !== null, `${def.id}.${ch.id}`).toBe(!!ch.odds || v.risky);

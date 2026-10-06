@@ -7,7 +7,7 @@ import { plural, t } from '../i18n';
 
 // ── the port ──────────────────────────────────────────────────────────────
 // Docked: the world waits while you trade. Five things to do and a way out:
-// sell the hold, buy Krail and food a unit at a time, patch a plate, pay for
+// sell the hold, buy Cyrite and food a unit at a time, patch a plate, pay for
 // a refit (three cards there and then), cast off. Every port sets its own
 // prices, and the Net marks them up. The list is redrawn after every trade,
 // so every price and every "can't" is live. On a journey a sixth line plots
@@ -24,7 +24,7 @@ type View = 'trade' | 'yard' | ShipSystem;
 
 /** The lanes out of a port, for re-plotting while docked: `pick` plots one and the world's jump follows it. */
 export interface Course {
-  lanes: () => Array<{ id: string; name: string; krail: number; days: number; note: string }>;
+  lanes: () => Array<{ id: string; name: string; cyrite: number; days: number; note: string }>;
   current: () => string | null;
   pick: (id: string) => void;
 }
@@ -147,7 +147,7 @@ export class PortPanel {
     this.sel = Math.min(this.sel, this.lines.length - 1);
     const kit = w.kit;
     const stock = this.view === 'trade'
-      ? [[t('Chits'), String(w.chits)], [t('Tank'), `${w.krail}/${w.jumpCost}`], [t('Food'), String(w.food)], [t('Hold'), `${w.ore}/${w.holdMax}`], [t('Hull'), `${w.plates}/${w.stats.maxPlates}`]]
+      ? [[t('Chits'), String(w.chits)], [t('Tank'), `${w.cyrite}/${w.jumpCost}`], [t('Food'), String(w.food)], [t('Hold'), `${w.ore}/${w.holdMax}`], [t('Hull'), `${w.plates}/${w.stats.maxPlates}`]]
       : [[t('Chits'), String(w.chits)], ...SHIP_SYSTEMS.map((s) => [t(SYSTEM_DEFS[s].name), String(kit[s])])];
     $('port-stock').replaceChildren(...stock.map(([k, v]) => h('span', '', '', h('span', 'k', k!), h('b', '', v!))));
     $('port-list').replaceChildren(...this.lines.map((l, i) => {
@@ -191,10 +191,10 @@ export class PortPanel {
   }
 
   private trade(w: World): void {
-    const P = w.prices, need = Math.max(0, w.jumpCost - w.krail);
+    const P = w.prices, need = Math.max(0, w.jumpCost - w.cyrite);
     this.lines = [
       { key: 'sell', label: t('Sell the hold'), price: w.ore ? `+${w.ore * P.ore}` : '—', note: t('{n} ore at {p} chits', { n: w.ore, p: P.ore }), ok: w.ore > 0 },
-      { key: 'krail', label: t('Buy Krail'), price: `${P.krail}`, note: w.krail >= TANK_MAX ? t('Tank full') : need ? t('{n} short of the jump', { n: need }) : t('Enough to jump'), ok: w.canBuy('krail') },
+      { key: 'cyrite', label: t('Buy Cyrite'), price: `${P.cyrite}`, note: w.cyrite >= TANK_MAX ? t('Tank full') : need ? t('{n} short of the jump', { n: need }) : t('Enough to jump'), ok: w.canBuy('cyrite') },
       { key: 'food', label: t('Buy food'), price: `${P.food}`, note: w.food >= FOOD_MAX ? t('Galley full') : t('{n} in the galley · a day each', { n: w.food }), ok: w.canBuy('food') },
       { key: 'plate', label: t('Patch a plate'), price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? t('Hull whole') : `${t('Hull')} ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
       { key: 'refit', label: t('Pay for a refit'), price: `${P.refit}`, note: t('Three cards, take one'), ok: w.canBuy('refit') },
@@ -203,7 +203,7 @@ export class PortPanel {
     if (c && lanes.length) {
       const now = lanes.find((x) => x.id === c.current()) ?? lanes[0]!;
       this.lines.push({
-        key: 'course', label: t(lanes.length > 1 ? 'Plot another lane' : 'The lane out'), price: `${now.krail}K`,
+        key: 'course', label: t(lanes.length > 1 ? 'Plot another lane' : 'The lane out'), price: `${now.cyrite} ${t('Cyrite')}`,
         note: [t('Bound for {dest}', { dest: now.name }), plural(now.days, '{n} day', '{n} days'), now.note].filter(Boolean).join(' · '), ok: lanes.length > 1,
       });
     }

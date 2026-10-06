@@ -307,7 +307,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   // the Breakout: the course. Port when the hold is nearly full or the hull wants patching and there is
   // money for it; the lane mouth once the tank holds the jump; drifting lane-ward meanwhile
   const bk = w.bk;
-  const need = !!bk && w.krail < bk.jumpCost;
+  const need = !!bk && w.cyrite < bk.jumpCost;
   const pr = w.prices;
   const hungry = !!bk && w.food < 9 && w.chits + w.ore * pr.ore >= pr.food * 6;
   const goPort = !!bk && !!bk.port && bk.docks === 0
@@ -523,11 +523,11 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     if (!w.bk && w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick); }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms') {
-      const before = { krail: w.krail, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
+      const before = { krail: w.cyrite, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
       w.answer(o.answer?.(w) ?? pickAnswer(w, o.policy ?? 'bluff'));
       const last = w.run.cards[w.run.cards.length - 1]!;
       answers.push({
-        card: before.card, choice: last.choice, won: last.won, krail: w.krail - before.krail, chits: w.chits - before.chits,
+        card: before.card, choice: last.choice, won: last.won, krail: w.cyrite - before.krail, chits: w.chits - before.chits,
         heat: (w.bk?.heat ?? 0) - before.heat, fight: w.aliens.length > before.aliens || w.bk?.blockade === 'called',
       });
       continue;
@@ -536,7 +536,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
       if (w.bk && w.bk.docks > docks) { docks = w.bk.docks; o.onDock?.(w); }
       // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, and a refit if there is money left
       w.sellOre();
-      while (w.krail < w.jumpCost && w.buy('krail'));
+      while (w.cyrite < w.jumpCost && w.buy('cyrite'));
       while (w.food < 12 && w.buy('food'));
       while (w.plates < w.stats.maxPlates && w.buy('plate'));
       if (w.buy('refit')) continue;

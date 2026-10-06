@@ -6,8 +6,9 @@ import { STEP } from '../core/loop';
 import { LOOSE, type Pickup } from '../sim/pickups';
 
 // ── things to pick up ─────────────────────────────────────────────────────
-// Krail is violet, the brand's colour for the field: a long shard of
-// crystal, HDR so it blooms, spinning, sized by what it holds. Hull repairs
+// Krail is pale gold and Cyrite (the Story mode's fuel) violet, the colour
+// of the veins it is cut from: a long shard of crystal, HDR so it blooms,
+// spinning, sized by what it holds. Hull repairs
 // are a warm amber crystal in a halo; power-ups are a ring round a core in
 // their own colour, turning, so a find reads as a find from across the
 // field. Everything pops in, and blinks for its last two seconds.
@@ -15,6 +16,7 @@ import { LOOSE, type Pickup } from '../sim/pickups';
 const MAX_CRYSTALS = 320;
 const MAX_ITEMS = 10;
 const VIOLET = new Color(2.2, 0.9, 3.6);
+const GOLD = new Color(3, 2.1, 0.8);
 /** Ore: a dull warm grit; parts: salvage, cold cyan. */
 const ORE = new Color(1.4, 1.05, 0.7);
 const PARTS = new Color(0.5, 1.9, 2.6);
@@ -75,7 +77,7 @@ export class PickupView {
         this.q.setFromAxisAngle(this.axis, this.time * 2.2 + pk.id);
         this.m.compose(this.p.set(x, 0.35 + Math.sin(this.time * 3 + pk.id) * 0.12, z), this.q, this.s.set(size, size, size));
         this.crystals.setMatrixAt(n, this.m);
-        this.crystals.setColorAt(n, pk.kind === 'crystal' ? this.c.copy(VIOLET).multiplyScalar(0.8 + pk.value * 0.12) : this.c.copy(pk.kind === 'ore' ? ORE : PARTS));
+        this.crystals.setColorAt(n, pk.kind === 'crystal' || pk.kind === 'cyrite' ? this.c.copy(pk.kind === 'crystal' ? GOLD : VIOLET).multiplyScalar(0.8 + pk.value * 0.12) : this.c.copy(pk.kind === 'ore' ? ORE : PARTS));
         n++;
         continue;
       }

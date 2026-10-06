@@ -13,7 +13,7 @@ const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, c
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, krail: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
+  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, food: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
@@ -68,8 +68,8 @@ describe('the cards', () => {
 
 describe('the comms engine', () => {
   it('reads conditions off the ship', () => {
-    expect(condOk({ short: true }, ctx({ krail: 10 }))).toBe(true);
-    expect(condOk({ short: true }, ctx({ krail: 25 }))).toBe(false);
+    expect(condOk({ short: true }, ctx({ cyrite: 10 }))).toBe(true);
+    expect(condOk({ short: true }, ctx({ cyrite: 25 }))).toBe(false);
     expect(condOk({ holdFull: true }, ctx({ ore: 35 }))).toBe(true);
     expect(condOk({ flag: 'codes' }, ctx())).toBe(false);
     expect(condOk({ noFlag: 'codes', heatMax: 0.5 }, ctx())).toBe(true);
@@ -78,7 +78,7 @@ describe('the comms engine', () => {
   });
 
   it('shows earned choices greyed out with what they need', () => {
-    const o = openCard(CARD_BY_ID.gutter_toll!, ctx({ krail: 2 }), new Rng(1));
+    const o = openCard(CARD_BY_ID.gutter_toll!, ctx({ cyrite: 2 }), new Rng(1));
     const bay = o.choices.find((c) => c.id === 'bay')!;
     expect(bay.ok).toBe(false);
     expect(bay.needs.join()).toMatch(/Torpedo bay/);
@@ -86,7 +86,7 @@ describe('the comms engine', () => {
     expect(friend.needs.join()).toMatch(/friend in the Gutter/);
     const pay = o.choices.find((c) => c.id === 'pay')!;
     expect(pay.ok).toBe(false);
-    expect(pay.needs.join()).toMatch(/4 Krail/);
+    expect(pay.needs.join()).toMatch(/4 Cyrite/);
     // fitted, the bay is a gamble on the odds
     const fitted = openCard(CARD_BY_ID.gutter_toll!, ctx({ levels: { tp_bay: 1 } }), new Rng(1)).choices.find((c) => c.id === 'bay')!;
     expect(fitted.ok).toBe(true);
@@ -204,10 +204,10 @@ describe('comms in the Breakout', () => {
 
   it('pays the ambushers off, and they break away', () => {
     const w = quiet();
-    w.krail = 10;
+    w.cyrite = 10;
     w.openComms(CARD_BY_ID.office_ambush!);
     w.answer('surrender');
-    expect(w.krail).toBe(5);
+    expect(w.cyrite).toBe(5);
     expect(w.aliens.every((a) => a.fleeing)).toBe(true);
   });
 
@@ -237,10 +237,10 @@ describe('comms in the Breakout', () => {
 
   it('calls in a favour later', () => {
     const w = quiet();
-    w.krail = 5;
+    w.cyrite = 5;
     w.openComms(CARD_BY_ID.fuel_runner!);
     w.answer('favour');
-    expect(w.krail).toBe(11);
+    expect(w.cyrite).toBe(11);
     expect(w.flags.has('owes_runner')).toBe(true);
     run(w, 59);
     expect(w.phase).toBe('play');
@@ -271,7 +271,7 @@ describe('comms in the Breakout', () => {
     const b = w.bk!;
     b.blockade = 'done';
     w.ship.x = b.lane.x; w.ship.z = b.lane.z;
-    w.krail = 25;
+    w.cyrite = 25;
     run(w, 8);
     expect(w.run.escaped).toBe(true);
     expect(w.run.jobsDone).toBe(1);

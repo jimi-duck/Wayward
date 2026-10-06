@@ -13,7 +13,7 @@ risks to take and how much of yourself to sacrifice to keep moving.
 Combat matters, but it should rarely be the point. The ideal sortie feels
 like this:
 
-> I need Krail. I need to reach the next system. There is a checkpoint
+> I need Cyrite. I need to reach the next system. There is a checkpoint
 > ahead. A settlement is asking for help. Calloway is getting closer. I
 > could fight, but maybe there's another way.
 
@@ -28,9 +28,9 @@ The tension comes from having too little time, fuel, information and trust.
 The **Accord** was the old free union of worlds. For centuries it spread
 from system to system, connected by jump lanes and powered by **Krail**, a
 rare crystalline resource found beneath the surface of a handful of worlds.
-Krail did almost everything: it powered jump drives, fed the fabrication
-systems that could build almost anything, kept cities alive, ships moving and
-economies running.
+Krail fed the fabrication systems that could build almost anything, kept
+cities alive and economies running. Its sister mineral, **Cyrite**, violet in
+the same rock, powered the jump drives and kept ships moving.
 
 Then the Krail started running out.
 
@@ -139,8 +139,8 @@ are what push the game beyond "space pirates versus evil government".
 
 ## Survival
 
-Krail is everything: fuel, power, currency, trade, weapons, repairs. Every
-jump costs it; every upgrade costs it; every mistake costs it. You also keep
+Krail and Cyrite are everything. Every jump costs Cyrite; every upgrade
+costs Krail; every mistake costs both. You also keep
 yourself alive: food, parts, cargo, fuel. Sometimes you have enough.
 Usually you don't.
 

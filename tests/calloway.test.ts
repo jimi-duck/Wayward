@@ -23,14 +23,14 @@ function result(j: Journey, o: Partial<SortieResult> = {}, cards: SortieResult['
   const r = newRun(1);
   r.escaped = (o.ended ?? 'jumped') === 'jumped';
   r.cards = cards;
-  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, krail: 30, food: 30, parts: 10 }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
+  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 30, food: 30, parts: 10 }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
 }
 const answer = (id: string, choice: string, won = true) => ({ id, choice, won, t: 60 });
 const file = (d: Partial<Dossier> = {}): Dossier => ({ ...newDossier(), ...d });
 
 /** A ctx for odds and conditions, with her file's tricks. */
 const ctx = (wise: Ctx['wise'] = {}, hunch: string[] = []): Ctx => ({
-  t: 100, heat: 0, krail: 10, need: 20, tank: 40, ore: 20, holdMax: 40, chits: 50, parts: 10, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
+  t: 100, heat: 0, cyrite: 10, need: 20, tank: 40, ore: 20, holdMax: 40, chits: 50, parts: 10, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
   standing: {}, place: 'open', hostiles: 0, food: 10, kind: 'transit', netted: false, behind: 1, wise, hunch,
 });
 
