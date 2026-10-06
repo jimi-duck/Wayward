@@ -1527,3 +1527,25 @@ html.breakout .pause-flow { display: none; }
 .bay-node.max .bn-tag { display: none; }
 @media (max-width: 900px), (max-height: 520px) { .bn-tag { display: none; } }
 .bi-note { font-style: italic; color: var(--ink-3); }
+
+/* ── wear: thirty years of work, very lightly ────────────────────────────
+   A few scratches, chipped corners, a serial, an old stamp and, now and then,
+   a scanline that breaks. Industrial, never neon. Still under reduced motion. */
+.wear { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; opacity: .9;
+  background:
+    linear-gradient(112deg, transparent 0 18%, rgba(216, 213, 198, .07) 18.1% 18.3%, transparent 18.5% 100%),
+    linear-gradient(64deg, transparent 0 71%, rgba(216, 213, 198, .06) 71.1% 71.25%, transparent 71.4% 100%),
+    linear-gradient(97deg, transparent 0 43%, rgba(216, 213, 198, .045) 43.1% 43.2%, transparent 43.3% 100%),
+    radial-gradient(circle at 100% 100%, rgba(0, 0, 0, .55) 0 14px, transparent 15px),
+    radial-gradient(circle at 0 100%, rgba(0, 0, 0, .4) 0 9px, transparent 10px),
+    radial-gradient(ellipse at 100% 0, rgba(217, 154, 39, .05), transparent 40%); }
+.wear::after { content: ""; position: absolute; left: 0; right: 0; top: -6px; height: 3px; background: rgba(216, 213, 198, .07); box-shadow: 0 0 0 1px rgba(76, 194, 203, .04);
+  animation: wear-scan 11s linear infinite; }
+.bay-w .wear::after { animation-duration: 14s; animation-delay: 4s; }
+@keyframes wear-scan { 0%, 92% { top: -6px; opacity: 0; } 93% { opacity: 1; translate: 3px 0; } 96% { translate: -2px 0; } 100% { top: 100%; opacity: 0; translate: 0 0; } }
+.wear-serial { position: absolute; left: 12px; bottom: 6px; z-index: 1; pointer-events: none; font: 500 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); opacity: .5; }
+.wear-stamp { position: absolute; right: 22px; top: 62px; z-index: 1; pointer-events: none; padding: 3px 7px; border: 1px solid var(--hud-mid); rotate: 3deg;
+  font: 700 9px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--hud); opacity: .38; mask-image: linear-gradient(100deg, #000 60%, rgba(0, 0, 0, .55) 80%, #000); }
+.bay-w { isolation: isolate; }
+@media (max-width: 900px), (max-height: 520px) { .wear-stamp, .wear-serial { display: none; } }
+@media (prefers-reduced-motion: reduce) { .wear::after { animation: none; display: none; } }

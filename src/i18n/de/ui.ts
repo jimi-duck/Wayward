@@ -229,6 +229,8 @@ export const UI: Record<string, string> = {
   'fitted': 'eingebaut',
   'Nothing yet': 'Noch nichts',
   'Ship overview': 'Schiffsübersicht',
+  'Service overdue': 'Wartung überfällig',
+  'OB-7731-A · Fit bay 03 · Rev 14': 'OB-7731-A · Einbaubucht 03 · Rev 14',
   'Profile': 'Profil',
   'Stock hauler': 'Serienfrachter',
   'Rammer': 'Rammer',
