@@ -46,6 +46,8 @@ export interface CommsView {
   /** Red panel: someone means harm. */
   alert: boolean;
   text: string;
+  /** What the ship's state adds to the call: behind the (i), not on the panel. */
+  more: string;
   read: { them: number; you: number; rows: Array<[string, string]> } | null;
   choices: CommsChoice[];
   /** A named captain's portrait, as SVG (null: nobody to show). */
@@ -76,6 +78,7 @@ export function cardView(o: Open): CommsView {
     colour: CALLER_CSS[d.caller],
     alert: HOSTILE.has(d.kind) || o.slow > 0,
     text: o.text,
+    more: o.more.join(' '),
     // the read: strength as two bars, and the one line that matters (the
     // choices' odds already carry how far it can be trusted)
     read: { them: r.them, you: r.you, rows: [[t('Intent'), t(r.intent)]] },
@@ -97,6 +100,7 @@ export function hailView(c: Contact): CommsView {
   return {
     kick: t('Alarm'), title: t(c.name), sub: `${t('{f} capital ship', { f: t(FACTION_NAME[c.faction] ?? c.faction) })} · ${t('on intercept')}`, colour: NEON_CSS[c.faction], alert: true,
     text: t('She fights back, with her escort. The sector clears for the duel.'),
+    more: '',
     read: null,
     face: null,
     choices: [
@@ -136,6 +140,12 @@ export class CommsPanel {
     $('cm-who').style.color = view.colour;
     $('cm-s').textContent = what.join(' · ');
     $('cm-text').textContent = view.text;
+    // what the ship's state adds sits one tap behind the (i)
+    this.info(false);
+    $('cm-i').hidden = !view.more;
+    $('cm-i').onclick = () => this.info();
+    $('cm-i').onpointerdown = (e) => e.stopPropagation();
+    $('cm-more').textContent = view.more;
     $('cm-face').hidden = !view.face;
     $('cm-face').innerHTML = view.face ?? '';
     $('cm-sigil').hidden = !!view.face;
@@ -152,10 +162,19 @@ export class CommsPanel {
       if (e.code === 'ArrowDown' || e.code === 'ArrowRight') return this.move(1), true;
       if (e.code === 'Enter' || e.code === 'NumpadEnter') return this.pick(this.sel), true;
       // the arcade hail's old keys: F engages, E evades
+      if (e.code === 'KeyI' && view.more) return this.info(), true;
       if (!view.read && e.code === 'KeyF') return this.pick(0), true;
       if (!view.read && e.code === 'KeyE') return this.pick(1), true;
       return e.code === 'Space' || e.code === 'Tab';
     }, ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+  }
+
+  /** Show or hide the lines behind the (i). */
+  private info(on?: boolean): void {
+    on ??= $('cm-more').hidden === true;
+    $('cm-more').hidden = !on;
+    $('cm-i').setAttribute('aria-expanded', String(on));
+    $('cm-i').classList.toggle('on', on);
   }
 
   /** The ambush's bar: the share of its time left (0 hides it). */

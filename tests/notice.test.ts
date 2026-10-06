@@ -191,7 +191,7 @@ describe('notice on the channel', () => {
     const n = marked('custody');
     const call = pressure(n, 0).captain!;
     const o = openCard(CARD_BY_ID.custody_bulletin!, ctx({ captain: call, notice: { custody: 'captain' }, t: 300 }), new Rng(1));
-    expect(o.text).toContain(`signed by ${call.name}`);
+    expect([o.text, ...o.more].join(' ')).toContain(`signed by ${call.name}`);
   });
 });
 

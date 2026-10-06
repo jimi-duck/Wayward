@@ -1,5 +1,5 @@
 import { t } from '../i18n';
-import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENTS, type Act } from '../content/story';
+import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENTS, YARD_BEAT, type Act } from '../content/story';
 import { viewOf } from './chart';
 import type { Journey } from './journey';
 
@@ -30,9 +30,9 @@ export const fragmentsFound = (flags: Iterable<string>): string[] => {
   return FRAGMENTS.filter((x) => f.has(x.flag)).map((x) => x.flag);
 };
 
-/** The story beat due in this system's sortie, if any: this region's first, then any missed before. */
+/** The story beat due in this system's sortie, if any: the yard's call before the first jump, then this region's first and any missed before. */
 export function dueBeat(j: Journey): string | null {
-  if (j.trail.length < 2) return null;
+  if (j.trail.length < 2) return j.carry.seen.includes(YARD_BEAT) ? null : YARD_BEAT;
   const seen = new Set(j.carry.seen), r = viewOf(j.chart, j.at);
   const open = BEATS.filter((b) => b.region <= r && !seen.has(b.card));
   return (open.find((b) => b.region === r) ?? open[0])?.card ?? null;

@@ -115,7 +115,7 @@ export const OFFERS: CardDef[] = [
   }),
   offer({
     id: 'offer_tank', from: 'Prefect Idris Calloway · Office of Peace', title: 'A full tank',
-    text: '“You’re always short of Cyrite, Juno. Tell me your heading and a tender fills you up. No tricks. I want you alive, and I want to know where you are.”',
+    text: '“You’re always short of Cyrite, Juno. Tell me your heading and a tender fills you up. No tricks. I want you alive.”',
     choices: [
       { id: 'accept', label: 'Take the Cyrite', tone: 'trade', hint: 'Twenty Cyrite. She knows your heading.', win: { text: 'The tender pumps Cyrite aboard · she knows where you are going', cyrite: 20, heat: -0.2, hunt: -1.5 } },
       { id: 'lie', label: 'Take it, with a false heading', tone: 'bluff', hint: 'The Cyrite, and the wrong lane. If you’ve lied before, she checks.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },

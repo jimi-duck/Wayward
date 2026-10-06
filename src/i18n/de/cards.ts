@@ -77,7 +77,7 @@ export const CARDS: Record<string, string> = {
   'The skiff peels away': 'Das Skiff dreht ab',
   'Independent prospector · Old Hesketh': 'Freie Schürferin · der alte Hesketh',
   'Cyrite, a little cut': 'Cyrit, leicht gestreckt',
-  '“Four Cyrite, raw out of the vein. Twenty-five chits or a dozen ore. You look like you need it.” You are {short} short of the jump.': '„Vier Cyrit, frisch aus der Ader. Fünfundzwanzig Chits oder ein Dutzend Erz. Siehst aus, als bräuchtest du’s.“ Dir fehlen {short} zum Sprung.',
+  '“Four Cyrite, raw out of the vein. Twenty-five chits or a dozen ore.” You are {short} short of the jump.': '„Vier Cyrit, frisch aus der Ader. Fünfundzwanzig Chits oder ein Dutzend Erz.“ Dir fehlen {short} zum Sprung.',
   'Spectral read: clean violet, full grade': 'Spektralscan: sauberes Violett, volle Güte',
   'Spectral read: half of it is coloured slag': 'Spektralscan: die Hälfte ist gefärbte Schlacke',
   'Pay chits': 'Chits zahlen',
