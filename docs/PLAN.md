@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done: the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 3 done, and console steps 1 and 2 (the state word, the ship lit by tab; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
 
 ## From the concept boards
 
@@ -617,6 +617,64 @@ choose between weapons and the fittings that carry them. The inspector warns
 when an install runs the ship over. The pilot report gains a table of Krail
 spent and the budgets at the end: laser builds buy heat exchangers, close
 quarters runs heavy, everyone buys reactor cores.
+
+### The console pass (design feedback, 2026-10-06)
+
+A UI thread on the bay and the briefing, from a design review: make the
+interface the ship's battered industrial operating system, and tie it to the
+physical ship. Amber is the player's decisions and Krail, teal the ship's
+state, red danger, grey unavailable. Each step ships on its own, with
+screenshots at desktop and phone sizes, German lines and a note in
+DESIGN.md.
+
+1. **Done: the state word, the briefing frame, the bay's feedback.** One
+   `◆ Observation / Contact / Battle / Critical` word on the HUD, pause card
+   and bay; the pause card as a console (rule, readings, Mine → Upgrade →
+   Survive with chips); tab dots as state; large before → after; Krail and
+   the budgets as the ship overview; Install with its price; a flash on fit.
+2. **Done: the ship as the protagonist.** In the bay the camera comes in on
+   the ship and the open tab lights its part in amber (prow guns, torpedo
+   belly, nacelles, spine modules, core, shield); the pause card wakes a
+   little of each, and on resume the lights ease out.
+3. **Thresholds on the bars.** Heat, mass and power warn near the rating
+   (a tick and a word at 80%, OVERLOAD over it), in the bay and on the HUD's
+   stat rows; the HUD's state word reads them. Reduced motion: no blink.
+4. **Installation animation.** On Install: Krail ticks down, the module
+   flashes, a line runs from the module to the ship part it belongs to (the
+   zone marks of step 2), the counters count to their new values, the
+   module settles. 400 to 700 ms, skipped with reduced motion, never delays
+   a second install.
+5. **Recommendations with a reason.** The Story's card refit (and a
+   "suggested" row in the bay) say why: close threats seen, ordnance low,
+   the build leans one way. Reasons are rows next to the cards in
+   `content/`, picked in `sim/offers.ts` from the run's own numbers, so a
+   test can name the reason for a given state.
+6. **Build profile.** `sim/build.ts` already names a build's identity; show
+   it in the bay as PROFILE: RAMMER / LANCER with three plain lines, and
+   the weights as short bars (close quarters, ordnance, long range,
+   defence). Needs the pilot's builds as test fixtures.
+7. **Hardware paths.** The web's links become engineering: a trunk per
+   system, branches that fork and rejoin, junction marks where a path
+   needs two parents. Layout is data in `content/web.ts` (tier and row
+   stay); the render draws the trunks. Check every tab at phone size.
+8. **Type hierarchy.** Name, effect, stats, flavour, cost, in that order
+   and weight; labels on the web dimmed to a third level (level pips
+   secondary, a short effect tag tertiary). A sweep of `main.css`, no new
+   data.
+9. **Wear.** Very light: a scanline interruption now and then, worn
+   corners on a few panels, serial numbers and maintenance marks, an old
+   warning label. CSS and a few SVGs, off with reduced motion and at low
+   quality tiers. Taste check with Jimi before the whole UI gets it.
+10. **The ship's voice.** Short environmental lines in the bay, the pause
+    card and the log: MAINTENANCE REQUIRED, UNAUTHORIZED CONFIGURATION, LOAD
+    LIMIT EXCEEDED, OBEDIENCE PROTOCOL: ACTIVE. Rows in `content/`, each
+    tied to a real state (over a rating, a stock build, a fresh fit), with
+    German twins.
+
+Order: 3 and 4 next (they finish the bay's feel), then 5 and 6 (they need
+the most design), then 7 and 8, with 9 and 10 last. Open: the HUD's
+state word could also colour the frame; whether the Story mode's port and
+chart screens take the same console frame.
 
 ### Open
 

@@ -356,8 +356,16 @@ export class Sector {
   }
 
   /** Place everything for this frame and draw it. `alpha` is how far past the previous step we are. */
-  frame(world: World, alpha: number, dt: number): void {
+  /** What the screen over the ship is about: a bay tab, 'brief' for the pause card, or none. Lights the ship (ShipView.light). */
+  console: string | null = null;
+  private bayK = 0;
+
+  frame(world: World, alpha: number, dt: number, uiDt = dt): void {
     this.time += dt;
+    const inBay = this.console !== null && this.console !== 'brief';
+    this.bayK += ((inBay ? 1 : 0) - this.bayK) * Math.min(1, 4 * uiDt);
+    this.rig.bay = this.bayK * this.bayK * (3 - 2 * this.bayK);
+    this.ship.light(this.console, uiDt);
     this.paintSky(world);
     const a = world.prev, b = world.ship, s = this.lerped;
     Object.assign(s, b);

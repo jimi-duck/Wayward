@@ -318,8 +318,10 @@ the bay the tab dots are state (amber fitted, teal ready, red over a rating
 through something fitted there, grey empty), Install names its price, the
 figures read as large before → after blocks, the overview carries Krail and
 the budgets with the selected module's draw ahead of them, and a fit lights
-the module and bumps the figures it moved. Not yet: the ship lit behind the
-bay by tab, a reason on each suggested card, a build profile.
+the module and bumps the figures it moved. The ship behind it is the protagonist: with the bay open the camera
+comes in and the tab lights its part of the ship in amber (`ShipView.light`,
+marks per tab in `render/ships.ts`); the pause card wakes a little of each
+and the lights ease out on resume. The rest is in PLAN.md (the console pass).
 
 
 ## The refit: three cards (the Story mode)

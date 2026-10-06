@@ -68,6 +68,11 @@ export class BayPanel {
     $('bay').addEventListener('pointerdown', (e) => e.stopPropagation());
   }
 
+  /** The tab open, for the ship drawn behind (render/ships.ts lights its part). */
+  get zone(): Tab {
+    return this.tab;
+  }
+
   get open(): boolean {
     return !$('bay').hidden;
   }

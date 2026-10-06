@@ -968,7 +968,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 }
 
 /* ── pause ────────────────────────────────────────────────────────────── */
-#pause { position: absolute; inset: 0; z-index: 3; display: none; place-items: center; background: rgba(8, 13, 14, .62); }
+#pause { position: absolute; inset: 0; z-index: 3; display: none; place-items: center; background: rgba(8, 13, 14, .46); }
 .paused #pause { display: grid; }
 .pause-card { display: grid; justify-items: center; gap: 1.1rem; width: min(600px, 92vw); padding: 24px 28px 22px 32px; }
 .pause-t { color: var(--hud); font: 700 clamp(22px, 5vw, 32px)/1 var(--font-head); letter-spacing: .32em; text-transform: uppercase; padding-left: .32em; }
@@ -1275,7 +1275,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
    Tabs left, the web centre, the inspector right, fitted and budgets below.
    Amber is what is fitted and the hand that fits it; teal is what is ready
    and the ship's readings; red only a budget run over. */
-#bay { background: radial-gradient(ellipse at 50% 40%, rgba(8, 13, 14, .62), rgba(8, 13, 14, .94) 70%); }
+#bay { background: radial-gradient(ellipse at 50% 55%, rgba(8, 13, 14, .22), rgba(8, 13, 14, .88) 80%); }
 .bay { --edge: var(--frame); --lit: var(--hud); width: min(1240px, 100%); height: min(720px, 100%);
   display: grid; grid-template: auto minmax(0, 1fr) auto / minmax(150px, 190px) minmax(0, 1fr) minmax(230px, 300px);
   grid-template-areas: "h h h" "tabs web insp" "foot foot foot"; gap: 12px; }
@@ -1307,7 +1307,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-tab.on .ico, .bay-tab.on .bt-c { color: var(--hud-hi); border-color: var(--hud-mid); }
 
 .bay-w { grid-area: web; position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; padding: 12px 14px 8px; border: 1px solid var(--line);
-  background: repeating-linear-gradient(0deg, rgba(216, 213, 198, .02) 0 1px, transparent 1px 3px), rgba(8, 13, 14, .55); min-height: 0; }
+  background: repeating-linear-gradient(0deg, rgba(216, 213, 198, .02) 0 1px, transparent 1px 3px), rgba(8, 13, 14, .36); min-height: 0; }
 .bay-tab-h { display: flex; align-items: baseline; gap: 10px; color: var(--hud); }
 .bay-tab-h .ico { width: 18px; height: 18px; align-self: center; }
 .bw-n { font: 700 calc(var(--fs) * 1.8)/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }

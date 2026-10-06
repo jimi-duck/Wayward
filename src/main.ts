@@ -372,7 +372,8 @@ function boot(): void {
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
-      sector.frame(world, alpha, dt);
+      sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
+      sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);
       if (started) stops();
       debug.frame(frameDt, renderer, quality, input, loop.paused);
