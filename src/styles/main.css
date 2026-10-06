@@ -1699,9 +1699,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pause-acts button { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid var(--line); background: rgba(11, 16, 17, .8); color: var(--ink-2); cursor: pointer;
   font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; }
 .pause-acts .ico { width: 15px; height: 15px; }
-#p-bay.ready { border-color: var(--hud); color: var(--hud-hi); background: var(--hud-ghost); }
-#p-bay b { display: none; min-width: 18px; padding: 2px 5px; color: #1a1104; background: var(--hud); font: 700 11px/1 var(--font-mono); }
-#p-bay.ready b { display: inline-block; }
 #p-go { border-color: var(--hud-mid) !important; color: var(--hud-hi) !important; }
 .touch-ui #p-go .only-desktop { display: none; }
 @media (max-height: 520px) {
@@ -1924,7 +1921,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
   .pause-card .brief.steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 14px; }
   .pause-card .brief.steps li { padding: 4px 0 4px 2em; border-bottom: 0; }
   .pause-card .brief.steps li::before { top: 7px; }
-  .pause-card .keys-l.only-touch-l { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .pause-card .keys-l.only-touch-l { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pause-card .keys-l { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px 12px; }
   .pause-card .pause-acts button { padding: 8px 12px; }
 }
