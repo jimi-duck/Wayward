@@ -818,12 +818,6 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .en-epi:empty { display: none; }
 .en-epi p { margin: 0; padding-left: 10px; border-left: 2px solid var(--amber); font: 400 14px/1.5 var(--font-display); color: var(--ink); }
 
-/* ── figures: a number before and after (the bay's inspector) ─────────── */
-.fig { display: flex; justify-content: space-between; gap: 10px; font: 500 calc(var(--fs) * 1.02)/1.2 var(--font-mono); letter-spacing: .04em; color: var(--ink-2); }
-.f-v { white-space: nowrap; color: var(--ink-3); }
-.f-v s { text-decoration: none; }
-.f-v b { font-weight: 600; color: var(--cat); }
-.fig.cost .f-v b { color: var(--alert); }
 
 /* ── start ────────────────────────────────────────────────────────────── */
 /* The key art fills the screen; the title, the two ways to play and the one
@@ -1353,7 +1347,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
   background: linear-gradient(180deg, var(--hud-ghost), rgba(11, 16, 17, .92) 40%); }
 #bay-main.done { animation: bay-done .5s var(--ez); }
 @keyframes bay-done { 0% { box-shadow: inset 0 0 0 2px var(--hud-hi), 0 0 18px var(--hud-dim); } }
-.bi-h { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+.bi-h { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
 .bi-oct { --c: var(--hud); display: grid; place-items: center; width: 48px; height: 48px; color: var(--hud); background: var(--hud-mid); }
 .bi-oct .ico-img { width: 40px; height: 40px; }
 .bi-hd { display: grid; gap: 5px; min-width: 0; }
@@ -1366,10 +1360,27 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bi-pips i.add { background: var(--hud); opacity: .45; animation: hud-blink 1.2s ease-in-out infinite; }
 .bi-text { margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink); }
 .bi-note { margin: 0; font: 400 12px/1.4 var(--font-display); color: var(--ink-2); }
-.bi-figs { --cat: var(--cy); display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
-.bi-figs:empty { display: none; }
-.bi-figs .fig.budget .f-l { color: var(--ink-3); }
 .bi-warn { margin: 0; padding: 6px 8px; border-left: 2px solid var(--alert); background: rgba(40, 12, 10, .45); font: 600 calc(var(--fs) * .95 * 1.18)/1.3 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--alert); }
+/* the delta chips: what a part moves and by how much (teal with an arrow for a gain, amber and no arrow for a cost; before and after in the tooltip) */
+.bi-dl { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.dl { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 10px; background: rgba(76, 194, 203, .06); border-left: 2px solid var(--cy); }
+.dl.cost { background: var(--hud-ghost); border-left-color: var(--hud); }
+.dl-l { min-width: 0; font: 600 max(10px, calc(var(--fs) * .9 * 1.18))/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.dl-v { display: inline-flex; align-items: center; gap: 6px; flex: none; font: 700 17px/1 var(--font-mono); letter-spacing: .02em; color: var(--cy); white-space: nowrap; }
+.dl.cost .dl-v { color: var(--hud-hi); }
+.dl-a { width: 0; height: 0; border-inline: 5px solid transparent; border-bottom: 8px solid currentColor; }
+.pc-fig:empty { min-height: 32px; }
+/* (i): the paragraph, the advice, every figure and the note, closed until asked for */
+.bi-i { position: relative; display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 1px solid var(--ink-3); border-radius: 50%; background: none; color: var(--ink-2); cursor: pointer;
+  font: italic 600 13px/1 var(--font-mono); }
+.bi-i::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; }
+.bi-i:hover, .bi-i.on { border-color: var(--hud); color: var(--hud-hi); }
+.bi-i.on { background: var(--hud-ghost); }
+.bi-more { display: grid; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+.bi-why { margin: 0; padding-left: 8px; border-left: 2px solid var(--hud); font: 400 13px/1.4 var(--font-display); color: var(--ink); }
+.bi-fl { margin: 0; display: flex; justify-content: space-between; gap: 10px; font: 500 12px/1.3 var(--font-mono); color: var(--ink-3); }
+.bi-fl span:last-child { color: var(--ink-2); white-space: nowrap; }
+.bi-fl.cost span:last-child { color: var(--hud-hi); }
 .bi-cost { display: flex; align-items: baseline; gap: 7px; padding-top: 10px; border-top: 1px solid var(--line); color: var(--violet); }
 .bi-cost .ico { width: 14px; height: 14px; align-self: center; }
 .bc-l { margin-right: auto; font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
@@ -1486,14 +1497,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 
 /* the bay: tab state, installing, the Before → After the player reads */
 .bay-tab { position: relative; }
-.bay-insp .bi-figs { gap: 8px; }
-.bay-insp .fig { display: grid; grid-template-columns: 1fr; gap: 3px; padding: 8px 10px; background: rgba(76, 194, 203, .06); border-left: 2px solid var(--cy); }
-.bay-insp .fig.cost { border-left-color: var(--alert); background: rgba(201, 74, 63, .08); }
-.bay-insp .fig .f-l { font-size: calc(var(--fs) * .9 * 1.18); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
-.bay-insp .fig .f-v { display: flex; align-items: baseline; gap: 8px; font: 500 15px/1.1 var(--font-mono); }
-.bay-insp .fig .f-v s { color: var(--ink-3); }
-.bay-insp .fig .f-v b { font-size: 19px; font-weight: 700; color: var(--cy); }
-.bay-insp .fig.cost .f-v b { color: var(--alert); }
 .bb-v em { font-style: normal; color: var(--hud); }
 .bb-bar { transition: background .45s var(--ez); }
 .bb-v.bump, .bb.bump .bb-v { animation: bay-bump .7s var(--ez); }
@@ -1523,7 +1526,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 /* the ship's computer's picks: amber, a diamond and a reason */
 .bi-rec, .c-rec { margin: 0; display: flex; flex-wrap: wrap; gap: 0 6px; font: 600 calc(var(--fs) * 1.05 * 1.18)/1.35 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
 .bi-rec b, .c-rec b { color: var(--hud-hi); font-weight: 700; }
-.bi-rec { padding: 6px 8px; border-left: 2px solid var(--hud); background: var(--hud-ghost); }
+.bi-rec { justify-self: start; padding: 4px 8px; border-left: 2px solid var(--hud); background: var(--hud-ghost); }
 .bay-node.rec::after { content: "◆"; position: absolute; top: -4px; left: calc(50% + 14px); color: var(--hud-hi); font-size: 11px; line-height: 1; text-shadow: 0 0 6px var(--hud); }
 
 /* the build's profile, under the tabs: a name, plain lines, how it leans */
@@ -1591,7 +1594,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-tab { grid-template-columns: auto 1fr auto; }
 
 .pick-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-content: center; height: 100%; }
-.pick-card { --c: var(--cy); position: relative; display: grid; align-content: start; gap: 9px; padding: 16px; border: 1px solid var(--line); background: rgba(11, 16, 17, .88); cursor: pointer; }
+.pick-card { --c: var(--cy); position: relative; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 9px; padding: 16px; border: 1px solid var(--line); background: rgba(11, 16, 17, .88); cursor: pointer; }
 .pick-card.ready { border-color: var(--cy-dim); }
 .pick-card.sel { border-color: var(--hud); box-shadow: inset 0 3px 0 var(--hud), 0 0 18px var(--hud-ghost); }
 .pick-card.short { --c: rgba(76, 194, 203, .5); }
@@ -1599,12 +1602,10 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pc-oct { --c2: var(--c); display: grid; place-items: center; width: 40px; height: 40px; color: var(--c); border: 1px solid var(--c);
   clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); background: rgba(8, 13, 14, .9); }
 .pc-oct .ico-img { width: 28px; height: 28px; }
-.pc-tab { flex: 1; font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.pc-tab { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 .pc-name { font: 700 clamp(17px, 1.7vw, 22px)/1.1 var(--font-head); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
 .pc-new { font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--cy); }
 .pc-text { font: 400 14px/1.4 var(--font-display); color: var(--ink-2); min-height: 2.8em; }
-.pc-fig { display: flex; justify-content: space-between; gap: 8px; font: 500 calc(var(--fs) * 1.05)/1.2 var(--font-mono); color: var(--ink-3); min-height: 1.2em; }
-.pc-fig b { color: var(--cy); font-weight: 600; }
 .pc-go { margin-top: 4px; padding: 11px; border: 1px solid var(--hud); background: var(--hud-ghost); color: var(--hud-hi); cursor: pointer;
   font: 700 calc(var(--fs) * 1.3)/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; }
 .pc-go:not(:disabled):hover { background: var(--hud-dim); }
@@ -1622,9 +1623,9 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-width: 760px) and (min-height: 521px) { .pick-row { grid-template-columns: 1fr; } }
 @media (max-height: 520px) { .pick-row { gap: 8px; } .pc-name { font-size: 15px; } .pc-oct { width: 30px; height: 30px; } .pc-oct .ico-img { width: 21px; height: 21px; } }
 /* small screens: no bay text under 10px, and what a thumb presses is about 40px tall (a ring's hit area grows, the ring as drawn does not) */
-.bay-k small, .bay-insp .fig .f-l { font-size: max(10px, calc(var(--fs) * .9 * 1.18)); }
+.bay-k small { font-size: max(10px, calc(var(--fs) * .9 * 1.18)); }
 #bay-auto, .pc-go:disabled { font-size: max(10px, calc(var(--fs) * 1.1)); }
-.bi-go:disabled, .pc-tab, .pc-new, .pc-fig { font-size: max(10px, calc(var(--fs) * 1.05)); }
+.bi-go:disabled, .pc-tab, .pc-new { font-size: max(10px, calc(var(--fs) * 1.05)); }
 .pick-more { font-size: max(10px, calc(var(--fs) * 1.02)); }
 #bay .chip { font-size: max(10px, calc(var(--fs) * .95)); }
 .bn-name { font-size: max(10px, calc(var(--fs) * .85 * 1.18)); }
@@ -1639,12 +1640,19 @@ html:not(.breakout) .pause-card #brief { display: none; }
   .bay-insp { padding-bottom: 0; gap: 5px; }
   .bi-go { position: sticky; bottom: 0; background: linear-gradient(var(--hud-ghost), var(--hud-ghost)), #0b1011; }
   .bi-go:disabled { background: #0b1011; }
-  .bi-note { display: none; }
+}
+/* a phone on its side: the chips are a little tighter */
+@media (max-height: 520px) {
+  .dl { padding: 4px 8px; }
+  .dl-v { font-size: 15px; }
+  .bi-dl { gap: 4px; }
+  .bi-dl, .bi-more { padding-top: 6px; }
+  .bi-stamp { display: none; }
 }
 /* a phone on its side: the words carry the header, the tabs and the inspector, so their icons go (the module glyphs on the cards and the web stay) */
 @media (max-height: 520px) {
   .bay-k > .ico, .bay-krail .ico, .bay-tab > .ico:first-child, .bay-tab-h > .ico, .bi-oct { display: none; }
-  .bi-h { grid-template-columns: 1fr; }
+  .bi-h { grid-template-columns: 1fr auto; }
 }
 
 /* touch: the buttons own the bottom right, so the badge and the state sit under the ship panel */

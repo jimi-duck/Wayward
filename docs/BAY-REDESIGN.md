@@ -8,7 +8,12 @@ Design document. No code has been changed. Based on the bay as it is on PR #58's
 - **Rings** sit on the painted ship by picture coordinates (`ZONE_AT` in `ui/bay.ts`), in every view. Signals is the mast, Defence the turrets.
 - **Arcade is "Pick one"**: three suggestions, the tabs shown locked. The Story mode keeps "Suggested" and the free tabs, on the same screen.
 - **Phones on their side** (667×375 and smaller) keep the same layout: ship strip, three cards, the budget bars. The one-column fall-back is for portrait widths only. Buttons and tabs are 36 to 40 px tall, a ring's tap area is 40 px around the ring as drawn, and no bay text is under 10 px. The header, tab and inspector icons are dropped there (the words carry them); the module glyphs on the cards and the web stay. Below 520 px of height the bay is exactly the screen: a tall inspector scrolls and its fit button stays in reach.
-- Not built yet: buckets, progressive disclosure, delta chips, quick builds, the demo window (steps 2 to 6 below).
+## As built (the inspector, delta chips)
+
+- **A delta chip per figure**, three at most: the figure's name and one signed change in its own unit (`+0.4`, `−0.5s`, `+2`), from `upgradeFigures` (`Fig.delta`, worked out in `sim/build.ts`). Teal with an arrow for a gain; amber with no arrow for a cost (red stays for threats). A faster reload reads `▲ −0.5s`: the arrow means better, the number says what moved. Before and after are in the tooltip. The first gain is also the number on each pick card.
+- **No icon on the chips.** The redesign asked for about nine new line symbols; the user's note that the bay carries too many icons won, so the name does that job. (Most figures belong to one system anyway, so a system icon would repeat three times.)
+- **A shorter inspector.** Glyph, name, level and an (i) button; the chips; what the part draws; Fit with its price. The paragraph, the reason for a recommendation, every figure as before → after and the flavour note open behind (i), and stay open as you move between parts. The origin stamp is hidden on a phone, as it is on the cards.
+- Not built yet: buckets, progressive disclosure, quick builds, the demo window (steps 2, 4 to 6 below).
 
 ## 0. What the game already has, and what changes
 

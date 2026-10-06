@@ -63,7 +63,11 @@ export function available(u: UpgradeDef, levels: Levels, unlocked: ReadonlySet<s
   return true;
 }
 
-export interface Fig { label: string; from: string; to: string; cost: boolean; }
+export interface Fig {
+  label: string; from: string; to: string; cost: boolean;
+  /** The change in the figure's own unit, signed: "+0.4", "−0.5s", "+2 m". Where it rounds to nothing, the new value. */
+  delta: string;
+}
 
 /** What one more level of an upgrade would change, as figures (in the Story mode, `arcade` false, without the arcade's own). */
 export function upgradeFigures(levels: Levels, id: string, arcade = true): Fig[] {
@@ -159,7 +163,9 @@ export function figures(before: Stats, after: Stats, arcade = true): Fig[] {
     const fa = d.fmt(a), fb = d.fmt(b);
     if (fa === fb) continue;
     // a figure appearing from nothing (a system switched on) is never a cost
-    out.push({ label: d.label, from: fa, to: fb, cost: a !== 0 && (d.lower ? b > a : b < a) });
+    const step = d.fmt(Math.abs(b - a));
+    const delta = /[1-9]/.test(step) ? `${b > a ? '+' : '−'}${step}` : fb;
+    out.push({ label: d.label, from: fa, to: fb, cost: a !== 0 && (d.lower ? b > a : b < a), delta });
   }
   return out;
 }
