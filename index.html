@@ -200,7 +200,7 @@
         <!-- the lockup (brand v1.1, § 9): the mark, the word, the ship's papers -->
         <div class="lockup" role="img" aria-label="Wayward, Obedience-class ore hauler">
           <svg class="mark" viewBox="0 0 40 34" aria-hidden="true"><path d="M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z"/></svg>
-          <span class="lk-t"><b class="lk-w">Wayward</b><span class="lk-d">Obedience-class ore hauler</span></span>
+          <span class="lk-t"><b class="lk-w">Wayward</b><span class="lk-d"><span>Obedience-class ore hauler</span><b class="lk-id">OB-7731-A</b></span></span>
         </div>
         <div class="modes" role="radiogroup" aria-label="Game mode">
           <button type="button" role="radio" id="mode-arcade" class="mode" aria-checked="true"><b class="mo-t">Arcade</b><span class="mo-s">Freefly • Score • Explore</span></button>
@@ -251,7 +251,7 @@
         <nav class="bay-tabs" id="bay-tabs" role="tablist"></nav>
         <section class="bay-w" id="bay-main">
           <i class="wear" aria-hidden="true"></i>
-          <span class="wear-serial" aria-hidden="true">OB-7731-A · Fit bay 03 · Rev 14</span>
+          <div class="wear-papers" id="bay-papers" aria-hidden="true"></div>
           <header class="bay-tab-h" id="bay-tab-h"></header>
           <div class="bay-legend"><span class="lg owned">Fitted</span><span class="lg open">Ready</span><span class="lg locked">Not yet</span></div>
           <div class="bay-web" id="bay-web"></div>
@@ -380,6 +380,7 @@
         </div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
         <div class="pause-foot" id="pause-foot"></div>
+        <div class="pause-papers" id="pause-papers" aria-hidden="true"></div>
       </div>
     </div>
     <!-- A phone held upright: the game plays on its side only, and waits. -->
