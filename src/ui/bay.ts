@@ -4,7 +4,7 @@ import { blockOf, budgets, cost, maxLevel, quickPicks, type Block } from '../sim
 import { upgradeFigures } from '../sim/build';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
-import { icon, ICON } from './refit';
+import { icon, nodeIcon } from './refit';
 import { num, t } from '../i18n';
 
 // ── the refit bay ─────────────────────────────────────────────────────────
@@ -30,7 +30,6 @@ const VIEWS: View[] = ['picks', ...TAB_ORDER];
 const TAB_ICON: Record<View, string> = {
   picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', reactor: 'i-core', synergies: 'i-link',
 };
-const FIT_ICON: Record<string, string> = { rx_core: 'i-core', rx_sinks: 'i-plasma', hl_frame: 'i-hull' };
 
 /** Why a module cannot be fitted, in a few words. */
 const WHY: Record<Block, string> = {
@@ -49,7 +48,6 @@ const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass'
 const OVER_WORD = { mass: 'Over the mass rating: slower to turn and to speed up', heat: 'Over the heat rating: the guns recharge and reload slower' } as const;
 
 const nameOf = (id: string) => t(UPGRADE[id]?.name ?? FITTING[id]?.name ?? id);
-const iconOf = (id: string) => FIT_ICON[id] ?? ICON[UPGRADE[id]?.branch ?? 'utility'];
 const textOf = (id: string, lv: number) => t(UPGRADE[id] ? upgradeText(UPGRADE[id]!, lv) : FITTING[id]!.text);
 
 /** A module's look: fitted (all, or some), ready to fit, in reach but short of Krail or power, or not yet open. */
@@ -259,7 +257,7 @@ export class BayPanel {
       go.addEventListener('click', (e) => { e.stopPropagation(); this.pick = i; this.install(n.id); });
       card.addEventListener('click', () => { this.pick = i; this.render(); });
       card.append(
-        h('span', 'pc-top', '', h('span', 'pc-oct', '', icon(iconOf(n.id))), h('span', 'pc-tab', t(TABS[n.tab].name)), h('kbd', 'only-desktop', String(i + 1))),
+        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(TABS[n.tab].name)), h('kbd', 'only-desktop', String(i + 1))),
         h('span', 'pc-name', nameOf(n.id)),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
         h('span', 'pc-text', textOf(n.id, Math.min(max, lv + 1))),
@@ -309,7 +307,7 @@ export class BayPanel {
       b.setAttribute('aria-label', `${nameOf(n.id)} · ${t('Lv')} ${lv}/${max}`);
       // the price where it can be paid soon: fitted-or-ready modules say what the next level costs
       const price = st === 'open' || st === 'short' || st === 'owned' ? cost(n.id, lv + 1) : 0;
-      b.append(h('span', 'bn-oct', '', icon(iconOf(n.id))), max > 1 ? pips(lv, max) : h('span', 'bi-pips'), h('span', 'bn-name', nameOf(n.id)),
+      b.append(h('span', 'bn-oct', '', nodeIcon(n.id)), max > 1 ? pips(lv, max) : h('span', 'bi-pips'), h('span', 'bn-name', nameOf(n.id)),
         ...(price ? [h('span', 'bn-cost', num(price))] : []));
       b.addEventListener('click', (e) => { e.stopPropagation(); this.sel = n.id; this.render(); });
       field.append(b);
@@ -325,7 +323,7 @@ export class BayPanel {
     const node = NODE[id]!;
     const lv = w.levels[id] ?? 0, max = maxLevel(id), next = Math.min(max, lv + 1);
     const why = blockOf(id, w.bayCtx());
-    const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', icon(iconOf(id))),
+    const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', nodeIcon(id)),
       h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips(lv, max, lv < max))));
     const out: HTMLElement[] = [head, h('p', 'bi-text', textOf(id, next))];
     if (lv < max) {

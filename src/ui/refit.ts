@@ -39,6 +39,14 @@ export function icon(id: string): SVGSVGElement {
   return svg;
 }
 
+/** A module's own glyph (public/icons/node, cut by tools/cut-bay-icons.py): a mask, so it takes the colour around it. */
+export function nodeIcon(id: string): HTMLElement {
+  const el = h('span', 'ico-img');
+  // resolved here: a url() in a custom property is read against the stylesheet, not the page
+  el.style.setProperty('--img', `url(${new URL(`${import.meta.env.BASE_URL}icons/node/${id}.png`, document.baseURI).href})`);
+  return el;
+}
+
 export class RefitPanel {
   private off: (() => void) | null = null;
   private sel = 0;
@@ -108,7 +116,7 @@ export class RefitPanel {
     b.addEventListener('pointerenter', () => { this.sel = i; this.mark(); });
 
     const sys = u.branch === 'salvage' && u.tech ? t('{f} salvage', { f: t(`${u.tech.charAt(0).toUpperCase()}${u.tech.slice(1)}`) }) : t(BRANCHES[u.branch].name);
-    const top = h('span', 'c-top', '', icon(ICON[u.branch]), h('span', 'c-sys', sys), h('span', 'c-tag', t(TAG_WORD[c.tag])), h('kbd', 'only-desktop', String(i + 1)));
+    const top = h('span', 'c-top', '', nodeIcon(u.id), h('span', 'c-sys', sys), h('span', 'c-tag', t(TAG_WORD[c.tag])), h('kbd', 'only-desktop', String(i + 1)));
     const name = h('span', 'c-name', t(u.name));
 
     // the module's level: owned blocks, then the one this card adds
