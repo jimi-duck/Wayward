@@ -296,6 +296,12 @@ export class BayPanel {
   private installFx(id: string, from: number, to: number): void {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     this.countKrail(from, to, 520);
+    // the stage takes the clamp: a 3 px kick on the picture, not on the controls
+    const bay = $('bay');
+    bay.classList.remove('kick');
+    void bay.offsetWidth;
+    bay.classList.add('kick');
+    setTimeout(() => bay.classList.remove('kick'), 120);
     const zone = NODE[id]!.tab;
     // a pulse leaves the part's ring
     const ring = this.rings.get(zone);
@@ -669,12 +675,22 @@ export class BayPanel {
       // the rating's state: a word from 80%, a louder one over (power is a ceiling: it fills, it never goes over)
       const share = use[k] / cap[k], state = k === 'power' ? (share >= 1 ? 'warn' : '') : share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
       const word = state === 'over' ? 'Over limit' : state === 'warn' ? (k === 'power' ? 'Full' : 'Warning') : '';
-      const bar = h('i', `bb-bar${state ? ` ${state}` : ''}`);
-      bar.style.setProperty('--v', Math.min(1, use[k] / cap[k]).toFixed(3));
-      bar.style.setProperty('--a', Math.min(1, (use[k] + add) / cap[k]).toFixed(3));
       // a fit just moved this rating: it ticks from what it said to what it says now, with the old figure struck beside it
       const now = `${use[k]}/${cap[k]}`, was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== now;
       this.shown[k] = now;
+      // one segment per point of rating: lit for what the ship draws, blinking for what the selected part would add;
+      // after a fit the new ones light one by one and a raised rating's new slots pop in
+      const [wasUse = 0, wasCap = 0] = moved ? was!.split('/').map(Number) : [];
+      const segs: HTMLElement[] = [];
+      for (let j = 0; j < cap[k]; j++) {
+        const on = j < use[k], fresh = moved && on && j >= wasUse, slot = moved && j >= wasCap;
+        const seg = h('i', [on ? 'on' : j < use[k] + add ? 'add' : '', fresh ? 'new' : '', slot ? 'pop' : ''].filter(Boolean).join(' '));
+        if (fresh || slot) seg.style.setProperty('--k', String(fresh ? j - wasUse : j - wasCap));
+        segs.push(seg);
+      }
+      // a part that would take it past a soft rating shows red before it is fitted (power is a ceiling: it never goes over)
+      const will = k !== 'power' && add > 0 && use[k] + add > cap[k];
+      const bar = h('i', `bb-bar${state ? ` ${state}` : ''}${will ? ' will' : ''}`, '', ...segs);
       const fig = h('span', 'bb-n', now);
       const val = h('b', `bb-v${moved ? ' bump' : ''}`, '', fig);
       if (moved) {
