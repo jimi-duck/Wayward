@@ -3,6 +3,7 @@ import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
 import { fileLines } from '../sim/calloway';
 import { gateOf, jumps, cyriteKnown, lanesFrom, netted, placeAt, regionCount, regionDef, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
+import { stance, type Stance } from '../sim/lanes';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
 import { RATION, WRECKS, here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
@@ -46,6 +47,8 @@ function project(shown: StarSystem[]): Proj {
 }
 const days = (n: number) => plural(n, '{n} day', '{n} days');
 const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { cyrite: 'Cyrite', krail: 'Krail', plates: 'Plates', parts: 'Parts', food: 'Food', chits: 'Chits' };
+/** A lane's style, as a mark and a word (sim/lanes.ts). */
+const STANCE_TAG: Record<Stance, [string, string]> = { quiet: ['○', 'Quiet'], watched: ['◐', 'Watched'], hostile: ['▲', 'Hostile'] };
 const richWord = (k: number) => t(k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
 /** A place in a few words: what it is, and what it pays (a strange signal's is not known till it is read). */
@@ -221,20 +224,20 @@ export class ChartPanel {
       const s = o.to;
       // a lane that brings the goal a jump nearer says so, at a glance
       const left = toGoal(j.chart, j.at, s.id), closer = some && near[i]!;
+      const st = stance(j.chart, o), [mark, word] = STANCE_TAG[st];
       const notes = [
-        days(o.route.days), `${t('food')} ${o.food}`, s.port ? s.port.name : t('no port'), `Cyrite ${richWord(cyriteKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
+        `${t('food')} ${o.food}`, s.port ? s.port.name : t('no port'), `Cyrite ${richWord(cyriteKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
       ];
       if (o.place) notes.push(placeText(o.place));
       if (fleetAt(j.chart, s.id)) notes.push(t('Drift fleet'));
       if (threnAt(j.chart, s.id) >= THREN_ABOUT) notes.push('Thren');
       if (raided(j.chart, s.id)) notes.push(t('raided'));
-      if (o.to.quiet && !o.netted) notes.push(t('Quiet'));
       if (o.netted) notes.push(t('netted'));
       if (o.shadow) notes.push(t('Calloway last seen'));
       const b = h('button', `port-l ch-l${i === this.sel ? ' sel' : ''}${o.netted ? ' net' : ''}`, '',
         h('kbd', '', String(i + 1)),
         h('span', 'pl-n', '', h('b', '', s.name), left === 0 ? h('span', 'ch-goal-c', t('Goal')) : closer ? h('span', 'ch-goal-c', t('Toward goal')) : null, h('span', 'ch-kind', ` ${t(KIND_WORD[s.kind])}${s.kind === 'edge' || s.kind === 'gate' ? '' : ` · ${t(HOLDER_NAMES[s.holder])}`}`)),
-        h('span', 'pl-note', notes.join(' · ')),
+        h('span', 'pl-note', '', h('span', 'ch-tags', '', h('span', `ch-tag ${st}`, '', h('i', '', mark), h('b', '', t(word))), h('span', 'ch-tag', days(o.route.days))), h('span', '', notes.join(' · '))),
         h('b', 'pl-p', String(o.route.cyrite)),
       ) as HTMLButtonElement;
       b.type = 'button';

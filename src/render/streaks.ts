@@ -90,7 +90,7 @@ export class Streaks {
   readonly mesh: Mesh;
   private n = 0;
 
-  constructor(scene: Scene, private readonly max = 640) {
+  constructor(scene: Scene, private readonly max = 1024) {
     // a quad: x 0..1 tail to head, y -1..1
     this.geo.setAttribute('position', new Float32BufferAttribute([0, -1, 0, 1, -1, 0, 1, 1, 0, 0, 1, 0], 3));
     this.geo.setIndex([0, 1, 2, 0, 2, 3]);
