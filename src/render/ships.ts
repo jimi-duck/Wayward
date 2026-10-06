@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DoubleSide, Group, Mesh,
-  MeshBasicMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, TorusGeometry,
+  MeshBasicMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, TorusGeometry, Vector3,
   type Object3D, type Texture,
 } from 'three';
 import { clamp, lerp } from '../core/math';
@@ -239,6 +239,8 @@ export class ShipView {
   /** The bay's lights: a sprite a mark, eased in and out by zone. */
   private readonly marks: Array<{ zone: string; sprite: Sprite; size: number }> = [];
   private readonly zoneLevel: Record<string, number> = {};
+  /** A fit just landed on a zone: a brighter flash that dies away. */
+  private readonly kick: Record<string, number> = {};
   private bank = 0;
   private pitch = 0;
   private heat = 0;
@@ -320,20 +322,32 @@ export class ShipView {
    */
   light(zone: string | null, dt: number): void {
     const k = Math.min(1, 5 * dt), t = this.time;
+    for (const z of Object.keys(this.kick)) this.kick[z] = Math.max(0, this.kick[z]! - 1.6 * dt);
     for (const z of Object.keys(MARKS)) {
       const want = zone === 'brief' ? BRIEF_ZONES[z] ?? 0 : zone === z ? 1 : 0, cur = this.zoneLevel[z] ?? 0;
       this.zoneLevel[z] = cur + (want - cur) * k;
     }
     for (const m of this.marks) {
-      const v = this.zoneLevel[m.zone] ?? 0;
+      const v = Math.min(1.6, (this.zoneLevel[m.zone] ?? 0) + (this.kick[m.zone] ?? 0) * 0.9);
       m.sprite.visible = v > 0.01;
       if (!m.sprite.visible) continue;
       const pulse = 0.85 + 0.15 * Math.sin(t * 2.4 + m.sprite.position.x * 3);
-      (m.sprite.material as SpriteMaterial).opacity = v * 0.95 * pulse;
+      (m.sprite.material as SpriteMaterial).opacity = Math.min(1, v * 0.95 * pulse);
       m.sprite.scale.setScalar(m.size * MODEL_SCALE * (0.8 + 0.2 * v));
     }
     // the shield zone shows the ellipsoid itself, faintly
     if (this.zoneLevel.defence! > 0.05) this.hit = Math.max(this.hit, this.zoneLevel.defence! * 0.3);
+  }
+
+  /** A fit landed on a zone: flash its lights. */
+  flashZone(zone: string): void {
+    this.kick[zone] = 1;
+  }
+
+  /** The world positions of a zone's lights. */
+  zonePoints(zone: string): Vector3[] {
+    this.rollG.updateWorldMatrix(true, false);
+    return this.marks.filter((m) => m.zone === zone).map((m) => m.sprite.getWorldPosition(new Vector3()));
   }
 
   /** World positions of the nozzles and how hard they are burning, for exhaust sparks. */

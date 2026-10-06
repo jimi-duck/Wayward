@@ -229,6 +229,8 @@ export const UI: Record<string, string> = {
   'fitted': 'eingebaut',
   'Nothing yet': 'Noch nichts',
   'Ship overview': 'Schiffsübersicht',
+  'Over limit': 'Über Grenze',
+  'Full': 'Voll',
   'Observation': 'Beobachtung',
   'Battle': 'Gefecht',
   'Critical': 'Kritisch',

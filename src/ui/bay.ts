@@ -60,6 +60,9 @@ export class BayPanel {
   private tab: Tab = 'weapons';
   private sel: string | null = null;
   /** The module just fitted and the budgets it moved: lit for a moment (see fit). */
+  /** The ship drawn behind: where a tab's lights are on screen (fractions), and a way to flash them. Set by the app. */
+  ship: { points: (zone: string) => Array<[number, number]>; flash: (zone: string) => void } | null = null;
+  private shownKrail = -1;
   private fresh: { id: string; moved: Set<string> } | null = null;
 
   constructor() {
@@ -157,7 +160,7 @@ export class BayPanel {
   private fit(): void {
     const w = this.world;
     if (!w || !this.sel) return;
-    const before = budgets(w.levels), id = this.sel;
+    const before = budgets(w.levels), id = this.sel, krailBefore = Math.floor(w.krail);
     if (w.install(id) === null) {
       const after = budgets(w.levels), moved = new Set<string>(['krail']);
       for (const k of ['power', 'mass', 'heat'] as const) if (after.use[k] !== before.use[k] || after.cap[k] !== before.cap[k]) moved.add(k);
@@ -167,8 +170,57 @@ export class BayPanel {
       void el.offsetWidth;
       el.classList.add('done');
     }
+    const fitted = this.fresh;
     this.render();
+    if (fitted) this.installFx(krailBefore, Math.floor(w.krail));
     this.fresh = null;
+  }
+
+  /**
+   * The install, felt (400 to 700 ms): Krail counts down, the module flashes
+   * (the fresh class), a line runs from it to the ship part it belongs to and
+   * that part flashes, the budgets bump. None of it blocks a second install,
+   * and none of it with reduced motion.
+   */
+  private installFx(from: number, to: number): void {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    this.countKrail(from, to, 520);
+    this.ship?.flash(this.tab);
+    const node = document.querySelector('.bay-node.fresh .bn-oct'), pts = this.ship?.points(this.tab) ?? [];
+    $('bay').querySelector('.bay-line')?.remove();
+    if (!node || !pts.length) return;
+    const box = $('bay').getBoundingClientRect(), r = node.getBoundingClientRect();
+    const x0 = r.left + r.width / 2 - box.left, y0 = r.top + r.height / 2 - box.top;
+    // to the nearest of the tab's lights
+    let best = pts[0]!, bd = Infinity;
+    for (const p of pts) { const d = Math.hypot(p[0] * innerWidth - box.left - x0, p[1] * innerHeight - box.top - y0); if (d < bd) { bd = d; best = p; } }
+    const x1 = best[0] * innerWidth - box.left, y1 = best[1] * innerHeight - box.top;
+    const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'bay-line');
+    svg.setAttribute('width', String(box.width));
+    svg.setAttribute('height', String(box.height));
+    const line = document.createElementNS(ns, 'path');
+    line.setAttribute('d', `M${x0} ${y0} L${x1} ${y1}`);
+    line.setAttribute('pathLength', '1');
+    const dot = document.createElementNS(ns, 'circle');
+    dot.setAttribute('cx', String(x1));
+    dot.setAttribute('cy', String(y1));
+    dot.setAttribute('r', '5');
+    svg.append(line, dot);
+    $('bay').append(svg);
+    setTimeout(() => svg.remove(), 800);
+  }
+
+  /** Count the Krail readouts from one value to another. */
+  private countKrail(from: number, to: number, ms: number): void {
+    const els = [$('bay-krail').querySelector('b'), $('bay-budget').querySelector('.krail .bb-v')].filter(Boolean) as HTMLElement[];
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / ms), v = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      for (const e of els) e.textContent = num(v);
+      if (k < 1 && this.open) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   }
 
   // ── drawing ─────────────────────────────────────────────────────────────
@@ -312,12 +364,15 @@ export class BayPanel {
     const sel = this.sel ? NODE[this.sel] : null, can = sel && (w.levels[sel.id] ?? 0) < maxLevel(sel.id);
     $('bay-budget').replaceChildren(h('span', 'bf-h', t('Ship overview')), h('span', `bb krail${this.fresh ? ' bump' : ''}`, '', h('span', 'bb-l', 'Krail'), h('i', 'bb-gap'), h('b', 'bb-v', num(Math.floor(w.krail)))), ...(['power', 'mass', 'heat'] as const).map((k) => {
       const add = can ? sel!.draw[k] ?? 0 : 0;
-      const bar = h('i', `bb-bar${use[k] > cap[k] ? ' over' : ''}`);
+      // the rating's state: a word from 80%, a louder one over (power is a ceiling: it fills, it never goes over)
+      const share = use[k] / cap[k], state = k === 'power' ? (share >= 1 ? 'warn' : '') : share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
+      const word = state === 'over' ? 'Over limit' : state === 'warn' ? (k === 'power' ? 'Full' : 'Warning') : '';
+      const bar = h('i', `bb-bar${state ? ` ${state}` : ''}`);
       const val = h('b', `bb-v${this.fresh?.moved.has(k) ? ' bump' : ''}`, '', document.createTextNode(`${use[k]}/${cap[k]}`));
       if (add) val.append(h('em', '', ` → ${use[k] + add}`));
       bar.style.setProperty('--v', Math.min(1, use[k] / cap[k]).toFixed(3));
       bar.style.setProperty('--a', Math.min(1, (use[k] + add) / cap[k]).toFixed(3));
-      return h('span', `bb ${k}`, '', h('span', 'bb-l', t(BUDGET_WORD[k])), bar, val);
+      return h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : [])), bar, val);
     }));
   }
 }

@@ -1475,3 +1475,21 @@ html.breakout .pause-flow { display: none; }
 .bay-node.fresh .bn-oct { animation: bay-fit .7s var(--ez); }
 @keyframes bay-fit { 0% { filter: drop-shadow(0 0 14px var(--hud-hi)); transform: scale(1.3); } 100% { transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .bb-v.bump, .bb.bump .bb-v, .bay-node.fresh .bn-oct, .ops.critical { animation: none; } }
+
+/* thresholds on the bars: a tick at 80%, a word from there, a louder one over */
+.bb-bar { position: relative; }
+.bb-bar::after { content: ""; position: absolute; left: 80%; top: -2px; bottom: -2px; width: 1px; background: var(--ink-3); opacity: .7; }
+.bb-bar.warn { background: linear-gradient(90deg, var(--hud) calc(var(--v) * 100%), var(--hud-mid) calc(var(--v) * 100%) calc(var(--a) * 100%), rgba(216, 213, 198, .1) calc(var(--a) * 100%)); }
+.bb-l { display: flex; align-items: center; gap: 8px; }
+.bb-w { display: inline-flex; align-items: center; gap: 4px; font-size: calc(var(--fs) * .8 * 1.18); letter-spacing: .12em; color: var(--hud); }
+.bb-w i { font-style: normal; font-size: 9px; }
+.bb.over .bb-w { color: var(--alert); animation: hud-blink 1s ease-in-out infinite; }
+.bb.over .bb-v { color: var(--alert); }
+@media (max-width: 900px), (max-height: 520px) { .bb-wt { display: none; } }
+/* the install line: from the module to the ship part it belongs to */
+.bay-line { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 2; }
+.bay-line path { fill: none; stroke: var(--hud-hi); stroke-width: 1.5; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 4px var(--hud)); animation: bay-line .45s ease-out forwards; }
+.bay-line circle { fill: var(--hud-hi); opacity: 0; animation: bay-dot .6s ease-out .3s forwards; }
+@keyframes bay-line { to { stroke-dashoffset: 0; } }
+@keyframes bay-dot { 0% { opacity: 1; r: 3; } 100% { opacity: 0; r: 18; } }
+@media (prefers-reduced-motion: reduce) { .bay-line, .bb.over .bb-w { display: none; animation: none; } }

@@ -109,6 +109,7 @@ function boot(): void {
   const chart = new ChartPanel();
   const ending = new EndingPanel();
   const bay = new BayPanel();
+  bay.ship = { points: (z) => sector.zoneScreen(z), flash: (z) => sector.flashZone(z) };
   const padNav = new PadNav();
   let reported = false;
   const panelOpen = () => refit.open || bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;

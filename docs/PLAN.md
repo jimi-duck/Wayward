@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done, and console steps 1 and 2 (the state word, the ship lit by tab; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 3 done, and console steps 1 to 4 (the state word, the ship lit by tab, thresholds, the install; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
 
 ## From the concept boards
 
@@ -636,14 +636,15 @@ DESIGN.md.
    the ship and the open tab lights its part in amber (prow guns, torpedo
    belly, nacelles, spine modules, core, shield); the pause card wakes a
    little of each, and on resume the lights ease out.
-3. **Thresholds on the bars.** Heat, mass and power warn near the rating
-   (a tick and a word at 80%, OVERLOAD over it), in the bay and on the HUD's
-   stat rows; the HUD's state word reads them. Reduced motion: no blink.
-4. **Installation animation.** On Install: Krail ticks down, the module
-   flashes, a line runs from the module to the ship part it belongs to (the
-   zone marks of step 2), the counters count to their new values, the
-   module settles. 400 to 700 ms, skipped with reduced motion, never delays
-   a second install.
+3. **Done: thresholds on the bars.** In the bay's overview each rating
+   shows a tick at 80%, `▲ Warning` from there (amber), `▲ Over limit` and
+   a red blink over it; power is a ceiling and reads `▲ Full`. Not on the
+   HUD: it carries no ratings yet, so the state word does not read them.
+4. **Done: the installation, felt.** On Install the Krail counts down, the
+   module flashes, a line runs to the nearest light of the tab's part of the
+   ship (placed from the real 3D positions, `Sector.zoneScreen`), that part
+   flashes, the budgets bump. Skipped with reduced motion; never blocks a
+   second install.
 5. **Recommendations with a reason.** The Story's card refit (and a
    "suggested" row in the bay) say why: close threats seen, ordnance low,
    the build leans one way. Reasons are rows next to the cards in
@@ -671,8 +672,7 @@ DESIGN.md.
     tied to a real state (over a rating, a stock build, a fresh fit), with
     German twins.
 
-Order: 3 and 4 next (they finish the bay's feel), then 5 and 6 (they need
-the most design), then 7 and 8, with 9 and 10 last. Open: the HUD's
+Order: 5 and 6 next (they need the most design), then 7 and 8, with 9 and 10 last. Open: the HUD's
 state word could also colour the frame; whether the Story mode's port and
 chart screens take the same console frame.
 

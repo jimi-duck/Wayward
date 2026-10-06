@@ -360,6 +360,15 @@ export class Sector {
   console: string | null = null;
   private bayK = 0;
 
+  /** Where a zone's lights are on the screen, as fractions of it (0,0 top left), for the bay's lines to the ship. */
+  zoneScreen(zone: string): Array<[number, number]> {
+    return this.ship.zonePoints(zone).map((v) => { v.project(this.rig.camera); return [(v.x + 1) / 2, (1 - v.y) / 2] as [number, number]; });
+  }
+
+  flashZone(zone: string): void {
+    this.ship.flashZone(zone);
+  }
+
   frame(world: World, alpha: number, dt: number, uiDt = dt): void {
     this.time += dt;
     const inBay = this.console !== null && this.console !== 'brief';
