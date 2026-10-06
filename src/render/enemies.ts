@@ -1,6 +1,6 @@
 import {
-  AdditiveBlending, BoxGeometry, Color, Float32BufferAttribute, Group,
-  LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  AdditiveBlending, BoxGeometry, Color, Euler, Float32BufferAttribute, Group, InstancedMesh,
+  LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshStandardMaterial, Matrix4, Quaternion,
   Sprite, SpriteMaterial, Vector3, BufferGeometry, type Material, type Scene, type Texture,
 } from 'three';
 import { STEP } from '../core/loop';
@@ -228,9 +228,6 @@ class HullView {
   flaring = true;
   readonly halo: Sprite;
   private cloaked = -1;
-  private readonly back = new Vector3();
-  private readonly nozzle = new Vector3();
-  private readonly fwd = new Vector3();
   /** `own`: its own materials, so it can fade (cloak) without fading every hull of its kind. */
   constructor(readonly key: string, model: Model, glowTex: Texture, readonly colour: Color, readonly own = false) {
     const copy = model.root.clone();
@@ -259,35 +256,99 @@ class HullView {
     this.flaring = k < 0.5;
   }
 
-  /**
-   * The drives and running lights, as streaks (streaks.ts): a white-hot nozzle and a flame
-   * astern along the hull's own axis, so the plume points where the ship
-   * is not going. `size` is the hull's scale in the world; `far` grows the
-   * flare with distance so a drive still shows from across the sky.
-   */
+  /** The drives and running lights of this hull (see `lights`). */
   flare(streaks: Streaks, size: number, burn: number, time: number, id: number, far: number): void {
     if (!this.flaring) return;
     this.body.updateWorldMatrix(true, false);
-    const m = this.body.matrixWorld;
-    const flick = 1 + Math.sin(time * 31 + id) * 0.06;
-    this.back.set(-1, 0, 0).transformDirection(m);
-    // running lights: a few points that blink out of step, windows that stay lit
-    for (let i = 0; i < this.lamps.length; i++) {
-      const [lx, ly, lz, len, wid] = this.lamps[i]!;
-      this.nozzle.set(lx, ly, lz).applyMatrix4(m);
-      const slit = len !== wid, blink = slit ? 1 : 0.35 + 0.65 * Math.max(0, Math.sin(time * 2.4 + id * 1.7 + i * 2.1) * 3 - 1.2);
-      this.fwd.set(1, 0, 0).transformDirection(m);
-      if (!slit && blink < 0.05) continue;
-      streaks.push(this.nozzle.x, this.nozzle.y, this.nozzle.z, this.fwd.x, this.fwd.y, this.fwd.z,
-        Math.max(len * size, 0.05) * far, Math.max(wid * size, 0.05) * far, slit ? STREAK.slug : STREAK.orb, this.colour, blink * (slit ? 0.9 : 1.1), 0);
+    lights(streaks, this.body.matrixWorld, this, this.colour, size, burn, time, id, far);
+  }
+}
+
+const LP = new Vector3(), LBACK = new Vector3(), LFWD = new Vector3();
+
+/**
+ * The drives and running lights, as streaks (streaks.ts): a white-hot nozzle
+ * and a flame astern along the hull's own axis, so the plume points where the
+ * ship is not going. `m` is the hull's world matrix; `size` its scale in the
+ * world; `far` grows the flare with distance so a drive still shows from
+ * across the sky.
+ */
+function lights(streaks: Streaks, m: Matrix4, model: { engines: V3[]; lamps: Lamp[] }, colour: Color, size: number, burn: number, time: number, id: number, far: number): void {
+  const flick = 1 + Math.sin(time * 31 + id) * 0.06;
+  LBACK.set(-1, 0, 0).transformDirection(m);
+  LFWD.set(1, 0, 0).transformDirection(m);
+  // running lights: a few points that blink out of step, windows that stay lit
+  for (let i = 0; i < model.lamps.length; i++) {
+    const [lx, ly, lz, len, wid] = model.lamps[i]!;
+    const slit = len !== wid, blink = slit ? 1 : 0.35 + 0.65 * Math.max(0, Math.sin(time * 2.4 + id * 1.7 + i * 2.1) * 3 - 1.2);
+    if (!slit && blink < 0.05) continue;
+    LP.set(lx, ly, lz).applyMatrix4(m);
+    streaks.push(LP.x, LP.y, LP.z, LFWD.x, LFWD.y, LFWD.z,
+      Math.max(len * size, 0.05) * far, Math.max(wid * size, 0.05) * far, slit ? STREAK.slug : STREAK.orb, colour, blink * (slit ? 0.9 : 1.1), 0);
+  }
+  for (const e of model.engines) {
+    LP.set(e[0], e[1], e[2]).applyMatrix4(m);
+    // the flame trails behind the nozzle: its head is at the nozzle
+    streaks.push(LP.x, LP.y, LP.z, LFWD.x, LFWD.y, LFWD.z, size * (0.7 + 1.1 * burn) * flick * far, size * 0.2 * far, STREAK.torp, colour, 0.5, time * 5 + id);
+    streaks.push(LP.x, LP.y, LP.z, LBACK.x, LBACK.y, LBACK.z, size * 0.5 * far, size * 0.5 * far, STREAK.orb, colour, 0.7, time * 3 + id);
+  }
+}
+
+const MAX_BATCH = 48;
+
+/**
+ * Every plain hull of one model (kind and faction) in one set of draws: an
+ * InstancedMesh per material, so twenty scouts cost what one does. Hulls that
+ * need their own state (a cloak fading its materials, an elite's halo) stay
+ * a HullView. A hit flash moves the hull to a second set drawn in the flash
+ * material for the few frames it lasts.
+ */
+class HullBatch {
+  private readonly sets: InstancedMesh[][];
+  private readonly counts = [0, 0];
+  constructor(scene: Scene, readonly model: Model, readonly colour: Color) {
+    const src = model.root.children as Mesh[];
+    this.sets = [0, 1].map((flash) => src.map((m) => {
+      const im = new InstancedMesh(m.geometry, flash ? FLASH : (m.material as Material), MAX_BATCH);
+      im.count = 0;
+      im.visible = false;
+      // drawn from the origin's bounding sphere otherwise: cull nothing, as the streaks do
+      im.frustumCulled = false;
+      scene.add(im);
+      return im;
+    }));
+  }
+
+  begin(): void {
+    this.counts[0] = this.counts[1] = 0;
+  }
+
+  /** Place one hull. False when the batch is full (the hull is simply not drawn). */
+  add(m: Matrix4, flash: boolean): boolean {
+    const k = flash ? 1 : 0, i = this.counts[k]!;
+    if (i >= MAX_BATCH) return false;
+    for (const im of this.sets[k]!) im.setMatrixAt(i, m);
+    this.counts[k] = i + 1;
+    return true;
+  }
+
+  end(): void {
+    for (const k of [0, 1]) {
+      for (const im of this.sets[k]!) {
+        im.count = this.counts[k]!;
+        im.visible = im.count > 0;
+        im.instanceMatrix.needsUpdate = true;
+      }
     }
-    for (const e of this.engines) {
-      this.nozzle.set(e[0], e[1], e[2]).applyMatrix4(m);
-      const x = this.nozzle.x, y = this.nozzle.y, z = this.nozzle.z;
-      // the flame trails behind the nozzle: its head is at the nozzle
-      streaks.push(x, y, z, -this.back.x, -this.back.y, -this.back.z, size * (0.7 + 1.1 * burn) * flick * far, size * 0.2 * far, STREAK.torp, this.colour, 0.5, time * 5 + id);
-      streaks.push(x, y, z, this.back.x, this.back.y, this.back.z, size * 0.5 * far, size * 0.5 * far, STREAK.orb, this.colour, 0.7, time * 3 + id);
-    }
+  }
+
+  /** Throwaway instanced meshes on the same materials, for compiling their programs ahead of play. */
+  gallery(): InstancedMesh[] {
+    return this.sets.flat().map((im) => {
+      const w = new InstancedMesh(im.geometry, im.material, 1);
+      w.frustumCulled = false;
+      return w;
+    });
   }
 }
 
@@ -296,6 +357,12 @@ export class EnemyView {
   private readonly models = new Map<string, Model>();
   private readonly pools = new Map<string, HullView[]>();
   private readonly live = new Map<number, HullView>();
+  private readonly batches = new Map<string, HullBatch>();
+  private readonly m = new Matrix4();
+  private readonly q = new Quaternion();
+  private readonly e = new Euler();
+  private readonly p = new Vector3();
+  private readonly sc = new Vector3();
   private readonly beams: Mesh[] = [];
   private readonly webs: LineSegments[] = [];
   private bossView: { id: number; root: Group; hull: HullView; mats: Material[] } | null = null;
@@ -331,6 +398,7 @@ export class EnemyView {
       g.add(new HullView(kind, this.model(kind, f), this.glowTex, NEON[f]).root);
     }
     g.add(new Mesh(new BoxGeometry(1, 1, 1), FLASH));
+    for (const kind of ALIEN_ORDER) g.add(...this.batch(kind, ALIEN_TYPES[kind].faction).gallery());
     return g;
   }
 
@@ -339,6 +407,13 @@ export class EnemyView {
     let m = this.models.get(key);
     if (!m) { m = build(kind, faction); this.models.set(key, m); }
     return m;
+  }
+
+  private batch(kind: AlienKind, faction: Faction): HullBatch {
+    const key = `${kind}:${faction}`;
+    let b = this.batches.get(key);
+    if (!b) { b = new HullBatch(this.scene, this.model(kind, faction), NEON[faction]); this.batches.set(key, b); }
+    return b;
   }
 
   private take(al: Alien): HullView {
@@ -354,23 +429,37 @@ export class EnemyView {
     this.time += dt;
     const back = (1 - alpha) * STEP;
 
-    // hulls: pooled per kind, keyed by id
+    // plain hulls: batched per model. Cloakers and elites keep a view of their own.
+    for (const b of this.batches.values()) b.begin();
     const seen = new Set<number>();
     for (const al of aliens) {
-      seen.add(al.id);
-      let v = this.live.get(al.id);
-      if (!v) { v = this.take(al); this.live.set(al.id, v); }
-      v.root.position.set(al.x - al.vx * back, al.y - al.vy * back, al.z - al.vz * back);
-      v.root.scale.setScalar(al.r);
+      const plain = !al.canCloak && !al.elite;
+      this.p.set(al.x - al.vx * back, al.y - al.vy * back, al.z - al.vz * back);
       if (al.kind === 'drone') {
-        v.body.rotation.set(0, this.time * 0.4 + al.id, 0);
+        this.e.set(0, this.time * 0.4 + al.id, 0);
       } else {
         // yaw, then pitch with the climb, then bank (and a jink's barrel roll)
         const hs = Math.hypot(al.vx, al.vz);
         const pitch = Math.atan2(al.vy, Math.max(4, hs)) * 0.8;
         const roll = al.roll >= 0 ? al.rollDir * Math.PI * 2 * smooth(al.roll / JINK_ROLL) : 0;
-        v.body.rotation.set(al.bank + roll + Math.sin(this.time * 1.7 + al.id) * 0.04, al.face, pitch, 'YZX');
+        this.e.set(al.bank + roll + Math.sin(this.time * 1.7 + al.id) * 0.04, al.face, pitch, 'YZX');
       }
+      const burn = Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30);
+      // engines read from far off: the flare keeps a size on screen as the hull shrinks with distance
+      const far = Math.sqrt(Math.max(1, this.p.distanceTo(this.eye) / 40));
+      if (plain) {
+        const batch = this.batch(al.kind, al.faction);
+        this.m.compose(this.p, this.q.setFromEuler(this.e), this.sc.setScalar(al.r));
+        batch.add(this.m, al.hitT > 0);
+        lights(this.streaks, this.m, batch.model, batch.colour, al.r, burn, this.time, al.id, far);
+        continue;
+      }
+      seen.add(al.id);
+      let v = this.live.get(al.id);
+      if (!v) { v = this.take(al); this.live.set(al.id, v); }
+      v.root.position.copy(this.p);
+      v.root.scale.setScalar(al.r);
+      v.body.rotation.copy(this.e);
       v.flash(al.hitT > 0 && al.cloak < 0.5);
       v.cloak(al.cloak, this.time + al.id);
       v.halo.visible = !!al.elite && al.cloak < 0.5;
@@ -378,11 +467,9 @@ export class EnemyView {
         (v.halo.material as SpriteMaterial).color.copy(ELITE_GLOW[al.elite]).multiplyScalar(al.elite === 'volatile' ? 0.5 + 0.4 * Math.sin(this.time * 12) : 0.55);
         v.halo.scale.setScalar(3.4 + Math.sin(this.time * 3 + al.id) * 0.3);
       }
-      const burn = Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30);
-      // engines read from far off: the flare keeps a size on screen as the hull shrinks with distance
-      const far = Math.sqrt(Math.max(1, Math.hypot(v.root.position.x - this.eye.x, v.root.position.y - this.eye.y, v.root.position.z - this.eye.z) / 40));
       v.flare(this.streaks, al.r, burn, this.time, al.id, far);
     }
+    for (const b of this.batches.values()) b.end();
     for (const [id, v] of this.live) {
       if (seen.has(id)) continue;
       v.root.removeFromParent();
