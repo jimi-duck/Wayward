@@ -1,4 +1,4 @@
-"""Cut branding/bay-icon-sheet-v1.webp into public/icons/node/<id>.png.
+"""Cut branding/bay-icon-sheet-v2.webp into public/icons/node/<id>.png.
 
 Each glyph becomes a white-on-transparent mask, 96px square, so the bay can
 tint it with CSS (mask-image). Needs Pillow and numpy; run from the repo root:
@@ -10,12 +10,12 @@ import os
 import numpy as np
 from PIL import Image
 
-SHEET = 'branding/bay-icon-sheet-v1.webp'
+SHEET = 'branding/bay-icon-sheet-v2.webp'
 OUT = 'public/icons/node'
 SIZE, FIT = 96, 84
 # y0, y1, gap: the band of each row and how far apart columns must be to be separate glyphs
-ROWS = [(26, 118, 14), (145, 242, 14), (262, 362, 24), (381, 478, 14), (494, 580, 14), (608, 713, 14),
-        (716, 823, 14), (838, 938, 14), (944, 1038, 14), (1042, 1139, 8), (1141, 1222, 14)]
+ROWS = [(30, 115, 14), (143, 240, 14), (265, 358, 24), (382, 476, 14), (496, 584, 14), (604, 714, 14),
+        (717, 825, 14), (838, 940, 14), (942, 1040, 14), (1042, 1134, 14), (1136, 1224, 30)]
 ORDER = '''
 ph_emitters ph_capacitors ph_bank ph_lenses ph_pierce ph_cone ph_cone_wide ph_lance ph_lance_cap ph_array ph_fire_control
 tp_bay tp_magazine tp_yield tp_tracking tp_heavy tp_cluster tp_swarm tp_swarm_volley - tp_precision tp_painter
@@ -47,7 +47,7 @@ g = np.asarray(Image.open(SHEET).convert('L')).astype(np.float32)
 os.makedirs(OUT, exist_ok=True)
 for (y0, y1, gap), names in zip(ROWS, ORDER):
     band = g[y0:y1 + 1] > 60
-    cols = runs(band.any(0), gap)
+    cols = [c for c in runs(band.any(0), gap) if c[1] - c[0] > 24]  # specks are not glyphs
     assert len(cols) == len(names), (names, len(cols))
     for (x0, x1), name in zip(cols, names):
         if name == '-':
