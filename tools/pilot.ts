@@ -146,7 +146,7 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
 }
 
 /**
- * The refit bay, in a quiet moment: the module the strategy wants most of
+ * The refit bay, in a quiet moment (or as it opens by itself, in the arcade): the module the strategy wants most of
  * those it could fit with Krail enough. Bought if the Krail is there; if
  * power is what stops it, the reactor core first; otherwise the pilot saves
  * for it. A random pilot buys whatever it can afford, at random. A pilot
@@ -154,7 +154,7 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
  * away from one keeps back the Krail the next of them costs.
  */
 function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly string[] = []): void {
-  if (!w.openBay()) return;
+  if (w.phase !== 'bay' && !w.openBay()) return;
   for (let i = 0; i < 6; i++) {
     const ctx = w.bayCtx();
     const open = reachable(ctx);
@@ -172,7 +172,7 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
       pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
     }
     // away from a port, keep back the Krail the next wanted yard module will cost, as a player saving for the yard would
-    if (pick && !MODULE_BY_ID[pick] && !w.docked && w.krail - cost(pick, (w.levels[pick] ?? 0) + 1) < saveFor(w, modules)) break;
+    if (pick && !MODULE_BY_ID[pick] && !w.docked && w.krail - cost(pick, (w.levels[pick] ?? 0) + 1, !w.bk) < saveFor(w, modules)) break;
     if (!pick || w.install(pick)) break;
   }
   w.closeBay();
@@ -182,7 +182,7 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
 function saveFor(w: World, modules: readonly string[]): number {
   const port = { ...w.bayCtx(), docked: true, krail: Infinity, chits: Infinity };
   const next = modules.find((id) => blockOf(id, port) === null);
-  return next ? cost(next, (w.levels[next] ?? 0) + 1) : 0;
+  return next ? cost(next, (w.levels[next] ?? 0) + 1, !w.bk) : 0;
 }
 
 /**
@@ -517,8 +517,9 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   let docks = 0;
   let nextShop = 0, fitted = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
-    // a look into the bay every couple of seconds, when it will open
-    if (w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
+    // the arcade's bay opens by itself; the Story mode's pilot looks into it every couple of seconds, when it will open
+    if (w.phase === 'bay') { shop(w, strategy, rngPick, o.modules); continue; }
+    if (w.phase === 'play' && w.bk && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms') {
       const before = { krail: w.cyrite, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };

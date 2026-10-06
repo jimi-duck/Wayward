@@ -511,7 +511,10 @@ nodes in five tiers), not one map of two hundred.
 
 ### How it plays
 
-- **Opening it.** A key, the pad's Back, or a HUD button. It pauses the
+- **Opening it.** In the Arcade it opens by itself once a price of Krail is
+  aboard and the alert is clear (decided by Jimi, 2026-10-06; every module
+  costs the same there, the bay's look is unchanged); in the Story mode a
+  key, the pad's Back, or a HUD button. It pauses the
   world like any decision (`World.phase` 'bay', answered by `install(id)`
   and `closeBay()`). It will not open in danger: the same test the
   self-repair uses (a committed hostile close, fire near, a capital ship

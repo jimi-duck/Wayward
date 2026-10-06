@@ -57,6 +57,8 @@ export const STOCK: Readonly<Record<string, number>> = Object.freeze({ tp_bay: 1
 /** Krail for the first level of a node, by tier (1 to 4); each further level costs LEVEL_STEP more of it. */
 export const TIER_COST = [0, 40, 60, 90, 130] as const;
 export const LEVEL_STEP = 0.5;
+/** The Arcade mode's one price, in Krail, for every level of every module, and the Krail at which its bay opens by itself. Below the old average (60) because the first fits were 40 and a flat price slowed the start (BALANCE.md). */
+export const ARCADE_PRICE = 45;
 /** The yard's fee in chits for a level of yard work that is not a module (a module has its own, content/modules.ts). */
 export const YARD_FEE = 15;
 

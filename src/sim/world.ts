@@ -41,7 +41,8 @@ import {
   REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import type { Prices } from '../content/systems';
-import { install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
+import { ARCADE_PRICE } from '../content/web';
+import { blockOf, install as bayInstall, quickPicks, stockLevels, type BayCtx, type Block } from './bay';
 import { feelBudgets } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { planStop, type Stop } from './stop';
@@ -62,8 +63,9 @@ import {
 // sky, meet capital ships, and in the end lose the hull. The world pauses
 // itself at the decisions a run asks for, a hail ('hail': engage or evade), a comms card
 // in the Breakout ('comms': the card in `comms`; an ambush slows the world
-// instead of stopping it), a dock ('dock'), the refit bay ('bay': the player
-// opens it, sim/bay.ts says what can be fitted), and at the end ('over': the
+// instead of stopping it), a dock ('dock'), the refit bay ('bay': the Story
+// mode's player opens it, the arcade's opens by itself once a price of Krail
+// is aboard; sim/bay.ts says what can be fitted), and at the end ('over': the
 // record in `run`). The app answers with answerHail(), answer(), the port's calls, install() and closeBay(), and
 // restart(); the scripted pilot calls the same.
 
@@ -91,6 +93,8 @@ export type Alert = 'clear' | 'yellow' | 'red';
 /** A hostile hull this close (units) puts the ship on yellow alert: a little outside its guns' reach (FIRE_RANGE 70), well inside where hulls arrive. */
 export const WATCH_RANGE = 85;
 
+/** The arcade's bay opens by itself after this long with the alert clear and a price of Krail aboard. */
+export const BAY_QUIET = 2;
 
 /** Seconds into a sortie before the system's place shows itself. */
 export const PLACE_AT = 30;
@@ -136,6 +140,9 @@ export class World implements EncounterHost {
   pace: Pace = newPace(ALIEN_FIRST);
   /** The arcade's self-repair (sim/repair.ts). */
   mend: Mend = newMend();
+  /** The arcade's bay: the Krail it opens at next, and how long it has been quiet with that much aboard. */
+  private bayAt = ARCADE_PRICE;
+  private bayQuiet = 0;
 
   // the decisions, and the bay
   phase: Phase = 'play';
@@ -290,6 +297,7 @@ export class World implements EncounterHost {
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     if (this.mode !== 'breakout') {
       this.bk = null; this.krail = 0; this.cyrite = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
+      this.bayAt = ARCADE_PRICE; this.bayQuiet = 0;
       this.stock();
       return;
     }
@@ -864,6 +872,7 @@ export class World implements EncounterHost {
       for (const a of this.aliens) if (!a.fleeing && Math.hypot(a.x - sh.x, a.z - sh.z) < 60) close++;
       this.closePressed = Math.max(close, this.closePressed * (1 - dt / 40));
     }
+    this.bayDue(dt);
     if (!this.bk && this.alive) {
       const news = stepMend(this.mend, { sinceHit: this.sinceHit, plates: this.plates, maxPlates: st.maxPlates, danger: this.inDanger(), stats: st }, dt);
       if (news === 'start') this.events.push({ type: 'mendStart' });
@@ -962,6 +971,22 @@ export class World implements EncounterHost {
     return this.fit(id);
   }
 
+  /**
+   * The arcade's bay opens by itself: once the Krail aboard reaches a price,
+   * the alert has been clear a moment, and something can be fitted. Leaving
+   * with a price or more unspent puts the next opening one price further on
+   * (closeBay); the B key and the badge still open it sooner.
+   */
+  private bayDue(dt: number): void {
+    if (this.bk || !this.alive || this.phase !== 'play' || this.krail < this.bayAt) { this.bayQuiet = 0; return; }
+    this.bayQuiet = this.alert() !== 'clear' ? 0 : this.bayQuiet + dt;
+    if (this.bayQuiet < BAY_QUIET) return;
+    this.bayQuiet = 0;
+    const ctx = this.bayCtx();
+    if (quickPicks(ctx).some((w) => blockOf(w.id, ctx) === null)) this.openBay();
+    else this.bayAt = this.krail + ARCADE_PRICE; // nothing it could buy now: look again a price later
+  }
+
   private fit(id: string): Block | null {
     const r = bayInstall(id, this.bayCtx());
     if (typeof r === 'string') return r;
@@ -978,7 +1003,11 @@ export class World implements EncounterHost {
   }
 
   closeBay(): void {
-    if (this.phase === 'bay') this.phase = this.docked ? 'dock' : 'play';
+    if (this.phase !== 'bay') return;
+    this.phase = this.docked ? 'dock' : 'play';
+    // the arcade asks again at a price, or a price past what was left unspent
+    this.bayAt = this.krail >= ARCADE_PRICE ? this.krail + ARCADE_PRICE : ARCADE_PRICE;
+    this.bayQuiet = 0;
   }
 
   // ── comms ─────────────────────────────────────────────────────────────
