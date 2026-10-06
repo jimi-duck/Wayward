@@ -91,6 +91,12 @@ the Threshold, the last lane the old charts know.
   besides the Custody (contested systems are half Gutter), how hard the
   Custody already looks, how often people call, and whether there is a
   port. A port's prices come from its holder.
+- **A lane's style.** The lane list tags each lane quiet, watched or hostile
+  (`stance` in `sim/lanes.ts`, from the system at its far end: crossings and
+  rock are quiet, ports and gates watched, contested space, the Net, a raid,
+  Thren and Calloway's last sighting hostile) beside its days, so two lanes
+  read as a fork in style. It changes no rule; a new tag is a case there and
+  a German line.
 - **Days.** Every four minutes in a sortie is a day (`DAY`), and a lane
   takes its days. Juno flies alone and eats a unit of food a day; the
   drive wears two parts a jump. Short of food, you arrive weak; short
