@@ -55,9 +55,13 @@ const BAY_PULL = 0.3;
 /** In a tab the web takes the lower part of the screen: the ship rises further and stands smaller. */
 const BAY_TAB_LIFT = 0.14;
 const BAY_TAB_PULL = 0.25;
+/** A slow turn to and fro, so the ship in the bay reads as afloat (not with reduced motion). */
+const BAY_SWAY = MathUtils.degToRad(7);
+/** The picture slides right of the tabs, so the ship sits in the middle of the stage, not the screen (wide screens only). */
+const BAY_SHIFT = 105;
 const BAY_ELEV = MathUtils.degToRad(14);
 /** How far the bay lifts the ship, as a share of the screen height. */
-const BAY_LIFT = 0.2;
+const BAY_LIFT = 0.24;
 /** A phone on its side has less room above the cards. */
 const BAY_LIFT_SHORT = 0.3;
 
@@ -84,6 +88,8 @@ export class CameraRig {
   private offsetY = 0;
   /** Extra lift while the bay is open, in CSS pixels. */
   private lift = 0;
+  /** And the sideways slide, in CSS pixels. */
+  private shift = 0;
   private pull = 1;
   /** 0 in flight, 1 with the refit bay open: the camera comes in on the ship. */
   bay = 0;
@@ -132,14 +138,16 @@ export class CameraRig {
     const vfov = BASE_VFOV + FOV_KICK * s.speedFrac;
     // the bay lifts the ship clear of the cards along the bottom
     const lift = Math.round(this.h * (this.bay * (this.h < 520 ? BAY_LIFT_SHORT : BAY_LIFT) + this.bayTab * BAY_TAB_LIFT));
-    if (lift !== this.lift) { this.lift = lift; this.applyOffset(); }
+    const shift = this.w >= 900 ? Math.round(this.bay * BAY_SHIFT) : 0;
+    if (lift !== this.lift || shift !== this.shift) { this.lift = lift; this.shift = shift; this.applyOffset(); }
     if (Math.abs(this.camera.fov - vfov) > 0.01) {
       this.camera.fov = vfov;
       this.applyOffset();
     }
     const tanV = Math.tan(MathUtils.degToRad(vfov) / 2);
     // the bay swings the camera round to the ship's quarter and up, so its parts spread out instead of lining up
-    const yaw = this.yaw + this.bay * BAY_YAW, elev = ELEV + this.bay * BAY_ELEV, pitch = PITCH + this.bay * BAY_ELEV;
+    const sway = reduceMotion ? 0 : Math.sin(this.t * 0.4) * BAY_SWAY * this.bay;
+    const yaw = this.yaw + this.bay * BAY_YAW + sway, elev = ELEV + this.bay * BAY_ELEV, pitch = PITCH + this.bay * BAY_ELEV;
     const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 + BAY_PULL * this.bay + BAY_TAB_PULL * this.bayTab);
 
     // forward along the yaw, and the camera behind and above
@@ -165,7 +173,7 @@ export class CameraRig {
 
   private applyOffset(): void {
     const y = this.offsetY + this.lift;
-    if (y) this.camera.setViewOffset(this.w, this.h, 0, y, this.w, this.h);
+    if (y || this.shift) this.camera.setViewOffset(this.w, this.h, -this.shift, y, this.w, this.h);
     else this.camera.clearViewOffset();
     this.camera.updateProjectionMatrix();
   }

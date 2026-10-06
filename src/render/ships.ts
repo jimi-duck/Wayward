@@ -245,6 +245,8 @@ export class ShipView {
   private pitch = 0;
   private heat = 0;
   private hit = 0;
+  /** A bay tab is open: the shield stays hidden. */
+  private inBay = false;
   private trailClock = 0;
   private time = 0;
 
@@ -321,6 +323,8 @@ export class ShipView {
    * `dt` is real time: the world may be waiting.
    */
   light(zone: string | null, dt: number): void {
+    // the bay shows the bare ship: no shield bubble over it
+    this.inBay = zone !== null && zone !== 'brief';
     const k = Math.min(1, 5 * dt), t = this.time;
     for (const z of Object.keys(this.kick)) this.kick[z] = Math.max(0, this.kick[z]! - 1.6 * dt);
     for (const z of Object.keys(MARKS)) {
@@ -332,11 +336,13 @@ export class ShipView {
       m.sprite.visible = v > 0.01;
       if (!m.sprite.visible) continue;
       const pulse = 0.85 + 0.15 * Math.sin(t * 2.4 + m.sprite.position.x * 3);
-      (m.sprite.material as SpriteMaterial).opacity = Math.min(1, v * 0.95 * pulse);
-      m.sprite.scale.setScalar(m.size * MODEL_SCALE * (0.8 + 0.2 * v));
+      // in the bay the rings do the pointing: the lights are softer and smaller
+      const soft = this.inBay ? 0.5 : 1, small = this.inBay ? 0.7 : 1;
+      (m.sprite.material as SpriteMaterial).opacity = Math.min(1, v * 0.95 * pulse * soft);
+      m.sprite.scale.setScalar(m.size * MODEL_SCALE * small * (0.8 + 0.2 * v));
     }
-    // the shield zone shows the ellipsoid itself, faintly
-    if (this.zoneLevel.defence! > 0.05) this.hit = Math.max(this.hit, this.zoneLevel.defence! * 0.3);
+    // the pause card's Defence light shows the ellipsoid itself, faintly
+    if (!this.inBay && this.zoneLevel.defence! > 0.05) this.hit = Math.max(this.hit, this.zoneLevel.defence! * 0.3);
   }
 
   /** A fit landed on a zone: flash its lights. */
@@ -426,7 +432,7 @@ export class ShipView {
     const tint: [number, number, number] = st.phased ? [2.2, 0.8, 3.6] : st.cloaked ? [0.6, 2.4, 1.3]
       : this.hit > 0 && !this.absorbed ? [2.6, 0.55, 0.35] : this.absorbed || st.charged > 0 ? [0.7, 1.5, 3.4] : [0.45, 1.6, 1.8];
     (u.uColor!.value as Color).setRGB(...tint);
-    this.shield.visible = this.hit > 0 || grace > 0 || st.charged > 0;
+    this.shield.visible = !this.inBay && (this.hit > 0 || grace > 0 || st.charged > 0);
 
     this.root.updateMatrixWorld(true);
     this.trailClock += dt;

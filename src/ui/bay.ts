@@ -20,6 +20,9 @@ import { num, t } from '../i18n';
 //               web, left to right by tier (fitted amber, ready teal with its
 //               price, the rest dimmed), and an inspector on the right.
 //
+// In the Arcade mode only the suggestions are open ("Pick one"): the tabs are
+// shown, locked, as what the Story mode has. Same screen, nothing to explore.
+//
 // Along the bottom, the ship's three budgets. The world waits while the bay
 // is open. In the Story mode the yard's work (its modules, the frame, the
 // core's last level) is fitted only at a port, for chits as well as Krail.
@@ -71,6 +74,9 @@ function fitWord(w: World, id: string, why: Block | null): string {
   if (why === 'krail') return t('{n} more Krail', { n: num(Math.ceil(cost(id, (w.levels[id] ?? 0) + 1) - w.krail)) });
   return why ? t(WHY[why]) : `${t('Fit')} · ${priceWord(w, id)}`;
 }
+
+/** The Arcade mode: three picks, no web (the Story mode has no bk of its own here, so `!w.bk` is the arcade, as for fee). */
+const isArcade = (w: World) => !w.bk;
 
 /** The views: the suggestions, then every tab with something for this mode (Signals is the Story mode's). */
 const viewsOf = (w: World): View[] => ['picks', ...TAB_ORDER.filter((tab) => WEB.some((n) => n.tab === tab && blockOf(n.id, { ...w.bayCtx(), krail: Infinity }) !== 'mode'))];
@@ -189,6 +195,8 @@ export class BayPanel {
   }
 
   private go(view: View): void {
+    // the Arcade's tabs are locked: they are there to be seen
+    if (this.world && isArcade(this.world) && view !== 'picks') return;
     this.view = view;
     this.pick = 0;
     this.sel = view === 'picks' ? null : this.first(view);
@@ -196,7 +204,7 @@ export class BayPanel {
   }
 
   private step(d: number): void {
-    const views = viewsOf(this.world!), i = views.indexOf(this.view);
+    const views = isArcade(this.world!) ? (['picks'] as View[]) : viewsOf(this.world!), i = views.indexOf(this.view);
     this.go(views[(i + d + views.length) % views.length]!);
   }
 
@@ -272,6 +280,9 @@ export class BayPanel {
     this.countKrail(from, to, 520);
     const zone = NODE[id]!.tab;
     this.ship?.flash(zone);
+    // a pulse leaves the part's ring
+    const ring = this.rings.get(zone);
+    if (ring) { ring.classList.remove('hit'); void ring.offsetWidth; ring.classList.add('hit'); setTimeout(() => ring.classList.remove('hit'), 700); }
     const node = document.querySelector('.bay-node.fresh .bn-oct') ?? document.querySelector('.pick-card.sel .pc-oct'), pts = this.ship?.points(zone) ?? [];
     $('bay').querySelector('.bay-line')?.remove();
     if (!node || !pts.length) return;
@@ -378,18 +389,24 @@ export class BayPanel {
       if (!b) {
         b = h('button', 'bay-ring') as HTMLButtonElement;
         b.type = 'button';
-        b.append(h('i', 'br-o'));
+        b.append(h('i', 'br-o'), h('span', 'br-l'));
         b.addEventListener('click', (e) => {
           e.stopPropagation();
+          if (this.world && isArcade(this.world) && !this.picks().some((n) => n.tab === zone)) return;
           const k = this.picks().findIndex((n) => n.tab === zone);
           if (this.view === 'picks' && k >= 0) { this.pick = k; this.render(); } else this.go(zone as Tab);
         });
         this.rings.set(zone, b);
         layer.append(b);
       }
-      b.className = `bay-ring${i >= 0 ? ' sug' : ''}${(this.view === 'picks' ? i >= 0 && i === this.pick : zone === this.view) ? ' sel' : ''}${WEB.some((n) => n.tab === zone && (w.levels[n.id] ?? 0) > 0) ? ' fitted' : ''}`;
+      // in the Arcade only the suggested parts are live
+      const still = isArcade(w) && i < 0;
+      b.tabIndex = still ? -1 : 0;
+      b.className = `bay-ring${still ? ' still' : ''}${i >= 0 ? ' sug' : ''}${(this.view === 'picks' ? i >= 0 && i === this.pick : zone === this.view) ? ' sel' : ''}${WEB.some((n) => n.tab === zone && (w.levels[n.id] ?? 0) > 0) ? ' fitted' : ''}`;
       const name = t(TABS[zone as Tab].name);
       b.setAttribute('aria-label', i >= 0 ? `${name} · ${nameOf(picks[i]!.id)}` : name);
+      // the part's name beside its ring (on hover, focus and while it is the one open)
+      b.lastElementChild!.textContent = i >= 0 && this.view === 'picks' ? nameOf(picks[i]!.id) : name;
     }
     for (const [zone, b] of this.rings) if (!live.has(zone)) { b.remove(); this.rings.delete(zone); }
   }
@@ -429,20 +446,23 @@ export class BayPanel {
 
   private tabs(w: World): void {
     const { use, cap } = budgets(w.levels);
+    const arcade = isArcade(w);
     $('bay-tabs').replaceChildren(...viewsOf(w).map((v) => {
-      const ready = v === 'picks' ? 0 : WEB.filter((n) => n.tab === v && blockOf(n.id, w.bayCtx()) === null).length;
-      const name = v === 'picks' ? t('Suggested') : t(TABS[v].name);
+      const locked = arcade && v !== 'picks';
+      const ready = v === 'picks' || locked ? 0 : WEB.filter((n) => n.tab === v && blockOf(n.id, w.bayCtx()) === null).length;
+      const name = v === 'picks' ? t(arcade ? 'Pick one' : 'Suggested') : t(TABS[v].name);
       // the tab's state, beside the ready count: over a soft rating through something fitted here (red ▲), or fitted (amber ●)
       const nodes = v === 'picks' ? [] : WEB.filter((n) => n.tab === v), fitted = nodes.some((n) => (w.levels[n.id] ?? 0) > 0);
       const over = (['mass', 'heat'] as const).some((k) => use[k] > cap[k] && nodes.some((n) => (w.levels[n.id] ?? 0) > 0 && (n.draw[k] ?? 0) > 0));
-      const dot = v === 'picks' ? '' : over ? 'over' : fitted ? 'fitted' : '';
-      const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}`, '', icon(TAB_ICON[v]), h('span', 'bt-n', name), ready ? h('b', 'bt-c', String(ready)) : null, dot ? h('i', `bt-s ${dot}`) : null) as HTMLButtonElement;
+      const dot = v === 'picks' || locked ? '' : over ? 'over' : fitted ? 'fitted' : '';
+      const b = h('button', `bay-tab${v === this.view ? ' on' : ''}${v === 'picks' ? ' sug' : ''}${locked ? ' locked' : ''}`, '', icon(TAB_ICON[v]), h('span', 'bt-n', name), locked ? icon('i-lock') : ready ? h('b', 'bt-c', String(ready)) : null, dot ? h('i', `bt-s ${dot}`) : null) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', String(v === this.view));
+      if (locked) { b.setAttribute('aria-disabled', 'true'); b.tabIndex = -1; b.title = t('Story mode: plan your own build'); }
       b.addEventListener('click', (e) => { e.stopPropagation(); this.go(v); });
       return b;
-    }), this.profile(w));
+    }), ...(arcade ? [h('p', 'bay-lock-note', '', icon('i-lock'), document.createTextNode(` ${t('Story mode opens the whole build')}`))] : []), this.profile(w));
   }
 
   /** The suggestions: three cards, what each does in a line, the number that matters, and the price on the button. */
@@ -473,7 +493,8 @@ export class BayPanel {
       return card;
     });
     const empty = h('p', 'pick-none', t('Nothing to fit yet · break rock for Krail'));
-    $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t('Suggested')), h('span', 'bw-s', t('Picked for your ship')));
+    const arcade = isArcade(w);
+    $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(arcade ? 'Three refits for your ship' : 'Picked for your ship')));
     $('bay-web').replaceChildren(h('div', 'pick-row', '', ...(cards.length ? cards : [empty])),
       h('p', 'pick-more', t('Want to plan your own build? Pick a part of the ship on the left.')));
     $('bay-insp').replaceChildren();
