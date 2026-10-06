@@ -206,23 +206,21 @@ class HullView {
   readonly body = new Group();
   readonly meshes: Mesh[];
   readonly mats: Material[];
-  readonly glows: Sprite[] = [];
+  /** Engine nozzles in model space, and whether the flares show. */
+  readonly engines: V3[];
+  flaring = true;
   readonly halo: Sprite;
   private cloaked = -1;
+  private readonly back = new Vector3();
+  private readonly nozzle = new Vector3();
   /** `own`: its own materials, so it can fade (cloak) without fading every hull of its kind. */
-  constructor(readonly key: string, model: Model, glowTex: Texture, c: Color, readonly own = false) {
+  constructor(readonly key: string, model: Model, glowTex: Texture, readonly colour: Color, readonly own = false) {
     const copy = model.root.clone();
     this.meshes = copy.children as Mesh[];
     if (own) for (const m of this.meshes) m.material = (m.material as Material).clone();
     this.mats = this.meshes.map((m) => m.material as Material);
     this.body.add(copy);
-    for (const e of model.engines) {
-      const g = new Sprite(new SpriteMaterial({ map: glowTex, color: c.clone().multiplyScalar(0.55), blending: AdditiveBlending, depthWrite: false }));
-      g.position.set(...e);
-      g.scale.setScalar(0.8);
-      this.glows.push(g);
-      this.body.add(g);
-    }
+    this.engines = model.engines;
     this.halo = new Sprite(new SpriteMaterial({ map: glowTex, color: 0xffffff, blending: AdditiveBlending, depthWrite: false, opacity: 0.6 }));
     this.halo.visible = false;
     this.root.add(this.body, this.halo);
@@ -239,7 +237,28 @@ class HullView {
     if (Math.abs(vis - this.cloaked) < 0.005) return;
     this.cloaked = vis;
     for (const m of this.mats) { m.transparent = vis < 0.99; m.opacity = vis; m.depthWrite = vis >= 0.99; }
-    for (const g of this.glows) g.visible = k < 0.5;
+    this.flaring = k < 0.5;
+  }
+
+  /**
+   * The drives, as streaks (streaks.ts): a white-hot nozzle and a flame
+   * astern along the hull's own axis, so the plume points where the ship
+   * is not going. `size` is the hull's scale in the world; `far` grows the
+   * flare with distance so a drive still shows from across the sky.
+   */
+  flare(streaks: Streaks, size: number, burn: number, time: number, id: number, far: number): void {
+    if (!this.flaring) return;
+    this.body.updateWorldMatrix(true, false);
+    const m = this.body.matrixWorld;
+    const flick = 1 + Math.sin(time * 31 + id) * 0.06;
+    this.back.set(-1, 0, 0).transformDirection(m);
+    for (const e of this.engines) {
+      this.nozzle.set(e[0], e[1], e[2]).applyMatrix4(m);
+      const x = this.nozzle.x, y = this.nozzle.y, z = this.nozzle.z;
+      // the flame trails behind the nozzle: its head is at the nozzle
+      streaks.push(x, y, z, -this.back.x, -this.back.y, -this.back.z, size * (0.7 + 1.1 * burn) * flick * far, size * 0.2 * far, STREAK.torp, this.colour, 0.5, time * 5 + id);
+      streaks.push(x, y, z, this.back.x, this.back.y, this.back.z, size * 0.5 * far, size * 0.5 * far, STREAK.orb, this.colour, 0.7, time * 3 + id);
+    }
   }
 }
 
@@ -330,10 +349,10 @@ export class EnemyView {
         (v.halo.material as SpriteMaterial).color.copy(ELITE_GLOW[al.elite]).multiplyScalar(al.elite === 'volatile' ? 0.5 + 0.4 * Math.sin(this.time * 12) : 0.55);
         v.halo.scale.setScalar(3.4 + Math.sin(this.time * 3 + al.id) * 0.3);
       }
-      const burn = 0.9 + Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30) * 0.9;
-      // engines read from far off: the glow keeps a minimum size on screen as the hull shrinks with distance
-      const far = Math.max(1, Math.hypot(v.root.position.x - this.eye.x, v.root.position.y - this.eye.y, v.root.position.z - this.eye.z) / 40);
-      for (const g of v.glows) g.scale.setScalar((0.45 + 0.3 * burn) * Math.sqrt(far) * (1 + Math.sin(this.time * 31 + al.id) * 0.06));
+      const burn = Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30);
+      // engines read from far off: the flare keeps a size on screen as the hull shrinks with distance
+      const far = Math.sqrt(Math.max(1, Math.hypot(v.root.position.x - this.eye.x, v.root.position.y - this.eye.y, v.root.position.z - this.eye.z) / 40));
+      v.flare(this.streaks, al.r, burn, this.time, al.id, far);
     }
     for (const [id, v] of this.live) {
       if (seen.has(id)) continue;
@@ -353,7 +372,8 @@ export class EnemyView {
       if (boss.faction === 'voice') bv.hull.body.rotation.y = this.time * 0.15;
       const vis = 1 - boss.cloak * 0.92;
       for (const m of bv.mats) { m.opacity = vis; m.transparent = vis < 1; }
-      for (const g of bv.hull.glows) g.visible = boss.cloak < 0.6;
+      bv.hull.flaring = boss.cloak < 0.6;
+      bv.hull.flare(this.streaks, boss.r * 0.85, 0.5, this.time, boss.id, 1);
       bv.hull.flash(boss.hitT > 0);
     }
 
@@ -405,7 +425,6 @@ export class EnemyView {
     for (const m of own.root.children as Mesh[]) { m.material = (m.material as Material).clone(); mats.push(m.material); }
     const hull = new HullView(kind, own, this.glowTex, NEON[b.faction]);
     hull.root.scale.setScalar(b.r * 0.85);
-    for (const g of hull.glows) g.scale.setScalar(0.9);
     const root = new Group();
     root.add(hull.root);
     this.scene.add(root);
