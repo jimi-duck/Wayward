@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done: the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; step 4 (the Story mode, Cyrite) planned, step 5 to come (see below) |
+| R The refit bay | Steps 1 to 4 done: the web as data and rules, the bay on screen, the budgets felt, the Story mode in the bay with Cyrite as its fuel and the yard folded in; step 5 to come (see below) |
 
 ## From the concept boards
 
@@ -631,7 +631,7 @@ health as a bar under them; the upper-centre card is for hostile hulls only.
 The pause card is the briefing: three steps (mine, upgrade, survive), the
 three alert states, the controls for the device in hand, the bay and Auto-refit.
 
-**Step 4, planned (2026-10-06).** The Story mode builds in the bay, as
+**Step 4, done (2026-10-06).** The Story mode builds in the bay, as
 the arcade does:
 
 - **Cyrite is the fuel.** The violet rock, the tank, a lane's cost, the
@@ -659,9 +659,11 @@ the arcade does:
 
 ### Open
 
-- Builds that save for deep modules (torpedoes, mines) trailed; the deep
-  ordnance now costs 0.65 to 0.7 of its tier, not yet confirmed by a full
-  pilot.
+- The deep ordnance at 0.65 to 0.7 of its tier lifted both torpedo builds
+  (torpedo+defence 9:49 to 11:22, torpedo+laser 8:49 to 9:18);
+  mine+mobility still trails (7:52, about seven installs).
+- Story sorties run about a minute longer than with the cards (journey
+  pilot, 3:00 to 4:00 a system); worth a look once players have it.
 - The arcade's Krail: how much rock and kills give, against the costs
   above, for fewer installs than today's cards.
 
