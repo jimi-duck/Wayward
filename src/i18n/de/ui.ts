@@ -496,8 +496,8 @@ export const UI: Record<string, string> = {
   'Frontier Supply': 'Frontier Supply',
   'Refuel · repair · trade · no implant checks': 'Tanken · reparieren · handeln · keine Implantat-Checks',
   'Refuel · repair · trade · under Continuance order': 'Tanken · reparieren · handeln · unter Continuance-Befehl',
-  '<kbd>1</kbd>–<kbd>7</kbd> trade, plot, fit · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off':
-    '<kbd>1</kbd>–<kbd>7</kbd> handeln, planen, einbauen · <kbd>Enter</kbd> ablegen · Pad <kbd>A</kbd> wählen · <kbd>B</kbd> ablegen',
+  '<kbd>1</kbd>–<kbd>8</kbd> stop, fit, plot, trade · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off':
+    '<kbd>1</kbd>–<kbd>8</kbd> Halt, einbauen, planen, handeln · <kbd>Enter</kbd> ablegen · Pad <kbd>A</kbd> wählen · <kbd>B</kbd> ablegen',
   'Back to the dock': 'Zurück zum Dock',
   'Back to the systems': 'Zurück zu den Systemen',
   'Fitted': 'Eingebaut',
@@ -581,6 +581,12 @@ export const UI: Record<string, string> = {
   'no port': 'kein Hafen',
   'raided': 'überfallen',
   'Quiet': 'Ruhig',
+  'Sensible stop': 'Sinnvoller Halt',
+  'Nothing to do': 'Nichts zu tun',
+  'By hand ▸': 'Von Hand ▸',
+  'By hand ▾': 'Von Hand ▾',
+  'Sell, buy and patch one at a time': 'Einzeln verkaufen, kaufen, flicken',
+  '{n} ore sold': '{n} Erz verkauft',
   'netted': 'im Netz',
   'Calloway last seen': 'Calloway zuletzt hier',
   'Goal': 'Ziel',

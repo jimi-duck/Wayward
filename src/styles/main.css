@@ -1069,6 +1069,9 @@ html.swipe #app * { overscroll-behavior: contain; }
 .port-l.sel, .port-l:hover:not(:disabled) { --edge: var(--hud); --fill: var(--hud-fill); }
 .port-l:disabled { cursor: not-allowed; opacity: .45; }
 .port-l .pl-note { font: 400 13px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); justify-self: end; }
+.port-l .pl-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.port-l .pl-chip { padding: 2px 8px; border: 1px solid var(--cy-dim); color: var(--cy); font: 600 11px/1.4 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; }
+.port-l.stop { --edge: var(--amber-dim, rgba(240, 168, 64, .5)); }
 .port-l .pl-p { font: 600 calc(var(--fs) * 1.4)/1 var(--font-rail); color: var(--amber); min-width: 3ch; text-align: right; }
 #port-x { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
   padding: 10px 22px; font: 600 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
