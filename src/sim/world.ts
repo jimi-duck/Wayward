@@ -656,6 +656,12 @@ export class World implements EncounterHost {
     } else b.spool = Math.max(0, b.spool - dt * 2);
   }
 
+  /** The pursuit holds off for this system's calm (SortieDef.pace): after an answered card, or when the last pursuer is beaten. */
+  private rest(): void {
+    const b = this.bk;
+    if (b?.def.pace) b.nextPursuit = Math.max(b.nextPursuit, this.runTime + b.def.pace.calm);
+  }
+
   /** The pursuit: Custody hulls from behind (from home), now and then a Gutter crew from ahead, as often as the heat says. */
   private pursue(t: number): void {
     const b = this.bk!, s = this.ship;
@@ -1061,6 +1067,7 @@ export class World implements EncounterHost {
     this.comms = null;
     this.phase = 'play';
     this.applyOutcome(res.outcome, o.fee, o.brought);
+    this.rest();
     this.run.cards.push({ id: o.def.id, choice: res.choice.id, won: res.won, t: Math.round(this.runTime) });
     this.events.push({ type: 'commsAnswer', id: o.def.id, choice: res.choice.id, text: res.outcome.text, won: res.won });
     return true;
@@ -1961,6 +1968,7 @@ export class World implements EncounterHost {
       this.dropCrystals(al.x, al.z, Math.max(1, Math.round(al.xp * 0.5 * loot)), 5, al.vx, al.vz, 'parts');
       this.dropCrystals(al.x, al.z, al.xp * WRECK_KRAIL * loot, 5, al.vx, al.vz);
       this.bk.heat = Math.min(1, this.bk.heat + (al.faction === 'custody' ? HEAT_KILL_CUSTODY : HEAT_KILL));
+      if (!this.aliens.some((a) => !a.escort && !a.extra)) this.rest();
     } else this.dropCrystals(al.x, al.z, al.xp * (al.elite ? this.stats.eliteLoot : 1), 5, al.vx, al.vz);
     const chance = (al.elite ? REPAIR_CHANCE_ELITE : REPAIR_CHANCE) * this.stats.repairChance;
     if (!this.noRepairs && !this.bk && this.repairCd <= 0 && this.plates < this.stats.maxPlates && this.rng.next() < chance) {

@@ -318,7 +318,10 @@ export interface Open {
   def: CardDef;
   truth: string | null;
   read: Read;
+  /** The call, as spoken. */
   text: string;
+  /** What the ship's state adds to it, a line each (behind the (i) on the panel). */
+  more: string[];
   choices: ChoiceView[];
   fee: number;
   /** Hulls the card brought in. */
@@ -520,15 +523,29 @@ const slotFill = (x: Ctx, slots: Record<string, string> = {}) => {
   return (s: string) => s.replace(/\{(\w+)\}/g, (m, k: string) => all[k] ?? m);
 };
 
-/** Fill a card's text: its slots, then the lines that hold. */
-export function cardText(def: CardDef, x: Ctx, fee: number): string {
+/** Words a card may show at once; the rest of what the ship's state adds waits behind the (i). */
+export const SHOWN_WORDS = 24;
+const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
+
+/**
+ * A card's call: its text, then the lines that hold (what the ship's state
+ * adds) for as long as the whole stays within SHOWN_WORDS. The lines after
+ * that go to `more`, one tap behind the (i), in order.
+ */
+export function cardParts(def: CardDef, x: Ctx, fee: number): { text: string; more: string[] } {
   const slots: Record<string, string> = {
     fee: String(fee), cyrite: String(x.cyrite), need: String(x.need), short: String(Math.max(0, x.need - x.cyrite)),
     ore: String(x.ore), chits: String(x.chits), parts: String(x.parts), food: String(x.food),
   };
   const fill = slotFill(x, slots);
-  const extra = (def.lines ?? []).filter((l) => condOk(l.if, x)).map((l) => fill(t(l.text)));
-  return [fill(t(def.text)), ...extra].join(' ');
+  let text = fill(t(def.text));
+  const more: string[] = [];
+  for (const l of (def.lines ?? []).filter((l) => condOk(l.if, x))) {
+    const line = fill(t(l.text));
+    if (!more.length && wordCount(`${text} ${line}`) <= SHOWN_WORDS) text = `${text} ${line}`;
+    else more.push(line);
+  }
+  return { text, more };
 }
 
 function rollTruth(def: CardDef, x: Ctx, rng: Rng): string | null {
@@ -562,9 +579,10 @@ export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
   }
   const fee = feeFor(def, x);
   const read: Read = { them: theirStrength(def), you: yourStrength(x.levels, x.plates), ships: shipsWords(def), cargo: def.cargo ?? 'Unknown', intent, sure, shown };
+  const { text, more } = cardParts(def, x, fee);
   return {
     def, truth, fee, brought: [], read,
-    text: cardText(def, x, fee),
+    text, more,
     choices: def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, def, x, fee, read)),
     slow: def.slow ? def.slow.timeout : 0,
   };

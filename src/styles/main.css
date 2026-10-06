@@ -688,6 +688,11 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .sheet.alert .tx-msg { border-left-color: var(--alert-dim); }
 .tx-msg h2 { margin: 0; font: 600 calc(var(--fs) * 1.25 * 1.18)/1.2 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
 .cm-text { margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink-2); }
+.cm-i { position: relative; justify-self: start; width: 20px; height: 20px; padding: 0; border: 1px solid var(--cy-dim); border-radius: 50%; background: none; color: var(--cy); font: italic 600 12px/1 var(--font-display); cursor: pointer; }
+.cm-i::before { content: ""; position: absolute; inset: -10px; }
+.cm-i:hover, .cm-i.on { background: rgba(120, 220, 215, .12); }
+.cm-more { color: var(--ink-2); font-size: 13px; }
+.cm-i[hidden], .cm-more[hidden] { display: none; }
 .cm-read { display: grid; gap: 7px; padding: 9px 11px; border: 1px solid var(--line); background: rgba(255, 255, 255, .02); }
 .cm-read[hidden] { display: none; }
 .cm-read:empty { display: none; }

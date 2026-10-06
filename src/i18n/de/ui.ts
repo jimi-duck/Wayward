@@ -587,6 +587,7 @@ export const UI: Record<string, string> = {
   'By hand ▾': 'Von Hand ▾',
   'Sell, buy and patch one at a time': 'Einzeln verkaufen, kaufen, flicken',
   '{n} ore sold': '{n} Erz verkauft',
+  'More': 'Mehr',
   'netted': 'im Netz',
   'Calloway last seen': 'Calloway zuletzt hier',
   'Goal': 'Ziel',

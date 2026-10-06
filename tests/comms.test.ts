@@ -4,7 +4,7 @@ import type { InputFrame } from '../src/input/types';
 import { CARDS, FLAGS } from '../src/content/cards';
 import { MODULES } from '../src/content/modules';
 import { UPGRADES } from '../src/content/upgrades';
-import { CARD_BY_ID, COMMS_FIRST, SLOW, condOk, openCard, resolve, sensors, type Ctx } from '../src/sim/comms';
+import { CARD_BY_ID, COMMS_FIRST, SHOWN_WORDS, SLOW, condOk, openCard, resolve, sensors, type Ctx } from '../src/sim/comms';
 import { VARIANTS } from '../src/sim/enemies';
 import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';
@@ -96,8 +96,8 @@ describe('the comms engine', () => {
   it('reads differently with a full hold', () => {
     const empty = openCard(CARD_BY_ID.gutter_toll!, ctx(), new Rng(1));
     const full = openCard(CARD_BY_ID.gutter_toll!, ctx({ ore: 38 }), new Rng(1));
-    expect(empty.text).not.toMatch(/how low you sit/);
-    expect(full.text).toMatch(/how low you sit/);
+    expect([empty.text, ...empty.more].join(' ')).not.toMatch(/how low you sit/);
+    expect([full.text, ...full.more].join(' ')).toMatch(/how low you sit/);
     expect(empty.choices.some((c) => c.id === 'ore')).toBe(false);
     expect(full.choices.some((c) => c.id === 'ore')).toBe(true);
   });
@@ -125,6 +125,20 @@ describe('the comms engine', () => {
     const armed = openCard(CARD_BY_ID.gutter_toll!, ctx({ levels: { tp_bay: 1, ph_emitters: 3 } }), new Rng(1));
     expect(armed.read.you).toBeGreaterThan(o.read.you);
     expect(openCard(CARD_BY_ID.rumour_seam!, ctx(), new Rng(1)).read.them).toBe(0);
+  });
+
+  it('shows the call and as many of the ship’s lines as fit in 24 words, and the rest behind the (i)', () => {
+    const plain = openCard(CARD_BY_ID.checkpoint!, ctx({ heat: 0.5 }), new Rng(1));
+    expect(plain.more).toEqual([]);
+    const o = openCard(CARD_BY_ID.checkpoint!, ctx({ heat: 0.1, flags: new Set(['codes', 'fee_known']) }), new Rng(1));
+    // 15 words of call and a 10-word line would be 25: everything the ship adds waits
+    expect(o.text).toBe(plain.text);
+    expect(o.more).toEqual(['She sounds bored. Nobody has told her who you are yet.', 'The forged codes are loaded.', 'They say she takes a fee.']);
+    // a short call leaves room for the lines that fit, in order, and stops at the first that does not
+    const short = openCard({ ...CARD_BY_ID.checkpoint!, text: '“Heave to.”' }, ctx({ heat: 0.1, flags: new Set(['codes', 'fee_known']) }), new Rng(1));
+    expect(short.text).toBe('“Heave to.” She sounds bored. Nobody has told her who you are yet. The forged codes are loaded. They say she takes a fee.');
+    expect(short.text.split(/\s+/).length).toBeLessThanOrEqual(SHOWN_WORDS);
+    expect(short.more).toEqual([]);
   });
 
   it('loses to the truth, whatever the odds', () => {

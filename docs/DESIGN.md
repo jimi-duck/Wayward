@@ -191,6 +191,9 @@ only come because of an earlier answer. The journey adds ten more (see
   would leave you short of the jump. A rumour about the lane captain makes
   her fee cheaper and her more likely to take it; a bar rumour leads to a
   forger, whose codes may be good.
+  The panel shows the call and as many of those lines as fit in 24 words
+  (`SHOWN_WORDS`, `cardParts` in `sim/comms.ts`); the rest sit one tap behind
+  an (i), or the I key. The reading budget caps the call itself at 24 words.
 - **Ambushes** do not wait: the world runs at a fifth of its speed under
   the card, and when the bar runs out the default (fight) is taken.
 - The arcade's capital-ship hail is drawn by the same panel.
@@ -296,7 +299,10 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   12); a few older lines sit over it with their own ceiling, listed there.
 - **A kind of system**: a row in `SYSTEMS` (`content/systems.ts`) and its
   place in `COL_KINDS` (`sim/chart.ts`); a word and a colour in
-  `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`.
+  `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`. Its
+  `pace` row gives the pursuit room to breathe: seconds before the first
+  pursuer, and the quiet after an answered card or a beaten pursuer. A
+  quiet system (a breather) has no pursuit at all, whatever its pace.
 - **An unlock**: a row in `UNLOCKS` that grants upgrade, event, modifier or
   cosmetic ids; mark the granted content `locked: true`.
 
