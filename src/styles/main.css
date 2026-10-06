@@ -1160,6 +1160,11 @@ html.swipe #app * { overscroll-behavior: contain; }
 .ch-l .pl-p { grid-row: 1 / 3; grid-column: 3; }
 .ch-l kbd { grid-row: 1 / 3; }
 .ch-l.net .pl-note { color: #ef8a7f; }
+.ch-tags { display: inline-flex; gap: 6px; margin-right: 4px; vertical-align: 1px; }
+.ch-tag { display: inline-flex; align-items: center; gap: 5px; padding: 1px 7px; border: 1px solid var(--line); color: var(--ink-2); font: 600 10px/1.5 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; }
+.ch-tag i { font-style: normal; font-size: 9px; }
+.ch-tag.quiet { border-color: var(--cy-dim); color: var(--cy); }
+.ch-tag.hostile { border-color: rgba(239, 138, 127, .5); color: #ef8a7f; }
 .ch-leg { display: grid; grid-template-columns: auto auto 1fr; align-items: baseline; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line);
   font: 600 calc(var(--fs) * 1.05 * 1.18)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
 .ch-leg .pl-note { font: 400 12px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); justify-self: end; }
