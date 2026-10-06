@@ -213,7 +213,7 @@ function boot(): void {
     if (world.phase === 'refit' && world.offer && !refit.open) {
       // a full rail or battle salvage: three cards
       input.reset();
-      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); }, !world.bk);
+      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); }, !world.bk, (id) => world.advise(id));
     } else if (world.phase === 'bay' && !bay.open) {
       // the refit bay: the player opened it, and the world waits until they launch
       input.reset();

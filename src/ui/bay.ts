@@ -5,6 +5,8 @@ import { upgradeFigures } from '../sim/build';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
 import { icon, ICON } from './refit';
+import type { Advice } from '../sim/advice';
+import { profileOf } from '../sim/profile';
 import { opsOf, opsText } from './ops';
 import { num, t } from '../i18n';
 
@@ -238,6 +240,21 @@ export class BayPanel {
     this.footer(w);
   }
 
+  /**
+   * The ship's computer's picks: the modules ready to fit that have a reason
+   * (sim/advice.ts), the three firmest across the whole bay. Recomputed per draw; cheap.
+   */
+  private advice(w: World): Map<string, Advice> {
+    const picks: Array<[string, Advice]> = [];
+    for (const n of WEB) {
+      if (stateOf(w, n.id) !== 'open' && stateOf(w, n.id) !== 'owned') continue;
+      if (blockOf(n.id, w.bayCtx())) continue;
+      const a = w.advise(n.id);
+      if (a) picks.push([n.id, a]);
+    }
+    return new Map(picks.sort((a, b) => a[1].rank - b[1].rank).slice(0, 3));
+  }
+
   private tabs(w: World): void {
     const { use, cap } = budgets(w.levels);
     $('bay-tabs').replaceChildren(...TAB_ORDER.map((tab, i) => {
@@ -253,11 +270,23 @@ export class BayPanel {
       b.setAttribute('aria-selected', String(tab === this.tab));
       b.addEventListener('click', (e) => { e.stopPropagation(); this.go(tab); });
       return b;
-    }));
+    }), this.profile(w));
+  }
+
+  /** The build's profile: a name, a few plain lines, and how it leans (close, ordnance, range, defence). */
+  private profile(w: World): HTMLElement {
+    const p = profileOf(w.levels), WAY: Record<string, string> = { close: 'Close', ordnance: 'Ordnance', range: 'Range', defence: 'Defence' };
+    const bars = h('div', 'pf-bars');
+    for (const [a, v] of Object.entries(p.axes)) {
+      const i = h('i', 'pf-bar');
+      i.style.setProperty('--v', v.toFixed(2));
+      bars.append(h('span', 'pf-b', '', h('span', 'pf-l', t(WAY[a]!)), i));
+    }
+    return h('div', 'bay-prof', '', h('span', 'bf-h', t('Profile')), h('b', 'pf-name', t(p.name)), ...p.lines.map((l) => h('span', 'pf-line', t(l))), bars);
   }
 
   private web(w: World): void {
-    const nodes = WEB.filter((n) => n.tab === this.tab);
+    const nodes = WEB.filter((n) => n.tab === this.tab), recs = this.advice(w);
     const tiers = Math.max(...nodes.map((n) => n.tier)), rows = Math.max(...nodes.map((n) => n.row)) + 1;
     const X = (n: WebNode) => ((n.tier - 0.5) / Math.max(tiers, 3)) * 100;
     const Y = (n: WebNode) => ((n.row + 0.5) / Math.max(rows, 3)) * 100;
@@ -287,7 +316,7 @@ export class BayPanel {
     const field = h('div', 'bay-nodes');
     for (const n of nodes) {
       const st = stateOf(w, n.id), lv = w.levels[n.id] ?? 0, max = maxLevel(n.id);
-      const b = h('button', `bay-node ${st}${n.id === this.sel ? ' sel' : ''}${n.id === this.fresh?.id ? ' fresh' : ''}`) as HTMLButtonElement;
+      const b = h('button', `bay-node ${st}${recs.has(n.id) ? ' rec' : ''}${n.id === this.sel ? ' sel' : ''}${n.id === this.fresh?.id ? ' fresh' : ''}`) as HTMLButtonElement;
       b.type = 'button';
       b.style.left = `${X(n)}%`;
       b.style.top = `${Y(n)}%`;
@@ -313,7 +342,8 @@ export class BayPanel {
     for (let k = 1; k <= max; k++) pips.append(h('i', k <= lv ? 'on' : k === lv + 1 && lv < max ? 'add' : ''));
     const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', icon(iconOf(id))), h('div', 'bi-hd', '', h('span', 'bi-tab', t(TABS[node.tab].name)), h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips)));
     const text = h('p', 'bi-text', t(u ? upgradeText(u, next) : fit!.text));
-    const out: HTMLElement[] = [head, text];
+    const adv = lv < max && !why ? this.advice(w).get(id) : undefined;
+    const out: HTMLElement[] = [head, ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(adv.text, adv.vars)}`))] : []), text];
     if (u?.note) out.push(h('p', 'bi-note', t(u.note)));
 
     // what the next level changes: the figures, then the budgets

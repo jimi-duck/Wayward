@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done, and console steps 1 to 4 (the state word, the ship lit by tab, thresholds, the install; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 3 done, and console steps 1 to 6 (the state word, the ship lit by tab, thresholds, the install, advice, the profile; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
 
 ## From the concept boards
 
@@ -645,15 +645,18 @@ DESIGN.md.
    ship (placed from the real 3D positions, `Sector.zoneScreen`), that part
    flashes, the budgets bump. Skipped with reduced motion; never blocks a
    second install.
-5. **Recommendations with a reason.** The Story's card refit (and a
-   "suggested" row in the bay) say why: close threats seen, ordnance low,
-   the build leans one way. Reasons are rows next to the cards in
-   `content/`, picked in `sim/offers.ts` from the run's own numbers, so a
-   test can name the reason for a given state.
-6. **Build profile.** `sim/build.ts` already names a build's identity; show
-   it in the bay as PROFILE: RAMMER / LANCER with three plain lines, and
-   the weights as short bars (close quarters, ordnance, long range,
-   defence). Needs the pilot's builds as test fixtures.
+5. **Done: recommendations with a reason.** `sim/advice.ts` gives a module a
+   reason from the run's numbers, firmest first: a rating at its limit and a
+   module that raises it (power within one of full, heat or mass at 80%),
+   worn plates and a defence module, hostiles that pressed close lately
+   (`World.closePressed`, fading over about forty seconds) and close work,
+   the system you are deepest in. The bay marks the firmest three with a
+   ◆ and says why on the inspector; the Story's cards carry the same line.
+   Tests in `tests/advice.test.ts`.
+6. **Done: build profile.** `sim/profile.ts`: four ways to fight (close,
+   ordnance, range, defence), a name for the leading one (Rammer,
+   Bombardier, Lancer, Bulwark, Hybrid, Stock hauler), up to three plain
+   lines, and the weights as bars, under the bay's tabs (hidden on phones).
 7. **Hardware paths.** The web's links become engineering: a trunk per
    system, branches that fork and rejoin, junction marks where a path
    needs two parents. Layout is data in `content/web.ts` (tier and row
@@ -672,7 +675,7 @@ DESIGN.md.
     tied to a real state (over a rating, a stock build, a fresh fit), with
     German twins.
 
-Order: 5 and 6 next (they need the most design), then 7 and 8, with 9 and 10 last. Open: the HUD's
+Order: 7 and 8 next, with 9 and 10 last. Open: the HUD's
 state word could also colour the frame; whether the Story mode's port and
 chart screens take the same console frame.
 

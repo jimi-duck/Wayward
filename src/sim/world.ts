@@ -45,6 +45,7 @@ import { makeOffer, type Offer } from './offers';
 import { install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
 import { feelBudgets } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
+import { reasonOf, type Advice } from './advice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { addKit, discounted, earned, effects, fitNeeds, noKit, type Effects, type Kit } from './modules';
 import { MODULE_BY_ID } from '../content/modules';
@@ -158,6 +159,8 @@ export class World implements EncounterHost {
   powers: Record<PowerKind, number> = { shield: 0, rapid: 0, magnet: 0, overdrive: 0, charge: 0 };
 
   alive = true;
+  /** Hostiles that pressed close lately, fading (see step). */
+  closePressed = 0;
   run: RunStats;
   readonly unlocked: Set<string>;
   readonly modifiers: string[];
@@ -867,6 +870,13 @@ export class World implements EncounterHost {
       this.run.platesGained++;
       this.events.push({ type: 'regen', plates: this.plates });
     }
+    // how hard the fights have pressed lately: the most hostiles inside 60 m, fading over about forty seconds (the bay's advice, sim/advice.ts)
+    {
+      const sh = this.ship;
+      let close = 0;
+      for (const a of this.aliens) if (!a.fleeing && Math.hypot(a.x - sh.x, a.z - sh.z) < 60) close++;
+      this.closePressed = Math.max(close, this.closePressed * (1 - dt / 40));
+    }
     if (!this.bk && this.alive) {
       const news = stepMend(this.mend, { sinceHit: this.sinceHit, plates: this.plates, maxPlates: st.maxPlates, danger: this.inDanger(), stats: st }, dt);
       if (news === 'start') this.events.push({ type: 'mendStart' });
@@ -930,6 +940,11 @@ export class World implements EncounterHost {
   // ── the refit bay (the arcade) ────────────────────────────────────────
 
   /** What the bay's rules see of the ship. */
+  /** Why a module is worth fitting now, in a few words (sim/advice.ts), or null. */
+  advise(id: string): Advice | null {
+    return reasonOf(id, { levels: this.levels, plates: this.plates, maxPlates: this.stats.maxPlates, pressure: this.closePressed });
+  }
+
   bayCtx(): BayCtx {
     return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, krail: this.krail };
   }
@@ -2094,6 +2109,7 @@ export class World implements EncounterHost {
     this.field.density = 1;
     this.aliens = []; this.shots = []; this.webs = []; this.pickups = []; this.bolts = []; this.torps = [];
     this.tele = []; this.strikes = []; this.sys = newSystems();
+    this.closePressed = 0;
     this.command.reset();
     this.encounter = null;
     this.pace = newPace(ALIEN_FIRST);
