@@ -99,6 +99,8 @@ export const HEAT_KILL = 0.008;
 export const HEAT_KILL_CUSTODY = 0.014;
 /** Per second the cutter runs. */
 export const HEAT_CUT = 0.002;
+/** How fast the heat fades in a quiet system, a second (from 0.6 to nothing in about two minutes). */
+export const QUIET_COOL = 0.005;
 /** The heat a run's difficulty curve reads as its clock: heat 1 plays like seven minutes of the arcade. */
 export const HEAT_CLOCK = 420;
 /** The first pursuer, seconds in. */
@@ -141,6 +143,8 @@ export interface SortieDef {
   thren?: number;
   /** Who else is here, for the cards (sim/scatter.ts presence): 'drift', 'holdfast', 'raid', 'voice', 'thren'. */
   here?: string[];
+  /** A quiet system (a breather): no pursuit, no Thren, no chance cards or events; the heat fades. */
+  quiet?: boolean;
   /** A multiplier on the gap between chance calls. */
   calls: number;
   /** A Custody blockade holds the lane mouth (Cerro, and every netted system). */

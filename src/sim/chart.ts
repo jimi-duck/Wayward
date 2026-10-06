@@ -31,6 +31,9 @@ import { layScatter, RAID_MARKUP, type Fleet } from './scatter';
 //              phenomena.ts): a storm, a wreck, a beacon, a Thren lane.
 //              Storms and nebulae show from anywhere; the rest once you
 //              are within sight of them. Each is there until dealt with.
+//   breathers · a region's `quiet` row marks some mining and transit systems
+//              quiet (layQuiet): no pursuit, no cards, the heat fades. A
+//              quiet system the Net has reached is not quiet.
 //   the rest · Holdfasts, Drift fleets, Gutter raids, the Voice and the
 //              Thren move on their own (sim/scatter.ts).
 
@@ -54,6 +57,8 @@ export interface StarSystem {
   lane: number;
   /** The survey's estimate of `cyrite`, until it has been flown. */
   survey: number;
+  /** A breather: nothing hunts you here and no cards call (see `layQuiet`). Absent in a save from before them. */
+  quiet?: boolean;
 }
 
 export interface Route {
@@ -194,6 +199,7 @@ export function makeChart(seed: number): Chart {
   const home = systems[0]!.id, edge = systems[systems.length - 1]!.id;
   const c: Chart = { systems, routes, home, edge, net: { [home]: 1 }, stall: {}, visited: [home], seenNet: [home], seenDay: 0, places: {} };
   c.places = layPlaces(c, seed);
+  layQuiet(c, seed);
   layScatter(c, seed);
   arrive(c, home, 0);
   return c;
@@ -223,6 +229,19 @@ export function layPlaces(c: Chart, seed: number): Record<string, Place> {
     out[s.id] = { id, seen: d.far, done: false, reward: d.reward === 'unknown' ? SIGNAL_REWARDS[rng.int(SIGNAL_REWARDS.length)]! : d.reward };
   }
   return out;
+}
+
+/**
+ * Mark a region's breathers: the share of its mining and transit systems its
+ * `quiet` row gives. Its own generator, so the systems and lanes of a seed
+ * are the same as without them. A region with no `quiet` row has none.
+ */
+export function layQuiet(c: Chart, seed: number): void {
+  const rng = new Rng(seed ^ 0x9a1e7);
+  for (const s of c.systems) {
+    const share = REGIONS[regionOf(s)]?.quiet ?? 0;
+    if (share > 0 && (s.kind === 'mining' || s.kind === 'transit') && rng.next() < share) s.quiet = true;
+  }
 }
 
 /** The place in a system you know of and have not dealt with, if any. */

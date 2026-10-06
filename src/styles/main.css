@@ -1192,6 +1192,8 @@ circle.ch-net { fill: rgba(201, 74, 63, .16); stroke: var(--alert); stroke-width
 .ch-s.out .ch-name { fill: var(--ink); }
 .ch-s.sel .ch-name { fill: var(--amber); }
 .ch-num { font: 700 11px var(--font-mono); fill: var(--amber); }
+/* a breather: a plain teal ring, nothing hunts you here */
+.ch-quiet { fill: none; stroke: var(--signal-teal); stroke-width: 1.2; }
 .ch-place { fill: #f4c95f; stroke: #1a1408; stroke-width: 0.8; }
 /* the factions on the move: Thren as a green haze, a Drift fleet as a teal pennant, a Gutter raid as a red slash */
 circle.ch-thren { fill: rgba(92, 195, 162, .22); stroke: #5CC3A2; stroke-width: 1.4; stroke-dasharray: 3 3; }
