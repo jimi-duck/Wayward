@@ -105,7 +105,7 @@ export class BayPanel {
   onAuto: (on: boolean) => void = () => {};
   /** The ship drawn behind: where a tab's lights are on screen (fractions), and a way to flash them. Set by the app. */
   ship: { points: (zone: string) => Array<[number, number]>; flash: (zone: string) => void } | null = null;
-  /** Rings over the ship, in the Suggested view: one per zone, placed each frame from where the ship's lights are on screen. */
+  /** Rings over the ship: one per zone, placed each frame from where the ship's lights are on screen. */
   private rings = new Map<string, HTMLButtonElement>();
   private ringRaf = 0;
   /** The module just fitted and the budgets it moved: lit for a moment (see install). */
@@ -362,12 +362,13 @@ export class BayPanel {
 
   /**
    * The ship as the stage: a ring on each part of the ship that has modules,
-   * in the Suggested view. Amber and pulsing where a suggestion is (a tap
-   * selects it), teal and still elsewhere (a tap opens that part's tab).
+   * in every view. Amber and pulsing where a suggestion is (in the Suggested
+   * view a tap selects it), teal and still elsewhere; a tap opens that
+   * part's tab. The open part's ring is the selected one.
    */
   private ringsFor(w: World): void {
     const layer = $('bay-pts');
-    if (this.view !== 'picks' || !this.ship) { layer.replaceChildren(); this.rings.clear(); return; }
+    if (!this.ship) { layer.replaceChildren(); this.rings.clear(); return; }
     const picks = this.picks(), live = new Set<string>();
     for (const zone of RING_ZONES) {
       if (!this.ship.points(zone).length) continue;
@@ -381,12 +382,12 @@ export class BayPanel {
         b.addEventListener('click', (e) => {
           e.stopPropagation();
           const k = this.picks().findIndex((n) => n.tab === zone);
-          if (k >= 0) { this.pick = k; this.render(); } else this.go(zone as Tab);
+          if (this.view === 'picks' && k >= 0) { this.pick = k; this.render(); } else this.go(zone as Tab);
         });
         this.rings.set(zone, b);
         layer.append(b);
       }
-      b.className = `bay-ring${i >= 0 ? ' sug' : ''}${i >= 0 && i === this.pick ? ' sel' : ''}${WEB.some((n) => n.tab === zone && (w.levels[n.id] ?? 0) > 0) ? ' fitted' : ''}`;
+      b.className = `bay-ring${i >= 0 ? ' sug' : ''}${(this.view === 'picks' ? i >= 0 && i === this.pick : zone === this.view) ? ' sel' : ''}${WEB.some((n) => n.tab === zone && (w.levels[n.id] ?? 0) > 0) ? ' fitted' : ''}`;
       const name = t(TABS[zone as Tab].name);
       b.setAttribute('aria-label', i >= 0 ? `${name} · ${nameOf(picks[i]!.id)}` : name);
     }

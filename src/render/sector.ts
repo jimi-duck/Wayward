@@ -356,6 +356,7 @@ export class Sector {
   /** What the screen over the ship is about: a bay tab, 'brief' for the pause card, or none. Lights the ship (ShipView.light). */
   console: string | null = null;
   private bayK = 0;
+  private tabK = 0;
 
   /** Where a zone's lights are on the screen, as fractions of it (0,0 top left), for the bay's lines to the ship. */
   zoneScreen(zone: string): Array<[number, number]> {
@@ -371,6 +372,8 @@ export class Sector {
     const inBay = this.console !== null && this.console !== 'brief';
     this.bayK += ((inBay ? 1 : 0) - this.bayK) * Math.min(1, 4 * uiDt);
     this.rig.bay = this.bayK * this.bayK * (3 - 2 * this.bayK);
+    this.tabK += ((inBay && this.console !== 'picks' ? 1 : 0) - this.tabK) * Math.min(1, 4 * uiDt);
+    this.rig.bayTab = this.tabK * this.tabK * (3 - 2 * this.tabK);
     this.ship.light(this.console, uiDt);
     this.paintSky(world);
     const a = world.prev, b = world.ship, s = this.lerped;

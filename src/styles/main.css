@@ -1343,7 +1343,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 #bay.picks .pick-row { align-content: end; }
 #bay.picks .pc-text, #bay.picks .pick-more { display: none; }
 .bay-pts { position: absolute; inset: 0; pointer-events: none; }
-.bay-pts[hidden], #bay:not(.picks) .bay-pts { display: none; }
+/* in a tab the web takes the lower part of the screen and the ship the upper */
+#bay:not(.picks) .bay-w { margin-top: clamp(0px, 36vh - 60px, 300px); }
 .bay-ring { --c: var(--cy); position: absolute; translate: -50% -50%; width: 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
 .br-o { position: absolute; inset: 15px; border: 1.5px solid var(--c); border-radius: 50%; background: rgba(8, 13, 14, .55); opacity: .55; transition: inset .12s var(--ez), opacity .12s; }
 .bay-ring.fitted .br-o { background: var(--c); box-shadow: 0 0 0 3px rgba(8, 13, 14, .55); }
@@ -1352,6 +1353,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-ring:hover .br-o, .bay-ring:focus-visible .br-o { inset: 11px; opacity: 1; }
 .bay-ring.sel .br-o { inset: 9px; opacity: 1; animation: none; box-shadow: 0 0 10px var(--hud-mid); }
 @keyframes ring-pulse { 50% { inset: 12px; opacity: .6; } }
+/* a phone has no room for both: in a tab the web has the screen */
+@media (max-height: 520px) { #bay:not(.picks) .bay-pts { display: none; } #bay:not(.picks) .bay-w { margin-top: 0; } }
 @media (prefers-reduced-motion: reduce) { .bay-ring.sug .br-o { animation: none; } }
 
 /* a phone on its side: tabs across the top, the web and the inspector side by side, the budgets only */
