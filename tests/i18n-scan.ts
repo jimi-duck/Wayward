@@ -15,7 +15,7 @@ const SKIP_KEYS = new Set([
   'reward', 'system', 'approach', 'hair', 'eye', 'mark', 'jaw', 'skin', 'hairColour', 'type', 'group', 'cargo', 'learn', 'default',
   'holder', 'icon', 'colour', 'color', 'class', 'cls', 'key', 'code', 'flag', 'noFlag', 'tier', 'blockade', 'captain', 'calloway',
   'role', 'tactic', 'fire', 'fill', 'stroke', 'd', 'href', 'textAnchor', 'text-anchor', 'role', 'loseIf', 'role', 'mode', 'face',
-  'ships', 'shape', 'fx', 'kit', 'resourceKey', 'dash', 'hp', 'phase', 'stamp',
+  'ships', 'shape', 'fx', 'kit', 'resourceKey', 'dash', 'hp', 'phase', 'stamp', 'pre', 'post',
 ]);
 /** Calls whose arguments (all, or the first n) are never shown. */
 const SKIP_CALLS: Record<string, number> = {

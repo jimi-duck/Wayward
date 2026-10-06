@@ -18,7 +18,8 @@ import { planRoute } from './route';
 // JOURNEY_RUNS trades precision for speed.
 
 const RUNS = Number(process.env.JOURNEY_RUNS ?? 8);
-const MAX_LEGS = 24;
+const SET = process.env.JOURNEY_SET === 'eight' ? 'eight' : 'three';
+const MAX_LEGS = SET === 'eight' ? 140 : 24;
 
 const STRATEGIES: Strategy[] = [
   { kind: 'random' },
@@ -40,7 +41,7 @@ interface JourneyRun {
 }
 
 function flyJourney(seed: number, strat: Strategy, policy: Policy): JourneyRun {
-  const j = newJourney(seed);
+  const j = newJourney(seed, false, SET);
   const out: JourneyRun = { j, stuck: false, combat: 0, hungryJumps: 0, nettedArrivals: 0, callowayCalls: 0, callowayFights: 0, replots: 0, answers: [] };
   let n = 0;
   while (j.status !== 'over' && n < MAX_LEGS) {
@@ -189,5 +190,5 @@ ${Object.entries(endings).sort((a, b) => b[1] - a[1]).map(([k, v]) => `| ${k} | 
 |---|---|---|
 ${cardRows.join('\n')}
 `;
-  writeFileSync(new URL('../docs/BALANCE-JOURNEY.md', import.meta.url), md);
+  writeFileSync(new URL(SET === 'eight' ? '../docs/BALANCE-LONG.md' : '../docs/BALANCE-JOURNEY.md', import.meta.url), md);
 });
