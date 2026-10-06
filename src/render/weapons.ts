@@ -4,17 +4,19 @@ import type { Bolt, Torpedo } from '../sim/weapons';
 import type { Effects } from './fx';
 import { STREAK, type Streaks } from './streaks';
 
-// Laser lances: a white-hot core in a red sheath, long and heavy, pointed
+// Laser lances: a white-hot core in an amber sheath, long and heavy, pointed
 // along their flight (they climb and dive onto targets off the plane).
-// Torpedoes: a hot core in a red-orange halo, its motor flaring as it builds
-// speed, shedding embers. Ours burn red; enemy fire burns its faction's
+// Torpedoes: a hot core in an amber halo, its motor flaring as it builds
+// speed, shedding embers. Ours burn amber; enemy fire burns its faction's
 // colour. All of it is drawn as streaks (streaks.ts), in one draw call
 // shared with the enemy's fire.
 
 const MAX_TORPS = 12;
-const LANCE = new Color(2.2, 0.16, 0.3);
-const TORP = new Color(2.4, 0.5, 0.25);
-const TORP_FLAME = new Color(3.2, 1.0, 0.35);
+// amber-white is the player's hand (brand v1.1); red is left for threat. Paler than
+// the Custody and Gutter fire (saturated gold, orange) so ours still reads at a glance.
+const LANCE = new Color(2.4, 1.55, 0.7);
+const TORP = new Color(2.5, 1.3, 0.5);
+const TORP_FLAME = new Color(3.2, 1.7, 0.4);
 
 export class WeaponView {
   private readonly d = new Vector3();
