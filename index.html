@@ -203,6 +203,8 @@
           <svg class="mark" viewBox="0 0 40 34" aria-hidden="true"><path d="M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z"/></svg>
           <span class="lk-t"><b class="lk-w">Wayward</b><span class="lk-d">Obedience-class ore hauler</span></span>
         </div>
+        <!-- a journey in progress: one tap carries on, whichever mode is picked below -->
+        <button type="button" id="cont" class="cont" hidden><span class="ct-k">Continue journey</span><span class="ct-s" id="cont-s"></span><span class="ct-r" id="cont-r"></span></button>
         <div class="modes" role="radiogroup" aria-label="Game mode">
           <button type="button" role="radio" id="mode-arcade" class="mode" aria-checked="true"><b class="mo-t">Arcade</b><span class="mo-s">Freefly • Score • Explore</span></button>
           <button type="button" role="radio" id="mode-story" class="mode" aria-checked="false"><b class="mo-t">Story mode</b><span class="mo-s">Survive • Trade • Extract • Return</span></button>
@@ -378,6 +380,7 @@
           <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
           <button type="button" id="p-bay"><svg class="ico"><use href="#i-hull"/></svg><span>Refit bay</span><b id="p-bay-n"></b></button>
           <button type="button" id="p-auto" aria-pressed="false"><i class="sw"></i><span>Auto-refit</span><b id="p-auto-v">Off</b></button>
+          <button type="button" id="p-exit" class="story-only"><svg class="ico"><use href="#i-link"/></svg><span>Save and exit</span></button>
         </div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
         <div class="pause-foot" id="pause-foot"></div>
