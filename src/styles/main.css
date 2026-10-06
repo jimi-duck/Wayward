@@ -1603,8 +1603,28 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .chip.gives { color: var(--green); border-color: rgba(157, 179, 90, .4); }
 .chip.over { color: var(--alert); border-color: var(--alert-dim); }
 .bi-name { font-size: clamp(16px, 1.6vw, 20px); }
-@media (max-width: 760px) { .pick-row { grid-template-columns: 1fr; } }
+@media (max-width: 760px) and (min-height: 521px) { .pick-row { grid-template-columns: 1fr; } }
 @media (max-height: 520px) { .pick-row { gap: 8px; } .pc-name { font-size: 15px; } .pc-oct { width: 30px; height: 30px; } .pc-oct .ico-img { width: 21px; height: 21px; } }
+/* small screens: no bay text under 10px, and what a thumb presses is about 40px tall (a ring's hit area grows, the ring as drawn does not) */
+.bay-k small, .bay-insp .fig .f-l { font-size: max(10px, calc(var(--fs) * .9 * 1.18)); }
+#bay-auto, .pc-go:disabled { font-size: max(10px, calc(var(--fs) * 1.1)); }
+.bi-go:disabled, .pc-tab, .pc-new, .pc-fig { font-size: max(10px, calc(var(--fs) * 1.05)); }
+.pick-more { font-size: max(10px, calc(var(--fs) * 1.02)); }
+#bay .chip { font-size: max(10px, calc(var(--fs) * .95)); }
+.bn-name { font-size: max(10px, calc(var(--fs) * .85 * 1.18)); }
+@media (pointer: coarse), (max-height: 520px) {
+  #bay-auto, #bay-x, .bi-go, .pc-go, .bay-node { min-height: 40px; }
+  .bay-tab { min-height: 36px; }
+  .bay-ring::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; }
+}
+/* a phone on its side: the bay is exactly the screen, so a tall inspector scrolls and its button stays in reach */
+@media (max-height: 520px) {
+  #bay { grid-template-rows: minmax(0, 1fr); }
+  .bay-insp { padding-bottom: 0; gap: 5px; }
+  .bi-go { position: sticky; bottom: 0; background: linear-gradient(var(--hud-ghost), var(--hud-ghost)), #0b1011; }
+  .bi-go:disabled { background: #0b1011; }
+  .bi-note { display: none; }
+}
 
 /* touch: the buttons own the bottom right, so the badge and the state sit under the ship panel */
 .touch-ui #log { top: calc(var(--top) + var(--sys-h, 150px) + 8px); bottom: auto; width: auto; justify-items: end; gap: 6px; }

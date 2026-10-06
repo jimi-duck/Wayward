@@ -7,6 +7,7 @@ Design document. No code has been changed. Based on the bay as it is on PR #58's
 - **The ship is the title art.** The live 3D model reads blocky next to the painted Wayward, so the bay shows `src/assets/wayward-menu-background.jpg`, fitted to the room between the tabs and the cards (or the web), with its edges faded into the bay's dark. It is static. The 3D ship, camera, lights and renderer are untouched; the bay simply covers them.
 - **Rings** sit on the painted ship by picture coordinates (`ZONE_AT` in `ui/bay.ts`), in every view. Signals is the mast, Defence the turrets.
 - **Arcade is "Pick one"**: three suggestions, the tabs shown locked. The Story mode keeps "Suggested" and the free tabs, on the same screen.
+- **Phones on their side** (667×375 and smaller) keep the same layout: ship strip, three cards, the budget bars. The one-column fall-back is for portrait widths only. Buttons and tabs are 36 to 40 px tall, a ring's tap area is 40 px around the ring as drawn, and no bay text is under 10 px. Below 520 px of height the bay is exactly the screen: a tall inspector scrolls and its fit button stays in reach.
 - Not built yet: buckets, progressive disclosure, delta chips, quick builds, the demo window (steps 2 to 6 below).
 
 ## 0. What the game already has, and what changes
