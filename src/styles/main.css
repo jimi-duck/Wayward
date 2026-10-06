@@ -1466,8 +1466,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pause-foot span:first-child { color: var(--ink-2); }
 /* the bay: tab state, installing, the Before → After the player reads */
 .bay-tab { position: relative; }
-.bt-s { position: absolute; right: 10px; bottom: 7px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); opacity: .5; }
-.bt-s.fitted { background: var(--hud); opacity: 1; }
+.bt-s { position: absolute; right: 10px; bottom: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); opacity: .5; }
+.bt-s.fitted { background: var(--hud); opacity: 1; right: 24px; }
 .bt-s.ready { background: linear-gradient(90deg, var(--cy) 50%, transparent 50%); box-shadow: inset 0 0 0 1px var(--cy); opacity: 1; }
 .bt-s.over { background: var(--alert); border-radius: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); opacity: 1; }
 .bay-insp .bi-figs { gap: 8px; }
