@@ -662,6 +662,9 @@ the arcade does:
 - The deep ordnance at 0.65 to 0.7 of its tier lifted both torpedo builds
   (torpedo+defence 9:49 to 11:22, torpedo+laser 8:49 to 9:18);
   mine+mobility still trails (7:52, about seven installs).
+- The Rig build gets through 3 of 6 journeys (ship pilot; 4 of 6 with the
+  old yard), the weakest of the four; the yard's marks are back at or above
+  the old (Guns 3.5, Rig 2.7, Signals 4.0, Contacts 3.0 a journey).
 - Story sorties run about a minute longer than with the cards (journey
   pilot, 3:00 to 4:00 a system); worth a look once players have it.
 - The arcade's Krail: how much rock and kills give, against the costs
