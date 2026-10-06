@@ -169,8 +169,3 @@ export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
   for (const { w } of scored) if (out.length < n && !out.includes(w)) out.push(w);
   return out;
 }
-
-/** The suggestion Auto-refit would fit now, if one is affordable. */
-export function autoPick(ctx: BayCtx): string | null {
-  return quickPicks(ctx).find((w) => blockOf(w.id, ctx) === null)?.id ?? null;
-}

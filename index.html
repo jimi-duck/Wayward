@@ -173,11 +173,11 @@
       </section>
 
       <!-- lower right: the last thing that happened, the refit bay's badge, and the ship's alert:
-           nothing when clear (the bay opens), caution in yellow, red alert in red (it does not) -->
+           nothing when clear (the bay opens), yellow alert in amber (you are observed), red alert in red (you are targeted) -->
       <section id="log" class="hud-block" aria-live="off">
         <div id="log-lines"></div>
         <button type="button" id="upg" tabindex="-1" hidden><kbd class="only-desktop">B</kbd><svg class="ico"><use href="#i-hull"/></svg><span id="upg-t">Refit bay</span><b id="upg-n"></b></button>
-        <div id="mode" class="clear" hidden><svg class="md-i" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z"/><path d="M12 7l5 5-5 5-5-5z"/></svg><span id="mode-t">Caution</span><i class="stripes"></i></div>
+        <div id="mode" class="clear" hidden><svg class="md-i" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z"/><path d="M12 7l5 5-5 5-5-5z"/></svg><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span><i class="stripes"></i></div>
       </section>
 
       <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
@@ -256,7 +256,6 @@
           <span class="bay-k"><svg class="ico"><use href="#i-hull"/></svg><span><b id="bay-t">Refit bay</b><small id="bay-voice"></small></span></span>
           <span class="ops" id="bay-ops"></span>
           <span class="bay-krail" id="bay-krail"></span>
-          <button type="button" id="bay-auto" aria-pressed="false"><i class="sw"></i><span>Auto-refit</span><b id="bay-auto-v">Off</b></button>
           <button type="button" id="bay-x"><kbd class="only-desktop">B</kbd> Launch</button>
         </header>
         <nav class="bay-tabs" id="bay-tabs" role="tablist"></nav>
@@ -358,7 +357,7 @@
         <header class="term-h"><span class="th-id"><b>Wayward</b><i>OB-7731-A</i></span><span class="ops" id="pause-ops"></span></header>
         <div class="pause-t" id="pause-t">All stop</div>
         <div class="voice" id="pause-voice"></div>
-        <section class="term-s">
+        <section class="term-s main-only">
           <h3 class="th">Orders</h3>
           <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
           <ol class="howto arcade-only">
@@ -368,11 +367,7 @@
           </ol>
           <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Cyrite</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
         </section>
-        <section class="term-s full">
-          <h3 class="th">Status</h3>
-          <div class="states"><span class="st obs"><i></i>Caution · ships nearby</span><span class="st battle"><i></i>Red alert · under attack</span></div>
-        </section>
-        <section class="term-s full">
+        <section class="term-s full main-only">
           <h3 class="th">Controls</h3>
           <!-- the controls for what you play with: keys, touch or a pad -->
           <dl class="keys-l only-keys">
@@ -402,15 +397,24 @@
           <div><dt><kbd>Back</kbd></dt><dd>Refit bay</dd></div>
         </dl>
         </section>
-        <div class="pause-acts">
+        <!-- the other face of the card: the switches, in the same ruled rows -->
+        <section class="term-s set-only" id="settings">
+          <h3 class="th">Settings</h3>
+          <ol class="swl">
+            <li><button type="button" id="p-sound" aria-pressed="true"><span class="l">Sound</span><b id="p-sound-v">On</b></button></li>
+            <li id="p-buzz-r" hidden><button type="button" id="p-buzz" aria-pressed="true"><span class="l">Buzz</span><b id="p-buzz-v">On</b></button></li>
+            <li class="zoomrow" aria-label="Camera distance"><span class="l">Camera</span><span class="zs"><button type="button" id="zoom-in" aria-label="Closer">−</button><b id="zoom-v">1</b><button type="button" id="zoom-out" aria-label="Further">+</button></span></li>
+          </ol>
+        </section>
+        <div class="pause-acts main-only">
           <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
           <button type="button" id="p-bay"><span>Refit bay</span><b id="p-bay-n"></b></button>
-          <button type="button" id="p-auto" aria-pressed="false"><i class="sw"></i><span>Auto-refit</span><b id="p-auto-v">Off</b></button>
-          <button type="button" id="p-sound" aria-pressed="true"><i class="sw"></i><span>Sound</span><b id="p-sound-v">On</b></button>
-          <button type="button" id="p-buzz" aria-pressed="true" hidden><i class="sw"></i><span>Buzz</span><b id="p-buzz-v">On</b></button>
+          <button type="button" id="p-set"><span>Settings</span></button>
           <button type="button" id="p-exit" class="story-only"><span>Save and exit</span></button>
         </div>
-        <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
+        <div class="pause-acts set-only">
+          <button type="button" id="p-back"><span>Back</span></button>
+        </div>
         <div class="pause-foot" id="pause-foot"></div>
         <div class="pause-papers" id="pause-papers" aria-hidden="true"></div>
       </div>

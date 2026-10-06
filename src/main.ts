@@ -347,14 +347,6 @@ function boot(): void {
     world.openBay();
   };
   hud.onBay = openBay;
-  bay.auto = world.autoFit = profile.autoFit;
-  const setAuto = (on: boolean) => {
-    world.autoFit = profile.autoFit = bay.auto = on;
-    saveProfile(profile);
-    hud.note(world, t(on ? 'Auto-refit on' : 'Auto-refit off'));
-    showBrief();
-  };
-  bay.onAuto = setAuto;
 
   // ── start, pause ───────────────────────────────────────────────────────
   // The run waits behind the start card, so the first key or tap is the one
@@ -369,6 +361,7 @@ function boot(): void {
     if (!on && loop.paused && started && carded && !profile.briefed) { profile.briefed = true; saveProfile(profile); }
     if (on && started) carded = true;
     loop.paused = on;
+    if (on) showSettings(false);
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
       input.reset();
@@ -376,23 +369,27 @@ function boot(): void {
       showConsole(world);
     }
   };
-  /** The briefing's live parts: its title, the bay's count, Auto-refit. */
+  /** The pause card's other face: sound, buzz and camera, kept off the card that explains the game. */
+  const settingsOpen = () => el('pause').classList.contains('settings-on');
+  const showSettings = (on: boolean) => {
+    el('pause').classList.toggle('settings-on', on);
+    showBrief();
+    if (on) el('p-back').focus({ preventScroll: true });
+  };
+  /** The briefing's live parts: its title, the bay's count, the settings' switches. */
   const showBrief = () => {
     const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
-    el('pause-t').textContent = t(first ? 'Briefing' : 'All stop');
+    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : first ? 'Briefing' : 'All stop');
     const n = quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
     el('p-bay').classList.toggle('ready', n > 0);
     el('p-bay-n').textContent = n ? String(n) : '';
-    el('p-auto').classList.toggle('on', world.autoFit);
-    el('p-auto').setAttribute('aria-pressed', String(world.autoFit));
-    el('p-auto-v').textContent = t(world.autoFit ? 'On' : 'Off');
     for (const [id, on] of [['p-sound', feel.prefs.sound], ['p-buzz', feel.prefs.haptics]] as const) {
       el(id).classList.toggle('on', on);
       el(id).setAttribute('aria-pressed', String(on));
       el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
     }
-    el('p-buzz').hidden = !feel.canBuzz;
+    el('p-buzz-r').hidden = !feel.canBuzz;
   };
   // Phones and tablets take the whole screen where the browser allows it
   // (Android, iPad; never an iPhone browser), and on its side where it can
@@ -450,7 +447,7 @@ function boot(): void {
     {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'), cut: el('cut'),
     },
-    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
+    () => (started ? (panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
     () => openBay(),
   );
 
@@ -554,6 +551,8 @@ function boot(): void {
     if (e.code === 'Tab') e.preventDefault();
     // Any key resumes, except the pause keys themselves: Input has already
     // toggled on those, and answering them here as well would undo it.
+    // in Settings a key does not resume: Backspace goes back, the pause keys are Input's
+    if (settingsOpen()) { if (e.code === 'Backspace') showSettings(false); return; }
     if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);
     if (e.code === 'KeyB') openBay();
     if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -sector.rig.zoom : 1); // cycles round
@@ -580,7 +579,8 @@ function boot(): void {
   });
   el('pause').addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    setPaused(false);
+    if (settingsOpen()) showSettings(false);
+    else setPaused(false);
   });
   // the briefing's buttons answer themselves, without resuming underneath
   const act = (id: string, f: () => void) => {
@@ -588,7 +588,8 @@ function boot(): void {
     el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
   };
   act('p-bay', () => openBay());
-  act('p-auto', () => setAuto(!world.autoFit));
+  act('p-set', () => showSettings(true));
+  act('p-back', () => showSettings(false));
   act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
   act('p-buzz', () => { feel.setHaptics(!feel.prefs.haptics); showBrief(); });
   act('p-go', () => setPaused(false));

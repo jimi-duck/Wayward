@@ -8,7 +8,7 @@ import { CRYSTAL_LIFE, dropCrystals } from '../src/sim/pickups';
 import { CHAIN_WINDOW, OC_MAX, SHIP_R } from '../src/sim/tuning';
 import { cost } from '../src/sim/bay';
 import { launchTorpedo } from '../src/sim/weapons';
-import { AUTO_QUIET, World } from '../src/sim/world';
+import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
   ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard', ...f });
@@ -83,43 +83,25 @@ describe('krail and the refit bay', () => {
     expect(w.install('ph_capacitors')).toBe('closed');
   });
 
-  it('opens when the alert is clear; caution (ships near) and red alert (under attack) keep it shut', () => {
+  it('opens when the alert is clear; yellow alert (observed) and red alert (targeted) keep it shut', () => {
     const w = quiet();
     expect(w.alert()).toBe('clear');
     expect(w.bayClosed()).toBeNull();
-    // a hull close by, not attacking: caution
+    // a hull close by, not attacking: yellow alert
     const near = parked(w, 0, -78, 0, 'scout');
     near.mode = 'patrol';
-    expect(w.alert()).toBe('caution');
-    expect(w.bayClosed()).toBe('caution');
+    expect(w.alert()).toBe('yellow');
+    expect(w.bayClosed()).toBe('yellow');
     // one in the fight: red alert
     w.aliens = [];
     const al = parked(w, 0, -30, 0, 'lancer');
     al.mode = 'hold';
-    expect(w.alert()).toBe('alert');
-    expect(w.bayClosed()).toBe('alert');
+    expect(w.alert()).toBe('red');
+    expect(w.bayClosed()).toBe('red');
     expect(w.openBay()).toBe(false);
     w.aliens = [];
     expect(w.openBay()).toBe(true);
     w.closeBay();
-  });
-
-  it('Auto-refit fits the first affordable suggestion once it is quiet, and says so', () => {
-    const w = quiet();
-    w.krail = 200;
-    run(w, 3);
-    expect(w.refit).toBe(0); // off unless the player switches it on
-    w.autoFit = true;
-    const al = parked(w, 0, -30, 0, 'lancer');
-    al.mode = 'hold';
-    run(w, 3);
-    expect(w.refit).toBe(0); // not with a hostile close
-    w.aliens = [];
-    w.drain();
-    run(w, AUTO_QUIET + 0.2);
-    expect(w.refit).toBe(1);
-    expect(w.drain().some((e) => e.type === 'fitted' && 'auto' in e && e.auto)).toBe(true);
-    expect(w.krail).toBeLessThan(200);
   });
 
   it('starts a new run from the stock ship: lasers, a shield charge and the torpedo bay', () => {

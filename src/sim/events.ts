@@ -36,7 +36,7 @@ export type GameEvent =
   | { type: 'crystal'; x: number; z: number; value: number }
   | { type: 'cyrite'; x: number; z: number; value: number }
   | { type: 'power'; x: number; z: number; kind: PowerKind }
-  | { type: 'fitted'; id: string; auto?: boolean }
+  | { type: 'fitted'; id: string }
   | { type: 'salvage'; faction: string; tech: boolean }
   | { type: 'cloak'; x: number; z: number }
   | { type: 'bossWarn'; name: string; faction: string; hails: boolean }

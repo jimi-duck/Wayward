@@ -66,8 +66,6 @@ export interface Profile {
   zoom: number;
   /** The way in last chosen: the Breakout or the arcade. */
   mode: 'breakout' | 'arcade';
-  /** Auto-refit: the arcade's bay fits its own suggestions as you fly. */
-  autoFit: boolean;
   /** The arcade's briefing has been read through once (it opens in full the first time). */
   briefed: boolean;
   archive: Archive;
@@ -84,7 +82,6 @@ const fresh = (): Profile => ({
   cosmetic: 'engine-stock',
   zoom: 1,
   mode: 'breakout',
-  autoFit: false,
   briefed: false,
   archive: { journeys: [], endings: [], files: [], people: [], records: [] },
 });
@@ -110,6 +107,7 @@ const OLD_FACTIONS: Record<string, string> = { klingon: 'gutter', cardassian: 'c
  * so bests and unlocks survive. A profile already renamed passes through.
  */
 export function migrate(p: Record<string, any>): Record<string, any> {
+  delete p.autoFit; // Auto-refit is gone; a saved value is dropped
   for (const k of ['best', 'life']) {
     const o = p[k];
     if (o && 'dilithium' in o) {
