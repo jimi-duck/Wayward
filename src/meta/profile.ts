@@ -66,6 +66,10 @@ export interface Profile {
   zoom: number;
   /** The way in last chosen: the Breakout or the arcade. */
   mode: 'breakout' | 'arcade';
+  /** Auto-refit: the arcade's bay fits its own suggestions as you fly. */
+  autoFit: boolean;
+  /** The arcade's briefing has been read through once (it opens in full the first time). */
+  briefed: boolean;
   archive: Archive;
 }
 
@@ -80,6 +84,8 @@ const fresh = (): Profile => ({
   cosmetic: 'engine-stock',
   zoom: 1,
   mode: 'breakout',
+  autoFit: false,
+  briefed: false,
   archive: { journeys: [], endings: [], files: [], people: [], records: [] },
 });
 

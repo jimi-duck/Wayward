@@ -10,13 +10,13 @@ import { DOCK_TIME } from '../sim/breakout';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
-import { systemLevel } from './refit';
+import { systemLevel } from './icons';
 import { Radar } from './radar';
 import { range, Targeting } from './targeting';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
-import { cheapest } from '../sim/bay';
+import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view in the brand's six zones, with nothing on
@@ -110,6 +110,11 @@ export class Hud {
   private next = 0;
   private stockAt = 0;
   private bayReady = false;
+  /** Modules that can be fitted now, and how many the badge last showed (it pulses when there are more). */
+  private count = 0;
+  private shown = 0;
+  /** Opens the refit bay (main.ts), for the badge. */
+  onBay: () => void = () => {};
   /** When the log last said the self-repair had started, so a flicker of danger does not repeat it. */
   private mendNoted = -Infinity;
   private headingShown = true;
@@ -117,6 +122,9 @@ export class Hud {
   private centreKey = '';
 
   constructor(onZoom: (dir: 1 | -1) => void) {
+    // the refit bay's badge opens it, by tap or click; the flight controls behind never see the touch
+    const upg = $('upg');
+    upg.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); this.onBay(); });
     // on a phone the scope hangs under the sector block, whose height follows what the run shows
     const sector = $('sector');
     new ResizeObserver(() => document.documentElement.style.setProperty('--sector-b', `${Math.round(sector.getBoundingClientRect().bottom)}px`)).observe(sector);
@@ -139,6 +147,13 @@ export class Hud {
     this.modeKey = this.contactKey = this.powerKey = this.plateKey = '';
     this.levels = null;
     this.seed = -1;
+  }
+
+  /** The bay would not open: say why, short, and shake the badge. */
+  bayDenied(world: World, why: 'caution' | 'alert' | 'busy'): void {
+    if (why !== 'caution' && why !== 'alert') return;
+    this.note(world, t(why === 'alert' ? 'Bay locked · under attack' : 'Bay locked · ships nearby'), 'hit');
+    this.retrigger($('upg'), 'deny');
   }
 
   showZoom(level: number): void {
@@ -170,9 +185,9 @@ export class Hud {
       switch (e.type) {
         case 'rockDestroyed': this.note(world, `${t(ROCK_BROKEN[e.kind] ?? 'Rock broken')} · +${e.points}`, '', 'rock', e.points); break;
         case 'alienDestroyed': this.note(world, `${t('{name} destroyed', { name: t(e.label) })} · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
-        case 'crystal': if (!world.bk) { this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; } break;
+        case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
-        case 'rockCut': this.note(world, `${t('Cut clean')} · ${t('{n} ore', { n: e.ore })}${e.krail ? ` · ${e.krail} Krail` : ''}`, 'gain'); break;
+        case 'rockCut': this.note(world, `${t('Cut clean')} · ${t('{n} ore', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
         case 'fracture': this.note(world, t(e.kind === 'volatile' ? 'Volatile rock · it blew' : 'Rock cracked · too hot'), 'hit'); break;
         case 'holdFull': this.note(world, t('Hold full · sell at the port'), 'hit'); break;
         case 'patched': this.note(world, `${t('Plate patched')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
@@ -182,7 +197,7 @@ export class Hud {
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
         case 'spool': this.banner(t('Lane mouth'), t('Jump drive spooling'), t('Stay in the lane'), 1.6, 'calm'); break;
-        case 'needKrail': this.banner(t('Lane mouth'), t('Not enough Krail'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
+        case 'needCyrite': this.banner(t('Ship system'), t('Not enough Cyrite'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, t(POWER_LABEL[e.kind]), 'gain'); break;
@@ -196,6 +211,10 @@ export class Hud {
           break;
         case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, t('Shield up'), 'gain'); break;
         case 'regen': this.note(world, `${t('Hull regrown')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'fitted':
+          // Auto-refit says what it fitted; what you fit yourself you saw
+          if ('auto' in e && e.auto) this.note(world, `${t('Auto-refit')} · ${t(nodeName(e.id))}`, 'gain');
+          break;
         case 'mendStart': if (world.time - this.mendNoted > MEND_QUIET) { this.mendNoted = world.time; this.note(world, t('Self-repair under way')); } break;
         case 'mended': this.note(world, `${t('Hull mended')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); this.retrigger($('sys-hull'), 'mended'); break;
         case 'contacts': this.note(world, plural(e.n, '{n} contact inbound', '{n} contacts inbound'), 'hit'); break;
@@ -205,23 +224,22 @@ export class Hud {
           if (al) this.note(world, t('{name} has seen you', { name: alienLabel(al) }), 'hit');
           break;
         }
-        case 'damageControl': this.banner(t('Damage control'), t('Hull held'), t('One plate · two seconds of grace'), 2, 'caution'); break;
+        case 'damageControl': this.banner(t('Ship system'), t('Hull held'), t('One plate · two seconds of grace'), 2, 'caution'); break;
         case 'overchargeReady': this.note(world, t(document.documentElement.classList.contains('touch-ui') ? 'Core charged · tap Core' : 'Core charged · press E'), 'gain'); break;
         case 'overcharge': this.note(world, `${t('Overcharge')} · ${plural(e.hits, '{n} hit', '{n} hits')}`, 'gain'); break;
         case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
         case 'squad': this.note(world, t('{name} inbound', { name: t(e.label) }), 'hit'); break;
-        case 'levelUp': this.banner(t('Krail hold full'), `${t('Refit')} ${pad(e.refit, 2)}`, t('Pick an upgrade'), 0.9, 'gain'); break;
         case 'salvage': this.note(world, `${t('Salvage')}${e.tech ? ` · ${t('{f} tech recovered', { f: faction(e.faction) })}` : ''}`, 'gain'); break;
         case 'cloak': this.note(world, t('Cloaked · they hold fire'), 'gain'); break;
         case 'shipHit':
           this.note(world, `${t('Hull hit')} · ${damageWord(e.source)}`, 'hit');
           this.flashHit();
           this.retrigger($('sys-hull'), 'hit');
-          if (e.plates === 1) this.banner(t('Alarm'), t('Hull critical'), t('One plate left'), 1.8);
+          if (e.plates === 1) this.banner(t('Warning'), t('Hull critical'), t('One plate left'), 1.8);
           break;
         case 'bossWarn':
           this.note(world, t('{name} inbound', { name: t(e.name) }), 'hit');
-          this.banner(t('Contact'), t(e.name), t(e.hails ? 'Capital ship inbound' : 'Decloaking · no hail'), 2.6, 'caution');
+          this.banner(t(e.hails ? 'Continuance signal' : 'Contact'), t(e.name), t(e.hails ? 'Capital ship inbound' : 'Decloaking · no hail'), 2.6, e.hails ? 'caution corp' : 'caution');
           break;
         case 'bossEvaded': this.note(world, t('Broke away from {name}', { name: t(e.name) })); break;
         case 'bossArrive': this.note(world, t('{name} on intercept', { name: t(e.name) }), 'hit'); break;
@@ -268,7 +286,7 @@ export class Hud {
 
   private updateText(world: World): void {
     this.updateSector(world);
-    this.updateRail(world);
+    this.updateStock(world);
     this.updateVoyage(world);
     this.updateSystems(world);
     this.updateCentre(world);
@@ -298,42 +316,44 @@ export class Hud {
   // ── the rail ────────────────────────────────────────────────────────────
 
   /**
-   * The arcade: Krail is a stock for the refit bay. The row counts toward
+   * Krail is a stock for the refit bay, in both modes. The row counts toward
    * the cheapest module that only wants Krail, and lights "Bay" (with its
    * key) once something can be fitted and the bay will open.
    */
   private updateStock(world: World): void {
     if (world.time >= this.stockAt) {
       this.stockAt = world.time + 0.4;
-      this.next = cheapest(world.bayCtx())?.cost ?? 0;
+      const ctx = world.bayCtx();
+      this.next = cheapest(ctx)?.cost ?? 0;
+      // the badge counts the bay's suggestions you can pay for: a few, never a list to read
+      this.count = quickPicks(ctx).filter((w) => blockOf(w.id, ctx) === null).length;
     }
-    const k = Math.floor(world.krail), next = this.next;
-    const ready = next > 0 && k >= next && world.bayClosed() === null;
+    const k = Math.floor(world.krail), next = this.next, n = this.count;
+    const alert = world.alert(), locked = alert !== 'clear';
+    const ready = n > 0 && !locked;
     text($('xp-l'), 'Krail');
     text($('xp-v'), String(k));
     text($('xp-n'), next ? String(next) : '—');
     ticks($('xp'), next ? Math.min(1, k / next) : 1, 30);
     text($('refit-n'), pad(world.refit, 2));
     $('rail').classList.toggle('full', ready);
-    $('bay-b').classList.toggle('ready', ready);
+    $('rail').classList.add('stock');
     this.bayReady = ready;
+    // the badge: dim with nothing to fit, amber with a count when something can be, red and locked in battle
+    const badge = $('upg');
+    badge.hidden = false;
+    badge.classList.toggle('ready', n > 0 && !locked);
+    badge.classList.toggle('locked', n > 0 && locked);
+    badge.classList.toggle('red', alert === 'alert');
+    text($('upg-n'), n ? String(n) : '');
+    text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : n > 0 ? 'Upgrade ready' : 'Refit bay'));
+    if (n > this.shown && !locked) this.retrigger(badge, 'new');
+    this.shown = n;
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
   }
 
-  private updateRail(world: World): void {
-    if (!world.bk) return this.updateStock(world);
-    text($('xp-l'), t(world.bk ? 'Ore' : 'Krail'));
-    text($('refit-n'), pad(world.refit, 2));
-    text($('xp-v'), String(Math.floor(world.xp)));
-    text($('xp-n'), String(world.xpNext));
-    ticks($('xp'), world.xp / world.xpNext, 30);
-    $('rail').classList.toggle('full', world.celebrate > 0);
-    const g = $('xp-gain');
-    g.classList.toggle('on', this.gainT > 0.6);
-    if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
-  }
 
   // ── the Breakout: tank, hold, parts, chits, the Custody alert ───────────
 
@@ -344,12 +364,12 @@ export class Hud {
     $('voyage').hidden = !b;
     if (!b) { $('threat').classList.remove('on'); return; }
     const v = $('voyage');
-    // the tank, in the systems panel: Krail toward the jump
+    // the tank, in the systems panel: Cyrite toward the jump
     const fuel = $('sys-fuel'), need = b.jumpCost;
-    text($('v-fuel'), `${world.krail}/${need}`);
-    $('g-fuel').style.setProperty('--v', Math.min(1, world.krail / need).toFixed(2));
-    fuel.classList.toggle('ready', world.krail >= need);
-    text($('lv-fuel'), t(world.krail >= need ? 'Jump' : 'Tank'));
+    text($('v-fuel'), `${world.cyrite}/${need}`);
+    $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
+    fuel.classList.toggle('ready', world.cyrite >= need);
+    text($('lv-fuel'), t(world.cyrite >= need ? 'Jump' : 'Tank'));
     const ore = $('vy-ore');
     text(ore, `${world.ore}/${world.holdMax}`);
     $('g-hold').style.setProperty('--v', Math.min(1, world.ore / world.holdMax).toFixed(2));
@@ -363,7 +383,7 @@ export class Hud {
     text($('vy-heat'), `${t('Wanted')} ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}/4`);
     ticks($('vy-heat-t'), heat, 20, 'ceil');
     v.classList.toggle('hot', heat >= 0.8);
-    // the contacts beside the scope: the two places, the nearest hostile, the nearest Krail trace
+    // the contacts beside the scope: the two places, the nearest hostile, the nearest Cyrite trace
     const s = world.ship, dist = (o: { x: number; z: number }) => Math.hypot(o.x - s.x, o.z - s.z);
     let hostile: { label: string; d: number; faction: string } | null = null;
     for (const a of world.aliens) {
@@ -377,7 +397,7 @@ export class Hud {
     if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
     if (b.port) rows.push([b.port.name, dist(b.port), INK.teal]);
     rows.push([t(b.lane.name), dist(b.lane), 'var(--amber)']);
-    if (trace < Infinity) rows.push([t('Krail trace'), trace, 'var(--violet)']);
+    if (trace < Infinity) rows.push([t('Cyrite trace'), trace, 'var(--violet)']);
     const key = rows.map(([n, d]) => `${n}${Math.round(d / 10)}`).join();
     if (key !== this.contactKey) {
       this.contactKey = key;
@@ -392,9 +412,9 @@ export class Hud {
     }
 
     // the objective, as steps
-    const docked = b.docks > 0, ready = world.krail >= b.jumpCost;
+    const docked = b.docks > 0, ready = world.cyrite >= b.jumpCost;
     const steps: Array<[string, 'done' | 'now' | '']> = [
-      [`${t('Krail to jump')} · <b>${world.krail}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
+      [`${t('Cyrite to jump')} · <b>${world.cyrite}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
       ...(b.port ? [[`${t('Dock at {port} (optional)', { port: b.port.name })}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`}`, docked ? 'done' : ''] as [string, 'done' | '']] : []),
       [`${t('Reach the lane mouth')} · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
       // jobs taken on comms cards, paid where they say
@@ -607,7 +627,7 @@ export class Hud {
       } else {
         text($('obj-t'), t('Make for the lane mouth')); text($('obj-left'), range(dl));
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
-        text($('obj-s'), `Krail ${world.krail}/${bk.jumpCost} · ${t(world.krail >= bk.jumpCost ? 'enough to jump' : 'cut the violet rock')}`);
+        text($('obj-s'), `Cyrite ${world.cyrite}/${bk.jumpCost} · ${t(world.cyrite >= bk.jumpCost ? 'enough to jump' : 'cut the violet rock')}`);
       }
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
@@ -631,8 +651,8 @@ export class Hud {
       text($('obj-s'), '');
       const key = document.documentElement.classList.contains('touch-ui') ? '' : ' · B';
       const html = this.bayReady
-        ? `<li class="done">${t('Break rock')} · <b>${Math.floor(world.krail)}</b></li><li class="now">${t('Refit bay')}${key}</li>`
-        : `<li class="now">${t('Break rock')} · <b>${Math.floor(world.krail)}/${this.next || '—'}</b></li><li>${t('Refit bay when it is quiet')}</li>`;
+        ? `<li class="done">${t('Break rock')} · <b>${Math.floor(world.krail)}</b></li><li class="now">${t('Upgrade ready')}${key}</li>`
+        : `<li class="now">${t('Break rock')} · <b>${Math.floor(world.krail)}/${this.next || '—'}</b></li><li>${t('Upgrade in the refit bay')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
     }
@@ -640,42 +660,20 @@ export class Hud {
 
   // ── bottom right: the mode, and the log ─────────────────────────────────
 
-  /** What the ship is doing, in one word or two: an alert, an event, a fight, mining, or cruising. */
+  /**
+   * The ship's alert (World.alert), the same test the refit bay opens on:
+   * clear shows nothing at all; caution (yellow) when hulls are near or
+   * looking you over; red alert when you are under attack.
+   */
   private updateMode(world: World): void {
-    const s = world.ship, cs = world.command.state, e = world.encounter;
-    let cls = 'cruise', word = 'Cruise mode';
-    if (!world.alive) { cls = 'alert'; word = 'Hull breach'; }
-    else if (cs === 'fight' && world.command.boss) { cls = 'alert'; word = 'Alarm'; }
-    else if (cs === 'warning' || cs === 'hailing' || cs === 'inbound') { cls = 'caution'; word = 'Contact'; }
-    else if (world.aliens.some((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - s.x, a.z - s.z) < FIRE_RANGE * a.rgK)) { cls = 'combat'; word = 'Combat mode'; }
-    else if (e && !e.done) { cls = 'caution'; word = ENCOUNTERS[e.id].name; }
-    else if (world.aliens.some((a) => a.mode === 'watch')) { cls = 'caution'; word = 'Being watched'; }
-    else if (world.aliens.some((a) => a.mode === 'patrol' && Math.hypot(a.x - s.x, a.z - s.z) < PATROL_NEAR)) { cls = 'caution'; word = 'Patrol near'; }
-    else if (!world.bk && world.mend.state === 'repairing') { cls = 'repair'; word = 'Self-repair'; }
-    else if (world.cutting !== null || this.aim.targetKind === 'rock') { cls = 'mining'; word = 'Mining mode'; }
-    // only what this mode uses, the one in use lit
-    const st = world.stats, ready = world.oc >= OC_MAX;
-    const hints: Hint[] = cls === 'mining'
-      ? (world.bk ? [['3', 'Cut'], ['1', 'Break']] : [['1', 'Break rock']])
-      : cls === 'cruise' || cls === 'repair'
-        ? [['W', 'Thrust'], ['Shift', 'Roll'], ['Z', 'Zoom']]
-        : [['1', 'Lasers'], ...(st.torpedoes ? [['2', 'Torpedo'] as Hint] : []), ['Shift', 'Roll']];
-    if (cls !== 'cruise' && ready) hints.push(['E', 'Core']);
-    if (this.bayReady && (cls === 'cruise' || cls === 'repair' || cls === 'mining')) hints.push(['B', 'Refit bay']);
-    const lit = world.cutting !== null ? 'Cut' : ready ? 'Core' : '';
-    const key = `${cls}${word}${hints.join()}${lit}`;
+    const a = world.alert();
+    const word = !world.alive ? 'Hull breach' : a === 'alert' ? 'Red alert' : 'Caution';
+    const key = `${a}${word}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
-    $('mode').className = `cut ${cls}`;
+    $('mode').className = a;
+    $('mode').hidden = a === 'clear';
     text($('mode-t'), t(word));
-    $('hints').replaceChildren(...hints.map(([k, a]) => {
-      const d = document.createElement('div');
-      if (a === lit) d.className = 'lit';
-      const dt = document.createElement('dt'); dt.textContent = k;
-      const dd = document.createElement('dd'); dd.textContent = t(a);
-      d.append(dt, dd);
-      return d;
-    }));
   }
 
   private updateLog(world: World): void {

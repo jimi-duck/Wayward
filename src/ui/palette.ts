@@ -29,6 +29,7 @@ export const INK = {
   dust: '#757a74',
   green: '#9db35a',
   krail: '#e8bf6a',
+  cyrite: '#b590f2',
 } as const;
 
 /** The display faces, for canvas text. */

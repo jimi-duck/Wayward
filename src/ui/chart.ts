@@ -2,7 +2,7 @@ import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
 import { fileLines } from '../sim/calloway';
-import { gateOf, jumps, krailKnown, lanesFrom, placeAt, regionCount, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
+import { gateOf, jumps, cyriteKnown, lanesFrom, placeAt, regionCount, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
 import { REGIONS } from '../content/regions';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
 import { RATION, WRECKS, here, options, type Journey, type Outcome } from '../sim/journey';
@@ -33,7 +33,7 @@ import { num, plural, t } from '../i18n';
 const NS = 'http://www.w3.org/2000/svg';
 const W = 640, H = 300, PAD_X = 44, PAD_Y = 34;
 const KIND_COLOUR: Record<SystemKind, string> = {
-  home: INK.white, port: INK.teal, mining: INK.krail, contested: INK.red, transit: INK.dust, gate: INK.amber, edge: INK.amber,
+  home: INK.white, port: INK.teal, mining: INK.cyrite, contested: INK.red, transit: INK.dust, gate: INK.amber, edge: INK.amber,
 };
 const KIND_WORD: Record<SystemKind, string> = {
   home: 'Home', port: 'Port', mining: 'Mining', contested: 'Contested', transit: 'Transit', gate: 'Gate', edge: 'The last lane',
@@ -139,7 +139,7 @@ export class ChartPanel {
       // the journey, system by system
       $('ch-list').replaceChildren(...j.legs.map((l, i) => h('div', `ch-leg${l.ended === 'destroyed' ? ' wreck' : ''}`, '',
         h('span', 'k', String(i + 1).padStart(2, '0')), h('b', '', l.name),
-        h('span', 'pl-note', `${t(l.ended === 'destroyed' ? 'Wrecked' : 'Jumped')} · ${Math.floor(l.time / 60)}:${String(l.time % 60).padStart(2, '0')} · Krail ${l.krailIn}→${l.krailOut}${l.calloway ? ' · Calloway' : ''}`))));
+        h('span', 'pl-note', `${t(l.ended === 'destroyed' ? 'Wrecked' : 'Jumped')} · ${Math.floor(l.time / 60)}:${String(l.time % 60).padStart(2, '0')} · Cyrite ${l.cyriteIn}→${l.cyriteOut}${l.calloway ? ' · Calloway' : ''}`))));
     } else $('ch-list').replaceChildren();
     this.draw(j);
     this.off = keys((e) => {
@@ -205,7 +205,7 @@ export class ChartPanel {
       // a lane that brings the goal a jump nearer says so, at a glance
       const left = toGoal(j.chart, j.at, s.id), closer = some && near[i]!;
       const notes = [
-        days(o.route.days), `${t('food')} ${o.food}`, s.port ? s.port.name : t('no port'), `Krail ${richWord(krailKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
+        days(o.route.days), `${t('food')} ${o.food}`, s.port ? s.port.name : t('no port'), `Cyrite ${richWord(cyriteKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
       ];
       if (o.place) notes.push(placeText(o.place));
       if (fleetAt(j.chart, s.id)) notes.push(t('Drift fleet'));
@@ -217,10 +217,10 @@ export class ChartPanel {
         h('kbd', '', String(i + 1)),
         h('span', 'pl-n', '', h('b', '', s.name), left === 0 ? h('span', 'ch-goal-c', t('Goal')) : closer ? h('span', 'ch-goal-c', t('Toward goal')) : null, h('span', 'ch-kind', ` ${t(KIND_WORD[s.kind])}${s.kind === 'edge' || s.kind === 'gate' ? '' : ` · ${t(HOLDER_NAMES[s.holder])}`}`)),
         h('span', 'pl-note', notes.join(' · ')),
-        h('b', 'pl-p', String(o.route.krail)),
+        h('b', 'pl-p', String(o.route.cyrite)),
       ) as HTMLButtonElement;
       b.type = 'button';
-      b.title = t('{n} Krail to jump', { n: o.route.krail });
+      b.title = t('{n} Cyrite to jump', { n: o.route.cyrite });
       b.onclick = guarded(this.opened, () => this.pick(i));
       b.onpointerdown = (e) => e.stopPropagation();
       // hover marks it in place: a tap must not replace the button it is landing on
@@ -235,7 +235,7 @@ export class ChartPanel {
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
     const cells: Array<[string, string]> = [
-      [t('Tank'), `${c.krail}/${TANK_MAX}`], [t('Food'), `${c.food} · ${t('{n}/day', { n: RATION })}`], [t('Parts'), String(c.parts)], [t('Chits'), String(c.chits)], [t('Hold'), t('{n} ore', { n: c.ore })],
+      [t('Tank'), `${c.cyrite}/${TANK_MAX}`], [t('Food'), `${c.food} · ${t('{n}/day', { n: RATION })}`], [t('Parts'), String(c.parts)], [t('Chits'), String(c.chits)], [t('Hold'), t('{n} ore', { n: c.ore })],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
     const file = fileCount(c.flags);
@@ -270,7 +270,7 @@ export class ChartPanel {
       const live = (r.a === at && out.has(r.b)) || (r.b === at && out.has(r.a));
       const sel = live && (r.a === target || r.b === target);
       kids.push(svg('line', { x1: px(a), y1: py(a), x2: px(b), y2: py(b), class: `ch-r${live ? ' live' : ''}${sel ? ' sel' : ''}` }));
-      if (live) kids.push(svg('text', { x: (px(a) + px(b)) / 2, y: (py(a) + py(b)) / 2 - 5, class: `ch-cost${sel ? ' sel' : ''}`, 'text-anchor': 'middle' }, `${r.krail}`));
+      if (live) kids.push(svg('text', { x: (px(a) + px(b)) / 2, y: (py(a) + py(b)) / 2 - 5, class: `ch-cost${sel ? ' sel' : ''}`, 'text-anchor': 'middle' }, `${r.cyrite}`));
     }
     // your trail
     for (let i = 1; i < j.trail.length; i++) {

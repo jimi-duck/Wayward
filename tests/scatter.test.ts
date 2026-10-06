@@ -67,7 +67,7 @@ describe('regions', () => {
 
   it('never let you back through a gate', () => {
     const j = newJourney(9);
-    endSortie(j, result(j, {}, { krail: 30, food: 12, parts: 12 }));
+    endSortie(j, result(j, {}, { cyrite: 30, food: 12, parts: 12 }));
     j.at = gateOf(j.chart, 0).id;
     j.status = 'chart';
     const back = lanesFrom(j.chart, j.at).find(({ to }) => regionOf(to) === 0)!;
@@ -109,7 +109,7 @@ describe('the factions on their own', () => {
       const c = makeChart(seed);
       const was = c.drifts!.map((f) => f.at);
       const voice = c.systems.filter((s) => s.holder === 'voice').length;
-      const news = stepScatter(c, 10, new Rng(seed), { at: c.home, krail: 0, tank: TANK_MAX });
+      const news = stepScatter(c, 10, new Rng(seed), { at: c.home, cyrite: 0, tank: TANK_MAX });
       moved += c.drifts!.filter((f, i) => f.at !== was[i]).length;
       raids += news.filter((n) => n.text.startsWith('Gutter raiders') || n.text.startsWith('The Gutter has taken')).length;
       built += c.systems.filter((s) => s.holder === 'voice').length - voice;
@@ -123,20 +123,20 @@ describe('the factions on their own', () => {
   it('a raid makes a port dearer while it lasts', () => {
     const j = newJourney(3);
     const s = j.chart.systems.find((x) => x.port && x.kind !== 'home')!;
-    const before = sortieDef({ ...j, at: s.id }).port!.prices.krail;
+    const before = sortieDef({ ...j, at: s.id }).port!.prices.cyrite;
     j.chart.raid![s.id] = 2;
     expect(raided(j.chart, s.id)).toBe(true);
     expect(presence(j.chart, s.id)).toContain('raid');
-    expect(sortieDef({ ...j, at: s.id }).port!.prices.krail).toBeGreaterThan(before);
+    expect(sortieDef({ ...j, at: s.id }).port!.prices.cyrite).toBeGreaterThan(before);
   });
 
-  it('the Thren follow Krail on the move', () => {
-    const drawn = (krail: number) => {
+  it('the Thren follow Cyrite on the move', () => {
+    const drawn = (cyrite: number) => {
       const c = makeChart(8);
       const at = c.systems.find((s) => regionOf(s) === 1 && s.kind !== 'gate')!;
       c.thren = {};
       for (const { to } of lanesFrom(c, at.id)) c.thren[to.id] = 0.6;
-      stepScatter(c, 2, new Rng(1), { at: at.id, krail, tank: TANK_MAX });
+      stepScatter(c, 2, new Rng(1), { at: at.id, cyrite, tank: TANK_MAX });
       return threnAt(c, at.id);
     };
     expect(drawn(TANK_MAX)).toBeGreaterThan(drawn(0) + 0.05);
@@ -144,18 +144,18 @@ describe('the factions on their own', () => {
 });
 
 describe('the Thren in a sortie', () => {
-  function threnSortie(thren: number, krail: number) {
+  function threnSortie(thren: number, cyrite: number) {
     const j = newJourney(6);
-    endSortie(j, result(j, {}, { krail, food: 12, parts: 12 }));
+    endSortie(j, result(j, {}, { cyrite, food: 12, parts: 12 }));
     j.chart.thren![j.at] = thren;
     const def = sortieDef(j);
     expect(def.thren).toBe(thren);
-    return new World(11, { mode: 'breakout', sortie: def, carry: { ...j.carry, krail } });
+    return new World(11, { mode: 'breakout', sortie: def, carry: { ...j.carry, cyrite } });
   }
 
   it('swarm, sooner with a full tank, and scramble sensors and navigation', () => {
-    const first = (krail: number) => {
-      const w = threnSortie(0.8, krail);
+    const first = (cyrite: number) => {
+      const w = threnSortie(0.8, cyrite);
       for (let i = 0; i < Math.round(240 / STEP); i++) {
         if (w.phase === 'comms') w.answer(0, true);
         w.step(STEP, input());
@@ -165,7 +165,7 @@ describe('the Thren in a sortie', () => {
     };
     const full = first(TANK_MAX), dry = first(0);
     expect(full.t).toBeLessThan(120);
-    // drawn by Krail: with a full tank the second swarm comes sooner than with none (the first is on a clock)
+    // drawn by Cyrite: with a full tank the second swarm comes sooner than with none (the first is on a clock)
     expect(full.w.bk!.nextSwarm - full.t).toBeLessThan(dry.w.bk!.nextSwarm - dry.t);
     // close by, the scope and the lane mouth go strange
     const w = full.w;
@@ -186,7 +186,7 @@ describe('the Thren in a sortie', () => {
 
 describe('cards for who is here', () => {
   const ctx = (here: string[]): Ctx => ({
-    t: 120, heat: 0.2, krail: 20, need: 20, tank: TANK_MAX, ore: 20, holdMax: 40, chits: 50, parts: 10, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
+    t: 120, heat: 0.2, cyrite: 20, need: 20, tank: TANK_MAX, ore: 20, holdMax: 40, chits: 50, parts: 10, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
     standing: {}, place: 'open', hostiles: 0, food: 5, kind: 'transit', netted: false, behind: Infinity, here,
   });
   const card = (id: string) => CARDS.find((c) => c.id === id)!;

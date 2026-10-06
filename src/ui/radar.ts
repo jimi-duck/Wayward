@@ -22,7 +22,7 @@ const BEZEL = 15;
 const ARCS = 24;
 
 const ROCK_DOT: Record<string, string> = {
-  basalt: 'rgba(236,230,225,.34)', iron: 'rgba(160,172,190,.55)', rich: INK.krail, volatile: 'rgba(255,90,60,.85)', rare: INK.amberHi,
+  basalt: 'rgba(236,230,225,.34)', iron: 'rgba(160,172,190,.55)', rich: INK.cyrite, volatile: 'rgba(255,90,60,.85)', rare: INK.amberHi,
 };
 
 export class Radar {
@@ -156,7 +156,7 @@ export class Radar {
     for (const p of world.pickups) {
       if (!LOOSE.has(p.kind)) continue;
       const [x, y, out] = to(p.x, p.z);
-      g.fillStyle = p.kind === 'crystal' ? INK.krail : p.kind === 'ore' ? 'rgba(236,200,160,.8)' : rgba(RGB.teal, 0.8);
+      g.fillStyle = p.kind === 'crystal' ? INK.krail : p.kind === 'cyrite' ? INK.cyrite : p.kind === 'ore' ? 'rgba(236,200,160,.8)' : rgba(RGB.teal, 0.8);
       if (!out) g.fillRect(x - 0.8 * dpr, y - 0.8 * dpr, 1.6 * dpr, 1.6 * dpr);
     }
     // the port and the lane mouth, when they are in the scope's reach

@@ -115,11 +115,11 @@ export const OFFERS: CardDef[] = [
   }),
   offer({
     id: 'offer_tank', from: 'Prefect Idris Calloway · Office of Peace', title: 'A full tank',
-    text: '“You’re always short of Krail, Juno. Tell me your heading and a tender fills you up. No tricks. I want you alive, and I want to know where you are.”',
+    text: '“You’re always short of Cyrite, Juno. Tell me your heading and a tender fills you up. No tricks. I want you alive, and I want to know where you are.”',
     choices: [
-      { id: 'accept', label: 'Take the Krail', tone: 'trade', hint: 'Twenty Krail. She knows your heading.', win: { text: 'The tender pumps Krail aboard · she knows where you are going', krail: 20, heat: -0.2, hunt: -1.5 } },
-      { id: 'lie', label: 'Take it, with a false heading', tone: 'bluff', hint: 'The Krail, and the wrong lane. If you’ve lied before, she checks.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
-        win: { text: 'The Krail, and she turns for the wrong lane', krail: 20, hunt: 0.5 },
+      { id: 'accept', label: 'Take the Cyrite', tone: 'trade', hint: 'Twenty Cyrite. She knows your heading.', win: { text: 'The tender pumps Cyrite aboard · she knows where you are going', cyrite: 20, heat: -0.2, hunt: -1.5 } },
+      { id: 'lie', label: 'Take it, with a false heading', tone: 'bluff', hint: 'The Cyrite, and the wrong lane. If you’ve lied before, she checks.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
+        win: { text: 'The Cyrite, and she turns for the wrong lane', cyrite: 20, hunt: 0.5 },
         lose: { text: '“That is not where you are going.” · the tender pulls away', hunt: -1 } },
       { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'You will find your own.', win: { text: '“Then count it carefully.”' } },
     ],

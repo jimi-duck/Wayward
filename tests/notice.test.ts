@@ -19,7 +19,7 @@ const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, c
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, krail: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
+  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, food: 12, kind: 'transit', netted: false, behind: Infinity, ...x,
 });
 
@@ -33,7 +33,7 @@ function marked(f: 'custody' | 'gutter' = 'custody'): Notice {
 function result(j: Journey, o: Partial<SortieResult> = {}): SortieResult {
   const r = newRun(1);
   r.escaped = (o.ended ?? 'jumped') === 'jumped';
-  return { ended: 'jumped', time: 180, carry: { ...j.carry, krail: 20, food: 12, parts: 6, plates: 3 }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
+  return { ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 20, food: 12, parts: 6, plates: 3 }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
 }
 
 describe('the factions’ data', () => {

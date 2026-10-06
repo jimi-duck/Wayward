@@ -9,8 +9,8 @@ import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
-import { clearJourney, loadJourney, saveJourney } from './meta/save';
-import { checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
+import { clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
+import { bankAnswer, checkpoint, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, type Journey, type Outcome } from './sim/journey';
 import { sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
@@ -20,10 +20,11 @@ import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PadNav } from './ui/dom';
 import { cardView, CommsPanel, hailView } from './ui/comms';
-import { buildView, StartOptions, SummaryPanel } from './ui/panels';
+import { StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
-import { RefitPanel } from './ui/refit';
 import { BayPanel } from './ui/bay';
+import { showConsole } from './ui/briefing';
+import { blockOf, quickPicks } from './sim/bay';
 import { detect, localize, onLang, plural, setLang, t } from './i18n';
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
@@ -95,11 +96,10 @@ function boot(): void {
   // compile every shader behind the start card, once it has painted
   setTimeout(() => sector.warm(), 60);
 
-  // ── the run's stops: refit, comms, port, report ────────────────────────
+  // ── the run's stops: the bay, comms, port, report ──────────────────────
   // The world pauses itself at each and waits (an ambush only slows it); the
   // panels answer it. The comms panel draws both a Breakout card and the
   // arcade's capital-ship hail.
-  const refit = new RefitPanel();
   const comms = new CommsPanel();
   /** The card the comms panel is showing, so a slowed card that timed out can be taken down. */
   let shown: object | null = null;
@@ -108,9 +108,10 @@ function boot(): void {
   const chart = new ChartPanel();
   const ending = new EndingPanel();
   const bay = new BayPanel();
+  bay.ship = { points: (z) => sector.zoneScreen(z), flash: (z) => sector.flashZone(z) };
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => refit.open || bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
 
   // ── the journey ────────────────────────────────────────────────────────
   // The Breakout mode is a journey: system after system, with the chart
@@ -120,16 +121,70 @@ function boot(): void {
   // The title offers two ways to play, Arcade picked whenever the game opens;
   // Story mode carries on a saved journey, with a fresh one a click below.
   let pick: 'arcade' | 'breakout' = 'arcade';
+  /** Where a saved journey would carry on, in one line: the day, the system, the lane plotted, the wrecks. */
+  const resumeLine = (j: Journey) => {
+    const day = t('Day {n}', { n: Math.floor(j.day) + 1 });
+    if (pending(j)) return `${day} · ${t('through the Threshold · the file is still aboard')}`;
+    return [day, here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
+  };
   const showResume = () => {
-    const j = pick === 'breakout' && journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
+    const live = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
+    const j = pick === 'breakout' ? live : null;
     el('mode-arcade').setAttribute('aria-checked', String(pick === 'arcade'));
     el('mode-story').setAttribute('aria-checked', String(pick === 'breakout'));
     el('fresh').hidden = !j;
     el('resume-s').hidden = !j;
+    // under Arcade the saved journey is offered above the picker; under Story the launch button is its Continue
+    el('cont').hidden = !live || pick === 'breakout';
+    if (live) {
+      el('cont-s').textContent = resumeLine(live);
+      const last = live.log[live.log.length - 1]?.text;
+      el('cont-r').textContent = last ? `${t('Last time')} · ${t(last)}` : '';
+      el('cont-r').hidden = !last;
+    }
     el('launch').textContent = pick === 'arcade' ? t('Start arcade') : j ? t('Continue story') : t('Start story');
-    const day = t('Day {n}', { n: Math.floor(j?.day ?? 0) + 1 });
-    if (j && pending(j)) el('resume-s').textContent = `${day} · ${t('through the Threshold · the file is still aboard')}`;
-    else if (j) el('resume-s').textContent = [day, here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
+    if (j) el('resume-s').textContent = resumeLine(j);
+    // a save that could not be read is said so, with the safety copy on offer if there is one
+    const bad = saveUnreadable() && !journey;
+    el('save-problem').textContent = t('Your saved journey could not be read.');
+    el('save-problem').hidden = !bad;
+    el('restore').hidden = !bad || !hasBackup();
+    renderSaves(live);
+  };
+  /** Export the saved journey to a file, or bring one back from a file. */
+  const renderSaves = (live: Journey | null) => {
+    const box = el('saves');
+    const btn = (label: string, f: () => void) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = t(label);
+      b.addEventListener('pointerdown', (e) => e.stopPropagation());
+      b.addEventListener('click', (e) => { e.stopPropagation(); f(); });
+      return b;
+    };
+    const out: HTMLElement[] = [];
+    if (live) {
+      out.push(btn('Export save', () => {
+        const url = URL.createObjectURL(new Blob([exportJourney(live)], { type: 'application/json' }));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wayward-day-${Math.floor(live.day) + 1}.json`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }));
+    }
+    out.push(btn('Import save', () => {
+      const pickFile = document.createElement('input');
+      pickFile.type = 'file';
+      pickFile.accept = 'application/json,.json';
+      pickFile.addEventListener('change', async () => {
+        const text = await pickFile.files?.[0]?.text();
+        const j = text ? importJourney(text) : null;
+        if (j) { journey = j; showResume(); } else el('save-problem').textContent = t('That file is not a Wayward save.'), el('save-problem').hidden = false;
+      });
+      pickFile.click();
+    }));
+    box.replaceChildren(...out);
   };
   const choose = (mode: 'arcade' | 'breakout') => { pick = mode; showResume(); };
   showResume();
@@ -159,7 +214,7 @@ function boot(): void {
     if (world.carry().flags.includes('news')) hearNews(j);
     return {
       lanes: () => options(j).map((o) => ({
-        id: o.to.id, name: o.to.name, krail: o.route.krail, days: o.route.days,
+        id: o.to.id, name: o.to.name, cyrite: o.route.cyrite, days: o.route.days,
         note: [o.netted ? t('the Net holds it') : '', o.shadow ? t('Calloway last seen there') : '', o.to.kind === 'edge' ? t('the way out') : ''].filter(Boolean).join(' · '),
       })),
       current: () => j.dest,
@@ -208,14 +263,10 @@ function boot(): void {
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
   const stops = () => {
-    if (world.phase === 'refit' && world.offer && !refit.open) {
-      // a full rail or battle salvage: three cards
+    if (world.phase === 'bay' && !bay.open) {
+      // the refit bay: the player opened it, and the world waits until they launch (or go back to the dock)
       input.reset();
-      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); }, !world.bk);
-    } else if (world.phase === 'bay' && !bay.open) {
-      // the refit bay: the player opened it, and the world waits until they launch
-      input.reset();
-      bay.show(world, () => { world.closeBay(); input.reset(); hud.note(world, t('Launched')); });
+      bay.show(world, () => { world.closeBay(); input.reset(); if (world.phase === 'play') hud.note(world, t('Launched')); });
     } else if (world.phase === 'hail' && world.command.pending && !comms.open) {
       input.reset();
       shown = world.command.pending;
@@ -223,16 +274,22 @@ function boot(): void {
     } else if (world.phase === 'comms' && world.comms && !comms.open) {
       input.reset();
       shown = world.comms;
-      comms.show(cardView(world.comms), (i) => { world.answer(i); input.reset(); });
+      comms.show(cardView(world.comms), (i) => {
+        // the answer is banked in the journey now, so a closed tab does not take it back
+        const before = world.carry();
+        world.answer(i);
+        if (journey && world.mode === 'breakout' && journey.status === 'sortie') { bankAnswer(journey, before, world.carry()); saveJourney(journey); }
+        input.reset();
+      });
     } else if (world.phase === 'dock' && !port.open) {
-      // docked at the port, or back from a refit bought there
+      // docked at the port, or back from its refit bay
       input.reset();
       port.show(world, () => {
         input.reset();
-        hud.note(world, t('Cast off'));
+        hud.note(world, `${t('Cast off')} · ${t('Saved')}`);
         // the save at the port: a load starts this system again with the hold as it is now
         if (journey && world.mode === 'breakout') { checkpoint(journey, world.carry()); saveJourney(journey); }
-      }, () => {}, journey && world.mode === 'breakout' && world.bk?.def.port ? courseFor(journey) : null);
+      }, () => { world.openBay(); input.reset(); }, journey && world.mode === 'breakout' && world.bk?.def.port ? courseFor(journey) : null);
     } else if (world.phase === 'over' && !reported && world.mode === 'breakout' && journey) {
       reported = true;
       sortieOver();
@@ -256,33 +313,39 @@ function boot(): void {
       else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
     }
     // a gamepad answers the open panel
-    if (refit.open || bay.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
+    if (bay.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
       const p = padNav.poll();
-      if (refit.open) refit.padInput(p);
-      else if (bay.open) bay.padInput(p);
+      if (bay.open) bay.padInput(p);
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p, journey);
       else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
     }
-    // a full rail: a beat of slow motion before the panel
-    loop.timeScale = world.celebrate > 0 ? 0.3 : 1;
     // a panel that stops the run takes the screen: the HUD steps back
     document.documentElement.classList.toggle('panel-open', panelOpen());
   };
 
   // ── the refit bay ──────────────────────────────────────────────────────
-  // B, a pad's Back, or the touch button. The arcade only, never mid-fight:
-  // the HUD says why when it will not open.
+  // B, a pad's Back, the HUD's badge, or the pause card's button. In
+  // flight while the alert is clear, and always at a port; not in battle (the HUD's state says which), and
+  // when it will not open the HUD says why in a line.
   const openBay = () => {
-    if (!started || panelOpen() || world.bk) return;
+    if (!started || comms.open || port.open || chart.open || ending.open || bay.open) return;
     const why = world.bayClosed();
-    if (why === 'danger') { hud.note(world, t('Not with hostiles close'), 'hit'); return; }
-    if (why) return;
+    if (why) { hud.bayDenied(world, why); return; }
     setPaused(false);
     world.openBay();
   };
+  hud.onBay = openBay;
+  bay.auto = world.autoFit = profile.autoFit;
+  const setAuto = (on: boolean) => {
+    world.autoFit = profile.autoFit = bay.auto = on;
+    saveProfile(profile);
+    hud.note(world, t(on ? 'Auto-refit on' : 'Auto-refit off'));
+    showBrief();
+  };
+  bay.onAuto = setAuto;
 
   // ── start, pause ───────────────────────────────────────────────────────
   // The run waits behind the start card, so the first key or tap is the one
@@ -291,12 +354,27 @@ function boot(): void {
   let started = false;
   document.documentElement.classList.add('prelaunch');
   const setPaused = (on: boolean) => {
+    // the first stop of the first arcade run is the briefing; once read, it is the pause card
+    if (!on && loop.paused && started && !world.bk && !profile.briefed) { profile.briefed = true; saveProfile(profile); }
     loop.paused = on;
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
       input.reset();
-      el('pause-build').replaceChildren(buildView(world.levels));
+      showBrief();
+      showConsole(world);
     }
+  };
+  /** The briefing's live parts: its title, the bay's count, Auto-refit. */
+  const showBrief = () => {
+    const first = !world.bk && !profile.briefed;
+    el('pause').classList.toggle('first', first);
+    el('pause-t').textContent = t(first ? 'Briefing' : 'All stop');
+    const n = quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
+    el('p-bay').classList.toggle('ready', n > 0);
+    el('p-bay-n').textContent = n ? String(n) : '';
+    el('p-auto').classList.toggle('on', world.autoFit);
+    el('p-auto').setAttribute('aria-pressed', String(world.autoFit));
+    el('p-auto-v').textContent = t(world.autoFit ? 'On' : 'Off');
   };
   // Phones and tablets take the whole screen where the browser allows it
   // (Android, iPad; never an iPhone browser), and on its side where it can
@@ -370,7 +448,8 @@ function boot(): void {
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
-      sector.frame(world, alpha, dt);
+      sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
+      sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);
       if (started) stops();
       debug.frame(frameDt, renderer, quality, input, loop.paused);
@@ -433,6 +512,8 @@ function boot(): void {
   };
   press('launch', go);
   press('fresh', () => launch('breakout'));
+  press('cont', () => launch('breakout', true));
+  press('restore', () => { const j = restoreJourney(); if (j) { journey = j; pick = 'breakout'; showResume(); } });
   press('mode-arcade', () => choose('arcade'));
   press('mode-story', () => choose('breakout'));
   el('start').addEventListener('pointerdown', (e) => {
@@ -478,14 +559,22 @@ function boot(): void {
     e.stopPropagation();
     if (started && !panelOpen()) setPaused(true);
   });
-  el('bay-b').addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    openBay();
-  });
   el('pause').addEventListener('pointerdown', (e) => {
     e.preventDefault();
     setPaused(false);
+  });
+  // the briefing's buttons answer themselves, without resuming underneath
+  const act = (id: string, f: () => void) => {
+    el(id).addEventListener('pointerdown', (e) => e.stopPropagation());
+    el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
+  };
+  act('p-bay', () => openBay());
+  act('p-auto', () => setAuto(!world.autoFit));
+  act('p-go', () => setPaused(false));
+  // Story mode: the journey is saved as it stands (the last chart or dock), and the page reloads to the title
+  act('p-exit', () => {
+    if (journey && world.mode === 'breakout') saveJourney(journey);
+    location.reload();
   });
   // iOS Safari ignores user-scalable=no for pinch zoom; this is what stops it.
   document.addEventListener('gesturestart', (e) => e.preventDefault());

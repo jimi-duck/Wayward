@@ -29,6 +29,7 @@ const LAVA: RGB = [3.4, 0.7, 0.12];
 const ALERT: RGB = [3.6, 0.5, 0.4];
 const DUST: RGB = [1.1, 0.95, 0.85];
 const VIOLET: RGB = [2.2, 0.9, 3.6];
+const GOLD: RGB = [3, 2.1, 0.8];
 const AMBER: RGB = [3.8, 2.2, 0.5];
 const SHIELD: RGB = [0.8, 1.6, 3.6];
 const GRAZE: RGB = [1.6, 2.6, 3.8];
@@ -226,21 +227,17 @@ export class Sector {
           this.fx.burst(e.x, 0.3, e.z, 20, [3, 2.4, 1.2], 8, 0.3, 0.6);
           break;
         case 'crystal':
-          this.fx.flash(e.x, 0.3, e.z, 0.9 + e.value * 0.2, VIOLET, 0.12);
-          this.fx.burst(e.x, 0.3, e.z, 3 + e.value, VIOLET, 5, 0.18, 0.3);
+        case 'cyrite': {
+          const c = e.type === 'crystal' ? GOLD : VIOLET;
+          this.fx.flash(e.x, 0.3, e.z, 0.9 + e.value * 0.2, c, 0.12);
+          this.fx.burst(e.x, 0.3, e.z, 3 + e.value, c, 5, 0.18, 0.3);
           break;
+        }
         case 'power':
           this.fx.flash(e.x, 0.3, e.z, 6, AMBER, 0.35);
           this.fx.ring(e.x, 0.3, e.z, 7, AMBER, 0.5);
           this.fx.burst(e.x, 0.3, e.z, 30, AMBER, 9, 0.3, 0.7);
           break;
-        case 'levelUp': {
-          const s = this.lerped;
-          this.fx.ring(s.x, 0.2, s.z, 9, VIOLET, 0.55);
-          this.fx.flash(s.x, 0.4, s.z, 5, VIOLET, 0.3);
-          this.fx.burst(s.x, 0.4, s.z, 40, VIOLET, 9, 0.3, 0.8);
-          break;
-        }
         case 'graze':
           this.fx.burst(e.x, e.y, e.z, 5, GRAZE, 7, 0.2, 0.25);
           break;
@@ -309,9 +306,9 @@ export class Sector {
         case 'rockCut': {
           const big = [1, 0.62, 0.38][e.size]!;
           this.fx.flash(e.x, 0.3, e.z, 3 * big + 1, AMBER, 0.25);
-          this.fx.ring(e.x, 0.1, e.z, 6 * big + 2, e.krail ? VIOLET : AMBER, 0.45);
+          this.fx.ring(e.x, 0.1, e.z, 6 * big + 2, e.cyrite ? VIOLET : AMBER, 0.45);
           this.fx.rubble('rock', e.x, 0, e.z, big, 0.3, 14);
-          this.fx.burst(e.x, 0.3, e.z, 24, e.krail ? VIOLET : AMBER, 6, 0.3, 0.6);
+          this.fx.burst(e.x, 0.3, e.z, 24, e.cyrite ? VIOLET : AMBER, 6, 0.3, 0.6);
           this.rig.shake(0.08);
           break;
         }
@@ -356,8 +353,25 @@ export class Sector {
   }
 
   /** Place everything for this frame and draw it. `alpha` is how far past the previous step we are. */
-  frame(world: World, alpha: number, dt: number): void {
+  /** What the screen over the ship is about: a bay tab, 'brief' for the pause card, or none. Lights the ship (ShipView.light). */
+  console: string | null = null;
+  private bayK = 0;
+
+  /** Where a zone's lights are on the screen, as fractions of it (0,0 top left), for the bay's lines to the ship. */
+  zoneScreen(zone: string): Array<[number, number]> {
+    return this.ship.zonePoints(zone).map((v) => { v.project(this.rig.camera); return [(v.x + 1) / 2, (1 - v.y) / 2] as [number, number]; });
+  }
+
+  flashZone(zone: string): void {
+    this.ship.flashZone(zone);
+  }
+
+  frame(world: World, alpha: number, dt: number, uiDt = dt): void {
     this.time += dt;
+    const inBay = this.console !== null && this.console !== 'brief';
+    this.bayK += ((inBay ? 1 : 0) - this.bayK) * Math.min(1, 4 * uiDt);
+    this.rig.bay = this.bayK * this.bayK * (3 - 2 * this.bayK);
+    this.ship.light(this.console, uiDt);
     this.paintSky(world);
     const a = world.prev, b = world.ship, s = this.lerped;
     Object.assign(s, b);

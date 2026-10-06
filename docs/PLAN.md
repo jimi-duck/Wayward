@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done: the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 4 done, and console steps 1 to 10 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths, type hierarchy, a sample of wear, the voice; see the console pass): the web as data and rules, the bay on screen, the budgets felt, the Story mode in the bay with Cyrite as its fuel and the yard folded in; step 5 to come (see below) |
 
 ## From the concept boards
 
@@ -618,17 +618,140 @@ when an install runs the ship over. The pilot report gains a table of Krail
 spent and the budgets at the end: laser builds buy heat exchangers, close
 quarters runs heavy, everyone buys reactor cores.
 
+**A UI pass on the bay and the HUD (2026-10-06, Jimi's notes).** The mode
+card is an alert in three steps: clear (nothing shown; the bay opens),
+caution in yellow (ships near or scanning, not attacking) and red alert
+(under attack); the bay stays shut on yellow and red, and saying no is one
+line. An upgrades
+badge (clickable, B) counts the suggestions you can pay for and pulses when
+one comes in. The bay opens on three suggested modules with the price on the
+button; the tabs are a step further in, with prices on the web. Auto-refit
+fits the suggestions by itself. The target's brackets close tight with its
+health as a bar under them; the upper-centre card is for hostile hulls only.
+The pause card is the briefing: three steps (mine, upgrade, survive), the
+three alert states, the controls for the device in hand, the bay and Auto-refit.
+
+**Step 4, done (2026-10-06).** The Story mode builds in the bay, as
+the arcade does:
+
+- **Cyrite is the fuel.** The violet rock, the tank, a lane's cost, the
+  port's fuel, the storm's and the convoy's pay, and the Thren drawn to a
+  full tank all move from Krail to Cyrite (German: Cyrit). It keeps the
+  violet; Krail crystals take a tint of their own.
+- **Krail pays for the bay**, a stock as in the arcade: wrecks and ordinary
+  rock cut drop it. Ore stays cargo, sold for chits.
+- **The cards and the rail go.** The ship leaves Cerro with the stock fit;
+  the bay opens on the same three alert states in a sortie, and always
+  when docked. Suggestions and Auto-refit as in the arcade.
+- **The module yard folds into the web**, paid in Krail only: its modules
+  are nodes marked `story`; the four resources (salvage, rig parts,
+  signal kit, favours) go. **Yard-only** (fitted docked, plus chits): the
+  yard's modules, the structural frame and the reactor core's top levels.
+- **The save goes to version 7**: the tank's Krail becomes Cyrite; the
+  rail's progress and the four resources become Krail; fitted upgrades
+  stay (the web's nodes are the same ids), and the stock fit is added.
+- **Balanced** from the Breakout, journey, ship and endings pilots: two or
+  three installs in the Breakout, fuel as tight as today, fewer, bigger
+  installs over a journey than the cards gave. The arcade pilot confirms
+  the cheaper deep ordnance (caution at 85 units).
+- **Commits**, each playable: the fuel; the bay in a sortie; the port and
+  the yard; the save; balance, German, screenshots and the docs.
+
+### The console pass (design feedback, 2026-10-06)
+
+A UI thread on the bay and the briefing, from a design review: make the
+interface the ship's battered industrial operating system, and tie it to the
+physical ship. Amber is the player's decisions and Krail, teal the ship's
+state, red danger, grey unavailable. Each step ships on its own, with
+screenshots at desktop and phone sizes, German lines and a note in
+DESIGN.md.
+
+1. **Done: the state word, the briefing frame, the bay's feedback.** The
+   alert's word (`ui/ops.ts`: Clear, Caution, Red alert, and Critical at one
+   plate) on the bay and pause card; the pause card as a console (rule,
+   voice line, readings); tab marks as state; large before → after; Install
+   with its price; a flash on fit.
+2. **Done: the ship as the protagonist.** In the bay the camera comes in on
+   the ship and the open tab lights its part in amber (prow guns, torpedo
+   belly, nacelles, spine modules, core, shield); the pause card wakes a
+   little of each, and on resume the lights ease out.
+3. **Done: thresholds on the bars.** In the bay's overview each rating
+   shows a tick at 80%, `▲ Warning` from there (amber), `▲ Over limit` and
+   a red blink over it; power is a ceiling and reads `▲ Full`. Not on the
+   HUD: it carries no ratings yet, so the state word does not read them.
+4. **Done: the installation, felt.** On Install the Krail counts down, the
+   module flashes, a line runs to the nearest light of the tab's part of the
+   ship (placed from the real 3D positions, `Sector.zoneScreen`), that part
+   flashes, the budgets bump. Skipped with reduced motion; never blocks a
+   second install.
+5. **Done: recommendations with a reason.** `sim/advice.ts` gives a module a
+   reason from the run's numbers, firmest first: a rating at its limit and a
+   module that raises it (power within one of full, heat or mass at 80%),
+   worn plates and a defence module, hostiles that pressed close lately
+   (`World.closePressed`, fading over about forty seconds) and close work,
+   the system you are deepest in. The bay marks the firmest three with a
+   ◆ and says why on the inspector; the Story's cards carry the same line.
+   Tests in `tests/advice.test.ts`.
+6. **Done: build profile.** `sim/profile.ts`: four ways to fight (close,
+   ordnance, range, defence), a name for the leading one (Rammer,
+   Bombardier, Lancer, Bulwark, Hybrid, Stock hauler), up to three plain
+   lines, and the weights as bars, under the bay's tabs (hidden on phones).
+7. **Done: hardware paths.** The web's links are drawn as hardware: a
+   conduit under a live wire, a bus a parent's children share with a diamond
+   junction where it forks, a bus into a child with two parents with a round
+   junction where it joins, amber where both ends are fitted and teal where
+   the way is open. Drawn from the data as it is (`BayPanel.web`); no layout
+   change was needed. Checked on the Weapons, Engines and Utility tabs, and
+   Utility at phone size.
+8. **Done: type hierarchy, in the bay.** The inspector reads name, effect,
+   the before → after figures, then the flavour note (italic, dim), then the
+   price and the button. On the web a node is three levels: the name (bold),
+   the level pips, then a small dim tag for what it moves (its first figure;
+   desktop only, hidden once fully fitted or out of reach). The HUD and the
+   Story's screens are not swept yet.
+9. **Done as a sample: wear, on the pause card and the bay.** A few faint
+   scratches and chipped corners (`.wear`), an old "Service overdue" stamp on
+   the pause card, a serial line on the bay's web, and a scanline that
+   breaks every 11 to 14 seconds. Still under reduced motion; the stamp and
+   serial are hidden on phones. Jimi to say whether it spreads to the HUD,
+   comms and the port.
+10. **Done: the ship's voice.** `content/voice.ts` holds six lines, firmest
+    first (Load limit exceeded, Maintenance required, Unauthorised
+    configuration, Automated refit enabled, Obedience protocol: active,
+    Crew absent); `sim/voice.ts` picks the first whose state holds (over the
+    mass rating, plates at half or less, a build beyond the yard's, Krail
+    enough for a module, a stock ship). One line shows under the bay's title
+    and on the pause card. Not in the log yet. Tests in `tests/advice.test.ts`.
+
+11. **Done: the art pass** (`docs/ART-PASS.md`): stamps for where a module
+    came from, the tab marks as ship state, ratings that tick with the old
+    figure struck beside them, the ship's papers in small print, the ship's
+    answer to a fit, pop-up kickers in the ship's voice, a stencilled wordmark
+    with `OB-7731-A`, and a repair patch and scuffs on the inspector, tab list
+    and ratings, and (9 spread, on Jimi's word) on the HUD's status block, the comms panel, the port and the pause card, which gets its "Service overdue" stamp back. A few marks each, no scanline on the HUD.
+    The bay's structure is untouched pending the 8-tab or 4-view decision.
+
+Open: 9 spreads on Jimi's word; whether the Story mode's port and chart
+screens take the same console frame.
+
+Merged with the alert and briefing pass above: the HUD's alert (clear,
+caution, red alert) is the one source of the state word, which the bay and
+the pause card show beside it with one more step, critical (one plate left);
+the pause card keeps that pass's three steps and states, with the console's
+rule, voice line and readings around them. Suggestions come from that pass;
+the reasons of step 5 ride on its cards and on the web.
 ### Open
 
-- Builds that save for deep modules (torpedoes, mines) fit six or seven in
-  a run and trail the rest; the costs of tier 3 and 4, or what the pilot
-  saves for, want a look.
+- The deep ordnance at 0.65 to 0.7 of its tier lifted both torpedo builds
+  (torpedo+defence 9:49 to 11:22, torpedo+laser 8:49 to 9:18);
+  mine+mobility still trails (7:52, about seven installs).
+- The Rig build gets through 3 of 6 journeys (ship pilot; 4 of 6 with the
+  old yard), the weakest of the four; the yard's marks are back at or above
+  the old (Guns 3.5, Rig 2.7, Signals 4.0, Contacts 3.0 a journey).
+- Story sorties run about a minute longer than with the cards (journey
+  pilot, 3:00 to 4:00 a system); worth a look once players have it.
 - The arcade's Krail: how much rock and kills give, against the costs
   above, for fewer installs than today's cards.
-- Cyrite (Story): where it shows in rock, what wrecks carry, the tank, and
-  every card and line that says Krail where it means fuel (step 4, with a
-  save migration).
-- Which modules are yard-only.
 
 ## The long tail
 

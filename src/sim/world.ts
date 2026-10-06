@@ -10,9 +10,9 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import { STORY_AT } from '../content/story';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_KRAIL, CAPITAL_PARTS, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
-  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_KRAIL, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
-  ORE_XP, rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
+  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, HOLD_START, JUMP_COST, PATCH_COST,
+  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
+  rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, commsGap, condOk, openCard, pickCard, refresh, resolve, theirStrength, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
@@ -37,17 +37,17 @@ import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from '
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
-  BREACH_GRACE, CELEBRATE, CHAIN_WINDOW, DYING, GRAZE, OC_GAIN, OC_MAX, OVERCHARGE_POINTS, PX, RARE_FIRST, REPAIR_CHANCE,
-  REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult, xpFor,
+  BREACH_GRACE, CHAIN_WINDOW, DYING, GRAZE, OC_GAIN, OC_MAX, OVERCHARGE_POINTS, PX, RARE_FIRST, REPAIR_CHANCE,
+  REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import type { Prices } from '../content/systems';
-import { makeOffer, type Offer } from './offers';
-import { install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
+import { autoPick, install as bayInstall, stockLevels, type BayCtx, type Block } from './bay';
 import { feelBudgets } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
+import { reasonOf, type Advice } from './advice';
+import { voiceId, voiceText } from './voice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
-import { addKit, discounted, earned, effects, fitNeeds, noKit, type Effects, type Kit } from './modules';
-import { MODULE_BY_ID } from '../content/modules';
+import { discounted, effects, type Effects } from './modules';
 import {
   acquire, fireWeapons, launchTorpedo, moveBolts, moveTorpedoes, newArms, type Arms, type Bolt, type FireMods, type Targets, type Torpedo,
 } from './weapons';
@@ -57,20 +57,18 @@ import {
 // PI/2 faces -Z ("up" on screen), headings are never wrapped. Enemies, their
 // fire and the player's fire move in 3D; rock and bulwarks sit on the plane.
 //
-// A run is a loop: fly, fight, collect krail, fill the rail, refit, face
-// harder sky, meet capital ships, and in the end lose the hull. The world
-// pauses itself at the decisions a run asks for, a refit (`phase` 'refit':
-// three cards in `offer`), a hail ('hail': engage or evade), a comms card
+// A run is a loop: fly, fight, collect krail, refit in the bay, face harder
+// sky, meet capital ships, and in the end lose the hull. The world pauses
+// itself at the decisions a run asks for, a hail ('hail': engage or evade), a comms card
 // in the Breakout ('comms': the card in `comms`; an ambush slows the world
-// instead of stopping it), a dock ('dock'), the refit bay in the arcade
-// ('bay': the player opens it, sim/bay.ts says what can be fitted), and at
-// the end ('over': the record in `run`). The app answers with choose(),
-// answerHail(), answer(), the port's calls, install() and closeBay(), and
+// instead of stopping it), a dock ('dock'), the refit bay ('bay': the player
+// opens it, sim/bay.ts says what can be fitted), and at the end ('over': the
+// record in `run`). The app answers with answerHail(), answer(), the port's calls, install() and closeBay(), and
 // restart(); the scripted pilot calls the same.
 
-export type Phase = 'play' | 'refit' | 'hail' | 'comms' | 'dock' | 'bay' | 'over';
+export type Phase = 'play' | 'hail' | 'comms' | 'dock' | 'bay' | 'over';
 /** What the port sells. */
-export type PortItem = 'krail' | 'plate' | 'refit' | 'food';
+export type PortItem = 'cyrite' | 'plate' | 'food';
 
 export interface WorldOptions {
   /** Upgrade, event and modifier ids opened by long-term progression. */
@@ -86,6 +84,15 @@ export interface WorldOptions {
 
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const BOSS_PLATES = 1;
+
+/** The ship's alert (World.alert). */
+export type Alert = 'clear' | 'caution' | 'alert';
+/** A hostile hull this close (units) puts the ship on caution: a little outside its guns' reach (FIRE_RANGE 70), well inside where hulls arrive. */
+export const CAUTION_RANGE = 85;
+
+/** Auto-refit waits this long with the alert clear before it fits, and this long again between fits. */
+export const AUTO_QUIET = 2;
+export const AUTO_GAP = 1;
 
 /** Seconds into a sortie before the system's place shows itself. */
 export const PLACE_AT = 30;
@@ -131,21 +138,16 @@ export class World implements EncounterHost {
   pace: Pace = newPace(ALIEN_FIRST);
   /** The arcade's self-repair (sim/repair.ts). */
   mend: Mend = newMend();
+  /** Auto-refit: the bay's suggestions fitted as you fly, in quiet moments. The player's choice; off unless set. */
+  autoFit = false;
+  private autoQuiet = 0;
 
-  // the refit rail and the cards
+  // the decisions, and the bay
   phase: Phase = 'play';
-  xp = 0;
+  /** Installs made in the bay (the journey's, in the Story mode). */
   refit = 0;
-  xpNext = xpFor(0);
-  /** The three cards on the table while `phase` is 'refit'. */
-  offer: Offer | null = null;
-  /** Refits earned and not yet taken, and battle salvage (one card each, her faction's tech first). */
-  pendingRefits = 0;
-  pendingSalvage: Faction[] = [];
-  /** The factions whose capital ship has been destroyed this run: their tech can be offered. */
+  /** The factions whose capital ship has been destroyed: their tech can be fitted. */
   techs = new Set<string>();
-  /** Seconds of slow motion left before the cards come up. */
-  celebrate = 0;
 
   // the reactor, the chain, power-ups
   oc = 0;
@@ -158,6 +160,8 @@ export class World implements EncounterHost {
   powers: Record<PowerKind, number> = { shield: 0, rapid: 0, magnet: 0, overdrive: 0, charge: 0 };
 
   alive = true;
+  /** Hostiles that pressed close lately, fading (see step). */
+  closePressed = 0;
   run: RunStats;
   readonly unlocked: Set<string>;
   readonly modifiers: string[];
@@ -175,8 +179,6 @@ export class World implements EncounterHost {
   private nextEvent = EVENT_FIRST;
   private eventN = 0;
   private lastEvent: EncounterId | null = null;
-  /** Specialisation groups already offered: each branch gets its moment once. */
-  private presented = new Set<string>();
   private timeScore = 0;
   private nextSample = 0;
   private wasRolling = false;
@@ -185,8 +187,10 @@ export class World implements EncounterHost {
   // the Breakout: the course and the pursuit (null in the arcade), the tank, the hold, the cutter
   mode: Mode;
   bk: Breakout | null = null;
-  /** Krail in the tank: fuel for the jump. */
+  /** Krail aboard: what the refit bay builds from, in both modes. */
   krail = 0;
+  /** Cyrite in the tank: fuel for the jump (the Story mode). */
+  cyrite = 0;
   ore = 0;
   holdMax = HOLD_START;
   parts = 0;
@@ -196,13 +200,10 @@ export class World implements EncounterHost {
   cutter: Cutter = newCutter();
   /** The rock the cutter is on this step, if it is running. */
   cutting: number | null = null;
-  /** Docked at the port: `phase` is 'dock', or 'refit' while a bought card is on the table. */
+  /** Docked at the port: `phase` is 'dock', or 'bay' while the bay is open there. */
   docked = false;
   /** What the fitted modules do (sim/modules.ts), worked out with the stats. */
   fx: Effects = effects({});
-  /** The systems' resources brought aboard, and spent at this sortie's ports; what this sortie earns is read off the run. */
-  private kitIn: Kit = noKit();
-  private kitSpent: Kit = noKit();
   private holdNag = 0;
 
   // the comms: the card on the table, what the run has set in motion, and who thinks what of you
@@ -291,12 +292,10 @@ export class World implements EncounterHost {
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
-    this.kitIn = noKit(); this.kitSpent = noKit();
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     if (this.mode !== 'breakout') {
-      this.bk = null; this.krail = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
-      // the arcade's ship leaves with the basics fitted: lasers, a shield charge, the torpedo bay
-      if (!Object.keys(this.levels).length) { this.levels = stockLevels(); this.refreshStats(); }
+      this.bk = null; this.krail = 0; this.cyrite = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
+      this.stock();
       return;
     }
     const def = this.sortie;
@@ -309,20 +308,27 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     for (const w of places(b)) { w.x += s.x; w.z += s.z; }
     this.field.density = def.density;
-    this.krail = START_KRAIL;
+    this.cyrite = START_CYRITE;
+    this.krail = 0;
     this.ore = 0;
     this.holdMax = HOLD_START;
     this.parts = 0;
     this.chits = 0;
     this.food = FOOD_START;
-    // a few violet-veined rocks in the opening field: the first Krail is there to be cut
+    // a few violet-veined rocks in the opening field: the first Cyrite is there to be cut
     let n = 0;
     const most = Math.round(def.rich * 44);
     for (const r of this.field.rocks) {
       if (r.size === 0 && this.rng.next() < 0.12 && n < most) { r.kind = 'rich'; r.hp = r.maxHp = Math.round(r.maxHp * 1.6); n++; }
     }
     if (this.carryIn) this.bringAboard(this.carryIn);
+    this.stock();
     this.fitAboard();
+  }
+
+  /** A new ship leaves with the basics fitted: lasers, a shield charge, the torpedo bay. */
+  private stock(): void {
+    if (!Object.keys(this.levels).length) { this.levels = stockLevels(); this.refreshStats(); }
   }
 
   /** What the fitted modules set up at the start of a sortie, or when one is fitted: the hold's racks, the flags they open in the comms. */
@@ -333,7 +339,8 @@ export class World implements EncounterHost {
 
   /** What the ship brings from the last system: the hold, the tank, the build and the rail, the plates, and what the comms set in motion. */
   private bringAboard(c: Carry): void {
-    this.krail = Math.min(TANK_MAX, c.krail);
+    this.cyrite = Math.min(TANK_MAX, c.cyrite);
+    this.krail = c.krail;
     this.parts = c.parts;
     this.chits = c.chits;
     this.food = Math.min(FOOD_MAX, c.food);
@@ -341,15 +348,12 @@ export class World implements EncounterHost {
     this.refreshStats();
     this.ore = Math.min(HOLD_START + this.fx.hold, c.ore);
     this.plates = Math.max(1, Math.min(this.stats.maxPlates, c.plates));
-    this.xp = c.xp;
     this.refit = c.refit;
-    this.xpNext = xpFor(c.refit);
     this.techs = new Set(c.techs);
     this.flags = new Set(c.flags);
     this.standing = { ...c.standing };
     this.jobs = c.jobs.map((j) => ({ ...j }));
     this.heard = new Set(c.seen);
-    this.kitIn = { ...noKit(), ...c.kit };
   }
 
   /** The cards that cannot come now: heard this sortie, or heard on the journey and not the kind that comes again. */
@@ -362,9 +366,9 @@ export class World implements EncounterHost {
   /** What the ship carries now, into the next system. */
   carry(): Carry {
     return {
-      krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
-      xp: this.xp, refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
-      seen: [...new Set([...this.heard, ...this.cardsSeen])], kit: this.kit,
+      cyrite: this.cyrite, krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
+      refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
+      seen: [...new Set([...this.heard, ...this.cardsSeen])],
     };
   }
 
@@ -385,7 +389,7 @@ export class World implements EncounterHost {
     return report ? { id: c.id, report } : null;
   }
 
-  /** Krail the plotted jump takes (the Breakout's lane in Cerro). */
+  /** Cyrite the plotted jump takes (the Breakout's lane in Cerro). */
   get jumpCost(): number {
     return this.bk?.jumpCost ?? 0;
   }
@@ -521,10 +525,9 @@ export class World implements EncounterHost {
     } else if ((this.dying -= dt) <= 0) this.finish();
     if (this.bk && this.bk.jumpT >= 0 && (this.bk.jumpT -= dt) <= 0) this.finish();
 
-    // the decisions: a full rail (after a beat of slow motion), and a hail
+    // the decisions: a hail
     if (this.phase !== 'play') return;
-    if (this.alive && this.celebrate > 0 && (this.celebrate -= dt) <= 0) this.openOffer();
-    else if (this.alive && this.command.hailing && this.phase === 'play') this.phase = 'hail';
+    if (this.alive && this.command.hailing) this.phase = 'hail';
   }
 
   // ── the Breakout ──────────────────────────────────────────────────────
@@ -639,15 +642,15 @@ export class World implements EncounterHost {
     }
     if (b.blockade === 'called' && this.command.state === 'idle' && !this.command.boss) b.blockade = 'done';
 
-    // the lane mouth: hold inside it with the Krail to jump while the drive spools
+    // the lane mouth: hold inside it with the Cyrite to jump while the drive spools
     if (dl < b.lane.r) {
-      if (this.krail >= b.jumpCost && this.phase === 'play') {
+      if (this.cyrite >= b.jumpCost && this.phase === 'play') {
         if (b.spool === 0) this.events.push({ type: 'spool' });
         b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
         if (b.spool >= b.spoolNeed) this.jump();
       } else if (b.nagT <= 0) {
         b.nagT = 6;
-        this.events.push({ type: 'needKrail', have: this.krail, need: b.jumpCost });
+        this.events.push({ type: 'needCyrite', have: this.cyrite, need: b.jumpCost });
       }
     } else b.spool = Math.max(0, b.spool - dt * 2);
   }
@@ -681,7 +684,7 @@ export class World implements EncounterHost {
   /**
    * The Thren, where the chart has them: a knot of motes (and a web layer
    * leading, where they are thick), from any side, sooner and oftener the
-   * more Krail is aboard. They hold off while a capital ship is engaged.
+   * more Cyrite is aboard. They hold off while a capital ship is engaged.
    */
   private swarm(t: number): void {
     const b = this.bk!, s = this.ship, thren = b.def.thren ?? 0;
@@ -698,7 +701,7 @@ export class World implements EncounterHost {
       m.modeT = (lead?.modeT ?? 0) + i * 0.25;
     }
     this.events.push({ type: 'squad', label: 'Thren swarm' });
-    b.nextSwarm = t + swarmGap(thren, this.krail) * this.rng.range(0.8, 1.2);
+    b.nextSwarm = t + swarmGap(thren, this.cyrite) * this.rng.range(0.8, 1.2);
   }
 
   /** Navigation scrambles near Thren hulls, and settles once they are gone. */
@@ -719,9 +722,12 @@ export class World implements EncounterHost {
     const points = Math.round(ROCK_POINTS[r.size] * ROCK_KINDS[r.kind].points * 1.5);
     this.addScore(points, 'rocks');
     if (y.ore) this.dropCrystals(r.x, r.z, y.ore, 3, r.vx, r.vz, 'ore');
-    if (y.krail) this.dropCrystals(r.x, r.z, y.krail, 3, r.vx, r.vz);
+    if (y.cyrite) this.dropCrystals(r.x, r.z, y.cyrite, 3, r.vx, r.vz, 'cyrite');
+    // Krail: what a break would give by chance, sure when cut clean
+    const K = ROCK_KINDS[r.kind];
+    this.dropCrystals(r.x, r.z, K.crystals[r.size]! * ROCK_KRAIL, 3, r.vx, r.vz);
     if (r.kind === 'rare') this.dropItem(this.randomPower(), r.x, r.z);
-    this.events.push({ type: 'rockCut', x: r.x, z: r.z, size: r.size, kind: r.kind, ore: y.ore, krail: y.krail, points });
+    this.events.push({ type: 'rockCut', x: r.x, z: r.z, size: r.size, kind: r.kind, ore: y.ore, cyrite: y.cyrite, points });
   }
 
   private dock(): void {
@@ -761,55 +767,24 @@ export class World implements EncounterHost {
     return Math.max(1, PATCH_COST - this.fx.patch);
   }
 
-  /** Each system's resource aboard: what came aboard, what this sortie has earned so far, less what its ports took. */
-  get kit(): Kit {
-    const k = addKit(this.kitIn, earned(this.run));
-    for (const s of Object.keys(k) as Array<keyof Kit>) k[s] -= this.kitSpent[s];
-    return k;
-  }
-
-  /** Why a module's next mark cannot be fitted here and now, in words (empty when it can). */
-  fitNeeds(id: string): string[] {
-    if (this.phase !== 'dock') return ['Only at a port'];
-    return fitNeeds(this.levels, this.kit, this.chits, id);
-  }
-
-  /** At the port: fit the next mark of a module, paid in its system's resource and chits. */
-  fitModule(id: string): boolean {
-    const m = MODULE_BY_ID[id];
-    if (!m || this.fitNeeds(id).length) return false;
-    const mk = this.levels[id] ?? 0;
-    this.kitSpent[m.system] += m.kit[mk]!;
-    this.chits -= m.chits[mk]!;
-    this.levels = { ...this.levels, [id]: mk + 1 };
-    this.refreshStats();
-    this.fitAboard();
-    this.events.push({ type: 'fitted', id, name: m.name, mark: mk + 1 });
-    return true;
-  }
-
   /** Whether a thing can be had at the port now. */
   canBuy(item: PortItem): boolean {
     if (this.phase !== 'dock') return false;
     if (this.chits < this.prices[item]) return false;
-    if (item === 'krail') return this.krail < TANK_MAX;
+    if (item === 'cyrite') return this.cyrite < TANK_MAX;
     if (item === 'plate') return this.plates < this.stats.maxPlates;
     if (item === 'food') return this.food < FOOD_MAX;
     return true;
   }
 
-  /** At the port: buy one of something. A refit deals three cards there and then. */
+  /** At the port: buy one of something. */
   buy(item: PortItem): boolean {
     useIds(this.ids);
     if (!this.canBuy(item)) return false;
     this.chits -= this.prices[item];
-    if (item === 'krail') this.krail++;
+    if (item === 'cyrite') this.cyrite++;
     else if (item === 'food') this.food++;
-    else if (item === 'plate') this.repair(1);
-    else {
-      this.pendingRefits++;
-      this.openOffer();
-    }
+    else this.repair(1);
     return true;
   }
 
@@ -830,15 +805,15 @@ export class World implements EncounterHost {
     this.ship.invuln = Math.max(this.ship.invuln, 2);
   }
 
-  /** Into the lane: the drive takes the Krail and the ship is gone. */
+  /** Into the lane: the drive takes the Cyrite and the ship is gone. */
   private jump(): void {
     const b = this.bk!, s = this.ship;
-    this.krail -= b.jumpCost;
+    this.cyrite -= b.jumpCost;
     this.settleJobs('lane');
     this.run.escaped = true;
-    this.run.krailLeft = this.krail;
+    this.run.cyriteLeft = this.cyrite;
     this.run.cause = 'escaped';
-    this.addScore(5000 + this.krail * 50 + this.plates * 500, 'events');
+    this.addScore(5000 + this.cyrite * 50 + this.plates * 500, 'events');
     b.jumpT = 1.6;
     s.invuln = 99;
     this.events.push({ type: 'jumped', x: s.x, z: s.z });
@@ -867,6 +842,14 @@ export class World implements EncounterHost {
       this.run.platesGained++;
       this.events.push({ type: 'regen', plates: this.plates });
     }
+    // how hard the fights have pressed lately: the most hostiles inside 60 m, fading over about forty seconds (the bay's advice, sim/advice.ts)
+    {
+      const sh = this.ship;
+      let close = 0;
+      for (const a of this.aliens) if (!a.fleeing && Math.hypot(a.x - sh.x, a.z - sh.z) < 60) close++;
+      this.closePressed = Math.max(close, this.closePressed * (1 - dt / 40));
+    }
+    this.autoRefit(dt);
     if (!this.bk && this.alive) {
       const news = stepMend(this.mend, { sinceHit: this.sinceHit, plates: this.plates, maxPlates: st.maxPlates, danger: this.inDanger(), stats: st }, dt);
       if (news === 'start') this.events.push({ type: 'mendStart' });
@@ -889,33 +872,27 @@ export class World implements EncounterHost {
     return false;
   }
 
+  /**
+   * The ship's alert, three steps, what the HUD shows and what the refit bay
+   * opens on:
+   *   clear   · nothing hostile about: the HUD stays quiet, the bay opens
+   *   caution · (yellow) hulls nearby, a watcher looking you over, a capital
+   *             ship on its way: not attacking yet, but the bay stays shut
+   *   alert   · (red) under attack: a committed hostile close, fire near, a
+   *             capital ship engaged (inDanger)
+   */
+  alert(): Alert {
+    if (!this.alive || this.inDanger()) return 'alert';
+    const s = this.ship, cs = this.command.state;
+    if (cs !== 'idle') return 'caution';
+    for (const a of this.aliens) {
+      if (a.fleeing || ALIEN_TYPES[a.kind].fire === 'none') continue;
+      if (a.mode === 'watch' || Math.hypot(a.x - s.x, a.z - s.z) < CAUTION_RANGE) return 'caution';
+    }
+    return 'clear';
+  }
+
   // ── decisions ─────────────────────────────────────────────────────────
-
-  /** Deal the next hand of cards: salvage first, then refits. Nothing left to offer, and the run flies on. */
-  private openOffer(): void {
-    const faction = this.pendingSalvage[0];
-    const kind = faction ? 'salvage' : 'refit';
-    if (!faction && this.pendingRefits <= 0) return;
-    this.offer = makeOffer({ levels: this.levels, unlocked: this.unlocked, techs: this.techs, presented: this.presented, refit: this.refit, kind, faction, arcade: !this.bk }, this.rng);
-    if (!this.offer.cards.length) { this.offer = null; this.pendingRefits = 0; this.pendingSalvage = []; if (this.docked) this.phase = 'dock'; return; }
-    this.phase = 'refit';
-  }
-
-  /** Take card `i` of the offer. Another hand follows straight away if more refits are owed. False if there is no such card. */
-  choose(i: number): boolean {
-    useIds(this.ids);
-    const card = this.offer?.cards[i];
-    if (this.phase !== 'refit' || !card) return false;
-    if (this.offer!.kind === 'salvage') this.pendingSalvage.shift();
-    else this.pendingRefits--;
-    this.levels = { ...this.levels, [card.id]: (this.levels[card.id] ?? 0) + 1 };
-    this.refreshStats();
-    this.events.push({ type: 'fitted', id: card.id });
-    this.offer = null;
-    this.phase = this.docked ? 'dock' : 'play';
-    if (this.alive && (this.pendingRefits > 0 || this.pendingSalvage.length)) this.openOffer();
-    return true;
-  }
 
   /** The hail: engage (true) or evade (false). Evade is refused when it is not on offer. */
   answerHail(engage: boolean): void {
@@ -927,18 +904,34 @@ export class World implements EncounterHost {
     this.phase = 'play';
   }
 
-  // ── the refit bay (the arcade) ────────────────────────────────────────
+  // ── the refit bay ─────────────────────────────────────────────────────
 
   /** What the bay's rules see of the ship. */
-  bayCtx(): BayCtx {
-    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, krail: this.krail };
+  /** Why a module is worth fitting now, in a few words (sim/advice.ts), or null. */
+  advise(id: string): Advice | null {
+    return reasonOf(id, { levels: this.levels, plates: this.plates, maxPlates: this.stats.maxPlates, pressure: this.closePressed });
   }
 
-  /** Why the bay will not open now, or null if it will: only in the arcade, only while flying, never with danger near. */
-  bayClosed(): 'mode' | 'busy' | 'danger' | null {
-    if (this.bk) return 'mode';
-    if (!this.alive || this.phase !== 'play' || this.celebrate > 0) return 'busy';
-    return this.inDanger() ? 'danger' : null;
+  /** What the ship says about itself now (sim/voice.ts), in English. */
+  voice(): string {
+    return voiceText(voiceId({ bay: this.bayCtx(), plates: this.plates, maxPlates: this.stats.maxPlates }));
+  }
+
+  bayCtx(): BayCtx {
+    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.krail, chits: this.chits };
+  }
+
+  /**
+   * Why the bay will not open now, or null if it will: while flying with
+   * the alert clear, or docked at a port. The HUD shows the alert, so it
+   * always says whether the bay will open: yellow and red keep it shut.
+   */
+  bayClosed(): 'busy' | 'caution' | 'alert' | null {
+    if (!this.alive) return 'busy';
+    if (this.phase === 'dock') return null;
+    if (this.phase !== 'play') return 'busy';
+    const a = this.alert();
+    return a === 'clear' ? null : a;
   }
 
   /** Open the bay: the world waits while you fit. False if it cannot open now (see bayClosed). */
@@ -948,24 +941,39 @@ export class World implements EncounterHost {
     return true;
   }
 
-  /** Fit one more level of `id`, paid in Krail. Null when fitted, else why not (sim/bay.ts). */
+  /** Fit one more level of `id`, paid in Krail (and the yard's chits). Null when fitted, else why not (sim/bay.ts). */
   install(id: string): Block | 'closed' | null {
     useIds(this.ids);
     if (this.phase !== 'bay') return 'closed';
+    return this.fit(id, false);
+  }
+
+  /** Auto-refit: fit the bay's first affordable suggestion by itself, once nothing hostile is close. */
+  private autoRefit(dt: number): void {
+    if (!this.autoFit || !this.alive || this.phase !== 'play') return;
+    this.autoQuiet = this.alert() !== 'clear' ? 0 : this.autoQuiet + dt;
+    if (this.autoQuiet < AUTO_QUIET) return;
+    const id = autoPick(this.bayCtx());
+    if (id) { this.fit(id, true); this.autoQuiet = AUTO_QUIET - AUTO_GAP; }
+  }
+
+  private fit(id: string, auto: boolean): Block | null {
     const r = bayInstall(id, this.bayCtx());
     if (typeof r === 'string') return r;
     this.krail -= r.cost;
+    this.chits -= r.fee;
     this.levels = r.levels;
     this.refreshStats();
+    this.fitAboard();
     this.refit++;
-    this.run.refit = this.refit;
+    this.run.refit++;
     this.run.krailSpent += r.cost;
-    this.events.push({ type: 'fitted', id });
+    this.events.push({ type: 'fitted', id, auto });
     return null;
   }
 
   closeBay(): void {
-    if (this.phase === 'bay') this.phase = 'play';
+    if (this.phase === 'bay') this.phase = this.docked ? 'dock' : 'play';
   }
 
   // ── comms ─────────────────────────────────────────────────────────────
@@ -975,7 +983,7 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
     return {
-      t: this.runTime, heat: b?.heat ?? 0, krail: this.krail, need: b?.jumpCost ?? JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
+      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, need: b?.jumpCost ?? JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
       parts: this.parts, plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       food: this.food, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
@@ -1033,7 +1041,7 @@ export class World implements EncounterHost {
     // a timed-out default the ship cannot afford falls to the first choice it can
     if (!res && timedOut) { const ok = o.choices.find((c) => c.ok); if (ok) res = resolve(o, ok.id, x, this.rng); }
     if (!res) return false;
-    this.krail -= res.cost.krail; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts; this.food -= res.cost.food;
+    this.cyrite -= res.cost.cyrite; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts; this.food -= res.cost.food;
     if (res.outcome.sell) this.chits += res.cost.ore * res.outcome.sell;
     this.comms = null;
     this.phase = 'play';
@@ -1046,7 +1054,7 @@ export class World implements EncounterHost {
   /** Do what an outcome says, at the card's fee. `brought`: the hulls the card brought in, for a dismissal. Returns the ids of any hulls it brings. */
   private applyOutcome(out: Outcome, fee: number, brought: number[]): number[] {
     const b = this.bk;
-    this.krail = Math.min(TANK_MAX, Math.max(0, this.krail + amount(out.krail, this.krail, fee)));
+    this.cyrite = Math.min(TANK_MAX, Math.max(0, this.cyrite + amount(out.cyrite, this.cyrite, fee)));
     this.ore = Math.min(this.holdMax, Math.max(0, this.ore + amount(out.ore, this.ore, fee)));
     this.chits = Math.max(0, this.chits + amount(out.chits, this.chits, fee));
     this.parts = Math.max(0, this.parts + amount(out.parts, this.parts, fee));
@@ -1143,7 +1151,7 @@ export class World implements EncounterHost {
     this.fx = effects(this.levels);
     const s = computeStats(this.levels);
     // the arcade feels its budgets: heavy is slow, hot is slow to reload (the Story mode's turn comes with its bay)
-    if (!this.bk) feelBudgets(s, this.levels);
+    feelBudgets(s, this.levels);
     const m = this.modifiers.map((id) => MODIFIERS[id]!);
     for (const d of m) if (d.plates) s.maxPlates = Math.max(1, s.maxPlates + d.plates);
     return s;
@@ -1523,11 +1531,17 @@ export class World implements EncounterHost {
         this.run.krail += pk.value;
         this.addScore(pk.value * SCORE_PER_CRYSTAL, 'krail');
         this.events.push({ type: 'crystal', x: pk.x, z: pk.z, value: pk.value });
-        // the Breakout: Krail is fuel, into the tank; in the arcade it is what the refit bay builds from
-        if (this.bk) this.krail = Math.min(TANK_MAX, this.krail + pk.value);
-        else { this.krail += pk.value * this.stats.xpMult; this.run.krailEarned += pk.value * this.stats.xpMult; }
+        // Krail, in both modes: what the refit bay builds from
+        this.krail += pk.value * this.stats.xpMult;
+        this.run.krailEarned += pk.value * this.stats.xpMult;
         break;
       }
+      case 'cyrite':
+        // the Story mode's fuel, into the tank
+        this.cyrite = Math.min(TANK_MAX, this.cyrite + pk.value);
+        this.run.cyrite += pk.value;
+        this.events.push({ type: 'cyrite', x: pk.x, z: pk.z, value: pk.value });
+        break;
       case 'ore': {
         const room = Math.max(0, this.holdMax - this.ore), got = Math.min(room, pk.value);
         if (got < pk.value && this.holdNag <= 0) { this.holdNag = 8; this.events.push({ type: 'holdFull' }); }
@@ -1536,7 +1550,6 @@ export class World implements EncounterHost {
         this.run.ore += got;
         this.addScore(got * SCORE_PER_CRYSTAL, 'krail');
         this.events.push({ type: 'ore', x: pk.x, z: pk.z, value: got });
-        this.gainXp(got * this.stats.xpMult * ORE_XP);
         break;
       }
       case 'parts':
@@ -1566,7 +1579,7 @@ export class World implements EncounterHost {
     return this.plates > before;
   }
 
-  dropCrystals(x: number, z: number, total: number, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'ore' | 'parts' = 'crystal'): void {
+  dropCrystals(x: number, z: number, total: number, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'cyrite' | 'ore' | 'parts' = 'crystal'): void {
     if (kind === 'crystal') this.run.dropped += Math.round(total);
     dropCrystals(this.pickups, x, z, total, this.rng, spread, vx, vz, kind);
   }
@@ -1583,19 +1596,6 @@ export class World implements EncounterHost {
     const p = Math.round(points * this.scoreMult);
     this.score += p;
     this.run.scoreBy[src] += p;
-  }
-
-  private gainXp(v: number): void {
-    this.xp += v;
-    while (this.xp >= this.xpNext) {
-      this.xp -= this.xpNext;
-      this.refit++;
-      this.run.refit = this.refit;
-      this.xpNext = xpFor(this.refit);
-      this.pendingRefits++;
-      this.events.push({ type: 'levelUp', refit: this.refit });
-      if (this.celebrate <= 0) this.celebrate = CELEBRATE;
-    }
   }
 
   // ── the reactor ─────────────────────────────────────────────────────
@@ -1941,8 +1941,10 @@ export class World implements EncounterHost {
       elite: !!al.elite, label: alienLabel(al),
     });
     if (this.bk) {
-      // the Breakout: a wreck gives parts, and the Custody notices
-      this.dropCrystals(al.x, al.z, Math.max(1, Math.round(al.xp * 0.5 * (al.elite ? this.stats.eliteLoot : 1))), 5, al.vx, al.vz, 'parts');
+      // the Story mode: a wreck gives parts and some Krail, and the Custody notices
+      const loot = al.elite ? this.stats.eliteLoot : 1;
+      this.dropCrystals(al.x, al.z, Math.max(1, Math.round(al.xp * 0.5 * loot)), 5, al.vx, al.vz, 'parts');
+      this.dropCrystals(al.x, al.z, al.xp * WRECK_KRAIL * loot, 5, al.vx, al.vz);
       this.bk.heat = Math.min(1, this.bk.heat + (al.faction === 'custody' ? HEAT_KILL_CUSTODY : HEAT_KILL));
     } else this.dropCrystals(al.x, al.z, al.xp * (al.elite ? this.stats.eliteLoot : 1), 5, al.vx, al.vz);
     const chance = (al.elite ? REPAIR_CHANCE_ELITE : REPAIR_CHANCE) * this.stats.repairChance;
@@ -1978,9 +1980,9 @@ export class World implements EncounterHost {
     this.run.killsBy[src]++;
     this.chainKill();
     this.events.push({ type: 'bossDestroyed', x: b.x, y: b.y, z: b.z, name: b.name, faction: b.faction, points: bounty });
-    // the salvage: krail, a hull repair, a power-up, a refit card and the faction's tech
+    // the salvage: krail, a hull repair, a power-up, the faction's tech; in the Story mode a top-up of Cyrite and parts
     this.dropCrystals(b.x, b.z, this.bk ? CAPITAL_KRAIL : 26 + 8 * b.n, 12);
-    if (this.bk) this.dropCrystals(b.x, b.z, CAPITAL_PARTS, 10, 0, 0, 'parts');
+    if (this.bk) { this.dropCrystals(b.x, b.z, CAPITAL_CYRITE, 10, 0, 0, 'cyrite'); this.dropCrystals(b.x, b.z, CAPITAL_PARTS, 10, 0, 0, 'parts'); }
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
     if (!this.noRepairs) for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
@@ -1988,11 +1990,6 @@ export class World implements EncounterHost {
     const fresh = !this.techs.has(b.faction);
     this.techs.add(b.faction);
     this.events.push({ type: 'salvage', faction: b.faction, tech: fresh });
-    // the Story mode deals her salvage as cards; in the arcade her tech opens in the bay
-    if (this.bk) {
-      this.pendingSalvage.push(b.faction);
-      if (this.celebrate <= 0) this.celebrate = CELEBRATE * 2;
-    }
     // the wing breaks off when its flagship goes
     for (const al of this.aliens) if (al.escort) { al.fleeing = true; al.mode = 'leave'; al.vx = (al.x - b.x) * 2; al.vz = (al.z - b.z) * 2; }
   }
@@ -2023,8 +2020,10 @@ export class World implements EncounterHost {
       // broken, not cut: scraps of what was in it
       const y = rockYield(r.kind, r.size, false);
       if (y.ore) this.dropCrystals(r.x, r.z, y.ore, 4, r.vx, r.vz, 'ore');
-      if (y.krail) this.dropCrystals(r.x, r.z, y.krail, 4, r.vx, r.vz);
-    } else if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.dropCrystals(r.x, r.z, K.crystals[r.size]!, 4, r.vx, r.vz);
+      if (y.cyrite) this.dropCrystals(r.x, r.z, y.cyrite, 4, r.vx, r.vz, 'cyrite');
+    }
+    // Krail by chance, in both modes (less of it in the Story mode, where a cut gives it surely)
+    if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.dropCrystals(r.x, r.z, K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), 4, r.vx, r.vz);
     if (r.kind === 'rare') this.dropItem(this.randomPower(), r.x, r.z);
     if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, src === 'hazard' ? 'hazard' : src, 'volatile', 1, true);
   }
@@ -2055,7 +2054,6 @@ export class World implements EncounterHost {
     const s = this.ship;
     this.alive = false;
     this.dying = DYING;
-    this.celebrate = 0;
     this.best = Math.max(this.best, this.score);
     this.events.push({ type: 'breach', x: s.x, z: s.z, score: this.score });
   }
@@ -2094,6 +2092,7 @@ export class World implements EncounterHost {
     this.field.density = 1;
     this.aliens = []; this.shots = []; this.webs = []; this.pickups = []; this.bolts = []; this.torps = [];
     this.tele = []; this.strikes = []; this.sys = newSystems();
+    this.closePressed = 0;
     this.command.reset();
     this.encounter = null;
     this.pace = newPace(ALIEN_FIRST);
@@ -2105,8 +2104,7 @@ export class World implements EncounterHost {
     this.plates = this.stats.maxPlates;
     this.shields = this.stats.shieldMax; this.shieldT = 0;
     this.arms = newArms(this.stats);
-    this.xp = 0; this.refit = 0; this.xpNext = xpFor(0); this.celebrate = 0;
-    this.offer = null; this.pendingRefits = 0; this.pendingSalvage = []; this.techs = new Set(); this.presented.clear();
+    this.refit = 0; this.techs = new Set();
     this.oc = 0; this.overload = 0; this.phaseT = 0; this.cloakT = 0; this.chain = 0; this.chainT = 0;
     for (const k of POWERS) this.powers[k] = 0;
     this.dcUsed = false; this.sinceHit = 0; this.repairCd = 0; this.nextRare = RARE_FIRST;

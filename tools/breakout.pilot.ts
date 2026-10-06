@@ -35,7 +35,7 @@ it('flies the Breakout', { timeout: 3_600_000 }, () => {
       all.push(...res.map((r) => ({ ...r, policy })));
       const out = res.filter((r) => r.run.escaped);
       const caught = res.filter((r) => !r.run.escaped);
-      rows.push(`| ${stratName(strat)} | ${policy} | ${out.length}/${res.length} | ${out.length ? mmss(mean(out.map((r) => r.run.time))) : '—'} | ${caught.length ? mmss(mean(caught.map((r) => r.run.time))) : '—'} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.run.time))))} | ${mean(res.map((r) => r.run.refit)).toFixed(1)} | ${mean(res.map((r) => r.run.ore)).toFixed(0)} | ${mean(res.map((r) => r.run.krail)).toFixed(0)} | ${mean(res.map((r) => r.run.cut)).toFixed(1)} / ${mean(res.map((r) => r.run.fractured)).toFixed(1)} | ${pct(res.filter((r) => r.run.docked > 0).length / res.length)} | ${mean(res.map((r) => r.run.platesLost)).toFixed(1)} / ${mean(res.map((r) => r.run.platesGained)).toFixed(1)} |`);
+      rows.push(`| ${stratName(strat)} | ${policy} | ${out.length}/${res.length} | ${out.length ? mmss(mean(out.map((r) => r.run.time))) : '—'} | ${caught.length ? mmss(mean(caught.map((r) => r.run.time))) : '—'} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.run.time))))} | ${mean(res.map((r) => r.run.refit)).toFixed(1)} | ${mean(res.map((r) => r.run.ore)).toFixed(0)} | ${mean(res.map((r) => r.run.cyrite)).toFixed(0)} | ${mean(res.map((r) => r.run.cut)).toFixed(1)} / ${mean(res.map((r) => r.run.fractured)).toFixed(1)} | ${pct(res.filter((r) => r.run.docked > 0).length / res.length)} | ${mean(res.map((r) => r.run.platesLost)).toFixed(1)} / ${mean(res.map((r) => r.run.platesGained)).toFixed(1)} |`);
     }
   }
   const damage: Record<string, number> = {};
@@ -83,7 +83,7 @@ way.
 
 ## Escapes
 
-| Strategy | Policy | Escaped | Time to escape | Lasted, if caught | Time in combat | Refits | Ore | Krail | Cut / fractured | Docked | Plates lost / gained |
+| Strategy | Policy | Escaped | Time to escape | Lasted, if caught | Time in combat | Installs | Ore | Cyrite | Cut / fractured | Docked | Plates lost / gained |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 ${rows.join('\n')}
 

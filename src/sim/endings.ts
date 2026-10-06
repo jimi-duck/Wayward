@@ -4,7 +4,7 @@ import { CAPTAIN_BY_ID } from './captains';
 import type { Standing } from './comms';
 import type { Faction } from './enemies';
 import type { Journey } from './journey';
-import { hasFitted, systemMarks, type Kit } from './modules';
+import { hasFitted, systemMarks, type Marks } from './modules';
 import { atLeast, tier } from './notice';
 import { fileCount, fragmentsFound } from './story';
 import { STORY_PEOPLE } from '../content/story';
@@ -21,8 +21,7 @@ import { STORY_PEOPLE } from '../content/story';
 export interface Ledger {
   standing: Partial<Record<Standing, number>>;
   flags: Set<string>;
-  marks: Kit;
-  kit: Kit;
+  marks: Marks;
   levels: Journey['carry']['levels'];
   friends: number;
   notice: (f: Faction) => boolean;
@@ -40,7 +39,6 @@ export function ledger(j: Journey): Ledger {
     standing,
     flags: new Set(j.carry.flags),
     marks: systemMarks(j.carry.levels),
-    kit: j.carry.kit,
     levels: j.carry.levels,
     friends: SCATTER.filter((s) => (standing[s] ?? 0) >= FRIEND).length,
     notice: (f) => atLeast(tier(j.notice, f), 'hunters'),
@@ -55,8 +53,7 @@ export function ledger(j: Journey): Ledger {
 /** Does the journey meet every part of this need? */
 export function meets(l: Ledger, n: Need): boolean {
   for (const [s, v] of Object.entries(n.standing ?? {}) as Array<[Standing, number]>) if ((l.standing[s] ?? 0) < v) return false;
-  for (const [s, v] of Object.entries(n.marks ?? {}) as Array<[keyof Kit, number]>) if (l.marks[s] < v) return false;
-  for (const [s, v] of Object.entries(n.kit ?? {}) as Array<[keyof Kit, number]>) if (l.kit[s] < v) return false;
+  for (const [s, v] of Object.entries(n.marks ?? {}) as Array<[keyof Marks, number]>) if (l.marks[s] < v) return false;
   if (n.allFlags && !n.allFlags.every((f) => l.flags.has(f))) return false;
   if (n.friends !== undefined && l.friends < n.friends) return false;
   if (n.flags && !n.flags.some((f) => l.flags.has(f))) return false;

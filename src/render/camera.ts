@@ -70,6 +70,8 @@ export class CameraRig {
   private h = 1;
   private offsetY = 0;
   private pull = 1;
+  /** 0 in flight, 1 with the refit bay open: the camera comes in on the ship. */
+  bay = 0;
 
   /** `offsetY` lifts the centre of the picture by that many CSS pixels. */
   resize(width: number, height: number, offsetY: number): void {
@@ -116,7 +118,7 @@ export class CameraRig {
       this.applyOffset();
     }
     const tanV = Math.tan(MathUtils.degToRad(vfov) / 2);
-    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull;
+    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 - 0.12 * this.bay);
 
     // forward along the yaw, and the camera behind and above
     const fx = Math.cos(this.yaw), fz = -Math.sin(this.yaw);

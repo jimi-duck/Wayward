@@ -15,13 +15,15 @@ Two ways in from the start screen:
   Threshold, with the Continuance's **Net** spreading behind you and
   **Prefect Calloway** following your trail. It starts with the Breakout,
   getting out of the home system. The old lane mouth is about a minute's flight away, flat out.
-  Reach it with 20 Krail in the tank and hold inside it while the drive
-  spools. Krail is scarce: hold the **cutter** (3 or C) on violet-veined rock,
+  Reach it with 20 **Cyrite** in the tank and hold inside it while the drive
+  spools. Cyrite is scarce: hold the **cutter** (3 or C) on violet-veined rock,
   easing off before it overheats, and it comes apart clean. Ordinary rock gives
-  ore, which fills the hold and the refit rail and sells at **Frontier
-  Supply**, the dock about halfway, where you can also buy Krail, patch a
-  plate or pay for a refit. Wrecks give parts, and you patch a plate out
-  of them when you are left alone. The Custody pursue from behind, harder as
+  ore, which fills the hold and sells at **Frontier Supply**, the dock about
+  halfway, where you can also buy Cyrite and patch a plate. Rock and wrecks
+  drop **Krail**, spent in the **refit bay** (B) as in the arcade; at a port
+  the bay also does the yard's work, the heaviest modules, for chits as well.
+  Wrecks give parts, and you patch a plate out of them when you are left
+  alone. The Custody pursue from behind, harder as
   the **hunt pressure** rises, and a capital ship blockades the lane mouth.
   Along the way, people call: traders, miners asking for help, jobs,
   warnings, raiders, a Prefect. Each **comms card** pauses the game and
@@ -31,7 +33,7 @@ Two ways in from the start screen:
   spoof it, pay it, talk through it, or fight her.
 
   On the far side of every lane, the **chart**: plot the next jump. Each
-  lane costs Krail (the lane mouth wants it) and days; you eat food
+  lane costs Cyrite (the lane mouth wants it) and days; you eat food
   every day and the drive wears parts every jump. Systems differ: ports to
   trade at, mining systems with rich rock, quick empty transits, contested
   space full of Gutter crews. A netted system has a blockade at its lane
@@ -42,7 +44,7 @@ Two ways in from the start screen:
   **Continue** carries on.
 - **Arcade**: the endless run. The ship leaves with lasers, torpedoes and a
   shield charge. Krail from rock and wrecks is spent in the **refit bay**
-  (B): a web of modules in eight tabs, each level paid in Krail and drawing
+  (B): a web of modules in tabs, each level paid in Krail and drawing
   on the ship's power, mass and heat; nothing comes out once fitted. It
   opens whenever nothing hostile is close. Hostiles arrive in encounters
   with quiet spells between, where the hull mends itself; from 3:30 capital
@@ -98,9 +100,8 @@ game opens with no bars at all.
 | Cutter (Breakout, hold) | 3, C or L | Cut button | LB or left trigger |
 | Overcharge (when full) | E | Core button | Y |
 | Barrel roll | Shift | a second finger on the left half | B or RB |
-| Refit bay (arcade): open, launch | B; Esc or B to launch | the bay button, bottom centre | Back; B |
-| Refit bay: tab, module, install | Q E or 1–8, arrows, Enter | tap | bumpers, stick, A |
-| Refit (Story): take a card | 1 2 3, or arrows and Enter, or click | tap a card | stick, A |
+| Refit bay (arcade, alert clear): open, launch | B; Esc or B to launch | the upgrades badge | Back; B |
+| Refit bay: fit a suggestion, change tab, move, fit | 1 2 3, Q E, arrows, Enter; A for Auto-refit | tap | stick, A, bumpers; Y for Auto-refit |
 | Comms: answer | 1–6, or arrows and Enter | tap | stick, A |
 | Hail (arcade): engage / evade | 1 or F / 2 or E | tap | A / B |
 | Camera distance | Z (cycles), or − and = | pause screen | |

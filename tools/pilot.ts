@@ -13,8 +13,9 @@ import { CUT_RANGE } from '../src/sim/mining';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
-import { blockOf, budgets, reachable } from '../src/sim/bay';
+import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
 import { FITTING } from '../src/content/web';
+import { MODULE_BY_ID } from '../src/content/modules';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
 // A competent, unspectacular player, for balancing. It picks a goal (nose
@@ -73,6 +74,8 @@ export interface PilotOptions {
   answer?: (w: World) => string | null;
   /** Sees every event and the world after each step, for the measuring tools. */
   watch?: (w: World, events: readonly GameEvent[]) => void;
+  /** The yard's modules the pilot wants at a port (the Story mode), most wanted first; others it leaves. */
+  modules?: string[];
 }
 
 export interface PilotResult {
@@ -119,31 +122,9 @@ export function stratName(s: Strategy): string {
 const KIND_BONUS: Record<string, number> = { system: 4, spec: 5, synergy: 4, tech: 5, stat: 1 };
 const WEAPON_BRANCHES = new Set<string>(['laser', 'torpedo', 'mine', 'plasma', 'close']);
 
-/**
- * The card to take. 'random' takes any of the three, as a player who reads
- * none of them would. A focus takes its branch (then its second), keeps a
- * little defence, and takes salvaged tech and synergies when they come.
- */
-function pickCard(w: World, s: Strategy, rngPick: () => number): number {
-  const cards = w.offer?.cards ?? [];
-  if (s.kind === 'random') return Math.floor(rngPick() * cards.length);
-  const score = (id: string) => {
-    const u = UPGRADE[id]!;
-    let v = u.branch === s.branch ? 10 : u.branch === s.second ? 6 : 0;
-    // a build with no weapon branch still keeps its guns up, as a player would
-    if (!WEAPON_BRANCHES.has(s.branch) && !(s.second && WEAPON_BRANCHES.has(s.second)) && u.branch === 'laser') v += 8;
-    if (u.branch === 'defence') v += 3;
-    if (u.branch === s.branch || u.branch === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
-    else if (u.kind === 'system') v -= 3;
-    return v + rngPick() * 2;
-  };
-  let best = 0, bestV = -Infinity;
-  cards.forEach((c, i) => { const v = score(c.id); if (v > bestV) { bestV = v; best = i; } });
-  return best;
-}
-
-/** How much the strategy wants a module of the bay (upgrades as pickCard scores them; fittings when their budget is short). */
-function want(w: World, s: Strategy, id: string): number {
+/** How much the strategy wants a module of the bay: its branch, then its second, a little defence, tech and synergies; fittings when their budget is short; the yard's modules it was told to want. */
+function want(w: World, s: Strategy, id: string, modules: readonly string[] = []): number {
+  if (MODULE_BY_ID[id]) { const i = modules.indexOf(id); return i < 0 ? -1 : 16 - i; }
   if (FITTING[id]) {
     // a fitting when its budget is short: power nearly gone, or the ship run hot or heavy
     const { use, cap } = budgets(w.levels);
@@ -165,26 +146,40 @@ function want(w: World, s: Strategy, id: string): number {
  * The refit bay, in a quiet moment: the module the strategy wants most of
  * those it could fit with Krail enough. Bought if the Krail is there; if
  * power is what stops it, the reactor core first; otherwise the pilot saves
- * for it. A random pilot buys whatever it can afford, at random.
+ * for it. A random pilot buys whatever it can afford, at random. A pilot
+ * told to want some of the yard's modules fits them first at a port, and
+ * away from one keeps back the Krail the next of them costs.
  */
-function shop(w: World, s: Strategy, rngPick: () => number): void {
+function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly string[] = []): void {
   if (!w.openBay()) return;
   for (let i = 0; i < 6; i++) {
     const ctx = w.bayCtx();
     const open = reachable(ctx);
     if (!open.length) break;
     let pick: string | null;
-    if (s.kind === 'random') {
-      const now = open.filter((n) => blockOf(n.id, ctx) === null);
+    // the yard's modules it was told to want come first, whenever one can be fitted
+    const wanted = modules.find((id) => blockOf(id, ctx) === null);
+    if (wanted) pick = wanted;
+    else if (s.kind === 'random') {
+      const now = open.filter((n) => blockOf(n.id, ctx) === null && !MODULE_BY_ID[n.id]);
       pick = now.length ? now[Math.floor(rngPick() * now.length)]!.id : null;
     } else {
-      const best = open.map((n) => ({ id: n.id, v: want(w, s, n.id) + rngPick() })).sort((a, b) => b.v - a.v)[0]!;
+      const best = open.map((n) => ({ id: n.id, v: want(w, s, n.id, modules) + rngPick() })).sort((a, b) => b.v - a.v)[0]!;
       const why = blockOf(best.id, ctx);
       pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
     }
+    // away from a port, keep back the Krail the next wanted yard module will cost, as a player saving for the yard would
+    if (pick && !MODULE_BY_ID[pick] && !w.docked && w.krail - cost(pick, (w.levels[pick] ?? 0) + 1) < saveFor(w, modules)) break;
     if (!pick || w.install(pick)) break;
   }
   w.closeBay();
+}
+
+/** The Krail to keep for the first wanted yard module that a port could fit (nothing once they are all in). */
+function saveFor(w: World, modules: readonly string[]): number {
+  const port = { ...w.bayCtx(), docked: true, krail: Infinity, chits: Infinity };
+  const next = modules.find((id) => blockOf(id, port) === null);
+  return next ? cost(next, (w.levels[next] ?? 0) + 1) : 0;
 }
 
 /**
@@ -307,7 +302,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   // the Breakout: the course. Port when the hold is nearly full or the hull wants patching and there is
   // money for it; the lane mouth once the tank holds the jump; drifting lane-ward meanwhile
   const bk = w.bk;
-  const need = !!bk && w.krail < bk.jumpCost;
+  const need = !!bk && w.cyrite < bk.jumpCost;
   const pr = w.prices;
   const hungry = !!bk && w.food < 9 && w.chits + w.ore * pr.ore >= pr.food * 6;
   const goPort = !!bk && !!bk.port && bk.docks === 0
@@ -518,28 +513,27 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   let docks = 0;
   let nextShop = 0, fitted = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
-    if (w.phase === 'refit') { w.choose(pickCard(w, strategy, rngPick)); continue; }
-    // the arcade: a look into the bay every couple of seconds, when it will open
-    if (!w.bk && w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick); }
+    // a look into the bay every couple of seconds, when it will open
+    if (w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms') {
-      const before = { krail: w.krail, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
+      const before = { krail: w.cyrite, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
       w.answer(o.answer?.(w) ?? pickAnswer(w, o.policy ?? 'bluff'));
       const last = w.run.cards[w.run.cards.length - 1]!;
       answers.push({
-        card: before.card, choice: last.choice, won: last.won, krail: w.krail - before.krail, chits: w.chits - before.chits,
+        card: before.card, choice: last.choice, won: last.won, krail: w.cyrite - before.krail, chits: w.chits - before.chits,
         heat: (w.bk?.heat ?? 0) - before.heat, fight: w.aliens.length > before.aliens || w.bk?.blockade === 'called',
       });
       continue;
     }
     if (w.phase === 'dock') {
       if (w.bk && w.bk.docks > docks) { docks = w.bk.docks; o.onDock?.(w); }
-      // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, and a refit if there is money left
+      // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, then the bay
       w.sellOre();
-      while (w.krail < w.jumpCost && w.buy('krail'));
+      while (w.cyrite < w.jumpCost && w.buy('cyrite'));
       while (w.food < 12 && w.buy('food'));
       while (w.plates < w.stats.maxPlates && w.buy('plate'));
-      if (w.buy('refit')) continue;
+      shop(w, strategy, rngPick, o.modules);
       w.undock();
       continue;
     }
@@ -555,8 +549,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     const evs = w.drain();
     o.watch?.(w, evs);
     for (const ev of evs) {
-      if (ev.type === 'levelUp' && [1, 5, 10, 15, 20].includes(ev.refit)) refitAt[ev.refit] = Math.round(w.runTime);
-      if (ev.type === 'fitted' && !w.bk && [1, 5, 10, 15, 20].includes(++fitted)) refitAt[fitted] = Math.round(w.runTime);
+      if (ev.type === 'fitted' && [1, 5, 10, 15, 20].includes(++fitted)) refitAt[fitted] = Math.round(w.runTime);
       if (ev.type === 'bossArrive') { fightStart = w.runTime; fightFaction = ev.faction; }
       if (ev.type === 'bossDestroyed') { bossFights.push({ faction: ev.faction, outcome: 'killed', seconds: Math.round(w.runTime - fightStart), hpLeft: 0, refit: w.refit }); fightStart = -1; }
       if (ev.type === 'bossLeft') {

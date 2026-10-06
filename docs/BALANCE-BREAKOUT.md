@@ -12,20 +12,20 @@ way.
 
 ## Escapes
 
-| Strategy | Policy | Escaped | Time to escape | Lasted, if caught | Time in combat | Refits | Ore | Krail | Cut / fractured | Docked | Plates lost / gained |
+| Strategy | Policy | Escaped | Time to escape | Lasted, if caught | Time in combat | Installs | Ore | Cyrite | Cut / fractured | Docked | Plates lost / gained |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| random | fight | 12/16 | 4:59 | 4:18 | 42% | 4.8 | 64 | 26 | 7.7 / 0.1 | 63% | 2.6 / 1.8 |
-| random | run | 10/16 | 5:17 | 3:44 | 44% | 4.6 | 57 | 14 | 8.3 / 0.1 | 75% | 3.4 / 1.9 |
-| random | pay | 12/16 | 5:20 | 4:00 | 38% | 5.1 | 71 | 27 | 8.7 / 0.1 | 56% | 2.1 / 1.3 |
-| random | bluff | 13/16 | 5:07 | 3:58 | 37% | 5.3 | 69 | 27 | 8.3 / 0.1 | 63% | 2.1 / 1.4 |
-| laser+defence | fight | 15/16 | 6:29 | 3:32 | 60% | 4.3 | 52 | 22 | 7.4 / 0.1 | 56% | 2.9 / 2.7 |
-| laser+defence | run | 15/16 | 6:03 | 3:07 | 59% | 4.1 | 44 | 18 | 8.4 / 0.1 | 81% | 3.1 / 2.7 |
-| laser+defence | pay | 12/16 | 7:03 | 5:01 | 63% | 4.2 | 49 | 23 | 8.8 / 0.1 | 31% | 4.9 / 4.0 |
-| laser+defence | bluff | 13/16 | 6:32 | 6:17 | 63% | 4.4 | 52 | 23 | 9.1 / 0.1 | 44% | 3.8 / 3.1 |
-| torpedo+defence | fight | 14/16 | 5:14 | 3:33 | 39% | 5.1 | 67 | 25 | 7.1 / 0.0 | 75% | 2.1 / 1.7 |
-| torpedo+defence | run | 14/16 | 4:50 | 3:55 | 40% | 5.1 | 65 | 18 | 7.9 / 0.0 | 88% | 1.6 / 1.1 |
-| torpedo+defence | pay | 14/16 | 5:27 | 4:21 | 39% | 5.2 | 72 | 27 | 7.3 / 0.0 | 75% | 2.3 / 1.8 |
-| torpedo+defence | bluff | 15/16 | 5:23 | 3:36 | 38% | 5.3 | 72 | 29 | 7.3 / 0.0 | 75% | 1.4 / 1.1 |
+| random | fight | 14/16 | 5:07 | 4:18 | 36% | 3.2 | 78 | 23 | 5.7 / 0.0 | 100% | 1.4 / 1.1 |
+| random | run | 13/16 | 5:31 | 4:05 | 36% | 3.1 | 77 | 18 | 5.3 / 0.0 | 100% | 1.8 / 1.2 |
+| random | pay | 14/16 | 5:15 | 4:59 | 35% | 3.3 | 84 | 22 | 6.0 / 0.0 | 100% | 1.5 / 1.1 |
+| random | bluff | 15/16 | 5:45 | 4:06 | 37% | 3.6 | 86 | 24 | 6.8 / 0.0 | 100% | 1.4 / 1.1 |
+| laser+defence | fight | 15/16 | 5:09 | 4:22 | 36% | 3.5 | 78 | 25 | 5.7 / 0.0 | 100% | 0.9 / 0.8 |
+| laser+defence | run | 15/16 | 5:25 | 3:41 | 36% | 3.2 | 78 | 19 | 5.1 / 0.0 | 100% | 0.9 / 0.6 |
+| laser+defence | pay | 16/16 | 5:22 | — | 36% | 3.4 | 80 | 24 | 6.0 / 0.0 | 100% | 0.5 / 0.5 |
+| laser+defence | bluff | 15/16 | 5:20 | 4:43 | 36% | 3.3 | 78 | 22 | 6.4 / 0.0 | 100% | 0.7 / 0.5 |
+| torpedo+defence | fight | 15/16 | 5:09 | 4:22 | 36% | 2.7 | 78 | 24 | 5.7 / 0.0 | 100% | 0.8 / 0.6 |
+| torpedo+defence | run | 15/16 | 5:23 | 3:41 | 36% | 2.6 | 76 | 19 | 5.1 / 0.0 | 100% | 1.0 / 0.7 |
+| torpedo+defence | pay | 16/16 | 5:19 | — | 35% | 2.8 | 79 | 24 | 5.9 / 0.0 | 100% | 0.4 / 0.4 |
+| torpedo+defence | bluff | 14/16 | 5:14 | 5:23 | 35% | 2.6 | 77 | 21 | 6.4 / 0.0 | 100% | 0.7 / 0.3 |
 
 "Time in combat" is the share of the run with a hostile in firing range of
 the ship.
@@ -34,29 +34,29 @@ the ship.
 
 | Policy | Escaped | Cards answered | Jobs done | Time in combat | Time to escape |
 |---|---|---|---|---|---|
-| fight | 85% | 9.0 | 0.6 | 47% | 5:37 |
-| run | 81% | 8.0 | 0.0 | 48% | 5:25 |
-| pay | 79% | 8.9 | 0.6 | 47% | 5:55 |
-| bluff | 85% | 8.9 | 0.5 | 46% | 5:40 |
+| fight | 92% | 9.3 | 0.6 | 36% | 5:08 |
+| run | 90% | 8.8 | 0.0 | 36% | 5:26 |
+| pay | 96% | 9.3 | 0.7 | 36% | 5:19 |
+| bluff | 92% | 9.8 | 0.5 | 36% | 5:27 |
 
 ## The checkpoint
 
 | Choice | Taken | Came off | Then escaped |
 |---|---|---|---|
-| run | 119 | 100% | 87% |
-| spoof | 4 | 50% | 100% |
-| rig | 2 | 100% | 100% |
-| pay | 7 | 43% | 100% |
-| talk | 1 | 0% | 100% |
-| fight | 47 | 100% | 87% |
+| run | 130 | 100% | 92% |
+| spoof | 1 | 0% | 100% |
+| rig | 2 | 0% | 100% |
+| pay | 11 | 82% | 100% |
+| talk | 0 | — | — |
+| fight | 48 | 100% | 92% |
 
 ## The blockade, when it came to a fight
 
 | Outcome | Fights |
 |---|---|
-| killed | 134 |
-| escaped (she left) | 21 |
-| died | 18 |
+| killed | 171 |
+| escaped (she left) | 0 |
+| died | 12 |
 
 ## Every card, every choice
 
@@ -67,118 +67,111 @@ not a gamble; the aim is that none does.
 
 | Card | Choice | Taken | Came off | Krail | Chits | Heat | Fight | Then escaped |
 |---|---|---|---|---|---|---|---|---|
-| checkpoint | fight | 47 | 100% | 0.0 | 0 | 0.00 | 100% | 87% |
-| checkpoint | pay | 7 | 43% | 0.0 | -65 | 0.00 | 57% | 100% |
-| checkpoint | rig | 2 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| checkpoint | run | 119 | 100% | 0.0 | 0 | +0.25 | 0% | 87% |
-| checkpoint | spoof | 4 | 50% | 0.0 | 0 | -0.02 | 50% | 100% |
-| checkpoint | talk | 1 | 0% | 0.0 | 0 | +0.05 | 100% | 100% |
-| port_check | bribe | 2 | 100% | 0.0 | -48 | 0.00 | 0% | 100% |
-| port_check | refuse | 108 | 100% | 0.0 | 0 | +0.07 | 0% | 86% |
-| port_check | scan | 33 | 67% | 0.0 | 0 | +0.03 | 0% | 91% |
-| beacon_cache | go | 31 | 58% | +3.2 | 0 | +0.05 | 42% | 94% |
-| beacon_cache | no | 7 | 100% | 0.0 | 0 | 0.00 | 0% | 86% |
-| distress_custody | no | 6 | 100% | 0.0 | 0 | 0.00 | 0% | 67% |
-| distress_custody | rescue | 7 | 71% | 0.0 | 0 | -0.07 | 0% | 86% |
-| distress_custody | strip | 23 | 100% | 0.0 | 0 | +0.05 | 0% | 70% |
-| distress_freighter | help | 11 | 100% | 0.0 | 0 | 0.00 | 100% | 82% |
-| distress_freighter | no | 30 | 100% | 0.0 | 0 | 0.00 | 0% | 90% |
-| distress_tug | help | 47 | 60% | 0.0 | 0 | 0.00 | 40% | 81% |
-| distress_tug | no | 14 | 100% | 0.0 | 0 | 0.00 | 0% | 86% |
-| courier | no | 9 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| courier | take | 37 | 78% | +7.3 | 0 | 0.00 | 0% | 92% |
-| decoy | no | 4 | 100% | 0.0 | 0 | 0.00 | 0% | 50% |
-| decoy | take | 8 | 100% | +8.8 | 0 | +0.18 | 0% | 75% |
-| haul_job | no | 16 | 100% | 0.0 | 0 | 0.00 | 0% | 81% |
+| checkpoint | fight | 48 | 100% | 0.0 | 0 | 0.00 | 100% | 92% |
+| checkpoint | pay | 11 | 82% | 0.0 | -54 | 0.00 | 18% | 100% |
+| checkpoint | rig | 2 | 0% | 0.0 | 0 | +0.10 | 100% | 100% |
+| checkpoint | run | 130 | 100% | 0.0 | 0 | +0.23 | 0% | 92% |
+| checkpoint | spoof | 1 | 0% | 0.0 | 0 | +0.04 | 100% | 100% |
+| port_check | bribe | 3 | 100% | 0.0 | -35 | 0.00 | 0% | 100% |
+| port_check | refuse | 141 | 100% | 0.0 | 0 | +0.08 | 0% | 92% |
+| port_check | scan | 48 | 33% | 0.0 | 0 | +0.10 | 0% | 92% |
+| beacon_cache | go | 25 | 76% | +4.6 | 0 | +0.03 | 24% | 88% |
+| beacon_cache | no | 17 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| distress_custody | no | 8 | 100% | 0.0 | 0 | 0.00 | 0% | 88% |
+| distress_custody | rescue | 4 | 75% | 0.0 | 0 | -0.09 | 0% | 100% |
+| distress_custody | strip | 10 | 100% | 0.0 | 0 | +0.08 | 0% | 100% |
+| distress_freighter | help | 5 | 100% | 0.0 | 0 | 0.00 | 100% | 100% |
+| distress_freighter | no | 19 | 100% | 0.0 | 0 | 0.00 | 0% | 95% |
+| distress_tug | help | 18 | 67% | 0.0 | 0 | 0.00 | 33% | 89% |
+| distress_tug | no | 22 | 100% | 0.0 | 0 | 0.00 | 0% | 95% |
+| courier | no | 9 | 100% | 0.0 | 0 | 0.00 | 0% | 89% |
+| courier | take | 24 | 88% | +7.7 | 0 | 0.00 | 0% | 100% |
+| decoy | no | 7 | 100% | 0.0 | 0 | 0.00 | 0% | 86% |
+| decoy | take | 11 | 100% | +9.1 | 0 | +0.18 | 0% | 91% |
+| haul_job | no | 14 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
 | haul_job | take | 37 | 100% | 0.0 | 0 | 0.00 | 0% | 92% |
-| runner_favour | carry | 3 | 100% | 0.0 | 0 | +0.05 | 0% | 100% |
-| salvage_job | no | 11 | 100% | 0.0 | 0 | 0.00 | 0% | 73% |
-| salvage_job | take | 27 | 100% | 0.0 | 0 | 0.00 | 0% | 89% |
-| foreman_again | refuse | 13 | 100% | 0.0 | 0 | +0.06 | 0% | 92% |
-| foreman | cut | 12 | 100% | 0.0 | 0 | 0.00 | 0% | 75% |
-| foreman | stall | 14 | 100% | 0.0 | 0 | -0.12 | 0% | 93% |
-| foreman | tell | 34 | 100% | 0.0 | 0 | +0.07 | 0% | 88% |
-| hungry_crew | fight | 18 | 100% | 0.0 | 0 | 0.00 | 100% | 89% |
-| hungry_crew | give | 28 | 64% | -3.0 | 0 | 0.00 | 36% | 86% |
-| hungry_crew | no | 13 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| pod_thanks | hull | 9 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| pod | leave | 8 | 100% | 0.0 | 0 | 0.00 | 0% | 88% |
-| pod | strip | 39 | 100% | 0.0 | 0 | 0.00 | 0% | 85% |
-| pod | take | 9 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| stowaways | no | 8 | 100% | 0.0 | 0 | 0.00 | 0% | 88% |
-| stowaways | take | 13 | 100% | 0.0 | 0 | +0.05 | 0% | 100% |
-| rumour_captain | listen | 40 | 73% | 0.0 | 0 | 0.00 | 0% | 95% |
-| rumour_captain | no | 11 | 100% | 0.0 | 0 | 0.00 | 0% | 82% |
-| rumour_forger | intro | 3 | 100% | 0.0 | -10 | 0.00 | 0% | 100% |
-| rumour_forger | no | 10 | 100% | 0.0 | 0 | 0.00 | 0% | 80% |
-| rumour_forger | note | 55 | 100% | 0.0 | 0 | 0.00 | 0% | 85% |
-| rumour_prefect | ask | 10 | 100% | 0.0 | -5 | 0.00 | 0% | 80% |
-| rumour_prefect | quiet | 37 | 100% | 0.0 | 0 | -0.05 | 0% | 97% |
-| rumour_seam | no | 57 | 100% | 0.0 | 0 | 0.00 | 0% | 81% |
-| rumour_seam | trade | 135 | 78% | 0.0 | 0 | 0.00 | 0% | 84% |
-| claim_jumpers | fight | 4 | 100% | 0.0 | 0 | +0.03 | 100% | 75% |
-| claim_jumpers | hand | 18 | 100% | 0.0 | 0 | -0.05 | 0% | 83% |
-| gutter_toll | bay | 7 | 57% | 0.0 | 0 | 0.00 | 43% | 100% |
-| gutter_toll | fight | 13 | 100% | 0.0 | 0 | 0.00 | 100% | 92% |
+| runner_favour | carry | 3 | 100% | 0.0 | 0 | +0.05 | 0% | 67% |
+| salvage_job | no | 10 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| salvage_job | take | 33 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| foreman_again | refuse | 15 | 100% | 0.0 | 0 | +0.08 | 0% | 87% |
+| foreman | cut | 12 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| foreman | stall | 20 | 100% | 0.0 | 0 | -0.12 | 0% | 90% |
+| foreman | tell | 29 | 100% | 0.0 | 0 | +0.07 | 0% | 93% |
+| hungry_crew | fight | 8 | 100% | 0.0 | 0 | 0.00 | 100% | 88% |
+| hungry_crew | give | 27 | 59% | -3.0 | 0 | 0.00 | 41% | 85% |
+| hungry_crew | no | 11 | 100% | 0.0 | 0 | 0.00 | 0% | 91% |
+| pod_thanks | hull | 16 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| pod | leave | 13 | 100% | 0.0 | 0 | 0.00 | 0% | 92% |
+| pod | strip | 34 | 100% | 0.0 | 0 | 0.00 | 0% | 94% |
+| pod | take | 16 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| stowaways | no | 10 | 100% | 0.0 | 0 | 0.00 | 0% | 80% |
+| stowaways | take | 36 | 100% | 0.0 | 0 | +0.05 | 0% | 92% |
+| rumour_captain | listen | 68 | 51% | 0.0 | 0 | 0.00 | 0% | 96% |
+| rumour_captain | no | 13 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| rumour_forger | intro | 4 | 100% | 0.0 | -10 | 0.00 | 0% | 100% |
+| rumour_forger | no | 11 | 100% | 0.0 | 0 | 0.00 | 0% | 91% |
+| rumour_forger | note | 46 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| rumour_prefect | ask | 17 | 100% | 0.0 | -5 | 0.00 | 0% | 94% |
+| rumour_prefect | quiet | 24 | 100% | 0.0 | 0 | -0.05 | 0% | 92% |
+| rumour_seam | no | 66 | 100% | 0.0 | 0 | 0.00 | 0% | 91% |
+| rumour_seam | trade | 126 | 43% | 0.0 | 0 | 0.00 | 0% | 93% |
+| claim_jumpers | fight | 2 | 100% | 0.0 | 0 | +0.05 | 100% | 100% |
+| claim_jumpers | hand | 17 | 100% | 0.0 | 0 | -0.05 | 0% | 94% |
+| gutter_toll | bay | 15 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| gutter_toll | fight | 9 | 100% | 0.0 | 0 | 0.00 | 100% | 100% |
 | gutter_toll | friend | 1 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| gutter_toll | pay | 35 | 100% | -4.0 | 0 | 0.00 | 0% | 89% |
-| office_ambush | fight | 10 | 100% | 0.0 | 0 | 0.00 | 0% | 90% |
-| office_ambush | run | 12 | 100% | 0.0 | 0 | +0.06 | 0% | 92% |
-| office_ambush | surrender | 20 | 100% | -11.6 | 0 | 0.00 | 0% | 75% |
-| picket_fine | fight | 5 | 100% | 0.0 | 0 | +0.06 | 100% | 100% |
-| picket_fine | ore | 7 | 100% | 0.0 | 0 | 0.00 | 0% | 71% |
-| picket_fine | pay | 2 | 100% | 0.0 | -38 | 0.00 | 0% | 100% |
-| ares_tender | no | 7 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| ares_tender | parts | 26 | 100% | 0.0 | 0 | 0.00 | 0% | 77% |
-| forger | buy | 7 | 86% | 0.0 | -40 | 0.00 | 0% | 100% |
-| forger | no | 10 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| freighter_thanks | krail | 10 | 100% | +6.4 | 0 | 0.00 | 0% | 80% |
-| fuel_runner | favour | 3 | 100% | +6.0 | 0 | 0.00 | 0% | 100% |
-| fuel_runner | no | 1 | 100% | 0.0 | 0 | 0.00 | 0% | 0% |
-| krail_seller | no | 5 | 100% | 0.0 | 0 | 0.00 | 0% | 80% |
-| krail_seller | ore | 17 | 88% | +3.8 | 0 | 0.00 | 0% | 88% |
-| ore_buyer | no | 16 | 100% | 0.0 | 0 | 0.00 | 0% | 94% |
-| ore_buyer | sell | 45 | 87% | 0.0 | +81 | +0.01 | 0% | 87% |
-| calloway | answer | 45 | 100% | 0.0 | 0 | +0.01 | 0% | 98% |
-| calloway | silence | 13 | 100% | 0.0 | 0 | +0.02 | 0% | 100% |
-| custody_demand | defy | 5 | 100% | 0.0 | 0 | +0.10 | 100% | 100% |
-| custody_demand | silent | 8 | 100% | 0.0 | 0 | +0.03 | 0% | 100% |
-| office_watch | buy | 4 | 100% | 0.0 | -20 | 0.00 | 0% | 100% |
-| office_watch | no | 33 | 100% | 0.0 | 0 | 0.00 | 0% | 94% |
-| sweep_warning | ask | 8 | 25% | 0.0 | 0 | -0.04 | 0% | 75% |
-| sweep_warning | no | 41 | 100% | 0.0 | 0 | 0.00 | 0% | 76% |
-| sweep_warning | pay | 2 | 50% | 0.0 | -15 | -0.02 | 0% | 100% |
-| tracker_found | keep | 5 | 100% | 0.0 | 0 | +0.03 | 0% | 80% |
-| tracker_found | open | 2 | 0% | 0.0 | 0 | +0.15 | 0% | 100% |
+| gutter_toll | pay | 19 | 100% | -4.0 | 0 | 0.00 | 0% | 84% |
+| office_ambush | fight | 11 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| office_ambush | run | 18 | 100% | 0.0 | 0 | +0.04 | 0% | 94% |
+| office_ambush | surrender | 22 | 100% | -10.9 | 0 | 0.00 | 0% | 91% |
+| picket_fine | fight | 6 | 100% | 0.0 | 0 | +0.06 | 100% | 100% |
+| picket_fine | ore | 17 | 100% | 0.0 | 0 | 0.00 | 0% | 76% |
+| ares_tender | no | 11 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| ares_tender | parts | 32 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| ares_tender | patch | 2 | 100% | 0.0 | -40 | 0.00 | 0% | 100% |
+| forger | buy | 1 | 100% | 0.0 | -40 | 0.00 | 0% | 100% |
+| forger | no | 22 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| freighter_thanks | krail | 4 | 100% | +8.0 | 0 | 0.00 | 0% | 100% |
+| fuel_runner | favour | 3 | 100% | +6.0 | 0 | 0.00 | 0% | 67% |
+| krail_seller | no | 3 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| krail_seller | ore | 35 | 100% | +4.0 | 0 | 0.00 | 0% | 97% |
+| ore_buyer | no | 13 | 100% | 0.0 | 0 | 0.00 | 0% | 77% |
+| ore_buyer | sell | 33 | 79% | 0.0 | +81 | +0.01 | 0% | 100% |
+| calloway | answer | 30 | 100% | 0.0 | 0 | +0.02 | 0% | 93% |
+| calloway | silence | 9 | 100% | 0.0 | 0 | +0.01 | 0% | 100% |
+| custody_demand | defy | 15 | 100% | 0.0 | 0 | +0.10 | 100% | 87% |
+| custody_demand | silent | 21 | 100% | 0.0 | 0 | +0.04 | 0% | 95% |
+| office_watch | buy | 6 | 100% | 0.0 | -20 | 0.00 | 0% | 100% |
+| office_watch | no | 51 | 100% | 0.0 | 0 | 0.00 | 0% | 84% |
+| sweep_warning | ask | 15 | 13% | 0.0 | 0 | -0.02 | 0% | 93% |
+| sweep_warning | no | 55 | 100% | 0.0 | 0 | 0.00 | 0% | 95% |
+| sweep_warning | pay | 5 | 100% | 0.0 | -15 | -0.15 | 0% | 100% |
+| tracker_found | keep | 1 | 100% | 0.0 | 0 | +0.05 | 0% | 100% |
+| tracker_found | open | 2 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
 
 ## What caught the ones who did not get out
 
 | Cause | Runs |
 |---|---|
-| rock | 11 |
-| fire:capital:spiral | 10 |
-| fire:capital:volley | 3 |
-| fire:interdictor | 3 |
-| ram:lancer | 2 |
-| fire:lancer | 2 |
-| bulwark | 1 |
-| ram:interdictor | 1 |
+| fire:capital:spiral | 7 |
+| fire:lancer | 4 |
+| rock | 4 |
 
 ## Where the damage comes from
 
 | Source | Hits | Share |
 |---|---|---|
-| fire:capital:spiral | 224 | 23% |
-| rock | 186 | 19% |
-| fire:interdictor | 150 | 15% |
-| fire:capital:volley | 61 | 6% |
-| fire:lancer | 55 | 6% |
-| ram:capital | 43 | 4% |
-| fire:capital:ring | 38 | 4% |
-| bulwark | 35 | 4% |
-| fire:picket | 34 | 3% |
-| ram:raptor | 33 | 3% |
-| fire:raptor | 30 | 3% |
-| ram:enforcer | 25 | 3% |
-| ram:lancer | 16 | 2% |
-| ram:interdictor | 13 | 1% |
+| rock | 344 | 38% |
+| fire:capital:spiral | 236 | 26% |
+| fire:interdictor | 73 | 8% |
+| fire:lancer | 51 | 6% |
+| fire:capital:volley | 42 | 5% |
+| bulwark | 37 | 4% |
+| ram:enforcer | 20 | 2% |
+| ram:capital | 19 | 2% |
+| fire:capital:ring | 19 | 2% |
+| ram:raptor | 13 | 1% |
+| fire:enforcer | 9 | 1% |
+| fire:raptor | 9 | 1% |
+| ram:lancer | 7 | 1% |
+| artillery | 6 | 1% |

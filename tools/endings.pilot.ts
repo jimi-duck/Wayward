@@ -28,18 +28,10 @@ function planRoute(j: Journey): string {
     j.at = o.to.id;
     const left = o.to.kind === 'edge' ? 0 : toEdge(j);
     j.at = at;
-    const v = -left * 40 - o.route.krail * 1.2 - (o.netted ? 35 : 0) - (o.shadow ? 30 : 0);
+    const v = -left * 40 - o.route.cyrite * 1.2 - (o.netted ? 35 : 0) - (o.shadow ? 30 : 0);
     if (v > bestV) { bestV = v; best = o.to.id; }
   }
   return best;
-}
-
-/** At a port: fit what can be fitted of the system this journey leans on. */
-function fitAll(w: World, lean: ShipSystem): void {
-  for (let k = 0; k < 4; k++) {
-    const m = MODULES.filter((x) => x.system === lean).find((x) => w.fitNeeds(x.id).length === 0);
-    if (!m || !w.fitModule(m.id)) return;
-  }
 }
 
 function flyJourney(seed: number, policy: Policy, lean: ShipSystem): Journey {
@@ -48,7 +40,8 @@ function flyJourney(seed: number, policy: Policy, lean: ShipSystem): Journey {
   while (j.status !== 'over' && n < MAX_LEGS) {
     if (j.status === 'chart') plot(j, planRoute(j));
     const w = new World(seed * 31 + n * 7 + 1, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
-    flyWorld(w, seed * 31 + n, STRAT, { maxTime: 1200, breakout: true, policy, onDock: (w) => fitAll(w, lean) });
+    // at every port the bay fits what it can of the system this journey leans on
+    flyWorld(w, seed * 31 + n, STRAT, { maxTime: 1200, breakout: true, policy, modules: MODULES.filter((x) => x.system === lean).map((x) => x.id) });
     if (w.phase !== 'over') break;
     endSortie(j, w.result());
     n++;
@@ -72,9 +65,8 @@ it('opens endings on real journeys', { timeout: 7_200_000 }, () => {
         for (const id of open) opened[id]!++;
         const st = SCATTER.map((s) => `${s} ${l.standing[s] ?? 0}`).join(', ');
         const mk = SHIP_SYSTEMS.map((s) => `${s} ${l.marks[s]}`).join(', ');
-        const kit = SHIP_SYSTEMS.map((s) => `${s} ${j.carry.kit[s]}`).join(', ');
         const hunting = (['custody', 'office', 'gutter'] as const).filter((f) => l.notice(f)).join(', ') || '—';
-        rows.push(`| ${lean} | ${policy} | through | ${open.join(', ')} | ${st} | ${mk} | ${kit} | ${hunting} | ${l.beaten} | ${[...l.flags].join(', ') || '—'} |`);
+        rows.push(`| ${lean} | ${policy} | through | ${open.join(', ')} | ${st} | ${mk} | ${Math.floor(j.carry.krail)} | ${hunting} | ${l.beaten} | ${[...l.flags].join(', ') || '—'} |`);
       }
     }
   }
@@ -88,7 +80,7 @@ ${through} of ${total} reached the Threshold.
 |---|---|
 ${ENDINGS.map((e) => `| ${e.name} | ${opened[e.id]}/${through} |`).join('\n')}
 
-| Lean | Policy | End | Open | Standing (Scatter) | Marks | Kit aboard | Hunting you | Calloway beaten | Flags |
+| Lean | Policy | End | Open | Standing (Scatter) | Marks | Krail aboard | Hunting you | Calloway beaten | Flags |
 |---|---|---|---|---|---|---|---|---|---|
 ${rows.join('\n')}
 `;

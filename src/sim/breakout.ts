@@ -7,7 +7,6 @@ import type { Faction } from './enemies';
 import type { RockKind, RockSize } from './field';
 import type { Report } from './captains';
 import { NO_NEMESIS, type Nemesis } from './calloway';
-import type { Kit } from './modules';
 import { QUIET, type Pressure } from './notice';
 import type { RunStats } from './run';
 import type { Rng } from './rng';
@@ -17,12 +16,12 @@ import type { Rng } from './rng';
 // sortie has a shape instead of an endless clock:
 //
 //   the lane mouth · far across the system, the old jump lane out. Reach it
-//                    with enough Krail in the tank, hold inside it while the
+//                    with enough Cyrite in the tank, hold inside it while the
 //                    drive spools, and you are gone. A Custody capital ship
 //                    blockades it, and her checkpoint is a comms card: run
 //                    it, spoof it, pay it, talk through it, or fight her.
 //   the port       · a fuel dock off the direct line, roughly halfway, that
-//                    does not check implants. Dock to sell ore, buy Krail,
+//                    does not check implants. Dock to sell ore, buy Cyrite,
 //                    patch the hull and pay for a refit. Docking quiets the
 //                    pursuit a little, once.
 //   heat           · how hard the Custody is looking for you, 0 to 1. It
@@ -31,10 +30,11 @@ import type { Rng } from './rng';
 //                    and which: pickets first, then cruisers, enforcers and
 //                    interdictors. They come from behind, from home.
 //
-// Krail is fuel now, and scarce: it comes from violet-veined rock cut clean,
+// Cyrite is the fuel, and scarce: it comes from violet-veined rock cut clean,
 // from the rare gold rock, from the port and from a capital ship's wreck.
-// Ore is what the cutter takes out of ordinary rock: it fills the hold, it
-// pays for refits on the rail, and it sells at the port. Parts are salvage
+// Krail is what the refit bay builds from, as in the arcade: crystals out of
+// ordinary rock and the wrecks of what you destroy. Ore is what the cutter
+// takes out of ordinary rock: it fills the hold and sells at the port. Parts are salvage
 // from wrecks; you patch a plate out of them when the ship is left
 // alone for a few seconds.
 
@@ -57,13 +57,11 @@ export const PORT_OFF = 260;
 export const LANE_R = 16;
 export const PORT_R = 9;
 
-/** Krail it takes to jump, what the tank holds at the start, and the hold's capacity. */
+/** Cyrite it takes to jump, what the tank holds at the start, and the hold's capacity. */
 export const JUMP_COST = 20;
-export const START_KRAIL = 6;
+export const START_CYRITE = 6;
 export const TANK_MAX = 40;
 export const HOLD_START = 40;
-/** Each unit of ore is worth this much on the refit rail: a Breakout is short, and a build should take shape in it. */
-export const ORE_XP = 1.7;
 /** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
 export const SPOOL_RUN = 2.2;
@@ -71,8 +69,12 @@ export const SPOOL_RUN = 2.2;
 export const BLOCKADE_AT = 420;
 /** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
 export const BLOCKADE_HP = 3;
-/** Krail and parts a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
-export const CAPITAL_KRAIL = 6;
+/** Cyrite and parts a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
+export const CAPITAL_CYRITE = 6;
+/** Krail in the Story mode, for the refit bay: a share of a wreck's worth, a share of what rock gives in the arcade (a cut gives it surely, a break by chance), and a capital ship's salvage. */
+export const WRECK_KRAIL = 0.6;
+export const ROCK_KRAIL = 0.6;
+export const CAPITAL_KRAIL = 40;
 export const CAPITAL_PARTS = 18;
 
 /** Parts to patch a plate, the quiet it needs, and how long the patch takes. */
@@ -118,7 +120,7 @@ export interface SortieDef {
   region?: number;
   name: string;
   kind: SystemKind;
-  /** Where the plotted lane goes, and the Krail it takes to jump. */
+  /** Where the plotted lane goes, and the Cyrite it takes to jump. */
   dest: string;
   jumpCost: number;
   /** Distance to the lane mouth. */
@@ -135,7 +137,7 @@ export interface SortieDef {
   gutter: number;
   /** Who comes from ahead, as variant ids, where it is not the Gutter (a Voice system, Thren space). */
   ahead?: string[];
-  /** Thren in the system, 0 to 1: they swarm, drawn by the Krail aboard (sim/world.ts). */
+  /** Thren in the system, 0 to 1: they swarm, drawn by the Cyrite aboard (sim/world.ts). */
   thren?: number;
   /** Who else is here, for the cards (sim/scatter.ts presence): 'drift', 'holdfast', 'raid', 'voice', 'thren'. */
   here?: string[];
@@ -166,6 +168,9 @@ export const HOME: SortieDef = {
 
 /** What the Wayward carries from one sortie into the next. */
 export interface Carry {
+  /** Cyrite in the tank: fuel for the jumps. */
+  cyrite: number;
+  /** Krail aboard: what the refit bay builds from. */
   krail: number;
   ore: number;
   parts: number;
@@ -174,8 +179,7 @@ export interface Carry {
   /** Plates whole (never more than the build allows). */
   plates: number;
   levels: Levels;
-  /** The refit rail. */
-  xp: number;
+  /** Installs made in the refit bay. */
   refit: number;
   /** Factions whose tech has been salvaged. */
   techs: string[];
@@ -184,8 +188,6 @@ export interface Carry {
   jobs: JobDef[];
   /** Cards already heard on this journey (the ones that come once). */
   seen: string[];
-  /** Each ship system's resource, for fitting modules at a port (sim/modules.ts). */
-  kit: Kit;
 }
 
 /** What a sortie hands back to the journey. */
@@ -234,14 +236,14 @@ export function pickPursuer(heat: number, rng: Rng, gutter = 0.22, ahead: readon
 
 // ── the Thren ─────────────────────────────────────────────────────────────
 // Where the chart has Thren (sim/scatter.ts), they swarm: a knot of motes,
-// with a web layer once they are thick, drawn by the Krail aboard. The
+// with a web layer once they are thick, drawn by the Cyrite aboard. The
 // fuller the tank, the sooner and the oftener they come. Near them,
 // sensors and navigation go strange: the scope fills with static and the
 // lane mouth will not hold still (World.navNoise).
 
-/** Seconds to the first swarm, and between swarms, with an empty tank in thin Thren and a full one in thick; Krail aboard divides it. */
+/** Seconds to the first swarm, and between swarms, with an empty tank in thin Thren and a full one in thick; Cyrite aboard divides it. */
 export const SWARM_FIRST = 50;
-export const swarmGap = (thren: number, krail: number) => lerp(110, 40, clamp(thren, 0, 1)) / (0.5 + clamp(krail / TANK_MAX, 0, 1));
+export const swarmGap = (thren: number, cyrite: number) => lerp(110, 40, clamp(thren, 0, 1)) / (0.5 + clamp(cyrite / TANK_MAX, 0, 1));
 /** Motes in a swarm, and the Thren at which a web layer leads it. */
 export const swarmSize = (thren: number) => 3 + Math.round(clamp(thren, 0, 1) * 3);
 export const SWARM_WEAVER = 0.6;
@@ -252,7 +254,7 @@ export const JAM_SPOOL = 0.5;
 // ── what rock gives ───────────────────────────────────────────────────────
 // Cut clean, a rock gives all of this; broken by the guns, only scraps.
 
-export interface Yield { ore: number; krail: number }
+export interface Yield { ore: number; cyrite: number }
 
 const ORE: Record<RockKind, readonly [number, number, number]> = {
   basalt: [6, 3, 1],
@@ -261,7 +263,7 @@ const ORE: Record<RockKind, readonly [number, number, number]> = {
   volatile: [12, 6, 3],
   rare: [4, 4, 4],
 };
-const KRAIL: Record<RockKind, readonly [number, number, number]> = {
+const CYRITE: Record<RockKind, readonly [number, number, number]> = {
   basalt: [0, 0, 0],
   iron: [0, 0, 0],
   rich: [12, 7, 4],
@@ -273,7 +275,7 @@ export const SCRAP = 0.3;
 
 export function rockYield(kind: RockKind, size: RockSize, clean: boolean): Yield {
   const k = clean ? 1 : SCRAP;
-  return { ore: Math.round(ORE[kind][size] * k), krail: Math.round(KRAIL[kind][size] * k) };
+  return { ore: Math.round(ORE[kind][size] * k), cyrite: Math.round(CYRITE[kind][size] * k) };
 }
 
 // ── the course ────────────────────────────────────────────────────────────
@@ -296,7 +298,7 @@ export interface Breakout {
   def: SortieDef;
   lane: Waypoint;
   port: Waypoint | null;
-  /** Krail the plotted jump takes. */
+  /** Cyrite the plotted jump takes. */
   jumpCost: number;
   /** The port's prices today. */
   prices: Prices;
@@ -317,7 +319,7 @@ export interface Breakout {
   blockade: 'none' | 'checkpoint' | 'called' | 'done';
   /** Seconds of the jump's flash before the report; -1 until the jump. */
   jumpT: number;
-  /** Seconds until the next "not enough Krail" reminder. */
+  /** Seconds until the next "not enough Cyrite" reminder. */
   nagT: number;
 }
 

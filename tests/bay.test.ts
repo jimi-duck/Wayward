@@ -1,20 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { UPGRADES, UPGRADE } from '../src/content/upgrades';
+import { MODULES } from '../src/content/modules';
 import { FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
-import { blockOf, budgets, cost, install, maxLevel, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
+import { autoPick, blockOf, budgets, cost, install, maxLevel, PICKS, quickPicks, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
 import { computeStats, upgradeFigures } from '../src/sim/build';
 import { feelBudgets, overload, OVERLOAD } from '../src/sim/budgets';
 import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
 
 const ALL = new Set(UPGRADES.map((u) => u.id));
-const ctx = (o: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: ALL, techs: new Set(), arcade: true, krail: 1e9, ...o });
+const ctx = (o: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: ALL, techs: new Set(), arcade: true, krail: 1e9, chits: 1e9, ...o });
 
 describe('the web', () => {
-  it('places every upgrade and every fitting exactly once, and nothing else', () => {
+  it('places every upgrade, every fitting and every yard module exactly once, and nothing else', () => {
     const ids = WEB.map((w) => w.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect([...ids].sort()).toEqual([...UPGRADES.map((u) => u.id), ...FITTINGS.map((f) => f.id)].sort());
+    expect([...ids].sort()).toEqual([...UPGRADES.map((u) => u.id), ...FITTINGS.map((f) => f.id), ...MODULES.map((m) => m.id)].sort());
   });
 
   it('leads only from shallower nodes in the same tab, with no two nodes in one place', () => {
@@ -38,7 +39,7 @@ describe('the web', () => {
     }
   });
 
-  it('can reach every node from the stock ship, given Krail, power and the unlocks', () => {
+  it('can reach every node from the stock ship, given Krail, power, the unlocks and a port', () => {
     const techs = new Set(['gutter', 'custody', 'office', 'voice', 'thren']);
     /** What a node needs fitted first: where it comes from, and what its upgrade requires, all the way back. */
     const before = (id: string, out = new Set<string>()): Set<string> => {
@@ -49,7 +50,7 @@ describe('the web', () => {
       const path = before(w.id);
       // power is not what this is about: a core far bigger than any ship's
       let levels: Record<string, number> = { ...stockLevels(), rx_core: 100 };
-      const c = (lv: Record<string, number>) => ctx({ levels: lv, techs, arcade: !w.story });
+      const c = (lv: Record<string, number>) => ctx({ levels: lv, techs, arcade: !w.story, docked: true });
       for (let round = 0; round < 12 && blockOf(w.id, c(levels)) !== null; round++) {
         for (const o of WEB) {
           // never a specialisation that is not on the way: it would close the target's group
@@ -173,15 +174,41 @@ describe('the budgets, felt (step 3)', () => {
     expect(overload(framed).handling.thrust).toBe(1);
   });
 
-  it('the arcade flies with it and the card figures show it; the Story mode does not yet', () => {
+  it('both modes fly with it, and the figures show it', () => {
     const hot = { ...stockLevels(), ph_emitters: 5, ph_capacitors: 4, ph_pierce: 3 };
     const w = new World(1);
     w.setLevels(hot);
     expect(w.stats.bankRefill).toBeLessThan(computeStats(hot).bankRefill);
     const s = new World(1, { mode: 'breakout' });
     s.setLevels(hot);
-    expect(s.stats.bankRefill).toBe(computeStats(hot).bankRefill);
+    expect(s.stats.bankRefill).toBeLessThan(computeStats(hot).bankRefill);
     const fig = upgradeFigures({ ...stockLevels(), ph_emitters: 3, ph_capacitors: 2, ph_pierce: 1 }, 'ph_pierce').find((f) => f.label === 'Bank refill/sec');
     expect(fig?.cost).toBe(true);
+  });
+});
+
+describe('suggestions', () => {
+  it('offers a few modules that can be fitted (or want only Krail), from different tabs, the same each time', () => {
+    const picks = quickPicks(ctx({ krail: 0 }));
+    expect(picks.length).toBe(PICKS);
+    for (const p of picks) expect(['krail', null]).toContain(blockOf(p.id, ctx({ krail: 0 })));
+    expect(new Set(picks.map((p) => p.tab)).size).toBe(PICKS);
+    expect(quickPicks(ctx({ krail: 0 })).map((p) => p.id)).toEqual(picks.map((p) => p.id));
+  });
+
+  it('leans toward what the ship already is, and asks for power or cooling when they run short', () => {
+    const lasers = { ...stockLevels(), ph_emitters: 2, ph_capacitors: 1 };
+    expect(quickPicks(ctx({ levels: lasers })).map((p) => p.tab)).toContain('weapons');
+    const hot = { ...stockLevels(), ph_emitters: 3, ph_capacitors: 2, ph_pierce: 1 };
+    expect(quickPicks(ctx({ levels: hot })).map((p) => p.id)).toContain('rx_sinks');
+    const flat = { ...stockLevels(), df_shield: 1 }; // 7 of 8 power
+    expect(quickPicks(ctx({ levels: flat })).map((p) => p.id)).toContain('rx_core');
+  });
+
+  it('Auto-refit picks only what it can pay for', () => {
+    expect(autoPick(ctx({ krail: 10 }))).toBeNull();
+    const id = autoPick(ctx({ krail: 60 }));
+    expect(id).not.toBeNull();
+    expect(blockOf(id!, ctx({ krail: 60 }))).toBeNull();
   });
 });
