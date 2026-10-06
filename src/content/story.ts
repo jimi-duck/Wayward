@@ -84,7 +84,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_warden', kind: 'rumour', caller: 'miners',
     from: 'Ilse Marrow · retired Lane Warden', title: 'I was on the relay that night',
-    text: '“I heard about your file. Seventy years ago I ran the Narrows relay. The lanes didn’t fail, Juno. We were told to turn them off.”',
+    text: '“I heard about your file. Seventy years ago I ran the Narrows relay. The lanes didn’t fail. We were told to turn them off.”',
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
       { id: 'hear', label: 'Hear her out', tone: 'help', hint: 'Her account goes in the file. She talks for a long time.', win: { text: 'The order, in her words · it goes in the file', flag: 'frag_order', standing: { miners: 1 }, hunt: -0.5 } },
