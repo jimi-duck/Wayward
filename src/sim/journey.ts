@@ -10,6 +10,7 @@ import {
   viewOf, type Chart, type StarSystem,
 } from './chart';
 import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './scatter';
+import { arrival, delay as keysDelay, KEYS_NOTED, shift } from './consequences';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
@@ -179,11 +180,17 @@ export function sortieDef(j: Journey): SortieDef {
   const R = REGIONS[regionOf(s)] ?? REGIONS[0]!, raid = raided(j.chart, s.id);
   // a breather is quiet unless the Net has reached it: a blockade is not a rest
   const quiet = !!s.quiet && !net;
-  const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0);
+  // what the flags from earlier choices change here (content/consequences.ts)
+  const at = { holder: s.holder, here: presence(j.chart, s.id), port: !!s.port };
+  const echo = shift(j.carry.flags, at);
+  const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0) + echo.ahead;
+  const quoted = s.port ? pricesAt(j.chart, s.id)! : null;
+  // a copy: the chart's own prices are not the flags' to change
+  const prices = quoted && { ...quoted, plate: Math.round(quoted.plate * echo.plates) };
   return {
     system: s.id, region: regionOf(s), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
-    port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
-    heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
+    port: prices ? { name: s.port!.name, prices } : null,
+    heat: Math.max(0, Math.min(0.6, t.heat + (net ? 0.25 : 0) + echo.heat)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
     rich: t.rich * (0.6 + s.cyrite * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, quiet,
     ahead: raid ? undefined : AHEAD[s.holder], thren: threnAt(j.chart, s.id), here: presence(j.chart, s.id),
     blockade: net, netted: net, calloway: finale || quiet ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
@@ -401,6 +408,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   // a new act: out of Cerro, the Run; into the Hollows, the Choice
   const turn = j.trail.length === 2 ? ACTS[1] : there.kind === 'gate' && viewOf(j.chart, to) === CHOICE_REGION ? ACTS[2] : null;
   if (turn) { lines.unshift(actLine(turn)); note(j, actLine(turn)); }
+  lines.push(...arrival(c.flags, { holder: there.holder, here: presence(j.chart, to), port: !!there.port }).map((l) => t(l)));
   const fleet = fleetAt(j.chart, to);
   if (fleet) lines.push(t('Drift fleet here · {name} trades food and news', { name: fleet.name }));
   if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push(t('Thren here · they come for Cyrite'));
@@ -412,6 +420,12 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     note(j, t('Through the Threshold · into the Scatter'));
     j.ending = null;
     return { kind: 'through', lines: [t('The old lane opens. Beyond it, the Scatter.'), ...lines] };
+  }
+  // the keys from the Voice close the lane behind you
+  const held = keysDelay(c.flags);
+  if (held > 0) {
+    j.hunt.delay += held;
+    if (!c.flags.includes(KEYS_NOTED)) { c.flags.push(KEYS_NOTED); lines.push(t('A lane closes behind you · Calloway is held up')); }
   }
   // with every system flown she reads your route a little better, unless the echoes left behind make it lie
   const echo = effects(c.levels).echo;
