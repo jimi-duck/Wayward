@@ -2,6 +2,7 @@ import { UNLOCKS, type Lifetime, type UnlockDef } from '../content/unlocks';
 import type { RunStats } from '../sim/run';
 import type { JourneyRecord } from '../sim/endings';
 import type { EndingId } from '../content/endings';
+import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/survival';
 
 // ── the pilot's record, between runs ──────────────────────────────────────
 // Bests, lifetime totals, the last few runs, what long-term progression
@@ -59,8 +60,8 @@ export interface Profile {
   history: RunRecord[];
   /** Unlock ids earned. */
   earned: string[];
-  /** The difficulty for the next run (['easy'], [] for Mid, or ['hard']), and the engine colour. */
-  modifiers: string[];
+  /** The survival mode for the next new run or journey (content/survival.ts), and the engine colour. A journey in progress keeps its own. */
+  survival: SurvivalId;
   cosmetic: string;
   /** The camera distance last chosen (an index into the zoom steps). */
   zoom: number;
@@ -78,7 +79,7 @@ const fresh = (): Profile => ({
   life: { runs: 0, kills: 0, capitals: 0, krail: 0, capitalsBy: {}, bestTime: 0, bestScore: 0 },
   history: [],
   earned: [],
-  modifiers: [],
+  survival: DEFAULT_SURVIVAL,
   cosmetic: 'engine-stock',
   zoom: 1,
   mode: 'breakout',
@@ -108,8 +109,13 @@ const OLD_FACTIONS: Record<string, string> = { klingon: 'gutter', cardassian: 'c
  */
 export function migrate(p: Record<string, any>): Record<string, any> {
   delete p.autoFit; // Auto-refit is gone; a saved value is dropped
-  // the challenge toggles became one difficulty: Hostile skies is Hard, the others are dropped
-  if (Array.isArray(p.modifiers)) p.modifiers = p.modifiers.includes('hard') || p.modifiers.includes('hostile') ? ['hard'] : p.modifiers.includes('easy') ? ['easy'] : [];
+  // the challenge toggles became one difficulty, and the difficulty became the survival mode: Easy is Drifter, Hard (and the old Hostile skies) is Raider
+  if ('modifiers' in p) {
+    const m: unknown[] = Array.isArray(p.modifiers) ? p.modifiers : [];
+    if (!('survival' in p)) p.survival = m.includes('hard') || m.includes('hostile') ? 'raider' : m.includes('easy') ? 'drifter' : DEFAULT_SURVIVAL;
+    delete p.modifiers;
+  }
+  if (p.survival !== undefined) p.survival = survivalOf(p.survival).id;
   for (const k of ['best', 'life']) {
     const o = p[k];
     if (o && 'dilithium' in o) {

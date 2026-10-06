@@ -16,6 +16,7 @@ import type { GameEvent } from '../src/sim/events';
 import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
 import { FITTING } from '../src/content/web';
 import { MODULE_BY_ID } from '../src/content/modules';
+import type { SurvivalId } from '../src/content/survival';
 
 // ── the scripted pilot ────────────────────────────────────────────────────
 // A competent, unspectacular player, for balancing. It picks a goal (nose
@@ -61,7 +62,8 @@ export interface PilotOptions {
   /** Evade every hail that can be evaded. */
   evade?: boolean;
   unlocked?: string[];
-  modifiers?: string[];
+  /** The survival mode (content/survival.ts), the baseline unless given. */
+  survival?: SurvivalId;
   /** Input lag in steps (reaction to new fire is modelled separately, REACT). */
   lag?: number;
   /** Fly the Breakout instead of the endless arcade run. */
@@ -493,7 +495,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
 
 /** Fly one run to the end (or maxTime) and report it. */
 export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): PilotResult {
-  const w = new World(seed, { unlocked: o.unlocked ?? [], modifiers: o.modifiers ?? [], mode: o.breakout ? 'breakout' : 'arcade' });
+  const w = new World(seed, { unlocked: o.unlocked ?? [], survival: o.survival, mode: o.breakout ? 'breakout' : 'arcade' });
   return flyWorld(w, seed, strategy, o);
 }
 

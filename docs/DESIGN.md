@@ -244,7 +244,8 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
 | Calloway's file | `content/calloway.ts` (tricks, numbers, offers, her face) | `sim/calloway.ts` (the file, her read on your route, offers, the last meeting), `sim/hunt.ts` (the hunch), `World` (the offer, the lane mouth) |
 | Named captains | `CAPTAINS`, `PERSONALITIES` in `content/captains.ts`; who names whom in `content/factions.ts` | `sim/captains.ts` (how they come, the card, memory), `sim/notice.ts` (when, the roster), `World` (the meeting), `ui/face.ts` |
-| Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
+| Survival modes | `content/survival.ts`: one row a mode (Drifter, Prospector, Raider) | `World.survival`, read by `sim/director.ts` (the sky), the pursuit and heat, `cutClean` / `destroyRock` (rock), `World.salvage` / `wreck` (wrecks), `pickEncounter` (events, the Raider's skirmish), `buildStats` (the hull), `sim/journey.ts` and `sim/chart.ts` (the voyage) |
+| Difficulty | `sim/director.ts` | the sky's multipliers, now the `sky` group of a survival mode |
 | Encounters (arcade) | `PACING`, `APPROACHES` in `sim/pacing.ts`; `groupSize`, `lull`, `enemyInterval`, `enemyCap` in `sim/director.ts` | `World.spawn` / `arrive` / `sendHostile`, the approach modes in `moveAlien` |
 | Self-repair (arcade) | `SELF_REPAIR` in `sim/repair.ts`; `repair*` in `Stats` | `stepMend` from `World.tick`, the hull row and mode card in `ui/hud.ts` |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
@@ -694,9 +695,36 @@ krail, overcharges, capital ships, events), shows the ship as built,
 what did the killing and what did the damage, the score curve against your
 best run's, and any unlocks earned. Long-term progression opens options,
 never power: locked specialisations, a synergy, two sector events and
-engine colours. Difficulty (Easy, Mid, Hard on the start screen) is always
-open: Easy and Hard are modifiers with a score multiplier, Mid has none. The logbook on the start screen shows the
+engine colours. The survival mode (below) is always open. The logbook on the start screen shows the
 hint for every unlock still locked.
+
+## Survival modes
+
+Chosen on the start screen under Start, before a run: Drifter, Prospector
+(the default and the baseline) or Raider. A mode is not a difficulty. Each
+changes what the game is about, and each is one row in `content/survival.ts`
+that the systems read; nothing else asks which mode it is. To rebalance a
+mode, change its row. A multiplier of 1 changes nothing and draws no random
+numbers, so Prospector plays exactly as the game did before modes.
+
+- **Drifter.** Calmer skies (fewer hulls, fewer elites, longer gaps between
+  pursuers, slower heat), richer rock, cheaper lanes, a bigger start, a
+  tougher hull, and four wrecks before you are adrift. Explore and follow the
+  story.
+- **Prospector.** Mine Krail, manage Cyrite, trade, run or fight.
+- **Raider.** Rock is thin and loud (cutting adds more heat), wrecks are rich
+  and last longer, and the sector sends a skirmish: two crews fight each
+  other, ignore you until you come close or shoot, and leave their wrecks.
+  A wreck in the Story holds parts, Cyrite and ore by the hull that died
+  (a fighter little, a cruiser cells, a hauler its hold); Prospector's holds
+  parts and Krail only. Find a fight, outlast it, strip what it left, sell
+  what you cannot use.
+
+The mode is saved with the profile (the title remembers it) and with the
+journey (a journey keeps its mode; the title cannot change it, and says so).
+A run's mode is fixed when it starts. Old saves: Easy becomes Drifter, Hard
+(and Hostile Skies) becomes Raider, anything else Prospector. Numbers and
+their evidence: [BALANCE-SURVIVAL.md](BALANCE-SURVIVAL.md).
 
 ## Balance
 

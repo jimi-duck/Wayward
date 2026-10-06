@@ -38,14 +38,14 @@ export const POWER_LABEL: Record<PowerKind, string> = {
 };
 export const POWERS: PowerKind[] = ['shield', 'rapid', 'magnet', 'overdrive', 'charge'];
 
-/** Scatter `total` krail as crystals of 1, 3 and 5 (or Cyrite, ore or parts, as `kind`), thrown out from (x, z). */
-export function dropCrystals(out: Pickup[], x: number, z: number, total: number, rng: Rng, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'cyrite' | 'ore' | 'parts' = 'crystal'): void {
+/** Scatter `total` krail as crystals of 1, 3 and 5 (or Cyrite, ore or parts, as `kind`), thrown out from (x, z); `lifeK` stretches how long they last. */
+export function dropCrystals(out: Pickup[], x: number, z: number, total: number, rng: Rng, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'cyrite' | 'ore' | 'parts' = 'crystal', lifeK = 1): void {
   let left = Math.max(0, Math.round(total));
   while (left > 0) {
     const v = left >= 10 ? 5 : left >= 4 ? 3 : 1;
     left -= v;
     const a = rng.range(0, Math.PI * 2), sp = rng.range(0.4, 1) * spread;
-    out.push({ id: newId(), kind, x, z, vx: vx * 0.4 + Math.cos(a) * sp, vz: vz * 0.4 + Math.sin(a) * sp, life: CRYSTAL_LIFE + rng.range(-1, 1), value: v, age: 0 });
+    out.push({ id: newId(), kind, x, z, vx: vx * 0.4 + Math.cos(a) * sp, vz: vz * 0.4 + Math.sin(a) * sp, life: (CRYSTAL_LIFE + rng.range(-1, 1)) * lifeK, value: v, age: 0 });
   }
 }
 

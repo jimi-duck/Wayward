@@ -213,10 +213,14 @@
           <button type="button" role="radio" id="mode-story" class="mode" aria-checked="false"><b class="mo-t">Story mode</b><span class="mo-s">Survive • Trade • Extract • Return</span></button>
         </div>
         <div class="launch-row"><button type="button" id="launch">Start arcade</button></div>
-        <div class="diff">
-          <span class="diff-k">Difficulty</span>
-          <div id="mods" class="mods" role="group" aria-label="Difficulty"></div>
+        <!-- the survival mode: how the whole game plays, picked before a run (content/survival.ts) -->
+        <div class="diff surv">
+          <span class="diff-k">Survival mode</span>
+          <div id="mods" class="mods" role="radiogroup" aria-label="Survival mode"></div>
+          <b class="sv-t" id="sv-t"></b>
           <span class="diff-s" id="diff-s"></span>
+          <div class="sv-scale" id="sv-scale"></div>
+          <span class="diff-s sv-keep" id="sv-keep" hidden></span>
         </div>
         <p class="resume-s" id="resume-s" hidden></p>
         <button type="button" id="fresh" class="ghost" hidden>New journey</button>

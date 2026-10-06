@@ -10,6 +10,7 @@ import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
+import { SURVIVAL } from './content/survival';
 import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
@@ -53,9 +54,9 @@ function boot(): void {
   const coarse = matchMedia('(pointer: coarse)').matches;
   const quality = new QualityGovernor(pinned >= 0 ? pinned : tierIndex(coarse ? 'medium' : 'high'), pinned >= 0);
 
-  // The pilot's record between runs: bests, unlocks, chosen modifiers.
+  // The pilot's record between runs: bests, unlocks, the survival mode chosen for the next run.
   const profile = loadProfile();
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), modifiers: profile.modifiers, mode: profile.mode });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: profile.mode });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);
@@ -128,7 +129,7 @@ function boot(): void {
   const resumeLine = (j: Journey) => {
     const day = t('Day {n}', { n: Math.floor(j.day) + 1 });
     if (pending(j)) return `${day} · ${t('through the Threshold · the file is still aboard')}`;
-    return [day, here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
+    return [day, t(SURVIVAL[j.survival].name), here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
   };
   const showResume = () => {
     const live = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
@@ -185,7 +186,7 @@ function boot(): void {
       pickFile.addEventListener('change', async () => {
         const text = await pickFile.files?.[0]?.text();
         const j = text ? importJourney(text) : null;
-        if (j) { journey = j; showResume(); } else el('save-problem').textContent = t('That file is not a Wayward save.'), el('save-problem').hidden = false;
+        if (j) { journey = j; showResume(); startOpts.render(); } else el('save-problem').textContent = t('That file is not a Wayward save.'), el('save-problem').hidden = false;
       });
       pickFile.click();
     }));
@@ -199,7 +200,7 @@ function boot(): void {
   const startSortie = () => {
     const j = journey!;
     sortieStart = tally(j);
-    world.restart({ unlocked: grants(profile), modifiers: profile.modifiers, mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+    world.restart({ unlocked: grants(profile), mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
     showMode();
     reported = false;
     setPaused(false);
@@ -236,7 +237,7 @@ function boot(): void {
     if (j.status === 'over') recordJourney(profile, journeyRecord(j));
     chart.notice(j, out, () => {
       if (j.status === 'over') {
-        journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three');
+        journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
         saveJourney(journey);
       }
       startSortie();
@@ -267,10 +268,10 @@ function boot(): void {
   const startOpts = new StartOptions(profile, () => {
     saveProfile(profile);
     sector.setCosmetic(profile.cosmetic);
-    // before the first launch nothing has happened yet, so the run can be re-made with the new modifiers
-    if (!started) world.restart({ modifiers: profile.modifiers, mode: profile.mode });
+    // before the first launch nothing has happened yet, so the run can be re-made in the new survival mode
+    if (!started) world.restart({ survival: profile.survival, mode: profile.mode });
     showBrief();
-  });
+  }, () => (journey && (journey.status !== 'over' || pending(journey)) ? journey.survival : null));
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
   const stops = () => {
@@ -309,7 +310,7 @@ function boot(): void {
       input.reset();
       const rec = recordRun(profile, world.run);
       summary.show(world.run, rec, () => {
-        world.restart({ unlocked: grants(profile), modifiers: profile.modifiers, mode: profile.mode });
+        world.restart({ unlocked: grants(profile), survival: profile.survival, mode: profile.mode });
         showMode();
         reported = false;
         startOpts.render();
@@ -426,7 +427,7 @@ function boot(): void {
     fit();
     setPaused(false);
     if (mode === 'arcade') {
-      if (world.mode !== 'arcade') { world.restart({ modifiers: profile.modifiers, mode, carry: null }); showMode(); }
+      if (world.mode !== 'arcade' || world.survival.id !== profile.survival) { world.restart({ survival: profile.survival, mode, carry: null }); showMode(); }
       hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
       // how to play first: the pause card, until any key or tap
       setPaused(true);
@@ -435,7 +436,7 @@ function boot(): void {
     if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
       // a journey left at the Threshold still goes into the Archive, the file unchosen
       if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
-      journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three');
+      journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
       saveJourney(journey);
     } else if (pending(journey)) return threshold(journey, [t('Journey resumed · the Threshold is behind you')]);
     else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cool, plot the next jump')]);

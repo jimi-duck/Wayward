@@ -86,7 +86,7 @@ type Hint = [string, string];
 
 const SECTOR_NAME: Record<EncounterId, string> = {
   rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
-  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly',
+  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish',
 };
 
 export class Hud {

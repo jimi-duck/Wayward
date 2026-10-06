@@ -5,6 +5,7 @@ import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
 import { pending } from '../sim/endings';
 import { stockLevels } from '../sim/bay';
+import { survivalOf } from '../content/survival';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
@@ -49,6 +50,9 @@ export function migrate(raw: unknown): Journey | null {
   // 6 → 7: Cyrite is the fuel and the refit bay builds the ship (the refit bay, step 4). What was Krail in the tank, on the lanes,
   // in the rock and at the ports is Cyrite now; Krail is the bay's.
   if (j.version < 7) toCyrite(j as unknown as Old);
+  // 7 → 8: survival modes. A journey saved before them was played as the game was designed: Prospector.
+  // A newer-looking id the game does not know (a hand-edited file) falls back to the same.
+  j.survival = survivalOf(j.survival).id;
   j.version = VERSION;
   return j as Journey;
 }

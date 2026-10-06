@@ -1,5 +1,5 @@
 import type { Strike } from './bosses';
-import type { Alien, EliteId } from './enemies';
+import { leave, provoke, type Alien, type EliteId } from './enemies';
 import type { GameEvent } from './events';
 import type { Field } from './field';
 import { newId } from './ids';
@@ -25,8 +25,14 @@ import type { ShipState } from './ship';
 //                        thick fog; the core charges faster in it.
 //   Spatial anomaly    · a gravity well drags in everything, rock, fire,
 //                        crystals and you, and crushes what reaches its core.
+//   Skirmish           · two crews at each other ahead: raiders on a convoy.
+//                        They ignore you until you come close or shoot. Wait it
+//                        out and the loser's wrecks lie there (loot lasts longer
+//                        than usual in a mode that salvages) and the winner is
+//                        battered; step in early and both turn on you. Only the
+//                        Raider mode draws it (content/survival.ts `events`).
 
-export type EncounterId = 'rich_field' | 'distress' | 'derelict' | 'convoy' | 'ion_storm' | 'nebula' | 'anomaly';
+export type EncounterId = 'rich_field' | 'distress' | 'derelict' | 'convoy' | 'ion_storm' | 'nebula' | 'anomaly' | 'skirmish';
 
 export interface EncounterDef {
   id: EncounterId;
@@ -49,6 +55,7 @@ export const ENCOUNTERS: Record<EncounterId, EncounterDef> = {
   nebula:     { id: 'nebula',     name: 'Nebula',             at: 240, weight: 0.9, duration: 30, text: 'Sensors down · the core charges faster' },
   derelict:   { id: 'derelict',   name: 'Derelict hulk',      at: 120, weight: 1,   duration: 45, locked: true, text: 'Salvage it, if you dare' },
   anomaly:    { id: 'anomaly',    name: 'Spatial anomaly',    at: 300, weight: 0.8, duration: 26, locked: true, text: 'Gravity well · everything falls in' },
+  skirmish:   { id: 'skirmish',   name: 'Skirmish',           at: 60,  weight: 1,   duration: 75, text: 'Raiders on a convoy · let it burn out' },
 };
 export const ENCOUNTER_ORDER = Object.keys(ENCOUNTERS) as EncounterId[];
 
@@ -67,6 +74,23 @@ export interface Encounter {
   ids: number[];
   /** A place on the chart playing this event (content/phenomena.ts): its name on the banners. */
   place?: string;
+  /** A skirmish: who is on each side, which side loses, and where the fight stands. */
+  fight?: Fight;
+}
+
+export interface Fight {
+  a: number[];
+  b: number[];
+  loser: 'a' | 'b';
+  /** Seconds to the next exchange of fire. */
+  tempo: number;
+  /** The fight is decided (the winners come to look the ship over), and when. */
+  over: boolean;
+  overAt: number;
+  /** The ship came close or shot at someone: every hull turns on it. */
+  alarm: boolean;
+  /** Hulls lost so far. */
+  wrecks: number;
 }
 
 /** What an event needs from the world it runs in. */
@@ -83,6 +107,8 @@ export interface EncounterHost {
   randomPower(): PickupKind;
   repair(n: number): boolean;
   addScore(points: number): void;
+  /** A hull lost in someone else's fight: it goes up and leaves its wreck, nobody's kill. */
+  wreck(al: Alien): void;
 }
 
 const ahead = (s: ShipState, d: number, side = 0): [number, number] => {
@@ -90,16 +116,18 @@ const ahead = (s: ShipState, d: number, side = 0): [number, number] => {
   return [s.x + fx * d + rx * side, s.z + fz * d + rz * side];
 };
 
-export function pickEncounter(t: number, last: EncounterId | null, unlocked: ReadonlySet<string>, rng: Rng): EncounterId | null {
+/** The event to run next: by its weight, times the survival mode's weight for it (none at all: it never comes). */
+export function pickEncounter(t: number, last: EncounterId | null, unlocked: ReadonlySet<string>, rng: Rng, weights: Partial<Record<EncounterId, number>> = {}): EncounterId | null {
+  const w = (id: EncounterId) => ENCOUNTERS[id].weight * (weights[id] ?? 1);
   const pool = ENCOUNTER_ORDER.filter((id) => {
     const d = ENCOUNTERS[id];
-    return d.at <= t && id !== last && (!d.locked || unlocked.has(id));
+    return d.at <= t && id !== last && (!d.locked || unlocked.has(id)) && w(id) > 0;
   });
   if (!pool.length) return null;
   let total = 0;
-  for (const id of pool) total += ENCOUNTERS[id].weight;
+  for (const id of pool) total += w(id);
   let roll = rng.next() * total;
-  for (const id of pool) { roll -= ENCOUNTERS[id].weight; if (roll <= 0) return id; }
+  for (const id of pool) { roll -= w(id); if (roll <= 0) return id; }
   return pool[pool.length - 1]!;
 }
 
@@ -141,6 +169,22 @@ export function startEncounter(id: EncounterId, h: EncounterHost, place?: { name
     case 'ion_storm':
       e.timer = 1.2;
       break;
+    case 'skirmish': {
+      // raiders (Gutter) on a convoy (Custody), far enough ahead to watch: the sides hold station either side of the centre
+      const side = rng.next() < 0.5 ? 1 : -1;
+      const [cx, cz] = ahead(s, 85, side * 35);
+      const px = Math.sin(s.heading), pz = Math.cos(s.heading); // across the line of sight
+      const crew = (variants: string[], k: number) => variants.map((v, i) => {
+        const x = cx + px * k * 13 + rng.range(-5, 5), z = cz + pz * k * 13 + rng.range(-5, 5);
+        const al = h.spawnHostile(v, { x, y: rng.range(1, 7), z }, null, true);
+        al.mode = 'brawl'; al.ax = x; al.az = z; al.ttl = 999; al.cloak = 0; al.slide = i % 2 ? 1 : -1; al.cruiseY = al.y;
+        return al.id;
+      });
+      e.fight = { a: crew(['scout', 'scout', 'raptor'], -1), b: crew(['freighter', 'picket', 'picket'], 1), loser: rng.next() < 0.5 ? 'a' : 'b', tempo: 2, over: false, overAt: 0, alarm: false, wrecks: 0 };
+      e.ids = [...e.fight.a, ...e.fight.b];
+      e.x = cx; e.z = cz; e.r = 20;
+      break;
+    }
     case 'nebula':
       break;
     case 'anomaly':
@@ -193,6 +237,46 @@ export function stepEncounter(e: Encounter, h: EncounterHost, dt: number): boole
       if (left.length === 0) return finish(e, h, true);
       break;
     }
+    case 'skirmish': {
+      const f = e.fight!;
+      const live = (ids: number[]) => ids.map((id) => h.aliens.find((a) => a.id === id)).filter((a): a is Alien => !!a);
+      const A = live(f.a), B = live(f.b);
+      const all = [...A, ...B];
+      if (!all.length) return finish(e, h, f.wrecks > 0);
+      if (!f.alarm && all.some((a) => a.mode !== 'brawl' && !(f.over && a.mode === 'approach'))) {
+        // the ship was noticed: whoever is left in the fight turns on it
+        f.alarm = true;
+        for (const a of all) if (a.mode === 'brawl') provoke(a, h.events);
+      }
+      if (!f.over && !f.alarm && (f.tempo -= dt) <= 0) {
+        f.tempo = rng.range(0.9, 1.5);
+        const [lose, win] = f.loser === 'a' ? [A, B] : [B, A];
+        // the losing side is ground down; the winning side is hurt, but never finished
+        const hit = (from: Alien | undefined, to: Alien | undefined, share: number, floor: number) => {
+          if (!to) return;
+          if (from) h.events.push({ type: 'enemyFire', x: from.x, y: from.y, z: from.z, faction: from.faction });
+          to.hp = Math.max(floor * to.maxHp, to.hp - to.maxHp * share);
+          to.hitT = 0.1;
+          h.events.push({ type: 'alienHit', x: to.x, y: to.y, z: to.z, id: to.id });
+        };
+        const shooter = (side: Alien[]) => { const guns = side.filter((a) => a.kind !== 'freighter'); return guns[rng.int(Math.max(1, guns.length))]; };
+        const victim = lose[rng.int(lose.length)];
+        hit(shooter(win), victim, 0.17, 0);
+        if (victim && victim.hp <= 0.01) { h.wreck(victim); f.wrecks++; }
+        hit(shooter(lose), win[rng.int(win.length)], 0.05, 0.3);
+      }
+      if (!f.over && !f.alarm && (f.loser === 'a' ? A : B).length === 0) {
+        // decided: the winners come to look you over
+        f.over = true;
+        f.overAt = e.t;
+        for (const a of f.loser === 'a' ? B : A) {
+          if (a.kind === 'freighter') leave(a);
+          else { a.mode = 'approach'; a.approach = 'investigate'; a.modeT = 16; }
+        }
+      }
+      if (f.over && e.t - f.overAt > 30) return finish(e, h, f.wrecks > 0);
+      break;
+    }
     case 'ion_storm':
       e.timer -= dt;
       if (e.timer <= 0) {
@@ -235,6 +319,7 @@ function finish(e: Encounter, h: EncounterHost, success: boolean): true {
       if (success) h.addScore(Math.round(800 * e.progress));
       text = e.progress >= 1 ? 'Convoy destroyed' : e.progress > 0 ? 'Convoy broken' : 'Convoy got away';
       break;
+    case 'skirmish': text = success ? 'The fight is over · the wrecks are yours' : 'They broke it off'; break;
     case 'ion_storm': text = 'The storm passes'; break;
     case 'nebula': text = 'Sensors restored'; break;
     case 'anomaly': text = 'The anomaly collapses'; h.addScore(600); break;
