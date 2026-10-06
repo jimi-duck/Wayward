@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done: the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 3 done: the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; step 4 (the Story mode, Cyrite) planned, step 5 to come (see below) |
 
 ## From the concept boards
 
@@ -629,19 +629,41 @@ button; the tabs are a step further in, with prices on the web. Auto-refit
 fits the suggestions by itself. The target's brackets close tight with its
 health as a bar under them; the upper-centre card is for hostile hulls only.
 The pause card is the briefing: three steps (mine, upgrade, survive), the
-two states, the controls for the device in hand, the bay and Auto-refit.
+three alert states, the controls for the device in hand, the bay and Auto-refit.
+
+**Step 4, planned (2026-10-06).** The Story mode builds in the bay, as
+the arcade does:
+
+- **Cyrite is the fuel.** The violet rock, the tank, a lane's cost, the
+  port's fuel, the storm's and the convoy's pay, and the Thren drawn to a
+  full tank all move from Krail to Cyrite (German: Cyrit). It keeps the
+  violet; Krail crystals take a tint of their own.
+- **Krail pays for the bay**, a stock as in the arcade: wrecks and ordinary
+  rock cut drop it. Ore stays cargo, sold for chits.
+- **The cards and the rail go.** The ship leaves Cerro with the stock fit;
+  the bay opens on the same three alert states in a sortie, and always
+  when docked. Suggestions and Auto-refit as in the arcade.
+- **The module yard folds into the web**, paid in Krail only: its modules
+  are nodes marked `story`; the four resources (salvage, rig parts,
+  signal kit, favours) go. **Yard-only** (fitted docked, plus chits): the
+  yard's modules, the structural frame and the reactor core's top levels.
+- **The save goes to version 7**: the tank's Krail becomes Cyrite; the
+  rail's progress and the four resources become Krail; fitted upgrades
+  stay (the web's nodes are the same ids), and the stock fit is added.
+- **Balanced** from the Breakout, journey, ship and endings pilots: two or
+  three installs in the Breakout, fuel as tight as today, fewer, bigger
+  installs over a journey than the cards gave. The arcade pilot confirms
+  the cheaper deep ordnance (caution at 85 units).
+- **Commits**, each playable: the fuel; the bay in a sortie; the port and
+  the yard; the save; balance, German, screenshots and the docs.
 
 ### Open
 
-- Builds that save for deep modules (torpedoes, mines) fit six or seven in
-  a run and trail the rest; the costs of tier 3 and 4, or what the pilot
-  saves for, want a look.
+- Builds that save for deep modules (torpedoes, mines) trailed; the deep
+  ordnance now costs 0.65 to 0.7 of its tier, not yet confirmed by a full
+  pilot.
 - The arcade's Krail: how much rock and kills give, against the costs
   above, for fewer installs than today's cards.
-- Cyrite (Story): where it shows in rock, what wrecks carry, the tank, and
-  every card and line that says Krail where it means fuel (step 4, with a
-  save migration).
-- Which modules are yard-only.
 
 ## The long tail
 
