@@ -341,7 +341,9 @@ export class BayPanel {
       b.setAttribute('aria-label', `${nameOf(n.id)} · ${t('Lv')} ${lv}/${max}`);
       const pips = h('span', 'bn-pips');
       if (max > 1) for (let k = 1; k <= max; k++) pips.append(h('i', k <= lv ? 'on' : ''));
-      b.append(h('span', 'bn-oct', '', icon(iconOf(n.id))), pips, h('span', 'bn-name', nameOf(n.id)));
+      // three levels: the name, then the level pips, then what it moves (the first figure's label)
+      const first = lv < max && st !== 'locked' ? upgradeFigures(w.levels, n.id, !w.bk).find((f) => !f.cost)?.label : undefined;
+      b.append(h('span', 'bn-oct', '', icon(iconOf(n.id))), pips, h('span', 'bn-name', nameOf(n.id)), ...(first ? [h('span', 'bn-tag', t(first))] : []));
       b.addEventListener('click', (e) => { e.stopPropagation(); this.sel = n.id; this.render(); });
       field.append(b);
     }
@@ -362,7 +364,6 @@ export class BayPanel {
     const text = h('p', 'bi-text', t(u ? upgradeText(u, next) : fit!.text));
     const adv = lv < max && !why ? this.advice(w).get(id) : undefined;
     const out: HTMLElement[] = [head, ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(adv.text, adv.vars)}`))] : []), text];
-    if (u?.note) out.push(h('p', 'bi-note', t(u.note)));
 
     // what the next level changes: the figures, then the budgets
     if (lv < max) {
@@ -383,6 +384,8 @@ export class BayPanel {
       }
       out.push(figs, ...warn.map((x) => h('p', 'bi-warn', x)));
     }
+    // flavour comes after the numbers, then the price
+    if (u?.note) out.push(h('p', 'bi-note', t(u.note)));
 
     // the price, and the button
     const price = lv < max ? cost(id, lv + 1) : 0;

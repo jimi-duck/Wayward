@@ -1516,3 +1516,14 @@ html.breakout .pause-flow { display: none; }
 .pf-l { font: 600 calc(var(--fs) * .85 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .pf-bar { height: 4px; background: linear-gradient(90deg, var(--hud) calc(var(--v) * 100%), rgba(216, 213, 198, .1) 0); }
 @media (max-width: 900px), (max-height: 520px) { .bay-prof { display: none; } }
+
+/* type hierarchy: the name first, the level second, what it moves third; in the inspector
+   name, effect, figures, flavour, cost */
+.bay-node { gap: 3px; }
+.bn-name { font-weight: 700; letter-spacing: .06em; }
+.bay-node.locked .bn-name { font-weight: 600; }
+.bn-tag { max-width: 92px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 calc(var(--fs) * .72 * 1.18)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); opacity: .75; }
+.bay-node.sel .bn-tag, .bay-node:hover .bn-tag { color: var(--ink-2); opacity: 1; }
+.bay-node.max .bn-tag { display: none; }
+@media (max-width: 900px), (max-height: 520px) { .bn-tag { display: none; } }
+.bi-note { font-style: italic; color: var(--ink-3); }

@@ -125,7 +125,7 @@ Make it feel like WAYWARD before anything else changes.
 | M7 The Scatter | First pass done: three regions out through gates, the factions acting on their own, the Thren as swarms drawn to Krail, places (see below) |
 | M8 The story | Second pass done: three acts, six story beats through the Run that piece the Severance file together and open endings, the six endings with epilogues, the Archive (see below) |
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
-| R The refit bay | Steps 1 to 3 done, and console steps 1 to 7 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
+| R The refit bay | Steps 1 to 3 done, and console steps 1 to 8 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths, type hierarchy; see the console pass): the web as data and rules, the bay on screen in the arcade (no more cards there), the budgets felt; steps 4 and 5 to come (see below) |
 
 ## From the concept boards
 
@@ -664,10 +664,12 @@ DESIGN.md.
    the way is open. Drawn from the data as it is (`BayPanel.web`); no layout
    change was needed. Checked on the Weapons, Engines and Utility tabs, and
    Utility at phone size.
-8. **Type hierarchy.** Name, effect, stats, flavour, cost, in that order
-   and weight; labels on the web dimmed to a third level (level pips
-   secondary, a short effect tag tertiary). A sweep of `main.css`, no new
-   data.
+8. **Done: type hierarchy, in the bay.** The inspector reads name, effect,
+   the before → after figures, then the flavour note (italic, dim), then the
+   price and the button. On the web a node is three levels: the name (bold),
+   the level pips, then a small dim tag for what it moves (its first figure;
+   desktop only, hidden once fully fitted or out of reach). The HUD and the
+   Story's screens are not swept yet.
 9. **Wear.** Very light: a scanline interruption now and then, worn
    corners on a few panels, serial numbers and maintenance marks, an old
    warning label. CSS and a few SVGs, off with reduced motion and at low
@@ -678,7 +680,7 @@ DESIGN.md.
     tied to a real state (over a rating, a stock build, a fresh fit), with
     German twins.
 
-Order: 8 next, with 9 and 10 last. Open: the HUD's
+Order: 9 and 10 last. Open: the HUD's
 state word could also colour the frame; whether the Story mode's port and
 chart screens take the same console frame.
 
