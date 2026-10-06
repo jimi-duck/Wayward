@@ -18,6 +18,7 @@ import { EnemyView, NEON, wreck } from './enemies';
 import { ShipView } from './ships';
 import { hashSeed, skyFor } from './sky';
 import { glowTexture } from './textures';
+import { Streaks } from './streaks';
 import { WeaponView } from './weapons';
 
 // The scene root: reads the simulation and its events, never writes them.
@@ -51,6 +52,7 @@ export class Sector {
   private readonly env: Environment;
   private readonly rocks: RockView;
   private readonly fx: Effects;
+  private readonly streaks: Streaks;
   private readonly weapons: WeaponView;
   private readonly ship: ShipView;
   private readonly enemies: EnemyView;
@@ -76,9 +78,10 @@ export class Sector {
     this.env = new Environment(this.scene, renderer);
     this.rocks = new RockView(this.scene, glow);
     this.fx = new Effects(this.scene, glow);
-    this.weapons = new WeaponView(this.scene, glow);
+    this.streaks = new Streaks(this.scene);
+    this.weapons = new WeaponView(this.streaks);
     this.ship = new ShipView(glow);
-    this.enemies = new EnemyView(this.scene, glow);
+    this.enemies = new EnemyView(this.scene, glow, this.streaks);
     this.pickups = new PickupView(this.scene, glow);
     this.arsenal = new ArsenalView(this.scene);
     this.hazards = new HazardView(this.scene, glow, wreck);
@@ -393,9 +396,11 @@ export class Sector {
     this.ship.status.overload = world.overload > 0 || world.powers.rapid > 0;
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);
+    this.streaks.begin();
     this.weapons.update(world.bolts, world.torps, alpha, this.fx, dt, this.time);
     this.enemies.eye.copy(this.rig.camera.position);
     this.enemies.update(world.aliens, world.command.boss, world.shots, world.webs, alpha, dt);
+    this.streaks.end();
     this.pickups.update(world.pickups, alpha, dt);
     this.arsenal.update(world.sys, dt, this.rig.camera.position);
     this.hazards.update(world.tele, world.strikes, world.encounter, dt);
