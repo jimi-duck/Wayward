@@ -7,7 +7,7 @@ import { computeStats, upgradeFigures } from '../src/sim/build';
 import { pressure } from '../src/sim/director';
 import { ALIEN_FIRST, alienFire, moveAlien, SPAWN_NEAR, spawnAlien, type Arena } from '../src/sim/enemies';
 import type { GameEvent } from '../src/sim/events';
-import { makeOffer } from '../src/sim/offers';
+import { blockOf } from '../src/sim/bay';
 import { APPROACHES, PACING, pickApproach, waveSize } from '../src/sim/pacing';
 import { hurtMend, newMend, SELF_REPAIR, stepMend } from '../src/sim/repair';
 import { Rng } from '../src/sim/rng';
@@ -20,7 +20,6 @@ const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: fals
 function run(w: World, seconds: number, each?: (w: World) => void) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     if (w.phase === 'hail') w.answerHail(false);
-    if (w.phase === 'refit') w.choose(0);
     w.step(STEP, idle);
     each?.(w);
   }
@@ -285,7 +284,6 @@ describe('the whole loop', () => {
     const seen: GameEvent['type'][] = [];
     const fly = (seconds: number, f: Partial<InputFrame> = {}, until?: () => boolean) => {
       for (let i = 0; i < Math.round(seconds / STEP) && !until?.(); i++) {
-        if (w.phase === 'refit') w.choose(0);
         w.step(STEP, { ...idle, ...f });
         seen.push(...w.drain().map((e) => e.type));
       }
@@ -331,19 +329,14 @@ describe('the whole loop', () => {
   });
 });
 
-describe('arcade-only cards', () => {
-  it('are dealt in the arcade and never in the Story mode', () => {
+describe('arcade-only modules', () => {
+  it('open in the arcade\'s bay and never in the Story mode\'s', () => {
     const ids = UPGRADES.filter((u) => u.arcade).map((u) => u.id);
     expect(ids).toEqual(expect.arrayContaining(['df_repair', 'ut_quiet']));
-    const dealt = (arcade: boolean) => {
-      const seen = new Set<string>();
-      for (let seed = 0; seed < 300; seed++) {
-        const o = makeOffer({ levels: {}, unlocked: new Set(), techs: new Set(), presented: new Set(UPGRADES.filter((u) => u.group).map((u) => u.group!)), refit: 3, arcade }, new Rng(seed));
-        for (const c of o.cards) seen.add(c.id);
-      }
-      return seen;
-    };
-    expect([...dealt(true)].some((id) => ids.includes(id))).toBe(true);
-    expect([...dealt(false)].some((id) => ids.includes(id))).toBe(false);
+    const ctx = (arcade: boolean) => ({ levels: {}, unlocked: new Set<string>(), techs: new Set<string>(), arcade, krail: 1e6 });
+    for (const id of ids) {
+      expect(blockOf(id, ctx(true)), id).not.toBe('mode');
+      expect(blockOf(id, ctx(false)), id).toBe('mode');
+    }
   });
 });

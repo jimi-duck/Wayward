@@ -8,7 +8,6 @@ import { HOLD_START, PATCH_COST, PRICE } from '../src/sim/breakout';
 import { computeStats } from '../src/sim/build';
 import { CARD_BY_ID as CARDS_BY_ID, choiceView, sensors, yourStrength, type Ctx } from '../src/sim/comms';
 import { ECHO_DELAY, endSortie, newJourney, VERSION } from '../src/sim/journey';
-import { makeOffer } from '../src/sim/offers';
 import { Rng } from '../src/sim/rng';
 import {
   BLUFF_KIT, CAPITAL_SALVAGE, discounted, earned, effects, fitCost, fitNeeds, hasFitted, JOB_FAVOURS, LISTENER_KIT, mainSystem, noKit, systemMarks,
@@ -231,17 +230,8 @@ describe('the ghost echo', () => {
 });
 
 describe('the field refit under the four systems', () => {
-  it('puts every upgrade under a system, and deals a system’s cards more often once its modules are fitted', () => {
+  it('puts every upgrade under a system', () => {
     for (const u of UPGRADES) expect(SHIP_SYSTEMS).toContain(upgradeSystem(u));
     expect(upgradeSystem(UPGRADES.find((u) => u.id === 'ut_scanner')!)).toBe('signals');
-    const share = (levels: Record<string, number>) => {
-      let rig = 0, all = 0;
-      for (let seed = 1; seed <= 400; seed++) {
-        const o = makeOffer({ levels, unlocked: new Set(), techs: new Set(), presented: new Set(UPGRADES.filter((u) => u.group).map((u) => u.group!)), refit: 3 }, new Rng(seed));
-        for (const c of o.cards) { all++; if (upgradeSystem(UPGRADES.find((u) => u.id === c.id)!) === 'rig') rig++; }
-      }
-      return rig / all;
-    };
-    expect(share({ md_racks: 3, md_shop: 2, md_tractor: 2 })).toBeGreaterThan(share({}) * 1.3);
   });
 });

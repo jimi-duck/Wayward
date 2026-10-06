@@ -113,14 +113,6 @@ export const BULWARK_COUNT = 5;
 export const BULWARK_R = [7, 12] as const;
 
 // ── the run ───────────────────────────────────────────────────────────────
-// Krail to the next refit: the first in about ten seconds of steady
-// mining (the first card is the hook), then a climb, so refits come quickly
-// early (a build takes shape before the sector turns dangerous) and spread
-// out late (each one counts). A refit is one card, so they come a little
-// more often than when a refit was two points on the web.
-export const xpFor = (refit: number) => Math.round(6 + refit * 4 + Math.pow(refit, 1.8) * 0.75);
-/** Seconds of slow motion between a full rail and the refit panel. */
-export const CELEBRATE = 0.35;
 /** Seconds the wreck drifts before the run report. */
 export const DYING = 1.8;
 

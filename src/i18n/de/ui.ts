@@ -449,6 +449,7 @@ export const UI: Record<string, string> = {
   'Calloway, last seen': 'Calloway, zuletzt gesehen',
   'Drift fleet': 'Drift-Flotte',
   'Thren': 'Thren',
+  'Fit modules for Krail': 'Module für Krail einbauen',
   'Numbers on lanes: Cyrite to jump': 'Zahlen auf Bahnen: Cyrit pro Sprung',
   'The region: systems, lanes, the Net and Calloway': 'Die Region: Systeme, Bahnen, das Netz und Calloway',
   'Home': 'Heimat',

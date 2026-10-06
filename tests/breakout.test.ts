@@ -157,10 +157,9 @@ describe('the Breakout', () => {
     expect(w.cyrite).toBe(k + 1);
     expect(w.buy('plate')).toBe(true);
     expect(w.plates).toBe(2);
-    w.chits = PRICE.refit;
-    expect(w.buy('refit')).toBe(true);
-    expect(w.phase).toBe('refit');
-    w.choose(0);
+    // the bay opens at the port, and closing it goes back to the dock
+    expect(w.openBay()).toBe(true);
+    w.closeBay();
     expect(w.phase).toBe('dock');
     w.undock();
     expect(w.phase).toBe('play');

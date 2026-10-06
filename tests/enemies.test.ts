@@ -29,11 +29,10 @@ function onStation(w: World) {
   for (let i = 0; i < 40 && w.command.boss?.arriving; i++) run(w, 0.5);
   expect(w.command.boss?.arriving).toBe(false);
 }
-/** Run the clock, answering the decisions a run asks for: engage every hail, take the first card. */
+/** Run the clock, answering the decisions a run asks for: engage every hail. */
 function run(w: World, seconds: number) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     if (w.phase === 'hail') w.answerHail(true);
-    if (w.phase === 'refit') w.choose(0);
     w.ship.invuln = 1;
     w.step(STEP, idle);
   }
@@ -105,10 +104,9 @@ describe('capital ships', () => {
     expect(evs.some((e) => e.type === 'salvage' && e.faction === b.faction && e.tech)).toBe(true);
     expect(w.run.capitals).toBe(1);
     expect(w.run.scoreBy.capitals).toBeGreaterThan(1000);
-    // a hull repair, a power-up and krail to collect, and her faction's tech open in the bay (no card in the arcade)
+    // a hull repair, a power-up and krail to collect, and her faction's tech open in the bay
     expect(w.pickups.some((p) => p.kind === 'repair')).toBe(true);
     expect(w.pickups.filter((p) => p.kind === 'crystal').length).toBeGreaterThan(5);
-    expect(w.pendingSalvage).toEqual([]);
     expect(w.techs.has(b.faction)).toBe(true);
     expect(w.command.next).toBeCloseTo(w.runTime + bossGap(1), 0);
   });

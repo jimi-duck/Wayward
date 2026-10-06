@@ -10,7 +10,7 @@ import { DOCK_TIME } from '../sim/breakout';
 import { POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
-import { systemLevel } from './refit';
+import { systemLevel } from './icons';
 import { Radar } from './radar';
 import { range, Targeting } from './targeting';
 import { INK } from './palette';
@@ -152,7 +152,7 @@ export class Hud {
   }
 
   /** The bay would not open: say why, short, and shake the badge. */
-  bayDenied(world: World, why: 'caution' | 'alert' | 'busy' | 'mode'): void {
+  bayDenied(world: World, why: 'caution' | 'alert' | 'busy'): void {
     if (why !== 'caution' && why !== 'alert') return;
     this.note(world, t(why === 'alert' ? 'Bay locked · under attack' : 'Bay locked · ships nearby'), 'hit');
     this.retrigger($('upg'), 'deny');
@@ -231,7 +231,6 @@ export class Hud {
         case 'overcharge': this.note(world, `${t('Overcharge')} · ${plural(e.hits, '{n} hit', '{n} hits')}`, 'gain'); break;
         case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
         case 'squad': this.note(world, t('{name} inbound', { name: t(e.label) }), 'hit'); break;
-        case 'levelUp': this.banner(t('Krail hold full'), `${t('Refit')} ${pad(e.refit, 2)}`, t('Pick an upgrade'), 0.9, 'gain'); break;
         case 'salvage': this.note(world, `${t('Salvage')}${e.tech ? ` · ${t('{f} tech recovered', { f: faction(e.faction) })}` : ''}`, 'gain'); break;
         case 'cloak': this.note(world, t('Cloaked · they hold fire'), 'gain'); break;
         case 'shipHit':
@@ -289,7 +288,7 @@ export class Hud {
 
   private updateText(world: World): void {
     this.updateSector(world);
-    this.updateRail(world);
+    this.updateStock(world);
     this.updateVoyage(world);
     this.updateSystems(world);
     this.updateCentre(world);
@@ -319,7 +318,7 @@ export class Hud {
   // ── the rail ────────────────────────────────────────────────────────────
 
   /**
-   * The arcade: Krail is a stock for the refit bay. The row counts toward
+   * Krail is a stock for the refit bay, in both modes. The row counts toward
    * the cheapest module that only wants Krail, and lights "Bay" (with its
    * key) once something can be fitted and the bay will open.
    */
@@ -357,18 +356,6 @@ export class Hud {
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
   }
 
-  private updateRail(world: World): void {
-    if (!world.bk) return this.updateStock(world);
-    text($('xp-l'), t(world.bk ? 'Ore' : 'Krail'));
-    text($('refit-n'), pad(world.refit, 2));
-    text($('xp-v'), String(Math.floor(world.xp)));
-    text($('xp-n'), String(world.xpNext));
-    ticks($('xp'), world.xp / world.xpNext, 30);
-    $('rail').classList.toggle('full', world.celebrate > 0);
-    const g = $('xp-gain');
-    g.classList.toggle('on', this.gainT > 0.6);
-    if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
-  }
 
   // ── the Breakout: tank, hold, parts, chits, the Custody alert ───────────
 

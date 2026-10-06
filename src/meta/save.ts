@@ -5,6 +5,7 @@ import { noKit } from '../sim/modules';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
 import { pending } from '../sim/endings';
+import { stockLevels } from '../sim/bay';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
@@ -41,8 +42,8 @@ export function migrate(raw: unknown): Journey | null {
   // 5 → 6: the factions on the move (M7). A journey saved before keeps its one region, and gets its Drift fleet and its Thren now.
   if (j.version < 6) layScatter(j.chart, j.seed ?? 0);
   if (!j.chart.thren || !j.chart.drifts || !j.chart.raid) return null;
-  // 6 → 7: Cyrite is the fuel (the refit bay, step 4). What was Krail in the tank, on the lanes, in the rock and at the ports is Cyrite now;
-  // Krail is the bay's, and starts at nothing.
+  // 6 → 7: Cyrite is the fuel and the refit bay builds the ship (the refit bay, step 4). What was Krail in the tank, on the lanes,
+  // in the rock and at the ports is Cyrite now; Krail is the bay's.
   if (j.version < 7) toCyrite(j as unknown as Old);
   j.version = VERSION;
   return j as Journey;
@@ -60,7 +61,10 @@ const move = (o: Record<string, unknown> | null | undefined, from: string, to: s
 
 function toCyrite(j: Old): void {
   move(j.carry, 'krail', 'cyrite');
-  j.carry.krail = 0;
+  // the refit rail's progress comes back as Krail; the cards' upgrades stay fitted (the bay's modules are the same ids), with the stock fit
+  j.carry.krail = Math.round(Number(j.carry.xp) || 0);
+  delete j.carry.xp;
+  j.carry.levels = { ...stockLevels(), ...(j.carry.levels as Record<string, number>) };
   for (const s of j.chart.systems) {
     move(s, 'krail', 'cyrite');
     move((s.port as { prices?: Record<string, unknown> } | null)?.prices, 'krail', 'cyrite');

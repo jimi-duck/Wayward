@@ -3,12 +3,12 @@ import { FOOD_MAX, TANK_MAX } from '../sim/breakout';
 import { fitCost } from '../sim/modules';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
-import { plural, t } from '../i18n';
+import { num, plural, t } from '../i18n';
 
 // ── the port ──────────────────────────────────────────────────────────────
 // Docked: the world waits while you trade. Five things to do and a way out:
-// sell the hold, buy Cyrite and food a unit at a time, patch a plate, pay for
-// a refit (three cards there and then), cast off. Every port sets its own
+// sell the hold, buy Cyrite and food a unit at a time, patch a plate, open
+// the refit bay (it always opens at a port), cast off. Every port sets its own
 // prices, and the Net marks them up. The list is redrawn after every trade,
 // so every price and every "can't" is live. On a journey a sixth line plots
 // again: each press turns to the next lane out of here.
@@ -18,7 +18,7 @@ import { plural, t } from '../i18n';
 // modules, each with the next mark's price or what it still needs. Back
 // (or Escape, or the pad's B) climbs out a level at a time.
 
-type Line = { key: 'sell' | 'course' | 'yard' | 'back' | 'fit' | PortItem; label: string; price: string; note: string; ok: boolean; go?: () => void };
+type Line = { key: 'sell' | 'course' | 'yard' | 'back' | 'fit' | 'bay' | PortItem; label: string; price: string; note: string; ok: boolean; go?: () => void };
 /** What the panel shows: the trade, the four systems, or one system's modules. */
 type View = 'trade' | 'yard' | ShipSystem;
 
@@ -36,7 +36,7 @@ export class PortPanel {
   private lines: Line[] = [];
   private world: World | null = null;
   private onLeave: (() => void) | null = null;
-  private onRefit: (() => void) | null = null;
+  private onBay: (() => void) | null = null;
   private course: Course | null = null;
   private view: View = 'trade';
 
@@ -44,13 +44,13 @@ export class PortPanel {
     return !$('port').hidden;
   }
 
-  /** Open on the world's dock. `onRefit` is called when a bought refit puts cards on the table. */
-  show(world: World, onLeave: () => void, onRefit: () => void, course: Course | null = null): void {
+  /** Open on the world's dock. `onBay` opens the refit bay; the dock comes back when it closes. */
+  show(world: World, onLeave: () => void, onBay: () => void, course: Course | null = null): void {
     this.close();
     this.world = world;
     this.course = course;
     this.onLeave = onLeave;
-    this.onRefit = onRefit;
+    this.onBay = onBay;
     this.opened = performance.now();
     this.sel = 0;
     this.view = 'trade';
@@ -70,13 +70,6 @@ export class PortPanel {
       if (e.code === 'Space') return this.act(this.sel), true;
       return e.code.startsWith('Arrow') || e.code === 'Tab';
     }, ['ArrowUp', 'ArrowDown']);
-  }
-
-  /** The refit's cards were taken: back to the dock. */
-  resume(): void {
-    if (!this.world) return;
-    this.render();
-    $('port').hidden = false;
   }
 
   close(): void {
@@ -121,12 +114,6 @@ export class PortPanel {
       c.pick(lanes[(at + 1) % lanes.length]!.id);
     } else {
       w.buy(l.key as PortItem);
-      if (l.key === 'refit' && w.phase === 'refit') {
-        // the cards take the screen; the dock comes back when they are done
-        $('port').hidden = true;
-        this.onRefit?.();
-        return;
-      }
     }
     this.render();
   }
@@ -197,7 +184,7 @@ export class PortPanel {
       { key: 'cyrite', label: t('Buy Cyrite'), price: `${P.cyrite}`, note: w.cyrite >= TANK_MAX ? t('Tank full') : need ? t('{n} short of the jump', { n: need }) : t('Enough to jump'), ok: w.canBuy('cyrite') },
       { key: 'food', label: t('Buy food'), price: `${P.food}`, note: w.food >= FOOD_MAX ? t('Galley full') : t('{n} in the galley · a day each', { n: w.food }), ok: w.canBuy('food') },
       { key: 'plate', label: t('Patch a plate'), price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? t('Hull whole') : `${t('Hull')} ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
-      { key: 'refit', label: t('Pay for a refit'), price: `${P.refit}`, note: t('Three cards, take one'), ok: w.canBuy('refit') },
+      { key: 'bay', label: t('Refit bay'), price: `${num(Math.floor(w.krail))} Krail`, note: t('Fit modules for Krail'), ok: true, go: () => { this.close(); this.onBay?.(); } },
     ];
     const c = this.course, lanes = c?.lanes() ?? [];
     if (c && lanes.length) {

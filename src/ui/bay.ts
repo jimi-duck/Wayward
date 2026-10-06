@@ -4,7 +4,7 @@ import { blockOf, budgets, cost, maxLevel, quickPicks, type Block } from '../sim
 import { upgradeFigures } from '../sim/build';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
-import { icon, ICON } from './refit';
+import { icon, ICON } from './icons';
 import { num, t } from '../i18n';
 
 // ── the refit bay ─────────────────────────────────────────────────────────
@@ -100,6 +100,9 @@ export class BayPanel {
     // the bay opens on the suggestions; the tabs are a step further in
     this.view = 'picks';
     this.pick = 0;
+    // at a port the bay closes back onto the dock; in flight it launches
+    const x = $('bay-x');
+    x.replaceChildren(h('kbd', 'only-desktop', 'B'), ` ${t(world.docked ? 'Back to the dock' : 'Launch')}`);
     $('bay').hidden = false;
     this.render();
     this.off = keys((e) => {

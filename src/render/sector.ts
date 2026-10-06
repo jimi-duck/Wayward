@@ -238,13 +238,6 @@ export class Sector {
           this.fx.ring(e.x, 0.3, e.z, 7, AMBER, 0.5);
           this.fx.burst(e.x, 0.3, e.z, 30, AMBER, 9, 0.3, 0.7);
           break;
-        case 'levelUp': {
-          const s = this.lerped;
-          this.fx.ring(s.x, 0.2, s.z, 9, VIOLET, 0.55);
-          this.fx.flash(s.x, 0.4, s.z, 5, VIOLET, 0.3);
-          this.fx.burst(s.x, 0.4, s.z, 40, VIOLET, 9, 0.3, 0.8);
-          break;
-        }
         case 'graze':
           this.fx.burst(e.x, e.y, e.z, 5, GRAZE, 7, 0.2, 0.25);
           break;

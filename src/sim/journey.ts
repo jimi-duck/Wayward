@@ -14,6 +14,7 @@ import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, ty
 import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
 import { effects, noKit } from './modules';
+import { stockLevels } from './bay';
 import { Rng } from './rng';
 import { sensors } from './comms';
 import type { Faction } from './enemies';
@@ -138,7 +139,7 @@ const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 
 export function startCarry(): Carry {
   return {
-    cyrite: START_CYRITE, krail: 0, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: {}, xp: 0, refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], kit: noKit(),
+    cyrite: START_CYRITE, krail: 0, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], kit: noKit(),
   };
 }
 

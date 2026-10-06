@@ -316,16 +316,20 @@ describe('the journey', () => {
     expect(migrate({ version: 1 })).toBeNull();
   });
 
-  it('turns an old save\'s Krail into Cyrite, and starts the bay\'s Krail at nothing', () => {
+  it('turns an old save\'s Krail into Cyrite, its rail into Krail, and fits the stock ship', () => {
     const j = pastBreakout();
     const old = JSON.parse(JSON.stringify(j).replace(/cyrite/g, 'krail'));
     old.version = 6;
     delete old.carry.krail;
     old.carry.krail = 17;
+    old.carry.xp = 9;
+    old.carry.levels = { ph_emitters: 2 };
     const back = migrate(old)!;
     expect(back.version).toBe(VERSION);
     expect(back.carry.cyrite).toBe(17);
-    expect(back.carry.krail).toBe(0);
+    expect(back.carry.krail).toBe(9);
+    expect(back.carry.levels).toEqual({ tp_bay: 1, ph_emitters: 2 });
+    expect('xp' in back.carry).toBe(false);
     expect(back.chart.routes.every((r) => typeof r.cyrite === 'number')).toBe(true);
     expect(back.chart.systems.every((s) => typeof s.cyrite === 'number' && (!s.port || typeof s.port.prices.cyrite === 'number'))).toBe(true);
     expect(Object.values(back.chart.places).some((p) => (p.reward as string) === 'krail')).toBe(false);
@@ -344,7 +348,7 @@ describe('a sortie in the world', () => {
 
   it('carries the ship in and back out', () => {
     const j = pastBreakout();
-    j.carry = { ...j.carry, cyrite: 17, ore: 9, parts: 3, chits: 44, food: 7, plates: 2, levels: { ut_scanner: 1 }, xp: 5, refit: 2, flags: ['codes'], standing: { guild: 1 } };
+    j.carry = { ...j.carry, cyrite: 17, ore: 9, parts: 3, chits: 44, food: 7, plates: 2, levels: { ut_scanner: 1 }, refit: 2, flags: ['codes'], standing: { guild: 1 } };
     plot(j, options(j)[0]!.to.id);
     const w = sortie(j);
     expect(w.cyrite).toBe(17);
@@ -354,7 +358,7 @@ describe('a sortie in the world', () => {
     expect(w.levels.ut_scanner).toBe(1);
     expect(w.refit).toBe(2);
     expect(w.flags.has('codes')).toBe(true);
-    expect(w.carry()).toMatchObject({ cyrite: 17, ore: 9, parts: 3, chits: 44, food: 7, plates: 2, xp: 5, refit: 2, flags: ['codes'] });
+    expect(w.carry()).toMatchObject({ cyrite: 17, ore: 9, parts: 3, chits: 44, food: 7, plates: 2, refit: 2, flags: ['codes'] });
   });
 
   it('takes a new lane plotted at the dock, and only while docked', () => {

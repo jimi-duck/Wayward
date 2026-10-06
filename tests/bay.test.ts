@@ -173,14 +173,14 @@ describe('the budgets, felt (step 3)', () => {
     expect(overload(framed).handling.thrust).toBe(1);
   });
 
-  it('the arcade flies with it and the card figures show it; the Story mode does not yet', () => {
+  it('both modes fly with it, and the figures show it', () => {
     const hot = { ...stockLevels(), ph_emitters: 5, ph_capacitors: 4, ph_pierce: 3 };
     const w = new World(1);
     w.setLevels(hot);
     expect(w.stats.bankRefill).toBeLessThan(computeStats(hot).bankRefill);
     const s = new World(1, { mode: 'breakout' });
     s.setLevels(hot);
-    expect(s.stats.bankRefill).toBe(computeStats(hot).bankRefill);
+    expect(s.stats.bankRefill).toBeLessThan(computeStats(hot).bankRefill);
     const fig = upgradeFigures({ ...stockLevels(), ph_emitters: 3, ph_capacitors: 2, ph_pierce: 1 }, 'ph_pierce').find((f) => f.label === 'Bank refill/sec');
     expect(fig?.cost).toBe(true);
   });

@@ -22,7 +22,6 @@ import { PadNav } from './ui/dom';
 import { cardView, CommsPanel, hailView } from './ui/comms';
 import { buildView, StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
-import { RefitPanel } from './ui/refit';
 import { BayPanel } from './ui/bay';
 import { blockOf, quickPicks } from './sim/bay';
 import { detect, localize, onLang, plural, setLang, t } from './i18n';
@@ -96,11 +95,10 @@ function boot(): void {
   // compile every shader behind the start card, once it has painted
   setTimeout(() => sector.warm(), 60);
 
-  // ── the run's stops: refit, comms, port, report ────────────────────────
+  // ── the run's stops: the bay, comms, port, report ──────────────────────
   // The world pauses itself at each and waits (an ambush only slows it); the
   // panels answer it. The comms panel draws both a Breakout card and the
   // arcade's capital-ship hail.
-  const refit = new RefitPanel();
   const comms = new CommsPanel();
   /** The card the comms panel is showing, so a slowed card that timed out can be taken down. */
   let shown: object | null = null;
@@ -111,7 +109,7 @@ function boot(): void {
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => refit.open || bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
 
   // ── the journey ────────────────────────────────────────────────────────
   // The Breakout mode is a journey: system after system, with the chart
@@ -209,14 +207,10 @@ function boot(): void {
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
   const stops = () => {
-    if (world.phase === 'refit' && world.offer && !refit.open) {
-      // a full rail or battle salvage: three cards
+    if (world.phase === 'bay' && !bay.open) {
+      // the refit bay: the player opened it, and the world waits until they launch (or go back to the dock)
       input.reset();
-      refit.show(world.offer, world.levels, (i) => { world.choose(i); input.reset(); }, !world.bk);
-    } else if (world.phase === 'bay' && !bay.open) {
-      // the refit bay: the player opened it, and the world waits until they launch
-      input.reset();
-      bay.show(world, () => { world.closeBay(); input.reset(); hud.note(world, t('Launched')); });
+      bay.show(world, () => { world.closeBay(); input.reset(); if (world.phase === 'play') hud.note(world, t('Launched')); });
     } else if (world.phase === 'hail' && world.command.pending && !comms.open) {
       input.reset();
       shown = world.command.pending;
@@ -226,14 +220,14 @@ function boot(): void {
       shown = world.comms;
       comms.show(cardView(world.comms), (i) => { world.answer(i); input.reset(); });
     } else if (world.phase === 'dock' && !port.open) {
-      // docked at the port, or back from a refit bought there
+      // docked at the port, or back from its refit bay
       input.reset();
       port.show(world, () => {
         input.reset();
         hud.note(world, t('Cast off'));
         // the save at the port: a load starts this system again with the hold as it is now
         if (journey && world.mode === 'breakout') { checkpoint(journey, world.carry()); saveJourney(journey); }
-      }, () => {}, journey && world.mode === 'breakout' && world.bk?.def.port ? courseFor(journey) : null);
+      }, () => { world.openBay(); input.reset(); }, journey && world.mode === 'breakout' && world.bk?.def.port ? courseFor(journey) : null);
     } else if (world.phase === 'over' && !reported && world.mode === 'breakout' && journey) {
       reported = true;
       sortieOver();
@@ -257,28 +251,25 @@ function boot(): void {
       else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
     }
     // a gamepad answers the open panel
-    if (refit.open || bay.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
+    if (bay.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
       const p = padNav.poll();
-      if (refit.open) refit.padInput(p);
-      else if (bay.open) bay.padInput(p);
+      if (bay.open) bay.padInput(p);
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p, journey);
       else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
     }
-    // a full rail: a beat of slow motion before the panel
-    loop.timeScale = world.celebrate > 0 ? 0.3 : 1;
     // a panel that stops the run takes the screen: the HUD steps back
     document.documentElement.classList.toggle('panel-open', panelOpen());
   };
 
   // ── the refit bay ──────────────────────────────────────────────────────
-  // B, a pad's Back, the HUD's badge, or the pause card's button. The
-  // arcade, while flying; not in battle (the HUD's state says which), and
+  // B, a pad's Back, the HUD's badge, or the pause card's button. In
+  // flight while the alert is clear, and always at a port; not in battle (the HUD's state says which), and
   // when it will not open the HUD says why in a line.
   const openBay = () => {
-    if (!started || world.bk || refit.open || comms.open || port.open || chart.open || ending.open || bay.open) return;
+    if (!started || comms.open || port.open || chart.open || ending.open || bay.open) return;
     const why = world.bayClosed();
     if (why) { hud.bayDenied(world, why); return; }
     setPaused(false);

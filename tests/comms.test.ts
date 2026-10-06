@@ -173,7 +173,7 @@ describe('comms in the Breakout', () => {
   it('refuses a choice the ship has not earned', () => {
     const w = quiet();
     w.openComms(CARD_BY_ID.gutter_toll!);
-    expect(w.answer('bay')).toBe(false);
+    expect(w.answer('friend')).toBe(false);
     expect(w.phase).toBe('comms');
   });
 

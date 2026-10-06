@@ -63,8 +63,6 @@ export const JUMP_COST = 20;
 export const START_CYRITE = 6;
 export const TANK_MAX = 40;
 export const HOLD_START = 40;
-/** Each unit of ore is worth this much on the refit rail: a Breakout is short, and a build should take shape in it. */
-export const ORE_XP = 1.7;
 /** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
 export const SPOOL_RUN = 2.2;
@@ -182,8 +180,7 @@ export interface Carry {
   /** Plates whole (never more than the build allows). */
   plates: number;
   levels: Levels;
-  /** The refit rail. */
-  xp: number;
+  /** Installs made in the refit bay. */
   refit: number;
   /** Factions whose tech has been salvaged. */
   techs: string[];

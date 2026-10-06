@@ -119,30 +119,7 @@ export function stratName(s: Strategy): string {
 const KIND_BONUS: Record<string, number> = { system: 4, spec: 5, synergy: 4, tech: 5, stat: 1 };
 const WEAPON_BRANCHES = new Set<string>(['laser', 'torpedo', 'mine', 'plasma', 'close']);
 
-/**
- * The card to take. 'random' takes any of the three, as a player who reads
- * none of them would. A focus takes its branch (then its second), keeps a
- * little defence, and takes salvaged tech and synergies when they come.
- */
-function pickCard(w: World, s: Strategy, rngPick: () => number): number {
-  const cards = w.offer?.cards ?? [];
-  if (s.kind === 'random') return Math.floor(rngPick() * cards.length);
-  const score = (id: string) => {
-    const u = UPGRADE[id]!;
-    let v = u.branch === s.branch ? 10 : u.branch === s.second ? 6 : 0;
-    // a build with no weapon branch still keeps its guns up, as a player would
-    if (!WEAPON_BRANCHES.has(s.branch) && !(s.second && WEAPON_BRANCHES.has(s.second)) && u.branch === 'laser') v += 8;
-    if (u.branch === 'defence') v += 3;
-    if (u.branch === s.branch || u.branch === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
-    else if (u.kind === 'system') v -= 3;
-    return v + rngPick() * 2;
-  };
-  let best = 0, bestV = -Infinity;
-  cards.forEach((c, i) => { const v = score(c.id); if (v > bestV) { bestV = v; best = i; } });
-  return best;
-}
-
-/** How much the strategy wants a module of the bay (upgrades as pickCard scores them; fittings when their budget is short). */
+/** How much the strategy wants a module of the bay: its branch, then its second, a little defence, tech and synergies; fittings when their budget is short. */
 function want(w: World, s: Strategy, id: string): number {
   if (FITTING[id]) {
     // a fitting when its budget is short: power nearly gone, or the ship run hot or heavy
@@ -518,9 +495,8 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   let docks = 0;
   let nextShop = 0, fitted = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
-    if (w.phase === 'refit') { w.choose(pickCard(w, strategy, rngPick)); continue; }
-    // the arcade: a look into the bay every couple of seconds, when it will open
-    if (!w.bk && w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick); }
+    // a look into the bay every couple of seconds, when it will open
+    if (w.phase === 'play' && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick); }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms') {
       const before = { krail: w.cyrite, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
@@ -534,12 +510,12 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     }
     if (w.phase === 'dock') {
       if (w.bk && w.bk.docks > docks) { docks = w.bk.docks; o.onDock?.(w); }
-      // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, and a refit if there is money left
+      // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, then the bay
       w.sellOre();
       while (w.cyrite < w.jumpCost && w.buy('cyrite'));
       while (w.food < 12 && w.buy('food'));
       while (w.plates < w.stats.maxPlates && w.buy('plate'));
-      if (w.buy('refit')) continue;
+      shop(w, strategy, rngPick);
       w.undock();
       continue;
     }
@@ -555,8 +531,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     const evs = w.drain();
     o.watch?.(w, evs);
     for (const ev of evs) {
-      if (ev.type === 'levelUp' && [1, 5, 10, 15, 20].includes(ev.refit)) refitAt[ev.refit] = Math.round(w.runTime);
-      if (ev.type === 'fitted' && !w.bk && [1, 5, 10, 15, 20].includes(++fitted)) refitAt[fitted] = Math.round(w.runTime);
+      if (ev.type === 'fitted' && [1, 5, 10, 15, 20].includes(++fitted)) refitAt[fitted] = Math.round(w.runTime);
       if (ev.type === 'bossArrive') { fightStart = w.runTime; fightFaction = ev.faction; }
       if (ev.type === 'bossDestroyed') { bossFights.push({ faction: ev.faction, outcome: 'killed', seconds: Math.round(w.runTime - fightStart), hpLeft: 0, refit: w.refit }); fightStart = -1; }
       if (ev.type === 'bossLeft') {
