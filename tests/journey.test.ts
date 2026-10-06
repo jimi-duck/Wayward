@@ -8,7 +8,7 @@ import {
 } from '../src/sim/chart';
 import { behind, daysUntil, huntOn, newHunt, SEARCH } from '../src/sim/hunt';
 import {
-  ADRIFT, DAY, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, START_PARTS, WAITING, WEAR, WRECKS, type Journey,
+  ADRIFT, bankAnswer, DAY, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, START_PARTS, WAITING, WEAR, WRECKS, type Journey,
 } from '../src/sim/journey';
 import { Rng } from '../src/sim/rng';
 import { newRun } from '../src/sim/run';
@@ -465,5 +465,46 @@ describe('a sortie in the world', () => {
     expect(w.buy('food')).toBe(true);
     expect(w.food).toBe(food + 1);
     expect(w.chits).toBe(10 - w.prices.food);
+  });
+});
+
+describe('banking an answer', () => {
+  const copy = (c: Journey['carry']): Journey['carry'] => ({ ...c, flags: [...c.flags], seen: [...c.seen], standing: { ...c.standing }, jobs: c.jobs.map((x) => ({ ...x })) });
+
+  it('writes only what the answer changed into the journey, and survives a save', () => {
+    const j = pastBreakout();
+    j.carry.chits = 50;
+    j.status = 'sortie';
+    // mid-sortie the ship has mined 10 ore; the answer pays 30 chits and gives a flag, standing and a heard card
+    const before = copy(j.carry);
+    before.ore = 10;
+    const after = copy(before);
+    after.chits -= 30;
+    after.flags.push('frag_ledger');
+    after.seen.push('story_ledger');
+    after.standing.kellern = -1;
+    bankAnswer(j, before, after);
+    expect(j.carry.chits).toBe(20);
+    expect(j.carry.ore).toBe(0);
+    expect(j.carry.flags).toContain('frag_ledger');
+    expect(j.carry.seen).toContain('story_ledger');
+    expect(j.carry.standing.kellern).toBe(-1);
+    const back = migrate(JSON.parse(JSON.stringify(j)));
+    expect(back?.carry.flags).toContain('frag_ledger');
+    expect(back?.carry.chits).toBe(20);
+  });
+
+  it('never drops a stock below nothing, and takes back a flag an answer cleared', () => {
+    const j = pastBreakout();
+    j.carry.flags = ['news'];
+    j.carry.food = 1;
+    const before = copy(j.carry);
+    before.food = 5;
+    const after = copy(before);
+    after.food = 0;
+    after.flags = [];
+    bankAnswer(j, before, after);
+    expect(j.carry.food).toBe(0);
+    expect(j.carry.flags).not.toContain('news');
   });
 });
