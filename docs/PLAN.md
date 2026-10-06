@@ -619,8 +619,10 @@ spent and the budgets at the end: laser builds buy heat exchangers, close
 quarters runs heavy, everyone buys reactor cores.
 
 **A UI pass on the bay and the HUD (2026-10-06, Jimi's notes).** The mode
-card is two words: Observation (yellow) and Battle (red alert); the bay
-opens in the first, and saying no in the second is one line. An upgrades
+card is an alert in three steps: clear (nothing shown; the bay opens),
+caution in yellow (ships near or scanning, not attacking) and red alert
+(under attack); the bay stays shut on yellow and red, and saying no is one
+line. An upgrades
 badge (clickable, B) counts the suggestions you can pay for and pulses when
 one comes in. The bay opens on three suggested modules with the price on the
 button; the tabs are a step further in, with prices on the web. Auto-refit

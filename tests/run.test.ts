@@ -84,13 +84,21 @@ describe('krail and the refit bay', () => {
     expect(w.install('ph_capacitors')).toBe('closed');
   });
 
-  it('opens in observation, and is locked in battle (what the mode card shows)', () => {
+  it('opens when the alert is clear; caution (ships near) and red alert (under attack) keep it shut', () => {
     const w = quiet();
+    expect(w.alert()).toBe('clear');
     expect(w.bayClosed()).toBeNull();
+    // a hull close by, not attacking: caution
+    const near = parked(w, 0, -95, 0, 'scout');
+    near.mode = 'patrol';
+    expect(w.alert()).toBe('caution');
+    expect(w.bayClosed()).toBe('caution');
+    // one in the fight: red alert
+    w.aliens = [];
     const al = parked(w, 0, -30, 0, 'lancer');
     al.mode = 'hold';
-    expect(w.inDanger()).toBe(true);
-    expect(w.bayClosed()).toBe('battle');
+    expect(w.alert()).toBe('alert');
+    expect(w.bayClosed()).toBe('alert');
     expect(w.openBay()).toBe(false);
     w.aliens = [];
     expect(w.openBay()).toBe(true);

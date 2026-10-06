@@ -288,16 +288,18 @@ The arcade builds the ship in the **refit bay** (PLAN.md, R; `content/web.ts`,
 the torpedo bay. Krail (crystals from rock and wrecks, times the krail
 matrix) is a stock, no longer a rail to a card.
 
-**When it opens.** The HUD shows one word for the ship's state: Observation
-(yellow) while nothing hostile is close, Battle (red) when something is
-(`World.inDanger`: a committed hostile within 60 units, fire close by, a
-capital ship engaged). The bay opens in Observation, by B, a pad's Back,
-the upgrades badge (lower right; under the ship panel on touch) or the
-pause card's button, and the world waits on it. In Battle it stays shut and
-the log says so in one line ("Bay locked · clear the fight") while the badge
-shakes. The badge is dim with nothing to fit, amber with a count of the
-suggestions you can pay for, red when locked, and pulses when one becomes
-affordable.
+**When it opens.** The ship has an alert in three steps (`World.alert`):
+clear (nothing hostile about; the HUD shows nothing), caution in yellow
+(a hull within 110 units, a watcher looking you over, a capital ship on its
+way, none of them attacking) and red alert (under attack, `World.inDanger`:
+a committed hostile within 60 units, fire close by, a capital ship engaged).
+The bay opens only when clear, by B, a pad's Back, the upgrades badge
+(lower right; under the ship panel on touch) or the pause card's button, and
+the world waits on it. On caution or red alert it stays shut and the log
+says why in one line ("Bay locked · ships nearby", "Bay locked · under
+attack") while the badge shakes. The badge is dim with nothing to fit, amber
+with a count of the suggestions you can pay for, yellow or red when locked,
+and pulses when one becomes affordable.
 
 **Suggested first.** The bay opens on three suggestions (`quickPicks`):
 modules that suit the build (by its tags), a reactor core, heat exchangers
@@ -305,7 +307,7 @@ or frame when that budget runs short, cheaper favoured, from different tabs,
 at most one new system. Each is a card with one line, the number that
 matters and the price on its button: one tap, or 1 2 3. **Auto-refit** (a
 switch in the bay and on the pause card, saved in the profile) fits the
-first affordable suggestion by itself after two seconds of Observation, and
+first affordable suggestion by itself after two seconds of clear, and
 the log names it. A player who never opens the bay still gets a coherent
 ship; one who wants to plan opens a tab: eight tabs (Hull, Weapons, Ordnance, Engines, Defence, Utility,
 Reactor, Synergies), each a small web left to right by tier. A module opens

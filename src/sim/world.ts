@@ -87,7 +87,12 @@ export interface WorldOptions {
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const BOSS_PLATES = 1;
 
-/** Auto-refit waits this long with nothing hostile close before it fits, and this long again between fits. */
+/** The ship's alert (World.alert). */
+export type Alert = 'clear' | 'caution' | 'alert';
+/** A hostile hull this close (units) puts the ship on caution: a little inside where they arrive. */
+export const CAUTION_RANGE = 110;
+
+/** Auto-refit waits this long with the alert clear before it fits, and this long again between fits. */
 export const AUTO_QUIET = 2;
 export const AUTO_GAP = 1;
 
@@ -897,6 +902,26 @@ export class World implements EncounterHost {
     return false;
   }
 
+  /**
+   * The ship's alert, three steps, what the HUD shows and what the refit bay
+   * opens on:
+   *   clear   · nothing hostile about: the HUD stays quiet, the bay opens
+   *   caution · (yellow) hulls nearby, a watcher looking you over, a capital
+   *             ship on its way: not attacking yet, but the bay stays shut
+   *   alert   · (red) under attack: a committed hostile close, fire near, a
+   *             capital ship engaged (inDanger)
+   */
+  alert(): Alert {
+    if (!this.alive || this.inDanger()) return 'alert';
+    const s = this.ship, cs = this.command.state;
+    if (cs !== 'idle') return 'caution';
+    for (const a of this.aliens) {
+      if (a.fleeing || ALIEN_TYPES[a.kind].fire === 'none') continue;
+      if (a.mode === 'watch' || Math.hypot(a.x - s.x, a.z - s.z) < CAUTION_RANGE) return 'caution';
+    }
+    return 'clear';
+  }
+
   // ── decisions ─────────────────────────────────────────────────────────
 
   /** Deal the next hand of cards: salvage first, then refits. Nothing left to offer, and the run flies on. */
@@ -944,14 +969,14 @@ export class World implements EncounterHost {
 
   /**
    * Why the bay will not open now, or null if it will: the arcade, while
-   * flying, and not in battle. Battle is exactly what the HUD's mode card
-   * shows in red (inDanger: a committed hostile close, fire near, a capital
-   * ship engaged), so the card always says whether the bay will open.
+   * flying, with the alert clear. The HUD shows the alert, so it always says
+   * whether the bay will open: yellow and red keep it shut.
    */
-  bayClosed(): 'mode' | 'busy' | 'battle' | null {
+  bayClosed(): 'mode' | 'busy' | 'caution' | 'alert' | null {
     if (this.bk) return 'mode';
     if (!this.alive || this.phase !== 'play' || this.celebrate > 0) return 'busy';
-    return this.inDanger() ? 'battle' : null;
+    const a = this.alert();
+    return a === 'clear' ? null : a;
   }
 
   /** Open the bay: the world waits while you fit. False if it cannot open now (see bayClosed). */
@@ -971,7 +996,7 @@ export class World implements EncounterHost {
   /** Auto-refit (the arcade): fit the bay's first affordable suggestion by itself, once nothing hostile is close. */
   private autoRefit(dt: number): void {
     if (!this.autoFit || this.bk || !this.alive) return;
-    this.autoQuiet = this.inDanger() ? 0 : this.autoQuiet + dt;
+    this.autoQuiet = this.alert() !== 'clear' ? 0 : this.autoQuiet + dt;
     if (this.autoQuiet < AUTO_QUIET) return;
     const id = autoPick(this.bayCtx());
     if (id) { this.fit(id, true); this.autoQuiet = AUTO_QUIET - AUTO_GAP; }

@@ -152,9 +152,9 @@ export class Hud {
   }
 
   /** The bay would not open: say why, short, and shake the badge. */
-  bayDenied(world: World, why: 'battle' | 'busy' | 'mode'): void {
-    if (why !== 'battle') return;
-    this.note(world, t('Bay locked · clear the fight'), 'hit');
+  bayDenied(world: World, why: 'caution' | 'alert' | 'busy' | 'mode'): void {
+    if (why !== 'caution' && why !== 'alert') return;
+    this.note(world, t(why === 'alert' ? 'Bay locked · under attack' : 'Bay locked · ships nearby'), 'hit');
     this.retrigger($('upg'), 'deny');
   }
 
@@ -332,7 +332,7 @@ export class Hud {
       this.count = quickPicks(ctx).filter((w) => blockOf(w.id, ctx) === null).length;
     }
     const k = Math.floor(world.krail), next = this.next, n = this.count;
-    const locked = world.bayClosed() === 'battle';
+    const alert = world.alert(), locked = alert !== 'clear';
     const ready = n > 0 && !locked;
     text($('xp-l'), 'Krail');
     text($('xp-v'), String(k));
@@ -347,6 +347,7 @@ export class Hud {
     badge.hidden = false;
     badge.classList.toggle('ready', n > 0 && !locked);
     badge.classList.toggle('locked', n > 0 && locked);
+    badge.classList.toggle('red', alert === 'alert');
     text($('upg-n'), n ? String(n) : '');
     text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : n > 0 ? 'Upgrade ready' : 'Refit bay'));
     if (n > this.shown && !locked) this.retrigger(badge, 'new');
@@ -675,17 +676,18 @@ export class Hud {
   // ── bottom right: the mode, and the log ─────────────────────────────────
 
   /**
-   * The ship's state, in one word: Observation (yellow) while nothing hostile
-   * is close, Battle (red) when it is. It is the same test the refit bay
-   * opens on (World.inDanger), so the word always says whether it will.
+   * The ship's alert (World.alert), the same test the refit bay opens on:
+   * clear shows nothing at all; caution (yellow) when hulls are near or
+   * looking you over; red alert when you are under attack.
    */
   private updateMode(world: World): void {
-    const battle = !world.alive || world.inDanger();
-    const word = !world.alive ? 'Hull breach' : battle ? 'Battle' : 'Observation';
-    const key = `${battle}${word}`;
+    const a = world.alert();
+    const word = !world.alive ? 'Hull breach' : a === 'alert' ? 'Red alert' : 'Caution';
+    const key = `${a}${word}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
-    $('mode').className = battle ? 'battle' : 'obs';
+    $('mode').className = a;
+    $('mode').hidden = a === 'clear';
     text($('mode-t'), t(word));
   }
 

@@ -169,12 +169,12 @@
         </div>
       </section>
 
-      <!-- lower right: the last thing that happened, the refit bay's badge, and the ship's state:
-           observation (yellow: the bay opens) or battle (red: it does not) -->
+      <!-- lower right: the last thing that happened, the refit bay's badge, and the ship's alert:
+           nothing when clear (the bay opens), caution in yellow, red alert in red (it does not) -->
       <section id="log" class="hud-block" aria-live="off">
         <div id="log-lines"></div>
         <button type="button" id="upg" tabindex="-1" hidden><kbd class="only-desktop">B</kbd><svg class="ico"><use href="#i-hull"/></svg><span id="upg-t">Refit bay</span><b id="upg-n"></b></button>
-        <div id="mode" class="obs"><svg class="md-i" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z"/><path d="M12 7l5 5-5 5-5-5z"/></svg><span id="mode-t">Observation</span><i class="stripes"></i></div>
+        <div id="mode" class="clear" hidden><svg class="md-i" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z"/><path d="M12 7l5 5-5 5-5-5z"/></svg><span id="mode-t">Caution</span><i class="stripes"></i></div>
       </section>
 
       <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
@@ -349,7 +349,7 @@
           <li><svg class="ico"><use href="#i-hull"/></svg><b>Upgrade</b><span>Spend Krail in the refit bay, or let Auto-refit do it.</span></li>
           <li><svg class="ico"><use href="#i-hostile"/></svg><b>Survive</b><span>Hostiles come in waves. In the quiet, the hull mends.</span></li>
         </ol>
-        <div class="states arcade-only"><span class="st obs"><i></i>Observation · the bay opens</span><span class="st battle"><i></i>Battle · the bay is locked</span></div>
+        <div class="states arcade-only"><span class="st clear"><i></i>Clear · the bay opens</span><span class="st obs"><i></i>Caution · ships nearby</span><span class="st battle"><i></i>Red alert · under attack</span></div>
         <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Krail</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
         <!-- the controls for what you play with: keys, touch or a pad -->
         <dl class="keys-l only-keys">
