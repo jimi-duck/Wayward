@@ -1406,8 +1406,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bf-none { font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
 .bb { display: contents; }
 .bb-l { font: 600 calc(var(--fs) * 1.05 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
-.bb-bar { align-self: center; height: 6px; background: linear-gradient(90deg, var(--cy) calc(var(--v) * 100%), var(--cy-dim) calc(var(--v) * 100%) calc(var(--a) * 100%), rgba(216, 213, 198, .1) calc(var(--a) * 100%)); }
-.bb-bar.over { background: linear-gradient(90deg, var(--alert) 100%, transparent 0); }
 .bb-v { font: 500 12px/1 var(--font-mono); color: var(--ink); }
 
 
@@ -1503,7 +1501,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 /* the bay: tab state, installing, the Before → After the player reads */
 .bay-tab { position: relative; }
 .bb-v em { font-style: normal; color: var(--hud); }
-.bb-bar { transition: background .45s var(--ez); }
 .bb-v.bump, .bb.bump .bb-v { animation: bay-bump .7s var(--ez); }
 @keyframes bay-bump { 0% { color: var(--hud-hi); text-shadow: 0 0 10px var(--hud); } 100% { color: var(--ink); text-shadow: none; } }
 .bay-node.fresh .bn-oct { animation: bay-fit .7s var(--ez); }
@@ -1513,7 +1510,24 @@ html:not(.breakout) .pause-card #brief { display: none; }
 /* thresholds on the bars: a tick at 80%, a word from there, a louder one over */
 .bb-bar { position: relative; }
 .bb-bar::after { content: ""; position: absolute; left: 80%; top: -2px; bottom: -2px; width: 1px; background: var(--ink-3); opacity: .7; }
-.bb-bar.warn { background: linear-gradient(90deg, var(--hud) calc(var(--v) * 100%), var(--hud-mid) calc(var(--v) * 100%) calc(var(--a) * 100%), rgba(216, 213, 198, .1) calc(var(--a) * 100%)); }
+/* the bars in segments, one per point of rating: lit for the draw, blinking for what the selected part would add, red when it would not fit */
+.bb-bar { align-self: center; display: flex; gap: 2px; height: 8px; }
+.bb-bar i { flex: 1; background: rgba(216, 213, 198, .1); }
+.bb-bar i.on { background: var(--cy); }
+.bb-bar.warn i.on { background: var(--hud); }
+.bb-bar.over i { background: var(--alert); }
+.bb-bar i.add { background: var(--hud-mid); animation: seg-blink 1.25s ease-in-out infinite; }
+.bb-bar.will i.add { background: var(--alert); }
+.bb-bar i.new { animation: seg-on .22s var(--ez) backwards; animation-delay: calc(var(--k, 0) * 40ms + 100ms); }
+.bb-bar i.pop { animation: seg-pop .26s var(--ez) backwards; animation-delay: calc(var(--k, 0) * 40ms); }
+@keyframes seg-blink { 50% { opacity: .35; } }
+@keyframes seg-on { 0% { background: rgba(216, 213, 198, .1); transform: none; } 40% { background: var(--hud-hi); transform: scaleY(1.9); } }
+@keyframes seg-pop { 0% { transform: scaleX(0); } 70% { transform: scaleX(1.15); } }
+/* the fit: the button goes in 2 px with a hard stop, the picture takes a short kick */
+.bi-go:not(:disabled):active, .pc-go:not(:disabled):active, #bay-x:active, #bay-auto:active { translate: 0 2px; transition: translate 40ms linear; }
+#bay.kick .bay-art, #bay.kick .bay-pts { animation: bay-kick 90ms linear; }
+@keyframes bay-kick { 35% { translate: 0 3px; } 70% { translate: 0 -1px; } }
+@media (prefers-reduced-motion: reduce) { .bb-bar i { animation: none; } #bay.kick .bay-art, #bay.kick .bay-pts { animation: none; } }
 .bb-l { display: flex; align-items: center; gap: 8px; }
 .bb-w { display: inline-flex; align-items: center; gap: 4px; font-size: calc(var(--fs) * .8 * 1.18); letter-spacing: .12em; color: var(--hud); }
 .bb-w i { font-style: normal; font-size: 9px; }
