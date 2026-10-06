@@ -252,6 +252,12 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   in `VARIANTS` (renderer and HUD pick it up). A new archetype is a row in
   `ALIEN_TYPES`, its tactic in `moveAlien`, and a model in
   `render/enemies.ts` `build()`.
+- **A shot**: bolts, enemy slugs, plasma and torpedoes are all streaks
+  (`render/streaks.ts`): one instanced ribbon, one draw call. A new look is a
+  style in `STREAK` and a branch in its fragment shader, not a new mesh.
+- **Judging a look or its cost**: the enemy bench, `tools/enemies.html` on the
+  dev server (`?view=fleet|close|fire`, `?kind=`, `?n=`, `?quality=`,
+  `?frames=N` fills `window.__bench` with draws and triangles).
 - **An elite modifier**: one row in `ELITES`, plus the colour of its halo
   in `render/enemies.ts`.
 - **A capital ship**: one row in `FACTIONS` (cycles per phase, station,

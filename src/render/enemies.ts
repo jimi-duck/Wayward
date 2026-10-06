@@ -1,7 +1,7 @@
 import {
-  AdditiveBlending, BoxGeometry, Color, Float32BufferAttribute, Group, InstancedBufferAttribute, InstancedMesh,
-  LineBasicMaterial, LineSegments, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, Quaternion,
-  SphereGeometry, Sprite, SpriteMaterial, Vector3, BufferGeometry, type Material, type Scene, type Texture,
+  AdditiveBlending, BoxGeometry, Color, Float32BufferAttribute, Group,
+  LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  Sprite, SpriteMaterial, Vector3, BufferGeometry, type Material, type Scene, type Texture,
 } from 'three';
 import { STEP } from '../core/loop';
 import type { Boss } from '../sim/bosses';
@@ -9,6 +9,7 @@ import {
   ALIEN_ORDER, ALIEN_TYPES, BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type EliteId, type Faction, type Shot, type Web,
 } from '../sim/enemies';
 import { Kit, metal, seeded, type V3 } from './kit';
+import { STREAK, type Streaks } from './streaks';
 
 // ── the enemy ─────────────────────────────────────────────────────────────
 // Built from the same industrial kit as the player's ships, so the whole sky
@@ -48,7 +49,6 @@ const FACTION_METAL: Record<Faction, number> = {
   thren: 0x9a7a52,
 };
 const WEB = new Color(2.2, 0.9, 3.4);
-const WHITE = new Color(3.5, 3.5, 3.5);
 
 interface Model { root: Group; engines: V3[]; }
 
@@ -243,39 +243,20 @@ class HullView {
   }
 }
 
-const MAX_SHOTS = 400;
-const X = new Vector3(1, 0, 0);
 
 export class EnemyView {
   private readonly models = new Map<string, Model>();
   private readonly pools = new Map<string, HullView[]>();
   private readonly live = new Map<number, HullView>();
-  private readonly shots: InstancedMesh;
-  private readonly shotGlow: InstancedMesh;
   private readonly beams: Mesh[] = [];
   private readonly webs: LineSegments[] = [];
   private bossView: { id: number; root: Group; hull: HullView; mats: Material[] } | null = null;
-  private readonly m = new Matrix4();
-  private readonly q = new Quaternion();
-  private readonly p = new Vector3();
-  private readonly s = new Vector3();
-  private readonly d = new Vector3();
   private readonly c = new Color();
   private time = 0;
   /** The camera's position, for distance-aware glow sizes. */
   readonly eye = new Vector3();
 
-  constructor(private readonly scene: Scene, private readonly glowTex: Texture) {
-    // enemy fire: a hot slug in a glow of its faction's colour, stretched along its flight
-    this.shots = new InstancedMesh(new SphereGeometry(1, 10, 8), new MeshBasicMaterial({ color: 0xffffff, toneMapped: false }), MAX_SHOTS);
-    this.shotGlow = new InstancedMesh(new SphereGeometry(1, 10, 8),
-      new MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3, blending: AdditiveBlending, depthWrite: false, toneMapped: false }), MAX_SHOTS);
-    for (const im of [this.shots, this.shotGlow]) {
-      im.instanceColor = new InstancedBufferAttribute(new Float32Array(MAX_SHOTS * 3), 3);
-      im.count = 0;
-      im.frustumCulled = false;
-      scene.add(im);
-    }
+  constructor(private readonly scene: Scene, private readonly glowTex: Texture, private readonly streaks: Streaks) {
     for (let i = 0; i < 8; i++) {
       const b = new Mesh(new BoxGeometry(1, 1, 1).translate(0.5, 0, 0), new MeshBasicMaterial({ color: NEON.voice.clone(), transparent: true, blending: AdditiveBlending, depthWrite: false }));
       b.visible = false;
@@ -376,26 +357,12 @@ export class EnemyView {
       bv.hull.flash(boss.hitT > 0);
     }
 
-    // enemy fire
-    let n = 0;
+    // enemy fire: a hot slug in a glow of its faction's colour; plasma is a pulsing orb
     for (const b of shots) {
-      if (n >= MAX_SHOTS) break;
-      const r = b.hp > 0 ? b.r * (1.1 + Math.sin(this.time * 14 + b.id) * 0.15) : b.r;
-      this.q.setFromUnitVectors(X, this.d.set(b.vx, b.vy, b.vz).normalize());
-      this.p.set(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back);
-      this.m.compose(this.p, this.q, this.s.set(r * (b.hp > 0 ? 1.1 : 1.9), r * 0.42, r * 0.42));
-      this.shots.setMatrixAt(n, this.m);
-      this.c.copy(NEON[b.faction]).lerp(WHITE, 0.12);
-      this.shots.setColorAt(n, this.c);
-      this.m.compose(this.p, this.q, this.s.set(r * (b.hp > 0 ? 2.2 : 2.8), r * 1.1, r * 1.1));
-      this.shotGlow.setMatrixAt(n, this.m);
-      this.shotGlow.setColorAt(n, this.c.copy(NEON[b.faction]).multiplyScalar(0.5));
-      n++;
-    }
-    for (const im of [this.shots, this.shotGlow]) {
-      im.count = n;
-      im.instanceMatrix.needsUpdate = true;
-      if (im.instanceColor) im.instanceColor.needsUpdate = true;
+      const plasma = b.hp > 0, r = plasma ? b.r * (1.1 + Math.sin(this.time * 14 + b.id) * 0.15) : b.r;
+      this.c.copy(NEON[b.faction]).multiplyScalar(plasma ? 0.7 : 0.55);
+      this.streaks.push(b.x - b.vx * back, b.y - b.vy * back + 0.1, b.z - b.vz * back, b.vx, b.vy, b.vz,
+        plasma ? r * 4.2 : r * 7, plasma ? r * 3.2 : r * 2.6, plasma ? STREAK.orb : STREAK.slug, this.c, plasma ? 1.2 : 0.9, this.time * 2 + b.id * 0.31);
     }
 
     // beams: a thin telegraph while winding up, then the cut
