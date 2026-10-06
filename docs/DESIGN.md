@@ -334,14 +334,14 @@ being directly targeted, `World.inDanger`: a committed hostile within 60
 units, fire close by, a capital ship engaged).
 The bay opens in flight only when clear, and always when docked at a port
 (the port's list has a line for it, and closing it goes back to the dock),
-by B, a pad's Back, the upgrades badge (lower right; under the ship panel
-on touch) or the pause card's button, and the world waits on it. **In the
+by B, a pad's Back, the upgrades badge (the Story mode's: lower right, under
+the ship panel on touch) or the pause card's button, and the world waits on it. **In the
 Arcade the player need not open it:** it opens by itself once the Krail
 aboard reaches the price (`World.bayDue`; ARCADE_PRICE, 30) and the alert
 has been clear for two seconds (BAY_QUIET), and only if something can be
 fitted. Once a pick is made the bay shuts itself and asks again at the
 price if Krail is left; leaving without a pick puts the next opening one
-price further on (B and the badge still open it sooner). The Story mode's
+price further on (B still opens it sooner; the Arcade HUD has no badge). The Story mode's
 bay is the player's call. On yellow or red alert it stays shut and the log
 says why in one line ("Bay locked · yellow alert", "Bay locked · red
 alert") while the badge shakes. The badge is dim with nothing to fit, amber
