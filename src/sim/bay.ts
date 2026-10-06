@@ -1,15 +1,17 @@
 import { MODULE_BY_ID } from '../content/modules';
 import { UPGRADE, upgradeText } from '../content/upgrades';
-import { FITTING, LEVEL_STEP, NODE, STOCK, TIER_COST, WEB, YARD_FEE, type WebNode } from '../content/web';
+import { ARCADE_PRICE, FITTING, LEVEL_STEP, NODE, STOCK, TIER_COST, WEB, YARD_FEE, type WebNode } from '../content/web';
 import { budgets } from './budgets';
 import { available, type Levels } from './build';
 
 // ── the refit bay: what can be fitted, what it costs, what it leaves ──────
 // The rules over content/web.ts. Building happens only in the bay (PLAN.md,
-// R): you open it (in flight when the alert is clear, and always at a
-// port), pay Krail, and fit one level at a time, or let Auto-refit fit the
-// suggestions as you fly. In the Story mode the yard's work is fitted only
-// while docked, and the yard charges chits as well.
+// R): in the Arcade mode it opens by itself once a price of Krail is aboard
+// and the alert is clear, and every level costs the same; in the Story mode
+// you open it (in flight when the alert is clear, and always at a port) and
+// the price is the tier's. You pay Krail and fit one level at a time. In the
+// Story mode the yard's work is fitted only while docked, and the yard
+// charges chits as well.
 // Nothing comes out again. This module only answers questions about a
 // build; the world keeps the Krail and the levels and calls `install`.
 
@@ -57,10 +59,11 @@ export function fee(id: string, lv: number, arcade: boolean): number {
   return MODULE_BY_ID[id]?.chits[lv - 1] ?? YARD_FEE * lv;
 }
 
-/** Krail for level `lv` (1 up) of a node. */
-export function cost(id: string, lv: number): number {
+/** Krail for level `lv` (1 up) of a node: ARCADE_PRICE in the Arcade mode, else by tier and level. */
+export function cost(id: string, lv: number, arcade: boolean): number {
   const node = NODE[id];
   if (!node) return Infinity;
+  if (arcade) return ARCADE_PRICE;
   const base = TIER_COST[Math.min(node.tier, TIER_COST.length - 1)]! * (node.price ?? 1);
   return Math.round((base * (1 + LEVEL_STEP * (lv - 1))) / 5) * 5;
 }
@@ -82,7 +85,7 @@ export function blockOf(id: string, ctx: BayCtx): Block | null {
   if (yardWork(id, lv + 1, ctx.arcade) && !ctx.docked) return 'yard';
   const { use, cap } = budgets(ctx.levels);
   if ((node.draw.power ?? 0) > 0 && use.power + node.draw.power! > cap.power) return 'power';
-  if (ctx.krail < cost(id, lv + 1)) return 'krail';
+  if (ctx.krail < cost(id, lv + 1, ctx.arcade)) return 'krail';
   if ((ctx.chits ?? 0) < fee(id, lv + 1, ctx.arcade)) return 'chits';
   return null;
 }
@@ -92,7 +95,7 @@ export function install(id: string, ctx: BayCtx): { levels: Levels; cost: number
   const why = blockOf(id, ctx);
   if (why) return why;
   const lv = ctx.levels[id] ?? 0;
-  return { levels: { ...ctx.levels, [id]: lv + 1 }, cost: cost(id, lv + 1), fee: fee(id, lv + 1, ctx.arcade) };
+  return { levels: { ...ctx.levels, [id]: lv + 1 }, cost: cost(id, lv + 1, ctx.arcade), fee: fee(id, lv + 1, ctx.arcade) };
 }
 
 /** The nodes of a tab that could be fitted were there Krail and power enough: what the bay lights as available. */
@@ -113,7 +116,7 @@ export function cheapest(ctx: BayCtx): { id: string; cost: number } | null {
   for (const w of WEB) {
     const b = blockOf(w.id, ctx);
     if (b !== null && b !== 'krail' && b !== 'chits') continue;
-    const c = cost(w.id, (ctx.levels[w.id] ?? 0) + 1);
+    const c = cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade);
     if (!best || c < best.cost) best = { id: w.id, cost: c };
   }
   return best;
@@ -158,7 +161,7 @@ export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
   const systems = Object.keys(ctx.levels).filter((id) => UPGRADE[id]?.kind === 'system' && (ctx.levels[id] ?? 0) > 0).length;
   const scored = WEB
     .filter((w) => { const b = blockOf(w.id, ctx); return b === null || b === 'krail' || b === 'chits'; })
-    .map((w) => ({ w, v: suits(w.id, ctx, affinity, systems) / Math.sqrt(cost(w.id, (ctx.levels[w.id] ?? 0) + 1) / 40) }))
+    .map((w) => ({ w, v: suits(w.id, ctx, affinity, systems) / Math.sqrt(cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade) / 40) }))
     .sort((a, b) => b.v - a.v || a.w.id.localeCompare(b.w.id));
   // a spread: different tabs, and no more than one new system at a time
   const out: WebNode[] = [];

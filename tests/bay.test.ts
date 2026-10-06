@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { UPGRADES, UPGRADE } from '../src/content/upgrades';
 import { MODULES } from '../src/content/modules';
-import { FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
-import { blockOf, budgets, cost, install, maxLevel, PICKS, quickPicks, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
+import { ARCADE_PRICE, FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
+import { blockOf, budgets, cheapest, cost, install, maxLevel, PICKS, quickPicks, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
 import { computeStats, upgradeFigures } from '../src/sim/build';
 import { feelBudgets, overload, OVERLOAD } from '../src/sim/budgets';
 import { World } from '../src/sim/world';
@@ -84,11 +84,19 @@ describe('the bay’s rules', () => {
     expect(blockOf('ph_pierce', ctx({ levels: (r as { levels: Record<string, number> }).levels }))).toBeNull();
   });
 
-  it('charges more for deeper nodes and later levels', () => {
-    expect(cost('ph_lance', 1)).toBeGreaterThan(cost('ph_emitters', 1));
-    expect(cost('ph_emitters', 2)).toBeGreaterThan(cost('ph_emitters', 1));
-    expect(blockOf('ph_emitters', ctx({ krail: cost('ph_emitters', 1) - 1 }))).toBe('krail');
-    expect(blockOf('ph_emitters', ctx({ krail: cost('ph_emitters', 1) }))).toBeNull();
+  it('charges the Story mode more for deeper nodes and later levels, and the Arcade one price for all', () => {
+    expect(cost('ph_lance', 1, false)).toBeGreaterThan(cost('ph_emitters', 1, false));
+    expect(cost('ph_emitters', 2, false)).toBeGreaterThan(cost('ph_emitters', 1, false));
+    const story = { arcade: false, krail: cost('ph_emitters', 1, false) - 1 };
+    expect(blockOf('ph_emitters', ctx(story))).toBe('krail');
+    expect(blockOf('ph_emitters', ctx({ ...story, krail: story.krail + 1 }))).toBeNull();
+    // the Arcade: a tier-one module, a tier-four one and a later level all cost ARCADE_PRICE
+    for (const [id, lv] of [['ph_emitters', 1], ['ph_emitters', 2], ['ph_lance', 1], ['tp_cluster', 1]] as const) expect(cost(id, lv, true), `${id} ${lv}`).toBe(ARCADE_PRICE);
+    expect(blockOf('ph_emitters', ctx({ krail: ARCADE_PRICE - 1 }))).toBe('krail');
+    expect(blockOf('ph_emitters', ctx({ krail: ARCADE_PRICE }))).toBeNull();
+    const r = install('ph_emitters', ctx()) as { cost: number };
+    expect(r.cost).toBe(ARCADE_PRICE);
+    expect(cheapest(ctx({ krail: 0 }))?.cost).toBe(ARCADE_PRICE);
   });
 
   it('keeps the upgrades’ own rules: one specialisation per group, a deep enough branch', () => {

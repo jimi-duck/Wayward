@@ -335,7 +335,13 @@ units, fire close by, a capital ship engaged).
 The bay opens in flight only when clear, and always when docked at a port
 (the port's list has a line for it, and closing it goes back to the dock),
 by B, a pad's Back, the upgrades badge (lower right; under the ship panel
-on touch) or the pause card's button, and the world waits on it. On yellow or red alert it stays shut and the log
+on touch) or the pause card's button, and the world waits on it. **In the
+Arcade the player need not open it:** it opens by itself once the Krail
+aboard reaches the price (`World.bayDue`; ARCADE_PRICE, 45) and the alert
+has been clear for two seconds (BAY_QUIET), and only if something can be
+fitted. Leaving with a price or more unspent puts the next opening one
+price further on (B and the badge still open it sooner). The Story mode's
+bay is the player's call. On yellow or red alert it stays shut and the log
 says why in one line ("Bay locked · yellow alert", "Bay locked · red
 alert") while the badge shakes. The badge is dim with nothing to fit, amber
 with a count of the suggestions you can pay for, yellow or red when locked,
@@ -351,9 +357,10 @@ Defence, Utility, Signals (the Story mode's), Reactor and Synergies, each a
 small web left to right by tier. A module opens
 once something it comes from is fitted, then by the upgrade's own rules
 (requires, one specialisation per group, a deep enough system). Each level
-costs Krail by tier (40, 60, 90, 130; half as much again a level; the deep
-torpedo and mine modules cost 0.65 to 0.7 of that, so ordnance builds keep
-pace) and draws
+costs Krail by tier in the Story mode (40, 60, 90, 130; half as much again
+a level; the deep torpedo and mine modules cost 0.65 to 0.7 of that, so
+ordnance builds keep pace), and the same in the Arcade, whatever the module
+or the level (ARCADE_PRICE, 45), and draws
 power, mass or heat, against ratings of 8 each (the stock ship draws 5
 power, 3 heat, 1 mass). Power is a ceiling; the reactor core (+3 a level)
 raises it and is always open until full, so a build never gets stuck, and

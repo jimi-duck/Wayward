@@ -60,7 +60,7 @@ describe('the ship’s systems', () => {
     expect(blockOf('md_racks', { ...story({ docked: true }), arcade: true })).toBe('mode');
     expect(fee('md_racks', 1, false)).toBe(10);
     expect(fee('md_racks', 2, false)).toBe(20);
-    expect(cost('md_racks', 2)).toBeGreaterThan(cost('md_racks', 1));
+    expect(cost('md_racks', 2, false)).toBeGreaterThan(cost('md_racks', 1, false));
     expect(blockOf('md_racks', story({ docked: true, levels: { ...stockLevels(), md_racks: 3 } }))).toBe('full');
     // the frame is yard work in the Story mode, never in the arcade; the core only from its last level
     expect(blockOf('hl_frame', story())).toBe('yard');
@@ -111,7 +111,7 @@ describe('the yard', () => {
     expect(w.install('md_racks')).toBeNull();
     expect(w.levels.md_racks).toBe(1);
     expect(w.chits).toBe(60);
-    expect(w.krail).toBe(500 - cost('md_racks', 1));
+    expect(w.krail).toBe(500 - cost('md_racks', 1, false));
     expect(w.holdMax).toBe(HOLD_START + 15);
     // the spoofer comes after the baffles on the web
     expect(w.install('md_spoofer')).toBe('path');

@@ -72,12 +72,12 @@ const textOf = (id: string, lv: number) => t(nodeText(id, lv));
 /** The price of the next level: Krail, and the yard's chits where it charges. */
 function priceWord(w: World, id: string): string {
   const lv = (w.levels[id] ?? 0) + 1, f = fee(id, lv, !w.bk);
-  return `${num(cost(id, lv))} Krail${f ? ` · ${num(f)} ${t('chits')}` : ''}`;
+  return `${num(cost(id, lv, !w.bk))} Krail${f ? ` · ${num(f)} ${t('chits')}` : ''}`;
 }
 
 /** What the Fit button says: the price, how much Krail is missing, or why not. */
 function fitWord(w: World, id: string, why: Block | null): string {
-  if (why === 'krail') return t('{n} more Krail', { n: num(Math.ceil(cost(id, (w.levels[id] ?? 0) + 1) - w.krail)) });
+  if (why === 'krail') return t('{n} more Krail', { n: num(Math.ceil(cost(id, (w.levels[id] ?? 0) + 1, !w.bk) - w.krail)) });
   return why ? t(WHY[why]) : `${t('Fit')} · ${priceWord(w, id)}`;
 }
 
@@ -135,6 +135,8 @@ export class BayPanel {
     $('bay-x').addEventListener('click', (e) => { e.stopPropagation(); if (this.open) this.launch(); });
     // a tap on the bay never reaches the flight controls behind it
     $('bay').addEventListener('pointerdown', (e) => e.stopPropagation());
+    // the Arcade bay opens by itself, mid-flight: a tap in its first moments is still the fight's
+    $('bay').addEventListener('click', (e) => { if (performance.now() - this.opened < GUARD) { e.stopPropagation(); e.preventDefault(); } }, true);
     addEventListener('resize', () => { if (this.open) this.placeArt(); });
   }
 
@@ -603,7 +605,7 @@ export class BayPanel {
       b.style.top = `${Y(n)}%`;
       b.setAttribute('aria-label', `${nameOf(n.id)} · ${t('Lv')} ${lv}/${max}`);
       // the price where it can be paid soon: fitted-or-ready modules say what the next level costs
-      const price = st === 'open' || st === 'short' || st === 'owned' ? cost(n.id, lv + 1) : 0;
+      const price = st === 'open' || st === 'short' || st === 'owned' ? cost(n.id, lv + 1, !w.bk) : 0;
       // three levels: the name, then the level pips, then what it moves (the first figure's label)
       const first = lv < max && st !== 'locked' ? upgradeFigures(w.levels, n.id, !w.bk).find((f) => !f.cost)?.label : undefined;
       b.append(h('span', 'bn-oct', '', nodeIcon(n.id)), max > 1 ? pips(lv, max) : h('span', 'bi-pips'), h('span', 'bn-name', nameOf(n.id)),
