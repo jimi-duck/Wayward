@@ -632,7 +632,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 
 /* ── panels: comms, run report, logbook ──────────────────────────────── */
 .sheet { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: max(12px, var(--safe-t)) max(12px, var(--safe-r)) max(12px, var(--safe-b)) max(12px, var(--safe-l));
-  background: radial-gradient(ellipse at 50% 50%, rgba(8, 13, 14, .3), rgba(8, 13, 14, .84) 75%); animation: ab-in .18s var(--ez); }
+  background: radial-gradient(ellipse at 50% 50%, rgba(8, 13, 14, .3), rgba(8, 13, 14, .84) 75%); animation: ab-in .4s var(--ez); }
 .sheet[hidden] { display: none; }
 @keyframes ab-in { from { opacity: 0; } }
 /* a panel that stops the run: the cut frame, a lit bar down the left like
@@ -642,8 +642,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .panel::before { background: linear-gradient(90deg, var(--lit) 0 5px, var(--edge) 5px); }
 .panel.narrow { width: min(640px, 100%); }
 .panel.wide { width: min(1120px, 100%); overflow-y: auto; gap: 12px; padding-top: 14px; }
-.sheet:not([hidden]) .panel { animation: panel-up .22s var(--ez); }
-@keyframes panel-up { from { transform: translateY(8px); opacity: 0; } }
+.sheet:not([hidden]) .panel { animation: panel-up .5s var(--ez); }
+@keyframes panel-up { from { transform: translateY(14px); opacity: 0; } }
 .sheet.alert .panel { --edge: var(--alert-dim); --lit: var(--alert); }
 .ph { display: grid; gap: 6px; }
 .ph.row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
@@ -843,6 +843,14 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
     url("../assets/wayward-menu-background.jpg") 55% 42% / cover no-repeat,
     var(--void); }
 #start[hidden] { display: none; }
+/* the title settles in piece by piece: the lockup, the modes, then the launch */
+#start:not([hidden]) .start-card > * { animation: start-in .6s var(--ez) both; }
+#start:not([hidden]) .start-card > :nth-child(2) { animation-delay: .08s; }
+#start:not([hidden]) .start-card > :nth-child(3) { animation-delay: .16s; }
+#start:not([hidden]) .start-card > :nth-child(4) { animation-delay: .24s; }
+#start:not([hidden]) .start-card > :nth-child(n+5) { animation-delay: .32s; }
+#start:not([hidden]) .start-foot { animation: start-in .6s .4s var(--ez) both; }
+@keyframes start-in { from { opacity: 0; transform: translateY(10px); } }
 .prelaunch #hud, .prelaunch #touch { visibility: hidden; }
 .panel-open #hud, .panel-open #touch { visibility: hidden; }
 .start-card { display: grid; justify-items: center; gap: clamp(18px, 3.2vh, 30px); text-align: center; }
@@ -1025,7 +1033,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 @media (prefers-reduced-motion: reduce) {
   #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #sys-oc.hot #g-oc, #mode.red .stripes, #release.ready, #release.on, #torp.on { animation: none; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
-  #log-lines p.new, #banner.on, #sys-hull.hit, #sys-hull.mended, .plates i.mend.live, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel { animation: none; }
+  #log-lines p.new, #banner.on, #sys-hull.hit, #sys-hull.mended, .plates i.mend.live, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel, #start:not([hidden]) .start-card > *, #start:not([hidden]) .start-foot { animation: none; }
   .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path { animation: none; }
 }
 
