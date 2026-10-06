@@ -20,7 +20,7 @@ import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
 import { PadNav } from './ui/dom';
 import { cardView, CommsPanel, hailView } from './ui/comms';
-import { buildView, StartOptions, SummaryPanel } from './ui/panels';
+import { StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { RefitPanel } from './ui/refit';
 import { BayPanel } from './ui/bay';
@@ -309,14 +309,15 @@ function boot(): void {
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
       input.reset();
-      el('pause-build').replaceChildren(buildView(world.levels));
       showBrief();
       showConsole(world);
     }
   };
   /** The briefing's live parts: its title, the bay's count, Auto-refit. */
   const showBrief = () => {
-    el('pause-t').textContent = t(!world.bk && !profile.briefed ? 'Briefing' : 'All stop');
+    const first = !world.bk && !profile.briefed;
+    el('pause').classList.toggle('first', first);
+    el('pause-t').textContent = t(first ? 'Briefing' : 'All stop');
     const n = world.bk ? 0 : quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
     el('p-bay').classList.toggle('ready', n > 0);
     el('p-bay-n').textContent = n ? String(n) : '';

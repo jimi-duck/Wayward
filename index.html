@@ -345,9 +345,6 @@
     <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
       <div class="pause-card panel">
-        <i class="wear" aria-hidden="true"></i>
-        <span class="wear-stamp" aria-hidden="true">Service overdue</span>
-        <div class="pause-rule"><span>Ship system</span><span>Operational briefing</span></div>
         <div class="pause-t" id="pause-t">All stop</div>
         <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
         <ol class="howto arcade-only">
@@ -386,13 +383,12 @@
           <div class="arcade-only"><dt><kbd>Back</kbd></dt><dd>Refit bay</dd></div>
         </dl>
         <div class="pause-acts">
+          <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
           <button type="button" id="p-bay" class="arcade-only"><svg class="ico"><use href="#i-hull"/></svg><span>Refit bay</span><b id="p-bay-n"></b></button>
           <button type="button" id="p-auto" class="arcade-only" aria-pressed="false"><i class="sw"></i><span>Auto-refit</span><b id="p-auto-v">Off</b></button>
-          <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
         </div>
         <div class="zoomsel" aria-label="Camera distance"><button type="button" id="zoom-in" aria-label="Closer">−</button><span class="k">Camera <b id="zoom-v">1</b></span><button type="button" id="zoom-out" aria-label="Further">+</button></div>
-        <div class="pause-build" id="pause-build"></div>
-        <div class="pause-rule pause-foot" id="pause-foot"></div>
+        <div class="pause-foot" id="pause-foot"></div>
       </div>
     </div>
     <!-- A phone held upright: the game plays on its side only, and waits. -->
