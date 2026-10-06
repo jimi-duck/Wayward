@@ -1233,7 +1233,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-tabs { grid-area: tabs; display: grid; align-content: start; gap: 6px; overflow-y: auto; }
 .bay-tab { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 9px; padding: 9px 10px; border: 1px solid var(--line); background: rgba(11, 16, 17, .7);
   color: var(--ink-2); cursor: pointer; text-align: left; font: inherit; }
-.bay-tab .ico { width: 16px; height: 16px; color: var(--ink-3); }
+.bay-tab .ico { width: 18px; height: 18px; stroke-width: 1.7; color: var(--ink-3); }
 .bt-n { font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .bt-c { min-width: 20px; padding: 2px 4px; text-align: center; font: 500 11px/1 var(--font-mono); color: var(--ink-3); border: 1px solid var(--line); }
 .bay-tab kbd { font-size: 10px; opacity: .6; }
@@ -1246,7 +1246,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bay-w { grid-area: web; position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; padding: 12px 14px 8px; border: 1px solid var(--line);
   background: repeating-linear-gradient(0deg, rgba(216, 213, 198, .02) 0 1px, transparent 1px 3px), rgba(8, 13, 14, .36); min-height: 0; }
 .bay-tab-h { display: flex; align-items: baseline; gap: 10px; color: var(--hud); }
-.bay-tab-h .ico { width: 18px; height: 18px; align-self: center; }
+.bay-tab-h .ico { width: 22px; height: 22px; stroke-width: 1.6; align-self: center; }
 .bw-n { font: 700 calc(var(--fs) * 1.8)/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
 .bw-s { font: 600 calc(var(--fs) * .95 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .bay-legend { position: absolute; top: 12px; right: 14px; display: flex; gap: 12px; }
