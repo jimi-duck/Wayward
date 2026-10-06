@@ -31,7 +31,7 @@ import { num, t } from '../i18n';
 type View = 'picks' | Tab;
 
 const TAB_ICON: Record<View, string> = {
-  picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-event', reactor: 'i-core', synergies: 'i-link',
+  picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-signal', reactor: 'i-core', synergies: 'i-link',
 };
 
 /** Why a module cannot be fitted, in a few words. */
