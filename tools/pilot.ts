@@ -155,7 +155,8 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
  */
 function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly string[] = []): void {
   if (w.phase !== 'bay' && !w.openBay()) return;
-  for (let i = 0; i < 6; i++) {
+  // the arcade's bay shuts itself after one pick, and opens again when the Krail is there
+  for (let i = 0; i < (w.bk ? 6 : 1); i++) {
     const ctx = w.bayCtx();
     const open = reachable(ctx);
     if (!open.length) break;

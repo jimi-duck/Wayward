@@ -116,6 +116,8 @@ export class BayPanel {
   private onClose: (() => void) | null = null;
   private off: (() => void) | null = null;
   private opened = 0;
+  /** An Arcade pick is made and the bay is about to shut. */
+  private closing = false;
   private view: View = 'picks';
   private sel: string | null = null;
   /** The suggestion selected, in the Suggested view. */
@@ -154,6 +156,7 @@ export class BayPanel {
     this.world = world;
     this.onClose = onClose;
     this.opened = performance.now();
+    this.closing = false;
     this.shown = {};
     // the bay opens on the suggestions; the tabs are a step further in
     this.view = 'picks';
@@ -258,7 +261,7 @@ export class BayPanel {
 
   private install(id: string): void {
     const w = this.world;
-    if (!w) return;
+    if (!w || this.closing) return;
     const before = budgets(w.levels), krailBefore = Math.floor(w.krail);
     let fitted = false;
     if (w.install(id) === null) {
@@ -274,6 +277,11 @@ export class BayPanel {
     this.render();
     if (fitted) { this.installFx(id, krailBefore, Math.floor(w.krail)); this.answer(id); }
     this.fresh = null;
+    // the Arcade bay opened by itself for one pick: once it is made it shuts, after the fit has landed (a second pick comes when the Krail does)
+    if (fitted && isArcade(w)) {
+      this.closing = true;
+      window.setTimeout(() => { if (this.open && this.world === w) this.launch(); }, 700);
+    }
   }
 
   /** The ship answers a fit in the voice line for a few seconds: accepted, or not factory spec if the part has a stamp. */

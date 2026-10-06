@@ -143,6 +143,8 @@ export class World implements EncounterHost {
   /** The arcade's bay: the Krail it opens at next, and how long it has been quiet with that much aboard. */
   private bayAt = ARCADE_PRICE;
   private bayQuiet = 0;
+  /** Something was fitted since the bay opened: what is left is a new pick, not a skipped one. */
+  private bayFit = false;
 
   // the decisions, and the bay
   phase: Phase = 'play';
@@ -990,6 +992,7 @@ export class World implements EncounterHost {
   private fit(id: string): Block | null {
     const r = bayInstall(id, this.bayCtx());
     if (typeof r === 'string') return r;
+    this.bayFit = true;
     this.krail -= r.cost;
     this.chits -= r.fee;
     this.levels = r.levels;
@@ -1005,8 +1008,9 @@ export class World implements EncounterHost {
   closeBay(): void {
     if (this.phase !== 'bay') return;
     this.phase = this.docked ? 'dock' : 'play';
-    // the arcade asks again at a price, or a price past what was left unspent
-    this.bayAt = this.krail >= ARCADE_PRICE ? this.krail + ARCADE_PRICE : ARCADE_PRICE;
+    // the arcade asks again at a price: at once for what is left after a pick, a price past it if the player left without one
+    this.bayAt = this.bayFit || this.krail < ARCADE_PRICE ? ARCADE_PRICE : this.krail + ARCADE_PRICE;
+    this.bayFit = false;
     this.bayQuiet = 0;
   }
 
