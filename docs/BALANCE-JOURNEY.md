@@ -13,12 +13,12 @@ toward Krail when the tank is. It answers every comms card by one policy.
 
 | Strategy | Policy | Through | Captured | Wrecked out | Stuck | Systems flown | Days | Wrecks | Calloway calls | Time in combat | Sortie length |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| random | run | 6/8 | 2 | 0 | 0 | 9.4 | 18.5 | 0.4 | 1.6 | 32% | 3:09 |
-| random | bluff | 8/8 | 0 | 0 | 0 | 10.0 | 21.0 | 0.0 | 2.1 | 32% | 3:13 |
-| random | fight | 7/8 | 1 | 0 | 0 | 9.4 | 19.8 | 0.3 | 2.5 | 46% | 3:28 |
-| torpedo+defence | run | 8/8 | 0 | 0 | 0 | 10.1 | 21.2 | 0.1 | 2.3 | 33% | 3:25 |
-| torpedo+defence | bluff | 8/8 | 0 | 0 | 0 | 10.0 | 20.5 | 0.0 | 1.5 | 27% | 3:04 |
-| torpedo+defence | fight | 8/8 | 0 | 0 | 0 | 10.0 | 19.5 | 0.0 | 2.1 | 34% | 3:08 |
+| random | run | 7/8 | 1 | 0 | 0 | 9.3 | 21.9 | 0.3 | 2.3 | 36% | 4:18 |
+| random | bluff | 8/8 | 0 | 0 | 0 | 10.0 | 22.7 | 0.1 | 1.5 | 32% | 3:57 |
+| random | fight | 7/8 | 1 | 0 | 0 | 9.8 | 21.8 | 0.3 | 2.5 | 38% | 4:02 |
+| torpedo+defence | run | 7/8 | 1 | 0 | 0 | 9.1 | 20.3 | 0.1 | 2.0 | 31% | 4:00 |
+| torpedo+defence | bluff | 8/8 | 0 | 0 | 0 | 10.0 | 21.4 | 0.1 | 1.9 | 24% | 3:36 |
+| torpedo+defence | fight | 8/8 | 0 | 0 | 0 | 9.9 | 21.0 | 0.0 | 2.1 | 31% | 3:30 |
 
 "Through" reached the Threshold. "Captured": wrecked with Calloway in the
 system. "Wrecked out": the third wreck. "Stuck": a sortie ran out the
@@ -35,77 +35,77 @@ pilot's clock (twenty minutes) without a jump or a wreck.
 
 | System | Journeys still going | Krail arriving | Krail after the jump | Sortie | Day | Calloway came | Wrecked |
 |---|---|---|---|---|---|---|---|
-| 1 | 48 | 6.0 | 14.0 | 4:51 | 1.2 | 0% | 4% |
-| 2 | 48 | 13.4 | 13.4 | 3:11 | 3.6 | 6% | 0% |
-| 3 | 48 | 13.4 | 16.9 | 3:45 | 5.6 | 63% | 0% |
-| 4 | 48 | 16.9 | 16.7 | 3:22 | 7.5 | 50% | 4% |
-| 5 | 46 | 15.8 | 18.3 | 2:57 | 9.8 | 17% | 2% |
-| 6 | 46 | 17.8 | 13.3 | 2:42 | 11.8 | 15% | 0% |
-| 7 | 46 | 13.3 | 16.0 | 2:56 | 13.6 | 11% | 0% |
-| 8 | 46 | 16.0 | 13.9 | 2:36 | 15.4 | 24% | 0% |
-| 9 | 46 | 13.9 | 10.2 | 2:42 | 17.3 | 17% | 0% |
-| 10 | 46 | 10.2 | 17.5 | 3:18 | 19.3 | 96% | 2% |
-| 11 | 3 | 5.3 | 22.0 | 3:07 | 21.4 | 100% | 0% |
+| 1 | 48 | 6.0 | 15.7 | 5:04 | 1.3 | 0% | 6% |
+| 2 | 48 | 14.8 | 13.3 | 3:03 | 3.8 | 2% | 0% |
+| 3 | 48 | 13.3 | 15.9 | 3:44 | 5.8 | 73% | 0% |
+| 4 | 48 | 15.9 | 20.0 | 3:30 | 7.8 | 48% | 4% |
+| 5 | 46 | 20.0 | 20.2 | 3:50 | 10.2 | 7% | 0% |
+| 6 | 46 | 20.2 | 20.6 | 3:45 | 12.4 | 17% | 0% |
+| 7 | 46 | 20.6 | 20.6 | 3:37 | 14.3 | 28% | 2% |
+| 8 | 45 | 20.5 | 18.3 | 3:44 | 16.6 | 16% | 0% |
+| 9 | 45 | 18.3 | 18.1 | 4:10 | 18.8 | 29% | 0% |
+| 10 | 40 | 17.8 | 18.1 | 4:31 | 21.3 | 90% | 3% |
+| 11 | 4 | 12.3 | 18.3 | 4:06 | 22.7 | 100% | 0% |
 
 ## By kind of system
 
 | Kind | Sorties | Mean length | Wrecked |
 |---|---|---|---|
-| home | 50 | 4:50 | 4% |
-| mining | 134 | 3:17 | 2% |
-| contested | 97 | 3:29 | 0% |
-| transit | 56 | 2:16 | 0% |
-| gate | 93 | 2:44 | 1% |
-| port | 41 | 3:07 | 0% |
+| home | 51 | 5:03 | 6% |
+| mining | 101 | 3:46 | 1% |
+| contested | 93 | 4:30 | 1% |
+| port | 64 | 3:46 | 2% |
+| gate | 92 | 3:45 | 1% |
+| transit | 63 | 2:37 | 0% |
 
 ## The Net and the galley
 
 | | Per journey |
 |---|---|
-| Arrivals in a netted system | 1.9 |
+| Arrivals in a netted system | 1.5 |
 | Jumps without enough food | 0.1 |
 | Calloway's ship fought | 0.8 |
-| Calloway beaten | 2.1 |
-| Lanes re-plotted at a port | 0.2 |
-| Jumps she was behind at the end | 2.7 |
+| Calloway beaten | 2.4 |
+| Lanes re-plotted at a port | 0.1 |
+| Jumps she was behind at the end | 2.4 |
 
 ## Calloway's file
 
 | | Per journey |
 |---|---|
 | Offers she made | 2.5 |
-| Offers taken | 1.1 |
-| Tricks she saw | 3.4 |
-| Truths told her | 2.1 |
+| Offers taken | 1.2 |
+| Tricks she saw | 3.9 |
+| Truths told her | 2.4 |
 | Read your route by the end | 100% |
-| Met her at the Threshold | 46 of 48 |
+| Met her at the Threshold | 45 of 48 |
 
 How the last meeting ended:
 
 | Ending | Journeys |
 |---|---|
 | beaten | 37 |
-| slipped | 7 |
-| taken at the Threshold | 1 |
-| turned | 1 |
+| turned | 5 |
+| yielded | 2 |
+| slipped | 1 |
 
 ## The journey's cards
 
 | Card | Answered | Choices |
 |---|---|---|
-| calloway_here | 97 | run 33, talk 24, decoy 3, fight 37 |
-| calloway_word | 77 | silence 36, ask 38, lie 3 |
-| lane_toll | 222 | krail 121, talk 26, fight 75 |
-| port_scan | 32 | refuse 19, scan 13 |
-| port_news | 95 | no 54, buy 41 |
-| food_trader | 2 | parts 1, ore 1 |
-| drift_fleet | 45 | no 13, food 15, news 2, trail 15 |
-| holdout | 49 | no 17, krail 32 |
-| relay | 45 | leave 15, jam 10, gutter 6, break 14 |
-| false_trail | 61 | no 31, ore 28, pay 2 |
-| offer_meet | 26 | accept 26 |
+| calloway_here | 98 | run 34, talk 22, decoy 5, fight 37 |
+| calloway_word | 74 | silence 26, ask 45, lie 3 |
+| lane_toll | 230 | krail 120, talk 27, fight 83 |
+| port_scan | 24 | refuse 15, scan 9 |
+| port_news | 82 | no 27, buy 55 |
+| food_trader | 3 | no 3 |
+| drift_fleet | 58 | no 20, food 14, trail 23, news 1 |
+| holdout | 61 | no 19, krail 42 |
+| relay | 59 | leave 23, gutter 20, break 16 |
+| false_trail | 74 | no 28, ore 43, pay 3 |
+| offer_meet | 31 | accept 31 |
 | offer_name | 10 | accept 10 |
-| offer_tank | 37 | refuse 15, lie 12, accept 10 |
-| offer_truce | 6 | accept 6 |
-| offer_home | 41 | silence 16, answer 17, think 8 |
-| calloway_last | 46 | run 19, archive 10, remind 2, fight 15 |
+| offer_tank | 32 | refuse 14, lie 5, accept 13 |
+| offer_truce | 5 | accept 5 |
+| offer_home | 41 | silence 16, think 10, answer 15 |
+| calloway_last | 45 | run 15, archive 11, remind 4, fight 15 |

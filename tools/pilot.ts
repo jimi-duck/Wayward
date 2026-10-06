@@ -13,7 +13,7 @@ import { CUT_RANGE } from '../src/sim/mining';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
-import { blockOf, budgets, reachable } from '../src/sim/bay';
+import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
 import { FITTING } from '../src/content/web';
 import { MODULE_BY_ID } from '../src/content/modules';
 
@@ -146,7 +146,9 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
  * The refit bay, in a quiet moment: the module the strategy wants most of
  * those it could fit with Krail enough. Bought if the Krail is there; if
  * power is what stops it, the reactor core first; otherwise the pilot saves
- * for it. A random pilot buys whatever it can afford, at random.
+ * for it. A random pilot buys whatever it can afford, at random. A pilot
+ * told to want some of the yard's modules fits them first at a port, and
+ * away from one keeps back the Krail the next of them costs.
  */
 function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly string[] = []): void {
   if (!w.openBay()) return;
@@ -166,9 +168,18 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
       const why = blockOf(best.id, ctx);
       pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
     }
+    // away from a port, keep back the Krail the next wanted yard module will cost, as a player saving for the yard would
+    if (pick && !MODULE_BY_ID[pick] && !w.docked && w.krail - cost(pick, (w.levels[pick] ?? 0) + 1) < saveFor(w, modules)) break;
     if (!pick || w.install(pick)) break;
   }
   w.closeBay();
+}
+
+/** The Krail to keep for the first wanted yard module that a port could fit (nothing once they are all in). */
+function saveFor(w: World, modules: readonly string[]): number {
+  const port = { ...w.bayCtx(), docked: true, krail: Infinity, chits: Infinity };
+  const next = modules.find((id) => blockOf(id, port) === null);
+  return next ? cost(next, (w.levels[next] ?? 0) + 1) : 0;
 }
 
 /**
