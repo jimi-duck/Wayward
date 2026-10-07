@@ -9,7 +9,8 @@ import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
-import { clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
+import { chapterSave, clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
+import { recap } from './sim/chapters';
 import { SURVIVAL } from './content/survival';
 import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { sysById } from './sim/chart';
@@ -146,6 +147,18 @@ function boot(): void {
       el('cont-r').textContent = last ? `${t('Last time')} · ${t(last)}` : '';
       el('cont-r').hidden = !last;
     }
+    // the chapter just begun, and the way back to its gate (not in Hardcore, where nothing is taken back)
+    const rc = j ? recap(j) : null;
+    const box = el('recap');
+    box.hidden = !rc;
+    box.replaceChildren();
+    if (rc) {
+      const head = document.createElement('b');
+      head.textContent = rc.name;
+      box.append(head, ...[plural(rc.days, '{n} day', '{n} days'), plural(rc.stops, '{n} stop', '{n} stops'), ...rc.changes].map((c) => Object.assign(document.createElement('span'), { className: 'chip', textContent: c })));
+    }
+    const snap = j && !j.hardcore ? chapterSave() : null;
+    el('chapter').hidden = !snap || !j || snap.day >= j.day;
     el('launch').textContent = pick === 'arcade' ? t('Start arcade') : j ? t('Continue story') : t('Start story');
     if (j) el('resume-s').textContent = resumeLine(j);
     // a save that could not be read is said so, with the safety copy on offer if there is one
@@ -529,6 +542,7 @@ function boot(): void {
   };
   press('launch', go);
   press('fresh', () => launch('breakout'));
+  press('chapter', () => { const j = restartChapter(); if (j) { journey = j; showResume(); } });
   press('cont', () => launch('breakout', true));
   press('restore', () => { const j = restoreJourney(); if (j) { journey = j; pick = 'breakout'; showResume(); } });
   press('mode-arcade', () => choose('arcade'));

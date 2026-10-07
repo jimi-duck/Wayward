@@ -1989,3 +1989,9 @@ html.breakout #pause:not(.first) .term-s.full { display: none; }
 #p-set .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; }
 #p-set:hover, #p-set:focus-visible { color: var(--hud-hi); border-color: var(--hud-mid); outline: none; }
 #pause.settings-on #p-set { display: none; }
+
+/* the chapter just begun, on the title: its name and what it changed, as chips */
+.recap { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; margin: 0; }
+.recap[hidden] { display: none; }
+.recap b { flex-basis: 100%; text-align: center; font: 700 calc(11px * 1.18)/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+.recap .chip { background: rgba(8, 12, 16, .78); font-size: max(10px, calc(var(--fs, 11px) * .95)); }

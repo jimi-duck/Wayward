@@ -15,6 +15,7 @@ import { arrival, delay as keysDelay, KEYS_NOTED, shift } from './consequences';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, crossGate, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
+import { openChapter, type Chapter } from './chapters';
 import { effects } from './modules';
 import { stockLevels } from './bay';
 import { Rng } from './rng';
@@ -137,6 +138,8 @@ export interface Journey {
   score: number;
   legs: Leg[];
   log: Array<{ day: number; text: string }>;
+  /** A record for each gate crossed (sim/chapters.ts); absent on a journey saved before them. */
+  chapters?: Chapter[];
   /** Draws from the journey's own generator, so a loaded journey carries on exactly. */
   rolls: number;
 }
@@ -430,7 +433,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const place = placeAt(j.chart, to);
   if (place && there.kind !== 'edge') lines.push(`${t('{name} here', { name: t(PLACES[place.id].name) })} · ${t(PLACES[place.id].blurb)}`);
   // through a gate: a new region
-  if (there.kind === 'gate') { const R = regionDef(j.chart, viewOf(j.chart, to)); if (R) { lines.unshift(`${t(R.name)} · ${t(R.blurb)}`); note(j, t('Through {gate} into {region}', { gate: there.name, region: t(R.name) })); } }
+  if (there.kind === 'gate') { openChapter(j, viewOf(j.chart, to)); const R = regionDef(j.chart, viewOf(j.chart, to)); if (R) { lines.unshift(`${t(R.name)} · ${t(R.blurb)}`); note(j, t('Through {gate} into {region}', { gate: there.name, region: t(R.name) })); } }
   // a new act: out of Cerro, the Run; into the Hollows, the Choice
   const turn = j.trail.length === 2 ? ACTS[1] : there.kind === 'gate' && tierOf(j.chart, viewOf(j.chart, to)) === CHOICE_REGION && tierOf(j.chart, regionOf(there)) < CHOICE_REGION ? ACTS[2] : null;
   if (turn) { lines.unshift(actLine(turn)); note(j, actLine(turn)); }

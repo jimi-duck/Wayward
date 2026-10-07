@@ -127,7 +127,7 @@ Make it feel like WAYWARD before anything else changes.
 | UI Look and feel | Passes 1 to 3 done (the foundation, the six-zone HUD, comms as a transmission); passes 4 to 7 to come (see below) |
 | R The refit bay | Steps 1 to 4 done, and console steps 1 to 10 (the state word, the ship lit by tab, thresholds, the install, advice, the profile, hardware paths, type hierarchy, a sample of wear, the voice; see the console pass): the web as data and rules, the bay on screen, the budgets felt, the Story mode in the bay with Cyrite as its fuel and the yard folded in; step 5 to come (see below) |
 | SM Survival modes | Done: Drifter, Prospector (baseline) and Raider chosen on the title, one table in `content/survival.ts`, saved with the profile and the journey (journey version 8), the Raider's skirmish, unit tests and a pilot report (see [BALANCE-SURVIVAL.md](BALANCE-SURVIVAL.md)); real-device play still to do |
-| S Scale-up | In progress: breathers, the eight regions (behind `?long`) and the clocks (Calloway once a region, capture risk per region, the Net tuned to about 9 netted arrivals a journey) are built. Chapters and the new story beats are next (see [SCALE-UP.md](SCALE-UP.md)) |
+| S Scale-up | In progress: breathers, the eight regions (behind `?long`) and the clocks (Calloway once a region, capture risk per region, the Net tuned to about 9 netted arrivals a journey) are built. Chapters at region gates (a record, a snapshot to start the chapter again, and a recap on the title) are built too. The new story beats are next (see [SCALE-UP.md](SCALE-UP.md)) |
 
 ## From the concept boards
 
