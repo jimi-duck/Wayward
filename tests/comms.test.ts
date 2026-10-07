@@ -6,6 +6,7 @@ import { MODULES } from '../src/content/modules';
 import { UPGRADES } from '../src/content/upgrades';
 import { CARD_BY_ID, COMMS_FIRST, SHOWN_WORDS, SLOW, condOk, openCard, resolve, sensors, type Ctx } from '../src/sim/comms';
 import { VARIANTS } from '../src/sim/enemies';
+import { DESK } from '../src/sim/desk';
 import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';
 
@@ -168,15 +169,17 @@ describe('the comms engine', () => {
 });
 
 describe('comms in the Breakout', () => {
-  it('does not call on a timer: a long quiet is the first opening, and a major card stops the world', () => {
+  it('does not call on a timer: it takes an opening, and a major card stops the world', () => {
     const w = new World(11, { mode: 'breakout' });
     w.bk!.nextPursuit = Infinity;
     w.field.rocks = [];
     w.storyMade = w.offerMade = w.callowayMet = true;
+    w.desk.allowed = true;
     run(w, COMMS_FIRST + 1);
     expect(w.phase).toBe('play');
     expect(w.call).toBeNull();
-    // after a long clear stretch a card comes (a call, or a panel)
+    // on an opening (a fight just won), with a clear sky, a card comes: a call, or a panel
+    w.desk.opp.won = Infinity;
     for (let i = 0; i < 6000 && !w.call && w.phase !== 'comms'; i++) { w.aliens = []; run(w, 0.1); }
     expect(w.call || w.comms).toBeTruthy();
     if (w.phase === 'comms') {
@@ -263,9 +266,9 @@ describe('comms in the Breakout', () => {
     expect(w.cyrite).toBe(11);
     expect(w.flags.has('owes_runner')).toBe(true);
     run(w, 59);
-    expect(w.phase).toBe('play');
-    run(w, 2);
-    // a follow-up is a call: it rides along, the world keeps going
+    expect(w.call).toBeNull();
+    // a follow-up is a call: it rides along, the world keeps going, and it waits out the desk's gap after the last card
+    for (let i = 0; i < 100 && !w.call; i++) run(w, 1.5);
     expect(w.phase).toBe('play');
     expect(w.call!.def.id).toBe('runner_favour');
   });

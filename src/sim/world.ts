@@ -9,7 +9,7 @@ import { Command, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
-import { Desk, DESK, type Busy } from './desk';
+import { Desk, DESK, HUSH, type Busy } from './desk';
 import { STORY_AT } from '../content/story';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, HOLD_START, JUMP_COST, PATCH_COST,
@@ -222,6 +222,7 @@ export class World implements EncounterHost {
   callUntil = 0;
   /** The comms desk: what may be heard, and when (sim/desk.ts). */
   desk!: Desk;
+  private deskRng = new Rng(1);
   private heardChatter = new Set<string>();
   private wasBusy: Busy = 'free';
   private arrivalSaid = false;
@@ -302,7 +303,8 @@ export class World implements EncounterHost {
     this.holdNag = 0;
     this.comms = null;
     this.call = null;
-    this.desk = new Desk(this.rng);
+    this.deskRng = new Rng(this.seed * 7919 + 13);
+    this.desk = new Desk(this.deskRng, 0, this.sortie.calls ?? 1, this.carryIn?.hush ?? HUSH);
     this.heardChatter = new Set();
     this.wasBusy = 'free'; this.arrivalSaid = false; this.fullSaid = false; this.fightT = 0;
     this.flags = new Set();
@@ -393,6 +395,7 @@ export class World implements EncounterHost {
       cyrite: this.cyrite, krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
+      hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
     };
   }
 
@@ -680,7 +683,8 @@ export class World implements EncounterHost {
         this.openComms(CARD_BY_ID.checkpoint!);
       } else {
         b.blockade = 'done';
-        const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll');
+        // an open lane's toll is not every jump's: a roll, and not on the heels of another call
+        const def = this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
         if (def) this.openComms(def);
       }
     }
@@ -1103,13 +1107,13 @@ export class World implements EncounterHost {
     if (this.call && t >= this.callUntil) this.lapse();
 
     // the moments worth a word: the arrival, a fight won, a hold nearly full
-    if (!this.arrivalSaid && t >= 5) { this.arrivalSaid = true; d.moment('arrive', t); }
+    if (!this.arrivalSaid && t >= 5) { this.arrivalSaid = true; d.moment('arrive', t, this.deskRng); }
     if (busy === 'fight') this.fightT += 1 / 60;
     else if (was === 'fight' && busy !== 'transit') {
-      if (this.fightT > 6 && this.rng.next() < 0.6) d.moment('won', t);
+      if (this.fightT > 6) d.moment('won', t, this.deskRng);
       this.fightT = 0;
     }
-    if (!this.fullSaid && this.ore >= this.holdMax * 0.8) { this.fullSaid = true; d.moment('haul', t); }
+    if (!this.fullSaid && this.ore >= this.holdMax * 0.8) { this.fullSaid = true; d.moment('haul', t, this.deskRng); }
 
     // follow-ups, once due
     const due = this.follows.findIndex((f) => f.at <= t);
@@ -1122,13 +1126,12 @@ export class World implements EncounterHost {
     if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
       this.portCalled = true;
       const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'port');
-      if (def) d.offer(def, weightOf(def), t, true);
+      if (def && (weightOf(def) === 'major' || this.deskRng.next() < DESK.portNews)) d.offer(def, weightOf(def), t, true);
     }
     // a new card by chance: only on an opportunity, never on a timer alone, and few a sortie
-    if (!b.def.quiet && t >= this.cardNext && d.wants(t, busy, Math.max(1, Math.round(DESK.chance * b.def.calls)))) {
+    if (!b.def.quiet && t >= this.cardNext && d.wants(t, busy)) {
       const def = pickCard(this.commsCtx(), this.blocked(), this.rng);
       if (def) { d.offer(def, weightOf(def), t); d.used(); }
-      else d.chance += 0.25;
     }
 
     // deliver the one that is next, if the moment is right
@@ -1144,7 +1147,7 @@ export class World implements EncounterHost {
     }
     // the radio: a line, no answer. A card on the table has the screen.
     if (!this.call) {
-      const m = d.pingFor(busy, t, this.rng);
+      const m = d.pingFor(busy, t, this.deskRng);
       if (m) this.say(m);
     }
   }
@@ -1154,7 +1157,7 @@ export class World implements EncounterHost {
     const b = this.bk!, x = this.commsCtx();
     const pool = CHATTER.filter((c) => c.on.includes(m) && !this.heardChatter.has(c.id) && (!c.kind || c.kind.includes(x.kind)) && (c.netted === undefined || c.netted === x.netted));
     if (!pool.length) return;
-    const c = pool[this.rng.int(pool.length)]!;
+    const c = pool[this.deskRng.int(pool.length)]!;
     this.heardChatter.add(c.id);
     this.desk.spoke(this.runTime);
     this.events.push({ type: 'ping', id: c.id, from: c.from, caller: c.caller, text: c.text, moment: m, system: b.def.name });

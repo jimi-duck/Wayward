@@ -127,12 +127,13 @@ export class Radio {
     const first = o.choices[0];
     terms.hidden = many || !first || !first.hint;
     terms.textContent = first && !many ? t(first.hint) : '';
+    $('rd-list').classList.toggle('many', many);
     $('rd-list').replaceChildren(...o.choices.map((c, i) => {
       const key = i === 0 ? KEY_OF[0]! : i === o.choices.length - 1 ? KEY_OF[2]! : KEY_OF[1]!;
       const chips = c.ok
         ? [...c.gains.filter((g) => g !== 'Job').map((g) => h('span', /^−/.test(g) ? 'g-loss' : 'g-gain', t(g))), ...c.cost.map((x) => h('span', 'g-loss', x)), ...(c.chance !== null ? [h('span', 'g-odds', oddsWord(c.chance))] : [])]
         : c.needs.map((n) => h('span', 'g-need', t(n)));
-      const b = h('button', `rd-c${i === 0 ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
+      const b = h('button', `rd-c${i === o.choices.findIndex((x) => x.ok) ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('aria-disabled', String(!c.ok));
       b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); if (performance.now() - this.opened > 350) this.pick(i); };

@@ -1,3 +1,4 @@
+import { HUSH } from '../sim/desk';
 import { hunchOf, newDossier } from '../sim/calloway';
 import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
 import { layScatter } from '../sim/scatter';
@@ -55,6 +56,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 7) toCyrite(j as unknown as Old);
   // 7 → 8: survival modes. A journey saved before them was played as the game was designed: Prospector.
   // A newer-looking id the game does not know (a hand-edited file) falls back to the same.
+  // 8 → 9: the comms desk paces itself across systems. A journey saved before it starts quiet.
+  if (j.version < 9) j.carry.hush = HUSH;
   j.survival = survivalOf(j.survival).id;
   j.version = VERSION;
   return j as Journey;

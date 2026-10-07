@@ -91,6 +91,9 @@ it('flies story journeys and logs the transmissions', { timeout: 7_200_000 }, ()
     ...[...tiers.entries()].map(([k, v]) => `| ${k} | ${v} | ${(v / hours).toFixed(1)} |`),
     '',
   ];
+  const ids = new Map<string, number>();
+  for (const x of all) if (x.tier !== 'ping') ids.set(x.id, (ids.get(x.id) ?? 0) + 1);
+  lines.push('| Card | Weight | An hour |', '| --- | --- | --- |', ...[...ids.entries()].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([id, n]) => `| ${id} | ${all.find((x) => x.id === id)!.tier} | ${(n / hours).toFixed(1)} |`), '');
   writeFileSync(OUT, lines.join('\n'));
   console.log(lines.join('\n'));
 });

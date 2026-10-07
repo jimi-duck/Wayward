@@ -25,6 +25,9 @@ import type { Rng } from './rng';
 
 export type Busy = 'free' | 'cutting' | 'tight' | 'fight' | 'transit';
 
+/** The hush of a journey that has not spoken yet: a long quiet, in seconds. */
+export const HUSH = 600;
+
 export const DESK = {
   /** A hostile this close (units) is a fight; a rock this close past its edge, at speed, is tight flying. */
   threat: 90,
@@ -36,19 +39,22 @@ export const DESK = {
   /** Seconds after the beam stops before a card opens. */
   cutSettle: 3,
   /** Seconds since the last card closed before this weight may open. */
-  gap: { major: 70, important: 55, routine: 110, ambient: 0 } as Record<Weight, number>,
+  gap: { major: 180, important: 150, routine: 220, ambient: 0 } as Record<Weight, number>,
   /** Seconds a call stays up unanswered, then lapses. */
   window: { important: 30, routine: 22 },
   /** Seconds a queued card waits before it is dropped. */
   stale: { major: Infinity, important: 300, routine: 120, ambient: 20 } as Record<Weight, number>,
-  /** Chance cards a sortie, before the system's call rate. */
-  chance: 2,
+  /** The chance a sortie has a card by chance at all (times the system's call rate): most sorties have none. */
+  chance: 0.4,
   /** Seconds of free flight with nothing said before a long quiet is itself an opportunity. */
   quiet: 170,
   /** How long an opportunity (a fight won, a full hold) stays good. */
   opportunity: 100,
   /** Radio lines: seconds between, a sortie's most, seconds a line stays up, and the least between two. */
-  ping: { between: [70, 130] as const, max: 4, show: 7, least: 25 },
+  ping: { between: [240, 420] as const, max: 2, show: 7, least: 60, arrive: 0.12, moment: 0.4 },
+  /** The chance the open lane's toll is called at the lane mouth, and a routine port call at the port's approach. */
+  toll: 0.3,
+  portNews: 0.5,
 };
 
 export interface Ask {
@@ -64,7 +70,7 @@ const RANK: Record<Weight, number> = { major: 3, important: 2, routine: 1, ambie
 export class Desk {
   queue: Ask[] = [];
   /** Clock of the last card closed or opened. */
-  lastClose = -Infinity;
+  lastClose: number;
   lastThreat = -Infinity;
   lastCut = -Infinity;
   lastPing = -Infinity;
@@ -76,10 +82,14 @@ export class Desk {
   /** Moments a radio line is wanted for. */
   wish: Array<[Moment, number]> = [];
   arrived = 0;
+  /** This sortie has a card by chance (rolled once, at the start). */
+  allowed: boolean;
 
-  constructor(rng: Rng, now = 0) {
+  constructor(rng: Rng, now = 0, rate = 1, hush = HUSH) {
     this.arrived = now;
-    this.nextPing = now + rng.range(...DESK.ping.between) * 0.6;
+    this.lastClose = now - hush;
+    this.allowed = rng.next() < DESK.chance * rate;
+    this.nextPing = now + rng.range(...DESK.ping.between);
   }
 
   /** Ask to be heard. Offered twice, heard once. */
@@ -95,9 +105,9 @@ export class Desk {
   }
 
   /** The moment something happened that is worth a word. */
-  moment(m: Moment, now: number): void {
+  moment(m: Moment, now: number, rng: Rng): void {
     this.opp[m] = now + DESK.opportunity;
-    if (m !== 'calm') this.wish.push([m, now]);
+    if (m !== 'calm' && rng.next() < (m === 'arrive' ? DESK.ping.arrive : DESK.ping.moment)) this.wish.push([m, now]);
   }
 
   /** Whether a card of this weight may open now. */
@@ -128,9 +138,9 @@ export class Desk {
     this.lastClose = now;
   }
 
-  /** A new card by chance is welcome: the opportunity is live (or it has been quiet too long), the sortie's few are not spent, and nothing else waits. */
-  wants(now: number, busy: Busy, budget: number): boolean {
-    if (this.chance >= budget || this.queue.length || !this.may('routine', busy, now)) return false;
+  /** A new card by chance is welcome: the sortie is one that has one, the opportunity is live (or it has been quiet too long), and nothing else waits. */
+  wants(now: number, busy: Busy): boolean {
+    if (!this.allowed || this.chance >= 1 || this.queue.length || !this.may('routine', busy, now)) return false;
     const live = (['won', 'haul'] as const).some((m) => (this.opp[m] ?? 0) > now);
     return live || now - Math.max(this.lastClose, this.arrived) >= DESK.quiet;
   }
