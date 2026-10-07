@@ -129,9 +129,9 @@ describe('space', () => {
     let total = 0;
     for (let seed = 1; seed <= 10; seed++) total += fly(seed, 600).deals.length;
     const per = total / 10;
-    expect(per).toBeGreaterThanOrEqual(4);
-    expect(per).toBeLessThanOrEqual(10);
-    for (let seed = 1; seed <= 10; seed++) expect(fly(seed, 600).space.features.length).toBeLessThanOrEqual(36);
+    expect(per).toBeGreaterThanOrEqual(6);
+    expect(per).toBeLessThanOrEqual(16);
+    for (let seed = 1; seed <= 10; seed++) expect(fly(seed, 600).space.features.length).toBeLessThanOrEqual(56);
   });
 
   it('lets go of what is far behind', () => {

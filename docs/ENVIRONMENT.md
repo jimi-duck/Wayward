@@ -156,8 +156,10 @@ The loop the brief asks for is **see, wonder, react, use, keep flying**.
 
 ### Rhythm (Arcade)
 
-The composer (`Space.step`) deals one expanse ahead whenever the last one's
-rim is under 2,400 units away. It has a memory and two hard rules:
+The composer (`Space.step`) deals the next expanse where the ground it has
+already dealt ends along the ship's nose, whenever that is under 1,800 units
+ahead, so expanses chain with no gap. Each holds `COMPOSE.density` (1.6) times
+its roster's count. It has a memory and two hard rules:
 
 - never the same expanse twice running;
 - never a third busy expanse in a row;
@@ -168,7 +170,16 @@ rim is under 2,400 units away. It has a memory and two hard rules:
 
 Tests fly the composer for ten minutes over many seeds and check it: at
 least five kinds of expanse in ten minutes, no repeats, no three busy in a
-row, four to ten expanses in ten minutes.
+row, six to sixteen features dealt in ten minutes.
+
+`npm run pilot:space` flies a ship through the composer alone and writes
+[BALANCE-SPACE.md](BALANCE-SPACE.md). Its first run found the sky too thin
+(a ship in something 5% of the time, empty stretches of four minutes, an
+expanse every three minutes) because the next expanse was only dealt once the
+last was behind. The chain and the density above are the fix. The scripted
+pilot of `npm run pilot` hovers near the start and never reaches a feature,
+so it cannot judge `?space`: the default stays off until the owner has flown
+it.
 
 ### The HUD
 
@@ -299,8 +310,10 @@ Small PRs off `main`, one stage at a time, each shippable.
    the Story comms thread's manager can key a call off that flag. The
    environment fires no transmissions of its own. The old timed events still
    play on top, unchanged. Story needs `?space`, like Arcade.
-6. **Pace and polish.** Rarity and rhythm from pilot reports, per-feature
-   audio, transitions, the ship lit by the place it is in.
+6. **Pace and polish** (started). Rhythm from the exposure report: the
+   composer chains expanses and fills them more. Still to do: per-feature
+   audio, transitions, the ship lit by the place it is in, and the storm's
+   lightning and the well's core with telegraphs.
 
 Real-device checks (frame rate, glow, how it reads on a phone) are the
 owner's, as ever.
