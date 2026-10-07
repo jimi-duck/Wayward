@@ -1982,7 +1982,6 @@ html.breakout #pause:not(.first) .term-s.full { display: none; }
   .swl { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
   .swl li.paintrow { grid-column: 1 / -1; }
   .swl li { border-bottom: 0; }
-  .zoomrow { display: none !important; }
 }
 @media (max-height: 520px) { .pause-card .pause-acts button { min-height: 40px; } }
 

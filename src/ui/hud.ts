@@ -121,18 +121,13 @@ export class Hud {
   private contactKey = '';
   private centreKey = '';
 
-  constructor(onZoom: (dir: 1 | -1) => void) {
+  constructor() {
     // the refit bay's badge opens it, by tap or click; the flight controls behind never see the touch
     const upg = $('upg');
     upg.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); this.onBay(); });
     // on a phone the scope hangs under the sector block, whose height follows what the run shows
     const sector = $('sector');
     new ResizeObserver(() => document.documentElement.style.setProperty('--sector-b', `${Math.round(sector.getBoundingClientRect().bottom)}px`)).observe(sector);
-    for (const [id, dir] of [['zoom-in', -1], ['zoom-out', 1]] as const) {
-      const b = $(id);
-      b.addEventListener('click', () => onZoom(dir));
-      b.addEventListener('pointerdown', (e) => e.stopPropagation());
-    }
   }
 
   /** Size the scope's backing store. The HUD needs no lift: it leaves the picture alone. */
@@ -154,10 +149,6 @@ export class Hud {
     if (why === 'busy') return;
     this.note(world, t(why === 'red' ? 'Bay locked · red alert' : 'Bay locked · yellow alert'), 'hit');
     this.retrigger($('upg'), 'deny');
-  }
-
-  showZoom(level: number): void {
-    $('zoom-v').textContent = String(level + 1);
   }
 
   /** Put a line on the log. Kills of the same kind in a quick run add up on one line. */
@@ -649,7 +640,7 @@ export class Hud {
       const key = document.documentElement.classList.contains('touch-ui') ? '' : ' · B';
       const html = this.bayReady
         ? `<li class="done">${t('Break rock')} · <b>${Math.floor(world.krail)}</b></li><li class="now">${t('Upgrade ready')}${key}</li>`
-        : `<li class="now">${t('Break rock')} · <b>${Math.floor(world.krail)}/${this.next || '—'}</b></li><li>${t('Upgrade in the refit bay')}</li>`;
+        : `<li class="now">${t('Break rock')} · <b>${Math.floor(world.krail)}/${this.next || '—'}</b></li><li>${t('Upgrade opens by itself')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
     }

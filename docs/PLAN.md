@@ -724,7 +724,7 @@ DESIGN.md.
    comms and the port.
 10. **Done: the ship's voice.** `content/voice.ts` holds six lines, firmest
     first (Load limit exceeded, Maintenance required, Unauthorised
-    configuration, Automated refit enabled, Obedience protocol: active,
+    configuration, Refit authorised, Obedience protocol: active,
     Crew absent); `sim/voice.ts` picks the first whose state holds (over the
     mass rating, plates at half or less, a build beyond the yard's, Krail
     enough for a module, a stock ship). One line shows under the bay's title
