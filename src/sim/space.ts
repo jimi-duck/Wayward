@@ -91,7 +91,7 @@ export const CALM: Readonly<Influence> = Object.freeze({
 /** How the composer is tuned: how far ahead it deals, when it starts, how many features it keeps. */
 export const COMPOSE = {
   /** Deal a new expanse when the nearest one ahead has its rim further than this from the ship. */
-  lookahead: 2400,
+  lookahead: 1800,
   /** Its rim is dealt this far ahead, and within this bearing off the nose. */
   dealAt: 2100,
   dealArc: 0.55,
@@ -103,6 +103,8 @@ export const COMPOSE = {
   memory: 4,
   /** A feature sits within this share of its expanse's radius, and keeps this much clear of other matter. */
   spread: 0.7,
+  /** A multiplier on how many features an expanse holds: the rosters' counts are for a thin sky, this fills it. */
+  density: 1.6,
   clear: 90,
   /** The weight history puts on an expanse seen lately. Never the same twice running; never a third busy one in a row. */
   lately: 0.2,
@@ -182,19 +184,18 @@ export class Space {
   private dealAhead(t: number, ship: Pose): void {
     if (t < COMPOSE.first) return;
     const fx = Math.cos(ship.heading), fz = -Math.sin(ship.heading);
-    for (const e of this.expanses) {
-      const dx = e.x - ship.x, dz = e.z - ship.z, d = Math.hypot(dx, dz);
-      const ahead = d < 1 || (dx * fx + dz * fz) / d > -0.25;
-      if (ahead && d - e.r < COMPOSE.lookahead) return;
-    }
+    // how far the ground already dealt reaches ahead of the nose: the next expanse starts where it ends
+    let reach = 0;
+    for (const e of this.expanses) reach = Math.max(reach, (e.x - ship.x) * fx + (e.z - ship.z) * fz + e.r);
+    if (reach > COMPOSE.lookahead) return;
     const def = this.pick(t);
     const d = EXPANSES[def];
     const r = this.rng.range(d.radius[0], d.radius[1]);
     for (let tries = 0; tries < 6; tries++) {
       const a = ship.heading + this.rng.range(-COMPOSE.dealArc, COMPOSE.dealArc);
-      const dist = COMPOSE.dealAt + r + tries * 400;
+      const dist = Math.max(reach, COMPOSE.dealAt - r) + r * 0.7 + tries * 400;
       const x = ship.x + Math.cos(a) * dist, z = ship.z - Math.sin(a) * dist;
-      if (this.expanses.every((o) => Math.hypot(o.x - x, o.z - z) > o.r + r - 300) || tries === 5) {
+      if (this.expanses.every((o) => Math.hypot(o.x - x, o.z - z) > o.r + r - 600) || tries === 5) {
         this.addExpanse(def, x, z, { r, t });
         return;
       }
@@ -232,7 +233,7 @@ export class Space {
   /** Fill an expanse from its roster: weighted by kind and rarity, spaced out, never on top of other matter. */
   private deal(e: Expanse, t: number): void {
     const d = EXPANSES[e.def];
-    const n = this.rng.int(d.count[1] - d.count[0] + 1) + d.count[0];
+    const n = Math.round((this.rng.int(d.count[1] - d.count[0] + 1) + d.count[0]) * COMPOSE.density);
     const used = new Set<FeatureId>();
     for (let i = 0; i < n; i++) {
       const id = this.pickFeature(d, t, used);
