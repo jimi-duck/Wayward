@@ -158,6 +158,10 @@ export class Sector {
           this.fx.flash(e.x, 0.15, e.z, 1.6, OURS, 0.08);
           this.rig.kick(0.05);
           break;
+        case 'break':
+          this.fx.ring(e.x, 0.2, e.z, 5, OURS, 0.4);
+          this.rig.shake(0.18);
+          break;
         case 'torpedo':
           this.fx.flash(e.x, 0.15, e.z, 3, FIRE, 0.16);
           this.fx.light(e.x, 0.3, e.z, [1, 0.5, 0.3], 60, 0.2);

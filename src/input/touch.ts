@@ -15,7 +15,8 @@ import type { Press } from './types';
 //
 // Steering drives like a racing game: across turns the nose, any push away
 // from the centre opens the throttle, and pulling back coasts. A second
-// finger on the stick's side is a barrel roll.
+// finger on the stick's side is a barrel roll when it taps, and the break and
+// reverse when it flicks down.
 
 /** How far the thumb travels for a full deflection, as a share of the ring's width. */
 const TRAVEL = 0.4;
@@ -54,6 +55,14 @@ export function driveStick(x: number, y: number): { turn: number; thrust: number
   return { turn, thrust };
 }
 
+/** A second finger that travels this far down (CSS pixels) breaks and reverses. */
+export const FLICK = 36;
+
+/** Is a finger that has moved (dx, dy) from where it landed flicking down? Down must dominate. */
+export function flickedDown(dx: number, dy: number): boolean {
+  return dy >= FLICK && dy > Math.abs(dx) * 1.2;
+}
+
 type Role = 'stick' | 'fire' | 'torpedo' | 'release' | 'roll' | 'cut';
 
 export class TouchStick {
@@ -66,6 +75,8 @@ export class TouchStick {
   cutting = false;
 
   private readonly roles = new Map<number, Role>();
+  /** Second fingers on the stick's side: where each landed, and whether it has already broken. */
+  private readonly seconds = new Map<number, { x: number; y: number; done: boolean }>();
   private stickId: number | null = null;
   private ox = 0;
   private oy = 0;
@@ -91,6 +102,7 @@ export class TouchStick {
   /** Let go of everything, e.g. when the game pauses under the thumbs. */
   letGo(): void {
     this.roles.clear();
+    this.seconds.clear();
     this.releaseStick();
     this.firing = false;
     this.cutting = false;
@@ -107,7 +119,7 @@ export class TouchStick {
     try { this.el.layer.setPointerCapture(e.pointerId); } catch { /* fine without */ }
     switch (role) {
       case 'stick': this.grab(e); break;
-      case 'roll': this.onPress('roll'); break;
+      case 'roll': this.seconds.set(e.pointerId, { x: e.clientX, y: e.clientY, done: false }); break;
       case 'fire': this.firing = true; this.el.fire.classList.add('on'); break;
       case 'torpedo': this.onPress('torpedo'); this.blink(this.el.torpedo); break;
       case 'release': this.onPress('overcharge'); this.blink(this.el.release); break;
@@ -116,6 +128,11 @@ export class TouchStick {
   };
 
   private move = (e: PointerEvent): void => {
+    const second = this.seconds.get(e.pointerId);
+    if (second && !second.done && flickedDown(e.clientX - second.x, e.clientY - second.y)) {
+      second.done = true;
+      this.onPress('brk');
+    }
     if (e.pointerId !== this.stickId) return;
     e.preventDefault();
     this.track(e.clientX, e.clientY);
@@ -125,6 +142,10 @@ export class TouchStick {
     const role = this.roles.get(e.pointerId);
     if (!role) return;
     this.roles.delete(e.pointerId);
+    // a tap that never flicked is the roll, pressed as the finger lifts
+    const second = this.seconds.get(e.pointerId);
+    this.seconds.delete(e.pointerId);
+    if (second && !second.done && e.type === 'pointerup') this.onPress('roll');
     if (role === 'stick') this.releaseStick();
     if (role === 'cut' && ![...this.roles.values()].includes('cut')) {
       this.cutting = false;

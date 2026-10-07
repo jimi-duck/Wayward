@@ -5,13 +5,13 @@ import { flightControls, type FlightControls } from '../src/sim/controls';
 import { newShip, stepShip, topSpeed, turnPerStep, type ShipState } from '../src/sim/ship';
 import { computeStats } from '../src/sim/build';
 import { flightHull } from '../src/sim/stats';
-import { PX, ROLL_COOLDOWN, ROLL_IFRAMES } from '../src/sim/tuning';
+import { BREAK_COOLDOWN, BREAK_TIME, PX, ROLL_COOLDOWN, ROLL_IFRAMES } from '../src/sim/tuning';
 import type { InputFrame } from '../src/input/types';
 
-const idle: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
+const idle: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const ctl = (c: Partial<FlightControls>): FlightControls => ({ ...idle, ...c });
 const input = (f: Partial<InputFrame>): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard', ...f });
 
 function fly(s: ShipState, hull: Hull, c: FlightControls, seconds: number): ShipState {
   for (let i = 0; i < Math.round(seconds / STEP); i++) stepShip(s, c, hull, STEP);
@@ -148,5 +148,67 @@ describe('controls', () => {
     expect(c.rollDir).toBe(-1);
     expect(c.fire).toBe(true);
     expect(c.torpedo).toBe(true);
+  });
+});
+
+describe('break and reverse', () => {
+  const brk = ctl({ brk: true });
+  const cruising = () => fly(newShip(), HULL, ctl({ thrust: 1 }), 3);
+
+  it('swings the nose round 180 degrees and keeps most of the speed', () => {
+    const s = cruising();
+    const h0 = s.heading, v0 = speed(s);
+    stepShip(s, brk, HULL, STEP);
+    fly(s, HULL, idle, BREAK_TIME);
+    expect(Math.abs(s.heading - h0)).toBeCloseTo(Math.PI, 2);
+    expect(s.breakT).toBe(-1);
+    // still sliding the way it was going, now tail first
+    expect(speed(s)).toBeGreaterThan(v0 * 0.4);
+    expect(speed(s)).toBeLessThan(v0);
+    expect(s.vx * Math.cos(s.heading) + s.vz * -Math.sin(s.heading)).toBeLessThan(0);
+  });
+
+  it('is not instant: the nose is part way round half way through', () => {
+    const s = cruising();
+    const h0 = s.heading;
+    stepShip(s, brk, HULL, STEP);
+    fly(s, HULL, idle, BREAK_TIME * 0.3);
+    const turned = Math.abs(s.heading - h0);
+    expect(turned).toBeGreaterThan(0.1);
+    expect(turned).toBeLessThan(Math.PI * 0.6);
+  });
+
+  it('locks the helm and throttle while it runs, then hands them back', () => {
+    const s = cruising();
+    stepShip(s, ctl({ brk: true, turn: 1, thrust: 1 }), HULL, STEP);
+    expect(s.thrust).toBe(0);
+    fly(s, HULL, ctl({ turn: 1, thrust: 1 }), BREAK_TIME + 0.1);
+    const h = s.heading;
+    fly(s, HULL, ctl({ turn: 1 }), 0.3);
+    expect(s.heading).toBeLessThan(h - 0.1);
+  });
+
+  it('goes the way the helm leans, and waits out its cooldown', () => {
+    const s = cruising();
+    stepShip(s, ctl({ brk: true, rollDir: -1 }), HULL, STEP);
+    expect(s.breakDir).toBe(-1);
+    fly(s, HULL, idle, BREAK_TIME + 0.1);
+    const h = s.heading;
+    stepShip(s, brk, HULL, STEP);
+    expect(s.breakT).toBe(-1);
+    fly(s, HULL, idle, BREAK_COOLDOWN);
+    stepShip(s, brk, HULL, STEP);
+    expect(s.breakT).toBeGreaterThanOrEqual(0);
+  });
+
+  it('gives no invulnerability, and blocks a roll while it runs', () => {
+    const s = cruising();
+    stepShip(s, ctl({ brk: true, roll: true }), HULL, STEP);
+    expect(s.invuln).toBe(0);
+    expect(s.rollT).toBe(-1);
+  });
+
+  it('is DOWN on the keys, and the flight controls carry it', () => {
+    expect(flightControls(input({ brk: true })).brk).toBe(true);
   });
 });
