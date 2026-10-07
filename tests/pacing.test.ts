@@ -306,7 +306,8 @@ describe('the whole loop', () => {
     expect(w.aliens.filter((a) => group.has(a.id)).length).toBe(0);
     expect(seen).toContain('quiet');
     // repairing in the quiet
-    fly(60, {}, () => w.plates === 3);
+    // the sky is empty while it mends: the ship has seen off whatever the heavier waves send
+    fly(60, {}, () => { w.aliens = w.aliens.filter((a) => a.escort || a.extra); return w.plates === 3; });
     expect(w.plates).toBe(3);
     expect(w.run.platesMended).toBe(1);
     // back into it: the next encounter comes

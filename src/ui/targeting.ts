@@ -327,7 +327,7 @@ export class Targeting {
       if (world.bk) {
         for (const wp of world.seenPlaces()) {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
-          if (d < 400) put(wp.x, 0.5, wp.z, 'm dia obj', `${tr(wp.name)} · ${range(d)}`);
+          put(wp.x, 0.5, wp.z, 'm dia obj far', `${tr(wp.name)} · ${range(d)}`);
         }
       }
       const boss = world.command.boss;

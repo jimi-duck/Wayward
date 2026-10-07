@@ -35,9 +35,11 @@ export interface Mods {
   elites: number;
   /** Multiplier on the share of rock that is clustered, shepherded or volatile. */
   hazard: number;
+  /** Multiplier on the Krail the arcade's rock and wrecks drop (the Story's rows are in the mode's `rock` and `salvage`). */
+  income: number;
 }
 
-export const NO_MODS: Mods = { traffic: 1, toughness: 1, fire: 1, elites: 1, hazard: 1 };
+export const NO_MODS: Mods = { traffic: 1, toughness: 1, fire: 1, elites: 1, hazard: 1, income: 1 };
 
 const V = PX * HZ;
 
