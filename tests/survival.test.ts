@@ -741,7 +741,8 @@ describe('the voyage', () => {
     const again = makeChart(5, 'eight');
     layQuiet(again, 5);
     expect(again.systems.map((s) => !!s.quiet)).toEqual(b.systems.map((s) => !!s.quiet));
-  });
+    // 24 eight-region charts: slower than vitest's 5 s on a busy machine
+  }, 30_000);
 });
 
 describe('a mode that is playable', () => {
