@@ -384,7 +384,7 @@ export function reports(inf: Influence, max = 2): Report[] {
   add('lock', inf.lock, inf.lock <= 0.3 ? 1 - inf.lock + 0.2 : 1 - inf.lock);
   add('sight', inf.sight, 1 - inf.sight);
   add('jam', inf.jam, inf.jam);
-  add('pull', Math.hypot(inf.ax, inf.az), Math.hypot(inf.ax, inf.az) / 5);
+  add('pull', Math.hypot(inf.ax, inf.az), Math.hypot(inf.ax, inf.az) / 12);
   add('drag', inf.drag, inf.drag - 1 > 0.05 ? (inf.drag - 1) * 4 : 0);
   add('conceal', inf.conceal, 1 - inf.conceal);
   return out.sort((a, b) => b.s - a.s).slice(0, max).map(({ kind, value }) => ({ kind, value }));
