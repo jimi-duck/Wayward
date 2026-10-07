@@ -38,6 +38,8 @@ const BOSS_R = 6;
 const ARRIVE_AT = 150, ARRIVE_Y = 28;
 export const bossBounty = (n: number, f: Faction) => Math.round((1800 + n * 700) * FACTIONS[f].bounty / 10) * 10;
 export { BOSS_FIRST, bossGap };
+/** The hull of a faction's first capital ship in a run, against the usual. */
+export const INTRO_HP = 0.7;
 
 export type Attack =
   | 'ring' | 'volley' | 'charge' | 'spiral' | 'cloak' | 'salvo' | 'beams' | 'tractor' | 'cage' | 'shards'
@@ -69,12 +71,12 @@ export const FACTIONS: Record<Faction, FactionDef> = {
     station: 38, wing: 'warbird', wingN: 2, wingHp: 0.85,
   },
   voice: {
-    at: 230, hull: 'drone', names: ['Foundry Seven', 'Mother Lathe', 'Foundry Thirty', 'The Hesse Choir'], hp: 1.15, fuse: 72, bounty: 1.3,
+    at: 400, hull: 'drone', names: ['Foundry Seven', 'Mother Lathe', 'Foundry Thirty', 'The Hesse Choir'], hp: 1.15, fuse: 72, bounty: 1.3,
     cycles: [['beams', 'tractor', 'ring'], ['beams', 'launch', 'tractor', 'ring'], ['beams', 'tractor', 'launch', 'beams', 'ring']],
     station: 34, wing: 'drone', wingN: 4, wingHp: 0.3,
   },
   thren: {
-    at: 250, hull: 'weaver', names: ['Thren Lattice', 'Thren Bloom', 'Thren Hollow', 'Thren Knot'], hp: 1, fuse: 62, bounty: 1.1,
+    at: 340, hull: 'weaver', names: ['Thren Lattice', 'Thren Bloom', 'Thren Hollow', 'Thren Knot'], hp: 1, fuse: 62, bounty: 1.1,
     cycles: [['cage', 'shards', 'ring'], ['webline', 'shards', 'cage', 'ring'], ['cage', 'webline', 'shards', 'ring']],
     station: 32, wing: 'weaver', wingN: 3, wingHp: 1,
   },
@@ -308,7 +310,9 @@ export class Command {
   private arrive(t: number, s: ShipState, aliens: Alien[], rng: Rng, events: GameEvent[]): void {
     const { faction, name } = this.pending!;
     const def = FACTIONS[faction];
-    const hp = Math.round(bossHp(this.count, t) * def.hp * this.hpScale);
+    // a faction's first capital ship of a run is an introduction: its patterns are new, so it is lighter
+    const intro = (this.seen[faction] ?? 0) === 0 ? INTRO_HP : 1;
+    const hp = Math.round(bossHp(this.count, t) * def.hp * this.hpScale * intro);
     this.hpScale = 1;
     const wingN = def.wingN + this.wingExtra;
     this.wingExtra = 0;

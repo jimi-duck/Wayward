@@ -575,8 +575,12 @@ regenerative, web-spinner.
 decided, as smooth functions of run time. The opening is a slow burn: the
 field starts at half its old density with slower rock (and five bulwarks,
 not seven), and no hostile shows up for forty seconds. Density, speed and
-toughness climb from there; variety opens over five minutes; from four
-minutes elites and squads appear, and from five the factions mix. Late, the
+toughness climb from there; variety opens over five minutes; from two and a
+half minutes elites appear, from three squads, and from four the factions
+mix, so the build-up starts before the first capital ship rather than with
+it. A faction's first capital ship of a run is lighter (`INTRO_HP`), and the
+Voice and the Thren, whose beams and webs read hardest, are not dealt until
+6:40 and 5:40. Late, the
 enemy ceiling levels off while elites, squads and hazardous rock keep
 coming, so difficulty comes from combinations, not counts.
 
@@ -586,7 +590,7 @@ first, growing with the clock, and a tenth of a hull more per refit taken),
 arriving `enemyInterval` seconds apart (a pair of interceptors or a squad
 counts as several). Once every one of them is destroyed, gone, or left
 behind past the cull ring, the sector goes quiet for `lull` seconds (about
-20 at the start, 9 from nine minutes; Quiet running stretches it). A group that
+18 at the start, 9 from eight minutes; Quiet running stretches it). A group that
 drags on 45 seconds past its last arrival breaks off. A capital ship's fight
 is an encounter too, with a quiet spell after it. The log says when contacts
 are inbound and when the sector is quiet again.

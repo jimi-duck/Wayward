@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
-import { BOSS_FIRST, bossGap } from '../src/sim/bosses';
+import { BOSS_FIRST, FACTIONS, INTRO_HP, bossGap } from '../src/sim/bosses';
+import { bossHp, pressure } from '../src/sim/director';
 import { ALIEN_FIRST, SPAWN_NEAR, VARIANTS, alienMax, spawnAlien } from '../src/sim/enemies';
 import type { Bulwark } from '../src/sim/field';
 import { Rng } from '../src/sim/rng';
@@ -109,6 +110,35 @@ describe('capital ships', () => {
     expect(w.pickups.filter((p) => p.kind === 'crystal').length).toBeGreaterThan(5);
     expect(w.techs.has(b.faction)).toBe(true);
     expect(w.command.next).toBeCloseTo(w.runTime + bossGap(1), 0);
+  });
+
+  it('make a faction’s first capital ship lighter, and its second the usual weight', () => {
+    const w = immortal(7);
+    w.command.next = 1e9;
+    const arrive = () => {
+      w.command.summon(w.runTime, 'custody');
+      for (let i = 0; i < 40 * 60 && !w.command.boss; i++) { if (w.phase === 'hail') w.answerHail(true); w.ship.invuln = 1; w.step(STEP, idle); }
+      const b = w.command.boss!;
+      return { ratio: b.maxHp / (bossHp(b.n, w.runTime) * FACTIONS.custody.hp), b };
+    };
+    const first = arrive();
+    expect(first.ratio).toBeCloseTo(INTRO_HP, 1);
+    // break it, and the next of the same faction comes at full weight
+    first.b.hp = 1;
+    w.bolts.push(bolt(first.b.x, first.b.y, first.b.z));
+    for (let i = 0; i < 60 * 40 && w.command.boss; i++) { w.ship.invuln = 1; w.step(STEP, idle); if (w.command.boss?.arriving) { first.b.hp = 1; w.command.boss.hp = 1; w.bolts.push(bolt(w.command.boss.x, w.command.boss.y, w.command.boss.z)); } }
+    expect(w.command.boss).toBeNull();
+    expect(arrive().ratio).toBeCloseTo(1, 1);
+  });
+
+  it('deal the beams and webs last, so new things arrive one at a time', () => {
+    expect(FACTIONS.voice.at).toBeGreaterThan(FACTIONS.thren.at);
+    expect(FACTIONS.thren.at).toBeGreaterThan(FACTIONS.office.at + 120);
+    // the build-up starts before the first capital ship: elites and squads are on their way by then, and the factions mix before the second
+    const p = pressure(BOSS_FIRST);
+    expect(p.eliteChance).toBeGreaterThan(0);
+    expect(p.squadChance).toBeGreaterThan(0);
+    expect(pressure(BOSS_FIRST + bossGap(0)).theatre).toBeLessThan(4);
   });
 
   it('leave when the fuse runs out', () => {
