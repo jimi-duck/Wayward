@@ -17,7 +17,7 @@ balanced with a scripted pilot and the reasoning lives in the code comments and
 
 | Area | Choice | Why |
 |---|---|---|
-| Flight model | Flat play plane for the ship, full 3D for everything else | Keeps all the original tuning; touch stays one thumb. The ship banks and pitches visually; a barrel roll is a dodge, and the break and reverse (DOWN; a downward flick of a second finger on touch) is a committed 180° flip that keeps most of the speed. Since the gritty pass, enemies and fire use altitude, and the gunnery computer and torpedoes reach them there. |
+| Flight model | Flat play plane for the ship, full 3D for everything else | Keeps all the original tuning; touch stays one thumb. The ship banks and pitches visually; a barrel roll is a dodge, and the break and reverse (DOWN; a downward flick of a second finger on touch) is a committed loop that turns the ship 180° that keeps most of the speed. Since the gritty pass, enemies and fire use altitude, and the gunnery computer and torpedoes reach them there. |
 | Rendering | Three.js, plain TypeScript | Light, mature, best custom-shader ecosystem; WebGL2 runs on every current phone. |
 | Build | Vite + TypeScript | Fast reloads; `npm run dev:phone` serves to a phone on the same Wi-Fi. |
 | Collision | Custom: spatial hash; sphere, ray and segment tests | The original is circles, rays and segments on a plane, with hand-tuned arcade handling. A rigid-body engine would add WASM weight and fight that tuning. |
