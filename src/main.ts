@@ -11,6 +11,7 @@ import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { chapterSave, clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
 import { recap } from './sim/chapters';
+import { FEATURES } from './content/features';
 import { SURVIVAL } from './content/survival';
 import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { sysById } from './sim/chart';
@@ -494,6 +495,8 @@ function boot(): void {
       radio.sync(world.call, world.callUntil - world.runTime);
       // the title covers the canvas and the HUD: nothing to draw until the first launch
       if (!started) return;
+      const there = world.air.from[0];
+      feel.bed(there && !loop.paused ? FEATURES[there.def].voice : null, world.air.weight);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);
