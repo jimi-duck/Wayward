@@ -14,7 +14,8 @@ import type { CardDef } from '../sim/comms';
 // history to the file (a `frag_` flag), an ally, a buyer or a copy sent on,
 // and those open endings at the Threshold (content/endings.ts). The journey
 // deals the beat due in each sortie (sim/story.ts); the world plays it a
-// little after arrival (sim/world.ts).
+// little after arrival (sim/world.ts). The eight-region journey has two a
+// region, ten more, and four more pieces of the file.
 
 export interface Act {
   n: 1 | 2 | 3;
@@ -53,19 +54,44 @@ export const FRAGMENTS: Fragment[] = [
 
 export const FRAGMENT_FLAGS = FRAGMENTS.map((f) => f.flag);
 
-/** A story beat: its card, and the region it comes in (or any later one, if it was missed). */
+/** The four more the long journey's beats bring in. The endings still read the first four; these are the rest of the file. */
+export const FRAGMENTS_LONG: Fragment[] = [
+  { flag: 'frag_blackbox', name: 'The black box', line: 'A wreck’s recorder: the last call from the night the lanes went dark.', where: 'Wrecks in the Salvage Belt keep their recorders.' },
+  { flag: 'frag_charts', name: 'The charts', line: 'The old lane charts, from before the breakers.', where: 'Someone in the Drift Deep still sails by them.' },
+  { flag: 'frag_workorder', name: 'The work order', line: 'The Continuance’s order to build the breakers, signed and dated.', where: 'The Breaker Yards filed everything.' },
+  { flag: 'frag_witnesses', name: 'The witnesses', line: 'Forty names of people who were in the room, and kept quiet.', where: 'The Free Ports keep a list of who was there.' },
+];
+export const FRAGMENTS_ALL: Fragment[] = [...FRAGMENTS, ...FRAGMENTS_LONG];
+export const FRAGMENT_FLAGS_LONG = FRAGMENTS_ALL.map((f) => f.flag);
+
+/**
+ * A story beat: its card, and the region it comes in (or any later one, if it was missed). `region` is the
+ * three-region chart's; `long` is the eight-region chart's (two a region: one that moves the file, one a faction).
+ * A beat with no `region` belongs to the long chart alone.
+ */
 export interface Beat {
   card: string;
-  region: number;
+  region?: number;
+  long: number;
 }
 
 export const BEATS: Beat[] = [
-  { card: 'story_warden', region: 0 },
-  { card: 'story_ledger', region: 0 },
-  { card: 'story_moot', region: 1 },
-  { card: 'story_drift', region: 1 },
-  { card: 'story_broker', region: 1 },
-  { card: 'story_voice', region: 2 },
+  { card: 'story_warden', region: 0, long: 0 },
+  { card: 'story_ledger', region: 0, long: 0 },
+  { card: 'story_moot', region: 1, long: 1 },
+  { card: 'story_drift', region: 1, long: 1 },
+  { card: 'story_broker', region: 1, long: 2 },
+  { card: 'story_salvor', long: 2 },
+  { card: 'story_charts', long: 3 },
+  { card: 'story_ferry', long: 3 },
+  { card: 'story_workorder', long: 4 },
+  { card: 'story_crew', long: 4 },
+  { card: 'story_harbour', long: 5 },
+  { card: 'story_witnesses', long: 5 },
+  { card: 'story_voice', region: 2, long: 6 },
+  { card: 'story_thren', long: 6 },
+  { card: 'story_aide', long: 7 },
+  { card: 'story_toll', long: 7 },
 ];
 
 /** The people the beats bring in, by the flags that mean you met them, for the Archive. */
@@ -76,6 +102,10 @@ export const STORY_PEOPLE: Array<{ flags: string[]; name: string }> = [
   { flags: ['frag_manifests', 'pact_drift'], name: 'Mother Saffi of the Long Walk' },
   { flags: ['broker'], name: 'Vell, a Gutter broker' },
   { flags: ['frag_keys', 'lane_keys', 'voice_read'], name: 'The Voice' },
+  { flags: ['frag_blackbox'], name: 'Dov Kessin, a salvor' },
+  { flags: ['frag_charts'], name: 'Hale Tarn, a chartwright' },
+  { flags: ['frag_workorder'], name: 'Pell Anand, a yard clerk' },
+  { flags: ['frag_witnesses'], name: 'Mirren, keeper of the list' },
 ];
 
 const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: 'story', ...c });
@@ -174,6 +204,118 @@ export const STORY_CARDS: CardDef[] = [
       { id: 'keys', label: 'Ask for the keys', tone: 'help', hint: 'Who built the breakers goes in the file, and a way to close a lane.', win: { text: 'The keys are in the file · and in your hands', flag: ['frag_keys', 'lane_keys'] } },
       { id: 'read', label: 'Let it read the file', tone: 'help', hint: 'The keys go in the file. The Voice can carry it everywhere.', win: { text: 'The Voice has read it all · it is listening now', flag: ['frag_keys', 'voice_read'], notice: { voice: -3 } } },
       { id: 'cut', label: 'Cut every terminal', tone: 'refuse', hint: 'Whatever it is, it is not yours.', win: { text: 'The terminals go dark' } },
+    ],
+  }),
+
+  // ── the long journey: the Salvage Belt to the Last Lanes ──────────────────
+  story({
+    id: 'story_salvor', kind: 'trade', caller: 'miners',
+    from: 'Dov Kessin · salvor', title: 'A recorder that still runs',
+    text: '“That wreck’s recorder still runs. It heard the night the lanes went dark. I can’t cut it free alone.”',
+    cargo: 'A salvage tug · one cutting arm',
+    choices: [
+      { id: 'cut', label: 'Cut it free together', tone: 'help', hint: 'Three parts for the blades. The recording goes in the file.', cost: { parts: 3 }, win: { text: 'The black box goes in the file', flag: 'frag_blackbox', standing: { miners: 1 } } },
+      { id: 'pay', label: 'Pay him to do it', tone: 'pay', hint: 'Twenty-five chits. Quiet, and slower.', cost: { chits: 25 }, win: { text: 'Kessin hands over the recorder', flag: 'frag_blackbox' } },
+      { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Not worth the time.', win: { text: 'Kessin goes back to his wreck' } },
+    ],
+  }),
+  story({
+    id: 'story_charts', kind: 'trade', caller: 'miners',
+    from: 'Hale Tarn · chartwright', title: 'The charts they burned',
+    text: '“I draw lanes by hand, from charts the Continuance burned. I’ll trade you a copy for something to eat.”',
+    cargo: 'A drifting chart room · lamps and paper',
+    choices: [
+      { id: 'food', label: 'Trade food', tone: 'trade', hint: 'Three food for the old charts.', cost: { food: 3 }, win: { text: 'The old charts go in the file', flag: 'frag_charts' } },
+      { id: 'share', label: 'Share what you know', tone: 'help', hint: 'Free. He hears the file too, and talks.', win: { text: 'Tarn copies your route · the charts go in the file', flag: 'frag_charts', heat: 0.08, standing: { miners: 1 } } },
+      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The lamps drift astern' } },
+    ],
+  }),
+  story({
+    id: 'story_ferry', kind: 'trade', caller: 'miners',
+    from: 'Ossi Rane · the Quiet Ferry', title: 'A lane ahead',
+    text: '“Nobody hunts out here. I can carry you a lane ahead of anyone behind you. Stores, and no questions.”',
+    cargo: 'A slow ferry · forty berths, all empty',
+    choices: [
+      { id: 'ride', label: 'Ride the ferry', tone: 'trade', hint: 'Four food. Calloway loses a day.', cost: { food: 4 }, win: { text: 'The ferry carries you ahead', hunt: 1, standing: { miners: 1 } } },
+      { id: 'talk', label: 'Trade stories', tone: 'help', hint: 'Rane shares his stores for the news.', win: { text: 'Stores across · the news goes round', food: 3, heat: 0.05 } },
+      { id: 'no', label: 'Wave him on', tone: 'refuse', hint: 'Keep your stores.', win: { text: 'The ferry idles away' } },
+    ],
+  }),
+  story({
+    id: 'story_workorder', kind: 'trade', caller: 'kellern',
+    from: 'Pell Anand · yard clerk', title: 'The first work order',
+    text: '“Every breaker built here has a work order. The first is signed in the Continuance’s own hand. Taking it costs me my pension.”',
+    cargo: 'A yard shuttle · a sealed case',
+    choices: [
+      { id: 'buy', label: 'Pay for the order', tone: 'pay', hint: 'Thirty-five chits.', cost: { chits: 35 }, win: { text: 'The work order goes in the file', flag: 'frag_workorder' } },
+      { id: 'shield', label: 'Promise to shield him', tone: 'bluff', hint: 'Free, if he believes you can.', odds: { base: 0.45, standing: { kellern: 0.1 } }, win: { text: '“Then take it.” · the work order goes in the file', flag: 'frag_workorder', standing: { kellern: -1 } }, lose: { text: 'He thinks better of it, and closes the case' } },
+      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep the chits.', win: { text: 'Anand signs off' } },
+    ],
+  }),
+  story({
+    id: 'story_crew', kind: 'plea', caller: 'frontier',
+    from: 'Marit Voss · crew steward', title: 'The yard crews',
+    text: '“The yard crews stop work if you stand with us. It buys you a quiet lane, and Kellern a bad week.”',
+    cargo: 'A crew barge · two hundred hands',
+    choices: [
+      { id: 'stand', label: 'Stand with the crews', tone: 'help', hint: 'Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews stop work · the lane goes quiet', hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
+      { id: 'parts', label: 'Ask for parts', tone: 'trade', hint: 'Four parts, and no promises.', win: { text: 'Parts across · no promises', parts: 4 } },
+      { id: 'no', label: 'Not yet', tone: 'refuse', hint: 'Stay out of it.', win: { text: 'The barge falls away' } },
+    ],
+  }),
+  story({
+    id: 'story_harbour', kind: 'trade', caller: 'guild',
+    from: 'Ines Duarte · harbour-master, the Dust Traders', title: 'A berth, no questions',
+    text: '“A berth for the Wayward, and no questions. The Guild only wants to know you for a friend.”',
+    cargo: 'The harbour-master’s launch · very good manners',
+    choices: [
+      { id: 'berth', label: 'Take the berth', tone: 'trade', hint: 'Food and parts for the stay. The Guild takes note.', win: { text: 'A berth, stores and a friend in the Guild', food: 3, parts: 3, heat: 0.05, standing: { guild: 1 } } },
+      { id: 'pay', label: 'Pay your way', tone: 'pay', hint: 'Twenty chits. No favours owed.', cost: { chits: 20 }, win: { text: 'Docked and square', food: 3, parts: 3 } },
+      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'You fly on your own.', win: { text: 'The launch turns back' } },
+    ],
+  }),
+  story({
+    id: 'story_witnesses', kind: 'rumour', caller: 'guild',
+    from: 'Old Mirren · keeper of the free ports’ list', title: 'Forty names',
+    text: '“We keep the names of everyone in the room when the order was read. Forty of them. Read it to no one.”',
+    cargo: 'A ledger-keeper’s skiff · a locked box',
+    choices: [
+      { id: 'copy', label: 'Copy the list', tone: 'help', hint: 'The names go in the file. Copies get talked about.', win: { text: 'The witnesses go in the file', flag: 'frag_witnesses', heat: 0.08 } },
+      { id: 'swear', label: 'Swear to guard it', tone: 'help', hint: 'Only the file, and her trust.', win: { text: 'She lets you read it · the witnesses go in the file', flag: 'frag_witnesses', standing: { guild: 1 } } },
+      { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Some names are better left.', win: { text: 'Mirren closes the box' } },
+    ],
+  }),
+  story({
+    id: 'story_thren', kind: 'warning', caller: 'unknown',
+    from: 'The Thren · a signal that is not speech', title: 'They follow you',
+    text: '“THEY FOLLOW THE CYRITE. THEY FOLLOW YOU. SPEAK, OR BE FOLLOWED.”',
+    cargo: 'No ship · a pulse in the dark',
+    choices: [
+      { id: 'vent', label: 'Vent six Cyrite', tone: 'pay', hint: 'The swarm feeds and drifts off.', cost: { cyrite: 6 }, win: { text: 'The Thren feed on the Cyrite and go quiet', calm: 120 } },
+      { id: 'show', label: 'Show them the file', tone: 'bluff', hint: 'A gamble. They may read it as a threat.', odds: { base: 0.5 }, win: { text: 'They read it, and make room', calm: 240, notice: { thren: -2 } }, lose: { text: 'They take it as a challenge' } },
+      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Whatever it is, it is not yours.', win: { text: 'The pulse fades' } },
+    ],
+  }),
+  story({
+    id: 'story_aide', kind: 'plea', caller: 'office',
+    from: 'Noor Hale · sub-prefect, the Continuance', title: 'The Prefect’s aide',
+    text: '“I serve the Prefect. I could lose her for a day. Tell me what you mean to do at the Threshold.”',
+    cargo: 'A Continuance cutter · no weapons showing',
+    choices: [
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She delays the Prefect two days. She also knows your plan.', win: { text: 'Hale holds the Prefect back, and keeps your answer', hunt: 2, heat: 0.1 } },
+      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A day, if she believes it.', odds: { base: 0.5 }, win: { text: 'She believes you · a day gained', hunt: 1 }, lose: { text: 'She sees through it, and marks you' } },
+      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust no one from the Office.', win: { text: 'The cutter turns away' } },
+    ],
+  }),
+  story({
+    id: 'story_toll', kind: 'trade', caller: 'guild',
+    from: 'Keeper Oren · the Last Toll', title: 'Every lane ends here',
+    text: '“Every lane ends here. The toll is what you carry, or what you are.”',
+    cargo: 'A toll platform · one lit window',
+    choices: [
+      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Thirty chits. He tops up the tank.', cost: { chits: 30 }, win: { text: 'Toll paid · the tank is topped up', cyrite: 10 } },
+      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · the tank is topped up', cyrite: 10, heat: 0.05 }, lose: { text: 'He bars the window' } },
+      { id: 'run', label: 'Run the gate', tone: 'fight', hint: 'The platform’s guns wake.', win: { text: 'The platform opens fire', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }] } },
     ],
   }),
 ];

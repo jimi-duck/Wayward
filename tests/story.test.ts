@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEATS, FRAGMENTS, STORY_AT, STORY_CARDS, YARD_BEAT } from '../src/content/story';
+import { BEATS, FRAGMENTS, FRAGMENTS_ALL, STORY_AT, STORY_CARDS, YARD_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
 import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
@@ -167,5 +167,41 @@ describe('the file', () => {
     expect(rec.records).toHaveLength(4);
     expect(rec.people).toContain('Warden Ilse Marrow');
     expect(rec.people).toContain('The Voice');
+  });
+});
+
+describe('the long journey’s story', () => {
+  it('has two beats in each of the eight regions, and the three-region chart keeps its six', () => {
+    for (let r = 0; r < 8; r++) expect(BEATS.filter((b) => b.long === r), `region ${r}`).toHaveLength(2);
+    expect(BEATS.filter((b) => b.region !== undefined)).toHaveLength(6);
+    expect(FRAGMENTS_ALL).toHaveLength(8);
+  });
+
+  it('deals the long chart’s beats by its own regions', () => {
+    const j = newJourney(7, false, 'eight');
+    j.carry.seen.push(YARD_BEAT);
+    endSortie(j, result(j));
+    expect(dueBeat(j)).toBe('story_warden');
+    // arriving in the Salvage Belt (the third region) with the Marches' beats seen: its own come first
+    j.at = j.chart.systems.find((s) => viewOf(j.chart, s.id) === 2)!.id;
+    j.carry.seen = [YARD_BEAT, 'story_warden', 'story_ledger', 'story_moot', 'story_drift'];
+    expect(['story_broker', 'story_salvor']).toContain(dueBeat(j));
+    j.carry.seen.push('story_broker', 'story_salvor');
+    expect(dueBeat(j)).toBeNull();
+  });
+
+  it('count eight pieces of the file on the long chart, and four on the old one', () => {
+    const flags = ['frag_order', 'frag_blackbox', 'frag_witnesses'];
+    expect(fileCount(flags, 'eight')).toEqual({ found: 3, of: 8 });
+    expect(fileCount(flags)).toEqual({ found: 1, of: FRAGMENTS.length });
+  });
+
+  it('read the extra pieces as a line in the epilogue, not as a need', () => {
+    const j = newJourney(7);
+    endSortie(j, result(j, { flags: ['frag_order', 'frag_ledger', 'frag_manifests', 'frag_keys', 'frag_blackbox', 'frag_charts', 'frag_workorder', 'frag_witnesses'] }));
+    let guard = 0;
+    while (j.status === 'chart' && guard++ < 20) step(j, { flags: j.carry.flags });
+    expect(epilogue(j, 'broadcast').some((l) => l.includes('the rest: the black box'))).toBe(true);
+    expect(journeyRecord(j).records).toHaveLength(8);
   });
 });

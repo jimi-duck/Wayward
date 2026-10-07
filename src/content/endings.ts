@@ -78,6 +78,7 @@ export const ENDINGS: EndingDef[] = [
       { text: 'The Wayward’s array points down the old lane. The file goes out on every band.' },
       { text: 'For a day nothing happens. Then the core worlds start asking where seventy years of Krail went.' },
       { if: { fragments: 4 }, text: 'It goes out whole: order, ledger, manifests, keys. Nobody can call it a forgery.' },
+      { if: { allFlags: ['frag_blackbox', 'frag_charts', 'frag_workorder', 'frag_witnesses'] }, text: 'And behind it, the rest: the black box, the charts, the work order, the witnesses.' },
       { if: { flags: ['copy_warden'] }, text: 'Ilse Marrow reads the order aloud on the Narrows relay, where she first heard it.' },
       { if: { flags: ['voice_read'] }, text: 'The Voice carries it into every terminal that still listens.' },
       { if: { flags: ['calloway_told'] }, text: 'Idris Calloway quits on an open channel. She reads the file aloud first.' },
