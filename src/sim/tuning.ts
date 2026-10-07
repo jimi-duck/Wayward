@@ -146,7 +146,6 @@ export const chainMult = (n: number) => 1 + Math.min(3, Math.floor(n / 5) * 0.25
 
 export const SCORE_PER_SECOND = 8;
 export const SCORE_PER_CRYSTAL = 3;
-export const OVERCHARGE_POINTS = 250;
 
 // Hull repairs are meant to be rare: a small chance from a kill, never more
 // than one every REPAIR_GAP seconds, never on a full hull, and one from each
@@ -165,11 +164,4 @@ export const SHIELD_DELAY = 5;
 /** Grace after a shield absorbs a hit: shorter than a plate's, so one charge never eats a volley. */
 export const SHIELD_GRACE = 0.7;
 
-// ── overcharge ────────────────────────────────────────────────────────────
-// The reactor charges from near misses: fire that passes close, rock
-// skimmed at speed, hulls passed close aboard, beams and webs brushed.
-export const OC_MAX = 100;
-export const OC_GAIN = { shot: 7, rock: 5, hull: 9, beam: 14, web: 6, strike: 8 } as const;
-/** How close counts as a near miss, beyond touching: units. */
-export const GRAZE = { shot: 1.6, rock: 1.4, hull: 2.6, beam: 1.6, web: 1.6, strike: 2.5 } as const;
 export const RARE_FIRST = 50;

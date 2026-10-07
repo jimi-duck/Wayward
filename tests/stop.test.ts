@@ -44,7 +44,7 @@ describe('the sensible stop', () => {
     w.field.rocks = []; w.field.bulwarks = [];
     w.cardNext = Infinity; w.bk!.nextPursuit = Infinity; w.portCalled = true;
     w.ship.x = w.bk!.port!.x; w.ship.z = w.bk!.port!.z; w.ship.vx = w.ship.vz = 0;
-    for (let i = 0; i < 90 && w.phase !== 'dock'; i++) w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+    for (let i = 0; i < 90 && w.phase !== 'dock'; i++) w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
     expect(w.phase).toBe('dock');
     w.ore = 30; w.plates = 1; w.chits = 10; w.cyrite = 5; w.food = 2;
     const plan = w.planStop();

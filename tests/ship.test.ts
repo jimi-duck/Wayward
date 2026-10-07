@@ -11,7 +11,7 @@ import type { InputFrame } from '../src/input/types';
 const idle: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const ctl = (c: Partial<FlightControls>): FlightControls => ({ ...idle, ...c });
 const input = (f: Partial<InputFrame>): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...f });
 
 function fly(s: ShipState, hull: Hull, c: FlightControls, seconds: number): ShipState {
   for (let i = 0; i < Math.round(seconds / STEP); i++) stepShip(s, c, hull, STEP);

@@ -48,7 +48,7 @@ export function buildView(levels: Levels, named = true): HTMLElement {
 // ── the run report ────────────────────────────────────────────────────────
 
 const WEAPON_WORD: Record<string, string> = {
-  laser: 'Lasers', torpedo: 'Torpedoes', mine: 'Mines', plasma: 'Plasma', arc: 'Hull arc', ram: 'Ramming', overcharge: 'Overcharge', hazard: 'The sector',
+  laser: 'Lasers', torpedo: 'Torpedoes', mine: 'Mines', plasma: 'Plasma', arc: 'Hull arc', ram: 'Ramming', hazard: 'The sector',
 };
 
 /** What hurt, in words: "rock", "fire:scout" or "ram:raptor" to a phrase. */
@@ -111,7 +111,6 @@ export class SummaryPanel {
       tile('Kills', r.kills, p.kills),
       tile('Best chain', r.bestChain, p.chain),
       tile('Krail', r.krail, p.krail),
-      tile('Overcharges', r.overcharges, p.overcharges),
       tile('Capital ships', r.capitals, p.capitals),
       h('div', 'tile', '', h('span', 'k', t('Sector events')), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', t('{n} power-ups found', { n: r.powerups }))),
     );

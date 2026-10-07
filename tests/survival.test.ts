@@ -29,7 +29,7 @@ Object.assign(globalThis, {
 });
 beforeEach(() => mem.clear());
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
 const priv = (w: World) => w as unknown as {
   nextEvent: number; encounter: unknown; killAlien(a: unknown, s: string): void; cutClean(r: unknown): void; destroyRock(r: unknown, s: string): void; richShare: number;
 };
@@ -77,8 +77,8 @@ describe('the table', () => {
 
   it('keeps Prospector at the old numbers: every multiplier 1, bar the arcade sky', () => {
     const P = SURVIVAL.prospector;
-    // the arcade sky is the one thing set above 1 (Jimi: "harder", with the bay at 30 Krail); everything the Story reads is the old number
-    expect(P.sky).toEqual({ traffic: 2, toughness: 2, fire: 1.35, elites: 1.9, hazard: 1.5, income: 0.75 });
+    // the arcade sky is the one thing set above 1 (Jimi: "harder", with the bay at 30 Krail, then eased about 15% when the overcharge went); everything the Story reads is the old number
+    expect(P.sky).toEqual({ traffic: 1.7, toughness: 1.7, fire: 1.35, elites: 1.9, hazard: 1.5, income: 0.75 });
     expect(P.score).toBe(1);
     expect(P.pursuit).toEqual({ gap: 1, cap: 1, elite: 1 });
     expect(P.heat).toEqual({ rate: 1, kill: 1, cut: 1 });

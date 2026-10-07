@@ -277,15 +277,6 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #sys-hull.mended { animation: mend-done .7s ease-out; }
 @keyframes mend-pulse { 50% { outline-color: var(--cy); box-shadow: 0 0 7px var(--cy-dim); } }
 @keyframes mend-done { 0% { background: rgba(57, 174, 183, .28); } }
-/* the reactor: near misses charge it; full, it releases on E */
-#g-oc { --n: 12; --on: var(--cy); --off: var(--cy-ghost); height: 5px; }
-#sys-oc.ready #g-oc { --on: #c9f0f2; filter: drop-shadow(0 0 5px var(--cy)); }
-#sys-oc.ready .val { color: var(--cy); }
-#sys-oc.ready kbd { color: #041416; background: var(--cy); border-color: var(--cy); }
-#sys-oc.hot #g-oc { animation: hud-blink .3s ease-in-out infinite; }
-#sys-oc .ico { color: var(--cy); }
-#sys-oc.hot .val { color: var(--cy); }
-#v-oc.word { font: 600 calc(var(--fs) * .88 * 1.18)/1 var(--font-rail); letter-spacing: .10em; text-transform: uppercase; }
 /* the score: one line under the rows, the chain beside it */
 #score { font-size: calc(var(--fs) * 1.45); letter-spacing: .1em; }
 #chain { display: flex; align-items: center; gap: 5px; }
@@ -588,8 +579,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* ── touch controls ───────────────────────────────────────────────────── */
 /* Laid out for two thumbs on a phone held on its side. The left thumb's
    home is well in from the edge (clear of the notch and the browser's
-   back swipe); the right thumb rests on Laser, with Torpedo and the reactor
-   core one short reach away round it. The ring is only a hint at rest:
+   back swipe); the right thumb rests on Laser, with Torpedo
+   one short reach away round it. The ring is only a hint at rest:
    wherever the thumb lands on the left half, the stick comes to it. */
 #touch {
   position: absolute; inset: 0; z-index: 1; touch-action: none;
@@ -600,8 +591,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   --fw: clamp(80px, 24vh, 104px);
   --bw: clamp(60px, 17vh, 72px);
 }
-#stick, #fire, #torp, #release, #cut, #pause-b { display: none; }
-.touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #release, .touch-ui #pause-b { display: grid; }
+#stick, #fire, #torp, #cut, #pause-b { display: none; }
+.touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #pause-b { display: grid; }
 .touch-ui.breakout #cut { display: grid; }
 .touch-ui:not(.has-torps) #torp { display: none; }
 #stick {
@@ -617,32 +608,28 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* the buttons are octagons, an edge and a glass like every panel, and each
    carries its own gauge under the thumb that uses it. The layer behind does
    the hit-testing (generously), so the buttons themselves take no events. */
-#fire, #torp, #release, #cut {
+#fire, #torp, #cut {
   --c: 28%; --edge: var(--hud-mid); --fill: rgba(11, 16, 17, .58);
   position: absolute; isolation: isolate; place-items: center; align-content: center; gap: 6px; border: 0; padding: 0; background: none;
   pointer-events: none; aspect-ratio: 1;
   font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink);
 }
-:is(#fire, #torp, #release, #cut)::before, :is(#fire, #torp, #release, #cut)::after { content: ""; position: absolute; pointer-events: none;
+:is(#fire, #torp, #cut)::before, :is(#fire, #torp, #cut)::after { content: ""; position: absolute; pointer-events: none;
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); }
 /* the edge is only the 1px ring (evenodd), so the glass inside lets the view through and never shows the edge colour */
-:is(#fire, #torp, #release, #cut)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
+:is(#fire, #torp, #cut)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
   clip-path: polygon(evenodd, var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
     var(--ci) 1px, calc(100% - var(--ci)) 1px, calc(100% - 1px) var(--ci), calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), var(--ci) calc(100% - 1px), 1px calc(100% - var(--ci)), 1px var(--ci), var(--ci) 1px); }
-:is(#fire, #torp, #release, #cut)::after { inset: 1px; z-index: -1; background: var(--fill); }
+:is(#fire, #torp, #cut)::after { inset: 1px; z-index: -1; background: var(--fill); }
 #fire { right: var(--in-r); bottom: var(--pb); width: var(--fw); --edge: var(--hud); font-size: 10px; }
 #fire.on { --fill: rgba(217, 154, 39, .34); }
 #t-bank { --n: 10; width: 56%; height: 5px; }
 #fire.dry #t-bank { --on: var(--alert); --off: var(--alert-dim); }
-/* torpedo: to the left of the trigger, a touch higher; the core: above it */
+/* torpedo: to the left of the trigger, a touch higher */
 #torp { right: calc(var(--in-r) + var(--fw) + 10px); bottom: calc(var(--pb) + var(--fw) * .3); width: var(--bw); }
 #torp.on { animation: tap-flash .22s var(--ez); }
 #t-rack { width: 58%; }
 #t-rack i { height: 5px; }
-#release { right: calc(var(--in-r) + (var(--fw) - var(--bw)) / 2); bottom: calc(var(--pb) + var(--fw) + 12px); width: var(--bw); --edge: var(--amber-dim); color: var(--ink-2); }
-#release .ticks { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 60%; height: 4px; }
-#release.ready { --edge: var(--amber); --fill: rgba(229, 169, 58, .24); color: var(--ink); animation: core-ready 1.2s ease-in-out infinite alternate; }
-#release.on { animation: tap-flash .22s var(--ez); }
 /* the cutter: further left again, on the bottom line, amber like the beam */
 #cut { right: calc(var(--in-r) + var(--fw) + var(--bw) + 22px); bottom: var(--pb); width: var(--bw); --edge: var(--amber-dim); }
 #cut.on { --edge: var(--amber); --fill: rgba(229, 169, 58, .28); }
@@ -650,7 +637,6 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #t-heat { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 56%; height: 4px; }
 #cut.hot #t-heat { --on: var(--alert); }
 @keyframes tap-flash { from { scale: .88; } }
-@keyframes core-ready { to { scale: 1.05; } }
 /* pause: small, low and in the middle, out of both thumbs' way */
 #pause-b { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 6px); translate: -50% 0; width: 44px; height: 32px;
   place-content: center; grid-auto-flow: column; gap: 5px; border: 0; padding: 0; background: none; opacity: .55; pointer-events: auto; touch-action: none; }
@@ -1124,7 +1110,7 @@ html.swipe #app * { overscroll-behavior: contain; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #sys-oc.hot #g-oc, #mode.red .stripes, #release.ready, #release.on, #torp.on { animation: none; }
+  #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #mode.red .stripes, #torp.on { animation: none; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
   #log-lines p.new, #banner.on, #sys-hull.hit, #sys-hull.mended, .plates i.mend.live, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel, #start:not([hidden]) .start-card > *, #start:not([hidden]) .start-foot { animation: none; }
   .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path, #hdg-obj.rear { animation: none; }

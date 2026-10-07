@@ -5,7 +5,7 @@ import type { Device, InputFrame, Press } from './types';
 
 /**
  * Every input device, merged into one InputFrame per simulation step.
- * Presses (roll, torpedo, overcharge) are queued as they happen and consumed by the
+ * Presses (roll, break, torpedo) are queued as they happen and consumed by the
  * next step, so a press is never lost between steps and never read twice when
  * one display frame runs two steps. Pause goes straight to `onPause`.
  */
@@ -44,7 +44,6 @@ export class Input {
       torpedo: this.presses.has('torpedo'),
       roll: this.presses.has('roll'),
       brk: this.presses.has('brk'),
-      overcharge: this.presses.has('overcharge'),
       device: this.device,
     };
     this.presses.clear();

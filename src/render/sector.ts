@@ -35,7 +35,6 @@ const DUST: RGB = [1.1, 0.95, 0.85];
 const VIOLET: RGB = [2.2, 0.9, 3.6];
 const AMBER: RGB = [3.8, 2.2, 0.5];
 const SHIELD: RGB = [0.8, 1.6, 3.6];
-const GRAZE: RGB = [1.6, 2.6, 3.8];
 const BOLT: RGB = [2.6, 3.2, 4.6];
 
 const rgb = (faction: string): RGB => {
@@ -259,23 +258,6 @@ export class Sector {
           this.fx.ring(e.x, 0.3, e.z, 7, AMBER, 0.5);
           this.fx.burst(e.x, 0.3, e.z, 30, AMBER, 9, 0.3, 0.7);
           break;
-        case 'graze':
-          this.fx.burst(e.x, e.y, e.z, 5, GRAZE, 7, 0.2, 0.25);
-          break;
-        case 'overchargeReady': {
-          const s = this.lerped;
-          this.fx.ring(s.x, 0.2, s.z, 4, AMBER, 0.4);
-          break;
-        }
-        case 'overcharge':
-          this.fx.flash(e.x, 0.4, e.z, e.radius * 0.8, [4, 3, 1.4], 0.35);
-          this.fx.ring(e.x, 0.2, e.z, e.radius, AMBER, 0.6);
-          this.fx.ring(e.x, 0.5, e.z, e.radius * 0.7, [4, 3, 2], 0.45);
-          this.fx.burst(e.x, 0.4, e.z, 80, AMBER, 26, 0.4, 0.8);
-          this.fx.light(e.x, 1, e.z, [1, 0.7, 0.3], 900, 0.5);
-          this.rig.shake(0.7);
-          hold = Math.max(hold, 0.09);
-          break;
         case 'mineLaid':
           this.fx.flash(e.x, 0.2, e.z, 0.8, AMBER, 0.08);
           break;
@@ -410,9 +392,8 @@ export class Sector {
     this.ship.root.visible = world.alive && !(world.bk && world.bk.jumpT >= 0 && world.bk.jumpT < 1.3);
     // the shield stands at the rim as it fills, and fully once a charge is up
     this.ship.status.charged = world.powers.shield > 0 ? 1 : Math.min(1, world.shields);
-    this.ship.status.phased = world.phaseT > 0;
     this.ship.status.cloaked = world.cloakT > 0;
-    this.ship.status.overload = world.overload > 0 || world.powers.rapid > 0;
+    this.ship.status.rapid = world.powers.rapid > 0;
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);
     this.streaks.begin();
@@ -488,8 +469,6 @@ export class Sector {
         this.fx.mote(x, 0.3 + Math.random() * 2, z, (e.x - x) * 0.9 - Math.sin(ang) * 6, 0, (e.z - z) * 0.9 + Math.cos(ang) * 6, [1.6, 0.7, 3], 0.3, 0.9);
       }
     }
-    // the phase cloak sheds violet
-    if (world.phaseT > 0 && Math.random() < 0.6) this.fx.mote(s.x, 0.3, s.z, (Math.random() - 0.5) * 4, Math.random() * 2, (Math.random() - 0.5) * 4, [2.2, 0.8, 3.6], 0.3, 0.4);
   }
 
   /** The interpolated ship, for the HUD. */

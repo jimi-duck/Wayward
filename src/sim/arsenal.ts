@@ -52,11 +52,11 @@ export const GRAVITY_PULL = 20;
 export const CHAIN_CLOUD = 2.5;
 
 /** Lay mines and plasma behind the ship as the build allows. Returns a mine laid this step, if any. */
-export function laySystems(sys: Systems, ship: ShipState, s: Stats, dt: number, overload: boolean): Mine | null {
+export function laySystems(sys: Systems, ship: ShipState, s: Stats, dt: number, rapid: boolean): Mine | null {
   const hx = Math.cos(ship.heading), hz = -Math.sin(ship.heading);
   let laid: Mine | null = null;
   if (s.mines) {
-    sys.mineT -= dt * (overload ? 2.5 : 1);
+    sys.mineT -= dt * (rapid ? 2.5 : 1);
     if (sys.mineT <= 0) {
       if (sys.mines.length < s.mineMax) {
         laid = { id: newId(), x: ship.x - hx * STERN, z: ship.z - hz * STERN, vx: ship.vx * 0.15, vz: ship.vz * 0.15, life: s.mineLife, arm: MINE_ARM, fuse: -1, boost: 1 };
@@ -86,14 +86,6 @@ export function plasmaRing(sys: Systems, ship: ShipState, s: Stats): void {
   for (let i = 0; i < 10; i++) {
     const a = (i / 10) * Math.PI * 2;
     sys.burns.push({ x: ship.x + Math.cos(a) * 3, z: ship.z + Math.sin(a) * 3, r: s.plasmaRadius * 1.4, life: s.plasmaLife * 1.2, max: s.plasmaLife * 1.2, dps: s.plasmaDps, trail: true });
-  }
-}
-
-/** A ring of six mines round the ship (core-charged mines on a release). */
-export function mineRing(sys: Systems, ship: ShipState, s: Stats): void {
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    sys.mines.push({ id: newId(), x: ship.x + Math.cos(a) * 6, z: ship.z + Math.sin(a) * 6, vx: Math.cos(a) * 3, vz: Math.sin(a) * 3, life: s.mineLife, arm: MINE_ARM, fuse: -1, boost: 1 });
   }
 }
 
@@ -169,7 +161,7 @@ export interface ArcHit<T> { target: T; dmg: number; from: [number, number, numb
  * The hull arc: up to `arcTargets` of the nearest things in reach (hulls
  * before rock), then `arcJumps` onward hops from each at falling damage.
  */
-export function arcTargets<A extends Reachable, B extends Reachable>(ship: ShipState, s: Stats, hulls: readonly A[], rocks: readonly B[], overload: boolean): ArcHit<A | B>[] {
+export function arcTargets<A extends Reachable, B extends Reachable>(ship: ShipState, s: Stats, hulls: readonly A[], rocks: readonly B[], rapid: boolean): ArcHit<A | B>[] {
   type T = A | B;
   const reach = s.arcRange;
   const dist = (a: Reachable, x: number, y: number, z: number) => Math.hypot(a.x - x, a.y - y, a.z - z) - a.r;
@@ -178,7 +170,7 @@ export function arcTargets<A extends Reachable, B extends Reachable>(ship: ShipS
   const hit = new Set<number>();
   const out: ArcHit<T>[] = [];
   const first = [...near(hulls, ship.x, 0.3, ship.z, reach, hit), ...near(rocks, ship.x, 0, ship.z, reach, hit)].slice(0, s.arcTargets);
-  const dmg = s.arcDamage * (overload ? 1.5 : 1);
+  const dmg = s.arcDamage * (rapid ? 1.5 : 1);
   // lightning is for hulls: rock takes half
   const rock = new Set<T>(rocks);
   for (const t of first) {

@@ -9,7 +9,7 @@ import { Rng } from '../src/sim/rng';
 import { newShip } from '../src/sim/ship';
 import { World } from '../src/sim/world';
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
 const bolt = (x: number, y: number, z: number, vx = 0, vy = 0, vz = 0, life = 1) => ({ x, y, z, vx, vy, vz, life, dmg: 1.4, pierce: 0, hit: [], homing: 0 });
 
 /** A world where nothing can hurt the ship, so the clock can run long. */

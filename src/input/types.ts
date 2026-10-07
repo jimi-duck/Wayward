@@ -2,11 +2,11 @@
 export type Device = 'keyboard' | 'touch' | 'gamepad';
 
 /**
- * One-shot actions. Roll and overcharge are queued for the next simulation
+ * One-shot actions. Roll, break and torpedo are queued for the next simulation
  * step. Pause is not: it is answered at once by the app, because a paused
  * loop never runs a step that could read it.
  */
-export type Press = 'roll' | 'brk' | 'torpedo' | 'overcharge' | 'pause' | 'bay';
+export type Press = 'roll' | 'brk' | 'torpedo' | 'pause' | 'bay';
 
 /**
  * An analogue stick, in screen space: angle 0 points right and PI/2 points
@@ -36,6 +36,5 @@ export interface InputFrame {
   roll: boolean;
   /** Break and reverse pressed since the last step. */
   brk: boolean;
-  overcharge: boolean;
   device: Device;
 }

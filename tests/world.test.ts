@@ -8,7 +8,7 @@ import { CELL, POWERS, POWER_HINT } from '../src/sim/pickups';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...f });
 
 function run(w: World, seconds: number, f: Partial<InputFrame> = {}) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input(f));
@@ -174,7 +174,7 @@ describe('the field', () => {
 
 describe('salvage cells', () => {
   it('gives each source the cell its work suggests, never a random one', () => {
-    expect(CELL).toEqual({ rock: 'magnet', rescue: 'shield', derelict: 'charge', elite: 'rapid', wreck: 'overdrive' });
+    expect(CELL).toEqual({ rock: 'magnet', rescue: 'shield', derelict: 'shield', elite: 'rapid', wreck: 'overdrive' });
     for (const k of POWERS) expect(POWER_HINT[k]).toBeTruthy();
     expect(new Set(Object.values(CELL))).toEqual(new Set(POWERS));
   });

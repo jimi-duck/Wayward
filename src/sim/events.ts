@@ -5,7 +5,7 @@
 // off the play plane.
 
 export type BlastKind = 'torpedo' | 'bomblet' | 'mine' | 'volatile' | 'elite' | 'reactive' | 'strike';
-export type PowerKind = 'shield' | 'rapid' | 'magnet' | 'overdrive' | 'charge';
+export type PowerKind = 'shield' | 'rapid' | 'magnet' | 'overdrive';
 
 export type GameEvent =
   | { type: 'bolt'; x: number; z: number; heading: number }
@@ -56,9 +56,6 @@ export type GameEvent =
   | { type: 'tractor' }
   | { type: 'mineLaid'; x: number; z: number }
   | { type: 'arc'; points: number[] }
-  | { type: 'graze'; x: number; y: number; z: number; amount: number }
-  | { type: 'overchargeReady' }
-  | { type: 'overcharge'; x: number; z: number; radius: number; hits: number }
   | { type: 'chain'; count: number; mult: number }
   | { type: 'strike'; x: number; z: number; r: number; kind: string }
   | { type: 'sectorEvent'; id: string; name: string; text: string }

@@ -2,7 +2,7 @@ import { DEFAULT_SURVIVAL, SURVIVAL, type Survival, type SurvivalId } from '../c
 import type { Hull } from '../content/hulls';
 import type { InputFrame } from '../input/types';
 import {
-  arcTargets, burnAt, chainMines, CHAIN_CLOUD, GRAVITY_PULL, laySystems, mineRing, newSystems, plasmaRing, stepBurns, stepMines,
+  arcTargets, burnAt, chainMines, CHAIN_CLOUD, GRAVITY_PULL, laySystems, newSystems, plasmaRing, stepBurns, stepMines,
   type Mine, type Reachable, type Systems,
 } from './arsenal';
 import { Command, type Strike, type Telegraph } from './bosses';
@@ -41,7 +41,7 @@ import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from '
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
-  BREACH_GRACE, CHAIN_WINDOW, DYING, GRAZE, OC_GAIN, OC_MAX, OVERCHARGE_POINTS, PX, RARE_FIRST, REPAIR_CHANCE,
+  BREACH_GRACE, CHAIN_WINDOW, DYING, PX, RARE_FIRST, REPAIR_CHANCE,
   REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import type { Prices } from '../content/systems';
@@ -172,15 +172,12 @@ export class World implements EncounterHost {
   /** The factions whose capital ship has been destroyed: their tech can be fitted. */
   techs = new Set<string>();
 
-  // the reactor, the chain, power-ups
-  oc = 0;
-  /** Seconds of weapons overload left (after a release), of phase cloak, and of the roll cloak (Office tech). */
-  overload = 0;
-  phaseT = 0;
+  // the chain, power-ups
+  /** Seconds of the roll cloak (Office tech) left. */
   cloakT = 0;
   chain = 0;
   chainT = 0;
-  powers: Record<PowerKind, number> = { shield: 0, rapid: 0, magnet: 0, overdrive: 0, charge: 0 };
+  powers: Record<PowerKind, number> = { shield: 0, rapid: 0, magnet: 0, overdrive: 0 };
 
   alive = true;
   /** Hostiles that pressed close lately, fading (see step). */
@@ -538,11 +535,11 @@ export class World implements EncounterHost {
 
     // our weapons and systems
     const targets = this.targets();
-    const fm: FireMods = { overload: this.overload > 0 || this.powers.rapid > 0, damage: this.dmgMult * (this.powers.overdrive > 0 ? 1.5 : 1), drifting: drifting(s, this.hull) };
+    const fm: FireMods = { rapid: this.powers.rapid > 0, damage: this.dmgMult * (this.powers.overdrive > 0 ? 1.5 : 1), drifting: drifting(s, this.hull) };
     const fireStats = this.sensorsDown || this.air.lock < 1 ? { ...st, torpSeek: st.torpSeek * (this.sensorsDown ? 0.6 : 1) * this.air.lock } : st;
     if (this.alive) {
       fireWeapons(this.arms, s, c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
-      const laid = laySystems(this.sys, s, st, dt, fm.overload);
+      const laid = laySystems(this.sys, s, st, dt, fm.rapid);
       if (laid) this.events.push({ type: 'mineLaid', x: laid.x, z: laid.z });
     }
 
@@ -568,15 +565,11 @@ export class World implements EncounterHost {
     stepWebs(this.webs, dt);
     moveBolts(this.bolts, dt, targets);
     for (const tp of moveTorpedoes(this.torps, targets, dt)) this.torpBlast(tp);
-    this.stepSystems(dt, fm.overload);
+    this.stepSystems(dt, fm.rapid);
     this.stepStrikes(dt);
     for (let i = this.tele.length - 1; i >= 0; i--) if ((this.tele[i]!.t -= dt) <= 0) this.tele.splice(i, 1);
     this.stepPickups(dt);
     this.collide();
-    if (this.alive) {
-      this.graze(dt);
-      if (input.overcharge) this.release();
-    }
     if (this.bk) this.stepBreakout(dt, c.cut);
     if (this.bk && !slowed) this.stepComms();
     const lock = acquire(this.targets(), s.x, s.z, s.heading, fireStats.torpCone, fireStats.torpSeek);
@@ -914,12 +907,10 @@ export class World implements EncounterHost {
     this.events.push({ type: 'jumped', x: s.x, z: s.z });
   }
 
-  /** Clocks: power-ups, overload, the chain, shields, regeneration. */
+  /** Clocks: power-ups, the chain, shields, regeneration. */
   private tick(dt: number): void {
     const st = this.stats;
     for (const k of POWERS) if (this.powers[k] > 0) this.powers[k] = Math.max(0, this.powers[k] - dt);
-    if (this.overload > 0) this.overload = Math.max(0, this.overload - dt);
-    if (this.phaseT > 0) this.phaseT = Math.max(0, this.phaseT - dt);
     if (this.cloakT > 0) this.cloakT = Math.max(0, this.cloakT - dt);
     if (this.repairCd > 0) this.repairCd -= dt;
     if (this.chain > 0 && (this.chainT -= dt) <= 0) this.chain = 0;
@@ -1635,7 +1626,7 @@ export class World implements EncounterHost {
     return this.field.rocks.map((r) => ({ id: r.id, x: r.x, y: 0, z: r.z, r: r.r, rock: r }));
   }
 
-  private stepSystems(dt: number, overload: boolean): void {
+  private stepSystems(dt: number, rapid: boolean): void {
     const st = this.stats, sys = this.sys;
     // mines
     if (sys.mines.length) {
@@ -1671,9 +1662,9 @@ export class World implements EncounterHost {
     }
     // the hull arc
     if (st.arc && this.alive) {
-      sys.arcT -= dt * (overload ? 2 : 1);
+      sys.arcT -= dt * (rapid ? 2 : 1);
       if (sys.arcT <= 0) {
-        const hits = arcTargets(this.ship, st, this.reachableHulls(), this.reachableRocks(), overload);
+        const hits = arcTargets(this.ship, st, this.reachableHulls(), this.reachableRocks(), rapid);
         if (hits.length) {
           const pts: number[] = [];
           for (const h of hits) {
@@ -1751,8 +1742,8 @@ export class World implements EncounterHost {
       }
       const d = Math.hypot(s.x - k.x, s.z - k.z);
       if (this.alive && d < k.r + SHIP_R) {
-        if (s.invuln <= 0 && this.phaseT <= 0) this.hitShip(k.kind === 'lightning' ? 'lightning' : 'artillery', k.x, k.z);
-      } else if (this.alive && d < k.r + SHIP_R + GRAZE.strike) this.addCharge(OC_GAIN.strike, s.x, 0.3, s.z);
+        if (s.invuln <= 0) this.hitShip(k.kind === 'lightning' ? 'lightning' : 'artillery', k.x, k.z);
+      }
       if (k.kind === 'lightning') {
         for (const al of [...this.aliens]) if (Math.abs(al.y) < 4 && Math.hypot(al.x - k.x, al.z - k.z) < k.r + al.r) this.hurtAlien(al, 6, 'hazard', al.x, al.y, al.z);
         for (const r of [...this.field.rocks]) if (Math.hypot(r.x - k.x, r.z - k.z) < k.r + r.r) this.damageRock(r, 3, 'hazard', r.x, 0, r.z);
@@ -1769,7 +1760,7 @@ export class World implements EncounterHost {
       if (this.alive) {
         const [ax, az] = wellPull(well, s.x, s.z, 7);
         s.vx += ax * dt; s.vz += az * dt;
-        if (Math.hypot(s.x - well.x, s.z - well.z) < well.r + SHIP_R && s.invuln <= 0 && this.phaseT <= 0) this.hitShip('anomaly', well.x, well.z);
+        if (Math.hypot(s.x - well.x, s.z - well.z) < well.r + SHIP_R && s.invuln <= 0) this.hitShip('anomaly', well.x, well.z);
       }
       for (const r of [...this.field.rocks]) if (Math.hypot(r.x - well.x, r.z - well.z) < well.r + r.r * 0.5) this.damageRock(r, 30 * dt, 'hazard', r.x, 0, r.z, true);
     }
@@ -1816,8 +1807,7 @@ export class World implements EncounterHost {
       default: {
         const kind = pk.kind as PowerKind;
         this.run.powerups++;
-        if (kind === 'charge') this.addCharge(OC_MAX, pk.x, 0.3, pk.z, true);
-        else this.powers[kind] = POWER_TIME[kind] * this.stats.powerTime;
+        this.powers[kind] = POWER_TIME[kind] * this.stats.powerTime;
         this.events.push({ type: 'power', x: pk.x, z: pk.z, kind });
       }
     }
@@ -1857,91 +1847,6 @@ export class World implements EncounterHost {
     const p = Math.round(points * this.survival.score);
     this.score += p;
     this.run.scoreBy[src] += p;
-  }
-
-  // ── the reactor ─────────────────────────────────────────────────────
-
-  private addCharge(amount: number, x: number, y: number, z: number, raw = false): void {
-    const before = this.oc;
-    let gain = amount;
-    if (!raw) {
-      gain *= this.stats.ocGain;
-      const e = this.encounter;
-      if (e && !e.done) gain *= e.id === 'ion_storm' ? 2 : e.id === 'nebula' ? 1.5 : 1;
-      this.run.grazes++;
-      this.events.push({ type: 'graze', x, y, z, amount: gain });
-    }
-    this.oc = Math.min(OC_MAX, this.oc + gain);
-    if (before < OC_MAX && this.oc >= OC_MAX) this.events.push({ type: 'overchargeReady' });
-  }
-
-  /**
-   * Near misses: fire that passes close without hitting, rock skimmed at
-   * speed, hulls passed close aboard, beams and webs brushed. Each thing
-   * counts once (rock and hulls again after a pause).
-   */
-  private graze(dt: number): void {
-    const s = this.ship, st = this.stats, rolling = s.rollT >= 0;
-    const speed = Math.hypot(s.vx, s.vz);
-    // the evasion suite doubles what a roll grazes; the afterburner what is grazed near top speed
-    const k = (st.evasion && rolling ? 2 : 1) * (st.speedGraze && speed > 0.8 * topSpeed(this.hull) ? 2 : 1);
-    let any = false;
-    for (const sh of this.shots) {
-      if (sh.grazed) continue;
-      const d = Math.hypot(sh.x - s.x, sh.y, sh.z - s.z), touch = sh.r + SHIP_R;
-      if (d > touch && d < touch + GRAZE.shot) { sh.grazed = true; this.addCharge(OC_GAIN.shot * k, sh.x, sh.y, sh.z); any = true; }
-    }
-    for (const r of this.field.rocks) {
-      if (r.grazeT > 0) continue;
-      const rel = Math.hypot(s.vx - r.vx, s.vz - r.vz);
-      if (rel < 6) continue;
-      const d = Math.hypot(r.x - s.x, r.z - s.z) - r.r * 0.88 - SHIP_R;
-      if (d > 0 && d < GRAZE.rock) { r.grazeT = 1.2; this.addCharge(OC_GAIN.rock * k, (r.x + s.x) / 2, 0.2, (r.z + s.z) / 2); any = true; }
-    }
-    for (const al of this.aliens) {
-      if (al.grazeT > 0) continue;
-      const d = Math.hypot(al.x - s.x, al.y, al.z - s.z) - al.r - SHIP_R;
-      if (d > 0 && d < GRAZE.hull && speed > 4) { al.grazeT = 2; this.addCharge(OC_GAIN.hull * k, al.x, al.y, al.z); any = true; }
-    }
-    const beams = [...this.aliens.filter((a) => Math.abs(a.y) < 3), ...(this.command.boss?.beams ?? [])];
-    for (const bm of beams) {
-      if (!beamLive(bm)) continue;
-      const d = rayDist(s.x, s.z, bm.x, bm.z, bm.beamAng, BEAM_LEN) - BEAM_W - SHIP_R;
-      if (d > 0 && d < GRAZE.beam) { this.oc = Math.min(OC_MAX, this.oc + OC_GAIN.beam * st.ocGain * k * dt); any = true; }
-    }
-    for (const w of this.webs) {
-      const d = Math.hypot(s.x - w.x, s.z - w.z) - w.r * 0.92;
-      if (w.r > 1 && d > 0 && d < GRAZE.web) { this.oc = Math.min(OC_MAX, this.oc + OC_GAIN.web * st.ocGain * dt); }
-    }
-    if (any && st.evasion && rolling) s.rollCooldown = 0;
-  }
-
-  /** Release the overcharge: a nova that breaks hulls and clears fire, then the guns run hot. */
-  private release(): void {
-    if (this.oc < OC_MAX) return;
-    const s = this.ship, st = this.stats;
-    const R = st.ocRadius, dmg = st.ocDamage * (1 + 0.06 * this.refit) * this.dmgMult;
-    let hits = 0;
-    for (const al of [...this.aliens]) {
-      if (Math.hypot(al.x - s.x, al.y * 0.6, al.z - s.z) < R + al.r) { hits++; this.hurtAlien(al, dmg, 'overcharge', al.x, al.y, al.z); }
-    }
-    const b = this.command.targetable();
-    if (b && !b.arriving && Math.hypot(b.x - s.x, b.z - s.z) < R + b.r) { hits++; this.hurtBoss(dmg * 0.6, 'overcharge', b.x, b.y, b.z); }
-    for (const r of [...this.field.rocks]) if (Math.hypot(r.x - s.x, r.z - s.z) < R + r.r) this.damageRock(r, dmg, 'overcharge', r.x, 0, r.z);
-    for (const w of [...this.field.bulwarks]) if (Math.hypot(w.x - s.x, w.z - s.z) < R + w.r * 0.9) this.damageBulwark(w, dmg, s.x + (w.x - s.x) * 0.5, 0, s.z + (w.z - s.z) * 0.5, true);
-    this.shots = this.shots.filter((sh) => Math.hypot(sh.x - s.x, sh.z - s.z) > R * 1.4);
-    this.webs = this.webs.filter((w) => Math.hypot(w.x - s.x, w.z - s.z) > R);
-    this.overload = st.ocOverload;
-    s.invuln = Math.max(s.invuln, 0.5);
-    if (st.ocPhase > 0) this.phaseT = st.ocPhase;
-    if (st.ocRefill) {
-      if (st.torpedoes) this.arms.rack = st.torpRack;
-      if (st.mines) mineRing(this.sys, s, st);
-    }
-    this.oc = 0;
-    this.run.overcharges++;
-    this.addScore(OVERCHARGE_POINTS + hits * 50, 'overcharge');
-    this.events.push({ type: 'overcharge', x: s.x, z: s.z, radius: R, hits });
   }
 
   // ── collisions ────────────────────────────────────────────────────────
@@ -2024,23 +1929,12 @@ export class World implements EncounterHost {
       s.x = b.x + nx * min; s.z = b.z + nz * min;
       const vn = s.vx * nx + s.vz * nz;
       if (vn < 0) { s.vx -= 1.5 * vn * nx; s.vz -= 1.5 * vn * nz; }
-      if (s.invuln <= 0 && this.phaseT <= 0) return this.hitShip('bulwark');
+      if (s.invuln <= 0) return this.hitShip('bulwark');
     }
 
     const speedFrac = Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(this.hull));
     // a ram at speed hits twice as hard as a nudge; never less than the stock hull's own weight
     const ramDmg = Math.max(BASE.ramDamage, st.ramDamage * (st.ramjet ? 0.5 + speedFrac : 0.5 + 0.5 * speedFrac)) * this.dmgMult;
-    // the phase cloak: nothing touches the ship, and it rams through what it meets
-    if (this.phaseT > 0) {
-      for (const al of [...this.aliens]) {
-        if (al.calm < 0.4 || Math.hypot(s.x - al.x, al.y, s.z - al.z) >= al.r + SHIP_R) continue;
-        this.hurtAlien(al, ramDmg * 1.5, 'ram', al.x, al.y, al.z);
-        if (st.ramArc) this.ramArc(al.x, al.y, al.z, al.id);
-      }
-      for (const r of [...rocks]) if (Math.hypot(s.x - r.x, s.z - r.z) < r.r * 0.88 + SHIP_R) this.damageRock(r, ramDmg * 1.5, 'ram', r.x, 0, r.z);
-      return;
-    }
-
     const rolling = s.rollT >= 0;
     const vulnerable = s.invuln <= 0;
     // ramjet: a roll is a ram that cannot hurt you
@@ -2103,7 +1997,7 @@ export class World implements EncounterHost {
 
   private hitShip(source: string, fromX?: number, fromZ?: number): void {
     const s = this.ship, st = this.stats;
-    if (!this.alive || this.phaseT > 0) return;
+    if (!this.alive) return;
     if (fromX !== undefined && fromZ !== undefined) {
       // knock the two apart, so the hit reads as a collision and not a pass
       const dx = s.x - fromX, dz = s.z - fromZ, d = Math.hypot(dx, dz) || 1;
@@ -2419,7 +2313,7 @@ export class World implements EncounterHost {
     this.shields = this.stats.shieldMax; this.shieldT = 0;
     this.arms = newArms(this.stats);
     this.refit = 0; this.techs = new Set();
-    this.oc = 0; this.overload = 0; this.phaseT = 0; this.cloakT = 0; this.chain = 0; this.chainT = 0;
+    this.cloakT = 0; this.chain = 0; this.chainT = 0;
     for (const k of POWERS) this.powers[k] = 0;
     this.dcUsed = false; this.sinceHit = 0; this.repairCd = 0; this.nextRare = RARE_FIRST;
     this.theatre = 'gutter'; this.theatreT = 70; this.nextEvent = EVENT_FIRST; this.eventN = 0; this.lastEvent = null;

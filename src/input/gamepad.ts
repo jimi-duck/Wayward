@@ -4,7 +4,6 @@ import type { Aim, Press } from './types';
 const A = 0;
 const B = 1;
 const X = 2;
-const Y = 3;
 const LB = 4;
 const RB = 5;
 const LT = 6;
@@ -19,7 +18,6 @@ const DPAD_RIGHT = 15;
 
 const PRESSES: Array<[number, Press]> = [
   [X, 'torpedo'],
-  [Y, 'overcharge'],
   [B, 'roll'],
   [RB, 'roll'],
   [L3, 'brk'],

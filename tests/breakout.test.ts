@@ -10,7 +10,7 @@ import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...f });
 
 function run(w: World, seconds: number, f: Partial<InputFrame> = {}) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input(f));

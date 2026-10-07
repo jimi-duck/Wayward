@@ -5,13 +5,13 @@ import { BOSS_FIRST } from '../src/sim/director';
 import { ENCOUNTERS, startEncounter } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';
 import { CRYSTAL_LIFE, dropCrystals } from '../src/sim/pickups';
-import { CHAIN_WINDOW, OC_MAX, SHIP_R } from '../src/sim/tuning';
+import { CHAIN_WINDOW, SHIP_R } from '../src/sim/tuning';
 import { ARCADE_PRICE } from '../src/content/web';
 import { launchTorpedo } from '../src/sim/weapons';
 import { BAY_QUIET, World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...f });
 
 function run(w: World, seconds: number, f: Partial<InputFrame> = {}) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input(f));
@@ -237,39 +237,6 @@ describe('krail and the refit bay', () => {
     expect(w.openBay()).toBe(true);
     w.closeBay();
     expect(w.phase).toBe('dock');
-  });
-});
-
-describe('the reactor', () => {
-  it('charges from fire that passes close without hitting', () => {
-    const w = quiet();
-    w.shots.push({ id: 1, x: 2.8, y: 0, z: -6, vx: 0, vy: 0, vz: 20, life: 2, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
-    run(w, 0.6);
-    expect(w.plates).toBe(w.stats.maxPlates);
-    expect(w.oc).toBeGreaterThan(0);
-    expect(w.run.grazes).toBe(1);
-  });
-
-  it('releases on the key when full: hulls near take damage, fire near is gone, the guns run hot', () => {
-    const w = quiet();
-    const al = parked(w, 8, -8);
-    al.hp = al.maxHp = 3;
-    for (let i = 0; i < 12; i++) w.shots.push({ id: 100 + i, x: 10, y: 0, z: 10 + i, vx: 0, vy: 0, vz: 0, life: 9, r: 0.45, faction: 'gutter', hp: 0, seek: 0, split: 0 });
-    w.oc = OC_MAX;
-    w.step(STEP, input({ overcharge: true }));
-    expect(w.aliens.includes(al)).toBe(false);
-    expect(w.shots.length).toBe(0);
-    expect(w.overload).toBeGreaterThan(3);
-    expect(w.oc).toBe(0);
-    expect(w.run.overcharges).toBe(1);
-    expect(w.run.killsBy.overcharge).toBe(1);
-  });
-
-  it('does nothing on the key while it is still charging', () => {
-    const w = quiet();
-    w.oc = OC_MAX - 1;
-    w.step(STEP, input({ overcharge: true }));
-    expect(w.run.overcharges).toBe(0);
   });
 });
 

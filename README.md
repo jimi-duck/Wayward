@@ -98,8 +98,8 @@ game opens with no bars at all.
 | Lasers (hold) | 1, Space or J | hold anywhere on the right half | A |
 | Torpedo (once fitted) | 2, F or K | Torpedo button | X |
 | Cutter (Breakout, hold) | 3, C or L | Cut button | LB or left trigger |
-| Overcharge (when full) | E | Core button | Y |
-| Barrel roll | Shift | a second finger on the left half | B or RB |
+| Barrel roll | Shift | tap a second finger on the left half | B or RB |
+| Break and reverse | ↓ or S | flick a second finger down | L3 or d-pad down |
 | Refit bay (arcade, alert clear): open, launch | B; Esc or B to launch | the upgrades badge | Back; B |
 | Refit bay: fit a suggestion, change tab, move, fit | 1 2 3, Q E, arrows, Enter | tap | stick, A, bumpers |
 | Comms: answer | 1–6, or arrows and Enter | tap | stick, A |
@@ -116,8 +116,7 @@ large to medium to small, sometimes into violet krail crystals that the
 tractor pulls in (they fade if left). Bulwarks (massive asteroids) never
 break: they stop fire from both sides and hurt to fly into.
 
-Near misses (fire, rock, hulls, beams) charge the reactor; release it for
-a nova that clears fire and runs the guns hot. The first forty seconds are
+The first forty seconds are
 yours alone. In the arcade, enemies then come in encounters with quiet
 between: a group arrives from far out, never dead ahead, and each hull
 closes its own way (patrols that only turn on you if you come close,

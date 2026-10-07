@@ -34,12 +34,12 @@ describe('the profile between runs', () => {
   it('earns unlocks by doing things, and they open options, not power', () => {
     const p = loadProfile();
     expect(grants(p)).toEqual([]);
-    const r = recordRun(p, runWith({ time: 310, overcharges: 6, capitalFactions: ['voice'], capitals: 1 }));
+    const r = recordRun(p, runWith({ time: 310, capitalFactions: ['voice'], capitals: 1 }));
     const ids = r.unlocked.map((u) => u.id);
     expect(ids).toContain('u_derelict');
-    expect(ids).toContain('u_phase');
+    expect(ids).not.toContain('u_phase');
     expect(ids).toContain('u_regenerative');
-    expect(grants(loadProfile())).toEqual(expect.arrayContaining(['derelict', 'oc_phase', 'df_regenerative']));
+    expect(grants(loadProfile())).toEqual(expect.arrayContaining(['derelict', 'df_regenerative']));
     // earned once
     expect(recordRun(loadProfile(), runWith({ time: 310 })).unlocked.map((u) => u.id)).not.toContain('u_derelict');
   });

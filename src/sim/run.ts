@@ -7,8 +7,8 @@ import type { Levels } from './build';
 // the scripted pilot reads it to balance the game (plates lost against
 // plates gained, the real sources of damage, how long builds survive).
 
-export type Weapon = 'laser' | 'torpedo' | 'mine' | 'plasma' | 'arc' | 'ram' | 'overcharge' | 'hazard';
-export type ScoreSource = 'time' | 'kills' | 'rocks' | 'krail' | 'capitals' | 'events' | 'overcharge';
+export type Weapon = 'laser' | 'torpedo' | 'mine' | 'plasma' | 'arc' | 'ram' | 'hazard';
+export type ScoreSource = 'time' | 'kills' | 'rocks' | 'krail' | 'capitals' | 'events';
 
 export interface RunStats {
   seed: number;
@@ -27,8 +27,6 @@ export interface RunStats {
   krailEarned: number;
   krailSpent: number;
   refit: number;
-  overcharges: number;
-  grazes: number;
   bestChain: number;
   capitals: number;
   capitalsEvaded: number;
@@ -85,9 +83,9 @@ export const TIMELINE = 10;
 export function newRun(seed: number, survival = 'prospector'): RunStats {
   return {
     seed, time: 0, score: 0,
-    scoreBy: { time: 0, kills: 0, rocks: 0, krail: 0, capitals: 0, events: 0, overcharge: 0 },
-    kills: 0, killsBy: { laser: 0, torpedo: 0, mine: 0, plasma: 0, arc: 0, ram: 0, overcharge: 0, hazard: 0 },
-    killsByKind: {}, elites: 0, rocks: 0, krail: 0, dropped: 0, krailEarned: 0, krailSpent: 0, refit: 0, overcharges: 0, grazes: 0, bestChain: 0,
+    scoreBy: { time: 0, kills: 0, rocks: 0, krail: 0, capitals: 0, events: 0 },
+    kills: 0, killsBy: { laser: 0, torpedo: 0, mine: 0, plasma: 0, arc: 0, ram: 0, hazard: 0 },
+    killsByKind: {}, elites: 0, rocks: 0, krail: 0, dropped: 0, krailEarned: 0, krailSpent: 0, refit: 0, bestChain: 0,
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
     platesLost: 0, platesGained: 0, platesMended: 0, shieldsAbsorbed: 0, waves: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
     timeline: [], build: {}, identity: '', survival, loot: { rock: NO_LOOT(), wreck: NO_LOOT() }, cause: '',

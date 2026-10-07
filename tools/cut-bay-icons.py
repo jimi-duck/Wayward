@@ -30,6 +30,8 @@ sy_plasma_torps sy_detonator sy_arc_shield sy_ramjet sy_arc_torps sy_core_mines
 tech_gutter tech_custody tech_office tech_voice tech_thren
 '''.split('\n')
 ORDER = [r.split() for r in ORDER if r.strip()]
+# glyphs still on the sheet for modules that no longer exist (the overcharge reactor): cut nothing for them
+RETIRED = {'oc_coils', 'oc_nova', 'oc_overload', 'oc_phase', 'sy_core_mines'}
 
 
 def runs(mask, gap):
@@ -60,5 +62,5 @@ for (y0, y1, gap), names in zip(ROWS, ORDER):
         a = Image.fromarray((alpha * 255).astype(np.uint8)).resize((max(1, round(w * k)), max(1, round(h * k))), Image.LANCZOS)
         img = Image.new('LA', (SIZE, SIZE), (255, 0))
         img.paste(Image.merge('LA', (Image.new('L', a.size, 255), a)), ((SIZE - a.width) // 2, (SIZE - a.height) // 2))
-        img.save(f'{OUT}/{name}.png', optimize=True)
+        if name not in RETIRED: img.save(f'{OUT}/{name}.png', optimize=True)
 print('ok')

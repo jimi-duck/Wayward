@@ -20,9 +20,9 @@ import type { ShipState } from './ship';
 //   Enemy convoy       · freighters crossing under escort, heavy with
 //                        krail. They will not stop for you.
 //   Ion storm          · lightning lands where the circles are drawn, on
-//                        anything; near misses charge the core twice as fast.
+//                        anything.
 //   Nebula             · sensors fail: short radar, short torpedo locks, a
-//                        thick fog; the core charges faster in it.
+//                        thick fog.
 //   Spatial anomaly    · a gravity well drags in everything, rock, fire,
 //                        crystals and you, and crushes what reaches its core.
 //   Skirmish           · two crews at each other ahead: raiders on a convoy.
@@ -51,8 +51,8 @@ export const ENCOUNTERS: Record<EncounterId, EncounterDef> = {
   rich_field: { id: 'rich_field', name: 'Mineral-rich field', at: 60,  weight: 1.2, duration: 32, text: 'Krail readings off the scale' },
   distress:   { id: 'distress',   name: 'Distress signal',    at: 90,  weight: 1,   duration: 42, text: 'Hold position at the beacon' },
   convoy:     { id: 'convoy',     name: 'Enemy convoy',       at: 150, weight: 1,   duration: 46, text: 'Freighters crossing, heavy with krail' },
-  ion_storm:  { id: 'ion_storm',  name: 'Ion storm',          at: 200, weight: 1,   duration: 26, text: 'Lightning on the circles · grazes charge double' },
-  nebula:     { id: 'nebula',     name: 'Nebula',             at: 240, weight: 0.9, duration: 30, text: 'Sensors down · the core charges faster' },
+  ion_storm:  { id: 'ion_storm',  name: 'Ion storm',          at: 200, weight: 1,   duration: 26, text: 'Lightning on the circles' },
+  nebula:     { id: 'nebula',     name: 'Nebula',             at: 240, weight: 0.9, duration: 30, text: 'Sensors down · radar and locks are short' },
   derelict:   { id: 'derelict',   name: 'Derelict hulk',      at: 120, weight: 1,   duration: 45, locked: true, text: 'Salvage it, if you dare' },
   anomaly:    { id: 'anomaly',    name: 'Spatial anomaly',    at: 300, weight: 0.8, duration: 26, locked: true, text: 'Gravity well · everything falls in' },
   skirmish:   { id: 'skirmish',   name: 'Skirmish',           at: 60,  weight: 1,   duration: 75, text: 'Raiders on a convoy · let it burn out' },

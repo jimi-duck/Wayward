@@ -52,7 +52,6 @@ const ITEM_COLOR: Record<string, Color> = {
   rapid: new Color(3.8, 0.8, 0.6),
   magnet: new Color(2.4, 1, 3.8),
   overdrive: new Color(3.8, 2.2, 0.4),
-  charge: new Color(3.8, 3, 1.2),
 };
 
 interface Item { root: Group; core: Mesh; ring: Mesh; halo: Sprite; }

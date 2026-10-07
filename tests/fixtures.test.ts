@@ -13,7 +13,7 @@ import { World } from '../src/sim/world';
 
 const DIR = new URL('./fixtures/', import.meta.url);
 const files = readdirSync(DIR).filter((f) => /^journey-v\d+\.json$/.test(f));
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 
 describe('saved journeys of every version', () => {
   it('keeps a fixture for the current version', () => {

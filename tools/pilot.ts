@@ -6,7 +6,7 @@ import { ALIEN_TYPES, beamLive, cloaked, FIRE_RANGE, rayDist } from '../src/sim/
 import { identity } from '../src/sim/build';
 import { thrustPerStep, topSpeed, turnPerStep } from '../src/sim/ship';
 import { BASE } from '../src/sim/stats';
-import { OC_MAX, SHIP_R } from '../src/sim/tuning';
+import { SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 import { PATCH_COST } from '../src/sim/breakout';
 import { CUT_RANGE } from '../src/sim/mining';
@@ -26,8 +26,7 @@ import type { SurvivalId } from '../src/content/survival';
 // against where rock, hulls, fire, beams, telegraphed charges and landing
 // circles will be, and takes the safest that still serves the goal. It sees
 // new fire only after a person's reaction time, shoots what is in front of
-// it, rolls when the look-ahead finds no clean line, releases the
-// overcharge into a crowd, and builds the ship to a strategy from the cards
+// it, rolls when the look-ahead finds no clean line, and builds the ship to a strategy from the cards
 // it is dealt, and answers comms cards by a policy. It plays through the same
 // API the app does (step, choose, answerHail, answer), so a balance number
 // here is a number in the game.
@@ -118,7 +117,7 @@ export function pickAnswer(w: World, policy: Policy): string {
   return o.choices.find((ch) => ch.ok)!.id;
 }
 
-const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 
 export function stratName(s: Strategy): string {
   return s.kind === 'random' ? 'random' : `${s.branch}${s.second ? `+${s.second}` : ''}`;
@@ -482,13 +481,6 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   if (st.torpedoes && w.lock !== null) {
     const ship = targets.ships.some((a) => a.id === w.lock) || targets.boss?.id === w.lock;
     if (ship || w.arms.rack === st.torpRack) f.torpedo = true;
-  }
-  // the overcharge into a crowd, or out of trouble
-  if (w.oc >= OC_MAX) {
-    const R = st.ocRadius;
-    const near = w.aliens.filter((a) => Math.hypot(a.x - s.x, a.z - s.z) < R).length;
-    const fire = w.shots.filter((sh) => Math.hypot(sh.x - s.x, sh.z - s.z) < R).length;
-    if (near >= 3 || fire >= 6 || (boss && Math.hypot(boss.x - s.x, boss.z - s.z) < R) || w.plates === 1) f.overcharge = true;
   }
   return f;
 }

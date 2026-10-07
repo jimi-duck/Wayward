@@ -10,7 +10,7 @@ import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';
 import { faceSvg } from '../src/ui/face';
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) { w.ship.invuln = 1; w.step(STEP, input()); } };
 const bolt = (x: number, y: number, z: number) => ({ x, y, z, vx: 0, vy: 0, vz: 0, life: 1, dmg: 1.4, pierce: 0, hit: [], homing: 0 });
 

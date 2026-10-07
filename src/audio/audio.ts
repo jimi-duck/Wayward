@@ -84,7 +84,7 @@ function cueFor(e: GameEvent): string | undefined {
     case 'rockHit': case 'alienHit': case 'bulwarkHit': case 'bossHit': return 'hitRock';
     case 'rockDestroyed': case 'bulwarkBroken': case 'rockCut': return 'breakRock';
     case 'alienDestroyed': case 'bossDestroyed': return 'breakShip';
-    case 'blast': case 'overcharge': return 'blast';
+    case 'blast': return 'blast';
     case 'shipHit': return 'hull';
     case 'shieldHit': return 'shield';
     case 'shieldUp': return 'shieldUp';

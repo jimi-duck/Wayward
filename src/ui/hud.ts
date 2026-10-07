@@ -8,7 +8,6 @@ import { ALIEN_TYPES, alienLabel, cloaked, FIRE_RANGE } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
 import { DOCK_TIME } from '../sim/breakout';
 import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
-import { OC_MAX } from '../sim/tuning';
 import { NAMED } from '../content/features';
 import { REPORT_TEXT } from '../sim/space';
 import type { World } from '../sim/world';
@@ -217,8 +216,6 @@ export class Hud {
           break;
         }
         case 'damageControl': this.banner(t('Ship system'), t('Hull held'), t('One plate · two seconds of grace'), 2, 'caution'); break;
-        case 'overchargeReady': this.note(world, t(document.documentElement.classList.contains('touch-ui') ? 'Core charged · tap Core' : 'Core charged · press E'), 'gain'); break;
-        case 'overcharge': this.note(world, `${t('Overcharge')} · ${plural(e.hits, '{n} hit', '{n} hits')}`, 'gain'); break;
         case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
         case 'squad': this.note(world, t('{name} inbound', { name: t(e.label) }), 'hit'); break;
         case 'salvage': this.note(world, `${t('Salvage')}${e.tech ? ` · ${t('{f} tech recovered', { f: faction(e.faction) })}` : ''}`, 'gain'); break;
@@ -453,7 +450,7 @@ export class Hud {
     }
 
     // lasers: the bank
-    const bank = arms.bank / st.bankMax, hot = world.overload > 0 || world.powers.rapid > 0;
+    const bank = arms.bank / st.bankMax, hot = world.powers.rapid > 0;
     const dry = arms.bank < st.bankShot && !hot;
     ticks($('g-bank'), bank, 50);
     const ph = $('sys-ph');
@@ -490,18 +487,6 @@ export class Hud {
       blocks($('g-mines'), st.mineMax).forEach((p, i) => p.classList.toggle('on', i < world.sys.mines.length));
       text($('v-mines'), `${world.sys.mines.length}/${st.mineMax}`);
     }
-
-    // the reactor
-    const oc = world.oc / OC_MAX, ready = oc >= 1;
-    ticks($('g-oc'), oc, 12);
-    const ocRow = $('sys-oc');
-    ocRow.classList.toggle('ready', ready && world.overload <= 0);
-    ocRow.classList.toggle('hot', world.overload > 0 || world.phaseT > 0);
-    const vo = $('v-oc');
-    const word = world.phaseT > 0 ? `${Math.ceil(world.phaseT)}s` : world.overload > 0 ? `${Math.ceil(world.overload)}s` : ready ? t('Ready') : '';
-    vo.classList.toggle('word', !!word);
-    if (word) text(vo, word);
-    else if (vo.firstChild?.nodeValue !== `${Math.round(oc * 100)}` || vo.childNodes.length !== 2) vo.replaceChildren(`${Math.round(oc * 100)}`, Object.assign(document.createElement('small'), { textContent: '%' }));
 
     // the hull: plates, then shield charges, the one filling drawn part full;
     // in the arcade the plate the self-repair is on fills too, and pulses while it works
@@ -549,7 +534,7 @@ export class Hud {
 
     // power-ups running
     const live = (Object.keys(world.powers) as Array<keyof typeof world.powers>).filter((k) => world.powers[k] > 0);
-    const pk = live.map((k) => `${k}${Math.ceil(world.powers[k])}`).join() + (world.phaseT > 0 ? `phase${Math.ceil(world.phaseT)}` : '')
+    const pk = live.map((k) => `${k}${Math.ceil(world.powers[k])}`).join()
       + (world.cloakT > 0 ? `cloak${Math.ceil(world.cloakT)}` : '');
     if (pk !== this.powerKey) {
       this.powerKey = pk;
@@ -561,7 +546,6 @@ export class Hud {
         return s;
       };
       const chips = live.map((k) => chip(t(POWER_LABEL[k]), world.powers[k]));
-      if (world.phaseT > 0) chips.push(chip(t('Phase cloak'), world.phaseT));
       if (world.cloakT > 0) chips.push(chip(t('Cloak'), world.cloakT));
       $('powers').replaceChildren(...chips);
     }
@@ -569,8 +553,6 @@ export class Hud {
     // touch: each button's own gauge
     ticks($('t-bank'), bank, 10);
     $('fire').classList.toggle('dry', dry);
-    ticks($('t-oc'), oc, 10);
-    $('release').classList.toggle('ready', ready);
 
     // the panel's height places the power-ups under it, and the centre block on narrow screens
     const sysKey = `${st.torpedoes}${st.mines}${shields}${!!world.bk}`;
@@ -695,7 +677,7 @@ export class Hud {
   private measure(): void {
     const h = $('systems').offsetHeight;
     if (h) $('hud').style.setProperty('--sys-h', `${h}px`);
-    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('fire'), $('torp'), $('release')]);
+    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('fire'), $('torp')]);
   }
 
   private retrigger(el: HTMLElement, cls: string): void {
