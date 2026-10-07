@@ -94,6 +94,12 @@ function deltaChip(f: Fig, cls = 'dl'): HTMLElement {
   return chip;
 }
 
+/** One effect in words, as the card tells it: "3 → 5 beams per shot"; a cost reads "↓ 5 → 4 shots/sec" in amber. */
+function effectLine(f: Fig): HTMLElement {
+  return h('span', `pc-fl${f.cost ? ' cost' : ''}`, '', ...(f.cost ? [h('i', 'pc-dn', '↓')] : []),
+    h('b', '', f.from === '—' ? t(f.to) : `${t(f.from)} → ${t(f.to)}`), h('span', '', t(f.label).toLowerCase()));
+}
+
 /** The views: the suggestions, then every tab with something for this mode (Signals is the Story mode's). */
 const viewsOf = (w: World): View[] => ['picks', ...TAB_ORDER.filter((tab) => WEB.some((n) => n.tab === tab && blockOf(n.id, { ...w.bayCtx(), krail: Infinity }) !== 'mode'))];
 
@@ -134,6 +140,10 @@ export class BayPanel {
   private shown: Record<string, string> = {};
   /** The ship's answer to a fit, in the voice line, until this timer puts the voice back. */
   private logT = 0;
+  /** The choice the ship link was last drawn for, and when the install's own line is done with the stage. */
+  private linked = '';
+  private linkHold = 0;
+  private linkTry = 0;
 
   constructor() {
     $('bay-x').addEventListener('click', (e) => { e.stopPropagation(); if (this.open) this.launch(); });
@@ -160,6 +170,8 @@ export class BayPanel {
     this.opened = performance.now();
     this.closing = false;
     this.shown = {};
+    this.linked = '';
+    this.linkHold = 0;
     // the bay opens on the suggestions; the tabs are a step further in
     this.view = 'picks';
     this.pick = 0;
@@ -168,6 +180,9 @@ export class BayPanel {
     x.replaceChildren(h('kbd', 'only-desktop', 'B'), ` ${t(world.docked ? 'Back to the dock' : 'Launch')}`);
     $('bay').hidden = false;
     this.render();
+    // the type changes the room once the fonts arrive: the line finds its ring again
+    document.fonts?.ready.then(() => this.open && this.link());
+    for (const ms of [150, 500]) setTimeout(() => this.open && this.link(), ms);
     this.off = keys((e) => {
       const c = e.code;
       if (c === 'Escape' || c === 'KeyB') return this.launch(), true;
@@ -188,6 +203,7 @@ export class BayPanel {
     $('bay-pts').replaceChildren();
     this.rings.clear();
     $('bay').querySelector('.bay-link-pick')?.remove();
+    for (const k of ['--ax', '--ay', '--aw']) $('bay').style.removeProperty(k);
     $('bay').hidden = true;
   }
 
@@ -232,7 +248,7 @@ export class BayPanel {
   private move(dx: number, dy: number): void {
     if (this.view === 'picks') {
       const n = this.picks().length;
-      if (dx && n) { this.pick = (this.pick + dx + n) % n; this.render(); }
+      if (dx && n) this.choose((this.pick + dx + n) % n);
       return;
     }
     const cur = this.sel ? NODE[this.sel] : null;
@@ -309,6 +325,9 @@ export class BayPanel {
   private installFx(id: string, from: number, to: number): void {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     this.countKrail(from, to, 520);
+    this.linkHold = performance.now() + 800;
+    $('bay').querySelector('.bay-link-pick')?.remove();
+    this.linked = '';
     // the stage takes the clamp: a 3 px kick on the picture, not on the controls
     const bay = $('bay');
     bay.classList.remove('kick');
@@ -431,7 +450,7 @@ export class BayPanel {
           e.stopPropagation();
           if (this.world && isArcade(this.world) && !this.picks().some((n) => n.tab === zone)) return;
           const k = this.picks().findIndex((n) => n.tab === zone);
-          if (this.view === 'picks' && k >= 0) { this.pick = k; this.render(); } else this.go(zone);
+          if (this.view === 'picks' && k >= 0) this.choose(k); else this.go(zone);
         });
         this.rings.set(zone, b);
         layer.append(b);
@@ -473,9 +492,16 @@ export class BayPanel {
     if (ah < 80) return;
     const W = Math.max(340, Math.min(aw * 0.94 / (ART.sw / ART.w), ah * 0.94 / (ART.sh / ART.w), 1300));
     const x = left + aw / 2 - (ART.cx / ART.w) * W - box.left, y = top + ah / 2 - (ART.cy / ART.w) * W - box.top;
+    // the first placement snaps into place: she does not fly in from the corner when the bay opens
+    if (!bay.style.getPropertyValue('--aw')) {
+      bay.classList.add('snap');
+      requestAnimationFrame(() => requestAnimationFrame(() => bay.classList.remove('snap')));
+    }
     bay.style.setProperty('--ax', `${x.toFixed(1)}px`);
     bay.style.setProperty('--ay', `${y.toFixed(1)}px`);
     bay.style.setProperty('--aw', `${W.toFixed(1)}px`);
+    // the ring has moved with her: the line to it follows
+    requestAnimationFrame(() => this.link());
   }
 
   private tabs(w: World): void {
@@ -533,7 +559,7 @@ export class BayPanel {
     const ctx = w.bayCtx();
     const cards = picks.map((n, i) => {
       const lv = w.levels[n.id] ?? 0, max = maxLevel(n.id), why = blockOf(n.id, ctx);
-      const fig = upgradeFigures(w.levels, n.id, true).find((f) => !f.cost);
+      const figs = upgradeFigures(w.levels, n.id, !w.bk), fx = [...figs.filter((f) => !f.cost).slice(0, 2), ...figs.filter((f) => f.cost).slice(0, 1)];
       const why1 = w.advise(n.id);
       const card = h('div', `pick-card${why ? ' short' : ' ready'}${i === this.pick ? ' sel' : ''}`);
       const go = h('button', 'pc-go', '') as HTMLButtonElement;
@@ -542,14 +568,15 @@ export class BayPanel {
       // the Arcade's cards say Fit and nothing else: the price gates when the bay opens, it is not part of the choice
       go.append(document.createTextNode(isArcade(w) && (!why || why === 'krail') ? t('Fit') : fitWord(w, n.id, why)));
       go.addEventListener('click', (e) => { e.stopPropagation(); this.pick = i; this.install(n.id); });
-      card.addEventListener('click', () => { this.pick = i; this.render(); });
+      card.addEventListener('click', () => this.choose(i));
       card.append(
+        this.shot(n.tab),
         h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(isArcade(w) ? ROLE_NAME[roleOf(n.id)] : TABS[n.tab].name)), ...this.stamp(n.id, 'pc-stamp'), h('kbd', 'only-desktop', String(i + 1))),
         h('span', 'pc-name', nameOf(n.id)),
         ...(why1 ? [h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why1.text, why1.vars)}`))] : []),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
         h('span', 'pc-text', textOf(n.id, Math.min(max, lv + 1))),
-        fig ? deltaChip(fig, 'dl pc-fig') : h('span', 'pc-fig'),
+        h('span', 'pc-fx', '', ...fx.map(effectLine)),
         go,
       );
       return card;
@@ -562,21 +589,62 @@ export class BayPanel {
     $('bay-insp').replaceChildren();
   }
 
-  /** CARD → HARDWARE → SHIP: a thin technical line from the chosen card up to the ring on its part of the ship. */
+  /** A window on the painted ship at the part a card is about: the card shows what it fits. */
+  private shot(tab: Tab): HTMLElement {
+    const [x, y] = ZONE_AT[tab] ?? [ART.cx, ART.cy], Z = 3, ASPECT = 0.4;
+    // the picture is Z times the window's width, centred on the part: background-position in percent
+    const pos = (f: number, win: number, size: number) => (((win / 2 - size * f) / (win - size)) * 100).toFixed(1);
+    const el = h('span', 'pc-shot', '', h('i', 'pc-ring'));
+    el.style.setProperty('--bx', `${pos(x / ART.w, 1, Z)}%`);
+    el.style.setProperty('--by', `${pos(y / ART.h, ASPECT, Z * ART.h / ART.w)}%`);
+    return el;
+  }
+
+  /**
+   * CARD → HARDWARE → SHIP: a thin technical line from the chosen card up to the ring on its part
+   * of the ship. It draws itself once when the choice changes (then the ring answers with a ping),
+   * stays still on a redraw, and waits out the install's own line.
+   */
   private link(): void {
-    const bay = $('bay'), old = bay.querySelector('.bay-link-pick');
+    const bay = $('bay'), old = bay.querySelector('.bay-link-pick') as SVGSVGElement | null;
     const card = this.view === 'picks' && this.open ? bay.querySelector('.pick-card.sel') as HTMLElement | null : null;
     const zone = card && this.picks()[this.pick]?.tab, ring = zone ? this.rings.get(zone) : undefined;
-    if (!card || !ring) { old?.remove(); return; }
+    if (!card || !ring) { old?.remove(); this.linked = ''; return; }
+    // the ship is not on the stage yet: placeArt calls this again when she is
+    if (!bay.style.getPropertyValue('--aw')) return;
+    const wait = this.linkHold - performance.now();
+    if (wait > 0) { old?.remove(); this.linked = ''; setTimeout(() => this.link(), wait + 20); return; }
     const o = bay.getBoundingClientRect(), c = card.getBoundingClientRect(), r = ring.getBoundingClientRect();
-    const x0 = c.left + c.width / 2 - o.left, y0 = c.top - o.top, x1 = r.left + r.width / 2 - o.left, y1 = r.top + r.height / 2 - o.top + r.height * 0.5;
-    if (y1 >= y0 - 6) { old?.remove(); return; }
+    // the ring is not where the ship will put it yet: look again in a moment
+    if (r.width < 1 || r.left <= o.left || r.top <= o.top) { if (this.open && this.linkTry++ < 20) setTimeout(() => this.link(), 60); return; }
+    this.linkTry = 0;
+    const x0 = c.left + c.width / 2 - o.left, y0 = c.top - o.top, x1 = r.left + r.width / 2 - o.left, y1 = r.top + r.height - o.top - r.height * 0.1;
+    if (y1 >= y0 - 6) { old?.remove(); this.linked = ''; return; }
+    const key = `${zone}:${this.pick}`, fresh = key !== this.linked;
+    this.linked = key;
     const ns = 'http://www.w3.org/2000/svg', my = y0 - Math.min(26, (y0 - y1) / 2);
-    const svg = (old as SVGSVGElement | null) ?? document.createElementNS(ns, 'svg');
-    svg.setAttribute('class', 'bay-link-pick');
+    const svg = old ?? document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', `bay-link-pick${fresh ? ' draw' : ''}`);
     svg.setAttribute('aria-hidden', 'true');
-    svg.innerHTML = `<path d="M${x0} ${y0} V${my} H${x1} V${y1}" vector-effect="non-scaling-stroke"/><circle cx="${x0}" cy="${y0}" r="3"/>`;
+    svg.innerHTML = `<path d="M${x0} ${y0} V${my} H${x1} V${y1}" pathLength="1" vector-effect="non-scaling-stroke"/><circle cx="${x0}" cy="${y0}" r="3"/>`;
     if (!old) bay.append(svg);
+    // the line arrives: the ring answers
+    if (fresh && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setTimeout(() => { if (this.open && ring.isConnected) { ring.classList.remove('hit'); void ring.offsetWidth; ring.classList.add('hit'); setTimeout(() => ring.classList.remove('hit'), 700); } }, 300);
+    }
+  }
+
+  /** Choose a card (a tap, an arrow, its ring): the cards, the ring, the line and the bars answer in place, so nothing is rebuilt and the changes can move. */
+  private choose(i: number): void {
+    const w = this.world;
+    if (!w || this.view !== 'picks') return;
+    const cards = [...$('bay-web').querySelectorAll('.pick-card')];
+    if (!cards[i] || i === this.pick) return;
+    this.pick = i;
+    cards.forEach((c, k) => c.classList.toggle('sel', k === i));
+    this.ringsFor(w);
+    this.budgetBar(w);
+    requestAnimationFrame(() => this.link());
   }
 
   private web(w: World, tab: Tab): void {
