@@ -5,8 +5,9 @@ worth flying through: what is out there, how it behaves, how the two modes
 share it, and the order it gets built in. The data is in
 `src/content/features.ts`, the system in `src/sim/space.ts`.
 
-Status: stages 1 and 2 done (the library, the system, and how the first
-features look, behind `?space`). See [Stages](#stages).
+Status: stages 1 to 4 done (the library, the system, how the first
+features look, and what they do to the ship; all behind `?space` until the
+balance pass). See [Stages](#stages).
 
 ## What the game does today
 
@@ -268,12 +269,22 @@ Small PRs off `main`, one stage at a time, each shippable.
    breaker field's rubble waits for stage 3, when rock density follows it.
    Behind `?space` (Arcade only); the world owns the `Space`, and nothing in
    play reads it yet. Screenshots in the project's `environment/` folder.
-3. **Play.** The world owns a `Space` in Arcade; effects apply (sensors,
-   lock, jam, rock density, pull, drag, conceal); the chip HUD; a pilot
-   report to check modules a run and difficulty did not move.
-4. **The rest of the library**, in the order that makes tactical sense:
-   shroud, static field, graveyard, seam, well, storm, slipway, lantern line,
-   relic, carrier.
+3. **Play** (done, behind `?space`). `World.stepSpace` samples the place at
+   the ship each step and applies sensors, torpedo lock, navigation noise,
+   rock density (`Field.zone`), drag and pull (the ship and every hull);
+   the HUD shows `World.conditions` as up to two teal lines under the
+   alerts. Not applied yet: `conceal` (hulls losing you), `krail`, `shield`
+   and the storm's lightning, which come with their features in stage 4.
+   A pilot report with the flag on, and the switch to default, wait for
+   stage 6.
+4. **The rest of the library** (done, behind `?space`). Every feature has a
+   look now: shroud, static and storm are cloud and haze sprites; breakers,
+   graveyard, slipway, relic and well are also real dark meshes, raised when
+   the ship is within 700 units of the rim and put away after; lantern line,
+   seam and carrier are blinking lights. Krail from a graveyard or slipway
+   pays more. Still not applied: `conceal` (hulls losing you), `shield`, and
+   the storm's lightning and the well's crushing core, which want the
+   telegraph and alert work in stage 6.
 5. **Story.** Chart systems carry a site; places map to features; the four
    named places; comms tags through the central manager; palettes by region.
 6. **Pace and polish.** Rarity and rhythm from pilot reports, per-feature

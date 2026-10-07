@@ -114,6 +114,8 @@ export class Field {
   richBoost = 0;
   /** Extra field density, as a multiplier (events). */
   density = 1;
+  /** The place's multiplier on rock (sim/space.ts), 1 in open space. */
+  zone = 1;
   /** Seconds until a new bulwark drifts in, counted down while one is missing (0 when none is owed). */
   private restockT = 0;
 
@@ -306,7 +308,7 @@ export class Field {
       this.restockT = this.bulwarks.length < BULWARK_COUNT ? BULWARK_RESTOCK : 0;
     }
     // Top up out in the fog, never in front of the player.
-    if (this.weight() < p.fieldTarget * this.density) this.topUp(cx, cz, p);
+    if (this.weight() < p.fieldTarget * this.density * this.zone) this.topUp(cx, cz, p);
   }
 
   find(id: number | null): Rock | undefined {

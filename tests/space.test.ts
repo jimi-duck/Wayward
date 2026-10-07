@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { EXPANSES, EXPANSE_ORDER, FEATURES, FEATURE_ORDER, NAMED, type Purpose } from '../src/content/features';
+import { STEP } from '../src/core/loop';
 import { REGIONS } from '../src/content/regions';
 import { reports, REPORT_TEXT, Space, weightAt, type Pose } from '../src/sim/space';
+import { World } from '../src/sim/world';
 
 const PURPOSES: Purpose[] = ['visual', 'exploration', 'resource', 'tactical', 'hazard', 'mystery', 'navigation', 'story', 'neutral'];
 
@@ -218,5 +220,67 @@ describe('what it does to the ship', () => {
   it('knows the expanses by name', () => {
     expect(EXPANSE_ORDER.length).toBe(7);
     for (const id of EXPANSE_ORDER) expect(EXPANSES[id].count[0]).toBeLessThanOrEqual(EXPANSES[id].count[1]);
+  });
+});
+
+describe('in the world', () => {
+  const idle = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' as const };
+  const fly = (w: World, secs: number) => { for (let i = 0; i < Math.round(secs / STEP); i++) w.step(STEP, idle); };
+  const bare = (): { w: World; space: Space } => {
+    const w = new World(5, { space: true });
+    const space = w.space!;
+    // nothing dealt on its own: the test places what it wants
+    (space as unknown as { compose: boolean }).compose = false;
+    return { w, space };
+  };
+
+  it('is off unless asked, and plays as before', () => {
+    expect(new World(5).space).toBeNull();
+    expect(new World(5).conditions).toEqual([]);
+  });
+
+  it('blinds the scope and the torpedoes in a shroud, and says so', () => {
+    const { w, space } = bare();
+    space.place('shroud', 0, 0, { r: 500 });
+    fly(w, 1);
+    expect(w.sensorsDown).toBe(true);
+    expect(w.air.lock).toBeLessThan(0.6);
+    expect(w.conditions.length).toBeGreaterThan(0);
+    w.ship.x = 4000;
+    fly(w, 1);
+    expect(w.sensorsDown).toBe(false);
+    expect(w.conditions).toEqual([]);
+  });
+
+  it('thickens the rock in breakers and thins it in the hush', () => {
+    const { w, space } = bare();
+    space.place('breakers', 0, 0, { r: 500 });
+    fly(w, 0.5);
+    expect(w.field.zone).toBeGreaterThan(2);
+    w.ship.x = 4000;
+    fly(w, 0.5);
+    expect(w.field.zone).toBe(1);
+  });
+
+  it('pays more Krail in a graveyard', () => {
+    const { w, space } = bare();
+    space.place('graveyard', 0, 0, { r: 500 });
+    fly(w, 0.5);
+    w.dropCrystals(0, 0, 10);
+    expect(w.run.dropped).toBe(16);
+  });
+
+  it('scrambles navigation in a static field', () => {
+    const { w, space } = bare();
+    space.place('static', 0, 0, { r: 600 });
+    fly(w, 2);
+    expect(w.navNoise).toBeGreaterThan(0.2);
+  });
+
+  it('leans the ship toward a well', () => {
+    const { w, space } = bare();
+    space.place('well', 300, 0, { r: 500 });
+    fly(w, 3);
+    expect(w.ship.vx).toBeGreaterThan(5);
   });
 });

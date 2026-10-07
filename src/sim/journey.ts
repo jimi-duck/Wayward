@@ -1,3 +1,4 @@
+import { HUSH } from './desk';
 import { t } from '../i18n';
 import {
   DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_CYRITE, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
@@ -81,7 +82,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 9;
+export const VERSION = 10;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -149,7 +150,7 @@ const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 export function startCarry(survival: SurvivalId = DEFAULT_SURVIVAL): Carry {
   const K = survivalOf(survival).voyage.start;
   return {
-    cyrite: K.cyrite, krail: 0, ore: 0, parts: K.parts, chits: 0, food: K.food, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [],
+    cyrite: K.cyrite, krail: 0, ore: 0, parts: K.parts, chits: 0, food: K.food, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], hush: HUSH,
   };
 }
 

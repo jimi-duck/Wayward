@@ -175,6 +175,7 @@
         <div id="log-lines"></div>
         <button type="button" id="upg" tabindex="-1" hidden><kbd class="only-desktop">B</kbd><svg class="ico"><use href="#i-hull"/></svg><span id="upg-t">Refit bay</span><b id="upg-n"></b></button>
         <div id="mode" class="clear" hidden><svg class="md-i" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z"/><path d="M12 7l5 5-5 5-5-5z"/></svg><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span><i class="stripes"></i></div>
+        <div id="cond" hidden></div>
       </section>
 
       <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
@@ -281,7 +282,22 @@
       <div class="bay-pts" id="bay-pts"></div>
     </div>
 
-    <!-- Comms: whoever opens a channel to the ship (a Breakout card), and the arcade's capital-ship hail,
+        <!-- The radio: the light transmissions that ride along while you fly. A call (a job, a trade, a warning) is a small
+         card with its answers as buttons; a line of chatter is one subtitle. Neither stops the world. -->
+    <div id="radio" class="radio">
+      <div id="rd-call" class="rd-call" role="group" aria-labelledby="rd-who" hidden>
+        <div class="rd-h"><i class="tx-wave" aria-hidden="true"></i><span class="rd-k">Incoming</span><span id="rd-kind" class="rd-kind"></span><span id="rd-prio" class="rd-prio" hidden>Priority</span></div>
+        <div class="rd-id"><b id="rd-who"></b><span id="rd-what"></span></div>
+        <p id="rd-text" class="rd-text"></p>
+        <p id="rd-read" class="rd-read" hidden></p>
+        <p id="rd-terms" class="rd-terms" hidden></p>
+        <div id="rd-list" class="rd-list"></div>
+        <div id="rd-timer" class="rd-timer"><i></i></div>
+      </div>
+      <div id="rd-line" class="rd-line" hidden aria-live="polite"><i class="tx-wave" aria-hidden="true"></i><b id="rdl-from"></b><span id="rdl-text"></span></div>
+    </div>
+
+<!-- Comms: whoever opens a channel to the ship (a Breakout card), and the arcade's capital-ship hail,
          as a transmission received (brand v1.1, section 14): who is calling, a short message, numbered options
          with what each one brings beside it. Red, with a stamp, when the caller means harm. -->
     <div id="comms" class="sheet" role="dialog" aria-labelledby="cm-t" hidden>

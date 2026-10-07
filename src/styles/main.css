@@ -458,6 +458,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #mode-t { font: 700 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--mc); white-space: nowrap; }
 #mode .stripes { flex: none; width: 18px; height: 8px; background: repeating-linear-gradient(-55deg, var(--mc) 0 2px, transparent 2px 5px); opacity: .7; }
 #mode[hidden] { display: none; }
+/* what the place is doing to the ship: the ship's voice, teal, one or two short lines, only while it is felt */
+#cond { display: grid; gap: 2px; justify-items: end; font: 600 calc(var(--fs) * 1.05)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); text-shadow: 0 1px 2px #000; }
+#cond[hidden] { display: none; }
 #mode.yellow { background: rgba(36, 26, 8, .6); }
 #mode.red { --mc: var(--alert); background: rgba(40, 12, 10, .6); }
 #mode.red .stripes { animation: hud-blink .7s ease-in-out infinite; }
@@ -1621,9 +1624,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @keyframes seg-pop { 0% { transform: scaleX(0); } 70% { transform: scaleX(1.15); } }
 /* the fit: the button goes in 2 px with a hard stop, the picture takes a short kick */
 .bi-go:not(:disabled):active, .pc-go:not(:disabled):active, #bay-x:active, #bay-auto:active { translate: 0 2px; transition: translate 40ms linear; }
-#bay.kick .bay-art, #bay.kick .bay-pts { animation: bay-kick 90ms linear; }
-@keyframes bay-kick { 35% { translate: 0 3px; } 70% { translate: 0 -1px; } }
-@media (prefers-reduced-motion: reduce) { .bb-bar i { animation: none; } #bay.kick .bay-art, #bay.kick .bay-pts { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .bb-bar i { animation: none; } }
 .bb-l { display: flex; align-items: center; gap: 8px; }
 .bb-w { display: inline-flex; align-items: center; gap: 4px; font-size: calc(var(--fs) * .8 * 1.18); letter-spacing: .12em; color: var(--hud); }
 .bb-w i { font-style: normal; font-size: 9px; }
@@ -1631,12 +1632,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bb.over .bb-v { color: var(--alert); }
 @media (max-width: 900px), (max-height: 520px) { .bb-wt { display: none; } }
 /* the install line: from the module to the ship part it belongs to */
-.bay-line { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 2; }
-.bay-line path { fill: none; stroke: var(--hud-hi); stroke-width: 1.5; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 4px var(--hud)); animation: bay-line .45s ease-out forwards; }
-.bay-line circle { fill: var(--hud-hi); opacity: 0; animation: bay-dot .6s ease-out .3s forwards; }
-@keyframes bay-line { to { stroke-dashoffset: 0; } }
-@keyframes bay-dot { 0% { opacity: 1; r: 3; } 100% { opacity: 0; r: 18; } }
-@media (prefers-reduced-motion: reduce) { .bay-line, .bb.over .bb-w { display: none; animation: none; } }
+@media (prefers-reduced-motion: reduce) { .bb.over .bb-w { animation: none; } }
 
 /* the ship's computer's picks: amber, a diamond and a reason */
 .bi-rec, .c-rec { margin: 0; display: flex; flex-wrap: wrap; gap: 0 6px; font: 600 calc(var(--fs) * 1.05 * 1.18)/1.35 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
@@ -1711,6 +1707,14 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pick-card.sel .pc-name { color: var(--hud-hi); }
 .pick-card.sel .pc-oct { --c: var(--hud); }
 #bay.arcade .pick-card:not(.sel) .pc-go:not(:disabled) { background: none; border-color: var(--line-2, var(--line)); color: var(--ink-2); }
+/* the pick, one beat: the chosen card is solid and says Fitted, the others fall back, the ship warms, the bay fades */
+.pick-card.gone { opacity: .25 !important; scale: .97; pointer-events: none; transition: opacity .25s ease-out, scale .25s ease-out; }
+.pick-card.fitted { pointer-events: none; }
+.pick-card.fitted .pc-go:disabled { background: var(--hud); border-color: var(--hud-hi); color: #1a1205; transition: background .15s, color .15s; }
+#bay.warm .bay-art { animation: bay-warm .5s ease-out; }
+@keyframes bay-warm { 30% { filter: brightness(1.22) saturate(1.1); } }
+#bay.leaving { opacity: 0; transition: opacity .3s ease-in; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { #bay.warm .bay-art { animation: none; } .pick-card.gone { transition: none; scale: 1; } #bay.leaving { transition: none; } }
 /* the price gates when the bay opens, it is not the choice: the Arcade's header drops the Krail figure */
 #bay.arcade .bay-krail { display: none; }
 #bay.arcade .bay-tab.locked { cursor: default; opacity: .55; }
@@ -2095,3 +2099,70 @@ html.breakout #pause:not(.first) .term-s.full { display: none; }
 .recap[hidden] { display: none; }
 .recap b { flex-basis: 100%; text-align: center; font: 700 calc(11px * 1.18)/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
 .recap .chip { background: rgba(8, 12, 16, .78); font-size: max(10px, calc(var(--fs, 11px) * .95)); }
+
+/* ── the radio: calls and chatter that ride along while you fly ──
+   A call sits in the free band above the ship, clear of the top strip, the
+   scope and both thumbs; a line of chatter is a subtitle under the ship. */
+.radio { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.radio.under, .panel-open .radio, :root.prelaunch .radio { display: none; }
+.rd-call { --cc: var(--cy); position: absolute; left: 50%; top: max(21%, calc(var(--safe-t) + 96px)); translate: -50% 0; width: min(400px, 44vw); pointer-events: auto;
+  display: grid; gap: 7px; padding: 10px 14px 12px; border: 1px solid var(--cy-dim); border-left: 3px solid var(--cy);
+  background: rgba(8, 13, 14, .86); box-shadow: 0 6px 24px rgba(0, 0, 0, .5); animation: rd-in .26s var(--ez); }
+.rd-call.prio { border-color: var(--amber-dim); border-left-color: var(--amber); }
+@keyframes rd-in { from { opacity: 0; translate: -50% -8px; } }
+.rd-call[hidden], .rd-line[hidden] { display: none; }
+.rd-h { display: flex; align-items: center; gap: 8px; }
+.rd-k { font: 600 12px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--cy); }
+.rd-kind { font: 600 12px/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+.rd-kind::before { content: "· "; }
+.rd-prio { margin-left: auto; padding: 3px 7px 2px; border: 1.5px solid var(--amber); font: 700 12px/1 var(--font-head); letter-spacing: .18em; text-transform: uppercase; color: var(--amber); }
+.rd-id { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.rd-id b { font: 700 17px/1.1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--cc); }
+.rd-id span { font: 600 12px/1.1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.rd-text { margin: 0; font: 400 14px/1.4 var(--font-display); color: var(--ink); }
+.rd-read { margin: 0; font: 500 12px/1.2 var(--font-mono); letter-spacing: .06em; color: var(--cy); }
+.rd-read::before { content: "READ · "; color: var(--ink-2); }
+.rd-terms { margin: 0; font: 500 13px/1.2 var(--font-mono); letter-spacing: .05em; color: var(--cy); }
+.rd-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.rd-c { flex: 1 1 0; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 3px 8px; min-height: 40px; padding: 6px 10px; border: 1px solid var(--cy-dim); background: rgba(57, 174, 183, .08); color: var(--ink); cursor: pointer; text-align: left; font: 600 14px/1.1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; }
+.rd-c.first { border-color: var(--amber); background: rgba(229, 169, 58, .14); }
+.rd-c:hover:not([aria-disabled="true"]) { background: rgba(229, 169, 58, .24); }
+.rd-c[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.rd-c kbd { flex: none; padding: 0; min-width: 0; height: auto; border: 0; font: 500 13px/1 var(--font-mono); color: var(--ink-2); }
+.rd-c.first kbd { color: var(--amber); }
+.rd-chips { display: inline-flex; flex-wrap: wrap; gap: 3px 5px; flex-basis: 100%; font: 500 11.5px/1 var(--font-mono); letter-spacing: .06em; text-transform: none; }
+.rd-chips > span { padding: 2px 5px; border: 1px solid currentColor; border-radius: 2px; }
+.rd-chips .g-gain { color: var(--cy); }
+.rd-chips .g-loss { color: var(--amber); }
+.rd-chips .g-odds, .rd-chips .g-need { color: var(--ink-2); }
+.rd-list.many { flex-direction: column; }
+.rd-list.many .rd-c { flex: none; }
+.rd-list.many .rd-chips { flex-basis: auto; margin-left: auto; }
+.rd-timer { height: 2px; background: var(--cy-ghost); }
+.rd-timer i { display: block; height: 100%; width: 100%; background: var(--cy); }
+.rd-call.prio .rd-timer i { background: var(--amber); }
+/* a line of chatter: a subtitle under the ship */
+.rd-line { position: absolute; left: 50%; bottom: max(17%, calc(var(--safe-b) + 70px)); translate: -50% 0; max-width: min(560px, 48vw); pointer-events: none;
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 10px; padding: 7px 14px; background: rgba(8, 13, 14, .72); border-left: 2px solid var(--cy-dim); text-shadow: 0 1px 4px #000; }
+.rd-line.in { animation: rd-line 7s linear forwards; }
+@keyframes rd-line { 0% { opacity: 0; } 5% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
+.rd-line .tx-wave { align-self: center; width: 22px; height: 9px; }
+.rd-line b { font: 700 12px/1.1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; }
+.rd-line span { font: 400 13.5px/1.35 var(--font-display); color: var(--ink); }
+@media (max-width: 720px), (max-height: 520px) and (max-width: 1000px) {
+  .rd-call { top: max(21%, calc(var(--safe-t) + 80px)); left: 45%; width: min(330px, 36vw); gap: 4px; padding: 6px 10px 8px; }
+  .rd-list.many { gap: 3px; }
+  .rd-list.many .rd-c { min-height: 34px; }
+  .rd-h { gap: 6px; }
+  .rd-k, .rd-kind, .rd-prio { font-size: 11px; }
+  .rd-id b { font-size: 14px; }
+  .rd-id span { display: none; }
+  .rd-text { font-size: 12px; line-height: 1.3; }
+  .rd-read, .rd-terms { font-size: 11px; }
+  .rd-c { min-height: 40px; padding: 4px 8px; font-size: 13px; }
+  .rd-chips { font-size: 10.5px; }
+  .rd-line { left: 46%; max-width: 40vw; padding: 4px 10px; }
+  .rd-line span { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .rd-call { animation: none; } }
+.cm-body.solo { grid-template-columns: minmax(0, 1fr); }

@@ -8,6 +8,8 @@ import {
 import { Command, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import { OFFER_AT } from '../content/calloway';
+import { CHATTER, type Moment } from '../content/chatter';
+import { Desk, DESK, HUSH, type Busy } from './desk';
 import { STORY_AT } from '../content/story';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, HOLD_START, JUMP_COST, PATCH_COST,
@@ -15,7 +17,7 @@ import {
   rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
-  CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, commsGap, condOk, openCard, pickCard, refresh, resolve, theirStrength, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
+  CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
 } from './comms';
 import { coolRocks, cutRock, cutTarget, newCutter, type Cutter } from './mining';
@@ -33,7 +35,7 @@ import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type 
 import { Ids, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
-import { Space } from './space';
+import { CALM, reports, Space, type Influence, type Report as Condition } from './space';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
@@ -140,6 +142,10 @@ export class World implements EncounterHost {
   /** The expanses and features around the ship (null: off). */
   space: Space | null = null;
   private spaceOn = false;
+  /** What the place does to the ship now (sim/space.ts), and what to tell the player of it. */
+  air: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
+  conditions: Condition[] = [];
+  private readonly there: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
   /** Rocks and hulls broken this run. */
   kills = 0;
   /** The arcade's encounters: a wave on its way or being fought, or the quiet between (sim/pacing.ts). */
@@ -218,6 +224,17 @@ export class World implements EncounterHost {
 
   // the comms: the card on the table, what the run has set in motion, and who thinks what of you
   comms: Open | null = null;
+  /** The call that rides along while the ship flies (a lighter card), and the run time it lapses at. */
+  call: Open | null = null;
+  callUntil = 0;
+  /** The comms desk: what may be heard, and when (sim/desk.ts). */
+  desk!: Desk;
+  private deskRng = new Rng(1);
+  private heardChatter = new Set<string>();
+  private wasBusy: Busy = 'free';
+  private arrivalSaid = false;
+  private fullSaid = false;
+  private fightT = 0;
   flags = new Set<string>();
   standing: Partial<Record<Standing, number>> = {};
   /** Jobs taken and not yet paid. */
@@ -294,6 +311,11 @@ export class World implements EncounterHost {
     this.patchT = 0;
     this.holdNag = 0;
     this.comms = null;
+    this.call = null;
+    this.deskRng = new Rng(this.seed * 7919 + 13);
+    this.desk = new Desk(this.deskRng, 0, this.sortie.calls ?? 1, this.carryIn?.hush ?? HUSH);
+    this.heardChatter = new Set();
+    this.wasBusy = 'free'; this.arrivalSaid = false; this.fullSaid = false; this.fightT = 0;
     this.flags = new Set();
     this.standing = {};
     this.jobs = [];
@@ -382,6 +404,7 @@ export class World implements EncounterHost {
       cyrite: this.cyrite, krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
+      hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
     };
   }
 
@@ -461,7 +484,7 @@ export class World implements EncounterHost {
 
   /** Sensors are down (the nebula, or the Thren close by): shorter radar and locks. */
   get sensorsDown(): boolean {
-    return (this.encounter?.id === 'nebula' && !this.encounter.done) || this.navNoise > 0.3;
+    return (this.encounter?.id === 'nebula' && !this.encounter.done) || this.navNoise > 0.3 || this.air.sight < 0.7;
   }
 
   /** How scrambled navigation is, 0 to 1: Thren hulls close by make the lane mouth swim on the scope and the drive spool slow. */
@@ -496,7 +519,7 @@ export class World implements EncounterHost {
     if (this.bk && c.cut) c.fire = false;
 
     stepShip(s, c, this.hull, dt);
-    this.space?.step(dt, this.runTime, s);
+    if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
     if (rolling && !this.wasRolling && st.rollBurst) plasmaRing(this.sys, s, st);
     if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
@@ -509,7 +532,7 @@ export class World implements EncounterHost {
     // our weapons and systems
     const targets = this.targets();
     const fm: FireMods = { rapid: this.powers.rapid > 0, damage: this.dmgMult * (this.powers.overdrive > 0 ? 1.5 : 1), drifting: drifting(s, this.hull) };
-    const fireStats = this.sensorsDown ? { ...st, torpSeek: st.torpSeek * 0.6 } : st;
+    const fireStats = this.sensorsDown || this.air.lock < 1 ? { ...st, torpSeek: st.torpSeek * (this.sensorsDown ? 0.6 : 1) * this.air.lock } : st;
     if (this.alive) {
       fireWeapons(this.arms, s, c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
       const laid = laySystems(this.sys, s, st, dt, fm.rapid);
@@ -628,7 +651,7 @@ export class World implements EncounterHost {
     if (!this.callowayMet && this.runTime >= this.callowayAt && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint') {
       this.callowayMet = true;
       const def = CARD_BY_ID.calloway_here;
-      if (def) return this.openComms(def);
+      if (def) this.desk.offer(def, weightOf(def), this.runTime);
     }
 
     // the story beat: once, a little after arrival, if the journey has one due here
@@ -636,7 +659,7 @@ export class World implements EncounterHost {
     if (beat && !this.storyMade && this.runTime >= STORY_AT && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
-      if (def && !this.heard.has(def.id) && !this.cardsSeen.has(def.id)) return this.openComms(def);
+      if (def && !this.heard.has(def.id) && !this.cardsSeen.has(def.id)) this.desk.offer(def, weightOf(def), this.runTime);
     }
 
     // her offer: once a sortie at most, when she has one to make (and is not here in person)
@@ -644,7 +667,7 @@ export class World implements EncounterHost {
     if (offer && !this.offerMade && !this.callowayMet && this.runTime >= OFFER_AT && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.offerMade = true;
       const def = CARD_BY_ID[offer];
-      if (def) return this.openComms(def);
+      if (def) this.desk.offer(def, weightOf(def), this.runTime);
     }
 
     // a named captain: they find you once, and come their own way
@@ -655,7 +678,7 @@ export class World implements EncounterHost {
       if (turnsAway(cdef, cap.memory, you, them, this.rng)) {
         this.captainEnd = 'left';
         this.events.push({ type: 'captainLeft', id: cdef.id, name: cdef.name, text: cdef.lines.leave });
-      } else return this.openComms(captainCard(cdef, cap.memory, you, them));
+      } else { const cc = captainCard(cdef, cap.memory, you, them); this.desk.offer(cc, weightOf(cc), this.runTime); }
     }
 
     // the lane mouth: a blockade's checkpoint is a comms card; an open lane may still have someone waiting
@@ -671,7 +694,8 @@ export class World implements EncounterHost {
         this.openComms(CARD_BY_ID.checkpoint!);
       } else {
         b.blockade = 'done';
-        const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll');
+        // an open lane's toll is not every jump's: a roll, and not on the heels of another call
+        const def = this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
         if (def) this.openComms(def);
       }
     }
@@ -775,6 +799,7 @@ export class World implements EncounterHost {
 
   private dock(): void {
     const b = this.bk!;
+    this.lapse();
     b.dockT = 0;
     b.docks++;
     this.run.docked++;
@@ -1067,48 +1092,127 @@ export class World implements EncounterHost {
     };
   }
 
-  /** Who calls, and when: follow-ups when due, the port's approach once, then a card by chance every half minute or so. */
+  /** What the player is doing: only a free sky hears a card (sim/desk.ts). */
+  private busy(): Busy {
+    const b = this.bk!, s = this.ship;
+    if (b.jumpT >= 0 || b.spool > 0 || b.dockT > 0.2 || b.blockade === 'checkpoint') return 'transit';
+    if (this.command.state !== 'idle' || this.aliens.some((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < DESK.threat)) return 'fight';
+    if (this.cutting !== null) return 'cutting';
+    const fast = Math.hypot(s.vx, s.vz) > topSpeed(this.hull) * 0.5;
+    if (fast && this.field.rocks.some((r) => Math.hypot(r.x - s.x, r.z - s.z) < r.r + DESK.tight)) return 'tight';
+    return 'free';
+  }
+
+  /** Who calls, and when. Everything that wants to talk is offered to the desk, which says when it is heard. */
   private stepComms(): void {
-    const b = this.bk!, t = this.runTime, s = this.ship;
-    if (!this.alive || this.phase !== 'play' || b.jumpT >= 0 || this.command.state !== 'idle' || b.blockade === 'checkpoint') return;
+    const b = this.bk!, t = this.runTime, s = this.ship, d = this.desk;
+    if (!this.alive || this.phase !== 'play') return;
+    const busy = this.busy();
+    const was = this.wasBusy;
+    this.wasBusy = busy;
+    d.watch(busy, t);
+    d.sweep(t, this.docked);
+    // a call nobody picked up: the channel closes
+    if (this.call && t >= this.callUntil) this.lapse();
+
+    // the moments worth a word: the arrival, a fight won, a hold nearly full
+    if (!this.arrivalSaid && t >= 5) { this.arrivalSaid = true; d.moment('arrive', t, this.deskRng); }
+    if (busy === 'fight') this.fightT += 1 / 60;
+    else if (was === 'fight' && busy !== 'transit') {
+      if (this.fightT > 6) d.moment('won', t, this.deskRng);
+      this.fightT = 0;
+    }
+    if (!this.fullSaid && this.ore >= this.holdMax * 0.8) { this.fullSaid = true; d.moment('haul', t, this.deskRng); }
+
+    // follow-ups, once due
     const due = this.follows.findIndex((f) => f.at <= t);
     if (due >= 0) {
       const [f] = this.follows.splice(due, 1);
       const def = CARD_BY_ID[f!.card];
-      if (def && !this.cardsSeen.has(def.id) && condOk(def.when, this.commsCtx())) return this.openComms(def);
+      if (def && !this.cardsSeen.has(def.id)) d.offer(def, weightOf(def), t);
     }
+    // the port's approach calls once
     if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
       this.portCalled = true;
       const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'port');
-      if (def) return this.openComms(def);
+      if (def && (weightOf(def) === 'major' || this.deskRng.next() < DESK.portNews)) d.offer(def, weightOf(def), t, true);
     }
-    if (b.def.quiet || t < this.cardNext) return;
-    const x = this.commsCtx();
-    // not in the middle of a fight, unless the card is about the fight
-    if (x.hostiles > 1) { this.cardNext = t + 4; return; }
-    const def = pickCard(x, this.blocked(), this.rng);
-    this.cardNext = t + (def ? commsGap(b.heat, this.rng) * b.def.calls : 10);
-    if (def) this.openComms(def);
+    // a new card by chance: only on an opportunity, never on a timer alone, and few a sortie
+    if (!b.def.quiet && t >= this.cardNext && d.wants(t, busy)) {
+      const def = pickCard(this.commsCtx(), this.blocked(), this.rng);
+      if (def) { d.offer(def, weightOf(def), t); d.used(); }
+    }
+
+    // deliver the one that is next, if the moment is right
+    if (!this.call) {
+      const a = d.next(busy, t);
+      if (a) {
+        const pre = a.def.trigger === 'chance' || a.def.trigger === 'follow' || a.def.trigger === 'port' || a.def.trigger === undefined;
+        if (!pre || condOk(a.def.when, this.commsCtx())) {
+          if (a.tier === 'major') return this.openComms(a.def);
+          this.openCall(a.def);
+        }
+      }
+    }
+    // the radio: a line, no answer. A card on the table has the screen.
+    if (!this.call) {
+      const m = d.pingFor(busy, t, this.deskRng);
+      if (m) this.say(m);
+    }
+  }
+
+  /** One line on the radio for this moment, if one fits and has not been heard. */
+  private say(m: Moment): void {
+    const b = this.bk!, x = this.commsCtx();
+    const pool = CHATTER.filter((c) => c.on.includes(m) && !this.heardChatter.has(c.id) && (!c.kind || c.kind.includes(x.kind)) && (c.netted === undefined || c.netted === x.netted));
+    if (!pool.length) return;
+    const c = pool[this.deskRng.int(pool.length)]!;
+    this.heardChatter.add(c.id);
+    this.desk.spoke(this.runTime);
+    this.events.push({ type: 'ping', id: c.id, from: c.from, caller: c.caller, text: c.text, moment: m, system: b.def.name });
+  }
+
+  /** A card as a call: the world does not wait. It lapses if nobody answers. */
+  private openCall(def: CardDef): void {
+    useIds(this.ids);
+    const o = openCard(def, this.commsCtx(), this.rng);
+    this.cardsSeen.add(def.id);
+    this.call = o;
+    this.callUntil = this.runTime + (o.tier === 'important' ? DESK.window.important : DESK.window.routine);
+    this.desk.closed(this.runTime);
+    this.events.push({ type: 'call', id: def.id, tier: o.tier as 'important' | 'routine', kind: def.kind, from: o.def.from, title: o.def.title, seconds: this.callUntil - this.runTime });
+  }
+
+  /** Nobody answered: the channel closes and nothing happens. */
+  private lapse(): void {
+    const o = this.call;
+    if (!o) return;
+    this.call = null;
+    this.desk.closed(this.runTime);
+    this.run.cards.push({ id: o.def.id, choice: 'lapsed', won: false, t: Math.round(this.runTime) });
+    this.events.push({ type: 'callEnd', id: o.def.id, lapsed: true });
   }
 
   /** Put a card on the table: the world waits (or slows), and anyone it brings arrives. */
   openComms(def: CardDef): void {
     useIds(this.ids);
+    this.lapse();
     const x = this.commsCtx();
     const o = openCard(def, x, this.rng);
     this.cardsSeen.add(def.id);
+    this.desk.closed(this.runTime);
     this.comms = o;
     this.phase = 'comms';
     if (def.arrive) o.brought.push(...this.applyOutcome(def.arrive, o.fee, []));
     refresh(o, this.commsCtx());
-    this.events.push({ type: 'comms', id: def.id, kind: def.kind, from: o.def.from, title: o.def.title, slow: o.slow > 0 });
+    this.events.push({ type: 'comms', id: def.id, tier: 'major', kind: def.kind, from: o.def.from, title: o.def.title, slow: o.slow > 0 });
   }
 
   /** Answer the card on the table with choice `id` (or its index). False if it cannot be taken. `timedOut`: the slowed card ran out of time. */
   answer(id: string | number, timedOut = false): boolean {
     useIds(this.ids);
-    const o = this.comms;
-    if (this.phase !== 'comms' || !o) return false;
+    const o = this.phase === 'comms' ? this.comms : this.call;
+    if (!o) return false;
     const key = typeof id === 'number' ? o.choices[id]?.id : id;
     if (!key) return false;
     const x = this.commsCtx();
@@ -1118,8 +1222,9 @@ export class World implements EncounterHost {
     if (!res) return false;
     this.cyrite -= res.cost.cyrite; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts; this.food -= res.cost.food;
     if (res.outcome.sell) this.chits += res.cost.ore * res.outcome.sell;
-    this.comms = null;
-    this.phase = 'play';
+    if (o === this.call) this.call = null;
+    else { this.comms = null; this.phase = 'play'; }
+    this.desk.closed(this.runTime);
     this.applyOutcome(res.outcome, o.fee, o.brought);
     this.rest();
     this.run.cards.push({ id: o.def.id, choice: res.choice.id, won: res.won, t: Math.round(this.runTime) });
@@ -1377,6 +1482,25 @@ export class World implements EncounterHost {
     if (al.canCloak && at) al.cloak = 1;
     this.aliens.push(al);
     return al;
+  }
+
+  /** The shared world: deal it, ask what it does here, and apply it (docs/ENVIRONMENT.md). */
+  private stepSpace(dt: number, s: ShipState): void {
+    const space = this.space!;
+    space.step(dt, this.runTime, s);
+    const a = space.sample(s.x, s.z, this.air);
+    this.field.zone = a.rock;
+    this.navNoise = Math.max(a.jam, this.navNoise > 0 ? this.navNoise - dt * 0.5 : 0);
+    // heavy going slows the ship; a pull leans it
+    if (a.drag > 1) { const k = Math.exp(-(a.drag - 1) * 1.5 * dt); s.vx *= k; s.vz *= k; }
+    s.vx += a.ax * dt; s.vz += a.az * dt;
+    if (space.features.some((f) => f.def === 'well')) {
+      for (const al of this.aliens) {
+        const h = space.sample(al.x, al.z, this.there);
+        al.vx += h.ax * dt; al.vz += h.az * dt;
+      }
+    }
+    this.conditions = reports(a);
   }
 
   private stepAliens(dt: number, t: number, p: Pressure): void {
@@ -1682,6 +1806,8 @@ export class World implements EncounterHost {
   }
 
   dropCrystals(x: number, z: number, total: number, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'cyrite' | 'ore' | 'parts' = 'crystal', life = 1): void {
+    // a place rich in salvage (docs/ENVIRONMENT.md) pays more Krail where it is dropped
+    if (kind === 'crystal' && this.space) total = Math.round(total * this.air.krail);
     if (kind === 'crystal') this.run.dropped += Math.round(total);
     dropCrystals(this.pickups, x, z, total, this.rng, spread, vx, vz, kind, life);
   }
@@ -2132,7 +2258,7 @@ export class World implements EncounterHost {
     r.identity = identity(this.levels).title;
     r.capitalsEscaped = Math.max(0, this.command.count - this.command.kills - (this.command.boss ? 1 : 0));
     r.timeline.push({ t: Math.round(this.runTime), score: this.score, plates: this.run.escaped ? this.plates : 0, refit: this.refit });
-    this.comms = null;
+    this.comms = null; this.call = null;
     this.phase = 'over';
   }
 
