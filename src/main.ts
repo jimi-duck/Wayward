@@ -29,8 +29,8 @@ import { showConsole } from './ui/briefing';
 import { Feel } from './audio/audio';
 import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
-/** The long journey (eight regions, docs/SCALE-UP.md) is for testing until the clocks are tuned: open the game with ?long. */
-const LONG_JOURNEY = new URLSearchParams(location.search).has('long');
+/** New Story journeys run the eight regions (docs/SCALE-UP.md); ?short plays the old three, for testing. */
+const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
