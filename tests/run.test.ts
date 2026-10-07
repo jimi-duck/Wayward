@@ -6,9 +6,9 @@ import { ENCOUNTERS, startEncounter } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';
 import { CRYSTAL_LIFE, dropCrystals } from '../src/sim/pickups';
 import { CHAIN_WINDOW, OC_MAX, SHIP_R } from '../src/sim/tuning';
-import { cost } from '../src/sim/bay';
+import { ARCADE_PRICE } from '../src/content/web';
 import { launchTorpedo } from '../src/sim/weapons';
-import { AUTO_QUIET, World } from '../src/sim/world';
+import { BAY_QUIET, World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
   ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard', ...f });
@@ -66,7 +66,7 @@ describe('krail and the refit bay', () => {
 
   it('opens the bay when it is quiet; the world waits; a level is paid for in krail', () => {
     const w = quiet();
-    w.krail = cost('ph_emitters', 1);
+    w.krail = ARCADE_PRICE;
     expect(w.openBay()).toBe(true);
     expect(w.phase).toBe('bay');
     const t = w.runTime;
@@ -83,43 +83,121 @@ describe('krail and the refit bay', () => {
     expect(w.install('ph_capacitors')).toBe('closed');
   });
 
-  it('opens when the alert is clear; caution (ships near) and red alert (under attack) keep it shut', () => {
+  it('opens when the alert is clear; yellow alert (observed) and red alert (targeted) keep it shut', () => {
     const w = quiet();
     expect(w.alert()).toBe('clear');
     expect(w.bayClosed()).toBeNull();
-    // a hull close by, not attacking: caution
+    // a hull close by, not attacking: yellow alert
     const near = parked(w, 0, -78, 0, 'scout');
     near.mode = 'patrol';
-    expect(w.alert()).toBe('caution');
-    expect(w.bayClosed()).toBe('caution');
+    expect(w.alert()).toBe('yellow');
+    expect(w.bayClosed()).toBe('yellow');
     // one in the fight: red alert
     w.aliens = [];
     const al = parked(w, 0, -30, 0, 'lancer');
     al.mode = 'hold';
-    expect(w.alert()).toBe('alert');
-    expect(w.bayClosed()).toBe('alert');
+    expect(w.alert()).toBe('red');
+    expect(w.bayClosed()).toBe('red');
     expect(w.openBay()).toBe(false);
     w.aliens = [];
     expect(w.openBay()).toBe(true);
     w.closeBay();
   });
 
-  it('Auto-refit fits the first affordable suggestion once it is quiet, and says so', () => {
+  it('in the arcade the bay opens by itself once a price of Krail is aboard and the alert is clear', () => {
     const w = quiet();
-    w.krail = 200;
-    run(w, 3);
-    expect(w.refit).toBe(0); // off unless the player switches it on
-    w.autoFit = true;
+    w.krail = ARCADE_PRICE - 1;
+    run(w, BAY_QUIET + 1);
+    expect(w.phase).toBe('play'); // not enough yet
+    dropCrystals(w.pickups, 1, 0, 1, w.rng, 0);
+    run(w, 1);
+    expect(w.krail).toBeGreaterThanOrEqual(ARCADE_PRICE);
+    expect(w.phase).toBe('play'); // a moment of quiet first, to pick up what is falling
+    run(w, BAY_QUIET);
+    expect(w.phase).toBe('bay');
+    const t = w.runTime;
+    run(w, 1);
+    expect(w.runTime).toBe(t); // the world waits
+  });
+
+  it('waits for the alert to clear, and for the hull that raises it to go', () => {
+    const w = quiet();
     const al = parked(w, 0, -30, 0, 'lancer');
     al.mode = 'hold';
-    run(w, 3);
-    expect(w.refit).toBe(0); // not with a hostile close
+    w.krail = ARCADE_PRICE;
+    run(w, BAY_QUIET + 3);
+    expect(w.alert()).toBe('red');
+    expect(w.phase).toBe('play');
     w.aliens = [];
-    w.drain();
-    run(w, AUTO_QUIET + 0.2);
-    expect(w.refit).toBe(1);
-    expect(w.drain().some((e) => e.type === 'fitted' && 'auto' in e && e.auto)).toBe(true);
-    expect(w.krail).toBeLessThan(200);
+    run(w, BAY_QUIET - 0.5);
+    expect(w.phase).toBe('play');
+    run(w, 1);
+    expect(w.phase).toBe('bay');
+  });
+
+  it('charges every module the same in the arcade, and the bay stays up for as many as the Krail buys', () => {
+    const w = quiet();
+    w.krail = ARCADE_PRICE * 2 + 10;
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
+    expect(w.install('ph_emitters')).toBeNull();
+    expect(w.krail).toBe(ARCADE_PRICE + 10);
+    expect(w.install('ph_emitters')).toBeNull(); // a second level costs the same
+    expect(w.krail).toBe(10);
+    expect(w.install('ph_capacitors')).toBe('krail');
+    expect(w.run.krailSpent).toBe(ARCADE_PRICE * 2);
+  });
+
+  it('asks again a price later when the player leaves with a price unspent, and at the price once it is spent down', () => {
+    const w = quiet();
+    const P = ARCADE_PRICE, start = P * 2 + 10;
+    w.krail = start;
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
+    w.closeBay(); // launched without fitting
+    run(w, BAY_QUIET + 2);
+    expect(w.phase).toBe('play');
+    w.krail = start + P - 1;
+    run(w, BAY_QUIET + 2);
+    expect(w.phase).toBe('play');
+    w.krail += 1;
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
+    // spent down below a price, it opens again at the price
+    expect(w.install('ph_emitters')).toBeNull();
+    expect(w.install('ph_emitters')).toBeNull();
+    expect(w.install('ph_capacitors')).toBeNull();
+    expect(w.krail).toBe(start + P - 3 * P);
+    expect(w.krail).toBeLessThan(P);
+    w.closeBay();
+    w.krail = P;
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
+  });
+
+  it('asks again at once for what is left after a pick, since that is a new pick and not a skipped one', () => {
+    const w = quiet();
+    w.krail = ARCADE_PRICE * 2;
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
+    expect(w.install('ph_emitters')).toBeNull();
+    w.closeBay(); // the bay shuts itself after a pick
+    expect(w.krail).toBe(ARCADE_PRICE);
+    run(w, BAY_QUIET + 0.5);
+    expect(w.phase).toBe('bay');
+  });
+
+  it('leaves the Story mode’s bay to the player', () => {
+    const s = new World(1, { mode: 'breakout' });
+    s.field.rocks = [];
+    s.field.step = () => {};
+    s.aliens = [];
+    s.bk!.nextPursuit = Infinity;
+    s.cardNext = Infinity;
+    s.portCalled = true;
+    s.krail = 500;
+    for (let i = 0; i < 60 * (BAY_QUIET + 3); i++) s.step(STEP, input());
+    expect(s.phase).toBe('play');
   });
 
   it('starts a new run from the stock ship: lasers, a shield charge and the torpedo bay', () => {

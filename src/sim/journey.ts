@@ -3,6 +3,7 @@ import {
   DANGER_DAYS, PLACE_CHITS, PLACE_COVER, PLACE_CYRITE, PLACE_KRAIL, PLACE_PARTS, PLACES, REWARD_WORD,
 } from '../content/phenomena';
 import { SYSTEMS } from '../content/systems';
+import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/survival';
 import type { RegionSet } from '../content/regions';
 import { FOOD_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
@@ -10,6 +11,7 @@ import {
   tierOf, viewOf, type Chart, type StarSystem,
 } from './chart';
 import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './scatter';
+import { arrival, delay as keysDelay, KEYS_NOTED, shift } from './consequences';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, crossGate, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
@@ -78,7 +80,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 7;
+export const VERSION = 8;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -108,6 +110,8 @@ export interface Journey {
   version: number;
   seed: number;
   hardcore: boolean;
+  /** The survival mode it was begun in (content/survival.ts): fixed for the journey, whatever the title shows later. */
+  survival: SurvivalId;
   day: number;
   chart: Chart;
   /** Where the Wayward is, and where the plotted lane goes (null while the chart is open). */
@@ -139,17 +143,24 @@ export interface Journey {
 
 const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 
-export function startCarry(): Carry {
+export function startCarry(survival: SurvivalId = DEFAULT_SURVIVAL): Carry {
+  const K = survivalOf(survival).voyage.start;
   return {
-    cyrite: START_CYRITE, krail: 0, ore: 0, parts: START_PARTS, chits: 0, food: FOOD_START, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [],
+    cyrite: K.cyrite, krail: 0, ore: 0, parts: K.parts, chits: 0, food: K.food, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [],
   };
 }
 
 /** A new journey: the region laid out, the Breakout first. The old lane out of Cerro leads to one system of the next column. */
-export function newJourney(seed: number, hardcore = false, set: RegionSet = 'three'): Journey {
-  const chart = makeChart(seed, set);
+export function newJourney(seed: number, hardcore = false, set: RegionSet = 'three', survival: SurvivalId = DEFAULT_SURVIVAL): Journey {
+  const V = survivalOf(survival).voyage;
+  const chart = makeChart(seed, set, V.breathers);
+  // the mode's fuel economy is written into the lanes once, so everything that reads a lane's Cyrite (the chart, the planner, the save) agrees
+  if (V.jump !== 1) {
+    chart.fuel = V.jump;
+    for (const r of chart.routes) r.cyrite = Math.max(1, Math.round(r.cyrite * V.jump));
+  }
   const j: Journey = {
-    version: VERSION, seed, hardcore, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry: startCarry(),
+    version: VERSION, seed, hardcore, survival: survivalOf(survival).id, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry: startCarry(survival),
     wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
   };
   const out = lanesFrom(chart, chart.home);
@@ -167,7 +178,7 @@ export const here = (j: Journey): StarSystem => sysById(j.chart, j.at);
 export function sortieDef(j: Journey): SortieDef {
   const s = here(j);
   const notice = pressure(j.notice, j.day);
-  if (s.kind === 'home') return { ...HOME, system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice, story: dueBeat(j) };
+  if (s.kind === 'home') return { ...HOME, survival: j.survival, jumpCost: Math.max(1, Math.round(HOME.jumpCost * (j.chart.fuel ?? 1))), system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice, story: dueBeat(j) };
   const t = SYSTEMS[s.kind];
   const net = netted(j.chart, s.id);
   const route = j.dest ? routeBetween(j.chart, s.id, j.dest) : null;
@@ -181,13 +192,19 @@ export function sortieDef(j: Journey): SortieDef {
   const R = regionDef(j.chart, regionOf(s)) ?? regionsOf(j.chart)[0]!, raid = raided(j.chart, s.id);
   // a breather is quiet unless the Net has reached it: a blockade is not a rest
   const quiet = !!s.quiet && !net;
+  // what the flags from earlier choices change here (content/consequences.ts)
+  const at = { holder: s.holder, here: presence(j.chart, s.id), port: !!s.port };
+  const echo = shift(j.carry.flags, at);
   // the long journey: she meets you once a region
   const met = !!R.calloway && !!j.hunt.met?.includes(regionOf(s));
-  const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0);
+  const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0) + echo.ahead;
+  const quoted = s.port ? pricesAt(j.chart, s.id)! : null;
+  // a copy: the chart's own prices are not the flags' to change
+  const prices = quoted && { ...quoted, plate: Math.round(quoted.plate * echo.plates) };
   return {
-    system: s.id, region: tierOf(j.chart, regionOf(s)), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
-    port: s.port ? { name: s.port.name, prices: pricesAt(j.chart, s.id)! } : null,
-    heat: Math.min(0.6, t.heat + (net ? 0.25 : 0)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
+    survival: j.survival, system: s.id, region: tierOf(j.chart, regionOf(s)), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
+    port: prices ? { name: s.port!.name, prices } : null,
+    heat: Math.max(0, Math.min(0.6, t.heat + (net ? 0.25 : 0) + echo.heat)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
     rich: quiet ? Math.max(QUIET_RICH, t.rich * (0.6 + s.cyrite * 0.8)) : t.rich * (0.6 + s.cyrite * 0.8), density: quiet ? Math.max(QUIET_DENSITY, t.density) : t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, pace: t.pace, quiet,
     ahead: raid ? undefined : AHEAD[s.holder], thren: threnAt(j.chart, s.id), here: presence(j.chart, s.id),
     blockade: net, netted: net, calloway: finale || quiet || met ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
@@ -257,7 +274,7 @@ function pass(j: Journey, days: number, heard: string[] = []): string[] {
   cool(j.notice, days);
   // the Net moves once you are out of Cerro: it is the Continuance answering the escape
   if (j.trail.length < 2) return [];
-  const fell = spreadNet(j.chart, days, rng(j));
+  const fell = spreadNet(j.chart, days * survivalOf(j.survival).voyage.net, rng(j));
   // the Thren follow the Cyrite: in a lane, to where it is going (the Wayward is already set down there)
   const at = j.at;
   for (const n of stepScatter(j.chart, days, rng(j), { at, cyrite: j.carry.cyrite, tank: TANK_MAX })) {
@@ -361,8 +378,9 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (res.ended === 'destroyed') {
     j.wrecks++;
     // a wreck with her in the system is a capture (on the long chart, with the region's risk)
+    const V = survivalOf(j.survival).voyage;
     const taken = res.calloway && captureRoll(j, s);
-    if (j.hardcore || j.wrecks >= WRECKS || taken) {
+    if (j.hardcore || j.wrecks >= V.wrecks || taken) {
       j.status = 'over';
       j.end = taken ? 'captured' : 'wrecked';
       j.carry = res.carry;
@@ -371,10 +389,10 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     }
     // adrift: you patch her enough to fly, and the hold is gone
     const c = res.carry;
-    j.carry = { ...c, ore: 0, parts: Math.floor(c.parts / 2), cyrite: Math.floor(c.cyrite / 2), chits: Math.floor(c.chits / 2), plates: 2 };
+    j.carry = { ...c, ore: 0, parts: Math.floor(c.parts * V.kept), cyrite: Math.floor(c.cyrite * V.kept), chits: Math.floor(c.chits * V.kept), plates: 2 };
     pass(j, ADRIFT);
     note(j, t('Wrecked in {name} · adrift a day', { name: s.name }));
-    lines.push(t('The hull went. She flies again, a day later.'), t('Hold lost, and half your Cyrite, parts and chits.'), t('{n} more and she won’t fly again.', { n: WRECKS - j.wrecks }));
+    lines.push(t('The hull went. She flies again, a day later.'), t(V.kept > 0.5 ? 'Hold lost, and a quarter of your Cyrite, parts and chits.' : 'Hold lost, and half your Cyrite, parts and chits.'), t('{n} more and she won’t fly again.', { n: V.wrecks - j.wrecks }));
     j.status = 'sortie';
     return { kind: 'adrift', lines };
   }
@@ -388,7 +406,8 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   let penalty = 0;
   if (c.food >= eat) { c.food -= eat; j.hungry = 0; }
   else { c.food = 0; j.hungry++; penalty++; lines.push(t('Out of food in the lane · a plate down')); }
-  if (c.parts >= WEAR) c.parts -= WEAR;
+  const wear = survivalOf(j.survival).voyage.wear;
+  if (c.parts >= wear) c.parts -= wear;
   else { c.parts = 0; penalty++; lines.push(t('No parts for the drive · a plate down')); }
   c.plates = Math.max(1, c.plates - penalty);
   j.carry = c;
@@ -415,6 +434,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   // a new act: out of Cerro, the Run; into the Hollows, the Choice
   const turn = j.trail.length === 2 ? ACTS[1] : there.kind === 'gate' && tierOf(j.chart, viewOf(j.chart, to)) === CHOICE_REGION && tierOf(j.chart, regionOf(there)) < CHOICE_REGION ? ACTS[2] : null;
   if (turn) { lines.unshift(actLine(turn)); note(j, actLine(turn)); }
+  lines.push(...arrival(c.flags, { holder: there.holder, here: presence(j.chart, to), port: !!there.port }).map((l) => t(l)));
   const fleet = fleetAt(j.chart, to);
   if (fleet) lines.push(t('Drift fleet here · {name} trades food and news', { name: fleet.name }));
   if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push(t('Thren here · they come for Cyrite'));
@@ -426,6 +446,12 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     note(j, t('Through the Threshold · into the Scatter'));
     j.ending = null;
     return { kind: 'through', lines: [t('The old lane opens. Beyond it, the Scatter.'), ...lines] };
+  }
+  // the keys from the Voice close the lane behind you
+  const held = keysDelay(c.flags);
+  if (held > 0) {
+    j.hunt.delay += held;
+    if (!c.flags.includes(KEYS_NOTED)) { c.flags.push(KEYS_NOTED); lines.push(t('A lane closes behind you · Calloway is held up')); }
   }
   // with every system flown she reads your route a little better, unless the echoes left behind make it lie
   const echo = effects(c.levels).echo;

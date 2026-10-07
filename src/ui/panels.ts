@@ -1,8 +1,9 @@
 import { BRANCHES, UPGRADES, type Branch } from '../content/upgrades';
-import { COSMETICS, MODIFIERS, UNLOCKS } from '../content/unlocks';
+import { COSMETICS, UNLOCKS } from '../content/unlocks';
+import { SURVIVAL, SURVIVALS, type SurvivalId } from '../content/survival';
 import { ENDING_BY_ID, ENDINGS } from '../content/endings';
 import { FRAGMENTS } from '../content/story';
-import { availableModifiers, grants, type Profile, type Recorded } from '../meta/profile';
+import { grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { VARIANTS } from '../sim/enemies';
@@ -200,13 +201,14 @@ export class SummaryPanel {
   }
 }
 
-// ── the start screen: records, challenge modifiers, engine colour; the Archive ─
+// ── the start screen: records, the survival mode, the language; the Archive ─
 // The Archive replaces the logbook: the file (the endings reached, and what
 // the Archive kept of it), the journeys, the people met, and the unlocks.
 // The title no longer has a button for it; logbook(true) still opens it.
 
 export class StartOptions {
-  constructor(private readonly profile: Profile, private readonly onChange: () => void) {
+  /** `saved`: the survival mode of the journey the title would carry on, if there is one: it keeps its own whatever is picked. */
+  constructor(private readonly profile: Profile, private readonly onChange: () => void, private readonly saved: () => SurvivalId | null = () => null) {
     $('logbook-x').addEventListener('click', () => this.logbook(false));
     $('logbook').addEventListener('pointerdown', (e) => e.stopPropagation());
     this.render();
@@ -223,23 +225,36 @@ export class StartOptions {
     if (p.life.runs) {
       rec.append(h('span', '', t('Best'), h('b', '', fmt(p.best.score))), h('span', '', t('Longest'), h('b', '', mmss(p.best.time))), h('span', '', t('Runs'), h('b', '', String(p.life.runs))));
     }
+    // the survival mode: Drifter, Prospector or Raider, with what the one picked means and how it differs, written under it
     const mods = $('mods');
-    mods.replaceChildren();
-    for (const id of availableModifiers(p)) {
-      const d = MODIFIERS[id]!;
-      const b = h('button', '', `${t(d.name)} ×${d.score}`) as HTMLButtonElement;
+    const K = SURVIVAL[p.survival];
+    mods.replaceChildren(...SURVIVALS.map((m) => {
+      const b = h('button', '', t(m.name)) as HTMLButtonElement;
       b.type = 'button';
-      b.title = t(d.text);
-      b.setAttribute('aria-pressed', String(p.modifiers.includes(id)));
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(p.survival === m.id));
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => {
         e.stopPropagation();
-        p.modifiers = p.modifiers.includes(id) ? p.modifiers.filter((m) => m !== id) : [...p.modifiers, id];
+        if (p.survival === m.id) return;
+        p.survival = m.id;
         this.render();
         this.onChange();
       });
-      mods.append(b);
-    }
+      return b;
+    }));
+    $('sv-t').textContent = t(K.tag);
+    $('diff-s').textContent = t(K.text);
+    const pips = (n: number, cls: string) => h('i', cls, '', ...[1, 2, 3].map((k) => h('s', k <= n ? 'on' : '')));
+    $('sv-scale').replaceChildren(
+      h('span', 'sv-c sky', '', h('em', '', t('Skies')), pips(K.scale.sky, 'sky')),
+      h('span', 'sv-c', '', h('em', '', t('Mining')), pips(K.scale.mining, '')),
+      h('span', 'sv-c', '', h('em', '', t('Wrecks')), pips(K.scale.wrecks, '')),
+    );
+    // a journey in progress keeps the mode it began in: say so when the pick differs
+    const kept = this.saved();
+    $('sv-keep').hidden = !kept || kept === p.survival;
+    if (kept) $('sv-keep').textContent = t('Your journey in progress stays {mode}. This is for the next new one.', { mode: t(SURVIVAL[kept].name) });
     // the language: English or German, remembered
     $('lang').replaceChildren(...LANGS.map((l) => {
       const b = h('button', '', LANG_NAME[l]) as HTMLButtonElement;

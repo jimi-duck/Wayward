@@ -219,7 +219,7 @@ first capital ship hails at 3:30, once the build has a shape.
 ## The loop
 
 Fly, fight and break rock → collect krail → fit modules in the refit bay
-(or let Auto-refit) → harder sky → a capital ship hails (engage or evade)
+→ harder sky → a capital ship hails (engage or evade)
 → her salvage: her faction's tech opens in the bay → specialisations,
 synergies → the hull goes → the run report → play again.
 
@@ -244,7 +244,8 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
 | Calloway's file | `content/calloway.ts` (tricks, numbers, offers, her face) | `sim/calloway.ts` (the file, her read on your route, offers, the last meeting), `sim/hunt.ts` (the hunch), `World` (the offer, the lane mouth) |
 | Named captains | `CAPTAINS`, `PERSONALITIES` in `content/captains.ts`; who names whom in `content/factions.ts` | `sim/captains.ts` (how they come, the card, memory), `sim/notice.ts` (when, the roster), `World` (the meeting), `ui/face.ts` |
-| Difficulty | `sim/director.ts` | read by the field, spawner, guns and capital ships |
+| Survival modes | `content/survival.ts`: one row a mode (Drifter, Prospector, Raider) | `World.survival`, read by `sim/director.ts` (the sky), the pursuit and heat, `cutClean` / `destroyRock` (rock), `World.salvage` / `wreck` (wrecks), `pickEncounter` (events, the Raider's skirmish), `buildStats` (the hull), `sim/journey.ts` and `sim/chart.ts` (the voyage) |
+| Difficulty | `sim/director.ts` | the sky's multipliers, now the `sky` group of a survival mode |
 | Encounters (arcade) | `PACING`, `APPROACHES` in `sim/pacing.ts`; `groupSize`, `lull`, `enemyInterval`, `enemyCap` in `sim/director.ts` | `World.spawn` / `arrive` / `sendHostile`, the approach modes in `moveAlien` |
 | Self-repair (arcade) | `SELF_REPAIR` in `sim/repair.ts`; `repair*` in `Stats` | `stepMend` from `World.tick`, the hull row and mode card in `ui/hud.ts` |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
@@ -303,6 +304,13 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   in `FLAGS`. The tests check every reference, and `tests/reading.test.ts`
   holds each part to a word cap (text 24, hint 15, label 6, win and lose
   12); a few older lines sit over it with their own ceiling, listed there.
+- **A consequence of a story flag**: a row in `CONSEQUENCES`
+  (`content/consequences.ts`): the flag, the chips the choice shows (what it
+  brings, then what it costs, a minus sign for the cost), and what changes
+  in play: plate prices by holder, heat near a fleet, the pursuit from
+  ahead, days Calloway is held up, and the log lines where it bites. The
+  rules are in `sim/consequences.ts`; `sortieDef` and `endSortie` read them.
+  A cost makes things dearer or harder, and never shuts a way.
 - **A kind of system**: a row in `SYSTEMS` (`content/systems.ts`) and its
   place in `COL_KINDS` (`sim/chart.ts`); a word and a colour in
   `ui/chart.ts` and `ui/hud.ts`. Cards can ask for it with `kind`. Its
@@ -320,16 +328,24 @@ the torpedo bay. Krail (crystals from rock and wrecks, times the krail
 matrix) is a stock to spend there.
 
 **When it opens.** The ship has an alert in three steps (`World.alert`):
-clear (nothing hostile about; the HUD shows nothing), caution in yellow
-(a hull within 85 units, a watcher looking you over, a capital ship on its
-way, none of them attacking) and red alert (under attack, `World.inDanger`:
-a committed hostile within 60 units, fire close by, a capital ship engaged).
+clear (nothing hostile about; the HUD shows nothing), yellow alert (you are
+being observed: a hull within 85 units, a watcher looking you over, a
+capital ship on its way, none of them attacking) and red alert (you are
+being directly targeted, `World.inDanger`: a committed hostile within 60
+units, fire close by, a capital ship engaged).
 The bay opens in flight only when clear, and always when docked at a port
 (the port's list has a line for it, and closing it goes back to the dock),
-by B, a pad's Back, the upgrades badge (lower right; under the ship panel
-on touch) or the pause card's button, and the world waits on it. On caution or red alert it stays shut and the log
-says why in one line ("Bay locked · ships nearby", "Bay locked · under
-attack") while the badge shakes. The badge is dim with nothing to fit, amber
+by B, a pad's Back, the upgrades badge (the Story mode's: lower right, under
+the ship panel on touch) or the pause card's button, and the world waits on it. **In the
+Arcade the player need not open it:** it opens by itself once the Krail
+aboard reaches the price (`World.bayDue`; ARCADE_PRICE, 30) and the alert
+has been clear for two seconds (BAY_QUIET), and only if something can be
+fitted. Once a pick is made the bay shuts itself and asks again at the
+price if Krail is left; leaving without a pick puts the next opening one
+price further on (B still opens it sooner; the Arcade HUD has no badge). The Story mode's
+bay is the player's call. On yellow or red alert it stays shut and the log
+says why in one line ("Bay locked · yellow alert", "Bay locked · red
+alert") while the badge shakes. The badge is dim with nothing to fit, amber
 with a count of the suggestions you can pay for, yellow or red when locked,
 and pulses when one becomes affordable.
 
@@ -337,18 +353,16 @@ and pulses when one becomes affordable.
 modules that suit the build (by its tags), a reactor core, heat exchangers
 or frame when that budget runs short, cheaper favoured, from different tabs,
 at most one new system. Each is a card with one line, the number that
-matters and the price on its button: one tap, or 1 2 3. **Auto-refit** (a
-switch in the bay and on the pause card, saved in the profile) fits the
-first affordable suggestion by itself after two seconds of clear, and
-the log names it. A player who never opens the bay still gets a coherent
+matters and the price on its button: one tap, or 1 2 3. A player who never opens the bay still gets a coherent
 ship; one who wants to plan opens a tab: Hull, Weapons, Ordnance, Engines,
 Defence, Utility, Signals (the Story mode's), Reactor and Synergies, each a
 small web left to right by tier. A module opens
 once something it comes from is fitted, then by the upgrade's own rules
 (requires, one specialisation per group, a deep enough system). Each level
-costs Krail by tier (40, 60, 90, 130; half as much again a level; the deep
-torpedo and mine modules cost 0.65 to 0.7 of that, so ordnance builds keep
-pace) and draws
+costs Krail by tier in the Story mode (40, 60, 90, 130; half as much again
+a level; the deep torpedo and mine modules cost 0.65 to 0.7 of that, so
+ordnance builds keep pace), and the same in the Arcade, whatever the module
+or the level (ARCADE_PRICE, 30), and draws
 power, mass or heat, against ratings of 8 each (the stock ship draws 5
 power, 3 heat, 1 mass). Power is a ceiling; the reactor core (+3 a level)
 raises it and is always open until full, so a build never gets stuck, and
@@ -373,8 +387,9 @@ port they show "Fitted only at a port". The marks fitted in each system
 still name the ship and open endings.
 
 **The ship's console** (`ui/ops.ts`, `ui/briefing.ts`). The bay and the
-pause card show the HUD's alert as one word (`◆ Clear`, `◆ Caution`,
-`◆ Red alert`, and `◆ Critical` at one plate), the pause card wraps the
+pause card show the HUD's alert as one word (`◆ Clear`, `◆ Yellow alert`,
+`◆ Red alert`, and `◆ Critical` at one plate; the pause card shows only the
+two alerts), the pause card wraps the
 briefing in a rule, a line of the ship's voice and a line of readings. In the
 bay the tabs carry marks (amber fitted, red over a rating through something
 fitted there), Install names its price, the figures read as large
@@ -679,10 +694,37 @@ The report compares the run with your best (survival, refits, kills, chain,
 krail, overcharges, capital ships, events), shows the ship as built,
 what did the killing and what did the damage, the score curve against your
 best run's, and any unlocks earned. Long-term progression opens options,
-never power: locked specialisations, a synergy, two sector events, three
-challenge modifiers (ironman, glass cannon, hostile skies, each with a score
-multiplier) and engine colours. The logbook on the start screen shows the
+never power: locked specialisations, a synergy, two sector events and
+engine colours. The survival mode (below) is always open. The logbook on the start screen shows the
 hint for every unlock still locked.
+
+## Survival modes
+
+Chosen on the start screen under Start, before a run: Drifter, Prospector
+(the default and the baseline) or Raider. A mode is not a difficulty. Each
+changes what the game is about, and each is one row in `content/survival.ts`
+that the systems read; nothing else asks which mode it is. To rebalance a
+mode, change its row. A multiplier of 1 changes nothing and draws no random
+numbers, so Prospector plays exactly as the game did before modes.
+
+- **Drifter.** Calmer skies (fewer hulls, fewer elites, longer gaps between
+  pursuers, slower heat), richer rock, cheaper lanes, a bigger start, a
+  tougher hull, and four wrecks before you are adrift. Explore and follow the
+  story.
+- **Prospector.** Mine Krail, manage Cyrite, trade, run or fight.
+- **Raider.** Rock is thin and loud (cutting adds more heat), wrecks are rich
+  and last longer, and the sector sends a skirmish: two crews fight each
+  other, ignore you until you come close or shoot, and leave their wrecks.
+  A wreck in the Story holds parts, Cyrite and ore by the hull that died
+  (a fighter little, a cruiser cells, a hauler its hold); Prospector's holds
+  parts and Krail only. Find a fight, outlast it, strip what it left, sell
+  what you cannot use.
+
+The mode is saved with the profile (the title remembers it) and with the
+journey (a journey keeps its mode; the title cannot change it, and says so).
+A run's mode is fixed when it starts. Old saves: Easy becomes Drifter, Hard
+(and Hostile Skies) becomes Raider, anything else Prospector. Numbers and
+their evidence: [BALANCE-SURVIVAL.md](BALANCE-SURVIVAL.md).
 
 ## Balance
 

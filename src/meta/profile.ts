@@ -1,7 +1,8 @@
-import { MODIFIERS, UNLOCKS, type Lifetime, type UnlockDef } from '../content/unlocks';
+import { UNLOCKS, type Lifetime, type UnlockDef } from '../content/unlocks';
 import type { RunStats } from '../sim/run';
 import type { JourneyRecord } from '../sim/endings';
 import type { EndingId } from '../content/endings';
+import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/survival';
 
 // ── the pilot's record, between runs ──────────────────────────────────────
 // Bests, lifetime totals, the last few runs, what long-term progression
@@ -59,15 +60,13 @@ export interface Profile {
   history: RunRecord[];
   /** Unlock ids earned. */
   earned: string[];
-  /** Challenge modifiers switched on for the next run, and the engine colour. */
-  modifiers: string[];
+  /** The survival mode for the next new run or journey (content/survival.ts), and the engine colour. A journey in progress keeps its own. */
+  survival: SurvivalId;
   cosmetic: string;
   /** The camera distance last chosen (an index into the zoom steps). */
   zoom: number;
   /** The way in last chosen: the Breakout or the arcade. */
   mode: 'breakout' | 'arcade';
-  /** Auto-refit: the arcade's bay fits its own suggestions as you fly. */
-  autoFit: boolean;
   /** The arcade's briefing has been read through once (it opens in full the first time). */
   briefed: boolean;
   archive: Archive;
@@ -80,11 +79,10 @@ const fresh = (): Profile => ({
   life: { runs: 0, kills: 0, capitals: 0, krail: 0, capitalsBy: {}, bestTime: 0, bestScore: 0 },
   history: [],
   earned: [],
-  modifiers: [],
+  survival: DEFAULT_SURVIVAL,
   cosmetic: 'engine-stock',
   zoom: 1,
   mode: 'breakout',
-  autoFit: false,
   briefed: false,
   archive: { journeys: [], endings: [], files: [], people: [], records: [] },
 });
@@ -110,6 +108,14 @@ const OLD_FACTIONS: Record<string, string> = { klingon: 'gutter', cardassian: 'c
  * so bests and unlocks survive. A profile already renamed passes through.
  */
 export function migrate(p: Record<string, any>): Record<string, any> {
+  delete p.autoFit; // Auto-refit is gone; a saved value is dropped
+  // the challenge toggles became one difficulty, and the difficulty became the survival mode: Easy is Drifter, Hard (and the old Hostile skies) is Raider
+  if ('modifiers' in p) {
+    const m: unknown[] = Array.isArray(p.modifiers) ? p.modifiers : [];
+    if (!('survival' in p)) p.survival = m.includes('hard') || m.includes('hostile') ? 'raider' : m.includes('easy') ? 'drifter' : DEFAULT_SURVIVAL;
+    delete p.modifiers;
+  }
+  if (p.survival !== undefined) p.survival = survivalOf(p.survival).id;
   for (const k of ['best', 'life']) {
     const o = p[k];
     if (o && 'dilithium' in o) {
@@ -140,12 +146,6 @@ export function saveProfile(p: Profile): void {
 /** Every id the profile's unlocks open (upgrades, events, modifiers, cosmetics). */
 export function grants(p: Profile): string[] {
   return UNLOCKS.filter((u) => p.earned.includes(u.id)).flatMap((u) => u.grants);
-}
-
-/** Modifiers the player may switch on: earned ones only. */
-export function availableModifiers(p: Profile): string[] {
-  const g = new Set(grants(p));
-  return Object.keys(MODIFIERS).filter((m) => g.has(m));
 }
 
 export interface Recorded {

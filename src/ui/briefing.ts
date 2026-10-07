@@ -1,6 +1,5 @@
 import type { World } from '../sim/world';
 import { $, h } from './dom';
-import { opsOf, opsText } from './ops';
 import { num, t } from '../i18n';
 
 // ── the briefing, on the ship's console ───────────────────────────────────
@@ -9,9 +8,6 @@ import { num, t } from '../i18n';
 // the three steps main.ts's showBrief fills.
 
 export function showConsole(w: World): void {
-  const o = opsOf(w);
-  $('pause-ops').className = `ops ${o}`;
-  $('pause-ops').textContent = opsText(o);
   $('pause-voice').textContent = t(w.voice());
   $('pause-foot').replaceChildren(
     h('span', '', t('Obedience class')),

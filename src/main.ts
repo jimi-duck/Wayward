@@ -10,6 +10,7 @@ import { Sector } from './render/sector';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
+import { SURVIVAL } from './content/survival';
 import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
@@ -24,7 +25,7 @@ import { StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
-import { blockOf, quickPicks } from './sim/bay';
+import { Feel } from './audio/audio';
 import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
 /** The long journey (eight regions, docs/SCALE-UP.md) is for testing until the clocks are tuned: open the game with ?long. */
@@ -53,9 +54,9 @@ function boot(): void {
   const coarse = matchMedia('(pointer: coarse)').matches;
   const quality = new QualityGovernor(pinned >= 0 ? pinned : tierIndex(coarse ? 'medium' : 'high'), pinned >= 0);
 
-  // The pilot's record between runs: bests, unlocks, chosen modifiers.
+  // The pilot's record between runs: bests, unlocks, the survival mode chosen for the next run.
   const profile = loadProfile();
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), modifiers: profile.modifiers, mode: profile.mode });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: profile.mode });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);
@@ -63,9 +64,10 @@ function boot(): void {
   sector.setCosmetic(profile.cosmetic);
   const debug = new DebugOverlay(el('debug'), params.get('debug') === '1');
 
+  const feel = new Feel();
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  sector.reduceMotion = motion.matches;
-  motion.addEventListener('change', (e) => { sector.reduceMotion = e.matches; });
+  sector.reduceMotion = feel.reduceMotion = motion.matches;
+  motion.addEventListener('change', (e) => { sector.reduceMotion = feel.reduceMotion = e.matches; });
 
   // ── zoom ───────────────────────────────────────────────────────────────
   // the middle distance by default: room to see what is coming; the choice is remembered
@@ -127,7 +129,7 @@ function boot(): void {
   const resumeLine = (j: Journey) => {
     const day = t('Day {n}', { n: Math.floor(j.day) + 1 });
     if (pending(j)) return `${day} · ${t('through the Threshold · the file is still aboard')}`;
-    return [day, here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
+    return [day, t(SURVIVAL[j.survival].name), here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
   };
   const showResume = () => {
     const live = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
@@ -156,6 +158,8 @@ function boot(): void {
   /** Export the saved journey to a file, or bring one back from a file. */
   const renderSaves = (live: Journey | null) => {
     const box = el('saves');
+    // only the Story has a save to bring in or take out
+    box.hidden = pick !== 'breakout';
     const btn = (label: string, f: () => void) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -182,7 +186,7 @@ function boot(): void {
       pickFile.addEventListener('change', async () => {
         const text = await pickFile.files?.[0]?.text();
         const j = text ? importJourney(text) : null;
-        if (j) { journey = j; showResume(); } else el('save-problem').textContent = t('That file is not a Wayward save.'), el('save-problem').hidden = false;
+        if (j) { journey = j; showResume(); startOpts.render(); } else el('save-problem').textContent = t('That file is not a Wayward save.'), el('save-problem').hidden = false;
       });
       pickFile.click();
     }));
@@ -196,7 +200,7 @@ function boot(): void {
   const startSortie = () => {
     const j = journey!;
     sortieStart = tally(j);
-    world.restart({ unlocked: grants(profile), modifiers: profile.modifiers, mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+    world.restart({ unlocked: grants(profile), mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
     showMode();
     reported = false;
     setPaused(false);
@@ -233,7 +237,7 @@ function boot(): void {
     if (j.status === 'over') recordJourney(profile, journeyRecord(j));
     chart.notice(j, out, () => {
       if (j.status === 'over') {
-        journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three');
+        journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
         saveJourney(journey);
       }
       startSortie();
@@ -243,6 +247,7 @@ function boot(): void {
   const threshold = (j: Journey, lines: string[]) => {
     loop.paused = true;
     input.reset();
+    feel.win();
     ending.show(j, () => {
       saveJourney(j);
       noticeOf(j, { kind: 'through', lines: [...j.log.slice(-1).map((l) => l.text), ...lines] });
@@ -263,9 +268,10 @@ function boot(): void {
   const startOpts = new StartOptions(profile, () => {
     saveProfile(profile);
     sector.setCosmetic(profile.cosmetic);
-    // before the first launch nothing has happened yet, so the run can be re-made with the new modifiers
-    if (!started) world.restart({ modifiers: profile.modifiers, mode: profile.mode });
-  });
+    // before the first launch nothing has happened yet, so the run can be re-made in the new survival mode
+    if (!started) world.restart({ survival: profile.survival, mode: profile.mode });
+    showBrief();
+  }, () => (journey && (journey.status !== 'over' || pending(journey)) ? journey.survival : null));
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
   const stops = () => {
@@ -304,7 +310,7 @@ function boot(): void {
       input.reset();
       const rec = recordRun(profile, world.run);
       summary.show(world.run, rec, () => {
-        world.restart({ unlocked: grants(profile), modifiers: profile.modifiers, mode: profile.mode });
+        world.restart({ unlocked: grants(profile), survival: profile.survival, mode: profile.mode });
         showMode();
         reported = false;
         startOpts.render();
@@ -344,14 +350,6 @@ function boot(): void {
     world.openBay();
   };
   hud.onBay = openBay;
-  bay.auto = world.autoFit = profile.autoFit;
-  const setAuto = (on: boolean) => {
-    world.autoFit = profile.autoFit = bay.auto = on;
-    saveProfile(profile);
-    hud.note(world, t(on ? 'Auto-refit on' : 'Auto-refit off'));
-    showBrief();
-  };
-  bay.onAuto = setAuto;
 
   // ── start, pause ───────────────────────────────────────────────────────
   // The run waits behind the start card, so the first key or tap is the one
@@ -366,6 +364,7 @@ function boot(): void {
     if (!on && loop.paused && started && carded && !profile.briefed) { profile.briefed = true; saveProfile(profile); }
     if (on && started) carded = true;
     loop.paused = on;
+    if (on) showSettings(false);
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
       input.reset();
@@ -373,17 +372,25 @@ function boot(): void {
       showConsole(world);
     }
   };
-  /** The briefing's live parts: its title, the bay's count, Auto-refit. */
+  /** The pause card's other face: sound, buzz and camera, kept off the card that explains the game. */
+  const settingsOpen = () => el('pause').classList.contains('settings-on');
+  const showSettings = (on: boolean) => {
+    el('pause').classList.toggle('settings-on', on);
+    showBrief();
+    if (on) el('p-back').focus({ preventScroll: true });
+  };
+  /** The briefing's live parts: its title, the bay's count, the settings' switches. */
   const showBrief = () => {
     const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
-    el('pause-t').textContent = t(first ? 'Briefing' : 'All stop');
-    const n = quickPicks(world.bayCtx()).filter((w) => blockOf(w.id, world.bayCtx()) === null).length;
-    el('p-bay').classList.toggle('ready', n > 0);
-    el('p-bay-n').textContent = n ? String(n) : '';
-    el('p-auto').classList.toggle('on', world.autoFit);
-    el('p-auto').setAttribute('aria-pressed', String(world.autoFit));
-    el('p-auto-v').textContent = t(world.autoFit ? 'On' : 'Off');
+    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : first ? 'Briefing' : 'All stop');
+    for (const [id, on] of [['p-sound', feel.prefs.sound], ['p-buzz', feel.prefs.haptics]] as const) {
+      el(id).classList.toggle('on', on);
+      el(id).setAttribute('aria-pressed', String(on));
+      el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
+    }
+    el('p-buzz-r').hidden = !feel.canBuzz;
+    el('p-paint-r').hidden = !el('paint').childElementCount;
   };
   // Phones and tablets take the whole screen where the browser allows it
   // (Android, iPad; never an iPhone browser), and on its side where it can
@@ -420,7 +427,7 @@ function boot(): void {
     fit();
     setPaused(false);
     if (mode === 'arcade') {
-      if (world.mode !== 'arcade') { world.restart({ modifiers: profile.modifiers, mode, carry: null }); showMode(); }
+      if (world.mode !== 'arcade' || world.survival.id !== profile.survival) { world.restart({ survival: profile.survival, mode, carry: null }); showMode(); }
       hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
       // how to play first: the pause card, until any key or tap
       setPaused(true);
@@ -429,7 +436,7 @@ function boot(): void {
     if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
       // a journey left at the Threshold still goes into the Archive, the file unchosen
       if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
-      journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three');
+      journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
       saveJourney(journey);
     } else if (pending(journey)) return threshold(journey, [t('Journey resumed · the Threshold is behind you')]);
     else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cool, plot the next jump')]);
@@ -441,7 +448,7 @@ function boot(): void {
     {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), release: el('release'), cut: el('cut'),
     },
-    () => (started ? (panelOpen() ? undefined : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
+    () => (started ? (panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
     () => openBay(),
   );
 
@@ -457,6 +464,7 @@ function boot(): void {
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
+      feel.events(events);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);
@@ -544,6 +552,8 @@ function boot(): void {
     if (e.code === 'Tab') e.preventDefault();
     // Any key resumes, except the pause keys themselves: Input has already
     // toggled on those, and answering them here as well would undo it.
+    // in Settings a key does not resume: Backspace goes back, the pause keys are Input's
+    if (settingsOpen()) { if (e.code === 'Backspace') showSettings(false); return; }
     if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);
     if (e.code === 'KeyB') openBay();
     if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -sector.rig.zoom : 1); // cycles round
@@ -570,15 +580,18 @@ function boot(): void {
   });
   el('pause').addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    setPaused(false);
+    if (settingsOpen()) showSettings(false);
+    else setPaused(false);
   });
   // the briefing's buttons answer themselves, without resuming underneath
   const act = (id: string, f: () => void) => {
     el(id).addEventListener('pointerdown', (e) => e.stopPropagation());
     el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
   };
-  act('p-bay', () => openBay());
-  act('p-auto', () => setAuto(!world.autoFit));
+  act('p-set', () => showSettings(true));
+  act('p-back', () => showSettings(false));
+  act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
+  act('p-buzz', () => { feel.setHaptics(!feel.prefs.haptics); showBrief(); });
   act('p-go', () => setPaused(false));
   // Story mode: the journey is saved as it stands (the last chart or dock), and the page reloads to the title
   act('p-exit', () => {

@@ -44,7 +44,7 @@ export const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody:
 const faction = (f: string) => t(FACTION_NAME[f] ?? f);
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
-/** A patrol this close (units) puts the mode card on caution. */
+/** A patrol this close (units) puts the mode card on yellow alert. */
 const PATROL_NEAR = 110;
 /** Seconds before the log says again that the self-repair has started. */
 const MEND_QUIET = 10;
@@ -86,7 +86,7 @@ type Hint = [string, string];
 
 const SECTOR_NAME: Record<EncounterId, string> = {
   rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
-  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly',
+  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish',
 };
 
 export class Hud {
@@ -150,9 +150,9 @@ export class Hud {
   }
 
   /** The bay would not open: say why, short, and shake the badge. */
-  bayDenied(world: World, why: 'caution' | 'alert' | 'busy'): void {
-    if (why !== 'caution' && why !== 'alert') return;
-    this.note(world, t(why === 'alert' ? 'Bay locked · under attack' : 'Bay locked · ships nearby'), 'hit');
+  bayDenied(world: World, why: 'yellow' | 'red' | 'busy'): void {
+    if (why === 'busy') return;
+    this.note(world, t(why === 'red' ? 'Bay locked · red alert' : 'Bay locked · yellow alert'), 'hit');
     this.retrigger($('upg'), 'deny');
   }
 
@@ -211,10 +211,6 @@ export class Hud {
           break;
         case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, t('Shield up'), 'gain'); break;
         case 'regen': this.note(world, `${t('Hull regrown')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
-        case 'fitted':
-          // Auto-refit says what it fitted; what you fit yourself you saw
-          if ('auto' in e && e.auto) this.note(world, `${t('Auto-refit')} · ${t(nodeName(e.id))}`, 'gain');
-          break;
         case 'mendStart': if (world.time - this.mendNoted > MEND_QUIET) { this.mendNoted = world.time; this.note(world, t('Self-repair under way')); } break;
         case 'mended': this.note(world, `${t('Hull mended')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); this.retrigger($('sys-hull'), 'mended'); break;
         case 'contacts': this.note(world, plural(e.n, '{n} contact inbound', '{n} contacts inbound'), 'hit'); break;
@@ -341,10 +337,11 @@ export class Hud {
     this.bayReady = ready;
     // the badge: dim with nothing to fit, amber with a count when something can be, red and locked in battle
     const badge = $('upg');
-    badge.hidden = false;
+    // the Arcade bay opens by itself, so only the Story mode shows the badge
+    badge.hidden = !world.bk;
     badge.classList.toggle('ready', n > 0 && !locked);
     badge.classList.toggle('locked', n > 0 && locked);
-    badge.classList.toggle('red', alert === 'alert');
+    badge.classList.toggle('red', alert === 'red');
     text($('upg-n'), n ? String(n) : '');
     text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : n > 0 ? 'Upgrade ready' : 'Refit bay'));
     if (n > this.shown && !locked) this.retrigger(badge, 'new');
@@ -662,18 +659,23 @@ export class Hud {
 
   /**
    * The ship's alert (World.alert), the same test the refit bay opens on:
-   * clear shows nothing at all; caution (yellow) when hulls are near or
-   * looking you over; red alert when you are under attack.
+   * clear shows nothing at all; yellow alert when you are being observed
+   * (hulls near or looking you over); red alert when you are being directly
+   * targeted.
    */
   private updateMode(world: World): void {
     const a = world.alert();
-    const word = !world.alive ? 'Hull breach' : a === 'alert' ? 'Red alert' : 'Caution';
+    const word = !world.alive ? 'Hull breach' : a === 'red' ? 'Red alert' : 'Yellow alert';
     const key = `${a}${word}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
-    $('mode').className = a;
-    $('mode').hidden = a === 'clear';
+    const mode = $('mode');
+    mode.className = a;
+    mode.hidden = a === 'clear';
     text($('mode-t'), t(word));
+    text($('mode-s'), t(a === 'red' ? 'You are being targeted' : 'You are being observed'));
+    // a step up or down lights the card once, so a change is seen and not only read
+    if (a !== 'clear') this.retrigger(mode, 'enter');
   }
 
   private updateLog(world: World): void {

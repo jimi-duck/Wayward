@@ -80,6 +80,8 @@ export interface Place {
 export interface Chart {
   systems: StarSystem[];
   routes: Route[];
+  /** The survival mode's multiplier on what a lane costs in Cyrite, already in `routes`; a lane opened later (a shortcut) takes it too. Absent: 1. */
+  fuel?: number;
   home: string;
   edge: string;
   /** The Net's progress into each system: at 1, it is netted. */
@@ -168,7 +170,7 @@ function nameIn(R: RegionDef, rng: Rng, used: Set<string>): string {
 }
 
 /** Lay a chart out from a seed: the three regions every journey had, or (for the long journey) the eight. */
-export function makeChart(seed: number, set: RegionSet = 'three'): Chart {
+export function makeChart(seed: number, set: RegionSet = 'three', breathers = 1): Chart {
   const rng = new Rng(seed ^ 0x5eed);
   const regions = REGION_SETS[set], LAYOUT = layoutOf(regions), COLS = LAYOUT.length;
   const names = [...NAMES], used = new Set<string>();
@@ -222,7 +224,7 @@ export function makeChart(seed: number, set: RegionSet = 'three'): Chart {
   const c: Chart = { systems, routes, home, edge, net: { [home]: 1 }, stall: {}, visited: [home], seenNet: [home], seenDay: 0, places: {} };
   if (set !== 'three') c.regionSet = set;
   c.places = layPlaces(c, seed);
-  layQuiet(c, seed);
+  layQuiet(c, seed, breathers);
   layScatter(c, seed);
   arrive(c, home, 0);
   return c;
@@ -259,10 +261,10 @@ export function layPlaces(c: Chart, seed: number): Record<string, Place> {
  * `quiet` row gives. Its own generator, so the systems and lanes of a seed
  * are the same as without them. A region with no `quiet` row has none.
  */
-export function layQuiet(c: Chart, seed: number): void {
+export function layQuiet(c: Chart, seed: number, breathers = 1): void {
   const rng = new Rng(seed ^ 0x9a1e7);
   for (const s of c.systems) {
-    const share = regionDef(c, regionOf(s))?.quiet ?? 0;
+    const share = Math.min(1, (regionDef(c, regionOf(s))?.quiet ?? 0) * breathers);
     if (share > 0 && (s.kind === 'mining' || s.kind === 'transit') && rng.next() < share) s.quiet = true;
   }
 }
@@ -291,7 +293,7 @@ export function openShortcut(c: Chart, id: string): StarSystem | null {
     .sort((p, q) => (q.col - p.col) || Math.abs(p.y - s.y) - Math.abs(q.y - s.y));
   const to = by[0];
   if (!to) return null;
-  c.routes.push({ a: id, b: to.id, cyrite: 10, days: 1 });
+  c.routes.push({ a: id, b: to.id, cyrite: Math.max(1, Math.round(10 * (c.fuel ?? 1))), days: 1 });
   return to;
 }
 

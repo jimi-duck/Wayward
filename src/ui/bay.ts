@@ -3,7 +3,7 @@ import { UPGRADE } from '../content/upgrades';
 import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
 import { blockOf, budgets, cost, fee, maxLevel, nodeName, nodeText, quickPicks, type Block } from '../sim/bay';
 import type { Advice } from '../sim/advice';
-import { upgradeFigures } from '../sim/build';
+import { upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
 import { profileOf } from '../sim/profile';
 import type { World } from '../sim/world';
@@ -17,8 +17,7 @@ import { num, t } from '../i18n';
 // Where the ship is built (PLAN.md, R). Two ways in, for two kinds of player:
 //
 //   Suggested · the default: three modules that suit the ship as it is, as
-//               big cards, one tap (or 1 2 3) to fit. Nothing to plan. With
-//               Auto-refit on, the ship fits these by itself as you fly.
+//               big cards, one tap (or 1 2 3) to fit. Nothing to plan.
 //   the tabs  · for whoever wants to build: each part of the ship as a small
 //               web, left to right by tier (fitted amber, ready teal with its
 //               price, the rest dimmed), and an inspector on the right.
@@ -31,8 +30,7 @@ import { num, t } from '../i18n';
 // core's last level) is fitted only at a port, for chits as well as Krail.
 //
 // Keys: Q E (or Tab) change view, arrows move, Enter fits, 1 2 3 fit a
-// suggestion, A toggles Auto-refit, Esc or B launches. A pad: bumpers,
-// stick, A, Y for Auto-refit, B. Touch: tap.
+// suggestion, Esc or B launches. A pad: bumpers, stick, A, B. Touch: tap.
 
 type View = 'picks' | Tab;
 
@@ -74,17 +72,25 @@ const textOf = (id: string, lv: number) => t(nodeText(id, lv));
 /** The price of the next level: Krail, and the yard's chits where it charges. */
 function priceWord(w: World, id: string): string {
   const lv = (w.levels[id] ?? 0) + 1, f = fee(id, lv, !w.bk);
-  return `${num(cost(id, lv))} Krail${f ? ` · ${num(f)} ${t('chits')}` : ''}`;
+  return `${num(cost(id, lv, !w.bk))} Krail${f ? ` · ${num(f)} ${t('chits')}` : ''}`;
 }
 
 /** What the Fit button says: the price, how much Krail is missing, or why not. */
 function fitWord(w: World, id: string, why: Block | null): string {
-  if (why === 'krail') return t('{n} more Krail', { n: num(Math.ceil(cost(id, (w.levels[id] ?? 0) + 1) - w.krail)) });
+  if (why === 'krail') return t('{n} more Krail', { n: num(Math.ceil(cost(id, (w.levels[id] ?? 0) + 1, !w.bk) - w.krail)) });
   return why ? t(WHY[why]) : `${t('Fit')} · ${priceWord(w, id)}`;
 }
 
 /** The Arcade mode: three picks, no web (the Story mode has no bk of its own here, so `!w.bk` is the arcade, as for fee). */
 const isArcade = (w: World) => !w.bk;
+
+/** One figure as a chip: what it moves and by how much. Teal with an arrow for a gain, amber and no arrow for a cost; before and after are in the tooltip. */
+function deltaChip(f: Fig, cls = 'dl'): HTMLElement {
+  const chip = h('span', `${cls}${f.cost ? ' cost' : ''}`, '', h('span', 'dl-l', t(f.label)),
+    h('b', 'dl-v', '', ...(f.cost ? [] : [h('i', 'dl-a')]), document.createTextNode(t(f.delta))));
+  chip.title = `${t(f.label)}: ${t(f.from)} → ${t(f.to)}`;
+  return chip;
+}
 
 /** The views: the suggestions, then every tab with something for this mode (Signals is the Story mode's). */
 const viewsOf = (w: World): View[] => ['picks', ...TAB_ORDER.filter((tab) => WEB.some((n) => n.tab === tab && blockOf(n.id, { ...w.bayCtx(), krail: Infinity }) !== 'mode'))];
@@ -110,13 +116,14 @@ export class BayPanel {
   private onClose: (() => void) | null = null;
   private off: (() => void) | null = null;
   private opened = 0;
+  /** An Arcade pick is made and the bay is about to shut. */
+  private closing = false;
   private view: View = 'picks';
   private sel: string | null = null;
   /** The suggestion selected, in the Suggested view. */
   private pick = 0;
-  /** Auto-refit, and what to tell when it is switched. */
-  auto = false;
-  onAuto: (on: boolean) => void = () => {};
+  /** The inspector's details (the paragraph, the advice, every figure, the note) are open. */
+  private more = false;
   /** Rings over the ship: one per part, set on the art by percent (see ZONE_AT). */
   private rings = new Map<string, HTMLButtonElement>();
   /** The module just fitted and the budgets it moved: lit for a moment (see install). */
@@ -128,9 +135,10 @@ export class BayPanel {
 
   constructor() {
     $('bay-x').addEventListener('click', (e) => { e.stopPropagation(); if (this.open) this.launch(); });
-    $('bay-auto').addEventListener('click', (e) => { e.stopPropagation(); this.toggleAuto(); });
     // a tap on the bay never reaches the flight controls behind it
     $('bay').addEventListener('pointerdown', (e) => e.stopPropagation());
+    // the Arcade bay opens by itself, mid-flight: a tap in its first moments is still the fight's
+    $('bay').addEventListener('click', (e) => { if (performance.now() - this.opened < GUARD) { e.stopPropagation(); e.preventDefault(); } }, true);
     addEventListener('resize', () => { if (this.open) this.placeArt(); });
   }
 
@@ -148,6 +156,7 @@ export class BayPanel {
     this.world = world;
     this.onClose = onClose;
     this.opened = performance.now();
+    this.closing = false;
     this.shown = {};
     // the bay opens on the suggestions; the tabs are a step further in
     this.view = 'picks';
@@ -162,7 +171,6 @@ export class BayPanel {
       if (c === 'Escape' || c === 'KeyB') return this.launch(), true;
       if (c === 'KeyQ' || (c === 'Tab' && e.shiftKey)) return this.step(-1), true;
       if (c === 'KeyE' || c === 'Tab') return this.step(1), true;
-      if (c === 'KeyA' && this.view === 'picks') return this.toggleAuto(), true;
       const d = c === 'ArrowLeft' ? [-1, 0] : c === 'ArrowRight' ? [1, 0] : c === 'ArrowUp' || c === 'KeyW' ? [0, -1] : c === 'ArrowDown' || c === 'KeyS' ? [0, 1] : null;
       if (d) return this.move(d[0]!, d[1]!), true;
       if (c === 'Enter' || c === 'NumpadEnter' || c === 'Space') return this.fit(), true;
@@ -180,14 +188,13 @@ export class BayPanel {
     $('bay').hidden = true;
   }
 
-  /** A gamepad: bumpers change view, the stick moves, A fits, Y switches Auto-refit, B launches. */
+  /** A gamepad: bumpers change view, the stick moves, A fits, B launches. */
   padInput(p: PadEdges): void {
     if (!this.world || performance.now() - this.opened < GUARD) return;
     if (p.lb) this.step(-1);
     else if (p.rb) this.step(1);
     else if (p.left || p.right || p.up || p.down) this.move(p.left ? -1 : p.right ? 1 : 0, p.up ? -1 : p.down ? 1 : 0);
     else if (p.a) this.fit();
-    else if (p.y) this.toggleAuto();
     else if (p.b || p.back) this.launch();
   }
 
@@ -195,12 +202,6 @@ export class BayPanel {
     const done = this.onClose;
     this.close();
     done?.();
-  }
-
-  private toggleAuto(): void {
-    this.auto = !this.auto;
-    this.onAuto(this.auto);
-    this.render();
   }
 
   private go(view: View): void {
@@ -260,7 +261,7 @@ export class BayPanel {
 
   private install(id: string): void {
     const w = this.world;
-    if (!w) return;
+    if (!w || this.closing) return;
     const before = budgets(w.levels), krailBefore = Math.floor(w.krail);
     let fitted = false;
     if (w.install(id) === null) {
@@ -276,6 +277,11 @@ export class BayPanel {
     this.render();
     if (fitted) { this.installFx(id, krailBefore, Math.floor(w.krail)); this.answer(id); }
     this.fresh = null;
+    // the Arcade bay opened by itself for one pick: once it is made it shuts, after the fit has landed (a second pick comes when the Krail does)
+    if (fitted && isArcade(w)) {
+      this.closing = true;
+      window.setTimeout(() => { if (this.open && this.world === w) this.launch(); }, 700);
+    }
   }
 
   /** The ship answers a fit in the voice line for a few seconds: accepted, or not factory spec if the part has a stamp. */
@@ -300,6 +306,12 @@ export class BayPanel {
   private installFx(id: string, from: number, to: number): void {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     this.countKrail(from, to, 520);
+    // the stage takes the clamp: a 3 px kick on the picture, not on the controls
+    const bay = $('bay');
+    bay.classList.remove('kick');
+    void bay.offsetWidth;
+    bay.classList.add('kick');
+    setTimeout(() => bay.classList.remove('kick'), 120);
     const zone = NODE[id]!.tab;
     // a pulse leaves the part's ring
     const ring = this.rings.get(zone);
@@ -378,10 +390,6 @@ export class BayPanel {
     $('bay-ops').className = `ops ${o}`;
     $('bay-ops').textContent = opsText(o);
     $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.krail))), h('span', '', 'Krail'));
-    const auto = $('bay-auto');
-    auto.classList.toggle('on', this.auto);
-    auto.setAttribute('aria-pressed', String(this.auto));
-    $('bay-auto-v').textContent = t(this.auto ? 'On' : 'Off');
     this.papers(w);
     $('bay').classList.toggle('picks', this.view === 'picks');
     $('bay').classList.toggle('arcade', isArcade(w));
@@ -535,7 +543,7 @@ export class BayPanel {
         ...(why1 ? [h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why1.text, why1.vars)}`))] : []),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
         h('span', 'pc-text', textOf(n.id, Math.min(max, lv + 1))),
-        fig ? h('span', 'pc-fig', '', h('span', '', t(fig.label)), h('b', '', t(fig.to))) : h('span', 'pc-fig'),
+        fig ? deltaChip(fig, 'dl pc-fig') : h('span', 'pc-fig'),
         go,
       );
       return card;
@@ -605,7 +613,7 @@ export class BayPanel {
       b.style.top = `${Y(n)}%`;
       b.setAttribute('aria-label', `${nameOf(n.id)} · ${t('Lv')} ${lv}/${max}`);
       // the price where it can be paid soon: fitted-or-ready modules say what the next level costs
-      const price = st === 'open' || st === 'short' || st === 'owned' ? cost(n.id, lv + 1) : 0;
+      const price = st === 'open' || st === 'short' || st === 'owned' ? cost(n.id, lv + 1, !w.bk) : 0;
       // three levels: the name, then the level pips, then what it moves (the first figure's label)
       const first = lv < max && st !== 'locked' ? upgradeFigures(w.levels, n.id, !w.bk).find((f) => !f.cost)?.label : undefined;
       b.append(h('span', 'bn-oct', '', nodeIcon(n.id)), max > 1 ? pips(lv, max) : h('span', 'bi-pips'), h('span', 'bn-name', nameOf(n.id)),
@@ -616,7 +624,7 @@ export class BayPanel {
     $('bay-web').replaceChildren(svg, field);
   }
 
-  /** The selected module: what it does, the numbers it changes, what it would leave the ship, and Fit with its price. */
+  /** The selected module: its name and level, what each figure changes, what it draws, and Fit with its price. The paragraph, the advice and the note sit behind (i). */
   private inspector(w: World): void {
     const id = this.sel;
     const el = $('bay-insp');
@@ -624,15 +632,19 @@ export class BayPanel {
     const node = NODE[id]!;
     const lv = w.levels[id] ?? 0, max = maxLevel(id), next = Math.min(max, lv + 1);
     const why = blockOf(id, w.bayCtx());
+    const info = h('button', `bi-i${this.more ? ' on' : ''}`, 'i') as HTMLButtonElement;
+    info.type = 'button';
+    info.title = t('Details');
+    info.setAttribute('aria-label', t('Details'));
+    info.setAttribute('aria-expanded', String(this.more));
+    info.addEventListener('click', (e) => { e.stopPropagation(); this.more = !this.more; this.render(); });
     const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', nodeIcon(id)),
-      h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips(lv, max, lv < max))));
+      h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips(lv, max, lv < max))), info);
     const adv = lv < max && !why ? this.advice(w).get(id) : undefined;
-    const out: HTMLElement[] = [head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(adv.text, adv.vars)}`))] : []), h('p', 'bi-text', textOf(id, next))];
+    const figs = lv < max ? upgradeFigures(w.levels, id, !w.bk) : [];
+    const out: HTMLElement[] = [head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`))] : [])];
     if (lv < max) {
-      const figs = h('div', 'bi-figs');
-      for (const f of upgradeFigures(w.levels, id, !w.bk).slice(0, 3)) {
-        figs.append(h('div', `fig${f.cost ? ' cost' : ''}`, '', h('span', 'f-l', t(f.label)), h('span', 'f-v', '', h('s', '', t(f.from)), document.createTextNode(' → '), h('b', '', t(f.to)))));
-      }
+      if (figs.length) out.push(h('div', 'bi-dl', '', ...figs.slice(0, 3).map((f) => deltaChip(f))));
       // what it draws, as chips: +1 power, +2 heat
       const { use, cap } = budgets(w.levels);
       const chips = h('div', 'bi-chips');
@@ -643,13 +655,17 @@ export class BayPanel {
         if (g) chips.append(h('span', `chip ${k} gives`, `${t(BUDGET_WORD[k])} ${t('limit')} +${g}`));
         if (d && k !== 'power' && use[k] + d > cap[k]) warn.push(t(OVER_WORD[k]));
       }
-      out.push(figs);
       if (chips.childElementCount) out.push(chips);
       out.push(...warn.map((x) => h('p', 'bi-warn', x)));
     }
-    // flavour comes after the numbers, then the price
-    const note = UPGRADE[id]?.note;
-    if (note) out.push(h('p', 'bi-note', t(note)));
+    if (this.more) {
+      const note = UPGRADE[id]?.note;
+      out.push(h('div', 'bi-more', '',
+        ...(adv ? [h('p', 'bi-why', t(adv.text, adv.vars))] : []),
+        h('p', 'bi-text', textOf(id, next)),
+        ...figs.map((f) => h('p', `bi-fl${f.cost ? ' cost' : ''}`, '', h('span', '', t(f.label)), h('span', '', `${t(f.from)} → ${t(f.to)}`))),
+        ...(note ? [h('p', 'bi-note', t(note))] : [])));
+    }
     const btn = h('button', 'bi-go', '') as HTMLButtonElement;
     btn.type = 'button';
     btn.disabled = !!why;
@@ -669,12 +685,22 @@ export class BayPanel {
       // the rating's state: a word from 80%, a louder one over (power is a ceiling: it fills, it never goes over)
       const share = use[k] / cap[k], state = k === 'power' ? (share >= 1 ? 'warn' : '') : share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
       const word = state === 'over' ? 'Over limit' : state === 'warn' ? (k === 'power' ? 'Full' : 'Warning') : '';
-      const bar = h('i', `bb-bar${state ? ` ${state}` : ''}`);
-      bar.style.setProperty('--v', Math.min(1, use[k] / cap[k]).toFixed(3));
-      bar.style.setProperty('--a', Math.min(1, (use[k] + add) / cap[k]).toFixed(3));
       // a fit just moved this rating: it ticks from what it said to what it says now, with the old figure struck beside it
       const now = `${use[k]}/${cap[k]}`, was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== now;
       this.shown[k] = now;
+      // one segment per point of rating: lit for what the ship draws, blinking for what the selected part would add;
+      // after a fit the new ones light one by one and a raised rating's new slots pop in
+      const [wasUse = 0, wasCap = 0] = moved ? was!.split('/').map(Number) : [];
+      const segs: HTMLElement[] = [];
+      for (let j = 0; j < cap[k]; j++) {
+        const on = j < use[k], fresh = moved && on && j >= wasUse, slot = moved && j >= wasCap;
+        const seg = h('i', [on ? 'on' : j < use[k] + add ? 'add' : '', fresh ? 'new' : '', slot ? 'pop' : ''].filter(Boolean).join(' '));
+        if (fresh || slot) seg.style.setProperty('--k', String(fresh ? j - wasUse : j - wasCap));
+        segs.push(seg);
+      }
+      // a part that would take it past a soft rating shows red before it is fitted (power is a ceiling: it never goes over)
+      const will = k !== 'power' && add > 0 && use[k] + add > cap[k];
+      const bar = h('i', `bb-bar${state ? ` ${state}` : ''}${will ? ' will' : ''}`, '', ...segs);
       const fig = h('span', 'bb-n', now);
       const val = h('b', `bb-v${moved ? ' bump' : ''}`, '', fig);
       if (moved) {

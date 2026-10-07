@@ -35,7 +35,7 @@ import { STREAK, type Streaks } from './streaks';
 // an elite carries a halo in its modifier's colour.
 
 export const NEON: Record<Faction, Color> = {
-  gutter: new Color(3.6, 1.3, 0.25),
+  gutter: new Color(3.6, 1.6, 0.2),
   custody: new Color(3.4, 2.5, 0.5),
   office: new Color(0.5, 3.4, 1.2),
   voice: new Color(0.7, 3.6, 0.6),

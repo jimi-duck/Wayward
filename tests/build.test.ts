@@ -61,6 +61,22 @@ describe('the figures', () => {
     expect(upgradeFigures({}, 'tp_bay').find((f) => f.label === 'Torpedo rack')).toMatchObject({ from: '—', cost: false });
     expect(upgradeFigures({}, 'ut_tactical').map((f) => f.label)).toContain('All weapon damage');
   });
+
+  it('gives each figure one signed change in its own unit, for the delta chips', () => {
+    // a system switched on: from nothing to the new value, so the change is the value
+    const rack = upgradeFigures({}, 'tp_bay').find((f) => f.label === 'Torpedo rack')!;
+    expect(rack.delta).toBe(`+${rack.to}`);
+    // every figure of every upgrade reads as a sign and a number, or the new value where the change rounds to nothing
+    for (const u of UPGRADES) {
+      for (const f of upgradeFigures({}, u.id)) {
+        expect(f.delta, `${u.id}: ${f.label}`).toMatch(/^[+−]\S|^\S/);
+        expect(f.delta, `${u.id}: ${f.label}`).not.toMatch(/^[+−]0(\.0)?\D*$/);
+      }
+    }
+    // a gain where lower is better still reads as the number going down
+    const reload = upgradeFigures({ tp_bay: 1 }, 'tp_magazine').find((f) => f.label === 'Torpedo reload');
+    expect(reload?.delta.startsWith('−'), 'a faster reload is a smaller number').toBe(true);
+  });
 });
 
 describe('what the ship became', () => {

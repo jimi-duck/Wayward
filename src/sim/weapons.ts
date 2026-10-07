@@ -70,7 +70,7 @@ export function newArms(s: Stats = BASE): Arms {
 export interface FireMods {
   /** Overcharge overload or rapid fire: faster, and the bank is not drawn. */
   overload: boolean;
-  /** Damage multiplier (overdrive, challenge modifiers). */
+  /** Damage multiplier (overdrive, fire control). */
   damage: number;
   /** Drifting with the drift drive. */
   drifting: boolean;
