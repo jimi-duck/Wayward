@@ -40,6 +40,7 @@ export type GameEvent =
   | { type: 'fitted'; id: string }
   | { type: 'salvage'; faction: string; tech: boolean }
   | { type: 'cloak'; x: number; z: number }
+  | { type: 'break'; x: number; z: number }
   | { type: 'bossWarn'; name: string; faction: string; hails: boolean }
   | { type: 'hail'; name: string; faction: string }
   | { type: 'bossEvaded'; name: string; faction: string }

@@ -9,7 +9,7 @@ import { Rng } from '../src/sim/rng';
 import { newShip } from '../src/sim/ship';
 import { World } from '../src/sim/world';
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' };
 const bolt = (x: number, y: number, z: number, vx = 0, vy = 0, vz = 0, life = 1) => ({ x, y, z, vx, vy, vz, life, dmg: 1.4, pierce: 0, hit: [], homing: 0 });
 
 /** A world where nothing can hurt the ship, so the clock can run long. */
@@ -55,7 +55,7 @@ describe('enemy pacing (the original curves)', () => {
     const seen = new Set<string>();
     for (let s = 0; s < 330; s++) {
       run(w, 1);
-      if (!w.command.boss) expect(w.aliens.filter((a) => !a.escort && !a.extra).length).toBeLessThanOrEqual(alienMax(w.runTime));
+      if (!w.command.boss) expect(w.aliens.filter((a) => !a.escort && !a.extra).length).toBeLessThanOrEqual(w.pressure.enemyCap);
       for (const a of w.aliens) {
         seen.add(a.kind);
         if (!a.escort && !a.extra) expect(VARIANTS[a.variant]!.at).toBeLessThanOrEqual(w.runTime);

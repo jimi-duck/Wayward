@@ -85,7 +85,7 @@ export interface WorldOptions {
   carry?: Carry | null;
 }
 
-const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
+const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const BOSS_PLATES = 1;
 
 /** The ship's alert (World.alert): clear, yellow (observed) or red (targeted). */
@@ -188,6 +188,7 @@ export class World implements EncounterHost {
   private timeScore = 0;
   private nextSample = 0;
   private wasRolling = false;
+  private wasBreaking = false;
   readonly events: GameEvent[] = [];
 
   // the Breakout: the course and the pursuit (null in the arcade), the tank, the hold, the cutter
@@ -489,6 +490,9 @@ export class World implements EncounterHost {
     if (rolling && !this.wasRolling && st.rollBurst) plasmaRing(this.sys, s, st);
     if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
     this.wasRolling = rolling;
+    const breaking = s.breakT >= 0;
+    if (breaking && !this.wasBreaking) this.events.push({ type: 'break', x: s.x, z: s.z });
+    this.wasBreaking = breaking;
     this.tick(dt);
 
     // our weapons and systems
@@ -700,7 +704,7 @@ export class World implements EncounterHost {
       const a = (pick.ahead ? home + Math.PI : home) + this.rng.range(-0.7, 0.7);
       const d = this.rng.range(115, 145);
       const at = { x: s.x + Math.cos(a) * d, y: ALIEN_TYPES[v.kind].role === 'cruiser' ? this.rng.range(-3, 8) : this.rng.range(-4, 16), z: s.z - Math.sin(a) * d };
-      const elite = this.rng.next() < pursuitElite(b.heat) * this.mods.elites + b.def.notice.elite ? pickElite(v.kind, v.faction, this.rng) : null;
+      const elite = this.rng.next() < pursuitElite(b.heat) * this.survival.pursuit.elite + b.def.notice.elite ? pickElite(v.kind, v.faction, this.rng) : null;
       const lead = this.spawnHostile(v.id, at, elite);
       // a pair, once the heat is up
       if (b.heat > 0.35 && regular + 1 < cap && ALIEN_TYPES[v.kind].role === 'interceptor' && this.rng.next() < 0.5) {

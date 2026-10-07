@@ -4,8 +4,8 @@ import {
   type Object3D, type Texture,
 } from 'three';
 import { clamp, lerp } from '../core/math';
-import type { ShipState } from '../sim/ship';
-import { ROLL_TIME } from '../sim/tuning';
+import { breakEase, type ShipState } from '../sim/ship';
+import { BREAK_TIME, ROLL_TIME } from '../sim/tuning';
 import type { V3 } from './kit';
 import { glowTexture } from './textures';
 import { buildWayward, MODEL_SCALE, type BuiltHull, type Nozzle } from './wayward';
@@ -394,6 +394,7 @@ export class ShipView {
       const t = clamp(s.rollT / ROLL_TIME, 0, 1);
       roll = s.rollDir * Math.PI * 2 * (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
     }
+    if (s.breakT >= 0 && !reduceMotion) roll = s.breakDir * Math.PI * 2 * breakEase(s.breakT / BREAK_TIME);
     this.pitchG.rotation.z = this.pitch;
     this.rollG.rotation.x = this.bank + roll;
     // a slow heave, so a ship at rest still reads as afloat

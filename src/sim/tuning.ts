@@ -44,6 +44,17 @@ export const ROLL_IFRAMES = 0.35;
 /** Sideways kick as a fraction of the hull's top speed. */
 export const ROLL_KICK = 0.5;
 
+// ── the break ─────────────────────────────────────────────────────────────
+// Break and reverse: a half-second flip that swings the nose 180 degrees
+// while the ship keeps most of its speed, so it slides on away backwards with
+// the guns facing the chaser. Helm and throttle are locked until it ends and
+// there is no invulnerability: it is a committed turn, not a dodge.
+export const BREAK_TIME = 0.5;
+/** Seconds from the start of one break to the next. */
+export const BREAK_COOLDOWN = 2.2;
+/** Share of the speed still carried at the end of a break. */
+export const BREAK_KEEP = 0.62;
+
 // ── the ship ──────────────────────────────────────────────────────────────
 /** Collision radius: the original's 9px. */
 export const SHIP_R = 9 * PX;
