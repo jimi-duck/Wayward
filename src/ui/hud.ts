@@ -11,6 +11,7 @@ import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
 import type { World } from '../sim/world';
 import { systemLevel } from './icons';
 import { Radar } from './radar';
+import { Heading } from './guide';
 import { range, Targeting } from './targeting';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
@@ -91,6 +92,7 @@ const SECTOR_NAME: Record<EncounterId, string> = {
 export class Hud {
   private readonly radar = new Radar($<HTMLCanvasElement>('radar'));
   private readonly aim = new Targeting();
+  private readonly guide = new Heading();
   private readonly log: LogLine[] = [];
   private textClock = 1;
   private measureClock = 0;
@@ -116,7 +118,6 @@ export class Hud {
   onBay: () => void = () => {};
   /** When the log last said the self-repair had started, so a flicker of danger does not repeat it. */
   private mendNoted = -Infinity;
-  private headingShown = true;
   private contactKey = '';
   private centreKey = '';
 
@@ -247,13 +248,8 @@ export class Hud {
 
   update(world: World, sector: Sector, dt: number): void {
     this.aim.update(world, sector, dt);
-    // the heading: a compass bearing (north is up the screen at the start), the tape sliding under it
-    // (skipped while the layout hides it, as it does on phones: a style write a frame is not free there)
-    if (this.headingShown) {
-      const deg = (((90 - (sector.shipNow.heading * 180) / Math.PI) % 360) + 360) % 360;
-      text($('hdg'), String(Math.round(deg) % 360).padStart(3, '0'));
-      $('hdg-tape').style.setProperty('--o', `${(-deg * 2).toFixed(1)}px`);
-    }
+    // the heading tape, with the objective on it; it also says whether this is travel or a fight
+    this.guide.update(world, sector.shipNow.heading, dt);
     if (this.bannerT > 0 && (this.bannerT -= dt) <= 0) $('banner').classList.remove('on');
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
     this.textClock += dt;
@@ -664,7 +660,6 @@ export class Hud {
   // ── helpers ─────────────────────────────────────────────────────────────
 
   private measure(): void {
-    this.headingShown = $('heading').offsetWidth > 0;
     const h = $('systems').offsetHeight;
     if (h) $('hud').style.setProperty('--sys-h', `${h}px`);
     this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('fire'), $('torp')]);

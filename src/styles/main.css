@@ -189,8 +189,13 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #objective.event { border-left-color: var(--amber); }
 
 /* ── top centre: the heading ──────────────────────────────────────────── */
-#heading { position: absolute; left: 50%; top: calc(var(--safe-t) + 8px); translate: -50% 0; width: 170px; display: grid; justify-items: center; gap: 4px; }
+/* The compass tape, and the objective on it: a diamond along its bearing,
+   pinned to the end as a chevron when it is further round than the tape shows. */
+#heading { position: absolute; left: 50%; top: calc(var(--safe-t) + 8px); translate: -50% 0; width: 200px; display: grid; justify-items: center; gap: 4px; }
+.hdg-r { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; column-gap: 8px; }
 #hdg { font: 500 calc(var(--fs) * .95)/1 var(--font-mono); letter-spacing: .24em; color: var(--ink-2); padding-left: .24em; }
+#hdg-rel, #hdg-d { font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--amber); white-space: nowrap; text-shadow: 0 1px 4px #000; }
+#hdg-rel { text-align: right; }
 #hdg-tape { --o: 0px; position: relative; width: 100%; height: 7px;
   background:
     repeating-linear-gradient(90deg, var(--hair) 0 1px, transparent 1px 10px) var(--o) 100% / 100% 4px repeat-x,
@@ -198,6 +203,14 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   -webkit-mask: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
           mask: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); }
 #heading::after { content: ""; position: absolute; left: 50%; bottom: -3px; width: 1px; height: 10px; background: var(--hud); }
+#hdg-obj { position: absolute; left: 50%; bottom: -2px; width: 9px; height: 9px; margin-left: -4.5px; background: var(--amber); rotate: 45deg;
+  box-shadow: 0 0 6px rgba(229, 169, 58, .7); pointer-events: none; }
+#hdg-obj[hidden] { display: none; }
+#hdg-obj[data-edge] { rotate: 0deg; width: 8px; height: 12px; margin-left: -4px; bottom: -4px; box-shadow: none; clip-path: polygon(100% 0, 0 50%, 100% 100%); }
+#hdg-obj[data-edge="r"] { clip-path: polygon(0 0, 100% 50%, 0 100%); }
+#hdg-obj[data-edge=""] { clip-path: none; }
+#hdg-obj.rear { animation: hdg-turn .6s steps(2, jump-none) infinite; }
+@keyframes hdg-turn { 50% { opacity: .35; } }
 
 /* ── top right: ship systems ──────────────────────────────────────────── */
 /* Ship status, as in the brand's gameplay view: a row each (icon, name,
@@ -390,6 +403,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #marks .m.dia::after { left: calc(100% + 8px); top: 50%; translate: 0 -50%; color: var(--ink); }
 #marks .m.dep { --d: var(--amber); }
 #marks .m.obj::before { background: var(--amber); }
+/* a place in the distance: bigger, with a ring, so it can be found from across the system */
+#marks .m.obj.far { width: 24px; height: 24px; margin: -12px 0 0 -12px; }
+#marks .m.obj.far::before { filter: drop-shadow(0 0 5px rgba(229, 169, 58, .8)); }
 
 /* off screen: a pointer on the edge for the capital ship and the objective */
 .ptr { position: absolute; left: 0; top: 0; display: none; --pc: var(--alert); }
@@ -404,6 +420,13 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   filter: drop-shadow(0 0 3px var(--pc)); }
 #threats .thr.elite i { --pc: var(--amber); }
 #threats .thr.close i { animation: thr-blink .5s steps(2, jump-none) infinite; }
+/* the pressing hull: larger, and says how far; in a fight the chevrons grow and the objective's pointers step back */
+#threats .thr.top i { left: -8px; top: -8px; width: 16px; height: 16px; border-width: 3px; }
+#threats .thr b { position: absolute; left: 0; top: 0; translate: var(--lx, -50%) var(--ly, 12px); white-space: nowrap; text-shadow: 0 1px 5px #000;
+  font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .1em; color: #f08a7e; }
+#hud[data-focus="combat"] #threats .thr:not(.top) i { scale: 1.3; }
+#hud[data-focus="combat"] #ptr-obj, #hud[data-focus="combat"] #ptr-lane, #hud[data-focus="combat"] #ptr-port { opacity: .6; }
+#hud:not([data-focus="combat"]) .ptr#ptr-obj i, #hud:not([data-focus="combat"]) .ptr#ptr-lane i { width: 18px; height: 18px; left: -9px; top: -9px; border-width: 3px; }
 @keyframes thr-blink { 50% { opacity: .3; } }
 
 /* ── lower left: the scope, the contacts, the hunt, the sector ────────── */
@@ -1087,7 +1110,7 @@ html.swipe #app * { overscroll-behavior: contain; }
   #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #mode.red .stripes, #torp.on { animation: none; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
   #log-lines p.new, #banner.on, #sys-hull.hit, #sys-hull.mended, .plates i.mend.live, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel, #start:not([hidden]) .start-card > *, #start:not([hidden]) .start-foot { animation: none; }
-  .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path { animation: none; }
+  .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path, #hdg-obj.rear { animation: none; }
 }
 
 /* ── the Breakout ─────────────────────────────────────────────────────────

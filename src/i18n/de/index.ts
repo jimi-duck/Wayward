@@ -1,4 +1,5 @@
 import { CARDS } from './cards';
+import { SPACE } from './space';
 import { STORY } from './story';
 import { UI } from './ui';
 import { WORLD } from './world';
@@ -10,8 +11,9 @@ import { WORLD } from './world';
 //   world  · the sim's lines, ship systems, upgrades, modules, places, regions
 //   cards  · comms cards (content/cards.ts)
 //   story  · captains, Calloway, the endings, unlocks
+//   space  · the shared world's features and expanses (content/features.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...CARDS, ...STORY };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([

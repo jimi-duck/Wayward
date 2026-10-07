@@ -45,6 +45,31 @@ export function glowTexture(): Texture {
   });
 }
 
+/** A soft, uneven cloud of dust, white so a material colour tints it: blobs of glow, thickest in the middle. */
+export function cloudTexture(): Texture {
+  return once('cloud', () => {
+    const [c, g] = canvas(256, 256);
+    const r = rand(77);
+    for (let i = 0; i < 70; i++) {
+      const a = r() * Math.PI * 2, d = Math.pow(r(), 0.8) * 84, x = 128 + Math.cos(a) * d, y = 128 + Math.sin(a) * d * 0.8;
+      const rad = 22 + r() * 40, k = 0.05 + r() * 0.09 * (1 - d / 100);
+      const grad = g.createRadialGradient(x, y, 0, x, y, rad);
+      grad.addColorStop(0, `rgba(255,255,255,${k})`);
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 256, 256);
+    }
+    // the edge always falls away to nothing
+    g.globalCompositeOperation = 'destination-in';
+    const fade = g.createRadialGradient(128, 128, 20, 128, 128, 128);
+    fade.addColorStop(0, 'rgba(0,0,0,1)');
+    fade.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = fade;
+    g.fillRect(0, 0, 256, 256);
+    return finish(c, false);
+  });
+}
+
 /** A ragged ball of flame, white at the heart: tinted and grown for fireballs. */
 export function fireTexture(): Texture {
   return once('fire', () => {
