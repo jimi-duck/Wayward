@@ -7,24 +7,26 @@ import type { Role } from '../sim/enemies';
 // is; it asks this row for a number. To rebalance a mode, change its row.
 //
 //   Drifter    · calmer skies, a kinder economy. Explore and follow the story.
-//   Prospector · the game as designed, and the baseline: every number is 1
-//                (or what the code had before modes), so the other two are
-//                read against it.
+//   Prospector · the game as designed, and the baseline the other two are read
+//                against. Its numbers are 1 or what the code had before modes,
+//                bar the arcade sky, set above 1 once the bay cost 30 Krail.
 //   Raider     · mining is thin and loud, wrecks are rich and last. You live
 //                off what the fighting leaves: find a fight, outlast it,
 //                strip what it left, sell what you cannot use.
 //
 // A multiplier of 1 changes nothing. The groups say where each row bites:
-//   sky      · the arcade's encounters and the Story's pursuit (sim/director.ts)
-//   pursuit  · the Story's hunters: how far apart they come, how many at once
+//   sky      · the arcade's encounters: how many, how tough, how hard they fire (sim/director.ts)
+//   pursuit  · the Story's hunters: how far apart they come, how many at once, how many elites
 //   heat     · the Story's heat (how hard the Custody looks): its climb, what a kill and the cutter add
 //   rock     · what rock gives (sim/world.ts: cut clean or broken)
 //   salvage  · what a dead hull gives, and for how long it lies there
 //   events   · which sector events come, and how often (sim/encounters.ts)
 //   ship     · how much the hull can take (sim/world.ts)
 //   voyage   · the Story's journey: fuel, food, wear, wrecks, the port, the Net, breathers
-// Prospector's numbers equal the code's old constants, so a test pinned to the
-// baseline stays true (tests/survival.test.ts keeps it so).
+// The Story's numbers for Prospector equal the code's old constants, so a test
+// pinned to them stays true (tests/survival.test.ts keeps it so). The arcade
+// sky is Prospector's one row above 1; Drifter and Raider keep their distance
+// from it (their rows were scaled by the same factors).
 
 export type SurvivalId = 'drifter' | 'prospector' | 'raider';
 export const SURVIVAL_IDS: readonly SurvivalId[] = ['drifter', 'prospector', 'raider'];
@@ -52,6 +54,8 @@ export interface Survival {
     /** Multiplier on the gap between pursuers (more than 1 is rarer) and on how many fly at once. */
     gap: number;
     cap: number;
+    /** Multiplier on the chance a pursuer is an elite. */
+    elite: number;
   };
   heat: {
     /** Multipliers on the heat's climb, on what a kill adds, and on what the cutter adds. */
@@ -119,8 +123,8 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     text: 'Fewer threats, a kinder economy. Explore, and follow the story at your own pace.',
     scale: { sky: 1, mining: 3, wrecks: 2 },
     score: 0.8,
-    sky: { traffic: 0.7, toughness: 0.85, fire: 1.25, elites: 0.5, hazard: 0.5 },
-    pursuit: { gap: 1.5, cap: 0.67 },
+    sky: { traffic: 1.55, toughness: 1.85, fire: 1.75, elites: 1, hazard: 0.8 },
+    pursuit: { gap: 1.5, cap: 0.67, elite: 0.5 },
     heat: { rate: 0.8, kill: 1, cut: 1 },
     rock: { krail: 1.25, ore: 1.2, cyrite: 1.3, veins: 1.15 },
     salvage: {
@@ -139,8 +143,8 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     text: 'Mine Krail. Manage Cyrite. Trade, run or fight.',
     scale: { sky: 2, mining: 2, wrecks: 2 },
     score: 1,
-    sky: { traffic: 1, toughness: 1, fire: 1, elites: 1, hazard: 1 },
-    pursuit: { gap: 1, cap: 1 },
+    sky: { traffic: 2.2, toughness: 2.2, fire: 1.4, elites: 2, hazard: 1.6 },
+    pursuit: { gap: 1, cap: 1, elite: 1 },
     heat: { rate: 1, kill: 1, cut: 1 },
     rock: { krail: 1, ore: 1, cyrite: 1, veins: 1 },
     salvage: {
@@ -159,8 +163,8 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     text: 'Mining is scarce and loud, wrecks are plentiful. Survive on what others leave behind.',
     scale: { sky: 3, mining: 1, wrecks: 3 },
     score: 1.25,
-    sky: { traffic: 1.25, toughness: 1.1, fire: 0.9, elites: 1.4, hazard: 1.3 },
-    pursuit: { gap: 0.8, cap: 1.34 },
+    sky: { traffic: 2.75, toughness: 2.4, fire: 1.25, elites: 2.8, hazard: 2.1 },
+    pursuit: { gap: 0.8, cap: 1.34, elite: 1.4 },
     heat: { rate: 1.1, kill: 0.6, cut: 2 },
     rock: { krail: 0.4, ore: 0.5, cyrite: 0.45, veins: 0.6 },
     salvage: {

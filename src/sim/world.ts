@@ -700,7 +700,7 @@ export class World implements EncounterHost {
       const a = (pick.ahead ? home + Math.PI : home) + this.rng.range(-0.7, 0.7);
       const d = this.rng.range(115, 145);
       const at = { x: s.x + Math.cos(a) * d, y: ALIEN_TYPES[v.kind].role === 'cruiser' ? this.rng.range(-3, 8) : this.rng.range(-4, 16), z: s.z - Math.sin(a) * d };
-      const elite = this.rng.next() < pursuitElite(b.heat) * this.mods.elites + b.def.notice.elite ? pickElite(v.kind, v.faction, this.rng) : null;
+      const elite = this.rng.next() < pursuitElite(b.heat) * this.survival.pursuit.elite + b.def.notice.elite ? pickElite(v.kind, v.faction, this.rng) : null;
       const lead = this.spawnHostile(v.id, at, elite);
       // a pair, once the heat is up
       if (b.heat > 0.35 && regular + 1 < cap && ALIEN_TYPES[v.kind].role === 'interceptor' && this.rng.next() < 0.5) {

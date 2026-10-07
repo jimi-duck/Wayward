@@ -716,7 +716,10 @@ Chosen on the start screen under Start, before a run: Drifter, Prospector
 changes what the game is about, and each is one row in `content/survival.ts`
 that the systems read; nothing else asks which mode it is. To rebalance a
 mode, change its row. A multiplier of 1 changes nothing and draws no random
-numbers, so Prospector plays exactly as the game did before modes.
+numbers, so Prospector's Story plays exactly as it did before modes. Its
+Arcade sky is set above 1 (about double the hulls and toughness, 1.4 times
+the fire, twice the elites) to answer the 30-Krail bay; see the calibration
+in BALANCE-SURVIVAL.md.
 
 - **Drifter.** Calmer skies (fewer hulls, fewer elites, longer gaps between
   pursuers, slower heat), richer rock, cheaper lanes, a bigger start, a

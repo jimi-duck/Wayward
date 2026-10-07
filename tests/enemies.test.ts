@@ -55,7 +55,7 @@ describe('enemy pacing (the original curves)', () => {
     const seen = new Set<string>();
     for (let s = 0; s < 330; s++) {
       run(w, 1);
-      if (!w.command.boss) expect(w.aliens.filter((a) => !a.escort && !a.extra).length).toBeLessThanOrEqual(alienMax(w.runTime));
+      if (!w.command.boss) expect(w.aliens.filter((a) => !a.escort && !a.extra).length).toBeLessThanOrEqual(w.pressure.enemyCap);
       for (const a of w.aliens) {
         seen.add(a.kind);
         if (!a.escort && !a.extra) expect(VARIANTS[a.variant]!.at).toBeLessThanOrEqual(w.runTime);
