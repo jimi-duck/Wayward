@@ -118,7 +118,7 @@ export function pickAnswer(w: World, policy: Policy): string {
   return o.choices.find((ch) => ch.ok)!.id;
 }
 
-const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' });
+const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
 
 export function stratName(s: Strategy): string {
   return s.kind === 'random' ? 'random' : `${s.branch}${s.second ? `+${s.second}` : ''}`;

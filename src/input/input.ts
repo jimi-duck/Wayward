@@ -43,6 +43,7 @@ export class Input {
       cut: this.keyboard.cut() || pad.cut || this.touch.cutting,
       torpedo: this.presses.has('torpedo'),
       roll: this.presses.has('roll'),
+      brk: this.presses.has('brk'),
       overcharge: this.presses.has('overcharge'),
       device: this.device,
     };

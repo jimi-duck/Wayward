@@ -198,6 +198,7 @@ export const UI: Record<string, string> = {
 
   // the log and the banners
   'Rock broken': 'Fels zerlegt',
+  'Bulwark shattered': 'Bollwerk zersprengt',
   'Iron rock broken': 'Eisenfels zerlegt',
   'Rich rock broken': 'Reicher Fels zerlegt',
   'Volatile rock broken': 'Instabiler Fels zerlegt',
@@ -372,6 +373,9 @@ export const UI: Record<string, string> = {
   'Steer and thrust': 'Lenken und Schub',
   'Right thumb': 'Rechter Daumen',
   'Second finger, left': 'Zweiter Finger, links',
+  'Second finger, tap': 'Zweiter Finger, tippen',
+  'Second finger, flick down': 'Zweiter Finger, nach unten wischen',
+  'Break and reverse': 'Wenden',
   'Badge': 'Abzeichen',
   'Resume · any key': 'Weiter · beliebige Taste',
   'Resume': 'Weiter',

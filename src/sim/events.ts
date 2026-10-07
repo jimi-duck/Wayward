@@ -13,6 +13,7 @@ export type GameEvent =
   | { type: 'rockHit'; x: number; y: number; z: number; id: number }
   | { type: 'rockDestroyed'; x: number; z: number; size: number; points: number; kind: string }
   | { type: 'bulwarkHit'; x: number; y: number; z: number }
+  | { type: 'bulwarkBroken'; x: number; z: number; r: number; points: number }
   | { type: 'blast'; x: number; y: number; z: number; radius: number; kind: BlastKind }
   | { type: 'shipHit'; x: number; z: number; plates: number; source: string }
   | { type: 'shieldHit'; x: number; z: number; left: number; source: string }
@@ -39,6 +40,7 @@ export type GameEvent =
   | { type: 'fitted'; id: string }
   | { type: 'salvage'; faction: string; tech: boolean }
   | { type: 'cloak'; x: number; z: number }
+  | { type: 'break'; x: number; z: number }
   | { type: 'bossWarn'; name: string; faction: string; hails: boolean }
   | { type: 'hail'; name: string; faction: string }
   | { type: 'bossEvaded'; name: string; faction: string }

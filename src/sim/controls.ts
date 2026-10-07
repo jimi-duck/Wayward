@@ -14,6 +14,8 @@ export interface FlightControls {
   thrust: number;
   /** Start a barrel roll this step. */
   roll: boolean;
+  /** Start a break and reverse this step. */
+  brk: boolean;
   /** Which way to roll: -1 left, 1 right, 0 for the ship to decide. */
   rollDir: -1 | 0 | 1;
   /** Laser trigger held. */
@@ -37,5 +39,5 @@ export function flightControls(input: InputFrame): FlightControls {
     thrust = Math.max(thrust, stickThrottle(Math.sin(aim.angle) * aim.mag));
   }
   const rollDir = Math.abs(turn) > 0.1 ? (turn > 0 ? 1 : -1) : 0;
-  return { turn, thrust, roll: input.roll, rollDir, fire: input.fire, torpedo: input.torpedo, cut: input.cut };
+  return { turn, thrust, roll: input.roll, brk: input.brk, rollDir, fire: input.fire, torpedo: input.torpedo, cut: input.cut };
 }

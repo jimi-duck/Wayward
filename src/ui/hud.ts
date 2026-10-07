@@ -175,6 +175,7 @@ export class Hud {
     for (const e of evts) {
       switch (e.type) {
         case 'rockDestroyed': this.note(world, `${t(ROCK_BROKEN[e.kind] ?? 'Rock broken')} · +${e.points}`, '', 'rock', e.points); break;
+        case 'bulwarkBroken': this.note(world, `${t('Bulwark shattered')} · +${e.points}`, '', 'rock', e.points); break;
         case 'alienDestroyed': this.note(world, `${t('{name} destroyed', { name: t(e.label) })} · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
         case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;

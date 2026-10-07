@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
-import type { Rock } from '../src/sim/field';
-import { BANK_MAX, BANK_REFILL, BANK_SHOT, DYING, ROCK_POINTS, SHOT_COOLDOWN, TORP_RELOAD, TORP_SPACING } from '../src/sim/tuning';
+import type { Bulwark, Rock } from '../src/sim/field';
+import { BANK_MAX, BULWARK_RESTOCK, BANK_REFILL, BANK_SHOT, DYING, ROCK_POINTS, SHOT_COOLDOWN, TORP_RELOAD, TORP_SPACING } from '../src/sim/tuning';
 import { spawnAlien } from '../src/sim/enemies';
 import { CELL, POWERS, POWER_HINT } from '../src/sim/pickups';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard', ...f });
 
 function run(w: World, seconds: number, f: Partial<InputFrame> = {}) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input(f));
@@ -186,5 +186,48 @@ describe('salvage cells', () => {
     w.aliens.push(al);
     (w as unknown as { killAlien(a: typeof al, s: string): void }).killAlien(al, 'laser');
     expect(w.pickups.some((p) => p.kind === 'rapid')).toBe(true);
+  });
+});
+
+describe('the biggest rock', () => {
+  /** A world with one still bulwark dead ahead of the ship, and the field's own top-up and drift left to run. */
+  function wall(): { w: World; b: Bulwark } {
+    const w = new World(1);
+    w.field.rocks = [];
+    w.field.bulwarks = [];
+    const b: Bulwark = { id: 7, x: 0, z: -40, vx: 0, vz: 0, r: 9, variant: 0, ax: 0, ay: 1, az: 0, spin: 0, age: 10, hp: 120, maxHp: 120 };
+    w.field.bulwarks.push(b);
+    return { w, b };
+  }
+
+  it('takes laser fire without breaking at once: the shot is spent and the wall keeps its place', () => {
+    const { w, b } = wall();
+    run(w, 3, { fire: true });
+    expect(b.hp).toBeLessThan(b.maxHp);
+    expect(b.hp).toBeGreaterThan(0);
+    expect(w.field.bulwarks).toContain(b);
+  });
+
+  it('breaks under enough fire into a crowd of rock of every size, and scores', () => {
+    const { w, b } = wall();
+    const before = w.score;
+    b.hp = 0.01;
+    run(w, 1, { fire: true });
+    expect(w.field.bulwarks).not.toContain(b);
+    const sizes = [0, 1, 2].map((z) => w.field.rocks.filter((r) => r.size === z).length);
+    expect(sizes[0]).toBeGreaterThanOrEqual(1);
+    expect(sizes[1]).toBeGreaterThanOrEqual(4);
+    expect(sizes[2]).toBeGreaterThanOrEqual(5);
+    expect(w.score).toBeGreaterThan(before);
+    expect(w.drain().some((e) => e.type === 'bulwarkBroken')).toBe(true);
+  });
+
+  it('is replaced by a new one out in the fog a while after', () => {
+    const { w, b } = wall();
+    b.hp = 0.01;
+    run(w, 1, { fire: true });
+    expect(w.field.bulwarks.length).toBe(0);
+    run(w, BULWARK_RESTOCK + 5);
+    expect(w.field.bulwarks.length).toBe(1);
   });
 });

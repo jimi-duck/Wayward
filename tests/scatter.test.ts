@@ -13,7 +13,7 @@ import { newRun } from '../src/sim/run';
 import { World } from '../src/sim/world';
 import { migrate } from '../src/meta/save';
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
 
 function result(j: Journey, o: Partial<SortieResult> = {}, c: Partial<Journey['carry']> = {}): SortieResult {
   const r = newRun(1);
