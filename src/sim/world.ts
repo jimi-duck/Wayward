@@ -31,7 +31,7 @@ import {
 import type { BlastKind, GameEvent, PowerKind } from './events';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Rock } from './field';
 import { Ids, useIds } from './ids';
-import { dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type Pickup, type PickupKind } from './pickups';
+import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
@@ -754,7 +754,7 @@ export class World implements EncounterHost {
     // Krail: what a break would give by chance, sure when cut clean
     const K = ROCK_KINDS[r.kind];
     this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * ROCK_KRAIL, R.krail), r.x, r.z, 3, r.vx, r.vz);
-    if (r.kind === 'rare') this.dropItem(this.randomPower(), r.x, r.z);
+    if (r.kind === 'rare') this.dropItem(this.cell('rock'), r.x, r.z);
     this.events.push({ type: 'rockCut', x: r.x, z: r.z, size: r.size, kind: r.kind, ore, cyrite, points });
   }
 
@@ -1675,8 +1675,9 @@ export class World implements EncounterHost {
     dropItem(this.pickups, kind, x, z, this.rng);
   }
 
-  randomPower(): PickupKind {
-    return POWERS[this.rng.int(POWERS.length)]!;
+  /** The cell a source gives: what the place it came from would do for you (sim/pickups.ts). */
+  cell(source: CellSource): PickupKind {
+    return CELL[source];
   }
 
   addScore(points: number, src: ScoreSource = 'events'): void {
@@ -2041,6 +2042,8 @@ export class World implements EncounterHost {
       this.repairCd = REPAIR_GAP;
     }
     const E = al.elite ? ELITES[al.elite] : null;
+    // an elite's fire control comes off the wreck whole
+    if (E) this.dropItem(this.cell('elite'), al.x, al.z);
     if (E?.blast) this.blast(al.x, al.y, al.z, E.blast, ELITE_BLAST_DAMAGE, 'hazard', 'elite', 1, true);
     if (FACTION_TRAITS[al.faction].web || E?.web) {
       this.webs.push({ id: al.id, x: al.x, z: al.z, life: 6, r: 0, max: WEB_R * (E?.web ? 0.8 : 0.45) });
@@ -2103,7 +2106,7 @@ export class World implements EncounterHost {
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
     for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);
-    this.dropItem(this.randomPower(), b.x, b.z);
+    this.dropItem(this.cell('wreck'), b.x, b.z);
     const fresh = !this.techs.has(b.faction);
     this.techs.add(b.faction);
     this.events.push({ type: 'salvage', faction: b.faction, tech: fresh });
@@ -2142,7 +2145,7 @@ export class World implements EncounterHost {
     }
     // Krail by chance, in both modes (less of it in the Story mode, where a cut gives it surely)
     if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), this.survival.rock.krail), r.x, r.z, 4, r.vx, r.vz);
-    if (r.kind === 'rare') this.dropItem(this.randomPower(), r.x, r.z);
+    if (r.kind === 'rare') this.dropItem(this.cell('rock'), r.x, r.z);
     if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, src === 'hazard' ? 'hazard' : src, 'volatile', 1, true);
   }
 

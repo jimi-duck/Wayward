@@ -551,6 +551,13 @@ iron (from about 3:00, three times the hull, splits into more iron); rich
 when broken, you included); rare (gold, a power-up inside, one every minute
 or two); singles, clusters, and a big rock in its own debris.
 
+**Salvage cells** (the power-ups) are never drawn from a hat: each place
+gives the cell its work suggests (`CELL` in `sim/pickups.ts`). Rare rock
+holds a tractor surge, a rescued crew lends an emergency shield, a derelict
+a reactor charge, an elite's wreck its fire control (rapid fire), a capital
+ship's wreck its drive (overdrive). The pickup and the note say what it
+does in a line (`POWER_HINT`); a new cell is a row in each table.
+
 **Enemies**: seven archetypes from the original, by behaviour (scouts
 strafe past, raptors line up and ram, lancers broadside from cover,
 warbirds snipe with plasma that can be shot down, stalkers sit on your tail

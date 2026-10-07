@@ -48,6 +48,11 @@ export const WORLD: Record<string, string> = {
   'Tractor surge': 'Traktorschub',
   'Overdrive': 'Overdrive',
   'Reactor charge': 'Reaktorladung',
+  'Stops the next hit': 'Fängt den nächsten Treffer ab',
+  'Lasers fire twice as fast, free': 'Laser feuern doppelt so schnell, gratis',
+  'Pulls every crystal in': 'Zieht alle Kristalle heran',
+  'Lasers hit half as hard again': 'Laser treffen anderthalbmal so hart',
+  'Fills the overcharge': 'Füllt die Überladung',
 
   // ── sector events ──
   'Krail readings off the scale': 'Krail-Werte durch die Decke',

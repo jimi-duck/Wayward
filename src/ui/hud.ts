@@ -7,7 +7,7 @@ import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
 import { ALIEN_TYPES, alienLabel, cloaked, FIRE_RANGE } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
 import { DOCK_TIME } from '../sim/breakout';
-import { POWER_LABEL } from '../sim/pickups';
+import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
 import { systemLevel } from './icons';
@@ -191,7 +191,7 @@ export class Hud {
         case 'needCyrite': this.banner(t('Ship system'), t('Not enough Cyrite'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
-        case 'power': this.note(world, t(POWER_LABEL[e.kind]), 'gain'); break;
+        case 'power': this.note(world, `${t(POWER_LABEL[e.kind])} · ${t(POWER_HINT[e.kind])}`, 'gain'); break;
         case 'plasmaDown': this.note(world, t('Plasma torpedo shot down')); break;
         case 'tractor': this.note(world, t('Tractor lock · thrust away'), 'hit'); break;
         case 'bankEmpty': this.note(world, t('Laser bank low · slower fire'), 'hit'); break;
