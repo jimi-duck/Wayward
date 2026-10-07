@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { UPGRADES, UPGRADE } from '../src/content/upgrades';
 import { MODULES } from '../src/content/modules';
-import { ARCADE_PRICE, FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
-import { blockOf, budgets, cheapest, cost, install, maxLevel, PICKS, quickPicks, reachable, stockLevels, type BayCtx } from '../src/sim/bay';
+import { ARCADE_PRICE, FITTING, FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
+import { blockOf, budgets, cheapest, cost, install, maxLevel, PICKS, quickPicks, reachable, roleOf, stockLevels, type BayCtx } from '../src/sim/bay';
 import { computeStats, upgradeFigures } from '../src/sim/build';
 import { feelBudgets, overload, OVERLOAD } from '../src/sim/budgets';
 import { World } from '../src/sim/world';
@@ -196,20 +196,74 @@ describe('the budgets, felt (step 3)', () => {
 });
 
 describe('suggestions', () => {
-  it('offers a few modules that can be fitted (or want only Krail), from different tabs, the same each time', () => {
-    const picks = quickPicks(ctx({ krail: 0 }));
+  it('offers a few modules that can be fitted (or want only Krail), from different tabs, the same each time (the Story mode)', () => {
+    const story = (o: Partial<BayCtx> = {}) => ctx({ arcade: false, ...o });
+    const picks = quickPicks(story({ krail: 0 }));
     expect(picks.length).toBe(PICKS);
-    for (const p of picks) expect(['krail', null]).toContain(blockOf(p.id, ctx({ krail: 0 })));
+    for (const p of picks) expect(['krail', null]).toContain(blockOf(p.id, story({ krail: 0 })));
     expect(new Set(picks.map((p) => p.tab)).size).toBe(PICKS);
-    expect(quickPicks(ctx({ krail: 0 })).map((p) => p.id)).toEqual(picks.map((p) => p.id));
+    expect(quickPicks(story({ krail: 0 })).map((p) => p.id)).toEqual(picks.map((p) => p.id));
   });
 
-  it('leans toward what the ship already is, and asks for power or cooling when they run short', () => {
+  it('leans toward what the ship already is, and asks for power or cooling when they run short (the Story mode)', () => {
+    const story = (o: Partial<BayCtx> = {}) => ctx({ arcade: false, ...o });
     const lasers = { ...stockLevels(), ph_emitters: 2, ph_capacitors: 1 };
-    expect(quickPicks(ctx({ levels: lasers })).map((p) => p.tab)).toContain('weapons');
+    expect(quickPicks(story({ levels: lasers })).map((p) => p.tab)).toContain('weapons');
     const hot = { ...stockLevels(), ph_emitters: 3, ph_capacitors: 2, ph_pierce: 1 };
-    expect(quickPicks(ctx({ levels: hot })).map((p) => p.id)).toContain('rx_sinks');
+    expect(quickPicks(story({ levels: hot })).map((p) => p.id)).toContain('rx_sinks');
     const flat = { ...stockLevels(), df_shield: 1 }; // 7 of 8 power
+    expect(quickPicks(story({ levels: flat })).map((p) => p.id)).toContain('rx_core');
+  });
+});
+
+describe('the Arcade’s three picks', () => {
+  const roles = (o: Partial<BayCtx> = {}) => quickPicks(ctx({ krail: 0, ...o })).map((p) => roleOf(p.id));
+
+  it('is always a gun, a defence and a part of the ship, in that order, every opening', () => {
+    let levels = stockLevels();
+    for (let deal = 0; deal < 20; deal++) {
+      const picks = quickPicks(ctx({ levels, deal }));
+      expect(picks.map((p) => roleOf(p.id))).toEqual(['weapons', 'defence', 'ship']);
+      for (const p of picks) expect(['krail', null]).toContain(blockOf(p.id, ctx({ levels, deal, krail: 0 })));
+      levels = { ...levels, [picks[deal % 3]!.id]: (levels[picks[deal % 3]!.id] ?? 0) + 1 };
+    }
+  });
+
+  it('deals the same opening the same way, and a later opening differently', () => {
+    const a = quickPicks(ctx({ deal: 0 })).map((p) => p.id), b = quickPicks(ctx({ deal: 0 })).map((p) => p.id);
+    expect(b).toEqual(a);
+    const seen = new Set<string>();
+    for (let deal = 0; deal < 12; deal++) for (const p of quickPicks(ctx({ deal }))) seen.add(p.id);
+    expect(seen.size).toBeGreaterThan(6);
+  });
+
+  it('starts on the basics, and never opens with the reactor, cooling or frame unless the ship needs one', () => {
+    for (let deal = 0; deal < 6; deal++) {
+      const ids = quickPicks(ctx({ deal })).map((p) => p.id);
+      for (const id of ids) expect(FITTING[id], id).toBeUndefined();
+    }
+    const flat = { ...stockLevels(), df_shield: 1, df_armour: 1, df_repair: 1 }; // out of power
     expect(quickPicks(ctx({ levels: flat })).map((p) => p.id)).toContain('rx_core');
+  });
+
+  it('is slower to deal a card again that was passed over', () => {
+    const first = quickPicks(ctx({ deal: 1 }));
+    const again = quickPicks(ctx({ deal: 2, passed: first.map((p) => p.id) }));
+    expect(again.map((p) => p.id)).not.toEqual(first.map((p) => p.id));
+    expect(roles({ deal: 2 })).toEqual(['weapons', 'defence', 'ship']);
+  });
+
+  it('turns the explorer to a new branch: a part of the ship with nothing fitted', () => {
+    // opening 0: the gun slot explores, so it is not a laser or torpedo card
+    const gun = quickPicks(ctx({ deal: 0 }))[0]!;
+    expect(['laser', 'torpedo']).not.toContain(UPGRADE[gun.id]?.branch);
+  });
+
+  it('is kept by the world: the bay deals afresh once it has shut', () => {
+    const w = new World(2);
+    const a = w.bayCtx().deal;
+    w.phase = 'bay';
+    w.closeBay();
+    expect(w.bayCtx().deal).toBe((a ?? 0) + 1);
   });
 });

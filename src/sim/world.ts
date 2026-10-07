@@ -145,6 +145,10 @@ export class World implements EncounterHost {
   private bayQuiet = 0;
   /** Something was fitted since the bay opened: what is left is a new pick, not a skipped one. */
   private bayFit = false;
+  /** Times the bay has shut this run: each opening deals the Arcade picks a little differently (sim/bay.ts). */
+  private bayDeal = 0;
+  private bayShown: { ids: string[]; at: Record<string, number> } | null = null;
+  private bayPassed: string[] = [];
 
   // the decisions, and the bay
   phase: Phase = 'play';
@@ -962,7 +966,7 @@ export class World implements EncounterHost {
   }
 
   bayCtx(): BayCtx {
-    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.krail, chits: this.chits };
+    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.krail, chits: this.chits, deal: this.bayDeal, passed: this.bayPassed };
   }
 
   /**
@@ -982,6 +986,7 @@ export class World implements EncounterHost {
   openBay(): boolean {
     if (this.bayClosed()) return false;
     this.phase = 'bay';
+    if (!this.bk) this.bayShown = { ids: quickPicks(this.bayCtx()).map((w) => w.id), at: this.levels };
     return true;
   }
 
@@ -1031,6 +1036,10 @@ export class World implements EncounterHost {
     this.bayAt = this.bayFit || this.krail < ARCADE_PRICE ? ARCADE_PRICE : this.krail + ARCADE_PRICE;
     this.bayFit = false;
     this.bayQuiet = 0;
+    this.bayDeal++;
+    // the cards that were dealt and not taken: the next opening is slower to deal them again
+    if (this.bayShown) this.bayPassed = this.bayShown.ids.filter((id) => (this.levels[id] ?? 0) === (this.bayShown!.at[id] ?? 0));
+    this.bayShown = null;
   }
 
   // ── comms ─────────────────────────────────────────────────────────────

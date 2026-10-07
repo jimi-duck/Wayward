@@ -29,6 +29,7 @@ export const UI: Record<string, string> = {
   'Your saved journey could not be read.': 'Dein Spielstand ließ sich nicht lesen.',
   'Restore last save': 'Letzten Stand laden',
   'Export save': 'Spielstand sichern',
+  'Ship': 'Schiff',
   'Import save': 'Spielstand laden',
   'That file is not a Wayward save.': 'Diese Datei ist kein Wayward-Spielstand.',
   'Saved journey': 'Gespeicherte Reise',

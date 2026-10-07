@@ -2,7 +2,7 @@ import { MODULE_BY_ID } from '../content/modules';
 import { UPGRADE, upgradeText } from '../content/upgrades';
 import { ARCADE_PRICE, FITTING, LEVEL_STEP, NODE, STOCK, TIER_COST, WEB, YARD_FEE, type WebNode } from '../content/web';
 import { budgets } from './budgets';
-import { available, type Levels } from './build';
+import { available, branchLevels, type Levels } from './build';
 
 // ── the refit bay: what can be fitted, what it costs, what it leaves ──────
 // The rules over content/web.ts. Building happens only in the bay (PLAN.md,
@@ -29,6 +29,10 @@ export interface BayCtx {
   krail: number;
   /** Story: chits aboard, for the yard's fee. */
   chits?: number;
+  /** The Arcade: how many times the bay has shut this run, so each opening deals a little differently (the same opening always deals the same). */
+  deal?: number;
+  /** The Arcade: cards dealt at the last opening and not taken, which come round again less readily. */
+  passed?: readonly string[];
 }
 
 /** Why a node cannot be fitted now, first reason first. */
@@ -156,6 +160,7 @@ function suits(id: string, ctx: BayCtx, affinity: Map<string, number>, systems: 
  * only Krail, best first, each from a different tab where it can.
  */
 export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
+  if (ctx.arcade && n === PICKS) return arcadePicks(ctx);
   const affinity = new Map<string, number>();
   for (const [id, lv] of Object.entries(ctx.levels)) for (const t of UPGRADE[id]?.tags ?? []) affinity.set(t, (affinity.get(t) ?? 0) + lv);
   const systems = Object.keys(ctx.levels).filter((id) => UPGRADE[id]?.kind === 'system' && (ctx.levels[id] ?? 0) > 0).length;
@@ -170,5 +175,81 @@ export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
   for (const { w } of scored) if (out.length < n && fits(w, true)) out.push(w);
   for (const { w } of scored) if (out.length < n && fits(w, false)) out.push(w);
   for (const { w } of scored) if (out.length < n && !out.includes(w)) out.push(w);
+  return out;
+}
+
+// ── the Arcade's three picks ──────────────────────────────────────────────
+// Always one of each: a gun, a defence, a part of the ship, in that order, so
+// the cards read the same every time and nothing is a mystery. Each is the
+// module that suits the ship best in its role (what it already leans to, a
+// basic early, what its budgets need), nudged by a deterministic shuffle of
+// the opening so the same ship is not dealt the same cards twice. One slot
+// in three, in turn, is an explorer: it prefers a part of the ship you have
+// not touched, so a run can wander off its first idea. The reactor, heat
+// and frame fittings are not picks: they come only when the ship has run
+// out of power, cooling or frame, as the one card in the ship's slot.
+
+/** Branches the ship leaves with already (lasers, and the torpedo bay): never new. */
+const STOCK_BRANCH: ReadonlySet<string> = new Set(['laser', 'torpedo']);
+
+export type PickRole = 'weapons' | 'defence' | 'ship';
+export const PICK_ROLES: readonly PickRole[] = ['weapons', 'defence', 'ship'];
+
+/** Which of the three a node is: its upgrade's category, and the ship's for a fitting. */
+export const roleOf = (id: string): PickRole => UPGRADE[id]?.cat ?? 'ship';
+
+/** A steady number from 0 to 1 for a card at an opening: nothing random about it, so the bay and the HUD agree. */
+function shuffle(id: string, deal: number, progress: number): number {
+  let h = 2166136261;
+  for (const c of `${id}:${deal}:${progress}`) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  return ((h >>> 0) % 1000) / 1000;
+}
+
+/** The fitting a ship has run short of, if any: it takes the ship's slot, being the thing that stops the rest. */
+function shortOf(ctx: BayCtx): string | null {
+  const { use, cap } = budgets(ctx.levels);
+  // power gone is the hard stop; heat and mass only count once they are over, and then every other opening, so the ship's slot is not always the same card
+  // (one that was passed over waits a few openings before it asks again)
+  const deal = ctx.deal ?? 0, asked = (id: string) => !ctx.passed?.includes(id) || deal % 3 === 0;
+  if (cap.power - use.power < 1) return asked('rx_core') ? 'rx_core' : null;
+  if (deal % 2) return null;
+  if (use.heat > cap.heat && asked('rx_sinks')) return 'rx_sinks';
+  if (use.mass > cap.mass && asked('hl_frame')) return 'hl_frame';
+  return null;
+}
+
+export function arcadePicks(ctx: BayCtx): WebNode[] {
+  // the ship leaves with lasers and torpedoes, so those are what it starts out leaning to
+  const affinity = new Map<string, number>([['laser', 1], ['torpedo', 1]]);
+  for (const [id, lv] of Object.entries(ctx.levels)) for (const t of UPGRADE[id]?.tags ?? []) affinity.set(t, (affinity.get(t) ?? 0) + lv);
+  const systems = Object.keys(ctx.levels).filter((id) => UPGRADE[id]?.kind === 'system' && (ctx.levels[id] ?? 0) > 0).length;
+  const progress = Object.values(ctx.levels).reduce((a, b) => a + b, 0), early = progress < 5;
+  const deal = ctx.deal ?? 0, explorer = PICK_ROLES[deal % PICK_ROLES.length]!;
+  const open = WEB.filter((w) => { const b = blockOf(w.id, ctx); return b === null || b === 'krail' || b === 'chits'; });
+  const need = shortOf(ctx);
+  const score = (w: WebNode, role: PickRole): number => {
+    let v = suits(w.id, ctx, affinity, systems);
+    // a basic first, the late rungs later
+    if (early) v *= w.tier <= 1 ? 1.5 : w.tier >= 3 ? 0.6 : 1;
+    // and the guns the ship already has, over a new toy, until it has a few fitted
+    if (early && UPGRADE[w.id]?.kind === 'stat' && (UPGRADE[w.id]!.branch === 'laser' || UPGRADE[w.id]!.branch === 'torpedo')) v *= 1.7;
+    // the explorer wants something this ship has none of
+    const u = UPGRADE[w.id];
+    if (role === explorer && u && u.kind !== 'tech' && !STOCK_BRANCH.has(u.branch) && branchLevels(ctx.levels, u.branch) === 0) v *= 2.2;
+    if (ctx.passed?.includes(w.id)) v *= 0.2;
+    return v * (0.7 + 0.6 * shuffle(w.id, deal, progress));
+  };
+  const out: WebNode[] = [];
+  for (const role of PICK_ROLES) {
+    const fix = role === 'ship' ? open.find((w) => w.id === need) : undefined;
+    const best = fix ?? open
+      .filter((w) => !FITTING[w.id] && roleOf(w.id) === role && !out.includes(w))
+      .map((w) => ({ w, v: score(w, role) }))
+      .sort((a, b) => b.v - a.v || a.w.id.localeCompare(b.w.id))[0]?.w;
+    if (best) out.push(best);
+  }
+  // a role with nothing left to fit: the best of what remains
+  const rest = open.filter((w) => !FITTING[w.id] && !out.includes(w)).sort((a, b) => score(b, roleOf(b.id)) - score(a, roleOf(a.id)) || a.id.localeCompare(b.id));
+  for (const w of rest) if (out.length < PICKS) out.push(w);
   return out;
 }
