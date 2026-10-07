@@ -97,7 +97,12 @@
         </section>
       </section>
 
-      <div id="heading" class="hud-block" aria-hidden="true"><b id="hdg">000</b><i id="hdg-tape"></i></div>
+      <!-- upper centre: the horizon round the ship (nose in the middle, behind at the ends) and the one thing to read off it -->
+      <div id="heading" class="hud-block" aria-hidden="true">
+        <div class="gd-row gd-foe" id="gd-foe" hidden><svg class="gd-arrow" viewBox="0 0 24 24" id="gd-foe-arrow"><path d="M12 2.5l7.5 17-7.5-4.5-7.5 4.5z"/></svg><span class="gd-name" id="gd-foe-n">Hostile</span><b class="gd-rel" id="gd-foe-rel"></b><b class="gd-dist" id="gd-foe-d"></b><span class="gd-eta" id="gd-foe-c"></span></div>
+        <div class="gd-row gd-go" id="gd-go" hidden><svg class="gd-arrow" viewBox="0 0 24 24" id="gd-arrow"><path d="M12 2.5l7.5 17-7.5-4.5-7.5 4.5z"/></svg><span class="gd-name" id="gd-name"></span><b class="gd-rel" id="gd-rel"></b><b class="gd-dist" id="gd-dist"></b><span class="gd-eta" id="gd-eta"></span></div>
+        <div id="gd-bar"><i class="gd-c"></i><span id="gd-marks"></span></div>
+      </div>
 
       <!-- upper right: the ship's condition, a row each, read at a glance -->
       <section id="systems" class="hud-block cut" aria-label="Ship status">
