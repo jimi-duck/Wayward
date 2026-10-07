@@ -237,6 +237,13 @@ const WEB_SPIN = 1.5;
 export const JINK_ROLL = 0.6;
 /** Attack runs an interceptor flies before it breaks off and leaves the sky to the next wave. */
 const RUNS = 4;
+/**
+ * Every hull fights on the ship's plane, give or take a hand's breadth of
+ * hover, so what you see is where it is: it can be shot, it can be hidden
+ * behind rock, and rock stands in its way as it does in yours. (It used to
+ * cruise high and drop in, which hid it and let it clear every rock.)
+ */
+export const PLANE = { light: 1.1, cruiser: 0.6 } as const;
 /** How fast a cloak comes and goes, per second. */
 const CLOAK_RATE = 1.4;
 
@@ -280,6 +287,8 @@ export interface Alien {
   calm: number;
   /** Seconds before it can count as a near miss again. */
   grazeT: number;
+  /** Seconds before it can be hurt by rock again. */
+  bumpT: number;
   xp: number;
   /** How it closes on the ship before it fights (sim/pacing.ts). */
   approach: Approach;
@@ -376,7 +385,7 @@ export function spawnAlien(kind: AlienKind, ship: ShipState, t: number, rng: Rng
   const E = o.elite ? ELITES[o.elite] : null;
   const a = ship.heading + (rng.next() < 0.75 ? rng.range(-0.9, 0.9) : rng.range(0, Math.PI * 2));
   const d = rng.range(SPAWN_NEAR, SPAWN_FAR);
-  const cruiseY = T.role === 'cruiser' ? rng.range(-4, 9) : rng.range(-6, 18);
+  const cruiseY = rng.range(-PLANE[T.role === 'cruiser' ? 'cruiser' : 'light'], PLANE[T.role === 'cruiser' ? 'cruiser' : 'light']);
   const x = at ? at.x : ship.x + Math.cos(a) * d;
   const z = at ? at.z : ship.z - Math.sin(a) * d;
   const y = at ? at.y : cruiseY;
@@ -391,7 +400,7 @@ export function spawnAlien(kind: AlienKind, ship: ShipState, t: number, rng: Rng
     ax: 0, az: 0, cruiseY: at ? at.y : cruiseY, jink: 0, runs: 0, beamT: 0, beamAng: 0, soaked: 0, hitT: 0, escort: !!at, extra: false,
     spK: F.speed * (E?.speed ?? 1), cdK, rgK: F.range, shotK: E?.shotSpeed ?? 1,
     shots: (v.kind === kind ? v.shots : undefined) ?? T.shots + (E?.extraShots ?? 0), split: !!(v.kind === kind && v.split),
-    cloak: canCloak && !at ? 1 : 0, canCloak, burn: 0, burnDps: 0, mark: 0, snare: 0, calm: 99, grazeT: 0,
+    cloak: canCloak && !at ? 1 : 0, canCloak, burn: 0, burnDps: 0, mark: 0, snare: 0, calm: 99, grazeT: 0, bumpT: 0,
     xp: Math.round(T.xp * (E ? 2 : 1)), approach: T.tactic === 'cross' ? 'direct' : o.approach ?? 'direct',
   };
 }
@@ -447,20 +456,37 @@ function avoid(al: Alien, arena: Arena, dt: number): void {
       if (vn < 0) { al.vx -= vn * nx; al.vy -= vn * ny; al.vz -= vn * nz; }
     }
   }
-  for (const r of arena.rocks) {
-    const dx = al.x - r.x, dy = al.y, dz = al.z - r.z;
-    if (Math.abs(dx) > 8 || Math.abs(dz) > 8) continue;
-    const d = Math.hypot(dx, dy, dz) || 1, clear = r.r + al.r + 1.5;
-    if (d > clear) continue;
-    const push = ((clear - d) / clear) * 30 * dt;
-    al.vx += (dx / d) * push; al.vy += (dy / d) * push; al.vz += (dz / d) * push;
-  }
+  dodgeRock(al, arena.rocks, dt);
   for (const o of arena.aliens) {
     if (o === al) continue;
     const dx = al.x - o.x, dy = al.y - o.y, dz = al.z - o.z, d = Math.hypot(dx, dy, dz) || 1, clear = al.r + o.r + 3;
     if (d > clear) continue;
     const push = ((clear - d) / clear) * 22 * dt;
     al.vx += (dx / d) * push; al.vy += (dy / d) * push; al.vz += (dz / d) * push;
+  }
+}
+
+/**
+ * Rock in the way: swerve round it, as hard as the hull can. Every hull sees
+ * it at the same distance, but a nimble one has the thrust to clear it and a
+ * bulky one does not, and none can slip a gap narrower than itself (the
+ * world holds the hull to that, in `hullsVsRock`). The small Wayward
+ * threads what a cruiser cannot.
+ */
+function dodgeRock(al: Alien, rocks: readonly Rock[], dt: number): void {
+  const sp = Math.hypot(al.vx, al.vz);
+  if (sp < 1) return;
+  const hx = al.vx / sp, hz = al.vz / sp, reach = sp * 1.8 + 8;
+  const T = ALIEN_TYPES[al.kind];
+  for (const r of rocks) {
+    const rx = r.x - al.x, rz = r.z - al.z;
+    if (Math.abs(rx) > reach + 4 || Math.abs(rz) > reach + 4) continue;
+    const ahead = rx * hx + rz * hz;
+    if (ahead < -r.r || ahead > reach) continue;
+    const side = rx * -hz + rz * hx, clear = r.r + al.r + 1;
+    if (Math.abs(side) > clear) continue;
+    const dir = side >= 0 ? -1 : 1, push = T.accel * 1.2 * (1 - Math.max(0, ahead) / reach) * dt;
+    al.vx += -hz * dir * push; al.vz += hx * dir * push;
   }
 }
 
@@ -485,11 +511,12 @@ function evade(al: Alien, T: AlienType, arena: Arena, rng: Rng, events: GameEven
   if (rng.next() >= T.evade) return;
   const side: 1 | -1 = rng.next() < 0.5 ? 1 : -1;
   const h = Math.hypot(b.vx, b.vz) || 1;
-  const up = al.y < 1.5 ? 1 : al.y > 14 ? -1 : rng.next() < 0.5 ? 1 : -1;
+  const up = al.y < -0.5 ? 1 : al.y > 1.5 ? -1 : rng.next() < 0.5 ? 1 : -1;
   const k = T.role === 'cruiser' ? 0.4 : 1;
-  al.vx += (-b.vz / h) * side * 15 * k;
-  al.vz += (b.vx / h) * side * 15 * k;
-  al.vy += up * 13 * k;
+  // a jink is sideways across the lance, with a hop for the roll to read; it stays on the plane
+  al.vx += (-b.vz / h) * side * 19 * k;
+  al.vz += (b.vx / h) * side * 19 * k;
+  al.vy += up * 3.5 * k;
   al.roll = 0;
   al.rollDir = side;
   al.jink = rng.range(1.4, 2.4) * (T.role === 'cruiser' ? 2 : 1);
@@ -575,6 +602,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
   if (al.jink > 0) al.jink = Math.max(0, al.jink - dt);
   if (al.mark > 0) al.mark = Math.max(0, al.mark - dt);
   if (al.grazeT > 0) al.grazeT = Math.max(0, al.grazeT - dt);
+  if (al.bumpT > 0) al.bumpT = Math.max(0, al.bumpT - dt);
   if (al.roll >= 0 && (al.roll += dt) >= JINK_ROLL) al.roll = -1;
   if (T.ttl > 0 && !al.fleeing && (al.ttl -= dt) <= 0) leave(al);
   const regen = al.elite ? ELITES[al.elite].regen : 0;
@@ -653,7 +681,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
     }
 
     case 'leave':
-      steer(al, al.x - ux * 100, 30, al.z - uz * 100, dash, acc, dt);
+      steer(al, al.x - ux * 100, 4, al.z - uz * 100, dash, acc, dt);
       break;
 
     // the convoy: across the sector on its own heading, whatever you do
@@ -664,7 +692,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
     // interceptors: swing out high, dive, pass, climb out
     case 'setup': {
       const gx = s.x + fx * 30 + rx * al.slide * 28, gz = s.z + fz * 30 + rz * al.slide * 28;
-      steer(al, gx, 9, gz, speed * 1.3, acc, dt, 4);
+      steer(al, gx, 1.6, gz, speed * 1.3, acc, dt, 4);
       if (Math.hypot(gx - al.x, gz - al.z) < 9 || al.modeT <= 0) { al.mode = 'run'; al.modeT = 3.5; }
       break;
     }
@@ -694,7 +722,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
       break;
     case 'extend': {
       const sp = Math.hypot(al.vx, al.vz) || 1;
-      steer(al, al.x + (al.vx / sp) * 30, 10, al.z + (al.vz / sp) * 30, dash, acc, dt);
+      steer(al, al.x + (al.vx / sp) * 30, 1.8, al.z + (al.vz / sp) * 30, dash, acc, dt);
       if (al.modeT <= 0) {
         if (++al.runs >= RUNS && !al.escort) leave(al);
         else if (T.tactic === 'ram') { al.mode = 'line'; al.modeT = 1.2 + (al.id % 5) * 0.16; }

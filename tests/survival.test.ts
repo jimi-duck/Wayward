@@ -52,6 +52,8 @@ function traffic(w: World, seconds: number): { arrived: number; gap: number } {
   let quiet = 0, gap = 0;
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     w.plates = 99;
+    // the arcade bay opens by itself once the Krail is aboard (a hull that rams the ship drops some): shut it, nobody is refitting here
+    if (w.phase === 'bay') w.closeBay();
     w.step(STEP, idle);
     let any = false;
     for (const a of w.aliens) if (!a.extra) { any = true; seen.add(a.id); }
@@ -739,7 +741,8 @@ describe('the voyage', () => {
     const again = makeChart(5, 'eight');
     layQuiet(again, 5);
     expect(again.systems.map((s) => !!s.quiet)).toEqual(b.systems.map((s) => !!s.quiet));
-  });
+    // 24 eight-region charts: slower than vitest's 5 s on a busy machine
+  }, 30_000);
 });
 
 describe('a mode that is playable', () => {
