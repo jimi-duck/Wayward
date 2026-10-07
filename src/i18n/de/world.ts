@@ -441,6 +441,7 @@ export const WORLD: Record<string, string> = {
   'The last lane the old charts know. Beyond it, the Scatter.': 'Die letzte Bahn auf den alten Karten. Dahinter: der Scatter.',
   'the Dust Traders': 'Dust Traders',
   'a Holdfast': 'ein Holdfast',
+  'nobody': 'niemand',
 
   // ── unlocks (content/unlocks.ts) ──
   'Swarm launcher': 'Schwarmwerfer',
@@ -458,7 +459,7 @@ export const WORLD: Record<string, string> = {
   'Release 6 overcharges in one run.': 'Entlade 6 Überladungen in einer Runde.',
   'Ramjet': 'Staustrahl',
   'A synergy of ram prow and main drive: roll into hulls to ram them untouched.': 'Synergie aus Rammbug und Hauptantrieb: roll in Schiffe und ramm sie unbeschadet.',
-  'Reach refit 12.': 'Erreich Umbau 12.',
+  'Reach refit 12.': 'Erreiche Umbau 12.',
   'Derelict hulks': 'Treibende Wracks',
   'A new sector event: salvage a drifting hulk, and spring its trap.': 'Neues Sektorereignis: plündre ein treibendes Wrack und lös seine Falle aus.',
   'Survive 5 minutes.': 'Überleb 5 Minuten.',

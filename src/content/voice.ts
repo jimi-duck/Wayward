@@ -9,7 +9,7 @@ export const VOICE: Array<{ id: VoiceId; text: string }> = [
   { id: 'overweight', text: 'Load limit exceeded' },
   { id: 'maintenance', text: 'Maintenance required' },
   { id: 'unauthorised', text: 'Unauthorised configuration' },
-  { id: 'refit', text: 'Automated refit enabled' },
+  { id: 'refit', text: 'Refit authorised' },
   { id: 'obedience', text: 'Obedience protocol: active' },
   { id: 'crew', text: 'Crew absent' },
 ];

@@ -2,6 +2,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DE, KEEP } from '../src/i18n/de';
 import { loadDe, num, plural, setLang, t } from '../src/i18n';
 import { scanPage, scanSource } from './i18n-scan';
+import { HOLDER_NAMES } from '../src/content/systems';
 
 // Every line the player can see has a German one (or is a name, the same in
 // both). New text without German fails here, with the list of what is missing.
@@ -22,6 +23,11 @@ describe('German', () => {
   it('covers the page', () => {
     const missing = holes(scanPage());
     expect(missing, `${missing.length} lines have no German:\n${missing.join('\n')}`).toEqual([]);
+  });
+
+  it('covers the lower-case words the scan skips', () => {
+    // the scan leaves single lower-case words out; these tables are shown through t()
+    expect(holes(Object.values(HOLDER_NAMES))).toEqual([]);
   });
 
   it('keeps every placeholder', () => {

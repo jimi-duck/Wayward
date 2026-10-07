@@ -75,12 +75,10 @@ function boot(): void {
   sector.rig.zoom = clamp(Math.round(profile.zoom), 0, ZOOMS.length - 1);
   const zoom = (dir: number) => {
     sector.rig.zoom = clamp(sector.rig.zoom + dir, 0, ZOOMS.length - 1);
-    hud.showZoom(sector.rig.zoom);
     profile.zoom = sector.rig.zoom;
     saveProfile(profile);
   };
-  const hud = new Hud(zoom);
-  hud.showZoom(sector.rig.zoom);
+  const hud = new Hud();
 
   // An iPhone gives a page in a browser no fullscreen, and the browser keeps
   // its tabs and bars on screen until the page scrolls (the swipe screen,
@@ -214,6 +212,8 @@ function boot(): void {
     const j = journey!;
     sortieStart = tally(j);
     world.restart({ unlocked: grants(profile), mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+    // a new journey carries 99 plates for "full": the ship's own count is the start to compare with
+    sortieStart = { ...sortieStart, plates: world.plates };
     showMode();
     reported = false;
     setPaused(false);
