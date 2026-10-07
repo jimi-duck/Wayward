@@ -128,23 +128,26 @@ function boot(): void {
   const resumeLine = (j: Journey) => {
     const day = t('Day {n}', { n: Math.floor(j.day) + 1 });
     if (pending(j)) return `${day} · ${t('through the Threshold · the file is still aboard')}`;
-    return [day, t(SURVIVAL[j.survival].name), here(j).name, j.dest ? t('bound for {dest}', { dest: sysById(j.chart, j.dest).name }) : '', j.wrecks ? plural(j.wrecks, '{n} wreck', '{n} wrecks') : ''].filter(Boolean).join(' · ');
+    return [day, t(SURVIVAL[j.survival].name), j.dest ? `${here(j).name} → ${sysById(j.chart, j.dest).name}` : here(j).name].join(' · ');
+  };
+  /** Start game replaces a saved journey only on a second press: the first arms it and says so. */
+  let armed = false;
+  let disarm = 0;
+  const paintLaunch = (replaces: boolean) => {
+    const what = `${t(pick === 'arcade' ? 'Arcade' : 'Story')} · ${t(SURVIVAL[profile.survival].name)}`;
+    el('launch').classList.toggle('armed', armed);
+    el('launch-s').textContent = armed ? t('Press again to replace your save') : replaces ? `${what} · ${t('New journey')}` : what;
+    el('launch-t').textContent = armed ? t('Start a new journey?') : t('Start game');
   };
   const showResume = () => {
     const live = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
     const j = pick === 'breakout' ? live : null;
     el('mode-arcade').setAttribute('aria-checked', String(pick === 'arcade'));
     el('mode-story').setAttribute('aria-checked', String(pick === 'breakout'));
-    el('fresh').hidden = !j;
-    el('resume-s').hidden = !j;
-    // under Arcade the saved journey is offered above the picker; under Story the launch button is its Continue
-    el('cont').hidden = !live || pick === 'breakout';
-    if (live) {
-      el('cont-s').textContent = resumeLine(live);
-      const last = live.log[live.log.length - 1]?.text;
-      el('cont-r').textContent = last ? `${t('Last time')} · ${t(last)}` : '';
-      el('cont-r').hidden = !last;
-    }
+    // a saved journey is a small card above the picks, in either mode; Start game below is always a new one
+    el('cont').hidden = !live;
+    if (live) el('cont-s').textContent = resumeLine(live);
+    armed = false;
     // the chapter just begun, and the way back to its gate (not in Hardcore, where nothing is taken back)
     const rc = j ? recap(j) : null;
     const box = el('recap');
@@ -157,8 +160,7 @@ function boot(): void {
     }
     const snap = j && !j.hardcore ? chapterSave() : null;
     el('chapter').hidden = !snap || !j || snap.day >= j.day;
-    el('launch').textContent = pick === 'arcade' ? t('Start arcade') : j ? t('Continue story') : t('Start story');
-    if (j) el('resume-s').textContent = resumeLine(j);
+    paintLaunch(!!j);
     // a save that could not be read is said so, with the safety copy on offer if there is one
     const bad = saveUnreadable() && !journey;
     el('save-problem').textContent = t('Your saved journey could not be read.');
@@ -284,6 +286,7 @@ function boot(): void {
     // before the first launch nothing has happened yet, so the run can be re-made in the new survival mode
     if (!started) world.restart({ survival: profile.survival, mode: profile.mode });
     showBrief();
+    showResume();
   }, () => (journey && (journey.status !== 'over' || pending(journey)) ? journey.survival : null));
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
@@ -535,13 +538,20 @@ function boot(): void {
   window.visualViewport?.addEventListener('resize', bars);
   el('swipe-x').addEventListener('click', () => { kept = true; bars(); });
 
+  // Enter or a tap off the buttons: Arcade starts, Story carries on a saved journey or begins one
   const go = () => launch(pick, pick === 'breakout');
   const press = (id: string, f: () => void) => {
     el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
     el(id).addEventListener('pointerdown', (e) => e.stopPropagation());
   };
-  press('launch', go);
-  press('fresh', () => launch('breakout'));
+  press('launch', () => {
+    const live = journey && (journey.status !== 'over' || pending(journey));
+    if (pick === 'arcade' || !live || armed) return launch(pick);
+    armed = true;
+    paintLaunch(true);
+    clearTimeout(disarm);
+    disarm = window.setTimeout(() => { armed = false; paintLaunch(true); }, 4000);
+  });
   press('chapter', () => { const j = restartChapter(); if (j) { journey = j; showResume(); } });
   press('cont', () => launch('breakout', true));
   press('restore', () => { const j = restoreJourney(); if (j) { journey = j; pick = 'breakout'; showResume(); } });
@@ -557,6 +567,15 @@ function boot(): void {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
     if (!started) {
       if (startOpts.logbookOpen) { if (e.code === 'Escape') startOpts.logbook(false); return; }
+      // in the difficulty row the arrows step through Easy, Normal, Hard; anywhere else they swap the mode
+      const inDifs = e.target instanceof Element && e.target.closest('#mods');
+      if (inDifs && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+        const all = [...document.querySelectorAll<HTMLButtonElement>('#mods button')];
+        const at = all.findIndex((b) => b.getAttribute('aria-checked') === 'true');
+        all[Math.max(0, Math.min(all.length - 1, at + (e.code === 'ArrowRight' ? 1 : -1)))]?.click();
+        document.querySelector<HTMLButtonElement>('#mods button[aria-checked="true"]')?.focus();
+        return;
+      }
       if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { choose(pick === 'arcade' ? 'breakout' : 'arcade'); el(pick === 'arcade' ? 'mode-arcade' : 'mode-story').focus(); return; }
       // Enter on a focused button presses that button; anywhere else it starts the picked mode
       if ((e.code === 'Enter' || e.code === 'Space') && !(e.target instanceof HTMLButtonElement)) go();

@@ -206,6 +206,9 @@ export class SummaryPanel {
 // the Archive kept of it), the journeys, the people met, and the unlocks.
 // The title no longer has a button for it; logbook(true) still opens it.
 
+/** What each survival mode is as a difficulty, under its name. */
+const LEVEL: Record<SurvivalId, string> = { drifter: 'Easy', prospector: 'Normal', raider: 'Hard' };
+
 export class StartOptions {
   /** `saved`: the survival mode of the journey the title would carry on, if there is one: it keeps its own whatever is picked. */
   constructor(private readonly profile: Profile, private readonly onChange: () => void, private readonly saved: () => SurvivalId | null = () => null) {
@@ -229,7 +232,7 @@ export class StartOptions {
     const mods = $('mods');
     const K = SURVIVAL[p.survival];
     mods.replaceChildren(...SURVIVALS.map((m) => {
-      const b = h('button', '', t(m.name)) as HTMLButtonElement;
+      const b = h('button', 'dif', '', h('b', 'df-t', t(m.name)), h('span', 'df-s', t(LEVEL[m.id]))) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-checked', String(p.survival === m.id));
