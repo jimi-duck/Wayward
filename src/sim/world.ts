@@ -423,6 +423,11 @@ export class World implements EncounterHost {
     return pressure(this.clock, this.mods);
   }
 
+  /** The arcade's Krail income: the mode's sky says how much; the Story's income is in its rock and salvage rows. */
+  private get income(): number {
+    return this.bk ? 1 : this.mods.income;
+  }
+
   /** The share of veined rock in this system: the system's own, and the mode's. */
   private get richShare(): number {
     return (this.bk?.def.rich ?? 0) * this.survival.rock.veins;
@@ -761,7 +766,7 @@ export class World implements EncounterHost {
     if (cyrite) this.loot('rock', 'cyrite', cyrite, r.x, r.z, 3, r.vx, r.vz);
     // Krail: what a break would give by chance, sure when cut clean
     const K = ROCK_KINDS[r.kind];
-    this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * ROCK_KRAIL, R.krail), r.x, r.z, 3, r.vx, r.vz);
+    this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * ROCK_KRAIL, R.krail * this.income), r.x, r.z, 3, r.vx, r.vz);
     if (r.kind === 'rare') this.dropItem(this.cell('rock'), r.x, r.z);
     this.events.push({ type: 'rockCut', x: r.x, z: r.z, size: r.size, kind: r.kind, ore, cyrite, points });
   }
@@ -2077,7 +2082,7 @@ export class World implements EncounterHost {
     const K = this.survival.salvage, loot = al.elite ? this.stats.eliteLoot : 1, life = K.life;
     const v = { x: al.x, z: al.z, vx: al.vx, vz: al.vz };
     if (!this.bk) {
-      this.loot('wreck', 'crystal', this.share(al.xp * loot, K.krail), v.x, v.z, 5, v.vx, v.vz, life);
+      this.loot('wreck', 'crystal', this.share(al.xp * loot, K.krail * this.income), v.x, v.z, 5, v.vx, v.vz, life);
       return;
     }
     const C = K.cargo[ALIEN_TYPES[al.kind].role];
@@ -2179,7 +2184,7 @@ export class World implements EncounterHost {
       if (cyrite) this.loot('rock', 'cyrite', cyrite, r.x, r.z, 4, r.vx, r.vz);
     }
     // Krail by chance, in both modes (less of it in the Story mode, where a cut gives it surely)
-    if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), this.survival.rock.krail), r.x, r.z, 4, r.vx, r.vz);
+    if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), this.survival.rock.krail * this.income), r.x, r.z, 4, r.vx, r.vz);
     if (r.kind === 'rare') this.dropItem(this.cell('rock'), r.x, r.z);
     if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, src === 'hazard' ? 'hazard' : src, 'volatile', 1, true);
   }
