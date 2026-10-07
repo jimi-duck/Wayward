@@ -12,9 +12,9 @@ mode's salvage loop is a floor here, not what a player who plays it can do.
 
 | Mode | Runs | Survived | Mean time | Contacts / min | Time in combat | Longest calm | Kills / min | Plates lost / min | Score |
 |---|---|---|---|---|---|---|---|---|---|
-| Drifter | 20 | 60% | 9:13 | 3.25 | 53% | 0:56 | 8.5 | 0.34 | 76,853 |
-| Prospector | 20 | 15% | 7:46 | 2.90 | 61% | 0:49 | 8.3 | 0.49 | 67,729 |
-| Raider | 20 | 10% | 7:07 | 2.71 | 66% | 0:48 | 9.1 | 0.51 | 77,665 |
+| Drifter | 20 | 75% | 9:41 | 3.30 | 51% | 0:57 | 8.5 | 0.39 | 91,756 |
+| Prospector | 20 | 35% | 8:09 | 3.22 | 58% | 0:47 | 8.1 | 0.43 | 79,967 |
+| Raider | 20 | 30% | 8:07 | 3.32 | 63% | 0:49 | 11.2 | 0.42 | 130,639 |
 
 "Contacts" are times a hostile came into firing range from nothing.
 "Longest calm" is the longest stretch with no hostile in range.
@@ -25,17 +25,17 @@ Krail dropped a minute, by source, and bay picks a minute (every pick costs 30 K
 
 | Mode | From rock | From wrecks | Total | Wreck share | Picks / min |
 |---|---|---|---|---|---|
-| Drifter | 70.7 | 46.2 | 116.9 | 40% | 2.3 |
-| Prospector | 40.4 | 35.3 | 75.6 | 47% | 1.4 |
-| Raider | 14.3 | 72.9 | 87.3 | 84% | 1.5 |
+| Drifter | 71.5 | 47.7 | 119.2 | 40% | 2.3 |
+| Prospector | 41.0 | 36.2 | 77.1 | 47% | 1.4 |
+| Raider | 16.2 | 96.0 | 112.1 | 86% | 1.8 |
 
 ## The Story: how journeys go
 
 | Mode | Through | Captured | Wrecked out | Stuck | Systems flown | Days | Wrecks | Time in combat | Contacts / min | Longest calm | Hungry jumps | Cyrite at the chart |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Drifter | 6/6 | 0 | 0 | 0 | 9.8 | 19.8 | 0.0 | 22% | 1.90 | 1:03 | 0.0 | 23.0 |
-| Prospector | 6/6 | 0 | 0 | 0 | 10.2 | 23.3 | 0.3 | 31% | 2.63 | 0:59 | 0.0 | 19.6 |
-| Raider | 5/6 | 0 | 1 | 0 | 10.5 | 22.3 | 1.0 | 37% | 2.53 | 0:56 | 0.0 | 19.8 |
+| Drifter | 6/6 | 0 | 0 | 0 | 9.8 | 20.3 | 0.0 | 20% | 1.94 | 1:02 | 0.0 | 23.3 |
+| Prospector | 5/6 | 1 | 0 | 0 | 9.0 | 19.4 | 0.2 | 30% | 2.42 | 0:56 | 0.0 | 18.1 |
+| Raider | 6/6 | 0 | 0 | 0 | 9.8 | 22.2 | 0.0 | 35% | 2.87 | 0:55 | 0.0 | 18.2 |
 
 "Stuck" is a sortie that ran out the pilot's twenty minutes without a jump or a wreck: the
 sign of an unwinnable resource state.
@@ -46,15 +46,15 @@ Dropped a minute of flight, by source.
 
 | Mode | Resource | From rock | From wrecks | Wreck share |
 |---|---|---|---|---|
-| Drifter | Krail | 31.3 | 14.0 | 31% |
-| Drifter | Cyrite | 6.9 | 0.8 | 11% |
-| Drifter | Ore | 29.2 | 0.0 | 0% |
-| Drifter | Parts | 0.0 | 12.2 | 100% |
-| Prospector | Krail | 31.6 | 16.0 | 34% |
-| Prospector | Cyrite | 6.0 | 0.7 | 11% |
-| Prospector | Ore | 28.3 | 0.0 | 0% |
-| Prospector | Parts | 0.0 | 13.1 | 100% |
-| Raider | Krail | 9.5 | 37.8 | 80% |
-| Raider | Cyrite | 1.5 | 11.7 | 89% |
-| Raider | Ore | 13.2 | 3.4 | 21% |
-| Raider | Parts | 0.0 | 20.8 | 100% |
+| Drifter | Krail | 31.9 | 14.9 | 32% |
+| Drifter | Cyrite | 6.8 | 0.9 | 12% |
+| Drifter | Ore | 30.2 | 0.0 | 0% |
+| Drifter | Parts | 0.0 | 12.9 | 100% |
+| Prospector | Krail | 29.3 | 17.1 | 37% |
+| Prospector | Cyrite | 5.1 | 0.9 | 16% |
+| Prospector | Ore | 27.4 | 0.0 | 0% |
+| Prospector | Parts | 0.0 | 13.4 | 100% |
+| Raider | Krail | 9.3 | 36.5 | 80% |
+| Raider | Cyrite | 1.7 | 10.7 | 86% |
+| Raider | Ore | 12.3 | 3.6 | 23% |
+| Raider | Parts | 0.0 | 19.6 | 100% |

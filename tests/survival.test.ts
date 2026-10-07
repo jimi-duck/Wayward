@@ -77,8 +77,8 @@ describe('the table', () => {
 
   it('keeps Prospector at the old numbers: every multiplier 1, bar the arcade sky', () => {
     const P = SURVIVAL.prospector;
-    // the arcade sky is the one thing set above 1 (Jimi: "harder", with the bay at 30 Krail); everything the Story reads is the old number
-    expect(P.sky).toEqual({ traffic: 2, toughness: 2, fire: 1.35, elites: 1.9, hazard: 1.5, income: 0.75 });
+    // the arcade sky is the one thing set above 1 (Jimi: "harder", with the bay at 30 Krail, then eased about 15% when the overcharge went); everything the Story reads is the old number
+    expect(P.sky).toEqual({ traffic: 1.7, toughness: 1.7, fire: 1.35, elites: 1.9, hazard: 1.5, income: 0.75 });
     expect(P.score).toBe(1);
     expect(P.pursuit).toEqual({ gap: 1, cap: 1, elite: 1 });
     expect(P.heat).toEqual({ rate: 1, kill: 1, cut: 1 });
