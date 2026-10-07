@@ -7,7 +7,7 @@ Wayward in 3D: a rebuild of the canvas game hidden in the portfolio
 
 A survivors-style roguelite. Lasers fire themselves, so steering is the only
 control. Kills drop krail; a full rail opens a refit card (one of three from
-17 upgrades). Near misses charge an overcharge that Space releases. Every ~68s a
+17 upgrades). Every ~68s a
 capital ship hails and you choose to fight or flee. Pressure rises every second
 until the hull reaches zero. There is no win state and no audio. Its tuning was
 balanced with a scripted pilot and the reasoning lives in the code comments and
@@ -157,7 +157,7 @@ found the first version cluttered:
   damage.
 - `ui/hud.ts` keeps only what earns its place while flying: the refit rail
   across the top, one ship-systems panel (the build's name; lasers, then
-  torpedoes and mines once fitted, and the reactor, each with its key,
+  torpedoes and mines once fitted, each with its key,
   gauge, reading and the level the refits have taken it to; the hull with
   its shield charges; the score and chain), a capital ship's or a sector
   event's panel at the top centre, the scope, and two fading log lines.
@@ -175,7 +175,7 @@ found the first version cluttered:
 - `ui/radar.ts`: ship-up, a compass bezel that turns with the ship, the
   camera's field of view, contacts by kind, and a bezel ring that lights
   toward any hostile in firing range.
-- Touch: octagon buttons that each carry their gauge (bank, rack, core),
+- Touch: octagon buttons that each carry their gauge (bank, rack),
   clustered round the right thumb; on a phone the panel tightens and the
   scope moves to the top left.
 
@@ -204,7 +204,7 @@ too hectic to get hooked.
   (utility) keeps a card for every-weapon damage.
 - The HUD follows the new reference: the sector and the krail gauge
   top left (the full-width rail is gone), a heading tape top centre, a
-  leaner systems panel top right (weapon rows; hull, reactor and score
+  leaner systems panel top right (weapon rows; hull and score
   side by side), the target's label sitting on its bracket frame with its
   integrity, mineral deposits marked with a hexagon and a two-line label,
   the scope with its range, and a mode line bottom right (cruise, mining
@@ -231,7 +231,7 @@ Coming in later milestones: `audio/`, three sectors and a win state.
 - **The flight model** keeps the original's per-frame numbers: one step is
   one 60Hz frame, so thrust, turn rate and drag port unchanged. Top speeds
   are 450, 316 and 384 px/s, as measured in the original.
-- **Presses** (roll, overcharge) are queued and consumed by the next step.
+- **Presses** (roll, break, torpedo) are queued and consumed by the next step.
   Pause is answered immediately by the app: a paused loop runs no steps.
 
 ## Mobile
@@ -246,8 +246,8 @@ Coming in later milestones: `audio/`, three sectors and a win state.
   is a floating stick: the ring centres exactly under the thumb (a touch
   never steers by itself) and follows the thumb past its rim. It drives like
   a racing game: across steers on an eased curve, any push opens the
-  throttle, pulling back coasts. The right half is the trigger: Torpedo and
-  Core are hit-tested with slack round them, and any other touch there holds
+  throttle, pulling back coasts. The right half is the trigger: Torpedo
+  is hit-tested with slack round it, and any other touch there holds
   the lasers, so a thumb that misses a button still fires. A second finger
   on the left is a barrel roll (a tap) or the break and reverse (a downward flick). The layer does all the hit-testing; a
   `touchend` with no fingers left releases everything, whatever pointer
@@ -271,7 +271,7 @@ Coming in later milestones: `audio/`, three sectors and a win state.
 | M2 | Combat core: asteroids, lasers, torpedoes, collision, splitting, hull, game over | done (roguelite pass) |
 | M3 | Combat feel and effects: trails, sparks, shield dome, explosions, shake | |
 | M4 | Space environment: starfield, nebulae, sun, shadows, bloom | |
-| M5 | Roguelite systems: XP, upgrades, hull pick, overcharge, enemies, bosses, hails | done (roguelite pass; no hull pick: one ship, many builds) |
+| M5 | Roguelite systems: XP, upgrades, hull pick, enemies, bosses, hails | done (roguelite pass; no hull pick: one ship, many builds) |
 | M5b | Roguelite pass: refit tree, weapon systems, rock kinds, factions, elites, director, capital-ship phases and telegraphs, sector events, run report, long-term unlocks, scripted-pilot balancing | done |
 | M5c | HUD pass: one tactical UI language for the HUD and every panel, ship systems with refit levels, targeting with mining readouts, a compass scope, module refit cards, a decluttered phone layout | done |
 | M6 | Three sectors and a win state | |

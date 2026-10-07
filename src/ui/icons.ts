@@ -8,10 +8,10 @@ import { branchLevels, type Levels } from '../sim/build';
 /** The HUD's icon for each branch. */
 export const ICON: Record<Branch, string> = {
   laser: 'i-laser', torpedo: 'i-torp', mine: 'i-mine', plasma: 'i-plasma', close: 'i-arc', mobility: 'i-engine',
-  defence: 'i-shield', utility: 'i-rock', overcharge: 'i-core', synergy: 'i-link', salvage: 'i-capital',
+  defence: 'i-shield', utility: 'i-rock', synergy: 'i-link', salvage: 'i-capital',
 };
-/** Lasers and the reactor come fitted from the yard, so they count from level 1, as on the HUD. */
-const STOCK = new Set<Branch>(['laser', 'overcharge']);
+/** Lasers come fitted from the yard, so they count from level 1, as on the HUD. */
+const STOCK = new Set<Branch>(['laser']);
 
 export function systemLevel(levels: Levels, b: Branch): number {
   return branchLevels(levels, b) + (STOCK.has(b) ? 1 : 0);

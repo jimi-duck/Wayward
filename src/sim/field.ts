@@ -59,8 +59,6 @@ export interface Rock {
   r: number;
   hp: number;
   maxHp: number;
-  /** Seconds before this rock can count as a near miss again. */
-  grazeT: number;
   /** Which of the rock shapes to draw. */
   variant: number;
   /** Tumble: an axis and a rate, for the renderer. */
@@ -147,7 +145,7 @@ export class Field {
     const rock: Rock = {
       id: newId(), kind, x, z,
       vx: vx ?? Math.cos(a) * sp, vz: vz ?? Math.sin(a) * sp,
-      size, r: ROCK_R[size] * this.rng.range(0.88, 1.12) * (kind === 'iron' ? 0.92 : 1), hp, maxHp: hp, grazeT: 0,
+      size, r: ROCK_R[size] * this.rng.range(0.88, 1.12) * (kind === 'iron' ? 0.92 : 1), hp, maxHp: hp,
       variant: this.rng.int(ROCK_VARIANTS), ax: ax / n, ay: ay / n, az: az / n,
       spin: this.rng.range(-0.9, 0.9) * (1 + size * 0.6), age: 0, hitT: 0,
     };
@@ -285,7 +283,6 @@ export class Field {
       r.z += r.vz * dt;
       r.age += dt;
       if (r.hitT > 0) r.hitT = Math.max(0, r.hitT - dt);
-      if (r.grazeT > 0) r.grazeT = Math.max(0, r.grazeT - dt);
       if (r.x - cx > half) r.x -= FIELD_BAND; else if (r.x - cx < -half) r.x += FIELD_BAND;
       if (r.z - cz > half) r.z -= FIELD_BAND; else if (r.z - cz < -half) r.z += FIELD_BAND;
       // rock glances off a bulwark

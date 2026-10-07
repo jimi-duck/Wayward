@@ -49,7 +49,6 @@ export const UI: Record<string, string> = {
   'Lasers': 'Laser',
   'Torpedo': 'Torpedo',
   'Cutter': 'Schneider',
-  'Overcharge': 'Überladung',
   'Roll': 'Rolle',
   'Camera': 'Kamera',
   'Continue': 'Weiter',
@@ -193,7 +192,6 @@ export const UI: Record<string, string> = {
   'Netted · Custody control': 'Im Netz · Custody-Kontrolle',
   'Mineral-rich field': 'Reiches Erzfeld',
   'Spatial anomaly': 'Raumanomalie',
-  'Phase cloak': 'Phasentarnung',
   'Cloak': 'Tarnung',
 
   // the log and the banners
@@ -392,8 +390,6 @@ export const UI: Record<string, string> = {
   'Damage control': 'Schadenskontrolle',
   'Hull held': 'Rumpf hält',
   'One plate · two seconds of grace': 'Eine Platte · zwei Sekunden Schonfrist',
-  'Core charged · tap Core': 'Kern geladen · Kern tippen',
-  'Core charged · press E': 'Kern geladen · E drücken',
   '{n} hit': '{n} Treffer',
   '{n} hits': '{n} Treffer',
   'Chain {n} · score ×{m}': 'Kette {n} · Punkte ×{m}',
@@ -688,7 +684,6 @@ export const UI: Record<string, string> = {
   'Never docked': 'Nie angedockt',
   'Survived': 'Überlebt',
   'Best chain': 'Beste Kette',
-  'Overcharges': 'Überladungen',
   'Capital ships': 'Kapitalschiffe',
   'Sector events': 'Sektorereignisse',
   '{n} power-ups found': '{n} Power-ups gefunden',

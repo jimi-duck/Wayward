@@ -31,7 +31,7 @@ export const ORIGIN: Readonly<Record<string, Origin>> = Object.freeze({
   // defence and utility
   df_shield: 'oem', cl_arc: 'unknown', ut_tractor: 'oem', ut_scanner: 'aftermarket',
   // the core
-  rx_core: 'repaired', rx_sinks: 'aftermarket', oc_overload: 'unknown',
+  rx_core: 'repaired',
   // salvaged tech, and the yard's quiet kit
   tech_gutter: 'salvaged', tech_custody: 'property', tech_office: 'property', tech_thren: 'unknown', tech_voice: 'unknown',
   md_plate: 'salvaged', md_ghost: 'unknown',

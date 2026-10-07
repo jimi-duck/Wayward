@@ -108,8 +108,6 @@ export interface Stats {
   rollKick: number;
   rollIframes: number;
   drift: boolean;
-  /** Grazes during a roll count double and refund the roll. */
-  evasion: boolean;
 
   // defence
   maxPlates: number;
@@ -130,17 +128,9 @@ export interface Stats {
   repairMax: number;
   repairUnderFire: boolean;
 
-  // utility and the reactor
+  // utility
   tractor: number;
   xpMult: number;
-  ocGain: number;
-  ocRadius: number;
-  ocDamage: number;
-  ocOverload: number;
-  /** Seconds of intangibility a release gives (the phase cloak). */
-  ocPhase: number;
-  /** A release refills the torpedo rack and lays a ring of mines. */
-  ocRefill: boolean;
 
   // the whole ship
   /** Multiplier on every weapon's damage. */
@@ -149,8 +139,6 @@ export interface Stats {
   plasmaCorona: boolean;
   /** A ram discharges an arc into the hulls near its target. */
   ramArc: boolean;
-  /** Near misses at speed count double. */
-  speedGraze: boolean;
 
   // the economy (utility)
   /** Multipliers: rock's chance of krail, hull repairs' chance, power-up time, rare rock's frequency, an elite's krail. */
@@ -194,14 +182,14 @@ export const BASE: Readonly<Stats> = Object.freeze({
   ramDamage: 3, ramSafe: false, ramjet: false,
 
   thrust: 1, turn: 1, grip: HULL.grip, rollCooldown: ROLL_COOLDOWN, rollKick: ROLL_KICK, rollIframes: ROLL_IFRAMES,
-  drift: false, evasion: false,
+  drift: false,
 
   maxPlates: HULL.plates, shieldMax: SHIELD_MAX, shieldRecharge: SHIELD_RECHARGE, shieldDelay: SHIELD_DELAY, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
   repairDelay: SELF_REPAIR.delay, repairRate: 1 / SELF_REPAIR.perPlate, repairMax: SELF_REPAIR.max, repairUnderFire: false,
 
-  tractor: 165 * PX, xpMult: 1, ocGain: 1, ocRadius: 20, ocDamage: 10, ocOverload: 4, ocPhase: 0, ocRefill: false,
+  tractor: 165 * PX, xpMult: 1,
 
-  dmgAll: 1, plasmaCorona: false, ramArc: false, speedGraze: false,
+  dmgAll: 1, plasmaCorona: false, ramArc: false,
   crystalChance: 1, repairChance: 1, powerTime: 1, rareRate: 1, eliteLoot: 1,
   disruptor: 0, rollCloak: 0, snare: 0,
   notice: 1, lull: 1,
@@ -240,8 +228,6 @@ export const CAPS = {
   rollCooldown: 0.45,
   /** A roll covers the ship for at most this share of the time until the next, so rolling on the cooldown always leaves a gap. */
   rollCover: 0.8,
-  ocRadius: 34,
-  ocGain: 2.2,
   dmgAll: 1.6,
   /** A ram that kills costs no hull, and the arc fires by itself, so both have a ceiling. */
   ramDamage: 18,
@@ -287,8 +273,6 @@ export function capStats(s: Stats): Stats {
   s.turn = Math.min(s.turn, CAPS.turn);
   s.rollCooldown = Math.max(s.rollCooldown, CAPS.rollCooldown);
   s.rollIframes = Math.min(s.rollIframes, s.rollCooldown * CAPS.rollCover);
-  s.ocRadius = Math.min(s.ocRadius, CAPS.ocRadius);
-  s.ocGain = Math.min(s.ocGain, CAPS.ocGain);
   s.dmgAll = Math.min(s.dmgAll, CAPS.dmgAll);
   s.ramDamage = Math.min(s.ramDamage, CAPS.ramDamage);
   s.arcDamage = Math.min(s.arcDamage, CAPS.arcDamage);

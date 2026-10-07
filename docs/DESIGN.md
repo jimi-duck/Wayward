@@ -208,7 +208,7 @@ Everyone launches in the same ship: the Wayward, OB-7731-A, a stolen
 Obedience-class ore hauler. Over a run she becomes
 something else, depending on what you fit in the refit bay: a torpedo
 boat, a minelayer, a brawler that rams and arcs, a fortress, an interceptor
-that dives through fire to charge its core. Nothing is a class you pick; it
+that dives through fire. Nothing is a class you pick; it
 is a ship you build. The run report names what you built.
 
 The run is a slow burn. The first forty seconds are yours alone, a thin
@@ -471,12 +471,10 @@ The branches:
   on to one more hull), the **shock prow** (a ram discharges into the hulls
   near its target) or the **juggernaut** (unlockable).
 - **Mobility**: main drive, thrusters, dampers, evasive jets (the roll comes
-  round sooner and covers longer); each also charges the core a little
-  faster, since the interceptor's gun is the release. Specialise into
+  round sooner and covers longer). Specialise into
   the **drift drive** (keep speed off the throttle; lances fired while
-  drifting hit a third harder), the **evasive pattern** (grazing fire
-  mid-roll counts double and refunds the roll) or the **afterburner**
-  (more thrust; near misses near top speed count double).
+  drifting hit a third harder), the **evasive pattern** (a longer roll that
+  comes round much sooner) or the **afterburner** (a much higher top speed).
 - **Defence**: **deflector shields** (a charge that takes one hit, then
   recharges), regenerators, ablative armour (+1 plate), bulkheads (longer
   grace), damage control (one save). Specialise into the **fortress**,
@@ -487,11 +485,13 @@ The branches:
   (rock gives krail half as often again), **salvage drones** (more hull
   repairs, longer power-ups) or **deep scanners** (rare rock twice as
   often, elites carry twice the krail).
-- **Reactor**: coils (more overcharge from near misses). Specialise into
-  the **core nova**, **weapons overload** (longer, and refills racks) or
-  the **phase cloak** (unlockable).
+- **Reactor** (a bay tab, not an upgrade branch): the reactor core and the
+  heat exchangers raise the ship's power and cooling. There is no
+  overcharge any more (removed 2026-10-07): the meter, the release key,
+  grazing, the phase cloak, core nova, weapons overload and core-charged
+  mines all went with it.
 - **Synergies** (needing both halves): plasma warheads, laser detonators,
-  the capacitor shield, arc warheads, core-charged mines, and the ramjet
+  the capacitor shield, arc warheads, and the ramjet
   (unlockable).
 
 **Salvaged tech**, one per faction: Gutter **disruptors** (every fourth
@@ -534,13 +534,9 @@ work faster and mend a second plate a spell; the regenerative hull works
 with hostiles close. The Story mode keeps its own repair: parts patched into
 a plate when you are left alone.
 
-## The reactor and the chain
+## The kill chain
 
-Near misses charge the core: fire that passes close without hitting, rock
-skimmed at speed, hulls passed close aboard, beams and webs brushed (each
-counts once). Full, it releases on **E** (gamepad Y, touch **Core**): a
-nova that damages everything near (scaling with refits), clears enemy fire,
-and runs the guns hot for a few seconds. The **kill chain** is score only:
+The **kill chain** is score only:
 each hull kill inside a short window adds one; breaking rock keeps it alive.
 
 ## The sector
@@ -554,7 +550,7 @@ or two); singles, clusters, and a big rock in its own debris.
 **Salvage cells** (the power-ups) are never drawn from a hat: each place
 gives the cell its work suggests (`CELL` in `sim/pickups.ts`). Rare rock
 holds a tractor surge, a rescued crew lends an emergency shield, a derelict
-a reactor charge, an elite's wreck its fire control (rapid fire), a capital
+a charged shield, an elite's wreck its fire control (rapid fire), a capital
 ship's wreck its drive (overdrive). The pickup and the note say what it
 does in a line (`POWER_HINT`); a new cell is a row in each table.
 
@@ -702,15 +698,13 @@ shows what is in it.
 
 When no capital ship is about, roughly once a minute: a mineral-rich field,
 a distress signal (hold the beacon circle for a repair), an enemy convoy
-(freighters heavy with krail), an ion storm (lightning on the circles;
-near misses charge double), a nebula (sensors down; the core charges
-faster), and, once unlocked, a derelict hulk (salvage, then an ambush) and
+(freighters heavy with krail), an ion storm (lightning on the circles), a nebula (sensors down: short radar and locks), and, once unlocked, a derelict hulk (salvage, then an ambush) and
 a spatial anomaly (a gravity well that crushes what reaches its core).
 
 ## The run report and progression
 
 The report compares the run with your best (survival, refits, kills, chain,
-krail, overcharges, capital ships, events), shows the ship as built,
+krail, capital ships, events), shows the ship as built,
 what did the killing and what did the damage, the score curve against your
 best run's, and any unlocks earned. Long-term progression opens options,
 never power: locked specialisations, a synergy, two sector events and

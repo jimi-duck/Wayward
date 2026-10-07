@@ -147,7 +147,7 @@ class Trail {
 // Unseen until it takes a hit: then a hex lattice flares, red at the rim
 // (red is damage). It shimmers teal through the grace after a hit. With
 // shield charges up it stands faintly blue at the rim, and a hit it absorbs
-// flares blue instead of red; phased, it shimmers violet.
+// flares blue instead of red.
 function shieldMaterial(): ShaderMaterial {
   return new ShaderMaterial({
     transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
@@ -374,8 +374,8 @@ export class ShipView {
     }
   }
 
-  /** The visible state the build adds: shield charges up, phased, weapons overloaded. */
-  status = { charged: 0, phased: false, overload: false, cloaked: false };
+  /** The visible state the build adds: shield charges up, rapid fire, cloaked. */
+  status = { charged: 0, rapid: false, cloaked: false };
 
   update(s: ShipState, dt: number, reduceMotion: boolean): void {
     this.time += dt;
@@ -406,7 +406,7 @@ export class ShipView {
     // a slow heave, so a ship at rest still reads as afloat
     this.pitchG.position.y = Math.sin(this.time * 1.3) * 0.03 + lift;
 
-    const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05, hot = this.status.overload ? 1.6 : 1;
+    const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05, hot = this.status.rapid ? 1.6 : 1;
     this.discMat.color.copy(this.bell).multiplyScalar((0.3 + 0.35 * h) * hot);
     this.rimMat.color.copy(this.bell).multiplyScalar((0.22 + 0.3 * h) * flick * hot);
     this.coreMat.color.copy(this.core).multiplyScalar((0.22 + 0.5 * h) * flick * hot);
@@ -423,14 +423,14 @@ export class ShipView {
 
     this.hit = Math.max(0, this.hit - dt * 2.2);
     const st = this.status;
-    const grace = st.phased || st.cloaked ? 1 : s.invuln > 0 && s.rollT < 0 ? Math.min(1, s.invuln) : 0;
+    const grace = st.cloaked ? 1 : s.invuln > 0 && s.rollT < 0 ? Math.min(1, s.invuln) : 0;
     const u = this.shieldMat.uniforms;
     u.uHit!.value = this.hit;
     u.uGrace!.value = grace;
     u.uTime!.value = this.time;
     u.uCharge!.value = st.charged;
     // a hit that got through flares red (damage); a charge or the grace after a hit stands in teal (the ship's own state)
-    const tint: [number, number, number] = st.phased ? [2.2, 0.8, 3.6] : st.cloaked ? [0.6, 2.4, 1.3]
+    const tint: [number, number, number] = st.cloaked ? [0.6, 2.4, 1.3]
       : this.hit > 0 && !this.absorbed ? [2.6, 0.55, 0.35] : this.absorbed || st.charged > 0 ? [0.7, 1.5, 3.4] : [0.45, 1.6, 1.8];
     (u.uColor!.value as Color).setRGB(...tint);
     this.shield.visible = this.hit > 0 || grace > 0 || st.charged > 0;

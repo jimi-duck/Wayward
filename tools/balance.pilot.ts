@@ -22,7 +22,7 @@ const STRATEGIES: Strategy[] = [
   { kind: 'focus', branch: 'torpedo', second: 'defence' },
   { kind: 'focus', branch: 'plasma', second: 'mobility' },
   { kind: 'focus', branch: 'defence', second: 'laser' },
-  { kind: 'focus', branch: 'mobility', second: 'overcharge' },
+  { kind: 'focus', branch: 'mobility', second: 'laser' },
 ];
 
 const mean = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);

@@ -17,7 +17,6 @@ const PRESSES: Record<string, Press> = {
   Numpad2: 'torpedo',
   KeyF: 'torpedo',
   KeyK: 'torpedo',
-  KeyE: 'overcharge',
   ArrowDown: 'brk',
   KeyS: 'brk',
   ShiftLeft: 'roll',
@@ -72,7 +71,7 @@ export class Keyboard {
     this.onActive();
     this.held.add(e.code);
     // A press is a press, not a hold: a held key repeats keydown, and without
-    // this guard a full overcharge would be spent on every repeat.
+    // this guard a torpedo would be spent on every repeat.
     const p = PRESSES[e.code];
     if (p && !e.repeat) this.onPress(p);
   };

@@ -285,8 +285,6 @@ export interface Alien {
   snare: number;
   /** Seconds since it last took damage (regeneration waits for quiet). */
   calm: number;
-  /** Seconds before it can count as a near miss again. */
-  grazeT: number;
   /** Seconds before it can be hurt by rock again. */
   bumpT: number;
   xp: number;
@@ -301,8 +299,6 @@ export interface Shot {
   hp: number; seek: number;
   /** shards: seconds until it splits in three */
   split: number;
-  /** already counted as a near miss */
-  grazed?: boolean;
   /** Who fired it (a variant id, or 'capital'), for the damage report. */
   from?: string;
 }
@@ -400,7 +396,7 @@ export function spawnAlien(kind: AlienKind, ship: ShipState, t: number, rng: Rng
     ax: 0, az: 0, cruiseY: at ? at.y : cruiseY, jink: 0, runs: 0, beamT: 0, beamAng: 0, soaked: 0, hitT: 0, escort: !!at, extra: false,
     spK: F.speed * (E?.speed ?? 1), cdK, rgK: F.range, shotK: E?.shotSpeed ?? 1,
     shots: (v.kind === kind ? v.shots : undefined) ?? T.shots + (E?.extraShots ?? 0), split: !!(v.kind === kind && v.split),
-    cloak: canCloak && !at ? 1 : 0, canCloak, burn: 0, burnDps: 0, mark: 0, snare: 0, calm: 99, grazeT: 0, bumpT: 0,
+    cloak: canCloak && !at ? 1 : 0, canCloak, burn: 0, burnDps: 0, mark: 0, snare: 0, calm: 99, bumpT: 0,
     xp: Math.round(T.xp * (E ? 2 : 1)), approach: T.tactic === 'cross' ? 'direct' : o.approach ?? 'direct',
   };
 }
@@ -601,7 +597,6 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
   if (al.hitT > 0) al.hitT = Math.max(0, al.hitT - dt);
   if (al.jink > 0) al.jink = Math.max(0, al.jink - dt);
   if (al.mark > 0) al.mark = Math.max(0, al.mark - dt);
-  if (al.grazeT > 0) al.grazeT = Math.max(0, al.grazeT - dt);
   if (al.bumpT > 0) al.bumpT = Math.max(0, al.bumpT - dt);
   if (al.roll >= 0 && (al.roll += dt) >= JINK_ROLL) al.roll = -1;
   if (T.ttl > 0 && !al.fleeing && (al.ttl -= dt) <= 0) leave(al);

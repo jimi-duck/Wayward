@@ -8,7 +8,7 @@ import type { Press } from './types';
 // the ring follows the thumb, so reversing a turn is always one ring's
 // width away however far the thumb has wandered.
 //
-// The right half is the trigger's. A thumb on Torpedo, Cut or Release (or
+// The right half is the trigger's. A thumb on Torpedo or Cut (or
 // close to one) presses it (Cut is held, like the trigger); a thumb anywhere else on the right holds the
 // lasers. A thumb that misses a button still fires, rather than doing
 // nothing or, worse, anchoring the stick under the wrong thumb.
@@ -33,8 +33,6 @@ export interface TouchElements {
   fire: HTMLElement;
   /** A torpedo per tap. */
   torpedo: HTMLElement;
-  /** The reactor, when it is full. */
-  release: HTMLElement;
   /** The cutter, held. */
   cut: HTMLElement;
 }
@@ -63,7 +61,7 @@ export function flickedDown(dx: number, dy: number): boolean {
   return dy >= FLICK && dy > Math.abs(dx) * 1.2;
 }
 
-type Role = 'stick' | 'fire' | 'torpedo' | 'release' | 'roll' | 'cut';
+type Role = 'stick' | 'fire' | 'torpedo' | 'roll' | 'cut';
 
 export class TouchStick {
   /** The helm, -1 to 1, and the throttle, 0 to 1, from the stick. */
@@ -122,7 +120,6 @@ export class TouchStick {
       case 'roll': this.seconds.set(e.pointerId, { x: e.clientX, y: e.clientY, done: false }); break;
       case 'fire': this.firing = true; this.el.fire.classList.add('on'); break;
       case 'torpedo': this.onPress('torpedo'); this.blink(this.el.torpedo); break;
-      case 'release': this.onPress('overcharge'); this.blink(this.el.release); break;
       case 'cut': this.cutting = true; this.el.cut.classList.add('on'); break;
     }
   };
@@ -162,7 +159,7 @@ export class TouchStick {
     if (x < window.innerWidth / 2) return this.stickId === null ? 'stick' : 'roll';
     if (inside(this.el.fire, x, y, 0)) return 'fire';
     let best: Role = 'fire', bestD = SLACK;
-    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.release, 'release'], [this.el.cut, 'cut']] as const) {
+    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.cut, 'cut']] as const) {
       const d = edgeDistance(node, x, y);
       if (d < bestD) { bestD = d; best = role; }
     }

@@ -56,8 +56,26 @@ export function migrate(raw: unknown): Journey | null {
   // 7 → 8: survival modes. A journey saved before them was played as the game was designed: Prospector.
   // A newer-looking id the game does not know (a hand-edited file) falls back to the same.
   j.survival = survivalOf(j.survival).id;
+  // 8 → 9: the overcharge reactor is gone. What was fitted for it comes out of the ship, and its Krail comes back.
+  if (j.version < 9) retireOvercharge(j.carry as unknown as { krail: number; levels: Record<string, number> });
   j.version = VERSION;
   return j as Journey;
+}
+
+/**
+ * The modules the overcharge took with it, and what each level cost in Krail when it was fitted
+ * (fixed here: the web no longer has them, and a later change to prices must not change a refund).
+ */
+export const RETIRED: Readonly<Record<string, readonly number[]>> = {
+  oc_coils: [40, 60, 80], oc_nova: [60], oc_overload: [60], oc_phase: [60], sy_core_mines: [40],
+};
+
+function retireOvercharge(c: { krail: number; levels: Record<string, number> }): void {
+  for (const [id, prices] of Object.entries(RETIRED)) {
+    const had = c.levels?.[id] ?? 0;
+    for (let lv = 0; lv < had; lv++) c.krail += prices[lv] ?? 0;
+    if (c.levels) delete c.levels[id];
+  }
 }
 
 /** A journey from before Cyrite, where Krail was the fuel. */

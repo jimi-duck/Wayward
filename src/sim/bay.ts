@@ -246,7 +246,9 @@ export function arcadePicks(ctx: BayCtx): WebNode[] {
       .filter((w) => !FITTING[w.id] && roleOf(w.id) === role && !out.includes(w))
       .map((w) => ({ w, v: score(w, role) }))
       .sort((a, b) => b.v - a.v || a.w.id.localeCompare(b.w.id))[0]?.w;
-    if (best) out.push(best);
+    // the ship's slot, with no part left to fit that the power allows, offers the cooling, frame or core that opens more
+    const spare = role === 'ship' && !best ? ['rx_sinks', 'hl_frame', 'rx_core'].map((id) => open.find((w) => w.id === id)).find(Boolean) : undefined;
+    if (best ?? spare) out.push((best ?? spare)!);
   }
   // a role with nothing left to fit: the best of what remains
   const rest = open.filter((w) => !FITTING[w.id] && !out.includes(w)).sort((a, b) => score(b, roleOf(b.id)) - score(a, roleOf(a.id)) || a.id.localeCompare(b.id));

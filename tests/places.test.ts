@@ -9,7 +9,7 @@ import { newRun } from '../src/sim/run';
 import { PLACE_AT, World } from '../src/sim/world';
 import { migrate } from '../src/meta/save';
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 /** Fly on for `seconds`, letting any call time out. */
 const run = (w: World, seconds: number) => {
   for (let i = 0; i < Math.round(seconds / STEP); i++) {

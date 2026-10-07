@@ -19,18 +19,16 @@ import type { Stats } from '../sim/stats';
 //                             └─ specialise: Arc storm · Juggernaut · Shock prow
 //   Ship ────┬─ Mobility ─── drive, thrusters, dampers, jets
 //            │                └─ specialise: Drift drive · Evasive pattern · Afterburner
-//            ├─ Utility ──── tractor, krail matrix
-//            │                └─ specialise: Prospector · Salvage drones · Deep scanners
-//            └─ Reactor ── coils
-//                             └─ specialise: Core nova · Weapons overload · Phase cloak
+//            └─ Utility ──── tractor, krail matrix
+//                             └─ specialise: Prospector · Salvage drones · Deep scanners
 //   Defence ──  Shields, armour, bulkheads, damage control
 //                             └─ specialise: Fortress · Reactive armour · Regenerative hull
 //   Synergies on the bridges between regions, once you own both halves.
 //
 // The rail is the field refit, under the ship's four systems
-// (content/modules.ts): weapons, defence and the reactor are Guns; the drive
-// and the utility rigs are Rig; deep scanners, the phase cloak and the
-// evasive pattern are Signals. Contacts has no cards: it grows from favours
+// (content/modules.ts): weapons and defence are Guns; the drive
+// and the utility rigs are Rig; deep scanners and the evasive pattern are
+// Signals. Contacts has no cards: it grows from favours
 // at a port. Modules fitted in a system bring its cards round more often.
 //   Salvage: one piece of tech per faction, opened by destroying its capital
 //   ship in the run.
@@ -46,7 +44,7 @@ import type { Stats } from '../sim/stats';
 // it changes (see FIGURES in sim/build.ts).
 
 export type Branch =
-  | 'laser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'overcharge' | 'synergy' | 'salvage';
+  | 'laser' | 'torpedo' | 'mine' | 'plasma' | 'close' | 'mobility' | 'defence' | 'utility' | 'synergy' | 'salvage';
 export type Category = 'weapons' | 'defence' | 'ship';
 export type UpgradeKind = 'stat' | 'system' | 'spec' | 'synergy' | 'tech';
 export type TechFaction = 'gutter' | 'custody' | 'office' | 'voice' | 'thren';
@@ -101,7 +99,6 @@ export const BRANCHES: Record<Branch, BranchDef> = {
   mobility: { name: 'Mobility', cat: 'ship', identity: 'Interceptor', system: 'rig' },
   defence: { name: 'Defence', cat: 'defence', identity: 'Bulwark', system: 'guns' },
   utility: { name: 'Utility', cat: 'ship', identity: 'Prospector', system: 'rig' },
-  overcharge: { name: 'Reactor', cat: 'ship', identity: 'Core diver', system: 'guns' },
   synergy: { name: 'Synergy', cat: 'weapons', identity: 'Hybrid', system: 'guns' },
   salvage: { name: 'Salvage', cat: 'ship', identity: 'Raider', system: 'guns' },
 };
@@ -361,23 +358,23 @@ export const UPGRADES: UpgradeDef[] = [
   // ── mobility ───────────────────────────────────────────────────────────
   {
     id: 'mo_impulse', name: 'Main drive', branch: 'mobility', cat: 'ship', kind: 'stat', max: 4, tags: ['mobility', 'speed'],
-    text: 'More thrust and a higher top speed, and near misses charge your core faster.',
-    apply: (s) => { s.thrust *= 1.08; s.ocGain *= 1.06; },
+    text: 'More thrust and a higher top speed.',
+    apply: (s) => { s.thrust *= 1.08; },
   },
   {
     id: 'mo_thrusters', name: 'Manoeuvring thrusters', branch: 'mobility', cat: 'ship', kind: 'stat', max: 3, tags: ['mobility', 'turning'],
-    text: 'You turn faster, and near misses charge your core faster.',
-    apply: (s) => { s.turn *= 1.12; s.ocGain *= 1.06; },
+    text: 'You turn faster.',
+    apply: (s) => { s.turn *= 1.12; },
   },
   {
     id: 'mo_dampers', name: 'Inertial dampers', branch: 'mobility', cat: 'ship', kind: 'stat', max: 2, tags: ['mobility', 'turning'],
-    text: 'You carve tighter turns and slide less, and near misses charge your core faster.',
-    apply: (s) => { s.grip += 0.04; s.ocGain *= 1.06; },
+    text: 'You carve tighter turns and slide less.',
+    apply: (s) => { s.grip += 0.04; },
   },
   {
     id: 'mo_jets', name: 'Evasive jets', branch: 'mobility', cat: 'ship', kind: 'stat', max: 3, tags: ['mobility', 'evasion'],
     text: 'Your barrel roll comes round sooner, throws you further and covers you longer.',
-    apply: (s) => { s.rollCooldown *= 0.8; s.rollKick *= 1.12; s.rollIframes += 0.05; s.ocGain *= 1.06; },
+    apply: (s) => { s.rollCooldown *= 0.8; s.rollKick *= 1.12; s.rollIframes += 0.05; },
   },
   {
     id: 'mo_drift', name: 'Drift drive', branch: 'mobility', cat: 'ship', kind: 'spec', max: 1, group: 'mobility', needs: 4,
@@ -388,9 +385,9 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: 'mo_evasion', name: 'Evasive pattern', branch: 'mobility', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'mobility', needs: 4,
-    tags: ['mobility', 'evasion', 'overcharge'],
-    text: 'A longer roll, and grazing fire mid-roll counts double and refunds it.',
-    apply: (s) => { s.evasion = true; s.rollIframes += 0.2; },
+    tags: ['mobility', 'evasion'],
+    text: 'A longer roll, and it comes round much sooner.',
+    apply: (s) => { s.rollIframes += 0.2; s.rollCooldown *= 0.75; },
   },
 
   // ── defence ────────────────────────────────────────────────────────────
@@ -476,32 +473,6 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.dmgAll *= 1.07; },
   },
 
-  // ── the reactor ──────────────────────────────────────────────────────
-  {
-    id: 'oc_coils', name: 'Reactor coils', branch: 'overcharge', cat: 'ship', kind: 'stat', max: 3, tags: ['overcharge', 'evasion'],
-    text: 'Near misses charge your overcharge faster.',
-    apply: (s) => { s.ocGain *= 1.25; },
-  },
-  {
-    id: 'oc_nova', name: 'Core nova', branch: 'overcharge', cat: 'ship', kind: 'spec', max: 1, group: 'overcharge', needs: 2,
-    tags: ['overcharge', 'area', 'damage'],
-    text: 'Your overcharge release is a much bigger, harder blast.',
-    apply: (s) => { s.ocRadius *= 1.45; s.ocDamage *= 1.8; },
-  },
-  {
-    id: 'oc_overload', name: 'Weapons overload', branch: 'overcharge', cat: 'ship', kind: 'spec', max: 1, group: 'overcharge', needs: 2,
-    tags: ['overcharge', 'rate'],
-    text: 'A release overloads your weapons for longer, and refills your racks.',
-    apply: (s) => { s.ocOverload = 7; s.ocRefill = true; },
-  },
-  {
-    id: 'oc_phase', name: 'Phase cloak', branch: 'overcharge', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'overcharge', needs: 2,
-    tags: ['overcharge', 'evasion', 'ram'], locked: true,
-    text: 'A release phases you out: nothing touches you, and you ram through anything.',
-    note: 'For three seconds.',
-    apply: (s) => { s.ocPhase = 3; },
-  },
-
   // ── synergies ──────────────────────────────────────────────────────────
   {
     id: 'sy_plasma_torps', name: 'Plasma warheads', branch: 'synergy', cat: 'weapons', kind: 'synergy', max: 1,
@@ -533,12 +504,6 @@ export const UPGRADES: UpgradeDef[] = [
     text: 'Your torpedo blasts arc on to three nearby hulls.',
     apply: (s) => { s.torpArc = 3; },
   },
-  {
-    id: 'sy_core_mines', name: 'Core-charged mines', branch: 'synergy', cat: 'weapons', kind: 'synergy', max: 1,
-    requires: [{ id: 'mn_layer' }, { id: 'oc_coils' }], tags: ['mine', 'overcharge'],
-    text: 'Your overcharge release lays a ring of mines around you and refills your racks.',
-    apply: (s) => { s.ocRefill = true; },
-  },
 
   // ── more specialisations ───────────────────────────────────────────────
   {
@@ -555,9 +520,9 @@ export const UPGRADES: UpgradeDef[] = [
   },
   {
     id: 'mo_afterburner', name: 'Afterburner', branch: 'mobility', cat: 'ship', kind: 'spec', max: 1, group: 'mobility', needs: 4,
-    tags: ['mobility', 'speed', 'overcharge'],
-    text: 'A higher top speed, and near misses at speed charge the core twice as fast.',
-    apply: (s) => { s.thrust *= 1.12; s.speedGraze = true; },
+    tags: ['mobility', 'speed'],
+    text: 'A much higher top speed.',
+    apply: (s) => { s.thrust *= 1.18; },
   },
   {
     id: 'ut_prospector', name: 'Prospector', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,

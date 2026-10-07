@@ -65,12 +65,6 @@ export const UNLOCKS: UnlockDef[] = [
     earned: (r) => weaponKills(r, 'ram') >= 12,
   },
   {
-    id: 'u_phase', kind: 'specialisation', name: 'Phase cloak', grants: ['oc_phase'],
-    text: 'A reactor specialisation: release to phase out and ram through anything.',
-    hint: 'Release 6 overcharges in one run.',
-    earned: (r) => r.overcharges >= 6,
-  },
-  {
     id: 'u_ramjet', kind: 'synergy', name: 'Ramjet', grants: ['sy_ramjet'],
     text: 'A synergy of ram prow and main drive: roll into hulls to ram them untouched.',
     hint: 'Reach refit 12.',

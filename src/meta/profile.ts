@@ -22,7 +22,6 @@ export interface Best {
   time: number;
   chain: number;
   krail: number;
-  overcharges: number;
   capitals: number;
   kills: number;
   refit: number;
@@ -74,7 +73,7 @@ export interface Profile {
 
 const fresh = (): Profile => ({
   version: 1,
-  best: { score: 0, time: 0, chain: 0, krail: 0, overcharges: 0, capitals: 0, kills: 0, refit: 0 },
+  best: { score: 0, time: 0, chain: 0, krail: 0, capitals: 0, kills: 0, refit: 0 },
   bestCurve: [],
   life: { runs: 0, kills: 0, capitals: 0, krail: 0, capitalsBy: {}, bestTime: 0, bestScore: 0 },
   history: [],
@@ -165,7 +164,6 @@ export function recordRun(p: Profile, r: RunStats): Recorded {
   b.time = Math.max(b.time, r.time);
   b.chain = Math.max(b.chain, r.bestChain);
   b.krail = Math.max(b.krail, r.krail);
-  b.overcharges = Math.max(b.overcharges, r.overcharges);
   b.capitals = Math.max(b.capitals, r.capitals);
   b.kills = Math.max(b.kills, r.kills);
   b.refit = Math.max(b.refit, r.refit);

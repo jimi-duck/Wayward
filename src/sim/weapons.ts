@@ -68,15 +68,15 @@ export function newArms(s: Stats = BASE): Arms {
 
 /** What changes how the guns fire this step, beyond the build. */
 export interface FireMods {
-  /** Overcharge overload or rapid fire: faster, and the bank is not drawn. */
-  overload: boolean;
+  /** Rapid fire: faster, and the bank is not drawn. */
+  rapid: boolean;
   /** Damage multiplier (overdrive, fire control). */
   damage: number;
   /** Drifting with the drift drive. */
   drifting: boolean;
 }
 
-export const NO_FIRE_MODS: FireMods = { overload: false, damage: 1, drifting: false };
+export const NO_FIRE_MODS: FireMods = { rapid: false, damage: 1, drifting: false };
 
 const NOSE = 1.5; // units ahead of the ship's centre that fire leaves from
 const EMITTER = 0.42; // units either side of the centreline
@@ -158,7 +158,7 @@ export function fireWeapons(
 
   // lasers
   if (c.fire && arms.cooldown === 0) {
-    if (m.overload || arms.bank >= s.bankShot) {
+    if (m.rapid || arms.bank >= s.bankShot) {
       const n = s.laserLances, cone = n > 1;
       const ox = cone ? 0 : Math.sin(ship.heading) * EMITTER * arms.side, oz = cone ? 0 : Math.cos(ship.heading) * EMITTER * arms.side;
       const x = ship.x + hx * NOSE + ox, z = ship.z + hz * NOSE + oz;
@@ -177,8 +177,8 @@ export function fireWeapons(
         });
       }
       events.push({ type: 'bolt', x, z, heading: ship.heading });
-      if (!m.overload) arms.bank -= s.bankShot;
-      arms.cooldown = s.laserCooldown * (m.overload ? 0.5 : 1);
+      if (!m.rapid) arms.bank -= s.bankShot;
+      arms.cooldown = s.laserCooldown * (m.rapid ? 0.5 : 1);
       arms.side = arms.side === 1 ? -1 : 1;
     } else if (!arms.dryFired) {
       arms.dryFired = true;
@@ -217,7 +217,7 @@ export function fireWeapons(
     }
   }
   if (arms.rack < s.torpRack) {
-    arms.reload -= dt * (m.overload ? 4 : 1);
+    arms.reload -= dt * (m.rapid ? 4 : 1);
     if (arms.reload <= 0) {
       arms.rack++;
       arms.reload = arms.rack < s.torpRack ? s.torpReload : 0;

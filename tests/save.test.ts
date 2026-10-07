@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restoreJourney, saveJourney, saveUnreadable,
+  clearJourney, exportJourney, hasBackup, importJourney, loadJourney, migrate, restoreJourney, saveJourney, saveUnreadable,
 } from '../src/meta/save';
-import { newJourney } from '../src/sim/journey';
+import { newJourney, VERSION } from '../src/sim/journey';
 
 // The journey save keeps the save it replaces as a safety copy, reports a save it cannot read, and
 // round-trips through an exported file.
@@ -65,5 +65,26 @@ describe('the journey save', () => {
     expect(importJourney(JSON.stringify({ version: 99 }))).toBeNull();
     expect(importJourney(text)?.day).toBe(4);
     expect(loadJourney()?.seed).toBe(5);
+  });
+});
+
+describe('a journey saved before the overcharge was removed', () => {
+  it('loses the reactor modules, keeps the rest, and gets its Krail back', () => {
+    const j = newJourney(3) as unknown as { version: number; carry: { krail: number; levels: Record<string, number> } };
+    j.version = 8;
+    j.carry.krail = 10;
+    j.carry.levels = { tp_bay: 1, mn_layer: 1, oc_coils: 2, oc_nova: 1, sy_core_mines: 1, mo_impulse: 2 };
+    const back = migrate(JSON.parse(JSON.stringify(j)))!;
+    expect(back.version).toBe(VERSION);
+    expect(Object.keys(back.carry.levels).some((id) => id.startsWith('oc_') || id === 'sy_core_mines')).toBe(false);
+    expect(back.carry.levels).toMatchObject({ tp_bay: 1, mn_layer: 1, mo_impulse: 2 });
+    // coils 40 + 60, nova 60, core-charged mines 40
+    expect(back.carry.krail).toBe(10 + 100 + 60 + 40);
+  });
+
+  it('leaves a current save alone', () => {
+    const j = newJourney(4);
+    j.carry.krail = 77;
+    expect(migrate(JSON.parse(JSON.stringify(j)))!.carry.krail).toBe(77);
   });
 });

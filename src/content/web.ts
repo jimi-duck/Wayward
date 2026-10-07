@@ -197,13 +197,9 @@ export const WEB: WebNode[] = [
   n('md_names', 'signals', 2, 3, ['md_ledger'], {}, { story: true, yard: 1 }),
   n('md_dock', 'signals', 2, 4, ['md_ledger'], {}, { story: true, yard: 1 }),
 
-  // ── reactor: power, heat, and the core's release ────────────────────────
+  // ── reactor: power and heat ────────────────────────
   n('rx_core', 'reactor', 1, 0, null, { heat: 1 }, { gives: { power: 3 }, yard: 3 }),
   n('rx_sinks', 'reactor', 1, 1, null, { mass: 1 }, { gives: { heat: 4 } }),
-  n('oc_coils', 'reactor', 1, 2, null, { heat: 1 }),
-  n('oc_nova', 'reactor', 2, 1, ['oc_coils'], { heat: 2 }),
-  n('oc_overload', 'reactor', 2, 2, ['oc_coils'], { heat: 2 }),
-  n('oc_phase', 'reactor', 2, 3, ['oc_coils'], { power: 2 }),
 
   // ── synergies (each needs its two halves) and salvaged tech ─────────────
   n('sy_plasma_torps', 'synergies', 1, 0, null, { power: 1, heat: 1 }),
@@ -211,7 +207,6 @@ export const WEB: WebNode[] = [
   n('sy_arc_shield', 'synergies', 1, 2, null, { power: 1, heat: 1 }),
   n('sy_ramjet', 'synergies', 1, 3, null, { power: 1, heat: 1 }),
   n('sy_arc_torps', 'synergies', 1, 4, null, { power: 1, heat: 1 }),
-  n('sy_core_mines', 'synergies', 1, 5, null, { power: 1, heat: 1 }),
   n('tech_gutter', 'synergies', 2, 0, null, { power: 1 }),
   n('tech_custody', 'synergies', 2, 1, null, { power: 1 }),
   n('tech_office', 'synergies', 2, 2, null, { power: 1 }),
