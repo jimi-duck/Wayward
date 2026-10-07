@@ -197,6 +197,8 @@ export interface Carry {
   jobs: JobDef[];
   /** Cards already heard on this journey (the ones that come once). */
   seen: string[];
+  /** Seconds of flight since the last card or call closed: the comms desk's pacing runs on across systems (sim/desk.ts). */
+  hush: number;
 }
 
 /** What a sortie hands back to the journey. */

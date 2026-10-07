@@ -6,6 +6,7 @@ import { MODULES } from '../src/content/modules';
 import { UPGRADES } from '../src/content/upgrades';
 import { CARD_BY_ID, COMMS_FIRST, SHOWN_WORDS, SLOW, condOk, openCard, resolve, sensors, type Ctx } from '../src/sim/comms';
 import { VARIANTS } from '../src/sim/enemies';
+import { DESK } from '../src/sim/desk';
 import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';
 
@@ -168,18 +169,26 @@ describe('the comms engine', () => {
 });
 
 describe('comms in the Breakout', () => {
-  it('opens the first card early, and the world waits for the answer', () => {
+  it('does not call on a timer: it takes an opening, and a major card stops the world', () => {
     const w = new World(11, { mode: 'breakout' });
     w.bk!.nextPursuit = Infinity;
     w.field.rocks = [];
+    w.storyMade = w.offerMade = w.callowayMet = true;
+    w.desk.allowed = true;
     run(w, COMMS_FIRST + 1);
-    expect(w.phase).toBe('comms');
-    const t = w.runTime;
-    run(w, 3);
-    expect(w.runTime).toBe(t);
-    expect(w.drain().some((e) => e.type === 'comms')).toBe(true);
-    const i = w.comms!.choices.findIndex((c) => c.ok);
-    expect(w.answer(i)).toBe(true);
+    expect(w.phase).toBe('play');
+    expect(w.call).toBeNull();
+    // on an opening (a fight just won), with a clear sky, a card comes: a call, or a panel
+    w.desk.opp.won = Infinity;
+    for (let i = 0; i < 6000 && !w.call && w.phase !== 'comms'; i++) { w.aliens = []; run(w, 0.1); }
+    expect(w.call || w.comms).toBeTruthy();
+    if (w.phase === 'comms') {
+      const t = w.runTime;
+      run(w, 3);
+      expect(w.runTime).toBe(t);
+    }
+    const o = (w.comms ?? w.call)!;
+    expect(w.answer(o.choices.findIndex((c) => c.ok))).toBe(true);
     expect(w.phase).toBe('play');
     expect(w.run.cards.length).toBe(1);
   });
@@ -257,10 +266,11 @@ describe('comms in the Breakout', () => {
     expect(w.cyrite).toBe(11);
     expect(w.flags.has('owes_runner')).toBe(true);
     run(w, 59);
+    expect(w.call).toBeNull();
+    // a follow-up is a call: it rides along, the world keeps going, and it waits out the desk's gap after the last card
+    for (let i = 0; i < 100 && !w.call; i++) run(w, 1.5);
     expect(w.phase).toBe('play');
-    run(w, 2);
-    expect(w.phase).toBe('comms');
-    expect(w.comms!.def.id).toBe('runner_favour');
+    expect(w.call!.def.id).toBe('runner_favour');
   });
 
   it('lets forged codes through the checkpoint, usually', () => {

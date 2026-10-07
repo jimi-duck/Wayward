@@ -48,7 +48,7 @@ export interface CommsView {
   text: string;
   /** What the ship's state adds to the call: behind the (i), not on the panel. */
   more: string;
-  read: { them: number; you: number; rows: Array<[string, string]> } | null;
+  read: { them: number; you: number; bars: boolean; rows: Array<[string, string]> } | null;
   choices: CommsChoice[];
   /** A named captain's portrait, as SVG (null: nobody to show). */
   face: string | null;
@@ -81,7 +81,8 @@ export function cardView(o: Open): CommsView {
     more: o.more.join(' '),
     // the read: strength as two bars, and the one line that matters (the
     // choices' odds already carry how far it can be trusted)
-    read: { them: r.them, you: r.you, rows: [[t('Intent'), t(r.intent)]] },
+    // only when there is something to read: hulls to weigh up, or a story that could be a lie
+    read: d.ships?.length || d.truths?.length ? { them: r.them, you: r.you, bars: !!d.ships?.length, rows: d.truths?.length ? [[t('Intent'), t(r.intent)]] : [] } : null,
     choices: o.choices.map((c) => ({
       label: t(c.label), hint: t(c.hint), lines: [], ok: c.ok, needs: c.needs.map((n) => t(n)), gains: c.gains,
       tags: [...c.cost, ...(c.chance !== null ? [oddsWord(c.chance)] : [])],
@@ -151,6 +152,7 @@ export class CommsPanel {
     $('cm-sigil').hidden = !!view.face;
     $('cm-sigil').style.setProperty('--cc', view.colour);
     this.drawRead(view);
+    $('cm-body').classList.toggle('solo', !view.read);
     this.timer(0);
     this.render();
     $('comms').hidden = false;
@@ -228,7 +230,7 @@ export class CommsPanel {
       return b;
     };
     box.replaceChildren(
-      h('div', 'cm-str', '', bar(t('Them'), r.them, 'them'), bar(t('You'), r.you, 'you')),
+      ...(r.bars ? [h('div', 'cm-str', '', bar(t('Them'), r.them, 'them'), bar(t('You'), r.you, 'you'))] : []),
       ...r.rows.map(([k, val], i) => h('div', `cm-row${i === 0 ? ' intent' : ''}`, '', h('span', 'k', k), h('span', 'v', val))),
     );
   }

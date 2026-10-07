@@ -189,7 +189,8 @@ describe('Calloway makes offers', () => {
     w.field.rocks = [];
     run(w, OFFER_AT - 1);
     expect(w.phase).not.toBe('comms');
-    run(w, 2);
+    // the desk waits for a clear sky: nothing hostile about
+    for (let i = 0; i < 400 && w.phase !== 'comms'; i++) { w.aliens = []; run(w, 0.1); }
     expect(w.comms?.def.id).toBe('offer_home');
   });
 });
