@@ -9,6 +9,7 @@ import type { GameEvent } from '../sim/events';
 import { DOCK_TIME } from '../sim/breakout';
 import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
+import { REPORT_TEXT } from '../sim/space';
 import type { World } from '../sim/world';
 import { systemLevel } from './icons';
 import { Radar } from './radar';
@@ -108,6 +109,7 @@ export class Hud {
   private lv: Record<string, number> = {};
   private seed = -1;
   private modeKey = '';
+  private condKey = '';
   /** The arcade's refit bay: the cheapest module in reach, when it was last worked out, and whether one can be fitted now. */
   private next = 0;
   private stockAt = 0;
@@ -140,7 +142,7 @@ export class Hud {
 
   /** The language changed: redraw what is only written when it changes. */
   relabel(): void {
-    this.modeKey = this.contactKey = this.powerKey = this.plateKey = '';
+    this.modeKey = this.condKey = this.contactKey = this.powerKey = this.plateKey = '';
     this.levels = null;
     this.seed = -1;
   }
@@ -275,6 +277,7 @@ export class Hud {
     this.updateSystems(world);
     this.updateCentre(world);
     this.updateMode(world);
+    this.updateCond(world);
     this.updateLog(world);
   }
 
@@ -664,6 +667,16 @@ export class Hud {
     text($('mode-s'), t(a === 'red' ? 'You are being targeted' : 'You are being observed'));
     // a step up or down lights the card once, so a change is seen and not only read
     if (a !== 'clear') this.retrigger(mode, 'enter');
+  }
+
+  /** The place's effects on the ship, in the ship's words: nothing for what only looks like something. */
+  private updateCond(world: World): void {
+    const key = world.conditions.map((c) => c.kind).join();
+    if (key === this.condKey) return;
+    this.condKey = key;
+    const el = $('cond');
+    el.hidden = !key;
+    el.replaceChildren(...world.conditions.map((c) => { const d = document.createElement('div'); d.textContent = t(REPORT_TEXT[c.kind]); return d; }));
   }
 
   private updateLog(world: World): void {

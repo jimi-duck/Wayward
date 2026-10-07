@@ -160,7 +160,7 @@ export const FEATURES: Record<FeatureId, FeatureDef> = {
   well: {
     id: 'well', name: 'Gravity well', blurb: 'Something heavy and unseen. The light bends round it, and everything leans in.',
     purpose: ['tactical', 'hazard', 'mystery'], layer: 'matter', size: [300, 600], rarity: 'rare', gap: 3600, from: 240,
-    effects: { pull: 5, drag: 1.1 }, look: { tint: [0.2, 0.1, 0.32], dim: 0.2, shape: 'lens', far: 4200 },
+    effects: { pull: 12, drag: 1.1 }, look: { tint: [0.2, 0.1, 0.32], dim: 0.2, shape: 'lens', far: 4200 },
     voice: { hum: 22, grit: 0.15 }, pulse: { period: 19, depth: 0.25 }, load: 'busy', story: ['site', 'history', 'route'],
   },
   seam: {

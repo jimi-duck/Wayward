@@ -467,6 +467,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #mode-t { font: 700 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--mc); white-space: nowrap; }
 #mode .stripes { flex: none; width: 18px; height: 8px; background: repeating-linear-gradient(-55deg, var(--mc) 0 2px, transparent 2px 5px); opacity: .7; }
 #mode[hidden] { display: none; }
+/* what the place is doing to the ship: the ship's voice, teal, one or two short lines, only while it is felt */
+#cond { display: grid; gap: 2px; justify-items: end; font: 600 calc(var(--fs) * 1.05)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); text-shadow: 0 1px 2px #000; }
+#cond[hidden] { display: none; }
 #mode.yellow { background: rgba(36, 26, 8, .6); }
 #mode.red { --mc: var(--alert); background: rgba(40, 12, 10, .6); }
 #mode.red .stripes { animation: hud-blink .7s ease-in-out infinite; }

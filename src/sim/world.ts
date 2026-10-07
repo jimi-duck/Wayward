@@ -33,7 +33,7 @@ import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type 
 import { Ids, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
-import { Space } from './space';
+import { CALM, reports, Space, type Influence, type Report as Condition } from './space';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
@@ -140,6 +140,10 @@ export class World implements EncounterHost {
   /** The expanses and features around the ship (null: off). */
   space: Space | null = null;
   private spaceOn = false;
+  /** What the place does to the ship now (sim/space.ts), and what to tell the player of it. */
+  air: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
+  conditions: Condition[] = [];
+  private readonly there: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
   /** Rocks and hulls broken this run. */
   kills = 0;
   /** The arcade's encounters: a wave on its way or being fought, or the quiet between (sim/pacing.ts). */
@@ -464,7 +468,7 @@ export class World implements EncounterHost {
 
   /** Sensors are down (the nebula, or the Thren close by): shorter radar and locks. */
   get sensorsDown(): boolean {
-    return (this.encounter?.id === 'nebula' && !this.encounter.done) || this.navNoise > 0.3;
+    return (this.encounter?.id === 'nebula' && !this.encounter.done) || this.navNoise > 0.3 || this.air.sight < 0.7;
   }
 
   /** How scrambled navigation is, 0 to 1: Thren hulls close by make the lane mouth swim on the scope and the drive spool slow. */
@@ -499,7 +503,7 @@ export class World implements EncounterHost {
     if (this.bk && c.cut) c.fire = false;
 
     stepShip(s, c, this.hull, dt);
-    this.space?.step(dt, this.runTime, s);
+    if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
     if (rolling && !this.wasRolling && st.rollBurst) plasmaRing(this.sys, s, st);
     if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
@@ -512,7 +516,7 @@ export class World implements EncounterHost {
     // our weapons and systems
     const targets = this.targets();
     const fm: FireMods = { overload: this.overload > 0 || this.powers.rapid > 0, damage: this.dmgMult * (this.powers.overdrive > 0 ? 1.5 : 1), drifting: drifting(s, this.hull) };
-    const fireStats = this.sensorsDown ? { ...st, torpSeek: st.torpSeek * 0.6 } : st;
+    const fireStats = this.sensorsDown || this.air.lock < 1 ? { ...st, torpSeek: st.torpSeek * (this.sensorsDown ? 0.6 : 1) * this.air.lock } : st;
     if (this.alive) {
       fireWeapons(this.arms, s, c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
       const laid = laySystems(this.sys, s, st, dt, fm.overload);
@@ -1386,6 +1390,25 @@ export class World implements EncounterHost {
     if (al.canCloak && at) al.cloak = 1;
     this.aliens.push(al);
     return al;
+  }
+
+  /** The shared world: deal it, ask what it does here, and apply it (docs/ENVIRONMENT.md). */
+  private stepSpace(dt: number, s: ShipState): void {
+    const space = this.space!;
+    space.step(dt, this.runTime, s);
+    const a = space.sample(s.x, s.z, this.air);
+    this.field.zone = a.rock;
+    this.navNoise = Math.max(a.jam, this.navNoise > 0 ? this.navNoise - dt * 0.5 : 0);
+    // heavy going slows the ship; a pull leans it
+    if (a.drag > 1) { const k = Math.exp(-(a.drag - 1) * 1.5 * dt); s.vx *= k; s.vz *= k; }
+    s.vx += a.ax * dt; s.vz += a.az * dt;
+    if (space.features.some((f) => f.def === 'well')) {
+      for (const al of this.aliens) {
+        const h = space.sample(al.x, al.z, this.there);
+        al.vx += h.ax * dt; al.vz += h.az * dt;
+      }
+    }
+    this.conditions = reports(a);
   }
 
   private stepAliens(dt: number, t: number, p: Pressure): void {
