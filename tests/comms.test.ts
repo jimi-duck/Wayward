@@ -168,18 +168,24 @@ describe('the comms engine', () => {
 });
 
 describe('comms in the Breakout', () => {
-  it('opens the first card early, and the world waits for the answer', () => {
+  it('does not call on a timer: a long quiet is the first opening, and a major card stops the world', () => {
     const w = new World(11, { mode: 'breakout' });
     w.bk!.nextPursuit = Infinity;
     w.field.rocks = [];
+    w.storyMade = w.offerMade = w.callowayMet = true;
     run(w, COMMS_FIRST + 1);
-    expect(w.phase).toBe('comms');
-    const t = w.runTime;
-    run(w, 3);
-    expect(w.runTime).toBe(t);
-    expect(w.drain().some((e) => e.type === 'comms')).toBe(true);
-    const i = w.comms!.choices.findIndex((c) => c.ok);
-    expect(w.answer(i)).toBe(true);
+    expect(w.phase).toBe('play');
+    expect(w.call).toBeNull();
+    // after a long clear stretch a card comes (a call, or a panel)
+    for (let i = 0; i < 6000 && !w.call && w.phase !== 'comms'; i++) { w.aliens = []; run(w, 0.1); }
+    expect(w.call || w.comms).toBeTruthy();
+    if (w.phase === 'comms') {
+      const t = w.runTime;
+      run(w, 3);
+      expect(w.runTime).toBe(t);
+    }
+    const o = (w.comms ?? w.call)!;
+    expect(w.answer(o.choices.findIndex((c) => c.ok))).toBe(true);
     expect(w.phase).toBe('play');
     expect(w.run.cards.length).toBe(1);
   });
@@ -259,8 +265,9 @@ describe('comms in the Breakout', () => {
     run(w, 59);
     expect(w.phase).toBe('play');
     run(w, 2);
-    expect(w.phase).toBe('comms');
-    expect(w.comms!.def.id).toBe('runner_favour');
+    // a follow-up is a call: it rides along, the world keeps going
+    expect(w.phase).toBe('play');
+    expect(w.call!.def.id).toBe('runner_favour');
   });
 
   it('lets forged codes through the checkpoint, usually', () => {

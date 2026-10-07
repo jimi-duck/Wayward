@@ -77,7 +77,12 @@ export type GameEvent =
   | { type: 'spool' }
   | { type: 'needCyrite'; have: number; need: number }
   | { type: 'jumped'; x: number; z: number }
-  | { type: 'comms'; id: string; kind: string; from: string; title: string; slow: boolean }
+  | { type: 'comms'; id: string; tier: 'major'; kind: string; from: string; title: string; slow: boolean }
+  /** A lighter card, as a call that rides along; and its channel closing (lapsed: nobody answered). */
+  | { type: 'call'; id: string; tier: 'important' | 'routine'; kind: string; from: string; title: string; seconds: number }
+  | { type: 'callEnd'; id: string; lapsed: boolean }
+  /** A line on the radio: no answer asked. */
+  | { type: 'ping'; id: string; from: string; caller: string; text: string; moment: string; system: string }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
   | { type: 'jobDone'; id: string; text: string }
   | { type: 'jobShort'; id: string; text: string };
