@@ -5,7 +5,7 @@ worth flying through: what is out there, how it behaves, how the two modes
 share it, and the order it gets built in. The data is in
 `src/content/features.ts`, the system in `src/sim/space.ts`.
 
-Status: stages 1 to 3 done (the library, the system, how the first
+Status: stages 1 to 4 done (the library, the system, how the first
 features look, and what they do to the ship; all behind `?space` until the
 balance pass). See [Stages](#stages).
 
@@ -277,9 +277,14 @@ Small PRs off `main`, one stage at a time, each shippable.
    and the storm's lightning, which come with their features in stage 4.
    A pilot report with the flag on, and the switch to default, wait for
    stage 6.
-4. **The rest of the library**, in the order that makes tactical sense:
-   shroud, static field, graveyard, seam, well, storm, slipway, lantern line,
-   relic, carrier.
+4. **The rest of the library** (done, behind `?space`). Every feature has a
+   look now: shroud, static and storm are cloud and haze sprites; breakers,
+   graveyard, slipway, relic and well are also real dark meshes, raised when
+   the ship is within 700 units of the rim and put away after; lantern line,
+   seam and carrier are blinking lights. Krail from a graveyard or slipway
+   pays more. Still not applied: `conceal` (hulls losing you), `shield`, and
+   the storm's lightning and the well's crushing core, which want the
+   telegraph and alert work in stage 6.
 5. **Story.** Chart systems carry a site; places map to features; the four
    named places; comms tags through the central manager; palettes by region.
 6. **Pace and polish.** Rarity and rhythm from pilot reports, per-feature

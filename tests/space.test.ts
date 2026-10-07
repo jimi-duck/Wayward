@@ -262,6 +262,14 @@ describe('in the world', () => {
     expect(w.field.zone).toBe(1);
   });
 
+  it('pays more Krail in a graveyard', () => {
+    const { w, space } = bare();
+    space.place('graveyard', 0, 0, { r: 500 });
+    fly(w, 0.5);
+    w.dropCrystals(0, 0, 10);
+    expect(w.run.dropped).toBe(16);
+  });
+
   it('scrambles navigation in a static field', () => {
     const { w, space } = bare();
     space.place('static', 0, 0, { r: 600 });

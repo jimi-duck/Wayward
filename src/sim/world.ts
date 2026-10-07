@@ -1816,6 +1816,8 @@ export class World implements EncounterHost {
   }
 
   dropCrystals(x: number, z: number, total: number, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'cyrite' | 'ore' | 'parts' = 'crystal', life = 1): void {
+    // a place rich in salvage (docs/ENVIRONMENT.md) pays more Krail where it is dropped
+    if (kind === 'crystal' && this.space) total = Math.round(total * this.air.krail);
     if (kind === 'crystal') this.run.dropped += Math.round(total);
     dropCrystals(this.pickups, x, z, total, this.rng, spread, vx, vz, kind, life);
   }
