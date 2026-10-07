@@ -32,11 +32,11 @@ import {
 } from './enemies';
 import type { BlastKind, GameEvent, PowerKind } from './events';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type Rock } from './field';
-import { Ids, useIds } from './ids';
+import { Ids, newId, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
 import { laySortie } from './sites';
-import { CALM, reports, Space, type Influence, type Report as Condition } from './space';
+import { CALM, reports, weightAt, Space, type Influence, type Report as Condition } from './space';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
@@ -145,6 +145,8 @@ export class World implements EncounterHost {
   private spaceOn = false;
   /** The named place the ship is inside (content/features.ts NAMED), if any; its flag `site:<id>` is set on entering. */
   siteHere: string | null = null;
+  private stormT = 2;
+  private coreT = 1;
   /** What the place does to the ship now (sim/space.ts), and what to tell the player of it. */
   air: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
   conditions: Condition[] = [];
@@ -1488,6 +1490,38 @@ export class World implements EncounterHost {
     return al;
   }
 
+  /**
+   * The two features that hurt, each with a drawn circle first (strikes, the same warning as a
+   * storm event's lightning): a storm cell throws lightning near the ship, and a well's core
+   * crushes what sits in it. Neither touches the alert: they are weather, not a hunter.
+   */
+  private spaceThreats(dt: number, s: ShipState, a: Influence): void {
+    if (!this.alive) return;
+    let storm = 0, core: { x: number; z: number; r: number } | null = null;
+    for (const f of a.from) {
+      if (f.def === 'storm') storm = Math.max(storm, weightAt(f, s.x, s.z) * f.level);
+      else if (f.def === 'well') {
+        const r = Math.max(24, f.r * 0.09);
+        if (Math.hypot(s.x - f.x, s.z - f.z) < r * 1.8) core = { x: f.x, z: f.z, r };
+      }
+    }
+    if (storm > 0.3) {
+      this.stormT -= dt;
+      if (this.stormT <= 0) {
+        this.stormT = this.rng.range(1.6, 2.8) / (storm * this.mods.hazard);
+        const lead = this.rng.range(0.3, 1.1);
+        this.strikes.push({ id: newId(), kind: 'lightning', x: s.x + s.vx * lead + this.rng.range(-8, 8), z: s.z + s.vz * lead + this.rng.range(-8, 8), r: 3.6, t: 1.1, total: 1.1, faction: null });
+      }
+    } else this.stormT = Math.max(this.stormT, 1.5);
+    if (core) {
+      this.coreT -= dt;
+      if (this.coreT <= 0) {
+        this.coreT = 2.2;
+        this.strikes.push({ id: newId(), kind: 'blast', x: core.x + this.rng.range(-4, 4), z: core.z + this.rng.range(-4, 4), r: core.r * 0.5, t: 1.2, total: 1.2, faction: null });
+      }
+    } else this.coreT = Math.max(this.coreT, 1);
+  }
+
   /** Story's space: laid by hand along the course, not composed (sim/sites.ts). */
   private layStory(): void {
     this.siteHere = null;
@@ -1513,6 +1547,7 @@ export class World implements EncounterHost {
       }
     }
     this.conditions = reports(a);
+    this.spaceThreats(dt, s, a);
     // inside a named place: say so once, and let the story read the flag
     const f = space.features.find((q) => q.named && Math.hypot(s.x - q.x, s.z - q.z) < q.r);
     this.siteHere = f?.named ?? null;

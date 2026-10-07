@@ -293,9 +293,8 @@ Small PRs off `main`, one stage at a time, each shippable.
    graveyard, slipway, relic and well are also real dark meshes, raised when
    the ship is within 700 units of the rim and put away after; lantern line,
    seam and carrier are blinking lights. Krail from a graveyard or slipway
-   pays more. Still not applied: `conceal` (hulls losing you), `shield`, and
-   the storm's lightning and the well's crushing core, which want the
-   telegraph and alert work in stage 6.
+   pays more. Still not applied: `conceal` (hulls losing you) and `shield`. The
+   storm's lightning and the well's core came in stage 6.
 5. **Story** (done, behind `?space`). `sim/sites.ts` lays a sortie's space
    by hand (`compose: false`): one calm backdrop for its region (the Reach
    open dark or veil, the Marches veil or hush, the Hollows hush or open; a
@@ -311,9 +310,14 @@ Small PRs off `main`, one stage at a time, each shippable.
    environment fires no transmissions of its own. The old timed events still
    play on top, unchanged. Story needs `?space`, like Arcade.
 6. **Pace and polish** (started). Rhythm from the exposure report: the
-   composer chains expanses and fills them more. Still to do: per-feature
-   audio, transitions, the ship lit by the place it is in, and the storm's
-   lightning and the well's core with telegraphs.
+   composer chains expanses and fills them more. The storm cell throws lightning near the ship
+   (a drawn circle for 1.1 s first, one every 1.6 to 2.8 s, faster deeper in
+   and in harder survival modes) and the well's core, a small circle at its
+   heart, drops a blast (1.2 s of warning, every 2.2 s) on whatever sits in
+   it. Both are the existing strikes, so they draw and hurt like the storm
+   event's; neither touches Yellow or Red alert, because weather is not a
+   hunter. Still to do: per-feature audio, transitions, the ship lit by the
+   place it is in.
 
 Real-device checks (frame rate, glow, how it reads on a phone) are the
 owner's, as ever.
