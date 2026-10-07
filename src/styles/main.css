@@ -894,7 +894,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(10px, 1.2vw, 16px); width: min(600px, 100%); }
 .mode { --c: 12px; --edge: rgba(216, 213, 198, .3); --fill: rgba(8, 12, 15, .86); position: relative; isolation: isolate; display: grid; gap: 8px; justify-items: start;
   padding: clamp(11px, 1.6vh, 16px) 20px clamp(10px, 1.5vh, 14px) 24px; border: 0; background: none; cursor: pointer; text-align: left; color: var(--ink);
-  transition: color .2s var(--ez), filter .25s var(--ez); }
+  transition: color .2s var(--ez); }
 .mode::before, .mode::after { content: ""; position: absolute; pointer-events: none; transition: background .2s var(--ez), opacity .2s var(--ez); }
 .mode::before { inset: 0; z-index: -2; background: var(--edge);
   clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
@@ -932,7 +932,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 
 /* the one button: the strongest thing on the card. What it starts is written under it. */
 #launch { display: grid; align-content: center; justify-items: center; gap: 6px; min-width: min(340px, 100%); height: 62px; padding: 0 56px; --c: 14px; --fill: linear-gradient(180deg, rgba(122, 84, 18, .96), rgba(66, 44, 9, .96));
-  filter: drop-shadow(0 0 20px rgba(217, 154, 39, .32)); transition: filter .25s var(--ez), transform .2s var(--ez); }
+  filter: drop-shadow(0 0 20px rgba(217, 154, 39, .32)); transition: transform .2s var(--ez); }
 #launch:hover, #launch:focus-visible { --fill: linear-gradient(180deg, rgba(160, 110, 24, .98), rgba(88, 59, 12, .98)); filter: drop-shadow(0 0 26px rgba(242, 184, 74, .45)); }
 #launch:active { transform: translateY(1px); }
 .la-t { font: 800 clamp(22px, 2.1vw, 28px)/1 var(--font-head); letter-spacing: .3em; padding-left: .3em; color: var(--industrial-white); }
@@ -949,7 +949,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* the difficulty: three plates with their level under the name, then what the picked one does (red is the sky, amber what you can take) */
 .difs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1vw, 12px); width: 100%; }
 .dif { --c: 9px; --edge: rgba(216, 213, 198, .3); --fill: rgba(8, 12, 15, .86); position: relative; isolation: isolate; display: grid; gap: 6px; justify-items: center; padding: 9px 8px 8px; border: 0; background: none; cursor: pointer; color: var(--ink);
-  transition: color .2s var(--ez), filter .25s var(--ez), transform .2s var(--ez); }
+  transition: color .2s var(--ez), transform .2s var(--ez); }
 .dif::before, .dif::after { content: ""; position: absolute; pointer-events: none; transition: background .2s var(--ez); }
 .dif::before { inset: 0; z-index: -2; background: var(--edge); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
 .dif::after { inset: 1px; z-index: -1; background: var(--fill); clip-path: polygon(calc(var(--c) - .4px) 0, 100% 0, 100% calc(100% - var(--c) + .4px), calc(100% - var(--c) + .4px) 100%, 0 100%, 0 calc(var(--c) - .4px)); }

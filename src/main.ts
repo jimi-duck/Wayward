@@ -492,6 +492,8 @@ function boot(): void {
       feel.events(events);
       radio.events(events);
       radio.sync(world.call, world.callUntil - world.runTime);
+      // the title covers the canvas and the HUD: nothing to draw until the first launch
+      if (!started) return;
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);
