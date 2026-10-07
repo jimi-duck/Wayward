@@ -13,7 +13,7 @@ import {
 import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './scatter';
 import { arrival, delay as keysDelay, KEYS_NOTED, shift } from './consequences';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
-import { BEATEN_DELAY, behind, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
+import { BEATEN_DELAY, behind, crossGate, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
 import { effects } from './modules';
 import { stockLevels } from './bay';
@@ -81,6 +81,8 @@ export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
 export const VERSION = 8;
+/** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
+const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
 export const AHEAD: Partial<Record<string, string[]>> = { voice: ['drone', 'probe', 'drone'], thren: ['mote', 'mote', 'weaver'] };
 /** A Gutter raid adds this to the share of the pursuit from ahead. */
@@ -193,6 +195,8 @@ export function sortieDef(j: Journey): SortieDef {
   // what the flags from earlier choices change here (content/consequences.ts)
   const at = { holder: s.holder, here: presence(j.chart, s.id), port: !!s.port };
   const echo = shift(j.carry.flags, at);
+  // the long journey: she meets you once a region
+  const met = !!R.calloway && !!j.hunt.met?.includes(regionOf(s));
   const ahead = (net ? t.gutter * 0.5 : t.gutter) * R.ahead + (raid ? RAID_AHEAD : 0) + echo.ahead;
   const quoted = s.port ? pricesAt(j.chart, s.id)! : null;
   // a copy: the chart's own prices are not the flags' to change
@@ -201,9 +205,9 @@ export function sortieDef(j: Journey): SortieDef {
     survival: j.survival, system: s.id, region: tierOf(j.chart, regionOf(s)), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
     port: prices ? { name: s.port!.name, prices } : null,
     heat: Math.max(0, Math.min(0.6, t.heat + (net ? 0.25 : 0) + echo.heat)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
-    rich: t.rich * (0.6 + s.cyrite * 0.8), density: t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, pace: t.pace, quiet,
+    rich: quiet ? Math.max(QUIET_RICH, t.rich * (0.6 + s.cyrite * 0.8)) : t.rich * (0.6 + s.cyrite * 0.8), density: quiet ? Math.max(QUIET_DENSITY, t.density) : t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, pace: t.pace, quiet,
     ahead: raid ? undefined : AHEAD[s.holder], thren: threnAt(j.chart, s.id), here: presence(j.chart, s.id),
-    blockade: net, netted: net, calloway: finale || quiet ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
+    blockade: net, netted: net, calloway: finale || quiet || met ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
     place: pd ? { name: pd.name, text: pd.text, plays: pd.plays } : null,
     nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer }),
     story: quiet ? null : dueBeat(j),
@@ -328,6 +332,12 @@ export interface Outcome {
   lines: string[];
 }
 
+/** A wreck with Calloway in the system: a capture, or on the long chart with the region's chance. */
+function captureRoll(j: Journey, s: StarSystem): boolean {
+  const risk = regionDef(j.chart, regionOf(s))?.calloway?.risk;
+  return risk === undefined || rng(j).next() < risk;
+}
+
 /** A sortie is over: fold its result into the journey. */
 export function endSortie(j: Journey, res: SortieResult): Outcome {
   const lines: string[] = [];
@@ -339,7 +349,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   else if (res.huntDelay < 0) huntOn(j.hunt, j.chart, j.trail, -res.huntDelay);
   if (res.stall > 0 && !netted(j.chart, s.id)) j.chart.stall[s.id] = (j.chart.stall[s.id] ?? 0) + res.stall;
   else if (res.stall < 0) pushNet(j.chart, s.id, -res.stall);
-  if (res.calloway) j.hunt.caught++;
+  if (res.calloway) { j.hunt.caught++; (j.hunt.met ??= []).push(regionOf(s)); }
   if (res.callowayBeaten) { j.hunt.beaten++; j.hunt.delay += BEATEN_DELAY; lines.push(t('Calloway’s ship is crippled · {n} days of repairs', { n: BEATEN_DELAY })); }
   // the system's place, dealt with: it pays now, and any new lane opens from where you go next
   if (res.place) lines.push(...claim(j, s, res.carry, res.ended === 'jumped' && j.dest ? j.dest : s.id));
@@ -367,13 +377,15 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
 
   if (res.ended === 'destroyed') {
     j.wrecks++;
+    // a wreck with her in the system is a capture (on the long chart, with the region's risk)
     const V = survivalOf(j.survival).voyage;
-    if (j.hardcore || j.wrecks >= V.wrecks || res.calloway) {
+    const taken = res.calloway && captureRoll(j, s);
+    if (j.hardcore || j.wrecks >= V.wrecks || taken) {
       j.status = 'over';
-      j.end = res.calloway ? 'captured' : 'wrecked';
+      j.end = taken ? 'captured' : 'wrecked';
       j.carry = res.carry;
-      note(j, t(res.calloway ? 'Taken by Calloway in {name}' : 'The Wayward breaks up in {name}', { name: s.name }));
-      return { kind: j.end, lines: [t(res.calloway ? 'Calloway’s boarders cut through the airlock.' : 'The Wayward is beyond saving.')] };
+      note(j, t(taken ? 'Taken by Calloway in {name}' : 'The Wayward breaks up in {name}', { name: s.name }));
+      return { kind: j.end, lines: [t(taken ? 'Calloway’s boarders cut through the airlock.' : 'The Wayward is beyond saving.')] };
     }
     // adrift: you patch her enough to fly, and the hold is gone
     const c = res.carry;
@@ -402,6 +414,8 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   j.at = to;
   j.dest = null;
   j.trail.push(to);
+  // out of a gate, into the next region: she starts it close behind, not with the last one's debt
+  if (s.kind === 'gate' && regionDef(j.chart, regionOf(s))?.calloway) crossGate(j.hunt, j.trail);
   // she crosses after you: the lane's days count on her trail too
   fell.push(...pass(j, days, lines));
   arrive(j.chart, to, j.day);

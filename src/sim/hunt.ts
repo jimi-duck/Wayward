@@ -26,6 +26,8 @@ import { routeBetween, sysById, type Chart } from './chart';
 export const SEARCH = 0.3;
 /** Days' start you have when you leave Cerro (on top of the lane she has to cross after you). */
 export const HUNT_START = 1;
+/** Jumps behind you she is when you leave a gate (the long journey): she starts each region close, not carrying the last one's debt. */
+export const GATE_LEAD = 2;
 /** Days she loses to a beating. */
 export const BEATEN_DELAY = 4;
 
@@ -43,6 +45,8 @@ export interface Hunt {
   beaten: number;
   /** Her read on your route (sim/calloway.ts hunchOf), once she has one. */
   hunch?: Hunch;
+  /** The regions she has met you in (the long journey: once each). */
+  met?: number[];
 }
 
 export function newHunt(): Hunt {
@@ -77,6 +81,13 @@ export function huntOn(h: Hunt, c: Chart, trail: readonly string[], days: number
     h.progress = 0;
   }
   return h.idx >= trail.length - 1;
+}
+
+/** You leave a gate: she is no more than `GATE_LEAD` jumps behind, and no further delayed than that. */
+export function crossGate(h: Hunt, trail: readonly string[]): void {
+  const idx = Math.max(h.idx, trail.length - 1 - GATE_LEAD);
+  if (idx !== h.idx) { h.idx = idx; h.progress = 0; }
+  h.delay = Math.min(h.delay, 1);
 }
 
 /** Jumps she is behind you. */
