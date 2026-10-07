@@ -14,8 +14,9 @@ import { FIELD_TARGET, HZ, PX } from './tuning';
 // it is beaten or shaken off. The groups grow with the clock (and the
 // refits, in the pacing), the quiet spells shorten, and the ceiling holds the
 // most hulls at once. Density, speed and toughness climb steadily; enemy
-// variety opens up over the first five minutes; from four minutes elites and
-// squads start to appear, and from five the factions mix. Late difficulty
+// variety opens up over the first five minutes; from two and a half minutes
+// elites start to appear, from three squads, and from four the factions mix,
+// so the build-up begins before the first capital ship rather than with it. Late difficulty
 // leans on combinations (squads, elites, faction mixes, hazardous rock) more
 // than on raw numbers: the counts level off while the combinations keep
 // coming.
@@ -82,15 +83,15 @@ export function pressure(t: number, mods: Mods = NO_MODS): Pressure {
     m,
     enemyInterval: Math.max(1.2, 3.4 - 0.22 * m) / mods.traffic,
     enemyCap: Math.round(clamp(1.1 * m + 0.2, 1, 10) * mods.traffic),
-    groupSize: clamp(1 + 0.5 * m, 1, 8) * mods.traffic,
-    lull: Math.max(9, 20 - 1.2 * m) / mods.traffic,
+    groupSize: clamp(1 + 0.6 * m, 1, 8) * mods.traffic,
+    lull: Math.max(9, 18 - 1.1 * m) / mods.traffic,
     enemyHp: (1 + 0.17 * m + 0.06 * late) * mods.toughness,
     fireCd: Math.max(0.62, 2.2 - 0.17 * m) * mods.fire,
     shotSpeed: Math.min(5.6, 3.1 + 0.42 * m) * V,
     spread: Math.max(0.07, 0.26 - 0.03 * m),
-    eliteChance: clamp((m - 4) * 0.045, 0, 0.42) * mods.elites,
-    squadChance: clamp((m - 4) * 0.07, 0, 0.55) * mods.elites,
-    theatre: Math.max(1, 4 - Math.max(0, m - 5) * 0.75),
+    eliteChance: clamp((m - 2.5) * 0.04, 0, 0.42) * mods.elites,
+    squadChance: clamp((m - 3) * 0.06, 0, 0.55) * mods.elites,
+    theatre: Math.max(1, 4 - Math.max(0, m - 4) * 0.75),
     fieldTarget: Math.min(60, FIELD_TARGET * 0.4 + 5 * m),
     rockSpeed: Math.min(1.9, 0.75 + 0.1 * m),
     rockHp: Math.min(2.6, 1 + 0.1 * m),
@@ -105,7 +106,10 @@ export function pressure(t: number, mods: Mods = NO_MODS): Pressure {
 // ── capital ships ─────────────────────────────────────────────────────────
 // The first arrives at 3:30, once a build has a shape. Then one every 80s,
 // closing by 5s a ship to a floor of 50s. Evading one brings the next one in
-// sooner: the gap is cut to EVADE_GAP of itself.
+// sooner: the gap is cut to EVADE_GAP of itself. A faction's first capital
+// ship of a run is lighter (INTRO_HP, sim/bosses.ts), and the Voice and the
+// Thren, whose beams and webs are the hardest to read, are not dealt until
+// 6:40 and 5:40 (FACTIONS), so the new things arrive one at a time.
 export const BOSS_FIRST = 210;
 export const bossGap = (n: number) => Math.max(50, 80 - n * 5);
 export const EVADE_GAP = 0.55;
@@ -113,5 +117,5 @@ export const EVADE_GAP = 0.55;
 export const bossHp = (n: number, t: number) => (55 + n * 85 + n * n * 12) * (1 + 0.05 * (t / 60));
 
 // ── sector events ─────────────────────────────────────────────────────────
-export const EVENT_FIRST = 100;
-export const eventGap = (n: number) => Math.max(55, 85 - n * 4);
+export const EVENT_FIRST = 75;
+export const eventGap = (n: number) => Math.max(50, 75 - n * 4);
