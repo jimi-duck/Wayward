@@ -6,6 +6,7 @@ import { VERSION, type Journey } from '../sim/journey';
 import { pending } from '../sim/endings';
 import { stockLevels } from '../sim/bay';
 import { survivalOf } from '../content/survival';
+import { atChapter } from '../sim/chapters';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
@@ -24,6 +25,8 @@ import { survivalOf } from '../content/survival';
 const KEY = 'wayward.journey';
 /** The save before the latest write, kept while it still reads: the way back if the latest cannot be read. */
 const BAK = 'wayward.journey.bak';
+/** The journey as it stood at the last gate crossed: "Start this chapter again". */
+const CH = 'wayward.journey.chapter';
 
 /** Older saves, brought up to the current shape. Returns null for one that cannot be read. */
 export function migrate(raw: unknown): Journey | null {
@@ -131,6 +134,23 @@ export function hasBackup(): boolean {
   }
 }
 
+/** The chapter snapshot, if there is one that reads. */
+export function chapterSave(): Journey | null {
+  try {
+    const raw = localStorage.getItem(CH);
+    return raw ? migrate(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The chapter snapshot made the current save: the chapter played again from its gate. Null if there is none. */
+export function restartChapter(): Journey | null {
+  const j = chapterSave();
+  if (j) saveJourney(j);
+  return j;
+}
+
 /** Ask the browser not to clear the saves when space runs short (once; it may say no). */
 let asked = false;
 function keep(): void {
@@ -157,8 +177,14 @@ export function saveJourney(j: Journey): void {
     if (j.status === 'over' && !pending(j)) {
       localStorage.removeItem(KEY);
       localStorage.removeItem(BAK);
+      localStorage.removeItem(CH);
     } else {
-      localStorage.setItem(KEY, JSON.stringify(j));
+      const text = JSON.stringify(j);
+      localStorage.setItem(KEY, text);
+      // standing at a gate just crossed: the chapter's start, kept beside the safety copy
+      if (atChapter(j)) {
+        try { localStorage.setItem(CH, text); } catch { /* no room for it: the save itself went in */ }
+      }
       unreadable = false;
       keep();
     }
@@ -171,6 +197,7 @@ export function clearJourney(): void {
   try {
     localStorage.removeItem(KEY);
     localStorage.removeItem(BAK);
+    localStorage.removeItem(CH);
   } catch {
     // nothing to clear
   }
