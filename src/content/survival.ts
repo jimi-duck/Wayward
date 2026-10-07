@@ -15,7 +15,7 @@ import type { Role } from '../sim/enemies';
 //                strip what it left, sell what you cannot use.
 //
 // A multiplier of 1 changes nothing. The groups say where each row bites:
-//   sky      · the arcade's encounters: how many, how tough, how hard they fire (sim/director.ts)
+//   sky      · the arcade's encounters (how many, how tough, how hard they fire) and its Krail income (sim/director.ts)
 //   pursuit  · the Story's hunters: how far apart they come, how many at once, how many elites
 //   heat     · the Story's heat (how hard the Custody looks): its climb, what a kill and the cutter add
 //   rock     · what rock gives (sim/world.ts: cut clean or broken)
@@ -123,7 +123,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     text: 'Fewer threats, a kinder economy. Explore, and follow the story at your own pace.',
     scale: { sky: 1, mining: 3, wrecks: 2 },
     score: 0.8,
-    sky: { traffic: 1.55, toughness: 1.85, fire: 1.75, elites: 1, hazard: 0.8 },
+    sky: { traffic: 1.4, toughness: 1.7, fire: 1.7, elites: 0.95, hazard: 0.75, income: 0.9 },
     pursuit: { gap: 1.5, cap: 0.67, elite: 0.5 },
     heat: { rate: 0.8, kill: 1, cut: 1 },
     rock: { krail: 1.25, ore: 1.2, cyrite: 1.3, veins: 1.15 },
@@ -143,7 +143,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     text: 'Mine Krail. Manage Cyrite. Trade, run or fight.',
     scale: { sky: 2, mining: 2, wrecks: 2 },
     score: 1,
-    sky: { traffic: 2.2, toughness: 2.2, fire: 1.4, elites: 2, hazard: 1.6 },
+    sky: { traffic: 2, toughness: 2, fire: 1.35, elites: 1.9, hazard: 1.5, income: 0.75 },
     pursuit: { gap: 1, cap: 1, elite: 1 },
     heat: { rate: 1, kill: 1, cut: 1 },
     rock: { krail: 1, ore: 1, cyrite: 1, veins: 1 },
@@ -163,7 +163,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     text: 'Mining is scarce and loud, wrecks are plentiful. Survive on what others leave behind.',
     scale: { sky: 3, mining: 1, wrecks: 3 },
     score: 1.25,
-    sky: { traffic: 2.75, toughness: 2.4, fire: 1.25, elites: 2.8, hazard: 2.1 },
+    sky: { traffic: 2.5, toughness: 2.2, fire: 1.2, elites: 2.65, hazard: 1.95, income: 0.75 },
     pursuit: { gap: 0.8, cap: 1.34, elite: 1.4 },
     heat: { rate: 1.1, kill: 0.6, cut: 2 },
     rock: { krail: 0.4, ore: 0.5, cyrite: 0.45, veins: 0.6 },
