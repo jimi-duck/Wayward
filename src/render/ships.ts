@@ -394,11 +394,17 @@ export class ShipView {
       const t = clamp(s.rollT / ROLL_TIME, 0, 1);
       roll = s.rollDir * Math.PI * 2 * (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
     }
-    if (s.breakT >= 0 && !reduceMotion) roll = s.breakDir * Math.PI * 2 * breakEase(s.breakT / BREAK_TIME);
-    this.pitchG.rotation.z = this.pitch;
+    // the break is a loop: the nose comes up and over the top while the heading swings round
+    let loop = 0, lift = 0;
+    if (s.breakT >= 0 && !reduceMotion) {
+      const u = clamp(s.breakT / BREAK_TIME, 0, 1);
+      loop = Math.PI * 2 * breakEase(u);
+      lift = Math.sin(Math.PI * u) * 0.9;
+    }
+    this.pitchG.rotation.z = this.pitch + loop;
     this.rollG.rotation.x = this.bank + roll;
     // a slow heave, so a ship at rest still reads as afloat
-    this.pitchG.position.y = Math.sin(this.time * 1.3) * 0.03;
+    this.pitchG.position.y = Math.sin(this.time * 1.3) * 0.03 + lift;
 
     const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05, hot = this.status.overload ? 1.6 : 1;
     this.discMat.color.copy(this.bell).multiplyScalar((0.3 + 0.35 * h) * hot);

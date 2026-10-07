@@ -45,7 +45,7 @@ export const ROLL_IFRAMES = 0.35;
 export const ROLL_KICK = 0.5;
 
 // ── the break ─────────────────────────────────────────────────────────────
-// Break and reverse: a half-second flip that swings the nose 180 degrees
+// Break and reverse: a half-second loop over the top that swings the nose 180 degrees
 // while the ship keeps most of its speed, so it slides on away backwards with
 // the guns facing the chaser. Helm and throttle are locked until it ends and
 // there is no invulnerability: it is a committed turn, not a dodge.
