@@ -3,7 +3,7 @@ import { leave, provoke, type Alien, type EliteId } from './enemies';
 import type { GameEvent } from './events';
 import type { Field } from './field';
 import { newId } from './ids';
-import type { PickupKind } from './pickups';
+import type { CellSource, PickupKind } from './pickups';
 import type { Rng } from './rng';
 import type { ShipState } from './ship';
 
@@ -104,7 +104,8 @@ export interface EncounterHost {
   spawnHostile(variant: string, at?: { x: number; y: number; z: number }, elite?: EliteId | null, extra?: boolean): Alien;
   dropCrystals(x: number, z: number, total: number): void;
   dropItem(kind: PickupKind, x: number, z: number): void;
-  randomPower(): PickupKind;
+  /** The cell a source gives (sim/pickups.ts CELL). */
+  cell(source: CellSource): PickupKind;
   repair(n: number): boolean;
   addScore(points: number): void;
   /** A hull lost in someone else's fight: it goes up and leaves its wreck, nobody's kill. */
@@ -219,7 +220,7 @@ export function stepEncounter(e: Encounter, h: EncounterHost, dt: number): boole
         e.progress = Math.min(1, e.progress + dt / 3.5);
         if (e.progress >= 1) {
           // the salvage, and the trap
-          h.dropItem(h.randomPower(), e.x, e.z);
+          h.dropItem(h.cell('derelict'), e.x, e.z);
           h.dropCrystals(e.x, e.z, 30);
           h.addScore(1000);
           // an Office of Peace ambush, decloaking round the hulk
@@ -309,7 +310,7 @@ function finish(e: Encounter, h: EncounterHost, success: boolean): true {
       if (success) {
         const fixed = h.repair(1);
         if (!fixed) h.dropCrystals(e.x, e.z, 25);
-        h.dropItem(h.randomPower(), e.x, e.z);
+        h.dropItem(h.cell('rescue'), e.x, e.z);
         h.addScore(1500);
         text = fixed ? 'Survivors aboard · hull repaired' : 'Survivors aboard · krail transferred';
       } else text = 'Signal lost';

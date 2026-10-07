@@ -3,6 +3,8 @@ import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import type { Rock } from '../src/sim/field';
 import { BANK_MAX, BANK_REFILL, BANK_SHOT, DYING, ROCK_POINTS, SHOT_COOLDOWN, TORP_RELOAD, TORP_SPACING } from '../src/sim/tuning';
+import { spawnAlien } from '../src/sim/enemies';
+import { CELL, POWERS, POWER_HINT } from '../src/sim/pickups';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
@@ -167,5 +169,22 @@ describe('the field', () => {
     expect(a.score).toBe(b.score);
     expect(a.field.rocks.map((r) => r.id)).toEqual(b.field.rocks.map((r) => r.id));
     expect(a.ship.x).toBe(b.ship.x);
+  });
+});
+
+describe('salvage cells', () => {
+  it('gives each source the cell its work suggests, never a random one', () => {
+    expect(CELL).toEqual({ rock: 'magnet', rescue: 'shield', derelict: 'charge', elite: 'rapid', wreck: 'overdrive' });
+    for (const k of POWERS) expect(POWER_HINT[k]).toBeTruthy();
+    expect(new Set(Object.values(CELL))).toEqual(new Set(POWERS));
+  });
+
+  it('drops rapid fire from an elite’s wreck', () => {
+    const w = new World(3);
+    w.field.rocks = [];
+    const al = spawnAlien('scout', w.ship, 0, w.rng, undefined, { elite: 'gunner' });
+    w.aliens.push(al);
+    (w as unknown as { killAlien(a: typeof al, s: string): void }).killAlien(al, 'laser');
+    expect(w.pickups.some((p) => p.kind === 'rapid')).toBe(true);
   });
 });

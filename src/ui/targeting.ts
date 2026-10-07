@@ -5,7 +5,7 @@ import { rockYield } from '../sim/breakout';
 import { ENCOUNTERS } from '../sim/encounters';
 import { alienBonus, alienLabel, cloaked, type Alien } from '../sim/enemies';
 import { ROCK_KINDS, type Rock } from '../sim/field';
-import { LOOSE, POWER_LABEL } from '../sim/pickups';
+import { CELL, LOOSE, POWER_LABEL } from '../sim/pickups';
 import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
@@ -246,7 +246,7 @@ export class Targeting {
       // mining: what the rock is, what breaking it yields, what it breaks into
       const r = t.ref as Rock, K = ROCK_KINDS[r.kind];
       name = `${tr(ASTEROID[r.kind] ?? 'Asteroid')} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
-      const extra = r.kind === 'rare' ? ` · ${tr('power-up')}` : r.kind === 'volatile' ? ` · ${tr('unstable')}` : '';
+      const extra = r.kind === 'rare' ? ` · ${tr(POWER_LABEL[CELL.rock])}` : r.kind === 'volatile' ? ` · ${tr('unstable')}` : '';
       if (world.bk) {
         // the Breakout: what a clean cut gives, and how the cut is going
         const y = rockYield(r.kind, r.size, true);
