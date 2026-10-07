@@ -259,7 +259,7 @@ export class ChartPanel {
       [t('Tank'), `${c.cyrite}/${TANK_MAX}`], [t('Food'), `${c.food} · ${t('{n}/day', { n: RATION })}`], [t('Parts'), String(c.parts)], [t('Chits'), String(c.chits)], [t('Hold'), t('{n} ore', { n: c.ore })],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
-    const file = fileCount(c.flags);
+    const file = fileCount(c.flags, j.chart.regionSet ?? 'three');
     $('ch-stat').replaceChildren(
       h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', t('File {n}/{of}', { n: file.found, of: file.of }))),
       ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `${t('Goal')} · ${t('reach {name}', { name: goal.name })} · ${plural(left, '{n} jump', '{n} jumps')}`)] : []),

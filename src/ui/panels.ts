@@ -2,7 +2,7 @@ import { BRANCHES, UPGRADES, type Branch } from '../content/upgrades';
 import { COSMETICS, UNLOCKS } from '../content/unlocks';
 import { SURVIVAL, SURVIVALS, type SurvivalId } from '../content/survival';
 import { ENDING_BY_ID, ENDINGS } from '../content/endings';
-import { FRAGMENTS } from '../content/story';
+import { FRAGMENTS_ALL } from '../content/story';
 import { grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -288,7 +288,7 @@ export class StartOptions {
         const got = a.endings.includes(e.id);
         return h('li', got ? 'on' : '', '', h('b', '', got ? t(e.name) : '???'), h('span', 'kind', t(got ? 'reached' : 'ending')), h('p', '', t(got ? e.file : e.pitch)));
       }));
-      $('ar-s').replaceChildren(...FRAGMENTS.map((f) => {
+      $('ar-s').replaceChildren(...FRAGMENTS_ALL.map((f) => {
         const got = a.records.includes(f.flag);
         return h('li', got ? 'on' : '', '', h('b', '', got ? t(f.name) : '???'), h('span', 'kind', t(got ? 'found' : 'missing')), h('p', '', t(got ? f.line : f.where)));
       }));
@@ -301,7 +301,7 @@ export class StartOptions {
         const got = p.earned.includes(u.id);
         return h('li', got ? 'on' : '', '', h('b', '', got ? t(u.name) : '???'), h('span', 'kind', t(u.kind)), h('p', '', t(got ? u.text : u.hint)));
       }));
-      $('logbook-s').textContent = [plural(a.journeys.length, '{n} journey', '{n} journeys'), t('{n} of {of} endings', { n: a.endings.length, of: ENDINGS.length }), t('{n} of {of} pieces of the Severance', { n: a.records.length, of: FRAGMENTS.length }), t('{n} of {of} unlocks', { n: p.earned.length, of: UNLOCKS.length }), t('none of it makes the ship stronger')].join(' · ');
+      $('logbook-s').textContent = [plural(a.journeys.length, '{n} journey', '{n} journeys'), t('{n} of {of} endings', { n: a.endings.length, of: ENDINGS.length }), t('{n} of {of} pieces of the Severance', { n: a.records.length, of: FRAGMENTS_ALL.length }), t('{n} of {of} unlocks', { n: p.earned.length, of: UNLOCKS.length }), t('none of it makes the ship stronger')].join(' · ');
     }
     $('logbook').hidden = !on;
   }

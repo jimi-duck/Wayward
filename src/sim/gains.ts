@@ -23,6 +23,7 @@ const FLAG_SHORT: Record<string, string> = {
 /** The story's flags (content/story.ts): what a beat's answer puts in your hands, named first. */
 const STORY_SHORT: Record<string, string> = {
   frag_order: 'File +1', frag_ledger: 'File +1', frag_manifests: 'File +1', frag_keys: 'File +1',
+  frag_blackbox: 'File +1', frag_charts: 'File +1', frag_workorder: 'File +1', frag_witnesses: 'File +1',
   copy_warden: 'Copy out', voice_read: 'Copy out',
 };
 const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['chits', 'chits'], ['ore', 'ore'], ['parts', 'parts'], ['food', 'food']];
