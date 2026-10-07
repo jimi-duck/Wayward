@@ -254,3 +254,44 @@ describe('the 3D sky', () => {
     expect(blast!.y).toBeGreaterThan(5);
   });
 });
+
+describe('one plane, and rock in the way', () => {
+  it('keeps every hull within a hand of the ship’s plane', () => {
+    const rng = new Rng(5), ship = newShip();
+    for (const kind of ['scout', 'raptor', 'lancer', 'warbird', 'stalker', 'drone'] as const) {
+      for (let i = 0; i < 40; i++) expect(Math.abs(spawnAlien(kind, ship, 10, rng).y)).toBeLessThanOrEqual(1.1);
+    }
+  });
+
+  it('holds a hull out of a rock, and a hard hit costs it hull and the rock too', () => {
+    const w = immortal(6);
+    w.command.next = 1e9;
+    w.pace.until = 1e9;
+    const rock = w.field.spawn(0, 40, 0, 0, 0, 'iron', 1, 0);
+    w.field.rocks.push(rock);
+    const al = spawnAlien('raptor', w.ship, 0, w.rng, { x: 20, y: 0, z: 0 });
+    w.aliens.push(al);
+    const hp = al.hp, rockHp = rock.hp;
+    // a hull driven into the rock at speed
+    al.x = rock.x - 1; al.z = 0; al.vx = 45;
+    (w as unknown as { hullVsRock(a: typeof al): void }).hullVsRock(al);
+    expect(Math.hypot(al.x - rock.x, al.z - rock.z)).toBeGreaterThanOrEqual(rock.r * 0.9 + al.r - 1e-6);
+    expect(al.vx).toBeLessThan(0);
+    expect(al.hp).toBeLessThan(hp);
+    expect(rock.hp).toBeLessThan(rockHp);
+  });
+
+  it('stops enemy fire on a rock between the gun and the ship', () => {
+    const w = immortal(7);
+    w.command.next = 1e9;
+    w.pace.until = 1e9;
+    const rock = w.field.spawn(0, 10, 0, 0, 0, 'iron', 1, 0);
+    w.field.rocks.push(rock);
+    w.shots.push({ id: 1, x: 7.5, y: 0, z: 0, vx: -20, vy: 0, vz: 0, life: 3, r: 0.4, faction: 'gutter', hp: 0, seek: 0, split: 0 });
+    const plates = w.plates;
+    w.step(STEP, idle);
+    w.step(STEP, idle);
+    expect(w.shots.length).toBe(0);
+    expect(w.plates).toBe(plates);
+  });
+});

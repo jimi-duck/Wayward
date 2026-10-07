@@ -99,6 +99,8 @@ export const TORP_CONE = 1.1;
 /** Rock radii by size: large, medium, small. */
 export const ROCK_R = [3.2, 1.9, 1.05] as const;
 export const ROCK_HP = [4, 2, 1] as const;
+/** Share of its hull a hull loses driving into rock at its full dash: the light ones break, the heavy ones are slowed more than hurt. */
+export const ROCK_BUMP = { light: 0.3, cruiser: 0.14 } as const;
 /** Points per rock, the classic arcade ladder: the smaller, the more. */
 export const ROCK_POINTS = [20, 50, 100] as const;
 /** How many large rocks' worth of field to keep around the ship. */

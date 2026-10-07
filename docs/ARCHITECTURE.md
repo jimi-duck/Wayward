@@ -102,7 +102,11 @@ the user supplied, and changes the shape of the fight:
   tactical AI (approach from far out, interceptor attack runs and jinks,
   cruisers using bulwarks as cover); `sim/field.ts` adds bulwarks; lasers
   gain a gunnery computer (lances lift onto targets off the plane) and
-  torpedoes accelerate and steer in 3D.
+  torpedoes accelerate and steer in 3D. Since the Arcade second look, hulls
+  fight within a hand of the plane (`PLANE` in `sim/enemies.ts`), so rock
+  is solid to them (`World.hullVsRock`), stops their fire, and the smaller
+  Wayward threads gaps they cannot. Only a capital ship still comes in
+  high, once, as its entrance.
 
 The roguelite pass turns the prototype into the full run loop, built on
 everything above (the flight model, camera, HUD and look are unchanged).

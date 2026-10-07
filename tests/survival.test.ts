@@ -52,6 +52,8 @@ function traffic(w: World, seconds: number): { arrived: number; gap: number } {
   let quiet = 0, gap = 0;
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     w.plates = 99;
+    // the arcade bay opens by itself once the Krail is aboard (a hull that rams the ship drops some): shut it, nobody is refitting here
+    if (w.phase === 'bay') w.closeBay();
     w.step(STEP, idle);
     let any = false;
     for (const a of w.aliens) if (!a.extra) { any = true; seen.add(a.id); }

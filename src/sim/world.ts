@@ -38,7 +38,7 @@ import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
   BREACH_GRACE, CHAIN_WINDOW, DYING, GRAZE, OC_GAIN, OC_MAX, OVERCHARGE_POINTS, PX, RARE_FIRST, REPAIR_CHANCE,
-  REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
+  REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import type { Prices } from '../content/systems';
 import { ARCADE_PRICE } from '../content/web';
@@ -1377,6 +1377,8 @@ export class World implements EncounterHost {
       // the roll cloak: hulls lose the ship and hold their fire
       if (this.alive && this.cloakT <= 0) alienFire(al, s, t, this.shots, this.field.bulwarks, this.rng, this.events, p);
       stepBeam(al, s, dt);
+      this.hullVsRock(al);
+      if (!this.aliens.includes(al)) continue;
       if (well) {
         const [ax, az] = wellPull(well, al.x, al.z, 10);
         al.vx += ax * dt; al.vz += az * dt;
@@ -1390,6 +1392,36 @@ export class World implements EncounterHost {
       // gone: off the far side of the sky, or away after leaving
       const d = Math.hypot(al.x - s.x, al.z - s.z);
       if (d > CULL || (al.fleeing && al.age > 3 && d > 160)) this.aliens.splice(this.aliens.indexOf(al), 1);
+    }
+  }
+
+  /**
+   * Rock is solid to a hull as it is to the ship, but a hull is bigger: it
+   * is held out of every rock, and what it hits at speed breaks on it (a
+   * hull) and cracks it (the rock). Fliers who chase through a field lose
+   * hulls to it; the Wayward, smaller, slips between.
+   */
+  private hullVsRock(al: Alien): void {
+    if (al.mode === 'cross') return;
+    for (const r of this.field.rocks) {
+      const dx = al.x - r.x, dz = al.z - r.z;
+      const min = r.r * 0.9 + al.r;
+      if (Math.abs(dx) > min || Math.abs(dz) > min) continue;
+      const d = Math.hypot(dx, dz) || 0.01;
+      if (d >= min) continue;
+      const nx = dx / d, nz = dz / d;
+      al.x = r.x + nx * min; al.z = r.z + nz * min;
+      // closing speed along the contact normal: what is lost in the bounce
+      const vn = (al.vx - r.vx) * nx + (al.vz - r.vz) * nz;
+      if (vn >= 0) continue;
+      al.vx -= 1.3 * vn * nx; al.vz -= 1.3 * vn * nz;
+      if (al.bumpT > 0 || al.fleeing) continue;
+      al.bumpT = 0.7;
+      const T = ALIEN_TYPES[al.kind], hit = Math.min(1, -vn / T.dash);
+      const calm = al.calm;
+      this.hurtAlien(al, al.maxHp * ROCK_BUMP[T.role === 'cruiser' ? 'cruiser' : 'light'] * hit, 'hazard', al.x, al.y, al.z, true);
+      if (this.aliens.includes(al)) al.calm = calm;
+      this.damageRock(r, 0.4 + (-vn) * 0.08, 'hazard', r.x, 0, r.z, true);
     }
   }
 
@@ -1799,10 +1831,12 @@ export class World implements EncounterHost {
       }
     }
 
-    // enemy fire stops on a bulwark
+    // enemy fire stops on a bulwark, and on any rock in its way: rock is cover
     for (let i = this.shots.length - 1; i >= 0; i--) {
       const sh = this.shots[i]!;
-      if (inBulwark(sh.x, sh.y, sh.z, sh.r)) { this.shots.splice(i, 1); this.events.push({ type: 'bulwarkHit', x: sh.x, y: sh.y, z: sh.z }); }
+      if (inBulwark(sh.x, sh.y, sh.z, sh.r)) { this.shots.splice(i, 1); this.events.push({ type: 'bulwarkHit', x: sh.x, y: sh.y, z: sh.z }); continue; }
+      const rock = rocks.find((r) => (sh.x - r.x) ** 2 + (sh.z - r.z) ** 2 < (r.r * 0.9 + sh.r) ** 2);
+      if (rock) { this.shots.splice(i, 1); this.damageRock(rock, 0.15, 'hazard', sh.x, sh.y, sh.z, true); }
     }
 
     if (!this.alive) return;
