@@ -571,6 +571,14 @@ together they are worse (a weaver with two raptors). **Elites** are
 familiar hulls with a modifier: armoured, swift, volatile, gunner, cloaked,
 regenerative, web-spinner.
 
+**Bulwarks** (`sim/field.ts`, numbers in `sim/tuning.ts`) are the field's
+big rocks. They stop fire from both sides, hurt to fly into and give heavy
+hulls cover, but guns, blasts and plasma now wear them down: 100 hit
+points at the smallest and 170 at the largest, the weight of 25 to 42 large
+rocks. A broken one bursts into debris (one or two large rock, four or five
+medium, five to seven small) and scores 400, and a new bulwark drifts in
+from the fog 25 seconds after.
+
 **The director** (`sim/director.ts`) is the one place difficulty is
 decided, as smooth functions of run time. The opening is a slow burn: the
 field starts at half its old density with slower rock (and five bulwarks,

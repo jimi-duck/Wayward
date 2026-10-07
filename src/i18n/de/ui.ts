@@ -198,6 +198,7 @@ export const UI: Record<string, string> = {
 
   // the log and the banners
   'Rock broken': 'Fels zerlegt',
+  'Bulwark shattered': 'Bollwerk zersprengt',
   'Iron rock broken': 'Eisenfels zerlegt',
   'Rich rock broken': 'Reicher Fels zerlegt',
   'Volatile rock broken': 'Instabiler Fels zerlegt',
