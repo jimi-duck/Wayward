@@ -188,16 +188,64 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #obj-s:empty { display: none; }
 #objective.event { border-left-color: var(--amber); }
 
-/* ── top centre: the heading ──────────────────────────────────────────── */
-#heading { position: absolute; left: 50%; top: calc(var(--safe-t) + 8px); translate: -50% 0; width: 170px; display: grid; justify-items: center; gap: 4px; }
-#hdg { font: 500 calc(var(--fs) * .95)/1 var(--font-mono); letter-spacing: .24em; color: var(--ink-2); padding-left: .24em; }
-#hdg-tape { --o: 0px; position: relative; width: 100%; height: 7px;
+/* ── top centre: the navigation strip ─────────────────────────────────── */
+/* One bar is the horizon round the ship, the nose in the middle and behind at
+   the two ends. Above it, in travel, the objective's row; in a fight the
+   nearest hull's row in red, with the objective kept under it. */
+#heading { position: absolute; left: 50%; top: calc(var(--safe-t) + 8px); translate: -50% 0; width: clamp(200px, 24vw, 300px);
+  display: grid; gap: 5px; padding: 6px 9px 7px; background: rgba(8, 13, 14, .62); border: 1px solid var(--hair);
+  border-top-color: var(--amber); transition: border-top-color .25s, background .25s; }
+#heading.idle { background: rgba(8, 13, 14, .4); border-top-color: var(--hair); }
+#heading.combat { border-top-color: var(--alert); background: rgba(14, 9, 9, .66); }
+.gd-row { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto auto auto; align-items: center; column-gap: 7px; min-height: 18px; }
+.gd-row[hidden] { display: none; }
+.gd-arrow { width: 16px; height: 16px; fill: var(--amber); filter: drop-shadow(0 0 3px rgba(229, 169, 58, .5)); }
+.gd-name { font: 600 calc(var(--fs) * 1.18 * 1.1)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--amber);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gd-rel { font: 600 calc(var(--fs) * 1.6)/1 var(--font-rail); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
+.gd-dist { font: 600 calc(var(--fs) * 1.6)/1 var(--font-rail); letter-spacing: .04em; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.gd-eta { font: 500 calc(var(--fs) * 1.2)/1 var(--font-mono); color: var(--ink-2); min-width: 3.4ch; text-align: right; font-variant-numeric: tabular-nums; }
+.gd-eta:empty, .gd-dist:empty { display: none; }
+/* narrow screens: the objective's card already names it, so the strip keeps the arrow and the numbers */
+@media (max-width: 760px) { .gd-name { display: none; } .gd-row { grid-template-columns: 16px auto auto 1fr; } .gd-eta { text-align: right; } }
+/* on the way: the arrow is bright and still; turned right round it pulses; moving away it dims the ETA to a word */
+.gd-go.on .gd-arrow { filter: drop-shadow(0 0 5px rgba(229, 169, 58, .9)); }
+.gd-go.away .gd-eta { color: var(--amber); }
+.gd-go.turn .gd-arrow { animation: gd-turn .6s steps(2, jump-none) infinite; }
+.gd-go.in .gd-rel { color: var(--amber); }
+/* a fight: the hull's row is red, the objective's row steps back */
+.gd-foe .gd-arrow { fill: var(--alert); filter: drop-shadow(0 0 4px rgba(224, 87, 75, .6)); }
+.gd-foe .gd-name { color: var(--alert-ink, #f08a7e); }
+.gd-foe.rear .gd-rel { color: #f08a7e; }
+.gd-foe.close .gd-arrow, .gd-foe.close .gd-rel { animation: gd-turn .5s steps(2, jump-none) infinite; }
+#heading.combat .gd-go { opacity: .82; }
+#heading.combat .gd-go .gd-rel, #heading.combat .gd-go .gd-dist { font-size: calc(var(--fs) * 1.25); }
+@keyframes gd-turn { 50% { opacity: .35; } }
+/* the bar */
+#gd-bar { position: relative; height: 14px;
   background:
-    repeating-linear-gradient(90deg, var(--hair) 0 1px, transparent 1px 10px) var(--o) 100% / 100% 4px repeat-x,
-    repeating-linear-gradient(90deg, var(--hud-mid) 0 1px, transparent 1px 60px) var(--o) 100% / 100% 7px repeat-x;
-  -webkit-mask: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
-          mask: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); }
-#heading::after { content: ""; position: absolute; left: 50%; bottom: -3px; width: 1px; height: 10px; background: var(--hud); }
+    linear-gradient(90deg, rgba(236, 230, 225, .1), transparent 14%, transparent 86%, rgba(236, 230, 225, .1)),
+    repeating-linear-gradient(90deg, var(--hair) 0 1px, transparent 1px 12.5%) 0 100% / 100% 5px no-repeat;
+  border-bottom: 1px solid rgba(236, 230, 225, .3); }
+#gd-bar .gd-c { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(229, 169, 58, .55); }
+#gd-marks > span { position: absolute; top: 50%; width: 0; height: 0; }
+#gd-marks > span[hidden] { display: none; }
+#gd-marks > span::before { content: ""; position: absolute; translate: -50% -50%; }
+/* the objective: a filled amber diamond; the other places hollow, the port teal */
+#gd-marks .o::before { width: 11px; height: 11px; rotate: 45deg; background: var(--amber); box-shadow: 0 0 6px rgba(229, 169, 58, .7); }
+#gd-marks .p::before { width: 8px; height: 8px; rotate: 45deg; border: 1.5px solid var(--amber); }
+#gd-marks .p.port::before { border-color: var(--cy); }
+/* the capital ship: a red square; a hull: a red tick, the most pressing one taller; a convoy hull: a teal ring */
+#gd-marks .k::before { width: 10px; height: 10px; background: var(--alert); box-shadow: 0 0 6px rgba(224, 87, 75, .6); }
+#gd-marks .t::before { width: 3px; height: 12px; background: var(--alert); }
+#gd-marks .t.elite::before { background: #f08a7e; }
+#gd-marks .t.cold::before { height: 7px; opacity: .7; }
+#gd-marks .t.top::before { width: 5px; height: 16px; box-shadow: 0 0 6px rgba(224, 87, 75, .8); }
+#gd-marks .f::before { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--cy); }
+/* the way the ship is really going: a small teal caret under the bar */
+#gd-marks .v::before { top: 9px; width: 0; height: 0; background: none; border: 4px solid transparent; border-bottom: 6px solid var(--cy); border-top: 0; translate: -50% 0; }
+#hud:not([data-focus="combat"]) #gd-marks .t { opacity: .85; }
+#hud[data-focus="combat"] #gd-marks .o::before { width: 8px; height: 8px; }
 
 /* ── top right: ship systems ──────────────────────────────────────────── */
 /* Ship status, as in the brand's gameplay view: a row each (icon, name,
@@ -299,7 +347,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #powers span b { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); color: var(--amber); }
 
 /* ── upper centre: one card, the most important thing out there ──────── */
-#centre { position: absolute; left: 50%; top: calc(var(--safe-t) + 42px); translate: -50% 0; display: grid; gap: 8px; justify-items: center; }
+#centre { position: absolute; left: 50%; top: calc(var(--safe-t) + 16px + var(--gd-h, 48px)); translate: -50% 0; display: grid; gap: 8px; justify-items: center; }
 #boss { width: clamp(260px, 30vw, 400px); display: none; gap: 7px; padding: 9px 14px; --edge: var(--alert-dim); --lit: var(--alert); --fill: rgba(8, 13, 14, .5); }
 #boss.on { display: grid; }
 .boss-h { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--alert); }
@@ -413,6 +461,13 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   filter: drop-shadow(0 0 3px var(--pc)); }
 #threats .thr.elite i { --pc: var(--amber); }
 #threats .thr.close i { animation: thr-blink .5s steps(2, jump-none) infinite; }
+/* the pressing hull: larger, and says how far; in a fight the chevrons grow and the objective's pointers step back */
+#threats .thr.top i { left: -8px; top: -8px; width: 16px; height: 16px; border-width: 3px; }
+#threats .thr b { position: absolute; left: 0; top: 0; translate: var(--lx, -50%) var(--ly, 12px); white-space: nowrap; text-shadow: 0 1px 5px #000;
+  font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .1em; color: #f08a7e; }
+#hud[data-focus="combat"] #threats .thr:not(.top) i { scale: 1.3; }
+#hud[data-focus="combat"] #ptr-obj, #hud[data-focus="combat"] #ptr-lane, #hud[data-focus="combat"] #ptr-port { opacity: .6; }
+#hud:not([data-focus="combat"]) .ptr#ptr-obj i, #hud:not([data-focus="combat"]) .ptr#ptr-lane i { width: 18px; height: 18px; left: -9px; top: -9px; border-width: 3px; }
 @keyframes thr-blink { 50% { opacity: .3; } }
 
 /* ── lower left: the scope, the contacts, the hunt, the sector ────────── */
@@ -523,7 +578,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   #systems { width: min(262px, 62vw); padding: 9px 10px 10px 11px; column-gap: 6px; row-gap: 8px; grid-template-columns: 12px max-content minmax(36px, 1fr) minmax(38px, max-content); }
   #systems kbd, #systems .nokey, .sys-row .lv { display: none; }
   #sector { width: min(200px, 34vw); }
-  #heading { display: none; }
+  #heading { width: min(190px, 30vw); padding: 5px 7px 6px; }
   #centre { top: calc(var(--top) + var(--sys-h, 150px) + 10px); }
   #radar { width: clamp(104px, 30vw, 132px); }
   #log { width: min(300px, 70vw); }
@@ -546,8 +601,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 @media (max-height: 460px) {
   #hud { --pad: 10px; }
   #banner { top: 16%; }
-  #heading { display: none; }
-  .touch-ui #centre { top: var(--top); }
+  #heading { top: var(--top); }
+  .touch-ui #centre { top: calc(var(--top) + var(--gd-h, 48px) + 8px); }
   /* on a narrow phone the middle cards slide left of centre, so they never reach the systems panel */
   .touch-ui #centre { left: min(50%, calc(100vw - min(250px, 34vw) - var(--right) - 10px - min(280px, 36vw) / 2)); }
   .touch-ui #boss, .touch-ui #threat, .touch-ui #tgt-card { width: min(280px, 36vw); }
@@ -1101,7 +1156,7 @@ html.swipe #app * { overscroll-behavior: contain; }
   #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #sys-oc.hot #g-oc, #mode.red .stripes, #release.ready, #release.on, #torp.on { animation: none; }
   :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan,
   #log-lines p.new, #banner.on, #sys-hull.hit, #sys-hull.mended, .plates i.mend.live, .sys-row .lv.up, .sheet, .sheet:not([hidden]) .panel, #start:not([hidden]) .start-card > *, #start:not([hidden]) .start-foot { animation: none; }
-  .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path { animation: none; }
+  .card, .lvl i.add, #threats .thr.close i, #swipe .cover-i path, .gd-go.turn .gd-arrow, .gd-foe.close .gd-arrow, .gd-foe.close .gd-rel { animation: none; }
 }
 
 /* ── the Breakout ─────────────────────────────────────────────────────────

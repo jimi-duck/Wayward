@@ -2,6 +2,7 @@ import { angleDelta } from '../core/math';
 import type { Sector } from '../render/sector';
 import { ALIEN_TYPES, cloaked, FIRE_RANGE } from '../sim/enemies';
 import { LOOSE } from '../sim/pickups';
+import { guideTarget, sidePlaces, track } from '../sim/guide';
 import type { World } from '../sim/world';
 import { FONT, INK, RGB, rgba } from './palette';
 
@@ -42,7 +43,7 @@ export class Radar {
     return world.sensorsDown ? RADAR_RANGE * 0.45 : RADAR_RANGE;
   }
 
-  draw(world: World, sector: Sector, target: number | null): void {
+  draw(world: World, sector: Sector, target: number | null, combat = false): void {
     const c = this.canvas, g = c.getContext('2d');
     if (!g || !c.width) return;
     const s = sector.shipNow, h = s.heading;
@@ -106,16 +107,22 @@ export class Radar {
       g.strokeStyle = v > 0 ? rgba(RGB.red, 0.35 + v * 0.6) : 'rgba(236,230,225,.07)';
       g.beginPath(); g.arc(0, 0, Rb + 9.5 * dpr, a - half, a + half); g.stroke();
     }
-    // the Breakout's two places, always: a diamond on the ring along each one's bearing (amber the lane, teal the port)
+    // where to go: an amber arrowhead on the ring along its bearing, larger than the rest; the other places are small diamonds (amber the lane, teal the port)
     const bk = world.bk;
-    if (bk) {
-      for (const wp of world.seenPlaces()) {
-        const a = at(Math.atan2(-(wp.z - s.z), wp.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 4 * dpr;
-        g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(Math.PI / 4);
-        g.fillStyle = wp.kind === 'lane' ? INK.amber : INK.teal;
-        g.fillRect(-sz / 2, -sz / 2, sz, sz);
-        g.restore();
-      }
+    const lead = world.alive ? guideTarget(world) : null;
+    for (const wp of sidePlaces(world, lead)) {
+      const a = at(Math.atan2(-(wp.z - s.z), wp.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 4 * dpr;
+      g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(Math.PI / 4);
+      g.fillStyle = wp.kind === 'lane' ? INK.amber : INK.teal;
+      g.fillRect(-sz / 2, -sz / 2, sz, sz);
+      g.restore();
+    }
+    if (lead) {
+      const a = at(Math.atan2(-(lead.z - s.z), lead.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 5.5 * dpr;
+      g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(a + Math.PI / 2);
+      g.fillStyle = INK.amber;
+      g.beginPath(); g.moveTo(0, -sz * 1.2); g.lineTo(sz, sz * 0.8); g.lineTo(0, sz * 0.2); g.lineTo(-sz, sz * 0.8); g.closePath(); g.fill();
+      g.restore();
     }
     // the heading index: a notch at the top, where the nose points
     g.fillStyle = `rgb(${HUD})`;
@@ -140,7 +147,26 @@ export class Radar {
     g.strokeStyle = 'rgba(236,230,225,.12)';
     for (const a of [-hf, hf]) { g.beginPath(); g.moveTo(C, C); g.lineTo(C + Math.sin(a) * R, C - Math.cos(a) * R); g.stroke(); }
 
-    // the field
+    // the way to go: a dashed amber line from the ship to the objective, pinned at the rim when it is further than the scope reaches
+    if (lead) {
+      const [gx, gy] = to(lead.x, lead.z);
+      g.strokeStyle = rgba(RGB.amber, combat ? 0.35 : 0.8); g.lineWidth = 1.4 * dpr;
+      g.setLineDash([4 * dpr, 4 * dpr]);
+      g.beginPath(); g.moveTo(C, C); g.lineTo(gx, gy); g.stroke();
+      g.setLineDash([]);
+    }
+    // the way the ship is really moving: a teal line as long as a second and a half of travel
+    const tr = track(world);
+    if (tr) {
+      const len = Math.min(R * 0.92, tr.speed * 1.5 * k), a = -Math.PI / 2 - tr.rel;
+      g.strokeStyle = rgba(RGB.teal, 0.9); g.lineWidth = 1.6 * dpr;
+      g.beginPath(); g.moveTo(C, C); g.lineTo(C + Math.cos(a) * len, C + Math.sin(a) * len); g.stroke();
+      g.fillStyle = `rgb(${HUD})`;
+      g.beginPath(); g.arc(C + Math.cos(a) * len, C + Math.sin(a) * len, 2 * dpr, 0, Math.PI * 2); g.fill();
+    }
+
+    // the field: rock and pickups step back in a fight
+    g.globalAlpha = combat ? 0.5 : 1;
     g.fillStyle = 'rgba(236,230,225,.1)'; g.strokeStyle = 'rgba(236,230,225,.2)';
     for (const b of world.field.bulwarks) {
       const [x, y, out] = to(b.x, b.z, R + b.r * k);
@@ -179,6 +205,7 @@ export class Radar {
     g.fillStyle = rgba(RGB.amber, 0.85);
     for (const m of world.sys.mines) { const [x, y, out] = to(m.x, m.z); if (!out) g.fillRect(x - dpr, y - dpr, 2 * dpr, 2 * dpr); }
 
+    g.globalAlpha = 1;
     // the objective: a diamond, and the circle that matters
     const e = world.encounter;
     if (e && !e.done && e.r > 0) {

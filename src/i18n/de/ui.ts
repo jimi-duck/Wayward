@@ -713,4 +713,11 @@ export const UI: Record<string, string> = {
   'for the whole screen, with no tabs or bars': 'für den ganzen Bildschirm, ohne Tabs und Leisten',
   'Keep the bars': 'Leisten behalten',
   'Details': 'Details',
+  // ── the navigation strip ──
+  'Ahead': 'Voraus',
+  'Behind': 'Hinten',
+  '{n}° left': '{n}° links',
+  '{n}° right': '{n}° rechts',
+  'Inside': 'Drin',
+  'Away': 'Weg',
 };
