@@ -141,7 +141,7 @@ export class BayPanel {
     $('bay').addEventListener('pointerdown', (e) => e.stopPropagation());
     // the Arcade bay opens by itself, mid-flight: a tap in its first moments is still the fight's
     $('bay').addEventListener('click', (e) => { if (performance.now() - this.opened < GUARD) { e.stopPropagation(); e.preventDefault(); } }, true);
-    addEventListener('resize', () => { if (this.open) this.placeArt(); });
+    addEventListener('resize', () => { if (this.open) { this.placeArt(); this.link(); } });
   }
 
   /** The view open, for the ship drawn behind (render/ships.ts lights its part). */
@@ -187,6 +187,7 @@ export class BayPanel {
     this.off = null;
     $('bay-pts').replaceChildren();
     this.rings.clear();
+    $('bay').querySelector('.bay-link-pick')?.remove();
     $('bay').hidden = true;
   }
 
@@ -398,6 +399,8 @@ export class BayPanel {
     this.tabs(w);
     if (this.view === 'picks') this.suggested(w);
     else { this.web(w, this.view); this.inspector(w); }
+    // after layout: the line from the chosen card to its part of the ship
+    requestAnimationFrame(() => this.link());
     this.budgetBar(w);
     this.ringsFor(w);
   }
@@ -491,7 +494,7 @@ export class BayPanel {
       if (locked) { b.setAttribute('aria-disabled', 'true'); b.tabIndex = -1; b.title = t('Story mode: plan your own build'); }
       b.addEventListener('click', (e) => { e.stopPropagation(); this.go(v); });
       return b;
-    }), ...(arcade ? [h('p', 'bay-lock-note', '', icon('i-lock'), document.createTextNode(` ${t('Story mode opens the whole build')}`))] : []), this.profile(w));
+    }), ...(arcade ? [h('p', 'bay-lock-note', '', icon('i-lock'), document.createTextNode(` ${t('Story: full refit control')}`))] : []), this.profile(w));
   }
 
   /** The ship's papers along the foot of the web: her designation, and what the registry says of her. Quiet; desktop only. */
@@ -536,7 +539,8 @@ export class BayPanel {
       const go = h('button', 'pc-go', '') as HTMLButtonElement;
       go.type = 'button';
       go.disabled = !!why;
-      go.append(document.createTextNode(fitWord(w, n.id, why)));
+      // the Arcade's cards say Fit and nothing else: the price gates when the bay opens, it is not part of the choice
+      go.append(document.createTextNode(isArcade(w) && (!why || why === 'krail') ? t('Fit') : fitWord(w, n.id, why)));
       go.addEventListener('click', (e) => { e.stopPropagation(); this.pick = i; this.install(n.id); });
       card.addEventListener('click', () => { this.pick = i; this.render(); });
       card.append(
@@ -556,6 +560,23 @@ export class BayPanel {
     $('bay-web').replaceChildren(h('div', 'pick-row', '', ...(cards.length ? cards : [empty])),
       h('p', 'pick-more', t('Want to plan your own build? Pick a part of the ship on the left.')));
     $('bay-insp').replaceChildren();
+  }
+
+  /** CARD → HARDWARE → SHIP: a thin technical line from the chosen card up to the ring on its part of the ship. */
+  private link(): void {
+    const bay = $('bay'), old = bay.querySelector('.bay-link-pick');
+    const card = this.view === 'picks' && this.open ? bay.querySelector('.pick-card.sel') as HTMLElement | null : null;
+    const zone = card && this.picks()[this.pick]?.tab, ring = zone ? this.rings.get(zone) : undefined;
+    if (!card || !ring) { old?.remove(); return; }
+    const o = bay.getBoundingClientRect(), c = card.getBoundingClientRect(), r = ring.getBoundingClientRect();
+    const x0 = c.left + c.width / 2 - o.left, y0 = c.top - o.top, x1 = r.left + r.width / 2 - o.left, y1 = r.top + r.height / 2 - o.top + r.height * 0.5;
+    if (y1 >= y0 - 6) { old?.remove(); return; }
+    const ns = 'http://www.w3.org/2000/svg', my = y0 - Math.min(26, (y0 - y1) / 2);
+    const svg = (old as SVGSVGElement | null) ?? document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'bay-link-pick');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.innerHTML = `<path d="M${x0} ${y0} V${my} H${x1} V${y1}" vector-effect="non-scaling-stroke"/><circle cx="${x0}" cy="${y0}" r="3"/>`;
+    if (!old) bay.append(svg);
   }
 
   private web(w: World, tab: Tab): void {
