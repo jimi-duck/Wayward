@@ -910,7 +910,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
 .start-foot { grid-row: 3; width: 100%; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px 22px; }
 .start-foot .records { justify-content: flex-start; }
-.start-foot #saves { justify-content: flex-end; }
+.start-foot #saves { justify-content: flex-end; margin-left: auto; }
 /* the difficulty: three buttons, and what the picked one does */
 .diff { display: grid; justify-items: center; gap: 6px; padding: 8px 14px; background: rgba(8, 13, 14, .62); margin-top: calc(clamp(18px, 3.2vh, 30px) * -.4); }
 .diff-k { font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); text-shadow: 0 1px 6px #000; }
@@ -950,7 +950,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 
 /* a short screen (a phone on its side, a small laptop window): all of it tighter */
 @media (max-height: 620px) {
-  .start-foot { gap: 6px 12px; }
+  /* in the corners, over the card's empty sides: a saved journey's strip made the card taller than the screen and pushed Export and Import off it */
+  .start-foot { gap: 6px 12px; position: absolute; left: 24px; right: 24px; bottom: max(14px, calc(var(--safe-b) + 10px)); width: auto; pointer-events: none; }
+  .start-foot > * { pointer-events: auto; }
   .diff-s { font-size: 11px; }
   .diff { margin-top: -4px; gap: 4px; }
   #start { padding-top: max(14px, calc(var(--safe-t) + 10px)); gap: 6px; }

@@ -214,6 +214,8 @@ function boot(): void {
     const j = journey!;
     sortieStart = tally(j);
     world.restart({ unlocked: grants(profile), mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+    // a new journey carries 99 plates for "full": the ship's own count is the start to compare with
+    sortieStart = { ...sortieStart, plates: world.plates };
     showMode();
     reported = false;
     setPaused(false);

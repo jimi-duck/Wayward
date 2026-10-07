@@ -606,7 +606,7 @@ export const UI: Record<string, string> = {
   'Toward goal': 'Richtung Ziel',
   '{n} Cyrite to jump': '{n} Cyrit pro Sprung',
   '{n}/day': '{n}/Tag',
-  'reach {name}': 'erreich {name}',
+  'reach {name}': 'erreiche {name}',
   'not on your trail yet': 'noch nicht auf deiner Spur',
   'last seen {where}': 'zuletzt gesehen: {where}',
   'unknown': 'unbekannt',
