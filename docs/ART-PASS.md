@@ -96,3 +96,7 @@ Jimi asked for red player lasers, so the lances are red with a white-hot core an
 sheath (second, dimmer streak, same draw). That sets aside "red is threat only" for our lances. To keep them apart
 from enemy fire, Gutter fire moved from red-orange to orange-gold; no faction fires red.
 Lance hits on rock, hulls and bosses add a few quick red-hot sparks. Torpedoes stay amber.
+
+## The plasma trail is a line
+
+The Drive plasma vent used to lay soft pink patches that bloomed over the ship and the HUD. The trail is now one thin, steady line strip in a muted red-amber, below the bloom threshold, dimming as it fades and gone near the lens. Damage, width and lifetime are unchanged; only the drawing moved (`render/arsenal.ts`). Clouds from chain reactions and plasma warheads stay as patches.
