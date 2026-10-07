@@ -35,6 +35,7 @@ import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type 
 import { Ids, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
+import { laySortie } from './sites';
 import { CALM, reports, Space, type Influence, type Report as Condition } from './space';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
@@ -142,6 +143,8 @@ export class World implements EncounterHost {
   /** The expanses and features around the ship (null: off). */
   space: Space | null = null;
   private spaceOn = false;
+  /** The named place the ship is inside (content/features.ts NAMED), if any; its flag `site:<id>` is set on entering. */
+  siteHere: string | null = null;
   /** What the place does to the ship now (sim/space.ts), and what to tell the player of it. */
   air: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
   conditions: Condition[] = [];
@@ -301,6 +304,7 @@ export class World implements EncounterHost {
     this.carryIn = opts.carry ?? null;
     this.run = newRun(seed, this.survival.id);
     this.begin();
+    this.layStory();
   }
 
   /** What the mode needs at the start of a run: the Breakout's course, tank and veined rock, and no capital ships of its own accord. */
@@ -1493,6 +1497,14 @@ export class World implements EncounterHost {
     return al;
   }
 
+  /** Story's space: laid by hand along the course, not composed (sim/sites.ts). */
+  private layStory(): void {
+    this.siteHere = null;
+    if (!this.spaceOn || this.mode !== 'breakout' || !this.bk) return;
+    this.space = new Space(this.seed + this.sortie.lane, { hazard: this.mods.hazard, compose: false });
+    laySortie(this.space, this.sortie, this.ship, this.bk.lane);
+  }
+
   /** The shared world: deal it, ask what it does here, and apply it (docs/ENVIRONMENT.md). */
   private stepSpace(dt: number, s: ShipState): void {
     const space = this.space!;
@@ -1510,6 +1522,10 @@ export class World implements EncounterHost {
       }
     }
     this.conditions = reports(a);
+    // inside a named place: say so once, and let the story read the flag
+    const f = space.features.find((q) => q.named && Math.hypot(s.x - q.x, s.z - q.z) < q.r);
+    this.siteHere = f?.named ?? null;
+    if (f?.named) this.flags.add(`site:${f.named}`);
   }
 
   private stepAliens(dt: number, t: number, p: Pressure): void {
@@ -2414,6 +2430,7 @@ export class World implements EncounterHost {
     this.run = newRun(this.seed, this.survival.id);
     this.phase = 'play';
     this.begin();
+    this.layStory();
   }
 }
 

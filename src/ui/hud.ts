@@ -9,6 +9,7 @@ import type { GameEvent } from '../sim/events';
 import { DOCK_TIME } from '../sim/breakout';
 import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
 import { OC_MAX } from '../sim/tuning';
+import { NAMED } from '../content/features';
 import { REPORT_TEXT } from '../sim/space';
 import type { World } from '../sim/world';
 import { systemLevel } from './icons';
@@ -671,12 +672,13 @@ export class Hud {
 
   /** The place's effects on the ship, in the ship's words: nothing for what only looks like something. */
   private updateCond(world: World): void {
-    const key = world.conditions.map((c) => c.kind).join();
+    const key = (world.siteHere ?? '') + world.conditions.map((c) => c.kind).join();
     if (key === this.condKey) return;
     this.condKey = key;
     const el = $('cond');
     el.hidden = !key;
-    el.replaceChildren(...world.conditions.map((c) => { const d = document.createElement('div'); d.textContent = t(REPORT_TEXT[c.kind]); return d; }));
+    const lines = [...(world.siteHere ? [NAMED[world.siteHere]!.name] : []), ...world.conditions.map((c) => REPORT_TEXT[c.kind])];
+    el.replaceChildren(...lines.map((l) => { const d = document.createElement('div'); d.textContent = t(l); return d; }));
   }
 
   private updateLog(world: World): void {
