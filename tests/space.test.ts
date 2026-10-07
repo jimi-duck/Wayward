@@ -348,3 +348,43 @@ describe('Story sites, every system', () => {
     }
   });
 });
+
+describe('Storm lightning and the well core', () => {
+  const idle = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' as const };
+  const bare = () => {
+    const w = new World(5, { space: true });
+    (w.space as unknown as { compose: boolean }).compose = false;
+    w.ship.invuln = 0;
+    return w;
+  };
+  const fly = (w: World, secs: number) => { for (let i = 0; i < Math.round(secs / STEP); i++) w.step(STEP, idle); };
+
+  it('draws a circle before lightning in a storm cell, and none outside it', () => {
+    const w = bare();
+    w.space!.place('storm', 0, 0, { r: 600 });
+    fly(w, 4);
+    expect(w.strikes.some((k) => k.kind === 'lightning' && k.t > 0)).toBe(true);
+    const out = bare();
+    out.space!.place('storm', 5000, 5000, { r: 600 });
+    fly(out, 4);
+    expect(out.strikes.length).toBe(0);
+  });
+
+  it('crushes only what sits in the core, and tells it first', () => {
+    const w = bare();
+    w.space!.place('well', 0, 0, { r: 500 });
+    fly(w, 2);
+    expect(w.strikes.some((k) => k.kind === 'blast' && k.t > 0)).toBe(true);
+    const far = bare();
+    far.space!.place('well', 300, 0, { r: 500 });
+    fly(far, 3);
+    expect(far.strikes.filter((k) => k.kind === 'blast').length).toBe(0);
+  });
+
+  it('never raises the alert by itself', () => {
+    const w = bare();
+    w.space!.place('storm', 0, 0, { r: 600 });
+    fly(w, 6);
+    expect(w.alert()).toBe('clear');
+  });
+});
