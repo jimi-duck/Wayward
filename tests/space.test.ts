@@ -226,7 +226,7 @@ describe('what it does to the ship', () => {
 });
 
 describe('in the world', () => {
-  const idle = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' as const };
+  const idle = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' as const };
   const fly = (w: World, secs: number) => { for (let i = 0; i < Math.round(secs / STEP); i++) w.step(STEP, idle); };
   const bare = (): { w: World; space: Space } => {
     const w = new World(5, { space: true });
@@ -300,7 +300,7 @@ describe('Story sites', () => {
     expect(sp.expanses.length).toBe(1);
     expect(sp.features.some((f) => f.def === 'storm')).toBe(true);
     const n = sp.features.length;
-    for (let i = 0; i < 600; i++) w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+    for (let i = 0; i < 600; i++) w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
     expect(sp.expanses.length).toBe(1);
     expect(sp.features.length).toBe(n);
   });
@@ -330,7 +330,7 @@ describe('Story sites', () => {
     const f = w.space!.features.find((q) => q.named)!;
     expect(Math.hypot(f.x - w.bk!.lane.x, f.z - w.bk!.lane.z)).toBeGreaterThan(f.r);
     w.ship.x = f.x; w.ship.z = f.z;
-    w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+    w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
     expect(w.siteHere).toBe(f.named);
     expect(w.flags.has(`site:${f.named}`)).toBe(true);
   });
