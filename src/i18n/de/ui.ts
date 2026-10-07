@@ -720,5 +720,4 @@ export const UI: Record<string, string> = {
   '{n}° left': '{n}° links',
   '{n}° right': '{n}° rechts',
   'Inside': 'Drin',
-  'Away': 'Weg',
 };

@@ -12,7 +12,7 @@ import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
 import { systemLevel } from './icons';
 import { Radar } from './radar';
-import { GuideStrip } from './guide';
+import { Heading } from './guide';
 import { range, Targeting } from './targeting';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
@@ -93,7 +93,7 @@ const SECTOR_NAME: Record<EncounterId, string> = {
 export class Hud {
   private readonly radar = new Radar($<HTMLCanvasElement>('radar'));
   private readonly aim = new Targeting();
-  private readonly guide = new GuideStrip();
+  private readonly guide = new Heading();
   private readonly log: LogLine[] = [];
   private textClock = 1;
   private measureClock = 0;
@@ -251,8 +251,8 @@ export class Hud {
 
   update(world: World, sector: Sector, dt: number): void {
     this.aim.update(world, sector, dt);
-    // the navigation strip: the way to go, who is where; it also says whether this is travel or a fight
-    if (this.guide.update(world, dt)) this.measure();
+    // the heading tape, with the objective on it; it also says whether this is travel or a fight
+    this.guide.update(world, sector.shipNow.heading, dt);
     if (this.bannerT > 0 && (this.bannerT -= dt) <= 0) $('banner').classList.remove('on');
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
     this.textClock += dt;
@@ -263,7 +263,7 @@ export class Hud {
     this.radarClock += dt;
     if (this.radarClock >= 1 / 30) {
       this.radarClock = 0;
-      this.radar.draw(world, sector, this.aim.target, this.guide.fighting);
+      this.radar.draw(world, sector, this.aim.target);
       text($('radar-r'), range(this.radar.reach(world)));
     }
   }
@@ -680,9 +680,7 @@ export class Hud {
   private measure(): void {
     const h = $('systems').offsetHeight;
     if (h) $('hud').style.setProperty('--sys-h', `${h}px`);
-    const g = $('heading').offsetHeight;
-    if (g) $('hud').style.setProperty('--gd-h', `${g}px`);
-    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('heading'), $('fire'), $('torp'), $('release')]);
+    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('fire'), $('torp'), $('release')]);
   }
 
   private retrigger(el: HTMLElement, cls: string): void {
