@@ -140,9 +140,8 @@ export class BayPanel {
   private shown: Record<string, string> = {};
   /** The ship's answer to a fit, in the voice line, until this timer puts the voice back. */
   private logT = 0;
-  /** The choice the ship link was last drawn for, and when the install's own line is done with the stage. */
+  /** The choice the ship link was last drawn for. */
   private linked = '';
-  private linkHold = 0;
   private linkTry = 0;
 
   constructor() {
@@ -169,9 +168,9 @@ export class BayPanel {
     this.onClose = onClose;
     this.opened = performance.now();
     this.closing = false;
+    $('bay').classList.remove('chosen', 'leaving', 'warm');
     this.shown = {};
     this.linked = '';
-    this.linkHold = 0;
     // the bay opens on the suggestions; the tabs are a step further in
     this.view = 'picks';
     this.pick = 0;
@@ -204,6 +203,7 @@ export class BayPanel {
     this.rings.clear();
     $('bay').querySelector('.bay-link-pick')?.remove();
     for (const k of ['--ax', '--ay', '--aw']) $('bay').style.removeProperty(k);
+    $('bay').classList.remove('chosen', 'leaving', 'warm');
     $('bay').hidden = true;
   }
 
@@ -288,19 +288,40 @@ export class BayPanel {
       for (const k of ['power', 'mass', 'heat'] as const) if (after.use[k] !== before.use[k] || after.cap[k] !== before.cap[k]) moved.add(k);
       this.fresh = { id, moved };
       fitted = true;
-      const el = $('bay-main');
-      el.classList.remove('done');
-      void el.offsetWidth;
-      el.classList.add('done');
+      // the web's panel flashes; in the suggestions it is see-through, so the flash would only draw a stray frame
+      if (this.view !== 'picks') {
+        const el = $('bay-main');
+        el.classList.remove('done');
+        void el.offsetWidth;
+        el.classList.add('done');
+      }
     }
-    this.render();
+    // the Arcade's cards stay as they are (the next three are not the point of this moment): the chosen one confirms, the rest step back
+    if (fitted && isArcade(w) && this.view === 'picks') this.confirm(w, id);
+    else this.render();
     if (fitted) { this.installFx(id, krailBefore, Math.floor(w.krail)); this.answer(id); }
     this.fresh = null;
-    // the Arcade bay opened by itself for one pick: once it is made it shuts, after the fit has landed (a second pick comes when the Krail does)
-    if (fitted && isArcade(w)) {
-      this.closing = true;
-      window.setTimeout(() => { if (this.open && this.world === w) this.launch(); }, 700);
-    }
+  }
+
+  /**
+   * The Arcade's pick, one clean beat: the chosen card says Fitted and lights solid, the other two
+   * fall back, the ring on the ship answers (installFx), the bars tick; then the bay fades and shuts.
+   */
+  private confirm(w: World, id: string): void {
+    this.closing = true;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, bay = $('bay');
+    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.krail))), h('span', '', 'Krail'));
+    this.budgetBar(w);
+    this.papers(w);
+    [...$('bay-web').querySelectorAll('.pick-card')].forEach((c, k) => {
+      const on = k === this.pick;
+      c.classList.toggle('fitted', on);
+      c.classList.toggle('gone', !on);
+      if (on) { const go = c.querySelector('.pc-go') as HTMLButtonElement; go.disabled = true; go.textContent = `✓ ${t('Fitted')}`; }
+    });
+    bay.classList.add('chosen');
+    window.setTimeout(() => { if (this.open && this.world === w) bay.classList.add('leaving'); }, reduce ? 150 : 650);
+    window.setTimeout(() => { if (this.open && this.world === w) this.launch(); }, reduce ? 300 : 950);
   }
 
   /** The ship answers a fit in the voice line for a few seconds: accepted, or not factory spec if the part has a stamp. */
@@ -317,48 +338,19 @@ export class BayPanel {
   }
 
   /**
-   * The install, felt (400 to 700 ms): Krail counts down, the module flashes
-   * (the fresh class), a line runs from it to the ship part it belongs to and
-   * that part's ring pulses, the budgets bump. None of it blocks a second install,
-   * and none of it with reduced motion.
+   * The install, felt (under 600 ms): Krail counts down, the module flashes (the fresh class),
+   * the ring on the part it belongs to pings and the ship warms for a beat, the budgets bump.
+   * None of it blocks a second install, and none of it with reduced motion.
    */
   private installFx(id: string, from: number, to: number): void {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     this.countKrail(from, to, 520);
-    this.linkHold = performance.now() + 800;
-    $('bay').querySelector('.bay-link-pick')?.remove();
-    this.linked = '';
-    // the stage takes the clamp: a 3 px kick on the picture, not on the controls
-    const bay = $('bay');
-    bay.classList.remove('kick');
+    const bay = $('bay'), ring = this.rings.get(NODE[id]!.tab);
+    bay.classList.remove('warm');
     void bay.offsetWidth;
-    bay.classList.add('kick');
-    setTimeout(() => bay.classList.remove('kick'), 120);
-    const zone = NODE[id]!.tab;
-    // a pulse leaves the part's ring
-    const ring = this.rings.get(zone);
+    bay.classList.add('warm');
+    setTimeout(() => bay.classList.remove('warm'), 600);
     if (ring) { ring.classList.remove('hit'); void ring.offsetWidth; ring.classList.add('hit'); setTimeout(() => ring.classList.remove('hit'), 700); }
-    const node = document.querySelector('.bay-node.fresh .bn-oct') ?? document.querySelector('.pick-card.sel .pc-oct');
-    $('bay').querySelector('.bay-line')?.remove();
-    if (!node || !ring) return;
-    // a line from the module to the part of the ship it belongs to
-    const box = $('bay').getBoundingClientRect(), r = node.getBoundingClientRect(), g = ring.getBoundingClientRect();
-    const x0 = r.left + r.width / 2 - box.left, y0 = r.top + r.height / 2 - box.top;
-    const x1 = g.left + g.width / 2 - box.left, y1 = g.top + g.height / 2 - box.top;
-    const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
-    svg.setAttribute('class', 'bay-line');
-    svg.setAttribute('width', String(box.width));
-    svg.setAttribute('height', String(box.height));
-    const line = document.createElementNS(ns, 'path');
-    line.setAttribute('d', `M${x0} ${y0} L${x1} ${y1}`);
-    line.setAttribute('pathLength', '1');
-    const dot = document.createElementNS(ns, 'circle');
-    dot.setAttribute('cx', String(x1));
-    dot.setAttribute('cy', String(y1));
-    dot.setAttribute('r', '5');
-    svg.append(line, dot);
-    $('bay').append(svg);
-    setTimeout(() => svg.remove(), 800);
   }
 
   /** Count the Krail readout from one value to another. */
@@ -612,8 +604,6 @@ export class BayPanel {
     if (!card || !ring) { old?.remove(); this.linked = ''; return; }
     // the ship is not on the stage yet: placeArt calls this again when she is
     if (!bay.style.getPropertyValue('--aw')) return;
-    const wait = this.linkHold - performance.now();
-    if (wait > 0) { old?.remove(); this.linked = ''; setTimeout(() => this.link(), wait + 20); return; }
     const o = bay.getBoundingClientRect(), c = card.getBoundingClientRect(), r = ring.getBoundingClientRect();
     // the ring is not where the ship will put it yet: look again in a moment
     if (r.width < 1 || r.left <= o.left || r.top <= o.top) { if (this.open && this.linkTry++ < 20) setTimeout(() => this.link(), 60); return; }

@@ -1609,9 +1609,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @keyframes seg-pop { 0% { transform: scaleX(0); } 70% { transform: scaleX(1.15); } }
 /* the fit: the button goes in 2 px with a hard stop, the picture takes a short kick */
 .bi-go:not(:disabled):active, .pc-go:not(:disabled):active, #bay-x:active, #bay-auto:active { translate: 0 2px; transition: translate 40ms linear; }
-#bay.kick .bay-art, #bay.kick .bay-pts { animation: bay-kick 90ms linear; }
-@keyframes bay-kick { 35% { translate: 0 3px; } 70% { translate: 0 -1px; } }
-@media (prefers-reduced-motion: reduce) { .bb-bar i { animation: none; } #bay.kick .bay-art, #bay.kick .bay-pts { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .bb-bar i { animation: none; } }
 .bb-l { display: flex; align-items: center; gap: 8px; }
 .bb-w { display: inline-flex; align-items: center; gap: 4px; font-size: calc(var(--fs) * .8 * 1.18); letter-spacing: .12em; color: var(--hud); }
 .bb-w i { font-style: normal; font-size: 9px; }
@@ -1619,12 +1617,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bb.over .bb-v { color: var(--alert); }
 @media (max-width: 900px), (max-height: 520px) { .bb-wt { display: none; } }
 /* the install line: from the module to the ship part it belongs to */
-.bay-line { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 2; }
-.bay-line path { fill: none; stroke: var(--hud-hi); stroke-width: 1.5; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 4px var(--hud)); animation: bay-line .45s ease-out forwards; }
-.bay-line circle { fill: var(--hud-hi); opacity: 0; animation: bay-dot .6s ease-out .3s forwards; }
-@keyframes bay-line { to { stroke-dashoffset: 0; } }
-@keyframes bay-dot { 0% { opacity: 1; r: 3; } 100% { opacity: 0; r: 18; } }
-@media (prefers-reduced-motion: reduce) { .bay-line, .bb.over .bb-w { display: none; animation: none; } }
+@media (prefers-reduced-motion: reduce) { .bb.over .bb-w { animation: none; } }
 
 /* the ship's computer's picks: amber, a diamond and a reason */
 .bi-rec, .c-rec { margin: 0; display: flex; flex-wrap: wrap; gap: 0 6px; font: 600 calc(var(--fs) * 1.05 * 1.18)/1.35 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
@@ -1699,6 +1692,14 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pick-card.sel .pc-name { color: var(--hud-hi); }
 .pick-card.sel .pc-oct { --c: var(--hud); }
 #bay.arcade .pick-card:not(.sel) .pc-go:not(:disabled) { background: none; border-color: var(--line-2, var(--line)); color: var(--ink-2); }
+/* the pick, one beat: the chosen card is solid and says Fitted, the others fall back, the ship warms, the bay fades */
+.pick-card.gone { opacity: .25 !important; scale: .97; pointer-events: none; transition: opacity .25s ease-out, scale .25s ease-out; }
+.pick-card.fitted { pointer-events: none; }
+.pick-card.fitted .pc-go:disabled { background: var(--hud); border-color: var(--hud-hi); color: #1a1205; transition: background .15s, color .15s; }
+#bay.warm .bay-art { animation: bay-warm .5s ease-out; }
+@keyframes bay-warm { 30% { filter: brightness(1.22) saturate(1.1); } }
+#bay.leaving { opacity: 0; transition: opacity .3s ease-in; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { #bay.warm .bay-art { animation: none; } .pick-card.gone { transition: none; scale: 1; } #bay.leaving { transition: none; } }
 /* the price gates when the bay opens, it is not the choice: the Arcade's header drops the Krail figure */
 #bay.arcade .bay-krail { display: none; }
 #bay.arcade .bay-tab.locked { cursor: default; opacity: .55; }
