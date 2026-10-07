@@ -5,8 +5,8 @@ worth flying through: what is out there, how it behaves, how the two modes
 share it, and the order it gets built in. The data is in
 `src/content/features.ts`, the system in `src/sim/space.ts`.
 
-Status: stage 1 (the library and the system, no visuals yet). See
-[Stages](#stages).
+Status: stages 1 and 2 done (the library, the system, and how the first
+features look, behind `?space`). See [Stages](#stages).
 
 ## What the game does today
 
@@ -262,10 +262,12 @@ Small PRs off `main`, one stage at a time, each shippable.
 
 1. **Foundation** (done in this PR). This document, the library, `Space`,
    tests. Nothing visible, nothing wired, nothing changes in play.
-2. **Look.** `render/space.ts`: the far look (glows, silhouettes) and the
-   mood tint, first for the four that carry the most: dust veil, curtain,
-   breaker field, passage. Behind a dev flag. Screenshots at desktop and
-   phone sizes.
+2. **Look** (done). `render/space.ts`: the far look and the mood tint
+   (`Environment.weather`). The dust veil, curtain and passage have their
+   own look; every other feature shows as a faint glint until stage 4. The
+   breaker field's rubble waits for stage 3, when rock density follows it.
+   Behind `?space` (Arcade only); the world owns the `Space`, and nothing in
+   play reads it yet. Screenshots in the project's `environment/` folder.
 3. **Play.** The world owns a `Space` in Arcade; effects apply (sensors,
    lock, jam, rock density, pull, drag, conceal); the chip HUD; a pilot
    report to check modules a run and difficulty did not move.
