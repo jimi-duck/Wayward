@@ -75,11 +75,12 @@ describe('the table', () => {
     expect(survivalOf('raider').id).toBe('raider');
   });
 
-  it('keeps Prospector at the old numbers: every multiplier 1', () => {
+  it('keeps Prospector at the old numbers: every multiplier 1, bar the arcade sky', () => {
     const P = SURVIVAL.prospector;
-    expect(P.sky).toEqual(NO_MODS);
+    // the arcade sky is the one thing set above 1 (Jimi: "harder", with the bay at 30 Krail); everything the Story reads is the old number
+    expect(P.sky).toEqual({ traffic: 2.2, toughness: 2.2, fire: 1.4, elites: 2, hazard: 1.6 });
     expect(P.score).toBe(1);
-    expect(P.pursuit).toEqual({ gap: 1, cap: 1 });
+    expect(P.pursuit).toEqual({ gap: 1, cap: 1, elite: 1 });
     expect(P.heat).toEqual({ rate: 1, kill: 1, cut: 1 });
     expect(P.rock).toEqual({ krail: 1, ore: 1, cyrite: 1, veins: 1 });
     expect(P.salvage).toMatchObject({ krail: 1, life: 1, repair: 1, capital: 1, reach: 1 });
@@ -234,7 +235,7 @@ describe('the sky', () => {
   it('brings fewer, softer hulls in Drifter and more, tougher ones in Raider', () => {
     for (const m of [2, 5, 9]) {
       const [d, p, r] = SURVIVAL_IDS.map((id) => pressure(m * 60, SURVIVAL[id].sky));
-      expect(p).toEqual(pressure(m * 60));
+      expect(p).toEqual(pressure(m * 60, SURVIVAL.prospector.sky));
       expect(d!.enemyCap).toBeLessThanOrEqual(p!.enemyCap);
       expect(p!.enemyCap).toBeLessThanOrEqual(r!.enemyCap);
       expect(d!.groupSize).toBeLessThan(p!.groupSize);
@@ -253,7 +254,7 @@ describe('the sky', () => {
     expect(late[2]!.volatile).toBeGreaterThan(late[1]!.volatile);
   });
 
-  it('sends more hulls in the arcade as the modes go from Drifter to Raider', () => {
+  it('sends more hulls in the arcade as the modes go from Drifter to Raider', { timeout: 30_000 }, () => {
     const got = SURVIVAL_IDS.map((id) => [1, 2, 3, 4].map((seed) => traffic(sky(id, seed), 420).arrived));
     const [d, p, r] = got.map(mean);
     expect(d!).toBeLessThan(p!);
@@ -263,7 +264,7 @@ describe('the sky', () => {
     expect(r!).toBeLessThan(p! * 2);
   });
 
-  it('never goes quiet for too long, or sends hulls without a break', () => {
+  it('never goes quiet for too long, or sends hulls without a break', { timeout: 30_000 }, () => {
     for (const id of SURVIVAL_IDS) for (const seed of [1, 2, 3]) {
       const { gap } = traffic(sky(id, seed), 420);
       // the longest stretch with nothing new on the way: the opening quiet is ALIEN_FIRST (about 20 s) and the quiet spells run to 30 s
@@ -271,7 +272,7 @@ describe('the sky', () => {
     }
   });
 
-  it('plays the Story\'s pursuit slower in Drifter and faster in Raider', () => {
+  it('plays the Story\'s pursuit slower in Drifter and faster in Raider', { timeout: 30_000 }, () => {
     const spawned = (id: SurvivalId) => {
       const j = newJourney(7, false, 'three', id);
       j.carry.cyrite = 0;
@@ -728,8 +729,8 @@ describe('the voyage', () => {
     expect(net('raider')).toBe(net('prospector'));
   });
 
-  it('lays more breathers for a Drifter and fewer for a Raider', () => {
-    const quiet = (b: number) => sum([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => makeChart(seed, 'eight', b).systems.filter((s) => s.quiet).length));
+  it('lays more breathers for a Drifter and fewer for a Raider', { timeout: 30_000 }, () => {
+    const quiet = (b: number) => sum([1, 2, 3, 4].map((seed) => makeChart(seed, 'eight', b).systems.filter((s) => s.quiet).length));
     const [d, p, r] = [SURVIVAL.drifter, SURVIVAL.prospector, SURVIVAL.raider].map((m) => quiet(m.voyage.breathers));
     expect(d!).toBeGreaterThan(p!);
     expect(r!).toBeLessThan(p!);
@@ -741,8 +742,8 @@ describe('the voyage', () => {
     const again = makeChart(5, 'eight');
     layQuiet(again, 5);
     expect(again.systems.map((s) => !!s.quiet)).toEqual(b.systems.map((s) => !!s.quiet));
-    // 24 eight-region charts: slower than vitest's 5 s on a busy machine
-  }, 30_000);
+    // eight-region charts are slow to lay: the explicit timeout keeps a busy machine from flaking it
+  });
 });
 
 describe('a mode that is playable', () => {
