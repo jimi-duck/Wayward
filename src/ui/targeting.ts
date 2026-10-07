@@ -9,6 +9,7 @@ import { CELL, LOOSE, POWER_LABEL } from '../sim/pickups';
 import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
+import { BEHIND, threats } from '../sim/guide';
 import { NEON_CSS } from './colors';
 import { t as tr } from '../i18n';
 
@@ -90,7 +91,7 @@ export class Targeting {
       const d = document.createElement('div');
       d.className = 'thr';
       d.hidden = true;
-      d.append(document.createElement('i'));
+      d.append(document.createElement('i'), document.createElement('b'));
       th.append(d);
       this.threats.push(d);
     }
@@ -376,33 +377,36 @@ export class Targeting {
       showObj ? `${tr(ENCOUNTERS[e!.id].name)} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
   }
 
-  /** Hulls out of view: the nearest first, each pinned to the edge along its bearing. */
+  /** Hulls out of view: the most pressing first (armed and near, then what you cannot see), each pinned to the edge along its bearing. */
   private drawThreats(world: World, sector: Sector, live: boolean): void {
     const s = sector.shipNow, m = 30;
     let n = 0;
     if (live) {
-      const out = world.aliens
-        .filter((a) => !cloaked(a))
-        .map((a) => ({ a, d: Math.hypot(a.x - s.x, a.z - s.z) }))
-        .filter(({ a, d }) => {
-          if (d > THREAT_RANGE) return false;
-          const p = sector.project(a.x, a.y, a.z);
-          return !p || p.x < 0 || p.y < 0 || p.x > this.w || p.y > this.h;
-        })
-        .sort((x, y) => x.d - y.d);
+      const out = threats(world, 24).filter((f) => {
+        const a = world.aliens.find((x) => x.id === f.id)!;
+        const p = sector.project(a.x, a.y, a.z);
+        return !p || p.x < 0 || p.y < 0 || p.x > this.w || p.y > this.h;
+      });
       const cx = this.w / 2, cy = this.h / 2;
-      for (const { a, d } of out) {
+      let first = true;
+      for (const f of out) {
         if (n >= MAX_THREATS) break;
-        const rel = angleDelta(s.heading, Math.atan2(-(a.z - s.z), a.x - s.x));
-        const dx = -Math.sin(rel), dy = -Math.cos(rel);
+        const a = world.aliens.find((x) => x.id === f.id)!;
+        const dx = -Math.sin(f.rel), dy = -Math.cos(f.rel);
         const k = Math.min((cx - m) / Math.max(1e-3, Math.abs(dx)), (cy - m - 30) / Math.max(1e-3, Math.abs(dy)));
         const el = this.threats[n++]!;
+        const top = first && !f.friendly;
+        if (top) first = false;
         el.hidden = false;
-        el.className = `thr${a.elite ? ' elite' : ''}${d < 30 && dy > 0.3 ? ' close' : ''}`;
-        el.style.setProperty('--pc', NEON_CSS[a.faction]);
+        el.className = `thr${a.elite ? ' elite' : ''}${top ? ' top' : ''}${f.dist < 30 && Math.abs(f.rel) > BEHIND ? ' close' : ''}`;
+        el.style.setProperty('--pc', f.friendly ? 'var(--cy)' : NEON_CSS[a.faction]);
         el.style.setProperty('--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
-        el.style.opacity = clamp(1.25 - d / THREAT_RANGE, 0.45, 1).toFixed(2);
+        el.style.opacity = clamp(1.25 - f.dist / THREAT_RANGE, 0.45, 1).toFixed(2);
         el.style.transform = `translate(${(cx + dx * k).toFixed(1)}px, ${(cy + dy * k).toFixed(1)}px)`;
+        // the pressing one says how far; the label flips inward at the edges so it never leaves the screen
+        const lab = el.lastElementChild as HTMLElement;
+        text(lab, top ? range(f.dist) : '');
+        lab.style.setProperty('--ly', dy > 0.6 ? '-22px' : '12px');
       }
     }
     for (; n < MAX_THREATS; n++) if (!this.threats[n]!.hidden) this.threats[n]!.hidden = true;

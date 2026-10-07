@@ -178,6 +178,13 @@ export class Sector {
           this.fx.flash(e.x, e.y, e.z, 1.3, HOT, 0.08);
           this.fx.burst(e.x, e.y, e.z, 7, DUST, 6, 0.22, 0.35);
           break;
+        case 'bulwarkBroken':
+          this.fx.explode(e.x, -0.2, e.z, e.r * 0.5, LAVA, 'rock');
+          this.fx.flash(e.x, 0, e.z, e.r * 0.9, HOT, 0.2);
+          this.fx.burst(e.x, 0.3, e.z, 40, FIRE, 14, 0.5, 1);
+          this.rig.shake(0.6);
+          hold = Math.max(hold, 0.08);
+          break;
         case 'rockDestroyed': {
           const big = [1, 0.62, 0.38][e.size]!;
           this.fx.explode(e.x, -0.2, e.z, 2.2 * big, ROCK_TINT[e.kind] ?? LAVA, 'rock');

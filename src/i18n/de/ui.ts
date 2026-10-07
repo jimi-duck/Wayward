@@ -198,6 +198,7 @@ export const UI: Record<string, string> = {
 
   // the log and the banners
   'Rock broken': 'Fels zerlegt',
+  'Bulwark shattered': 'Bollwerk zersprengt',
   'Iron rock broken': 'Eisenfels zerlegt',
   'Rich rock broken': 'Reicher Fels zerlegt',
   'Volatile rock broken': 'Instabiler Fels zerlegt',
@@ -713,4 +714,11 @@ export const UI: Record<string, string> = {
   'for the whole screen, with no tabs or bars': 'für den ganzen Bildschirm, ohne Tabs und Leisten',
   'Keep the bars': 'Leisten behalten',
   'Details': 'Details',
+  // ── the navigation strip ──
+  'Ahead': 'Voraus',
+  'Behind': 'Hinten',
+  '{n}° left': '{n}° links',
+  '{n}° right': '{n}° rechts',
+  'Inside': 'Drin',
+  'Away': 'Weg',
 };

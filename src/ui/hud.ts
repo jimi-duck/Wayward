@@ -12,6 +12,7 @@ import { OC_MAX } from '../sim/tuning';
 import type { World } from '../sim/world';
 import { systemLevel } from './icons';
 import { Radar } from './radar';
+import { GuideStrip } from './guide';
 import { range, Targeting } from './targeting';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
@@ -92,6 +93,7 @@ const SECTOR_NAME: Record<EncounterId, string> = {
 export class Hud {
   private readonly radar = new Radar($<HTMLCanvasElement>('radar'));
   private readonly aim = new Targeting();
+  private readonly guide = new GuideStrip();
   private readonly log: LogLine[] = [];
   private textClock = 1;
   private measureClock = 0;
@@ -117,7 +119,6 @@ export class Hud {
   onBay: () => void = () => {};
   /** When the log last said the self-repair had started, so a flicker of danger does not repeat it. */
   private mendNoted = -Infinity;
-  private headingShown = true;
   private contactKey = '';
   private centreKey = '';
 
@@ -175,6 +176,7 @@ export class Hud {
     for (const e of evts) {
       switch (e.type) {
         case 'rockDestroyed': this.note(world, `${t(ROCK_BROKEN[e.kind] ?? 'Rock broken')} · +${e.points}`, '', 'rock', e.points); break;
+        case 'bulwarkBroken': this.note(world, `${t('Bulwark shattered')} · +${e.points}`, '', 'rock', e.points); break;
         case 'alienDestroyed': this.note(world, `${t('{name} destroyed', { name: t(e.label) })} · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
         case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
@@ -249,13 +251,8 @@ export class Hud {
 
   update(world: World, sector: Sector, dt: number): void {
     this.aim.update(world, sector, dt);
-    // the heading: a compass bearing (north is up the screen at the start), the tape sliding under it
-    // (skipped while the layout hides it, as it does on phones: a style write a frame is not free there)
-    if (this.headingShown) {
-      const deg = (((90 - (sector.shipNow.heading * 180) / Math.PI) % 360) + 360) % 360;
-      text($('hdg'), String(Math.round(deg) % 360).padStart(3, '0'));
-      $('hdg-tape').style.setProperty('--o', `${(-deg * 2).toFixed(1)}px`);
-    }
+    // the navigation strip: the way to go, who is where; it also says whether this is travel or a fight
+    if (this.guide.update(world, dt)) this.measure();
     if (this.bannerT > 0 && (this.bannerT -= dt) <= 0) $('banner').classList.remove('on');
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
     this.textClock += dt;
@@ -266,7 +263,7 @@ export class Hud {
     this.radarClock += dt;
     if (this.radarClock >= 1 / 30) {
       this.radarClock = 0;
-      this.radar.draw(world, sector, this.aim.target);
+      this.radar.draw(world, sector, this.aim.target, this.guide.fighting);
       text($('radar-r'), range(this.radar.reach(world)));
     }
   }
@@ -681,10 +678,11 @@ export class Hud {
   // ── helpers ─────────────────────────────────────────────────────────────
 
   private measure(): void {
-    this.headingShown = $('heading').offsetWidth > 0;
     const h = $('systems').offsetHeight;
     if (h) $('hud').style.setProperty('--sys-h', `${h}px`);
-    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('fire'), $('torp'), $('release')]);
+    const g = $('heading').offsetHeight;
+    if (g) $('hud').style.setProperty('--gd-h', `${g}px`);
+    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('heading'), $('fire'), $('torp'), $('release')]);
   }
 
   private retrigger(el: HTMLElement, cls: string): void {
