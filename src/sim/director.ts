@@ -21,16 +21,22 @@ import { FIELD_TARGET, HZ, PX } from './tuning';
 // coming.
 //
 // Every curve is in minutes, m. `Mods` scales the whole thing for the
-// challenge modifiers a player can switch on between runs.
+// survival mode chosen on the title (content/survival.ts `sky`).
 
 export interface Mods {
   /** Multiplier on enemy spawn rate and ceiling. */
   traffic: number;
   /** Multiplier on enemy hull. */
   toughness: number;
+  /** Multiplier on the time between an enemy's volleys: below 1 they fire oftener. */
+  fire: number;
+  /** Multiplier on the chance of an elite and of a squad. */
+  elites: number;
+  /** Multiplier on the share of rock that is clustered, shepherded or volatile. */
+  hazard: number;
 }
 
-export const NO_MODS: Mods = { traffic: 1, toughness: 1 };
+export const NO_MODS: Mods = { traffic: 1, toughness: 1, fire: 1, elites: 1, hazard: 1 };
 
 const V = PX * HZ;
 
@@ -79,19 +85,19 @@ export function pressure(t: number, mods: Mods = NO_MODS): Pressure {
     groupSize: clamp(1 + 0.5 * m, 1, 8) * mods.traffic,
     lull: Math.max(9, 20 - 1.2 * m) / mods.traffic,
     enemyHp: (1 + 0.17 * m + 0.06 * late) * mods.toughness,
-    fireCd: Math.max(0.62, 2.2 - 0.17 * m),
+    fireCd: Math.max(0.62, 2.2 - 0.17 * m) * mods.fire,
     shotSpeed: Math.min(5.6, 3.1 + 0.42 * m) * V,
     spread: Math.max(0.07, 0.26 - 0.03 * m),
-    eliteChance: clamp((m - 4) * 0.045, 0, 0.42),
-    squadChance: clamp((m - 4) * 0.07, 0, 0.55),
+    eliteChance: clamp((m - 4) * 0.045, 0, 0.42) * mods.elites,
+    squadChance: clamp((m - 4) * 0.07, 0, 0.55) * mods.elites,
     theatre: Math.max(1, 4 - Math.max(0, m - 5) * 0.75),
     fieldTarget: Math.min(60, FIELD_TARGET * 0.4 + 5 * m),
     rockSpeed: Math.min(1.9, 0.75 + 0.1 * m),
     rockHp: Math.min(2.6, 1 + 0.1 * m),
-    cluster: clamp((m - 2) * 0.06, 0, 0.3),
-    shepherd: clamp((m - 3) * 0.04, 0, 0.18),
+    cluster: clamp((m - 2) * 0.06, 0, 0.3) * mods.hazard,
+    shepherd: clamp((m - 3) * 0.04, 0, 0.18) * mods.hazard,
     iron: clamp((m - 3) * 0.05, 0, 0.32),
-    volatile: clamp((m - 5) * 0.03, 0, 0.14),
+    volatile: clamp((m - 5) * 0.03, 0, 0.14) * mods.hazard,
     rich: 0.035,
   };
 }

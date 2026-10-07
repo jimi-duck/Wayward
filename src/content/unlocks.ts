@@ -8,8 +8,8 @@ import type { RunStats } from '../sim/run';
 // a player always knows what to try next.
 //
 // An unlock grants ids: upgrade ids (locked cards in content/upgrades.ts),
-// sector event ids (locked rows in sim/encounters.ts), challenge modifier
-// ids (MODIFIERS below) or cosmetic ids (COSMETICS below).
+// sector event ids (locked rows in sim/encounters.ts) or cosmetic ids
+// (COSMETICS below).
 
 export interface Lifetime {
   runs: number;
@@ -101,26 +101,6 @@ export const UNLOCKS: UnlockDef[] = [
     earned: (_r, life) => life.krail >= 1500,
   },
 ];
-
-// ── challenge modifiers ───────────────────────────────────────────────────
-
-export interface ModifierDef {
-  id: string;
-  name: string;
-  text: string;
-  score: number;
-  traffic?: number;
-  toughness?: number;
-  damage?: number;
-  plates?: number;
-  noRepairs?: boolean;
-}
-
-/** The three difficulties: Mid is no modifier at all, Easy and Hard are one each. */
-export const MODIFIERS: Record<string, ModifierDef> = {
-  easy: { id: 'easy', name: 'Easy', text: 'Fewer, softer hulls. Score ×0.8.', score: 0.8, traffic: 0.8, toughness: 0.85 },
-  hard: { id: 'hard', name: 'Hard', text: 'More traffic, tougher hulls. Score ×1.4.', score: 1.4, traffic: 1.35, toughness: 1.2 },
-};
 
 // ── cosmetics ─────────────────────────────────────────────────────────────
 

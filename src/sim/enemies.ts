@@ -62,7 +62,7 @@ type Tactic = 'dogfight' | 'ram' | 'hunt' | 'broadside' | 'snipe' | 'grind' | 'a
 type Fire = 'fan' | 'burst' | 'plasma' | 'lead' | 'beam' | 'none';
 export type Mode =
   | 'approach' | 'setup' | 'run' | 'extend' | 'line' | 'hold' | 'cover' | 'peek' | 'seek' | 'spin' | 'leave' | 'cross'
-  | 'patrol' | 'watch';
+  | 'patrol' | 'watch' | 'brawl';
 
 const V = PX * HZ; // the original's px/frame → units/second
 
@@ -548,6 +548,12 @@ function commit(al: Alien, events: GameEvent[]): void {
   events.push({ type: 'noticed', id: al.id, x: al.x, y: al.y, z: al.z });
 }
 
+/** Somebody else's fight, noticed by the ship: a fighter turns on it, a hauler runs. */
+export function provoke(al: Alien, events: GameEvent[]): void {
+  if (ALIEN_TYPES[al.kind].tactic === 'cross') leave(al);
+  else commit(al, events);
+}
+
 /** A patrol's next waypoint: on along its beat, turning a little. */
 function nextLeg(al: Alien, rng: Rng): void {
   const h = Math.atan2(-(al.az - al.z), al.ax - al.x) + rng.range(-0.8, 0.8);
@@ -635,6 +641,14 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
         if (al.approach === 'investigate' && al.calm > 90 && rng.next() < PACING.moveOn) leave(al);
         else commit(al, events);
       }
+      break;
+    }
+
+    // someone else's fight (a skirmish, sim/encounters.ts): holding station on its own side, circling a little, until the ship comes close or hits anyone
+    case 'brawl': {
+      const a = al.age * 0.35 * al.slide;
+      steer(al, al.ax + Math.cos(a) * 5, al.cruiseY, al.az + Math.sin(a) * 5, speed * 0.7, acc, dt, 3);
+      if (d < seen * 0.5 || al.calm < 1) provoke(al, events);
       break;
     }
 
@@ -774,7 +788,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
 /** Fire when the type's way of fighting says so and the cooldown is up. */
 export function alienFire(al: Alien, s: ShipState, t: number, shots: Shot[], bulwarks: readonly Bulwark[], rng: Rng, events: GameEvent[], p: Pressure = pressure(t)): void {
   const T = ALIEN_TYPES[al.kind];
-  if (T.fire === 'none' || al.fleeing || al.mode === 'approach' || al.mode === 'patrol' || al.mode === 'watch' || t < al.nextShot) return;
+  if (T.fire === 'none' || al.fleeing || al.mode === 'approach' || al.mode === 'patrol' || al.mode === 'watch' || al.mode === 'brawl' || t < al.nextShot) return;
   // a cloaked hull decloaks before it fires: the shimmer is the warning
   if (al.cloak > 0.25) { al.nextShot = t + 0.1; return; }
   const dx = s.x - al.x, dz = s.z - al.z, d = Math.hypot(dx, dz);

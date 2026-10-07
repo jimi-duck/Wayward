@@ -44,10 +44,11 @@ describe('the profile between runs', () => {
     expect(recordRun(loadProfile(), runWith({ time: 310 })).unlocked.map((u) => u.id)).not.toContain('u_derelict');
   });
 
-  it('folds the old challenge toggles into one difficulty', () => {
-    expect(migrate({ modifiers: ['ironman', 'hostile'] }).modifiers).toEqual(['hard']);
-    expect(migrate({ modifiers: ['glass'] }).modifiers).toEqual([]);
-    expect(migrate({ modifiers: ['easy'] }).modifiers).toEqual(['easy']);
+  it('folds the old challenge toggles into one survival mode', () => {
+    expect(migrate({ modifiers: ['ironman', 'hostile'] }).survival).toBe('raider');
+    expect(migrate({ modifiers: ['glass'] }).survival).toBe('prospector');
+    expect(migrate({ modifiers: ['easy'] }).survival).toBe('drifter');
+    expect(migrate({ modifiers: ['easy'] }).modifiers).toBeUndefined();
   });
 
   it('plays on when storage refuses', () => {

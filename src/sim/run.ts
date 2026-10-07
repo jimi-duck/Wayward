@@ -50,7 +50,10 @@ export interface RunStats {
   timeline: Array<{ t: number; score: number; plates: number; refit: number }>;
   build: Levels;
   identity: string;
-  modifiers: string[];
+  /** The survival mode it was played in (content/survival.ts). */
+  survival: string;
+  /** Where Krail, Cyrite, ore and parts came from, as they were dropped (not as collected): rock (cut or broken) and wrecks. */
+  loot: Record<'rock' | 'wreck', Loot>;
   /** What ended it. */
   cause: string;
   /** The Breakout or the arcade. */
@@ -74,9 +77,12 @@ export interface RunStats {
   ports: string[];
 }
 
+export interface Loot { krail: number; cyrite: number; ore: number; parts: number }
+export const NO_LOOT = (): Loot => ({ krail: 0, cyrite: 0, ore: 0, parts: 0 });
+
 export const TIMELINE = 10;
 
-export function newRun(seed: number, modifiers: string[] = []): RunStats {
+export function newRun(seed: number, survival = 'prospector'): RunStats {
   return {
     seed, time: 0, score: 0,
     scoreBy: { time: 0, kills: 0, rocks: 0, krail: 0, capitals: 0, events: 0, overcharge: 0 },
@@ -84,7 +90,7 @@ export function newRun(seed: number, modifiers: string[] = []): RunStats {
     killsByKind: {}, elites: 0, rocks: 0, krail: 0, dropped: 0, krailEarned: 0, krailSpent: 0, refit: 0, overcharges: 0, grazes: 0, bestChain: 0,
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
     platesLost: 0, platesGained: 0, platesMended: 0, shieldsAbsorbed: 0, waves: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
-    timeline: [], build: {}, identity: '', modifiers, cause: '',
+    timeline: [], build: {}, identity: '', survival, loot: { rock: NO_LOOT(), wreck: NO_LOOT() }, cause: '',
     mode: 'arcade', escaped: false, cyrite: 0, cyriteLeft: 0, ore: 0, oreSold: 0, parts: 0, cut: 0, fractured: 0, cutTime: 0, docked: 0,
     cards: [], jobsDone: 0, ports: [],
   };
