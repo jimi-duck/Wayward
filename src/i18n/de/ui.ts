@@ -340,7 +340,7 @@ export const UI: Record<string, string> = {
   'Pick one': 'Wähl eins',
   'Three refits for your ship': 'Drei Umbauten für dein Schiff',
   'Story mode: plan your own build': 'Story-Modus: plan dein eigenes Schiff',
-  'Story mode opens the whole build': 'Der Story-Modus öffnet den ganzen Bau',
+  'Story: full refit control': 'Story: volle Kontrolle beim Umbau',
   'Suggested': 'Vorschläge',
   'Want to plan your own build? Pick a part of the ship on the left.': 'Lieber selbst planen? Wähl links einen Teil des Schiffs.',
   'limit': 'Grenze',

@@ -1515,7 +1515,10 @@ html:not(.breakout) .pause-card #brief { display: none; }
   .pc-text { font-size: 12.5px; }
   .pick-more { display: none; }
   /* the ship needs the room: the cards shrink to a glyph, a name and the price */
-  #bay.picks .pc-fig, #bay.picks .pc-tab, #bay.picks .pc-rec, #bay.picks .bay-tab-h, #bay.picks .bi-pips, #bay.picks .pc-stamp, #bay.picks .pc-new { display: none; }
+  #bay.picks .pc-rec, #bay.picks .bay-tab-h, #bay.picks .bi-pips, #bay.picks .pc-stamp, #bay.picks .pc-new { display: none; }
+  #bay.picks .pc-fig { min-height: 0; }
+  #bay.picks .pc-fig.dl { padding: 3px 8px; }
+  #bay.picks .pc-fig .dl-v { font-size: 14px; }
   /* the Arcade has nothing in its tabs to show on a phone: the ship gets the row */
   #bay.arcade .bay-tabs { display: none; }
   #bay.picks .pick-card { padding: 8px 10px; gap: 4px; }
@@ -1646,7 +1649,21 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pick-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-content: center; height: 100%; }
 .pick-card { --c: var(--cy); position: relative; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 9px; padding: 16px; border: 1px solid var(--line); background: rgba(11, 16, 17, .88); cursor: pointer; }
 .pick-card.ready { border-color: var(--cy-dim); }
-.pick-card.sel { border-color: var(--hud); box-shadow: inset 0 3px 0 var(--hud), 0 0 18px var(--hud-ghost); }
+.pick-card { transition: border-color .15s, background .15s, opacity .15s; }
+.pick-card.sel { border-color: var(--hud); background: linear-gradient(180deg, var(--hud-ghost), rgba(11, 16, 17, .92) 70%); box-shadow: inset 0 3px 0 var(--hud), 0 0 18px var(--hud-ghost); }
+/* the Arcade's choice: the chosen card is lit, the other two step back; a notch marks the one you are making */
+#bay.arcade .pick-card:not(.sel) { opacity: .8; border-color: var(--line); }
+#bay.arcade .pick-card:not(.sel):hover { opacity: 1; }
+.pick-card.sel::after { content: ""; position: absolute; top: 0; right: 0; width: 18px; height: 18px; background: var(--hud); clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.pick-card.sel .pc-name { color: var(--hud-hi); }
+.pick-card.sel .pc-oct { --c: var(--hud); }
+#bay.arcade .pick-card:not(.sel) .pc-go:not(:disabled) { background: none; border-color: var(--line-2, var(--line)); color: var(--ink-2); }
+/* the price gates when the bay opens, it is not the choice: the Arcade's header drops the Krail figure */
+#bay.arcade .bay-krail { display: none; }
+#bay.arcade .bay-tab.locked { cursor: default; opacity: .55; }
+.bay-link-pick { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; overflow: visible; }
+.bay-link-pick path { fill: none; stroke: var(--hud-hi); stroke-width: 1.5; stroke-dasharray: 4 4; filter: drop-shadow(0 0 2px rgba(5, 8, 12, .9)); }
+.bay-link-pick circle { fill: var(--hud); }
 .pick-card.short { --c: rgba(76, 194, 203, .5); }
 .pc-top { display: flex; align-items: center; gap: 9px; }
 .pc-oct { --c2: var(--c); display: grid; place-items: center; width: 40px; height: 40px; color: var(--c); border: 1px solid var(--c);
