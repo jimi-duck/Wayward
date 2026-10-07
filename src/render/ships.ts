@@ -4,8 +4,8 @@ import {
   type Object3D, type Texture,
 } from 'three';
 import { clamp, lerp } from '../core/math';
-import type { ShipState } from '../sim/ship';
-import { ROLL_TIME } from '../sim/tuning';
+import { breakEase, type ShipState } from '../sim/ship';
+import { BREAK_TIME, ROLL_TIME } from '../sim/tuning';
 import type { V3 } from './kit';
 import { glowTexture } from './textures';
 import { buildWayward, MODEL_SCALE, type BuiltHull, type Nozzle } from './wayward';
@@ -394,10 +394,17 @@ export class ShipView {
       const t = clamp(s.rollT / ROLL_TIME, 0, 1);
       roll = s.rollDir * Math.PI * 2 * (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
     }
-    this.pitchG.rotation.z = this.pitch;
+    // the break is a loop: the nose comes up and over the top while the heading swings round
+    let loop = 0, lift = 0;
+    if (s.breakT >= 0 && !reduceMotion) {
+      const u = clamp(s.breakT / BREAK_TIME, 0, 1);
+      loop = Math.PI * 2 * breakEase(u);
+      lift = Math.sin(Math.PI * u) * 0.9;
+    }
+    this.pitchG.rotation.z = this.pitch + loop;
     this.rollG.rotation.x = this.bank + roll;
     // a slow heave, so a ship at rest still reads as afloat
-    this.pitchG.position.y = Math.sin(this.time * 1.3) * 0.03;
+    this.pitchG.position.y = Math.sin(this.time * 1.3) * 0.03 + lift;
 
     const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05, hot = this.status.overload ? 1.6 : 1;
     this.discMat.color.copy(this.bell).multiplyScalar((0.3 + 0.35 * h) * hot);

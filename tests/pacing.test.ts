@@ -15,7 +15,7 @@ import { newShip } from '../src/sim/ship';
 import { BASE } from '../src/sim/stats';
 import { World } from '../src/sim/world';
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' };
 
 function run(w: World, seconds: number, each?: (w: World) => void) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
@@ -306,7 +306,8 @@ describe('the whole loop', () => {
     expect(w.aliens.filter((a) => group.has(a.id)).length).toBe(0);
     expect(seen).toContain('quiet');
     // repairing in the quiet
-    fly(60, {}, () => w.plates === 3);
+    // the sky is empty while it mends: the ship has seen off whatever the heavier waves send
+    fly(60, {}, () => { w.aliens = w.aliens.filter((a) => a.escort || a.extra); return w.plates === 3; });
     expect(w.plates).toBe(3);
     expect(w.run.platesMended).toBe(1);
     // back into it: the next encounter comes

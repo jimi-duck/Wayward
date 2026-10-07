@@ -10,6 +10,7 @@ import { CameraRig } from './camera';
 import { Environment } from './environment';
 import { Effects, type RGB } from './fx';
 import { HazardView } from './hazards';
+import { SpaceView } from './space';
 import { krailRGB, PickupView } from './pickups';
 import { Post } from './post';
 import type { QualityTier } from './quality';
@@ -60,6 +61,8 @@ export class Sector {
   private readonly pickups: PickupView;
   private readonly arsenal: ArsenalView;
   private readonly hazards: HazardView;
+  private readonly space: SpaceView;
+  private readonly mood = { fog: 0, dim: 0, tint: [0, 0, 0] as [number, number, number] };
   private readonly breakout: BreakoutView;
   private post: Post | null = null;
   private readonly lerped = newShip();
@@ -87,6 +90,7 @@ export class Sector {
     this.arsenal = new ArsenalView(this.scene);
     this.hazards = new HazardView(this.scene, glow, wreck);
     this.breakout = new BreakoutView(this.scene, glow);
+    this.space = new SpaceView(this.scene, glow);
     this.scene.add(this.ship.root);
   }
 
@@ -158,6 +162,10 @@ export class Sector {
           this.fx.flash(e.x, 0.15, e.z, 1.6, OURS, 0.08);
           this.rig.kick(0.05);
           break;
+        case 'break':
+          this.fx.ring(e.x, 0.2, e.z, 5, OURS, 0.4);
+          this.rig.shake(0.18);
+          break;
         case 'torpedo':
           this.fx.flash(e.x, 0.15, e.z, 3, FIRE, 0.16);
           this.fx.light(e.x, 0.3, e.z, [1, 0.5, 0.3], 60, 0.2);
@@ -173,6 +181,13 @@ export class Sector {
         case 'bulwarkHit':
           this.fx.flash(e.x, e.y, e.z, 1.3, HOT, 0.08);
           this.fx.burst(e.x, e.y, e.z, 7, DUST, 6, 0.22, 0.35);
+          break;
+        case 'bulwarkBroken':
+          this.fx.explode(e.x, -0.2, e.z, e.r * 0.5, LAVA, 'rock');
+          this.fx.flash(e.x, 0, e.z, e.r * 0.9, HOT, 0.2);
+          this.fx.burst(e.x, 0.3, e.z, 40, FIRE, 14, 0.5, 1);
+          this.rig.shake(0.6);
+          hold = Math.max(hold, 0.08);
           break;
         case 'rockDestroyed': {
           const big = [1, 0.62, 0.38][e.size]!;
@@ -425,7 +440,12 @@ export class Sector {
     const storm = e && !e.done && e.id === 'ion_storm';
     if (storm && dt > 0 && Math.random() < dt * 0.7) this.flash = Math.max(this.flash, 0.4 + Math.random() * 0.4);
     this.flash = Math.max(0, this.flash - dt * 5);
-    this.env.weather(this.nebula, this.reduceMotion ? 0 : this.flash);
+    // the place the ship is in: its murk and its light ease in over a couple of seconds
+    const there = world.space ? world.space.sample(world.ship.x, world.ship.z) : null, m = this.mood, k = Math.min(1, dt * 1.2);
+    m.fog += ((there?.fog ?? 0) - m.fog) * k; m.dim += ((there?.dim ?? 0) - m.dim) * k;
+    for (let i = 0; i < 3; i++) m.tint[i] = m.tint[i]! + ((there?.tint[i] ?? 0) - m.tint[i]!) * k;
+    this.space.update(world.space, this.rig.target.x, this.rig.target.z, dt, this.reduceMotion);
+    this.env.weather(this.nebula, this.reduceMotion ? 0 : this.flash, m);
 
     if (!this.post?.render(dt)) this.renderer.render(this.scene, this.rig.camera);
   }

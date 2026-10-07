@@ -250,6 +250,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Self-repair (arcade) | `SELF_REPAIR` in `sim/repair.ts`; `repair*` in `Stats` | `stepMend` from `World.tick`, the hull row and mode card in `ui/hud.ts` |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
 | Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
+| Story communications: weights, pacing, calls, radio | `DESK` in `sim/desk.ts`, `CHATTER` in `content/chatter.ts`, `tier` on a card | `Desk`, `weightOf`, `World.stepComms` / `openCall`, `ui/radio.ts`; see [COMMS.md](COMMS.md) |
 | The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `meta/save.ts`, `ui/chart.ts` |
 | Score and the record | `sim/run.ts`, `sim/tuning.ts` | `World.addScore`, `World.finish` |
 | Between runs | `content/unlocks.ts` | `meta/profile.ts` (localStorage), `ui/panels.ts` |
@@ -571,6 +572,14 @@ together they are worse (a weaver with two raptors). **Elites** are
 familiar hulls with a modifier: armoured, swift, volatile, gunner, cloaked,
 regenerative, web-spinner.
 
+**Bulwarks** (`sim/field.ts`, numbers in `sim/tuning.ts`) are the field's
+big rocks. They stop fire from both sides, hurt to fly into and give heavy
+hulls cover, but guns, blasts and plasma now wear them down: 100 hit
+points at the smallest and 170 at the largest, the weight of 25 to 42 large
+rocks. A broken one bursts into debris (one or two large rock, four or five
+medium, five to seven small) and scores 400, and a new bulwark drifts in
+from the fog 25 seconds after.
+
 **The director** (`sim/director.ts`) is the one place difficulty is
 decided, as smooth functions of run time. The opening is a slow burn: the
 field starts at half its old density with slower rock (and five bulwarks,
@@ -718,7 +727,8 @@ that the systems read; nothing else asks which mode it is. To rebalance a
 mode, change its row. A multiplier of 1 changes nothing and draws no random
 numbers, so Prospector's Story plays exactly as it did before modes. Its
 Arcade sky is set above 1 (about double the hulls and toughness, 1.4 times
-the fire, twice the elites) to answer the 30-Krail bay; see the calibration
+the fire, twice the elites, and a quarter off the Arcade's Krail income, which
+the Story never reads) to answer the 30-Krail bay; see the calibration
 in BALANCE-SURVIVAL.md.
 
 - **Drifter.** Calmer skies (fewer hulls, fewer elites, longer gaps between

@@ -20,6 +20,7 @@ import { ChartPanel } from './ui/chart';
 import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
+import { Radio } from './ui/radio';
 import { PadNav } from './ui/dom';
 import { cardView, CommsPanel, hailView } from './ui/comms';
 import { StartOptions, SummaryPanel } from './ui/panels';
@@ -57,7 +58,7 @@ function boot(): void {
 
   // The pilot's record between runs: bests, unlocks, the survival mode chosen for the next run.
   const profile = loadProfile();
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: profile.mode });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: profile.mode, space: params.has('space') });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);
@@ -105,6 +106,7 @@ function boot(): void {
   // panels answer it. The comms panel draws both a Breakout card and the
   // arcade's capital-ship hail.
   const comms = new CommsPanel();
+  const radio = new Radio((id) => radioAnswer(id), () => radioBlocked());
   /** The card the comms panel is showing, so a slowed card that timed out can be taken down. */
   let shown: object | null = null;
   const summary = new SummaryPanel();
@@ -115,6 +117,13 @@ function boot(): void {
   const padNav = new PadNav();
   let reported = false;
   const panelOpen = () => bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
+  const radioBlocked = () => !started || loop.paused || panelOpen();
+  const radioAnswer = (id: string) => {
+    const before = world.carry();
+    if (!world.answer(id)) return;
+    if (journey && world.mode === 'breakout' && journey.status === 'sortie') { bankAnswer(journey, before, world.carry()); saveJourney(journey); }
+  };
 
   // ── the journey ────────────────────────────────────────────────────────
   // The Breakout mode is a journey: system after system, with the chart
@@ -481,6 +490,8 @@ function boot(): void {
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
       feel.events(events);
+      radio.events(events);
+      radio.sync(world.call, world.callUntil - world.runTime);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.frame(world, alpha, dt, frameDt);
       hud.update(world, sector, frameDt);

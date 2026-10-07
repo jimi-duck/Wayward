@@ -16,7 +16,7 @@ import { World } from '../src/sim/world';
 import { migrate } from '../src/meta/save';
 import { VERSION } from '../src/sim/journey';
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 /** A sortie result as the world would hand it back: jumped (or wrecked) after `time` seconds, with the journey's carry changed by `c`. */
@@ -424,19 +424,23 @@ describe('a sortie in the world', () => {
 
   it('puts a toll on an open lane instead of the blockade', () => {
     let tolls = 0;
-    for (let seed = 1; seed < 12; seed++) {
+    for (let seed = 1; seed < 60; seed++) {
       const j = pastBreakout(seed);
       plot(j, options(j)[0]!.to.id);
       // an open lane: the Net may already hold the first system at its pace
       delete j.chart.net[j.at];
-      const w = sortie(j);
+      j.carry.hush = 600;
+      const w = new World(seed, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+      w.cardNext = Infinity; w.portCalled = true; w.bk!.nextPursuit = Infinity;
       const b = w.bk!;
       w.ship.x = b.lane.x + 300; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0;
       run(w, 0.2);
       expect(b.blockade).not.toBe('checkpoint');
       if (w.phase === 'comms') { expect(w.comms!.def.trigger).toBe('toll'); tolls++; }
     }
+    // a toll is a roll, not every jump's
     expect(tolls).toBeGreaterThan(0);
+    expect(tolls).toBeLessThan(40);
   });
 
   it('keeps Cerro’s story in Cerro, and plays a card that comes once only once a journey', () => {

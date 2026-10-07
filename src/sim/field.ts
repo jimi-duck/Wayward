@@ -1,7 +1,7 @@
 import type { Pressure } from './director';
 import { newId } from './ids';
 import type { Rng } from './rng';
-import { BULWARK_COUNT, BULWARK_R, FIELD_BAND, FIELD_TARGET, ROCK_HP, ROCK_R } from './tuning';
+import { BULWARK_COUNT, BULWARK_DEBRIS, BULWARK_HP, BULWARK_R, BULWARK_RESTOCK, FIELD_BAND, FIELD_TARGET, ROCK_HP, ROCK_R } from './tuning';
 
 // ── the field ─────────────────────────────────────────────────────────────
 // Rock is the game's ground truth: the thing you thread, the thing you break,
@@ -77,9 +77,10 @@ export interface Rock {
 }
 
 /**
- * A massive asteroid: nothing breaks it. It stops fire from both sides, it
- * hurts to fly into, and the heavier enemy hulls use it as cover. Bulwarks
- * drift slowly and tumble slower still; rock that drifts into one glances off.
+ * A massive asteroid. It stops fire from both sides, it hurts to fly into,
+ * and the heavier enemy hulls use it as cover. It takes a great deal of fire
+ * to break, and then it bursts into debris. Bulwarks drift slowly and tumble
+ * slower still; rock that drifts into one glances off.
  */
 export interface Bulwark {
   id: number;
@@ -94,6 +95,8 @@ export interface Bulwark {
   az: number;
   spin: number;
   age: number;
+  hp: number;
+  maxHp: number;
 }
 
 export const ROCK_VARIANTS = 4;
@@ -113,6 +116,10 @@ export class Field {
   richBoost = 0;
   /** Extra field density, as a multiplier (events). */
   density = 1;
+  /** The place's multiplier on rock (sim/space.ts), 1 in open space. */
+  zone = 1;
+  /** Seconds until a new bulwark drifts in, counted down while one is missing (0 when none is owed). */
+  private restockT = 0;
 
   constructor(private readonly rng: Rng) {}
 
@@ -166,6 +173,28 @@ export class Field {
         rock.vx * 0.6 + px * kick, rock.vz * 0.6 + pz * kick, into, hpScale);
       child.age = 10;
       out.push(child);
+    }
+    return out;
+  }
+
+  /** Take a bulwark out and scatter its debris in a ring: large, medium and small rock, more of it the bigger it was. */
+  shatter(b: Bulwark, hpScale = 1): Rock[] {
+    const i = this.bulwarks.indexOf(b);
+    if (i >= 0) this.bulwarks.splice(i, 1);
+    this.restockT = this.restockT > 0 ? this.restockT : BULWARK_RESTOCK;
+    const f = (b.r - BULWARK_R[0]) / (BULWARK_R[1] - BULWARK_R[0]);
+    const out: Rock[] = [];
+    const a = this.rng.range(0, Math.PI * 2);
+    for (let size = 0 as RockSize; size <= 2; size++) {
+      const n = Math.round(BULWARK_DEBRIS.min[size]! + (BULWARK_DEBRIS.max[size]! - BULWARK_DEBRIS.min[size]!) * f);
+      for (let k = 0; k < n; k++) {
+        // large rock near the heart, small rock thrown wide
+        const pa = a + this.rng.range(0, Math.PI * 2), ring = b.r * (0.2 + 0.35 * (size === 0 ? 0 : size)) + this.rng.range(0, 1.5);
+        const px = Math.cos(pa), pz = Math.sin(pa), kick = this.rng.range(2.5, 6) + size * 1.5;
+        const rock = this.spawn(size, b.x + px * ring, b.z + pz * ring, b.vx * 0.6 + px * kick, b.vz * 0.6 + pz * kick, 'basalt', hpScale);
+        rock.age = 10;
+        out.push(rock);
+      }
     }
     return out;
   }
@@ -231,7 +260,9 @@ export class Field {
     const b: Bulwark = {
       id: newId(), x, z, vx: Math.cos(a) * sp, vz: Math.sin(a) * sp, r,
       variant: this.rng.int(BULWARK_VARIANTS), ax: ax / n, ay: ay / n, az: az / n, spin: this.rng.range(-0.08, 0.08), age: 0,
+      hp: 0, maxHp: 0,
     };
+    b.hp = b.maxHp = Math.round(BULWARK_HP[0] + (BULWARK_HP[1] - BULWARK_HP[0]) * (r - BULWARK_R[0]) / (BULWARK_R[1] - BULWARK_R[0]));
     const ok = Math.hypot(x - cx, z - cz) > clear + r && this.bulwarks.every((o) => Math.hypot(o.x - x, o.z - z) > o.r + r + 14);
     if (ok) this.bulwarks.push(b);
     return b;
@@ -269,8 +300,18 @@ export class Field {
         if (vn < 0) { r.vx -= 1.6 * vn * nx; r.vz -= 1.6 * vn * nz; }
       }
     }
+    // A new bulwark drifts in out in the fog once the last one's debris has had its time.
+    if (this.restockT > 0 && (this.restockT -= dt) <= 0) {
+      for (let tries = 0; tries < 12 && this.bulwarks.length < BULWARK_COUNT; tries++) {
+        const a = this.rng.range(0, Math.PI * 2), d = this.rng.range(95, 115);
+        const n = this.bulwarks.length;
+        this.addBulwark(cx + Math.cos(a) * d, cz + Math.sin(a) * d, 60, cx, cz);
+        if (this.bulwarks.length > n) break;
+      }
+      this.restockT = this.bulwarks.length < BULWARK_COUNT ? BULWARK_RESTOCK : 0;
+    }
     // Top up out in the fog, never in front of the player.
-    if (this.weight() < p.fieldTarget * this.density) this.topUp(cx, cz, p);
+    if (this.weight() < p.fieldTarget * this.density * this.zone) this.topUp(cx, cz, p);
   }
 
   find(id: number | null): Rock | undefined {

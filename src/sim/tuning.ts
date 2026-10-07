@@ -44,6 +44,17 @@ export const ROLL_IFRAMES = 0.35;
 /** Sideways kick as a fraction of the hull's top speed. */
 export const ROLL_KICK = 0.5;
 
+// ── the break ─────────────────────────────────────────────────────────────
+// Break and reverse: a half-second loop over the top that swings the nose 180 degrees
+// while the ship keeps most of its speed, so it slides on away backwards with
+// the guns facing the chaser. Helm and throttle are locked until it ends and
+// there is no invulnerability: it is a committed turn, not a dodge.
+export const BREAK_TIME = 0.5;
+/** Seconds from the start of one break to the next. */
+export const BREAK_COOLDOWN = 2.2;
+/** Share of the speed still carried at the end of a break. */
+export const BREAK_KEEP = 0.62;
+
 // ── the ship ──────────────────────────────────────────────────────────────
 /** Collision radius: the original's 9px. */
 export const SHIP_R = 9 * PX;
@@ -109,10 +120,20 @@ export const FIELD_TARGET = 34;
 export const FIELD_BAND = 240;
 
 // ── bulwarks ──────────────────────────────────────────────────────────────
-// Massive asteroids that nothing breaks. They stop fire from both sides,
-// they hurt to fly into, and the heavier enemy hulls hide behind them.
+// Massive asteroids. They stop fire from both sides, they hurt to fly into,
+// and the heavier enemy hulls hide behind them. They can be broken, but it
+// takes a long time on guns: the smallest holds as much as 25 large rocks.
+// A broken one bursts into a ring of debris, and the sky grows a new one
+// out in the fog a while after.
 export const BULWARK_COUNT = 5;
 export const BULWARK_R = [7, 12] as const;
+/** Hit points at the smallest and the largest radius. */
+export const BULWARK_HP = [100, 170] as const;
+/** Debris at the smallest and the largest radius: large, medium and small rock. */
+export const BULWARK_DEBRIS = { min: [1, 4, 5], max: [2, 5, 7] } as const;
+export const BULWARK_POINTS = 400;
+/** Seconds after one breaks before a new one drifts in. */
+export const BULWARK_RESTOCK = 25;
 
 // ── the run ───────────────────────────────────────────────────────────────
 /** Seconds the wreck drifts before the run report. */

@@ -42,6 +42,8 @@ export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' |
 export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
 /** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, with Calloway, as her offer (from her file), or as a story beat (sim/story.ts). */
 export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer' | 'story';
+/** How much a transmission weighs (sim/desk.ts): what it may interrupt, and how it is shown. */
+export type Weight = 'major' | 'important' | 'routine' | 'ambient';
 /** Where the ship is: open space, the port's approach, the lane mouth. */
 export type Place = 'open' | 'port' | 'lane';
 
@@ -262,6 +264,8 @@ export interface CardDef {
   boost?: { if: Cond; mult: number };
   /** Can come again in a later system (otherwise once a journey). */
   repeat?: boolean;
+  /** Its weight, when the default for its kind (see `weightOf`) is not right. */
+  tier?: Weight;
   /** Who is on the channel, for the read (no ships: a voice on the radio). */
   ships?: Array<{ variant: string; n: number }>;
   cargo?: string;
@@ -316,6 +320,8 @@ export interface Read {
 /** A card on the table. */
 export interface Open {
   def: CardDef;
+  /** Its weight: a major card stops the world, the rest ride along as a call. */
+  tier: Weight;
   truth: string | null;
   read: Read;
   /** The call, as spoken. */
@@ -581,7 +587,7 @@ export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
   const read: Read = { them: theirStrength(def), you: yourStrength(x.levels, x.plates), ships: shipsWords(def), cargo: def.cargo ?? 'Unknown', intent, sure, shown };
   const { text, more } = cardParts(def, x, fee);
   return {
-    def, truth, fee, brought: [], read,
+    def, tier: weightOf(def), truth, fee, brought: [], read,
     text, more,
     choices: def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, def, x, fee, read)),
     slow: def.slow ? def.slow.timeout : 0,
@@ -603,6 +609,22 @@ export function resolve(o: Open, id: string, x: Ctx, rng: Rng): { choice: Choice
   else if (c.odds) won = rng.next() < oddsFor(c.odds, x);
   const outcome = won || !c.lose ? c.win : c.lose;
   return { choice: c, won: won || !c.lose, cost: costOf(c.cost, x, o.fee), outcome };
+}
+
+/**
+ * How much a card weighs. Anything a story, Calloway, a captain, a blockade or
+ * a shakedown brings, and anything with more than three answers, is a major
+ * event: the full panel, the world waits. Warnings, pleas, distress calls and
+ * follow-ups are important; trades, jobs and rumours are routine. Both of
+ * those ride along as a small call while the ship keeps flying. A row can say
+ * otherwise with `tier`.
+ */
+export function weightOf(def: CardDef): Weight {
+  if (def.tier) return def.tier;
+  if (def.slow || def.face || ['story', 'offer', 'hunt', 'lane', 'toll'].includes(def.trigger ?? '')) return 'major';
+  if (['checkpoint', 'shakedown', 'captain', 'offer'].includes(def.kind) || def.choices.length > 3) return 'major';
+  if (def.trigger === 'follow' || ['warning', 'plea', 'distress'].includes(def.kind)) return 'important';
+  return 'routine';
 }
 
 /** The next chance card: one the run has not seen, whose condition holds, by weight. */

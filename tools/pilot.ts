@@ -110,7 +110,7 @@ export interface PilotResult {
  * answers the same way gets.
  */
 export function pickAnswer(w: World, policy: Policy): string {
-  const o = w.comms!;
+  const o = (w.comms ?? w.call)!;
   for (const tone of PREFER[policy]) {
     const c = o.choices.find((ch) => ch.ok && ch.tone === tone && (tone !== 'bluff' || ch.odds === null || ch.odds >= 0.4));
     if (c) return c.id;
@@ -118,7 +118,7 @@ export function pickAnswer(w: World, policy: Policy): string {
   return o.choices.find((ch) => ch.ok)!.id;
 }
 
-const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' });
+const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
 
 export function stratName(s: Strategy): string {
   return s.kind === 'random' ? 'random' : `${s.branch}${s.second ? `+${s.second}` : ''}`;
@@ -524,8 +524,8 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     if (w.phase === 'bay') { shop(w, strategy, rngPick, o.modules); continue; }
     if (w.phase === 'play' && w.bk && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
-    if (w.phase === 'comms') {
-      const before = { krail: w.cyrite, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: w.comms!.def.id };
+    if (w.phase === 'comms' || (w.phase === 'play' && w.call)) {
+      const before = { krail: w.cyrite, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: (w.comms ?? w.call)!.def.id };
       w.answer(o.answer?.(w) ?? pickAnswer(w, o.policy ?? 'bluff'));
       const last = w.run.cards[w.run.cards.length - 1]!;
       answers.push({

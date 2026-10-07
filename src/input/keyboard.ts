@@ -18,6 +18,8 @@ const PRESSES: Record<string, Press> = {
   KeyF: 'torpedo',
   KeyK: 'torpedo',
   KeyE: 'overcharge',
+  ArrowDown: 'brk',
+  KeyS: 'brk',
   ShiftLeft: 'roll',
   ShiftRight: 'roll',
   ...Object.fromEntries(PAUSE_KEYS.map((k) => [k, 'pause' as const])),

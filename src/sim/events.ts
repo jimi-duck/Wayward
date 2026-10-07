@@ -13,6 +13,7 @@ export type GameEvent =
   | { type: 'rockHit'; x: number; y: number; z: number; id: number }
   | { type: 'rockDestroyed'; x: number; z: number; size: number; points: number; kind: string }
   | { type: 'bulwarkHit'; x: number; y: number; z: number }
+  | { type: 'bulwarkBroken'; x: number; z: number; r: number; points: number }
   | { type: 'blast'; x: number; y: number; z: number; radius: number; kind: BlastKind }
   | { type: 'shipHit'; x: number; z: number; plates: number; source: string }
   | { type: 'shieldHit'; x: number; z: number; left: number; source: string }
@@ -39,6 +40,7 @@ export type GameEvent =
   | { type: 'fitted'; id: string }
   | { type: 'salvage'; faction: string; tech: boolean }
   | { type: 'cloak'; x: number; z: number }
+  | { type: 'break'; x: number; z: number }
   | { type: 'bossWarn'; name: string; faction: string; hails: boolean }
   | { type: 'hail'; name: string; faction: string }
   | { type: 'bossEvaded'; name: string; faction: string }
@@ -76,7 +78,12 @@ export type GameEvent =
   | { type: 'spool' }
   | { type: 'needCyrite'; have: number; need: number }
   | { type: 'jumped'; x: number; z: number }
-  | { type: 'comms'; id: string; kind: string; from: string; title: string; slow: boolean }
+  | { type: 'comms'; id: string; tier: 'major'; kind: string; from: string; title: string; slow: boolean }
+  /** A lighter card, as a call that rides along; and its channel closing (lapsed: nobody answered). */
+  | { type: 'call'; id: string; tier: 'important' | 'routine'; kind: string; from: string; title: string; seconds: number }
+  | { type: 'callEnd'; id: string; lapsed: boolean }
+  /** A line on the radio: no answer asked. */
+  | { type: 'ping'; id: string; from: string; caller: string; text: string; moment: string; system: string }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
   | { type: 'jobDone'; id: string; text: string }
   | { type: 'jobShort'; id: string; text: string };

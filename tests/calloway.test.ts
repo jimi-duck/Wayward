@@ -16,7 +16,7 @@ import { newRun } from '../src/sim/run';
 import { World } from '../src/sim/world';
 import { migrate } from '../src/meta/save';
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) { w.ship.invuln = 1; w.step(STEP, input()); } };
 
 function result(j: Journey, o: Partial<SortieResult> = {}, cards: SortieResult['run']['cards'] = []): SortieResult {
@@ -189,7 +189,8 @@ describe('Calloway makes offers', () => {
     w.field.rocks = [];
     run(w, OFFER_AT - 1);
     expect(w.phase).not.toBe('comms');
-    run(w, 2);
+    // the desk waits for a clear sky: nothing hostile about
+    for (let i = 0; i < 400 && w.phase !== 'comms'; i++) { w.aliens = []; run(w, 0.1); }
     expect(w.comms?.def.id).toBe('offer_home');
   });
 });
