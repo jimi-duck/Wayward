@@ -29,7 +29,7 @@ import {
   spawnAlien, stepBeam, stepWebs, type Alien, type Arena, type EliteId, type Faction, type Shot, type Web,
 } from './enemies';
 import type { BlastKind, GameEvent, PowerKind } from './events';
-import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Rock } from './field';
+import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type Rock } from './field';
 import { Ids, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
@@ -38,7 +38,7 @@ import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
   BREACH_GRACE, CHAIN_WINDOW, DYING, GRAZE, OC_GAIN, OC_MAX, OVERCHARGE_POINTS, PX, RARE_FIRST, REPAIR_CHANCE,
-  REPAIR_CHANCE_ELITE, REPAIR_GAP, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
+  REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import type { Prices } from '../content/systems';
 import { ARCADE_PRICE } from '../content/web';
@@ -1501,6 +1501,10 @@ export class World implements EncounterHost {
         const dps = burnAt(sys, r.x, r.z, r.r);
         if (dps > 0) this.damageRock(r, dps * this.dmgMult * dt, 'plasma', r.x, 0, r.z, true);
       }
+      for (const w of [...this.field.bulwarks]) {
+        const dps = burnAt(sys, w.x, w.z, w.r * 0.9);
+        if (dps > 0) this.damageBulwark(w, dps * this.dmgMult * dt, w.x, 0, w.z, true);
+      }
       const b = this.command.targetable();
       if (b && !b.arriving && Math.abs(b.y) < 4) {
         const dps = burnAt(sys, b.x, b.z, b.r * 0.85);
@@ -1764,6 +1768,7 @@ export class World implements EncounterHost {
     const b = this.command.targetable();
     if (b && !b.arriving && Math.hypot(b.x - s.x, b.z - s.z) < R + b.r) { hits++; this.hurtBoss(dmg * 0.6, 'overcharge', b.x, b.y, b.z); }
     for (const r of [...this.field.rocks]) if (Math.hypot(r.x - s.x, r.z - s.z) < R + r.r) this.damageRock(r, dmg, 'overcharge', r.x, 0, r.z);
+    for (const w of [...this.field.bulwarks]) if (Math.hypot(w.x - s.x, w.z - s.z) < R + w.r * 0.9) this.damageBulwark(w, dmg, s.x + (w.x - s.x) * 0.5, 0, s.z + (w.z - s.z) * 0.5, true);
     this.shots = this.shots.filter((sh) => Math.hypot(sh.x - s.x, sh.z - s.z) > R * 1.4);
     this.webs = this.webs.filter((w) => Math.hypot(w.x - s.x, w.z - s.z) > R);
     this.overload = st.ocOverload;
@@ -1825,7 +1830,8 @@ export class World implements EncounterHost {
         land(r.id);
         this.damageRock(r, b.dmg, 'laser', b.x, b.y, b.z);
       }
-      if (!spent && inBulwark(b.x, b.y, b.z, 0.2)) { spent = true; this.events.push({ type: 'bulwarkHit', x: b.x, y: b.y, z: b.z }); }
+      const wall = spent ? undefined : inBulwark(b.x, b.y, b.z, 0.2);
+      if (wall) { spent = true; this.damageBulwark(wall, b.dmg, b.x, b.y, b.z); }
       if (spent) this.bolts.splice(i, 1);
     }
 
@@ -2135,6 +2141,22 @@ export class World implements EncounterHost {
     return false;
   }
 
+  /** A bulwark takes fire: it stops the shot and, a great deal of fire later, bursts into debris. */
+  private damageBulwark(b: Bulwark, amount: number, x: number, y: number, z: number, quiet = false): void {
+    if (!this.field.bulwarks.includes(b)) return;
+    const bucket = Math.ceil(b.hp / (b.maxHp / 12));
+    b.hp -= amount;
+    if (!quiet || Math.ceil(b.hp / (b.maxHp / 12)) < bucket) this.events.push({ type: 'bulwarkHit', x, y, z });
+    if (b.hp > 0) return;
+    if (this.chain > 0) this.chainT = CHAIN_WINDOW;
+    const points = Math.round(BULWARK_POINTS * chainMult(this.chain));
+    this.addScore(points, 'rocks');
+    this.kills++;
+    this.run.rocks++;
+    this.field.shatter(b, pressure(this.clock, this.mods).rockHp);
+    this.events.push({ type: 'bulwarkBroken', x: b.x, z: b.z, r: b.r, points });
+  }
+
   private destroyRock(r: Rock, src: Weapon): void {
     if (!this.field.rocks.includes(r)) return;
     const K = ROCK_KINDS[r.kind];
@@ -2166,6 +2188,7 @@ export class World implements EncounterHost {
     this.events.push({ type: 'blast', x, y, z, radius, kind });
     const inside = (ox: number, oy: number, oz: number, r: number) => (ox - x) ** 2 + (oy - y) ** 2 + (oz - z) ** 2 < (radius + r) ** 2;
     for (const r of [...this.field.rocks]) if (inside(r.x, 0, r.z, r.r)) this.damageRock(r, dmg, src, r.x, 0, r.z);
+    for (const b of [...this.field.bulwarks]) if (inside(b.x, 0, b.z, b.r * 0.9)) this.damageBulwark(b, dmg, x, y, z, true);
     const snare = (src === 'torpedo' || src === 'mine') ? this.stats.snare : 0;
     for (const al of [...this.aliens]) {
       if (!inside(al.x, al.y, al.z, al.r)) continue;

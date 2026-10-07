@@ -77,7 +77,7 @@ function cueFor(e: GameEvent): string | undefined {
   switch (e.type) {
     case 'bolt': return 'bolt';
     case 'rockHit': case 'alienHit': case 'bulwarkHit': case 'bossHit': return 'hitRock';
-    case 'rockDestroyed': case 'rockCut': return 'breakRock';
+    case 'rockDestroyed': case 'bulwarkBroken': case 'rockCut': return 'breakRock';
     case 'alienDestroyed': case 'bossDestroyed': return 'breakShip';
     case 'blast': case 'overcharge': return 'blast';
     case 'shipHit': return 'hull';

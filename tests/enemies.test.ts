@@ -22,7 +22,7 @@ function immortal(seed = 3): World {
 }
 /** A still bulwark, for cover and blocking tests. */
 function bulwark(x: number, z: number, r = 9): Bulwark {
-  return { id: 999, x, z, vx: 0, vz: 0, r, variant: 0, ax: 0, ay: 1, az: 0, spin: 0, age: 10 };
+  return { id: 999, x, z, vx: 0, vz: 0, r, variant: 0, ax: 0, ay: 1, az: 0, spin: 0, age: 10, hp: 100, maxHp: 100 };
 }
 /** Run until a capital ship is on station. */
 function onStation(w: World) {

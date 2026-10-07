@@ -109,10 +109,20 @@ export const FIELD_TARGET = 34;
 export const FIELD_BAND = 240;
 
 // ── bulwarks ──────────────────────────────────────────────────────────────
-// Massive asteroids that nothing breaks. They stop fire from both sides,
-// they hurt to fly into, and the heavier enemy hulls hide behind them.
+// Massive asteroids. They stop fire from both sides, they hurt to fly into,
+// and the heavier enemy hulls hide behind them. They can be broken, but it
+// takes a long time on guns: the smallest holds as much as 25 large rocks.
+// A broken one bursts into a ring of debris, and the sky grows a new one
+// out in the fog a while after.
 export const BULWARK_COUNT = 5;
 export const BULWARK_R = [7, 12] as const;
+/** Hit points at the smallest and the largest radius. */
+export const BULWARK_HP = [100, 170] as const;
+/** Debris at the smallest and the largest radius: large, medium and small rock. */
+export const BULWARK_DEBRIS = { min: [1, 4, 5], max: [2, 5, 7] } as const;
+export const BULWARK_POINTS = 400;
+/** Seconds after one breaks before a new one drifts in. */
+export const BULWARK_RESTOCK = 25;
 
 // ── the run ───────────────────────────────────────────────────────────────
 /** Seconds the wreck drifts before the run report. */
