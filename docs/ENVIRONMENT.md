@@ -119,7 +119,7 @@ nothing to the ship at all.
 | **Passage** | V · | 6–14° | uncommon | none; it is sky | cannot be reached | a mile of lit windows crossing the far dark |
 | **Carrier** | M N S | 2–4° | rare | none; a bearing on the scope | cannot be reached until followed | a pulse on the nav strip toward a feature |
 
-Each row has an audio hum and grit in the data (`voice`). Audio is stage 5;
+Each row has an audio hum and grit in the data (`voice`). Audio is stage 6;
 the idea is one low bed per feature, blended by how far in the ship is, so
 the player learns "that tone is a static field" without a word.
 
@@ -316,8 +316,10 @@ Small PRs off `main`, one stage at a time, each shippable.
    heart, drops a blast (1.2 s of warning, every 2.2 s) on whatever sits in
    it. Both are the existing strikes, so they draw and hurt like the storm
    event's; neither touches Yellow or Red alert, because weather is not a
-   hunter. Still to do: per-feature audio, transitions, the ship lit by the
-   place it is in.
+   hunter. Each feature's `voice` is now a bed: `Feel.bed` fades in a low hum and a band of
+   grit with how deep in the place the ship is, never louder than a hum under
+   the cues, and silent outside a feature or when paused. Still to do:
+   transitions, the ship lit by the place it is in.
 
 Real-device checks (frame rate, glow, how it reads on a phone) are the
 owner's, as ever.

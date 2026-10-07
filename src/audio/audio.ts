@@ -109,6 +109,7 @@ export class Feel {
   private master: GainNode | null = null;
   private noise: AudioBuffer | null = null;
   private last = new Map<string, number>();
+  private hum: { osc: OscillatorNode; og: GainNode; ng: GainNode } | null = null;
 
   constructor() {
     // browsers only allow sound after a gesture
@@ -158,6 +159,36 @@ export class Feel {
       const id = cueFor(e);
       if (id) this.play(id);
     }
+  }
+
+  /**
+   * The bed of the place the ship is in (content/features.ts `voice`): a low hum and a band of grit,
+   * faded in with how deep in it the ship is. Silent outside a feature, when paused, and with sound
+   * off. Never louder than a hum under the cues.
+   */
+  bed(voice: { hum: number; grit: number } | null, level: number): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.master || !this.prefs.sound || ctx.state !== 'running') return;
+    if (!this.hum) {
+      const osc = ctx.createOscillator(), og = ctx.createGain(), ng = ctx.createGain(), lp = ctx.createBiquadFilter();
+      osc.type = 'triangle'; osc.frequency.value = 50; og.gain.value = 0;
+      lp.type = 'lowpass'; lp.frequency.value = 900; ng.gain.value = 0;
+      osc.connect(og).connect(this.master);
+      if (!this.noise) {
+        this.noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+        const data = this.noise.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = this.noise; src.loop = true;
+      src.connect(lp).connect(ng).connect(this.master);
+      osc.start(); src.start();
+      this.hum = { osc, og, ng };
+    }
+    const h = this.hum, t = ctx.currentTime, k = Math.max(0, Math.min(1, level));
+    if (voice) h.osc.frequency.setTargetAtTime(voice.hum, t, 0.8);
+    h.og.gain.setTargetAtTime(voice ? 0.04 * k : 0, t, 0.8);
+    h.ng.gain.setTargetAtTime(voice ? 0.035 * voice.grit * k : 0, t, 0.8);
   }
 
   /** The win beat: a short rising figure. */
