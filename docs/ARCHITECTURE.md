@@ -17,7 +17,7 @@ balanced with a scripted pilot and the reasoning lives in the code comments and
 
 | Area | Choice | Why |
 |---|---|---|
-| Flight model | Flat play plane for the ship, full 3D for everything else | Keeps all the original tuning; touch stays one thumb. The ship banks and pitches visually; a barrel roll is a dodge. Since the gritty pass, enemies and fire use altitude, and the gunnery computer and torpedoes reach them there. |
+| Flight model | Flat play plane for the ship, full 3D for everything else | Keeps all the original tuning; touch stays one thumb. The ship banks and pitches visually; a barrel roll is a dodge, and the break and reverse (DOWN; a downward flick of a second finger on touch) is a committed 180° flip that keeps most of the speed. Since the gritty pass, enemies and fire use altitude, and the gunnery computer and torpedoes reach them there. |
 | Rendering | Three.js, plain TypeScript | Light, mature, best custom-shader ecosystem; WebGL2 runs on every current phone. |
 | Build | Vite + TypeScript | Fast reloads; `npm run dev:phone` serves to a phone on the same Wi-Fi. |
 | Collision | Custom: spatial hash; sphere, ray and segment tests | The original is circles, rays and segments on a plane, with hand-tuned arcade handling. A rigid-body engine would add WASM weight and fight that tuning. |
@@ -249,7 +249,7 @@ Coming in later milestones: `audio/`, three sectors and a win state.
   throttle, pulling back coasts. The right half is the trigger: Torpedo and
   Core are hit-tested with slack round them, and any other touch there holds
   the lasers, so a thumb that misses a button still fires. A second finger
-  on the left is a barrel roll. The layer does all the hit-testing; a
+  on the left is a barrel roll (a tap) or the break and reverse (a downward flick). The layer does all the hit-testing; a
   `touchend` with no fingers left releases everything, whatever pointer
   events a system gesture swallowed. Controls appear on first touch, so a
   touchscreen laptop gets them only once it is used that way.

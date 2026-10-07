@@ -68,6 +68,7 @@ const CUES: Record<string, Cue> = {
   fit: { tones: [{ f: 70, to: 45, d: 0.2, v: 0.3, type: 'triangle' }], noise: { d: 0.05, v: 0.1, lo: 300, hi: 1500 }, gap: 0.15 },
   horn: { tones: [{ f: 82, d: 0.9, v: 0.2, type: 'sawtooth' }, { f: 123, d: 0.9, v: 0.1, type: 'sawtooth' }], gap: 2 },
   hail: { tones: [{ f: 660, d: 0.12, v: 0.09, type: 'sine' }, { f: 495, d: 0.2, v: 0.09, type: 'sine', at: 0.16 }], gap: 1 },
+  break: { tones: [{ f: 300, to: 90, d: 0.45, v: 0.14, type: 'sawtooth' }], noise: { d: 0.45, v: 0.14, lo: 400, hi: 3000 }, gap: 0.5, buzz: [25, 20, 25] },
   jump: { tones: [{ f: 60, to: 600, d: 0.7, v: 0.2, type: 'sawtooth' }], noise: { d: 0.7, v: 0.12, lo: 200, hi: 4000 }, gap: 1 },
   win: { tones: [{ f: 440, d: 0.3, v: 0.12, type: 'triangle' }, { f: 554, d: 0.3, v: 0.12, type: 'triangle', at: 0.15 }, { f: 659, d: 0.6, v: 0.14, type: 'triangle', at: 0.3 }], gap: 1 },
 };
@@ -89,6 +90,7 @@ function cueFor(e: GameEvent): string | undefined {
     case 'bossArrive': case 'bossWarn': return 'horn';
     case 'hail': case 'comms': return 'hail';
     case 'jumped': return 'jump';
+    case 'break': return 'break';
     default: return undefined;
   }
 }

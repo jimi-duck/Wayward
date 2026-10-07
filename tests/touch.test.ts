@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { driveStick, STICK_DEAD } from '../src/input/touch';
+import { driveStick, FLICK, flickedDown, STICK_DEAD } from '../src/input/touch';
 
 describe('the touch stick', () => {
   it('does nothing inside the dead zone', () => {
@@ -39,5 +39,14 @@ describe('the touch stick', () => {
       expect(d.thrust).toBeGreaterThanOrEqual(0);
       expect(d.thrust).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe('the second finger', () => {
+  it('breaks on a clear downward flick, not on a tap or a sideways drag', () => {
+    expect(flickedDown(2, FLICK + 4)).toBe(true);
+    expect(flickedDown(0, 8)).toBe(false);
+    expect(flickedDown(60, FLICK + 4)).toBe(false);
+    expect(flickedDown(0, -60)).toBe(false);
   });
 });

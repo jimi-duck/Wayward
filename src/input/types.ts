@@ -6,7 +6,7 @@ export type Device = 'keyboard' | 'touch' | 'gamepad';
  * step. Pause is not: it is answered at once by the app, because a paused
  * loop never runs a step that could read it.
  */
-export type Press = 'roll' | 'torpedo' | 'overcharge' | 'pause' | 'bay';
+export type Press = 'roll' | 'brk' | 'torpedo' | 'overcharge' | 'pause' | 'bay';
 
 /**
  * An analogue stick, in screen space: angle 0 points right and PI/2 points
@@ -34,6 +34,8 @@ export interface InputFrame {
   /** Torpedo pressed since the last step (button 2). */
   torpedo: boolean;
   roll: boolean;
+  /** Break and reverse pressed since the last step. */
+  brk: boolean;
   overcharge: boolean;
   device: Device;
 }

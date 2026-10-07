@@ -29,7 +29,7 @@ Object.assign(globalThis, {
 });
 beforeEach(() => mem.clear());
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, overcharge: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' };
 const priv = (w: World) => w as unknown as {
   nextEvent: number; encounter: unknown; killAlien(a: unknown, s: string): void; cutClean(r: unknown): void; destroyRock(r: unknown, s: string): void; richShare: number;
 };

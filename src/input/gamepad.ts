@@ -11,7 +11,9 @@ const LT = 6;
 const RT = 7;
 const BACK = 8;
 const START = 9;
+const L3 = 10;
 const DPAD_UP = 12;
+const DPAD_DOWN = 13;
 const DPAD_LEFT = 14;
 const DPAD_RIGHT = 15;
 
@@ -20,6 +22,8 @@ const PRESSES: Array<[number, Press]> = [
   [Y, 'overcharge'],
   [B, 'roll'],
   [RB, 'roll'],
+  [L3, 'brk'],
+  [DPAD_DOWN, 'brk'],
   [START, 'pause'],
   [BACK, 'bay'],
 ];

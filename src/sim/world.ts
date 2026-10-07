@@ -85,7 +85,7 @@ export interface WorldOptions {
   carry?: Carry | null;
 }
 
-const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, rollDir: 0, fire: false, torpedo: false, cut: false };
+const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false, cut: false };
 const BOSS_PLATES = 1;
 
 /** The ship's alert (World.alert): clear, yellow (observed) or red (targeted). */
@@ -188,6 +188,7 @@ export class World implements EncounterHost {
   private timeScore = 0;
   private nextSample = 0;
   private wasRolling = false;
+  private wasBreaking = false;
   readonly events: GameEvent[] = [];
 
   // the Breakout: the course and the pursuit (null in the arcade), the tank, the hold, the cutter
@@ -489,6 +490,9 @@ export class World implements EncounterHost {
     if (rolling && !this.wasRolling && st.rollBurst) plasmaRing(this.sys, s, st);
     if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
     this.wasRolling = rolling;
+    const breaking = s.breakT >= 0;
+    if (breaking && !this.wasBreaking) this.events.push({ type: 'break', x: s.x, z: s.z });
+    this.wasBreaking = breaking;
     this.tick(dt);
 
     // our weapons and systems

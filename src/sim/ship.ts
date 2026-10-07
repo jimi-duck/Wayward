@@ -1,7 +1,7 @@
 import type { Hull } from '../content/hulls';
 import type { FlightControls } from './controls';
 import {
-  COAST_DRAG, GRIP_CARVE, HELM_EASE, HZ, PX, ROLL_COOLDOWN, ROLL_IFRAMES, ROLL_KICK, ROLL_TIME, ROT_SPEED, THRUST,
+  BREAK_COOLDOWN, BREAK_KEEP, BREAK_TIME, COAST_DRAG, GRIP_CARVE, HELM_EASE, HZ, PX, ROLL_COOLDOWN, ROLL_IFRAMES, ROLL_KICK, ROLL_TIME, ROT_SPEED, THRUST,
 } from './tuning';
 
 // ── the flight model ──────────────────────────────────────────────────────
@@ -34,6 +34,12 @@ export interface ShipState {
   rollDir: 1 | -1;
   /** Seconds until another roll is allowed. */
   rollCooldown: number;
+  /** Seconds into a break and reverse, or -1 when not breaking. */
+  breakT: number;
+  /** Direction of the current or last break: 1 right, -1 left. */
+  breakDir: 1 | -1;
+  /** Seconds until another break is allowed. */
+  breakCooldown: number;
   /** Seconds of invulnerability left. */
   invuln: number;
 }
@@ -41,7 +47,7 @@ export interface ShipState {
 export function newShip(): ShipState {
   return {
     x: 0, z: 0, vx: 0, vz: 0, heading: Math.PI / 2, helm: 0, thrust: 0, yawRate: 0,
-    rollT: -1, rollDir: 1, rollCooldown: 0, invuln: 0,
+    rollT: -1, rollDir: 1, rollCooldown: 0, breakT: -1, breakDir: 1, breakCooldown: 0, invuln: 0,
   };
 }
 
@@ -86,8 +92,35 @@ export function drifting(s: ShipState, hull: Hull): boolean {
   return !!hull.drift && s.thrust === 0 && Math.hypot(s.vx, s.vz) > topSpeed(hull) * 0.3;
 }
 
-export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number): void {
+/** How far through the flip a break is, 0 to 1, at fraction t of its time: slow in, fast through the middle, slow out. */
+export function breakEase(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+}
+
+export function stepShip(s: ShipState, input: FlightControls, hull: Hull, dt: number): void {
   const before = s.heading;
+  // Break and reverse: the flip locks the helm and the throttle, and the
+  // ship bleeds some speed as it comes round. Lasers stay live.
+  if (s.breakCooldown > 0) s.breakCooldown = Math.max(0, s.breakCooldown - dt);
+  if (input.brk && s.breakCooldown === 0 && s.breakT < 0 && s.rollT < 0) {
+    s.breakDir = input.rollDir === 0 ? (s.breakDir === 1 ? -1 : 1) : input.rollDir;
+    s.breakT = 0;
+    s.breakCooldown = BREAK_COOLDOWN;
+    s.helm = 0;
+  }
+  const breaking = s.breakT >= 0;
+  const c = breaking ? { ...input, turn: 0, thrust: 0, roll: false } : input;
+  if (breaking) {
+    const was = breakEase(s.breakT / BREAK_TIME);
+    s.breakT += dt;
+    // turning right lowers the heading
+    s.heading -= s.breakDir * Math.PI * (breakEase(s.breakT / BREAK_TIME) - was);
+    if (s.breakT >= BREAK_TIME) s.breakT = -1;
+    const k = Math.pow(BREAK_KEEP, dt / BREAK_TIME);
+    s.vx *= k;
+    s.vz *= k;
+  }
   const drift = !!hull.drift && c.thrust === 0 && Math.hypot(s.vx, s.vz) > topSpeed(hull) * 0.3;
   const turnRate = turnPerStep(hull) * (drift ? DRIFT_TURN : 1);
 
@@ -107,7 +140,7 @@ export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number
 
   // The barrel roll: a sideways kick at the start, then the hull's own drag.
   if (s.rollCooldown > 0) s.rollCooldown = Math.max(0, s.rollCooldown - dt);
-  if (c.roll && s.rollCooldown === 0) {
+  if (c.roll && s.rollCooldown === 0 && !breaking) {
     s.rollDir = c.rollDir === 0 ? (s.rollDir === 1 ? -1 : 1) : c.rollDir;
     s.rollT = 0;
     s.rollCooldown = hull.rollCooldown ?? ROLL_COOLDOWN;
@@ -122,7 +155,8 @@ export function stepShip(s: ShipState, c: FlightControls, hull: Hull, dt: number
   }
   if (s.invuln > 0) s.invuln = Math.max(0, s.invuln - dt);
 
-  const drag = drift ? Math.max(hull.drag, DRIFT_DRAG) : c.thrust === 0 ? Math.max(hull.drag, COAST_DRAG) : hull.drag;
+  // a break carries its speed through the flip, like a drift
+  const drag = drift || breaking ? Math.max(hull.drag, DRIFT_DRAG) : c.thrust === 0 ? Math.max(hull.drag, COAST_DRAG) : hull.drag;
   s.vx *= drag;
   s.vz *= drag;
   s.x += s.vx * dt;
