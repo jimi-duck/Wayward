@@ -206,27 +206,31 @@
           <svg class="mark" viewBox="0 0 40 34" aria-hidden="true"><path d="M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z"/></svg>
           <span class="lk-t"><b class="lk-w">Wayward</b><span class="lk-d"><span>Obedience-class ore hauler</span><b class="lk-id">OB-7731-A</b></span></span>
         </div>
-        <!-- a journey in progress: one tap carries on, whichever mode is picked below -->
-        <button type="button" id="cont" class="cont" hidden><span class="ct-k">Continue journey</span><span class="ct-s" id="cont-s"></span><span class="ct-r" id="cont-r"></span></button>
-        <div class="modes" role="radiogroup" aria-label="Game mode">
-          <button type="button" role="radio" id="mode-arcade" class="mode" aria-checked="true"><b class="mo-t">Arcade</b><span class="mo-s">Freefly • Score • Explore</span></button>
-          <button type="button" role="radio" id="mode-story" class="mode" aria-checked="false"><b class="mo-t">Story mode</b><span class="mo-s">Survive • Trade • Extract • Return</span></button>
-        </div>
-        <div class="launch-row"><button type="button" id="launch">Start arcade</button></div>
-        <!-- the survival mode: how the whole game plays, picked before a run (content/survival.ts) -->
-        <div class="diff surv">
-          <span class="diff-k">Survival mode</span>
-          <div id="mods" class="mods" role="radiogroup" aria-label="Survival mode"></div>
-          <b class="sv-t" id="sv-t"></b>
-          <span class="diff-s" id="diff-s"></span>
-          <div class="sv-scale" id="sv-scale"></div>
-          <span class="diff-s sv-keep" id="sv-keep" hidden></span>
-        </div>
-        <p class="resume-s" id="resume-s" hidden></p>
+        <!-- a journey in progress: a small card, the way back in whichever mode is picked below -->
+        <button type="button" id="cont" class="cont" hidden><span class="ct-t"><span class="ct-k">Continue journey</span><span class="ct-s" id="cont-s"></span></span><span class="ct-go">Continue</span></button>
         <!-- the chapter just begun, in three chips (sim/chapters.ts), and a way back to its gate -->
         <div class="recap" id="recap" hidden></div>
         <button type="button" id="chapter" class="ghost" hidden>Start this chapter again</button>
-        <button type="button" id="fresh" class="ghost" hidden>New journey</button>
+        <!-- the one path: the mode, the difficulty and what it means, then Start -->
+        <div class="pick">
+          <span class="pk-k">Game mode</span>
+          <div class="modes" role="radiogroup" aria-label="Game mode">
+            <button type="button" role="radio" id="mode-arcade" class="mode" aria-checked="true"><b class="mo-t">Arcade</b><span class="mo-s">Freefly • Score • Explore</span></button>
+            <button type="button" role="radio" id="mode-story" class="mode" aria-checked="false"><b class="mo-t">Story</b><span class="mo-s">Survive • Trade • Extract • Return</span></button>
+          </div>
+        </div>
+        <!-- the survival mode, shown as a difficulty: how the whole game plays (content/survival.ts) -->
+        <div class="pick surv">
+          <span class="pk-k">Difficulty</span>
+          <div id="mods" class="difs" role="radiogroup" aria-label="Difficulty"></div>
+          <div class="sv-pre">
+            <b class="sv-t" id="sv-t"></b>
+            <span class="diff-s" id="diff-s"></span>
+            <div class="sv-scale" id="sv-scale"></div>
+          </div>
+          <span class="diff-s sv-keep" id="sv-keep" hidden></span>
+        </div>
+        <button type="button" id="launch"><span class="la-t" id="launch-t">Start game</span><span class="la-s" id="launch-s"></span></button>
         <!-- a save the game could not read: say so, and offer the safety copy if there is one -->
         <p class="resume-s warn" id="save-problem" hidden>Your saved journey could not be read.</p>
         <button type="button" id="restore" class="ghost" hidden>Restore last save</button>
