@@ -5,9 +5,9 @@ worth flying through: what is out there, how it behaves, how the two modes
 share it, and the order it gets built in. The data is in
 `src/content/features.ts`, the system in `src/sim/space.ts`.
 
-Status: stages 1 to 4 done (the library, the system, how the first
-features look, and what they do to the ship; all behind `?space` until the
-balance pass). See [Stages](#stages).
+Status: stages 1 to 5 done (the library, the system, how the features
+look, what they do to the ship, and Story's sites; all behind `?space` until
+the balance pass). See [Stages](#stages).
 
 ## What the game does today
 
@@ -285,8 +285,20 @@ Small PRs off `main`, one stage at a time, each shippable.
    pays more. Still not applied: `conceal` (hulls losing you), `shield`, and
    the storm's lightning and the well's crushing core, which want the
    telegraph and alert work in stage 6.
-5. **Story.** Chart systems carry a site; places map to features; the four
-   named places; comms tags through the central manager; palettes by region.
+5. **Story** (done, behind `?space`). `sim/sites.ts` lays a sortie's space
+   by hand (`compose: false`): one calm backdrop for its region (the Reach
+   open dark or veil, the Marches veil or hush, the Hollows hush or open; a
+   quiet system always open dark) and, where the system has a place, the
+   feature that looks like it: ion storm to storm, nebula to shroud,
+   gravity well to well, derelict to graveyard, convoy to passage. A call
+   for help is a ship, so it gets none. The site sits a third of the way to
+   the lane mouth and well to one side, so flying into it is a choice. About
+   one system in three that fits a region has one of the four named places
+   (the same system always gets the same answer). Inside a named place the
+   HUD shows its name as a teal line and the run's flags get `site:<id>`;
+   the Story comms thread's manager can key a call off that flag. The
+   environment fires no transmissions of its own. The old timed events still
+   play on top, unchanged. Story needs `?space`, like Arcade.
 6. **Pace and polish.** Rarity and rhythm from pilot reports, per-feature
    audio, transitions, the ship lit by the place it is in.
 

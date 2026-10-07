@@ -4,6 +4,8 @@ import { STEP } from '../src/core/loop';
 import { REGIONS } from '../src/content/regions';
 import { reports, REPORT_TEXT, Space, weightAt, type Pose } from '../src/sim/space';
 import { World } from '../src/sim/world';
+import { HOME, type SortieDef } from '../src/sim/breakout';
+import { siteFor } from '../src/sim/sites';
 
 const PURPOSES: Purpose[] = ['visual', 'exploration', 'resource', 'tactical', 'hazard', 'mystery', 'navigation', 'story', 'neutral'];
 
@@ -282,5 +284,67 @@ describe('in the world', () => {
     space.place('well', 300, 0, { r: 500 });
     fly(w, 3);
     expect(w.ship.vx).toBeGreaterThan(5);
+  });
+});
+
+describe('Story sites', () => {
+  const def = (system: string, plays: 'ion_storm' | 'nebula' | 'anomaly' | 'derelict' | 'distress', region = 0): SortieDef => ({
+    ...HOME, system, region, name: 'Test', kind: 'transit', home: false,
+    place: { name: 'Place', text: 't', plays },
+  });
+  const story = (d: SortieDef) => new World(9, { mode: 'breakout', sortie: d, space: true });
+
+  it('lays a hand-made space, one backdrop and the place, and never composes', () => {
+    const w = story(def('s1', 'ion_storm'));
+    const sp = w.space!;
+    expect(sp.expanses.length).toBe(1);
+    expect(sp.features.some((f) => f.def === 'storm')).toBe(true);
+    const n = sp.features.length;
+    for (let i = 0; i < 600; i++) w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+    expect(sp.expanses.length).toBe(1);
+    expect(sp.features.length).toBe(n);
+  });
+
+  it('maps each event to the feature that looks like it, and none for a call for help', () => {
+    expect(siteFor(def('a', 'nebula'))?.feature).toBe('shroud');
+    expect(siteFor(def('a', 'anomaly'))?.feature).toBe('well');
+    expect(siteFor(def('a', 'derelict'))?.feature).toBe('graveyard');
+    expect(siteFor(def('a', 'distress'))).toBeNull();
+  });
+
+  it('names a place only where its region fits, and the same way every time', () => {
+    let named = 0;
+    for (let i = 0; i < 60; i++) {
+      const s = siteFor(def(`sys${i}`, 'anomaly', 0));
+      expect(s?.named).toBeUndefined(); // the Sable Well is Marches and Hollows
+      expect(siteFor(def(`sys${i}`, 'anomaly', 1))).toEqual(siteFor(def(`sys${i}`, 'anomaly', 1)));
+      if (siteFor(def(`sys${i}`, 'anomaly', 1))?.named) named++;
+    }
+    expect(named).toBeGreaterThan(5);
+    expect(named).toBeLessThan(40);
+  });
+
+  it('sets the site flag on entering a named place, and keeps the site off the lane', () => {
+    const d = [...Array(80).keys()].map((i) => def(`n${i}`, 'anomaly', 1)).find((x) => siteFor(x)?.named)!;
+    const w = story(d);
+    const f = w.space!.features.find((q) => q.named)!;
+    expect(Math.hypot(f.x - w.bk!.lane.x, f.z - w.bk!.lane.z)).toBeGreaterThan(f.r);
+    w.ship.x = f.x; w.ship.z = f.z;
+    w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, overcharge: false, device: 'keyboard' });
+    expect(w.siteHere).toBe(f.named);
+    expect(w.flags.has(`site:${f.named}`)).toBe(true);
+  });
+
+  it('keeps Story without a space unless asked', () => {
+    expect(new World(9, { mode: 'breakout', sortie: def('s1', 'ion_storm') }).space).toBeNull();
+  });
+});
+
+describe('Story sites, every system', () => {
+  it('lays something for any system id without throwing', () => {
+    for (let i = 0; i < 300; i++) {
+      const w = new World(3, { mode: 'breakout', sortie: { ...HOME, system: `x${i * 7919}`, region: i % 3, home: false, place: { name: 'P', text: 't', plays: 'derelict' } }, space: true });
+      expect(w.space!.expanses.length).toBe(1);
+    }
   });
 });

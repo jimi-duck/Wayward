@@ -32,7 +32,7 @@ export function platingTextures(): { map: Texture; bump: Texture; paint: Texture
   const make = () => {
     const c = document.createElement('canvas');
     c.width = c.height = SIZE;
-    return [c, c.getContext('2d')!] as const;
+    return [c, c.getContext('2d', { willReadFrequently: true })!] as const;
   };
   const [ca, a] = make(); // albedo
   const [cb, b] = make(); // height: mid grey is the plate surface
