@@ -8,18 +8,21 @@ import { metal } from './kit';
 // ── the systems that fire themselves ──────────────────────────────────────
 // Mines: a dark spiked shell with an amber lamp that blinks slowly while it
 // arms, steadily once armed, and fast once something sets it off. Plasma:
-// hot pink patches where the engines vented, cooling as they fade; clouds
-// from a chain reaction or a plasma warhead burn orange. The trail is laid
-// between the ship and the chase camera, so its patches lie flat on the
-// plane and fade out as they near the lens: otherwise they swell over the
-// lower screen and the bloom washes out the HUD. Arcs: jagged
+// the vent's trail is one thin, steady line strip along where the engines
+// vented, dimming as it fades and gone near the lens (soft pink patches hid
+// the ship and the HUD, and the bloom washed them out); the damage is
+// unchanged, only the drawing is. Clouds from a chain reaction or a plasma
+// warhead stay as orange patches. Arcs: jagged
 // blue-white lightning, redrawn every frame so it crawls, gone in a blink.
 
 const MAX_MINES = 40;
 const MAX_BURNS = 260;
 const MAX_ARC_SEGS = 900;
 const ARC_LIFE = 0.16;
-const TRAIL = new Color(3.2, 0.9, 1.7);
+/** Under the bloom threshold on purpose: a line, not a glow. */
+const TRAIL = new Color(1, 0.42, 0.3);
+/** Trail points further apart than this are not joined (a roll's ring, a corona). */
+const TRAIL_JOIN = 3;
 const CLOUD = new Color(3.4, 1.3, 0.3);
 const ARC = new Color(2.4, 3.2, 4.6);
 /** Plasma within NEAR of the camera is invisible, and full strength from FAR out. */
@@ -33,6 +36,9 @@ export class ArsenalView {
   private readonly lamps: InstancedMesh;
   private readonly burns: InstancedMesh;
   private readonly arcLines: LineSegments;
+  private readonly trailLines: LineSegments;
+  private readonly trailPos = new Float32Array(MAX_BURNS * 6);
+  private readonly trailCol = new Float32Array(MAX_BURNS * 6);
   private readonly arcPos = new Float32Array(MAX_ARC_SEGS * 6);
   private readonly arcs: Arc[] = [];
   private readonly m = new Matrix4();
@@ -60,6 +66,13 @@ export class ArsenalView {
     this.arcLines = new LineSegments(g, new LineBasicMaterial({ color: ARC, transparent: true, blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
     this.arcLines.frustumCulled = false;
     scene.add(this.arcLines);
+    const t = new BufferGeometry();
+    t.setAttribute('position', new BufferAttribute(this.trailPos, 3));
+    t.setAttribute('color', new BufferAttribute(this.trailCol, 3));
+    t.setDrawRange(0, 0);
+    this.trailLines = new LineSegments(t, new LineBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
+    this.trailLines.frustumCulled = false;
+    scene.add(this.trailLines);
   }
 
   /** An arc event: pairs of points (x, y, z, x, y, z, ...). */
@@ -91,20 +104,38 @@ export class ArsenalView {
     if (this.lamps.instanceColor) this.lamps.instanceColor.needsUpdate = true;
 
     // plasma and clouds
-    let b = 0;
+    let b = 0, t = 0, px = 0, pz = 0, pf = 0, linked = false;
     for (const br of sys.burns) {
-      if (b >= MAX_BURNS) break;
       const f = Math.max(0, br.life / br.max);
-      const r = br.r * (br.trail ? 0.55 + 0.45 * f : 0.7 + 0.3 * Math.sin(this.time * 9 + b));
       const near = smoothstep(BURN_NEAR, BURN_FAR, Math.hypot(br.x - eye.x, br.z - eye.z));
-      this.m.compose(this.p.set(br.x, br.trail ? 0.05 : 0.2, br.z), this.q.identity(), this.s.set(r * 1.3, 1, r * 1.3));
+      if (br.trail) {
+        // one strip: each point joins the last when they are close, else a short tick
+        if (t < MAX_BURNS) {
+          const join = linked && Math.hypot(br.x - px, br.z - pz) < TRAIL_JOIN;
+          const x0 = join ? px : br.x - 0.25, z0 = join ? pz : br.z;
+          const k0 = (join ? pf : f * near) * 0.5, k1 = f * near * 0.5;
+          this.trailPos.set([x0, 0.08, z0, br.x + (join ? 0 : 0.25), 0.08, br.z], t * 6);
+          this.c.copy(TRAIL);
+          this.trailCol.set([this.c.r * k0, this.c.g * k0, this.c.b * k0, this.c.r * k1, this.c.g * k1, this.c.b * k1], t * 6);
+          t++;
+        }
+        px = br.x; pz = br.z; pf = f * near; linked = true;
+        continue;
+      }
+      if (b >= MAX_BURNS) continue;
+      const r = br.r * (0.7 + 0.3 * Math.sin(this.time * 9 + b));
+      this.m.compose(this.p.set(br.x, 0.2, br.z), this.q.identity(), this.s.set(r * 1.3, 1, r * 1.3));
       this.burns.setMatrixAt(b, this.m);
-      this.burns.setColorAt(b, this.c.copy(br.trail ? TRAIL : CLOUD).multiplyScalar((0.15 + 0.5 * f) * near));
+      this.burns.setColorAt(b, this.c.copy(CLOUD).multiplyScalar((0.15 + 0.5 * f) * near));
       b++;
     }
     this.burns.count = b;
     this.burns.instanceMatrix.needsUpdate = true;
     if (this.burns.instanceColor) this.burns.instanceColor.needsUpdate = true;
+    const tg = this.trailLines.geometry;
+    tg.setDrawRange(0, t * 2);
+    (tg.attributes.position as BufferAttribute).needsUpdate = true;
+    (tg.attributes.color as BufferAttribute).needsUpdate = true;
 
     // arcs: each pair redrawn as a jagged line, crawling
     let seg = 0;
