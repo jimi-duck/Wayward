@@ -1,7 +1,7 @@
 import { LOG, STAMP } from '../content/papers';
 import { UPGRADE } from '../content/upgrades';
 import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
-import { blockOf, budgets, cost, fee, maxLevel, nodeName, nodeText, quickPicks, type Block } from '../sim/bay';
+import { blockOf, budgets, cost, fee, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
 import type { Advice } from '../sim/advice';
 import { upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
@@ -33,6 +33,8 @@ import { num, t } from '../i18n';
 // suggestion, Esc or B launches. A pad: bumpers, stick, A, B. Touch: tap.
 
 type View = 'picks' | Tab;
+/** What the Arcade's three cards are called: a gun, a defence, a part of the ship. */
+const ROLE_NAME: Record<PickRole, string> = { weapons: 'Weapons', defence: 'Defence', ship: 'Ship' };
 
 const TAB_ICON: Record<View, string> = {
   picks: 'i-event', hull: 'i-hull', weapons: 'i-laser', ordnance: 'i-torp', engines: 'i-engine', defence: 'i-shield', utility: 'i-rock', signals: 'i-signal', reactor: 'i-core', synergies: 'i-link',
@@ -538,7 +540,7 @@ export class BayPanel {
       go.addEventListener('click', (e) => { e.stopPropagation(); this.pick = i; this.install(n.id); });
       card.addEventListener('click', () => { this.pick = i; this.render(); });
       card.append(
-        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(TABS[n.tab].name)), ...this.stamp(n.id, 'pc-stamp'), h('kbd', 'only-desktop', String(i + 1))),
+        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(isArcade(w) ? ROLE_NAME[roleOf(n.id)] : TABS[n.tab].name)), ...this.stamp(n.id, 'pc-stamp'), h('kbd', 'only-desktop', String(i + 1))),
         h('span', 'pc-name', nameOf(n.id)),
         ...(why1 ? [h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why1.text, why1.vars)}`))] : []),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
