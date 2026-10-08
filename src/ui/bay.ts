@@ -41,7 +41,7 @@ const TAB_ICON: Record<View, string> = {
 };
 
 /**
- * The ship in the bay is the painted Wayward of the title art (src/assets/wayward-menu-background.jpg,
+ * The ship in the bay is the painted Wayward of the title art (src/assets/wayward-menu-background.webp,
  * 1735 × 906): her middle and size in the picture, so the bay can fit her to the room it has,
  * and where each part of the ship is on her, for the rings. Signals is the mast, Defence the turrets.
  */

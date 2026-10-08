@@ -57,3 +57,16 @@ bulwark holds the plain-mesh rock program.
 **Trade-off.** The same compile work now happens behind the title, so a very
 fast tap on Start can still wait for the end of it. Real-device check: the first
 two seconds after Start on a phone.
+
+## Pass 2: what the title downloads
+
+**Cause.** The title art (262 KB JPEG) was found only after the stylesheet had
+been read, so it queued behind it, and the two main faces likewise.
+
+**Change.** Both screens' art is WebP at quality 84 (PSNR about 39 dB against
+the JPEG, no visible difference): 262 to 190 KB and 329 to 205 KB. The page
+preloads the title art and the two faces the title uses.
+
+**After (software browser, same machine).** The title art finishes at 61 ms
+(was 307 ms), and the page downloads 1.84 MB on first load (was 1.90 MB, with
+the menu art still to come in the bay: 124 KB lighter).
