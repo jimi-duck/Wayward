@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, BoxGeometry, BufferAttribute, Color, Group, IcosahedronGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial,
+  AdditiveBlending, NormalBlending, BoxGeometry, BufferAttribute, Color, Group, IcosahedronGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial,
   SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, Vector3, type BufferGeometry, type Material, type Scene, type Texture,
 } from 'three';
 import { FEATURES, type FeatureDef } from '../content/features';
@@ -26,7 +26,7 @@ import { cloudTexture } from './textures';
 // away again after, so a feature costs nothing until it is near. Nothing
 // else in the scene changes.
 
-const MAX_SPRITES = 140;
+const MAX_SPRITES = 220;
 
 interface Piece {
   s: Sprite;
@@ -160,12 +160,12 @@ export class SpaceView {
     const tint = new Color(def.look.tint[0], def.look.tint[1], def.look.tint[2]);
     const root = new Group();
     const pieces: Piece[] = [];
-    const add = (map: Texture, colour: Color, scaleX: number, scaleY: number, x: number, y: number, z: number, a: number, rot = 0) => {
+    const add = (map: Texture, colour: Color, scaleX: number, scaleY: number, x: number, y: number, z: number, a: number, rot = 0, dark = false) => {
       if (this.sprites >= MAX_SPRITES) return;
-      const s = new Sprite(new SpriteMaterial({ map, color: colour, blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0, rotation: rot, toneMapped: false }));
+      const s = new Sprite(new SpriteMaterial({ map, color: colour, blending: dark ? NormalBlending : AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0, rotation: rot, toneMapped: false }));
       s.scale.set(scaleX, scaleY, 1);
       s.frustumCulled = false;
-      s.renderOrder = -1;
+      s.renderOrder = dark ? -2 : -1;
       root.add(s);
       this.sprites++;
       pieces.push({ s, x, y, z, a, ph: r() * Math.PI * 2, w: 0.5 + r() });
@@ -173,22 +173,34 @@ export class SpaceView {
     switch (def.look.shape) {
       case 'cloud': case 'haze': {
         // a bank: blobs of dust at different heights, lit warmer toward the middle
-        const n = def.look.shape === 'cloud' ? 7 : 5;
+        const n = def.look.shape === 'cloud' ? 8 : 5, murk = def.id === 'shroud' ? 0.85 : def.id === 'storm' ? 0.6 : 0.4;
+        // the body of the cloud: dark, dense dust that eats the stars behind it, in layers of different height
         for (let i = 0; i < n; i++) {
-          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.62;
-          const c = tint.clone().multiplyScalar(2.6 + r() * 1.2);
-          add(cloudTexture(), c, f.r * (0.8 + r() * 0.7), f.r * (0.5 + r() * 0.35), Math.cos(a) * k, 8 + r() * 40, Math.sin(a) * k, 0.5 + r() * 0.3, r() * Math.PI * 2);
+          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.6;
+          add(cloudTexture(), tint.clone().multiplyScalar(0.07), f.r * (0.7 + r() * 0.6), f.r * (0.4 + r() * 0.3), Math.cos(a) * k, 2 + r() * 12, Math.sin(a) * k, murk * (0.5 + r() * 0.4), r() * Math.PI * 2, true);
+        }
+        // lit from within and from the side: warm cores toward the middle, thin bright edges high up, each blob its own tilt
+        for (let i = 0; i < n; i++) {
+          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.62, core = 1 - k / (f.r * 0.62);
+          const c = tint.clone().multiplyScalar(2.2 + r() * 1.0 + core * 1.6);
+          add(cloudTexture(), c, f.r * (0.55 + r() * 0.5), f.r * (0.3 + r() * 0.25), Math.cos(a) * k, 14 + r() * 40, Math.sin(a) * k, 0.38 + r() * 0.25, r() * Math.PI * 2);
+        }
+        // a few small bright knots: the grain that shows scale and gives the light somewhere to live
+        for (let i = 0; i < 4; i++) {
+          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.45;
+          add(this.glow, tint.clone().multiplyScalar(4 + r() * 3), f.r * 0.12, f.r * 0.12, Math.cos(a) * k, 10 + r() * 30, Math.sin(a) * k, 0.45);
+          if (def.id === 'storm') pieces[pieces.length - 1]!.b = 1.5 + r() * 3;
         }
         break;
       }
       case 'ribbon': {
         // an aurora: tall ribbons strung along a slow curve
-        const along = r() * Math.PI * 2, n = 12;
+        const along = r() * Math.PI * 2, n = 22;
         for (let i = 0; i < n; i++) {
           const u = (i / (n - 1) - 0.5) * 2, bow = (1 - u * u) * f.r * 0.25;
-          const c = tint.clone().multiplyScalar(6 + r() * 2);
+          const c = tint.clone().multiplyScalar((6 + r() * 2) * (0.6 + 0.8 * Math.abs(Math.sin(i * 1.7))));
           const x = Math.cos(along) * u * f.r + Math.cos(along + Math.PI / 2) * bow, z = Math.sin(along) * u * f.r + Math.sin(along + Math.PI / 2) * bow;
-          add(this.glow, c, f.r * 0.5, f.r * (0.8 + r() * 0.5), x, f.r * 0.4, z, 0.3 + r() * 0.14);
+          add(this.glow, c, f.r * (0.1 + r() * 0.07), f.r * (0.9 + r() * 0.9), x, f.r * (0.45 + r() * 0.2), z, 0.22 + r() * 0.16);
         }
         break;
       }
