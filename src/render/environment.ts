@@ -96,6 +96,20 @@ export class Environment {
     this.group.add(this.parallax.group);
     scene.add(this.group);
     this.setSky(skyFor(1, 0));
+    this.anchorPrograms();
+  }
+
+  /**
+   * A disposed material takes its program with it once nothing else uses it,
+   * so each new sky's planet, halo and ring would compile again, in play. A
+   * hidden planet with every extra, kept for the page's life, holds them.
+   */
+  private anchorPrograms(): void {
+    const sky = skyFor(1, 0), [colA, colB, atmo] = sky.neb;
+    sky.planet = { kind: 0, colA, colB, atmo, size: 6, az: 0, el: -10, ring: true, moon: true };
+    const proof = new FarBodies(sky, new Vector3(-40, 55, -10));
+    proof.group.visible = false;
+    this.stars.add(proof.group);
   }
 
   /** A new sky: repaint the backdrop and put up its far bodies. */

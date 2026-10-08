@@ -219,6 +219,10 @@ export class RockView {
       this.halos.push(h);
     }
     for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, 5, 9 + k * 2, 0.36));
+    // a bulwark is a plain mesh, not an instance: hidden here so the warm-up compiles its program too
+    const proxy = new Mesh(this.bulwarkGeo[0]!, this.bulwarkMat);
+    proxy.visible = false;
+    scene.add(proxy);
 
     // the backdrop: far asteroids above, below and all around
     const backMat = lavaRock(1.6, 0.8, 0.2);

@@ -104,7 +104,7 @@ function boot(review: typeof import('./review') | null): void {
   // the console's text sizes change once the web fonts arrive
   document.fonts?.ready.then(fit);
   // compile every shader behind the start card, once it has painted
-  setTimeout(() => sector.warm(), 60);
+  setTimeout(() => void sector.warm().then(() => { if (!started) sector.warmFrame(); }), 60);
 
   // ── the run's stops: the bay, comms, port, report ──────────────────────
   // The world pauses itself at each and waits (an ambush only slows it); the
@@ -514,7 +514,7 @@ function boot(review: typeof import('./review') | null): void {
         matchTier(renderer, quality.tier);
         sector.setTier(quality.tier);
         fit();
-        sector.warm();
+        void sector.warm();
       }
     },
   });
