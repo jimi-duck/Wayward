@@ -503,6 +503,7 @@ function boot(review: typeof import('./review') | null): void {
       const there = world.air.from[0];
       feel.bed(there && !loop.paused ? FEATURES[there.def].voice : null, world.air.weight);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
+      sector.covered = bay.covers;
       sector.frame(world, alpha, dt, frameDt);
       tour?.frame();
       hud.update(world, sector, frameDt);

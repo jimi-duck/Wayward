@@ -162,6 +162,12 @@ export class BayPanel {
     return !$('bay').hidden;
   }
 
+  /** Open and opaque: not fading out on a pick, so the view behind it is not seen. */
+  get covers(): boolean {
+    const bay = $('bay');
+    return !bay.hidden && !bay.classList.contains('leaving');
+  }
+
   show(world: World, onClose: () => void): void {
     this.close();
     this.world = world;

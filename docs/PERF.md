@@ -104,3 +104,19 @@ and shake. Hull kills, bulwarks, hits and capital ships are unchanged.
 **Real device:** whether mining now feels smoother, and whether the small
 breaks still have enough weight. `if (e.size === 0)` in `Sector.react` is the
 one place to put it back.
+
+## Pass 5: nothing drawn behind the refit bay
+
+**Cause.** The bay is opaque and covers the whole view, but the scene and the
+post chain (bloom, SMAA) were still drawn behind it every frame. On a phone that
+is a full GPU frame competing with the bay's own animation (the pick beat, the
+fade).
+
+**Change.** Once the bay has settled over the view, the frame is not drawn
+(`Sector.covered`; the bay says when it is opaque and not yet fading out, so the
+fade-out never shows a frozen picture). Everything else still updates, so the
+bay's lines to the ship stay right. Drawing resumes the moment the bay starts to
+leave.
+
+**After.** 0 draw calls over 60 frames with the bay open (was a full frame each).
+Real device: bay animation smoothness and battery.
