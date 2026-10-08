@@ -77,7 +77,21 @@ const PALETTES: Palette[] = [
   // arcade extras
   { neb: ['#3a2a7a', '#7a2a6a', '#ffd0f0'], band: '#504a6a', planets: [['#6a5a9a', '#d0c0e8', '#e0a8ff']], star: '#f0e8ff', stars: 1, glow: 1.1 },
   { neb: ['#1f4a6a', '#5a2a7a', '#d0e8ff'], band: '#40506a', planets: [['#c8d8e8', '#6a8aa8', '#c0e0ff']], star: '#ffffff', stars: 1.1, glow: 0.95 },
+  // the long journey's other regions (5 to 9), each a little less human
+  // the Salvage Belt: tarnished amber dust, trader lamps
+  { neb: ['#6a4a2a', '#3a2a24', '#e8c89a'], band: '#5a4a3c', planets: [['#7a5a3a', '#c8a880', '#ffd8a0']], star: '#fff2d8', stars: 0.8, glow: 1 },
+  // the Drift Deep: cold indigo, few stars, nothing near
+  { neb: ['#1a2a5a', '#2a1a4a', '#7aa0e0'], band: '#34405a', planets: [['#2a3a5a', '#7a8aa8', '#7aa0ff']], star: '#cfe0ff', stars: 0.7, glow: 0.95 },
+  // the Breaker Yards: iron, rust haze, hard light
+  { neb: ['#5a3a2a', '#2a2a3a', '#e8a888'], band: '#4a4448', planets: [['#5a4a44', '#a89a90', '#ffb090']], star: '#ffe8d8', stars: 0.75, glow: 1 },
+  // the Free Ports: warm smoke and lamplight
+  { neb: ['#6a4a1a', '#2a3a5a', '#ffd890'], band: '#5a5040', planets: [['#7a5a2a', '#d8b878', '#ffc870']], star: '#fff0d0', stars: 0.8, glow: 1.1 },
+  // the Last Lanes: near black, a thin violet, almost no stars
+  { neb: ['#2a1a4a', '#0a2a2a', '#d0b0ff'], band: '#2a2a3a', planets: [['#1a1a2a', '#5a4a7a', '#b890ff']], star: '#e8e0ff', stars: 0.4, glow: 1.15 },
 ];
+
+/** The palettes the arcade draws from at random (the original five). */
+const ARCADE = [0, 1, 2, 3, 4];
 
 function rand(seed: number) {
   let s = (Math.abs(Math.floor(seed)) % 2147483646) + 1;
@@ -91,10 +105,10 @@ export function hashSeed(key: string): number {
   return h >>> 0;
 }
 
-/** The sky for a seed: a region's palette (0 to 2), or any (null, the arcade). */
+/** The sky for a seed: a region's palette (0 to 9), or any of the arcade's (null). */
 export function skyFor(seed: number, region: number | null): Sky {
   const r = rand(seed);
-  return paint(seed, r, region === null ? PALETTES[Math.floor(r() * PALETTES.length)]! : PALETTES[Math.max(0, Math.min(2, region))]!);
+  return paint(seed, r, region === null ? PALETTES[ARCADE[Math.floor(r() * ARCADE.length)]!]! : PALETTES[Math.max(0, Math.min(PALETTES.length - 1, region))]!);
 }
 
 /** How many palettes there are: the three regions' and the arcade's extras. */

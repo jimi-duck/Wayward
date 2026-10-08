@@ -454,7 +454,7 @@ export class Sector {
     const key = breakout ? `${world.sortie.system}:${world.sortie.region ?? 0}` : world.run;
     if (key === this.skyFor) return;
     this.skyFor = key;
-    this.env.setSky(breakout ? skyFor(hashSeed(world.sortie.system), world.sortie.region ?? 0) : skyFor(Math.floor(Math.random() * 1e9), null));
+    this.env.setSky(breakout ? skyFor(hashSeed(world.sortie.system), world.sortie.sky ?? world.sortie.region ?? 0) : skyFor(Math.floor(Math.random() * 1e9), null));
   }
 
   /** Particles that come from state rather than events: exhaust, burning hulls, the anomaly's pull. */

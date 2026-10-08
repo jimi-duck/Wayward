@@ -206,7 +206,7 @@ export function sortieDef(j: Journey): SortieDef {
   // a copy: the chart's own prices are not the flags' to change
   const prices = quoted && { ...quoted, plate: Math.round(quoted.plate * echo.plates) };
   return {
-    survival: j.survival, system: s.id, region: tierOf(j.chart, regionOf(s)), name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
+    survival: j.survival, system: s.id, region: tierOf(j.chart, regionOf(s)), sky: R.sky, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
     port: prices ? { name: s.port!.name, prices } : null,
     heat: Math.max(0, Math.min(0.6, t.heat + (net ? 0.25 : 0) + echo.heat)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
     rich: quiet ? Math.max(QUIET_RICH, t.rich * (0.6 + s.cyrite * 0.8)) : t.rich * (0.6 + s.cyrite * 0.8), density: quiet ? Math.max(QUIET_DENSITY, t.density) : t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, pace: t.pace, quiet,
