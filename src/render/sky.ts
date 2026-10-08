@@ -3,6 +3,7 @@ import {
   LinearFilter, Mesh, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, RingGeometry, Scene, ShaderMaterial,
   SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer,
 } from 'three';
+import { farWorks } from './farworks';
 import { glowTexture } from './textures';
 
 // ── the sky ───────────────────────────────────────────────────────────────
@@ -474,7 +475,7 @@ export class FarBodies {
     const spike = new Sprite(new SpriteMaterial({ map: spikeTexture(), color: sky.star.clone().multiplyScalar(1.1), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true }));
     spike.scale.setScalar(D * 0.11);
     spike.position.copy(flare.position);
-    this.group.add(flare, spike);
+    this.group.add(flare, spike, farWorks(sky, D));
     this.group.traverse((o) => { o.renderOrder = -3; o.frustumCulled = false; });
   }
 
