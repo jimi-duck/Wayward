@@ -95,8 +95,8 @@ const LOOKS: Record<RockKind, RockLook> = {
   basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1, 1, 1],         zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
   iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
   rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.85, 0.8, 1.05], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
-  volatile: { id: 'volatile', glow: [4.5, 2.4, 1.1],   tint: [1.2, 0.85, 0.75], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
-  rare:     { id: 'rare',     glow: [4.2, 3.2, 1.1],   tint: [1.2, 1.1, 0.85],  zone: 0.5,  pulse: 3,   metal: 0.35, mineral: 0.8, strata: 0.7, rim: 0.4 },
+  volatile: { id: 'volatile', glow: [3.0, 1.5, 0.6],   tint: [1.2, 0.85, 0.75], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
+  rare:     { id: 'rare',     glow: [2.6, 1.9, 0.6],   tint: [1.2, 1.1, 0.85],  zone: 0.5,  pulse: 3,   metal: 0.35, mineral: 0.8, strata: 0.7, rim: 0.4 },
 };
 const KINDS = Object.keys(LOOKS) as RockKind[];
 
@@ -146,12 +146,12 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
         stone = mix(stone, vec3(0.025, 0.018, 0.015), heat * 0.75);
         // strata: beds laid down in a slanted plane, warped, each its own shade; the edge of a bed catches light
         float bedPos = dot(rp, normalize(vec3(0.35, 0.9, 0.25))) * 1.7 + rn * 1.4;
-        float bed = sin(bedPos * 3.0) * 0.5 + 0.5, bedId = floor(bedPos * 0.5);
+        float bed = sin(bedPos * 5.0) * 0.5 + 0.5, bedId = floor(bedPos * 0.5);
         float bedTone = fract(sin(bedId * 12.9898) * 43758.5453);
-        stone *= 1.0 + uStrata * ((bed - 0.5) * 0.5 + (bedTone - 0.5) * 0.55);
+        stone *= 1.0 + uStrata * ((bed - 0.5) * 0.9 + (bedTone - 0.5) * 1.1);
         float lip = smoothstep(0.86, 1.0, bed) * uStrata;
         // inclusions: lit crystals set in the stone, thresholded from fine noise
-        float incl = smoothstep(0.62, 0.72, snoise(rp * 3.4 + 4.7)) * uMineral * (1.0 - heat);
+        float incl = smoothstep(0.55, 0.66, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - heat);
         stone = mix(stone, vec3(0.5, 0.46, 0.42), incl * 0.5);
         diffuseColor.rgb *= stone * uTint;
         float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
@@ -167,7 +167,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
         float rimPulse = 0.65 + 0.35 * sin(uTime * uPulse * 0.6);
         totalEmissiveRadiance += lavaGlow + uGlow * rimK * uRim * rimPulse * 0.5 * uLava;`);
   };
-  m.customProgramCacheKey = () => `lava-rock2-${detail}-${lava}-${bump}-${look.id}`;
+  m.customProgramCacheKey = () => `lava-rock3-${detail}-${lava}-${bump}-${look.id}`;
   return m;
 }
 
