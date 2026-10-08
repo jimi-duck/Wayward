@@ -64,6 +64,75 @@ const ELITE_GLOW: Record<EliteId, Color> = {
   spinner: new Color(2.4, 0.9, 3.4),
 };
 
+/** Rough extent of each hull: nose x, tail x, half-width z, deck height y. */
+const EXTENT: Partial<Record<AlienKind, [number, number, number, number]>> = {
+  scout: [1.0, -0.7, 1.0, 0.28], stalker: [1.0, -0.7, 1.0, 0.28], raptor: [1.25, -0.9, 0.8, 0.22],
+  lancer: [1.18, -1.05, 0.55, 0.3], warbird: [1.1, -0.6, 1.0, 0.3], freighter: [1.05, -1.05, 0.4, 0.2],
+};
+
+/**
+ * What makes a hull of one faction not another, on top of the archetype's
+ * shape (SHIPS.md): Gutter patched and lopsided, Custody ordered in heavy
+ * rows, the Office slim swept crescents, the Voice machine crust, Thren
+ * faceted blades. Each adds to the outline, not just the surface.
+ */
+function dress(k: Kit, kind: AlienKind, f: Faction, rnd: () => number): void {
+  const e = EXTENT[kind];
+  if (!e) return;
+  const [nose, tail, w, h] = e, len = nose - tail, mid = (nose + tail) / 2;
+  switch (f) {
+    case 'gutter': {
+      // a bolted-on plate and a pod on one side only, a hanging strut, a stripe
+      const s = rnd() < 0.5 ? -1 : 1;
+      k.box('hull', [len * 0.34, 0.07, w * 0.32], [mid - len * 0.1, h * 0.5, s * w * 0.55], [0, 0.12 * s, 0.08 * s]);
+      k.box('trim', [len * 0.3, 0.015, w * 0.1], [mid - len * 0.1, h * 0.5 + 0.045, s * w * 0.55]);
+      k.cyl('dark', 0.07, 0.07, len * 0.4, [mid - len * 0.2, -0.04, -s * w * 0.4], 'x', 7);
+      k.box('dark', [0.05, 0.05, w * 0.35], [mid + len * 0.15, -0.1, s * w * 0.3]);
+      k.box('hull', [len * 0.16, 0.12, 0.1], [tail + 0.1, 0.1, -s * w * 0.28], [0.2, 0, 0]);
+      break;
+    }
+    case 'custody': {
+      // armour plates in matched rows, and a band across the nose
+      for (let i = 0; i < 3; i++) for (const s of [-1, 1]) {
+        k.box('dark', [len * 0.22, 0.05, w * 0.22], [mid + len * (0.22 - i * 0.26), h * 0.55, s * w * 0.34]);
+      }
+      k.box('trim', [0.05, 0.03, w * 0.55], [nose - len * 0.2, h * 0.5, 0]);
+      k.box('hull', [len * 0.5, 0.05, w * 0.1], [mid, h * 0.52, 0]);
+      for (const s of [-1, 1]) k.box('hull', [len * 0.12, 0.1, w * 0.1], [tail + len * 0.08, 0, s * w * 0.25]);
+      break;
+    }
+    case 'office': {
+      // swept crescent fins sweeping back past the tail, a thin green line
+      for (const s of [-1, 1]) {
+        k.wedge('hull', [[mid + len * 0.1, s * w * 0.25], [mid - len * 0.2, s * w * 0.9], [tail - len * 0.25, s * w * 1.05], [tail + len * 0.1, s * w * 0.55], [mid - len * 0.25, s * w * 0.35]], 0.04, [0, 0.0, 0], [s * 0.1, 0, 0]);
+        k.box('trim', [len * 0.5, 0.012, 0.025], [mid - len * 0.1, 0.03, s * w * 0.62], [0, -0.12 * s, 0]);
+      }
+      k.box('trim', [len * 0.6, 0.012, 0.03], [mid, h * 0.5 + 0.01, 0]);
+      break;
+    }
+    case 'voice': {
+      // a foundry crust: vent stacks, pipes along the flanks, a heavy brow
+      for (let i = 0; i < 4; i++) k.cyl('dark', 0.05, 0.06, 0.16 + rnd() * 0.12, [tail + len * (0.2 + i * 0.16), h * 0.5 + 0.08, (rnd() - 0.5) * w * 0.3], 'y', 6);
+      for (const s of [-1, 1]) {
+        k.cyl('dark', 0.035, 0.035, len * 0.7, [mid - len * 0.05, h * 0.2, s * w * 0.3], 'x', 6);
+        k.box('trim', [len * 0.16, 0.05, 0.03], [mid + len * 0.1, h * 0.5, s * w * 0.2]);
+      }
+      k.box('dark', [len * 0.25, 0.1, w * 0.45], [nose - len * 0.25, h * 0.35, 0]);
+      k.greebles('dark', rnd, tail + 0.1, nose - 0.3, -w * 0.3, w * 0.3, h + 0.02, 10, 0.08);
+      break;
+    }
+    case 'thren': {
+      // faceted blades: a forward shard and swept crystals either side
+      k.crystal('trim', 0.18, [nose + len * 0.12, 0, 0], [3.2, 0.5, 0.5]);
+      for (const s of [-1, 1]) {
+        k.crystal('hull', 0.2, [mid - len * 0.05, 0.02, s * w * 0.62], [2.4, 0.4, 0.9]);
+        k.crystal('trim', 0.12, [tail + len * 0.15, 0.04, s * w * 0.4], [2.2, 0.5, 0.5]);
+      }
+      break;
+    }
+  }
+}
+
 /** A hull of unit radius, nose +X, in a faction's metal. */
 function build(kind: AlienKind, faction: Faction): Model {
   const k = new Kit(), rnd = seeded(kind.length * 31 + kind.charCodeAt(0));
@@ -179,6 +248,7 @@ function build(kind: AlienKind, faction: Faction): Model {
       break;
     }
   }
+  dress(k, kind, faction, seeded(kind.length * 17 + faction.length * 5));
   return { root: k.build(factionMaterials(faction)), engines, lamps };
 }
 
@@ -201,7 +271,7 @@ function factionMaterials(f: Faction): Record<string, Material> {
       hull: metal({ ...coat, tint: l.paint, scale: 1.2 }),
       dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.35, scale: 1.8 }),
       trim: f === 'thren'
-        ? new MeshStandardMaterial({ color: l.trim, emissive: new Color(l.trim).multiplyScalar(GLOW.trim), roughness: 0.25, metalness: 0.2 })
+        ? new MeshStandardMaterial({ color: l.trim, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.35), roughness: 0.4, metalness: 0.2 })
         : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
       lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
     };
