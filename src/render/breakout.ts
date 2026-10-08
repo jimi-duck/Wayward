@@ -33,50 +33,99 @@ function materials(): Record<string, Material> {
   return mats;
 }
 
-/** The gate: twelve pylons on a broken ring, the throat between them. Kit units are world units here. */
+/** The gate: twelve pylons on a ring of girders, service lamps, a control gantry. Kit units are world units here. */
 function buildLane(): Group {
   const k = new Kit(), rnd = seeded(7731);
-  const R = 18;
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
+  const R = 18, N = 12;
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2;
     const x = Math.cos(a) * R, z = Math.sin(a) * R;
-    const tall = 5 + rnd() * 4;
-    k.box('dark', [2.2, tall, 2.2], [x, tall / 2 - 1, z], [0, -a, 0]);
-    k.box('paint', [2.4, 0.6, 2.4], [x, tall - 1.2, z], [0, -a, 0]);
-    k.box('amber', [0.3, tall * 0.7, 0.3], [x * 0.94, tall / 2 - 0.5, z * 0.94], [0, -a, 0]);
-    k.box('lamp', [0.5, 0.5, 0.5], [x, tall - 0.5, z]);
-    // the broken ring between the pylons: some spans still standing
-    if (rnd() < 0.7) {
-      const b = a + Math.PI / 12, len = 2 * R * Math.sin(Math.PI / 12) * 0.9;
-      k.box('hull', [1, 0.8, len], [Math.cos(b) * R, 0.5, Math.sin(b) * R], [0, -b, 0]);
+    const tall = 6 + rnd() * 4;
+    const out = (d: number): [number, number] => [Math.cos(a) * (R + d), Math.sin(a) * (R + d)];
+    // a footing, a tapering column, a collar and an emitter coil: the pylon stands on rock-hung struts
+    k.box('dark', [4, 1.2, 4], [x, -1.4, z], [0, -a, 0]);
+    k.cyl('dark', 1.0, 1.5, tall, [x, tall / 2 - 0.8, z], 'y', 8);
+    k.box('paint', [2.8, 0.7, 2.8], [x, tall * 0.55, z], [0, -a, 0]);
+    k.box('paint', [2.4, 0.5, 2.4], [x, tall - 1.2, z], [0, -a, 0]);
+    for (let c = 0; c < 3; c++) k.cyl('hull', 1.25 - c * 0.08, 1.25 - c * 0.08, 0.28, [x, tall - 0.2 + c * 0.45, z], 'y', 12);
+    k.box('amber', [0.28, tall * 0.55, 0.28], [out(1.35)[0], tall * 0.3, out(1.35)[1]], [0, -a, 0]);
+    k.box('lamp', [0.5, 0.5, 0.5], [x, tall + 1.4, z]);
+    // a ladder and a service platform on the outer face
+    k.box('dark', [0.08, tall * 0.8, 0.5], [out(1.6)[0], tall * 0.35, out(1.6)[1]], [0, -a, 0]);
+    k.box('hull', [1.6, 0.12, 1.6], [out(1.5)[0], tall * 0.4, out(1.5)[1]], [0, -a, 0]);
+    // a girder span to the next pylon, two chords and braces, some spans torn
+    const b = a + Math.PI / N, len = 2 * R * Math.sin(Math.PI / N) * 0.82;
+    if (rnd() < 0.75) {
+      const mx = Math.cos(b) * R, mz = Math.sin(b) * R;
+      k.box('hull', [0.35, 0.35, len], [mx, 1.2, mz], [0, -b, 0]);
+      k.box('hull', [0.35, 0.35, len], [mx, -0.1, mz], [0, -b, 0]);
+      k.box('dark', [0.2, 1.6, 0.2], [mx, 0.55, mz], [0, -b, 0]);
+      for (let j = -2; j <= 2; j++) {
+        const o = j * len * 0.19;
+        k.box('dark', [0.14, 1.5, 0.14], [mx - Math.sin(b) * o, 0.55, mz + Math.cos(b) * o], [0.5 * (j % 2 || 1), -b, 0]);
+        k.box('lamp', [0.22, 0.22, 0.22], [mx - Math.sin(b) * o, 1.55, mz + Math.cos(b) * o], [0, 0, 0]);
+      }
+    } else {
+      // a stub and a hanging cable end where the span fell
+      k.box('hull', [0.35, 0.35, len * 0.3], [Math.cos(b - 0.1) * R, 1.2, Math.sin(b - 0.1) * R], [0, -b, 0]);
+      k.cyl('dark', 0.05, 0.05, 2.4, [Math.cos(b - 0.1) * R, 0, Math.sin(b - 0.1) * R], 'y', 5);
     }
   }
+  // the control gantry beside the throat: a tower, a deck, a mast, hazard-yellow tanks
+  const gx = -R - 9, gz = -R * 0.3;
+  k.box('dark', [4, 9, 4], [gx, 3.5, gz]);
+  k.box('paint', [5.6, 0.7, 5.6], [gx, 8.2, gz]);
+  k.box('hull', [3.2, 2, 3.2], [gx, 9.5, gz]);
+  k.box('lamp', [2.6, 0.18, 0.06], [gx + 1.65, 9.7, gz]);
+  k.cyl('dark', 0.1, 0.1, 6, [gx, 13.5, gz], 'y', 5);
+  k.box('lamp', [0.4, 0.4, 0.4], [gx, 16.7, gz]);
+  for (let t = 0; t < 3; t++) k.cyl('paint', 1.5, 1.5, 4.5, [gx - 4 + t * 3.4, 0.6, gz + 5.5], 'z', 12);
+  k.box('dark', [12, 0.3, 0.9], [gx + 3, 7.8, gz + 3], [0, 0.5, 0]);
+  k.greebles('dark', rnd, -R - 12, -R - 6, -R * 0.3 - 3, -R * 0.3 + 3, 8.55, 10, 0.5);
   k.greebles('dark', rnd, -R - 4, R + 4, -R - 4, -R + 2, -0.6, 10, 1.2);
   return k.build(materials());
 }
 
-/** The depot: a hub on a spine, tanks, a crane, a beacon tower, lit windows. */
+/** The depot: a hub with a habitat ring, docking arms, a tank farm, a mast. Fixed; the berth ring is drawn apart. */
 function buildPort(): Group {
   const k = new Kit(), rnd = seeded(9);
+  // the hub: a drum core, a ring of cabin blocks round it, lit windows between
   k.cyl('hull', 4.5, 5.5, 3, [0, 0, 0], 'y', 24);
   k.cyl('dark', 5.6, 5.6, 0.4, [0, -1.2, 0], 'y', 24);
   k.cyl('paint', 3, 3.6, 1.6, [0, 2.2, 0], 'y', 16);
-  for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; k.box('lamp', [0.3, 0.2, 0.3], [Math.cos(a) * 4.6, 0.6, Math.sin(a) * 4.6]); }
-  // fuel tanks round the hub, hazard yellow
-  for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2 + 0.4;
-    k.cyl('paint', 1.6, 1.6, 4, [Math.cos(a) * 8.5, 0.3, Math.sin(a) * 8.5], 'y', 14);
-    k.cyl('dark', 1.7, 1.7, 0.3, [Math.cos(a) * 8.5, 2.3, Math.sin(a) * 8.5], 'y', 14);
-    k.box('dark', [4, 0.5, 0.6], [Math.cos(a) * 6.5, 0, Math.sin(a) * 6.5], [0, -a, 0]);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    k.box('hull', [2.6, 1.6, 2.2], [Math.cos(a) * 7, 0.2, Math.sin(a) * 7], [0, -a, 0]);
+    k.box('lamp', [0.9, 0.18, 0.06], [Math.cos(a) * 8.35, 0.5, Math.sin(a) * 8.35], [0, -a, 0]);
+    k.box('dark', [0.5, 0.5, 2.2], [Math.cos(a + 0.26) * 7, -0.2, Math.sin(a + 0.26) * 7], [0, -a - 0.26, 0]);
   }
-  // the beacon tower: the red light you steer for
-  k.box('dark', [0.8, 12, 0.8], [-3, 6, -3]);
-  k.box('amber', [0.25, 10, 0.25], [-3.45, 6, -3]);
-  k.box('lamp', [1.2, 1.2, 1.2], [-3, 12.6, -3]);
-  // a crane over the berth
+  for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; k.box('lamp', [0.3, 0.2, 0.3], [Math.cos(a) * 4.6, 1.5, Math.sin(a) * 4.6]); }
+  // two docking arms reaching out to the berth, with mooring clamps and a crane
+  for (const s of [-1, 1]) {
+    k.box('dark', [14, 0.7, 0.9], [-8, -0.2, s * 2.6]);
+    k.box('hull', [1.4, 0.9, 1.4], [-15, -0.2, s * 2.6]);
+    k.box('paint', [0.5, 1.6, 0.5], [-14, 0.8, s * 2.6]);
+    k.box('lamp', [0.3, 0.3, 0.3], [-14, 1.8, s * 2.6]);
+    for (let j = 0; j < 4; j++) k.box('dark', [0.12, 1.3, 0.12], [-3 - j * 3, 0.5, s * 2.6]);
+  }
   k.box('dark', [0.6, 7, 0.6], [4, 3.5, 4]);
   k.box('paint', [9, 0.6, 0.8], [0.5, 7, 4], [0, 0.3, 0]);
-  k.greebles('hull', rnd, -4, 4, -4, 4, 1.6, 12, 0.8);
+  k.box('dark', [0.1, 3, 0.1], [-3.6, 5.4, 4]);
+  // the tank farm: hazard-yellow spheres-ish drums on a frame, with piping to the hub
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 + 0.4, tx = Math.cos(a) * 12.5, tz = Math.sin(a) * 12.5;
+    k.cyl('paint', 1.7, 1.7, 4.2, [tx, 0.3, tz], 'y', 14);
+    k.cyl('dark', 1.8, 1.8, 0.3, [tx, 2.5, tz], 'y', 14);
+    k.cyl('dark', 1.8, 1.8, 0.3, [tx, -1.9, tz], 'y', 14);
+    k.cyl('dark', 0.2, 0.2, 7, [Math.cos(a) * 9, 0, Math.sin(a) * 9], 'x', 6);
+    k.box('lamp', [0.25, 0.25, 0.25], [tx, 2.8, tz]);
+  }
+  // the beacon mast: the light you steer for
+  k.box('dark', [0.8, 14, 0.8], [-3, 7, -3]);
+  k.box('dark', [2.4, 0.3, 0.3], [-3, 10, -3]);
+  k.box('amber', [0.25, 11, 0.25], [-3.45, 6.5, -3]);
+  k.box('lamp', [1.2, 1.2, 1.2], [-3, 14.6, -3]);
+  k.greebles('hull', rnd, -4, 4, -4, 4, 1.6, 14, 0.8);
   return k.build(materials());
 }
 
