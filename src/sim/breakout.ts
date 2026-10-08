@@ -123,6 +123,8 @@ export interface SortieDef {
   system: string;
   /** Its region (content/regions.ts), for the sky; the Reach unless given. */
   region?: number;
+  /** The sky palette (content/regions.ts); the region's own where absent. */
+  sky?: number;
   name: string;
   kind: SystemKind;
   /** Where the plotted lane goes, and the Cyrite it takes to jump. */
