@@ -12,6 +12,10 @@ export function createRenderer(canvas: HTMLCanvasElement, tier: QualityTier): We
     stencil: false,
     depth: true,
   });
+  // The link check asks the driver for each program's log the first time it is used, which
+  // makes the browser finish compiling right there, in the frame. Shipped shaders do not
+  // need it; ?debug=1 and the dev server keep it for anyone writing one.
+  renderer.debug.checkShaderErrors = import.meta.env.DEV || new URLSearchParams(location.search).get('debug') === '1';
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = direct ? ACESFilmicToneMapping : NoToneMapping;
   return renderer;
