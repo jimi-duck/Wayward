@@ -225,7 +225,8 @@ export class Sector {
           this.fx.explode(e.x, -0.2, e.z, 2.2 * big, ROCK_TINT[e.kind] ?? LAVA, 'rock');
           if (e.kind === 'rich' || e.kind === 'rare') this.fx.burst(e.x, 0.3, e.z, 30, ROCK_TINT[e.kind]!, 10, 0.4, 0.8);
           this.rig.shake(0.12 + 0.2 * big);
-          hold = Math.max(hold, 0.02 + 0.02 * big);
+          // only the biggest rock holds the world still: a field breaks about once a second, and each hold is a skipped step in the ship's flight
+          if (e.size === 0) hold = Math.max(hold, 0.03);
           break;
         }
         case 'blast': {
