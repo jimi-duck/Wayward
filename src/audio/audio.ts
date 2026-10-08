@@ -10,6 +10,13 @@ import type { GameEvent } from '../sim/events';
 
 const KEY = 'wayward.feel.v1';
 
+/**
+ * Master switch. Off: no AudioContext is ever made (so a phone shows no audio session), every cue
+ * and bed is skipped, and pause Settings hides the Sound row. Haptics are unaffected. Set to true
+ * to bring sound back.
+ */
+export const SOUND_AVAILABLE = false;
+
 export interface FeelPrefs {
   sound: boolean;
   haptics: boolean;
@@ -120,7 +127,7 @@ export class Feel {
 
   /** Make or resume the audio context. Safe to call again. */
   start(): void {
-    if (!this.prefs.sound) return;
+    if (!SOUND_AVAILABLE || !this.prefs.sound) return;
     try {
       if (!this.ctx) {
         const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;

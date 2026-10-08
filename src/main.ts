@@ -28,7 +28,7 @@ import { StartOptions, SummaryPanel } from './ui/panels';
 import { PortPanel } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
-import { Feel } from './audio/audio';
+import { Feel, SOUND_AVAILABLE } from './audio/audio';
 import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions (docs/SCALE-UP.md); ?short plays the old three, for testing. */
@@ -419,6 +419,7 @@ function boot(review: typeof import('./review') | null): void {
       el(id).setAttribute('aria-pressed', String(on));
       el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
     }
+    el('p-sound').closest('li')!.hidden = !SOUND_AVAILABLE;
     el('p-buzz-r').hidden = !feel.canBuzz;
     el('p-paint-r').hidden = !el('paint').childElementCount;
   };
