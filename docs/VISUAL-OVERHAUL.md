@@ -120,3 +120,4 @@ a crowded review stop; real frame rate is for a device.
 
 - Phase 1 done: `render/look.ts` holds each faction's coat, undercoat, trim and wear and the emissive ceilings; enemy hulls use the painted, worn plate (`enemies.ts`). The faction reads from the coat at range, not just the engines.
 - Phase 2 done: `dress()` in `enemies.ts` adds each faction's outline language to the six archetypes (scout, stalker, raptor, lancer, warbird, freighter) from one small extent table; drone and weaver keep their own shape. Capitals are the same builds at scale, so they carry it too. Cost: a few dozen more boxes per hull, merged into the same draws.
+- Phase 3 done: Cyrite, ore and parts are lit instanced shapes (a violet prism, a rock lump, a salvage case) instead of glowing specks; Krail stays the one bright shard. Power-ups sit in a small dark cradle. Rock was left alone (it already reads). Cost: three more instanced draws and ten small cradles.
