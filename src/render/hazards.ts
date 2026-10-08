@@ -31,7 +31,7 @@ const additive = (opacity = 1) => new MeshBasicMaterial({
   color: 0xffffff, transparent: true, opacity, blending: AdditiveBlending, depthWrite: false, toneMapped: false, side: DoubleSide,
 });
 
-interface Mark { root: Group; track: Mesh; fill: Mesh; ring: Mesh; disc: Mesh; }
+interface Mark { root: Group; track: Mesh; fill: Mesh; ring: Mesh; disc: Mesh; edge: Mesh; }
 
 export class HazardView {
   private readonly marks: Mark[] = [];
@@ -48,11 +48,12 @@ export class HazardView {
     const line = new PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0.5, 0, 0);
     const ring = new RingGeometry(0.93, 1, 56).rotateX(-Math.PI / 2);
     const disc = new RingGeometry(0, 1, 40).rotateX(-Math.PI / 2);
+    const edge = new RingGeometry(0.96, 1, 56).rotateX(-Math.PI / 2);
     const make = (list: Mark[], n: number) => {
       for (let i = 0; i < n; i++) {
         const root = new Group();
-        const m: Mark = { root, track: new Mesh(line, additive(0.22)), fill: new Mesh(line, additive(0.5)), ring: new Mesh(ring, additive(0.8)), disc: new Mesh(disc, additive(0.28)) };
-        root.add(m.track, m.fill, m.ring, m.disc);
+        const m: Mark = { root, track: new Mesh(line, additive(0.22)), fill: new Mesh(line, additive(0.5)), ring: new Mesh(ring, additive(0.8)), disc: new Mesh(disc, additive(0.28)), edge: new Mesh(edge, additive(0.9)) };
+        root.add(m.track, m.fill, m.ring, m.disc, m.edge);
         root.visible = false;
         scene.add(root);
         list.push(m);
@@ -95,6 +96,11 @@ export class HazardView {
     scene.add(this.well);
   }
 
+  /** One beat for every warning: slow and shallow at first, quicker as the moment comes, never a strobe. */
+  private pulse(prog: number): number {
+    return 0.8 + 0.2 * Math.sin(this.time * (8 + prog * 12));
+  }
+
   update(tele: readonly Telegraph[], strikes: readonly Strike[], e: Encounter | null, dt: number): void {
     this.time += dt;
     // a capital ship's tells
@@ -104,12 +110,12 @@ export class HazardView {
       if (!t) return;
       const prog = 1 - t.t / Math.max(0.01, t.total);
       const col = NEON[t.faction];
-      const pulse = 0.7 + 0.3 * Math.sin(this.time * 24);
+      const pulse = this.pulse(prog);
       m.root.position.set(t.x, 0.06, t.z);
       m.root.rotation.y = t.ang;
       const isLine = t.kind === 'line';
       m.track.visible = m.fill.visible = isLine;
-      m.ring.visible = m.disc.visible = !isLine;
+      m.ring.visible = m.disc.visible = m.edge.visible = !isLine;
       if (isLine) {
         const w = t.len > 40 ? 1.2 : 0.8;
         m.track.scale.set(t.len, 1, w);
@@ -121,6 +127,8 @@ export class HazardView {
         m.disc.scale.setScalar(t.r * prog);
         tint(m.ring, col, 0.6 * pulse);
         tint(m.disc, col, 0.18);
+        m.edge.scale.setScalar(Math.max(0.01, t.r * prog));
+        tint(m.edge, col, 0.9);
       }
     });
     // landing circles
@@ -132,11 +140,13 @@ export class HazardView {
       const col = STRIKE_COLOR[k.kind];
       m.root.position.set(k.x, 0.07, k.z);
       m.track.visible = m.fill.visible = false;
-      m.ring.visible = m.disc.visible = true;
+      m.ring.visible = m.disc.visible = m.edge.visible = true;
       m.ring.scale.setScalar(k.r);
       m.disc.scale.setScalar(k.r * prog);
-      tint(m.ring, col, (0.5 + 0.5 * prog) * (0.75 + 0.25 * Math.sin(this.time * 30)));
+      m.edge.scale.setScalar(Math.max(0.01, k.r * prog));
+      tint(m.ring, col, (0.5 + 0.5 * prog) * this.pulse(prog));
       tint(m.disc, col, 0.12 + 0.2 * prog);
+      tint(m.edge, col, 0.9);
     });
 
     // the events' props
