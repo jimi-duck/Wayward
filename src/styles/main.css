@@ -848,12 +848,13 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #start { --scrim: rgba(6, 9, 12, .86); position: absolute; inset: 0; z-index: 4; display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: 12px;
   /* the menu stays centred over the art's calm dark middle; the Wayward keeps the lower right */
   padding: max(clamp(24px, 6vh, 72px), calc(var(--safe-t) + 14px)) calc(24px + var(--shift)) max(14px, calc(var(--safe-b) + 10px)) 24px;
+  --art-pos: 88% 64%; --art-size: cover;
   --shift: 0px; --pool-x: calc(50% - var(--shift) / 2); --pool-y: 30%;
   background:
     radial-gradient(ellipse 34% 40% at var(--pool-x) var(--pool-y), rgba(5, 8, 12, .72), rgba(5, 8, 12, .4) 58%, rgba(5, 8, 12, 0)),
     linear-gradient(180deg, rgba(5, 8, 12, .5) 0%, rgba(5, 8, 12, 0) 30%, rgba(5, 8, 12, 0) 88%, rgba(5, 8, 12, .5) 100%),
     radial-gradient(ellipse 80% 75% at 50% 48%, rgba(0, 0, 0, 0) 58%, rgba(0, 0, 0, .5) 100%),
-    url("../assets/wayward-title-background.jpg") 88% 64% / cover no-repeat,
+    url("../assets/wayward-title-background.jpg") var(--art-pos) / var(--art-size) no-repeat,
     var(--void); }
 #start[hidden] { display: none; }
 /* the title settles in piece by piece: the lockup, the modes, then the launch */
@@ -930,6 +931,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .resume-s.warn { color: var(--hud-hi); }
 .tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(8, 13, 14, .7);
   font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
+/* squarer screens: the art grows and hangs from the top, so the Wayward sinks below the menu */
+@media (max-aspect-ratio: 3/2) { #start { --art-pos: 92% 0%; --art-size: auto 124%; } }
 .start-foot { grid-row: 3; width: calc(100% + var(--shift)); margin-right: calc(var(--shift) * -1); justify-self: start; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px 22px; }
 .start-foot .records { justify-content: flex-start; }
 .start-foot #saves { justify-content: flex-end; margin-left: auto; }
