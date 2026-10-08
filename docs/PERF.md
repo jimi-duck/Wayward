@@ -89,3 +89,18 @@ run.
 
 **Trade-off.** A shader that fails on an unusual GPU now fails quietly (black or
 missing object) instead of logging why; `?debug=1` brings the log back.
+
+## Pass 4: the hit-stop on every rock
+
+**Cause.** Every kill, hit and break holds the simulation still for a few steps
+(`loop.freeze`) so it lands with weight, while the camera and effects carry on.
+A rock break held for 20 to 40 ms, and the scripted pilot breaks about 65 rocks
+a minute (against 9 hull kills), so about once a second the ship stopped for one
+or two steps while the camera kept moving: a judder in flight, not a slow frame.
+
+**Change.** Only the biggest rocks hold (30 ms). Smaller rocks keep their burst
+and shake. Hull kills, bulwarks, hits and capital ships are unchanged.
+
+**Real device:** whether mining now feels smoother, and whether the small
+breaks still have enough weight. `if (e.size === 0)` in `Sector.react` is the
+one place to put it back.
