@@ -291,7 +291,7 @@ function factionMaterials(f: Faction): Record<string, Material> {
   let m = factionMats.get(f);
   if (!m) {
     const l = HULL_LOOK[f];
-    const coat = { painted: true, worn: l.worn, roughness: 0.62, metalness: 0.1 };
+    const coat = { painted: true, worn: l.worn, roughness: 0.62, metalness: 0.1, engine: NEON[f].clone().multiplyScalar(0.12) };
     const lit = (c: number, k: number) => new MeshStandardMaterial({ color: c, emissive: new Color(c).multiplyScalar(k), roughness: 0.4, metalness: 0.2 });
     m = {
       hull: metal({ ...coat, tint: l.base, roughness: 0.6, metalness: 0.45, scale: 1.8 }),
