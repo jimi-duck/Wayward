@@ -70,3 +70,22 @@ preloads the title art and the two faces the title uses.
 **After (software browser, same machine).** The title art finishes at 61 ms
 (was 307 ms), and the page downloads 1.84 MB on first load (was 1.90 MB, with
 the menu art still to come in the bay: 124 KB lighter).
+
+## Pass 3: no link check in shipped builds
+
+**Cause.** three.js checks every program's link log the first time the program
+is drawn with (`renderer.debug.checkShaderErrors`). Reading the log makes the
+browser finish compiling that program on the spot, inside the frame. In a dev
+profile the first frame with hulls on screen spent 270 of its 325 ms in those
+two calls.
+
+**Change.** The check runs on the dev server and with `?debug=1`, and not in
+shipped builds. The shaders are ours and fixed, and the warm-up already links
+them.
+
+**After.** No frame over 60 ms in the same 400-frame late-game run (software
+GL, dev profile; was one at 148 to 325 ms). Real device: the first fights of a
+run.
+
+**Trade-off.** A shader that fails on an unusual GPU now fails quietly (black or
+missing object) instead of logging why; `?debug=1` brings the log back.
