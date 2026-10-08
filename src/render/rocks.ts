@@ -83,14 +83,20 @@ interface RockLook {
   zone: number;
   pulse: number;
   metal: number;
+  /** How much of the surface is mineral inclusions (lit crystals in the stone). */
+  mineral: number;
+  /** Strata contrast: layered stone shows how a rock was laid down. */
+  strata: number;
+  /** A glancing-light rim in the glow's colour: how the rock reads as charged. */
+  rim: number;
 }
 
 const LOOKS: Record<RockKind, RockLook> = {
-  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1, 1, 1],         zone: 0,    pulse: 1.4, metal: 0.04 },
-  iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55 },
-  rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.85, 0.8, 1.05], zone: 0.3,  pulse: 2.2, metal: 0.1 },
-  volatile: { id: 'volatile', glow: [4.5, 2.4, 1.1],   tint: [1.2, 0.85, 0.75], zone: 0.45, pulse: 7,   metal: 0.04 },
-  rare:     { id: 'rare',     glow: [4.2, 3.2, 1.1],   tint: [1.2, 1.1, 0.85],  zone: 0.5,  pulse: 3,   metal: 0.35 },
+  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1, 1, 1],         zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
+  iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
+  rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.85, 0.8, 1.05], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
+  volatile: { id: 'volatile', glow: [4.5, 2.4, 1.1],   tint: [1.2, 0.85, 0.75], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
+  rare:     { id: 'rare',     glow: [4.2, 3.2, 1.1],   tint: [1.2, 1.1, 0.85],  zone: 0.5,  pulse: 3,   metal: 0.35, mineral: 0.8, strata: 0.7, rim: 0.4 },
 };
 const KINDS = Object.keys(LOOKS) as RockKind[];
 
@@ -111,13 +117,16 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
     shader.uniforms.uTint = { value: new Color(...look.tint) };
     shader.uniforms.uZone = { value: look.zone };
     shader.uniforms.uPulse = { value: look.pulse };
+    shader.uniforms.uMineral = { value: look.mineral };
+    shader.uniforms.uStrata = { value: look.strata };
+    shader.uniforms.uRim = { value: look.rim };
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         varying vec3 vRockP; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
-        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse;
+        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim;
         ${SIMPLEX}
         ${PERTURB}
         float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
@@ -135,18 +144,30 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
         vec3 stone = mix(vec3(0.05, 0.045, 0.042), vec3(0.2, 0.18, 0.16), smoothstep(-0.55, 0.65, rn + fine * 0.35));
         stone = mix(stone, vec3(0.32, 0.29, 0.26), smoothstep(0.55, 0.9, rn) * 0.6);
         stone = mix(stone, vec3(0.025, 0.018, 0.015), heat * 0.75);
+        // strata: beds laid down in a slanted plane, warped, each its own shade; the edge of a bed catches light
+        float bedPos = dot(rp, normalize(vec3(0.35, 0.9, 0.25))) * 1.7 + rn * 1.4;
+        float bed = sin(bedPos * 3.0) * 0.5 + 0.5, bedId = floor(bedPos * 0.5);
+        float bedTone = fract(sin(bedId * 12.9898) * 43758.5453);
+        stone *= 1.0 + uStrata * ((bed - 0.5) * 0.5 + (bedTone - 0.5) * 0.55);
+        float lip = smoothstep(0.86, 1.0, bed) * uStrata;
+        // inclusions: lit crystals set in the stone, thresholded from fine noise
+        float incl = smoothstep(0.62, 0.72, snoise(rp * 3.4 + 4.7)) * uMineral * (1.0 - heat);
+        stone = mix(stone, vec3(0.5, 0.46, 0.42), incl * 0.5);
         diffuseColor.rgb *= stone * uTint;
         float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
         vec3 lavaGlow = (uGlow * crack * pulse + uGlow * 0.14 * heat * 0.4) * uLava;
-        float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5;`)
+        lavaGlow += uGlow * incl * (0.5 + 0.5 * sin(uTime * uPulse * 0.7 + rp.x * 5.0)) * 0.55 * uLava;
+        float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + incl * 0.2;`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2, 0.4, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, rockH * uBump, faceDirection);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        totalEmissiveRadiance += lavaGlow;`);
+        float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 2.5);
+        float rimPulse = 0.65 + 0.35 * sin(uTime * uPulse * 0.6);
+        totalEmissiveRadiance += lavaGlow + uGlow * rimK * uRim * rimPulse * 0.5 * uLava;`);
   };
-  m.customProgramCacheKey = () => `lava-rock-${detail}-${lava}-${bump}-${look.id}`;
+  m.customProgramCacheKey = () => `lava-rock2-${detail}-${lava}-${bump}-${look.id}`;
   return m;
 }
 
@@ -154,7 +175,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
  * A rock shape of unit radius: an icosphere of the given subdivision, pushed
  * out by noise and pitted with craters, a little flattened. Smooth normals.
  */
-function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42): BufferGeometry {
+function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0): BufferGeometry {
   const g = mergeVertices(new IcosahedronGeometry(1, detail).deleteAttribute('normal').deleteAttribute('uv'), 1e-4);
   const p = g.attributes.position!;
   const v = new Vector3();
@@ -163,6 +184,10 @@ function rockGeometry(seed: number, detail: number, craters: number, rough = 0.4
     const d = new Vector3(rnd() * 2 - 1, rnd() * 2 - 1, rnd() * 2 - 1).normalize();
     return { d, size: 0.18 + rnd() * 0.32, depth: 0.05 + rnd() * 0.09 };
   });
+  // fracture planes: the rock was broken off something bigger, and keeps flat faces
+  const planes = Array.from({ length: cuts }, () => ({
+    n: new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.7, rnd() * 2 - 1).normalize(), d: 0.52 + rnd() * 0.22,
+  }));
   for (let i = 0; i < p.count; i++) {
     v.fromBufferAttribute(p, i).normalize();
     const big = fbm(v.x * 1.2 + seed, v.y * 1.2, v.z * 1.2, 4, seed);
@@ -174,6 +199,7 @@ function rockGeometry(seed: number, detail: number, craters: number, rough = 0.4
       if (a < 1.35) k += a < 1 ? -c.depth * (1 - a * a) : c.depth * 0.6 * Math.sin(((a - 1) / 0.35) * Math.PI);
     }
     v.multiplyScalar(k);
+    for (const c of planes) { const over = v.dot(c.n) - c.d; if (over > 0) v.addScaledVector(c.n, -over * 0.94); }
     v.y *= 0.84;
     p.setXYZ(i, v.x, v.y, v.z);
   }
@@ -199,7 +225,7 @@ export class RockView {
   private time = 0;
 
   constructor(private readonly scene: Scene, glow: Texture) {
-    const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => rockGeometry(k * 3.7 + 1, 4, 4 + k));
+    const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => rockGeometry(k * 3.7 + 1, 4, 1 + (k % 2), 0.4, 4 + (k % 3)));
     for (const kind of KINDS) {
       const mat = lavaRock(1.35, 1, 0.12, LOOKS[kind]);
       for (let k = 0; k < ROCK_VARIANTS; k++) {
@@ -218,7 +244,7 @@ export class RockView {
       scene.add(h);
       this.halos.push(h);
     }
-    for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, 5, 9 + k * 2, 0.36));
+    for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, 5, 3 + k, 0.36, 7 + k));
     // a bulwark is a plain mesh, not an instance: hidden here so the warm-up compiles its program too
     const proxy = new Mesh(this.bulwarkGeo[0]!, this.bulwarkMat);
     proxy.visible = false;
@@ -230,7 +256,7 @@ export class RockView {
     this.backBase = new Float32Array(per * 3 * 8);
     const rnd = seeded(99);
     for (let k = 0; k < 3; k++) {
-      const mesh = new InstancedMesh(rockGeometry(k * 2.9 + 40, 2, 2), backMat, per);
+      const mesh = new InstancedMesh(rockGeometry(k * 2.9 + 40, 2, 1, 0.42, 3), backMat, per);
       mesh.frustumCulled = false;
       this.backdrop.push(mesh);
       scene.add(mesh);

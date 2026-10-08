@@ -10,6 +10,7 @@ import {
 } from '../sim/enemies';
 import { Kit, metal, seeded, type V3 } from './kit';
 import { GLOW, HULL_LOOK } from './look';
+import { designFor } from './hulls';
 import { STREAK, type Streaks } from './streaks';
 
 // ── the enemy ─────────────────────────────────────────────────────────────
@@ -135,6 +136,8 @@ function dress(k: Kit, kind: AlienKind, f: Faction, rnd: () => number): void {
 
 /** A hull of unit radius, nose +X, in a faction's metal. */
 function build(kind: AlienKind, faction: Faction): Model {
+  const design = designFor(kind, faction);
+  if (design) return { root: design.k.build(factionMaterials(faction)), engines: design.engines, lamps: design.lamps };
   const k = new Kit(), rnd = seeded(kind.length * 31 + kind.charCodeAt(0));
   const engines: V3[] = [];
   // Running lights and windows are not geometry: they are drawn as light
@@ -267,13 +270,17 @@ function factionMaterials(f: Faction): Record<string, Material> {
   if (!m) {
     const l = HULL_LOOK[f];
     const coat = { painted: true, worn: l.worn, roughness: 0.62, metalness: 0.1 };
+    const lit = (c: number, k: number) => new MeshStandardMaterial({ color: c, emissive: new Color(c).multiplyScalar(k), roughness: 0.4, metalness: 0.2 });
     m = {
-      hull: metal({ ...coat, tint: l.paint, scale: 1.2 }),
-      dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.35, scale: 1.8 }),
-      trim: f === 'thren'
-        ? new MeshStandardMaterial({ color: l.trim, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.35), roughness: 0.4, metalness: 0.2 })
-        : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
+      hull: metal({ ...coat, tint: l.base, roughness: 0.6, metalness: 0.45, scale: 1.8 }),
+      paint: metal({ ...coat, tint: l.paint, scale: 1.2 }),
+      patch: metal({ ...coat, tint: l.patch, scale: 1.4 }),
+      dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.5, scale: 1.8 }),
+      trim: f === 'thren' ? lit(l.trim, GLOW.trim * 0.35) : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
+      glow: lamp(NEON[f].clone().multiplyScalar(0.9)),
       lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
+      crystal: lit(l.paint, GLOW.trim * 0.5),
+      violet: lamp(NEON.thren.clone().multiplyScalar(0.55)),
     };
     factionMats.set(f, m);
   }

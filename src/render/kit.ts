@@ -435,6 +435,13 @@ export class Kit {
     this.add(key, g, pos, rot);
   }
 
+  /** A faceted solid of revolution round +Y (six sides, flat-shaded): grown crystal. Profile is [radius, height] bottom to top. */
+  shard(key: string, profile: Array<[number, number]>, pos: V3, rot: V3 = [0, 0, 0]): void {
+    const g = new LatheGeometry(profile.map(([r, y]) => new Vector2(r, y)), 6).toNonIndexed();
+    g.computeVertexNormals();
+    this.add(key, g, pos, rot);
+  }
+
   crystal(key: string, r: number, pos: V3, scale: V3): void {
     this.add(key, new OctahedronGeometry(r, 0), pos, [0, 0, 0], scale);
   }
