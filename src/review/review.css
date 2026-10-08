@@ -1,0 +1,35 @@
+/* The review world's menu and labels (docs/REVIEW.md). Development only: loaded with ?dev, never in a normal run. */
+#rv-btn, #rv, #rv-labels, #rv-sky { font-family: var(--font-rail, system-ui, sans-serif); }
+#rv-btn { position: absolute; z-index: 6; left: calc(var(--safe-l, 0px) + 8px); top: 50%; translate: 0 -50%; min-height: 40px; padding: 0 12px;
+  background: var(--glass, rgba(8, 13, 14, .66)); color: var(--cy, #4cc2cb); border: 1px solid var(--cy-dim, rgba(57, 174, 183, .34));
+  font: 600 13px/1 var(--font-rail, system-ui); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; pointer-events: auto; touch-action: manipulation; }
+#rv-btn:hover, #rv-btn:focus-visible { border-color: var(--cy, #4cc2cb); outline: none; }
+#rv.on ~ #rv-btn, #rv-btn.on { display: none; }
+#rv { position: absolute; z-index: 7; left: 0; top: 0; bottom: 0; width: min(330px, 62vw); box-sizing: border-box; padding: calc(var(--safe-t, 0px) + 10px) 12px 12px calc(var(--safe-l, 0px) + 12px);
+  background: rgba(8, 13, 14, .93); border-right: 1px solid var(--cy-dim, rgba(57, 174, 183, .34)); color: var(--ink, #e4e1d3);
+  display: none; flex-direction: column; gap: 10px; overflow-y: auto; pointer-events: auto; touch-action: pan-y; overscroll-behavior: contain; }
+#rv.on { display: flex; }
+#rv h2 { margin: 0; font: 600 15px/1.2 var(--font-rail, system-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--cy, #4cc2cb); }
+#rv .rv-k { font: 600 11px/1 var(--font-rail, system-ui); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2, #a9a89c); }
+#rv .rv-note { margin: 0; font: 13px/1.4 var(--font-body, system-ui); color: var(--ink, #e4e1d3); }
+#rv .rv-row { display: flex; flex-wrap: wrap; gap: 6px; }
+#rv button { min-height: 40px; padding: 0 10px; background: transparent; color: var(--ink, #e4e1d3); border: 1px solid var(--line, rgba(216, 213, 198, .25));
+  font: 600 13px/1.1 var(--font-rail, system-ui); letter-spacing: .06em; text-align: left; cursor: pointer; touch-action: manipulation; }
+#rv button:hover, #rv button:focus-visible { border-color: var(--cy, #4cc2cb); outline: none; }
+#rv button[aria-pressed="true"] { border-color: var(--amber, #e5a93a); color: var(--amber, #e5a93a); }
+#rv .rv-stops { display: grid; gap: 4px; }
+#rv .rv-stops button { width: 100%; }
+#rv .rv-hint { margin: 0; font: 12px/1.4 var(--font-mono, monospace); color: var(--ink-2, #a9a89c); }
+#rv-labels { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+#rv-labels div { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); max-width: 220px; padding: 3px 7px; text-align: center; white-space: normal;
+  background: rgba(8, 13, 14, .78); border: 1px solid var(--cy-dim, rgba(57, 174, 183, .34)); color: var(--cy, #4cc2cb);
+  font: 600 12px/1.2 var(--font-rail, system-ui); letter-spacing: .08em; text-transform: uppercase; text-shadow: 0 1px 4px #000; will-change: transform; }
+#rv-labels small { display: block; margin-top: 2px; font: 11px/1.25 var(--font-body, system-ui); letter-spacing: 0; text-transform: none; color: var(--ink, #e4e1d3); }
+#rv-labels.off { display: none; }
+@media (max-height: 460px) {
+  #rv-labels div { font-size: 11px; max-width: 160px; }
+  #rv-labels small { display: none; }
+}
+
+/* the arcade's goals mean nothing here */
+.review #objective { display: none !important; }

@@ -17,7 +17,7 @@ import type { QualityTier } from './quality';
 import { RockView } from './rocks';
 import { EnemyView, NEON, wreck } from './enemies';
 import { ShipView } from './ships';
-import { hashSeed, skyFor } from './sky';
+import { hashSeed, skyFor, type Sky } from './sky';
 import { glowTexture } from './textures';
 import { Streaks } from './streaks';
 import { WeaponView } from './weapons';
@@ -74,6 +74,8 @@ export class Sector {
   private weld = 0;
   /** The run or system the sky was painted for. */
   private skyFor: unknown = null;
+  /** The review world pins a sky of its own; the run's is left alone while it holds. */
+  private pinned = false;
   reduceMotion = false;
 
   constructor(private readonly renderer: WebGLRenderer, private tier: QualityTier) {
@@ -95,6 +97,17 @@ export class Sector {
 
   get camera() {
     return this.rig.camera;
+  }
+
+  /** Paint this sky and keep it (the review world's switch). */
+  setBackdrop(sky: Sky): void {
+    this.pinned = true;
+    this.env.setSky(sky);
+  }
+
+  /** The next frame puts the camera straight behind the ship, with no swoop: after a jump across the gallery. */
+  snapCamera(): void {
+    this.snapped = false;
   }
 
   /** Engine colours: a cosmetic id from content/unlocks.ts. */
@@ -399,7 +412,7 @@ export class Sector {
     this.streaks.begin();
     this.weapons.update(world.bolts, world.torps, alpha, this.fx, dt, this.time);
     this.enemies.eye.copy(this.rig.camera.position);
-    this.enemies.update(world.aliens, world.command.boss, world.shots, world.webs, alpha, dt);
+    this.enemies.update(world.aliens, world.review ? world.review.bosses : world.command.boss ? [world.command.boss] : [], world.shots, world.webs, alpha, dt);
     this.streaks.end();
     this.pickups.update(world.pickups, alpha, dt, this.fx);
     this.arsenal.update(world.sys, dt, this.rig.camera.position);
@@ -436,6 +449,7 @@ export class Sector {
    * region's colours); the arcade's is new every run.
    */
   private paintSky(world: World): void {
+    if (this.pinned) return;
     const breakout = world.mode === 'breakout';
     const key = breakout ? `${world.sortie.system}:${world.sortie.region ?? 0}` : world.run;
     if (key === this.skyFor) return;

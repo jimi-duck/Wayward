@@ -118,7 +118,7 @@ const frame = (now: number) => {
   streaks.begin();
   weapons.update(bolts, torps, 1, fx, dt, t);
   enemies.eye.copy(camera.position);
-  enemies.update(aliens, null, shots, [], 1, dt);
+  enemies.update(aliens, [], shots, [], 1, dt);
   streaks.end();
   fx.update(dt);
   env.update(camera, 0, 0, 0, 0, dt);

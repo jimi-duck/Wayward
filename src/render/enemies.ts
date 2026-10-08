@@ -365,7 +365,8 @@ export class EnemyView {
   private readonly sc = new Vector3();
   private readonly beams: Mesh[] = [];
   private readonly webs: LineSegments[] = [];
-  private bossView: { id: number; root: Group; hull: HullView; mats: Material[] } | null = null;
+  /** The capital ships on show: one in a fight, five in the review world. */
+  private readonly bossViews = new Map<number, { root: Group; hull: HullView; mats: Material[] }>();
   private readonly c = new Color();
   private time = 0;
   /** The camera's position, for distance-aware glow sizes. */
@@ -425,7 +426,7 @@ export class EnemyView {
     return v;
   }
 
-  update(aliens: readonly Alien[], boss: Boss | null, shots: readonly Shot[], webs: readonly Web[], alpha: number, dt: number): void {
+  update(aliens: readonly Alien[], bosses: readonly Boss[], shots: readonly Shot[], webs: readonly Web[], alpha: number, dt: number): void {
     this.time += dt;
     const back = (1 - alpha) * STEP;
 
@@ -477,11 +478,14 @@ export class EnemyView {
       this.live.delete(id);
     }
 
-    // the capital ship
-    if (boss && (!this.bossView || this.bossView.id !== boss.id)) this.makeBoss(boss);
-    if (!boss && this.bossView) { this.bossView.root.removeFromParent(); this.bossView = null; }
-    if (boss && this.bossView) {
-      const bv = this.bossView;
+    // the capital ships
+    for (const [id, bv] of this.bossViews) {
+      if (bosses.some((b) => b.id === id)) continue;
+      bv.root.removeFromParent();
+      this.bossViews.delete(id);
+    }
+    for (const boss of bosses) {
+      const bv = this.bossViews.get(boss.id) ?? this.makeBoss(boss);
       bv.root.position.set(boss.x - boss.vx * back, boss.y - boss.vy * back, boss.z - boss.vz * back);
       const pitch = boss.arriving ? Math.atan2(boss.vy, Math.max(6, Math.hypot(boss.vx, boss.vz))) * 0.5 : 0;
       bv.hull.body.rotation.set(Math.sin(this.time * 0.6) * 0.03, boss.face, pitch, 'YZX');
@@ -504,7 +508,7 @@ export class EnemyView {
     // beams: a thin telegraph while winding up, then the cut
     const bms = [
       ...aliens.filter((a) => a.beamT > 0).map((a) => ({ x: a.x, y: a.y, z: a.z, beamT: a.beamT, beamAng: a.beamAng })),
-      ...(boss?.beams.filter((b) => b.beamT > 0).map((b) => ({ ...b, y: boss.y })) ?? []),
+      ...bosses.flatMap((boss) => boss.beams.filter((b) => b.beamT > 0).map((b) => ({ ...b, y: boss.y }))),
     ];
     this.beams.forEach((mesh, i) => {
       const b = bms[i];
@@ -531,8 +535,7 @@ export class EnemyView {
 
   }
 
-  private makeBoss(b: Boss): void {
-    this.bossView?.root.removeFromParent();
+  private makeBoss(b: Boss) {
     const kind = { gutter: 'raptor', custody: 'lancer', office: 'warbird', voice: 'drone', thren: 'weaver' }[b.faction] as AlienKind;
     const model = this.model(kind, b.faction);
     // its own materials, so the cloak can fade them
@@ -544,7 +547,9 @@ export class EnemyView {
     const root = new Group();
     root.add(hull.root);
     this.scene.add(root);
-    this.bossView = { id: b.id, root, hull, mats };
+    const view = { root, hull, mats };
+    this.bossViews.set(b.id, view);
+    return view;
   }
 }
 

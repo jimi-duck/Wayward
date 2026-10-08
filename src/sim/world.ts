@@ -5,7 +5,7 @@ import {
   arcTargets, burnAt, chainMines, CHAIN_CLOUD, GRAVITY_PULL, laySystems, newSystems, plasmaRing, stepBurns, stepMines,
   type Mine, type Reachable, type Systems,
 } from './arsenal';
-import { Command, type Strike, type Telegraph } from './bosses';
+import { Command, type Boss, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
@@ -89,6 +89,14 @@ export interface WorldOptions {
   carry?: Carry | null;
   /** The shared world's expanses and features (sim/space.ts): off until stage 3 of docs/ENVIRONMENT.md turns it on. */
   space?: boolean;
+  /** The review world (docs/REVIEW.md): a ship that cannot be hurt, in a gallery that holds still. src/review/ lays the exhibits. */
+  review?: boolean;
+}
+
+/** What the review world adds to a World: capital ships on show (the command only ever holds the one in the fight), and the places' gate and depot. */
+export interface ReviewState {
+  bosses: Boss[];
+  bk: Breakout | null;
 }
 
 const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false, cut: false };
@@ -186,6 +194,8 @@ export class World implements EncounterHost {
   closePressed = 0;
   run: RunStats;
   readonly unlocked: Set<string>;
+  /** Set in the review world only: nothing in it moves, hunts or hurts. */
+  review: ReviewState | null = null;
   /** The survival mode this run plays in: every rule that differs between modes reads its row (content/survival.ts). */
   survival: Survival = SURVIVAL[DEFAULT_SURVIVAL];
   private mods: Mods = NO_MODS;
@@ -299,6 +309,10 @@ export class World implements EncounterHost {
     this.mode = opts.mode ?? 'arcade';
     this.spaceOn = !!opts.space;
     if (this.spaceOn && this.mode === 'arcade') this.space = new Space(seed, { hazard: this.mods.hazard });
+    if (opts.review) {
+      this.review = { bosses: [], bk: null };
+      this.space = new Space(seed, { compose: false });
+    }
     this.sortie = opts.sortie ?? HOME;
     this.carryIn = opts.carry ?? null;
     this.run = newRun(seed, this.survival.id);
@@ -509,6 +523,7 @@ export class World implements EncounterHost {
 
   step(dt: number, input: InputFrame): void {
     useIds(this.ids);
+    if (this.review) return this.stepReview(dt, input);
     // an ambush on the table slows the world rather than stopping it, and does not wait for ever
     const slowed = this.phase === 'comms' && !!this.comms && this.comms.slow > 0;
     if (this.phase !== 'play' && !slowed) return;
@@ -592,6 +607,33 @@ export class World implements EncounterHost {
     // the decisions: a hail
     if (this.phase !== 'play') return;
     if (this.alive && this.command.hailing) this.phase = 'hail';
+  }
+
+  /**
+   * The review world's step (docs/REVIEW.md): the ship flies and fires, the
+   * place it is in works on it, and nothing else moves. No hull hunts, no rock
+   * drifts, no pickup fades, no clock runs down, and nothing collides, so
+   * there is nothing to die of.
+   */
+  private stepReview(dt: number, input: InputFrame): void {
+    Object.assign(this.prev, this.ship);
+    const s = this.ship;
+    const c = { ...flightControls(input), torpedo: false, cut: false };
+    stepShip(s, c, this.hull, dt);
+    if (this.space) {
+      // the place's pull and drag, without its lightning
+      const space = this.space;
+      space.step(dt, this.runTime, s);
+      const a = space.sample(s.x, s.z, this.air);
+      if (a.drag > 1) { const k = Math.exp(-(a.drag - 1) * 1.5 * dt); s.vx *= k; s.vz *= k; }
+      s.vx += a.ax * dt; s.vz += a.az * dt;
+      this.conditions = reports(a);
+    }
+    // free fire, at nothing: the lances only show what they look like
+    fireWeapons(this.arms, s, c, { ships: [], boss: null, rocks: [] }, this.stats, { rapid: true, damage: 1, drifting: drifting(s, this.hull) }, this.bolts, this.torps, this.events, dt);
+    moveBolts(this.bolts, dt);
+    this.time += dt;
+    this.runTime += dt;
   }
 
   // ── the Breakout ──────────────────────────────────────────────────────
@@ -970,6 +1012,7 @@ export class World implements EncounterHost {
    *            near, a capital ship engaged (inDanger)
    */
   alert(): Alert {
+    if (this.review) return 'clear';
     if (!this.alive || this.inDanger()) return 'red';
     const s = this.ship, cs = this.command.state;
     if (cs !== 'idle') return 'yellow';

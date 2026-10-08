@@ -122,7 +122,7 @@ export class BreakoutView {
 
   update(world: World, ship: { x: number; z: number; heading: number }, fx: Effects, dt: number): void {
     this.time += dt;
-    const b = world.bk;
+    const b = world.bk ?? world.review?.bk ?? null;
     this.lane.visible = !!b;
     this.port.visible = !!b?.port;
     if (!b) { this.beam.visible = this.bite.visible = false; return; }

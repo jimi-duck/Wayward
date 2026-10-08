@@ -94,7 +94,18 @@ export function hashSeed(key: string): number {
 /** The sky for a seed: a region's palette (0 to 2), or any (null, the arcade). */
 export function skyFor(seed: number, region: number | null): Sky {
   const r = rand(seed);
-  const p = region === null ? PALETTES[Math.floor(r() * PALETTES.length)]! : PALETTES[Math.max(0, Math.min(2, region))]!;
+  return paint(seed, r, region === null ? PALETTES[Math.floor(r() * PALETTES.length)]! : PALETTES[Math.max(0, Math.min(2, region))]!);
+}
+
+/** How many palettes there are: the three regions' and the arcade's extras. */
+export const PALETTE_COUNT = PALETTES.length;
+
+/** The sky for a seed in one named palette (the review world's switch; the game draws through skyFor). */
+export function skyIn(seed: number, palette: number): Sky {
+  return paint(seed, rand(seed), PALETTES[Math.max(0, Math.min(PALETTES.length - 1, palette))]!);
+}
+
+function paint(seed: number, r: () => number, p: Palette): Sky {
   const lin = (hex: string) => new Color(hex);
   const pp = p.planets[Math.floor(r() * p.planets.length)]!;
   // most systems have a world in view; a few are just the deep
