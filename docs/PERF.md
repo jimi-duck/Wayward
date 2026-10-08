@@ -120,3 +120,24 @@ leave.
 
 **After.** 0 draw calls over 60 frames with the bay open (was a full frame each).
 Real device: bay animation smoothness and battery.
+
+## Pass 5b: the far works were 86 draws
+
+**Cause.** Visual overhaul round two put a ring station, a fleet or a hulk on
+every sky. Each was built from dozens of separate boxes, so a sky with two of
+them was 83 more draw calls and 86 meshes every frame, for objects that never
+move. The code's comment said they were merged; they were not.
+
+**Change.** Each work is baked into one mesh per material (3 each, 6 a sky).
+Same triangles (1,644), same look; the geometry is built once per sky.
+
+**After (this machine, JS only).** Visible draw calls at cruise 83 fewer; the
+renderer's CPU per frame 2.9 to 2.6 ms (about 11%), at 960x540 on the dev server.
+That saving is several times larger on a phone, and the GPU's vertex and state
+work drops with it.
+
+## After round two of the visual overhaul (#151)
+
+Programs compiled after Start: still 0 (70 programs behind the title on High,
+67 on Medium, up from 60 and 57). Per-frame JS at cruise, medium tier: 3.4 ms
+here after this pass.
