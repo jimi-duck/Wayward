@@ -1,10 +1,12 @@
 import {
   AdditiveBlending, BoxGeometry, BufferAttribute, Color, Group, IcosahedronGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial,
-  SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, type BufferGeometry, type Scene, type Texture,
+  SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, Vector3, type BufferGeometry, type Material, type Scene, type Texture,
 } from 'three';
 import { FEATURES, type FeatureDef } from '../content/features';
 import { clamp } from '../core/math';
 import type { Feature, Space } from '../sim/space';
+import { designFor } from './hulls';
+import { metal } from './kit';
 import { cloudTexture } from './textures';
 
 // ── the shared world, drawn ───────────────────────────────────────────────
@@ -69,6 +71,41 @@ const ROCK_MAT = new MeshStandardMaterial({ color: 0x24211f, roughness: 0.95, me
 const HULL_MAT = new MeshStandardMaterial({ color: 0x4a5058, roughness: 0.55, metalness: 0.5, flatShading: true });
 const SLAB_MAT = new MeshStandardMaterial({ color: 0x07090b, roughness: 0.25, metalness: 0.8 });
 const CORE_MAT = new MeshBasicMaterial({ color: 0x000000 });
+
+// the dead: hull models from the same designs the fleets fly, gone cold, scorched and breached
+let dead: Record<string, Material> | null = null;
+function deadMaterials(): Record<string, Material> {
+  if (dead) return dead;
+  const coat = { painted: true, worn: 1, roughness: 0.78, metalness: 0.35 };
+  const cold = new MeshBasicMaterial({ color: new Color(0.9, 0.22, 0.06), toneMapped: false });
+  dead = {
+    hull: metal({ ...coat, tint: 0x1e1d1c, scale: 1.6 }), paint: metal({ ...coat, tint: 0x3a352f, scale: 1.2 }), patch: metal({ ...coat, tint: 0x4a443a }),
+    dark: metal({ ...coat, tint: 0x141312, scale: 1.8 }), trim: metal({ ...coat, tint: 0x3a2a24 }), glow: new MeshBasicMaterial({ color: 0x050505 }),
+    lamp: cold, crystal: metal({ ...coat, tint: 0x2a2418 }), violet: new MeshBasicMaterial({ color: 0x0a0610 }),
+  };
+  return dead;
+}
+const HULKS: Array<[Parameters<typeof designFor>[0], Parameters<typeof designFor>[1]]> = [['lancer', 'custody'], ['raptor', 'gutter'], ['warbird', 'office'], ['drone', 'voice'], ['freighter', 'custody']];
+const hulkModels = new Map<number, Group>();
+/** A dead hull of unit radius: one of the five designs, each built once. */
+function hulkModel(i: number): Group {
+  let g = hulkModels.get(i % HULKS.length);
+  if (!g) {
+    const [kind, faction] = HULKS[i % HULKS.length]!;
+    g = designFor(kind, faction)!.k.build(deadMaterials());
+    hulkModels.set(i % HULKS.length, g);
+  }
+  return g.clone();
+}
+
+/** A square bar from a to b, for gantry work. */
+function bar(parent: Group, mat: Material, a: Vector3, b: Vector3, t: number): void {
+  const m = new Mesh(BOX, mat as MeshStandardMaterial);
+  m.position.copy(a).add(b).multiplyScalar(0.5);
+  m.scale.set(t, t, a.distanceTo(b));
+  m.lookAt(b);
+  parent.add(m);
+}
 
 const rand = (seed: number) => {
   let s = (seed >>> 0) % 2147483647 || 1;
@@ -223,41 +260,72 @@ export class SpaceView {
         }
         break;
       case 'hulks':
-        // dead ships: a long hull, a stub of a spar, a dim lamp that has not quite died
+        // dead ships: the fleets' own hulls, cold, one lamp that has not quite died, a torn half drifting off each
         for (let i = 0; i < 5; i++) {
-          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.8, hull = new Group(), L = 30 + r() * 40;
+          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.8, hull = new Group(), L = 26 + r() * 30;
           hull.position.set(Math.cos(a) * k, (r() - 0.5) * 6, Math.sin(a) * k);
-          mesh(BOX, HULL_MAT, hull, 0, 0, 0, L, 6 + r() * 5, 8 + r() * 6).rotation.set(0, 0, 0);
-          mesh(BOX, HULL_MAT, hull, L * 0.3, 4, 0, L * 0.3, 3, 4).rotation.set(0, 0, 0);
-          mesh(BOX, HULL_MAT, hull, -L * 0.35, -2, 3, L * 0.25, 2, 9).rotation.set(0.2, 0.3, 0);
+          const body = hulkModel(i + Math.floor(r() * 5));
+          body.scale.setScalar(L * 0.5);
+          hull.add(body);
+          // wreckage: bent plates and a spar that came away
+          for (let j = 0; j < 5; j++) mesh(BOX, HULL_MAT, hull, (r() - 0.5) * L, (r() - 0.5) * L * 0.4, (r() - 0.5) * L * 0.8, 1.2 + r() * 4, 0.3, 1 + r() * 3.5);
+          bar(hull, HULL_MAT, new Vector3(-L * 0.2, 1, 0), new Vector3(-L * 0.9, 5 + r() * 6, (r() - 0.5) * 12), 0.5);
           hull.rotation.set((r() - 0.5) * 0.6, r() * 6, (r() - 0.5) * 0.6);
           g.add(hull);
           spin.push({ m: hull as unknown as Mesh, x: 0.01, y: (r() - 0.5) * 0.08, z: 0.01 });
         }
         break;
       case 'frame': {
-        // a gantry over an unfinished hull
-        const y = r() * 6;
-        mesh(BOX, HULL_MAT, g, 0, 9, 0, 80, 9, 14).rotation.set(0, 0, 0);
-        mesh(BOX, HULL_MAT, g, 30, 9, 0, 20, 7, 10).rotation.set(0, 0, 0);
-        for (const x of [-24, 24]) {
-          mesh(BOX, HULL_MAT, g, x, 22, 18, 3, 44, 3).rotation.set(0, 0, 0);
-          mesh(BOX, HULL_MAT, g, x, 22, -18, 3, 44, 3).rotation.set(0, 0, 0);
-          mesh(BOX, HULL_MAT, g, x, 44, 0, 3, 3, 39).rotation.set(0, 0, 0);
+        // a slipway: two gantry towers on rails, a lattice bridge, and an unfinished hull in the cradle, ribs and keel with no skin
+        const y = r() * 6, V = (x: number, yy: number, z: number) => new Vector3(x, yy, z);
+        for (let i = 0; i < 11; i++) {
+          const x = -36 + i * 7.2, h = 6 + Math.sin((i / 10) * Math.PI) * 8 * (i > 8 ? 0.4 : 1), w = 5 + Math.sin((i / 10) * Math.PI) * 5;
+          bar(g, HULL_MAT, V(x, 5 - h * 0.3, -w), V(x, 5 + h * 0.8, -w * 0.7), 0.6);
+          bar(g, HULL_MAT, V(x, 5 - h * 0.3, w), V(x, 5 + h * 0.8, w * 0.7), 0.6);
+          bar(g, HULL_MAT, V(x, 5 + h * 0.8, -w * 0.7), V(x, 5 + h * 0.8, w * 0.7), 0.5);
+          bar(g, HULL_MAT, V(x, 5 - h * 0.3, -w), V(x, 5 - h * 0.3, w), 0.5);
+          if (i < 10) bar(g, HULL_MAT, V(x, 5, 0), V(x + 7.2, 5, 0), 1.1);
         }
-        mesh(BOX, HULL_MAT, g, 0, 44, 0, 52, 2, 2).rotation.set(0, 0, 0);
+        for (const s2 of [-1, 1]) for (const x of [-26, 26]) {
+          const z = s2 * 22;
+          bar(g, HULL_MAT, V(x - 3, -2, z - 3), V(x, 46, z), 1.2);
+          bar(g, HULL_MAT, V(x + 3, -2, z - 3), V(x, 46, z), 1.2);
+          for (let j = 0; j < 6; j++) bar(g, HULL_MAT, V(x - 2.4 + (j % 2) * 4.8, 4 + j * 7, z), V(x + 2.4 - (j % 2) * 4.8, 11 + j * 7, z), 0.4);
+          mesh(BOX, HULL_MAT, g, x, -2, z, 9, 1.6, 9).rotation.set(0, 0, 0);
+        }
+        for (const x of [-26, 26]) bar(g, HULL_MAT, V(x, 46, -22), V(x, 46, 22), 1.4);
+        bar(g, HULL_MAT, V(-26, 47, 0), V(26, 47, 0), 1.6);
+        for (let j = 0; j < 9; j++) bar(g, HULL_MAT, V(-26 + j * 6.5, 46, 0), V(-26 + (j + 1) * 6.5, 50, 0), 0.4);
+        mesh(BOX, HULL_MAT, g, 40, 3, 0, 10, 7, 12).rotation.set(0, 0, 0);
         g.rotation.y = y;
         break;
       }
       case 'slab': {
+        // the relic: a black monolith, a plinth of broken ground, and fine seams of cold light drawn on its face
         face = true;
         mesh(BOX, SLAB_MAT, g, 0, 46, 0, 14, 92, 3).rotation.set(0, 0, 0);
+        const seam = new MeshBasicMaterial({ color: new Color(0.35, 0.8, 1.1), toneMapped: false });
+        for (let i = 0; i < 7; i++) {
+          const y = 12 + i * 11, w = 6 + (i % 3) * 2;
+          mesh(BOX, seam, g, 0, y, 1.6, w, 0.16, 0.05).rotation.set(0, 0, 0);
+          if (i % 2) mesh(BOX, seam, g, (i % 4 ? 1 : -1) * w * 0.5, y + 5, 1.6, 0.16, 10, 0.05).rotation.set(0, 0, 0);
+        }
+        mesh(BOX, seam, g, 0, 91.5, 0, 14, 0.25, 3.05).rotation.set(0, 0, 0);
+        for (let i = 0; i < 9; i++) {
+          const a = r() * Math.PI * 2, k = 6 + r() * 14, s2 = 1.5 + r() * 4;
+          mesh(chunk(i), ROCK_MAT, g, Math.cos(a) * k, s2 * 0.3, Math.sin(a) * k, s2, s2 * 0.6, s2);
+        }
         break;
       }
       case 'lens': {
         // a dark centre, a rim of light, rings turning
         const core = new Mesh(new SphereGeometry(1, 20, 14), CORE_MAT);
         core.scale.setScalar(f.r * 0.07); core.position.y = 3; g.add(core);
+        // a photon ring hugging the dark, and a soft halo behind it that the core cuts a hole in
+        const photon = new Mesh(new TorusGeometry(f.r * 0.073, f.r * 0.0035, 6, 96), new MeshBasicMaterial({ color: new Color(2.6, 1.8, 3.4), transparent: true, opacity: 0.85, blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
+        photon.rotation.x = Math.PI / 2; photon.position.y = 3; g.add(photon); rings.push(photon);
+        const halo = new Sprite(new SpriteMaterial({ map: this.glow, color: new Color(1.4, 0.7, 2.6), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0.55 }));
+        halo.scale.setScalar(f.r * 0.5); halo.position.set(0, 3, 0); g.add(halo);
         for (let i = 0; i < 3; i++) {
           const ring = new Mesh(new TorusGeometry(f.r * (0.12 + i * 0.1), 0.35 + i * 0.15, 6, 72), new MeshBasicMaterial({ color: new Color(1.1 + i * 0.3, 0.5, 2.4 - i * 0.3), transparent: true, opacity: 0.45 - i * 0.1, blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
           ring.rotation.x = Math.PI / 2; ring.position.y = 3; g.add(ring); rings.push(ring);

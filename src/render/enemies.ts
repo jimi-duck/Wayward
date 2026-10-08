@@ -10,6 +10,7 @@ import {
 } from '../sim/enemies';
 import { Kit, metal, seeded, type V3 } from './kit';
 import { GLOW, HULL_LOOK } from './look';
+import { designFor } from './hulls';
 import { STREAK, type Streaks } from './streaks';
 
 // ── the enemy ─────────────────────────────────────────────────────────────
@@ -135,6 +136,8 @@ function dress(k: Kit, kind: AlienKind, f: Faction, rnd: () => number): void {
 
 /** A hull of unit radius, nose +X, in a faction's metal. */
 function build(kind: AlienKind, faction: Faction): Model {
+  const design = designFor(kind, faction);
+  if (design) return { root: design.k.build(factionMaterials(faction)), engines: design.engines, lamps: design.lamps };
   const k = new Kit(), rnd = seeded(kind.length * 31 + kind.charCodeAt(0));
   const engines: V3[] = [];
   // Running lights and windows are not geometry: they are drawn as light
@@ -261,19 +264,45 @@ export function wreck(): Group {
   return m.root;
 }
 
+/**
+ * Grown crystal: a dark smoky amber body that lights from inside. Facing
+ * the eye it is deep and nearly black; at a glancing angle the edge fills
+ * with amber, and every facet takes a slightly different depth, so a hull
+ * reads as a cut stone with a light in it, not a painted shape.
+ */
+function crystalMaterial(body: number, glow: number): MeshStandardMaterial {
+  const m = new MeshStandardMaterial({ color: new Color(body).multiplyScalar(0.05), roughness: 0.14, metalness: 0.85, flatShading: true, envMapIntensity: 0.8 });
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uInner = { value: new Color(glow).multiplyScalar(1.5) };
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uInner;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        vec3 nv = normalize(vViewPosition);
+        float edge = pow(1.0 - abs(dot(normalize(normal), nv)), 2.2);
+        float facet = fract(sin(dot(floor(normal * 6.0), vec3(12.9, 78.2, 37.7))) * 43758.5) * 0.5 + 0.5;
+        totalEmissiveRadiance += uInner * (0.015 + edge * 1.9) * facet * facet;`);
+  };
+  m.customProgramCacheKey = () => 'thren-crystal';
+  return m;
+}
+
 const factionMats = new Map<Faction, Record<string, Material>>();
 function factionMaterials(f: Faction): Record<string, Material> {
   let m = factionMats.get(f);
   if (!m) {
     const l = HULL_LOOK[f];
-    const coat = { painted: true, worn: l.worn, roughness: 0.62, metalness: 0.1 };
+    const coat = { painted: true, worn: l.worn, roughness: 0.62, metalness: 0.1, engine: NEON[f].clone().multiplyScalar(0.12) };
+    const lit = (c: number, k: number) => new MeshStandardMaterial({ color: c, emissive: new Color(c).multiplyScalar(k), roughness: 0.4, metalness: 0.2 });
     m = {
-      hull: metal({ ...coat, tint: l.paint, scale: 1.2 }),
-      dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.35, scale: 1.8 }),
-      trim: f === 'thren'
-        ? new MeshStandardMaterial({ color: l.trim, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.35), roughness: 0.4, metalness: 0.2 })
-        : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
+      hull: metal({ ...coat, tint: l.base, roughness: 0.6, metalness: 0.45, scale: 1.8 }),
+      paint: metal({ ...coat, tint: l.paint, scale: 1.2 }),
+      patch: metal({ ...coat, tint: l.patch, scale: 1.4 }),
+      dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.5, scale: 1.8 }),
+      trim: f === 'thren' ? lit(l.trim, GLOW.trim * 0.35) : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
+      glow: lamp(NEON[f].clone().multiplyScalar(0.9)),
       lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
+      crystal: crystalMaterial(l.paint, l.trim),
+      violet: lamp(NEON.thren.clone().multiplyScalar(0.55)),
     };
     factionMats.set(f, m);
   }

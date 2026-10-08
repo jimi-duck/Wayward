@@ -4,6 +4,7 @@ import {
   Scene, ShaderMaterial, SphereGeometry, Vector3, type Camera, type WebGLRenderer, type WebGLRenderTarget,
 } from 'three';
 import { bakeSky, FarBodies, Parallax, skyFor, type Sky } from './sky';
+import { WORLD_RIM } from './kit';
 
 // ── deep space ────────────────────────────────────────────────────────────
 // No grid and no floor: just the dark. Back to front: the sky (render/sky.ts:
@@ -26,6 +27,7 @@ const DUST_BOX = 130;
 const KEY_TINT = new Color();
 
 export class Environment {
+  private readonly skyRim = new Color();
   readonly group = new Group();
   private readonly stars = new Group();
   private readonly dustBase: Float32Array;
@@ -123,6 +125,8 @@ export class Environment {
     this.far = new FarBodies(sky, new Vector3(-40, 55, -10));
     this.stars.add(this.far.group);
     this.parallax.setSky(sky);
+    this.skyRim.copy(sky.neb[0]).lerp(sky.neb[2], 0.35).multiplyScalar(0.5);
+    WORLD_RIM.value.copy(this.skyRim);
   }
 
   /**
@@ -138,6 +142,8 @@ export class Environment {
     this.scene.backgroundIntensity = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
     this.far?.dim(1 - nebula * 0.7);
     this.parallax.dim(1 - nebula * 0.6);
+    WORLD_RIM.value.copy(this.skyRim).multiplyScalar(1 + flash * 4);
+    if (t) WORLD_RIM.value.r += t[0] * 0.25, WORLD_RIM.value.g += t[1] * 0.25, WORLD_RIM.value.b += t[2] * 0.25;
     this.key.intensity = 4.4 + flash * 9;
     this.key.color.setRGB(1, 0.9 + flash * 0.1, 0.78 + flash * 0.22);
     if (t) this.key.color.lerp(KEY_TINT.setRGB(0.55 + t[0] * 1.6, 0.6 + t[1] * 1.6, 0.7 + t[2] * 1.6), Math.min(0.6, (t[0] + t[1] + t[2]) * 1.1));

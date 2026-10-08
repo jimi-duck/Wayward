@@ -214,7 +214,12 @@ export const PERTURB = /* glsl */ `
     return (l > 1e-20 && l == l) ? p * inversesqrt(l) : n;
   }`;
 
+/** The sky's light on every kit surface that faces away from the key: a faint rim in the nebula's colour (set by the environment). */
+export const WORLD_RIM = { value: new Color(0.03, 0.035, 0.07) };
+
 export interface MetalOptions {
+  /** Light from the hull's own drives, washing forward along the aft of the model (HDR colour). */
+  engine?: Color;
   tint: number | Color;
   roughness?: number;
   metalness?: number;
@@ -256,6 +261,8 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
       shader.uniforms.uHits = { value: hits };
     }
     shader.uniforms.uKitScale = { value: scale };
+    shader.uniforms.uRim = WORLD_RIM;
+    if (o.engine) shader.uniforms.uEngine = { value: o.engine };
     shader.uniforms.uKitStrength = { value: strength };
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vKitP; varying vec3 vKitN; uniform float uKitScale;')
@@ -263,7 +270,12 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         varying vec3 vKitP; varying vec3 vKitN; uniform sampler2D uKitBump; uniform float uKitStrength;
+        uniform vec3 uRim; uniform float uKitScale;${o.engine ? ' uniform vec3 uEngine;' : ''}
         ${PERTURB}`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        float kitRim = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
+        totalEmissiveRadiance += uRim * kitRim * (0.5 + 0.5 * metalnessFactor);
+        ${o.engine ? 'totalEmissiveRadiance += uEngine * diffuseColor.rgb * (1.0 - smoothstep(-1.0, -0.1, vKitP.x / uKitScale)) * 0.9;' : ''}`)
       .replace('#include <map_fragment>', `
         vec3 kitW = pow(abs(normalize(vKitN)), vec3(4.0)); kitW /= (kitW.x + kitW.y + kitW.z);
         vec4 kitC = texture2D(map, vKitP.zy) * kitW.x + texture2D(map, vKitP.xz) * kitW.y + texture2D(map, vKitP.xy) * kitW.z;
@@ -275,7 +287,7 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);`);
     if (worn > 0) wearShader(shader, painted);
   };
-  m.customProgramCacheKey = () => `kit-metal-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}`;
+  m.customProgramCacheKey = () => `kit-metal-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}`;
   return m;
 }
 
@@ -432,6 +444,13 @@ export class Kit {
       { depth: height, bevelEnabled: true, bevelSize: Math.min(0.03, height * 0.2), bevelThickness: Math.min(0.03, height * 0.2), bevelSegments: 1 });
     g.rotateX(-Math.PI / 2);
     g.translate(0, -height / 2, 0);
+    this.add(key, g, pos, rot);
+  }
+
+  /** A faceted solid of revolution round +Y (six sides, flat-shaded): grown crystal. Profile is [radius, height] bottom to top. */
+  shard(key: string, profile: Array<[number, number]>, pos: V3, rot: V3 = [0, 0, 0]): void {
+    const g = new LatheGeometry(profile.map(([r, y]) => new Vector2(r, y)), 6).toNonIndexed();
+    g.computeVertexNormals();
     this.add(key, g, pos, rot);
   }
 
