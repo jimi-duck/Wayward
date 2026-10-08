@@ -129,7 +129,26 @@ a crowded review stop; real frame rate is for a device.
 ## Left for a device, or later
 
 - **Frame rate.** The software renderer here cannot measure it. The added cost is small (a few dozen merged boxes per hull model, three instanced pickup draws, ten cradles, 48 thin rings) but a phone should be checked on a crowded Raider fight.
-- **Hull silhouettes from far away.** The faction outlines are modest additions to the archetype shapes. A real redesign per archetype (SHIPS.md's full roster, with the Office's crescent hulls and the Thren's blades built as whole bodies) is the next large step, and wants the art director's input.
+- **Hull silhouettes from far away (round two redesigned all fifteen; a device and the art director should now judge them).** The faction outlines are modest additions to the archetype shapes. A real redesign per archetype (SHIPS.md's full roster, with the Office's crescent hulls and the Thren's blades built as whole bodies) is the next large step, and wants the art director's input.
 - **Bulwark and large rock close up.** The plating texture magnifies visibly when a bulwark fills the screen. A finer detail layer or a second texture scale would fix it.
 - **Thren trim** reads a little flat violet on big blades; a faint gradient would help.
 - **Story look.** The new region skies, the gate and the port could only be seen in the review world, not in a flown Story run.
+
+## Round two: from effects on prototype shapes to designed things
+
+Round one gave everything the right colours and a few outline touches. The
+verdict was fair: good prototype geometry with effects added. Round two
+changed the geometry and the materials, with the Wayward as the bar.
+Screenshots are in `visual-overhaul/round2/` (hull studio shots `h-`, `t-`,
+`u-`, `v-`, `w-`; rock `rl-`; Krail and finds `pq-`, `pr-`, `ps-`; gate and
+port `pl-`; sky `sl-`; features `fu-`).
+
+- **Hulls** (`render/hulls.ts`, new). All fifteen variants are designed from the inside out and built from the kit: dark structure with the faction's coat on raised armour plates over a dark gap, engine housings with bells and cooling fins, hardpoint mounts, vents, bolts, lit slits. Gutter is lopsided and patched, with a mismatched replacement panel and heat scars; Custody is disciplined rows of identical armour modules, sensor masts and heavy turrets; the Office is a narrow swept crescent with recessed lit edges; the Voice is a foundry crust of vents, pipes and green slits with no cockpit; the Thren are dark crystal bodies lit from inside, with amber showing along the edges, not violet trim on a normal ship. Capitals are the same hulls scaled. `enemies.ts` asks `designFor()` first and keeps the old builds only as a fallback; `dress()` is therefore dead weight for the shipped roster and can go when nothing falls back.
+- **Materials.** One shared language: `base`, `paint`, `patch`, `under`, `trim` per faction in `HULL_LOOK`; every kit metal now takes a faint rim in the nebula's colour (`WORLD_RIM`, set per sky, brightened by lightning and a place's tint) and each hull takes a warm wash from its own drives on the aft of its body. Thren crystal is its own material (dark, glassy, amber at glancing angles, each facet a different depth).
+- **Rock.** Fracture planes cut flat faces into each shape; the shader adds strata (beds with their own shades, a lit lip), mineral inclusions (elongated, lit in the rock's colour) and a charged rim. Rich reads violet and glittering, Rare gold, Volatile hot at the rim before it goes, Iron banded. Rare and Volatile glow toned down so they no longer wash out.
+- **Krail** is a six-sided glass prism with two shards grown off it, dark body lit from inside in its worth colour (white, blue, purple unchanged), a rim and a slow shimmer moving facet to facet. **Cyrite** is a violet crystal pair in a dark clamp, **ore** a split rock lump with a bright seam and a strap, **parts** a hard case with corner guards, a handle and a latch lamp. Power-ups sit in a cage: base, collar, three arms, clamps.
+- **Gate and port.** Round one's structures gain a second level: an outer ring truss between the pylon heads, sagging cable runs, lamp strings, transformer tanks with hazard stripes, a hanging keystone on four cables; the port gains truss spines under the docking arms, a crane with a cargo pod on its hooks, cable runs hub to tanks, four radiator fins and a comms dish.
+- **Space.** `render/farworks.ts`: a ring station, an anchored fleet and a hulk sit far out on the sky, hazy silhouettes with a few lamps, so there is scale behind the planet. Graveyards are the fleets' own hulls, cold and breached; the slipway is a real gantry with ribs in the cradle; the relic has seams of cold light; the well has a photon ring and a halo.
+- **Not done in round two** (judged on screenshots here): clouds (veil, shroud, curtain, storm) are still additive sprites; the shroud does not yet occlude real hulls with a shader; storm light on nearby rocks; per-hull bespoke damage states. Combat marks were looked at and left, they already share one streak renderer and the warning beat.
+
+Cost, counted with the scene traversal in the review world (no GPU here): about 356 visible meshes in the review baseline, about 460 beside a slipway, 160 k triangles; hulls are still instanced, parts merge one draw per material key. Per-frame JS is unchanged. Shader cost rose a little (rim and engine terms on kit metal, strata and inclusions on rock); a device must check a crowded Raider fight.
