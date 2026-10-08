@@ -21,7 +21,7 @@ export interface HullLook {
 export const HULL_LOOK: Record<Faction, HullLook> = {
   gutter: { paint: 0x8a5a42, under: 0x4a3a34, trim: 0x9c3a22, worn: 1 },
   custody: { paint: 0xa89460, under: 0x5a5038, trim: 0x8c3a24, worn: 0.6 },
-  office: { paint: 0x6a8a78, under: 0x34423c, trim: 0x7aa890, worn: 0.4 },
+  office: { paint: 0x56725f, under: 0x34423c, trim: 0x7aa890, worn: 0.4 },
   voice: { paint: 0x3a403d, under: 0x1e2220, trim: 0x2f6a48, worn: 0.8 },
   thren: { paint: 0xa8885a, under: 0x5a4a34, trim: 0x8a52b0, worn: 0.3 },
 };
