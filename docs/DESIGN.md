@@ -254,6 +254,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `meta/save.ts`, `ui/chart.ts` |
 | Score and the record | `sim/run.ts`, `sim/tuning.ts` | `World.addScore`, `World.finish` |
 | Between runs | `content/unlocks.ts` | `meta/profile.ts` (localStorage), `ui/panels.ts` |
+| The review world (`?dev`) | the exhibits, in `review/gallery.ts` | `World.review` / `stepReview`, `review/panel.ts`; see [REVIEW.md](REVIEW.md) |
 
 ### Adding things
 

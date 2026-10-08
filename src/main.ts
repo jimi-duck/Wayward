@@ -40,7 +40,7 @@ function el<T extends HTMLElement = HTMLElement>(id: string): T {
   return node as T;
 }
 
-function boot(): void {
+function boot(review: typeof import('./review') | null): void {
   // the language first: everything after draws its text in it
   setLang(detect(), false);
   localize();
@@ -59,7 +59,10 @@ function boot(): void {
 
   // The pilot's record between runs: bests, unlocks, the survival mode chosen for the next run.
   const profile = loadProfile();
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: profile.mode, space: params.has('space') });
+  // ?dev is the review world (docs/REVIEW.md): a gallery of everything in the game, flown without risk, and nothing it does is saved
+  const dev = review !== null;
+  const persist = (p: typeof profile) => { if (!dev) saveProfile(p); };
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: dev ? 'arcade' : profile.mode, space: params.has('space'), review: dev });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);
@@ -78,9 +81,10 @@ function boot(): void {
   const zoom = (dir: number) => {
     sector.rig.zoom = clamp(sector.rig.zoom + dir, 0, ZOOMS.length - 1);
     profile.zoom = sector.rig.zoom;
-    saveProfile(profile);
+    persist(profile);
   };
   const hud = new Hud();
+  const tour = review ? review.startReview(el('app'), world, sector) : null;
 
   // An iPhone gives a page in a browser no fullscreen, and the browser keeps
   // its tabs and bars on screen until the page scrolls (the swipe screen,
@@ -291,7 +295,7 @@ function boot(): void {
     noticeOf(j, { ...out, lines });
   };
   const startOpts = new StartOptions(profile, () => {
-    saveProfile(profile);
+    persist(profile);
     sector.setCosmetic(profile.cosmetic);
     // before the first launch nothing has happened yet, so the run can be re-made in the new survival mode
     if (!started) world.restart({ survival: profile.survival, mode: profile.mode });
@@ -387,7 +391,7 @@ function boot(): void {
   document.documentElement.classList.add('prelaunch');
   const setPaused = (on: boolean) => {
     // the first stop of the first run is the briefing; once read, it is the pause card
-    if (!on && loop.paused && started && carded && !profile.briefed) { profile.briefed = true; saveProfile(profile); }
+    if (!on && loop.paused && started && carded && !profile.briefed) { profile.briefed = true; persist(profile); }
     if (on && started) carded = true;
     loop.paused = on;
     if (on) showSettings(false);
@@ -443,7 +447,7 @@ function boot(): void {
     if (started) return;
     if (mode !== profile.mode) {
       profile.mode = mode;
-      saveProfile(profile);
+      persist(profile);
     }
     started = true;
     el('start').hidden = true;
@@ -499,6 +503,7 @@ function boot(): void {
       feel.bed(there && !loop.paused ? FEATURES[there.def].voice : null, world.air.weight);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.frame(world, alpha, dt, frameDt);
+      tour?.frame();
       hud.update(world, sector, frameDt);
       if (started) stops();
       debug.frame(frameDt, renderer, quality, input, loop.paused);
@@ -654,8 +659,12 @@ function boot(): void {
   // hidden (no animation frames) and read the state back. Stripped from builds.
   if (import.meta.env.DEV) Object.assign(window, { __ab: { world, loop, sector, renderer, input, launch, hud, profile, journey: () => journey, clearJourney } });
 
+  // the review world has no title: it opens in the gallery, flying
+  if (dev) { launch('arcade'); setPaused(false); }
   loop.start();
 }
 
-// German players wait for their dictionary; everyone else starts at once
-(detect() === 'de' ? loadDe() : Promise.resolve()).then(boot);
+// German players wait for their dictionary; everyone else starts at once.
+// The review world's code is fetched only for ?dev.
+const reviewing = new URLSearchParams(location.search).has('dev');
+Promise.all([detect() === 'de' ? loadDe() : Promise.resolve(), reviewing ? import('./review') : null]).then(([, review]) => boot(review));
