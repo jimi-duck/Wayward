@@ -9,6 +9,7 @@ import {
   ALIEN_ORDER, ALIEN_TYPES, BEAM_FIRE, BEAM_LEN, JINK_ROLL, type Alien, type AlienKind, type EliteId, type Faction, type Shot, type Web,
 } from '../sim/enemies';
 import { Kit, metal, seeded, type V3 } from './kit';
+import { GLOW, HULL_LOOK } from './look';
 import { STREAK, type Streaks } from './streaks';
 
 // ── the enemy ─────────────────────────────────────────────────────────────
@@ -40,13 +41,6 @@ export const NEON: Record<Faction, Color> = {
   office: new Color(0.5, 3.4, 1.2),
   voice: new Color(0.7, 3.6, 0.6),
   thren: new Color(3.0, 1.0, 3.4),
-};
-const FACTION_METAL: Record<Faction, number> = {
-  gutter: 0x7a5646,
-  custody: 0x8f805c,
-  office: 0x5c7466,
-  voice: 0x3b403d,
-  thren: 0x9a7a52,
 };
 const WEB = new Color(2.2, 0.9, 3.4);
 
@@ -201,13 +195,14 @@ const factionMats = new Map<Faction, Record<string, Material>>();
 function factionMaterials(f: Faction): Record<string, Material> {
   let m = factionMats.get(f);
   if (!m) {
-    const tint = FACTION_METAL[f];
+    const l = HULL_LOOK[f];
+    const coat = { painted: true, worn: l.worn, roughness: 0.62, metalness: 0.1 };
     m = {
-      hull: metal({ tint, roughness: 0.6, metalness: 0.55, scale: 1.6 }),
-      dark: metal({ tint: new Color(tint).multiplyScalar(0.55), roughness: 0.5, metalness: 0.7, scale: 2.2 }),
+      hull: metal({ ...coat, tint: l.paint, scale: 1.2 }),
+      dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.35, scale: 1.8 }),
       trim: f === 'thren'
-        ? new MeshStandardMaterial({ color: 0x5a3a14, emissive: new Color(1.4, 0.7, 0.1), roughness: 0.25, metalness: 0.2 })
-        : metal({ tint: 0x6a2220, roughness: 0.65, metalness: 0.35, scale: 2 }),
+        ? new MeshStandardMaterial({ color: l.trim, emissive: new Color(l.trim).multiplyScalar(GLOW.trim), roughness: 0.25, metalness: 0.2 })
+        : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
       lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
     };
     factionMats.set(f, m);
