@@ -20,6 +20,7 @@
     "pilot:endings": "vitest run --config tools/vitest.config.ts tools/endings.pilot.ts",
     "pilot:space": "vitest run --config tools/vitest.config.ts tools/space.pilot.ts",
     "pilot:comms": "vitest run --config tools/vitest.config.ts tools/comms.pilot.ts",
+    "pilot:perf": "vitest run --config tools/vitest.config.ts tools/perf.pilot.ts",
     "pilot:feel": "vitest run --config tools/vitest.config.ts tools/feel.pilot.ts"
   },
   "engines": {

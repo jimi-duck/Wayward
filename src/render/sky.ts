@@ -268,6 +268,31 @@ const BAKE = /* glsl */ `
   }
 `;
 
+/**
+ * The baking pass: one material, one quad, kept for the life of the page. A
+ * material disposed after each bake would drop its program with it, and the
+ * heaviest shader in the game would compile again for every system.
+ */
+let baker: { scene: Scene; camera: OrthographicCamera; uniforms: Record<string, { value: unknown }> } | null = null;
+
+function bakePass() {
+  if (baker) return baker;
+  const mat = new ShaderMaterial({
+    vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: BAKE,
+    uniforms: {
+      uSeed: { value: 0 }, uGlow: { value: 0 }, uClouds: { value: 0 }, uStars: { value: 0 },
+      uNebA: { value: new Color() }, uNebB: { value: new Color() }, uNebC: { value: new Color() },
+      uBand: { value: new Color() }, uBandN: { value: new Vector3() },
+      uC: { value: [0, 1, 2, 3, 4].map(() => new Vector4()) },
+    },
+    depthTest: false, depthWrite: false,
+  });
+  const scene = new Scene();
+  scene.add(new Mesh(new PlaneGeometry(2, 2), mat));
+  return (baker = { scene, camera: new OrthographicCamera(), uniforms: mat.uniforms });
+}
+
 /** Paint a sky into an equirectangular texture, on the GPU. The caller owns (and disposes) the target. */
 export function bakeSky(renderer: WebGLRenderer, sky: Sky, width = 2048): WebGLRenderTarget {
   const r = rand(sky.seed * 7 + 3);
@@ -276,33 +301,22 @@ export function bakeSky(renderer: WebGLRenderer, sky: Sky, width = 2048): WebGLR
   // five clouds spread round the compass, so every heading has one in view,
   // where the camera looks: round the horizon and below it
   const az0 = r() * 360;
-  const clouds = [0, 1, 2, 3, 4].map((i) => {
+  const pass = bakePass(), u = pass.uniforms;
+  const clouds = u.uC!.value as Vector4[];
+  clouds.forEach((c, i) => {
     const d = dirOf(az0 + i * 72 + (r() - 0.5) * 40, -32 + r() * 38);
-    return new Vector4(d.x, d.y, d.z, (0.05 + r() * 0.07) * sky.clouds);
+    c.set(d.x, d.y, d.z, (0.05 + r() * 0.07) * sky.clouds);
   });
   // the band tilts down through the view somewhere round the compass
-  const bandN = dirOf(r() * 360, 25 + r() * 40);
-  const mat = new ShaderMaterial({
-    vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
-    fragmentShader: BAKE,
-    uniforms: {
-      uSeed: { value: sky.seed % 97 + r() * 10 },
-      uGlow: { value: sky.glow }, uClouds: { value: sky.clouds }, uStars: { value: sky.stars },
-      uNebA: { value: sky.neb[0] }, uNebB: { value: sky.neb[1] }, uNebC: { value: sky.neb[2] },
-      uBand: { value: sky.band }, uBandN: { value: bandN },
-      uC: { value: clouds },
-    },
-    depthTest: false, depthWrite: false,
-  });
-  const quad = new Mesh(new PlaneGeometry(2, 2), mat);
-  const scene = new Scene();
-  scene.add(quad);
+  (u.uBandN!.value as Vector3).copy(dirOf(r() * 360, 25 + r() * 40));
+  u.uSeed!.value = sky.seed % 97 + r() * 10;
+  u.uGlow!.value = sky.glow; u.uClouds!.value = sky.clouds; u.uStars!.value = sky.stars;
+  (u.uNebA!.value as Color).copy(sky.neb[0]); (u.uNebB!.value as Color).copy(sky.neb[1]); (u.uNebC!.value as Color).copy(sky.neb[2]);
+  (u.uBand!.value as Color).copy(sky.band);
   const prev = renderer.getRenderTarget();
   renderer.setRenderTarget(target);
-  renderer.render(scene, new OrthographicCamera());
+  renderer.render(pass.scene, pass.camera);
   renderer.setRenderTarget(prev);
-  quad.geometry.dispose();
-  mat.dispose();
   return target;
 }
 

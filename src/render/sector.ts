@@ -139,18 +139,37 @@ export class Sector {
    * first hit and each new kind of hull would each stall a frame on a phone
    * while its program compiles.
    */
-  warm(): void {
+  warm(): Promise<unknown> {
     const hidden: Object3D[] = [];
     this.scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
     const gallery = this.enemies.gallery();
     gallery.add(wreck());
     this.scene.add(gallery);
+    const { renderer, post } = this, was = renderer.getRenderTarget();
+    let compiling: Promise<unknown>;
     try {
-      this.renderer.compile(this.scene, this.rig.camera);
+      // On Medium and High the scene is drawn into the post chain's linear buffer, which
+      // is a different program for every material than drawing to the canvas; compile
+      // for the buffer the frames will really use. compileAsync starts every link now,
+      // so the objects can go back to hidden before it finishes.
+      renderer.setRenderTarget(post?.composer?.inputBuffer ?? null);
+      compiling = renderer.compileAsync(this.scene, this.rig.camera);
     } finally {
+      renderer.setRenderTarget(was);
       gallery.removeFromParent();
       for (const o of hidden) o.visible = false;
     }
+    return compiling;
+  }
+
+  /**
+   * One frame through the post chain, which compiles its passes (bloom, SMAA)
+   * and uploads the textures, instead of leaving them to the first frame after
+   * Start. Behind the title only: the canvas is blanked again.
+   */
+  warmFrame(): void {
+    this.post?.render(0);
+    this.renderer.clear();
   }
 
   /** Where a world point lands on screen, in CSS pixels; null when behind the camera. */
