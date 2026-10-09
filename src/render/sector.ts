@@ -47,6 +47,9 @@ const BLAST_TINT: Record<string, RGB> = {
   torpedo: FIRE, bomblet: FIRE, mine: AMBER, volatile: [4.2, 2.6, 1.2], elite: [3.6, 1.2, 0.3], reactive: SHIELD, strike: FIRE,
 };
 
+/** How far the bay's ease must have run before it covers the view completely. */
+const COVERED = 0.985;
+
 export class Sector {
   readonly scene = new Scene();
   readonly rig = new CameraRig();
@@ -77,6 +80,8 @@ export class Sector {
   /** The review world pins a sky of its own; the run's is left alone while it holds. */
   private pinned = false;
   reduceMotion = false;
+  /** An opaque panel (the refit bay) is over the whole view. */
+  covered = false;
 
   constructor(private readonly renderer: WebGLRenderer, private tier: QualityTier) {
     const glow = glowTexture();
@@ -461,6 +466,8 @@ export class Sector {
     this.space.update(world.space, this.rig.target.x, this.rig.target.z, dt, this.reduceMotion);
     this.env.weather(this.nebula, this.reduceMotion ? 0 : this.flash, m);
 
+    // the refit bay is opaque and covers the whole view once the ship has settled under it: nothing to draw, and phones animate its cards more smoothly without a full frame behind them
+    if (this.covered && this.bayK > COVERED) return;
     if (!this.post?.render(dt)) this.renderer.render(this.scene, this.rig.camera);
   }
 

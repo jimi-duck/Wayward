@@ -1,4 +1,5 @@
-import { BoxGeometry, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, TorusGeometry, type Material } from 'three';
+import { BoxGeometry, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, TorusGeometry, type BufferGeometry, type Material } from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { dirOf, type Sky } from './sky';
 import { seeded } from './kit';
 
@@ -7,9 +8,29 @@ import { seeded } from './kit';
 // anchor, a hulk. Each is a small kit model set far out on the sky sphere, a
 // dark silhouette with a few lights, tinted toward the haze it sits in, so
 // the sky has scale and a history, and a ship in the foreground is measured
-// against them. They are kit-built and merged; three draws or so apiece.
+// against them. They are kit-built and merged: one draw a material, three apiece.
 
 type Mats = { body: Material; dark: Material; lamp: Material };
+
+/** Bake a built work's parts into one mesh a material: dozens of boxes would be dozens of draws, every frame, for a thing that never moves. */
+function merged(work: Group): Group {
+  work.updateMatrixWorld(true);
+  const by = new Map<Material, BufferGeometry[]>();
+  work.traverse((o) => {
+    if (!(o instanceof Mesh)) return;
+    const g = o.geometry.clone().applyMatrix4(o.matrixWorld);
+    o.geometry.dispose();
+    const list = by.get(o.material as Material);
+    if (list) list.push(g); else by.set(o.material as Material, [g]);
+  });
+  const out = new Group();
+  for (const [material, list] of by) {
+    const geo = mergeGeometries(list)!;
+    for (const g of list) g.dispose();
+    out.add(new Mesh(geo, material));
+  }
+  return out;
+}
 
 function materials(sky: Sky): Mats {
   const haze = sky.star.clone().lerp(new Color(0.2, 0.22, 0.32), 0.7);
@@ -118,7 +139,7 @@ export function farWorks(sky: Sky, D: number): Group {
   const n = 2;
   const start = Math.floor(rnd() * makers.length);
   for (let i = 0; i < n; i++) {
-    const work = makers[(start + i) % makers.length]!(m, rnd);
+    const work = merged(makers[(start + i) % makers.length]!(m, rnd));
     const avoid = sky.planet ? sky.planet.az : 0;
     const az = avoid + 70 + rnd() * 100 + i * 120, el = -4 + rnd() * 16;
     const at = dirOf(az, el).multiplyScalar(D * (0.7 + rnd() * 0.15));
