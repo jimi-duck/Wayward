@@ -105,7 +105,7 @@ export function hailView(c: Contact): CommsView {
     read: null,
     face: null,
     choices: [
-      { label: t('Engage'), hint: t('Fight her. Her wreck pays a refit, her tech, hull, Krail and a power-up.'), lines: [], gains: ['Fight', t('+{n} score', { n: fmt(c.bounty) }), 'Refit'], tags: [], ok: true, needs: [] },
+      { label: t('Engage'), hint: t('Fight her. Her wreck pays a refit, her tech, hull, chits and a power-up.'), lines: [], gains: ['Fight', t('+{n} score', { n: fmt(c.bounty) }), 'Refit'], tags: [], ok: true, needs: [] },
       evade,
     ],
   };

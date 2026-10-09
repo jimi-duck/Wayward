@@ -115,7 +115,7 @@ export const NOTICE: Record<Faction, FactionNotice> = {
     kill: { interceptor: 1, cruiser: 2, special: 2, capital: 6 }, decay: 0.7,
     at: { warning: 5, toll: 10, hunters: 22, captain: 32 }, standingPer: Infinity, toll: 1, hunt: 0.8, elite: 0.06,
     lines: {
-      warning: 'The Thren have tasted your Krail',
+      warning: 'The Thren have tasted your Cyrite',
       toll: 'Thren webs thicken on your lanes',
       hunters: 'Thren shards drift toward your wake',
       captain: 'Something old among the Thren has woken',

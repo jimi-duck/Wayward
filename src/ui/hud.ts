@@ -570,7 +570,7 @@ export class Hud {
         : t(def.text));
     } else if (!bk) {
       // the arcade between events: break rock toward the next refit, which opens by itself
-      text($('obj-t'), t('Extract Krail'));
+      text($('obj-t'), t('Collect chits'));
       text($('obj-left'), `${Math.floor(world.krail)}/${this.next || '—'}`);
       ticks($('obj-p'), this.next ? Math.min(1, world.krail / this.next) : 1, 30);
       text($('obj-s'), '');

@@ -74,6 +74,8 @@ export interface Ctx {
   /** Each faction's notice tier, the fee multipliers it brings, and the named captain in the system (sim/notice.ts). */
   notice?: Partial<Record<Faction, Tier>>;
   toll?: Partial<Record<Faction, number>>;
+  /** The region's tier (0 the Reach): tolls, bribes and favours cost more the further out you are. */
+  region?: number;
   captain?: CaptainCall | null;
   /** Calloway's file (sim/calloway.ts): times she has seen each trick, and her read on your route. */
   wise?: Readonly<Partial<Record<string, number>>>;
@@ -364,6 +366,9 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   return true;
 }
 
+/** Each region out adds this share to every card fee: the late game still has somewhere for chits to go. */
+export const FEE_REGION = 0.12;
+
 /** The card's fee for this ship, now: a faction that has marked you charges more. */
 export function feeFor(def: CardDef, x: Ctx): number {
   const f = def.fee;
@@ -371,6 +376,7 @@ export function feeFor(def: CardDef, x: Ctx): number {
   let v = f.base + (f.heat ?? 0) * x.heat;
   for (const [flag, m] of Object.entries(f.flags ?? {})) if (x.flags.has(flag)) v *= m;
   v *= x.toll?.[def.caller as Faction] ?? 1;
+  v *= 1 + FEE_REGION * (x.region ?? 0);
   return Math.max(1, Math.round(v / 5) * 5);
 }
 

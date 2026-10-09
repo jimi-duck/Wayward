@@ -140,7 +140,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     id: 'prospector',
     name: 'Prospector',
     tag: 'The way the game was meant to be played.',
-    text: 'Mine Krail. Manage Cyrite. Trade, run or fight.',
+    text: 'Mine rock. Manage Cyrite. Trade, run or fight.',
     scale: { sky: 2, mining: 2, wrecks: 2 },
     score: 1,
     sky: { traffic: 1.7, toughness: 1.7, fire: 1.35, elites: 1.9, hazard: 1.5, income: 0.75 },

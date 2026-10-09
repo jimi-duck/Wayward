@@ -48,9 +48,9 @@ export interface EncounterDef {
 }
 
 export const ENCOUNTERS: Record<EncounterId, EncounterDef> = {
-  rich_field: { id: 'rich_field', name: 'Mineral-rich field', at: 60,  weight: 1.2, duration: 32, text: 'Krail readings off the scale' },
+  rich_field: { id: 'rich_field', name: 'Mineral-rich field', at: 60,  weight: 1.2, duration: 32, text: 'Rich readings off the scale' },
   distress:   { id: 'distress',   name: 'Distress signal',    at: 90,  weight: 1,   duration: 42, text: 'Hold position at the beacon' },
-  convoy:     { id: 'convoy',     name: 'Enemy convoy',       at: 150, weight: 1,   duration: 46, text: 'Freighters crossing, heavy with krail' },
+  convoy:     { id: 'convoy',     name: 'Enemy convoy',       at: 150, weight: 1,   duration: 46, text: 'Freighters crossing, heavy with cargo' },
   ion_storm:  { id: 'ion_storm',  name: 'Ion storm',          at: 200, weight: 1,   duration: 26, text: 'Lightning on the circles' },
   nebula:     { id: 'nebula',     name: 'Nebula',             at: 240, weight: 0.9, duration: 30, text: 'Sensors down · radar and locks are short' },
   derelict:   { id: 'derelict',   name: 'Derelict hulk',      at: 120, weight: 1,   duration: 45, locked: true, text: 'Salvage it, if you dare' },
@@ -317,7 +317,7 @@ function finish(e: Encounter, h: EncounterHost, success: boolean): true {
         if (!fixed) h.dropCrystals(e.x, e.z, 25);
         h.dropItem(h.cell('rescue'), e.x, e.z);
         h.addScore(1500);
-        text = fixed ? 'Survivors aboard · hull repaired' : 'Survivors aboard · krail transferred';
+        text = fixed ? 'Survivors aboard · hull repaired' : 'Survivors aboard · chits transferred';
       } else text = 'Signal lost';
       break;
     case 'derelict': text = success ? 'Salvage aboard · contacts closing' : 'The hulk drifts off'; break;

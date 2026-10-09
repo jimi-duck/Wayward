@@ -29,7 +29,7 @@ export interface BayCtx {
   krail: number;
   /** Story: chits aboard, for the yard's fee. */
   chits?: number;
-  /** Story: one purse. `krail` is then the chits aboard, and a fitting costs its price and the yard's fee together. */
+  /** One purse in both modes: `krail` is the chits aboard, and a fitting costs its price and the yard's fee together (the Arcade has no fee). */
   pooled?: boolean;
   /** The Arcade: how many times the bay has shut this run, so each opening deals a little differently (the same opening always deals the same). */
   deal?: number;

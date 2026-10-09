@@ -221,13 +221,14 @@ export class World implements EncounterHost {
   // the Breakout: the course and the pursuit (null in the arcade), the tank, the hold, the cutter
   mode: Mode;
   bk: Breakout | null = null;
-  /** Krail aboard: what the refit bay builds from, in both modes. */
-  krail = 0;
-  /** What the bay spends: Krail in the Arcade, chits in the Story (one purse). */
-  get purse(): number { return this.bk ? this.chits : this.krail; }
+  /** Chits are the only money, in both modes. `krail` is the run's old name for the same purse (the Arcade's tuning and records still use it). */
+  get krail(): number { return this.chits; }
+  set krail(v: number) { this.chits = v; }
+  /** What the bay spends: chits, in both modes. */
+  get purse(): number { return this.chits; }
   /** Cyrite in the tank: fuel for the jump (the Story mode). */
   cyrite = 0;
-  /** Chits aboard: the Story's one purse (the bay, ports, favours). Scrap pays into it as it is picked up. */
+  /** Chits aboard: the one purse in both modes (the bay, ports, favours). Rock and scrap pay into it as they are picked up. */
   chits = 0;
   /** Supplies aboard: the galley and the spares in one. A lane's days, the drive's wear and a plate patch draw on it. */
   supplies = 0;
@@ -1060,7 +1061,7 @@ export class World implements EncounterHost {
   }
 
   bayCtx(): BayCtx {
-    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.bk ? this.chits : this.krail, chits: this.chits, pooled: !!this.bk, deal: this.bayDeal, passed: this.bayPassed };
+    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.chits, chits: this.chits, pooled: true, deal: this.bayDeal, passed: this.bayPassed };
   }
 
   /**
@@ -1147,7 +1148,7 @@ export class World implements EncounterHost {
       plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       supplies: this.supplies, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
-      notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, captain: this.sortie.notice.captain,
+      notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, region: this.sortie.region, captain: this.sortie.notice.captain,
       wise: this.sortie.nemesis.wise, hunch: this.sortie.nemesis.hunch, here: this.sortie.here,
     };
   }

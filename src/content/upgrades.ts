@@ -451,11 +451,11 @@ export const UPGRADES: UpgradeDef[] = [
   // ── utility ────────────────────────────────────────────────────────────
   {
     id: 'ut_tractor', name: 'Tractor beam', branch: 'utility', cat: 'ship', kind: 'stat', max: 3, tags: ['utility', 'tractor'],
-    text: 'You pull krail in from further away.',
+    text: 'You pull chits in from further away.',
     apply: (s) => { s.tractor *= 1.35; },
   },
   {
-    id: 'ut_matrix', name: 'Krail matrix', branch: 'utility', cat: 'ship', kind: 'stat', max: 2, tags: ['utility', 'xp'],
+    id: 'ut_matrix', name: 'Chit matrix', branch: 'utility', cat: 'ship', kind: 'stat', max: 2, tags: ['utility', 'xp'],
     weight: 0.8,
     text: 'Every crystal is worth more toward your next refit.',
     apply: (s) => { s.xpMult *= 1.12; },
@@ -527,7 +527,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ut_prospector', name: 'Prospector', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'xp'],
-    text: 'Rock gives up krail half again as often.',
+    text: 'Rock gives up chits half again as often.',
     apply: (s) => { s.crystalChance *= 1.5; s.tractor *= 1.1; },
   },
   {
@@ -540,7 +540,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ut_scanner', name: 'Deep scanners', branch: 'utility', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'xp', 'damage'],
-    text: 'Boosters turn up twice as often, and elites carry twice the krail.',
+    text: 'Boosters turn up twice as often, and elites carry twice the chits.',
     apply: (s) => { s.boostRate *= 2; s.eliteLoot *= 2; },
   },
 

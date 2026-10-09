@@ -111,7 +111,7 @@ export class SummaryPanel {
       tile('Refits', r.refit, p.refit),
       tile('Kills', r.kills, p.kills),
       tile('Best chain', r.bestChain, p.chain),
-      tile('Krail', r.krail, p.krail),
+      tile('Chits', r.krail, p.krail),
       tile('Capital ships', r.capitals, p.capitals),
       h('div', 'tile', '', h('span', 'k', t('Sector events')), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', t('{n} boosters found', { n: r.powerups }))),
     );
@@ -179,7 +179,7 @@ export class SummaryPanel {
     if (met) notes.push(t('Capital ships: {a} killed, {b} evaded, {c} got away.', { a: r.capitals, b: r.capitalsEvaded, c: r.capitalsEscaped }));
     if (r.shieldsAbsorbed) notes.push(plural(r.shieldsAbsorbed, 'Shields took {n} hit.', 'Shields took {n} hits.'));
     if (r.platesGained) notes.push(plural(r.platesGained, 'You mended {n} plate.', 'You mended {n} plates.'));
-    if (r.dropped) notes.push(t('Krail picked up: {p}%.', { p: Math.round((r.krail / r.dropped) * 100) }));
+    if (r.dropped) notes.push(t('Chits picked up: {p}%.', { p: Math.round((r.krail / r.dropped) * 100) }));
     box.append(h('p', 'how-note', notes.join(' ')));
     return box;
   }
