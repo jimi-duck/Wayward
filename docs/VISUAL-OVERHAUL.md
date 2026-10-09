@@ -164,3 +164,12 @@ them, washed toward the sky's haze so distance takes contrast first. Lamps
 are few and warm. Every work in a sky merges into one mesh per material, so
 the whole set is four draws a sky (was six), and the plating shares the
 kit's shader program, so no new compile.
+
+Same round, dust and gantries. The cloud sprite (veil, shroud, storm, static)
+was a pile of soft radial blobs, which read as cotton balls and burnt out to
+white. It is now warped fractal noise: ragged, filamentary, clumped in the
+middle, and the lit cores are about a third dimmer. It is painted once while
+the title is up (about a tenth of a second), not on the first cloud in a run.
+The slipway's steel and the relic's slab were near black in shadow; both now
+lift out of it. Nebula, planet and starfield were checked in the review
+world and left as they were.

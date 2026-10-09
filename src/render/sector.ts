@@ -19,7 +19,7 @@ import { RockView } from './rocks';
 import { EnemyView, NEON, wreck } from './enemies';
 import { ShipView } from './ships';
 import { hashSeed, skyFor, type Sky } from './sky';
-import { glowTexture } from './textures';
+import { cloudTexture, glowTexture } from './textures';
 import { Streaks } from './streaks';
 import { WeaponView } from './weapons';
 
@@ -148,6 +148,7 @@ export class Sector {
    * while its program compiles.
    */
   warm(): Promise<unknown> {
+    cloudTexture(); // painted now, on the title, not on the first dust cloud in a run
     const hidden: Object3D[] = [];
     this.scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
     const gallery = this.enemies.gallery();

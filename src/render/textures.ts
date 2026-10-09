@@ -45,27 +45,42 @@ export function glowTexture(): Texture {
   });
 }
 
-/** A soft, uneven cloud of dust, white so a material colour tints it: blobs of glow, thickest in the middle. */
+/**
+ * Dust in space: a warped, layered noise, wispy at the edges and clumped in
+ * the middle, white so a material colour tints it. Ragged and filamentary, not
+ * a ball of soft blobs; the edge always falls away to nothing.
+ */
 export function cloudTexture(): Texture {
   return once('cloud', () => {
-    const [c, g] = canvas(256, 256);
-    const r = rand(77);
-    for (let i = 0; i < 70; i++) {
-      const a = r() * Math.PI * 2, d = Math.pow(r(), 0.8) * 84, x = 128 + Math.cos(a) * d, y = 128 + Math.sin(a) * d * 0.8;
-      const rad = 22 + r() * 40, k = 0.05 + r() * 0.09 * (1 - d / 100);
-      const grad = g.createRadialGradient(x, y, 0, x, y, rad);
-      grad.addColorStop(0, `rgba(255,255,255,${k})`);
-      grad.addColorStop(1, 'rgba(255,255,255,0)');
-      g.fillStyle = grad;
-      g.fillRect(0, 0, 256, 256);
+    const N = 256, [c, g] = canvas(N, N);
+    const r = rand(77), lat = new Float32Array(33 * 33);
+    for (let i = 0; i < lat.length; i++) lat[i] = r();
+    const val = (x: number, y: number) => {
+      const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi;
+      const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
+      const at = (i: number, j: number) => lat[((j & 31) * 33) + (i & 31)]!;
+      return at(xi, yi) * (1 - u) * (1 - v) + at(xi + 1, yi) * u * (1 - v) + at(xi, yi + 1) * (1 - u) * v + at(xi + 1, yi + 1) * u * v;
+    };
+    const fbm = (x: number, y: number) => {
+      let a = 0.5, f = 1, t = 0;
+      for (let o = 0; o < 5; o++) { t += a * val(x * f, y * f); f *= 2.03; a *= 0.5; }
+      return t;
+    };
+    const img = g.createImageData(N, N);
+    for (let j = 0; j < N; j++) {
+      for (let i = 0; i < N; i++) {
+        const x = i / N, y = j / N, dx = x - 0.5, dy = (y - 0.5) * 1.15, d = Math.hypot(dx, dy) * 2;
+        // warp the lookup by itself, which pulls the noise into filaments
+        const qx = fbm(x * 3, y * 3), qy = fbm(x * 3 + 5.2, y * 3 + 1.3);
+        const n = fbm(x * 4 + qx * 3.2, y * 4 + qy * 3.2);
+        const body = Math.max(0, Math.min(1, (n - 0.36) / 0.34));
+        const fall = Math.max(0, 1 - d * d), a = body * body * (3 - 2 * body) * Math.pow(fall, 1.4);
+        const k = (j * N + i) * 4;
+        img.data[k] = img.data[k + 1] = img.data[k + 2] = 255;
+        img.data[k + 3] = Math.round(Math.min(1, a * 1.1) * 255);
+      }
     }
-    // the edge always falls away to nothing
-    g.globalCompositeOperation = 'destination-in';
-    const fade = g.createRadialGradient(128, 128, 20, 128, 128, 128);
-    fade.addColorStop(0, 'rgba(0,0,0,1)');
-    fade.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = fade;
-    g.fillRect(0, 0, 256, 256);
+    g.putImageData(img, 0, 0);
     return finish(c, false);
   });
 }

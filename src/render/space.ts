@@ -68,8 +68,8 @@ function chunk(i: number): BufferGeometry {
 }
 const BOX = new BoxGeometry(1, 1, 1);
 const ROCK_MAT = new MeshStandardMaterial({ color: 0x24211f, roughness: 0.95, metalness: 0.15, flatShading: true });
-const HULL_MAT = new MeshStandardMaterial({ color: 0x4a5058, roughness: 0.55, metalness: 0.5, flatShading: true });
-const SLAB_MAT = new MeshStandardMaterial({ color: 0x07090b, roughness: 0.25, metalness: 0.8 });
+const HULL_MAT = new MeshStandardMaterial({ color: 0x6a7480, roughness: 0.6, metalness: 0.3, flatShading: true, emissive: 0x0a1016, envMapIntensity: 1.3 });
+const SLAB_MAT = new MeshStandardMaterial({ color: 0x1c232c, roughness: 0.3, metalness: 0.6, emissive: 0x04070a, envMapIntensity: 1.3 });
 const CORE_MAT = new MeshBasicMaterial({ color: 0x000000 });
 
 // the dead: hull models from the same designs the fleets fly, gone cold, scorched and breached
@@ -182,7 +182,7 @@ export class SpaceView {
         // lit from within and from the side: warm cores toward the middle, thin bright edges high up, each blob its own tilt
         for (let i = 0; i < n; i++) {
           const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.62, core = 1 - k / (f.r * 0.62);
-          const c = tint.clone().multiplyScalar(2.2 + r() * 1.0 + core * 1.6);
+          const c = tint.clone().multiplyScalar(1.5 + r() * 0.8 + core * 1.1);
           add(cloudTexture(), c, f.r * (0.55 + r() * 0.5), f.r * (0.3 + r() * 0.25), Math.cos(a) * k, 14 + r() * 40, Math.sin(a) * k, 0.38 + r() * 0.25, r() * Math.PI * 2);
         }
         // a few small bright knots: the grain that shows scale and gives the light somewhere to live
