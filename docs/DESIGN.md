@@ -29,7 +29,8 @@ A sortie with a shape: get the stolen hauler out of the home system
   of it on the way: `TORP_YIELD` (0.5, `sim/breakout.ts`) of the ore and
   Cyrite, and the rock is gone. A ram or lightning leaves `SCRAP` (0.3).
   `rockTake(weapon)` is the one place that says which; `World.torpYieldMult`
-  is the multiplier a booster sets to give torpedoes more of it. A volatile rock still
+  is 1 / `TORP_YIELD` while the high-yield torpedo booster runs, so a torpedo
+  takes the whole rock then. A volatile rock still
   goes off when it breaks. Each rock mined adds a little hunt pressure
   (`HEAT_MINE`, times the mode's `heat.mine`). In the arcade rock gives only
   Krail by chance, and a torpedo halves that chance. The target card shows

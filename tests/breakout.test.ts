@@ -78,6 +78,13 @@ describe('mining', () => {
     expect(w.cyrite).toBe(START_CYRITE + rockYield('rich', 0, TORP_YIELD).cyrite);
     expect(rockYield('rich', 0, TORP_YIELD).cyrite).toBeLessThan(rockYield('rich', 0).cyrite);
     expect(rockTake('torpedo')).toBe(TORP_YIELD);
+    // the high-yield booster cancels the penalty while it runs
+    const b = quiet();
+    b.powers.yield = 5;
+    const rb = rockAhead(b, 12, 'rich', 0);
+    priv(b).destroyRock(rb, 'torpedo');
+    run(b, 2);
+    expect(b.cyrite).toBe(START_CYRITE + rockYield('rich', 0).cyrite);
     expect(rockTake('laser')).toBe(1);
   });
 });

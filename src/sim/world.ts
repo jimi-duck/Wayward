@@ -230,8 +230,10 @@ export class World implements EncounterHost {
   patchT = 0;
   /** Seconds left of "the lasers are working a rock" after the last hit on one (the comms desk waits it out). */
   mineT = 0;
-  /** A multiplier on `TORP_YIELD` for boosters (a high-yield torpedo): 1 normally, capped at the whole rock. */
-  torpYieldMult = 1;
+  /** A multiplier on `TORP_YIELD`: the high-yield torpedo booster lifts it to the whole rock while it runs. */
+  get torpYieldMult(): number {
+    return this.powers.yield > 0 ? 1 / TORP_YIELD : 1;
+  }
   /** Docked at the port: `phase` is 'dock', or 'bay' while the bay is open there. */
   docked = false;
   /** What the fitted modules do (sim/modules.ts), worked out with the stats. */
