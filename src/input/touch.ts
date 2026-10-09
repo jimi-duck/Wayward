@@ -13,6 +13,9 @@ import type { Press } from './types';
 // lasers. A thumb that misses a button still fires, rather than doing
 // nothing or, worse, anchoring the stick under the wrong thumb.
 //
+// Break and reverse has a small button of its own above the trigger, and the
+// flick below stays for a second finger.
+//
 // Steering drives like a racing game: across turns the nose, any push away
 // from the centre opens the throttle, and pulling back coasts. A second
 // finger on the stick's side is a barrel roll when it taps, and the break and
@@ -35,6 +38,8 @@ export interface TouchElements {
   torpedo: HTMLElement;
   /** The cutter, held. */
   cut: HTMLElement;
+  /** Break and reverse, a tap. */
+  brk: HTMLElement;
 }
 
 /**
@@ -61,7 +66,7 @@ export function flickedDown(dx: number, dy: number): boolean {
   return dy >= FLICK && dy > Math.abs(dx) * 1.2;
 }
 
-type Role = 'stick' | 'fire' | 'torpedo' | 'roll' | 'cut';
+type Role = 'stick' | 'fire' | 'torpedo' | 'roll' | 'cut' | 'brk';
 
 export class TouchStick {
   /** The helm, -1 to 1, and the throttle, 0 to 1, from the stick. */
@@ -121,6 +126,7 @@ export class TouchStick {
       case 'fire': this.firing = true; this.el.fire.classList.add('on'); break;
       case 'torpedo': this.onPress('torpedo'); this.blink(this.el.torpedo); break;
       case 'cut': this.cutting = true; this.el.cut.classList.add('on'); break;
+      case 'brk': this.onPress('brk'); this.blink(this.el.brk); break;
     }
   };
 
@@ -159,7 +165,7 @@ export class TouchStick {
     if (x < window.innerWidth / 2) return this.stickId === null ? 'stick' : 'roll';
     if (inside(this.el.fire, x, y, 0)) return 'fire';
     let best: Role = 'fire', bestD = SLACK;
-    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.cut, 'cut']] as const) {
+    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.cut, 'cut'], [this.el.brk, 'brk']] as const) {
       const d = edgeDistance(node, x, y);
       if (d < bestD) { bestD = d; best = role; }
     }

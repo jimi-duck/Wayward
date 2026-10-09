@@ -19,6 +19,7 @@ import { INK } from './palette';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
+import { BREAK_COOLDOWN } from '../sim/tuning';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // A tactical overlay on the view in the brand's six zones, with nothing on
@@ -429,6 +430,10 @@ export class Hud {
     const h = r?.heat ?? 0;
     ticks($('t-heat'), h, 10);
     $('cut').classList.toggle('hot', h > 0.8);
+    // touch: the break's recharge fills the button's gauge back up
+    const brkReady = 1 - world.ship.breakCooldown / BREAK_COOLDOWN;
+    ticks($('t-brk'), brkReady, 5);
+    $('brk').classList.toggle('wait', world.ship.breakCooldown > 0);
   }
 
   // ── top right: ship systems ─────────────────────────────────────────────
