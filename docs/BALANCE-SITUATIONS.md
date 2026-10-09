@@ -13,26 +13,27 @@ rest turn only on a reason).
 
 | Region | Situations | Systems | Share | Unknown | Corporate | Frontier | Hostile |
 |---|---|---|---|---|---|---|---|
-| 1 The Reach | 22.5 | 29.0 | 78% | 40% | 21% | 39% | 0% |
-| 2 The Marches | 17.6 | 28.0 | 63% | 51% | 9% | 40% | 0% |
-| 3 The Salvage Belt | 17.4 | 28.0 | 62% | 52% | 11% | 37% | 0% |
-| 4 The Drift Deep | 16.9 | 28.0 | 60% | 53% | 9% | 37% | 0% |
-| 5 The Breaker Yards | 16.1 | 28.0 | 58% | 19% | 46% | 36% | 0% |
-| 6 The Free Ports | 15.5 | 28.0 | 55% | 39% | 15% | 46% | 0% |
-| 7 The Hollows | 10.5 | 19.0 | 55% | 38% | 13% | 48% | 0% |
-| 8 The Last Lanes | 14.1 | 27.0 | 52% | 28% | 23% | 49% | 0% |
+| 1 The Reach | 15.0 | 29.0 | 52% | 40% | 20% | 40% | 0% |
+| 2 The Marches | 14.8 | 28.0 | 53% | 81% | 4% | 15% | 0% |
+| 3 The Salvage Belt | 11.7 | 28.0 | 42% | 77% | 4% | 19% | 0% |
+| 4 The Drift Deep | 12.4 | 28.0 | 44% | 73% | 4% | 23% | 0% |
+| 5 The Breaker Yards | 9.6 | 28.0 | 34% | 31% | 48% | 21% | 0% |
+| 6 The Free Ports | 10.3 | 28.0 | 37% | 59% | 13% | 28% | 0% |
+| 7 The Hollows | 6.9 | 19.0 | 36% | 58% | 9% | 32% | 0% |
+| 8 The Last Lanes | 8.1 | 27.0 | 30% | 50% | 16% | 34% | 0% |
 
 ## The first half hour
 
-The first 12 systems of 3 journeys, with the minute the pilot arrived and what the
+The first 12 systems of 4 journeys, with the minute the pilot arrived and what the
 system had going on. The first alien moment comes on average at minute
-18 (3 of 3 journeys); the first human optional situation at
-minute 7 (3 of 3).
+30 (4 of 4 journeys); the first human optional situation at
+minute 15 (4 of 4).
 
 | Seed | Systems, by arrival |
 |---|---|
-| 3000 | 0:00 home<br>4:29 home<br>9:02 mining · An empty berth<br>11:58 port · A hauler with stock<br>14:14 transit · A settlement short of food<br>16:26 mining · A lockdown<br>18:49 port · Something on the scope<br>21:02 port · A Custody inspection<br>23:58 transit · A relay that answers<br>26:52 contested · It is studying you<br>29:58 contested · A survey relay<br>32:53 gate |
-| 3013 | 0:00 home<br>4:20 transit · A hauler with stock<br>6:54 port<br>9:57 contested · A settlement under guard<br>14:04 mining · A lockdown<br>16:33 mining · Something on the scope<br>20:48 mining<br>25:27 transit · A relay that answers<br>28:41 mining · It is studying you<br>35:22 contested · An empty berth<br>40:46 gate<br>46:33 port · A sealed crate |
-| 3026 | 0:00 home<br>4:49 mining · A hauler with stock<br>7:15 port · A hauler with stock<br>9:49 mining · A settlement short of food<br>13:27 mining · A Custody inspection<br>16:01 port · Something on the scope<br>19:46 mining · A Custody inspection<br>23:30 mining · A relay that answers<br>25:57 mining · It is studying you<br>28:26 port<br>30:53 gate<br>33:21 mining · A cell that needs parts |
+| 3000 | 0:00 home<br>4:29 home<br>9:02 mining · A Net sweep<br>11:49 port<br>14:03 transit<br>16:39 mining · A Net sweep<br>19:53 port · An empty berth<br>22:27 port · A settlement under guard<br>26:13 transit · A lockdown<br>29:25 contested · Something on the scope<br>34:03 contested · A relay that answers<br>38:49 gate |
+| 3013 | 0:00 home<br>4:20 transit<br>8:55 port<br>11:42 mining<br>15:04 mining · An empty berth<br>18:00 mining · A settlement under guard<br>21:18 transit · A lockdown<br>23:23 mining · Something on the scope<br>28:34 contested · A relay that answers<br>35:37 gate<br>40:20 port · It is studying you<br>44:05 mining · A swarm in the Cyrite |
+| 3026 | 0:00 home<br>4:49 mining<br>7:34 port<br>11:04 mining<br>15:30 mining<br>18:19 mining<br>21:18 port · An empty berth<br>26:15 mining · A settlement under guard<br>31:45 mining · A lockdown<br>36:34 mining · Something on the scope<br>41:02 port · A relay that answers<br>45:26 gate |
+| 3039 | 0:00 home<br>5:02 port<br>7:22 mining<br>12:08 transit · A Net sweep<br>14:29 port<br>17:46 transit · A hauler with stock<br>19:25 port · A settlement short of food<br>22:31 mining · A lockdown<br>27:04 contested · Something on the scope<br>32:30 mining · A relay that answers<br>37:11 gate<br>41:32 port · It is studying you |
 
 33 situations are written; 23 sit on the timetable.
