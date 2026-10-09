@@ -17,12 +17,11 @@ import { BULWARK_COUNT, BULWARK_DEBRIS, BULWARK_HP, BULWARK_R, BULWARK_RESTOCK, 
 //   rich     · violet-veined and rare all run: a shower of krail.
 //   volatile · from about 4:30: glows white-hot and goes off when broken,
 //              hurting anything close, you included.
-//   rare     · one every minute or two, gold, never split: a power-up inside.
 // and in formations: single rocks, clusters drifting together, and a big rock
 // shepherding its own debris.
 
 export type RockSize = 0 | 1 | 2;
-export type RockKind = 'basalt' | 'iron' | 'rich' | 'volatile' | 'rare';
+export type RockKind = 'basalt' | 'iron' | 'rich' | 'volatile';
 
 export interface RockKindDef {
   /** Hull multiplier. */
@@ -41,7 +40,6 @@ export const ROCK_KINDS: Record<RockKind, RockKindDef> = {
   iron:     { hp: 3,   crystal: [0.85, 0.65, 0.5], crystals: [4, 2, 1], splitsInto: 'iron',   points: 2 },
   rich:     { hp: 1.6, crystal: [1, 1, 1],         crystals: [9, 6, 4], splitsInto: 'basalt', points: 2 },
   volatile: { hp: 1,   crystal: [0.6, 0.6, 0.6],   crystals: [3, 2, 1], splitsInto: null,     points: 2 },
-  rare:     { hp: 4,   crystal: [1, 1, 1],         crystals: [5, 5, 5], splitsInto: null,     points: 5 },
 };
 
 /** A volatile rock's blast: radius and damage to hulls and rock. */
@@ -195,19 +193,6 @@ export class Field {
       }
     }
     return out;
-  }
-
-  /** A rare rock, out in the fog: gold, tough, a power-up inside. */
-  spawnRare(cx: number, cz: number, heading: number): Rock | null {
-    for (let tries = 0; tries < 8; tries++) {
-      const a = heading + this.rng.range(-0.8, 0.8), d = this.rng.range(70, 95);
-      const x = cx + Math.cos(a) * d, z = cz - Math.sin(a) * d;
-      if (this.insideBulwark(x, z, ROCK_R[1] + 2)) continue;
-      const r = this.spawn(1, x, z, undefined, undefined, 'rare');
-      r.vx *= 0.4; r.vz *= 0.4;
-      return r;
-    }
-    return null;
   }
 
   /** New rock out in the fog, in the formation and kind the director's mix asks for. */

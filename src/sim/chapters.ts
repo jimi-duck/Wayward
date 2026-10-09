@@ -27,6 +27,7 @@ export interface Chapter {
 
 /** Writes the record for the region the Wayward has just entered. */
 export function openChapter(j: Journey, region: number): void {
+  j.lost = 0;
   (j.chapters ??= []).push({
     region, day: j.day, stops: j.legs.length, standing: { ...j.carry.standing }, fragments: fragmentsFound(j.carry.flags),
     read: !!(j.hunt.hunch?.kind || j.hunt.hunch?.straight),

@@ -102,7 +102,7 @@ export interface Survival {
     /** What the Wayward starts a journey with, and parts the drive wears a jump. */
     start: { cyrite: number; food: number; parts: number };
     wear: number;
-    /** Wrecks the Wayward survives, and the share of Cyrite, parts and chits it keeps when it is adrift. */
+    /** Wrecks in one region that end it (the last is a total loss: the region is flown again from its gate), and the share of Cyrite, parts and chits it keeps when it is adrift. */
     wrecks: number;
     kept: number;
     /** Multiplier on what the port pays for ore. */

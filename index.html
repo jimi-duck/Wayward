@@ -172,6 +172,7 @@
       <button type="button" id="fire" tabindex="-1"><span>Laser</span><i class="ticks" id="t-bank"></i></button>
       <button type="button" id="torp" tabindex="-1"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
       <button type="button" id="cut" tabindex="-1"><span>Cut</span><i class="ticks" id="t-heat"></i></button>
+      <button type="button" id="brk" tabindex="-1"><span>Turn</span><i class="ticks" id="t-brk"></i></button>
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
 
@@ -200,6 +201,8 @@
             <b class="sv-t" id="sv-t"></b>
             <span class="diff-s" id="diff-s"></span>
             <div class="sv-scale" id="sv-scale"></div>
+            <!-- Story only: what a wreck costs (sim/journey.ts) -->
+            <span class="sv-rule" id="sv-rule" hidden></span>
           </div>
           <span class="diff-s sv-keep" id="sv-keep" hidden></span>
         </div>
@@ -313,6 +316,15 @@
       </div>
     </div>
 
+    <!-- Wrecked: a few lines over the dark, any key or tap to skip (ui/adrift.ts). -->
+    <div id="drift" class="drift" role="dialog" aria-labelledby="dr-k" hidden>
+      <div class="dr-in">
+        <span class="dr-k" id="dr-k"></span>
+        <p class="dr-l" id="dr-l"></p>
+      </div>
+      <span class="dr-skip" id="dr-skip">Skip</span>
+    </div>
+
     <!-- The Threshold: what the Severance file is worth, then the epilogue. -->
     <div id="ending" class="sheet" role="dialog" aria-labelledby="en-t" hidden>
       <div class="panel narrow ending">
@@ -390,7 +402,7 @@
           <div><dt>Left thumb</dt><dd>Steer and thrust</dd></div>
           <div><dt>Right thumb</dt><dd>Lasers</dd></div>
           <div><dt>Second finger, tap</dt><dd>Roll</dd></div>
-          <div><dt>Second finger, flick down</dt><dd>Break and reverse</dd></div>
+          <div><dt>Turn button, or flick down</dt><dd>Break and reverse</dd></div>
         </dl>
         <dl class="keys-l only-pad">
           <div><dt><kbd>Stick</kbd></dt><dd>Steer</dd></div>

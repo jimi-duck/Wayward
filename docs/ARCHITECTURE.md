@@ -168,8 +168,8 @@ found the first version cluttered:
   narrow screen, clear of the panel and the scope) says what it is and
   its integrity, and for rock what breaking it yields. The gunsight and a
   centre mark light when a lance fired now would hit. Marks: brackets on
-  other hulls, the capital ship by name, the nearest krail-rich or
-  rare rock, repairs, power-ups, the objective; edge pointers when the
+  other hulls, the capital ship by name, the nearest krail-rich
+  rock, repairs, boosters, the objective; edge pointers when the
   capital ship or the objective is off screen, and a small chevron in its
   faction's colour for each hull out of view.
 - `ui/radar.ts`: ship-up, a compass bezel that turns with the ship, the

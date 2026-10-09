@@ -32,7 +32,7 @@ import type { Rng } from './rng';
 //                    interdictors. They come from behind, from home.
 //
 // Cyrite is the fuel, and scarce: it comes from violet-veined rock cut clean,
-// from the rare gold rock, from the port and from a capital ship's wreck.
+// from the port and from a capital ship's wreck.
 // Krail is what the refit bay builds from, as in the arcade: crystals out of
 // ordinary rock and the wrecks of what you destroy. Ore is what the cutter
 // takes out of ordinary rock: it fills the hold and sells at the port. Parts are salvage
@@ -274,14 +274,12 @@ const ORE: Record<RockKind, readonly [number, number, number]> = {
   iron: [10, 5, 2],
   rich: [3, 2, 1],
   volatile: [12, 6, 3],
-  rare: [4, 4, 4],
 };
 const CYRITE: Record<RockKind, readonly [number, number, number]> = {
   basalt: [0, 0, 0],
   iron: [0, 0, 0],
   rich: [12, 7, 4],
   volatile: [0, 0, 0],
-  rare: [6, 6, 6],
 };
 /** Of a clean cut, what the guns leave behind. */
 export const SCRAP = 0.3;

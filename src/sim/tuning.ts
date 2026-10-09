@@ -164,4 +164,7 @@ export const SHIELD_DELAY = 5;
 /** Grace after a shield absorbs a hit: shorter than a plate's, so one charge never eats a volley. */
 export const SHIELD_GRACE = 0.7;
 
-export const RARE_FIRST = 50;
+/** Boosters (sim/pickups.ts): the first an ordinary hull may carry, the chance of one per kill, the gap between two. */
+export const BOOST_FIRST = 40;
+export const BOOST_CHANCE = 0.05;
+export const BOOST_GAP = 30;

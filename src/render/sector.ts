@@ -42,7 +42,7 @@ const rgb = (faction: string): RGB => {
   return c ? [c.r, c.g, c.b] : FIRE;
 };
 
-const ROCK_TINT: Record<string, RGB> = { basalt: LAVA, iron: [1.6, 0.5, 0.2], rich: VIOLET, volatile: [4.2, 2.4, 1], rare: [4, 3, 1.2] };
+const ROCK_TINT: Record<string, RGB> = { basalt: LAVA, iron: [1.6, 0.5, 0.2], rich: VIOLET, volatile: [4.2, 2.4, 1] };
 const BLAST_TINT: Record<string, RGB> = {
   torpedo: FIRE, bomblet: FIRE, mine: AMBER, volatile: [4.2, 2.6, 1.2], elite: [3.6, 1.2, 0.3], reactive: SHIELD, strike: FIRE,
 };
@@ -86,7 +86,7 @@ export class Sector {
   constructor(private readonly renderer: WebGLRenderer, private tier: QualityTier) {
     const glow = glowTexture();
     this.env = new Environment(this.scene, renderer);
-    this.rocks = new RockView(this.scene, glow);
+    this.rocks = new RockView(this.scene);
     this.fx = new Effects(this.scene, glow);
     this.streaks = new Streaks(this.scene);
     this.weapons = new WeaponView(this.streaks);
@@ -228,7 +228,7 @@ export class Sector {
         case 'rockDestroyed': {
           const big = [1, 0.62, 0.38][e.size]!;
           this.fx.explode(e.x, -0.2, e.z, 2.2 * big, ROCK_TINT[e.kind] ?? LAVA, 'rock');
-          if (e.kind === 'rich' || e.kind === 'rare') this.fx.burst(e.x, 0.3, e.z, 30, ROCK_TINT[e.kind]!, 10, 0.4, 0.8);
+          if (e.kind === 'rich') this.fx.burst(e.x, 0.3, e.z, 30, ROCK_TINT[e.kind]!, 10, 0.4, 0.8);
           this.rig.shake(0.12 + 0.2 * big);
           // only the biggest rock holds the world still: a field breaks about once a second, and each hold is a skipped step in the ship's flight
           if (e.size === 0) hold = Math.max(hold, 0.03);

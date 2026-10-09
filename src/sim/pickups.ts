@@ -31,28 +31,31 @@ export const CRYSTAL_LIFE = 11;
 export const REPAIR_LIFE = 12;
 export const POWER_LIFE = 14;
 export const PICKUP_R = SHIP_R + 1.3;
-/** How long each power-up lasts, seconds. */
-export const POWER_TIME: Record<PowerKind, number> = { shield: 10, rapid: 8, magnet: 5, overdrive: 8 };
+/** How long each booster lasts, seconds. */
+export const POWER_TIME: Record<PowerKind, number> = { shield: 7, rapid: 8, yield: 10, overdrive: 8 };
 export const POWER_LABEL: Record<PowerKind, string> = {
-  shield: 'Emergency shield', rapid: 'Rapid fire', magnet: 'Tractor surge', overdrive: 'Overdrive',
+  shield: 'Hardened plating', rapid: 'Unlimited lasers', yield: 'High-yield torpedoes', overdrive: 'Overdrive',
 };
-export const POWERS: PowerKind[] = ['shield', 'rapid', 'magnet', 'overdrive'];
+export const POWERS: PowerKind[] = ['shield', 'rapid', 'yield', 'overdrive'];
 /** What each does, in a line: shown with the name when you take it. */
 export const POWER_HINT: Record<PowerKind, string> = {
-  shield: 'Stops the next hit', rapid: 'Lasers fire twice as fast, free', magnet: 'Pulls every crystal in', overdrive: 'Lasers hit half as hard again',
+  shield: 'Every hit glances off', rapid: 'Lasers never run dry, twice as fast', yield: 'Torpedoes hit twice as hard, wider', overdrive: 'Lasers hit half as hard again',
 };
+/** A high-yield torpedo: damage and blast radius, times the usual. */
+export const YIELD_DAMAGE = 2;
+export const YIELD_BLAST = 1.5;
 
-// ── salvage cells ─────────────────────────────────────────────────────────
-// A power-up is a cell: a charged piece of salvage, and what it does is what
-// the place it came from would do for you. It is never drawn from a hat.
+// ── boosters ──────────────────────────────────────────────────────────────
+// A booster is a charged piece of salvage that does one thing, loudly, for a
+// few seconds; the HUD counts it down. What a source gives is what the place
+// it came from would do for you. Any ordinary hull may also carry one.
 //
-//   rock      · a glinting core in rare rock: a tractor surge, to sweep up what the break threw
-//   rescue    · the crew you pulled out of a distress signal lend you their shield
-//   derelict  · a live reactor cell in a hulk: it charges a shield
-//   elite     · an elite's fire control, stripped from the wreck: rapid fire
+//   rescue    · the crew you pulled out of a distress signal harden your plating
+//   derelict  · unspent warheads in a hulk: high-yield torpedoes
+//   elite     · an elite's fire control, stripped from the wreck: unlimited lasers
 //   wreck     · a capital ship's own drive, wrenched off: overdrive for your lasers
-export type CellSource = 'rock' | 'rescue' | 'derelict' | 'elite' | 'wreck';
-export const CELL: Record<CellSource, PowerKind> = { rock: 'magnet', rescue: 'shield', derelict: 'shield', elite: 'rapid', wreck: 'overdrive' };
+export type CellSource = 'rescue' | 'derelict' | 'elite' | 'wreck';
+export const CELL: Record<CellSource, PowerKind> = { rescue: 'shield', derelict: 'yield', elite: 'rapid', wreck: 'overdrive' };
 
 /** Scatter `total` krail as crystals of 1, 3 and 5 (or Cyrite, ore or parts, as `kind`), thrown out from (x, z); `lifeK` stretches how long they last. */
 export function dropCrystals(out: Pickup[], x: number, z: number, total: number, rng: Rng, spread = 6, vx = 0, vz = 0, kind: 'crystal' | 'cyrite' | 'ore' | 'parts' = 'crystal', lifeK = 1): void {
@@ -77,10 +80,9 @@ export function dropItem(out: Pickup[], kind: PickupKind, x: number, z: number, 
 
 /**
  * Drift, tractor and age every pickup. Returns those collected this step.
- * `tractor` is the pull radius for crystals; `surge` pulls everything on the
- * field (the magnet power-up).
+ * `tractor` is the pull radius for crystals.
  */
-export function stepPickups(list: Pickup[], s: ShipState, tractor: number, surge: boolean, dt: number): Pickup[] {
+export function stepPickups(list: Pickup[], s: ShipState, tractor: number, dt: number): Pickup[] {
   const got: Pickup[] = [];
   for (let i = list.length - 1; i >= 0; i--) {
     const p = list[i]!;
@@ -88,7 +90,7 @@ export function stepPickups(list: Pickup[], s: ShipState, tractor: number, surge
     p.age += dt;
     const dx = s.x - p.x, dz = s.z - p.z, d = Math.hypot(dx, dz) || 1;
     const loose = LOOSE.has(p.kind);
-    const reach = loose ? (surge ? 120 : tractor) : surge ? 60 : 0;
+    const reach = loose ? tractor : 0;
     if (d < reach && p.age > 0.25) {
       // the pull grows as it closes, and always outruns the ship
       const pull = 40 + 260 * (1 - d / reach) * (1 - d / reach) + Math.hypot(s.vx, s.vz) * 1.5;

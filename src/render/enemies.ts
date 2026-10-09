@@ -270,21 +270,25 @@ export function wreck(): Group {
  * with amber, and every facet takes a slightly different depth, so a hull
  * reads as a cut stone with a light in it, not a painted shape.
  */
-function crystalMaterial(body: number, glow: number): MeshStandardMaterial {
-  const m = new MeshStandardMaterial({ color: new Color(body).multiplyScalar(0.05), roughness: 0.14, metalness: 0.85, flatShading: true, envMapIntensity: 0.8 });
+function crystalMaterial(body: number, glow: number, core = 0.01, name = 'thren-crystal'): MeshStandardMaterial {
+  const m = new MeshStandardMaterial({ color: new Color(body).multiplyScalar(0.16), roughness: 0.2, metalness: 0.7, flatShading: true, envMapIntensity: 0.8 });
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uInner = { value: new Color(glow).multiplyScalar(1.5) };
+    sh.uniforms.uCore = { value: core };
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform vec3 uInner;')
+      .replace('#include <common>', '#include <common>\nuniform vec3 uInner; uniform float uCore;')
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         vec3 nv = normalize(vViewPosition);
-        float edge = pow(1.0 - abs(dot(normalize(normal), nv)), 2.2);
+        float edge = pow(1.0 - abs(dot(normalize(normal), nv)), 3.6);
         float facet = fract(sin(dot(floor(normal * 6.0), vec3(12.9, 78.2, 37.7))) * 43758.5) * 0.5 + 0.5;
-        totalEmissiveRadiance += uInner * (0.015 + edge * 1.9) * facet * facet;`);
+        totalEmissiveRadiance += uInner * (uCore + edge * 1.7) * facet * facet * facet;`);
   };
-  m.customProgramCacheKey = () => 'thren-crystal';
+  m.customProgramCacheKey = () => name;
   return m;
 }
+
+/** How hot a faction's lit slits run: the Office's are a thin quiet line, the Gutter's a working lamp. */
+const SLIT: Record<Faction, number> = { gutter: 0.9, custody: 0.85, office: 0.4, voice: 0.55, thren: 0.6 };
 
 const factionMats = new Map<Faction, Record<string, Material>>();
 function factionMaterials(f: Faction): Record<string, Material> {
@@ -299,10 +303,10 @@ function factionMaterials(f: Faction): Record<string, Material> {
       patch: metal({ ...coat, tint: l.patch, scale: 1.4 }),
       dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.5, scale: 1.8 }),
       trim: f === 'thren' ? lit(l.trim, GLOW.trim * 0.35) : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
-      glow: lamp(NEON[f].clone().multiplyScalar(0.9)),
+      glow: lamp(NEON[f].clone().multiplyScalar(SLIT[f])),
       lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
-      crystal: crystalMaterial(l.paint, l.trim),
-      violet: lamp(NEON.thren.clone().multiplyScalar(0.55)),
+      crystal: crystalMaterial(l.paint, l.trim, 0.07),
+      violet: crystalMaterial(0x2a1040, 0x9a40ff, 0.5, 'thren-violet'),
     };
     factionMats.set(f, m);
   }

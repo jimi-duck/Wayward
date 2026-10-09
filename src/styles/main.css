@@ -1,4 +1,5 @@
 @import "./fonts.css";
+@import "./glass.css";
 /* WAYWARD, brand v1.1 (branding/WAYWARD_Brand_Visual_Direction_v1.1.md):
    industrial cyberpunk, a stolen ore hauler's dashboard. Overwhelmingly dark
    and desaturated; each light means one thing:
@@ -155,8 +156,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   --fw: clamp(80px, 24vh, 104px);
   --bw: clamp(60px, 17vh, 72px);
 }
-#stick, #fire, #torp, #cut, #pause-b { display: none; }
-.touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #pause-b { display: grid; }
+#stick, #fire, #torp, #cut, #brk, #pause-b { display: none; }
+.touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #brk, .touch-ui #pause-b { display: grid; }
 .touch-ui.breakout #cut { display: grid; }
 .touch-ui:not(.has-torps) #torp { display: none; }
 #stick {
@@ -172,19 +173,19 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* the buttons are octagons, an edge and a glass like every panel, and each
    carries its own gauge under the thumb that uses it. The layer behind does
    the hit-testing (generously), so the buttons themselves take no events. */
-#fire, #torp, #cut {
+#fire, #torp, #cut, #brk {
   --c: 28%; --edge: var(--hud-mid); --fill: rgba(11, 16, 17, .58);
   position: absolute; isolation: isolate; place-items: center; align-content: center; gap: 6px; border: 0; padding: 0; background: none;
   pointer-events: none; aspect-ratio: 1;
   font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink);
 }
-:is(#fire, #torp, #cut)::before, :is(#fire, #torp, #cut)::after { content: ""; position: absolute; pointer-events: none;
+:is(#fire, #torp, #cut, #brk)::before, :is(#fire, #torp, #cut, #brk)::after { content: ""; position: absolute; pointer-events: none;
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); }
 /* the edge is only the 1px ring (evenodd), so the glass inside lets the view through and never shows the edge colour */
-:is(#fire, #torp, #cut)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
+:is(#fire, #torp, #cut, #brk)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
   clip-path: polygon(evenodd, var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
     var(--ci) 1px, calc(100% - var(--ci)) 1px, calc(100% - 1px) var(--ci), calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), var(--ci) calc(100% - 1px), 1px calc(100% - var(--ci)), 1px var(--ci), var(--ci) 1px); }
-:is(#fire, #torp, #cut)::after { inset: 1px; z-index: -1; background: var(--fill); }
+:is(#fire, #torp, #cut, #brk)::after { inset: 1px; z-index: -1; background: var(--fill); }
 #fire { right: var(--in-r); bottom: var(--pb); width: var(--fw); --edge: var(--hud); font-size: 10px; }
 #fire.on { --fill: rgba(217, 154, 39, .34); }
 #t-bank { --n: 10; width: 56%; height: 5px; }
@@ -198,6 +199,11 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #cut { right: calc(var(--in-r) + var(--fw) + var(--bw) + 22px); bottom: var(--pb); width: var(--bw); --edge: var(--amber-dim); }
 #cut.on { --edge: var(--amber); --fill: rgba(229, 169, 58, .28); }
 .touch-ui:not(.has-torps) #cut { right: calc(var(--in-r) + var(--fw) + 10px); }
+/* break and reverse: above the trigger, a short reach up for the same thumb; the gauge refills over the cooldown */
+#brk { right: calc(var(--in-r) + var(--fw) * .22); bottom: calc(var(--pb) + var(--fw) + 10px); width: calc(var(--bw) * .86); --edge: var(--hud-mid); }
+#brk.on { animation: tap-flash .22s var(--ez); }
+#brk.wait { --fill: rgba(11, 16, 17, .4); opacity: .7; }
+#t-brk { --n: 5; width: 56%; height: 4px; }
 #t-heat { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 56%; height: 4px; }
 #cut.hot #t-heat { --on: var(--alert); }
 @keyframes tap-flash { from { scale: .88; } }
@@ -428,7 +434,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #start:not([hidden]) .start-card > :nth-child(4) { animation-delay: .24s; }
 #start:not([hidden]) .start-card > :nth-child(n+5) { animation-delay: .32s; }
 #start:not([hidden]) .start-foot { animation: start-in .6s .4s var(--ez) both; }
-@keyframes start-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes start-in { from { transform: translateY(10px); } }
+@keyframes start-fade { from { opacity: 0; } }
+#start:not([hidden]) { animation: start-fade .5s var(--ez) both; }
 .prelaunch #hud, .prelaunch #touch { visibility: hidden; }
 .panel-open #hud, .panel-open #touch { visibility: hidden; }
 .start-card { display: grid; justify-items: center; gap: clamp(10px, 1.8vh, 18px); text-align: center; }
@@ -496,7 +504,10 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .tip { max-width: 440px; margin: 0; padding: 7px 10px; border-left: 2px solid var(--amber); background: rgba(8, 13, 14, .7);
   font: 400 12px/1.4 var(--font-display); color: var(--ink-2); text-align: left; }
 /* squarer screens: the art grows and hangs from the top, so the Wayward sinks below the menu */
-@media (max-aspect-ratio: 3/2) { #start { --art-pos: 92% 0%; --art-size: auto 124%; } }
+/* the art sits a little low and large, so the Wayward clears the card; not on ultrawide, where it must still cover */
+@media (max-aspect-ratio: 16/9) { #start { --art-pos: 90% 10%; --art-size: auto 108%; } }
+@media (min-aspect-ratio: 16/9) and (max-aspect-ratio: 19/10) { #start { --art-pos: 90% 10%; --art-size: 108% auto; } }
+@media (max-aspect-ratio: 3/2) { #start { --art-pos: 96% 0%; --art-size: auto 116%; } }
 .start-foot { grid-row: 3; width: calc(100% + var(--shift)); margin-right: calc(var(--shift) * -1); justify-self: start; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px 22px; }
 .start-foot .records { justify-content: flex-start; }
 .start-foot #saves { justify-content: flex-end; margin-left: auto; }
@@ -528,6 +539,105 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .sv-c.sky s.on { background: var(--alert); }
 .sv-keep { display: block; padding: 4px 10px; background: var(--scrim); color: var(--hud-hi); font-size: 12px; }
 .sv-keep[hidden] { display: none; }
+/* ── the ship's glass ─────────────────────────────────────────────────────
+   Smoked optical glass in cut steel frames. Each plate is three things: a lit
+   one-pixel rim (light comes from the sun, top right), a body that blurs and
+   darkens what is behind it, and the tint of its state. Amber is the player's
+   pick, cyan is the ship's own information, and there is no red here. No icons:
+   weight comes from size, type and light. The body's backdrop-filter needs
+   its plate to carry no filter of its own, so the glow is a shadow, not a
+   drop-shadow. Phones get less blur and none of the small hardware. */
+#start .mode, #start .dif, #start #launch {
+  --gl-e1: var(--gl-smoke-e1); --gl-e2: var(--gl-smoke-e2); --gl-f: var(--gl-smoke-f); --gl-t: var(--gl-smoke-t);
+  position: relative; isolation: isolate; border: 0; background: none; filter: none; box-shadow: none;
+  transition: --gl-e1 .3s var(--ez), --gl-e2 .3s var(--ez), --gl-f .3s var(--ez), --gl-t .3s var(--ez), color .2s var(--ez), transform .2s var(--ez);
+}
+#start .mode::before, #start .dif::before, #start #launch::before { --ci: calc(var(--c) + .41px); content: ""; position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background: linear-gradient(205deg, var(--gl-e1), var(--gl-e2) 55%, var(--gl-e2));
+  clip-path: polygon(evenodd, var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c), var(--c) 0,
+    var(--ci) 1px, calc(100% - 1px) 1px, calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), 1px calc(100% - 1px), 1px var(--ci), var(--ci) 1px);
+  transition: none; }
+#start .mode::after, #start .dif::after, #start #launch::after { content: ""; position: absolute; inset: 1px; z-index: -1; pointer-events: none;
+  -webkit-backdrop-filter: var(--gl-glass); backdrop-filter: var(--gl-glass);
+  background:
+    var(--gl-dots),
+    repeating-linear-gradient(0deg, rgba(216, 213, 198, .022) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .025) 34%, rgba(255, 255, 255, 0) 62%),
+    radial-gradient(130% 120% at 92% 0%, var(--gl-t), transparent 64%),
+    linear-gradient(0deg, var(--gl-t), transparent 42%),
+    linear-gradient(var(--gl-f), var(--gl-f)),
+    var(--gl-under);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), inset 0 -22px 32px -24px var(--gl-t); transition: none; }
+/* the small plates carry no hardware */
+#start .dif::after { background:
+    repeating-linear-gradient(0deg, rgba(216, 213, 198, .022) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .02) 38%, rgba(255, 255, 255, 0) 64%),
+    radial-gradient(130% 120% at 92% 0%, var(--gl-t), transparent 64%),
+    linear-gradient(var(--gl-f), var(--gl-f)),
+    var(--gl-under); }
+#start .mo-t::before, #start .df-s::before { display: none; }
+#start .mo-t, #start .df-t, #start .la-t { text-shadow: 0 1px 10px rgba(0, 0, 0, .55); }
+#start .mo-s, #start .df-s, #start .la-s { text-shadow: 0 1px 6px rgba(0, 0, 0, .6); }
+
+/* hover: the glass lifts, a little brighter and clearer */
+#start .mode:hover, #start .dif:hover, #start #launch:hover, #start #launch:focus-visible {
+  --gl-e1: var(--gl-hover-e1); --gl-e2: var(--gl-hover-e2); --gl-f: var(--gl-hover-f); --gl-t: var(--gl-hover-t); }
+/* the picked plate: amber glass, warm light from inside */
+#start .mode[aria-checked="true"], #start .dif[aria-checked="true"] {
+  --gl-e1: var(--gl-amber-e1); --gl-e2: var(--gl-amber-e2); --gl-f: var(--gl-amber-f); --gl-t: var(--gl-amber-t);
+  filter: none; box-shadow: 0 12px 30px -16px rgba(217, 154, 39, .6); }
+#start .dif[aria-checked="true"] { --gl-f: rgba(66, 42, 6, .62); --gl-t: rgba(255, 172, 40, .36); box-shadow: 0 10px 24px -16px rgba(217, 154, 39, .5); }
+/* Story is the ship's own record: cyan, quieter */
+#start #mode-story[aria-checked="true"] {
+  --gl-e1: var(--gl-cyan-e1); --gl-e2: var(--gl-cyan-e2); --gl-f: var(--gl-cyan-f); --gl-t: var(--gl-cyan-t);
+  box-shadow: 0 12px 30px -16px rgba(57, 174, 183, .55); }
+#start #mode-story[aria-checked="true"] .mo-s { color: #a4ecf1; }
+#start .mode:disabled, #start .dif:disabled, #start .mode[aria-disabled="true"], #start .dif[aria-disabled="true"] {
+  --gl-e1: var(--gl-off-e1); --gl-e2: var(--gl-off-e2); --gl-f: var(--gl-off-f); --gl-t: var(--gl-off-t); color: var(--ink-3); cursor: default; }
+#start .mode:focus-visible, #start .dif:focus-visible, #start #launch:focus-visible, #start .cont:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
+
+/* Start: the lit control. Warmest glass, a long amber shadow under it, a slow
+   light running round the rim. */
+#start #launch { --gl-e1: rgba(255, 210, 120, .96); --gl-e2: rgba(217, 154, 39, .48); --gl-f: rgba(84, 52, 5, .74); --gl-t: rgba(255, 178, 44, .46);
+  box-shadow: 0 16px 38px -16px rgba(242, 170, 50, .75); }
+#start #launch:hover, #start #launch:focus-visible { --gl-e1: rgba(255, 228, 160, 1); --gl-e2: rgba(242, 184, 74, .6); --gl-f: rgba(92, 58, 7, .7); --gl-t: rgba(255, 190, 70, .5);
+  box-shadow: 0 18px 44px -14px rgba(255, 190, 70, .85); }
+#start #launch.armed { --gl-f: rgba(104, 66, 8, .72); --gl-t: rgba(255, 190, 70, .5); }
+#start #launch:active { transform: translateY(1px); }
+#start #launch::before { background: linear-gradient(100deg, var(--gl-e2) 0%, var(--gl-e1) 36%, #fff3d2 50%, var(--gl-e1) 64%, var(--gl-e2) 100%) 0 0 / 260% 100%;
+  animation: glass-run 9s linear infinite; }
+@keyframes glass-run { from { background-position: 100% 0; } to { background-position: 0 0; } }
+#start .la-t { color: #fff8e6; }
+#start .la-s { color: #ffe9bb; }
+#start .ct-k { color: var(--ink); }
+
+/* Continue: a quieter strip of the same glass, amber only at its left edge */
+#start .cont { border: 1px solid rgba(176, 218, 228, .28); border-left: 2px solid var(--hud); border-top-color: rgba(206, 238, 244, .4);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 60%), rgba(8, 15, 23, .5);
+  -webkit-backdrop-filter: var(--gl-glass); backdrop-filter: var(--gl-glass); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+  transition: background .2s var(--ez), border-color .2s var(--ez); }
+#start .cont:hover, #start .cont:focus-visible { background: linear-gradient(180deg, rgba(255, 220, 140, .12), rgba(255, 255, 255, 0) 70%), rgba(40, 28, 8, .55); border-color: rgba(242, 184, 74, .7); border-left-color: var(--hud-hi); }
+#start .ct-go { border: 1px solid rgba(242, 184, 74, .7); background: rgba(217, 154, 39, .1); }
+
+/* the information under the difficulty: the ship's cyan glass */
+#start .sv-pre { border: 1px solid rgba(124, 226, 234, .22); border-top-color: rgba(176, 238, 244, .4);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 60%), rgba(6, 22, 30, .52);
+  -webkit-backdrop-filter: var(--gl-glass); backdrop-filter: var(--gl-glass); }
+/* labels, papers, records, language and saves: the smallest glass */
+#start .pk-k b, #start .lk-d, #start .sv-keep, #start .records, #start #lang button, #start .start-foot .mods button {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 70%), rgba(7, 14, 21, .52);
+  -webkit-backdrop-filter: var(--gl-glass); backdrop-filter: var(--gl-glass); }
+#start .pk-k b { border: 1px solid rgba(176, 218, 228, .14); }
+#start .lk-d { border: 1px solid rgba(176, 218, 228, .16); }
+#start .records { border: 1px solid rgba(176, 218, 228, .16); border-left: 1px solid rgba(216, 213, 198, .4); }
+#start #lang button, #start .start-foot .mods button { border: 1px solid rgba(176, 218, 228, .24); }
+#start #lang button[aria-pressed="true"] { border-color: rgba(176, 218, 228, .24); border-bottom: 1px solid var(--hud); background: linear-gradient(180deg, rgba(244, 172, 52, .22), rgba(244, 172, 52, .04) 80%), rgba(24, 18, 8, .55); }
+#start .start-foot .mods button:hover, #start #lang button:hover { border-color: rgba(206, 238, 244, .5); }
+
+@media (max-height: 620px), (pointer: coarse) { #start #launch { --gl-f: rgba(70, 45, 8, .68); } #start #launch::before { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #start #launch::before { animation: none; } }
+/* no blur to lean on (glass.css sets the darker body), so the strips get a darker fill too */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { #start .cont, #start .sv-pre, #start .records { background-color: rgba(6, 10, 15, .8); } }
 /* the language, top right: quiet; the picked one is only brighter and underlined */
 #start > #lang { position: absolute; top: max(14px, calc(var(--safe-t) + 10px)); right: max(16px, calc(var(--safe-r, 0px) + 12px)); gap: 2px; }
 #lang button { height: 26px; border-color: transparent; background: var(--scrim); color: var(--ink-2); font-size: 11px; letter-spacing: .18em; }
@@ -583,8 +693,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   .la-t { font-size: 20px; }
   .la-s { font-size: 10.5px; }
   .cont { width: min(268px, 100%); gap: 8px; padding: 5px 8px 5px 12px; }
-  .ct-go { font-size: 0; padding: 3px 7px; }
-  .ct-go::after { content: "›"; font: 700 16px/1 var(--font-head); }
+  .ct-go { display: none; }
   .ct-k { font-size: 9.5px; }
   .ct-s { font-size: 10.5px; letter-spacing: .04em; }
   .lk-w { font-size: clamp(34px, 9.5vh, 52px); }
@@ -1652,3 +1761,19 @@ html.breakout #pause:not(.first) .term-s.full { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .rd-call { animation: none; } }
 .cm-body.solo { grid-template-columns: minmax(0, 1fr); }
+
+/* wrecked: a few lines over the dark; amber is the player's hand, red the breach, teal the tug */
+.drift { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; padding: 24px; background: radial-gradient(ellipse at 50% 50%, rgba(8, 13, 14, .9), #050808 80%); text-align: center; animation: dr-in .6s var(--ez); }
+.drift[hidden] { display: none; }
+@keyframes dr-in { from { opacity: 0; } }
+.dr-in { display: grid; gap: 14px; max-width: 46ch; }
+.dr-k { font: 700 calc(11px * 1.18)/1.2 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--alert); }
+.drift.tug .dr-k { color: var(--cy); }
+.dr-l { margin: 0; min-height: 3.6em; font: 400 clamp(16px, 2.4vw, 22px)/1.4 var(--font-display); color: var(--industrial-white); }
+.dr-l.in { animation: dr-line 1s var(--ez) both; }
+@keyframes dr-line { from { opacity: 0; } }
+.dr-skip { position: absolute; right: max(16px, var(--safe-r)); bottom: max(14px, var(--safe-b)); font: 600 11px/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) { .drift, .dr-l.in { animation: none; } }
+.sv-rule { max-width: 52ch; font: 600 11px/1.35 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--cy); text-align: center; }
+.sv-rule[hidden] { display: none; }
+.ch-rule { margin: 0; padding: 6px 10px; border-left: 2px solid var(--alert); background: var(--scrim); font: 600 12px/1.35 var(--font-rail); letter-spacing: .06em; color: var(--industrial-white); }

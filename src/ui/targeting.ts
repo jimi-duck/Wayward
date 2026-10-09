@@ -5,7 +5,7 @@ import { rockYield } from '../sim/breakout';
 import { ENCOUNTERS } from '../sim/encounters';
 import { alienBonus, alienLabel, cloaked, type Alien } from '../sim/enemies';
 import { ROCK_KINDS, type Rock } from '../sim/field';
-import { CELL, LOOSE, POWER_LABEL } from '../sim/pickups';
+import { LOOSE, POWER_LABEL } from '../sim/pickups';
 import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
@@ -24,7 +24,7 @@ import { t as tr } from '../i18n';
 //                  integrity, and for rock what breaking it yields
 //   marks        · brackets on every other hull in view (amber for elites),
 //                  the capital ship by name, the nearest krail-rich or
-//                  rare rock, repairs and power-ups to go and get, the
+//                  rock, repairs and boosters to go and get, the
 //                  objective. Only the things worth flying to get a word.
 //   pointers     · the capital ship and the objective, pinned to the edge
 //                  when they are off screen; a small chevron for each hull
@@ -53,7 +53,7 @@ const metres = (u: number) => Math.round(u / PX);
 export const range = (u: number) => (metres(u) >= 1000 ? `${(metres(u) / 1000).toFixed(1)} km` : `${metres(u)} m`);
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SIZE = ['L', 'M', 'S'] as const;
-const ASTEROID: Record<string, string> = { basalt: 'Asteroid', iron: 'Iron asteroid', rich: 'Rich asteroid', volatile: 'Volatile asteroid', rare: 'Rare asteroid' };
+const ASTEROID: Record<string, string> = { basalt: 'Asteroid', iron: 'Iron asteroid', rich: 'Rich asteroid', volatile: 'Volatile asteroid' };
 
 /** Set a node's text only when it changed. */
 function text(el: HTMLElement, t: string): void {
@@ -249,7 +249,7 @@ export class Targeting {
       // mining: what the rock is, what breaking it yields, what it breaks into
       const r = t.ref as Rock, K = ROCK_KINDS[r.kind];
       name = `${tr(ASTEROID[r.kind] ?? 'Asteroid')} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
-      const extra = r.kind === 'rare' ? ` · ${tr(POWER_LABEL[CELL.rock])}` : r.kind === 'volatile' ? ` · ${tr('unstable')}` : '';
+      const extra = r.kind === 'volatile' ? ` · ${tr('unstable')}` : '';
       if (world.bk) {
         // the Breakout: what a clean cut gives, and how the cut is going
         const y = rockYield(r.kind, r.size, true);
@@ -280,7 +280,7 @@ export class Targeting {
     text($('tgt-int-v'), `${Math.round(v * 100)}%`);
     if (t.kind === 'boss') cls = 'boss';
     const card = this.card;
-    for (const k of ['rock', 'basalt', 'iron', 'rich', 'volatile', 'rare', 'elite', 'friendly', 'boss']) {
+    for (const k of ['rock', 'basalt', 'iron', 'rich', 'volatile', 'elite', 'friendly', 'boss']) {
       const on = cls.split(' ').includes(k);
       this.box.classList.toggle(k, on);
       card.classList.toggle(k, on);
@@ -337,14 +337,14 @@ export class Targeting {
         if (Math.hypot(p.x - s.x, p.z - s.z) > NEAR) continue;
         put(p.x, 0.4, p.z, 'm dia', tr(p.kind === 'repair' ? 'Hull repair' : POWER_LABEL[p.kind as PowerKind]));
       }
-      // the nearest krail-rich or rare rock: a deposit worth the detour
+      // the nearest krail-rich rock: a deposit worth the detour
       let dep: Rock | null = null, depD = NEAR;
       for (const r of world.field.rocks) {
-        if ((r.kind !== 'rich' && r.kind !== 'rare') || r.id === t?.id) continue;
+        if (r.kind !== 'rich' || r.id === t?.id) continue;
         const d = Math.hypot(r.x - s.x, r.z - s.z);
         if (d < depD) { depD = d; dep = r; }
       }
-      if (dep) put(dep.x, dep.r + 0.6, dep.z, dep.kind === 'rich' ? 'm dia dep' : 'm dia', tr(dep.kind === 'rich' ? 'Mineral deposit\nRich · krail' : 'Rare ore\nPower-up inside'));
+      if (dep) put(dep.x, dep.r + 0.6, dep.z, 'm dia dep', tr('Mineral deposit\nRich · krail'));
       // a neutral hull in reach gets its name and distance, quietly: the nearest one only
       let trader: Alien | null = null, trD = TRADER;
       for (const a of world.aliens) {

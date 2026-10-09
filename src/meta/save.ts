@@ -61,6 +61,8 @@ export function migrate(raw: unknown): Journey | null {
   j.survival = survivalOf(j.survival).id;
   // 9 → 10: the overcharge reactor is gone. What was fitted for it comes out of the ship, and its Krail comes back.
   if (j.version < 10) retireOvercharge(j.carry as unknown as { krail: number; levels: Record<string, number> });
+  // 10 → 11: wrecks are counted for each region (the third in one is a total loss). A journey saved before starts the region clean.
+  if (j.version < 11) j.lost = 0;
   j.version = VERSION;
   return j as Journey;
 }

@@ -15,6 +15,7 @@ import { range, Targeting } from './targeting';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
+import { BREAK_COOLDOWN } from '../sim/tuning';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // The ship and the world come first; the HUD answers five questions and
@@ -41,7 +42,7 @@ const THREAT_NEAR = 320;
 /** Seconds before the log says again that the self-repair has started. */
 const MEND_QUIET = 10;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron rock broken', rich: 'Rich rock broken', volatile: 'Volatile rock broken', rare: 'Rare rock broken' };
+const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron rock broken', rich: 'Rich rock broken', volatile: 'Volatile rock broken' };
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
 const fmt = num;
 
@@ -86,6 +87,7 @@ export class Hud {
   private plateKey = '';
   private sysKey = '';
   private powerKey = '';
+  private readonly powerFull = new Map<string, number>();
   private seed = -1;
   private modeKey = '';
   private condKey = '';
@@ -353,6 +355,10 @@ export class Hud {
     const h = r?.heat ?? 0;
     ticks($('t-heat'), h, 10);
     $('cut').classList.toggle('hot', h > 0.8);
+    // touch: the break's recharge fills the button's gauge back up
+    const brkReady = 1 - world.ship.breakCooldown / BREAK_COOLDOWN;
+    ticks($('t-brk'), brkReady, 5);
+    $('brk').classList.toggle('wait', world.ship.breakCooldown > 0);
   }
 
   // ── top right: ship systems ─────────────────────────────────────────────
@@ -446,29 +452,41 @@ export class Hud {
       text($('chain-x'), `×${world.chainMult}`);
     }
 
-    // power-ups running
+    // boosters running
     const live = (Object.keys(world.powers) as Array<keyof typeof world.powers>).filter((k) => world.powers[k] > 0);
     const pk = live.map((k) => `${k}${Math.ceil(world.powers[k])}`).join()
       + (world.cloakT > 0 ? `cloak${Math.ceil(world.cloakT)}` : '');
     if (pk !== this.powerKey) {
       this.powerKey = pk;
-      const chip = (label: string, secs: number) => {
+      // a chip each: name, seconds left and a bar that drains (its full length is the longest it has been seen)
+      const chip = (id: string, label: string, secs: number) => {
+        const full = Math.max(this.powerFull.get(id) ?? 0, secs);
+        this.powerFull.set(id, full);
         const s = document.createElement('span');
         const b = document.createElement('b');
         b.textContent = `${Math.ceil(secs)}s`;
-        s.append(label, b);
+        const bar = document.createElement('i');
+        bar.style.setProperty('--left', String(Math.min(1, secs / full)));
+        s.dataset.power = id;
+        s.append(label, b, bar);
         return s;
       };
-      const chips = live.map((k) => chip(t(POWER_LABEL[k]), world.powers[k]));
-      if (world.cloakT > 0) chips.push(chip(t('Cloak'), world.cloakT));
+      for (const id of [...this.powerFull.keys()]) if (!live.includes(id as never) && !(id === 'cloak' && world.cloakT > 0)) this.powerFull.delete(id);
+      const chips = live.map((k) => chip(k, t(POWER_LABEL[k]), world.powers[k]));
+      if (world.cloakT > 0) chips.push(chip('cloak', t('Cloak'), world.cloakT));
       $('powers').replaceChildren(...chips);
+    }
+    // the bars drain smoothly between the whole seconds
+    for (const c of Array.from($('powers').children) as HTMLElement[]) {
+      const id = c.dataset.power!, left = id === 'cloak' ? world.cloakT : world.powers[id as keyof typeof world.powers];
+      (c.lastElementChild as HTMLElement).style.setProperty('--left', String(Math.min(1, left / (this.powerFull.get(id) || 1))));
     }
 
     // touch: each button's own gauge
     ticks($('t-bank'), bank, 10);
     $('fire').classList.toggle('dry', dry);
 
-    // the panel's height places the power-ups under it, and the centre block on narrow screens
+    // the panel's height places the boosters under it, and the centre block on narrow screens
     const sysKey = `${st.torpedoes}${st.mines}${shields}${!!world.bk}`;
     if (sysKey !== this.sysKey) { this.sysKey = sysKey; this.measure(); }
   }

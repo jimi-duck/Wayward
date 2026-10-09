@@ -14,10 +14,11 @@ import { recap } from './sim/chapters';
 import { FEATURES } from './content/features';
 import { SURVIVAL } from './content/survival';
 import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
-import { sysById } from './sim/chart';
+import { regionsOf, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
-import { ChartPanel } from './ui/chart';
+import { Cutscene } from './ui/adrift';
+import { ChartPanel, regionName } from './ui/chart';
 import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
@@ -118,10 +119,11 @@ function boot(review: typeof import('./review') | null): void {
   const port = new PortPanel();
   const chart = new ChartPanel();
   const ending = new EndingPanel();
+  const cut = new Cutscene();
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   const radioBlocked = () => !started || loop.paused || panelOpen();
   const radioAnswer = (id: string) => {
@@ -158,6 +160,7 @@ function boot(review: typeof import('./review') | null): void {
     const j = pick === 'breakout' ? live : null;
     el('mode-arcade').setAttribute('aria-checked', String(pick === 'arcade'));
     el('mode-story').setAttribute('aria-checked', String(pick === 'breakout'));
+    el('sv-rule').hidden = pick !== 'breakout';
     // a saved journey is a small card above the picks, in either mode; Start game below is always a new one
     el('cont').hidden = !live;
     if (live) el('cont-s').textContent = resumeLine(live);
@@ -287,12 +290,33 @@ function boot(review: typeof import('./review') | null): void {
     const j = journey!;
     const rec = recordRun(profile, world.run);
     const out = endSortie(j, world.result());
+    // the third wreck in a region: it is flown again from its gate
+    if (out.kind === 'wrecked' && !j.hardcore) return regionLost(j);
     saveJourney(j);
     chart.debrief(sortieStart ? debrief(sortieStart, j) : []);
     const lines = [...out.lines, ...rec.unlocked.map((u) => `${t('Unlocked')} · ${t(u.name)}`)];
     if (out.kind === 'jumped') return openChart(lines);
     if (pending(j)) return threshold(j, lines);
+    if (out.kind === 'adrift') {
+      loop.paused = true;
+      input.reset();
+      return cut.play('adrift', () => noticeOf(j, { ...out, lines }));
+    }
     noticeOf(j, { ...out, lines });
+  };
+  /** A total loss: back to the gate the region was entered by (the chapter save), or the start of the journey in the first. The Archive keeps nothing of it. */
+  const regionLost = (j: Journey) => {
+    const snap = chapterSave();
+    const back = snap && snap.seed === j.seed ? snap : newJourney(j.seed, false, regionsOf(j.chart).length > 3 ? 'eight' : 'three', j.survival);
+    journey = back;
+    saveJourney(back);
+    loop.paused = true;
+    input.reset();
+    cut.play('lost', () => {
+      const where = regionName(back.chart, back.at);
+      const lines = [snap ? t('Back at the gate of {region}, with the ship you had then.', { region: where }) : t('Back at the start of the run out of Cerro, with the ship you stole.'), t('What you missed there is still out there.')];
+      chart.notice(back, { kind: 'lost', lines }, () => startSortie());
+    });
   };
   const startOpts = new StartOptions(profile, () => {
     persist(profile);
@@ -355,9 +379,10 @@ function boot(review: typeof import('./review') | null): void {
       else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
     }
     // a gamepad answers the open panel
-    if (bay.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
+    if (cut.open || bay.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
       const p = padNav.poll();
-      if (bay.open) bay.padInput(p);
+      if (cut.open) cut.padInput(p);
+      else if (bay.open) bay.padInput(p);
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p, journey);
@@ -477,7 +502,7 @@ function boot(review: typeof import('./review') | null): void {
 
   const input = new Input(
     {
-      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), cut: el('cut'),
+      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), cut: el('cut'), brk: el('brk'),
     },
     () => (started ? (panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
     () => openBay(),
@@ -521,7 +546,7 @@ function boot(review: typeof import('./review') | null): void {
   });
   loop.paused = true;
   // dev server only: a handle for tools/shots.mjs to put any screen up
-  if (import.meta.env.DEV) Object.assign(window, { wayward: { world, sector, loop, launch, openChart, chart, get journey() { return journey; } } });
+  if (import.meta.env.DEV) Object.assign(window, { wayward: { world, sector, loop, launch, openChart, chart, cut, get journey() { return journey; } } });
 
   // ── landscape only ─────────────────────────────────────────────────────
   // A phone held upright gets the turn screen over everything, and a run

@@ -141,11 +141,11 @@ export interface Stats {
   ramArc: boolean;
 
   // the economy (utility)
-  /** Multipliers: rock's chance of krail, hull repairs' chance, power-up time, rare rock's frequency, an elite's krail. */
+  /** Multipliers: rock's chance of krail, hull repairs' chance, booster time, booster frequency, an elite's krail. */
   crystalChance: number;
   repairChance: number;
   powerTime: number;
-  rareRate: number;
+  boostRate: number;
   eliteLoot: number;
 
   // salvaged tech (from capital ships)
@@ -190,7 +190,7 @@ export const BASE: Readonly<Stats> = Object.freeze({
   tractor: 165 * PX, xpMult: 1,
 
   dmgAll: 1, plasmaCorona: false, ramArc: false,
-  crystalChance: 1, repairChance: 1, powerTime: 1, rareRate: 1, eliteLoot: 1,
+  crystalChance: 1, repairChance: 1, powerTime: 1, boostRate: 1, eliteLoot: 1,
   disruptor: 0, rollCloak: 0, snare: 0,
   notice: 1, lull: 1,
 });

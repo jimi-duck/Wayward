@@ -533,15 +533,15 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ut_salvager', name: 'Salvage drones', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'defence'],
-    text: 'Hull repairs turn up more often, and power-ups last half again as long.',
+    text: 'Hull repairs turn up more often, and boosters last half again as long.',
     note: 'Still no more than one repair every half minute.',
     apply: (s) => { s.repairChance *= 1.8; s.powerTime *= 1.5; },
   },
   {
     id: 'ut_scanner', name: 'Deep scanners', branch: 'utility', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'xp', 'damage'],
-    text: 'Rare rock turns up twice as often, and elites carry twice the krail.',
-    apply: (s) => { s.rareRate *= 2; s.eliteLoot *= 2; },
+    text: 'Boosters turn up twice as often, and elites carry twice the krail.',
+    apply: (s) => { s.boostRate *= 2; s.eliteLoot *= 2; },
   },
 
   // ── salvage: tech from the capital ships you destroy ───────────────────

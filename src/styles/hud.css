@@ -8,13 +8,13 @@
    grey. */
 
 :root {
-  /* smoked glass, shared with comms, the pause card and the menu */
-  --glass-fill: linear-gradient(180deg, rgba(22, 36, 42, .5), rgba(8, 14, 17, .62));
+  /* smoked glass: built on the tokens in glass.css (the menu's), a lighter blur for a HUD that sits over the action */
+  --glass-fill: linear-gradient(180deg, rgba(22, 36, 42, .5), var(--gl-smoke-f));
   --glass-deep: linear-gradient(180deg, rgba(14, 24, 29, .74), rgba(6, 10, 12, .84));
-  --glass-edge: rgba(150, 196, 204, .22);
-  --glass-edge-hi: rgba(196, 230, 234, .46);
+  --glass-edge: var(--gl-smoke-e2);
+  --glass-edge-hi: var(--gl-smoke-e1);
   --glass-sheen: rgba(255, 255, 255, .07);
-  --glass-blur: blur(5px) saturate(1.15);
+  --glass-blur: blur(calc(var(--blur) * .4)) saturate(1.15);
   /* small red type needs to be lighter than the red of a mark to hold 4.5:1 on glass over a bright nebula */
   --alert-text: #f08a7e;
 }
@@ -191,7 +191,10 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #powers { position: absolute; right: var(--right); top: calc(var(--top) + var(--sys-h, 150px) + 8px); display: grid; gap: 4px; justify-items: end; }
 #powers span { display: flex; align-items: center; gap: 10px; padding: 4px 9px 4px 8px; background: var(--glass-fill); border-left: 2px solid var(--amber);
   font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
-#powers span b { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); color: var(--amber); font-variant-numeric: tabular-nums; }
+#powers span b { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); color: var(--amber); font-variant-numeric: tabular-nums; min-width: 2.2em; text-align: right; }
+/* the time left, draining from the right */
+#powers span { position: relative; overflow: hidden; }
+#powers span i { position: absolute; left: 0; bottom: 0; height: 3px; width: calc(100% * var(--left, 1)); background: var(--amber); }
 
 /* ── upper centre: the alert, the capital ship, the target ────────────── */
 #centre { position: absolute; left: 50%; top: calc(var(--safe-t) + 46px); translate: -50% 0; display: grid; gap: 8px; justify-items: center; }
@@ -245,7 +248,6 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #tgt-card.locked #tgt-lock { display: inline-block; }
 /* rock reads in the colour of what it yields */
 #tgt-card.rock .tc-s b { color: var(--violet); }
-#tgt-card.rare .tc-s b { color: var(--amber); }
 #tgt-card.volatile { --lit: var(--alert); }
 /* a hull is a threat: red, as every threat is */
 #tgt-card:not(.rock) { --edge: rgba(224, 87, 75, .4); --lit: var(--alert); --tint: linear-gradient(rgba(70, 16, 12, .28), rgba(70, 16, 12, .22)); }

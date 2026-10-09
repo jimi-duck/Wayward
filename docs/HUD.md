@@ -50,7 +50,7 @@ brighter, like a bracket), a body that lets the picture through, a sheen
 along the top, one faint diagonal reflection and two tiny maintenance ticks.
 Tokens, in `:root` of `hud.css`, shared with the menu and the pause card:
 
-- `--glass-fill`, `--glass-deep` the body, light and deep
+- built on the menu's tokens in `glass.css` (`--gl-smoke-*`, `--blur`); `--glass-fill`, `--glass-deep` the body, light and deep
 - `--glass-edge`, `--glass-edge-hi` the hairline and its lit end
 - `--glass-sheen` the top highlight
 - `--glass-blur` the backdrop blur
