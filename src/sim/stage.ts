@@ -2,6 +2,7 @@ import { t } from '../i18n';
 import { SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
+import { Run, scaleOut, type Pt } from './mission';
 import type { Encounter } from './encounters';
 import type { Rng } from './rng';
 import type { World } from './world';
@@ -40,6 +41,9 @@ const GONE = 520;
 
 const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 
+/** The goals a Run (sim/mission.ts) plays. */
+const MISSION = new Set(['destroy', 'strike', 'defend', 'race', 'survey', 'sneak']);
+
 export interface StageResult { id: string; result: SitResult }
 
 export class Stage {
@@ -63,6 +67,8 @@ export class Stage {
   /** A hail ring for the call: set from the def. */
   private marker: Encounter | null = null;
   private said = new Set<string>();
+  /** The mission, once its goal is taken (sim/mission.ts). */
+  run: Run | null = null;
 
   constructor(def: SituationDef, at: string, w: World) {
     this.def = def;
@@ -78,7 +84,7 @@ export class Stage {
     this.x = this.sx + ux * this.len * along + -uz * side * OFF;
     this.z = this.sz + uz * this.len * along + ux * side * OFF;
     // site actors are there from the start: you see them before you hear them
-    for (const a of def.actors ?? []) if ((a.from ?? 'site') === 'site') this.spawn(w, a);
+    for (const a of def.actors ?? []) if ((a.from ?? 'site') === 'site' && !a.foe) this.spawn(w, a);
   }
 
   // ── geometry ───────────────────────────────────────────────────────────
@@ -115,6 +121,8 @@ export class Stage {
       al.ax = hx; al.az = hz;
       al.ward = { act: a.act, temper: a.temper, hx, hz, ring: a.ring ?? (a.act === 'orbit' ? 60 : a.act === 'follow' ? 120 : 40), warned: 0, tag: a.tag };
       al.spK *= a.pace ?? 1;
+      if (a.hp) { al.hp *= a.hp; al.maxHp *= a.hp; }
+      if (a.target) al.job = true;
       this.actors.push(al);
     }
   }
@@ -137,6 +145,7 @@ export class Stage {
   /** A scene hull was hit by the player. Meek ones run, the rest turn; the whole guard knows. */
   shot(w: World, al: Alien): void {
     if (!al.ward || this.result) return;
+    if (this.run?.owns(al)) { this.run.shot(w, al); return; }
     this.provoked = true;
     for (const a of this.alive(w)) {
       if (!a.ward) continue;
@@ -195,7 +204,7 @@ export class Stage {
   private begin(w: World): void {
     this.begun = true;
     for (const f of this.def.seen ?? []) w.flags.add(f);
-    for (const a of this.def.actors ?? []) if (a.from === 'ahead' || a.from === 'astern') this.spawn(w, a);
+    for (const a of this.def.actors ?? []) if ((a.from === 'ahead' || a.from === 'astern') && !a.foe) this.spawn(w, a);
     this.said_('start', w);
   }
 
@@ -213,6 +222,10 @@ export class Stage {
     const g = this.def.goal;
     this.taken = true; this.clock = 0; this.hold = 0; this.out = 0;
     this.line = t(g.line);
+    if (MISSION.has(g.kind)) {
+      const { ux, uz } = this.dir();
+      this.run = new Run(this.def, { x: this.x, z: this.z, ux, uz }, w, this.actors.filter((a) => (this.def.actors ?? []).some((sp) => sp.target && sp.tag === a.ward?.tag)));
+    }
     if (this.def.threat) this.threatT = this.def.threat.after;
     this.trapped = !!this.def.trap;
     w.events.push({ type: 'sectorEvent', id: 'scene', name: t(this.def.name), text: this.line });
@@ -223,6 +236,10 @@ export class Stage {
   get held(): number { return this.def.goal.hold > 0 ? Math.min(1, this.hold / this.def.goal.hold) : 0; }
   /** Seconds left before the goal is missed (0: no limit). */
   get left(): number { return this.def.goal.limit > 0 ? Math.max(0, this.def.goal.limit - this.clock) : 0; }
+  /** The mission's second line on the HUD, its pins in the world, and how seen the ship is (sneak). */
+  get status(): string { return this.run?.status ?? ''; }
+  get pins(): Array<Pt & { r?: number }> { return this.run?.points ?? []; }
+  get exposed(): number { return this.run?.exposed ?? 0; }
   /** Whether what the site asks for is aboard (the HUD's 'holding' against 'not enough'). */
   ready = true;
 
@@ -236,7 +253,11 @@ export class Stage {
       for (let i = 0; i < d.threat.n; i++) w.spawnHostile(d.threat.variant, { x: s.x + ux * 340 + (i - d.threat.n / 2) * 30, y: 0, z: s.z + uz * 340 + (i - d.threat.n / 2) * 30 }, null, true);
       w.events.push({ type: 'ping', id: `say_${d.id}_threat`, from: t('Scope'), caller: 'unknown', text: t('“Contacts ahead, closing fast.”'), moment: 'calm', system: w.sortie.name });
     }
-    if (g.kind === 'follow') {
+    if (this.run) {
+      const v = this.run.step(w, dt);
+      this.ready = true;
+      if (v) return this.finish(w, v);
+    } else if (g.kind === 'follow') {
       const lead = this.leader(w);
       if (!lead) return this.finish(w, 'lost');
       const dl = Math.hypot(lead.x - s.x, lead.z - s.z);
@@ -285,7 +306,7 @@ export class Stage {
     const lead = this.leader(w);
     for (const [i, a] of this.alive(w).entries()) {
       const W = a.ward;
-      if (!W) continue;
+      if (!W || this.run?.owns(a)) continue;
       a.mode = 'drift';
       const dx = s.x - a.x, dz = s.z - a.z, d = Math.hypot(dx, dz) || 1;
       const ph = i * 2.1;
@@ -310,6 +331,13 @@ export class Stage {
             a.ax = wait || past ? a.x : a.x + (this.lx - a.x) * 0.08 + Math.sin(a.age * 0.2) * 4;
             a.az = wait || past ? a.z : a.z + (this.lz - a.z) * 0.08;
           } else if (lead) { a.ax = lead.x - ux * (14 + i * 6) + Math.cos(ph) * 10; a.az = lead.z - uz * (14 + i * 6) + Math.sin(ph) * 10; }
+          break;
+        }
+        case 'patrol': {
+          // sweeps the site on a ring, slow and steady, each hull on its own phase
+          const th = now * 0.22 * (i % 2 ? -1 : 1) + ph;
+          const r = W.ring + (i % 3) * 22;
+          a.ax = this.x + Math.cos(th) * r; a.az = this.z + Math.sin(th) * r;
           break;
         }
         case 'pass':
@@ -353,8 +381,11 @@ export class Stage {
     if (w.encounter !== this.marker) { this.marker = null; return; }
     const m = this.marker;
     const g = this.def.goal;
-    if (g.kind === 'follow') { const l = this.leader(w); if (l) { m.x = l.x; m.z = l.z; } m.r = FOLLOW_R; } else { m.x = this.x; m.z = this.z; m.r = SITE_R; }
-    m.progress = g.hold > 0 ? Math.min(1, this.hold / g.hold) : 0;
+    if (this.run) { m.x = this.run.focus.x; m.z = this.run.focus.z; m.r = this.run.focus.r; m.progress = this.run.progress; }
+    else {
+      if (g.kind === 'follow') { const l = this.leader(w); if (l) { m.x = l.x; m.z = l.z; } m.r = FOLLOW_R; } else { m.x = this.x; m.z = this.z; m.r = SITE_R; }
+      m.progress = g.hold > 0 ? Math.min(1, this.hold / g.hold) : 0;
+    }
     m.t = this.clock;
   }
 
@@ -363,14 +394,18 @@ export class Stage {
     if (this.result) return;
     this.result = r;
     const d = this.def;
-    const out: Outcome | undefined = r === 'won' ? (d.goal.kind === 'call' ? undefined : d.win) : r === 'lost' ? (d.goal.kind === 'call' ? undefined : d.lose) : r === 'ignored' ? d.ignore : undefined;
-    if (out) w.applyOutcome(out, 1, []);
+    // a goal pays only when it was taken on: a card answered some other way has paid in the card
+    const goalOut = (o: Outcome | undefined): Outcome | undefined => (d.goal.kind === 'call' || !this.taken ? undefined : o);
+    const out: Outcome | undefined = r === 'won' ? goalOut(d.win) : r === 'lost' ? goalOut(d.lose) : r === 'ignored' ? d.ignore : undefined;
+    if (out) w.applyOutcome(r === 'won' && this.run ? scaleOut(out, this.run.scale) : out, 1, []);
+    if (this.run && r === 'lost') for (const a of this.alive(w)) if (a.ward?.act === 'patrol') provoke(a, w.events);
     if (r === 'won' && !this.provoked) { for (const a of this.alive(w)) if (a.ward && a.ward.act !== 'lead') a.ward.act = 'pass'; }
     if (this.taken) this.said_(r === 'won' ? 'won' : 'lost', w);
     if (this.taken && out?.text) w.events.push({ type: 'sectorEventEnd', id: 'scene', name: t(d.name), text: t(out.text), success: r === 'won' });
     this.taken = false;
     this.line = '';
     this.mark(w);
+    if (this.run) { for (const a of w.aliens) if (this.run.owns(a)) a.job = false; this.run = null; }
     // a lead ship that was followed goes on its way
     if (r !== 'lost') for (const a of this.alive(w)) if (a.ward?.act === 'lead') a.ward.act = 'pass';
   }

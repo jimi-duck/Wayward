@@ -584,7 +584,7 @@ export class Hud {
       text($('obj-t'), st.line);
       text($('obj-left'), st.left > 0 ? `${Math.ceil(st.left)}s` : '');
       ticks($('obj-p'), e.progress, 30);
-      text($('obj-s'), st.def.goal.kind === 'follow' ? t(d < e.r ? 'Staying with it' : 'Catch up with it') : d < e.r ? t(st.ready ? 'Holding' : st.def.goal.give ? 'Not enough aboard' : 'Hold still') : `${e.label} · ${range(d)}`);
+      text($('obj-s'), st.status ? `${st.status} · ${range(d)}` : st.def.goal.kind === 'follow' ? t(d < e.r ? 'Staying with it' : 'Catch up with it') : d < e.r ? t(st.ready ? 'Holding' : st.def.goal.give ? 'Not enough aboard' : 'Hold still') : `${e.label} · ${range(d)}`);
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
       const left = Math.max(0, Math.ceil(e.dur - e.t));
