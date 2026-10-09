@@ -153,3 +153,14 @@ port `pl-`; sky `sl-`; features `fu-`).
 - **Not done in round two** (judged on screenshots here): the shroud does not yet occlude real hulls with a shader; storm light on nearby rocks; per-hull bespoke damage states. Combat marks were looked at and left, they already share one streak renderer and the warning beat.
 
 Cost, counted with the scene traversal in the review world (no GPU here): about 356 visible meshes in the review baseline, about 460 beside a slipway, 160 k triangles; hulls are still instanced, parts merge one draw per material key. Per-frame JS is unchanged. Shader cost rose a little (rim and engine terms on kit metal, strata and inclusions on rock); a device must check a crowded Raider fight.
+
+## Round three: the far works were plain boxes
+
+A screenshot showed the far-works fleet as black bars with rows of white
+dots: boxes in a dark material, unlit and unpainted, set against the haze.
+They now use the real hull designs (warbird, lancer and freighter for the
+fleet, a raptor for the hulk), in the same plating as the ships in front of
+them, washed toward the sky's haze so distance takes contrast first. Lamps
+are few and warm. Every work in a sky merges into one mesh per material, so
+the whole set is four draws a sky (was six), and the plating shares the
+kit's shader program, so no new compile.
