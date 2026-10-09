@@ -345,7 +345,7 @@ export class Sector {
           hold = Math.max(hold, 0.11);
           break;
         }
-        case 'rockCut': {
+        case 'rockMined': {
           const big = [1, 0.62, 0.38][e.size]!;
           this.fx.flash(e.x, 0.3, e.z, 3 * big + 1, AMBER, 0.25);
           this.fx.ring(e.x, 0.1, e.z, 6 * big + 2, e.cyrite ? VIOLET : AMBER, 0.45);
@@ -354,10 +354,6 @@ export class Sector {
           this.rig.shake(0.08);
           break;
         }
-        case 'fracture':
-          this.fx.flash(e.x, 0.3, e.z, 5, [4.2, 0.8, 0.3], 0.2);
-          this.rig.shake(0.25);
-          break;
         case 'ore':
           this.fx.burst(e.x, 0.3, e.z, 2 + e.value, DUST, 4, 0.16, 0.25);
           break;

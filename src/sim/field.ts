@@ -67,9 +67,6 @@ export interface Rock {
   /** Seconds since it appeared (for a fade-in) and since it was last hit (a flash). */
   age: number;
   hitT: number;
-  /** The cutter's heat in it (0 to 1, past 1 it fractures) and how far the cut has gone (0 to 1). */
-  heat?: number;
-  cut?: number;
 }
 
 /**

@@ -179,13 +179,12 @@ export class Hud {
   events(evts: GameEvent[], world: World): void {
     for (const e of evts) {
       switch (e.type) {
-        case 'rockDestroyed': this.note(world, `${t(ROCK_BROKEN[e.kind] ?? 'Rock broken')} · +${e.points}`, '', 'rock', e.points); break;
+        case 'rockDestroyed': this.note(world, `${t(ROCK_BROKEN[e.kind] ?? 'Rock broken')} · +${e.points}${e.left !== undefined ? ` · ${t('{n}% of the ore left', { n: e.left })}` : ''}`, '', 'rock', e.points); break;
         case 'bulwarkBroken': this.note(world, `${t('Bulwark shattered')} · +${e.points}`, '', 'rock', e.points); break;
         case 'alienDestroyed': this.note(world, `${t('{name} destroyed', { name: t(e.label) })} · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
         case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
-        case 'rockCut': this.note(world, `${t('Cut clean')} · ${t('{n} ore', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
-        case 'fracture': this.note(world, t(e.kind === 'volatile' ? 'Volatile rock · it blew' : 'Rock cracked · too hot'), 'hit'); break;
+        case 'rockMined': this.note(world, `${t('Mined clean')} · ${t('{n} ore', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
         case 'holdFull': this.note(world, t('Hold full · sell at the port'), 'hit'); break;
         case 'patched': this.note(world, `${t('Plate patched')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;
@@ -426,11 +425,6 @@ export class Hud {
     const list = $('obj-list');
     if (list.innerHTML !== html) list.innerHTML = html;
 
-    // touch: the cutter's heat in the rock under the beam
-    const r = world.field.find(world.cutting);
-    const h = r?.heat ?? 0;
-    ticks($('t-heat'), h, 10);
-    $('cut').classList.toggle('hot', h > 0.8);
     // touch: the break's recharge fills the button's gauge back up
     const brkReady = 1 - world.ship.breakCooldown / BREAK_COOLDOWN;
     ticks($('t-brk'), brkReady, 5);
@@ -616,7 +610,7 @@ export class Hud {
       } else {
         text($('obj-t'), t('Make for the lane mouth')); text($('obj-left'), range(dl));
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
-        text($('obj-s'), `Cyrite ${world.cyrite}/${bk.jumpCost} · ${t(world.cyrite >= bk.jumpCost ? 'enough to jump' : 'cut the violet rock')}`);
+        text($('obj-s'), `Cyrite ${world.cyrite}/${bk.jumpCost} · ${t(world.cyrite >= bk.jumpCost ? 'enough to jump' : 'mine the violet rock')}`);
       }
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];

@@ -96,7 +96,7 @@ describe('the story beats', () => {
     w.portCalled = true;
     w.bk!.nextPursuit = Infinity;
     w.field.rocks = [];
-    const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
+    const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
     run(STORY_AT - 2);
     expect(w.phase).not.toBe('comms');
     run(4);
@@ -115,7 +115,7 @@ describe('the story beats', () => {
       w.cardNext = Infinity;
       w.bk!.nextPursuit = Infinity;
       w.field.rocks = [];
-      for (let t = 0; t < (STORY_AT + 2) * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); }
+      for (let t = 0; t < (STORY_AT + 2) * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); }
       expect(w.comms?.def.id).toBe(YARD_BEAT);
       const before = w.result().carry;
       w.answer(answer);

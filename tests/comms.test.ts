@@ -10,7 +10,7 @@ import { DESK } from '../src/sim/desk';
 import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({

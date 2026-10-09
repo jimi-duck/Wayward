@@ -2,15 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import {
-  HEAT_START, JUMP_COST, LANE_DIST, PATCH_COST, PATCH_QUIET, PATCH_TIME, PRICE, PURSUIT_FIRST, SPOOL, START_CYRITE, pickPursuer, rockYield,
+  HEAT_START, JUMP_COST, LANE_DIST, PATCH_COST, PATCH_QUIET, PATCH_TIME, PRICE, PURSUIT_FIRST, SPOOL, START_CYRITE, pickPursuer, rockYield, rockTake, TORP_YIELD,
 } from '../src/sim/breakout';
 import type { Rock } from '../src/sim/field';
-import { CUT_WORK, cutRock, WARM } from '../src/sim/mining';
 import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';
 
 const input = (f: Partial<InputFrame> = {}): InputFrame =>
-  ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...f });
+  ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...f });
 
 function run(w: World, seconds: number, f: Partial<InputFrame> = {}) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input(f));
@@ -43,60 +42,43 @@ function rockAhead(w: World, ahead: number, kind: Rock['kind'] = 'basalt', size:
   return r;
 }
 
-describe('the cutter', () => {
-  it('goes in only once the rock is warm, and comes out clean under the line', () => {
-    const w = quiet();
-    const r = rockAhead(w, 9);
-    let res = 'none';
-    let t = 0;
-    while (t < 2 && res === 'cutting' || t === 0) { res = cutRock(r, STEP); t += STEP; if ((r.heat ?? 0) < WARM) expect(r.cut ?? 0).toBe(0); }
-    expect(r.cut ?? 0).toBeGreaterThan(0);
-  });
+describe('mining', () => {
+  const priv = (w: World) => w as unknown as { destroyRock(r: unknown, s: string): void };
 
-  it('fractures a rock held past the line', () => {
-    const w = quiet();
-    const r = rockAhead(w, 9, 'basalt', 0);
-    let res = 'cutting';
-    for (let i = 0; i < 10 / STEP && res === 'cutting'; i++) res = cutRock(r, STEP);
-    // a large rock needs more warm cutting than one long hold allows
-    expect(CUT_WORK[0]).toBeGreaterThan(2);
-    expect(res).toBe('fracture');
-  });
-
-  it('cuts a small rock clean in one hold, and the ore falls out for the tractor', () => {
+  it('lasers take a small rock apart clean, and the ore falls out for the tractor', () => {
     const w = quiet();
     rockAhead(w, 8, 'basalt', 2);
-    let cut = false;
-    for (let i = 0; i < 6 / STEP && !cut; i++) { w.step(STEP, input({ cut: true })); cut = w.drain().some((e) => e.type === 'rockCut'); }
-    expect(cut).toBe(true);
+    let mined = false;
+    for (let i = 0; i < 6 / STEP && !mined; i++) { w.step(STEP, input({ fire: true })); mined = w.drain().some((e) => e.type === 'rockMined'); }
+    expect(mined).toBe(true);
     expect(w.field.rocks.length).toBe(0);
     run(w, 2);
-    expect(w.ore).toBe(rockYield('basalt', 2, true).ore);
-    expect(w.run.cut).toBe(1);
+    expect(w.ore).toBe(rockYield('basalt', 2).ore);
+    expect(w.run.mined).toBe(1);
   });
 
-  it('pulsed, cuts a large rock clean', () => {
+  it('mines a large veined rock clean, and nothing is left to split', () => {
     const w = quiet();
     const r = rockAhead(w, 12, 'rich', 0);
-    let done = false;
-    for (let i = 0; i < 40 / STEP && !done; i++) {
-      // ease off at the red, back in once it has cooled a little
-      const hot = (r.heat ?? 0) > 0.9;
-      w.step(STEP, input({ cut: !hot && (r.heat ?? 0) < 0.92 }));
-      if (hot) run(w, 0.6);
-      done = w.drain().some((e) => e.type === 'rockCut') || !w.field.rocks.includes(r);
-    }
-    expect(w.run.cut).toBe(1);
-    expect(w.run.fractured).toBe(0);
+    for (let i = 0; i < 20 / STEP && w.field.rocks.includes(r); i++) w.step(STEP, input({ fire: true }));
+    expect(w.run.mined).toBe(1);
+    expect(w.field.rocks.length).toBe(0);
     run(w, 2);
-    expect(w.cyrite).toBe(START_CYRITE + rockYield("rich", 0, true).cyrite);
+    expect(w.cyrite).toBe(START_CYRITE + rockYield('rich', 0).cyrite);
   });
 
-  it('holds the lasers while it runs', () => {
+  it('a torpedo destroys part of the rock, so it gives less than the lasers', () => {
     const w = quiet();
-    rockAhead(w, 9);
-    w.step(STEP, input({ fire: true, cut: true }));
-    expect(w.drain().some((e) => e.type === 'bolt')).toBe(false);
+    const r = rockAhead(w, 12, 'rich', 0);
+    priv(w).destroyRock(r, 'torpedo');
+    run(w, 2);
+    expect(w.field.rocks.length).toBe(0);
+    expect(w.run.mined).toBe(0);
+    expect(w.run.blasted).toBe(1);
+    expect(w.cyrite).toBe(START_CYRITE + rockYield('rich', 0, TORP_YIELD).cyrite);
+    expect(rockYield('rich', 0, TORP_YIELD).cyrite).toBeLessThan(rockYield('rich', 0).cyrite);
+    expect(rockTake('torpedo')).toBe(TORP_YIELD);
+    expect(rockTake('laser')).toBe(1);
   });
 });
 
