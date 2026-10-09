@@ -15,10 +15,10 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_trader', kind: 'trade', caller: 'frontier', tier: 'routine',
     from: 'Orlo Pike · independent hauler', title: 'Stock to swap',
-    text: '“Running light, and I sell stores fair. Chits buy anything out here: supplies, spares, favours.”',
+    text: '“Running light, and I sell stores fair. Cyrite buy anything out here: supplies, spares, favours.”',
     cargo: 'A hauler · hold half empty',
     choices: [
-      { id: 'food', label: 'Buy supplies', tone: 'pay', hint: 'Three supplies for twenty chits. Supplies buy time away from ports.', cost: { chits: 20 }, win: { text: 'Three supplies aboard', supplies: 3 } },
+      { id: 'food', label: 'Buy supplies', tone: 'pay', hint: 'Three supplies for four Cyrite. Supplies buy time away from ports.', cost: { chits: 20 }, win: { text: 'Three supplies aboard', supplies: 3 } },
       { id: 'no', label: 'Wave him on', tone: 'refuse', hint: 'Keep your stock.', win: { text: 'Pike eases off' } },
     ],
   }),
@@ -28,7 +28,7 @@ export const SCENE_CARDS: CardDef[] = [
     text: '“The Custody came for a head count and Orlo went with them. Or he went. Nobody says which. His locker is still full.”',
     cargo: 'A dock · every window shuttered',
     choices: [
-      { id: 'ask', label: 'Ask who was counted', tone: 'pay', hint: 'Ten chits to the clerk. The Net’s edge, and where the Prefect was seen.', cost: { chits: 10 }, win: { text: 'The clerk talks · the Net’s edge and the Prefect’s last port', flag: 'news' } },
+      { id: 'ask', label: 'Ask who was counted', tone: 'pay', hint: 'Two Cyrite to the clerk. The Net’s edge, and where the Prefect was seen.', cost: { chits: 10 }, win: { text: 'The clerk talks · the Net’s edge and the Prefect’s last port', flag: 'news' } },
       { id: 'take', label: 'Take what he left', tone: 'trade', hint: 'Three supplies from the locker. The dock will remember.', win: { text: 'Three supplies from his locker · the clerk looks away', supplies: 3, standing: { frontier: -1, miners: -1 } } },
       { id: 'no', label: 'Fly on', tone: 'refuse', hint: 'Not your fight.', win: { text: 'The clerk shutters the window' } },
     ],
@@ -36,11 +36,11 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_shortage', kind: 'plea', caller: 'miners', tier: 'important',
     from: 'Settlement steward · a small hold', title: 'Eleven days of food',
-    text: '“Eleven days of food for two hundred people. We have chits and nothing to eat. Three of your supplies would carry us.”',
+    text: '“Eleven days of food for two hundred people. We have Cyrite and nothing to eat. Three of your supplies would carry us.”',
     cargo: 'A settlement · lamps on, hatches closed',
     choices: [
       { id: 'bring', label: 'Bring them food', tone: 'help', hint: 'Fly to the settlement with three food. They remember who came.', win: { text: 'You turn for the settlement' } },
-      { id: 'sell', label: 'Sell it dear', tone: 'trade', hint: 'Three supplies for forty-five chits. They will not forget the price.', cost: { supplies: 3 }, win: { text: 'Forty-five chits, and a cold hatch', chits: 45, standing: { miners: -1, frontier: -1 }, flag: 'gouged' } },
+      { id: 'sell', label: 'Sell it dear', tone: 'trade', hint: 'Three supplies for nine Cyrite. They will not forget the price.', cost: { supplies: 3 }, win: { text: 'Nine Cyrite, and a cold hatch', chits: 45, standing: { miners: -1, frontier: -1 }, flag: 'gouged' } },
       { id: 'no', label: 'Move on', tone: 'refuse', hint: 'You need your own stores.', win: { text: 'The steward closes the channel' } },
     ],
   }),
@@ -50,7 +50,7 @@ export const SCENE_CARDS: CardDef[] = [
     text: '“The Custody took eleven workers off the barge. A head count, they said. They hold them at our dock, guard on the approach.”',
     cargo: 'A settlement · two pickets on the dock',
     choices: [
-      { id: 'clerk', label: 'Pay the dock clerk', tone: 'pay', hint: 'Thirty chits at the dock quietly frees the barge. Fly there.', win: { text: 'You turn for the dock' } },
+      { id: 'clerk', label: 'Pay the dock clerk', tone: 'pay', hint: 'Six Cyrite at the dock quietly frees the barge. Fly there.', win: { text: 'You turn for the dock' } },
       { id: 'jam', label: 'Jam the guard’s channel', tone: 'bluff', hint: 'Needs a jammer. The barge slips out while the guard hears static.', needs: { fitted: 'md_jammer' }, win: { text: 'The guard’s channel goes to static · the barge slips out', standing: { miners: 1, frontier: 1 }, notice: { custody: 2 }, flag: 'freed_workers', stall: 2 } },
       { id: 'fight', label: 'Drive off the guard', tone: 'fight', hint: 'The pickets turn on you. The barge is free.', win: { text: 'The pickets turn on you · the barge is free', spawn: [{ variant: 'picket', n: 2, from: 'around' }], standing: { miners: 1 }, notice: { custody: 3 }, flag: 'freed_workers' } },
       { id: 'no', label: 'Fly on', tone: 'refuse', hint: 'It is not your barge.', win: { text: 'The steward closes the channel' } },
@@ -78,7 +78,7 @@ export const SCENE_CARDS: CardDef[] = [
     text: '“The Gutter crew says they cut her first. The tug says it is their claim. Neither will give way. She is worth a refit.”',
     cargo: 'A big wreck · two crews at the cut',
     choices: [
-      { id: 'cut', label: 'Strip it while they argue', tone: 'fight', hint: 'Supplies and chits off the wreck. Both crews will mind.', win: { text: 'You slip in while they shout', heat: 0.05 } },
+      { id: 'cut', label: 'Strip it while they argue', tone: 'fight', hint: 'Supplies and Cyrite off the wreck. Both crews will mind.', win: { text: 'You slip in while they shout', heat: 0.05 } },
       { id: 'guns', label: 'Break it up', tone: 'fight', hint: 'A burst across both bows. They scatter, and remember.', win: { text: 'Both crews scatter', spawn: [{ variant: 'scout', n: 2, from: 'around' }], standing: { gutter: -1 } } },
       { id: 'no', label: 'Leave them to it', tone: 'refuse', hint: 'Not your wreck.', win: { text: 'The crews go back to shouting' } },
     ],
@@ -86,7 +86,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_convoy', kind: 'job', caller: 'guild', tier: 'important',
     from: 'Convoy master Aisha Reen', title: 'Walk us to the lane',
-    text: '“Three haulers, no guns, raiders on the lane. Stay on our flank to the mouth for fifty chits.”',
+    text: '“Three haulers, no guns, raiders on the lane. Stay on our flank to the mouth for ten Cyrite.”',
     cargo: 'A convoy · three haulers, heavy with ore',
     choices: [
       { id: 'escort', label: 'Fly escort', tone: 'help', hint: 'Stay with the haulers. Raiders will come.', win: { text: 'The convoy forms up on your wing' } },
@@ -96,12 +96,12 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_smugglers', kind: 'job', caller: 'gutter', tier: 'routine',
     from: 'A runner · no name', title: 'A crate, no questions',
-    text: '“Sealed crate. A fence at the next dock, sixty chits on arrival. If the Custody opens it, you never met me.”',
+    text: '“Sealed crate. A fence at the next dock, twelve Cyrite on arrival. If the Custody opens it, you never met me.”',
     cargo: 'A runner’s skiff · hold sealed',
     choices: [
-      { id: 'take', label: 'Carry the crate', tone: 'trade', hint: 'Sixty chits at the next port. Scans will read the hold.', win: { text: 'The crate is aboard', flag: 'contraband',
+      { id: 'take', label: 'Carry the crate', tone: 'trade', hint: 'Twelve Cyrite at the next port. Scans will read the hold.', win: { text: 'The crate is aboard', flag: 'contraband',
         job: { id: 'crate', text: 'Deliver the sealed crate to the next port', at: 'port', pay: { text: 'The fence pays, and the crate is gone', chits: 60, standing: { gutter: 1 }, unflag: 'contraband' } } } },
-      { id: 'tell', label: 'Tell the Custody', tone: 'trade', hint: 'Thirty chits from the patrol. The Gutter will hear who talked.', win: { text: 'Thirty chits, and a runner with a long memory', chits: 30, standing: { gutter: -2 }, notice: { gutter: 2 } } },
+      { id: 'tell', label: 'Tell the Custody', tone: 'trade', hint: 'Six Cyrite from the patrol. The Gutter will hear who talked.', win: { text: 'Six Cyrite, and a runner with a long memory', chits: 30, standing: { gutter: -2 }, notice: { gutter: 2 } } },
       { id: 'no', label: 'Not for sale', tone: 'refuse', hint: 'Keep the hold clean.', win: { text: 'The runner shrugs and goes' } },
     ],
   }),
@@ -129,7 +129,7 @@ export const SCENE_CARDS: CardDef[] = [
     choices: [
       { id: 'codes', label: 'Show the forged codes', tone: 'bluff', hint: 'The codes from the yard. The scan reads clean.', show: { flag: 'codes' }, odds: { base: 0.8, heat: -0.3 }, win: { text: 'The scan reads clean · they wave you on', dismiss: true }, lose: { text: 'The codes do not match · hold for a second scan', heat: 0.12 } },
       { id: 'spoof', label: 'Spoof the transponder', tone: 'bluff', hint: 'Needs a spoofer. They see another hauler.', show: { fitted: 'md_spoofer', noFlag: 'codes' }, needs: { fitted: 'md_spoofer' }, win: { text: 'They see another hauler · the line opens', dismiss: true } },
-      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Twenty chits and no scan.', cost: { chits: 20 }, win: { text: 'Toll paid · the picket looks the other way', dismiss: true } },
+      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Four Cyrite and no scan.', cost: { chits: 20 }, win: { text: 'Toll paid · the picket looks the other way', dismiss: true } },
       { id: 'fight', label: 'Run the line', tone: 'fight', hint: 'Fight is not the only answer, but it is one.', win: { text: 'The pickets turn on you', spawn: [{ variant: 'picket', n: 2, from: 'around' }], notice: { custody: 2 }, heat: 0.1 } },
       { id: 'round', label: 'Go round', tone: 'refuse', hint: 'Stay outside the line. It gets logged.', win: { text: 'Logged · the picket watches you go', heat: 0.04 } },
     ],
@@ -142,7 +142,7 @@ export const SCENE_CARDS: CardDef[] = [
     cargo: 'Three pickets · the line is full',
     choices: [
       { id: 'spoof', label: 'Spoof the transponder', tone: 'bluff', hint: 'Needs a spoofer. They see a listed hull.', needs: { fitted: 'md_spoofer' }, show: { fitted: 'md_spoofer' }, win: { text: 'A listed hull, as far as the line can tell', dismiss: true } },
-      { id: 'pay', label: 'Pay to be listed', tone: 'pay', hint: 'Forty chits. They write you in for the day.', cost: { chits: 40 }, win: { text: 'Listed for the day · the line opens', dismiss: true } },
+      { id: 'pay', label: 'Pay to be listed', tone: 'pay', hint: 'Eight Cyrite. They write you in for the day.', cost: { chits: 40 }, win: { text: 'Listed for the day · the line opens', dismiss: true } },
       { id: 'fight', label: 'Run the line', tone: 'fight', hint: 'Three hulls, and the Net behind them.', win: { text: 'The pickets turn on you', spawn: [{ variant: 'picket', n: 3, from: 'around' }], notice: { custody: 3 }, heat: 0.12 } },
       { id: 'round', label: 'Go round', tone: 'refuse', hint: 'Stay outside the line. The Net notes it.', win: { text: 'Noted · the pickets watch you go', heat: 0.06 } },
     ],
@@ -165,7 +165,7 @@ export const SCENE_CARDS: CardDef[] = [
     cargo: 'A patrol · three hulls, wide formation',
     choices: [
       { id: 'dark', label: 'Run dark', tone: 'bluff', hint: 'Cut the transponder till they turn. Needs baffles or a ghost echo.', needs: { fitted: ['md_baffles', 'md_ghost'] }, show: { fitted: ['md_baffles', 'md_ghost'] }, win: { text: 'The patrol sweeps past', heat: -0.05 } },
-      { id: 'report', label: 'Report a clean hold', tone: 'pay', hint: 'Fifteen chits for the officer’s cooperation.', cost: { chits: 15 }, win: { text: 'The officer logs you clean', dismiss: true } },
+      { id: 'report', label: 'Report a clean hold', tone: 'pay', hint: 'Three Cyrite for the officer’s cooperation.', cost: { chits: 15 }, win: { text: 'The officer logs you clean', dismiss: true } },
       { id: 'no', label: 'Hold course', tone: 'refuse', hint: 'Keep clear of the patrol.', win: { text: 'The patrol watches you pass', heat: 0.04 } },
     ],
   }),
@@ -192,7 +192,7 @@ export const SCENE_CARDS: CardDef[] = [
     cargo: 'A Thren shard · open at one end',
     choices: [
       { id: 'aid', label: 'Patch it with two supplies', tone: 'help', hint: 'Supplies mend things, even this. It will remember.', cost: { supplies: 2 }, win: { text: 'Its glow steadies · it drifts off the way it came', flag: 'thren_aided', notice: { thren: -4 } } },
-      { id: 'cut', label: 'Cut it for chits', tone: 'fight', hint: 'Twenty-five chits and three Cyrite. The Thren will remember too.', win: { text: 'You cut it open · chits and Cyrite spill out', krail: 25, cyrite: 3, notice: { thren: 4 }, flag: 'thren_harmed' } },
+      { id: 'cut', label: 'Cut it for Cyrite', tone: 'fight', hint: 'Eight Cyrite. The Thren will remember too.', win: { text: 'You cut it open · Cyrite spills out', krail: 25, cyrite: 3, notice: { thren: 4 }, flag: 'thren_harmed' } },
       { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'It is not yours.', win: { text: 'It tumbles on' } },
     ],
   }),
@@ -214,7 +214,7 @@ export const SCENE_CARDS: CardDef[] = [
     cargo: 'A foundry hull · arms folded away',
     choices: [
       { id: 'mend', label: 'Let it work', tone: 'help', hint: 'It mends the Wayward. It asks for nothing.', win: { text: 'Plates welded back on, quietly · the machine says nothing', plates: 2, flag: 'voice_mended' } },
-      { id: 'pay', label: 'Leave it chits', tone: 'pay', hint: 'Ten chits. It takes them, and mends the plates and the drive.', cost: { chits: 10 }, win: { text: 'It mends the plates and the drive · the chits vanish', plates: 2, supplies: 2, flag: ['voice_mended', 'voice_paid'] } },
+      { id: 'pay', label: 'Leave it Cyrite', tone: 'pay', hint: 'Two Cyrite. It takes them, and mends the plates and the drive.', cost: { chits: 10 }, win: { text: 'It mends the plates and the drive · the Cyrite vanish', plates: 2, supplies: 2, flag: ['voice_mended', 'voice_paid'] } },
       { id: 'no', label: 'Fly on', tone: 'refuse', hint: 'You do not know what it wants.', win: { text: 'The cradle folds away' } },
     ],
   }),
@@ -277,8 +277,8 @@ export const SCENE_CARDS: CardDef[] = [
     text: 'Behind the plating, something no yard built. Cargo-pod sized, and warm. Your Cyrite gauge twitches as you near.',
     cargo: 'A wreck · one hatch peeled back from inside',
     choices: [
-      { id: 'look', label: 'Go in and look', tone: 'help', hint: 'Fly to the wreck and hold beside it. Chits, if it lets you.', win: { text: 'You turn for the wreck' } },
-      { id: 'cut', label: 'Cut it free', tone: 'fight', hint: 'Supplies and chits. It might not like it.', win: { text: 'You cut it loose and it goes dark', supplies: 3, krail: 35, notice: { thren: 2 }, flag: 'object_cut' } },
+      { id: 'look', label: 'Go in and look', tone: 'help', hint: 'Fly to the wreck and hold beside it. Cyrite, if it lets you.', win: { text: 'You turn for the wreck' } },
+      { id: 'cut', label: 'Cut it free', tone: 'fight', hint: 'Supplies and Cyrite. It might not like it.', win: { text: 'You cut it loose and it goes dark', supplies: 3, krail: 35, notice: { thren: 2 }, flag: 'object_cut' } },
       { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Some wrecks are better left.', win: { text: 'The wreck turns slowly behind you' } },
     ],
   }),
@@ -289,7 +289,7 @@ export const SCENE_CARDS: CardDef[] = [
     cargo: 'A Custody yard · one cradle, covered',
     choices: [
       { id: 'cut', label: 'Cut it loose', tone: 'help', hint: 'Three parts at the cradle. The Thren have looked for it. The Custody will know.', win: { text: 'You turn for the cradle' } },
-      { id: 'help', label: 'Help the crew', tone: 'trade', hint: 'Cut for them. Sixty chits and the Custody’s thanks.', win: { text: 'You cut with the crew · the hulk comes apart in pieces', chits: 60, standing: { custody: 1 }, notice: { thren: 3 }, flag: 'cut_hulk' } },
+      { id: 'help', label: 'Help the crew', tone: 'trade', hint: 'Cut for them. Twelve Cyrite and the Custody’s thanks.', win: { text: 'You cut with the crew · the hulk comes apart in pieces', chits: 60, standing: { custody: 1 }, notice: { thren: 3 }, flag: 'cut_hulk' } },
       { id: 'no', label: 'Mind your business', tone: 'refuse', hint: 'It is not yours to touch.', win: { text: 'The foreman waves you off' } },
     ],
   }),

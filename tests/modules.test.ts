@@ -23,10 +23,10 @@ const ctx = (x: Partial<Ctx> = {}): Ctx => ({
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, supplies: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
-/** A quiet Breakout docked at the port, with `chits` aboard. */
-function docked(chits = 500): World {
+/** A quiet Breakout docked at the port, with `cyrite` aboard. */
+function docked(cyrite = 100): World {
   const j = newJourney(3);
-  const w = new World(5, { mode: 'breakout', carry: { ...j.carry, chits } });
+  const w = new World(5, { mode: 'breakout', carry: { ...j.carry, cyrite } });
   w.field.rocks = [];
   w.field.bulwarks = [];
   w.field.step = () => {};
@@ -52,14 +52,14 @@ describe('the ship’s systems', () => {
     }
   });
 
-  it('prices the yard\'s work in chits, only at a port, and only in the Story mode', () => {
+  it('prices the yard\'s work in Cyrite, only at a port, and only in the Story mode', () => {
     const story = (x: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: new Set(), techs: new Set(), arcade: false, krail: 1000, chits: 1000, ...x });
     expect(blockOf('md_racks', story())).toBe('yard');
     expect(blockOf('md_racks', story({ docked: true }))).toBeNull();
-    expect(blockOf('md_racks', story({ docked: true, chits: 5 }))).toBe('chits');
+    expect(blockOf('md_racks', story({ docked: true, chits: 1 }))).toBe('chits');
     expect(blockOf('md_racks', { ...story({ docked: true }), arcade: true })).toBe('mode');
-    expect(fee('md_racks', 1, false)).toBe(10);
-    expect(fee('md_racks', 2, false)).toBe(20);
+    expect(fee('md_racks', 1, false)).toBe(2);
+    expect(fee('md_racks', 2, false)).toBe(4);
     expect(cost('md_racks', 2, false)).toBeGreaterThan(cost('md_racks', 1, false));
     expect(blockOf('md_racks', story({ docked: true, levels: { ...stockLevels(), md_racks: 3 } }))).toBe('full');
     // the frame is yard work in the Story mode, never in the arcade; the core only from its last level
@@ -107,12 +107,12 @@ describe('the ship’s systems', () => {
 
 describe('the yard', () => {
   it('fits a module in the bay at a port, paid from the one purse, and not at sea', () => {
-    const w = docked(500);
+    const w = docked(100);
     expect(w.phase).toBe('dock');
     expect(w.openBay()).toBe(true);
     expect(w.install('md_racks')).toBeNull();
     expect(w.levels.md_racks).toBe(1);
-    expect(w.chits).toBe(500 - cost('md_racks', 1, false) - fee('md_racks', 1, false));
+    expect(w.cyrite).toBe(100 - cost('md_racks', 1, false) - fee('md_racks', 1, false));
     expect(w.supplyMax).toBe(SUPPLIES_MAX + 4);
     // the spoofer comes after the baffles on the web
     expect(w.install('md_spoofer')).toBe('path');
@@ -165,8 +165,7 @@ describe('the save', () => {
     j.carry.kit = { guns: 3, rig: 2, signals: 0, contacts: 1 };
     const m = migrate(JSON.parse(JSON.stringify(j)));
     expect(m?.version).toBe(VERSION);
-    expect(m?.carry.cyrite).toBe(20);
-    expect(m?.carry.chits).toBe(6 * 8);
+    expect(m?.carry.cyrite).toBe(20 + Math.round((6 * 8) / 5));
     expect('kit' in m!.carry).toBe(false);
     expect(MODULE_BY_ID.md_racks).toBeDefined();
   });

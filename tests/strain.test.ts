@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { World } from '../src/sim/world';
-import { CYRITE_RUSH, CYRITE_SELL, EMPTY_STORES, LOW_SUPPLIES } from '../src/sim/breakout';
+import { EMPTY_STORES, LOW_SUPPLIES } from '../src/sim/breakout';
 import { WEB } from '../src/content/web';
 import { budgets, weightFuel } from '../src/sim/budgets';
 import { newJourney, options, plot, sortieDef } from '../src/sim/journey';
@@ -71,32 +71,37 @@ describe('a ship that is short or heavy', () => {
   });
 });
 
-describe('the work bay and its Cyrite', () => {
-  it('sells spare Cyrite for chits at a bay, never the tank the jump needs, and not at sea', () => {
+describe('the gate and the depot keep their own', () => {
+  const idle = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
+
+  it('hurts nothing inside the ring, and the alert is clear', () => {
     const { w } = story();
-    w.cyrite = w.jumpCost + 5;
-    const chits = w.chits;
-    expect(w.sellCyrite()).toBe(0); // not docked
-    w.phase = 'dock'; w.docked = true;
-    expect(w.spareCyrite).toBe(5);
-    expect(w.sellCyrite(2)).toBe(2 * CYRITE_SELL);
-    expect(w.sellCyrite()).toBe(3 * CYRITE_SELL);
-    expect(w.cyrite).toBe(w.jumpCost);
-    expect(w.chits).toBe(chits + 5 * CYRITE_SELL);
-    expect(w.sellCyrite()).toBe(0);
+    w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
+    const lane = w.bk!.lane;
+    w.ship.x = lane.x + 10; w.ship.z = lane.z;
+    expect(w.safe).toBe('lane');
+    const plates = w.plates;
+    (w as unknown as { hitShip(s: string, x: number, z: number): void }).hitShip('test', lane.x, lane.z);
+    expect(w.plates).toBe(plates);
+    expect(w.alert()).toBe('clear');
+    w.ship.x = lane.x + 100;
+    expect(w.safe).toBeNull();
   });
 
-  it('asks the rush price for Cyrite only while the tank is short of the jump', () => {
+  it('keeps hostile hulls outside it, circling', () => {
     const { w } = story();
-    w.phase = 'dock'; w.docked = true;
-    w.chits = 500;
-    w.cyrite = 0;
-    const p = w.prices.cyrite;
-    expect(w.cyritePrice).toBe(Math.ceil(p * CYRITE_RUSH));
-    const before = w.chits;
-    expect(w.buy('cyrite')).toBe(true);
-    expect(before - w.chits).toBe(Math.ceil(p * CYRITE_RUSH));
-    w.cyrite = w.jumpCost;
-    expect(w.cyritePrice).toBe(p);
+    w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
+    const port = w.bk!.port!;
+    w.field.rocks = [];
+    w.ship.x = port.x; w.ship.z = port.z;
+    const a = w.spawnHostile('scout', { x: port.x + 70, y: 0, z: port.z });
+    for (let i = 0; i < 600; i++) {
+      w.ship.x = port.x; w.ship.z = port.z; w.ship.vx = 0; w.ship.vz = 0;
+      w.step(1 / 60, idle);
+      if (w.phase !== 'play') w.phase = 'play';
+    }
+    const d = Math.hypot(a.x - port.x, a.z - port.z);
+    expect(d).toBeGreaterThan(40);
+    expect(w.plates).toBe(w.stats.maxPlates);
   });
 });

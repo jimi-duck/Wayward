@@ -172,6 +172,8 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
       const why = blockOf(best.id, ctx);
       pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
     }
+    // one stock: a player does not build with the Cyrite the next jump needs
+    if (pick && w.bk && w.cyrite - price(w, pick) < w.jumpCost) break;
     // away from a port, keep back the Krail the next wanted yard module will cost, as a player saving for the yard would
     if (pick && !MODULE_BY_ID[pick] && !w.docked && w.purse - price(w, pick) < saveFor(w, modules)) break;
     if (!pick || w.install(pick)) break;
@@ -314,9 +316,11 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   const bk = w.bk;
   const need = !!bk && w.cyrite < bk.jumpCost;
   const pr = w.prices;
-  const hungry = !!bk && w.supplies < 9 && w.chits >= pr.supplies * 6;
+  // what is over the jump's Cyrite is what the port and the bay can have
+  const over = bk ? w.cyrite - bk.jumpCost : 0;
+  const hungry = !!bk && w.supplies < 9 && over >= pr.supplies * 3;
   const goPort = !!bk && !!bk.port && bk.docks === 0
-    && (hungry || w.chits >= 120 || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && w.chits >= pr.plate));
+    && (hungry || over >= 24 || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && over >= pr.plate));
   const dest = bk ? (goPort ? bk.port : !need ? bk.lane : null) : null;
   if (bk) {
     const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;
@@ -524,18 +528,17 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
       w.answer(o.answer?.(w) ?? pickAnswer(w, o.policy ?? 'bluff'));
       const last = w.run.cards[w.run.cards.length - 1]!;
       answers.push({
-        card: before.card, choice: last.choice, won: last.won, krail: w.cyrite - before.krail, chits: w.chits - before.chits,
+        card: before.card, choice: last.choice, won: last.won, krail: w.cyrite - before.krail, chits: 0,
         heat: (w.bk?.heat ?? 0) - before.heat, fight: w.aliens.length > before.aliens || w.bk?.blockade === 'called',
       });
       continue;
     }
     if (w.phase === 'dock') {
       if (w.bk && w.bk.docks > docks) { docks = w.bk.docks; o.onDock?.(w); }
-      // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, then the bay
-      while (w.cyrite < w.jumpCost && w.buy('cyrite'));
-      while (w.supplies < 12 && w.buy('supplies'));
-      w.sellCyrite();
-      while (w.plates < w.stats.maxPlates && w.buy('plate'));
+      // the port: stock the galley for two jumps and patch, from what is over the jump's Cyrite, then the bay
+      const spare = (item: 'supplies' | 'plate') => w.cyrite - w.prices[item] >= w.jumpCost;
+      while (w.supplies < 12 && spare('supplies') && w.buy('supplies'));
+      while (w.plates < w.stats.maxPlates && spare('plate') && w.buy('plate'));
       shop(w, strategy, rngPick, o.modules);
       w.undock();
       continue;

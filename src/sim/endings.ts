@@ -1,4 +1,5 @@
 import { OBSERVATIONS } from '../content/situations';
+import { CHITS_PER_CYRITE } from './purse';
 import { t } from '../i18n';
 import { ENDING_BY_ID, ENDINGS, FRIEND, SCATTER, type EndingDef, type EndingId, type Need } from '../content/endings';
 import { CAPTAIN_BY_ID } from './captains';
@@ -44,7 +45,7 @@ export function ledger(j: Journey): Ledger {
     friends: SCATTER.filter((s) => (standing[s] ?? 0) >= FRIEND).length,
     notice: (f) => atLeast(tier(j.notice, f), 'hunters'),
     beaten: j.hunt.beaten,
-    chits: j.carry.chits,
+    chits: j.carry.cyrite * CHITS_PER_CYRITE,
     fragments: fileCount(j.carry.flags).found,
     wrecks: j.wrecks,
     hardcore: j.hardcore,

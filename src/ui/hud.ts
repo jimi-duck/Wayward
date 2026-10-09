@@ -8,6 +8,7 @@ import { DOCK_TIME, LOW_SUPPLIES } from '../sim/breakout';
 import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
 import { NAMED } from '../content/features';
 import { REPORT_TEXT } from '../sim/space';
+import { lessonOf, stepOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { Radar } from './radar';
 import { Heading } from './guide';
@@ -38,6 +39,13 @@ const faction = (f: string) => t(FACTION_NAME[f] ?? f);
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
 /** What the ship says is wrong with it, in a few words (World.warnings). */
+/** How to do each lesson step, as the words for keys, a touch screen and a pad (the HUD shows the one that fits). */
+const LESSON_HINT: Record<string, Array<[string, string]>> = {
+  fire: [['h-keys', 'Hold Space to fire the lasers'], ['h-touch', 'Hold the right thumb to fire'], ['h-pad', 'Hold A to fire']],
+  bay: [['h-keys', 'Press B to open the bay'], ['h-touch', 'Tap Open bay'], ['h-pad', 'Press Back to open the bay']],
+  torpedo: [['h-keys', 'Press 2 to launch a torpedo'], ['h-touch', 'Tap the torpedo button'], ['h-pad', 'Press X to launch']],
+};
+
 const SHIP_WARN = {
   empty: 'Out of supplies · slower, guns weaker',
   low: 'Supplies low',
@@ -309,17 +317,25 @@ export class Hud {
     const n = this.count;
     const alert = world.alert(), locked = alert !== 'clear';
     text($('xp-v'), String(Math.floor(world.purse)));
-    $('rail').hidden = !!world.bk; // the Story's one purse is the Chits in the stores line
+    $('rail').hidden = !!world.bk; // the Story's Cyrite is the fuel row
     const badge = $('upg');
-    badge.hidden = true; // the Story fits only at a work bay; the Arcade opens its own picks
-    badge.classList.toggle('ready', n > 0 && !locked);
-    badge.classList.toggle('locked', n > 0 && locked);
-    badge.classList.toggle('red', alert === 'red');
-    text($('upg-n'), n ? String(n) : '');
-    text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : 'Open bay'));
-    text($('upg-s'), t(n > 0 && locked ? (alert === 'red' ? 'Red alert' : 'Yellow alert') : 'Upgrade ship'));
-    if (n > this.shown && !locked) this.retrigger(badge, 'new');
-    this.shown = n;
+    // the Story fits only at a work bay and the Arcade opens its own picks; the training's one upgrade is the exception
+    const lesson = !!world.bk && stepOf(world) === 'bay';
+    badge.hidden = !lesson;
+    if (lesson) {
+      badge.classList.add('ready'); badge.classList.remove('locked', 'red');
+      text($('upg-n'), '1'); text($('upg-t'), t('Open bay')); text($('upg-s'), t('Fit the torpedo bay'));
+      this.shown = 1;
+    } else {
+      badge.classList.toggle('ready', n > 0 && !locked);
+      badge.classList.toggle('locked', n > 0 && locked);
+      badge.classList.toggle('red', alert === 'red');
+      text($('upg-n'), n ? String(n) : '');
+      text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : 'Open bay'));
+      text($('upg-s'), t(n > 0 && locked ? (alert === 'red' ? 'Red alert' : 'Yellow alert') : 'Upgrade ship'));
+      if (n > this.shown && !locked) this.retrigger(badge, 'new');
+      this.shown = n;
+    }
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
@@ -338,8 +354,7 @@ export class Hud {
     text($('v-fuel'), `${world.cyrite}/${need}`);
     $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
     fuel.classList.toggle('ready', world.cyrite >= need);
-    // the stores: chits and supplies, one line; supplies go amber when they are running low
-    text($('vy-chits'), String(Math.floor(world.chits)));
+    // the stores: supplies; they go amber when they are running low
     const sup = $('vy-supplies');
     text(sup, String(world.supplies));
     sup.classList.toggle('full', world.supplies <= LOW_SUPPLIES);
@@ -521,7 +536,22 @@ export class Hud {
     const event = !!e && !e.done;
     obj.classList.toggle('course', (course && bk.spool === 0 && bk.dockT === 0 && bk.jumpT < 0) || (!bk && !event));
     obj.classList.toggle('event', event && !course);
-    if (bk && course) {
+    const les = world.alive ? lessonOf(world) : null;
+    obj.classList.toggle('lesson', !!les);
+    text($('obj-k'), les ? t('Training {n}/{m}', { n: les.n, m: les.of }) : t('Objective'));
+    if (les) {
+      // the first minutes: one thing to do, where it is, and how to do it on this device
+      obj.classList.add('on', 'course');
+      obj.classList.remove('event');
+      const s = world.ship, m = les.mark;
+      text($('obj-t'), t(les.line));
+      text($('obj-left'), m ? range(Math.hypot(m.x - s.x, m.z - s.z)) : '');
+      ticks($('obj-p'), les.progress, 30);
+      text($('obj-s'), '');
+      const html = `<li>${LESSON_HINT[les.hint]!.map(([c, k]) => `<span class="${c}">${t(k)}</span>`).join('')}</li>`;
+      const list = $('obj-list');
+      if (list.innerHTML !== html) list.innerHTML = html;
+    } else if (bk && course) {
       // the Breakout's course: the lane mouth, or what is happening at one of the two places
       const s = world.ship;
       const dl = Math.hypot(bk.lane.x - s.x, bk.lane.z - s.z);
@@ -571,7 +601,7 @@ export class Hud {
         : t(def.text));
     } else if (!bk) {
       // the arcade between events: break rock toward the next refit, which opens by itself
-      text($('obj-t'), t('Collect chits'));
+      text($('obj-t'), t('Collect Cyrite'));
       text($('obj-left'), `${Math.floor(world.krail)}/${this.next || '—'}`);
       ticks($('obj-p'), this.next ? Math.min(1, world.krail / this.next) : 1, 30);
       text($('obj-s'), '');
@@ -597,15 +627,18 @@ export class Hud {
       ? a === 'yellow' ? t('{name} is noticing you', { name: t(sighted.name) })
         : `${t(sighted.name)} · ${range(Math.hypot(sighted.x - world.ship.x, sighted.z - world.ship.z))} · ${sighted.jumpT > 0 ? t('Jumping') : `${t('Leaves in')} ${Math.ceil(sighted.stay)}s`}`
       : t(a === 'red' ? 'You are being targeted' : 'You are being observed');
-    const word = !world.alive ? 'Hull breach' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
-    const key = `${a}${word}${sub}`;
+    // inside the gate's or the depot's safe ring: the card says so, teal and quiet, and nothing is firing
+    const safe = world.alive ? world.safe : null;
+    const word = !world.alive ? 'Hull breach' : safe ? 'Safe here' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
+    const note = safe ? t(safe === 'lane' ? 'The gate covers you · nothing can fire here' : 'The depot covers you · nothing can fire here') : sub;
+    const key = `${a}${word}${note}${safe ?? ''}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
     const mode = $('mode');
-    mode.className = `glass ${calm ? 'sighted' : a}${sighted ? ' cap' : ''}`;
-    mode.hidden = a === 'clear' && !calm;
+    mode.className = `glass ${calm || safe ? 'sighted' : a}${sighted && !safe ? ' cap' : ''}`;
+    mode.hidden = a === 'clear' && !calm && !safe;
     text($('mode-t'), t(word));
-    text($('mode-s'), sub);
+    text($('mode-s'), note);
     // a step up or down lights the card once, so a change is seen and not only read
     const lvl = `${mode.hidden}${mode.className}${word}`;
     if (!mode.hidden && lvl !== this.modeLvl) this.retrigger(mode, 'enter');

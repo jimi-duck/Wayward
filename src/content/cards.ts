@@ -123,7 +123,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'krail_seller', kind: 'trade', caller: 'miners', when: { after: 60, short: true }, weight: 1.2, repeat: true,
     from: 'Independent prospector · Old Hesketh', title: 'Cyrite, a little cut',
-    text: '“Four Cyrite, raw out of the vein. Twenty-five chits.” You are {short} short of the jump.',
+    text: '“Eight Cyrite, raw out of the vein. Four now, and I ask no questions.” You are {short} short of the jump.',
     ships: [], cargo: 'Prospector’s tug · a few crates',
     truths: [
       { id: 'pure', weight: 2, read: 'Spectral read: clean violet, full grade' },
@@ -131,33 +131,33 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       {
-        id: 'chits', label: 'Pay chits', tone: 'pay', hint: 'Four Cyrite for twenty-five.', cost: { chits: 25 }, loseIf: ['cut'],
-        win: { text: 'Four Cyrite aboard', cyrite: 4, standing: { miners: 1 } },
-        lose: { text: 'Half of it is slag · two Cyrite', cyrite: 2 },
+        id: 'chits', label: 'Pay four Cyrite', tone: 'pay', hint: 'Four now for eight, if it is pure.', cost: { cyrite: 4 }, loseIf: ['cut'],
+        win: { text: 'Eight Cyrite aboard', cyrite: 8, standing: { miners: 1 } },
+        lose: { text: 'Half of it is slag · four Cyrite', cyrite: 4 },
       },
       { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Cut your own.', win: { text: 'Hesketh signs off' } },
     ],
   },
   {
     id: 'ares_tender', kind: 'trade', caller: 'frontier', when: { after: 90, chits: 45 }, repeat: true,
-    from: 'Ares Drive · service tender', title: 'Spares for chits',
-    text: '“Ares Drive, spares and service. Forty-five chits gets you six supplies, or forty chits patches a plate right now.”',
+    from: 'Ares Drive · service tender', title: 'Spares for Cyrite',
+    text: '“Ares Drive, spares and service. Nine Cyrite gets you six supplies, or eight Cyrite patches a plate right now.”',
     lines: [{ if: { hurt: true }, text: 'Your hull is open to space in two places. They can see it from here.' }],
     ships: [{ variant: 'freighter', n: 1 }], cargo: 'Service tender · spares racks',
     choices: [
-      { id: 'parts', label: 'Six supplies for 45', tone: 'trade', hint: 'Supplies patch plates when it is quiet.', cost: { chits: 45 }, win: { text: 'Six supplies aboard', supplies: 6 } },
-      { id: 'patch', label: 'Patch a plate', tone: 'pay', hint: 'Forty chits, done now.', show: { hurt: true }, cost: { chits: 40 }, win: { text: 'Plate welded on by Ares Drive', plates: 1 } },
+      { id: 'parts', label: 'Six supplies · 9 Cyrite', tone: 'trade', hint: 'Supplies patch plates when it is quiet.', cost: { chits: 45 }, win: { text: 'Six supplies aboard', supplies: 6 } },
+      { id: 'patch', label: 'Patch a plate', tone: 'pay', hint: 'Eight Cyrite, done now.', show: { hurt: true }, cost: { chits: 40 }, win: { text: 'Plate welded on by Ares Drive', plates: 1 } },
       { id: 'no', label: 'No thanks', tone: 'refuse', hint: 'Keep what you have.', win: { text: 'The tender moves on' } },
     ],
   },
   {
     id: 'fuel_runner', kind: 'trade', caller: 'gutter', when: { after: 120, short: true, heatMin: 0.2 }, repeat: true,
     from: 'Fuel runner · call sign Tallow', title: 'Topped up, at a price',
-    text: '“Heard a hauler’s running dry out here. Six Cyrite. Fifty chits, or a favour later. Your call, Wayward.”',
+    text: '“Heard a hauler’s running dry out here. Six Cyrite. Two supplies, or a favour later. Your call, Wayward.”',
     lines: [{ if: { flag: 'gutter_friend' }, text: '“Friend of a friend. I will go easy.”' }],
     cargo: 'Runner’s skiff · tanks sloshing',
     choices: [
-      { id: 'pay', label: 'Fifty chits', tone: 'pay', hint: 'Clean, done.', cost: { chits: 50 }, win: { text: 'Six Cyrite aboard', cyrite: 6 } },
+      { id: 'pay', label: 'Two supplies', tone: 'pay', hint: 'Clean, done.', cost: { supplies: 2 }, win: { text: 'Six Cyrite aboard', cyrite: 6 } },
       {
         id: 'favour', label: 'A favour later', tone: 'help', hint: 'Cyrite now. The bill comes when it comes.',
         win: { text: 'Six Cyrite aboard · Tallow will call', cyrite: 6, flag: 'owes_runner', follow: { card: 'runner_favour', after: 60 } },
@@ -168,7 +168,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'forger', kind: 'trade', caller: 'unknown', when: { flag: 'forger_known', noFlag: 'codes' }, weight: 3,
     from: 'A name at Frontier Supply', title: 'Clean codes, lightly used',
-    text: '“Registry codes off a hauler the company wrote off. They will pass a lane scan, mostly. Forty chits.”',
+    text: '“Registry codes off a hauler the company wrote off. They will pass a lane scan, mostly. Eight Cyrite.”',
     cargo: 'A data spike, warm from somebody’s pocket',
     truths: [
       { id: 'real', weight: 3, read: 'The checksum matches an Obedience-class registry' },
@@ -180,7 +180,7 @@ export const CARDS: CardDef[] = [
         win: { text: 'Forged codes loaded', flag: 'codes' },
         lose: { text: 'Codes loaded · something about them is off', flag: ['codes', 'codes_bad'] },
       },
-      { id: 'no', label: 'Not now', tone: 'refuse', hint: 'Keep the chits.', win: { text: 'The name goes quiet' } },
+      { id: 'no', label: 'Not now', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'The name goes quiet' } },
     ],
   },
 
@@ -253,7 +253,7 @@ export const CARDS: CardDef[] = [
     text: '“Our own ship is grounded and the crate has to reach the next dock. Carry it and we pay sixty, plus our goodwill.”',
     cargo: 'Fuel dock stores · running low',
     choices: [
-      { id: 'take', label: 'Take the job', tone: 'help', hint: 'A sealed crate to the next dock: sixty chits.', win: { text: 'Job taken: a crate to the next dock', job: { id: 'haul', text: 'A sealed crate to the next dock', at: 'port', pay: { text: 'Crate delivered · sixty chits', chits: 60, standing: { frontier: 1 } } } } },
+      { id: 'take', label: 'Take the job', tone: 'help', hint: 'A sealed crate to the next dock: twelve Cyrite.', win: { text: 'Job taken: a crate to the next dock', job: { id: 'haul', text: 'A sealed crate to the next dock', at: 'port', pay: { text: 'Crate delivered · twelve Cyrite', chits: 60, standing: { frontier: 1 } } } } },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'No promises.', win: { text: 'Stores signs off' } },
     ],
   },
@@ -263,7 +263,7 @@ export const CARDS: CardDef[] = [
     text: '“Custody hulls carry good stores. Bring six supplies to the dock and we pay seventy. We do not ask how you got them.”',
     cargo: 'Salvage desk',
     choices: [
-      { id: 'take', label: 'Take the job', tone: 'help', hint: 'Six supplies at the dock: seventy chits.', win: { text: 'Job taken: six supplies to Ares Drive', job: { id: 'salvage', text: 'Six supplies to the dock', at: 'port', give: { supplies: 6 }, pay: { text: 'Supplies delivered · seventy chits', chits: 70, standing: { frontier: 1 } } } } },
+      { id: 'take', label: 'Take the job', tone: 'help', hint: 'Six supplies at the dock: fourteen Cyrite.', win: { text: 'Job taken: six supplies to Ares Drive', job: { id: 'salvage', text: 'Six supplies to the dock', at: 'port', give: { supplies: 6 }, pay: { text: 'Supplies delivered · fourteen Cyrite', chits: 70, standing: { frontier: 1 } } } } },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Supplies patch your own hull.', win: { text: 'The desk signs off' } },
     ],
   },
@@ -309,7 +309,7 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       {
-        id: 'pay', label: 'Pay for the pattern', tone: 'pay', hint: 'Fifteen chits, and you slip the sweep.', cost: { chits: 15 }, loseIf: ['plant'],
+        id: 'pay', label: 'Pay for the pattern', tone: 'pay', hint: 'Three Cyrite, and you slip the sweep.', cost: { chits: 15 }, loseIf: ['plant'],
         win: { text: 'Sweep pattern loaded · you slip past it', heat: -0.15, standing: { miners: 1 } },
         lose: { text: 'The pattern was bait · they knew where you would be', heat: 0.12 },
       },
@@ -324,7 +324,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'office_watch', kind: 'warning', caller: 'unknown', when: { after: 110, noFlag: 'freqs' },
     from: 'A scrambled voice', title: 'The Office is listening',
-    text: '“The Office listens on every channel near the lane mouth. I sell their frequencies. Twenty chits.”',
+    text: '“The Office listens on every channel near the lane mouth. I sell their frequencies. Four Cyrite.”',
     cargo: 'A scrambled channel',
     truths: [
       { id: 'real', weight: 3, read: 'Carrier wave from the port’s own antenna' },
@@ -334,7 +334,7 @@ export const CARDS: CardDef[] = [
       {
         id: 'buy', label: 'Buy the list', tone: 'pay', hint: 'Any bluff at the lane goes better.', cost: { chits: 20 }, loseIf: ['scam'],
         win: { text: 'Office frequencies loaded', flag: 'freqs' },
-        lose: { text: 'The list is garbage · twenty chits gone' },
+        lose: { text: 'The list is garbage · four Cyrite gone' },
       },
       { id: 'no', label: 'Ignore it', tone: 'refuse', hint: 'Everyone sells something.', win: { text: 'The voice cuts out' } },
     ],
@@ -367,7 +367,6 @@ export const CARDS: CardDef[] = [
     ships: [{ variant: 'raptor', n: 2 }, { variant: 'scout', n: 1 }], cargo: 'Raiders · empty holds, full guns',
     choices: [
       { id: 'pay', label: 'Pay four Cyrite', tone: 'pay', hint: 'Cheap, if you have it.', cost: { cyrite: 4 }, win: { text: 'The Saints take their toll and go' } },
-      { id: 'chits', label: 'Pay thirty chits', tone: 'pay', hint: 'Dearer than Cyrite, if you are short of it.', cost: { chits: 30 }, win: { text: 'The Saints take the chits and go' } },
       { id: 'friend', label: 'Name the Leaky Tin', tone: 'bluff', hint: 'A friend in the Gutter vouches for you.', needs: { flag: 'gutter_friend' }, win: { text: 'The Saints let you pass', standing: { gutter: 1 } } },
       {
         id: 'bay', label: 'Open the torpedo bay', tone: 'bluff', hint: 'Show them what a hauler can carry.', needs: { fitted: 'tp_bay' }, odds: { base: 0.7, fitted: { tp_heavy: 0.15, tp_swarm: 0.15 } },
@@ -380,7 +379,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'picket_fine', kind: 'shakedown', caller: 'custody', when: { after: 60, heatMax: 0.55, netted: true }, repeat: true,
     from: 'Custody picket · PF-226', title: 'Unlicensed cutting',
-    text: '“You’re mining without a Kellern licence. {fee} chits, now. Or we do this at the moon.”',
+    text: '“You’re mining without a Kellern licence. {fee} Cyrite, now. Or we do this at the moon.”',
     lines: [{ if: { heatMax: 0.25 }, text: 'He hasn’t matched your ship to the notice. He just wants money.' }],
     ships: [{ variant: 'picket', n: 2 }], cargo: 'Patrol pair · a pilot with a quota',
     fee: { base: 20, heat: 40 },
@@ -411,9 +410,9 @@ export const CARDS: CardDef[] = [
     ships: [{ variant: 'enforcer', n: 1 }, { variant: 'picket', n: 1 }], cargo: 'Claim enforcers · company colours',
     fee: { base: 30, heat: 30 },
     choices: [
-      { id: 'hand', label: 'Hand it over', tone: 'pay', hint: 'Half your chits, and they forget you.', cost: { chits: 'half' }, win: { text: 'Chits surrendered · logged as recovered', heat: -0.05, standing: { kellern: 1 } } },
+      { id: 'hand', label: 'Hand it over', tone: 'pay', hint: 'Half your Cyrite, and they forget you.', cost: { chits: 'half' }, win: { text: 'Cyrite surrendered · logged as recovered', heat: -0.05, standing: { kellern: 1 } } },
       { id: 'bribe', label: 'Pay them off', tone: 'pay', hint: 'Company men are paid badly.', cost: { chits: 'fee' }, win: { text: 'Paid off · they never saw you' } },
-      { id: 'racks', label: 'Stow most of it', tone: 'pay', hint: 'The racks have a false floor. They find ten chits and no more.', needs: { fitted: 'md_racks' }, win: { text: 'They find a little · you keep the rest', chits: -10, heat: -0.05, standing: { kellern: 1 } } },
+      { id: 'racks', label: 'Stow most of it', tone: 'pay', hint: 'The racks have a false floor. They find two Cyrite and no more.', needs: { fitted: 'md_racks' }, win: { text: 'They find a little · you keep the rest', chits: -10, heat: -0.05, standing: { kellern: 1 } } },
       { id: 'fight', label: 'Fight', tone: 'fight', hint: 'An enforcer and a picket.', win: { text: 'Weapons hot on the claim enforcers', spawn: [{ variant: 'enforcer', n: 1 }, { variant: 'picket', n: 1 }], heat: 0.05, standing: { kellern: -1 } } },
     ],
   },
@@ -463,7 +462,7 @@ export const CARDS: CardDef[] = [
       },
       {
         id: 'tow', label: 'Tow them clear', tone: 'help', hint: 'Tractor them out.', needs: { fitted: 'md_tractor' }, loseIf: ['ambush'],
-        win: { text: 'Towed clear · supplies and chits', supplies: 3, chits: 16, standing: { miners: 2 } },
+        win: { text: 'Towed clear · supplies and Cyrite', supplies: 3, chits: 16, standing: { miners: 2 } },
         lose: { text: 'Bait · raiders', spawn: [{ variant: 'scout', n: 1, from: 'ahead' }] },
       },
       { id: 'no', label: 'Keep going', tone: 'refuse', hint: 'Not your problem.', win: { text: 'The call fades behind you' } },
@@ -522,7 +521,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'rumour_seam', kind: 'rumour', caller: 'miners', when: { after: 20, heatMax: 0.5 }, weight: 1.4, repeat: true,
     from: 'A prospector on the open band', title: 'A seam off the line',
-    text: '“There’s violet in the rock round here, if you know where. Survey’s ten chits.”',
+    text: '“There’s violet in the rock round here, if you know where. Survey’s two Cyrite.”',
     cargo: 'A survey file',
     truths: [
       { id: 'true', weight: 2, read: 'The survey matches the field around you' },
@@ -540,7 +539,7 @@ export const CARDS: CardDef[] = [
     cargo: 'Overheard',
     choices: [
       { id: 'note', label: 'Remember the name', tone: 'trade', hint: 'She may call later.', win: { text: 'A name at Frontier Supply', flag: 'forger_known' } },
-      { id: 'intro', label: 'Pay for an introduction', tone: 'pay', hint: 'Ten chits, and she calls soon.', cost: { chits: 10 }, win: { text: 'Introduction paid for', flag: 'forger_known', follow: { card: 'forger', after: 12 } } },
+      { id: 'intro', label: 'Pay for an introduction', tone: 'pay', hint: 'Two Cyrite, and she calls soon.', cost: { chits: 10 }, win: { text: 'Introduction paid for', flag: 'forger_known', follow: { card: 'forger', after: 12 } } },
       { id: 'no', label: 'Ignore it', tone: 'refuse', hint: 'Bar talk.', win: { text: 'The band moves on' } },
     ],
   },
@@ -564,7 +563,7 @@ export const CARDS: CardDef[] = [
     text: '“A Prefect came to the moon this morning. Office of Peace. Asked for you by name. Calloway.”',
     cargo: 'Gossip, frightened',
     choices: [
-      { id: 'ask', label: 'Ask what she asked', tone: 'trade', hint: 'Five chits loosens a tongue.', cost: { chits: 5 }, win: { text: 'She asked where your family lives', flag: 'calloway_known' } },
+      { id: 'ask', label: 'Ask what she asked', tone: 'trade', hint: 'One Cyrite loosens a tongue.', cost: { chits: 5 }, win: { text: 'She asked where your family lives', flag: 'calloway_known' } },
       { id: 'quiet', label: 'Go quiet a while', tone: 'refuse', hint: 'Cut the transponder chatter.', win: { text: 'Running dark', heat: -0.05 } },
     ],
   },
@@ -641,7 +640,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'lane_toll', kind: 'shakedown', caller: 'gutter', trigger: 'toll', when: { netted: false, kind: ['contested', 'mining', 'transit', 'port'] }, repeat: true,
     from: 'Raiders · the Lane Wardens', title: 'This lane has a keeper',
-    text: '“Nobody uses the old lane without paying. {fee} chits or four Cyrite, and you’re through.”',
+    text: '“Nobody uses the old lane without paying. {fee} Cyrite, and you’re through.”',
     lines: [
       { if: { standing: ['gutter', 1] }, text: '“You are the one who helped the Leaky Tin. Maybe half.”' },
       { if: { kind: 'contested' }, text: 'Two more raiders sit in the lane’s shadow.' },
@@ -654,8 +653,7 @@ export const CARDS: CardDef[] = [
       { id: 'hungry', weight: 1, read: 'Their guns are warm · they will take the ship if they can', boost: { if: { kind: 'contested' }, mult: 2 } },
     ],
     choices: [
-      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Chits, and through.', cost: { chits: 'fee' }, loseIf: ['hungry'], win: { text: 'Toll paid · the Wardens wave you on', standing: { gutter: 1 } }, lose: { text: 'They take the chits and the guns come up anyway', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }] } },
-      { id: 'krail', label: 'Pay in Cyrite', tone: 'trade', hint: 'Four Cyrite, if you can spare it.', cost: { cyrite: 4 }, win: { text: 'Four Cyrite across · through', standing: { gutter: 1 } } },
+      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Cyrite, and through.', cost: { chits: 'fee' }, loseIf: ['hungry'], win: { text: 'Toll paid · the Wardens wave you on', standing: { gutter: 1 } }, lose: { text: 'They take the Cyrite and the guns come up anyway', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }] } },
       { id: 'talk', label: 'Name a friend', tone: 'bluff', hint: 'Someone in the Gutter owes you, maybe.', odds: { base: 0.3, standing: { gutter: 0.25 }, flags: { gutter_friend: 0.3 } }, win: { text: '“Go on, then.” · through for nothing' }, lose: { text: '“Never heard of them.” · weapons hot', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }] } },
       { id: 'account', label: 'Bill the Guild', tone: 'trade', hint: 'Free passage.', needs: { fitted: 'md_ledger' }, win: { text: 'Billed · through', standing: { guild: 1 } } },
       { id: 'fight', label: 'Clear the lane', tone: 'fight', hint: 'Three light hulls between you and the jump.', win: { text: 'Clearing the lane', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }], standing: { gutter: -1 } } },
@@ -699,7 +697,7 @@ export const CARDS: CardDef[] = [
     text: '“Fresh stores off a garden ship. You look thin.” You have {supplies} supplies aboard.',
     ships: [{ variant: 'freighter', n: 1 }], cargo: 'Drift trader · sealed food crates',
     choices: [
-      { id: 'chits', label: 'Buy three', tone: 'trade', hint: 'Twenty-five chits for three.', cost: { chits: 25 }, win: { text: 'Three crates aboard', supplies: 3, standing: { guild: 1 } } },
+      { id: 'chits', label: 'Buy three', tone: 'trade', hint: 'Five Cyrite for three.', cost: { chits: 25 }, win: { text: 'Three crates aboard', supplies: 3, standing: { guild: 1 } } },
       { id: 'no', label: 'Not today', tone: 'refuse', hint: 'Make do.', win: { text: 'The Kindly Ann sails on' } },
     ],
   },
@@ -713,8 +711,8 @@ export const CARDS: CardDef[] = [
     ],
     ships: [{ variant: 'freighter', n: 2 }], cargo: 'A Drift fleet · stores, spares, rumours',
     choices: [
-      { id: 'food', label: 'Buy two supplies', tone: 'trade', hint: 'Fifteen chits for two.', cost: { chits: 15 }, win: { text: 'Two crates aboard', supplies: 2, standing: { miners: 1 } } },
-      { id: 'news', label: 'Ask about the lanes', tone: 'trade', hint: 'Five chits: where the Net is, and who follows you.', cost: { chits: 5 }, win: { text: 'The Drift tell you what they have seen', flag: 'news' } },
+      { id: 'food', label: 'Buy two supplies', tone: 'trade', hint: 'Three Cyrite for two.', cost: { chits: 15 }, win: { text: 'Two crates aboard', supplies: 2, standing: { miners: 1 } } },
+      { id: 'news', label: 'Ask about the lanes', tone: 'trade', hint: 'One Cyrite: where the Net is, and who follows you.', cost: { chits: 5 }, win: { text: 'The Drift tell you what they have seen', flag: 'news' } },
       { id: 'trail', label: 'Ask them to lie for you', tone: 'help', hint: 'If the Prefect asks the fleet, they send her the wrong way.', needs: { standing: ['miners', 2] }, odds: { base: 0.95, learn: 'fleet' }, win: { text: 'The Long Walk will tell her you went the other way', hunt: 1 }, lose: { text: 'The Prefect has heard that story from a Drift fleet before' } },
       { id: 'no', label: 'Pass by', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
     ],
@@ -753,7 +751,7 @@ export const CARDS: CardDef[] = [
     text: '“Metal. For passage.”',
     ships: [{ variant: 'drone', n: 1 }, { variant: 'probe', n: 1 }], cargo: 'A foundry · its keepers',
     choices: [
-      { id: 'ore', label: 'Give thirty chits', tone: 'pay', hint: 'They let you pass.', cost: { chits: 30 }, win: { text: 'The foundry takes the chits · you may pass', notice: { voice: -3 } } },
+      { id: 'ore', label: 'Give six Cyrite', tone: 'pay', hint: 'They let you pass.', cost: { chits: 30 }, win: { text: 'The foundry takes the Cyrite · you may pass', notice: { voice: -3 } } },
       { id: 'parts', label: 'Give four supplies', tone: 'trade', hint: 'They want what you are made of.', cost: { supplies: 4 }, win: { text: 'The foundry takes the supplies · you may pass', notice: { voice: -3 } } },
       { id: 'no', label: 'Refuse', tone: 'fight', hint: 'The keepers come for you.', win: { text: 'The keepers come', spawn: [{ variant: 'drone', n: 1, from: 'ahead' }, { variant: 'probe', n: 1, from: 'ahead' }] } },
     ],
@@ -764,7 +762,7 @@ export const CARDS: CardDef[] = [
     text: '“Keep out of it, hauler. Or join in.”',
     ships: [{ variant: 'raptor', n: 1 }, { variant: 'scout', n: 2 }], cargo: 'A raiding party · fresh plunder',
     choices: [
-      { id: 'join', label: 'Join in', tone: 'trade', hint: 'A cut of the plunder. The locals will remember.', win: { text: 'Your cut: thirty chits and some stores', chits: 30, supplies: 1, standing: { gutter: 1, miners: -1 } } },
+      { id: 'join', label: 'Join in', tone: 'trade', hint: 'A cut of the plunder. The locals will remember.', win: { text: 'Your cut: six Cyrite and some stores', chits: 30, supplies: 1, standing: { gutter: 1, miners: -1 } } },
       { id: 'out', label: 'Keep out', tone: 'refuse', hint: 'Not your fight.', win: { text: 'The raiders let you be' } },
       { id: 'fight', label: 'Drive them off', tone: 'fight', hint: 'The locals will thank you.', win: { text: 'The raiders turn on you', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }, { variant: 'scout', n: 2, from: 'ahead' }], standing: { miners: 1, gutter: -1 } } },
     ],
@@ -777,14 +775,14 @@ export const CARDS: CardDef[] = [
     choices: [
       { id: 'break', label: 'Break the relay', tone: 'fight', hint: 'The Net stalls here, and every patrol in the system hears it.', win: { text: 'Relay broken · the pickets come for you', stall: 2.5, heat: 0.18, spawn: [{ variant: 'picket', n: 2, from: 'ahead' }] } },
       { id: 'jam', label: 'Jam it', tone: 'bluff', hint: 'Garble its survey. Quieter, and shorter.', needs: { fitted: ['ut_scanner', 'tech_office', 'tech_custody'] }, odds: { base: 0.75 }, win: { text: 'The survey reads garbage · the Net will wait', stall: 1.5 }, lose: { text: 'The relay flags the jamming', heat: 0.12 } },
-      { id: 'gutter', label: 'Point the Gutter at it', tone: 'trade', hint: 'Twenty chits and a Gutter crew strips it. Slower than doing it yourself.', cost: { chits: 20 }, win: { text: 'A Gutter crew takes the relay apart · the Net will wait', stall: 1.5, standing: { gutter: 1 } } },
+      { id: 'gutter', label: 'Point the Gutter at it', tone: 'trade', hint: 'Four Cyrite and a Gutter crew strips it. Slower than doing it yourself.', cost: { chits: 20 }, win: { text: 'A Gutter crew takes the relay apart · the Net will wait', stall: 1.5, standing: { gutter: 1 } } },
       { id: 'leave', label: 'Leave it', tone: 'refuse', hint: 'Not your fight. When it’s done, the Net comes here.', win: { text: 'You leave the relay to its work · the Net is coming', stall: -4 } },
     ],
   },
   {
     id: 'false_trail', kind: 'trade', caller: 'guild', when: { after: 45, kind: ['port', 'contested', 'mining'] }, repeat: true,
     from: 'Dust Traders Guild · flight clerk', title: 'A flight plan, filed',
-    text: '“{fee} chits and I file a flight plan for a lane you’re not taking. Anyone asking gets the wrong answer.”',
+    text: '“{fee} Cyrite and I file a flight plan for a lane you’re not taking. Anyone asking gets the wrong answer.”',
     lines: [
       { if: { hunted: 1 }, text: '“Someone is asking after you already.”' },
       { if: { wise: ['plan', 1] }, text: '“A Prefect came through checking our filings. She knows the trick.”' },
@@ -796,7 +794,7 @@ export const CARDS: CardDef[] = [
     ],
     choices: [
       { id: 'pay', label: 'File the false plan', tone: 'pay', hint: 'A day and a half, if the clerk is honest.', cost: { chits: 'fee' }, loseIf: ['informer'], odds: { base: 0.95, learn: 'plan' }, win: { text: 'Plan filed · a false trail', hunt: 1.5, standing: { guild: 1 } }, lose: { text: 'The plan is filed, and your real heading with it', hunt: -0.5, heat: 0.1 } },
-      { id: 'no', label: 'No need', tone: 'refuse', hint: 'Keep the chits.', win: { text: 'The clerk shrugs' } },
+      { id: 'no', label: 'No need', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'The clerk shrugs' } },
     ],
   },
 
@@ -851,7 +849,7 @@ export const CARDS: CardDef[] = [
     cargo: 'A freighter, grateful',
     choices: [
       { id: 'krail', label: 'Take the Cyrite', tone: 'trade', hint: 'Eight Cyrite.', win: { text: 'Eight Cyrite from the Long Reckoning', cyrite: 8, standing: { guild: 2 } } },
-      { id: 'chits', label: 'Take the chits', tone: 'trade', hint: 'Fifty chits.', win: { text: 'Fifty chits from the Long Reckoning', chits: 50, standing: { guild: 2 } } },
+      { id: 'chits', label: 'Take the Cyrite', tone: 'trade', hint: 'Ten Cyrite.', win: { text: 'Ten Cyrite from the Long Reckoning', chits: 50, standing: { guild: 2 } } },
     ],
   },
   {
@@ -891,7 +889,7 @@ export const CARDS: CardDef[] = [
     ],
     cargo: 'The Gutter band · rumour and threat',
     choices: [
-      { id: 'pay', label: 'Pay blood money', tone: 'pay', hint: 'Chits to the families. It buys some quiet.', cost: { chits: 20 }, win: { text: 'Blood money paid', notice: { gutter: -4 }, standing: { gutter: 1 } } },
+      { id: 'pay', label: 'Pay blood money', tone: 'pay', hint: 'Cyrite to the families. It buys some quiet.', cost: { chits: 20 }, win: { text: 'Blood money paid', notice: { gutter: -4 }, standing: { gutter: 1 } } },
       { id: 'boast', label: '“Tell them to come and try”', tone: 'fight', hint: 'They will.', win: { text: 'The band goes quiet · then very busy', notice: { gutter: 2 }, spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }] } },
       { id: 'ignore', label: 'Say nothing', tone: 'refuse', hint: 'Words are cheap.', win: { text: 'Channel closed' } },
     ],

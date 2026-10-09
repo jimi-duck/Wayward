@@ -245,9 +245,9 @@ describe('notice on the journey', () => {
 });
 
 describe('a captain in the world', () => {
-  function sortie(j: Journey, chits = 0): World {
+  function sortie(j: Journey, cyrite = 0): World {
     const def = sortieDef(j);
-    const w = new World(5, { mode: 'breakout', sortie: def, carry: { ...j.carry, chits } });
+    const w = new World(5, { mode: 'breakout', sortie: def, carry: { ...j.carry, cyrite } });
     w.cardNext = Infinity;
     w.portCalled = true;
     w.bk!.nextPursuit = Infinity;
@@ -280,7 +280,7 @@ describe('a captain in the world', () => {
   it('ambush, if that is their way, and stand off when paid, if they deal', () => {
     const j = hunted('gutter');
     // the Gutter's first captain is a broker
-    const v = sortie(j, 500);
+    const v = sortie(j, 20);
     v.captainAt = 1;
     run(v, 1.2);
     expect(v.answer('pay')).toBe(true);
@@ -306,7 +306,7 @@ describe('a captain in the world', () => {
 
   it('tells the journey what the cards did to notice', () => {
     const j = hunted('custody');
-    const w = sortie(j, 100);
+    const w = sortie(j, 20);
     j.carry.levels = {};
     w.openComms(CARD_BY_ID.gutter_word!);
     expect(w.answer('pay')).toBe(true);

@@ -138,7 +138,7 @@ export const OFFERS: CardDef[] = [
     text: '“The Office logs things it cannot name. You have been closer than anyone. What did you see? I will trade what we know.”',
     choices: [
       { id: 'tell', label: 'Tell her what you saw', tone: 'help', hint: 'The Office’s maps of the Net’s edge. She learns what you know.', win: { text: 'She listens · and sends her maps of the Net’s edge', flag: ['news', 'calloway_curious'], score: 400, hunt: -0.5 } },
-      { id: 'sell', label: 'Sell her one piece', tone: 'trade', hint: 'Forty chits for one thing you saw. She does not get all of it.', win: { text: 'Forty chits · she knows less than she thinks', chits: 40 } },
+      { id: 'sell', label: 'Sell her one piece', tone: 'trade', hint: 'Eight Cyrite for one thing you saw. She does not get all of it.', win: { text: 'Eight Cyrite · she knows less than she thinks', chits: 40 } },
       { id: 'refuse', label: 'Say nothing', tone: 'refuse', hint: 'What you saw is yours.', win: { text: '“Then we both guess.”' } },
     ],
   }),

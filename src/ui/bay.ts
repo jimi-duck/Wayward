@@ -6,6 +6,7 @@ import type { Advice } from '../sim/advice';
 import { upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
 import { profileOf } from '../sim/profile';
+import { stepOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
 import { icon, nodeIcon } from './icons';
@@ -61,8 +62,8 @@ const WHY: Record<Block, string> = {
   needs: 'Needs more of its system, or a rival is fitted',
   yard: 'Fitted only at a port',
   power: 'Not enough power · fit a reactor core',
-  krail: 'Not enough chits',
-  chits: 'Not enough chits for the yard',
+  krail: 'Not enough Cyrite',
+  chits: 'Not enough Cyrite for the yard',
 };
 const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass', heat: 'Heat' };
 /** What running over a soft rating costs (sim/budgets.ts). */
@@ -75,21 +76,22 @@ const textOf = (id: string, lv: number) => t(nodeText(id, lv));
 function priceWord(w: World, id: string): string {
   const lv = (w.levels[id] ?? 0) + 1, f = fee(id, lv, !w.bk);
   // the Story has one purse: the price and the yard's fee are one sum of chits
-  if (w.bk) return `${num(cost(id, lv, false) + f)} ${t('chits')}`;
-  return `${num(cost(id, lv, true))} ${t('chits')}`;
+  if (w.bk) return `${num(cost(id, lv, false) + f)} ${t('Cyrite')}`;
+  return `${num(cost(id, lv, true))} ${t('Cyrite')}`;
 }
 
 /** What the Fit button says: the price, how much Krail is missing, or why not. */
 function fitWord(w: World, id: string, why: Block | null): string {
   if (why === 'krail') {
     const lv = (w.levels[id] ?? 0) + 1;
-    return t('{n} more chits', { n: num(Math.ceil(cost(id, lv, !w.bk) + fee(id, lv, !w.bk) - w.purse)) });
+    return t('{n} more Cyrite', { n: num(Math.ceil(cost(id, lv, !w.bk) + fee(id, lv, !w.bk) - w.purse)) });
   }
   return why ? t(WHY[why]) : `${t('Fit')} · ${priceWord(w, id)}`;
 }
 
 /** The Arcade mode: three picks, no web (the Story mode has no bk of its own here, so `!w.bk` is the arcade, as for fee). */
-const isArcade = (w: World) => !w.bk;
+/** The plain bay: one view of cards, no prices to read, closes on a pick. The Arcade's, and the training's one upgrade. */
+const isArcade = (w: World) => !w.bk || stepOf(w) === 'bay';
 
 /** One figure as a chip: what it moves and by how much. Teal with an arrow for a gain, amber and no arrow for a cost; before and after are in the tooltip. */
 function deltaChip(f: Fig, cls = 'dl'): HTMLElement {
@@ -321,7 +323,7 @@ export class BayPanel {
   private confirm(w: World, id: string): void {
     this.closing = true;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, bay = $('bay');
-    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.purse))), h('span', '', t('Chits')));
+    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.purse))), h('span', '', t('Cyrite')));
     this.budgetBar(w);
     this.papers(w);
     [...$('bay-web').querySelectorAll('.pick-card')].forEach((c, k) => {
@@ -414,7 +416,7 @@ export class BayPanel {
     const o = opsOf(w);
     $('bay-ops').className = `ops ${o}`;
     $('bay-ops').textContent = opsText(o);
-    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.purse))), h('span', '', t('Chits')));
+    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.purse))), h('span', '', t('Cyrite')));
     this.papers(w);
     $('bay').classList.toggle('picks', this.view === 'picks');
     $('bay').classList.toggle('arcade', isArcade(w));
@@ -584,9 +586,9 @@ export class BayPanel {
       );
       return card;
     });
-    const empty = h('p', 'pick-none', t(w.bk ? 'Nothing to fit yet · pick up scrap for chits' : 'Nothing to fit yet · break rock for chits'));
+    const empty = h('p', 'pick-none', t(w.bk ? 'Nothing to fit yet · pick up scrap for Cyrite' : 'Nothing to fit yet · break rock for Cyrite'));
     const arcade = isArcade(w);
-    $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(arcade ? 'Three refits for your ship' : 'Picked for your ship')));
+    $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(w.bk && arcade ? 'Your first refit' : arcade ? 'Three refits for your ship' : 'Picked for your ship')));
     $('bay-web').replaceChildren(h('div', 'pick-row', '', ...(cards.length ? cards : [empty])),
       h('p', 'pick-more', t('Want to plan your own build? Pick a part of the ship on the left.')));
     $('bay-insp').replaceChildren();

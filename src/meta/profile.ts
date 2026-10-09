@@ -70,6 +70,8 @@ export interface Profile {
   mode: 'breakout' | 'arcade';
   /** The arcade's briefing has been read through once (it opens in full the first time). */
   briefed: boolean;
+  /** The first minutes' training has been played through or skipped. */
+  trained: boolean;
   archive: Archive;
 }
 
@@ -85,6 +87,7 @@ const fresh = (): Profile => ({
   zoom: 1,
   mode: 'breakout',
   briefed: false,
+  trained: false,
   archive: { journeys: [], endings: [], files: [], people: [], records: [], sightings: [] },
 });
 

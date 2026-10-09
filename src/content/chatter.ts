@@ -38,7 +38,7 @@ export const CHATTER: Chatter[] = [
   { id: 'medic_beacon', from: 'Rescue beacon', caller: 'unknown', on: ['won'], text: '“Automated: debris field detected. No survivors requested.”' },
   { id: 'dock_gossip', from: 'Free dock', caller: 'frontier', on: ['won', 'calm'], kind: ['port'], text: '“Heard shooting out your way. Bring us the scrap and we will pretend we did not.”' },
   { id: 'old_hand', from: 'Old hand', caller: 'miners', on: ['haul'], text: '“Heavy ships turn slow. Strip what you do not use.”' },
-  { id: 'cargo_cheer', from: 'Barge', caller: 'frontier', on: ['haul'], text: '“That is a lot of iron on one hull. The dock pays by the chit, not the pound.”' },
+  { id: 'cargo_cheer', from: 'Barge', caller: 'frontier', on: ['haul'], text: '“That is a lot of iron on one hull. The dock pays by the Cyrite, not the pound.”' },
   { id: 'drift_hum', from: 'Drift fleet', caller: 'unknown', on: ['calm'], kind: ['transit', 'edge', 'mining'], text: '“We are only passing. The ships are old, and so are we.”' },
   { id: 'pilot_wave', from: 'Passing freighter', caller: 'guild', on: ['calm'], text: '“Clear sky ahead of you. Do not tell anyone I said that.”' },
   { id: 'wake_report', from: 'Weather desk', caller: 'office', on: ['calm', 'arrive'], text: '“Dust is thin and the lanes are quiet. A good day to be nobody.”' },

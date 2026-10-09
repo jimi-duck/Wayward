@@ -23,7 +23,7 @@ describe('what a choice brings', () => {
   });
 
   it('marks losses with a minus, like a cost', () => {
-    expect(gains({ text: '', chits: -10, plates: -1 }, ctx(), 0)).toEqual(['−10 chits', '−1 hull']);
+    expect(gains({ text: '', chits: -10, plates: -1 }, ctx(), 0)).toEqual(['−2 Cyrite', '−1 hull']);
   });
 });
 

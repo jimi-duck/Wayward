@@ -1,4 +1,5 @@
 import { MODULE_BY_ID } from '../content/modules';
+import { cy, CHITS_PER_CYRITE } from './purse';
 import { UPGRADE, upgradeText } from '../content/upgrades';
 import { ARCADE_PRICE, FITTING, LEVEL_STEP, NODE, STOCK, TIER_COST, WEB, YARD_FEE, type WebNode } from '../content/web';
 import { budgets } from './budgets';
@@ -35,6 +36,8 @@ export interface BayCtx {
   deal?: number;
   /** The Arcade: cards dealt at the last opening and not taken, which come round again less readily. */
   passed?: readonly string[];
+  /** The training: the one node the bay offers. */
+  only?: string;
 }
 
 /** Why a node cannot be fitted now, first reason first. */
@@ -59,19 +62,19 @@ export const nodeText = (id: string, lv: number): string => (UPGRADE[id] ? upgra
 /** Whether a fitting is yard work: in the Story every install is, so it needs a work bay (a port). */
 export const yardWork = (id: string, _lv: number, arcade: boolean): boolean => !arcade && NODE[id] !== undefined;
 
-/** The yard's fee in chits for level `lv` (1 up) of a node, or 0 when it is not yard work. */
+/** The yard's fee in Cyrite (the rows say chits; `cy` converts) for level `lv` (1 up) of a node, or 0 when it is not yard work. */
 export function fee(id: string, lv: number, arcade: boolean): number {
   if (!yardWork(id, lv, arcade) || NODE[id]?.yard === undefined || lv < NODE[id]!.yard!) return 0;
-  return MODULE_BY_ID[id]?.chits[lv - 1] ?? YARD_FEE * lv;
+  return cy(MODULE_BY_ID[id]?.chits[lv - 1] ?? YARD_FEE * lv);
 }
 
-/** Krail for level `lv` (1 up) of a node: ARCADE_PRICE in the Arcade mode, else by tier and level. */
+/** Cyrite for level `lv` (1 up) of a node: ARCADE_PRICE in the Arcade mode, else by tier and level. */
 export function cost(id: string, lv: number, arcade: boolean): number {
   const node = NODE[id];
   if (!node) return Infinity;
   if (arcade) return ARCADE_PRICE;
   const base = TIER_COST[Math.min(node.tier, TIER_COST.length - 1)]! * (node.price ?? 1);
-  return Math.round((base * (1 + LEVEL_STEP * (lv - 1))) / 5) * 5;
+  return cy(Math.round((base * (1 + LEVEL_STEP * (lv - 1))) / 5) * 5);
 }
 
 export { budgets, overBy } from './budgets';
@@ -163,13 +166,14 @@ function suits(id: string, ctx: BayCtx, affinity: Map<string, number>, systems: 
  * only Krail, best first, each from a different tab where it can.
  */
 export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
+  if (ctx.only) return WEB.filter((w) => w.id === ctx.only);
   if (ctx.arcade && n === PICKS) return arcadePicks(ctx);
   const affinity = new Map<string, number>();
   for (const [id, lv] of Object.entries(ctx.levels)) for (const t of UPGRADE[id]?.tags ?? []) affinity.set(t, (affinity.get(t) ?? 0) + lv);
   const systems = Object.keys(ctx.levels).filter((id) => UPGRADE[id]?.kind === 'system' && (ctx.levels[id] ?? 0) > 0).length;
   const scored = WEB
     .filter((w) => { const b = blockOf(w.id, ctx); return b === null || b === 'krail' || b === 'chits'; })
-    .map((w) => ({ w, v: suits(w.id, ctx, affinity, systems) / Math.sqrt(cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade) / 40) }))
+    .map((w) => ({ w, v: suits(w.id, ctx, affinity, systems) / Math.sqrt(cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade) * (ctx.arcade ? 1 : CHITS_PER_CYRITE) / 40) }))
     .sort((a, b) => b.v - a.v || a.w.id.localeCompare(b.w.id));
   // a spread: different tabs, and no more than one new system at a time
   const out: WebNode[] = [];

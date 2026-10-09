@@ -228,7 +228,7 @@ describe('the journey', () => {
     const j = pastBreakout();
     plot(j, options(j)[0]!.to.id);
     const at = j.at, day = j.day, region = viewOf(j.chart, at);
-    const out = endSortie(j, result(j, { ended: 'destroyed', time: DAY }, { cyrite: 11, chits: 41}));
+    const out = endSortie(j, result(j, { ended: 'destroyed', time: DAY }, { cyrite: 11 + 8 }));
     expect(out.kind).toBe('adrift');
     expect(j.status).toBe('sortie');
     expect(j.at).not.toBe(at);
@@ -237,7 +237,7 @@ describe('the journey', () => {
     expect(j.dest).not.toBeNull();
     expect(j.lost).toBe(1);
     expect(j.day).toBeCloseTo(day + 1 + ADRIFT, 5);
-    expect(j.carry).toMatchObject({ cyrite: 5, chits: 20, plates: 2 });
+    expect(j.carry).toMatchObject({ cyrite: 9, plates: 2 });
     for (let i = 1; i < WRECKS - 1; i++) { endSortie(j, result(j, { ended: 'destroyed' })); }
     const end = endSortie(j, result(j, { ended: 'destroyed' }));
     expect(end.kind).toBe('wrecked');
@@ -336,8 +336,7 @@ describe('the journey', () => {
     old.carry.levels = { ph_emitters: 2 };
     const back = migrate(old)!;
     expect(back.version).toBe(VERSION);
-    expect(back.carry.cyrite).toBe(17);
-    expect(back.carry.chits).toBe(9 + j.carry.chits);
+    expect(back.carry.cyrite).toBe(17 + Math.round(9 / 5));
     expect('krail' in back.carry).toBe(false);
     expect(back.carry.levels).toEqual({ tp_bay: 1, ph_emitters: 2 });
     expect('xp' in back.carry).toBe(false);
@@ -359,7 +358,7 @@ describe('a sortie in the world', () => {
 
   it('carries the ship in and back out', () => {
     const j = pastBreakout();
-    j.carry = { ...j.carry, cyrite: 17, chits: 44, supplies: 7, plates: 2, levels: { ut_scanner: 1 }, refit: 2, flags: ['codes'], standing: { guild: 1 } };
+    j.carry = { ...j.carry, cyrite: 17, supplies: 7, plates: 2, levels: { ut_scanner: 1 }, refit: 2, flags: ['codes'], standing: { guild: 1 } };
     plot(j, options(j)[0]!.to.id);
     const w = sortie(j);
     expect(w.cyrite).toBe(17);
@@ -368,7 +367,7 @@ describe('a sortie in the world', () => {
     expect(w.levels.ut_scanner).toBe(1);
     expect(w.refit).toBe(2);
     expect(w.flags.has('codes')).toBe(true);
-    expect(w.carry()).toMatchObject({ cyrite: 17, chits: 44, supplies: 7, plates: 2, refit: 2, flags: ['codes'] });
+    expect(w.carry()).toMatchObject({ cyrite: 17, supplies: 7, plates: 2, refit: 2, flags: ['codes'] });
   });
 
   it('takes a new lane plotted at the dock, and only while docked', () => {
@@ -419,8 +418,7 @@ describe('a sortie in the world', () => {
     const j = pastBreakout();
     plot(j, options(j)[0]!.to.id);
     const w = sortie(j);
-    w.chits = 100;
-    w.cyrite = 10;
+    w.cyrite = 40;
     w.openComms(CARDS.find((c) => c.id === 'false_trail')!);
     w.comms!.truth = 'honest';
     expect(w.answer('pay')).toBe(true);
@@ -486,23 +484,23 @@ describe('banking an answer', () => {
 
   it('writes only what the answer changed into the journey, and survives a save', () => {
     const j = pastBreakout();
-    j.carry.chits = 50;
+    j.carry.cyrite = 50;
     j.status = 'sortie';
-    // the answer pays 30 chits and gives a flag, standing and a heard card
+    // the answer pays 30 Cyrite and gives a flag, standing and a heard card
     const before = copy(j.carry);
     const after = copy(before);
-    after.chits -= 30;
+    after.cyrite -= 30;
     after.flags.push('frag_ledger');
     after.seen.push('story_ledger');
     after.standing.kellern = -1;
     bankAnswer(j, before, after);
-    expect(j.carry.chits).toBe(20);
+    expect(j.carry.cyrite).toBe(20);
     expect(j.carry.flags).toContain('frag_ledger');
     expect(j.carry.seen).toContain('story_ledger');
     expect(j.carry.standing.kellern).toBe(-1);
     const back = migrate(JSON.parse(JSON.stringify(j)));
     expect(back?.carry.flags).toContain('frag_ledger');
-    expect(back?.carry.chits).toBe(20);
+    expect(back?.carry.cyrite).toBe(20);
   });
 
   it('never drops a stock below nothing, and takes back a flag an answer cleared', () => {

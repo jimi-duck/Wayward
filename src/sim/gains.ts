@@ -1,6 +1,7 @@
 import type { Faction } from './enemies';
 import type { Amount, Cost, Ctx, Outcome, Standing } from './comms';
 import { chipsOf } from './consequences';
+import { cy } from './purse';
 
 // ── what a choice brings ──────────────────────────────────────────────────
 // A comms choice's outcome in a few short words, worked out from the data so
@@ -26,14 +27,14 @@ const STORY_SHORT: Record<string, string> = {
   frag_blackbox: 'File +1', frag_charts: 'File +1', frag_workorder: 'File +1', frag_witnesses: 'File +1',
   copy_warden: 'Copy out', voice_read: 'Copy out',
 };
-const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['chits', 'chits'], ['supplies', 'supplies']];
+const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['supplies', 'supplies']];
 
-const held = (x: Ctx, k: keyof Cost) => ({ chits: x.chits, cyrite: x.cyrite, supplies: x.supplies })[k];
+const held = (x: Ctx, k: keyof Cost) => ({ chits: x.cyrite, cyrite: x.cyrite, supplies: x.supplies })[k];
 
 /** An amount as a delta, without the comms module (which imports this one). */
-function delta(a: Amount | undefined, have: number, fee: number): number {
+function delta(a: Amount | undefined, have: number, fee: number, chits = false): number {
   if (a === undefined) return 0;
-  if (typeof a === 'number') return a;
+  if (typeof a === 'number') return chits ? cy(a) : a;
   return a === 'fee' ? fee : a === '-fee' ? -fee : a === '-all' ? -have : -Math.ceil(have / 2);
 }
 
@@ -51,10 +52,11 @@ export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyo
   if (o.dismiss) out.push('They leave');
   // what changes hands
   for (const [k, word] of WHAT) {
-    const n = delta(o[k], held(x, k), fee);
+    // chits and Cyrite are one stock: what a row gives in chits is told in Cyrite
+    const n = delta(o[k], held(x, k), fee) + (k === 'cyrite' ? delta(o.chits, held(x, k), fee, true) : 0);
     if (n) out.push(`${n > 0 ? '+' : '−'}${Math.abs(n)} ${word}`);
   }
-  if (o.krail) out.push(`${o.krail > 0 ? '+' : '−'}${Math.abs(o.krail)} chits`);
+  if (o.krail) out.push(`${o.krail > 0 ? '+' : '−'}${Math.abs(cy(o.krail))} Cyrite`);
   if (o.plates) out.push(o.plates > 0 ? `+${o.plates} hull` : `−${-o.plates} hull`);
   if (o.job) out.push('Job');
   if (o.seam) out.push('Rich rock');

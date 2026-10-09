@@ -53,7 +53,7 @@ describe('mining', () => {
     expect(mined).toBe(true);
     expect(w.field.rocks.length).toBe(0);
     run(w, 2);
-    expect(w.run.ore).toBe(rockYield('basalt', 2).ore);
+    expect(w.run.loot.rock.ore).toBe(rockYield('basalt', 2).ore);
     expect(w.run.mined).toBe(1);
   });
 
@@ -64,7 +64,8 @@ describe('mining', () => {
     expect(w.run.mined).toBe(1);
     expect(w.field.rocks.length).toBe(0);
     run(w, 2);
-    expect(w.cyrite).toBe(START_CYRITE + rockYield('rich', 0).cyrite);
+    // the rock's Cyrite, and the odd crystal the vein carries, all in the one hold
+    expect(w.cyrite).toBeGreaterThanOrEqual(START_CYRITE + rockYield('rich', 0).cyrite);
   });
 
   it('a torpedo destroys part of the rock, so it gives less than the lasers', () => {
@@ -75,7 +76,7 @@ describe('mining', () => {
     expect(w.field.rocks.length).toBe(0);
     expect(w.run.mined).toBe(0);
     expect(w.run.blasted).toBe(1);
-    expect(w.cyrite).toBe(START_CYRITE + rockYield('rich', 0, TORP_YIELD).cyrite);
+    expect(w.cyrite).toBeGreaterThanOrEqual(START_CYRITE + rockYield('rich', 0, TORP_YIELD).cyrite);
     expect(rockYield('rich', 0, TORP_YIELD).cyrite).toBeLessThan(rockYield('rich', 0).cyrite);
     expect(rockTake('torpedo')).toBe(TORP_YIELD);
     // the high-yield booster cancels the penalty while it runs
@@ -84,7 +85,7 @@ describe('mining', () => {
     const rb = rockAhead(b, 12, 'rich', 0);
     priv(b).destroyRock(rb, 'torpedo');
     run(b, 2);
-    expect(b.cyrite).toBe(START_CYRITE + rockYield('rich', 0).cyrite);
+    expect(b.cyrite).toBeGreaterThanOrEqual(START_CYRITE + rockYield('rich', 0).cyrite);
     expect(rockTake('laser')).toBe(1);
   });
 });
@@ -131,19 +132,18 @@ describe('the Breakout', () => {
     expect(w.bk!.heat).toBeGreaterThan(HEAT_START);
   });
 
-  it('docks when slow inside the port, sells Cyrite and plates, and casts off', () => {
+  it('docks when slow inside the port, mends a plate, and casts off', () => {
     const w = quiet();
     const b = w.bk!;
     w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
-    w.chits = 100;
+    w.cyrite = w.jumpCost + 40;
     w.plates = 1;
     run(w, 1.5);
     expect(w.phase).toBe('dock');
     const k = w.cyrite;
-    expect(w.buy("cyrite")).toBe(true);
-    expect(w.cyrite).toBe(k + 1);
     expect(w.buy('plate')).toBe(true);
     expect(w.plates).toBe(2);
+    expect(w.cyrite).toBeLessThan(k);
     // the bay opens at the port, and closing it goes back to the dock
     expect(w.openBay()).toBe(true);
     w.closeBay();

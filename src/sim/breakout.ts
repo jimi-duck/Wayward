@@ -58,10 +58,17 @@ export const PORT_ALONG = 1000;
 export const PORT_OFF = 200;
 export const LANE_R = 16;
 export const PORT_R = 14;
+/** The gate and the depot keep their own: inside this (units) nothing can hurt the ship, and hostile hulls will not enter, but circle outside. */
+export const SAFE_R = 40;
+/** How far outside the safe ring a hostile hull holds, and how fast (of its cruise) it circles there. */
+export const SAFE_HOLD = 8;
 
 /** Cyrite it takes to jump, and what the tank holds at the start. */
 export const JUMP_COST = 20;
 export const START_CYRITE = 6;
+/** Cyrite the ship can hold, as a ceiling for sums; money does not run to the top of a tank. */
+export const HOLD_MAX = 999;
+/** The scale of a good store of Cyrite: what the Thren swarms read it against. */
 export const TANK_MAX = 40;
 /** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
@@ -87,10 +94,6 @@ export const PATCH_TIME = 4;
 export const DOCK_TIME = 1;
 /** The share of top speed under which the clamps take you inside the ring. */
 export const DOCK_SPEED = 0.5;
-/** Chits a lump of spare Cyrite fetches at a work bay (the bay buys it for less than it sells it). */
-export const CYRITE_SELL = 3;
-/** Cyrite bought while the tank is short of the jump costs this many times the price: the bay knows you are stuck. */
-export const CYRITE_RUSH = 2;
 /** Docking quiets the pursuit by this much, once per port. */
 export const DOCK_COOL = 0.2;
 
@@ -188,10 +191,8 @@ export const HOME: SortieDef = {
 
 /** What the Wayward carries from one sortie into the next. */
 export interface Carry {
-  /** Cyrite in the tank: fuel for the jumps. */
+  /** Cyrite aboard: the jump's fuel, the bay's money, the ports' price, in one stock. */
   cyrite: number;
-  /** Chits aboard: the Story's one purse, for the bay, the ports and favours. */
-  chits: number;
   /** Supplies aboard: the galley and the spares in one. A lane's days and the drive's wear draw on it, and so does patching a plate. */
   supplies: number;
   /** Plates whole (never more than the build allows). */

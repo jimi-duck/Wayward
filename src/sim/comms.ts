@@ -1,5 +1,6 @@
 import { LEARN } from '../content/calloway';
 import { t } from '../i18n';
+import { cy } from './purse';
 import { CARDS, FLAGS } from '../content/cards';
 import type { Tier } from '../content/factions';
 import type { SystemKind } from '../content/systems';
@@ -346,7 +347,7 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.heatMin !== undefined && x.heat < c.heatMin) return false;
   if (c.heatMax !== undefined && x.heat > c.heatMax) return false;
   if (c.cyrite !== undefined && x.cyrite < c.cyrite) return false;
-  if (c.chits !== undefined && x.chits < c.chits) return false;
+  if (c.chits !== undefined && x.cyrite < cy(c.chits)) return false;
   if (c.short !== undefined && (x.cyrite < x.need) !== c.short) return false;
   if (c.hurt !== undefined && (x.plates < x.maxPlates) !== c.hurt) return false;
   if (!list(c.flag).every((f) => x.flags.has(f))) return false;
@@ -377,13 +378,14 @@ export function feeFor(def: CardDef, x: Ctx): number {
   for (const [flag, m] of Object.entries(f.flags ?? {})) if (x.flags.has(flag)) v *= m;
   v *= x.toll?.[def.caller as Faction] ?? 1;
   v *= 1 + FEE_REGION * (x.region ?? 0);
-  return Math.max(1, Math.round(v / 5) * 5);
+  // written in chits, paid in Cyrite
+  return cy(Math.max(5, Math.round(v / 5) * 5));
 }
 
-/** What an amount comes to against what is held: a delta. */
-export function amount(a: Amount | undefined, held: number, fee: number): number {
+/** What an amount comes to against what is held: a delta. `chits`: a number is written in chits and comes to Cyrite. */
+export function amount(a: Amount | undefined, held: number, fee: number, chits = false): number {
   if (a === undefined) return 0;
-  if (typeof a === 'number') return a;
+  if (typeof a === 'number') return chits ? cy(a) : a;
   switch (a) {
     case 'fee': return fee;
     case '-fee': return -fee;
@@ -448,16 +450,17 @@ export function oddsFor(o: Odds, x: Ctx): number {
   return Math.min(0.95, Math.max(0.05, p));
 }
 
-const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'chits', cyrite: 'Cyrite', supplies: 'supplies' };
-const NONE_WORDS: Record<keyof Cost, string> = { chits: 'No chits to give', cyrite: 'No Cyrite to give', supplies: 'No supplies to give' };
+const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'Cyrite', cyrite: 'Cyrite', supplies: 'supplies' };
+const NONE_WORDS: Record<keyof Cost, string> = { chits: 'No Cyrite to give', cyrite: 'No Cyrite to give', supplies: 'No supplies to give' };
 
-const take = (a: Take, held: number, fee: number) => (a === 'fee' ? fee : a === 'all' ? held : a === 'half' ? Math.ceil(held / 2) : a);
+const take = (a: Take, held: number, fee: number, chits = false) => (a === 'fee' ? fee : a === 'all' ? held : a === 'half' ? Math.ceil(held / 2) : chits ? cy(a) : a);
 
-/** What a cost comes to, as numbers taken from the ship. */
+/** What a cost comes to, as numbers taken from the ship. Chits and Cyrite are one stock: the chits a row asks for are taken as Cyrite. */
 function costOf(c: Cost | undefined, x: Ctx, fee: number): Record<keyof Cost, number> {
-  const held = { chits: x.chits, cyrite: x.cyrite, supplies: x.supplies };
   const out = { chits: 0, cyrite: 0, supplies: 0 };
-  for (const k of Object.keys(out) as Array<keyof Cost>) if (c?.[k] !== undefined) out[k] = take(c[k]!, held[k], fee);
+  if (c?.cyrite !== undefined) out.cyrite += take(c.cyrite, x.cyrite, fee);
+  if (c?.chits !== undefined) out.cyrite += take(c.chits, x.cyrite, fee, true);
+  if (c?.supplies !== undefined) out.supplies = take(c.supplies, x.supplies, fee);
   return out;
 }
 
@@ -492,10 +495,10 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
     if (n.supplies !== undefined && x.supplies < n.supplies) needs.push(t('Needs {n} supplies', { n: n.supplies }));
   }
   const cost = costOf(c.cost, x, fee);
-  const held = { chits: x.chits, cyrite: x.cyrite, supplies: x.supplies };
+  const held = { chits: x.cyrite, cyrite: x.cyrite, supplies: x.supplies };
   const costWords: string[] = [];
   for (const k of Object.keys(cost) as Array<keyof Cost>) {
-    if (!c.cost || c.cost[k] === undefined) continue;
+    if (!c.cost || (k === 'cyrite' ? c.cost.cyrite === undefined && c.cost.chits === undefined : k === 'chits' || c.cost[k] === undefined)) continue;
     if (cost[k] > held[k]) needs.push(`${t('Needs')} ${cost[k]} ${t(AMOUNT_WORDS[k])}`);
     else if (cost[k] === 0) needs.push(t(NONE_WORDS[k]));
     costWords.push(`−${cost[k]} ${t(AMOUNT_WORDS[k])}`);
@@ -531,7 +534,7 @@ const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 export function cardParts(def: CardDef, x: Ctx, fee: number): { text: string; more: string[] } {
   const slots: Record<string, string> = {
     fee: String(fee), cyrite: String(x.cyrite), need: String(x.need), short: String(Math.max(0, x.need - x.cyrite)),
-    chits: String(x.chits), supplies: String(x.supplies),
+    chits: String(x.cyrite), supplies: String(x.supplies),
   };
   const fill = slotFill(x, slots);
   let text = fill(t(def.text));
