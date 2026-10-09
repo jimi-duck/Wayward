@@ -1,3 +1,5 @@
+import { artImg } from './art';
+import { placeOfPort } from '../content/art';
 import { CYRITE_SELL, SUPPLIES_MAX, TANK_MAX } from '../sim/breakout';
 import { stopIdle, type Stop } from '../sim/stop';
 import type { PortItem, World } from '../sim/world';
@@ -69,6 +71,10 @@ export class PortPanel {
     this.sel = 0;
     this.manual = false;
     $('port-t').textContent = world.bk?.port?.name ?? t('Port');
+    // a banner of the place, where the build has one for who holds it
+    const banner = world.bk?.port ? artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
+    $('port-art').hidden = !banner;
+    $('port-art').replaceChildren(...(banner ? [banner] : []));
     $('port-s').textContent = t(world.bk?.def.netted ? 'Refuel · repair · trade · under Continuance order' : 'Refuel · repair · trade · no implant checks');
     const x = $('port-x');
     x.onclick = guarded(this.opened, () => this.leave());

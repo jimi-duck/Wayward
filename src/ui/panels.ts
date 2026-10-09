@@ -6,6 +6,8 @@ import { FRAGMENTS_ALL } from '../content/story';
 import { OBSERVATIONS } from '../content/situations';
 import { grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
+import { artImg } from './art';
+import type { SlotId } from '../content/art';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { VARIANTS } from '../sim/enemies';
 import type { RunStats } from '../sim/run';
@@ -67,6 +69,13 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const DAMAGE_WORD: Record<string, string> = {
   rock: 'Rock', bulwark: 'Bulwarks', web: 'Thren webs', volatile: 'Volatile rock', blast: 'Blasts', lightning: 'Lightning', artillery: 'Shells', anomaly: 'The anomaly',
 };
+
+/** A picture beside a found entry in the Archive, if the build has one. Entries not yet found show nothing, so nothing is given away. */
+function pictured(li: HTMLElement, slot: SlotId, id: string, got: boolean): HTMLElement {
+  const img = got ? artImg(slot, id, 'ar-pic') : null;
+  if (img) { li.classList.add('pic'); li.prepend(img); }
+  return li;
+}
 
 export class SummaryPanel {
   private off: (() => void) | null = null;
@@ -297,15 +306,15 @@ export class StartOptions {
       const a = p.archive;
       $('ar-e').replaceChildren(...ENDINGS.map((e) => {
         const got = a.endings.includes(e.id);
-        return h('li', got ? 'on' : '', '', h('b', '', got ? t(e.name) : '???'), h('span', 'kind', t(got ? 'reached' : 'ending')), h('p', '', t(got ? e.file : e.pitch)));
+        return pictured(h('li', got ? 'on' : '', '', h('b', '', got ? t(e.name) : '???'), h('span', 'kind', t(got ? 'reached' : 'ending')), h('p', '', t(got ? e.file : e.pitch))), 'ending', e.id, got);
       }));
       $('ar-s').replaceChildren(...FRAGMENTS_ALL.map((f) => {
         const got = a.records.includes(f.flag);
-        return h('li', got ? 'on' : '', '', h('b', '', got ? t(f.name) : '???'), h('span', 'kind', t(got ? 'found' : 'missing')), h('p', '', t(got ? f.line : f.where)));
+        return pictured(h('li', got ? 'on' : '', '', h('b', '', got ? t(f.name) : '???'), h('span', 'kind', t(got ? 'found' : 'missing')), h('p', '', t(got ? f.line : f.where))), 'file', f.flag, got);
       }));
       $('ar-o').replaceChildren(...OBSERVATIONS.map((o) => {
         const got = (a.sightings ?? []).includes(o.flag);
-        return h('li', got ? 'on' : '', '', h('b', '', got ? t(o.name) : '???'), h('span', 'kind', t(got ? 'seen' : 'unseen')), h('p', '', got ? `${t(o.line)} ${t(o.theory)}` : t('Somewhere out there.')));
+        return pictured(h('li', got ? 'on' : '', '', h('b', '', got ? t(o.name) : '???'), h('span', 'kind', t(got ? 'seen' : 'unseen')), h('p', '', got ? `${t(o.line)} ${t(o.theory)}` : t('Somewhere out there.'))), 'sighting', o.flag, got);
       }));
       $('ar-j').replaceChildren(...a.journeys.slice(0, 12).map((r) => h('li', r.end === 'through' ? '' : 'lost', '',
         h('b', '', t(r.ending ? ENDING_BY_ID[r.ending].name : r.end === 'through' ? 'Through' : r.end === 'captured' ? 'Taken' : 'Lost')),

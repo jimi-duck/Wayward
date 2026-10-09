@@ -22,6 +22,8 @@
     "pilot:situations": "vitest run --config tools/vitest.config.ts tools/situations.pilot.ts",
     "pilot:comms": "vitest run --config tools/vitest.config.ts tools/comms.pilot.ts",
     "pilot:perf": "vitest run --config tools/vitest.config.ts tools/perf.pilot.ts",
+    "art:brief": "vitest run --config tools/vitest.config.ts tools/art-brief.pilot.ts",
+    "art:prep": "python3 tools/art-prep.py",
     "pilot:feel": "vitest run --config tools/vitest.config.ts tools/feel.pilot.ts"
   },
   "engines": {
