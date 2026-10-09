@@ -477,7 +477,7 @@ function boot(review: typeof import('./review') | null): void {
 
   const input = new Input(
     {
-      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), cut: el('cut'),
+      layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), cut: el('cut'), brk: el('brk'),
     },
     () => (started ? (panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
     () => openBay(),
