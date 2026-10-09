@@ -22,7 +22,7 @@ function sortieFor(id: string, seed = 5) {
   const j = newJourney(seed, false, 'eight');
   const run = newRun(1);
   run.escaped = true;
-  endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 30, food: 12, parts: 6, plates: 3 }, run, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
+  endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 30, supplies: 12, plates: 3 }, run, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
   plot(j, lanesFrom(j.chart, j.at)[0]!.to.id);
   return { j, def: { ...sortieDef(j), situation: id, quiet: true, place: null, story: null } };
 }
@@ -140,7 +140,7 @@ describe('settling', () => {
     j.chart.situations = { [id]: { id: 'shortage', seen: true, done: false } };
     // the home system is no place for one; the market is what matters here
     settle(j.chart, id, 'lost', ctx, SITUATION_BY_ID.shortage);
-    expect(j.chart.market?.[0]?.mult.food).toBeGreaterThan(1);
+    expect(j.chart.market?.[0]?.mult.supplies).toBeGreaterThan(1);
     expect(j.chart.situations[id]!.done).toBe(true);
     expect(j.chart.situations[id]!.result).toBe('lost');
   });
@@ -148,7 +148,7 @@ describe('settling', () => {
 
 describe('the stage', () => {
   it('rings the call when the ship is near, and puts a goal on the sector when it is taken', () => {
-    const w = world('shortage', { food: 6 });
+    const w = world('shortage', { supplies: 6 });
     const st = w.stage!;
     expect(st).not.toBeNull();
     put(w, st.x + 60, st.z);
@@ -163,7 +163,7 @@ describe('the stage', () => {
   });
 
   it('pays a delivered goal, takes what it asked for, and gives the sky back', () => {
-    const w = world('shortage', { food: 6, chits: 0 });
+    const w = world('shortage', { supplies: 6, chits: 0 });
     const st = w.stage!;
     put(w, st.x + 60, st.z);
     run(w, 24);
@@ -171,14 +171,14 @@ describe('the stage', () => {
     put(w, st.x, st.z);
     run(w, 6);
     expect(st.result).toBe('won');
-    expect(w.food).toBe(3);
+    expect(w.supplies).toBe(3);
     expect(w.chits).toBeGreaterThanOrEqual(20);
     expect(w.encounter).toBeNull();
     expect(w.result().situation).toEqual({ id: w.sortie.system, result: 'won' });
   });
 
   it('does not count the hold without what the site asks for', () => {
-    const w = world('shortage', { food: 0 });
+    const w = world('shortage', { supplies: 0 });
     const st = w.stage!;
     put(w, st.x + 60, st.z);
     run(w, 24);
@@ -189,7 +189,7 @@ describe('the stage', () => {
   });
 
   it('misses a goal that is not met in time', () => {
-    const w = world('shortage', { food: 6 });
+    const w = world('shortage', { supplies: 6 });
     const st = w.stage!;
     put(w, st.x + 60, st.z);
     run(w, 24);

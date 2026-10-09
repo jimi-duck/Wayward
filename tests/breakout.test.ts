@@ -53,7 +53,7 @@ describe('mining', () => {
     expect(mined).toBe(true);
     expect(w.field.rocks.length).toBe(0);
     run(w, 2);
-    expect(w.ore).toBe(rockYield('basalt', 2).ore);
+    expect(w.run.ore).toBe(rockYield('basalt', 2).ore);
     expect(w.run.mined).toBe(1);
   });
 
@@ -131,16 +131,14 @@ describe('the Breakout', () => {
     expect(w.bk!.heat).toBeGreaterThan(HEAT_START);
   });
 
-  it('docks when slow inside the port, sells the hold, sells Cyrite and plates, and casts off', () => {
+  it('docks when slow inside the port, sells Cyrite and plates, and casts off', () => {
     const w = quiet();
     const b = w.bk!;
     w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
-    w.ore = 30;
+    w.chits = 100;
     w.plates = 1;
     run(w, 1.5);
     expect(w.phase).toBe('dock');
-    expect(w.sellOre()).toBe(30 * PRICE.ore);
-    expect(w.ore).toBe(0);
     const k = w.cyrite;
     expect(w.buy("cyrite")).toBe(true);
     expect(w.cyrite).toBe(k + 1);
@@ -154,13 +152,13 @@ describe('the Breakout', () => {
     expect(w.phase).toBe('play');
   });
 
-  it('patches a plate from parts once the ship is left alone', () => {
+  it('patches a plate from supplies once the ship is left alone', () => {
     const w = quiet();
     w.plates = 1;
-    w.parts = PATCH_COST;
+    w.supplies = PATCH_COST;
     run(w, PATCH_QUIET + PATCH_TIME + 0.5);
     expect(w.plates).toBe(2);
-    expect(w.parts).toBe(0);
+    expect(w.supplies).toBe(0);
   });
 
   it('will not jump without the Cyrite, and jumps once the drive has spooled', () => {

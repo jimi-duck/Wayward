@@ -11,7 +11,7 @@ import { newRun } from '../src/sim/run';
 function result(j: Journey, o: Partial<SortieResult> = {}): SortieResult {
   const r = newRun(1);
   r.escaped = (o.ended ?? 'jumped') === 'jumped';
-  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 40, food: 30, parts: 10 }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
+  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 40, supplies: 30}, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
 }
 
 /** A long journey out of Cerro, in the first system with a lane plotted. */

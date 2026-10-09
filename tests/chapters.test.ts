@@ -19,7 +19,7 @@ class Store {
 function result(j: Journey): SortieResult {
   const r = newRun(1);
   r.escaped = true;
-  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 40, food: 30, parts: 10 }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o() };
+  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 40, supplies: 30}, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o() };
 }
 const o = () => ({});
 

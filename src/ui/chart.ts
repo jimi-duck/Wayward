@@ -8,7 +8,7 @@ import { gateOf, jumps, cyriteKnown, lanesFrom, netted, placeAt, regionCount, re
 import { stance, type Stance } from '../sim/lanes';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
 import { survivalOf } from '../content/survival';
-import { RATION, here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
+import { here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { act, actLine, fileCount } from '../sim/story';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -49,7 +49,7 @@ function project(shown: StarSystem[]): Proj {
   return { px: (s) => PAD_X + ((s.col - lo) / (hi - lo)) * (W - PAD_X * 2), py: (s) => PAD_Y + s.y * (H - PAD_Y * 2) };
 }
 const days = (n: number) => plural(n, '{n} day', '{n} days');
-const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { cyrite: 'Cyrite', krail: 'Krail', plates: 'Plates', parts: 'Parts', food: 'Food', chits: 'Chits' };
+const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { cyrite: 'Cyrite', plates: 'Plates', supplies: 'Supplies', chits: 'Chits' };
 /** A lane's style, as a mark and a word (sim/lanes.ts). */
 const STANCE_TAG: Record<Stance, [string, string]> = { quiet: ['○', 'Quiet'], watched: ['◐', 'Watched'], hostile: ['▲', 'Hostile'] };
 const richWord = (k: number) => t(k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
@@ -243,7 +243,7 @@ export class ChartPanel {
       const left = toGoal(j.chart, j.at, s.id), closer = some && near[i]!;
       const st = stance(j.chart, o), [mark, word] = STANCE_TAG[st];
       const notes = [
-        `${t('food')} ${o.food}`, s.port ? s.port.name : t('no port'), `Cyrite ${richWord(cyriteKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
+        `${o.supplies} ${t('supplies')}`, s.port ? s.port.name : t('no port'), `Cyrite ${richWord(cyriteKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
       ];
       if (o.place) notes.push(placeText(o.place));
       if (o.scene) notes.push(o.scene);
@@ -273,10 +273,11 @@ export class ChartPanel {
     const seen = j.trail[j.hunt.seenIdx];
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
-    // what each is for, on hover: Cyrite moves the ship, Krail grows it, chits pay, parts mend, food is time away, ore is cargo
+    // what each is for, on hover: Cyrite moves the ship, supplies keep it going, chits pay for everything else
     const cells: Array<[string, string, string]> = [
-      [t('Tank'), `${c.cyrite}/${TANK_MAX}`, t('Cyrite: it moves you. One lane, one jump’s worth.')], [t('Food'), `${c.food} · ${t('{n}/day', { n: RATION })}`, t('Food: how long you can stay away from the ports.')],
-      [t('Parts'), String(c.parts), t('Parts: repairs, and mechanical favours.')], [t('Chits'), String(c.chits), t('Chits: money. Spend them on food, parts, news and favours, or keep them for the next port.')], [t('Hold'), t('{n} ore', { n: c.ore }), t('Ore: cargo to sell, or to deliver.')],
+      [t('Tank'), `${c.cyrite}/${TANK_MAX}`, t('Cyrite: it moves you. One lane, one jump’s worth.')],
+      [t('Supplies'), String(c.supplies), t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')],
+      [t('Chits'), String(c.chits), t('Chits: money. Upgrades in the bay, and supplies, Cyrite, news and favours at the ports.')],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
     const file = fileCount(c.flags, j.chart.regionSet ?? 'three');

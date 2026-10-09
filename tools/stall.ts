@@ -25,7 +25,7 @@ for (let n = 0; n < 140 && j.status !== 'over'; n++) {
   if (w.phase !== 'over') {
     const s = sysById(j.chart, def.system);
     console.log('STALL at system', n + 1, def.name, s.kind, 'region', s.region, 'holder', s.holder, 'cyrite', s.cyrite, 'quiet', !!s.quiet, 'netted', netted(j.chart, s.id));
-    console.log('jumpCost', def.jumpCost, 'cyrite aboard', w.cyrite, 'rich', def.rich, 'density', def.density, 'port', !!def.port, 'food', w.carry().food, 'time', w.runTime, 'phase', w.phase);
+    console.log('jumpCost', def.jumpCost, 'cyrite aboard', w.cyrite, 'rich', def.rich, 'density', def.density, 'port', !!def.port, 'food', w.carry().supplies, 'time', w.runTime, 'phase', w.phase);
     break;
   }
   endSortie(j, w.result());

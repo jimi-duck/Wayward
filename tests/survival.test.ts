@@ -8,8 +8,9 @@ import { lanesFrom, layQuiet, makeChart, netted, spreadNet } from '../src/sim/ch
 import { NO_MODS, pressure } from '../src/sim/director';
 import { ENCOUNTER_ORDER, pickEncounter, startEncounter, type EncounterId } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';
-import { ADRIFT, DAY, endSortie, newJourney, plot, sortieDef, START_PARTS, VERSION, WEAR, WRECKS, type Journey } from '../src/sim/journey';
-import { HOME, JUMP_COST, FOOD_START, START_CYRITE, pursuitCap, pursuitInterval } from '../src/sim/breakout';
+import { SCRAP_PRICE } from '../src/content/systems';
+import { ADRIFT, DAY, endSortie, newJourney, plot, sortieDef, VERSION, WEAR, WRECKS, type Journey } from '../src/sim/journey';
+import { HOME, JUMP_COST, SUPPLIES_START, START_CYRITE, pursuitCap, pursuitInterval } from '../src/sim/breakout';
 import { newRun } from '../src/sim/run';
 import { Rng } from '../src/sim/rng';
 import { World } from '../src/sim/world';
@@ -86,7 +87,7 @@ describe('the table', () => {
     expect(P.salvage).toMatchObject({ krail: 1, life: 1, repair: 1, capital: 1, reach: 1 });
     for (const c of Object.values(P.salvage.cargo)) expect(c).toEqual({ parts: 0.5, cyrite: 0, ore: 0 });
     expect(P.ship).toEqual({ plates: 0, recharge: 1, grace: 1 });
-    expect(P.voyage).toMatchObject({ jump: 1, start: { cyrite: START_CYRITE, food: FOOD_START, parts: START_PARTS }, wear: WEAR, wrecks: WRECKS, kept: 0.5, ore: 1, net: 1, breathers: 1 });
+    expect(P.voyage).toMatchObject({ jump: 1, start: { cyrite: START_CYRITE, supplies: SUPPLIES_START }, wear: WEAR, wrecks: WRECKS, kept: 0.5, ore: 1, net: 1, breathers: 1 });
     // a sector event it never draws: the skirmish is the Raider's
     expect(P.events.gap).toBe(1);
     for (const [id, w] of Object.entries(P.events.weights)) expect(w).toBe(id === 'skirmish' ? 0 : 1);
@@ -504,20 +505,20 @@ describe('the economy', () => {
     expect(j.carry.cyrite).toBeLessThan(40);
   });
 
-  it('sells the Raider\'s ore for more, and nobody else\'s', () => {
-    const price = (id: SurvivalId) => new World(1, { mode: 'breakout', survival: id }).prices.ore;
+  it('pays the Raider more for scrap, and nobody else\'s', () => {
+    const price = (id: SurvivalId) => new World(1, { mode: 'breakout', survival: id }).scrapValue;
     expect(price('raider')).toBeGreaterThan(price('prospector'));
-    expect(price('prospector')).toBe(HOME.port!.prices.ore);
+    expect(price('prospector')).toBe(SCRAP_PRICE);
     expect(price('drifter')).toBe(price('prospector'));
     // the rest of the board is the same
     const a = new World(1, { mode: 'breakout', survival: 'raider' }).prices, b = new World(1, { mode: 'breakout' }).prices;
-    expect({ ...a, ore: 0 }).toEqual({ ...b, ore: 0 });
+    expect(a).toEqual(b);
   });
 
   it('keeps Drifter generous but not free: its Cyrite is richer, its jumps cheaper, and neither is without limit', () => {
     const d = newJourney(7, false, 'three', 'drifter'), p = newJourney(7);
     expect(d.carry.cyrite).toBeGreaterThan(p.carry.cyrite);
-    expect(d.carry.food).toBeGreaterThan(p.carry.food);
+    expect(d.carry.supplies).toBeGreaterThan(p.carry.supplies);
     // cheaper lanes, but a lane always costs something, and a jump to the next system is still more than the opening tank gave Prospector
     for (const [i, r] of d.chart.routes.entries()) {
       expect(r.cyrite).toBeLessThan(p.chart.routes[i]!.cyrite);
@@ -668,9 +669,9 @@ describe('the voyage', () => {
   it('starts every mode with its own tank, galley and spares', () => {
     for (const id of SURVIVAL_IDS) {
       const j = newJourney(7, false, 'three', id), K = SURVIVAL[id].voyage.start;
-      expect(j.carry).toMatchObject({ cyrite: K.cyrite, food: K.food, parts: K.parts });
+      expect(j.carry).toMatchObject({ cyrite: K.cyrite, supplies: K.supplies });
     }
-    expect(newJourney(7).carry).toMatchObject({ cyrite: START_CYRITE, food: FOOD_START, parts: START_PARTS });
+    expect(newJourney(7).carry).toMatchObject({ cyrite: START_CYRITE, supplies: SUPPLIES_START });
   });
 
   it('prices the lanes by the mode, once, and the opening lane too', () => {
@@ -685,18 +686,17 @@ describe('the voyage', () => {
   it('lets a Drifter survive a wreck more than the others, and keep more of what it carried', () => {
     const wreck = (id: SurvivalId) => {
       const j = newJourney(3, false, 'three', id);
-      j.carry.cyrite = 20; j.carry.parts = 8; j.carry.chits = 40; j.carry.ore = 10;
+      j.carry.cyrite = 20; j.carry.supplies = 8; j.carry.chits = 40;
       const out = endSortie(j, result(j, { ended: 'destroyed' }));
       return { j, out };
     };
     const d = wreck('drifter'), p = wreck('prospector');
     expect(d.out.kind).toBe('adrift');
     expect(d.j.carry.cyrite).toBe(15);
-    expect(d.j.carry.parts).toBe(6);
+    expect(d.j.carry.supplies).toBe(6);
     expect(d.j.carry.chits).toBe(30);
     expect(p.j.carry.cyrite).toBe(10);
-    expect(p.j.carry.parts).toBe(4);
-    expect(d.j.carry.ore).toBe(0);
+    expect(p.j.carry.supplies).toBe(4);
     // the days lost adrift are the same, and the wreck count is
     expect(d.j.day).toBeCloseTo(p.j.day, 5);
     expect(ADRIFT).toBe(1);
@@ -709,13 +709,12 @@ describe('the voyage', () => {
   it('wears the drive less in Drifter', () => {
     const jump = (id: SurvivalId) => {
       const j = newJourney(3, false, 'three', id);
-      j.carry.parts = 6;
+      j.carry.supplies = 14;
       plot(j, lanesFrom(j.chart, j.at)[0]!.to.id);
       endSortie(j, result(j));
-      return j.carry.parts;
+      return j.carry.supplies;
     };
-    expect(jump('prospector')).toBe(6 - WEAR);
-    expect(jump('drifter')).toBe(6 - SURVIVAL.drifter.voyage.wear);
+    expect(jump('drifter') - jump('prospector')).toBe(WEAR - SURVIVAL.drifter.voyage.wear);
   });
 
   it('spreads the Net slower in Drifter', () => {
@@ -771,7 +770,7 @@ describe('a mode that is playable', () => {
   });
 
   it('is not unwinnable by hunger: every mode begins with food for the first jump', () => {
-    for (const id of SURVIVAL_IDS) expect(newJourney(7, false, 'three', id).carry.food).toBeGreaterThanOrEqual(FOOD_START);
+    for (const id of SURVIVAL_IDS) expect(newJourney(7, false, 'three', id).carry.supplies).toBeGreaterThanOrEqual(SUPPLIES_START);
   });
 
   it('keeps netted systems and the Net from Cerro the same everywhere at the start', () => {

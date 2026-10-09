@@ -60,7 +60,7 @@ export interface Goal {
   /** The objective line on the HUD. */
   line: string;
   /** What has to be handed over at the site (reach): short of it, the hold does not count. */
-  give?: { ore?: number; parts?: number; food?: number; chits?: number; cyrite?: number };
+  give?: { supplies?: number; chits?: number; cyrite?: number };
 }
 
 /** What a situation does to the chart when it is over. */
@@ -71,7 +71,7 @@ export interface ChartFx {
   stallNear?: number;
   pushNear?: number;
   /** Prices around move for a while: multipliers on what the ports charge in this region, and the days it lasts. */
-  market?: { food?: number; ore?: number; cyrite?: number; plate?: number; days: number };
+  market?: { supplies?: number; cyrite?: number; plate?: number; days: number };
   /** What the ship knew of the Net and the Prefect is lost. */
   forget?: boolean;
   /** Another situation turns up this many jumps on. */
@@ -154,11 +154,11 @@ export const SITUATIONS: SituationDef[] = [
     id: 'shortage', name: 'A settlement short of food', blurb: 'A settlement running out of food.', group: 'frontier',
     kinds: ['mining', 'transit', 'port', 'contested'], regions: [0, 5], holders: ['holdfast', 'none', 'guild', 'gutter', 'frontier'], weight: 1.4, tight: 'roundup',
     prop: 'settlement', card: 'sc_shortage', at: 20, hail: 520, accept: ['bring'],
-    goal: { kind: 'reach', hold: 4, limit: 200, line: 'Bring food to the settlement', give: { food: 3 } },
+    goal: { kind: 'reach', hold: 4, limit: 200, line: 'Bring supplies to the settlement', give: { supplies: 3 } },
     win: { text: 'The settlement eats · word goes down the lanes', standing: { miners: 1, frontier: 1 }, chits: 20, stall: 3, flag: 'helped_settlement' },
     lose: { text: 'Too late · the settlement stops answering', standing: { miners: -1 } },
     ignore: { text: 'You flew on · the settlement noted it', standing: { miners: -1 } },
-    after: { lost: { market: { food: 1.25, days: 8 }, text: 'Food runs short on the lanes round here' }, ignored: { market: { food: 1.15, days: 6 } } },
+    after: { lost: { market: { supplies: 1.25, days: 8 }, text: 'Food runs short on the lanes round here' }, ignored: { market: { supplies: 1.15, days: 6 } } },
   },
   {
     id: 'roundup', name: 'A settlement under guard', blurb: 'A settlement the Custody has closed. People are missing.', group: 'corporate',
@@ -187,7 +187,7 @@ export const SITUATIONS: SituationDef[] = [
     prop: 'wreck', actors: [act('scout', 2, 'hold', 'wary', 'Gutter crew', { from: 'site', ring: 24 }), act('freighter', 1, 'hold', 'meek', 'Claim tug', { from: 'site', ring: 30 })],
     card: 'sc_claim', at: 25, hail: 420, accept: ['cut'],
     goal: { kind: 'reach', hold: 5, limit: 150, line: 'Strip the wreck' },
-    win: { text: 'Parts and Krail off the wreck', parts: 3, krail: 25, score: 600 },
+    win: { text: 'Supplies and chits off the wreck', supplies: 3, krail: 25, score: 600 },
     lose: { text: 'The crews stripped it before you' },
     ignore: { text: 'The crews settle it with their guns' },
   },
@@ -200,7 +200,7 @@ export const SITUATIONS: SituationDef[] = [
     threat: { variant: 'raptor', n: 2, after: 25 },
     win: { text: 'The convoy made the lane', chits: 50, standing: { guild: 1, frontier: 1 } },
     lose: { text: 'You lost the convoy', standing: { guild: -1 } },
-    after: { lost: { market: { ore: 0.85, food: 1.15, days: 8 }, text: 'Stock does not arrive · prices move' } },
+    after: { lost: { market: { supplies: 1.15, days: 8 }, text: 'Stock does not arrive · prices move' } },
   },
   {
     id: 'smugglers', name: 'A sealed crate', blurb: 'Somebody needs a crate carried quietly.', group: 'frontier',
@@ -213,7 +213,7 @@ export const SITUATIONS: SituationDef[] = [
     id: 'resistance', name: 'A cell that needs parts', blurb: 'A cell that has not been counted.', group: 'frontier',
     kinds: ['mining', 'transit', 'contested'], regions: [1, 5], weight: 0.9, holders: ['holdfast', 'none', 'gutter'],
     prop: 'settlement', card: 'sc_resistance', at: 30, hail: 480, accept: ['supply'],
-    goal: { kind: 'reach', hold: 4, limit: 190, line: 'Take parts to the cell', give: { parts: 4 } },
+    goal: { kind: 'reach', hold: 4, limit: 190, line: 'Take supplies to the cell', give: { supplies: 4 } },
     win: { text: 'The cell is working · the relay in the next lane goes dark', standing: { miners: 1, frontier: 1 }, stall: 4, flag: 'supplied_cell' },
     lose: { text: 'The cell went to ground', standing: { frontier: -1 } },
     after: { won: { stallNear: 3, text: 'A resistance cell holds the Net off' } },
@@ -239,7 +239,7 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['mining', 'transit', 'contested'], regions: [0, 5], weight: 1.1,
     prop: 'relay', actors: [act('picket', 1, 'hold', 'wary', 'Survey picket', { from: 'site', ring: 60 })],
     card: 'sc_survey', at: 25, hail: 480, accept: ['cut', 'jam'],
-    goal: { kind: 'reach', hold: 8, limit: 170, line: 'Cut the survey relay', give: { parts: 2 } },
+    goal: { kind: 'reach', hold: 8, limit: 170, line: 'Cut the survey relay', give: { supplies: 2 } },
     win: { text: 'The relay goes dark · the Net slows round here', stall: 4, notice: { custody: 1 } },
     lose: { text: 'The relay finished its survey', stall: -3 },
     ignore: { text: 'The relay finishes its survey', stall: -2 },
@@ -368,7 +368,7 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['mining', 'contested', 'port'], regions: [4, 7], weight: 0.5,
     prop: 'yard', actors: [act('lancer', 1, 'hold', 'territorial', 'Custody yard guard', { from: 'site', ring: 100 }), act('shard', 1, 'hold', 'meek', 'Thren hulk', { from: 'site', ring: 8 })],
     card: 'sc_yard_hulk', at: 30, hail: 520, accept: ['cut'],
-    goal: { kind: 'reach', hold: 8, limit: 180, line: 'Reach the cradle', give: { parts: 3 } },
+    goal: { kind: 'reach', hold: 8, limit: 180, line: 'Reach the cradle', give: { supplies: 3 } },
     win: { text: 'The hulk is loose · it went into the dark', flag: ['freed_hulk', 'saw_hulk'], notice: { custody: 3, thren: -3 } },
     lose: { text: 'The cutting crews were ready' },
     ignore: { text: 'You left the cradle as it was' },

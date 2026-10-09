@@ -53,7 +53,7 @@ export interface ModuleDef {
   text: string;
   /** Change the stat block for owning mark `mk` (called once per mark owned). */
   stats?: (s: Stats, mk: number) => void;
-  /** Ore the hold carries, per mark. */
+  /** Supplies the hold carries, per mark. */
   hold?: number;
   /** Parts a patch saves, per mark. */
   patch?: number;
@@ -102,13 +102,13 @@ export const MODULES: ModuleDef[] = [
   // ── rig ───────────────────────────────────────────────────────────────
   {
     id: 'md_racks', name: 'Cargo racks', system: 'rig', max: 3, chits: marks(10, 20, 30),
-    text: 'Holds 15 more ore.',
-    hold: 15,
+    text: 'Holds 4 more supplies.',
+    hold: 4,
   },
   {
     id: 'md_shop', name: 'Machine shop', system: 'rig', max: 2, chits: marks(10, 20),
-    text: 'Patching costs 2 parts less.',
-    patch: 2,
+    text: 'Patching costs 1 supply less.',
+    patch: 1,
   },
   {
     id: 'md_tractor', name: 'Ore tractor', system: 'rig', max: 2, chits: marks(10, 20),

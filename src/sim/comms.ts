@@ -55,10 +55,7 @@ export interface Ctx {
   /** Cyrite the jump needs, and what the tank holds. */
   need: number;
   tank: number;
-  ore: number;
-  holdMax: number;
   chits: number;
-  parts: number;
   plates: number;
   maxPlates: number;
   levels: Levels;
@@ -67,8 +64,8 @@ export interface Ctx {
   place: Place;
   /** Hostile hulls within reach. */
   hostiles: number;
-  /** Food in the galley. */
-  food: number;
+  /** Supplies aboard. */
+  supplies: number;
   /** The system: its kind, and whether the Net holds it. */
   kind: SystemKind;
   netted: boolean;
@@ -91,15 +88,11 @@ export interface Cond {
   after?: number;
   heatMin?: number;
   heatMax?: number;
-  /** At least this much in the hold, the tank, the purse, the parts bin. */
-  ore?: number;
+  /** At least this much in the tank, the purse. */
   cyrite?: number;
   chits?: number;
-  parts?: number;
   /** The tank is short of the jump. */
   short?: boolean;
-  /** The hold is four-fifths full. */
-  holdFull?: boolean;
   /** A plate is missing. */
   hurt?: boolean;
   /** Every flag set, none of these set. */
@@ -111,7 +104,7 @@ export interface Cond {
   place?: Place;
   /** Hostiles about (true) or a clear sky (false). */
   hostiles?: boolean;
-  /** The galley has less than this much food. */
+  /** The ship has less than this much in supplies. */
   hungry?: number;
   /** The system is one of these kinds. */
   kind?: SystemKind | SystemKind[];
@@ -142,7 +135,7 @@ export interface JobDef {
   /** Paid at the port (on docking) or at the lane mouth (on the jump). */
   at: 'port' | 'lane';
   /** What has to be handed over there. */
-  give?: { ore?: number; parts?: number };
+  give?: { supplies?: number };
   pay: Outcome;
 }
 
@@ -151,11 +144,9 @@ export interface Outcome {
   /** The log line. */
   text: string;
   cyrite?: Amount;
-  ore?: Amount;
   chits?: Amount;
-  parts?: Amount;
-  food?: Amount;
-  /** Krail for the refit bay (Story): the wrecks and finds that pay in it. */
+  supplies?: Amount;
+  /** Chits for the bay (Story), from wrecks and finds: Krail in the Arcade's old words, one purse now. Kept as the name the content uses. */
   krail?: number;
   plates?: number;
   heat?: number;
@@ -174,8 +165,6 @@ export interface Outcome {
   job?: JobDef;
   /** A job given up. */
   drop?: string;
-  /** Chits paid for each unit of ore the choice's cost took (a sale). */
-  sell?: number;
   /** Seconds of veined rock all round (a seam found). */
   seam?: number;
   /** Days of delay for Calloway (a false trail, a lie she has to check). */
@@ -198,15 +187,13 @@ export interface Need {
   flag?: string;
   standing?: [Standing, number];
   cyrite?: number;
-  ore?: number;
-  parts?: number;
-  food?: number;
+  supplies?: number;
 }
 
 /** What a choice takes: a number, the card's fee, all of it, or half of it. */
 export type Take = number | 'fee' | 'all' | 'half';
 /** What a choice takes whatever happens next (the fee is gone whether or not she honours it). */
-export interface Cost { chits?: Take; cyrite?: Take; ore?: Take; parts?: Take; food?: Take }
+export interface Cost { chits?: Take; cyrite?: Take; supplies?: Take }
 
 /** The chance a gamble comes off: a base, moved by heat, flags, systems and standing. */
 export interface Odds {
@@ -254,7 +241,7 @@ export interface CardDef {
   /** Who is speaking, and the card's title. */
   from: string;
   title: string;
-  /** What they say. Slots: {fee} {cyrite} {need} {short} {ore} {chits} {parts} {food}, and {captain} {ship} (also in `from` and `title`). */
+  /** What they say. Slots: {fee} {cyrite} {need} {short} {chits} {supplies}, and {captain} {ship} (also in `from` and `title`). */
   text: string;
   /** Lines added when their condition holds: the same card reads differently with a full hold or a checkpoint ahead. */
   lines?: Array<{ if: Cond; text: string }>;
@@ -356,12 +343,9 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.after !== undefined && x.t < c.after) return false;
   if (c.heatMin !== undefined && x.heat < c.heatMin) return false;
   if (c.heatMax !== undefined && x.heat > c.heatMax) return false;
-  if (c.ore !== undefined && x.ore < c.ore) return false;
   if (c.cyrite !== undefined && x.cyrite < c.cyrite) return false;
   if (c.chits !== undefined && x.chits < c.chits) return false;
-  if (c.parts !== undefined && x.parts < c.parts) return false;
   if (c.short !== undefined && (x.cyrite < x.need) !== c.short) return false;
-  if (c.holdFull !== undefined && (x.ore >= x.holdMax * 0.8) !== c.holdFull) return false;
   if (c.hurt !== undefined && (x.plates < x.maxPlates) !== c.hurt) return false;
   if (!list(c.flag).every((f) => x.flags.has(f))) return false;
   if (list(c.noFlag).some((f) => x.flags.has(f))) return false;
@@ -369,7 +353,7 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.standing && (x.standing[c.standing[0]] ?? 0) < c.standing[1]) return false;
   if (c.place !== undefined && x.place !== c.place) return false;
   if (c.hostiles !== undefined && (x.hostiles > 0) !== c.hostiles) return false;
-  if (c.hungry !== undefined && x.food >= c.hungry) return false;
+  if (c.hungry !== undefined && x.supplies >= c.hungry) return false;
   if (c.kind !== undefined && !list(c.kind).includes(x.kind)) return false;
   if (c.netted !== undefined && x.netted !== c.netted) return false;
   if (c.hunted !== undefined && !(x.behind <= c.hunted)) return false;
@@ -458,15 +442,15 @@ export function oddsFor(o: Odds, x: Ctx): number {
   return Math.min(0.95, Math.max(0.05, p));
 }
 
-const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'chits', cyrite: 'Cyrite', ore: 'ore', parts: 'parts', food: 'food' };
-const NONE_WORDS: Record<keyof Cost, string> = { chits: 'No chits to give', cyrite: 'No Cyrite to give', ore: 'No ore to give', parts: 'No parts to give', food: 'No food to give' };
+const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'chits', cyrite: 'Cyrite', supplies: 'supplies' };
+const NONE_WORDS: Record<keyof Cost, string> = { chits: 'No chits to give', cyrite: 'No Cyrite to give', supplies: 'No supplies to give' };
 
 const take = (a: Take, held: number, fee: number) => (a === 'fee' ? fee : a === 'all' ? held : a === 'half' ? Math.ceil(held / 2) : a);
 
 /** What a cost comes to, as numbers taken from the ship. */
 function costOf(c: Cost | undefined, x: Ctx, fee: number): Record<keyof Cost, number> {
-  const held = { chits: x.chits, cyrite: x.cyrite, ore: x.ore, parts: x.parts, food: x.food };
-  const out = { chits: 0, cyrite: 0, ore: 0, parts: 0, food: 0 };
+  const held = { chits: x.chits, cyrite: x.cyrite, supplies: x.supplies };
+  const out = { chits: 0, cyrite: 0, supplies: 0 };
   for (const k of Object.keys(out) as Array<keyof Cost>) if (c?.[k] !== undefined) out[k] = take(c[k]!, held[k], fee);
   return out;
 }
@@ -499,12 +483,10 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
     if (n.flag && !x.flags.has(n.flag)) needs.push(t('Needs {what}', { what: t(FLAGS[n.flag] ?? n.flag) }));
     if (n.standing && (x.standing[n.standing[0]] ?? 0) < n.standing[1]) needs.push(t('Needs standing with {who}', { who: t(standingName(n.standing[0])) }));
     if (n.cyrite !== undefined && x.cyrite < n.cyrite) needs.push(t('Needs {n} Cyrite', { n: n.cyrite }));
-    if (n.ore !== undefined && x.ore < n.ore) needs.push(t('Needs {n} ore', { n: n.ore }));
-    if (n.parts !== undefined && x.parts < n.parts) needs.push(t('Needs {n} parts', { n: n.parts }));
-    if (n.food !== undefined && x.food < n.food) needs.push(t('Needs {n} food', { n: n.food }));
+    if (n.supplies !== undefined && x.supplies < n.supplies) needs.push(t('Needs {n} supplies', { n: n.supplies }));
   }
   const cost = costOf(c.cost, x, fee);
-  const held = { chits: x.chits, cyrite: x.cyrite, ore: x.ore, parts: x.parts, food: x.food };
+  const held = { chits: x.chits, cyrite: x.cyrite, supplies: x.supplies };
   const costWords: string[] = [];
   for (const k of Object.keys(cost) as Array<keyof Cost>) {
     if (!c.cost || c.cost[k] === undefined) continue;
@@ -543,7 +525,7 @@ const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 export function cardParts(def: CardDef, x: Ctx, fee: number): { text: string; more: string[] } {
   const slots: Record<string, string> = {
     fee: String(fee), cyrite: String(x.cyrite), need: String(x.need), short: String(Math.max(0, x.need - x.cyrite)),
-    ore: String(x.ore), chits: String(x.chits), parts: String(x.parts), food: String(x.food),
+    chits: String(x.chits), supplies: String(x.supplies),
   };
   const fill = slotFill(x, slots);
   let text = fill(t(def.text));

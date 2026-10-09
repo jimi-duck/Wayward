@@ -1,0 +1,22 @@
+// The one-purse pass: chits, supplies and scrap (Krail is the Arcade's word again).
+export const ECONOMY: Record<string, string> = {
+  'A Drift fleet · stores, spares, rumours': 'Eine Drift-Flotte · Vorräte, Ersatz, Gerüchte',
+  '{n} more chits': 'Noch {n} Chits',
+  'Supplies': 'Vorräte',
+  'supplies': 'Vorräte',
+  'Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.': 'Vorräte: die Tage der Bahn, der Verschleiß des Antriebs und Platten-Flicken. Sind sie weg, kostet ein Sprung eine Platte.',
+  'Chits: money. Upgrades in the bay, and supplies, Cyrite, news and favours at the ports.': 'Chits: Geld. Aufrüstungen in der Werft, dazu Vorräte, Cyrit, Neuigkeiten und Gefallen in den Häfen.',
+  'Modules for chits · the yard’s work only here': 'Module für Chits · Werftarbeit nur hier',
+  'Buy and patch one at a time': 'Kaufen und flicken, eins nach dem anderen',
+  'Stores full': 'Lager voll',
+  '{n} aboard · a day each': '{n} an Bord · je ein Tag',
+  'No supplies to give': 'Keine Vorräte zu geben',
+  'Needs {n} supplies': 'Braucht {n} Vorräte',
+  '+{n} supplies · +{k} chits': '+{n} Vorräte · +{k} Chits',
+  'The fee: a quarter of your Cyrite, supplies and chits.': 'Die Gebühr: ein Viertel von Cyrit, Vorräten und Chits.',
+  'The fee: half your Cyrite, supplies and chits.': 'Die Gebühr: die Hälfte von Cyrit, Vorräten und Chits.',
+  'Out of supplies in the lane · a plate down': 'Vorräte in der Bahn aufgebraucht · eine Platte weniger',
+  'Stow most of it': 'Das meiste verstauen',
+  'The racks have a false floor. They find ten chits and no more.': 'Die Regale haben einen doppelten Boden. Sie finden zehn Chits und nicht mehr.',
+  'They find a little · you keep the rest': 'Sie finden ein bisschen · den Rest behältst du',
+};

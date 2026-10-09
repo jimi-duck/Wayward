@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { CARDS } from '../src/content/cards';
-import { HOME, TANK_MAX, type SortieResult } from '../src/sim/breakout';
+import { HOME, SUPPLIES_START, TANK_MAX, type SortieResult } from '../src/sim/breakout';
 import {
   arrive, COLS, jumps, lanesFrom, makeChart, NET_MARKUP, NET_RATE, netted, pricesAt, pushNet, spreadNet, sysById, viewOf, type Chart,
 } from '../src/sim/chart';
 import { behind, daysUntil, huntOn, newHunt, SEARCH } from '../src/sim/hunt';
 import {
-  ADRIFT, bankAnswer, DAY, debrief, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, START_PARTS, tally, WAITING, WEAR, WRECKS, type Journey,
+  ADRIFT, bankAnswer, DAY, debrief, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, tally, WAITING, WEAR, WRECKS, type Journey,
 } from '../src/sim/journey';
 import { openChapter } from '../src/sim/chapters';
 import { Rng } from '../src/sim/rng';
@@ -30,7 +30,7 @@ function result(j: Journey, o: Partial<SortieResult> = {}, c: Partial<Journey['c
 /** Out of Cerro and onto the chart in the first system. */
 function pastBreakout(seed = 7): Journey {
   const j = newJourney(seed);
-  endSortie(j, result(j, {}, { cyrite: 20, food: 12, parts: 6 }));
+  endSortie(j, result(j, {}, { cyrite: 20, supplies: 12}));
   return j;
 }
 
@@ -113,8 +113,7 @@ describe('the chart', () => {
     c.net[s.id] = 1;
     const after = pricesAt(c, s.id)!;
     expect(after.cyrite).toBeGreaterThanOrEqual(Math.round(before.cyrite * NET_MARKUP.cyrite!) - 1);
-    expect(after.ore).toBeLessThanOrEqual(before.ore);
-  });
+      });
 
   it('knows the Net only as far as the news reaches', () => {
     const c: Chart = makeChart(9);
@@ -153,30 +152,29 @@ describe('the journey', () => {
     expect(d.jumpCost).toBe(HOME.jumpCost);
     expect(d.calloway).toBe(Infinity);
     expect(lanesFrom(j.chart, j.at).map((l) => l.to.id)).toContain(j.dest);
-    expect(j.carry.parts).toBe(START_PARTS);
+    expect(j.carry.supplies).toBe(SUPPLIES_START);
   });
 
   it('jumps: the lane takes days, food and parts, then the chart', () => {
     const j = newJourney(2);
     const dest = j.dest!;
     const days = lanesFrom(j.chart, j.at).find((l) => l.to.id === dest)!.route.days;
-    const out = endSortie(j, result(j, { time: DAY / 2 }, { cyrite: 5, food: 12, parts: 6 }));
+    const out = endSortie(j, result(j, { time: DAY / 2 }, { cyrite: 5, supplies: 12}));
     expect(out.kind).toBe('jumped');
     expect(j.status).toBe('chart');
     expect(j.at).toBe(dest);
     expect(j.trail).toEqual([j.chart.home, dest]);
     expect(j.day).toBeCloseTo(0.5 + days, 5);
-    expect(j.carry.food).toBe(12 - days * RATION);
-    expect(j.carry.parts).toBe(6 - WEAR);
+    expect(j.carry.supplies).toBe(12 - days * RATION - WEAR);
     expect(j.carry.cyrite).toBe(5);
     expect(j.chart.visited).toContain(dest);
   });
 
-  it('goes hungry and wears the hull when the galley and the parts bin are empty', () => {
+  it('goes hungry and wears the hull when the supplies run out', () => {
     const j = newJourney(2);
-    endSortie(j, result(j, {}, { food: 0, parts: 0, plates: 3 }));
+    endSortie(j, result(j, {}, { supplies: 0, plates: 3 }));
     expect(j.hungry).toBe(1);
-    expect(j.carry.plates).toBe(1);
+    expect(j.carry.plates).toBe(2);
   });
 
   it('plots only lanes out of here, and never back to Cerro', () => {
@@ -226,11 +224,11 @@ describe('the journey', () => {
     expect(j.chart.stall[at]).toBeGreaterThan(0);
   });
 
-  it('leaves you adrift after a wreck: towed to another system of the region, a day later, hold and Krail gone; the third in the region is a total loss', () => {
+  it('leaves you adrift after a wreck: towed to another system of the region, a day later, a share of the stores gone; the third in the region is a total loss', () => {
     const j = pastBreakout();
     plot(j, options(j)[0]!.to.id);
     const at = j.at, day = j.day, region = viewOf(j.chart, at);
-    const out = endSortie(j, result(j, { ended: 'destroyed', time: DAY }, { ore: 30, krail: 50, cyrite: 11, chits: 41, parts: 9 }));
+    const out = endSortie(j, result(j, { ended: 'destroyed', time: DAY }, { cyrite: 11, chits: 41}));
     expect(out.kind).toBe('adrift');
     expect(j.status).toBe('sortie');
     expect(j.at).not.toBe(at);
@@ -239,7 +237,7 @@ describe('the journey', () => {
     expect(j.dest).not.toBeNull();
     expect(j.lost).toBe(1);
     expect(j.day).toBeCloseTo(day + 1 + ADRIFT, 5);
-    expect(j.carry).toMatchObject({ ore: 0, krail: 0, cyrite: 5, chits: 20, parts: 4, plates: 2 });
+    expect(j.carry).toMatchObject({ cyrite: 5, chits: 20, plates: 2 });
     for (let i = 1; i < WRECKS - 1; i++) { endSortie(j, result(j, { ended: 'destroyed' })); }
     const end = endSortie(j, result(j, { ended: 'destroyed' }));
     expect(end.kind).toBe('wrecked');
@@ -269,7 +267,7 @@ describe('the journey', () => {
       // always the lane that gets closest to the Threshold
       const o = options(j).sort((a, b) => jumps(j.chart, a.to.id, j.chart.edge) - jumps(j.chart, b.to.id, j.chart.edge))[0]!;
       plot(j, o.to.id);
-      endSortie(j, result(j, { time: 60 }, { food: 30, parts: 20 }));
+      endSortie(j, result(j, { time: 60 }, { supplies: 30}));
     }
     expect(j.end).toBe('through');
     expect(j.at).toBe(j.chart.edge);
@@ -339,7 +337,8 @@ describe('the journey', () => {
     const back = migrate(old)!;
     expect(back.version).toBe(VERSION);
     expect(back.carry.cyrite).toBe(17);
-    expect(back.carry.krail).toBe(9);
+    expect(back.carry.chits).toBe(9 + j.carry.chits);
+    expect('krail' in back.carry).toBe(false);
     expect(back.carry.levels).toEqual({ tp_bay: 1, ph_emitters: 2 });
     expect('xp' in back.carry).toBe(false);
     expect(back.chart.routes.every((r) => typeof r.cyrite === 'number')).toBe(true);
@@ -360,17 +359,16 @@ describe('a sortie in the world', () => {
 
   it('carries the ship in and back out', () => {
     const j = pastBreakout();
-    j.carry = { ...j.carry, cyrite: 17, ore: 9, parts: 3, chits: 44, food: 7, plates: 2, levels: { ut_scanner: 1 }, refit: 2, flags: ['codes'], standing: { guild: 1 } };
+    j.carry = { ...j.carry, cyrite: 17, chits: 44, supplies: 7, plates: 2, levels: { ut_scanner: 1 }, refit: 2, flags: ['codes'], standing: { guild: 1 } };
     plot(j, options(j)[0]!.to.id);
     const w = sortie(j);
     expect(w.cyrite).toBe(17);
-    expect(w.ore).toBe(9);
-    expect(w.food).toBe(7);
+    expect(w.supplies).toBe(7);
     expect(w.plates).toBe(2);
     expect(w.levels.ut_scanner).toBe(1);
     expect(w.refit).toBe(2);
     expect(w.flags.has('codes')).toBe(true);
-    expect(w.carry()).toMatchObject({ cyrite: 17, ore: 9, parts: 3, chits: 44, food: 7, plates: 2, refit: 2, flags: ['codes'] });
+    expect(w.carry()).toMatchObject({ cyrite: 17, chits: 44, supplies: 7, plates: 2, refit: 2, flags: ['codes'] });
   });
 
   it('takes a new lane plotted at the dock, and only while docked', () => {
@@ -466,7 +464,6 @@ describe('a sortie in the world', () => {
     const heard = new World(5, { mode: 'breakout', sortie: sortieDef(j), carry: { ...j.carry, seen: ['calloway', 'ore_buyer'] } });
     const blocked = (heard as unknown as { blocked(): Set<string> }).blocked();
     expect(blocked.has('calloway')).toBe(true);
-    expect(blocked.has('ore_buyer')).toBe(false);
   });
 
   it('sells food at the port', () => {
@@ -477,10 +474,10 @@ describe('a sortie in the world', () => {
     run(w, 1.5);
     expect(w.phase).toBe('dock');
     w.chits = 10;
-    const food = w.food;
-    expect(w.buy('food')).toBe(true);
-    expect(w.food).toBe(food + 1);
-    expect(w.chits).toBe(10 - w.prices.food);
+    const food = w.supplies;
+    expect(w.buy('supplies')).toBe(true);
+    expect(w.supplies).toBe(food + 1);
+    expect(w.chits).toBe(10 - w.prices.supplies);
   });
 });
 
@@ -491,9 +488,8 @@ describe('banking an answer', () => {
     const j = pastBreakout();
     j.carry.chits = 50;
     j.status = 'sortie';
-    // mid-sortie the ship has mined 10 ore; the answer pays 30 chits and gives a flag, standing and a heard card
+    // the answer pays 30 chits and gives a flag, standing and a heard card
     const before = copy(j.carry);
-    before.ore = 10;
     const after = copy(before);
     after.chits -= 30;
     after.flags.push('frag_ledger');
@@ -501,7 +497,6 @@ describe('banking an answer', () => {
     after.standing.kellern = -1;
     bankAnswer(j, before, after);
     expect(j.carry.chits).toBe(20);
-    expect(j.carry.ore).toBe(0);
     expect(j.carry.flags).toContain('frag_ledger');
     expect(j.carry.seen).toContain('story_ledger');
     expect(j.carry.standing.kellern).toBe(-1);
@@ -513,14 +508,14 @@ describe('banking an answer', () => {
   it('never drops a stock below nothing, and takes back a flag an answer cleared', () => {
     const j = pastBreakout();
     j.carry.flags = ['news'];
-    j.carry.food = 1;
+    j.carry.supplies = 1;
     const before = copy(j.carry);
-    before.food = 5;
+    before.supplies = 5;
     const after = copy(before);
-    after.food = 0;
+    after.supplies = 0;
     after.flags = [];
     bankAnswer(j, before, after);
-    expect(j.carry.food).toBe(0);
+    expect(j.carry.supplies).toBe(0);
     expect(j.carry.flags).not.toContain('news');
   });
 });
@@ -530,11 +525,11 @@ describe('the debrief strip', () => {
     const j = pastBreakout();
     const was = tally(j);
     j.carry.cyrite += 12;
-    j.carry.parts -= 2;
+    j.carry.supplies -= 2;
     j.carry.plates -= 1;
     j.day += 1.5;
     expect(debrief(was, j)).toEqual([
-      { key: 'cyrite', d: 12 }, { key: 'plates', d: -1 }, { key: 'parts', d: -2 }, { key: 'day', d: 1.5 },
+      { key: 'cyrite', d: 12 }, { key: 'plates', d: -1 }, { key: 'supplies', d: -2 }, { key: 'day', d: 1.5 },
     ]);
   });
 

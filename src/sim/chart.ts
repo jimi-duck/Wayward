@@ -50,7 +50,7 @@ export interface StarSystem {
   holder: Holder;
   /** Cyrite richness and food supply, 0 to 1. */
   cyrite: number;
-  food: number;
+  supplies: number;
   /** The port's name and prices (before the Net's mark-up), or no port. */
   port: { name: string; prices: Prices } | null;
   /** World units from the arrival point to the lane mouth. */
@@ -126,8 +126,8 @@ export const NET_PRESS = 0.5;
 export const HOLDFAST_HOLD = 0.4;
 /** How far the news reaches: the Net is seen this many jumps out, each arrival. */
 export const SIGHT = 2;
-/** What the Net does to a port: dearer Cyrite, food and plates, less for ore. */
-export const NET_MARKUP: Partial<Record<keyof Prices, number>> = { ore: 0.75, cyrite: 1.4, food: 1.4, plate: 1.25 };
+/** What the Net does to a port: dearer Cyrite, supplies and plates. */
+export const NET_MARKUP: Partial<Record<keyof Prices, number>> = { cyrite: 1.4, supplies: 1.4, plate: 1.25 };
 
 /** The chart's columns: Cerro, then for each region its columns and its gate, with the region each belongs to. */
 const layoutOf = (regions: RegionDef[]): Array<{ kinds: SystemKind[]; n: number; region: number }> => [
@@ -169,7 +169,7 @@ function pricesFor(holder: Holder, rng: Rng): Prices {
   const p = { ...BASE_PRICES };
   for (const k of Object.keys(p) as Array<keyof Prices>) {
     const v = BASE_PRICES[k] * (m[k] ?? 1) * rng.range(0.9, 1.1);
-    p[k] = k === 'ore' || k === 'cyrite' || k === 'food' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;
+    p[k] = k === 'cyrite' || k === 'supplies' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;
   }
   return p;
 }
@@ -210,7 +210,7 @@ export function makeChart(seed: number, set: RegionSet = 'three', breathers = 1)
       const y = n === 1 ? 0.5 : clamp((i + 0.5) / n + rng.range(-0.08, 0.08), 0.08, 0.92);
       systems.push({
         id: `s${systems.length}`, name, kind, col, region, x: col / 5, y, holder, cyrite,
-        food: Math.round(rng.range(t.food[0], t.food[1]) * 100) / 100,
+        supplies: Math.round(rng.range(t.supplies[0], t.supplies[1]) * 100) / 100,
         port: hasPort ? { name: kind === 'home' ? 'Frontier Supply' : portNames[rng.int(portNames.length)]!, prices: kind === 'home' ? { ...BASE_PRICES } : pricesFor(holder, rng) } : null,
         lane: Math.round(rng.range(t.lane[0], t.lane[1]) / 50) * 50,
         survey: clamp(Math.round((cyrite + rng.range(-0.25, 0.25)) * 100) / 100, 0, 1),
@@ -402,12 +402,12 @@ export function pricesAt(c: Chart, id: string): Prices | null {
   if (!net && !raid && !moved.length) return s.port.prices;
   const p = { ...s.port.prices };
   const marks: Array<[keyof Prices, number]> = [
-    ...(net ? Object.entries(NET_MARKUP) as Array<[keyof Prices, number]> : []), ...(raid ? [['cyrite', RAID_MARKUP], ['food', RAID_MARKUP]] as Array<[keyof Prices, number]> : []),
+    ...(net ? Object.entries(NET_MARKUP) as Array<[keyof Prices, number]> : []), ...(raid ? [['cyrite', RAID_MARKUP], ['supplies', RAID_MARKUP]] as Array<[keyof Prices, number]> : []),
     ...moved.flatMap((m) => Object.entries(m.mult) as Array<[keyof Prices, number]>),
   ];
   for (const [k, m] of marks) {
     const v = p[k] * m;
-    p[k] = k === 'ore' || k === 'cyrite' || k === 'food' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;
+    p[k] = k === 'cyrite' || k === 'supplies' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;
   }
   return p;
 }

@@ -4,7 +4,7 @@ import type { Sector } from '../render/sector';
 import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
 import { alienLabel, cloaked } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
-import { DOCK_TIME } from '../sim/breakout';
+import { DOCK_TIME, LOW_SUPPLIES } from '../sim/breakout';
 import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
 import { NAMED } from '../content/features';
 import { REPORT_TEXT } from '../sim/space';
@@ -299,7 +299,8 @@ export class Hud {
     }
     const n = this.count;
     const alert = world.alert(), locked = alert !== 'clear';
-    text($('xp-v'), String(Math.floor(world.krail)));
+    text($('xp-v'), String(Math.floor(world.purse)));
+    $('rail').hidden = !!world.bk; // the Story's one purse is the Chits in the stores line
     const badge = $('upg');
     badge.hidden = !world.bk || n === 0;
     badge.classList.toggle('ready', n > 0 && !locked);
@@ -328,15 +329,11 @@ export class Hud {
     text($('v-fuel'), `${world.cyrite}/${need}`);
     $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
     fuel.classList.toggle('ready', world.cyrite >= need);
-    // the stores: hold, parts, chits, food, one line
-    const ore = $('vy-ore');
-    text(ore, `${world.ore}/${world.holdMax}`);
-    ore.classList.toggle('full', world.ore >= world.holdMax);
-    text($('vy-parts'), String(world.parts));
-    text($('vy-chits'), String(world.chits));
-    const food = $('vy-food');
-    text(food, String(world.food));
-    food.classList.toggle('full', world.food < 6);
+    // the stores: chits and supplies, one line; supplies go amber when they are running low
+    text($('vy-chits'), String(Math.floor(world.chits)));
+    const sup = $('vy-supplies');
+    text(sup, String(world.supplies));
+    sup.classList.toggle('full', world.supplies <= LOW_SUPPLIES);
     // the objective's threat line: the nearest hostile when it is close, else how hard the Custody is looking
     const s = world.ship;
     let hostile: { label: string; d: number; faction: string } | null = null;

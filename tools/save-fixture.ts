@@ -9,7 +9,7 @@ const j = newJourney(7);
 const run = newRun(1);
 run.escaped = true;
 endSortie(j, {
-  ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 20, food: 12, parts: 6, plates: 3 }, run,
+  ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 20, supplies: 12, plates: 3 }, run,
   calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {},
 });
 writeFileSync(new URL(`../tests/fixtures/journey-v${VERSION}.json`, import.meta.url), JSON.stringify(j));

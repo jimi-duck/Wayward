@@ -5,8 +5,8 @@ import { MAX_GAINS, gains } from '../src/sim/gains';
 import { Rng } from '../src/sim/rng';
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
-  levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, food: 12, kind: 'home', netted: true, behind: Infinity, ...x,
+  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, chits: 0, plates: 3, maxPlates: 3,
+  levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, supplies: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
 describe('what a choice brings', () => {
@@ -20,12 +20,6 @@ describe('what a choice brings', () => {
     expect(of('talk')).toContain('Through the lane');
     expect(of('fight')).toContain('Fight');
     expect(of('run')).toContain('Run the blockade');
-  });
-
-  it('prices a sale by the ore it takes', () => {
-    const sell = CARD_BY_ID.ore_buyer!.choices.find((c) => c.id === 'sell')!;
-    const v = choiceView(sell, CARD_BY_ID.ore_buyer!, ctx({ ore: 20 }), 0);
-    expect(v.gains).toContain('+60 chits');
   });
 
   it('marks losses with a minus, like a cost', () => {
@@ -52,7 +46,7 @@ describe('the read as odds', () => {
 
   it('gives every gamble on a card a chance, and nothing else one', () => {
     for (const def of CARDS) {
-      const o = openCard(def, ctx({ chits: 999, ore: 30, parts: 30, cyrite: 30 }), new Rng(3));
+      const o = openCard(def, ctx({ chits: 999, cyrite: 30 }), new Rng(3));
       for (const v of o.choices) {
         const ch = def.choices.find((c) => c.id === v.id)!;
         expect(v.chance !== null, `${def.id}.${ch.id}`).toBe(!!ch.odds || v.risky);

@@ -29,6 +29,8 @@ export interface BayCtx {
   krail: number;
   /** Story: chits aboard, for the yard's fee. */
   chits?: number;
+  /** Story: one purse. `krail` is then the chits aboard, and a fitting costs its price and the yard's fee together. */
+  pooled?: boolean;
   /** The Arcade: how many times the bay has shut this run, so each opening deals a little differently (the same opening always deals the same). */
   deal?: number;
   /** The Arcade: cards dealt at the last opening and not taken, which come round again less readily. */
@@ -89,6 +91,7 @@ export function blockOf(id: string, ctx: BayCtx): Block | null {
   if (yardWork(id, lv + 1, ctx.arcade) && !ctx.docked) return 'yard';
   const { use, cap } = budgets(ctx.levels);
   if ((node.draw.power ?? 0) > 0 && use.power + node.draw.power! > cap.power) return 'power';
+  if (ctx.pooled) return ctx.krail < cost(id, lv + 1, ctx.arcade) + fee(id, lv + 1, ctx.arcade) ? 'krail' : null;
   if (ctx.krail < cost(id, lv + 1, ctx.arcade)) return 'krail';
   if ((ctx.chits ?? 0) < fee(id, lv + 1, ctx.arcade)) return 'chits';
   return null;
@@ -120,7 +123,7 @@ export function cheapest(ctx: BayCtx): { id: string; cost: number } | null {
   for (const w of WEB) {
     const b = blockOf(w.id, ctx);
     if (b !== null && b !== 'krail' && b !== 'chits') continue;
-    const c = cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade);
+    const c = cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade) + (ctx.pooled ? fee(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade) : 0);
     if (!best || c < best.cost) best = { id: w.id, cost: c };
   }
   return best;

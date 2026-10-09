@@ -14,8 +14,8 @@ const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, t
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, ore: 0, holdMax: 40, chits: 0, parts: 0, plates: 3, maxPlates: 3,
-  levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, food: 12, kind: 'home', netted: true, behind: Infinity, ...x,
+  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, chits: 0, plates: 3, maxPlates: 3,
+  levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, supplies: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
 /** A quiet Breakout: no rock, no pursuit, no chance cards unless asked. */
@@ -71,7 +71,7 @@ describe('the comms engine', () => {
   it('reads conditions off the ship', () => {
     expect(condOk({ short: true }, ctx({ cyrite: 10 }))).toBe(true);
     expect(condOk({ short: true }, ctx({ cyrite: 25 }))).toBe(false);
-    expect(condOk({ holdFull: true }, ctx({ ore: 35 }))).toBe(true);
+    expect(condOk({ hungry: 5 }, ctx({ supplies: 3 }))).toBe(true);
     expect(condOk({ flag: 'codes' }, ctx())).toBe(false);
     expect(condOk({ noFlag: 'codes', heatMax: 0.5 }, ctx())).toBe(true);
     expect(condOk({ fitted: ['tp_bay', 'ut_scanner'] }, ctx({ levels: { ut_scanner: 1 } }))).toBe(true);
@@ -92,15 +92,6 @@ describe('the comms engine', () => {
     const fitted = openCard(CARD_BY_ID.gutter_toll!, ctx({ levels: { tp_bay: 1 } }), new Rng(1)).choices.find((c) => c.id === 'bay')!;
     expect(fitted.ok).toBe(true);
     expect(fitted.odds).toBeCloseTo(0.7);
-  });
-
-  it('reads differently with a full hold', () => {
-    const empty = openCard(CARD_BY_ID.gutter_toll!, ctx(), new Rng(1));
-    const full = openCard(CARD_BY_ID.gutter_toll!, ctx({ ore: 38 }), new Rng(1));
-    expect([empty.text, ...empty.more].join(' ')).not.toMatch(/how low you sit/);
-    expect([full.text, ...full.more].join(' ')).toMatch(/how low you sit/);
-    expect(empty.choices.some((c) => c.id === 'ore')).toBe(false);
-    expect(full.choices.some((c) => c.id === 'ore')).toBe(true);
   });
 
   it('reads intent as well as the sensors allow', () => {
@@ -200,16 +191,6 @@ describe('comms in the Breakout', () => {
     expect(w.phase).toBe('comms');
   });
 
-  it('sells the hold to the Guild at the Guild’s price', () => {
-    const w = quiet();
-    w.ore = 20;
-    w.openComms(CARD_BY_ID.ore_buyer!);
-    w.comms!.truth = 'honest';
-    w.answer('sell');
-    expect(w.ore).toBe(0);
-    expect(w.chits).toBe(60);
-    expect(w.standing.guild).toBe(1);
-  });
 
   it('slows the world for an ambush, and takes the default when time runs out', () => {
     const w = quiet();
@@ -234,28 +215,28 @@ describe('comms in the Breakout', () => {
     expect(w.aliens.every((a) => a.fleeing)).toBe(true);
   });
 
-  it('pays a job on docking with the goods, and holds it without them', () => {
+  it('pays a job on docking, and holds one that needs goods until they are aboard', () => {
     const w = quiet();
     w.openComms(CARD_BY_ID.haul_job!);
     w.answer('take');
     expect(w.jobs.length).toBe(1);
     const b = w.bk!;
     w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
-    w.ore = 5;
     run(w, 1.5);
     expect(w.phase).toBe('dock');
-    expect(w.drain().some((e) => e.type === 'jobShort')).toBe(true);
-    expect(w.jobs.length).toBe(1);
+    expect(w.jobs.length).toBe(0);
+    expect(w.chits).toBe(60);
+    expect(w.run.jobsDone).toBe(1);
+    // a job that wants supplies waits until they are aboard
     w.undock();
-    w.ore = 20;
+    w.jobs.push({ id: 'salvage', text: 'Six supplies to the dock', at: 'port', give: { supplies: 6 }, pay: { text: 'Paid', chits: 70 } });
+    w.supplies = 2;
     w.ship.x += 40;
     run(w, 0.5);
     w.ship.x = b.port!.x; w.ship.vx = w.ship.vz = 0;
     run(w, 1.5);
-    expect(w.jobs.length).toBe(0);
-    expect(w.ore).toBe(5);
-    expect(w.chits).toBe(60);
-    expect(w.run.jobsDone).toBe(1);
+    expect(w.drain().some((e) => e.type === 'jobShort')).toBe(true);
+    expect(w.jobs.length).toBe(1);
   });
 
   it('calls in a favour later', () => {

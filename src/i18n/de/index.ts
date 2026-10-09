@@ -1,4 +1,5 @@
 import { CARDS } from './cards';
+import { ECONOMY } from './economy';
 import { SCENES } from './scenes';
 import { SPACE } from './space';
 import { STORY } from './story';
@@ -15,7 +16,7 @@ import { WORLD } from './world';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([

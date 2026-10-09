@@ -67,7 +67,7 @@ describe('regions', () => {
 
   it('never let you back through a gate', () => {
     const j = newJourney(9);
-    endSortie(j, result(j, {}, { cyrite: 30, food: 12, parts: 12 }));
+    endSortie(j, result(j, {}, { cyrite: 30, supplies: 12}));
     j.at = gateOf(j.chart, 0).id;
     j.status = 'chart';
     const back = lanesFrom(j.chart, j.at).find(({ to }) => regionOf(to) === 0)!;
@@ -146,7 +146,7 @@ describe('the factions on their own', () => {
 describe('the Thren in a sortie', () => {
   function threnSortie(thren: number, cyrite: number) {
     const j = newJourney(6);
-    endSortie(j, result(j, {}, { cyrite, food: 12, parts: 12 }));
+    endSortie(j, result(j, {}, { cyrite, supplies: 12}));
     j.chart.thren![j.at] = thren;
     const def = sortieDef(j);
     expect(def.thren).toBe(thren);
@@ -186,8 +186,8 @@ describe('the Thren in a sortie', () => {
 
 describe('cards for who is here', () => {
   const ctx = (here: string[]): Ctx => ({
-    t: 120, heat: 0.2, cyrite: 20, need: 20, tank: TANK_MAX, ore: 20, holdMax: 40, chits: 50, parts: 10, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
-    standing: {}, place: 'open', hostiles: 0, food: 5, kind: 'transit', netted: false, behind: Infinity, here,
+    t: 120, heat: 0.2, cyrite: 20, need: 20, tank: TANK_MAX, chits: 50, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
+    standing: {}, place: 'open', hostiles: 0, supplies: 5, kind: 'transit', netted: false, behind: Infinity, here,
   });
   const card = (id: string) => CARDS.find((c) => c.id === id)!;
 

@@ -15,11 +15,10 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_trader', kind: 'trade', caller: 'frontier', tier: 'routine',
     from: 'Orlo Pike · independent hauler', title: 'Stock to swap',
-    text: '“Running light. I pay three a lump for clean ore, and I sell food fair. Chits buy anything out here: food, parts, favours.”',
+    text: '“Running light, and I sell stores fair. Chits buy anything out here: supplies, spares, favours.”',
     cargo: 'A hauler · hold half empty',
     choices: [
-      { id: 'sell', label: 'Sell your ore', tone: 'trade', hint: 'Three chits an ore. A dock pays less, but ore also buys favours.', cost: { ore: 'all' }, show: { ore: 1 }, win: { text: 'Ore sold at his rate', sell: 3 } },
-      { id: 'food', label: 'Buy food', tone: 'pay', hint: 'Three days of food. Food is how long you can stay away from the ports.', cost: { chits: 20 }, win: { text: 'Three days of food aboard', food: 3 } },
+      { id: 'food', label: 'Buy supplies', tone: 'pay', hint: 'Three supplies for twenty chits. Supplies buy time away from ports.', cost: { chits: 20 }, win: { text: 'Three supplies aboard', supplies: 3 } },
       { id: 'no', label: 'Wave him on', tone: 'refuse', hint: 'Keep your stock.', win: { text: 'Pike eases off' } },
     ],
   }),
@@ -30,18 +29,18 @@ export const SCENE_CARDS: CardDef[] = [
     cargo: 'A dock · every window shuttered',
     choices: [
       { id: 'ask', label: 'Ask who was counted', tone: 'pay', hint: 'Ten chits to the clerk. The Net’s edge, and where the Prefect was seen.', cost: { chits: 10 }, win: { text: 'The clerk talks · the Net’s edge and the Prefect’s last port', flag: 'news' } },
-      { id: 'take', label: 'Take what he left', tone: 'trade', hint: 'Three parts from the locker. The dock will remember.', win: { text: 'Three parts from his locker · the clerk looks away', parts: 3, standing: { frontier: -1, miners: -1 } } },
+      { id: 'take', label: 'Take what he left', tone: 'trade', hint: 'Three supplies from the locker. The dock will remember.', win: { text: 'Three supplies from his locker · the clerk looks away', supplies: 3, standing: { frontier: -1, miners: -1 } } },
       { id: 'no', label: 'Fly on', tone: 'refuse', hint: 'Not your fight.', win: { text: 'The clerk shutters the window' } },
     ],
   }),
   scene({
     id: 'sc_shortage', kind: 'plea', caller: 'miners', tier: 'important',
     from: 'Settlement steward · a small hold', title: 'Eleven days of food',
-    text: '“Eleven days of food for two hundred people. We have chits and nothing to eat. Three days of yours would carry us.”',
+    text: '“Eleven days of food for two hundred people. We have chits and nothing to eat. Three of your supplies would carry us.”',
     cargo: 'A settlement · lamps on, hatches closed',
     choices: [
       { id: 'bring', label: 'Bring them food', tone: 'help', hint: 'Fly to the settlement with three food. They remember who came.', win: { text: 'You turn for the settlement' } },
-      { id: 'sell', label: 'Sell it dear', tone: 'trade', hint: 'Three food for forty-five chits. They will not forget the price.', cost: { food: 3 }, win: { text: 'Forty-five chits, and a cold hatch', chits: 45, standing: { miners: -1, frontier: -1 }, flag: 'gouged' } },
+      { id: 'sell', label: 'Sell it dear', tone: 'trade', hint: 'Three supplies for forty-five chits. They will not forget the price.', cost: { supplies: 3 }, win: { text: 'Forty-five chits, and a cold hatch', chits: 45, standing: { miners: -1, frontier: -1 }, flag: 'gouged' } },
       { id: 'no', label: 'Move on', tone: 'refuse', hint: 'You need your own stores.', win: { text: 'The steward closes the channel' } },
     ],
   }),
@@ -79,7 +78,7 @@ export const SCENE_CARDS: CardDef[] = [
     text: '“The Gutter crew says they cut her first. The tug says it is their claim. Neither will give way. She is worth a refit.”',
     cargo: 'A big wreck · two crews at the cut',
     choices: [
-      { id: 'cut', label: 'Strip it while they argue', tone: 'fight', hint: 'Parts and Krail off the wreck. Both crews will mind.', win: { text: 'You slip in while they shout', heat: 0.05 } },
+      { id: 'cut', label: 'Strip it while they argue', tone: 'fight', hint: 'Supplies and chits off the wreck. Both crews will mind.', win: { text: 'You slip in while they shout', heat: 0.05 } },
       { id: 'guns', label: 'Break it up', tone: 'fight', hint: 'A burst across both bows. They scatter, and remember.', win: { text: 'Both crews scatter', spawn: [{ variant: 'scout', n: 2, from: 'around' }], standing: { gutter: -1 } } },
       { id: 'no', label: 'Leave them to it', tone: 'refuse', hint: 'Not your wreck.', win: { text: 'The crews go back to shouting' } },
     ],
@@ -108,12 +107,12 @@ export const SCENE_CARDS: CardDef[] = [
   }),
   scene({
     id: 'sc_resistance', kind: 'plea', caller: 'frontier', tier: 'important',
-    from: 'A cell that has not been counted', title: 'The dish needs parts',
-    text: '“A dark relay, a hold full of people the Net has not counted. Four parts for the dish and it goes round us.”',
+    from: 'A cell that has not been counted', title: 'The dish needs supplies',
+    text: '“A dark relay, a hold full of people the Net has not counted. Four supplies for the dish and it goes round us.”',
     cargo: 'A hidden hold · lamps off',
     choices: [
-      { id: 'supply', label: 'Bring them parts', tone: 'help', hint: 'Four parts, delivered. The Net slows round here.', win: { text: 'You turn for the cell' } },
-      { id: 'no', label: 'Keep your parts', tone: 'refuse', hint: 'You need them yourself.', win: { text: 'The channel goes dark' } },
+      { id: 'supply', label: 'Bring them supplies', tone: 'help', hint: 'Four supplies, delivered. The Net slows round here.', win: { text: 'You turn for the cell' } },
+      { id: 'no', label: 'Keep your supplies', tone: 'refuse', hint: 'You need them yourself.', win: { text: 'The channel goes dark' } },
     ],
   }),
 
@@ -192,8 +191,8 @@ export const SCENE_CARDS: CardDef[] = [
     text: 'A Thren shard, broken open, tumbling slowly. Its edges still glow. It does not move away from you.',
     cargo: 'A Thren shard · open at one end',
     choices: [
-      { id: 'aid', label: 'Patch it with two parts', tone: 'help', hint: 'Parts mend things, even this. It will remember.', cost: { parts: 2 }, win: { text: 'Its glow steadies · it drifts off the way it came', flag: 'thren_aided', notice: { thren: -4 } } },
-      { id: 'cut', label: 'Cut it for Krail', tone: 'fight', hint: 'Twenty-five Krail and three Cyrite. The Thren will remember too.', win: { text: 'You cut it open · Krail and Cyrite spill out', krail: 25, cyrite: 3, notice: { thren: 4 }, flag: 'thren_harmed' } },
+      { id: 'aid', label: 'Patch it with two supplies', tone: 'help', hint: 'Supplies mend things, even this. It will remember.', cost: { supplies: 2 }, win: { text: 'Its glow steadies · it drifts off the way it came', flag: 'thren_aided', notice: { thren: -4 } } },
+      { id: 'cut', label: 'Cut it for chits', tone: 'fight', hint: 'Twenty-five chits and three Cyrite. The Thren will remember too.', win: { text: 'You cut it open · chits and Cyrite spill out', krail: 25, cyrite: 3, notice: { thren: 4 }, flag: 'thren_harmed' } },
       { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'It is not yours.', win: { text: 'It tumbles on' } },
     ],
   }),
@@ -215,7 +214,7 @@ export const SCENE_CARDS: CardDef[] = [
     cargo: 'A foundry hull · arms folded away',
     choices: [
       { id: 'mend', label: 'Let it work', tone: 'help', hint: 'It mends the Wayward. It asks for nothing.', win: { text: 'Plates welded back on, quietly · the machine says nothing', plates: 2, flag: 'voice_mended' } },
-      { id: 'pay', label: 'Leave it chits', tone: 'pay', hint: 'Ten chits. It takes them, and mends the plates and the drive.', cost: { chits: 10 }, win: { text: 'It mends the plates and the drive · the chits vanish', plates: 2, parts: 2, flag: ['voice_mended', 'voice_paid'] } },
+      { id: 'pay', label: 'Leave it chits', tone: 'pay', hint: 'Ten chits. It takes them, and mends the plates and the drive.', cost: { chits: 10 }, win: { text: 'It mends the plates and the drive · the chits vanish', plates: 2, supplies: 2, flag: ['voice_mended', 'voice_paid'] } },
       { id: 'no', label: 'Fly on', tone: 'refuse', hint: 'You do not know what it wants.', win: { text: 'The cradle folds away' } },
     ],
   }),
@@ -234,13 +233,13 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_voice_request', kind: 'job', caller: 'unknown', tier: 'important',
     from: 'The Voice · a relay', title: 'CARRY THIS',
-    text: '“WE CANNOT CARRY IT OURSELVES. THREE PARTS, SEALED. LEAVE THEM AT THE NEXT DOCK. THEY WILL KNOW WHAT TO DO.”',
+    text: '“WE CANNOT CARRY IT OURSELVES. A CASE, SEALED. LEAVE IT AT THE NEXT DOCK. THEY WILL KNOW WHAT TO DO.”',
     cargo: 'No ship · a hatch opens in the relay',
     choices: [
-      { id: 'take', label: 'Carry the parts', tone: 'help', hint: 'Three sealed parts. Do not spend them: they go to the next port.', win: { text: 'A sealed case is aboard', parts: 3, flag: 'voice_carrying',
-        job: { id: 'voice_parts', text: 'Leave the Voice’s sealed parts at the next port', at: 'port', give: { parts: 3 }, pay: { text: 'The dock clerk takes the case without a word · the lamps flicker once', chits: 40, flag: 'voice_delivered', unflag: 'voice_carrying' } } } },
-      { id: 'open', label: 'Open the case first', tone: 'bluff', hint: 'Needs a machine shop. Look before you carry.', needs: { fitted: 'md_shop' }, show: { fitted: 'md_shop' }, win: { text: 'A lane key in a warm case · it closes itself', flag: ['voice_opened', 'voice_asked'], parts: 3,
-        job: { id: 'voice_parts', text: 'Leave the Voice’s sealed parts at the next port', at: 'port', give: { parts: 3 }, pay: { text: 'The dock clerk takes the case without a word · the lamps flicker once', chits: 40, flag: 'voice_delivered', unflag: 'voice_carrying' } } } },
+      { id: 'take', label: 'Carry the case', tone: 'help', hint: 'A sealed case. Do not open it: it goes to the next port.', win: { text: 'A sealed case is aboard', flag: 'voice_carrying',
+        job: { id: 'voice_parts', text: 'Leave the Voice’s sealed case at the next port', at: 'port', pay: { text: 'The dock clerk takes the case without a word · the lamps flicker once', chits: 40, flag: 'voice_delivered', unflag: 'voice_carrying' } } } },
+      { id: 'open', label: 'Open the case first', tone: 'bluff', hint: 'Needs a machine shop. Look before you carry.', needs: { fitted: 'md_shop' }, show: { fitted: 'md_shop' }, win: { text: 'A lane key in a warm case · it closes itself', flag: ['voice_opened', 'voice_asked'],
+        job: { id: 'voice_parts', text: 'Leave the Voice’s sealed case at the next port', at: 'port', pay: { text: 'The dock clerk takes the case without a word · the lamps flicker once', chits: 40, flag: 'voice_delivered', unflag: 'voice_carrying' } } } },
       { id: 'no', label: 'Refuse', tone: 'refuse', hint: 'You do not carry things for machines.', win: { text: 'The hatch closes', flag: 'voice_refused' } },
     ],
   }),
@@ -278,8 +277,8 @@ export const SCENE_CARDS: CardDef[] = [
     text: 'Behind the plating, something no yard built. Cargo-pod sized, and warm. Your Cyrite gauge twitches as you near.',
     cargo: 'A wreck · one hatch peeled back from inside',
     choices: [
-      { id: 'look', label: 'Go in and look', tone: 'help', hint: 'Fly to the wreck and hold beside it. Krail, if it lets you.', win: { text: 'You turn for the wreck' } },
-      { id: 'cut', label: 'Cut it free', tone: 'fight', hint: 'Parts and Krail. It might not like it.', win: { text: 'You cut it loose and it goes dark', parts: 3, krail: 35, notice: { thren: 2 }, flag: 'object_cut' } },
+      { id: 'look', label: 'Go in and look', tone: 'help', hint: 'Fly to the wreck and hold beside it. Chits, if it lets you.', win: { text: 'You turn for the wreck' } },
+      { id: 'cut', label: 'Cut it free', tone: 'fight', hint: 'Supplies and chits. It might not like it.', win: { text: 'You cut it loose and it goes dark', supplies: 3, krail: 35, notice: { thren: 2 }, flag: 'object_cut' } },
       { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Some wrecks are better left.', win: { text: 'The wreck turns slowly behind you' } },
     ],
   }),

@@ -23,15 +23,15 @@ function result(j: Journey, o: Partial<SortieResult> = {}, cards: SortieResult['
   const r = newRun(1);
   r.escaped = (o.ended ?? 'jumped') === 'jumped';
   r.cards = cards;
-  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 30, food: 30, parts: 10 }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
+  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 30, supplies: 30}, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
 }
 const answer = (id: string, choice: string, won = true) => ({ id, choice, won, t: 60 });
 const file = (d: Partial<Dossier> = {}): Dossier => ({ ...newDossier(), ...d });
 
 /** A ctx for odds and conditions, with her file's tricks. */
 const ctx = (wise: Ctx['wise'] = {}, hunch: string[] = []): Ctx => ({
-  t: 100, heat: 0, cyrite: 10, need: 20, tank: 40, ore: 20, holdMax: 40, chits: 50, parts: 10, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
-  standing: {}, place: 'open', hostiles: 0, food: 10, kind: 'transit', netted: false, behind: 1, wise, hunch,
+  t: 100, heat: 0, cyrite: 10, need: 20, tank: 40, chits: 50, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
+  standing: {}, place: 'open', hostiles: 0, supplies: 10, kind: 'transit', netted: false, behind: 1, wise, hunch,
 });
 
 /** A trail through the chart that keeps to one kind of system where it can. */
@@ -82,7 +82,7 @@ describe('Calloway learns your tricks', () => {
     const def = sortieDef(j);
     expect(def.nemesis.wise).toEqual({ decoy: 1, run: 1 });
     const o = openCard(CARD_BY_ID.calloway_here!, ctx(def.nemesis.wise), new Rng(1));
-    expect([o.text, ...o.more].join(' ')).toContain('ore pods');
+    expect([o.text, ...o.more].join(' ')).toContain('stores');
     expect(o.choices.find((c) => c.id === 'decoy')!.odds).toBeCloseTo(oddsFor(CARD_BY_ID.calloway_here!.choices.find((c) => c.id === 'decoy')!.odds!, ctx()) - LEARN, 5);
   });
 
@@ -146,11 +146,11 @@ describe('Calloway makes offers', () => {
   it('chooses from what you told her, who you know, and what you care about', () => {
     expect(offerFor(file({ told: 1 }), { day: 9, behind: 1, caught: 1, flown: 3, flags: ['gutter_friend'] })).toBe('offer_meet');
     const fighter = newDossier();
-    study(fighter, [answer('relay', 'break'), answer('relay', 'break'), answer('food_trader', 'ore')], false, 1);
+    study(fighter, [answer('relay', 'break'), answer('relay', 'break'), answer('food_trader', 'chits')], false, 1);
     expect(care(fighter)).toBe('fight');
     expect(offerFor(fighter, { day: 9, behind: 1, caught: 1, flown: 3, flags: [] })).toBe('offer_truce');
     const trader = newDossier();
-    study(trader, [answer('food_trader', 'ore'), answer('food_trader', 'parts')], false, 1);
+    study(trader, [answer('food_trader', 'chits'), answer('food_trader', 'chits')], false, 1);
     expect(offerFor(trader, { day: 9, behind: 1, caught: 1, flown: 3, flags: [] })).toBe('offer_tank');
   });
 
@@ -180,6 +180,7 @@ describe('Calloway makes offers', () => {
     endSortie(j, result(j));
     j.hunt.caught = 1;
     plot(j, options(j)[0]!.to.id);
+    for (const id of Object.keys(j.chart.net)) j.chart.net[id] = 0;
     const def = sortieDef(j);
     expect(def.nemesis.offer).toBe('offer_home');
     const w = new World(5, { mode: 'breakout', sortie: { ...def, calloway: Infinity, notice: { ...def.notice, captain: null }, story: null }, carry: j.carry });

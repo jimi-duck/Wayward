@@ -308,9 +308,9 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   const bk = w.bk;
   const need = !!bk && w.cyrite < bk.jumpCost;
   const pr = w.prices;
-  const hungry = !!bk && w.food < 9 && w.chits + w.ore * pr.ore >= pr.food * 6;
+  const hungry = !!bk && w.supplies < 9 && w.chits >= pr.supplies * 6;
   const goPort = !!bk && !!bk.port && bk.docks === 0
-    && (w.ore >= w.holdMax * 0.8 || hungry || (w.plates < st.maxPlates && w.parts < PATCH_COST && (w.chits + w.ore * pr.ore) >= pr.plate));
+    && (hungry || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && w.chits >= pr.plate));
   const dest = bk ? (goPort ? bk.port : !need ? bk.lane : null) : null;
   if (bk) {
     const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;
@@ -347,7 +347,6 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
       const d = Math.hypot(r.x - s.x, r.z - s.z);
       const veined = r.kind === 'rich';
       const k = d * (veined ? (need ? 0.25 : 0.6) : r.kind === 'volatile' ? 2 : 1);
-      if (bk && !veined && w.ore >= w.holdMax) continue;
       if (k < best && d < 50) { best = k; td = d; tgt = r; mining = r; }
     }
   }
@@ -527,9 +526,8 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     if (w.phase === 'dock') {
       if (w.bk && w.bk.docks > docks) { docks = w.bk.docks; o.onDock?.(w); }
       // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, then the bay
-      w.sellOre();
       while (w.cyrite < w.jumpCost && w.buy('cyrite'));
-      while (w.food < 12 && w.buy('food'));
+      while (w.supplies < 12 && w.buy('supplies'));
       while (w.plates < w.stats.maxPlates && w.buy('plate'));
       shop(w, strategy, rngPick, o.modules);
       w.undock();

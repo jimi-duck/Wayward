@@ -27,7 +27,7 @@ function result(j: Journey, o: Partial<SortieResult> = {}, c: Partial<Journey['c
 /** A journey out of Cerro, in the first system, with a place there of the given kind and reward. */
 function atPlace(reward: Reward, id: PlaceId = 'convoy'): Journey {
   const j = newJourney(7);
-  endSortie(j, result(j, {}, { cyrite: 20, food: 12, parts: 6 }));
+  endSortie(j, result(j, {}, { cyrite: 20, supplies: 12}));
   j.chart.places[j.at] = { id, reward, seen: true, done: false };
   return j;
 }

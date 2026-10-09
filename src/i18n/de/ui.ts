@@ -525,7 +525,7 @@ export const UI: Record<string, string> = {
   'Tank full': 'Tank voll',
   '{n} short of the jump': '{n} fehlen zum Sprung',
   'Enough to jump': 'Genug zum Springen',
-  'Buy food': 'Essen kaufen',
+  'Buy supplies': 'Vorräte kaufen',
   'Galley full': 'Kombüse voll',
   '{n} in the galley · a day each': '{n} in der Kombüse · je ein Tag',
   'Patch a plate': 'Platte flicken',

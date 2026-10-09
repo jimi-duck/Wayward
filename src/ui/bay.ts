@@ -74,12 +74,17 @@ const textOf = (id: string, lv: number) => t(nodeText(id, lv));
 /** The price of the next level: Krail, and the yard's chits where it charges. */
 function priceWord(w: World, id: string): string {
   const lv = (w.levels[id] ?? 0) + 1, f = fee(id, lv, !w.bk);
-  return `${num(cost(id, lv, !w.bk))} Krail${f ? ` · ${num(f)} ${t('chits')}` : ''}`;
+  // the Story has one purse: the price and the yard's fee are one sum of chits
+  if (w.bk) return `${num(cost(id, lv, false) + f)} ${t('chits')}`;
+  return `${num(cost(id, lv, true))} Krail`;
 }
 
 /** What the Fit button says: the price, how much Krail is missing, or why not. */
 function fitWord(w: World, id: string, why: Block | null): string {
-  if (why === 'krail') return t('{n} more Krail', { n: num(Math.ceil(cost(id, (w.levels[id] ?? 0) + 1, !w.bk) - w.krail)) });
+  if (why === 'krail') {
+    const lv = (w.levels[id] ?? 0) + 1;
+    return t(w.bk ? '{n} more chits' : '{n} more Krail', { n: num(Math.ceil(cost(id, lv, !w.bk) + fee(id, lv, !w.bk) - w.purse)) });
+  }
   return why ? t(WHY[why]) : `${t('Fit')} · ${priceWord(w, id)}`;
 }
 
@@ -287,7 +292,7 @@ export class BayPanel {
   private install(id: string): void {
     const w = this.world;
     if (!w || this.closing) return;
-    const before = budgets(w.levels), krailBefore = Math.floor(w.krail);
+    const before = budgets(w.levels), krailBefore = Math.floor(w.purse);
     let fitted = false;
     if (w.install(id) === null) {
       const after = budgets(w.levels), moved = new Set<string>(['krail']);
@@ -305,7 +310,7 @@ export class BayPanel {
     // the Arcade's cards stay as they are (the next three are not the point of this moment): the chosen one confirms, the rest step back
     if (fitted && isArcade(w) && this.view === 'picks') this.confirm(w, id);
     else this.render();
-    if (fitted) { this.installFx(id, krailBefore, Math.floor(w.krail)); this.answer(id); }
+    if (fitted) { this.installFx(id, krailBefore, Math.floor(w.purse)); this.answer(id); }
     this.fresh = null;
   }
 
@@ -316,7 +321,7 @@ export class BayPanel {
   private confirm(w: World, id: string): void {
     this.closing = true;
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, bay = $('bay');
-    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.krail))), h('span', '', 'Krail'));
+    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.purse))), h('span', '', t(w.bk ? 'Chits' : 'Krail')));
     this.budgetBar(w);
     this.papers(w);
     [...$('bay-web').querySelectorAll('.pick-card')].forEach((c, k) => {
@@ -409,7 +414,7 @@ export class BayPanel {
     const o = opsOf(w);
     $('bay-ops').className = `ops ${o}`;
     $('bay-ops').textContent = opsText(o);
-    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.krail))), h('span', '', 'Krail'));
+    $('bay-krail').replaceChildren(icon('i-rock'), h('b', '', num(Math.floor(w.purse))), h('span', '', t(w.bk ? 'Chits' : 'Krail')));
     this.papers(w);
     $('bay').classList.toggle('picks', this.view === 'picks');
     $('bay').classList.toggle('arcade', isArcade(w));

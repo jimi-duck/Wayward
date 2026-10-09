@@ -22,7 +22,7 @@ export interface Effects {
   /** Multiplier on how fast heat climbs. */
   heat: number;
   sensors: number;
-  /** Multiplier on what a port charges (not on what it pays for ore). */
+  /** Multiplier on what a port charges . */
   price: number;
   dockCool: number;
   /** Marks of false echo left behind each jump. */
@@ -78,7 +78,7 @@ export function discounted(p: Prices, levels: Levels): Prices {
   const f = effects(levels).price;
   if (f === 1) return p;
   const off = (v: number) => Math.max(1, Math.round(v * f));
-  return { ore: p.ore, cyrite: off(p.cyrite), food: off(p.food), plate: off(p.plate) };
+  return { cyrite: off(p.cyrite), supplies: off(p.supplies), plate: off(p.plate) };
 }
 
 /** Marks fitted in each system. */

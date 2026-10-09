@@ -58,11 +58,10 @@ export const PORT_OFF = 260;
 export const LANE_R = 16;
 export const PORT_R = 9;
 
-/** Cyrite it takes to jump, what the tank holds at the start, and the hold's capacity. */
+/** Cyrite it takes to jump, and what the tank holds at the start. */
 export const JUMP_COST = 20;
 export const START_CYRITE = 6;
 export const TANK_MAX = 40;
-export const HOLD_START = 40;
 /** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
 export const SPOOL_RUN = 2.2;
@@ -70,16 +69,16 @@ export const SPOOL_RUN = 2.2;
 export const BLOCKADE_AT = 420;
 /** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
 export const BLOCKADE_HP = 3;
-/** Cyrite and parts a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
+/** Cyrite and supplies a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
 export const CAPITAL_CYRITE = 6;
 /** Krail in the Story mode, for the refit bay: a share of a wreck's worth, a share of what rock gives in the arcade (a cut gives it surely, a break by chance), and a capital ship's salvage. */
 export const WRECK_KRAIL = 0.6;
 export const ROCK_KRAIL = 0.6;
 export const CAPITAL_KRAIL = 40;
-export const CAPITAL_PARTS = 18;
+export const CAPITAL_SUPPLIES = 6;
 
-/** Parts to patch a plate, the quiet it needs, and how long the patch takes. */
-export const PATCH_COST = 6;
+/** Supplies to patch a plate, the quiet it needs, and how long the patch takes. */
+export const PATCH_COST = 3;
 export const PATCH_QUIET = 6;
 export const PATCH_TIME = 4;
 
@@ -184,12 +183,10 @@ export const HOME: SortieDef = {
 export interface Carry {
   /** Cyrite in the tank: fuel for the jumps. */
   cyrite: number;
-  /** Krail aboard: what the refit bay builds from. */
-  krail: number;
-  ore: number;
-  parts: number;
+  /** Chits aboard: the Story's one purse, for the bay, the ports and favours. */
   chits: number;
-  food: number;
+  /** Supplies aboard: the galley and the spares in one. A lane's days and the drive's wear draw on it, and so does patching a plate. */
+  supplies: number;
   /** Plates whole (never more than the build allows). */
   plates: number;
   levels: Levels;
@@ -230,9 +227,11 @@ export interface SortieResult {
   situation?: { id: string; result: 'won' | 'lost' | 'declined' | 'ignored' } | null;
 }
 
-/** Food, in days for the one aboard: what the galley holds at most, and at the start. */
-export const FOOD_MAX = 10;
-export const FOOD_START = 4;
+/** Supplies: what the ship holds at most, and at the start. */
+export const SUPPLIES_MAX = 16;
+export const SUPPLIES_START = 8;
+/** At or under this many, the HUD and the ports say supplies are low. */
+export const LOW_SUPPLIES = 4;
 
 /** The pursuers, by the heat they need. Gutter crews work the belt ahead and do not care who you are. */
 const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [

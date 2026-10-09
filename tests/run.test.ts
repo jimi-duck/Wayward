@@ -214,7 +214,7 @@ describe('krail and the refit bay', () => {
     expect(w.stats.shieldMax).toBe(1);
   });
 
-  it('the Story mode builds in the bay too: stock fit, Krail from rock, the bay opens when clear and while docked', () => {
+  it('the Story mode builds in the bay too: stock fit, chits from rock, the bay opens when clear and while docked', () => {
     const w = new World(1, { mode: 'breakout' });
     w.field.rocks = [];
     w.field.step = () => {};
@@ -225,7 +225,7 @@ describe('krail and the refit bay', () => {
     expect(w.levels).toEqual({ tp_bay: 1 });
     w.dropCrystals(w.ship.x, w.ship.z, 50, 0);
     for (let i = 0; i < 90; i++) w.step(STEP, input());
-    expect(w.krail).toBeGreaterThanOrEqual(50);
+    expect(w.chits).toBeGreaterThanOrEqual(50);
     expect(w.phase).toBe('play');
     expect(w.openBay()).toBe(true);
     expect(w.install('ph_emitters')).toBeNull();

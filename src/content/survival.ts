@@ -99,13 +99,13 @@ export interface Survival {
   voyage: {
     /** Multiplier on the Cyrite a lane costs. */
     jump: number;
-    /** What the Wayward starts a journey with, and parts the drive wears a jump. */
-    start: { cyrite: number; food: number; parts: number };
+    /** What the Wayward starts a journey with, and the supplies the drive wears through a jump (on top of the lane's days). */
+    start: { cyrite: number; supplies: number };
     wear: number;
-    /** Wrecks in one region that end it (the last is a total loss: the region is flown again from its gate), and the share of Cyrite, parts and chits it keeps when it is adrift. */
+    /** Wrecks in one region that end it (the last is a total loss: the region is flown again from its gate), and the share of Cyrite, supplies and chits it keeps when it is adrift. */
     wrecks: number;
     kept: number;
-    /** Multiplier on what the port pays for ore. */
+    /** Multiplier on what scrap pays when it is picked up. */
     ore: number;
     /** The Net's spread, and the share of breathers (quiet systems) the chart lays. */
     net: number;
@@ -134,7 +134,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     },
     events: { weights: { rich_field: 1.5, distress: 1.3, convoy: 0.6, ion_storm: 0.5, nebula: 0.6, derelict: 1, anomaly: 0.5, skirmish: 0 }, gap: 1.25 },
     ship: { plates: 1, recharge: 0.75, grace: 1.3 },
-    voyage: { jump: 0.8, start: { cyrite: 10, food: 5, parts: 6 }, wear: 1, wrecks: 4, kept: 0.75, ore: 1, net: 0.85, breathers: 1.5 },
+    voyage: { jump: 0.8, start: { cyrite: 10, supplies: 11 }, wear: 1, wrecks: 4, kept: 0.75, ore: 1, net: 0.85, breathers: 1.5 },
   },
   prospector: {
     id: 'prospector',
@@ -154,7 +154,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     },
     events: { weights: { rich_field: 1, distress: 1, convoy: 1, ion_storm: 1, nebula: 1, derelict: 1, anomaly: 1, skirmish: 0 }, gap: 1 },
     ship: { plates: 0, recharge: 1, grace: 1 },
-    voyage: { jump: 1, start: { cyrite: 6, food: 4, parts: 4 }, wear: 2, wrecks: 3, kept: 0.5, ore: 1, net: 1, breathers: 1 },
+    voyage: { jump: 1, start: { cyrite: 6, supplies: 8 }, wear: 2, wrecks: 3, kept: 0.5, ore: 1, net: 1, breathers: 1 },
   },
   raider: {
     id: 'raider',
@@ -179,7 +179,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     },
     events: { weights: { rich_field: 0.4, distress: 0.8, convoy: 1.8, ion_storm: 1, nebula: 1, derelict: 1.5, anomaly: 1, skirmish: 2.2 }, gap: 0.8 },
     ship: { plates: 0, recharge: 1, grace: 1 },
-    voyage: { jump: 1, start: { cyrite: 6, food: 4, parts: 4 }, wear: 2, wrecks: 3, kept: 0.5, ore: 1.6, net: 1, breathers: 0.5 },
+    voyage: { jump: 1, start: { cyrite: 6, supplies: 8 }, wear: 2, wrecks: 3, kept: 0.5, ore: 1.6, net: 1, breathers: 0.5 },
   },
 };
 
