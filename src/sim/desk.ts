@@ -17,13 +17,13 @@ import type { Rng } from './rng';
 //   ambient    one line on the radio, no answer. Never stops anything; held
 //              only in a fight or on a jump or a dock.
 //
-// What a player is doing (`Busy`): fighting, cutting rock, flying tight
+// What a player is doing (`Busy`): fighting, mining rock, flying tight
 // through rock, jumping or docking, or free. Only a free sky hears a card.
 // New cards do not come on a timer: they come on an opportunity, a fight won,
 // a hold filling up, or a long quiet, and at most a few a sortie. The same
 // rules run in the pilot and the tests, because the desk is plain data.
 
-export type Busy = 'free' | 'cutting' | 'tight' | 'fight' | 'transit';
+export type Busy = 'free' | 'mining' | 'tight' | 'fight' | 'transit';
 
 /** The hush of a journey that has not spoken yet: a long quiet, in seconds. */
 export const HUSH = 600;
@@ -36,8 +36,8 @@ export const DESK = {
   arrive: 20,
   /** Seconds of clear sky after the last hostile before a card opens, major/important and routine. */
   settle: { major: 4, important: 6, routine: 12, ambient: 0 } as Record<Weight, number>,
-  /** Seconds after the beam stops before a card opens. */
-  cutSettle: 3,
+  /** Seconds after the lasers stop before a card opens. */
+  mineSettle: 3,
   /** Seconds since the last card closed before this weight may open. */
   gap: { major: 180, important: 150, routine: 220, ambient: 0 } as Record<Weight, number>,
   /** Seconds a call stays up unanswered, then lapses. */
@@ -72,7 +72,7 @@ export class Desk {
   /** Clock of the last card closed or opened. */
   lastClose: number;
   lastThreat = -Infinity;
-  lastCut = -Infinity;
+  lastMine = -Infinity;
   lastPing = -Infinity;
   nextPing: number;
   pings = 0;
@@ -101,7 +101,7 @@ export class Desk {
   /** What is the player doing. Call every step. */
   watch(busy: Busy, now: number): void {
     if (busy === 'fight') this.lastThreat = now;
-    if (busy === 'cutting') this.lastCut = now;
+    if (busy === 'mining') this.lastMine = now;
   }
 
   /** The moment something happened that is worth a word. */
@@ -115,7 +115,7 @@ export class Desk {
     if (busy === 'transit' || busy === 'fight') return false;
     if (tier === 'ambient') return true;
     if (busy !== 'free' || (tier !== 'major' && now - this.arrived < DESK.arrive)) return false;
-    if (now - this.lastThreat < DESK.settle[tier] || now - this.lastCut < DESK.cutSettle) return false;
+    if (now - this.lastThreat < DESK.settle[tier] || now - this.lastMine < DESK.mineSettle) return false;
     return now - this.lastClose >= DESK.gap[tier];
   }
 

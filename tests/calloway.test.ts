@@ -16,7 +16,7 @@ import { newRun } from '../src/sim/run';
 import { World } from '../src/sim/world';
 import { migrate } from '../src/meta/save';
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) { w.ship.invuln = 1; w.step(STEP, input()); } };
 
 function result(j: Journey, o: Partial<SortieResult> = {}, cards: SortieResult['run']['cards'] = []): SortieResult {

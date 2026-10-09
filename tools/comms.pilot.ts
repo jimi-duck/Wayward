@@ -36,7 +36,7 @@ function fly(seed: number): { tx: Tx[]; total: number; legs: number } {
         const ev = e as { type: string; id?: string; tier?: string };
         if (ev.type !== 'comms' && ev.type !== 'call' && ev.type !== 'ping') continue;
         const near = w.aliens.filter((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < 70).length;
-        const busy = w.command.state === 'fight' || near > 0 ? 'fight' : w.cutting ? 'cut' : 'free';
+        const busy = w.command.state === 'fight' || near > 0 ? 'fight' : w.mineT > 0 ? 'cut' : 'free';
         const tier = ev.tier ?? (ev.type === 'comms' ? 'major' : ev.type);
         tx.push({ t: base + w.runTime, id: ev.id ?? '', tier, busy, stopped: ev.type === 'comms' });
       }

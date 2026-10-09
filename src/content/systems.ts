@@ -56,7 +56,7 @@ export const SYSTEMS: Record<SystemKind, SystemTemplate> = {
     cyrite: [0.4, 0.4], food: [0, 0], port: 1, lane: [2600, 2600], rich: 0.09, density: 1, gutter: 0.22, heat: 0.1, heatRate: 1, calls: 1, pace: { first: 45, calm: 0 },
   },
   mining: {
-    kind: 'mining', blurb: 'Veined rock and a few claim crews. Cyrite if you will cut for it.', holders: ['kellern', 'guild', 'none'],
+    kind: 'mining', blurb: 'Veined rock and a few claim crews. Cyrite if you will mine for it.', holders: ['kellern', 'guild', 'none'],
     cyrite: [0.6, 1], food: [0, 0.3], port: 0.4, lane: [2200, 2700], rich: 0.16, density: 1.15, gutter: 0.3, heat: 0.05, heatRate: 0.85, calls: 1.2, pace: { first: 75, calm: 18 },
   },
   port: {

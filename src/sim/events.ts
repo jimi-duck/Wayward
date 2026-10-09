@@ -11,7 +11,7 @@ export type GameEvent =
   | { type: 'bolt'; x: number; z: number; heading: number }
   | { type: 'torpedo'; x: number; z: number; heading: number; target: number | null }
   | { type: 'rockHit'; x: number; y: number; z: number; id: number }
-  | { type: 'rockDestroyed'; x: number; z: number; size: number; points: number; kind: string }
+  | { type: 'rockDestroyed'; x: number; z: number; size: number; points: number; kind: string; left?: number }
   | { type: 'bulwarkHit'; x: number; y: number; z: number }
   | { type: 'bulwarkBroken'; x: number; z: number; r: number; points: number }
   | { type: 'blast'; x: number; y: number; z: number; radius: number; kind: BlastKind }
@@ -68,8 +68,7 @@ export type GameEvent =
   | { type: 'ore'; x: number; z: number; value: number }
   | { type: 'parts'; x: number; z: number; value: number }
   | { type: 'holdFull' }
-  | { type: 'rockCut'; x: number; z: number; size: number; kind: string; ore: number; cyrite: number; points: number }
-  | { type: 'fracture'; x: number; z: number; kind: string }
+  | { type: 'rockMined'; x: number; z: number; size: number; kind: string; ore: number; cyrite: number; points: number }
   | { type: 'patched'; plates: number }
   | { type: 'docked'; name: string }
   | { type: 'spool' }

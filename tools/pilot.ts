@@ -9,7 +9,6 @@ import { BASE } from '../src/sim/stats';
 import { SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 import { PATCH_COST } from '../src/sim/breakout';
-import { CUT_RANGE } from '../src/sim/mining';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
@@ -117,7 +116,7 @@ export function pickAnswer(w: World, policy: Policy): string {
   return o.choices.find((ch) => ch.ok)!.id;
 }
 
-const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
+const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 
 export function stratName(s: Strategy): string {
   return s.kind === 'random' ? 'random' : `${s.branch}${s.second ? `+${s.second}` : ''}`;
@@ -202,7 +201,7 @@ function ramNow(w: World): number {
 const REACT = 0.2;
 
 /** What the pilot remembers between steps: when each shot was first seen, and the current plan. */
-interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null; cutting?: boolean; }
+interface Memo { seen: Map<number, number>; plan: { heading: number; thrust: number; until: number } | null }
 
 const PLAN_DT = 0.1, PLAN_STEPS = 12, PLAN_EVERY = 5;
 const OFFSETS = [0, 0.4, -0.4, 0.8, -0.8, 1.25, -1.25, 1.7, -1.7, 2.3, -2.3, Math.PI];
@@ -470,12 +469,8 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   };
   f.fire = targets.ships.some((a) => inFront(a.x, a.z, a.r, reach)) || (!!targets.boss && inFront(targets.boss.x, targets.boss.z, targets.boss.r, reach))
     || w.field.rocks.some((r) => inFront(r.x, r.z, r.r, bk ? 9 : reach * 0.7));
-  // the cutter: on the rock it is mining once in reach, pulsed under the line
-  if (bk && mining && Math.hypot(mining.x - s.x, mining.z - s.z) - mining.r < CUT_RANGE - 2) {
-    const heat = mining.heat ?? 0;
-    memo.cutting = memo.cutting ? heat < 0.86 : heat < 0.45;
-    if (memo.cutting && inFront(mining.x, mining.z, mining.r, CUT_RANGE + mining.r)) { f.cut = true; f.fire = false; }
-  } else memo.cutting = false;
+  // the lasers mine: fire on the rock it is working once in reach
+  if (bk && mining && inFront(mining.x, mining.z, mining.r, reach * 0.8)) f.fire = true;
   if (w.arms.bank < st.bankShot * 2 && !f.fire) f.fire = false;
   // torpedoes at hulls, or rock when the rack is full
   if (st.torpedoes && w.lock !== null) {

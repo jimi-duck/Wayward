@@ -36,8 +36,6 @@ export interface TouchElements {
   fire: HTMLElement;
   /** A torpedo per tap. */
   torpedo: HTMLElement;
-  /** The cutter, held. */
-  cut: HTMLElement;
   /** Break and reverse, a tap. */
   brk: HTMLElement;
 }
@@ -66,7 +64,7 @@ export function flickedDown(dx: number, dy: number): boolean {
   return dy >= FLICK && dy > Math.abs(dx) * 1.2;
 }
 
-type Role = 'stick' | 'fire' | 'torpedo' | 'roll' | 'cut' | 'brk';
+type Role = 'stick' | 'fire' | 'torpedo' | 'roll' | 'brk';
 
 export class TouchStick {
   /** The helm, -1 to 1, and the throttle, 0 to 1, from the stick. */
@@ -74,8 +72,6 @@ export class TouchStick {
   thrust = 0;
   /** The trigger is held. */
   firing = false;
-  /** The cutter is held. */
-  cutting = false;
 
   private readonly roles = new Map<number, Role>();
   /** Second fingers on the stick's side: where each landed, and whether it has already broken. */
@@ -108,9 +104,7 @@ export class TouchStick {
     this.seconds.clear();
     this.releaseStick();
     this.firing = false;
-    this.cutting = false;
     this.el.fire.classList.remove('on');
-    this.el.cut.classList.remove('on');
   }
 
   private down = (e: PointerEvent): void => {
@@ -125,7 +119,6 @@ export class TouchStick {
       case 'roll': this.seconds.set(e.pointerId, { x: e.clientX, y: e.clientY, done: false }); break;
       case 'fire': this.firing = true; this.el.fire.classList.add('on'); break;
       case 'torpedo': this.onPress('torpedo'); this.blink(this.el.torpedo); break;
-      case 'cut': this.cutting = true; this.el.cut.classList.add('on'); break;
       case 'brk': this.onPress('brk'); this.blink(this.el.brk); break;
     }
   };
@@ -150,10 +143,6 @@ export class TouchStick {
     this.seconds.delete(e.pointerId);
     if (second && !second.done && e.type === 'pointerup') this.onPress('roll');
     if (role === 'stick') this.releaseStick();
-    if (role === 'cut' && ![...this.roles.values()].includes('cut')) {
-      this.cutting = false;
-      this.el.cut.classList.remove('on');
-    }
     if (role === 'fire' && ![...this.roles.values()].includes('fire')) {
       this.firing = false;
       this.el.fire.classList.remove('on');
@@ -165,7 +154,7 @@ export class TouchStick {
     if (x < window.innerWidth / 2) return this.stickId === null ? 'stick' : 'roll';
     if (inside(this.el.fire, x, y, 0)) return 'fire';
     let best: Role = 'fire', bestD = SLACK;
-    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.cut, 'cut'], [this.el.brk, 'brk']] as const) {
+    for (const [node, role] of [[this.el.torpedo, 'torpedo'], [this.el.brk, 'brk']] as const) {
       const d = edgeDistance(node, x, y);
       if (d < bestD) { bestD = d; best = role; }
     }

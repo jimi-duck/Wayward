@@ -29,8 +29,6 @@ export interface InputFrame {
   aim: Aim | null;
   /** Laser trigger held (button 1). */
   fire: boolean;
-  /** Cutter held (button 3): the mining laser. */
-  cut: boolean;
   /** Torpedo pressed since the last step (button 2). */
   torpedo: boolean;
   roll: boolean;

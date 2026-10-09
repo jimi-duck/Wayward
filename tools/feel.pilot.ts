@@ -17,7 +17,7 @@ import { fly, type Strategy } from './pilot';
 const RUNS = Number(process.env.PILOT_RUNS ?? 8);
 const MAX = Number(process.env.PILOT_TIME ?? 360);
 
-const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false, cut: false };
+const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false };
 const f1 = (n: number) => n.toFixed(1), f2 = (n: number) => n.toFixed(2);
 const mean = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
 const median = (a: number[]) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)]! : 0; };
