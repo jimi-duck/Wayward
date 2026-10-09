@@ -13,7 +13,7 @@ import type { Prices } from '../content/systems';
 export const SUPPLIES_TARGET = 10;
 
 /** What the plan reads of the ship and the port. */
-export interface StopView { chits: number; prices: Prices; cyrite: number; jumpCost: number; supplies: number; plates: number; maxPlates: number; supplyMax?: number }
+export interface StopView { chits: number; prices: Prices; cyrite: number; jumpCost: number; supplies: number; plates: number; maxPlates: number; supplyMax?: number; /** What the Cyrite the jump needs costs, as a multiple of the price (a work bay charges more when you are stuck). */ rush?: number }
 
 /** What the stop would do: how many of each bought, and what it costs in chits (a negative `chits`). */
 export interface Stop { cyrite: number; supplies: number; plate: number; chits: number }
@@ -21,13 +21,14 @@ export interface Stop { cyrite: number; supplies: number; plate: number; chits: 
 export function planStop(v: StopView): Stop {
   let chits = v.chits;
   const out: Stop = { cyrite: 0, supplies: 0, plate: 0, chits: 0 };
-  const buy = (item: 'cyrite' | 'supplies' | 'plate', have: number, want: number) => {
-    const n = Math.max(0, Math.min(want - have, Math.floor(chits / v.prices[item])));
+  const buy = (item: 'cyrite' | 'supplies' | 'plate', have: number, want: number, mult = 1) => {
+    const price = Math.ceil(v.prices[item] * mult);
+    const n = Math.max(0, Math.min(want - have, Math.floor(chits / price)));
     out[item] += n;
-    chits -= n * v.prices[item];
-    out.chits -= n * v.prices[item];
+    chits -= n * price;
+    out.chits -= n * price;
   };
-  buy('cyrite', v.cyrite, Math.min(TANK_MAX, v.jumpCost));
+  buy('cyrite', v.cyrite, Math.min(TANK_MAX, v.jumpCost), v.rush ?? 1);
   buy('supplies', v.supplies, Math.min(v.supplyMax ?? SUPPLIES_MAX, SUPPLIES_TARGET));
   buy('plate', v.plates, v.maxPlates);
   buy('cyrite', v.cyrite + out.cyrite, Math.min(TANK_MAX, v.jumpCost * 2));

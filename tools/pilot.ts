@@ -316,7 +316,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   const pr = w.prices;
   const hungry = !!bk && w.supplies < 9 && w.chits >= pr.supplies * 6;
   const goPort = !!bk && !!bk.port && bk.docks === 0
-    && (hungry || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && w.chits >= pr.plate));
+    && (hungry || w.chits >= 120 || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && w.chits >= pr.plate));
   const dest = bk ? (goPort ? bk.port : !need ? bk.lane : null) : null;
   if (bk) {
     const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;
@@ -534,6 +534,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
       // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, then the bay
       while (w.cyrite < w.jumpCost && w.buy('cyrite'));
       while (w.supplies < 12 && w.buy('supplies'));
+      w.sellCyrite();
       while (w.plates < w.stats.maxPlates && w.buy('plate'));
       shop(w, strategy, rngPick, o.modules);
       w.undock();

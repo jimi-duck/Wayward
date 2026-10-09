@@ -66,8 +66,10 @@ describe('the ship’s systems', () => {
     expect(blockOf('hl_frame', story())).toBe('yard');
     expect(blockOf('hl_frame', { ...story(), arcade: true })).toBeNull();
     expect(fee('hl_frame', 1, true)).toBe(0);
-    expect(blockOf('rx_core', story({ levels: { ...stockLevels(), rx_core: 1 } }))).toBeNull();
-    expect(blockOf('rx_core', story({ levels: { ...stockLevels(), rx_core: 2 } }))).toBe('yard');
+    // every Story install is work-bay work: at sea nothing fits, docked the core's early levels do
+    expect(blockOf('rx_core', story({ levels: { ...stockLevels(), rx_core: 1 } }))).toBe('yard');
+    expect(blockOf('rx_core', story({ docked: true, levels: { ...stockLevels(), rx_core: 1 } }))).toBeNull();
+    expect(fee('rx_core', 1, false)).toBe(0);
   });
 
   it('changes the stat block, the hold, the heat, the prices and what the comms open', () => {
@@ -125,9 +127,9 @@ describe('the yard', () => {
     w.undock();
     w.chits = 500;
     w.aliens = [];
-    expect(w.openBay()).toBe(true);
-    expect(w.install('md_plate')).toBe('yard');
-    w.closeBay();
+    // at sea the Story bay stays shut: upgrades are a work bay's job
+    expect(w.bayClosed()).toBe('away');
+    expect(w.openBay()).toBe(false);
     expect(w.carry().levels).toMatchObject({ md_racks: 1, md_spoofer: 1 });
   });
 

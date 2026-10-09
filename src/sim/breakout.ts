@@ -21,9 +21,10 @@ import type { Rng } from './rng';
 //                    drive spools, and you are gone. A Custody capital ship
 //                    blockades it, and her checkpoint is a comms card: run
 //                    it, spoof it, pay it, talk through it, or fight her.
-//   the port       · a fuel dock off the direct line, roughly halfway, that
-//                    does not check implants. Dock to sell ore, buy Cyrite,
-//                    patch the hull and pay for a refit. Docking quiets the
+//   the port       · a work bay off the direct line, a little under halfway,
+//                    that does not check implants. Dock to sell spare Cyrite,
+//                    buy supplies and Cyrite (dear when you are short), patch
+//                    the hull and fit upgrades: the refit bay only opens here. Docking quiets the
 //                    pursuit a little, once.
 //   heat           · how hard the Custody is looking for you, 0 to 1. It
 //                    climbs with time, with every kill and with the noise of
@@ -53,10 +54,10 @@ export interface Waypoint {
 /** Straight-line distance from the start to the lane mouth: about a minute flat out. */
 export const LANE_DIST = 2600;
 /** The port: this far along the line, this far off it. */
-export const PORT_ALONG = 1250;
-export const PORT_OFF = 260;
+export const PORT_ALONG = 1000;
+export const PORT_OFF = 200;
 export const LANE_R = 16;
-export const PORT_R = 9;
+export const PORT_R = 14;
 
 /** Cyrite it takes to jump, and what the tank holds at the start. */
 export const JUMP_COST = 20;
@@ -84,6 +85,12 @@ export const PATCH_TIME = 4;
 
 /** Seconds docking takes once slow inside the port's ring. */
 export const DOCK_TIME = 1;
+/** The share of top speed under which the clamps take you inside the ring. */
+export const DOCK_SPEED = 0.5;
+/** Chits a lump of spare Cyrite fetches at a work bay (the bay buys it for less than it sells it). */
+export const CYRITE_SELL = 3;
+/** Cyrite bought while the tank is short of the jump costs this many times the price: the bay knows you are stuck. */
+export const CYRITE_RUSH = 2;
 /** Docking quiets the pursuit by this much, once per port. */
 export const DOCK_COOL = 0.2;
 

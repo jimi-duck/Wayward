@@ -14,7 +14,7 @@ import { STORY_AT } from '../content/story';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
-  rockYield, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
+  rockYield, DOCK_SPEED, CYRITE_SELL, CYRITE_RUSH, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
@@ -695,7 +695,7 @@ export class World implements EncounterHost {
     const speed = Math.hypot(s.vx, s.vz) / topSpeed(this.hull);
     // the port: slow inside its ring, and the clamps take you
     const dp = b.port ? Math.hypot(s.x - b.port.x, s.z - b.port.z) : Infinity;
-    if (b.port && dp < b.port.r && speed < 0.35 && this.command.state !== 'fight' && this.phase === 'play') {
+    if (b.port && dp < b.port.r && speed < DOCK_SPEED && this.command.state !== 'fight' && this.phase === 'play') {
       if ((b.dockT += dt) >= DOCK_TIME) this.dock();
     } else b.dockT = Math.max(0, b.dockT - dt * 2);
 
@@ -888,10 +888,32 @@ export class World implements EncounterHost {
     return Math.max(1, PATCH_COST - this.fx.patch);
   }
 
+  /** What a unit of Cyrite costs here: the work bay's price, doubled while the tank is short of the jump. */
+  get cyritePrice(): number {
+    const p = this.prices.cyrite;
+    return this.bk && this.cyrite < this.jumpCost ? Math.ceil(p * CYRITE_RUSH) : p;
+  }
+
+  /** Cyrite aboard beyond what the jump takes: what the bay will buy. */
+  get spareCyrite(): number {
+    return Math.max(0, this.cyrite - this.jumpCost);
+  }
+
+  /** At the work bay: sell spare Cyrite (all of it, or `n`) for chits. Returns the chits paid. */
+  sellCyrite(n = Infinity): number {
+    if (this.phase !== 'dock' || !this.bk) return 0;
+    const k = Math.min(Math.floor(n), this.spareCyrite);
+    if (k <= 0) return 0;
+    const got = k * CYRITE_SELL;
+    this.cyrite -= k;
+    this.chits += got;
+    return got;
+  }
+
   /** Whether a thing can be had at the port now. */
   canBuy(item: PortItem): boolean {
     if (this.phase !== 'dock') return false;
-    if (this.chits < this.prices[item]) return false;
+    if (this.chits < (item === 'cyrite' ? this.cyritePrice : this.prices[item])) return false;
     if (item === 'cyrite') return this.cyrite < TANK_MAX;
     if (item === 'plate') return this.plates < this.stats.maxPlates;
     if (item === 'supplies') return this.supplies < this.supplyMax;
@@ -902,7 +924,7 @@ export class World implements EncounterHost {
   buy(item: PortItem): boolean {
     useIds(this.ids);
     if (!this.canBuy(item)) return false;
-    this.chits -= this.prices[item];
+    this.chits -= item === 'cyrite' ? this.cyritePrice : this.prices[item];
     if (item === 'cyrite') this.cyrite++;
     else if (item === 'supplies') this.supplies++;
     else this.repair(1);
@@ -911,7 +933,7 @@ export class World implements EncounterHost {
 
   /** What the port would do for a sensible stop now (sim/stop.ts). */
   planStop(): Stop {
-    return planStop({ supplyMax: this.supplyMax, chits: this.chits, prices: this.prices, cyrite: this.cyrite, jumpCost: this.jumpCost, supplies: this.supplies, plates: this.plates, maxPlates: this.stats.maxPlates });
+    return planStop({ rush: this.bk ? CYRITE_RUSH : 1, supplyMax: this.supplyMax, chits: this.chits, prices: this.prices, cyrite: this.cyrite, jumpCost: this.jumpCost, supplies: this.supplies, plates: this.plates, maxPlates: this.stats.maxPlates });
   }
 
   /** At the port: the sensible stop. Returns what it did. */
@@ -1069,10 +1091,11 @@ export class World implements EncounterHost {
    * the alert clear, or docked at a port. The HUD shows the alert, so it
    * always says whether the bay will open: yellow and red keep it shut.
    */
-  bayClosed(): 'busy' | 'yellow' | 'red' | null {
+  bayClosed(): 'busy' | 'yellow' | 'red' | 'away' | null {
     if (!this.alive) return 'busy';
     if (this.phase === 'dock') return null;
     if (this.phase !== 'play') return 'busy';
+    if (this.bk) return 'away'; // the Story fits only at a work bay
     const a = this.alert();
     return a === 'clear' ? null : a;
   }

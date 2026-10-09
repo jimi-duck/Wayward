@@ -16,6 +16,25 @@ Krail is retired: chits are the only money in both modes. In the Arcade the bay 
 of scrap pays chits the moment it is picked up (`SCRAP_PRICE`, moved by the
 survival mode), so there is no hold to fill and no sale to make.
 
+## The work bay
+
+In the Story the ship is upgraded only docked at a port, the work bay: every
+install, not just the yard's modules (the Arcade keeps its own picks in
+flight). In flight, B says "Upgrades: dock at a work bay" and the bay badge
+is gone. The port also does the rest of the trade:
+
+- **Sell spare Cyrite.** Whatever the tank holds beyond one jump pays
+  `CYRITE_SELL` (3 chits) a unit. Scrap already pays at pick-up.
+- **Rush price.** Buying Cyrite while the tank is short of the jump costs
+  `CYRITE_RUSH` (x2). Once the tank covers the jump it is the plain price.
+  The Sensible stop uses the rush price for the first units.
+- **More of them, close by.** Mining systems have a bay 70% of the time
+  (was 40%), contested 75% (50%), gates always. The bay sits 1,000 along
+  the lane, 200 off it, with a 150 call range, so it is a short detour
+  on the way to the lane mouth.
+
+First guesses; the journey pilot docks once a system to upgrade and sell.
+
 ## When it goes wrong
 
 The ship still flies. It flies worse.

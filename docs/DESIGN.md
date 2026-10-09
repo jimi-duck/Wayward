@@ -389,11 +389,13 @@ can be fitted.
 
 **The yard (the Story mode).** The ship's four systems' modules
 (`content/modules.ts`: Guns, Rig, Signals, Contacts) are nodes of the same
-web, marked `story` and `yard`: fitted only while docked, for Krail and the
+web, marked `story` and `yard`: fitted only while docked, for chits and the
 yard's fee in chits (each module's own, 10 to 30 a mark). The structural
 frame, and the reactor core's third level, are yard work in the Story mode
-too (`YARD_FEE`, 15 chits a level), so ports keep their pull. Away from a
-port they show "Fitted only at a port". The marks fitted in each system
+too (`YARD_FEE`, 15 chits a level), so ports keep their pull. In the Story
+every install needs a work bay (`yardWork`; `World.bayClosed()` says
+'away' in flight); only the yard nodes carry a fee. Away from a port
+they show "Fitted only at a port". The marks fitted in each system
 still name the ship and open endings.
 
 **The ship's console** (`ui/ops.ts`, `ui/briefing.ts`). The bay and the

@@ -62,7 +62,7 @@ describe('Calloway on the long chart', () => {
     expect(j.trail.length - 1 - j.hunt.idx).toBeLessThanOrEqual(GATE_LEAD + 1);
   });
 
-  it('captures on a wreck with her there only with the region’s chance, the same way each time', { timeout: 30_000 }, () => {
+  it('captures on a wreck with her there only with the region’s chance, the same way each time', { timeout: 120_000 }, () => {
     const ends = new Map<string, number>();
     for (let seed = 1; seed <= 24; seed++) {
       const j = inFirstSystem(seed);

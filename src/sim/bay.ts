@@ -56,12 +56,12 @@ export const maxLevel = (id: string): number => UPGRADE[id]?.max ?? FITTING[id]?
 export const nodeName = (id: string): string => UPGRADE[id]?.name ?? FITTING[id]?.name ?? MODULE_BY_ID[id]?.name ?? id;
 export const nodeText = (id: string, lv: number): string => (UPGRADE[id] ? upgradeText(UPGRADE[id]!, lv) : FITTING[id]?.text ?? MODULE_BY_ID[id]?.text ?? '');
 
-/** Whether level `lv` of a node is yard work: the Story mode, at a port only. */
-export const yardWork = (id: string, lv: number, arcade: boolean): boolean => !arcade && NODE[id]?.yard !== undefined && lv >= NODE[id]!.yard!;
+/** Whether a fitting is yard work: in the Story every install is, so it needs a work bay (a port). */
+export const yardWork = (id: string, _lv: number, arcade: boolean): boolean => !arcade && NODE[id] !== undefined;
 
 /** The yard's fee in chits for level `lv` (1 up) of a node, or 0 when it is not yard work. */
 export function fee(id: string, lv: number, arcade: boolean): number {
-  if (!yardWork(id, lv, arcade)) return 0;
+  if (!yardWork(id, lv, arcade) || NODE[id]?.yard === undefined || lv < NODE[id]!.yard!) return 0;
   return MODULE_BY_ID[id]?.chits[lv - 1] ?? YARD_FEE * lv;
 }
 

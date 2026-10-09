@@ -60,7 +60,7 @@ export const SYSTEMS: Record<SystemKind, SystemTemplate> = {
   },
   mining: {
     kind: 'mining', blurb: 'Veined rock and a few claim crews. Cyrite if you will mine for it.', holders: ['kellern', 'guild', 'none'],
-    cyrite: [0.6, 1], supplies: [0, 0.3], port: 0.4, lane: [2200, 2700], rich: 0.16, density: 1.15, gutter: 0.3, heat: 0.05, heatRate: 0.85, calls: 1.2, pace: { first: 75, calm: 18 },
+    cyrite: [0.6, 1], supplies: [0, 0.3], port: 0.7, lane: [2200, 2700], rich: 0.16, density: 1.15, gutter: 0.3, heat: 0.05, heatRate: 0.85, calls: 1.2, pace: { first: 75, calm: 18 },
   },
   port: {
     kind: 'port', blurb: 'A station with a market, a galley and a refit bay. Busy, and watched.', holders: ['frontier', 'guild'],
@@ -72,11 +72,11 @@ export const SYSTEMS: Record<SystemKind, SystemTemplate> = {
   },
   contested: {
     kind: 'contested', blurb: 'Gutter crews and Custody patrols, both looking for a prize.', holders: ['gutter'],
-    cyrite: [0.35, 0.75], supplies: [0.2, 0.5], port: 0.5, lane: [2300, 2800], rich: 0.1, density: 1.05, gutter: 0.55, heat: 0.18, heatRate: 1.15, calls: 0.8, pace: { first: 38, calm: 8 },
+    cyrite: [0.35, 0.75], supplies: [0.2, 0.5], port: 0.75, lane: [2300, 2800], rich: 0.1, density: 1.05, gutter: 0.55, heat: 0.18, heatRate: 1.15, calls: 0.8, pace: { first: 38, calm: 8 },
   },
   gate: {
     kind: 'gate', blurb: 'The one way through to the next region. Everyone passes here.', holders: ['none'],
-    cyrite: [0.25, 0.45], supplies: [0, 0.2], port: 0.5, lane: [2200, 2500], rich: 0.08, density: 0.9, gutter: 0.35, heat: 0.12, heatRate: 1.05, calls: 0.9, pace: { first: 45, calm: 10 },
+    cyrite: [0.25, 0.45], supplies: [0, 0.2], port: 1, lane: [2200, 2500], rich: 0.08, density: 0.9, gutter: 0.35, heat: 0.12, heatRate: 1.05, calls: 0.9, pace: { first: 45, calm: 10 },
   },
   edge: {
     kind: 'edge', blurb: 'The last lane the old charts know. Beyond it, the Scatter.', holders: ['none'],

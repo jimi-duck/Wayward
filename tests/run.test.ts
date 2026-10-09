@@ -227,11 +227,14 @@ describe('krail and the refit bay', () => {
     for (let i = 0; i < 90; i++) w.step(STEP, input());
     expect(w.chits).toBeGreaterThanOrEqual(50);
     expect(w.phase).toBe('play');
+    expect(w.openBay()).toBe(false); // the Story fits only at a work bay
+    w.phase = 'dock'; w.docked = true;
     expect(w.openBay()).toBe(true);
     expect(w.install('ph_emitters')).toBeNull();
     expect(w.levels.ph_emitters).toBe(1);
     w.closeBay();
-    expect(w.phase).toBe('play');
+    expect(w.phase).toBe('dock');
+    w.phase = 'play'; w.docked = false;
     // docked, the bay opens whatever is about, and closing it goes back to the dock
     w.phase = 'dock'; w.docked = true;
     parked(w, 0, -20, 0, 'lancer');

@@ -136,8 +136,9 @@ export class Hud {
   }
 
   /** The bay would not open: say why, short, and shake the badge. */
-  bayDenied(world: World, why: 'yellow' | 'red' | 'busy'): void {
+  bayDenied(world: World, why: 'yellow' | 'red' | 'busy' | 'away'): void {
     if (why === 'busy') return;
+    if (why === 'away') { this.note(world, t('Upgrades: dock at a work bay'), 'hit'); return; }
     this.note(world, t(why === 'red' ? 'Bay locked · red alert' : 'Bay locked · yellow alert'), 'hit');
     this.retrigger($('upg'), 'deny');
   }
@@ -310,7 +311,7 @@ export class Hud {
     text($('xp-v'), String(Math.floor(world.purse)));
     $('rail').hidden = !!world.bk; // the Story's one purse is the Chits in the stores line
     const badge = $('upg');
-    badge.hidden = !world.bk || n === 0;
+    badge.hidden = true; // the Story fits only at a work bay; the Arcade opens its own picks
     badge.classList.toggle('ready', n > 0 && !locked);
     badge.classList.toggle('locked', n > 0 && locked);
     badge.classList.toggle('red', alert === 'red');

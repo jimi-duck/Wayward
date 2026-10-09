@@ -1,4 +1,4 @@
-import { SUPPLIES_MAX, TANK_MAX } from '../sim/breakout';
+import { CYRITE_SELL, SUPPLIES_MAX, TANK_MAX } from '../sim/breakout';
 import { stopIdle, type Stop } from '../sim/stop';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -154,8 +154,10 @@ export class PortPanel {
     const plan = w.planStop(), idle = stopIdle(plan);
     this.lines = [
       { key: 'stop', label: t('Sensible stop'), price: idle ? '—' : `−${Math.abs(plan.chits)}`, note: t('Nothing to do'), chips: idle ? undefined : deltas(plan), ok: !idle },
-      { key: 'bay', label: t('Refit bay'), price: `${num(Math.floor(w.chits))} ${t('chits')}`, note: t('Modules for chits · the yard’s work only here'), ok: true, go: () => { this.close(); this.onBay?.(); } },
+      { key: 'bay', label: t('Refit bay'), price: `${num(Math.floor(w.chits))} ${t('chits')}`, note: t('Upgrades are fitted at a work bay, only here'), ok: true, go: () => { this.close(); this.onBay?.(); } },
     ];
+    const spare = w.spareCyrite;
+    if (w.bk && spare > 0) this.lines.push({ key: 'bay', label: t('Sell spare Cyrite'), price: `+${spare * CYRITE_SELL}`, note: t('{n} beyond the jump · {p} chits each', { n: spare, p: CYRITE_SELL }), ok: true, go: () => { w.sellCyrite(); this.render(); } });
     const c = this.course, lanes = c?.lanes() ?? [];
     if (c && lanes.length) {
       const now = lanes.find((x) => x.id === c.current()) ?? lanes[0]!;
@@ -166,7 +168,7 @@ export class PortPanel {
     }
     this.lines.push({ key: 'hand', label: t(this.manual ? 'By hand ▾' : 'By hand ▸'), price: '', note: t('Buy and patch one at a time'), ok: true, go: () => { this.manual = !this.manual; this.render(); } });
     if (this.manual) this.lines.push(
-      { key: 'cyrite', label: t('Buy Cyrite'), price: `${P.cyrite}`, note: w.cyrite >= TANK_MAX ? t('Tank full') : need ? t('{n} short of the jump', { n: need }) : t('Enough to jump'), ok: w.canBuy('cyrite') },
+      { key: 'cyrite', label: t('Buy Cyrite'), price: `${w.cyritePrice}`, note: w.cyrite >= TANK_MAX ? t('Tank full') : need && w.cyritePrice > P.cyrite ? t('{n} short of the jump · rush price', { n: need }) : need ? t('{n} short of the jump', { n: need }) : t('Enough to jump'), ok: w.canBuy('cyrite') },
       { key: 'supplies', label: t('Buy supplies'), price: `${P.supplies}`, note: w.supplies >= w.supplyMax ? t('Stores full') : t('{n} aboard · a day each', { n: w.supplies }), ok: w.canBuy('supplies') },
       { key: 'plate', label: t('Patch a plate'), price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? t('Hull whole') : `${t('Hull')} ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
     );

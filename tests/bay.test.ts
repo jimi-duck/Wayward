@@ -87,7 +87,7 @@ describe('the bay’s rules', () => {
   it('charges the Story mode more for deeper nodes and later levels, and the Arcade one price for all', () => {
     expect(cost('ph_lance', 1, false)).toBeGreaterThan(cost('ph_emitters', 1, false));
     expect(cost('ph_emitters', 2, false)).toBeGreaterThan(cost('ph_emitters', 1, false));
-    const story = { arcade: false, krail: cost('ph_emitters', 1, false) - 1 };
+    const story = { arcade: false, docked: true, krail: cost('ph_emitters', 1, false) - 1 };
     expect(blockOf('ph_emitters', ctx(story))).toBe('krail');
     expect(blockOf('ph_emitters', ctx({ ...story, krail: story.krail + 1 }))).toBeNull();
     // the Arcade: a tier-one module, a tier-four one and a later level all cost ARCADE_PRICE
@@ -197,7 +197,7 @@ describe('the budgets, felt (step 3)', () => {
 
 describe('suggestions', () => {
   it('offers a few modules that can be fitted (or want only Krail), from different tabs, the same each time (the Story mode)', () => {
-    const story = (o: Partial<BayCtx> = {}) => ctx({ arcade: false, ...o });
+    const story = (o: Partial<BayCtx> = {}) => ctx({ arcade: false, docked: true, ...o });
     const picks = quickPicks(story({ krail: 0 }));
     expect(picks.length).toBe(PICKS);
     for (const p of picks) expect(['krail', null]).toContain(blockOf(p.id, story({ krail: 0 })));
@@ -206,7 +206,7 @@ describe('suggestions', () => {
   });
 
   it('leans toward what the ship already is, and asks for power or cooling when they run short (the Story mode)', () => {
-    const story = (o: Partial<BayCtx> = {}) => ctx({ arcade: false, ...o });
+    const story = (o: Partial<BayCtx> = {}) => ctx({ arcade: false, docked: true, ...o });
     const lasers = { ...stockLevels(), ph_emitters: 2, ph_capacitors: 1 };
     expect(quickPicks(story({ levels: lasers })).map((p) => p.tab)).toContain('weapons');
     const hot = { ...stockLevels(), ph_emitters: 3, ph_capacitors: 2, ph_pierce: 1 };
