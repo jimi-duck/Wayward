@@ -10,6 +10,7 @@ expects: `<slot folder>/<id>.<png|jpg|webp>` (for example `captains/vance.png`,
 middle), resizes to the slot's size, turns the black of an emblem into
 transparency, and writes `src/art/<slot folder>/<id>.webp`.
 
+A ZIP of pictures named `captains__vance.png` works too.
 A PDF in the folder works too: one picture per page, with a line of page text
 `FILE: captains/vance` (docs/art/CHATGPT-BRIEF.md asks the generator for this).
 The largest picture on each page is cut out; a page with no such line (a contact
@@ -18,7 +19,7 @@ sheet) is skipped.
 Needs Pillow (`python3 -m pip install pillow`), and pypdf for PDFs. Sizes and ids are read from
 docs/art/briefs.json, which `npm run art:brief` writes from the game's rows.
 """
-import io, json, re, sys
+import io, json, re, sys, zipfile
 from pathlib import Path
 
 try:
@@ -95,6 +96,14 @@ def main() -> int:
         if f.suffix.lower() == '.pdf':
             for key, im in from_pdf(f, known):
                 take(key, im, f'{f.name}')
+        elif f.suffix.lower() == '.zip':
+            with zipfile.ZipFile(f) as z:
+                for name in sorted(z.namelist()):
+                    p = Path(name)
+                    if p.suffix.lower() in EXT and not p.name.startswith('.'):
+                        parts = p.with_suffix('').parts
+                        key = '/'.join(parts[-2:]) if len(parts) > 1 else parts[0].replace('__', '/', 1)
+                        take(key, Image.open(io.BytesIO(z.read(name))), f'{f.name}:{name}')
         elif f.suffix.lower() in EXT:
             parts = f.relative_to(inbox).with_suffix('').parts
             key = '/'.join(parts[-2:]) if len(parts) > 1 else parts[0].replace('__', '/', 1)
