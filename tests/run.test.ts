@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
+import { DETECT_R, FACTIONS, WARY_R } from '../src/sim/bosses';
 import { BOSS_FIRST } from '../src/sim/director';
 import { ENCOUNTERS, startEncounter } from '../src/sim/encounters';
 import { spawnAlien } from '../src/sim/enemies';
@@ -417,34 +418,71 @@ describe('boosters', () => {
   });
 });
 
-describe('capital ships: the hail', () => {
-  const toHail = (w: World) => { for (let i = 0; i < (BOSS_FIRST + 5) * 60 && w.phase !== 'hail'; i++) { w.ship.invuln = 1; w.step(STEP, input()); } };
+describe('capital ships: sighted', () => {
+  const toSight = (w: World) => { for (let i = 0; i < (BOSS_FIRST + 5) * 60 && w.command.state !== 'sighted'; i++) { w.ship.invuln = 1; w.step(STEP, input()); } };
 
-  it('opens before a contact; evading sends the next one sooner, and you cannot evade twice running', () => {
+  it('shows up unaware and out of range, never stops the world, and jumps out if you stay clear', () => {
     const w = quiet(7);
     w.command.next = BOSS_FIRST;
-    toHail(w);
-    expect(w.phase).toBe('hail');
-    const c = w.command.pending!;
-    expect(c.canEvade).toBe(true);
-    const t = w.runTime;
-    w.answerHail(false);
+    toSight(w);
+    expect(w.phase).toBe('play');
+    const b = w.command.boss!;
+    expect(b.unaware).toBe(true);
+    expect(Math.hypot(b.x - w.ship.x, b.z - w.ship.z)).toBeGreaterThan(b.sense + 20);
+    expect(w.alert()).toBe('clear');
+    const score = w.score, krail = w.krail, t = w.runTime;
+    for (let i = 0; i < 80 * 60 && w.command.state === 'sighted'; i++) { w.ship.invuln = 1; w.ship.x = b.x - 400; w.ship.z = b.z; w.step(STEP, input()); }
+    expect(w.command.state).toBe('idle');
     expect(w.command.boss).toBeNull();
     expect(w.run.capitalsEvaded).toBe(1);
-    expect(w.command.next).toBeCloseTo(t + c.evadeGap, 0);
-    for (let i = 0; i < 120 * 60 && w.phase !== 'hail'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
-    expect(w.phase).toBe('hail');
-    expect(w.command.pending!.canEvade).toBe(false);
-    w.answerHail(false); // refused: you fight
-    run(w, 2);
-    expect(w.command.boss).not.toBeNull();
+    expect(w.score).toBeGreaterThan(score);
+    expect(w.krail).toBeGreaterThan(krail);
+    expect(w.drain().some((e) => e.type === 'bossJumped')).toBe(true);
+    expect(w.command.next).toBeGreaterThan(t);
+  });
+
+  it('notices a ship that lingers inside its range, and calls its wing', () => {
+    const w = quiet(7);
+    w.command.next = BOSS_FIRST;
+    toSight(w);
+    const b = w.command.boss!;
+    let yellow = false;
+    for (let i = 0; i < 30 * 60 && w.command.state === 'sighted'; i++) {
+      w.ship.invuln = 1; w.ship.x = b.x - b.sense * 0.6; w.ship.z = b.z; w.step(STEP, input());
+      yellow ||= w.alert() === 'yellow';
+    }
+    expect(yellow).toBe(true);
+    expect(w.command.state).toBe('fight');
+    expect(b.unaware).toBe(false);
+    expect(w.alert()).toBe('red');
+  });
+
+  it('wakes at once when shot', () => {
+    const w = quiet(7);
+    w.command.next = BOSS_FIRST;
+    toSight(w);
+    const b = w.command.boss!;
+    w.bolts.push({ x: b.x, y: b.y, z: b.z, vx: 0, vy: 0, vz: 0, life: 1, dmg: 1, pierce: 0, hit: [], homing: 0 });
+    w.step(STEP, input());
+    expect(w.command.state).toBe('fight');
+  });
+
+  it('makes the next ship warier after you slip one', () => {
+    const w = quiet(7);
+    w.command.next = BOSS_FIRST;
+    toSight(w);
+    const first = w.command.boss!;
+    for (let i = 0; i < 80 * 60 && w.command.state === 'sighted'; i++) { w.ship.invuln = 1; w.ship.x = first.x - 400; w.ship.z = first.z; w.step(STEP, input()); }
+    expect(w.command.evadedLast).toBe(true);
+    expect(first.sense).toBe(DETECT_R[first.faction]);
+    expect(w.command.detectRange(first)).toBeCloseTo(DETECT_R[first.faction] * WARY_R, 5);
   });
 
   it('telegraphs every attack before it opens, and turns nastier in phases', () => {
     const w = quiet(7);
     w.command.next = BOSS_FIRST;
-    toHail(w);
-    w.answerHail(true);
+    toSight(w);
+    w.provoke();
     let teles = 0;
     for (let i = 0; i < 30 * 60; i++) {
       w.ship.invuln = 1;

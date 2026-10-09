@@ -44,6 +44,8 @@ export type GameEvent =
   | { type: 'bossWarn'; name: string; faction: string; hails: boolean }
   | { type: 'hail'; name: string; faction: string }
   | { type: 'bossEvaded'; name: string; faction: string }
+  | { type: 'bossSighted'; name: string; faction: string; x: number; z: number; r: number }
+  | { type: 'bossJumped'; name: string; faction: string; bounty: number }
   | { type: 'bossArrive'; name: string; faction: string; x: number; z: number }
   | { type: 'bossHit'; x: number; y: number; z: number }
   | { type: 'bossPhase'; name: string; faction: string; phase: number; x: number; y: number; z: number }

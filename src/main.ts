@@ -70,6 +70,8 @@ function boot(review: typeof import('./review') | null): void {
   const sector = new Sector(renderer, quality.tier);
   sector.setCosmetic(profile.cosmetic);
   const debug = new DebugOverlay(el('debug'), params.get('debug') === '1');
+  // `?debug=1` also leaves the world on window, for the screenshot scripts
+  if (params.get('debug') === '1') (window as unknown as { __world: World }).__world = world;
 
   const feel = new Feel();
   const motion = matchMedia('(prefers-reduced-motion: reduce)');

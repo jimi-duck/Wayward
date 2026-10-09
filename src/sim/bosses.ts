@@ -34,6 +34,22 @@ const HAIL_AFTER = 1.1;
 /** Seconds from "engage" to the drop. */
 const ENGAGE_DROP = 1.2;
 const BOSS_R = 6;
+/** A sighted capital ship's detection range by faction: the Voice's foundry sees furthest. */
+export const DETECT_R: Record<Faction, number> = { gutter: 85, custody: 100, office: 90, voice: 115, thren: 95 };
+/** Seconds inside the range for it to notice you, seconds outside for it to lose the thread. */
+const DETECT_TIME = 3.2, DETECT_FADE = 2.4;
+/** Inside half the range it notices twice as fast. */
+const DETECT_CLOSE = 0.5;
+/** How long a sighted ship loiters before it jumps, and how long the jump takes. */
+const STAY = 48, JUMP_TIME = 2.6;
+/** Where a sighted ship appears, from the ship's bow (clear of every detection range). */
+const SIGHT_AT = 190, SIGHT_ARC = 0.6, SIGHT_Y = 28;
+/** A ship that has noticed you and is being run from burns its fuse at this rate while you are beyond 3.5 times its station: it hunts longer. */
+export const CHASE_BURN = 0.6, CHASE_FAR = 3.5;
+/** After an unbroken evasion the next one is sharper-eyed: range and speed of noticing. */
+export const WARY_R = 1.15, WARY_T = 0.8;
+/** What staying clear pays when it jumps out: a share of its bounty in score, and a little Krail. */
+export const JUMP_SCORE = 0.25, JUMP_KRAIL = 8;
 /** Where a capital ship drops in: ahead of the ship, far out and high. */
 const ARRIVE_AT = 150, ARRIVE_Y = 28;
 export const bossBounty = (n: number, f: Faction) => Math.round((1800 + n * 700) * FACTIONS[f].bounty / 10) * 10;
@@ -131,6 +147,16 @@ export interface Boss {
   fightT: number; orbit: number;
   /** Seconds since it began its drop. */
   arriveT: number;
+  /** Sighted but not yet aware of you (Arcade): it drifts, holds fire and jumps out when `stay` runs out. */
+  unaware: boolean;
+  /** 0 to 1: how close it is to noticing you. Builds inside its detection range, fades outside. */
+  aware: number;
+  /** Seconds before an unaware ship jumps away. */
+  stay: number;
+  /** Seconds into the jump out. */
+  jumpT: number;
+  /** How far out an unaware ship sees you. */
+  sense: number;
 }
 
 export interface Contact {
@@ -138,14 +164,14 @@ export interface Contact {
   name: string;
   n: number;
   bounty: number;
-  /** Office ships never hail. */
+  /** Office ships never hail (and never sit sighted: they decloak). */
   hails: boolean;
   canEvade: boolean;
   /** Seconds until the next contact if this one is evaded. */
   evadeGap: number;
 }
 
-export type CommandState = 'idle' | 'warning' | 'hailing' | 'inbound' | 'fight';
+export type CommandState = 'idle' | 'warning' | 'hailing' | 'sighted' | 'inbound' | 'fight';
 
 export class Command {
   boss: Boss | null = null;
@@ -218,6 +244,7 @@ export class Command {
       case 'idle':
         if (t >= this.next - BOSS_WARN) {
           this.pending = this.pick(t, rng);
+          if (this.auto && this.pending.hails) { this.sight(t, s, rng, events); return; }
           this.state = 'warning';
           events.push({ type: 'bossWarn', name: this.pending.name, faction: this.pending.faction, hails: this.pending.hails });
         }
@@ -229,6 +256,9 @@ export class Command {
         } else if (!this.pending!.hails && t >= this.next) this.arrive(t, s, aliens, rng, events);
         return;
       case 'hailing':
+        return;
+      case 'sighted':
+        if (this.boss) this.watch(this.boss, t, dt, s, aliens, rng, events);
         return;
       case 'inbound':
         if (t >= this.next) this.arrive(t, s, aliens, rng, events);
@@ -242,7 +272,8 @@ export class Command {
   /** The boss took damage. Returns true if it broke up. */
   hurt(dmg: number, aliens: Alien[], s: ShipState, t: number, rng: Rng, events: GameEvent[]): boolean {
     const b = this.boss;
-    if (!b || b.leaving || b.cloak > 0.5 || b.arriving) return false;
+    if (b && b.unaware && b.jumpT === 0) { this.notice(b, t, s, aliens, rng, events); return false; }
+    if (!b || b.leaving || b.cloak > 0.5 || b.arriving || b.unaware) return false;
     // the foundry adapts, as its drones do: once it has soaked enough, half damage
     if (b.faction === 'voice' && b.soaked >= 30) dmg *= 0.5;
     b.soaked += dmg;
@@ -307,35 +338,124 @@ export class Command {
     };
   }
 
-  private arrive(t: number, s: ShipState, aliens: Alien[], rng: Rng, events: GameEvent[]): void {
-    const { faction, name } = this.pending!;
+  private build(faction: Faction, name: string, hp: number, x: number, y: number, z: number, face: number, arriving: boolean): Boss {
     const def = FACTIONS[faction];
-    // a faction's first capital ship of a run is an introduction: its patterns are new, so it is lighter
-    const intro = (this.seen[faction] ?? 0) === 0 ? INTRO_HP : 1;
-    const hp = Math.round(bossHp(this.count, t) * def.hp * this.hpScale * intro);
-    this.hpScale = 1;
-    const wingN = def.wingN + this.wingExtra;
-    this.wingExtra = 0;
-    // far out in front of the ship and high, so the chase camera sees it come in
-    const x = s.x + Math.cos(s.heading) * ARRIVE_AT, z = s.z - Math.sin(s.heading) * ARRIVE_AT, y = ARRIVE_Y;
-    this.boss = {
-      id: newId(), faction, name, n: this.count, x, y, z, vx: 0, vy: 0, vz: 0, face: s.heading + Math.PI, arriving: true,
+    return {
+      id: newId(), faction, name, n: this.count, x, y, z, vx: 0, vy: 0, vz: 0, face, arriving,
       hp, maxHp: hp, r: BOSS_R, phase: 0, attack: def.cycles[0][0]!, attackT: 4, cycleI: 0, shotT: 0, spin: 0, windT: 0, aimLock: 0,
       fuse: def.fuse, leaving: false, cloak: 0, hitT: 0, soaked: 0, beams: [], chargeT: 0, fightT: 0, orbit: 0, arriveT: 0,
+      unaware: false, aware: 0, stay: 0, jumpT: 0, sense: 0,
     };
+  }
+
+  /** The escort wing comes in with her, together. */
+  private callWing(b: Boss, s: ShipState, t: number, aliens: Alien[], rng: Rng): void {
+    const def = FACTIONS[b.faction];
+    const wingN = def.wingN + this.wingExtra;
+    this.wingExtra = 0;
+    for (let i = 0; i < wingN; i++) {
+      const a = (i / wingN) * Math.PI * 2;
+      const e = spawnAlien(def.wing, s, t, rng, { x: b.x + Math.cos(a) * 12, y: b.y - 4, z: b.z + Math.sin(a) * 12 });
+      e.hp = e.maxHp = Math.max(1, Math.round(e.maxHp * def.wingHp));
+      aliens.push(e);
+    }
+  }
+
+  private hullPoints(faction: Faction, t: number): number {
+    // a faction's first capital ship of a run is an introduction: its patterns are new, so it is lighter
+    const intro = (this.seen[faction] ?? 0) === 0 ? INTRO_HP : 1;
+    const hp = Math.round(bossHp(this.count, t) * FACTIONS[faction].hp * this.hpScale * intro);
+    this.hpScale = 1;
+    return hp;
+  }
+
+  private arrive(t: number, s: ShipState, aliens: Alien[], rng: Rng, events: GameEvent[]): void {
+    const { faction, name } = this.pending!;
+    // far out in front of the ship and high, so the chase camera sees it come in
+    const x = s.x + Math.cos(s.heading) * ARRIVE_AT, z = s.z - Math.sin(s.heading) * ARRIVE_AT, y = ARRIVE_Y;
+    this.boss = this.build(faction, name, this.hullPoints(faction, t), x, y, z, s.heading + Math.PI, true);
     this.seen[faction] = (this.seen[faction] ?? 0) + 1;
     this.last = faction;
     this.count++;
     this.pending = null;
     this.state = 'fight';
-    // the escort wing comes in with her, together
-    for (let i = 0; i < wingN; i++) {
-      const a = (i / wingN) * Math.PI * 2;
-      const e = spawnAlien(def.wing, s, t, rng, { x: x + Math.cos(a) * 12, y: y - 4, z: z + Math.sin(a) * 12 });
-      e.hp = e.maxHp = Math.max(1, Math.round(e.maxHp * def.wingHp));
-      aliens.push(e);
-    }
+    this.callWing(this.boss, s, t, aliens, rng);
     events.push({ type: 'bossArrive', name, faction, x, z });
+  }
+
+  /** Arcade: a capital ship appears ahead, out of range and unaware. Keep clear of it until it jumps. */
+  private sight(t: number, s: ShipState, rng: Rng, events: GameEvent[]): void {
+    const { faction, name } = this.pending!;
+    const a = s.heading + rng.range(-SIGHT_ARC, SIGHT_ARC);
+    const x = s.x + Math.cos(a) * SIGHT_AT, z = s.z - Math.sin(a) * SIGHT_AT;
+    const b = this.build(faction, name, this.hullPoints(faction, t), x, SIGHT_Y, z, rng.range(0, Math.PI * 2), false);
+    b.unaware = true;
+    b.stay = STAY;
+    b.sense = this.detectRange(b);
+    // it idles across the sector, slowly, never straight at you
+    const heading = Math.atan2(-(s.z - z), s.x - x) + (rng.next() < 0.5 ? 1 : -1) * rng.range(0.9, 1.6);
+    b.vx = Math.cos(heading) * 2.5; b.vz = -Math.sin(heading) * 2.5;
+    b.face = Math.atan2(-b.vz, b.vx);
+    this.boss = b;
+    this.seen[faction] = (this.seen[faction] ?? 0) + 1;
+    this.last = faction;
+    this.count++;
+    this.state = 'sighted';
+    events.push({ type: 'bossSighted', name, faction, x, z, r: this.detectRange(b) });
+  }
+
+  /** How far out it sees you. An evasion in a row makes the next ship warier. */
+  detectRange(b: Boss): number {
+    return DETECT_R[b.faction] * (this.evadedLast ? WARY_R : 1);
+  }
+
+  /** The player goes in at a sighted ship (the scripted pilot's way of choosing the fight). */
+  provoke(t: number, s: ShipState, aliens: Alien[], rng: Rng, events: GameEvent[]): void {
+    const b = this.boss;
+    if (this.state === 'sighted' && b && b.unaware && b.jumpT === 0) this.notice(b, t, s, aliens, rng, events);
+  }
+
+  /** Sighted: it drifts, you are measured, and it jumps out when its time is up. */
+  private watch(b: Boss, t: number, dt: number, s: ShipState, aliens: Alien[], rng: Rng, events: GameEvent[]): void {
+    if (b.hitT > 0) b.hitT = Math.max(0, b.hitT - dt);
+    if (b.jumpT > 0) {
+      // the jump: it turns its bow out, winds up and is gone
+      b.jumpT += dt;
+      b.vx *= 1 + 1.4 * dt; b.vz *= 1 + 1.4 * dt;
+      b.vy = 6 * (b.jumpT / JUMP_TIME);
+      b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+      if (b.jumpT >= JUMP_TIME) {
+        events.push({ type: 'bossJumped', name: b.name, faction: b.faction, bounty: bossBounty(b.n, b.faction) });
+        this.pending = null;
+        this.boss = null;
+        this.state = 'idle';
+        this.evadedLast = true;
+        this.evades++;
+        this.next = t + Math.round(bossGap(this.count) * EVADE_GAP);
+      }
+      return;
+    }
+    b.x += b.vx * dt; b.z += b.vz * dt;
+    b.y += (SIGHT_Y - b.y) * Math.min(1, dt);
+    const d = Math.hypot(s.x - b.x, s.z - b.z), r = b.sense;
+    if (d < r) {
+      const rate = (d < r * DETECT_CLOSE ? 2 : 1) / (DETECT_TIME * (this.evadedLast ? WARY_T : 1));
+      b.aware = Math.min(1, b.aware + rate * dt);
+    } else b.aware = Math.max(0, b.aware - dt / DETECT_FADE);
+    if (b.aware >= 1) { this.notice(b, t, s, aliens, rng, events); return; }
+    if ((b.stay -= dt) <= 0) b.jumpT = 0.001;
+  }
+
+  /** It has seen you (or been shot): down onto station, with her wing, and she hunts whoever runs from her for longer. */
+  private notice(b: Boss, t: number, s: ShipState, aliens: Alien[], rng: Rng, events: GameEvent[]): void {
+    b.unaware = false;
+    b.arriving = true;
+    b.arriveT = 0;
+    b.aware = 1;
+    this.pending = null;
+    this.state = 'fight';
+    this.callWing(b, s, t, aliens, rng);
+    events.push({ type: 'bossArrive', name: b.name, faction: b.faction, x: b.x, z: b.z });
   }
 
   private end(t: number): void {
@@ -397,7 +517,7 @@ export class Command {
     }
 
     b.fightT += dt;
-    b.fuse -= dt;
+    b.fuse -= dt * (d > FACTIONS[b.faction].station * CHASE_FAR ? CHASE_BURN : 1);
     if (b.fuse <= 0 && !b.leaving) {
       b.leaving = true;
       b.beams = [];

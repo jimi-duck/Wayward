@@ -208,6 +208,11 @@ export class Hud {
           this.note(world, t('{name} inbound', { name: t(e.name) }), 'hit');
           this.banner(t(e.hails ? 'Continuance signal' : 'Contact'), t(e.name), t(e.hails ? 'Capital ship inbound' : 'Decloaking · no hail'), 2.6, e.hails ? 'caution corp' : 'caution');
           break;
+        case 'bossSighted':
+          this.note(world, t('{name} spotted', { name: t(e.name) }), 'hit');
+          this.banner(t('Contact'), t(e.name), t('Capital ship spotted · keep your distance'), 4, 'caution');
+          break;
+        case 'bossJumped': this.note(world, t('{name} jumped out · clear', { name: t(e.name) }), 'gain'); break;
         case 'bossEvaded': this.note(world, t('Broke away from {name}', { name: t(e.name) })); break;
         case 'bossArrive': this.note(world, t('{name} on intercept', { name: t(e.name) }), 'hit'); break;
         case 'bossPhase': this.banner(t('Capital ship'), t(e.phase === 2 ? 'Last stand' : 'Hull buckling'), t(e.phase === 2 ? 'Everything she has left' : 'Reinforcements inbound'), 1.6); break;
@@ -493,13 +498,15 @@ export class Hud {
     if (b) {
       boss.classList.toggle('cloaked', b.cloak > 0.5);
       boss.classList.toggle('inbound', b.arriving);
+      boss.classList.toggle('sighted', b.unaware);
       text($('boss-name'), t(b.name));
       text($('boss-cls'), t('{f} capital ship', { f: faction(b.faction) }));
-      ticks($('boss-hp'), b.hp / b.maxHp, 45, 'ceil');
+      // unaware: the bar is how close it is to noticing you, and the fuse is when it jumps
+      ticks($('boss-hp'), b.unaware ? b.aware : b.hp / b.maxHp, 45, 'ceil');
       const d = Math.hypot(b.x - world.ship.x, b.z - world.ship.z);
-      text($('boss-hull'), b.arriving ? t('Inbound') : `${t('Hull')} ${Math.max(0, Math.round((b.hp / b.maxHp) * 100))}%`);
-      text($('boss-phase'), b.arriving ? range(d) : b.leaving ? t('Breaking off') : `${t('Phase')} ${b.phase + 1}/3`);
-      text($('boss-fuse'), b.arriving || b.leaving ? '' : `${t('Fuse')} ${Math.ceil(b.fuse)}s`);
+      text($('boss-hull'), b.unaware ? t(b.aware > 0.05 ? 'Noticing you' : 'Keep clear') : b.arriving ? t('Inbound') : `${t('Hull')} ${Math.max(0, Math.round((b.hp / b.maxHp) * 100))}%`);
+      text($('boss-phase'), b.unaware || b.arriving ? range(d) : b.leaving ? t('Breaking off') : `${t('Phase')} ${b.phase + 1}/3`);
+      text($('boss-fuse'), b.unaware ? (b.jumpT > 0 ? t('Jumping') : `${t('Leaves in')} ${Math.ceil(b.stay)}s`) : b.arriving || b.leaving ? '' : `${t('Fuse')} ${Math.ceil(b.fuse)}s`);
     }
 
     const e = world.encounter, obj = $('objective');
