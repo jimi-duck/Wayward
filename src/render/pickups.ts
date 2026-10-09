@@ -204,13 +204,14 @@ export class PickupView {
     }
     const cradle = mergeGeometries(cradleParts.map((g) => { const n = g.index ? g.toNonIndexed() : g; n.deleteAttribute('uv'); return n; }))!;
     const cradleMat = new MeshStandardMaterial({ color: 0x4a4d4f, roughness: 0.6, metalness: 0.6 });
-    const ringGeo = new TorusGeometry(0.9, 0.07, 6, 28);
+    const ringGeo = new TorusGeometry(0.8, 0.04, 8, 32);
     for (let i = 0; i < MAX_ITEMS; i++) {
       const root = new Group();
-      const core = new Mesh(new OctahedronGeometry(0.45, 0), new MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
-      const ring = new Mesh(ringGeo, new MeshBasicMaterial({ color: 0xffffff, toneMapped: false, transparent: true, opacity: 0.9 }));
+      // a cell is a faceted glass core and a thin steel band, lit by the scene with a small inner colour, not a lamp
+      const core = new Mesh(new OctahedronGeometry(0.4, 0), new MeshStandardMaterial({ color: 0x20262c, roughness: 0.2, metalness: 0.4, flatShading: true, emissive: 0x000000 }));
+      const ring = new Mesh(ringGeo, new MeshStandardMaterial({ color: 0x6a7076, roughness: 0.4, metalness: 0.8, emissive: 0x000000 }));
       const halo = new Sprite(new SpriteMaterial({ map: glow, color: 0xffffff, blending: AdditiveBlending, depthWrite: false }));
-      halo.scale.setScalar(2.6);
+      halo.scale.setScalar(1.8);
       const base = new Mesh(cradle, cradleMat);
       base.position.y = -0.62;
       root.add(base, core, ring, halo);
@@ -263,9 +264,9 @@ export class PickupView {
       it.root.visible = !blink;
       it.root.position.set(x, 0.55 + Math.sin(this.time * 2.5 + pk.id) * 0.15, z);
       it.root.scale.setScalar(pop);
-      (it.core.material as MeshBasicMaterial).color.copy(col);
-      (it.ring.material as MeshBasicMaterial).color.copy(col).multiplyScalar(0.8);
-      (it.halo.material as SpriteMaterial).color.copy(col).multiplyScalar(0.5);
+      (it.core.material as MeshStandardMaterial).emissive.copy(col).multiplyScalar(0.55);
+      (it.ring.material as MeshStandardMaterial).emissive.copy(col).multiplyScalar(0.22);
+      (it.halo.material as SpriteMaterial).color.copy(col).multiplyScalar(0.2);
       it.core.rotation.y = this.time * 2;
       it.ring.visible = pk.kind !== 'repair';
       it.ring.rotation.set(this.time * 1.3 + pk.id, this.time * 0.9, 0);
