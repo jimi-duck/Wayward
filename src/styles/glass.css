@@ -3,7 +3,7 @@
 
    A glass plate is a lit rim, a body that blurs and darkens what is behind it,
    and a tint for its state (see the start block in main.css for the plate
-   recipe). Amber is the player's pick, cyan is the ship's own information, and
+   recipe). Muted blue is the player's pick, cyan is the ship's own information, and
    red stays the threat's alone. Plates carry no `filter` of their own: it would
    hide the art from their backdrop-filter, so a glow is a box-shadow.
 
@@ -25,14 +25,16 @@
   /* states: rim bright (e1), rim dim (e2), body (f), inner light (t) */
   --gl-smoke-e1: rgba(184, 224, 234, .66);  --gl-smoke-e2: rgba(150, 190, 200, .16); --gl-smoke-f: rgba(8, 15, 23, .5);   --gl-smoke-t: rgba(76, 194, 203, .08);
   --gl-hover-e1: rgba(206, 238, 244, .8);   --gl-hover-e2: rgba(176, 214, 224, .24); --gl-hover-f: rgba(14, 26, 36, .42); --gl-hover-t: rgba(120, 214, 222, .17);
-  --gl-amber-e1: rgba(255, 210, 116, 1);    --gl-amber-e2: rgba(232, 168, 48, .5);   --gl-amber-f: rgba(74, 46, 6, .6);    --gl-amber-t: rgba(255, 172, 40, .46);
+  --gl-blue-e1: rgba(179, 205, 234, 1);    --gl-blue-e2: rgba(134, 169, 209, .5);   --gl-blue-f: rgba(22, 38, 62, .6);    --gl-blue-t: rgba(110, 152, 204, .46);
   --gl-cyan-e1: rgba(124, 226, 234, .88);   --gl-cyan-e2: rgba(57, 174, 183, .32);   --gl-cyan-f: rgba(8, 36, 44, .6);     --gl-cyan-t: rgba(76, 194, 203, .26);
+  /* the old name, kept so nothing built on it breaks */
+  --gl-amber-e1: var(--gl-blue-e1); --gl-amber-e2: var(--gl-blue-e2); --gl-amber-f: var(--gl-blue-f); --gl-amber-t: var(--gl-blue-t);
   --gl-off-e1: rgba(150, 160, 160, .22);    --gl-off-e2: rgba(150, 160, 160, .08);   --gl-off-f: rgba(6, 9, 12, .62);      --gl-off-t: rgba(0, 0, 0, 0);
 }
 /* a phone, a small window: less blur, none of the small hardware, a firmer body */
 @media (max-height: 620px), (pointer: coarse) {
   :root { --blur: 8px; --gl-dots: linear-gradient(transparent, transparent);
-    --gl-smoke-f: rgba(7, 13, 20, .6); --gl-amber-f: rgba(50, 33, 8, .66); --gl-cyan-f: rgba(7, 34, 42, .68); }
+    --gl-smoke-f: rgba(7, 13, 20, .6); --gl-blue-f: rgba(16, 26, 42, .66); --gl-cyan-f: rgba(7, 34, 42, .68); }
 }
 /* no blur to lean on: a darker body instead */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { :root { --gl-under: rgba(6, 10, 15, .72); } }

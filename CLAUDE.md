@@ -23,8 +23,8 @@ things) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
   in `sim/journey.ts` and adds a migration in `meta/save.ts`.
 - **Balance from numbers.** Balance changes come from the pilot reports
   (`npm run pilot*`); update the matching `docs/BALANCE*.md`.
-- **The look is brand v1.1** (`branding/`): amber is the player and their
-  hand, teal is information, red is threat and nothing else. UI passes come
+- **The look is brand v1.1** (`branding/`): a muted steel blue is the player and their
+  hand, teal is information, a dull gold is caution only, red is threat and nothing else. UI passes come
   with screenshots at desktop and phone sizes.
 - **Before a push**, `npm run check` and `npm run build`; CI runs both on
   every pull request. Cloudflare deploys `main`, with previews on pull

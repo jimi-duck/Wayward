@@ -69,7 +69,7 @@
 /* ── upper left: the objective ────────────────────────────────────────── */
 #objective { --lit: var(--amber); position: absolute; left: var(--left); top: var(--top); width: clamp(240px, 22vw, 330px); display: none; gap: 6px; padding: 10px 14px 11px 15px; }
 #objective.on { display: grid; }
-.obj-k { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.obj-k { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--hud); }
 .obj-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 #obj-t { font: 600 calc(var(--fs) * 1.95)/1.05 var(--font-rail); letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
 #obj-left { white-space: nowrap; font: 600 calc(var(--fs) * 1.45)/1 var(--font-rail); letter-spacing: .06em; color: var(--amber); font-variant-numeric: tabular-nums; }
@@ -88,7 +88,7 @@ html.breakout #objective.course #obj-p, #objective.course #obj-s { display: none
 #obj-threat[hidden] { display: none; }
 #obj-threat.hot { animation: hud-blink 1.3s ease-in-out infinite; }
 /* an event holds the amber edge; the course only lights the left end */
-#objective.event { --edge: rgba(229, 169, 58, .5); }
+#objective.event { --edge: rgba(134, 169, 209, .5); }
 
 /* ── upper centre: the heading ────────────────────────────────────────── */
 /* A compass tape with the objective on it: a diamond along its bearing,
@@ -130,14 +130,14 @@ html.breakout #objective.course #obj-p, #objective.course #obj-s { display: none
     linear-gradient(180deg, rgba(255, 255, 255, .26), transparent 60%),
     linear-gradient(90deg, var(--fillc) 0 calc(var(--v) * 100%), rgba(57, 174, 183, .14) 0);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, .7), 0 0 0 1px rgba(150, 196, 204, .12); }
-#sys-ph.low .bar { --fillc: var(--amber); }
-#sys-ph.low .val { color: var(--amber); }
+#sys-ph.low .bar { --fillc: var(--caution); }
+#sys-ph.low .val { color: var(--caution); }
 #sys-ph.dry .bar { --fillc: var(--alert-dim); }
 #sys-ph.dry .val { color: var(--alert); animation: hud-blink .8s ease-in-out infinite; }
-#sys-ph.hot .bar { --fillc: #ffe2a8; }
+#sys-ph.hot .bar { --fillc: #cfe2f5; }
 #sys-ph.hot .val { color: var(--hud-hi); }
-#sys-fuel.ready .bar { --fillc: #f6e2b4; }
-#sys-fuel.ready .val { color: var(--violet); }
+#sys-fuel.ready .bar { --fillc: #cfe2f5; }
+#sys-fuel.ready .val { color: var(--hud-hi); }
 
 /* racks: torpedoes and mines, one pip a round, the next filling as it reloads; quiet out of a fight */
 .rack { display: flex; gap: 4px; min-width: 0; }
@@ -149,7 +149,7 @@ html.breakout #objective.course #obj-p, #objective.course #obj-s { display: none
 .sys-row.arms > * { transition: opacity .5s; }
 .sys-row.arms.idle > * { opacity: .55; }
 #sys-tp.lock #v-rack { color: var(--hud-hi); }
-#sys-tp.empty #v-rack { color: var(--amber); }
+#sys-tp.empty #v-rack { color: var(--caution); }
 #sys-tp.dry .rack { animation: hud-blink .5s ease-in-out 2; }
 
 /* the hull: a plate a segment, then shield charges in teal */
@@ -199,12 +199,12 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 /* ── upper centre: the alert, the capital ship, the target ────────────── */
 #centre { position: absolute; left: 50%; top: calc(var(--safe-t) + 46px); translate: -50% 0; display: grid; gap: 8px; justify-items: center; }
 /* the alert: yellow is a quiet line (you are observed); red is the loudest thing on the screen (you are targeted) */
-#mode { --mc: var(--amber); --lit: var(--amber); padding: 6px 16px; text-align: center; }
+#mode { --mc: var(--caution); --lit: var(--caution); padding: 6px 16px; text-align: center; }
 #mode[hidden] { display: none; }
 .md-w { display: grid; gap: 3px; justify-items: center; }
 #mode-t { font: 600 calc(var(--fs) * 1.3)/1 var(--font-rail); letter-spacing: .24em; text-transform: uppercase; color: var(--mc); white-space: nowrap; }
 #mode-s { font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
-#mode.yellow { --edge: rgba(229, 169, 58, .4); }
+#mode.yellow { --edge: var(--caution-dim); }
 #mode.red { --mc: var(--alert); --lit: var(--alert); --edge: rgba(224, 87, 75, .6); --tint: linear-gradient(rgba(110, 24, 18, .55), rgba(80, 16, 12, .5)); padding: 9px 26px 10px; }
 #mode.red #mode-t { font-size: calc(var(--fs) * 2.5); letter-spacing: .3em; padding-left: .3em; }
 #mode.red #mode-s { color: var(--ink); }
@@ -244,20 +244,17 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 .tc-int { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; font: 600 calc(var(--fs) * 1.0)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
 #tgt-int-v { font: 600 calc(var(--fs) * 1.1)/1 var(--font-mono); color: var(--cy); }
 #tgt-int { --v: 1; display: block; height: 4px; background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
-#tgt-lock { display: none; flex: none; padding: 2px 4px; font: 600 calc(var(--fs) * .95)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: #1a1104; background: var(--hud); }
+#tgt-lock { display: none; flex: none; padding: 2px 4px; font: 600 calc(var(--fs) * .95)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: #0a1118; background: var(--hud); }
 #tgt-card.locked #tgt-lock { display: inline-block; }
-/* rock reads in the colour of what it yields */
-#tgt-card.rock .tc-s b { color: var(--violet); }
-#tgt-card.volatile { --lit: var(--alert); }
 /* a hull is a threat: red, as every threat is */
-#tgt-card:not(.rock) { --edge: rgba(224, 87, 75, .4); --lit: var(--alert); --tint: linear-gradient(rgba(70, 16, 12, .28), rgba(70, 16, 12, .22)); }
-#tgt-card:not(.rock) #tgt-int-v { color: var(--alert); }
-#tgt-card:not(.rock) #tgt-int { background: linear-gradient(90deg, var(--alert) 0 calc(var(--v) * 100%), var(--alert-dim) 0); }
+#tgt-card { --edge: rgba(224, 87, 75, .4); --lit: var(--alert); --tint: linear-gradient(rgba(70, 16, 12, .28), rgba(70, 16, 12, .22)); }
+#tgt-card #tgt-int-v { color: var(--alert); }
+#tgt-card #tgt-int { background: linear-gradient(90deg, var(--alert) 0 calc(var(--v) * 100%), var(--alert-dim) 0); }
 
 /* a neutral hull (a convoy freighter) is not a threat: teal */
-#tgt-card.friendly:not(.rock) { --edge: var(--glass-edge); --lit: var(--cy); --tint: linear-gradient(transparent, transparent); }
-#tgt-card.friendly:not(.rock) #tgt-int-v { color: var(--cy); }
-#tgt-card.friendly:not(.rock) #tgt-int { background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
+#tgt-card.friendly { --edge: var(--glass-edge); --lit: var(--cy); --tint: linear-gradient(transparent, transparent); }
+#tgt-card.friendly #tgt-int-v { color: var(--cy); }
+#tgt-card.friendly #tgt-int { background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
 
 /* ── in the world: the gunsight, the target, marks ────────────────────── */
 #world { position: absolute; inset: 0; overflow: hidden; }
@@ -279,8 +276,8 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #tgt { position: absolute; left: 0; top: 0; display: none; --h: 30px; }
 #tgt.on { display: block; }
 #tgt-box { position: absolute; left: calc(var(--h) * -1); top: calc(var(--h) * -1); width: calc(var(--h) * 2); height: calc(var(--h) * 2);
-  --b: var(--hud); --l: min(14px, calc(var(--h) * .4)); --t: 1px; outline: 1px solid rgba(217, 154, 39, .16); outline-offset: -1px; }
-#tgt.locked #tgt-box { --t: 2px; outline-color: rgba(217, 154, 39, .32); }
+  --b: var(--hud); --l: min(14px, calc(var(--h) * .4)); --t: 1px; outline: 1px solid rgba(134, 169, 209, .16); outline-offset: -1px; }
+#tgt.locked #tgt-box { --t: 2px; outline-color: rgba(134, 169, 209, .32); }
 #tgt.acq #tgt-box { animation: tgt-acq .2s var(--ez); }
 #tgt.lockon #tgt-box { animation: tgt-lock .26s var(--ez); }
 @keyframes tgt-acq { from { transform: scale(1.8); opacity: 0; } }
@@ -294,15 +291,14 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #tgt.arc .tgt-x { display: block; }
 #tgt-under { position: absolute; left: 0; right: 0; top: calc(100% + 4px); display: flex; align-items: center; gap: 6px; }
 #tgt-hp { --v: 1; flex: 1; min-width: 18px; height: 3px; background: linear-gradient(90deg, var(--c-hp, var(--alert)) 0 calc(var(--v) * 100%), rgba(216, 213, 198, .14) 0); }
-#tgt.rock #tgt-hp { --c-hp: var(--violet); }
 #tgt-d { flex: none; white-space: nowrap; text-shadow: 0 1px 5px #000;
   font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
 /* a hull is a threat: red, as every threat is */
-#tgt:not(.rock) #tgt-box { --b: var(--threat); outline-color: rgba(201, 74, 63, .2); }
+#tgt #tgt-box { --b: var(--threat); outline-color: rgba(201, 74, 63, .2); }
 #tgt.friendly #tgt-box { --b: var(--cy); outline-color: rgba(76, 194, 203, .2); }
-#tgt.friendly:not(.rock) #tgt-hp { --c-hp: var(--cy); }
-#tgt.friendly:not(.rock) .tgt-x { background: linear-gradient(var(--cy), var(--cy)) center / 100% 1px no-repeat, linear-gradient(var(--cy), var(--cy)) center / 1px 100% no-repeat; }
-#tgt:not(.rock) .tgt-x { background: linear-gradient(var(--alert), var(--alert)) center / 100% 1px no-repeat, linear-gradient(var(--alert), var(--alert)) center / 1px 100% no-repeat; }
+#tgt.friendly #tgt-hp { --c-hp: var(--cy); }
+#tgt.friendly .tgt-x { background: linear-gradient(var(--cy), var(--cy)) center / 100% 1px no-repeat, linear-gradient(var(--cy), var(--cy)) center / 1px 100% no-repeat; }
+#tgt .tgt-x { background: linear-gradient(var(--alert), var(--alert)) center / 100% 1px no-repeat, linear-gradient(var(--alert), var(--alert)) center / 1px 100% no-repeat; }
 
 /* Corner brackets, from eight gradients: --b colour, --l arm, --t weight. */
 #tgt-box, #marks .m {
@@ -390,13 +386,13 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #cond[hidden] { display: none; }
 
 /* [B] Open bay: only when there is something to fit; amber while it can be, quiet and locked under an alert */
-#upg { display: flex; align-items: center; gap: 11px; border: 0; background: none; font: inherit; padding: 7px 14px 7px 11px; --lit: var(--amber); --edge: rgba(229, 169, 58, .45); color: var(--amber); cursor: pointer; pointer-events: auto; touch-action: manipulation; }
+#upg { display: flex; align-items: center; gap: 11px; border: 0; background: none; font: inherit; padding: 7px 14px 7px 11px; --lit: var(--amber); --edge: rgba(134, 169, 209, .45); color: var(--amber); cursor: pointer; pointer-events: auto; touch-action: manipulation; }
 #upg[hidden] { display: none; }
 #upg kbd { min-width: 20px; height: 20px; font-size: 12px; color: var(--ink); border-color: var(--glass-edge-hi); background: rgba(255, 255, 255, .06); }
 .up-w { display: grid; gap: 3px; text-align: left; }
 #upg-t { font: 600 calc(var(--fs) * 1.5)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--amber); white-space: nowrap; }
 #upg-s { font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
-#upg b { display: none; min-width: 18px; padding: 2px 5px; text-align: center; color: #1a1104; background: var(--hud); font: 700 11px/1 var(--font-mono); }
+#upg b { display: none; min-width: 18px; padding: 2px 5px; text-align: center; color: #0a1118; background: var(--hud); font: 700 11px/1 var(--font-mono); }
 #upg.ready b, #upg.locked b { display: inline-block; }
 #upg.locked { --lit: var(--glass-edge); --edge: var(--glass-edge); }
 #upg.locked #upg-t { color: var(--ink-2); }
@@ -427,7 +423,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #banner-t { font: 700 clamp(20px, 2.3vw, 30px)/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
 .bn-s { font: 600 calc(var(--fs) * 1.1)/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 .bn-s:empty { display: none; }
-#banner.caution { --tone: var(--amber); filter: drop-shadow(0 0 18px rgba(229, 169, 58, .16)); }
+#banner.caution { --tone: var(--caution); filter: drop-shadow(0 0 18px rgba(201, 171, 102, .16)); }
 #banner.calm { --tone: var(--cy); filter: none; }
 #banner.gain { --tone: var(--violet); filter: none; }
 

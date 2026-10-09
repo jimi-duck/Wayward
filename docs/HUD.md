@@ -30,8 +30,10 @@ picture left alone, everything else shown only while it matters. The code is
 | Lower left | the scope; sector code and name; the scope's range | always (the text is hidden on phones) |
 | Lower right | the last thing that happened; `[B] Open bay / Upgrade ship` | Story only, once something can be fitted; locked and grey under an alert, and says why |
 
-Colour keeps its meaning: amber the player and the job, teal what the ship
-knows, red the threat and nothing else. Small red type uses `--alert-text`
+Colour keeps its meaning: muted steel blue (`--blue`, `--hud`) the player and
+the job, teal what the ship knows, red the threat and nothing else. A dull
+gold (`--caution`) is left for a yellow alert, a low reading and a cost; krail
+keeps its pale sand. Small red type uses `--alert-text`
 (`#f08a7e`) so it holds 4.5:1 over a bright sky.
 
 ## The alert
@@ -56,7 +58,7 @@ Tokens, in `:root` of `hud.css`, shared with the menu and the pause card:
 - `--glass-blur` the backdrop blur
 - `--tint` (per panel) a colour wash: red for threat panels
 
-Per-panel `--lit` and `--edge` colour the hairline (amber for the objective
+Per-panel `--lit` and `--edge` colour the hairline (blue for the objective
 and the bay prompt, red for threat, teal for the target card).
 
 ## Cost
