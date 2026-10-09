@@ -184,15 +184,16 @@
         <svg class="st-mark" viewBox="0 0 40 34" aria-hidden="true"><path d="M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z"/></svg>
         <b class="st-w">Wayward</b>
         <span class="st-tag">Keep moving</span>
+        <!-- where the journey stands: two quiet lines, only while there is one -->
+        <p class="st-trip" id="st-trip" hidden></p>
       </header>
 
       <div class="st-col">
         <!-- the way in -->
         <nav class="st-list" id="st-menu" aria-label="Wayward">
-          <button type="button" id="m-continue" class="st-row" hidden><span class="st-t">Continue</span><span class="st-s" id="cont-s"></span></button>
+          <button type="button" id="m-continue" class="st-row" hidden><span class="st-t">Continue</span></button>
           <button type="button" id="m-journey" class="st-row"><span class="st-t">New journey</span></button>
           <button type="button" id="m-arcade" class="st-row"><span class="st-t">Arcade mode</span></button>
-          <button type="button" id="m-archive" class="st-row"><span class="st-t">Archive</span></button>
           <button type="button" id="m-settings" class="st-row"><span class="st-t">Settings</span></button>
         </nav>
 
@@ -209,7 +210,6 @@
           </div>
           <span class="st-warn" id="sv-keep" hidden></span>
           <div class="st-list st-go">
-            <button type="button" id="launch" class="st-row st-begin"><span class="st-t" id="launch-t">Begin</span><span class="st-s" id="launch-s"></span></button>
             <button type="button" id="d-back" class="st-row"><span class="st-t">Back</span></button>
           </div>
         </section>
@@ -222,6 +222,7 @@
             <button type="button" id="s-buzz" class="st-row st-sw" aria-pressed="true" hidden><span class="st-t">Buzz</span><b class="st-v" id="s-buzz-v">On</b></button>
             <div id="lang" class="st-row st-lang" role="group" aria-label="Language"></div>
           </div>
+          <div class="st-list" id="saves" aria-label="Saved journey"></div>
           <div class="st-list st-go"><button type="button" id="s-back" class="st-row"><span class="st-t">Back</span></button></div>
         </section>
 
@@ -235,16 +236,9 @@
         <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
       </div>
 
-      <!-- the ship as the journey left it, and where it is going; only while there is a journey -->
-      <div class="st-side">
-        <aside class="st-ship glass" id="st-ship" aria-label="Ship status" hidden></aside>
-        <button type="button" class="st-trip glass" id="st-trip" aria-label="Current journey" hidden></button>
-      </div>
-
       <footer class="st-foot">
         <span class="st-ver" id="st-ver"></span>
         <div id="records" class="records"></div>
-        <div id="saves" class="mods" aria-label="Saved journey"></div>
       </footer>
     </div>
 
@@ -447,6 +441,7 @@
         </section>
         <div class="pause-acts main-only">
           <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
+          <button type="button" id="p-arch" class="story-only"><span>Archive</span></button>
           <button type="button" id="p-exit" class="story-only"><span>Save and exit</span></button>
         </div>
         <div class="pause-acts set-only">
