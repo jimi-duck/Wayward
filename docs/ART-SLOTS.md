@@ -5,6 +5,18 @@ each one needs to be briefed, and how a finished file gets into the game. Writte
 2026-10-09. The hook is built: drop a file in `src/art/`, rebuild, and it shows.
 A slot with no file looks exactly as it does today.
 
+## The one file to give the image generator
+
+[art/CHATGPT-BRIEF.md](art/CHATGPT-BRIEF.md) is self-contained: the game and its
+story, the look (matched to the title art, attached from `art/reference/`), each
+faction's look, technical rules, the delivery format, a check-list, and all 109
+pictures with their prompts in batches. Attach it to a chat with the two reference
+pictures. It asks for a style sheet first, then a **PDF per batch**, one page per
+picture, each page carrying the text line `FILE: captains/vance`.
+`npm run art:prep -- <folder of PDFs>` cuts each picture out by that line, crops,
+sizes and puts it into `src/art/`. Single images named `captains__vance.png`
+work as well. It is written by `npm run art:brief`.
+
 ## The short version
 
 - **109 pictures in nine slots.** About 100 are wanted, 8 are optional extras.
@@ -53,9 +65,10 @@ Not built, on purpose or for later:
 Every brief is the same five parts, so a set comes out of one world:
 
 1. **Style block.** One paragraph, the same in every prompt: brand v1.1 in
-   words (industrial, "used, not dirty", worn paint and stencils; muted and
-   dark; teal for information only, red for threat only, dull gold for caution
-   only; no neon). It is in `STYLE` in `tools/art/briefs.ts`.
+   words, matched to the title art (cinematic and detailed, industrial, "used, not
+   dirty", worn paint and stencils; muted and dark with the Wayward's yellow-orange
+   as the warm anchor; teal for information only, red for threat only, dull gold
+   for caution only; no neon). It is in `STYLE` in `tools/art/briefs.ts`.
 2. **Subject.** From the game's rows: name, rank, ship and faction for a captain;
    `from`, role and the card's own words for a contact; the variant's label, role,
    size and tactic for a ship; the ending's pitch and file line; a sighting's

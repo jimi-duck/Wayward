@@ -15,6 +15,7 @@ import { CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PL
 // The prompt for every picture, written from the game's rows and tools/art/looks.ts.
 // Plain text, one block per picture, to paste into any image generator.
 
+type Raw = Omit<Brief, 'body'>;
 export interface Brief {
   slot: SlotId;
   id: string;
@@ -32,14 +33,16 @@ export interface Brief {
   /** The game rows the prompt was built from, for checking a result against its card. */
   facts: string[];
   optional?: boolean;
+  /** The prompt without the style block (the master brief states the style once). */
+  body: string;
 }
 
 /** The look of the whole game in one block, put at the head of every prompt. */
 export const STYLE = [
-  'Style: industrial cyberpunk frontier, "used, not dirty". Advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label.',
-  'Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels. Painterly-realistic concept art, restrained and grounded; not glossy, not sleek, not factory-fresh.',
-  'Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27). Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. No neon pink or purple.',
-  'Lighting: low-key, one practical light source, soft haze, restrained glow; nothing blown out.',
+  'Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, "used, not dirty": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label.',
+  'Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow.',
+  'Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward\'s yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink.',
+  'Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.',
 ].join(' ');
 
 export const AVOID_ALL = 'text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face';
@@ -61,14 +64,14 @@ function faceWords(f: Face): string {
 const dir = (s: SlotId) => `src/art/${SLOTS[s].dir}`;
 const sz = (s: SlotId) => `${SLOTS[s].w}×${SLOTS[s].h}`;
 
-const portraitSpec = [
+export const portraitSpec = [
   'Framing: head and shoulders portrait, 4:5 vertical, the face filling about two thirds of the frame height so it still reads when shown 48 pixels wide. Eyes in the upper third, looking toward the viewer.',
   'Lighting: the key light from the side or the screens in front; a plain dark, out-of-focus setting behind. The person is the whole picture.',
 ].join(' ');
 
-const player = 'The viewer is "Juno", a miner who stole the wrong ship; this person is someone met over a comms channel.';
+export const player = 'The viewer is "Juno", a miner who stole the wrong ship; this person is someone met over a comms channel.';
 
-function captainBrief(id: string, scarred = false): Brief {
+function captainBrief(id: string, scarred = false): Raw {
   const c = CAPTAINS.find((x) => x.id === id);
   const face = c?.face ?? CALLOWAY_FACE;
   const look = CAPTAIN_LOOK[id] ?? '';
@@ -91,7 +94,7 @@ function captainBrief(id: string, scarred = false): Brief {
 const cardOf = (id: string) => [...CARDS, ...STORY_CARDS].find((c) => c.id === id)!;
 const CALLER_FACTION: Record<string, string> = { miners: 'miners', kellern: 'kellern', guild: 'guild', frontier: 'frontier', gutter: 'gutter', custody: 'custody', office: 'office' };
 
-function contactBrief(id: string): Brief {
+function contactBrief(id: string): Raw {
   const c = cardOf(id);
   const look = CONTACT_LOOK[id] ?? '';
   const [name, role] = c.from.split(' · ');
@@ -105,7 +108,7 @@ function contactBrief(id: string): Brief {
   };
 }
 
-function emblemBrief(id: string): Brief {
+function emblemBrief(id: string): Raw {
   return {
     slot: 'emblem', id, file: `${dir('emblem')}/${id}.webp`,
     prompt: `A single flat emblem, a one-colour graphic mark for ${FACTION_LOOK[id]}\nThe mark: ${EMBLEM_IDEA[id]}.\nDraw it as a bold white shape on a pure black background, centred, with generous empty margin (the mark fills about 70% of the frame), thick clean strokes that survive being shrunk to 24 pixels, no gradients, no shading, no texture, no text. Square, 1:1. It will be tinted by the game, so it must work as a plain silhouette.\nStyle: stencilled, industrial, used: edges may be slightly worn, never decorative. Part of a set of ten marks; keep stroke weight and size the same across the set.`,
@@ -116,7 +119,7 @@ function emblemBrief(id: string): Brief {
   };
 }
 
-function shipBrief(id: string): Brief {
+function shipBrief(id: string): Raw {
   const v = VARIANTS[id]!, T = ALIEN_TYPES[v.kind];
   const size = T.r >= 3 ? 'large' : T.r >= 2.2 ? 'medium-large' : T.r >= 1.6 ? 'medium' : 'small';
   return {
@@ -129,7 +132,7 @@ function shipBrief(id: string): Brief {
   };
 }
 
-function placeBrief(id: string): Brief {
+function placeBrief(id: string): Raw {
   return {
     slot: 'place', id, file: `${dir('place')}/${id}.webp`,
     prompt: `${STYLE}\n\nSubject: ${PLACE_LOOK[id]}\nFraming: a wide establishing shot of the port seen from a ship approaching, ultra-wide banner. Keep everything important in the middle third of the height, because the game crops the top and bottom. A hint of a ship docked or approaching for scale. 16:9 is fine; the prep step crops to a 4:1 band.\nThe place should feel lived in: people work here.`,
@@ -139,7 +142,7 @@ function placeBrief(id: string): Brief {
   };
 }
 
-function endingBrief(id: string): Brief {
+function endingBrief(id: string): Raw {
   const e = ENDINGS.find((x) => x.id === id)!;
   return {
     slot: 'ending', id, file: `${dir('ending')}/${id}.webp`,
@@ -150,7 +153,7 @@ function endingBrief(id: string): Brief {
   };
 }
 
-function sightingBrief(flag: string): Brief {
+function sightingBrief(flag: string): Raw {
   const o = OBSERVATIONS.find((x) => x.flag === flag)!;
   const group = /thren/.test(flag) || flag === 'saw_thren' ? FACTION_LOOK.thren : /voice/.test(flag) || flag === 'saw_voice' ? FACTION_LOOK.voice : 'something unexplained, between the Voice and the Thren';
   return {
@@ -162,7 +165,7 @@ function sightingBrief(flag: string): Brief {
   };
 }
 
-function fileBrief(flag: string): Brief {
+function fileBrief(flag: string): Raw {
   const f = FRAGMENTS_ALL.find((x) => x.flag === flag)!;
   return {
     slot: 'file', id: flag, file: `${dir('file')}/${flag}.webp`,
@@ -174,7 +177,7 @@ function fileBrief(flag: string): Brief {
   };
 }
 
-function regionBrief(slug: string): Brief {
+function regionBrief(slug: string): Raw {
   const r = REGIONS_LONG.find((x) => regionSlug(x.name) === slug)!;
   return {
     slot: 'region', id: slug, file: `${dir('region')}/${slug}.webp`,
@@ -187,7 +190,7 @@ function regionBrief(slug: string): Brief {
 
 export function allBriefs(): Brief[] {
   const ids = artIds(), opt = artOptional();
-  const out: Brief[] = [];
+  const out: Raw[] = [];
   for (const id of ids.captain) out.push(captainBrief(id));
   for (const id of opt.captain ?? []) out.push(captainBrief(id.replace(/-scarred$/, ''), true));
   for (const id of ids.contact) out.push(contactBrief(id));
@@ -198,5 +201,5 @@ export function allBriefs(): Brief[] {
   for (const id of ids.sighting) out.push(sightingBrief(id));
   for (const id of ids.file) out.push(fileBrief(id));
   for (const id of ids.region) out.push(regionBrief(id));
-  return out;
+  return out.map((b) => ({ ...b, body: b.prompt.startsWith(STYLE) ? b.prompt.slice(STYLE.length).trimStart() : b.prompt }));
 }
