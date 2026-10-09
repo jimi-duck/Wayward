@@ -1,10 +1,9 @@
 import { angleDelta, clamp } from '../core/math';
 import type { Sector } from '../render/sector';
 import type { Boss } from '../sim/bosses';
-import { rockYield, TORP_YIELD } from '../sim/breakout';
 import { ENCOUNTERS } from '../sim/encounters';
 import { alienBonus, alienLabel, cloaked, type Alien } from '../sim/enemies';
-import { ROCK_KINDS, type Rock } from '../sim/field';
+import type { Rock } from '../sim/field';
 import { LOOSE, POWER_LABEL } from '../sim/pickups';
 import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
@@ -31,16 +30,14 @@ import { t as tr } from '../i18n';
 //                  out of view, in its faction's colour, brighter the closer
 //                  it is, blinking when one is close behind
 
-type Kind = 'hull' | 'boss' | 'rock';
+type Kind = 'hull' | 'boss';
 
-interface Pick { kind: Kind; id: number; x: number; y: number; z: number; r: number; ref: Alien | Boss | Rock; }
+interface Pick { kind: Kind; id: number; x: number; y: number; z: number; r: number; ref: Alien | Boss; }
 
 const MAX_MARKS = 18;
 /** Chevrons for hulls out of view, and how far out they reach. */
 const MAX_THREATS = 10;
 const THREAT_RANGE = 110;
-/** Hull targets win over rock at the same range: rock counts this much further away. */
-const ROCK_BIAS = 1.6;
 /** A new candidate must beat the current target by this much to take over. */
 const STICKY = 1.25;
 /** Deposits and pickups are marked inside this range. */
@@ -52,8 +49,6 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const metres = (u: number) => Math.round(u / PX);
 export const range = (u: number) => (metres(u) >= 1000 ? `${(metres(u) / 1000).toFixed(1)} km` : `${metres(u)} m`);
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const SIZE = ['L', 'M', 'S'] as const;
-const ASTEROID: Record<string, string> = { basalt: 'Asteroid', iron: 'Iron asteroid', rich: 'Rich asteroid', volatile: 'Volatile asteroid' };
 
 /** Set a node's text only when it changed. */
 function text(el: HTMLElement, t: string): void {
@@ -132,7 +127,6 @@ export class Targeting {
     const boss = world.command.boss;
     const bossPick = (b: Boss): Pick => ({ kind: 'boss', id: b.id, x: b.x, y: b.y, z: b.z, r: b.r, ref: b });
     const hullPick = (a: Alien): Pick => ({ kind: 'hull', id: a.id, x: a.x, y: a.y, z: a.z, r: a.r, ref: a });
-    const rockPick = (r: Rock): Pick => ({ kind: 'rock', id: r.id, x: r.x, y: 0, z: r.z, r: r.r, ref: r });
     const bossOk = !!boss && !boss.leaving && boss.cloak < 0.5;
 
     // the torpedo lock, when the bay is fitted
@@ -141,28 +135,19 @@ export class Targeting {
       if (bossOk && boss!.id === world.lock) return bossPick(boss!);
       const al = world.aliens.find((a) => a.id === world.lock && !cloaked(a));
       if (al) return hullPick(al);
-      const rock = world.field.find(world.lock);
-      if (rock) return rockPick(rock);
       this.lockedNow = false;
     }
 
-    // otherwise the best of: hulls toward the nose, the rock in the line of fire
-    const reach = world.stats.laserSpeed * world.stats.laserLife;
+    // otherwise the best hull toward the nose; rock is never a target
     const scoreOf = (p: Pick): number => {
       const dx = p.x - x, dz = p.z - z, d = Math.hypot(dx, dz);
       const off = Math.abs(angleDelta(heading, Math.atan2(-dz, dx)));
-      if (p.kind === 'rock') {
-        // only rock the lances would actually meet
-        if (d > reach || d < 0.5 || Math.sin(Math.min(off, Math.PI / 2)) * d > p.r + 0.6 || off > Math.PI / 2) return Infinity;
-        return d * ROCK_BIAS;
-      }
       if (off > 1.1) return Infinity;
       return d * (1 + off * 1.5) * (p.kind === 'boss' ? 0.6 : 1);
     };
     const candidates: Pick[] = [];
     for (const a of world.aliens) if (!cloaked(a)) candidates.push(hullPick(a));
     if (bossOk && !boss!.arriving) candidates.push(bossPick(boss!));
-    for (const r of world.field.rocks) if (Math.abs(r.x - x) < reach && Math.abs(r.z - z) < reach) candidates.push(rockPick(r));
     let best: Pick | null = null, bestScore = Infinity, keep: Pick | null = null, keepScore = Infinity;
     for (const p of candidates) {
       const sc = scoreOf(p);
@@ -179,7 +164,6 @@ export class Targeting {
     const dx = t.x - x, dz = t.z - z, d = Math.hypot(dx, dz);
     if (d > world.stats.laserSpeed * world.stats.laserLife || d < 0.5) return false;
     const off = Math.abs(angleDelta(heading, Math.atan2(-dz, dx)));
-    if (t.kind === 'rock') return off < Math.PI / 2 && Math.sin(off) * d < t.r + 0.3;
     return off < BOLT_ELEVATE_CONE + t.r / d;
   }
 
@@ -220,7 +204,7 @@ export class Targeting {
     el.style.transform = `translate(${c.x.toFixed(1)}px, ${c.y.toFixed(1)}px)`;
     const s = world.ship;
     const d = Math.hypot(t.x - s.x, t.y, t.z - s.z);
-    const alt = t.kind === 'rock' ? '' : t.y > 1 ? ` · ▲ ${metres(t.y)} m` : t.y < -1 ? ` · ▼ ${metres(-t.y)} m` : '';
+    const alt = t.y > 1 ? ` · ▲ ${metres(t.y)} m` : t.y < -1 ? ` · ▼ ${metres(-t.y)} m` : '';
     text($('tgt-d'), `${range(d)}${alt}`);
 
     this.drawCard(world, t, dt);
@@ -245,25 +229,6 @@ export class Targeting {
       name = tr(b.name);
       sub = `<b>${tr('{f} capital', { f: tr(cap(b.faction)) })}</b> · ${tr('phase')} ${b.phase + 1}/3`;
       hp = b.hp / b.maxHp;
-    } else {
-      // mining: what the rock is, what breaking it yields, what it breaks into
-      const r = t.ref as Rock, K = ROCK_KINDS[r.kind];
-      name = `${tr(ASTEROID[r.kind] ?? 'Asteroid')} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
-      const extra = r.kind === 'volatile' ? ` · ${tr('unstable')}` : '';
-      if (world.bk) {
-        // the Breakout: what the lasers take from it, and what a torpedo leaves
-        const y = rockYield(r.kind, r.size);
-        sub = `${tr('Ore')} <b>${y.ore}</b>${y.cyrite ? ` · Cyrite <b>${y.cyrite}</b>` : ''} · ${tr('torpedo')} <b>${Math.round(TORP_YIELD * 100)}%</b>${extra}`;
-        intK = tr('Integrity');
-        hp = r.hp / r.maxHp;
-      } else {
-        const chance = K.crystal[r.size]!, n = K.crystals[r.size]!;
-        const yieldWord = chance >= 1 ? `${tr('Yield')} <b>${n}</b>` : `${tr('Yield')} <b>${n}</b> · ${Math.round(chance * 100)}%`;
-        sub = `${yieldWord}${extra}`;
-        intK = tr('Integrity');
-        hp = r.hp / r.maxHp;
-      }
-      cls = `rock ${r.kind}`;
     }
     // how far: the brackets carry it on screen, the card everywhere
     const d = Math.hypot(t.x - world.ship.x, t.y, t.z - world.ship.z);
@@ -278,7 +243,7 @@ export class Targeting {
     text($('tgt-int-v'), `${Math.round(v * 100)}%`);
     if (t.kind === 'boss') cls = 'boss';
     const card = this.card;
-    for (const k of ['rock', 'basalt', 'iron', 'rich', 'volatile', 'elite', 'friendly', 'boss']) {
+    for (const k of ['elite', 'friendly', 'boss']) {
       const on = cls.split(' ').includes(k);
       this.box.classList.toggle(k, on);
       card.classList.toggle(k, on);

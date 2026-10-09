@@ -16,7 +16,7 @@
 #rv button { min-height: 40px; padding: 0 10px; background: transparent; color: var(--ink, #e4e1d3); border: 1px solid var(--line, rgba(216, 213, 198, .25));
   font: 600 13px/1.1 var(--font-rail, system-ui); letter-spacing: .06em; text-align: left; cursor: pointer; touch-action: manipulation; }
 #rv button:hover, #rv button:focus-visible { border-color: var(--cy, #4cc2cb); outline: none; }
-#rv button[aria-pressed="true"] { border-color: var(--amber, #e5a93a); color: var(--amber, #e5a93a); }
+#rv button[aria-pressed="true"] { border-color: var(--amber, #86a9d1); color: var(--amber, #86a9d1); }
 #rv .rv-stops { display: grid; gap: 4px; }
 #rv .rv-stops button { width: 100%; }
 #rv .rv-hint { margin: 0; font: 12px/1.4 var(--font-mono, monospace); color: var(--ink-2, #a9a89c); }
