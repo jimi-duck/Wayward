@@ -70,7 +70,7 @@ describe('the journey save', () => {
 
 describe('a journey saved before the overcharge was removed (version 9 and older)', () => {
   it.each([8, 9])('loses the reactor modules, keeps the rest, and gets its Krail back (saved as version %i)', (version) => {
-    const j = newJourney(3) as unknown as { version: number; carry: { krail: number; levels: Record<string, number> } };
+    const j = newJourney(3) as unknown as { version: number; carry: { krail: number; chits: number; levels: Record<string, number> } };
     j.version = version;
     j.carry.krail = 10;
     j.carry.levels = { tp_bay: 1, mn_layer: 1, oc_coils: 2, oc_nova: 1, sy_core_mines: 1, mo_impulse: 2 };
@@ -79,12 +79,12 @@ describe('a journey saved before the overcharge was removed (version 9 and older
     expect(Object.keys(back.carry.levels).some((id) => id.startsWith('oc_') || id === 'sy_core_mines')).toBe(false);
     expect(back.carry.levels).toMatchObject({ tp_bay: 1, mn_layer: 1, mo_impulse: 2 });
     // coils 40 + 60, nova 60, core-charged mines 40
-    expect(back.carry.krail).toBe(10 + 100 + 60 + 40);
+    expect(back.carry.chits).toBe(10 + 100 + 60 + 40);
   });
 
   it('leaves a current save alone', () => {
     const j = newJourney(4);
-    j.carry.krail = 77;
-    expect(migrate(JSON.parse(JSON.stringify(j)))!.carry.krail).toBe(77);
+    j.carry.chits = 77;
+    expect(migrate(JSON.parse(JSON.stringify(j)))!.carry.chits).toBe(77);
   });
 });

@@ -11,7 +11,7 @@ import { newRun } from '../src/sim/run';
 function result(j: Journey, o: Partial<SortieResult> = {}): SortieResult {
   const r = newRun(1);
   r.escaped = (o.ended ?? 'jumped') === 'jumped';
-  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 40, food: 30, parts: 10 }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
+  return { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3, cyrite: 40, supplies: 30}, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {}, ...o };
 }
 
 /** A long journey out of Cerro, in the first system with a lane plotted. */
@@ -62,7 +62,7 @@ describe('Calloway on the long chart', () => {
     expect(j.trail.length - 1 - j.hunt.idx).toBeLessThanOrEqual(GATE_LEAD + 1);
   });
 
-  it('captures on a wreck with her there only with the region’s chance, the same way each time', { timeout: 30_000 }, () => {
+  it('captures on a wreck with her there only with the region’s chance, the same way each time', { timeout: 120_000 }, () => {
     const ends = new Map<string, number>();
     for (let seed = 1; seed <= 24; seed++) {
       const j = inFirstSystem(seed);

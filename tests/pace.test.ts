@@ -19,7 +19,7 @@ function sortie(pace: SortieDef['pace'], quiet = false): World {
   const run = newRun(1);
   run.escaped = true;
   endSortie(j, {
-    ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 30, food: 12, parts: 6, plates: 3 }, run,
+    ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 30, supplies: 12, plates: 3 }, run,
     calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {},
   });
   plot(j, lanesFrom(j.chart, j.at)[0]!.to.id);

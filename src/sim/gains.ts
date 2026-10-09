@@ -26,9 +26,9 @@ const STORY_SHORT: Record<string, string> = {
   frag_blackbox: 'File +1', frag_charts: 'File +1', frag_workorder: 'File +1', frag_witnesses: 'File +1',
   copy_warden: 'Copy out', voice_read: 'Copy out',
 };
-const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['chits', 'chits'], ['ore', 'ore'], ['parts', 'parts'], ['food', 'food']];
+const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['chits', 'chits'], ['supplies', 'supplies']];
 
-const held = (x: Ctx, k: keyof Cost) => ({ chits: x.chits, cyrite: x.cyrite, ore: x.ore, parts: x.parts, food: x.food })[k];
+const held = (x: Ctx, k: keyof Cost) => ({ chits: x.chits, cyrite: x.cyrite, supplies: x.supplies })[k];
 
 /** An amount as a delta, without the comms module (which imports this one). */
 function delta(a: Amount | undefined, have: number, fee: number): number {
@@ -50,12 +50,11 @@ export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyo
   if (o.spawn?.length && !o.blockade && !o.captain) out.push('Hostiles');
   if (o.dismiss) out.push('They leave');
   // what changes hands
-  if (o.sell && paid.ore) out.push(`+${o.sell * paid.ore} chits`);
   for (const [k, word] of WHAT) {
     const n = delta(o[k], held(x, k), fee);
     if (n) out.push(`${n > 0 ? '+' : '−'}${Math.abs(n)} ${word}`);
   }
-  if (o.krail) out.push(`${o.krail > 0 ? '+' : '−'}${Math.abs(o.krail)} Krail`);
+  if (o.krail) out.push(`${o.krail > 0 ? '+' : '−'}${Math.abs(o.krail)} chits`);
   if (o.plates) out.push(o.plates > 0 ? `+${o.plates} hull` : `−${-o.plates} hull`);
   if (o.job) out.push('Job');
   if (o.seam) out.push('Rich rock');

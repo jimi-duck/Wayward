@@ -108,11 +108,11 @@ export class SummaryPanel {
       $('sum-tiles').replaceChildren(
         plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Through the lane mouth' : 'Short of the lane')),
         plain('Cyrite', String(r.cyrite), r.escaped ? t('{n} left after the jump', { n: r.cyriteLeft }) : t('Gathered')),
-        plain('Ore', String(r.ore), t('{n} sold at the port', { n: r.oreSold })),
+        plain('Scrap', String(r.ore), t('{n} chits paid', { n: r.oreSold })),
         plain('Rock mined', String(r.mined), t('{n} blasted', { n: r.blasted })),
         tile('Refits', r.refit, p.refit),
         tile('Kills', r.kills, p.kills),
-        plain('Parts', String(r.parts), t('{n} plates mended', { n: r.platesGained })),
+        plain('Supplies', String(r.parts), t('{n} plates mended', { n: r.platesGained })),
         plain('Port', r.docked ? `${r.docked}×` : '—', t(r.docked ? 'Docked at Frontier Supply' : 'Never docked')),
       );
     } else $('sum-tiles').replaceChildren(
@@ -120,7 +120,7 @@ export class SummaryPanel {
       tile('Refits', r.refit, p.refit),
       tile('Kills', r.kills, p.kills),
       tile('Best chain', r.bestChain, p.chain),
-      tile('Krail', r.krail, p.krail),
+      tile('Chits', r.krail, p.krail),
       tile('Capital ships', r.capitals, p.capitals),
       h('div', 'tile', '', h('span', 'k', t('Sector events')), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', t('{n} boosters found', { n: r.powerups }))),
     );
@@ -188,7 +188,7 @@ export class SummaryPanel {
     if (met) notes.push(t('Capital ships: {a} killed, {b} evaded, {c} got away.', { a: r.capitals, b: r.capitalsEvaded, c: r.capitalsEscaped }));
     if (r.shieldsAbsorbed) notes.push(plural(r.shieldsAbsorbed, 'Shields took {n} hit.', 'Shields took {n} hits.'));
     if (r.platesGained) notes.push(plural(r.platesGained, 'You mended {n} plate.', 'You mended {n} plates.'));
-    if (r.dropped) notes.push(t('Krail picked up: {p}%.', { p: Math.round((r.krail / r.dropped) * 100) }));
+    if (r.dropped) notes.push(t('Chits picked up: {p}%.', { p: Math.round((r.krail / r.dropped) * 100) }));
     box.append(h('p', 'how-note', notes.join(' ')));
     return box;
   }
@@ -297,7 +297,7 @@ export class StartOptions {
       h('span', 'sv-c', '', h('em', '', t('Mining')), pips(K.scale.mining, '')),
       h('span', 'sv-c', '', h('em', '', t('Wrecks')), pips(K.scale.wrecks, '')),
     );
-    $('sv-rule').textContent = t('Wrecked? You drift on, hold and Krail gone. {n} wrecks in one region and you fly it again.', { n: K.voyage.wrecks });
+    $('sv-rule').textContent = t('Wrecked? You drift on, a share of your stores gone. {n} wrecks in one region and you fly it again.', { n: K.voyage.wrecks });
   }
 
   logbook(on: boolean): void {

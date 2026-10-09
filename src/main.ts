@@ -278,7 +278,7 @@ function boot(review: typeof import('./review') | null): void {
     reported = false;
     setPaused(false);
     const d = world.sortie;
-    hud.note(world, d.home ? t('Clear of the yards · make for the lane mouth') : `${d.name} · ${t('{n} Krail to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
+    hud.note(world, d.home ? t('Clear of the yards · make for the lane mouth') : `${d.name} · ${t('{n} Cyrite to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
   const openChart = (lines: string[]) => {
@@ -296,7 +296,7 @@ function boot(review: typeof import('./review') | null): void {
     if (world.carry().flags.includes('news')) hearNews(j);
     return {
       lanes: () => options(j).map((o) => ({
-        id: o.to.id, name: o.to.name, cyrite: o.route.cyrite, days: o.route.days,
+        id: o.to.id, name: o.to.name, cyrite: o.fuel, days: o.route.days,
         note: [o.netted ? t('the Net holds it') : '', o.shadow ? t('Calloway last seen there') : '', o.to.kind === 'edge' ? t('the way out') : ''].filter(Boolean).join(' · '),
       })),
       current: () => j.dest,

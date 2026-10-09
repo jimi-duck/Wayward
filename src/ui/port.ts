@@ -1,6 +1,6 @@
 import { artImg } from './art';
 import { placeOfPort } from '../content/art';
-import { FOOD_MAX, TANK_MAX } from '../sim/breakout';
+import { CYRITE_SELL, SUPPLIES_MAX, TANK_MAX } from '../sim/breakout';
 import { stopIdle, type Stop } from '../sim/stop';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -8,9 +8,9 @@ import { num, plural, t } from '../i18n';
 
 // ── the port ──────────────────────────────────────────────────────────────
 // Docked: the world waits while you trade. One tap does the sensible stop
-// (sell the hold, then Cyrite for the jump, food, the hull and a second jump,
+// (Cyrite for the jump, supplies, the hull and a second jump,
 // as far as the chits reach: sim/stop.ts), and the row says what it will do.
-// Selling, buying Cyrite and food a unit at a time and patching a plate are
+// Buying Cyrite and supplies a unit at a time and patching a plate are
 // one tap deeper, under "By hand". Beside them: open the refit bay (it
 // always opens at a port) and cast off. Every port sets its own
 // prices, and the Net marks them up. The list is redrawn after every trade,
@@ -18,17 +18,16 @@ import { num, plural, t } from '../i18n';
 // again: each press turns to the next lane out of here. The yard's modules
 // are in the refit bay, fitted only while docked.
 
-/** What a sensible stop does, as chips: ore sold and what comes aboard. */
-function deltas(s: Stop, ore: number): string[] {
+/** What a sensible stop does, as chips: what comes aboard. */
+function deltas(s: Stop): string[] {
   return [
-    ...(s.sell ? [t('{n} ore sold', { n: ore })] : []),
     ...(s.cyrite ? [`+${s.cyrite} ${t('Cyrite')}`] : []),
-    ...(s.food ? [`+${s.food} ${t('Food')}`] : []),
+    ...(s.supplies ? [`+${s.supplies} ${t('Supplies')}`] : []),
     ...(s.plate ? [`+${s.plate} ${t('Hull')}`] : []),
   ];
 }
 
-type Line = { key: 'stop' | 'hand' | 'sell' | 'course' | 'bay' | PortItem; label: string; price: string; note: string; chips?: string[]; ok: boolean; go?: () => void };
+type Line = { key: 'stop' | 'hand' | 'course' | 'bay' | PortItem; label: string; price: string; note: string; chips?: string[]; ok: boolean; go?: () => void };
 
 /** The lanes out of a port, for re-plotting while docked: `pick` plots one and the world's jump follows it. */
 export interface Course {
@@ -36,6 +35,14 @@ export interface Course {
   current: () => string | null;
   pick: (id: string) => void;
 }
+
+/** What a port says of the ship's state, and what to do about it (World.warnings). */
+const PORT_WARN = {
+  empty: 'Out of supplies · the ship flies slower and worse. Buy some here.',
+  low: 'Supplies low · a lane or two left. Buy some here.',
+  heavy: 'Heavy · slower to turn, and each jump burns {n} more Cyrite. A lighter build or a bigger frame in the bay fixes it.',
+  hot: 'Running hot · the guns cycle slower. Cooling in the bay fixes it.',
+} as const;
 
 export class PortPanel {
   private off: (() => void) | null = null;
@@ -109,7 +116,6 @@ export class PortPanel {
     this.sel = i;
     if (l.go) { l.go(); return; }
     if (l.key === 'stop') w.sensibleStop();
-    else if (l.key === 'sell') w.sellOre();
     else if (l.key === 'course') {
       // the next lane out of here, round and round
       const c = this.course!, lanes = c.lanes(), at = lanes.findIndex((x) => x.id === c.current());
@@ -132,8 +138,13 @@ export class PortPanel {
     const w = this.world!;
     this.trade(w);
     this.sel = Math.min(this.sel, this.lines.length - 1);
-    const stock = [[t('Chits'), String(w.chits)], [t('Tank'), `${w.cyrite}/${w.jumpCost}`], [t('Food'), String(w.food)], [t('Hold'), `${w.ore}/${w.holdMax}`], [t('Hull'), `${w.plates}/${w.stats.maxPlates}`]];
+    const stock = [[t('Chits'), String(w.chits)], [t('Tank'), `${w.cyrite}/${w.jumpCost}`], [t('Supplies'), `${w.supplies}/${w.supplyMax}`], [t('Hull'), `${w.plates}/${w.stats.maxPlates}`]];
     $('port-stock').replaceChildren(...stock.map(([k, v]) => h('span', '', '', h('span', 'k', k!), h('b', '', v!))));
+    // the ship's trouble and where it is mended: the stores here, the weight in the bay
+    const warn = w.warnings.map((k) => t(PORT_WARN[k], { n: w.weightFuel }));
+    const el = $('port-warn');
+    el.hidden = !warn.length;
+    el.replaceChildren(...warn.map((l) => h('span', '', l)));
     $('port-list').replaceChildren(...this.lines.map((l, i) => {
       const b = h('button', `port-l${i === this.sel ? ' sel' : ''}${l.key === 'stop' ? ' stop' : ''}`, '', h('kbd', '', String(i + 1)), h('span', 'pl-n', l.label), l.chips ? h('span', 'pl-chips', '', ...l.chips.map((c) => h('span', 'pl-chip', c))) : h('span', 'pl-note', l.note), h('b', 'pl-p', l.price)) as HTMLButtonElement;
       b.type = 'button';
@@ -148,9 +159,11 @@ export class PortPanel {
     const P = w.prices, need = Math.max(0, w.jumpCost - w.cyrite);
     const plan = w.planStop(), idle = stopIdle(plan);
     this.lines = [
-      { key: 'stop', label: t('Sensible stop'), price: idle ? '—' : `${plan.chits > 0 ? '+' : plan.chits < 0 ? '−' : ''}${Math.abs(plan.chits)}`, note: t('Nothing to do'), chips: idle ? undefined : deltas(plan, w.ore), ok: !idle },
-      { key: 'bay', label: t('Refit bay'), price: `${num(Math.floor(w.krail))} Krail`, note: t('Modules for Krail · the yard’s work only here'), ok: true, go: () => { this.close(); this.onBay?.(); } },
+      { key: 'stop', label: t('Sensible stop'), price: idle ? '—' : `−${Math.abs(plan.chits)}`, note: t('Nothing to do'), chips: idle ? undefined : deltas(plan), ok: !idle },
+      { key: 'bay', label: t('Refit bay'), price: `${num(Math.floor(w.chits))} ${t('chits')}`, note: t('Upgrades are fitted at a work bay, only here'), ok: true, go: () => { this.close(); this.onBay?.(); } },
     ];
+    const spare = w.spareCyrite;
+    if (w.bk && spare > 0) this.lines.push({ key: 'bay', label: t('Sell spare Cyrite'), price: `+${spare * CYRITE_SELL}`, note: t('{n} beyond the jump · {p} chits each', { n: spare, p: CYRITE_SELL }), ok: true, go: () => { w.sellCyrite(); this.render(); } });
     const c = this.course, lanes = c?.lanes() ?? [];
     if (c && lanes.length) {
       const now = lanes.find((x) => x.id === c.current()) ?? lanes[0]!;
@@ -159,11 +172,10 @@ export class PortPanel {
         note: [t('Bound for {dest}', { dest: now.name }), plural(now.days, '{n} day', '{n} days'), now.note].filter(Boolean).join(' · '), ok: lanes.length > 1,
       });
     }
-    this.lines.push({ key: 'hand', label: t(this.manual ? 'By hand ▾' : 'By hand ▸'), price: '', note: t('Sell, buy and patch one at a time'), ok: true, go: () => { this.manual = !this.manual; this.render(); } });
+    this.lines.push({ key: 'hand', label: t(this.manual ? 'By hand ▾' : 'By hand ▸'), price: '', note: t('Buy and patch one at a time'), ok: true, go: () => { this.manual = !this.manual; this.render(); } });
     if (this.manual) this.lines.push(
-      { key: 'sell', label: t('Sell the hold'), price: w.ore ? `+${w.ore * P.ore}` : '—', note: t('{n} ore at {p} chits', { n: w.ore, p: P.ore }), ok: w.ore > 0 },
-      { key: 'cyrite', label: t('Buy Cyrite'), price: `${P.cyrite}`, note: w.cyrite >= TANK_MAX ? t('Tank full') : need ? t('{n} short of the jump', { n: need }) : t('Enough to jump'), ok: w.canBuy('cyrite') },
-      { key: 'food', label: t('Buy food'), price: `${P.food}`, note: w.food >= FOOD_MAX ? t('Galley full') : t('{n} in the galley · a day each', { n: w.food }), ok: w.canBuy('food') },
+      { key: 'cyrite', label: t('Buy Cyrite'), price: `${w.cyritePrice}`, note: w.cyrite >= TANK_MAX ? t('Tank full') : need && w.cyritePrice > P.cyrite ? t('{n} short of the jump · rush price', { n: need }) : need ? t('{n} short of the jump', { n: need }) : t('Enough to jump'), ok: w.canBuy('cyrite') },
+      { key: 'supplies', label: t('Buy supplies'), price: `${P.supplies}`, note: w.supplies >= w.supplyMax ? t('Stores full') : t('{n} aboard · a day each', { n: w.supplies }), ok: w.canBuy('supplies') },
       { key: 'plate', label: t('Patch a plate'), price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? t('Hull whole') : `${t('Hull')} ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
     );
   }

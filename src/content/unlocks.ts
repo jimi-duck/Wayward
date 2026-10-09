@@ -91,7 +91,7 @@ export const UNLOCKS: UnlockDef[] = [
   {
     id: 'u_gold', kind: 'cosmetic', name: 'Krail-gold engines', grants: ['engine-gold'],
     text: 'A cosmetic: your engines burn gold.',
-    hint: 'Collect 1,500 krail, across all your runs.',
+    hint: 'Collect 1,500 chits, across all your runs.',
     earned: (_r, life) => life.krail >= 1500,
   },
 ];

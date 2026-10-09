@@ -66,7 +66,7 @@ it('opens endings on real journeys', { timeout: 7_200_000 }, () => {
         const st = SCATTER.map((s) => `${s} ${l.standing[s] ?? 0}`).join(', ');
         const mk = SHIP_SYSTEMS.map((s) => `${s} ${l.marks[s]}`).join(', ');
         const hunting = (['custody', 'office', 'gutter'] as const).filter((f) => l.notice(f)).join(', ') || '—';
-        rows.push(`| ${lean} | ${policy} | through | ${open.join(', ')} | ${st} | ${mk} | ${Math.floor(j.carry.krail)} | ${hunting} | ${l.beaten} | ${[...l.flags].join(', ') || '—'} |`);
+        rows.push(`| ${lean} | ${policy} | through | ${open.join(', ')} | ${st} | ${mk} | ${Math.floor(j.carry.chits)} | ${hunting} | ${l.beaten} | ${[...l.flags].join(', ') || '—'} |`);
       }
     }
   }

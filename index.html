@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Wayward">
-  <meta name="description" content="Wayward: a stolen ore hauler, a file the Continuance wants back, and the way out. Mine Krail, refit, and stay one step ahead.">
+  <meta name="description" content="Wayward: a stolen ore hauler, a file the Continuance wants back, and the way out. Collect chits, refit, and stay one step ahead.">
   <title>Wayward</title>
   <!-- Added to the Home Screen, the game opens with no browser bars: on iPhone
        that is the only way to the whole screen. -->
@@ -92,7 +92,7 @@
       <!-- upper left: the one thing to do, and only what is worth a second line -->
       <section id="objective" class="hud-block glass" aria-live="polite" aria-label="Current objective">
         <span class="obj-k">Objective</span>
-        <div class="obj-h"><b id="obj-t">Extract Krail</b><span id="obj-left"></span></div>
+        <div class="obj-h"><b id="obj-t">Collect chits</b><span id="obj-left"></span></div>
         <i class="ticks" id="obj-p"></i>
         <span id="obj-s"></span>
         <ul id="obj-list"></ul>
@@ -124,8 +124,8 @@
           <span class="rack" id="g-mines"></span><b class="val" id="v-mines">0</b>
         </div>
         <div class="sys-foot">
-          <span class="stores" id="rail"><span class="lbl" id="xp-l">Krail</span><b id="xp-v">0</b><span id="xp-gain"></span></span>
-          <span class="stores vy-cells" id="vy-cells"><span class="lbl" id="sys-hold-l">Hold</span><b id="vy-ore">0/40</b><span class="lbl">Parts</span><b id="vy-parts">0</b><span class="lbl">Chits</span><b id="vy-chits">0</b><span class="lbl">Food</span><b id="vy-food">0</b></span>
+          <span class="stores" id="rail"><span class="lbl" id="xp-l">Chits</span><b id="xp-v">0</b><span id="xp-gain"></span></span>
+          <span class="stores vy-cells" id="vy-cells"><span class="lbl">Chits</span><b id="vy-chits">0</b><span class="lbl">Supplies</span><b id="vy-supplies">0</b></span>
           <span id="sys-score"><span class="lbl">Score</span><b class="val" id="score">000000</b><span id="chain"><span class="lbl">Chain <span id="chain-n">0</span></span><b id="chain-x">×1</b></span></span>
         </div>
       </section>
@@ -330,6 +330,7 @@
         <div id="port-art" class="port-art" aria-hidden="true" hidden></div>
         <header class="ph"><span class="kick">Docked</span><h2 id="port-t">Frontier Supply</h2><span class="sub" id="port-s">Refuel · repair · trade · no implant checks</span></header>
         <div class="port-stock" id="port-stock"></div>
+        <div class="port-warn" id="port-warn" hidden></div>
         <div class="port-list" id="port-list"></div>
         <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>8</kbd> stop, fit, plot, trade · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off</span><button type="button" id="port-x">Cast off</button></footer>
       </div>
@@ -399,8 +400,8 @@
           <h3 class="th">Orders</h3>
           <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
           <ol class="howto arcade-only">
-            <li><b>Mine Krail</b><span>Shoot rock, grab crystals. Torpedoes lose half.</span></li>
-            <li><b>Upgrade</b><span>Spend Krail in the bay.</span></li>
+            <li><b>Collect chits</b><span>Shoot rock, grab crystals. Torpedoes lose half.</span></li>
+            <li><b>Upgrade</b><span>Spend chits in the bay.</span></li>
             <li><b>Survive</b><span>Outlast the waves.</span></li>
           </ol>
           <ol class="brief steps" id="brief" data-i18n="html"><li>Laser the <b class="v">violet rock</b> for Cyrite · torpedoes waste half</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>

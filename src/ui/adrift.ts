@@ -20,7 +20,7 @@ export const SCENES: Record<Scene, { kick: string; lines: string[] }> = {
       'Every light goes out. The hold opens to the dark.',
       'The drive is cold. Nothing answers on any channel.',
       'A lamp, far off, sweeping slowly. A Drift tug, working the wrecks.',
-      '“Salvage claim. We tow, you pay. The hold and your Krail.”',
+      '“Salvage claim. We tow, you pay. A share of everything aboard.”',
     ],
   },
   lost: {

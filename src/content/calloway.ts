@@ -16,7 +16,7 @@ export type Trick = 'lie' | 'bluff' | 'decoy' | 'dark' | 'run' | 'fight' | 'plan
 
 /** Each trick, in words (her file on the chart, the last meeting's lines). */
 export const TRICK_WORDS: Record<Trick, string> = {
-  lie: 'false headings', bluff: '“the file is already out”', decoy: 'ore pods dumped as a decoy', dark: 'going dark', run: 'running for the lane',
+  lie: 'false headings', bluff: '“the file is already out”', decoy: 'stores dumped as a decoy', dark: 'going dark', run: 'running for the lane',
   fight: 'turning to fight', plan: 'false flight plans', fleet: 'Drift fleets that lie for you',
 };
 
@@ -30,7 +30,6 @@ export const TRICKS: Record<string, Trick> = {
   'calloway_here:dark': 'dark',
   'calloway_here:fight': 'fight',
   'false_trail:pay': 'plan',
-  'false_trail:ore': 'plan',
   'drift_fleet:trail': 'fleet',
   'offer_tank:lie': 'lie',
   'offer_home:think': 'lie',

@@ -13,7 +13,7 @@ import type { RunStats } from './run';
 // she keeps a file on the Wayward, and the file changes how she comes:
 //
 //   tricks  · every way you have got away from her (a false heading, the
-//             ore pods, going dark, a false flight plan...) is counted, won
+//             stores dumped, going dark, a false flight plan...) is counted, won
 //             or lost, and each one she has seen works less well the next
 //             time (content/calloway.ts LEARN off its odds). Running from
 //             her brings a bigger wing; beating her ship, a heavier one.

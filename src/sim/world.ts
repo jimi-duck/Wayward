@@ -12,9 +12,9 @@ import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { STORY_AT } from '../content/story';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, HOLD_START, JUMP_COST, PATCH_COST,
+  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
-  rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
+  rockYield, DOCK_SPEED, CYRITE_SELL, CYRITE_RUSH, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
@@ -44,10 +44,10 @@ import {
   BREACH_GRACE, CHAIN_WINDOW, DYING, PX, BOOST_FIRST, BOOST_CHANCE, BOOST_GAP, REPAIR_CHANCE,
   REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, MINE_HP, MINE_KRAIL, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
-import type { Prices } from '../content/systems';
+import { SCRAP_PRICE, type Prices } from '../content/systems';
 import { ARCADE_PRICE } from '../content/web';
 import { blockOf, install as bayInstall, quickPicks, stockLevels, type BayCtx, type Block } from './bay';
-import { feelBudgets } from './budgets';
+import { feelBudgets, overRatings, weightFuel } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { planStop, type Stop } from './stop';
 import { reasonOf, type Advice } from './advice';
@@ -75,7 +75,7 @@ import {
 
 export type Phase = 'play' | 'hail' | 'comms' | 'dock' | 'bay' | 'over';
 /** What the port sells. */
-export type PortItem = 'cyrite' | 'plate' | 'food';
+export type PortItem = 'cyrite' | 'plate' | 'supplies';
 
 export interface WorldOptions {
   /** Upgrade, event and modifier ids opened by long-term progression. */
@@ -221,15 +221,18 @@ export class World implements EncounterHost {
   // the Breakout: the course and the pursuit (null in the arcade), the tank, the hold, the cutter
   mode: Mode;
   bk: Breakout | null = null;
-  /** Krail aboard: what the refit bay builds from, in both modes. */
-  krail = 0;
+  /** Chits are the only money, in both modes. `krail` is the run's old name for the same purse (the Arcade's tuning and records still use it). */
+  get krail(): number { return this.chits; }
+  set krail(v: number) { this.chits = v; }
+  /** What the bay spends: chits, in both modes. */
+  get purse(): number { return this.chits; }
   /** Cyrite in the tank: fuel for the jump (the Story mode). */
   cyrite = 0;
-  ore = 0;
-  holdMax = HOLD_START;
-  parts = 0;
+  /** Chits aboard: the one purse in both modes (the bay, ports, favours). Rock and scrap pay into it as they are picked up. */
   chits = 0;
-  /** Seconds into patching a plate from parts. */
+  /** Supplies aboard: the galley and the spares in one. A lane's days, the drive's wear and a plate patch draw on it. */
+  supplies = 0;
+  /** Seconds into patching a plate from supplies. */
   patchT = 0;
   /** Seconds left of "the lasers are working a rock" after the last hit on one (the comms desk waits it out). */
   mineT = 0;
@@ -241,7 +244,6 @@ export class World implements EncounterHost {
   docked = false;
   /** What the fitted modules do (sim/modules.ts), worked out with the stats. */
   fx: Effects = effects({});
-  private holdNag = 0;
 
   // the comms: the card on the table, what the run has set in motion, and who thinks what of you
   comms: Open | null = null;
@@ -254,7 +256,6 @@ export class World implements EncounterHost {
   private heardChatter = new Set<string>();
   private wasBusy: Busy = 'free';
   private arrivalSaid = false;
-  private fullSaid = false;
   private fightT = 0;
   flags = new Set<string>();
   standing: Partial<Record<Standing, number>> = {};
@@ -270,10 +271,9 @@ export class World implements EncounterHost {
   /** Seconds of a sold survey's veined rock left. */
   private seamT = 0;
 
-  // the journey: the system being flown, what came aboard with the ship, food, and what this sortie did to the hunt
+  // the journey: the system being flown, what came aboard with the ship, and what this sortie did to the hunt
   sortie: SortieDef = HOME;
   private carryIn: Carry | null = null;
-  food = 0;
   /** Calloway: seconds into the sortie she arrives; whether she has, and whether her ship is the one fighting. */
   callowayAt = Infinity;
   callowayMet = false;
@@ -334,13 +334,12 @@ export class World implements EncounterHost {
     this.mineT = 0;
     this.docked = false;
     this.patchT = 0;
-    this.holdNag = 0;
     this.comms = null;
     this.call = null;
     this.deskRng = new Rng(this.seed * 7919 + 13);
     this.desk = new Desk(this.deskRng, 0, this.sortie.calls ?? 1, this.carryIn?.hush ?? HUSH);
     this.heardChatter = new Set();
-    this.wasBusy = 'free'; this.arrivalSaid = false; this.fullSaid = false; this.fightT = 0;
+    this.wasBusy = 'free'; this.arrivalSaid = false; this.fightT = 0;
     this.flags = new Set();
     this.standing = {};
     this.jobs = [];
@@ -354,7 +353,7 @@ export class World implements EncounterHost {
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     this.stage = null;
     if (this.mode !== 'breakout') {
-      this.bk = null; this.krail = 0; this.cyrite = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
+      this.bk = null; this.krail = 0; this.cyrite = 0; this.chits = 0; this.supplies = 0; this.callowayAt = Infinity;
       this.bayAt = ARCADE_PRICE; this.bayQuiet = 0;
       this.stock();
       return;
@@ -371,11 +370,8 @@ export class World implements EncounterHost {
     this.field.density = def.density;
     this.cyrite = this.survival.voyage.start.cyrite;
     this.krail = 0;
-    this.ore = 0;
-    this.holdMax = HOLD_START;
-    this.parts = 0;
     this.chits = 0;
-    this.food = this.survival.voyage.start.food;
+    this.supplies = this.survival.voyage.start.supplies;
     // a few violet-veined rocks in the opening field: the first Cyrite is there to be cut
     let n = 0;
     const most = Math.round(this.richShare * 44);
@@ -393,22 +389,18 @@ export class World implements EncounterHost {
     if (!Object.keys(this.levels).length) { this.levels = stockLevels(); this.refreshStats(); }
   }
 
-  /** What the fitted modules set up at the start of a sortie, or when one is fitted: the hold's racks, the flags they open in the comms. */
+  /** What the fitted modules set up at the start of a sortie, or when one is fitted: the supply racks, the flags they open in the comms. */
   private fitAboard(): void {
-    this.holdMax = HOLD_START + this.fx.hold;
     for (const f of this.fx.flags) this.flags.add(f);
   }
 
-  /** What the ship brings from the last system: the hold, the tank, the build and the rail, the plates, and what the comms set in motion. */
+  /** What the ship brings from the last system: the stores, the tank, the build, the plates, and what the comms set in motion. */
   private bringAboard(c: Carry): void {
     this.cyrite = Math.min(TANK_MAX, c.cyrite);
-    this.krail = c.krail;
-    this.parts = c.parts;
     this.chits = c.chits;
-    this.food = Math.min(FOOD_MAX, c.food);
+    this.supplies = Math.min(this.supplyMax, c.supplies);
     this.levels = { ...c.levels };
     this.refreshStats();
-    this.ore = Math.min(HOLD_START + this.fx.hold, c.ore);
     this.plates = Math.max(1, Math.min(this.stats.maxPlates, c.plates));
     this.refit = c.refit;
     this.techs = new Set(c.techs);
@@ -428,7 +420,7 @@ export class World implements EncounterHost {
   /** What the ship carries now, into the next system. */
   carry(): Carry {
     return {
-      cyrite: this.cyrite, krail: this.krail, ore: this.ore, parts: this.parts, chits: this.chits, food: this.food, plates: this.plates, levels: { ...this.levels },
+      cyrite: this.cyrite, chits: this.chits, supplies: this.supplies, plates: this.plates, levels: { ...this.levels },
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
       hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
@@ -456,7 +448,25 @@ export class World implements EncounterHost {
 
   /** Cyrite the plotted jump takes (the Breakout's lane in Cerro). */
   get jumpCost(): number {
-    return this.bk?.jumpCost ?? 0;
+    return (this.bk?.jumpCost ?? 0) + this.weightFuel;
+  }
+
+  /** Cyrite a jump takes on top of the lane's, for a ship carried heavy. */
+  weightFuel = 0;
+  /** The stores are gone: the ship flies slower and worse until a crate is aboard (EMPTY_STORES). */
+  thin = false;
+
+  /** What is wrong with the ship, in the order it matters: for the HUD's quiet line. */
+  get warnings(): Array<'empty' | 'low' | 'heavy' | 'hot'> {
+    const out: Array<'empty' | 'low' | 'heavy' | 'hot'> = [];
+    if (this.bk) {
+      if (this.supplies <= 0) out.push('empty');
+      else if (this.supplies <= LOW_SUPPLIES) out.push('low');
+    }
+    const over = overRatings(this.levels);
+    if (over.mass) out.push('heavy');
+    if (over.heat) out.push('hot');
+    return out;
   }
 
   /** The clock the difficulty curve reads: run time in the arcade, heat in the Breakout. */
@@ -542,6 +552,8 @@ export class World implements EncounterHost {
       const o = this.comms!;
       if ((o.slow = Math.max(0, o.slow - dt)) <= 0) { this.answer(o.def.slow!.default, true); return; }
     }
+    // the stores run out or come back: the stat block follows
+    if (this.bk && (this.supplies <= 0) !== this.thin) this.refreshStats();
     Object.assign(this.prev, this.ship);
     const s = this.ship, t = this.runTime, st = this.stats;
     const p = pressure(this.clock, this.mods);
@@ -655,17 +667,16 @@ export class World implements EncounterHost {
     b.heat = b.def.quiet ? Math.max(0, b.heat - QUIET_COOL * dt) : Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * this.fx.heat * this.survival.heat.rate * dt);
     if (b.nagT > 0) b.nagT -= dt;
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
-    if (this.holdNag > 0) this.holdNag -= dt;
     if (!this.alive || b.jumpT >= 0) return;
     this.stage?.step(this, dt);
 
     if (this.mineT > 0) this.mineT -= dt;
 
-    // patching: parts into a plate, once the ship has been left alone for a while
-    if (this.plates < this.stats.maxPlates && this.parts >= this.patchCost && this.sinceHit >= PATCH_QUIET) {
+    // patching: supplies into a plate, once the ship has been left alone for a while
+    if (this.plates < this.stats.maxPlates && this.supplies >= this.patchCost && this.sinceHit >= PATCH_QUIET) {
       if ((this.patchT += dt) >= PATCH_TIME) {
         this.patchT = 0;
-        this.parts -= this.patchCost;
+        this.supplies -= this.patchCost;
         this.repair(1);
         this.events.push({ type: 'patched', plates: this.plates });
       }
@@ -684,7 +695,7 @@ export class World implements EncounterHost {
     const speed = Math.hypot(s.vx, s.vz) / topSpeed(this.hull);
     // the port: slow inside its ring, and the clamps take you
     const dp = b.port ? Math.hypot(s.x - b.port.x, s.z - b.port.z) : Infinity;
-    if (b.port && dp < b.port.r && speed < 0.35 && this.command.state !== 'fight' && this.phase === 'play') {
+    if (b.port && dp < b.port.r && speed < DOCK_SPEED && this.command.state !== 'fight' && this.phase === 'play') {
       if ((b.dockT += dt) >= DOCK_TIME) this.dock();
     } else b.dockT = Math.max(0, b.dockT - dt * 2);
 
@@ -744,13 +755,13 @@ export class World implements EncounterHost {
 
     // the lane mouth: hold inside it with the Cyrite to jump while the drive spools
     if (dl < b.lane.r) {
-      if (this.cyrite >= b.jumpCost && this.phase === 'play') {
+      if (this.cyrite >= this.jumpCost && this.phase === 'play') {
         if (b.spool === 0) this.events.push({ type: 'spool' });
         b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
         if (b.spool >= b.spoolNeed) this.jump();
       } else if (b.nagT <= 0) {
         b.nagT = 6;
-        this.events.push({ type: 'needCyrite', have: this.cyrite, need: b.jumpCost });
+        this.events.push({ type: 'needCyrite', have: this.cyrite, need: this.jumpCost });
       }
     } else b.spool = Math.max(0, b.spool - dt * 2);
   }
@@ -857,35 +868,55 @@ export class World implements EncounterHost {
     this.settleJobs('port');
   }
 
-  /** At the port: sell the whole hold. Returns the chits it fetched. */
-  sellOre(): number {
-    if (this.phase !== 'dock' || this.ore <= 0) return 0;
-    const got = this.ore * this.prices.ore;
-    this.run.oreSold += this.ore;
-    this.ore = 0;
-    this.chits += got;
-    return got;
-  }
-
   /** What the port here charges (Cerro's prices outside a sortie), less what the ship's contacts knock off, and the survival mode's rate for ore. */
   get prices(): Prices {
-    const p = discounted(this.bk?.prices ?? HOME.port!.prices, this.levels), k = this.survival.voyage.ore;
-    // what the port pays for ore is the mode's to move: the Raider's salvage sells, the rest of the board is the same
-    return k === 1 ? p : { ...p, ore: Math.max(1, Math.round(p.ore * k)) };
+    return discounted(this.bk?.prices ?? HOME.port!.prices, this.levels);
   }
 
-  /** Parts a patch takes: the machine shop saves some. */
+  /** The most supplies the ship holds: the racks add to it. */
+  get supplyMax(): number {
+    return SUPPLIES_MAX + this.fx.hold;
+  }
+
+  /** What a lump of scrap pays in chits when it is picked up: the port's price for it, at the survival mode's rate. */
+  get scrapValue(): number {
+    return Math.max(1, Math.round(SCRAP_PRICE * this.survival.voyage.ore));
+  }
+
+  /** Supplies a patch takes: the machine shop saves some. */
   get patchCost(): number {
     return Math.max(1, PATCH_COST - this.fx.patch);
+  }
+
+  /** What a unit of Cyrite costs here: the work bay's price, doubled while the tank is short of the jump. */
+  get cyritePrice(): number {
+    const p = this.prices.cyrite;
+    return this.bk && this.cyrite < this.jumpCost ? Math.ceil(p * CYRITE_RUSH) : p;
+  }
+
+  /** Cyrite aboard beyond what the jump takes: what the bay will buy. */
+  get spareCyrite(): number {
+    return Math.max(0, this.cyrite - this.jumpCost);
+  }
+
+  /** At the work bay: sell spare Cyrite (all of it, or `n`) for chits. Returns the chits paid. */
+  sellCyrite(n = Infinity): number {
+    if (this.phase !== 'dock' || !this.bk) return 0;
+    const k = Math.min(Math.floor(n), this.spareCyrite);
+    if (k <= 0) return 0;
+    const got = k * CYRITE_SELL;
+    this.cyrite -= k;
+    this.chits += got;
+    return got;
   }
 
   /** Whether a thing can be had at the port now. */
   canBuy(item: PortItem): boolean {
     if (this.phase !== 'dock') return false;
-    if (this.chits < this.prices[item]) return false;
+    if (this.chits < (item === 'cyrite' ? this.cyritePrice : this.prices[item])) return false;
     if (item === 'cyrite') return this.cyrite < TANK_MAX;
     if (item === 'plate') return this.plates < this.stats.maxPlates;
-    if (item === 'food') return this.food < FOOD_MAX;
+    if (item === 'supplies') return this.supplies < this.supplyMax;
     return true;
   }
 
@@ -893,24 +924,23 @@ export class World implements EncounterHost {
   buy(item: PortItem): boolean {
     useIds(this.ids);
     if (!this.canBuy(item)) return false;
-    this.chits -= this.prices[item];
+    this.chits -= item === 'cyrite' ? this.cyritePrice : this.prices[item];
     if (item === 'cyrite') this.cyrite++;
-    else if (item === 'food') this.food++;
+    else if (item === 'supplies') this.supplies++;
     else this.repair(1);
     return true;
   }
 
   /** What the port would do for a sensible stop now (sim/stop.ts). */
   planStop(): Stop {
-    return planStop({ ore: this.ore, chits: this.chits, prices: this.prices, cyrite: this.cyrite, jumpCost: this.jumpCost, food: this.food, plates: this.plates, maxPlates: this.stats.maxPlates });
+    return planStop({ rush: this.bk ? CYRITE_RUSH : 1, supplyMax: this.supplyMax, chits: this.chits, prices: this.prices, cyrite: this.cyrite, jumpCost: this.jumpCost, supplies: this.supplies, plates: this.plates, maxPlates: this.stats.maxPlates });
   }
 
   /** At the port: the sensible stop. Returns what it did. */
   sensibleStop(): Stop {
     const plan = this.planStop();
-    if (this.phase !== 'dock') return { sell: false, cyrite: 0, food: 0, plate: 0, chits: 0 };
-    if (plan.sell) this.sellOre();
-    for (const item of ['cyrite', 'food', 'plate'] as const) for (let i = 0; i < plan[item]; i++) this.buy(item);
+    if (this.phase !== 'dock') return { cyrite: 0, supplies: 0, plate: 0, chits: 0 };
+    for (const item of ['cyrite', 'supplies', 'plate'] as const) for (let i = 0; i < plan[item]; i++) this.buy(item);
     return plan;
   }
 
@@ -934,7 +964,7 @@ export class World implements EncounterHost {
   /** Into the lane: the drive takes the Cyrite and the ship is gone. */
   private jump(): void {
     const b = this.bk!, s = this.ship;
-    this.cyrite -= b.jumpCost;
+    this.cyrite -= this.jumpCost;
     this.settleJobs('lane');
     this.run.escaped = true;
     this.run.cyriteLeft = this.cyrite;
@@ -1053,7 +1083,7 @@ export class World implements EncounterHost {
   }
 
   bayCtx(): BayCtx {
-    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.krail, chits: this.chits, deal: this.bayDeal, passed: this.bayPassed };
+    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.chits, chits: this.chits, pooled: true, deal: this.bayDeal, passed: this.bayPassed };
   }
 
   /**
@@ -1061,10 +1091,11 @@ export class World implements EncounterHost {
    * the alert clear, or docked at a port. The HUD shows the alert, so it
    * always says whether the bay will open: yellow and red keep it shut.
    */
-  bayClosed(): 'busy' | 'yellow' | 'red' | null {
+  bayClosed(): 'busy' | 'yellow' | 'red' | 'away' | null {
     if (!this.alive) return 'busy';
     if (this.phase === 'dock') return null;
     if (this.phase !== 'play') return 'busy';
+    if (this.bk) return 'away'; // the Story fits only at a work bay
     const a = this.alert();
     return a === 'clear' ? null : a;
   }
@@ -1104,8 +1135,8 @@ export class World implements EncounterHost {
     const r = bayInstall(id, this.bayCtx());
     if (typeof r === 'string') return r;
     this.bayFit = true;
-    this.krail -= r.cost;
-    this.chits -= r.fee;
+    if (this.bk) this.chits -= r.cost + r.fee;
+    else this.krail -= r.cost;
     this.levels = r.levels;
     this.refreshStats();
     this.fitAboard();
@@ -1136,11 +1167,11 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
     return {
-      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, need: b?.jumpCost ?? JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
-      parts: this.parts, plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
+      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, need: b ? this.jumpCost : JUMP_COST, tank: TANK_MAX, chits: this.chits,
+      plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
-      food: this.food, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
-      notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, captain: this.sortie.notice.captain,
+      supplies: this.supplies, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
+      notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, region: this.sortie.region, captain: this.sortie.notice.captain,
       wise: this.sortie.nemesis.wise, hunch: this.sortie.nemesis.hunch, here: this.sortie.here,
     };
   }
@@ -1178,7 +1209,6 @@ export class World implements EncounterHost {
       if (this.fightT > 6) d.moment('won', t, this.deskRng);
       this.fightT = 0;
     }
-    if (!this.fullSaid && this.ore >= this.holdMax * 0.8) { this.fullSaid = true; d.moment('haul', t, this.deskRng); }
 
     // follow-ups, once due
     const due = this.follows.findIndex((f) => f.at <= t);
@@ -1277,8 +1307,7 @@ export class World implements EncounterHost {
     // a timed-out default the ship cannot afford falls to the first choice it can
     if (!res && timedOut) { const ok = o.choices.find((c) => c.ok); if (ok) res = resolve(o, ok.id, x, this.rng); }
     if (!res) return false;
-    this.cyrite -= res.cost.cyrite; this.ore -= res.cost.ore; this.chits -= res.cost.chits; this.parts -= res.cost.parts; this.food -= res.cost.food;
-    if (res.outcome.sell) this.chits += res.cost.ore * res.outcome.sell;
+    this.cyrite -= res.cost.cyrite; this.chits -= res.cost.chits; this.supplies -= res.cost.supplies;
     if (o === this.call) this.call = null;
     else { this.comms = null; this.phase = 'play'; }
     this.desk.closed(this.runTime);
@@ -1294,11 +1323,9 @@ export class World implements EncounterHost {
   applyOutcome(out: Outcome, fee: number, brought: number[]): number[] {
     const b = this.bk;
     this.cyrite = Math.min(TANK_MAX, Math.max(0, this.cyrite + amount(out.cyrite, this.cyrite, fee)));
-    this.ore = Math.min(this.holdMax, Math.max(0, this.ore + amount(out.ore, this.ore, fee)));
     this.chits = Math.max(0, this.chits + amount(out.chits, this.chits, fee));
-    this.parts = Math.max(0, this.parts + amount(out.parts, this.parts, fee));
-    this.food = Math.min(FOOD_MAX, Math.max(0, this.food + amount(out.food, this.food, fee)));
-    if (out.krail) this.krail = Math.max(0, this.krail + out.krail);
+    this.supplies = Math.min(this.supplyMax, Math.max(0, this.supplies + amount(out.supplies, this.supplies, fee)));
+    if (out.krail) { if (b) this.chits = Math.max(0, this.chits + out.krail); else this.krail = Math.max(0, this.krail + out.krail); }
     if (out.hunt) this.huntDelay += out.hunt;
     if (out.stall) this.stall += out.stall;
     if (b && out.calm) b.nextSwarm = Math.max(b.nextSwarm, this.runTime + out.calm);
@@ -1371,9 +1398,8 @@ export class World implements EncounterHost {
     for (const j of [...this.jobs]) {
       if (j.at !== at) continue;
       const g = j.give ?? {};
-      if ((g.ore ?? 0) > this.ore || (g.parts ?? 0) > this.parts) { this.events.push({ type: 'jobShort', id: j.id, text: j.text }); continue; }
-      this.ore -= g.ore ?? 0;
-      this.parts -= g.parts ?? 0;
+      if ((g.supplies ?? 0) > this.supplies) { this.events.push({ type: 'jobShort', id: j.id, text: j.text }); continue; }
+      this.supplies -= g.supplies ?? 0;
       this.jobs.splice(this.jobs.indexOf(j), 1);
       this.run.jobsDone++;
       this.applyOutcome(j.pay, 0, []);
@@ -1392,6 +1418,17 @@ export class World implements EncounterHost {
     const s = computeStats(this.levels);
     // the arcade feels its budgets: heavy is slow, hot is slow to reload (the Story mode's turn comes with its bay)
     feelBudgets(s, this.levels);
+    // the Story's stores: out of them the crew tires and the drive goes unserviced
+    this.thin = !!this.bk && this.supplies <= 0;
+    if (this.thin) {
+      s.thrust *= EMPTY_STORES;
+      s.turn *= EMPTY_STORES;
+      s.bankRefill *= EMPTY_STORES;
+      s.torpReload /= EMPTY_STORES;
+      s.mineInterval /= EMPTY_STORES;
+      s.arcInterval /= EMPTY_STORES;
+    }
+    this.weightFuel = this.bk ? weightFuel(this.levels) : 0;
     // the survival mode's hull: plates, how fast a shield comes back, grace after a hit, how far the tractor reaches
     const K = this.survival;
     s.maxPlates = Math.max(1, s.maxPlates + K.ship.plates);
@@ -1864,8 +1901,9 @@ export class World implements EncounterHost {
         this.run.krail += pk.value;
         this.addScore(pk.value * SCORE_PER_CRYSTAL, 'krail');
         this.events.push({ type: 'crystal', x: pk.x, z: pk.z, value: pk.value });
-        // Krail, in both modes: what the refit bay builds from
-        this.krail += pk.value * this.stats.xpMult;
+        // what the refit bay builds from: Krail in the Arcade, chits in the Story (one purse)
+        if (this.bk) this.chits += pk.value * this.stats.xpMult;
+        else this.krail += pk.value * this.stats.xpMult;
         this.run.krailEarned += pk.value * this.stats.xpMult;
         break;
       }
@@ -1876,20 +1914,23 @@ export class World implements EncounterHost {
         this.events.push({ type: 'cyrite', x: pk.x, z: pk.z, value: pk.value });
         break;
       case 'ore': {
-        const room = Math.max(0, this.holdMax - this.ore), got = Math.min(room, pk.value);
-        if (got < pk.value && this.holdNag <= 0) { this.holdNag = 8; this.events.push({ type: 'holdFull' }); }
-        if (got <= 0) break;
-        this.ore += got;
-        this.run.ore += got;
-        this.addScore(got * SCORE_PER_CRYSTAL, 'krail');
+        // scrap pays at once: one purse, no hold
+        const got = pk.value * this.scrapValue;
+        this.chits += got;
+        this.run.ore += pk.value;
+        this.run.oreSold += got;
+        this.addScore(pk.value * SCORE_PER_CRYSTAL, 'krail');
         this.events.push({ type: 'ore', x: pk.x, z: pk.z, value: got });
         break;
       }
-      case 'parts':
-        this.parts += pk.value;
+      case 'parts': {
+        // a crate of supplies, as far as the racks hold
+        const got = Math.min(pk.value, Math.max(0, this.supplyMax - this.supplies));
+        this.supplies += got;
         this.run.parts += pk.value;
         this.events.push({ type: 'parts', x: pk.x, z: pk.z, value: pk.value });
         break;
+      }
       case 'repair':
         if (this.repair(1)) this.events.push({ type: 'pickup', x: pk.x, z: pk.z, plates: this.plates });
         else this.addScore(500, 'events');
@@ -2273,7 +2314,7 @@ export class World implements EncounterHost {
     // the salvage: krail, a hull repair, a power-up, the faction's tech; in the Story mode a top-up of Cyrite and parts
     const cap = this.survival.salvage.capital, life = this.survival.salvage.life;
     this.loot('wreck', 'crystal', this.share(this.bk ? CAPITAL_KRAIL : 26 + 8 * b.n, cap), b.x, b.z, 12, 0, 0, life);
-    if (this.bk) { this.loot('wreck', 'cyrite', this.share(CAPITAL_CYRITE, cap), b.x, b.z, 10, 0, 0, life); this.loot('wreck', 'parts', this.share(CAPITAL_PARTS, cap), b.x, b.z, 10, 0, 0, life); }
+    if (this.bk) { this.loot('wreck', 'cyrite', this.share(CAPITAL_CYRITE, cap), b.x, b.z, 10, 0, 0, life); this.loot('wreck', 'parts', this.share(CAPITAL_SUPPLIES, cap), b.x, b.z, 10, 0, 0, life); }
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
     for (let i = 0; i < BOSS_PLATES; i++) this.dropItem('repair', b.x, b.z);

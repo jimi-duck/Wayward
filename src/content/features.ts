@@ -62,7 +62,7 @@ export interface Effects {
   /** Rock density, and the share of it that is veined (added). */
   rock?: number;
   rich?: number;
-  /** Krail from rock and wrecks. */
+  /** Chits from rock and wrecks. */
   krail?: number;
   /** Shield recharge. */
   shield?: number;

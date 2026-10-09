@@ -4,7 +4,7 @@ import type { Sector } from '../render/sector';
 import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
 import { alienLabel, cloaked } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
-import { DOCK_TIME } from '../sim/breakout';
+import { DOCK_TIME, LOW_SUPPLIES } from '../sim/breakout';
 import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
 import { NAMED } from '../content/features';
 import { REPORT_TEXT } from '../sim/space';
@@ -37,6 +37,14 @@ export const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody:
 const faction = (f: string) => t(FACTION_NAME[f] ?? f);
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
+/** What the ship says is wrong with it, in a few words (World.warnings). */
+const SHIP_WARN = {
+  empty: 'Out of supplies · slower, guns weaker',
+  low: 'Supplies low',
+  heavy: 'Heavy · slower to turn',
+  hot: 'Running hot · guns slower',
+} as const;
+
 /** A hostile this close (units) earns the objective a threat line. */
 const THREAT_NEAR = 320;
 /** Seconds before the log says again that the self-repair has started. */
@@ -128,8 +136,9 @@ export class Hud {
   }
 
   /** The bay would not open: say why, short, and shake the badge. */
-  bayDenied(world: World, why: 'yellow' | 'red' | 'busy'): void {
+  bayDenied(world: World, why: 'yellow' | 'red' | 'busy' | 'away'): void {
     if (why === 'busy') return;
+    if (why === 'away') { this.note(world, t('Upgrades: dock at a work bay'), 'hit'); return; }
     this.note(world, t(why === 'red' ? 'Bay locked · red alert' : 'Bay locked · yellow alert'), 'hit');
     this.retrigger($('upg'), 'deny');
   }
@@ -162,7 +171,7 @@ export class Hud {
         case 'alienDestroyed': this.note(world, `${t('{name} destroyed', { name: t(e.label) })} · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
         case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
-        case 'rockMined': this.note(world, `${t('Mined clean')} · ${t('{n} ore', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
+        case 'rockMined': this.note(world, `${t('Mined clean')} · ${t('{n} scrap', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
         case 'holdFull': this.note(world, t('Hold full · sell at the port'), 'hit'); break;
         case 'patched': this.note(world, `${t('Plate patched')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;
@@ -299,9 +308,10 @@ export class Hud {
     }
     const n = this.count;
     const alert = world.alert(), locked = alert !== 'clear';
-    text($('xp-v'), String(Math.floor(world.krail)));
+    text($('xp-v'), String(Math.floor(world.purse)));
+    $('rail').hidden = !!world.bk; // the Story's one purse is the Chits in the stores line
     const badge = $('upg');
-    badge.hidden = !world.bk || n === 0;
+    badge.hidden = true; // the Story fits only at a work bay; the Arcade opens its own picks
     badge.classList.toggle('ready', n > 0 && !locked);
     badge.classList.toggle('locked', n > 0 && locked);
     badge.classList.toggle('red', alert === 'red');
@@ -324,19 +334,15 @@ export class Hud {
     const th = $('obj-threat');
     if (!b) { th.hidden = true; return; }
     // the tank, in the status panel: Cyrite toward the jump
-    const fuel = $('sys-fuel'), need = b.jumpCost;
+    const fuel = $('sys-fuel'), need = world.jumpCost;
     text($('v-fuel'), `${world.cyrite}/${need}`);
     $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
     fuel.classList.toggle('ready', world.cyrite >= need);
-    // the stores: hold, parts, chits, food, one line
-    const ore = $('vy-ore');
-    text(ore, `${world.ore}/${world.holdMax}`);
-    ore.classList.toggle('full', world.ore >= world.holdMax);
-    text($('vy-parts'), String(world.parts));
-    text($('vy-chits'), String(world.chits));
-    const food = $('vy-food');
-    text(food, String(world.food));
-    food.classList.toggle('full', world.food < 6);
+    // the stores: chits and supplies, one line; supplies go amber when they are running low
+    text($('vy-chits'), String(Math.floor(world.chits)));
+    const sup = $('vy-supplies');
+    text(sup, String(world.supplies));
+    sup.classList.toggle('full', world.supplies <= LOW_SUPPLIES);
     // the objective's threat line: the nearest hostile when it is close, else how hard the Custody is looking
     const s = world.ship;
     let hostile: { label: string; d: number; faction: string } | null = null;
@@ -529,9 +535,9 @@ export class Hud {
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));
       } else {
         // the one thing to do now, and at most two quiet lines under it
-        const ready = world.cyrite >= bk.jumpCost;
+        const ready = world.cyrite >= world.jumpCost;
         text($('obj-t'), t(ready ? 'Make for the lane mouth' : 'Cyrite to jump'));
-        text($('obj-left'), ready ? range(dl) : `${world.cyrite}/${bk.jumpCost}`);
+        text($('obj-left'), ready ? range(dl) : `${world.cyrite}/${world.jumpCost}`);
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         text($('obj-s'), '');
         const lines: string[] = [];
@@ -565,7 +571,7 @@ export class Hud {
         : t(def.text));
     } else if (!bk) {
       // the arcade between events: break rock toward the next refit, which opens by itself
-      text($('obj-t'), t('Extract Krail'));
+      text($('obj-t'), t('Collect chits'));
       text($('obj-left'), `${Math.floor(world.krail)}/${this.next || '—'}`);
       ticks($('obj-p'), this.next ? Math.min(1, world.krail / this.next) : 1, 30);
       text($('obj-s'), '');
@@ -608,13 +614,19 @@ export class Hud {
 
   /** The place's effects on the ship, in the ship's words: nothing for what only looks like something. */
   private updateCond(world: World): void {
-    const key = (world.siteHere ?? '') + world.conditions.map((c) => c.kind).join();
+    const warns = world.alive ? world.warnings : [];
+    const key = (world.siteHere ?? '') + world.conditions.map((c) => c.kind).join() + warns.join() + world.weightFuel;
     if (key === this.condKey) return;
     this.condKey = key;
     const el = $('cond');
     el.hidden = !key;
     const lines = [...(world.siteHere ? [NAMED[world.siteHere]!.name] : []), ...world.conditions.map((c) => REPORT_TEXT[c.kind])];
-    el.replaceChildren(...lines.map((l) => { const d = document.createElement('div'); d.textContent = t(l); return d; }));
+    // the ship's own trouble, quiet and dull gold: the stores and the weight (it flies on, worse)
+    const warn = warns.map((w) => w === 'heavy' && world.weightFuel ? t('Heavy · slower, +{n} Cyrite a jump', { n: world.weightFuel }) : t(SHIP_WARN[w]));
+    el.replaceChildren(
+      ...lines.map((l) => { const d = document.createElement('div'); d.textContent = t(l); return d; }),
+      ...warn.map((l) => { const d = document.createElement('div'); d.className = 'warn'; d.textContent = l; return d; }),
+    );
   }
 
   private updateLog(world: World): void {

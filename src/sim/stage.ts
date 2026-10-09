@@ -257,12 +257,12 @@ export class Stage {
   /** What the site wants has been brought. */
   private has(w: World): boolean {
     const give = this.def.goal.give;
-    return !give || ((give.ore ?? 0) <= w.ore && (give.parts ?? 0) <= w.parts && (give.food ?? 0) <= w.food && (give.chits ?? 0) <= w.chits && (give.cyrite ?? 0) <= w.cyrite);
+    return !give || ((give.supplies ?? 0) <= w.supplies && (give.chits ?? 0) <= w.chits && (give.cyrite ?? 0) <= w.cyrite);
   }
   private pay(w: World): void {
     const give = this.def.goal.give;
     if (!give) return;
-    w.ore -= give.ore ?? 0; w.parts -= give.parts ?? 0; w.food -= give.food ?? 0; w.chits -= give.chits ?? 0; w.cyrite -= give.cyrite ?? 0;
+    w.supplies -= give.supplies ?? 0; w.chits -= give.chits ?? 0; w.cyrite -= give.cyrite ?? 0;
   }
 
   /** Hostiles waiting on the line to the lane mouth, sprung as the ship passes. */

@@ -21,9 +21,10 @@ import type { Rng } from './rng';
 //                    drive spools, and you are gone. A Custody capital ship
 //                    blockades it, and her checkpoint is a comms card: run
 //                    it, spoof it, pay it, talk through it, or fight her.
-//   the port       · a fuel dock off the direct line, roughly halfway, that
-//                    does not check implants. Dock to sell ore, buy Cyrite,
-//                    patch the hull and pay for a refit. Docking quiets the
+//   the port       · a work bay off the direct line, a little under halfway,
+//                    that does not check implants. Dock to sell spare Cyrite,
+//                    buy supplies and Cyrite (dear when you are short), patch
+//                    the hull and fit upgrades: the refit bay only opens here. Docking quiets the
 //                    pursuit a little, once.
 //   heat           · how hard the Custody is looking for you, 0 to 1. It
 //                    climbs with time, with every kill and with the noise of
@@ -53,16 +54,15 @@ export interface Waypoint {
 /** Straight-line distance from the start to the lane mouth: about a minute flat out. */
 export const LANE_DIST = 2600;
 /** The port: this far along the line, this far off it. */
-export const PORT_ALONG = 1250;
-export const PORT_OFF = 260;
+export const PORT_ALONG = 1000;
+export const PORT_OFF = 200;
 export const LANE_R = 16;
-export const PORT_R = 9;
+export const PORT_R = 14;
 
-/** Cyrite it takes to jump, what the tank holds at the start, and the hold's capacity. */
+/** Cyrite it takes to jump, and what the tank holds at the start. */
 export const JUMP_COST = 20;
 export const START_CYRITE = 6;
 export const TANK_MAX = 40;
-export const HOLD_START = 40;
 /** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
 export const SPOOL_RUN = 2.2;
@@ -70,21 +70,27 @@ export const SPOOL_RUN = 2.2;
 export const BLOCKADE_AT = 420;
 /** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
 export const BLOCKADE_HP = 3;
-/** Cyrite and parts a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
+/** Cyrite and supplies a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
 export const CAPITAL_CYRITE = 6;
 /** Krail in the Story mode, for the refit bay: a share of a wreck's worth, a share of what rock gives in the arcade (a cut gives it surely, a break by chance), and a capital ship's salvage. */
 export const WRECK_KRAIL = 0.6;
 export const ROCK_KRAIL = 0.6;
 export const CAPITAL_KRAIL = 40;
-export const CAPITAL_PARTS = 18;
+export const CAPITAL_SUPPLIES = 6;
 
-/** Parts to patch a plate, the quiet it needs, and how long the patch takes. */
-export const PATCH_COST = 6;
+/** Supplies to patch a plate, the quiet it needs, and how long the patch takes. */
+export const PATCH_COST = 3;
 export const PATCH_QUIET = 6;
 export const PATCH_TIME = 4;
 
 /** Seconds docking takes once slow inside the port's ring. */
 export const DOCK_TIME = 1;
+/** The share of top speed under which the clamps take you inside the ring. */
+export const DOCK_SPEED = 0.5;
+/** Chits a lump of spare Cyrite fetches at a work bay (the bay buys it for less than it sells it). */
+export const CYRITE_SELL = 3;
+/** Cyrite bought while the tank is short of the jump costs this many times the price: the bay knows you are stuck. */
+export const CYRITE_RUSH = 2;
 /** Docking quiets the pursuit by this much, once per port. */
 export const DOCK_COOL = 0.2;
 
@@ -184,12 +190,10 @@ export const HOME: SortieDef = {
 export interface Carry {
   /** Cyrite in the tank: fuel for the jumps. */
   cyrite: number;
-  /** Krail aboard: what the refit bay builds from. */
-  krail: number;
-  ore: number;
-  parts: number;
+  /** Chits aboard: the Story's one purse, for the bay, the ports and favours. */
   chits: number;
-  food: number;
+  /** Supplies aboard: the galley and the spares in one. A lane's days and the drive's wear draw on it, and so does patching a plate. */
+  supplies: number;
   /** Plates whole (never more than the build allows). */
   plates: number;
   levels: Levels;
@@ -230,9 +234,16 @@ export interface SortieResult {
   situation?: { id: string; result: 'won' | 'lost' | 'declined' | 'ignored' } | null;
 }
 
-/** Food, in days for the one aboard: what the galley holds at most, and at the start. */
-export const FOOD_MAX = 10;
-export const FOOD_START = 4;
+/** Supplies: what the ship holds at most, and at the start. */
+export const SUPPLIES_MAX = 16;
+export const SUPPLIES_START = 8;
+/** At or under this many, the HUD and the ports say supplies are low. */
+export const LOW_SUPPLIES = 4;
+/**
+ * With the stores gone the crew tires and the drive goes unserviced: the ship still flies, but thrust, turning and
+ * the guns' cycle run at this share. It comes back the moment a crate is aboard.
+ */
+export const EMPTY_STORES = 0.85;
 
 /** The pursuers, by the heat they need. Gutter crews work the belt ahead and do not care who you are. */
 const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [

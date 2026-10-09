@@ -15,7 +15,7 @@ import { World } from '../src/sim/world';
 function result(j: Journey, c: Partial<Journey['carry']> = {}): SortieResult {
   const r = newRun(1);
   r.escaped = true;
-  return { ended: 'jumped', time: 60, carry: { ...j.carry, plates: 3, food: 30, parts: 20, cyrite: 20, ...c }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} };
+  return { ended: 'jumped', time: 60, carry: { ...j.carry, plates: 3, supplies: 30, cyrite: 20, ...c }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} };
 }
 
 /** One jump nearer the Threshold. */
@@ -26,8 +26,8 @@ function step(j: Journey, c: Partial<Journey['carry']> = {}): void {
 }
 
 const ctx = (o: Partial<Ctx> = {}): Ctx => ({
-  t: 400, heat: 0.2, cyrite: 20, need: 20, tank: 40, ore: 30, holdMax: 40, chits: 100, parts: 20, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
-  standing: {}, place: 'open', hostiles: 0, food: 10, kind: 'transit', netted: false, behind: 3, ...o,
+  t: 400, heat: 0.2, cyrite: 20, need: 20, tank: 40, chits: 100, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
+  standing: {}, place: 'open', hostiles: 0, supplies: 10, kind: 'transit', netted: false, behind: 3, ...o,
 });
 
 const opened = (j: Journey) => choices(j).filter((c) => c.open).map((c) => c.def.id);
@@ -125,7 +125,7 @@ describe('the story beats', () => {
     expect(fuel.after.cyrite).toBe(fuel.before.cyrite + 14);
     const codes = play('codes');
     expect(codes.after.flags).toContain('codes');
-    expect(codes.after.parts).toBe(codes.before.parts - 4);
+    expect(codes.after.supplies).toBe(codes.before.supplies - 4);
     expect(codes.after.seen).toContain(YARD_BEAT);
   });
 

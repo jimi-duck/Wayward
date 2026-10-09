@@ -7,6 +7,8 @@ import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
 import { pending } from '../sim/endings';
 import { stockLevels } from '../sim/bay';
+import { SUPPLIES_MAX } from '../sim/breakout';
+import { SCRAP_PRICE } from '../content/systems';
 import { survivalOf } from '../content/survival';
 import { atChapter } from '../sim/chapters';
 
@@ -66,6 +68,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 11) j.lost = 0;
   // 11 → 12: situations. A journey saved before them is dealt some, and the systems it has been through are done with.
   if (j.version < 12) dealSituations(j.chart, j.seed ?? 0);
+  // 12 → 13: one purse and one stock. Krail and ore are chits now, and food and parts are supplies.
+  if (j.version < 13) oneEconomy(j as unknown as Old);
   j.version = VERSION;
   return j as Journey;
 }
@@ -84,6 +88,25 @@ function retireOvercharge(c: { krail: number; levels: Record<string, number> }):
     for (let lv = 0; lv < had; lv++) c.krail += prices[lv] ?? 0;
     if (c.levels) delete c.levels[id];
   }
+}
+
+/** Rewrites a price list in place: no ore, and food is supplies. */
+function reprice(p: Record<string, number> | undefined | null): void {
+  if (!p) return;
+  if ('food' in p) { p.supplies = p.food!; delete p.food; }
+  delete p.ore;
+}
+
+function oneEconomy(j: Old): void {
+  const c = j.carry as Record<string, number>;
+  c.chits = (Number(c.chits) || 0) + (Number(c.krail) || 0) + (Number(c.ore) || 0) * SCRAP_PRICE;
+  c.supplies = Math.min(SUPPLIES_MAX, (Number(c.food) || 0) + (Number(c.parts) || 0));
+  for (const k of ['krail', 'ore', 'parts', 'food']) delete c[k];
+  for (const s of j.chart.systems) {
+    if ('food' in s) { s.supplies = s.food; delete s.food; }
+    reprice((s.port as { prices?: Record<string, number> } | null | undefined)?.prices);
+  }
+  for (const m of ((j.chart as unknown as { market?: Array<{ mult: Record<string, number> }> }).market ?? [])) reprice(m.mult);
 }
 
 /** A journey from before Cyrite, where Krail was the fuel. */

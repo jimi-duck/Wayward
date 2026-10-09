@@ -12,7 +12,7 @@ import { PATCH_COST } from '../src/sim/breakout';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
-import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
+import { blockOf, budgets, cost, fee, reachable } from '../src/sim/bay';
 import { FITTING } from '../src/content/web';
 import { MODULE_BY_ID } from '../src/content/modules';
 import type { SurvivalId } from '../src/content/survival';
@@ -173,17 +173,23 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
       pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
     }
     // away from a port, keep back the Krail the next wanted yard module will cost, as a player saving for the yard would
-    if (pick && !MODULE_BY_ID[pick] && !w.docked && w.krail - cost(pick, (w.levels[pick] ?? 0) + 1, !w.bk) < saveFor(w, modules)) break;
+    if (pick && !MODULE_BY_ID[pick] && !w.docked && w.purse - price(w, pick) < saveFor(w, modules)) break;
     if (!pick || w.install(pick)) break;
   }
   w.closeBay();
+}
+
+/** What the next level of a node takes from the purse: its price, and in the Story the yard's fee with it. */
+function price(w: World, id: string): number {
+  const lv = (w.levels[id] ?? 0) + 1;
+  return cost(id, lv, !w.bk) + (w.bk ? fee(id, lv, false) : 0);
 }
 
 /** The Krail to keep for the first wanted yard module that a port could fit (nothing once they are all in). */
 function saveFor(w: World, modules: readonly string[]): number {
   const port = { ...w.bayCtx(), docked: true, krail: Infinity, chits: Infinity };
   const next = modules.find((id) => blockOf(id, port) === null);
-  return next ? cost(next, (w.levels[next] ?? 0) + 1, !w.bk) : 0;
+  return next ? price(w, next) : 0;
 }
 
 /**
@@ -308,9 +314,9 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   const bk = w.bk;
   const need = !!bk && w.cyrite < bk.jumpCost;
   const pr = w.prices;
-  const hungry = !!bk && w.food < 9 && w.chits + w.ore * pr.ore >= pr.food * 6;
+  const hungry = !!bk && w.supplies < 9 && w.chits >= pr.supplies * 6;
   const goPort = !!bk && !!bk.port && bk.docks === 0
-    && (w.ore >= w.holdMax * 0.8 || hungry || (w.plates < st.maxPlates && w.parts < PATCH_COST && (w.chits + w.ore * pr.ore) >= pr.plate));
+    && (hungry || w.chits >= 120 || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && w.chits >= pr.plate));
   const dest = bk ? (goPort ? bk.port : !need ? bk.lane : null) : null;
   if (bk) {
     const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;
@@ -347,7 +353,6 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
       const d = Math.hypot(r.x - s.x, r.z - s.z);
       const veined = r.kind === 'rich';
       const k = d * (veined ? (need ? 0.25 : 0.6) : r.kind === 'volatile' ? 2 : 1);
-      if (bk && !veined && w.ore >= w.holdMax) continue;
       if (k < best && d < 50) { best = k; td = d; tgt = r; mining = r; }
     }
   }
@@ -527,9 +532,9 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     if (w.phase === 'dock') {
       if (w.bk && w.bk.docks > docks) { docks = w.bk.docks; o.onDock?.(w); }
       // the port: sell, top the tank up toward the jump, stock the galley for two jumps, patch, then the bay
-      w.sellOre();
       while (w.cyrite < w.jumpCost && w.buy('cyrite'));
-      while (w.food < 12 && w.buy('food'));
+      while (w.supplies < 12 && w.buy('supplies'));
+      w.sellCyrite();
       while (w.plates < w.stats.maxPlates && w.buy('plate'));
       shop(w, strategy, rngPick, o.modules);
       w.undock();
