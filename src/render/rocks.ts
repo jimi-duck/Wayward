@@ -9,7 +9,7 @@ import { BULWARK_VARIANTS, ROCK_VARIANTS, type Bulwark, type Rock, type RockKind
 import { PERTURB, seeded } from './kit';
 
 // ── rock ──────────────────────────────────────────────────────────────────
-// Dark, dusty stone, split by fissures. The shapes are built once
+// Dark, dusty stone, split by fissures; basalt keeps a dull ember in its thinnest cracks. The shapes are built once
 // at startup: an icosphere pushed out by fractal noise, with craters (a bowl
 // and a raised rim) pressed into it, smooth-shaded. The surface detail is all
 // in the fragment shader, in the rock's own space so it turns with the rock:
@@ -118,13 +118,14 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
     shader.uniforms.uMineral = { value: look.mineral };
     shader.uniforms.uStrata = { value: look.strata };
     shader.uniforms.uRim = { value: look.rim };
+    shader.uniforms.uEmber = { value: look.id === 'basalt' || look.id === 'volatile' ? 1 : 0 };
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         varying vec3 vRockP; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
-        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim;
+        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber;
         ${SIMPLEX}
         ${PERTURB}
         float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
@@ -139,7 +140,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
         float zone = smoothstep(0.15 - uZone, 0.55 - uZone, snoise(rp * 0.28 + 3.3));
         float crack = (smoothstep(0.972, 0.995, ridgeA) + smoothstep(0.982, 0.997, ridgeB) * 0.6) * zone;
         float heat = smoothstep(0.93, 0.99, max(ridgeA, ridgeB * 0.95)) * zone;
-        vec3 stone = mix(vec3(0.09, 0.083, 0.078), vec3(0.32, 0.295, 0.27), smoothstep(-0.55, 0.65, rn + fine * 0.35));
+        vec3 stone = mix(vec3(0.06, 0.055, 0.05), vec3(0.24, 0.215, 0.19), smoothstep(-0.55, 0.65, rn + fine * 0.35));
         stone = mix(stone, vec3(0.32, 0.29, 0.26), smoothstep(0.55, 0.9, rn) * 0.6);
         stone = mix(stone, vec3(0.025, 0.018, 0.015), heat * 0.75);
         // strata: beds laid down in a slanted plane, warped, each its own shade; the edge of a bed catches light
@@ -153,9 +154,9 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
         stone = mix(stone, vec3(0.5, 0.46, 0.42), incl * 0.5);
         diffuseColor.rgb *= stone * uTint;
         float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
-        // no light of its own: cracks are dark fissures, inclusions are pale flecks
-        vec3 lavaGlow = vec3(0.0);
-        stone *= 1.0 - crack * 0.55;
+        // cooled stone: the thinnest cracks keep a dull ember, steady and under the bloom line (basalt and volatile only)
+        vec3 lavaGlow = uGlow * crack * heat * 0.1 * uLava * uEmber;
+        stone *= 1.0 - crack * 0.4;
         float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + incl * 0.2;`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2, 0.4, 1.0);`)
@@ -164,7 +165,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance += lavaGlow;`);
   };
-  m.customProgramCacheKey = () => `stone-rock4-${detail}-${lava}-${bump}-${look.id}`;
+  m.customProgramCacheKey = () => `stone-rock5-${detail}-${lava}-${bump}-${look.id}`;
   return m;
 }
 
