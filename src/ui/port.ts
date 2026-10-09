@@ -38,7 +38,7 @@ export interface Course {
 const PORT_WARN = {
   empty: 'Out of supplies · the ship flies slower and worse. Buy some here.',
   low: 'Supplies low · a lane or two left. Buy some here.',
-  heavy: 'Heavy · slower to turn, and each jump burns {n} more Cyrite. A lighter build in the bay fixes it.',
+  heavy: 'Heavy · slower to turn, and each jump burns {n} more Cyrite. A lighter build or a bigger frame in the bay fixes it.',
   hot: 'Running hot · the guns cycle slower. Cooling in the bay fixes it.',
 } as const;
 

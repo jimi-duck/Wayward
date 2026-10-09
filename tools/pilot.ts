@@ -12,7 +12,7 @@ import { PATCH_COST } from '../src/sim/breakout';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
-import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
+import { blockOf, budgets, cost, fee, reachable } from '../src/sim/bay';
 import { FITTING } from '../src/content/web';
 import { MODULE_BY_ID } from '../src/content/modules';
 import type { SurvivalId } from '../src/content/survival';
@@ -173,17 +173,23 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
       pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
     }
     // away from a port, keep back the Krail the next wanted yard module will cost, as a player saving for the yard would
-    if (pick && !MODULE_BY_ID[pick] && !w.docked && w.krail - cost(pick, (w.levels[pick] ?? 0) + 1, !w.bk) < saveFor(w, modules)) break;
+    if (pick && !MODULE_BY_ID[pick] && !w.docked && w.purse - price(w, pick) < saveFor(w, modules)) break;
     if (!pick || w.install(pick)) break;
   }
   w.closeBay();
+}
+
+/** What the next level of a node takes from the purse: its price, and in the Story the yard's fee with it. */
+function price(w: World, id: string): number {
+  const lv = (w.levels[id] ?? 0) + 1;
+  return cost(id, lv, !w.bk) + (w.bk ? fee(id, lv, false) : 0);
 }
 
 /** The Krail to keep for the first wanted yard module that a port could fit (nothing once they are all in). */
 function saveFor(w: World, modules: readonly string[]): number {
   const port = { ...w.bayCtx(), docked: true, krail: Infinity, chits: Infinity };
   const next = modules.find((id) => blockOf(id, port) === null);
-  return next ? cost(next, (w.levels[next] ?? 0) + 1, !w.bk) : 0;
+  return next ? price(w, next) : 0;
 }
 
 /**

@@ -26,7 +26,7 @@ export const ECONOMY: Record<string, string> = {
   'Running hot · guns slower': 'Heiß gelaufen · Waffen langsamer',
   'Out of supplies · the ship flies slower and worse. Buy some here.': 'Keine Vorräte · das Schiff fliegt langsamer und schlechter. Kauf hier welche.',
   'Supplies low · a lane or two left. Buy some here.': 'Vorräte knapp · für eine, zwei Bahnen. Kauf hier welche.',
-  'Heavy · slower to turn, and each jump burns {n} more Cyrite. A lighter build in the bay fixes it.': 'Schwer · träger beim Drehen, und jeder Sprung braucht {n} Cyrit mehr. Ein leichterer Aufbau in der Werft hilft.',
+  'Heavy · slower to turn, and each jump burns {n} more Cyrite. A lighter build or a bigger frame in the bay fixes it.': 'Schwer · träger beim Drehen, und jeder Sprung braucht {n} Cyrit mehr. Ein leichterer Aufbau oder ein größerer Rahmen in der Werft hilft.',
   'Running hot · the guns cycle slower. Cooling in the bay fixes it.': 'Heiß gelaufen · die Waffen laden langsamer. Kühlung in der Werft hilft.',
   'Out of supplies · the ship flies slower and worse': 'Keine Vorräte · das Schiff fliegt langsamer und schlechter',
   'Supplies low · buy more at a port': 'Vorräte knapp · kauf mehr in einem Hafen',
@@ -38,4 +38,6 @@ export const ECONOMY: Record<string, string> = {
   'She flies again from here, a day later. A share of the stores gone.': 'Sie fliegt von hier wieder, einen Tag später. Ein Teil der Vorräte weg.',
   '“Salvage claim. We tow, you pay. A share of everything aboard.”': '„Bergungsanspruch. Wir schleppen, du zahlst. Einen Teil von allem an Bord.“',
   'Nothing to fit yet · pick up scrap for chits': 'Noch nichts einzubauen · sammle Schrott für Chits',
+  '“Heavy ships turn slow. Strip what you do not use.”': '„Schwere Schiffe drehen träge. Wirf ab, was du nicht brauchst.“',
+  '“That is a lot of iron on one hull. The dock pays by the chit, not the pound.”': '„Ganz schön viel Eisen an einem Rumpf. Das Dock zahlt nach Chits, nicht nach Gewicht.“',
 };

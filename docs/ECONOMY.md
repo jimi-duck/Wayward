@@ -43,5 +43,19 @@ food richness and the ports' price lists. The fixture is
 
 ## Numbers
 
-First guesses, to be tuned from `npm run pilot:journey` (see
-[BALANCE-JOURNEY.md](BALANCE-JOURNEY.md)).
+First guesses, read from `npm run pilot:journey` (24 journeys, three regions,
+[BALANCE-JOURNEY.md](BALANCE-JOURNEY.md)):
+
+- The pilot fits upgrades in flight from one purse now, and every journey
+  gets through (21 of 24 before). The ship is stronger earlier because scrap
+  money builds it too. If real play is easier than it should be, the first
+  lever is `SCRAP_PRICE` (2), then the Story rock's Krail multiplier.
+- Supplies were never short for the pilot (about 12 aboard from the second
+  system on), so the empty-stores penalty is covered by tests, not by the
+  pilot. A human who ignores the galley will meet it.
+- The pilot's builds are over the mass rating from the fourth system on (and
+  always by the eighth). The surcharge tops out at 6 Cyrite a jump, about a
+  third of a lane, and a frame module (`hl_frame`, +4 mass a mark) fixes it.
+- Chits pile up once the web is fitted (about 1,500 by the tenth system).
+  The bay is the only big sink, so a later tier of yard work is the next
+  thing to add if that feels empty on a device.

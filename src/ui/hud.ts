@@ -333,7 +333,7 @@ export class Hud {
     const th = $('obj-threat');
     if (!b) { th.hidden = true; return; }
     // the tank, in the status panel: Cyrite toward the jump
-    const fuel = $('sys-fuel'), need = b.jumpCost;
+    const fuel = $('sys-fuel'), need = world.jumpCost;
     text($('v-fuel'), `${world.cyrite}/${need}`);
     $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
     fuel.classList.toggle('ready', world.cyrite >= need);
@@ -534,9 +534,9 @@ export class Hud {
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));
       } else {
         // the one thing to do now, and at most two quiet lines under it
-        const ready = world.cyrite >= bk.jumpCost;
+        const ready = world.cyrite >= world.jumpCost;
         text($('obj-t'), t(ready ? 'Make for the lane mouth' : 'Cyrite to jump'));
-        text($('obj-left'), ready ? range(dl) : `${world.cyrite}/${bk.jumpCost}`);
+        text($('obj-left'), ready ? range(dl) : `${world.cyrite}/${world.jumpCost}`);
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         text($('obj-s'), '');
         const lines: string[] = [];
