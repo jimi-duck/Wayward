@@ -17,7 +17,7 @@ import { World } from '../src/sim/world';
 import { migrate } from '../src/meta/save';
 import { VERSION } from '../src/sim/journey';
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 /** A sortie result as the world would hand it back: jumped (or wrecked) after `time` seconds, with the journey's carry changed by `c`. */

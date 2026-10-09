@@ -440,7 +440,7 @@ export const WORLD: Record<string, string> = {
 
   // ── systems (content/systems.ts) ──
   'Kellern Mining’s yards. Home, until today.': 'Die Werften von Kellern Mining. Zuhause, bis heute.',
-  'Veined rock and a few claim crews. Cyrite if you will cut for it.': 'Geäderter Fels und ein paar Schürfer. Cyrit, wenn du schneidest.',
+  'Veined rock and a few claim crews. Cyrite if you will mine for it.': 'Geäderter Fels und ein paar Schürfer. Cyrit, wenn du abbaust.',
   'A station with a market, a galley and a refit bay. Busy, and watched.': 'Eine Station mit Markt, Kombüse und Umbaudock. Viel los, und bewacht.',
   'Empty space between lanes. Quick, quiet, and nothing to eat.': 'Leerer Raum zwischen Bahnen. Schnell, ruhig, und nichts zu essen.',
   'Gutter crews and Custody patrols, both looking for a prize.': 'Gutter-Crews und Custody-Patrouillen, alle auf Beute aus.',

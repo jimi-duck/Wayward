@@ -16,8 +16,8 @@ Two ways in from the start screen:
   **Prefect Calloway** following your trail. It starts with the Breakout,
   getting out of the home system. The old lane mouth is about a minute's flight away, flat out.
   Reach it with 20 **Cyrite** in the tank and hold inside it while the drive
-  spools. Cyrite is scarce: hold the **cutter** (3 or C) on violet-veined rock,
-  easing off before it overheats, and it comes apart clean. Ordinary rock gives
+  spools. Cyrite is scarce: shoot the violet-veined rock with the **lasers** and it comes apart clean
+  (a torpedo wastes half of what is in it). Ordinary rock gives
   ore, which fills the hold and sells at **Frontier Supply**, the dock about
   halfway, where you can also buy Cyrite and patch a plate. Rock and wrecks
   drop **Krail**, spent in the **refit bay** (B) as in the arcade; at a port

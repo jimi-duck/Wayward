@@ -1,7 +1,7 @@
 import { angleDelta, clamp } from '../core/math';
 import type { Sector } from '../render/sector';
 import type { Boss } from '../sim/bosses';
-import { rockYield } from '../sim/breakout';
+import { rockYield, TORP_YIELD } from '../sim/breakout';
 import { ENCOUNTERS } from '../sim/encounters';
 import { alienBonus, alienLabel, cloaked, type Alien } from '../sim/enemies';
 import { ROCK_KINDS, type Rock } from '../sim/field';
@@ -251,13 +251,11 @@ export class Targeting {
       name = `${tr(ASTEROID[r.kind] ?? 'Asteroid')} ${SIZE[r.size]}-${String(r.id % 1000).padStart(3, '0')}`;
       const extra = r.kind === 'volatile' ? ` · ${tr('unstable')}` : '';
       if (world.bk) {
-        // the Breakout: what a clean cut gives, and how the cut is going
-        const y = rockYield(r.kind, r.size, true);
-        sub = `${tr('Ore')} <b>${y.ore}</b>${y.cyrite ? ` · Cyrite <b>${y.cyrite}</b>` : ''}${extra}`;
-        if ((r.cut ?? 0) > 0 || (r.heat ?? 0) > 0) {
-          intK = tr((r.heat ?? 0) > 0.8 ? 'Too hot · cut' : 'Cut');
-          hp = r.cut ?? 0;
-        } else { intK = tr('Integrity'); hp = r.hp / r.maxHp; }
+        // the Breakout: what the lasers take from it, and what a torpedo leaves
+        const y = rockYield(r.kind, r.size);
+        sub = `${tr('Ore')} <b>${y.ore}</b>${y.cyrite ? ` · Cyrite <b>${y.cyrite}</b>` : ''} · ${tr('torpedo')} <b>${Math.round(TORP_YIELD * 100)}%</b>${extra}`;
+        intK = tr('Integrity');
+        hp = r.hp / r.maxHp;
       } else {
         const chance = K.crystal[r.size]!, n = K.crystals[r.size]!;
         const yieldWord = chance >= 1 ? `${tr('Yield')} <b>${n}</b>` : `${tr('Yield')} <b>${n}</b> · ${Math.round(chance * 100)}%`;

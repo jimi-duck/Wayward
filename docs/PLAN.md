@@ -66,7 +66,7 @@ New sim modules, each with its own tests:
 |---|---|
 | `sim/journey.ts` | the persistent state, `startSortie`, `endSortie` |
 | `sim/cargo.ts` | the hold: slots, cargo kinds, Krail, food, parts |
-| `sim/mining.ts` | the cutting beam, rock heat windows, yield |
+| `sim/breakout.ts` (`rockYield`, `rockTake`) | what rock gives: lasers all of it, torpedoes `TORP_YIELD` |
 | `sim/heat.ts` | per-system attention and what it triggers |
 | `sim/poi.ts` | points of interest in a system: fields, ports, wrecks, signals, gates |
 | `sim/comms.ts` | card selection, the read, choice resolution, follow-ups |
@@ -252,9 +252,9 @@ enough Krail to jump.
   pursuit of you, not spawned around you. The existing director, enemy
   archetypes and the first capital ship (a Custody cutter hailing at the
   lane mouth) are reused; only where and why they spawn changes.
-- **The cutting beam.** `sim/mining.ts`: hold it on a rock, keep the cut in
-  its heat window, ore and Krail come out clean; overheat and it fractures.
-  The guns still break rock, for scraps. Krail fills the tank (fuel), ore
+- **Mining with the lasers.** (First built as a separate cutting beam with a
+  heat window; replaced by the lasers, see DESIGN.md.) A rock the lasers
+  destroy comes out clean; a torpedo wastes half. Krail fills the tank (fuel), ore
   fills a small hold.
 - **Krail becomes scarce.** Most rock gives ore, few give Krail. The field
   refit (the three cards) is now paid for in ore, not dropped by every kill.

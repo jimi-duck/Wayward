@@ -11,13 +11,10 @@ import { Kit, metal, seeded, type V3 } from './kit';
 // The lane mouth: an old Accord gate, a ring of dead pylons round a slow
 // amber swirl, lighting up as the drive spools. The port: Frontier Supply, a
 // squat fuel depot on a rock-anchored spine, its docking ring drawn on the
-// plane in cyan. The cutter: an amber beam from the bow to the rock under
-// it, going white and then red as the rock heats, sparks where it bites.
+// plane in cyan.
 
 const AMBER = new Color(3.6, 2, 0.45);
 const CYAN = new Color(0.4, 2.4, 3.2);
-const SPARK: RGB = [3.8, 2.4, 0.8];
-const HOT: RGB = [4, 1.2, 0.4];
 
 let mats: Record<string, Material> | null = null;
 function materials(): Record<string, Material> {
@@ -236,8 +233,6 @@ export class BreakoutView {
   private readonly throat: Mesh;
   private readonly laneRing: Mesh;
   private readonly portRing: Mesh;
-  private readonly beam: Mesh;
-  private readonly bite: Sprite;
   private time = 0;
 
   constructor(scene: Scene, glow: Texture) {
@@ -256,12 +251,6 @@ export class BreakoutView {
     this.lane.visible = this.port.visible = false;
     scene.add(this.lane, this.port);
 
-    this.beam = new Mesh(new CylinderGeometry(0.07, 0.11, 1, 6, 1, true).rotateZ(Math.PI / 2).translate(0.5, 0, 0),
-      new MeshBasicMaterial({ color: AMBER, toneMapped: false, transparent: true, opacity: 0.9, blending: AdditiveBlending, depthWrite: false }));
-    this.beam.visible = false;
-    this.bite = new Sprite(new SpriteMaterial({ map: glow, color: AMBER, blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
-    this.bite.visible = false;
-    scene.add(this.beam, this.bite);
   }
 
   update(world: World, ship: { x: number; z: number; heading: number }, fx: Effects, dt: number): void {
@@ -269,7 +258,7 @@ export class BreakoutView {
     const b = world.bk ?? world.review?.bk ?? null;
     this.lane.visible = !!b;
     this.port.visible = !!b?.port;
-    if (!b) { this.beam.visible = this.bite.visible = false; return; }
+    if (!b) return;
     this.lane.position.set(b.lane.x, -1.5, b.lane.z);
     if (b.port) this.port.position.set(b.port.x, -2, b.port.z);
     // the throat brightens as the tank fills and blazes while the drive spools
@@ -279,25 +268,5 @@ export class BreakoutView {
     (this.throat.material as MeshBasicMaterial).opacity = 0.015 + 0.025 * ready + 0.18 * spool + (b.jumpT >= 0 ? 0.4 : 0);
     (this.laneRing.material as MeshBasicMaterial).opacity = 0.35 + 0.35 * ready + 0.2 * Math.sin(this.time * 3) * ready;
     (this.portRing.material as MeshBasicMaterial).opacity = 0.35 + 0.25 * Math.sin(this.time * 2.4) + b.dockT;
-
-    // the cutter's beam: bow to rock
-    const r = world.field.find(world.cutting);
-    if (!r || !world.alive) { this.beam.visible = this.bite.visible = false; return; }
-    const bx = ship.x + Math.cos(ship.heading) * 1.4, bz = ship.z - Math.sin(ship.heading) * 1.4;
-    const dx = r.x - bx, dz = r.z - bz, d = Math.hypot(dx, dz) || 1;
-    const reach = Math.max(0.5, d - r.r * 0.7);
-    const hx = bx + (dx / d) * reach, hz = bz + (dz / d) * reach;
-    this.beam.visible = this.bite.visible = true;
-    this.beam.position.set(bx, 0.15, bz);
-    this.beam.rotation.set(0, Math.atan2(-dz, dx), 0);
-    this.beam.scale.set(reach, 1 + Math.sin(this.time * 40) * 0.25, 1 + Math.sin(this.time * 40) * 0.25);
-    const heat = clamp(r.heat ?? 0, 0, 1);
-    // amber, through white-hot, to red near the line
-    const c = heat < 0.75 ? AMBER.clone().lerp(new Color(4, 3.4, 2.6), heat / 0.75) : new Color(4, 3.4, 2.6).lerp(new Color(4.2, 0.6, 0.3), (heat - 0.75) / 0.25);
-    (this.beam.material as MeshBasicMaterial).color.copy(c);
-    (this.bite.material as SpriteMaterial).color.copy(c);
-    this.bite.position.set(hx, 0.2, hz);
-    this.bite.scale.setScalar(1.2 + heat * 2.2 + Math.sin(this.time * 30) * 0.2);
-    if (dt > 0 && Math.random() < 0.6) fx.burst(hx, 0.2, hz, 2, heat > 0.8 ? HOT : SPARK, 6, 0.15, 0.3);
   }
 }

@@ -29,9 +29,9 @@ Object.assign(globalThis, {
 });
 beforeEach(() => mem.clear());
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
 const priv = (w: World) => w as unknown as {
-  nextEvent: number; encounter: unknown; killAlien(a: unknown, s: string): void; cutClean(r: unknown): void; destroyRock(r: unknown, s: string): void; richShare: number;
+  nextEvent: number; encounter: unknown; killAlien(a: unknown, s: string): void; mineRock(r: unknown): void; destroyRock(r: unknown, s: string): void; richShare: number;
 };
 const mean = (a: number[]) => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
 const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
@@ -81,7 +81,7 @@ describe('the table', () => {
     expect(P.sky).toEqual({ traffic: 1.7, toughness: 1.7, fire: 1.35, elites: 1.9, hazard: 1.5, income: 0.75 });
     expect(P.score).toBe(1);
     expect(P.pursuit).toEqual({ gap: 1, cap: 1, elite: 1 });
-    expect(P.heat).toEqual({ rate: 1, kill: 1, cut: 1 });
+    expect(P.heat).toEqual({ rate: 1, kill: 1, mine: 1 });
     expect(P.rock).toEqual({ krail: 1, ore: 1, cyrite: 1, veins: 1 });
     expect(P.salvage).toMatchObject({ krail: 1, life: 1, repair: 1, capital: 1, reach: 1 });
     for (const c of Object.values(P.salvage.cargo)) expect(c).toEqual({ parts: 0.5, cyrite: 0, ore: 0 });
@@ -302,7 +302,7 @@ describe('the sky', () => {
     expect(cap('raider')).toBeGreaterThan(cap('prospector'));
   });
 
-  it('heats the Story at the rate the mode says, and the cutter\'s noise, and what a kill adds', () => {
+  it('heats the Story at the rate the mode says, and what a kill adds', () => {
     const j = (id: SurvivalId) => {
       const jj = newJourney(7, false, 'three', id);
       const w = new World(2, { mode: 'breakout', sortie: { ...sortieDef(jj), home: false, calloway: Infinity, story: null }, carry: jj.carry });
@@ -335,19 +335,19 @@ describe('the hull', () => {
 });
 
 describe('rock', () => {
-  /** What cutting every kind and size of rock clean (or breaking it) drops, summed over `n` goes. */
-  function mined(id: SurvivalId, how: 'cut' | 'break', n = 30) {
+  /** What mining every kind and size of rock clean (or blasting it) drops, summed over `n` goes. */
+  function mined(id: SurvivalId, how: 'mine' | 'break', n = 30) {
     const w = new World(4, { mode: 'breakout', survival: id });
     w.field.rocks = []; w.field.bulwarks = []; w.field.step = () => {};
     for (let k = 0; k < n; k++) for (const kind of ['basalt', 'iron', 'rich'] as const) for (const size of [0, 1, 2] as const) {
       const r = w.field.spawn(size, 500, 500, 0, 0, kind);
-      if (how === 'cut') priv(w).cutClean(r); else priv(w).destroyRock(r, 'laser');
+      if (how === 'mine') priv(w).mineRock(r); else priv(w).destroyRock(r, 'torpedo');
     }
     return w.run.loot.rock;
   }
 
   it('gives a Drifter more, and a Raider a good deal less, of Krail, ore and Cyrite', () => {
-    for (const how of ['cut', 'break'] as const) {
+    for (const how of ['mine', 'break'] as const) {
       const [d, p, r] = SURVIVAL_IDS.map((id) => mined(id, how));
       for (const k of ['krail', 'ore', 'cyrite'] as const) {
         expect(d![k], `${how} ${k}`).toBeGreaterThan(p![k]);
@@ -364,9 +364,9 @@ describe('rock', () => {
     // 12 Cyrite from a large veined rock, 6 and 3 ore from a large basalt: the table's own numbers, no rounding in the way
     const w = new World(4, { mode: 'breakout' });
     w.field.rocks = []; w.field.bulwarks = []; w.field.step = () => {};
-    priv(w).cutClean(w.field.spawn(0, 500, 500, 0, 0, 'rich'));
+    priv(w).mineRock(w.field.spawn(0, 500, 500, 0, 0, 'rich'));
     expect(w.run.loot.rock.cyrite).toBe(12);
-    priv(w).cutClean(w.field.spawn(0, 500, 500, 0, 0, 'basalt'));
+    priv(w).mineRock(w.field.spawn(0, 500, 500, 0, 0, 'basalt'));
     expect(w.run.loot.rock.ore).toBe(3 + 6);
   });
 
@@ -479,7 +479,7 @@ describe('the economy', () => {
       const w = new World(4, { mode: 'breakout', survival: id });
       w.field.rocks = []; w.field.bulwarks = []; w.field.step = () => {};
       let got = 0;
-      for (let i = 0; i < 60; i++) { const before = w.run.loot.rock.cyrite; priv(w).cutClean(w.field.spawn(0, 500, 500, 0, 0, 'rich')); got += w.run.loot.rock.cyrite - before; }
+      for (let i = 0; i < 60; i++) { const before = w.run.loot.rock.cyrite; priv(w).mineRock(w.field.spawn(0, 500, 500, 0, 0, 'rich')); got += w.run.loot.rock.cyrite - before; }
       return got / 60;
     };
     const cruiser = (id: SurvivalId) => {

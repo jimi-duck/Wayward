@@ -156,9 +156,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
   --fw: clamp(80px, 24vh, 104px);
   --bw: clamp(60px, 17vh, 72px);
 }
-#stick, #fire, #torp, #cut, #brk, #pause-b { display: none; }
+#stick, #fire, #torp, #brk, #pause-b { display: none; }
 .touch-ui #stick, .touch-ui #fire, .touch-ui #torp, .touch-ui #brk, .touch-ui #pause-b { display: grid; }
-.touch-ui.breakout #cut { display: grid; }
 .touch-ui:not(.has-torps) #torp { display: none; }
 #stick {
   position: absolute; left: var(--in-l); bottom: var(--pb);
@@ -173,19 +172,19 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 /* the buttons are octagons, an edge and a glass like every panel, and each
    carries its own gauge under the thumb that uses it. The layer behind does
    the hit-testing (generously), so the buttons themselves take no events. */
-#fire, #torp, #cut, #brk {
+#fire, #torp, #brk {
   --c: 28%; --edge: var(--hud-mid); --fill: rgba(11, 16, 17, .58);
   position: absolute; isolation: isolate; place-items: center; align-content: center; gap: 6px; border: 0; padding: 0; background: none;
   pointer-events: none; aspect-ratio: 1;
   font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink);
 }
-:is(#fire, #torp, #cut, #brk)::before, :is(#fire, #torp, #cut, #brk)::after { content: ""; position: absolute; pointer-events: none;
+:is(#fire, #torp, #brk)::before, :is(#fire, #torp, #brk)::after { content: ""; position: absolute; pointer-events: none;
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); }
 /* the edge is only the 1px ring (evenodd), so the glass inside lets the view through and never shows the edge colour */
-:is(#fire, #torp, #cut, #brk)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
+:is(#fire, #torp, #brk)::before { inset: 0; z-index: -2; background: var(--edge); --ci: calc(var(--c) + .41px);
   clip-path: polygon(evenodd, var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
     var(--ci) 1px, calc(100% - var(--ci)) 1px, calc(100% - 1px) var(--ci), calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), var(--ci) calc(100% - 1px), 1px calc(100% - var(--ci)), 1px var(--ci), var(--ci) 1px); }
-:is(#fire, #torp, #cut, #brk)::after { inset: 1px; z-index: -1; background: var(--fill); }
+:is(#fire, #torp, #brk)::after { inset: 1px; z-index: -1; background: var(--fill); }
 #fire { right: var(--in-r); bottom: var(--pb); width: var(--fw); --edge: var(--hud); font-size: 10px; }
 #fire.on { --fill: rgba(217, 154, 39, .34); }
 #t-bank { --n: 10; width: 56%; height: 5px; }
@@ -195,17 +194,11 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #torp.on { animation: tap-flash .22s var(--ez); }
 #t-rack { width: 58%; }
 #t-rack i { height: 5px; }
-/* the cutter: further left again, on the bottom line, amber like the beam */
-#cut { right: calc(var(--in-r) + var(--fw) + var(--bw) + 22px); bottom: var(--pb); width: var(--bw); --edge: var(--amber-dim); }
-#cut.on { --edge: var(--amber); --fill: rgba(229, 169, 58, .28); }
-.touch-ui:not(.has-torps) #cut { right: calc(var(--in-r) + var(--fw) + 10px); }
 /* break and reverse: above the trigger, a short reach up for the same thumb; the gauge refills over the cooldown */
 #brk { right: calc(var(--in-r) + var(--fw) * .22); bottom: calc(var(--pb) + var(--fw) + 10px); width: calc(var(--bw) * .86); --edge: var(--hud-mid); }
 #brk.on { animation: tap-flash .22s var(--ez); }
 #brk.wait { --fill: rgba(11, 16, 17, .4); opacity: .7; }
 #t-brk { --n: 5; width: 56%; height: 4px; }
-#t-heat { --n: 10; --on: var(--amber); --off: var(--amber-dim); width: 56%; height: 4px; }
-#cut.hot #t-heat { --on: var(--alert); }
 @keyframes tap-flash { from { scale: .88; } }
 /* pause: small, low and in the middle, out of both thumbs' way */
 #pause-b { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 6px); translate: -50% 0; width: 44px; height: 32px;

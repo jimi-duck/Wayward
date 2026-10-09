@@ -18,16 +18,23 @@ A sortie with a shape: get the stolen hauler out of the home system
   the drive spools for five seconds; leave the ring and it winds down. The
   jump takes the Cyrite and ends the run as an escape.
 - **Cyrite is fuel, and scarce.** Only veined (rich, violet) rock and the
-  rare gold rock carry it, cut clean; the guns break a rock for 30% of what
-  is in it (`rockYield`). The tank starts at 6.
+  rare gold rock carry it, mined clean with the lasers (`rockYield`). The tank starts at 6.
 - **Krail builds the ship**, as in the arcade: pale gold crystals out of
-  ordinary rock (`ROCK_KRAIL` of the arcade's: sure when cut clean, by chance
-  when broken) and the wrecks of what you destroy (`WRECK_KRAIL`), and 40
+  ordinary rock (`ROCK_KRAIL` of the arcade's: sure when mined, by chance
+  when blasted) and the wrecks of what you destroy (`WRECK_KRAIL`), and 40
   from a capital ship. It is spent in the refit bay (below).
-- **The cutter** (`sim/mining.ts`), on its own held trigger: the rock under
-  it heats; once warm the cut goes in; past the line the rock fractures. A
-  small rock comes out clean in one hold; a large one needs the beam pulsed.
-  Heat and the cut belong to the rock. The lasers hold while it runs.
+- **Mining is the lasers' job.** A rock the lasers destroy is mined clean:
+  all its ore and Cyrite fall out for the tractor, Krail is sure, and nothing
+  is left to split (`World.mineRock`). A torpedo, mine or burn destroys part
+  of it on the way: `TORP_YIELD` (0.5, `sim/breakout.ts`) of the ore and
+  Cyrite, and the rock is gone. A ram or lightning leaves `SCRAP` (0.3).
+  `rockTake(weapon)` is the one place that says which; `World.torpYieldMult`
+  is 1 / `TORP_YIELD` while the high-yield torpedo booster runs, so a torpedo
+  takes the whole rock then. A volatile rock still
+  goes off when it breaks. Each rock mined adds a little hunt pressure
+  (`HEAT_MINE`, times the mode's `heat.mine`). In the arcade rock gives only
+  Krail by chance, and a torpedo halves that chance. The target card shows
+  what the lasers take and what a torpedo leaves; the briefing says it once.
 - **Ore** fills the hold (40) and sells at the port. **Parts** come from wrecks; six of them patch a plate
   once the ship has gone six seconds unhit. Random repair drops are off.
 - **The port.** Slow inside its ring for a second and the clamps take you
@@ -39,7 +46,7 @@ A sortie with a shape: get the stolen hauler out of the home system
   hull whole, Cyrite for a second jump). Its row shows what it will do as
   chips; the one-at-a-time rows sit under "By hand".
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
-  more) and the cutter's noise. It decides how often pursuers come, how
+  more) and mining noise. It decides how often pursuers come, how
   many at once and which: pickets, then cruisers, enforcers and, late,
   interdictors, all Custody, from behind (38s apart down to 10s, one to
   three at once); now and then
