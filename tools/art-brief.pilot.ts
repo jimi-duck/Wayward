@@ -2,9 +2,11 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { test } from 'vitest';
 import { SLOTS, type SlotId } from '../src/content/art';
 import { allBriefs, AVOID_ALL, STYLE } from './art/briefs';
+import { masterBrief } from './art/master';
 
 // ── the prompts for every picture ─────────────────────────────────────────
-// `npm run art:brief` writes docs/art/briefs.md (to read and copy from) and
+// `npm run art:brief` writes docs/art/CHATGPT-BRIEF.md (the one file to give an
+// image generator), docs/art/briefs.md (every prompt in full, to copy from) and
 // docs/art/briefs.json (to feed a script). Both are made from the game's own
 // rows, so run it again after a captain, a card, an ending or a ship is added.
 
@@ -30,4 +32,5 @@ test('write the briefs', () => {
     }
   }
   writeFileSync('docs/art/briefs.md', md.join('\n'));
+  writeFileSync('docs/art/CHATGPT-BRIEF.md', masterBrief(list) + '\n');
 });
