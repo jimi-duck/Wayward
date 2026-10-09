@@ -99,11 +99,11 @@ export class SummaryPanel {
       $('sum-tiles').replaceChildren(
         plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Through the lane mouth' : 'Short of the lane')),
         plain('Cyrite', String(r.cyrite), r.escaped ? t('{n} left after the jump', { n: r.cyriteLeft }) : t('Gathered')),
-        plain('Ore', String(r.ore), t('{n} sold at the port', { n: r.oreSold })),
+        plain('Scrap', String(r.ore), t('{n} chits paid', { n: r.oreSold })),
         plain('Rock mined', String(r.mined), t('{n} blasted', { n: r.blasted })),
         tile('Refits', r.refit, p.refit),
         tile('Kills', r.kills, p.kills),
-        plain('Parts', String(r.parts), t('{n} plates mended', { n: r.platesGained })),
+        plain('Supplies', String(r.parts), t('{n} plates mended', { n: r.platesGained })),
         plain('Port', r.docked ? `${r.docked}×` : '—', t(r.docked ? 'Docked at Frontier Supply' : 'Never docked')),
       );
     } else $('sum-tiles').replaceChildren(
@@ -288,7 +288,7 @@ export class StartOptions {
       h('span', 'sv-c', '', h('em', '', t('Mining')), pips(K.scale.mining, '')),
       h('span', 'sv-c', '', h('em', '', t('Wrecks')), pips(K.scale.wrecks, '')),
     );
-    $('sv-rule').textContent = t('Wrecked? You drift on, hold and Krail gone. {n} wrecks in one region and you fly it again.', { n: K.voyage.wrecks });
+    $('sv-rule').textContent = t('Wrecked? You drift on, a share of your stores gone. {n} wrecks in one region and you fly it again.', { n: K.voyage.wrecks });
   }
 
   logbook(on: boolean): void {

@@ -170,7 +170,7 @@ export class Hud {
         case 'alienDestroyed': this.note(world, `${t('{name} destroyed', { name: t(e.label) })} · +${fmt(e.points)}`, 'gain', 'hull', e.points); break;
         case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
-        case 'rockMined': this.note(world, `${t('Mined clean')} · ${t('{n} ore', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
+        case 'rockMined': this.note(world, `${t('Mined clean')} · ${t('{n} scrap', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
         case 'holdFull': this.note(world, t('Hold full · sell at the port'), 'hit'); break;
         case 'patched': this.note(world, `${t('Plate patched')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;

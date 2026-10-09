@@ -584,7 +584,7 @@ export class BayPanel {
       );
       return card;
     });
-    const empty = h('p', 'pick-none', t('Nothing to fit yet · break rock for Krail'));
+    const empty = h('p', 'pick-none', t(w.bk ? 'Nothing to fit yet · pick up scrap for chits' : 'Nothing to fit yet · break rock for Krail'));
     const arcade = isArcade(w);
     $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(arcade ? 'Three refits for your ship' : 'Picked for your ship')));
     $('bay-web').replaceChildren(h('div', 'pick-row', '', ...(cards.length ? cards : [empty])),

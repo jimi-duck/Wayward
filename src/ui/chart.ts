@@ -160,7 +160,7 @@ export class ChartPanel {
     $('ch-s').textContent = end
       ? [plural(legs, '{n} jump', '{n} jumps'), days(Math.round(j.day)), plural(j.wrecks, '{n} wreck', '{n} wrecks'), plural(j.hunt.caught, 'Calloway caught you once', 'Calloway caught you {n} times'), `${t('score')} ${num(j.score)}`].join(' · ')
       : out.kind === 'lost' ? t('Too many wrecks in one region: you fly it again.')
-      : t('She flies again from here, a day later. Hold and Krail gone.');
+      : t('She flies again from here, a day later. A share of the stores gone.');
     this.onPick = null;
     this.onGo = onGo;
     const go = $('ch-go');

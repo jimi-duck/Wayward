@@ -151,7 +151,7 @@ export const SITUATIONS: SituationDef[] = [
     after: { won: { flag: 'missing_hauler' } },
   },
   {
-    id: 'shortage', name: 'A settlement short of food', blurb: 'A settlement running out of food.', group: 'frontier',
+    id: 'shortage', name: 'A settlement short of supplies', blurb: 'A settlement running out of supplies.', group: 'frontier',
     kinds: ['mining', 'transit', 'port', 'contested'], regions: [0, 5], holders: ['holdfast', 'none', 'guild', 'gutter', 'frontier'], weight: 1.4, tight: 'roundup',
     prop: 'settlement', card: 'sc_shortage', at: 20, hail: 520, accept: ['bring'],
     goal: { kind: 'reach', hold: 4, limit: 200, line: 'Bring supplies to the settlement', give: { supplies: 3 } },
@@ -210,7 +210,7 @@ export const SITUATIONS: SituationDef[] = [
     ignore: { text: 'The runner shrugs and goes' },
   },
   {
-    id: 'resistance', name: 'A cell that needs parts', blurb: 'A cell that has not been counted.', group: 'frontier',
+    id: 'resistance', name: 'A cell that needs supplies', blurb: 'A cell that has not been counted.', group: 'frontier',
     kinds: ['mining', 'transit', 'contested'], regions: [1, 5], weight: 0.9, holders: ['holdfast', 'none', 'gutter'],
     prop: 'settlement', card: 'sc_resistance', at: 30, hail: 480, accept: ['supply'],
     goal: { kind: 'reach', hold: 4, limit: 190, line: 'Take supplies to the cell', give: { supplies: 4 } },

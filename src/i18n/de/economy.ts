@@ -31,4 +31,11 @@ export const ECONOMY: Record<string, string> = {
   'Out of supplies · the ship flies slower and worse': 'Keine Vorräte · das Schiff fliegt langsamer und schlechter',
   'Supplies low · buy more at a port': 'Vorräte knapp · kauf mehr in einem Hafen',
   'Heavy · each jump burns {n} more Cyrite': 'Schwer · jeder Sprung braucht {n} Cyrit mehr',
+  'Scrap': 'Schrott',
+  '{n} chits paid': '{n} Chits bezahlt',
+  '{n} scrap': '{n} Schrott',
+  'Wrecked? You drift on, a share of your stores gone. {n} wrecks in one region and you fly it again.': 'Zerstört? Du treibst weiter, ein Teil deiner Vorräte weg. Bei {n} Wracks in einer Region fliegst du sie neu.',
+  'She flies again from here, a day later. A share of the stores gone.': 'Sie fliegt von hier wieder, einen Tag später. Ein Teil der Vorräte weg.',
+  '“Salvage claim. We tow, you pay. A share of everything aboard.”': '„Bergungsanspruch. Wir schleppen, du zahlst. Einen Teil von allem an Bord.“',
+  'Nothing to fit yet · pick up scrap for chits': 'Noch nichts einzubauen · sammle Schrott für Chits',
 };

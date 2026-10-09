@@ -755,7 +755,7 @@ export const CARDS: Record<string, string> = {
   'Relay ghost': 'Relais-Geist',
   '“…unregistered carrier… no, never mind. Carry on.”': '„…unregistrierter Träger… nein, vergiss es. Weiter.“',
   'Ore hauler': 'Erzfrachter',
-  '“Hold full and the dock is a day away. Why do I do this.”': '„Laderaum voll und das Dock einen Tag weg. Warum tu ich mir das an.“',
+  '“Tank low and the dock is a day away. Why do I do this.”': '„Tank fast leer und das Dock einen Tag weg. Warum tu ich mir das an.“',
   'Tug': 'Schlepper',
   '“…and the Wayward went down with all her ore. Somebody write a better verse.”': '„…und die Wayward ging mit all ihrem Erz unter. Schreibt wer eine bessere Strophe.“',
   'Scanner kid': 'Scanner-Kind',
