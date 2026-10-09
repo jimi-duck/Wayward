@@ -22,6 +22,11 @@ costs nothing) and at least one other way to settle it:
 | Run the needle | Drift Deep onward | `race`: six beacons in order against a rival at 78% of the ship's top speed, rock in the gaps | a spoofer drops her out |
 | The point of no return | Drift Deep onward | `survey`: three rings round a black hole, the closer the more it pays; the nav goes, the core burns | sell the contract |
 | Nothing to declare | Reach to Free Ports | `sneak`: reach the drop between three sweeping patrols, hold still | sell the drop |
+| A kill zone | Belt onward | `destroy`: six raiders, two heavy, on a crossing; clearing it cheapens supplies for ten days | a jammer slips past |
+| The missing shift | Marches to Free Ports | `reach`: hold at the wreck with a supply; a rescued crew slows the Net | tell the Custody |
+| Follow the Cyrite | Belt to Hollows | `follow`: stay on a prospector's wing to a vein; nothing shoots | buy her chart for a rich seam |
+| Someone answered | Drift Deep onward | `watch`: hold slow and close by a relay three unknown contacts circle; sets an Archive flag | sell the bearing |
+| The wreck that remembered | Belt onward | `watch`: pull a wreck's log slow and close; the Office pays, and someone wanted it wiped | strip it for parts |
 
 ## What each one changes
 
@@ -72,13 +77,12 @@ units, and the HUD shows `Stage.status` under the objective line.
 
 ## Not yet
 
-Eighteen of the twenty-five ideas are still to do: Clear the Kill Zone and Be
-the Bait (more combat), One Crate No Questions and Keep Your Distance (more
-stealth), the chains (Missing Payroll, The Witness, Two Captains One Wreck),
-the corporate pair (One Filter Left, Lose the Prefect), the finds (Follow the
-Cyrite, Finders Keepers, The Wreck That Remembered) and the Thren work (Someone
-Answered, The Voice on the Wire). Each is a row and a card once its goal
-exists; most use the six goals as they are. Still to check on a real device: the
-rival's pace, the sneak timing and how often a system has a job (`SIT_CHANCE`).
+Thirteen of the twenty-five ideas are still to do: Be the Bait and Keep Your
+Distance, One Crate No Questions, the chains (Missing Payroll, The Witness, Two
+Captains One Wreck), the corporate pair (One Filter Left, Lose the Prefect),
+Finders Keepers, The Voice on the Wire, The Long Walk, Wanted: Bring Them Back's
+sequel, and Protect the Last Shift's follow-ups. Each is a row and a card; most
+use the goals as they are. Still to check on a real device: the rival's pace,
+the sneak timing and how often a system has a job (`SIT_CHANCE`).
 
 The Hostile column of [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md) now includes the foes of missions, which fight from the moment the job is taken.
