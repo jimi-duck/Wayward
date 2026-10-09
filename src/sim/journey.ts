@@ -42,10 +42,12 @@ import { actLine, dueBeat } from './story';
 //              costs the Cyrite on the lane, days in the lane, and food and
 //              parts for those days.
 //
-// Failure costs, but rarely ends it. A wreck leaves you adrift in the same
-// system with the hold gone and half of everything else, a day later; a
-// third wreck, a wreck with Calloway in the system, or any wreck in
-// hardcore, and the journey is over. Reaching the Threshold ends the
+// Failure costs, but rarely ends it. A wreck leaves you adrift: a Drift tug
+// tows the Wayward to another system of the same region, a day later, with
+// the hold and the Krail taken as the fee and half the rest. The third wreck
+// in one region (the mode's limit) is a total loss: the region is flown
+// again from its gate (main.ts, with the chapter save). A wreck with
+// Calloway in the system, or any wreck in hardcore, ends the journey. Reaching the Threshold ends the
 // region: out into the Scatter, with one choice left, what the Severance
 // file is worth (sim/endings.ts).
 //
@@ -82,7 +84,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 10;
+export const VERSION = 11;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -130,6 +132,8 @@ export interface Journey {
   carry: Carry;
   /** Wrecks so far, and jumps in a row without enough food. */
   wrecks: number;
+  /** Wrecks in the region flown now: the mode's limit makes it a total loss (back to the gate). Starts again at each gate. */
+  lost: number;
   hungry: number;
   /** Between sorties, plotting ('chart'); in a sortie ('sortie'); or done. */
   status: 'chart' | 'sortie' | 'over';
@@ -165,7 +169,7 @@ export function newJourney(seed: number, hardcore = false, set: RegionSet = 'thr
   }
   const j: Journey = {
     version: VERSION, seed, hardcore, survival: survivalOf(survival).id, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry: startCarry(survival),
-    wrecks: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
+    wrecks: 0, lost: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
   };
   const out = lanesFrom(chart, chart.home);
   j.dest = out[rng(j).int(out.length)]!.to.id;
@@ -331,9 +335,28 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
 }
 
 export interface Outcome {
-  kind: 'jumped' | 'adrift' | JourneyEnd;
+  /** 'lost' is made by the app from a 'wrecked' that can be flown again: the region from its gate. */
+  kind: 'jumped' | 'adrift' | 'lost' | JourneyEnd;
   /** What happened, in lines for the panel. */
   lines: string[];
+}
+
+/**
+ * The tug puts the Wayward down in another system of the region: a new one if any is left, and one the Net
+ * does not hold. Not the Cerro yards, a gate or the Threshold. The lane out is plotted for her, as at the start.
+ */
+function driftTo(j: Journey, from: StarSystem): StarSystem {
+  const region = viewOf(j.chart, from.id);
+  const pool = j.chart.systems.filter((x) => x.id !== from.id && viewOf(j.chart, x.id) === region && x.kind !== 'home' && x.kind !== 'gate' && x.kind !== 'edge' && !netted(j.chart, x.id));
+  const fresh = pool.filter((x) => !j.chart.visited.includes(x.id));
+  const pick = fresh.length ? fresh : pool.length ? pool : [from];
+  const to = pick[rng(j).int(pick.length)]!;
+  j.at = to.id;
+  j.trail.push(to.id);
+  arrive(j.chart, to.id, j.day);
+  const out = lanesFrom(j.chart, to.id);
+  j.dest = out[rng(j).int(out.length)]!.to.id;
+  return to;
 }
 
 /** A wreck with Calloway in the system: a capture, or on the long chart with the region's chance. */
@@ -381,22 +404,24 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
 
   if (res.ended === 'destroyed') {
     j.wrecks++;
+    j.lost = (j.lost ?? 0) + 1;
     // a wreck with her in the system is a capture (on the long chart, with the region's risk)
     const V = survivalOf(j.survival).voyage;
     const taken = res.calloway && captureRoll(j, s);
-    if (j.hardcore || j.wrecks >= V.wrecks || taken) {
+    if (j.hardcore || j.lost >= V.wrecks || taken) {
       j.status = 'over';
       j.end = taken ? 'captured' : 'wrecked';
       j.carry = res.carry;
       note(j, t(taken ? 'Taken by Calloway in {name}' : 'The Wayward breaks up in {name}', { name: s.name }));
       return { kind: j.end, lines: [t(taken ? 'Calloway’s boarders cut through the airlock.' : 'The Wayward is beyond saving.')] };
     }
-    // adrift: you patch her enough to fly, and the hold is gone
+    // adrift: a Drift tug tows her to another system of the region. The hold and the Krail are the fee.
     const c = res.carry;
-    j.carry = { ...c, ore: 0, parts: Math.floor(c.parts * V.kept), cyrite: Math.floor(c.cyrite * V.kept), chits: Math.floor(c.chits * V.kept), plates: 2 };
+    j.carry = { ...c, ore: 0, krail: 0, parts: Math.floor(c.parts * V.kept), cyrite: Math.floor(c.cyrite * V.kept), chits: Math.floor(c.chits * V.kept), plates: 2 };
     pass(j, ADRIFT);
-    note(j, t('Wrecked in {name} · adrift a day', { name: s.name }));
-    lines.push(t('The hull went. She flies again, a day later.'), t(V.kept > 0.5 ? 'Hold lost, and a quarter of your Cyrite, parts and chits.' : 'Hold lost, and half your Cyrite, parts and chits.'), t('{n} more and she won’t fly again.', { n: V.wrecks - j.wrecks }));
+    const to = driftTo(j, s);
+    note(j, t('Wrecked in {name} · towed to {to}', { name: s.name, to: to.name }));
+    lines.push(t('A Drift tug found the wreck and towed her to {to}.', { to: to.name }), t(V.kept > 0.5 ? 'The fee: hold and Krail, and a quarter of your Cyrite, parts and chits.' : 'The fee: hold and Krail, and half your Cyrite, parts and chits.'), t('Wrecks left in this region · {n}', { n: V.wrecks - j.lost }));
     j.status = 'sortie';
     return { kind: 'adrift', lines };
   }

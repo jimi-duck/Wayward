@@ -222,6 +222,8 @@
             <b class="sv-t" id="sv-t"></b>
             <span class="diff-s" id="diff-s"></span>
             <div class="sv-scale" id="sv-scale"></div>
+            <!-- Story only: what a wreck costs (sim/journey.ts) -->
+            <span class="sv-rule" id="sv-rule" hidden></span>
           </div>
           <span class="diff-s sv-keep" id="sv-keep" hidden></span>
         </div>
@@ -333,6 +335,15 @@
         <div class="port-list" id="port-list"></div>
         <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>8</kbd> stop, fit, plot, trade · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off</span><button type="button" id="port-x">Cast off</button></footer>
       </div>
+    </div>
+
+    <!-- Wrecked: a few lines over the dark, any key or tap to skip (ui/adrift.ts). -->
+    <div id="drift" class="drift" role="dialog" aria-labelledby="dr-k" hidden>
+      <div class="dr-in">
+        <span class="dr-k" id="dr-k"></span>
+        <p class="dr-l" id="dr-l"></p>
+      </div>
+      <span class="dr-skip" id="dr-skip">Skip</span>
     </div>
 
     <!-- The Threshold: what the Severance file is worth, then the epilogue. -->

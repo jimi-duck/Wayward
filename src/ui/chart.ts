@@ -5,7 +5,8 @@ import { fileLines } from '../sim/calloway';
 import { gateOf, jumps, cyriteKnown, lanesFrom, netted, placeAt, regionCount, regionDef, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
 import { stance, type Stance } from '../sim/lanes';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
-import { RATION, WRECKS, here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
+import { survivalOf } from '../content/survival';
+import { RATION, here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { act, actLine, fileCount } from '../sim/story';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -59,7 +60,7 @@ const goalOf = (c: Chart, at: string) => gateOf(c, viewOf(c, at));
 /** Jumps from a system to the goal (Infinity with no way). */
 const toGoal = (c: Chart, at: string, id: string) => jumps(c, id, goalOf(c, at).id);
 /** The region's name, when the chart has more than one. */
-const regionName = (c: Chart, at: string) => (regionCount(c) > 1 ? t(regionDef(c, viewOf(c, at))?.name ?? '') : '');
+export const regionName = (c: Chart, at: string) => (regionCount(c) > 1 ? t(regionDef(c, viewOf(c, at))?.name ?? '') : '');
 
 /** A faction's notice in a line: its tier, how far to the next, standing, and its captain. */
 function noticeText(l: NoticeLine, day: number): string {
@@ -124,23 +125,27 @@ export class ChartPanel {
     }, ['ArrowUp', 'ArrowDown']);
   }
 
-  /** A notice with one way on: adrift after a wreck, or a journey's end. */
+  /** A notice with one way on: adrift after a wreck, a region lost, or a journey's end. */
   notice(j: Journey, out: Outcome, onGo: () => void): void {
     this.begin(j, out.lines);
     const s = here(j);
     const end = out.kind === 'through' || out.kind === 'captured' || out.kind === 'wrecked';
+    const rn = regionName(j.chart, j.at);
     $('chart').classList.toggle('alert', out.kind !== 'through');
-    $('ch-k').textContent = end ? `${t('Journey over')} · ${t('day {n}', { n: Math.floor(j.day) + 1 })}` : t('Wreck {n} of {of}', { n: j.wrecks, of: WRECKS });
-    $('ch-t').textContent = out.kind === 'through' ? t('Into the Scatter') : out.kind === 'captured' ? t('Taken by Calloway') : out.kind === 'wrecked' ? t('The Wayward is lost') : `${t('Adrift')} · ${s.name}`;
+    $('ch-k').textContent = end ? `${t('Journey over')} · ${t('day {n}', { n: Math.floor(j.day) + 1 })}`
+      : out.kind === 'lost' ? [t('Total loss'), rn].filter(Boolean).join(' · ')
+      : [t('Wreck {n} of {of}', { n: j.lost, of: survivalOf(j.survival).voyage.wrecks }), rn].filter(Boolean).join(' · ');
+    $('ch-t').textContent = out.kind === 'through' ? t('Into the Scatter') : out.kind === 'captured' ? t('Taken by Calloway') : out.kind === 'wrecked' ? t('The Wayward is lost') : out.kind === 'lost' ? t('The region starts again') : `${t('Adrift')} · ${s.name}`;
     const legs = j.legs.filter((l) => l.ended === 'jumped').length;
     $('ch-s').textContent = end
       ? [plural(legs, '{n} jump', '{n} jumps'), days(Math.round(j.day)), plural(j.wrecks, '{n} wreck', '{n} wrecks'), plural(j.hunt.caught, 'Calloway caught you once', 'Calloway caught you {n} times'), `${t('score')} ${num(j.score)}`].join(' · ')
-      : t('She flies again. Same system, a day later, hold empty.');
+      : out.kind === 'lost' ? t('Too many wrecks in one region: you fly it again.')
+      : t('She flies again from here, a day later. Hold and Krail gone.');
     this.onPick = null;
     this.onGo = onGo;
     const go = $('ch-go');
     go.hidden = false;
-    go.textContent = t(end ? 'New journey' : 'Fly on');
+    go.textContent = t(end ? 'New journey' : out.kind === 'lost' ? 'Fly the region again' : 'Fly on');
     go.onclick = guarded(this.opened, () => this.go());
     go.onpointerdown = (e) => e.stopPropagation();
     this.ids = [];
@@ -149,6 +154,10 @@ export class ChartPanel {
       $('ch-list').replaceChildren(...j.legs.map((l, i) => h('div', `ch-leg${l.ended === 'destroyed' ? ' wreck' : ''}`, '',
         h('span', 'k', String(i + 1).padStart(2, '0')), h('b', '', l.name),
         h('span', 'pl-note', `${t(l.ended === 'destroyed' ? 'Wrecked' : 'Jumped')} · ${Math.floor(l.time / 60)}:${String(l.time % 60).padStart(2, '0')} · Cyrite ${l.cyriteIn}→${l.cyriteOut}${l.calloway ? ' · Calloway' : ''}`))));
+    } else if (out.kind === 'adrift') {
+      // the rule, where the player is looking: the last wreck here is a total loss
+      const left = survivalOf(j.survival).voyage.wrecks - j.lost;
+      $('ch-list').replaceChildren(h('p', 'ch-rule', left > 1 ? t('Wrecks left in this region · {n}', { n: left }) : t('The next wreck in this region is a total loss: you fly it again from its gate.')));
     } else $('ch-list').replaceChildren();
     this.draw(j);
     this.off = keys((e) => {

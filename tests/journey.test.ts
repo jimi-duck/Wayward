@@ -4,12 +4,13 @@ import type { InputFrame } from '../src/input/types';
 import { CARDS } from '../src/content/cards';
 import { HOME, TANK_MAX, type SortieResult } from '../src/sim/breakout';
 import {
-  arrive, COLS, jumps, lanesFrom, makeChart, NET_MARKUP, NET_RATE, netted, pricesAt, pushNet, spreadNet, sysById, type Chart,
+  arrive, COLS, jumps, lanesFrom, makeChart, NET_MARKUP, NET_RATE, netted, pricesAt, pushNet, spreadNet, sysById, viewOf, type Chart,
 } from '../src/sim/chart';
 import { behind, daysUntil, huntOn, newHunt, SEARCH } from '../src/sim/hunt';
 import {
   ADRIFT, bankAnswer, DAY, debrief, endSortie, here, RATION, newJourney, options, plot, replot, sortieDef, START_PARTS, tally, WAITING, WEAR, WRECKS, type Journey,
 } from '../src/sim/journey';
+import { openChapter } from '../src/sim/chapters';
 import { Rng } from '../src/sim/rng';
 import { newRun } from '../src/sim/run';
 import { World } from '../src/sim/world';
@@ -225,20 +226,31 @@ describe('the journey', () => {
     expect(j.chart.stall[at]).toBeGreaterThan(0);
   });
 
-  it('leaves you adrift after a wreck, a day later with the hold gone; the third wreck ends it', () => {
+  it('leaves you adrift after a wreck: towed to another system of the region, a day later, hold and Krail gone; the third in the region is a total loss', () => {
     const j = pastBreakout();
     plot(j, options(j)[0]!.to.id);
-    const at = j.at, day = j.day;
-    const out = endSortie(j, result(j, { ended: 'destroyed', time: DAY }, { ore: 30, cyrite: 11, chits: 41, parts: 9 }));
+    const at = j.at, day = j.day, region = viewOf(j.chart, at);
+    const out = endSortie(j, result(j, { ended: 'destroyed', time: DAY }, { ore: 30, krail: 50, cyrite: 11, chits: 41, parts: 9 }));
     expect(out.kind).toBe('adrift');
     expect(j.status).toBe('sortie');
-    expect(j.at).toBe(at);
+    expect(j.at).not.toBe(at);
+    expect(viewOf(j.chart, j.at)).toBe(region);
+    expect(['home', 'gate', 'edge']).not.toContain(sysById(j.chart, j.at).kind);
+    expect(j.dest).not.toBeNull();
+    expect(j.lost).toBe(1);
     expect(j.day).toBeCloseTo(day + 1 + ADRIFT, 5);
-    expect(j.carry).toMatchObject({ ore: 0, cyrite: 5, chits: 20, parts: 4, plates: 2 });
-    for (let i = 1; i < WRECKS - 1; i++) endSortie(j, result(j, { ended: 'destroyed' }));
+    expect(j.carry).toMatchObject({ ore: 0, krail: 0, cyrite: 5, chits: 20, parts: 4, plates: 2 });
+    for (let i = 1; i < WRECKS - 1; i++) { endSortie(j, result(j, { ended: 'destroyed' })); }
     const end = endSortie(j, result(j, { ended: 'destroyed' }));
     expect(end.kind).toBe('wrecked');
     expect(j.status).toBe('over');
+  });
+
+  it('counts wrecks for each region: crossing a gate starts the count again', () => {
+    const j = pastBreakout();
+    j.lost = 2;
+    openChapter(j, 1);
+    expect(j.lost).toBe(0);
   });
 
   it('ends it at the first wreck in hardcore, or with Calloway in the system', () => {
