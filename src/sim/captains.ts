@@ -208,8 +208,8 @@ export function captainCard(def: CaptainDef, m: CaptainMemory, you: number, them
   ];
   if (f.fee !== null) {
     choices.push({
-      id: 'pay', label: 'Pay them off', tone: 'pay', hint: m.bargained ? 'The price went up. It will again.' : t('Chits, and {name} goes away.', { name: def.name }),
-      cost: { chits: 'fee' }, win: { text: t('{name} takes the chits and stands off', { name: def.name }), captain: 'pay' },
+      id: 'pay', label: 'Pay them off', tone: 'pay', hint: m.bargained ? 'The price went up. It will again.' : t('Cyrite, and {name} goes away.', { name: def.name }),
+      cost: { chits: 'fee' }, win: { text: t('{name} takes the Cyrite and stands off', { name: def.name }), captain: 'pay' },
     });
   }
   if (f.nerve < Infinity) {

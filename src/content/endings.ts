@@ -111,7 +111,7 @@ export const ENDINGS: EndingDef[] = [
       { text: 'The auction takes four hours. The file goes for more Krail than Kellern Mining cut in a decade.' },
       { if: { standing: { gutter: 2 } }, text: 'The Gutter win it. A month later there are new lanes on their charts, with tolls.' },
       { if: { standing: { guild: 2 } }, text: 'The Guild win it, and sit on it. Leverage keeps better than truth.' },
-      { if: { flags: ['broker'] }, text: 'Vell pays what she said she would, to the chit. That is the frightening part.' },
+      { if: { flags: ['broker'] }, text: 'Vell pays what she said she would, to the Cyrite. That is the frightening part.' },
       { if: { flags: ['owes_runner'] }, text: 'Tallow takes the favour you owed out of the money. It is a large favour.' },
       { text: 'The Wayward gets new plates and a new name. Nobody asks where you went.' },
     ],

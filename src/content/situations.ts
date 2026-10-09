@@ -187,7 +187,7 @@ export const SITUATIONS: SituationDef[] = [
     prop: 'wreck', actors: [act('scout', 2, 'hold', 'wary', 'Gutter crew', { from: 'site', ring: 24 }), act('freighter', 1, 'hold', 'meek', 'Claim tug', { from: 'site', ring: 30 })],
     card: 'sc_claim', at: 25, hail: 420, accept: ['cut'],
     goal: { kind: 'reach', hold: 5, limit: 150, line: 'Strip the wreck' },
-    win: { text: 'Supplies and chits off the wreck', supplies: 3, krail: 25, score: 600 },
+    win: { text: 'Supplies and Cyrite off the wreck', supplies: 3, krail: 25, score: 600 },
     lose: { text: 'The crews stripped it before you' },
     ignore: { text: 'The crews settle it with their guns' },
   },

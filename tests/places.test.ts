@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cy } from '../src/sim/purse';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { PLACES, PLACE_CHITS, PLACE_CYRITE, type PlaceId, type Reward } from '../src/content/phenomena';
@@ -126,9 +127,9 @@ describe('a place in a sortie', () => {
   it('can leave a favour owed', () => {
     const j = atPlace('favour', 'distress');
     plot(j, options(j)[0]!.to.id);
-    const chits = j.carry.chits;
+    const had = j.carry.cyrite;
     endSortie(j, result(j, { place: true }));
-    expect(j.carry.chits).toBe(chits + PLACE_CHITS);
+    expect(j.carry.cyrite).toBe(had + cy(PLACE_CHITS));
   });
 });
 

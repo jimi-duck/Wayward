@@ -317,7 +317,7 @@ function finish(e: Encounter, h: EncounterHost, success: boolean): true {
         if (!fixed) h.dropCrystals(e.x, e.z, 25);
         h.dropItem(h.cell('rescue'), e.x, e.z);
         h.addScore(1500);
-        text = fixed ? 'Survivors aboard · hull repaired' : 'Survivors aboard · chits transferred';
+        text = fixed ? 'Survivors aboard · hull repaired' : 'Survivors aboard · Cyrite transferred';
       } else text = 'Signal lost';
       break;
     case 'derelict': text = success ? 'Salvage aboard · contacts closing' : 'The hulk drifts off'; break;

@@ -7,6 +7,7 @@ import { HOME, type SortieDef } from '../src/sim/breakout';
 import { CAPTAIN_BY_ID, captainCard, form, meet, newMemory, turnsAway, RUN_LEARN, type CaptainMemory } from '../src/sim/captains';
 import { QUIET } from '../src/sim/notice';
 import { Rng } from '../src/sim/rng';
+import { cy } from '../src/sim/purse';
 import { World } from '../src/sim/world';
 import { faceSvg } from '../src/ui/face';
 
@@ -137,7 +138,7 @@ describe('named captains in a sortie', () => {
     w.chits = 200;
     run(w, 3.2);
     const fee = w.comms!.fee;
-    expect(fee).toBe(PERSONALITIES.broker.fee);
+    expect(fee).toBe(cy(PERSONALITIES.broker.fee!));
     w.answer('pay');
     expect(w.chits).toBe(200 - fee);
     run(w, 4);

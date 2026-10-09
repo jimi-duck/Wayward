@@ -5,7 +5,7 @@ the first sortie as told, three marked steps, each one a thing the game
 already does:
 
 1. **Laser the violet rock.** One rock, close ahead, with what the jump needs
-   in it (the tank starts short by exactly that). It pays chits and Cyrite.
+   in it (the tank starts short by exactly that). It pays Cyrite.
 2. **Fit the torpedo bay.** The ship leaves the yard without it. The bay opens
    in flight for this one step, with a single card, and the purse holds the
    price.

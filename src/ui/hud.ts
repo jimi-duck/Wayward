@@ -317,7 +317,7 @@ export class Hud {
     const n = this.count;
     const alert = world.alert(), locked = alert !== 'clear';
     text($('xp-v'), String(Math.floor(world.purse)));
-    $('rail').hidden = !!world.bk; // the Story's one purse is the Chits in the stores line
+    $('rail').hidden = !!world.bk; // the Story's Cyrite is the fuel row
     const badge = $('upg');
     // the Story fits only at a work bay and the Arcade opens its own picks; the training's one upgrade is the exception
     const lesson = !!world.bk && stepOf(world) === 'bay';
@@ -354,8 +354,7 @@ export class Hud {
     text($('v-fuel'), `${world.cyrite}/${need}`);
     $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
     fuel.classList.toggle('ready', world.cyrite >= need);
-    // the stores: chits and supplies, one line; supplies go amber when they are running low
-    text($('vy-chits'), String(Math.floor(world.chits)));
+    // the stores: supplies; they go amber when they are running low
     const sup = $('vy-supplies');
     text(sup, String(world.supplies));
     sup.classList.toggle('full', world.supplies <= LOW_SUPPLIES);
@@ -602,7 +601,7 @@ export class Hud {
         : t(def.text));
     } else if (!bk) {
       // the arcade between events: break rock toward the next refit, which opens by itself
-      text($('obj-t'), t('Collect chits'));
+      text($('obj-t'), t('Collect Cyrite'));
       text($('obj-left'), `${Math.floor(world.krail)}/${this.next || '—'}`);
       ticks($('obj-p'), this.next ? Math.min(1, world.krail / this.next) : 1, 30);
       text($('obj-s'), '');

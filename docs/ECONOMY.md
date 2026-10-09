@@ -8,32 +8,41 @@ point if it did not build the ship.
 
 | Thing | What it is | Where it comes from | Where it goes |
 |---|---|---|---|
-| **Chits** | The one currency. | Scrap and rock picked up, jobs, favours, wreck loot, places. | The bay (price and yard fee together), and the ports: supplies, Cyrite, plates, news. |
-| **Supplies** | The galley and the spares in one stock (max 16, racks add 4 a mark). | Crates on wrecks and capital ships, cards, places, ports (9 chits). | A lane's days (1 a day), the drive's wear (2 a jump), a plate patch (3). |
-| **Cyrite** | Fuel. One jump's worth for one lane. | Violet rock, wrecks, ports. | The jump, plus a weight surcharge (below). |
+| **Cyrite** | The one currency, in both modes: fuel, building material and money. | Violet crystals from mined rock, scrap and wrecks, jobs, favours, places. | The jump (one lane's worth), the bay (price and yard fee together), and the ports: supplies and plates. |
+| **Supplies** | The galley and the spares in one stock (max 16, racks add 4 a mark). | Crates on wrecks and capital ships, cards, places, ports. | A lane's days (1 a day), the drive's wear (2 a jump), a plate patch (3). |
 
-Krail is retired: chits are the only money in both modes. In the Arcade the bay spends them too (no prices shown, it opens itself at 30). Ore is not a stock: a lump
-of scrap pays chits the moment it is picked up (`SCRAP_PRICE`, moved by the
-survival mode), so there is no hold to fill and no sale to make.
+Chits and Krail are retired as things the player sees. The content rows (card
+costs, fees, tier prices, yard fees) are still written in chits, the old
+unit, and the engine converts where a row meets the hold: five chits to a
+Cyrite (`sim/purse.ts`, `cy()`), never rounding a small amount to nothing. So
+the tuning of those rows stands and only one number sets the exchange.
+The hold has no cap of its own worth knowing (999); the HUD shows it against
+the jump's cost, so the question is always "do I have the jump, and what is
+over".
+
+Scrap and crystals fall as Cyrite, a fifth of a chit's worth each, the odd
+part by chance. They drop as bold violet crystals (1, 3 or 5 each) that fly
+well clear of the rock, so a mined rock leaves something to fly through. In
+the Arcade Cyrite is the same stock, counted one for one.
 
 ## The work bay
 
 In the Story the ship is upgraded only docked at a port, the work bay: every
 install, not just the yard's modules (the Arcade keeps its own picks in
 flight). In flight, B says "Upgrades: dock at a work bay" and the bay badge
-is gone. The port also does the rest of the trade:
+is gone.
 
-- **Sell spare Cyrite.** Whatever the tank holds beyond one jump pays
-  `CYRITE_SELL` (3 chits) a unit. Scrap already pays at pick-up.
-- **Rush price.** Buying Cyrite while the tank is short of the jump costs
-  `CYRITE_RUSH` (x2). Once the tank covers the jump it is the plain price.
-  The Sensible stop uses the rush price for the first units.
-- **More of them, close by.** Mining systems have a bay 70% of the time
-  (was 40%), contested 75% (50%), gates always. The bay sits 1,000 along
-  the lane, 200 off it, with a 150 call range, so it is a short detour
-  on the way to the lane mouth.
+- **No buying or selling Cyrite.** There is one stock, so nothing to swap. The
+  Sensible stop buys supplies, then plates, from what is over the jump's
+  Cyrite, and never spends the jump.
+- **More of them, close by.** Mining systems have a bay 70% of the time,
+  contested 75%, gates always. The bay sits 1,000 along the lane, 200 off
+  it, with a 150 call range, so it is a short detour on the way to the lane
+  mouth.
+- **Safe inside.** The lane mouth and the bay are safe ground: shots do
+  nothing inside the ring, hunters circle outside, and the HUD says so.
 
-First guesses; the journey pilot docks once a system to upgrade and sell.
+First guesses; the journey pilot docks once a system to upgrade.
 
 ## When it goes wrong
 
@@ -55,10 +64,10 @@ supplies there, weight and heat in the bay.
 
 ## Saves
 
-Journey version 13. `meta/save.ts` folds Krail and ore (at the scrap price) into
-chits (the Arcade keeps no journey, so only its records and tuning keep the old `krail` name), food and parts into supplies (to the maximum), and renames the systems'
-food richness and the ports' price lists. The fixture is
-`tests/fixtures/journey-v13.json`.
+Journey version 14. `meta/save.ts` adds the chits aboard to the Cyrite, five
+to one (`oneCurrency`), after the older steps (Krail and ore into chits,
+food and parts into supplies). The fixture is
+`tests/fixtures/journey-v14.json`; older ones stay and migrate.
 
 ## Numbers
 
@@ -75,7 +84,8 @@ First guesses, read from `npm run pilot:journey` (24 journeys, three regions,
 - The pilot's builds are over the mass rating from the fourth system on (and
   always by the eighth). The surcharge tops out at 6 Cyrite a jump, about a
   third of a lane, and a frame module (`hl_frame`, +4 mass a mark) fixes it.
-- Chits pile up once the web is fitted (about 1,500 by the tenth system).
-  Every card fee (tolls, bribes, favours) now rises 12% a region out
-  (`FEE_REGION`), so late money still has a use. A later tier of yard work is
-  the next step if that feels thin on a device.
+- With one stock, upgrades and fuel compete: every Cyrite spent in the bay is
+  not in the tank. That is the point, and the first thing to watch on a
+  device. The levers are the rock's Cyrite (`CYRITE` and `ORE` in
+  `sim/breakout.ts`), `SCRAP_PRICE`, and the tier prices in `sim/bay.ts`.
+- Card fees rise 12% a region out (`FEE_REGION`), so late Cyrite still has a use.

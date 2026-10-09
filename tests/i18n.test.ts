@@ -45,7 +45,7 @@ describe('German', () => {
     expect(t('Break out')).toBe(DE['Break out']);
     expect(t('Not a line anyone wrote')).toBe('Not a line anyone wrote');
     expect(t('Bound for {dest}', { dest: 'Cerro' })).toContain('Cerro');
-    expect(t('+60 chits')).toBe(DE['+{#} chits']!.replace('{#}', '60'));
+    expect(t('+60 Cyrite')).toBe(DE['+{#} Cyrite']!.replace('{#}', '60'));
     expect(plural(1, '{n} wreck', '{n} wrecks')).toBe(DE['{n} wreck']!.replace('{n}', '1'));
     expect(num(12345)).toBe('12.345');
     setLang('en', false);

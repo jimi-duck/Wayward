@@ -9,6 +9,7 @@ import { lanesFrom, makeChart, netted, regionOf, sysById } from '../src/sim/char
 import { endSortie, newJourney, plot, sortieDef, type Journey } from '../src/sim/journey';
 import { dealSituations, laySituations, liveSituation, settle } from '../src/sim/situations';
 import { newRun } from '../src/sim/run';
+import { cy } from '../src/sim/purse';
 import { World } from '../src/sim/world';
 
 // The Situation layer: what is going on in a system (content/situations.ts), dealt on the chart
@@ -163,7 +164,7 @@ describe('the stage', () => {
   });
 
   it('pays a delivered goal, takes what it asked for, and gives the sky back', () => {
-    const w = world('shortage', { supplies: 6, chits: 0 });
+    const w = world('shortage', { supplies: 6, cyrite: 0 });
     const st = w.stage!;
     put(w, st.x + 60, st.z);
     run(w, 24);
@@ -172,7 +173,7 @@ describe('the stage', () => {
     run(w, 6);
     expect(st.result).toBe('won');
     expect(w.supplies).toBe(3);
-    expect(w.chits).toBeGreaterThanOrEqual(20);
+    expect(w.cyrite).toBeGreaterThanOrEqual(cy(20));
     expect(w.encounter).toBeNull();
     expect(w.result().situation).toEqual({ id: w.sortie.system, result: 'won' });
   });

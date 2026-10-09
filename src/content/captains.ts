@@ -63,7 +63,7 @@ export const CAPTAINS: CaptainDef[] = [
     lines: {
       hail: '“Hauler! Kade, of the Ironmaw. You’ve been killing Gutter crews. Bad for business. Mine, mostly.”',
       ambush: '“Surprise, hauler.” The Ironmaw grinds out of the rock with its maw open.',
-      bargain: '“Or keep it civil: {fee} chits and the Ironmaw eats elsewhere.”',
+      bargain: '“Or keep it civil: {fee} Cyrite and the Ironmaw eats elsewhere.”',
       leave: 'Kade looks at your guns, laughs, and takes the Ironmaw elsewhere.',
       back: {
         won: '“Look who’s flying again. I sold your wreck’s plating twice.”',
@@ -99,7 +99,7 @@ export const CAPTAINS: CaptainDef[] = [
     lines: {
       hail: '“Good afternoon. Ashgrove, Office of Peace, aboard the Kind Regard. Let’s avoid a messy hour.”',
       ambush: '“Forgive the theatrics.” The Kind Regard is suddenly very close.',
-      bargain: '“A consultancy fee of {fee} chits would close the file. Purely administrative.”',
+      bargain: '“A consultancy fee of {fee} Cyrite would close the file. Purely administrative.”',
       leave: 'Ashgrove closes the channel politely. The Kind Regard is gone.',
       back: {
         won: '“We have met. You were unconscious for most of it.”',

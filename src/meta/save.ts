@@ -1,4 +1,5 @@
 import { HUSH } from '../sim/desk';
+import { CHITS_PER_CYRITE } from '../sim/purse';
 import { hunchOf, newDossier } from '../sim/calloway';
 import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
 import { dealSituations } from '../sim/situations';
@@ -70,6 +71,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 12) dealSituations(j.chart, j.seed ?? 0);
   // 12 → 13: one purse and one stock. Krail and ore are chits now, and food and parts are supplies.
   if (j.version < 13) oneEconomy(j as unknown as Old);
+  // 13 → 14: Cyrite is the one currency. The chits aboard come across at five to the Cyrite.
+  if (j.version < 14) oneCurrency(j.carry as unknown as Record<string, number>);
   j.version = VERSION;
   return j as Journey;
 }
@@ -95,6 +98,11 @@ function reprice(p: Record<string, number> | undefined | null): void {
   if (!p) return;
   if ('food' in p) { p.supplies = p.food!; delete p.food; }
   delete p.ore;
+}
+
+function oneCurrency(c: Record<string, number>): void {
+  c.cyrite = (Number(c.cyrite) || 0) + Math.round((Number(c.chits) || 0) / CHITS_PER_CYRITE);
+  delete c.chits;
 }
 
 function oneEconomy(j: Old): void {

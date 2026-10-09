@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { World } from '../src/sim/world';
-import { CYRITE_RUSH, CYRITE_SELL, EMPTY_STORES, LOW_SUPPLIES } from '../src/sim/breakout';
+import { EMPTY_STORES, LOW_SUPPLIES } from '../src/sim/breakout';
 import { WEB } from '../src/content/web';
 import { budgets, weightFuel } from '../src/sim/budgets';
 import { newJourney, options, plot, sortieDef } from '../src/sim/journey';
@@ -68,36 +68,6 @@ describe('a ship that is short or heavy', () => {
     const levels = heavy();
     const { w } = story(levels);
     expect(w.jumpCost).toBeGreaterThan(w.bk!.jumpCost);
-  });
-});
-
-describe('the work bay and its Cyrite', () => {
-  it('sells spare Cyrite for chits at a bay, never the tank the jump needs, and not at sea', () => {
-    const { w } = story();
-    w.cyrite = w.jumpCost + 5;
-    const chits = w.chits;
-    expect(w.sellCyrite()).toBe(0); // not docked
-    w.phase = 'dock'; w.docked = true;
-    expect(w.spareCyrite).toBe(5);
-    expect(w.sellCyrite(2)).toBe(2 * CYRITE_SELL);
-    expect(w.sellCyrite()).toBe(3 * CYRITE_SELL);
-    expect(w.cyrite).toBe(w.jumpCost);
-    expect(w.chits).toBe(chits + 5 * CYRITE_SELL);
-    expect(w.sellCyrite()).toBe(0);
-  });
-
-  it('asks the rush price for Cyrite only while the tank is short of the jump', () => {
-    const { w } = story();
-    w.phase = 'dock'; w.docked = true;
-    w.chits = 500;
-    w.cyrite = 0;
-    const p = w.prices.cyrite;
-    expect(w.cyritePrice).toBe(Math.ceil(p * CYRITE_RUSH));
-    const before = w.chits;
-    expect(w.buy('cyrite')).toBe(true);
-    expect(before - w.chits).toBe(Math.ceil(p * CYRITE_RUSH));
-    w.cyrite = w.jumpCost;
-    expect(w.cyritePrice).toBe(p);
   });
 });
 

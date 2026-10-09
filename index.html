@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Wayward">
-  <meta name="description" content="Wayward: a stolen ore hauler, a file the Continuance wants back, and the way out. Collect chits, refit, and stay one step ahead.">
+  <meta name="description" content="Wayward: a stolen ore hauler, a file the Continuance wants back, and the way out. Collect Cyrite, refit, and stay one step ahead.">
   <title>Wayward</title>
   <!-- Added to the Home Screen, the game opens with no browser bars: on iPhone
        that is the only way to the whole screen. -->
@@ -92,7 +92,7 @@
       <!-- upper left: the one thing to do, and only what is worth a second line -->
       <section id="objective" class="hud-block glass" aria-live="polite" aria-label="Current objective">
         <span class="obj-k" id="obj-k">Objective</span>
-        <div class="obj-h"><b id="obj-t">Collect chits</b><span id="obj-left"></span></div>
+        <div class="obj-h"><b id="obj-t">Collect Cyrite</b><span id="obj-left"></span></div>
         <i class="ticks" id="obj-p"></i>
         <span id="obj-s"></span>
         <ul id="obj-list"></ul>
@@ -108,7 +108,7 @@
           <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span><b class="val" id="v-hull">3/3</b>
         </div>
         <div class="sys-row" id="sys-fuel" hidden>
-          <span class="lbl">Fuel</span>
+          <span class="lbl">Cyrite</span>
           <i class="bar" id="g-fuel"></i><b class="val" id="v-fuel">6/20</b>
         </div>
         <div class="sys-row" id="sys-ph">
@@ -124,8 +124,8 @@
           <span class="rack" id="g-mines"></span><b class="val" id="v-mines">0</b>
         </div>
         <div class="sys-foot">
-          <span class="stores" id="rail"><span class="lbl" id="xp-l">Chits</span><b id="xp-v">0</b><span id="xp-gain"></span></span>
-          <span class="stores vy-cells" id="vy-cells"><span class="lbl">Chits</span><b id="vy-chits">0</b><span class="lbl">Supplies</span><b id="vy-supplies">0</b></span>
+          <span class="stores" id="rail"><span class="lbl" id="xp-l">Cyrite</span><b id="xp-v">0</b><span id="xp-gain"></span></span>
+          <span class="stores vy-cells" id="vy-cells"><span class="lbl">Supplies</span><b id="vy-supplies">0</b></span>
           <span id="sys-score"><span class="lbl">Score</span><b class="val" id="score">000000</b><span id="chain"><span class="lbl">Chain <span id="chain-n">0</span></span><b id="chain-x">×1</b></span></span>
         </div>
       </section>
@@ -400,8 +400,8 @@
           <h3 class="th">Orders</h3>
           <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
           <ol class="howto arcade-only">
-            <li><b>Collect chits</b><span>Shoot rock, grab crystals. Torpedoes lose half.</span></li>
-            <li><b>Upgrade</b><span>Spend chits in the bay.</span></li>
+            <li><b>Collect Cyrite</b><span>Shoot rock, grab crystals. Torpedoes lose half.</span></li>
+            <li><b>Upgrade</b><span>Spend Cyrite in the bay.</span></li>
             <li><b>Survive</b><span>Outlast the waves.</span></li>
           </ol>
           <ol class="brief steps" id="brief" data-i18n="html"><li>Laser the <b class="v">violet rock</b> for Cyrite · torpedoes waste half</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>

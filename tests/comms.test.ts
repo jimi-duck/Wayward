@@ -8,6 +8,7 @@ import { CARD_BY_ID, COMMS_FIRST, SHOWN_WORDS, SLOW, condOk, openCard, resolve, 
 import { VARIANTS } from '../src/sim/enemies';
 import { DESK } from '../src/sim/desk';
 import { Rng } from '../src/sim/rng';
+import { cy } from '../src/sim/purse';
 import { World } from '../src/sim/world';
 
 const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
@@ -134,14 +135,14 @@ describe('the comms engine', () => {
   });
 
   it('loses to the truth, whatever the odds', () => {
-    const x = ctx({ chits: 200 });
+    const x = ctx({ cyrite: 200 });
     const o = openCard(CARD_BY_ID.checkpoint!, x, new Rng(2));
     o.truth = 'by_book';
     expect(resolve(o, 'pay', x, new Rng(1))!.outcome.blockade).toBe('fight');
     o.truth = 'corrupt';
     const r = resolve(o, 'pay', x, new Rng(1))!;
     expect(r.outcome.blockade).toBe('pass');
-    expect(r.cost.chits).toBe(o.fee);
+    expect(r.cost.cyrite).toBe(o.fee);
   });
 
   it('makes a lie harder the more they are looking', () => {
@@ -222,10 +223,11 @@ describe('comms in the Breakout', () => {
     expect(w.jobs.length).toBe(1);
     const b = w.bk!;
     w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
+    const had = w.cyrite;
     run(w, 1.5);
     expect(w.phase).toBe('dock');
     expect(w.jobs.length).toBe(0);
-    expect(w.chits).toBe(60);
+    expect(w.cyrite - had).toBe(cy(60));
     expect(w.run.jobsDone).toBe(1);
     // a job that wants supplies waits until they are aboard
     w.undock();

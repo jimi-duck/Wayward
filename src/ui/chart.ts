@@ -1,6 +1,6 @@
 import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
-import { LOW_SUPPLIES, TANK_MAX } from '../sim/breakout';
+import { LOW_SUPPLIES } from '../sim/breakout';
 import { overRatings, weightFuel } from '../sim/budgets';
 import { fileLines } from '../sim/calloway';
 import { QUESTIONS } from '../content/situations';
@@ -50,7 +50,7 @@ function project(shown: StarSystem[]): Proj {
   return { px: (s) => PAD_X + ((s.col - lo) / (hi - lo)) * (W - PAD_X * 2), py: (s) => PAD_Y + s.y * (H - PAD_Y * 2) };
 }
 const days = (n: number) => plural(n, '{n} day', '{n} days');
-const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { cyrite: 'Cyrite', plates: 'Plates', supplies: 'Supplies', chits: 'Chits' };
+const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { cyrite: 'Cyrite', plates: 'Plates', supplies: 'Supplies' };
 /** A lane's style, as a mark and a word (sim/lanes.ts). */
 const STANCE_TAG: Record<Stance, [string, string]> = { quiet: ['○', 'Quiet'], watched: ['◐', 'Watched'], hostile: ['▲', 'Hostile'] };
 const richWord = (k: number) => t(k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
@@ -285,11 +285,10 @@ export class ChartPanel {
     const seen = j.trail[j.hunt.seenIdx];
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
-    // what each is for, on hover: Cyrite moves the ship, supplies keep it going, chits pay for everything else
+    // what each is for, on hover: Cyrite moves the ship, supplies keep it going and pays for the rest
     const cells: Array<[string, string, string]> = [
-      [t('Tank'), `${c.cyrite}/${TANK_MAX}`, t('Cyrite: it moves you. One lane, one jump’s worth.')],
+      [t('Cyrite'), String(c.cyrite), t('Cyrite: the one currency. It moves you, builds your ship and pays at the ports.')],
       [t('Supplies'), String(c.supplies), t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')],
-      [t('Chits'), String(c.chits), t('Chits: money. Upgrades in the bay, and supplies, Cyrite, news and favours at the ports.')],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
     const file = fileCount(c.flags, j.chart.regionSet ?? 'three');

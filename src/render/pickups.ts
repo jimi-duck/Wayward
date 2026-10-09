@@ -20,10 +20,12 @@ import type { Effects, RGB } from './fx';
 // field. Everything pops in, and blinks for its last two seconds.
 
 const MAX_CRYSTALS = 320;
-/** Cyrite, ore and parts are rarer than Krail. */
+/** Ore and parts are rarer than crystal. */
 const MAX_LOOSE = 96;
 const MAX_ITEMS = 10;
 const VIOLET = new Color(2.2, 0.9, 3.6);
+/** Cyrite crystals by worth: a deep violet for a small one, a bright one for the richest. */
+const C_DEEP = new Color(1.1, 0.3, 2.1), C_BRIGHT = new Color(1.9, 0.75, 2.9);
 /** Krail by worth: white (lowest), blue, purple (highest). */
 const K_WHITE = new Color(2, 2.05, 2.3);
 const K_BLUE = new Color(0.55, 1.5, 4);
@@ -127,20 +129,6 @@ function findMaterial(emissive: Color, roughness: number, metalness: number, fla
   return m;
 }
 
-/** Cyrite: a violet crystal pair held in a dark clamp, a lit seam at the waist. */
-function cyriteGeo(): BufferGeometry {
-  const prism = (r: number, len: number): BufferGeometry => new LatheGeometry([new Vector2(0, -len), new Vector2(r * 0.7, -len * 0.5), new Vector2(r, 0), new Vector2(r * 0.8, len * 0.5), new Vector2(0, len)], 6).toNonIndexed();
-  return mergeGeometries([
-    part(prism(0.3, 0.8), 1, 1),
-    part(prism(0.18, 0.5).rotateZ(0.6).translate(0.28, -0.1, 0.05), 0.8, 1),
-    part(prism(0.14, 0.42).rotateZ(-0.7).translate(-0.22, -0.15, -0.1), 0.9, 1),
-    part(new CylinderGeometry(0.42, 0.46, 0.14, 6).translate(0, -0.3, 0), 0.18, 0),
-    part(new CylinderGeometry(0.4, 0.4, 0.05, 6).translate(0, 0.22, 0), 0.18, 0),
-    part(new BoxGeometry(0.1, 0.62, 0.1).translate(0.4, -0.04, 0), 0.14, 0),
-    part(new BoxGeometry(0.1, 0.62, 0.1).translate(-0.4, -0.04, 0), 0.14, 0),
-  ])!;
-}
-
 /** Ore: a split lump of rock, a bright metal seam through the break, a strap round it. */
 function oreGeo(): BufferGeometry {
   const lump = new IcosahedronGeometry(0.62, 1);
@@ -188,7 +176,6 @@ function batch(scene: Scene, geo: BufferGeometry, mat: Material, max: number): B
 
 export class PickupView {
   private readonly crystals: InstancedMesh;
-  private readonly cyrite: Batch;
   private readonly ore: Batch;
   private readonly parts: Batch;
   private readonly items: Item[] = [];
@@ -209,9 +196,8 @@ export class PickupView {
     this.crystals.count = 0;
     this.crystals.frustumCulled = false;
     scene.add(this.crystals);
-    // the finds that are not Krail are things, not light: lit lumps and cases
-    // with only a small lamp, so a field of Krail still reads first
-    this.cyrite = batch(scene, cyriteGeo(), findMaterial(new Color(1.1, 0.25, 1.7), 0.3, 0.3), MAX_LOOSE);
+    // the finds that are not crystal are things, not light: lit lumps and cases
+    // with only a small lamp, so a field of crystal still reads first
     this.ore = batch(scene, oreGeo(), findMaterial(new Color(0.9, 0.5, 0.2), 0.85, 0.3), MAX_LOOSE);
     this.parts = batch(scene, partsGeo(), findMaterial(new Color(0.1, 0.7, 0.9), 0.5, 0.6), MAX_LOOSE);
     // a power-up sits in a small dark housing: a cradle under the core
@@ -245,36 +231,38 @@ export class PickupView {
     this.clock.value = this.time;
     const back = (1 - alpha) * STEP;
     let n = 0, k = 0;
-    this.cyrite.n = this.ore.n = this.parts.n = 0;
+    this.ore.n = this.parts.n = 0;
     for (const pk of list) {
       const pop = Math.min(1, pk.age / 0.25);
       const blink = pk.life < 2 && Math.sin(this.time * 22) < 0;
       const x = pk.x - pk.vx * back, z = pk.z - pk.vz * back;
       if (LOOSE.has(pk.kind)) {
-        const b = pk.kind === 'cyrite' ? this.cyrite : pk.kind === 'ore' ? this.ore : pk.kind === 'parts' ? this.parts : null;
+        const b = pk.kind === 'ore' ? this.ore : pk.kind === 'parts' ? this.parts : null;
+        const cy = pk.kind === 'cyrite';
         if (b ? b.n >= MAX_LOOSE : n >= MAX_CRYSTALS) continue;
-        const rank = pk.kind === 'crystal' ? krailRank(pk.value) : 0;
+        const rank = pk.kind === 'crystal' || cy ? krailRank(pk.value) : 0;
         // the richest pulse, the middling barely; the weight eases in so no step shows
-        const rich = pk.kind === 'crystal' ? Math.max(0, (rank - 0.5) * 2) : 0;
+        const rich = pk.kind === 'crystal' || cy ? Math.max(0, (rank - 0.5) * 2) : 0;
         const beat = Math.sin(this.time * 5 + pk.id * 1.7);
-        const size = (0.32 + pk.value * 0.07) * pop * (blink ? 0.4 : 1) * (1 + rich * 0.1 * beat);
+        // Cyrite is the one thing worth finding: a bold violet crystal, twice the size of Krail, so a mined rock leaves something to fly through
+        const size = (cy ? 0.6 + pk.value * 0.14 : 0.32 + pk.value * 0.07) * pop * (blink ? 0.4 : 1) * (1 + rich * 0.1 * beat);
         this.q.setFromAxisAngle(this.axis, this.time * (b ? 0.9 : 2.2) + pk.id);
         this.m.compose(this.p.set(x, 0.35 + Math.sin(this.time * 3 + pk.id) * 0.12, z), this.q, this.s.set(size, size, size));
         if (b) {
           // a find tumbles slowly, so it reads as a thing and not a spark
           this.q.multiply(this.tilt.setFromAxisAngle(this.lean, 0.5 + pk.id * 0.3));
-          this.m.compose(this.p, this.q, this.s.setScalar(size * (pk.kind === 'cyrite' ? 1.5 : pk.kind === 'ore' ? 1.4 : 1)));
+          this.m.compose(this.p, this.q, this.s.setScalar(size * (pk.kind === 'ore' ? 1.4 : 1)));
           b.mesh.setMatrixAt(b.n, this.m);
-          this.c.copy(pk.kind === 'cyrite' ? VIOLET.clone().multiplyScalar(0.28) : pk.kind === 'ore' ? ORE : PARTS);
+          this.c.copy(pk.kind === 'ore' ? ORE : PARTS);
           b.mesh.setColorAt(b.n, this.c);
-          if (fx && dt > 0 && !blink && pk.kind === 'cyrite') this.shed(fx, pk, x, z, rank, rich);
           b.n++;
           continue;
         }
         this.crystals.setMatrixAt(n, this.m);
-        if (pk.kind === 'crystal') this.c.copy(krailColour(pk.value, this.c)).multiplyScalar(0.85 + rank * 0.25 + rich * 0.3 * (0.5 + 0.5 * beat));
+        if (cy) this.c.copy(C_DEEP).lerp(C_BRIGHT, rank).multiplyScalar(1 + rich * 0.25 * (0.5 + 0.5 * beat));
+        else this.c.copy(krailColour(pk.value, this.c)).multiplyScalar(0.85 + rank * 0.25 + rich * 0.3 * (0.5 + 0.5 * beat));
         this.crystals.setColorAt(n, this.c);
-        if (fx && dt > 0 && !blink && pk.kind === 'crystal') this.shed(fx, pk, x, z, rank, rich);
+        if (fx && dt > 0 && !blink) this.shed(fx, pk, x, z, rank, rich);
         n++;
         continue;
       }
@@ -295,7 +283,7 @@ export class PickupView {
     this.crystals.count = n;
     this.crystals.instanceMatrix.needsUpdate = true;
     if (this.crystals.instanceColor) this.crystals.instanceColor.needsUpdate = true;
-    for (const b of [this.cyrite, this.ore, this.parts]) {
+    for (const b of [this.ore, this.parts]) {
       b.mesh.count = b.n;
       b.mesh.instanceMatrix.needsUpdate = true;
       if (b.mesh.instanceColor) b.mesh.instanceColor.needsUpdate = true;

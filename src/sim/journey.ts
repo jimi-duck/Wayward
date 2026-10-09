@@ -7,7 +7,8 @@ import { SYSTEMS } from '../content/systems';
 import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/survival';
 import type { RegionSet } from '../content/regions';
 import { weightFuel } from './budgets';
-import { SUPPLIES_MAX, SUPPLIES_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
+import { cy } from './purse';
+import { SUPPLIES_MAX, SUPPLIES_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, HOLD_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
   arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
   tierOf, viewOf, type Chart, type StarSystem,
@@ -85,7 +86,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 13;
+export const VERSION = 14;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -155,7 +156,7 @@ const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 export function startCarry(survival: SurvivalId = DEFAULT_SURVIVAL): Carry {
   const K = survivalOf(survival).voyage.start;
   return {
-    cyrite: K.cyrite, chits: 0, supplies: K.supplies, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], hush: HUSH,
+    cyrite: K.cyrite, supplies: K.supplies, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], hush: HUSH,
   };
 }
 
@@ -319,20 +320,20 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
   const head = d.reward === 'unknown' ? `${t(d.name)} · ${t(d.done)}: ${t(REWARD_WORD[p.reward])}` : `${t(d.name)} · ${t(d.done)}`;
   const lines = [head];
   switch (p.reward) {
-    case 'cyrite': c.cyrite = Math.min(TANK_MAX, c.cyrite + PLACE_CYRITE); lines.push(`+${PLACE_CYRITE} Cyrite`); break;
-    case 'parts': c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); c.chits += PLACE_KRAIL; lines.push(t('+{n} supplies · +{k} chits', { n: PLACE_PARTS, k: PLACE_KRAIL })); break;
+    case 'cyrite': c.cyrite = Math.min(HOLD_MAX, c.cyrite + PLACE_CYRITE); lines.push(`+${PLACE_CYRITE} Cyrite`); break;
+    case 'parts': c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); c.cyrite += cy(PLACE_KRAIL); lines.push(t('+{n} supplies · +{k} Cyrite', { n: PLACE_PARTS, k: cy(PLACE_KRAIL) })); break;
     case 'cover': j.hunt.delay += PLACE_COVER; lines.push(t('Calloway loses your trail for a while')); break;
     case 'shortcut': {
       const to = openShortcut(j.chart, from);
       lines.push(to ? t('New lane: {a} to {b}', { a: sysById(j.chart, from).name, b: to.name }) : t('The lane it showed leads nowhere new'));
       break;
     }
-    case 'favour': c.chits += PLACE_CHITS; lines.push(t('+{n} chits · favours owed', { n: PLACE_CHITS })); break;
+    case 'favour': c.cyrite += cy(PLACE_CHITS); lines.push(t('+{n} Cyrite · favours owed', { n: cy(PLACE_CHITS) })); break;
     case 'info': hearNews(j); sightPlaces(j.chart, s.id, 3); lines.push(t('The Net’s edge, and the places three jumps round')); break;
     case 'danger':
-      c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); c.chits += PLACE_KRAIL * 2;
+      c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); c.cyrite += cy(PLACE_KRAIL * 2);
       huntOn(j.hunt, j.chart, j.trail, DANGER_DAYS);
-      lines.push(t('+{n} supplies · +{k} chits', { n: PLACE_PARTS, k: PLACE_KRAIL * 2 }), t('Word gets out · Calloway gains a day'));
+      lines.push(t('+{n} supplies · +{k} Cyrite', { n: PLACE_PARTS, k: cy(PLACE_KRAIL * 2) }), t('Word gets out · Calloway gains a day'));
       break;
   }
   note(j, head);
@@ -428,11 +429,11 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     }
     // adrift: a Drift tug tows her to another system of the region. The fee is some of everything you carry.
     const c = res.carry;
-    j.carry = { ...c, supplies: Math.max(3, Math.floor(c.supplies * V.kept)), cyrite: Math.floor(c.cyrite * V.kept), chits: Math.floor(c.chits * V.kept), plates: 2 };
+    j.carry = { ...c, supplies: Math.max(3, Math.floor(c.supplies * V.kept)), cyrite: Math.floor(c.cyrite * V.kept), plates: 2 };
     pass(j, ADRIFT);
     const to = driftTo(j, s);
     note(j, t('Wrecked in {name} · towed to {to}', { name: s.name, to: to.name }));
-    lines.push(t('A Drift tug found the wreck and towed her to {to}.', { to: to.name }), t(V.kept > 0.5 ? 'The fee: a quarter of your Cyrite, supplies and chits.' : 'The fee: half your Cyrite, supplies and chits.'), t('Wrecks left in this region · {n}', { n: V.wrecks - j.lost }));
+    lines.push(t('A Drift tug found the wreck and towed her to {to}.', { to: to.name }), t(V.kept > 0.5 ? 'The fee: a quarter of your Cyrite, supplies and Cyrite.' : 'The fee: half your Cyrite, supplies and Cyrite.'), t('Wrecks left in this region · {n}', { n: V.wrecks - j.lost }));
     j.status = 'sortie';
     return { kind: 'adrift', lines };
   }
@@ -511,7 +512,7 @@ export function checkpoint(j: Journey, c: Carry): void {
  */
 export function bankAnswer(j: Journey, before: Carry, after: Carry): void {
   const c = j.carry;
-  for (const k of ['cyrite', 'chits', 'supplies'] as const) c[k] = Math.max(0, c[k] + after[k] - before[k]);
+  for (const k of ['cyrite', 'supplies'] as const) c[k] = Math.max(0, c[k] + after[k] - before[k]);
   const diff = (a: string[], b: string[]) => a.filter((x) => !b.includes(x));
   c.flags = [...diff(c.flags, diff(before.flags, after.flags)), ...diff(diff(after.flags, before.flags), c.flags)];
   c.seen = [...c.seen, ...diff(diff(after.seen, before.seen), c.seen)];
@@ -525,9 +526,9 @@ export function bankAnswer(j: Journey, before: Carry, after: Carry): void {
 }
 
 /** The stocks and the day, taken at the start of a sortie, to show what it changed. */
-export interface Tally { cyrite: number; plates: number; supplies: number; chits: number; day: number }
+export interface Tally { cyrite: number; plates: number; supplies: number; day: number }
 export const tally = (j: Journey): Tally => ({
-  cyrite: j.carry.cyrite, plates: j.carry.plates, supplies: j.carry.supplies, chits: j.carry.chits, day: j.day,
+  cyrite: j.carry.cyrite, plates: j.carry.plates, supplies: j.carry.supplies, day: j.day,
 });
 
 /** One change for the debrief strip: what moved, and by how much (days are tenths). */
@@ -536,7 +537,7 @@ export interface Chip { key: keyof Tally; d: number }
 /** What a sortie changed, for the chart's strip: each stock that moved, then the days. Nothing that stayed the same. */
 export function debrief(was: Tally, j: Journey): Chip[] {
   const now = tally(j), out: Chip[] = [];
-  for (const key of ['cyrite', 'plates', 'supplies', 'chits'] as const) {
+  for (const key of ['cyrite', 'plates', 'supplies'] as const) {
     const d = Math.round(now[key] - was[key]);
     if (d) out.push({ key, d });
   }

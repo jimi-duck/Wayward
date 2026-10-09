@@ -110,7 +110,7 @@ it('flies whole journeys, one build per system', { timeout: 7_200_000 }, () => {
     for (let i = 0; i < RUNS; i++) res.push(flyJourney(3000 + i * 13, b));
     const through = res.filter((r) => r.j.end === 'through').length;
     rows.push(`| ${b.name} | ${b.policy} | ${through}/${res.length} | ${res.filter((r) => r.j.end === 'captured').length} | ${res.filter((r) => r.j.end === 'wrecked').length} | ${res.filter((r) => r.stuck).length} | ${f1(mean(res.map((r) => r.j.legs.length)))} | ${f1(mean(res.map((r) => r.j.day)))} | ${f1(mean(res.map((r) => r.j.wrecks)))} | ${f1(mean(res.map((r) => r.callowayCalls)))} |`);
-    how.push(`| ${b.name} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.time))))} | ${f1(mean(res.map((r) => r.kills)))} | ${pct(res.filter((r) => r.j.hunt.hunch?.kind || r.j.hunt.hunch?.straight).length / res.length)} | ${f1(mean(res.map((r) => r.j.carry.chits)))} | ${f1(mean(res.map((r) => r.j.carry.cyrite)))} |`);
+    how.push(`| ${b.name} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.time))))} | ${f1(mean(res.map((r) => r.kills)))} | ${pct(res.filter((r) => r.j.hunt.hunch?.kind || r.j.hunt.hunch?.straight).length / res.length)} | ${f1(mean(res.map((r) => r.j.carry.cyrite)))} |`);
     earnRows.push(`| ${b.name} | ${f1(mean(res.map((r) => r.krail)))} | ${f1(mean(res.map((r) => r.spent)))} | ${f1(mean(res.map((r) => r.j.carry.refit)))} |`);
     const marks = SHIP_SYSTEMS.map((s) => f1(mean(res.map((r) => systemMarks(r.j.carry.levels)[s]))));
     fitRows.push(`| ${b.name} | ${marks.join(' | ')} | ${f1(mean(res.map((r) => r.fitted)))} | ${res.filter((r) => r.fitted).length}/${res.length} |`);

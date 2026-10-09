@@ -686,7 +686,7 @@ describe('the voyage', () => {
   it('lets a Drifter survive a wreck more than the others, and keep more of what it carried', () => {
     const wreck = (id: SurvivalId) => {
       const j = newJourney(3, false, 'three', id);
-      j.carry.cyrite = 20; j.carry.supplies = 8; j.carry.chits = 40;
+      j.carry.cyrite = 20; j.carry.supplies = 8;
       const out = endSortie(j, result(j, { ended: 'destroyed' }));
       return { j, out };
     };
@@ -694,7 +694,6 @@ describe('the voyage', () => {
     expect(d.out.kind).toBe('adrift');
     expect(d.j.carry.cyrite).toBe(15);
     expect(d.j.carry.supplies).toBe(6);
-    expect(d.j.carry.chits).toBe(30);
     expect(p.j.carry.cyrite).toBe(10);
     expect(p.j.carry.supplies).toBe(4);
     // the days lost adrift are the same, and the wreck count is

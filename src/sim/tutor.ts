@@ -4,7 +4,7 @@ import type { World } from './world';
 // ── the first minutes ─────────────────────────────────────────────────────
 // An onboarding level, short and plain: one rock, one upgrade, one shot, and
 // the tank is full. The pilot lasers a single violet rock set close ahead
-// (it pays chits and the Cyrite the jump needs), opens the bay and fits the
+// (it pays Cyrite, the jump's fuel and the upgrade's price in one), opens the bay and fits the
 // torpedo bay (the ship starts without it, so the first upgrade is the one
 // that matters), then shoots one ship with the new torpedoes. After that the
 // jump is in reach and the run goes on as it always did. Each step is a
@@ -56,8 +56,8 @@ const SHIP_AT = 85;
 const LINGER = 1.2;
 /** The torpedo bay: the one node the bay offers in the lesson. */
 export const LESSON_NODE = 'tp_bay';
-/** Chits over the price in the purse when the bay step begins (the rock pays some too). */
-const SPARE = 5;
+/** Cyrite over the price in the hold when the bay step begins (the rock pays some too). */
+const SPARE = 1;
 
 export function newTutor(): Tutor {
   return { steps: ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0 };
@@ -72,8 +72,8 @@ function ahead(w: World, d: number, side = 0): { x: number; z: number } {
   return { x: s.x + c * d - n * side, z: s.z + n * d + c * side };
 }
 
-/** The stock the mine step watches: Cyrite in the Story, chits in the arcade. */
-const stock = (w: World): number => (w.bk ? w.cyrite : w.chits);
+/** The stock the mine step watches: the one Cyrite stock. */
+const stock = (w: World): number => w.cyrite;
 const fitted = (w: World): number => Object.values(w.levels).reduce((a, b) => a + b, 0);
 
 function layRock(w: World, tu: Tutor): void {
@@ -99,7 +99,7 @@ function begin(w: World, tu: Tutor): void {
   } else if (id === 'bay') {
     tu.base = fitted(w);
     // the price, and a little over, so the first upgrade is only a press away
-    w.chits = Math.max(w.chits, w.bk ? bayPrice() + SPARE : 30);
+    w.cyrite = Math.max(w.cyrite, w.bk ? bayPrice() + SPARE : 6);
   } else {
     tu.base = w.kills;
     layShip(w, tu);

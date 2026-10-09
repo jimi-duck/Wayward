@@ -310,7 +310,7 @@ export class Targeting {
         const d = Math.hypot(r.x - s.x, r.z - s.z);
         if (d < depD) { depD = d; dep = r; }
       }
-      if (dep) put(dep.x, dep.r + 0.6, dep.z, 'm dia dep', tr('Mineral deposit\nRich · chits'));
+      if (dep) put(dep.x, dep.r + 0.6, dep.z, 'm dia dep', tr('Mineral deposit\nRich · Cyrite'));
       // a neutral hull in reach gets its name and distance, quietly: the nearest one only
       let trader: Alien | null = null, trD = TRADER;
       for (const a of world.aliens) {

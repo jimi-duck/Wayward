@@ -146,13 +146,13 @@ export const STORY_CARDS: CardDef[] = [
       { id: 'sting', weight: 1, read: 'A Kellern security band is open behind him' },
     ],
     choices: [
-      { id: 'buy', label: 'Pay for the ledger', tone: 'pay', hint: 'Thirty chits.', cost: { chits: 30 }, loseIf: ['sting'],
+      { id: 'buy', label: 'Pay for the ledger', tone: 'pay', hint: 'Six Cyrite.', cost: { chits: 30 }, loseIf: ['sting'],
         win: { text: 'The ledger goes in the file', flag: 'frag_ledger' },
         lose: { text: 'The ledger is real · so is the trace on it', flag: 'frag_ledger', heat: 0.15 } },
       { id: 'ask', label: 'Ask him to do right', tone: 'bluff', hint: 'Free, if he believes in something.', odds: { base: 0.4, standing: { miners: 0.1 } },
         win: { text: '“For my father.” · the ledger goes in the file', flag: 'frag_ledger', standing: { kellern: -1 } },
         lose: { text: 'He goes quiet, and closes the channel' } },
-      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep the chits.', win: { text: 'Brook signs off' } },
+      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Brook signs off' } },
     ],
   }),
 
@@ -175,7 +175,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'Drift fleet · forty hulls, lashed together',
     choices: [
       { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests, and the Drift stand with you. Copies get talked about.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift'], heat: 0.08, hunt: -0.5 } },
-      { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Twenty chits. Just the manifests, quietly.', cost: { chits: 20 }, win: { text: 'The manifests go in the file', flag: 'frag_manifests' } },
+      { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Four Cyrite. Just the manifests, quietly.', cost: { chits: 20 }, win: { text: 'The manifests go in the file', flag: 'frag_manifests' } },
       { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
     ],
   }),
@@ -185,7 +185,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“Everyone knows what you carry. At the Threshold, I buy it. Here’s something on account.”',
     cargo: 'A broker’s yacht · very clean guns',
     choices: [
-      { id: 'take', label: 'Take the advance', tone: 'trade', hint: 'Forty chits, and a buyer at the end.', win: { text: 'Forty chits · Vell will be waiting', chits: 40, flag: 'broker', standing: { gutter: 1 } } },
+      { id: 'take', label: 'Take the advance', tone: 'trade', hint: 'Eight Cyrite, and a buyer at the end.', win: { text: 'Eight Cyrite · Vell will be waiting', chits: 40, flag: 'broker', standing: { gutter: 1 } } },
       { id: 'no', label: 'Not for sale', tone: 'refuse', hint: 'She will remember.', win: { text: '“Everything is, eventually.”' } },
       { id: 'fight', label: 'Run her off', tone: 'fight', hint: 'Her escort is quick.', win: { text: 'Her escort turns on you', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], standing: { gutter: -1 } } },
     ],
@@ -212,7 +212,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'A salvage tug · one cutting arm',
     choices: [
       { id: 'cut', label: 'Cut it free together', tone: 'help', hint: 'Two supplies for the blades. The recording goes in the file.', cost: { supplies: 2 }, win: { text: 'The black box goes in the file', flag: 'frag_blackbox', standing: { miners: 1 } } },
-      { id: 'pay', label: 'Pay him to do it', tone: 'pay', hint: 'Twenty-five chits. Quiet, and slower.', cost: { chits: 25 }, win: { text: 'Kessin hands over the recorder', flag: 'frag_blackbox' } },
+      { id: 'pay', label: 'Pay him to do it', tone: 'pay', hint: 'Five Cyrite. Quiet, and slower.', cost: { chits: 25 }, win: { text: 'Kessin hands over the recorder', flag: 'frag_blackbox' } },
       { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Not worth the time.', win: { text: 'Kessin goes back to his wreck' } },
     ],
   }),
@@ -244,9 +244,9 @@ export const STORY_CARDS: CardDef[] = [
     text: '“Every breaker built here has a work order. The first is signed in the Continuance’s own hand. Taking it costs me my pension.”',
     cargo: 'A yard shuttle · a sealed case',
     choices: [
-      { id: 'buy', label: 'Pay for the order', tone: 'pay', hint: 'Thirty-five chits.', cost: { chits: 35 }, win: { text: 'The work order goes in the file', flag: 'frag_workorder' } },
+      { id: 'buy', label: 'Pay for the order', tone: 'pay', hint: 'Seven Cyrite.', cost: { chits: 35 }, win: { text: 'The work order goes in the file', flag: 'frag_workorder' } },
       { id: 'shield', label: 'Promise to shield him', tone: 'bluff', hint: 'Free, if he believes you can.', odds: { base: 0.45, standing: { kellern: 0.1 } }, win: { text: '“Then take it.” · the work order goes in the file', flag: 'frag_workorder', standing: { kellern: -1 } }, lose: { text: 'He thinks better of it, and closes the case' } },
-      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep the chits.', win: { text: 'Anand signs off' } },
+      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Anand signs off' } },
     ],
   }),
   story({
@@ -267,7 +267,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The harbour-master’s launch · very good manners',
     choices: [
       { id: 'berth', label: 'Take the berth', tone: 'trade', hint: 'Supplies for the stay. The Guild takes note.', win: { text: 'A berth, stores and a friend in the Guild', supplies: 6, heat: 0.05, standing: { guild: 1 } } },
-      { id: 'pay', label: 'Pay your way', tone: 'pay', hint: 'Twenty chits. No favours owed.', cost: { chits: 20 }, win: { text: 'Docked and square', supplies: 6 } },
+      { id: 'pay', label: 'Pay your way', tone: 'pay', hint: 'Four Cyrite. No favours owed.', cost: { chits: 20 }, win: { text: 'Docked and square', supplies: 6 } },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'You fly on your own.', win: { text: 'The launch turns back' } },
     ],
   }),
@@ -310,7 +310,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“Every lane ends here. The toll is what you carry, or what you are.”',
     cargo: 'A toll platform · one lit window',
     choices: [
-      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Thirty chits. He tops up the tank.', cost: { chits: 30 }, win: { text: 'Toll paid · the tank is topped up', cyrite: 10 } },
+      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Six Cyrite. He tops up the tank.', cost: { chits: 30 }, win: { text: 'Toll paid · the tank is topped up', cyrite: 10 } },
       { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · the tank is topped up', cyrite: 10, heat: 0.05 }, lose: { text: 'He bars the window' } },
       { id: 'run', label: 'Run the gate', tone: 'fight', hint: 'The platform’s guns wake.', win: { text: 'The platform opens fire', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }] } },
     ],

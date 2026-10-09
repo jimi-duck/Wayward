@@ -37,7 +37,7 @@ export const TABS: Record<Tab, TabDef> = {
   ordnance: { name: 'Ordnance', sub: 'Torpedoes · mines' },
   engines: { name: 'Engines', sub: 'Drive · handling · plasma' },
   defence: { name: 'Defence', sub: 'Shields · the hull arc' },
-  utility: { name: 'Utility', sub: 'Tractor · scanners · chits' },
+  utility: { name: 'Utility', sub: 'Tractor · scanners · Cyrite' },
   signals: { name: 'Signals', sub: 'Stealth · sensors · contacts' },
   reactor: { name: 'Reactor', sub: 'Power · heat · the core' },
   synergies: { name: 'Synergies', sub: 'Pairings · salvaged tech' },
