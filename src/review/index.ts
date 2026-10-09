@@ -6,6 +6,7 @@ import { ReviewPanel } from './panel';
 /** The review world (docs/REVIEW.md): lay the gallery in a World built with `review: true`, and put up its menu and labels. Loaded only by ?dev. */
 export function startReview(app: HTMLElement, world: World, sector: Sector): { frame(): void } {
   const gallery = new Gallery(world);
+  gallery.near = Number(new URLSearchParams(location.search).get('near')) || 0;
   gallery.onMove = () => sector.snapCamera();
   const panel = new ReviewPanel(app, world, gallery, sector);
   gallery.go(gallery.stops[0]!.id);

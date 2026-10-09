@@ -7,6 +7,7 @@ import { FEATURES, type FeatureDef } from '../content/features';
 import { clamp } from '../core/math';
 import type { Feature, Space } from '../sim/space';
 import { designFor } from './hulls';
+import { lavaRock, rockGeometry } from './rocks';
 import { metal } from './kit';
 import { cloudTexture } from './textures';
 
@@ -56,19 +57,12 @@ const SOLID_RANGE = 700;
 
 const CHUNKS: BufferGeometry[] = [];
 function chunk(i: number): BufferGeometry {
-  if (!CHUNKS.length) {
-    const r = rand(9);
-    for (let k = 0; k < 4; k++) {
-      const g = new IcosahedronGeometry(1, 0), p = g.getAttribute('position') as BufferAttribute;
-      for (let v = 0; v < p.count; v++) p.setXYZ(v, p.getX(v) * (0.7 + r() * 0.5), p.getY(v) * (0.7 + r() * 0.5), p.getZ(v) * (0.7 + r() * 0.5));
-      g.computeVertexNormals();
-      CHUNKS.push(g);
-    }
-  }
+  // the same shaped, cratered rock as the field's, so rubble and hulks' debris are not bare polyhedra
+  if (!CHUNKS.length) for (let k = 0; k < 4; k++) CHUNKS.push(rockGeometry(k * 4.1 + 60, 3, 1 + (k % 2), 0.4, 3 + (k % 3)));
   return CHUNKS[i % CHUNKS.length]!;
 }
 const BOX = new BoxGeometry(1, 1, 1);
-const ROCK_MAT = new MeshStandardMaterial({ color: 0x24211f, roughness: 0.95, metalness: 0.15, flatShading: true });
+const ROCK_MAT = lavaRock(2.6, 1, 0.07, undefined, false);
 const HULL_MAT = new MeshStandardMaterial({ color: 0x6a7480, roughness: 0.6, metalness: 0.3, flatShading: true, emissive: 0x0a1016, envMapIntensity: 1.3 });
 const SLAB_MAT = new MeshStandardMaterial({ color: 0x34404e, roughness: 0.32, metalness: 0.55, emissive: 0x05090e, envMapIntensity: 1.3 });
 const CORE_MAT = new MeshBasicMaterial({ color: 0x000000 });

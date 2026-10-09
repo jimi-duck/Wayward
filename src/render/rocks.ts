@@ -104,7 +104,7 @@ const KINDS = Object.keys(LOOKS) as RockKind[];
  * frequency for the same grain); `lava` scales the glow; `bump` is the
  * surface relief, in world units. `look` recolours it by kind.
  */
-function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt): MeshStandardMaterial {
+export function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt, ember = true): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35 });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = lavaTime;
@@ -118,7 +118,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
     shader.uniforms.uMineral = { value: look.mineral };
     shader.uniforms.uStrata = { value: look.strata };
     shader.uniforms.uRim = { value: look.rim };
-    shader.uniforms.uEmber = { value: look.id === 'basalt' || look.id === 'volatile' ? 1 : 0 };
+    shader.uniforms.uEmber = { value: ember && (look.id === 'basalt' || look.id === 'volatile') ? 1 : 0 };
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;');
@@ -165,7 +165,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance += lavaGlow;`);
   };
-  m.customProgramCacheKey = () => `stone-rock5-${detail}-${lava}-${bump}-${look.id}`;
+  m.customProgramCacheKey = () => `stone-rock5-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
@@ -173,7 +173,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
  * A rock shape of unit radius: an icosphere of the given subdivision, pushed
  * out by noise and pitted with craters, a little flattened. Smooth normals.
  */
-function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0): BufferGeometry {
+export function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0): BufferGeometry {
   const g = mergeVertices(new IcosahedronGeometry(1, detail).deleteAttribute('normal').deleteAttribute('uv'), 1e-4);
   const p = g.attributes.position!;
   const v = new Vector3();
