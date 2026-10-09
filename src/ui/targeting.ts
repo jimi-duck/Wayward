@@ -45,6 +45,8 @@ const ROCK_BIAS = 1.6;
 const STICKY = 1.25;
 /** Deposits and pickups are marked inside this range. */
 const NEAR = 80;
+/** A neutral hull is named inside this range. */
+const TRADER = 200;
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const metres = (u: number) => Math.round(u / PX);
@@ -230,19 +232,19 @@ export class Targeting {
     this.cardClock += dt;
     if (this.cardClock < 0.1) return;
     this.cardClock = 0;
-    let name = '', sub = '', intK = tr('Hull'), ico = '#i-hostile', hp = 1, cls = '';
+    let name = '', sub = '', intK = tr('Hull'), hp = 1, cls = '';
     if (t.kind === 'hull') {
       const a = t.ref as Alien;
       name = tr(alienLabel(a));
       sub = `<b>${tr(cap(a.faction))}</b> · +${alienBonus(a)}`;
       hp = a.hp / a.maxHp;
       if (a.elite) cls = 'elite';
+      else if (a.kind === 'freighter') cls = 'friendly';
     } else if (t.kind === 'boss') {
       const b = t.ref as Boss;
       name = tr(b.name);
       sub = `<b>${tr('{f} capital', { f: tr(cap(b.faction)) })}</b> · ${tr('phase')} ${b.phase + 1}/3`;
       hp = b.hp / b.maxHp;
-      ico = '#i-capital';
     } else {
       // mining: what the rock is, what breaking it yields, what it breaks into
       const r = t.ref as Rock, K = ROCK_KINDS[r.kind];
@@ -261,7 +263,6 @@ export class Targeting {
         intK = tr('Integrity');
         hp = r.hp / r.maxHp;
       }
-      ico = '#i-rock';
       cls = `rock ${r.kind}`;
     }
     // how far: the brackets carry it on screen, the card everywhere
@@ -275,11 +276,9 @@ export class Targeting {
     $('tgt-int').style.setProperty('--v', v.toFixed(2));
     $('tgt-hp').style.setProperty('--v', v.toFixed(2));
     text($('tgt-int-v'), `${Math.round(v * 100)}%`);
-    const use = $('tgt-ico');
-    if (use.getAttribute('href') !== ico) use.setAttribute('href', ico);
     if (t.kind === 'boss') cls = 'boss';
     const card = this.card;
-    for (const k of ['rock', 'basalt', 'iron', 'rich', 'volatile', 'elite', 'boss']) {
+    for (const k of ['rock', 'basalt', 'iron', 'rich', 'volatile', 'elite', 'friendly', 'boss']) {
       const on = cls.split(' ').includes(k);
       this.box.classList.toggle(k, on);
       card.classList.toggle(k, on);
@@ -306,7 +305,7 @@ export class Targeting {
       n++;
       if (label) {
         // the label's rough box: beside a hexagon, under anything else
-        const side = cls.includes('dia');
+        const side = cls.includes('dia') || cls.includes('tag');
         const lx0 = side ? p.x + 12 : p.x - 70, lx1 = side ? p.x + 170 : p.x + 70, ly0 = side ? p.y - 16 : p.y + 8, ly1 = side ? p.y + 16 : p.y + 34;
         if (this.avoid.some((r) => !(lx1 < r.left || lx0 > r.right || ly1 < r.top || ly0 > r.bottom))) label = '';
       }
@@ -319,13 +318,13 @@ export class Targeting {
       // the objective first: it must never be crowded out
       const e = world.encounter;
       if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy')) {
-        put(e.x, 0.5, e.z, 'm dia obj', `${tr(ENCOUNTERS[e.id].name)} · ${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
+        put(e.x, 0.5, e.z, 'm dia obj', `${tr(ENCOUNTERS[e.id].name)}\n${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
       }
       // the Breakout's two places, when they are in view
       if (world.bk) {
         for (const wp of world.seenPlaces()) {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
-          put(wp.x, 0.5, wp.z, 'm dia obj far', `${tr(wp.name)} · ${range(d)}`);
+          put(wp.x, 0.5, wp.z, 'm dia obj far', `${tr(wp.name)}\n${range(d)}`);
         }
       }
       const boss = world.command.boss;
@@ -344,9 +343,17 @@ export class Targeting {
         if (d < depD) { depD = d; dep = r; }
       }
       if (dep) put(dep.x, dep.r + 0.6, dep.z, 'm dia dep', tr('Mineral deposit\nRich · krail'));
+      // a neutral hull in reach gets its name and distance, quietly: the nearest one only
+      let trader: Alien | null = null, trD = TRADER;
+      for (const a of world.aliens) {
+        if (a.kind !== 'freighter' || cloaked(a) || a.id === t?.id) continue;
+        const d = Math.hypot(a.x - s.x, a.z - s.z);
+        if (d < trD) { trD = d; trader = a; }
+      }
+      if (trader) put(trader.x, trader.y, trader.z, 'm tag', `${tr(alienLabel(trader))}\n${range(trD)}`);
       // every other hull: brackets only, amber for an elite
       for (const a of world.aliens) {
-        if (cloaked(a) || a.id === t?.id) continue;
+        if (cloaked(a) || a.id === t?.id || a === trader) continue;
         put(a.x, a.y, a.z, a.elite ? 'm elite' : 'm', '');
       }
     }

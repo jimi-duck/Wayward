@@ -12,8 +12,8 @@ A sortie with a shape: get the stolen hauler out of the home system
 
 - **The course.** The lane mouth is 2,600 units ahead of the start (about a
   minute flat out); Frontier Supply, the port, is halfway and off the line.
-  The HUD carries both as pointers, radar diamonds, a contacts list and the
-  objective's steps.
+  The HUD carries both as a name and a distance on the place itself, radar
+  diamonds, the objective and its quiet lines (see [HUD.md](HUD.md)).
 - **The jump.** Inside the lane mouth with 20 Cyrite in the tank (`JUMP_COST`),
   the drive spools for five seconds; leave the ring and it winds down. The
   jump takes the Cyrite and ends the run as an escape.
@@ -352,8 +352,8 @@ aboard reaches the price (`World.bayDue`; ARCADE_PRICE, 30) and the alert
 has been clear for two seconds (BAY_QUIET), and only if something can be
 fitted. Once a pick is made the bay shuts itself and asks again at the
 price if Krail is left; leaving without a pick puts the next opening one
-price further on (B still opens it sooner; the Arcade HUD has no badge). The Story mode's
-bay is the player's call. On yellow or red alert it stays shut and the log
+price further on (B still opens it sooner; the Arcade HUD has no prompt). The Story mode's
+bay is the player's call, and the HUD's "[B] Open bay" shows once something can be fitted. On yellow or red alert it stays shut and the log
 says why in one line ("Bay locked · yellow alert", "Bay locked · red
 alert") while the badge shakes. The badge is dim with nothing to fit, amber
 with a count of the suggestions you can pay for, yellow or red when locked,
@@ -384,8 +384,8 @@ laser bank refills, and torpedoes, mines and the hull arc come round, slower
 exchangers (+4 a level) raise the ratings. The bay shows it all before an
 install: the budgets after, the figures that would suffer in red, and a line
 saying what running over costs. A capital ship destroyed opens her faction's tech in Synergies. The
-HUD's Krail row counts toward the cheapest module in reach and lights the
-bay's key when one can be fitted.
+HUD's Krail line counts what is aboard; "[B] Open bay" lights once a module
+can be fitted.
 
 **The yard (the Story mode).** The ship's four systems' modules
 (`content/modules.ts`: Guns, Rig, Signals, Contacts) are nodes of the same

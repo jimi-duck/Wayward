@@ -1,0 +1,486 @@
+/* ── the HUD (docs/HUD.md) ────────────────────────────────────────────────
+   The ship and the world come first. The HUD is smoked glass bolted into the
+   Wayward's windscreen: a few small panels in the corners, the rest of the
+   picture left alone, and anything else shown only while it matters.
+   Colour keeps its meaning: amber the player and the job, teal what the
+   ship knows, red the threat and nothing else. Size and weight, not
+   dimness, carry the hierarchy: labels are small and clear, never grey on
+   grey. */
+
+:root {
+  /* smoked glass: built on the tokens in glass.css (the menu's), a lighter blur for a HUD that sits over the action */
+  --glass-fill: linear-gradient(180deg, rgba(22, 36, 42, .5), var(--gl-smoke-f));
+  --glass-deep: linear-gradient(180deg, rgba(14, 24, 29, .74), rgba(6, 10, 12, .84));
+  --glass-edge: var(--gl-smoke-e2);
+  --glass-edge-hi: var(--gl-smoke-e1);
+  --glass-sheen: rgba(255, 255, 255, .07);
+  --glass-blur: blur(calc(var(--blur) * .4)) saturate(1.15);
+  /* small red type needs to be lighter than the red of a mark to hold 4.5:1 on glass over a bright nebula */
+  --alert-text: #f08a7e;
+}
+/* a phone's GPU should not blur the whole picture every frame: the glass is just a little darker there */
+.touch-ui { --glass-blur: none; --glass-fill: linear-gradient(180deg, rgba(14, 24, 29, .66), rgba(7, 12, 14, .74)); }
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass-blur: none; --glass-fill: linear-gradient(180deg, rgba(14, 24, 29, .8), rgba(7, 12, 14, .86)); }
+}
+
+/* The glass: a lit hairline cut at 45° top left and bottom right (its left
+   end brighter, a bracket), a body that lets the view through, a sheen along
+   the top, a faint diagonal reflection and two tiny maintenance ticks. */
+.glass { --c: 8px; --edge: var(--glass-edge); --lit: var(--glass-edge-hi); --tint: linear-gradient(transparent, transparent); position: relative; isolation: isolate;
+  box-shadow: 0 12px 22px -14px rgba(0, 0, 0, .7); }
+.glass::before, .glass::after { content: ""; position: absolute; pointer-events: none; }
+.glass::before {
+  --ci: calc(var(--c) + .41px);
+  inset: 0; z-index: -2;
+  background: linear-gradient(90deg, var(--lit) 0 18px, var(--edge) 18px);
+  clip-path: polygon(evenodd, var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c), var(--c) 0,
+    var(--ci) 1px, calc(100% - 1px) 1px, calc(100% - 1px) calc(100% - var(--ci)), calc(100% - var(--ci)) calc(100% - 1px), 1px calc(100% - 1px), 1px var(--ci), var(--ci) 1px);
+}
+.glass::after {
+  --ci: calc(var(--c) - .4px);
+  inset: 1px; z-index: -1;
+  background:
+    linear-gradient(var(--glass-edge-hi), var(--glass-edge-hi)) right 9px top 3px / 9px 1px no-repeat,
+    linear-gradient(var(--glass-edge), var(--glass-edge)) left 9px bottom 3px / 7px 1px no-repeat,
+    linear-gradient(180deg, var(--glass-sheen), transparent 34%),
+    linear-gradient(112deg, transparent 0 58%, rgba(255, 255, 255, .03) 58% 66%, transparent 66%),
+    var(--tint),
+    var(--glass-fill);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  clip-path: polygon(var(--ci) 0, 100% 0, 100% calc(100% - var(--ci)), calc(100% - var(--ci)) 100%, 0 100%, 0 var(--ci));
+}
+
+/* ── the HUD's frame ──────────────────────────────────────────────────── */
+#hud {
+  position: absolute; inset: 0; pointer-events: none;
+  --pad: clamp(14px, 1.9vw, 28px);
+  --top: calc(var(--safe-t) + 14px);
+  --right: calc(var(--pad) + var(--safe-r));
+  --bottom: calc(var(--pad) + var(--safe-b));
+  --left: calc(var(--pad) + var(--safe-l));
+}
+#hud button { pointer-events: auto; }
+/* the HUD powers up when the run starts: no delay and no fill, so if it never runs the HUD is simply there */
+:root:not(.prelaunch) .hud-block { animation: hud-boot .42s var(--ez); }
+@keyframes hud-boot { from { opacity: 0; transform: translateY(6px); } }
+.hud-block { text-shadow: 0 1px 5px rgba(0, 0, 0, .85); }
+
+/* ── upper left: the objective ────────────────────────────────────────── */
+#objective { --lit: var(--amber); position: absolute; left: var(--left); top: var(--top); width: clamp(240px, 22vw, 330px); display: none; gap: 6px; padding: 10px 14px 11px 15px; }
+#objective.on { display: grid; }
+.obj-k { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.obj-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+#obj-t { font: 600 calc(var(--fs) * 1.95)/1.05 var(--font-rail); letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
+#obj-left { white-space: nowrap; font: 600 calc(var(--fs) * 1.45)/1 var(--font-rail); letter-spacing: .06em; color: var(--amber); font-variant-numeric: tabular-nums; }
+#obj-p { --n: 30; --on: var(--amber); --off: var(--amber-dim); height: 3px; margin-top: 2px; }
+/* in the Story the lane is a place, not a count: the line under the title says how far */
+html.breakout #objective.course #obj-p, #objective.course #obj-s { display: none; }
+#obj-s { font: 600 calc(var(--fs) * 1.15)/1.25 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+#obj-s:empty { display: none; }
+#obj-list { display: none; margin: 2px 0 0; padding: 7px 0 0; list-style: none; gap: 4px; border-top: 1px solid var(--line);
+  font: 600 calc(var(--fs) * 1.15)/1.25 var(--font-rail); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); }
+#objective.course #obj-list:not(:empty) { display: grid; }
+#obj-list b { color: var(--cy); font-weight: 600; white-space: nowrap; }
+/* the threat worth a line: red, small, only while it is true */
+#obj-threat { margin: 0; display: flex; align-items: center; gap: 7px; font: 600 calc(var(--fs) * 1.2)/1.2 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--alert-text); }
+#obj-threat::before { content: ""; flex: none; width: 6px; height: 6px; background: currentColor; rotate: 45deg; }
+#obj-threat[hidden] { display: none; }
+#obj-threat.hot { animation: hud-blink 1.3s ease-in-out infinite; }
+/* an event holds the amber edge; the course only lights the left end */
+#objective.event { --edge: rgba(229, 169, 58, .5); }
+
+/* ── upper centre: the heading ────────────────────────────────────────── */
+/* A compass tape with the objective on it: a diamond along its bearing,
+   pinned to the end as a chevron when it is further round than the tape shows. */
+#heading { position: absolute; left: 50%; top: calc(var(--safe-t) + 10px); translate: -50% 0; width: 200px; display: grid; justify-items: center; gap: 5px; opacity: .92; }
+.hdg-r { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; column-gap: 8px; }
+#hdg { grid-column: 2; grid-row: 1; font: 500 calc(var(--fs) * 1.1)/1 var(--font-mono); letter-spacing: .24em; color: var(--ink); padding-left: .24em; }
+#hdg-rel { grid-column: 3; grid-row: 1; justify-self: start; font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--amber); white-space: nowrap; }
+#hdg-tape { --o: 0px; --tick: rgba(196, 230, 234, .34); position: relative; width: 100%; height: 7px;
+  background:
+    repeating-linear-gradient(90deg, var(--tick) 0 1px, transparent 1px 10px) var(--o) 100% / 100% 4px repeat-x,
+    repeating-linear-gradient(90deg, rgba(196, 230, 234, .7) 0 1px, transparent 1px 60px) var(--o) 100% / 100% 7px repeat-x;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
+          mask: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); }
+#heading::after { content: ""; position: absolute; left: 50%; bottom: -3px; width: 1px; height: 10px; background: var(--hud); }
+#hdg-obj { position: absolute; left: 50%; bottom: -2px; width: 9px; height: 9px; margin-left: -4.5px; background: var(--amber); rotate: 45deg; pointer-events: none; }
+#hdg-obj[hidden] { display: none; }
+#hdg-obj[data-edge] { rotate: 0deg; width: 8px; height: 12px; margin-left: -4px; bottom: -4px; clip-path: polygon(100% 0, 0 50%, 100% 100%); }
+#hdg-obj[data-edge="r"] { clip-path: polygon(0 0, 100% 50%, 0 100%); }
+#hdg-obj[data-edge=""] { clip-path: none; }
+#hdg-obj.rear { animation: hdg-turn .6s steps(2, jump-none) infinite; }
+@keyframes hdg-turn { 50% { opacity: .35; } }
+
+/* ── upper right: the ship ────────────────────────────────────────────── */
+/* Hull, fuel, energy: a row each, a label, a thin gauge with some depth, the
+   reading. Munitions are a row too, quiet until a fight. Stores are one line. */
+#systems { position: absolute; right: var(--right); top: var(--top); width: clamp(236px, 19vw, 292px);
+  display: grid; grid-template-columns: max-content minmax(54px, 1fr) minmax(40px, max-content); align-items: center;
+  column-gap: 11px; row-gap: 9px; padding: 11px 14px 11px 15px; }
+.sys-row { display: contents; }
+.sys-row[hidden] { display: none; }
+.sys-row > .lbl { min-width: 5.2em; color: var(--ink-2); font-size: calc(var(--fs) * 1.15); letter-spacing: .16em; }
+.sys-row .val { justify-self: end; font-size: calc(var(--fs) * 1.5); }
+.sys-row .val small { font-size: .7em; color: var(--ink-2); margin-left: 1px; }
+.sys-row .val.word { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+/* a gauge is a recessed track with a lit fill */
+.bar { --v: 1; --fillc: var(--cy); display: block; height: 5px; min-width: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .26), transparent 60%),
+    linear-gradient(90deg, var(--fillc) 0 calc(var(--v) * 100%), rgba(57, 174, 183, .14) 0);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .7), 0 0 0 1px rgba(150, 196, 204, .12); }
+#sys-ph.low .bar { --fillc: var(--amber); }
+#sys-ph.low .val { color: var(--amber); }
+#sys-ph.dry .bar { --fillc: var(--alert-dim); }
+#sys-ph.dry .val { color: var(--alert); animation: hud-blink .8s ease-in-out infinite; }
+#sys-ph.hot .bar { --fillc: #ffe2a8; }
+#sys-ph.hot .val { color: var(--hud-hi); }
+#sys-fuel.ready .bar { --fillc: #f6e2b4; }
+#sys-fuel.ready .val { color: var(--violet); }
+
+/* racks: torpedoes and mines, one pip a round, the next filling as it reloads; quiet out of a fight */
+.rack { display: flex; gap: 4px; min-width: 0; }
+.rack i { --p: 0; flex: 1; max-width: 18px; height: 7px;
+  background: linear-gradient(90deg, var(--hud-mid) 0 calc(var(--p) * 100%), var(--hud-ghost) 0);
+  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 50%, calc(100% - 4px) 100%, 0 100%); }
+.rack i.on { background: var(--hud); }
+#g-mines i { max-width: 10px; height: 6px; clip-path: none; }
+.sys-row.arms > * { transition: opacity .5s; }
+.sys-row.arms.idle > * { opacity: .55; }
+#sys-tp.lock #v-rack { color: var(--hud-hi); }
+#sys-tp.empty #v-rack { color: var(--amber); }
+#sys-tp.dry .rack { animation: hud-blink .5s ease-in-out 2; }
+
+/* the hull: a plate a segment, then shield charges in teal */
+.plates { display: flex; gap: 3px; min-width: 0; }
+.plates i { flex: 1; max-width: 30px; height: 7px; background: rgba(216, 213, 198, .14); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .6); }
+.plates i.on { background: linear-gradient(180deg, #fff, var(--ink) 55%); }
+.plates i.sh { max-width: 10px; margin-left: 3px; background: linear-gradient(to top, rgba(57, 174, 183, .3) var(--fill, 0%), transparent var(--fill, 0%)); outline: 1px solid var(--cy-dim); outline-offset: -1px; transform: skewX(-20deg); }
+.plates i.sh.on { background: rgba(57, 174, 183, .55); outline-color: var(--cy); }
+html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6ee, var(--cy) 60%); }
+#sys-hull.crit .plates i.on:not(.sh) { background: var(--alert); animation: hud-blink 1.1s ease-in-out infinite; }
+#sys-hull.crit #v-hull { color: var(--alert); }
+#sys-hull.hit { animation: hud-hit .6s ease-out; }
+/* self-repair (the arcade): the plate being mended fills in teal, pulsing while it works */
+.plates i.mend { background: linear-gradient(to right, rgba(57, 174, 183, .55) var(--fill, 0%), rgba(216, 213, 198, .14) var(--fill, 0%)); outline: 1px solid var(--cy-dim); outline-offset: -1px; }
+.plates i.mend.live { animation: mend-pulse 1.1s ease-in-out infinite; }
+#sys-hull.mending #v-hull { color: var(--cy); }
+#sys-hull.mended { animation: mend-done .7s ease-out; }
+@keyframes mend-pulse { 50% { outline-color: var(--cy); } }
+@keyframes mend-done { 0% { background: rgba(57, 174, 183, .28); } }
+
+/* the stores: Krail, then in the Story the hold, parts, chits and food; in the Arcade the score. One quiet line. */
+.sys-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; padding-top: 8px; border-top: 1px solid var(--line); }
+.stores { display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; }
+.stores[hidden], #sys-score[hidden] { display: none; }
+.sys-foot .lbl { font-size: calc(var(--fs) * 1.0); color: var(--ink-2); }
+.sys-foot b { font: 600 calc(var(--fs) * 1.3)/1 var(--font-rail); letter-spacing: .04em; color: var(--ink); font-variant-numeric: tabular-nums; margin-right: 5px; }
+#rail { position: relative; }
+#rail b { color: var(--violet); }
+#xp-gain { position: absolute; right: -4px; bottom: calc(100% + 3px); font: 600 calc(var(--fs) * 1.1)/1 var(--font-mono); letter-spacing: .1em; color: var(--violet); opacity: 0; transition: opacity .5s; }
+#xp-gain.on { opacity: 1; transition: none; }
+.vy-cells b.full { color: var(--amber); }
+#sys-score { display: flex; align-items: baseline; gap: 6px; margin-left: auto; }
+#score { font-size: calc(var(--fs) * 1.35); letter-spacing: .1em; margin: 0; }
+#chain { display: flex; align-items: baseline; gap: 5px; }
+#chain b { color: var(--amber); margin: 0; }
+#chain:not(.on) { display: none; }
+
+/* power-ups running (and the boosters to come): a chip each, under the panel, a countdown on the right */
+#powers { position: absolute; right: var(--right); top: calc(var(--top) + var(--sys-h, 150px) + 8px); display: grid; gap: 4px; justify-items: end; }
+#powers span { display: flex; align-items: center; gap: 10px; padding: 4px 9px 4px 8px; background: var(--glass-fill); border-left: 2px solid var(--amber);
+  font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+#powers span b { font: 600 calc(var(--fs) * 1.25)/1 var(--font-rail); color: var(--amber); font-variant-numeric: tabular-nums; min-width: 2.2em; text-align: right; }
+/* the time left, draining from the right */
+#powers span { position: relative; overflow: hidden; }
+#powers span i { position: absolute; left: 0; bottom: 0; height: 3px; width: calc(100% * var(--left, 1)); background: var(--amber); }
+
+/* ── upper centre: the alert, the capital ship, the target ────────────── */
+#centre { position: absolute; left: 50%; top: calc(var(--safe-t) + 46px); translate: -50% 0; display: grid; gap: 8px; justify-items: center; }
+/* the alert: yellow is a quiet line (you are observed); red is the loudest thing on the screen (you are targeted) */
+#mode { --mc: var(--amber); --lit: var(--amber); padding: 6px 16px; text-align: center; }
+#mode[hidden] { display: none; }
+.md-w { display: grid; gap: 3px; justify-items: center; }
+#mode-t { font: 600 calc(var(--fs) * 1.3)/1 var(--font-rail); letter-spacing: .24em; text-transform: uppercase; color: var(--mc); white-space: nowrap; }
+#mode-s { font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
+#mode.yellow { --edge: rgba(229, 169, 58, .4); }
+#mode.red { --mc: var(--alert); --lit: var(--alert); --edge: rgba(224, 87, 75, .6); --tint: linear-gradient(rgba(110, 24, 18, .55), rgba(80, 16, 12, .5)); padding: 9px 26px 10px; }
+#mode.red #mode-t { font-size: calc(var(--fs) * 2.5); letter-spacing: .3em; padding-left: .3em; }
+#mode.red #mode-s { color: var(--ink); }
+#mode.enter { animation: mode-in .5s var(--ez) both; }
+#mode.red.enter { animation: mode-in .5s var(--ez) both, mode-flash 1.1s ease-out; }
+#mode.red::before { animation: mode-edge 1.6s ease-in-out infinite; }
+@keyframes mode-in { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }
+@keyframes mode-flash { 0%, 40% { box-shadow: 0 0 22px rgba(224, 87, 75, .4), 0 12px 22px -14px rgba(0, 0, 0, .7); } 100% { box-shadow: 0 12px 22px -14px rgba(0, 0, 0, .7); } }
+@keyframes mode-edge { 50% { opacity: .65; } }
+@media (max-height: 520px) { #mode-s { display: none; } }
+
+#boss { width: clamp(260px, 30vw, 400px); display: none; gap: 7px; padding: 9px 14px; --edge: rgba(224, 87, 75, .45); --lit: var(--alert); --tint: linear-gradient(rgba(70, 16, 12, .3), rgba(70, 16, 12, .24)); }
+#boss.on { display: grid; }
+.boss-h { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+#boss-name { font: 600 calc(var(--fs) * 1.5)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#boss-cls { margin-left: auto; font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--alert-text); white-space: nowrap; }
+/* the hull, with a notch at each phase */
+.boss-bar { position: relative; }
+#boss-hp { --n: 45; --on: var(--alert); --off: var(--alert-dim); height: 5px; }
+.boss-bar::before, .boss-bar::after { content: ""; position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--ink-2); }
+.boss-bar::before { left: 33.333%; }
+.boss-bar::after { left: 66.666%; }
+.boss-f { display: flex; justify-content: space-between; gap: 10px; font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+#boss.inbound #boss-hp { --on: transparent; animation: hud-blink 1s ease-in-out infinite; }
+#boss.cloaked #boss-hp { opacity: .35; }
+
+/* the target: what it is, how far, what it yields, how much is left; the capital ship and the alert take the stage first */
+#tgt-card { display: none; width: clamp(200px, 18vw, 260px); padding: 7px 13px 8px; --lit: var(--cy); }
+#tgt-card.on { display: block; }
+#boss.on ~ #tgt-card, #tgt-card.boss { display: none; }
+.tc-b { display: grid; gap: 5px; min-width: 0; }
+.tc-n { display: flex; align-items: center; gap: 7px; min-width: 0; }
+#tgt-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: 600 calc(var(--fs) * 1.35)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+.tc-s { font: 600 calc(var(--fs) * 1.05)/1.1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-s b { font-weight: 600; color: var(--ink); }
+.tc-int { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; font: 600 calc(var(--fs) * 1.0)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
+#tgt-int-v { font: 600 calc(var(--fs) * 1.1)/1 var(--font-mono); color: var(--cy); }
+#tgt-int { --v: 1; display: block; height: 4px; background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
+#tgt-lock { display: none; flex: none; padding: 2px 4px; font: 600 calc(var(--fs) * .95)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: #1a1104; background: var(--hud); }
+#tgt-card.locked #tgt-lock { display: inline-block; }
+/* rock reads in the colour of what it yields */
+#tgt-card.rock .tc-s b { color: var(--violet); }
+#tgt-card.volatile { --lit: var(--alert); }
+/* a hull is a threat: red, as every threat is */
+#tgt-card:not(.rock) { --edge: rgba(224, 87, 75, .4); --lit: var(--alert); --tint: linear-gradient(rgba(70, 16, 12, .28), rgba(70, 16, 12, .22)); }
+#tgt-card:not(.rock) #tgt-int-v { color: var(--alert); }
+#tgt-card:not(.rock) #tgt-int { background: linear-gradient(90deg, var(--alert) 0 calc(var(--v) * 100%), var(--alert-dim) 0); }
+
+/* a neutral hull (a convoy freighter) is not a threat: teal */
+#tgt-card.friendly:not(.rock) { --edge: var(--glass-edge); --lit: var(--cy); --tint: linear-gradient(transparent, transparent); }
+#tgt-card.friendly:not(.rock) #tgt-int-v { color: var(--cy); }
+#tgt-card.friendly:not(.rock) #tgt-int { background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
+
+/* ── in the world: the gunsight, the target, marks ────────────────────── */
+#world { position: absolute; inset: 0; overflow: hidden; }
+
+/* where the lasers go; it lights when the target is in the line of fire */
+#reticle { position: absolute; left: 0; top: 0; width: 26px; height: 26px; margin: -13px 0 0 -13px; opacity: .5;
+  --b: var(--hud);
+  background:
+    linear-gradient(var(--b), var(--b)) left center / 7px 1px no-repeat,
+    linear-gradient(var(--b), var(--b)) right center / 7px 1px no-repeat,
+    linear-gradient(var(--b), var(--b)) center top / 1px 7px no-repeat,
+    linear-gradient(var(--b), var(--b)) center bottom / 1px 7px no-repeat;
+  transition: opacity .12s; }
+#reticle i { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; background: var(--hud); opacity: 0; transition: opacity .12s; }
+#reticle.on { opacity: 1; }
+#reticle.on i { opacity: 1; }
+
+/* the target: a bracket frame, its health a thin bar and its range under it */
+#tgt { position: absolute; left: 0; top: 0; display: none; --h: 30px; }
+#tgt.on { display: block; }
+#tgt-box { position: absolute; left: calc(var(--h) * -1); top: calc(var(--h) * -1); width: calc(var(--h) * 2); height: calc(var(--h) * 2);
+  --b: var(--hud); --l: min(14px, calc(var(--h) * .4)); --t: 1px; outline: 1px solid rgba(217, 154, 39, .16); outline-offset: -1px; }
+#tgt.locked #tgt-box { --t: 2px; outline-color: rgba(217, 154, 39, .32); }
+#tgt.acq #tgt-box { animation: tgt-acq .2s var(--ez); }
+#tgt.lockon #tgt-box { animation: tgt-lock .26s var(--ez); }
+@keyframes tgt-acq { from { transform: scale(1.8); opacity: 0; } }
+@keyframes tgt-lock { 40% { transform: scale(1.14); } }
+.tgt-scan { position: absolute; left: 2px; right: 2px; top: 0; height: 1px; background: var(--hud-hi); opacity: 0; }
+#tgt.acq .tgt-scan, #tgt.lockon .tgt-scan { animation: tgt-scan .45s linear; }
+@keyframes tgt-scan { from { top: 0; opacity: .9; } to { top: 100%; opacity: 0; } }
+/* the centre mark: in the line of fire */
+.tgt-x { position: absolute; left: 50%; top: 50%; width: 11px; height: 11px; margin: -5.5px; display: none;
+  background: linear-gradient(var(--hud), var(--hud)) center / 100% 1px no-repeat, linear-gradient(var(--hud), var(--hud)) center / 1px 100% no-repeat; }
+#tgt.arc .tgt-x { display: block; }
+#tgt-under { position: absolute; left: 0; right: 0; top: calc(100% + 4px); display: flex; align-items: center; gap: 6px; }
+#tgt-hp { --v: 1; flex: 1; min-width: 18px; height: 3px; background: linear-gradient(90deg, var(--c-hp, var(--alert)) 0 calc(var(--v) * 100%), rgba(216, 213, 198, .14) 0); }
+#tgt.rock #tgt-hp { --c-hp: var(--violet); }
+#tgt-d { flex: none; white-space: nowrap; text-shadow: 0 1px 5px #000;
+  font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+/* a hull is a threat: red, as every threat is */
+#tgt:not(.rock) #tgt-box { --b: var(--threat); outline-color: rgba(201, 74, 63, .2); }
+#tgt.friendly #tgt-box { --b: var(--cy); outline-color: rgba(76, 194, 203, .2); }
+#tgt.friendly:not(.rock) #tgt-hp { --c-hp: var(--cy); }
+#tgt.friendly:not(.rock) .tgt-x { background: linear-gradient(var(--cy), var(--cy)) center / 100% 1px no-repeat, linear-gradient(var(--cy), var(--cy)) center / 1px 100% no-repeat; }
+#tgt:not(.rock) .tgt-x { background: linear-gradient(var(--alert), var(--alert)) center / 100% 1px no-repeat, linear-gradient(var(--alert), var(--alert)) center / 1px 100% no-repeat; }
+
+/* Corner brackets, from eight gradients: --b colour, --l arm, --t weight. */
+#tgt-box, #marks .m {
+  --b: var(--hud); --l: 10px; --t: 1px;
+  background:
+    linear-gradient(var(--b), var(--b)) left top / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) left top / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) right top / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) right top / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) left bottom / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) left bottom / var(--t) var(--l) no-repeat,
+    linear-gradient(var(--b), var(--b)) right bottom / var(--l) var(--t) no-repeat,
+    linear-gradient(var(--b), var(--b)) right bottom / var(--t) var(--l) no-repeat;
+}
+
+/* Marks: a name and a distance on the thing itself, a small diamond or dot, no symbols.
+   A hull is brackets only; a place or a thing worth fetching also says what it is. */
+#marks .m { position: absolute; left: 0; top: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px; --b: var(--alert-dim); --l: 4px; }
+#marks .m[hidden] { display: none; }
+#marks .m.elite { --b: #f08a7e; }
+#marks .m.cap { width: 28px; height: 28px; margin: -14px 0 0 -14px; --b: var(--alert); --l: 8px; --t: 2px; }
+#marks .m::after { content: attr(data-t); position: absolute; left: 50%; top: calc(100% + 5px); translate: -50% 0; white-space: pre; text-shadow: 0 1px 5px #000, 0 0 2px #000;
+  font: 600 calc(var(--fs) * 1.25)/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+#marks .m.cap::after { color: var(--alert); }
+#marks .m.dia, #marks .m.tag { background: none; --d: var(--amber); }
+#marks .m.dia { width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; }
+#marks .m.dia::before { content: ""; position: absolute; inset: 0; background: var(--d); rotate: 45deg; box-shadow: 0 0 0 3px rgba(8, 14, 17, .28); }
+#marks .m.dia::after, #marks .m.tag::after { left: calc(100% + 11px); top: 50%; translate: 0 -50%; text-align: left; }
+#marks .m.dep { --d: var(--violet); }
+#marks .m.obj.far { width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; }
+#marks .m.tag { width: 8px; height: 8px; margin: -4px 0 0 -4px; }
+#marks .m.tag::before { content: ""; position: absolute; inset: 0; border: 1px solid var(--cy); border-radius: 50%; }
+#marks .m.tag::after { color: var(--ink-2); }
+
+/* off screen: a pointer on the edge for the capital ship and the objective */
+.ptr { position: absolute; left: 0; top: 0; display: none; --pc: var(--alert); }
+.ptr.on { display: block; }
+.ptr i { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-right: 2px solid var(--pc); border-top: 2px solid var(--pc); rotate: var(--a, 0deg); }
+.ptr span { position: absolute; left: 0; top: 14px; translate: -50% 0; white-space: nowrap; text-shadow: 0 1px 5px #000, 0 0 2px #000;
+  font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--pc); }
+#ptr-obj, #ptr-lane { --pc: var(--amber); }
+#ptr-port { --pc: var(--hud-hi, var(--cy)); }
+/* hulls off screen: a smaller chevron each, in the faction's colour, brighter the closer; it blinks when one is close behind */
+#threats .thr { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
+#threats .thr i { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-right: 2px solid var(--pc); border-top: 2px solid var(--pc); rotate: var(--a, 0deg); }
+#threats .thr.elite i { --pc: #f08a7e; }
+#threats .thr.close i { animation: thr-blink .5s steps(2, jump-none) infinite; }
+/* the pressing hull: larger, and says how far; in a fight the chevrons grow and the objective's pointers step back */
+#threats .thr.top i { left: -8px; top: -8px; width: 16px; height: 16px; border-width: 3px; }
+#threats .thr b { position: absolute; left: 0; top: 0; translate: var(--lx, -50%) var(--ly, 12px); white-space: nowrap; text-shadow: 0 1px 5px #000;
+  font: 600 calc(var(--fs) * 1.3)/1 var(--font-rail); letter-spacing: .1em; color: #f08a7e; }
+#hud[data-focus="combat"] #threats .thr:not(.top) i { scale: 1.3; }
+#hud[data-focus="combat"] #ptr-obj, #hud[data-focus="combat"] #ptr-lane, #hud[data-focus="combat"] #ptr-port { opacity: .6; }
+#hud:not([data-focus="combat"]) .ptr#ptr-obj i, #hud:not([data-focus="combat"]) .ptr#ptr-lane i { width: 18px; height: 18px; left: -9px; top: -9px; border-width: 3px; }
+@keyframes thr-blink { 50% { opacity: .3; } }
+
+/* ── lower left: the scope, and where you are ─────────────────────────── */
+#sensors { position: absolute; left: calc(var(--left) - 8px); bottom: calc(var(--bottom) - 8px); display: flex; align-items: flex-end; gap: 10px; }
+/* the scope is a glass disc: the picture shows through it, softly blurred on a desktop */
+#radar { display: block; width: clamp(150px, 13vw, 190px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, .07), transparent 46%), rgba(8, 14, 17, .22);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  box-shadow: 0 0 0 1px rgba(150, 196, 204, .16), 0 12px 22px -12px rgba(0, 0, 0, .8); }
+.sens-side { display: grid; gap: 9px; align-self: flex-end; padding: 0 0 18px 2px; }
+.sec-id { display: grid; gap: 4px; font: 600 calc(var(--fs) * 1.15)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+.sec-id b { font-weight: 600; color: var(--ink-2); }
+.sec-id span { color: var(--ink); font-size: calc(var(--fs) * 1.35); }
+.range { display: flex; align-items: baseline; gap: 7px; }
+.range .lbl { font-size: calc(var(--fs) * 1.0); color: var(--ink-2); }
+#radar-r { font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .08em; color: var(--ink); white-space: nowrap; }
+
+/* ── lower right: the last thing that happened, and the bay when it can open ── */
+#log { position: absolute; right: var(--right); bottom: var(--bottom); width: clamp(220px, 17vw, 260px); display: grid; gap: 9px; justify-items: end; }
+#log-lines { display: grid; justify-items: end; gap: 5px; min-height: 1.3em; }
+#log-lines p { margin: 0; white-space: nowrap; text-shadow: 0 1px 6px #000; transition: opacity .6s;
+  font: 600 calc(var(--fs) * 1.1)/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+#log-lines p.new { animation: log-in .18s var(--ez); }
+#log-lines p.gain span { color: var(--ink); }
+#log-lines p.hit span { color: var(--hud-hi); }
+#log-lines p.old { opacity: .55; }
+#log-lines p.gone { opacity: 0; }
+@keyframes log-in { from { opacity: 0; transform: translateX(8px); } }
+/* what the place is doing to the ship: the ship's voice, teal, one or two short lines, only while it is felt */
+#cond { display: grid; gap: 2px; justify-items: end; font: 600 calc(var(--fs) * 1.2)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); text-shadow: 0 1px 2px #000; }
+#cond[hidden] { display: none; }
+
+/* [B] Open bay: only when there is something to fit; amber while it can be, quiet and locked under an alert */
+#upg { display: flex; align-items: center; gap: 11px; border: 0; background: none; font: inherit; padding: 7px 14px 7px 11px; --lit: var(--amber); --edge: rgba(229, 169, 58, .45); color: var(--amber); cursor: pointer; pointer-events: auto; touch-action: manipulation; }
+#upg[hidden] { display: none; }
+#upg kbd { min-width: 20px; height: 20px; font-size: 12px; color: var(--ink); border-color: var(--glass-edge-hi); background: rgba(255, 255, 255, .06); }
+.up-w { display: grid; gap: 3px; text-align: left; }
+#upg-t { font: 600 calc(var(--fs) * 1.5)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--amber); white-space: nowrap; }
+#upg-s { font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
+#upg b { display: none; min-width: 18px; padding: 2px 5px; text-align: center; color: #1a1104; background: var(--hud); font: 700 11px/1 var(--font-mono); }
+#upg.ready b, #upg.locked b { display: inline-block; }
+#upg.locked { --lit: var(--glass-edge); --edge: var(--glass-edge); }
+#upg.locked #upg-t { color: var(--ink-2); }
+#upg.locked b { background: var(--ink-2); }
+#upg.locked.red #upg-s { color: var(--alert-text); }
+#upg.new { animation: upg-new 1.2s var(--ez) 2; }
+#upg.deny { animation: upg-deny .4s ease-in-out; }
+@keyframes upg-new { 30% { translate: 0 -3px; } }
+@keyframes upg-deny { 20%, 60% { translate: -4px 0; } 40%, 80% { translate: 4px 0; } }
+
+/* ── alerts ───────────────────────────────────────────────────────────── */
+#vignette { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, transparent 50%, rgba(201, 74, 63, .42) 100%); }
+#vignette.hit { animation: vig-hit .55s ease-out; }
+#vignette.critical { opacity: .35; animation: vig-crit 1.8s ease-in-out infinite; }
+@keyframes vig-hit { from { opacity: 1; } to { opacity: 0; } }
+@keyframes vig-crit { 50% { opacity: .12; } }
+@keyframes hud-blink { 50% { opacity: .35; } }
+@keyframes hud-hit { 0%, 30% { background: rgba(201, 74, 63, .28); } }
+
+/* a placard for the moments that stop the eye: a striped band, a kicker, a heavy title, one line of fact */
+#banner { position: absolute; left: 50%; top: 24%; translate: -50% 0; display: none; grid-template-columns: 12px auto; min-width: min(380px, 86vw);
+  --tone: var(--alert); filter: drop-shadow(0 0 18px rgba(201, 74, 63, .18)); }
+#banner.on { display: grid; animation: bn-in .22s var(--ez); }
+@keyframes bn-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.bn-stripes { background: repeating-linear-gradient(-45deg, var(--tone) 0 5px, transparent 5px 10px); border: 1px solid var(--tone); border-right: 0; }
+.bn-body { display: grid; gap: 7px; padding: 11px 28px 13px 16px; background: rgba(8, 13, 14, .82); border: 1px solid var(--tone); border-left: 0; text-align: left; }
+.bn-k { display: flex; align-items: center; gap: 7px; font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--tone); }
+#banner-t { font: 700 clamp(20px, 2.3vw, 30px)/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+.bn-s { font: 600 calc(var(--fs) * 1.1)/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.bn-s:empty { display: none; }
+#banner.caution { --tone: var(--amber); filter: drop-shadow(0 0 18px rgba(229, 169, 58, .16)); }
+#banner.calm { --tone: var(--cy); filter: none; }
+#banner.gain { --tone: var(--violet); filter: none; }
+
+/* ── a narrow window, and a phone ─────────────────────────────────────── */
+@media (max-width: 760px) {
+  #systems { width: min(232px, 52vw); padding: 9px 11px 9px 12px; column-gap: 8px; row-gap: 7px; }
+  .sys-row > .lbl { min-width: 4.4em; }
+  #objective { width: min(230px, 40vw); }
+  #heading { display: none; }
+  #centre { top: calc(var(--top) + var(--sys-h, 150px) + 10px); }
+  #radar { width: clamp(104px, 30vw, 132px); }
+  #log { width: min(300px, 70vw); }
+}
+@media (max-width: 600px) {
+  #log-lines { display: none; }
+  .sens-side { display: none; }
+}
+/* touch: the stick owns the bottom left and the buttons the bottom right, so everything you read moves up and everything you press moves down */
+.touch-ui #log-lines, .touch-ui .sens-side { display: none; }
+.touch-ui #sensors { left: calc(var(--left) - 8px); bottom: auto; top: calc(var(--sector-b, calc(var(--top) + 38px)) + 14px); }
+.touch-ui #radar { width: clamp(104px, 22vmin, 140px); }
+.touch-ui #log { top: calc(var(--top) + var(--sys-h, 150px) + 8px); bottom: auto; width: auto; justify-items: end; gap: 6px; }
+.touch-ui #upg kbd { display: none; }
+.touch-ui #upg { padding: 8px 12px; min-height: 40px; }
+@media (max-width: 480px) {
+  .touch-ui #radar { width: 92px; }
+  .touch-ui #systems { width: min(224px, 56vw); }
+}
+@media (max-height: 460px) {
+  #hud { --pad: 10px; }
+  #banner { top: 16%; }
+  #heading { display: none; }
+  /* on a phone the middle cards take the gap between the objective and the ship panel */
+  .touch-ui #centre { --gap: calc(100vw - var(--left) - min(250px, 31vw) - min(250px, 34vw) - var(--right) - 24px); top: var(--top); left: calc(var(--left) + min(250px, 31vw) + 12px); translate: 0 0; justify-items: start; }
+  .touch-ui #boss, .touch-ui #mode, .touch-ui #tgt-card { width: min(280px, var(--gap)); }
+  .touch-ui #mode { padding-inline: 8px; }
+  .touch-ui #mode.red #mode-t { font-size: calc(var(--fs) * 2); letter-spacing: .2em; padding-left: .2em; }
+  .touch-ui #obj-list li:nth-child(n+2) { display: none; }
+  /* a phone on its side: a tighter panel, and the thumbs' buttons down to the edge */
+  .touch-ui #systems { width: min(250px, 34vw); row-gap: 5px; padding: 7px 10px 7px 11px; }
+  .touch-ui .sys-foot { padding-top: 5px; }
+  .touch-ui #objective { width: min(250px, 31vw); gap: 4px; padding: 7px 10px 8px 11px; }
+  .touch-ui #obj-list { gap: 3px; padding-top: 5px; }
+  .touch-ui #upg-s { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #vignette.critical, #sys-ph.dry .val, #sys-tp.dry .rack, #sys-hull.crit .plates i.on:not(.sh), #boss.inbound #boss-hp, #mode.red::before, #obj-threat.hot, #torp.on { animation: none; }
+  :root:not(.prelaunch) .hud-block, #tgt.acq #tgt-box, #tgt.lockon #tgt-box, #tgt.acq .tgt-scan, #tgt.lockon .tgt-scan, #mode.enter, #mode.red.enter,
+  #log-lines p.new, #banner.on, #sys-hull.hit, #sys-hull.mended, .plates i.mend.live, #upg.new { animation: none; }
+  #threats .thr.close i, #hdg-obj.rear { animation: none; }
+}
+
+/* ── the pause card: the same glass, deeper ───────────────────────────── */
+.pause-card.panel { --fill: var(--glass-deep); }
+.pause-card.panel::after { -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
