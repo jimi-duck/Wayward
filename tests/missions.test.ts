@@ -235,3 +235,59 @@ describe('nothing to declare', () => {
     expect(pat.some((a) => !a.ward)).toBe(true);
   });
 });
+
+describe('the second batch', () => {
+  it('a kill zone pays when every raider is down', () => {
+    const { w, st } = take('kill_zone', 'clear');
+    const before = w.cyrite;
+    run(w, 1);
+    expect(st.run!.foes.length).toBe(6);
+    for (const f of [...st.run!.foes]) kill(w, f);
+    run(w, 1);
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(170));
+  });
+
+  it('the missing shift is found by holding at the wreck with a supply', () => {
+    const { w, st } = take('missing_shift', 'search');
+    const before = w.cyrite, sup = w.supplies;
+    for (let i = 0; i < 12 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(100));
+    expect(w.supplies).toBe(sup - 1 + 3);
+  });
+
+  it('the prospector is followed to the vein, and lost when the ship stays behind', () => {
+    const a = take('follow_cyrite', 'follow');
+    const before = a.w.cyrite;
+    for (let i = 0; i < 70 * 60 && !a.st.result; i++) {
+      const lead = a.st.actors.find((x) => x.ward?.act === 'lead');
+      if (lead) put(a.w, lead.x, lead.z + 20);
+      run(a.w, 1 / 60);
+    }
+    expect(a.st.result).toBe('won');
+    expect(gain(a.w, before)).toBe(cy(90));
+    const b = take('follow_cyrite', 'follow');
+    put(b.w, b.st.x + 4000, b.st.z);
+    for (let i = 0; i < 60 && !b.st.result; i++) run(b.w, 1);
+    expect(b.st.result).toBe('lost');
+  });
+
+  it('the chart can be bought instead, and the goal is never paid', () => {
+    const { w, st } = take('follow_cyrite', 'buy', { cyrite: 40 });
+    const before = w.cyrite;
+    run(w, 1);
+    expect(st.result).toBe('won');
+    expect(w.cyrite).toBe(before);
+  });
+
+  it('a signal and a wreck are read by holding slow and close', () => {
+    for (const [id, choice, pay] of [['someone_answered', 'listen', 130], ['wreck_remembered', 'read', 120]] as const) {
+      const { w, st } = take(id, choice);
+      const before = w.cyrite;
+      for (let i = 0; i < 14 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
+      expect(st.result, id).toBe('won');
+      expect(gain(w, before), id).toBe(cy(pay));
+    }
+  });
+});
