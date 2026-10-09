@@ -118,6 +118,9 @@ export class Gallery {
     this.current = this.stops[0]!;
   }
 
+  /** Metres to stand closer than a stop's usual place (set from ?near= by the page). */
+  near = 0;
+
   /** Put the ship at a stop, facing the exhibit, with the place built if it is built on arrival. */
   go(id: string): void {
     const stop = this.stops.find((s) => s.id === id);
@@ -132,7 +135,9 @@ export class Gallery {
     w.air.from.length = 0;
     this.build(stop.id);
     const at = this.at.get(stop.id)!;
-    Object.assign(s, { x: at.x, z: at.z, vx: 0, vz: 0, heading: at.heading, helm: 0, thrust: 0, yawRate: 0, rollT: -1, breakT: -1 });
+    // ?near=N: stand N metres closer to the exhibit, for a still close-up (the software renderer cannot fly there in time)
+    const near = this.near;
+    Object.assign(s, { x: at.x + near, z: at.z, vx: 0, vz: 0, heading: at.heading, helm: 0, thrust: 0, yawRate: 0, rollT: -1, breakT: -1 });
     Object.assign(w.prev, s);
     w.bolts.length = 0;
     this.onMove();

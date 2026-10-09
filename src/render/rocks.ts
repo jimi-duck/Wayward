@@ -104,7 +104,7 @@ const KINDS = Object.keys(LOOKS) as RockKind[];
  * frequency for the same grain); `lava` scales the glow; `bump` is the
  * surface relief, in world units. `look` recolours it by kind.
  */
-function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt): MeshStandardMaterial {
+export function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt, ember = true): MeshStandardMaterial {
   const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35 });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = lavaTime;
@@ -118,14 +118,15 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
     shader.uniforms.uMineral = { value: look.mineral };
     shader.uniforms.uStrata = { value: look.strata };
     shader.uniforms.uRim = { value: look.rim };
-    shader.uniforms.uEmber = { value: look.id === 'basalt' || look.id === 'volatile' ? 1 : 0 };
+    shader.uniforms.uViolet = { value: ember && look.id === 'rich' ? 1 : 0 };
+    shader.uniforms.uEmber = { value: ember && (look.id === 'basalt' || look.id === 'volatile') ? 1 : 0 };
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         varying vec3 vRockP; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
-        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber;
+        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber; uniform float uViolet;
         ${SIMPLEX}
         ${PERTURB}
         float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
@@ -156,16 +157,21 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
         float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
         // cooled stone: the thinnest cracks keep a dull ember, steady and under the bloom line (basalt and volatile only)
         vec3 lavaGlow = uGlow * crack * heat * 0.1 * uLava * uEmber;
-        stone *= 1.0 - crack * 0.4;
+        // rich rock: violet veins through the stone and crystals set in it, steady and well under the bloom line
+        float vein = (smoothstep(0.93, 0.985, ridgeA) * 0.7 + smoothstep(0.95, 0.99, ridgeB) * 0.5) * (0.4 + 0.6 * zone);
+        lavaGlow += uGlow * (vein * 0.07 + incl * 0.16) * uLava * uViolet;
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.14, 0.09, 0.2), vein * 0.55 * uViolet);
+        diffuseColor.rgb *= 1.0 - crack * 0.4;
         float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + incl * 0.2;`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2, 0.4, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, rockH * uBump, faceDirection);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        totalEmissiveRadiance += lavaGlow;`);
+        float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
+        totalEmissiveRadiance += lavaGlow + uGlow * rimK * 0.012 * uViolet * uLava;`);
   };
-  m.customProgramCacheKey = () => `stone-rock5-${detail}-${lava}-${bump}-${look.id}`;
+  m.customProgramCacheKey = () => `stone-rock6-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
@@ -173,7 +179,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
  * A rock shape of unit radius: an icosphere of the given subdivision, pushed
  * out by noise and pitted with craters, a little flattened. Smooth normals.
  */
-function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0): BufferGeometry {
+export function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0): BufferGeometry {
   const g = mergeVertices(new IcosahedronGeometry(1, detail).deleteAttribute('normal').deleteAttribute('uv'), 1e-4);
   const p = g.attributes.position!;
   const v = new Vector3();
@@ -273,13 +279,16 @@ export class RockView {
       const i = counts[slot]!;
       if (i >= PER_VARIANT) continue;
       counts[slot] = i + 1;
+      // no two alike: each rock is stretched its own way and takes its own shade of stone
+      const h1 = hash(r.id), h2 = hash(r.id + 17), h3 = hash(r.id + 41);
       const grow = Math.min(1, r.age / 0.6);
       const s = r.r * (grow * grow * (3 - 2 * grow));
       this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.spin * r.age + r.id);
-      this.m.compose(this.pos.set(r.x - r.vx * back, -0.3, r.z - r.vz * back), this.q, this.sc.set(s, s, s));
+      this.m.compose(this.pos.set(r.x - r.vx * back, -0.3, r.z - r.vz * back), this.q, this.sc.set(s * (0.8 + 0.4 * h1), s * (0.85 + 0.3 * h2), s * (0.8 + 0.4 * h3)));
       mesh.setMatrixAt(i, this.m);
       const flash = 1 + (r.hitT / 0.12) * 4;
-      mesh.setColorAt(i, this.col.setRGB(flash, flash * 0.8, flash * 0.7));
+      const tone = 0.72 + 0.5 * h2, warm = 0.92 + 0.16 * h3;
+      mesh.setColorAt(i, this.col.setRGB(flash * tone * warm, flash * tone * 0.8, flash * tone * 0.7 / warm));
     }
     this.meshes.forEach((mesh, k) => {
       mesh.count = counts[k]!;
@@ -322,6 +331,12 @@ export class RockView {
       mesh.instanceMatrix.needsUpdate = true;
     });
   }
+}
+
+/** A steady 0..1 from an id, for each rock's own proportions and shade. */
+function hash(n: number): number {
+  const x = Math.sin(n * 12.9898 + 4.1) * 43758.5453;
+  return x - Math.floor(x);
 }
 
 function wrap(v: number, m: number): number {

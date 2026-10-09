@@ -13,6 +13,9 @@ every exhibit has a name on it (small teal tags, shown for the current stop
 and only while the ship is near). Nothing it does is saved: the profile, the
 journey and the Archive are left alone.
 
+`?dev&near=300` stands the ship that many metres closer to each stop, for still
+close-ups where flying up is too slow (a screenshot rig, say).
+
 The menu is the **Review** tab on the left edge. It picks a group, then a
 stop; a stop puts the ship in front of it. Keys: `[` and `]` for the previous
 and next stop, `V` for the next sky, `H` to hide the names.
