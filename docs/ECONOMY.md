@@ -89,3 +89,7 @@ First guesses, read from `npm run pilot:journey` (24 journeys, three regions,
   device. The levers are the rock's Cyrite (`CYRITE` and `ORE` in
   `sim/breakout.ts`), `SCRAP_PRICE`, and the tier prices in `sim/bay.ts`.
 - Card fees rise 12% a region out (`FEE_REGION`), so late Cyrite still has a use.
+- Pilot (24 journeys): 21 through, 3 captured (was 23 and 1, noise at this size).
+  The hold grows to about 100 by the sixth system and 240 by the tenth, the
+  old chit pile at a fifth. Late Cyrite is plentiful once the web is fitted;
+  missions that pay and cost something are the intended sink.
