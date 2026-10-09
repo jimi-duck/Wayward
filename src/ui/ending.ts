@@ -1,5 +1,6 @@
 import { choices, choose, type Choice } from '../sim/endings';
 import type { Journey } from '../sim/journey';
+import { artImg } from './art';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { t } from '../i18n';
 
@@ -94,7 +95,7 @@ export class EndingPanel {
     $('en-t').textContent = t(c.def.name);
     $('en-s').textContent = t(c.def.pitch);
     $('en-l').replaceChildren();
-    $('en-epi').replaceChildren(...lines.map((l) => h('p', '', t(l))));
+    $('en-epi').replaceChildren(...[artImg('ending', c.def.id, 'en-pic')].filter((x): x is HTMLImageElement => !!x), ...lines.map((l) => h('p', '', t(l))));
     const go = $('en-go');
     go.hidden = false;
     go.onclick = guarded(this.opened, () => this.done());

@@ -1,6 +1,8 @@
 import type { Contact } from '../sim/bosses';
 import type { Caller, Open } from '../sim/comms';
 import { NEON_CSS } from './colors';
+import { artImg, artUrl } from './art';
+import { CALLOWAY_ID, CONTACTS } from '../content/art';
 import { faceSvg } from './face';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
@@ -52,6 +54,21 @@ export interface CommsView {
   choices: CommsChoice[];
   /** A named captain's portrait, as SVG (null: nobody to show). */
   face: string | null;
+  /** Pictures from src/art, by name; each is used only if the build has the file (ui/art.ts). */
+  art: ArtRef;
+}
+
+/** Which pictures a call could show: a portrait, the caller's emblem, the first hull on the read. */
+export interface ArtRef { portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; scarred?: boolean }
+const NO_ART: ArtRef = { portrait: null, emblem: null, ship: null };
+
+/** The pictures a card could show, worked out from the card alone. */
+export function artOf(d: Open['def']): ArtRef {
+  const person = d.id.startsWith('captain:') ? d.id.slice(8) : d.caller === 'calloway' ? CALLOWAY_ID : null;
+  const contact = d.id in CONTACTS ? CONTACTS[d.id] ?? d.id : null;
+  const emblem = d.caller === 'calloway' ? 'office' : d.caller !== 'unknown' && d.caller !== 'captain' ? d.caller
+    : /^The Voice/.test(d.from) ? 'voice' : /^The Thren/.test(d.from) ? 'thren' : null;
+  return { portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, scarred: (d.scars ?? 0) > 0 };
 }
 
 const CALLER_CSS: Record<Caller, string> = {
@@ -88,6 +105,7 @@ export function cardView(o: Open): CommsView {
       tags: [...c.cost, ...(c.chance !== null ? [oddsWord(c.chance)] : [])],
     })),
     face: d.face ? faceSvg(d.face, CALLER_CSS[d.caller], d.scars ?? 0) : null,
+    art: artOf(d),
   };
 }
 
@@ -104,6 +122,7 @@ export function hailView(c: Contact): CommsView {
     more: '',
     read: null,
     face: null,
+    art: { ...NO_ART, emblem: c.faction },
     choices: [
       { label: t('Engage'), hint: t('Fight her. Her wreck pays a refit, her tech, hull, Krail and a power-up.'), lines: [], gains: ['Fight', t('+{n} score', { n: fmt(c.bounty) }), 'Refit'], tags: [], ok: true, needs: [] },
       evade,
@@ -147,10 +166,20 @@ export class CommsPanel {
     $('cm-i').onclick = () => this.info();
     $('cm-i').onpointerdown = (e) => e.stopPropagation();
     $('cm-more').textContent = view.more;
-    $('cm-face').hidden = !view.face;
-    $('cm-face').innerHTML = view.face ?? '';
-    $('cm-sigil').hidden = !!view.face;
+    // a painted portrait where the build has one; else the drawn face; else the caller's emblem; else the plain sigil
+    const [pslot, pid] = view.art.portrait ?? [null, ''];
+    // a captain you have scarred may have a second portrait, `<id>-scarred`
+    const portrait = pslot ? (view.art.scarred && artImg(pslot, `${pid}-scarred`, 'cm-pic')) || artImg(pslot, pid, 'cm-pic') : null;
+    $('cm-face').hidden = !view.face && !portrait;
+    $('cm-face').classList.toggle('art', !!portrait);
+    if (portrait) $('cm-face').replaceChildren(portrait);
+    else $('cm-face').innerHTML = view.face ?? '';
+    $('cm-sigil').hidden = !$('cm-face').hidden;
     $('cm-sigil').style.setProperty('--cc', view.colour);
+    const emblem = view.art.emblem ? artUrl('emblem', view.art.emblem) : null;
+    $('cm-sigil').classList.toggle('emblem', !!emblem);
+    if (emblem) $('cm-sigil').style.setProperty('--emblem', `url("${emblem}")`);
+    else $('cm-sigil').style.removeProperty('--emblem');
     this.drawRead(view);
     $('cm-body').classList.toggle('solo', !view.read);
     this.timer(0);
@@ -229,7 +258,9 @@ export class CommsPanel {
       (b.children[1] as HTMLElement).style.setProperty('--w', `${(n / top) * 100}%`);
       return b;
     };
+    const hull = v.art.ship ? artImg('ship', v.art.ship, 'cm-hull') : null;
     box.replaceChildren(
+      ...(hull ? [hull] : []),
       ...(r.bars ? [h('div', 'cm-str', '', bar(t('Them'), r.them, 'them'), bar(t('You'), r.you, 'you'))] : []),
       ...r.rows.map(([k, val], i) => h('div', `cm-row${i === 0 ? ' intent' : ''}`, '', h('span', 'k', k), h('span', 'v', val))),
     );
