@@ -210,7 +210,7 @@ export class SpaceView {
         // far: a faint glint where it is; near: the solid part (below)
         add(this.glow, tint.clone().multiplyScalar(3), f.r * 1.2, f.r * 0.5, 0, 12, 0, 0.18);
         // the well bends light: a halo round its dark centre
-        if (def.look.shape === 'lens') add(this.glow, tint.clone().multiplyScalar(6), f.r * 0.3, f.r * 0.3, 0, 3, 0, 0.55);
+        if (def.look.shape === 'lens') add(this.glow, tint.clone().multiplyScalar(3), f.r * 0.3, f.r * 0.3, 0, 3, 0, 0.4);
         break;
       }
       case 'buoys': {
@@ -226,8 +226,8 @@ export class SpaceView {
       case 'veins': {
         // violet glints in dark rock, slow
         for (let i = 0; i < 16; i++) {
-          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.8, z = 3 + r() * 7;
-          add(this.glow, tint.clone().multiplyScalar(6 + r() * 3), z, z, Math.cos(a) * k, 2 + r() * 6, Math.sin(a) * k, 0.5 + r() * 0.4);
+          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.8, z = 0.8 + r() * 1.8;
+          add(this.glow, tint.clone().multiplyScalar(5 + r() * 3), z, z, Math.cos(a) * k, 2 + r() * 6, Math.sin(a) * k, 0.5 + r() * 0.4);
           pieces[pieces.length - 1]!.b = 0.4 + r() * 0.9;
         }
         add(cloudTexture(), tint.clone().multiplyScalar(2), f.r * 1.4, f.r * 0.8, 0, 6, 0, 0.3);

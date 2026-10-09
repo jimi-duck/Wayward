@@ -63,7 +63,7 @@ if (view === 'close') {
   const kind = (params.get('kind') ?? 'lancer') as Alien['kind'];
   const f = (params.get('faction') as Faction | null) ?? ALIEN_TYPES[kind].faction;
   spot(kind, f, 0, 0, 0, Number(params.get('face') ?? '2.4'));
-  aliens[0]!.r = 5;
+  aliens[0]!.r = Number(params.get('r') ?? '5');
   aliens[0]!.hitT = Number(params.get('hit') ?? '0');
 } else {
   // a fleet: every hull in a row, then more rows behind for the count
