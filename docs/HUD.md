@@ -22,13 +22,13 @@ picture left alone, everything else shown only while it matters. The code is
 | Place | What | When |
 |---|---|---|
 | Upper left | `OBJECTIVE`, the one thing to do, how far (or `6/20` Cyrite), at most two quiet lines (the lane, a job, the optional port) | always; a red line only while a hostile is within 320 m or the Custody is at wanted 3 |
-| Upper centre | the heading tape with the objective on it, then one card: the alert, the capital ship, or the target | tape always (not on phones); cards on cue |
+| Upper centre | the heading tape with the objective on it, then one card: the capital ship or the target | tape always (not on phones); cards on cue |
 | Upper right | Hull, Fuel (Story), Energy; Torpedoes and Mines (dimmed until a fight, a lock or a reload); one line of stores (Krail; Story: hold, parts, chits, food; Arcade: score and chain) | always |
 | Under the panel | power-ups running, one chip each with a countdown | while they run |
 | World | name and distance on the lane mouth, the port, an event, a neutral hull; brackets on hostiles; the target's brackets | in view |
 | Edge | a pointer for the objective and the capital ship, a chevron per hull out of view | when off screen |
 | Lower left | the scope; sector code and name; the scope's range | always (the text is hidden on phones) |
-| Lower right | the last thing that happened; `[B] Open bay / Upgrade ship` | Story only, once something can be fitted; locked and grey under an alert, and says why |
+| Lower right (top right under the ship panel on phones) | the alert (yellow or red, one compact plate); the last thing that happened; `[B] Open bay / Upgrade ship` | Story only, once something can be fitted; locked and grey under an alert, and says why |
 
 Colour keeps its meaning: muted steel blue (`--blue`, `--hud`) the player and
 the job, teal what the ship knows, red the threat and nothing else. A dull

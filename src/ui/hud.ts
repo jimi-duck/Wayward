@@ -24,7 +24,7 @@ import { BREAK_COOLDOWN } from '../sim/tuning';
 //                        threat worth a line
 //   where to           · upper centre: the heading tape, the objective on it;
 //                        in the world, a name and a distance on the place
-//   am I in danger     · the alert card under the tape (yellow: observed, red:
+//   am I in danger     · the alert card bottom right (yellow: observed, red:
 //                        targeted), the capital ship, the target in the brackets
 //   is the ship fine   · upper right: hull, fuel, energy; munitions say more
 //                        in a fight; stores in one quiet line
