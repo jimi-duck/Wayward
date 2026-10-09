@@ -210,8 +210,7 @@ export class SummaryPanel {
 const LEVEL: Record<SurvivalId, string> = { drifter: 'Easy', prospector: 'Normal', raider: 'Hard' };
 
 export class StartOptions {
-  /** `saved`: the survival mode of the journey the title would carry on, if there is one: it keeps its own whatever is picked. */
-  constructor(private readonly profile: Profile, private readonly onChange: () => void, private readonly saved: () => SurvivalId | null = () => null) {
+  constructor(private readonly profile: Profile, private readonly onChange: () => void) {
     $('logbook-x').addEventListener('click', () => this.logbook(false));
     $('logbook').addEventListener('pointerdown', (e) => e.stopPropagation());
     this.render();
@@ -232,7 +231,7 @@ export class StartOptions {
     const mods = $('mods');
     const K = SURVIVAL[p.survival];
     mods.replaceChildren(...SURVIVALS.map((m) => {
-      const b = h('button', 'dif', '', h('b', 'df-t', t(m.name)), h('span', 'df-s', t(LEVEL[m.id]))) as HTMLButtonElement;
+      const b = h('button', 'st-row dif', '', h('span', 'st-t', t(m.name)), h('span', 'st-s', t(LEVEL[m.id]))) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('role', 'radio');
       b.setAttribute('aria-checked', String(p.survival === m.id));
@@ -255,10 +254,6 @@ export class StartOptions {
       h('span', 'sv-c', '', h('em', '', t('Wrecks')), pips(K.scale.wrecks, '')),
     );
     $('sv-rule').textContent = t('Wrecked? You drift on, hold and Krail gone. {n} wrecks in one region and you fly it again.', { n: K.voyage.wrecks });
-    // a journey in progress keeps the mode it began in: say so when the pick differs
-    const kept = this.saved();
-    $('sv-keep').hidden = !kept || kept === p.survival;
-    if (kept) $('sv-keep').textContent = t('Your journey in progress stays {mode}. This is for the next new one.', { mode: t(SURVIVAL[kept].name) });
     // the language: English or German, remembered
     $('lang').replaceChildren(...LANGS.map((l) => {
       const b = h('button', '', LANG_NAME[l]) as HTMLButtonElement;
