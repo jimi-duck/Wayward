@@ -103,21 +103,23 @@ The Drive plasma vent used to lay soft pink patches that bloomed over the ship a
 
 ## Title screen list
 
-The title is a left-aligned list on the art (`title.css`): the wordmark with
-"Keep moving" top left, then Continue (when a journey is saved), New journey,
-Arcade mode, Archive and Settings as bare rows with a hairline down their left
-edge. The picked row gets a muted bar, bright at its left edge and fading
-right, and a chevron; it uses the shared `--gl-blue-*` tokens, so a palette
-change reaches it. Top right, two glass cards (`.glass`, from `hud.css`) show
-the saved ship's Fuel and Food bars and stock, and the current journey with
-its next stop. They sit above the Wayward in the art so her bow stays clear.
+The title is a left-aligned list on the art (`title.css`): the yellow mark and
+wordmark with "Keep moving" top left, two quiet lines under them (the journey's
+region and day, the next stop) when a journey is saved, then Continue (when
+saved), New journey, Arcade mode and Settings as bare rows with a hairline down
+their left edge. The picked row gets a muted bar and chevron from the shared
+`--gl-blue-*` tokens, so a palette change reaches it. The logo keeps the brand
+yellow.
 
-- Difficulty is a step after Arcade or New journey, Normal pre-picked, with
-  Begin and Back under it. Nothing starts from a tap on the picture.
+- Difficulty is a step after Arcade or New journey. Choosing a row starts the
+  game; there is no Begin. The preview (line, pips, wreck rule) follows the
+  hover or focus and settles on the saved pick.
+- Settings holds sound, buzz, language, and Export and Import save.
+- The Archive left the title; it opens from the pause card in Story.
 - Up and Down walk the rows, Enter presses, Esc or Backspace goes back.
-- Phones (short windows) hide the cards; the Continue row carries the line.
+- Phones (short windows) get 40px rows, and the
+  difficulty preview is dropped (touch has no hover).
 - The version line is the build date (`__BUILD__`, set in `vite.config.ts`).
-- A plate with a `filter` hides the art from its own backdrop-filter, so the
-  glow is a shadow, never a drop-shadow.
-- Contrast is measured on the rendered pixels (the audit in
-  `/mnt/project-files/start-redesign/aa/`).
+- Text sits on dark scrims, measured on the rendered pixels (the audit in
+  `/mnt/project-files/start-redesign/aa/`); AA holds at 1440x900 and 667x375,
+  in English and German.

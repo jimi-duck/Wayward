@@ -210,7 +210,7 @@ export class SummaryPanel {
 const LEVEL: Record<SurvivalId, string> = { drifter: 'Easy', prospector: 'Normal', raider: 'Hard' };
 
 export class StartOptions {
-  constructor(private readonly profile: Profile, private readonly onChange: () => void) {
+  constructor(private readonly profile: Profile, private readonly onChange: () => void, private readonly onPick: () => void) {
     $('logbook-x').addEventListener('click', () => this.logbook(false));
     $('logbook').addEventListener('pointerdown', (e) => e.stopPropagation());
     this.render();
@@ -229,7 +229,6 @@ export class StartOptions {
     }
     // the survival mode: Drifter, Prospector or Raider, with what the one picked means and how it differs, written under it
     const mods = $('mods');
-    const K = SURVIVAL[p.survival];
     mods.replaceChildren(...SURVIVALS.map((m) => {
       const b = h('button', 'st-row dif', '', h('span', 'st-t', t(m.name)), h('span', 'st-s', t(LEVEL[m.id]))) as HTMLButtonElement;
       b.type = 'button';
@@ -238,22 +237,21 @@ export class StartOptions {
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (p.survival === m.id) return;
-        p.survival = m.id;
-        this.render();
-        this.onChange();
+        if (p.survival !== m.id) {
+          p.survival = m.id;
+          this.render();
+          this.onChange();
+        }
+        // choosing a difficulty is the way in: the game starts on it
+        this.onPick();
       });
+      // what a row means shows while it is under the pointer or the focus, and settles back on the pick when they leave
+      b.addEventListener('pointerenter', () => this.preview(m.id));
+      b.addEventListener('focus', () => this.preview(m.id));
       return b;
     }));
-    $('sv-t').textContent = t(K.tag);
-    $('diff-s').textContent = t(K.text);
-    const pips = (n: number, cls: string) => h('i', cls, '', ...[1, 2, 3].map((k) => h('s', k <= n ? 'on' : '')));
-    $('sv-scale').replaceChildren(
-      h('span', 'sv-c sky', '', h('em', '', t('Skies')), pips(K.scale.sky, 'sky')),
-      h('span', 'sv-c', '', h('em', '', t('Mining')), pips(K.scale.mining, '')),
-      h('span', 'sv-c', '', h('em', '', t('Wrecks')), pips(K.scale.wrecks, '')),
-    );
-    $('sv-rule').textContent = t('Wrecked? You drift on, hold and Krail gone. {n} wrecks in one region and you fly it again.', { n: K.voyage.wrecks });
+    mods.onpointerleave = () => this.preview(p.survival);
+    this.preview(p.survival);
     // the language: English or German, remembered
     $('lang').replaceChildren(...LANGS.map((l) => {
       const b = h('button', '', LANG_NAME[l]) as HTMLButtonElement;
@@ -277,6 +275,20 @@ export class StartOptions {
         paint.append(b);
       }
     }
+  }
+
+  /** The difficulty's preview: its line, the three pips and, in Story, what a wreck costs. */
+  private preview(id: SurvivalId): void {
+    const K = SURVIVAL[id];
+    $('sv-t').textContent = t(K.tag);
+    $('diff-s').textContent = t(K.text);
+    const pips = (n: number, cls: string) => h('i', cls, '', ...[1, 2, 3].map((k) => h('s', k <= n ? 'on' : '')));
+    $('sv-scale').replaceChildren(
+      h('span', 'sv-c sky', '', h('em', '', t('Skies')), pips(K.scale.sky, 'sky')),
+      h('span', 'sv-c', '', h('em', '', t('Mining')), pips(K.scale.mining, '')),
+      h('span', 'sv-c', '', h('em', '', t('Wrecks')), pips(K.scale.wrecks, '')),
+    );
+    $('sv-rule').textContent = t('Wrecked? You drift on, hold and Krail gone. {n} wrecks in one region and you fly it again.', { n: K.voyage.wrecks });
   }
 
   logbook(on: boolean): void {

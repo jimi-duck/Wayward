@@ -15,7 +15,6 @@ import { FEATURES } from './content/features';
 import { SURVIVAL } from './content/survival';
 import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { regionsOf, routeBetween, sysById } from './sim/chart';
-import { FOOD_MAX, TANK_MAX } from './sim/breakout';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
 import { Cutscene } from './ui/adrift';
@@ -141,12 +140,6 @@ function boot(review: typeof import('./review') | null): void {
   // The title offers two ways to play, Arcade picked whenever the game opens;
   // Story mode carries on a saved journey, with a fresh one a click below.
   let pick: 'arcade' | 'breakout' = 'arcade';
-  /** Where a saved journey would carry on, in one line: the day, the system, the lane plotted, the wrecks. */
-  const resumeLine = (j: Journey) => {
-    const day = t('Day {n}', { n: Math.floor(j.day) + 1 });
-    if (pending(j)) return `${day} · ${t('through the Threshold · the file is still aboard')}`;
-    return [day, t(SURVIVAL[j.survival].name), j.dest ? `${here(j).name} → ${sysById(j.chart, j.dest).name}` : here(j).name].join(' · ');
-  };
   /** The title is a plain list; Arcade and New journey lead to one step more (the difficulty, Normal ready), Settings to another. */
   type Step = 'menu' | 'diff' | 'set';
   let step: Step = 'menu';
@@ -159,8 +152,7 @@ function boot(review: typeof import('./review') | null): void {
     el('st-set').hidden = step !== 'set';
     // the chapter's recap and the save notes belong to the list, not to a step
     for (const id of ['recap', 'chapter', 'save-problem', 'restore']) el(id).classList.toggle('st-quiet', step !== 'menu');
-    el('st-ship').classList.toggle('st-quiet', step === 'set');
-    el('st-trip').classList.toggle('st-quiet', step === 'set');
+    el('st-trip').classList.toggle('st-quiet', step !== 'menu');
   };
   const showStep = (to: Step, focus = true) => {
     step = to;
@@ -170,62 +162,30 @@ function boot(review: typeof import('./review') | null): void {
     const first = to === 'diff' ? document.querySelector<HTMLElement>('#mods .dif[aria-checked="true"]') : rows()[0];
     (first ?? rows()[0])?.focus({ preventScroll: true });
   };
-  const paintLaunch = () => {
-    const live = liveJourney();
-    const what = `${t(pick === 'arcade' ? 'Arcade' : 'Story')} · ${t(SURVIVAL[profile.survival].name)}`;
-    el('launch-t').textContent = t('Begin');
-    el('launch-s').textContent = what;
-    // a New journey over a saved one: say so before it is begun, never after
+  /** A New journey over a saved one: say so before it is begun, never after. */
+  const paintWarn = () => {
     const warn = el('sv-keep');
-    warn.hidden = !(pick === 'breakout' && live);
+    warn.hidden = !(pick === 'breakout' && liveJourney());
     warn.textContent = t('This replaces your saved journey.');
   };
-  /** The ship's stocks and where the journey stands, from the save: the right-hand panels. */
+  /** Where the journey stands, in two quiet lines under the word: the region and day, then the next stop. */
   const paintJourney = (live: Journey | null) => {
-    const ship = el('st-ship'), trip = el('st-trip');
-    ship.hidden = trip.hidden = !live;
+    const trip = el('st-trip');
+    trip.hidden = !live;
     if (!live) return;
-    const c = live.carry;
-    const bar = (label: string, v: number, max: number) => {
-      const row = document.createElement('div');
-      row.className = 'sx-bar';
-      const k = Object.assign(document.createElement('span'), { className: 'k', textContent: t(label) });
-      const m = document.createElement('i');
-      m.className = 'ticks';
-      m.style.setProperty('--v', String(Math.max(0, Math.min(1, v / max))));
-      m.style.setProperty('--n', '12');
-      m.style.setProperty('--on', 'var(--cy)');
-      m.style.setProperty('--off', 'rgba(124, 226, 234, .14)');
-      row.append(k, m, Object.assign(document.createElement('b'), { textContent: `${Math.round(v)}/${max}` }));
-      return row;
-    };
-    const stock = document.createElement('div');
-    stock.className = 'sx-stock';
-    for (const [label, n] of [['Parts', c.parts], ['Chits', c.chits], ['Krail', c.krail], ['Ore', c.ore]] as const) {
-      stock.append(Object.assign(document.createElement('span'), { textContent: `${t(label)} ${Math.floor(n)}` }));
-    }
-    ship.replaceChildren(bar('Fuel', c.cyrite, TANK_MAX), bar('Food', c.food, FOOD_MAX), stock);
     const at = here(live), rn = regionName(live.chart, live.at);
-    const head = Object.assign(document.createElement('span'), { className: 'st-k', textContent: t('Current journey') });
-    const line = document.createElement('span');
-    line.className = 'sx-line';
-    const art = document.createElement('i');
-    art.className = 'sx-art';
-    art.setAttribute('aria-hidden', 'true');
-    const txt = document.createElement('span');
-    txt.append(Object.assign(document.createElement('b'), { textContent: rn || at.name }), Object.assign(document.createElement('em'), { textContent: t('Day {n}', { n: Math.floor(live.day) + 1 }) + ' · ' + t(SURVIVAL[live.survival].name) }));
-    line.append(art, txt);
-    const next = document.createElement('span');
-    next.className = 'sx-next';
     const dest = live.dest ? sysById(live.chart, live.dest) : null;
     const lane = dest ? routeBetween(live.chart, live.at, dest.id) : null;
-    next.append(
-      Object.assign(document.createElement('span'), { className: 'st-k', textContent: t('Next stop') }),
-      Object.assign(document.createElement('b'), { textContent: dest ? dest.name : at.name }),
-      Object.assign(document.createElement('em'), { textContent: lane ? `${plural(lane.days, '{n} day', '{n} days')} · ${lane.cyrite} ${t('Cyrite')}` : t('Plot the next jump') }),
+    const line = (k: string, v: string) => {
+      const row = document.createElement('span');
+      row.className = 'st-tl';
+      row.append(Object.assign(document.createElement('i'), { textContent: k }), Object.assign(document.createElement('b'), { textContent: v }));
+      return row;
+    };
+    trip.replaceChildren(
+      line(t('Current journey'), `${rn || at.name} · ${t('Day {n}', { n: Math.floor(live.day) + 1 })}`),
+      line(t('Next stop'), dest ? `${dest.name}${lane ? ` · ${plural(lane.days, '{n} day', '{n} days')}` : ''}` : t('Plot the next jump')),
     );
-    trip.replaceChildren(head, line, next);
-    trip.setAttribute('aria-label', t('Current journey'));
   };
   const showResume = () => {
     const live = liveJourney();
@@ -233,7 +193,6 @@ function boot(review: typeof import('./review') | null): void {
     el('sv-rule').hidden = pick !== 'breakout';
     // a saved journey is the first row of the list, and the panels on the right
     el('m-continue').hidden = !live;
-    if (live) el('cont-s').textContent = resumeLine(live);
     paintStep();
     paintJourney(live);
     // the chapter just begun, and the way back to its gate (not in Hardcore, where nothing is taken back)
@@ -248,7 +207,7 @@ function boot(review: typeof import('./review') | null): void {
     }
     const snap = j && !j.hardcore ? chapterSave() : null;
     el('chapter').hidden = !snap || !j || snap.day >= j.day;
-    paintLaunch();
+    paintWarn();
     paintSwitches();
     // a save that could not be read is said so, with the safety copy on offer if there is one
     const bad = saveUnreadable() && !journey;
@@ -272,7 +231,8 @@ function boot(review: typeof import('./review') | null): void {
     const btn = (label: string, f: () => void) => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.textContent = t(label);
+      b.className = 'st-row';
+      b.append(Object.assign(document.createElement('span'), { className: 'st-t', textContent: t(label) }));
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => { e.stopPropagation(); f(); });
       return b;
@@ -404,7 +364,7 @@ function boot(review: typeof import('./review') | null): void {
     if (!started) world.restart({ survival: profile.survival, mode: profile.mode });
     showBrief();
     showResume();
-  });
+  }, () => launch(pick));
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
   const stops = () => {
@@ -678,14 +638,11 @@ function boot(review: typeof import('./review') | null): void {
   press('m-continue', () => launch('breakout', true));
   press('m-journey', () => { pick = 'breakout'; showStep('diff'); });
   press('m-arcade', () => { pick = 'arcade'; showStep('diff'); });
-  press('m-archive', () => startOpts.logbook(true));
   press('m-settings', () => showStep('set'));
   press('d-back', () => showStep('menu'));
   press('s-back', () => showStep('menu'));
-  press('launch', () => launch(pick));
   press('s-sound', () => { feel.setSound(!feel.prefs.sound); paintSwitches(); showBrief(); });
   press('s-buzz', () => { feel.setHaptics(!feel.prefs.haptics); paintSwitches(); showBrief(); });
-  press('st-trip', () => launch('breakout', true));
   press('chapter', () => { const j = restartChapter(); if (j) { journey = j; showResume(); } });
   press('restore', () => { const j = restoreJourney(); if (j) { journey = j; showResume(); } });
   // the pointer moves the highlight the way the arrows do
@@ -715,6 +672,7 @@ function boot(review: typeof import('./review') | null): void {
       if ((e.code === 'Enter' || e.code === 'Space') && !(e.target instanceof HTMLButtonElement)) menuEnter();
       return;
     }
+    if (startOpts.logbookOpen) { if (e.code === 'Escape') startOpts.logbook(false); return; }
     if (panelOpen()) return;
     if (e.code === 'Tab') e.preventDefault();
     // Any key resumes, except the pause keys themselves: Input has already
@@ -756,6 +714,8 @@ function boot(review: typeof import('./review') | null): void {
     el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
   };
   act('p-set', () => showSettings(true));
+  // the Archive, once the title's list: from the pause card, over it
+  act('p-arch', () => startOpts.logbook(true));
   act('p-back', () => showSettings(false));
   act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
   act('p-buzz', () => { feel.setHaptics(!feel.prefs.haptics); showBrief(); });
