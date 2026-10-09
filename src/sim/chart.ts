@@ -77,6 +77,19 @@ export interface Place {
   reward: Reward;
 }
 
+/** What is going on in a system (content/situations.ts): which, whether you know of it, and how it ended. */
+export interface Sit {
+  id: string;
+  seen: boolean;
+  done: boolean;
+  /** Promised on the alien thread's timetable (or a guaranteed beat), not rolled. */
+  arc?: boolean;
+  result?: 'won' | 'lost' | 'declined' | 'ignored';
+}
+
+/** Prices round a region move for a while after a delivery was missed or a convoy lost. */
+export interface Market { region: number; until: number; mult: Partial<Prices> }
+
 export interface Chart {
   systems: StarSystem[];
   routes: Route[];
@@ -94,6 +107,9 @@ export interface Chart {
   seenDay: number;
   /** The places, by system. */
   places: Record<string, Place>;
+  /** What is going on, by system (sim/situations.ts), and the prices it has moved. Absent in a save from before them. */
+  situations?: Record<string, Sit>;
+  market?: Market[];
   /** What the factions are doing on their own (sim/scatter.ts): Drift fleets on the move, Thren by system, Gutter raids (days left). Absent in a save from before them. */
   drifts?: Fleet[];
   thren?: Record<string, number>;
@@ -277,7 +293,10 @@ export function placeAt(c: Chart, id: string): Place | null {
 
 /** Bring the places within `n` jumps of a system onto the chart. */
 export function sightPlaces(c: Chart, id: string, n: number): void {
-  for (const s of c.systems) { const p = c.places[s.id]; if (p && jumps(c, id, s.id) <= n) p.seen = true; }
+  for (const s of c.systems) {
+    const p = c.places[s.id], q = c.situations?.[s.id];
+    if ((p || q) && jumps(c, id, s.id) <= n) { if (p) p.seen = true; if (q) q.seen = true; }
+  }
 }
 
 /**
@@ -379,9 +398,13 @@ export function pricesAt(c: Chart, id: string): Prices | null {
   const s = sysById(c, id);
   if (!s.port) return null;
   const net = netted(c, id), raid = (c.raid?.[id] ?? 0) > 0;
-  if (!net && !raid) return s.port.prices;
+  const moved = (c.market ?? []).filter((m) => m.region === regionOf(s) && m.until > c.seenDay);
+  if (!net && !raid && !moved.length) return s.port.prices;
   const p = { ...s.port.prices };
-  const marks: Array<[keyof Prices, number]> = [...(net ? Object.entries(NET_MARKUP) as Array<[keyof Prices, number]> : []), ...(raid ? [['cyrite', RAID_MARKUP], ['food', RAID_MARKUP]] as Array<[keyof Prices, number]> : [])];
+  const marks: Array<[keyof Prices, number]> = [
+    ...(net ? Object.entries(NET_MARKUP) as Array<[keyof Prices, number]> : []), ...(raid ? [['cyrite', RAID_MARKUP], ['food', RAID_MARKUP]] as Array<[keyof Prices, number]> : []),
+    ...moved.flatMap((m) => Object.entries(m.mult) as Array<[keyof Prices, number]>),
+  ];
   for (const [k, m] of marks) {
     const v = p[k] * m;
     p[k] = k === 'ore' || k === 'cyrite' || k === 'food' ? Math.max(1, Math.round(v)) : Math.round(v / 5) * 5;

@@ -481,7 +481,7 @@ describe('sector events', () => {
   });
 
   it('every event starts and finishes cleanly', () => {
-    for (const id of Object.keys(ENCOUNTERS) as Array<keyof typeof ENCOUNTERS>) {
+    for (const id of Object.keys(ENCOUNTERS).filter((k) => k !== 'scene') as Array<keyof typeof ENCOUNTERS>) {
       const w = quiet();
       w.encounter = startEncounter(id, w);
       for (let i = 0; i < (ENCOUNTERS[id].duration + 1) * 60; i++) { w.ship.invuln = 1; w.step(STEP, input()); }

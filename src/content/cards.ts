@@ -1,6 +1,7 @@
 import type { CardDef } from '../sim/comms';
 import { CALLOWAY_FACE, OFFERS } from './calloway';
 import { STORY_CARDS } from './story';
+import { SCENE_CARDS } from './situationCards';
 
 // ── comms cards ───────────────────────────────────────────────────────────
 // Everyone who opens a channel to the Wayward in the home system. A card is
@@ -938,4 +939,7 @@ export const CARDS: CardDef[] = [
 
   // the story beats, one a sortie through the Run (content/story.ts)
   ...STORY_CARDS,
+
+  // what is going on in a system: the calls situations make (content/situations.ts)
+  ...SCENE_CARDS,
 ];

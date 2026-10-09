@@ -62,7 +62,33 @@ type Tactic = 'dogfight' | 'ram' | 'hunt' | 'broadside' | 'snipe' | 'grind' | 'a
 type Fire = 'fan' | 'burst' | 'plasma' | 'lead' | 'beam' | 'none';
 export type Mode =
   | 'approach' | 'setup' | 'run' | 'extend' | 'line' | 'hold' | 'cover' | 'peek' | 'seek' | 'spin' | 'leave' | 'cross'
-  | 'patrol' | 'watch' | 'brawl';
+  | 'patrol' | 'watch' | 'brawl' | 'drift';
+
+/**
+ * A hull that is not here to fight (sim/stage.ts): traffic, visitors, the unknown. It moves on a script
+ * of its own and fires at nobody; what turns it on the ship is its temper, never a timer.
+ *
+ *   meek        never turns on you; runs if shot
+ *   wary        turns on you only if shot
+ *   territorial turns on you if you come inside its guard ring (after a warning), or shoot
+ *   drawn       comes to the Cyrite you carry, close but never at you; turns only if shot
+ *   hostile     an ordinary hostile: the ward ends and it commits
+ */
+export type Temper = 'meek' | 'wary' | 'territorial' | 'drawn' | 'hostile';
+/** What it does while it is a ward: crosses the sector, circles the ship, sits where it is, trails the ship, leads the ship on. */
+export type WardAct = 'pass' | 'orbit' | 'hold' | 'follow' | 'lead';
+
+export interface Ward {
+  act: WardAct;
+  temper: Temper;
+  /** Where it holds, circles about or heads for (`hold`, `pass`): the scene's centre, or a point far off. */
+  hx: number; hz: number;
+  /** Its guard ring (territorial) and the standoff it keeps (orbit, follow). */
+  ring: number;
+  /** A warning has been given, and when (seconds into the sortie); the actor's name in the scene. */
+  warned: number;
+  tag: string;
+}
 
 const V = PX * HZ; // the original's px/frame → units/second
 
@@ -290,6 +316,8 @@ export interface Alien {
   xp: number;
   /** How it closes on the ship before it fights (sim/pacing.ts). */
   approach: Approach;
+  /** Not a fighter, for now (see Ward). */
+  ward?: Ward;
 }
 
 export interface Shot {
@@ -573,6 +601,7 @@ function commit(al: Alien, events: GameEvent[]): void {
 
 /** Somebody else's fight, noticed by the ship: a fighter turns on it, a hauler runs. */
 export function provoke(al: Alien, events: GameEvent[]): void {
+  if (al.ward) delete al.ward;
   if (ALIEN_TYPES[al.kind].tactic === 'cross') leave(al);
   else commit(al, events);
 }
@@ -599,7 +628,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
   if (al.mark > 0) al.mark = Math.max(0, al.mark - dt);
   if (al.bumpT > 0) al.bumpT = Math.max(0, al.bumpT - dt);
   if (al.roll >= 0 && (al.roll += dt) >= JINK_ROLL) al.roll = -1;
-  if (T.ttl > 0 && !al.fleeing && (al.ttl -= dt) <= 0) leave(al);
+  if (T.ttl > 0 && !al.fleeing && !al.ward && (al.ttl -= dt) <= 0) leave(al);
   const regen = al.elite ? ELITES[al.elite].regen : 0;
   if (regen && al.calm > 2 && al.hp < al.maxHp) al.hp = Math.min(al.maxHp, al.hp + al.maxHp * regen * dt);
   if (al.canCloak) {
@@ -677,6 +706,11 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
 
     case 'leave':
       steer(al, al.x - ux * 100, 4, al.z - uz * 100, dash, acc, dt);
+      break;
+
+    // a ward's script (sim/stage.ts sets the goal each step): on to the point, at its own pace, whatever the ship does
+    case 'drift':
+      steer(al, al.ax, al.cruiseY, al.az, speed * 0.9, acc, dt, 8);
       break;
 
     // the convoy: across the sector on its own heading, whatever you do
@@ -811,7 +845,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
 /** Fire when the type's way of fighting says so and the cooldown is up. */
 export function alienFire(al: Alien, s: ShipState, t: number, shots: Shot[], bulwarks: readonly Bulwark[], rng: Rng, events: GameEvent[], p: Pressure = pressure(t)): void {
   const T = ALIEN_TYPES[al.kind];
-  if (T.fire === 'none' || al.fleeing || al.mode === 'approach' || al.mode === 'patrol' || al.mode === 'watch' || al.mode === 'brawl' || t < al.nextShot) return;
+  if (T.fire === 'none' || al.fleeing || al.mode === 'approach' || al.mode === 'patrol' || al.mode === 'watch' || al.mode === 'brawl' || al.mode === 'drift' || al.ward || t < al.nextShot) return;
   // a cloaked hull decloaks before it fires: the shimmer is the warning
   if (al.cloak > 0.25) { al.nextShot = t + 0.1; return; }
   const dx = s.x - al.x, dz = s.z - al.z, d = Math.hypot(dx, dz);

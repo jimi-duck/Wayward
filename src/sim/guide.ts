@@ -66,7 +66,7 @@ export function guideTarget(world: World): Guide | null {
   const places = world.seenPlaces();
   const lane = places.find((p) => p.kind === 'lane'), port = places.find((p) => p.kind === 'port');
   const busy = !!bk && (bk.spool > 0 || bk.dockT > 0 || bk.jumpT >= 0);
-  if (e && !e.done && e.r > 0 && !busy) return { kind: 'event', name: ENCOUNTERS[e.id].name, x: e.x, z: e.z, r: e.r };
+  if (e && !e.done && e.r > 0 && !busy) return { kind: 'event', name: e.label ?? e.place ?? ENCOUNTERS[e.id].name, x: e.x, z: e.z, r: e.r };
   if (bk) {
     if (bk.dockT > 0 && port) return { kind: 'port', name: port.name, x: port.x, z: port.z, r: port.r };
     if (lane) return { kind: 'lane', name: lane.name, x: lane.x, z: lane.z, r: lane.r };
@@ -89,7 +89,7 @@ export function threats(world: World, max = 8): Threat[] {
     const f = fix(s.x, s.z, s.heading, a.x, a.z);
     if (f.dist > GUIDE_RANGE) continue;
     const T = ALIEN_TYPES[a.kind];
-    const friendly = a.kind === 'freighter';
+    const friendly = a.kind === 'freighter' || !!a.ward;
     const armed = !friendly && T.fire !== 'none' && !a.fleeing;
     const near = 1 - f.dist / GUIDE_RANGE;
     const blind = Math.abs(f.rel) > BEHIND ? 0.25 : Math.abs(f.rel) > Math.PI / 3 ? 0.12 : 0;
@@ -106,7 +106,7 @@ export function inFight(world: World): boolean {
   const s = world.ship, b = world.command.boss;
   if (b && !b.arriving && !b.leaving && b.cloak < 0.5 && Math.hypot(b.x - s.x, b.z - s.z) < FIGHT_RANGE * 2) return true;
   for (const a of world.aliens) {
-    if (cloaked(a) || a.fleeing || ALIEN_TYPES[a.kind].fire === 'none') continue;
+    if (cloaked(a) || a.fleeing || a.ward || ALIEN_TYPES[a.kind].fire === 'none') continue;
     if (Math.hypot(a.x - s.x, a.z - s.z) < FIGHT_RANGE) return true;
   }
   return false;

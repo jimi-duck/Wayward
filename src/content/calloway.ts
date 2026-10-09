@@ -34,12 +34,13 @@ export const TRICKS: Record<string, Trick> = {
   'drift_fleet:trail': 'fleet',
   'offer_tank:lie': 'lie',
   'offer_home:think': 'lie',
+  'offer_passage:lie': 'lie',
   'calloway_last:bluff': 'bluff',
   'calloway_last:dark': 'dark',
 };
 
 /** Answers that told her the truth, or met her halfway: what trust is made of. */
-export const TOLD = new Set(['calloway:answer', 'calloway_word:ask', 'offer_home:answer', 'offer_meet:accept']);
+export const TOLD = new Set(['calloway:answer', 'calloway_word:ask', 'offer_home:answer', 'offer_meet:accept', 'offer_info:tell']);
 
 /** Each time she has seen a trick, its odds fall by this much. A spoof works less well the second time. */
 export const LEARN = 0.15;
@@ -131,6 +132,42 @@ export const OFFERS: CardDef[] = [
       { id: 'accept', label: 'Give her your word', tone: 'help', hint: 'Custody and Office ease off. Kill one later and she’ll know.',
         win: { text: 'Your word, and hers · the bulletins come down', notice: { custody: -8, office: -6 } } },
       { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'They shoot first.', win: { text: '“Then I will keep writing letters.”' } },
+    ],
+  }),
+  offer({
+    id: 'offer_info', from: 'Prefect Idris Calloway · Office of Peace', title: 'What did you see?',
+    text: '“The Office logs things it cannot name. You have been closer than anyone. What did you see? I will trade what we know.”',
+    choices: [
+      { id: 'tell', label: 'Tell her what you saw', tone: 'help', hint: 'The Office’s maps of the Net’s edge. She learns what you know.', win: { text: 'She listens · and sends her maps of the Net’s edge', flag: ['news', 'calloway_curious'], score: 400, hunt: -0.5 } },
+      { id: 'sell', label: 'Sell her one piece', tone: 'trade', hint: 'Forty chits for one thing you saw. She does not get all of it.', win: { text: 'Forty chits · she knows less than she thinks', chits: 40 } },
+      { id: 'refuse', label: 'Say nothing', tone: 'refuse', hint: 'What you saw is yours.', win: { text: '“Then we both guess.”' } },
+    ],
+  }),
+  offer({
+    id: 'offer_shelter', from: 'Prefect Idris Calloway · Office of Peace', title: 'Come alongside',
+    text: '“Your hull is a mess. A tender can have you whole by the next watch. I will not board. My word.”',
+    choices: [
+      { id: 'accept', label: 'Let the tender in', tone: 'trade', hint: 'Two plates mended. The Custody is called off for now. She knows where you are.', win: { text: 'Two plates mended · her fleet stands off', plates: 2, notice: { custody: -4 }, hunt: -1 } },
+      { id: 'refuse', label: 'Wave the tender off', tone: 'refuse', hint: 'You will mend her yourself.', win: { text: '“Then be careful with that hull.”' } },
+    ],
+  }),
+  offer({
+    id: 'offer_passage', from: 'Prefect Idris Calloway · Office of Peace', title: 'A clean transit stamp',
+    text: '“Net checkpoints ahead. I can stamp you through the next. My name on the permit. I only need to know your exit.”',
+    choices: [
+      { id: 'accept', label: 'Take the permit', tone: 'trade', hint: 'The Net holds off here for four days. She knows your exit.', win: { text: 'Stamped · the checkpoints wave you on', stall: 4, hunt: -1.5, flag: 'permit' } },
+      { id: 'lie', label: 'Take it, name a false exit', tone: 'bluff', hint: 'The permit and the wrong lane. If you have lied before, she checks.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
+        win: { text: 'Stamped · she turns for the wrong exit', stall: 4, hunt: 0.5, flag: 'permit' },
+        lose: { text: '“That is not an exit.” · the permit is void', hunt: -1 } },
+      { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'You will find your own way.', win: { text: '“Then the checkpoints are yours.”' } },
+    ],
+  }),
+  offer({
+    id: 'offer_identity', from: 'Prefect Idris Calloway · Office of Peace', title: 'A name that is not yours',
+    text: '“A transponder under another name. Clean history, no Custody notice. In return, you owe me one answer, when I ask.”',
+    choices: [
+      { id: 'accept', label: 'Take the name', tone: 'trade', hint: 'Custody and Office forget you for a while. You owe her an answer.', win: { text: 'A new name · the bulletins go quiet', notice: { custody: -10, office: -8 }, hunt: -1, flag: 'owes_calloway' } },
+      { id: 'refuse', label: 'Keep your own', tone: 'refuse', hint: 'It is the only one that is true.', win: { text: '“It is also the one they hunt.”' } },
     ],
   }),
   offer({

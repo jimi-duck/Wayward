@@ -1,3 +1,4 @@
+import { OBSERVATIONS } from '../content/situations';
 import { t } from '../i18n';
 import { ENDING_BY_ID, ENDINGS, FRIEND, SCATTER, type EndingDef, type EndingId, type Need } from '../content/endings';
 import { CAPTAIN_BY_ID } from './captains';
@@ -112,6 +113,8 @@ export interface JourneyRecord {
   file: string | null;
   /** The pieces of the Severance's history found (content/story.ts), by flag. */
   records: string[];
+  /** What was seen of the unknown, by flag (content/situations.ts). */
+  sightings?: string[];
 }
 
 export function journeyRecord(j: Journey): JourneyRecord {
@@ -133,5 +136,6 @@ export function journeyRecord(j: Journey): JourneyRecord {
     seed: j.seed, end: j.end ?? 'wrecked', ending, days: Math.round(j.day), jumps: j.legs.filter((l) => l.ended === 'jumped').length,
     wrecks: j.wrecks, score: j.score, hardcore: j.hardcore, people, file: ending ? ENDING_BY_ID[ending].file : null,
     records: fragmentsFound(f),
+    sightings: OBSERVATIONS.map((o) => o.flag).filter((x) => f.has(x)),
   };
 }

@@ -89,7 +89,7 @@ type Hint = [string, string];
 
 const SECTOR_NAME: Record<EncounterId, string> = {
   rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
-  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish',
+  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish', scene: 'Situation',
 };
 
 export class Hud {
@@ -374,15 +374,19 @@ export class Hud {
     // the contacts beside the scope: the two places, the nearest hostile, the nearest Cyrite trace
     const s = world.ship, dist = (o: { x: number; z: number }) => Math.hypot(o.x - s.x, o.z - s.z);
     let hostile: { label: string; d: number; faction: string } | null = null;
+    let visitor: { label: string; d: number } | null = null;
     for (const a of world.aliens) {
       if (cloaked(a)) continue;
       const d = dist(a);
+      // a ward is a contact, not a hostile: its own name, in teal
+      if (a.ward) { if (!visitor || d < visitor.d) visitor = { label: t(a.ward.tag), d }; continue; }
       if (!hostile || d < hostile.d) hostile = { label: t(alienLabel(a)), d, faction: a.faction };
     }
     let trace = Infinity;
     for (const r of world.field.rocks) if (r.kind === 'rich') trace = Math.min(trace, dist(r));
     const rows: Array<[string, number, string]> = [];
     if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
+    if (visitor && visitor.d < 400) rows.push([visitor.label, visitor.d, INK.teal]);
     if (b.port) rows.push([b.port.name, dist(b.port), INK.teal]);
     rows.push([t(b.lane.name), dist(b.lane), 'var(--amber)']);
     if (trace < Infinity) rows.push([t('Cyrite trace'), trace, 'var(--violet)']);
@@ -618,6 +622,13 @@ export class Hud {
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         text($('obj-s'), `Cyrite ${world.cyrite}/${bk.jumpCost} · ${t(world.cyrite >= bk.jumpCost ? 'enough to jump' : 'cut the violet rock')}`);
       }
+    } else if (e && !e.done && e.id === 'scene' && world.stage) {
+      // a situation's goal: the line the call took on, the time left, and where it stands
+      const st = world.stage, d = Math.hypot(e.x - world.ship.x, e.z - world.ship.z);
+      text($('obj-t'), st.line);
+      text($('obj-left'), st.left > 0 ? `${Math.ceil(st.left)}s` : '');
+      ticks($('obj-p'), e.progress, 30);
+      text($('obj-s'), st.def.goal.kind === 'follow' ? t(d < e.r ? 'Staying with it' : 'Catch up with it') : d < e.r ? t(st.ready ? 'Holding' : st.def.goal.give ? 'Not enough aboard' : 'Hold still') : `${e.label} · ${range(d)}`);
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
       const left = Math.max(0, Math.ceil(e.dur - e.t));

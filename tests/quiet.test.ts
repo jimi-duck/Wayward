@@ -30,7 +30,7 @@ function fly(j: Journey, seconds: number) {
   let hostiles = 0, stopped = 0;
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     w.step(STEP, idle);
-    hostiles = Math.max(hostiles, w.aliens.length);
+    hostiles = Math.max(hostiles, w.aliens.filter((a) => !a.ward).length);
     if (w.phase === 'comms') { stopped++; for (const c of w.comms!.choices) if (w.answer(c.id)) break; } else if (w.phase === 'hail') { stopped++; w.answerHail(false); }
   }
   return { hostiles, stopped, heat: w.commsCtx().heat };

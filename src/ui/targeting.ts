@@ -320,8 +320,8 @@ export class Targeting {
     if (live) {
       // the objective first: it must never be crowded out
       const e = world.encounter;
-      if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy')) {
-        put(e.x, 0.5, e.z, 'm dia obj', `${tr(ENCOUNTERS[e.id].name)} · ${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
+      if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy' || e.id === 'scene')) {
+        put(e.x, 0.5, e.z, 'm dia obj', `${tr(e.label ?? ENCOUNTERS[e.id].name)} · ${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
       }
       // the Breakout's two places, when they are in view
       if (world.bk) {
@@ -374,7 +374,7 @@ export class Targeting {
     const e = world.encounter;
     const showObj = live && !!e && !e.done && e.r > 0;
     this.pointer($('ptr-obj'), $('ptr-obj-t'), sector, s.x, s.z, s.heading, showObj ? { x: e!.x, y: 0.5, z: e!.z } : null,
-      showObj ? `${tr(ENCOUNTERS[e!.id].name)} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
+      showObj ? `${tr(e!.label ?? ENCOUNTERS[e!.id].name)} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
   }
 
   /** Hulls out of view: the most pressing first (armed and near, then what you cannot see), each pinned to the edge along its bearing. */

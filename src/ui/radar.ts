@@ -208,7 +208,7 @@ export class Radar {
     for (const a of world.aliens) {
       if (cloaked(a)) continue;
       const [x, y, out] = to(a.x, a.z);
-      g.fillStyle = out ? rgba(RGB.red, 0.5) : a.elite ? '#f08a7e' : a.kind === 'freighter' ? INK.white2 : INK.red;
+      g.fillStyle = out ? (a.ward ? rgba(RGB.white, 0.4) : rgba(RGB.red, 0.5)) : a.elite ? '#f08a7e' : a.kind === 'freighter' || a.ward ? INK.white2 : INK.red;
       g.save(); g.translate(x, y); g.rotate(-(a.face - h));
       const role = ALIEN_TYPES[a.kind].role;
       const sz = (role === 'cruiser' || a.kind === 'freighter' ? 4.6 : 3.4) * dpr;

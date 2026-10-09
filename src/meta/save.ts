@@ -1,6 +1,7 @@
 import { HUSH } from '../sim/desk';
 import { hunchOf, newDossier } from '../sim/calloway';
 import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
+import { dealSituations } from '../sim/situations';
 import { layScatter } from '../sim/scatter';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
@@ -63,6 +64,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 10) retireOvercharge(j.carry as unknown as { krail: number; levels: Record<string, number> });
   // 10 → 11: wrecks are counted for each region (the third in one is a total loss). A journey saved before starts the region clean.
   if (j.version < 11) j.lost = 0;
+  // 11 → 12: situations. A journey saved before them is dealt some, and the systems it has been through are done with.
+  if (j.version < 12) dealSituations(j.chart, j.seed ?? 0);
   j.version = VERSION;
   return j as Journey;
 }

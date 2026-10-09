@@ -55,6 +55,7 @@ export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyo
     const n = delta(o[k], held(x, k), fee);
     if (n) out.push(`${n > 0 ? '+' : '−'}${Math.abs(n)} ${word}`);
   }
+  if (o.krail) out.push(`${o.krail > 0 ? '+' : '−'}${Math.abs(o.krail)} Krail`);
   if (o.plates) out.push(o.plates > 0 ? `+${o.plates} hull` : `−${-o.plates} hull`);
   if (o.job) out.push('Job');
   if (o.seam) out.push('Rich rock');
