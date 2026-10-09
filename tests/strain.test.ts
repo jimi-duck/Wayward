@@ -111,7 +111,7 @@ describe('the gate and the depot keep their own', () => {
     w.ship.x = lane.x + 10; w.ship.z = lane.z;
     expect(w.safe).toBe('lane');
     const plates = w.plates;
-    w.hitShip('test', lane.x, lane.z);
+    (w as unknown as { hitShip(s: string, x: number, z: number): void }).hitShip('test', lane.x, lane.z);
     expect(w.plates).toBe(plates);
     expect(w.alert()).toBe('clear');
     w.ship.x = lane.x + 100;
