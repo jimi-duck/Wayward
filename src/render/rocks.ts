@@ -9,13 +9,12 @@ import { BULWARK_VARIANTS, ROCK_VARIANTS, type Bulwark, type Rock, type RockKind
 import { PERTURB, seeded } from './kit';
 
 // ── rock ──────────────────────────────────────────────────────────────────
-// Dark basalt, split by fissures of glowing lava. The shapes are built once
+// Dark, dusty stone, split by fissures. The shapes are built once
 // at startup: an icosphere pushed out by fractal noise, with craters (a bowl
 // and a raised rim) pressed into it, smooth-shaded. The surface detail is all
 // in the fragment shader, in the rock's own space so it turns with the rock:
 // fractal noise for the stone's colour and grain, a ridged noise for the
-// crack network (thin lines glow lava-hot and pulse slowly; the stone near
-// them is scorched), and the same noise as a height to perturb the normal.
+// crack network (thin dark lines), and the same noise as a height to perturb the normal.
 //
 // Three kinds share the material: the field (instanced, four shapes),
 // bulwarks (individual, finer meshes) and a far backdrop of asteroids at all
@@ -132,7 +131,7 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
       .replace('#include <map_fragment>', `
         vec3 rp = vRockP * uDetail;
         float rn = rockFbm(rp * 0.9);
-        float fine = snoise(rp * 6.0) * 0.5 + snoise(rp * 14.0) * 0.25;
+        float fine = snoise(rp * 5.0) * 0.5 + snoise(rp * 9.0) * 0.12;
         // the crack network: thin ridges of a warped noise, two scales
         float ridgeA = 1.0 - abs(snoise(rp * 0.55 + vec3(rn * 0.7)));
         float ridgeB = 1.0 - abs(snoise(rp * 1.35 + vec3(7.1, 2.3, 5.9) + vec3(rn * 0.4)));
@@ -140,33 +139,32 @@ function lavaRock(detail: number, lava: number, bump: number, look: RockLook = L
         float zone = smoothstep(0.15 - uZone, 0.55 - uZone, snoise(rp * 0.28 + 3.3));
         float crack = (smoothstep(0.972, 0.995, ridgeA) + smoothstep(0.982, 0.997, ridgeB) * 0.6) * zone;
         float heat = smoothstep(0.93, 0.99, max(ridgeA, ridgeB * 0.95)) * zone;
-        vec3 stone = mix(vec3(0.05, 0.045, 0.042), vec3(0.2, 0.18, 0.16), smoothstep(-0.55, 0.65, rn + fine * 0.35));
+        vec3 stone = mix(vec3(0.09, 0.083, 0.078), vec3(0.32, 0.295, 0.27), smoothstep(-0.55, 0.65, rn + fine * 0.35));
         stone = mix(stone, vec3(0.32, 0.29, 0.26), smoothstep(0.55, 0.9, rn) * 0.6);
         stone = mix(stone, vec3(0.025, 0.018, 0.015), heat * 0.75);
         // strata: beds laid down in a slanted plane, warped, each its own shade; the edge of a bed catches light
         float bedPos = dot(rp, normalize(vec3(0.35, 0.9, 0.25))) * 1.7 + rn * 1.4;
         float bed = sin(bedPos * 5.0) * 0.5 + 0.5, bedId = floor(bedPos * 0.5);
         float bedTone = fract(sin(bedId * 12.9898) * 43758.5453);
-        stone *= 1.0 + uStrata * ((bed - 0.5) * 0.9 + (bedTone - 0.5) * 1.1);
+        stone *= 1.0 + uStrata * ((bed - 0.5) * 0.35 + (bedTone - 0.5) * 0.5);
         float lip = smoothstep(0.86, 1.0, bed) * uStrata;
         // inclusions: lit crystals set in the stone, thresholded from fine noise
         float incl = smoothstep(0.55, 0.66, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - heat);
         stone = mix(stone, vec3(0.5, 0.46, 0.42), incl * 0.5);
         diffuseColor.rgb *= stone * uTint;
         float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
-        vec3 lavaGlow = (uGlow * crack * pulse + uGlow * 0.14 * heat * 0.4) * uLava;
-        lavaGlow += uGlow * incl * (0.5 + 0.5 * sin(uTime * uPulse * 0.7 + rp.x * 5.0)) * 0.55 * uLava;
+        // no light of its own: cracks are dark fissures, inclusions are pale flecks
+        vec3 lavaGlow = vec3(0.0);
+        stone *= 1.0 - crack * 0.55;
         float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + incl * 0.2;`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2, 0.4, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, rockH * uBump, faceDirection);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 2.5);
-        float rimPulse = 0.65 + 0.35 * sin(uTime * uPulse * 0.6);
-        totalEmissiveRadiance += lavaGlow + uGlow * rimK * uRim * rimPulse * 0.5 * uLava;`);
+        totalEmissiveRadiance += lavaGlow;`);
   };
-  m.customProgramCacheKey = () => `lava-rock3-${detail}-${lava}-${bump}-${look.id}`;
+  m.customProgramCacheKey = () => `stone-rock4-${detail}-${lava}-${bump}-${look.id}`;
   return m;
 }
 
@@ -211,7 +209,7 @@ export class RockView {
   private readonly meshes: InstancedMesh[] = [];
   private readonly bulwarks = new Map<number, Mesh>();
   private readonly bulwarkGeo: BufferGeometry[] = [];
-  private readonly bulwarkMat = lavaRock(4.5, 1, 0.3);
+  private readonly bulwarkMat = lavaRock(3, 1, 0.1);
   private readonly backdrop: InstancedMesh[] = [];
   private readonly backBase: Float32Array;
   private readonly m = new Matrix4();
