@@ -133,7 +133,6 @@
 
       <!-- upper centre: the alert, or the most important thing out there (one at a time reads best) -->
       <div id="centre">
-        <div id="mode" class="glass clear" hidden><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span></div>
         <section id="boss" class="glass" aria-live="polite">
           <div class="boss-h"><b id="boss-name">Ironmaw</b><span id="boss-cls">Gutter capital ship</span></div>
           <div class="boss-bar"><i class="ticks" id="boss-hp"></i></div>
@@ -156,6 +155,7 @@
 
       <!-- lower right: the last thing that happened, the bay when it can be opened, what the place does to the ship -->
       <section id="log" class="hud-block" aria-live="off">
+          <div id="mode" class="glass clear" hidden><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span></div>
         <div id="log-lines"></div>
         <div id="cond" hidden></div>
         <button type="button" id="upg" class="glass" tabindex="-1" hidden><kbd class="only-desktop">B</kbd><span class="up-w"><span id="upg-t">Open bay</span><small id="upg-s">Upgrade ship</small></span><b id="upg-n"></b></button>
