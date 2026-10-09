@@ -1,4 +1,5 @@
 @import "./fonts.css";
+@import "./glass.css";
 /* WAYWARD, brand v1.1 (branding/WAYWARD_Brand_Visual_Direction_v1.1.md):
    industrial cyberpunk, a stolen ore hauler's dashboard. Overwhelmingly dark
    and desaturated; each light means one thing:
@@ -977,20 +978,8 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
    weight comes from size, type and light. The body's backdrop-filter needs
    its plate to carry no filter of its own, so the glow is a shadow, not a
    drop-shadow. Phones get less blur and none of the small hardware. */
-@property --gl-e1 { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
-@property --gl-e2 { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
-@property --gl-f { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
-@property --gl-t { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
-#start {
-  --blur: 14px;
-  --gl-under: transparent;
-  --gl-dots: radial-gradient(circle at calc(100% - 8px) 8px, rgba(216, 213, 198, .4) 0 1.1px, transparent 1.7px) 0 0 / 100% 100% no-repeat,
-    radial-gradient(circle at 8px calc(100% - 8px), rgba(216, 213, 198, .4) 0 1.1px, transparent 1.7px) 0 0 / 100% 100% no-repeat,
-    repeating-linear-gradient(90deg, rgba(216, 213, 198, .42) 0 1px, transparent 1px 4px) 16px calc(100% - 7px) / 26px 3px no-repeat;
-  --gl-glass: blur(var(--blur)) saturate(1.4) brightness(.8);
-}
 #start .mode, #start .dif, #start #launch {
-  --gl-e1: rgba(184, 224, 234, .66); --gl-e2: rgba(150, 190, 200, .16); --gl-f: rgba(8, 15, 23, .5); --gl-t: rgba(76, 194, 203, .08);
+  --gl-e1: var(--gl-smoke-e1); --gl-e2: var(--gl-smoke-e2); --gl-f: var(--gl-smoke-f); --gl-t: var(--gl-smoke-t);
   position: relative; isolation: isolate; border: 0; background: none; filter: none; box-shadow: none;
   transition: --gl-e1 .3s var(--ez), --gl-e2 .3s var(--ez), --gl-f .3s var(--ez), --gl-t .3s var(--ez), color .2s var(--ez), transform .2s var(--ez);
 }
@@ -1023,19 +1012,19 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 
 /* hover: the glass lifts, a little brighter and clearer */
 #start .mode:hover, #start .dif:hover, #start #launch:hover, #start #launch:focus-visible {
-  --gl-e1: rgba(206, 238, 244, .8); --gl-e2: rgba(176, 214, 224, .24); --gl-f: rgba(14, 26, 36, .42); --gl-t: rgba(120, 214, 222, .17); }
+  --gl-e1: var(--gl-hover-e1); --gl-e2: var(--gl-hover-e2); --gl-f: var(--gl-hover-f); --gl-t: var(--gl-hover-t); }
 /* the picked plate: amber glass, warm light from inside */
 #start .mode[aria-checked="true"], #start .dif[aria-checked="true"] {
-  --gl-e1: rgba(255, 210, 116, 1); --gl-e2: rgba(232, 168, 48, .5); --gl-f: rgba(74, 46, 6, .6); --gl-t: rgba(255, 172, 40, .46);
+  --gl-e1: var(--gl-amber-e1); --gl-e2: var(--gl-amber-e2); --gl-f: var(--gl-amber-f); --gl-t: var(--gl-amber-t);
   filter: none; box-shadow: 0 12px 30px -16px rgba(217, 154, 39, .6); }
 #start .dif[aria-checked="true"] { --gl-f: rgba(66, 42, 6, .62); --gl-t: rgba(255, 172, 40, .36); box-shadow: 0 10px 24px -16px rgba(217, 154, 39, .5); }
 /* Story is the ship's own record: cyan, quieter */
 #start #mode-story[aria-checked="true"] {
-  --gl-e1: rgba(124, 226, 234, .88); --gl-e2: rgba(57, 174, 183, .32); --gl-f: rgba(8, 36, 44, .6); --gl-t: rgba(76, 194, 203, .26);
+  --gl-e1: var(--gl-cyan-e1); --gl-e2: var(--gl-cyan-e2); --gl-f: var(--gl-cyan-f); --gl-t: var(--gl-cyan-t);
   box-shadow: 0 12px 30px -16px rgba(57, 174, 183, .55); }
 #start #mode-story[aria-checked="true"] .mo-s { color: #a4ecf1; }
 #start .mode:disabled, #start .dif:disabled, #start .mode[aria-disabled="true"], #start .dif[aria-disabled="true"] {
-  --gl-e1: rgba(150, 160, 160, .22); --gl-e2: rgba(150, 160, 160, .08); --gl-f: rgba(6, 9, 12, .62); --gl-t: rgba(0, 0, 0, 0); color: var(--ink-3); cursor: default; }
+  --gl-e1: var(--gl-off-e1); --gl-e2: var(--gl-off-e2); --gl-f: var(--gl-off-f); --gl-t: var(--gl-off-t); color: var(--ink-3); cursor: default; }
 #start .mode:focus-visible, #start .dif:focus-visible, #start #launch:focus-visible, #start .cont:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
 
 /* Start: the lit control. Warmest glass, a long amber shadow under it, a slow
@@ -1076,19 +1065,10 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #start #lang button[aria-pressed="true"] { border-color: rgba(176, 218, 228, .24); border-bottom: 1px solid var(--hud); background: linear-gradient(180deg, rgba(244, 172, 52, .22), rgba(244, 172, 52, .04) 80%), rgba(24, 18, 8, .55); }
 #start .start-foot .mods button:hover, #start #lang button:hover { border-color: rgba(206, 238, 244, .5); }
 
-/* a phone, a small window: less blur, none of the small hardware, a firmer glass */
-@media (max-height: 620px), (pointer: coarse) {
-  #start { --blur: 8px; --gl-dots: linear-gradient(transparent, transparent); }
-  #start .mode, #start .dif { --gl-f: rgba(7, 13, 20, .6); }
-  #start .mode[aria-checked="true"], #start .dif[aria-checked="true"] { --gl-f: rgba(50, 33, 8, .66); }
-  #start #mode-story[aria-checked="true"] { --gl-f: rgba(7, 34, 42, .68); }
-  #start #launch { --gl-f: rgba(70, 45, 8, .68); }
-  #start #launch::before { animation: none; }
-}
+@media (max-height: 620px), (pointer: coarse) { #start #launch { --gl-f: rgba(70, 45, 8, .68); } #start #launch::before { animation: none; } }
 @media (prefers-reduced-motion: reduce) { #start #launch::before { animation: none; } }
-/* no blur to lean on: a darker body instead */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { #start { --gl-under: rgba(6, 10, 15, .72); } #start .cont, #start .sv-pre, #start .records { background-color: rgba(6, 10, 15, .8); } }
-@media (prefers-reduced-transparency: reduce) { #start { --gl-glass: none; --gl-under: rgba(6, 10, 15, .9); } }
+/* no blur to lean on (glass.css sets the darker body), so the strips get a darker fill too */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { #start .cont, #start .sv-pre, #start .records { background-color: rgba(6, 10, 15, .8); } }
 /* the language, top right: quiet; the picked one is only brighter and underlined */
 #start > #lang { position: absolute; top: max(14px, calc(var(--safe-t) + 10px)); right: max(16px, calc(var(--safe-r, 0px) + 12px)); gap: 2px; }
 #lang button { height: 26px; border-color: transparent; background: var(--scrim); color: var(--ink-2); font-size: 11px; letter-spacing: .18em; }

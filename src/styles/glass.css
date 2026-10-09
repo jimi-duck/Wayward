@@ -1,0 +1,39 @@
+/* The ship's glass: the one place the glass tokens live. The title screen and
+   the HUD both build on these, so there is a single material.
+
+   A glass plate is a lit rim, a body that blurs and darkens what is behind it,
+   and a tint for its state (see the start block in main.css for the plate
+   recipe). Amber is the player's pick, cyan is the ship's own information, and
+   red stays the threat's alone. Plates carry no `filter` of their own: it would
+   hide the art from their backdrop-filter, so a glow is a box-shadow.
+
+   The colour tokens are typed so a state change fades. Phones and short windows
+   get a lighter tier at the foot; without backdrop-filter the body is darker. */
+@property --gl-e1 { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
+@property --gl-e2 { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
+@property --gl-f { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
+@property --gl-t { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
+:root {
+  /* the blur and what it does to the colours behind it */
+  --blur: 14px;
+  --gl-glass: blur(var(--blur)) saturate(1.4) brightness(.8);
+  --gl-under: transparent;
+  /* small hardware: two fasteners and a row of ticks, on the big plates only */
+  --gl-dots: radial-gradient(circle at calc(100% - 8px) 8px, rgba(216, 213, 198, .4) 0 1.1px, transparent 1.7px) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle at 8px calc(100% - 8px), rgba(216, 213, 198, .4) 0 1.1px, transparent 1.7px) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, rgba(216, 213, 198, .42) 0 1px, transparent 1px 4px) 16px calc(100% - 7px) / 26px 3px no-repeat;
+  /* states: rim bright (e1), rim dim (e2), body (f), inner light (t) */
+  --gl-smoke-e1: rgba(184, 224, 234, .66);  --gl-smoke-e2: rgba(150, 190, 200, .16); --gl-smoke-f: rgba(8, 15, 23, .5);   --gl-smoke-t: rgba(76, 194, 203, .08);
+  --gl-hover-e1: rgba(206, 238, 244, .8);   --gl-hover-e2: rgba(176, 214, 224, .24); --gl-hover-f: rgba(14, 26, 36, .42); --gl-hover-t: rgba(120, 214, 222, .17);
+  --gl-amber-e1: rgba(255, 210, 116, 1);    --gl-amber-e2: rgba(232, 168, 48, .5);   --gl-amber-f: rgba(74, 46, 6, .6);    --gl-amber-t: rgba(255, 172, 40, .46);
+  --gl-cyan-e1: rgba(124, 226, 234, .88);   --gl-cyan-e2: rgba(57, 174, 183, .32);   --gl-cyan-f: rgba(8, 36, 44, .6);     --gl-cyan-t: rgba(76, 194, 203, .26);
+  --gl-off-e1: rgba(150, 160, 160, .22);    --gl-off-e2: rgba(150, 160, 160, .08);   --gl-off-f: rgba(6, 9, 12, .62);      --gl-off-t: rgba(0, 0, 0, 0);
+}
+/* a phone, a small window: less blur, none of the small hardware, a firmer body */
+@media (max-height: 620px), (pointer: coarse) {
+  :root { --blur: 8px; --gl-dots: linear-gradient(transparent, transparent);
+    --gl-smoke-f: rgba(7, 13, 20, .6); --gl-amber-f: rgba(50, 33, 8, .66); --gl-cyan-f: rgba(7, 34, 42, .68); }
+}
+/* no blur to lean on: a darker body instead */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { :root { --gl-under: rgba(6, 10, 15, .72); } }
+@media (prefers-reduced-transparency: reduce) { :root { --gl-glass: none; --gl-under: rgba(6, 10, 15, .9); } }

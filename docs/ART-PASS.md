@@ -115,3 +115,8 @@ from size, type and light. Start has a slow light running round its rim.
   animation; without `backdrop-filter` the body is simply darker.
 - Contrast is still measured on the rendered pixels (the audit in
   `/mnt/project-files/start-redesign/aa/`).
+
+The tokens live in `src/styles/glass.css` (typed state colours, blur, the
+phone tier, the fallbacks); the title plates in `main.css` are the first
+recipe that uses them. Anything else that wants the glass, the HUD included,
+takes its tokens from there rather than making a second system.
