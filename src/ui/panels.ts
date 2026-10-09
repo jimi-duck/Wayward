@@ -112,7 +112,7 @@ export class SummaryPanel {
       tile('Best chain', r.bestChain, p.chain),
       tile('Krail', r.krail, p.krail),
       tile('Capital ships', r.capitals, p.capitals),
-      h('div', 'tile', '', h('span', 'k', t('Sector events')), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', t('{n} power-ups found', { n: r.powerups }))),
+      h('div', 'tile', '', h('span', 'k', t('Sector events')), h('b', '', `${r.eventsWon}/${r.events}`), h('span', 'cmp', t('{n} boosters found', { n: r.powerups }))),
     );
     $('sum-build').replaceChildren(buildView(r.build, false));
     $('sum-how').replaceChildren(this.how(r));

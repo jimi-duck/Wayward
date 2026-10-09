@@ -200,7 +200,6 @@ export const UI: Record<string, string> = {
   'Iron rock broken': 'Eisenfels zerlegt',
   'Rich rock broken': 'Reicher Fels zerlegt',
   'Volatile rock broken': 'Instabiler Fels zerlegt',
-  'Rare rock broken': 'Seltener Fels zerlegt',
   '{n} rocks broken': '{n} Felsen zerlegt',
   '{n} kills': '{n} Abschüsse',
   '{name} destroyed': '{name} zerstört',
@@ -437,7 +436,6 @@ export const UI: Record<string, string> = {
   'Iron asteroid': 'Eisenasteroid',
   'Rich asteroid': 'Reicher Asteroid',
   'Volatile asteroid': 'Instabiler Asteroid',
-  'Rare asteroid': 'Seltener Asteroid',
   'power-up': 'Power-up',
   'unstable': 'instabil',
   'Too hot · cut': 'Zu heiß · Schnitt',
@@ -445,7 +443,6 @@ export const UI: Record<string, string> = {
   'Yield': 'Ertrag',
   'Hull repair': 'Rumpfreparatur',
   'Mineral deposit\nRich · krail': 'Erzader\nReich · Krail',
-  'Rare ore\nPower-up inside': 'Seltenes Erz\nPower-up drin',
   '{f} capital': '{f}-Kapitalschiff',
 
   // ── the refit ──
@@ -686,7 +683,7 @@ export const UI: Record<string, string> = {
   'Best chain': 'Beste Kette',
   'Capital ships': 'Kapitalschiffe',
   'Sector events': 'Sektorereignisse',
-  '{n} power-ups found': '{n} Power-ups gefunden',
+  '{n} boosters found': '{n} Booster gefunden',
   '{w}: {p}% of kills.': '{w}: {p}% der Abschüsse.',
   'Worst damage: {what}.': 'Am meisten Schaden: {what}.',
   'Capital ships: {a} killed, {b} evaded, {c} got away.': 'Kapitalschiffe: {a} zerstört, {b} ausgewichen, {c} entkommen.',

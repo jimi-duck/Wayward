@@ -42,14 +42,14 @@ export const WORLD: Record<string, string> = {
   '{elite} {name}': '{name} ({elite})',
 
 
-  // ── power-ups ──
-  'Emergency shield': 'Notschild',
-  'Rapid fire': 'Schnellfeuer',
-  'Tractor surge': 'Traktorschub',
+  // ── boosters ──
+  'Hardened plating': 'Gehärtete Panzerung',
+  'Unlimited lasers': 'Unbegrenzte Laser',
+  'High-yield torpedoes': 'Hochleistungstorpedos',
   'Overdrive': 'Overdrive',
-  'Stops the next hit': 'Fängt den nächsten Treffer ab',
-  'Lasers fire twice as fast, free': 'Laser feuern doppelt so schnell, gratis',
-  'Pulls every crystal in': 'Zieht alle Kristalle heran',
+  'Every hit glances off': 'Jeder Treffer prallt ab',
+  'Lasers never run dry, twice as fast': 'Laser laufen nie leer, doppelt so schnell',
+  'Torpedoes hit twice as hard, wider': 'Torpedos treffen doppelt so hart, weiter',
   'Lasers hit half as hard again': 'Laser treffen anderthalbmal so hart',
 
   // ── sector events ──
@@ -251,8 +251,8 @@ export const WORLD: Record<string, string> = {
   'All weapon damage': 'Waffenschaden gesamt',
   'Krail from rock': 'Krail aus Fels',
   'Repair drops': 'Reparatur-Drops',
-  'Power-up time': 'Power-up-Dauer',
-  'Rare rock': 'Seltener Fels',
+  'Booster time': 'Booster-Dauer',
+  'Boosters': 'Booster',
   'Elite krail': 'Elite-Krail',
   'Disruptor bolt every': 'Disruptor alle',
   'Roll cloak': 'Rollentarnung',
@@ -681,10 +681,10 @@ export const WORLD: Record<string, string> = {
   'Every ram discharges an arc into the hulls near what you hit.': 'Jeder Rammstoß entlädt einen Bogen in die Schiffe um dein Ziel.',
   'Rock gives up krail half again as often.': 'Fels gibt 50% öfter Krail.',
   'Salvage drones': 'Bergungsdrohnen',
-  'Hull repairs turn up more often, and power-ups last half again as long.': 'Rumpfreparaturen tauchen öfter auf, und Power-ups halten 50% länger.',
+  'Hull repairs turn up more often, and boosters last half again as long.': 'Rumpfreparaturen tauchen öfter auf, und Booster halten 50% länger.',
   'Still no more than one repair every half minute.': 'Trotzdem höchstens eine Reparatur pro halbe Minute.',
   'Deep scanners': 'Tiefenscanner',
-  'Rare rock turns up twice as often, and elites carry twice the krail.': 'Seltener Fels doppelt so oft, und Elite-Schiffe tragen doppelt Krail.',
+  'Boosters turn up twice as often, and elites carry twice the krail.': 'Booster tauchen doppelt so oft auf, und Elite-Schiffe tragen doppelt Krail.',
   // salvaged tech
   'Gutter scatterguns': 'Gutter-Schrotflinten',
   'Every fourth laser shot is a scattergun slug at triple damage.': 'Jeder vierte Laserschuss ist eine Schrotladung mit dreifachem Schaden.',

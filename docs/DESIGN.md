@@ -485,7 +485,7 @@ The branches:
 - **Utility**: tractor reach, the krail matrix (more XP), the tactical
   computer (every weapon hits harder). Specialise into the **prospector**
   (rock gives krail half as often again), **salvage drones** (more hull
-  repairs, longer power-ups) or **deep scanners** (rare rock twice as
+  repairs, longer boosters) or **deep scanners** (boosters twice as
   often, elites carry twice the krail).
 - **Reactor** (a bay tab, not an upgrade branch): the reactor core and the
   heat exchangers raise the ship's power and cooling. There is no
@@ -510,7 +510,7 @@ the build changes; `capStats` clamps it after every multiplier has run, so
 no stack of upgrades escapes a cap. The bay shows the figures a level
 changes, computed by diffing the block before and after. A run touches a few
 ship-wide numbers too: all weapon damage (the tactical computer, capped at +60%),
-krail from rock, repair drops, power-up time, rare rock and elite
+krail from rock, repair drops, booster time, booster rate and elite
 loot.
 
 ## Defence, damage and repair
@@ -546,15 +546,21 @@ each hull kill inside a short window adds one; breaking rock keeps it alive.
 **Rock** comes in kinds and formations, mixed by the director: basalt;
 iron (from about 3:00, three times the hull, splits into more iron); rich
 (violet veins, a shower of krail); volatile (from about 5:00, goes off
-when broken, you included); rare (gold, a power-up inside, one every minute
-or two); singles, clusters, and a big rock in its own debris.
+when broken, you included); singles, clusters, and a big rock in its own debris.
 
-**Salvage cells** (the power-ups) are never drawn from a hat: each place
-gives the cell its work suggests (`CELL` in `sim/pickups.ts`). Rare rock
-holds a tractor surge, a rescued crew lends an emergency shield, a derelict
-a charged shield, an elite's wreck its fire control (rapid fire), a capital
-ship's wreck its drive (overdrive). The pickup and the note say what it
-does in a line (`POWER_HINT`); a new cell is a row in each table.
+**Boosters** are short, loud, timed: **hardened plating** (7 s, every hit
+glances off), **unlimited lasers** (8 s, the bank is not drawn, twice the
+rate), **high-yield torpedoes** (10 s, twice the damage, half as wide again)
+and **overdrive** (8 s, lasers hit half as hard again). Each running booster
+is a chip under the ship panel with its name, seconds left and a draining bar
+(`#powers` in the HUD, filled in `hud.ts`; one self-contained block). A
+rescued crew gives plating, a derelict's warheads give high-yield torpedoes
+(unlimited lasers if there is no torpedo bay), an elite's wreck its fire
+control, a capital ship's wreck its drive (`CELL` in `sim/pickups.ts`).
+Ordinary hulls sometimes carry one too: `BOOST_CHANCE` per kill, never twice
+within `BOOST_GAP`, `BOOST_FIRST` into the run (`sim/tuning.ts`). There is no
+special rock any more. Pickup and note say what it does in a line
+(`POWER_HINT`); a new booster is a row in each table.
 
 **Enemies**: seven archetypes from the original, by behaviour (scouts
 strafe past, raptors line up and ram, lancers broadside from cover,

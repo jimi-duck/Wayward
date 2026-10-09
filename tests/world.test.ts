@@ -174,7 +174,7 @@ describe('the field', () => {
 
 describe('salvage cells', () => {
   it('gives each source the cell its work suggests, never a random one', () => {
-    expect(CELL).toEqual({ rock: 'magnet', rescue: 'shield', derelict: 'shield', elite: 'rapid', wreck: 'overdrive' });
+    expect(CELL).toEqual({ rescue: 'shield', derelict: 'yield', elite: 'rapid', wreck: 'overdrive' });
     for (const k of POWERS) expect(POWER_HINT[k]).toBeTruthy();
     expect(new Set(Object.values(CELL))).toEqual(new Set(POWERS));
   });

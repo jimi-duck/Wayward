@@ -29,7 +29,6 @@ const KIND: Record<RockKind, { heat: number; work: number }> = {
   iron: { heat: 0.8, work: 1.5 },
   rich: { heat: 1.05, work: 1.1 },
   volatile: { heat: 1.35, work: 0.8 },
-  rare: { heat: 0.9, work: 1.6 },
 };
 
 export interface Cutter {

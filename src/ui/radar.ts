@@ -164,9 +164,9 @@ export class Radar {
     }
     for (const r of world.field.rocks) {
       const [x, y, out] = to(r.x, r.z);
-      if (out && r.kind !== 'rare') continue;
+      if (out) continue;
       g.fillStyle = ROCK_DOT[r.kind] ?? ROCK_DOT.basalt!;
-      g.beginPath(); g.arc(x, y, Math.max((r.kind === 'rare' || r.kind === 'rich' ? 2.2 : 1.2) * dpr, r.r * k), 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(x, y, Math.max((r.kind === 'rich' ? 2.2 : 1.2) * dpr, r.r * k), 0, Math.PI * 2); g.fill();
     }
     for (const p of world.pickups) {
       if (!LOOSE.has(p.kind)) continue;

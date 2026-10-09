@@ -33,7 +33,7 @@ import {
 import type { BlastKind, GameEvent, PowerKind } from './events';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type Rock } from './field';
 import { Ids, newId, useIds } from './ids';
-import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, type CellSource, type Pickup, type PickupKind } from './pickups';
+import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, YIELD_BLAST, YIELD_DAMAGE, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
 import { laySortie } from './sites';
 import { CALM, reports, weightAt, Space, type Influence, type Report as Condition } from './space';
@@ -41,7 +41,7 @@ import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from '
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
-  BREACH_GRACE, CHAIN_WINDOW, DYING, PX, RARE_FIRST, REPAIR_CHANCE,
+  BREACH_GRACE, CHAIN_WINDOW, DYING, PX, BOOST_FIRST, BOOST_CHANCE, BOOST_GAP, REPAIR_CHANCE,
   REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import type { Prices } from '../content/systems';
@@ -187,7 +187,7 @@ export class World implements EncounterHost {
   cloakT = 0;
   chain = 0;
   chainT = 0;
-  powers: Record<PowerKind, number> = { shield: 0, rapid: 0, magnet: 0, overdrive: 0 };
+  powers: Record<PowerKind, number> = { shield: 0, rapid: 0, yield: 0, overdrive: 0 };
 
   alive = true;
   /** Hostiles that pressed close lately, fading (see step). */
@@ -203,7 +203,8 @@ export class World implements EncounterHost {
   private dcUsed = false;
   private sinceHit = 0;
   private repairCd = 0;
-  private nextRare = RARE_FIRST;
+  /** Seconds before an ordinary hull may carry a booster again. */
+  private boostCd = BOOST_FIRST;
   private theatre: Faction = 'gutter';
   private theatreT = 70;
   private nextEvent = EVENT_FIRST;
@@ -553,7 +554,8 @@ export class World implements EncounterHost {
     // our weapons and systems
     const targets = this.targets();
     const fm: FireMods = { rapid: this.powers.rapid > 0, damage: this.dmgMult * (this.powers.overdrive > 0 ? 1.5 : 1), drifting: drifting(s, this.hull) };
-    const fireStats = this.sensorsDown || this.air.lock < 1 ? { ...st, torpSeek: st.torpSeek * (this.sensorsDown ? 0.6 : 1) * this.air.lock } : st;
+    let fireStats = this.sensorsDown || this.air.lock < 1 ? { ...st, torpSeek: st.torpSeek * (this.sensorsDown ? 0.6 : 1) * this.air.lock } : st;
+    if (this.powers.yield > 0) fireStats = { ...fireStats, torpDamage: fireStats.torpDamage * YIELD_DAMAGE, torpBlast: fireStats.torpBlast * YIELD_BLAST };
     if (this.alive) {
       fireWeapons(this.arms, s, c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
       const laid = laySystems(this.sys, s, st, dt, fm.rapid);
@@ -562,10 +564,6 @@ export class World implements EncounterHost {
 
     // the sector
     this.field.step(dt, s.x, s.z, this.bk ? { ...p, rich: this.richShare } : p);
-    if (t >= this.nextRare) {
-      this.field.spawnRare(s.x, s.z, s.heading);
-      this.nextRare = t + this.rng.range(70, 110) / st.rareRate;
-    }
     if (this.bk) { this.pursue(t); this.swarm(t); this.jam(dt); }
     else this.spawn(t, p);
     this.stepAliens(dt, t, p);
@@ -841,7 +839,6 @@ export class World implements EncounterHost {
     // Krail: what a break would give by chance, sure when cut clean
     const K = ROCK_KINDS[r.kind];
     this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * ROCK_KRAIL, R.krail * this.income), r.x, r.z, 3, r.vx, r.vz);
-    if (r.kind === 'rare') this.dropItem(this.cell('rock'), r.x, r.z);
     this.events.push({ type: 'rockCut', x: r.x, z: r.z, size: r.size, kind: r.kind, ore, cyrite, points });
   }
 
@@ -951,12 +948,13 @@ export class World implements EncounterHost {
     this.events.push({ type: 'jumped', x: s.x, z: s.z });
   }
 
-  /** Clocks: power-ups, the chain, shields, regeneration. */
+  /** Clocks: boosters, the chain, shields, regeneration. */
   private tick(dt: number): void {
     const st = this.stats;
     for (const k of POWERS) if (this.powers[k] > 0) this.powers[k] = Math.max(0, this.powers[k] - dt);
     if (this.cloakT > 0) this.cloakT = Math.max(0, this.cloakT - dt);
     if (this.repairCd > 0) this.repairCd -= dt;
+    if (this.boostCd > 0) this.boostCd -= dt;
     if (this.chain > 0 && (this.chainT -= dt) <= 0) this.chain = 0;
     this.sinceHit += dt;
     if (this.shieldT > 0) this.shieldT = Math.max(0, this.shieldT - dt);
@@ -1843,7 +1841,7 @@ export class World implements EncounterHost {
       for (const r of [...this.field.rocks]) if (Math.hypot(r.x - well.x, r.z - well.z) < well.r + r.r * 0.5) this.damageRock(r, 30 * dt, 'hazard', r.x, 0, r.z, true);
     }
     if (!this.alive) return;
-    for (const pk of stepPickups(this.pickups, s, this.stats.tractor, this.powers.magnet > 0, dt)) this.collect(pk);
+    for (const pk of stepPickups(this.pickups, s, this.stats.tractor, dt)) this.collect(pk);
   }
 
   private collect(pk: Pickup): void {
@@ -1918,7 +1916,15 @@ export class World implements EncounterHost {
 
   /** The cell a source gives: what the place it came from would do for you (sim/pickups.ts). */
   cell(source: CellSource): PickupKind {
-    return CELL[source];
+    const kind = CELL[source];
+    // warheads are no use without a torpedo bay: the lasers get the charge instead
+    return kind === 'yield' && !this.stats.torpedoes ? 'rapid' : kind;
+  }
+
+  /** A booster for an ordinary hull to carry: plating, unlimited lasers or, with a torpedo bay, warheads. */
+  private boosterKind(): PickupKind {
+    const kinds: PowerKind[] = this.stats.torpedoes ? ['shield', 'rapid', 'yield'] : ['shield', 'rapid'];
+    return kinds[this.rng.int(kinds.length)]!;
   }
 
   addScore(points: number, src: ScoreSource = 'events'): void {
@@ -2086,10 +2092,9 @@ export class World implements EncounterHost {
     hurtMend(this.mend);
     // any damage holds the shield's recharge off
     this.shieldT = st.shieldDelay;
-    // an emergency shield (power-up) first, then a whole shield charge, then the hull
+    // hardened plating (booster) turns every hit for its few seconds; then a whole shield charge, then the hull
     if (this.powers.shield > 0 || this.shields >= 1) {
-      if (this.powers.shield > 0) this.powers.shield = 0;
-      else this.shields -= 1;
+      if (this.powers.shield <= 0) this.shields -= 1;
       s.invuln = SHIELD_GRACE;
       this.run.shieldsAbsorbed++;
       this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source });
@@ -2189,8 +2194,12 @@ export class World implements EncounterHost {
       this.repairCd = REPAIR_GAP;
     }
     const E = al.elite ? ELITES[al.elite] : null;
-    // an elite's fire control comes off the wreck whole
+    // an elite's fire control comes off the wreck whole; an ordinary hull sometimes carries a booster
     if (E) this.dropItem(this.cell('elite'), al.x, al.z);
+    else if (this.boostCd <= 0 && this.rng.next() < BOOST_CHANCE * this.stats.boostRate) {
+      this.dropItem(this.boosterKind(), al.x, al.z);
+      this.boostCd = BOOST_GAP;
+    }
     if (E?.blast) this.blast(al.x, al.y, al.z, E.blast, ELITE_BLAST_DAMAGE, 'hazard', 'elite', 1, true);
     if (FACTION_TRAITS[al.faction].web || E?.web) {
       this.webs.push({ id: al.id, x: al.x, z: al.z, life: 6, r: 0, max: WEB_R * (E?.web ? 0.8 : 0.45) });
@@ -2308,7 +2317,6 @@ export class World implements EncounterHost {
     }
     // Krail by chance, in both modes (less of it in the Story mode, where a cut gives it surely)
     if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), this.survival.rock.krail * this.income), r.x, r.z, 4, r.vx, r.vz);
-    if (r.kind === 'rare') this.dropItem(this.cell('rock'), r.x, r.z);
     if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, src === 'hazard' ? 'hazard' : src, 'volatile', 1, true);
   }
 
@@ -2393,7 +2401,7 @@ export class World implements EncounterHost {
     this.refit = 0; this.techs = new Set();
     this.cloakT = 0; this.chain = 0; this.chainT = 0;
     for (const k of POWERS) this.powers[k] = 0;
-    this.dcUsed = false; this.sinceHit = 0; this.repairCd = 0; this.nextRare = RARE_FIRST;
+    this.dcUsed = false; this.sinceHit = 0; this.repairCd = 0; this.boostCd = BOOST_FIRST;
     this.theatre = 'gutter'; this.theatreT = 70; this.nextEvent = EVENT_FIRST; this.eventN = 0; this.lastEvent = null;
     this.timeScore = 0; this.nextSample = 0;
     this.alive = true; this.dying = 0;

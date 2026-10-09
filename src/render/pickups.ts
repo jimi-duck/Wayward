@@ -54,7 +54,7 @@ const ITEM_COLOR: Record<string, Color> = {
   repair: new Color(3, 2.4, 1.2),
   shield: new Color(0.9, 1.8, 3.8),
   rapid: new Color(3.8, 0.8, 0.6),
-  magnet: new Color(2.4, 1, 3.8),
+  yield: new Color(2.4, 1, 3.8),
   overdrive: new Color(3.8, 2.2, 0.4),
 };
 

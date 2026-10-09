@@ -5,7 +5,7 @@
 // off the play plane.
 
 export type BlastKind = 'torpedo' | 'bomblet' | 'mine' | 'volatile' | 'elite' | 'reactive' | 'strike';
-export type PowerKind = 'shield' | 'rapid' | 'magnet' | 'overdrive';
+export type PowerKind = 'shield' | 'rapid' | 'yield' | 'overdrive';
 
 export type GameEvent =
   | { type: 'bolt'; x: number; z: number; heading: number }
