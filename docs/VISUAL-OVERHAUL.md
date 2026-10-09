@@ -173,3 +173,12 @@ the title is up (about a tenth of a second), not on the first cloud in a run.
 The slipway's steel and the relic's slab were near black in shadow; both now
 lift out of it. Nebula, planet and starfield were checked in the review
 world and left as they were.
+
+Round three, leftovers. The graveyard hulks were nearly black and scratched to
+noise; the dead coat is now lighter with less wear, so the hull shapes read at
+play distance and close. The slipway holds a freighter hull from the fleet
+designs where a plain box stood. The relic is a tower of twisted, alternately
+swelling and pinching sections with cold light in the joints and down the
+faces, and a shard turning above it; the cold light is the same teal as the
+UI's information colour, so labels and lights do not clash. Cost: a handful of
+extra meshes on two rare features, no new materials or programs.

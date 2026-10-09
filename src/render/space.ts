@@ -1,4 +1,5 @@
 import {
+  CylinderGeometry, OctahedronGeometry,
   AdditiveBlending, NormalBlending, BoxGeometry, BufferAttribute, Color, Group, IcosahedronGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial,
   SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, Vector3, type BufferGeometry, type Material, type Scene, type Texture,
 } from 'three';
@@ -69,19 +70,19 @@ function chunk(i: number): BufferGeometry {
 const BOX = new BoxGeometry(1, 1, 1);
 const ROCK_MAT = new MeshStandardMaterial({ color: 0x24211f, roughness: 0.95, metalness: 0.15, flatShading: true });
 const HULL_MAT = new MeshStandardMaterial({ color: 0x6a7480, roughness: 0.6, metalness: 0.3, flatShading: true, emissive: 0x0a1016, envMapIntensity: 1.3 });
-const SLAB_MAT = new MeshStandardMaterial({ color: 0x1c232c, roughness: 0.3, metalness: 0.6, emissive: 0x04070a, envMapIntensity: 1.3 });
+const SLAB_MAT = new MeshStandardMaterial({ color: 0x34404e, roughness: 0.32, metalness: 0.55, emissive: 0x05090e, envMapIntensity: 1.3 });
 const CORE_MAT = new MeshBasicMaterial({ color: 0x000000 });
 
 // the dead: hull models from the same designs the fleets fly, gone cold, scorched and breached
 let dead: Record<string, Material> | null = null;
 function deadMaterials(): Record<string, Material> {
   if (dead) return dead;
-  const coat = { painted: true, worn: 1, roughness: 0.78, metalness: 0.35 };
+  const coat = { painted: true, worn: 0.55, roughness: 0.74, metalness: 0.35 };
   const cold = new MeshBasicMaterial({ color: new Color(0.9, 0.22, 0.06), toneMapped: false });
   dead = {
-    hull: metal({ ...coat, tint: 0x1e1d1c, scale: 1.6 }), paint: metal({ ...coat, tint: 0x3a352f, scale: 1.2 }), patch: metal({ ...coat, tint: 0x4a443a }),
-    dark: metal({ ...coat, tint: 0x141312, scale: 1.8 }), trim: metal({ ...coat, tint: 0x3a2a24 }), glow: new MeshBasicMaterial({ color: 0x050505 }),
-    lamp: cold, crystal: metal({ ...coat, tint: 0x2a2418 }), violet: new MeshBasicMaterial({ color: 0x0a0610 }),
+    hull: metal({ ...coat, tint: 0x34353a, scale: 1.6 }), paint: metal({ ...coat, tint: 0x5a5750, scale: 1.2 }), patch: metal({ ...coat, tint: 0x6a6458 }),
+    dark: metal({ ...coat, tint: 0x24262a, scale: 1.8 }), trim: metal({ ...coat, tint: 0x4e403a }), glow: new MeshBasicMaterial({ color: 0x050505 }),
+    lamp: cold, crystal: metal({ ...coat, tint: 0x3c3628 }), violet: new MeshBasicMaterial({ color: 0x0a0610 }),
   };
   return dead;
 }
@@ -308,23 +309,43 @@ export class SpaceView {
         for (const x of [-26, 26]) bar(g, HULL_MAT, V(x, 46, -22), V(x, 46, 22), 1.4);
         bar(g, HULL_MAT, V(-26, 47, 0), V(26, 47, 0), 1.6);
         for (let j = 0; j < 9; j++) bar(g, HULL_MAT, V(-26 + j * 6.5, 46, 0), V(-26 + (j + 1) * 6.5, 50, 0), 0.4);
-        mesh(BOX, HULL_MAT, g, 40, 3, 0, 10, 7, 12).rotation.set(0, 0, 0);
+        // the hull on the stocks: a freighter's, cold, riding in the cradle between the ribs
+        const keel = hulkModel(4);
+        keel.scale.setScalar(30);
+        keel.position.set(-2, 6, 0);
+        g.add(keel);
         g.rotation.y = y;
         break;
       }
       case 'slab': {
-        // the relic: a black monolith, a plinth of broken ground, and fine seams of cold light drawn on its face
+        // the relic: a tower of twisted, tapering sections of dark stone, cold light in the joints and down each face, and a shard hanging above it, turning
         face = true;
-        mesh(BOX, SLAB_MAT, g, 0, 46, 0, 14, 92, 3).rotation.set(0, 0, 0);
         const seam = new MeshBasicMaterial({ color: new Color(0.35, 0.8, 1.1), toneMapped: false });
-        for (let i = 0; i < 7; i++) {
-          const y = 12 + i * 11, w = 6 + (i % 3) * 2;
-          mesh(BOX, seam, g, 0, y, 1.6, w, 0.16, 0.05).rotation.set(0, 0, 0);
-          if (i % 2) mesh(BOX, seam, g, (i % 4 ? 1 : -1) * w * 0.5, y + 5, 1.6, 0.16, 10, 0.05).rotation.set(0, 0, 0);
+        let y0 = 0;
+        for (let i = 0; i < 5; i++) {
+          const RB = [9.5, 6.4, 8.2, 5.2, 6.4][i]!, rb = RB, rt = RB * (i % 2 ? 1.3 : 0.62), h = 17;
+          const sec = mesh(new CylinderGeometry(rt, rb, h, 6, 1), SLAB_MAT, g, 0, y0 + h / 2, 0, 1, 1, 1);
+          sec.rotation.set(0, i * 0.42, 0);
+          // glyph strips down three of its faces
+          for (let k = 0; k < 3; k++) {
+            const a = i * 0.42 + (k / 3) * Math.PI * 2, rr = (rb + rt) / 2 * 0.87 + 0.12;
+            const strip = mesh(BOX, seam, g, Math.cos(a) * rr, y0 + h / 2, Math.sin(a) * rr, 0.22, h * (0.5 + 0.12 * ((i + k) % 3)), 0.06);
+            strip.rotation.set(0, Math.PI / 2 - a, 0);
+          }
+          y0 += h;
+          if (i < 4) {
+            const ring = mesh(new CylinderGeometry(rt * 0.92, [6.4, 8.2, 5.2, 6.4][i]! * 0.92, 1.2, 6, 1), seam, g, 0, y0 + 0.6, 0, 1, 1, 1);
+            ring.rotation.set(0, (i + 0.5) * 0.42, 0);
+            y0 += 1.2;
+          }
         }
-        mesh(BOX, seam, g, 0, 91.5, 0, 14, 0.25, 3.05).rotation.set(0, 0, 0);
+        const shard = mesh(new OctahedronGeometry(1, 0), SLAB_MAT, g, 0, y0 + 14, 0, 4.2, 9, 4.2);
+        spin.push({ m: shard, x: 0, y: 0.35, z: 0 });
+        mesh(new OctahedronGeometry(1, 0), seam, g, 0, y0 + 14, 0, 1.6, 3.6, 1.6);
+        const halo = new Sprite(new SpriteMaterial({ map: this.glow, color: new Color(0.3, 0.8, 1.2), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0.5 }));
+        halo.scale.setScalar(24); halo.position.set(0, y0 + 14, 0); g.add(halo);
         for (let i = 0; i < 9; i++) {
-          const a = r() * Math.PI * 2, k = 6 + r() * 14, s2 = 1.5 + r() * 4;
+          const a = r() * Math.PI * 2, k = 9 + r() * 14, s2 = 1.5 + r() * 4;
           mesh(chunk(i), ROCK_MAT, g, Math.cos(a) * k, s2 * 0.3, Math.sin(a) * k, s2, s2 * 0.6, s2);
         }
         break;
