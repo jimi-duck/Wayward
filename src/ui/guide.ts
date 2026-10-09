@@ -1,7 +1,6 @@
 import { t } from '../i18n';
 import { AHEAD, BEHIND, fix, guideTarget, inFight, sayBearing } from '../sim/guide';
 import type { World } from '../sim/world';
-import { range } from './targeting';
 
 // ── the heading ───────────────────────────────────────────────────────────
 // The compass tape at the top centre, as it was, with the objective on it:
@@ -60,7 +59,7 @@ export class Heading {
     // the objective on the tape, a few times a second is plenty for the words
     const lead = live ? guideTarget(world) : null;
     this.obj.hidden = !lead;
-    if (!lead) { text($('hdg-rel'), ''); text($('hdg-d'), ''); return; }
+    if (!lead) { text($('hdg-rel'), ''); return; }
     const s = world.ship, f = fix(s.x, s.z, heading, lead.x, lead.z);
     if (this.tick++ % 20 === 0) this.half = Math.max(40, this.tape.offsetWidth / 2 - 6);
     const off = -((f.rel * 180) / Math.PI) * PX_PER_DEG;
@@ -72,6 +71,5 @@ export class Heading {
     this.obj.classList.toggle('rear', Math.abs(f.rel) >= BEHIND);
     const inside = f.dist <= lead.r;
     text($('hdg-rel'), inside ? t('Inside') : bearingText(f.rel));
-    text($('hdg-d'), inside ? '' : range(f.dist));
   }
 }

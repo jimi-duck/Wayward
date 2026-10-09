@@ -234,6 +234,8 @@ export const UI: Record<string, string> = {
   'Self-repair': 'Selbstreparatur',
   // the refit bay
   'Refit bay': 'Werftbucht',
+  'Open bay': 'Werft öffnen',
+  'Upgrade ship': 'Schiff aufrüsten',
   'Refit bay when it is quiet': 'Werftbucht, sobald es ruhig ist',
   'Choose a module to fit': 'Wähl ein Modul zum Einbauen',
   'Launch': 'Ablegen',

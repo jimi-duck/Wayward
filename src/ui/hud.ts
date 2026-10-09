@@ -1,53 +1,43 @@
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
-import type { Branch } from '../content/upgrades';
 import type { Sector } from '../render/sector';
-import type { Levels } from '../sim/build';
 import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
-import { ALIEN_TYPES, alienLabel, cloaked, FIRE_RANGE } from '../sim/enemies';
+import { alienLabel, cloaked } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
 import { DOCK_TIME } from '../sim/breakout';
 import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
 import { NAMED } from '../content/features';
 import { REPORT_TEXT } from '../sim/space';
 import type { World } from '../sim/world';
-import { systemLevel } from './icons';
 import { Radar } from './radar';
 import { Heading } from './guide';
 import { range, Targeting } from './targeting';
-import { INK } from './palette';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
-// A tactical overlay on the view in the brand's six zones, with nothing on
-// it that does not earn its place while flying. It answers four questions:
-// what am I doing, what is threatening me, what condition is the ship in,
-// where am I.
-//   upper left   · the current objective as short steps: a sector event,
-//                  the Breakout's course, or Krail toward the next refit
-//   upper centre · the heading, and one card: the capital ship, else the
-//                  nearest pursuer (red), else the target (what it is, how
-//                  far, what it yields, how much is left)
-//   upper right  · ship status, a row each (icon, name, key, gauge,
-//                  reading): hull, fuel, energy, core, Krail, hold, then
-//                  torpedoes and mines once fitted; the score under them.
-//                  Power-ups running sit below.
-//   centre       · the world: the gunsight, the target's brackets and marks
-//                  (ui/targeting.ts)
-//   lower left   · the scope (ui/radar.ts), the contacts, the hunt, the sector
-//   lower right  · the operating mode and only the keys that mode uses,
-//                  the last thing that happened fading above it
-// Alerts are placards that come and go. Every figure is live. Text is
-// written ten times a second, the scope thirty, the world every frame.
+// The ship and the world come first; the HUD answers five questions and
+// shows anything else only when it is the answer (docs/HUD.md).
+//   what am I doing    · upper left: one objective, how far, and the one
+//                        threat worth a line
+//   where to           · upper centre: the heading tape, the objective on it;
+//                        in the world, a name and a distance on the place
+//   am I in danger     · the alert card under the tape (yellow: observed, red:
+//                        targeted), the capital ship, the target in the brackets
+//   is the ship fine   · upper right: hull, fuel, energy; munitions say more
+//                        in a fight; stores in one quiet line
+//   what is around me  · lower left: the scope, and the sector
+// The lower right holds the last thing that happened and, when something can
+// be fitted, [B] Open bay. Every figure is live. Text is written ten times a
+// second, the scope thirty, the world every frame.
 
 export const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody: 'Custody', office: 'Office', voice: 'Voice', thren: 'Thren' };
 const faction = (f: string) => t(FACTION_NAME[f] ?? f);
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
-/** A patrol this close (units) puts the mode card on yellow alert. */
-const PATROL_NEAR = 110;
+/** A hostile this close (units) earns the objective a threat line. */
+const THREAT_NEAR = 320;
 /** Seconds before the log says again that the self-repair has started. */
 const MEND_QUIET = 10;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -72,19 +62,10 @@ function blocks(host: HTMLElement, n: number): HTMLElement[] {
 
 interface LogLine { el: HTMLParagraphElement; text: string; at: number; kind: string; n: number; pts: number; }
 
-/** The rows that carry a system level, and the branch each one reads. */
-const ROWS: Array<{ id: string; branch: Branch }> = [
-  { id: 'ph', branch: 'laser' },
-  { id: 'tp', branch: 'torpedo' },
-  { id: 'mn', branch: 'mine' },
-];
 /** What the top-left label calls the sector while an event is on. */
 const KIND_NAME: Record<SystemKind, string> = {
   home: 'Kellern yards', mining: 'Mining system', port: 'Port system', transit: 'Transit', contested: 'Contested', gate: 'Gate', edge: 'The last lane',
 };
-
-/** The actions each operating mode puts under the thumb: [key, what it does]. */
-type Hint = [string, string];
 
 const SECTOR_NAME: Record<EncounterId, string> = {
   rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
@@ -105,15 +86,12 @@ export class Hud {
   private plateKey = '';
   private sysKey = '';
   private powerKey = '';
-  private levels: Levels | null = null;
-  private lv: Record<string, number> = {};
   private seed = -1;
   private modeKey = '';
   private condKey = '';
-  /** The arcade's refit bay: the cheapest module in reach, when it was last worked out, and whether one can be fitted now. */
+  /** The arcade's refit bay: the cheapest module in reach, and when it was last worked out. */
   private next = 0;
   private stockAt = 0;
-  private bayReady = false;
   /** Modules that can be fitted now, and how many the badge last showed (it pulses when there are more). */
   private count = 0;
   private shown = 0;
@@ -128,9 +106,9 @@ export class Hud {
     // the refit bay's badge opens it, by tap or click; the flight controls behind never see the touch
     const upg = $('upg');
     upg.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); this.onBay(); });
-    // on a phone the scope hangs under the sector block, whose height follows what the run shows
-    const sector = $('sector');
-    new ResizeObserver(() => document.documentElement.style.setProperty('--sector-b', `${Math.round(sector.getBoundingClientRect().bottom)}px`)).observe(sector);
+    // on a phone the scope hangs under the objective, whose height follows what the run shows
+    const objective = $('objective');
+    new ResizeObserver(() => document.documentElement.style.setProperty('--sector-b', `${Math.round(objective.getBoundingClientRect().bottom)}px`)).observe(objective);
   }
 
   /** Size the scope's backing store. The HUD needs no lift: it leaves the picture alone. */
@@ -143,7 +121,6 @@ export class Hud {
   /** The language changed: redraw what is only written when it changes. */
   relabel(): void {
     this.modeKey = this.condKey = this.contactKey = this.powerKey = this.plateKey = '';
-    this.levels = null;
     this.seed = -1;
   }
 
@@ -298,41 +275,32 @@ export class Hud {
     text($('sec-name'), t(e && !e.done ? SECTOR_NAME[e.id] : 'Asteroid field'));
   }
 
-  // ── the rail ────────────────────────────────────────────────────────────
+  // ── the stores, and the bay's prompt ────────────────────────────────────
 
   /**
-   * Krail is a stock for the refit bay, in both modes. The row counts toward
-   * the cheapest module that only wants Krail, and lights "Bay" (with its
-   * key) once something can be fitted and the bay will open.
+   * Krail is the stock for the refit bay, in both modes. In the Story, [B] Open
+   * bay shows only once something can be fitted (the Arcade bay opens by
+   * itself); under an alert it stays, locked, and says why.
    */
   private updateStock(world: World): void {
     if (world.time >= this.stockAt) {
       this.stockAt = world.time + 0.4;
       const ctx = world.bayCtx();
       this.next = cheapest(ctx)?.cost ?? 0;
-      // the badge counts the bay's suggestions you can pay for: a few, never a list to read
+      // the prompt counts the bay's suggestions you can pay for: a few, never a list to read
       this.count = quickPicks(ctx).filter((w) => blockOf(w.id, ctx) === null).length;
     }
-    const k = Math.floor(world.krail), next = this.next, n = this.count;
+    const n = this.count;
     const alert = world.alert(), locked = alert !== 'clear';
-    const ready = n > 0 && !locked;
-    text($('xp-l'), 'Krail');
-    text($('xp-v'), String(k));
-    text($('xp-n'), next ? String(next) : '—');
-    ticks($('xp'), next ? Math.min(1, k / next) : 1, 30);
-    text($('refit-n'), pad(world.refit, 2));
-    $('rail').classList.toggle('full', ready);
-    $('rail').classList.add('stock');
-    this.bayReady = ready;
-    // the badge: dim with nothing to fit, amber with a count when something can be, red and locked in battle
+    text($('xp-v'), String(Math.floor(world.krail)));
     const badge = $('upg');
-    // the Arcade bay opens by itself, so only the Story mode shows the badge
-    badge.hidden = !world.bk;
+    badge.hidden = !world.bk || n === 0;
     badge.classList.toggle('ready', n > 0 && !locked);
     badge.classList.toggle('locked', n > 0 && locked);
     badge.classList.toggle('red', alert === 'red');
     text($('upg-n'), n ? String(n) : '');
-    text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : n > 0 ? 'Upgrade ready' : 'Refit bay'));
+    text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : 'Open bay'));
+    text($('upg-s'), t(n > 0 && locked ? (alert === 'red' ? 'Red alert' : 'Yellow alert') : 'Upgrade ship'));
     if (n > this.shown && !locked) this.retrigger(badge, 'new');
     this.shown = n;
     const g = $('xp-gain');
@@ -340,89 +308,45 @@ export class Hud {
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);
   }
 
-
-  // ── the Breakout: tank, hold, parts, chits, the Custody alert ───────────
+  // ── the Story's stores, the tank, and the threat worth a line ───────────
 
   private updateVoyage(world: World): void {
     const b = world.bk;
-    $('sys-hold').hidden = !b;
     $('vy-cells').hidden = !b;
-    $('voyage').hidden = !b;
-    if (!b) { $('threat').classList.remove('on'); return; }
-    const v = $('voyage');
-    // the tank, in the systems panel: Cyrite toward the jump
+    $('sys-score').hidden = !!b;
+    const th = $('obj-threat');
+    if (!b) { th.hidden = true; return; }
+    // the tank, in the status panel: Cyrite toward the jump
     const fuel = $('sys-fuel'), need = b.jumpCost;
     text($('v-fuel'), `${world.cyrite}/${need}`);
     $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
     fuel.classList.toggle('ready', world.cyrite >= need);
-    text($('lv-fuel'), t(world.cyrite >= need ? 'Jump' : 'Tank'));
+    // the stores: hold, parts, chits, food, one line
     const ore = $('vy-ore');
     text(ore, `${world.ore}/${world.holdMax}`);
-    $('g-hold').style.setProperty('--v', Math.min(1, world.ore / world.holdMax).toFixed(2));
-    $('sys-hold').classList.toggle('full', world.ore >= world.holdMax);
+    ore.classList.toggle('full', world.ore >= world.holdMax);
     text($('vy-parts'), String(world.parts));
     text($('vy-chits'), String(world.chits));
     const food = $('vy-food');
     text(food, String(world.food));
     food.classList.toggle('full', world.food < 6);
-    const heat = b.heat;
-    text($('vy-heat'), `${t('Wanted')} ${heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4}/4`);
-    ticks($('vy-heat-t'), heat, 20, 'ceil');
-    v.classList.toggle('hot', heat >= 0.8);
-    // the contacts beside the scope: the two places, the nearest hostile, the nearest Cyrite trace
-    const s = world.ship, dist = (o: { x: number; z: number }) => Math.hypot(o.x - s.x, o.z - s.z);
+    // the objective's threat line: the nearest hostile when it is close, else how hard the Custody is looking
+    const s = world.ship;
     let hostile: { label: string; d: number; faction: string } | null = null;
     for (const a of world.aliens) {
-      if (cloaked(a)) continue;
-      const d = dist(a);
+      if (cloaked(a) || a.kind === 'freighter') continue;
+      const d = Math.hypot(a.x - s.x, a.z - s.z);
       if (!hostile || d < hostile.d) hostile = { label: t(alienLabel(a)), d, faction: a.faction };
     }
-    let trace = Infinity;
-    for (const r of world.field.rocks) if (r.kind === 'rich' || r.kind === 'rare') trace = Math.min(trace, dist(r));
-    const rows: Array<[string, number, string]> = [];
-    if (hostile) rows.push([hostile.label, hostile.d, 'var(--alert)']);
-    if (b.port) rows.push([b.port.name, dist(b.port), INK.teal]);
-    rows.push([t(b.lane.name), dist(b.lane), 'var(--amber)']);
-    if (trace < Infinity) rows.push([t('Cyrite trace'), trace, 'var(--violet)']);
-    const key = rows.map(([n, d]) => `${n}${Math.round(d / 10)}`).join();
-    if (key !== this.contactKey) {
-      this.contactKey = key;
-      $('contacts-l').replaceChildren(...rows.map(([n, d, c]) => {
-        const li = document.createElement('li');
-        li.style.setProperty('--c', c);
-        const name = document.createElement('span'); name.textContent = n;
-        const v = document.createElement('b'); v.textContent = range(d);
-        li.append(name, v);
-        return li;
-      }));
-    }
-
-    // the objective, as steps
-    const docked = b.docks > 0, ready = world.cyrite >= b.jumpCost;
-    const steps: Array<[string, 'done' | 'now' | '']> = [
-      [`${t('Cyrite to jump')} · <b>${world.cyrite}/${b.jumpCost}</b>`, ready ? 'done' : 'now'],
-      ...(b.port ? [[`${t('Dock at {port} (optional)', { port: b.port.name })}${docked ? '' : ` · <b>${range(dist(b.port))}</b>`}`, docked ? 'done' : ''] as [string, 'done' | '']] : []),
-      [`${t('Reach the lane mouth')} · <b>${range(dist(b.lane))}</b>`, ready ? 'now' : ''],
-      // jobs taken on comms cards, paid where they say
-      ...world.jobs.map((j): [string, ''] => [`${t('Job')} · ${t(j.text)}`, '']),
-    ];
-    const html = steps.map(([t, c]) => `<li class="${c}">${t}</li>`).join('');
-    // the threat card: the nearest pursuer, how close and how bad
-    const th = $('threat');
-    const near = hostile && hostile.d < 320 ? hostile : null;
-    const thOn = !!near && world.command.state !== 'fight';
-    th.classList.toggle('on', thOn);
-    const cKey = `${thOn}`;
+    const near = hostile && hostile.d < THREAT_NEAR ? hostile : null;
+    const heat = b.heat, level = heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4;
+    const line = near ? `${t(near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact')} · ${range(near.d)}`
+      : level >= 3 ? `${t('Wanted')} ${level}/4` : '';
+    th.hidden = !line;
+    text(th, line);
+    th.classList.toggle('hot', level >= 4 || (!!near && near.d < 110));
+    const cKey = `${!!line}`;
     if (cKey !== this.centreKey) { this.centreKey = cKey; this.measure(); }
-    if (near) {
-      const level = near.d < 45 ? 'high' : near.d < 110 ? 'medium' : 'low';
-      th.classList.toggle('high', level === 'high');
-      text($('th-n'), t(near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact'));
-      text($('th-s'), `${near.label} · ${range(near.d)}`);
-      text($('th-l'), t(level === 'high' ? 'Threat high' : level === 'medium' ? 'Threat medium' : 'Threat low'));
-    }
-    const list = $('obj-list');
-    if (list.innerHTML !== html) list.innerHTML = html;
 
     // touch: the cutter's heat in the rock under the beam
     const r = world.field.find(world.cutting);
@@ -435,19 +359,6 @@ export class Hud {
 
   private updateSystems(world: World): void {
     const st = world.stats, arms = world.arms;
-
-    // the level each system's refits have reached
-    if (world.levels !== this.levels) {
-      const first = this.levels === null;
-      this.levels = world.levels;
-      for (const r of ROWS) {
-        const n = systemLevel(world.levels, r.branch);
-        const el = $(`lv-${r.id}`);
-        text(el, n > 0 ? `${t('Lv')} ${n}` : '');
-        if (!first && n > (this.lv[r.id] ?? 0)) this.retrigger(el, 'up');
-        this.lv[r.id] = n;
-      }
-    }
 
     // lasers: the bank
     const bank = arms.bank / st.bankMax, hot = world.powers.rapid > 0;
@@ -475,6 +386,8 @@ export class Hud {
       const locked = world.lock !== null;
       tp.classList.toggle('lock', locked && arms.rack > 0);
       tp.classList.toggle('empty', arms.rack === 0);
+      // out of a fight a full rack is only a quiet line
+      tp.classList.toggle('idle', !this.guide.fighting && arms.rack === st.torpRack && !locked);
       text(vr, arms.rack === 0 ? `${Math.max(0, arms.reload).toFixed(1)}s` : t(locked ? 'Lock' : 'Ready'));
     }
 
@@ -486,6 +399,7 @@ export class Hud {
     if (st.mines) {
       blocks($('g-mines'), st.mineMax).forEach((p, i) => p.classList.toggle('on', i < world.sys.mines.length));
       text($('v-mines'), `${world.sys.mines.length}/${st.mineMax}`);
+      mn.classList.toggle('idle', !this.guide.fighting);
     }
 
     // the hull: plates, then shield charges, the one filling drawn part full;
@@ -559,7 +473,7 @@ export class Hud {
     if (sysKey !== this.sysKey) { this.sysKey = sysKey; this.measure(); }
   }
 
-  // ── top centre: a capital ship, a sector event ──────────────────────────
+  // ── top centre: a capital ship; top left: the objective ──────────────────────────
 
   private updateCentre(world: World): void {
     const b = world.command.boss, boss = $('boss');
@@ -596,9 +510,19 @@ export class Hud {
         text($('obj-t'), bk.port?.name ?? ''); text($('obj-left'), '');
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));
       } else {
-        text($('obj-t'), t('Make for the lane mouth')); text($('obj-left'), range(dl));
+        // the one thing to do now, and at most two quiet lines under it
+        const ready = world.cyrite >= bk.jumpCost;
+        text($('obj-t'), t(ready ? 'Make for the lane mouth' : 'Cyrite to jump'));
+        text($('obj-left'), ready ? range(dl) : `${world.cyrite}/${bk.jumpCost}`);
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
-        text($('obj-s'), `Cyrite ${world.cyrite}/${bk.jumpCost} · ${t(world.cyrite >= bk.jumpCost ? 'enough to jump' : 'cut the violet rock')}`);
+        text($('obj-s'), '');
+        const lines: string[] = [];
+        if (!ready) lines.push(`${t('Reach the lane mouth')} · <b>${range(dl)}</b>`);
+        for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
+        if (bk.port && bk.docks === 0) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
+        const html = lines.slice(0, 2).map((l) => `<li>${l}</li>`).join('');
+        const list = $('obj-list');
+        if (list.innerHTML !== html) list.innerHTML = html;
       }
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
@@ -615,17 +539,13 @@ export class Hud {
         : e.id === 'anomaly' ? t('Keep clear of the core')
         : t(def.text));
     } else if (!bk) {
-      // the arcade between events: break rock, fill the hold, refit
+      // the arcade between events: break rock toward the next refit, which opens by itself
       text($('obj-t'), t('Extract Krail'));
-      text($('obj-left'), '');
+      text($('obj-left'), `${Math.floor(world.krail)}/${this.next || '—'}`);
       ticks($('obj-p'), this.next ? Math.min(1, world.krail / this.next) : 1, 30);
       text($('obj-s'), '');
-      const key = document.documentElement.classList.contains('touch-ui') ? '' : ' · B';
-      const html = this.bayReady
-        ? `<li class="done">${t('Break rock')} · <b>${Math.floor(world.krail)}</b></li><li class="now">${t('Upgrade ready')}${key}</li>`
-        : `<li class="now">${t('Break rock')} · <b>${Math.floor(world.krail)}/${this.next || '—'}</b></li><li>${t('Upgrade opens by itself')}</li>`;
       const list = $('obj-list');
-      if (list.innerHTML !== html) list.innerHTML = html;
+      if (list.innerHTML) list.innerHTML = '';
     }
   }
 
@@ -644,7 +564,7 @@ export class Hud {
     if (key === this.modeKey) return;
     this.modeKey = key;
     const mode = $('mode');
-    mode.className = a;
+    mode.className = `glass ${a}`;
     mode.hidden = a === 'clear';
     text($('mode-t'), t(word));
     text($('mode-s'), t(a === 'red' ? 'You are being targeted' : 'You are being observed'));
@@ -677,7 +597,7 @@ export class Hud {
   private measure(): void {
     const h = $('systems').offsetHeight;
     if (h) $('hud').style.setProperty('--sys-h', `${h}px`);
-    this.aim.layout([$('systems'), $('sensors'), $('sector'), $('log'), $('centre'), $('fire'), $('torp')]);
+    this.aim.layout([$('systems'), $('sensors'), $('objective'), $('log'), $('centre'), $('fire'), $('torp')]);
   }
 
   private retrigger(el: HTMLElement, cls: string): void {
