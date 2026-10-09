@@ -3,13 +3,14 @@
 
 > **For Jimi: how to use this**
 > 1. Open a new ChatGPT chat. Attach `docs/art/reference/wayward-title-art.jpg` and `wayward-menu-art.jpg` (the title screen art) and attach this file (it is long, so attach rather than paste).
-> 2. It will first make a **style sheet** (one picture of four kinds) and ask you to approve it. Say what to change. Then ask for **batch A**, then B, and so on. Keep every batch in the same chat so the look stays the same.
-> 3. For each batch it hands back a **PDF**, one page per picture, each page captioned with the picture's file name. Save the PDFs in a folder and give them to me (drop them in the project, or in a folder on your computer); `npm run art:prep -- <folder>` reads the PDFs, cuts out each picture by its caption, crops and sizes it, and puts it into the game.
-> 4. If ChatGPT cannot make PDFs, ask for the pictures one by one, each named with its file name (for example `captains__vance.png`). That works too.
+> 2. Write: *"Do the whole brief in one run and give me one file at the end."* It is told below to make all 109 pictures in order without stopping to ask, then to hand back **one PDF**, one page per picture, each page captioned with the picture's file name.
+> 3. If it stops part-way (long runs often do), just say **"continue"**; it keeps going from where it stopped and still ends with the one file.
+> 4. Give me the file (drop it in the project, or a folder on your computer). `npm run art:prep -- <folder>` cuts out each picture by its caption, crops and sizes it, and puts it into the game.
+> 5. Fallback if it cannot make one PDF: one ZIP of the pictures, each named with its file name (for example `captains__vance.png`). That works too.
 
 ## 1. Your job
 You are making the artwork for **WAYWARD**, a 3D space-survival roguelite for desktop and phone browsers. The pictures appear in the game where the player pauses: when someone calls them on the comms channel (portraits, a faction emblem, the hull of the ship calling), when they dock at a port (a banner), at the ending, and in the Archive (found photographs and objects). There are **101 pictures** (plus 8 optional), listed in section 8, each with its own prompt.
-Work in batches (section 6). Make every picture in the same look, as one set, matching the attached reference. Do not put any text, lettering or numbers in a picture. The game draws all words itself.
+Do the whole list in one run (section 6). Make every picture in the same look, as one set, matching the attached reference. Do not put any text, lettering or numbers in a picture. The game draws all words itself.
 
 ## 2. The game in brief
 **You play Juno**, a miner who stole the wrong ship: the *Wayward*, an Obedience-class ore hauler, carrying a file (the **Severance**) that could expose seventy years of lies. The ruling power, **the Continuance**, once switched off the jump lanes and has run the story ever since. You flee out through the **Scatter**, a broken frontier, choosing what to spend, who to trust and what to risk. Combat is possible but rarely the point.
@@ -76,10 +77,10 @@ Tone: **industrial, oppressive, scrappy, mysterious, human, dangerous.** Everyth
 
 **Ships:** one hull, three-quarter side view from slightly above, nose pointing right, whole hull in frame with room around it, pure black background, one side light with a rim light; no planet, stars, other ships or visible pilot.
 
-## 6. Delivery
-**Work in batches, in this order, and wait for approval of the style sheet first.**
+## 6. Delivery: everything in one run, one file at the end
+**Make all 109 pictures in one run, without stopping to ask for approval or notes between them.** Work through section 8 in the order given (the batches A to J). Do not pause after a batch, do not show candidates, do not ask questions: use your best judgement and keep going. If you run out of room in a response, carry on in the next as soon as I say "continue", picking up exactly where you stopped.
 
-**Step 0: the style sheet.** One page with four pictures: the emblem for `custody`, the captain portrait `vance`, the ship `lancer`, the port banner `kellern`. Show it and wait for my notes. Everything after is matched to the approved sheet: keep the same rendering, grain, lighting and level of detail.
+**To keep it one set without stopping:** before the first picture, fix the look once, in your own words, in a short private note: the rendering style, grain, lighting direction, colour grade and level of detail of the title art. Keep to that note for every picture. Make the **emblems first** (they are quick and set the stencilled, worn graphic language), then the captains, contacts, ships, ports and the rest. For the optional scarred captains (batch J), keep the same person as in batch B.
 
 
 | Batch | What | Pictures | Note |
@@ -95,14 +96,16 @@ Tone: **industrial, oppressive, scrappy, mysterious, human, dangerous.** Everyth
 | I | Regions | 8 | Eight region banners. |
 | J | Captains and Calloway (scarred) | 8 | Optional: the same captains, scarred. Only after batch B is approved, using those portraits as the reference. |
 
-**Each batch is one PDF** named `wayward-art-<batch letter>-<kind>.pdf` (for example `wayward-art-B-captains.pdf`):
-- **Page 1:** a contact sheet of the batch (thumbnails with their file names), so I can see consistency at a glance.
-- **Then one page per picture:** the picture as large as the page allows, and under it, in plain text, exactly this line, copied from the picture's heading in section 8:
+**At the end, hand over ONE file:** a single PDF named `wayward-art-all.pdf`:
+- **Page 1:** a contact sheet of all the pictures (small thumbnails with their file names), so I can judge the set at a glance.
+- **Then one page per picture, in the order of section 8:** the picture as large as the page allows, and under it, as plain page text (not inside the picture), exactly this line, copied from the picture's heading in section 8:
   `FILE: captains/vance`
-  (the slot folder, a slash, the id). This line is how the picture is put into the game, so it must be exact.
-- Do not put the file line inside the picture; keep it as page text.
+  (the slot folder, a slash, the id). This line is how the picture is put into the game, so it must be exact, and every picture needs its own page.
+- Keep the PDF to a size that can be downloaded (aim for under about 150 MB): embed each picture at roughly the size listed in section 5 (up to 1.5 times larger is fine), not at the largest your tool can make.
 
-If a picture fails the checks in section 7, remake it before the PDF. If you make several candidates, show them to me first and put only the chosen one in the PDF.
+**If one PDF is not possible** (too large, or your tool cannot build one), hand over one ZIP file instead, with every picture as a PNG named after its file line with the slash written as two underscores: `captains__vance.png`, `emblems__custody.png`.
+
+Before you put a picture in the file, check it against section 7 and remake it if it fails; show me only the finished file, not the attempts.
 
 ## 7. Check each picture before you hand it over
 1. Does it look like it belongs to the title art, and to the rest of the set?

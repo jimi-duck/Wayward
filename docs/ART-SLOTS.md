@@ -11,11 +11,13 @@ A slot with no file looks exactly as it does today.
 story, the look (matched to the title art, attached from `art/reference/`), each
 faction's look, technical rules, the delivery format, a check-list, and all 109
 pictures with their prompts in batches. Attach it to a chat with the two reference
-pictures. It asks for a style sheet first, then a **PDF per batch**, one page per
-picture, each page carrying the text line `FILE: captains/vance`.
-`npm run art:prep -- <folder of PDFs>` cuts each picture out by that line, crops,
-sizes and puts it into `src/art/`. Single images named `captains__vance.png`
-work as well. It is written by `npm run art:brief`.
+pictures. It tells the generator to make **all of them in one run, without
+stopping for approval**, and to hand back **one PDF** (`wayward-art-all.pdf`): a
+contact sheet, then one page per picture carrying the text line
+`FILE: captains/vance`. If a long run stops, say "continue". `npm run art:prep --
+<folder>` cuts each picture out by that line, crops, sizes and puts it into
+`src/art/`. A ZIP of images named `captains__vance.png` works as well. The brief
+is written by `npm run art:brief`.
 
 ## The short version
 
