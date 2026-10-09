@@ -409,6 +409,7 @@ export const UI: Record<string, string> = {
   '{name} jumped out · clear': '{name} ist weggesprungen · frei',
   'Capital ship spotted · keep your distance': 'Kapitalschiff gesichtet · halt Abstand',
   'Noticing you': 'Hat dich im Blick',
+  '{name} is noticing you': '{name} wird auf dich aufmerksam',
   'Keep clear': 'Abstand halten',
   'Leaves in': 'Weg in',
   'Jumping': 'Sprung',

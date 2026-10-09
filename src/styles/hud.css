@@ -230,6 +230,11 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 .boss-f { display: flex; justify-content: space-between; gap: 10px; font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 #boss.inbound #boss-hp { --on: transparent; animation: hud-blink 1s ease-in-out infinite; }
 #boss.cloaked #boss-hp { opacity: .35; }
+/* sighted and unaware: information, not threat. The bar is how close it is to noticing you. */
+#boss.sighted { --edge: var(--cy-dim); --lit: var(--cy); --tint: none; }
+#boss.sighted #boss-cls { color: var(--cy); }
+#boss.sighted #boss-hp { --on: var(--amber); --off: var(--cy-dim); }
+#boss.sighted .boss-bar::before, #boss.sighted .boss-bar::after { display: none; }
 
 /* the target: what it is, how far, what it yields, how much is left; the capital ship and the alert take the stage first */
 #tgt-card { display: none; width: clamp(200px, 18vw, 260px); padding: 7px 13px 8px; --lit: var(--cy); }

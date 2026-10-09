@@ -586,14 +586,16 @@ export class Hud {
   private updateMode(world: World): void {
     const a = world.alert();
     const word = !world.alive ? 'Hull breach' : a === 'red' ? 'Red alert' : 'Yellow alert';
-    const key = `${a}${word}`;
+    // a sighted capital ship that is starting to notice you says so in the alert card
+    const cap = world.command.boss?.unaware && a === 'yellow' ? world.command.boss.name : '';
+    const key = `${a}${word}${cap}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
     const mode = $('mode');
     mode.className = `glass ${a}`;
     mode.hidden = a === 'clear';
     text($('mode-t'), t(word));
-    text($('mode-s'), t(a === 'red' ? 'You are being targeted' : 'You are being observed'));
+    text($('mode-s'), cap ? t('{name} is noticing you', { name: t(cap) }) : t(a === 'red' ? 'You are being targeted' : 'You are being observed'));
     // a step up or down lights the card once, so a change is seen and not only read
     if (a !== 'clear') this.retrigger(mode, 'enter');
   }
