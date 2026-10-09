@@ -247,6 +247,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Weapons | the stat block | `sim/weapons.ts` (lasers, torpedoes), `sim/arsenal.ts` (mines, plasma, hull arc) |
 | Asteroids | `ROCK_KINDS` in `sim/field.ts` | `Field.topUp` (formations), `World.destroyRock` |
 | Krail, Cyrite and pickups | `sim/pickups.ts`, `rockYield` in `sim/breakout.ts` | `World.collect` |
+| Artwork (pictures made outside the game) | `content/art.ts` (slots, emblems, contacts), `src/art/` (the files) | `ui/art.ts` (the loader), `artOf` in `ui/comms.ts`, `ui/port.ts`, `ui/ending.ts`, `ui/panels.ts`; prompts by `tools/art/` (see [ART-SLOTS.md](ART-SLOTS.md)) |
 | Enemies | `ALIEN_TYPES`, `FACTION_TRAITS`, `VARIANTS`, `SQUADS`, `ELITES` in `sim/enemies.ts` | the existing tactical AI, `World.spawn` |
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
 | Calloway's file | `content/calloway.ts` (tricks, numbers, offers, her face) | `sim/calloway.ts` (the file, her read on your route, offers, the last meeting), `sim/hunt.ts` (the hunch), `World` (the offer, the lane mouth) |
