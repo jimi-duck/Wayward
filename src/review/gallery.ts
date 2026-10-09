@@ -71,14 +71,13 @@ const ROCK_NOTE: Record<RockKind, string> = {
   iron: 'Dark and dense, three times the hull. Splits in three.',
   rich: 'Violet-veined. A shower of Krail.',
   volatile: 'Glows white-hot and goes off when broken.',
-  rare: 'Gold. Never splits. A salvage cell inside.',
 };
 
 const CELL_NOTE: Record<string, string> = {
   repair: 'Hull repair. One plate back.',
-  shield: `${POWER_LABEL.shield}. ${POWER_HINT.shield}. From a rescue or a derelict reactor.`,
+  shield: `${POWER_LABEL.shield}. ${POWER_HINT.shield}. From a rescue, or any hull.`,
   rapid: `${POWER_LABEL.rapid}. ${POWER_HINT.rapid}. From an elite's wreck.`,
-  magnet: `${POWER_LABEL.magnet}. ${POWER_HINT.magnet}. From a rare rock.`,
+  yield: `${POWER_LABEL.yield}. ${POWER_HINT.yield}. From a hulk's warheads, or any hull.`,
   overdrive: `${POWER_LABEL.overdrive}. ${POWER_HINT.overdrive}. From a capital ship's wreck.`,
 };
 

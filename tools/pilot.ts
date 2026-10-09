@@ -337,14 +337,14 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     const d = Math.hypot(a.x - s.x, a.z - s.z);
     if (d < td && d < (bk ? 32 : 55) && Math.abs(a.y ?? 0) < 12) { td = d; tgt = a; }
   }
-  // no hull in reach: mine the field, nearest first, the rich and the rare before the rest
+  // no hull in reach: mine the field, nearest first, the rich before the rest
   // (the Breakout: only while there is mining to do; on the way to a berth it keeps going)
   let mining: (typeof w.field.rocks)[number] | null = null;
   if (!tgt && !(bk && dest)) {
     let best = Infinity;
     for (const r of w.field.rocks) {
       const d = Math.hypot(r.x - s.x, r.z - s.z);
-      const veined = r.kind === 'rich' || r.kind === 'rare';
+      const veined = r.kind === 'rich';
       const k = d * (veined ? (need ? 0.25 : 0.6) : r.kind === 'volatile' ? 2 : 1);
       if (bk && !veined && w.ore >= w.holdMax) continue;
       if (k < best && d < 50) { best = k; td = d; tgt = r; mining = r; }

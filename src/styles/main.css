@@ -301,7 +301,10 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #powers { position: absolute; right: var(--right); top: calc(var(--top) + var(--sys-h, 150px) + 8px); display: grid; gap: 4px; justify-items: end; }
 #powers span { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 7px; background: var(--glass); border-left: 2px solid var(--amber);
   font: 600 calc(var(--fs) * .9 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
-#powers span b { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); color: var(--amber); }
+#powers span b { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); color: var(--amber); min-width: 2.2em; text-align: right; }
+/* the time left, draining from the right */
+#powers span { position: relative; overflow: hidden; }
+#powers span i { position: absolute; left: 0; bottom: 0; height: 3px; width: calc(100% * var(--left, 1)); background: var(--amber); }
 
 /* ── upper centre: one card, the most important thing out there ──────── */
 #centre { position: absolute; left: 50%; top: calc(var(--safe-t) + 42px); translate: -50% 0; display: grid; gap: 8px; justify-items: center; }
@@ -341,7 +344,6 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 #tgt-card.locked #tgt-lock { display: inline-block; }
 /* rock reads in the colour of what it yields */
 #tgt-card.rock > .ico, #tgt-card.rock .tc-s b { color: var(--violet); }
-#tgt-card.rare > .ico, #tgt-card.rare .tc-s b { color: var(--amber); }
 #tgt-card.volatile > .ico { color: var(--alert); }
 /* a hull is a threat: red, as every threat is */
 #tgt-card:not(.rock) { --edge: var(--alert-dim); --lit: var(--alert); --fill: rgba(40, 12, 10, .5); }

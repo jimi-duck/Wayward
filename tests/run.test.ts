@@ -376,19 +376,44 @@ describe('the systems that fire themselves', () => {
   });
 });
 
-describe('power-ups', () => {
-  it('a rare rock breaks into a power-up, and rapid fire stops the bank draining', () => {
+describe('boosters', () => {
+  it('unlimited lasers stop the bank draining', () => {
     const w = quiet();
-    const r = w.field.spawn(1, 0, -12, 0, 0, 'rare');
-    r.hp = 0.1;
-    run(w, 0.5, { fire: true });
-    const p = w.pickups.find((k) => k.kind !== 'crystal');
-    expect(p).toBeDefined();
-    w.pickups = [];
     w.powers.rapid = 5;
     const bank = w.arms.bank;
     run(w, 1, { fire: true });
     expect(w.arms.bank).toBeGreaterThanOrEqual(bank);
+  });
+
+  it('hardened plating turns every hit for its time, and runs out', () => {
+    const w = quiet();
+    w.powers.shield = 3;
+    const plates = w.plates, shields = w.shields;
+    for (let i = 0; i < 3; i++) {
+      (w as unknown as { hitShip(s: string): void }).hitShip('hazard');
+      w.ship.invuln = 0;
+    }
+    expect(w.plates).toBe(plates);
+    expect(w.shields).toBe(shields);
+    expect(w.powers.shield).toBeGreaterThan(0);
+  });
+
+  it('high-yield torpedoes hit harder and wider', () => {
+    const w = quiet();
+    w.stats.torpedoes = true;
+    w.arms.rack = w.stats.torpRack;
+    const fire = (): { dmg: number; blast: number } => {
+      w.torps = [];
+      w.arms.spacing = 0;
+      run(w, 0.05, { torpedo: true });
+      const tp = w.torps[0]!;
+      return { dmg: tp.dmg, blast: tp.blast };
+    };
+    const base = fire();
+    w.powers.yield = 5;
+    const boosted = fire();
+    expect(boosted.dmg).toBeCloseTo(base.dmg * 2);
+    expect(boosted.blast).toBeCloseTo(base.blast * 1.5);
   });
 });
 

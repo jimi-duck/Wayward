@@ -1,6 +1,6 @@
 import {
-  AdditiveBlending, Color, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
-  Sprite, SpriteMaterial, Vector3, type BufferGeometry, type Scene, type Texture,
+  Color, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
+  Vector3, type BufferGeometry, type Scene,
 } from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STEP } from '../core/loop';
@@ -96,7 +96,6 @@ const LOOKS: Record<RockKind, RockLook> = {
   iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
   rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.85, 0.8, 1.05], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
   volatile: { id: 'volatile', glow: [3.0, 1.5, 0.6],   tint: [1.2, 0.85, 0.75], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
-  rare:     { id: 'rare',     glow: [2.6, 1.9, 0.6],   tint: [1.2, 1.1, 0.85],  zone: 0.5,  pulse: 3,   metal: 0.35, mineral: 0.8, strata: 0.7, rim: 0.4 },
 };
 const KINDS = Object.keys(LOOKS) as RockKind[];
 
@@ -210,7 +209,6 @@ function rockGeometry(seed: number, detail: number, craters: number, rough = 0.4
 export class RockView {
   /** One instanced mesh per kind per shape: meshes[kind index * ROCK_VARIANTS + variant]. */
   private readonly meshes: InstancedMesh[] = [];
-  private readonly halos: Sprite[] = [];
   private readonly bulwarks = new Map<number, Mesh>();
   private readonly bulwarkGeo: BufferGeometry[] = [];
   private readonly bulwarkMat = lavaRock(4.5, 1, 0.3);
@@ -224,7 +222,7 @@ export class RockView {
   private readonly col = new Color();
   private time = 0;
 
-  constructor(private readonly scene: Scene, glow: Texture) {
+  constructor(private readonly scene: Scene) {
     const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => rockGeometry(k * 3.7 + 1, 4, 1 + (k % 2), 0.4, 4 + (k % 3)));
     for (const kind of KINDS) {
       const mat = lavaRock(1.35, 1, 0.12, LOOKS[kind]);
@@ -236,13 +234,6 @@ export class RockView {
         this.meshes.push(mesh);
         scene.add(mesh);
       }
-    }
-    // the rare rock carries a halo, so it reads as a find from far off
-    for (let i = 0; i < 4; i++) {
-      const h = new Sprite(new SpriteMaterial({ map: glow, color: new Color(2.4, 1.8, 0.5), blending: AdditiveBlending, depthWrite: false }));
-      h.visible = false;
-      scene.add(h);
-      this.halos.push(h);
     }
     for (let k = 0; k < BULWARK_VARIANTS; k++) this.bulwarkGeo.push(rockGeometry(k * 5.3 + 20, 5, 3 + k, 0.36, 7 + k));
     // a bulwark is a plain mesh, not an instance: hidden here so the warm-up compiles its program too
@@ -277,19 +268,12 @@ export class RockView {
     lavaTime.value = this.time;
     const counts = new Array<number>(this.meshes.length).fill(0);
     const back = (1 - alpha) * STEP;
-    let halo = 0;
     for (const r of rocks) {
       const slot = KINDS.indexOf(r.kind) * ROCK_VARIANTS + r.variant;
       const mesh = this.meshes[slot]!;
       const i = counts[slot]!;
       if (i >= PER_VARIANT) continue;
       counts[slot] = i + 1;
-      if (r.kind === 'rare' && halo < this.halos.length) {
-        const h = this.halos[halo++]!;
-        h.visible = true;
-        h.position.set(r.x - r.vx * back, 0.2, r.z - r.vz * back);
-        h.scale.setScalar(r.r * (5 + Math.sin(this.time * 3 + r.id) * 0.6));
-      }
       const grow = Math.min(1, r.age / 0.6);
       const s = r.r * (grow * grow * (3 - 2 * grow));
       this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.spin * r.age + r.id);
@@ -298,7 +282,6 @@ export class RockView {
       const flash = 1 + (r.hitT / 0.12) * 4;
       mesh.setColorAt(i, this.col.setRGB(flash, flash * 0.8, flash * 0.7));
     }
-    for (let i = halo; i < this.halos.length; i++) this.halos[i]!.visible = false;
     this.meshes.forEach((mesh, k) => {
       mesh.count = counts[k]!;
       mesh.visible = mesh.count > 0;
