@@ -3,6 +3,7 @@ import { test } from 'vitest';
 import { SLOTS, type SlotId } from '../src/content/art';
 import { allBriefs, AVOID_ALL, STYLE } from './art/briefs';
 import { masterBrief } from './art/master';
+import { starterBrief } from './art/starter';
 
 // ── the prompts for every picture ─────────────────────────────────────────
 // `npm run art:brief` writes docs/art/CHATGPT-BRIEF.md (the one file to give an
@@ -33,4 +34,5 @@ test('write the briefs', () => {
   }
   writeFileSync('docs/art/briefs.md', md.join('\n'));
   writeFileSync('docs/art/CHATGPT-BRIEF.md', masterBrief(list) + '\n');
+  writeFileSync('docs/art/STARTER-15.md', starterBrief(list) + '\n');
 });
