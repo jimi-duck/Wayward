@@ -37,6 +37,7 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="./src/assets/fonts/barlow-semi-condensed-400.woff2">
   <link rel="stylesheet" href="./src/styles/main.css">
   <link rel="stylesheet" href="./src/styles/hud.css">
+  <link rel="stylesheet" href="./src/styles/title.css">
 </head>
 <body>
   <div id="app">
@@ -175,27 +176,30 @@
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
 
-    <!-- The title: the lockup, the two ways to play, the one button that starts
-         the chosen one, over the key art. Options sit quietly along the foot. -->
+    <!-- The title, after the reference board: the word and its line top left, a plain list down the
+         left edge (the way in), the ship's stocks and the journey on the right while there is one.
+         Difficulty is a step after Arcade or New journey, not a part of the list. -->
     <div id="start" role="dialog" aria-label="Wayward">
-      <div class="start-card">
-        <!-- the lockup (brand v1.1, § 9): the mark, the word, the ship's papers -->
-        <div class="lockup" role="img" aria-label="Wayward, Obedience-class ore hauler">
-          <svg class="mark" viewBox="0 0 40 34" aria-hidden="true"><path d="M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z"/></svg>
-          <span class="lk-t"><b class="lk-w">Wayward</b><span class="lk-d"><span>Obedience-class ore hauler</span><b class="lk-id">OB-7731-A</b></span></span>
-        </div>
-        <!-- the one path: the mode, the difficulty and what it means, then Start -->
-        <div class="pick">
-          <span class="pk-k"><b>Game mode</b></span>
-          <div class="modes" role="radiogroup" aria-label="Game mode">
-            <button type="button" role="radio" id="mode-arcade" class="mode" aria-checked="true"><b class="mo-t">Arcade</b><span class="mo-s">Freefly • Score • Explore</span></button>
-            <button type="button" role="radio" id="mode-story" class="mode" aria-checked="false"><b class="mo-t">Story</b><span class="mo-s">Survive • Trade • Extract • Return</span></button>
-          </div>
-        </div>
-        <!-- the survival mode, shown as a difficulty: how the whole game plays (content/survival.ts) -->
-        <div class="pick surv">
-          <span class="pk-k"><b>Difficulty</b></span>
-          <div id="mods" class="difs" role="radiogroup" aria-label="Difficulty"></div>
+      <header class="st-brand" role="img" aria-label="Wayward, keep moving">
+        <svg class="st-mark" viewBox="0 0 40 34" aria-hidden="true"><path d="M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z"/></svg>
+        <b class="st-w">Wayward</b>
+        <span class="st-tag">Keep moving</span>
+      </header>
+
+      <div class="st-col">
+        <!-- the way in -->
+        <nav class="st-list" id="st-menu" aria-label="Wayward">
+          <button type="button" id="m-continue" class="st-row" hidden><span class="st-t">Continue</span><span class="st-s" id="cont-s"></span></button>
+          <button type="button" id="m-journey" class="st-row"><span class="st-t">New journey</span></button>
+          <button type="button" id="m-arcade" class="st-row"><span class="st-t">Arcade mode</span></button>
+          <button type="button" id="m-archive" class="st-row"><span class="st-t">Archive</span></button>
+          <button type="button" id="m-settings" class="st-row"><span class="st-t">Settings</span></button>
+        </nav>
+
+        <!-- the step after New journey or Arcade mode: how hard, Normal ready -->
+        <section class="st-step" id="st-diff" aria-labelledby="st-diff-t" hidden>
+          <h2 class="st-h" id="st-diff-t">Difficulty</h2>
+          <div class="st-list" id="mods" role="radiogroup" aria-label="Difficulty"></div>
           <div class="sv-pre">
             <b class="sv-t" id="sv-t"></b>
             <span class="diff-s" id="diff-s"></span>
@@ -203,11 +207,24 @@
             <!-- Story only: what a wreck costs (sim/journey.ts) -->
             <span class="sv-rule" id="sv-rule" hidden></span>
           </div>
-          <span class="diff-s sv-keep" id="sv-keep" hidden></span>
-        </div>
-        <button type="button" id="launch"><span class="la-t" id="launch-t">Start game</span><span class="la-s" id="launch-s"></span></button>
-        <!-- a journey in progress: a small card under Start, the way back in whichever mode is picked -->
-        <button type="button" id="cont" class="cont" hidden><span class="ct-t"><span class="ct-k">Continue journey</span><span class="ct-s" id="cont-s"></span></span><span class="ct-go">Continue</span></button>
+          <span class="st-warn" id="sv-keep" hidden></span>
+          <div class="st-list st-go">
+            <button type="button" id="launch" class="st-row st-begin"><span class="st-t" id="launch-t">Begin</span><span class="st-s" id="launch-s"></span></button>
+            <button type="button" id="d-back" class="st-row"><span class="st-t">Back</span></button>
+          </div>
+        </section>
+
+        <!-- Settings: the switches that matter before a run -->
+        <section class="st-step" id="st-set" aria-labelledby="st-set-t" hidden>
+          <h2 class="st-h" id="st-set-t">Settings</h2>
+          <div class="st-list" id="st-sw">
+            <button type="button" id="s-sound" class="st-row st-sw" aria-pressed="true"><span class="st-t">Sound</span><b class="st-v" id="s-sound-v">On</b></button>
+            <button type="button" id="s-buzz" class="st-row st-sw" aria-pressed="true" hidden><span class="st-t">Buzz</span><b class="st-v" id="s-buzz-v">On</b></button>
+            <div id="lang" class="st-row st-lang" role="group" aria-label="Language"></div>
+          </div>
+          <div class="st-list st-go"><button type="button" id="s-back" class="st-row"><span class="st-t">Back</span></button></div>
+        </section>
+
         <!-- the chapter just begun, in three chips (sim/chapters.ts), and a way back to its gate -->
         <div class="recap" id="recap" hidden></div>
         <button type="button" id="chapter" class="ghost" hidden>Start this chapter again</button>
@@ -217,11 +234,18 @@
         <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->
         <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
       </div>
-      <div class="start-foot">
+
+      <!-- the ship as the journey left it, and where it is going; only while there is a journey -->
+      <div class="st-side">
+        <aside class="st-ship glass" id="st-ship" aria-label="Ship status" hidden></aside>
+        <button type="button" class="st-trip glass" id="st-trip" aria-label="Current journey" hidden></button>
+      </div>
+
+      <footer class="st-foot">
+        <span class="st-ver" id="st-ver"></span>
         <div id="records" class="records"></div>
         <div id="saves" class="mods" aria-label="Saved journey"></div>
-      </div>
-      <div id="lang" class="mods lang" aria-label="Language"></div>
+      </footer>
     </div>
 
     <!-- The Archive (once the logbook): journeys, endings, files and people carried between journeys, and what progression has opened. -->

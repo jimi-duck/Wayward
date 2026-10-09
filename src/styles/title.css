@@ -1,0 +1,143 @@
+/* ── the title ────────────────────────────────────────────────────────────
+   After the reference board: the word and its line top left, a plain list
+   down the left edge, the ship's stocks and the journey on the right while
+   there is a journey. The key art stays whole; only the left edge is shaded
+   for reading. The rows are bare text: the pick is a muted bar that fades
+   out to the right, and weight comes from type and light. Difficulty is a
+   step after Arcade or New journey, with Normal ready.
+   Glass is the shared material (glass.css, .glass in hud.css). */
+#start {
+  --pad-x: clamp(20px, 4.2vw, 64px);
+  position: absolute; inset: 0; z-index: 4;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); grid-template-rows: auto 1fr auto; column-gap: 24px;
+  padding: max(clamp(22px, 6vh, 64px), calc(var(--safe-t) + 14px)) max(var(--pad-x), calc(var(--safe-r) + 16px)) max(14px, calc(var(--safe-b) + 10px)) max(var(--pad-x), calc(var(--safe-l) + 16px));
+  background:
+    linear-gradient(90deg, rgba(4, 7, 11, .82) 0%, rgba(4, 7, 11, .56) 24%, rgba(4, 7, 11, 0) 50%),
+    linear-gradient(180deg, rgba(4, 7, 11, .4) 0%, rgba(4, 7, 11, 0) 22%, rgba(4, 7, 11, 0) 84%, rgba(4, 7, 11, .5) 100%),
+    url("../assets/wayward-title-background.webp") var(--art-pos, 86% 56%) / cover no-repeat,
+    var(--void);
+  color: var(--ink); }
+#start[hidden] { display: none; }
+/* the page fades in as a whole (a plate with its own opacity would stop seeing the art), the rows slide in after it */
+#start:not([hidden]) { animation: st-fade .5s var(--ez) both; }
+@keyframes st-fade { from { opacity: 0; } }
+@keyframes st-in { from { opacity: 0; transform: translateX(-10px); } }
+#start:not([hidden]) .st-list > .st-row { animation: st-in .5s var(--ez) both; }
+#start:not([hidden]) .st-list > :nth-child(2) { animation-delay: .05s; }
+#start:not([hidden]) .st-list > :nth-child(3) { animation-delay: .1s; }
+#start:not([hidden]) .st-list > :nth-child(4) { animation-delay: .15s; }
+#start:not([hidden]) .st-list > :nth-child(5) { animation-delay: .2s; }
+
+/* the word: the amber mark, wide-set letters, and the line under them */
+.st-brand { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: clamp(12px, 1.4vw, 20px); align-items: center; justify-self: start; }
+.st-mark { grid-row: 1 / span 2; width: clamp(40px, 4.4vw, 68px); height: auto; fill: var(--wayward-amber); filter: drop-shadow(0 2px 12px rgba(0, 0, 0, .5)); }
+.st-w { font: 600 clamp(30px, 3.5vw, 52px)/1 var(--font-head); letter-spacing: .36em; text-transform: uppercase; color: var(--industrial-white); text-shadow: 0 2px 16px rgba(0, 0, 0, .55); }
+.st-tag { font: 500 clamp(11px, .95vw, 14px)/1 var(--font-rail); letter-spacing: .5em; text-transform: uppercase; color: var(--ink); margin-top: 6px; padding-left: .1em; text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
+
+.st-col { grid-column: 1; grid-row: 2; align-self: start; margin-top: clamp(26px, 8vh, 90px); display: grid; gap: 14px; justify-items: start; width: min(420px, 100%); }
+.st-col .recap, .st-col .ghost, .st-col .tip, .st-col .resume-s { margin-left: 18px; }
+.st-quiet { display: none !important; }
+
+/* the list: a hairline down its left edge, bare rows */
+.st-list { display: grid; gap: 2px; width: 100%; border-left: 1px solid rgba(216, 213, 198, .26); }
+.st-list[hidden], .st-step[hidden] { display: none; }
+.st-step { display: grid; gap: 12px; width: 100%; }
+.st-h { margin: 0 0 2px 18px; font: 600 12px/1 var(--font-rail); letter-spacing: .4em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
+.st-row { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 2px 14px; width: 100%; min-height: 44px;
+  margin: 0; padding: 9px 20px 9px 42px; border: 0; background: none; cursor: pointer; text-align: left; color: var(--ink); -webkit-tap-highlight-color: transparent; }
+.st-row[hidden] { display: none; }
+.st-t { font: 500 clamp(17px, 1.55vw, 23px)/1.1 var(--font-head); letter-spacing: .22em; text-transform: uppercase; text-shadow: 0 1px 10px rgba(0, 0, 0, .6); }
+.st-s { font: 600 12px/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
+#m-continue .st-s { grid-column: 1 / -1; letter-spacing: .08em; }
+.st-v { font: 600 13px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+/* the pick: a muted bar, bright at its left edge and fading out to the right; a chevron marks it */
+.st-row::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .18s var(--ez);
+  background: linear-gradient(90deg, var(--gl-blue-e2) 0%, rgba(0, 0, 0, 0) 94%); box-shadow: inset 3px 0 0 var(--gl-blue-e1); }
+.st-row::after { content: "›"; position: absolute; left: 18px; top: 50%; translate: -4px -52%; font: 500 20px/1 var(--font-head); color: var(--industrial-white); opacity: 0; transition: opacity .18s var(--ez), translate .18s var(--ez); }
+.st-row:hover, .st-row:focus { outline: none; color: var(--industrial-white); }
+.st-row:hover::before, .st-row:focus::before, .st-row:hover::after, .st-row:focus::after { opacity: 1; }
+.st-row:hover::after, .st-row:focus::after { translate: 0 -52%; }
+.st-row:focus-visible { outline: none; }
+/* a choice already made (the difficulty) keeps a lit rail even when the pick moves on */
+.st-row[aria-checked="true"] { color: var(--industrial-white); box-shadow: inset 3px 0 0 var(--gl-blue-e1); }
+.st-row[aria-checked="true"] .st-s { color: var(--gl-blue-e1); }
+.st-row[aria-pressed="true"] .st-v { color: var(--gl-blue-e1); }
+.st-row[aria-pressed="false"] .st-v { color: var(--ink-2); }
+.st-begin .st-t { color: var(--gl-blue-e1); }
+.st-go { margin-top: 4px; }
+.st-warn { margin: 0 0 0 18px; padding: 6px 10px; border-left: 2px solid var(--gl-blue-e1); background: rgba(6, 9, 12, .62); font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--hud-hi); }
+.st-warn[hidden] { display: none; }
+.st-lang { display: flex; gap: 8px; align-items: center; cursor: default; }
+.st-lang:hover::before, .st-lang:hover::after { opacity: 0; }
+.st-lang button { flex: none; height: 32px; min-width: 76px; padding: 0 12px; font: 600 12px/1 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink); background: rgba(6, 9, 12, .55); border: 1px solid rgba(216, 213, 198, .3); cursor: pointer; }
+.st-lang button:hover, .st-lang button:focus { outline: none; border-color: var(--gl-blue-e1); }
+.st-lang button[aria-pressed="true"] { color: var(--industrial-white); border-color: var(--gl-blue-e1); background: var(--gl-blue-f); }
+
+/* what the picked difficulty means: one cyan line and three small meters */
+.sv-pre { display: grid; gap: 7px; margin-left: 18px; padding: 8px 12px; width: calc(100% - 18px); background: rgba(6, 12, 18, .62); border-left: 1px solid var(--cy-dim); }
+.sv-t { font: 700 13px/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--industrial-white); }
+.diff-s { display: none; }
+.sv-rule { font: 400 12px/1.35 var(--font-display); color: var(--ink); }
+.sv-rule[hidden] { display: none; }
+.sv-scale { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.sv-c { display: inline-flex; align-items: center; gap: 7px; font: 600 11px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
+.sv-c em { font-style: normal; }
+.sv-c i { display: inline-flex; gap: 3px; }
+.sv-c s { display: block; width: 10px; height: 6px; background: rgba(255, 255, 255, .18); }
+.sv-c s.on { background: var(--blue); }
+.sv-c.sky s.on { background: var(--alert); }
+
+/* the right: the ship's stocks over the journey, glass from the HUD's own recipe */
+.st-side { grid-column: 2; grid-row: 1 / span 2; align-self: start; justify-self: end; display: grid; gap: 12px; width: min(330px, 100%); }
+.st-side > [hidden] { display: none; }
+.st-ship { display: grid; gap: 9px; padding: 14px 16px 12px; --tint: linear-gradient(180deg, rgba(76, 194, 203, .06), transparent 60%); }
+.sx-bar { display: grid; grid-template-columns: 52px minmax(0, 1fr) 46px; align-items: center; gap: 10px; }
+.sx-bar .k { color: var(--ink); font-size: 11px; letter-spacing: .2em; }
+.sx-bar .ticks { height: 8px; }
+.sx-bar b { font: 600 12px/1 var(--font-mono); color: var(--ink); text-align: right; }
+.sx-stock { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 3px; padding-top: 9px; border-top: 1px solid rgba(216, 213, 198, .18); font: 600 11px/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
+.st-trip { display: grid; gap: 10px; width: 100%; padding: 12px 14px; border: 0; cursor: pointer; text-align: left; color: var(--ink); font: inherit; --tint: linear-gradient(180deg, rgba(76, 194, 203, .05), transparent 60%); }
+.st-trip:hover, .st-trip:focus { outline: none; --edge: var(--glass-edge-hi); }
+.st-trip:focus-visible { outline: 2px solid var(--gl-blue-e1); outline-offset: 3px; }
+.st-k { font: 600 11px/1 var(--font-rail); letter-spacing: .26em; text-transform: uppercase; color: var(--hud-hi); }
+.sx-line { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; }
+.sx-art { display: block; width: 72px; height: 46px; border: 1px solid rgba(216, 213, 198, .26); background: url("../assets/wayward-title-background.webp") 74% 62% / 330% auto no-repeat; }
+.sx-line b, .sx-next b { display: block; font: 600 15px/1.2 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--industrial-white); }
+.sx-line em, .sx-next em { display: block; margin-top: 3px; font: 400 13px/1.25 var(--font-display); font-style: normal; color: var(--ink); }
+.sx-next { display: grid; gap: 3px; padding-top: 9px; border-top: 1px solid rgba(216, 213, 198, .18); }
+.sx-next .st-k { color: var(--ink); }
+
+/* the foot: the version, the record, the save's file buttons */
+.st-foot { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: flex-end; gap: 10px 22px; flex-wrap: wrap; }
+.st-ver { font: 400 11px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(0, 0, 0, .8); padding-bottom: 3px; }
+.st-foot .records { background: rgba(6, 9, 12, .6); }
+.st-foot #saves { margin-left: auto; justify-content: flex-end; }
+.st-foot .mods button { background: rgba(6, 9, 12, .6); color: var(--ink); border-color: rgba(216, 213, 198, .34); }
+.st-foot .mods button:hover { border-color: var(--gl-blue-e1); }
+
+/* a squarer screen: the art hangs a little to the right so the ship stays out from under the list */
+@media (max-aspect-ratio: 3/2) { #start { --art-pos: 100% 56%; } }
+/* a short screen (a phone on its side, a small window): the list, tighter, and no panels */
+@media (max-height: 620px) {
+  #start { padding-top: max(10px, calc(var(--safe-t) + 8px)); column-gap: 12px; }
+  .st-col { margin-top: 12px; gap: 8px; width: min(340px, 100%); }
+  .st-w { font-size: clamp(24px, 7vh, 34px); letter-spacing: .3em; }
+  .st-mark { width: clamp(28px, 7vh, 40px); }
+  .st-tag { font-size: 10px; letter-spacing: .4em; margin-top: 4px; }
+  .st-row { min-height: 40px; padding: 6px 14px 6px 36px; }
+  .st-t { font-size: 17px; }
+  .st-s { font-size: 11px; }
+  .st-side { display: none; }
+  .sv-pre { padding: 5px 10px; gap: 5px; }
+  .sv-rule { display: none; }
+  .st-h { font-size: 11px; }
+  .st-foot { gap: 6px 14px; }
+  .st-foot .records { font-size: 10px; gap: 12px; }
+}
+@media (max-height: 420px) {
+  .st-col { margin-top: 14px; gap: 6px; }
+  .st-list { gap: 0; }
+  .st-row { min-height: 40px; padding-top: 4px; padding-bottom: 4px; }
+  .sv-pre { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { #start:not([hidden]), #start:not([hidden]) .st-list > .st-row { animation: none; } .st-row::before, .st-row::after { transition: none; } }

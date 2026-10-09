@@ -14,7 +14,8 @@ import { recap } from './sim/chapters';
 import { FEATURES } from './content/features';
 import { SURVIVAL } from './content/survival';
 import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
-import { regionsOf, sysById } from './sim/chart';
+import { regionsOf, routeBetween, sysById } from './sim/chart';
+import { FOOD_MAX, TANK_MAX } from './sim/breakout';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
 import { Cutscene } from './ui/adrift';
@@ -146,25 +147,95 @@ function boot(review: typeof import('./review') | null): void {
     if (pending(j)) return `${day} · ${t('through the Threshold · the file is still aboard')}`;
     return [day, t(SURVIVAL[j.survival].name), j.dest ? `${here(j).name} → ${sysById(j.chart, j.dest).name}` : here(j).name].join(' · ');
   };
-  /** Start game replaces a saved journey only on a second press: the first arms it and says so. */
-  let armed = false;
-  let disarm = 0;
-  const paintLaunch = (replaces: boolean) => {
+  /** The title is a plain list; Arcade and New journey lead to one step more (the difficulty, Normal ready), Settings to another. */
+  type Step = 'menu' | 'diff' | 'set';
+  let step: Step = 'menu';
+  const liveJourney = () => (journey && (journey.status !== 'over' || pending(journey)) ? journey : null);
+  /** The rows on screen now, top to bottom: the list, or the step's own. */
+  const rows = () => [...document.querySelectorAll<HTMLElement>(step === 'menu' ? '#st-menu .st-row:not([hidden])' : step === 'diff' ? '#st-diff .st-row:not([hidden])' : '#st-set .st-row:not([hidden]), #lang button')].filter((b) => !b.closest('[hidden]'));
+  const paintStep = () => {
+    el('st-menu').hidden = step !== 'menu';
+    el('st-diff').hidden = step !== 'diff';
+    el('st-set').hidden = step !== 'set';
+    // the chapter's recap and the save notes belong to the list, not to a step
+    for (const id of ['recap', 'chapter', 'save-problem', 'restore']) el(id).classList.toggle('st-quiet', step !== 'menu');
+    el('st-ship').classList.toggle('st-quiet', step === 'set');
+    el('st-trip').classList.toggle('st-quiet', step === 'set');
+  };
+  const showStep = (to: Step, focus = true) => {
+    step = to;
+    showResume();
+    if (!focus) return;
+    // the step opens on its natural row: Normal for difficulty, Begin is one Down away
+    const first = to === 'diff' ? document.querySelector<HTMLElement>('#mods .dif[aria-checked="true"]') : rows()[0];
+    (first ?? rows()[0])?.focus({ preventScroll: true });
+  };
+  const paintLaunch = () => {
+    const live = liveJourney();
     const what = `${t(pick === 'arcade' ? 'Arcade' : 'Story')} · ${t(SURVIVAL[profile.survival].name)}`;
-    el('launch').classList.toggle('armed', armed);
-    el('launch-s').textContent = armed ? t('Press again to replace your save') : replaces ? `${what} · ${t('New journey')}` : what;
-    el('launch-t').textContent = armed ? t('Start a new journey?') : t('Start game');
+    el('launch-t').textContent = t('Begin');
+    el('launch-s').textContent = what;
+    // a New journey over a saved one: say so before it is begun, never after
+    const warn = el('sv-keep');
+    warn.hidden = !(pick === 'breakout' && live);
+    warn.textContent = t('This replaces your saved journey.');
+  };
+  /** The ship's stocks and where the journey stands, from the save: the right-hand panels. */
+  const paintJourney = (live: Journey | null) => {
+    const ship = el('st-ship'), trip = el('st-trip');
+    ship.hidden = trip.hidden = !live;
+    if (!live) return;
+    const c = live.carry;
+    const bar = (label: string, v: number, max: number) => {
+      const row = document.createElement('div');
+      row.className = 'sx-bar';
+      const k = Object.assign(document.createElement('span'), { className: 'k', textContent: t(label) });
+      const m = document.createElement('i');
+      m.className = 'ticks';
+      m.style.setProperty('--v', String(Math.max(0, Math.min(1, v / max))));
+      m.style.setProperty('--n', '12');
+      m.style.setProperty('--on', 'var(--cy)');
+      m.style.setProperty('--off', 'rgba(124, 226, 234, .14)');
+      row.append(k, m, Object.assign(document.createElement('b'), { textContent: `${Math.round(v)}/${max}` }));
+      return row;
+    };
+    const stock = document.createElement('div');
+    stock.className = 'sx-stock';
+    for (const [label, n] of [['Parts', c.parts], ['Chits', c.chits], ['Krail', c.krail], ['Ore', c.ore]] as const) {
+      stock.append(Object.assign(document.createElement('span'), { textContent: `${t(label)} ${Math.floor(n)}` }));
+    }
+    ship.replaceChildren(bar('Fuel', c.cyrite, TANK_MAX), bar('Food', c.food, FOOD_MAX), stock);
+    const at = here(live), rn = regionName(live.chart, live.at);
+    const head = Object.assign(document.createElement('span'), { className: 'st-k', textContent: t('Current journey') });
+    const line = document.createElement('span');
+    line.className = 'sx-line';
+    const art = document.createElement('i');
+    art.className = 'sx-art';
+    art.setAttribute('aria-hidden', 'true');
+    const txt = document.createElement('span');
+    txt.append(Object.assign(document.createElement('b'), { textContent: rn || at.name }), Object.assign(document.createElement('em'), { textContent: t('Day {n}', { n: Math.floor(live.day) + 1 }) + ' · ' + t(SURVIVAL[live.survival].name) }));
+    line.append(art, txt);
+    const next = document.createElement('span');
+    next.className = 'sx-next';
+    const dest = live.dest ? sysById(live.chart, live.dest) : null;
+    const lane = dest ? routeBetween(live.chart, live.at, dest.id) : null;
+    next.append(
+      Object.assign(document.createElement('span'), { className: 'st-k', textContent: t('Next stop') }),
+      Object.assign(document.createElement('b'), { textContent: dest ? dest.name : at.name }),
+      Object.assign(document.createElement('em'), { textContent: lane ? `${plural(lane.days, '{n} day', '{n} days')} · ${lane.cyrite} ${t('Cyrite')}` : t('Plot the next jump') }),
+    );
+    trip.replaceChildren(head, line, next);
+    trip.setAttribute('aria-label', t('Current journey'));
   };
   const showResume = () => {
-    const live = journey && (journey.status !== 'over' || pending(journey)) ? journey : null;
-    const j = pick === 'breakout' ? live : null;
-    el('mode-arcade').setAttribute('aria-checked', String(pick === 'arcade'));
-    el('mode-story').setAttribute('aria-checked', String(pick === 'breakout'));
+    const live = liveJourney();
+    const j = live;
     el('sv-rule').hidden = pick !== 'breakout';
-    // a saved journey is a small card above the picks, in either mode; Start game below is always a new one
-    el('cont').hidden = !live;
+    // a saved journey is the first row of the list, and the panels on the right
+    el('m-continue').hidden = !live;
     if (live) el('cont-s').textContent = resumeLine(live);
-    armed = false;
+    paintStep();
+    paintJourney(live);
     // the chapter just begun, and the way back to its gate (not in Hardcore, where nothing is taken back)
     const rc = j ? recap(j) : null;
     const box = el('recap');
@@ -177,7 +248,8 @@ function boot(review: typeof import('./review') | null): void {
     }
     const snap = j && !j.hardcore ? chapterSave() : null;
     el('chapter').hidden = !snap || !j || snap.day >= j.day;
-    paintLaunch(!!j);
+    paintLaunch();
+    paintSwitches();
     // a save that could not be read is said so, with the safety copy on offer if there is one
     const bad = saveUnreadable() && !journey;
     el('save-problem').textContent = t('Your saved journey could not be read.');
@@ -185,11 +257,18 @@ function boot(review: typeof import('./review') | null): void {
     el('restore').hidden = !bad || !hasBackup();
     renderSaves(live);
   };
+  /** Settings on the title: sound and buzz, read from the same switches the pause card has. */
+  const paintSwitches = () => {
+    for (const [id, on] of [['s-sound', feel.prefs.sound], ['s-buzz', feel.prefs.haptics]] as const) {
+      el(id).setAttribute('aria-pressed', String(on));
+      el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
+    }
+    el('s-sound').hidden = !SOUND_AVAILABLE;
+    el('s-buzz').hidden = !feel.canBuzz;
+  };
   /** Export the saved journey to a file, or bring one back from a file. */
   const renderSaves = (live: Journey | null) => {
     const box = el('saves');
-    // only the Story has a save to bring in or take out
-    box.hidden = pick !== 'breakout';
     const btn = (label: string, f: () => void) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -222,8 +301,8 @@ function boot(review: typeof import('./review') | null): void {
     }));
     box.replaceChildren(...out);
   };
-  const choose = (mode: 'arcade' | 'breakout') => { pick = mode; showResume(); };
-  showResume();
+  el('st-ver').textContent = `WAYWARD · ${__BUILD__}`;
+  showStep('menu');
   /** The stocks and the day as this system began, to show what it changed. */
   let sortieStart: Tally | null = null;
   /** Fly the journey's current system. */
@@ -325,7 +404,7 @@ function boot(review: typeof import('./review') | null): void {
     if (!started) world.restart({ survival: profile.survival, mode: profile.mode });
     showBrief();
     showResume();
-  }, () => (journey && (journey.status !== 'over' || pending(journey)) ? journey.survival : null));
+  });
   // a new language: the page, then whatever the start card drew itself
   onLang(() => { localize(); showResume(); startOpts.render(); hud.relabel(); });
   const stops = () => {
@@ -504,7 +583,7 @@ function boot(review: typeof import('./review') | null): void {
     {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), brk: el('brk'),
     },
-    () => (started ? (panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : launch(pick, pick === 'breakout')),
+    () => (started ? (panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : menuEnter()),
     () => openBay(),
   );
 
@@ -586,47 +665,54 @@ function boot(review: typeof import('./review') | null): void {
   window.visualViewport?.addEventListener('resize', bars);
   el('swipe-x').addEventListener('click', () => { kept = true; bars(); });
 
-  // Enter or a tap off the buttons: Arcade starts, Story carries on a saved journey or begins one
-  const go = () => launch(pick, pick === 'breakout');
+  // The title is a list of buttons: nothing starts from a tap on the picture. Enter, or a pad's start, presses the row that has the focus.
+  const menuEnter = () => {
+    const f = document.activeElement;
+    if (f instanceof HTMLElement && el('start').contains(f) && f.closest('.st-row')) f.click();
+    else rows()[0]?.click();
+  };
   const press = (id: string, f: () => void) => {
     el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
     el(id).addEventListener('pointerdown', (e) => e.stopPropagation());
   };
-  press('launch', () => {
-    const live = journey && (journey.status !== 'over' || pending(journey));
-    if (pick === 'arcade' || !live || armed) return launch(pick);
-    armed = true;
-    paintLaunch(true);
-    clearTimeout(disarm);
-    disarm = window.setTimeout(() => { armed = false; paintLaunch(true); }, 4000);
-  });
+  press('m-continue', () => launch('breakout', true));
+  press('m-journey', () => { pick = 'breakout'; showStep('diff'); });
+  press('m-arcade', () => { pick = 'arcade'; showStep('diff'); });
+  press('m-archive', () => startOpts.logbook(true));
+  press('m-settings', () => showStep('set'));
+  press('d-back', () => showStep('menu'));
+  press('s-back', () => showStep('menu'));
+  press('launch', () => launch(pick));
+  press('s-sound', () => { feel.setSound(!feel.prefs.sound); paintSwitches(); showBrief(); });
+  press('s-buzz', () => { feel.setHaptics(!feel.prefs.haptics); paintSwitches(); showBrief(); });
+  press('st-trip', () => launch('breakout', true));
   press('chapter', () => { const j = restartChapter(); if (j) { journey = j; showResume(); } });
-  press('cont', () => launch('breakout', true));
-  press('restore', () => { const j = restoreJourney(); if (j) { journey = j; pick = 'breakout'; showResume(); } });
-  press('mode-arcade', () => choose('arcade'));
-  press('mode-story', () => choose('breakout'));
-  el('start').addEventListener('pointerdown', (e) => {
-    if (startOpts.logbookOpen) return;
-    e.preventDefault();
-    go();
-  });
+  press('restore', () => { const j = restoreJourney(); if (j) { journey = j; showResume(); } });
+  // the pointer moves the highlight the way the arrows do
+  for (const r of document.querySelectorAll<HTMLElement>('#start .st-row')) r.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') r.focus({ preventScroll: true }); });
 
   window.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
     if (!started) {
       if (startOpts.logbookOpen) { if (e.code === 'Escape') startOpts.logbook(false); return; }
-      // in the difficulty row the arrows step through Easy, Normal, Hard; anywhere else they swap the mode
-      const inDifs = e.target instanceof Element && e.target.closest('#mods');
-      if (inDifs && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
-        const all = [...document.querySelectorAll<HTMLButtonElement>('#mods button')];
-        const at = all.findIndex((b) => b.getAttribute('aria-checked') === 'true');
-        all[Math.max(0, Math.min(all.length - 1, at + (e.code === 'ArrowRight' ? 1 : -1)))]?.click();
-        document.querySelector<HTMLButtonElement>('#mods button[aria-checked="true"]')?.focus();
+      // Up and Down walk the rows, Back (Esc, Backspace) leaves a step, Enter presses the row that has the focus
+      if (e.code === 'ArrowDown' || e.code === 'ArrowUp') {
+        e.preventDefault();
+        const all = rows();
+        const at = all.indexOf(document.activeElement as HTMLElement);
+        all[at < 0 ? (e.code === 'ArrowDown' ? 0 : all.length - 1) : (at + (e.code === 'ArrowDown' ? 1 : -1) + all.length) % all.length]?.focus({ preventScroll: true });
         return;
       }
-      if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { choose(pick === 'arcade' ? 'breakout' : 'arcade'); el(pick === 'arcade' ? 'mode-arcade' : 'mode-story').focus(); return; }
-      // Enter on a focused button presses that button; anywhere else it starts the picked mode
-      if ((e.code === 'Enter' || e.code === 'Space') && !(e.target instanceof HTMLButtonElement)) go();
+      // in the difficulty list Left and Right step through Easy, Normal, Hard as well
+      if (step === 'diff' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight') && document.activeElement?.closest('#mods')) {
+        const all = [...document.querySelectorAll<HTMLButtonElement>('#mods button')];
+        const at = all.indexOf(document.activeElement as HTMLButtonElement);
+        all[Math.max(0, Math.min(all.length - 1, at + (e.code === 'ArrowRight' ? 1 : -1)))]?.focus();
+        return;
+      }
+      if ((e.code === 'Escape' || e.code === 'Backspace') && step !== 'menu') { showStep('menu'); return; }
+      // Enter on a focused button presses that button; with none, the first row
+      if ((e.code === 'Enter' || e.code === 'Space') && !(e.target instanceof HTMLButtonElement)) menuEnter();
       return;
     }
     if (panelOpen()) return;

@@ -1,6 +1,10 @@
 import { defineConfig } from 'vitest/config';
 
+/** The day the bundle was built, for the title's version line. */
+const BUILD = new Date().toISOString().slice(0, 10);
+
 export default defineConfig({
+  define: { __BUILD__: JSON.stringify(BUILD) },
   // Relative asset paths, so the same build works at a domain root
   // (play.example.com/) and under a project path (user.github.io/game/).
   base: './',
