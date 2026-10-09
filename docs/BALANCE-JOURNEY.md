@@ -13,12 +13,12 @@ toward Cyrite when the tank is. It answers every comms card by one policy.
 
 | Strategy | Policy | Through | Captured | Wrecked out | Stuck | Systems flown | Days | Wrecks | Calloway calls | Time in combat | Sortie length |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| random | run | 4/4 | 0 | 0 | 0 | 9.8 | 22.6 | 0.0 | 1.8 | 22% | 3:56 |
-| random | bluff | 4/4 | 0 | 0 | 0 | 9.8 | 21.7 | 0.3 | 1.3 | 20% | 3:41 |
-| random | fight | 4/4 | 0 | 0 | 0 | 9.8 | 22.5 | 0.0 | 2.0 | 23% | 3:53 |
-| torpedo+defence | run | 4/4 | 0 | 0 | 0 | 9.8 | 24.2 | 0.0 | 2.0 | 15% | 4:36 |
-| torpedo+defence | bluff | 4/4 | 0 | 0 | 0 | 9.8 | 23.7 | 0.0 | 2.0 | 14% | 4:23 |
-| torpedo+defence | fight | 4/4 | 0 | 0 | 0 | 9.8 | 23.3 | 0.0 | 2.0 | 14% | 4:01 |
+| random | run | 4/4 | 0 | 0 | 0 | 10.0 | 20.6 | 0.5 | 1.0 | 22% | 2:57 |
+| random | bluff | 3/4 | 1 | 0 | 0 | 8.3 | 16.2 | 0.3 | 0.8 | 25% | 2:53 |
+| random | fight | 4/4 | 0 | 0 | 0 | 9.8 | 20.8 | 0.0 | 1.3 | 24% | 3:11 |
+| torpedo+defence | run | 4/4 | 0 | 0 | 0 | 10.3 | 21.5 | 0.5 | 1.0 | 17% | 3:01 |
+| torpedo+defence | bluff | 4/4 | 0 | 0 | 0 | 9.8 | 21.1 | 0.0 | 1.3 | 12% | 3:07 |
+| torpedo+defence | fight | 4/4 | 0 | 0 | 0 | 9.8 | 20.9 | 0.0 | 1.0 | 14% | 3:08 |
 
 "Through" reached the Threshold. "Captured": wrecked with Calloway in the
 system. "Wrecked out": the third wreck. "Stuck": a sortie ran out the
@@ -28,22 +28,23 @@ pilot's clock (twenty minutes) without a jump or a wreck.
 
 | End | Journeys |
 |---|---|
-| through | 24 |
+| through | 23 |
+| captured | 1 |
 
 ## The Cyrite curve, system by system
 
 | System | Journeys still going | Cyrite arriving | Cyrite after the jump | Sortie | Day | Calloway came | Wrecked |
 |---|---|---|---|---|---|---|---|
-| 1 | 24 | 6.0 | 19.6 | 3:46 | 0.9 | 0% | 4% |
-| 2 | 24 | 18.8 | 18.1 | 2:57 | 3.6 | 0% | 0% |
-| 3 | 24 | 18.1 | 22.3 | 3:25 | 5.5 | 42% | 0% |
-| 4 | 24 | 22.3 | 17.5 | 2:51 | 7.2 | 96% | 0% |
-| 5 | 24 | 17.5 | 18.7 | 5:02 | 10.2 | 88% | 0% |
-| 6 | 24 | 18.7 | 18.3 | 4:35 | 12.6 | 13% | 0% |
-| 7 | 24 | 18.3 | 17.6 | 4:02 | 14.6 | 33% | 0% |
-| 8 | 24 | 17.6 | 18.8 | 5:14 | 17.3 | 67% | 0% |
-| 9 | 24 | 18.8 | 18.9 | 4:56 | 19.8 | 71% | 0% |
-| 10 | 18 | 18.9 | 16.8 | 3:59 | 22.2 | 100% | 0% |
+| 1 | 24 | 6.0 | 18.5 | 3:34 | 0.9 | 0% | 13% |
+| 2 | 24 | 16.4 | 13.9 | 2:56 | 3.5 | 0% | 0% |
+| 3 | 24 | 13.9 | 14.2 | 2:56 | 5.4 | 25% | 4% |
+| 4 | 24 | 13.8 | 18.9 | 2:53 | 7.1 | 83% | 4% |
+| 5 | 23 | 18.0 | 18.8 | 3:08 | 9.7 | 70% | 0% |
+| 6 | 23 | 18.8 | 17.3 | 2:26 | 11.5 | 22% | 0% |
+| 7 | 23 | 17.3 | 19.5 | 2:59 | 13.4 | 17% | 0% |
+| 8 | 23 | 19.5 | 19.0 | 2:54 | 15.5 | 9% | 0% |
+| 9 | 23 | 19.0 | 20.1 | 3:18 | 17.6 | 30% | 0% |
+| 10 | 19 | 20.5 | 22.6 | 3:33 | 19.4 | 95% | 0% |
 
 ## Chits and supplies, system by system
 
@@ -52,26 +53,26 @@ What was aboard as each sortie began.
 | System | Journeys still going | Chits | Supplies | Out of supplies | Heavy |
 |---|---|---|---|---|---|
 | 1 | 24 | 0 | 8.0 | 0% | 0% |
-| 2 | 24 | 38 | 11.7 | 0% | 13% |
-| 3 | 24 | 37 | 12.3 | 0% | 38% |
-| 4 | 24 | 42 | 11.5 | 0% | 50% |
-| 5 | 24 | 62 | 11.1 | 0% | 67% |
-| 6 | 24 | 188 | 12.7 | 0% | 92% |
-| 7 | 24 | 510 | 12.9 | 0% | 96% |
-| 8 | 24 | 770 | 12.7 | 0% | 100% |
-| 9 | 24 | 1162 | 12.8 | 0% | 100% |
-| 10 | 18 | 1512 | 12.7 | 0% | 100% |
+| 2 | 24 | 158 | 11.5 | 0% | 0% |
+| 3 | 24 | 310 | 12.5 | 0% | 0% |
+| 4 | 24 | 408 | 12.3 | 0% | 0% |
+| 5 | 23 | 520 | 11.5 | 0% | 0% |
+| 6 | 23 | 470 | 12.0 | 0% | 9% |
+| 7 | 23 | 564 | 12.0 | 0% | 13% |
+| 8 | 23 | 554 | 12.0 | 0% | 17% |
+| 9 | 23 | 481 | 12.4 | 0% | 26% |
+| 10 | 19 | 900 | 12.6 | 0% | 32% |
 
 ## By kind of system
 
 | Kind | Sorties | Mean length | Wrecked |
 |---|---|---|---|
-| home | 24 | 3:46 | 4% |
-| mining | 68 | 4:18 | 0% |
-| port | 19 | 4:27 | 0% |
-| transit | 51 | 2:44 | 0% |
-| gate | 48 | 4:46 | 0% |
-| contested | 24 | 5:01 | 0% |
+| home | 24 | 3:34 | 13% |
+| mining | 60 | 3:07 | 0% |
+| port | 21 | 3:03 | 0% |
+| contested | 44 | 3:28 | 2% |
+| gate | 46 | 3:05 | 0% |
+| transit | 36 | 2:05 | 3% |
 
 ## Rest
 
@@ -82,47 +83,46 @@ Breathers per journey: 0.0, 0% of the systems flown.
 
 | Kind | Sorties | Longest quiet | Between contacts | Time in combat |
 |---|---|---|---|---|
-| home | 24 | 1:08 | 0:34 | 36% |
-| mining | 68 | 1:21 | 0:42 | 15% |
-| port | 19 | 1:19 | 0:35 | 15% |
-| transit | 51 | 1:15 | 0:53 | 9% |
-| gate | 48 | 1:06 | 0:29 | 18% |
-| contested | 24 | 1:02 | 0:25 | 20% |
+| home | 24 | 1:03 | 0:42 | 30% |
+| mining | 60 | 1:13 | 0:44 | 17% |
+| port | 21 | 1:25 | 1:17 | 14% |
+| contested | 44 | 0:52 | 0:27 | 18% |
+| gate | 46 | 1:02 | 0:42 | 16% |
+| transit | 36 | 1:08 | 0:59 | 9% |
 
 ## The Net and the stores
 
 | | Per journey |
 |---|---|
-| Arrivals in a netted system | 2.3 |
+| Arrivals in a netted system | 1.9 |
 | Jumps without enough supplies | 0.0 |
-| Calloway's ship fought | 0.7 |
-| Calloway beaten | 2.6 |
-| Lanes re-plotted at a port | 0.0 |
-| Jumps she was behind at the end | 1.8 |
+| Calloway's ship fought | 0.4 |
+| Calloway beaten | 2.0 |
+| Lanes re-plotted at a port | 0.2 |
+| Jumps she was behind at the end | 2.2 |
 
 ## Calloway's file
 
 | | Per journey |
 |---|---|
-| Offers she made | 1.0 |
-| Offers taken | 0.2 |
-| Tricks she saw | 1.8 |
-| Truths told her | 0.4 |
+| Offers she made | 0.2 |
+| Offers taken | 0.0 |
+| Tricks she saw | 1.0 |
+| Truths told her | 0.1 |
 | Read your route by the end | 100% |
-| Met her at the Threshold | 24 of 24 |
+| Met her at the Threshold | 23 of 24 |
 
 How the last meeting ended:
 
 | Ending | Journeys |
 |---|---|
 | beaten | 23 |
-| yielded | 1 |
 
 ## The journey's cards
 
 | Card | Answered | Choices |
 |---|---|---|
-| calloway_here | 44 | run 15, talk 8, decoy 5, fight 16 |
+| calloway_here | 25 | run 8, talk 7, fight 9, decoy 1 |
 | calloway_word | 0 | — |
 | lane_toll | 0 | — |
 | port_scan | 0 | — |
@@ -132,13 +132,13 @@ How the last meeting ended:
 | holdout | 0 | — |
 | relay | 0 | — |
 | false_trail | 0 | — |
-| offer_meet | 3 | accept 3 |
+| offer_meet | 1 | accept 1 |
 | offer_name | 0 | — |
 | offer_tank | 0 | — |
 | offer_truce | 0 | — |
-| offer_info | 20 | refuse 6, sell 8, tell 6 |
+| offer_info | 4 | refuse 1, tell 2, sell 1 |
 | offer_shelter | 0 | — |
-| offer_passage | 2 | accept 1, refuse 1 |
+| offer_passage | 0 | — |
 | offer_identity | 0 | — |
 | offer_home | 0 | — |
-| calloway_last | 24 | run 15, remind 1, fight 8 |
+| calloway_last | 23 | run 15, fight 8 |
