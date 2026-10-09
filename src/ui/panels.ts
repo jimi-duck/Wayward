@@ -253,6 +253,7 @@ export class StartOptions {
       h('span', 'sv-c', '', h('em', '', t('Mining')), pips(K.scale.mining, '')),
       h('span', 'sv-c', '', h('em', '', t('Wrecks')), pips(K.scale.wrecks, '')),
     );
+    $('sv-rule').textContent = t('Wrecked? You drift on, hold and Krail gone. {n} wrecks in one region and you fly it again.', { n: K.voyage.wrecks });
     // a journey in progress keeps the mode it began in: say so when the pick differs
     const kept = this.saved();
     $('sv-keep').hidden = !kept || kept === p.survival;

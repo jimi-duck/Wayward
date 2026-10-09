@@ -2175,3 +2175,19 @@ html.breakout #pause:not(.first) .term-s.full { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .rd-call { animation: none; } }
 .cm-body.solo { grid-template-columns: minmax(0, 1fr); }
+
+/* wrecked: a few lines over the dark; amber is the player's hand, red the breach, teal the tug */
+.drift { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; padding: 24px; background: radial-gradient(ellipse at 50% 50%, rgba(8, 13, 14, .9), #050808 80%); text-align: center; animation: dr-in .6s var(--ez); }
+.drift[hidden] { display: none; }
+@keyframes dr-in { from { opacity: 0; } }
+.dr-in { display: grid; gap: 14px; max-width: 46ch; }
+.dr-k { font: 700 calc(11px * 1.18)/1.2 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--alert); }
+.drift.tug .dr-k { color: var(--cy); }
+.dr-l { margin: 0; min-height: 3.6em; font: 400 clamp(16px, 2.4vw, 22px)/1.4 var(--font-display); color: var(--industrial-white); }
+.dr-l.in { animation: dr-line 1s var(--ez) both; }
+@keyframes dr-line { from { opacity: 0; } }
+.dr-skip { position: absolute; right: max(16px, var(--safe-r)); bottom: max(14px, var(--safe-b)); font: 600 11px/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) { .drift, .dr-l.in { animation: none; } }
+.sv-rule { max-width: 52ch; font: 600 11px/1.35 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--cy); text-align: center; }
+.sv-rule[hidden] { display: none; }
+.ch-rule { margin: 0; padding: 6px 10px; border-left: 2px solid var(--alert); background: var(--scrim); font: 600 12px/1.35 var(--font-rail); letter-spacing: .06em; color: var(--industrial-white); }
