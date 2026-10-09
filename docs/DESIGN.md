@@ -655,6 +655,13 @@ card on top reads the faction, the range and "Leaves in Ns".
   (`CHASE_BURN`), so a chase lasts about two thirds as long again; let the
   fuse run out and it leaves with nothing paid.
 
+Balance: the pilot always goes in at first sight, so it plays the fight
+branch only. Against main, 12 seeds × 2 builds × Prospector and Raider
+(48 runs each): mean run time 484 s before, 454 s after, and 8 against 6
+runs reaching the ten-minute cap. That is inside the pilot's noise (the full
+`pilot:survival` report swings by more than that between neighbouring
+commits), so Survival's numbers stand. The stay-clear branch is not piloted.
+
 Office ships never sit sighted: they decloak and the fight starts. The first
 contact of a run is always Gutter or Custody. The Story's hails (the
 blockade, captains) are unchanged: a card with Engage or Evade.

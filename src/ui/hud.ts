@@ -89,6 +89,7 @@ export class Hud {
   private powerKey = '';
   private readonly powerFull = new Map<string, number>();
   private seed = -1;
+  private modeLvl = '';
   private modeKey = '';
   private condKey = '';
   /** The arcade's refit bay: the cheapest module in reach, and when it was last worked out. */
@@ -122,7 +123,7 @@ export class Hud {
 
   /** The language changed: redraw what is only written when it changes. */
   relabel(): void {
-    this.modeKey = this.condKey = this.contactKey = this.powerKey = this.plateKey = '';
+    this.modeLvl = this.modeKey = this.condKey = this.contactKey = this.powerKey = this.plateKey = '';
     this.seed = -1;
   }
 
@@ -494,19 +495,17 @@ export class Hud {
 
   private updateCentre(world: World): void {
     const b = world.command.boss, boss = $('boss');
-    boss.classList.toggle('on', !!b);
+    boss.classList.toggle('on', !!b && !b.unaware);
     if (b) {
       boss.classList.toggle('cloaked', b.cloak > 0.5);
       boss.classList.toggle('inbound', b.arriving);
-      boss.classList.toggle('sighted', b.unaware);
       text($('boss-name'), t(b.name));
       text($('boss-cls'), t('{f} capital ship', { f: faction(b.faction) }));
-      // unaware: the bar is how close it is to noticing you, and the fuse is when it jumps
-      ticks($('boss-hp'), b.unaware ? b.aware : b.hp / b.maxHp, 45, 'ceil');
+      ticks($('boss-hp'), b.hp / b.maxHp, 45, 'ceil');
       const d = Math.hypot(b.x - world.ship.x, b.z - world.ship.z);
-      text($('boss-hull'), b.unaware ? t(b.aware > 0.05 ? 'Noticing you' : 'Keep clear') : b.arriving ? t('Inbound') : `${t('Hull')} ${Math.max(0, Math.round((b.hp / b.maxHp) * 100))}%`);
-      text($('boss-phase'), b.unaware || b.arriving ? range(d) : b.leaving ? t('Breaking off') : `${t('Phase')} ${b.phase + 1}/3`);
-      text($('boss-fuse'), b.unaware ? (b.jumpT > 0 ? t('Jumping') : `${t('Leaves in')} ${Math.ceil(b.stay)}s`) : b.arriving || b.leaving ? '' : `${t('Fuse')} ${Math.ceil(b.fuse)}s`);
+      text($('boss-hull'), b.arriving ? t('Inbound') : `${t('Hull')} ${Math.max(0, Math.round((b.hp / b.maxHp) * 100))}%`);
+      text($('boss-phase'), b.arriving ? range(d) : b.leaving ? t('Breaking off') : `${t('Phase')} ${b.phase + 1}/3`);
+      text($('boss-fuse'), b.arriving || b.leaving ? '' : `${t('Fuse')} ${Math.ceil(b.fuse)}s`);
     }
 
     const e = world.encounter, obj = $('objective');
@@ -585,19 +584,26 @@ export class Hud {
    */
   private updateMode(world: World): void {
     const a = world.alert();
-    const word = !world.alive ? 'Hull breach' : a === 'red' ? 'Red alert' : 'Yellow alert';
-    // a sighted capital ship that is starting to notice you says so in the alert card
-    const cap = world.command.boss?.unaware && a === 'yellow' ? world.command.boss.name : '';
-    const key = `${a}${word}${cap}`;
+    // a capital ship sighted and not yet aware of you: the card is teal and quiet, then turns yellow as it starts to notice you
+    const cap = world.alive ? world.command.boss : null, sighted = cap?.unaware ? cap : null;
+    const calm = a === 'clear' && !!sighted;
+    const sub = sighted
+      ? a === 'yellow' ? t('{name} is noticing you', { name: t(sighted.name) })
+        : `${t(sighted.name)} · ${range(Math.hypot(sighted.x - world.ship.x, sighted.z - world.ship.z))} · ${sighted.jumpT > 0 ? t('Jumping') : `${t('Leaves in')} ${Math.ceil(sighted.stay)}s`}`
+      : t(a === 'red' ? 'You are being targeted' : 'You are being observed');
+    const word = !world.alive ? 'Hull breach' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
+    const key = `${a}${word}${sub}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
     const mode = $('mode');
-    mode.className = `glass ${a}`;
-    mode.hidden = a === 'clear';
+    mode.className = `glass ${calm ? 'sighted' : a}${sighted ? ' cap' : ''}`;
+    mode.hidden = a === 'clear' && !calm;
     text($('mode-t'), t(word));
-    text($('mode-s'), cap ? t('{name} is noticing you', { name: t(cap) }) : t(a === 'red' ? 'You are being targeted' : 'You are being observed'));
+    text($('mode-s'), sub);
     // a step up or down lights the card once, so a change is seen and not only read
-    if (a !== 'clear') this.retrigger(mode, 'enter');
+    const lvl = `${mode.hidden}${mode.className}${word}`;
+    if (!mode.hidden && lvl !== this.modeLvl) this.retrigger(mode, 'enter');
+    this.modeLvl = lvl;
   }
 
   /** The place's effects on the ship, in the ship's words: nothing for what only looks like something. */
