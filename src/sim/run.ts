@@ -60,13 +60,12 @@ export interface RunStats {
   escaped: boolean;
   cyrite: number;
   cyriteLeft: number;
-  /** Ore taken aboard and sold; parts salvaged; rocks cut clean and fractured; seconds of cutting; times docked. */
+  /** Ore taken aboard and sold; parts salvaged; rocks mined with the lasers and rocks blasted apart; times docked. */
   ore: number;
   oreSold: number;
   parts: number;
-  cut: number;
-  fractured: number;
-  cutTime: number;
+  mined: number;
+  blasted: number;
   docked: number;
   /** Every comms card answered: which, how, and whether it came off. Jobs finished. */
   cards: Array<{ id: string; choice: string; won: boolean; t: number }>;
@@ -89,7 +88,7 @@ export function newRun(seed: number, survival = 'prospector'): RunStats {
     capitals: 0, capitalsEvaded: 0, capitalsEscaped: 0, capitalFactions: [],
     platesLost: 0, platesGained: 0, platesMended: 0, shieldsAbsorbed: 0, waves: 0, damageBy: {}, events: 0, eventsWon: 0, powerups: 0,
     timeline: [], build: {}, identity: '', survival, loot: { rock: NO_LOOT(), wreck: NO_LOOT() }, cause: '',
-    mode: 'arcade', escaped: false, cyrite: 0, cyriteLeft: 0, ore: 0, oreSold: 0, parts: 0, cut: 0, fractured: 0, cutTime: 0, docked: 0,
+    mode: 'arcade', escaped: false, cyrite: 0, cyriteLeft: 0, ore: 0, oreSold: 0, parts: 0, mined: 0, blasted: 0, docked: 0,
     cards: [], jobsDone: 0, ports: [],
   };
 }

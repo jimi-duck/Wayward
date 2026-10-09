@@ -11,7 +11,7 @@ import { World } from '../src/sim/world';
 
 // The pursuit's room to breathe: when the first pursuer comes, and the quiet after an answer or a beaten pursuer (content/systems.ts `pace`).
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
 
 /** The first system out of Cerro as a sortie, with the pace given and no chance cards or port call to interrupt. */
 function sortie(pace: SortieDef['pace'], quiet = false): World {

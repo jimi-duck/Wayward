@@ -12,22 +12,29 @@ A sortie with a shape: get the stolen hauler out of the home system
 
 - **The course.** The lane mouth is 2,600 units ahead of the start (about a
   minute flat out); Frontier Supply, the port, is halfway and off the line.
-  The HUD carries both as pointers, radar diamonds, a contacts list and the
-  objective's steps.
+  The HUD carries both as a name and a distance on the place itself, radar
+  diamonds, the objective and its quiet lines (see [HUD.md](HUD.md)).
 - **The jump.** Inside the lane mouth with 20 Cyrite in the tank (`JUMP_COST`),
   the drive spools for five seconds; leave the ring and it winds down. The
   jump takes the Cyrite and ends the run as an escape.
 - **Cyrite is fuel, and scarce.** Only veined (rich, violet) rock and the
-  rare gold rock carry it, cut clean; the guns break a rock for 30% of what
-  is in it (`rockYield`). The tank starts at 6.
+  rare gold rock carry it, mined clean with the lasers (`rockYield`). The tank starts at 6.
 - **Krail builds the ship**, as in the arcade: pale gold crystals out of
-  ordinary rock (`ROCK_KRAIL` of the arcade's: sure when cut clean, by chance
-  when broken) and the wrecks of what you destroy (`WRECK_KRAIL`), and 40
+  ordinary rock (`ROCK_KRAIL` of the arcade's: sure when mined, by chance
+  when blasted) and the wrecks of what you destroy (`WRECK_KRAIL`), and 40
   from a capital ship. It is spent in the refit bay (below).
-- **The cutter** (`sim/mining.ts`), on its own held trigger: the rock under
-  it heats; once warm the cut goes in; past the line the rock fractures. A
-  small rock comes out clean in one hold; a large one needs the beam pulsed.
-  Heat and the cut belong to the rock. The lasers hold while it runs.
+- **Mining is the lasers' job.** A rock the lasers destroy is mined clean:
+  all its ore and Cyrite fall out for the tractor, Krail is sure, and nothing
+  is left to split (`World.mineRock`). A torpedo, mine or burn destroys part
+  of it on the way: `TORP_YIELD` (0.5, `sim/breakout.ts`) of the ore and
+  Cyrite, and the rock is gone. A ram or lightning leaves `SCRAP` (0.3).
+  `rockTake(weapon)` is the one place that says which; `World.torpYieldMult`
+  is 1 / `TORP_YIELD` while the high-yield torpedo booster runs, so a torpedo
+  takes the whole rock then. A volatile rock still
+  goes off when it breaks. Each rock mined adds a little hunt pressure
+  (`HEAT_MINE`, times the mode's `heat.mine`). In the arcade rock gives only
+  Krail by chance, and a torpedo halves that chance. The target card shows
+  what the lasers take and what a torpedo leaves; the briefing says it once.
 - **Ore** fills the hold (40) and sells at the port. **Parts** come from wrecks; six of them patch a plate
   once the ship has gone six seconds unhit. Random repair drops are off.
 - **The port.** Slow inside its ring for a second and the clamps take you
@@ -39,7 +46,7 @@ A sortie with a shape: get the stolen hauler out of the home system
   hull whole, Cyrite for a second jump). Its row shows what it will do as
   chips; the one-at-a-time rows sit under "By hand".
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
-  more) and the cutter's noise. It decides how often pursuers come, how
+  more) and mining noise. It decides how often pursuers come, how
   many at once and which: pickets, then cruisers, enforcers and, late,
   interdictors, all Custody, from behind (38s apart down to 10s, one to
   three at once); now and then
@@ -345,8 +352,8 @@ aboard reaches the price (`World.bayDue`; ARCADE_PRICE, 30) and the alert
 has been clear for two seconds (BAY_QUIET), and only if something can be
 fitted. Once a pick is made the bay shuts itself and asks again at the
 price if Krail is left; leaving without a pick puts the next opening one
-price further on (B still opens it sooner; the Arcade HUD has no badge). The Story mode's
-bay is the player's call. On yellow or red alert it stays shut and the log
+price further on (B still opens it sooner; the Arcade HUD has no prompt). The Story mode's
+bay is the player's call, and the HUD's "[B] Open bay" shows once something can be fitted. On yellow or red alert it stays shut and the log
 says why in one line ("Bay locked · yellow alert", "Bay locked · red
 alert") while the badge shakes. The badge is dim with nothing to fit, amber
 with a count of the suggestions you can pay for, yellow or red when locked,
@@ -377,8 +384,8 @@ laser bank refills, and torpedoes, mines and the hull arc come round, slower
 exchangers (+4 a level) raise the ratings. The bay shows it all before an
 install: the budgets after, the figures that would suffer in red, and a line
 saying what running over costs. A capital ship destroyed opens her faction's tech in Synergies. The
-HUD's Krail row counts toward the cheapest module in reach and lights the
-bay's key when one can be fitted.
+HUD's Krail line counts what is aboard; "[B] Open bay" lights once a module
+can be fitted.
 
 **The yard (the Story mode).** The ship's four systems' modules
 (`content/modules.ts`: Guns, Rig, Signals, Contacts) are nodes of the same

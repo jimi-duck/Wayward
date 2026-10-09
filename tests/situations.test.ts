@@ -14,7 +14,7 @@ import { World } from '../src/sim/world';
 // The Situation layer: what is going on in a system (content/situations.ts), dealt on the chart
 // (sim/situations.ts) and played on the sector (sim/stage.ts).
 
-const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
+const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 const CARD = Object.fromEntries(SCENE_CARDS.map((c) => [c.id, c]));
 
 /** A journey one jump out of Cerro, with a sortie for the situation `id` instead of whatever the chart dealt. Quiet, so no pursuit comes to the idle ship. */

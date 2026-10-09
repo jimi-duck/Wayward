@@ -17,8 +17,8 @@ import type { Role } from '../sim/enemies';
 // A multiplier of 1 changes nothing. The groups say where each row bites:
 //   sky      · the arcade's encounters (how many, how tough, how hard they fire) and its Krail income (sim/director.ts)
 //   pursuit  · the Story's hunters: how far apart they come, how many at once, how many elites
-//   heat     · the Story's heat (how hard the Custody looks): its climb, what a kill and the cutter add
-//   rock     · what rock gives (sim/world.ts: cut clean or broken)
+//   heat     · the Story's heat (how hard the Custody looks): its climb, what a kill and a mined rock add
+//   rock     · what rock gives (sim/world.ts: mined with the lasers, blasted or broken)
 //   salvage  · what a dead hull gives, and for how long it lies there
 //   events   · which sector events come, and how often (sim/encounters.ts)
 //   ship     · how much the hull can take (sim/world.ts)
@@ -58,10 +58,10 @@ export interface Survival {
     elite: number;
   };
   heat: {
-    /** Multipliers on the heat's climb, on what a kill adds, and on what the cutter adds. */
+    /** Multipliers on the heat's climb, on what a kill adds, and on what mining a rock adds. */
     rate: number;
     kill: number;
-    cut: number;
+    mine: number;
   };
   rock: {
     /** Krail, ore and Cyrite a rock gives, and the share of veined rock in a system. */
@@ -125,7 +125,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     score: 0.8,
     sky: { traffic: 1.2, toughness: 1.45, fire: 1.7, elites: 0.95, hazard: 0.75, income: 0.9 },
     pursuit: { gap: 1.5, cap: 0.67, elite: 0.5 },
-    heat: { rate: 0.8, kill: 1, cut: 1 },
+    heat: { rate: 0.8, kill: 1, mine: 1 },
     rock: { krail: 1.25, ore: 1.2, cyrite: 1.3, veins: 1.15 },
     salvage: {
       krail: 1,
@@ -145,7 +145,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     score: 1,
     sky: { traffic: 1.7, toughness: 1.7, fire: 1.35, elites: 1.9, hazard: 1.5, income: 0.75 },
     pursuit: { gap: 1, cap: 1, elite: 1 },
-    heat: { rate: 1, kill: 1, cut: 1 },
+    heat: { rate: 1, kill: 1, mine: 1 },
     rock: { krail: 1, ore: 1, cyrite: 1, veins: 1 },
     salvage: {
       krail: 1,
@@ -165,7 +165,7 @@ export const SURVIVAL: Record<SurvivalId, Survival> = {
     score: 1.25,
     sky: { traffic: 2.1, toughness: 1.9, fire: 1.2, elites: 2.65, hazard: 1.95, income: 0.75 },
     pursuit: { gap: 0.8, cap: 1.34, elite: 1.4 },
-    heat: { rate: 1.1, kill: 0.6, cut: 2 },
+    heat: { rate: 1.1, kill: 0.6, mine: 2 },
     rock: { krail: 0.4, ore: 0.5, cyrite: 0.45, veins: 0.6 },
     salvage: {
       krail: 2,

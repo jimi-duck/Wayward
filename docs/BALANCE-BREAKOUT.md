@@ -175,3 +175,23 @@ not a gamble; the aim is that none does.
 | fire:raptor | 9 | 1% |
 | ram:lancer | 7 | 1% |
 | artillery | 6 | 1% |
+
+## Mining with the lasers (replacing the cutting beam)
+
+Before/after, 6 seeds per strategy and policy, laser+defence and random
+strategies, one set of numbers each. Lasers mine clean (no heat to manage),
+so rock is `MINE_HP` (1.5) tougher in the Story and a mined rock gives
+`MINE_KRAIL` (1.4) of the old Krail, to stand in for the pieces a broken
+rock used to split into.
+
+| | Before (cutter) | After (lasers) |
+|---|---|---|
+| Time to escape | 4:43 to 5:00 | 3:26 to 3:48 |
+| Ore | 65 to 69 | 71 to 75 |
+| Cyrite | 19 to 23 | 22 to 28 |
+| Installs per run | 2.4 to 3.1 | 1.2 to 2.0 (about the same per minute) |
+
+The pilot no longer spends time holding a beam, so escapes are about a
+minute faster; income per minute is level for ore and Krail and Cyrite
+runs a fifth richer. A torpedo kill gives `TORP_YIELD` (0.5) of the ore and
+Cyrite.

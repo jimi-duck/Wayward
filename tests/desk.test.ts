@@ -45,10 +45,10 @@ describe('the desk', () => {
   it('keeps off the player while the beam is on rock, and flying tight', () => {
     const d = desk();
     d.offer(CARD_BY_ID.haul_job!, 'routine', 0);
-    d.watch('cutting', 200);
-    expect(d.next('cutting', 200)).toBeNull();
+    d.watch('mining', 200);
+    expect(d.next('mining', 200)).toBeNull();
     expect(d.next('tight', 200)).toBeNull();
-    expect(d.next('free', 200 + DESK.cutSettle + 0.1)).not.toBeNull();
+    expect(d.next('free', 200 + DESK.mineSettle + 0.1)).not.toBeNull();
   });
 
   it('plays the heaviest first and holds the lighter while a heavier one waits', () => {
@@ -111,7 +111,7 @@ describe('the radio', () => {
     d.nextPing = 0;
     expect(d.pingFor('fight', 100, new Rng(2))).toBeNull();
     expect(d.pingFor('transit', 100, new Rng(2))).toBeNull();
-    expect(d.pingFor('cutting', 100, new Rng(2))).toBe('calm');
+    expect(d.pingFor('mining', 100, new Rng(2))).toBe('calm');
     d.spoke(100);
     d.nextPing = 0;
     expect(d.pingFor('free', 100 + DESK.ping.least - 1, new Rng(2))).toBeNull();

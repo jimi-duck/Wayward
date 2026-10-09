@@ -9,7 +9,7 @@ import type { Report } from './captains';
 import type { SurvivalId } from '../content/survival';
 import { NO_NEMESIS, type Nemesis } from './calloway';
 import { QUIET, type Pressure } from './notice';
-import type { RunStats } from './run';
+import type { RunStats, Weapon } from './run';
 import type { Rng } from './rng';
 
 // ── the Breakout ──────────────────────────────────────────────────────────
@@ -98,8 +98,9 @@ export const HEAT_RATE = 0.0022;
 export const HEAT_KILL = 0.008;
 /** Custody hulls are missed more. */
 export const HEAT_KILL_CUSTODY = 0.014;
-/** Per second the cutter runs. */
-export const HEAT_CUT = 0.002;
+/** Per second of work a mined rock adds: a large rock takes about 5.5 s of it, a small one 1.4 s. */
+export const HEAT_MINE = 0.002;
+export const MINE_WORK = [5.5, 3.2, 1.4] as const;
 /** How fast the heat fades in a quiet system, a second (from 0.6 to nothing in about two minutes). */
 export const QUIET_COOL = 0.005;
 /** The heat a run's difficulty curve reads as its clock: heat 1 plays like seven minutes of the arcade. */
@@ -269,7 +270,9 @@ export const THREN_JAM = 80;
 export const JAM_SPOOL = 0.5;
 
 // ── what rock gives ───────────────────────────────────────────────────────
-// Cut clean, a rock gives all of this; broken by the guns, only scraps.
+// Mined with the lasers, a rock gives all of this and comes apart clean.
+// Torpedoes and other blasts destroy part of it on the way (`TORP_YIELD`),
+// and rock broken any other way gives only scraps.
 
 export interface Yield { ore: number; cyrite: number }
 
@@ -285,11 +288,16 @@ const CYRITE: Record<RockKind, readonly [number, number, number]> = {
   rich: [12, 7, 4],
   volatile: [0, 0, 0],
 };
-/** Of a clean cut, what the guns leave behind. */
+/** Of a clean take, what rock broken any other way (a ram, lightning) leaves behind. */
 export const SCRAP = 0.3;
+/** Of a clean take, what a torpedo, mine or burn leaves: the blast destroys the rest. One number, so a booster can multiply it. */
+export const TORP_YIELD = 0.5;
 
-export function rockYield(kind: RockKind, size: RockSize, clean: boolean): Yield {
-  const k = clean ? 1 : SCRAP;
+/** The share of a rock's yield a weapon's kill gives. */
+/** `torp` is the blast share in force (`TORP_YIELD` times any booster, see `World.torpYieldMult`). */
+export const rockTake = (src: Weapon, torp = TORP_YIELD): number => src === 'laser' ? 1 : src === 'ram' || src === 'hazard' ? SCRAP : Math.min(1, torp);
+
+export function rockYield(kind: RockKind, size: RockSize, k = 1): Yield {
   return { ore: Math.round(ORE[kind][size] * k), cyrite: Math.round(CYRITE[kind][size] * k) };
 }
 

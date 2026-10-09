@@ -22,8 +22,6 @@ export interface FlightControls {
   fire: boolean;
   /** Launch a torpedo this step. */
   torpedo: boolean;
-  /** Cutter held. */
-  cut: boolean;
 }
 
 function stickThrottle(push: number): number {
@@ -39,5 +37,5 @@ export function flightControls(input: InputFrame): FlightControls {
     thrust = Math.max(thrust, stickThrottle(Math.sin(aim.angle) * aim.mag));
   }
   const rollDir = Math.abs(turn) > 0.1 ? (turn > 0 ? 1 : -1) : 0;
-  return { turn, thrust, roll: input.roll, brk: input.brk, rollDir, fire: input.fire, torpedo: input.torpedo, cut: input.cut };
+  return { turn, thrust, roll: input.roll, brk: input.brk, rollDir, fire: input.fire, torpedo: input.torpedo };
 }

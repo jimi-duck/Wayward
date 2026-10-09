@@ -36,6 +36,7 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="./src/assets/fonts/barlow-condensed-700.woff2">
   <link rel="preload" as="font" type="font/woff2" crossorigin href="./src/assets/fonts/barlow-semi-condensed-400.woff2">
   <link rel="stylesheet" href="./src/styles/main.css">
+  <link rel="stylesheet" href="./src/styles/hud.css">
 </head>
 <body>
   <div id="app">
@@ -63,16 +64,15 @@
       <symbol id="i-lock" viewBox="0 0 24 24"><path d="M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4 M12 15v2"/></symbol>
     </svg>
 
-    <!-- The HUD, in the brand's six zones (v1.1, section 12): instrument lines laid over the view, never a dashboard round it.
-           upper left   · the current objective, as short steps
-           upper centre · one card: the threat, the capital ship, or the target
-           upper right  · ship status, a row each: hull, fuel, energy, core, Krail, hold, munitions
-           centre       · the world: the gunsight and the target's brackets, nothing else
-           lower left   · the scope and its contacts, where you are, how hard you are hunted
-           lower right  · the operating mode and only that mode's actions -->
+    <!-- The HUD (docs/HUD.md): the ship and the world first, everything else on cue.
+           upper left   · one objective: what to do, how far, the threat that matters
+           upper centre · the heading tape, then the alert, the capital ship or the target
+           upper right  · hull, fuel, energy; munitions quieter until a fight; stores in one line
+           centre       · the world: the gunsight, the target's brackets, the marks that name places and ships
+           lower left   · the scope, and where you are
+           lower right  · the last thing that happened, and [B] Open bay when there is something to fit -->
     <div id="hud">
       <div id="vignette" aria-hidden="true"></div>
-      <div id="frame" aria-hidden="true"><i class="fr-tl"></i><i class="fr-bl"></i><i class="fr-br"></i><i class="fr-ladder"></i></div>
 
       <div id="world" aria-hidden="true">
         <div id="reticle"><i></i></div>
@@ -88,101 +88,79 @@
         <div id="threats"></div>
       </div>
 
-      <!-- upper left: the ship's plate, then what to do now -->
-      <section id="sector" class="hud-block" aria-label="Current objective">
-        <!-- the brand plate: the ship as the boards name her -->
-        <div class="plate"><b class="pl-n">Wayward</b><span class="pl-s">Obedience-class ore hauler</span><span class="pl-r">Serial OB-7731-A</span></div>
-        <section id="objective" aria-live="polite">
-          <span class="obj-k"><i class="stripes"></i>Current objective</span>
-          <div class="obj-h"><svg class="ico"><use href="#i-event"/></svg><b id="obj-t">Extract Krail</b><span id="obj-left"></span></div>
-          <i class="ticks" id="obj-p"></i>
-          <span id="obj-s"></span>
-          <ul id="obj-list"></ul>
-        </section>
+      <!-- upper left: the one thing to do, and only what is worth a second line -->
+      <section id="objective" class="hud-block glass" aria-live="polite" aria-label="Current objective">
+        <span class="obj-k">Objective</span>
+        <div class="obj-h"><b id="obj-t">Extract Krail</b><span id="obj-left"></span></div>
+        <i class="ticks" id="obj-p"></i>
+        <span id="obj-s"></span>
+        <ul id="obj-list"></ul>
+        <p id="obj-threat" hidden></p>
       </section>
 
-      <div id="heading" class="hud-block" aria-hidden="true"><div class="hdg-r"><span id="hdg-rel"></span><b id="hdg">000</b><span id="hdg-d"></span></div><i id="hdg-tape"></i><i id="hdg-obj" hidden></i></div>
+      <div id="heading" class="hud-block" aria-hidden="true"><div class="hdg-r"><span id="hdg-rel"></span><b id="hdg">000</b></div><i id="hdg-tape"></i><i id="hdg-obj" hidden></i></div>
 
-      <!-- upper right: the ship's condition, a row each, read at a glance -->
-      <section id="systems" class="hud-block cut" aria-label="Ship status">
-        <i class="wear hud still" aria-hidden="true"></i>
+      <!-- upper right: the ship's condition -->
+      <section id="systems" class="hud-block glass" aria-label="Ship status">
         <div class="sys-row" id="sys-hull">
-          <svg class="ico"><use href="#i-hull"/></svg><span class="lbl">Hull</span><span class="nokey"></span>
-          <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span><b class="val" id="v-hull">3/3</b><span class="lv"></span>
+          <span class="lbl">Hull</span>
+          <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span><b class="val" id="v-hull">3/3</b>
         </div>
         <div class="sys-row" id="sys-fuel" hidden>
-          <svg class="ico"><use href="#i-engine"/></svg><span class="lbl">Fuel</span><span class="nokey"></span>
-          <i class="bar" id="g-fuel"></i><b class="val" id="v-fuel">6/20</b><span class="lv" id="lv-fuel">Tank</span>
+          <span class="lbl">Fuel</span>
+          <i class="bar" id="g-fuel"></i><b class="val" id="v-fuel">6/20</b>
         </div>
         <div class="sys-row" id="sys-ph">
-          <svg class="ico"><use href="#i-laser"/></svg><span class="lbl">Energy</span><kbd>1</kbd>
-          <i class="bar" id="g-bank"></i><b class="val" id="v-bank">100<small>%</small></b><span class="lv" id="lv-ph">Lv 1</span>
+          <span class="lbl">Energy</span>
+          <i class="bar" id="g-bank"></i><b class="val" id="v-bank">100<small>%</small></b>
         </div>
-        <div class="sys-row" id="rail" aria-label="Krail to the next refit">
-          <svg class="ico"><use href="#i-rock"/></svg><span class="lbl" id="xp-l">Krail</span><span class="nokey"></span>
-          <i class="ticks" id="xp"></i><b class="val"><span id="xp-v">0</span><small>/<span id="xp-n">0</span></small></b><span class="lv">Refit <b id="refit-n">00</b><span id="xp-gain"></span></span>
+        <div class="sys-row arms" id="sys-tp" hidden>
+          <span class="lbl">Torpedoes</span>
+          <span class="rack" id="g-rack"></span><b class="val word" id="v-rack">Ready</b>
         </div>
-        <div class="sys-row" id="sys-hold" hidden>
-          <svg class="ico"><use href="#i-capital"/></svg><span class="lbl">Hold</span><span class="nokey"></span>
-          <i class="bar" id="g-hold"></i><b class="val" id="vy-ore">0/40</b><span class="lv"></span>
-        </div>
-        <div class="sys-row" id="sys-tp" hidden>
-          <svg class="ico"><use href="#i-torp"/></svg><span class="lbl">Torpedoes</span><kbd>2</kbd>
-          <span class="rack" id="g-rack"></span><b class="val word" id="v-rack">Ready</b><span class="lv" id="lv-tp"></span>
-        </div>
-        <div class="sys-row" id="sys-mn" hidden>
-          <svg class="ico"><use href="#i-mine"/></svg><span class="lbl">Mines</span><span class="nokey"></span>
-          <span class="rack" id="g-mines"></span><b class="val" id="v-mines">0</b><span class="lv" id="lv-mn"></span>
+        <div class="sys-row arms" id="sys-mn" hidden>
+          <span class="lbl">Mines</span>
+          <span class="rack" id="g-mines"></span><b class="val" id="v-mines">0</b>
         </div>
         <div class="sys-foot">
-          <span class="vy-cells" id="vy-cells"><span><span class="lbl">Parts</span><b id="vy-parts">0</b></span><span><span class="lbl">Chits</span><b id="vy-chits">0</b></span><span><span class="lbl">Food</span><b id="vy-food">0</b></span></span>
+          <span class="stores" id="rail"><span class="lbl" id="xp-l">Krail</span><b id="xp-v">0</b><span id="xp-gain"></span></span>
+          <span class="stores vy-cells" id="vy-cells"><span class="lbl" id="sys-hold-l">Hold</span><b id="vy-ore">0/40</b><span class="lbl">Parts</span><b id="vy-parts">0</b><span class="lbl">Chits</span><b id="vy-chits">0</b><span class="lbl">Food</span><b id="vy-food">0</b></span>
           <span id="sys-score"><span class="lbl">Score</span><b class="val" id="score">000000</b><span id="chain"><span class="lbl">Chain <span id="chain-n">0</span></span><b id="chain-x">×1</b></span></span>
         </div>
       </section>
       <div id="powers" aria-live="polite"></div>
 
-      <!-- upper centre: one card, the most important thing out there -->
+      <!-- upper centre: the alert, or the most important thing out there (one at a time reads best) -->
       <div id="centre">
-        <section id="threat" class="cut" aria-live="polite">
-          <svg class="ico"><use href="#i-alert"/></svg>
-          <span class="th-b"><b id="th-n">Custody patrol</b><span id="th-s">Picket · 400 m</span><span id="th-l">Threat: low</span></span>
-        </section>
-        <section id="boss" class="cut" aria-live="polite">
-          <div class="boss-h"><svg class="ico"><use href="#i-capital"/></svg><b id="boss-name">Ironmaw</b><span id="boss-cls">Gutter capital ship</span></div>
+        <div id="mode" class="glass clear" hidden><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span></div>
+        <section id="boss" class="glass" aria-live="polite">
+          <div class="boss-h"><b id="boss-name">Ironmaw</b><span id="boss-cls">Gutter capital ship</span></div>
           <div class="boss-bar"><i class="ticks" id="boss-hp"></i></div>
           <div class="boss-f"><span id="boss-hull">Hull 100%</span><span id="boss-phase">Phase 1/3</span><span id="boss-fuse">Fuse 42s</span></div>
         </section>
-        <section id="tgt-card" class="cut">
-          <svg class="ico"><use id="tgt-ico" href="#i-hostile"/></svg>
+        <section id="tgt-card" class="glass">
           <span class="tc-b"><span class="tc-n"><b id="tgt-name">Interceptor</b><span id="tgt-lock">Lock</span></span><span class="tc-s" id="tgt-sub">Gutter</span>
             <span class="tc-int"><span id="tgt-int-k">Hull</span><i id="tgt-int"></i><b id="tgt-int-v">100%</b></span></span>
         </section>
       </div>
 
-      <!-- lower left: the scope, who is out there, where you are -->
+      <!-- lower left: the scope, and where you are -->
       <section id="sensors" class="hud-block" aria-hidden="true">
         <canvas id="radar"></canvas>
-        <span class="range"><span class="lbl">Range</span><b id="radar-r">1.0 km</b></span>
         <div class="sens-side">
-          <div id="contacts"><span class="lbl">Contacts</span><ul id="contacts-l"></ul></div>
-          <div id="voyage" aria-label="Pursuit">
-            <div class="vy-row heat"><span class="lbl">Hunt</span><b id="vy-heat">Wanted Lv 1</b></div>
-            <i class="ticks" id="vy-heat-t"></i>
-          </div>
           <div class="sec-id"><b id="sec-code">Sector 83-37</b><span id="sec-name">Asteroid field</span></div>
+          <span class="range"><span class="lbl">Range</span><b id="radar-r">1.0 km</b></span>
         </div>
       </section>
 
-      <!-- lower right: the last thing that happened, the refit bay's badge, and the ship's alert:
-           nothing when clear (the bay opens), yellow alert in amber (you are observed), red alert in red (you are targeted) -->
+      <!-- lower right: the last thing that happened, the bay when it can be opened, what the place does to the ship -->
       <section id="log" class="hud-block" aria-live="off">
         <div id="log-lines"></div>
-        <button type="button" id="upg" tabindex="-1" hidden><kbd class="only-desktop">B</kbd><svg class="ico"><use href="#i-hull"/></svg><span id="upg-t">Refit bay</span><b id="upg-n"></b></button>
-        <div id="mode" class="clear" hidden><svg class="md-i" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z"/><path d="M12 7l5 5-5 5-5-5z"/></svg><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span><i class="stripes"></i></div>
         <div id="cond" hidden></div>
+        <button type="button" id="upg" class="glass" tabindex="-1" hidden><kbd class="only-desktop">B</kbd><span class="up-w"><span id="upg-t">Open bay</span><small id="upg-s">Upgrade ship</small></span><b id="upg-n"></b></button>
       </section>
 
-      <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><svg class="ico"><use href="#i-alert"/></svg><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
+      <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
     </div>
 
     <!-- Touch controls. The left half of the screen is the stick's catchment
@@ -193,7 +171,6 @@
       <div id="stick"><div id="knob"></div></div>
       <button type="button" id="fire" tabindex="-1"><span>Laser</span><i class="ticks" id="t-bank"></i></button>
       <button type="button" id="torp" tabindex="-1"><span>Torpedo</span><span class="rack" id="t-rack"></span></button>
-      <button type="button" id="cut" tabindex="-1"><span>Cut</span><i class="ticks" id="t-heat"></i></button>
       <button type="button" id="brk" tabindex="-1"><span>Turn</span><i class="ticks" id="t-brk"></i></button>
       <button type="button" id="pause-b" tabindex="-1" aria-label="Pause"><i></i><i></i></button>
     </div>
@@ -403,11 +380,11 @@
           <h3 class="th">Orders</h3>
           <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
           <ol class="howto arcade-only">
-            <li><b>Mine Krail</b><span>Shoot rock, grab crystals.</span></li>
+            <li><b>Mine Krail</b><span>Shoot rock, grab crystals. Torpedoes lose half.</span></li>
             <li><b>Upgrade</b><span>Spend Krail in the bay.</span></li>
             <li><b>Survive</b><span>Outlast the waves.</span></li>
           </ol>
-          <ol class="brief steps" id="brief" data-i18n="html"><li>Cut the <b class="v">violet rock</b> for Cyrite</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
+          <ol class="brief steps" id="brief" data-i18n="html"><li>Laser the <b class="v">violet rock</b> for Cyrite · torpedoes waste half</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
         </section>
         <section class="term-s full main-only">
           <h3 class="th">Controls</h3>
@@ -419,7 +396,6 @@
           <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
           <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
           <div><dt><kbd>↓</kbd></dt><dd>Break and reverse</dd></div>
-          <div class="story-only"><dt><kbd>3</kbd></dt><dd>Cutter</dd></div>
         </dl>
         <dl class="keys-l only-touch-l">
           <div><dt>Left thumb</dt><dd>Steer and thrust</dd></div>

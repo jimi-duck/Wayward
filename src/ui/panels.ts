@@ -100,7 +100,7 @@ export class SummaryPanel {
         plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Through the lane mouth' : 'Short of the lane')),
         plain('Cyrite', String(r.cyrite), r.escaped ? t('{n} left after the jump', { n: r.cyriteLeft }) : t('Gathered')),
         plain('Ore', String(r.ore), t('{n} sold at the port', { n: r.oreSold })),
-        plain('Rock cut clean', String(r.cut), t('{n} cracked', { n: r.fractured })),
+        plain('Rock mined', String(r.mined), t('{n} blasted', { n: r.blasted })),
         tile('Refits', r.refit, p.refit),
         tile('Kills', r.kills, p.kills),
         plain('Parts', String(r.parts), t('{n} plates mended', { n: r.platesGained })),

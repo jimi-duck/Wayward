@@ -15,7 +15,7 @@ import { newShip } from '../src/sim/ship';
 import { BASE } from '../src/sim/stats';
 import { World } from '../src/sim/world';
 
-const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, cut: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
+const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
 
 function run(w: World, seconds: number, each?: (w: World) => void) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) {

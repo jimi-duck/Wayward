@@ -110,6 +110,10 @@ export const TORP_CONE = 1.1;
 /** Rock radii by size: large, medium, small. */
 export const ROCK_R = [3.2, 1.9, 1.05] as const;
 export const ROCK_HP = [4, 2, 1] as const;
+/** The Story's rock is tougher by this much: mining it with the lasers takes a few seconds, as the old cutting beam did. */
+export const MINE_HP = 1.5;
+/** And the Krail a mined rock gives, over what a rock gave when the cutting beam took it (a broken rock used to split, and every piece rolled for Krail). */
+export const MINE_KRAIL = 1.4;
 /** Share of its hull a hull loses driving into rock at its full dash: the light ones break, the heavy ones are slowed more than hurt. */
 export const ROCK_BUMP = { light: 0.3, cruiser: 0.14 } as const;
 /** Points per rock, the classic arcade ladder: the smaller, the more. */

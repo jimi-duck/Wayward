@@ -40,7 +40,7 @@ Every card is offered to the desk; nothing opens itself.
    jump, a dock or a blockade. Major, important and routine wait for free; ambient
    waits only for a fight, a jump or a dock.
 2. **A breath after.** Four to twelve seconds after the last hostile, three after the
-   cutter stops. A card that became available mid-fight arrives after it.
+   lasers stop on a rock. A card that became available mid-fight arrives after it.
 3. **Spacing.** A card needs 180 (major), 150 (important) or 220 (routine) seconds
    since the last one closed. The clock runs on across systems (`Carry.hush`), so
    a short sortie does not reset it.

@@ -12,7 +12,7 @@ import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { STORY_AT } from '../content/story';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_CUT, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, HOLD_START, JUMP_COST, PATCH_COST,
+  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_PARTS, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, HOLD_START, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
   rockYield, FOOD_MAX, FOOD_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
@@ -20,7 +20,6 @@ import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
 } from './comms';
-import { coolRocks, cutRock, cutTarget, newCutter, type Cutter } from './mining';
 import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, type Mods, type Pressure } from './director';
@@ -43,7 +42,7 @@ import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
   BREACH_GRACE, CHAIN_WINDOW, DYING, PX, BOOST_FIRST, BOOST_CHANCE, BOOST_GAP, REPAIR_CHANCE,
-  REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
+  REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, MINE_HP, MINE_KRAIL, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import type { Prices } from '../content/systems';
 import { ARCADE_PRICE } from '../content/web';
@@ -100,7 +99,7 @@ export interface ReviewState {
   bk: Breakout | null;
 }
 
-const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false, cut: false };
+const IDLE: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false };
 const BOSS_PLATES = 1;
 
 /** The ship's alert (World.alert): clear, yellow (observed) or red (targeted). */
@@ -232,9 +231,12 @@ export class World implements EncounterHost {
   chits = 0;
   /** Seconds into patching a plate from parts. */
   patchT = 0;
-  cutter: Cutter = newCutter();
-  /** The rock the cutter is on this step, if it is running. */
-  cutting: number | null = null;
+  /** Seconds left of "the lasers are working a rock" after the last hit on one (the comms desk waits it out). */
+  mineT = 0;
+  /** A multiplier on `TORP_YIELD`: the high-yield torpedo booster lifts it to the whole rock while it runs. */
+  get torpYieldMult(): number {
+    return this.powers.yield > 0 ? 1 / TORP_YIELD : 1;
+  }
   /** Docked at the port: `phase` is 'dock', or 'bay' while the bay is open there. */
   docked = false;
   /** What the fitted modules do (sim/modules.ts), worked out with the stats. */
@@ -329,8 +331,7 @@ export class World implements EncounterHost {
     this.run.mode = this.mode;
     this.command.auto = this.mode === 'arcade';
     this.command.reset();
-    this.cutter = newCutter();
-    this.cutting = null;
+    this.mineT = 0;
     this.docked = false;
     this.patchT = 0;
     this.holdNag = 0;
@@ -545,9 +546,6 @@ export class World implements EncounterHost {
     const s = this.ship, t = this.runTime, st = this.stats;
     const p = pressure(this.clock, this.mods);
     const c = this.alive && !slowed && (!this.bk || this.bk.jumpT < 0) ? flightControls(input) : IDLE;
-    // the cutter and the lasers share the bow: while the beam runs, the guns hold
-    if (this.bk && c.cut) c.fire = false;
-
     stepShip(s, c, this.hull, dt);
     if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
@@ -571,7 +569,7 @@ export class World implements EncounterHost {
     }
 
     // the sector
-    this.field.step(dt, s.x, s.z, this.bk ? { ...p, rich: this.richShare } : p);
+    this.field.step(dt, s.x, s.z, this.bk ? { ...p, rockHp: p.rockHp * MINE_HP, rich: this.richShare } : p);
     if (this.bk) { this.pursue(t); this.swarm(t); this.jam(dt); }
     else this.spawn(t, p);
     this.stepAliens(dt, t, p);
@@ -593,7 +591,7 @@ export class World implements EncounterHost {
     for (let i = this.tele.length - 1; i >= 0; i--) if ((this.tele[i]!.t -= dt) <= 0) this.tele.splice(i, 1);
     this.stepPickups(dt);
     this.collide();
-    if (this.bk) this.stepBreakout(dt, c.cut);
+    if (this.bk) this.stepBreakout(dt);
     if (this.bk && !slowed) this.stepComms();
     const lock = acquire(this.targets(), s.x, s.z, s.heading, fireStats.torpCone, fireStats.torpSeek);
     this.lock = lock ? lock.id : null;
@@ -624,7 +622,7 @@ export class World implements EncounterHost {
   private stepReview(dt: number, input: InputFrame): void {
     Object.assign(this.prev, this.ship);
     const s = this.ship;
-    const c = { ...flightControls(input), torpedo: false, cut: false };
+    const c = { ...flightControls(input), torpedo: false };
     stepShip(s, c, this.hull, dt);
     if (this.space) {
       // the place's pull and drag, without its lightning
@@ -644,8 +642,8 @@ export class World implements EncounterHost {
 
   // ── the Breakout ──────────────────────────────────────────────────────
 
-  /** Heat, the cutter, patching, the port and the lane mouth. */
-  private stepBreakout(dt: number, cut: boolean): void {
+  /** Heat, patching, the port and the lane mouth. */
+  private stepBreakout(dt: number): void {
     const b = this.bk!, s = this.ship;
     b.heat = b.def.quiet ? Math.max(0, b.heat - QUIET_COOL * dt) : Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * this.fx.heat * this.survival.heat.rate * dt);
     if (b.nagT > 0) b.nagT -= dt;
@@ -654,27 +652,7 @@ export class World implements EncounterHost {
     if (!this.alive || b.jumpT >= 0) return;
     this.stage?.step(this, dt);
 
-    // the cutter
-    this.cutting = null;
-    if (cut) {
-      const r = cutTarget(s, this.field.rocks, this.cutter.target);
-      this.cutter.target = r ? r.id : null;
-      if (r) {
-        this.cutting = r.id;
-        this.cutter.time += dt;
-        this.run.cutTime += dt;
-        if (!b.def.quiet) b.heat = Math.min(1, b.heat + HEAT_CUT * this.survival.heat.cut * dt);
-        const res = cutRock(r, dt);
-        if (res === 'clean') this.cutClean(r);
-        else if (res === 'fracture') {
-          this.run.fractured++;
-          this.events.push({ type: 'fracture', x: r.x, z: r.z, kind: r.kind });
-          r.heat = 0;
-          this.destroyRock(r, 'laser');
-        }
-      }
-    } else this.cutter.target = null;
-    coolRocks(this.field.rocks, this.cutting, dt);
+    if (this.mineT > 0) this.mineT -= dt;
 
     // patching: parts into a plate, once the ship has been left alone for a while
     if (this.plates < this.stats.maxPlates && this.parts >= this.patchCost && this.sinceHit >= PATCH_QUIET) {
@@ -833,23 +811,25 @@ export class World implements EncounterHost {
     this.navNoise = near ? Math.min(1, this.navNoise + dt * 0.8) : Math.max(0, this.navNoise - dt * 0.5);
   }
 
-  /** A rock cut clean: everything in it falls out for the tractor, and nothing is left to split. */
-  private cutClean(r: Rock): void {
-    const y = rockYield(r.kind, r.size, true);
+  /** A rock mined with the lasers: everything in it falls out for the tractor, and nothing is left to split. */
+  private mineRock(r: Rock): void {
+    const y = rockYield(r.kind, r.size);
     const i = this.field.rocks.indexOf(r);
     if (i >= 0) this.field.rocks.splice(i, 1);
-    this.run.cut++;
+    this.run.mined++;
     this.run.rocks++;
     this.kills++;
+    if (!this.bk!.def.quiet) this.bk!.heat = Math.min(1, this.bk!.heat + HEAT_MINE * MINE_WORK[r.size] * this.survival.heat.mine);
     const points = Math.round(ROCK_POINTS[r.size] * ROCK_KINDS[r.kind].points * 1.5);
     this.addScore(points, 'rocks');
     const R = this.survival.rock, ore = this.share(y.ore, R.ore), cyrite = this.share(y.cyrite, R.cyrite);
     if (ore) this.loot('rock', 'ore', ore, r.x, r.z, 3, r.vx, r.vz);
     if (cyrite) this.loot('rock', 'cyrite', cyrite, r.x, r.z, 3, r.vx, r.vz);
-    // Krail: what a break would give by chance, sure when cut clean
+    // Krail: what a break would give by chance, sure when mined
     const K = ROCK_KINDS[r.kind];
-    this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * ROCK_KRAIL, R.krail * this.income), r.x, r.z, 3, r.vx, r.vz);
-    this.events.push({ type: 'rockCut', x: r.x, z: r.z, size: r.size, kind: r.kind, ore, cyrite, points });
+    this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * ROCK_KRAIL * MINE_KRAIL, R.krail * this.income), r.x, r.z, 3, r.vx, r.vz);
+    if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, 'laser', 'volatile', 1, true);
+    this.events.push({ type: 'rockMined', x: r.x, z: r.z, size: r.size, kind: r.kind, ore, cyrite, points });
   }
 
   private dock(): void {
@@ -1157,7 +1137,7 @@ export class World implements EncounterHost {
     const b = this.bk!, s = this.ship;
     if (b.jumpT >= 0 || b.spool > 0 || b.dockT > 0.2 || b.blockade === 'checkpoint') return 'transit';
     if (this.command.state !== 'idle' || this.aliens.some((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < DESK.threat)) return 'fight';
-    if (this.cutting !== null) return 'cutting';
+    if (this.mineT > 0) return 'mining';
     const fast = Math.hypot(s.vx, s.vz) > topSpeed(this.hull) * 0.5;
     if (fast && this.field.rocks.some((r) => Math.hypot(r.x - s.x, r.z - s.z) < r.r + DESK.tight)) return 'tight';
     return 'free';
@@ -2291,6 +2271,7 @@ export class World implements EncounterHost {
   private damageRock(r: Rock, amount: number, src: Weapon, x: number, y: number, z: number, quiet = false): boolean {
     if (!this.field.rocks.includes(r)) return false;
     r.hp -= amount;
+    if (this.bk && src === 'laser') this.mineT = 0.6;
     if (!quiet || r.hitT <= 0) {
       r.hitT = 0.12;
       this.events.push({ type: 'rockHit', x, y, z, id: r.id });
@@ -2311,29 +2292,36 @@ export class World implements EncounterHost {
     this.addScore(points, 'rocks');
     this.kills++;
     this.run.rocks++;
-    this.field.shatter(b, pressure(this.clock, this.mods).rockHp);
+    this.field.shatter(b, pressure(this.clock, this.mods).rockHp * (this.bk ? MINE_HP : 1));
     this.events.push({ type: 'bulwarkBroken', x: b.x, z: b.z, r: b.r, points });
   }
 
   private destroyRock(r: Rock, src: Weapon): void {
     if (!this.field.rocks.includes(r)) return;
+    // the Story: the lasers take a rock apart clean, nothing left to split
+    if (this.bk && src === 'laser') { this.mineRock(r); return; }
     const K = ROCK_KINDS[r.kind];
     if (this.chain > 0) this.chainT = CHAIN_WINDOW;
     const points = Math.round(ROCK_POINTS[r.size] * K.points * chainMult(this.chain));
     this.addScore(points, 'rocks');
     this.kills++;
     this.run.rocks++;
-    this.field.split(r, pressure(this.clock, this.mods).rockHp);
-    this.events.push({ type: 'rockDestroyed', x: r.x, z: r.z, size: r.size, points, kind: r.kind });
+    // the Story: a blast destroys part of what was in it, and the rock is gone with it
+    if (this.bk) { this.field.rocks.splice(this.field.rocks.indexOf(r), 1); this.run.blasted++; }
+    else this.field.split(r, pressure(this.clock, this.mods).rockHp);
+    let left: number | undefined;
     if (this.bk) {
-      // broken, not cut: scraps of what was in it
-      const y = rockYield(r.kind, r.size, false);
+      // broken, not mined: what the blast left of it
+      const take = rockTake(src, TORP_YIELD * this.torpYieldMult), y = rockYield(r.kind, r.size, take);
+      if (y.ore || y.cyrite) left = Math.round(take * 100);
       const ore = this.share(y.ore, this.survival.rock.ore), cyrite = this.share(y.cyrite, this.survival.rock.cyrite);
       if (ore) this.loot('rock', 'ore', ore, r.x, r.z, 4, r.vx, r.vz);
       if (cyrite) this.loot('rock', 'cyrite', cyrite, r.x, r.z, 4, r.vx, r.vz);
     }
-    // Krail by chance, in both modes (less of it in the Story mode, where a cut gives it surely)
-    if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance) this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), this.survival.rock.krail * this.income), r.x, r.z, 4, r.vx, r.vz);
+    this.events.push({ type: 'rockDestroyed', x: r.x, z: r.z, size: r.size, points, kind: r.kind, left });
+    // Krail by chance, in both modes (less of it in the Story mode, where mining gives it surely); a blast destroys some of it
+    const blasted = src === 'torpedo' || src === 'mine' || src === 'plasma' || src === 'arc';
+    if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance * (blasted ? Math.min(1, TORP_YIELD * this.torpYieldMult) : 1)) this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), this.survival.rock.krail * this.income), r.x, r.z, 4, r.vx, r.vz);
     if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, src === 'hazard' ? 'hazard' : src, 'volatile', 1, true);
   }
 
