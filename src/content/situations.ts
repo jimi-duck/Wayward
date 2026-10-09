@@ -1,5 +1,6 @@
 import type { Outcome } from '../sim/comms';
 import type { Temper, WardAct } from '../sim/enemies';
+import { MISSIONS } from './missions';
 import type { Holder, SystemKind } from './systems';
 
 // ── situations ────────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ export type SitGroup = 'corporate' | 'frontier' | 'unknown';
 /** How a situation ended: carried through, lost, turned down, or left behind unanswered. */
 export type SitResult = 'won' | 'lost' | 'declined' | 'ignored';
 /** What stands at the site, drawn in render/stage.ts. */
-export type Prop = 'settlement' | 'relay' | 'wreck' | 'beacon' | 'checkpoint' | 'yard' | 'lane' | 'foundry' | 'seam' | 'object';
+export type Prop = 'settlement' | 'relay' | 'wreck' | 'beacon' | 'checkpoint' | 'yard' | 'lane' | 'foundry' | 'seam' | 'object' | 'hole' | 'rig';
 
 /** One kind of ship in a scene, and how it behaves while it is not fighting (see Ward in sim/enemies.ts). */
 export interface ActorSpec {
@@ -48,11 +49,27 @@ export interface ActorSpec {
   pace?: number;
   /** The name the HUD and radio give it. */
   tag: string;
+  /** Missions (sim/mission.ts): a real hostile that fights from the start of the goal, not a ward. */
+  foe?: boolean;
+  /** Missions: the ship the goal is about (the tanker, the wanted captain, the rig), a ward whose hull is `hp` times the usual. */
+  target?: boolean;
+  hp?: number;
+  /** Missions: when this ship goes down the rest scatter and the job is done for less (`goal.scatter`). */
+  scatter?: boolean;
 }
 
 /** What the sortie asks of the player once the call is taken. */
 export interface Goal {
-  kind: 'call' | 'reach' | 'follow' | 'watch';
+  /**
+   * call, reach, follow and watch are the quiet goals. The mission goals (sim/mission.ts):
+   *   destroy  clear every foe (or the one that breaks the rest)
+   *   strike   cripple the target, then close in and take it
+   *   defend   keep the target alive until the hold is up
+   *   race     the beacons in order, ahead of a rival
+   *   survey   readings at rings round a hazard, as close as you dare
+   *   sneak    reach the drop without the patrols reading the hold
+   */
+  kind: 'call' | 'reach' | 'follow' | 'watch' | 'destroy' | 'strike' | 'defend' | 'race' | 'survey' | 'sneak';
   /** Seconds to hold inside the ring (reach, watch) or stay with the lead ship (follow). */
   hold: number;
   /** Seconds after taking it before it is missed. */
@@ -61,6 +78,14 @@ export interface Goal {
   line: string;
   /** What has to be handed over at the site (reach): short of it, the hold does not count. */
   give?: { supplies?: number; chits?: number; cyrite?: number };
+  /** Missions: the share of the pay when the target is destroyed outright (strike), or the job is done by scattering the foes (destroy). */
+  spoil?: number;
+  /** Missions: how many beacons (race), and the rival's pace as a share of the ship's top speed. */
+  beacons?: number;
+  pace?: number;
+  /** Missions: the distances of the readings, outermost first (survey); the share of the pay each earns. */
+  rings?: number[];
+  shares?: number[];
 }
 
 /** What a situation does to the chart when it is over. */
@@ -116,6 +141,8 @@ export interface SituationDef {
   goal: Goal;
   /** Hostiles that come once the goal is taken on: so many seconds in, from ahead (a convoy's raiders). */
   threat?: { variant: string; n: number; after: number };
+  /** Missions: more foes in waves (defend): so many seconds into the goal, from out ahead. */
+  waves?: Array<{ variant: string; n: number; at: number }>;
   /** Hostiles waiting on the straight line to the lane mouth, sprung when the ship passes this far along it, unless the situation was won (the pickets the stranger led you round). */
   trap?: { variant: string; n: number; at: number };
   /** What it does in the sortie when the goal is carried, or missed. */
@@ -394,6 +421,8 @@ export const SITUATIONS: SituationDef[] = [
   },
 ];
 
+SITUATIONS.push(...MISSIONS);
+
 export const SITUATION_BY_ID: Record<string, SituationDef> = Object.fromEntries(SITUATIONS.map((s) => [s.id, s]));
 
 /** The kinds of situation that are only variants, never dealt out on their own. */
@@ -445,7 +474,7 @@ export const ARC: ArcRow[] = [
 ];
 
 /** The chance a system with no promised situation has one, by kind; a quiet one has far fewer. */
-export const SIT_CHANCE: Partial<Record<SystemKind, number>> = { mining: 0.2, transit: 0.15, port: 0.15, contested: 0.25 };
+export const SIT_CHANCE: Partial<Record<SystemKind, number>> = { mining: 0.3, transit: 0.25, port: 0.2, contested: 0.35 };
 export const SIT_CHANCE_QUIET = 0.05;
 /** Columns at the start of the first region with nothing rolled in them: the escape, the first refit and the first port. */
 export const EARLY_QUIET = 4;

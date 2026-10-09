@@ -1,4 +1,5 @@
 import type { CardDef } from '../sim/comms';
+import { MISSION_CARDS } from './missions';
 
 // ── the calls situations make ─────────────────────────────────────────────
 // The opening call of each situation (content/situations.ts). Short on words:
@@ -304,4 +305,6 @@ export const SCENE_CARDS: CardDef[] = [
       { id: 'no', label: 'Switch the scope off', tone: 'refuse', hint: 'Not everything wants answering.', win: { text: 'The scope goes quiet' } },
     ],
   }),
+  // ══ missions ════════════════════════════════════════════════════════════
+  ...MISSION_CARDS,
 ];

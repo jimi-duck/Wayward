@@ -2,7 +2,8 @@
 
 The second pass on the Story mode: what is going on in a system, who is in it,
 and why the player should care. Numbers are in
-[BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md).
+[BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md). The jobs with a goal to play (a
+toll to break, a tanker to cripple, a race) are in [MISSIONS.md](MISSIONS.md).
 
 ## The problem it solves
 

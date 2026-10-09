@@ -150,7 +150,39 @@ function object(): Group {
   return k.build(materials());
 }
 
-const BUILD: Record<Prop, () => Group> = { settlement, relay, wreck, beacon, checkpoint, yard, lane, foundry, seam, object };
+function hole(): Group {
+  const k = new Kit(), rnd = seeded(73);
+  // a dark core with a lit rim, the lane it bends drawn as thin broken rings
+  k.cyl('dark', 7, 7, 0.6, [0, 0, 0], 'y', 28);
+  for (let i = 0; i < 56; i++) {
+    const a = (i / 56) * Math.PI * 2, r = 10.6 + rnd() * 0.8;
+    k.box('amber', [1.5 + rnd() * 0.8, 0.1, 0.16], [Math.cos(a) * r, 0, Math.sin(a) * r], [0, -a + Math.PI / 2, 0]);
+  }
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2 + 0.2, r = 17 + rnd() * 5;
+    k.box('dark', [1.6 + rnd() * 2, 0.1, 0.16], [Math.cos(a) * r, 0.1, Math.sin(a) * r], [0, -a + Math.PI / 2, 0]);
+  }
+  return k.build(materials());
+}
+
+function rig(): Group {
+  const k = new Kit(), rnd = seeded(79);
+  // a drilling platform on four legs: a derrick, a flare stack, lit decks
+  k.box('dark', [14, 1.2, 14], [0, 0, 0]);
+  for (const [x, z] of [[-6, -6], [6, -6], [-6, 6], [6, 6]] as const) { k.box('hull', [0.9, 7, 0.9], [x, -2.4, z]); k.box('lamp', [0.3, 0.3, 0.3], [x, 1.2, z]); }
+  truss(k, [-6, 7, -6], [6, 7, 6], 0.9, 8, 2);
+  k.box('hull', [1.4, 14, 1.4], [0, 7, 0]);
+  strut(k, 'dark', [-3, 1, -3], [0, 13, 0], 0.18, 4);
+  strut(k, 'dark', [3, 1, 3], [0, 13, 0], 0.18, 4);
+  k.box('amber', [0.3, 4, 0.3], [5, 3.6, -5]);
+  k.box('lamp', [0.7, 0.7, 0.7], [0, 14.4, 0]);
+  k.box('paint', [4, 1.6, 3], [-3, 1.4, 3]);
+  k.greebles('dark', rnd, -6, 6, -6, 6, 0.7, 10, 0.7);
+  return k.build(materials());
+}
+
+const BUILD: Record<Prop, () => Group> = { settlement, relay, wreck, beacon, checkpoint, yard, lane, foundry, seam, object, hole, rig };
+const TEAL = new Color(0.5, 2.4, 2.6);
 
 export class SiteView {
   private readonly root = new Group();
@@ -158,6 +190,9 @@ export class SiteView {
   private key = '';
   private time = 0;
   private body: Group | null = null;
+  private pinKey = '';
+  private pinMeshes: Mesh[] = [];
+  private readonly pinRoot = new Group();
 
   constructor(scene: Scene) {
     this.ring = flatRing(30, 0.3, AMBER, 0.5);
@@ -165,11 +200,34 @@ export class SiteView {
     this.root.add(this.ring);
     this.root.visible = false;
     scene.add(this.root);
+    scene.add(this.pinRoot);
+  }
+
+  /** The mission's beacons, drops and survey rings: flat teal rings on the plane, the one to go to bright. */
+  private pins(world: World, dt: number): void {
+    const st = world.stage, list = st && st.taken && !st.result ? st.pins as Array<{ x: number; z: number; on: boolean; r?: number }> : [];
+    const kind = st?.def.goal.kind;
+    const rad = (p: { r?: number }): number => p.r ?? (kind === 'sneak' ? 28 : 26);
+    const key = list.map((p) => rad(p)).join(',');
+    if (key !== this.pinKey) {
+      this.pinKey = key;
+      for (const m of this.pinMeshes) { this.pinRoot.remove(m); m.geometry.dispose(); }
+      this.pinMeshes = list.map((p) => { const m = flatRing(rad(p), Math.max(0.6, rad(p) * 0.014), TEAL, 0.5); m.position.y = -0.8; this.pinRoot.add(m); return m; });
+    }
+    this.time += list.length ? dt : 0;
+    list.forEach((p, i) => {
+      const m = this.pinMeshes[i]!;
+      m.position.x = p.x; m.position.z = p.z;
+      // beacons and drops show only the one to go to; survey rings all show
+      m.visible = kind === 'survey' || p.on;
+      (m.material as MeshBasicMaterial).opacity = kind === 'survey' ? 0.22 + 0.1 * Math.sin(this.time * 2 + i) : 0.45 + 0.2 * Math.sin(this.time * 4);
+    });
   }
 
   update(world: World, dt: number): void {
     const st = world.stage;
     const prop = st?.def.prop;
+    this.pins(world, dt);
     if (!st || !prop) { this.root.visible = false; this.key = ''; return; }
     this.time += dt;
     if (this.key !== `${world.sortie.system}:${st.def.id}`) {
@@ -177,14 +235,17 @@ export class SiteView {
       if (this.body) { this.root.remove(this.body); this.body = null; }
       this.body = BUILD[prop]();
       this.body.rotation.y = ((world.sortie.system.length * 0.7) % 3) - 1.5;
+      // a disc seen edge-on is a line: the hole leans to show its face
+      if (prop === 'hole') this.body.rotation.x = 0.55;
       this.root.add(this.body);
     }
     this.root.visible = true;
     this.root.position.set(st.x, -1.5, st.z);
     // the hold circle shows only while the goal is on
-    const on = st.taken && !st.result && st.def.goal.kind !== 'follow';
+    const on = st.taken && !st.result && st.def.goal.kind !== 'follow' && !st.run;
     this.ring.visible = on;
     if (on) (this.ring.material as MeshBasicMaterial).opacity = 0.3 + 0.2 * Math.sin(this.time * 3) + st.held * 0.3;
     if (prop === 'object' && this.body) this.body.rotation.y += dt * 0.25;
+    if (prop === 'hole' && this.body) this.body.rotation.y += dt * 0.12;
   }
 }

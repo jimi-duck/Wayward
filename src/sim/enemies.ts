@@ -76,7 +76,7 @@ export type Mode =
  */
 export type Temper = 'meek' | 'wary' | 'territorial' | 'drawn' | 'hostile';
 /** What it does while it is a ward: crosses the sector, circles the ship, sits where it is, trails the ship, leads the ship on. */
-export type WardAct = 'pass' | 'orbit' | 'hold' | 'follow' | 'lead';
+export type WardAct = 'pass' | 'orbit' | 'hold' | 'follow' | 'lead' | 'patrol';
 
 export interface Ward {
   act: WardAct;
@@ -318,6 +318,8 @@ export interface Alien {
   approach: Approach;
   /** Not a fighter, for now (see Ward). */
   ward?: Ward;
+  /** Part of a mission (sim/mission.ts): kept however far off it is. */
+  job?: boolean;
 }
 
 export interface Shot {

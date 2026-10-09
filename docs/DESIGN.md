@@ -259,6 +259,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
 | Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
 | Story communications: weights, pacing, calls, radio | `DESK` in `sim/desk.ts`, `CHATTER` in `content/chatter.ts`, `tier` on a card | `Desk`, `weightOf`, `World.stepComms` / `openCall`, `ui/radio.ts`; see [COMMS.md](COMMS.md) |
+| Missions: optional jobs (destroy, strike, defend, race, survey, sneak) | `MISSIONS` and `MISSION_CARDS` in `content/missions.ts`, `Goal.kind` in `content/situations.ts` | `Run` in `sim/mission.ts`, played by `Stage` (`sim/stage.ts`), drawn in `render/site.ts`; see [MISSIONS.md](MISSIONS.md) |
 | Adrift and total loss: the per-region wreck count, the tow, the restart | `Journey.lost`, `voyage.wrecks` in `content/survival.ts`, `driftTo` in `sim/journey.ts`, `regionLost` in `main.ts`, `ui/adrift.ts`; see [ADRIFT.md](ADRIFT.md) |
 | The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `meta/save.ts`, `ui/chart.ts` |
 | Score and the record | `sim/run.ts`, `sim/tuning.ts` | `World.addScore`, `World.finish` |

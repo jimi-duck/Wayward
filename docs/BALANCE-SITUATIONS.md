@@ -14,26 +14,28 @@ rest turn only on a reason).
 | Region | Situations | Systems | Share | Unknown | Corporate | Frontier | Hostile |
 |---|---|---|---|---|---|---|---|
 | 1 The Reach | 15.0 | 29.0 | 52% | 40% | 20% | 40% | 0% |
-| 2 The Marches | 14.8 | 28.0 | 53% | 81% | 4% | 15% | 0% |
-| 3 The Salvage Belt | 11.7 | 28.0 | 42% | 77% | 4% | 19% | 0% |
-| 4 The Drift Deep | 12.4 | 28.0 | 44% | 73% | 4% | 23% | 0% |
-| 5 The Breaker Yards | 9.6 | 28.0 | 34% | 31% | 48% | 21% | 0% |
-| 6 The Free Ports | 10.3 | 28.0 | 37% | 59% | 13% | 28% | 0% |
-| 7 The Hollows | 6.9 | 19.0 | 36% | 58% | 9% | 32% | 0% |
-| 8 The Last Lanes | 8.1 | 27.0 | 30% | 50% | 16% | 34% | 0% |
+| 2 The Marches | 16.1 | 28.0 | 58% | 74% | 7% | 19% | 3% |
+| 3 The Salvage Belt | 13.4 | 28.0 | 48% | 67% | 8% | 25% | 16% |
+| 4 The Drift Deep | 13.8 | 28.0 | 49% | 65% | 9% | 26% | 13% |
+| 5 The Breaker Yards | 11.8 | 28.0 | 42% | 25% | 41% | 34% | 8% |
+| 6 The Free Ports | 11.6 | 28.0 | 41% | 52% | 14% | 34% | 5% |
+| 7 The Hollows | 8.2 | 19.0 | 43% | 49% | 19% | 32% | 4% |
+| 8 The Last Lanes | 10.3 | 27.0 | 38% | 39% | 26% | 35% | 0% |
 
 ## The first half hour
 
-The first 12 systems of 4 journeys, with the minute the pilot arrived and what the
+The first 12 systems of 6 journeys, with the minute the pilot arrived and what the
 system had going on. The first alien moment comes on average at minute
-30 (4 of 4 journeys); the first human optional situation at
-minute 15 (4 of 4).
+21 (6 of 6 journeys); the first human optional situation at
+minute 12 (6 of 6).
 
 | Seed | Systems, by arrival |
 |---|---|
-| 3000 | 0:00 home<br>4:29 home<br>9:02 mining · A Net sweep<br>11:49 port<br>14:03 transit<br>16:39 mining · A Net sweep<br>19:53 port · An empty berth<br>22:27 port · A settlement under guard<br>26:13 transit · A lockdown<br>29:25 contested · Something on the scope<br>34:03 contested · A relay that answers<br>38:49 gate |
-| 3013 | 0:00 home<br>4:20 transit<br>8:55 port<br>11:42 mining<br>15:04 mining · An empty berth<br>18:00 mining · A settlement under guard<br>21:18 transit · A lockdown<br>23:23 mining · Something on the scope<br>28:34 contested · A relay that answers<br>35:37 gate<br>40:20 port · It is studying you<br>44:05 mining · A swarm in the Cyrite |
-| 3026 | 0:00 home<br>4:49 mining<br>7:34 port<br>11:04 mining<br>15:30 mining<br>18:19 mining<br>21:18 port · An empty berth<br>26:15 mining · A settlement under guard<br>31:45 mining · A lockdown<br>36:34 mining · Something on the scope<br>41:02 port · A relay that answers<br>45:26 gate |
-| 3039 | 0:00 home<br>5:02 port<br>7:22 mining<br>12:08 transit · A Net sweep<br>14:29 port<br>17:46 transit · A hauler with stock<br>19:25 port · A settlement short of food<br>22:31 mining · A lockdown<br>27:04 contested · Something on the scope<br>32:30 mining · A relay that answers<br>37:11 gate<br>41:32 port · It is studying you |
+| 3000 | 0:00 home<br>2:58 mining · A Net sweep<br>5:43 port<br>8:08 transit<br>9:38 port<br>12:08 contested · A hauler with stock<br>16:16 port · A settlement short of supplies<br>18:47 mining · A Custody inspection<br>22:29 transit · Something on the scope<br>25:06 transit · A relay that answers<br>27:18 gate<br>31:25 mining · It is studying you |
+| 3013 | 0:00 home<br>2:39 contested<br>4:56 transit<br>6:25 contested<br>8:35 port<br>10:56 transit · A hauler with stock<br>12:21 transit · A settlement short of supplies<br>13:50 port · A Custody inspection<br>16:10 contested · Something on the scope<br>20:14 mining · A relay that answers<br>22:27 gate<br>24:56 transit · It is studying you |
+| 3026 | 0:00 home<br>2:35 port<br>5:09 port<br>7:31 contested<br>10:58 port<br>13:58 port · A hauler with stock<br>16:08 transit · A settlement short of supplies<br>17:41 transit · A lockdown<br>19:14 contested · Something on the scope<br>21:51 contested · A relay that answers<br>24:36 gate<br>29:02 port · It is studying you |
+| 3039 | 0:00 home<br>3:39 port<br>5:58 contested<br>8:21 port<br>12:12 port<br>14:15 contested · A hauler with stock<br>16:31 contested · A settlement short of supplies<br>18:39 mining · A Custody inspection<br>20:38 port · Something on the scope<br>23:04 port · A relay that answers<br>25:39 gate<br>28:44 transit · It is studying you |
+| 3052 | 0:00 home<br>3:24 port<br>5:38 mining<br>8:28 mining<br>10:51 port<br>15:00 transit · A hauler with stock<br>17:48 port · A settlement short of supplies<br>21:48 transit · A Custody inspection<br>24:27 contested · Something on the scope<br>28:50 port · A relay that answers<br>32:41 gate<br>36:30 contested · It is studying you |
+| 3065 | 0:00 home<br>2:56 transit<br>4:24 transit<br>6:04 port<br>8:54 mining<br>11:11 transit · A hauler with stock<br>12:55 port · A settlement short of supplies<br>15:28 mining · A Custody inspection<br>18:12 contested · Something on the scope<br>20:48 contested · A relay that answers<br>23:58 gate<br>26:23 transit · It is studying you |
 
-33 situations are written; 23 sit on the timetable.
+40 situations are written; 23 sit on the timetable.

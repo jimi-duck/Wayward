@@ -1674,7 +1674,7 @@ export class World implements EncounterHost {
       if (!this.aliens.includes(al)) continue;
       // gone: off the far side of the sky, or away after leaving
       const d = Math.hypot(al.x - s.x, al.z - s.z);
-      if (!al.ward && (d > CULL || (al.fleeing && al.age > 3 && d > 160))) this.aliens.splice(this.aliens.indexOf(al), 1);
+      if (!al.ward && !al.job && (d > CULL || (al.fleeing && al.age > 3 && d > 160))) this.aliens.splice(this.aliens.indexOf(al), 1);
     }
   }
 
@@ -2148,6 +2148,9 @@ export class World implements EncounterHost {
   }
 
   // ── damage ────────────────────────────────────────────────────────────
+
+  /** A mission hazard (the core of a black hole) scorches the hull: one hit, as any other. */
+  scorch(): void { if (this.ship.invuln <= 0) this.hitShip('hazard'); }
 
   private hitShip(source: string, fromX?: number, fromZ?: number): void {
     const s = this.ship, st = this.stats;
