@@ -534,6 +534,9 @@ html.swipe #app * { overscroll-behavior: contain; }
 
 /* the port */
 .port-stock { display: flex; flex-wrap: wrap; gap: 22px; font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.port-warn { display: grid; gap: 3px; font: 600 calc(var(--fs) * 1.1)/1.25 var(--font-rail); letter-spacing: .08em; color: var(--caution); }
+.ch-warn { margin: 0; font: 600 calc(var(--fs) * 1.1)/1.25 var(--font-rail); letter-spacing: .08em; color: var(--caution); }
+.port-warn[hidden] { display: none; }
 .port-stock b { margin-left: 8px; font: 600 calc(var(--fs) * 1.5)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); }
 .port-list { display: grid; gap: 8px; }
 .port-l { --c: 8px; --edge: rgba(216, 213, 198, .16); --fill: rgba(20, 26, 26, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;

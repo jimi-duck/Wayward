@@ -6,6 +6,7 @@ import {
 import { SYSTEMS } from '../content/systems';
 import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/survival';
 import type { RegionSet } from '../content/regions';
+import { weightFuel } from './budgets';
 import { SUPPLIES_MAX, SUPPLIES_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
   arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
@@ -228,7 +229,7 @@ export function sortieDef(j: Journey): SortieDef {
 export function options(j: Journey) {
   // never back to Cerro (the yards are the Continuance's), nor back through a gate
   return lanesFrom(j.chart, j.at).filter(({ to }) => onward(j, to)).map(({ to, route }) => ({
-    to, route, supplies: route.days * RATION + survivalOf(j.survival).voyage.wear, netted: j.chart.seenNet.includes(to.id),
+    to, route, fuel: route.cyrite + weightFuel(j.carry.levels), supplies: route.days * RATION + survivalOf(j.survival).voyage.wear, netted: j.chart.seenNet.includes(to.id),
     /** Calloway was last seen there (as far as you know). */
     shadow: j.trail[j.hunt.seenIdx] === to.id,
     /** The place there, as far as you know. */

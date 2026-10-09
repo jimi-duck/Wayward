@@ -296,7 +296,7 @@ function boot(review: typeof import('./review') | null): void {
     if (world.carry().flags.includes('news')) hearNews(j);
     return {
       lanes: () => options(j).map((o) => ({
-        id: o.to.id, name: o.to.name, cyrite: o.route.cyrite, days: o.route.days,
+        id: o.to.id, name: o.to.name, cyrite: o.fuel, days: o.route.days,
         note: [o.netted ? t('the Net holds it') : '', o.shadow ? t('Calloway last seen there') : '', o.to.kind === 'edge' ? t('the way out') : ''].filter(Boolean).join(' · '),
       })),
       current: () => j.dest,

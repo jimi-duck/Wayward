@@ -387,6 +387,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 /* what the place is doing to the ship: the ship's voice, teal, one or two short lines, only while it is felt */
 #cond { display: grid; gap: 2px; justify-items: end; font: 600 calc(var(--fs) * 1.2)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); text-shadow: 0 1px 2px #000; }
 #cond[hidden] { display: none; }
+#cond .warn { color: var(--caution); }
 
 /* [B] Open bay: only when there is something to fit; amber while it can be, quiet and locked under an alert */
 #upg { display: flex; align-items: center; gap: 11px; border: 0; background: none; font: inherit; padding: 7px 14px 7px 11px; --lit: var(--amber); --edge: rgba(134, 169, 209, .45); color: var(--amber); cursor: pointer; pointer-events: auto; touch-action: manipulation; }

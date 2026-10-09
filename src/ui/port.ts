@@ -34,6 +34,14 @@ export interface Course {
   pick: (id: string) => void;
 }
 
+/** What a port says of the ship's state, and what to do about it (World.warnings). */
+const PORT_WARN = {
+  empty: 'Out of supplies · the ship flies slower and worse. Buy some here.',
+  low: 'Supplies low · a lane or two left. Buy some here.',
+  heavy: 'Heavy · slower to turn, and each jump burns {n} more Cyrite. A lighter build in the bay fixes it.',
+  hot: 'Running hot · the guns cycle slower. Cooling in the bay fixes it.',
+} as const;
+
 export class PortPanel {
   private off: (() => void) | null = null;
   private sel = 0;
@@ -126,6 +134,11 @@ export class PortPanel {
     this.sel = Math.min(this.sel, this.lines.length - 1);
     const stock = [[t('Chits'), String(w.chits)], [t('Tank'), `${w.cyrite}/${w.jumpCost}`], [t('Supplies'), `${w.supplies}/${w.supplyMax}`], [t('Hull'), `${w.plates}/${w.stats.maxPlates}`]];
     $('port-stock').replaceChildren(...stock.map(([k, v]) => h('span', '', '', h('span', 'k', k!), h('b', '', v!))));
+    // the ship's trouble and where it is mended: the stores here, the weight in the bay
+    const warn = w.warnings.map((k) => t(PORT_WARN[k], { n: w.weightFuel }));
+    const el = $('port-warn');
+    el.hidden = !warn.length;
+    el.replaceChildren(...warn.map((l) => h('span', '', l)));
     $('port-list').replaceChildren(...this.lines.map((l, i) => {
       const b = h('button', `port-l${i === this.sel ? ' sel' : ''}${l.key === 'stop' ? ' stop' : ''}`, '', h('kbd', '', String(i + 1)), h('span', 'pl-n', l.label), l.chips ? h('span', 'pl-chips', '', ...l.chips.map((c) => h('span', 'pl-chip', c))) : h('span', 'pl-note', l.note), h('b', 'pl-p', l.price)) as HTMLButtonElement;
       b.type = 'button';

@@ -232,6 +232,11 @@ export const SUPPLIES_MAX = 16;
 export const SUPPLIES_START = 8;
 /** At or under this many, the HUD and the ports say supplies are low. */
 export const LOW_SUPPLIES = 4;
+/**
+ * With the stores gone the crew tires and the drive goes unserviced: the ship still flies, but thrust, turning and
+ * the guns' cycle run at this share. It comes back the moment a crate is aboard.
+ */
+export const EMPTY_STORES = 0.85;
 
 /** The pursuers, by the heat they need. Gutter crews work the belt ahead and do not care who you are. */
 const PURSUERS: Array<{ variant: string; from: number; weight: number }> = [

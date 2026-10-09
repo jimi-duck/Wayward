@@ -37,6 +37,14 @@ export const FACTION_NAME: Record<string, string> = { gutter: 'Gutter', custody:
 const faction = (f: string) => t(FACTION_NAME[f] ?? f);
 const LOG_LINES = 1;
 const LOG_LIFE = 4.5;
+/** What the ship says is wrong with it, in a few words (World.warnings). */
+const SHIP_WARN = {
+  empty: 'Out of supplies · slower, guns weaker',
+  low: 'Supplies low',
+  heavy: 'Heavy · slower to turn',
+  hot: 'Running hot · guns slower',
+} as const;
+
 /** A hostile this close (units) earns the objective a threat line. */
 const THREAT_NEAR = 320;
 /** Seconds before the log says again that the self-repair has started. */
@@ -605,13 +613,19 @@ export class Hud {
 
   /** The place's effects on the ship, in the ship's words: nothing for what only looks like something. */
   private updateCond(world: World): void {
-    const key = (world.siteHere ?? '') + world.conditions.map((c) => c.kind).join();
+    const warns = world.alive ? world.warnings : [];
+    const key = (world.siteHere ?? '') + world.conditions.map((c) => c.kind).join() + warns.join() + world.weightFuel;
     if (key === this.condKey) return;
     this.condKey = key;
     const el = $('cond');
     el.hidden = !key;
     const lines = [...(world.siteHere ? [NAMED[world.siteHere]!.name] : []), ...world.conditions.map((c) => REPORT_TEXT[c.kind])];
-    el.replaceChildren(...lines.map((l) => { const d = document.createElement('div'); d.textContent = t(l); return d; }));
+    // the ship's own trouble, quiet and dull gold: the stores and the weight (it flies on, worse)
+    const warn = warns.map((w) => w === 'heavy' && world.weightFuel ? t('Heavy · slower, +{n} Cyrite a jump', { n: world.weightFuel }) : t(SHIP_WARN[w]));
+    el.replaceChildren(
+      ...lines.map((l) => { const d = document.createElement('div'); d.textContent = t(l); return d; }),
+      ...warn.map((l) => { const d = document.createElement('div'); d.className = 'warn'; d.textContent = l; return d; }),
+    );
   }
 
   private updateLog(world: World): void {

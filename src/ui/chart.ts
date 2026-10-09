@@ -1,6 +1,7 @@
 import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
-import { TANK_MAX } from '../sim/breakout';
+import { LOW_SUPPLIES, TANK_MAX } from '../sim/breakout';
+import { overRatings, weightFuel } from '../sim/budgets';
 import { fileLines } from '../sim/calloway';
 import { QUESTIONS } from '../content/situations';
 import { longIndex, situationLine } from '../sim/situations';
@@ -84,6 +85,17 @@ function svg(tag: string, attrs: Record<string, string | number>, text = ''): SV
   for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
   if (text) e.textContent = text;
   return e;
+}
+
+/** The ship's trouble, in a line each: thin stores, and weight that costs Cyrite (it flies on, worse). */
+function shipTrouble(j: Journey): string[] {
+  const c = j.carry, out: string[] = [];
+  if (c.supplies <= 0) out.push(t('Out of supplies · the ship flies slower and worse'));
+  else if (c.supplies <= LOW_SUPPLIES) out.push(t('Supplies low · buy more at a port'));
+  const fuel = weightFuel(c.levels);
+  if (fuel) out.push(t('Heavy · each jump burns {n} more Cyrite', { n: fuel }));
+  if (overRatings(c.levels).heat) out.push(t('Running hot · guns slower'));
+  return out;
 }
 
 export class ChartPanel {
@@ -256,10 +268,10 @@ export class ChartPanel {
         h('kbd', '', String(i + 1)),
         h('span', 'pl-n', '', h('b', '', s.name), left === 0 ? h('span', 'ch-goal-c', t('Goal')) : closer ? h('span', 'ch-goal-c', t('Toward goal')) : null, h('span', 'ch-kind', ` ${t(KIND_WORD[s.kind])}${s.kind === 'edge' || s.kind === 'gate' ? '' : ` · ${t(HOLDER_NAMES[s.holder])}`}`)),
         h('span', 'pl-note', '', h('span', 'ch-tags', '', h('span', `ch-tag ${st}`, '', h('i', '', mark), h('b', '', t(word))), h('span', 'ch-tag', days(o.route.days))), h('span', '', notes.join(' · '))),
-        h('b', 'pl-p', String(o.route.cyrite)),
+        h('b', 'pl-p', String(o.fuel)),
       ) as HTMLButtonElement;
       b.type = 'button';
-      b.title = t('{n} Cyrite to jump', { n: o.route.cyrite });
+      b.title = t('{n} Cyrite to jump', { n: o.fuel });
       b.onclick = guarded(this.opened, () => this.pick(i));
       b.onpointerdown = (e) => e.stopPropagation();
       // hover marks it in place: a tap must not replace the button it is landing on
@@ -285,6 +297,7 @@ export class ChartPanel {
       h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', t('File {n}/{of}', { n: file.found, of: file.of }))),
       ...regionAsks(j.chart, j.at),
       ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `${t('Goal')} · ${t('reach {name}', { name: goal.name })} · ${plural(left, '{n} jump', '{n} jumps')}`)] : []),
+      ...shipTrouble(j).map((l) => h('p', 'ch-warn', l)),
       h('div', 'port-stock', '', ...cells.map(([k, v, why]) => { const e = h('span', '', '', h('span', 'k', k), h('b', '', v)); e.title = why; return e; })),
       h('p', 'ch-hunt', j.trail.length < 2
         ? `Calloway · ${t('not on your trail yet')}`
@@ -303,6 +316,7 @@ export class ChartPanel {
     const { px, py } = project(shown);
     const out = new Set(lanesFrom(c, at).map((l) => l.to.id));
     const target = this.ids[this.sel];
+    const extra = weightFuel(j.carry.levels);
     const kids: SVGElement[] = [];
     const rn = regionName(c, at);
     if (rn) kids.push(svg('text', { x: W / 2, y: 14, 'text-anchor': 'middle', class: 'ch-region' }, rn));
@@ -313,7 +327,7 @@ export class ChartPanel {
       const live = (r.a === at && out.has(r.b)) || (r.b === at && out.has(r.a));
       const sel = live && (r.a === target || r.b === target);
       kids.push(svg('line', { x1: px(a), y1: py(a), x2: px(b), y2: py(b), class: `ch-r${live ? ' live' : ''}${sel ? ' sel' : ''}` }));
-      if (live) kids.push(svg('text', { x: (px(a) + px(b)) / 2, y: (py(a) + py(b)) / 2 - 5, class: `ch-cost${sel ? ' sel' : ''}`, 'text-anchor': 'middle' }, `${r.cyrite}`));
+      if (live) kids.push(svg('text', { x: (px(a) + px(b)) / 2, y: (py(a) + py(b)) / 2 - 5, class: `ch-cost${sel ? ' sel' : ''}`, 'text-anchor': 'middle' }, `${r.cyrite + extra}`));
     }
     // your trail
     for (let i = 1; i < j.trail.length; i++) {

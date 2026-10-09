@@ -23,6 +23,12 @@ export const OVERLOAD = {
   cooling: 0.9, heatFloor: 0.5,
 } as const;
 
+/**
+ * The Story's weight on the drive: every point of mass over the rating costs this much more Cyrite
+ * per jump, up to the cap. A heavy ship still flies, and still jumps; it just burns more.
+ */
+export const WEIGHT_FUEL = { perMass: 1, max: 6 } as const;
+
 /** What a build draws and what it is rated for. */
 export function budgets(levels: Record<string, number>): { use: Budget; cap: Budget } {
   const use: Budget = { ...STOCK_DRAW }, cap: Budget = { ...RATINGS };
@@ -37,6 +43,18 @@ export function budgets(levels: Record<string, number>): { use: Budget; cap: Bud
 
 /** How far over a rating, as a share of it (0 when within). */
 export const overBy = (use: number, cap: number) => Math.max(0, use - cap) / Math.max(1, cap);
+
+/** Cyrite a jump costs extra for the mass carried over the frame's rating (0 within it). */
+export function weightFuel(levels: Record<string, number>): number {
+  const { use, cap } = budgets(levels);
+  return Math.min(WEIGHT_FUEL.max, Math.ceil(Math.max(0, use.mass - cap.mass) * WEIGHT_FUEL.perMass));
+}
+
+/** Which ratings the build runs over (for the HUD's quiet line and the bay). */
+export function overRatings(levels: Record<string, number>): { mass: boolean; heat: boolean } {
+  const { use, cap } = budgets(levels);
+  return { mass: use.mass > cap.mass, heat: use.heat > cap.heat };
+}
 
 /** The multipliers a build's overload puts on handling and on the guns' cycle (1 when within its ratings). */
 export function overload(levels: Record<string, number>): { handling: { thrust: number; turn: number }; cooling: number } {

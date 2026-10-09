@@ -14,7 +14,7 @@ import { STORY_AT } from '../content/story';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
-  rockYield, SUPPLIES_MAX, SUPPLIES_START, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
+  rockYield, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
@@ -47,7 +47,7 @@ import {
 import { SCRAP_PRICE, type Prices } from '../content/systems';
 import { ARCADE_PRICE } from '../content/web';
 import { blockOf, install as bayInstall, quickPicks, stockLevels, type BayCtx, type Block } from './bay';
-import { feelBudgets } from './budgets';
+import { feelBudgets, overRatings, weightFuel } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { planStop, type Stop } from './stop';
 import { reasonOf, type Advice } from './advice';
@@ -447,7 +447,25 @@ export class World implements EncounterHost {
 
   /** Cyrite the plotted jump takes (the Breakout's lane in Cerro). */
   get jumpCost(): number {
-    return this.bk?.jumpCost ?? 0;
+    return (this.bk?.jumpCost ?? 0) + this.weightFuel;
+  }
+
+  /** Cyrite a jump takes on top of the lane's, for a ship carried heavy. */
+  weightFuel = 0;
+  /** The stores are gone: the ship flies slower and worse until a crate is aboard (EMPTY_STORES). */
+  thin = false;
+
+  /** What is wrong with the ship, in the order it matters: for the HUD's quiet line. */
+  get warnings(): Array<'empty' | 'low' | 'heavy' | 'hot'> {
+    const out: Array<'empty' | 'low' | 'heavy' | 'hot'> = [];
+    if (this.bk) {
+      if (this.supplies <= 0) out.push('empty');
+      else if (this.supplies <= LOW_SUPPLIES) out.push('low');
+    }
+    const over = overRatings(this.levels);
+    if (over.mass) out.push('heavy');
+    if (over.heat) out.push('hot');
+    return out;
   }
 
   /** The clock the difficulty curve reads: run time in the arcade, heat in the Breakout. */
@@ -533,6 +551,8 @@ export class World implements EncounterHost {
       const o = this.comms!;
       if ((o.slow = Math.max(0, o.slow - dt)) <= 0) { this.answer(o.def.slow!.default, true); return; }
     }
+    // the stores run out or come back: the stat block follows
+    if (this.bk && (this.supplies <= 0) !== this.thin) this.refreshStats();
     Object.assign(this.prev, this.ship);
     const s = this.ship, t = this.runTime, st = this.stats;
     const p = pressure(this.clock, this.mods);
@@ -734,13 +754,13 @@ export class World implements EncounterHost {
 
     // the lane mouth: hold inside it with the Cyrite to jump while the drive spools
     if (dl < b.lane.r) {
-      if (this.cyrite >= b.jumpCost && this.phase === 'play') {
+      if (this.cyrite >= this.jumpCost && this.phase === 'play') {
         if (b.spool === 0) this.events.push({ type: 'spool' });
         b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
         if (b.spool >= b.spoolNeed) this.jump();
       } else if (b.nagT <= 0) {
         b.nagT = 6;
-        this.events.push({ type: 'needCyrite', have: this.cyrite, need: b.jumpCost });
+        this.events.push({ type: 'needCyrite', have: this.cyrite, need: this.jumpCost });
       }
     } else b.spool = Math.max(0, b.spool - dt * 2);
   }
@@ -921,7 +941,7 @@ export class World implements EncounterHost {
   /** Into the lane: the drive takes the Cyrite and the ship is gone. */
   private jump(): void {
     const b = this.bk!, s = this.ship;
-    this.cyrite -= b.jumpCost;
+    this.cyrite -= this.jumpCost;
     this.settleJobs('lane');
     this.run.escaped = true;
     this.run.cyriteLeft = this.cyrite;
@@ -1123,7 +1143,7 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
     return {
-      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, need: b?.jumpCost ?? JUMP_COST, tank: TANK_MAX, chits: this.chits,
+      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, need: b ? this.jumpCost : JUMP_COST, tank: TANK_MAX, chits: this.chits,
       plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       supplies: this.supplies, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
@@ -1374,6 +1394,17 @@ export class World implements EncounterHost {
     const s = computeStats(this.levels);
     // the arcade feels its budgets: heavy is slow, hot is slow to reload (the Story mode's turn comes with its bay)
     feelBudgets(s, this.levels);
+    // the Story's stores: out of them the crew tires and the drive goes unserviced
+    this.thin = !!this.bk && this.supplies <= 0;
+    if (this.thin) {
+      s.thrust *= EMPTY_STORES;
+      s.turn *= EMPTY_STORES;
+      s.bankRefill *= EMPTY_STORES;
+      s.torpReload /= EMPTY_STORES;
+      s.mineInterval /= EMPTY_STORES;
+      s.arcInterval /= EMPTY_STORES;
+    }
+    this.weightFuel = this.bk ? weightFuel(this.levels) : 0;
     // the survival mode's hull: plates, how fast a shield comes back, grace after a hit, how far the tractor reaches
     const K = this.survival;
     s.maxPlates = Math.max(1, s.maxPlates + K.ship.plates);
