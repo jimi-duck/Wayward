@@ -179,10 +179,31 @@ Generators drift between prompts. Things that help, in order:
   `tools/art/briefs.ts`, and the screen that draws it, with `artImg` and a
   fallback.
 
+## First pictures (2026-10-09)
+
+The free ChatGPT account returned contact sheets (four panels, or ten emblems,
+on one image) instead of one file per picture. They were cut by hand and
+installed through `art:prep`: 64 pictures, 2.8 MB in all.
+
+| Slot | In | Still empty |
+| --- | --- | --- |
+| Captains | vance, sorensen, kade, vex, calloway | ashgrove, pell, chorus, loom, all `-scarred` |
+| Contacts | all 18 | none |
+| Emblems | all 10 | none |
+| Ships | all 15 | none |
+| Places | kellern, frontier, guild, gutter | holdfast, free, netted |
+| Endings | broadcast, unite, sell, trade | seal, vanish |
+| Sightings | thren_trade, thren_hurt, thren_lane, thren_swarm | the rest |
+| File pieces | frag_order, frag_ledger, frag_manifests, frag_keys | blackbox, charts, workorder, witnesses |
+| Regions | none | all (not drawn in the game yet) |
+
+Ships were fitted whole onto black, not cropped. Portraits were cut 4:5 around
+the face. A better quality second pass of any single picture just overwrites
+its file.
+
 ## What I could not check
 
 I cannot make or judge the pictures themselves; the screenshots in the pull
-request use placeholder shapes (removed again) to prove the slots, the crops,
-the emblem tint and the phone sizes. Whether the real set looks right, and the
-cost of the files on a phone's connection, are for a device look once there
-are real pictures.
+request show the slots at desktop and phone size. Whether the set looks right
+on a real phone, and the cost of the files on a phone's connection, are for a
+device look.
