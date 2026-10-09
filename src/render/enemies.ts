@@ -271,7 +271,7 @@ export function wreck(): Group {
  * reads as a cut stone with a light in it, not a painted shape.
  */
 function crystalMaterial(body: number, glow: number, core = 0.01, name = 'thren-crystal'): MeshStandardMaterial {
-  const m = new MeshStandardMaterial({ color: new Color(body).multiplyScalar(0.05), roughness: 0.14, metalness: 0.85, flatShading: true, envMapIntensity: 0.8 });
+  const m = new MeshStandardMaterial({ color: new Color(body).multiplyScalar(0.16), roughness: 0.2, metalness: 0.7, flatShading: true, envMapIntensity: 0.8 });
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uInner = { value: new Color(glow).multiplyScalar(1.5) };
     sh.uniforms.uCore = { value: core };
@@ -305,7 +305,7 @@ function factionMaterials(f: Faction): Record<string, Material> {
       trim: f === 'thren' ? lit(l.trim, GLOW.trim * 0.35) : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
       glow: lamp(NEON[f].clone().multiplyScalar(SLIT[f])),
       lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
-      crystal: crystalMaterial(l.paint, l.trim),
+      crystal: crystalMaterial(l.paint, l.trim, 0.07),
       violet: crystalMaterial(0x2a1040, 0x9a40ff, 0.5, 'thren-violet'),
     };
     factionMats.set(f, m);
