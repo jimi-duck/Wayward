@@ -101,22 +101,23 @@ Lance hits on rock, hulls and bosses add a few quick red-hot sparks. Torpedoes s
 
 The Drive plasma vent used to lay soft pink patches that bloomed over the ship and the HUD. The trail is now one thin, steady line strip in a muted red-amber, below the bloom threshold, dimming as it fades and gone near the lens. Damage, width and lifetime are unchanged; only the drawing moved (`render/arsenal.ts`). Clouds from chain reactions and plasma warheads stay as patches.
 
-## Title screen glass
+## Title screen list
 
-The title plates are smoked glass in cut frames (`── the ship's glass` in
-`main.css`): a lit rim, a body that blurs and darkens the art behind it, and a
-tint for the state. Normal is cool grey, hover is clearer, the picked plate is
-amber (Story is cyan), information is cyan. There are no icons: weight comes
-from size, type and light. Start has a slow light running round its rim.
+The title is a left-aligned list on the art (`title.css`): the wordmark with
+"Keep moving" top left, then Continue (when a journey is saved), New journey,
+Arcade mode, Archive and Settings as bare rows with a hairline down their left
+edge. The picked row gets a muted bar, bright at its left edge and fading
+right, and a chevron; it uses the shared `--gl-blue-*` tokens, so a palette
+change reaches it. Top right, two glass cards (`.glass`, from `hud.css`) show
+the saved ship's Fuel and Food bars and stock, and the current journey with
+its next stop. They sit above the Wayward in the art so her bow stays clear.
 
+- Difficulty is a step after Arcade or New journey, Normal pre-picked, with
+  Begin and Back under it. Nothing starts from a tap on the picture.
+- Up and Down walk the rows, Enter presses, Esc or Backspace goes back.
+- Phones (short windows) hide the cards; the Continue row carries the line.
+- The version line is the build date (`__BUILD__`, set in `vite.config.ts`).
 - A plate with a `filter` hides the art from its own backdrop-filter, so the
   glow is a shadow, never a drop-shadow.
-- Phones and short windows get less blur, no small hardware and no rim
-  animation; without `backdrop-filter` the body is simply darker.
-- Contrast is still measured on the rendered pixels (the audit in
+- Contrast is measured on the rendered pixels (the audit in
   `/mnt/project-files/start-redesign/aa/`).
-
-The tokens live in `src/styles/glass.css` (typed state colours, blur, the
-phone tier, the fallbacks); the title plates in `main.css` are the first
-recipe that uses them. Anything else that wants the glass, the HUD included,
-takes its tokens from there rather than making a second system.
