@@ -6,6 +6,7 @@ import { newShip, topSpeed } from '../sim/ship';
 import type { World } from '../sim/world';
 import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
+import { SiteView } from './site';
 import { CameraRig } from './camera';
 import { Environment } from './environment';
 import { Effects, type RGB } from './fx';
@@ -66,6 +67,7 @@ export class Sector {
   private readonly space: SpaceView;
   private readonly mood = { fog: 0, dim: 0, tint: [0, 0, 0] as [number, number, number] };
   private readonly breakout: BreakoutView;
+  private readonly site: SiteView;
   private post: Post | null = null;
   private readonly lerped = newShip();
   private readonly v = new Vector3();
@@ -96,6 +98,7 @@ export class Sector {
     this.arsenal = new ArsenalView(this.scene);
     this.hazards = new HazardView(this.scene, glow, wreck);
     this.breakout = new BreakoutView(this.scene, glow);
+    this.site = new SiteView(this.scene);
     this.space = new SpaceView(this.scene, glow);
     this.scene.add(this.ship.root);
   }
@@ -439,6 +442,7 @@ export class Sector {
     this.arsenal.update(world.sys, dt, this.rig.camera.position);
     this.hazards.update(world.tele, world.strikes, world.encounter, dt);
     this.breakout.update(world, s, this.fx, dt);
+    this.site.update(world, dt);
     if (dt > 0) this.ambient(world, s.heading);
     // self-repair: the odd welding spark off the plating while it works
     if (dt > 0 && !world.bk && world.alive && world.mend.state === 'repairing' && (this.weld -= dt) <= 0) {

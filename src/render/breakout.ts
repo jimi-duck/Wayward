@@ -17,7 +17,8 @@ const AMBER = new Color(3.6, 2, 0.45);
 const CYAN = new Color(0.4, 2.4, 3.2);
 
 let mats: Record<string, Material> | null = null;
-function materials(): Record<string, Material> {
+/** The materials the Breakout's structures share (also the situations' sites, render/site.ts). */
+export function materials(): Record<string, Material> {
   if (mats) return mats;
   mats = {
     hull: metal({ tint: 0x7d8288, roughness: 0.7, metalness: 0.4 }),
@@ -35,7 +36,7 @@ function materials(): Record<string, Material> {
 const UP = new Vector3(0, 1, 0), tmpA = new Vector3(), tmpB = new Vector3(), tmpQ = new Quaternion(), tmpM = new Matrix4(), tmpS = new Vector3(1, 1, 1);
 
 /** A round strut between two points: a girder chord, a brace, a cable. */
-function strut(k: Kit, key: string, a: V3, b: V3, r: number, seg = 5): void {
+export function strut(k: Kit, key: string, a: V3, b: V3, r: number, seg = 5): void {
   tmpA.set(...a); tmpB.set(...b);
   const len = tmpA.distanceTo(tmpB);
   if (len < 1e-3) return;
@@ -45,7 +46,7 @@ function strut(k: Kit, key: string, a: V3, b: V3, r: number, seg = 5): void {
 }
 
 /** A hanging cable: a catenary in short struts, sagging by `sag` at the middle. */
-function cable(k: Kit, a: V3, b: V3, sag: number, r = 0.07, n = 7): void {
+export function cable(k: Kit, a: V3, b: V3, sag: number, r = 0.07, n = 7): void {
   let prev = a;
   for (let i = 1; i <= n; i++) {
     const t = i / n, here: V3 = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t - sag * 4 * t * (1 - t), a[2] + (b[2] - a[2]) * t];
@@ -55,7 +56,7 @@ function cable(k: Kit, a: V3, b: V3, sag: number, r = 0.07, n = 7): void {
 }
 
 /** A lattice girder from a to b: two chords, zigzag braces, a node lamp every few bays. */
-function truss(k: Kit, a: V3, b: V3, depth: number, bays: number, lampEvery = 0): void {
+export function truss(k: Kit, a: V3, b: V3, depth: number, bays: number, lampEvery = 0): void {
   const up: V3 = [0, depth, 0];
   const at = (t: number, h: number): V3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t + h, a[2] + (b[2] - a[2]) * t];
   strut(k, 'hull', at(0, 0), at(1, 0), 0.12, 4);
@@ -68,7 +69,7 @@ function truss(k: Kit, a: V3, b: V3, depth: number, bays: number, lampEvery = 0)
 }
 
 /** Hazard stripes across a plate: alternating paint and dark bars. */
-function stripes(k: Kit, x: number, y: number, z: number, along: 'x' | 'z', len: number, wid: number, n: number): void {
+export function stripes(k: Kit, x: number, y: number, z: number, along: 'x' | 'z', len: number, wid: number, n: number): void {
   for (let i = 0; i < n; i++) {
     const o = -len / 2 + (i + 0.5) * (len / n);
     if (i % 2) continue;
@@ -221,7 +222,7 @@ function buildPort(): Group {
   return k.build(materials());
 }
 
-function flatRing(r: number, w: number, color: Color, opacity: number): Mesh {
+export function flatRing(r: number, w: number, color: Color, opacity: number): Mesh {
   const m = new Mesh(new RingGeometry(r - w, r, 64), new MeshBasicMaterial({ color, toneMapped: false, transparent: true, opacity, side: DoubleSide, depthWrite: false, blending: AdditiveBlending }));
   m.rotation.x = -Math.PI / 2;
   return m;

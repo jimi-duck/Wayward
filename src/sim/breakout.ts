@@ -171,6 +171,8 @@ export interface SortieDef {
   place?: { name: string; text: string; plays: EncounterId } | null;
   /** The story beat due here (content/story.ts): its card calls a little after arrival. */
   story?: string | null;
+  /** The situation playing here (content/situations.ts), as the chart has it now: its tightened variant where the Net holds the system. */
+  situation?: string | null;
 }
 
 export const HOME: SortieDef = {
@@ -224,6 +226,8 @@ export interface SortieResult {
   notice: Partial<Record<Faction, number>>;
   /** The system's place: dealt with (true), tried and lost (false), or not met (null or absent). */
   place?: boolean | null;
+  /** The system's situation, if it was met: which system, and how it ended (sim/stage.ts). */
+  situation?: { id: string; result: 'won' | 'lost' | 'declined' | 'ignored' } | null;
 }
 
 /** Food, in days for the one aboard: what the galley holds at most, and at the start. */

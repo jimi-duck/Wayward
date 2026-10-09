@@ -40,6 +40,8 @@ export const DESK = {
   mineSettle: 3,
   /** Seconds since the last card closed before this weight may open. */
   gap: { major: 180, important: 150, routine: 220, ambient: 0 } as Record<Weight, number>,
+  /** The gap an eager (scene) call waits instead, seconds since the last card closed. */
+  eager: 50,
   /** Seconds a call stays up unanswered, then lapses. */
   window: { important: 30, routine: 22 },
   /** Seconds a queued card waits before it is dropped. */
@@ -63,6 +65,8 @@ export interface Ask {
   at: number;
   /** Place-bound: dropped on docking (the port's approach call). */
   port?: boolean;
+  /** A scene's call (sim/stage.ts): it is the point of the system, so it waits for a shorter quiet than a chance call. */
+  eager?: boolean;
 }
 
 const RANK: Record<Weight, number> = { major: 3, important: 2, routine: 1, ambient: 0 };
@@ -93,9 +97,9 @@ export class Desk {
   }
 
   /** Ask to be heard. Offered twice, heard once. */
-  offer(def: CardDef, tier: Weight, now: number, port = false): void {
+  offer(def: CardDef, tier: Weight, now: number, port = false, eager = false): void {
     if (this.queue.some((a) => a.def.id === def.id)) return;
-    this.queue.push({ def, tier, at: now, port });
+    this.queue.push({ def, tier, at: now, port, eager });
   }
 
   /** What is the player doing. Call every step. */
@@ -111,12 +115,12 @@ export class Desk {
   }
 
   /** Whether a card of this weight may open now. */
-  may(tier: Weight, busy: Busy, now: number): boolean {
+  may(tier: Weight, busy: Busy, now: number, eager = false): boolean {
     if (busy === 'transit' || busy === 'fight') return false;
     if (tier === 'ambient') return true;
     if (busy !== 'free' || (tier !== 'major' && now - this.arrived < DESK.arrive)) return false;
     if (now - this.lastThreat < DESK.settle[tier] || now - this.lastMine < DESK.mineSettle) return false;
-    return now - this.lastClose >= DESK.gap[tier];
+    return now - this.lastClose >= (eager ? Math.min(DESK.eager, DESK.gap[tier]) : DESK.gap[tier]);
   }
 
   /** Drop what has waited too long (or was bound to a place the ship has left). */
@@ -124,11 +128,12 @@ export class Desk {
     this.queue = this.queue.filter((a) => now - a.at < DESK.stale[a.tier] && !(a.port && docked));
   }
 
-  /** The card to open now, if any: the heaviest first, and nothing lighter while a heavier one waits. */
+  /** The card to open now, if any: the heaviest first, and nothing lighter while a heavier one waits, unless the lighter is a scene's call and the heavier has to wait its gap. */
   next(busy: Busy, now: number): Ask | null {
-    const top = this.queue.reduce((r, a) => Math.max(r, RANK[a.tier]), -1);
-    const pick = this.queue.filter((a) => RANK[a.tier] === top).sort((a, b) => a.at - b.at)[0];
-    if (!pick || !this.may(pick.tier, busy, now)) return null;
+    const order = [...this.queue].sort((a, b) => RANK[b.tier] - RANK[a.tier] || a.at - b.at);
+    const top = order[0] && RANK[order[0].tier];
+    const pick = order.find((a) => (RANK[a.tier] === top || a.eager) && this.may(a.tier, busy, now, a.eager));
+    if (!pick) return null;
     this.queue.splice(this.queue.indexOf(pick), 1);
     return pick;
   }

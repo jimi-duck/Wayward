@@ -1,4 +1,5 @@
 import { CARDS } from './cards';
+import { SCENES } from './scenes';
 import { SPACE } from './space';
 import { STORY } from './story';
 import { UI } from './ui';
@@ -12,8 +13,9 @@ import { WORLD } from './world';
 //   cards  · comms cards (content/cards.ts)
 //   story  · captains, Calloway, the endings, unlocks
 //   space  · the shared world's features and expanses (content/features.ts)
+//   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([

@@ -333,6 +333,8 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   let tgt: { x: number; z: number; y?: number; vx: number; vz: number } | null = targets.boss;
   let td = tgt ? Math.hypot(tgt.x - s.x, tgt.z - s.z) : Infinity;
   for (const a of targets.ships) {
+    // a ward (traffic, a visitor) is not shot at: the pilot has no quarrel with it
+    if (w.aliens.some((x) => x.id === (a as { id?: number }).id && x.ward)) continue;
     const d = Math.hypot(a.x - s.x, a.z - s.z);
     if (d < td && d < (bk ? 32 : 55) && Math.abs(a.y ?? 0) < 12) { td = d; tgt = a; }
   }
@@ -537,7 +539,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     if (seen.size > 2000) for (const id of [...seen.keys()]) if (!w.shots.some((sh) => sh.id === id)) seen.delete(id);
     const input = queue.length > lag ? queue.shift()! : blank();
     w.step(STEP, input);
-    const near = w.aliens.filter((a) => !cloaked(a) && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < FIRE_RANGE * a.rgK).length;
+    const near = w.aliens.filter((a) => !cloaked(a) && !a.ward && ALIEN_TYPES[a.kind].fire !== 'none' && Math.hypot(a.x - w.ship.x, a.z - w.ship.z) < FIRE_RANGE * a.rgK).length;
     if (w.command.state === 'fight' || near > 0) combat += STEP;
     if (near >= 3) crowd += STEP;
     const hot = w.command.state === 'fight' || near > 0;

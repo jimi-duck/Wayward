@@ -151,6 +151,7 @@ export function ending(cards: readonly Answer[], beaten: boolean): Ending | null
   if (!a) return null;
   if (a.won && a.choice === 'archive') return 'turned';
   if (a.won && a.choice === 'remind') return 'yielded';
+  if (a.won && a.choice === 'owe') return 'turned';
   if (a.won && a.choice === 'bluff') return 'bluffed';
   if (a.won && a.choice === 'dark') return 'dark';
   return beaten ? 'beaten' : 'slipped';
@@ -166,15 +167,20 @@ export const ENDING_LINES: Record<Ending, string> = {
 };
 
 /** The offer she would make now, if any: what you told her first, then who you know, then what you care about. `flown`: systems flown since Cerro. */
-export function offerFor(d: Dossier, o: { day: number; behind: number; caught: number; flown: number; flags: readonly string[] }): string | null {
+export function offerFor(d: Dossier, o: { day: number; behind: number; caught: number; flown: number; flags: readonly string[]; hurt?: boolean; netted?: boolean }): string | null {
   if (o.flown < OFFER_FLOWN || (o.caught < 1 && o.behind > OFFER_NEAR)) return null;
   if (d.lastOffer !== null && o.day < d.lastOffer + OFFER_GAP) return null;
   const c = care(d);
   const want: Array<[string, boolean]> = [
     ['offer_meet', d.told > 0],
+    // a hull in a bad way, and what you have seen of the unknown, are things she notices first
+    ['offer_shelter', !!o.hurt],
+    ['offer_info', o.flags.some((f) => f === 'saw_thren' || f === 'saw_voice' || f === 'saw_object')],
     ['offer_name', o.flags.includes('gutter_friend')],
+    ['offer_passage', !!o.netted || o.flown >= 6],
     ['offer_truce', c === 'fight'],
     ['offer_tank', c === 'profit'],
+    ['offer_identity', o.flown >= 9],
     ['offer_home', true],
   ];
   return want.find(([id, ok]) => ok && !d.offers.includes(id))?.[0] ?? null;
@@ -207,6 +213,7 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
   else if (d.took.length) said.push(t('“You took what I offered, and I kept my word.”'));
   if (lied >= 2) said.push(t('“You lied to me {n} times. I counted.”', { n: lied }));
   else if (lied === 1) said.push(t('“You lied to me once. I noticed.”'));
+  if (d.took.includes('offer_identity')) said.push(t('“I gave you a name, Juno. You owe me an answer.”'));
   if (d.told && trusted > 0) said.push(t('“You told me the truth when it cost you. I remember.”'));
   if (hunt.beaten) said.push(t('The Patience was rebuilt {times}, heavier each time.', { times: times(hunt.beaten) }));
   if (wing) said.push(t('An interdictor flies with her. You ran too often.'));
@@ -231,6 +238,14 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
       odds: { base: ARCHIVE_BASE + ARCHIVE_TRUST * trusted },
       win: { text: 'She reads it all the way through. Then the Patience stands aside.', blockade: 'pass', score: 5000 },
       lose: { text: '“It changes nothing.” · weapons hot', calloway: 'fight', blockade: 'pass' },
+    });
+  }
+  if (d.took.includes('offer_identity')) {
+    choices.push({
+      id: 'owe', label: 'Pay what you owe', tone: 'help', hint: 'You took her name. Answer her one question, and she may stand aside.',
+      odds: { base: 0.55 + ARCHIVE_TRUST * Math.max(0, trusted) },
+      win: { text: 'You answer. She stands aside.', blockade: 'pass', score: 3000 },
+      lose: { text: '“That is not an answer.” · weapons hot', calloway: 'fight', blockade: 'pass' },
     });
   }
   if (hunt.beaten >= 2) {

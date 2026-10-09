@@ -41,7 +41,7 @@ export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' |
 /** Who is on the channel, for the colour of the card. */
 export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
 /** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, with Calloway, as her offer (from her file), or as a story beat (sim/story.ts). */
-export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer' | 'story';
+export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer' | 'story' | 'scene';
 /** How much a transmission weighs (sim/desk.ts): what it may interrupt, and how it is shown. */
 export type Weight = 'major' | 'important' | 'routine' | 'ambient';
 /** Where the ship is: open space, the port's approach, the lane mouth. */
@@ -155,6 +155,8 @@ export interface Outcome {
   chits?: Amount;
   parts?: Amount;
   food?: Amount;
+  /** Krail for the refit bay (Story): the wrecks and finds that pay in it. */
+  krail?: number;
   plates?: number;
   heat?: number;
   score?: number;
@@ -628,7 +630,7 @@ export function weightOf(def: CardDef): Weight {
 }
 
 /** The next chance card: one the run has not seen, whose condition holds, by weight. */
-export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: Exclude<Trigger, 'follow' | 'offer' | 'story'> = 'chance'): CardDef | null {
+export function pickCard(x: Ctx, seen: ReadonlySet<string>, rng: Rng, trigger: Exclude<Trigger, 'follow' | 'offer' | 'story' | 'scene'> = 'chance'): CardDef | null {
   const pool = CARDS.filter((c) => (c.trigger ?? 'chance') === trigger && !seen.has(c.id) && condOk(c.when, x));
   if (!pool.length) return null;
   const w = (c: CardDef) => (c.weight ?? 1) * (c.boost && condOk(c.boost.if, x) ? c.boost.mult : 1);

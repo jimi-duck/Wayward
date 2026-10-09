@@ -2,6 +2,8 @@ import { PLACES, REWARD_WORD } from '../content/phenomena';
 import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
 import { TANK_MAX } from '../sim/breakout';
 import { fileLines } from '../sim/calloway';
+import { QUESTIONS } from '../content/situations';
+import { longIndex, situationLine } from '../sim/situations';
 import { gateOf, jumps, cyriteKnown, lanesFrom, netted, placeAt, regionCount, regionDef, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
 import { stance, type Stance } from '../sim/lanes';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
@@ -59,6 +61,12 @@ const placeText = (p: Place) => `${t(PLACES[p.id].name)}, ${t(REWARD_WORD[PLACES
 const goalOf = (c: Chart, at: string) => gateOf(c, viewOf(c, at));
 /** Jumps from a system to the goal (Infinity with no way). */
 const toGoal = (c: Chart, at: string, id: string) => jumps(c, id, goalOf(c, at).id);
+/** The two things the region you are heading into asks: one about the people, one about what is not. */
+function regionAsks(c: Chart, at: string): HTMLElement[] {
+  const q = QUESTIONS[longIndex(c, viewOf(c, at))];
+  return q ? [h('p', 'ch-asks', `${t('The region asks')} · ${t(q.human)} ${t(q.unknown)}`)] : [];
+}
+
 /** The region's name, when the chart has more than one. */
 export const regionName = (c: Chart, at: string) => (regionCount(c) > 1 ? t(regionDef(c, viewOf(c, at))?.name ?? '') : '');
 
@@ -238,6 +246,7 @@ export class ChartPanel {
         `${t('food')} ${o.food}`, s.port ? s.port.name : t('no port'), `Cyrite ${richWord(cyriteKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
       ];
       if (o.place) notes.push(placeText(o.place));
+      if (o.scene) notes.push(o.scene);
       if (fleetAt(j.chart, s.id)) notes.push(t('Drift fleet'));
       if (threnAt(j.chart, s.id) >= THREN_ABOUT) notes.push('Thren');
       if (raided(j.chart, s.id)) notes.push(t('raided'));
@@ -264,15 +273,18 @@ export class ChartPanel {
     const seen = j.trail[j.hunt.seenIdx];
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
-    const cells: Array<[string, string]> = [
-      [t('Tank'), `${c.cyrite}/${TANK_MAX}`], [t('Food'), `${c.food} · ${t('{n}/day', { n: RATION })}`], [t('Parts'), String(c.parts)], [t('Chits'), String(c.chits)], [t('Hold'), t('{n} ore', { n: c.ore })],
+    // what each is for, on hover: Cyrite moves the ship, Krail grows it, chits pay, parts mend, food is time away, ore is cargo
+    const cells: Array<[string, string, string]> = [
+      [t('Tank'), `${c.cyrite}/${TANK_MAX}`, t('Cyrite: it moves you. One lane, one jump’s worth.')], [t('Food'), `${c.food} · ${t('{n}/day', { n: RATION })}`, t('Food: how long you can stay away from the ports.')],
+      [t('Parts'), String(c.parts), t('Parts: repairs, and mechanical favours.')], [t('Chits'), String(c.chits), t('Chits: money. Spend them on food, parts, news and favours, or keep them for the next port.')], [t('Hold'), t('{n} ore', { n: c.ore }), t('Ore: cargo to sell, or to deliver.')],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
     const file = fileCount(c.flags, j.chart.regionSet ?? 'three');
     $('ch-stat').replaceChildren(
       h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', t('File {n}/{of}', { n: file.found, of: file.of }))),
+      ...regionAsks(j.chart, j.at),
       ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `${t('Goal')} · ${t('reach {name}', { name: goal.name })} · ${plural(left, '{n} jump', '{n} jumps')}`)] : []),
-      h('div', 'port-stock', '', ...cells.map(([k, v]) => h('span', '', '', h('span', 'k', k), h('b', '', v)))),
+      h('div', 'port-stock', '', ...cells.map(([k, v, why]) => { const e = h('span', '', '', h('span', 'k', k), h('b', '', v)); e.title = why; return e; })),
       h('p', 'ch-hunt', j.trail.length < 2
         ? `Calloway · ${t('not on your trail yet')}`
         : `Calloway · ${t('last seen {where}', { where: seen ? sysById(j.chart, seen).name : t('unknown') })}, ${ago ? plural(ago, '{n} day ago', '{n} days ago') : t('today')} · ${gap === 0 ? t('in this system') : plural(gap, 'about {n} jump behind', 'about {n} jumps behind')}`),
@@ -323,10 +335,10 @@ export class ChartPanel {
       if (s.quiet && !net) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-quiet' }));
       g.append(svg('circle', { cx: x, cy: y, r: s.kind === 'edge' || s.kind === 'home' || s.kind === 'gate' ? 8 : 6.5, fill: visited ? KIND_COLOUR[s.kind] : 'rgba(11,12,15,.9)', stroke: KIND_COLOUR[s.kind], 'stroke-width': 2 }));
       if (s.port) g.append(svg('rect', { x: x + 6, y: y - 11, width: 5, height: 5, fill: INK.teal }));
-      const place = placeAt(c, s.id);
-      if (place) {
+      const place = placeAt(c, s.id), scene = situationLine(c, s.id);
+      if (place || scene) {
         const m = svg('path', { d: `M${x - 9} ${y - 14}l3 3l-3 3l-3-3z`, class: 'ch-place' });
-        m.append(svg('title', {}, placeText(place)));
+        m.append(svg('title', {}, place ? placeText(place) : scene!));
         g.append(m);
       }
       g.append(svg('text', { x, y: y + 20, 'text-anchor': 'middle', class: 'ch-name' }, s.name));

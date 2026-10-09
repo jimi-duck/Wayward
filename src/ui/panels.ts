@@ -3,6 +3,7 @@ import { COSMETICS, UNLOCKS } from '../content/unlocks';
 import { SURVIVAL, SURVIVALS, type SurvivalId } from '../content/survival';
 import { ENDING_BY_ID, ENDINGS } from '../content/endings';
 import { FRAGMENTS_ALL } from '../content/story';
+import { OBSERVATIONS } from '../content/situations';
 import { grants, type Profile, type Recorded } from '../meta/profile';
 import { identity, type Levels } from '../sim/build';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -295,6 +296,10 @@ export class StartOptions {
         const got = a.records.includes(f.flag);
         return h('li', got ? 'on' : '', '', h('b', '', got ? t(f.name) : '???'), h('span', 'kind', t(got ? 'found' : 'missing')), h('p', '', t(got ? f.line : f.where)));
       }));
+      $('ar-o').replaceChildren(...OBSERVATIONS.map((o) => {
+        const got = (a.sightings ?? []).includes(o.flag);
+        return h('li', got ? 'on' : '', '', h('b', '', got ? t(o.name) : '???'), h('span', 'kind', t(got ? 'seen' : 'unseen')), h('p', '', got ? `${t(o.line)} ${t(o.theory)}` : t('Somewhere out there.')));
+      }));
       $('ar-j').replaceChildren(...a.journeys.slice(0, 12).map((r) => h('li', r.end === 'through' ? '' : 'lost', '',
         h('b', '', t(r.ending ? ENDING_BY_ID[r.ending].name : r.end === 'through' ? 'Through' : r.end === 'captured' ? 'Taken' : 'Lost')),
         h('span', '', [plural(r.jumps, '{n} jump', '{n} jumps'), plural(r.days, '{n} day', '{n} days'), plural(r.wrecks, '{n} wreck', '{n} wrecks'), r.hardcore ? t('hardcore') : ''].filter(Boolean).join(' · ')))));
@@ -304,7 +309,7 @@ export class StartOptions {
         const got = p.earned.includes(u.id);
         return h('li', got ? 'on' : '', '', h('b', '', got ? t(u.name) : '???'), h('span', 'kind', t(u.kind)), h('p', '', t(got ? u.text : u.hint)));
       }));
-      $('logbook-s').textContent = [plural(a.journeys.length, '{n} journey', '{n} journeys'), t('{n} of {of} endings', { n: a.endings.length, of: ENDINGS.length }), t('{n} of {of} pieces of the Severance', { n: a.records.length, of: FRAGMENTS_ALL.length }), t('{n} of {of} unlocks', { n: p.earned.length, of: UNLOCKS.length }), t('none of it makes the ship stronger')].join(' · ');
+      $('logbook-s').textContent = [plural(a.journeys.length, '{n} journey', '{n} journeys'), t('{n} of {of} endings', { n: a.endings.length, of: ENDINGS.length }), t('{n} of {of} pieces of the Severance', { n: a.records.length, of: FRAGMENTS_ALL.length }), t('{n} of {of} sightings', { n: (a.sightings ?? []).length, of: OBSERVATIONS.length }), t('{n} of {of} unlocks', { n: p.earned.length, of: UNLOCKS.length }), t('none of it makes the ship stronger')].join(' · ');
     }
     $('logbook').hidden = !on;
   }

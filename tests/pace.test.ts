@@ -68,7 +68,7 @@ describe('the pursuit’s pace', () => {
   it('does not stack with a quiet system: a breather is quiet whatever its pace', () => {
     const w = sortie({ first: 10, calm: 10 }, true);
     fly(w, 200);
-    expect(w.aliens.length).toBe(0);
+    expect(w.aliens.filter((a) => !a.ward).length).toBe(0);
   });
 
   it('gives the rock the longest quiet and the contested systems the least', () => {

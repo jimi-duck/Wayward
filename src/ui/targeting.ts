@@ -317,8 +317,8 @@ export class Targeting {
     if (live) {
       // the objective first: it must never be crowded out
       const e = world.encounter;
-      if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy')) {
-        put(e.x, 0.5, e.z, 'm dia obj', `${tr(ENCOUNTERS[e.id].name)}\n${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
+      if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy' || e.id === 'scene')) {
+        put(e.x, 0.5, e.z, 'm dia obj', `${tr(e.label ?? ENCOUNTERS[e.id].name)}\n${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
       }
       // the Breakout's two places, when they are in view
       if (world.bk) {
@@ -346,11 +346,11 @@ export class Targeting {
       // a neutral hull in reach gets its name and distance, quietly: the nearest one only
       let trader: Alien | null = null, trD = TRADER;
       for (const a of world.aliens) {
-        if (a.kind !== 'freighter' || cloaked(a) || a.id === t?.id) continue;
+        if ((a.kind !== 'freighter' && !a.ward) || cloaked(a) || a.id === t?.id) continue;
         const d = Math.hypot(a.x - s.x, a.z - s.z);
         if (d < trD) { trD = d; trader = a; }
       }
-      if (trader) put(trader.x, trader.y, trader.z, 'm tag', `${tr(alienLabel(trader))}\n${range(trD)}`);
+      if (trader) put(trader.x, trader.y, trader.z, 'm tag', `${tr(trader.ward ? trader.ward.tag : alienLabel(trader))}\n${range(trD)}`);
       // every other hull: brackets only, amber for an elite
       for (const a of world.aliens) {
         if (cloaked(a) || a.id === t?.id || a === trader) continue;
@@ -379,7 +379,7 @@ export class Targeting {
     const e = world.encounter;
     const showObj = live && !!e && !e.done && e.r > 0;
     this.pointer($('ptr-obj'), $('ptr-obj-t'), sector, s.x, s.z, s.heading, showObj ? { x: e!.x, y: 0.5, z: e!.z } : null,
-      showObj ? `${tr(ENCOUNTERS[e!.id].name)} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
+      showObj ? `${tr(e!.label ?? ENCOUNTERS[e!.id].name)} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
   }
 
   /** Hulls out of view: the most pressing first (armed and near, then what you cannot see), each pinned to the edge along its bearing. */

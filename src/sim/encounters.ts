@@ -32,7 +32,7 @@ import type { ShipState } from './ship';
 //                        battered; step in early and both turn on you. Only the
 //                        Raider mode draws it (content/survival.ts `events`).
 
-export type EncounterId = 'rich_field' | 'distress' | 'derelict' | 'convoy' | 'ion_storm' | 'nebula' | 'anomaly' | 'skirmish';
+export type EncounterId = 'rich_field' | 'distress' | 'derelict' | 'convoy' | 'ion_storm' | 'nebula' | 'anomaly' | 'skirmish' | 'scene';
 
 export interface EncounterDef {
   id: EncounterId;
@@ -56,8 +56,10 @@ export const ENCOUNTERS: Record<EncounterId, EncounterDef> = {
   derelict:   { id: 'derelict',   name: 'Derelict hulk',      at: 120, weight: 1,   duration: 45, locked: true, text: 'Salvage it, if you dare' },
   anomaly:    { id: 'anomaly',    name: 'Spatial anomaly',    at: 300, weight: 0.8, duration: 26, locked: true, text: 'Gravity well · everything falls in' },
   skirmish:   { id: 'skirmish',   name: 'Skirmish',           at: 60,  weight: 1,   duration: 75, text: 'Raiders on a convoy · let it burn out' },
+  // the marker a system's situation puts on the sector (sim/stage.ts): never drawn by chance, named by its label
+  scene:      { id: 'scene',      name: 'Situation',          at: Infinity, weight: 0, duration: 9999, text: '' },
 };
-export const ENCOUNTER_ORDER = Object.keys(ENCOUNTERS) as EncounterId[];
+export const ENCOUNTER_ORDER = (Object.keys(ENCOUNTERS) as EncounterId[]).filter((id) => id !== 'scene');
 
 export interface Encounter {
   id: EncounterId;
@@ -76,6 +78,8 @@ export interface Encounter {
   place?: string;
   /** A skirmish: who is on each side, which side loses, and where the fight stands. */
   fight?: Fight;
+  /** A situation's marker (sim/stage.ts): the name on the HUD and the compass. */
+  label?: string;
 }
 
 export interface Fight {
@@ -187,6 +191,7 @@ export function startEncounter(id: EncounterId, h: EncounterHost, place?: { name
       break;
     }
     case 'nebula':
+    case 'scene':
       break;
     case 'anomaly':
       [e.x, e.z] = ahead(s, 38, rng.range(-15, 15));

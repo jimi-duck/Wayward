@@ -70,7 +70,7 @@ const KIND_NAME: Record<SystemKind, string> = {
 
 const SECTOR_NAME: Record<EncounterId, string> = {
   rich_field: 'Mineral-rich field', distress: 'Distress call', convoy: 'Convoy lane', ion_storm: 'Ion storm', nebula: 'Nebula',
-  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish',
+  derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish', scene: 'Situation',
 };
 
 export class Hud {
@@ -335,7 +335,7 @@ export class Hud {
     const s = world.ship;
     let hostile: { label: string; d: number; faction: string } | null = null;
     for (const a of world.aliens) {
-      if (cloaked(a) || a.kind === 'freighter') continue;
+      if (cloaked(a) || a.kind === 'freighter' || a.ward) continue;
       const d = Math.hypot(a.x - s.x, a.z - s.z);
       if (!hostile || d < hostile.d) hostile = { label: t(alienLabel(a)), d, faction: a.faction };
     }
@@ -536,6 +536,13 @@ export class Hud {
         const list = $('obj-list');
         if (list.innerHTML !== html) list.innerHTML = html;
       }
+    } else if (e && !e.done && e.id === 'scene' && world.stage) {
+      // a situation's goal: the line the call took on, the time left, and where it stands
+      const st = world.stage, d = Math.hypot(e.x - world.ship.x, e.z - world.ship.z);
+      text($('obj-t'), st.line);
+      text($('obj-left'), st.left > 0 ? `${Math.ceil(st.left)}s` : '');
+      ticks($('obj-p'), e.progress, 30);
+      text($('obj-s'), st.def.goal.kind === 'follow' ? t(d < e.r ? 'Staying with it' : 'Catch up with it') : d < e.r ? t(st.ready ? 'Holding' : st.def.goal.give ? 'Not enough aboard' : 'Hold still') : `${e.label} · ${range(d)}`);
     } else if (e && !e.done) {
       const def = ENCOUNTERS[e.id];
       const left = Math.max(0, Math.ceil(e.dur - e.t));

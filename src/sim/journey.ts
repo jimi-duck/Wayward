@@ -15,6 +15,7 @@ import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './
 import { arrival, delay as keysDelay, KEYS_NOTED, shift } from './consequences';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, crossGate, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
+import { dealSituations, liveSituation, settle, situationLine } from './situations';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
 import { openChapter, type Chapter } from './chapters';
 import { effects } from './modules';
@@ -84,7 +85,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 11;
+export const VERSION = 12;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -167,6 +168,7 @@ export function newJourney(seed: number, hardcore = false, set: RegionSet = 'thr
     chart.fuel = V.jump;
     for (const r of chart.routes) r.cyrite = Math.max(1, Math.round(r.cyrite * V.jump));
   }
+  dealSituations(chart, seed);
   const j: Journey = {
     version: VERSION, seed, hardcore, survival: survivalOf(survival).id, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry: startCarry(survival),
     wrecks: 0, lost: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
@@ -194,7 +196,7 @@ export function sortieDef(j: Journey): SortieDef {
   const until = daysUntil(j.hunt, j.chart, j.trail);
   // the jump to the Threshold: she is not behind you, she is waiting at the lane mouth
   const finale = j.dest === j.chart.edge;
-  const offer = offerFor(j.calloway, { day: j.day, behind: behind(j.hunt, j.trail), caught: j.hunt.caught, flown: j.trail.length - 1, flags: j.carry.flags });
+  const offer = offerFor(j.calloway, { day: j.day, behind: behind(j.hunt, j.trail), caught: j.hunt.caught, flown: j.trail.length - 1, flags: j.carry.flags, hurt: j.carry.plates <= 2, netted: net });
   const p = placeAt(j.chart, s.id), pd = p && PLACES[p.id];
   // further out the Custody is far from home, and whoever holds the system comes at you from ahead
   const R = regionDef(j.chart, regionOf(s)) ?? regionsOf(j.chart)[0]!, raid = raided(j.chart, s.id);
@@ -219,6 +221,7 @@ export function sortieDef(j: Journey): SortieDef {
     place: pd ? { name: pd.name, text: pd.text, plays: pd.plays } : null,
     nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer }),
     story: quiet ? null : dueBeat(j),
+    situation: liveSituation(j.chart, s.id)?.id ?? null,
   };
 }
 
@@ -231,6 +234,8 @@ export function options(j: Journey) {
     shadow: j.trail[j.hunt.seenIdx] === to.id,
     /** The place there, as far as you know. */
     place: placeAt(j.chart, to.id),
+    /** What is going on there, in a few words, as far as you know. */
+    scene: situationLine(j.chart, to.id),
   }));
 }
 
@@ -380,6 +385,12 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (res.callowayBeaten) { j.hunt.beaten++; j.hunt.delay += BEATEN_DELAY; lines.push(t('Calloway’s ship is crippled · {n} days of repairs', { n: BEATEN_DELAY })); }
   // the system's place, dealt with: it pays now, and any new lane opens from where you go next
   if (res.place) lines.push(...claim(j, s, res.carry, res.ended === 'jumped' && j.dest ? j.dest : s.id));
+  // the system's situation, met: what it did to the chart and the hunt
+  if (res.situation) {
+    const flag = (f: string) => { if (!res.carry.flags.includes(f)) res.carry.flags.push(f); };
+    const hunt = (d: number) => { if (d > 0) j.hunt.delay += d; else if (d < 0) huntOn(j.hunt, j.chart, j.trail, -d); };
+    lines.push(...settle(j.chart, res.situation.id, res.situation.result, { at: s.id, day: j.day, flag, hunt }));
+  }
   const flags = new Set(res.carry.flags);
   const news = flags.delete('news');
   flags.delete('calloway_beaten');

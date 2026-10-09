@@ -23,6 +23,7 @@ import {
 import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, type Mods, type Pressure } from './director';
+import { Stage, makeStage } from './stage';
 import { pickEncounter, startEncounter, stepEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import {
   ALIEN_FIRST, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SPAWN_FAR, SPAWN_NEAR, SQUADS, VARIANTS,
@@ -140,6 +141,8 @@ export class World implements EncounterHost {
   strikes: Strike[] = [];
   readonly command = new Command();
   encounter: Encounter | null = null;
+  /** The system's situation, played on the sector (sim/stage.ts). */
+  stage: Stage | null = null;
   /** The target a torpedo launched now would lock, for the HUD. */
   lock: number | null = null;
   score = 0;
@@ -349,6 +352,7 @@ export class World implements EncounterHost {
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
+    this.stage = null;
     if (this.mode !== 'breakout') {
       this.bk = null; this.krail = 0; this.cyrite = 0; this.ore = 0; this.parts = 0; this.chits = 0; this.food = 0; this.callowayAt = Infinity;
       this.bayAt = ARCADE_PRICE; this.bayQuiet = 0;
@@ -378,6 +382,7 @@ export class World implements EncounterHost {
     for (const r of this.field.rocks) {
       if (r.size === 0 && this.rng.next() < 0.12 && n < most) { r.kind = 'rich'; r.hp = r.maxHp = Math.round(r.maxHp * 1.6); n++; }
     }
+    if (def.situation && !def.home) this.stage = makeStage(def.system, def.situation, this);
     if (this.carryIn) this.bringAboard(this.carryIn);
     this.stock();
     this.fitAboard();
@@ -432,7 +437,9 @@ export class World implements EncounterHost {
 
   /** The sortie, once it is over: what the journey needs to carry on. */
   result(): SortieResult {
+    const situation = this.stage?.conclude(this) ?? null;
     return {
+      situation,
       ended: this.run.escaped ? 'jumped' : 'destroyed', time: this.runTime, carry: this.carry(), run: this.run,
       calloway: this.callowayMet, callowayBeaten: this.callowayBeaten, huntDelay: this.huntDelay, stall: this.stall,
       captain: this.captainResult(), notice: { ...this.noticeDelta }, place: this.placeWon,
@@ -465,7 +472,8 @@ export class World implements EncounterHost {
   /** What the seeker can see this step. A capital ship still dropping in is not yet in reach; a cloaked hull never is. */
   targets(): Targets {
     const boss = this.command.targetable();
-    return { ships: this.aliens.filter((a) => !cloaked(a)), boss: boss && !boss.arriving ? boss : null, rocks: this.field.rocks };
+    // a ward is nobody's target: homing and aim help leave traffic and visitors alone
+    return { ships: this.aliens.filter((a) => !cloaked(a) && !a.ward), boss: boss && !boss.arriving ? boss : null, rocks: this.field.rocks };
   }
 
   /** The current difficulty. */
@@ -642,6 +650,7 @@ export class World implements EncounterHost {
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (this.holdNag > 0) this.holdNag -= dt;
     if (!this.alive || b.jumpT >= 0) return;
+    this.stage?.step(this, dt);
 
     if (this.mineT > 0) this.mineT -= dt;
 
@@ -656,8 +665,9 @@ export class World implements EncounterHost {
     } else this.patchT = 0;
 
     // keep the places clear: rock and bulwarks drift off them
-    for (const w of places(b)) {
-      const clear = w.kind === 'port' ? 30 : 24;
+    const st = this.stage;
+    for (const w of st ? [...places(b), { kind: 'site' as const, x: st.x, z: st.z }] : places(b)) {
+      const clear = w.kind === 'port' || w.kind === 'site' ? 30 : 24;
       for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
         const dx = o.x - w.x, dz = o.z - w.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
         if (d < min) { o.x = w.x + (dx / d) * min; o.z = w.z + (dz / d) * min; }
@@ -954,7 +964,7 @@ export class World implements EncounterHost {
     {
       const sh = this.ship;
       let close = 0;
-      for (const a of this.aliens) if (!a.fleeing && Math.hypot(a.x - sh.x, a.z - sh.z) < 60) close++;
+      for (const a of this.aliens) if (!a.fleeing && !a.ward && Math.hypot(a.x - sh.x, a.z - sh.z) < 60) close++;
       this.closePressed = Math.max(close, this.closePressed * (1 - dt / 40));
     }
     this.bayDue(dt);
@@ -973,7 +983,7 @@ export class World implements EncounterHost {
     const s = this.ship, cs = this.command.state;
     if (cs === 'fight' || cs === 'inbound') return true;
     for (const a of this.aliens) {
-      if (a.fleeing || ALIEN_TYPES[a.kind].fire === 'none' || a.mode === 'patrol' || a.mode === 'watch' || a.mode === 'brawl') continue;
+      if (a.fleeing || a.ward || ALIEN_TYPES[a.kind].fire === 'none' || a.mode === 'patrol' || a.mode === 'watch' || a.mode === 'brawl') continue;
       if (Math.hypot(a.x - s.x, a.z - s.z) < SELF_REPAIR.danger) return true;
     }
     for (const sh of this.shots) if (Math.hypot(sh.x - s.x, sh.z - s.z) < SELF_REPAIR.fireDanger) return true;
@@ -995,7 +1005,7 @@ export class World implements EncounterHost {
     const s = this.ship, cs = this.command.state;
     if (cs !== 'idle') return 'yellow';
     for (const a of this.aliens) {
-      if (a.fleeing || ALIEN_TYPES[a.kind].fire === 'none') continue;
+      if (a.fleeing || a.ward || ALIEN_TYPES[a.kind].fire === 'none') continue;
       if (a.mode === 'watch' || Math.hypot(a.x - s.x, a.z - s.z) < WATCH_RANGE) return 'yellow';
     }
     return 'clear';
@@ -1112,18 +1122,21 @@ export class World implements EncounterHost {
     return {
       t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, need: b?.jumpCost ?? JUMP_COST, tank: TANK_MAX, ore: this.ore, holdMax: this.holdMax, chits: this.chits,
       parts: this.parts, plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
-      hostiles: this.aliens.filter((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
+      hostiles: this.aliens.filter((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       food: this.food, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
       notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, captain: this.sortie.notice.captain,
       wise: this.sortie.nemesis.wise, hunch: this.sortie.nemesis.hunch, here: this.sortie.here,
     };
   }
 
+  /** Slow enough to look at something (a scene's watch). */
+  stageSlow(): boolean { return Math.hypot(this.ship.vx, this.ship.vz) < topSpeed(this.hull) * 0.35; }
+
   /** What the player is doing: only a free sky hears a card (sim/desk.ts). */
   private busy(): Busy {
     const b = this.bk!, s = this.ship;
     if (b.jumpT >= 0 || b.spool > 0 || b.dockT > 0.2 || b.blockade === 'checkpoint') return 'transit';
-    if (this.command.state !== 'idle' || this.aliens.some((a) => !a.fleeing && Math.hypot(a.x - s.x, a.z - s.z) < DESK.threat)) return 'fight';
+    if (this.command.state !== 'idle' || this.aliens.some((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < DESK.threat)) return 'fight';
     if (this.mineT > 0) return 'mining';
     const fast = Math.hypot(s.vx, s.vz) > topSpeed(this.hull) * 0.5;
     if (fast && this.field.rocks.some((r) => Math.hypot(r.x - s.x, r.z - s.z) < r.r + DESK.tight)) return 'tight';
@@ -1218,6 +1231,7 @@ export class World implements EncounterHost {
     this.desk.closed(this.runTime);
     this.run.cards.push({ id: o.def.id, choice: 'lapsed', won: false, t: Math.round(this.runTime) });
     this.events.push({ type: 'callEnd', id: o.def.id, lapsed: true });
+    this.stage?.lapsed(this, o.def.id);
   }
 
   /** Put a card on the table: the world waits (or slows), and anyone it brings arrives. */
@@ -1256,17 +1270,19 @@ export class World implements EncounterHost {
     this.rest();
     this.run.cards.push({ id: o.def.id, choice: res.choice.id, won: res.won, t: Math.round(this.runTime) });
     this.events.push({ type: 'commsAnswer', id: o.def.id, choice: res.choice.id, text: res.outcome.text, won: res.won });
+    this.stage?.answered(this, o.def.id, res.choice.id, res.choice.tone, res.won, res.outcome);
     return true;
   }
 
   /** Do what an outcome says, at the card's fee. `brought`: the hulls the card brought in, for a dismissal. Returns the ids of any hulls it brings. */
-  private applyOutcome(out: Outcome, fee: number, brought: number[]): number[] {
+  applyOutcome(out: Outcome, fee: number, brought: number[]): number[] {
     const b = this.bk;
     this.cyrite = Math.min(TANK_MAX, Math.max(0, this.cyrite + amount(out.cyrite, this.cyrite, fee)));
     this.ore = Math.min(this.holdMax, Math.max(0, this.ore + amount(out.ore, this.ore, fee)));
     this.chits = Math.max(0, this.chits + amount(out.chits, this.chits, fee));
     this.parts = Math.max(0, this.parts + amount(out.parts, this.parts, fee));
     this.food = Math.min(FOOD_MAX, Math.max(0, this.food + amount(out.food, this.food, fee)));
+    if (out.krail) this.krail = Math.max(0, this.krail + out.krail);
     if (out.hunt) this.huntDelay += out.hunt;
     if (out.stall) this.stall += out.stall;
     if (b && out.calm) b.nextSwarm = Math.max(b.nextSwarm, this.runTime + out.calm);
@@ -1605,7 +1621,7 @@ export class World implements EncounterHost {
       if (!this.aliens.includes(al)) continue;
       // gone: off the far side of the sky, or away after leaving
       const d = Math.hypot(al.x - s.x, al.z - s.z);
-      if (d > CULL || (al.fleeing && al.age > 3 && d > 160)) this.aliens.splice(this.aliens.indexOf(al), 1);
+      if (!al.ward && (d > CULL || (al.fleeing && al.age > 3 && d > 160))) this.aliens.splice(this.aliens.indexOf(al), 1);
     }
   }
 
@@ -2135,6 +2151,7 @@ export class World implements EncounterHost {
     // Voice hulls adapt: past a share of their hull soaked (the original's 6 of 16), half damage
     if (FACTION_TRAITS[al.faction].adapt && al.soaked >= al.maxHp * (BORG_ADAPT / 16)) dmg *= 0.5;
     if (src === 'torpedo' && al.mark > 0) dmg *= this.stats.markBonus;
+    if (al.ward && src !== 'hazard' && src !== 'plasma') this.stage?.shot(this, al);
     al.soaked += dmg;
     al.hp -= dmg;
     al.calm = 0;
