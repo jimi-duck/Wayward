@@ -6,6 +6,7 @@ import type { Advice } from '../sim/advice';
 import { upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
 import { profileOf } from '../sim/profile';
+import { stepOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
 import { icon, nodeIcon } from './icons';
@@ -89,7 +90,8 @@ function fitWord(w: World, id: string, why: Block | null): string {
 }
 
 /** The Arcade mode: three picks, no web (the Story mode has no bk of its own here, so `!w.bk` is the arcade, as for fee). */
-const isArcade = (w: World) => !w.bk;
+/** The plain bay: one view of cards, no prices to read, closes on a pick. The Arcade's, and the training's one upgrade. */
+const isArcade = (w: World) => !w.bk || stepOf(w) === 'bay';
 
 /** One figure as a chip: what it moves and by how much. Teal with an arrow for a gain, amber and no arrow for a cost; before and after are in the tooltip. */
 function deltaChip(f: Fig, cls = 'dl'): HTMLElement {
@@ -586,7 +588,7 @@ export class BayPanel {
     });
     const empty = h('p', 'pick-none', t(w.bk ? 'Nothing to fit yet · pick up scrap for chits' : 'Nothing to fit yet · break rock for chits'));
     const arcade = isArcade(w);
-    $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(arcade ? 'Three refits for your ship' : 'Picked for your ship')));
+    $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(w.bk && arcade ? 'Your first refit' : arcade ? 'Three refits for your ship' : 'Picked for your ship')));
     $('bay-web').replaceChildren(h('div', 'pick-row', '', ...(cards.length ? cards : [empty])),
       h('p', 'pick-more', t('Want to plan your own build? Pick a part of the ship on the left.')));
     $('bay-insp').replaceChildren();

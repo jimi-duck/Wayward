@@ -31,6 +31,7 @@ import {
   spawnAlien, stepBeam, stepWebs, type Alien, type Arena, type EliteId, type Faction, type Shot, type Web,
 } from './enemies';
 import type { BlastKind, GameEvent, PowerKind } from './events';
+import { newTutor, skipTutor, stepOf, stepTutor, LESSON_NODE, type Tutor } from './tutor';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type Rock } from './field';
 import { Ids, newId, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, YIELD_BLAST, YIELD_DAMAGE, type CellSource, type Pickup, type PickupKind } from './pickups';
@@ -263,6 +264,8 @@ export class World implements EncounterHost {
   jobs: JobDef[] = [];
   /** Run time of the next chance card (Infinity: none), and whether the port's approach has called. */
   cardNext = COMMS_FIRST;
+  /** The first minutes' training (sim/tutor.ts), while a new pilot is being taught. */
+  tutor: Tutor | null = null;
   portCalled = false;
   private cardsSeen = new Set<string>();
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
@@ -530,6 +533,12 @@ export class World implements EncounterHost {
   /** How scrambled navigation is, 0 to 1: Thren hulls close by make the lane mouth swim on the scope and the drive spool slow. */
   navNoise = 0;
 
+  /** Teach the first minutes: a few marked steps, then the run goes on as it was. */
+  train(): void { this.tutor = newTutor(); stepTutor(this, 0); }
+
+  /** End the training now. */
+  skipTraining(): void { skipTutor(this); }
+
   /** The places as the scope shows them: the lane mouth wanders while the Thren scramble navigation. */
   seenPlaces(): Waypoint[] {
     const b = this.bk;
@@ -544,6 +553,7 @@ export class World implements EncounterHost {
   step(dt: number, input: InputFrame): void {
     useIds(this.ids);
     if (this.review) return this.stepReview(dt, input);
+    if (this.tutor) stepTutor(this, dt);
     // an ambush on the table slows the world rather than stopping it, and does not wait for ever
     const slowed = this.phase === 'comms' && !!this.comms && this.comms.slow > 0;
     if (this.phase !== 'play' && !slowed) return;
@@ -1083,7 +1093,7 @@ export class World implements EncounterHost {
   }
 
   bayCtx(): BayCtx {
-    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked, krail: this.chits, chits: this.chits, pooled: true, deal: this.bayDeal, passed: this.bayPassed };
+    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked || stepOf(this) === 'bay', only: this.bk && stepOf(this) === 'bay' ? LESSON_NODE : undefined, krail: this.chits, chits: this.chits, pooled: true, deal: this.bayDeal, passed: this.bayPassed };
   }
 
   /**
@@ -1095,6 +1105,7 @@ export class World implements EncounterHost {
     if (!this.alive) return 'busy';
     if (this.phase === 'dock') return null;
     if (this.phase !== 'play') return 'busy';
+    if (stepOf(this) === 'bay') return null; // the lesson's one upgrade, in flight
     if (this.bk) return 'away'; // the Story fits only at a work bay
     const a = this.alert();
     return a === 'clear' ? null : a;
@@ -2452,6 +2463,7 @@ export class World implements EncounterHost {
     this.closePressed = 0;
     this.command.reset();
     this.encounter = null;
+    this.tutor = null;
     this.pace = newPace(ALIEN_FIRST);
     this.mend = newMend();
     this.score = 0; this.kills = 0; this.runTime = 0;

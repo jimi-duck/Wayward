@@ -483,3 +483,9 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 /* ── the pause card: the same glass, deeper ───────────────────────────── */
 .pause-card.panel { --fill: var(--glass-deep); }
 .pause-card.panel::after { -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
+
+/* the first minutes: the objective block is the lesson; how to do it, for the device in hand */
+#objective.lesson .obj-k { color: var(--cy); }
+#objective .h-touch, #objective .h-pad { display: none; }
+.touch-ui:not(.pad-ui) #objective .h-keys, .pad-ui #objective .h-keys { display: none; }
+.touch-ui:not(.pad-ui) #objective .h-touch, .pad-ui #objective .h-pad { display: inline; }

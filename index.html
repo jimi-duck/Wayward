@@ -91,7 +91,7 @@
 
       <!-- upper left: the one thing to do, and only what is worth a second line -->
       <section id="objective" class="hud-block glass" aria-live="polite" aria-label="Current objective">
-        <span class="obj-k">Objective</span>
+        <span class="obj-k" id="obj-k">Objective</span>
         <div class="obj-h"><b id="obj-t">Collect chits</b><span id="obj-left"></span></div>
         <i class="ticks" id="obj-p"></i>
         <span id="obj-s"></span>
@@ -443,6 +443,7 @@
         </section>
         <div class="pause-acts main-only">
           <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
+          <button type="button" id="p-skip" hidden><span>Skip training</span></button>
           <button type="button" id="p-arch" class="story-only"><span>Archive</span></button>
           <button type="button" id="p-exit" class="story-only"><span>Save and exit</span></button>
         </div>

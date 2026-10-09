@@ -9,6 +9,7 @@ import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
 import { BEHIND, threats } from '../sim/guide';
+import { lessonOf } from '../sim/tutor';
 import { NEON_CSS } from './colors';
 import { t as tr } from '../i18n';
 
@@ -281,12 +282,14 @@ export class Targeting {
     };
     if (live) {
       // the objective first: it must never be crowded out
+      const les = lessonOf(world);
+      if (les?.mark) put(les.mark.x, 0.5, les.mark.z, 'm dia obj', `${tr(les.mark.name)}\n${range(Math.hypot(les.mark.x - s.x, les.mark.z - s.z))}`);
       const e = world.encounter;
       if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy' || e.id === 'scene')) {
         put(e.x, 0.5, e.z, 'm dia obj', `${tr(e.label ?? ENCOUNTERS[e.id].name)}\n${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
       }
       // the Breakout's two places, when they are in view
-      if (world.bk) {
+      if (world.bk && !les) {
         for (const wp of world.seenPlaces()) {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
           put(wp.x, 0.5, wp.z, 'm dia obj far', `${tr(wp.name)}\n${range(d)}`);
@@ -303,7 +306,7 @@ export class Targeting {
       // the nearest krail-rich rock: a deposit worth the detour
       let dep: Rock | null = null, depD = NEAR;
       for (const r of world.field.rocks) {
-        if (r.kind !== 'rich' || r.id === t?.id) continue;
+        if (r.kind !== 'rich' || r.id === t?.id || (les?.mark && r.id === world.tutor?.rockId)) continue;
         const d = Math.hypot(r.x - s.x, r.z - s.z);
         if (d < depD) { depD = d; dep = r; }
       }
@@ -330,10 +333,11 @@ export class Targeting {
   private drawPointers(world: World, sector: Sector, live: boolean): void {
     const s = sector.shipNow;
     const bk = world.bk;
+    const lesson = live && !!lessonOf(world);
     if (bk && !bk.port) $('ptr-port').classList.remove('on');
     for (const wp of world.seenPlaces()) {
       const id = wp.kind === 'lane' ? 'ptr-lane' : 'ptr-port';
-      this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live ? { x: wp.x, y: 0.5, z: wp.z } : null,
+      this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live && !lesson ? { x: wp.x, y: 0.5, z: wp.z } : null,
         `${tr(wp.name)} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);
     }
     if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); }
@@ -342,9 +346,11 @@ export class Targeting {
     this.pointer($('ptr-cap'), $('ptr-cap-t'), sector, s.x, s.z, s.heading, showBoss ? boss! : null,
       showBoss ? `${tr(boss!.name)} · ${range(Math.hypot(boss!.x - s.x, boss!.z - s.z))}` : '');
     const e = world.encounter;
+    const les = live ? lessonOf(world) : null;
     const showObj = live && !!e && !e.done && e.r > 0;
-    this.pointer($('ptr-obj'), $('ptr-obj-t'), sector, s.x, s.z, s.heading, showObj ? { x: e!.x, y: 0.5, z: e!.z } : null,
-      showObj ? `${tr(e!.label ?? ENCOUNTERS[e!.id].name)} · ${range(Math.hypot(e!.x - s.x, e!.z - s.z))}` : '');
+    const pt = les?.mark ? { x: les.mark.x, y: 0.5, z: les.mark.z, name: les.mark.name } : showObj ? { x: e!.x, y: 0.5, z: e!.z, name: e!.label ?? ENCOUNTERS[e!.id].name } : null;
+    this.pointer($('ptr-obj'), $('ptr-obj-t'), sector, s.x, s.z, s.heading, pt,
+      pt ? `${tr(pt.name)} · ${range(Math.hypot(pt.x - s.x, pt.z - s.z))}` : '');
   }
 
   /** Hulls out of view: the most pressing first (armed and near, then what you cannot see), each pinned to the edge along its bearing. */

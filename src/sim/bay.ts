@@ -35,6 +35,8 @@ export interface BayCtx {
   deal?: number;
   /** The Arcade: cards dealt at the last opening and not taken, which come round again less readily. */
   passed?: readonly string[];
+  /** The training: the one node the bay offers. */
+  only?: string;
 }
 
 /** Why a node cannot be fitted now, first reason first. */
@@ -163,6 +165,7 @@ function suits(id: string, ctx: BayCtx, affinity: Map<string, number>, systems: 
  * only Krail, best first, each from a different tab where it can.
  */
 export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
+  if (ctx.only) return WEB.filter((w) => w.id === ctx.only);
   if (ctx.arcade && n === PICKS) return arcadePicks(ctx);
   const affinity = new Map<string, number>();
   for (const [id, lv] of Object.entries(ctx.levels)) for (const t of UPGRADE[id]?.tags ?? []) affinity.set(t, (affinity.get(t) ?? 0) + lv);

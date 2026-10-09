@@ -34,6 +34,8 @@ import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions (docs/SCALE-UP.md); ?short plays the old three, for testing. */
 const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
+/** `?train` plays the training whether or not it has been played (to look at it). */
+const TRAIN = new URLSearchParams(location.search).has('train');
 
 function el<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -278,6 +280,7 @@ function boot(review: typeof import('./review') | null): void {
     reported = false;
     setPaused(false);
     const d = world.sortie;
+    if (d.home && (!profile.trained || TRAIN)) world.train();
     hud.note(world, d.home ? t('Clear of the yards · make for the lane mouth') : `${d.name} · ${t('{n} Cyrite to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
@@ -409,7 +412,8 @@ function boot(review: typeof import('./review') | null): void {
         showMode();
         reported = false;
         startOpts.render();
-        hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
+        if (!profile.trained || TRAIN) world.train();
+      hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
         input.reset();
       });
     }
@@ -488,6 +492,7 @@ function boot(review: typeof import('./review') | null): void {
     el('p-sound').closest('li')!.hidden = !SOUND_AVAILABLE;
     el('p-buzz-r').hidden = !feel.canBuzz;
     el('p-paint-r').hidden = !el('paint').childElementCount;
+    el('p-skip').hidden = !(world.tutor && !world.tutor.done);
   };
   // Phones and tablets take the whole screen where the browser allows it
   // (Android, iPad; never an iPhone browser), and on its side where it can
@@ -557,6 +562,7 @@ function boot(review: typeof import('./review') | null): void {
     render(alpha, frameDt) {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
+      if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training done · the rest is yours')); }
       // a kill lands harder for a beat of stillness (never with reduced motion)
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
@@ -719,6 +725,7 @@ function boot(review: typeof import('./review') | null): void {
   // the Archive, once the title's list: from the pause card, over it
   act('p-arch', () => startOpts.logbook(true));
   act('p-back', () => showSettings(false));
+  act('p-skip', () => { world.skipTraining(); showBrief(); });
   act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
   act('p-buzz', () => { feel.setHaptics(!feel.prefs.haptics); showBrief(); });
   act('p-go', () => setPaused(false));
