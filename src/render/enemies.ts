@@ -388,7 +388,7 @@ function lights(streaks: Streaks, m: Matrix4, model: { engines: V3[]; lamps: Lam
     LP.set(e[0], e[1], e[2]).applyMatrix4(m);
     // the flame trails behind the nozzle: its head is at the nozzle
     streaks.push(LP.x, LP.y, LP.z, LFWD.x, LFWD.y, LFWD.z, size * (0.7 + 1.1 * burn) * flick * far, size * 0.2 * far, STREAK.torp, colour, 0.5, time * 5 + id);
-    streaks.push(LP.x, LP.y, LP.z, LBACK.x, LBACK.y, LBACK.z, size * 0.5 * far, size * 0.5 * far, STREAK.orb, colour, 0.7, time * 3 + id);
+    streaks.push(LP.x, LP.y, LP.z, LBACK.x, LBACK.y, LBACK.z, size * 0.3 * far, size * 0.3 * far, STREAK.orb, colour, 0.45, time * 3 + id);
   }
 }
 
@@ -545,7 +545,7 @@ export class EnemyView {
       }
       const burn = Math.min(1, Math.hypot(al.vx, al.vy, al.vz) / 30);
       // engines read from far off: the flare keeps a size on screen as the hull shrinks with distance
-      const far = Math.sqrt(Math.max(1, this.p.distanceTo(this.eye) / 40));
+      const far = Math.min(2.4, Math.sqrt(Math.max(1, this.p.distanceTo(this.eye) / 40)));
       if (plain) {
         const batch = this.batch(al.kind, al.faction);
         this.m.compose(this.p, this.q.setFromEuler(this.e), this.sc.setScalar(al.r));
@@ -563,8 +563,8 @@ export class EnemyView {
       v.cloak(al.cloak, this.time + al.id);
       v.halo.visible = !!al.elite && al.cloak < 0.5;
       if (al.elite) {
-        (v.halo.material as SpriteMaterial).color.copy(ELITE_GLOW[al.elite]).multiplyScalar(al.elite === 'volatile' ? 0.5 + 0.4 * Math.sin(this.time * 12) : 0.55);
-        v.halo.scale.setScalar(3.4 + Math.sin(this.time * 3 + al.id) * 0.3);
+        (v.halo.material as SpriteMaterial).color.copy(ELITE_GLOW[al.elite]).multiplyScalar(al.elite === 'volatile' ? 0.22 + 0.12 * Math.sin(this.time * 12) : 0.24);
+        v.halo.scale.setScalar(2.6 + Math.sin(this.time * 3 + al.id) * 0.15);
       }
       v.flare(this.streaks, al.r, burn, this.time, al.id, far);
     }
