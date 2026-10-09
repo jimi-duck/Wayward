@@ -2,7 +2,7 @@ import {
   AdditiveBlending, Color, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, PlaneGeometry, RingGeometry,
   SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, type Material, type Object3D, type Scene, type Texture,
 } from 'three';
-import type { Strike, Telegraph } from '../sim/bosses';
+import type { Boss, Strike, Telegraph } from '../sim/bosses';
 import type { Encounter } from '../sim/encounters';
 import { NEON } from './enemies';
 
@@ -26,6 +26,7 @@ const STRIKE_COLOR: Record<Strike['kind'], Color> = {
   web: new Color(1.8, 0.8, 2.8),
 };
 const AMBER = new Color(2.8, 1.7, 0.4);
+const TEAL = new Color(0.6, 2.0, 2.2);
 
 const additive = (opacity = 1) => new MeshBasicMaterial({
   color: 0xffffff, transparent: true, opacity, blending: AdditiveBlending, depthWrite: false, toneMapped: false, side: DoubleSide,
@@ -37,6 +38,7 @@ export class HazardView {
   private readonly marks: Mark[] = [];
   private readonly strikes: Mark[] = [];
   private readonly beacon: Group;
+  private readonly sense: Mesh;
   private readonly zone: Mesh;
   private readonly zoneFill: Mesh;
   private readonly well: Group;
@@ -71,6 +73,10 @@ export class HazardView {
     top.scale.setScalar(5);
     this.beacon.add(pillar, top);
     this.beacon.visible = false;
+    // a sighted capital ship's detection range: teal while it has not noticed you, amber as it does
+    this.sense = new Mesh(ring, additive(0.5));
+    this.sense.visible = false;
+    scene.add(this.sense);
     this.zone = new Mesh(ring, additive(0.9));
     (this.zone.material as MeshBasicMaterial).color.copy(AMBER);
     this.zoneFill = new Mesh(disc, additive(0.12));
@@ -101,8 +107,15 @@ export class HazardView {
     return 0.8 + 0.2 * Math.sin(this.time * (8 + prog * 12));
   }
 
-  update(tele: readonly Telegraph[], strikes: readonly Strike[], e: Encounter | null, dt: number): void {
+  update(tele: readonly Telegraph[], strikes: readonly Strike[], e: Encounter | null, dt: number, boss: Boss | null = null): void {
     this.time += dt;
+    const watch = boss && boss.unaware ? boss : null;
+    this.sense.visible = !!watch;
+    if (watch) {
+      this.sense.position.set(watch.x, 0.05, watch.z);
+      this.sense.scale.setScalar(watch.sense);
+      tint(this.sense, TEAL.clone().lerp(AMBER, Math.min(1, watch.aware * 1.6)), 0.3 + 0.3 * watch.aware + 0.1 * Math.sin(this.time * 3 + watch.aware * 9));
+    }
     // a capital ship's tells
     this.marks.forEach((m, i) => {
       const t = tele[i];

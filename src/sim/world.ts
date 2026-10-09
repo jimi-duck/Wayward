@@ -5,7 +5,7 @@ import {
   arcTargets, burnAt, chainMines, CHAIN_CLOUD, GRAVITY_PULL, laySystems, newSystems, plasmaRing, stepBurns, stepMines,
   type Mine, type Reachable, type Systems,
 } from './arsenal';
-import { Command, type Boss, type Strike, type Telegraph } from './bosses';
+import { Command, JUMP_KRAIL, JUMP_SCORE, bossBounty, type Boss, type Strike, type Telegraph } from './bosses';
 import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report } from './captains';
 import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
@@ -573,8 +573,15 @@ export class World implements EncounterHost {
     if (this.bk) { this.pursue(t); this.swarm(t); this.jam(dt); }
     else this.spawn(t, p);
     this.stepAliens(dt, t, p);
-    const before = this.command.state;
+    const before = this.command.state, sighted = this.command.boss;
     this.command.step(t, dt, s, this.aliens, this.shots, this.webs, this.tele, this.strikes, this.rng, this.events);
+    if (before === 'sighted' && this.command.state === 'idle' && sighted) {
+      // it jumped out without ever knowing you: staying clear pays a little
+      this.run.capitalsEvaded++;
+      this.addScore(Math.round(bossBounty(sighted.n, sighted.faction) * JUMP_SCORE / 10) * 10, 'events');
+      this.krail += JUMP_KRAIL;
+      this.run.krailEarned += JUMP_KRAIL;
+    }
     if (before !== 'fight' && this.command.state === 'fight') {
       // engaged: the regular traffic clears out for the capital ship and her wing
       for (const al of this.aliens) if (!al.escort && !al.extra) leave(al);
@@ -1003,7 +1010,10 @@ export class World implements EncounterHost {
     if (this.review) return 'clear';
     if (!this.alive || this.inDanger()) return 'red';
     const s = this.ship, cs = this.command.state;
-    if (cs !== 'idle') return 'yellow';
+    if (cs === 'sighted') {
+      // a capital ship that has not noticed you is only on the map; yellow once it starts to
+      if ((this.command.boss?.aware ?? 0) > 0.05) return 'yellow';
+    } else if (cs !== 'idle') return 'yellow';
     for (const a of this.aliens) {
       if (a.fleeing || a.ward || ALIEN_TYPES[a.kind].fire === 'none') continue;
       if (a.mode === 'watch' || Math.hypot(a.x - s.x, a.z - s.z) < WATCH_RANGE) return 'yellow';
@@ -1012,6 +1022,12 @@ export class World implements EncounterHost {
   }
 
   // ── decisions ─────────────────────────────────────────────────────────
+
+  /** Go in at a sighted capital ship now (what flying up to it does; the scripted pilot calls it). */
+  provoke(): void {
+    useIds(this.ids);
+    this.command.provoke(this.runTime, this.ship, this.aliens, this.rng, this.events);
+  }
 
   /** The hail: engage (true) or evade (false). Evade is refused when it is not on offer. */
   answerHail(engage: boolean): void {
@@ -1596,7 +1612,9 @@ export class World implements EncounterHost {
     const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
     const well = this.encounter?.id === 'anomaly' && !this.encounter.done ? this.encounter : null;
     for (let i = this.aliens.length - 1; i >= 0; i--) {
-      const al = this.aliens[i]!;
+      const al = this.aliens[i];
+      // a hull moving can clear another from the list (a ram, a break); skip the hole
+      if (!al) continue;
       moveAlien(al, s, dt, arena, this.webs, this.rng, this.events);
       if (al.snare > 0) {
         // snared (Thren tech): the hull wades as if through a web

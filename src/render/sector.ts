@@ -440,7 +440,7 @@ export class Sector {
     this.streaks.end();
     this.pickups.update(world.pickups, alpha, dt, this.fx);
     this.arsenal.update(world.sys, dt, this.rig.camera.position);
-    this.hazards.update(world.tele, world.strikes, world.encounter, dt);
+    this.hazards.update(world.tele, world.strikes, world.encounter, dt, world.command.boss);
     this.breakout.update(world, s, this.fx, dt);
     this.site.update(world, dt);
     if (dt > 0) this.ambient(world, s.heading);

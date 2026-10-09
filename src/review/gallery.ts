@@ -200,7 +200,7 @@ export class Gallery {
       const b: Boss = {
         id: newId(), faction: f, name: def.names[0]!, n: 0, x, y: 2, z: zz, vx: 0, vy: 0, vz: 0, face: FACE, arriving: false,
         hp: 1, maxHp: 1, r: CAPITAL_R, phase: 0, attack: def.cycles[0][0]!, attackT: 0, cycleI: 0, shotT: 0, spin: 0, windT: 0, aimLock: 0,
-        fuse: def.fuse, leaving: false, cloak: 0, hitT: 0, soaked: 0, beams: [], chargeT: 0, fightT: 0, orbit: 0, arriveT: 0,
+        fuse: def.fuse, leaving: false, cloak: 0, hitT: 0, soaked: 0, beams: [], chargeT: 0, fightT: 0, orbit: 0, arriveT: 0, unaware: false, aware: 0, stay: 0, jumpT: 0, sense: 0,
       };
       this.bosses.push(b);
       this.label('capitals', x, 11, zz, def.names[0]!, `${FACTION_NAME[f]} capital ship · ${def.hull}`, 130);

@@ -512,6 +512,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
     // the arcade's bay opens by itself; the Story mode's pilot looks into it every couple of seconds, when it will open
     if (w.phase === 'bay') { shop(w, strategy, rngPick, o.modules); continue; }
     if (w.phase === 'play' && w.bk && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
+    if (w.command.state === 'sighted' && !o.evade) w.provoke();
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms' || (w.phase === 'play' && w.call)) {
       const before = { krail: w.cyrite, chits: w.chits, heat: w.bk?.heat ?? 0, aliens: w.aliens.length, card: (w.comms ?? w.call)!.def.id };

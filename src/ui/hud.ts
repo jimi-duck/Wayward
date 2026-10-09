@@ -89,6 +89,7 @@ export class Hud {
   private powerKey = '';
   private readonly powerFull = new Map<string, number>();
   private seed = -1;
+  private modeLvl = '';
   private modeKey = '';
   private condKey = '';
   /** The arcade's refit bay: the cheapest module in reach, and when it was last worked out. */
@@ -122,7 +123,7 @@ export class Hud {
 
   /** The language changed: redraw what is only written when it changes. */
   relabel(): void {
-    this.modeKey = this.condKey = this.contactKey = this.powerKey = this.plateKey = '';
+    this.modeLvl = this.modeKey = this.condKey = this.contactKey = this.powerKey = this.plateKey = '';
     this.seed = -1;
   }
 
@@ -208,6 +209,11 @@ export class Hud {
           this.note(world, t('{name} inbound', { name: t(e.name) }), 'hit');
           this.banner(t(e.hails ? 'Continuance signal' : 'Contact'), t(e.name), t(e.hails ? 'Capital ship inbound' : 'Decloaking · no hail'), 2.6, e.hails ? 'caution corp' : 'caution');
           break;
+        case 'bossSighted':
+          this.note(world, t('{name} spotted', { name: t(e.name) }), 'hit');
+          this.banner(t('Contact'), t(e.name), t('Capital ship spotted · keep your distance'), 4, 'caution');
+          break;
+        case 'bossJumped': this.note(world, t('{name} jumped out · clear', { name: t(e.name) }), 'gain'); break;
         case 'bossEvaded': this.note(world, t('Broke away from {name}', { name: t(e.name) })); break;
         case 'bossArrive': this.note(world, t('{name} on intercept', { name: t(e.name) }), 'hit'); break;
         case 'bossPhase': this.banner(t('Capital ship'), t(e.phase === 2 ? 'Last stand' : 'Hull buckling'), t(e.phase === 2 ? 'Everything she has left' : 'Reinforcements inbound'), 1.6); break;
@@ -489,7 +495,7 @@ export class Hud {
 
   private updateCentre(world: World): void {
     const b = world.command.boss, boss = $('boss');
-    boss.classList.toggle('on', !!b);
+    boss.classList.toggle('on', !!b && !b.unaware);
     if (b) {
       boss.classList.toggle('cloaked', b.cloak > 0.5);
       boss.classList.toggle('inbound', b.arriving);
@@ -578,17 +584,26 @@ export class Hud {
    */
   private updateMode(world: World): void {
     const a = world.alert();
-    const word = !world.alive ? 'Hull breach' : a === 'red' ? 'Red alert' : 'Yellow alert';
-    const key = `${a}${word}`;
+    // a capital ship sighted and not yet aware of you: the card is teal and quiet, then turns yellow as it starts to notice you
+    const cap = world.alive ? world.command.boss : null, sighted = cap?.unaware ? cap : null;
+    const calm = a === 'clear' && !!sighted;
+    const sub = sighted
+      ? a === 'yellow' ? t('{name} is noticing you', { name: t(sighted.name) })
+        : `${t(sighted.name)} · ${range(Math.hypot(sighted.x - world.ship.x, sighted.z - world.ship.z))} · ${sighted.jumpT > 0 ? t('Jumping') : `${t('Leaves in')} ${Math.ceil(sighted.stay)}s`}`
+      : t(a === 'red' ? 'You are being targeted' : 'You are being observed');
+    const word = !world.alive ? 'Hull breach' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
+    const key = `${a}${word}${sub}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
     const mode = $('mode');
-    mode.className = `glass ${a}`;
-    mode.hidden = a === 'clear';
+    mode.className = `glass ${calm ? 'sighted' : a}${sighted ? ' cap' : ''}`;
+    mode.hidden = a === 'clear' && !calm;
     text($('mode-t'), t(word));
-    text($('mode-s'), t(a === 'red' ? 'You are being targeted' : 'You are being observed'));
+    text($('mode-s'), sub);
     // a step up or down lights the card once, so a change is seen and not only read
-    if (a !== 'clear') this.retrigger(mode, 'enter');
+    const lvl = `${mode.hidden}${mode.className}${word}`;
+    if (!mode.hidden && lvl !== this.modeLvl) this.retrigger(mode, 'enter');
+    this.modeLvl = lvl;
   }
 
   /** The place's effects on the ship, in the ship's words: nothing for what only looks like something. */

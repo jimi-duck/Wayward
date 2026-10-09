@@ -221,12 +221,12 @@ is a ship you build. The run report names what you built.
 The run is a slow burn. The first forty seconds are yours alone, a thin
 field of slow rock to learn the ship on and mine the first module out of;
 the first hostile is a lone scout. The sky fills in from there, and the
-first capital ship hails at 3:30, once the build has a shape.
+first capital ship is sighted at 3:30, once the build has a shape.
 
 ## The loop
 
 Fly, fight and break rock → collect krail → fit modules in the refit bay
-→ harder sky → a capital ship hails (engage or evade)
+→ harder sky → a capital ship is sighted (stay clear until it jumps, or fight)
 → her salvage: her faction's tech opens in the bay → specialisations,
 synergies → the hull goes → the run report → play again.
 
@@ -630,20 +630,41 @@ watched" and "Patrol near", and the log names a hull that has seen you.
 
 ## Capital ships
 
-From 3:30, a contact every 50 to 80 seconds. A yellow alert, then the hail:
+From 3:30, a contact every 50 to 80 seconds. In the Arcade nothing pauses:
+the capital ship is **sighted** 190 units off, a teal ring on the plane shows
+how far out it sees (85 to 115 by faction, `DETECT_R`), and a small teal
+card on top reads the faction, the range and "Leaves in Ns".
 
-- **Engage**: regular traffic clears out; the capital ship drops in with
+- **Stay clear**: it has not noticed you. Keep outside the ring and in about
+  48 seconds it jumps out. That pays a quarter of its bounty in score and 8
+  Krail (`JUMP_SCORE`, `JUMP_KRAIL`), counts as an evasion, and the next
+  contact comes sooner (`EVADE_GAP`) with a ring 15% wider and a quicker
+  eye (`WARY_R`, `WARY_T`).
+- **Get noticed**: inside the ring a bar fills over about 3 seconds (twice as
+  fast inside half the range) and fades outside. The alert turns Yellow as it
+  fills and Red when it commits. Shooting it wakes it at once.
+- **Fight**: regular traffic clears out; the capital ship drops in with
   its wing and fights in three phases (each adds its faction's signature
   attack, calls reinforcements and quickens the cycle). Every attack winds
   up behind a telegraph: lines where a charge or volley will go, rings
   where a nova bursts, circles where shells or webs will land. Destroy it
   for the bounty, krail, a hull repair and a power-up, and her faction's
   tech opens in the bay.
-  Let its fuse run out and it leaves with nothing paid.
-- **Evade**: no fight, no reward, and the next contact comes sooner. You
-  cannot evade twice running; a Voice foundry cannot be evaded; Office ships never
-  hail (they decloak and the fight starts). The first contact of a run is
-  always Gutter or Custody.
+- **Run**: you can still break away once seen, but a ship that has noticed
+  you burns its fuse at 0.6 speed while you are beyond 3.5 times its station
+  (`CHASE_BURN`), so a chase lasts about two thirds as long again; let the
+  fuse run out and it leaves with nothing paid.
+
+Balance: the pilot always goes in at first sight, so it plays the fight
+branch only. Against main, 12 seeds × 2 builds × Prospector and Raider
+(48 runs each): mean run time 484 s before, 454 s after, and 8 against 6
+runs reaching the ten-minute cap. That is inside the pilot's noise (the full
+`pilot:survival` report swings by more than that between neighbouring
+commits), so Survival's numbers stand. The stay-clear branch is not piloted.
+
+Office ships never sit sighted: they decloak and the fight starts. The first
+contact of a run is always Gutter or Custody. The Story's hails (the
+blockade, captains) are unchanged: a card with Engage or Evade.
 
 Each faction moves its own way: Gutter crews sway across your bow and charge,
 Custody cutters hold long range and wheel, Office ships vanish and reappear on your

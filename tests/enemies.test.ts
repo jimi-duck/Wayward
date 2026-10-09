@@ -30,10 +30,11 @@ function onStation(w: World) {
   for (let i = 0; i < 40 && w.command.boss?.arriving; i++) run(w, 0.5);
   expect(w.command.boss?.arriving).toBe(false);
 }
-/** Run the clock, answering the decisions a run asks for: engage every hail. */
+/** Run the clock, answering the decisions a run asks for: engage every hail and go in at every sighted capital ship. */
 function run(w: World, seconds: number) {
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
     if (w.phase === 'hail') w.answerHail(true);
+    w.provoke();
     w.ship.invuln = 1;
     w.step(STEP, idle);
   }
@@ -68,25 +69,24 @@ describe('enemy pacing (the original curves)', () => {
 });
 
 describe('capital ships', () => {
-  it('warn, then arrive on the original clock with an escort wing', () => {
+  it('sight on the original clock, then arrive with an escort wing once they notice', () => {
     const w = immortal(7);
     run(w, BOSS_FIRST - 3);
     expect(w.command.boss).toBeNull();
     run(w, 3.2);
     const ev = w.drain().map((e) => e.type);
-    expect(ev).toContain('bossWarn');
+    expect(ev).toContain('bossSighted');
     expect(ev).toContain('bossArrive');
     expect(w.command.boss).not.toBeNull();
     expect(['gutter', 'custody']).toContain(w.command.boss!.faction); // unlocked by 135s; never a Office first
     expect(w.aliens.some((a) => a.escort)).toBe(true);
   });
 
-  it('drop in from far out and high, and cannot be hurt until on station', () => {
+  it('drop in from the sighting and cannot be hurt until on station', () => {
     const w = immortal(7);
     run(w, BOSS_FIRST + 0.2);
     const b = w.command.boss!;
     expect(b.arriving).toBe(true);
-    expect(b.y).toBeGreaterThan(10);
     expect(Math.hypot(b.x - w.ship.x, b.z - w.ship.z)).toBeGreaterThan(100);
     expect(w.targets().boss).toBeNull();
   });
@@ -117,7 +117,7 @@ describe('capital ships', () => {
     w.command.next = 1e9;
     const arrive = () => {
       w.command.summon(w.runTime, 'custody');
-      for (let i = 0; i < 40 * 60 && !w.command.boss; i++) { if (w.phase === 'hail') w.answerHail(true); w.ship.invuln = 1; w.step(STEP, idle); }
+      for (let i = 0; i < 40 * 60 && !w.command.boss; i++) { if (w.phase === 'hail') w.answerHail(true); w.provoke(); w.ship.invuln = 1; w.step(STEP, idle); }
       const b = w.command.boss!;
       return { ratio: b.maxHp / (bossHp(b.n, w.runTime) * FACTIONS.custody.hp), b };
     };
@@ -143,7 +143,7 @@ describe('capital ships', () => {
 
   it('leave when the fuse runs out', () => {
     const w = immortal(7);
-    run(w, BOSS_FIRST + 75);
+    run(w, BOSS_FIRST + 120);
     expect(w.drain().some((e) => e.type === 'bossLeft')).toBe(true);
   });
 });
