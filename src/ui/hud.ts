@@ -628,15 +628,18 @@ export class Hud {
       ? a === 'yellow' ? t('{name} is noticing you', { name: t(sighted.name) })
         : `${t(sighted.name)} · ${range(Math.hypot(sighted.x - world.ship.x, sighted.z - world.ship.z))} · ${sighted.jumpT > 0 ? t('Jumping') : `${t('Leaves in')} ${Math.ceil(sighted.stay)}s`}`
       : t(a === 'red' ? 'You are being targeted' : 'You are being observed');
-    const word = !world.alive ? 'Hull breach' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
-    const key = `${a}${word}${sub}`;
+    // inside the gate's or the depot's safe ring: the card says so, teal and quiet, and nothing is firing
+    const safe = world.alive ? world.safe : null;
+    const word = !world.alive ? 'Hull breach' : safe ? 'Safe here' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
+    const note = safe ? t(safe === 'lane' ? 'The gate covers you · nothing can fire here' : 'The depot covers you · nothing can fire here') : sub;
+    const key = `${a}${word}${note}${safe ?? ''}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
     const mode = $('mode');
-    mode.className = `glass ${calm ? 'sighted' : a}${sighted ? ' cap' : ''}`;
-    mode.hidden = a === 'clear' && !calm;
+    mode.className = `glass ${calm || safe ? 'sighted' : a}${sighted && !safe ? ' cap' : ''}`;
+    mode.hidden = a === 'clear' && !calm && !safe;
     text($('mode-t'), t(word));
-    text($('mode-s'), sub);
+    text($('mode-s'), note);
     // a step up or down lights the card once, so a change is seen and not only read
     const lvl = `${mode.hidden}${mode.className}${word}`;
     if (!mode.hidden && lvl !== this.modeLvl) this.retrigger(mode, 'enter');

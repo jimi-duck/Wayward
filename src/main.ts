@@ -413,7 +413,7 @@ function boot(review: typeof import('./review') | null): void {
         reported = false;
         startOpts.render();
         if (!profile.trained || TRAIN) world.train();
-      hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
+        hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
         input.reset();
       });
     }
@@ -576,7 +576,9 @@ function boot(review: typeof import('./review') | null): void {
       feel.bed(there && !loop.paused ? FEATURES[there.def].voice : null, world.air.weight);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.covered = bay.covers;
-      sector.frame(world, alpha, dt, frameDt);
+      // a card that stops the world (hail, comms, dock, bay) stops stepping: drawn between two old steps the ship and the hulls would shimmer back and forth, so hold on the latest
+      const live = world.phase === 'play' || (world.phase === 'comms' && !!world.comms && world.comms.slow > 0);
+      sector.frame(world, live ? alpha : 1, dt, frameDt);
       tour?.frame();
       hud.update(world, sector, frameDt);
       if (started) stops();

@@ -58,6 +58,10 @@ export const PORT_ALONG = 1000;
 export const PORT_OFF = 200;
 export const LANE_R = 16;
 export const PORT_R = 14;
+/** The gate and the depot keep their own: inside this (units) nothing can hurt the ship, and hostile hulls will not enter, but circle outside. */
+export const SAFE_R = 40;
+/** How far outside the safe ring a hostile hull holds, and how fast (of its cruise) it circles there. */
+export const SAFE_HOLD = 8;
 
 /** Cyrite it takes to jump, and what the tank holds at the start. */
 export const JUMP_COST = 20;

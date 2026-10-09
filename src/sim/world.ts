@@ -14,7 +14,7 @@ import { STORY_AT } from '../content/story';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
-  rockYield, DOCK_SPEED, CYRITE_SELL, CYRITE_RUSH, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
+  rockYield, DOCK_SPEED, SAFE_R, SAFE_HOLD, CYRITE_SELL, CYRITE_RUSH, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
@@ -1037,6 +1037,16 @@ export class World implements EncounterHost {
     return false;
   }
 
+  /** Inside the lane mouth's or the depot's safe ring: nothing hurts the ship here and hostile hulls keep out. */
+  get safe(): 'lane' | 'port' | null {
+    const b = this.bk;
+    if (!b || !this.alive) return null;
+    const s = this.ship;
+    if (Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < SAFE_R) return 'lane';
+    if (b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < SAFE_R) return 'port';
+    return null;
+  }
+
   /**
    * The ship's alert, three steps, what the HUD shows and what the refit bay
    * opens on:
@@ -1047,7 +1057,7 @@ export class World implements EncounterHost {
    *            near, a capital ship engaged (inDanger)
    */
   alert(): Alert {
-    if (this.review) return 'clear';
+    if (this.review || this.safe) return 'clear';
     if (!this.alive || this.inDanger()) return 'red';
     const s = this.ship, cs = this.command.state;
     if (cs === 'sighted') {
@@ -1659,11 +1669,14 @@ export class World implements EncounterHost {
     const s = this.ship;
     const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
     const well = this.encounter?.id === 'anomaly' && !this.encounter.done ? this.encounter : null;
+    const safe = !!this.safe, keep = this.bk ? [this.bk.lane, ...(this.bk.port ? [this.bk.port] : [])] : [];
     for (let i = this.aliens.length - 1; i >= 0; i--) {
       const al = this.aliens[i];
       // a hull moving can clear another from the list (a ram, a break); skip the hole
       if (!al) continue;
       moveAlien(al, s, dt, arena, this.webs, this.rng, this.events);
+      // the gate and the depot are not entered by a hostile hull: it holds at the ring and circles there
+      if (!al.ward && al.kind !== 'freighter') for (const k of keep) this.holdOut(al, k.x, k.z);
       if (al.snare > 0) {
         // snared (Thren tech): the hull wades as if through a web
         al.snare = Math.max(0, al.snare - dt);
@@ -1671,7 +1684,7 @@ export class World implements EncounterHost {
         al.vx *= k; al.vy *= k; al.vz *= k;
       }
       // the roll cloak: hulls lose the ship and hold their fire
-      if (this.alive && this.cloakT <= 0) alienFire(al, s, t, this.shots, this.field.bulwarks, this.rng, this.events, p);
+      if (this.alive && this.cloakT <= 0 && !safe) alienFire(al, s, t, this.shots, this.field.bulwarks, this.rng, this.events, p);
       stepBeam(al, s, dt);
       this.hullVsRock(al);
       if (!this.aliens.includes(al)) continue;
@@ -1689,6 +1702,15 @@ export class World implements EncounterHost {
       const d = Math.hypot(al.x - s.x, al.z - s.z);
       if (!al.ward && (d > CULL || (al.fleeing && al.age > 3 && d > 160))) this.aliens.splice(this.aliens.indexOf(al), 1);
     }
+  }
+
+  /** Keep a hostile hull outside a safe ring: at the edge it turns along it, the way round it was already going. */
+  private holdOut(al: Alien, x: number, z: number): void {
+    const dx = al.x - x, dz = al.z - z, d = Math.hypot(dx, dz) || 0.01, edge = SAFE_R + SAFE_HOLD;
+    if (d >= edge) return;
+    const nx = dx / d, nz = dz / d, dir = al.id % 2 ? 1 : -1, sp = Math.max(6, Math.hypot(al.vx, al.vz) * 0.8);
+    al.x = x + nx * edge; al.z = z + nz * edge;
+    al.vx = -nz * dir * sp; al.vz = nx * dir * sp;
   }
 
   /**
@@ -2147,7 +2169,7 @@ export class World implements EncounterHost {
 
   private hitShip(source: string, fromX?: number, fromZ?: number): void {
     const s = this.ship, st = this.stats;
-    if (!this.alive) return;
+    if (!this.alive || this.safe) return;
     if (fromX !== undefined && fromZ !== undefined) {
       // knock the two apart, so the hit reads as a collision and not a pass
       const dx = s.x - fromX, dz = s.z - fromZ, d = Math.hypot(dx, dz) || 1;

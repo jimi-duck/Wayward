@@ -100,3 +100,38 @@ describe('the work bay and its Cyrite', () => {
     expect(w.cyritePrice).toBe(p);
   });
 });
+
+describe('the gate and the depot keep their own', () => {
+  const idle = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
+
+  it('hurts nothing inside the ring, and the alert is clear', () => {
+    const { w } = story();
+    w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
+    const lane = w.bk!.lane;
+    w.ship.x = lane.x + 10; w.ship.z = lane.z;
+    expect(w.safe).toBe('lane');
+    const plates = w.plates;
+    w.hitShip('test', lane.x, lane.z);
+    expect(w.plates).toBe(plates);
+    expect(w.alert()).toBe('clear');
+    w.ship.x = lane.x + 100;
+    expect(w.safe).toBeNull();
+  });
+
+  it('keeps hostile hulls outside it, circling', () => {
+    const { w } = story();
+    w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
+    const port = w.bk!.port!;
+    w.field.rocks = [];
+    w.ship.x = port.x; w.ship.z = port.z;
+    const a = w.spawnHostile('scout', { x: port.x + 70, y: 0, z: port.z });
+    for (let i = 0; i < 600; i++) {
+      w.ship.x = port.x; w.ship.z = port.z; w.ship.vx = 0; w.ship.vz = 0;
+      w.step(1 / 60, idle);
+      if (w.phase !== 'play') w.phase = 'play';
+    }
+    const d = Math.hypot(a.x - port.x, a.z - port.z);
+    expect(d).toBeGreaterThan(40);
+    expect(w.plates).toBe(w.stats.maxPlates);
+  });
+});
