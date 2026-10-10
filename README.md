@@ -1,65 +1,49 @@
 # WAYWARD
 
-A cyberpunk space survival game from [jciclitira.com](https://www.jciclitira.com)'s
-lab, in 3D with Three.js, for desktop and mobile browsers.
+A 3D space-survival roguelite for desktop and mobile browsers, built with
+TypeScript, Three.js and Vite. Keep moving.
 
-You are a contract miner who found the wrong file and stole the wrong ship:
-the Wayward (OB-7731-A), an Obedience-class ore hauler, blunt cutting head
-up front, rust-red engine block, two drive pods on pylons. The
-Continuance wants her, and you, back.
+You stole an ore hauler, and hidden in its systems was a file that exposes
+what really happened when the jump lanes went dark seventy years ago. The
+Continuance wants its ship and its secret back. You do not have to win a war.
+You only have to get out of the system, then the next, then the one after.
 
-Two ways in from the start screen:
+## Two ways to play
 
-- **Break out** (milestones M1 to M3 of [the plan](docs/PLAN.md)): a
-  journey across a region of about a dozen systems, from Cerro to the
-  Threshold, with the Continuance's **Net** spreading behind you and
-  **Prefect Calloway** following your trail. It starts with the Breakout,
-  getting out of the home system. The old lane mouth is about a minute's flight away, flat out.
-  Reach it with 20 **Cyrite** in the tank and hold inside it while the drive
-  spools. Cyrite is scarce: shoot the violet-veined rock with the **lasers** and it comes apart clean
-  (a torpedo wastes half of what is in it). Ordinary rock gives
-  ore, which fills the hold and sells at **Frontier Supply**, the dock about
-  halfway, where you can also buy Cyrite and patch a plate. Rock and wrecks
-  drop **Krail**, spent in the **refit bay** (B) as in the arcade; at a port
-  the bay also does the yard's work, the heaviest modules, for chits as well.
-  Wrecks give parts, and you patch a plate out of them when you are left
-  alone. The Custody pursue from behind, harder as
-  the **hunt pressure** rises, and a capital ship blockades the lane mouth.
-  Along the way, people call: traders, miners asking for help, jobs,
-  warnings, raiders, a Prefect. Each **comms card** pauses the game and
-  shows a read of them (their strength against yours, and a guess at what
-  they really want, as good as your sensors), and choices that cost, gamble
-  or need something you may not have. At the lane, her checkpoint: run it,
-  spoof it, pay it, talk through it, or fight her.
+Both start from the title menu.
 
-  On the far side of every lane, the **chart**: plot the next jump. Each
-  lane costs Cyrite (the lane mouth wants it) and days; you eat food
-  every day and the drive wears parts every jump. Systems differ: ports to
-  trade at, mining systems with rich rock, quick empty transits, contested
-  space full of Gutter crews. A netted system has a blockade at its lane
-  and dearer prices. Linger, and Calloway catches up: then it is a comms
-  card, not the end, though a wreck with her in the system is. A wreck
-  otherwise leaves you adrift, a day later, with the hold gone; the third
-  is the end. The journey is saved between systems and at every port:
-  **Continue** carries on.
-- **Arcade**: the endless run. The ship leaves with lasers, torpedoes and a
-  shield charge. Krail from rock and wrecks is spent in the **refit bay**
-  (B): a web of modules in tabs, each level paid in Krail and drawing
-  on the ship's power, mass and heat; nothing comes out once fitted. It
-  opens whenever nothing hostile is close. Hostiles arrive in encounters
-  with quiet spells between, where the hull mends itself; from 3:30 capital
-  ships hail. When the hull goes, the run report says what you built and how it
-  went.
+- **Story.** A journey of about 85 stops across eight regions, roughly seven
+  hours over many sessions. Each new journey opens on a short story card, then
+  a one-minute training: laser a violet rock for Cyrite, shoot one ship, then
+  make a short hop to the work bay and fit torpedoes. After that:
+  - **Cyrite is the one currency.** It fuels every jump, pays for upgrades and
+    is your money at ports. Laser rock for it, strip wrecks for it. Spare
+    Cyrite is spent at work bays; you can never be locked out of a choice.
+  - **Supplies** are drawn by jumps and plate patches. Weight over the mass
+    rating flies worse and burns more Cyrite.
+  - **Work bays** are where upgrades happen, in most systems and
+    at every gate. The gate and the bay are safe zones: nothing fires inside.
+  - **The chart.** After each jump you plot the next one. Systems differ:
+    ports, rich mining, quiet transits, contested space. The Continuance's
+    **Net** spreads behind you, and **Prefect Calloway** follows your trail.
+    Linger and she catches up. A wreck leaves you adrift; a region with too
+    many wrecks is flown again from its gate.
+  - **Comms cards** pause the game and read the other party for you, with the
+    cost, the risk and the odds as chips. Run it, pay it, talk through it or
+    fight.
+  - **Missions** are optional jobs that start from something in the sky:
+    strike runs, escorts, races, surveys, smuggling past a patrol. Each can be
+    refused for free, pays roughly 20 to 45 Cyrite, and most leave a mark on
+    the chart.
+  - The journey saves between systems, at every port and at each region gate.
+    **Continue** carries on.
+- **Arcade.** The endless run. Three supplied picks in the bay (a gun, a
+  defence, a ship), hostiles in encounters with quiet spells between, and
+  capital ships that hail from 3:30. When the hull goes, the run report says
+  what you built.
 
-- Where the game goes next, WAYWARD: [docs/VISION.md](docs/VISION.md),
-  and the build plan: [docs/PLAN.md](docs/PLAN.md).
-- The game as designed, where each system lives and how to add to it:
-  [docs/DESIGN.md](docs/DESIGN.md).
-- The plan, the decisions behind it and the milestone list:
-  [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-- The latest balance reports from the scripted pilot: [docs/BALANCE.md](docs/BALANCE.md)
-  (the arcade), [docs/BALANCE-BREAKOUT.md](docs/BALANCE-BREAKOUT.md) and
-  [docs/BALANCE-JOURNEY.md](docs/BALANCE-JOURNEY.md).
+Difficulty is chosen after Arcade or New journey: Easy, Normal or Hard.
+Game sound is off for now.
 
 ## Run it
 
@@ -68,90 +52,83 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173.
+Open http://localhost:5173. To play on a phone on the same Wi-Fi, run
+`npm run dev:phone` and open the `Network:` address Vite prints.
 
-## Play it on your phone
-
-With the phone on the same Wi-Fi as your computer:
-
-```bash
-npm run dev:phone
-```
-
-Vite prints a `Network:` address such as `http://192.168.1.20:5173`. Open that
-on the phone.
-
-The game plays in landscape only: held upright, a phone gets a screen asking
-to turn it, and a run pauses. Android goes fullscreen at launch and locks to
-landscape. An iPhone browser has no fullscreen, and folds its tabs and bars
-away only when the page scrolls, so there the page scrolls under the fixed
-game: while the bars are out a swipe screen asks for one swipe up, and a run
-pauses under it. Added to the Home Screen (Share › Add to Home Screen), the
-game opens with no bars at all.
+The game plays in landscape. Held upright, a phone asks you to turn it. Android
+goes fullscreen at launch; an iPhone browser has no fullscreen, so add the game
+to the Home Screen for no bars.
 
 ## Controls
 
 | | Desktop | Touch | Gamepad |
 |---|---|---|---|
-| Steer | ← → or A D | drag on the left half: across steers | left stick, d-pad |
-| Thrust | ↑ or W | any push opens the throttle; pull back to coast | right trigger, d-pad up |
-| Lasers (hold) | 1, Space or J | hold anywhere on the right half | A |
+| Steer | ← → or A D | drag on the left half | left stick, d-pad |
+| Thrust | ↑ or W | any push opens the throttle | right trigger, d-pad up |
+| Lasers (hold) | 1, Space or J | hold on the right half | A |
 | Torpedo (once fitted) | 2, F or K | Torpedo button | X |
-| Cutter (Breakout, hold) | 3, C or L | Cut button | LB or left trigger |
-| Barrel roll | Shift | tap a second finger on the left half | B or RB |
-| Break and reverse | ↓ or S | flick a second finger down | L3 or d-pad down |
-| Refit bay (arcade, alert clear): open, launch | B; Esc or B to launch | the upgrades badge | Back; B |
-| Refit bay: fit a suggestion, change tab, move, fit | 1 2 3, Q E, arrows, Enter | tap | stick, A, bumpers |
-| Comms: answer | 1–6, or arrows and Enter | tap | stick, A |
-| Hail (arcade): engage / evade | 1 or F / 2 or E | tap | A / B |
-| Camera distance | Z (cycles), or − and = | pause screen | |
-| Pause | Esc or P | the pause button, bottom centre | Start |
+| Barrel roll | Shift | second finger on the left half | B or RB |
+| Break and reverse | ↓ or S | flick a second finger down, or the Turn button | L3 or d-pad down |
+| Bay (Arcade, alert clear) | B | the upgrades badge | Back |
+| Bay (Story) | dock at a work bay | dock at a work bay | dock at a work bay |
+| Comms: answer | 1 to 6, or arrows and Enter | tap | stick, A |
+| Camera distance | Z, or − and = | pause screen | |
+| Pause | Esc or P | pause button | Start |
 
-The camera rides low behind the ship. You steer on a flat plane; everything
-else uses the whole sky. Lasers draw on the laser bank and refill when you
-let go, and the gunnery computer lifts or drops a lance onto a hull flying
-above or below you if it is in a narrow cone ahead. Torpedoes, mines, the
-plasma trail, the hull arc and shields are refits, not standard. Rock breaks
-large to medium to small, sometimes into violet krail crystals that the
-tractor pulls in (they fade if left). Bulwarks (massive asteroids) never
-break: they stop fire from both sides and hurt to fly into.
+You steer on a flat plane; the gunnery computer lifts or drops a lance onto a
+hull above or below you. Rock breaks large to medium to small. Lasers take a
+rock clean; a torpedo keeps only half of what is in it.
 
-The first forty seconds are
-yours alone. In the arcade, enemies then come in encounters with quiet
-between: a group arrives from far out, never dead ahead, and each hull
-closes its own way (patrols that only turn on you if you come close,
-lookouts that hold off before they commit, flankers, interceptors) before
-it fights by type and faction; beat or shake off the group and the sector
-goes quiet for a while. Groups grow with the clock and your refits; from
-about four minutes in they bring squads, mixed factions and elite
-variants. From 3:30 capital ships hail. Every hit costs a hull plate (or a
-shield charge); the last plate ends the run. Left alone for a few seconds,
-with nothing hostile close, the hull slowly mends itself, a plate a quiet
-spell.
+## Developer notes
 
-## Debug
-
-- `` ` `` toggles the debug readout (frame rate, quality tier, draw calls, input).
-- `?debug=1` starts with it open.
-- `?quality=low|medium|high` pins a quality tier.
+- `?dev` opens the review world: every ship, rock, item and feature, labelled,
+  flown without risk ([docs/REVIEW.md](docs/REVIEW.md)).
+- `?train` plays the Arcade training again; `?short` plays the old three-region
+  journey; `?space` turns on the environment phenomena
+  ([docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)).
+- `` ` `` toggles the debug readout; `?debug=1` starts with it open;
+  `?quality=low|medium|high` pins a quality tier.
 
 ## Checks
 
 ```bash
 npm run check   # types + unit tests
 npm run build   # production build into dist/
-npm run preview # serve dist/ (also on the network)
-npm run pilot   # the scripted pilot's balance runs (a few minutes): writes docs/BALANCE.md
-npm run pilot:breakout  # the pilot through the Breakout: writes docs/BALANCE-BREAKOUT.md
-npm run pilot:journey   # whole journeys, chart and all: writes docs/BALANCE-JOURNEY.md
+npm run preview # serve dist/
 ```
 
-`PILOT_RUNS` (default 12 per strategy) and `PILOT_TIME` (default 900s)
-trade precision for speed, e.g. `PILOT_RUNS=4 npm run pilot`.
+Scripted pilots play the simulation headless and write the balance reports in
+`docs/BALANCE*.md`: `pilot`, `pilot:breakout`, `pilot:journey` (whole
+journeys, about 14 minutes; `JOURNEY_SET=eight` for the long set),
+`pilot:situations`, `pilot:comms`, `pilot:space`, `pilot:survival`,
+`pilot:endings`, `pilot:ship`, `pilot:feel` and `pilot:perf`. `PILOT_RUNS` and
+`PILOT_TIME` trade precision for speed. No pilot can judge feel or frame
+rate; those need a real device.
 
 ## Deploy
 
-Cloudflare Workers Builds deploys the game as a static-assets Worker
-(`wrangler.jsonc`): every push to `main` runs `npm run build` and uploads
-`dist/`, and pull requests get a preview build. Pull requests also run types,
-tests and a build in GitHub Actions (`ci.yml`).
+Cloudflare Workers Builds deploys `main` as a static-assets Worker
+(`wrangler.jsonc`), with a preview on every pull request. GitHub Actions
+(`ci.yml`) runs types, tests and the build on each pull request.
+
+## Where things live
+
+- [docs/VISION.md](docs/VISION.md): the game, its world and its story.
+- [docs/PLAN.md](docs/PLAN.md): milestones and status.
+- [docs/DESIGN.md](docs/DESIGN.md): where each system lives and how to add to it.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): the decisions behind the build.
+- [docs/ONBOARDING.md](docs/ONBOARDING.md), [docs/ECONOMY.md](docs/ECONOMY.md),
+  [docs/MISSIONS.md](docs/MISSIONS.md), [docs/COMMS.md](docs/COMMS.md),
+  [docs/NAVIGATION.md](docs/NAVIGATION.md), [docs/HUD.md](docs/HUD.md): the
+  systems a player meets.
+- [docs/COPY.md](docs/COPY.md): the copywriting rules.
+- [docs/ART-PASS.md](docs/ART-PASS.md), [docs/ART-SLOTS.md](docs/ART-SLOTS.md):
+  the look and the image slots. The brand lives in `branding/`.
+
+## Working on it
+
+`src/sim` never imports Three.js: the simulation runs in fixed 1/60 s steps on
+plain data, so tests and the pilots play it headless. Cards, upgrades, systems,
+captains, story beats and endings are rows in `src/content/`; their rules live
+in `src/sim/`. Every visible line goes through `t()` and needs a German twin in
+`src/i18n/de/`. See [CLAUDE.md](CLAUDE.md) for the full set of house rules.

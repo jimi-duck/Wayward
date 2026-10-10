@@ -1,5 +1,7 @@
 # The HUD
 
+> **Currency note.** Cyrite is the one currency (see [ECONOMY.md](ECONOMY.md)). Where this file says chits, Krail or ore money, it describes the earlier economy; content rows are still written in chits and converted to Cyrite (5 to 1) by `cy()` in `src/sim/purse.ts`.
+
 The ship and the world come first. The HUD is smoked glass bolted into the
 Wayward's windscreen: a few small panels in the corners, the middle of the
 picture left alone, everything else shown only while it matters. The code is

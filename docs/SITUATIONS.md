@@ -1,5 +1,7 @@
 # Situations
 
+> **Currency note.** Cyrite is the one currency (see [ECONOMY.md](ECONOMY.md)). Where this file says chits, Krail or ore money, it describes the earlier economy; content rows are still written in chits and converted to Cyrite (5 to 1) by `cy()` in `src/sim/purse.ts`.
+
 The second pass on the Story mode: what is going on in a system, who is in it,
 and why the player should care. Numbers are in
 [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md). The jobs with a goal to play (a
