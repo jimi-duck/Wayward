@@ -814,9 +814,6 @@ export const COPY: Record<string, string> = {
   'Refuel · repair · trade · implant scans required': 'Tanken · reparieren · handeln · Implantat-Scans Pflicht',
   'Need {n} more Cyrite to jump': 'Noch {n} Cyrit bis zum Sprung nötig',
   'No available services': 'Keine Dienste verfügbar',
-  'Install upgrades at a work bay': 'Umbauten in einer Werkbucht einbauen',
-  'Choose another jump lane': 'Andere Sprungbahn wählen',
-  'Exit lane': 'Ausgangsbahn',
   'Buy supplies or repair hull plates one at a time': 'Vorräte kaufen oder Rumpfplatten reparieren, eins nach dem anderen',
   'Hull fully repaired': 'Rumpf komplett repariert',
 };

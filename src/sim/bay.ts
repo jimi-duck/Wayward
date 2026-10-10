@@ -116,6 +116,11 @@ export function reachable(ctx: BayCtx, nodes: readonly WebNode[] = WEB): WebNode
   });
 }
 
+/** How many modules could be fitted right now, price, power and place all met: what the port tells of its bay. */
+export function affordable(ctx: BayCtx): number {
+  return WEB.filter((w) => (!ctx.only || w.id === ctx.only) && blockOf(w.id, ctx) === null).length;
+}
+
 /** A new ship's levels: the stock fit. */
 export const stockLevels = (): Levels => ({ ...STOCK });
 
