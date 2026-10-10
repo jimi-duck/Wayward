@@ -1,8 +1,8 @@
 import { HUSH } from '../sim/desk';
 import { CHITS_PER_CYRITE, TANK_MAX, refine } from '../sim/purse';
 import { hunchOf, newDossier } from '../sim/calloway';
-import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
-import { dealSituations } from '../sim/situations';
+import { layPlaces, sightPlaces, sysById, SIGHT } from '../sim/chart';
+import { dealSituations, layJobs } from '../sim/situations';
 import { layScatter } from '../sim/scatter';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
@@ -75,6 +75,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 14) oneCurrency(j.carry as unknown as Record<string, number>);
   // 14 → 15: jump fluid. The Cyrite aboard fills the new drive tank first (it was the jump's fuel), and what is over is the purse.
   if (j.version < 15) driveTank(j.carry as unknown as Record<string, number>);
+  // 15 → 16: jobs on the timetable. A journey saved before gets them in the columns still ahead.
+  if (j.version >= 12 && j.version < 16) addJobs(j as Journey);
   j.version = VERSION;
   return j as Journey;
 }
@@ -86,6 +88,13 @@ export function migrate(raw: unknown): Journey | null {
 export const RETIRED: Readonly<Record<string, readonly number[]>> = {
   oc_coils: [40, 60, 80], oc_nova: [60], oc_overload: [60], oc_phase: [60], sy_core_mines: [40],
 };
+
+/** Lay the timetable's jobs into the columns ahead of the ship, in systems that have no alien moment promised. */
+function addJobs(j: Journey): void {
+  const c = j.chart;
+  if (!c.situations) return;
+  for (const id of layJobs(c, j.seed ?? 0, c.situations, sysById(c, j.at).col)) delete c.places[id];
+}
 
 function retireOvercharge(c: { krail: number; levels: Record<string, number> }): void {
   for (const [id, prices] of Object.entries(RETIRED)) {

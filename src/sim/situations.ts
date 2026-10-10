@@ -1,7 +1,8 @@
 import { t } from '../i18n';
 import {
-  ARC, EARLY_QUIET, SIT_CHANCE, SIT_CHANCE_QUIET, SITUATION_BY_ID, SITUATIONS, SWEEP_CHANCE, type ChartFx, type SitResult, type SituationDef,
+  ARC, EARLY_QUIET, JOB_COLS, SIT_CHANCE, SIT_CHANCE_QUIET, SITUATION_BY_ID, SITUATIONS, SWEEP_CHANCE, type ChartFx, type SitResult, type SituationDef,
 } from '../content/situations';
+import { MISSIONS } from '../content/missions';
 import { REGIONS_LONG } from '../content/regions';
 import { jumps, lanesFrom, netted, pushNet, regionOf, sysById, type Chart, type Sit, type StarSystem } from './chart';
 import { Rng } from './rng';
@@ -13,6 +14,9 @@ import { Rng } from './rng';
 //   the timetable  · ARC rows promise a situation in a column of a region, so
 //                    the first half hour, and the alien thread through every
 //                    region, do not depend on a roll or on which lane is taken.
+//   the jobs       · JOB_COLS says how many columns of a region carry a job
+//                    (content/missions.ts) in every system, so a player meets
+//                    one early and regularly on any lane (layJobs).
 //   the roll       · every other system may have one, by its kind: quiet
 //                    systems far less often, and a netted one gets a sweep.
 //
@@ -33,6 +37,43 @@ function columnsOf(c: Chart, region: number): number[] {
 
 const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 
+const JOB_IDS = new Set(MISSIONS.map((m) => m.id));
+/** Whether a situation is one of the optional jobs. */
+export const isJob = (id: string): boolean => JOB_IDS.has(id);
+
+/**
+ * Lay the jobs the timetable promises into `q`: in each region, JOB_COLS columns picked evenly from those without an alien
+ * moment, and in each system of such a column a job that fits its kind and region. `from` leaves out the columns up to it
+ (for a journey saved before the timetable had jobs; the ship never goes back a column). Returns the systems dealt one.
+ */
+export function layJobs(c: Chart, seed: number, q: Record<string, Sit>, from = -1): string[] {
+  const rng = new Rng(seed ^ 0x10b5);
+  const used = new Map<string, number>();
+  for (const sit of Object.values(q)) if (isJob(sit.id)) used.set(sit.id, (used.get(sit.id) ?? 0) + 1);
+  const laid: string[] = [];
+  const free = (x: StarSystem) => { const k = q[x.id]; return !k || (!k.arc && !k.seen && !k.done && !isJob(k.id)); };
+  for (let region = 0; region < (c.regionSet === 'eight' ? 8 : 3); region++) {
+    const long = longIndex(c, region);
+    const n = JOB_COLS[long] ?? 0;
+    const cols = columnsOf(c, region).filter((col) => col > from && !c.systems.some((x) => regionOf(x) === region && x.col === col && open(x) && q[x.id]?.arc));
+    for (let i = 0; i < n && cols.length; i++) {
+      const col = cols[Math.min(cols.length - 1, Math.floor(((i + 0.5) * cols.length) / n))]!;
+      for (const s of c.systems.filter((x) => regionOf(x) === region && x.col === col && open(x) && free(x))) {
+        const pool = MISSIONS.filter((d) => d.kinds.includes(s.kind) && long >= d.regions[0] && long <= d.regions[1] && (!d.holders || d.holders.includes(s.holder)));
+        if (!pool.length) continue;
+        const w = (d: SituationDef) => d.weight / (1 + 1.2 * (used.get(d.id) ?? 0));
+        let roll = rng.next() * pool.reduce((a, d) => a + w(d), 0);
+        let pick = pool[pool.length - 1]!;
+        for (const d of pool) { roll -= w(d); if (roll <= 0) { pick = d; break; } }
+        used.set(pick.id, (used.get(pick.id) ?? 0) + 1);
+        q[s.id] = { id: pick.id, seen: false, done: false };
+        laid.push(s.id);
+      }
+    }
+  }
+  return laid;
+}
+
 /** Deal the situations over a laid-out chart. Its own generator, so a seed's systems and lanes are what they were without them. */
 export function laySituations(c: Chart, seed: number): Record<string, Sit> {
   const rng = new Rng(seed ^ 0x51737);
@@ -50,6 +91,8 @@ export function laySituations(c: Chart, seed: number): Record<string, Sit> {
       for (const s of c.systems.filter((x) => regionOf(x) === region && x.col === cols[k] && open(x))) out[s.id] = { id: row.id, seen: false, done: false, arc: true };
     }
   }
+  // the jobs
+  layJobs(c, seed, out);
   // the roll
   const firstCol = Math.min(...c.systems.filter((x) => regionOf(x) === 0 && open(x)).map((x) => x.col));
   const used = new Map<string, number>();

@@ -186,6 +186,8 @@ export class Stage {
         const card = CARD_BY_ID[d.card];
         if (card) { w.desk.offer(card, weightOf(card), now, false, true); this.offered = true; }
       }
+      // a call the desk let go stale was never heard: ring it again
+      if (this.offered && !this.taken && d.card && w.phase === 'play' && !w.desk.waiting(d.card) && w.call?.def.id !== d.card && w.comms?.def.id !== d.card) this.offered = false;
       if (this.begun && !this.nearSaid && near < 260) { this.nearSaid = true; this.said_('near', w); }
       // a scene with no call and no goal is over once it has played: it was there to be seen
       if (this.begun && !d.card && d.goal.kind === 'call' && this.progress(w.ship.x, w.ship.z) > 0.2 && near > 340 && this.progress(w.ship.x, w.ship.z) > this.progress(this.x, this.z) + 0.06) this.finish(w, 'won');
@@ -367,7 +369,8 @@ export class Stage {
   // ── the marker ─────────────────────────────────────────────────────────
   /** The scene's pin on the sector: while the goal is on, the HUD, compass, radar and edge pointers read it like any sector event. */
   private mark(w: World): void {
-    const live = this.taken && !this.result;
+    // a job is pinned from the moment it is in the sky, so the player can fly to it; the call rings when they are near
+    const live = (this.taken || (this.begun && this.def.goal.kind !== 'call')) && !this.result;
     if (!live) {
       if (this.marker && w.encounter === this.marker) w.encounter = null;
       this.marker = null;
@@ -381,13 +384,16 @@ export class Stage {
     if (w.encounter !== this.marker) { this.marker = null; return; }
     const m = this.marker;
     const g = this.def.goal;
-    if (this.run) { m.x = this.run.focus.x; m.z = this.run.focus.z; m.r = this.run.focus.r; m.progress = this.run.progress; }
+    if (!this.taken) { m.x = this.x; m.z = this.z; m.r = SITE_R; m.progress = 0; } else if (this.run) { m.x = this.run.focus.x; m.z = this.run.focus.z; m.r = this.run.focus.r; m.progress = this.run.progress; }
     else {
       if (g.kind === 'follow') { const l = this.leader(w); if (l) { m.x = l.x; m.z = l.z; } m.r = FOLLOW_R; } else { m.x = this.x; m.z = this.z; m.r = SITE_R; }
       m.progress = g.hold > 0 ? Math.min(1, this.hold / g.hold) : 0;
     }
     m.t = this.clock;
   }
+
+  /** A job in the sky that has not been taken on: on the scope, with its call still to ring. */
+  get onScope(): boolean { return this.begun && !this.taken && !this.result && this.def.goal.kind !== 'call'; }
 
   // ── the end ────────────────────────────────────────────────────────────
   private finish(w: World, r: SitResult): void {

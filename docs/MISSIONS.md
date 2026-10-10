@@ -40,6 +40,21 @@ costs nothing) and at least one other way to settle it:
 | The witness | Belt onward | `defend`: keep a freighter alive 80 s against two waves of pickets | hand her over |
 | Lose the Prefect | Marches to Hollows | `sneak`: wipe your trace at a relay inside a patrol loop; the Prefect loses a day | pay the broker |
 
+## How often, and how you know
+
+Jobs are dealt on a timetable as well as by the roll (`JOB_COLS`, `layJobs` in
+`sim/situations.ts`): one column of the first region (about the third stop) and
+two columns of every other region carry a job in each of their systems, so any
+lane meets one. The roll adds more. A journey saved before this (version 15)
+gets them in the columns still ahead. The pilot's count is in
+[BALANCE-JOBS.md](BALANCE-JOBS.md) (`npm run pilot:jobs`).
+
+Thirty seconds into a sortie the job is on the scope: a pin with its name and
+range on the HUD, the compass and the radar, a quiet "On the scope" line under the
+objective, and the same line on the pause card. The call rings within 480 units
+of the site. If the desk drops the call unheard it rings again; refusing it, or
+taking another answer, clears the pin.
+
 ## What each one changes
 
 A job that ends leaves a mark on the chart (`after`) and often a flag:
