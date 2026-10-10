@@ -593,6 +593,9 @@ html.swipe #app * { overscroll-behavior: contain; }
 .pl-badge.short::before { content: "!"; }
 .pl-badge.done, .pl-badge.none { color: var(--ink-3); }
 .pl-badge.done::before { content: "—"; }
+.pl-badge.lock { color: var(--ink-2); }
+.pl-badge.lock::before { content: "×"; }
+.port-l.lead { --edge: var(--hud-hi); box-shadow: 0 0 0 1px var(--hud-mid); }
 /* the refit bay leads: wider, a rule of steel blue, the cue to open it */
 .port-l.bay { grid-template-columns: 1fr auto; grid-template-areas: "t r" "d r"; align-items: center; gap: 3px 16px; padding: 14px 16px; --edge: var(--hud-mid); }
 .port-l.bay .pl-t { grid-area: t; font-size: calc(var(--fs) * 1.5 * 1.18); letter-spacing: .14em; }
@@ -621,6 +624,7 @@ html.swipe #app * { overscroll-behavior: contain; }
   padding: 10px 24px; font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
 .pd-lane { --c: 6px; --edge: var(--hud-dim); --fill: rgba(14, 19, 19, .8); padding: 8px 14px; font-size: calc(var(--fs) * 1.0 * 1.18); color: var(--ink-2); }
 .pd-lane[hidden] { display: none; }
+.pd-lane:disabled { cursor: not-allowed; opacity: .5; }
 #port-x::before, #port-x::after, .pd-lane::before, .pd-lane::after { content: ""; position: absolute; pointer-events: none; }
 #port-x::before, .pd-lane::before { inset: 0; z-index: -2; background: var(--edge); }
 #port-x::after, .pd-lane::after { inset: 1px; z-index: -1; background: var(--fill); }

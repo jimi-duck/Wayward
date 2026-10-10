@@ -1,6 +1,7 @@
 import { artImg } from './art';
 import { placeOfPort } from '../content/art';
 import { affordable } from '../sim/bay';
+import { needsTorpedoFit } from '../sim/tutor';
 import { stopIdle, SUPPLIES_TARGET, type Stop } from '../sim/stop';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -50,7 +51,7 @@ const PORT_WARN = {
 } as const;
 
 /** The state words, the same on every service: say what you can do, or why not. Never colour alone. */
-function badge(kind: 'ok' | 'short' | 'done', text: string): HTMLElement {
+function badge(kind: 'ok' | 'short' | 'done' | 'lock', text: string): HTMLElement {
   return h('span', `pl-badge ${kind}`, text);
 }
 
@@ -198,6 +199,7 @@ export class PortPanel {
     lane.onclick = guarded(this.opened, () => this.act('lane'));
     lane.onpointerdown = (e) => e.stopPropagation();
     const e = (k: Entry['key']) => this.entries.find((x) => x.key === k)!;
+    lane.disabled = !e('lane').ok;
     e('lane').el = lane;
     e('cast').el = $('port-x');
   }
@@ -205,6 +207,8 @@ export class PortPanel {
   /** The port's entries and the rows that show them. */
   private plan(w: World): { entries: Entry[]; bay: HTMLElement[]; buy: HTMLElement[]; stop: HTMLElement[] } {
     const P = w.prices, cy = Math.floor(w.cyrite);
+    // the first visit of the training: only the bay is open, and it says to start there (sim/tutor.ts)
+    const first = needsTorpedoFit(w);
     const entries: Entry[] = [];
     /** A pressable card; the entry remembers its element so the selection can move without a redraw. */
     const card = (key: Entry['key'], ok: boolean, cls: string, kids: HTMLElement[], go: () => void, label: string): HTMLElement => {
@@ -220,18 +224,18 @@ export class PortPanel {
     // the bay: free to enter; the count is what the bay itself would let you fit now
     const can = affordable(w.bayCtx());
     const bayName = t('Refit bay'), bayText = t('Browse weapons, systems and ship upgrades.');
-    const bayState = can ? plural(can, '{n} upgrade you can afford', '{n} upgrades you can afford') : t('No upgrades you can afford yet');
-    const bay = card('bay', true, 'bay', [
+    const bayState = first ? t('Start here · fit your torpedoes') : can ? plural(can, '{n} upgrade you can afford', '{n} upgrades you can afford') : t('No upgrades you can afford yet');
+    const bay = card('bay', true, `bay${first ? ' lead' : ''}`, [
       h('span', 'pl-t', bayName), h('span', 'pl-d', bayText),
-      h('span', 'pl-r', '', h('span', `pl-badge ${can ? 'ok' : 'none'}`, bayState), h('span', 'pl-go', t('Open bay'))),
+      h('span', 'pl-r', '', h('span', `pl-badge ${can || first ? 'ok' : 'none'}`, bayState), h('span', 'pl-go', t('Open bay'))),
     ], () => { this.close(); this.onBay?.(); }, `${bayName}. ${bayText} ${bayState}`);
     // a purchase: what is aboard, the price, and the one state word that says if you can
     const buy = (key: 'fuel' | 'supplies' | 'plate', name: string, detail: string, price: number, full: string, tag: string, verb: string): HTMLElement => {
       const done = key === 'fuel' ? w.fuel >= w.tankCap : key === 'plate' ? w.plates >= w.stats.maxPlates : w.supplies >= w.supplyMax;
-      const ok = w.canBuy(key);
+      const ok = !first && w.canBuy(key);
       const need = Math.max(0, Math.ceil(price - w.cyrite));
-      const state = done ? badge('done', full) : need ? badge('short', t('Need {n} more Cyrite', { n: num(need) })) : badge('ok', t('Can afford'));
-      return card(key, ok, `buy${done ? ' done' : need ? ' short' : ''}`, [
+      const state = first ? badge('lock', t('Locked · use the bay first')) : done ? badge('done', full) : need ? badge('short', t('Need {n} more Cyrite', { n: num(need) })) : badge('ok', t('Can afford'));
+      return card(key, ok, `buy${first ? ' locked' : done ? ' done' : need ? ' short' : ''}`, [
         h('span', 'pl-t', name), h('span', 'pl-d', detail), h('span', 'pl-p', tag),
         h('span', 'pl-r', '', state, ...(ok ? [h('span', 'pl-go', verb)] : [])),
       ], () => { w.buy(key); this.render(); }, `${name}. ${detail}. ${tag}`);
@@ -246,15 +250,15 @@ export class PortPanel {
     const plan = w.planStop(), idle = stopIdle(plan);
     const lack = Math.max(0, Math.ceil(w.jumpCost - w.fuel) - plan.fuel);
     const missing = w.fuel < w.jumpCost || w.supplies < Math.min(w.supplyMax, SUPPLIES_TARGET) || w.plates < w.stats.maxPlates;
-    const stop = card('stop', !idle, 'stop', [
+    const stop = card('stop', !idle && !first, 'stop', [
       h('span', 'pl-t', t('Sensible stop')),
       idle ? h('span', 'pl-d', lack ? t('Need {n} more jump fluid to jump', { n: lack }) : '') : h('span', 'pl-chips', '', ...deltas(plan).map((c) => h('span', 'pl-chip', c))),
-      h('span', 'pl-r', '', idle ? (missing ? badge('short', t('Need Cyrite')) : badge('done', t('All topped up'))) : h('b', 'pl-sum', `−${Math.abs(plan.cyrite)} ${t('Cyrite')}`), ...(idle ? [] : [h('span', 'pl-go', t('Top up'))])),
+      h('span', 'pl-r', '', first ? badge('lock', t('Locked · use the bay first')) : idle ? (missing ? badge('short', t('Need Cyrite')) : badge('done', t('All topped up'))) : h('b', 'pl-sum', `−${Math.abs(plan.cyrite)} ${t('Cyrite')}`), ...(idle || first ? [] : [h('span', 'pl-go', t('Top up'))])),
     ], () => { w.sensibleStop(); this.render(); }, t('Sensible stop'));
     // the lane change and Cast off live in the departure block; they are entries all the same
     const lanes = this.course?.lanes() ?? [];
     entries.push({
-      key: 'lane', ok: lanes.length > 1,
+      key: 'lane', ok: lanes.length > 1 && !first,
       go: () => {
         // the next lane out of here, round and round
         const c = this.course!, ls = c.lanes(), at = ls.findIndex((x) => x.id === c.current());

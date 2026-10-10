@@ -117,6 +117,8 @@ export const ECONOMY: Record<string, string> = {
   'Departure': 'Abflug',
   '<kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> select · <kbd>Space</kbd> use · <kbd>Enter</kbd> cast off · controller: <kbd>A</kbd> use / <kbd>B</kbd> cast off': '<kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> wählen · <kbd>Leertaste</kbd> benutzen · <kbd>Enter</kbd> ablegen · Controller: <kbd>A</kbd> benutzen / <kbd>B</kbd> ablegen',
   '{n} jump fluid': '{n} Sprungfluid',
+  'Start here · fit your torpedoes': 'Hier anfangen · Torpedos einbauen',
+  'Locked · use the bay first': 'Gesperrt · erst die Werft',
   'Buy jump fluid': 'Sprungfluid kaufen',
   '{n} in the tank · {m} to jump': '{n} im Tank · {m} für den Sprung',
   'No jump fluid to give': 'Kein Sprungfluid zum Abgeben',
