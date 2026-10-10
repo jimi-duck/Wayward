@@ -8,7 +8,7 @@ Moved from the README when it became the player-facing page.
 - `?dev` opens the review world: every ship, rock, item and feature, labelled,
   flown without risk ([docs/REVIEW.md](REVIEW.md)).
 - `?train` plays the Arcade training again; `?short` plays the old three-region
-  journey; `?space` turns on the environment phenomena
+  journey; `?nospace` turns the environment phenomena off
   ([docs/ENVIRONMENT.md](ENVIRONMENT.md)).
 - `` ` `` toggles the debug readout; `?debug=1` starts with it open;
   `?quality=low|medium|high` pins a quality tier.

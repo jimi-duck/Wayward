@@ -66,7 +66,7 @@ function boot(review: typeof import('./review') | null): void {
   // ?dev is the review world (docs/REVIEW.md): a gallery of everything in the game, flown without risk, and nothing it does is saved
   const dev = review !== null;
   const persist = (p: typeof profile) => { if (!dev) saveProfile(p); };
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: dev ? 'arcade' : profile.mode, space: params.has('space'), review: dev });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: dev ? 'arcade' : profile.mode, space: !params.has('nospace'), review: dev });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);
