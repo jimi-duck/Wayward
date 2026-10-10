@@ -26,14 +26,14 @@ refinery. She cooks as she collects.
 | Thing | What it is | Where it comes from | Where it goes |
 |---|---|---|---|
 | **Jump fluid** | The drive tank: exactly the plotted lane's jump, no more (replot to a dearer lane and it asks for a little more). | The refinery, from every Cyrite you pick up or are paid, until the tank is full. Ports sell a top-up. | The jump (one lane's worth, plus a heavy ship's surcharge). Cards can ask for it (a Thren swarm takes five). |
-| **Cyrite** | The purse, in both modes. | What the tank cannot take: rock, scrap, wrecks, jobs, favours, places. | The bay (price and yard fee together), the ports (supplies, plates, fluid), card costs. |
+| **Cyrite** | The purse, in both modes. | What the tank cannot take: rock, scrap, wrecks, jobs, favours, places. | The bay (one price, yard work included), the ports (supplies, plates, fluid), card costs. |
 | **Supplies** | The galley and the spares in one stock (max 16, racks add 4 a mark). | Crates on wrecks and capital ships, cards, places, ports. | A lane's days (1 a day), the drive's wear (2 a jump), a plate patch (3). |
 
 Arcade: there is no jump, so no fluid. Cyrite is the one stock and the bay
 spends it, as before.
 
 Chits and Krail are retired as things the player sees. The content rows (card
-costs, fees, tier prices, yard fees) are still written in chits, the old
+costs and fees) are still written in chits, the old
 unit, and the engine converts where a row meets the hold: five chits to a
 Cyrite (`sim/purse.ts`, `cy()`), never rounding a small amount to nothing. So
 the tuning of those rows stands and only one number sets the exchange.
@@ -66,8 +66,8 @@ what it always took; what is new is that the purse is only ever spare.
   The 20 is the plotted lane's jump plus the weight of a heavy ship
   (`World.jumpCost`), so the departure block names the same number.
 - The refit bay is free to enter; its card counts the modules the bay would let
-  you fit right now (`affordable` in `sim/bay.ts`: price, yard fee, power and
-  place all met), never a price.
+  you fit right now (`affordable` in `sim/bay.ts`: price, power and place all
+  met); with none, it names the cheapest part's price.
 
 ### On screen
 
@@ -93,7 +93,48 @@ is gone.
 - **Safe inside.** The lane mouth and the bay are safe ground: shots do
   nothing inside the ring, hunters circle outside, and the HUD says so.
 
-First guesses; the journey pilot docks once a system to upgrade.
+## Upgrades: the one thing to spend on
+
+The ship is the point of the money. Every part has an upside and a downside,
+and there is always something to fit.
+
+- **Three gauges.** Every part draws Power, Heat or Mass (`WEB` in
+  `content/web.ts`). Power is a ceiling: a part that needs more than is free
+  cannot be fitted. Over the Heat rating the guns recharge and reload slower;
+  over the Mass rating the ship is slower and each jump burns more fluid.
+- **Balance parts, with no end.** The reactor core (+3 power, 1 heat), the heat
+  exchangers (+4 heat, 1 mass) and the frame (+4 mass, 1 power) are open at
+  every work bay and have no top level. Each takes a little of the next gauge,
+  so a big ship needs about one balance part for every three or four parts
+  it carries, and a ring of them never runs out.
+- **Ladders that go on.** Stat upgrades, and the yard modules that change the
+  stat block, have no top level. Past the written top a level gives half of
+  a written level, each one a tenth less (`overhaul`), until the ship's own
+  limits (`CAPS`) leave nothing to gain; the bay then says "At its limit".
+  Single-purchase parts (a system, a specialisation, a flag) are bought once.
+- **Prices climb** (`STORY_PRICE`, `cost` in `sim/bay.ts`): a first fit costs
+  20, 27, 36 or 48 Cyrite by tier (the balance parts 25, climbing a ninth a
+  level); each further level of the same part costs a quarter more; and every
+  level fitted anywhere on the ship adds 7% to every price. The Arcade's price
+  stays flat.
+- **Life without them gets harder.** Hostile hulls are tougher by the depth of
+  the chart (`threatAt`: 1 in Cerro to 8 at the Threshold) and fire a quarter of
+  that excess oftener, so a ship that stays as it left falls behind. Jobs pay
+  more the same way (`bountyAt`: 1 to 2.5), so jobs stay the way to the next
+  part.
+
+Prices in Cyrite, for the 1st, 3rd, 6th and 10th level of one part, on a ship
+with 0, 20 and 40 levels fitted:
+
+| Part | 0 | 20 | 40 |
+|---|---|---|---|
+| Laser emitters (tier 1) | 20 / 30 / 60 / 150 | 50 / 75 / 145 / 360 | 75 / 120 / 230 / 565 |
+| Warhead yield (tier 2) | 25 / 40 / 80 / 200 | 65 / 100 / 200 / 485 | 105 / 160 / 315 / 765 |
+| Reactor core (balance part) | 25 / 30 / 45 / 70 | 60 / 75 / 105 / 165 | 95 / 120 / 165 / 265 |
+
+Numbers and what they do to a journey: [BALANCE-UPGRADES.md](BALANCE-UPGRADES.md)
+(`npm run pilot:upgrades`). First guesses; the feel of the climb needs a
+playtest.
 
 ## When it goes wrong
 
@@ -130,7 +171,8 @@ From `docs/BALANCE-JOURNEY.md` (three regions, 48 journeys, first guesses):
 - The tank is empty again after almost every jump (0 to 2 units left), so the
   fluid never piles up. The purse is what grows: about 47 Cyrite after the
   first system, 75 by the middle and 200 to 300 near the end.
-- Late journeys are rich. That is the point of the split, but the end of the
-  chart may want dearer upgrades or more to spend on. Not tuned yet.
+- Late journeys were rich. Upgrades now cost several times what they did and
+  climb, so the purse is spent as it comes through most of the chart; see
+  [BALANCE-UPGRADES.md](BALANCE-UPGRADES.md).
 - Not measured: how the refinery rule feels in play, and whether about 2
   Cyrite a unit at a port is right.

@@ -12,7 +12,7 @@ import { PATCH_COST } from '../src/sim/breakout';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
-import { blockOf, budgets, cost, fee, reachable } from '../src/sim/bay';
+import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
 import { FITTING } from '../src/content/web';
 import { MODULE_BY_ID } from '../src/content/modules';
 import type { SurvivalId } from '../src/content/survival';
@@ -32,7 +32,9 @@ import type { SurvivalId } from '../src/content/survival';
 
 export type Strategy =
   | { kind: 'random' }
-  | { kind: 'focus'; branch: Branch; second?: Branch };
+  | { kind: 'focus'; branch: Branch; second?: Branch }
+  /** Spreads over guns, torpedoes, defence, handling and kit, so it has to keep balancing power, heat and mass. */
+  | { kind: 'wide' };
 
 /** How the pilot answers comms cards: by the kind of answer it reaches for first. */
 export type Policy = 'fight' | 'run' | 'pay' | 'bluff';
@@ -78,6 +80,8 @@ export interface PilotOptions {
   watch?: (w: World, events: readonly GameEvent[]) => void;
   /** The yard's modules the pilot wants at a port (the Story mode), most wanted first; others it leaves. */
   modules?: string[];
+  /** Fit nothing in the bay: the Story ship as it left Cerro (the upgrade report's baseline). */
+  noShop?: boolean;
 }
 
 export interface PilotResult {
@@ -121,15 +125,16 @@ export function pickAnswer(w: World, policy: Policy): string {
 const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 
 export function stratName(s: Strategy): string {
-  return s.kind === 'random' ? 'random' : `${s.branch}${s.second ? `+${s.second}` : ''}`;
+  return s.kind === 'random' || s.kind === 'wide' ? s.kind : `${s.branch}${s.second ? `+${s.second}` : ''}`;
 }
 
 const KIND_BONUS: Record<string, number> = { system: 4, spec: 5, synergy: 4, tech: 5, stat: 1 };
+const WIDE_BRANCHES = new Set<string>(['laser', 'torpedo', 'defence', 'mobility', 'utility']);
 const WEAPON_BRANCHES = new Set<string>(['laser', 'torpedo', 'mine', 'plasma', 'close']);
 
 /** How much the strategy wants a module of the bay: its branch, then its second, a little defence, tech and synergies; fittings when their budget is short; the yard's modules it was told to want. */
 function want(w: World, s: Strategy, id: string, modules: readonly string[] = []): number {
-  if (MODULE_BY_ID[id]) { const i = modules.indexOf(id); return i < 0 ? -1 : 16 - i; }
+  if (MODULE_BY_ID[id]) { const i = modules.indexOf(id); return i < 0 || (w.bk && (w.levels[id] ?? 0) >= 3) ? -1 : 16 - i; }
   if (FITTING[id]) {
     // a fitting when its budget is short: power nearly gone, or the ship run hot or heavy
     const { use, cap } = budgets(w.levels);
@@ -139,12 +144,17 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
   }
   const u = UPGRADE[id]!;
   if (s.kind === 'random') return 1;
+  if (s.kind === 'wide') {
+    const v = WIDE_BRANCHES.has(u.branch) ? 8 : 2;
+    return (v + (KIND_BONUS[u.kind] ?? 0)) / (1 + 0.2 * (w.levels[id] ?? 0));
+  }
   let v = u.branch === s.branch ? 10 : u.branch === s.second ? 6 : 0;
   if (!WEAPON_BRANCHES.has(s.branch) && !(s.second && WEAPON_BRANCHES.has(s.second)) && u.branch === 'laser') v += 8;
   if (u.branch === 'defence') v += 3;
   if (u.branch === s.branch || u.branch === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
   else if (u.kind === 'system') v -= 3;
-  return v;
+  // the Story's ladders have no end and climb in price: a player spreads their Cyrite over them rather than pour it all into one
+  return w.bk ? v / (1 + 0.2 * (w.levels[id] ?? 0)) : v;
 }
 
 /**
@@ -164,7 +174,8 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
     if (!open.length) break;
     let pick: string | null;
     // the yard's modules it was told to want come first, whenever one can be fitted
-    const wanted = modules.find((id) => blockOf(id, ctx) === null);
+    // (a module that has no top mark in the Story is wanted up to the second only: past it, it competes with the rest)
+    const wanted = modules.find((id) => blockOf(id, ctx) === null && (!w.bk || (w.levels[id] ?? 0) < 3));
     if (wanted) pick = wanted;
     else if (s.kind === 'random') {
       const now = open.filter((n) => blockOf(n.id, ctx) === null && !MODULE_BY_ID[n.id]);
@@ -181,15 +192,14 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
   w.closeBay();
 }
 
-/** What the next level of a node takes from the purse: its price, and in the Story the yard's fee with it. */
+/** What the next level of a node takes from the purse. */
 function price(w: World, id: string): number {
-  const lv = (w.levels[id] ?? 0) + 1;
-  return cost(id, lv, !w.bk) + (w.bk ? fee(id, lv, false) : 0);
+  return cost(id, (w.levels[id] ?? 0) + 1, !w.bk, w.levels);
 }
 
 /** The Krail to keep for the first wanted yard module that a port could fit (nothing once they are all in). */
 function saveFor(w: World, modules: readonly string[]): number {
-  const port = { ...w.bayCtx(), docked: true, krail: Infinity, chits: Infinity };
+  const port = { ...w.bayCtx(), docked: true, krail: Infinity };
   const next = modules.find((id) => blockOf(id, port) === null);
   return next ? price(w, next) : 0;
 }
@@ -519,8 +529,8 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   let nextShop = 0, fitted = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
     // the arcade's bay opens by itself; the Story mode's pilot looks into it every couple of seconds, when it will open
-    if (w.phase === 'bay') { shop(w, strategy, rngPick, o.modules); continue; }
-    if (w.phase === 'play' && w.bk && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
+    if (w.phase === 'bay') { if (o.noShop) w.closeBay(); else shop(w, strategy, rngPick, o.modules); continue; }
+    if (w.phase === 'play' && w.bk && !o.noShop && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
     if (w.command.state === 'sighted' && !o.evade) w.provoke();
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms' || (w.phase === 'play' && w.call)) {
@@ -540,7 +550,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
       const spare = (item: 'supplies' | 'plate') => w.cyrite >= w.prices[item];
       while (w.supplies < 12 && spare('supplies') && w.buy('supplies'));
       while (w.plates < w.stats.maxPlates && spare('plate') && w.buy('plate'));
-      shop(w, strategy, rngPick, o.modules);
+      if (!o.noShop) shop(w, strategy, rngPick, o.modules);
       w.undock();
       continue;
     }

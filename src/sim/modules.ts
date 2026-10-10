@@ -1,6 +1,6 @@
 import { MODULES, SHIP_SYSTEMS, type ModuleDef, type ShipSystem } from '../content/modules';
 import type { Prices } from '../content/systems';
-import type { Levels } from './build';
+import { applyLevel, type Levels } from './build';
 import type { Stats } from './stats';
 
 // ── the ship's systems ────────────────────────────────────────────────────
@@ -57,9 +57,10 @@ export function effects(levels: Levels): Effects {
 
 /** The modules' share of the stat block, applied after the upgrades' and before the caps. */
 export function applyModules(s: Stats, levels: Levels): void {
-  each(levels, (m, mk) => {
-    if (m.stats) for (let i = 1; i <= mk; i++) m.stats(s, i);
-  });
+  for (const m of MODULES) {
+    // a module that changes the stat block has no top mark in the Story: the marks past `max` fade (sim/build.ts)
+    if (m.stats) for (let i = 1; i <= (levels[m.id] ?? 0); i++) applyLevel(s, m.stats, i, m.max);
+  }
 }
 
 /** Is this upgrade id fitted, or does a fitted module count as it? */

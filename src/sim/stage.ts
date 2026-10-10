@@ -2,7 +2,7 @@ import { t } from '../i18n';
 import { SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
-import { Run, scaleOut, type Pt } from './mission';
+import { bounty, Run, scaleOut, type Pt } from './mission';
 import type { Encounter } from './encounters';
 import type { Rng } from './rng';
 import type { World } from './world';
@@ -403,7 +403,7 @@ export class Stage {
     // a goal pays only when it was taken on: a card answered some other way has paid in the card
     const goalOut = (o: Outcome | undefined): Outcome | undefined => (d.goal.kind === 'call' || !this.taken ? undefined : o);
     const out: Outcome | undefined = r === 'won' ? goalOut(d.win) : r === 'lost' ? goalOut(d.lose) : r === 'ignored' ? d.ignore : undefined;
-    if (out) w.applyOutcome(r === 'won' && this.run ? scaleOut(out, this.run.scale) : out, 1, []);
+    if (out) w.applyOutcome(r === 'won' && this.run ? bounty(scaleOut(out, this.run.scale), w.pay) : out, 1, []);
     if (this.run && r === 'lost') for (const a of this.alive(w)) if (a.ward?.act === 'patrol') provoke(a, w.events);
     if (r === 'won' && !this.provoked) { for (const a of this.alive(w)) if (a.ward && a.ward.act !== 'lead') a.ward.act = 'pass'; }
     if (this.taken) this.said_(r === 'won' ? 'won' : 'lost', w);

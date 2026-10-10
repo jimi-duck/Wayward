@@ -1,17 +1,16 @@
 import { MODULE_BY_ID } from '../content/modules';
-import { cy, CHITS_PER_CYRITE } from './purse';
 import { UPGRADE, upgradeText } from '../content/upgrades';
-import { ARCADE_PRICE, FITTING, LEVEL_STEP, NODE, STOCK, TIER_COST, WEB, YARD_FEE, type WebNode } from '../content/web';
+import { ARCADE_PRICE, FITTING, NODE, STOCK, STORY_PRICE, WEB, type WebNode } from '../content/web';
 import { budgets } from './budgets';
-import { available, branchLevels, type Levels } from './build';
+import { available, branchLevels, gains, type Levels } from './build';
 
 // ── the refit bay: what can be fitted, what it costs, what it leaves ──────
 // The rules over content/web.ts. Building happens only in the bay: in the Arcade mode it opens by itself once a price of Krail is aboard
 // and the alert is clear, and every level costs the same; in the Story mode
 // you open it (in flight when the alert is clear, and always at a port) and
-// the price is the tier's. You pay Krail and fit one level at a time. In the
-// Story mode the yard's work is fitted only while docked, and the yard
-// charges chits as well.
+// the price is the tier's, raised by every level already on the ship. You pay
+// Cyrite and fit one level at a time. In the Story mode every install is
+// fitted only while docked, and the ladders go on without end (`limitOf`).
 // Nothing comes out again. This module only answers questions about a
 // build; the world keeps the Krail and the levels and calls `install`.
 
@@ -23,14 +22,10 @@ export interface BayCtx {
   techs: ReadonlySet<string>;
   /** The arcade (its own modules) or the Story mode (its own, and the yard's). */
   arcade: boolean;
-  /** Story: docked at a port, where yard-only modules can be fitted. */
+  /** Story: docked at a work bay, where every install is fitted. */
   docked?: boolean;
-  /** Krail aboard to pay with: in both modes what the fabricators build from. */
+  /** Cyrite aboard to pay with. */
   krail: number;
-  /** Story: chits aboard, for the yard's fee. */
-  chits?: number;
-  /** One purse in both modes: `krail` is the chits aboard, and a fitting costs its price and the yard's fee together (the Arcade has no fee). */
-  pooled?: boolean;
   /** The Arcade: how many times the bay has shut this run, so each opening deals a little differently (the same opening always deals the same). */
   deal?: number;
   /** The Arcade: cards dealt at the last opening and not taken, which come round again less readily. */
@@ -41,7 +36,7 @@ export interface BayCtx {
 
 /** Why a node cannot be fitted now, first reason first. */
 export type Block =
-  | 'full' // every level fitted
+  | 'full' // every level fitted, or (an endless ladder) a further level would change nothing
   | 'mode' // not in this mode
   | 'locked' // needs a long-term unlock
   | 'tech' // needs her capital ship destroyed
@@ -49,10 +44,16 @@ export type Block =
   | 'needs' // the upgrade's own rules: what it requires, a specialisation taken, a branch not deep enough
   | 'yard' // fitted only at a port
   | 'power' // not enough power free
-  | 'krail' // not enough Krail
-  | 'chits'; // not enough chits for the yard
+  | 'krail'; // not enough Cyrite
 
+/** The levels a node was written with: the Arcade's limit, and where the Story's ladder starts to fade (`overhaul`, sim/build.ts). */
 export const maxLevel = (id: string): number => UPGRADE[id]?.max ?? FITTING[id]?.max ?? MODULE_BY_ID[id]?.max ?? 0;
+
+/** Does the Story keep this node's ladder going past its written top? The stat upgrades, the yard modules that change the stat block, and the three balance parts. */
+export const endless = (id: string): boolean => FITTING[id] !== undefined || UPGRADE[id]?.kind === 'stat' || !!MODULE_BY_ID[id]?.stats;
+
+/** The most levels of a node this mode lets you fit: as written in the Arcade, no end in the Story where the ladder is endless. */
+export const limitOf = (id: string, arcade: boolean): number => (!arcade && endless(id) ? Infinity : maxLevel(id));
 
 /** A node's name, and what its level `lv` does, in English (the caller translates). */
 export const nodeName = (id: string): string => UPGRADE[id]?.name ?? FITTING[id]?.name ?? MODULE_BY_ID[id]?.name ?? id;
@@ -61,19 +62,25 @@ export const nodeText = (id: string, lv: number): string => (UPGRADE[id] ? upgra
 /** Whether a fitting is yard work: in the Story every install is, so it needs a work bay (a port). */
 export const yardWork = (id: string, _lv: number, arcade: boolean): boolean => !arcade && NODE[id] !== undefined;
 
-/** The yard's fee in Cyrite (the rows say chits; `cy` converts) for level `lv` (1 up) of a node, or 0 when it is not yard work. */
-export function fee(id: string, lv: number, arcade: boolean): number {
-  if (!yardWork(id, lv, arcade) || NODE[id]?.yard === undefined || lv < NODE[id]!.yard!) return 0;
-  return cy(MODULE_BY_ID[id]?.chits[lv - 1] ?? YARD_FEE * lv);
+/** Levels fitted beyond what the ship left with: every price rises with them. */
+export function built(levels: Levels): number {
+  let n = 0;
+  for (const [id, lv] of Object.entries(levels)) n += Math.max(0, lv - (STOCK[id] ?? 0));
+  return n;
 }
 
-/** Cyrite for level `lv` (1 up) of a node: ARCADE_PRICE in the Arcade mode, else by tier and level. */
-export function cost(id: string, lv: number, arcade: boolean): number {
+/**
+ * Cyrite for level `lv` (1 up) of a node: ARCADE_PRICE in the Arcade mode. In the Story it is the tier's price (the
+ * balance parts', their own), `growth` dearer for each level of the same node already fitted, and dearer by
+ * `ship` for every level fitted on the whole ship (STORY_PRICE, content/web.ts). The yard's work is in the price.
+ */
+export function cost(id: string, lv: number, arcade: boolean, levels: Levels = {}): number {
   const node = NODE[id];
   if (!node) return Infinity;
   if (arcade) return ARCADE_PRICE;
-  const base = TIER_COST[Math.min(node.tier, TIER_COST.length - 1)]! * (node.price ?? 1);
-  return cy(Math.round((base * (1 + LEVEL_STEP * (lv - 1))) / 5) * 5);
+  const P = STORY_PRICE, part = FITTING[id] !== undefined;
+  const base = part ? P.fitting : P.tier[Math.min(node.tier, P.tier.length - 1)]! * (node.price ?? 1);
+  return Math.max(5, Math.round((base * (part ? P.fittingGrowth : P.growth) ** (lv - 1) * (1 + P.ship * built(levels))) / 5) * 5);
 }
 
 export { budgets, overBy } from './budgets';
@@ -83,28 +90,27 @@ export function blockOf(id: string, ctx: BayCtx): Block | null {
   const node = NODE[id];
   if (!node) return 'mode';
   const lv = ctx.levels[id] ?? 0;
-  if (lv >= maxLevel(id)) return 'full';
+  if (lv >= limitOf(id, ctx.arcade)) return 'full';
+  // an endless ladder ends where a further level would change nothing (a physical limit, like the plates or the shield charges)
+  if (lv >= maxLevel(id) && !FITTING[id] && !ctx.arcade && !gains(ctx.levels, id)) return 'full';
   const u = UPGRADE[id];
   if ((u?.arcade && !ctx.arcade) || (node.story && ctx.arcade)) return 'mode';
   if (u?.locked && !ctx.unlocked.has(id)) return 'locked';
   if (u?.tech && !ctx.techs.has(u.tech)) return 'tech';
   if (lv === 0 && node.from && !node.from.some((f) => (ctx.levels[f] ?? 0) > 0)) return 'path';
-  if (u && !available(u, ctx.levels, ctx.unlocked)) return 'needs';
+  if (u && !available(u, ctx.levels, ctx.unlocked, !ctx.arcade && endless(id))) return 'needs';
   if (yardWork(id, lv + 1, ctx.arcade) && !ctx.docked) return 'yard';
   const { use, cap } = budgets(ctx.levels);
   if ((node.draw.power ?? 0) > 0 && use.power + node.draw.power! > cap.power) return 'power';
-  if (ctx.pooled) return ctx.krail < cost(id, lv + 1, ctx.arcade) + fee(id, lv + 1, ctx.arcade) ? 'krail' : null;
-  if (ctx.krail < cost(id, lv + 1, ctx.arcade)) return 'krail';
-  if ((ctx.chits ?? 0) < fee(id, lv + 1, ctx.arcade)) return 'chits';
-  return null;
+  return ctx.krail < cost(id, lv + 1, ctx.arcade, ctx.levels) ? 'krail' : null;
 }
 
-/** Fit one more level of `id`: the new levels and what it cost (Krail, and the yard's chits), or why not. */
-export function install(id: string, ctx: BayCtx): { levels: Levels; cost: number; fee: number } | Block {
+/** Fit one more level of `id`: the new levels and what it cost, or why not. */
+export function install(id: string, ctx: BayCtx): { levels: Levels; cost: number } | Block {
   const why = blockOf(id, ctx);
   if (why) return why;
   const lv = ctx.levels[id] ?? 0;
-  return { levels: { ...ctx.levels, [id]: lv + 1 }, cost: cost(id, lv + 1, ctx.arcade), fee: fee(id, lv + 1, ctx.arcade) };
+  return { levels: { ...ctx.levels, [id]: lv + 1 }, cost: cost(id, lv + 1, ctx.arcade, ctx.levels) };
 }
 
 /** The nodes of a tab that could be fitted were there Krail and power enough: what the bay lights as available. */
@@ -129,8 +135,8 @@ export function cheapest(ctx: BayCtx): { id: string; cost: number } | null {
   let best: { id: string; cost: number } | null = null;
   for (const w of WEB) {
     const b = blockOf(w.id, ctx);
-    if (b !== null && b !== 'krail' && b !== 'chits') continue;
-    const c = cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade) + (ctx.pooled ? fee(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade) : 0);
+    if (b !== null && b !== 'krail') continue;
+    const c = cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade, ctx.levels);
     if (!best || c < best.cost) best = { id: w.id, cost: c };
   }
   return best;
@@ -176,8 +182,8 @@ export function quickPicks(ctx: BayCtx, n = PICKS): WebNode[] {
   for (const [id, lv] of Object.entries(ctx.levels)) for (const t of UPGRADE[id]?.tags ?? []) affinity.set(t, (affinity.get(t) ?? 0) + lv);
   const systems = Object.keys(ctx.levels).filter((id) => UPGRADE[id]?.kind === 'system' && (ctx.levels[id] ?? 0) > 0).length;
   const scored = WEB
-    .filter((w) => { const b = blockOf(w.id, ctx); return b === null || b === 'krail' || b === 'chits'; })
-    .map((w) => ({ w, v: suits(w.id, ctx, affinity, systems) / Math.sqrt(cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade) * (ctx.arcade ? 1 : CHITS_PER_CYRITE) / 40) }))
+    .filter((w) => { const b = blockOf(w.id, ctx); return b === null || b === 'krail'; })
+    .map((w) => ({ w, v: suits(w.id, ctx, affinity, systems) / Math.sqrt(cost(w.id, (ctx.levels[w.id] ?? 0) + 1, ctx.arcade, ctx.levels) / 40) }))
     .sort((a, b) => b.v - a.v || a.w.id.localeCompare(b.w.id));
   // a spread: different tabs, and no more than one new system at a time
   const out: WebNode[] = [];
@@ -236,7 +242,7 @@ export function arcadePicks(ctx: BayCtx): WebNode[] {
   const systems = Object.keys(ctx.levels).filter((id) => UPGRADE[id]?.kind === 'system' && (ctx.levels[id] ?? 0) > 0).length;
   const progress = Object.values(ctx.levels).reduce((a, b) => a + b, 0), early = progress < 5;
   const deal = ctx.deal ?? 0, explorer = PICK_ROLES[deal % PICK_ROLES.length]!;
-  const open = WEB.filter((w) => { const b = blockOf(w.id, ctx); return b === null || b === 'krail' || b === 'chits'; });
+  const open = WEB.filter((w) => { const b = blockOf(w.id, ctx); return b === null || b === 'krail'; });
   const need = shortOf(ctx);
   const score = (w: WebNode, role: PickRole): number => {
     let v = suits(w.id, ctx, affinity, systems);

@@ -3,9 +3,8 @@ import type { Stats } from '../sim/stats';
 // ── the ship's four systems: the yard's modules ───────────────────────────
 // What the Wayward is, beyond the guns: four systems, each fitted with
 // modules at a port's yard (the Story mode). They sit in the refit bay with
-// everything else (content/web.ts, marked `story` and `yard`), paid in Krail
-// and a yard fee in chits, and fitted only while docked, so ports keep their
-// pull.
+// everything else (content/web.ts, marked `story`), paid in Cyrite like every
+// part, and fitted only while docked, so ports keep their pull.
 //
 //   Guns      · hardpoints, plate, a gunnery rig, a shield projector.
 //   Rig       · racks, a machine shop, an ore tractor, a capacitor bank. A Rig
@@ -47,8 +46,6 @@ export interface ModuleDef {
   system: ShipSystem;
   /** Marks it can be fitted to. */
   max: number;
-  /** The yard's fee in chits for each mark (index 0 is mark one), on top of the Krail the bay charges. */
-  chits: number[];
   /** The benefit of one more mark, one sentence. */
   text: string;
   /** Change the stat block for owning mark `mk` (called once per mark owned). */
@@ -73,94 +70,92 @@ export interface ModuleDef {
   counts?: string[];
 }
 
-const marks = (...n: number[]) => n;
-
 export const MODULES: ModuleDef[] = [
   // ── guns ──────────────────────────────────────────────────────────────
   {
-    id: 'md_hardpoints', name: 'Hardpoints', system: 'guns', max: 3, chits: marks(10, 20, 30),
+    id: 'md_hardpoints', name: 'Hardpoints', system: 'guns', max: 3,
     text: 'Every weapon hits harder. Counts as a torpedo bay.',
     stats: (s) => { s.dmgAll *= 1.1; },
     counts: ['tp_bay'],
   },
   {
-    id: 'md_plate', name: 'Armour plate', system: 'guns', max: 2, chits: marks(15, 30),
+    id: 'md_plate', name: 'Armour plate', system: 'guns', max: 2,
     text: 'One more plate of hull.',
     stats: (s) => { s.maxPlates += 1; },
   },
   {
-    id: 'md_gunnery', name: 'Gunnery rig', system: 'guns', max: 2, chits: marks(10, 25),
+    id: 'md_gunnery', name: 'Gunnery rig', system: 'guns', max: 2,
     text: 'Lasers and torpedoes reload faster.',
     stats: (s) => { s.laserCooldown *= 0.9; s.torpReload *= 0.9; },
   },
   {
-    id: 'md_projector', name: 'Shield projector', system: 'guns', max: 2, chits: marks(15, 30),
+    id: 'md_projector', name: 'Shield projector', system: 'guns', max: 2,
     text: 'One more shield charge.',
     stats: (s) => { s.shieldMax += 1; },
   },
 
   // ── rig ───────────────────────────────────────────────────────────────
   {
-    id: 'md_racks', name: 'Cargo racks', system: 'rig', max: 3, chits: marks(10, 20, 30),
+    id: 'md_racks', name: 'Cargo racks', system: 'rig', max: 3,
     text: 'Holds 4 more supplies.',
     hold: 4,
   },
   {
-    id: 'md_shop', name: 'Machine shop', system: 'rig', max: 2, chits: marks(10, 20),
+    id: 'md_shop', name: 'Machine shop', system: 'rig', max: 2,
     text: 'Patching costs 1 supply less.',
     patch: 1,
   },
   {
-    id: 'md_tractor', name: 'Ore tractor', system: 'rig', max: 2, chits: marks(10, 20),
+    id: 'md_tractor', name: 'Ore tractor', system: 'rig', max: 2,
     text: 'Pulls in pickups from further away.',
     stats: (s) => { s.tractor *= 1.3; },
   },
   {
-    id: 'md_capacitor', name: 'Capacitor bank', system: 'rig', max: 2, chits: marks(10, 20),
+    id: 'md_capacitor', name: 'Capacitor bank', system: 'rig', max: 2,
     text: 'Your shield recharges sooner and faster.',
     stats: (s) => { s.shieldRecharge *= 0.8; s.shieldDelay *= 0.8; },
   },
 
   // ── signals ───────────────────────────────────────────────────────────
   {
-    id: 'md_baffles', name: 'Baffles', system: 'signals', max: 2, chits: marks(10, 25),
+    id: 'md_baffles', name: 'Baffles', system: 'signals', max: 2,
     text: 'Heat builds slower.',
     quiet: 0.125,
   },
   {
-    id: 'md_array', name: 'Long-range array', system: 'signals', max: 1, chits: marks(20),
+    id: 'md_array', name: 'Long-range array', system: 'signals', max: 1,
     text: 'Better reads. Spots Calloway more often.',
     sensors: 0.15,
   },
   {
-    id: 'md_jammer', name: 'Jammer', system: 'signals', max: 1, chits: marks(20),
+    id: 'md_jammer', name: 'Jammer', system: 'signals', max: 1,
     text: 'Opens jam choices.',
     counts: ['ut_scanner'],
   },
   {
-    id: 'md_spoofer', name: 'Transponder spoofer', system: 'signals', max: 1, chits: marks(25),
+    id: 'md_spoofer', name: 'Transponder spoofer', system: 'signals', max: 1,
     text: 'Forged codes, every system.',
     flags: ['codes'],
   },
   {
-    id: 'md_ghost', name: 'Ghost echo', system: 'signals', max: 2, chits: marks(20, 30),
+    id: 'md_ghost', name: 'Ghost echo', system: 'signals', max: 2,
     text: 'Slows Calloway at every jump. Mk 2 hides your route.',
     echo: 1,
   },
 
   // ── contacts ──────────────────────────────────────────────────────────
   {
-    id: 'md_ledger', name: 'Guild ledger', system: 'contacts', max: 2, chits: marks(10, 15),
+    id: 'md_ledger', name: 'Guild ledger', system: 'contacts', max: 2,
     text: 'Ports cost 10% less.',
     discount: 0.1,
   },
   {
-    id: 'md_names', name: 'Names in the Gutter', system: 'contacts', max: 1, chits: marks(10),
+    id: 'md_names', name: 'Names in the Gutter', system: 'contacts', max: 1,
     text: 'A friend in the Gutter.',
     flags: ['gutter_friend'],
   },
   {
-    id: 'md_dock', name: 'Friends on the docks', system: 'contacts', max: 1, chits: marks(15),
+    id: 'md_dock', name: 'Friends on the docks', system: 'contacts', max: 1,
     text: 'Docking cools heat more.',
     dockCool: 0.2,
   },

@@ -39,6 +39,7 @@ is off.
 | Dev The review world | Done: `?dev` ([REVIEW.md](REVIEW.md)) |
 | V Visual overhaul | Done: one look table (`render/look.ts`), designed hulls with a faction layer, rock, Cyrite, gate and port. A device look is pending |
 | Eco The Story economy | Done, first guesses: one purse, jump fluid, supplies, the work bay ([ECONOMY.md](ECONOMY.md)). A device look is pending |
+| Up Story upgrades | Built, first guesses: endless ladders, balance parts that never run out, prices that climb with every part, hulls and jobs scaled by depth ([ECONOMY.md](ECONOMY.md), [BALANCE-UPGRADES.md](BALANCE-UPGRADES.md)). A playtest of the climb is still to do |
 | Mis Missions | Done: six goal kinds, 31 jobs, on a timetable so every region has them ([MISSIONS.md](MISSIONS.md)) |
 | Onb Onboarding | Done: a short lesson on every new Story journey, once in the Arcade ([ONBOARDING.md](ONBOARDING.md)) |
 | H The HUD | Done, pending a device look: a quieter, contextual HUD ([HUD.md](HUD.md)) |

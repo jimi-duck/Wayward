@@ -41,6 +41,13 @@ export interface Mods {
 
 export const NO_MODS: Mods = { traffic: 1, toughness: 1, fire: 1, elites: 1, hazard: 1, income: 1 };
 
+/**
+ * The Story's depth: hulls are `threat` times as tough, and fire a quarter of that excess oftener (1 at Cerro, about
+ * 3 at the Threshold; sim/journey.ts `threatAt`). A ship that has not grown by then is outmatched.
+ */
+export const threatened = (m: Mods, threat = 1): Mods =>
+  threat === 1 ? m : { ...m, toughness: m.toughness * threat, fire: m.fire / (1 + 0.25 * (threat - 1)) };
+
 const V = PX * HZ;
 
 export interface Pressure {

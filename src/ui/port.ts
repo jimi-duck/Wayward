@@ -1,6 +1,6 @@
 import { artImg } from './art';
 import { placeOfPort } from '../content/art';
-import { affordable } from '../sim/bay';
+import { affordable, cheapest } from '../sim/bay';
 import { needsTorpedoFit } from '../sim/tutor';
 import { stopIdle, SUPPLIES_TARGET, type Stop } from '../sim/stop';
 import type { PortItem, World } from '../sim/world';
@@ -222,9 +222,9 @@ export class PortPanel {
       return b;
     };
     // the bay: free to enter; the count is what the bay itself would let you fit now
-    const can = affordable(w.bayCtx());
+    const ctx = w.bayCtx(), can = affordable(ctx), next = can ? null : cheapest(ctx);
     const bayName = t('Refit bay'), bayText = t('Browse weapons, systems and ship upgrades.');
-    const bayState = first ? t('Start here · fit your torpedoes') : can ? plural(can, '{n} upgrade you can afford', '{n} upgrades you can afford') : t('No upgrades you can afford yet');
+    const bayState = first ? t('Start here · fit your torpedoes') : can ? plural(can, '{n} upgrade you can afford', '{n} upgrades you can afford') : next ? t('Cheapest part: {n} Cyrite', { n: num(next.cost) }) : t('No upgrades you can afford yet');
     const bay = card('bay', true, `bay${first ? ' lead' : ''}`, [
       h('span', 'pl-t', bayName), h('span', 'pl-d', bayText),
       h('span', 'pl-r', '', h('span', `pl-badge ${can || first ? 'ok' : 'none'}`, bayState), h('span', 'pl-go', t('Open bay'))),

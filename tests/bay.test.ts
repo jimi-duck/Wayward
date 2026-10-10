@@ -9,7 +9,7 @@ import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
 
 const ALL = new Set(UPGRADES.map((u) => u.id));
-const ctx = (o: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: ALL, techs: new Set(), arcade: true, krail: 1e9, chits: 1e9, ...o });
+const ctx = (o: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: ALL, techs: new Set(), arcade: true, krail: 1e9, ...o });
 
 describe('the web', () => {
   it('places every upgrade, every fitting and every yard module exactly once, and nothing else', () => {
