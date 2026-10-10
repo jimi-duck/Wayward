@@ -160,11 +160,15 @@ export class Field {
     const a = this.rng.range(0, Math.PI * 2), kick = this.rng.range(3.5, 7);
     const pieces = rock.kind === 'iron' ? 3 : 2;
     const out: Rock[] = [];
+    // the pieces start clear of one another (a child can be a touch bigger than its nominal size), each with its own push and a good part of the parent's momentum
+    const clear = ROCK_R[size] * 1.12 * (pieces === 3 ? 1.55 : 1.14);
     for (let k = 0; k < pieces; k++) {
-      const pa = a + (k / pieces) * Math.PI * 2, px = Math.cos(pa), pz = Math.sin(pa);
-      const child = this.spawn(size, rock.x + px * rock.r * 0.5, rock.z + pz * rock.r * 0.5,
-        rock.vx * 0.6 + px * kick, rock.vz * 0.6 + pz * kick, into, hpScale);
-      child.age = 10;
+      const pa = a + ((k + this.rng.range(-0.08, 0.08)) / pieces) * Math.PI * 2, px = Math.cos(pa), pz = Math.sin(pa);
+      const reach = Math.max(rock.r * 0.5, clear) * this.rng.range(1, 1.1), push = kick * this.rng.range(0.75, 1.25);
+      const child = this.spawn(size, rock.x + px * reach, rock.z + pz * reach,
+        rock.vx * 0.8 + px * push, rock.vz * 0.8 + pz * push, into, hpScale);
+      // they grow out of the break over a moment instead of appearing whole
+      child.age = 0.32;
       out.push(child);
     }
     return out;

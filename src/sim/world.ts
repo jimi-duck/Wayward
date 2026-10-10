@@ -863,7 +863,7 @@ export class World implements EncounterHost {
     const K = ROCK_KINDS[r.kind];
     this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * ROCK_KRAIL * MINE_KRAIL, R.krail * this.income), r.x, r.z, 3, r.vx, r.vz);
     if (r.kind === 'volatile') this.blast(r.x, 0, r.z, VOLATILE_BLAST, VOLATILE_DAMAGE, 'laser', 'volatile', 1, true);
-    this.events.push({ type: 'rockMined', x: r.x, z: r.z, size: r.size, kind: r.kind, ore, cyrite, points });
+    this.events.push({ type: 'rockMined', id: r.id, x: r.x, z: r.z, r: r.r, vx: r.vx, vz: r.vz, size: r.size, kind: r.kind, ore, cyrite, points });
   }
 
   private dock(): void {
@@ -2376,7 +2376,7 @@ export class World implements EncounterHost {
     if (this.bk && src === 'laser') this.mineT = 0.6;
     if (!quiet || r.hitT <= 0) {
       r.hitT = 0.12;
-      this.events.push({ type: 'rockHit', x, y, z, id: r.id });
+      this.events.push({ type: 'rockHit', x, y, z, id: r.id, rx: r.x, rz: r.z, r: r.r, kind: r.kind, size: r.size, hp: Math.max(0, r.hp / r.maxHp), src });
     }
     if (r.hp <= 0) { this.destroyRock(r, src); return true; }
     return false;
@@ -2420,7 +2420,7 @@ export class World implements EncounterHost {
       if (ore) this.loot('rock', 'ore', ore, r.x, r.z, 4, r.vx, r.vz);
       if (cyrite) this.loot('rock', 'cyrite', cyrite, r.x, r.z, 4, r.vx, r.vz);
     }
-    this.events.push({ type: 'rockDestroyed', x: r.x, z: r.z, size: r.size, points, kind: r.kind, left });
+    this.events.push({ type: 'rockDestroyed', id: r.id, x: r.x, z: r.z, r: r.r, vx: r.vx, vz: r.vz, size: r.size, points, kind: r.kind, src, left });
     // Krail by chance, in both modes (less of it in the Story mode, where mining gives it surely); a blast destroys some of it
     const blasted = src === 'torpedo' || src === 'mine' || src === 'plasma' || src === 'arc';
     if (this.rng.next() < K.crystal[r.size]! * this.stats.crystalChance * (blasted ? Math.min(1, TORP_YIELD * this.torpYieldMult) : 1)) this.loot('rock', 'crystal', this.share(K.crystals[r.size]! * (this.bk ? ROCK_KRAIL : 1), this.survival.rock.krail * this.income), r.x, r.z, 4, r.vx, r.vz);

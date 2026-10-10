@@ -16,6 +16,7 @@ import { krailRGB, PickupView } from './pickups';
 import { Post } from './post';
 import type { QualityTier } from './quality';
 import { RockView } from './rocks';
+import { RockFx } from './rockfx';
 import { EnemyView, NEON, wreck } from './enemies';
 import { ShipView } from './ships';
 import { hashSeed, skyFor, type Sky } from './sky';
@@ -43,7 +44,6 @@ const rgb = (faction: string): RGB => {
   return c ? [c.r, c.g, c.b] : FIRE;
 };
 
-const ROCK_TINT: Record<string, RGB> = { basalt: LAVA, iron: [1.6, 0.5, 0.2], rich: VIOLET, volatile: [4.2, 2.4, 1] };
 const BLAST_TINT: Record<string, RGB> = {
   torpedo: FIRE, bomblet: FIRE, mine: AMBER, volatile: [4.2, 2.6, 1.2], elite: [3.6, 1.2, 0.3], reactive: SHIELD, strike: FIRE,
 };
@@ -56,6 +56,7 @@ export class Sector {
   readonly rig = new CameraRig();
   private readonly env: Environment;
   private readonly rocks: RockView;
+  private readonly rockfx: RockFx;
   private readonly fx: Effects;
   private readonly streaks: Streaks;
   private readonly weapons: WeaponView;
@@ -90,6 +91,7 @@ export class Sector {
     this.env = new Environment(this.scene, renderer);
     this.rocks = new RockView(this.scene);
     this.fx = new Effects(this.scene, glow);
+    this.rockfx = new RockFx(this.fx, this.rocks);
     this.streaks = new Streaks(this.scene);
     this.weapons = new WeaponView(this.streaks);
     this.ship = new ShipView(glow);
@@ -213,11 +215,12 @@ export class Sector {
           this.rig.shake(0.08);
           break;
         case 'rockHit':
-          this.fx.flash(e.x, e.y, e.z, 1.6, LAVA, 0.1);
-          this.fx.burst(e.x, e.y, e.z, 10, FIRE, 9, 0.28, 0.45);
-          this.fx.burst(e.x, e.y, e.z, 5, LANCE_SPARK, 15, 0.14, 0.25);
-          this.fx.rubble('rock', e.x, e.y, e.z, 1, 0.14, 5);
+        case 'rockDestroyed':
+        case 'rockMined': {
+          const i = this.rockfx.react(e);
+          if (i) { if (i.shake) this.rig.shake(i.shake); hold = Math.max(hold, i.hold); }
           break;
+        }
         case 'bulwarkHit':
           this.fx.flash(e.x, e.y, e.z, 1.3, HOT, 0.08);
           this.fx.burst(e.x, e.y, e.z, 7, DUST, 6, 0.22, 0.35);
@@ -229,15 +232,6 @@ export class Sector {
           this.rig.shake(0.6);
           hold = Math.max(hold, 0.08);
           break;
-        case 'rockDestroyed': {
-          const big = [1, 0.62, 0.38][e.size]!;
-          this.fx.explode(e.x, -0.2, e.z, 2.2 * big, ROCK_TINT[e.kind] ?? LAVA, 'rock');
-          if (e.kind === 'rich') this.fx.burst(e.x, 0.3, e.z, 30, ROCK_TINT[e.kind]!, 10, 0.4, 0.8);
-          this.rig.shake(0.12 + 0.2 * big);
-          // only the biggest rock holds the world still: a field breaks about once a second, and each hold is a skipped step in the ship's flight
-          if (e.size === 0) hold = Math.max(hold, 0.03);
-          break;
-        }
         case 'blast': {
           const tint = BLAST_TINT[e.kind] ?? FIRE;
           const small = e.kind === 'bomblet';
@@ -347,15 +341,6 @@ export class Sector {
           this.fx.light(e.x, e.y, e.z, [1, 0.6, 0.3], 3000, 1.2);
           this.rig.shake(1);
           hold = Math.max(hold, 0.11);
-          break;
-        }
-        case 'rockMined': {
-          const big = [1, 0.62, 0.38][e.size]!;
-          this.fx.flash(e.x, 0.3, e.z, 3 * big + 1, AMBER, 0.25);
-          this.fx.ring(e.x, 0.1, e.z, 6 * big + 2, e.cyrite ? VIOLET : AMBER, 0.45);
-          this.fx.rubble('rock', e.x, 0, e.z, big, 0.3, 14);
-          this.fx.burst(e.x, 0.3, e.z, 24, e.cyrite ? VIOLET : AMBER, 6, 0.3, 0.6);
-          this.rig.shake(0.08);
           break;
         }
         case 'ore':

@@ -291,7 +291,14 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 - **Judging a look or its cost**: the enemy bench, `tools/enemies.html` on the
   dev server (`?view=fleet|close|fire`, `?kind=`, `?n=`, `?quality=`,
   `?frames=N` fills `window.__bench` with draws and triangles). Rocks and the
-  Krail stream have their own, `tools/rocks.html` (`?view=close|game`, `?r=`).
+  Krail stream have their own, `tools/rocks.html` (`?view=close|game`, `?r=`;
+  `?view=break&kind=rich&src=torpedo&cam=near` plays a hit, split and break
+  sequence through the real `Field` and `RockFx`).
+- **What a rock does when hit or broken**: the sim decides (`Field.split`,
+  `destroyRock`) and the events carry kind, weapon and centre; the look is
+  `render/rockfx.ts` (chips, dust, glints per kind, a torpedo heavier than a
+  laser) with the shove and stone pieces in `render/rocks.ts` (`kick`,
+  `fracture`). A new rock kind answers in one `switch` there.
 - **An elite modifier**: one row in `ELITES`, plus the colour of its halo
   in `render/enemies.ts`.
 - **A capital ship**: one row in `FACTIONS` (cycles per phase, station,

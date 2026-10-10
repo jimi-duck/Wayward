@@ -149,7 +149,7 @@ class Debris {
   }
 }
 
-interface Puff { sprite: Sprite; life: number; decay: number; size: number; grow: number; vx: number; vy: number; vz: number; hot: boolean; }
+interface Puff { sprite: Sprite; alpha: number; life: number; decay: number; size: number; grow: number; vx: number; vy: number; vz: number; hot: boolean; }
 interface Flash { sprite: Sprite; life: number; decay: number; max: number; }
 interface Ring { mesh: Mesh; life: number; decay: number; max: number; }
 interface Glow { light: PointLight; life: number; decay: number; peak: number; }
@@ -170,7 +170,7 @@ export class Effects {
 
   constructor(private readonly scene: Scene, glow: Texture) {
     this.rock = new Debris(new TetrahedronGeometry(1, 0),
-      new MeshStandardMaterial({ color: 0x2c2724, roughness: 0.9, flatShading: true, emissive: new Color(0.5, 0.08, 0.01) }));
+      new MeshStandardMaterial({ color: 0x2c2724, roughness: 0.9, flatShading: true, emissive: new Color(0.07, 0.025, 0.012) }));
     this.plating = new Debris(new BoxGeometry(1, 0.18, 0.7), metal({ tint: 0x6b6560, roughness: 0.55, metalness: 0.7, scale: 2 }));
     scene.add(this.sparks.points, this.rock.mesh, this.plating.mesh);
     for (let i = 0; i < 28; i++) {
@@ -193,7 +193,7 @@ export class Effects {
         }));
         sprite.visible = false;
         scene.add(sprite);
-        list.push({ sprite, life: 0, decay: 1, size: 1, grow: 1, vx: 0, vy: 0, vz: 0, hot: additive });
+        list.push({ sprite, alpha: 0.85, life: 0, decay: 1, size: 1, grow: 1, vx: 0, vy: 0, vz: 0, hot: additive });
       }
     };
     puff(fireTexture(), true, this.fires, 64);
@@ -271,6 +271,36 @@ export class Effects {
     }
   }
 
+  /** Sparks thrown in one direction (dx, dz), spread by `cone` (0 straight, 1 wide): the spray off an impact. */
+  spray(x: number, y: number, z: number, dx: number, dz: number, n: number, rgb: RGB, speed: number, size = 0.2, life = 0.35, cone = 0.45): void {
+    this.c.setRGB(...rgb);
+    const h = Math.atan2(dz, dx);
+    for (let i = 0; i < n; i++) {
+      const a = h + (Math.random() - 0.5) * Math.PI * cone, sp = speed * (0.4 + Math.random() * 0.8);
+      this.sparks.emit(x, y, z, Math.cos(a) * sp, (Math.random() - 0.3) * sp * 0.4, Math.sin(a) * sp, this.c, size * (0.5 + Math.random()), life * (0.6 + Math.random() * 0.8), 0.9);
+    }
+  }
+
+  /** Rock chips thrown in one direction: the same pool as rubble, aimed. */
+  chips(x: number, y: number, z: number, dx: number, dz: number, n: number, size: number, speed: number, cone = 0.6): void {
+    const h = Math.atan2(dz, dx);
+    for (let i = 0; i < n; i++) {
+      const a = h + (Math.random() - 0.5) * Math.PI * cone, sp = speed * (0.4 + Math.random() * 0.8);
+      this.rock.emit(x, y, z, Math.cos(a) * sp, (Math.random() - 0.3) * sp * 0.5, Math.sin(a) * sp, size * (0.4 + Math.random() * 0.8));
+    }
+  }
+
+  /** A puff of dust: smoke tinted `rgb` (dim), swelling slowly, no flame in it. */
+  dust(x: number, y: number, z: number, size: number, rgb: RGB, n = 1, speed = 1.5, life = 0.9, alpha = 0.3): void {
+    for (let i = 0; i < n; i++) {
+      const p = this.smokes.find((q) => q.life <= 0) ?? this.smokes[0]!;
+      const o = size * 0.3;
+      this.place(p, x + (Math.random() - 0.5) * o, y + (Math.random() - 0.5) * o, z + (Math.random() - 0.5) * o, size * (0.7 + Math.random() * 0.5), 1.6, life * (0.7 + Math.random() * 0.6), speed);
+      (p.sprite.material as SpriteMaterial).color.setRGB(...rgb);
+      p.alpha = alpha;
+    }
+  }
+
   /** A fireball: puffs of flame that swell and cool, then smoke that hangs on after them. */
   fireball(x: number, y: number, z: number, size: number, smoke = 1): void {
     const n = Math.round(4 + size * 1.5);
@@ -335,7 +365,7 @@ export class Effects {
 
   private place(p: Puff, x: number, y: number, z: number, size: number, grow: number, life: number, speed: number): void {
     p.sprite.position.set(x, y, z);
-    p.size = size; p.grow = grow; p.life = 1; p.decay = 1 / life;
+    p.size = size; p.grow = grow; p.life = 1; p.decay = 1 / life; p.alpha = 0.85;
     const a = Math.random() * Math.PI * 2, u = Math.random() * 2 - 1, r = Math.sqrt(1 - u * u);
     p.vx = Math.cos(a) * r * speed; p.vy = u * speed * 0.6 + speed * 0.15; p.vz = Math.sin(a) * r * speed;
     (p.sprite.material as SpriteMaterial).rotation = Math.random() * Math.PI * 2;
@@ -357,7 +387,7 @@ export class Effects {
       mat.color.copy(FIRE_HOT).lerp(FIRE_COOL, Math.min(1, t * 1.6));
       mat.opacity = p.life * p.life;
     } else {
-      mat.opacity = Math.min(1, t * 6) * p.life * 0.85;
+      mat.opacity = Math.min(1, t * 6) * p.life * p.alpha;
     }
   }
 }

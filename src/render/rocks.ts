@@ -91,7 +91,7 @@ interface RockLook {
 }
 
 const LOOKS: Record<RockKind, RockLook> = {
-  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1.12, 0.96, 0.82],         zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
+  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1.04, 0.96, 0.88],         zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
   iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
   rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.8, 0.72, 1.2], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
   volatile: { id: 'volatile', glow: [0.5, 1.7, 3.0],   tint: [0.7, 0.86, 1.22], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
@@ -122,11 +122,11 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
     shader.uniforms.uCool = { value: ember && look.id === 'volatile' ? 1 : 0 };
     shader.uniforms.uEmber = { value: ember && (look.id === 'basalt' || look.id === 'volatile') ? 1 : 0 };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;');
+      .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;\nattribute float aHit;\nvarying float vHit;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRockP = position;\nvHit = aHit;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
-        varying vec3 vRockP; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
+        varying vec3 vRockP; varying float vHit; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
         uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber; uniform float uViolet; uniform float uCool;
         ${SIMPLEX}
         ${PERTURB}
@@ -164,12 +164,16 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         float pocket = smoothstep(0.62, 0.74, snoise(rp * vec3(2.3, 2.9, 2.1) + 13.1)) * smoothstep(0.9, 0.97, max(ridgeA, ridgeB)) * uCool;
         lavaGlow += uGlow * pocket * 0.26 * uLava;
         float web = smoothstep(0.9, 0.985, max(ridgeA, ridgeB * 0.97)) * smoothstep(-0.25, 0.3, snoise(rp * 0.4 + 8.0)) * uCool;
-        lavaGlow += (uGlow * 0.14 + vec3(0.1, 0.12, 0.14) * smoothstep(0.96, 0.99, max(ridgeA, ridgeB))) * web * uLava;
+        lavaGlow += (uGlow * 0.14 + vec3(0.1, 0.12, 0.14) * smoothstep(0.96, 0.99, max(ridgeA, ridgeB))) * web * uLava * (0.85 + 0.25 * sin(uTime * 2.4 + rn * 9.0));
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.03, 0.04), pocket * 0.6);
         // rich rock: violet veins through the stone and crystals set in it, steady and well under the bloom line
         float vein = (smoothstep(0.95, 0.99, ridgeA) * 0.7 + smoothstep(0.965, 0.993, ridgeB) * 0.5) * (0.25 + 0.75 * zone);
         lavaGlow += uGlow * (vein * 0.07 + incl * 0.07) * uLava * uViolet;
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.06, 0.16), vein * 0.4 * uViolet);
+        // a hit, or damage taken, wakes the seams in the rock's own colour: cracks for basalt, veins for rich, fissures for volatile
+        vec3 kindC = uGlow / max(uGlow.r, max(uGlow.g, uGlow.b));
+        float seamK = crack * heat * uEmber * (1.0 - uCool) * 1.5 + vein * uViolet * 1.4 + (web + pocket) * uCool * 1.3;
+        lavaGlow += kindC * vHit * seamK * 0.3 * uLava * min(uEmber + uViolet, 1.0);
         diffuseColor.rgb *= 1.0 - (smoothstep(0.955, 0.99, ridgeA) * 0.3 + crack * 0.3);
         // sharp crests between broken faces: a creased noise
         float crest = pow(1.0 - abs(snoise(rp * 3.0 + 1.7)), 3.0);
@@ -185,7 +189,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
         totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.012 * uViolet + 0.01 * uCool) * uLava;`);
   };
-  m.customProgramCacheKey = () => `stone-rock7-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock8-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
@@ -193,7 +197,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
  * A rock shape of unit radius: an icosphere of the given subdivision, pushed
  * out by noise and pitted with craters, a little flattened. Smooth normals.
  */
-export function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0): BufferGeometry {
+export function rockGeometry(seed: number, detail: number, craters: number, rough = 0.42, cuts = 0, stretch: readonly [number, number, number] = [1, 1, 1]): BufferGeometry {
   const g = mergeVertices(new IcosahedronGeometry(1, detail).deleteAttribute('normal').deleteAttribute('uv'), 1e-4);
   const p = g.attributes.position!;
   const v = new Vector3();
@@ -206,6 +210,7 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
   const planes = Array.from({ length: cuts }, () => ({
     n: new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.7, rnd() * 2 - 1).normalize(), d: 0.52 + rnd() * 0.22,
   }));
+  const st = new Vector3(...stretch);
   for (let i = 0; i < p.count; i++) {
     v.fromBufferAttribute(p, i).normalize();
     const big = fbm(v.x * 1.2 + seed, v.y * 1.2, v.z * 1.2, 4, seed);
@@ -219,6 +224,7 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
     }
     v.multiplyScalar(k);
     for (const c of planes) { const over = v.dot(c.n) - c.d; if (over > 0) v.addScaledVector(c.n, -over * 0.94); }
+    v.multiply(st);
     v.y *= 0.84;
     p.setXYZ(i, v.x, v.y, v.z);
   }
@@ -273,6 +279,79 @@ function shardSeats(g: BufferGeometry, seed: number): Matrix4[] {
   return seats;
 }
 
+const MAX_CHUNKS = 84;
+const CHUNK_TINT: Record<string, [number, number, number]> = {
+  basalt: [1.1, 0.95, 0.8], iron: [0.8, 0.82, 0.88], rich: [0.78, 0.68, 1.15], volatile: [0.72, 0.86, 1.2],
+};
+
+/** The pieces thrown off a breaking rock: a pool of low stone shards that tumble, drift with the parent and crumble away. Visual only. */
+class Chunks {
+  private readonly mesh: InstancedMesh;
+  private readonly p = new Float32Array(MAX_CHUNKS * 3);
+  private readonly v = new Float32Array(MAX_CHUNKS * 3);
+  private readonly sz = new Float32Array(MAX_CHUNKS * 3);
+  private readonly ang = new Float32Array(MAX_CHUNKS * 4); // axis + angle
+  private readonly spin = new Float32Array(MAX_CHUNKS);
+  private readonly age = new Float32Array(MAX_CHUNKS).fill(-1);
+  private readonly life = new Float32Array(MAX_CHUNKS);
+  private next = 0;
+  private readonly m = new Matrix4();
+  private readonly q = new Quaternion();
+  private readonly ax = new Vector3();
+  private readonly pv = new Vector3();
+  private readonly sv = new Vector3();
+  private readonly col = new Color();
+
+  constructor(scene: Scene) {
+    this.mesh = new InstancedMesh(rockGeometry(311, 1, 0, 0.5, 5), lavaRock(1.1, 1, 0.1, LOOKS.basalt, false), MAX_CHUNKS);
+    this.mesh.instanceColor = new InstancedBufferAttribute(new Float32Array(MAX_CHUNKS * 3).fill(1), 3);
+    this.mesh.frustumCulled = false;
+    for (let i = 0; i < MAX_CHUNKS; i++) this.mesh.setMatrixAt(i, this.m.makeScale(0, 0, 0));
+    scene.add(this.mesh);
+  }
+
+  burst(kind: string, size: number, x: number, z: number, r: number, vx: number, vz: number, dx: number, dz: number, power: number): void {
+    const n = Math.round([7, 5, 3][size]! * power), tint = CHUNK_TINT[kind] ?? CHUNK_TINT.basalt!, base = Math.atan2(dz, dx);
+    for (let k = 0; k < n; k++) {
+      const i = this.next;
+      this.next = (this.next + 1) % MAX_CHUNKS;
+      // thrown mostly away from where the blow landed, every piece its own way and speed
+      const a = base + (Math.random() - 0.5) * Math.PI * 1.7, d = r * (0.3 + Math.random() * 0.5), sp = (2.5 + Math.random() * 5.5) * (0.7 + power * 0.3);
+      this.p.set([x + Math.cos(a) * d, -0.2 + (Math.random() - 0.5) * r * 0.4, z + Math.sin(a) * d], i * 3);
+      this.v.set([vx * 0.8 + Math.cos(a) * sp, (Math.random() - 0.4) * sp * 0.4, vz * 0.8 + Math.sin(a) * sp], i * 3);
+      const s = r * (0.08 + Math.random() * 0.13);
+      this.sz.set([s * (0.7 + Math.random() * 0.6), s * (0.6 + Math.random() * 0.5), s * (0.7 + Math.random() * 0.6)], i * 3);
+      const ax = Math.random() - 0.5, ay = Math.random() - 0.5, az = Math.random() - 0.5, nn = Math.hypot(ax, ay, az) || 1;
+      this.ang.set([ax / nn, ay / nn, az / nn, Math.random() * 6], i * 4);
+      this.spin[i] = (Math.random() - 0.5) * 9;
+      this.age[i] = 0;
+      this.life[i] = 0.6 + Math.random() * 0.5;
+      this.col.setRGB(tint[0] * (0.8 + Math.random() * 0.3), tint[1] * (0.8 + Math.random() * 0.3), tint[2] * (0.8 + Math.random() * 0.3));
+      this.mesh.setColorAt(i, this.col);
+    }
+    if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true;
+  }
+
+  update(dt: number): void {
+    let live = false;
+    for (let i = 0; i < MAX_CHUNKS; i++) {
+      if (this.age[i]! < 0) continue;
+      live = true;
+      const t = (this.age[i] = this.age[i]! + dt), L = this.life[i]!;
+      if (t >= L) { this.age[i] = -1; this.mesh.setMatrixAt(i, this.m.makeScale(0, 0, 0)); continue; }
+      const d = Math.pow(0.97, dt * 60);
+      for (let k = 0; k < 3; k++) { this.v[i * 3 + k]! *= d; this.p[i * 3 + k] = this.p[i * 3 + k]! + this.v[i * 3 + k]! * dt; }
+      this.ang[i * 4 + 3] = this.ang[i * 4 + 3]! + this.spin[i]! * dt;
+      this.q.setFromAxisAngle(this.ax.set(this.ang[i * 4]!, this.ang[i * 4 + 1]!, this.ang[i * 4 + 2]!), this.ang[i * 4 + 3]!);
+      // whole for the first part of its life, then it crumbles to nothing
+      const fade = Math.min(1, (L - t) / (L * 0.4)), f = fade * fade * (3 - 2 * fade);
+      this.m.compose(this.pv.set(this.p[i * 3]!, this.p[i * 3 + 1]!, this.p[i * 3 + 2]!), this.q, this.sv.set(this.sz[i * 3]! * f, this.sz[i * 3 + 1]! * f, this.sz[i * 3 + 2]! * f));
+      this.mesh.setMatrixAt(i, this.m);
+    }
+    if (live) this.mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+
 export class RockView {
   /** One instanced mesh per kind per shape: meshes[kind index * ROCK_VARIANTS + variant]. */
   private readonly meshes: InstancedMesh[] = [];
@@ -288,12 +367,31 @@ export class RockView {
   private readonly axis = new Vector3();
   private readonly col = new Color();
   private readonly shards: InstancedMesh;
+  /** Per-instance hit light, parallel to `meshes`. */
+  private readonly hits: InstancedBufferAttribute[] = [];
+  /** A brief shove and wobble on rocks that were hit: id to its state. */
+  private readonly kicks = new Map<number, { t: number; dx: number; dz: number; s: number }>();
+  private readonly seen = new Set<number>();
+  private readonly chunks: Chunks;
   private readonly seats: Matrix4[][];
   private readonly sm = new Matrix4();
+  private readonly tilt = new Quaternion();
+  private readonly wob = new Vector3();
   private time = 0;
 
   constructor(private readonly scene: Scene) {
-    const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => rockGeometry(k * 3.7 + 1, 4, 1 + (k % 2), 0.4, 8 + (k % 3)));
+    // four characters: blocky with many broken faces, long and shard-like, rounded and pitted by weathering, a flat ridged slab
+    const SHAPES: Array<{ craters: number; rough: number; cuts: number; stretch: [number, number, number] }> = [
+      { craters: 1, rough: 0.36, cuts: 12, stretch: [1, 0.92, 1] },
+      { craters: 1, rough: 0.34, cuts: 8, stretch: [1.4, 0.8, 0.78] },
+      { craters: 3, rough: 0.3, cuts: 3, stretch: [1, 1, 1.05] },
+      { craters: 2, rough: 0.44, cuts: 9, stretch: [1.18, 0.64, 1.1] },
+    ];
+    const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => {
+      const c = SHAPES[k % SHAPES.length]!;
+      return rockGeometry(k * 3.7 + 1, 4, c.craters, c.rough, c.cuts, c.stretch);
+    });
+    this.chunks = new Chunks(scene);
     this.seats = shapes.map((g, k) => shardSeats(g, 40 + k));
     // the crystals of the rich rock: one shared mesh, seated in each shape's hollows, and a few loose ones drifting near
     const crystal = new MeshStandardMaterial({ color: new Color(0.1, 0.045, 0.2), emissive: new Color(0.16, 0.05, 0.3), emissiveIntensity: 0.4, roughness: 0.22, metalness: 0.2, flatShading: true, envMapIntensity: 0.9 });
@@ -304,7 +402,12 @@ export class RockView {
     for (const kind of KINDS) {
       const mat = lavaRock(1.35, 1, 0.15, LOOKS[kind]);
       for (let k = 0; k < ROCK_VARIANTS; k++) {
-        const mesh = new InstancedMesh(shapes[k]!, mat, PER_VARIANT);
+        // each kind has its own copy of the shape: the hit light is a per-instance attribute on the geometry
+        const geo = shapes[k]!.clone();
+        const hit = new InstancedBufferAttribute(new Float32Array(PER_VARIANT), 1);
+        geo.setAttribute('aHit', hit);
+        this.hits.push(hit);
+        const mesh = new InstancedMesh(geo, mat, PER_VARIANT);
         mesh.instanceColor = new InstancedBufferAttribute(new Float32Array(PER_VARIANT * 3).fill(1), 3);
         mesh.count = 0;
         mesh.frustumCulled = false;
@@ -340,6 +443,17 @@ export class RockView {
   }
 
   /** Draw the field, `alpha` of a step past the simulated positions' previous step. */
+  /** A hit: shove the rock along (dx, dz) by `s` of its radius and set it wobbling. */
+  kick(id: number, dx: number, dz: number, s: number): void {
+    const k = this.kicks.get(id);
+    if (k) { k.t = Math.min(k.t, 0.05); k.dx = dx; k.dz = dz; k.s = Math.min(0.2, k.s * 0.6 + s); } else this.kicks.set(id, { t: 0, dx, dz, s });
+  }
+
+  /** A rock breaking apart: stone pieces fly from its body, carrying its drift. (dx, dz) is the way the blow came; `power` scales the burst. */
+  fracture(kind: string, size: number, x: number, z: number, r: number, vx: number, vz: number, dx: number, dz: number, power: number): void {
+    this.chunks.burst(kind, size, x, z, r, vx, vz, dx, dz, power);
+  }
+
   update(rocks: readonly Rock[], bulwarks: readonly Bulwark[], alpha: number, dt: number, cx: number, cz: number): void {
     this.time += dt;
     lavaTime.value = this.time;
@@ -357,7 +471,17 @@ export class RockView {
       const grow = Math.min(1, r.age / 0.6);
       const s = r.r * (grow * grow * (3 - 2 * grow));
       this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.spin * r.age + r.id);
-      this.m.compose(this.pos.set(r.x - r.vx * back, -0.3, r.z - r.vz * back), this.q, this.sc.set(s * (0.8 + 0.4 * h1), s * (0.85 + 0.3 * h2), s * (0.8 + 0.4 * h3)));
+      this.pos.set(r.x - r.vx * back, -0.3, r.z - r.vz * back);
+      const kk = this.kicks.get(r.id);
+      if (kk) {
+        // a hit shoves the rock a little along the shot and sets it wobbling, both dying away in under half a second
+        this.seen.add(r.id);
+        const push = kk.s * r.r * (1 - Math.exp(-kk.t * 50)) * Math.exp(-kk.t * 7);
+        this.pos.x += kk.dx * push; this.pos.z += kk.dz * push;
+        this.tilt.setFromAxisAngle(this.wob.set(-kk.dz, 0, kk.dx), kk.s * 1.6 * Math.sin(kk.t * 26) * Math.exp(-kk.t * 6));
+        this.q.premultiply(this.tilt);
+      }
+      this.m.compose(this.pos, this.q, this.sc.set(s * (0.8 + 0.4 * h1), s * (0.85 + 0.3 * h2), s * (0.8 + 0.4 * h3)));
       mesh.setMatrixAt(i, this.m);
       if (r.kind === 'rich') {
         // crystals riding the rock, fewer on a small one, and a couple of loose fragments circling it
@@ -370,7 +494,10 @@ export class RockView {
           this.shards.setMatrixAt(ns++, this.sm);
         }
       }
-      const flash = 1 + (r.hitT / 0.12) * 4;
+      // the hit wakes the seams (not the whole rock); damage taken keeps them a little lit
+      const hit = Math.max(r.hitT / 0.12, (1 - r.hp / r.maxHp) * 0.55);
+      this.hits[slot]!.setX(i, hit);
+      const flash = 1 + (r.hitT / 0.12) * 0.35;
       const tone = 0.72 + 0.5 * h2, warm = 0.92 + 0.16 * h3;
       mesh.setColorAt(i, this.col.setRGB(flash * tone * warm, flash * tone * 0.9, flash * tone * 0.84 / warm));
     }
@@ -381,7 +508,11 @@ export class RockView {
       mesh.visible = mesh.count > 0;
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      this.hits[k]!.needsUpdate = true;
     });
+    for (const [id, kk] of this.kicks) { kk.t += dt; if (kk.t > 0.6 || !this.seen.has(id)) this.kicks.delete(id); }
+    this.seen.clear();
+    this.chunks.update(dt);
 
     // bulwarks: one mesh each, made as they come into the field
     const seen = new Set<number>();
