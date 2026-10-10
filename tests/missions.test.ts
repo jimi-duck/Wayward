@@ -3,8 +3,11 @@ import { STEP } from '../src/core/loop';
 import { MISSIONS, MISSION_CARDS } from '../src/content/missions';
 import { SITUATION_BY_ID } from '../src/content/situations';
 import type { InputFrame } from '../src/input/types';
-import { lanesFrom } from '../src/sim/chart';
-import { endSortie, newJourney, plot, sortieDef, type Journey } from '../src/sim/journey';
+import { lanesFrom, makeChart, regionOf } from '../src/sim/chart';
+import { JOB_COLS } from '../src/content/situations';
+import { laySituations } from '../src/sim/situations';
+import { migrate } from '../src/meta/save';
+import { endSortie, newJourney, plot, sortieDef, VERSION, type Journey } from '../src/sim/journey';
 import { newRun } from '../src/sim/run';
 import { cy } from '../src/sim/purse';
 import { scaleOut } from '../src/sim/mission';
@@ -414,5 +417,56 @@ describe('the fourth batch', () => {
     kill(b.w, b.st.run!.target!);
     run(b.w, 1);
     expect(b.st.result).toBe('lost');
+  });
+});
+
+describe('a job in the sky', () => {
+  it('is pinned on the scope before the call, and rings again if the desk lost the call', () => {
+    const w = world('pirate_toll');
+    const st = w.stage!;
+    put(w, st.x, st.z + 900);
+    run(w, 35);
+    expect(st.begun && st.onScope).toBe(true);
+    expect(w.encounter?.id).toBe('scene');
+    expect(w.encounter?.label).toBe(st.def.name);
+    // near enough to ring; the desk drops the card before it opens
+    w.desk.closed(w.runTime);
+    put(w, st.x, st.z + 300);
+    run(w, 1);
+    expect(st.offered && w.desk.waiting(st.def.card!)).toBe(true);
+    (w.desk as unknown as { queue: unknown[] }).queue.length = 0;
+    for (let i = 0; i < 60 && !(w.call ?? w.comms); i++) run(w, 1);
+    expect((w.call ?? w.comms)?.def.id).toBe(SITUATION_BY_ID.pirate_toll!.card);
+  });
+});
+
+describe('jobs on the timetable', () => {
+  const isJob = (id: string) => MISSIONS.some((m) => m.id === id);
+
+  it('every region of every journey has its jobs, and the first is within the first few stops', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const c = makeChart(seed, 'eight', 0.2);
+      const q = laySituations(c, seed);
+      for (let region = 0; region < 8; region++) {
+        const cols = new Set(c.systems.filter((s) => regionOf(s) === region && isJob(q[s.id]?.id ?? '')).map((s) => s.col));
+        expect(cols.size, `seed ${seed} region ${region}`).toBeGreaterThanOrEqual(JOB_COLS[region]!);
+      }
+      // a job in every system of such a column: whichever lane is flown, the player meets it
+      const first = Math.min(...c.systems.filter((s) => isJob(q[s.id]?.id ?? '')).map((s) => s.col));
+      expect(first, `seed ${seed}`).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('a journey saved before them gets jobs in the columns ahead, and nowhere the ship has been', () => {
+    const j = newJourney(11, false, 'eight');
+    const raw = JSON.parse(JSON.stringify(j)) as Record<string, unknown> & { chart: { situations: Record<string, { id: string; arc?: boolean }> } };
+    for (const [id, s] of Object.entries(raw.chart.situations)) if (isJob(s.id)) delete raw.chart.situations[id];
+    expect(Object.values(raw.chart.situations).some((s) => isJob(s.id))).toBe(false);
+    raw.version = 15;
+    const m = migrate(raw)!;
+    expect(m.version).toBe(VERSION);
+    const jobs = Object.entries(m.chart.situations!).filter(([, s]) => isJob(s.id));
+    expect(jobs.length).toBeGreaterThan(8);
+    for (const [id, s] of Object.entries(m.chart.situations!)) if (isJob(s.id)) expect(s.arc, id).toBeFalsy();
   });
 });

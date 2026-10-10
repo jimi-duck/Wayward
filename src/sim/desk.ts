@@ -102,6 +102,9 @@ export class Desk {
     this.queue.push({ def, tier, at: now, port, eager });
   }
 
+  /** Whether a card is waiting its turn. */
+  waiting(id: string): boolean { return this.queue.some((a) => a.def.id === id); }
+
   /** What is the player doing. Call every step. */
   watch(busy: Busy, now: number): void {
     if (busy === 'fight') this.lastThreat = now;

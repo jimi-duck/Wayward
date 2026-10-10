@@ -169,6 +169,7 @@ export const UI: Record<string, string> = {
   'Cyrite to jump': 'Cyrit für den Sprung',
   'Dock at {port} (optional)': 'Andocken: {port} (optional)',
   'Job': 'Auftrag',
+  'On the scope': 'Auf dem Schirm',
   'Jump': 'Sprung',
   'Jump drive': 'Sprungantrieb',
   'Docking clamps': 'Andockklammern',

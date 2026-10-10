@@ -570,6 +570,8 @@ export class Hud {
         const lines: string[] = [];
         if (!ready) lines.push(`${t('Reach the lane entrance')} · <b>${range(dl)}</b>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
+        const sc = world.stage;
+        if (sc?.onScope) lines.push(`${t('On the scope')} · ${t(sc.def.name)} · <b>${range(Math.hypot(sc.x - s.x, sc.z - s.z))}</b>`);
         if (bk.port && bk.docks === 0) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
         const html = lines.slice(0, 2).map((l) => `<li>${l}</li>`).join('');
         const list = $('obj-list');
