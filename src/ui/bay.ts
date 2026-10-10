@@ -62,7 +62,7 @@ const WHY: Record<Block, string> = {
   needs: 'Needs more of its system, or a rival is fitted',
   yard: 'Fitted only at a port',
   power: 'Not enough power · fit a reactor core',
-  krail: 'Not enough Cyrite to jump',
+  krail: 'Not enough Cyrite',
   chits: 'Not enough Cyrite for the yard',
 };
 const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass', heat: 'Heat' };

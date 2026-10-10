@@ -1,5 +1,5 @@
 import { HUSH } from '../sim/desk';
-import { CHITS_PER_CYRITE } from '../sim/purse';
+import { CHITS_PER_CYRITE, TANK_MAX, refine } from '../sim/purse';
 import { hunchOf, newDossier } from '../sim/calloway';
 import { layPlaces, sightPlaces, SIGHT } from '../sim/chart';
 import { dealSituations } from '../sim/situations';
@@ -73,6 +73,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 13) oneEconomy(j as unknown as Old);
   // 13 → 14: Cyrite is the one currency. The chits aboard come across at five to the Cyrite.
   if (j.version < 14) oneCurrency(j.carry as unknown as Record<string, number>);
+  // 14 → 15: jump fluid. The Cyrite aboard fills the new drive tank first (it was the jump's fuel), and what is over is the purse.
+  if (j.version < 15) driveTank(j.carry as unknown as Record<string, number>);
   j.version = VERSION;
   return j as Journey;
 }
@@ -103,6 +105,13 @@ function reprice(p: Record<string, number> | undefined | null): void {
 function oneCurrency(c: Record<string, number>): void {
   c.cyrite = (Number(c.cyrite) || 0) + Math.round((Number(c.chits) || 0) / CHITS_PER_CYRITE);
   delete c.chits;
+}
+
+function driveTank(c: Record<string, number>): void {
+  const all = Math.max(0, Number(c.cyrite) || 0);
+  const r = refine(0, 0, TANK_MAX, all);
+  c.fuel = r.fuel;
+  c.cyrite = r.purse;
 }
 
 function oneEconomy(j: Old): void {

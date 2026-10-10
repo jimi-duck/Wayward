@@ -123,7 +123,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'krail_seller', kind: 'trade', caller: 'miners', when: { after: 60, short: true }, weight: 1.2, repeat: true,
     from: 'Independent prospector · Old Hesketh', title: 'A quick deal on Cyrite',
-    text: '“Eight Cyrite, fresh from the vein. Pay for four now and I will ask no questions.” You are {short} short of the jump.',
+    text: '“Eight Cyrite, fresh from the vein. Pay for four now and I will ask no questions.” Your tank is {short} short of the jump.',
     ships: [], cargo: 'Prospector’s tug · a few crates',
     truths: [
       { id: 'pure', weight: 2, read: 'Spectral scan: pure violet Cyrite, full grade.' },
@@ -230,7 +230,7 @@ export const CARDS: CardDef[] = [
         win: { text: 'Recycler repaired · you gain a Gutter contact', standing: { gutter: 2 }, flag: 'gutter_friend' },
         lose: { text: 'It was a trap · they rush you', spawn: [{ variant: 'scout', n: 2, from: 'ahead' }] },
       },
-      { id: 'no', label: 'Keep your Cyrite', tone: 'refuse', hint: 'You may need every unit for the next jump.', win: { text: 'The Leaky Tin drifts away' } },
+      { id: 'no', label: 'Keep your Cyrite', tone: 'refuse', hint: 'Keep it for the bay.', win: { text: 'The Leaky Tin drifts away' } },
       { id: 'fight', label: 'Attack them', tone: 'fight', hint: 'They are outmatched; you may recover their cargo.', win: { text: 'Weapons hot against the Leaky Tin', spawn: [{ variant: 'scout', n: 2, from: 'ahead' }], standing: { gutter: -1 } } },
     ],
   },
@@ -305,7 +305,7 @@ export const CARDS: CardDef[] = [
     cargo: 'A private channel',
     truths: [
       { id: 'true', weight: 3, read: 'Sol’s channel is secure.' },
-      { id: 'plant', weight: 1, read: 'Sol’s signal is routed through an Office of Peace relay.' },
+      { id: 'plant', weight: 1, read: 'Sol’s signal is routed through an Offices of Peace relay.' },
     ],
     choices: [
       {
@@ -323,8 +323,8 @@ export const CARDS: CardDef[] = [
   },
   {
     id: 'office_watch', kind: 'warning', caller: 'unknown', when: { after: 110, noFlag: 'freqs' },
-    from: 'A scrambled voice', title: 'The Office is listening',
-    text: '“The Office monitors every channel near the lane entrance. I can sell you the frequencies they use. Four Cyrite.”',
+    from: 'A scrambled voice', title: 'The Offices are listening',
+    text: '“The Offices monitor every channel near the lane entrance. I can sell you the frequencies they use. Four Cyrite.”',
     cargo: 'A scrambled channel',
     truths: [
       { id: 'real', weight: 3, read: 'The signal comes from the port’s own antenna.' },
@@ -341,7 +341,7 @@ export const CARDS: CardDef[] = [
   },
   {
     id: 'calloway', kind: 'warning', caller: 'calloway', when: { after: 150 }, weight: 2, face: CALLOWAY_FACE,
-    from: 'Prefect Idris Calloway · Office of Peace', title: 'Come home, Juno',
+    from: 'Prefect Idris Calloway · Offices of Peace', title: 'Come home, Juno',
     text: '“Juno, Idris Calloway. I am not your enemy. That archive is not worth your life. Tell me where you are going.”',
     lines: [
       { if: { flag: 'passengers' }, text: '“And the Okafors. They have children, Juno.”' },
@@ -362,7 +362,6 @@ export const CARDS: CardDef[] = [
     text: '“Nice hauler. Four Cyrite and you keep it.”',
     lines: [
       { if: { flag: 'gutter_friend' }, text: 'Their leader hesitates: the Leaky Tin vouched for you.' },
-      { if: { short: true }, text: 'You cannot spare Cyrite and still make the jump.' },
     ],
     ships: [{ variant: 'raptor', n: 2 }, { variant: 'scout', n: 1 }], cargo: 'Raiders · empty holds, full guns',
     choices: [
@@ -418,13 +417,13 @@ export const CARDS: CardDef[] = [
   },
   {
     id: 'office_ambush', kind: 'shakedown', caller: 'office', when: { after: 160, heatMin: 0.35 }, repeat: true,
-    from: 'Office of Peace · unregistered', title: 'Cut your drive',
+    from: 'Offices of Peace · unregistered', title: 'Cut your drive',
     text: 'Three hulls decloak around you. “Wayward. Cut your drive and surrender the Cyrite.”',
     ships: [{ variant: 'whisper', n: 3 }], cargo: 'Ambush fighters · no markings',
     slow: { timeout: 2.5, default: 'fight' },
     arrive: { text: 'Ambush · three hulls decloak', spawn: [{ variant: 'whisper', n: 3, from: 'around' }] },
     choices: [
-      { id: 'surrender', label: 'Surrender half the Cyrite', tone: 'pay', hint: 'They take it and vanish. You may not make the jump.', cost: { cyrite: 'half' }, win: { text: 'Cyrite surrendered · they cloak and go', dismiss: true } },
+      { id: 'surrender', label: 'Surrender half the Cyrite', tone: 'pay', hint: 'They take it and vanish.', cost: { cyrite: 'half' }, win: { text: 'Cyrite surrendered · they cloak and go', dismiss: true } },
       { id: 'fight', label: 'Fight', tone: 'fight', hint: 'Three fighters that hit from cloak.', win: { text: 'Weapons hot' } },
       {
         id: 'plate', label: 'Take it on the plate', tone: 'fight', hint: 'Soak it and burn away.', needs: { fitted: 'md_plate' },
@@ -560,7 +559,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'rumour_prefect', kind: 'rumour', caller: 'miners', when: { kind: 'home', after: 95 },
     from: 'Ore buyer’s chatter', title: 'A Prefect came through',
-    text: '“A Prefect came to the moon this morning. Office of Peace. Asked for you by name. Calloway.”',
+    text: '“A Prefect came to the moon this morning. Offices of Peace. Asked for you by name. Calloway.”',
     cargo: 'Gossip, frightened',
     choices: [
       { id: 'ask', label: 'Ask what she asked', tone: 'trade', hint: 'One Cyrite loosens a tongue.', cost: { chits: 5 }, win: { text: 'She asked where your family lives', flag: 'calloway_known' } },
@@ -583,7 +582,7 @@ export const CARDS: CardDef[] = [
       { if: { wise: ['run', 2] }, text: 'An interdictor flies with her. She has watched you run too often.' },
       { if: { hunch: 'straight' }, text: '“You never turn aside. So I stopped following and started waiting.”' },
     ],
-    ships: [{ variant: 'lancer', n: 1 }, { variant: 'enforcer', n: 2 }], cargo: 'Office of Peace cutter · full magazines · a Prefect aboard',
+    ships: [{ variant: 'lancer', n: 1 }, { variant: 'enforcer', n: 2 }], cargo: 'Offices of Peace cutter · full magazines · a Prefect aboard',
     truths: [
       { id: 'patient', weight: 2, read: 'Her wing holds back · she wants you alive' },
       { id: 'tired', weight: 1, read: 'Her drive is running hot · she has pushed hard to get here', boost: { if: { flag: 'calloway_beaten' }, mult: 2 } },
@@ -619,7 +618,7 @@ export const CARDS: CardDef[] = [
   },
   {
     id: 'calloway_word', kind: 'warning', caller: 'calloway', when: { after: 40, hunted: 1 }, weight: 2, repeat: true, face: CALLOWAY_FACE,
-    from: 'Prefect Idris Calloway · Office of Peace', title: 'One system behind',
+    from: 'Prefect Idris Calloway · Offices of Peace', title: 'One system behind',
     text: '“I’m one lane behind you, Juno. Every system you stop in, I stop in.”',
     lines: [
       { if: { flag: 'calloway_told' }, text: '“I keep thinking about what you told me. It doesn’t change my job.”' },
@@ -735,12 +734,12 @@ export const CARDS: CardDef[] = [
   },
   // the Scatter's own (sim/scatter.ts): who is in the system decides
   {
-    id: 'thren_smell', kind: 'warning', caller: 'unknown', when: { after: 25, here: 'thren', cyrite: 8 }, weight: 2.5, repeat: true,
-    from: 'Your own sensors', title: 'The Thren smell Cyrite',
-    text: 'Something is closing on the Cyrite in your tank.',
-    ships: [{ variant: 'mote', n: 4 }], cargo: 'A Thren swarm · drawn to Cyrite',
+    id: 'thren_smell', kind: 'warning', caller: 'unknown', when: { after: 25, here: 'thren', fuel: 8 }, weight: 2.5, repeat: true,
+    from: 'Your own sensors', title: 'The Thren smell jump fluid',
+    text: 'Something is closing on the jump fluid in your tank.',
+    ships: [{ variant: 'mote', n: 4 }], cargo: 'A Thren swarm · drawn to jump fluid',
     choices: [
-      { id: 'vent', label: 'Vent five Cyrite', tone: 'pay', hint: 'They take it and leave you be a while.', cost: { cyrite: 5 }, win: { text: 'The swarm feeds on the Cyrite and drifts off', calm: 90 } },
+      { id: 'vent', label: 'Vent five jump fluid', tone: 'pay', hint: 'They take it and leave you be a while.', cost: { fuel: 5 }, win: { text: 'The swarm feeds on the fluid and drifts off', calm: 90 } },
       { id: 'fight', label: 'Meet them', tone: 'fight', hint: 'They come now.', win: { text: 'The swarm comes', spawn: [{ variant: 'mote', n: 4, from: 'ahead' }] } },
       { id: 'run', label: 'Burn for the lane', tone: 'run', hint: 'They will follow.', win: { text: 'The Thren follow your wake' } },
     ],
@@ -790,7 +789,7 @@ export const CARDS: CardDef[] = [
     cargo: 'A Guild flight office', fee: { base: 25 },
     truths: [
       { id: 'honest', weight: 3, read: 'Guild-licensed · files a hundred plans a day' },
-      { id: 'informer', weight: 1, read: 'The clerk’s other line is to the Office of Peace' },
+      { id: 'informer', weight: 1, read: 'The clerk’s other line is to the Offices of Peace' },
     ],
     choices: [
       { id: 'pay', label: 'File the false plan', tone: 'pay', hint: 'A day and a half, if the clerk is honest.', cost: { chits: 'fee' }, loseIf: ['informer'], odds: { base: 0.95, learn: 'plan' }, win: { text: 'Plan filed · a false trail', hunt: 1.5, standing: { guild: 1 } }, lose: { text: 'The plan is filed, and your real heading with it', hunt: -0.5, heat: 0.1 } },

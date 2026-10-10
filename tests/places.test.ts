@@ -127,9 +127,10 @@ describe('a place in a sortie', () => {
   it('can leave a favour owed', () => {
     const j = atPlace('favour', 'distress');
     plot(j, options(j)[0]!.to.id);
-    const had = j.carry.cyrite;
+    const had = j.carry.cyrite + j.carry.fuel;
     endSortie(j, result(j, { place: true }));
-    expect(j.carry.cyrite).toBe(had + cy(PLACE_CHITS));
+    // found Cyrite goes to the tank first
+    expect(j.carry.cyrite + j.carry.fuel).toBe(had + cy(PLACE_CHITS));
   });
 });
 

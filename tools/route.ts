@@ -21,7 +21,7 @@ export function planRoute(j: Journey, c = j.carry): string {
     if (o.netted) v -= 35;
     if (o.shadow) v -= 30;
     if (c.supplies < 2 * RATION * 2 && s.port) v += 25;
-    if (c.cyrite < 15) v += cyriteKnown(j.chart, s) * 30;
+    if (c.fuel < 15) v += cyriteKnown(j.chart, s) * 30;
     if (s.port && c.plates < 3) v += 10;
     if (v > bestV) { bestV = v; best = s.id; }
   }

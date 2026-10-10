@@ -7,7 +7,7 @@ import { SYSTEMS } from '../content/systems';
 import { DEFAULT_SURVIVAL, survivalOf, type SurvivalId } from '../content/survival';
 import type { RegionSet } from '../content/regions';
 import { weightFuel } from './budgets';
-import { cy } from './purse';
+import { cy, refine } from './purse';
 import { SUPPLIES_MAX, SUPPLIES_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, HOLD_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
   arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
@@ -86,7 +86,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 14;
+export const VERSION = 15;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -100,9 +100,11 @@ export interface Leg {
   system: string;
   name: string;
   day: number;
-  /** Cyrite aboard arriving, and leaving (after the jump). */
+  /** Cyrite (the purse) aboard arriving, and leaving (after the jump); and the same for the drive tank's jump fluid (absent in a leg saved before the tank). */
   cyriteIn: number;
   cyriteOut: number;
+  fuelIn?: number;
+  fuelOut?: number;
   time: number;
   ended: 'jumped' | 'destroyed';
   cards: number;
@@ -156,7 +158,7 @@ const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 export function startCarry(survival: SurvivalId = DEFAULT_SURVIVAL): Carry {
   const K = survivalOf(survival).voyage.start;
   return {
-    cyrite: K.cyrite, supplies: K.supplies, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], hush: HUSH,
+    cyrite: 0, fuel: K.cyrite, supplies: K.supplies, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], hush: HUSH,
   };
 }
 
@@ -291,7 +293,7 @@ function pass(j: Journey, days: number, heard: string[] = []): string[] {
   const fell = spreadNet(j.chart, days * survivalOf(j.survival).voyage.net, rng(j));
   // the Thren follow the Cyrite: in a lane, to where it is going (the Wayward is already set down there)
   const at = j.at;
-  for (const n of stepScatter(j.chart, days, rng(j), { at, cyrite: j.carry.cyrite, tank: TANK_MAX })) {
+  for (const n of stepScatter(j.chart, days, rng(j), { at, cyrite: j.carry.fuel, tank: JUMP_COST })) {
     if (jumps(j.chart, at, n.id) > SIGHT) continue;
     note(j, n.text);
     heard.push(n.text);
@@ -307,6 +309,13 @@ function sight(j: Journey, sure: boolean): void {
   }
 }
 
+/** Cyrite found between systems, into the carry: the tank first, the rest to the purse (the refinery, as in flight). */
+function bank(c: Carry, n: number): void {
+  const r = refine(c.fuel, c.cyrite, JUMP_COST, n);
+  c.fuel = r.fuel;
+  c.cyrite = Math.min(HOLD_MAX, r.purse);
+}
+
 /**
  * The place in `s` was dealt with: mark it and pay it, into the carry `c`.
  * A new lane opens from `from` (where the Wayward goes next, so it can be
@@ -320,18 +329,18 @@ function claim(j: Journey, s: StarSystem, c: Carry, from: string): string[] {
   const head = d.reward === 'unknown' ? `${t(d.name)} · ${t(d.done)}: ${t(REWARD_WORD[p.reward])}` : `${t(d.name)} · ${t(d.done)}`;
   const lines = [head];
   switch (p.reward) {
-    case 'cyrite': c.cyrite = Math.min(HOLD_MAX, c.cyrite + PLACE_CYRITE); lines.push(`+${PLACE_CYRITE} Cyrite`); break;
-    case 'parts': c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); c.cyrite += cy(PLACE_KRAIL); lines.push(t('+{n} supplies · +{k} Cyrite', { n: PLACE_PARTS, k: cy(PLACE_KRAIL) })); break;
+    case 'cyrite': bank(c, PLACE_CYRITE); lines.push(`+${PLACE_CYRITE} Cyrite`); break;
+    case 'parts': c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); bank(c, cy(PLACE_KRAIL)); lines.push(t('+{n} supplies · +{k} Cyrite', { n: PLACE_PARTS, k: cy(PLACE_KRAIL) })); break;
     case 'cover': j.hunt.delay += PLACE_COVER; lines.push(t('Calloway loses your trail for a while')); break;
     case 'shortcut': {
       const to = openShortcut(j.chart, from);
       lines.push(to ? t('New lane: {a} to {b}', { a: sysById(j.chart, from).name, b: to.name }) : t('The lane it showed leads nowhere new'));
       break;
     }
-    case 'favour': c.cyrite += cy(PLACE_CHITS); lines.push(t('+{n} Cyrite · favours owed', { n: cy(PLACE_CHITS) })); break;
+    case 'favour': bank(c, cy(PLACE_CHITS)); lines.push(t('+{n} Cyrite · favours owed', { n: cy(PLACE_CHITS) })); break;
     case 'info': hearNews(j); sightPlaces(j.chart, s.id, 3); lines.push(t('The Net’s edge, and the places three jumps round')); break;
     case 'danger':
-      c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); c.cyrite += cy(PLACE_KRAIL * 2);
+      c.supplies = Math.min(SUPPLIES_MAX, c.supplies + PLACE_PARTS); bank(c, cy(PLACE_KRAIL * 2));
       huntOn(j.hunt, j.chart, j.trail, DANGER_DAYS);
       lines.push(t('+{n} supplies · +{k} Cyrite', { n: PLACE_PARTS, k: cy(PLACE_KRAIL * 2) }), t('Word gets out · Calloway gains a day'));
       break;
@@ -375,7 +384,7 @@ function captureRoll(j: Journey, s: StarSystem): boolean {
 export function endSortie(j: Journey, res: SortieResult): Outcome {
   const lines: string[] = [];
   const s = here(j);
-  const cyriteIn = j.carry.cyrite;
+  const cyriteIn = j.carry.cyrite, fuelIn = j.carry.fuel;
   j.score += res.run.score;
   // the sortie's own consequences: a held-up hunter, a system that will hold out
   if (res.huntDelay > 0) j.hunt.delay += res.huntDelay;
@@ -409,7 +418,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   lines.push(...heard);
   const fell = pass(j, res.time / DAY, lines);
   const leg: Leg = {
-    system: s.id, name: s.name, day: Math.round(j.day * 10) / 10, cyriteIn, cyriteOut: res.carry.cyrite, time: Math.round(res.time), ended: res.ended,
+    system: s.id, name: s.name, day: Math.round(j.day * 10) / 10, cyriteIn, cyriteOut: res.carry.cyrite, fuelIn, fuelOut: res.carry.fuel, time: Math.round(res.time), ended: res.ended,
     cards: res.run.cards.length, kills: res.run.kills, calloway: res.calloway, score: res.run.score,
   };
   j.legs.push(leg);
@@ -429,11 +438,11 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     }
     // adrift: a Drift tug tows her to another system of the region. The fee is some of everything you carry.
     const c = res.carry;
-    j.carry = { ...c, supplies: Math.max(3, Math.floor(c.supplies * V.kept)), cyrite: Math.floor(c.cyrite * V.kept), plates: 2 };
+    j.carry = { ...c, supplies: Math.max(3, Math.floor(c.supplies * V.kept)), cyrite: Math.floor(c.cyrite * V.kept), fuel: Math.floor(c.fuel * V.kept), plates: 2 };
     pass(j, ADRIFT);
     const to = driftTo(j, s);
     note(j, t('Wrecked in {name} · towed to {to}', { name: s.name, to: to.name }));
-    lines.push(t('A Drift tug found the wreck and towed her to {to}.', { to: to.name }), t(V.kept > 0.5 ? 'The fee: a quarter of your Cyrite, supplies and Cyrite.' : 'The fee: half your Cyrite, supplies and Cyrite.'), t('Wrecks left in this region · {n}', { n: V.wrecks - j.lost }));
+    lines.push(t('A Drift tug found the wreck and towed her to {to}.', { to: to.name }), t(V.kept > 0.5 ? 'The fee: a quarter of your Cyrite, jump fluid and supplies.' : 'The fee: half your Cyrite, jump fluid and supplies.'), t('Wrecks left in this region · {n}', { n: V.wrecks - j.lost }));
     j.status = 'sortie';
     return { kind: 'adrift', lines };
   }
@@ -462,6 +471,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     lines.push(t('Your news: the Net’s edge and the Prefect’s last port'));
   } else sight(j, false);
   leg.cyriteOut = c.cyrite;
+  leg.fuelOut = c.fuel;
   const there = sysById(j.chart, to);
   note(j, t('Jumped to {name}', { name: there.name }));
   for (const id of fell) if (j.chart.seenNet.includes(id)) lines.push(t('The Net has taken {name}', { name: sysById(j.chart, id).name }));
@@ -526,9 +536,9 @@ export function bankAnswer(j: Journey, before: Carry, after: Carry): void {
 }
 
 /** The stocks and the day, taken at the start of a sortie, to show what it changed. */
-export interface Tally { cyrite: number; plates: number; supplies: number; day: number }
+export interface Tally { cyrite: number; fuel: number; plates: number; supplies: number; day: number }
 export const tally = (j: Journey): Tally => ({
-  cyrite: j.carry.cyrite, plates: j.carry.plates, supplies: j.carry.supplies, day: j.day,
+  cyrite: j.carry.cyrite, fuel: j.carry.fuel, plates: j.carry.plates, supplies: j.carry.supplies, day: j.day,
 });
 
 /** One change for the debrief strip: what moved, and by how much (days are tenths). */
@@ -537,7 +547,7 @@ export interface Chip { key: keyof Tally; d: number }
 /** What a sortie changed, for the chart's strip: each stock that moved, then the days. Nothing that stayed the same. */
 export function debrief(was: Tally, j: Journey): Chip[] {
   const now = tally(j), out: Chip[] = [];
-  for (const key of ['cyrite', 'plates', 'supplies'] as const) {
+  for (const key of ['fuel', 'cyrite', 'plates', 'supplies'] as const) {
     const d = Math.round(now[key] - was[key]);
     if (d) out.push({ key, d });
   }

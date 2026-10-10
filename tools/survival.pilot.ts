@@ -59,7 +59,7 @@ function journey(seed: number, mode: SurvivalId): JourneyFlown {
   const out: JourneyFlown = { j, stuck: false, seconds: 0, combat: 0, contacts: 0, calm: [], rock: NO_LOOT(), wreck: NO_LOOT(), hungry: 0, tank: [] };
   let n = 0;
   while (j.status !== 'over' && n < MAX_LEGS) {
-    if (j.status === 'chart') { plot(j, planRoute(j)); out.tank.push(j.carry.cyrite); }
+    if (j.status === 'chart') { plot(j, planRoute(j)); out.tank.push(j.carry.fuel); }
     const def = sortieDef(j);
     const w = new World(seed * 31 + n * 7 + 1, { mode: 'breakout', sortie: def, carry: j.carry });
     const onDock = (w: World) => {

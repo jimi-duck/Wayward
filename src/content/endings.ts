@@ -82,7 +82,7 @@ export const ENDINGS: EndingDef[] = [
       { if: { flags: ['copy_warden'] }, text: 'Ilse Marrow reads the order aloud on the Narrows relay, where she first heard it.' },
       { if: { flags: ['voice_read'] }, text: 'The Voice carries it into every terminal that still listens.' },
       { if: { flags: ['calloway_told'] }, text: 'Idris Calloway quits on an open channel. She reads the file aloud first.' },
-      { if: { calm: ['office'] }, text: 'The Office of Peace calls it a forgery, then stops calling it anything.' },
+      { if: { calm: ['office'] }, text: 'The Offices of Peace call it a forgery, then stop calling it anything.' },
       { text: 'The lanes stay dark. But now everyone knows who turned them off.' },
     ],
   },
@@ -118,9 +118,9 @@ export const ENDINGS: EndingDef[] = [
   },
   {
     id: 'trade', name: 'Trade', pitch: 'Give it back for amnesty, a new name, maybe a way home.',
-    needs: 'Needs: Calloway told the truth, Draper given time, or Custody standing. And the Office not hunting you.',
+    needs: 'Needs: Calloway told the truth, Draper given time, or Custody standing. And the Offices not hunting you.',
     ways: [{ flags: ['calloway_told', 'stalled'], calm: ['office'] }, { standing: { custody: 1 }, calm: ['office'] }],
-    file: 'SEVERANCE · a receipt stamped by the Office of Peace',
+    file: 'SEVERANCE · a receipt stamped by the Offices of Peace',
     epilogue: [
       { text: 'Calloway meets you at the Threshold with a pardon already signed. She does not look at the file.' },
       { if: { flags: ['stalled'] }, text: 'Foreman Draper writes that you were coerced, as he said he would. It is almost true.' },

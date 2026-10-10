@@ -9,8 +9,8 @@
 
 export const UI: Record<string, string> = {
   // ── the start card ──
-  '<li>Mine <b class="v">violet asteroids</b> for Cyrite (torpedoes yield half)</li><li>Refuel</li><li>Jump from the <b class="a">lane entrance</b></li>':
-    '<li>Baue <b class="v">violette Asteroiden</b> für Cyrite ab (Torpedos bringen die Hälfte)</li><li>Tanke auf</li><li>Spring am <b class="a">Sprungpunkt</b></li>',
+  '<li>Mine <b class="v">violet asteroids</b> for Cyrite (torpedoes yield half)</li><li>Fill the tank with <b class="v">jump fluid</b></li><li>Jump from the <b class="a">lane entrance</b></li>':
+    '<li>Baue <b class="v">violette Asteroiden</b> für Cyrite ab (Torpedos bringen die Hälfte)</li><li>Füll den Tank mit <b class="v">Sprungfluid</b></li><li>Spring am <b class="a">Sprungpunkt</b></li>',
   'Obedience-class ore hauler': 'Erzfrachter der Obedience-Klasse',
   'Wayward, Obedience-class ore hauler': 'Wayward, Erzfrachter der Obedience-Klasse',
   'Game mode': 'Spielmodus',

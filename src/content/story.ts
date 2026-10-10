@@ -120,7 +120,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'Cerro yard · one open bay',
     choices: [
       { id: 'codes', label: 'Take the codes', tone: 'pay', hint: 'A clean ID at the lane, if it passes the scan. Costs four supplies.', cost: { supplies: 4 }, win: { text: 'Forged codes loaded', flag: 'codes' } },
-      { id: 'fuel', label: 'Fill the tank', tone: 'help', hint: 'Enough Cyrite for the first jump. The yard logs it.', win: { text: 'Tank topped up · the yard logs it', cyrite: 14, heat: 0.06 } },
+      { id: 'fuel', label: 'Fill the tank', tone: 'help', hint: 'Enough jump fluid for the first jump. The yard logs it.', win: { text: 'Tank topped up · the yard logs it', fuel: 14, heat: 0.06 } },
       { id: 'wave', label: 'Wave him off', tone: 'refuse', hint: 'Keep your supplies and your record.', win: { text: 'Okoro closes the channel' } },
     ],
   }),
@@ -301,7 +301,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She delays the Prefect two days. She also knows your plan.', win: { text: 'Hale holds the Prefect back, and keeps your answer', hunt: 2, heat: 0.1 } },
       { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A day, if she believes it.', odds: { base: 0.5 }, win: { text: 'She believes you · a day gained', hunt: 1 }, lose: { text: 'She sees through it, and marks you' } },
-      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust no one from the Office.', win: { text: 'The cutter turns away' } },
+      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust no one from the Offices.', win: { text: 'The cutter turns away' } },
     ],
   }),
   story({
@@ -310,8 +310,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“Every lane ends here. The toll is what you carry, or what you are.”',
     cargo: 'A toll platform · one lit window',
     choices: [
-      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Six Cyrite. He tops up the tank.', cost: { chits: 30 }, win: { text: 'Toll paid · the tank is topped up', cyrite: 10 } },
-      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · the tank is topped up', cyrite: 10, heat: 0.05 }, lose: { text: 'He bars the window' } },
+      { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Six Cyrite. He tops up the tank.', cost: { chits: 30 }, win: { text: 'Toll paid · the tank is topped up', fuel: 10 } },
+      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · the tank is topped up', fuel: 10, heat: 0.05 }, lose: { text: 'He bars the window' } },
       { id: 'run', label: 'Run the gate', tone: 'fight', hint: 'The platform’s guns wake.', win: { text: 'The platform opens fire', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }] } },
     ],
   }),

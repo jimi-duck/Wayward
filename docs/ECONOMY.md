@@ -1,29 +1,76 @@
 # The Story economy
 
-One purse, one stock, two ways the ship can be in trouble. Written after the
-user's note that food, scrap parts and ore felt loose, and that money had no
-point if it did not build the ship.
+Two things to find a use for, one thing to find. Written after the user's
+notes that food, scrap parts and ore felt loose, that money had no point if it
+did not build the ship, and then that fuel and upgrade money being the same
+stock meant holding some back to jump even when you had already collected
+enough.
+
+## The model in four lines
+
+1. You find **Cyrite**: mined rock, wrecks, jobs, favours.
+2. The ship's refinery cooks it into **jump fluid** first, until the drive
+   tank is full. Nothing to decide, nothing to hold back.
+3. What the tank cannot take stays **Cyrite**, your money: upgrades at a work
+   bay, supplies, plates, favours.
+4. A jump burns the lane's worth of jump fluid, and only that. Upgrades never
+   touch the tank.
+
+So there is one number to watch to leave (fluid against the lane's cost) and
+one to spend (Cyrite). The story reason: Krail runs humanity, but a drive
+needs Cyrite cooked down, and the Wayward is an ore hauler with a good
+refinery. She cooks as she collects.
 
 ## What is aboard
 
 | Thing | What it is | Where it comes from | Where it goes |
 |---|---|---|---|
-| **Cyrite** | The one currency, in both modes: fuel, building material and money. | Violet crystals from mined rock, scrap and wrecks, jobs, favours, places. | The jump (one lane's worth), the bay (price and yard fee together), and the ports: supplies and plates. |
+| **Jump fluid** | The drive tank: exactly the plotted lane's jump, no more (replot to a dearer lane and it asks for a little more). | The refinery, from every Cyrite you pick up or are paid, until the tank is full. Ports sell a top-up. | The jump (one lane's worth, plus a heavy ship's surcharge). Cards can ask for it (a Thren swarm takes five). |
+| **Cyrite** | The purse, in both modes. | What the tank cannot take: rock, scrap, wrecks, jobs, favours, places. | The bay (price and yard fee together), the ports (supplies, plates, fluid), card costs. |
 | **Supplies** | The galley and the spares in one stock (max 16, racks add 4 a mark). | Crates on wrecks and capital ships, cards, places, ports. | A lane's days (1 a day), the drive's wear (2 a jump), a plate patch (3). |
+
+Arcade: there is no jump, so no fluid. Cyrite is the one stock and the bay
+spends it, as before.
 
 Chits and Krail are retired as things the player sees. The content rows (card
 costs, fees, tier prices, yard fees) are still written in chits, the old
 unit, and the engine converts where a row meets the hold: five chits to a
 Cyrite (`sim/purse.ts`, `cy()`), never rounding a small amount to nothing. So
 the tuning of those rows stands and only one number sets the exchange.
-The hold has no cap of its own worth knowing (999); the HUD shows it against
-the jump's cost, so the question is always "do I have the jump, and what is
-over".
 
 Scrap and crystals fall as Cyrite, a fifth of a chit's worth each, the odd
 part by chance. They drop as bold violet crystals (1, 3 or 5 each) that fly
-well clear of the rock, so a mined rock leaves something to fly through. In
-the Arcade Cyrite is the same stock, counted one for one.
+well clear of the rock, so a mined rock leaves something to fly through.
+
+### The refinery (`refine` in `sim/purse.ts`)
+
+Every positive Cyrite that comes aboard in the Story goes through it: pickups
+(`World.collect`), a card that pays (`applyOutcome`), a place's reward
+(`bank` in `sim/journey.ts`). The tank takes what it has room for, the purse
+the rest. A loss (a toll, a bribe, a surrender) comes out of the purse only.
+A card that gives or takes fluid says so (`fuel` on an outcome or a cost) and
+the chip reads "jump fluid".
+
+The cost of this is that a ship on an empty tank has an empty purse: the
+first lane's worth of Cyrite you mine goes to the tank, not the bay. That is
+the same Cyrite the old stock needed to leave, so reaching the lane takes
+what it always took; what is new is that the purse is only ever spare.
+
+### The port
+
+- **Top up.** Fluid is a rescue, not an economy: about two Cyrite a unit
+  (`FLUID_PRICE` 0.4 of the board's Cyrite price, so three under the Net).
+  The Sensible stop fills the tank to the jump first, then buys supplies and
+  plates from the purse. "By hand" has a "Buy jump fluid" row.
+- The stock row reads `Jump fluid 9/20 · Cyrite 31 · Supplies · Hull`.
+
+### On screen
+
+- Status panel: `Fluid 9/20` (a bar that turns ready at the jump's cost) and
+  `Cyrite 31`. The objective says "Fill the tank" with the same count until
+  the tank holds the jump, then "Head for the lane entrance".
+- The chart's stock strip: `Jump fluid` and `Cyrite`, each with a tooltip.
+  Lane costs on the chart and the chart's list are fluid.
 
 ## The work bay
 
@@ -32,9 +79,8 @@ install, not just the yard's modules (the Arcade keeps its own picks in
 flight). In flight, B says "Upgrades: dock at a work bay" and the bay badge
 is gone.
 
-- **No buying or selling Cyrite.** There is one stock, so nothing to swap. The
-  Sensible stop buys supplies, then plates, from what is over the jump's
-  Cyrite, and never spends the jump.
+- **Upgrades come from the purse only.** The tank is never in the sum, so
+  there is nothing to hold back for the jump.
 - **More of them, close by.** Mining systems have a bay 70% of the time,
   contested 75%, gates always. The bay sits 1,000 along the lane, 200 off
   it, with a 150 call range, so it is a short detour on the way to the lane
@@ -64,32 +110,22 @@ supplies there, weight and heat in the bay.
 
 ## Saves
 
-Journey version 14. `meta/save.ts` adds the chits aboard to the Cyrite, five
-to one (`oneCurrency`), after the older steps (Krail and ore into chits,
-food and parts into supplies). The fixture is
-`tests/fixtures/journey-v14.json`; older ones stay and migrate.
+Journey version 15. `meta/save.ts` splits an older save's Cyrite into the new
+tank and purse: the tank takes up to 40 (what it always was, the jump's
+fuel), the purse the rest (`driveTank`). Nothing is lost. The fixture is
+`tests/fixtures/journey-v15.json`; older ones stay and migrate (14 added the
+chits to the Cyrite, five to one, after the older steps).
 
 ## Numbers
 
-First guesses, read from `npm run pilot:journey` (24 journeys, three regions,
-[BALANCE-JOURNEY.md](BALANCE-JOURNEY.md)):
+From `docs/BALANCE-JOURNEY.md` (three regions, 48 journeys, first guesses):
 
-- The pilot fits upgrades in flight from one purse now, and every journey
-  gets through (21 of 24 before). The ship is stronger earlier because scrap
-  money builds it too. If real play is easier than it should be, the first
-  lever is `SCRAP_PRICE` (2), then the rock's chit multiplier.
-- Supplies were never short for the pilot (about 12 aboard from the second
-  system on), so the empty-stores penalty is covered by tests, not by the
-  pilot. A human who ignores the galley will meet it.
-- The pilot's builds are over the mass rating from the fourth system on (and
-  always by the eighth). The surcharge tops out at 6 Cyrite a jump, about a
-  third of a lane, and a frame module (`hl_frame`, +4 mass a mark) fixes it.
-- With one stock, upgrades and fuel compete: every Cyrite spent in the bay is
-  not in the tank. That is the point, and the first thing to watch on a
-  device. The levers are the rock's Cyrite (`CYRITE` and `ORE` in
-  `sim/breakout.ts`), `SCRAP_PRICE`, and the tier prices in `sim/bay.ts`.
-- Card fees rise 12% a region out (`FEE_REGION`), so late Cyrite still has a use.
-- Pilot (24 journeys): 21 through, 3 captured (was 23 and 1, noise at this size).
-  The hold grows to about 100 by the sixth system and 240 by the tenth, the
-  old chit pile at a fifth. Late Cyrite is plentiful once the web is fitted;
-  missions that pay and cost something are the intended sink.
+- 45 of 48 journeys reach the Threshold (the old single-currency report had
+  21 of 24); the other three were captured. None got stuck for want of fluid.
+- The tank is empty again after almost every jump (0 to 2 units left), so the
+  fluid never piles up. The purse is what grows: about 47 Cyrite after the
+  first system, 75 by the middle and 200 to 300 near the end.
+- Late journeys are rich. That is the point of the split, but the end of the
+  chart may want dearer upgrades or more to spend on. Not tuned yet.
+- Not measured: how the refinery rule feels in play, and whether about 2
+  Cyrite a unit at a port is right.

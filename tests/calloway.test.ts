@@ -30,7 +30,7 @@ const file = (d: Partial<Dossier> = {}): Dossier => ({ ...newDossier(), ...d });
 
 /** A ctx for odds and conditions, with her file's tricks. */
 const ctx = (wise: Ctx['wise'] = {}, hunch: string[] = []): Ctx => ({
-  t: 100, heat: 0, cyrite: 10, need: 20, tank: 40, chits: 50, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
+  t: 100, heat: 0, cyrite: 10, fuel: 10, need: 20, tank: 40, chits: 50, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
   standing: {}, place: 'open', hostiles: 0, supplies: 10, kind: 'transit', netted: false, behind: 1, wise, hunch,
 });
 

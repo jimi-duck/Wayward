@@ -228,7 +228,7 @@ export function stepEncounter(e: Encounter, h: EncounterHost, dt: number): boole
           h.dropItem(h.cell('derelict'), e.x, e.z);
           h.dropCrystals(e.x, e.z, 30);
           h.addScore(1000);
-          // an Office of Peace ambush, decloaking round the hulk
+          // an Offices of Peace ambush, decloaking round the hulk
           for (let i = 0; i < 3; i++) {
             const a = (i / 3) * Math.PI * 2 + rng.range(-0.4, 0.4);
             h.spawnHostile(rng.next() < 0.6 ? 'whisper' : 'scout', { x: e.x + Math.cos(a) * 32, y: rng.range(2, 10), z: e.z + Math.sin(a) * 32 }, null, true);

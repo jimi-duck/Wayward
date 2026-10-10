@@ -29,7 +29,7 @@ const STORY_SHORT: Record<string, string> = {
 };
 const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['supplies', 'supplies']];
 
-const held = (x: Ctx, k: keyof Cost) => ({ chits: x.cyrite, cyrite: x.cyrite, supplies: x.supplies })[k];
+const held = (x: Ctx, k: keyof Cost) => ({ chits: x.cyrite, cyrite: x.cyrite, supplies: x.supplies, fuel: Math.floor(x.fuel) })[k];
 
 /** An amount as a delta, without the comms module (which imports this one). */
 function delta(a: Amount | undefined, have: number, fee: number, chits = false): number {
@@ -56,6 +56,7 @@ export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyo
     const n = delta(o[k], held(x, k), fee) + (k === 'cyrite' ? delta(o.chits, held(x, k), fee, true) : 0);
     if (n) out.push(`${n > 0 ? '+' : '−'}${Math.abs(n)} ${word}`);
   }
+  if (o.fuel) out.push(`${o.fuel > 0 ? '+' : '−'}${Math.abs(o.fuel)} jump fluid`);
   if (o.krail) out.push(`${o.krail > 0 ? '+' : '−'}${Math.abs(cy(o.krail))} Cyrite`);
   if (o.plates) out.push(o.plates > 0 ? `+${o.plates} hull` : `−${-o.plates} hull`);
   if (o.job) out.push('Job');

@@ -1,6 +1,6 @@
 # Game design
 
-> **Currency note.** Cyrite is the one currency (see [ECONOMY.md](ECONOMY.md)). Where this file says chits, Krail or ore money, it describes the earlier economy; content rows are still written in chits and converted to Cyrite (5 to 1) by `cy()` in `src/sim/purse.ts`.
+> **Currency note.** Cyrite is what you find and the money; jump fluid, refined from it first, is what the jump burns (see [ECONOMY.md](ECONOMY.md)). Where this file says chits, Krail or ore money, it describes the earlier economy; content rows are still written in chits and converted to Cyrite (5 to 1) by `cy()` in `src/sim/purse.ts`.
 
 This describes the game as it plays today: the journey (M1 to M3 of
 [PLAN.md](PLAN.md): the Breakout, the comms cards, the chart and the hunt),
@@ -16,11 +16,15 @@ A sortie with a shape: get the stolen hauler out of the home system
   minute flat out); Frontier Supply, the port, is halfway and off the line.
   The HUD carries both as a name and a distance on the place itself, radar
   diamonds, the objective and its quiet lines (see [HUD.md](HUD.md)).
-- **The jump.** Inside the lane mouth with 20 Cyrite in the tank (`JUMP_COST`),
-  the drive spools for five seconds; leave the ring and it winds down. The
-  jump takes the Cyrite and ends the run as an escape.
-- **Cyrite is fuel, and scarce.** Only veined (rich, violet) rock and the
-  rare gold rock carry it, mined clean with the lasers (`rockYield`). The tank starts at 6.
+- **The jump.** Inside the lane mouth with the lane's jump fluid in the tank
+  (`World.fuel`, 20 on the first lane), the drive spools for five seconds;
+  leave the ring and it winds down. The jump burns the fluid and ends the run
+  as an escape.
+- **Cyrite is what rock gives, and the tank comes first.** Only veined (rich, violet) rock and the
+  rare gold rock carry it, mined clean with the lasers (`rockYield`). The
+  ship's refinery sends what is picked up to the drive tank until it is full
+  (`refine`, `sim/purse.ts`), the rest to the purse. The tank starts at 6
+  jump fluid, the purse at 0.
 - **Krail builds the ship**, as in the arcade: pale gold crystals out of
   ordinary rock (`ROCK_KRAIL` of the arcade's: sure when mined, by chance
   when blasted) and the wrecks of what you destroy (`WRECK_KRAIL`), and 40
@@ -40,12 +44,11 @@ A sortie with a shape: get the stolen hauler out of the home system
 - **Ore** fills the hold (40) and sells at the port. **Parts** come from wrecks; six of them patch a plate
   once the ship has gone six seconds unhit. Random repair drops are off.
 - **The port.** Slow inside its ring for a second and the clamps take you
-  (`phase: 'dock'`): sell the hold (2 chits an ore), buy Cyrite (5), patch a
-  plate (30), or open the refit bay, where the yard's work is done. The
+  (`phase: 'dock'`): top up jump fluid (about two Cyrite a unit), buy supplies, patch a
+  plate, or open the refit bay, where the yard's work is done. The
   first dock takes 0.2 off the hunt pressure. The panel leads with one tap,
-  the **sensible stop** (`sim/stop.ts`): sell the hold, then buy what the
-  chits reach, most pressing first (Cyrite for the jump, food up to six, the
-  hull whole, Cyrite for a second jump). Its row shows what it will do as
+  the **sensible stop** (`sim/stop.ts`): from the purse, the tank up to the
+  jump first, then supplies up to ten, then the hull whole. Its row shows what it will do as
   chips; the one-at-a-time rows sit under "By hand".
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
   more) and mining noise. It decides how often pursuers come, how

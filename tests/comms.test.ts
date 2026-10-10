@@ -15,7 +15,7 @@ const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, t
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, chits: 0, plates: 3, maxPlates: 3,
+  t: 300, heat: 0.3, cyrite: 10, fuel: 10, need: 20, tank: 40, chits: 0, plates: 3, maxPlates: 3,
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, supplies: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 
@@ -70,8 +70,12 @@ describe('the cards', () => {
 
 describe('the comms engine', () => {
   it('reads conditions off the ship', () => {
-    expect(condOk({ short: true }, ctx({ cyrite: 10 }))).toBe(true);
-    expect(condOk({ short: true }, ctx({ cyrite: 25 }))).toBe(false);
+    expect(condOk({ short: true }, ctx({ fuel: 10 }))).toBe(true);
+    expect(condOk({ short: true }, ctx({ fuel: 25 }))).toBe(false);
+    // the purse does not stand in for the tank
+    expect(condOk({ short: true }, ctx({ fuel: 10, cyrite: 99 }))).toBe(true);
+    expect(condOk({ fuel: 8 }, ctx({ fuel: 10 }))).toBe(true);
+    expect(condOk({ fuel: 8 }, ctx({ fuel: 7 }))).toBe(false);
     expect(condOk({ hungry: 5 }, ctx({ supplies: 3 }))).toBe(true);
     expect(condOk({ flag: 'codes' }, ctx())).toBe(false);
     expect(condOk({ noFlag: 'codes', heatMax: 0.5 }, ctx())).toBe(true);
@@ -223,11 +227,12 @@ describe('comms in the Breakout', () => {
     expect(w.jobs.length).toBe(1);
     const b = w.bk!;
     w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
-    const had = w.cyrite;
+    const had = w.cyrite + w.fuel;
     run(w, 1.5);
     expect(w.phase).toBe('dock');
     expect(w.jobs.length).toBe(0);
-    expect(w.cyrite - had).toBe(cy(60));
+    // pay is Cyrite like any other: the tank takes it first
+    expect(w.cyrite + w.fuel - had).toBe(cy(60));
     expect(w.run.jobsDone).toBe(1);
     // a job that wants supplies waits until they are aboard
     w.undock();
@@ -244,9 +249,12 @@ describe('comms in the Breakout', () => {
   it('calls in a favour later', () => {
     const w = quiet();
     w.cyrite = 5;
+    w.fuel = 5;
     w.openComms(CARD_BY_ID.fuel_runner!);
     w.answer('favour');
-    expect(w.cyrite).toBe(11);
+    // six more, refined into the tank
+    expect(w.fuel).toBe(11);
+    expect(w.cyrite).toBe(5);
     expect(w.flags.has('owes_runner')).toBe(true);
     run(w, 59);
     expect(w.call).toBeNull();
@@ -278,7 +286,7 @@ describe('comms in the Breakout', () => {
     const b = w.bk!;
     b.blockade = 'done';
     w.ship.x = b.lane.x; w.ship.z = b.lane.z;
-    w.cyrite = 25;
+    w.fuel = 25;
     run(w, 8);
     expect(w.run.escaped).toBe(true);
     expect(w.run.jobsDone).toBe(1);

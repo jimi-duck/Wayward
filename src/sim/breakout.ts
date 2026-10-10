@@ -1,3 +1,4 @@
+import { TANK_MAX } from './purse';
 import { clamp, lerp } from '../core/math';
 import { BASE_PRICES, type Prices, type SystemKind } from '../content/systems';
 import type { Levels } from './build';
@@ -17,13 +18,13 @@ import type { Rng } from './rng';
 // sortie has a shape instead of an endless clock:
 //
 //   the lane mouth · far across the system, the old jump lane out. Reach it
-//                    with enough Cyrite in the tank, hold inside it while the
+//                    with enough jump fluid in the tank, hold inside it while the
 //                    drive spools, and you are gone. A Custody capital ship
 //                    blockades it, and her checkpoint is a comms card: run
 //                    it, spoof it, pay it, talk through it, or fight her.
 //   the port       · a work bay off the direct line, a little under halfway,
-//                    that does not check implants. Dock to sell spare Cyrite,
-//                    buy supplies and Cyrite (dear when you are short), patch
+//                    that does not check implants. Dock to top up the tank,
+//                    buy supplies (dear when you are short), patch
 //                    the hull and fit upgrades: the refit bay only opens here. Docking quiets the
 //                    pursuit a little, once.
 //   heat           · how hard the Custody is looking for you, 0 to 1. It
@@ -32,8 +33,9 @@ import type { Rng } from './rng';
 //                    and which: pickets first, then cruisers, enforcers and
 //                    interdictors. They come from behind, from home.
 //
-// Cyrite is the fuel, and scarce: it comes from violet-veined rock cut clean,
-// from the port and from a capital ship's wreck.
+// Jump fluid is the fuel, and scarce: the ship's refinery cooks it from the
+// Cyrite that violet-veined rock and wrecks give, filling the tank first; what
+// the tank cannot take stays Cyrite, the money. The port sells a top-up.
 // Krail is what the refit bay builds from, as in the arcade: crystals out of
 // ordinary rock and the wrecks of what you destroy. Ore is what the cutter
 // takes out of ordinary rock: it fills the hold and sells at the port. Parts are salvage
@@ -63,13 +65,13 @@ export const SAFE_R = 40;
 /** How far outside the safe ring a hostile hull holds, and how fast (of its cruise) it circles there. */
 export const SAFE_HOLD = 8;
 
-/** Cyrite it takes to jump, and what the tank holds at the start. */
+/** Jump fluid it takes to jump, and what the tank holds at the start. */
 export const JUMP_COST = 20;
 export const START_CYRITE = 6;
 /** Cyrite the ship can hold, as a ceiling for sums; money does not run to the top of a tank. */
 export const HOLD_MAX = 999;
-/** The scale of a good store of Cyrite: what the Thren swarms read it against. */
-export const TANK_MAX = 40;
+/** The drive tank (sim/purse.ts): a lane and a half. The Thren swarms read the tank against it. */
+export { TANK_MAX };
 /** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
 export const SPOOL_RUN = 2.2;
@@ -137,7 +139,7 @@ export interface SortieDef {
   sky?: number;
   name: string;
   kind: SystemKind;
-  /** Where the plotted lane goes, and the Cyrite it takes to jump. */
+  /** Where the plotted lane goes, and the jump fluid it takes to jump. */
   dest: string;
   jumpCost: number;
   /** Distance to the lane mouth. */
@@ -154,7 +156,7 @@ export interface SortieDef {
   gutter: number;
   /** Who comes from ahead, as variant ids, where it is not the Gutter (a Voice system, Thren space). */
   ahead?: string[];
-  /** Thren in the system, 0 to 1: they swarm, drawn by the Cyrite aboard (sim/world.ts). */
+  /** Thren in the system, 0 to 1: they swarm, drawn by the fluid aboard (sim/world.ts). */
   thren?: number;
   /** Who else is here, for the cards (sim/scatter.ts presence): 'drift', 'holdfast', 'raid', 'voice', 'thren'. */
   here?: string[];
@@ -191,8 +193,10 @@ export const HOME: SortieDef = {
 
 /** What the Wayward carries from one sortie into the next. */
 export interface Carry {
-  /** Cyrite aboard: the jump's fuel, the bay's money, the ports' price, in one stock. */
+  /** Cyrite aboard: the purse. It pays the bay, the ports and the favours; the jump does not touch it. */
   cyrite: number;
+  /** Jump fluid in the drive tank: mining and wrecks fill it first, a jump burns it. Never more than the tank holds. */
+  fuel: number;
   /** Supplies aboard: the galley and the spares in one. A lane's days and the drive's wear draw on it, and so does patching a plate. */
   supplies: number;
   /** Plates whole (never more than the build allows). */
@@ -266,14 +270,14 @@ export function pickPursuer(heat: number, rng: Rng, gutter = 0.22, ahead: readon
 
 // ── the Thren ─────────────────────────────────────────────────────────────
 // Where the chart has Thren (sim/scatter.ts), they swarm: a knot of motes,
-// with a web layer once they are thick, drawn by the Cyrite aboard. The
+// with a web layer once they are thick, drawn by the fluid aboard. The
 // fuller the tank, the sooner and the oftener they come. Near them,
 // sensors and navigation go strange: the scope fills with static and the
 // lane mouth will not hold still (World.navNoise).
 
-/** Seconds to the first swarm, and between swarms, with an empty tank in thin Thren and a full one in thick; Cyrite aboard divides it. */
+/** Seconds to the first swarm, and between swarms, with an empty tank in thin Thren and a full one in thick; the fluid aboard divides it. */
 export const SWARM_FIRST = 50;
-export const swarmGap = (thren: number, cyrite: number) => lerp(110, 40, clamp(thren, 0, 1)) / (0.5 + clamp(cyrite / TANK_MAX, 0, 1));
+export const swarmGap = (thren: number, fuel: number) => lerp(110, 40, clamp(thren, 0, 1)) / (0.5 + clamp(fuel / TANK_MAX, 0, 1));
 /** Motes in a swarm, and the Thren at which a web layer leads it. */
 export const swarmSize = (thren: number) => 3 + Math.round(clamp(thren, 0, 1) * 3);
 export const SWARM_WEAVER = 0.6;
@@ -333,7 +337,7 @@ export interface Breakout {
   def: SortieDef;
   lane: Waypoint;
   port: Waypoint | null;
-  /** Cyrite the plotted jump takes. */
+  /** Jump fluid the plotted jump takes. */
   jumpCost: number;
   /** The port's prices today. */
   prices: Prices;
@@ -354,7 +358,7 @@ export interface Breakout {
   blockade: 'none' | 'checkpoint' | 'called' | 'done';
   /** Seconds of the jump's flash before the report; -1 until the jump. */
   jumpT: number;
-  /** Seconds until the next "not enough Cyrite" reminder. */
+  /** Seconds until the next "not enough jump fluid" reminder. */
   nagT: number;
 }
 

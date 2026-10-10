@@ -313,7 +313,7 @@ export class Stage {
       switch (W.act) {
         case 'hold':
           // a drawn hull comes to within its ring of a ship with Cyrite aboard, and no nearer
-          if (W.temper === 'drawn' && w.cyrite > 0 && d < 220) { a.ax = s.x - (dx / d) * W.ring; a.az = s.z - (dz / d) * W.ring; } else { a.ax = W.hx; a.az = W.hz; }
+          if (W.temper === 'drawn' && w.fuel > 0 && d < 220) { a.ax = s.x - (dx / d) * W.ring; a.az = s.z - (dz / d) * W.ring; } else { a.ax = W.hx; a.az = W.hz; }
           break;
         case 'orbit': {
           const th = now * 0.25 + ph;

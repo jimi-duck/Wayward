@@ -556,7 +556,7 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.laserLife *= 1.2; s.laserPierce += 1; s.torpBlast *= 1.1; },
   },
   {
-    id: 'tech_office', name: 'Office of Peace cloak', branch: 'salvage', cat: 'ship', kind: 'tech', max: 1, tech: 'office', tags: ['mobility', 'evasion'],
+    id: 'tech_office', name: 'Offices of Peace cloak', branch: 'salvage', cat: 'ship', kind: 'tech', max: 1, tech: 'office', tags: ['mobility', 'evasion'],
     text: 'A barrel roll cloaks you: hostile hulls hold their fire for a moment.',
     note: 'Capital ships see through it.',
     apply: (s) => { s.rollCloak = 1.6; s.rollIframes += 0.1; },
