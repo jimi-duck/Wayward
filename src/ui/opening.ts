@@ -22,7 +22,9 @@ export class OpeningPanel {
     $('op-t').textContent = t('Breakout');
     $('op-l').replaceChildren(
       h('b', '', t('The Wayward is yours now.')),
-      h('p', '', t('You stole an ore hauler from Kellern Mining, and with it something far more dangerous: a file that could expose what really happened when the Continuance shut down the jump lanes seventy years ago.')),
+      h('p', '', t('The Continuance rules the core worlds. It began as an emergency government, when the Krail that keeps humanity running grew scarce, and it never gave the power back.')),
+      h('p', '', t('The shortage ended in the lane blackout: the outer systems were abandoned and millions were cut off from the core. Now every citizen is scored, rationed and tracked, and the Office of Peace deals with anyone it no longer finds desirable. People like you.')),
+      h('p', '', t('You stole an ore hauler. Hidden in its systems was something far more dangerous than you knew: a file that exposes what really happened when the jump lanes went dark seventy years ago.')),
       h('p', '', t('Now they want their ship, and their secret, back.')),
       h('p', '', t('You don’t have to win a war. You only have to get out of this system.')),
       h('b', 'op-job', t('Your first job')),

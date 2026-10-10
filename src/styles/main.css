@@ -1529,10 +1529,11 @@ html.breakout #pause:not(.first) .term-s.full { display: none; }
 .ch-rule { margin: 0; padding: 6px 10px; border-left: 2px solid var(--alert); background: var(--scrim); font: 600 12px/1.35 var(--font-rail); letter-spacing: .06em; color: var(--industrial-white); }
 
 /* the opening: a few lines read once at the start of a Story journey */
-.op-l { display: grid; gap: 10px; padding: 4px 0 8px; }
+.opening { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); }
+.op-l { display: grid; gap: 10px; padding: 4px 0 8px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; align-content: start; }
 .op-l p { margin: 0; font: 400 15px/1.5 var(--font-display); color: var(--ink); }
 .op-l b { font: 600 17px/1.3 var(--font-display); color: var(--ink); }
 .op-l .op-job { margin-top: 6px; font: 600 12px/1.3 var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
 #opening .pf { display: flex; justify-content: flex-end; }
 #op-go { min-height: 44px; min-width: 120px; }
-@media (max-height: 460px) { .op-l { gap: 6px; } .op-l p { font-size: 13px; } .op-l b { font-size: 15px; } }
+@media (max-height: 460px) { .op-l { gap: 5px; mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent); } .opening .ph, .opening .pf { flex: none; } .op-l p { font-size: 12px; line-height: 1.4; } .op-l b { font-size: 14px; } }
