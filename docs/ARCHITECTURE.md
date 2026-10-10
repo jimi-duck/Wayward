@@ -289,8 +289,8 @@ Coming in later milestones: `audio/`, three sectors and a win state.
   sector 3 wins and unlocks endless mode. Needed by M6.
 - **Franchise names**: settled by the WAYWARD rename below; the game's world
   is its own.
-- **Address.** Cloudflare Worker `game`; a subdomain such as
-  `play.jciclitira.com` is a custom domain on that Worker. Needed by M9.
+- **Address.** Cloudflare Worker `game`; a custom domain can point at that
+  Worker. Needed by M9.
 
 ## The WAYWARD rename (M0 of [PLAN.md](PLAN.md))
 
