@@ -291,3 +291,63 @@ describe('the second batch', () => {
     }
   });
 });
+
+describe('the third batch', () => {
+  it('keep your distance is won by sitting unseen in the middle of the loop', () => {
+    const { w, st } = take('keep_distance', 'record');
+    const before = w.cyrite;
+    expect(st.actors.filter((a) => a.ward?.act === 'patrol').length).toBe(4);
+    for (let i = 0; i < 16 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(150));
+  });
+
+  it('be the bait is won by breaking the four pickets that come', () => {
+    const { w, st } = take('be_bait', 'bait');
+    const before = w.cyrite;
+    run(w, 1);
+    expect(st.run!.foes.length).toBe(4);
+    for (const f of [...st.run!.foes]) kill(w, f);
+    run(w, 1);
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(160));
+  });
+
+  it('the dead drop is collected by holding at the beacon', () => {
+    const { w, st } = take('dead_drop', 'fetch');
+    const before = w.cyrite;
+    for (let i = 0; i < 9 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(140));
+  });
+
+  it('the long walk is won by staying with a slow hauler, and lost by leaving her', () => {
+    const a = take('long_walk', 'escort');
+    const before = a.w.cyrite;
+    for (let i = 0; i < 90 * 60 && !a.st.result; i++) {
+      const lead = a.st.actors.find((x) => x.ward?.act === 'lead');
+      if (lead) put(a.w, lead.x, lead.z + 20);
+      for (const h of a.w.aliens) if (!h.ward) h.hp = 0;
+      run(a.w, 1 / 60);
+    }
+    expect(a.st.result).toBe('won');
+    expect(gain(a.w, before)).toBeGreaterThanOrEqual(cy(120));
+    const b = take('long_walk', 'escort');
+    put(b.w, b.st.x + 4000, b.st.z);
+    for (let i = 0; i < 60 && !b.st.result; i++) run(b.w, 1);
+    expect(b.st.result).toBe('lost');
+  });
+
+  it('finders keepers is a race of four marks', () => {
+    const { w, st } = take('finders_keepers', 'race');
+    const before = w.cyrite;
+    run(w, 3.5);
+    for (let k = 0; k < 4; k++) {
+      const p = st.pins.find((q) => q.on)!;
+      put(w, p.x, p.z);
+      run(w, 0.1);
+    }
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBeGreaterThanOrEqual(cy(150));
+  });
+});

@@ -400,10 +400,11 @@ export class Run {
     this.exposure = Math.min(1, Math.max(0, this.exposure + (seen ? EXPOSE * this.stealth : -COOL) * dt));
     const near = Math.hypot(drop.x - s.x, drop.z - s.z);
     if (near < DROP_R && w.stageSlow()) this.hold += dt; else this.hold = Math.max(0, this.hold - dt * 0.5);
-    this.progress = Math.min(1, this.hold / DROP_HOLD);
+    const need = this.goal.hold || DROP_HOLD;
+    this.progress = Math.min(1, this.hold / need);
     this.status = this.exposure > 0.02 ? t('Exposure {n}%', { n: Math.round(this.exposure * 100) }) : near < DROP_R * 4 ? t('Hold still at the drop') : t('Unseen');
     if (this.exposure >= 1) return 'lost';
-    if (this.hold >= DROP_HOLD) return 'won';
+    if (this.hold >= need) return 'won';
     return null;
   }
 
