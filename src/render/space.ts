@@ -53,7 +53,7 @@ interface Look {
   pieces: Piece[];
   tint: Color;
   /** The solid part, built when the ship is near: its meshes' spin, and the group they hang from. */
-  solid?: { group: Group; spin: Array<{ m: Mesh; x: number; y: number; z: number }>; rings: Mesh[]; face: boolean };
+  solid?: { group: Group; spin: Array<{ m: Mesh; x: number; y: number; z: number }>; rings: Mesh[]; face: boolean; flow?: Array<{ m: Mesh; v: number; z0: number }> };
   near: boolean;
 }
 
@@ -67,6 +67,8 @@ function chunk(i: number): BufferGeometry {
   return CHUNKS[i % CHUNKS.length]!;
 }
 const BOX = new BoxGeometry(1, 1, 1);
+const FRAGMENT = new OctahedronGeometry(1, 0);
+const FRAGMENT_MAT = new MeshStandardMaterial({ color: new Color(0.1, 0.06, 0.16), emissive: new Color(0.14, 0.05, 0.26), emissiveIntensity: 0.35, roughness: 0.3, metalness: 0.25, flatShading: true });
 const ROCK_MAT = lavaRock(2.6, 1, 0.07, undefined, false);
 const HULL_MAT = new MeshStandardMaterial({ color: 0x6a7480, roughness: 0.6, metalness: 0.3, flatShading: true, emissive: 0x0a1016, envMapIntensity: 1.3 });
 const SLAB_MAT = new MeshStandardMaterial({ color: 0x34404e, roughness: 0.32, metalness: 0.55, emissive: 0x05090e, envMapIntensity: 1.3 });
@@ -270,7 +272,7 @@ export class SpaceView {
 
   /** The solid part of matter: dark meshes, built once the ship is near. */
   private raise(look: Look, def: FeatureDef): void {
-    const f = look.f, r = rand(f.seed + 5), g = new Group(), spin: NonNullable<Look['solid']>['spin'] = [], rings: Mesh[] = [];
+    const f = look.f, r = rand(f.seed + 5), g = new Group(), spin: NonNullable<Look['solid']>['spin'] = [], rings: Mesh[] = [], flow: Array<{ m: Mesh; v: number; z0: number }> = [];
     let face = false;
     const mesh = (geo: BufferGeometry, mat: MeshStandardMaterial | MeshBasicMaterial, parent: Group, x: number, y: number, z: number, sx: number, sy: number, sz: number, tumble = 0) => {
       const m = new Mesh(geo, mat);
@@ -366,6 +368,17 @@ export class SpaceView {
         }
         break;
       }
+      case 'veins': {
+        // mineral fragments carried along the stream: small, angular, dark violet, tumbling as they drift
+        for (let i = 0; i < 34; i++) {
+          const s2 = 0.25 + Math.pow(r(), 2) * 1.1;
+          const m = mesh(FRAGMENT, FRAGMENT_MAT, g, 0, 2 + r() * 14, 0, s2, s2 * (0.6 + r() * 0.9), s2 * (0.6 + r() * 0.6), 0.5);
+          const z0 = (r() - 0.5) * f.r * 1.6;
+          m.position.x = (r() - 0.5) * f.r * 0.6;
+          flow.push({ m, v: 3 + r() * 9, z0 });
+        }
+        break;
+      }
       case 'lens': {
         // a dark centre, a rim of light, rings turning
         const core = new Mesh(new SphereGeometry(1, 20, 14), CORE_MAT);
@@ -386,7 +399,7 @@ export class SpaceView {
     }
     g.position.set(0, 0, 0);
     look.root.add(g);
-    look.solid = { group: g, spin, rings, face };
+    look.solid = { group: g, spin, rings, face, flow };
   }
 
   private put(look: Look): void {
@@ -431,6 +444,7 @@ export class SpaceView {
     if (near && look.solid) {
       const so = look.solid, dt = this.dt;
       if (!still) for (const sp of so.spin) { sp.m.rotation.x += sp.x * dt; sp.m.rotation.y += sp.y * dt; sp.m.rotation.z += sp.z * dt; }
+      if (so.flow && !still) for (const fl of so.flow) fl.m.position.z = wrap(fl.z0 + fl.v * this.time + f.r * 0.8, f.r * 1.6) - f.r * 0.8;
       so.rings.forEach((rg, i) => { rg.rotation.z += dt * (0.5 - i * 0.2) * (i % 2 ? -1 : 1); });
       if (so.face) so.group.rotation.y = Math.atan2(cx - f.x, cz - f.z);
     }
