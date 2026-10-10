@@ -2,8 +2,9 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { t } from '../i18n';
 
 // ── the opening ───────────────────────────────────────────────────────────
-// What the game is, in a few lines, read once at the start of every new
-// Story journey: who you are, what is after you, and what the first job is.
+// What the game is, in a few lines, read at the start of every new Story
+// journey: who you are, what is after you, and the first job. The controls
+// card (the pause card) follows it.
 
 export class OpeningPanel {
   private off: (() => void) | null = null;
@@ -25,14 +26,14 @@ export class OpeningPanel {
     $('op-t').textContent = t('Breakout');
     $('op-l').replaceChildren(
       h('b', '', t('The Continuance controls the core. Everyone else is on their own.')),
-      h('p', '', t('Seventy years ago the jump lanes went dark, cutting the outer systems off from the core. The Continuance blamed dwindling Krail. Millions were lost, and the Continuance took control.')),
-      h('p', '', t('Today every citizen is scored, every resource is rationed and every ship is tracked. The Offices of Peace deal with anyone they find undesirable. People like you.')),
-      h('p', '', t('When they came for you, you escaped on a decommissioned Continuance ore hauler, the Wayward. You thought you had stolen a way out. But hidden in its systems was something far more dangerous: a sealed archive. It holds the truth about the blackout. It was no shortage but a purge, a way to seize power and remove everyone who could challenge it. You have no idea who else knows.')),
-      h('p', '', t('Your stolen ship is still transmitting its identity. The patrols are coming.')),
+      h('p', '', t('Seventy years ago, the jump lanes went dark, cutting the outer systems off from the core. The Continuance blamed dwindling Krail. Millions were stranded, and the core tightened its grip on what remained.')),
+      h('p', '', t('Today, every citizen is scored, every resource is rationed, and every ship is tracked. The Offices of Peace deal with anyone they deem undesirable. People like you.')),
+      h('p', '', t('When they came for you, you escaped aboard a decommissioned Continuance ore hauler, the Wayward. Hidden in its systems is a sealed archive revealing the truth behind the blackout. The shortages were a cover. The isolation was used to purge those who could challenge the Continuance and secure its hold on power.')),
+      h('p', '', t('Your ship is still broadcasting its identity. The patrols are coming.')),
       h('p', '', t('You don’t have to win a war. You just have to get out of this system.')),
       h('b', 'op-job', t('Your first job')),
-      h('p', '', t('Break asteroids for Cyrite. Your ship’s refinery cooks it into jump fluid first, until the drive tank is full. Whatever is left over is yours to spend on upgrades and supplies.')),
-      h('p', '', t('Keep moving and watch your hull. Not every ship you meet is an enemy, but you can’t afford to trust the wrong one. The longer you stay, the closer the patrols get.')),
+      h('p', '', t('Break asteroids for Cyrite. Your ship’s refinery converts it into jump fluid until the drive tank is full. Any surplus can be spent on upgrades and supplies.')),
+      h('p', '', t('Keep moving, watch your hull, and choose carefully who to trust. The longer you stay, the closer the patrols get.')),
     );
     this.paged = matchMedia('(max-height: 460px)').matches;
     this.page = 0;
@@ -62,7 +63,7 @@ export class OpeningPanel {
   private paint(): void {
     $('opening').classList.toggle('paged', this.paged);
     $('opening').dataset.page = String(this.page);
-    $('op-go').textContent = t(this.paged && this.page === 0 ? 'Continue' : 'Begin');
+    $('op-go').textContent = t('Continue');
     $('op-l').scrollTop = 0;
   }
 

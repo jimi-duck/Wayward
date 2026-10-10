@@ -1400,8 +1400,15 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-width: 600px) and (min-height: 521px) { .pause-card .howto li { grid-template-columns: 2.4em minmax(0, 1fr); } .pause-card .howto span { grid-column: 2; } }
 @media (prefers-reduced-motion: reduce) { .pause-card.term .voice::after { animation: none; } }
 
-/* the Story pause card: the briefing once in full, then the three steps and the buttons */
-html.breakout #pause:not(.first) .term-s.full { display: none; }
+/* orders as three plain sentences (Story), and the Arcade's two short sections */
+.pause-card .brief.lines { display: grid; gap: 0; max-width: none; padding: 0; list-style: none; font: 400 14px/1.4 var(--font-display); color: var(--ink-2); }
+.pause-card .brief.lines li { padding: 8px 0; border-bottom: 1px dashed var(--line); }
+.pause-card .brief.lines li:last-child { border-bottom: 0; }
+.pause-card .brief.lines b { font: 700 17px/1.2 var(--font-head); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.pause-card .brief.lines b.a { color: var(--cy); }
+.arc-how { display: grid; gap: 8px; margin-top: 4px; }
+.arc-how p { margin: 0; font: 400 14px/1.4 var(--font-display); color: var(--ink-2); }
+.arc-how .th:not(:first-child) { margin-top: 6px; }
 
 /* ── the pause card's Settings: the same ruled rows, a switch to a line ──── */
 #pause .set-only { display: none; }
