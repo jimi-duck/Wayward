@@ -1,5 +1,5 @@
 import {
-  Color, IcosahedronGeometry, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
+  Color, IcosahedronGeometry, LatheGeometry, Vector2, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
   Vector3, type BufferGeometry, type Scene,
 } from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -152,9 +152,10 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         stone *= 1.0 + uStrata * ((bed - 0.5) * 0.35 + (bedTone - 0.5) * 0.5);
         float lip = smoothstep(0.86, 1.0, bed) * uStrata;
         // inclusions: lit crystals set in the stone, thresholded from fine noise
-        float incl = smoothstep(0.55, 0.66, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - heat);
-        stone = mix(stone, vec3(0.5, 0.46, 0.42), incl * 0.5);
-        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.6) * 0.78;
+        float incl = smoothstep(0.63, 0.72, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - heat);
+        stone = mix(stone, mix(vec3(0.5, 0.46, 0.42), vec3(0.2, 0.1, 0.34), uViolet), incl * 0.5);
+        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.5) * 0.34;
+        stone *= 0.85 + 0.4 * pow(1.0 - abs(snoise(rp * 3.6 + 1.7)), 3.0);
         diffuseColor.rgb *= stone * uTint;
         float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
         // cooled stone: the thinnest cracks keep a dull ember, steady and under the bloom line (basalt and volatile only)
@@ -162,13 +163,17 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         // volatile rock: a few deep pockets lit cold from under the surface, sharp and local
         float pocket = smoothstep(0.62, 0.74, snoise(rp * vec3(2.3, 2.9, 2.1) + 13.1)) * smoothstep(0.9, 0.97, max(ridgeA, ridgeB)) * uCool;
         lavaGlow += uGlow * pocket * 0.26 * uLava;
+        float web = smoothstep(0.9, 0.985, max(ridgeA, ridgeB * 0.97)) * smoothstep(-0.25, 0.3, snoise(rp * 0.4 + 8.0)) * uCool;
+        lavaGlow += (uGlow * 0.14 + vec3(0.1, 0.12, 0.14) * smoothstep(0.96, 0.99, max(ridgeA, ridgeB))) * web * uLava;
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.03, 0.04), pocket * 0.6);
         // rich rock: violet veins through the stone and crystals set in it, steady and well under the bloom line
         float vein = (smoothstep(0.95, 0.99, ridgeA) * 0.7 + smoothstep(0.965, 0.993, ridgeB) * 0.5) * (0.25 + 0.75 * zone);
-        lavaGlow += uGlow * (vein * 0.07 + incl * 0.16) * uLava * uViolet;
+        lavaGlow += uGlow * (vein * 0.07 + incl * 0.07) * uLava * uViolet;
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.06, 0.16), vein * 0.4 * uViolet);
         diffuseColor.rgb *= 1.0 - (smoothstep(0.955, 0.99, ridgeA) * 0.3 + crack * 0.3);
-        float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + mix(incl * 0.2, floor(incl * 3.0) / 3.0 * 0.5, uViolet);`)
+        // sharp crests between broken faces: a creased noise
+        float crest = pow(1.0 - abs(snoise(rp * 3.0 + 1.7)), 3.0);
+        float rockH = crest * 0.35 + rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + mix(incl * 0.2, incl * 0.4, uViolet);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2 - incl * 0.1 * uViolet, 0.6, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
@@ -203,7 +208,7 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
     const big = fbm(v.x * 1.2 + seed, v.y * 1.2, v.z * 1.2, 4, seed);
     const mid = fbm(v.x * 3.1 + seed, v.y * 3.1, v.z * 3.1, 3, seed + 9);
     const ridge = 1 - Math.abs(fbm(v.x * 2.2 - seed, v.y * 2.2, v.z * 2.2, 2, seed + 4));
-    let k = 1 + big * rough + mid * 0.1 + ridge * 0.06;
+    let k = 1 + big * rough + mid * 0.17 + ridge * 0.1;
     for (const c of pits) {
       const a = Math.acos(Math.min(1, v.dot(c.d))) / c.size;
       if (a < 1.35) k += a < 1 ? -c.depth * (1 - a * a) : c.depth * 0.6 * Math.sin(((a - 1) / 0.35) * Math.PI);
@@ -215,6 +220,53 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
   }
   g.computeVertexNormals();
   return g;
+}
+
+/** A broken crystal: a six-sided prism closing to a point, every corner pushed off true, base at y = 0 and tip at y = 1. */
+function shardGeometry(): BufferGeometry {
+  const g = new LatheGeometry([new Vector2(0.001, 0), new Vector2(0.5, 0), new Vector2(0.46, 0.62), new Vector2(0.1, 1)], 6).toNonIndexed();
+  const p = g.attributes.position!, rnd = seeded(5);
+  const jit = new Map<string, [number, number, number]>();
+  for (let i = 0; i < p.count; i++) {
+    const key = `${p.getX(i).toFixed(3)},${p.getY(i).toFixed(3)},${p.getZ(i).toFixed(3)}`;
+    let j = jit.get(key);
+    if (!j) { j = [(rnd() - 0.5) * 0.3, (rnd() - 0.5) * 0.12, (rnd() - 0.5) * 0.3]; jit.set(key, j); }
+    const top = p.getY(i) > 0.9 ? 0.4 : 1;
+    p.setXYZ(i, p.getX(i) + j[0] * top, p.getY(i) + j[1], p.getZ(i) + j[2] * top);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+const SEATS = 4, CLUSTER = 3, SHARDS_PER_ROCK = SEATS * CLUSTER;
+const MAX_SHARDS = 640;
+
+/** Where crystals sit on a rock shape: in its hollows, spread apart, each leaning out along the surface. */
+function shardSeats(g: BufferGeometry, seed: number): Matrix4[] {
+  const p = g.attributes.position!, nrm = g.attributes.normal!, rnd = seeded(seed);
+  const order = Array.from({ length: p.count }, (_, i) => i).sort((a, b) => Math.hypot(p.getX(a), p.getY(a), p.getZ(a)) - Math.hypot(p.getX(b), p.getY(b), p.getZ(b)));
+  const hollow = order.slice(0, Math.floor(p.count * 0.45));
+  const seats: Matrix4[] = [], dirs: Vector3[] = [];
+  const up = new Vector3(0, 1, 0), n = new Vector3(), v = new Vector3(), q = new Quaternion(), tw = new Quaternion();
+  for (let tries = 0; tries < 400 && dirs.length < SEATS; tries++) {
+    const i = hollow[Math.floor(rnd() * hollow.length)]!;
+    n.fromBufferAttribute(nrm, i).normalize();
+    if (dirs.some((d) => d.dot(n) > 0.7)) continue;
+    dirs.push(n.clone());
+    v.fromBufferAttribute(p, i).addScaledVector(n, -0.06);
+    q.setFromUnitVectors(up, n);
+    // a little off the normal, and twisted: no two crystals lean alike
+    q.premultiply(tw.setFromAxisAngle(new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).normalize(), (rnd() - 0.5) * 0.7));
+    // a cluster: a main crystal and two smaller ones beside it, leaning away
+    const w = 0.05 + rnd() * 0.04, len = 0.1 + rnd() * 0.12;
+    for (let c = 0; c < CLUSTER; c++) {
+      const k = c ? 0.5 + rnd() * 0.3 : 1, qc = q.clone();
+      if (c) qc.premultiply(tw.setFromAxisAngle(new Vector3(rnd() - 0.5, 0, rnd() - 0.5).normalize().cross(n).normalize(), 0.25 + rnd() * 0.5));
+      const at = v.clone().addScaledVector(new Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).cross(n).normalize(), c ? 0.04 + rnd() * 0.04 : 0);
+      seats.push(new Matrix4().compose(at, qc, new Vector3(w * k, len * k, w * k * (0.7 + rnd() * 0.6))));
+    }
+  }
+  return seats;
 }
 
 export class RockView {
@@ -231,12 +283,22 @@ export class RockView {
   private readonly sc = new Vector3();
   private readonly axis = new Vector3();
   private readonly col = new Color();
+  private readonly shards: InstancedMesh;
+  private readonly seats: Matrix4[][];
+  private readonly sm = new Matrix4();
   private time = 0;
 
   constructor(private readonly scene: Scene) {
-    const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => rockGeometry(k * 3.7 + 1, 4, 1 + (k % 2), 0.4, 4 + (k % 3)));
+    const shapes = Array.from({ length: ROCK_VARIANTS }, (_, k) => rockGeometry(k * 3.7 + 1, 4, 1 + (k % 2), 0.4, 8 + (k % 3)));
+    this.seats = shapes.map((g, k) => shardSeats(g, 40 + k));
+    // the crystals of the rich rock: one shared mesh, seated in each shape's hollows, and a few loose ones drifting near
+    const crystal = new MeshStandardMaterial({ color: new Color(0.1, 0.045, 0.2), emissive: new Color(0.16, 0.05, 0.3), emissiveIntensity: 0.4, roughness: 0.22, metalness: 0.2, flatShading: true, envMapIntensity: 0.9 });
+    this.shards = new InstancedMesh(shardGeometry(), crystal, MAX_SHARDS);
+    this.shards.count = 0;
+    this.shards.frustumCulled = false;
+    scene.add(this.shards);
     for (const kind of KINDS) {
-      const mat = lavaRock(1.35, 1, 0.12, LOOKS[kind]);
+      const mat = lavaRock(1.35, 1, 0.15, LOOKS[kind]);
       for (let k = 0; k < ROCK_VARIANTS; k++) {
         const mesh = new InstancedMesh(shapes[k]!, mat, PER_VARIANT);
         mesh.instanceColor = new InstancedBufferAttribute(new Float32Array(PER_VARIANT * 3).fill(1), 3);
@@ -279,6 +341,7 @@ export class RockView {
     lavaTime.value = this.time;
     const counts = new Array<number>(this.meshes.length).fill(0);
     const back = (1 - alpha) * STEP;
+    let ns = 0;
     for (const r of rocks) {
       const slot = KINDS.indexOf(r.kind) * ROCK_VARIANTS + r.variant;
       const mesh = this.meshes[slot]!;
@@ -292,10 +355,23 @@ export class RockView {
       this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.spin * r.age + r.id);
       this.m.compose(this.pos.set(r.x - r.vx * back, -0.3, r.z - r.vz * back), this.q, this.sc.set(s * (0.8 + 0.4 * h1), s * (0.85 + 0.3 * h2), s * (0.8 + 0.4 * h3)));
       mesh.setMatrixAt(i, this.m);
+      if (r.kind === 'rich') {
+        // crystals riding the rock, fewer on a small one, and a couple of loose fragments circling it
+        const seats = this.seats[r.variant]!, n = Math.min(seats.length, (r.r > 2 ? 4 : r.r > 1.2 ? 3 : 2) * CLUSTER);
+        for (let j = 0; j < n && ns < MAX_SHARDS; j++) this.shards.setMatrixAt(ns++, this.sm.multiplyMatrices(this.m, seats[j]!));
+        for (let j = 0; j < 2 && ns < MAX_SHARDS; j++) {
+          const a = this.time * (0.25 + j * 0.1) * (j ? -1 : 1) + r.id * 1.7 + j * 3, f = r.r * (1.5 + 0.25 * j), c = r.r * (0.05 + 0.03 * h3);
+          this.q.setFromAxisAngle(this.axis.set(Math.sin(r.id + j), 1, Math.cos(j + r.id * 2)).normalize(), this.time * 0.6 + j);
+          this.sm.compose(this.pos.set(r.x + Math.cos(a) * f, 0.4 * Math.sin(a * 1.3 + j) * r.r, r.z + Math.sin(a) * f), this.q, this.sc.set(c, c * 1.8, c));
+          this.shards.setMatrixAt(ns++, this.sm);
+        }
+      }
       const flash = 1 + (r.hitT / 0.12) * 4;
       const tone = 0.72 + 0.5 * h2, warm = 0.92 + 0.16 * h3;
       mesh.setColorAt(i, this.col.setRGB(flash * tone * warm, flash * tone * 0.9, flash * tone * 0.84 / warm));
     }
+    this.shards.count = ns;
+    this.shards.instanceMatrix.needsUpdate = true;
     this.meshes.forEach((mesh, k) => {
       mesh.count = counts[k]!;
       mesh.visible = mesh.count > 0;
