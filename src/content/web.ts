@@ -65,7 +65,7 @@ export const STOCK: Readonly<Record<string, number>> = Object.freeze({ tp_bay: 1
  * exchangers, the frame) start at `fitting` and climb more gently: they are what keeps a big ship in trim, and they
  * never run out.
  */
-export const STORY_PRICE = { tier: [0, 24, 32, 42, 56], growth: 1.2, ship: 0.045, fitting: 30, fittingGrowth: 1.12 } as const;
+export const STORY_PRICE = { tier: [0, 20, 27, 36, 48], growth: 1.2, ship: 0.045, fitting: 25, fittingGrowth: 1.12 } as const;
 /** The Arcade mode's one price, in Krail, for every level of every module, and the Krail at which its bay opens by itself. Below the old average (60) because the first fits were 40 and a flat price slowed the start; 30 is the owner's call (BALANCE.md). */
 export const ARCADE_PRICE = 30;
 

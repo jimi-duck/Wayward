@@ -403,8 +403,8 @@ Defence, Utility, Signals (the Story mode's), Reactor and Synergies, each a
 small web left to right by tier. A module opens
 once something it comes from is fitted, then by the upgrade's own rules
 (requires, one specialisation per group, a deep enough system). Each level
-costs Cyrite by tier in the Story mode (`STORY_PRICE`: 24, 32, 42, 56 for the
-first level; a fifth dearer for each level of the same part, and 3% dearer for
+costs Cyrite by tier in the Story mode (`STORY_PRICE`: 20, 27, 36, 48 for the
+first level; a fifth dearer for each level of the same part, and 4.5% dearer for
 every level already on the ship; the deep torpedo and mine modules cost 0.65
 to 0.7 of that, so ordnance builds keep pace), the same in the Arcade whatever
 the module or the level (`ARCADE_PRICE`), and draws power, mass or heat,

@@ -1208,7 +1208,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-height: 520px) { .pick-row { gap: 8px; } .pc-name { font-size: 15px; } .pc-oct { width: 30px; height: 30px; } .pc-oct .ico-img { width: 21px; height: 21px; } }
 /* small screens: no bay text under 10px, and what a thumb presses is about 40px tall (a ring's hit area grows, the ring as drawn does not) */
 .bay-k small { font-size: max(10px, calc(var(--fs) * .9 * 1.18)); }
-.bi-go:disabled, .pc-tab, .pc-new { font-size: max(10px, calc(var(--fs) * 1.05)); }
+.bi-go:disabled, .bi-then, .pc-tab, .pc-new { font-size: max(10px, calc(var(--fs) * 1.05)); }
 .pick-more { font-size: max(10px, calc(var(--fs) * 1.02)); }
 #bay .chip { font-size: max(10px, calc(var(--fs) * .95)); }
 .bn-name { font-size: max(10px, calc(var(--fs) * .85 * 1.18)); }

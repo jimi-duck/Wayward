@@ -113,15 +113,24 @@ and there is always something to fit.
   limits (`CAPS`) leave nothing to gain; the bay then says "At its limit".
   Single-purchase parts (a system, a specialisation, a flag) are bought once.
 - **Prices climb** (`STORY_PRICE`, `cost` in `sim/bay.ts`): a first fit costs
-  24, 32, 42 or 56 Cyrite by tier (the balance parts 30, climbing a ninth a
+  20, 27, 36 or 48 Cyrite by tier (the balance parts 25, climbing a ninth a
   level); each further level of the same part costs a fifth more; and every
-  level fitted anywhere on the ship adds 3% to every price. The Arcade's price
+  level fitted anywhere on the ship adds 4.5% to every price. The Arcade's price
   stays flat.
 - **Life without them gets harder.** Hostile hulls are tougher by the depth of
   the chart (`threatAt`: 1 in Cerro to 5 at the Threshold) and fire a quarter of
   that excess oftener, so a ship that stays as it left falls behind. Jobs pay
   more the same way (`bountyAt`: 1 to 2.5), so jobs stay the way to the next
   part.
+
+Prices in Cyrite, for the 1st, 3rd, 6th and 10th level of one part, on a ship
+with 0, 20 and 40 levels fitted:
+
+| Part | 0 | 20 | 40 |
+|---|---|---|---|
+| Laser emitters (tier 1) | 20 / 30 / 50 / 105 | 40 / 55 / 95 / 195 | 55 / 80 / 140 / 290 |
+| Warhead yield (tier 2) | 25 / 40 / 65 / 140 | 50 / 75 / 130 / 265 | 75 / 110 / 190 / 390 |
+| Reactor core (balance part) | 25 / 30 / 45 / 70 | 50 / 60 / 85 / 130 | 70 / 90 / 125 / 195 |
 
 Numbers and what they do to a journey: [BALANCE-UPGRADES.md](BALANCE-UPGRADES.md)
 (`npm run pilot:upgrades`). First guesses; the feel of the climb needs a
@@ -162,7 +171,8 @@ From `docs/BALANCE-JOURNEY.md` (three regions, 48 journeys, first guesses):
 - The tank is empty again after almost every jump (0 to 2 units left), so the
   fluid never piles up. The purse is what grows: about 47 Cyrite after the
   first system, 75 by the middle and 200 to 300 near the end.
-- Late journeys are rich. That is the point of the split, but the end of the
-  chart may want dearer upgrades or more to spend on. Not tuned yet.
+- Late journeys were rich. Upgrades now cost several times what they did and
+  climb, so the purse is spent as it comes through most of the chart; see
+  [BALANCE-UPGRADES.md](BALANCE-UPGRADES.md).
 - Not measured: how the refinery rule feels in play, and whether about 2
   Cyrite a unit at a port is right.
