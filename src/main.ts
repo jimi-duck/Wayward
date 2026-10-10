@@ -17,6 +17,7 @@ import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney,
 import { regionsOf, routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
+import { OpeningPanel } from './ui/opening';
 import { Cutscene } from './ui/adrift';
 import { ChartPanel, regionName } from './ui/chart';
 import { barsOut } from './ui/bars';
@@ -123,11 +124,12 @@ function boot(review: typeof import('./review') | null): void {
   const port = new PortPanel();
   const chart = new ChartPanel();
   const ending = new EndingPanel();
+  const opening = new OpeningPanel();
   const cut = new Cutscene();
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || opening.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   const radioBlocked = () => !started || loop.paused || panelOpen();
   const radioAnswer = (id: string) => {
@@ -280,7 +282,7 @@ function boot(review: typeof import('./review') | null): void {
     reported = false;
     setPaused(false);
     const d = world.sortie;
-    if (d.home && (!profile.trained || TRAIN)) world.train();
+    if (d.home) world.train(); // every new Story journey starts with the training
     hud.note(world, d.home ? t('Clear the yards · head for the lane entrance') : `${d.name} · ${t('Need {n} Cyrite to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
@@ -315,6 +317,10 @@ function boot(review: typeof import('./review') | null): void {
       if (j.status === 'over') {
         journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
         saveJourney(journey);
+        startSortie();
+        loop.paused = true;
+        input.reset();
+        return opening.show(() => { loop.paused = false; input.reset(); });
       }
       startSortie();
     });
@@ -431,6 +437,7 @@ function boot(review: typeof import('./review') | null): void {
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p, journey);
+      else if (opening.open) opening.padInput(p);
       else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
     }
@@ -535,7 +542,9 @@ function boot(review: typeof import('./review') | null): void {
       setPaused(true);
       return;
     }
+    let fresh = false;
     if (!resume || !journey || (journey.status === 'over' && !pending(journey))) {
+      fresh = true;
       // a journey left at the Threshold still goes into the Archive, the file unchosen
       if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
       journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
@@ -543,6 +552,12 @@ function boot(review: typeof import('./review') | null): void {
     } else if (pending(journey)) return threshold(journey, [t('Journey resumed · you have passed the Threshold')]);
     else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cooled; plot your next jump')]);
     startSortie();
+    if (fresh) {
+      // a new journey opens on the story, read before the first lesson
+      loop.paused = true;
+      input.reset();
+      return opening.show(() => setPaused(true));
+    }
     setPaused(true);
   };
 

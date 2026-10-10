@@ -43,7 +43,8 @@ const LOG_LIFE = 4.5;
 const LESSON_HINT: Record<string, Array<[string, string]>> = {
   fire: [['h-keys', 'Hold Space to fire your lasers'], ['h-touch', 'Hold the fire control to shoot'], ['h-pad', 'Hold A to fire your lasers']],
   bay: [['h-keys', 'Press B to open the Bay'], ['h-touch', 'Tap Open Bay'], ['h-pad', 'Press Back to open the Bay']],
-  torpedo: [['h-keys', 'Press 2 to launch a torpedo'], ['h-touch', 'Tap the torpedo button to launch'], ['h-pad', 'Press X to launch a torpedo']],
+  dock: [['h-keys', 'Fly in slowly to dock'], ['h-touch', 'Fly in slowly to dock'], ['h-pad', 'Fly in slowly to dock']],
+  fit: [['h-keys', 'Open the bay and pick the torpedo bay'], ['h-touch', 'Open the bay and pick the torpedo bay'], ['h-pad', 'Open the bay and pick the torpedo bay']],
 };
 
 const SHIP_WARN = {
@@ -319,23 +320,16 @@ export class Hud {
     text($('xp-v'), String(Math.floor(world.purse)));
     $('rail').hidden = !!world.bk; // the Story's Cyrite is the fuel row
     const badge = $('upg');
-    // the Story fits only at a work bay and the Arcade opens its own picks; the training's one upgrade is the exception
-    const lesson = !!world.bk && stepOf(world) === 'bay';
-    badge.hidden = !lesson;
-    if (lesson) {
-      badge.classList.add('ready'); badge.classList.remove('locked', 'red');
-      text($('upg-n'), '1'); text($('upg-t'), t('Open bay')); text($('upg-s'), t('Fit the torpedo bay'));
-      this.shown = 1;
-    } else {
-      badge.classList.toggle('ready', n > 0 && !locked);
-      badge.classList.toggle('locked', n > 0 && locked);
-      badge.classList.toggle('red', alert === 'red');
-      text($('upg-n'), n ? String(n) : '');
-      text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : 'Open bay'));
-      text($('upg-s'), t(n > 0 && locked ? (alert === 'red' ? 'Red alert' : 'Yellow alert') : 'Upgrade ship'));
-      if (n > this.shown && !locked) this.retrigger(badge, 'new');
-      this.shown = n;
-    }
+    // the Story fits only at a work bay and the Arcade opens its own picks
+    badge.hidden = true;
+    badge.classList.toggle('ready', n > 0 && !locked);
+    badge.classList.toggle('locked', n > 0 && locked);
+    badge.classList.toggle('red', alert === 'red');
+    text($('upg-n'), n ? String(n) : '');
+    text($('upg-t'), t(n > 0 && locked ? 'Bay locked' : 'Open bay'));
+    text($('upg-s'), t(n > 0 && locked ? (alert === 'red' ? 'Red alert' : 'Yellow alert') : 'Upgrade ship'));
+    if (n > this.shown && !locked) this.retrigger(badge, 'new');
+    this.shown = n;
     const g = $('xp-gain');
     g.classList.toggle('on', this.gainT > 0.6);
     if (this.gain > 0) text(g, `+${Math.round(this.gain)}`);

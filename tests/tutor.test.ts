@@ -26,30 +26,36 @@ describe('the first minutes', () => {
     expect(w.bk!.nextPursuit).toBeGreaterThan(w.runTime + 20);
   });
 
-  it('goes rock, bay, ship, and leaves the tank holding the jump', () => {
+  it('goes rock, ship, then a short flight to the work bay, and leaves the tank holding the jump', () => {
     const w = story();
     w.field.step = () => {};
-    // mining: the rock is broken and what falls out is taken
     const rock = w.field.rocks.find((r) => r.id === w.tutor!.rockId)!;
     w.field.rocks = [rock];
     w.dropCrystals(w.ship.x, w.ship.z, 5, 0);
     w.field.rocks = [];
     w.cyrite = w.jumpCost - 2; // stand in for the pickup
     for (let i = 0; i < 120; i++) w.step(STEP, input());
+    expect(stepOf(w)).toBe('shoot');
+    // the first ship goes down
+    w.aliens = [];
+    w.kills++;
+    for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(stepOf(w)).toBe('bay');
-    // the bay opens in flight with one card, and takes the torpedo bay
-    expect(w.bayClosed()).toBeNull();
+    // the depot is a short hop away, and the bay stays shut in flight
+    const les = lessonOf(w)!;
+    expect(les.mark && Math.hypot(les.mark.x - w.ship.x, les.mark.z - w.ship.z)).toBeLessThan(250);
+    expect(w.bayClosed()).toBe('away');
+    // docked, it offers the one card and takes the torpedo bay
+    const p = w.bk!.port!;
+    w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+    for (let i = 0; i < 400 && w.phase === 'play'; i++) w.step(STEP, input());
+    expect(w.phase).toBe('dock');
     expect(w.openBay()).toBe(true);
     expect(w.install(LESSON_NODE)).toBeNull();
     w.closeBay();
     for (let i = 0; i < 120; i++) w.step(STEP, input());
-    expect(stepOf(w)).toBe('shoot');
-    expect(w.stats.torpedoes).toBe(true);
-    // the ship goes down
-    w.aliens = [];
-    w.kills++;
-    for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(w.tutor!.done).toBe(true);
+    expect(w.stats.torpedoes).toBe(true);
     expect(w.cyrite).toBeGreaterThanOrEqual(w.jumpCost);
     expect(lessonOf(w)).toBeNull();
   });

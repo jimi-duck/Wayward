@@ -532,7 +532,7 @@ export class World implements EncounterHost {
   navNoise = 0;
 
   /** Teach the first minutes: a few marked steps, then the run goes on as it was. */
-  train(): void { this.tutor = newTutor(); stepTutor(this, 0); }
+  train(): void { this.tutor = newTutor(!!this.bk); stepTutor(this, 0); }
 
   /** End the training now. */
   skipTraining(): void { skipTutor(this); }
@@ -1090,7 +1090,7 @@ export class World implements EncounterHost {
     if (!this.alive) return 'busy';
     if (this.phase === 'dock') return null;
     if (this.phase !== 'play') return 'busy';
-    if (stepOf(this) === 'bay') return null; // the lesson's one upgrade, in flight
+    if (stepOf(this) === 'bay' && !this.bk) return null; // the Arcade lesson's one upgrade, in flight
     if (this.bk) return 'away'; // the Story fits only at a work bay
     const a = this.alert();
     return a === 'clear' ? null : a;
