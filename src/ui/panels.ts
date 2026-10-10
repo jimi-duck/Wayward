@@ -31,7 +31,7 @@ export function buildView(levels: Levels, named = true): HTMLElement {
   const wrap = h('div', 'build');
   if (named) wrap.append(h('div', 'sum-ship', t(id.title)));
   const owned = UPGRADES.filter((u) => (levels[u.id] ?? 0) > 0);
-  if (!owned.length) { wrap.append(h('p', 'how-note', t('Stock: lasers, three plates, nothing else.'))); return wrap; }
+  if (!owned.length) { wrap.append(h('p', 'how-note', t('Starting loadout: lasers and three hull plates.'))); return wrap; }
   const order = [...id.branches.map((b) => b.branch), 'synergy' as Branch];
   for (const br of order) {
     const ups = owned.filter((u) => u.branch === br);
@@ -88,9 +88,9 @@ export class SummaryPanel {
     const breakout = r.mode === 'breakout';
     $('summary').classList.toggle('alert', !r.escaped);
     $('summary').querySelector('.kick')!.textContent = t(r.escaped ? 'Escaped' : 'Hull breach');
-    $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run over');
+    $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run complete');
     // what did it: the kicker already says hull breach
-    $('sum-s').textContent = r.escaped ? t('Out with {n} Cyrite to spare', { n: r.cyriteLeft }) : damageWord(r.cause || 'rock');
+    $('sum-s').textContent = r.escaped ? t('Escaped with {n} Cyrite remaining', { n: r.cyriteLeft }) : damageWord(r.cause || 'rock');
     $('sum-score').textContent = fmt(r.score);
     const line = $('sum-line');
     line.replaceChildren(h('span', '', `${mmss(r.time)} ${t(r.escaped ? 'to the lane' : 'survived')} · ${t('refit')} ${r.refit} · ${t('{n} kills', { n: r.kills })}`), rec.newBest ? h('span', 'best', ` · ${t('new best')}`) : h('span', '', ` · ${t('best')} ${fmt(p.score)}`));
@@ -106,8 +106,8 @@ export class SummaryPanel {
     if (breakout) {
       const plain = (label: string, v: string, note: string) => h('div', 'tile', '', h('span', 'k', t(label)), h('b', '', v), h('span', 'cmp', note));
       $('sum-tiles').replaceChildren(
-        plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Through the lane mouth' : 'Short of the lane')),
-        plain('Cyrite', String(r.cyrite), r.escaped ? t('{n} left after the jump', { n: r.cyriteLeft }) : t('Gathered')),
+        plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Reached the lane entrance' : 'Did not reach the lane')),
+        plain('Cyrite', String(r.cyrite), r.escaped ? t('{n} remaining after the jump', { n: r.cyriteLeft }) : t('Gathered')),
         plain('Scrap', String(r.ore), t('{n} Cyrite paid', { n: r.oreSold })),
         plain('Rock mined', String(r.mined), t('{n} blasted', { n: r.blasted })),
         tile('Refits', r.refit, p.refit),
@@ -181,14 +181,14 @@ export class SummaryPanel {
     box.append(grid);
     const notes: string[] = [];
     const top = kills[0];
-    if (top) notes.push(t('{w}: {p}% of kills.', { w: t(WEAPON_WORD[top[0]] ?? top[0]), p: Math.round((top[1] / totalK) * 100) }));
+    if (top) notes.push(t('{w}: {p}% of your kills.', { w: t(WEAPON_WORD[top[0]] ?? top[0]), p: Math.round((top[1] / totalK) * 100) }));
     const worst = dmg[0];
-    if (worst) notes.push(t('Worst damage: {what}.', { what: damageWord(worst[0]) }));
+    if (worst) notes.push(t('Most damage came from: {what}.', { what: damageWord(worst[0]) }));
     const met = r.capitals + r.capitalsEvaded + r.capitalsEscaped;
-    if (met) notes.push(t('Capital ships: {a} killed, {b} evaded, {c} got away.', { a: r.capitals, b: r.capitalsEvaded, c: r.capitalsEscaped }));
+    if (met) notes.push(t('Capital ships: {a} destroyed, {b} evaded, {c} escaped.', { a: r.capitals, b: r.capitalsEvaded, c: r.capitalsEscaped }));
     if (r.shieldsAbsorbed) notes.push(plural(r.shieldsAbsorbed, 'Shields took {n} hit.', 'Shields took {n} hits.'));
-    if (r.platesGained) notes.push(plural(r.platesGained, 'You mended {n} plate.', 'You mended {n} plates.'));
-    if (r.dropped) notes.push(t('Cyrite picked up: {p}%.', { p: Math.round((r.krail / r.dropped) * 100) }));
+    if (r.platesGained) notes.push(plural(r.platesGained, 'You repaired {n} hull plate.', 'You repaired {n} hull plates.'));
+    if (r.dropped) notes.push(t('Cyrite collected: {p}%.', { p: Math.round((r.krail / r.dropped) * 100) }));
     box.append(h('p', 'how-note', notes.join(' ')));
     return box;
   }
@@ -206,7 +206,7 @@ export class SummaryPanel {
     for (let i = 0; i <= 3; i++) svg.append(el('line', { class: 'grid', x1: '0', x2: String(W), y1: String(P + (i / 3) * (H - 2 * P)), y2: String(P + (i / 3) * (H - 2 * P)) }));
     if (best.length > 1) svg.append(el('path', { class: 'best', d: path(best) }));
     if (r.timeline.length > 1) svg.append(el('path', { class: 'run', d: path([{ t: 0, score: 0 }, ...r.timeline]) }));
-    svg.setAttribute('aria-label', `${t('Score over the run')}: ${fmt(r.score)}${best.length ? ` · ${t('best')} ${fmt(best[best.length - 1]!.score)}` : ''}`);
+    svg.setAttribute('aria-label', `${t('Run score')}: ${fmt(r.score)}${best.length ? ` · ${t('best')} ${fmt(best[best.length - 1]!.score)}` : ''}`);
   }
 }
 

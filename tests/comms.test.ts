@@ -126,12 +126,12 @@ describe('the comms engine', () => {
     const o = openCard(CARD_BY_ID.checkpoint!, ctx({ heat: 0.1, flags: new Set(['codes', 'fee_known']) }), new Rng(1));
     // 15 words of call and a 10-word line would be 25: everything the ship adds waits
     expect(o.text).toBe(plain.text);
-    expect(o.more).toEqual(['She sounds bored. Nobody has told her who you are yet.', 'The forged codes are loaded.', 'They say she takes a fee.']);
+    expect(o.more).toEqual(['She sounds bored. She has not been told who you are yet.', 'Your forged registration codes are ready.', 'You heard she accepts bribes.']);
     // a short call leaves room for the lines that fit, in order, and stops at the first that does not
     const short = openCard({ ...CARD_BY_ID.checkpoint!, text: '“Heave to.”' }, ctx({ heat: 0.1, flags: new Set(['codes', 'fee_known']) }), new Rng(1));
-    expect(short.text).toBe('“Heave to.” She sounds bored. Nobody has told her who you are yet. The forged codes are loaded. They say she takes a fee.');
+    expect(short.text).toBe('“Heave to.” She sounds bored. She has not been told who you are yet. Your forged registration codes are ready.');
     expect(short.text.split(/\s+/).length).toBeLessThanOrEqual(SHOWN_WORDS);
-    expect(short.more).toEqual([]);
+    expect(short.more).toEqual(['You heard she accepts bribes.']);
   });
 
   it('loses to the truth, whatever the odds', () => {

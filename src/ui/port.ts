@@ -37,10 +37,10 @@ export interface Course {
 
 /** What a port says of the ship's state, and what to do about it (World.warnings). */
 const PORT_WARN = {
-  empty: 'Out of supplies · the ship flies slower and worse. Buy some here.',
-  low: 'Supplies low · a lane or two left. Buy some here.',
-  heavy: 'Heavy · slower to turn, and each jump burns {n} more Cyrite. A lighter build or a bigger frame in the bay fixes it.',
-  hot: 'Running hot · the guns cycle slower. Cooling in the bay fixes it.',
+  empty: 'Out of supplies · handling is reduced. Buy more here.',
+  low: 'Supplies low · only a few jumps remain before performance drops. Buy more here.',
+  heavy: 'Heavy load · slower turning and {n} extra Cyrite per jump. Sell cargo or refit at the Bay to reduce the load.',
+  hot: 'Weapons overheating · guns fire more slowly. Fit cooling at the Bay to fix this.',
 } as const;
 
 export class PortPanel {
@@ -74,7 +74,7 @@ export class PortPanel {
     const banner = world.bk?.port ? artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
     $('port-art').hidden = !banner;
     $('port-art').replaceChildren(...(banner ? [banner] : []));
-    $('port-s').textContent = t(world.bk?.def.netted ? 'Refuel · repair · trade · under Continuance order' : 'Refuel · repair · trade · no implant checks');
+    $('port-s').textContent = t(world.bk?.def.netted ? 'Refuel · repair · trade · implant scans required' : 'Refuel · repair · trade · no implant checks');
     const x = $('port-x');
     x.onclick = guarded(this.opened, () => this.leave());
     x.onpointerdown = (e) => e.stopPropagation();
@@ -160,21 +160,21 @@ export class PortPanel {
     // the jump's own Cyrite is kept back from the stop; short of it the port says so
     const short = Math.max(0, w.jumpCost - w.cyrite);
     this.lines = [
-      { key: 'stop', label: t('Sensible stop'), price: idle ? '—' : `−${Math.abs(plan.cyrite)}`, note: short ? t('{n} Cyrite short of the jump', { n: short }) : t('Nothing to do'), chips: idle ? undefined : deltas(plan), ok: !idle },
-      { key: 'bay', label: t('Refit bay'), price: `${num(Math.floor(w.cyrite))} ${t('Cyrite')}`, note: t('Upgrades are fitted at a work bay, only here'), ok: true, go: () => { this.close(); this.onBay?.(); } },
+      { key: 'stop', label: t('Sensible stop'), price: idle ? '—' : `−${Math.abs(plan.cyrite)}`, note: short ? t('Need {n} more Cyrite to jump', { n: short }) : t('No available services'), chips: idle ? undefined : deltas(plan), ok: !idle },
+      { key: 'bay', label: t('Refit bay'), price: `${num(Math.floor(w.cyrite))} ${t('Cyrite')}`, note: t('Install upgrades at a work bay'), ok: true, go: () => { this.close(); this.onBay?.(); } },
     ];
     const c = this.course, lanes = c?.lanes() ?? [];
     if (c && lanes.length) {
       const now = lanes.find((x) => x.id === c.current()) ?? lanes[0]!;
       this.lines.push({
-        key: 'course', label: t(lanes.length > 1 ? 'Plot another lane' : 'The lane out'), price: `${now.cyrite} ${t('Cyrite')}`,
+        key: 'course', label: t(lanes.length > 1 ? 'Choose another jump lane' : 'Exit lane'), price: `${now.cyrite} ${t('Cyrite')}`,
         note: [t('Bound for {dest}', { dest: now.name }), plural(now.days, '{n} day', '{n} days'), now.note].filter(Boolean).join(' · '), ok: lanes.length > 1,
       });
     }
-    this.lines.push({ key: 'hand', label: t(this.manual ? 'By hand ▾' : 'By hand ▸'), price: '', note: t('Buy and patch one at a time'), ok: true, go: () => { this.manual = !this.manual; this.render(); } });
+    this.lines.push({ key: 'hand', label: t(this.manual ? 'By hand ▾' : 'By hand ▸'), price: '', note: t('Buy supplies or repair hull plates one at a time'), ok: true, go: () => { this.manual = !this.manual; this.render(); } });
     if (this.manual) this.lines.push(
       { key: 'supplies', label: t('Buy supplies'), price: `${P.supplies}`, note: w.supplies >= w.supplyMax ? t('Stores full') : t('{n} aboard · a day each', { n: w.supplies }), ok: w.canBuy('supplies') },
-      { key: 'plate', label: t('Patch a plate'), price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? t('Hull whole') : `${t('Hull')} ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
+      { key: 'plate', label: t('Patch a plate'), price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? t('Hull fully repaired') : `${t('Hull')} ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
     );
   }
 }

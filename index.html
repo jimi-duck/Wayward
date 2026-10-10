@@ -233,7 +233,7 @@
         <p class="resume-s warn" id="save-problem" hidden>Your saved journey could not be read.</p>
         <button type="button" id="restore" class="ghost" hidden>Restore last save</button>
         <!-- iPhone in a browser only: a Home Screen app never shows the browser's bars -->
-        <p class="tip" id="ios-tip" hidden>To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.</p>
+        <p class="tip" id="ios-tip" hidden>For a full-screen game, add Wayward to your Home Screen: tap Share, then Add to Home Screen. Launch it from the new icon to hide the browser bars.</p>
       </div>
 
       <footer class="st-foot">
@@ -319,7 +319,7 @@
         </div>
         <div id="cm-timer" class="cm-timer" hidden><i></i></div>
         <div id="cm-list" class="cm-list"></div>
-        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>6</kbd> answer · <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>Enter</kbd> · pad <kbd>A</kbd></span></footer>
+        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>6</kbd> to answer · <kbd>↑</kbd>/<kbd>↓</kbd> then <kbd>Enter</kbd> · controller: <kbd>A</kbd></span></footer>
       </div>
     </div>
 
@@ -332,7 +332,7 @@
         <div class="port-stock" id="port-stock"></div>
         <div class="port-warn" id="port-warn" hidden></div>
         <div class="port-list" id="port-list"></div>
-        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>8</kbd> stop, fit, plot, trade · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off</span><button type="button" id="port-x">Cast off</button></footer>
+        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>8</kbd>: stop, refit, plot or trade · <kbd>Enter</kbd> to leave port · controller: <kbd>A</kbd> select / <kbd>B</kbd> leave</span><button type="button" id="port-x">Cast off</button></footer>
       </div>
     </div>
 
@@ -348,10 +348,10 @@
     <!-- The Threshold: what the Severance file is worth, then the epilogue. -->
     <div id="ending" class="sheet" role="dialog" aria-labelledby="en-t" hidden>
       <div class="panel narrow ending">
-        <header class="ph row"><div class="ph"><span class="kick" id="en-k">The Threshold</span><h2 id="en-t">What is the file worth?</h2><span class="sub" id="en-s"></span></div><button type="button" id="en-go" hidden>Go on</button></header>
+        <header class="ph row"><div class="ph"><span class="kick" id="en-k">The Threshold</span><h2 id="en-t">What is the Severance file worth?</h2><span class="sub" id="en-s"></span></div><button type="button" id="en-go" hidden>Go on</button></header>
         <ul id="en-l" class="unlocks ends"></ul>
         <div id="en-epi" class="en-epi"></div>
-        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>6</kbd> choose · arrows and <kbd>Enter</kbd> · pad <kbd>A</kbd></span></footer>
+        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>6</kbd> to choose · arrows then <kbd>Enter</kbd> · controller: <kbd>A</kbd></span></footer>
       </div>
     </div>
 
@@ -372,26 +372,26 @@
         <ul id="ch-news" class="ch-news"></ul>
         <details id="ch-more" class="ch-more" hidden><summary id="ch-more-s"></summary><ul id="ch-more-l" class="ch-news"></ul></details>
         <div class="ch-body">
-          <svg id="ch-map" class="ch-map" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The region: systems, lanes, the Net and Calloway"></svg>
+          <svg id="ch-map" class="ch-map" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The chart shows systems, jump lanes, the Net and Calloway’s last known position."></svg>
           <div class="ch-side"><div id="ch-list" class="ch-list"></div><div id="ch-stat" class="ch-stat"></div></div>
         </div>
-        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>5</kbd> plot a lane · arrows and <kbd>Enter</kbd> · pad <kbd>A</kbd></span><span class="ch-key"><i class="kc-net"></i>The Net <i class="kc-cal"></i>Calloway, last seen <i class="kc-port"></i>Port <i class="kc-drift"></i>Drift fleet <i class="kc-thren"></i>Thren <span class="k">Numbers on lanes: Cyrite to jump</span></span></footer>
+        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>5</kbd> to plot a lane · arrows then <kbd>Enter</kbd> · controller: <kbd>A</kbd></span><span class="ch-key"><i class="kc-net"></i>The Net <i class="kc-cal"></i>Calloway, last seen <i class="kc-port"></i>Port <i class="kc-drift"></i>Drift fleet <i class="kc-thren"></i>Thren <span class="k">Numbers on lanes: Cyrite to jump</span></span></footer>
       </div>
     </div>
 
     <!-- The run report. Play again is the only way out. -->
     <div id="summary" class="sheet alert" role="dialog" aria-labelledby="sum-t" hidden>
       <div class="panel wide">
-        <header class="ph row"><div class="ph"><span class="kick">Hull breach</span><h2 id="sum-t">Run over</h2><span class="sub" id="sum-s"></span></div><button type="button" id="again">Play again</button></header>
+        <header class="ph row"><div class="ph"><span class="kick">Hull breach</span><h2 id="sum-t">Run complete</h2><span class="sub" id="sum-s"></span></div><button type="button" id="again">Play again</button></header>
         <div class="sum-top">
           <div class="sum-hero"><span class="k">Score</span><b id="sum-score">0</b><span class="sum-line" id="sum-line"></span><span class="sum-ship" id="sum-ship"></span></div>
           <div class="tiles" id="sum-tiles"></div>
         </div>
         <div class="sum-mid">
           <section class="sum-build"><h3 class="k">Your ship</h3><div id="sum-build"></div></section>
-          <section class="sum-how"><h3 class="k">How it went</h3><div id="sum-how"></div></section>
+          <section class="sum-how"><h3 class="k">Run summary</h3><div id="sum-how"></div></section>
         </div>
-        <figure class="chart"><figcaption><span class="k">Score over the run</span><span class="key"><i class="k-run"></i><span class="k">This run</span><i class="k-best"></i><span class="k">Best run</span></span></figcaption><svg id="sum-chart" viewBox="0 0 820 120" preserveAspectRatio="none"></svg></figure>
+        <figure class="chart"><figcaption><span class="k">Run score</span><span class="key"><i class="k-run"></i><span class="k">This run</span><i class="k-best"></i><span class="k">Best run</span></span></figcaption><svg id="sum-chart" viewBox="0 0 820 120" preserveAspectRatio="none"></svg></figure>
         <div id="sum-unlocks" class="sum-unlocks"></div>
       </div>
     </div>
@@ -413,7 +413,7 @@
             <li><b>Upgrade</b><span>Spend Cyrite in the bay.</span></li>
             <li><b>Survive</b><span>Outlast the waves.</span></li>
           </ol>
-          <ol class="brief steps" id="brief" data-i18n="html"><li>Laser the <b class="v">violet rock</b> for Cyrite · torpedoes waste half</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li></ol>
+          <ol class="brief steps" id="brief" data-i18n="html"><li>Mine <b class="v">violet asteroids</b> for Cyrite (torpedoes yield half)</li><li>Refuel</li><li>Jump from the <b class="a">lane entrance</b></li></ol>
         </section>
         <section class="term-s full main-only">
           <h3 class="th">Controls</h3>
@@ -451,7 +451,7 @@
           </ol>
         </section>
         <div class="pause-acts main-only">
-          <button type="button" id="p-go"><span class="only-desktop">Resume · any key</span><span class="only-touch">Resume</span></button>
+          <button type="button" id="p-go"><span class="only-desktop">Resume · press any key</span><span class="only-touch">Resume</span></button>
           <button type="button" id="p-skip" hidden><span>Skip training</span></button>
           <button type="button" id="p-arch" class="story-only"><span>Archive</span></button>
           <button type="button" id="p-exit" class="story-only"><span>Save and exit</span></button>
@@ -466,8 +466,8 @@
     <!-- A phone held upright: the game plays on its side only, and waits. -->
     <div id="turn" class="cover" role="alert">
       <svg class="cover-i" viewBox="0 0 48 48" aria-hidden="true"><path class="was" d="M6 6h14v24H6z M11 26h4"/><path d="M18 26h24v14H18z M38 31v4"/><path d="M26 6h4l8 8v6 M35 17l3 3 3-3"/></svg>
-      <b class="cover-t">Turn your phone</b>
-      <span class="cover-s">Wayward plays in landscape</span>
+      <b class="cover-t">Rotate your phone</b>
+      <span class="cover-s">Wayward is designed for landscape play</span>
     </div>
     <div id="debug" aria-hidden="true"></div>
   </div>
@@ -477,8 +477,8 @@
   <div id="swipe" class="cover" role="alert">
     <svg class="cover-i" viewBox="0 0 48 48" aria-hidden="true"><path d="M12 24l12-12 12 12"/><path d="M12 36l12-12 12 12"/></svg>
     <b class="cover-t">Swipe up</b>
-    <span class="cover-s">for the whole screen, with no tabs or bars</span>
-    <button type="button" id="swipe-x" class="ghost">Keep the bars</button>
+    <span class="cover-s">for full-screen play without browser bars</span>
+    <button type="button" id="swipe-x" class="ghost">Keep browser bars</button>
   </div>
   <noscript>Wayward needs JavaScript and WebGL to run.</noscript>
   <script type="module" src="./src/main.ts"></script>

@@ -9,7 +9,6 @@ export const SPACE: Record<string, string> = {
   'Curtain': 'Vorhang',
   'Charged gas lit in ribbons, miles tall. It does nothing but shine.': 'Geladenes Gas in Bändern, meilenhoch. Es leuchtet nur.',
   'Static field': 'Störfeld',
-  'A standing field that scrambles instruments. The lane mouth swims; locks will not hold.': 'Ein stehendes Feld, das die Instrumente stört. Die Lane-Mündung schwimmt, Ziele halten nicht.',
   'Storm cell': 'Sturmzelle',
   'Lightning walks the cell. It charges whatever it misses, and breaks what it does not.': 'Blitze wandern durch die Zelle. Was sie verfehlen, laden sie auf, was sie treffen, zerbrechen sie.',
   'Breaker field': 'Trümmerfeld',

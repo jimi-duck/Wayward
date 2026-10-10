@@ -76,7 +76,7 @@ function noticeText(l: NoticeLine, day: number): string {
   const name = t(l.name.replace(/^the /, ''));
   const parts = [`${name} · ${t(l.tier)}`, l.next ? t('{n}/{at} to {tier}', { n: Math.floor(l.notice), at: l.next.at, tier: t(l.next.tier) }) : t('{n} notice', { n: Math.floor(l.notice) })];
   if (l.standing !== null) parts.push(`${t('standing')} ${signed(l.standing)}`);
-  if (l.captain) parts.push(`${l.captain.name}, ${l.captain.rest > day + 1e-9 ? t('resting till day {n}', { n: Math.floor(l.captain.rest) + 1 }) : t('hunting you')}`);
+  if (l.captain) parts.push(`${l.captain.name}, ${l.captain.rest > day + 1e-9 ? t('resting until day {n}', { n: Math.floor(l.captain.rest) + 1 }) : t('hunting you')}`);
   return parts.join(' · ');
 }
 
@@ -94,7 +94,7 @@ function shipTrouble(j: Journey): string[] {
   else if (c.supplies <= LOW_SUPPLIES) out.push(t('Supplies low · buy more at a port'));
   const fuel = weightFuel(c.levels);
   if (fuel) out.push(t('Heavy · each jump burns {n} more Cyrite', { n: fuel }));
-  if (overRatings(c.levels).heat) out.push(t('Running hot · guns slower'));
+  if (overRatings(c.levels).heat) out.push(t('Weapons overheating · slower fire rate'));
   return out;
 }
 
@@ -152,20 +152,20 @@ export class ChartPanel {
     const end = out.kind === 'through' || out.kind === 'captured' || out.kind === 'wrecked';
     const rn = regionName(j.chart, j.at);
     $('chart').classList.toggle('alert', out.kind !== 'through');
-    $('ch-k').textContent = end ? `${t('Journey over')} · ${t('day {n}', { n: Math.floor(j.day) + 1 })}`
+    $('ch-k').textContent = end ? `${t('Journey ended')} · ${t('day {n}', { n: Math.floor(j.day) + 1 })}`
       : out.kind === 'lost' ? [t('Total loss'), rn].filter(Boolean).join(' · ')
       : [t('Wreck {n} of {of}', { n: j.lost, of: survivalOf(j.survival).voyage.wrecks }), rn].filter(Boolean).join(' · ');
     $('ch-t').textContent = out.kind === 'through' ? t('Into the Scatter') : out.kind === 'captured' ? t('Taken by Calloway') : out.kind === 'wrecked' ? t('The Wayward is lost') : out.kind === 'lost' ? t('The region starts again') : `${t('Adrift')} · ${s.name}`;
     const legs = j.legs.filter((l) => l.ended === 'jumped').length;
     $('ch-s').textContent = end
       ? [plural(legs, '{n} jump', '{n} jumps'), days(Math.round(j.day)), plural(j.wrecks, '{n} wreck', '{n} wrecks'), plural(j.hunt.caught, 'Calloway caught you once', 'Calloway caught you {n} times'), `${t('score')} ${num(j.score)}`].join(' · ')
-      : out.kind === 'lost' ? t('Too many wrecks in one region: you fly it again.')
+      : out.kind === 'lost' ? t('Too many wrecks in this region · restart the region')
       : t('She flies again from here, a day later. A share of the stores gone.');
     this.onPick = null;
     this.onGo = onGo;
     const go = $('ch-go');
     go.hidden = false;
-    go.textContent = t(end ? 'New journey' : out.kind === 'lost' ? 'Fly the region again' : 'Fly on');
+    go.textContent = t(end ? 'New journey' : out.kind === 'lost' ? 'Restart this region' : 'Fly on');
     go.onclick = guarded(this.opened, () => this.go());
     go.onpointerdown = (e) => e.stopPropagation();
     this.ids = [];
@@ -177,7 +177,7 @@ export class ChartPanel {
     } else if (out.kind === 'adrift') {
       // the rule, where the player is looking: the last wreck here is a total loss
       const left = survivalOf(j.survival).voyage.wrecks - j.lost;
-      $('ch-list').replaceChildren(h('p', 'ch-rule', left > 1 ? t('Wrecks left in this region · {n}', { n: left }) : t('The next wreck in this region is a total loss: you fly it again from its gate.')));
+      $('ch-list').replaceChildren(h('p', 'ch-rule', left > 1 ? t('Wrecks left in this region · {n}', { n: left }) : t('The next wreck in this region will end the journey · restart the region to continue')));
     } else $('ch-list').replaceChildren();
     this.draw(j);
     this.off = keys((e) => {
@@ -287,7 +287,7 @@ export class ChartPanel {
     const netN = j.chart.seenNet.length;
     // what each is for, on hover: Cyrite moves the ship, supplies keep it going and pays for the rest
     const cells: Array<[string, string, string]> = [
-      [t('Cyrite'), String(c.cyrite), t('Cyrite: the one currency. It moves you, builds your ship and pays at the ports.')],
+      [t('Cyrite'), String(c.cyrite), t('Cyrite is used to jump between systems and to pay for upgrades and services at ports.')],
       [t('Supplies'), String(c.supplies), t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
@@ -295,12 +295,12 @@ export class ChartPanel {
     $('ch-stat').replaceChildren(
       h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', t('File {n}/{of}', { n: file.found, of: file.of }))),
       ...regionAsks(j.chart, j.at),
-      ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `${t('Goal')} · ${t('reach {name}', { name: goal.name })} · ${plural(left, '{n} jump', '{n} jumps')}`)] : []),
+      ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `${t('Goal')} · ${t('Reach {name}', { name: goal.name })} · ${plural(left, '{n} jump', '{n} jumps')}`)] : []),
       ...shipTrouble(j).map((l) => h('p', 'ch-warn', l)),
       h('div', 'port-stock', '', ...cells.map(([k, v, why]) => { const e = h('span', '', '', h('span', 'k', k), h('b', '', v)); e.title = why; return e; })),
       h('p', 'ch-hunt', j.trail.length < 2
-        ? `Calloway · ${t('not on your trail yet')}`
-        : `Calloway · ${t('last seen {where}', { where: seen ? sysById(j.chart, seen).name : t('unknown') })}, ${ago ? plural(ago, '{n} day ago', '{n} days ago') : t('today')} · ${gap === 0 ? t('in this system') : plural(gap, 'about {n} jump behind', 'about {n} jumps behind')}`),
+        ? `Calloway · ${t('Not on your trail yet')}`
+        : `Calloway · ${t('last seen {where}', { where: seen ? sysById(j.chart, seen).name : t('unknown') })}, ${ago ? plural(ago, '{n} day ago', '{n} days ago') : t('today')} · ${gap === 0 ? t('in this system') : plural(gap, 'About {n} jump behind', 'About {n} jumps behind')}`),
       ...fileLines(j.calloway, j.hunt.hunch).map((l) => h('p', 'ch-file', t(l))),
       h('p', 'ch-netl', `${t('The Net')} · ${plural(netN, '{n} system', '{n} systems')} · ${t('as of day {n}', { n: Math.floor(j.chart.seenDay) + 1 })}`),
       ...readout(j.notice, c.standing).map((l) => h('p', `ch-notice t-${l.tier}`, noticeText(l, j.day))),
