@@ -32,6 +32,13 @@ costs nothing) and at least one other way to settle it:
 | The dead drop | Marches to Hollows | `reach`: collect a package at a beacon; a trap of three pickets waits on the way out | tell the Custody |
 | The long walk | Marches to Hollows | `follow`: walk a crippled, slow hauler to the lane; raiders come after half a minute | a tractor takes her in |
 | Finders keepers | Belt onward | `race`: four marks to a claim against a rival salvor at 90% of your speed | a spoofer takes half |
+| Something in the dark | Belt onward | `survey`: two rings round an uncharted warm object; the nearer pays most | sell the bearing |
+| The voice on the wire | Belt onward | `reach`: take a call at a dead relay that says your ship's name; sets the Voice flags | jam the relay |
+| Missing payroll | Marches to Hollows | `strike`: cripple a lightly built courier and take a month of wages | warn the barges |
+| One filter left | Marches to Free Ports | `reach` on a ninety-second clock with two supplies of parts | sell them the parts |
+| Two captains, one wreck | Belt onward | `destroy`: five hulls from two crews that turn on you; the wreck is yours | strip it while they shout |
+| The witness | Belt onward | `defend`: keep a freighter alive 80 s against two waves of pickets | hand her over |
+| Lose the Prefect | Marches to Hollows | `sneak`: wipe your trace at a relay inside a patrol loop; the Prefect loses a day | pay the broker |
 
 ## What each one changes
 
@@ -82,10 +89,9 @@ units, and the HUD shows `Stage.status` under the objective line.
 
 ## Not yet
 
-Seven of the twenty-five ideas are still to do: Something in the Dark, The Voice
-on the Wire, Missing Payroll, One Filter Left, Two Captains One Wreck, The
-Witness and Lose the Prefect. One Crate No Questions already exists as "A sealed
-crate" (`sc_smugglers`). Still to check on a real device: the rival's pace, the
-sneak timing and how often a system has a job (`SIT_CHANCE`).
+All twenty-five of the ideas are in, with One Crate No Questions as "A sealed
+crate" (`sc_smugglers`). What is left is checking them on a real device: the
+rival's pace, the sneak timing, the pay against the economy and how often a
+system has a job (`SIT_CHANCE`).
 
 The Hostile column of [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md) now includes the foes of missions, which fight from the moment the job is taken.
