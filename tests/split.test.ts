@@ -36,4 +36,16 @@ describe('rock splitting', () => {
       expect(Math.max(...speeds) - Math.min(...speeds)).toBeGreaterThan(0);
     }
   });
+
+  it('never makes a piece bigger than the rock it came from, and starts it at the parent\'s place', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const f = new Field(new Rng(seed));
+      const parent = f.spawn(seed % 2 ? 0 : 1, 10, -4, 3, 2, seed % 5 ? 'basalt' : 'iron');
+      for (const k of f.split(parent)) {
+        expect(k.r).toBeLessThanOrEqual(parent.r * 0.7 + 1e-9);
+        expect(k.x + k.ox).toBeCloseTo(parent.x, 6);
+        expect(k.z + k.oz).toBeCloseTo(parent.z, 6);
+      }
+    }
+  });
 });
