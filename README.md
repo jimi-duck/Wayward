@@ -81,8 +81,7 @@ rock clean; a torpedo keeps only half of what is in it.
 
 ## Developer notes
 
-- Settings has a Dev mode switch (remembered): it shows Open review world
-  and a Space effects switch, so the flags below need no URL editing.
+- Settings has a Dev review button that opens the review world, the same as `?dev`.
 - `?dev` opens the review world: every ship, rock, item and feature, labelled,
   flown without risk ([docs/REVIEW.md](docs/REVIEW.md)).
 - `?train` plays the Arcade training again; `?short` plays the old three-region
