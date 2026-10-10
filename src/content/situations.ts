@@ -500,7 +500,7 @@ export const QUESTIONS: Array<{ human: string; unknown: string }> = [
 // about it. Theories contradict each other on purpose.
 export interface Observation { flag: string; name: string; line: string; theory: string }
 export const OBSERVATIONS: Observation[] = [
-  { flag: 'saw_thren', name: 'The formation', line: 'Unregistered contacts crossed the scope without a word.', theory: 'Pirates, say the Gutter. Survey drones, says the Office. Neither of them looked up.' },
+  { flag: 'saw_thren', name: 'The formation', line: 'Unregistered contacts crossed the scope without a word.', theory: 'Pirates, say the Gutter. Survey drones, say the Offices. Neither of them looked up.' },
   { flag: 'thren_curious', name: 'The watcher', line: 'One contact matched your speed, studied the Wayward and left.', theory: 'Nobody has seen a Thren do that to a ship that was not carrying Cyrite.' },
   { flag: 'thren_swarm', name: 'The feeding', line: 'A swarm moved through a Cyrite field and ignored everything in it.', theory: 'Miners say they eat it. The Warden says they count it.' },
   { flag: 'thren_territory', name: 'The ring', line: 'They hold a seam and face outward, every one of them.', theory: 'A territory? A nest? A guard set by something that is not there?' },

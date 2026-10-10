@@ -144,13 +144,13 @@ describe('the factions on their own', () => {
 });
 
 describe('the Thren in a sortie', () => {
-  function threnSortie(thren: number, cyrite: number) {
+  function threnSortie(thren: number, fuel: number) {
     const j = newJourney(6);
-    endSortie(j, result(j, {}, { cyrite, supplies: 12}));
+    endSortie(j, result(j, {}, { fuel, supplies: 12}));
     j.chart.thren![j.at] = thren;
     const def = sortieDef(j);
     expect(def.thren).toBe(thren);
-    return new World(11, { mode: 'breakout', sortie: def, carry: { ...j.carry, cyrite } });
+    return new World(11, { mode: 'breakout', sortie: def, carry: { ...j.carry, fuel } });
   }
 
   it('swarm, sooner with a full tank, and scramble sensors and navigation', () => {
@@ -165,7 +165,7 @@ describe('the Thren in a sortie', () => {
     };
     const full = first(TANK_MAX), dry = first(0);
     expect(full.t).toBeLessThan(120);
-    // drawn by Cyrite: with a full tank the second swarm comes sooner than with none (the first is on a clock)
+    // drawn by the jump fluid: with a full tank the second swarm comes sooner than with none (the first is on a clock)
     expect(full.w.bk!.nextSwarm - full.t).toBeLessThan(dry.w.bk!.nextSwarm - dry.t);
     // close by, the scope and the lane mouth go strange
     const w = full.w;
@@ -186,7 +186,7 @@ describe('the Thren in a sortie', () => {
 
 describe('cards for who is here', () => {
   const ctx = (here: string[]): Ctx => ({
-    t: 120, heat: 0.2, cyrite: 20, need: 20, tank: TANK_MAX, chits: 50, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
+    t: 120, heat: 0.2, cyrite: 20, fuel: 20, need: 20, tank: TANK_MAX, chits: 50, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
     standing: {}, place: 'open', hostiles: 0, supplies: 5, kind: 'transit', netted: false, behind: Infinity, here,
   });
   const card = (id: string) => CARDS.find((c) => c.id === id)!;

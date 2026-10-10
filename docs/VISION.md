@@ -30,7 +30,9 @@ from system to system, connected by jump lanes and powered by **Krail**, a
 rare crystalline resource found beneath the surface of a handful of worlds.
 Krail fed the fabrication systems that could build almost anything, kept
 cities alive and economies running. Its sister mineral, **Cyrite**, violet in
-the same rock, powered the jump drives and kept ships moving.
+the same rock, powered the jump drives and kept ships moving. A drive does
+not burn it raw: a ship's refinery cooks it down to **jump fluid**, and the
+Wayward, an ore hauler, has a good one. She refines as she collects.
 
 Then the Krail started running out.
 
@@ -43,7 +45,7 @@ and seventy years later it still governs the core worlds.
   a **Civic Score**. The score decides what you can access, where you can
   travel, what work you may do and how closely you are watched.
 - The **Custody** is the fleet, the police and the military.
-- The **Office of Peace** is its intelligence network: it investigates
+- The **Offices of Peace** is its intelligence network: it investigates
   dissent, monitors communications and deals with people whose loyalty
   begins to slip.
 - **Corporations** control almost everything else: the mines, the
@@ -139,10 +141,11 @@ are what push the game beyond "space pirates versus evil government".
 
 ## Survival
 
-Krail and Cyrite are everything. Every jump costs Cyrite; every upgrade
-costs Krail; every mistake costs both. You also keep
-yourself alive: food, parts, cargo, fuel. Sometimes you have enough.
-Usually you don't.
+Cyrite is everything, and it has two lives. The ship refines it into jump
+fluid first, until the drive tank holds a jump; every jump burns fluid. What
+the tank cannot take stays Cyrite, the money for upgrades, ports and favours.
+Every mistake costs both. You also keep yourself alive: supplies, cargo,
+hull. Sometimes you have enough. Usually you don't.
 
 Every contact is a choice: a trader's deal, a settlement asking for help, a
 stranger with information, a toll, a distress call, a checkpoint at the next

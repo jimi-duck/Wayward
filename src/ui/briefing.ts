@@ -1,6 +1,7 @@
 import type { World } from '../sim/world';
 import { $, h } from './dom';
 import { num, t } from '../i18n';
+import { voiceText } from '../sim/voice';
 
 // ── the briefing, on the ship's console ───────────────────────────────────
 // The pause card as a display the ship has switched on: a rule above, and a
@@ -8,7 +9,9 @@ import { num, t } from '../i18n';
 // the three steps main.ts's showBrief fills.
 
 export function showConsole(w: World): void {
-  $('pause-voice').textContent = t(w.voice());
+  // the stock-ship line is the bay's joke, not the pause card's
+  const v = w.voice();
+  $('pause-voice').textContent = v === voiceText('obedience') ? '' : t(v);
   $('pause-foot').replaceChildren(
     h('span', '', t('Obedience class')),
     h('span', '', `${t('Cyrite')} ${num(Math.floor(w.purse))}`),

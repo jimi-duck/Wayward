@@ -354,7 +354,7 @@ export const SCENES: Record<string, string> = {
   'What are the lanes connected to?': 'Womit sind die Lanes verbunden?',
   'The formation': 'Die Formation',
   'Unregistered contacts crossed the scope without a word.': 'Unregistrierte Kontakte zogen wortlos über den Scope.',
-  'Pirates, say the Gutter. Survey drones, says the Office. Neither of them looked up.': 'Piraten, sagt die Gutter. Vermessungsdrohnen, sagt das Office. Keiner von beiden hat hingesehen.',
+  'Pirates, say the Gutter. Survey drones, say the Offices. Neither of them looked up.': 'Piraten, sagt die Gutter. Vermessungsdrohnen, sagen die Offices. Keiner von beiden hat hingesehen.',
   'The watcher': 'Der Beobachter',
   'One contact matched your speed, studied the Wayward and left.': 'Ein Kontakt hielt deine Geschwindigkeit, musterte die Wayward und ging.',
   'Nobody has seen a Thren do that to a ship that was not carrying Cyrite.': 'Noch nie hat ein Thren das mit einem Schiff getan, das kein Cyrit trug.',

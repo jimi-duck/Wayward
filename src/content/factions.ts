@@ -87,11 +87,11 @@ export const NOTICE: Record<Faction, FactionNotice> = {
     captains: ['kade', 'vex'],
   },
   office: {
-    name: 'the Office of Peace', standing: null,
+    name: 'the Offices of Peace', standing: null,
     kill: { interceptor: 2, cruiser: 3, special: 3, capital: 8 }, decay: 0.5,
     at: { warning: 3, toll: 7, hunters: 16, captain: 24 }, standingPer: Infinity, toll: 1.4, hunt: 0.8, elite: 0.1,
     lines: {
-      warning: 'The Office of Peace has opened a file',
+      warning: 'The Offices of Peace have opened a file',
       toll: 'Office clerks have your name on their fee schedule',
       hunters: 'Office ambush craft are on your trail',
       captain: 'An Office captain has been assigned to you',

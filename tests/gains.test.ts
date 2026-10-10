@@ -5,7 +5,7 @@ import { MAX_GAINS, gains } from '../src/sim/gains';
 import { Rng } from '../src/sim/rng';
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, chits: 0, plates: 3, maxPlates: 3,
+  t: 300, heat: 0.3, cyrite: 10, fuel: 10, need: 20, tank: 40, chits: 0, plates: 3, maxPlates: 3,
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, supplies: 12, kind: 'home', netted: true, behind: Infinity, ...x,
 });
 

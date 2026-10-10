@@ -50,7 +50,7 @@ function project(shown: StarSystem[]): Proj {
   return { px: (s) => PAD_X + ((s.col - lo) / (hi - lo)) * (W - PAD_X * 2), py: (s) => PAD_Y + s.y * (H - PAD_Y * 2) };
 }
 const days = (n: number) => plural(n, '{n} day', '{n} days');
-const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { cyrite: 'Cyrite', plates: 'Plates', supplies: 'Supplies' };
+const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { fuel: 'Jump fluid', cyrite: 'Cyrite', plates: 'Plates', supplies: 'Supplies' };
 /** A lane's style, as a mark and a word (sim/lanes.ts). */
 const STANCE_TAG: Record<Stance, [string, string]> = { quiet: ['○', 'Quiet'], watched: ['◐', 'Watched'], hostile: ['▲', 'Hostile'] };
 const richWord = (k: number) => t(k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
@@ -93,7 +93,7 @@ function shipTrouble(j: Journey): string[] {
   if (c.supplies <= 0) out.push(t('Out of supplies · the ship flies slower and worse'));
   else if (c.supplies <= LOW_SUPPLIES) out.push(t('Supplies low · buy more at a port'));
   const fuel = weightFuel(c.levels);
-  if (fuel) out.push(t('Heavy · each jump burns {n} more Cyrite', { n: fuel }));
+  if (fuel) out.push(t('Heavy · each jump burns {n} more jump fluid', { n: fuel }));
   if (overRatings(c.levels).heat) out.push(t('Weapons overheating · slower fire rate'));
   return out;
 }
@@ -173,7 +173,7 @@ export class ChartPanel {
       // the journey, system by system
       $('ch-list').replaceChildren(...j.legs.map((l, i) => h('div', `ch-leg${l.ended === 'destroyed' ? ' wreck' : ''}`, '',
         h('span', 'k', String(i + 1).padStart(2, '0')), h('b', '', l.name),
-        h('span', 'pl-note', `${t(l.ended === 'destroyed' ? 'Wrecked' : 'Jumped')} · ${Math.floor(l.time / 60)}:${String(l.time % 60).padStart(2, '0')} · Cyrite ${l.cyriteIn}→${l.cyriteOut}${l.calloway ? ' · Calloway' : ''}`))));
+        h('span', 'pl-note', `${t(l.ended === 'destroyed' ? 'Wrecked' : 'Jumped')} · ${Math.floor(l.time / 60)}:${String(l.time % 60).padStart(2, '0')} · ${l.fuelIn === undefined ? `Cyrite ${l.cyriteIn}→${l.cyriteOut}` : `${t('Jump fluid')} ${Math.floor(l.fuelIn)}→${Math.floor(l.fuelOut ?? 0)}`}${l.calloway ? ' · Calloway' : ''}`))));
     } else if (out.kind === 'adrift') {
       // the rule, where the player is looking: the last wreck here is a total loss
       const left = survivalOf(j.survival).voyage.wrecks - j.lost;
@@ -271,7 +271,7 @@ export class ChartPanel {
         h('b', 'pl-p', String(o.fuel)),
       ) as HTMLButtonElement;
       b.type = 'button';
-      b.title = t('{n} Cyrite to jump', { n: o.fuel });
+      b.title = t('{n} jump fluid to jump', { n: o.fuel });
       b.onclick = guarded(this.opened, () => this.pick(i));
       b.onpointerdown = (e) => e.stopPropagation();
       // hover marks it in place: a tap must not replace the button it is landing on
@@ -287,7 +287,8 @@ export class ChartPanel {
     const netN = j.chart.seenNet.length;
     // what each is for, on hover: Cyrite moves the ship, supplies keep it going and pays for the rest
     const cells: Array<[string, string, string]> = [
-      [t('Cyrite'), String(c.cyrite), t('Cyrite is used to jump between systems and to pay for upgrades and services at ports.')],
+      [t('Jump fluid'), String(Math.floor(c.fuel)), t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')],
+      [t('Cyrite'), String(c.cyrite), t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')],
       [t('Supplies'), String(c.supplies), t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')],
     ];
     const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);

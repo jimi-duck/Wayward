@@ -103,7 +103,7 @@ export class Gallery {
     world.aliens = [];
     world.pickups = [];
     // the lane gate and the depot read as lit and ready
-    world.cyrite = 99;
+    world.fuel = 99;
     this.hulls();
     this.elites();
     this.capitals();
@@ -248,7 +248,7 @@ export class Gallery {
     const z = this.stop('rock', 'loose', 'Krail & loose cargo', 'What the tractor pulls in. Krail goes white, blue, purple with its worth.');
     const items: Array<[PickupKind, number, string, string?]> = [
       ['crystal', 1, 'Krail 1', 'the smallest'], ['crystal', 2, 'Krail 2'], ['crystal', 3, 'Krail 3'], ['crystal', 4, 'Krail 4'], ['crystal', 5, 'Krail 5', 'the richest'],
-      ['cyrite', 3, 'Cyrite', 'Story fuel for the jump'], ['ore', 3, 'Ore', 'sold at the port'], ['parts', 3, 'Parts', 'patches a hull plate'],
+      ['cyrite', 3, 'Cyrite', 'refined into jump fluid first, then the purse'], ['ore', 3, 'Ore', 'sold at the port'], ['parts', 3, 'Parts', 'patches a hull plate'],
     ];
     items.forEach(([kind, value, name, sub], i) => {
       const [x, zz] = this.fan(i, items.length, z, 8, 7);
@@ -275,7 +275,7 @@ export class Gallery {
     bk.lane.x = 90; bk.lane.z = z;
     bk.port!.x = 190; bk.port!.z = z;
     w.review!.bk = bk;
-    this.label('places', 90, 12, z, 'Lane entrance', 'Hold inside the ring with the Cyrite to jump', 140);
+    this.label('places', 90, 12, z, 'Lane entrance', 'Hold inside the ring with the jump fluid to jump', 140);
     this.label('places', 190, 12, z, 'Port', 'Slow inside the cyan ring to dock', 140);
   }
 

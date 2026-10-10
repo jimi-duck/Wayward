@@ -173,7 +173,7 @@ describe('the stage', () => {
     run(w, 6);
     expect(st.result).toBe('won');
     expect(w.supplies).toBe(3);
-    expect(w.cyrite).toBeGreaterThanOrEqual(cy(20));
+    expect(w.cyrite + w.fuel).toBeGreaterThanOrEqual(cy(20));
     expect(w.encounter).toBeNull();
     expect(w.result().situation).toEqual({ id: w.sortie.system, result: 'won' });
   });

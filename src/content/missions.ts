@@ -49,7 +49,7 @@ export const MISSIONS: SituationDef[] = [
     lose: { text: 'The tanker escapes' },
     ignore: { text: 'You let the tanker pass' },
     after: {
-      won: { text: 'A tanker has gone missing · the Office is asking questions', flag: 'tanker_taken', hunt: 0.5 },
+      won: { text: 'A tanker has gone missing · the Offices are asking questions', flag: 'tanker_taken', hunt: 0.5 },
     },
   },
   {
@@ -179,7 +179,7 @@ export const MISSIONS: SituationDef[] = [
     prop: 'wreck',
     card: 'sc_wreck', at: 30, hail: 480, accept: ['read'],
     goal: { kind: 'watch', hold: 8, limit: 150, line: 'Get close and recover the wreck’s flight log' },
-    win: { text: 'Flight log recovered · the Office pays for an intact copy', chits: 120, flag: 'saw_hulk' },
+    win: { text: 'Flight log recovered · the Offices pay for an intact copy', chits: 120, flag: 'saw_hulk' },
     lose: { text: 'The log erases itself before the copy finishes' },
     ignore: { text: 'You leave the wreck untouched' },
     after: { won: { text: 'A derelict gave up its log · someone tried to destroy the record', hunt: 0.5, flag: 'saw_hulk' } },
@@ -316,7 +316,7 @@ export const MISSIONS: SituationDef[] = [
     win: { text: 'The witness survives · the evidence gets out', chits: 150, standing: { frontier: 1, custody: -2 }, notice: { custody: 2 }, flag: 'witness_saved' },
     lose: { text: 'The witness is lost · the evidence goes with them' },
     ignore: { text: 'You leave the witness to Custody' },
-    after: { won: { text: 'The witness escaped alive · the Office wants answers', hunt: 0.5, flag: 'witness_saved' } },
+    after: { won: { text: 'The witness escaped alive · the Offices want answers', hunt: 0.5, flag: 'witness_saved' } },
   },
   {
     id: 'lose_prefect', name: 'Lose the Prefect’s Trail', blurb: 'A patrol is using a relay to report your position to Calloway.', group: 'corporate',
@@ -459,7 +459,7 @@ export const MISSION_CARDS: CardDef[] = [
   mission({
     id: 'sc_wreck', kind: 'job', caller: 'office', tier: 'routine',
     from: 'Salvage broker', title: 'The Wreck That Remembered',
-    text: '“A derelict still holds a flight log. Recover an intact copy and the Office will pay. Someone else is trying to erase it.”',
+    text: '“A derelict still holds a flight log. Recover an intact copy and the Offices will pay. Someone else is trying to erase it.”',
     cargo: 'A wreck · its log still powered',
     choices: [
       { id: 'read', label: 'Recover the flight log', tone: 'help', hint: 'Move close and hold steady until the copy finishes.', win: { text: 'Heading to the wreck' } },

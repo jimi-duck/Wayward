@@ -263,7 +263,7 @@ export class BreakoutView {
     this.lane.position.set(b.lane.x, -1.5, b.lane.z);
     if (b.port) this.port.position.set(b.port.x, -2, b.port.z);
     // the throat brightens as the tank fills and blazes while the drive spools
-    const ready = world.cyrite >= b.jumpCost ? 1 : 0.35;
+    const ready = world.fuel >= b.jumpCost ? 1 : 0.35;
     const spool = b.spool / 5;
     this.throat.rotation.z += dt * (0.2 + spool * 3);
     (this.throat.material as MeshBasicMaterial).opacity = 0.015 + 0.025 * ready + 0.18 * spool + (b.jumpT >= 0 ? 0.4 : 0);

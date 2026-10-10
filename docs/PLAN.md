@@ -95,7 +95,7 @@ Make it feel like WAYWARD before anything else changes.
   |---|---|
   | Klingon: fast, aggressive | The Gutter |
   | Cardassian: long range, holds off | The Custody |
-  | Romulan: cloaks and strikes | The Office of Peace |
+  | Romulan: cloaks and strikes | The Offices of Peace |
   | Borg: adapts | The Voice |
   | Tholian: webs | The Thren |
 
@@ -133,7 +133,7 @@ Make it feel like WAYWARD before anything else changes.
 | G Situations | Done: a situation layer for the Story mode (33 situations, a timetable for the unknown thread, wards that are not enemies, the Net's tight variants, Calloway's personal offers, sightings in the Archive), journey version 12 (see [SITUATIONS.md](SITUATIONS.md), [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md)); real-device play still to do |
 | Dev The review world | Done: `?dev` opens a gallery of every hull, capital ship, rock, pickup, place and environment feature, held still and named, with a ship that cannot be hurt and a switchable sky (see [REVIEW.md](REVIEW.md)); a tool for reviewing, not a mode |
 | V Visual overhaul | Done (7 of 7), round two done (designed hulls, rock, Krail and finds, gate and port, far works), pending a device look: one look table (`render/look.ts`), enemy hulls painted like the Wayward, and a faction layer on every archetype's outline (patched Gutter, ordered Custody, swept Office, crusted Voice, bladed Thren). Next: rock and pickups, gate and port, combat marks, space depth, a consistency pass. Plan and audit in [VISUAL-OVERHAUL.md](VISUAL-OVERHAUL.md) |
-| Eco The Story economy | Done, first guesses, pending a device look: one currency (Cyrite, also the fuel) builds the ship, pays at ports and falls from rock as bold crystals (journey version 14); supplies replace food and parts, scrap pays at once and ore is not a stock, thin stores and a heavy ship fly worse and never stop, weight burns Cyrite, and the HUD, chart and port say so and upgrades belong to the work bay, which most systems now have; gate and bay are safe ground. See [ECONOMY.md](ECONOMY.md) |
+| Eco The Story economy | Done, first guesses, pending a device look: Cyrite is what is found and the money (bay, ports); the ship refines it into jump fluid first, which is all a jump burns, so nothing is held back for the lane (journey version 15, jump fluid split); it falls from rock as bold crystals; supplies replace food and parts, scrap pays at once and ore is not a stock, thin stores and a heavy ship fly worse and never stop, weight burns more jump fluid, and the HUD, chart and port say so and upgrades belong to the work bay, which most systems now have; gate and bay are safe ground. See [ECONOMY.md](ECONOMY.md) |
 | Mis Missions | Done, first batch, pending a device look: six goal kinds (destroy, strike, defend, race, survey, sneak) and twenty-four jobs beyond the quiet situations, paid in Cyrite and scaled by how the job went, each with another way to settle it and a mark left on the chart; situations are dealt more often (see [MISSIONS.md](MISSIONS.md)) |
 | Onb Onboarding | Done: a minute of training on every new Story journey (rock, one ship, fly to the near work bay and fit torpedoes), skippable; the Arcade plays it once. See [ONBOARDING.md](ONBOARDING.md) |
 | H The HUD | First pass done, pending a device look: a quieter, contextual HUD in smoked glass: one objective with a threat line, hull / fuel / energy with munitions quiet until a fight, stores in one line, the alert under the heading tape, names and distances on places and neutral hulls, "[B] Open bay" only when something can be fitted, glass tokens shared with the menu (see [HUD.md](HUD.md)) |
@@ -184,7 +184,7 @@ numbers and a visible current goal carry the play, and the words are there
 for whoever wants them (the reading itself is the "Slim down the reading"
 thread's; this track gives it the visual means).
 
-Faction colours: the Custody alert red, the Office of Peace a paler
+Faction colours: the Custody alert red, the Offices of Peace a paler
 official red (both the Continuance's arms: red, black, white), the Gutter
 faded rust, the Voice cold steel, the Thren a biological green.
 

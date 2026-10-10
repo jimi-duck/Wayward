@@ -2,7 +2,7 @@ import type { Face } from '../sim/captains';
 import type { CardDef } from '../sim/comms';
 
 // ── Calloway ──────────────────────────────────────────────────────────────
-// Prefect Idris Calloway, Office of Peace: the hunter who follows the
+// Prefect Idris Calloway, Offices of Peace: the hunter who follows the
 // Wayward's trail (sim/hunt.ts) and keeps a file on you (sim/calloway.ts).
 // This is what the file is made of and what she says about it: the tricks
 // she can learn, the habits she can read, the offers she makes, and the
@@ -92,7 +92,7 @@ const offer = (o: Omit<CardDef, 'kind' | 'caller' | 'trigger' | 'repeat' | 'face
  */
 export const OFFERS: CardDef[] = [
   offer({
-    id: 'offer_meet', from: 'Prefect Idris Calloway · Office of Peace', title: 'Meet me',
+    id: 'offer_meet', from: 'Prefect Idris Calloway · Offices of Peace', title: 'Meet me',
     text: '“I keep thinking about what you told me. Meet me: one ship each, no guns. I will listen. That is all I can promise.”',
     truths: [{ id: 'listening', weight: 3, read: 'She is alone on the channel · no escort appears on your sensors' }, { id: 'stalling', weight: 1, read: 'Her escort is moving while she keeps you talking' }],
     choices: [
@@ -103,7 +103,7 @@ export const OFFERS: CardDef[] = [
     ],
   }),
   offer({
-    id: 'offer_name', from: 'Prefect Idris Calloway · Office of Peace', title: 'A name for three days',
+    id: 'offer_name', from: 'Prefect Idris Calloway · Offices of Peace', title: 'A name for three days',
     text: '“Give me the name of your friend’s fence on the Leaky Tin, and I will give you three days. The Gutter will not know it came from you.”',
     truths: [{ id: 'quiet', weight: 2, read: 'Office channel, encrypted · she keeps her sources' }, { id: 'leaks', weight: 1, read: 'The channel is open · anyone could be listening' }],
     choices: [
@@ -114,36 +114,36 @@ export const OFFERS: CardDef[] = [
     ],
   }),
   offer({
-    id: 'offer_tank', from: 'Prefect Idris Calloway · Office of Peace', title: 'A full tank',
-    text: '“You are always short of Cyrite, Juno. Tell me your destination and a tender will refuel you. No tricks. I want you alive.”',
+    id: 'offer_tank', from: 'Prefect Idris Calloway · Offices of Peace', title: 'A full tank',
+    text: '“You are always short of jump fluid, Juno. Tell me your destination and a tender will refuel you. No tricks. I want you alive.”',
     choices: [
-      { id: 'accept', label: 'Take the Cyrite', tone: 'trade', hint: 'Receive 20 Cyrite, but Calloway learns your destination.', win: { text: 'The tender transfers 20 Cyrite · Calloway knows your destination', cyrite: 20, heat: -0.2, hunt: -1.5 } },
-      { id: 'lie', label: 'Take the Cyrite and give a false destination', tone: 'bluff', hint: 'Get the Cyrite and send her toward the wrong lane; she may check your story.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
-        win: { text: 'You receive the Cyrite · Calloway takes the wrong lane', cyrite: 20, hunt: 0.5 },
+      { id: 'accept', label: 'Take the fluid', tone: 'trade', hint: 'Receive 20 jump fluid, but Calloway learns your destination.', win: { text: 'The tender transfers 20 jump fluid · Calloway knows your destination', fuel: 20, heat: -0.2, hunt: -1.5 } },
+      { id: 'lie', label: 'Take the fluid and give a false destination', tone: 'bluff', hint: 'Get the fluid and send her toward the wrong lane; she may check your story.', odds: { base: 0.5, heat: -0.2, learn: 'lie' },
+        win: { text: 'You receive the fluid · Calloway takes the wrong lane', fuel: 20, hunt: 0.5 },
         lose: { text: '“That is not where you are going.” · the tender pulls away', hunt: -1 } },
       { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'You will need to find your own.', win: { text: '“Then count it carefully.”' } },
     ],
   }),
   offer({
-    id: 'offer_truce', from: 'Prefect Idris Calloway · Office of Peace', title: 'Stop, and I stop',
+    id: 'offer_truce', from: 'Prefect Idris Calloway · Offices of Peace', title: 'Stop, and I stop',
     text: '“Every Custody ship you destroy leaves a family waiting for news. Stop killing my crews, and I will stop sending them after you. Your word for mine.”',
     choices: [
-      { id: 'accept', label: 'Give her your word', tone: 'help', hint: 'Custody and the Office will ease off. If you attack them again, Calloway will know.',
+      { id: 'accept', label: 'Give her your word', tone: 'help', hint: 'Custody and the Offices will ease off. If you attack them again, Calloway will know.',
         win: { text: 'You agree to the truce · the bulletins are withdrawn', notice: { custody: -8, office: -6 } } },
       { id: 'refuse', label: 'Refuse', tone: 'refuse', hint: 'They shoot first.', win: { text: '“Then I will keep writing letters.”' } },
     ],
   }),
   offer({
-    id: 'offer_info', from: 'Prefect Idris Calloway · Office of Peace', title: 'What did you see?',
-    text: '“The Office records things it cannot explain. You have seen more than anyone. Tell me what you found, and I will trade what we know.”',
+    id: 'offer_info', from: 'Prefect Idris Calloway · Offices of Peace', title: 'What did you see?',
+    text: '“The Offices record things they cannot explain. You have seen more than anyone. Tell me what you found, and I will trade what we know.”',
     choices: [
-      { id: 'tell', label: 'Tell her what you saw', tone: 'help', hint: 'Receive the Office’s maps of the Net’s edge, but reveal what you know.', win: { text: 'She listens · and sends her maps of the Net’s edge', flag: ['news', 'calloway_curious'], score: 400, hunt: -0.5 } },
+      { id: 'tell', label: 'Tell her what you saw', tone: 'help', hint: 'Receive the Offices’ maps of the Net’s edge, but reveal what you know.', win: { text: 'She listens · and sends her maps of the Net’s edge', flag: ['news', 'calloway_curious'], score: 400, hunt: -0.5 } },
       { id: 'sell', label: 'Sell her one piece', tone: 'trade', hint: 'Sell one observation for 8 Cyrite. Keep the rest of what you know private.', win: { text: '8 Cyrite received · Calloway only gets one piece of the story', chits: 40 } },
       { id: 'refuse', label: 'Stay silent', tone: 'refuse', hint: 'What you saw is yours.', win: { text: '“Then we both guess.”' } },
     ],
   }),
   offer({
-    id: 'offer_shelter', from: 'Prefect Idris Calloway · Office of Peace', title: 'Come alongside',
+    id: 'offer_shelter', from: 'Prefect Idris Calloway · Offices of Peace', title: 'Come alongside',
     text: '“Your hull is badly damaged. My tender can repair two plates before the next watch. I will not board you. You have my word.”',
     choices: [
       { id: 'accept', label: 'Let the tender in', tone: 'trade', hint: 'Repair two hull plates and make the Custody stand off for now, but reveal your location.', win: { text: 'Two hull plates repaired · her fleet stands off', plates: 2, notice: { custody: -4 }, hunt: -1 } },
@@ -151,7 +151,7 @@ export const OFFERS: CardDef[] = [
     ],
   }),
   offer({
-    id: 'offer_passage', from: 'Prefect Idris Calloway · Office of Peace', title: 'A clean transit stamp',
+    id: 'offer_passage', from: 'Prefect Idris Calloway · Offices of Peace', title: 'A clean transit stamp',
     text: '“There are Net checkpoints ahead. I can authorise your passage through the next one. I only need to know which exit you will use.”',
     choices: [
       { id: 'accept', label: 'Take the permit', tone: 'trade', hint: 'Checkpoints will leave you alone for four days, but Calloway learns your exit.', win: { text: 'Stamped · the checkpoints wave you on', stall: 4, hunt: -1.5, flag: 'permit' } },
@@ -162,15 +162,15 @@ export const OFFERS: CardDef[] = [
     ],
   }),
   offer({
-    id: 'offer_identity', from: 'Prefect Idris Calloway · Office of Peace', title: 'A name that is not yours',
+    id: 'offer_identity', from: 'Prefect Idris Calloway · Offices of Peace', title: 'A name that is not yours',
     text: '“I can give your transponder a new identity: clean history, no Custody notice. In return, you owe me one honest answer when I ask.”',
     choices: [
-      { id: 'accept', label: 'Take the name', tone: 'trade', hint: 'Custody and the Office will lose your trail for a while. You will owe Calloway an answer.', win: { text: 'A new name · the bulletins go quiet', notice: { custody: -10, office: -8 }, hunt: -1, flag: 'owes_calloway' } },
+      { id: 'accept', label: 'Take the name', tone: 'trade', hint: 'Custody and the Offices will lose your trail for a while. You will owe Calloway an answer.', win: { text: 'A new name · the bulletins go quiet', notice: { custody: -10, office: -8 }, hunt: -1, flag: 'owes_calloway' } },
       { id: 'refuse', label: 'Keep your own', tone: 'refuse', hint: 'It is the only one that is true.', win: { text: '“It is also the one they hunt.”' } },
     ],
   }),
   offer({
-    id: 'offer_home', from: 'Prefect Idris Calloway · Office of Peace', title: 'The best there is',
+    id: 'offer_home', from: 'Prefect Idris Calloway · Offices of Peace', title: 'The best there is',
     text: '“Come home, Juno. Bring the archive and you will get a hearing, not a cell. It is the best offer I can make, and I will not make it twice.”',
     choices: [
       { id: 'think', label: 'Say you will think about it', tone: 'bluff', hint: 'Ask for time to decide. She may give it to you if she believes you.', odds: { base: 0.55, learn: 'lie' },

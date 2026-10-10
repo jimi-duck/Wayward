@@ -336,7 +336,9 @@ describe('the journey', () => {
     old.carry.levels = { ph_emitters: 2 };
     const back = migrate(old)!;
     expect(back.version).toBe(VERSION);
-    expect(back.carry.cyrite).toBe(17 + Math.round(9 / 5));
+    // all of it the tank's, up to what the tank holds
+    expect(back.carry.fuel + back.carry.cyrite).toBe(17 + Math.round(9 / 5));
+    expect(back.carry.fuel).toBe(17 + Math.round(9 / 5));
     expect('krail' in back.carry).toBe(false);
     expect(back.carry.levels).toEqual({ tp_bay: 1, ph_emitters: 2 });
     expect('xp' in back.carry).toBe(false);
@@ -390,13 +392,13 @@ describe('a sortie in the world', () => {
     expect(!!w.bk!.port).toBe(!!here(j).port);
     const b = w.bk!;
     b.blockade = 'done';
-    w.cyrite = o.route.cyrite;
+    w.fuel = o.route.cyrite;
     w.ship.x = b.lane.x; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0;
     run(w, 8);
     expect(w.phase).toBe('over');
     const res = w.result();
     expect(res.ended).toBe('jumped');
-    expect(res.carry.cyrite).toBe(0);
+    expect(res.carry.fuel).toBe(0);
   });
 
   it('opens Calloway’s channel when she arrives, and counts her ship beaten', () => {

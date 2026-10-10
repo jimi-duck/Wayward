@@ -48,7 +48,7 @@ import { PACING, type Approach } from './pacing';
 //
 // A hull is three things layered: its archetype (above: how it flies and
 // fights), its faction (FACTION_TRAITS: what every hull of that faction
-// does: Gutter crews press harder, Custody cutters reach further, Office of Peace ships cloak,
+// does: Gutter crews press harder, Custody cutters reach further, Offices of Peace ships cloak,
 // Voice hulls adapt, the Thren leave their webs behind), and, later in a run,
 // an elite modifier (ELITES). VARIANTS pairs archetypes with factions for
 // the spawner, so a new enemy is usually one row there, not new code.

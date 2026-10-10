@@ -302,7 +302,7 @@ docs and the brand moved together:
 - dilithium → Krail; phasers → lasers; the warp core → the reactor; photon
   and tricobalt → plain torpedoes and seismic mines;
 - the factions, by how they fight: Klingon → the Gutter, Cardassian → the
-  Custody, Romulan → the Office of Peace, Borg → the Voice, Tholian → the
+  Custody, Romulan → the Offices of Peace, Borg → the Voice, Tholian → the
   Thren; their variants, squads, capital ships and salvaged tech followed;
 - yellow and red alert → contact and alarm;
 - the wordmark and the logo files (`brand/`), with W and Y added to the
@@ -328,7 +328,7 @@ nothing is lost.
 - `sim/scatter.ts`: the factions acting on their own, stepped with the days
   (`stepScatter`): Drift fleets on the move, Gutter raids, Holdfasts
   throwing the Net back, the Voice building out, the Thren drifting and
-  drawn to Cyrite on the move. `presence` is who is in a system, for the
+  drawn to jump fluid on the move. `presence` is who is in a system, for the
   `SortieDef` (`here`, `thren`, `ahead`) and the cards (`Cond.here`).
 - `sim/hunt.ts`: Calloway on the trail; `daysUntil` is what turns lingering
   into her arrival time inside the next sortie.

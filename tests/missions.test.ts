@@ -20,10 +20,10 @@ function world(id: string, carry: Partial<Journey['carry']> = {}, levels: Record
   const j = newJourney(5, false, 'eight');
   const run = newRun(1);
   run.escaped = true;
-  endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 30, supplies: 12, plates: 3 }, run, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
+  endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, cyrite: 30, fuel: 40, supplies: 12, plates: 3 }, run, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
   plot(j, lanesFrom(j.chart, j.at)[0]!.to.id);
   const def = { ...sortieDef(j), situation: id, quiet: true, place: null, story: null };
-  const w = new World(j.seed * 31 + 1, { mode: 'breakout', sortie: def, carry: { ...j.carry, ...carry } });
+  const w = new World(j.seed * 31 + 1, { mode: 'breakout', sortie: def, carry: { ...j.carry, fuel: 40, ...carry } });
   w.levels = { ...w.levels, ...levels };
   w.ship.invuln = 1e9;
   return w;

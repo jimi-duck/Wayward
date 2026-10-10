@@ -108,8 +108,12 @@
           <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span><b class="val" id="v-hull">3/3</b>
         </div>
         <div class="sys-row" id="sys-fuel" hidden>
-          <span class="lbl">Cyrite</span>
+          <span class="lbl">Fluid</span>
           <i class="bar" id="g-fuel"></i><b class="val" id="v-fuel">6/20</b>
+        </div>
+        <div class="sys-row" id="sys-purse" hidden>
+          <span class="lbl">Cyrite</span>
+          <i aria-hidden="true"></i><b class="val" id="v-purse">0</b>
         </div>
         <div class="sys-row" id="sys-ph">
           <span class="lbl">Energy</span>
@@ -361,7 +365,7 @@
       <div class="panel narrow opening">
         <header class="ph"><span class="kick" id="op-k">Story 01</span><h2 id="op-t">Breakout</h2></header>
         <div id="op-l" class="op-l"></div>
-        <footer class="pf"><button type="button" id="op-go">Begin</button></footer>
+        <footer class="pf"><button type="button" id="op-go">Continue</button></footer>
       </div>
     </div>
 
@@ -407,14 +411,20 @@
         <div class="pause-t" id="pause-t">All stop</div>
         <div class="voice" id="pause-voice"></div>
         <section class="term-s main-only">
-          <h3 class="th">Orders</h3>
-          <!-- how to play, the arcade: three things, a few words each; the Story mode's steps below -->
-          <ol class="howto arcade-only">
-            <li><b>Collect Cyrite</b><span>Shoot rock, grab crystals. Torpedoes lose half.</span></li>
-            <li><b>Upgrade</b><span>Spend Cyrite in the bay.</span></li>
-            <li><b>Survive</b><span>Outlast the waves.</span></li>
-          </ol>
-          <ol class="brief steps" id="brief" data-i18n="html"><li>Mine <b class="v">violet asteroids</b> for Cyrite (torpedoes yield half)</li><li>Refuel</li><li>Jump from the <b class="a">lane entrance</b></li></ol>
+          <!-- Story: three short orders; Arcade: what the mode is and what to do -->
+          <h3 class="th story-only">Orders</h3>
+          <ul class="brief lines story-only" id="brief">
+            <li><b>Mine violet asteroids for Cyrite.</b> <span>Your refinery fills the jump tank first, leaving any surplus for upgrades and supplies.</span></li>
+            <li><b>Upgrade and resupply.</b> <span>Spend your remaining Cyrite to improve your ship and prepare for the journey ahead.</span></li>
+            <li><b class="a">Reach the lane entrance.</b> <span>Jump to the next system before the patrols close in.</span></li>
+          </ul>
+          <div class="arcade-only arc-how">
+            <h3 class="th">Survive the waves</h3>
+            <p>Mine asteroids for Cyrite. Use your haul to upgrade your ship and prepare for the next wave.</p>
+            <p>Destroy incoming hostiles, manage your energy, and keep your hull intact. Each wave gets more dangerous, so spend wisely and stay mobile.</p>
+            <h3 class="th">Your objective</h3>
+            <p>Collect Cyrite, improve your ship, and survive as long as you can. Push your score higher with every wave.</p>
+          </div>
         </section>
         <section class="term-s full main-only">
           <h3 class="th">Controls</h3>
@@ -422,16 +432,16 @@
           <dl class="keys-l only-keys">
           <div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Steer</dd></div>
           <div><dt><kbd>↑</kbd></dt><dd>Thrust</dd></div>
-          <div><dt><kbd>Space</kbd></dt><dd>Lasers</dd></div>
-          <div><dt><kbd>2</kbd></dt><dd>Torpedo</dd></div>
+          <div><dt><kbd>↓</kbd></dt><dd>Brake and reverse</dd></div>
           <div><dt><kbd>Shift</kbd></dt><dd>Roll</dd></div>
-          <div><dt><kbd>↓</kbd></dt><dd>Break and reverse</dd></div>
+          <div><dt><kbd>Space</kbd></dt><dd>Fire lasers</dd></div>
+          <div><dt><kbd>2</kbd></dt><dd>Fire torpedo</dd></div>
         </dl>
         <dl class="keys-l only-touch-l">
           <div><dt>Left thumb</dt><dd>Steer and thrust</dd></div>
           <div><dt>Right thumb</dt><dd>Lasers</dd></div>
           <div><dt>Second finger, tap</dt><dd>Roll</dd></div>
-          <div><dt>Turn button, or flick down</dt><dd>Break and reverse</dd></div>
+          <div><dt>Turn button, or flick down</dt><dd>Brake and reverse</dd></div>
         </dl>
         <dl class="keys-l only-pad">
           <div><dt><kbd>Stick</kbd></dt><dd>Steer</dd></div>
@@ -439,7 +449,7 @@
           <div><dt><kbd>A</kbd></dt><dd>Lasers</dd></div>
           <div><dt><kbd>X</kbd></dt><dd>Torpedo</dd></div>
           <div><dt><kbd>B</kbd></dt><dd>Roll</dd></div>
-          <div><dt><kbd>L3</kbd></dt><dd>Break and reverse</dd></div>
+          <div><dt><kbd>L3</kbd></dt><dd>Brake and reverse</dd></div>
         </dl>
         </section>
         <!-- the other face of the card: the switches, in the same ruled rows -->
@@ -452,10 +462,8 @@
           </ol>
         </section>
         <div class="pause-acts main-only">
-          <button type="button" id="p-go"><span class="only-desktop">Resume · press any key</span><span class="only-touch">Resume</span></button>
-          <button type="button" id="p-skip" hidden><span>Skip training</span></button>
-          <button type="button" id="p-arch" class="story-only"><span>Archive</span></button>
-          <button type="button" id="p-exit" class="story-only"><span>Save and exit</span></button>
+          <button type="button" id="p-go"><span class="only-desktop"><span class="story-only">Resume · press any key</span><span class="arcade-only">Begin · press any key</span></span><span class="only-touch"><span class="story-only">Resume</span><span class="arcade-only">Begin</span></span></button>
+          <button type="button" id="p-exit"><span class="story-only">Save and exit</span><span class="arcade-only">Exit</span></button>
         </div>
         <div class="pause-acts set-only">
           <button type="button" id="p-back"><span>Back</span></button>
