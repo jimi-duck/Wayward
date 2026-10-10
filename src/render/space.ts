@@ -42,6 +42,9 @@ interface Piece {
   b?: number;
   /** Turns this fast (radians a second), if it does: layers of a stream pass each other. */
   spin?: number;
+  /** Drifts along x at this speed and wraps within the feature: matter carried by the flow. */
+  flow?: number;
+  rot0?: number;
 }
 
 interface Look {
@@ -109,6 +112,7 @@ const rand = (seed: number) => {
   return () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646;
 };
 
+const wrap = (v: number, m: number) => ((v % m) + m) % m;
 const smooth = (x: number) => { const k = clamp(x, 0, 1); return k * k * (3 - 2 * k); };
 
 export class SpaceView {
@@ -232,12 +236,22 @@ export class SpaceView {
           add(this.glow, tint.clone().multiplyScalar(5 + r() * 3), z, z, Math.cos(a) * k, 2 + r() * 6, Math.sin(a) * k, 0.5 + r() * 0.4);
           pieces[pieces.length - 1]!.b = 0.4 + r() * 0.9;
         }
-        // the Krail stream: a dark body that eats the stars, then lit strands in layers that turn at their own pace
-        add(streamTexture(1), tint.clone().multiplyScalar(0.06), f.r * 1.6, f.r * 0.9, 0, 4, 0, 0.6, r() * 6.28, true);
-        for (let i = 0; i < 4; i++) {
+        // the Krail stream: a dark body that eats the stars, then lit strands in layers at their own depth and sway, running across the view
+        add(streamTexture(1), tint.clone().multiplyScalar(0.06), f.r * 1.7, f.r * 0.55, 0, 4, 0, 0.6, 0, true);
+        for (let i = 0; i < 5; i++) {
           const c = new Color(0.34, 0.2, 0.62).lerp(new Color(0.24, 0.3, 0.7), r()).multiplyScalar(0.9 + r() * 0.8);
-          add(streamTexture(1 + (i % 2)), c, f.r * (0.9 + i * 0.28), f.r * (0.45 + i * 0.14), (r() - 0.5) * f.r * 0.2, 5 + i * 5, (r() - 0.5) * f.r * 0.2, 0.25 - i * 0.03, r() * 6.28);
-          pieces[pieces.length - 1]!.spin = (i % 2 ? -1 : 1) * (0.012 + i * 0.01);
+          add(streamTexture(1 + (i % 2)), c, f.r * (1.0 + r() * 0.6), f.r * (0.3 + r() * 0.2), (r() - 0.5) * f.r * 0.5, 4 + i * 3, (r() - 0.5) * f.r * 0.5, 0.34 - i * 0.03, (r() - 0.5) * 0.3);
+          const q = pieces[pieces.length - 1]!;
+          q.spin = 0.05 + r() * 0.08;
+          q.rot0 = q.s.material.rotation;
+        }
+        // carried along the flow: bright motes at different depths and speeds, a few drifting mineral fragments
+        for (let i = 0; i < 26; i++) {
+          const k = r(), z = 0.5 + r() * 1.4;
+          add(this.glow, new Color(0.55, 0.35, 1.0).lerp(new Color(0.4, 0.6, 1.0), r()).multiplyScalar(2.5 + r() * 3), z, z, (r() - 0.5) * f.r * 0.5, 2 + k * 14, (r() - 0.5) * f.r * 1.6, 0.35 + r() * 0.4);
+          const q = pieces[pieces.length - 1]!;
+          q.b = 0.3 + r() * 1.2;
+          q.flow = (4 + k * 14) * (r() < 0.8 ? 1 : -0.5);
         }
         break;
       }
@@ -423,8 +437,9 @@ export class SpaceView {
     const sway = still ? 0 : 1;
     for (const p of look.pieces) {
       const swing = Math.sin(t * 0.12 * p.w + p.ph) * sway;
-      p.s.position.set(p.x + swing * 6, p.y + (def.look.shape === 'ribbon' ? Math.sin(t * 0.4 * p.w + p.ph) * sway * 8 : 0), p.z);
-      if (p.spin && !still) p.s.material.rotation += p.spin * this.dt;
+      const drift = p.flow && !still ? wrap(p.z + p.flow * t + f.r * 0.8, f.r * 1.6) - f.r * 0.8 : p.z;
+      p.s.position.set(p.x + swing * 6, p.y + (def.look.shape === 'ribbon' ? Math.sin(t * 0.4 * p.w + p.ph) * sway * 8 : 0), drift);
+      if (p.spin && p.rot0 !== undefined) p.s.material.rotation = p.rot0 + (still ? 0 : Math.sin(t * p.spin + p.ph) * 0.3);
       const blink = p.b ? 0.5 + 0.5 * Math.sin(t * p.b + p.ph) : 1;
       p.s.material.opacity = p.a * fade * f.level * blink;
     }
