@@ -9,7 +9,7 @@ import type { Feature, Space } from '../sim/space';
 import { designFor } from './hulls';
 import { lavaRock, rockGeometry } from './rocks';
 import { metal } from './kit';
-import { cloudTexture } from './textures';
+import { cloudTexture, streamTexture } from './textures';
 
 // ── the shared world, drawn ───────────────────────────────────────────────
 // Reads sim/space.ts and builds a look for each feature that is near enough
@@ -40,6 +40,8 @@ interface Piece {
   w: number;
   /** Blinks at this rate (radians a second), if it does. */
   b?: number;
+  /** Turns this fast (radians a second), if it does: layers of a stream pass each other. */
+  spin?: number;
 }
 
 interface Look {
@@ -230,7 +232,13 @@ export class SpaceView {
           add(this.glow, tint.clone().multiplyScalar(5 + r() * 3), z, z, Math.cos(a) * k, 2 + r() * 6, Math.sin(a) * k, 0.5 + r() * 0.4);
           pieces[pieces.length - 1]!.b = 0.4 + r() * 0.9;
         }
-        add(cloudTexture(), tint.clone().multiplyScalar(2), f.r * 1.4, f.r * 0.8, 0, 6, 0, 0.3);
+        // the Krail stream: a dark body that eats the stars, then lit strands in layers that turn at their own pace
+        add(streamTexture(1), tint.clone().multiplyScalar(0.06), f.r * 1.6, f.r * 0.9, 0, 4, 0, 0.6, r() * 6.28, true);
+        for (let i = 0; i < 4; i++) {
+          const c = new Color(0.34, 0.2, 0.62).lerp(new Color(0.24, 0.3, 0.7), r()).multiplyScalar(0.9 + r() * 0.8);
+          add(streamTexture(1 + (i % 2)), c, f.r * (0.9 + i * 0.28), f.r * (0.45 + i * 0.14), (r() - 0.5) * f.r * 0.2, 5 + i * 5, (r() - 0.5) * f.r * 0.2, 0.25 - i * 0.03, r() * 6.28);
+          pieces[pieces.length - 1]!.spin = (i % 2 ? -1 : 1) * (0.012 + i * 0.01);
+        }
         break;
       }
       case 'signal': {
@@ -416,6 +424,7 @@ export class SpaceView {
     for (const p of look.pieces) {
       const swing = Math.sin(t * 0.12 * p.w + p.ph) * sway;
       p.s.position.set(p.x + swing * 6, p.y + (def.look.shape === 'ribbon' ? Math.sin(t * 0.4 * p.w + p.ph) * sway * 8 : 0), p.z);
+      if (p.spin && !still) p.s.material.rotation += p.spin * this.dt;
       const blink = p.b ? 0.5 + 0.5 * Math.sin(t * p.b + p.ph) : 1;
       p.s.material.opacity = p.a * fade * f.level * blink;
     }
