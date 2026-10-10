@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { World } from '../src/sim/world';
 import { newJourney } from '../src/sim/journey';
 import { SAFE_R } from '../src/sim/breakout';
-import { lessonOf, stepOf, LESSON_NODE } from '../src/sim/tutor';
+import { goalOf } from '../src/sim/goal';
+import { metres } from '../src/sim/world';
+import { lessonOf, needsTorpedoFit, stepOf, LESSON_NODE } from '../src/sim/tutor';
 import type { InputFrame } from '../src/input/types';
 
 const input = (o: Partial<InputFrame> = {}): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...o });
@@ -16,6 +18,14 @@ function story() {
 }
 
 describe('the first minutes', () => {
+  it('puts the lane entrance 10 km off, and says so on the pause card', () => {
+    const w = story();
+    const d = Math.hypot(w.bk!.lane.x - w.ship.x, w.bk!.lane.z - w.ship.z);
+    expect(metres(d)).toBe(10000);
+    expect(needsTorpedoFit(w)).toBe(false);
+    expect(goalOf(w).goal).toBe('Laser the violet rock');
+  });
+
   it('starts on one rock close ahead, the torpedo bay not yet fitted, and the tank short of the jump by the rock', () => {
     const w = story();
     expect(stepOf(w)).toBe('mine');

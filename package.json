@@ -2,7 +2,7 @@
   "name": "wayward",
   "private": true,
   "version": "0.0.0",
-  "description": "Asteroid Blaster rebuilt in 3D for the web, on desktop and mobile.",
+  "description": "A dystopian 3D space survival game for desktop and mobile browsers.",
   "type": "module",
   "scripts": {
     "dev": "vite",

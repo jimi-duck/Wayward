@@ -1,12 +1,12 @@
 # WAYWARD
 
-*The game's vision. How it gets built is in [PLAN.md](PLAN.md).*
+*The game's vision. Status is in [PLAN.md](PLAN.md).*
 
 WAYWARD is a cyberpunk space survival game about staying ahead of a system
 that wants you back.
 
-You are not a space hero. You are a miner who stole the wrong ship, carrying
-evidence that could expose seventy years of lies. The game is about moving
+You are not a space hero. You are a fugitive aboard a stolen ore hauler,
+carrying evidence that could expose seventy years of lies. The game is about moving
 through a broken frontier while deciding what to spend, who to trust, what
 risks to take and how much of yourself to sacrifice to keep moving.
 
@@ -57,34 +57,33 @@ The Continuance calls this order. Everyone else calls it survival.
 
 Seventy years ago the jump lanes to the outer worlds went dark. Thousands of
 systems became unreachable overnight. Supply chains collapsed, ships
-disappeared, millions were cut off. The Continuance called it a catastrophic
-infrastructure failure. The region became **the Scatter**. The worlds left
+disappeared, millions were cut off. The Continuance blamed dwindling Krail.
+The region became **the Scatter**. The worlds left
 behind built their own settlements, repaired their own ships, scavenged what
 they could, and waited for the lanes to come back. They never did. Until
 now.
 
 ### You
 
-A contract miner on a corporate moon. Dig out Krail, meet your quota, don't
-ask questions. Then, in an old company archive, a file marked
-**SEVERANCE**: proof the lanes were shut down deliberately. The Krail
-reserves were running out, the outer worlds used too much of what remained,
-so the lanes were destroyed, the Scatter abandoned, and the Krail kept for
-the core. Seventy years of shortages. Billions left behind. All deliberate.
+You escape your home system aboard a decommissioned Continuance ore hauler.
+Hidden in her systems is a sealed archive, a file marked **SEVERANCE**: proof
+that the blackout was a purge. The shortages were a cover, and the isolation
+was used to remove those who could challenge the Continuance and to secure its
+hold on power. Seventy years of shortages, billions left behind, all
+deliberate.
 
 You don't know what happens if the file reaches the outside world. You know
 what happens if the Continuance finds it first.
 
 ### The Wayward
 
-You steal a company ore hauler, an old **Obedience-class**. Like every
-Continuance vessel she was named for an approved virtue: *Obedience*, *Duty*,
-*Prosperity*, *Loyalty*. You strip the name from the hull, paint over the
-markings, and give her your own: **WAYWARD**, the word the Continuance uses
-for people who refuse to stay where they belong.
+The hauler is an old **Obedience-class**. Like every Continuance vessel she
+was named for an approved virtue: *Obedience*, *Duty*, *Prosperity*,
+*Loyalty*. You paint over the markings and give her your own: **WAYWARD**, the
+word the Continuance uses for people who refuse to stay where they belong.
 
-A few others come with you, with their own reasons for leaving. You run for
-the Scatter, and just as you reach the dead lanes they come back online. For
+You run for the Scatter, and just as you reach the dead lanes they come back
+online. For
 the first time in seventy years the way out is open. The Continuance follows
 you through.
 
@@ -94,7 +93,7 @@ you through.
 
 **The Net.** Continuance control spreads across the star map behind you.
 Systems it reaches become checkpoints, surveillance zones and controlled
-markets: Krail trade restricted, implant scans mandatory, local leaders
+markets: Cyrite trade restricted, implant scans mandatory, local leaders
 pressured, resistance gone. You can slow it (help a settlement hold out,
 sabotage a checkpoint, destroy a relay, supply a resistance group, expose an
 operation), and every intervention costs something.
@@ -120,8 +119,8 @@ believes it because it's true, or because she needs it to be.
   resources, trade and safe routes. They know the Scatter better than anyone,
   and are very hard to control.
 - **The Gutter**: pirates, scavengers and abandoned crews beyond almost every
-  law. Ruthless, desperate, or past caring. They raid for Krail, parts and
-  food. Most people avoid them. Some become them.
+  law. Ruthless, desperate, or past caring. They raid for Cyrite and
+  supplies. Most people avoid them. Some become them.
 - **The Voice**: the old fabrication systems, left running with nobody to
   instruct them, began making their own decisions. Something emerged in the
   network, one intelligence or several. It speaks through terminals,
@@ -194,12 +193,14 @@ final dialogue option.
 
 ## The Breakout
 
-The current arcade game becomes the beginning of the story: the escape from
-your home system. Steal the Wayward, get through the first checkpoints, mine
-Krail, fight your way out, keep the ship alive, reach the Scatter. It is the
-first chapter of the larger game and an arcade mode of its own, because
-before you can decide what to do with the truth, you have to survive long
-enough to carry it somewhere.
+The story opens with the escape from your home system: get through the first
+checkpoints, mine Cyrite, fight your way out, keep the ship alive, reach the
+Scatter. A card sets the scene, a short training run follows (mine a violet
+rock, fit torpedoes at the work bay, shoot one ship), and the same loop also
+plays as the Arcade mode. Before you can decide what to do with the truth, you
+have to survive long enough to carry it somewhere.
+
+The story is about 85 stops in 8 regions, roughly seven hours.
 
 ---
 
@@ -215,40 +216,6 @@ enough to carry it somewhere.
    bonuses: who you help and who you leave behind follows you.
 5. **The frontier is alive.** Unpredictable, strange, occasionally hostile;
    not a collection of missions.
-
-## Milestones
-
-The full build plan, file by file, is in [PLAN.md](PLAN.md). In short:
-
-| | Milestone | The question it answers |
-|---|---|---|
-| M1 | The Breakout | Is escaping more interesting than fighting? |
-| M2 | The comms card | Do contacts feel like gambles rather than menus? |
-| M3 | The chart and the hunt | Does staying ahead across several sorties make a compelling session? |
-| M4 | Notice and nemeses | Do important enemies, Calloway above all, feel personal? |
-| M5 | The ship | Do different builds create different ways through the game? |
-| M6 | Crew (dropped: a one-person ship) | |
-| M7 | The Scatter | Does exploration create curiosity as well as risk? |
-| M8 | The story | Do the endings feel earned? |
-
-**The vertical slice** is M1, M2 and a small part of M3: one home system,
-one port, the Wayward, Krail extraction, basic ship survival, a handful of
-comms cards, one checkpoint, one meaningful choice, the first glimpse of the
-hunt. It proves one thing: **is it fun to be a fugitive in space?**
-
-## Open questions
-
-1. **The role of combat.** Available and satisfying, never the default. Can
-   the player survive by being clever rather than better armed?
-2. **Run length.** A 6–10 hour journey where failure costs but rarely ends
-   the story, or a harsher 1–2 hour roguelite? This affects almost everything.
-3. **How hard the hunt pushes.** The Net plus Calloway; pressure should force
-   decisions, not just movement.
-4. **The crew.** Decided: there is none. The Wayward is a one-person ship.
-5. **How much the player knows.** Enough to plan, never certain. Prices,
-   routes and positions can be wrong; Signals reveals more; Contacts can lie.
-6. **How strange the Scatter becomes.** Human at first, less so the further
-   you go.
 
 ## The central test
 

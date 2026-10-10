@@ -1,17 +1,9 @@
 # Situations
 
-> **Currency note.** Cyrite is the one currency (see [ECONOMY.md](ECONOMY.md)). Where this file says chits, Krail or ore money, it describes the earlier economy; content rows are still written in chits and converted to Cyrite (5 to 1) by `cy()` in `src/sim/purse.ts`.
-
 The second pass on the Story mode: what is going on in a system, who is in it,
 and why the player should care. Numbers are in
 [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md). The jobs with a goal to play (a
 toll to break, a tanker to cripple, a race) are in [MISSIONS.md](MISSIONS.md).
-
-## The problem it solves
-
-Before this pass a system was a kind (mining, port, transit, contested) plus
-a few chance calls. The Thren and the Voice were hostile swarms or a line in a
-card. Nothing in a system was *happening*, so nothing was remembered.
 
 ## Three levels of reading
 
@@ -48,7 +40,7 @@ is silent, the dice deal people's situations only; the unknown is never rolled.
 
 The player-facing groups are three, whatever the factions underneath:
 
-- **corporate**: Continuance, Custody, Office, Kellern
+- **corporate**: Continuance, Custody, the Offices of Peace, Kellern
 - **frontier**: Holdfasts, Drifts, the Gutter, the Dust Traders, independents
 - **unknown**: the Thren, the Voice, whatever the old lanes keep
 
@@ -90,7 +82,7 @@ nobody, and is ignored by the director, the alert, the fight test, the desk's
 | drawn | comes close to a ship with Cyrite aboard, never at it; turns only if shot |
 | hostile | an ordinary hostile (the traps and threats use these) |
 
-Acts are `pass`, `orbit`, `hold`, `follow`, `lead`. Encounter types from the
+Acts are `pass`, `orbit`, `hold`, `follow`, `lead`, `patrol`. Encounter types from the
 brief map onto them: passing (`pass`), curious (`orbit`), signal (a relay
 and its call), trade (the hauler, the Thren object), warning (territorial
 ring), territorial (the seam, the lane), opportunistic (the trap behind a
@@ -111,24 +103,21 @@ it on.
 
 | Resource | Is for |
 |---|---|
-| Jump fluid | movement: jumps (Story; refined from Cyrite, tank first) |
-| Krail | growth: the refit bay |
-| Chits | money and services: food, parts, news, favours, permits |
-| Parts | repairs and mechanical help |
-| Food | how long you can stay away from the ports |
-| Ore | cargo: sell it, or deliver it |
+| Jump fluid | jumps; the refinery cooks it from mined Cyrite until the tank holds one jump |
+| Cyrite | money: upgrades, supplies, plates, favours, permits |
+| Supplies | how long you can stay away from the ports |
 
-Each is named for its job the first time it matters (in a call's own text, not a
-tutorial), and again on hover in the chart. Chits are meant to be spent on
-something visible: a hauler's food, news, a permit, a clerk. Ore has a buyer
-who pays more than a dock (the hauler) and a delivery (the settlement).
+Each is named for its job the first time it matters (in a call's own text, not
+a tutorial), and again on hover in the chart. Cyrite is meant to be spent on
+something visible: a hauler's stock, news, a permit, a clerk. See
+[ECONOMY.md](ECONOMY.md).
 
 ## Calloway, personal
 
 Her offers (`content/calloway.ts`) are chosen from her file and from what
 she can see: a hull in a bad way brings *Come alongside* (two plates, the
 Custody called off, she knows where you are); having seen the unknown brings
-*What did you see?* (the Office's maps for the truth, or chits for a piece of
+*What did you see?* (the Offices' maps for the truth, or Cyrite for a piece of
 it); the Net ahead brings *A clean transit stamp*; a long way on, *A name that
 is not yours* (a clean record, and you owe her an answer). Taking the name
 puts a new choice on the last meeting. Every offer costs something she learns.
@@ -137,20 +126,6 @@ puts a new choice on the last meeting. Every offer costs something she learns.
 
 The Archive keeps **Sightings**: what was seen of the unknown, and what people
 say about it. Theories contradict each other on purpose.
-
-## First half hour
-
-| Minutes | What |
-|---|---|
-| 0 to 5 | escape from the yards |
-| 5 to 10 | Krail, the first refit |
-| 10 to 15 | the first port |
-| 15 to 20 | the first human optional situation (the hauler, then the settlement) |
-| 20 to 25 | a corporate checkpoint |
-| 25 to 30 | the first alien moment |
-
-The report in BALANCE-SITUATIONS.md says where the scripted pilot actually met
-them.
 
 ## Adding one
 

@@ -1,5 +1,5 @@
 // ── the refit bay's web ───────────────────────────────────────────────────
-// Every module the Wayward can fit, laid out for the bay (PLAN.md, R): a tab
+// Every module the Wayward can fit, laid out for the bay: a tab
 // per part of the ship, and in each a small web read left to right, tier by
 // tier. A node is a module with levels. Most are an upgrade from
 // content/upgrades.ts under the same id (its `apply` changes the stat

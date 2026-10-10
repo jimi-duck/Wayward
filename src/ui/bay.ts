@@ -15,7 +15,7 @@ import { tick } from './tick';
 import { num, t } from '../i18n';
 
 // ── the refit bay ─────────────────────────────────────────────────────────
-// Where the ship is built (PLAN.md, R). Two ways in, for two kinds of player:
+// Where the ship is built. Two ways in, for two kinds of player:
 //
 //   Suggested · the default: three modules that suit the ship as it is, as
 //               big cards, one tap (or 1 2 3) to fit. Nothing to plan.

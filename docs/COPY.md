@@ -1,9 +1,7 @@
 # Copy
 
-Rules for every line the player reads. They came out of the copy pass of
-2026-10-10, when all the English was exported, reworked by hand and applied
-back. German twins follow the English (`src/i18n/de/`; the lines of that pass
-are in `copy.ts`).
+Rules for every line the player reads. German twins follow the English
+(`src/i18n/de/`), short and informal (du).
 
 - **Clarity first.** In the HUD, chart, menus, tutorials and choice hints, say
   what is happening or what to do before adding atmosphere.
@@ -24,10 +22,11 @@ are in `copy.ts`).
   literal, the Thren strange and not explained early.
 - **Respect the player's time.** Short sentences, active voice, familiar words.
   No filler, repeated warnings or unexplained abbreviations.
-- **Consistent terms.** Cyrite, jump fluid, Krail, supplies, Bay, Custody, Offices of Peace,
-  the Net, the Voice, the Thren, jump lane, lane entrance. Cyrite is what is found and the
-  money; jump fluid is what the jump burns, refined from Cyrite (see `ECONOMY.md`). Never
-  call the fuel Cyrite or the money fluid. Chits and Krail are not shown as money.
+- **Consistent terms.** Cyrite, jump fluid, supplies, work bay, Custody, the Offices of
+  Peace, the Net, the Voice, the Thren, jump lane, lane entrance. Cyrite is what is found and
+  the money; jump fluid is what the jump burns, refined from Cyrite (see
+  [ECONOMY.md](ECONOMY.md)). Never call the fuel Cyrite or the money fluid. There are no
+  chits; Krail is a word of the story (what the Continuance said ran short), never a price.
 - **Sentence case** for messages and descriptions. Title case only for proper
   names and named story content.
 - **Punctuation by function.** Short labels and one-line status messages need
@@ -40,6 +39,6 @@ are in `copy.ts`).
   what it costs, what might go wrong and what happens next. Mystery belongs in
   the world, not in the controls.
 
-The comms reading caps (`tests/reading.test.ts`) were widened in the same pass
-(text 32 words, hint 19, label 8, win 16, lose 13, read 14) so a line can state
-its cost and risk.
+The comms reading caps are in `tests/reading.test.ts` (text 32 words, hint 19,
+label 8, win 16, lose 13, read 14), wide enough for a line to state its cost
+and risk.
