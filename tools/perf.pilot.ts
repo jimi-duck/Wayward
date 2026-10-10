@@ -45,6 +45,8 @@ function bench(label: string, make: (seed: number) => ReturnType<typeof fly>) {
 
 it('times the simulation', () => {
   bench('arcade', () => fly(7, { kind: 'random' }, { maxTime: MINUTES * 60 }));
+  bench('arcade+space', () => fly(7, { kind: 'random' }, { maxTime: MINUTES * 60, space: true }));
   bench('arcade-raider', () => fly(11, { kind: 'random' }, { maxTime: MINUTES * 60, survival: 'raider' }));
   bench('story', () => fly(5, { kind: 'random' }, { maxTime: MINUTES * 60, breakout: true }));
+  bench('story+space', () => fly(5, { kind: 'random' }, { maxTime: MINUTES * 60, breakout: true, space: true }));
 }, 1_800_000);

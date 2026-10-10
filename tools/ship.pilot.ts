@@ -15,7 +15,7 @@ import { planRoute } from './route';
 // at every port it can pay for them (after the Cyrite for the jump and the
 // galley), shops the rest of the bay for the branches that system holds,
 // answers the comms the way that system plays, and takes a choice its
-// modules opened whenever one is on the table. It writes docs/BALANCE-SHIP.md: how each
+// modules opened whenever one is on the table. It writes docs/BALANCE-SHIP.md (not kept in the repository): how each
 // build gets through, and whether each gets through in its own way.
 // SHIP_RUNS trades precision for speed.
 

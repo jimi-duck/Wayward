@@ -147,4 +147,7 @@ export const ECONOMY: Record<string, string> = {
   'Fire torpedo': 'Torpedo feuern',
   'Begin · press any key': 'Start · beliebige Taste drücken',
   'Exit': 'Beenden',
+  'Mine Cyrite to fill the jump tank': 'Baue Cyrit ab, um den Sprungtank zu füllen',
+  'Head for the lane entrance and jump': 'Fliege zum Routeneingang und spring',
+  'Collect Cyrite and upgrade your ship': 'Sammle Cyrit und rüste dein Schiff auf',
 };

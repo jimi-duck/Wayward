@@ -418,27 +418,17 @@
     <!-- Copy from COPY-game.md § 07. -->
     <div id="pause" role="status">
       <div class="pause-card panel term">
-        <i class="wear v3" aria-hidden="true"></i><span class="wear-stamp" aria-hidden="true">Service overdue</span>
+        <i class="wear v3" aria-hidden="true"></i>
         <!-- a terminal readout: the ship's id and state, the title and the ship's one line, the orders, the status key, the controls, then what you can do -->
         <header class="term-h"><span class="th-id"><b>Wayward</b><i>OB-7731-A</i></span></header>
         <button type="button" id="p-set" aria-label="Settings"><svg class="ico"><use href="#i-gear"/></svg></button>
         <div class="pause-t" id="pause-t">All stop</div>
         <div class="voice" id="pause-voice"></div>
         <section class="term-s main-only">
-          <!-- Story: three short orders; Arcade: what the mode is and what to do -->
-          <h3 class="th story-only">Orders</h3>
-          <ul class="brief lines story-only" id="brief">
-            <li><b>Mine violet asteroids for Cyrite.</b> <span>Your refinery fills the jump tank first, leaving any surplus for upgrades and supplies.</span></li>
-            <li><b>Upgrade and resupply.</b> <span>Spend your remaining Cyrite to improve your ship and prepare for the journey ahead.</span></li>
-            <li><b class="a">Reach the lane entrance.</b> <span>Jump to the next system before the patrols close in.</span></li>
-          </ul>
-          <div class="arcade-only arc-how">
-            <h3 class="th">Survive the waves</h3>
-            <p>Mine asteroids for Cyrite. Use your haul to upgrade your ship and prepare for the next wave.</p>
-            <p>Destroy incoming hostiles, manage your energy, and keep your hull intact. Each wave gets more dangerous, so spend wisely and stay mobile.</p>
-            <h3 class="th">Your objective</h3>
-            <p>Collect Cyrite, improve your ship, and survive as long as you can. Push your score higher with every wave.</p>
-          </div>
+          <!-- the one thing to do now, and the jobs taken on (src/sim/goal.ts) -->
+          <h3 class="th">Objective</h3>
+          <p class="goal" id="pause-goal"></p>
+          <ul class="jobs" id="pause-jobs"></ul>
         </section>
         <section class="term-s full main-only">
           <h3 class="th">Controls</h3>
@@ -482,8 +472,6 @@
         <div class="pause-acts set-only">
           <button type="button" id="p-back"><span>Back</span></button>
         </div>
-        <div class="pause-foot" id="pause-foot"></div>
-        <div class="pause-papers" id="pause-papers" aria-hidden="true"></div>
       </div>
     </div>
     <!-- A phone held upright: the game plays on its side only, and waits. -->

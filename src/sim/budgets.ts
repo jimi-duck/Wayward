@@ -14,7 +14,7 @@ import type { Stats } from './stats';
 //
 // Each penalty grows with how far over, as a share of the rating, down to a
 // floor, so an overloaded ship is worse, never useless. The arcade feels
-// them; the Story mode will once the bay reaches it (PLAN.md, R, step 4).
+// them; the Story mode will once the bay reaches it.
 
 export const OVERLOAD = {
   /** Per share of the mass rating run over: thrust and turning lost, and the least either can fall to. */

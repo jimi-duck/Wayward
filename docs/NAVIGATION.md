@@ -7,13 +7,13 @@ is `src/ui/guide.ts` (the heading), `src/ui/radar.ts` (the scope) and
 
 ## The heading
 
-The compass tape at the top centre, with the objective on it: an amber
+The compass tape at the top centre, with the objective on it: a steel blue
 diamond slides along the tape at the objective's bearing and pins to the end
 as a chevron when it is further round than the tape shows (behind you it
 sits at the end you turn toward, and pulses). Either side of the heading
 number: how far off the nose ("30° left") and how far away. The objective is
 an event's marker, else the lane mouth (the port while the clamps close).
-Phones keep the tape hidden, as before; the objective card and the edge
+Phones keep the tape hidden; the objective card and the edge
 pointer carry it there.
 
 ## The world and the scope
@@ -21,7 +21,7 @@ pointer carry it there.
 - The lane mouth and the port are marked in the world at any range, larger
   and glowing, with name and distance; off screen, the edge pointer says
   the same.
-- The scope draws a dashed amber line to the objective and an amber
+- The scope draws a dashed steel blue line to the objective and a steel blue
   arrowhead on its bezel.
 - Edge chevrons for hulls out of view are ranked by `threats()`: armed and
   near first, a hull you cannot see counts more, convoy hulls last. The top
@@ -36,6 +36,5 @@ objective's pointers are larger.
 
 ## Left out on purpose
 
-Above/below: hulls fly on the ship's plane (#108). A separate bar of
-contacts (tried in #121) read as a second map beside the scope and was
-removed.
+Above/below: hulls fly on the ship's plane. A separate bar of contacts read
+as a second map beside the scope, so there is none.

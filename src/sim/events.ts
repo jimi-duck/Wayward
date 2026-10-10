@@ -10,8 +10,9 @@ export type PowerKind = 'shield' | 'rapid' | 'yield' | 'overdrive';
 export type GameEvent =
   | { type: 'bolt'; x: number; z: number; heading: number }
   | { type: 'torpedo'; x: number; z: number; heading: number; target: number | null }
-  | { type: 'rockHit'; x: number; y: number; z: number; id: number }
-  | { type: 'rockDestroyed'; x: number; z: number; size: number; points: number; kind: string; left?: number }
+  /** A rock took a hit at (x, y, z): `rx`, `rz` is its centre, `hp` what is left of it (0 to 1), `src` the weapon (a string: the sim's Weapon names). */
+  | { type: 'rockHit'; x: number; y: number; z: number; id: number; rx: number; rz: number; r: number; kind: string; size: number; hp: number; src: string }
+  | { type: 'rockDestroyed'; id: number; x: number; z: number; r: number; vx: number; vz: number; size: number; points: number; kind: string; src: string; left?: number }
   | { type: 'bulwarkHit'; x: number; y: number; z: number }
   | { type: 'bulwarkBroken'; x: number; z: number; r: number; points: number }
   | { type: 'blast'; x: number; y: number; z: number; radius: number; kind: BlastKind }
@@ -71,7 +72,7 @@ export type GameEvent =
   | { type: 'ore'; x: number; z: number; value: number }
   | { type: 'parts'; x: number; z: number; value: number }
   | { type: 'holdFull' }
-  | { type: 'rockMined'; x: number; z: number; size: number; kind: string; ore: number; cyrite: number; points: number }
+  | { type: 'rockMined'; id: number; x: number; z: number; r: number; vx: number; vz: number; size: number; kind: string; ore: number; cyrite: number; points: number }
   | { type: 'patched'; plates: number }
   | { type: 'docked'; name: string }
   | { type: 'spool' }

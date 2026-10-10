@@ -6,8 +6,7 @@ import { budgets } from './budgets';
 import { available, branchLevels, type Levels } from './build';
 
 // ── the refit bay: what can be fitted, what it costs, what it leaves ──────
-// The rules over content/web.ts. Building happens only in the bay (PLAN.md,
-// R): in the Arcade mode it opens by itself once a price of Krail is aboard
+// The rules over content/web.ts. Building happens only in the bay: in the Arcade mode it opens by itself once a price of Krail is aboard
 // and the alert is clear, and every level costs the same; in the Story mode
 // you open it (in flight when the alert is clear, and always at a port) and
 // the price is the tier's. You pay Krail and fit one level at a time. In the

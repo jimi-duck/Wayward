@@ -33,7 +33,7 @@ import { showConsole } from './ui/briefing';
 import { Feel, SOUND_AVAILABLE } from './audio/audio';
 import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
-/** New Story journeys run the eight regions (docs/SCALE-UP.md); ?short plays the old three, for testing. */
+/** New Story journeys run the eight regions; ?short plays the old three, for testing. */
 const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
 /** `?train` plays the training whether or not it has been played (to look at it). */
 const TRAIN = new URLSearchParams(location.search).has('train');
@@ -66,7 +66,7 @@ function boot(review: typeof import('./review') | null): void {
   // ?dev is the review world (docs/REVIEW.md): a gallery of everything in the game, flown without risk, and nothing it does is saved
   const dev = review !== null;
   const persist = (p: typeof profile) => { if (!dev) saveProfile(p); };
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: dev ? 'arcade' : profile.mode, space: params.has('space'), review: dev });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: dev ? 'arcade' : profile.mode, space: !params.has('nospace'), review: dev });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);

@@ -3,7 +3,7 @@ import type { Faction } from '../sim/enemies';
 
 // ── one look for the whole game ──────────────────────────────────────────
 // The paint, trim and glow of every faction's hulls in one table, and the
-// emissive ceilings the rest of the renderer keeps under (docs/VISUAL-OVERHAUL.md).
+// emissive ceilings the rest of the renderer keeps under (docs/ART-PASS.md).
 // A hull is a painted coat chipped to dark metal at the edges, the way the
 // Wayward is; the faction is told by the coat, the trim line and the engines.
 

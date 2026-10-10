@@ -26,7 +26,7 @@ costs nothing) and at least one other way to settle it:
 | The missing shift | Marches to Free Ports | `reach`: hold at the wreck with a supply; a rescued crew slows the Net | tell the Custody |
 | Follow the Cyrite | Belt to Hollows | `follow`: stay on a prospector's wing to a vein; nothing shoots | buy her chart for a rich seam |
 | Someone answered | Drift Deep onward | `watch`: hold slow and close by a relay three unknown contacts circle; sets an Archive flag | sell the bearing |
-| The wreck that remembered | Belt onward | `watch`: pull a wreck's log slow and close; the Office pays, and someone wanted it wiped | strip it for parts |
+| The wreck that remembered | Belt onward | `watch`: pull a wreck's log slow and close; the Offices pay, and someone wanted it wiped | strip it for parts |
 | Keep your distance | Marches to Hollows | `sneak` with a ten-second hold: copy four patrols' codes from the middle of their loop | sell the loop |
 | Be the bait | Marches to Hollows | `destroy`: four Custody pickets come from ahead and have to be broken | warn the pickets |
 | The dead drop | Marches to Hollows | `reach`: collect a package at a beacon; a trap of three pickets waits on the way out | tell the Custody |
@@ -46,7 +46,7 @@ A job that ends leaves a mark on the chart (`after`) and often a flag:
 
 - the pirate toll broken makes supplies cheaper on that lane for twelve days;
   left standing, dearer;
-- a tanker taken makes the Office ask questions (Calloway gains half a day);
+- a tanker taken makes the Offices ask questions (Calloway gains half a day);
 - a rig held slows the Net round it; lost, Cyrite is dearer for ten days;
 - a drop made under a patrol is remembered by the Gutter; a drop read hands the
   patrol the lane;
@@ -54,7 +54,7 @@ A job that ends leaves a mark on the chart (`after`) and often a flag:
 
 ## Pay
 
-Written in chits, five to the Cyrite, like every other row, and scaled by how
+Written in the content rows in a small unit, converted at five to the Cyrite (`cy()`), and scaled by how
 the job went (`scaleOut`): 70% when the crew scattered, 40% for a spoiled cargo,
 the share of the rings reached, the share of the rig left. Between 20 and 45
 Cyrite, one to two jumps' worth, against two or three minutes of flying. A
@@ -87,11 +87,10 @@ units, and the HUD shows `Stage.status` under the objective line.
 3. German twins in `src/i18n/de/missions.ts`.
 4. A test in `tests/missions.test.ts` that plays it through.
 
-## Not yet
+## Still to check on a device
 
-All twenty-five of the ideas are in, with One Crate No Questions as "A sealed
-crate" (`sc_smugglers`). What is left is checking them on a real device: the
-rival's pace, the sneak timing, the pay against the economy and how often a
-system has a job (`SIT_CHANCE`).
+The rival's pace, the sneak timing, the pay against the economy and how often a
+system has a job (`SIT_CHANCE`). One more job, "A sealed crate" (`sc_smugglers`),
+is a plain call in `content/situations.ts`.
 
-The Hostile column of [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md) now includes the foes of missions, which fight from the moment the job is taken.
+The Hostile column of [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md) includes the foes of missions, which fight from the moment the job is taken.

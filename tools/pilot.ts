@@ -62,6 +62,8 @@ export interface PilotOptions {
   unlocked?: string[];
   /** The survival mode (content/survival.ts), the baseline unless given. */
   survival?: SurvivalId;
+  /** Fly with the environment's features on (docs/ENVIRONMENT.md). */
+  space?: boolean;
   /** Input lag in steps (reaction to new fire is modelled separately, REACT). */
   lag?: number;
   /** Fly the Breakout instead of the endless arcade run. */
@@ -491,7 +493,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
 
 /** Fly one run to the end (or maxTime) and report it. */
 export function fly(seed: number, strategy: Strategy, o: PilotOptions = {}): PilotResult {
-  const w = new World(seed, { unlocked: o.unlocked ?? [], survival: o.survival, mode: o.breakout ? 'breakout' : 'arcade' });
+  const w = new World(seed, { unlocked: o.unlocked ?? [], survival: o.survival, mode: o.breakout ? 'breakout' : 'arcade', space: o.space });
   return flyWorld(w, seed, strategy, o);
 }
 

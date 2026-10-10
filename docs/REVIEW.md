@@ -2,7 +2,7 @@
 
 A gallery of nearly everything in the game, in one place, for looking at
 rather than playing. Open the game with `?dev` on the end of the address
-(`/?dev`). There is no button for it on the title, so a player never meets it.
+(`/?dev`). The Settings screen has a Dev review button that does the same.
 
 ## What it is
 
@@ -23,16 +23,16 @@ and next stop, `V` for the next sky, `H` to hide the names.
 | Group | Stops |
 |---|---|
 | Ships | Hulls (all fifteen variants), Elites (the seven marks), Capital ships (one per faction) |
-| Rock & items | Rock (five kinds, three sizes), Bulwarks, Krail and loose cargo (Krail 1 to 5, Cyrite, ore, parts), Cells and repair |
+| Rock & items | Rock (four kinds, three sizes), Bulwarks, Krail and loose cargo (crystals 1 to 5, Cyrite, ore, parts), Cells and repair |
 | Places & fire | The lane gate and the port, enemy fire and the warning circles and lines |
 | Space | The fourteen features, the four named places, five sector events (beacon, hulk, ion storm, nebula, anomaly) |
 
-The environment features show here whether or not `?space` is on. Each is built
+The environment features show here whether or not they are on in play (`?nospace`). Each is built
 when you go to it, alone, at the middle of its size range; the well pulls the
 ship and the dust is heavy, but nothing strikes. A far feature (the passage, the
 carrier) is sky: its name hangs on the bearing it rides.
 
-The background is one of the five sky palettes (the three regions and the
+The background is one of the ten sky palettes (the eight regions and the
 arcade's two extras), switched from the menu or with `V`. Another sky re-rolls
 the seed in the same palette, so the planet and the nebulae change.
 

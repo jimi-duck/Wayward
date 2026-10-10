@@ -81,7 +81,7 @@ export const REGIONS: RegionDef[] = [
   },
 ];
 
-/** The way out as eight regions, for the long journey (docs/SCALE-UP.md). A chart is laid out from one set or the other and says which. */
+/** The way out as eight regions, for the long journey. A chart is laid out from one set or the other and says which. */
 export type RegionSet = 'three' | 'eight';
 
 /** `n` columns dealt from a few templates in turn. */

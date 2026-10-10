@@ -141,3 +141,50 @@ work drops with it.
 Programs compiled after Start: still 0 (70 programs behind the title on High,
 67 on Medium, up from 60 and 57). Per-frame JS at cruise, medium tier: 3.4 ms
 here after this pass.
+
+## Pass 6: space effects on, and a check after #190 to #192
+
+Space effects (the environment's features) went on by default on 2026-10-10, and
+the rock and Krail rework had just landed, so this pass looked for new cost
+before the owner's report of lag in parts. Measured here, 5 minutes of the
+scripted pilot, then a browser profile of the dev server at 960x540.
+
+**Simulation.** Mean step 0.05 to 0.09 ms in every run, p99 0.15 to 0.41 ms,
+worst step 4.5 to 10.9 ms (a rock or hull break, as before). Space on is no
+dearer than space off. The sim is not where lag comes from.
+
+| Run (5 min) | Mean | p99 | Worst |
+|---|---|---|---|
+| Arcade | 0.093 ms | 0.35 ms | 5.2 ms |
+| Arcade, space on | 0.065 ms | 0.22 ms | 6.2 ms |
+| Arcade, Raider | 0.088 ms | 0.41 ms | 7.6 ms |
+| Story | 0.084 ms | 0.35 ms | 10.9 ms |
+
+**One frame, in the browser.** With draws stubbed so the software renderer's
+fill does not hide it, our own per-frame code (rocks, hulls, effects, sky,
+space) is about 0.5 ms a frame; the rest, 4 to 6 ms, is three.js walking the
+scene and setting up about 100 draw calls and 100,000 triangles at cruise.
+Space features add up to about 17 draw calls while one is near, and **no new
+shader programs** (checked for all 14 features). The biggest single costs by
+triangles: the sky's far works 21k, the three rock-field shapes 16k, the
+Wayward's own hull 31k.
+
+**Found and fixed.** Three places built something on first sight, which is a
+dropped frame in flight:
+
+| First sight of | Before | After |
+|---|---|---|
+| A Krail seam (stream textures painted) | 77 ms | under 1 ms |
+| A graveyard (five dead hulls built) | 52 ms | 1 ms |
+| Breakers (rock shapes built) | 34 ms | 1 ms |
+
+`prepareSpace` now does that work behind the title with the rest of the
+warm-up (about 170 ms in one go on this machine, once). Trade-off: the same as
+pass 1, a very fast tap on Start can wait for it.
+
+**Not measurable here.** The GPU: fill rate of the rock shader, bloom and the
+sky on a phone, and frame pacing. The frame-time governor already steps a slow
+device down a tier. In software GL the first frame after launch also took
+several seconds with no new programs; whether any driver links lazily on its
+first draw is a real-device question. Real device: flying through a graveyard,
+a seam and a storm on a phone, and the first two seconds after Start.

@@ -1105,10 +1105,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
   animation: wear-scan 11s linear infinite; }
 .bay-w .wear::after { animation-duration: 14s; animation-delay: 4s; }
 @keyframes wear-scan { 0%, 92% { top: -6px; opacity: 0; } 93% { opacity: 1; translate: 3px 0; } 96% { translate: -2px 0; } 100% { top: 100%; opacity: 0; translate: 0 0; } }
-.wear-stamp { position: absolute; right: 22px; top: 62px; z-index: 1; pointer-events: none; padding: 3px 7px; border: 1px solid var(--hud-mid); rotate: 3deg;
-  font: 700 9px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--hud); opacity: .38; mask-image: linear-gradient(100deg, #000 60%, rgba(0, 0, 0, .55) 80%, #000); }
 .bay-w { isolation: isolate; }
-@media (max-width: 900px), (max-height: 520px) { .wear-stamp, .wear-papers, .pause-papers { display: none; } }
+@media (max-width: 900px), (max-height: 520px) { .wear-papers { display: none; } }
 @media (prefers-reduced-motion: reduce) { .wear::after { animation: none; display: none; } }
 
 /* the ship's voice: flat, amber-grey, in the margin of the console */
@@ -1312,7 +1310,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .wear-papers { position: absolute; left: 12px; right: 12px; bottom: 6px; z-index: 1; pointer-events: none; display: grid; gap: 3px; opacity: .5;
   font: 500 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 .wear-papers span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pause-papers { display: flex; justify-content: space-between; gap: 12px; width: 100%; margin-top: -.4rem; font: 500 9px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); opacity: .55; }
 /* a log that no longer reads: now and then a few of its letters drop out */
 .corrupt { font-style: normal; color: var(--ink-2); animation: corrupt 9s steps(1) infinite; }
 @keyframes corrupt { 0%, 100% { opacity: 1; letter-spacing: inherit; } 62% { opacity: .35; } 63% { opacity: 1; translate: 1px 0; } 64% { opacity: .5; translate: -1px 0; } 65% { translate: 0; opacity: 1; } }
@@ -1357,15 +1354,11 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .lk-id { font: 500 1em/1 var(--font-mono); letter-spacing: .2em; color: var(--hud-hi); rotate: -1deg; translate: 0 1px; }
 
 /* fixes found on the way: the pause card's foot lost its rule in a merge (it ran together as one line), the state word sat on the legend, the papers sat on the Suggested hint */
-.pause-foot { display: flex; justify-content: space-between; gap: 12px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);
-  font: 600 calc(10px * 1.1)/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); }
-.pause-foot span:first-child { color: var(--ink-2); }
-@media (max-height: 520px) { .pause-foot { display: none; } }
 .bw-m { margin-left: 18px; }
 #bay.picks .bay-web { margin-bottom: 46px; }
 @media (max-width: 900px), (max-height: 520px) { #bay.picks .bay-web { margin-bottom: 2px; } }
 #bay.picks .pick-more { bottom: -16px; }
-@media (max-width: 900px), (max-height: 520px) { .wear-papers, .pause-papers { display: none; } }
+@media (max-width: 900px), (max-height: 520px) { .wear-papers { display: none; } }
 
 /* ── wear, spread (Jimi, 2026-10-06): the ship's status display, the comms panel, the port and the pause card ──
    Still a few marks each, where hands and heat are: a chipped corner, one or two scrapes, a repair patch where a
@@ -1394,7 +1387,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .wear.patch::before { content: ""; position: absolute; right: 16px; bottom: 12px; width: 30px; height: 14px; rotate: -1.5deg;
   background: repeating-linear-gradient(-45deg, rgba(134, 169, 209, .2) 0 2px, transparent 2px 5px); border: 1px solid rgba(134, 169, 209, .16); }
 @media (max-height: 520px) { .wear.patch::before { display: none; } }
-.pause-card .wear-stamp { top: 16px; right: 20px; }
 #port .wear.patch::before { bottom: auto; top: 16px; }
 
 /* ── the briefing as a terminal readout (Jimi, 2026-10-06) ───────────────────
@@ -1455,10 +1447,6 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pause-card #p-go::before { content: ">"; margin-right: 8px; color: var(--hud); }
 
 /* the foot is the status line */
-.pause-card .pause-foot { justify-content: flex-start; gap: 0; font: 500 10px/1 var(--font-mono); letter-spacing: .16em; }
-.pause-card .pause-foot span + span::before { content: "│"; margin: 0 12px; color: var(--ink-3); opacity: .6; }
-.pause-card .pause-papers { margin-top: 0; }
-.pause-card.term .wear-stamp { top: 54px; right: 24px; }
 
 /* a phone on its side: one screen, no headings, orders in a row */
 @media (max-height: 520px) {
@@ -1481,15 +1469,10 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-width: 600px) and (min-height: 521px) { .pause-card .howto li { grid-template-columns: 2.4em minmax(0, 1fr); } .pause-card .howto span { grid-column: 2; } }
 @media (prefers-reduced-motion: reduce) { .pause-card.term .voice::after { animation: none; } }
 
-/* orders as three plain sentences (Story), and the Arcade's two short sections */
-.pause-card .brief.lines { display: grid; gap: 0; max-width: none; padding: 0; list-style: none; font: 400 14px/1.4 var(--font-display); color: var(--ink-2); }
-.pause-card .brief.lines li { padding: 8px 0; border-bottom: 1px dashed var(--line); }
-.pause-card .brief.lines li:last-child { border-bottom: 0; }
-.pause-card .brief.lines b { font: 700 17px/1.2 var(--font-head); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
-.pause-card .brief.lines b.a { color: var(--cy); }
-.arc-how { display: grid; gap: 8px; margin-top: 4px; }
-.arc-how p { margin: 0; font: 400 14px/1.4 var(--font-display); color: var(--ink-2); }
-.arc-how .th:not(:first-child) { margin-top: 6px; }
+/* the pause card's objective: one plain line, then the jobs */
+.pause-card .goal { margin: 0; font: 500 17px/1.35 var(--font-display); color: var(--ink); }
+.pause-card .jobs { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font: 400 14px/1.35 var(--font-display); color: var(--ink-2); }
+.pause-card .jobs[hidden] { display: none; }
 
 /* ── the pause card's Settings: the same ruled rows, a switch to a line ──── */
 #pause .set-only { display: none; }
