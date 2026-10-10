@@ -66,7 +66,7 @@ function boot(review: typeof import('./review') | null): void {
   // ?dev is the review world (docs/REVIEW.md): a gallery of everything in the game, flown without risk, and nothing it does is saved
   const dev = review !== null;
   const persist = (p: typeof profile) => { if (!dev) saveProfile(p); };
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: dev ? 'arcade' : profile.mode, space: params.has('space') || devPref('dev') && devPref('space'), review: dev });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: dev ? 'arcade' : profile.mode, space: params.has('space'), review: dev });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);
@@ -228,11 +228,6 @@ function boot(review: typeof import('./review') | null): void {
       el(id).setAttribute('aria-pressed', String(on));
       el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
     }
-    for (const [id, on] of [['s-dev', devPref('dev')], ['s-space', devPref('space')]] as const) {
-      el(id).setAttribute('aria-pressed', String(on));
-      el(`${id}-v`).textContent = t(on ? 'On' : 'Off');
-    }
-    el('s-review').hidden = el('s-space').hidden = !devPref('dev');
     el('s-sound').hidden = !SOUND_AVAILABLE;
     el('s-buzz').hidden = !feel.canBuzz;
   };
@@ -673,8 +668,6 @@ function boot(review: typeof import('./review') | null): void {
   press('s-back', () => showStep('menu'));
   press('s-sound', () => { feel.setSound(!feel.prefs.sound); paintSwitches(); showBrief(); });
   press('s-buzz', () => { feel.setHaptics(!feel.prefs.haptics); paintSwitches(); showBrief(); });
-  press('s-dev', () => { setDevPref('dev', !devPref('dev')); paintSwitches(); });
-  press('s-space', () => { setDevPref('space', !devPref('space')); paintSwitches(); });
   press('s-review', () => { location.search = '?dev'; });
   press('chapter', () => { const j = restartChapter(); if (j) { journey = j; showResume(); } });
   press('restore', () => { const j = restoreJourney(); if (j) { journey = j; showResume(); } });
@@ -769,14 +762,6 @@ function boot(review: typeof import('./review') | null): void {
   // the review world has no title: it opens in the gallery, flying
   if (dev) { launch('arcade'); setPaused(false); }
   loop.start();
-}
-
-// Dev mode (Settings): the same tools the URL flags give, remembered between visits.
-function devPref(k: 'dev' | 'space'): boolean {
-  try { return localStorage.getItem(`wayward.${k}`) === '1'; } catch { return false; }
-}
-function setDevPref(k: 'dev' | 'space', on: boolean) {
-  try { localStorage.setItem(`wayward.${k}`, on ? '1' : '0'); } catch { /* private mode: the switch just won't stick */ }
 }
 
 // German players wait for their dictionary; everyone else starts at once.
