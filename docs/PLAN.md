@@ -34,7 +34,7 @@ is off.
 | SM Survival modes | Done: Drifter, Prospector and Raider, one table in `content/survival.ts` ([BALANCE-SURVIVAL.md](BALANCE-SURVIVAL.md)) |
 | C Story communications | Done: one comms desk decides when anything is heard ([COMMS.md](COMMS.md), [BALANCE-COMMS.md](BALANCE-COMMS.md)) |
 | S Scale-up | Built: the eight regions are the default for new Story journeys (`?short` plays the old three), with breathers, the clocks, chapters at region gates and a longer story. A playtest of the long journey is still to do |
-| E The environment | Built behind `?space`: features, expanses and their effects on the ship ([ENVIRONMENT.md](ENVIRONMENT.md), [BALANCE-SPACE.md](BALANCE-SPACE.md)). Pace and polish are left |
+| E The environment | Built, on by default (`?nospace` turns it off): features, expanses and their effects on the ship ([ENVIRONMENT.md](ENVIRONMENT.md), [BALANCE-SPACE.md](BALANCE-SPACE.md)). Pace and polish are left |
 | G Situations | Done: the situation layer for the Story ([SITUATIONS.md](SITUATIONS.md), [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md)) |
 | Dev The review world | Done: `?dev` ([REVIEW.md](REVIEW.md)) |
 | V Visual overhaul | Done: one look table (`render/look.ts`), designed hulls with a faction layer, rock, Cyrite, gate and port. A device look is pending |
