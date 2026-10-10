@@ -468,10 +468,11 @@ export class RockView {
       counts[slot] = i + 1;
       // no two alike: each rock is stretched its own way and takes its own shade of stone
       const h1 = hash(r.id), h2 = hash(r.id + 17), h3 = hash(r.id + 41);
-      const grow = Math.min(1, r.age / 0.6);
-      const s = r.r * (grow * grow * (3 - 2 * grow));
+      // a piece of a break starts at the parent's place and half its size, then eases out to its own spot
+      const grow = Math.min(1, r.age / 0.45), ease = grow * grow * (3 - 2 * grow);
+      const s = r.r * (r.ox || r.oz ? 0.5 + 0.5 * ease : ease);
       this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.spin * r.age + r.id);
-      this.pos.set(r.x - r.vx * back, -0.3, r.z - r.vz * back);
+      this.pos.set(r.x - r.vx * back + r.ox * (1 - ease), -0.3, r.z - r.vz * back + r.oz * (1 - ease));
       const kk = this.kicks.get(r.id);
       if (kk) {
         // a hit shoves the rock a little along the shot and sets it wobbling, both dying away in under half a second
@@ -481,7 +482,7 @@ export class RockView {
         this.tilt.setFromAxisAngle(this.wob.set(-kk.dz, 0, kk.dx), kk.s * 1.6 * Math.sin(kk.t * 26) * Math.exp(-kk.t * 6));
         this.q.premultiply(this.tilt);
       }
-      this.m.compose(this.pos, this.q, this.sc.set(s * (0.8 + 0.4 * h1), s * (0.85 + 0.3 * h2), s * (0.8 + 0.4 * h3)));
+      this.m.compose(this.pos, this.q, this.sc.set(s * (0.88 + 0.24 * h1), s * (0.9 + 0.2 * h2), s * (0.88 + 0.24 * h3)));
       mesh.setMatrixAt(i, this.m);
       if (r.kind === 'rich') {
         // crystals riding the rock, fewer on a small one, and a couple of loose fragments circling it
