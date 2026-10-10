@@ -4,13 +4,13 @@ import type { World } from './world';
 // ── the first minutes ─────────────────────────────────────────────────────
 // An onboarding level, short and plain: one rock, one upgrade, one shot, and
 // the tank is full. The pilot lasers a single violet rock set close ahead
-// (it pays Cyrite, the jump's fuel and the upgrade's price in one), opens the bay and fits the
-// torpedo bay (the ship starts without it, so the first upgrade is the one
-// that matters), then shoots one ship with the new torpedoes. After that the
-// jump is in reach and the run goes on as it always did. Each step is a
-// thing the game already does; the tutor only sets one up (a rock, a purse,
-// a ship) and watches for it. Nothing locks, and Skip ends it. Plain data,
-// so a test flies it.
+// (the refinery sends what it gives to the drive tank, which starts short by
+// that much), shoots one ship, flies to the work bay and fits the torpedo
+// bay (the ship starts without it, so the first upgrade is the one that
+// matters; the purse holds its price). After that the jump is in reach and
+// the run goes on as it always did. Each step is a thing the game already
+// does; the tutor only sets one up (a rock, a purse, a ship) and watches for
+// it. Nothing locks, and Skip ends it. Plain data, so a test flies it.
 
 export type LessonId = 'mine' | 'bay' | 'shoot';
 
@@ -56,7 +56,7 @@ const SHIP_AT = 85;
 const LINGER = 1.2;
 /** The torpedo bay: the one node the bay offers in the lesson. */
 export const LESSON_NODE = 'tp_bay';
-/** Cyrite over the price in the hold when the bay step begins (the rock pays some too). */
+/** Cyrite over the price in the purse when the bay step begins. */
 const SPARE = 1;
 
 /** The Story's depot, set this far ahead and aside at the start: a short hop once the first ship is down. */
@@ -77,8 +77,8 @@ function ahead(w: World, d: number, side = 0): { x: number; z: number } {
   return { x: s.x + c * d - n * side, z: s.z + n * d + c * side };
 }
 
-/** The stock the mine step watches: the one Cyrite stock. */
-const stock = (w: World): number => w.cyrite;
+/** What the mine step watches: everything refined, tank and purse together. */
+const stock = (w: World): number => w.cyrite + w.fuel;
 const fitted = (w: World): number => Object.values(w.levels).reduce((a, b) => a + b, 0);
 
 function layRock(w: World, tu: Tutor): void {
@@ -98,7 +98,7 @@ function begin(w: World, tu: Tutor): void {
   tu.t = 0;
   if (id === 'mine') {
     // the ship leaves without its torpedo bay, and the tank is short by what the rock holds
-    if (w.bk) { const lv = { ...w.levels }; delete lv[LESSON_NODE]; w.setLevels(lv); w.cyrite = Math.max(0, w.jumpCost - 12); }
+    if (w.bk) { const lv = { ...w.levels }; delete lv[LESSON_NODE]; w.setLevels(lv); w.fuel = Math.max(0, w.jumpCost - 12); w.cyrite = 0; }
     tu.base = stock(w);
     layRock(w, tu);
     // the depot sits close by from the start, so the way to the bay is short
@@ -178,7 +178,7 @@ export function stepTutor(w: World, dt: number): void {
 function finish(w: World, tu: Tutor): void {
   tu.done = true;
   if (!w.bk) return;
-  w.cyrite = Math.max(w.cyrite, w.jumpCost);
+  w.fuel = Math.max(w.fuel, w.jumpCost);
   w.bk.nextPursuit = Math.max(w.bk.nextPursuit, w.runTime + 25);
   w.cardNext = Math.min(w.cardNext, w.runTime + 40);
 }

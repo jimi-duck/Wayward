@@ -189,7 +189,7 @@ export class Hud {
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
         case 'spool': this.banner(t('Lane entrance'), t('Jump drive charging'), t('Stay in the lane'), 1.6, 'calm'); break;
-        case 'needCyrite': this.banner(t('Ship system'), t('Not enough Cyrite to jump'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
+        case 'needFuel': this.banner(t('Ship system'), t('Not enough jump fluid'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, `${t(POWER_LABEL[e.kind])} · ${t(POWER_HINT[e.kind])}`, 'gain'); break;
@@ -343,11 +343,12 @@ export class Hud {
     $('sys-score').hidden = !!b;
     const th = $('obj-threat');
     if (!b) { th.hidden = true; return; }
-    // the tank, in the status panel: Cyrite toward the jump
+    // the tank, in the status panel: jump fluid toward the jump; and the purse (Cyrite) beside it
     const fuel = $('sys-fuel'), need = world.jumpCost;
-    text($('v-fuel'), `${world.cyrite}/${need}`);
-    $('g-fuel').style.setProperty('--v', Math.min(1, world.cyrite / need).toFixed(2));
-    fuel.classList.toggle('ready', world.cyrite >= need);
+    text($('v-fuel'), `${Math.floor(world.fuel)}/${need}`);
+    $('g-fuel').style.setProperty('--v', Math.min(1, world.fuel / need).toFixed(2));
+    fuel.classList.toggle('ready', world.fuel >= need);
+    text($('v-purse'), String(Math.floor(world.cyrite)));
     // the stores: supplies; they go amber when they are running low
     const sup = $('vy-supplies');
     text(sup, String(world.supplies));
@@ -413,6 +414,7 @@ export class Hud {
     }
 
     $('sys-fuel').hidden = !world.bk;
+    $('sys-purse').hidden = !world.bk;
 
     // mines: laid by themselves, out of a rack
     const mn = $('sys-mn');
@@ -559,9 +561,9 @@ export class Hud {
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));
       } else {
         // the one thing to do now, and at most two quiet lines under it
-        const ready = world.cyrite >= world.jumpCost;
-        text($('obj-t'), t(ready ? 'Head for the lane entrance' : 'Cyrite to jump'));
-        text($('obj-left'), ready ? range(dl) : `${world.cyrite}/${world.jumpCost}`);
+        const ready = world.fuel >= world.jumpCost;
+        text($('obj-t'), t(ready ? 'Head for the lane entrance' : 'Fill the tank'));
+        text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         text($('obj-s'), '');
         const lines: string[] = [];
@@ -649,7 +651,7 @@ export class Hud {
     el.hidden = !key;
     const lines = [...(world.siteHere ? [NAMED[world.siteHere]!.name] : []), ...world.conditions.map((c) => REPORT_TEXT[c.kind])];
     // the ship's own trouble, quiet and dull gold: the stores and the weight (it flies on, worse)
-    const warn = warns.map((w) => w === 'heavy' && world.weightFuel ? t('Heavy · slower, +{n} Cyrite a jump', { n: world.weightFuel }) : t(SHIP_WARN[w]));
+    const warn = warns.map((w) => w === 'heavy' && world.weightFuel ? t('Heavy · slower, +{n} jump fluid a jump', { n: world.weightFuel }) : t(SHIP_WARN[w]));
     el.replaceChildren(
       ...lines.map((l) => { const d = document.createElement('div'); d.textContent = t(l); return d; }),
       ...warn.map((l) => { const d = document.createElement('div'); d.className = 'warn'; d.textContent = l; return d; }),

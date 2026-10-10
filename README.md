@@ -3,10 +3,14 @@
 A 3D space-survival roguelite for desktop and mobile browsers, built with
 TypeScript, Three.js and Vite. Keep moving.
 
-You stole an ore hauler, and hidden in its systems was a file that exposes
-what really happened when the jump lanes went dark seventy years ago. The
-Continuance wants its ship and its secret back. You do not have to win a war.
+You stole an ore hauler, and hidden in its systems was a sealed archive that
+shows what really happened when the jump lanes went dark seventy years ago: no
+shortage, but a purge, with millions lost. The Continuance wants its ship and
+its secret back. You do not have to win a war.
 You only have to get out of the system, then the next, then the one after.
+
+The hauler's refinery cooks the Cyrite you mine into jump fluid for the drive;
+whatever is left over is yours to spend.
 
 ## Two ways to play
 
@@ -14,13 +18,16 @@ Both start from the title menu.
 
 - **Story.** A journey of about 85 stops across eight regions, roughly seven
   hours over many sessions. Each new journey opens on a short story card, then
-  a one-minute training: laser a violet rock for Cyrite, shoot one ship, then
+  a one-minute training: laser a violet rock for Cyrite (it fills the tank), shoot one ship, then
   make a short hop to the work bay and fit torpedoes. After that:
-  - **Cyrite is the one currency.** It fuels every jump, pays for upgrades and
-    is your money at ports. Laser rock for it, strip wrecks for it. Spare
-    Cyrite is spent at work bays; you can never be locked out of a choice.
+  - **Cyrite is what you find; jump fluid is what you fly on.** Laser rock for
+    Cyrite, strip wrecks for it. The ship's refinery cooks it into **jump
+    fluid** first, until the drive tank is full. Whatever is left over is yours
+    to spend on upgrades and supplies. Nothing to hold back: a jump burns fluid
+    and only fluid, an upgrade spends Cyrite and only Cyrite. Ports sell a
+    top-up of fluid if you are short. You can never be locked out of a choice.
   - **Supplies** are drawn by jumps and plate patches. Weight over the mass
-    rating flies worse and burns more Cyrite.
+    rating flies worse and burns more jump fluid.
   - **Work bays** are where upgrades happen, in most systems and
     at every gate. The gate and the bay are safe zones: nothing fires inside.
   - **The chart.** After each jump you plot the next one. Systems differ:

@@ -27,7 +27,7 @@ export const CHATTER: Chatter[] = [
   { id: 'claim_chatter', from: 'Claim crew', caller: 'miners', on: ['arrive', 'calm'], kind: ['mining'], text: '“Third pass on this seam and it is still thin. Try the far side.”' },
   { id: 'pit_boss', from: 'Pit boss', caller: 'miners', on: ['arrive'], kind: ['mining'], text: '“Cutters off the lane, please. Somebody is working that rock.”' },
   { id: 'depot_ping', from: 'Depot', caller: 'frontier', on: ['arrive'], kind: ['port'], text: '“Dock is open. Two berths free, one is not what it says.”' },
-  { id: 'net_notice', from: 'Net relay', caller: 'office', on: ['arrive', 'calm'], netted: true, text: '“This system is under Office of Peace protection. Welcome.”' },
+  { id: 'net_notice', from: 'Net relay', caller: 'office', on: ['arrive', 'calm'], netted: true, text: '“This system is under Offices of Peace protection. Welcome.”' },
   { id: 'net_static', from: 'Relay ghost', caller: 'unknown', on: ['calm'], netted: false, text: '“…unregistered carrier… no, never mind. Carry on.”' },
   { id: 'hauler_grumble', from: 'Ore hauler', caller: 'guild', on: ['calm'], text: '“Tank low and the dock is a day away. Why do I do this.”' },
   { id: 'tug_song', from: 'Tug', caller: 'frontier', on: ['calm'], text: '“…and the Wayward went down with all her ore. Somebody write a better verse.”' },

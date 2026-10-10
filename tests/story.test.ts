@@ -26,7 +26,7 @@ function step(j: Journey, c: Partial<Journey['carry']> = {}): void {
 }
 
 const ctx = (o: Partial<Ctx> = {}): Ctx => ({
-  t: 400, heat: 0.2, cyrite: 20, need: 20, tank: 40, chits: 100, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
+  t: 400, heat: 0.2, cyrite: 20, fuel: 20, need: 20, tank: 40, chits: 100, plates: 3, maxPlates: 3, levels: {}, flags: new Set(),
   standing: {}, place: 'open', hostiles: 0, supplies: 10, kind: 'transit', netted: false, behind: 3, ...o,
 });
 
@@ -122,7 +122,8 @@ describe('the story beats', () => {
       return { before, after: w.result().carry };
     };
     const fuel = play('fuel');
-    expect(fuel.after.cyrite).toBe(fuel.before.cyrite + 14);
+    expect(fuel.after.fuel).toBe(Math.min(40, fuel.before.fuel + 14));
+    expect(fuel.after.cyrite).toBe(fuel.before.cyrite);
     const codes = play('codes');
     expect(codes.after.flags).toContain('codes');
     expect(codes.after.supplies).toBe(codes.before.supplies - 4);

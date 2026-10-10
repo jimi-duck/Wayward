@@ -278,7 +278,7 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
     from: 'Prefect Idris Calloway · CCV Patience', title: 'The Threshold',
     text: said.join(' '), face: CALLOWAY_FACE, scars: Math.min(3, hunt.beaten),
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'enforcer', n: 2 + wing }],
-    cargo: `${t('Office of Peace cutter')} · ${t('met {times}', { times: times(Math.max(1, hunt.caught)) })}`,
+    cargo: `${t('Offices of Peace cutter')} · ${t('met {times}', { times: times(Math.max(1, hunt.caught)) })}`,
     truths: [{ id: 'file', weight: 1, read: known.length ? t('Her file on you: {list}', { list: known.join(', ') }) : 'Her file on you is thin · she has never seen you run' }],
     choices,
   };

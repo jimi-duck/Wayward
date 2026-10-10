@@ -53,7 +53,9 @@ export interface Ctx {
   t: number;
   heat: number;
   cyrite: number;
-  /** Cyrite the jump needs, and what the tank holds. */
+  /** Jump fluid in the tank. */
+  fuel: number;
+  /** Jump fluid the jump needs, and what the tank holds. */
   need: number;
   tank: number;
   chits: number;
@@ -91,8 +93,10 @@ export interface Cond {
   after?: number;
   heatMin?: number;
   heatMax?: number;
-  /** At least this much in the tank, the purse. */
+  /** At least this much in the purse. */
   cyrite?: number;
+  /** At least this much jump fluid in the tank. */
+  fuel?: number;
   chits?: number;
   /** The tank is short of the jump. */
   short?: boolean;
@@ -147,6 +151,8 @@ export interface Outcome {
   /** The log line. */
   text: string;
   cyrite?: Amount;
+  /** Jump fluid into the tank (never past what it holds). */
+  fuel?: number;
   chits?: Amount;
   supplies?: Amount;
   /** Chits for the bay (Story), from wrecks and finds: Krail in the Arcade's old words, one purse now. Kept as the name the content uses. */
@@ -196,7 +202,7 @@ export interface Need {
 /** What a choice takes: a number, the card's fee, all of it, or half of it. */
 export type Take = number | 'fee' | 'all' | 'half';
 /** What a choice takes whatever happens next (the fee is gone whether or not she honours it). */
-export interface Cost { chits?: Take; cyrite?: Take; supplies?: Take }
+export interface Cost { chits?: Take; cyrite?: Take; supplies?: Take; /** Jump fluid from the tank. */ fuel?: Take }
 
 /** The chance a gamble comes off: a base, moved by heat, flags, systems and standing. */
 export interface Odds {
@@ -244,7 +250,7 @@ export interface CardDef {
   /** Who is speaking, and the card's title. */
   from: string;
   title: string;
-  /** What they say. Slots: {fee} {cyrite} {need} {short} {chits} {supplies}, and {captain} {ship} (also in `from` and `title`). */
+  /** What they say. Slots: {fee} {cyrite} {fuel} {need} {short} {chits} {supplies}, and {captain} {ship} (also in `from` and `title`). */
   text: string;
   /** Lines added when their condition holds: the same card reads differently with a full hold or a checkpoint ahead. */
   lines?: Array<{ if: Cond; text: string }>;
@@ -348,7 +354,8 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.heatMax !== undefined && x.heat > c.heatMax) return false;
   if (c.cyrite !== undefined && x.cyrite < c.cyrite) return false;
   if (c.chits !== undefined && x.cyrite < cy(c.chits)) return false;
-  if (c.short !== undefined && (x.cyrite < x.need) !== c.short) return false;
+  if (c.fuel !== undefined && x.fuel < c.fuel) return false;
+  if (c.short !== undefined && (x.fuel < x.need) !== c.short) return false;
   if (c.hurt !== undefined && (x.plates < x.maxPlates) !== c.hurt) return false;
   if (!list(c.flag).every((f) => x.flags.has(f))) return false;
   if (list(c.noFlag).some((f) => x.flags.has(f))) return false;
@@ -450,17 +457,18 @@ export function oddsFor(o: Odds, x: Ctx): number {
   return Math.min(0.95, Math.max(0.05, p));
 }
 
-const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'Cyrite', cyrite: 'Cyrite', supplies: 'supplies' };
-const NONE_WORDS: Record<keyof Cost, string> = { chits: 'No Cyrite to give', cyrite: 'No Cyrite to give', supplies: 'No supplies to give' };
+const AMOUNT_WORDS: Record<keyof Cost, string> = { chits: 'Cyrite', cyrite: 'Cyrite', supplies: 'supplies', fuel: 'jump fluid' };
+const NONE_WORDS: Record<keyof Cost, string> = { chits: 'No Cyrite to give', cyrite: 'No Cyrite to give', supplies: 'No supplies to give', fuel: 'No jump fluid to give' };
 
 const take = (a: Take, held: number, fee: number, chits = false) => (a === 'fee' ? fee : a === 'all' ? held : a === 'half' ? Math.ceil(held / 2) : chits ? cy(a) : a);
 
 /** What a cost comes to, as numbers taken from the ship. Chits and Cyrite are one stock: the chits a row asks for are taken as Cyrite. */
 function costOf(c: Cost | undefined, x: Ctx, fee: number): Record<keyof Cost, number> {
-  const out = { chits: 0, cyrite: 0, supplies: 0 };
+  const out = { chits: 0, cyrite: 0, supplies: 0, fuel: 0 };
   if (c?.cyrite !== undefined) out.cyrite += take(c.cyrite, x.cyrite, fee);
   if (c?.chits !== undefined) out.cyrite += take(c.chits, x.cyrite, fee, true);
   if (c?.supplies !== undefined) out.supplies = take(c.supplies, x.supplies, fee);
+  if (c?.fuel !== undefined) out.fuel = take(c.fuel, Math.floor(x.fuel), fee);
   return out;
 }
 
@@ -495,7 +503,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
     if (n.supplies !== undefined && x.supplies < n.supplies) needs.push(t('Needs {n} supplies', { n: n.supplies }));
   }
   const cost = costOf(c.cost, x, fee);
-  const held = { chits: x.cyrite, cyrite: x.cyrite, supplies: x.supplies };
+  const held = { chits: x.cyrite, cyrite: x.cyrite, supplies: x.supplies, fuel: Math.floor(x.fuel) };
   const costWords: string[] = [];
   for (const k of Object.keys(cost) as Array<keyof Cost>) {
     if (!c.cost || (k === 'cyrite' ? c.cost.cyrite === undefined && c.cost.chits === undefined : k === 'chits' || c.cost[k] === undefined)) continue;
@@ -533,7 +541,7 @@ const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
  */
 export function cardParts(def: CardDef, x: Ctx, fee: number): { text: string; more: string[] } {
   const slots: Record<string, string> = {
-    fee: String(fee), cyrite: String(x.cyrite), need: String(x.need), short: String(Math.max(0, x.need - x.cyrite)),
+    fee: String(fee), cyrite: String(x.cyrite), need: String(x.need), short: String(Math.max(0, Math.ceil(x.need - x.fuel))), fuel: String(Math.floor(x.fuel)),
     chits: String(x.cyrite), supplies: String(x.supplies),
   };
   const fill = slotFill(x, slots);

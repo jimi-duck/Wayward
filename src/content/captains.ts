@@ -97,7 +97,7 @@ export const CAPTAINS: CaptainDef[] = [
     id: 'ashgrove', name: 'Mr Ashgrove', rank: 'Inquisitor', ship: 'Kind Regard', faction: 'office', personality: 'cautious',
     face: { skin: '#f0d6c0', hair: 'swept', hairColour: '#8a7e72', eye: 'none', mark: 'none', jaw: 'narrow' },
     lines: {
-      hail: '“Good afternoon. Ashgrove, Office of Peace, aboard the Kind Regard. Let’s avoid a messy hour.”',
+      hail: '“Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour.”',
       ambush: '“Forgive the theatrics.” The Kind Regard is suddenly very close.',
       bargain: '“A consultancy fee of {fee} Cyrite would close the file. Purely administrative.”',
       leave: 'Ashgrove closes the channel politely. The Kind Regard is gone.',

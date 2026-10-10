@@ -175,7 +175,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_thren_exchange', kind: 'trade', caller: 'unknown', tier: 'major',
     from: 'Thren object · no signal', title: 'It is waiting',
-    text: 'It holds still off your bow, a crystal that is not Cyrite in its grip. It looks at the Cyrite in your tank.',
+    text: 'It holds still off your bow, a crystal that is not Cyrite in its grip. It looks at the jump fluid in your tank.',
     lines: [{ if: { flag: 'thren_aided' }, text: 'It knows the Wayward. It dips toward you, once.' }],
     cargo: 'Thren object · no engines you can find',
     choices: [

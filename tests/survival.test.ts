@@ -276,7 +276,7 @@ describe('the sky', () => {
   it('plays the Story\'s pursuit slower in Drifter and faster in Raider', { timeout: 30_000 }, () => {
     const spawned = (id: SurvivalId) => {
       const j = newJourney(7, false, 'three', id);
-      j.carry.cyrite = 0;
+      j.carry.cyrite = 0; j.carry.fuel = 0;
       const def = { ...sortieDef(j), home: false, blockade: false, calloway: Infinity, notice: { ...sortieDef(j).notice, captain: null, elite: 0, pursuit: 1 }, story: null };
       const w = new World(2, { mode: 'breakout', sortie: def, carry: j.carry });
       w.field.rocks = []; w.field.bulwarks = []; w.field.step = () => {};
@@ -502,7 +502,7 @@ describe('the economy', () => {
     const hulls = 300 / (pursuitInterval(1) * SURVIVAL.raider.pursuit.gap) * Math.max(1, Math.round(pursuitCap(1) * SURVIVAL.raider.pursuit.cap));
     expect(hulls).toBeLessThan(200);
     // and a tank starts well short of a lane's cost, whatever is collected after
-    expect(j.carry.cyrite).toBeLessThan(40);
+    expect(j.carry.fuel).toBeLessThan(40);
   });
 
   it('pays the Raider more for scrap, and nobody else\'s', () => {
@@ -517,14 +517,14 @@ describe('the economy', () => {
 
   it('keeps Drifter generous but not free: its Cyrite is richer, its jumps cheaper, and neither is without limit', () => {
     const d = newJourney(7, false, 'three', 'drifter'), p = newJourney(7);
-    expect(d.carry.cyrite).toBeGreaterThan(p.carry.cyrite);
+    expect(d.carry.fuel).toBeGreaterThan(p.carry.fuel);
     expect(d.carry.supplies).toBeGreaterThan(p.carry.supplies);
     // cheaper lanes, but a lane always costs something, and a jump to the next system is still more than the opening tank gave Prospector
     for (const [i, r] of d.chart.routes.entries()) {
       expect(r.cyrite).toBeLessThan(p.chart.routes[i]!.cyrite);
       expect(r.cyrite).toBeGreaterThanOrEqual(8);
     }
-    expect(d.carry.cyrite).toBeLessThan(Math.min(...d.chart.routes.map((r) => r.cyrite)) * 2);
+    expect(d.carry.fuel).toBeLessThan(Math.min(...d.chart.routes.map((r) => r.cyrite)) * 2);
   });
 });
 
@@ -669,9 +669,9 @@ describe('the voyage', () => {
   it('starts every mode with its own tank, galley and spares', () => {
     for (const id of SURVIVAL_IDS) {
       const j = newJourney(7, false, 'three', id), K = SURVIVAL[id].voyage.start;
-      expect(j.carry).toMatchObject({ cyrite: K.cyrite, supplies: K.supplies });
+      expect(j.carry).toMatchObject({ cyrite: 0, fuel: K.cyrite, supplies: K.supplies });
     }
-    expect(newJourney(7).carry).toMatchObject({ cyrite: START_CYRITE, supplies: SUPPLIES_START });
+    expect(newJourney(7).carry).toMatchObject({ cyrite: 0, fuel: START_CYRITE, supplies: SUPPLIES_START });
   });
 
   it('prices the lanes by the mode, once, and the opening lane too', () => {
@@ -686,15 +686,17 @@ describe('the voyage', () => {
   it('lets a Drifter survive a wreck more than the others, and keep more of what it carried', () => {
     const wreck = (id: SurvivalId) => {
       const j = newJourney(3, false, 'three', id);
-      j.carry.cyrite = 20; j.carry.supplies = 8;
+      j.carry.cyrite = 20; j.carry.fuel = 20; j.carry.supplies = 8;
       const out = endSortie(j, result(j, { ended: 'destroyed' }));
       return { j, out };
     };
     const d = wreck('drifter'), p = wreck('prospector');
     expect(d.out.kind).toBe('adrift');
     expect(d.j.carry.cyrite).toBe(15);
+    expect(d.j.carry.fuel).toBe(15);
     expect(d.j.carry.supplies).toBe(6);
     expect(p.j.carry.cyrite).toBe(10);
+    expect(p.j.carry.fuel).toBe(10);
     expect(p.j.carry.supplies).toBe(4);
     // the days lost adrift are the same, and the wreck count is
     expect(d.j.day).toBeCloseTo(p.j.day, 5);
@@ -763,8 +765,8 @@ describe('a mode that is playable', () => {
       const j = newJourney(7, false, 'three', id);
       const first = sortieDef(j).jumpCost;
       // the opening tank is a start, not the jump: the first Cyrite is to be found, in every mode
-      expect(j.carry.cyrite, id).toBeLessThan(first + 1);
-      expect(j.carry.cyrite, id).toBeGreaterThan(0);
+      expect(j.carry.fuel, id).toBeLessThan(first + 1);
+      expect(j.carry.fuel, id).toBeGreaterThan(0);
     }
   });
 

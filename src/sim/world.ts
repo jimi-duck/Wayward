@@ -31,7 +31,7 @@ import {
   spawnAlien, stepBeam, stepWebs, type Alien, type Arena, type EliteId, type Faction, type Shot, type Web,
 } from './enemies';
 import type { BlastKind, GameEvent, PowerKind } from './events';
-import { CHITS_PER_CYRITE, cy } from './purse';
+import { CHITS_PER_CYRITE, cy, fluidPrice, refine, tankFor } from './purse';
 import { newTutor, skipTutor, stepOf, stepTutor, LESSON_NODE, type Tutor } from './tutor';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type Rock } from './field';
 import { Ids, newId, useIds } from './ids';
@@ -77,7 +77,7 @@ import {
 
 export type Phase = 'play' | 'hail' | 'comms' | 'dock' | 'bay' | 'over';
 /** What the port sells. */
-export type PortItem = 'plate' | 'supplies';
+export type PortItem = 'plate' | 'supplies' | 'fuel';
 
 export interface WorldOptions {
   /** Upgrade, event and modifier ids opened by long-term progression. */
@@ -223,15 +223,21 @@ export class World implements EncounterHost {
   // the Breakout: the course and the pursuit (null in the arcade), the tank, the hold, the cutter
   mode: Mode;
   bk: Breakout | null = null;
-  /** Cyrite is the one stock, in both modes: the drive burns it, the bay builds with it, the ports sell for it. `krail` and `chits` are the old names for the same stock (the Arcade's tuning, records and the content rows still use them). */
+  /** Cyrite is the purse, in both modes: the bay builds with it, the ports sell for it. `krail` and `chits` are the old names for the same stock (the Arcade's tuning, records and the content rows still use them). The Story's jump is paid in `fuel`, not from here. */
   get krail(): number { return this.cyrite; }
   set krail(v: number) { this.cyrite = v; }
   get chits(): number { return this.cyrite; }
   set chits(v: number) { this.cyrite = v; }
   /** What the bay spends. */
   get purse(): number { return this.cyrite; }
-  /** Cyrite aboard: fuel, money and build material in one. Rock, scrap and wrecks give it as it is picked up. */
+  /** Cyrite aboard: money and build material. Rock, scrap and wrecks give it as it is picked up, once the tank is full. */
   cyrite = 0;
+  /** Jump fluid in the drive tank (the Story): the refinery fills it first from what is picked up, the jump burns it, the ports sell a top-up. */
+  fuel = 0;
+  /** What the tank holds: the plotted jump. Over it, what is picked up is Cyrite. */
+  get tankCap(): number { return tankFor(this.jumpCost); }
+  /** A port's price for one unit of jump fluid, in Cyrite. */
+  get fluidPrice(): number { return fluidPrice(this.prices.cyrite); }
   /** Supplies aboard: the galley and the spares in one. A lane's days, the drive's wear and a plate patch draw on it. */
   supplies = 0;
   /** Seconds into patching a plate from supplies. */
@@ -357,7 +363,7 @@ export class World implements EncounterHost {
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     this.stage = null;
     if (this.mode !== 'breakout') {
-      this.bk = null; this.cyrite = 0; this.supplies = 0; this.callowayAt = Infinity;
+      this.bk = null; this.cyrite = 0; this.fuel = 0; this.supplies = 0; this.callowayAt = Infinity;
       this.bayAt = ARCADE_PRICE; this.bayQuiet = 0;
       this.stock();
       return;
@@ -372,7 +378,8 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     for (const w of places(b)) { w.x += s.x; w.z += s.z; }
     this.field.density = def.density;
-    this.cyrite = this.survival.voyage.start.cyrite;
+    this.cyrite = 0;
+    this.fuel = this.survival.voyage.start.cyrite;
     this.supplies = this.survival.voyage.start.supplies;
     // a few violet-veined rocks in the opening field: the first Cyrite is there to be cut
     let n = 0;
@@ -402,6 +409,7 @@ export class World implements EncounterHost {
     this.supplies = Math.min(this.supplyMax, c.supplies);
     this.levels = { ...c.levels };
     this.refreshStats();
+    this.fuel = c.fuel;
     this.plates = Math.max(1, Math.min(this.stats.maxPlates, c.plates));
     this.refit = c.refit;
     this.techs = new Set(c.techs);
@@ -421,7 +429,7 @@ export class World implements EncounterHost {
   /** What the ship carries now, into the next system. */
   carry(): Carry {
     return {
-      cyrite: this.cyrite, supplies: this.supplies, plates: this.plates, levels: { ...this.levels },
+      cyrite: this.cyrite, fuel: this.fuel, supplies: this.supplies, plates: this.plates, levels: { ...this.levels },
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
       hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
@@ -763,13 +771,13 @@ export class World implements EncounterHost {
 
     // the lane mouth: hold inside it with the Cyrite to jump while the drive spools
     if (dl < b.lane.r) {
-      if (this.cyrite >= this.jumpCost && this.phase === 'play') {
+      if (this.fuel >= this.jumpCost && this.phase === 'play') {
         if (b.spool === 0) this.events.push({ type: 'spool' });
         b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
         if (b.spool >= b.spoolNeed) this.jump();
       } else if (b.nagT <= 0) {
         b.nagT = 6;
-        this.events.push({ type: 'needCyrite', have: this.cyrite, need: this.jumpCost });
+        this.events.push({ type: 'needFuel', have: Math.floor(this.fuel), need: this.jumpCost });
       }
     } else b.spool = Math.max(0, b.spool - dt * 2);
   }
@@ -827,7 +835,7 @@ export class World implements EncounterHost {
       m.modeT = (lead?.modeT ?? 0) + i * 0.25;
     }
     this.events.push({ type: 'squad', label: 'Thren swarm' });
-    b.nextSwarm = t + swarmGap(thren, this.cyrite) * this.rng.range(0.8, 1.2);
+    b.nextSwarm = t + swarmGap(thren, (this.fuel / this.tankCap) * TANK_MAX) * this.rng.range(0.8, 1.2);
   }
 
   /** Navigation scrambles near Thren hulls, and settles once they are gone. */
@@ -901,6 +909,7 @@ export class World implements EncounterHost {
   /** Whether a thing can be had at the port now. */
   canBuy(item: PortItem): boolean {
     if (this.phase !== 'dock') return false;
+    if (item === 'fuel') return !!this.bk && this.fuel < this.tankCap && this.cyrite >= this.fluidPrice;
     if (this.cyrite < this.prices[item]) return false;
     if (item === 'plate') return this.plates < this.stats.maxPlates;
     return this.supplies < this.supplyMax;
@@ -910,22 +919,23 @@ export class World implements EncounterHost {
   buy(item: PortItem): boolean {
     useIds(this.ids);
     if (!this.canBuy(item)) return false;
+    if (item === 'fuel') { this.cyrite -= this.fluidPrice; this.fuel++; return true; }
     this.cyrite -= this.prices[item];
     if (item === 'supplies') this.supplies++;
     else this.repair(1);
     return true;
   }
 
-  /** What the port would do for a sensible stop now (sim/stop.ts): it keeps the Cyrite the jump needs. */
+  /** What the port would do for a sensible stop now (sim/stop.ts): the tank up to the jump first. */
   planStop(): Stop {
-    return planStop({ supplyMax: this.supplyMax, cyrite: this.cyrite, prices: this.prices, jumpCost: this.jumpCost, supplies: this.supplies, plates: this.plates, maxPlates: this.stats.maxPlates });
+    return planStop({ supplyMax: this.supplyMax, cyrite: this.cyrite, prices: this.prices, jumpCost: this.jumpCost, fuel: this.fuel, fluidPrice: this.fluidPrice, supplies: this.supplies, plates: this.plates, maxPlates: this.stats.maxPlates });
   }
 
   /** At the port: the sensible stop. Returns what it did. */
   sensibleStop(): Stop {
     const plan = this.planStop();
-    if (this.phase !== 'dock') return { supplies: 0, plate: 0, cyrite: 0 };
-    for (const item of ['supplies', 'plate'] as const) for (let i = 0; i < plan[item]; i++) this.buy(item);
+    if (this.phase !== 'dock') return { fuel: 0, supplies: 0, plate: 0, cyrite: 0 };
+    for (const item of ['fuel', 'supplies', 'plate'] as const) for (let i = 0; i < plan[item]; i++) this.buy(item);
     return plan;
   }
 
@@ -946,15 +956,15 @@ export class World implements EncounterHost {
     this.ship.invuln = Math.max(this.ship.invuln, 2);
   }
 
-  /** Into the lane: the drive takes the Cyrite and the ship is gone. */
+  /** Into the lane: the drive burns the fluid and the ship is gone. */
   private jump(): void {
     const b = this.bk!, s = this.ship;
-    this.cyrite -= this.jumpCost;
+    this.fuel -= this.jumpCost;
     this.settleJobs('lane');
     this.run.escaped = true;
     this.run.cyriteLeft = this.cyrite;
     this.run.cause = 'escaped';
-    this.addScore(5000 + this.cyrite * 50 + this.plates * 500, 'events');
+    this.addScore(5000 + (this.cyrite + this.fuel) * 50 + this.plates * 500, 'events');
     b.jumpT = 1.6;
     s.invuln = 99;
     this.events.push({ type: 'jumped', x: s.x, z: s.z });
@@ -1163,7 +1173,7 @@ export class World implements EncounterHost {
     const b = this.bk, s = this.ship;
     const place = !b ? 'open' : Math.hypot(s.x - b.lane.x, s.z - b.lane.z) < BLOCKADE_AT ? 'lane' : b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL ? 'port' : 'open';
     return {
-      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, need: b ? this.jumpCost : JUMP_COST, tank: TANK_MAX, chits: this.cyrite,
+      t: this.runTime, heat: b?.heat ?? 0, cyrite: this.cyrite, fuel: this.fuel, need: b ? this.jumpCost : JUMP_COST, tank: TANK_MAX, chits: this.cyrite,
       plates: this.plates, maxPlates: this.stats.maxPlates, levels: this.levels, flags: this.flags, standing: this.standing, place,
       hostiles: this.aliens.filter((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       supplies: this.supplies, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
@@ -1303,7 +1313,7 @@ export class World implements EncounterHost {
     // a timed-out default the ship cannot afford falls to the first choice it can
     if (!res && timedOut) { const ok = o.choices.find((c) => c.ok); if (ok) res = resolve(o, ok.id, x, this.rng); }
     if (!res) return false;
-    this.cyrite -= res.cost.cyrite; this.supplies -= res.cost.supplies;
+    this.cyrite -= res.cost.cyrite; this.supplies -= res.cost.supplies; this.fuel = Math.max(0, this.fuel - res.cost.fuel);
     if (o === this.call) this.call = null;
     else { this.comms = null; this.phase = 'play'; }
     this.desk.closed(this.runTime);
@@ -1318,9 +1328,21 @@ export class World implements EncounterHost {
   /** Do what an outcome says, at the card's fee. `brought`: the hulls the card brought in, for a dismissal. Returns the ids of any hulls it brings. */
   applyOutcome(out: Outcome, fee: number, brought: number[]): number[] {
     const b = this.bk;
-    this.cyrite = Math.min(HOLD_MAX, Math.max(0, this.cyrite + amount(out.cyrite, this.cyrite, fee) + amount(out.chits, this.cyrite, fee, true)));
+    // Cyrite found or paid: in the Story the refinery takes it into the tank first, the rest is the purse; a loss comes out of the purse
+    const dCy = amount(out.cyrite, this.cyrite, fee) + amount(out.chits, this.cyrite, fee, true);
+    if (b && dCy > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, dCy); this.fuel = r.fuel; this.cyrite = Math.min(HOLD_MAX, r.purse); }
+    else this.cyrite = Math.min(HOLD_MAX, Math.max(0, this.cyrite + dCy));
     this.supplies = Math.min(this.supplyMax, Math.max(0, this.supplies + amount(out.supplies, this.supplies, fee)));
-    if (out.krail) this.cyrite = Math.max(0, this.cyrite + (b ? cy(out.krail) : out.krail));
+    if (out.krail) {
+      const k = b ? cy(out.krail) : out.krail;
+      if (b && k > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, k); this.fuel = r.fuel; this.cyrite = Math.min(HOLD_MAX, r.purse); }
+      else this.cyrite = Math.max(0, this.cyrite + k);
+    }
+    if (out.fuel && b) {
+      // fluid handed over: into the tank, and what it cannot hold is worth the same in Cyrite
+      if (out.fuel > 0) { const r = refine(this.fuel, this.cyrite, this.tankCap, out.fuel); this.fuel = r.fuel; this.cyrite = Math.min(HOLD_MAX, r.purse); }
+      else this.fuel = Math.max(0, this.fuel + out.fuel);
+    }
     if (out.hunt) this.huntDelay += out.hunt;
     if (out.stall) this.stall += out.stall;
     if (b && out.calm) b.nextSwarm = Math.max(b.nextSwarm, this.runTime + out.calm);
@@ -1913,12 +1935,15 @@ export class World implements EncounterHost {
         this.run.krailEarned += pk.value * this.stats.xpMult;
         break;
       }
-      case 'cyrite':
-        // the Story mode's fuel, into the tank
-        this.cyrite = Math.min(HOLD_MAX, this.cyrite + pk.value);
+      case 'cyrite': {
+        // the Story's refinery: the tank first, the rest is Cyrite for the purse
+        const r = refine(this.fuel, this.cyrite, this.tankCap, pk.value), toTank = r.fuel - this.fuel;
+        this.fuel = r.fuel;
+        this.cyrite = Math.min(HOLD_MAX, r.purse);
         this.run.cyrite += pk.value;
-        this.events.push({ type: 'cyrite', x: pk.x, z: pk.z, value: pk.value });
+        this.events.push({ type: 'cyrite', x: pk.x, z: pk.z, value: pk.value, fuel: toTank });
         break;
+      }
       case 'ore': {
         // scrap pays at once: one purse, no hold
         const got = pk.value * this.scrapValue;

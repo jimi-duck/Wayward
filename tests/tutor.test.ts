@@ -22,7 +22,9 @@ describe('the first minutes', () => {
     expect(w.stats.torpedoes).toBe(false);
     const les = lessonOf(w)!;
     expect(les.mark && Math.hypot(les.mark.x - w.ship.x, les.mark.z - w.ship.z)).toBeLessThan(100);
-    expect(w.cyrite + 12).toBeGreaterThanOrEqual(w.jumpCost);
+    expect(w.fuel + 12).toBeGreaterThanOrEqual(w.jumpCost);
+    // the upgrade comes from the purse, not the tank
+    expect(w.cyrite).toBe(0);
     expect(w.bk!.nextPursuit).toBeGreaterThan(w.runTime + 20);
   });
 
@@ -33,7 +35,7 @@ describe('the first minutes', () => {
     w.field.rocks = [rock];
     w.dropCrystals(w.ship.x, w.ship.z, 5, 0);
     w.field.rocks = [];
-    w.cyrite = w.jumpCost - 2; // stand in for the pickup
+    w.fuel = w.jumpCost - 2; // stand in for the pickup
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(stepOf(w)).toBe('shoot');
     // the first ship goes down
@@ -56,7 +58,7 @@ describe('the first minutes', () => {
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(w.tutor!.done).toBe(true);
     expect(w.stats.torpedoes).toBe(true);
-    expect(w.cyrite).toBeGreaterThanOrEqual(w.jumpCost);
+    expect(w.fuel).toBeGreaterThanOrEqual(w.jumpCost);
     expect(lessonOf(w)).toBeNull();
   });
 
@@ -66,6 +68,6 @@ describe('the first minutes', () => {
     w.skipTraining();
     expect(w.tutor!.done && w.tutor!.skipped).toBe(true);
     expect(w.levels[LESSON_NODE]).toBe(1);
-    expect(w.cyrite).toBeGreaterThanOrEqual(w.jumpCost);
+    expect(w.fuel).toBeGreaterThanOrEqual(w.jumpCost);
   });
 });

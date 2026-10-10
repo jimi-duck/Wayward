@@ -283,7 +283,7 @@ function boot(review: typeof import('./review') | null): void {
     setPaused(false);
     const d = world.sortie;
     if (d.home) world.train(); // every new Story journey starts with the training
-    hud.note(world, d.home ? t('Clear the yards · head for the lane entrance') : `${d.name} · ${t('Need {n} Cyrite to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
+    hud.note(world, d.home ? t('Clear the yards · head for the lane entrance') : `${d.name} · ${t('Need {n} jump fluid to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
   const openChart = (lines: string[]) => {
@@ -490,7 +490,7 @@ function boot(review: typeof import('./review') | null): void {
   const showBrief = () => {
     const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
-    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : first ? 'Briefing' : 'All stop');
+    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : 'All stop');
     for (const [id, on] of [['p-sound', feel.prefs.sound], ['p-buzz', feel.prefs.haptics]] as const) {
       el(id).classList.toggle('on', on);
       el(id).setAttribute('aria-pressed', String(on));
@@ -499,7 +499,6 @@ function boot(review: typeof import('./review') | null): void {
     el('p-sound').closest('li')!.hidden = !SOUND_AVAILABLE;
     el('p-buzz-r').hidden = !feel.canBuzz;
     el('p-paint-r').hidden = !el('paint').childElementCount;
-    el('p-skip').hidden = !(world.tutor && !world.tutor.done);
   };
   // Phones and tablets take the whole screen where the browser allows it
   // (Android, iPad; never an iPhone browser), and on its side where it can
@@ -740,14 +739,11 @@ function boot(review: typeof import('./review') | null): void {
     el(id).addEventListener('click', (e) => { e.stopPropagation(); f(); });
   };
   act('p-set', () => showSettings(true));
-  // the Archive, once the title's list: from the pause card, over it
-  act('p-arch', () => startOpts.logbook(true));
   act('p-back', () => showSettings(false));
-  act('p-skip', () => { world.skipTraining(); showBrief(); });
   act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
   act('p-buzz', () => { feel.setHaptics(!feel.prefs.haptics); showBrief(); });
   act('p-go', () => setPaused(false));
-  // Story mode: the journey is saved as it stands (the last chart or dock), and the page reloads to the title
+  // Story mode saves the journey as it stands (the last chart or dock); the arcade just leaves. Either way the page reloads to the title
   act('p-exit', () => {
     if (journey && world.mode === 'breakout') saveJourney(journey);
     location.reload();

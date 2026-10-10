@@ -8,9 +8,9 @@ import { num, plural, t } from '../i18n';
 
 // ── the port ──────────────────────────────────────────────────────────────
 // Docked: the world waits while you trade. One tap does the sensible stop
-// (Cyrite for the jump, supplies, the hull and a second jump,
-// as far as the chits reach: sim/stop.ts), and the row says what it will do.
-// Buying Cyrite and supplies a unit at a time and patching a plate are
+// (jump fluid up to the jump, supplies, then the hull, as far as the Cyrite
+// reaches: sim/stop.ts), and the row says what it will do.
+// Buying fluid and supplies a unit at a time and patching a plate are
 // one tap deeper, under "By hand". Beside them: open the refit bay (it
 // always opens at a port) and cast off. Every port sets its own
 // prices, and the Net marks them up. The list is redrawn after every trade,
@@ -21,6 +21,7 @@ import { num, plural, t } from '../i18n';
 /** What a sensible stop does, as chips: what comes aboard. */
 function deltas(s: Stop): string[] {
   return [
+    ...(s.fuel ? [`+${s.fuel} ${t('Jump fluid')}`] : []),
     ...(s.supplies ? [`+${s.supplies} ${t('Supplies')}`] : []),
     ...(s.plate ? [`+${s.plate} ${t('Hull')}`] : []),
   ];
@@ -39,7 +40,7 @@ export interface Course {
 const PORT_WARN = {
   empty: 'Out of supplies · handling is reduced. Buy more here.',
   low: 'Supplies low · only a few jumps remain before performance drops. Buy more here.',
-  heavy: 'Heavy load · slower turning and {n} extra Cyrite per jump. Sell cargo or refit at the Bay to reduce the load.',
+  heavy: 'Heavy load · slower turning and {n} extra jump fluid per jump. Sell cargo or refit at the Bay to reduce the load.',
   hot: 'Weapons overheating · guns fire more slowly. Fit cooling at the Bay to fix this.',
 } as const;
 
@@ -137,7 +138,7 @@ export class PortPanel {
     const w = this.world!;
     this.trade(w);
     this.sel = Math.min(this.sel, this.lines.length - 1);
-    const stock = [[t('Cyrite'), `${w.cyrite}`], [t('Jump'), String(w.jumpCost)], [t('Supplies'), `${w.supplies}/${w.supplyMax}`], [t('Hull'), `${w.plates}/${w.stats.maxPlates}`]];
+    const stock = [[t('Jump fluid'), `${Math.floor(w.fuel)}/${w.jumpCost}`], [t('Cyrite'), `${Math.floor(w.cyrite)}`], [t('Supplies'), `${w.supplies}/${w.supplyMax}`], [t('Hull'), `${w.plates}/${w.stats.maxPlates}`]];
     $('port-stock').replaceChildren(...stock.map(([k, v]) => h('span', '', '', h('span', 'k', k!), h('b', '', v!))));
     // the ship's trouble and where it is mended: the stores here, the weight in the bay
     const warn = w.warnings.map((k) => t(PORT_WARN[k], { n: w.weightFuel }));
@@ -157,22 +158,23 @@ export class PortPanel {
   private trade(w: World): void {
     const P = w.prices;
     const plan = w.planStop(), idle = stopIdle(plan);
-    // the jump's own Cyrite is kept back from the stop; short of it the port says so
-    const short = Math.max(0, w.jumpCost - w.cyrite);
+    // the stop fills the tank to the jump first; if the purse cannot, the port says how far short it stays
+    const short = Math.max(0, Math.ceil(w.jumpCost - w.fuel) - plan.fuel);
     this.lines = [
-      { key: 'stop', label: t('Sensible stop'), price: idle ? '—' : `−${Math.abs(plan.cyrite)}`, note: short ? t('Need {n} more Cyrite to jump', { n: short }) : t('No available services'), chips: idle ? undefined : deltas(plan), ok: !idle },
+      { key: 'stop', label: t('Sensible stop'), price: idle ? '—' : `−${Math.abs(plan.cyrite)}`, note: short ? t('Need {n} more jump fluid to jump', { n: short }) : t('No available services'), chips: idle ? undefined : deltas(plan), ok: !idle },
       { key: 'bay', label: t('Refit bay'), price: `${num(Math.floor(w.cyrite))} ${t('Cyrite')}`, note: t('Install upgrades at a work bay'), ok: true, go: () => { this.close(); this.onBay?.(); } },
     ];
     const c = this.course, lanes = c?.lanes() ?? [];
     if (c && lanes.length) {
       const now = lanes.find((x) => x.id === c.current()) ?? lanes[0]!;
       this.lines.push({
-        key: 'course', label: t(lanes.length > 1 ? 'Choose another jump lane' : 'Exit lane'), price: `${now.cyrite} ${t('Cyrite')}`,
+        key: 'course', label: t(lanes.length > 1 ? 'Choose another jump lane' : 'Exit lane'), price: `${now.cyrite} ${t('Jump fluid')}`,
         note: [t('Bound for {dest}', { dest: now.name }), plural(now.days, '{n} day', '{n} days'), now.note].filter(Boolean).join(' · '), ok: lanes.length > 1,
       });
     }
-    this.lines.push({ key: 'hand', label: t(this.manual ? 'By hand ▾' : 'By hand ▸'), price: '', note: t('Buy supplies or repair hull plates one at a time'), ok: true, go: () => { this.manual = !this.manual; this.render(); } });
+    this.lines.push({ key: 'hand', label: t(this.manual ? 'By hand ▾' : 'By hand ▸'), price: '', note: t('Top up the tank, buy supplies or repair hull plates one at a time'), ok: true, go: () => { this.manual = !this.manual; this.render(); } });
     if (this.manual) this.lines.push(
+      { key: 'fuel', label: t('Buy jump fluid'), price: `${w.fluidPrice}`, note: w.fuel >= w.tankCap ? t('Tank full') : t('{n} in the tank · {m} to jump', { n: Math.floor(w.fuel), m: w.jumpCost }), ok: w.canBuy('fuel') },
       { key: 'supplies', label: t('Buy supplies'), price: `${P.supplies}`, note: w.supplies >= w.supplyMax ? t('Stores full') : t('{n} aboard · a day each', { n: w.supplies }), ok: w.canBuy('supplies') },
       { key: 'plate', label: t('Patch a plate'), price: `${P.plate}`, note: w.plates >= w.stats.maxPlates ? t('Hull fully repaired') : `${t('Hull')} ${w.plates}/${w.stats.maxPlates}`, ok: w.canBuy('plate') },
     );

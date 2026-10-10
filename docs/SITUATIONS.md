@@ -111,7 +111,7 @@ it on.
 
 | Resource | Is for |
 |---|---|
-| Cyrite | movement: jumps |
+| Jump fluid | movement: jumps (Story; refined from Cyrite, tank first) |
 | Krail | growth: the refit bay |
 | Chits | money and services: food, parts, news, favours, permits |
 | Parts | repairs and mechanical help |

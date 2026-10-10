@@ -2,8 +2,9 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { t } from '../i18n';
 
 // ── the opening ───────────────────────────────────────────────────────────
-// What the game is, in a few lines, read once at the start of every new
-// Story journey: who you are, what is after you, and what the first job is.
+// What the game is, in a few lines, read at the start of every new Story
+// journey: who you are, what is after you, and the first job. The controls
+// card (the pause card) follows it.
 
 export class OpeningPanel {
   private off: (() => void) | null = null;
@@ -24,23 +25,20 @@ export class OpeningPanel {
     $('op-k').textContent = t('Story 01');
     $('op-t').textContent = t('Breakout');
     $('op-l').replaceChildren(
-      h('b', '', t('The Wayward is yours now.')),
-      h('p', '', t('The Continuance rules the core worlds. It began as an emergency government, when the Krail that keeps humanity running grew scarce, and it never gave the power back.')),
-      h('p', '', t('The shortage ended in the lane blackout: the outer systems were abandoned and millions were cut off from the core. Now every citizen is scored, rationed and tracked, and the Office of Peace deals with anyone it no longer finds desirable. People like you.')),
-      h('p', '', t('You stole an ore hauler. Hidden in its systems was something far more dangerous than you knew: a file that exposes what really happened when the jump lanes went dark seventy years ago.')),
-      h('p', '', t('Now they want their ship, and their secret, back.')),
-      h('p', '', t('You don’t have to win a war. You only have to get out of this system.')),
+      h('b', '', t('The Continuance controls the core. Everyone else is on their own.')),
+      h('p', '', t('Seventy years ago, the jump lanes went dark, cutting the outer systems off from the core. The Continuance blamed dwindling Krail. Millions were stranded, and the core tightened its grip on what remained.')),
+      h('p', '', t('Today, every citizen is scored, every resource is rationed, and every ship is tracked. The Offices of Peace deal with anyone they deem undesirable. People like you.')),
+      h('p', '', t('When they came for you, you escaped aboard a decommissioned Continuance ore hauler, the Wayward. Hidden in its systems is a sealed archive revealing the truth behind the blackout. The shortages were a cover. The isolation was used to purge those who could challenge the Continuance and secure its hold on power.')),
+      h('p', '', t('Your ship is still broadcasting its identity. The patrols are coming.')),
+      h('p', '', t('You don’t have to win a war. You just have to get out of this system.')),
       h('b', 'op-job', t('Your first job')),
-      h('p', '', t('Break asteroids for Cyrite. It pays for upgrades and fuels the jump to the next system.')),
-      h('p', '', t('Keep moving and watch your hull. Not every ship you meet is an enemy. And the longer you linger, the sooner they find you.')),
+      h('p', '', t('Break asteroids for Cyrite. Your ship’s refinery converts it into jump fluid until the drive tank is full. Any surplus can be spent on upgrades and supplies.')),
+      h('p', '', t('Keep moving, watch your hull, and choose carefully who to trust. The longer you stay, the closer the patrols get.')),
     );
     this.paged = matchMedia('(max-height: 460px)').matches;
     this.page = 0;
-    let job = false;
-    for (const el of Array.from($('op-l').children)) {
-      job = job || el.classList.contains('op-job');
-      el.classList.toggle('op-p2', job);
-    }
+    // page two starts at the patrols: the story so far, then what is coming and the first job
+    Array.from($('op-l').children).forEach((el, i) => el.classList.toggle('op-p2', i >= 4));
     this.paint();
     const go = $('op-go');
     go.onclick = guarded(this.opened, () => this.done());
@@ -65,7 +63,7 @@ export class OpeningPanel {
   private paint(): void {
     $('opening').classList.toggle('paged', this.paged);
     $('opening').dataset.page = String(this.page);
-    $('op-go').textContent = t(this.paged && this.page === 0 ? 'Continue' : 'Begin');
+    $('op-go').textContent = t('Continue');
     $('op-l').scrollTop = 0;
   }
 

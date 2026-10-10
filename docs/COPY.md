@@ -24,10 +24,10 @@ are in `copy.ts`).
   literal, the Thren strange and not explained early.
 - **Respect the player's time.** Short sentences, active voice, familiar words.
   No filler, repeated warnings or unexplained abbreviations.
-- **Consistent terms.** Cyrite, Krail, supplies, Bay, Custody, Office of Peace,
-  the Net, the Voice, the Thren, jump lane, lane entrance. Cyrite is the one
-  currency and the jump fuel (see `ECONOMY.md`); Chits and Krail are not
-  shown as money.
+- **Consistent terms.** Cyrite, jump fluid, Krail, supplies, Bay, Custody, Offices of Peace,
+  the Net, the Voice, the Thren, jump lane, lane entrance. Cyrite is what is found and the
+  money; jump fluid is what the jump burns, refined from Cyrite (see `ECONOMY.md`). Never
+  call the fuel Cyrite or the money fluid. Chits and Krail are not shown as money.
 - **Sentence case** for messages and descriptions. Title case only for proper
   names and named story content.
 - **Punctuation by function.** Short labels and one-line status messages need

@@ -23,9 +23,9 @@ picture left alone, everything else shown only while it matters. The code is
 
 | Place | What | When |
 |---|---|---|
-| Upper left | `OBJECTIVE`, the one thing to do, how far (or `6/20` Cyrite), at most two quiet lines (the lane, a job, the optional port) | always; a red line only while a hostile is within 320 m or the Custody is at wanted 3 |
+| Upper left | `OBJECTIVE`, the one thing to do, how far (or `6/20` jump fluid, "Fill the tank"), at most two quiet lines (the lane, a job, the optional port) | always; a red line only while a hostile is within 320 m or the Custody is at wanted 3 |
 | Upper centre | the heading tape with the objective on it, then one card: the capital ship or the target | tape always (not on phones); cards on cue |
-| Upper right | Hull, Fuel (Story), Energy; Torpedoes and Mines (dimmed until a fight, a lock or a reload); one line of stores (Krail; Story: hold, parts, chits, food; Arcade: score and chain) | always |
+| Upper right | Hull, Fluid (Story: the drive tank, jump fluid against the lane's cost) and Cyrite (Story: the purse), Energy; Torpedoes and Mines (dimmed until a fight, a lock or a reload); one line of stores (Krail; Story: hold, parts, chits, food; Arcade: score and chain) | always |
 | Under the panel | power-ups running, one chip each with a countdown | while they run |
 | World | name and distance on the lane mouth, the port, an event, a neutral hull; brackets on hostiles; the target's brackets | in view |
 | Edge | a pointer for the objective and the capital ship, a chevron per hull out of view | when off screen |

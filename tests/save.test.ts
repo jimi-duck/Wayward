@@ -3,6 +3,7 @@ import {
   clearJourney, exportJourney, hasBackup, importJourney, loadJourney, migrate, restoreJourney, saveJourney, saveUnreadable,
 } from '../src/meta/save';
 import { newJourney, VERSION } from '../src/sim/journey';
+import { TANK_MAX } from '../src/sim/purse';
 
 // The journey save keeps the save it replaces as a safety copy, reports a save it cannot read, and
 // round-trips through an exported file.
@@ -79,7 +80,23 @@ describe('a journey saved before the overcharge was removed (version 9 and older
     expect(Object.keys(back.carry.levels).some((id) => id.startsWith('oc_') || id === 'sy_core_mines')).toBe(false);
     expect(back.carry.levels).toMatchObject({ tp_bay: 1, mn_layer: 1, mo_impulse: 2 });
     // coils 40 + 60, nova 60, core-charged mines 40: 200 refunded, in chits, so 40 Cyrite
-    expect(back.carry.cyrite).toBeGreaterThanOrEqual(40);
+    expect(back.carry.cyrite + back.carry.fuel).toBeGreaterThanOrEqual(40);
+  });
+
+  it('splits an old save\'s Cyrite into the new drive tank and the purse (version 14 and older)', () => {
+    const at = (cyrite: number) => {
+      const j = newJourney(4) as unknown as { version: number; carry: { cyrite: number; fuel?: number } };
+      j.version = 14;
+      j.carry.cyrite = cyrite;
+      delete j.carry.fuel;
+      return migrate(JSON.parse(JSON.stringify(j)))!;
+    };
+    // a small hold goes wholly to the tank, as the jump's fuel always was
+    expect(at(6).carry).toMatchObject({ fuel: 6, cyrite: 0 });
+    // a big one fills the tank and the rest is the purse: nothing is lost
+    const big = at(100);
+    expect(big.carry).toMatchObject({ fuel: TANK_MAX, cyrite: 100 - TANK_MAX });
+    expect(big.version).toBe(VERSION);
   });
 
   it('leaves a current save alone', () => {

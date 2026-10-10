@@ -35,7 +35,8 @@ export type GameEvent =
   | { type: 'webSet'; x: number; z: number }
   | { type: 'pickup'; x: number; z: number; plates: number }
   | { type: 'crystal'; x: number; z: number; value: number }
-  | { type: 'cyrite'; x: number; z: number; value: number }
+  /** Cyrite picked up; `fuel` is how much of it the refinery sent to the tank. */
+  | { type: 'cyrite'; x: number; z: number; value: number; fuel: number }
   | { type: 'power'; x: number; z: number; kind: PowerKind }
   | { type: 'fitted'; id: string }
   | { type: 'salvage'; faction: string; tech: boolean }
@@ -74,7 +75,7 @@ export type GameEvent =
   | { type: 'patched'; plates: number }
   | { type: 'docked'; name: string }
   | { type: 'spool' }
-  | { type: 'needCyrite'; have: number; need: number }
+  | { type: 'needFuel'; have: number; need: number }
   | { type: 'jumped'; x: number; z: number }
   | { type: 'comms'; id: string; tier: 'major'; kind: string; from: string; title: string; slow: boolean }
   /** A lighter card, as a call that rides along; and its channel closing (lapsed: nobody answered). */

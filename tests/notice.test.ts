@@ -19,7 +19,7 @@ const input = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, t
 const run = (w: World, seconds: number) => { for (let i = 0; i < Math.round(seconds / STEP); i++) w.step(STEP, input()); };
 
 const ctx = (x: Partial<Ctx> = {}): Ctx => ({
-  t: 300, heat: 0.3, cyrite: 10, need: 20, tank: 40, chits: 0, plates: 3, maxPlates: 3,
+  t: 300, heat: 0.3, cyrite: 10, fuel: 10, need: 20, tank: 40, chits: 0, plates: 3, maxPlates: 3,
   levels: {}, flags: new Set(), standing: {}, place: 'open', hostiles: 0, supplies: 12, kind: 'transit', netted: false, behind: Infinity, ...x,
 });
 
