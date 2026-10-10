@@ -134,7 +134,7 @@ export const FEATURES: Record<FeatureId, FeatureDef> = {
     voice: { hum: 70, grit: 0.05 }, pulse: { period: 38, depth: 0.5 }, load: 'calm', story: ['place', 'history'],
   },
   static: {
-    id: 'static', name: 'Static field', blurb: 'A standing field that scrambles instruments. The lane mouth swims; locks will not hold.',
+    id: 'static', name: 'Static field', blurb: 'A field that scrambles instruments. Navigation markers drift, and target locks fail.',
     purpose: ['navigation', 'tactical'], layer: 'air', size: [380, 760], rarity: 'uncommon', gap: 2400, from: 120,
     effects: { jam: 0.8, lock: 0.25, sight: 0.7 }, look: { tint: [0.12, 0.24, 0.34], fog: 0.15, dim: 0.15, shape: 'haze', far: 3200 },
     voice: { hum: 120, grit: 0.7 }, pulse: { period: 11, depth: 0.45 }, load: 'busy', story: ['route', 'signal', 'place'],

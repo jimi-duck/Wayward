@@ -152,7 +152,7 @@ export const STORY_CARDS: CardDef[] = [
       { id: 'ask', label: 'Ask him to do right', tone: 'bluff', hint: 'Free, if he believes in something.', odds: { base: 0.4, standing: { miners: 0.1 } },
         win: { text: '“For my father.” · the ledger goes in the file', flag: 'frag_ledger', standing: { kellern: -1 } },
         lose: { text: 'He goes quiet, and closes the channel' } },
-      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Brook signs off' } },
+      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Brook signs off' } },
     ],
   }),
 
@@ -176,7 +176,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests, and the Drift stand with you. Copies get talked about.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift'], heat: 0.08, hunt: -0.5 } },
       { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Four Cyrite. Just the manifests, quietly.', cost: { chits: 20 }, win: { text: 'The manifests go in the file', flag: 'frag_manifests' } },
-      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
+      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
     ],
   }),
   story({
@@ -224,7 +224,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'food', label: 'Trade supplies', tone: 'trade', hint: 'Three supplies for the old charts.', cost: { supplies: 3 }, win: { text: 'The old charts go in the file', flag: 'frag_charts' } },
       { id: 'share', label: 'Share what you know', tone: 'help', hint: 'Free. He hears the file too, and talks.', win: { text: 'Tarn copies your route · the charts go in the file', flag: 'frag_charts', heat: 0.08, standing: { miners: 1 } } },
-      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The lamps drift astern' } },
+      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The lamps drift astern' } },
     ],
   }),
   story({
@@ -246,7 +246,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'buy', label: 'Pay for the order', tone: 'pay', hint: 'Seven Cyrite.', cost: { chits: 35 }, win: { text: 'The work order goes in the file', flag: 'frag_workorder' } },
       { id: 'shield', label: 'Promise to shield him', tone: 'bluff', hint: 'Free, if he believes you can.', odds: { base: 0.45, standing: { kellern: 0.1 } }, win: { text: '“Then take it.” · the work order goes in the file', flag: 'frag_workorder', standing: { kellern: -1 } }, lose: { text: 'He thinks better of it, and closes the case' } },
-      { id: 'no', label: 'Pass', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Anand signs off' } },
+      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Anand signs off' } },
     ],
   }),
   story({

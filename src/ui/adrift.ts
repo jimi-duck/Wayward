@@ -17,18 +17,18 @@ export const SCENES: Record<Scene, { kick: string; lines: string[] }> = {
   adrift: {
     kick: 'Hull breach',
     lines: [
-      'Every light goes out. The hold opens to the dark.',
-      'The drive is cold. Nothing answers on any channel.',
-      'A lamp, far off, sweeping slowly. A Drift tug, working the wrecks.',
+      'Every light goes out. The cargo hold opens to space.',
+      'The drive is cold. No one answers any channel.',
+      'A distant light sweeps across the wreckage: a Drift tug looking for salvage.',
       '“Salvage claim. We tow, you pay. A share of everything aboard.”',
     ],
   },
   lost: {
     kick: 'Total loss',
     lines: [
-      'The hull is open to the stars. This time nothing is left to patch.',
-      'The Drift tug takes what remains back to the gate it found you at.',
-      'A new hull, the same file. The region lies ahead again.',
+      'The hull is open to space. There is nothing left to repair.',
+      'The Drift tug tows what remains of your ship back to the gate where it found you.',
+      'A new hull, the same file. You must cross the region again.',
     ],
   },
 };

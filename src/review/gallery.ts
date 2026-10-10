@@ -275,7 +275,7 @@ export class Gallery {
     bk.lane.x = 90; bk.lane.z = z;
     bk.port!.x = 190; bk.port!.z = z;
     w.review!.bk = bk;
-    this.label('places', 90, 12, z, 'Lane mouth', 'Hold inside the ring with the Cyrite to jump', 140);
+    this.label('places', 90, 12, z, 'Lane entrance', 'Hold inside the ring with the Cyrite to jump', 140);
     this.label('places', 190, 12, z, 'Port', 'Slow inside the cyan ring to dock', 140);
   }
 

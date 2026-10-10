@@ -82,7 +82,7 @@ const HOSTILE = new Set(['shakedown', 'checkpoint', 'captain']);
 
 /** A word for a chance, never a number: a gamble should feel like one. */
 export function oddsWord(p: number): string {
-  return t(p >= 0.8 ? 'Likely' : p >= 0.6 ? 'Good odds' : p >= 0.4 ? 'Even odds' : p >= 0.2 ? 'Long shot' : 'Hopeless');
+  return t(p >= 0.8 ? 'Likely to succeed' : p >= 0.6 ? 'Good chance' : p >= 0.4 ? 'Even chance' : p >= 0.2 ? 'Low chance' : 'Very unlikely');
 }
 
 /** A card on the table, as the panel draws it. */
@@ -114,17 +114,17 @@ const fmt = num;
 /** The arcade's capital-ship hail: engage or evade. */
 export function hailView(c: Contact): CommsView {
   const evade: CommsChoice = c.canEvade
-    ? { label: t('Evade'), hint: t('You get away, but not twice in a row.'), lines: [], gains: ['No bounty', t('Next in {n}s', { n: c.evadeGap })], tags: [], ok: true, needs: [] }
+    ? { label: t('Evade'), hint: t('You escape this time, but not every time.'), lines: [], gains: ['No bounty available', t('Next in {n}s', { n: c.evadeGap })], tags: [], ok: true, needs: [] }
     : { label: t('Evade'), hint: t('Break away.'), lines: [], gains: [], tags: [], ok: false, needs: [t(c.faction === 'voice' ? 'You can’t outrun a foundry' : 'Not now: you dodged the last one')] };
   return {
     kick: t('Alarm'), title: t(c.name), sub: `${t('{f} capital ship', { f: t(FACTION_NAME[c.faction] ?? c.faction) })} · ${t('on intercept')}`, colour: NEON_CSS[c.faction], alert: true,
-    text: t('She fights back, with her escort. The sector clears for the duel.'),
+    text: t('She fights back with her escort · the area clears for the duel.'),
     more: '',
     read: null,
     face: null,
     art: { ...NO_ART, emblem: c.faction },
     choices: [
-      { label: t('Engage'), hint: t('Fight her. Her wreck pays a refit, her tech, hull, Cyrite and a power-up.'), lines: [], gains: ['Fight', t('+{n} score', { n: fmt(c.bounty) }), 'Refit'], tags: [], ok: true, needs: [] },
+      { label: t('Engage'), hint: t('Fight her. Her wreck can yield an upgrade, tech, hull repairs, Cyrite and a power-up.'), lines: [], gains: ['Fight', t('+{n} score', { n: fmt(c.bounty) }), 'Refit'], tags: [], ok: true, needs: [] },
       evade,
     ],
   };

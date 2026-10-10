@@ -170,7 +170,7 @@ function boot(review: typeof import('./review') | null): void {
   const paintWarn = () => {
     const warn = el('sv-keep');
     warn.hidden = !(pick === 'breakout' && liveJourney());
-    warn.textContent = t('This replaces your saved journey.');
+    warn.textContent = t('This will replace your saved journey.');
   };
   /** Where the journey stands, in two quiet lines under the word: the region and day, then the next stop. */
   const paintJourney = (live: Journey | null) => {
@@ -281,7 +281,7 @@ function boot(review: typeof import('./review') | null): void {
     setPaused(false);
     const d = world.sortie;
     if (d.home && (!profile.trained || TRAIN)) world.train();
-    hud.note(world, d.home ? t('Clear of the yards · make for the lane mouth') : `${d.name} · ${t('{n} Cyrite to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
+    hud.note(world, d.home ? t('Clear the yards · head for the lane entrance') : `${d.name} · ${t('Need {n} Cyrite to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
   const openChart = (lines: string[]) => {
@@ -300,7 +300,7 @@ function boot(review: typeof import('./review') | null): void {
     return {
       lanes: () => options(j).map((o) => ({
         id: o.to.id, name: o.to.name, cyrite: o.fuel, days: o.route.days,
-        note: [o.netted ? t('the Net holds it') : '', o.shadow ? t('Calloway last seen there') : '', o.to.kind === 'edge' ? t('the way out') : ''].filter(Boolean).join(' · '),
+        note: [o.netted ? t('the Net controls this system') : '', o.shadow ? t('Calloway was last seen there') : '', o.to.kind === 'edge' ? t('the way out') : ''].filter(Boolean).join(' · '),
       })),
       current: () => j.dest,
       pick: (id: string) => { const r = replot(j, id); if (r) world.replot(r.dest, r.jumpCost); },
@@ -396,7 +396,7 @@ function boot(review: typeof import('./review') | null): void {
       input.reset();
       port.show(world, () => {
         input.reset();
-        hud.note(world, `${t('Cast off')} · ${t('Saved')}`);
+        hud.note(world, `${t('Leave port')} · ${t('Saved')}`);
         // the save at the port: a load starts this system again with the hold as it is now
         if (journey && world.mode === 'breakout') { checkpoint(journey, world.carry()); saveJourney(journey); }
       }, () => { world.openBay(); input.reset(); }, journey && world.mode === 'breakout' && world.bk?.def.port ? courseFor(journey) : null);
@@ -413,7 +413,7 @@ function boot(review: typeof import('./review') | null): void {
         reported = false;
         startOpts.render();
         if (!profile.trained || TRAIN) world.train();
-        hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
+        hud.note(world, `${t('Journey started')} · ${t(world.hull.name)}`);
         input.reset();
       });
     }
@@ -530,7 +530,7 @@ function boot(review: typeof import('./review') | null): void {
     setPaused(false);
     if (mode === 'arcade') {
       if (world.mode !== 'arcade' || world.survival.id !== profile.survival) { world.restart({ survival: profile.survival, mode, carry: null }); showMode(); }
-      hud.note(world, `${t('Run begins')} · ${t(world.hull.name)}`);
+      hud.note(world, `${t('Journey started')} · ${t(world.hull.name)}`);
       // how to play first: the pause card, until any key or tap
       setPaused(true);
       return;
@@ -540,8 +540,8 @@ function boot(review: typeof import('./review') | null): void {
       if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
       journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
       saveJourney(journey);
-    } else if (pending(journey)) return threshold(journey, [t('Journey resumed · the Threshold is behind you')]);
-    else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cool, plot the next jump')]);
+    } else if (pending(journey)) return threshold(journey, [t('Journey resumed · you have passed the Threshold')]);
+    else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cooled; plot your next jump')]);
     startSortie();
     setPaused(true);
   };
@@ -562,7 +562,7 @@ function boot(review: typeof import('./review') | null): void {
     render(alpha, frameDt) {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
-      if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training done · the rest is yours')); }
+      if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly')); }
       // a kill lands harder for a beat of stillness (never with reduced motion)
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);

@@ -41,16 +41,16 @@ const LOG_LIFE = 4.5;
 /** What the ship says is wrong with it, in a few words (World.warnings). */
 /** How to do each lesson step, as the words for keys, a touch screen and a pad (the HUD shows the one that fits). */
 const LESSON_HINT: Record<string, Array<[string, string]>> = {
-  fire: [['h-keys', 'Hold Space to fire the lasers'], ['h-touch', 'Hold the right thumb to fire'], ['h-pad', 'Hold A to fire']],
-  bay: [['h-keys', 'Press B to open the bay'], ['h-touch', 'Tap Open bay'], ['h-pad', 'Press Back to open the bay']],
-  torpedo: [['h-keys', 'Press 2 to launch a torpedo'], ['h-touch', 'Tap the torpedo button'], ['h-pad', 'Press X to launch']],
+  fire: [['h-keys', 'Hold Space to fire your lasers'], ['h-touch', 'Hold the fire control to shoot'], ['h-pad', 'Hold A to fire your lasers']],
+  bay: [['h-keys', 'Press B to open the Bay'], ['h-touch', 'Tap Open Bay'], ['h-pad', 'Press Back to open the Bay']],
+  torpedo: [['h-keys', 'Press 2 to launch a torpedo'], ['h-touch', 'Tap the torpedo button to launch'], ['h-pad', 'Press X to launch a torpedo']],
 };
 
 const SHIP_WARN = {
-  empty: 'Out of supplies · slower, guns weaker',
+  empty: 'Out of supplies · slower handling and weaker weapons',
   low: 'Supplies low',
-  heavy: 'Heavy · slower to turn',
-  hot: 'Running hot · guns slower',
+  heavy: 'Heavy load · slower turning',
+  hot: 'Weapons overheating · slower fire rate',
 } as const;
 
 /** A hostile this close (units) earns the objective a threat line. */
@@ -146,8 +146,8 @@ export class Hud {
   /** The bay would not open: say why, short, and shake the badge. */
   bayDenied(world: World, why: 'yellow' | 'red' | 'busy' | 'away'): void {
     if (why === 'busy') return;
-    if (why === 'away') { this.note(world, t('Upgrades: dock at a work bay'), 'hit'); return; }
-    this.note(world, t(why === 'red' ? 'Bay locked · red alert' : 'Bay locked · yellow alert'), 'hit');
+    if (why === 'away') { this.note(world, t('To install upgrades, dock at a work bay'), 'hit'); return; }
+    this.note(world, t(why === 'red' ? 'Bay unavailable during combat' : 'Bay unavailable during alert'), 'hit');
     this.retrigger($('upg'), 'deny');
   }
 
@@ -180,15 +180,15 @@ export class Hud {
         case 'crystal': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'ore': this.gain += e.value * world.stats.xpMult; this.gainT = 1.4; break;
         case 'rockMined': this.note(world, `${t('Mined clean')} · ${t('{n} scrap', { n: e.ore })}${e.cyrite ? ` · ${e.cyrite} Cyrite` : ''}`, 'gain'); break;
-        case 'holdFull': this.note(world, t('Hold full · sell at the port'), 'hit'); break;
-        case 'patched': this.note(world, `${t('Plate patched')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
+        case 'holdFull': this.note(world, t('Cargo hold full · sell cargo at a port'), 'hit'); break;
+        case 'patched': this.note(world, `${t('Hull plate repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;
         case 'comms': this.note(world, `${t(e.slow ? 'Ambush' : 'Channel open')} · ${t(e.from)}`, e.slow ? 'hit' : undefined); break;
         case 'commsAnswer': this.note(world, t(e.text), e.won ? undefined : 'hit'); break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
-        case 'spool': this.banner(t('Lane mouth'), t('Jump drive spooling'), t('Stay in the lane'), 1.6, 'calm'); break;
-        case 'needCyrite': this.banner(t('Ship system'), t('Not enough Cyrite'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
+        case 'spool': this.banner(t('Lane entrance'), t('Jump drive charging'), t('Stay in the lane'), 1.6, 'calm'); break;
+        case 'needCyrite': this.banner(t('Ship system'), t('Not enough Cyrite to jump'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, `${t(POWER_LABEL[e.kind])} · ${t(POWER_HINT[e.kind])}`, 'gain'); break;
@@ -202,45 +202,45 @@ export class Hud {
           break;
         case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, t('Shield up'), 'gain'); break;
         case 'regen': this.note(world, `${t('Hull regrown')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
-        case 'mendStart': if (world.time - this.mendNoted > MEND_QUIET) { this.mendNoted = world.time; this.note(world, t('Self-repair under way')); } break;
-        case 'mended': this.note(world, `${t('Hull mended')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); this.retrigger($('sys-hull'), 'mended'); break;
-        case 'contacts': this.note(world, plural(e.n, '{n} contact inbound', '{n} contacts inbound'), 'hit'); break;
-        case 'quiet': this.note(world, t('Sector quiet'), 'gain'); break;
+        case 'mendStart': if (world.time - this.mendNoted > MEND_QUIET) { this.mendNoted = world.time; this.note(world, t('Self-repair in progress')); } break;
+        case 'mended': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); this.retrigger($('sys-hull'), 'mended'); break;
+        case 'contacts': this.note(world, plural(e.n, '{n} contact approaching', '{n} contacts approaching'), 'hit'); break;
+        case 'quiet': this.note(world, t('No threats detected'), 'gain'); break;
         case 'noticed': {
           const al = world.aliens.find((a) => a.id === e.id);
-          if (al) this.note(world, t('{name} has seen you', { name: alienLabel(al) }), 'hit');
+          if (al) this.note(world, t('{name} has spotted you', { name: alienLabel(al) }), 'hit');
           break;
         }
-        case 'damageControl': this.banner(t('Ship system'), t('Hull held'), t('One plate · two seconds of grace'), 2, 'caution'); break;
+        case 'damageControl': this.banner(t('Ship system'), t('Hull stable'), t('One hull plate left · repair soon'), 2, 'caution'); break;
         case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
         case 'squad': this.note(world, t('{name} inbound', { name: t(e.label) }), 'hit'); break;
         case 'salvage': this.note(world, `${t('Salvage')}${e.tech ? ` · ${t('{f} tech recovered', { f: faction(e.faction) })}` : ''}`, 'gain'); break;
-        case 'cloak': this.note(world, t('Cloaked · they hold fire'), 'gain'); break;
+        case 'cloak': this.note(world, t('Cloak active · enemies cannot target you'), 'gain'); break;
         case 'shipHit':
-          this.note(world, `${t('Hull hit')} · ${damageWord(e.source)}`, 'hit');
+          this.note(world, `${t('Hull damaged')} · ${damageWord(e.source)}`, 'hit');
           this.flashHit();
           this.retrigger($('sys-hull'), 'hit');
-          if (e.plates === 1) this.banner(t('Warning'), t('Hull critical'), t('One plate left'), 1.8);
+          if (e.plates === 1) this.banner(t('Warning'), t('Hull critical · repair immediately'), t('One hull plate remaining'), 1.8);
           break;
         case 'bossWarn':
           this.note(world, t('{name} inbound', { name: t(e.name) }), 'hit');
-          this.banner(t(e.hails ? 'Continuance signal' : 'Contact'), t(e.name), t(e.hails ? 'Capital ship inbound' : 'Decloaking · no hail'), 2.6, e.hails ? 'caution corp' : 'caution');
+          this.banner(t(e.hails ? 'Continuance signal' : 'Contact'), t(e.name), t(e.hails ? 'Capital ship approaching' : 'Cloak dropping · no warning received'), 2.6, e.hails ? 'caution corp' : 'caution');
           break;
         case 'bossSighted':
           this.note(world, t('{name} spotted', { name: t(e.name) }), 'hit');
           this.banner(t('Contact'), t(e.name), t('Capital ship spotted · keep your distance'), 4, 'caution');
           break;
         case 'bossJumped': this.note(world, t('{name} jumped out · clear', { name: t(e.name) }), 'gain'); break;
-        case 'bossEvaded': this.note(world, t('Broke away from {name}', { name: t(e.name) })); break;
+        case 'bossEvaded': this.note(world, t('Escaped {name}', { name: t(e.name) })); break;
         case 'bossArrive': this.note(world, t('{name} on intercept', { name: t(e.name) }), 'hit'); break;
-        case 'bossPhase': this.banner(t('Capital ship'), t(e.phase === 2 ? 'Last stand' : 'Hull buckling'), t(e.phase === 2 ? 'Everything she has left' : 'Reinforcements inbound'), 1.6); break;
+        case 'bossPhase': this.banner(t('Capital ship'), t(e.phase === 2 ? 'Last stand' : 'Hull failing'), t(e.phase === 2 ? 'All weapons firing' : 'Reinforcements approaching'), 1.6); break;
         case 'bossLeft': this.note(world, t('Capital ship breaking off')); break;
         case 'captainLeft': this.note(world, t(e.text)); this.banner(t('Contact'), t(e.name), t('Turning away'), 2, 'calm'); break;
         case 'bossDestroyed':
           this.note(world, `${t('{name} destroyed', { name: t(e.name) })} · +${fmt(e.points)}`, 'gain');
           this.banner(t('Kill confirmed'), t(e.name), `+${fmt(e.points)} · ${t('battle salvage')}`, 2.4, 'calm');
           break;
-        case 'sectorEvent': this.banner(t('Sector event'), t(e.name), t(e.text), 2.4, 'caution'); this.note(world, t(e.name)); break;
+        case 'sectorEvent': this.banner(t('System event'), t(e.name), t(e.text), 2.4, 'caution'); this.note(world, t(e.name)); break;
         case 'sectorEventEnd': this.note(world, `${t(e.name)} · ${t(e.text)}`, e.success ? 'gain' : 'hit'); break;
         case 'breach':
           this.note(world, `${t('Hull breach')} · ${t('run {n}', { n: fmt(e.score) })}`, 'hit');
@@ -559,19 +559,19 @@ export class Hud {
         text($('obj-t'), t('Jump')); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), t('Into the lane'));
       } else if (bk.spool > 0) {
         text($('obj-t'), t('Jump drive')); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
-        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), t('Spooling · stay in the lane'));
+        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), t('Jump drive charging · stay in the lane'));
       } else if (bk.dockT > 0) {
         text($('obj-t'), bk.port?.name ?? ''); text($('obj-left'), '');
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));
       } else {
         // the one thing to do now, and at most two quiet lines under it
         const ready = world.cyrite >= world.jumpCost;
-        text($('obj-t'), t(ready ? 'Make for the lane mouth' : 'Cyrite to jump'));
+        text($('obj-t'), t(ready ? 'Head for the lane entrance' : 'Cyrite to jump'));
         text($('obj-left'), ready ? range(dl) : `${world.cyrite}/${world.jumpCost}`);
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         text($('obj-s'), '');
         const lines: string[] = [];
-        if (!ready) lines.push(`${t('Reach the lane mouth')} · <b>${range(dl)}</b>`);
+        if (!ready) lines.push(`${t('Reach the lane entrance')} · <b>${range(dl)}</b>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
         if (bk.port && bk.docks === 0) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
         const html = lines.slice(0, 2).map((l) => `<li>${l}</li>`).join('');
@@ -594,8 +594,8 @@ export class Hud {
       ticks($('obj-p'), p, 30);
       const d = Math.hypot(e.x - world.ship.x, e.z - world.ship.z);
       const inside = d < e.r;
-      text($('obj-s'), e.id === 'distress' ? (inside ? t('Holding at the beacon') : `${t('Reach the beacon')} · ${range(d)}`)
-        : e.id === 'derelict' ? (inside ? t('Salvaging') : `${t('Get close to salvage')} · ${range(d)}`)
+      text($('obj-s'), e.id === 'distress' ? (inside ? t('Holding position at the beacon') : `${t('Reach the beacon')} · ${range(d)}`)
+        : e.id === 'derelict' ? (inside ? t('Salvaging') : `${t('Move closer to salvage')} · ${range(d)}`)
         : e.id === 'convoy' ? t('{n}/3 freighters', { n: Math.round(e.progress * 3) })
         : e.id === 'anomaly' ? t('Keep clear of the core')
         : t(def.text));
@@ -624,7 +624,7 @@ export class Hud {
     const cap = world.alive ? world.command.boss : null, sighted = cap?.unaware ? cap : null;
     const calm = a === 'clear' && !!sighted;
     const sub = sighted
-      ? a === 'yellow' ? t('{name} is noticing you', { name: t(sighted.name) })
+      ? a === 'yellow' ? t('{name} is becoming suspicious', { name: t(sighted.name) })
         : `${t(sighted.name)} · ${range(Math.hypot(sighted.x - world.ship.x, sighted.z - world.ship.z))} · ${sighted.jumpT > 0 ? t('Jumping') : `${t('Leaves in')} ${Math.ceil(sighted.stay)}s`}`
       : t(a === 'red' ? 'You are being targeted' : 'You are being observed');
     // inside the gate's or the depot's safe ring: the card says so, teal and quiet, and nothing is firing
