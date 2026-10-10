@@ -33,7 +33,7 @@ import { showConsole } from './ui/briefing';
 import { Feel, SOUND_AVAILABLE } from './audio/audio';
 import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
 
-/** New Story journeys run the eight regions (docs/SCALE-UP.md); ?short plays the old three, for testing. */
+/** New Story journeys run the eight regions; ?short plays the old three, for testing. */
 const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
 /** `?train` plays the training whether or not it has been played (to look at it). */
 const TRAIN = new URLSearchParams(location.search).has('train');

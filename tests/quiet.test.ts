@@ -7,7 +7,7 @@ import { endSortie, here, newJourney, plot, sortieDef, type Journey } from '../s
 import { newRun } from '../src/sim/run';
 import { World } from '../src/sim/world';
 
-// A quiet system is a breather: nothing hunts you, no card calls, the heat fades (docs/SCALE-UP.md, step 2).
+// A quiet system is a breather: nothing hunts you, no card calls, the heat fades.
 
 const idle: InputFrame = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' };
 

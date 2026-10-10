@@ -1,9 +1,9 @@
 # Artwork slots
 
-Where pictures made outside the game (by an image generator) would help, what
-each one needs to be briefed, and how a finished file gets into the game. Written
-2026-10-09. The hook is built: drop a file in `src/art/`, rebuild, and it shows.
-A slot with no file looks exactly as it does today.
+Where pictures made outside the game (by an image generator) show, what each one
+needs to be briefed, and how a finished file gets into the game. The hook is
+built: drop a file in `src/art/`, rebuild, and it shows. A slot with no file looks
+exactly as it does without art.
 
 ## The one file to give the image generator
 
@@ -17,7 +17,9 @@ contact sheet, then one page per picture carrying the text line
 `FILE: captains/vance`. If a long run stops, say "continue". `npm run art:prep --
 <folder>` cuts each picture out by that line, crops, sizes and puts it into
 `src/art/`. A ZIP of images named `captains__vance.png` works as well. The brief
-is written by `npm run art:brief`.
+is written by `npm run art:brief`. For a free account with a daily limit,
+[art/STARTER-15.md](art/STARTER-15.md) is the same look in fifteen single-picture
+messages.
 
 ## The short version
 
@@ -50,7 +52,7 @@ is written by `npm run art:brief`.
 
 Not built, on purpose or for later:
 
-- **Module and upgrade icons.** Brand v1.1 and Jimi's HUD direction say no ornate
+- **Module and upgrade icons.** Brand v1.1 says no ornate
   icons; the bay already has its icon sheets. Not a good use of generated art.
 - **The player, "Juno".** A portrait for the pause card or the debrief would help
   the story, but the player is never shown today; decide first whether they have
@@ -119,9 +121,9 @@ Generators drift between prompts. Things that help, in order:
 3. **Make three or four of each and pick.** Faces especially.
 4. **Judge at the real size.** Portraits at 48 px wide, ships at 120 px, emblems
    at 24 px. If it does not read, the prompt needs a plainer, bolder subject.
-5. **Check the fit in the game.** Send screenshots of the comms call, port or
-   Archive at desktop and phone size and I will check cropping, contrast and
-   colour against the brand rules.
+5. **Check the fit in the game** with screenshots of the comms call, port or
+   Archive at desktop and phone size: cropping, contrast and colour against the
+   brand rules.
 
 ## How the output should be delivered
 
@@ -143,7 +145,7 @@ Generators drift between prompts. Things that help, in order:
   a German twin; a picture with lettering in it would not. The prompts ask for
   none, and ask for illegible writing on the file pieces.
 - **Licence.** Keep a note of the generator and its terms next to the files
-  (for example `src/art/SOURCES.md`) before the game ships.
+  (for example `src/art/SOURCES.md`) before the game ships; none exists yet.
 - **Size in the build.** Pictures load only when a screen asks for one, as
   separate hashed files, so a full set does not slow the first load.
   100 pictures at ~100 KB is about 10 MB on the host.
@@ -179,11 +181,9 @@ Generators drift between prompts. Things that help, in order:
   `tools/art/briefs.ts`, and the screen that draws it, with `artImg` and a
   fallback.
 
-## First pictures (2026-10-09)
+## Where the set stands
 
-The free ChatGPT account returned contact sheets (four panels, or ten emblems,
-on one image) instead of one file per picture. They were cut by hand and
-installed through `art:prep`: 64 pictures, 2.8 MB in all.
+Installed through `art:prep` (64 of 109 pictures, 2.8 MB in all):
 
 | Slot | In | Still empty |
 | --- | --- | --- |
@@ -195,15 +195,8 @@ installed through `art:prep`: 64 pictures, 2.8 MB in all.
 | Endings | broadcast, unite, sell, trade | seal, vanish |
 | Sightings | thren_trade, thren_hurt, thren_lane, thren_swarm | the rest |
 | File pieces | frag_order, frag_ledger, frag_manifests, frag_keys | blackbox, charts, workorder, witnesses |
-| Regions | none | all (not drawn in the game yet) |
+| Regions | none | all (no screen draws them yet) |
 
-Ships were fitted whole onto black, not cropped. Portraits were cut 4:5 around
-the face. A better quality second pass of any single picture just overwrites
-its file.
-
-## What I could not check
-
-I cannot make or judge the pictures themselves; the screenshots in the pull
-request show the slots at desktop and phone size. Whether the set looks right
-on a real phone, and the cost of the files on a phone's connection, are for a
-device look.
+Ships are fitted whole onto black, not cropped; portraits are cut 4:5 around the
+face. A second pass of any picture just overwrites its file. Whether the set
+reads on a real phone is for a device look.

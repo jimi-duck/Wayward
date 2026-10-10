@@ -6,7 +6,7 @@ import { act } from '../src/sim/story';
 import { endSortie, newJourney } from '../src/sim/journey';
 import { newRun } from '../src/sim/run';
 
-// The long journey's chart: eight regions, about 85 stops (docs/SCALE-UP.md, step 3).
+// The long journey's chart: eight regions, about 85 stops.
 
 describe('the eight-region chart', () => {
   const c = makeChart(11, 'eight');

@@ -6,7 +6,7 @@ import { endSortie, newJourney, plot, sortieDef, WAITING, type Journey } from '.
 import { newRun } from '../src/sim/run';
 
 // The long journey's clocks: Calloway meets you once a region, starts each region close behind, and a wreck
-// with her there is a capture only with the region's chance (docs/SCALE-UP.md, step 4).
+// with her there is a capture only with the region's chance.
 
 function result(j: Journey, o: Partial<SortieResult> = {}): SortieResult {
   const r = newRun(1);
