@@ -62,12 +62,17 @@ const SPARE = 1;
 
 /** The Story's depot, set this far ahead and aside at the start: a short hop once the rock is mined. */
 const DEPOT_AT = 170;
+/** The training's lane entrance, this far ahead (units, 10 km): the real one is far off, and the lesson is not the trip. */
+const TRAIN_LANE = 1000;
 const DEPOT_SIDE = 90;
 
 /** Mine, upgrade, shoot with it. The Story flies to a work bay for the upgrade; the Arcade fits it in flight. */
 export function newTutor(): Tutor {
   return { steps: ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0 };
 }
+
+/** Training is at its upgrade: the one thing on offer at the bay is the torpedo bay (the shop reads this to lock the rest). */
+export const needsTorpedoFit = (w: World): boolean => stepOf(w) === 'bay';
 
 /** The step in hand, or null when the training is over (or none is running). */
 export const stepOf = (w: World): LessonId | null => (w.tutor && !w.tutor.done ? w.tutor.steps[w.tutor.i]! : null);
@@ -105,6 +110,7 @@ function begin(w: World, tu: Tutor): void {
     // the depot sits close by from the start, so the way to the bay is short
     const port = w.bk?.port;
     if (port) { const p = ahead(w, DEPOT_AT, -DEPOT_SIDE); port.x = p.x; port.z = p.z; }
+    if (w.bk) { const p = ahead(w, TRAIN_LANE); w.bk.def = { ...w.bk.def, lane: TRAIN_LANE }; w.bk.lane.x = p.x; w.bk.lane.z = p.z; }
   } else if (id === 'bay') {
     tu.base = fitted(w);
     // the price, and a little over, so the first upgrade is only a press away
