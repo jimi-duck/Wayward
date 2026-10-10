@@ -42,6 +42,7 @@ const LOG_LIFE = 4.5;
 /** How to do each lesson step, as the words for keys, a touch screen and a pad (the HUD shows the one that fits). */
 const LESSON_HINT: Record<string, Array<[string, string]>> = {
   fire: [['h-keys', 'Hold Space to fire your lasers'], ['h-touch', 'Hold the fire control to shoot'], ['h-pad', 'Hold A to fire your lasers']],
+  torpedo: [['h-keys', 'Press 2 to fire a torpedo'], ['h-touch', 'Tap the Torpedo button'], ['h-pad', 'Press X to fire a torpedo']],
   bay: [['h-keys', 'Press B to open the Bay'], ['h-touch', 'Tap Open Bay'], ['h-pad', 'Press Back to open the Bay']],
   dock: [['h-keys', 'Fly in slowly to dock'], ['h-touch', 'Fly in slowly to dock'], ['h-pad', 'Fly in slowly to dock']],
   fit: [['h-keys', 'Open the bay and pick the torpedo bay'], ['h-touch', 'Open the bay and pick the torpedo bay'], ['h-pad', 'Open the bay and pick the torpedo bay']],

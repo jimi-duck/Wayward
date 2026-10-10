@@ -18,8 +18,8 @@ Both start from the title menu.
 
 - **Story.** A journey of about 85 stops across eight regions, roughly seven
   hours over many sessions. Each new journey opens on a short story card, then
-  a one-minute training: laser a violet rock for Cyrite (it fills the tank), shoot one ship, then
-  make a short hop to the work bay and fit torpedoes. After that:
+  a one-minute training: laser a violet rock for Cyrite (it fills the tank), make a short hop to the
+  work bay and fit torpedoes, then shoot one ship with them. After that:
   - **Cyrite is what you find; jump fluid is what you fly on.** Laser rock for
     Cyrite, strip wrecks for it. The ship's refinery cooks it into **jump
     fluid** first, until the drive tank is full. Whatever is left over is yours

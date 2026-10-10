@@ -540,7 +540,7 @@ export class World implements EncounterHost {
   navNoise = 0;
 
   /** Teach the first minutes: a few marked steps, then the run goes on as it was. */
-  train(): void { this.tutor = newTutor(!!this.bk); stepTutor(this, 0); }
+  train(): void { this.tutor = newTutor(); stepTutor(this, 0); }
 
   /** End the training now. */
   skipTraining(): void { skipTutor(this); }

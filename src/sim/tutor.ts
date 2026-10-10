@@ -5,9 +5,10 @@ import type { World } from './world';
 // An onboarding level, short and plain: one rock, one upgrade, one shot, and
 // the tank is full. The pilot lasers a single violet rock set close ahead
 // (the refinery sends what it gives to the drive tank, which starts short by
-// that much), shoots one ship, flies to the work bay and fits the torpedo
-// bay (the ship starts without it, so the first upgrade is the one that
-// matters; the purse holds its price). After that the jump is in reach and
+// that much), flies to the work bay and fits the torpedo bay (the ship
+// starts without it, so the first upgrade is the one that matters; the purse
+// holds its price), then shoots one ship with the torpedoes it just earned.
+// After that the jump is in reach and
 // the run goes on as it always did. Each step is a thing the game already
 // does; the tutor only sets one up (a rock, a purse, a ship) and watches for
 // it. Nothing locks, and Skip ends it. Plain data, so a test flies it.
@@ -44,7 +45,7 @@ export interface Lesson {
   /** English, one verb phrase; the HUD runs it through t(). */
   line: string;
   /** Which hint to show (the HUD has the words for each device). */
-  hint: 'fire' | 'bay' | 'dock' | 'fit';
+  hint: 'fire' | 'bay' | 'dock' | 'fit' | 'torpedo';
   mark: Mark | null;
   /** 0 to 1 */
   progress: number;
@@ -59,13 +60,13 @@ export const LESSON_NODE = 'tp_bay';
 /** Cyrite over the price in the purse when the bay step begins. */
 const SPARE = 1;
 
-/** The Story's depot, set this far ahead and aside at the start: a short hop once the first ship is down. */
+/** The Story's depot, set this far ahead and aside at the start: a short hop once the rock is mined. */
 const DEPOT_AT = 170;
 const DEPOT_SIDE = 90;
 
-/** The Story flies to a work bay for its one upgrade, after the first kill; the Arcade fits it in flight, before. */
-export function newTutor(story = false): Tutor {
-  return { steps: story ? ['mine', 'shoot', 'bay'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0 };
+/** Mine, upgrade, shoot with it. The Story flies to a work bay for the upgrade; the Arcade fits it in flight. */
+export function newTutor(): Tutor {
+  return { steps: ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0 };
 }
 
 /** The step in hand, or null when the training is over (or none is running). */
@@ -137,7 +138,7 @@ export function lessonOf(w: World): Lesson | null {
     return { ...base, line: 'Choose an upgrade', hint: 'bay', mark: null, progress: 0 };
   }
   const a = w.aliens.find((x) => x.id === tu.alienId);
-  return { ...base, line: 'Shoot the ship', hint: 'fire', mark: a ? { x: a.x, z: a.z, r: 0, name: 'Gutter ship' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
+  return { ...base, line: 'Shoot the ship with torpedoes', hint: 'torpedo', mark: a ? { x: a.x, z: a.z, r: 0, name: 'Gutter ship' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
 }
 
 /** Is the step in hand done? */
