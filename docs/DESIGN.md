@@ -287,7 +287,8 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   style in `STREAK` and a branch in its fragment shader, not a new mesh.
 - **Judging a look or its cost**: the enemy bench, `tools/enemies.html` on the
   dev server (`?view=fleet|close|fire`, `?kind=`, `?n=`, `?quality=`,
-  `?frames=N` fills `window.__bench` with draws and triangles).
+  `?frames=N` fills `window.__bench` with draws and triangles). Rocks and the
+  Krail stream have their own, `tools/rocks.html` (`?view=close|game`, `?r=`).
 - **An elite modifier**: one row in `ELITES`, plus the colour of its halo
   in `render/enemies.ts`.
 - **A capital ship**: one row in `FACTIONS` (cycles per phase, station,

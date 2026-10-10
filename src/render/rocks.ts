@@ -94,7 +94,7 @@ const LOOKS: Record<RockKind, RockLook> = {
   basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1, 1, 1],         zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
   iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
   rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.85, 0.8, 1.05], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
-  volatile: { id: 'volatile', glow: [3.0, 1.5, 0.6],   tint: [1.2, 0.85, 0.75], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
+  volatile: { id: 'volatile', glow: [0.5, 1.7, 3.0],   tint: [0.82, 0.88, 1.0], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
 };
 const KINDS = Object.keys(LOOKS) as RockKind[];
 
@@ -119,6 +119,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
     shader.uniforms.uStrata = { value: look.strata };
     shader.uniforms.uRim = { value: look.rim };
     shader.uniforms.uViolet = { value: ember && look.id === 'rich' ? 1 : 0 };
+    shader.uniforms.uCool = { value: ember && look.id === 'volatile' ? 1 : 0 };
     shader.uniforms.uEmber = { value: ember && (look.id === 'basalt' || look.id === 'volatile') ? 1 : 0 };
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vRockP;')
@@ -126,7 +127,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         varying vec3 vRockP; uniform float uTime; uniform float uDetail; uniform float uLava; uniform float uBump;
-        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber; uniform float uViolet;
+        uniform vec3 uGlow; uniform vec3 uTint; uniform float uZone; uniform float uPulse; uniform float uMineral; uniform float uStrata; uniform float uRim; uniform float uEmber; uniform float uViolet; uniform float uCool;
         ${SIMPLEX}
         ${PERTURB}
         float rockFbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * snoise(p); p = p * 2.07 + 11.3; a *= 0.5; } return s; }`)
@@ -143,7 +144,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         float heat = smoothstep(0.93, 0.99, max(ridgeA, ridgeB * 0.95)) * zone;
         vec3 stone = mix(vec3(0.06, 0.055, 0.05), vec3(0.24, 0.215, 0.19), smoothstep(-0.55, 0.65, rn + fine * 0.35));
         stone = mix(stone, vec3(0.32, 0.29, 0.26), smoothstep(0.55, 0.9, rn) * 0.6);
-        stone = mix(stone, vec3(0.025, 0.018, 0.015), heat * 0.75);
+        stone = mix(stone, vec3(0.025, 0.018, 0.015), heat * 0.5);
         // strata: beds laid down in a slanted plane, warped, each its own shade; the edge of a bed catches light
         float bedPos = dot(rp, normalize(vec3(0.35, 0.9, 0.25))) * 1.7 + rn * 1.4;
         float bed = sin(bedPos * 5.0) * 0.5 + 0.5, bedId = floor(bedPos * 0.5);
@@ -153,25 +154,30 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         // inclusions: lit crystals set in the stone, thresholded from fine noise
         float incl = smoothstep(0.55, 0.66, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - heat);
         stone = mix(stone, vec3(0.5, 0.46, 0.42), incl * 0.5);
+        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.6) * 0.78;
         diffuseColor.rgb *= stone * uTint;
         float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
         // cooled stone: the thinnest cracks keep a dull ember, steady and under the bloom line (basalt and volatile only)
-        vec3 lavaGlow = uGlow * crack * heat * 0.1 * uLava * uEmber;
+        vec3 lavaGlow = uGlow * crack * heat * mix(0.1, 0.17, uCool) * uLava * uEmber;
+        // volatile rock: a few deep pockets lit cold from under the surface, sharp and local
+        float pocket = smoothstep(0.62, 0.74, snoise(rp * vec3(2.3, 2.9, 2.1) + 13.1)) * smoothstep(0.9, 0.97, max(ridgeA, ridgeB)) * uCool;
+        lavaGlow += uGlow * pocket * 0.26 * uLava;
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.03, 0.04), pocket * 0.6);
         // rich rock: violet veins through the stone and crystals set in it, steady and well under the bloom line
-        float vein = (smoothstep(0.93, 0.985, ridgeA) * 0.7 + smoothstep(0.95, 0.99, ridgeB) * 0.5) * (0.4 + 0.6 * zone);
+        float vein = (smoothstep(0.95, 0.99, ridgeA) * 0.7 + smoothstep(0.965, 0.993, ridgeB) * 0.5) * (0.25 + 0.75 * zone);
         lavaGlow += uGlow * (vein * 0.07 + incl * 0.16) * uLava * uViolet;
-        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.14, 0.09, 0.2), vein * 0.55 * uViolet);
-        diffuseColor.rgb *= 1.0 - crack * 0.4;
-        float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + incl * 0.2;`)
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.1, 0.06, 0.16), vein * 0.4 * uViolet);
+        diffuseColor.rgb *= 1.0 - (smoothstep(0.955, 0.99, ridgeA) * 0.3 + crack * 0.3);
+        float rockH = rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + mix(incl * 0.2, floor(incl * 3.0) / 3.0 * 0.5, uViolet);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2, 0.4, 1.0);`)
+        roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2 - incl * 0.1 * uViolet, 0.6, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, rockH * uBump, faceDirection);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
-        totalEmissiveRadiance += lavaGlow + uGlow * rimK * 0.012 * uViolet * uLava;`);
+        totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.012 * uViolet + 0.01 * uCool) * uLava;`);
   };
-  m.customProgramCacheKey = () => `stone-rock6-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock7-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
@@ -288,7 +294,7 @@ export class RockView {
       mesh.setMatrixAt(i, this.m);
       const flash = 1 + (r.hitT / 0.12) * 4;
       const tone = 0.72 + 0.5 * h2, warm = 0.92 + 0.16 * h3;
-      mesh.setColorAt(i, this.col.setRGB(flash * tone * warm, flash * tone * 0.8, flash * tone * 0.7 / warm));
+      mesh.setColorAt(i, this.col.setRGB(flash * tone * warm, flash * tone * 0.9, flash * tone * 0.84 / warm));
     }
     this.meshes.forEach((mesh, k) => {
       mesh.count = counts[k]!;

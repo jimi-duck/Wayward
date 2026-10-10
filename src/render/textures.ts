@@ -85,6 +85,50 @@ export function cloudTexture(): Texture {
   });
 }
 
+/**
+ * A stream of dust: strands pulled long by a warped, ridged noise, bright
+ * threads inside darker bands with gaps between, curling at the ends. White,
+ * so a material colour tints it. `seed` gives each layer its own pattern.
+ */
+export function streamTexture(seed = 1): Texture {
+  return once('stream' + seed, () => {
+    const W = 256, H = 128, [c, g] = canvas(W, H);
+    const r = rand(300 + seed * 17), lat = new Float32Array(33 * 33);
+    for (let i = 0; i < lat.length; i++) lat[i] = r();
+    const val = (x: number, y: number) => {
+      const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi;
+      const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy);
+      const at = (i: number, j: number) => lat[((j & 31) * 33) + (i & 31)]!;
+      return at(xi, yi) * (1 - u) * (1 - v) + at(xi + 1, yi) * u * (1 - v) + at(xi, yi + 1) * (1 - u) * v + at(xi + 1, yi + 1) * u * v;
+    };
+    const fbm = (x: number, y: number, o = 4) => {
+      let a = 0.5, f = 1, t = 0;
+      for (let k = 0; k < o; k++) { t += a * val(x * f, y * f); f *= 2.03; a *= 0.5; }
+      return t;
+    };
+    const img = g.createImageData(W, H);
+    for (let j = 0; j < H; j++) {
+      for (let i = 0; i < W; i++) {
+        const x = i / W, y = j / H, d = Math.hypot(x - 0.5, (y - 0.5) * 2) * 2;
+        // warp, then stretch along the stream so the noise reads as strands
+        const qx = fbm(x * 2.5 + seed, y * 4), qy = fbm(x * 2.5 + 7.7, y * 4 + seed);
+        const wx = x * 3 + qx * 2.4, wy = y * 9 + qy * 3.2;
+        const body = fbm(wx, wy, 4);
+        const strand = 1 - Math.abs(fbm(wx * 1.6, wy * 2.4, 3) * 2 - 1);
+        const thread = Math.pow(Math.max(0, strand - 0.72) / 0.28, 2);
+        const band = Math.max(0, Math.min(1, (body - 0.4) / 0.3));
+        const fall = Math.max(0, 1 - d * d);
+        const a = (band * 0.55 + thread * band * 0.9) * Math.pow(fall, 1.3);
+        const k = (j * W + i) * 4;
+        img.data[k] = img.data[k + 1] = img.data[k + 2] = 255;
+        img.data[k + 3] = Math.round(Math.min(1, a) * 255);
+      }
+    }
+    g.putImageData(img, 0, 0);
+    return finish(c, false);
+  });
+}
+
 /** A ragged ball of flame, white at the heart: tinted and grown for fireballs. */
 export function fireTexture(): Texture {
   return once('fire', () => {
