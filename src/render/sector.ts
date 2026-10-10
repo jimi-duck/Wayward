@@ -11,7 +11,7 @@ import { CameraRig } from './camera';
 import { Environment } from './environment';
 import { Effects, type RGB } from './fx';
 import { HazardView } from './hazards';
-import { SpaceView } from './space';
+import { prepareSpace, SpaceView } from './space';
 import { krailRGB, PickupView } from './pickups';
 import { Post } from './post';
 import type { QualityTier } from './quality';
@@ -149,6 +149,7 @@ export class Sector {
    */
   warm(): Promise<unknown> {
     cloudTexture(); // painted now, on the title, not on the first dust cloud in a run
+    prepareSpace(); // and the places' own textures and shapes, not the first sight of one
     const hidden: Object3D[] = [];
     this.scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
     const gallery = this.enemies.gallery();

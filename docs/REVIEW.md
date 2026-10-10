@@ -27,7 +27,7 @@ and next stop, `V` for the next sky, `H` to hide the names.
 | Places & fire | The lane gate and the port, enemy fire and the warning circles and lines |
 | Space | The fourteen features, the four named places, five sector events (beacon, hulk, ion storm, nebula, anomaly) |
 
-The environment features show here whether or not `?space` is on. Each is built
+The environment features show here whether or not they are on in play (`?nospace`). Each is built
 when you go to it, alone, at the middle of its size range; the well pulls the
 ship and the dust is heavy, but nothing strikes. A far feature (the passage, the
 carrier) is sky: its name hangs on the bearing it rides.

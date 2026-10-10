@@ -117,6 +117,17 @@ const rand = (seed: number) => {
 const wrap = (v: number, m: number) => ((v % m) + m) % m;
 const smooth = (x: number) => { const k = clamp(x, 0, 1); return k * k * (3 - 2 * k); };
 
+/**
+ * Paint and build what a feature needs the first time it comes near, now, behind the title: the seam's stream
+ * textures, the rubble's rock shapes and the five hulks. Left to the first sighting each cost a frame of 35 to
+ * 80 ms on a fast machine. Each is built once, so asking again is free.
+ */
+export function prepareSpace(): void {
+  streamTexture(1); streamTexture(2);
+  chunk(0);
+  for (let i = 0; i < HULKS.length; i++) hulkModel(i);
+}
+
 export class SpaceView {
   private readonly looks = new Map<number, Look>();
   private readonly group = new Group();

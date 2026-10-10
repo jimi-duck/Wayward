@@ -6,8 +6,8 @@ share it, and the order it gets built in. The data is in
 `src/content/features.ts`, the system in `src/sim/space.ts`.
 
 Status: stages 1 to 5 done (the library, the system, how the features
-look, what they do to the ship, and Story's sites; all behind `?space` until
-the balance pass). See [Stages](#stages).
+look, what they do to the ship, and Story's sites). On by default since
+2026-10-10 at the owner's call; `?nospace` turns it off. See [Stages](#stages).
 
 ## What the game does today
 
@@ -178,8 +178,9 @@ row, six to sixteen features dealt in ten minutes.
 expanse every three minutes) because the next expanse was only dealt once the
 last was behind. The chain and the density above are the fix. The scripted
 pilot of `npm run pilot` hovers near the start and never reaches a feature,
-so it cannot judge `?space`: the default stays off until the owner has flown
-it.
+so it cannot judge the features' feel. They went on by default on 2026-10-10
+at the owner's call, before a pilot report or a real-device flight; `?nospace`
+turns them off.
 
 ### The HUD
 
@@ -308,7 +309,7 @@ Small PRs off `main`, one stage at a time, each shippable.
    HUD shows its name as a teal line and the run's flags get `site:<id>`;
    the Story comms thread's manager can key a call off that flag. The
    environment fires no transmissions of its own. The old timed events still
-   play on top, unchanged. Story needs `?space`, like Arcade.
+   play on top, unchanged. Story gets them with the default, like Arcade.
 6. **Pace and polish** (started). Rhythm from the exposure report: the
    composer chains expanses and fills them more. The storm cell throws lightning near the ship
    (a drawn circle for 1.1 s first, one every 1.6 to 2.8 s, faster deeper in
