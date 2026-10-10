@@ -1,6 +1,6 @@
 # The first minutes
 
-Every new Story journey starts with a short lesson (`sim/tutor.ts`), three
+Every new Story journey opens on a short story card (`ui/opening.ts`: who you are, what is after you, the first job), then a short lesson (`sim/tutor.ts`), three
 marked steps, each one a thing the game already does:
 
 1. **Laser the violet rock.** One rock, close ahead, with what the jump needs

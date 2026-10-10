@@ -70,4 +70,13 @@ export const ECONOMY: Record<string, string> = {
   'Nothing to fit yet · pick up scrap for Cyrite': 'Noch nichts einzubauen · sammle Schrott für Cyrit',
   '“Heavy ships turn slow. Strip what you do not use.”': '„Schwere Schiffe drehen träge. Wirf ab, was du nicht brauchst.“',
   '“That is a lot of iron on one hull. The dock pays by the Cyrite, not the pound.”': '„Ganz schön viel Eisen an einem Rumpf. Das Dock zahlt nach Cyrit, nicht nach Gewicht.“',
+  'Story 01': 'Story 01',
+  'Breakout': 'Ausbruch',
+  'The Wayward is yours now.': 'Die Wayward gehört jetzt dir.',
+  'You stole an ore hauler from Kellern Mining, and with it something far more dangerous: a file that could expose what really happened when the Continuance shut down the jump lanes seventy years ago.': 'Du hast einen Erzfrachter von Kellern Mining gestohlen, und dazu etwas viel Gefährlicheres: eine Datei, die enthüllen könnte, was wirklich geschah, als die Continuance vor siebzig Jahren die Sprungrouten dichtmachte.',
+  'Now they want their ship, and their secret, back.': 'Jetzt wollen sie ihr Schiff und ihr Geheimnis zurück.',
+  'You don\u2019t have to win a war. You only have to get out of this system.': 'Du musst keinen Krieg gewinnen. Du musst nur aus diesem System raus.',
+  'Your first job': 'Dein erster Job',
+  'Break asteroids for Cyrite. It pays for upgrades and fuels the jump to the next system.': 'Zerbrich Asteroiden für Cyrit. Es bezahlt Upgrades und treibt den Sprung ins nächste System an.',
+  'Keep moving and watch your hull. Not every ship you meet is an enemy. And the longer you linger, the sooner they find you.': 'Bleib in Bewegung und achte auf deinen Rumpf. Nicht jedes Schiff ist ein Feind. Und je länger du bleibst, desto eher finden sie dich.',
 };
