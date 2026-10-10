@@ -351,3 +351,68 @@ describe('the third batch', () => {
     expect(gain(w, before)).toBeGreaterThanOrEqual(cy(150));
   });
 });
+
+describe('the fourth batch', () => {
+  const hold = (id: string, choice: string, secs: number, pay: number, at = 0) => {
+    const { w, st } = take(id, choice);
+    const before = w.cyrite;
+    for (let i = 0; i < secs * 60 && !st.result; i++) { put(w, st.x + at, st.z); run(w, 1 / 60); }
+    expect(st.result, id).toBe('won');
+    expect(gain(w, before), id).toBe(cy(pay));
+    return w;
+  };
+
+  it('is won by holding where the job asks', () => {
+    const d = take('something_dark', 'probe');
+    const before = d.w.cyrite;
+    for (let i = 0; i < 12 * 60; i++) { put(d.w, d.st.x + 110, d.st.z); run(d.w, 1 / 60); }
+    put(d.w, d.st.x + 900, d.st.z);
+    run(d.w, 1);
+    expect(d.st.result).toBe('won');
+    expect(gain(d.w, before)).toBe(cy(160));
+    hold('voice_wire', 'listen', 10, 130);
+    hold('lose_prefect', 'lose', 12, 100);
+  });
+
+  it('the filter needs the parts, and pays when they are delivered in time', () => {
+    const w = hold('one_filter', 'bring', 14, 120);
+    expect(w.supplies).toBeLessThanOrEqual(10);
+    const b = take('one_filter', 'bring', { supplies: 0 });
+    for (let i = 0; i < 95 * 60 && !b.st.result; i++) { put(b.w, b.st.x, b.st.z); run(b.w, 1 / 60); }
+    expect(b.st.result).toBe('lost');
+  });
+
+  it('the payroll is taken from a crippled courier', () => {
+    const { w, st } = take('missing_payroll', 'take');
+    const tg = st.run!.target!, before = w.cyrite;
+    hit(w, tg, tg.maxHp * 0.8);
+    run(w, 1);
+    put(w, tg.x + 6, tg.z);
+    run(w, 5);
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(180));
+  });
+
+  it('two captains are both broken', () => {
+    const { w, st } = take('two_captains', 'break');
+    const before = w.cyrite;
+    run(w, 1);
+    expect(st.run!.foes.length).toBe(5);
+    for (const f of [...st.run!.foes]) kill(w, f);
+    run(w, 1);
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(170));
+  });
+
+  it('the witness lives when the pickets are broken, and is lost when she is not', () => {
+    const a = take('the_witness', 'guard');
+    const before = a.w.cyrite;
+    for (let i = 0; i < 85 && !a.st.result; i++) { run(a.w, 1); for (const f of [...(a.st.run?.foes ?? [])]) kill(a.w, f); }
+    expect(a.st.result).toBe('won');
+    expect(gain(a.w, before)).toBeGreaterThanOrEqual(cy(150 * 0.45));
+    const b = take('the_witness', 'guard');
+    kill(b.w, b.st.run!.target!);
+    run(b.w, 1);
+    expect(b.st.result).toBe('lost');
+  });
+});
