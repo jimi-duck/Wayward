@@ -91,10 +91,10 @@ interface RockLook {
 }
 
 const LOOKS: Record<RockKind, RockLook> = {
-  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1, 1, 1],         zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
+  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1.12, 0.96, 0.82],         zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
   iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
-  rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.85, 0.8, 1.05], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
-  volatile: { id: 'volatile', glow: [0.5, 1.7, 3.0],   tint: [0.82, 0.88, 1.0], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
+  rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.8, 0.72, 1.2], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
+  volatile: { id: 'volatile', glow: [0.5, 1.7, 3.0],   tint: [0.7, 0.86, 1.22], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
 };
 const KINDS = Object.keys(LOOKS) as RockKind[];
 
@@ -179,6 +179,9 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, rockH * uBump, faceDirection);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        // at chase distance the cracks are sub-pixel: the kind shows as a faint cast of its own colour instead, well under the bloom line
+        float farK = smoothstep(18.0, 70.0, length(vViewPosition));
+        totalEmissiveRadiance += uGlow / max(uGlow.r, max(uGlow.g, uGlow.b)) * farK * 0.035 * (uEmber * (1.0 - uCool * 0.0) + uViolet * 1.3 + uCool * 0.7) * uLava;
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
         totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.012 * uViolet + 0.01 * uCool) * uLava;`);
   };
@@ -208,7 +211,8 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
     const big = fbm(v.x * 1.2 + seed, v.y * 1.2, v.z * 1.2, 4, seed);
     const mid = fbm(v.x * 3.1 + seed, v.y * 3.1, v.z * 3.1, 3, seed + 9);
     const ridge = 1 - Math.abs(fbm(v.x * 2.2 - seed, v.y * 2.2, v.z * 2.2, 2, seed + 4));
-    let k = 1 + big * rough + mid * 0.17 + ridge * 0.1;
+    const crag = Math.pow(1 - Math.abs(fbm(v.x * 4.4 + seed * 2, v.y * 4.4, v.z * 4.4, 2, seed + 21)), 5);
+    let k = 1 + big * rough + mid * 0.17 + ridge * 0.1 + crag * 0.16 - 0.04;
     for (const c of pits) {
       const a = Math.acos(Math.min(1, v.dot(c.d))) / c.size;
       if (a < 1.35) k += a < 1 ? -c.depth * (1 - a * a) : c.depth * 0.6 * Math.sin(((a - 1) / 0.35) * Math.PI);
