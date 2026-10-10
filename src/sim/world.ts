@@ -2173,6 +2173,7 @@ export class World implements EncounterHost {
       }
       if (!vulnerable) continue;
       r.vx -= (s.x - r.x) * 0.5; r.vz -= (s.z - r.z) * 0.5;
+      if (r.size === 2) return this.graze(r.x, r.z);
       return this.hitShip('rock', r.x, r.z);
     }
   }
@@ -2181,6 +2182,17 @@ export class World implements EncounterHost {
 
   /** A mission hazard (the core of a black hole) scorches the hull: one hit, as any other. */
   scorch(): void { if (this.ship.invuln <= 0) this.hitShip('hazard'); }
+
+  /** A small rock only scrapes: the shield flashes and the ship is nudged, but no charge and no plate is lost. */
+  private graze(fromX: number, fromZ: number): void {
+    const s = this.ship, st = this.stats;
+    if (!this.alive || this.safe) return;
+    const dx = s.x - fromX, dz = s.z - fromZ, d = Math.hypot(dx, dz) || 1;
+    s.vx += (dx / d) * 6; s.vz += (dz / d) * 6;
+    s.invuln = Math.max(s.invuln, 0.35);
+    this.shieldT = Math.max(this.shieldT, st.shieldDelay * 0.5);
+    if (this.powers.shield > 0 || this.shields >= 1) this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source: 'rock' });
+  }
 
   private hitShip(source: string, fromX?: number, fromZ?: number): void {
     const s = this.ship, st = this.stats;

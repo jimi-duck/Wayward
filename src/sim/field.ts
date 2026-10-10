@@ -67,6 +67,9 @@ export interface Rock {
   /** Seconds since it appeared (for a fade-in) and since it was last hit (a flash). */
   age: number;
   hitT: number;
+  /** A piece of a break starts this far from where it is drawn: the renderer slides it out of the parent's place. */
+  ox: number;
+  oz: number;
 }
 
 /**
@@ -144,7 +147,7 @@ export class Field {
       vx: vx ?? Math.cos(a) * sp, vz: vz ?? Math.sin(a) * sp,
       size, r: ROCK_R[size] * this.rng.range(0.88, 1.12) * (kind === 'iron' ? 0.92 : 1), hp, maxHp: hp,
       variant: this.rng.int(ROCK_VARIANTS), ax: ax / n, ay: ay / n, az: az / n,
-      spin: this.rng.range(-0.9, 0.9) * (1 + size * 0.6), age: 0, hitT: 0,
+      spin: this.rng.range(-0.9, 0.9) * (1 + size * 0.6), age: 0, hitT: 0, ox: 0, oz: 0,
     };
     this.rocks.push(rock);
     return rock;
@@ -167,8 +170,9 @@ export class Field {
       const reach = Math.max(rock.r * 0.5, clear) * this.rng.range(1, 1.1), push = kick * this.rng.range(0.75, 1.25);
       const child = this.spawn(size, rock.x + px * reach, rock.z + pz * reach,
         rock.vx * 0.8 + px * push, rock.vz * 0.8 + pz * push, into, hpScale);
-      // they grow out of the break over a moment instead of appearing whole
-      child.age = 0.32;
+      // never bigger than the rock it came from, and drawn sliding out of its place
+      child.r = Math.min(child.r, rock.r * 0.7);
+      child.ox = rock.x - child.x; child.oz = rock.z - child.z;
       out.push(child);
     }
     return out;

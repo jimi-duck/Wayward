@@ -470,8 +470,6 @@ export const UI: Record<string, string> = {
   // ── the port ──
   'Frontier Supply': 'Frontier Supply',
   'Refuel · repair · trade · no implant checks': 'Tanken · reparieren · handeln · keine Implantat-Checks',
-  '<kbd>1</kbd>–<kbd>8</kbd>: stop, refit, plot or trade · <kbd>Enter</kbd> to leave port · controller: <kbd>A</kbd> select / <kbd>B</kbd> leave':
-    '<kbd>1</kbd>–<kbd>8</kbd>: Halt, Umbau, Kurs oder Handel · <kbd>Enter</kbd> zum Ablegen · Controller: <kbd>A</kbd> wählen / <kbd>B</kbd> ablegen',
   'Back to the dock': 'Zurück zum Dock',
   'Back to the systems': 'Zurück zu den Systemen',
   'Fitted': 'Eingebaut',
@@ -569,8 +567,6 @@ export const UI: Record<string, string> = {
   'raided': 'überfallen',
   'Quiet': 'Ruhig',
   'Sensible stop': 'Sinnvoller Halt',
-  'By hand ▸': 'Von Hand ▸',
-  'By hand ▾': 'Von Hand ▾',
   'Sell, buy and patch one at a time': 'Einzeln verkaufen, kaufen, flicken',
   '{n} ore sold': '{n} Erz verkauft',
   'More': 'Mehr',
