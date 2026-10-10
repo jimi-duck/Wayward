@@ -15,6 +15,9 @@ export function showConsole(w: World): void {
   const g = goalOf(w);
   $('pause-goal').textContent = t(g.goal);
   const jobs = $('pause-jobs');
-  jobs.replaceChildren(...g.jobs.map((j) => h('li', '', `${t('Job')} · ${t(j)}`)));
-  jobs.hidden = !g.jobs.length;
+  jobs.replaceChildren(
+    ...g.jobs.map((j) => h('li', '', `${t('Job')} · ${t(j)}`)),
+    ...(g.scope ? [h('li', '', `${t('On the scope')} · ${t(g.scope)}`)] : []),
+  );
+  jobs.hidden = !g.jobs.length && !g.scope;
 }

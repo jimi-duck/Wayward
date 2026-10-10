@@ -478,6 +478,11 @@ export const SIT_CHANCE: Partial<Record<SystemKind, number>> = { mining: 0.3, tr
 export const SIT_CHANCE_QUIET = 0.05;
 /** Columns at the start of the first region with nothing rolled in them: the escape, the first refit and the first port. */
 export const EARLY_QUIET = 4;
+/**
+ * Columns of each region (eight regions) where every system carries a job: the first region one, early, the rest two. The
+ * roll adds more on top. Without this a player met none in the first hour and about one a region after it.
+ */
+export const JOB_COLS = [1, 2, 2, 2, 2, 2, 2, 2];
 /** A netted system with none gets a sweep this often. */
 export const SWEEP_CHANCE = 0.45;
 

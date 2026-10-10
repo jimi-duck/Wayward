@@ -152,7 +152,7 @@ export const MISSIONS: SituationDef[] = [
   },
   {
     id: 'follow_cyrite', name: 'Follow the Cyrite Vein', blurb: 'A prospector offers to lead you to a rich Cyrite deposit for a share of the find.', group: 'frontier',
-    kinds: ['mining', 'transit', 'contested'], regions: [2, 6], weight: 1.0,
+    kinds: ['mining', 'transit', 'contested'], regions: [0, 6], weight: 1.0,
     actors: [act('freighter', 1, 'lead', 'meek', 'Prospector', { from: 'ahead', pace: 1.2 })],
     card: 'sc_follow', at: 25, hail: 9999, accept: ['follow'],
     goal: { kind: 'follow', hold: 50, limit: 150, line: 'Stay with the prospector until she finds the vein' },
