@@ -27,6 +27,11 @@ costs nothing) and at least one other way to settle it:
 | Follow the Cyrite | Belt to Hollows | `follow`: stay on a prospector's wing to a vein; nothing shoots | buy her chart for a rich seam |
 | Someone answered | Drift Deep onward | `watch`: hold slow and close by a relay three unknown contacts circle; sets an Archive flag | sell the bearing |
 | The wreck that remembered | Belt onward | `watch`: pull a wreck's log slow and close; the Office pays, and someone wanted it wiped | strip it for parts |
+| Keep your distance | Marches to Hollows | `sneak` with a ten-second hold: copy four patrols' codes from the middle of their loop | sell the loop |
+| Be the bait | Marches to Hollows | `destroy`: four Custody pickets come from ahead and have to be broken | warn the pickets |
+| The dead drop | Marches to Hollows | `reach`: collect a package at a beacon; a trap of three pickets waits on the way out | tell the Custody |
+| The long walk | Marches to Hollows | `follow`: walk a crippled, slow hauler to the lane; raiders come after half a minute | a tractor takes her in |
+| Finders keepers | Belt onward | `race`: four marks to a claim against a rival salvor at 90% of your speed | a spoofer takes half |
 
 ## What each one changes
 
@@ -77,12 +82,10 @@ units, and the HUD shows `Stage.status` under the objective line.
 
 ## Not yet
 
-Thirteen of the twenty-five ideas are still to do: Be the Bait and Keep Your
-Distance, One Crate No Questions, the chains (Missing Payroll, The Witness, Two
-Captains One Wreck), the corporate pair (One Filter Left, Lose the Prefect),
-Finders Keepers, The Voice on the Wire, The Long Walk, Wanted: Bring Them Back's
-sequel, and Protect the Last Shift's follow-ups. Each is a row and a card; most
-use the goals as they are. Still to check on a real device: the rival's pace,
-the sneak timing and how often a system has a job (`SIT_CHANCE`).
+Seven of the twenty-five ideas are still to do: Something in the Dark, The Voice
+on the Wire, Missing Payroll, One Filter Left, Two Captains One Wreck, The
+Witness and Lose the Prefect. One Crate No Questions already exists as "A sealed
+crate" (`sc_smugglers`). Still to check on a real device: the rival's pace, the
+sneak timing and how often a system has a job (`SIT_CHANCE`).
 
 The Hostile column of [BALANCE-SITUATIONS.md](BALANCE-SITUATIONS.md) now includes the foes of missions, which fight from the moment the job is taken.
