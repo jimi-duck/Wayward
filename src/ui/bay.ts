@@ -763,6 +763,8 @@ export class BayPanel {
     btn.disabled = !!why;
     btn.textContent = fitWord(w, id, why);
     btn.addEventListener('click', (e) => { e.stopPropagation(); this.install(id); });
+    // the climb: what the level after this one will cost, so a ladder that never ends still shows where it goes
+    if (more && endlessIn(w, id)) out.push(h('p', 'bi-then', t('The next one costs {n} Cyrite', { n: num(cost(id, lv + 2, false, { ...w.levels, [id]: lv + 1 })) })));
     out.push(btn);
     el.replaceChildren(...out);
   }

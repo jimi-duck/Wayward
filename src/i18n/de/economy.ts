@@ -96,6 +96,7 @@ export const ECONOMY: Record<string, string> = {
   '{n} upgrade you can afford': '{n} Upgrade leistbar',
   '{n} upgrades you can afford': '{n} Upgrades leistbar',
   'No upgrades you can afford yet': 'Noch nichts leistbar',
+  'Cheapest part: {n} Cyrite': 'Günstigstes Teil: {n} Cyrit',
   'Need {n} more Cyrite': 'Noch {n} Cyrit nötig',
   'Can afford': 'Leistbar',
   '{n} Cyrite each': '{n} Cyrit pro Stück',

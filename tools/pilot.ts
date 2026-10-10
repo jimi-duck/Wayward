@@ -146,7 +146,8 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
   if (u.branch === 'defence') v += 3;
   if (u.branch === s.branch || u.branch === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
   else if (u.kind === 'system') v -= 3;
-  return v;
+  // the Story's ladders have no end and climb in price: a player spreads their Cyrite over them rather than pour it all into one
+  return w.bk ? v / (1 + 0.35 * (w.levels[id] ?? 0)) : v;
 }
 
 /**

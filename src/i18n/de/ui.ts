@@ -511,6 +511,7 @@ export const UI: Record<string, string> = {
   'Thren': 'Thren',
   'Mk': 'Mk',
   'At its limit': 'Am Limit',
+  'The next one costs {n} Cyrite': 'Das nächste kostet {n} Cyrit',
   'Stealth · sensors · contacts': 'Tarnung · Sensoren · Kontakte',
   'Modules for Krail · the yard’s work only here': 'Module für Krail · Werftarbeit nur hier',
   'Numbers on lanes: Cyrite to jump': 'Zahlen auf Bahnen: Cyrit pro Sprung',
