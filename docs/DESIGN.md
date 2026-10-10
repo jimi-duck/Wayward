@@ -1,5 +1,7 @@
 # Game design
 
+> **Currency note.** Cyrite is the one currency (see [ECONOMY.md](ECONOMY.md)). Where this file says chits, Krail or ore money, it describes the earlier economy; content rows are still written in chits and converted to Cyrite (5 to 1) by `cy()` in `src/sim/purse.ts`.
+
 This describes the game as it plays today: the journey (M1 to M3 of
 [PLAN.md](PLAN.md): the Breakout, the comms cards, the chart and the hunt),
 and the arcade run it grew out of, which stays as a mode. See
