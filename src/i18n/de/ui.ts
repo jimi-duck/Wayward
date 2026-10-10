@@ -359,7 +359,6 @@ export const UI: Record<string, string> = {
   'Second finger, tap': 'Zweiter Finger, tippen',
   'Turn button, or flick down': 'Wende-Knopf oder nach unten wischen',
   'Turn': 'Wende',
-  'Break and reverse': 'Wenden',
   'Badge': 'Abzeichen',
   'Resume · press any key': 'Weiter · beliebige Taste drücken',
   'Resume': 'Weiter',
