@@ -9,6 +9,9 @@ export class OpeningPanel {
   private off: (() => void) | null = null;
   private opened = 0;
   private onDone: (() => void) | null = null;
+  /** Short screens (a phone on its side) read it as two pages: the story, then the first job. */
+  private paged = false;
+  private page = 0;
 
   get open(): boolean {
     return !$('opening').hidden;
@@ -31,6 +34,14 @@ export class OpeningPanel {
       h('p', '', t('Break asteroids for Cyrite. It pays for upgrades and fuels the jump to the next system.')),
       h('p', '', t('Keep moving and watch your hull. Not every ship you meet is an enemy. And the longer you linger, the sooner they find you.')),
     );
+    this.paged = matchMedia('(max-height: 460px)').matches;
+    this.page = 0;
+    let job = false;
+    for (const el of Array.from($('op-l').children)) {
+      job = job || el.classList.contains('op-job');
+      el.classList.toggle('op-p2', job);
+    }
+    this.paint();
     const go = $('op-go');
     go.onclick = guarded(this.opened, () => this.done());
     go.onpointerdown = (e) => e.stopPropagation();
@@ -51,8 +62,16 @@ export class OpeningPanel {
     if (this.open && performance.now() - this.opened >= GUARD && (p.a || p.b)) this.done();
   }
 
+  private paint(): void {
+    $('opening').classList.toggle('paged', this.paged);
+    $('opening').dataset.page = String(this.page);
+    $('op-go').textContent = t(this.paged && this.page === 0 ? 'Continue' : 'Begin');
+    $('op-l').scrollTop = 0;
+  }
+
   private done(): void {
     if (performance.now() - this.opened < GUARD) return;
+    if (this.paged && this.page === 0) { this.page = 1; this.paint(); return; }
     const f = this.onDone;
     this.onDone = null;
     this.close();
