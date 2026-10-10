@@ -22,7 +22,9 @@ const REPORT = process.env.UPG_REPORT;
 const POLICY = (process.env.UPG_POLICY ?? 'build') as 'none' | 'build';
 const SEED = Number(process.env.UPG_SEED ?? 3000);
 const MAX_LEGS = Number(process.env.UPG_LEGS ?? 140);
-const STRATEGY: Strategy = process.env.UPG_STRAT === 'random' ? { kind: 'random' } : { kind: 'focus', branch: 'torpedo', second: 'defence' };
+const STRATEGY: Strategy = process.env.UPG_STRAT === 'random' ? { kind: 'random' } : process.env.UPG_STRAT === 'focus' ? { kind: 'focus', branch: 'torpedo', second: 'defence' } : { kind: 'wide' };
+/** The yard's modules the build wants, most wanted first. */
+const MODULES_WANTED = ['md_plate', 'md_projector', 'md_hardpoints', 'md_gunnery', 'md_capacitor', 'md_tractor', 'md_plate', 'md_projector'];
 const ANSWERS: Policy = 'bluff';
 
 interface Stop {
@@ -55,7 +57,7 @@ function fly(): Saved {
       const was = j.dest, r = replot(j, planRoute(j, w.carry()));
       if (r && j.dest !== was) w.replot(r.dest, r.jumpCost);
     };
-    const res = flyWorld(w, SEED * 31 + n, STRATEGY, { maxTime: 1200, breakout: true, policy: ANSWERS, onDock, noShop: POLICY === 'none' });
+    const res = flyWorld(w, SEED * 31 + n, STRATEGY, { maxTime: 1200, breakout: true, policy: ANSWERS, onDock, noShop: POLICY === 'none', modules: MODULES_WANTED });
     if (w.phase !== 'over') break;
     const { use, cap } = budgets(w.levels);
     stops.push({

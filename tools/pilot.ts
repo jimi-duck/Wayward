@@ -32,7 +32,9 @@ import type { SurvivalId } from '../src/content/survival';
 
 export type Strategy =
   | { kind: 'random' }
-  | { kind: 'focus'; branch: Branch; second?: Branch };
+  | { kind: 'focus'; branch: Branch; second?: Branch }
+  /** Spreads over guns, torpedoes, defence, handling and kit, so it has to keep balancing power, heat and mass. */
+  | { kind: 'wide' };
 
 /** How the pilot answers comms cards: by the kind of answer it reaches for first. */
 export type Policy = 'fight' | 'run' | 'pay' | 'bluff';
@@ -123,10 +125,11 @@ export function pickAnswer(w: World, policy: Policy): string {
 const blank = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 
 export function stratName(s: Strategy): string {
-  return s.kind === 'random' ? 'random' : `${s.branch}${s.second ? `+${s.second}` : ''}`;
+  return s.kind === 'random' || s.kind === 'wide' ? s.kind : `${s.branch}${s.second ? `+${s.second}` : ''}`;
 }
 
 const KIND_BONUS: Record<string, number> = { system: 4, spec: 5, synergy: 4, tech: 5, stat: 1 };
+const WIDE_BRANCHES = new Set<string>(['laser', 'torpedo', 'defence', 'mobility', 'utility']);
 const WEAPON_BRANCHES = new Set<string>(['laser', 'torpedo', 'mine', 'plasma', 'close']);
 
 /** How much the strategy wants a module of the bay: its branch, then its second, a little defence, tech and synergies; fittings when their budget is short; the yard's modules it was told to want. */
@@ -141,6 +144,10 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
   }
   const u = UPGRADE[id]!;
   if (s.kind === 'random') return 1;
+  if (s.kind === 'wide') {
+    const v = WIDE_BRANCHES.has(u.branch) ? 8 : 2;
+    return (v + (KIND_BONUS[u.kind] ?? 0)) / (1 + 0.35 * (w.levels[id] ?? 0));
+  }
   let v = u.branch === s.branch ? 10 : u.branch === s.second ? 6 : 0;
   if (!WEAPON_BRANCHES.has(s.branch) && !(s.second && WEAPON_BRANCHES.has(s.second)) && u.branch === 'laser') v += 8;
   if (u.branch === 'defence') v += 3;
