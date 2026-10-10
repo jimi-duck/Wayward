@@ -549,31 +549,88 @@ html.swipe #app * { overscroll-behavior: contain; }
 .brief.steps .a { color: var(--amber); }
 .launch-row { display: flex; gap: 12px; align-items: center; }
 
-/* the port */
-.port-stock { display: flex; flex-wrap: wrap; gap: 22px; font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+/* the port: what the ship holds, the services, the departure */
+#port .panel.narrow { width: min(720px, 100%); overflow-y: auto; gap: 12px; }
+.port-stock { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); background: rgba(8, 13, 14, .55); }
+.ps-c { display: grid; align-content: start; gap: 3px; padding: 8px 12px; min-width: 0; font: 600 calc(var(--fs) * 1.02 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.ps-c + .ps-c { border-left: 1px solid var(--line); }
+.ps-c b { font: 600 calc(var(--fs) * 1.7)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); }
+.ps-sub { font: 600 calc(var(--fs) * .95 * 1.18)/1.2 var(--font-rail); letter-spacing: .1em; color: var(--ink-2); }
+.ps-c.ok .ps-sub { color: var(--cy); }
+.ps-c.short .ps-sub { color: var(--caution); }
 .port-warn { display: grid; gap: 3px; font: 600 calc(var(--fs) * 1.1)/1.25 var(--font-rail); letter-spacing: .08em; color: var(--caution); }
 .ch-warn { margin: 0; font: 600 calc(var(--fs) * 1.1)/1.25 var(--font-rail); letter-spacing: .08em; color: var(--caution); }
 .port-warn[hidden] { display: none; }
-.port-stock b { margin-left: 8px; font: 600 calc(var(--fs) * 1.5)/1 var(--font-rail); letter-spacing: .06em; color: var(--ink); }
+.port-sv { display: grid; gap: 8px; }
+.port-sh { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.port-sh h3 { margin: 0; font: 700 calc(var(--fs) * 1.25 * 1.18)/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
+.port-sh span { font: 400 13px/1.2 var(--font-display); color: var(--ink-2); }
 .port-list { display: grid; gap: 8px; }
+.port-list.buys { grid-template-columns: repeat(3, 1fr); }
 .port-l { --c: 8px; --edge: rgba(216, 213, 198, .16); --fill: rgba(20, 26, 26, .9); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
-  display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 14px; padding: 12px 16px; text-align: left; color: var(--ink);
-  font: 600 calc(var(--fs) * 1.15 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
+  display: grid; align-content: start; gap: 4px; padding: 10px 14px; min-width: 0; min-height: 40px; text-align: left; color: var(--ink);
+  font: 600 calc(var(--fs) * 1.1 * 1.18)/1.1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .port-l::before, .port-l::after { content: ""; position: absolute; pointer-events: none; }
 .port-l::before { inset: 0; z-index: -2; background: var(--edge); }
 .port-l::after { inset: 1px; z-index: -1; background: var(--fill); }
-.port-l.sel, .port-l:hover:not(:disabled) { --edge: var(--hud); --fill: var(--hud-fill); }
-.port-l:disabled { cursor: not-allowed; opacity: .45; }
-.port-l .pl-note { font: 400 13px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); justify-self: end; }
-.port-l .pl-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+/* hover and the keyboard or pad cursor are the steel blue, the player's hand; the state badges keep their own words */
+.port-l:hover:not(:disabled), .port-l.sel { --edge: var(--hud); --fill: var(--hud-fill); }
+.port-l.sel { box-shadow: inset 3px 0 0 var(--hud-hi); }
+.port-l:disabled { cursor: not-allowed; --fill: rgba(14, 19, 19, .7); }
+.port-l:disabled .pl-t, .port-l:disabled .pl-p { color: var(--ink-3); }
+.port-l .pl-t { color: var(--ink); }
+.port-l .pl-d { font: 400 13px/1.25 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); }
+.port-l .pl-p { font: 600 calc(var(--fs) * 1.05 * 1.18)/1.1 var(--font-rail); letter-spacing: .08em; color: var(--ink); }
+.port-l .pl-r { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; margin-top: 2px; }
+.port-l .pl-go { margin-left: auto; padding: 3px 9px; border: 1px solid var(--hud-mid); color: var(--hud-hi); font: 600 11px/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }
+.port-l .pl-go::after { content: " ▸"; }
+.port-l:hover:not(:disabled) .pl-go, .port-l.sel .pl-go { background: var(--hud-mid); color: #fff; }
+.pl-badge { font: 600 11px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
+.pl-badge::before { margin-right: 5px; }
+.pl-badge.ok { color: var(--cy); }
+.pl-badge.ok::before { content: "✓"; }
+.pl-badge.short { color: var(--caution); }
+.pl-badge.short::before { content: "!"; }
+.pl-badge.done, .pl-badge.none { color: var(--ink-3); }
+.pl-badge.done::before { content: "—"; }
+/* the refit bay leads: wider, a rule of steel blue, the cue to open it */
+.port-l.bay { grid-template-columns: 1fr auto; grid-template-areas: "t r" "d r"; align-items: center; gap: 3px 16px; padding: 14px 16px; --edge: var(--hud-mid); }
+.port-l.bay .pl-t { grid-area: t; font-size: calc(var(--fs) * 1.5 * 1.18); letter-spacing: .14em; }
+.port-l.bay .pl-d { grid-area: d; font-size: 14px; }
+.port-l.bay .pl-r { grid-area: r; flex-direction: column; align-items: flex-end; margin: 0; }
+.port-l.bay .pl-go { margin: 0; padding: 7px 14px; font-size: 13px; background: var(--hud-ghost); }
+.port-l.stop { grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; min-height: 40px; padding: 7px 14px; }
+.port-l.stop .pl-r { margin: 0; justify-content: flex-end; }
+.port-l .pl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .port-l .pl-chip { padding: 2px 8px; border: 1px solid var(--cy-dim); color: var(--cy); font: 600 11px/1.4 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; }
-.port-l.stop { --edge: var(--amber-dim, rgba(134, 169, 209, .5)); }
-.port-l .pl-p { font: 600 calc(var(--fs) * 1.4)/1 var(--font-rail); color: var(--amber); min-width: 3ch; text-align: right; }
-#port-x { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
-  padding: 10px 22px; font: 600 calc(var(--fs) * 1.1 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
-#port-x::before, #port-x::after { content: ""; position: absolute; pointer-events: none; }
-#port-x::before { inset: 0; z-index: -2; background: var(--edge); }
-#port-x::after { inset: 1px; z-index: -1; background: var(--fill); }
+.port-l .pl-sum { font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); color: var(--caution); }
+/* departure: its own block, so shopping and leaving do not read as one list */
+.port-dep { position: sticky; bottom: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--line); border-left: 3px solid var(--hud-mid); background: rgb(10, 15, 16); }
+.pd-info { display: grid; gap: 3px; min-width: 0; }
+.pd-k { font: 600 11px/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.pd-dest { font: 600 calc(var(--fs) * 1.4 * 1.18)/1.1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+.pd-meta { font: 400 13px/1.25 var(--font-display); color: var(--ink-2); }
+.pd-stat { font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; }
+.pd-stat::before { margin-right: 6px; }
+.pd-stat.ok { color: var(--cy); }
+.pd-stat.ok::before { content: "✓"; }
+.pd-stat.short { color: var(--caution); }
+.pd-stat.short::before { content: "!"; }
+.pd-acts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+#port-x, .pd-lane { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer; min-height: 40px;
+  padding: 10px 24px; font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
+.pd-lane { --c: 6px; --edge: var(--hud-dim); --fill: rgba(14, 19, 19, .8); padding: 8px 14px; font-size: calc(var(--fs) * 1.0 * 1.18); color: var(--ink-2); }
+.pd-lane[hidden] { display: none; }
+#port-x::before, #port-x::after, .pd-lane::before, .pd-lane::after { content: ""; position: absolute; pointer-events: none; }
+#port-x::before, .pd-lane::before { inset: 0; z-index: -2; background: var(--edge); }
+#port-x::after, .pd-lane::after { inset: 1px; z-index: -1; background: var(--fill); }
+#port-x:hover, #port-x.sel, .pd-lane:hover, .pd-lane.sel { --edge: var(--hud-hi); --fill: rgba(30, 50, 76, .95); color: #fff; }
+#port-x.sel, .pd-lane.sel { box-shadow: 0 0 0 2px var(--hud-hi); }
+@media (max-width: 560px) {
+  .port-list.buys { grid-template-columns: 1fr; }
+  .port-stock { grid-template-columns: 1fr 1fr; }
+  .ps-c:nth-child(3) { border-left: 0; }
+}
 
 /* ── the journey: continue, and the chart ─────────────────────────────── */
 #ch-go[hidden], #en-go[hidden] { display: none; }
@@ -682,15 +739,39 @@ circle.ch-thren { fill: rgba(92, 195, 162, .22); stroke: #5CC3A2; stroke-width: 
 @media (max-width: 640px) and (min-height: 521px) {
   .ch-body { grid-template-columns: 1fr; }
 }
-/* a phone on its side: the port's five lines with room for Cast off */
+/* a phone on its side: the port fits one screen, Cast off in reach */
 .launch-row { flex-wrap: wrap; justify-content: center; }
 @media (max-height: 520px) {
   .launch-row { gap: 8px; }
-  .port-list { gap: 5px; }
-  .port-l { padding: 7px 14px; font-size: calc(var(--fs) * 1.05); }
-  .port-l .pl-note { font-size: 12px; }
-  #port .pf { padding-top: 6px; }
+  #port .panel.narrow { gap: 6px; padding-top: 9px; padding-bottom: 8px; }
+  #port .port-art { display: none; }
+  #port .ph { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 12px; }
+  #port .ph .kick { font-size: 10px; }
+  #port .ph h2 { font-size: 20px; }
+  #port .ph .sub { font-size: 10px; }
+  .ps-c { padding: 4px 10px; gap: 2px; }
+  .ps-c b { font-size: calc(var(--fs) * 1.3); }
+  .ps-sub { display: none; }
+  .port-sh { display: none; }
+  .port-sv, .port-list { gap: 5px; }
+  .port-l { padding: 5px 10px; gap: 1px; min-height: 0; }
+  .port-l .pl-d { font-size: 12px; line-height: 1.2; }
+  .port-l .pl-r { margin-top: 1px; }
+  .port-l .pl-go { padding: 2px 7px; }
+  .port-l.bay { padding: 6px 12px; gap: 0 12px; }
+  .port-l.bay .pl-t { font-size: calc(var(--fs) * 1.25 * 1.18); }
+  .port-l.bay .pl-d { font-size: 13px; }
+  .port-l.bay .pl-r { flex-direction: row; align-items: center; gap: 10px; }
+  .port-l.bay .pl-go { padding: 5px 10px; font-size: 12px; }
+  .port-l.stop { padding: 4px 10px; min-height: 36px; }
+  .port-dep { padding: 5px 10px; }
+  .pd-info { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; }
+  .pd-k { display: none; }
+  .pd-dest { font-size: calc(var(--fs) * 1.1 * 1.18); }
+  .pd-stat { flex-basis: 100%; }
+  #port .pf { display: none; }
   #port-x { padding: 8px 18px; }
+  .pd-lane { padding: 8px 10px; }
 }
 
 /* the cut, fill and jump steps are the story's; the arcade pause card goes without */

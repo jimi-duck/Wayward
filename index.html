@@ -336,8 +336,22 @@
         <header class="ph"><span class="kick">Docked</span><h2 id="port-t">Frontier Supply</h2><span class="sub" id="port-s">Refuel · repair · trade · no implant checks</span></header>
         <div class="port-stock" id="port-stock"></div>
         <div class="port-warn" id="port-warn" hidden></div>
-        <div class="port-list" id="port-list"></div>
-        <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>8</kbd>: stop, refit, plot or trade · <kbd>Enter</kbd> to leave port · controller: <kbd>A</kbd> select / <kbd>B</kbd> leave</span><button type="button" id="port-x">Cast off</button></footer>
+        <section class="port-sv" aria-labelledby="port-sv-t">
+          <div class="port-sh"><h3 id="port-sv-t">Ship services</h3><span>Repairs, upgrades and supplies.</span></div>
+          <div class="port-list" id="port-bay"></div>
+          <div class="port-list buys" id="port-buy"></div>
+          <div class="port-list" id="port-stop"></div>
+        </section>
+        <section class="port-dep" aria-labelledby="port-dest">
+          <div class="pd-info">
+            <span class="pd-k">Departure</span>
+            <b class="pd-dest" id="port-dest"></b>
+            <span class="pd-meta" id="port-dmeta"></span>
+            <span class="pd-stat" id="port-dstat"></span>
+          </div>
+          <div class="pd-acts"><button type="button" id="port-lane" class="pd-lane" hidden></button><button type="button" id="port-x">Cast off</button></div>
+        </section>
+        <footer class="pf"><span class="keys" data-i18n="html"><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> select · <kbd>Space</kbd> use · <kbd>Enter</kbd> cast off · controller: <kbd>A</kbd> use / <kbd>B</kbd> cast off</span></footer>
       </div>
     </div>
 

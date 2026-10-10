@@ -46,10 +46,15 @@ A sortie with a shape: get the stolen hauler out of the home system
 - **The port.** Slow inside its ring for a second and the clamps take you
   (`phase: 'dock'`): top up jump fluid (about two Cyrite a unit), buy supplies, patch a
   plate, or open the refit bay, where the yard's work is done. The
-  first dock takes 0.2 off the hunt pressure. The panel leads with one tap,
-  the **sensible stop** (`sim/stop.ts`): from the purse, the tank up to the
-  jump first, then supplies up to ten, then the hull whole. Its row shows what it will do as
-  chips; the one-at-a-time rows sit under "By hand".
+  first dock takes 0.2 off the hunt pressure. The panel (`ui/port.ts`) reads top
+  to bottom: a status strip (Cyrite to spend, jump fluid against the jump,
+  supplies, plates), the Ship services (the refit bay card, then jump fluid,
+  supplies and hull repair as cards that each say `Can afford`, `Need n more
+  Cyrite` or why they are done), the **sensible stop** (`sim/stop.ts`: from the
+  purse, the tank up to the jump first, then supplies up to ten, then the hull
+  whole, shown as chips) and the departure block (the lane, whether the tank
+  makes it, Change lane where the port has more than one, Cast off). The
+  arrows walk the cards, Space or a click uses one, Enter casts off.
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
   more) and mining noise. It decides how often pursuers come, how
   many at once and which: pickets, then cruisers, enforcers and, late,
@@ -130,8 +135,8 @@ the Threshold, the last lane the old charts know.
   left to finish brings the Net into that system at once, even ahead of
   the front (`pushNet`). The chart shows the Net as it was when the news
   last reached you (two jumps out, each arrival), or everywhere if you
-  bought news. Docked at a port, you can plot another lane out (the port's
-  sixth line), with that news in hand.
+  bought news. Docked at a port, you can plot another lane out (Change lane
+  in the departure block), with that news in hand.
 - **Calloway** (`sim/hunt.ts`) follows the trail, the systems you flew in
   order: she sets out when you leave Cerro, a day behind, crosses each lane
   as long as it took you, then spends a third of a day asking questions
@@ -352,7 +357,7 @@ capital ship on its way, none of them attacking) and red alert (you are
 being directly targeted, `World.inDanger`: a committed hostile within 60
 units, fire close by, a capital ship engaged).
 The bay opens in flight only when clear, and always when docked at a port
-(the port's list has a line for it, and closing it goes back to the dock),
+(the port's Refit bay card opens it, and closing it goes back to the dock),
 by B, a pad's Back, the upgrades badge (the Story mode's: lower right, under
 the ship panel on touch) or the pause card's button, and the world waits on it. **In the
 Arcade the player need not open it:** it opens by itself once the Krail
