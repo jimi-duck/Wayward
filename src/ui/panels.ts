@@ -88,7 +88,7 @@ export class SummaryPanel {
     const breakout = r.mode === 'breakout';
     $('summary').classList.toggle('alert', !r.escaped);
     $('summary').querySelector('.kick')!.textContent = t(r.escaped ? 'Escaped' : 'Hull breach');
-    $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run over');
+    $('sum-t').textContent = t(r.escaped ? 'Into the lane' : breakout ? 'Caught in the home system' : rec.newBest ? 'New best' : 'Run complete');
     // what did it: the kicker already says hull breach
     $('sum-s').textContent = r.escaped ? t('Escaped with {n} Cyrite remaining', { n: r.cyriteLeft }) : damageWord(r.cause || 'rock');
     $('sum-score').textContent = fmt(r.score);
@@ -206,7 +206,7 @@ export class SummaryPanel {
     for (let i = 0; i <= 3; i++) svg.append(el('line', { class: 'grid', x1: '0', x2: String(W), y1: String(P + (i / 3) * (H - 2 * P)), y2: String(P + (i / 3) * (H - 2 * P)) }));
     if (best.length > 1) svg.append(el('path', { class: 'best', d: path(best) }));
     if (r.timeline.length > 1) svg.append(el('path', { class: 'run', d: path([{ t: 0, score: 0 }, ...r.timeline]) }));
-    svg.setAttribute('aria-label', `${t('Score over the run')}: ${fmt(r.score)}${best.length ? ` · ${t('best')} ${fmt(best[best.length - 1]!.score)}` : ''}`);
+    svg.setAttribute('aria-label', `${t('Run score')}: ${fmt(r.score)}${best.length ? ` · ${t('best')} ${fmt(best[best.length - 1]!.score)}` : ''}`);
   }
 }
 

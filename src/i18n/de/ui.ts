@@ -9,8 +9,8 @@
 
 export const UI: Record<string, string> = {
   // ── the start card ──
-  '<li>Laser the <b class="v">violet rock</b> for Cyrite · torpedoes waste half</li><li>Fill the tank</li><li>Jump at the <b class="a">lane mouth</b></li>':
-    '<li>Laser den <b class="v">violetten Fels</b> für Cyrit · Torpedos verschwenden die Hälfte</li><li>Tank füllen</li><li>Spring am <b class="a">Sprungpunkt</b></li>',
+  '<li>Mine <b class="v">violet asteroids</b> for Cyrite (torpedoes yield half)</li><li>Refuel</li><li>Jump from the <b class="a">lane entrance</b></li>':
+    '<li>Baue <b class="v">violette Asteroiden</b> für Cyrite ab (Torpedos bringen die Hälfte)</li><li>Tanke auf</li><li>Spring am <b class="a">Sprungpunkt</b></li>',
   'Obedience-class ore hauler': 'Erzfrachter der Obedience-Klasse',
   'Wayward, Obedience-class ore hauler': 'Wayward, Erzfrachter der Obedience-Klasse',
   'Game mode': 'Spielmodus',
@@ -54,8 +54,8 @@ export const UI: Record<string, string> = {
   'Break out': 'Ausbrechen',
   'New journey': 'Neue Reise',
   'Arcade': 'Arcade',
-  'To skip the swipe, add the game to your Home Screen: tap Share, then Add to Home Screen, and play from the new icon. It opens with no tabs or bars.':
-    'Ohne Wischen: Leg das Spiel auf deinen Home-Bildschirm (Teilen, dann Zum Home-Bildschirm) und starte es vom neuen Icon. Dann ohne Tabs und Leisten.',
+  'For a full-screen game, add Wayward to your Home Screen: tap Share, then Add to Home Screen. Launch it from the new icon to hide the browser bars.':
+    'Für Vollbild: Tipp auf Teilen, dann auf „Zum Home-Bildschirm“. Starte Wayward über das neue Symbol, dann sind die Browserleisten weg.',
   'Archive': 'Archiv',
   'Language': 'Sprache',
   'Challenge modifiers': 'Herausforderungen',
@@ -361,7 +361,7 @@ export const UI: Record<string, string> = {
   'Turn': 'Wende',
   'Break and reverse': 'Wenden',
   'Badge': 'Abzeichen',
-  'Resume · any key': 'Weiter · beliebige Taste',
+  'Resume · press any key': 'Weiter · beliebige Taste drücken',
   'Resume': 'Weiter',
   'Over the mass rating: slower to turn and to speed up': 'Über der Massengrenze: träger in Kurven und beim Beschleunigen',
   'Over the heat rating: the guns recharge and reload slower': 'Über der Hitzegrenze: Waffen laden langsamer nach',
@@ -440,8 +440,8 @@ export const UI: Record<string, string> = {
   // ── comms ──
   'Incoming transmission': 'Eingehender Funkspruch',
   'Incoming': 'Eingehend',
-  '<kbd>1</kbd>–<kbd>6</kbd> answer · <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>Enter</kbd> · pad <kbd>A</kbd>':
-    '<kbd>1</kbd>–<kbd>6</kbd> antworten · <kbd>↑</kbd> <kbd>↓</kbd> und <kbd>Enter</kbd> · Pad <kbd>A</kbd>',
+  '<kbd>1</kbd>–<kbd>6</kbd> to answer · <kbd>↑</kbd>/<kbd>↓</kbd> then <kbd>Enter</kbd> · controller: <kbd>A</kbd>':
+    '<kbd>1</kbd>–<kbd>6</kbd> zum Antworten · <kbd>↑</kbd>/<kbd>↓</kbd>, dann <kbd>Enter</kbd> · Controller: <kbd>A</kbd>',
   'Named captain': 'Bekannter Kapitän',
   'Plea': 'Bitte',
   'Job offer': 'Jobangebot',
@@ -470,8 +470,8 @@ export const UI: Record<string, string> = {
   // ── the port ──
   'Frontier Supply': 'Frontier Supply',
   'Refuel · repair · trade · no implant checks': 'Tanken · reparieren · handeln · keine Implantat-Checks',
-  '<kbd>1</kbd>–<kbd>8</kbd> stop, fit, plot, trade · <kbd>Enter</kbd> cast off · pad <kbd>A</kbd> choose · <kbd>B</kbd> cast off':
-    '<kbd>1</kbd>–<kbd>8</kbd> Halt, einbauen, planen, handeln · <kbd>Enter</kbd> ablegen · Pad <kbd>A</kbd> wählen · <kbd>B</kbd> ablegen',
+  '<kbd>1</kbd>–<kbd>8</kbd>: stop, refit, plot or trade · <kbd>Enter</kbd> to leave port · controller: <kbd>A</kbd> select / <kbd>B</kbd> leave':
+    '<kbd>1</kbd>–<kbd>8</kbd>: Halt, Umbau, Kurs oder Handel · <kbd>Enter</kbd> zum Ablegen · Controller: <kbd>A</kbd> wählen / <kbd>B</kbd> ablegen',
   'Back to the dock': 'Zurück zum Dock',
   'Back to the systems': 'Zurück zu den Systemen',
   'Fitted': 'Eingebaut',
@@ -493,10 +493,10 @@ export const UI: Record<string, string> = {
 
   // ── the Threshold ──
   'The Threshold': 'Die Schwelle',
-  'What is the file worth?': 'Was ist die Akte wert?',
+  'What is the Severance file worth?': 'Was ist die Severance-Akte wert?',
   'Go on': 'Weiter',
-  '<kbd>1</kbd>–<kbd>6</kbd> choose · arrows and <kbd>Enter</kbd> · pad <kbd>A</kbd>':
-    '<kbd>1</kbd>–<kbd>6</kbd> wählen · Pfeile und <kbd>Enter</kbd> · Pad <kbd>A</kbd>',
+  '<kbd>1</kbd>–<kbd>6</kbd> to choose · arrows then <kbd>Enter</kbd> · controller: <kbd>A</kbd>':
+    '<kbd>1</kbd>–<kbd>6</kbd> zum Wählen · Pfeile, dann <kbd>Enter</kbd> · Controller: <kbd>A</kbd>',
   'open': 'offen',
   'shut': 'zu',
   'Epilogue': 'Epilog',
@@ -505,8 +505,8 @@ export const UI: Record<string, string> = {
   'The chart': 'Die Karte',
   'Plot the next jump': 'Plan den nächsten Sprung',
   'Fly on': 'Weiterfliegen',
-  '<kbd>1</kbd>–<kbd>5</kbd> plot a lane · arrows and <kbd>Enter</kbd> · pad <kbd>A</kbd>':
-    '<kbd>1</kbd>–<kbd>5</kbd> Bahn wählen · Pfeile und <kbd>Enter</kbd> · Pad <kbd>A</kbd>',
+  '<kbd>1</kbd>–<kbd>5</kbd> to plot a lane · arrows then <kbd>Enter</kbd> · controller: <kbd>A</kbd>':
+    '<kbd>1</kbd>–<kbd>5</kbd> für eine Bahn · Pfeile, dann <kbd>Enter</kbd> · Controller: <kbd>A</kbd>',
   'The Net': 'Das Netz',
   'Calloway, last seen': 'Calloway, zuletzt gesehen',
   'Drift fleet': 'Drift-Flotte',
@@ -515,7 +515,7 @@ export const UI: Record<string, string> = {
   'Stealth · sensors · contacts': 'Tarnung · Sensoren · Kontakte',
   'Modules for Krail · the yard’s work only here': 'Module für Krail · Werftarbeit nur hier',
   'Numbers on lanes: Cyrite to jump': 'Zahlen auf Bahnen: Cyrit pro Sprung',
-  'The region: systems, lanes, the Net and Calloway': 'Die Region: Systeme, Bahnen, das Netz und Calloway',
+  'The chart shows systems, jump lanes, the Net and Calloway’s last known position.': 'Die Karte zeigt Systeme, Bahnen, das Netz und Calloways letzte bekannte Position.',
   'Home': 'Heimat',
   'Mining': 'Bergbau',
   'Contested': 'Umkämpft',
@@ -592,11 +592,11 @@ export const UI: Record<string, string> = {
   'as of day {n}': 'Stand Tag {n}',
 
   // ── the run report ──
-  'Run over': 'Runde vorbei',
+  'Run complete': 'Runde geschafft',
   'Play again': 'Nochmal',
   'Your ship': 'Dein Schiff',
-  'How it went': 'Wie’s lief',
-  'Score over the run': 'Punkte im Verlauf',
+  'Run summary': 'Rundenbilanz',
+  'Run score': 'Punkte der Runde',
   'This run': 'Diese Runde',
   'Best run': 'Beste Runde',
   'Plasma': 'Plasma',
@@ -653,11 +653,11 @@ export const UI: Record<string, string> = {
   'Further': 'Weiter weg',
   'Click or press any key to resume': 'Klick oder drück eine Taste zum Weiterspielen',
   'Tap to resume': 'Tippen zum Weiterspielen',
-  'Turn your phone': 'Dreh dein Handy',
-  'Wayward plays in landscape': 'Wayward läuft im Querformat',
+  'Rotate your phone': 'Dreh dein Handy',
+  'Wayward is designed for landscape play': 'Wayward ist fürs Querformat gemacht',
   'Swipe up': 'Nach oben wischen',
-  'for the whole screen, with no tabs or bars': 'für den ganzen Bildschirm, ohne Tabs und Leisten',
-  'Keep the bars': 'Leisten behalten',
+  'for full-screen play without browser bars': 'für Vollbild ohne Browserleisten',
+  'Keep browser bars': 'Browserleisten behalten',
   'Details': 'Details',
   // ── the navigation strip ──
   'Ahead': 'Voraus',

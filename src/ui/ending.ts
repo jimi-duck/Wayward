@@ -31,7 +31,7 @@ export class EndingPanel {
     this.list = choices(j);
     this.sel = Math.max(0, this.list.findIndex((c) => c.open));
     $('en-k').textContent = `${t('The Threshold')} · ${t('day {n}', { n: Math.floor(j.day) + 1 })}`;
-    $('en-t').textContent = t('What is the file worth?');
+    $('en-t').textContent = t('What is the Severance file worth?');
     $('en-s').textContent = t('The chase is over, but the Severance file is still aboard.');
     $('en-go').hidden = true;
     $('en-epi').replaceChildren();
