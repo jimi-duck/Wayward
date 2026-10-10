@@ -404,7 +404,7 @@ small web left to right by tier. A module opens
 once something it comes from is fitted, then by the upgrade's own rules
 (requires, one specialisation per group, a deep enough system). Each level
 costs Cyrite by tier in the Story mode (`STORY_PRICE`: 20, 27, 36, 48 for the
-first level; a fifth dearer for each level of the same part, and 4.5% dearer for
+first level; a quarter dearer for each level of the same part, and 7% dearer for
 every level already on the ship; the deep torpedo and mine modules cost 0.65
 to 0.7 of that, so ordnance builds keep pace), the same in the Arcade whatever
 the module or the level (`ARCADE_PRICE`), and draws power, mass or heat,

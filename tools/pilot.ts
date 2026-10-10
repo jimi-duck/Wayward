@@ -134,7 +134,7 @@ const WEAPON_BRANCHES = new Set<string>(['laser', 'torpedo', 'mine', 'plasma', '
 
 /** How much the strategy wants a module of the bay: its branch, then its second, a little defence, tech and synergies; fittings when their budget is short; the yard's modules it was told to want. */
 function want(w: World, s: Strategy, id: string, modules: readonly string[] = []): number {
-  if (MODULE_BY_ID[id]) { const i = modules.indexOf(id); return i < 0 ? -1 : 16 - i; }
+  if (MODULE_BY_ID[id]) { const i = modules.indexOf(id); return i < 0 || (w.bk && (w.levels[id] ?? 0) >= 3) ? -1 : 16 - i; }
   if (FITTING[id]) {
     // a fitting when its budget is short: power nearly gone, or the ship run hot or heavy
     const { use, cap } = budgets(w.levels);
@@ -146,7 +146,7 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
   if (s.kind === 'random') return 1;
   if (s.kind === 'wide') {
     const v = WIDE_BRANCHES.has(u.branch) ? 8 : 2;
-    return (v + (KIND_BONUS[u.kind] ?? 0)) / (1 + 0.35 * (w.levels[id] ?? 0));
+    return (v + (KIND_BONUS[u.kind] ?? 0)) / (1 + 0.2 * (w.levels[id] ?? 0));
   }
   let v = u.branch === s.branch ? 10 : u.branch === s.second ? 6 : 0;
   if (!WEAPON_BRANCHES.has(s.branch) && !(s.second && WEAPON_BRANCHES.has(s.second)) && u.branch === 'laser') v += 8;
@@ -154,7 +154,7 @@ function want(w: World, s: Strategy, id: string, modules: readonly string[] = []
   if (u.branch === s.branch || u.branch === s.second || u.kind === 'tech' || u.kind === 'synergy') v += KIND_BONUS[u.kind] ?? 0;
   else if (u.kind === 'system') v -= 3;
   // the Story's ladders have no end and climb in price: a player spreads their Cyrite over them rather than pour it all into one
-  return w.bk ? v / (1 + 0.35 * (w.levels[id] ?? 0)) : v;
+  return w.bk ? v / (1 + 0.2 * (w.levels[id] ?? 0)) : v;
 }
 
 /**
@@ -174,7 +174,8 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
     if (!open.length) break;
     let pick: string | null;
     // the yard's modules it was told to want come first, whenever one can be fitted
-    const wanted = modules.find((id) => blockOf(id, ctx) === null);
+    // (a module that has no top mark in the Story is wanted up to the second only: past it, it competes with the rest)
+    const wanted = modules.find((id) => blockOf(id, ctx) === null && (!w.bk || (w.levels[id] ?? 0) < 3));
     if (wanted) pick = wanted;
     else if (s.kind === 'random') {
       const now = open.filter((n) => blockOf(n.id, ctx) === null && !MODULE_BY_ID[n.id]);

@@ -40,6 +40,7 @@ interface Stop {
   combat: number;
   platesLost: number;
   wrecked: boolean;
+  levels: Record<string, number>;
 }
 
 interface Saved { policy: string; seed: number; end: string | null; stops: Stop[] }
@@ -63,7 +64,7 @@ function fly(): Saved {
     stops.push({
       n, purse: Math.round(w.cyrite), fuel: Math.round(w.fuel), built: Object.values(w.levels).reduce((a, b) => a + b, 0) - 1,
       power: `${use.power}/${cap.power}`, mass: `${use.mass}/${cap.mass}`, heat: `${use.heat}/${cap.heat}`,
-      time: Math.round(w.runTime), combat: Math.round(res.combat), platesLost: w.run.platesLost, wrecked: !w.run.escaped,
+      time: Math.round(w.runTime), combat: Math.round(res.combat), platesLost: w.run.platesLost, wrecked: !w.run.escaped, levels: { ...w.levels },
     });
     endSortie(j, w.result());
     n++;
@@ -108,6 +109,24 @@ the scripted pilot, one that fits parts at every work bay ("build") and one that
 Read it as a shape, not a verdict. The pilot dodges better than most people and does not chase jobs (their pay is on top of
 what is spare here); its "build" fits what a torpedo-and-defence ship wants, spreading over its parts, so late in the
 chart it has fitted what it wants and the purse piles up. The hulls grow tougher with depth (\`threatAt\`, 1 to 5).
+
+## Before and after
+
+Same four journeys (seeds 3000, 3013, 3026, 3039), the same wide build. "Before" is the old economy (flat tier prices, levels
+capped, hulls the same everywhere); "after" is this one (prices climb, no top level, hulls toughen to 8x, jobs pay up to 2.5x).
+
+| | Before | After |
+|---|---|---|
+| Parts fitted by stop 10 / 20 / 30 / 60 | 7.5 / 18.5 / 22.5 / 25 (then flat) | 2.3 / 6 / 13 / 31, still 42 at the end |
+| Purse at stop 20 / 30 / 60 | 208 / 678 / 999 (the cap) | 71 / 86 / 111 |
+| Purse at the end (stops 61+) | 999 | 420 to 690 |
+| In combat late (stops 61+) | 6 to 16% | 40 to 47% |
+| Plates lost a late sortie | about 0 | 1.0 to 1.6 |
+| A fitted ship gets through | 4 of 4 | 4 of 4 |
+| A ship that fits nothing gets through | not flown | 0 of 4 (2 wrecked out, 2 captured) |
+
+The purse that remains late is what is left after the pilot has bought everything it wants; it does not chase jobs, and
+it stops buying a ladder when the next level is dearer than it likes. A player has no such list.
 
 ## How the journeys ended
 

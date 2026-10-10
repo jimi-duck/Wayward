@@ -114,11 +114,11 @@ and there is always something to fit.
   Single-purchase parts (a system, a specialisation, a flag) are bought once.
 - **Prices climb** (`STORY_PRICE`, `cost` in `sim/bay.ts`): a first fit costs
   20, 27, 36 or 48 Cyrite by tier (the balance parts 25, climbing a ninth a
-  level); each further level of the same part costs a fifth more; and every
-  level fitted anywhere on the ship adds 4.5% to every price. The Arcade's price
+  level); each further level of the same part costs a quarter more; and every
+  level fitted anywhere on the ship adds 7% to every price. The Arcade's price
   stays flat.
 - **Life without them gets harder.** Hostile hulls are tougher by the depth of
-  the chart (`threatAt`: 1 in Cerro to 5 at the Threshold) and fire a quarter of
+  the chart (`threatAt`: 1 in Cerro to 8 at the Threshold) and fire a quarter of
   that excess oftener, so a ship that stays as it left falls behind. Jobs pay
   more the same way (`bountyAt`: 1 to 2.5), so jobs stay the way to the next
   part.
@@ -128,9 +128,9 @@ with 0, 20 and 40 levels fitted:
 
 | Part | 0 | 20 | 40 |
 |---|---|---|---|
-| Laser emitters (tier 1) | 20 / 30 / 50 / 105 | 40 / 55 / 95 / 195 | 55 / 80 / 140 / 290 |
-| Warhead yield (tier 2) | 25 / 40 / 65 / 140 | 50 / 75 / 130 / 265 | 75 / 110 / 190 / 390 |
-| Reactor core (balance part) | 25 / 30 / 45 / 70 | 50 / 60 / 85 / 130 | 70 / 90 / 125 / 195 |
+| Laser emitters (tier 1) | 20 / 30 / 60 / 150 | 50 / 75 / 145 / 360 | 75 / 120 / 230 / 565 |
+| Warhead yield (tier 2) | 25 / 40 / 80 / 200 | 65 / 100 / 200 / 485 | 105 / 160 / 315 / 765 |
+| Reactor core (balance part) | 25 / 30 / 45 / 70 | 60 / 75 / 105 / 165 | 95 / 120 / 165 / 265 |
 
 Numbers and what they do to a journey: [BALANCE-UPGRADES.md](BALANCE-UPGRADES.md)
 (`npm run pilot:upgrades`). First guesses; the feel of the climb needs a

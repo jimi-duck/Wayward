@@ -95,7 +95,7 @@ export const AHEAD: Partial<Record<string, string[]>> = { voice: ['drone', 'prob
 export const RAID_AHEAD = 0.25;
 
 /** How much tougher the hulls are at the Threshold than in Cerro, and how much more the jobs pay: the chart's depth sets both, so a ship that stays as it was falls behind and a ship that keeps growing keeps up. */
-export const DEPTH = { threat: 5, pay: 2.5 } as const;
+export const DEPTH = { threat: 8, pay: 2.5 } as const;
 
 /** How far along the chart a system is, 0 in Cerro to 1 at the Threshold. */
 export const depthOf = (c: Chart, id: string): number => Math.min(1, sysById(c, id).col / Math.max(1, colsOf(c) - 1));

@@ -7,12 +7,30 @@ Read it as a shape, not a verdict. The pilot dodges better than most people and 
 what is spare here); its "build" fits what a torpedo-and-defence ship wants, spreading over its parts, so late in the
 chart it has fitted what it wants and the purse piles up. The hulls grow tougher with depth (`threatAt`, 1 to 5).
 
+## Before and after
+
+Same four journeys (seeds 3000, 3013, 3026, 3039), the same wide build. "Before" is the old economy (flat tier prices, levels
+capped, hulls the same everywhere); "after" is this one (prices climb, no top level, hulls toughen to 8x, jobs pay up to 2.5x).
+
+| | Before | After |
+|---|---|---|
+| Parts fitted by stop 10 / 20 / 30 / 60 | 7.5 / 18.5 / 22.5 / 25 (then flat) | 2.3 / 6 / 13 / 31, still 42 at the end |
+| Purse at stop 20 / 30 / 60 | 208 / 678 / 999 (the cap) | 71 / 86 / 111 |
+| Purse at the end (stops 61+) | 999 | 420 to 690 |
+| In combat late (stops 61+) | 6 to 16% | 40 to 47% |
+| Plates lost a late sortie | about 0 | 1.0 to 1.6 |
+| A fitted ship gets through | 4 of 4 | 4 of 4 |
+| A ship that fits nothing gets through | not flown | 0 of 4 (2 wrecked out, 2 captured) |
+
+The purse that remains late is what is left after the pilot has bought everything it wants; it does not chase jobs, and
+it stops buying a ladder when the next level is dearer than it likes. A player has no such list.
+
 ## How the journeys ended
 
 | Policy | Journeys | Through | Captured | Wrecked out | Systems flown |
 |---|---|---|---|---|---|
-| build | 4 | 4 | 0 | 0 | 80.0 |
-| none | 4 | 0 | 1 | 3 | 67.0 |
+| build | 4 | 4 | 0 | 0 | 85.0 |
+| none | 4 | 0 | 2 | 2 | 65.5 |
 
 ## Along the chart
 
@@ -20,29 +38,29 @@ Purse and parts at the end of each stretch of systems. "Spare a stop" is how muc
 
 | Policy | Systems | Journeys | Purse | Spare a stop | Parts fitted | Sortie | In combat | Plates lost | Wrecked |
 |---|---|---|---|---|---|---|---|---|---|
-| build | 1-10 | 4 | 46 | 1.5 | 3.0 | 152s | 18% | 0.4 | 5% |
-| build | 11-20 | 4 | 97 | 0.6 | 11.4 | 151s | 9% | 0.0 | 0% |
-| build | 21-30 | 4 | 109 | 13.3 | 21.5 | 142s | 5% | 0.0 | 0% |
-| build | 31-40 | 4 | 251 | 16.6 | 28.3 | 152s | 4% | 0.0 | 0% |
-| build | 41-50 | 4 | 196 | -24.6 | 37.2 | 158s | 3% | 0.0 | 0% |
-| build | 51-60 | 4 | 211 | 23.9 | 44.4 | 158s | 2% | 0.0 | 0% |
-| build | 61-70 | 4 | 663 | 59.1 | 47.8 | 161s | 4% | 0.0 | 0% |
-| build | 71-80 | 4 | 883 | -34.2 | 48.9 | 164s | 6% | 0.0 | 0% |
-| build | 81-99 | 4 | 748 | 130.3 | 56.7 | 183s | 1% | 0.0 | 0% |
-| none | 1-10 | 4 | 75 | 8.4 | 0.0 | 144s | 19% | 0.6 | 10% |
-| none | 11-20 | 4 | 223 | 21.5 | 0.0 | 136s | 13% | 0.1 | 0% |
-| none | 21-30 | 4 | 487 | 25.9 | 0.0 | 138s | 11% | 0.0 | 0% |
-| none | 31-40 | 4 | 728 | 12.7 | 0.0 | 144s | 17% | 0.2 | 3% |
-| none | 41-50 | 4 | 788 | 14.7 | 0.0 | 146s | 19% | 0.1 | 3% |
-| none | 51-60 | 4 | 918 | 6.3 | 0.0 | 159s | 22% | 0.4 | 3% |
-| none | 61-70 | 4 | 735 | -58.7 | 0.0 | 193s | 40% | 2.0 | 27% |
-| none | 71-80 | 4 | 501 | -83.4 | 0.0 | 178s | 40% | 1.4 | 43% |
+| build | 1-10 | 4 | 39 | 0.2 | 2.3 | 155s | 25% | 0.5 | 0% |
+| build | 11-20 | 4 | 71 | 7.2 | 6.2 | 145s | 19% | 0.1 | 0% |
+| build | 21-30 | 4 | 86 | 4.5 | 12.9 | 137s | 12% | 0.0 | 0% |
+| build | 31-40 | 4 | 129 | 6.5 | 18.8 | 150s | 16% | 0.0 | 0% |
+| build | 41-50 | 4 | 121 | -10.8 | 25.5 | 147s | 17% | 0.0 | 0% |
+| build | 51-60 | 4 | 111 | -1.0 | 31.5 | 161s | 19% | 0.0 | 0% |
+| build | 61-70 | 4 | 422 | 44.1 | 34.6 | 235s | 40% | 1.0 | 3% |
+| build | 71-80 | 4 | 690 | 6.1 | 37.3 | 258s | 47% | 1.4 | 5% |
+| build | 81-99 | 4 | 625 | 21.3 | 42.2 | 254s | 44% | 1.6 | 4% |
+| none | 1-10 | 4 | 86 | 8.8 | 0.0 | 144s | 20% | 0.5 | 5% |
+| none | 11-20 | 4 | 239 | 21.6 | 0.0 | 141s | 14% | 0.1 | 0% |
+| none | 21-30 | 4 | 461 | 21.4 | 0.0 | 143s | 17% | 0.0 | 0% |
+| none | 31-40 | 4 | 698 | 24.3 | 0.0 | 149s | 20% | 0.0 | 0% |
+| none | 41-50 | 4 | 900 | 16.6 | 0.0 | 152s | 24% | 0.1 | 0% |
+| none | 51-60 | 4 | 988 | 3.4 | 0.0 | 146s | 24% | 0.1 | 3% |
+| none | 61-70 | 4 | 592 | -95.3 | 0.0 | 158s | 35% | 1.6 | 45% |
+| none | 71-80 | 4 | 279 | -84.0 | 0.0 | 193s | 53% | 2.0 | 67% |
 
 ## The gauges at the end of "build"
 
 | Journey | Power | Mass | Heat |
 |---|---|---|---|
-| 1 | 24/26 | 25/24 | 15/16 |
-| 2 | 25/29 | 20/20 | 15/16 |
-| 3 | 25/29 | 25/28 | 16/16 |
-| 4 | 30/32 | 31/32 | 18/20 |
+| 1 | 25/26 | 14/12 | 17/20 |
+| 2 | 29/32 | 17/20 | 21/20 |
+| 3 | 28/32 | 17/20 | 17/16 |
+| 4 | 34/35 | 19/20 | 23/24 |
