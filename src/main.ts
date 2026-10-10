@@ -280,7 +280,7 @@ function boot(review: typeof import('./review') | null): void {
     reported = false;
     setPaused(false);
     const d = world.sortie;
-    if (d.home && (!profile.trained || TRAIN)) world.train();
+    if (d.home) world.train(); // every new Story journey starts with the training
     hud.note(world, d.home ? t('Clear of the yards · make for the lane mouth') : `${d.name} · ${t('{n} Cyrite to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */

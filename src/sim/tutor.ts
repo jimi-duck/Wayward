@@ -44,7 +44,7 @@ export interface Lesson {
   /** English, one verb phrase; the HUD runs it through t(). */
   line: string;
   /** Which hint to show (the HUD has the words for each device). */
-  hint: 'fire' | 'bay' | 'torpedo';
+  hint: 'fire' | 'bay' | 'dock' | 'fit';
   mark: Mark | null;
   /** 0 to 1 */
   progress: number;
@@ -59,8 +59,13 @@ export const LESSON_NODE = 'tp_bay';
 /** Cyrite over the price in the hold when the bay step begins (the rock pays some too). */
 const SPARE = 1;
 
-export function newTutor(): Tutor {
-  return { steps: ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0 };
+/** The Story's depot, set this far ahead and aside at the start: a short hop once the first ship is down. */
+const DEPOT_AT = 170;
+const DEPOT_SIDE = 90;
+
+/** The Story flies to a work bay for its one upgrade, after the first kill; the Arcade fits it in flight, before. */
+export function newTutor(story = false): Tutor {
+  return { steps: story ? ['mine', 'shoot', 'bay'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0 };
 }
 
 /** The step in hand, or null when the training is over (or none is running). */
@@ -96,6 +101,9 @@ function begin(w: World, tu: Tutor): void {
     if (w.bk) { const lv = { ...w.levels }; delete lv[LESSON_NODE]; w.setLevels(lv); w.cyrite = Math.max(0, w.jumpCost - 12); }
     tu.base = stock(w);
     layRock(w, tu);
+    // the depot sits close by from the start, so the way to the bay is short
+    const port = w.bk?.port;
+    if (port) { const p = ahead(w, DEPOT_AT, -DEPOT_SIDE); port.x = p.x; port.z = p.z; }
   } else if (id === 'bay') {
     tu.base = fitted(w);
     // the price, and a little over, so the first upgrade is only a press away
@@ -123,9 +131,13 @@ export function lessonOf(w: World): Lesson | null {
     const mark = rock ? { x: rock.x, z: rock.z, r: rock.r + 6, name: 'Violet rock' } : null;
     return { ...base, line: rock || !got ? 'Laser the violet rock' : 'Fly through what falls out', hint: 'fire', mark, progress: got ? 1 : rock ? 0.1 + 0.7 * (1 - rock.hp / rock.maxHp) : 0.85 };
   }
-  if (id === 'bay') return { ...base, line: w.bk ? 'Fit the torpedo bay' : 'Pick an upgrade', hint: 'bay', mark: null, progress: 0 };
+  if (id === 'bay') {
+    const port = w.bk?.port;
+    if (port) return { ...base, line: w.docked ? 'Fit the torpedo bay' : 'Fly to the work bay', hint: w.docked ? 'fit' : 'dock', mark: { x: port.x, z: port.z, r: port.r, name: port.name }, progress: 0 };
+    return { ...base, line: 'Pick an upgrade', hint: 'bay', mark: null, progress: 0 };
+  }
   const a = w.aliens.find((x) => x.id === tu.alienId);
-  return { ...base, line: w.bk ? 'Shoot the ship with a torpedo' : 'Shoot the ship', hint: w.bk ? 'torpedo' : 'fire', mark: a ? { x: a.x, z: a.z, r: 0, name: 'Gutter ship' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
+  return { ...base, line: 'Shoot the ship', hint: 'fire', mark: a ? { x: a.x, z: a.z, r: 0, name: 'Gutter ship' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
 }
 
 /** Is the step in hand done? */
