@@ -15,15 +15,39 @@ import { midSentence, t } from '../i18n';
 
 export type Levels = Record<string, number>;
 
+/**
+ * The share of a written level's effect that a level past the top of its ladder gives (the Story's ladders do not
+ * end): half for the first, a tenth less with each one after. So the tenth extra level is still worth fitting, but a
+ * ship cannot out-build the caps by buying one thing for ever.
+ */
+export const overhaul = (k: number): number => 0.5 * 0.9 ** (k - 1);
+
+/** Apply level `lv` of a ladder written to `max`: in full up to it, at the `overhaul` share beyond. */
+export function applyLevel(s: Stats, apply: (s: Stats, lv: number) => void, lv: number, max: number): void {
+  if (lv <= max) { apply(s, lv); return; }
+  const full: Stats = { ...s }, f = overhaul(lv - max);
+  apply(full, lv);
+  for (const k of Object.keys(s) as Array<keyof Stats>) {
+    const a = s[k], b = full[k];
+    if (typeof a === 'number' && typeof b === 'number') (s[k] as number) = a + (b - a) * f;
+    else if (typeof b === 'boolean') (s[k] as boolean) = b;
+  }
+}
+
 /** The stat block for a build: base, every owned level in tree order, the fitted modules (sim/modules.ts), then the caps. */
 export function computeStats(levels: Levels): Stats {
   const s = newStats();
   for (const u of UPGRADES) {
     const lv = levels[u.id] ?? 0;
-    for (let i = 1; i <= lv; i++) u.apply(s, i);
+    for (let i = 1; i <= lv; i++) applyLevel(s, u.apply, i, u.max);
   }
   applyModules(s, levels);
   return capStats(s);
+}
+
+/** Would one more level of an upgrade change the ship at all, caps included? An endless ladder stops where it would not. */
+export function gains(levels: Levels, id: string): boolean {
+  return figures(computeStats(levels), computeStats({ ...levels, [id]: (levels[id] ?? 0) + 1 }), false).length > 0;
 }
 
 /** Levels owned in a branch. */
@@ -52,8 +76,8 @@ function takenGroups(levels: Levels): Set<string> {
 }
 
 /** Can this upgrade be offered now? */
-export function available(u: UpgradeDef, levels: Levels, unlocked: ReadonlySet<string>): boolean {
-  if ((levels[u.id] ?? 0) >= u.max) return false;
+export function available(u: UpgradeDef, levels: Levels, unlocked: ReadonlySet<string>, endless = false): boolean {
+  if (!endless && (levels[u.id] ?? 0) >= u.max) return false;
   if (u.locked && !unlocked.has(u.id)) return false;
   if (u.requires && !u.requires.every((r) => (levels[r.id] ?? 0) >= (r.lv ?? 1))) return false;
   if (u.group) {

@@ -1,4 +1,4 @@
-import { cost, fee } from './bay';
+import { cost } from './bay';
 import type { World } from './world';
 
 // ── the first minutes ─────────────────────────────────────────────────────
@@ -121,9 +121,9 @@ function begin(w: World, tu: Tutor): void {
   }
 }
 
-/** What the torpedo bay costs in the lesson's bay (price and fee together). */
+/** What the torpedo bay costs in the lesson's bay. */
 function bayPrice(): number {
-  return cost(LESSON_NODE, 1, false) + fee(LESSON_NODE, 1, false);
+  return cost(LESSON_NODE, 1, false);
 }
 
 /** Where step `tu.i` points, and how far along it is. */

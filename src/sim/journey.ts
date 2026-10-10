@@ -10,7 +10,7 @@ import { weightFuel } from './budgets';
 import { cy, refine } from './purse';
 import { SUPPLIES_MAX, SUPPLIES_START, HOME, JUMP_COST, START_CYRITE, TANK_MAX, HOLD_MAX, type Carry, type SortieDef, type SortieResult } from './breakout';
 import {
-  arrive, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
+  arrive, colsOf, jumps, lanesFrom, makeChart, netted, openShortcut, placeAt, pricesAt, pushNet, regionDef, regionOf, regionsOf, routeBetween, SIGHT, sightPlaces, spreadNet, sysById,
   tierOf, viewOf, type Chart, type StarSystem,
 } from './chart';
 import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './scatter';
@@ -93,6 +93,16 @@ const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 export const AHEAD: Partial<Record<string, string[]>> = { voice: ['drone', 'probe', 'drone'], thren: ['mote', 'mote', 'weaver'] };
 /** A Gutter raid adds this to the share of the pursuit from ahead. */
 export const RAID_AHEAD = 0.25;
+
+/** How much tougher the hulls are at the Threshold than in Cerro, and how much more the jobs pay: the chart's depth sets both, so a ship that stays as it was falls behind and a ship that keeps growing keeps up. */
+export const DEPTH = { threat: 3, pay: 2.5 } as const;
+
+/** How far along the chart a system is, 0 in Cerro to 1 at the Threshold. */
+export const depthOf = (c: Chart, id: string): number => Math.min(1, sysById(c, id).col / Math.max(1, colsOf(c) - 1));
+/** The hull multiplier at a system (1 to `DEPTH.threat`). */
+export const threatAt = (c: Chart, id: string): number => 1 + (DEPTH.threat - 1) * depthOf(c, id);
+/** The multiplier on a job's pay at a system (1 to `DEPTH.pay`). */
+export const bountyAt = (c: Chart, id: string): number => 1 + (DEPTH.pay - 1) * depthOf(c, id);
 
 export type JourneyEnd = 'through' | 'captured' | 'wrecked';
 
@@ -215,7 +225,7 @@ export function sortieDef(j: Journey): SortieDef {
   // a copy: the chart's own prices are not the flags' to change
   const prices = quoted && { ...quoted, plate: Math.round(quoted.plate * echo.plates) };
   return {
-    survival: j.survival, system: s.id, region: tierOf(j.chart, regionOf(s)), sky: R.sky, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
+    survival: j.survival, threat: threatAt(j.chart, s.id), pay: bountyAt(j.chart, s.id), system: s.id, region: tierOf(j.chart, regionOf(s)), sky: R.sky, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
     port: prices ? { name: s.port!.name, prices } : null,
     heat: Math.max(0, Math.min(0.6, t.heat + (net ? 0.25 : 0) + echo.heat)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
     rich: quiet ? Math.max(QUIET_RICH, t.rich * (0.6 + s.cyrite * 0.8)) : t.rich * (0.6 + s.cyrite * 0.8), density: quiet ? Math.max(QUIET_DENSITY, t.density) : t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, pace: t.pace, quiet,

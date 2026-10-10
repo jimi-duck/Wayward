@@ -1,7 +1,7 @@
 import { LOG, STAMP } from '../content/papers';
 import { UPGRADE } from '../content/upgrades';
 import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
-import { blockOf, budgets, cost, fee, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
+import { blockOf, budgets, cost, endless, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
 import type { Advice } from '../sim/advice';
 import { upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
@@ -63,7 +63,6 @@ const WHY: Record<Block, string> = {
   yard: 'Fitted only at a port',
   power: 'Not enough power · fit a reactor core',
   krail: 'Not enough Cyrite',
-  chits: 'Not enough Cyrite for the yard',
 };
 const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass', heat: 'Heat' };
 /** What running over a soft rating costs (sim/budgets.ts). */
@@ -72,21 +71,20 @@ const OVER_WORD = { mass: 'Over the mass rating: slower to turn and to speed up'
 const nameOf = (id: string) => t(nodeName(id));
 const textOf = (id: string, lv: number) => t(nodeText(id, lv));
 
-/** The price of the next level: Krail, and the yard's chits where it charges. */
-function priceWord(w: World, id: string): string {
-  const lv = (w.levels[id] ?? 0) + 1, f = fee(id, lv, !w.bk);
-  // the Story has one purse: the price and the yard's fee are one sum of chits
-  if (w.bk) return `${num(cost(id, lv, false) + f)} ${t('Cyrite')}`;
-  return `${num(cost(id, lv, true))} ${t('Cyrite')}`;
-}
+/** The price of the next level, in Cyrite. */
+const priceOf = (w: World, id: string): number => cost(id, (w.levels[id] ?? 0) + 1, !w.bk, w.levels);
 
-/** What the Fit button says: the price, how much Krail is missing, or why not. */
+/** Does this node's ladder go on for ever here (the Story's stat upgrades and balance parts)? Its level reads "Mk 7", with no top. */
+const endlessIn = (w: World, id: string): boolean => !!w.bk && endless(id);
+
+/** A level as the bay writes it: "Lv 2/5", or "Mk 7" on a ladder with no top. */
+const levelWord = (w: World, id: string, lv: number): string => (endlessIn(w, id) ? `${t('Mk')} ${lv}` : `${t('Lv')} ${lv}/${maxLevel(id)}`);
+
+/** What the Fit button says: the price, how much Cyrite is missing, or why not. */
 function fitWord(w: World, id: string, why: Block | null): string {
-  if (why === 'krail') {
-    const lv = (w.levels[id] ?? 0) + 1;
-    return t('{n} more Cyrite', { n: num(Math.ceil(cost(id, lv, !w.bk) + fee(id, lv, !w.bk) - w.purse)) });
-  }
-  return why ? t(WHY[why]) : `${t('Fit')} · ${priceWord(w, id)}`;
+  if (why === 'krail') return t('{n} more Cyrite', { n: num(Math.ceil(priceOf(w, id) - w.purse)) });
+  if (why === 'full' && endlessIn(w, id)) return t('At its limit');
+  return why ? t(WHY[why]) : `${t('Fit')} · ${num(priceOf(w, id))} ${t('Cyrite')}`;
 }
 
 /** The Arcade mode: three picks, no web (the Story mode has no bk of its own here, so `!w.bk` is the arcade, as for fee). */
@@ -113,13 +111,13 @@ const viewsOf = (w: World): View[] => ['picks', ...TAB_ORDER.filter((tab) => WEB
 /** A module's look: fitted (all, or some), ready to fit, in reach but short of Krail or power, or not yet open. */
 function stateOf(world: World, id: string): 'max' | 'owned' | 'open' | 'short' | 'locked' {
   const lv = world.levels[id] ?? 0, b = blockOf(id, world.bayCtx());
-  if (lv >= maxLevel(id)) return 'max';
+  if (b === 'full') return 'max';
   if (b === null) return lv ? 'owned' : 'open';
-  if (b === 'krail' || b === 'chits' || b === 'power') return lv ? 'owned' : 'short';
+  if (b === 'krail' || b === 'power') return lv ? 'owned' : 'short';
   return lv ? 'owned' : 'locked';
 }
 
-/** A module's level as pips, the next one (if any) marked. */
+/** A module's level as pips, the next one (if any) marked. Past the written top there is no pip to light: the label counts on. */
 function pips(lv: number, max: number, next = false): HTMLElement {
   const p = h('span', 'bi-pips');
   for (let k = 1; k <= max; k++) p.append(h('i', k <= lv ? 'on' : next && k === lv + 1 ? 'add' : ''));
@@ -553,7 +551,7 @@ export class BayPanel {
       damaged: tab === 'hull' && worn(w.plates, w.stats.maxPlates),
       ready: blocks.filter((b) => b === null).length,
       fitted: nodes.some((n) => (w.levels[n.id] ?? 0) > 0),
-      reachable: blocks.some((b) => b === null || b === 'krail' || b === 'power' || b === 'chits' || b === 'yard'),
+      reachable: blocks.some((b) => b === null || b === 'krail' || b === 'power' || b === 'yard'),
     });
   }
 
@@ -705,11 +703,11 @@ export class BayPanel {
       b.type = 'button';
       b.style.left = `${X(n)}%`;
       b.style.top = `${Y(n)}%`;
-      b.setAttribute('aria-label', `${nameOf(n.id)} · ${t('Lv')} ${lv}/${max}`);
+      b.setAttribute('aria-label', `${nameOf(n.id)} · ${levelWord(w, n.id, lv)}`);
       // the price where it can be paid soon: fitted-or-ready modules say what the next level costs
-      const price = st === 'open' || st === 'short' || st === 'owned' ? cost(n.id, lv + 1, !w.bk) : 0;
+      const price = st === 'open' || st === 'short' || st === 'owned' ? priceOf(w, n.id) : 0;
       // three levels: the name, then the level pips, then what it moves (the first figure's label)
-      const first = lv < max && st !== 'locked' ? upgradeFigures(w.levels, n.id, !w.bk).find((f) => !f.cost)?.label : undefined;
+      const first = st !== 'max' && st !== 'locked' ? upgradeFigures(w.levels, n.id, !w.bk).find((f) => !f.cost)?.label : undefined;
       b.append(h('span', 'bn-oct', '', nodeIcon(n.id)), max > 1 ? pips(lv, max) : h('span', 'bi-pips'), h('span', 'bn-name', nameOf(n.id)),
         ...(first ? [h('span', 'bn-tag', t(first))] : []), ...(price ? [h('span', 'bn-cost', num(price))] : []));
       b.addEventListener('click', (e) => { e.stopPropagation(); this.sel = n.id; this.render(); });
@@ -725,7 +723,7 @@ export class BayPanel {
     if (!id) { el.replaceChildren(); return; }
     const node = NODE[id]!;
     const lv = w.levels[id] ?? 0, max = maxLevel(id), next = Math.min(max, lv + 1);
-    const why = blockOf(id, w.bayCtx());
+    const why = blockOf(id, w.bayCtx()), more = why !== 'full';
     const info = h('button', `bi-i${this.more ? ' on' : ''}`, 'i') as HTMLButtonElement;
     info.type = 'button';
     info.title = t('Details');
@@ -733,11 +731,11 @@ export class BayPanel {
     info.setAttribute('aria-expanded', String(this.more));
     info.addEventListener('click', (e) => { e.stopPropagation(); this.more = !this.more; this.render(); });
     const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', nodeIcon(id)),
-      h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', `${t('Lv')} ${lv}/${max}`), pips(lv, max, lv < max))), info);
-    const adv = lv < max && !why ? this.advice(w).get(id) : undefined;
-    const figs = lv < max ? upgradeFigures(w.levels, id, !w.bk) : [];
+      h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', levelWord(w, id, lv)), pips(lv, max, more))), info);
+    const adv = more && !why ? this.advice(w).get(id) : undefined;
+    const figs = more ? upgradeFigures(w.levels, id, !w.bk) : [];
     const out: HTMLElement[] = [head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`))] : [])];
-    if (lv < max) {
+    if (more) {
       if (figs.length) out.push(h('div', 'bi-dl', '', ...figs.slice(0, 3).map((f) => deltaChip(f))));
       // what it draws, as chips: +1 power, +2 heat
       const { use, cap } = budgets(w.levels);
@@ -773,7 +771,7 @@ export class BayPanel {
   private budgetBar(w: World): void {
     const { use, cap } = budgets(w.levels);
     const sel = this.view === 'picks' ? this.picks()[this.pick] ?? null : this.sel ? NODE[this.sel] : null;
-    const can = sel && (w.levels[sel.id] ?? 0) < maxLevel(sel.id);
+    const can = sel && blockOf(sel.id, w.bayCtx()) !== 'full';
     $('bay-budget').replaceChildren(...(['power', 'mass', 'heat'] as const).map((k) => {
       const add = can ? sel!.draw[k] ?? 0 : 0;
       // the rating's state: a word from 80%, a louder one over (power is a ceiling: it fills, it never goes over)

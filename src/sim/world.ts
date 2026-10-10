@@ -22,7 +22,7 @@ import {
 } from './comms';
 import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
-import { EVENT_FIRST, eventGap, NO_MODS, pressure, type Mods, type Pressure } from './director';
+import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
 import { pickEncounter, startEncounter, stepEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import {
@@ -314,7 +314,7 @@ export class World implements EncounterHost {
     this.rng = new Rng(seed);
     this.unlocked = new Set(opts.unlocked ?? []);
     this.survival = SURVIVAL[opts.survival ?? opts.sortie?.survival ?? DEFAULT_SURVIVAL];
-    this.mods = this.survival.sky;
+    this.mods = threatened(this.survival.sky, opts.sortie?.threat);
     this.stats = this.buildStats();
     this.hull = flightHull(this.stats);
     this.plates = this.stats.maxPlates;
@@ -453,6 +453,11 @@ export class World implements EncounterHost {
     if (!c || !this.captainMet) return null;
     const report = this.captainEnd ?? (this.captainFighting ? (this.run.escaped ? 'evaded' : 'won') : null);
     return report ? { id: c.id, report } : null;
+  }
+
+  /** What the jobs here pay against their rows (sim/journey.ts `bountyAt`). */
+  get pay(): number {
+    return this.sortie.pay ?? 1;
   }
 
   /** Cyrite the plotted jump takes (the Breakout's lane in Cerro). */
@@ -1088,7 +1093,7 @@ export class World implements EncounterHost {
   }
 
   bayCtx(): BayCtx {
-    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked || stepOf(this) === 'bay', only: this.bk && stepOf(this) === 'bay' ? LESSON_NODE : undefined, krail: this.chits, chits: this.chits, pooled: true, deal: this.bayDeal, passed: this.bayPassed };
+    return { levels: this.levels, unlocked: this.unlocked, techs: this.techs, arcade: !this.bk, docked: this.docked || stepOf(this) === 'bay', only: this.bk && stepOf(this) === 'bay' ? LESSON_NODE : undefined, krail: this.chits, deal: this.bayDeal, passed: this.bayPassed };
   }
 
   /**
@@ -1141,7 +1146,7 @@ export class World implements EncounterHost {
     const r = bayInstall(id, this.bayCtx());
     if (typeof r === 'string') return r;
     this.bayFit = true;
-    if (this.bk) this.chits -= r.cost + r.fee;
+    if (this.bk) this.chits -= r.cost;
     else this.krail -= r.cost;
     this.levels = r.levels;
     this.refreshStats();
@@ -2478,11 +2483,12 @@ export class World implements EncounterHost {
     if (opts.mode) this.mode = opts.mode;
     if (opts.unlocked) for (const u of opts.unlocked) this.unlocked.add(u);
     // a new run takes the mode it is given: the options', else its sortie's, else the one it had
-    if (opts.survival || opts.sortie?.survival) { this.survival = SURVIVAL[opts.survival ?? opts.sortie!.survival!]; this.mods = this.survival.sky; }
+    if (opts.survival || opts.sortie?.survival) { this.survival = SURVIVAL[opts.survival ?? opts.sortie!.survival!]; this.mods = threatened(this.survival.sky, (opts.sortie ?? this.sortie).threat); }
     this.field.rocks = this.field.rocks.filter((r) => Math.hypot(r.x - s.x, r.z - s.z) >= 18);
     if (opts.sortie) {
       // a new system: new rock all round
       this.sortie = opts.sortie;
+      this.mods = threatened(this.survival.sky, opts.sortie.threat);
       this.field.rocks = [];
       this.field.bulwarks = [];
       this.field.seed(s.x, s.z);

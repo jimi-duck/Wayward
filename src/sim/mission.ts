@@ -73,6 +73,14 @@ export function scaleOut(out: Outcome, k: number): Outcome {
   return o;
 }
 
+/** An outcome's Cyrite at `k` times the pay: the Story's jobs pay more the further along the chart (sim/journey.ts `bountyAt`). */
+export function bounty(out: Outcome, k: number): Outcome {
+  if (k === 1) return out;
+  const o: Outcome = { ...out };
+  for (const f of ['cyrite', 'chits'] as const) if (typeof o[f] === 'number' && o[f]! > 0) (o as unknown as Record<string, number>)[f] = Math.round((o[f] as number) * k);
+  return o;
+}
+
 export interface Site { x: number; z: number; ux: number; uz: number }
 
 export class Run {

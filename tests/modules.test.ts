@@ -6,7 +6,7 @@ import { MODULES, MODULE_BY_ID, SHIP_SYSTEMS } from '../src/content/modules';
 import { NODE } from '../src/content/web';
 import { upgradeSystem, UPGRADES } from '../src/content/upgrades';
 import { PATCH_COST, PRICE, SUPPLIES_MAX } from '../src/sim/breakout';
-import { blockOf, cost, fee, stockLevels, type BayCtx } from '../src/sim/bay';
+import { blockOf, cost, stockLevels, type BayCtx } from '../src/sim/bay';
 import { computeStats } from '../src/sim/build';
 import { CARD_BY_ID as CARDS_BY_ID, choiceView, sensors, yourStrength, type Ctx } from '../src/sim/comms';
 import { ECHO_DELAY, endSortie, newJourney, VERSION } from '../src/sim/journey';
@@ -40,36 +40,32 @@ function docked(cyrite = 100): World {
 }
 
 describe('the ship’s systems', () => {
-  it('lists modules for all four systems, each a Story node of the bay\'s web fitted at the yard, with a fee for every mark', () => {
+  it('lists modules for all four systems, each a Story node of the bay\'s web fitted at the yard', () => {
     for (const s of SHIP_SYSTEMS) expect(MODULES.filter((m) => m.system === s).length).toBeGreaterThanOrEqual(3);
     const ups = new Set(UPGRADES.map((u) => u.id));
     expect(new Set(MODULES.map((m) => m.id)).size).toBe(MODULES.length);
     for (const m of MODULES) {
       expect(ups.has(m.id)).toBe(false);
-      expect(m.chits.length).toBe(m.max);
-      expect(NODE[m.id], m.id).toMatchObject({ story: true, yard: 1 });
+      expect(NODE[m.id], m.id).toMatchObject({ story: true });
       for (const id of m.counts ?? []) expect(ups.has(id)).toBe(true);
     }
   });
 
   it('prices the yard\'s work in Cyrite, only at a port, and only in the Story mode', () => {
-    const story = (x: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: new Set(), techs: new Set(), arcade: false, krail: 1000, chits: 1000, ...x });
+    const story = (x: Partial<BayCtx> = {}): BayCtx => ({ levels: stockLevels(), unlocked: new Set(), techs: new Set(), arcade: false, krail: 1000, ...x });
     expect(blockOf('md_racks', story())).toBe('yard');
     expect(blockOf('md_racks', story({ docked: true }))).toBeNull();
-    expect(blockOf('md_racks', story({ docked: true, chits: 1 }))).toBe('chits');
+    expect(blockOf('md_racks', story({ docked: true, krail: 1 }))).toBe('krail');
     expect(blockOf('md_racks', { ...story({ docked: true }), arcade: true })).toBe('mode');
-    expect(fee('md_racks', 1, false)).toBe(2);
-    expect(fee('md_racks', 2, false)).toBe(4);
     expect(cost('md_racks', 2, false)).toBeGreaterThan(cost('md_racks', 1, false));
+    // a module that changes no stat and has a written top ends there; the racks, the dock friends and the like
     expect(blockOf('md_racks', story({ docked: true, levels: { ...stockLevels(), md_racks: 3 } }))).toBe('full');
-    // the frame is yard work in the Story mode, never in the arcade; the core only from its last level
+    // the frame is yard work in the Story mode, never in the arcade
     expect(blockOf('hl_frame', story())).toBe('yard');
     expect(blockOf('hl_frame', { ...story(), arcade: true })).toBeNull();
-    expect(fee('hl_frame', 1, true)).toBe(0);
     // every Story install is work-bay work: at sea nothing fits, docked the core's early levels do
     expect(blockOf('rx_core', story({ levels: { ...stockLevels(), rx_core: 1 } }))).toBe('yard');
     expect(blockOf('rx_core', story({ docked: true, levels: { ...stockLevels(), rx_core: 1 } }))).toBeNull();
-    expect(fee('rx_core', 1, false)).toBe(0);
   });
 
   it('changes the stat block, the hold, the heat, the prices and what the comms open', () => {
@@ -112,7 +108,7 @@ describe('the yard', () => {
     expect(w.openBay()).toBe(true);
     expect(w.install('md_racks')).toBeNull();
     expect(w.levels.md_racks).toBe(1);
-    expect(w.cyrite).toBe(100 - cost('md_racks', 1, false) - fee('md_racks', 1, false));
+    expect(w.cyrite).toBe(100 - cost('md_racks', 1, false, stockLevels()));
     expect(w.supplyMax).toBe(SUPPLIES_MAX + 4);
     // the spoofer comes after the baffles on the web
     expect(w.install('md_spoofer')).toBe('path');

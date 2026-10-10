@@ -131,6 +131,10 @@ export const pursuitElite = (heat: number) => clamp((heat - 0.7) * 0.6, 0, 0.2);
 export interface SortieDef {
   /** The journey's survival mode (content/survival.ts); the baseline when absent. */
   survival?: SurvivalId;
+  /** How much tougher the hulls are this far along the chart (sim/journey.ts `threatAt`); 1 when absent. */
+  threat?: number;
+  /** A multiplier on what the jobs here pay (sim/journey.ts `bountyAt`); 1 when absent. */
+  pay?: number;
   /** The chart's id for the system, its name and kind. */
   system: string;
   /** Its region (content/regions.ts), for the sky; the Reach unless given. */

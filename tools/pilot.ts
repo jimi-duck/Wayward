@@ -12,7 +12,7 @@ import { PATCH_COST } from '../src/sim/breakout';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
-import { blockOf, budgets, cost, fee, reachable } from '../src/sim/bay';
+import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
 import { FITTING } from '../src/content/web';
 import { MODULE_BY_ID } from '../src/content/modules';
 import type { SurvivalId } from '../src/content/survival';
@@ -78,6 +78,8 @@ export interface PilotOptions {
   watch?: (w: World, events: readonly GameEvent[]) => void;
   /** The yard's modules the pilot wants at a port (the Story mode), most wanted first; others it leaves. */
   modules?: string[];
+  /** Fit nothing in the bay: the Story ship as it left Cerro (the upgrade report's baseline). */
+  noShop?: boolean;
 }
 
 export interface PilotResult {
@@ -181,15 +183,14 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
   w.closeBay();
 }
 
-/** What the next level of a node takes from the purse: its price, and in the Story the yard's fee with it. */
+/** What the next level of a node takes from the purse. */
 function price(w: World, id: string): number {
-  const lv = (w.levels[id] ?? 0) + 1;
-  return cost(id, lv, !w.bk) + (w.bk ? fee(id, lv, false) : 0);
+  return cost(id, (w.levels[id] ?? 0) + 1, !w.bk, w.levels);
 }
 
 /** The Krail to keep for the first wanted yard module that a port could fit (nothing once they are all in). */
 function saveFor(w: World, modules: readonly string[]): number {
-  const port = { ...w.bayCtx(), docked: true, krail: Infinity, chits: Infinity };
+  const port = { ...w.bayCtx(), docked: true, krail: Infinity };
   const next = modules.find((id) => blockOf(id, port) === null);
   return next ? price(w, next) : 0;
 }
@@ -519,8 +520,8 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
   let nextShop = 0, fitted = 0;
   while (w.phase !== 'over' && w.runTime < maxTime) {
     // the arcade's bay opens by itself; the Story mode's pilot looks into it every couple of seconds, when it will open
-    if (w.phase === 'bay') { shop(w, strategy, rngPick, o.modules); continue; }
-    if (w.phase === 'play' && w.bk && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
+    if (w.phase === 'bay') { if (o.noShop) w.closeBay(); else shop(w, strategy, rngPick, o.modules); continue; }
+    if (w.phase === 'play' && w.bk && !o.noShop && w.runTime >= nextShop) { nextShop = w.runTime + 2; shop(w, strategy, rngPick, o.modules); }
     if (w.command.state === 'sighted' && !o.evade) w.provoke();
     if (w.phase === 'hail') { w.answerHail(!o.evade || !w.command.pending?.canEvade); continue; }
     if (w.phase === 'comms' || (w.phase === 'play' && w.call)) {
@@ -540,7 +541,7 @@ export function flyWorld(w: World, seed: number, strategy: Strategy, o: PilotOpt
       const spare = (item: 'supplies' | 'plate') => w.cyrite >= w.prices[item];
       while (w.supplies < 12 && spare('supplies') && w.buy('supplies'));
       while (w.plates < w.stats.maxPlates && spare('plate') && w.buy('plate'));
-      shop(w, strategy, rngPick, o.modules);
+      if (!o.noShop) shop(w, strategy, rngPick, o.modules);
       w.undock();
       continue;
     }
