@@ -62,7 +62,7 @@ const WHY: Record<Block, string> = {
   needs: 'Needs more of its system, or a rival is fitted',
   yard: 'Fitted only at a port',
   power: 'Not enough power · fit a reactor core',
-  krail: 'Not enough Cyrite',
+  krail: 'Not enough Cyrite to jump',
   chits: 'Not enough Cyrite for the yard',
 };
 const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass', heat: 'Heat' };
@@ -586,7 +586,7 @@ export class BayPanel {
       );
       return card;
     });
-    const empty = h('p', 'pick-none', t(w.bk ? 'Nothing to fit yet · pick up scrap for Cyrite' : 'Nothing to fit yet · break rock for Cyrite'));
+    const empty = h('p', 'pick-none', t(w.bk ? 'No upgrade available yet · collect salvage to earn Cyrite' : 'Nothing to fit yet · break rock for Cyrite'));
     const arcade = isArcade(w);
     $('bay-tab-h').replaceChildren(icon('i-event'), h('span', 'bw-n', t(arcade ? 'Pick one' : 'Suggested')), h('span', 'bw-s', t(w.bk && arcade ? 'Your first refit' : arcade ? 'Three refits for your ship' : 'Picked for your ship')));
     $('bay-web').replaceChildren(h('div', 'pick-row', '', ...(cards.length ? cards : [empty])),

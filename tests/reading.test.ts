@@ -3,17 +3,15 @@ import { CARDS } from '../src/content/cards';
 
 // ── the reading budget ────────────────────────────────────────────────────
 // The comms card is read mid-flight, so every part of it has a cap in words.
-// Today's content is short (a card's text averages 17 words, a hint 7); this
-// keeps it short as the journey grows. A few older lines run over and are
+// The caps were widened in the copy pass of 2026-10-10 (docs/COPY.md): clear
+// beats short, so a line may say what it costs and risks. They still stop the
+// journey's cards from growing. A few older lines run over and are
 // listed with their own ceiling, so they cannot grow; shorten one and drop
 // its row.
 
-const CAP = { title: 7, from: 10, text: 24, line: 15, read: 13, label: 6, hint: 15, win: 12, lose: 12 };
+const CAP = { title: 7, from: 10, text: 32, line: 15, read: 14, label: 8, hint: 19, win: 16, lose: 13 };
 /** Lines already over their cap, held at today's length. */
-const LEGACY: Record<string, number> = {
-  'hint checkpoint:fight': 18, 'hint calloway_here:run': 17, 'hint calloway_here:talk': 16,
-  'win offer_name:accept': 15, 'label calloway_here:talk': 7,
-};
+const LEGACY: Record<string, number> = {};
 
 const words = (s: string) => s.trim().split(/\s+/).length;
 

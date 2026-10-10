@@ -121,9 +121,9 @@ export function lessonOf(w: World): Lesson | null {
     const rock = w.field.rocks.find((r) => r.id === tu.rockId);
     const got = stock(w) > tu.base;
     const mark = rock ? { x: rock.x, z: rock.z, r: rock.r + 6, name: 'Violet rock' } : null;
-    return { ...base, line: rock || !got ? 'Laser the violet rock' : 'Fly through what falls out', hint: 'fire', mark, progress: got ? 1 : rock ? 0.1 + 0.7 * (1 - rock.hp / rock.maxHp) : 0.85 };
+    return { ...base, line: rock || !got ? 'Laser the violet rock' : 'Fly through the drops to collect them', hint: 'fire', mark, progress: got ? 1 : rock ? 0.1 + 0.7 * (1 - rock.hp / rock.maxHp) : 0.85 };
   }
-  if (id === 'bay') return { ...base, line: w.bk ? 'Fit the torpedo bay' : 'Pick an upgrade', hint: 'bay', mark: null, progress: 0 };
+  if (id === 'bay') return { ...base, line: w.bk ? 'Fit the torpedo bay' : 'Choose an upgrade', hint: 'bay', mark: null, progress: 0 };
   const a = w.aliens.find((x) => x.id === tu.alienId);
   return { ...base, line: w.bk ? 'Shoot the ship with a torpedo' : 'Shoot the ship', hint: w.bk ? 'torpedo' : 'fire', mark: a ? { x: a.x, z: a.z, r: 0, name: 'Gutter ship' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
 }

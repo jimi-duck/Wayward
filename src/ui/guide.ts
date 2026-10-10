@@ -26,7 +26,7 @@ export function bearingText(rel: number): string {
   const b = sayBearing(rel);
   if (b.word === 'ahead') return t('Ahead');
   if (b.word === 'behind') return t('Behind');
-  return t(b.word === 'left' ? '{n}° left' : '{n}° right', { n: b.deg });
+  return t(b.word === 'left' ? '{n}° to the left' : '{n}° to the right', { n: b.deg });
 }
 
 export class Heading {

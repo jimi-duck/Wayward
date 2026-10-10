@@ -234,7 +234,7 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['mining', 'transit', 'contested', 'port'], regions: [1, 6], weight: 1, holders: ['gutter', 'none', 'guild', 'holdfast'],
     actors: [act('scout', 1, 'hold', 'wary', 'Runner', { from: 'site', ring: 14 })],
     card: 'sc_smugglers', at: 30, hail: 360, goal: CALL,
-    ignore: { text: 'The runner shrugs and goes' },
+    ignore: { text: 'The runner ends the call and moves on' },
   },
   {
     id: 'resistance', name: 'A cell that needs supplies', blurb: 'A cell that has not been counted.', group: 'frontier',
@@ -281,41 +281,41 @@ export const SITUATIONS: SituationDef[] = [
 
   // ══ unknown: the Thren ═══════════════════════════════════════════════════
   {
-    id: 'thren_pass', name: 'Something on the scope', blurb: 'Something crossed the scope here.', group: 'unknown',
+    id: 'thren_pass', name: 'Something Crossed the Scope', blurb: 'An unidentified formation crossed your sensors and did not answer the hail.', group: 'unknown',
     kinds: ['mining', 'transit', 'contested', 'port'], regions: [0, 7], weight: 0.5,
     actors: [act('mote', 5, 'pass', 'wary', 'Unknown formation', { from: 'ahead', pace: 1.2 })],
     at: 50, hail: 9999, goal: CALL, seen: ['saw_thren'],
-    say: [{ on: 'start', from: 'Scope', text: '“Unregistered contacts, bearing across. They are not squawking.”' }],
+    say: [{ on: 'start', from: 'Scope', text: '“Unregistered contacts crossing our field of view. No transponder signal.”' }],
   },
   {
-    id: 'thren_curious', name: 'It is studying you', blurb: 'Something lingers here.', group: 'unknown',
+    id: 'thren_curious', name: 'It Is Studying You', blurb: 'One unknown contact matches your speed and keeps its distance.', group: 'unknown',
     kinds: ['mining', 'transit', 'port', 'contested'], regions: [0, 7], weight: 0.5,
     actors: [act('weaver', 1, 'orbit', 'wary', 'Unknown contact', { from: 'ahead', ring: 55, pace: 0.8 })],
     at: 45, hail: 9999, goal: CALL, seen: ['saw_thren', 'thren_curious'],
-    say: [{ on: 'near', from: 'Scope', text: '“One contact, matching your speed. Not hailing. Not armed that we can see.”' }],
+    say: [{ on: 'near', from: 'Scope', text: '“One contact matching our speed. No hail. No weapons detected.”' }],
   },
   {
-    id: 'thren_swarm', name: 'A swarm in the Cyrite', blurb: 'A swarm is moving through the Cyrite field here.', group: 'unknown',
+    id: 'thren_swarm', name: 'A Swarm in the Cyrite', blurb: 'Unusual shapes move through the Cyrite field and react to the readings.', group: 'unknown',
     kinds: ['mining', 'contested', 'transit'], regions: [1, 7], weight: 0.5,
     actors: [act('mote', 7, 'pass', 'wary', 'Swarm', { from: 'ahead', pace: 0.7 }), act('weaver', 1, 'pass', 'wary', 'Swarm', { from: 'ahead', pace: 0.7 })],
     at: 40, hail: 9999, goal: CALL, seen: ['saw_thren', 'thren_swarm'],
-    say: [{ on: 'start', from: 'Scope', text: '“Cyrite readings spiking ahead. Something is feeding on the field.”' }],
+    say: [{ on: 'start', from: 'Scope', text: '“Cyrite readings are spiking ahead. Something is moving through the field.”' }],
   },
   {
-    id: 'thren_guard', name: 'They hold the seam', blurb: 'Veined rock, and something guarding it.', group: 'unknown',
+    id: 'thren_guard', name: 'Something Guards the Vein', blurb: 'A rich Cyrite seam is surrounded by an unknown formation.', group: 'unknown',
     kinds: ['mining', 'contested'], regions: [1, 7], weight: 0.6,
     prop: 'seam', actors: [act('mote', 4, 'hold', 'territorial', 'Thren', { from: 'site', ring: 85 }), act('weaver', 1, 'hold', 'territorial', 'Thren', { from: 'site', ring: 85 })],
     at: 30, hail: 9999, goal: CALL, seen: ['saw_thren', 'thren_territory'],
-    say: [{ on: 'near', from: 'Scope', text: '“They are holding station round the seam. Every one of them is facing outward.”' }],
+    say: [{ on: 'near', from: 'Scope', text: '“They are holding position around the seam. Every one of them is facing outward.”' }],
   },
   {
-    id: 'thren_exchange', name: 'It wants Cyrite', blurb: 'A Thren object holds still, and seems to wait.', group: 'unknown',
+    id: 'thren_exchange', name: 'A Strange Offer', blurb: 'A Thren object holds position beside Cyrite and seems to be waiting.', group: 'unknown',
     kinds: ['mining', 'transit', 'contested'], regions: [2, 7], weight: 0.5,
     prop: 'object', actors: [act('shard', 1, 'hold', 'drawn', 'Thren object', { from: 'site', ring: 30 })],
     card: 'sc_thren_exchange', at: 30, hail: 220, accept: [], goal: CALL, seen: ['saw_thren', 'thren_trade'],
   },
   {
-    id: 'thren_hurt', name: 'A damaged Thren object', blurb: 'A Thren shard, adrift and broken.', group: 'unknown',
+    id: 'thren_hurt', name: 'A Damaged Thren Object', blurb: 'A broken Thren structure drifts alone nearby.', group: 'unknown',
     kinds: ['mining', 'transit', 'contested'], regions: [2, 7], weight: 0.5,
     prop: 'object', actors: [act('mote', 1, 'hold', 'meek', 'Damaged Thren', { from: 'site', ring: 10 })],
     card: 'sc_thren_hurt', at: 30, hail: 260, goal: CALL, seen: ['saw_thren', 'thren_hurt'],
@@ -325,7 +325,7 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['transit', 'mining', 'contested'], regions: [3, 7], weight: 0.5,
     actors: [act('mote', 3, 'follow', 'wary', 'Unknown contacts', { from: 'astern', ring: 120, pace: 0.9 })],
     at: 60, hail: 9999, goal: CALL, seen: ['saw_thren', 'thren_lane'],
-    say: [{ on: 'start', from: 'Navigation', text: '“Lane mouth is drifting. It is not us. Something else is steering by it.”' }],
+    say: [{ on: 'start', from: 'Navigation', text: '“The jump-lane entrance is drifting. It is not us. Something else is moving it.”' }],
   },
   {
     id: 'thren_watch', name: 'They line the lane', blurb: 'The Thren are lined up along a lane. They face the way you are going.', group: 'unknown',
@@ -337,27 +337,27 @@ export const SITUATIONS: SituationDef[] = [
 
   // ══ unknown: the Voice ═══════════════════════════════════════════════════
   {
-    id: 'voice_relay', name: 'A relay that answers', blurb: 'An old relay that should be dead.', group: 'unknown',
+    id: 'voice_relay', name: 'The Relay Wakes', blurb: 'An old relay is transmitting, though no one should be powering it.', group: 'unknown',
     kinds: ['transit', 'mining', 'contested', 'port'], regions: [0, 7], weight: 0.5,
     prop: 'relay', card: 'sc_voice_relay', at: 30, hail: 260, goal: CALL, seen: ['saw_voice', 'voice_heard'],
   },
   {
-    id: 'voice_repair', name: 'A machine that mends', blurb: 'A factory hull, still working.', group: 'unknown',
+    id: 'voice_repair', name: 'A Request from the Relay', blurb: 'A relay requests a part for an unknown repair.', group: 'unknown',
     kinds: ['mining', 'transit', 'contested'], regions: [1, 7], weight: 0.5,
     prop: 'foundry', card: 'sc_voice_repair', at: 30, hail: 240, goal: CALL, seen: ['saw_voice', 'voice_mended'],
   },
   {
-    id: 'voice_knows', name: 'It knew', blurb: 'A relay with something to say about you.', group: 'unknown',
+    id: 'voice_knows', name: 'It Knows Your Ship', blurb: 'A Voice system addresses the Wayward by name.', group: 'unknown',
     kinds: ['transit', 'mining', 'contested', 'port'], regions: [2, 7], weight: 0.5,
     prop: 'relay', card: 'sc_voice_knows', at: 30, hail: 260, goal: CALL, seen: ['saw_voice', 'voice_knows'],
   },
   {
-    id: 'voice_request', name: 'A request', blurb: 'A machine voice asks for something to be carried.', group: 'unknown',
+    id: 'voice_request', name: 'A Task from the Voice', blurb: 'A fabrication system asks you to retrieve something it cannot reach.', group: 'unknown',
     kinds: ['transit', 'mining', 'contested'], regions: [3, 7], weight: 0.5,
     prop: 'relay', card: 'sc_voice_request', at: 30, hail: 260, goal: CALL, seen: ['saw_voice', 'voice_asked'],
   },
   {
-    id: 'voice_guide', name: 'An unknown ship leads', blurb: 'A ship that does not answer, flying a course nobody charted.', group: 'unknown',
+    id: 'voice_guide', name: 'An Unmarked Route', blurb: 'An old relay transmits a route that does not appear on your chart.', group: 'unknown',
     kinds: ['transit', 'mining', 'contested'], regions: [2, 7], weight: 0.5,
     actors: [act('probe', 1, 'lead', 'meek', 'Unknown ship', { from: 'ahead', pace: 1.1 })],
     card: 'sc_voice_guide', at: 25, hail: 9999, accept: ['follow'],
@@ -368,14 +368,14 @@ export const SITUATIONS: SituationDef[] = [
     seen: ['saw_voice', 'voice_guide'],
   },
   {
-    id: 'voice_direct', name: 'It speaks to you', blurb: 'Every terminal in the system carries the same voice.', group: 'unknown',
+    id: 'voice_direct', name: 'Follow the Signal', blurb: 'A signal is leading toward an old-lane structure.', group: 'unknown',
     kinds: ['transit', 'mining', 'contested'], regions: [6, 7], weight: 0.5,
     prop: 'foundry', card: 'sc_voice_direct', at: 30, hail: 280, goal: CALL, seen: ['saw_voice', 'voice_direct'],
   },
 
   // ══ unknown: the old lanes, and where the two stories meet ═══════════════
   {
-    id: 'old_object', name: 'It is not a ship', blurb: 'A wreck with something inside it that was never built by hand.', group: 'unknown',
+    id: 'old_object', name: 'An Object off the Chart', blurb: 'An uncharted object produces readings that do not agree.', group: 'unknown',
     kinds: ['mining', 'transit', 'contested'], regions: [2, 7], weight: 0.5,
     prop: 'wreck', card: 'sc_old_object', at: 30, hail: 300, accept: ['look'],
     goal: { kind: 'watch', hold: 6, limit: 150, line: 'Look inside the wreck' },
@@ -506,7 +506,7 @@ export const OBSERVATIONS: Observation[] = [
   { flag: 'thren_territory', name: 'The ring', line: 'They hold a seam and face outward, every one of them.', theory: 'A territory? A nest? A guard set by something that is not there?' },
   { flag: 'thren_trade', name: 'The exchange', line: 'A Thren object gave something back for Cyrite.', theory: 'An exchange. Or a test. Or a child learning what is edible.' },
   { flag: 'thren_hurt', name: 'The wounded', line: 'A Thren object, broken and adrift.', theory: 'They are not invulnerable. Somebody has been breaking them for a long time.' },
-  { flag: 'thren_lane', name: 'The shadow', line: 'The lane mouth drifted while something steered by it.', theory: 'The old lanes were never ours. We borrowed them.' },
+  { flag: 'thren_lane', name: 'The shadow', line: 'The jump-lane entrance drifted while something steered it.', theory: 'The old lanes were never ours. We borrowed them.' },
   { flag: 'thren_watch', name: 'The line', line: 'The Thren, in a straight line, facing the way you were going.', theory: 'A border. A welcome. A warning.' },
   { flag: 'saw_voice', name: 'The relay', line: 'A relay that should be dead answered, and used the Wayward’s name.', theory: 'A fault in the old network, say the Dust Traders. A person, say the Drift.' },
   { flag: 'voice_mended', name: 'The mending', line: 'A factory hull repaired the Wayward and asked for nothing.', theory: 'It was practising on you. Or it was being kind. The Voice does not say.' },

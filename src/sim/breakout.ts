@@ -320,7 +320,7 @@ export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { 
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
   const along = def.lane * (PORT_ALONG / LANE_DIST);
   return {
-    lane: { kind: 'lane', name: 'Lane mouth', x: x + fx * def.lane, z: z + fz * def.lane, r: LANE_R },
+    lane: { kind: 'lane', name: 'Lane entrance', x: x + fx * def.lane, z: z + fz * def.lane, r: LANE_R },
     port: def.port ? { kind: 'port', name: def.port.name, x: x + fx * along + rx * PORT_OFF, z: z + fz * along + rz * PORT_OFF, r: PORT_R } : null,
   };
 }
