@@ -1,142 +1,159 @@
 # WAYWARD
 
-A 3D space-survival roguelite for desktop and mobile browsers, built with
-TypeScript, Three.js and Vite. Keep moving.
+**A dystopian space survival game about a government that will do anything to keep its power.**
 
-You stole an ore hauler, and hidden in its systems was a sealed archive that
-shows what really happened when the jump lanes went dark seventy years ago: no
-shortage, but a purge, with millions lost. The Continuance wants its ship and
-its secret back. You do not have to win a war.
-You only have to get out of the system, then the next, then the one after.
+*Mine. Survive. Stay off the grid.*
 
-The hauler's refinery cooks the Cyrite you mine into jump fluid for the drive;
-whatever is left over is yours to spend.
+Humanity is ruled by the Continuance, a government that turned an emergency into permanent authority. Its citizens are scored, its resources are rationed, and every ship is tracked. The Offices of Peace deal with anyone the regime considers undesirable.
+
+Seventy years ago, the jump lanes connecting the outer systems to the core went dark. The Continuance blamed dwindling Krail supplies, leaving millions stranded as entire sectors lost contact with one another. The remaining routes were shut down, trade collapsed, and the outer systems were left to fend for themselves.
+
+The core survived. The Continuance tightened its grip.
+
+But the blackout was more than a crisis. It became a way to isolate potential opposition, abandon those the government no longer valued, and purge people who might threaten its rule. The truth was buried beneath the official story.
+
+Until now.
+
+You stole a decommissioned Continuance ore hauler called the *Wayward*. Hidden in its systems is a sealed archive containing evidence of what really happened. The government wants its ship and its secret back.
+
+You are not leading a revolution. You are not going to bring down the regime with a single act of defiance. You are one pilot in a battered ship, carrying something powerful people want to keep hidden.
+
+Your first priority is survival. Get your ship ready, gather the resources you need, and get out of the system before the patrols catch you.
+
+Then keep going.
+
+## A galaxy under control
+
+### The Continuance
+
+What began as an emergency government became the authority that rules the core worlds. The Continuance controls vital resources, monitors its citizens, and decides who deserves access to the systems that keep humanity alive.
+
+Its power does not depend on everyone believing its lies. It depends on having the means to enforce them.
+
+### The Offices of Peace
+
+The regime's enforcement apparatus. They deal with those deemed undesirable, from people who challenge the system to those who simply no longer fit within it.
+
+You have already attracted their attention. They will not simply forget about you.
+
+### The blackout
+
+Seventy years ago, the jump lanes went dark, breaking the connections between the core and the outer systems. The Continuance blamed a shortage of Krail, the mineral essential to humanity's jump network.
+
+The crisis became an opportunity. With the outer systems isolated and resources concentrated in the core, the Continuance could abandon entire populations and eliminate potential opposition while consolidating its grip on power.
+
+The archive aboard the *Wayward* contains evidence that challenges the official account. What you do with that knowledge is another problem entirely.
+
+### Life on the frontier
+
+Beyond the core, systems struggle to survive. Trade is unreliable, resources are scarce, and every port has its own interests. Some will help you for the right price. Others may sell you out.
+
+Not every ship is an enemy. But trust is a luxury you cannot always afford.
+
+## Survive in a hostile galaxy
+
+The *Wayward* is an industrial ore hauler, not a purpose-built warship. You will need to make it stronger, keep it supplied, and choose your battles carefully.
+
+**Mine for survival.**
+
+Break asteroids and salvage wrecks to recover Cyrite, the resource that keeps your journey going. Lasers recover the full contents of a rock, while torpedoes recover only half.
+
+**Manage your resources.**
+
+The ship's refinery converts Cyrite into jump fluid until the drive tank is full. Any surplus Cyrite can be spent on upgrades and supplies. Jumping consumes jump fluid, while upgrades cost Cyrite. Both matter, and neither is unlimited.
+
+**Build a better ship.**
+
+Visit work bays to install upgrades, improve your weapons, strengthen your defences, and prepare for increasingly dangerous encounters. Carry supplies for jumps and hull repairs, but remember that excess weight affects handling and fuel consumption.
+
+**Choose your route.**
+
+Plot your next jump after reaching a system. Ports, rich asteroid fields, quiet transits and contested territory offer different rewards and risks. You decide when to explore, when to trade, and when to move on.
+
+**Deal with whoever you meet.**
+
+Communications encounters give you a choice. Run, pay, negotiate or fight. Optional missions offer strike runs, escorts, races, surveys and smuggling jobs that can earn you Cyrite and leave their mark on your chart.
+
+**Stay ahead of the hunt.**
+
+The Continuance Net spreads behind you, and Prefect Calloway follows your trail. The longer you remain in one place, the closer she gets. Your ship can be repaired and upgraded, but every delay gives the authorities more time to catch up.
+
+Work bays and region gates offer safe places to prepare. But once you leave, you are back in the open.
+
+Your journey spans eight regions and approximately 85 stops, taking around seven hours to complete. Progress saves between systems, at ports and at region gates, so you can continue your escape across multiple sessions.
 
 ## Two ways to play
 
-Both start from the title menu.
+### Story Mode: Escape the Continuance
 
-- **Story.** A journey of about 85 stops across eight regions, roughly seven
-  hours over many sessions. Each new journey opens on a short story card, then
-  a one-minute training: laser a violet rock for Cyrite (it fills the tank), make a short hop to the
-  work bay and fit torpedoes, then shoot one ship with them. After that:
-  - **Cyrite is what you find; jump fluid is what you fly on.** Laser rock for
-    Cyrite, strip wrecks for it. The ship's refinery cooks it into **jump
-    fluid** first, until the drive tank is full. Whatever is left over is yours
-    to spend on upgrades and supplies. Nothing to hold back: a jump burns fluid
-    and only fluid, an upgrade spends Cyrite and only Cyrite. Ports sell a
-    top-up of fluid if you are short. You can never be locked out of a choice.
-  - **Supplies** are drawn by jumps and plate patches. Weight over the mass
-    rating flies worse and burns more jump fluid.
-  - **Work bays** are where upgrades happen, in most systems and
-    at every gate. The gate and the bay are safe zones: nothing fires inside.
-  - **The chart.** After each jump you plot the next one. Systems differ:
-    ports, rich mining, quiet transits, contested space. The Continuance's
-    **Net** spreads behind you, and **Prefect Calloway** follows your trail.
-    Linger and she catches up. A wreck leaves you adrift; a region with too
-    many wrecks is flown again from its gate.
-  - **Comms cards** pause the game and read the other party for you, with the
-    cost, the risk and the odds as chips. Run it, pay it, talk through it or
-    fight.
-  - **Missions** are optional jobs that start from something in the sky:
-    strike runs, escorts, races, surveys, smuggling past a patrol. Each can be
-    refused for free, pays roughly 20 to 45 Cyrite, and most leave a mark on
-    the chart.
-  - The journey saves between systems, at every port and at each region gate.
-    **Continue** carries on.
-- **Arcade.** The endless run. Three supplied picks in the bay (a gun, a
-  defence, a ship), hostiles in encounters with quiet spells between, and
-  capital ships that hail from 3:30. When the hull goes, the run report says
-  what you built.
+Follow the *Wayward* across the frontier, uncover the truth behind the blackout, and try to stay one step ahead of the government hunting you.
 
-Difficulty is chosen after Arcade or New journey: Easy, Normal or Hard.
-Game sound is off for now.
+Explore unfamiliar systems, make difficult choices, improve your ship and decide what risks are worth taking. The objective is simple: survive long enough to reach the next system.
 
-## Run it
+You do not need to defeat the Continuance. You just need to get away.
 
-```bash
+### Arcade Mode: Survive the waves
+
+Forget the journey and focus on survival.
+
+Choose a ship, weapon and defensive system, then face an endless series of increasingly dangerous encounters. Mine for Cyrite, upgrade your equipment, manage your energy and keep your hull intact.
+
+Capital ships begin hailing you at 3:30. How long you last depends on what you build and how well you fly.
+
+When your ship goes down, review your run and see how far you made it.
+
+## Controls
+
+WAYWARD supports keyboard, touch and gamepad controls. The game is designed to be played in landscape orientation.
+
+| Action | Desktop | Touch | Gamepad |
+|---|---|---|---|
+| Steer | Arrow keys or A / D | Drag on the left half | Left stick or D-pad |
+| Thrust | Up arrow or W | Push to open the throttle | Right trigger or D-pad up |
+| Fire lasers | 1, Space or J | Hold on the right half | A |
+| Fire torpedo | 2, F or K | Torpedo button | X |
+| Barrel roll | Shift | Second finger on the left half | B or RB |
+| Brake and reverse | Down arrow or S | Downward flick or Turn button | L3 or D-pad down |
+| Open bay in Arcade | B | Upgrades badge | Back |
+| Open bay in Story | Dock at a work bay | Dock at a work bay | Dock at a work bay |
+| Answer communications | 1 to 6, arrows and Enter | Tap | Stick and A |
+| Change camera distance | Z, - or = | Pause screen | |
+| Pause | Esc or P | Pause button | Start |
+
+Flight takes place on a flat plane. Your gunnery computer adjusts laser elevation to hit targets above or below you.
+
+## Play WAYWARD
+
+WAYWARD runs in desktop and mobile browsers.
+
+To run it locally, install Node.js and npm, then run:
+
+```sh
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173. To play on a phone on the same Wi-Fi, run
-`npm run dev:phone` and open the `Network:` address Vite prints.
+Open [http://localhost:5173](http://localhost:5173).
 
-The game plays in landscape. Held upright, a phone asks you to turn it. Android
-goes fullscreen at launch; an iPhone browser has no fullscreen, so add the game
-to the Home Screen for no bars.
+To play on a phone connected to the same Wi-Fi network, run:
 
-## Controls
-
-| | Desktop | Touch | Gamepad |
-|---|---|---|---|
-| Steer | ← → or A D | drag on the left half | left stick, d-pad |
-| Thrust | ↑ or W | any push opens the throttle | right trigger, d-pad up |
-| Lasers (hold) | 1, Space or J | hold on the right half | A |
-| Torpedo (once fitted) | 2, F or K | Torpedo button | X |
-| Barrel roll | Shift | second finger on the left half | B or RB |
-| Break and reverse | ↓ or S | flick a second finger down, or the Turn button | L3 or d-pad down |
-| Bay (Arcade, alert clear) | B | the upgrades badge | Back |
-| Bay (Story) | dock at a work bay | dock at a work bay | dock at a work bay |
-| Comms: answer | 1 to 6, or arrows and Enter | tap | stick, A |
-| Camera distance | Z, or − and = | pause screen | |
-| Pause | Esc or P | pause button | Start |
-
-You steer on a flat plane; the gunnery computer lifts or drops a lance onto a
-hull above or below you. Rock breaks large to medium to small. Lasers take a
-rock clean; a torpedo keeps only half of what is in it.
-
-## Developer notes
-
-- Settings has a Dev review button that opens the review world, the same as `?dev`.
-- `?dev` opens the review world: every ship, rock, item and feature, labelled,
-  flown without risk ([docs/REVIEW.md](docs/REVIEW.md)).
-- `?train` plays the Arcade training again; `?short` plays the old three-region
-  journey; `?space` turns on the environment phenomena
-  ([docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)).
-- `` ` `` toggles the debug readout; `?debug=1` starts with it open;
-  `?quality=low|medium|high` pins a quality tier.
-
-## Checks
-
-```bash
-npm run check   # types + unit tests
-npm run build   # production build into dist/
-npm run preview # serve dist/
+```sh
+npm run dev:phone
 ```
 
-Scripted pilots play the simulation headless and write the balance reports in
-`docs/BALANCE*.md`: `pilot`, `pilot:breakout`, `pilot:journey` (whole
-journeys, about 14 minutes; `JOURNEY_SET=eight` for the long set),
-`pilot:situations`, `pilot:comms`, `pilot:space`, `pilot:survival`,
-`pilot:endings`, `pilot:ship`, `pilot:feel` and `pilot:perf`. `PILOT_RUNS` and
-`PILOT_TIME` trade precision for speed. No pilot can judge feel or frame
-rate; those need a real device.
+Open the network address printed by Vite. Android enters fullscreen at launch. On iPhone, adding the game to the Home Screen provides the cleanest experience.
 
-## Deploy
+Choose Easy, Normal or Hard when starting Arcade Mode or a new Story journey.
 
-Cloudflare Workers Builds deploys `main` as a static-assets Worker
-(`wrangler.jsonc`), with a preview on every pull request. GitHub Actions
-(`ci.yml`) runs types, tests and the build on each pull request.
+Game sound is currently disabled.
 
-## Where things live
+## Further reading
 
-- [docs/VISION.md](docs/VISION.md): the game, its world and its story.
-- [docs/PLAN.md](docs/PLAN.md): milestones and status.
-- [docs/DESIGN.md](docs/DESIGN.md): where each system lives and how to add to it.
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): the decisions behind the build.
-- [docs/ONBOARDING.md](docs/ONBOARDING.md), [docs/ECONOMY.md](docs/ECONOMY.md),
-  [docs/MISSIONS.md](docs/MISSIONS.md), [docs/COMMS.md](docs/COMMS.md),
-  [docs/NAVIGATION.md](docs/NAVIGATION.md), [docs/HUD.md](docs/HUD.md): the
-  systems a player meets.
-- [docs/COPY.md](docs/COPY.md): the copywriting rules.
-- [docs/ART-PASS.md](docs/ART-PASS.md), [docs/ART-SLOTS.md](docs/ART-SLOTS.md):
-  the look and the image slots. The brand lives in `branding/`.
+- [Game vision and world](docs/VISION.md)
+- [Economy and resources](docs/ECONOMY.md)
+- [Missions](docs/MISSIONS.md)
+- [Navigation and systems](docs/NAVIGATION.md)
+- [HUD and interface](docs/HUD.md)
+- [Development: debug flags, checks, pilots and deploy](docs/DEVELOPMENT.md)
 
-## Working on it
-
-`src/sim` never imports Three.js: the simulation runs in fixed 1/60 s steps on
-plain data, so tests and the pilots play it headless. Cards, upgrades, systems,
-captains, story beats and endings are rows in `src/content/`; their rules live
-in `src/sim/`. Every visible line goes through `t()` and needs a German twin in
-`src/i18n/de/`. See [CLAUDE.md](CLAUDE.md) for the full set of house rules.
+For development and contribution guidelines, see [CLAUDE.md](CLAUDE.md).
