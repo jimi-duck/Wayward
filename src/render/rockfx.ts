@@ -52,7 +52,7 @@ export class RockFx {
     const k = heavy ? 2.2 : 1;
     this.fx.flash(x, y, z, (heavy ? 2.4 : 0.9) * (0.7 + 0.3 * big), CHIP_FLASH, heavy ? 0.1 : 0.06);
     const dust = STONE_DUST[e.kind] ?? STONE_DUST.basalt!;
-    if (Math.random() < (heavy ? 0.9 : 0.35)) this.fx.dust(x, y, z, 0.45 * big * k, dust, 1, 1, 0.7, 0.3);
+    if (heavy || Math.random() < 0.5) this.fx.dust(x, y, z, 0.45 * big * k, dust, 1, 1, 0.7, 0.3);
     this.fx.chips(x, y, z, dx, dz, Math.round((1 + Math.random() * 1.5) * k), 0.1 + 0.03 * k, 3.5 + 2 * k);
     switch (e.kind) {
       case 'rich':
@@ -70,7 +70,7 @@ export class RockFx {
       default:
         this.fx.spray(x, y, z, dx, dz, Math.round(1 + k), EMBER, 5, 0.12, 0.22, 0.8);
     }
-    return { shake: heavy ? 0.05 : 0, hold: 0 };
+    return { shake: heavy ? 0.05 : 0, hold: heavy ? 0.04 : 0 };
   }
 
   private broke(id: number, kind: string, size: number, x: number, z: number, r: number, vx: number, vz: number, src: string, mined = false): Impact {
