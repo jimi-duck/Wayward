@@ -716,7 +716,8 @@ export class World implements EncounterHost {
     const speed = Math.hypot(s.vx, s.vz) / topSpeed(this.hull);
     // the port: slow inside its ring, and the clamps take you
     const dp = b.port ? Math.hypot(s.x - b.port.x, s.z - b.port.z) : Infinity;
-    if (b.port && dp < b.port.r && speed < DOCK_SPEED && this.command.state !== 'fight' && this.phase === 'play') {
+    if (b.port && dp > b.port.r) b.castOff = false;
+    if (b.port && !b.castOff && dp < b.port.r && speed < DOCK_SPEED && this.command.state !== 'fight' && this.phase === 'play') {
       if ((b.dockT += dt) >= DOCK_TIME) this.dock();
     } else b.dockT = Math.max(0, b.dockT - dt * 2);
 
@@ -958,6 +959,7 @@ export class World implements EncounterHost {
     if (this.phase !== 'dock') return;
     this.docked = false;
     this.phase = 'play';
+    if (this.bk) this.bk.castOff = true;
     this.ship.invuln = Math.max(this.ship.invuln, 2);
   }
 

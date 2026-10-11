@@ -177,6 +177,23 @@ describe('the Breakout', () => {
     expect(w.phase).toBe('play');
   });
 
+  it('does not dock again right after casting off, only after leaving the ring', () => {
+    const w = quiet();
+    const b = w.bk!;
+    w.ship.x = b.port!.x; w.ship.z = b.port!.z; w.ship.vx = w.ship.vz = 0;
+    run(w, 1.5);
+    expect(w.phase).toBe('dock');
+    w.undock();
+    run(w, 3);
+    expect(w.phase).toBe('play');
+    // out of the ring and back in: the clamps take it again
+    w.ship.x = b.port!.x + b.port!.r + 20;
+    run(w, 0.1);
+    w.ship.x = b.port!.x; w.ship.vx = w.ship.vz = 0;
+    run(w, 1.5);
+    expect(w.phase).toBe('dock');
+  });
+
   it('patches a plate from supplies once the ship is left alone', () => {
     const w = quiet();
     w.plates = 1;
