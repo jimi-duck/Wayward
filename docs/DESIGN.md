@@ -57,8 +57,11 @@ A sortie with a shape: get the stolen hauler out of the home system
   Cyrite` or why they are done), the **sensible stop** (`sim/stop.ts`: from the
   purse, the tank up to the jump first, then supplies up to ten, then the hull
   whole, shown as chips) and the departure block (the lane, whether the tank
-  makes it, Change lane where the port has more than one, Cast off). The
-  arrows walk the cards, Space or a click uses one, Enter casts off.
+  makes it, Cast off). The lane is plotted on the chart, not here. Each buy
+  card has a quantity stepper (`−`/`+`) over the unchanged one-at-a-time
+  `buy`. The arrows walk the cards, Space or a click uses one, Enter casts
+  off. The dock, the transmission and the job offer share one set of parts
+  in `styles/dock.css`.
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
   more) and mining noise. It decides how often pursuers come, how
   many at once and which: pickets, then cruisers, enforcers and, late,
@@ -147,8 +150,7 @@ seven hours. `?short` plays the older three-region chart, for testing.
   left to finish brings the Net into that system at once, even ahead of
   the front (`pushNet`). The chart shows the Net as it was when the news
   last reached you (two jumps out, each arrival), or everywhere if you
-  bought news. Docked at a port, you can plot another lane out (Change lane
-  in the departure block), with that news in hand.
+  bought news. Plot the next lane on the chart, with that news in hand.
 - **Calloway** (`sim/hunt.ts`) follows the trail, the systems you flew in
   order: she sets out when you leave Cerro, a day behind, crosses each lane
   as long as it took you, then spends a third of a day asking questions

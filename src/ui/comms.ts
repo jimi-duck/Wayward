@@ -276,7 +276,7 @@ export class CommsPanel {
       const sel = i === this.sel;
       const b = h('button', `cm-c${sel ? ' sel' : ''}`, '',
         h('kbd', '', String(i + 1).padStart(2, '0')),
-        h('span', 'cm-main', '', h('span', 'cm-l', '', h('span', '', c.label), gains), sel || !c.gains.length ? h('span', 'cm-h', c.hint) : null, c.lines.length ? h('span', 'cm-lines', c.lines.join(' · ')) : null),
+        h('span', 'cm-main', '', h('span', 'cm-l', '', h('span', '', c.label), gains), c.hint ? h('span', 'cm-h', c.hint) : null, c.lines.length ? h('span', 'cm-lines', c.lines.join(' · ')) : null),
         h('span', 'cm-side', '', ...side),
       ) as HTMLButtonElement;
       b.type = 'button';

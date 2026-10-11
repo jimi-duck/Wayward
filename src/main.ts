@@ -11,9 +11,11 @@ import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { chapterSave, clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
 import { recap } from './sim/chapters';
+import { bounty } from './sim/mission';
+import { cy } from './sim/purse';
 import { FEATURES } from './content/features';
 import { SURVIVAL } from './content/survival';
-import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, replot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
+import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { regionsOf, routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
@@ -24,7 +26,8 @@ import { ChartPanel, regionName } from './ui/chart';
 import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
-import { Radio } from './ui/radio';
+import { Radio, type JobTerms } from './ui/radio';
+import type { Open } from './sim/comms';
 import { PadNav } from './ui/dom';
 import { cardView, CommsPanel, hailView } from './ui/comms';
 import { StartOptions, SummaryPanel } from './ui/panels';
@@ -32,7 +35,7 @@ import { PortPanel } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
 import { Feel, SOUND_AVAILABLE } from './audio/audio';
-import { detect, loadDe, localize, onLang, plural, setLang, t } from './i18n';
+import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
 const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
@@ -118,7 +121,16 @@ function boot(review: typeof import('./review') | null): void {
   // panels answer it. The comms panel draws both a Breakout card and the
   // arcade's capital-ship hail.
   const comms = new CommsPanel();
-  const radio = new Radio((id) => radioAnswer(id), () => radioBlocked());
+  /** What a job's call can say of its terms: the pay at this depth and the time it allows, read from the scene the call opens. */
+  const jobTerms = (o: Open): JobTerms | null => {
+    const st = world.stage, win = st?.def.win;
+    if (!st || st.def.card !== o.def.id || !win) return null;
+    const pay = bounty(win, world.pay);
+    const cyrite = cy(typeof pay.chits === 'number' ? pay.chits : 0) + (typeof pay.cyrite === 'number' ? pay.cyrite : 0);
+    const supplies = typeof pay.supplies === 'number' ? pay.supplies : 0;
+    return { reward: [...(cyrite > 0 ? [t('Up to {n} Cyrite', { n: num(cyrite) })] : []), ...(supplies > 0 ? [t('+{n} supplies', { n: supplies })] : [])], limit: st.def.goal.limit ?? 0 };
+  };
+  const radio = new Radio((id) => radioAnswer(id), () => radioBlocked(), jobTerms);
   /** The card the comms panel is showing, so a slowed card that timed out can be taken down. */
   let shown: object | null = null;
   const summary = new SummaryPanel();
@@ -307,7 +319,6 @@ function boot(review: typeof import('./review') | null): void {
         note: [o.netted ? t('the Net controls this system') : '', o.shadow ? t('Calloway was last seen there') : '', o.to.kind === 'edge' ? t('the way out') : ''].filter(Boolean).join(' · '),
       })),
       current: () => j.dest,
-      pick: (id: string) => { const r = replot(j, id); if (r) world.replot(r.dest, r.jumpCost); },
     };
   };
   /** A notice with one way on: adrift, or the journey's end (into the Archive, then a new journey). */
@@ -580,8 +591,8 @@ function boot(review: typeof import('./review') | null): void {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
       if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly')); }
-      // the Story explains the Heat bar once: when training is over (or there is none), the first time nothing else is open
-      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && world.phase === 'play' && world.alive && !loop.paused && !panelOpen()) {
+      // the Story explains the Heat bar once: when training is over (or there is none), the first time flying free (out of the safe rings) with nothing else open
+      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && world.phase === 'play' && !world.safe && world.alive && !loop.paused && !panelOpen()) {
         profile.heatTold = true;
         persist(profile);
         loop.paused = true;
