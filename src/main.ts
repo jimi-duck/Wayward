@@ -591,8 +591,8 @@ function boot(review: typeof import('./review') | null): void {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
       if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly')); }
-      // the Story explains the Heat bar once: when training is over (or there is none), the first time nothing else is open
-      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && world.phase === 'play' && world.alive && !loop.paused && !panelOpen()) {
+      // the Story explains the Heat bar once: when training is over (or there is none), the first time flying free (out of the safe rings) with nothing else open
+      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && world.phase === 'play' && !world.safe && world.alive && !loop.paused && !panelOpen()) {
         profile.heatTold = true;
         persist(profile);
         loop.paused = true;

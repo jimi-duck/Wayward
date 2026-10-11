@@ -97,6 +97,12 @@ export class PortPanel {
     const x = $('port-x');
     x.onclick = guarded(this.opened, () => this.leave());
     x.onpointerdown = (e) => e.stopPropagation();
+    // the header's three words are shortcuts: Trade and Repair walk to their card, Refit opens the bay
+    const jump: Record<string, () => void> = { trade: () => this.pick('fuel'), repair: () => this.pick('plate'), refit: () => this.act('bay') };
+    for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>('#port .dk-nav button'))) {
+      b.onclick = guarded(this.opened, () => jump[b.dataset.go ?? '']?.());
+      b.onpointerdown = (e) => e.stopPropagation();
+    }
     this.render();
     $('port').hidden = false;
     this.off = keys((e) => {
@@ -163,6 +169,12 @@ export class PortPanel {
   }
 
   /** The selection highlight, moved without redrawing. */
+  private pick(key: Entry['key']): void {
+    if (!this.entries.find((e) => e.key === key)?.ok) return;
+    this.sel = key;
+    this.mark();
+  }
+
   private mark(): void {
     for (const e of this.entries) e.el?.classList.toggle('sel', e.key === this.sel);
   }
