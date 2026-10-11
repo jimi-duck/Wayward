@@ -59,7 +59,7 @@ export interface CommsView {
 }
 
 /** Which pictures a call could show: a portrait, the caller's emblem, the first hull on the read. */
-export interface ArtRef { portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; scarred?: boolean }
+export interface ArtRef { portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; /** The hull drawn for this caller (`lancer-calloway`), tried before `ship`. */ owned?: string | null; scarred?: boolean }
 const NO_ART: ArtRef = { portrait: null, emblem: null, ship: null };
 
 /** The pictures a card could show, worked out from the card alone. */
@@ -68,7 +68,7 @@ export function artOf(d: Open['def']): ArtRef {
   const contact = d.id in CONTACTS ? CONTACTS[d.id] ?? d.id : null;
   const emblem = d.caller === 'calloway' ? 'office' : d.caller !== 'unknown' && d.caller !== 'captain' ? d.caller
     : /^The Voice/.test(d.from) ? 'voice' : /^The Thren/.test(d.from) ? 'thren' : null;
-  return { portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, scarred: (d.scars ?? 0) > 0 };
+  return { portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, owned: d.ships?.[0] ? `${d.ships[0].variant}-${d.caller}` : null, scarred: (d.scars ?? 0) > 0 };
 }
 
 const CALLER_CSS: Record<Caller, string> = {
@@ -258,7 +258,7 @@ export class CommsPanel {
       (b.children[1] as HTMLElement).style.setProperty('--w', `${(n / top) * 100}%`);
       return b;
     };
-    const hull = v.art.ship ? artImg('ship', v.art.ship, 'cm-hull') : null;
+    const hull = (v.art.owned && artImg('fleet', v.art.owned, 'cm-hull')) || (v.art.ship ? artImg('ship', v.art.ship, 'cm-hull') : null);
     box.replaceChildren(
       ...(hull ? [hull] : []),
       ...(r.bars ? [h('div', 'cm-str', '', bar(t('Them'), r.them, 'them'), bar(t('You'), r.you, 'you'))] : []),

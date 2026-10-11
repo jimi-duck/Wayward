@@ -1,7 +1,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { test } from 'vitest';
 import { SLOTS, type SlotId } from '../src/content/art';
-import { allBriefs, AVOID_ALL, STYLE } from './art/briefs';
+import { allBriefs, AVOID_ALL, CONTINUATION, STYLE } from './art/briefs';
+import { continueBrief } from './art/continue';
 import { masterBrief } from './art/master';
 import { starterBrief } from './art/starter';
 
@@ -14,6 +15,7 @@ import { starterBrief } from './art/starter';
 const TITLES: Record<SlotId, string> = {
   captain: 'Captains and Calloway', contact: 'Named contacts', emblem: 'Emblems', ship: 'Ships', place: 'Ports',
   ending: 'Endings', sighting: 'Sightings (Archive)', file: 'The file (Archive)', region: 'Regions',
+  fleet: 'Fleet (continuation)', job: 'Jobs (continuation)', phenomenon: 'Phenomena (continuation)',
 };
 
 test('write the briefs', () => {
@@ -33,6 +35,8 @@ test('write the briefs', () => {
     }
   }
   writeFileSync('docs/art/briefs.md', md.join('\n'));
-  writeFileSync('docs/art/CHATGPT-BRIEF.md', masterBrief(list) + '\n');
-  writeFileSync('docs/art/STARTER-15.md', starterBrief(list) + '\n');
+  const first = list.filter((b) => !CONTINUATION.includes(b.slot));
+  writeFileSync('docs/art/CHATGPT-BRIEF.md', masterBrief(first) + '\n');
+  writeFileSync('docs/art/STARTER-15.md', starterBrief(first) + '\n');
+  writeFileSync('docs/art/CONTINUE-BRIEF.md', continueBrief(list) + '\n');
 });

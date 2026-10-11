@@ -255,7 +255,7 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Inquisitor Mr Ashgrove, who flies the Kind Regard for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Cautious. Sixties, a polite inquisitor of the Office of Peace. Pale grey coat, spectacles pushed up, a tidy folder in hand. Behind: a clean grey office-like cabin, a window onto a lane. Face (from the game's portrait): pale skin, swept-back hair (brown-grey), a narrow jaw. Mood: how they sound when they first open a channel: “Good afternoon. Ashgrove, Office of Peace, aboard the Kind Regard. Let’s avoid a messy hour.” (portrait framing: section 5)
+- **Prompt:** Subject: Inquisitor Mr Ashgrove, who flies the Kind Regard for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Cautious. Sixties, a polite inquisitor of the Office of Peace. Pale grey coat, spectacles pushed up, a tidy folder in hand. Behind: a clean grey office-like cabin, a window onto a lane. Face (from the game's portrait): pale skin, swept-back hair (brown-grey), a narrow jaw. Mood: how they sound when they first open a channel: “Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour.” (portrait framing: section 5)
 
 #### captains/pell
 
@@ -418,24 +418,24 @@ Eighteen named people. Same lighting and framing as the captains.
 `FILE: contacts/foreman`
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
-- **Shown:** The comms call "Bring her back" (foreman), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Kellern Mining, Foreman Draper. Foreman Draper of Kellern Mining: fifties, heavy, a tired decent man with a boss’s voice; amber hi-vis over grey overalls, company badge, a hard hat under one arm. A yard office behind him. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “Bring the hauler back and I will say you were coerced. A docked wage, a warning. Run, and it is Custody business.” (portrait framing: section 5)
+- **Shown:** The comms call "Bring the Wayward back" (foreman), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Kellern Mining, Foreman Draper. Foreman Draper of Kellern Mining: fifties, heavy, a tired decent man with a boss’s voice; amber hi-vis over grey overalls, company badge, a hard hat under one arm. A yard office behind him. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “Bring the hauler back and I will say you were coerced. You will lose wages and get a warning. Keep running, and Custody takes over.” (portrait framing: section 5)
 
 #### contacts/krail_seller
 
 `FILE: contacts/krail_seller`
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
-- **Shown:** The comms call "Cyrite, a little cut" (krail_seller), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Independent prospector, Old Hesketh. Old Hesketh, independent prospector: sixties, sun-and-dust skin, white stubble, patched mining suit, a lamp on his forehead. The cockpit of a small tug behind him, a few crates. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Four Cyrite, raw out of the vein. Twenty-five chits.” You are {short} short of the jump. (portrait framing: section 5)
+- **Shown:** The comms call "A quick deal on Cyrite" (krail_seller), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Independent prospector, Old Hesketh. Old Hesketh, independent prospector: sixties, sun-and-dust skin, white stubble, patched mining suit, a lamp on his forehead. The cockpit of a small tug behind him, a few crates. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Eight Cyrite, fresh from the vein. Pay for four now and I will ask no questions.” Your tank is {short} short of the jump. (portrait framing: section 5)
 
 #### contacts/fuel_runner
 
 `FILE: contacts/fuel_runner`
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
-- **Shown:** The comms call "Topped up, at a price" (fuel_runner), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Fuel runner, call sign Tallow. Tallow, a fuel runner: thirties, wiry, cheerful and not to be trusted; oil-stained jacket with a hand-painted call sign, a siphon hose over one shoulder. Fuel cans in a cramped cab. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Heard a hauler’s running dry out here. Six Cyrite. Fifty chits, or a favour later. Your call, Wayward.” (portrait framing: section 5)
+- **Shown:** The comms call "Cyrite at a price" (fuel_runner), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Fuel runner, call sign Tallow. Tallow, a fuel runner: thirties, wiry, cheerful and not to be trusted; oil-stained jacket with a hand-painted call sign, a siphon hose over one shoulder. Fuel cans in a cramped cab. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Heard a hauler is running dry. I can get you six Cyrite: pay two supplies now, or owe me a favour. Your call, Wayward.” (portrait framing: section 5)
 
 ### Batch D: Ship profiles (15)
 
@@ -683,7 +683,7 @@ Twenty found photographs.
 
 - **Size:** 800×600. **Background:** full picture.
 - **Shown:** The Archive, beside a sighting once it has been seen. Unseen sightings stay blank.
-- **Prompt:** Subject: a sensor still, "The formation": Unregistered contacts crossed the scope without a word. It belongs to: the Thren: not a human faction and not "an alien spaceship". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at? The player’s own theory in the Archive: Pirates, say the Gutter. Survey drones, says the Office. Neither of them looked up. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
+- **Prompt:** Subject: a sensor still, "The formation": Unregistered contacts crossed the scope without a word. It belongs to: the Thren: not a human faction and not "an alien spaceship". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at? The player’s own theory in the Archive: Pirates, say the Gutter. Survey drones, say the Offices. Neither of them looked up. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
 
 #### sightings/thren_curious
 
@@ -731,7 +731,7 @@ Twenty found photographs.
 
 - **Size:** 800×600. **Background:** full picture.
 - **Shown:** The Archive, beside a sighting once it has been seen. Unseen sightings stay blank.
-- **Prompt:** Subject: a sensor still, "The shadow": The lane mouth drifted while something steered by it. It belongs to: the Thren: not a human faction and not "an alien spaceship". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at? The player’s own theory in the Archive: The old lanes were never ours. We borrowed them. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
+- **Prompt:** Subject: a sensor still, "The shadow": The jump-lane entrance drifted while something steered it. It belongs to: the Thren: not a human faction and not "an alien spaceship". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at? The player’s own theory in the Archive: The old lanes were never ours. We borrowed them. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
 
 #### sightings/thren_watch
 
@@ -1015,7 +1015,7 @@ Optional: the same captains, scarred. Only after batch B is approved, using thos
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call from a captain you have already scarred; the plain portrait is used if this is missing.
-- **Prompt:** Subject: Inquisitor Mr Ashgrove, who flies the Kind Regard for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Cautious. Sixties, a polite inquisitor of the Office of Peace. Pale grey coat, spectacles pushed up, a tidy folder in hand. Behind: a clean grey office-like cabin, a window onto a lane. Face (from the game's portrait): pale skin, swept-back hair (brown-grey), a narrow jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: “Good afternoon. Ashgrove, Office of Peace, aboard the Kind Regard. Let’s avoid a messy hour.” (portrait framing: section 5)
+- **Prompt:** Subject: Inquisitor Mr Ashgrove, who flies the Kind Regard for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Cautious. Sixties, a polite inquisitor of the Office of Peace. Pale grey coat, spectacles pushed up, a tidy folder in hand. Behind: a clean grey office-like cabin, a window onto a lane. Face (from the game's portrait): pale skin, swept-back hair (brown-grey), a narrow jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: “Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour.” (portrait framing: section 5)
 
 #### captains/pell-scarred
 

@@ -7,10 +7,12 @@ import { regionSlug } from '../../src/content/art';
 import { OBSERVATIONS } from '../../src/content/situations';
 import { FRAGMENTS_ALL, STORY_CARDS } from '../../src/content/story';
 import { CALLOWAY_FACE } from '../../src/content/calloway';
+import { MISSION_CARDS } from '../../src/content/missions';
+import { FEATURES, type FeatureId } from '../../src/content/features';
 import { ALIEN_TYPES, VARIANTS } from '../../src/sim/enemies';
 import type { Face } from '../../src/sim/captains';
 import { artIds, artOptional } from './ids';
-import { CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
+import { CAPITAL_LOOK, JOB_SCENE, OWNED_LOOK, TRAFFIC_LOOK, WAYWARD_LOOK, CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
 
 // The prompt for every picture, written from the game's rows and tools/art/looks.ts.
 // Plain text, one block per picture, to paste into any image generator.
@@ -188,6 +190,51 @@ function regionBrief(slug: string): Raw {
   };
 }
 
+const BLACK_HULL = 'Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.';
+
+function fleetBrief(id: string): Raw {
+  const cap = /^capital-/.test(id), way = /^wayward-/.test(id);
+  const key = id.replace(/^capital-/, '');
+  const owned = OWNED_LOOK[id];
+  const look = owned ? `${owned.hull}, built to the same silhouette as the game's existing "${id.split('-')[0]}" but owned by ${owned.owner}` : (cap ? CAPITAL_LOOK[key] : way ? WAYWARD_LOOK[id] : TRAFFIC_LOOK[id]) ?? "";
+  const c = CAPTAINS.find((x) => x.id === key);
+  const faction = c ? FACTION_LOOK[c.faction] : cap ? FACTION_LOOK.office : '';
+  const scale = cap ? 'Very large: a capital ship, far bigger than the Wayward, with a sense of scale from tiny lit windows and gantries.' : 'Medium in the game.';
+  return {
+    slot: 'fleet', id, file: `${dir('fleet')}/${id}.webp`,
+    prompt: `${STYLE}\n\nSubject: ${look.replace(/\.?$/, ".")}${faction ? `\nIt belongs to: ${faction}` : ''}\n${way ? 'Keep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.' : scale}\n${BLACK_HULL}`,
+    avoid: `${AVOID_ALL}, background scenery, stars, planets, cockpit pilot visible`,
+    size: sz('fleet'), background: 'pure black (blended in the game, no cut-out needed)',
+    where: owned ? `The comms call for ${owned.cards}: shown instead of the plain ${id.split('-')[0]} hull, which has the wrong owner for this caller.` : cap ? 'Not drawn yet: ready for the capital ship hail and the Arcade capital warning.' : way ? 'Not drawn yet: ready for the bay (the ship as fitted) and the debrief.' : 'Not drawn yet: ready for jobs and neutral traffic cards.',
+    facts: [`id ${id}`, ...(owned ? [`replaces the plain hull on card ${owned.cards}`] : []), ...(c ? [`ship ${c.ship}`, `captain ${c.name}`] : [])],
+  };
+}
+
+function jobBrief(id: string): Raw {
+  const c = MISSION_CARDS.find((x) => x.id === id)!;
+  return {
+    slot: 'job', id, file: `${dir('job')}/${id}.webp`,
+    prompt: `${STYLE}\n\nSubject: the job "${c.title}". ${c.text.replace(/[“”]/g, '"')}\nScene: ${JOB_SCENE[id]}.\nFraming: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.\nNo people's faces, no text, no UI.`,
+    avoid: AVOID_ALL, size: sz('job'), background: 'full picture',
+    where: 'Not drawn yet: ready for the job card in comms and the objective header.',
+    facts: [`card ${id}`, `title "${c.title}"`, `from "${c.from}"`],
+  };
+}
+
+function phenomenonBrief(id: string): Raw {
+  const f = FEATURES[id as FeatureId];
+  return {
+    slot: 'phenomenon', id, file: `${dir('phenomenon')}/${id}.webp`,
+    prompt: `${STYLE}\n\nSubject: "${f.name}": ${f.blurb}\nFraming: a found photograph from the Wayward’s external camera, 4:3, slightly grainy, a little overexposed, no HUD. The thing is large, strange and unexplained; the Wayward may be a tiny silhouette for scale. Keep it atmospheric and a little mysterious.`,
+    avoid: AVOID_ALL, size: sz('phenomenon'), background: 'full picture',
+    where: 'Not drawn yet: ready for the chart’s place markers and the Archive.',
+    facts: [`feature ${id}`, `name "${f.name}"`],
+  };
+}
+
+/** The slots added after the first set, for the continuation brief. */
+export const CONTINUATION: SlotId[] = ['fleet', 'job', 'phenomenon'];
+
 export function allBriefs(): Brief[] {
   const ids = artIds(), opt = artOptional();
   const out: Raw[] = [];
@@ -201,5 +248,8 @@ export function allBriefs(): Brief[] {
   for (const id of ids.sighting) out.push(sightingBrief(id));
   for (const id of ids.file) out.push(fileBrief(id));
   for (const id of ids.region) out.push(regionBrief(id));
+  for (const id of ids.fleet) out.push(fleetBrief(id));
+  for (const id of ids.job) out.push(jobBrief(id));
+  for (const id of ids.phenomenon) out.push(phenomenonBrief(id));
   return out.map((b) => ({ ...b, body: b.prompt.startsWith(STYLE) ? b.prompt.slice(STYLE.length).trimStart() : b.prompt }));
 }

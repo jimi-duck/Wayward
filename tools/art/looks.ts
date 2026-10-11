@@ -113,3 +113,74 @@ export const REGION_LOOK: Record<string, string> = {
   hollows: 'the Hollows: dead Voice foundries and Thren lanes, nothing human; pale blue-grey and green-teal, vast and unfamiliar',
   'last-lanes': 'the Last Lanes: the way to the Threshold, a few lanes left open, a single toll-gate lit in a blank sky; bare, final',
 };
+
+/** The captains' capital ships, by captain id: what the player sees when that flagship hails. */
+export const CAPITAL_LOOK: Record<string, string> = {
+  vance: 'CCV Reprimand, a Custody heavy cruiser and flagship: huge, long and layered, near-black hull with white stencilled bands and red warning bars, a spine of broadside batteries, a lit bridge dome near the stern. Official, strict, built to hold a lane.',
+  sorensen: 'CCV Due Process, a Custody command ship: a chapel-like hull, a long nave with a tall bridge spire, printed ordinance strips along the flanks, a flag of the Continuance lit from below. Ritual neatness, menace in the symmetry.',
+  kade: 'Ironmaw, a Gutter war-barge built from welded scrap hulls: a gaping bow like a jaw of mismatched plate, cargo nets, bolted-on armour of three different colours, copper-orange running lights and a crude painted tally on the side.',
+  vex: 'Last Mercy, a Gutter cult ship: dark and ragged, dressed like a floating derelict, hung with bone-coloured charms and lanterns, one red status light, rock and wreckage fixed to the hull as camouflage. Quiet and wrong.',
+  ashgrove: 'Kind Regard, an Office of Peace cruiser: clean, pale grey, windows in tidy rows like an office block on its side, no markings you can read, a calm bureaucratic profile with panels built to hide a cloak.',
+  pell: 'Silent Witness, an Office ambush cruiser: matte near-black hull, a single long visor-slit of sensors, cloaking panels, one small warm lamp near the stern. It looks like a place where nobody lives.',
+  chorus: 'Foundry Nine, a Voice foundry: an old industrial works made into a ship, pale blue-grey housings, huge rings and cable bundles, nine lit display windows across the front like a face. Slow, enormous, machine-calm.',
+  loom: 'Thren Hollow, a Thren capital: a vast woven lattice that is almost a cavity, green-teal light deep inside, repeating asymmetric forms, grown rather than built. No human features, no windows.',
+  calloway: 'CCV Patience, the Prefect’s own cutter of the Office of Peace: grey, severe, tailored lines, a small red rank mark, a long sensor mast, clean and fast for its size. Calm and tired, like its owner.',
+};
+
+/** Ships about their business in a system: the ones the jobs and the traffic use. */
+export const TRAFFIC_LOOK: Record<string, string> = {
+  tanker: 'a heavy fuel tanker: fat cylindrical tanks strapped to a thin spine, a small bridge, light armour and two escort mounts; slow, valuable, nervous',
+  hauler: 'a damaged ore hauler, too slow to reach the lane alone: patched hull, one engine pod dark, tarpaulin over a torn plate, a worn Obedience-class build',
+  courier: 'a lightly armed courier: small, fast, one big drive and a sealed cargo cage, no guns to speak of, a lamp in the cockpit',
+  gunship: 'a Dust Traders Guild gunship: brass-and-cream trim on a dark hull, a chin turret and two side guns, merchant-clean paint over military bones',
+  barge: 'a mining barge with a drilling rig: a squat hull with boom arms and a floodlit work deck, crew lights in rows, ore containers bolted on',
+  salvager: 'a salvage tug: a stubby hull with a long cutting arm and a grab claw, work lamps, a half-stripped plate under tow, a rival crew’s mismatched paint',
+  drifter: 'a Drift fleet ship: a patchwork hull of many ships, sewn textile banners and lanterns, a child’s drawing pinned on a plate, slow and warm',
+  ferry: 'the Quiet Ferry: a small, plain, dark ship with tidy lines and a ship’s bell hung at the door; a ferryman’s patience in a hull',
+};
+
+/** The Wayward as the player has built it: one hull, four ways of being fitted. */
+export const WAYWARD_LOOK: Record<string, string> = {
+  'wayward-stock': 'the Wayward as she starts: the long, low, worn yellow-orange hauler with split side engine pods, brand marks WAYWARD and OBEDIENCE CLASS, nothing added',
+  'wayward-guns': 'the Wayward fitted for Guns: the same hull with heavier hardpoints along the spine, extra plate welded over the flanks, a gunnery rig behind the cockpit and a shield projector dish, scorch marks, still unmistakably her',
+  'wayward-rig': 'the Wayward fitted for the Rig: the same hull with cargo racks along the back, a machine shop module, an ore tractor beam emitter under the nose and a capacitor bank, stained and workmanlike',
+  'wayward-signals': 'the Wayward fitted for Signals: the same hull with antenna masts and a dish array, baffles along the engines, matte dark patches over the yellow, a jammer boom; quiet, a little ghostly',
+};
+
+/** What each job looks like as a scene: the moment, not the whole story. */
+export const JOB_SCENE: Record<string, string> = {
+  sc_toll: 'a toll beacon blinking over an asteroid lane, four raider ships holding station around it, the Wayward approaching',
+  sc_tanker: 'a heavy tanker under hail of fire from the Wayward, two escorts wheeling, its engine pod venting',
+  sc_wanted: 'a fleeing fighter with one engine burning, the Wayward closing to disable it; a Custody notice-light glints on the dash',
+  sc_shift: 'a mining rig on an asteroid, floodlit crew silhouettes at the rail, raider ships closing in over the rocks',
+  sc_needle: 'a line of six lit beacons through a dense asteroid field, the Wayward and a rival racing between them',
+  sc_hole: 'the Wayward very small at the edge of an accretion disc around a black hole, light bending, sensor arms out',
+  sc_declare: 'a Custody patrol sweeping lamps across a lane, the Wayward drifting dark between them with a small package on a tether',
+  sc_kill_zone: 'a busy crossing choked with stalled traffic, six raiders holding the middle, the Wayward heading in with guns warm',
+  sc_missing: 'a silent wreck field, a dark rig with its lights out, the Wayward’s lamp on an open airlock',
+  sc_follow: 'a prospector’s battered tug leading the Wayward through a dust lane toward a faint glow of Cyrite veins in the rock',
+  sc_answered: 'an old relay mast pulsing a slow answer, three unknown contacts circling it, the Wayward approaching without a shot',
+  sc_wreck: 'a derelict hull with an open flight-recorder bay, a second ship closing to erase it, the Wayward in between',
+  sc_distance: 'four Custody patrol ships on a loop around a still centre, the Wayward holding dead still inside it, a tiny antenna out',
+  sc_bait: 'a Custody picket across a lane, the Wayward flashing past its guns to draw it out, a Guild gunship waiting in the rocks',
+  sc_dead_drop: 'a lone beacon with a sealed package clamped to it, the Wayward arriving, a shadow of a second ship in the dust behind',
+  sc_long_walk: 'a damaged hauler limping toward a lane gate, the Wayward alongside as escort, one engine of the hauler dark',
+  sc_finders: 'a wreck half-lit in a marker field, the Wayward and a rival salvage crew racing for the same claim',
+  sc_dark: 'an uncharted dark object with no clear edge, the Wayward’s sensor arc sweeping across it, readings flickering',
+  sc_wire: 'an abandoned relay broadcasting in the dark, a pale blue-teal glow on its dish, the Wayward’s hull lit by it',
+  sc_payroll: 'a small courier running fast through rocks, the Wayward matching its speed to disable it, a cargo cage on its back',
+  sc_filter: 'a settlement’s failing air filter glowing weakly on a rock station, the Wayward arriving with a crate of replacement parts',
+  sc_captains: 'two salvage crews with guns up facing each other across a valuable wreck, the Wayward arriving between them',
+  sc_witness: 'a back-dock at night, a hooded figure with a data case hurrying toward the Wayward’s open lock, Custody lamps sweeping behind',
+  sc_prefect: 'a relay mast inside a patrol route, the Wayward drifting dark to erase a trace, a Custody cutter passing close',
+};
+
+/** The same hull for a different owner: what a card shows when its caller is not the hull's own faction. `cards` names the comms cards it stands in for. */
+export const OWNED_LOOK: Record<string, { hull: string; owner: string; cards: string }> = {
+  'enforcer-kellern': { hull: 'a blunt armoured strike craft', owner: 'Kellern Mining security: amber and cream hazard stripes over the hull, company numbering, a claims-office lamp bar; hired muscle, not Custody', cards: 'claim_jumpers' },
+  'freighter-frontier': { hull: 'a blocky service tender with spares racks and a crane arm', owner: 'Frontier Supply: mismatched replacement panels, hand-painted numbers, tarpaulin over a rack, string lights; a depot’s own ship', cards: 'ares_tender' },
+  'freighter-guild': { hull: 'a plain blocky food freighter with stacked containers', owner: 'the Dust Traders Guild: brass-and-cream trim on a dark hull, ledger-number stencils on the containers, berth tags; merchant-clean', cards: 'food_trader' },
+  'freighter-miners': { hull: 'a plain blocky hauler with stacked containers', owner: 'a Drift fleet of independent miners: patchwork plating, sewn textile banners, lanterns, a child’s drawing pinned to a plate; slow and warm', cards: 'drift_fleet' },
+  'lancer-calloway': { hull: 'a heavy cruiser, long, low and layered', owner: 'the Office of Peace under Prefect Calloway: pale grey, severe and tidy, a small red rank mark, a tall sensor mast; the same bones as a Custody cruiser with a quieter coat', cards: 'calloway_here' },
+  'scout-guild': { hull: 'a small fast interceptor, a narrow wedge with split engine pods', owner: 'a Dust Traders Guild escort: brass-and-cream trim over dark paint, a chin lamp, a ledger number on the wing; not a pirate', cards: 'distress_freighter' },
+};
