@@ -1,3 +1,4 @@
+import { rockPose } from '../src/render/rockmotion';
 import { describe, expect, it } from 'vitest';
 import { Field } from '../src/sim/field';
 import { Rng } from '../src/sim/rng';
@@ -43,8 +44,11 @@ describe('rock splitting', () => {
       const parent = f.spawn(seed % 2 ? 0 : 1, 10, -4, 3, 2, seed % 5 ? 'basalt' : 'iron');
       for (const k of f.split(parent)) {
         expect(k.r).toBeLessThanOrEqual(parent.r * 0.7 + 1e-9);
-        expect(k.x + k.ox).toBeCloseTo(parent.x, 6);
-        expect(k.z + k.oz).toBeCloseTo(parent.z, 6);
+        // drawn a little back toward the parent's place, never past it
+        const d = Math.hypot(k.x - parent.x, k.z - parent.z), start = Math.hypot(k.x + k.ox - parent.x, k.z + k.oz - parent.z);
+        expect(start).toBeCloseTo(d * 0.75, 6);
+        // and from the first frame at its own size, below the parent's
+        expect(rockPose(0, true).scale * k.r).toBeLessThan(parent.r);
       }
     }
   });
@@ -61,5 +65,14 @@ describe('rock splitting', () => {
     let x = big.x;
     for (let i = 0; i < 120; i++) { f.step(1 / 60, 0, 0); expect(big.x).toBeGreaterThanOrEqual(x); x = big.x; }
     expect(big.vx).toBeGreaterThan(0);
+  });
+
+  it('draws a piece of a break at full size from the first frame, and never larger later', () => {
+    for (let age = 0; age <= 1; age += 0.02) expect(rockPose(age, true).scale).toBe(1);
+    expect(rockPose(0, false).scale).toBe(0);
+    expect(rockPose(0.5, false).scale).toBe(1);
+    let slide = rockPose(0, true).slide;
+    for (let age = 0.02; age <= 0.4; age += 0.02) { const s = rockPose(age, true).slide; expect(s).toBeLessThanOrEqual(slide); slide = s; }
+    expect(rockPose(0.3, true).slide).toBe(0);
   });
 });

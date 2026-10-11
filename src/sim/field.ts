@@ -163,7 +163,7 @@ export class Field {
     const into = ROCK_KINDS[rock.kind].splitsInto;
     if (rock.size >= 2 || !into) return [];
     const size = (rock.size + 1) as RockSize;
-    const a = this.rng.range(0, Math.PI * 2), kick = this.rng.range(3.5, 7);
+    const a = this.rng.range(0, Math.PI * 2), kick = this.rng.range(2.6, 5);
     const pieces = rock.kind === 'iron' ? 3 : 2;
     const out: Rock[] = [];
     // the pieces start clear of one another (a child can be a touch bigger than its nominal size), each with its own push and a good part of the parent's momentum
@@ -175,7 +175,8 @@ export class Field {
         rock.vx * 0.8 + px * push, rock.vz * 0.8 + pz * push, into, hpScale);
       // never bigger than the rock it came from, and drawn sliding out of its place
       child.r = Math.min(child.r, rock.r * 0.7);
-      child.ox = rock.x - child.x; child.oz = rock.z - child.z;
+      // drawn a quarter of the way back toward the parent's place at first, still clear of its sibling
+      child.ox = (rock.x - child.x) * 0.25; child.oz = (rock.z - child.z) * 0.25;
       out.push(child);
     }
     return out;
