@@ -1509,8 +1509,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .recap .chip { background: rgba(8, 12, 16, .78); font-size: max(10px, calc(var(--fs, 11px) * .95)); }
 
 /* ── the radio: calls and chatter that ride along while you fly ──
-   A call sits in the free band above the ship, clear of the top strip, the
-   scope and both thumbs; a line of chatter is a subtitle under the ship. */
+   A call holds the world still and sits in the free band above the ship; a line of chatter is a quiet subtitle at the bottom edge, clear of the ship. */
 .radio { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .radio.under, .panel-open .radio, :root.prelaunch .radio { display: none; }
 .rd-call { --cc: var(--cy); position: absolute; left: 50%; top: max(21%, calc(var(--safe-t) + 96px)); translate: -50% 0; width: min(400px, 44vw); pointer-events: auto;
@@ -1550,8 +1549,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .rd-timer i { display: block; height: 100%; width: 100%; background: var(--cy); }
 .rd-call.prio .rd-timer i { background: var(--amber); }
 /* a line of chatter: a subtitle under the ship */
-.rd-line { position: absolute; left: 50%; bottom: max(17%, calc(var(--safe-b) + 70px)); translate: -50% 0; max-width: min(560px, 48vw); pointer-events: none;
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 10px; padding: 7px 14px; background: rgba(8, 13, 14, .72); border-left: 2px solid var(--cy-dim); text-shadow: 0 1px 4px #000; }
+.rd-line { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 46px); translate: -50% 0; max-width: min(520px, 44vw); pointer-events: none;
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 3px 10px; padding: 5px 12px; background: rgba(8, 13, 14, .6); border-left: 2px solid var(--cy-dim); text-shadow: 0 1px 4px #000; }
 .rd-line.in { animation: rd-line 7s linear forwards; }
 @keyframes rd-line { 0% { opacity: 0; } 5% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
 .rd-line .tx-wave { align-self: center; width: 22px; height: 9px; }
@@ -1569,8 +1568,9 @@ html:not(.breakout) .pause-card #brief { display: none; }
   .rd-read, .rd-terms { font-size: 11px; }
   .rd-c { min-height: 40px; padding: 4px 8px; font-size: 13px; }
   .rd-chips { font-size: 10.5px; }
-  .rd-line { left: 46%; max-width: 40vw; padding: 4px 10px; }
-  .rd-line span { font-size: 12px; }
+  .rd-line { bottom: calc(var(--safe-b) + 42px); max-width: 36vw; padding: 3px 8px; gap: 1px 8px; }
+  .rd-line b { font-size: 10px; }
+  .rd-line span { font-size: 11px; line-height: 1.25; }
 }
 @media (prefers-reduced-motion: reduce) { .rd-call { animation: none; } }
 .cm-body.solo { grid-template-columns: minmax(0, 1fr); }

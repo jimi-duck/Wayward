@@ -428,14 +428,15 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 @keyframes hud-hit { 0%, 30% { background: rgba(201, 74, 63, .28); } }
 
 /* a placard for the moments that stop the eye: a striped band, a kicker, a heavy title, one line of fact */
-#banner { position: absolute; left: 50%; top: 24%; translate: -50% 0; display: none; grid-template-columns: 12px auto; min-width: min(380px, 86vw);
+/* it sits in the upper-centre stack with the capital ship and the target, clear of the ship and the way ahead */
+#banner { display: none; grid-template-columns: 8px auto; min-width: min(300px, 86vw);
   --tone: var(--alert); filter: drop-shadow(0 0 18px rgba(201, 74, 63, .18)); }
 #banner.on { display: grid; animation: bn-in .22s var(--ez); }
 @keyframes bn-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-.bn-stripes { background: repeating-linear-gradient(-45deg, var(--tone) 0 5px, transparent 5px 10px); border: 1px solid var(--tone); border-right: 0; }
-.bn-body { display: grid; gap: 7px; padding: 11px 28px 13px 16px; background: rgba(8, 13, 14, .82); border: 1px solid var(--tone); border-left: 0; text-align: left; }
+.bn-stripes { background: repeating-linear-gradient(-45deg, var(--tone) 0 4px, transparent 4px 8px); border: 1px solid var(--tone); border-right: 0; }
+.bn-body { display: grid; gap: 4px; padding: 7px 18px 8px 12px; background: rgba(8, 13, 14, .72); border: 1px solid var(--tone); border-left: 0; text-align: left; }
 .bn-k { display: flex; align-items: center; gap: 7px; font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--tone); }
-#banner-t { font: 700 clamp(20px, 2.3vw, 30px)/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
+#banner-t { font: 700 clamp(16px, 1.6vw, 20px)/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
 .bn-s { font: 600 calc(var(--fs) * 1.1)/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 .bn-s:empty { display: none; }
 #banner.caution { --tone: var(--caution); filter: drop-shadow(0 0 18px rgba(201, 171, 102, .16)); }
@@ -469,7 +470,9 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 }
 @media (max-height: 460px) {
   #hud { --pad: 10px; }
-  #banner { top: 16%; }
+  #banner { min-width: 0; max-width: var(--gap, 280px); }
+  #banner-t { font-size: 13px; letter-spacing: .06em; line-height: 1.15; }
+  .bn-s { display: none; }
   #heading { display: none; }
   /* on a phone the middle cards take the gap between the objective and the ship panel */
   .touch-ui #centre { --gap: calc(100vw - var(--left) - min(250px, 31vw) - min(250px, 34vw) - var(--right) - 24px); top: var(--top); left: calc(var(--left) + min(250px, 31vw) + 12px); translate: 0 0; justify-items: start; }
