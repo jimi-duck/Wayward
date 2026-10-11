@@ -49,15 +49,15 @@
 #port { place-items: center; background: #071018 url("../assets/wayward-supply-background.webp") center / cover no-repeat; }
 #port::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(7, 16, 24, .35), rgba(7, 16, 24, .1) 50%, rgba(7, 16, 24, .35)); }
 #port > .panel { position: relative; }
-#port .panel.port-panel { width: min(780px, 100%); overflow-y: auto; }
+#port .panel.port-panel { width: min(1080px, 100%); overflow-y: auto; }
 #port .port-art { display: none; }
 #port .port-pic { width: 100%; height: 100%; object-fit: cover; }
 #port .dk-h, #port .port-stock { z-index: 1; }
 /* what the ship holds: an icon, the name, what is aboard against what fits */
 #port .port-stock { grid-template-columns: repeat(4, 1fr); border: 1px solid var(--dk-hair); background: var(--dk-raised); }
-#port .ps-c { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+#port .ps-c { display: flex; align-items: center; gap: 12px; padding: 8px 12px; }
+#port .ps-pic { width: 52px; height: 52px; flex: none; object-fit: contain; }
 #port .ps-c + .ps-c { border-left: 1px solid var(--dk-hair); }
-#port .ps-c .ico { width: 22px; height: 22px; stroke: var(--dk-off); stroke-width: 1.5; }
 #port .ps-c.short .ico { stroke: var(--dk-amber); }
 #port .ps-t { display: grid; gap: 3px; min-width: 0; }
 #port .ps-c .k { color: var(--dk-ink2); }
@@ -91,11 +91,16 @@
 #port .port-l.bay { grid-template-areas: none; grid-template-rows: auto; min-height: 0; align-content: center; }
 #port .port-l.bay .pl-t, #port .port-l.bay .pl-d, #port .port-l.bay .pl-go { grid-area: auto; }
 #port .port-l.bay .pl-t { font-size: calc(var(--fs) * 1.45 * 1.18); }
-#port .port-l.bay .pl-go { min-height: 36px; padding: 8px 16px; }
+#port .port-l.bay .pl-go { position: relative; z-index: 1; min-height: 36px; padding: 8px 16px; }
+#port .port-l.bay { position: relative; overflow: hidden; min-height: 76px; grid-template-columns: auto minmax(0, 1fr) auto; }
+#port .port-l.bay > * { position: relative; z-index: 1; }
+#port .port-l.bay .bayico { grid-area: auto; width: 56px; max-height: 64px; align-self: center; }
+#port .bay-wide { position: absolute !important; z-index: 0 !important; right: 0; top: 0; bottom: 0; width: 46%; height: 100%; object-fit: cover; opacity: .75; -webkit-mask: linear-gradient(90deg, transparent, #000 55%); mask: linear-gradient(90deg, transparent, #000 55%); pointer-events: none; }
+#port .port-l.bay .pl-go { margin-left: auto; }
 /* the three purchases: icon, words, the state, then the quantity and the one button */
 #port .port-list.buys { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-#port .port-l.buy { display: grid; grid-template-columns: 38px minmax(0, 1fr); grid-template-areas: "ico m" "st st" "buy buy"; gap: 6px 12px; align-content: start; }
-#port .port-l.buy .pl-ico { grid-area: ico; }
+#port .port-l.buy { display: grid; grid-template-columns: 92px minmax(0, 1fr); grid-template-areas: "art m" "art st" "art buy"; gap: 4px 14px; align-content: center; }
+#port .pl-art { grid-area: art; width: 92px; max-height: 110px; object-fit: contain; align-self: center; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .55)); }
 #port .port-l.buy .pl-m { grid-area: m; }
 #port .port-l.buy .pl-r { grid-area: st; display: flex; margin: 0; }
 #port .port-l.buy .pl-buy { grid-area: buy; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
@@ -111,15 +116,23 @@
 #port .port-l.locked .pl-t, #port .port-l.locked .pl-d, #port .port-l.locked .pl-p, #port .port-l.done .pl-p { color: var(--dk-off); }
 /* the sensible stop */
 #port .port-l.stop { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-height: 46px; padding: 6px 12px; }
-#port .port-l.stop .pl-t { font-size: calc(var(--fs) * 1.3 * 1.18); }
+#port .port-l.stop .pl-t { font-size: calc(var(--fs) * 1.25 * 1.18); }
+#port .port-l.stop .stopico { grid-area: auto; width: 44px; max-height: 44px; }
+#port .port-l.stop .pl-m { flex: 1 1 200px; }
+#port .pl-cost { display: grid; gap: 2px; text-align: right; }
+#port .pl-cost .k { color: var(--dk-ink2); font: 600 calc(var(--fs) * 1.0 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 #port .port-l.stop .pl-r { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 #port .port-l.stop .pl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 #port .pl-chip { padding: 3px 9px; border: 1px solid var(--dk-line); color: var(--dk-info); font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; }
-#port .pl-sum { font: 600 calc(var(--fs) * 1.3)/1 var(--font-mono); color: var(--dk-amber); }
+#port .pl-sum { font: 600 calc(var(--fs) * 1.6)/1 var(--font-mono); color: var(--dk-amber); }
 #port .port-l.stop .pl-go { margin-left: 0; }
 #port .port-msg { margin: 0; min-height: 1.3em; font: 600 calc(var(--fs) * 1.1 * 1.18)/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--dk-info); }
 /* the departure: where to, whether the tank gets there, and Cast off */
 #port .port-dep { position: sticky; bottom: -14px; z-index: 2; display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--dk-hair); border-left: 3px solid var(--hud); background: rgb(10, 15, 16); }
+#port .pinico { width: 44px; height: 44px; object-fit: contain; }
+#port .pd-pin { display: grid; place-items: center; }
+#port .pd-stat::before { content: none; }
+#port .warnico { width: 22px; height: 22px; vertical-align: -5px; margin-right: 8px; }
 #port .pd-k { color: var(--dk-ink2); }
 #port .pd-dest { color: var(--dk-ink); }
 #port .pd-meta { color: var(--dk-ink2); }
@@ -252,7 +265,12 @@
   #port .port-dep #port-x { width: 100%; }
   #port .port-stock { grid-template-columns: repeat(4, 1fr); }
   #port .ps-c { gap: 6px; padding: 4px 8px; }
-  #port .ps-c .ico { width: 18px; height: 18px; }
+  #port .ps-pic { width: 26px; height: 26px; }
+  #port .port-l.buy .pl-art { width: 40px; max-height: 44px; }
+  #port .bay-wide, #port .port-l.stop .stopico, #port .pd-pin { display: none; }
+  #port .port-l.bay .bayico { width: 34px; max-height: 38px; }
+  #port .port-l.bay { min-height: 0; }
+  #port .warnico { width: 16px; height: 16px; margin-right: 6px; }
   #port .ps-c b { font-size: 15px; }
   #port .ps-sub { display: none; }
   #port .port-sv, #port .port-list { gap: 5px; }
@@ -262,13 +280,24 @@
   #port .port-l.bay .pl-t { font-size: 15px; }
   #port .pl-ico { width: 30px; height: 30px; }
   #port .pl-ico .ico { width: 18px; height: 18px; }
-  #port .port-l.buy { grid-template-columns: 30px minmax(0, 1fr); gap: 4px 8px; }
+  #port .port-l.buy { grid-template-columns: 40px minmax(0, 1fr); gap: 4px 8px; }
   #port .port-l.buy .pl-d { display: none; }
   #port .pl-t { font-size: 13px; }
   #port .pl-q { width: 40px; height: 40px; }
   #port .pl-go { min-height: 40px; }
   #port .pl-tot { display: none; }
-  #port .port-l.stop { min-height: 44px; padding: 3px 8px; }
+  #port .port-l.stop { min-height: 44px; padding: 3px 8px; flex-wrap: nowrap; gap: 8px; }
+  #port .port-l.stop .pl-d { display: none; }
+  #port .port-l.stop .pl-m { flex: 0 1 auto; }
+  #port .port-l.stop .pl-go { padding: 6px 10px; font-size: 11px; }
+  #port .port-l.stop .pl-chips { flex-wrap: nowrap; }
+  #port .port-l.stop .pl-chip { padding: 2px 6px; font-size: 11px; }
+  #port .port-l.buy { grid-template-areas: "art m" "st st" "buy buy"; }
+  #port .port-l.buy .pl-buy { flex-wrap: nowrap; gap: 4px; }
+  #port .port-l.buy .pl-go { margin-left: auto; }
+  #port .pl-chip { white-space: nowrap; }
+  #port .port-l.buy .pl-q { width: 36px; }
+  #port .port-l.buy .pl-go { padding: 6px 8px; }
   #port .port-msg { min-height: 0; }
   #port .port-msg:empty { display: none; }
   #port .port-dep { padding: 6px 10px; }
