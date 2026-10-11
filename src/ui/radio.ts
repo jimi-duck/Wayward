@@ -18,8 +18,8 @@ export interface JobTerms { reward: string[]; limit: number }
 //
 //   call  · a job, a trade, a warning or a plea. A small card with the caller,
 //           what they say, and the answers as buttons with what each brings.
-//           The ship keeps flying; Y answers the first, N the last (U a
-//           middle one), a tap does too, and left alone it lapses. Routine
+//           The app holds the world still while a call is up; Y answers the first, N the last (U a
+//           middle one), a tap does too, and it waits for one. Routine
 //           calls are cyan; an important one carries an amber PRIORITY stamp.
 //   line  · radio chatter: one line of subtitle, no answer, a few seconds.
 //
