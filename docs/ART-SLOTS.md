@@ -183,20 +183,19 @@ Generators drift between prompts. Things that help, in order:
 
 ## Where the set stands
 
-Installed through `art:prep` (64 of 109 pictures, 2.8 MB in all):
+All 109 slots have a picture (5.1 MB), cut from ChatGPT contact sheets and
+installed through `art:prep`.
 
-| Slot | In | Still empty |
-| --- | --- | --- |
-| Captains | vance, sorensen, kade, vex, calloway | ashgrove, pell, chorus, loom, all `-scarred` |
-| Contacts | all 18 | none |
-| Emblems | all 10 | none |
-| Ships | all 15 | none |
-| Places | kellern, frontier, guild, gutter | holdfast, free, netted |
-| Endings | broadcast, unite, sell, trade | seal, vanish |
-| Sightings | thren_trade, thren_hurt, thren_lane, thren_swarm | the rest |
-| File pieces | frag_order, frag_ledger, frag_manifests, frag_keys | blackbox, charts, workorder, witnesses |
-| Regions | none | all (no screen draws them yet) |
+- The first 64 were cut by hand: portraits 4:5 around the face, ships fitted
+  whole and large on black, emblems centred.
+- The full export (2026-10-11) added the other 45: Ashgrove, Pell, Chorus, Loom,
+  the eight `-scarred` portraits, three ports, two endings, 16 sightings, four
+  file pieces and all eight regions. Where it repeated a picture already in, the
+  existing file stayed, because its ships and emblems are larger and sharper.
+- Provisional: the `-scarred` portraits are the base portraits with light damage
+  marks, and a few sightings and endings stand in for the event rather than
+  showing it. No screen draws the regions yet.
+- The sheets that went unused are in `/mnt/project-files/art-brief/raw/`.
 
-Ships are fitted whole onto black, not cropped; portraits are cut 4:5 around the
-face. A second pass of any picture just overwrites its file. Whether the set
-reads on a real phone is for a device look.
+A better picture for any slot just overwrites its file. Whether the set reads on
+a real phone is for a device look.
