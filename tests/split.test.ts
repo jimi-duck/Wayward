@@ -58,9 +58,8 @@ describe('rock splitting', () => {
     expect(small.vx).toBeGreaterThan(big.vx * 5);
     expect(big.vx).toBeGreaterThan(0);
     expect(big.spin).not.toBe(0);
-    const x = big.x;
-    for (let i = 0; i < 120; i++) f.step(1 / 60, 0, 0);
-    expect(big.x).toBeGreaterThan(x);
+    let x = big.x;
+    for (let i = 0; i < 120; i++) { f.step(1 / 60, 0, 0); expect(big.x).toBeGreaterThanOrEqual(x); x = big.x; }
     expect(big.vx).toBeGreaterThan(0);
   });
 });
