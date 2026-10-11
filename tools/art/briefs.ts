@@ -12,7 +12,7 @@ import { FEATURES, type FeatureId } from '../../src/content/features';
 import { ALIEN_TYPES, VARIANTS } from '../../src/sim/enemies';
 import type { Face } from '../../src/sim/captains';
 import { artIds, artOptional } from './ids';
-import { CAPITAL_LOOK, JOB_SCENE, TRAFFIC_LOOK, WAYWARD_LOOK, CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
+import { CAPITAL_LOOK, JOB_SCENE, OWNED_LOOK, TRAFFIC_LOOK, WAYWARD_LOOK, CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
 
 // The prompt for every picture, written from the game's rows and tools/art/looks.ts.
 // Plain text, one block per picture, to paste into any image generator.
@@ -195,7 +195,8 @@ const BLACK_HULL = 'Framing: one ship, three-quarter side view from slightly abo
 function fleetBrief(id: string): Raw {
   const cap = /^capital-/.test(id), way = /^wayward-/.test(id);
   const key = id.replace(/^capital-/, '');
-  const look = (cap ? CAPITAL_LOOK[key] : way ? WAYWARD_LOOK[id] : TRAFFIC_LOOK[id]) ?? "";
+  const owned = OWNED_LOOK[id];
+  const look = owned ? `${owned.hull}, built to the same silhouette as the game's existing "${id.split('-')[0]}" but owned by ${owned.owner}` : (cap ? CAPITAL_LOOK[key] : way ? WAYWARD_LOOK[id] : TRAFFIC_LOOK[id]) ?? "";
   const c = CAPTAINS.find((x) => x.id === key);
   const faction = c ? FACTION_LOOK[c.faction] : cap ? FACTION_LOOK.office : '';
   const scale = cap ? 'Very large: a capital ship, far bigger than the Wayward, with a sense of scale from tiny lit windows and gantries.' : 'Medium in the game.';
@@ -204,8 +205,8 @@ function fleetBrief(id: string): Raw {
     prompt: `${STYLE}\n\nSubject: ${look.replace(/\.?$/, ".")}${faction ? `\nIt belongs to: ${faction}` : ''}\n${way ? 'Keep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.' : scale}\n${BLACK_HULL}`,
     avoid: `${AVOID_ALL}, background scenery, stars, planets, cockpit pilot visible`,
     size: sz('fleet'), background: 'pure black (blended in the game, no cut-out needed)',
-    where: cap ? 'Not drawn yet: ready for the capital ship hail and the Arcade capital warning.' : way ? 'Not drawn yet: ready for the bay (the ship as fitted) and the debrief.' : 'Not drawn yet: ready for jobs and neutral traffic cards.',
-    facts: [`id ${id}`, ...(c ? [`ship ${c.ship}`, `captain ${c.name}`] : [])],
+    where: owned ? `The comms call for ${owned.cards}: shown instead of the plain ${id.split('-')[0]} hull, which has the wrong owner for this caller.` : cap ? 'Not drawn yet: ready for the capital ship hail and the Arcade capital warning.' : way ? 'Not drawn yet: ready for the bay (the ship as fitted) and the debrief.' : 'Not drawn yet: ready for jobs and neutral traffic cards.',
+    facts: [`id ${id}`, ...(owned ? [`replaces the plain hull on card ${owned.cards}`] : []), ...(c ? [`ship ${c.ship}`, `captain ${c.name}`] : [])],
   };
 }
 

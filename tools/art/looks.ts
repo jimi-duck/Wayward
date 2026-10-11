@@ -174,3 +174,13 @@ export const JOB_SCENE: Record<string, string> = {
   sc_witness: 'a back-dock at night, a hooded figure with a data case hurrying toward the Wayward’s open lock, Custody lamps sweeping behind',
   sc_prefect: 'a relay mast inside a patrol route, the Wayward drifting dark to erase a trace, a Custody cutter passing close',
 };
+
+/** The same hull for a different owner: what a card shows when its caller is not the hull's own faction. `cards` names the comms cards it stands in for. */
+export const OWNED_LOOK: Record<string, { hull: string; owner: string; cards: string }> = {
+  'enforcer-kellern': { hull: 'a blunt armoured strike craft', owner: 'Kellern Mining security: amber and cream hazard stripes over the hull, company numbering, a claims-office lamp bar; hired muscle, not Custody', cards: 'claim_jumpers' },
+  'freighter-frontier': { hull: 'a blocky service tender with spares racks and a crane arm', owner: 'Frontier Supply: mismatched replacement panels, hand-painted numbers, tarpaulin over a rack, string lights; a depot’s own ship', cards: 'ares_tender' },
+  'freighter-guild': { hull: 'a plain blocky food freighter with stacked containers', owner: 'the Dust Traders Guild: brass-and-cream trim on a dark hull, ledger-number stencils on the containers, berth tags; merchant-clean', cards: 'food_trader' },
+  'freighter-miners': { hull: 'a plain blocky hauler with stacked containers', owner: 'a Drift fleet of independent miners: patchwork plating, sewn textile banners, lanterns, a child’s drawing pinned to a plate; slow and warm', cards: 'drift_fleet' },
+  'lancer-calloway': { hull: 'a heavy cruiser, long, low and layered', owner: 'the Office of Peace under Prefect Calloway: pale grey, severe and tidy, a small red rank mark, a tall sensor mast; the same bones as a Custody cruiser with a quieter coat', cards: 'calloway_here' },
+  'scout-guild': { hull: 'a small fast interceptor, a narrow wedge with split engine pods', owner: 'a Dust Traders Guild escort: brass-and-cream trim over dark paint, a chin lamp, a ledger number on the wing; not a pirate', cards: 'distress_freighter' },
+};

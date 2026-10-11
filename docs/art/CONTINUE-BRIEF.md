@@ -1,5 +1,5 @@
 # Wayward artwork: the continuation
-*Written by `npm run art:brief`. Give this whole file to the image generator that made the first set (same chat if you still have it). 59 new pictures in five batches.*
+*Written by `npm run art:brief`. Give this whole file to the image generator that made the first set (same chat if you still have it). 65 new pictures in six batches.*
 
 ## Read this first
 The first 109 pictures for the game WAYWARD are done and in use: captains, contacts, emblems, fifteen ships, ports, endings, sightings, pieces of the file and regions. This is **the same job, continued**: new subjects, the identical look. If you remember the first set, match it. If you do not, match the attached reference pictures (the Wayward title art).
@@ -8,10 +8,10 @@ The first 109 pictures for the game WAYWARD are done and in use: captains, conta
 - One subject per image, filling the frame, at the shape asked for.
 
 ## What to deliver
-- 59 pictures, **each a separate PNG**, named exactly as the `Save as` line says (for example `fleet__capital-vance.png`; two underscores after the folder name).
+- 65 pictures, **each a separate PNG**, named exactly as the `Save as` line says (for example `fleet__capital-vance.png`; two underscores after the folder name).
 - Hand them back as **one ZIP** of PNGs. If you cannot make a ZIP, give one PDF with one picture per page and the file name written on the page, in a caption **outside** the picture.
 - No text, lettering, numbers, logos, captions, watermark, frame or border **inside** any picture.
-- Do the batches in order K, L, M, N, O. If you run out of room, stop at the end of a picture and carry on when told "continue".
+- Do the batches in order K, L, M, N, O, P. If you run out of room, stop at the end of a picture and carry on when told "continue".
 
 ## The look (it is the same as before)
 Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted. Industrial cyberpunk frontier, "used, not dirty": old, patched, regulated, repurposed technology; worn painted metal, faded paint, replacement panels, stencils, cable runs, maintenance labels. Mostly dark and desaturated (void black, off-white, dust grey, rust brown) with one warm yellow-orange anchor (the Wayward). Signal teal only for screens and information; alert red only for threat; dull gold only for caution; nebula purple only far in the background; no neon pink. Low-key light: one key light with a soft rim light and haze; glow small and restrained (engine blue, window orange); nothing blown out. No text anywhere in the picture.
@@ -203,7 +203,58 @@ Save as: **`fleet__ferry.png`**
 Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: the Quiet Ferry: a small, plain, dark ship with tidy lines and a ship’s bell hung at the door; a ferryman’s patience in a hull. Medium in the game. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
 ```
 
-## Batch N: Jobs (24)
+## Batch N: The same hull, a different owner (6)
+Six pictures of ships the first set already drew, but in the colours of whoever actually owns them. Today a Kellern security call, a Drift fleet and a Guild food trader all show a Custody hull. Keep the same silhouette as the matching picture in the first set (attach it if you can) and change only the paint, markings and fittings.
+
+### fleet/enforcer-kellern
+
+Save as: **`fleet__enforcer-kellern.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: a blunt armoured strike craft, built to the same silhouette as the game's existing "enforcer" but owned by Kellern Mining security: amber and cream hazard stripes over the hull, company numbering, a claims-office lamp bar; hired muscle, not Custody. Medium in the game. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+### fleet/freighter-frontier
+
+Save as: **`fleet__freighter-frontier.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: a blocky service tender with spares racks and a crane arm, built to the same silhouette as the game's existing "freighter" but owned by Frontier Supply: mismatched replacement panels, hand-painted numbers, tarpaulin over a rack, string lights; a depot’s own ship. Medium in the game. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+### fleet/freighter-guild
+
+Save as: **`fleet__freighter-guild.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: a plain blocky food freighter with stacked containers, built to the same silhouette as the game's existing "freighter" but owned by the Dust Traders Guild: brass-and-cream trim on a dark hull, ledger-number stencils on the containers, berth tags; merchant-clean. Medium in the game. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+### fleet/freighter-miners
+
+Save as: **`fleet__freighter-miners.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: a plain blocky hauler with stacked containers, built to the same silhouette as the game's existing "freighter" but owned by a Drift fleet of independent miners: patchwork plating, sewn textile banners, lanterns, a child’s drawing pinned to a plate; slow and warm. Medium in the game. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+### fleet/lancer-calloway
+
+Save as: **`fleet__lancer-calloway.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: a heavy cruiser, long, low and layered, built to the same silhouette as the game's existing "lancer" but owned by the Office of Peace under Prefect Calloway: pale grey, severe and tidy, a small red rank mark, a tall sensor mast; the same bones as a Custody cruiser with a quieter coat. Medium in the game. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+### fleet/scout-guild
+
+Save as: **`fleet__scout-guild.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: a small fast interceptor, a narrow wedge with split engine pods, built to the same silhouette as the game's existing "scout" but owned by a Dust Traders Guild escort: brass-and-cream trim over dark paint, a chin lamp, a ledger number on the wing; not a pirate. Medium in the game. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+## Batch O: Jobs (24)
 Twenty-four scenes, one per job card. The moment just before the job starts, with the Wayward small in the frame.
 
 ### jobs/sc_toll
@@ -398,7 +449,7 @@ Save as: **`jobs__sc_prefect.png`**
 Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: the job "Lose the Prefect’s Trail". "Your tracking trace is stored on a relay inside that patrol’s route. Erase it without being seen and Calloway loses a day." Scene: a relay mast inside a patrol route, the Wayward drifting dark to erase a trace, a Custody cutter passing close. Framing: the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance. No people's faces, no text, no UI. Make it a wide landscape picture (16:9). One picture only, full frame, not a sheet or a grid.
 ```
 
-## Batch O: Phenomena (14)
+## Batch P: Phenomena (14)
 Fourteen strange things out in space, as found camera stills.
 
 ### phenomena/veil

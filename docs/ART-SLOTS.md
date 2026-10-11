@@ -184,13 +184,13 @@ Generators drift between prompts. Things that help, in order:
 ## The continuation set
 
 Three more slots are ready, with prompts, for a second run
-([CONTINUE-BRIEF.md](art/CONTINUE-BRIEF.md): 59 pictures, written by
+([CONTINUE-BRIEF.md](art/CONTINUE-BRIEF.md): 65 pictures, written by
 `npm run art:brief` like the first). No screen draws them yet; the hook and
 `art:prep` already take them.
 
 | Slot | Folder | Count | Size | For |
 | --- | --- | --- | --- | --- |
-| Fleet | `fleet/` | 21 | 960×480 on black | the nine capital ships (`capital-<captain>`), eight neutral hulls (tanker, hauler, courier, gunship, barge, salvager, drifter, ferry), the Wayward as fitted (`wayward-stock`, `-guns`, `-rig`, `-signals`) |
+| Fleet | `fleet/` | 27 | 960×480 on black | the nine capital ships (`capital-<captain>`), eight neutral hulls (tanker, hauler, courier, gunship, barge, salvager, drifter, ferry), the Wayward as fitted (`wayward-stock`, `-guns`, `-rig`, `-signals`), and six hulls in their real owner's colours (`<hull>-<caller>`, such as `freighter-miners`), which the comms call already uses in place of the plain hull |
 | Jobs | `jobs/` | 24 | 1280×720 | one scene per job card (`sc_*`) |
 | Phenomena | `phenomena/` | 14 | 800×600 | the places on the chart (`veil` … `carrier`) |
 
