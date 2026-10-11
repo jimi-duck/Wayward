@@ -181,6 +181,22 @@ Generators drift between prompts. Things that help, in order:
   `tools/art/briefs.ts`, and the screen that draws it, with `artImg` and a
   fallback.
 
+## The continuation set
+
+Three more slots are ready, with prompts, for a second run
+([CONTINUE-BRIEF.md](art/CONTINUE-BRIEF.md): 59 pictures, written by
+`npm run art:brief` like the first). No screen draws them yet; the hook and
+`art:prep` already take them.
+
+| Slot | Folder | Count | Size | For |
+| --- | --- | --- | --- | --- |
+| Fleet | `fleet/` | 21 | 960×480 on black | the nine capital ships (`capital-<captain>`), eight neutral hulls (tanker, hauler, courier, gunship, barge, salvager, drifter, ferry), the Wayward as fitted (`wayward-stock`, `-guns`, `-rig`, `-signals`) |
+| Jobs | `jobs/` | 24 | 1280×720 | one scene per job card (`sc_*`) |
+| Phenomena | `phenomena/` | 14 | 800×600 | the places on the chart (`veil` … `carrier`) |
+
+Left out on purpose, listed at the end of the brief: wrecks of each hull, damage
+stages of the Wayward, faction liveries, stations, elites and debrief scenes.
+
 ## Where the set stands
 
 All 109 slots have a picture (5.1 MB), cut from ChatGPT contact sheets and

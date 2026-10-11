@@ -1,5 +1,5 @@
 import { SLOTS, type SlotId } from '../../src/content/art';
-import { AVOID_ALL, player, portraitSpec, type Brief } from './briefs';
+import { AVOID_ALL, CONTINUATION, player, portraitSpec, type Brief } from './briefs';
 import { FACTION_LOOK } from './looks';
 
 // The one file to give an image generator: who the game is, how it looks, how to
@@ -8,6 +8,7 @@ import { FACTION_LOOK } from './looks';
 const TITLES: Record<SlotId, string> = {
   captain: 'Captains and Calloway', contact: 'Named contacts', emblem: 'Emblems', ship: 'Ship profiles', place: 'Port banners',
   ending: 'Endings', sighting: 'Sightings', file: 'Pieces of the file', region: 'Regions',
+  fleet: 'Fleet', job: 'Jobs', phenomenon: 'Phenomena',
 };
 const BATCHES: Array<{ id: string; slot: SlotId; optional?: boolean; note: string }> = [
   { id: 'A', slot: 'emblem', note: 'Smallest and quickest to judge. Do these first after the style sheet.' },
@@ -73,7 +74,7 @@ export function masterBrief(list: Brief[]): string {
 
   P('## 5. Technical rules',
     '| Kind | Final size in the game | Aspect to make | Notes |', '|---|---|---|---|',
-    ...(Object.values(SLOTS).map((s) => `| ${TITLES[s.id]} | ${s.w}×${s.h} | ${s.id === 'emblem' ? '1:1' : s.id === 'ship' ? '2:1' : s.id === 'place' ? 'widest you can; subject in the middle third of the height' : s.id === 'captain' || s.id === 'contact' ? '4:5 (or 2:3, with the head and shoulders kept compact and central)' : s.id === 'region' ? 'widest you can; subject in the middle band' : '16:9 or 4:3'} | ${s.alpha ? 'on pure black, see the prompt' : 'full picture'} |`)),
+    ...(Object.values(SLOTS).filter((s) => !CONTINUATION.includes(s.id)).map((s) => `| ${TITLES[s.id]} | ${s.w}×${s.h} | ${s.id === 'emblem' ? '1:1' : s.id === 'ship' ? '2:1' : s.id === 'place' ? 'widest you can; subject in the middle third of the height' : s.id === 'captain' || s.id === 'contact' ? '4:5 (or 2:3, with the head and shoulders kept compact and central)' : s.id === 'region' ? 'widest you can; subject in the middle band' : '16:9 or 4:3'} | ${s.alpha ? 'on pure black, see the prompt' : 'full picture'} |`)),
     '',
     '- **If your tool cannot make an exact ratio,** make the nearest one and keep everything important in the **central area**. The game crops from the middle.',
     '- **Make them larger than needed** if you can; they are shrunk. At least the sizes above.',

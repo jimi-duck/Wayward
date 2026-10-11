@@ -9,7 +9,7 @@ import { PORT_NAMES } from './systems';
 // prompt for every one. docs/ART-SLOTS.md says what each is for and how to
 // brief it; src/art/README.md says how to drop the files in.
 
-export type SlotId = 'captain' | 'contact' | 'emblem' | 'ship' | 'place' | 'ending' | 'sighting' | 'file' | 'region';
+export type SlotId = 'captain' | 'contact' | 'emblem' | 'ship' | 'place' | 'ending' | 'sighting' | 'file' | 'region' | 'fleet' | 'job' | 'phenomenon';
 
 export interface SlotDef {
   id: SlotId;
@@ -34,6 +34,9 @@ export const SLOTS: Record<SlotId, SlotDef> = {
   sighting: { id: 'sighting', dir: 'sightings', w: 800,  h: 600,  alpha: false, shownIn: 'Archive' },
   file:     { id: 'file',     dir: 'file',      w: 800,  h: 600,  alpha: false, shownIn: 'Archive' },
   region:   { id: 'region',   dir: 'regions',   w: 1280, h: 480,  alpha: false, shownIn: '' },
+  fleet:    { id: 'fleet',    dir: 'fleet',     w: 960,  h: 480,  alpha: false, shownIn: '' },
+  job:      { id: 'job',      dir: 'jobs',      w: 1280, h: 720,  alpha: false, shownIn: '' },
+  phenomenon: { id: 'phenomenon', dir: 'phenomena', w: 800, h: 600, alpha: false, shownIn: '' },
 };
 
 /** Formats the loader takes, best first. */
@@ -67,3 +70,14 @@ export const PLACES = ['kellern', 'frontier', 'guild', 'gutter', 'holdfast', 'fr
 
 /** A region's file name: "The Salvage Belt" is `salvage-belt`. */
 export const regionSlug = (name: string) => name.replace(/^the\s+/i, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/**
+ * Hulls that are not in the spawner's variant list (sim/enemies.ts): the captains'
+ * capital ships (a picture per captain, so `capital-<captain id>`), the ships that
+ * go about their business in a system, and the Wayward itself as it is fitted.
+ */
+export const FLEET = [
+  'capital-vance', 'capital-sorensen', 'capital-kade', 'capital-vex', 'capital-ashgrove', 'capital-pell', 'capital-chorus', 'capital-loom', 'capital-calloway',
+  'tanker', 'hauler', 'courier', 'gunship', 'barge', 'salvager', 'drifter', 'ferry',
+  'wayward-stock', 'wayward-guns', 'wayward-rig', 'wayward-signals',
+] as const;
