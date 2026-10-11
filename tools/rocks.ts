@@ -37,7 +37,7 @@ const rocks = new RockView(scene);
 const kinds: RockKind[] = ['basalt', 'rich', 'volatile', 'iron'];
 const list: Rock[] = kinds.map((kind, i) => ({
   id: 11 + i * 7, kind: params.get('shapes') ? 'basalt' : kind, x: 14, z: (i - 1.5) * size * 2.6, vx: 0, vz: 0, size: 0, r: size, hp: 9, maxHp: 9, variant: params.get('shapes') ? i : i % 3,
-  ax: 0.3, ay: 1, az: 0.2, spin: 0.12, age: 9, hitT: 0, ox: 0, oz: 0,
+  ax: 0.3, ay: 1, az: 0.2, spin: 0.12, age: 9, hitT: 0, ox: 0, oz: 0, rot: 0,
 }));
 
 const fx = new Effects(scene, glow);

@@ -369,14 +369,9 @@ export class RockView {
   private readonly shards: InstancedMesh;
   /** Per-instance hit light, parallel to `meshes`. */
   private readonly hits: InstancedBufferAttribute[] = [];
-  /** A brief shove and wobble on rocks that were hit: id to its state. */
-  private readonly kicks = new Map<number, { t: number; dx: number; dz: number; s: number }>();
-  private readonly seen = new Set<number>();
   private readonly chunks: Chunks;
   private readonly seats: Matrix4[][];
   private readonly sm = new Matrix4();
-  private readonly tilt = new Quaternion();
-  private readonly wob = new Vector3();
   private time = 0;
 
   constructor(private readonly scene: Scene) {
@@ -443,12 +438,6 @@ export class RockView {
   }
 
   /** Draw the field, `alpha` of a step past the simulated positions' previous step. */
-  /** A hit: shove the rock along (dx, dz) by `s` of its radius and set it wobbling. */
-  kick(id: number, dx: number, dz: number, s: number): void {
-    const k = this.kicks.get(id);
-    if (k) { k.t = Math.min(k.t, 0.05); k.dx = dx; k.dz = dz; k.s = Math.min(0.2, k.s * 0.6 + s); } else this.kicks.set(id, { t: 0, dx, dz, s });
-  }
-
   /** A rock breaking apart: stone pieces fly from its body, carrying its drift. (dx, dz) is the way the blow came; `power` scales the burst. */
   fracture(kind: string, size: number, x: number, z: number, r: number, vx: number, vz: number, dx: number, dz: number, power: number): void {
     this.chunks.burst(kind, size, x, z, r, vx, vz, dx, dz, power);
@@ -471,17 +460,8 @@ export class RockView {
       // a piece of a break starts at the parent's place and half its size, then eases out to its own spot
       const grow = Math.min(1, r.age / 0.45), ease = grow * grow * (3 - 2 * grow);
       const s = r.r * (r.ox || r.oz ? 0.5 + 0.5 * ease : ease);
-      this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.spin * r.age + r.id);
+      this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.rot);
       this.pos.set(r.x - r.vx * back + r.ox * (1 - ease), -0.3, r.z - r.vz * back + r.oz * (1 - ease));
-      const kk = this.kicks.get(r.id);
-      if (kk) {
-        // a hit shoves the rock a little along the shot and sets it wobbling, both dying away in under half a second
-        this.seen.add(r.id);
-        const push = kk.s * r.r * (1 - Math.exp(-kk.t * 50)) * Math.exp(-kk.t * 7);
-        this.pos.x += kk.dx * push; this.pos.z += kk.dz * push;
-        this.tilt.setFromAxisAngle(this.wob.set(-kk.dz, 0, kk.dx), kk.s * 1.6 * Math.sin(kk.t * 26) * Math.exp(-kk.t * 6));
-        this.q.premultiply(this.tilt);
-      }
       this.m.compose(this.pos, this.q, this.sc.set(s * (0.88 + 0.24 * h1), s * (0.9 + 0.2 * h2), s * (0.88 + 0.24 * h3)));
       mesh.setMatrixAt(i, this.m);
       if (r.kind === 'rich') {
@@ -511,8 +491,6 @@ export class RockView {
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       this.hits[k]!.needsUpdate = true;
     });
-    for (const [id, kk] of this.kicks) { kk.t += dt; if (kk.t > 0.6 || !this.seen.has(id)) this.kicks.delete(id); }
-    this.seen.clear();
     this.chunks.update(dt);
 
     // bulwarks: one mesh each, made as they come into the field

@@ -316,8 +316,10 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 - **What a rock does when hit or broken**: the sim decides (`Field.split`,
   `destroyRock`) and the events carry kind, weapon and centre; the look is
   `render/rockfx.ts` (chips, dust, glints per kind, a torpedo heavier than a
-  laser) with the shove and stone pieces in `render/rocks.ts` (`kick`,
-  `fracture`). A new rock kind answers in one `switch` there.
+  laser) with the stone pieces in `render/rocks.ts` (`fracture`). A hit moves
+  the rock for real: `Field.impulse` changes its drift and spin for good
+  (mass goes with radius squared), with no spring or snap-back in the
+  renderer. A new rock kind answers in one `switch` there.
 - **An elite modifier**: one row in `ELITES`, plus the colour of its halo
   in `render/enemies.ts`.
 - **A capital ship**: one row in `FACTIONS` (cycles per phase, station,

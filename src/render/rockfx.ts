@@ -48,8 +48,6 @@ export class RockFx {
     if (this.last.size > 64) this.last.clear();
     this.last.set(e.id, { dx, dz });
     const big = [1, 0.7, 0.5][e.size] ?? 0.5;
-    // the shove, along the shot
-    this.rocks.kick(e.id, -dx, -dz, (heavy ? 0.1 : 0.04) * (0.6 + 0.4 * big));
     const x = e.x, y = Math.max(0.1, e.y), z = e.z;
     const k = heavy ? 2.2 : 1;
     this.fx.flash(x, y, z, (heavy ? 2.4 : 0.9) * (0.7 + 0.3 * big), CHIP_FLASH, heavy ? 0.1 : 0.06);
