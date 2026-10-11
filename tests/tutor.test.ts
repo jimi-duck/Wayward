@@ -23,7 +23,7 @@ describe('the first minutes', () => {
     const d = Math.hypot(w.bk!.lane.x - w.ship.x, w.bk!.lane.z - w.ship.z);
     expect(metres(d)).toBe(10000);
     expect(needsTorpedoFit(w)).toBe(false);
-    expect(goalOf(w).goal).toBe('Laser the violet rock');
+    expect(goalOf(w).goal).toBe('Laser the Cyrite rock');
   });
 
   it('starts on one rock close ahead, the torpedo bay not yet fitted, and the tank short of the jump by the rock', () => {

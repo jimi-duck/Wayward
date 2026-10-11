@@ -385,6 +385,17 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #log-lines p.gone { opacity: 0; }
 @keyframes log-in { from { opacity: 0; transform: translateX(8px); } }
 /* what the place is doing to the ship: the ship's voice, teal, one or two short lines, only while it is felt */
+#heat { display: flex; align-items: center; gap: 10px; padding: 5px 12px 6px; }
+#heat[hidden] { display: none; }
+.ht-l { font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.ht-b { display: inline-flex; gap: 3px; --on: var(--hud); }
+.ht-b i { width: 20px; height: 7px; background: rgba(255, 255, 255, .16); }
+#heat[data-lit="3"] .ht-b, .ht-b[data-lit="3"] { --on: var(--caution); }
+#heat[data-lit="4"] .ht-b, .ht-b[data-lit="4"] { --on: var(--alert); }
+#heat[data-lit="1"] .ht-b i:nth-child(-n+1), #heat[data-lit="2"] .ht-b i:nth-child(-n+2), #heat[data-lit="3"] .ht-b i:nth-child(-n+3), #heat[data-lit="4"] .ht-b i,
+.ht-b[data-lit="2"] i:nth-child(-n+2) { background: var(--on); }
+.hn-bar { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.hn-bar .ht-b i { width: 34px; height: 9px; }
 #cond { display: grid; gap: 2px; justify-items: end; font: 600 calc(var(--fs) * 1.2)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); text-shadow: 0 1px 2px #000; }
 #cond[hidden] { display: none; }
 #cond .warn { color: var(--caution); }

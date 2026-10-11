@@ -174,7 +174,6 @@ export const UI: Record<string, string> = {
   'Jump drive': 'Sprungantrieb',
   'Docking clamps': 'Andockklammern',
   'enough to jump': 'genug zum Springen',
-  'mine the violet rock': 'laser den violetten Fels',
   'Reach the beacon': 'Zum Leuchtfeuer',
   'Salvaging': 'Berge',
   'Keep clear of the core': 'Weg vom Kern',

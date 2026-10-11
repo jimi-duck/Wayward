@@ -3,7 +3,7 @@ import type { World } from './world';
 
 // ── the first minutes ─────────────────────────────────────────────────────
 // An onboarding level, short and plain: one rock, one upgrade, one shot, and
-// the tank is full. The pilot lasers a single violet rock set close ahead
+// the tank is full. The pilot lasers a single Cyrite rock set close ahead
 // (the refinery sends what it gives to the drive tank, which starts short by
 // that much), flies to the work bay and fits the torpedo bay (the ship
 // starts without it, so the first upgrade is the one that matters; the purse
@@ -135,8 +135,8 @@ export function lessonOf(w: World): Lesson | null {
   if (id === 'mine') {
     const rock = w.field.rocks.find((r) => r.id === tu.rockId);
     const got = stock(w) > tu.base;
-    const mark = rock ? { x: rock.x, z: rock.z, r: rock.r + 6, name: 'Violet rock' } : null;
-    return { ...base, line: rock || !got ? 'Laser the violet rock' : 'Fly through the drops to collect them', hint: 'fire', mark, progress: got ? 1 : rock ? 0.1 + 0.7 * (1 - rock.hp / rock.maxHp) : 0.85 };
+    const mark = rock ? { x: rock.x, z: rock.z, r: rock.r + 6, name: 'Cyrite rock' } : null;
+    return { ...base, line: rock || !got ? 'Laser the Cyrite rock' : 'Fly through the drops to collect them', hint: 'fire', mark, progress: got ? 1 : rock ? 0.1 + 0.7 * (1 - rock.hp / rock.maxHp) : 0.85 };
   }
   if (id === 'bay') {
     const port = w.bk?.port;
