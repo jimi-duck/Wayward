@@ -15,7 +15,7 @@ three marked steps, each one a thing the game already does:
 3. **Shoot the ship with torpedoes.** One Gutter scout appears only now, a
    little way ahead.
 
-Then a **Heat** note (`ui/heatnote.ts`, Story only) explains the Heat bar in the lower right of the HUD: the Continuance ships you fight and the time you spend in a system raise it, and the hotter it is the more ships come and the likelier a blockade. The bar has four steps (gold from the third, red at the fourth) and shows from the start of every Story system.
+Then a **Heat** note (`ui/heatnote.ts`, Story only, once per profile: `profile.heatTold`, so a pilot who trained before the note existed sees it the first time they fly free) explains the Heat bar in the lower right of the HUD: the Continuance ships you fight and the time you spend in a system raise it, and the hotter it is the more ships come and the likelier a blockade. The bar has four steps (gold from the third, red at the fourth) and shows from the start of every Story system.
 
 Then the tank holds the jump (jump fluid), the quiet lifts after 25 s, and the run goes on.
 The Arcade has the same three in the same order (rock, a

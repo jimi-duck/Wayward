@@ -72,6 +72,8 @@ export interface Profile {
   briefed: boolean;
   /** The first minutes' training has been played through or skipped. */
   trained: boolean;
+  /** The Story's Heat note has been read (it shows once, the first time the Story is flown free of training). */
+  heatTold: boolean;
   archive: Archive;
 }
 
@@ -88,6 +90,7 @@ const fresh = (): Profile => ({
   mode: 'breakout',
   briefed: false,
   trained: false,
+  heatTold: false,
   archive: { journeys: [], endings: [], files: [], people: [], records: [], sightings: [] },
 });
 

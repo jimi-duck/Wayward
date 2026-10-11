@@ -579,9 +579,14 @@ function boot(review: typeof import('./review') | null): void {
     render(alpha, frameDt) {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
-      if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly'));
-        // the Story explains the heat bar once, as the training ends
-        if (world.bk && !world.tutor.skipped) { loop.paused = true; input.reset(); heatNote.show(() => { loop.paused = false; input.reset(); }); }
+      if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly')); }
+      // the Story explains the Heat bar once: when training is over (or there is none), the first time nothing else is open
+      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && world.phase === 'play' && world.alive && !loop.paused && !panelOpen()) {
+        profile.heatTold = true;
+        persist(profile);
+        loop.paused = true;
+        input.reset();
+        heatNote.show(() => { loop.paused = false; input.reset(); });
       }
       // a kill lands harder for a beat of stillness (never with reduced motion)
       const hold = sector.react(events);
