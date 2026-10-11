@@ -70,6 +70,8 @@ export interface Rock {
   /** A piece of a break starts this far from where it is drawn: the renderer slides it out of the parent's place. */
   ox: number;
   oz: number;
+  /** The tumble's current angle about its axis; `spin` turns it, and a hit can change `spin`. */
+  rot: number;
 }
 
 /**
@@ -147,8 +149,9 @@ export class Field {
       vx: vx ?? Math.cos(a) * sp, vz: vz ?? Math.sin(a) * sp,
       size, r: ROCK_R[size] * this.rng.range(0.88, 1.12) * (kind === 'iron' ? 0.92 : 1), hp, maxHp: hp,
       variant: this.rng.int(ROCK_VARIANTS), ax: ax / n, ay: ay / n, az: az / n,
-      spin: this.rng.range(-0.9, 0.9) * (1 + size * 0.6), age: 0, hitT: 0, ox: 0, oz: 0,
+      spin: this.rng.range(-0.9, 0.9) * (1 + size * 0.6), age: 0, hitT: 0, ox: 0, oz: 0, rot: 0,
     };
+    rock.rot = rock.id * 2.399;
     this.rocks.push(rock);
     return rock;
   }
@@ -274,6 +277,7 @@ export class Field {
       r.x += r.vx * dt;
       r.z += r.vz * dt;
       r.age += dt;
+      r.rot += r.spin * dt;
       if (r.hitT > 0) r.hitT = Math.max(0, r.hitT - dt);
       if (r.x - cx > half) r.x -= FIELD_BAND; else if (r.x - cx < -half) r.x += FIELD_BAND;
       if (r.z - cz > half) r.z -= FIELD_BAND; else if (r.z - cz < -half) r.z += FIELD_BAND;
@@ -299,6 +303,22 @@ export class Field {
     }
     // Top up out in the fog, never in front of the player.
     if (this.weight() < p.fieldTarget * this.density * this.zone) this.topUp(cx, cz, p);
+  }
+
+  /**
+   * A blow on a rock: a real change of drift and spin, kept for good (a rock does not spring back).
+   * (dx, dz) is the way the blow travels and (ox, oz) where it landed, from the rock's centre.
+   * Mass goes with the square of the radius, so a big rock barely moves and a small one is shoved;
+   * a blow off the centre line sets it turning.
+   */
+  impulse(r: Rock, dx: number, dz: number, j: number, ox = 0, oz = 0): void {
+    const d = Math.hypot(dx, dz);
+    if (d < 1e-6) return;
+    dx /= d; dz /= d;
+    const mass = r.r * r.r, dv = Math.min(3, j / mass);
+    r.vx += dx * dv; r.vz += dz * dv;
+    const lever = (ox * dz - oz * dx) / r.r;
+    r.spin = Math.max(-3, Math.min(3, r.spin + (lever * 1.6 + (ox === 0 && oz === 0 ? (r.id % 2 ? 0.25 : -0.25) : 0)) * Math.min(3, j / (mass * r.r))));
   }
 
   find(id: number | null): Rock | undefined {

@@ -115,6 +115,9 @@ export const MINE_HP = 1.5;
 /** And the Krail a mined rock gives, over what a rock gave when the cutting beam took it (a broken rock used to split, and every piece rolled for Krail). */
 export const MINE_KRAIL = 1.4;
 /** Share of its hull a hull loses driving into rock at its full dash: the light ones break, the heavy ones are slowed more than hurt. */
+/** The push a blow gives a rock (drift change is this over the rock's radius squared, so large rock barely moves). */
+export const ROCK_PUSH = { laser: 1.3, blast: 8 } as const;
+
 export const ROCK_BUMP = { light: 0.3, cruiser: 0.14 } as const;
 /** Points per rock, the classic arcade ladder: the smaller, the more. */
 export const ROCK_POINTS = [20, 50, 100] as const;

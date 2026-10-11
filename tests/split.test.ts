@@ -48,4 +48,19 @@ describe('rock splitting', () => {
       }
     }
   });
+
+  it('a blow changes drift and spin for good, and a big rock moves less than a small one', () => {
+    const f = new Field(new Rng(3));
+    const big = f.spawn(0, 0, 0, 0, 0, 'basalt'), small = f.spawn(2, 40, 0, 0, 0, 'basalt');
+    for (const r of [big, small]) { r.vx = 0; r.vz = 0; r.spin = 0; }
+    f.impulse(big, 1, 0, 1.3, 0, 1.5);
+    f.impulse(small, 1, 0, 1.3, 0, 0.5);
+    expect(small.vx).toBeGreaterThan(big.vx * 5);
+    expect(big.vx).toBeGreaterThan(0);
+    expect(big.spin).not.toBe(0);
+    const x = big.x;
+    for (let i = 0; i < 120; i++) f.step(1 / 60, 0, 0);
+    expect(big.x).toBeGreaterThan(x);
+    expect(big.vx).toBeGreaterThan(0);
+  });
 });

@@ -44,7 +44,7 @@ import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
   BREACH_GRACE, CHAIN_WINDOW, DYING, PX, BOOST_FIRST, BOOST_CHANCE, BOOST_GAP, REPAIR_CHANCE,
-  REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, MINE_HP, MINE_KRAIL, ROCK_BUMP, ROCK_POINTS, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
+  REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, MINE_HP, MINE_KRAIL, ROCK_BUMP, ROCK_POINTS, ROCK_PUSH, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import { SCRAP_PRICE, type Prices } from '../content/systems';
 import { ARCADE_PRICE } from '../content/web';
@@ -2077,7 +2077,9 @@ export class World implements EncounterHost {
         if (spent) break;
         if (b.hit.includes(r.id) || !hit(r.x, 0, r.z, r.r)) continue;
         land(r.id);
-        this.damageRock(r, b.dmg, 'laser', b.x, b.y, b.z);
+        const sp = Math.hypot(b.vx, b.vz) || 1;
+        const broke = this.damageRock(r, b.dmg, 'laser', b.x, b.y, b.z);
+        if (!broke) this.field.impulse(r, b.vx / sp, b.vz / sp, ROCK_PUSH.laser, b.x - r.x, b.z - r.z);
       }
       const wall = spent ? undefined : inBulwark(b.x, b.y, b.z, 0.2);
       if (wall) { spent = true; this.damageBulwark(wall, b.dmg, b.x, b.y, b.z); }
@@ -2451,7 +2453,10 @@ export class World implements EncounterHost {
   private blast(x: number, y: number, z: number, radius: number, dmg: number, src: Weapon, kind: BlastKind, vsShips = 1, hurtsShip = false): void {
     this.events.push({ type: 'blast', x, y, z, radius, kind });
     const inside = (ox: number, oy: number, oz: number, r: number) => (ox - x) ** 2 + (oy - y) ** 2 + (oz - z) ** 2 < (radius + r) ** 2;
-    for (const r of [...this.field.rocks]) if (inside(r.x, 0, r.z, r.r)) this.damageRock(r, dmg, src, r.x, 0, r.z);
+    for (const r of [...this.field.rocks]) {
+      if (!inside(r.x, 0, r.z, r.r)) continue;
+      if (!this.damageRock(r, dmg, src, r.x, 0, r.z)) this.field.impulse(r, r.x - x, r.z - z, ROCK_PUSH.blast * Math.max(0.3, 1 - Math.hypot(r.x - x, r.z - z) / (radius + r.r)));
+    }
     for (const b of [...this.field.bulwarks]) if (inside(b.x, 0, b.z, b.r * 0.9)) this.damageBulwark(b, dmg, x, y, z, true);
     const snare = (src === 'torpedo' || src === 'mine') ? this.stats.snare : 0;
     for (const al of [...this.aliens]) {
