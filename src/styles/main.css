@@ -550,7 +550,6 @@ html.swipe #app * { overscroll-behavior: contain; }
 .launch-row { display: flex; gap: 12px; align-items: center; }
 
 /* the port: what the ship holds, the services, the departure */
-#port .panel.narrow { width: min(720px, 100%); overflow-y: auto; gap: 12px; }
 .port-stock { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); background: rgba(8, 13, 14, .55); }
 .ps-c { display: grid; align-content: start; gap: 3px; padding: 8px 12px; min-width: 0; font: 600 calc(var(--fs) * 1.02 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 .ps-c + .ps-c { border-left: 1px solid var(--line); }
@@ -620,16 +619,6 @@ html.swipe #app * { overscroll-behavior: contain; }
 .pd-stat.short { color: var(--caution); }
 .pd-stat.short::before { content: "!"; }
 .pd-acts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-left: auto; }
-#port-x, .pd-lane { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer; min-height: 40px;
-  padding: 10px 24px; font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
-.pd-lane { --c: 6px; --edge: var(--hud-dim); --fill: rgba(14, 19, 19, .8); padding: 8px 14px; font-size: calc(var(--fs) * 1.0 * 1.18); color: var(--ink-2); }
-.pd-lane[hidden] { display: none; }
-.pd-lane:disabled { cursor: not-allowed; opacity: .5; }
-#port-x::before, #port-x::after, .pd-lane::before, .pd-lane::after { content: ""; position: absolute; pointer-events: none; }
-#port-x::before, .pd-lane::before { inset: 0; z-index: -2; background: var(--edge); }
-#port-x::after, .pd-lane::after { inset: 1px; z-index: -1; background: var(--fill); }
-#port-x:hover, #port-x.sel, .pd-lane:hover, .pd-lane.sel { --edge: var(--hud-hi); --fill: rgba(30, 50, 76, .95); color: #fff; }
-#port-x.sel, .pd-lane.sel { box-shadow: 0 0 0 2px var(--hud-hi); }
 @media (max-width: 560px) {
   .port-list.buys { grid-template-columns: 1fr; }
   .port-stock { grid-template-columns: 1fr 1fr; }
@@ -774,9 +763,7 @@ circle.ch-thren { fill: rgba(92, 195, 162, .22); stroke: #5CC3A2; stroke-width: 
   .pd-dest { font-size: calc(var(--fs) * 1.1 * 1.18); }
   .pd-stat { flex-basis: 100%; }
   #port .pf { display: none; }
-  #port-x { padding: 8px 18px; }
-  .pd-lane { padding: 8px 10px; }
-}
+  }
 
 /* the cut, fill and jump steps are the story's; the arcade pause card goes without */
 html:not(.breakout) .pause-card #brief { display: none; }

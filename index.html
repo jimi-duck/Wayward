@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="./src/styles/main.css">
   <link rel="stylesheet" href="./src/styles/hud.css">
   <link rel="stylesheet" href="./src/styles/title.css">
+  <link rel="stylesheet" href="./src/styles/dock.css">
 </head>
 <body>
   <div id="app">
@@ -62,6 +63,11 @@
       <symbol id="i-signal" viewBox="0 0 24 24"><path d="M12 12v9 M8 21h8 M7.5 7.5a6.4 6.4 0 000 9 M16.5 7.5a6.4 6.4 0 010 9 M4 4.5a11 11 0 000 15 M20 4.5a11 11 0 010 15"/></symbol>
       <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 7H5l-3 5 3 5h4 M15 7h4l3 5-3 5h-4 M8 12h8"/></symbol>
       <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5"/><path d="M12 2v3.5 M12 18.5V22 M2 12h3.5 M18.5 12H22 M4.9 4.9l2.5 2.5 M16.6 16.6l2.5 2.5 M4.9 19.1l2.5-2.5 M16.6 7.4l2.5-2.5"/></symbol>
+      <symbol id="i-job" viewBox="0 0 24 24"><path d="M12 2l10 10-10 10L2 12z M12 7v6 M12 15.500v1.500"/></symbol>
+      <symbol id="i-cyrite" viewBox="0 0 24 24"><path d="M12 2l4 6-4 14-4-14z M8 8h8 M3 12l5-4 M21 12l-5-4"/></symbol>
+      <symbol id="i-fluid" viewBox="0 0 24 24"><path d="M12 2.5C9 7 6 10.5 6 14.5a6 6 0 0 0 12 0c0-4-3-7.500-6-12z M9 15a3 3 0 0 0 3 3"/></symbol>
+      <symbol id="i-supplies" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z M3 7l9 4 9-4 M12 11v10 M7.500 5l9 4"/></symbol>
+      <symbol id="i-plate" viewBox="0 0 24 24"><path d="M5 3h14l2 4v9l-9 6-9-6V7z M8 8h8 M8 12h8"/></symbol>
       <symbol id="i-lock" viewBox="0 0 24 24"><path d="M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4 M12 15v2"/></symbol>
     </svg>
 
@@ -295,9 +301,11 @@
          card with its answers as buttons; a line of chatter is one subtitle. Neither stops the world. -->
     <div id="radio" class="radio">
       <div id="rd-call" class="rd-call" role="group" aria-labelledby="rd-who" hidden>
-        <div class="rd-h"><i class="tx-wave" aria-hidden="true"></i><span class="rd-k">Incoming</span><span id="rd-kind" class="rd-kind"></span><span id="rd-prio" class="rd-prio" hidden>Priority</span></div>
+        <div class="rd-h"><i class="tx-wave" aria-hidden="true"></i><svg class="ico rd-ico" aria-hidden="true"><use href="#i-job"/></svg><span class="rd-k" id="rd-k">Incoming</span><span id="rd-kind" class="rd-kind"></span><span id="rd-prio" class="rd-prio" hidden>Priority</span></div>
+        <div id="rd-art" class="rd-art" aria-hidden="true" hidden></div>
         <div class="rd-id"><b id="rd-who"></b><span id="rd-what"></span></div>
         <p id="rd-text" class="rd-text"></p>
+        <div id="rd-sheet" class="rd-sheet" hidden></div>
         <p id="rd-read" class="rd-read" hidden></p>
         <p id="rd-terms" class="rd-terms" hidden></p>
         <div id="rd-list" class="rd-list"></div>
@@ -309,19 +317,25 @@
 <!-- Comms: whoever opens a channel to the ship (a Breakout card), and the arcade's capital-ship hail,
          as a transmission received (brand v1.1, section 14): who is calling, a short message, numbered options
          with what each one brings beside it. Red, with a stamp, when the caller means harm. -->
-    <div id="comms" class="sheet" role="dialog" aria-labelledby="cm-t" hidden>
-      <div class="panel comms">
+    <div id="comms" class="sheet dk" role="dialog" aria-labelledby="cm-t" hidden>
+      <div class="panel comms dk-panel">
         <i class="wear v2" aria-hidden="true"></i>
-        <header class="tx-h"><i class="tx-wave" aria-hidden="true"></i><span class="tx-k">Incoming transmission</span><i class="tx-stripes" aria-hidden="true"></i></header>
-        <div class="tx-id">
-          <span id="cm-sigil" class="cm-sigil" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="sg-calm" d="M12 2l10 10-10 10L2 12z M12 7l5 5-5 5-5-5z"/><path class="sg-alert" d="M12 3l10 17H2z M12 9v5 M12 16.5v1.5"/></svg></span>
-          <div id="cm-face" class="cm-face" hidden></div>
-          <span class="tx-who"><b id="cm-who">Channel open</b><span id="cm-s"></span></span>
-          <span class="tx-stamp" id="cm-k">Incoming</span>
-        </div>
-        <div id="cm-body" class="cm-body">
-          <div class="tx-msg"><h2 id="cm-t">Channel open</h2><p id="cm-text" class="cm-text"></p><button id="cm-i" class="cm-i" type="button" aria-expanded="false" aria-label="More" title="More" hidden>i</button><p id="cm-more" class="cm-text cm-more" hidden></p></div>
-          <div id="cm-read" class="cm-read"></div>
+        <header class="tx-h"><i class="tx-wave" aria-hidden="true"></i><span class="tx-k">Incoming transmission</span></header>
+        <div class="tx-card">
+          <div class="tx-pic">
+            <span id="cm-sigil" class="cm-sigil" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="sg-calm" d="M12 2l10 10-10 10L2 12z M12 7l5 5-5 5-5-5z"/><path class="sg-alert" d="M12 3l10 17H2z M12 9v5 M12 16.5v1.5"/></svg></span>
+            <div id="cm-face" class="cm-face" hidden></div>
+          </div>
+          <div class="tx-main">
+            <div class="tx-id">
+              <span class="tx-who"><b id="cm-who">Channel open</b><span id="cm-s"></span></span>
+              <span class="tx-stamp" id="cm-k">Incoming</span>
+            </div>
+            <div id="cm-body" class="cm-body">
+              <div class="tx-msg"><h2 id="cm-t">Channel open</h2><p id="cm-text" class="cm-text"></p><button id="cm-i" class="cm-i" type="button" aria-expanded="false" aria-label="More" title="More" hidden>i</button><p id="cm-more" class="cm-text cm-more" hidden></p></div>
+              <div id="cm-read" class="cm-read"></div>
+            </div>
+          </div>
         </div>
         <div id="cm-timer" class="cm-timer" hidden><i></i></div>
         <div id="cm-list" class="cm-list"></div>
@@ -329,30 +343,34 @@
       </div>
     </div>
 
-    <!-- The port: sell the hold, buy Krail, patch the hull, pay for a refit, cast off. -->
-    <div id="port" class="sheet" role="dialog" aria-labelledby="port-t" hidden>
-      <div class="panel narrow">
-        <i class="wear v3 patch" aria-hidden="true"></i>
+    <!-- The port: the refit bay, the stores, a sensible stop and cast off. -->
+    <div id="port" class="sheet dk" role="dialog" aria-labelledby="port-t" hidden>
+      <div class="panel dk-panel port-panel">
         <div id="port-art" class="port-art" aria-hidden="true" hidden></div>
-        <header class="ph"><span class="kick">Docked</span><h2 id="port-t">Frontier Supply</h2><span class="sub" id="port-s">Refuel · repair · trade · no implant checks</span></header>
+        <header class="dk-h">
+          <span class="kick">Docked</span>
+          <h2 id="port-t">Frontier Supply</h2>
+          <nav class="dk-nav" aria-label="Services"><span>Trade</span><span>Repair</span><span>Refit</span></nav>
+          <span class="dk-tag" id="port-s">No implant checks</span>
+        </header>
         <div class="port-stock" id="port-stock"></div>
         <div class="port-warn" id="port-warn" hidden></div>
-        <section class="port-sv" aria-labelledby="port-sv-t">
-          <div class="port-sh"><h3 id="port-sv-t">Ship services</h3><span>Repairs, upgrades and supplies.</span></div>
+        <section class="port-sv" aria-label="Ship services">
           <div class="port-list" id="port-bay"></div>
           <div class="port-list buys" id="port-buy"></div>
           <div class="port-list" id="port-stop"></div>
         </section>
+        <p class="port-msg" id="port-msg" role="status" aria-live="polite"></p>
         <section class="port-dep" aria-labelledby="port-dest">
           <div class="pd-info">
-            <span class="pd-k">Departure</span>
+            <span class="pd-k">Next stop</span>
             <b class="pd-dest" id="port-dest"></b>
             <span class="pd-meta" id="port-dmeta"></span>
-            <span class="pd-stat" id="port-dstat"></span>
           </div>
-          <div class="pd-acts"><button type="button" id="port-lane" class="pd-lane" hidden></button><button type="button" id="port-x">Cast off</button></div>
+          <span class="pd-stat" id="port-dstat"></span>
+          <div class="pd-acts"><button type="button" id="port-x">Cast off</button></div>
         </section>
-        <footer class="pf"><span class="keys" data-i18n="html"><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> select · <kbd>Space</kbd> use · <kbd>Enter</kbd> cast off · controller: <kbd>A</kbd> use / <kbd>B</kbd> cast off</span></footer>
+        <footer class="pf"><span class="keys" data-i18n="html"><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> select · <kbd>−</kbd><kbd>+</kbd> quantity · <kbd>Space</kbd> use · <kbd>Enter</kbd> cast off · controller: <kbd>A</kbd> use / <kbd>B</kbd> cast off</span></footer>
       </div>
     </div>
 

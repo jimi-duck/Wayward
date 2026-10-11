@@ -5,6 +5,7 @@ import { needsTorpedoFit } from '../sim/tutor';
 import { stopIdle, SUPPLIES_TARGET, type Stop } from '../sim/stop';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
+import { icon } from './icons';
 import { num, plural, t } from '../i18n';
 
 // ── the port ──────────────────────────────────────────────────────────────
@@ -16,8 +17,11 @@ import { num, plural, t } from '../i18n';
 // departure: where the lane goes, whether the tank can make it, and Cast off.
 // Every port sets its own prices, and the Net marks them up. The panel is
 // redrawn after every trade, so every price and every "can't" is live.
-// Entries sit in rows (bay · three purchases · stop · lane and cast off); the
-// arrows move between them, Space or a click uses one, Enter casts off.
+// Entries sit in rows (bay · three purchases · stop · cast off); the arrows
+// move between them, Space or a click uses one, Enter casts off. A purchase
+// has a quantity (the − and + buttons, or the − and + keys on the selected
+// card) and buys that many in one press. The lane is chosen on the chart, not
+// here.
 // The yard's modules are in the refit bay, fitted only while docked.
 
 /** What a sensible stop does, as chips: what comes aboard. */
@@ -29,17 +33,17 @@ function deltas(s: Stop): string[] {
   ];
 }
 
-/** One thing to press: a service, the stop, the lane change or Cast off. */
-type Entry = { key: 'bay' | 'fuel' | 'supplies' | 'plate' | 'stop' | 'lane' | 'cast'; ok: boolean; go: () => void; el?: HTMLElement };
+/** One thing to press: a service, the stop or Cast off. */
+type Entry = { key: 'bay' | 'fuel' | 'supplies' | 'plate' | 'stop' | 'cast'; ok: boolean; go: () => void; el?: HTMLElement };
+type Buyable = 'fuel' | 'supplies' | 'plate';
 
 /** The rows the arrows walk (keys of the entries, left to right). */
-const ROWS: Entry['key'][][] = [['bay'], ['fuel', 'supplies', 'plate'], ['stop'], ['lane', 'cast']];
+const ROWS: Entry['key'][][] = [['bay'], ['fuel', 'supplies', 'plate'], ['stop'], ['cast']];
 
-/** The lanes out of a port, for re-plotting while docked: `pick` plots one and the world's jump follows it. */
+/** The lane out of here, for the departure line (the lane itself is plotted on the chart). */
 export interface Course {
   lanes: () => Array<{ id: string; name: string; cyrite: number; days: number; note: string }>;
   current: () => string | null;
-  pick: (id: string) => void;
 }
 
 /** What a port says of the ship's state, and what to do about it (World.warnings). */
@@ -64,6 +68,10 @@ export class PortPanel {
   private onLeave: (() => void) | null = null;
   private onBay: (() => void) | null = null;
   private course: Course | null = null;
+  /** How many of each the next press buys. */
+  private qty: Record<Buyable, number> = { fuel: 1, supplies: 1, plate: 1 };
+  /** The line under the services: what the last press did. */
+  private msg = '';
 
   get open(): boolean {
     return !$('port').hidden;
@@ -78,12 +86,14 @@ export class PortPanel {
     this.onBay = onBay;
     this.opened = performance.now();
     this.sel = 'bay';
+    this.qty = { fuel: 1, supplies: 1, plate: 1 };
+    this.msg = '';
     $('port-t').textContent = world.bk?.port?.name ?? t('Port');
     // a banner of the place, where the build has one for who holds it
     const banner = world.bk?.port ? artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
     $('port-art').hidden = !banner;
     $('port-art').replaceChildren(...(banner ? [banner] : []));
-    $('port-s').textContent = t(world.bk?.def.netted ? 'Refuel · repair · trade · implant scans required' : 'Refuel · repair · trade · no implant checks');
+    $('port-s').textContent = t(world.bk?.def.netted ? 'Implant scans required' : 'No implant checks');
     const x = $('port-x');
     x.onclick = guarded(this.opened, () => this.leave());
     x.onpointerdown = (e) => e.stopPropagation();
@@ -94,6 +104,8 @@ export class PortPanel {
       if (e.code === 'ArrowUp' || e.code === 'ArrowDown') { this.move(0, e.code === 'ArrowUp' ? -1 : 1); return true; }
       if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { this.move(e.code === 'ArrowLeft' ? -1 : 1, 0); return true; }
       if (e.code === 'Space') return this.act(this.sel), true;
+      if (e.code === 'Minus' || e.code === 'NumpadSubtract') return this.step(this.sel, -1), true;
+      if (e.code === 'Equal' || e.code === 'NumpadAdd') return this.step(this.sel, 1), true;
       return e.code.startsWith('Arrow') || e.code === 'Tab';
     }, ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
   }
@@ -155,20 +167,35 @@ export class PortPanel {
     for (const e of this.entries) e.el?.classList.toggle('sel', e.key === this.sel);
   }
 
+  /** The most one press can buy now: what is short, what there is room for, what the Cyrite reaches. */
+  private most(w: World, key: Buyable): number {
+    const price = key === 'fuel' ? w.fluidPrice : w.prices[key];
+    const room = key === 'fuel' ? Math.floor(w.tankCap - w.fuel) : key === 'plate' ? w.stats.maxPlates - w.plates : w.supplyMax - w.supplies;
+    return Math.max(0, Math.min(room, Math.floor(w.cyrite / price)));
+  }
+
+  /** Change how many the selected card buys, kept between 1 and what can be bought. */
+  private step(key: Entry['key'], d: number): void {
+    const w = this.world;
+    if (!w || (key !== 'fuel' && key !== 'supplies' && key !== 'plate')) return;
+    this.qty[key] = Math.max(1, Math.min(Math.max(1, this.most(w, key)), this.qty[key] + d));
+    this.render();
+  }
+
   private render(): void {
     const w = this.world!;
     // keep the selection on something that still works (a trade can use up the last of what it was on)
     const p = this.plan(w);
     this.entries = p.entries;
     if (!this.entries.find((e) => e.key === this.sel)?.ok) this.sel = this.entries.find((e) => e.ok)?.key ?? 'cast';
-    // what the ship holds
+    // what the ship holds: an icon, the name, what is aboard against what fits
     const short = Math.max(0, Math.ceil(w.jumpCost - w.fuel));
-    const cell = (k: string, v: string, sub?: string, cls = '') => h('span', `ps-c ${cls}`, '', h('span', 'k', k), h('b', '', v), ...(sub ? [h('span', 'ps-sub', sub)] : []));
+    const cell = (ico: string, k: string, v: string, sub?: string, cls = '') => h('span', `ps-c ${cls}`, '', icon(ico), h('span', 'ps-t', '', h('span', 'k', k), h('b', '', v), ...(sub ? [h('span', 'ps-sub', sub)] : [])));
     $('port-stock').replaceChildren(
-      cell(t('Cyrite'), num(Math.floor(w.cyrite)), t('to spend')),
-      cell(t('Jump fluid'), `${num(Math.floor(w.fuel))}/${w.jumpCost}`, short ? t('{n} more to jump', { n: short }) : t('Ready to jump'), short ? 'short' : 'ok'),
-      cell(t('Supplies'), `${w.supplies}/${w.supplyMax}`),
-      cell(t('Hull'), `${w.plates}/${w.stats.maxPlates}`, t('plates')),
+      cell('i-cyrite', t('Cyrite'), num(Math.floor(w.cyrite)), t('to spend')),
+      cell('i-fluid', t('Jump fluid'), `${num(Math.floor(w.fuel))}/${w.jumpCost}`, short ? t('{n} more to jump', { n: short }) : t('Ready to jump'), short ? 'short' : 'ok'),
+      cell('i-supplies', t('Supplies'), `${w.supplies}/${w.supplyMax}`),
+      cell('i-hull', t('Hull'), `${w.plates}/${w.stats.maxPlates}`, t('plates')),
     );
     // the ship's trouble and where it is mended: the stores here, the weight in the bay
     const warn = w.warnings.map((k) => t(PORT_WARN[k], { n: w.weightFuel }));
@@ -177,11 +204,12 @@ export class PortPanel {
     el.replaceChildren(...warn.map((l) => h('span', '', l)));
     // the services
     for (const [id, node] of [['port-bay', p.bay], ['port-buy', p.buy], ['port-stop', p.stop]] as const) $(id).replaceChildren(...node);
+    $('port-msg').textContent = this.msg;
     this.departure(w, short);
     this.mark();
   }
 
-  /** The departure block: where the lane goes, whether the tank can make it, the lane change where there is one. */
+  /** The departure block: where the lane goes, and whether the tank can make it. */
   private departure(w: World, short: number): void {
     const c = this.course, lanes = c?.lanes() ?? [];
     const now = c ? lanes.find((x) => x.id === c.current()) ?? lanes[0] : undefined;
@@ -193,79 +221,95 @@ export class PortPanel {
     const st = $('port-dstat');
     st.className = `pd-stat ${short ? 'short' : 'ok'}`;
     st.textContent = short ? t('Need {n} more jump fluid to jump', { n: short }) : t('Ready to jump');
-    const lane = $('port-lane') as HTMLButtonElement;
-    lane.hidden = lanes.length < 2;
-    lane.textContent = t('Change lane');
-    lane.onclick = guarded(this.opened, () => this.act('lane'));
-    lane.onpointerdown = (e) => e.stopPropagation();
-    const e = (k: Entry['key']) => this.entries.find((x) => x.key === k)!;
-    lane.disabled = !e('lane').ok;
-    e('lane').el = lane;
-    e('cast').el = $('port-x');
+    this.entries.find((x) => x.key === 'cast')!.el = $('port-x');
   }
 
   /** The port's entries and the rows that show them. */
   private plan(w: World): { entries: Entry[]; bay: HTMLElement[]; buy: HTMLElement[]; stop: HTMLElement[] } {
-    const P = w.prices, cy = Math.floor(w.cyrite);
+    const P = w.prices;
     // the first visit of the training: only the bay is open, and it says to start there (sim/tutor.ts)
     const first = needsTorpedoFit(w);
     const entries: Entry[] = [];
-    /** A pressable card; the entry remembers its element so the selection can move without a redraw. */
-    const card = (key: Entry['key'], ok: boolean, cls: string, kids: HTMLElement[], go: () => void, label: string): HTMLElement => {
-      const b = h('button', `port-l ${cls}`, '', ...kids) as HTMLButtonElement;
-      b.type = 'button';
-      b.disabled = !ok;
-      b.setAttribute('aria-label', label);
-      b.onclick = guarded(this.opened, () => this.act(key));
-      b.onpointerdown = (e) => e.stopPropagation();
-      entries.push({ key, ok, go, el: b });
-      return b;
-    };
+    const remember = (key: Entry['key'], ok: boolean, el: HTMLElement, go: () => void) => { entries.push({ key, ok, go, el }); };
     // the bay: free to enter; the count is what the bay itself would let you fit now
     const ctx = w.bayCtx(), can = affordable(ctx), next = can ? null : cheapest(ctx);
     const bayName = t('Refit bay'), bayText = t('Browse weapons, systems and ship upgrades.');
     const bayState = first ? t('Start here · fit your torpedoes') : can ? plural(can, '{n} upgrade you can afford', '{n} upgrades you can afford') : next ? t('Cheapest part: {n} Cyrite', { n: num(next.cost) }) : t('No upgrades you can afford yet');
-    const bay = card('bay', true, `bay${first ? ' lead' : ''}`, [
-      h('span', 'pl-t', bayName), h('span', 'pl-d', bayText),
-      h('span', 'pl-r', '', h('span', `pl-badge ${can || first ? 'ok' : 'none'}`, bayState), h('span', 'pl-go', t('Open bay'))),
-    ], () => { this.close(); this.onBay?.(); }, `${bayName}. ${bayText} ${bayState}`);
-    // a purchase: what is aboard, the price, and the one state word that says if you can
-    const buy = (key: 'fuel' | 'supplies' | 'plate', name: string, detail: string, price: number, full: string, tag: string, verb: string): HTMLElement => {
+    const bay = h('button', `port-l bay${first ? ' lead' : ''}`, '',
+      h('span', 'pl-ico', '', icon('i-hull')),
+      h('span', 'pl-m', '', h('span', 'pl-t', bayName), h('span', 'pl-d', bayText), h('span', `pl-badge ${can || first ? 'ok' : 'none'}`, bayState)),
+      h('span', 'pl-go', t('Open bay')),
+    ) as HTMLButtonElement;
+    bay.type = 'button';
+    bay.setAttribute('aria-label', `${bayName}. ${bayText} ${bayState}`);
+    bay.onclick = guarded(this.opened, () => this.act('bay'));
+    bay.onpointerdown = (e) => e.stopPropagation();
+    remember('bay', true, bay, () => { this.close(); this.onBay?.(); });
+    // a purchase: what is aboard, the unit price, a quantity, and the one state word that says if you can
+    const buy = (key: Buyable, ico: string, name: string, detail: string, price: number, full: string, tag: string, verb: string, did: (n: number, c: number) => string): HTMLElement => {
       const done = key === 'fuel' ? w.fuel >= w.tankCap : key === 'plate' ? w.plates >= w.stats.maxPlates : w.supplies >= w.supplyMax;
+      const most = this.most(w, key);
       const ok = !first && w.canBuy(key);
+      const n = Math.max(1, Math.min(Math.max(1, most), this.qty[key]));
+      this.qty[key] = n;
       const need = Math.max(0, Math.ceil(price - w.cyrite));
       const state = first ? badge('lock', t('Locked · use the bay first')) : done ? badge('done', full) : need ? badge('short', t('Need {n} more Cyrite', { n: num(need) })) : badge('ok', t('Can afford'));
-      return card(key, ok, `buy${first ? ' locked' : done ? ' done' : need ? ' short' : ''}`, [
-        h('span', 'pl-t', name), h('span', 'pl-d', detail), h('span', 'pl-p', tag),
-        h('span', 'pl-r', '', state, ...(ok ? [h('span', 'pl-go', verb)] : [])),
-      ], () => { w.buy(key); this.render(); }, `${name}. ${detail}. ${tag}`);
+      const stepper = (sign: 1 | -1, label: string) => {
+        const b = h('button', 'pl-q', sign < 0 ? '−' : '+') as HTMLButtonElement;
+        b.type = 'button';
+        b.disabled = !ok || (sign < 0 ? n <= 1 : n >= most);
+        b.setAttribute('aria-label', label);
+        b.onclick = guarded(this.opened, () => { this.sel = key; this.step(key, sign); });
+        b.onpointerdown = (e) => e.stopPropagation();
+        return b;
+      };
+      const go = h('button', 'pl-go', ok ? `${verb} ${n}` : verb) as HTMLButtonElement;
+      go.type = 'button';
+      go.disabled = !ok;
+      go.onclick = guarded(this.opened, () => this.act(key));
+      go.onpointerdown = (e) => e.stopPropagation();
+      const card = h('div', `port-l buy${first ? ' locked' : done ? ' done' : need ? ' short' : ''}`, '',
+        h('span', 'pl-ico', '', icon(ico)),
+        h('span', 'pl-m', '', h('span', 'pl-t', name), h('span', 'pl-d', detail), h('span', 'pl-p', tag)),
+        h('span', 'pl-r', '', state),
+        ...(ok ? [h('span', 'pl-buy', '', h('span', 'pl-qty', '', stepper(-1, t('Fewer')), h('b', '', String(n)), stepper(1, t('More'))), go, h('span', 'pl-tot', t('Total {n} Cyrite', { n: num(n * price) })))] : []),
+      );
+      card.setAttribute('role', 'group');
+      card.setAttribute('aria-label', `${name}. ${detail}. ${tag}`);
+      card.onpointerdown = () => { if (ok) this.sel = key; this.mark(); };
+      remember(key, ok, card, () => {
+        let got = 0;
+        for (let i = 0; i < n && w.buy(key); i++) got++;
+        this.msg = got ? did(got, got * price) : '';
+        this.render();
+      });
+      return card;
     };
     const room = w.supplyMax - w.supplies;
     const buys = [
-      buy('fuel', t('Buy jump fluid'), t('{n} in the tank · {m} to jump', { n: Math.floor(w.fuel), m: w.jumpCost }), w.fluidPrice, t('Tank full'), t('{n} Cyrite each', { n: w.fluidPrice }), t('Buy 1')),
-      buy('supplies', t('Buy supplies'), room > 0 ? t('{n} aboard · Room for {m} more', { n: w.supplies, m: room }) : t('{n} aboard · No room for more', { n: w.supplies }), P.supplies, t('At capacity'), t('{n} Cyrite each', { n: P.supplies }), t('Buy 1')),
-      buy('plate', t('Hull repair'), w.plates >= w.stats.maxPlates ? t('{n} of {m} plates', { n: w.plates, m: w.stats.maxPlates }) : t('{n} of {m} plates · {k} damaged', { n: w.plates, m: w.stats.maxPlates, k: w.stats.maxPlates - w.plates }), P.plate, t('Fully repaired'), t('{n} Cyrite per plate', { n: P.plate }), t('Repair 1')),
+      buy('fuel', 'i-fluid', t('Buy jump fluid'), t('{n} in the tank · {m} to jump', { n: Math.floor(w.fuel), m: w.jumpCost }), w.fluidPrice, t('Tank full'), t('{n} Cyrite each', { n: w.fluidPrice }), t('Buy'), (n, c) => t('Bought {n} jump fluid · −{c} Cyrite', { n, c: num(c) })),
+      buy('supplies', 'i-supplies', t('Buy supplies'), room > 0 ? t('{n} aboard · Room for {m} more', { n: w.supplies, m: room }) : t('{n} aboard · No room for more', { n: w.supplies }), P.supplies, t('At capacity'), t('{n} Cyrite each', { n: P.supplies }), t('Buy'), (n, c) => t('Bought {n} supplies · −{c} Cyrite', { n, c: num(c) })),
+      buy('plate', 'i-plate', t('Hull repair'), w.plates >= w.stats.maxPlates ? t('{n} of {m} plates', { n: w.plates, m: w.stats.maxPlates }) : t('{n} of {m} plates · {k} damaged', { n: w.plates, m: w.stats.maxPlates, k: w.stats.maxPlates - w.plates }), P.plate, t('Fully repaired'), t('{n} Cyrite per plate', { n: P.plate }), t('Repair'), (n, c) => t('Repaired {n} hull plates · −{c} Cyrite', { n, c: num(c) })),
     ];
     // the sensible stop: everything up to the jump, then supplies, then the hull, as far as the Cyrite reaches
     const plan = w.planStop(), idle = stopIdle(plan);
     const lack = Math.max(0, Math.ceil(w.jumpCost - w.fuel) - plan.fuel);
     const missing = w.fuel < w.jumpCost || w.supplies < Math.min(w.supplyMax, SUPPLIES_TARGET) || w.plates < w.stats.maxPlates;
-    const stop = card('stop', !idle && !first, 'stop', [
+    const stopOk = !idle && !first;
+    const stop = h('div', `port-l stop${stopOk ? '' : ' off'}`, '',
       h('span', 'pl-t', t('Sensible stop')),
       idle ? h('span', 'pl-d', lack ? t('Need {n} more jump fluid to jump', { n: lack }) : '') : h('span', 'pl-chips', '', ...deltas(plan).map((c) => h('span', 'pl-chip', c))),
-      h('span', 'pl-r', '', first ? badge('lock', t('Locked · use the bay first')) : idle ? (missing ? badge('short', t('Need Cyrite')) : badge('done', t('All topped up'))) : h('b', 'pl-sum', `−${Math.abs(plan.cyrite)} ${t('Cyrite')}`), ...(idle || first ? [] : [h('span', 'pl-go', t('Top up'))])),
-    ], () => { w.sensibleStop(); this.render(); }, t('Sensible stop'));
-    // the lane change and Cast off live in the departure block; they are entries all the same
-    const lanes = this.course?.lanes() ?? [];
-    entries.push({
-      key: 'lane', ok: lanes.length > 1 && !first,
-      go: () => {
-        // the next lane out of here, round and round
-        const c = this.course!, ls = c.lanes(), at = ls.findIndex((x) => x.id === c.current());
-        c.pick(ls[(at + 1) % ls.length]!.id);
-        this.render();
-      },
-    });
+      h('span', 'pl-r', '', first ? badge('lock', t('Locked · use the bay first')) : idle ? (missing ? badge('short', t('Need Cyrite')) : badge('done', t('All topped up'))) : h('b', 'pl-sum', `−${Math.abs(plan.cyrite)} ${t('Cyrite')}`)),
+    );
+    if (stopOk) {
+      const go = h('button', 'pl-go', t('Top up')) as HTMLButtonElement;
+      go.type = 'button';
+      go.onclick = guarded(this.opened, () => this.act('stop'));
+      go.onpointerdown = (e) => e.stopPropagation();
+      stop.append(go);
+    }
+    stop.setAttribute('aria-label', t('Sensible stop'));
+    remember('stop', stopOk, stop, () => { const done = w.sensibleStop(); this.msg = t('Topped up · −{c} Cyrite', { c: num(Math.abs(done.cyrite)) }); this.render(); });
     entries.push({ key: 'cast', ok: true, go: () => this.leave() });
     return { entries, bay: [bay], buy: buys, stop: [stop] };
   }

@@ -1,11 +1,16 @@
 import { DESK } from '../sim/desk';
 import type { Caller, Open } from '../sim/comms';
 import type { GameEvent } from '../sim/events';
-import { oddsWord } from './comms';
+import { artOf, oddsWord } from './comms';
+import { artImg, artUrl } from './art';
+import { icon } from './icons';
 import { NEON_CSS } from './colors';
 import { $, h } from './dom';
 import { INK } from './palette';
 import { t } from '../i18n';
+
+/** What a job's call can say of its terms, read from the scene it opens: the pay (best case) and the seconds it allows. */
+export interface JobTerms { reward: string[]; limit: number }
 
 // ── the radio ─────────────────────────────────────────────────────────────
 // The two light weights of transmission (sim/desk.ts), drawn over the flight
@@ -41,6 +46,8 @@ export class Radio {
     private readonly answer: (id: string) => void,
     /** True while a panel, a pause or a launch card has the screen. */
     private readonly blocked: () => boolean,
+    /** The terms of a job's call, where the scene has any. */
+    private readonly terms: (o: Open) => JobTerms | null = () => null,
   ) {
     window.addEventListener('keydown', (e) => {
       if (!this.shown || e.repeat || e.metaKey || e.ctrlKey || e.altKey || this.blocked() || performance.now() - this.opened < 350) return;
@@ -112,11 +119,16 @@ export class Radio {
     const card = $('rd-call');
     card.classList.toggle('prio', o.tier === 'important');
     card.style.setProperty('--cc', CALLER_CSS[d.caller]);
+    const job = d.kind === 'job';
+    card.classList.toggle('job', job);
+    $('rd-k').textContent = t(job ? 'Job offer' : 'Incoming');
     $('rd-kind').textContent = t(KIND_WORD[d.kind] ?? d.kind);
     $('rd-prio').hidden = o.tier !== 'important';
     const [who, ...what] = t(d.from).split(' · ');
-    $('rd-who').textContent = who ?? '';
-    $('rd-what').textContent = what.join(' · ');
+    // a job is read as a contract: its title, then who is offering it
+    $('rd-who').textContent = job ? t(d.title) : who ?? '';
+    $('rd-what').textContent = job ? t(d.from) : what.join(' · ');
+    this.contract(o, job);
     $('rd-text').textContent = o.text;
     // the read: one line, and only for a call that can be a lie
     const read = $('rd-read');
@@ -125,7 +137,7 @@ export class Radio {
     // the terms of a plain offer: what the first answer means, in the card's own words
     const terms = $('rd-terms');
     const first = o.choices[0];
-    terms.hidden = many || !first || !first.hint;
+    terms.hidden = job || many || !first || !first.hint;
     terms.textContent = first && !many ? t(first.hint) : '';
     $('rd-list').classList.toggle('many', many);
     $('rd-list').replaceChildren(...o.choices.map((c, i) => {
@@ -133,12 +145,30 @@ export class Radio {
       const chips = c.ok
         ? [...c.gains.filter((g) => g !== 'Job').map((g) => h('span', /^−/.test(g) ? 'g-loss' : 'g-gain', t(g))), ...c.cost.map((x) => h('span', 'g-loss', x)), ...(c.chance !== null ? [h('span', 'g-odds', oddsWord(c.chance))] : [])]
         : c.needs.map((n) => h('span', 'g-need', t(n)));
-      const b = h('button', `rd-c${i === o.choices.findIndex((x) => x.ok) ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
+      const b = h('button', `rd-c${i === o.choices.findIndex((x) => x.ok) ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), job && c.hint ? h('span', 'rd-hint', t(c.hint)) : null, chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('aria-disabled', String(!c.ok));
       b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); if (performance.now() - this.opened > 350) this.pick(i); };
       b.onpointerdown = (e) => e.stopPropagation();
       return b;
     }));
+  }
+
+  /** A job's picture and its terms: what it asks, what it pays. Hidden for every other call. */
+  private contract(o: Open, job: boolean): void {
+    const art = $('rd-art'), sheet = $('rd-sheet');
+    art.hidden = sheet.hidden = !job;
+    if (!job) { art.replaceChildren(); sheet.replaceChildren(); return; }
+    const a = artOf(o.def), [slot, id] = a.portrait ?? [null, ''];
+    const pic = (slot && artImg(slot, id, 'rd-pic')) || (a.ship ? artImg('ship', a.ship, 'rd-pic rd-hull') : null);
+    const emblem = a.emblem ? artUrl('emblem', a.emblem) : null;
+    art.classList.toggle('emblem', !pic && !!emblem);
+    if (emblem) art.style.setProperty('--emblem', `url("${emblem}")`); else art.style.removeProperty('--emblem');
+    art.replaceChildren(...(pic ? [pic] : emblem ? [] : [icon('i-job')]));
+    const terms = this.terms(o), lead = o.choices.find((c) => c.ok);
+    const asks = [...(lead?.cost ?? []), ...(terms?.limit ? [t('{n} s allowed', { n: terms.limit })] : [])];
+    const pays = terms?.reward ?? [];
+    const col = (k: string, items: string[], cls: string, none: string) => h('div', 'rd-col', '', h('span', 'k', k), h('div', 'rd-items', '', ...(items.length ? items.map((x) => h('span', cls, x)) : [h('span', 'g-none', none)])));
+    sheet.replaceChildren(col(t('Requires'), asks, 'g-loss', t('Nothing')), col(t('Reward'), pays, 'g-gain', t('Not fixed')));
   }
 }
