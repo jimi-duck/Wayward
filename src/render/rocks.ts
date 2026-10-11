@@ -1,3 +1,4 @@
+import { rockPose } from './rockmotion';
 import {
   Color, IcosahedronGeometry, LatheGeometry, Vector2, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
   Vector3, type BufferGeometry, type Scene,
@@ -457,11 +458,11 @@ export class RockView {
       counts[slot] = i + 1;
       // no two alike: each rock is stretched its own way and takes its own shade of stone
       const h1 = hash(r.id), h2 = hash(r.id + 17), h3 = hash(r.id + 41);
-      // a piece of a break starts at the parent's place and half its size, then eases out to its own spot
-      const grow = Math.min(1, r.age / 0.45), ease = grow * grow * (3 - 2 * grow);
-      const s = r.r * (r.ox || r.oz ? 0.5 + 0.5 * ease : ease);
+      // a piece of a break is full size from the first frame and only eases out the last of its way
+      const pose = rockPose(r.age, r.ox !== 0 || r.oz !== 0);
+      const s = r.r * pose.scale;
       this.q.setFromAxisAngle(this.axis.set(r.ax, r.ay, r.az), r.rot);
-      this.pos.set(r.x - r.vx * back + r.ox * (1 - ease), -0.3, r.z - r.vz * back + r.oz * (1 - ease));
+      this.pos.set(r.x - r.vx * back + r.ox * pose.slide, -0.3, r.z - r.vz * back + r.oz * pose.slide);
       this.m.compose(this.pos, this.q, this.sc.set(s * (0.88 + 0.24 * h1), s * (0.9 + 0.2 * h2), s * (0.88 + 0.24 * h3)));
       mesh.setMatrixAt(i, this.m);
       if (r.kind === 'rich') {
