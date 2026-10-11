@@ -45,10 +45,12 @@
 #port-x { min-height: 40px; padding: 9px 22px; }
 
 /* ── Frontier Supply ──────────────────────────────────────────────────── */
-#port { place-items: center; }
+/* the supply is a place of its own: a painted backdrop, the game not shown behind it */
+#port { place-items: center; background: #071018 url("../assets/wayward-supply-background.webp") center / cover no-repeat; }
+#port::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(7, 16, 24, .35), rgba(7, 16, 24, .1) 50%, rgba(7, 16, 24, .35)); }
+#port > .panel { position: relative; }
 #port .panel.port-panel { width: min(780px, 100%); overflow-y: auto; }
-#port .port-art { position: absolute; inset: 0 0 auto 0; height: 150px; margin: 0; max-height: none; border: 0; opacity: .22; pointer-events: none;
-  -webkit-mask: linear-gradient(#000 20%, transparent); mask: linear-gradient(#000 20%, transparent); z-index: 0; }
+#port .port-art { display: none; }
 #port .port-pic { width: 100%; height: 100%; object-fit: cover; }
 #port .dk-h, #port .port-stock { z-index: 1; }
 /* what the ship holds: an icon, the name, what is aboard against what fits */
@@ -226,6 +228,13 @@
 #rd-call:not(.job) .rd-c { border-color: var(--dk-line); background: var(--dk-raised); }
 #rd-call:not(.job) .rd-c.first { border-color: var(--hud-mid); background: var(--hud-ghost); }
 
+/* the onboarding cards (opening, Heat) take the bay's quiet outlined button too */
+#op-go, #hn-go { --c: 0px; position: static; border: 1px solid var(--hud-mid); background: var(--hud-ghost); color: var(--hud-hi); padding: 9px 22px; cursor: pointer;
+  font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; transition: background var(--dk-ez), color var(--dk-ez); }
+#op-go::before, #op-go::after, #hn-go::before, #hn-go::after { content: none; }
+#op-go:hover, #hn-go:hover, #op-go:focus-visible, #hn-go:focus-visible { background: var(--hud-dim); color: #fff; }
+#op-go:focus-visible, #hn-go:focus-visible { outline: 2px solid var(--hud); outline-offset: 2px; }
+
 /* ── a phone on its side, a short window ──────────────────────────────── */
 @media (max-height: 460px) {
   .sheet.dk .panel.dk-panel { padding: 8px 12px; gap: 6px; }
@@ -313,5 +322,5 @@
   #port .ps-c:nth-child(3) { border-left: 1px solid var(--dk-hair); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #port .port-l, #comms .cm-c, #port .pl-go, #port-x { transition: none; }
+  #port .port-l, #comms .cm-c, #port .pl-go, #port-x, #op-go, #hn-go { transition: none; }
 }

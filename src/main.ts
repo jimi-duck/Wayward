@@ -145,7 +145,9 @@ function boot(review: typeof import('./review') | null): void {
   let reported = false;
   const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || opening.open || heatNote.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
-  const radioBlocked = () => !started || loop.paused || panelOpen();
+  /** A call that asks for an answer holds the world still, like every other pop-up; it lets go when it is answered or lapses. */
+  let callHold = false;
+  const radioBlocked = () => !started || (loop.paused && !callHold) || panelOpen();
   const radioAnswer = (id: string) => {
     const before = world.carry();
     if (!world.answer(id)) return;
@@ -484,6 +486,7 @@ function boot(review: typeof import('./review') | null): void {
     // the first stop of the first run is the briefing; once read, it is the pause card
     if (!on && loop.paused && started && carded && !profile.briefed) { profile.briefed = true; persist(profile); }
     if (on && started) carded = true;
+    callHold = false;
     loop.paused = on;
     if (on) showSettings(false);
     document.documentElement.classList.toggle('paused', on && started);
@@ -605,6 +608,8 @@ function boot(review: typeof import('./review') | null): void {
       hud.events(events, world);
       feel.events(events);
       radio.events(events);
+      if (started && world.call && !callHold && !loop.paused && !panelOpen()) { callHold = true; loop.paused = true; input.reset(); }
+      else if (callHold && !world.call) { callHold = false; if (!panelOpen()) { loop.paused = false; input.reset(); } }
       radio.sync(world.call, world.callUntil - world.runTime);
       // the title covers the canvas and the HUD: nothing to draw until the first launch
       if (!started) return;
