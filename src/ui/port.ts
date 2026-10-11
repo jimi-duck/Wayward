@@ -5,8 +5,18 @@ import { needsTorpedoFit } from '../sim/tutor';
 import { stopIdle, SUPPLIES_TARGET, type Stop } from '../sim/stop';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
-import { icon } from './icons';
 import { num, plural, t } from '../i18n';
+
+// The pictures (icons, item art, the hangar) come from src/assets/supply.
+const PICS = import.meta.glob('../assets/supply/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+function pic(name: string, cls: string): HTMLImageElement {
+  const img = new Image();
+  img.src = PICS[`../assets/supply/${name}.webp`] ?? '';
+  img.alt = '';
+  img.className = cls;
+  img.draggable = false;
+  return img;
+}
 
 // ── the port ──────────────────────────────────────────────────────────────
 // Docked: the world waits while you trade. Top to bottom: what the ship holds
@@ -38,7 +48,7 @@ type Entry = { key: 'bay' | 'fuel' | 'supplies' | 'plate' | 'stop' | 'cast'; ok:
 type Buyable = 'fuel' | 'supplies' | 'plate';
 
 /** The rows the arrows walk (keys of the entries, left to right). */
-const ROWS: Entry['key'][][] = [['bay'], ['fuel', 'supplies', 'plate'], ['stop'], ['cast']];
+const ROWS: Entry['key'][][] = [['fuel', 'supplies', 'plate'], ['bay'], ['stop'], ['cast']];
 
 /** The lane out of here, for the departure line (the lane itself is plotted on the chart). */
 export interface Course {
@@ -202,12 +212,12 @@ export class PortPanel {
     if (!this.entries.find((e) => e.key === this.sel)?.ok) this.sel = this.entries.find((e) => e.ok)?.key ?? 'cast';
     // what the ship holds: an icon, the name, what is aboard against what fits
     const short = Math.max(0, Math.ceil(w.jumpCost - w.fuel));
-    const cell = (ico: string, k: string, v: string, sub?: string, cls = '') => h('span', `ps-c ${cls}`, '', icon(ico), h('span', 'ps-t', '', h('span', 'k', k), h('b', '', v), ...(sub ? [h('span', 'ps-sub', sub)] : [])));
+    const cell = (ico: string, k: string, v: string, sub?: string, cls = '') => h('span', `ps-c ${cls}`, '', pic(ico, 'ps-pic'), h('span', 'ps-t', '', h('span', 'k', k), h('b', '', v), ...(sub ? [h('span', 'ps-sub', sub)] : [])));
     $('port-stock').replaceChildren(
-      cell('i-cyrite', t('Cyrite'), num(Math.floor(w.cyrite)), t('to spend')),
-      cell('i-fluid', t('Jump fluid'), `${num(Math.floor(w.fuel))}/${w.jumpCost}`, short ? t('{n} more to jump', { n: short }) : t('Ready to jump'), short ? 'short' : 'ok'),
-      cell('i-supplies', t('Supplies'), `${w.supplies}/${w.supplyMax}`),
-      cell('i-hull', t('Hull'), `${w.plates}/${w.stats.maxPlates}`, t('plates')),
+      cell('ico-cyrite', t('Cyrite'), num(Math.floor(w.cyrite))),
+      cell('ico-fluid', t('Jump fluid'), `${num(Math.floor(w.fuel))}/${w.jumpCost}`, short ? t('{n} more to jump', { n: short }) : t('Ready to jump'), short ? 'short' : 'ok'),
+      cell('ico-supplies', t('Supplies'), `${w.supplies}/${w.supplyMax}`),
+      cell('ico-hull', t('Hull'), `${w.plates}/${w.stats.maxPlates}`),
     );
     // the ship's trouble and where it is mended: the stores here, the weight in the bay
     const warn = w.warnings.map((k) => t(PORT_WARN[k], { n: w.weightFuel }));
@@ -215,7 +225,7 @@ export class PortPanel {
     el.hidden = !warn.length;
     el.replaceChildren(...warn.map((l) => h('span', '', l)));
     // the services
-    for (const [id, node] of [['port-bay', p.bay], ['port-buy', p.buy], ['port-stop', p.stop]] as const) $(id).replaceChildren(...node);
+    for (const [id, node] of [['port-buy', p.buy], ['port-bay', p.bay], ['port-stop', p.stop]] as const) $(id).replaceChildren(...node);
     $('port-msg').textContent = this.msg;
     this.departure(w, short);
     this.mark();
@@ -232,7 +242,8 @@ export class PortPanel {
     $('port-dmeta').textContent = meta;
     const st = $('port-dstat');
     st.className = `pd-stat ${short ? 'short' : 'ok'}`;
-    st.textContent = short ? t('Need {n} more jump fluid to jump', { n: short }) : t('Ready to jump');
+    st.replaceChildren(...(short ? [pic('warn', 'warnico')] : []), document.createTextNode(short ? t('Need {n} more jump fluid to jump', { n: short }) : t('Ready to jump')));
+    $('port-pin').replaceChildren(pic('act-pin', 'pinico'));
     this.entries.find((x) => x.key === 'cast')!.el = $('port-x');
   }
 
@@ -248,8 +259,9 @@ export class PortPanel {
     const bayName = t('Refit bay'), bayText = t('Browse weapons, systems and ship upgrades.');
     const bayState = first ? t('Start here · fit your torpedoes') : can ? plural(can, '{n} upgrade you can afford', '{n} upgrades you can afford') : next ? t('Cheapest part: {n} Cyrite', { n: num(next.cost) }) : t('No upgrades you can afford yet');
     const bay = h('button', `port-l bay${first ? ' lead' : ''}`, '',
-      h('span', 'pl-ico', '', icon('i-hull')),
+      pic('art-bay', 'pl-art bayico'),
       h('span', 'pl-m', '', h('span', 'pl-t', bayName), h('span', 'pl-d', bayText), h('span', `pl-badge ${can || first ? 'ok' : 'none'}`, bayState)),
+      pic('bay-wide', 'bay-wide'),
       h('span', 'pl-go', t('Open bay')),
     ) as HTMLButtonElement;
     bay.type = 'button';
@@ -281,7 +293,7 @@ export class PortPanel {
       go.onclick = guarded(this.opened, () => this.act(key));
       go.onpointerdown = (e) => e.stopPropagation();
       const card = h('div', `port-l buy${first ? ' locked' : done ? ' done' : need ? ' short' : ''}`, '',
-        h('span', 'pl-ico', '', icon(ico)),
+        pic(ico, 'pl-art'),
         h('span', 'pl-m', '', h('span', 'pl-t', name), h('span', 'pl-d', detail), h('span', 'pl-p', tag)),
         h('span', 'pl-r', '', state),
         ...(ok ? [h('span', 'pl-buy', '', h('span', 'pl-qty', '', stepper(-1, t('Fewer')), h('b', '', String(n)), stepper(1, t('More'))), go, h('span', 'pl-tot', t('Total {n} Cyrite', { n: num(n * price) })))] : []),
@@ -299,9 +311,9 @@ export class PortPanel {
     };
     const room = w.supplyMax - w.supplies;
     const buys = [
-      buy('fuel', 'i-fluid', t('Buy jump fluid'), t('{n} in the tank · {m} to jump', { n: Math.floor(w.fuel), m: w.jumpCost }), w.fluidPrice, t('Tank full'), t('{n} Cyrite each', { n: w.fluidPrice }), t('Buy'), (n, c) => t('Bought {n} jump fluid · −{c} Cyrite', { n, c: num(c) })),
-      buy('supplies', 'i-supplies', t('Buy supplies'), room > 0 ? t('{n} aboard · Room for {m} more', { n: w.supplies, m: room }) : t('{n} aboard · No room for more', { n: w.supplies }), P.supplies, t('At capacity'), t('{n} Cyrite each', { n: P.supplies }), t('Buy'), (n, c) => t('Bought {n} supplies · −{c} Cyrite', { n, c: num(c) })),
-      buy('plate', 'i-plate', t('Hull repair'), w.plates >= w.stats.maxPlates ? t('{n} of {m} plates', { n: w.plates, m: w.stats.maxPlates }) : t('{n} of {m} plates · {k} damaged', { n: w.plates, m: w.stats.maxPlates, k: w.stats.maxPlates - w.plates }), P.plate, t('Fully repaired'), t('{n} Cyrite per plate', { n: P.plate }), t('Repair'), (n, c) => t('Repaired {n} hull plates · −{c} Cyrite', { n, c: num(c) })),
+      buy('fuel', 'art-fluid', t('Buy jump fluid'), t('{n} in the tank · {m} to jump', { n: Math.floor(w.fuel), m: w.jumpCost }), w.fluidPrice, t('Tank full'), t('{n} Cyrite each', { n: w.fluidPrice }), t('Buy'), (n, c) => t('Bought {n} jump fluid · −{c} Cyrite', { n, c: num(c) })),
+      buy('supplies', 'art-supplies', t('Buy supplies'), room > 0 ? t('{n} aboard · Room for {m} more', { n: w.supplies, m: room }) : t('{n} aboard · No room for more', { n: w.supplies }), P.supplies, t('At capacity'), t('{n} Cyrite each', { n: P.supplies }), t('Buy'), (n, c) => t('Bought {n} supplies · −{c} Cyrite', { n, c: num(c) })),
+      buy('plate', 'art-hull', t('Hull repair'), w.plates >= w.stats.maxPlates ? t('{n} of {m} plates', { n: w.plates, m: w.stats.maxPlates }) : t('{n} of {m} plates · {k} damaged', { n: w.plates, m: w.stats.maxPlates, k: w.stats.maxPlates - w.plates }), P.plate, t('Fully repaired'), t('{n} Cyrite per plate', { n: P.plate }), t('Repair'), (n, c) => t('Repaired {n} hull plates · −{c} Cyrite', { n, c: num(c) })),
     ];
     // the sensible stop: everything up to the jump, then supplies, then the hull, as far as the Cyrite reaches
     const plan = w.planStop(), idle = stopIdle(plan);
@@ -309,18 +321,19 @@ export class PortPanel {
     const missing = w.fuel < w.jumpCost || w.supplies < Math.min(w.supplyMax, SUPPLIES_TARGET) || w.plates < w.stats.maxPlates;
     const stopOk = !idle && !first;
     const stop = h('div', `port-l stop${stopOk ? '' : ' off'}`, '',
-      h('span', 'pl-t', t('Sensible stop')),
-      idle ? h('span', 'pl-d', lack ? t('Need {n} more jump fluid to jump', { n: lack }) : '') : h('span', 'pl-chips', '', ...deltas(plan).map((c) => h('span', 'pl-chip', c))),
-      h('span', 'pl-r', '', first ? badge('lock', t('Locked · use the bay first')) : idle ? (missing ? badge('short', t('Need Cyrite')) : badge('done', t('All topped up'))) : h('b', 'pl-sum', `−${Math.abs(plan.cyrite)} ${t('Cyrite')}`)),
+      pic('act-buy', 'pl-art stopico'),
+      h('span', 'pl-m', '', h('span', 'pl-t', t('Recommended purchase')), h('span', 'pl-d', idle && lack ? t('Need {n} more jump fluid to jump', { n: lack }) : t('Sensible stop for your next jump.'))),
+      ...(idle ? [] : [h('span', 'pl-chips', '', ...deltas(plan).map((c) => h('span', 'pl-chip', c)))]),
+      h('span', 'pl-r', '', first ? badge('lock', t('Locked · use the bay first')) : idle ? (missing ? badge('short', t('Need Cyrite')) : badge('done', t('All topped up'))) : h('span', 'pl-cost', '', h('span', 'k', t('Total cost')), h('b', 'pl-sum', `${num(Math.abs(plan.cyrite))} ${t('Cyrite')}`))),
     );
     if (stopOk) {
-      const go = h('button', 'pl-go', t('Top up')) as HTMLButtonElement;
+      const go = h('button', 'pl-go', t('Buy recommended')) as HTMLButtonElement;
       go.type = 'button';
       go.onclick = guarded(this.opened, () => this.act('stop'));
       go.onpointerdown = (e) => e.stopPropagation();
       stop.append(go);
     }
-    stop.setAttribute('aria-label', t('Sensible stop'));
+    stop.setAttribute('aria-label', t('Recommended purchase'));
     remember('stop', stopOk, stop, () => { const done = w.sensibleStop(); this.msg = t('Topped up · −{c} Cyrite', { c: num(Math.abs(done.cyrite)) }); this.render(); });
     entries.push({ key: 'cast', ok: true, go: () => this.leave() });
     return { entries, bay: [bay], buy: buys, stop: [stop] };
