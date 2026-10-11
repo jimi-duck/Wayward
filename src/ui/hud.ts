@@ -343,7 +343,7 @@ export class Hud {
     $('vy-cells').hidden = !b;
     $('sys-score').hidden = !!b;
     const th = $('obj-threat');
-    if (!b) { th.hidden = true; return; }
+    if (!b) { th.hidden = true; $('heat').hidden = true; return; }
     // the tank, in the status panel: jump fluid toward the jump; and the purse (Cyrite) beside it
     const fuel = $('sys-fuel'), need = world.jumpCost;
     text($('v-fuel'), `${Math.floor(world.fuel)}/${need}`);
@@ -364,8 +364,11 @@ export class Hud {
     }
     const near = hostile && hostile.d < THREAT_NEAR ? hostile : null;
     const heat = b.heat, level = heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4;
-    const line = near ? `${t(near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact')} · ${range(near.d)}`
-      : level >= 3 ? `${t('Wanted')} ${level}/4` : '';
+    const line = near ? `${t(near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact')} · ${range(near.d)}` : '';
+    // the system's heat, lower right: four steps, gold from the third, red at the fourth
+    const lit = Math.ceil(clamp(heat, 0, 1) * 4), ht = $('heat');
+    ht.hidden = false;
+    if (ht.dataset.lit !== String(lit)) ht.dataset.lit = String(lit);
     th.hidden = !line;
     text(th, line);
     th.classList.toggle('hot', level >= 4 || (!!near && near.d < 110));

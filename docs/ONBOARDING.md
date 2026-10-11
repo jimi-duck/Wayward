@@ -5,7 +5,7 @@ what is after you, the first job), then the controls card (the pause card, title
 "All stop", with Resume and Save and exit), then a short lesson (`sim/tutor.ts`):
 three marked steps, each one a thing the game already does:
 
-1. **Mine a violet rock.** One rock, close ahead, with what the jump needs
+1. **Mine a Cyrite rock.** One rock, close ahead, with what the jump needs
    in it (the drive tank starts short by exactly that). The ship refines the
    Cyrite into jump fluid as it comes aboard.
 2. **Fly to the work bay.** The depot sits a short hop off (about 190 units),
@@ -14,6 +14,8 @@ three marked steps, each one a thing the game already does:
    and the purse (Cyrite, apart from the tank) holds the price.
 3. **Shoot the ship with torpedoes.** One Gutter scout appears only now, a
    little way ahead.
+
+Then a **Heat** note (`ui/heatnote.ts`, Story only) explains the Heat bar in the lower right of the HUD: the Continuance ships you fight and the time you spend in a system raise it, and the hotter it is the more ships come and the likelier a blockade. The bar has four steps (gold from the third, red at the fourth) and shows from the start of every Story system.
 
 Then the tank holds the jump (jump fluid), the quiet lifts after 25 s, and the run goes on.
 The Arcade has the same three in the same order (rock, a

@@ -86,7 +86,7 @@ Balance: [BALANCE-BREAKOUT.md](BALANCE-BREAKOUT.md), from
 
 **The first minutes.** A new Story journey opens on the Breakout story card,
 then the controls card, then a short lesson (`sim/tutor.ts`, see
-[ONBOARDING.md](ONBOARDING.md)): mine a violet rock, fly to the work bay and
+[ONBOARDING.md](ONBOARDING.md)): mine a Cyrite rock, fly to the work bay and
 fit torpedoes, shoot one ship with torpedoes. The Arcade plays the same three
 steps once.
 

@@ -18,6 +18,7 @@ import { regionsOf, routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
 import { OpeningPanel } from './ui/opening';
+import { HeatNote } from './ui/heatnote';
 import { Cutscene } from './ui/adrift';
 import { ChartPanel, regionName } from './ui/chart';
 import { barsOut } from './ui/bars';
@@ -125,11 +126,12 @@ function boot(review: typeof import('./review') | null): void {
   const chart = new ChartPanel();
   const ending = new EndingPanel();
   const opening = new OpeningPanel();
+  const heatNote = new HeatNote();
   const cut = new Cutscene();
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || opening.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || opening.open || heatNote.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   const radioBlocked = () => !started || loop.paused || panelOpen();
   const radioAnswer = (id: string) => {
@@ -438,6 +440,7 @@ function boot(review: typeof import('./review') | null): void {
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p, journey);
       else if (opening.open) opening.padInput(p);
+      else if (heatNote.open) heatNote.padInput(p);
       else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
     }
@@ -576,7 +579,10 @@ function boot(review: typeof import('./review') | null): void {
     render(alpha, frameDt) {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
-      if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly')); }
+      if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly'));
+        // the Story explains the heat bar once, as the training ends
+        if (world.bk && !world.tutor.skipped) { loop.paused = true; input.reset(); heatNote.show(() => { loop.paused = false; input.reset(); }); }
+      }
       // a kill lands harder for a beat of stillness (never with reduced motion)
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);

@@ -160,6 +160,7 @@
       <!-- lower right: the last thing that happened, the bay when it can be opened, what the place does to the ship -->
       <section id="log" class="hud-block" aria-live="off">
           <div id="mode" class="glass clear" hidden><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span></div>
+        <div id="heat" class="glass clear" hidden aria-label="System heat"><span class="ht-l">Heat</span><span class="ht-b"><i></i><i></i><i></i><i></i></span></div>
         <div id="log-lines"></div>
         <div id="cond" hidden></div>
         <button type="button" id="upg" class="glass" tabindex="-1" hidden><kbd class="only-desktop">B</kbd><span class="up-w"><span id="upg-t">Open bay</span><small id="upg-s">Upgrade ship</small></span><b id="upg-n"></b></button>
@@ -380,6 +381,15 @@
         <header class="ph"><span class="kick" id="op-k">Story 01</span><h2 id="op-t">Breakout</h2></header>
         <div id="op-l" class="op-l"></div>
         <footer class="pf"><button type="button" id="op-go">Continue</button></footer>
+      </div>
+    </div>
+
+    <!-- Shown once in the Story training, after the first torpedo kill: what system heat is. -->
+    <div id="heatnote" class="sheet" role="dialog" aria-labelledby="hn-t" hidden>
+      <div class="panel narrow opening">
+        <header class="ph"><h2 id="hn-t">Heat</h2></header>
+        <div id="hn-l" class="op-l"></div>
+        <footer class="pf"><button type="button" id="hn-go">Got it</button></footer>
       </div>
     </div>
 
