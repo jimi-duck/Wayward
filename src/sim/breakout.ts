@@ -354,6 +354,8 @@ export interface Breakout {
   spoolNeed: number;
   /** Seconds slow inside the port's ring. */
   dockT: number;
+  /** Set on cast-off: the clamps stay open until the ship has left the port's ring. */
+  castOff: boolean;
   /** The port's one-off quieting is spent. */
   portCooled: boolean;
   /** Times docked. */
@@ -369,7 +371,7 @@ export interface Breakout {
 export function newBreakout(heading: number, def: SortieDef = HOME): Breakout {
   const c = course(heading, 0, 0, def);
   return {
-    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, portCooled: false, docks: 0,
+    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }
