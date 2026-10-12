@@ -222,7 +222,7 @@ export class Hud {
           this.note(world, `${t('Hull damaged')} · ${damageWord(e.source)}`, 'hit');
           this.flashHit();
           this.retrigger($('sys-hull'), 'hit');
-          if (e.plates === 1) this.banner(t('Warning'), t('Hull critical · repair immediately'), t('One hull plate remaining'), 1.8);
+          if (e.plates === 1) this.banner(t('Warning'), t('Hull critical'), t('One hull plate remaining'), 1.8);
           break;
         case 'bossWarn':
           this.note(world, t('{name} inbound', { name: t(e.name) }), 'hit');

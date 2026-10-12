@@ -419,27 +419,25 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 @keyframes upg-deny { 20%, 60% { translate: -4px 0; } 40%, 80% { translate: 4px 0; } }
 
 /* ── alerts ───────────────────────────────────────────────────────────── */
-#vignette { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, transparent 50%, rgba(201, 74, 63, .42) 100%); }
+#vignette { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, transparent 58%, rgba(201, 74, 63, .5) 100%); }
 #vignette.hit { animation: vig-hit .55s ease-out; }
-#vignette.critical { opacity: .35; animation: vig-crit 1.8s ease-in-out infinite; }
+#vignette.critical { opacity: .5; animation: vig-crit 1.5s ease-in-out infinite; }
 @keyframes vig-hit { from { opacity: 1; } to { opacity: 0; } }
-@keyframes vig-crit { 50% { opacity: .12; } }
+@keyframes vig-crit { 0%, 100% { opacity: .55; } 22% { opacity: .2; } 36% { opacity: .5; } 60% { opacity: .22; } }
 @keyframes hud-blink { 50% { opacity: .35; } }
 @keyframes hud-hit { 0%, 30% { background: rgba(201, 74, 63, .28); } }
 
-/* a placard for the moments that stop the eye: a striped band, a kicker, a heavy title, one line of fact */
-/* it sits in the upper-centre stack with the capital ship and the target, clear of the ship and the way ahead */
-#banner { display: none; grid-template-columns: 8px auto; min-width: min(300px, 86vw);
-  --tone: var(--alert); filter: drop-shadow(0 0 18px rgba(201, 74, 63, .18)); }
+/* a passing alert: a small plate in the alert corner, over the alert plate. The centre stays clear. */
+#banner { display: none; grid-template-columns: 3px auto; max-width: 100%; --tone: var(--alert); }
 #banner.on { display: grid; animation: bn-in .22s var(--ez); }
-@keyframes bn-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-.bn-stripes { background: repeating-linear-gradient(-45deg, var(--tone) 0 4px, transparent 4px 8px); border: 1px solid var(--tone); border-right: 0; }
-.bn-body { display: grid; gap: 4px; padding: 7px 18px 8px 12px; background: rgba(8, 13, 14, .72); border: 1px solid var(--tone); border-left: 0; text-align: left; }
-.bn-k { display: flex; align-items: center; gap: 7px; font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--tone); }
-#banner-t { font: 700 clamp(16px, 1.6vw, 20px)/1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
-.bn-s { font: 600 calc(var(--fs) * 1.1)/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+@keyframes bn-in { from { opacity: 0; translate: 8px 0; } }
+.bn-stripes { background: var(--tone); }
+.bn-body { display: grid; gap: 3px; padding: 5px 10px 6px 10px; background: rgba(8, 13, 14, .72); text-align: left; }
+.bn-k { display: flex; align-items: center; gap: 7px; font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--tone); }
+#banner-t { font: 700 calc(var(--fs) * 1.45)/1.1 var(--font-head); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+.bn-s { font: 600 calc(var(--fs) * 1.0)/1.25 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
 .bn-s:empty { display: none; }
-#banner.caution { --tone: var(--caution); filter: drop-shadow(0 0 18px rgba(201, 171, 102, .16)); }
+#banner.caution { --tone: var(--caution); }
 #banner.calm { --tone: var(--cy); filter: none; }
 #banner.gain { --tone: var(--violet); filter: none; }
 
@@ -470,8 +468,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 }
 @media (max-height: 460px) {
   #hud { --pad: 10px; }
-  #banner { min-width: 0; max-width: var(--gap, 280px); }
-  #banner-t { font-size: 13px; letter-spacing: .06em; line-height: 1.15; }
+  #banner-t { font-size: 12px; letter-spacing: .05em; }
   .bn-s { display: none; }
   #heading { display: none; }
   /* on a phone the middle cards take the gap between the objective and the ship panel */
