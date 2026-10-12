@@ -86,7 +86,7 @@
 #port .pl-badge.done, #port .pl-badge.none, #port .pl-badge.lock { color: var(--dk-off); }
 /* the refit bay: a strip of its own, with the one button that opens it */
 /* the refit bay: the one big destination of the screen. Identity left, the ship in the middle, the one button right. */
-#port .port-l.bay { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr) auto; align-items: center; gap: 18px; min-height: 176px; padding: 16px 20px; cursor: pointer; border: 1px solid var(--hud); background: linear-gradient(90deg, rgb(12, 20, 26), rgb(9, 14, 17)); box-shadow: inset 0 0 0 1px rgba(120, 160, 190, .12), 0 0 18px rgba(86, 134, 170, .14); grid-template-areas: none; grid-template-rows: auto; }
+#port .port-l.bay { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-content: center; align-items: center; gap: 12px 18px; min-height: 196px; padding: 16px 20px; cursor: pointer; border: 1px solid var(--hud); background: linear-gradient(90deg, rgb(12, 20, 26), rgb(9, 14, 17)); box-shadow: inset 0 0 0 1px rgba(120, 160, 190, .12), 0 0 18px rgba(86, 134, 170, .14); grid-template-areas: none; grid-template-rows: auto; }
 #port .port-l.bay:hover, #port .port-l.bay.sel { border-color: var(--hud); box-shadow: inset 0 0 0 1px var(--hud-mid), 0 0 22px rgba(86, 134, 170, .26); }
 #port .port-l.bay.lead { box-shadow: inset 3px 0 0 var(--hud), 0 0 22px rgba(86, 134, 170, .26); }
 #port .port-l.bay > * { position: relative; z-index: 1; }
@@ -96,8 +96,8 @@
 #port .port-l.bay .pl-t, #port .port-l.bay .pl-d, #port .port-l.bay .pl-go { grid-area: auto; }
 #port .port-l.bay .pl-t { font-size: calc(var(--fs) * 2 * 1.18); letter-spacing: .12em; }
 #port .port-l.bay .pl-d { font-size: calc(var(--fs) * 1.05 * 1.18); color: var(--dk-ink2); }
-#port .port-l.bay .bay-hero { position: absolute; z-index: 0; left: 34%; top: 0; bottom: 0; width: 42%; height: 100%; object-fit: cover; object-position: 50% 50%; -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); pointer-events: none; opacity: .92; }
-#port .port-l.bay .pl-go { grid-column: 3; min-height: 52px; padding: 12px 24px; font-size: calc(var(--fs) * 1.2 * 1.18); letter-spacing: .12em; background: linear-gradient(var(--hud-ghost), var(--hud-dim)); border-color: var(--hud); color: #fff; justify-self: end; }
+#port .port-l.bay .bay-hero { position: absolute; z-index: 0; left: 46%; top: 0; bottom: 0; right: 0; width: 54%; height: 100%; object-fit: cover; object-position: 50% 50%; -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); pointer-events: none; opacity: .92; }
+#port .port-l.bay .pl-go { grid-column: 1; grid-row: 2; min-height: 52px; padding: 12px 24px; font-size: calc(var(--fs) * 1.2 * 1.18); letter-spacing: .12em; background: linear-gradient(var(--hud-ghost), var(--hud-dim)); border-color: var(--hud); color: #fff; justify-self: start; }
 /* the three purchases: icon, words, the state, then the quantity and the one button */
 #port .port-list.buys { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 #port .port-l.buy { display: grid; grid-template-columns: 92px minmax(0, 1fr); grid-template-areas: "art m" "art st" "art buy"; gap: 4px 14px; align-content: center; }
@@ -273,7 +273,7 @@
   #port .port-l.bay .bayico { width: 34px; max-height: 38px; }
   #port .port-l.bay { min-height: 0; grid-template-columns: minmax(0, 1fr) auto; }
   #port .port-l.bay .bay-hero { left: auto; right: 0; width: 55%; opacity: .5; }
-  #port .port-l.bay .pl-go { grid-column: 2; min-height: 40px; padding: 8px 14px; font-size: 13px; }
+  #port .port-l.bay .pl-go { grid-column: 2; grid-row: auto; justify-self: end; min-height: 40px; padding: 8px 14px; font-size: 13px; }
   #port .warnico { width: 16px; height: 16px; margin-right: 6px; }
   #port .ps-c b { font-size: 15px; }
   #port .ps-sub { display: none; }
