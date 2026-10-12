@@ -61,8 +61,10 @@ A sortie with a shape: get the stolen hauler out of the home system
   card has a quantity stepper (`−`/`+`) over the unchanged one-at-a-time
   `buy`. The arrows walk the cards, Space or a click uses one, Enter casts
   off. The dock, the transmission and the job offer share one set of parts
-  in `styles/dock.css`. The supply screen's icons and item art are in
-  `assets/supply/` and load through `pic()` in `ui/port.ts`; the backdrop is
+  in `styles/dock.css`. The supply screen runs header, the four stores, the refit bay as a
+  wide hero (the painted Wayward from the title art, `supply/bay-hero.webp`),
+  the three purchases, the quiet recommended row and the departure. Its icons
+  and item art are in `assets/supply/` and load through `pic()` in `ui/port.ts`; the backdrop is
   `assets/wayward-supply-background.webp`.
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
   more) and mining noise. It decides how often pursuers come, how

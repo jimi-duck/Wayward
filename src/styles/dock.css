@@ -85,18 +85,19 @@
 #port .pl-badge.short { color: var(--dk-amber); }
 #port .pl-badge.done, #port .pl-badge.none, #port .pl-badge.lock { color: var(--dk-off); }
 /* the refit bay: a strip of its own, with the one button that opens it */
-#port .port-l.bay { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 10px 14px; cursor: pointer; border-color: var(--hud-mid); background: linear-gradient(90deg, var(--hud-ghost), var(--dk-raised)); }
-#port .port-l.bay:hover, #port .port-l.bay.sel { border-color: var(--hud); }
-#port .port-l.bay.lead { box-shadow: inset 3px 0 0 var(--hud); }
-#port .port-l.bay { grid-template-areas: none; grid-template-rows: auto; min-height: 0; align-content: center; }
-#port .port-l.bay .pl-t, #port .port-l.bay .pl-d, #port .port-l.bay .pl-go { grid-area: auto; }
-#port .port-l.bay .pl-t { font-size: calc(var(--fs) * 1.45 * 1.18); }
-#port .port-l.bay .pl-go { position: relative; z-index: 1; min-height: 36px; padding: 8px 16px; }
-#port .port-l.bay { position: relative; overflow: hidden; min-height: 76px; grid-template-columns: auto minmax(0, 1fr) auto; }
+/* the refit bay: the one big destination of the screen. Identity left, the ship in the middle, the one button right. */
+#port .port-l.bay { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr) auto; align-items: center; gap: 18px; min-height: 176px; padding: 16px 20px; cursor: pointer; border: 1px solid var(--hud); background: linear-gradient(90deg, rgb(12, 20, 26), rgb(9, 14, 17)); box-shadow: inset 0 0 0 1px rgba(120, 160, 190, .12), 0 0 18px rgba(86, 134, 170, .14); grid-template-areas: none; grid-template-rows: auto; }
+#port .port-l.bay:hover, #port .port-l.bay.sel { border-color: var(--hud); box-shadow: inset 0 0 0 1px var(--hud-mid), 0 0 22px rgba(86, 134, 170, .26); }
+#port .port-l.bay.lead { box-shadow: inset 3px 0 0 var(--hud), 0 0 22px rgba(86, 134, 170, .26); }
 #port .port-l.bay > * { position: relative; z-index: 1; }
-#port .port-l.bay .bayico { grid-area: auto; width: 56px; max-height: 64px; align-self: center; }
-#port .bay-wide { position: absolute !important; z-index: 0 !important; right: 0; top: 0; bottom: 0; width: 46%; height: 100%; object-fit: cover; opacity: .75; -webkit-mask: linear-gradient(90deg, transparent, #000 55%); mask: linear-gradient(90deg, transparent, #000 55%); pointer-events: none; }
-#port .port-l.bay .pl-go { margin-left: auto; }
+#port .port-l.bay .pl-id { display: flex; align-items: center; gap: 16px; min-width: 0; }
+#port .port-l.bay .bayico { width: 78px; height: auto; flex: none; grid-area: auto; }
+#port .port-l.bay .pl-m { display: grid; gap: 6px; min-width: 0; }
+#port .port-l.bay .pl-t, #port .port-l.bay .pl-d, #port .port-l.bay .pl-go { grid-area: auto; }
+#port .port-l.bay .pl-t { font-size: calc(var(--fs) * 2 * 1.18); letter-spacing: .12em; }
+#port .port-l.bay .pl-d { font-size: calc(var(--fs) * 1.05 * 1.18); color: var(--dk-ink2); }
+#port .port-l.bay .bay-hero { position: absolute; z-index: 0; left: 34%; top: 0; bottom: 0; width: 42%; height: 100%; object-fit: cover; object-position: 50% 50%; -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); pointer-events: none; opacity: .92; }
+#port .port-l.bay .pl-go { grid-column: 3; min-height: 52px; padding: 12px 24px; font-size: calc(var(--fs) * 1.2 * 1.18); letter-spacing: .12em; background: linear-gradient(var(--hud-ghost), var(--hud-dim)); border-color: var(--hud); color: #fff; justify-self: end; }
 /* the three purchases: icon, words, the state, then the quantity and the one button */
 #port .port-list.buys { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 #port .port-l.buy { display: grid; grid-template-columns: 92px minmax(0, 1fr); grid-template-areas: "art m" "art st" "art buy"; gap: 4px 14px; align-content: center; }
@@ -124,8 +125,9 @@
 #port .port-l.stop .pl-r { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 #port .port-l.stop .pl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 #port .pl-chip { padding: 3px 9px; border: 1px solid var(--dk-line); color: var(--dk-info); font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; }
-#port .pl-sum { font: 600 calc(var(--fs) * 1.6)/1 var(--font-mono); color: var(--dk-amber); }
-#port .port-l.stop .pl-go { margin-left: 0; }
+#port .pl-sum { font: 600 calc(var(--fs) * 1.3)/1 var(--font-mono); color: var(--dk-amber); }
+#port .port-l.stop .pl-go { margin-left: 0; min-height: 30px; padding: 4px 12px; background: transparent; border-color: var(--dk-hair); color: var(--dk-ink2); font-size: calc(var(--fs) * 0.95 * 1.18); }
+#port .port-l.stop .pl-go:hover:not(:disabled), #port .port-l.stop.sel .pl-go { border-color: var(--dk-hud); color: var(--dk-ink); }
 #port .port-msg { margin: 0; min-height: 1.3em; font: 600 calc(var(--fs) * 1.1 * 1.18)/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--dk-info); }
 /* the departure: where to, whether the tank gets there, and Cast off */
 #port .port-dep { position: sticky; bottom: -14px; z-index: 2; display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--dk-hair); border-left: 3px solid var(--hud); background: rgb(10, 15, 16); }
@@ -267,17 +269,20 @@
   #port .ps-c { gap: 6px; padding: 4px 8px; }
   #port .ps-pic { width: 26px; height: 26px; }
   #port .port-l.buy .pl-art { width: 40px; max-height: 44px; }
-  #port .bay-wide, #port .port-l.stop .stopico, #port .pd-pin { display: none; }
+  #port .port-l.stop .stopico, #port .pd-pin { display: none; }
   #port .port-l.bay .bayico { width: 34px; max-height: 38px; }
-  #port .port-l.bay { min-height: 0; }
+  #port .port-l.bay { min-height: 0; grid-template-columns: minmax(0, 1fr) auto; }
+  #port .port-l.bay .bay-hero { left: auto; right: 0; width: 55%; opacity: .5; }
+  #port .port-l.bay .pl-go { grid-column: 2; min-height: 40px; padding: 8px 14px; font-size: 13px; }
   #port .warnico { width: 16px; height: 16px; margin-right: 6px; }
   #port .ps-c b { font-size: 15px; }
   #port .ps-sub { display: none; }
   #port .port-sv, #port .port-list { gap: 5px; }
   #port .port-l { padding: 6px 8px; }
-  #port .port-l.bay { padding: 6px 10px; gap: 10px; }
+  #port .port-l.bay { padding: 6px 10px; gap: 10px; min-height: 66px; }
   #port .port-l.bay .pl-d { display: none; }
   #port .port-l.bay .pl-t { font-size: 15px; }
+  #port .port-l.bay .pl-id { gap: 10px; }
   #port .pl-ico { width: 30px; height: 30px; }
   #port .pl-ico .ico { width: 18px; height: 18px; }
   #port .port-l.buy { grid-template-columns: 40px minmax(0, 1fr); gap: 4px 8px; }

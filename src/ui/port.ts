@@ -48,7 +48,7 @@ type Entry = { key: 'bay' | 'fuel' | 'supplies' | 'plate' | 'stop' | 'cast'; ok:
 type Buyable = 'fuel' | 'supplies' | 'plate';
 
 /** The rows the arrows walk (keys of the entries, left to right). */
-const ROWS: Entry['key'][][] = [['fuel', 'supplies', 'plate'], ['bay'], ['stop'], ['cast']];
+const ROWS: Entry['key'][][] = [['bay'], ['fuel', 'supplies', 'plate'], ['stop'], ['cast']];
 
 /** The lane out of here, for the departure line (the lane itself is plotted on the chart). */
 export interface Course {
@@ -225,7 +225,7 @@ export class PortPanel {
     el.hidden = !warn.length;
     el.replaceChildren(...warn.map((l) => h('span', '', l)));
     // the services
-    for (const [id, node] of [['port-buy', p.buy], ['port-bay', p.bay], ['port-stop', p.stop]] as const) $(id).replaceChildren(...node);
+    for (const [id, node] of [['port-bay', p.bay], ['port-buy', p.buy], ['port-stop', p.stop]] as const) $(id).replaceChildren(...node);
     $('port-msg').textContent = this.msg;
     this.departure(w, short);
     this.mark();
@@ -259,10 +259,9 @@ export class PortPanel {
     const bayName = t('Refit bay'), bayText = t('Browse weapons, systems and ship upgrades.');
     const bayState = first ? t('Start here · fit your torpedoes') : can ? plural(can, '{n} upgrade you can afford', '{n} upgrades you can afford') : next ? t('Cheapest part: {n} Cyrite', { n: num(next.cost) }) : t('No upgrades you can afford yet');
     const bay = h('button', `port-l bay${first ? ' lead' : ''}`, '',
-      pic('art-bay', 'pl-art bayico'),
-      h('span', 'pl-m', '', h('span', 'pl-t', bayName), h('span', 'pl-d', bayText), h('span', `pl-badge ${can || first ? 'ok' : 'none'}`, bayState)),
-      pic('bay-wide', 'bay-wide'),
-      h('span', 'pl-go', t('Open bay')),
+      h('span', 'pl-id', '', pic('act-repair', 'pl-art bayico'), h('span', 'pl-m', '', h('span', 'pl-t', bayName), h('span', 'pl-d', bayText), h('span', `pl-badge ${can || first ? 'ok' : 'none'}`, bayState))),
+      pic('bay-hero', 'bay-hero'),
+      h('span', 'pl-go', t('Open refit bay')),
     ) as HTMLButtonElement;
     bay.type = 'button';
     bay.setAttribute('aria-label', `${bayName}. ${bayText} ${bayState}`);

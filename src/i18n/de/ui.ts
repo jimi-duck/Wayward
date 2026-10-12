@@ -222,6 +222,7 @@ export const UI: Record<string, string> = {
   // the refit bay
   'Refit bay': 'Werftbucht',
   'Open bay': 'Werft öffnen',
+  'Open refit bay': 'Werftbucht öffnen',
   'Upgrade ship': 'Schiff aufrüsten',
   'Refit bay when it is quiet': 'Werftbucht, sobald es ruhig ist',
   'Choose a module to fit': 'Wähl ein Modul zum Einbauen',
