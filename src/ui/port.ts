@@ -103,7 +103,8 @@ export class PortPanel {
     const banner = world.bk?.port ? artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
     $('port-art').hidden = !banner;
     $('port-art').replaceChildren(...(banner ? [banner] : []));
-    $('port-s').textContent = t(world.bk?.def.netted ? 'Implant scans required' : 'No implant checks');
+    // where this is (the system) and what the port asks of the crew
+    $('port-s').textContent = [world.bk?.def.name ? t(world.bk.def.name) : '', t(world.bk?.def.netted ? 'Implant scans required' : 'No implant checks')].filter(Boolean).join(' · ');
     const x = $('port-x');
     x.onclick = guarded(this.opened, () => this.leave());
     x.onpointerdown = (e) => e.stopPropagation();
