@@ -1409,9 +1409,11 @@ html:not(.breakout) .pause-card #brief { display: none; }
    A call holds the world still and sits in the free band above the ship; a line of chatter is a quiet subtitle at the bottom edge, clear of the ship. */
 .radio { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .radio.under, .panel-open .radio, :root.prelaunch .radio { display: none; }
-.rd-call { --cc: var(--cy); position: absolute; left: 50%; top: max(21%, calc(var(--safe-t) + 96px)); translate: -50% 0; width: min(400px, 44vw); pointer-events: auto;
+.rd-call { --cc: var(--cy); --rd-top: max(21%, calc(var(--safe-t) + 96px)); position: absolute; left: 50%; top: var(--rd-top); translate: -50% 0; width: min(400px, 44vw); pointer-events: auto;
   display: grid; gap: 7px; padding: 10px 14px 12px; border: 1px solid var(--cy-dim); border-left: 3px solid var(--cy);
-  background: rgba(8, 13, 14, .86); box-shadow: 0 6px 24px rgba(0, 0, 0, .5); animation: rd-in .26s var(--ez); }
+  background: rgba(8, 13, 14, .86); box-shadow: 0 6px 24px rgba(0, 0, 0, .5); animation: rd-in .26s var(--ez);
+  /* never taller than the window: a short screen scrolls the card, so every answer can be reached */
+  max-height: calc(100dvh - var(--rd-top) - var(--safe-b) - 8px); overflow-y: auto; overscroll-behavior: contain; }
 .rd-call.prio { border-color: var(--amber-dim); border-left-color: var(--amber); }
 @keyframes rd-in { from { opacity: 0; translate: -50% -8px; } }
 .rd-call[hidden], .rd-line[hidden] { display: none; }
@@ -1454,7 +1456,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .rd-line b { font: 700 12px/1.1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; }
 .rd-line span { font: 400 13.5px/1.35 var(--font-display); color: var(--ink); }
 @media (max-width: 720px), (max-height: 520px) and (max-width: 1000px) {
-  .rd-call { top: max(21%, calc(var(--safe-t) + 80px)); left: 45%; width: min(330px, 36vw); gap: 4px; padding: 6px 10px 8px; }
+  .rd-call { --rd-top: max(21%, calc(var(--safe-t) + 80px)); left: 45%; width: min(330px, 36vw); gap: 4px; padding: 6px 10px 8px; }
   .rd-list.many { gap: 3px; }
   .rd-list.many .rd-c { min-height: 34px; }
   .rd-h { gap: 6px; }
