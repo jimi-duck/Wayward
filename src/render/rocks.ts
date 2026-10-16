@@ -1,7 +1,7 @@
 import { rockPose } from './rockmotion';
 import {
   Color, IcosahedronGeometry, LatheGeometry, Vector2, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion,
-  Vector3, type BufferGeometry, type Scene,
+  Float32BufferAttribute, Vector3, type BufferGeometry, type Scene,
 } from 'three';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STEP } from '../core/loop';
@@ -106,7 +106,7 @@ const KINDS = Object.keys(LOOKS) as RockKind[];
  * surface relief, in world units. `look` recolours it by kind.
  */
 export function lavaRock(detail: number, lava: number, bump: number, look: RockLook = LOOKS.basalt, ember = true): MeshStandardMaterial {
-  const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35 });
+  const m = new MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: look.metal, envMapIntensity: 0.35, vertexColors: true });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uTime = lavaTime;
     shader.uniforms.uDetail = { value: detail };
@@ -178,7 +178,11 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         diffuseColor.rgb *= 1.0 - (smoothstep(0.955, 0.99, ridgeA) * 0.3 + crack * 0.3);
         // sharp crests between broken faces: a creased noise
         float crest = pow(1.0 - abs(snoise(rp * 3.0 + 1.7)), 3.0);
-        float rockH = crest * 0.35 + rn * 0.55 + fine * 0.22 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + mix(incl * 0.2, incl * 0.4, uViolet);`)
+        // angular relief: chipped conchoidal facets (a quantised, creased noise) and sharp crests over a low swell, not a soft lump
+        float chipN = snoise(rp * 2.4 + 5.2) * 0.5 + 0.5;
+        float chip = floor(chipN * 4.0) / 4.0 + smoothstep(0.0, 0.25, fract(chipN * 4.0)) * 0.25;
+        float chipE = pow(1.0 - abs(snoise(rp * 5.5 + 2.9)), 5.0);
+        float rockH = crest * 0.38 + rn * 0.22 + chip * 0.5 + chipE * 0.28 + fine * 0.2 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + mix(incl * 0.2, incl * 0.4, uViolet);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2 - incl * 0.1 * uViolet, 0.6, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
@@ -190,7 +194,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
         totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.012 * uViolet + 0.01 * uCool) * uLava;`);
   };
-  m.customProgramCacheKey = () => `stone-rock8-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock9-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 
@@ -208,10 +212,11 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
     return { d, size: 0.18 + rnd() * 0.32, depth: 0.05 + rnd() * 0.09 };
   });
   // fracture planes: the rock was broken off something bigger, and keeps flat faces
-  const planes = Array.from({ length: cuts }, () => ({
-    n: new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.7, rnd() * 2 - 1).normalize(), d: 0.52 + rnd() * 0.22,
+  const planes = Array.from({ length: Math.round(cuts * 2.2) }, () => ({
+    n: new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.7, rnd() * 2 - 1).normalize(), d: 0.46 + rnd() * 0.3,
   }));
   const st = new Vector3(...stretch);
+  const ledge = new Vector3(rnd() - 0.5, rnd() * 0.8 + 0.2, rnd() - 0.5).normalize();
   for (let i = 0; i < p.count; i++) {
     v.fromBufferAttribute(p, i).normalize();
     const big = fbm(v.x * 1.2 + seed, v.y * 1.2, v.z * 1.2, 4, seed);
@@ -219,6 +224,10 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
     const ridge = 1 - Math.abs(fbm(v.x * 2.2 - seed, v.y * 2.2, v.z * 2.2, 2, seed + 4));
     const crag = Math.pow(1 - Math.abs(fbm(v.x * 4.4 + seed * 2, v.y * 4.4, v.z * 4.4, 2, seed + 21)), 5);
     let k = 1 + big * rough + mid * 0.17 + ridge * 0.1 + crag * 0.16 - 0.04;
+    // ledges: a broken bed steps in terraces along the rock's own slant, so the outline has shelves and overhangs
+    const bed = (v.x * ledge.x + v.y * ledge.y + v.z * ledge.z) * 3.2 + big * 1.6;
+    const fr = bed - Math.floor(bed);
+    k += (fr < 0.82 ? fr * 0.07 : (1 - fr) * 0.39) * rough * 0.9 - 0.03 * rough;
     for (const c of pits) {
       const a = Math.acos(Math.min(1, v.dot(c.d))) / c.size;
       if (a < 1.35) k += a < 1 ? -c.depth * (1 - a * a) : c.depth * 0.6 * Math.sin(((a - 1) / 0.35) * Math.PI);
@@ -230,7 +239,38 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
     p.setXYZ(i, v.x, v.y, v.z);
   }
   g.computeVertexNormals();
+  bakeOcclusion(g);
   return g;
+}
+
+/**
+ * Ambient occlusion baked into vertex colours: a vertex sitting below the average of its neighbours (a crease, a
+ * crater floor, the foot of a ledge) gets darker. The rock material multiplies the colour in. Costs nothing at run time.
+ */
+function bakeOcclusion(g: BufferGeometry): void {
+  const p = g.attributes.position!, idx = g.index!, n = p.count;
+  const near: number[][] = Array.from({ length: n }, () => []);
+  for (let i = 0; i < idx.count; i += 3) {
+    const a = idx.getX(i), b = idx.getX(i + 1), c = idx.getX(i + 2);
+    near[a]!.push(b, c); near[b]!.push(a, c); near[c]!.push(a, b);
+  }
+  let r = new Float32Array(n);
+  for (let i = 0; i < n; i++) r[i] = Math.hypot(p.getX(i), p.getY(i), p.getZ(i));
+  const ao = new Float32Array(n);
+  for (let pass = 0; pass < 3; pass++) {
+    const sm = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const ns = near[i]!;
+      let sum = 0;
+      for (const j of ns) sum += r[j]!;
+      sm[i] = ns.length ? sum / ns.length : r[i]!;
+    }
+    for (let i = 0; i < n; i++) ao[i] = ao[i]! + Math.max(0, sm[i]! - r[i]!) * (pass ? 5 : 9);
+    r = sm;
+  }
+  const col = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) col.fill(0.35 + 0.65 / (1 + ao[i]! * 1.6), i * 3, i * 3 + 3);
+  g.setAttribute('color', new Float32BufferAttribute(col, 3));
 }
 
 /** A broken crystal: a six-sided prism closing to a point, every corner pushed off true, base at y = 0 and tip at y = 1. */
