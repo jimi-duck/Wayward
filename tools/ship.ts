@@ -19,6 +19,7 @@ const canvas = document.getElementById('c') as HTMLCanvasElement;
 const renderer = createRenderer(canvas, tier);
 const scene = new Scene();
 const env = new Environment(scene, renderer);
+env.setShadow(tier.shadow);
 const camera = new PerspectiveCamera(32, 1, 0.05, 4000);
 const post = new Post(renderer, scene, camera, tier);
 const ship = new ShipView();

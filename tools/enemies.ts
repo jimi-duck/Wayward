@@ -30,6 +30,7 @@ const canvas = document.getElementById('c') as HTMLCanvasElement;
 const renderer = createRenderer(canvas, tier);
 const scene = new Scene();
 const env = new Environment(scene, renderer);
+env.setShadow(tier.shadow);
 renderer.info.autoReset = false; // the post chain renders several times a frame: count them all
 const camera = new PerspectiveCamera(52, 1, 0.1, 4000);
 const post = new Post(renderer, scene, camera, tier);

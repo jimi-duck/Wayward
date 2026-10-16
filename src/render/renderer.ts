@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, NoToneMapping, SRGBColorSpace, WebGLRenderer } from 'three';
+import { ACESFilmicToneMapping, NoToneMapping, PCFShadowMap, SRGBColorSpace, WebGLRenderer } from 'three';
 import type { QualityTier } from './quality';
 
 // Medium and high tiers render through the post chain, which anti-aliases
@@ -18,12 +18,15 @@ export function createRenderer(canvas: HTMLCanvasElement, tier: QualityTier): We
   renderer.debug.checkShaderErrors = import.meta.env.DEV || new URLSearchParams(location.search).get('debug') === '1';
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = direct ? ACESFilmicToneMapping : NoToneMapping;
+  renderer.shadowMap.enabled = tier.shadow > 0;
+  renderer.shadowMap.type = PCFShadowMap;
   return renderer;
 }
 
 /** Keep the renderer's own tone mapping in step with whether the post chain runs. */
 export function matchTier(renderer: WebGLRenderer, tier: QualityTier): void {
   renderer.toneMapping = tier.name === 'low' ? ACESFilmicToneMapping : NoToneMapping;
+  renderer.shadowMap.enabled = tier.shadow > 0;
 }
 
 /**

@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DoubleSide, Group, Mesh,
-  MeshBasicMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, TorusGeometry, Vector3,
+  MeshBasicMaterial, MeshStandardMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, TorusGeometry, Vector3,
   type Object3D, type Texture,
 } from 'three';
 import { clamp, lerp } from '../core/math';
@@ -252,6 +252,7 @@ export class ShipView {
     this.model = buildWayward();
     this.model.root.scale.setScalar(MODEL_SCALE);
     this.rollG.add(this.model.root);
+    this.model.root.traverse((o) => { if ((o as Mesh).isMesh && (o as Mesh).material instanceof MeshStandardMaterial) o.castShadow = o.receiveShadow = true; });
     const disc = new CircleGeometry(1, 24).rotateY(-Math.PI / 2);
     const rimGeo = new TorusGeometry(1, 0.09, 6, 32).rotateY(Math.PI / 2);
     const plumeGeo = new CylinderGeometry(0.15, 1, 1, 20, 1, true).translate(0, 0.5, 0).rotateZ(Math.PI / 2);

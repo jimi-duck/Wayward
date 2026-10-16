@@ -20,14 +20,16 @@ export interface QualityTier {
   dprCap: number;
   /** Anti-aliasing (SMAA in the post chain). Only the high tier has it. */
   msaa: boolean;
+  /** Size of the sun's shadow map around the ship (0: no shadows). */
+  shadow: number;
 }
 
 // Bloom resolution, shadow map size and particle budgets join these as the
 // effects that use them land (M3, M4).
 export const TIERS: readonly QualityTier[] = [
-  { name: 'low', dprCap: 1, msaa: false },
-  { name: 'medium', dprCap: 1.25, msaa: false },
-  { name: 'high', dprCap: 1.5, msaa: true },
+  { name: 'low', dprCap: 1, msaa: false, shadow: 0 },
+  { name: 'medium', dprCap: 1.25, msaa: false, shadow: 512 },
+  { name: 'high', dprCap: 1.5, msaa: true, shadow: 1024 },
 ];
 
 const EMA = 0.05;

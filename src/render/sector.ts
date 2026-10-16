@@ -132,6 +132,7 @@ export class Sector {
     this.post?.composer?.dispose();
     this.post = new Post(this.renderer, this.scene, this.rig.camera, tier);
     this.fx.setLights(tier.name !== 'low');
+    this.env.setShadow(tier.shadow);
   }
 
   resize(width: number, height: number, dpr: number, offsetY: number): void {

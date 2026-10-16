@@ -409,6 +409,7 @@ class HullBatch {
     this.sets = [0, 1].map((flash) => src.map((m) => {
       const im = new InstancedMesh(m.geometry, flash ? FLASH : (m.material as Material), MAX_BATCH);
       im.count = 0;
+      im.castShadow = im.receiveShadow = true;
       im.visible = false;
       // drawn from the origin's bounding sphere otherwise: cull nothing, as the streaks do
       im.frustumCulled = false;
