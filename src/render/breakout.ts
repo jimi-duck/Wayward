@@ -108,6 +108,9 @@ function spire(k: Kit, rnd: () => number, a: number, r0: number, h: number): voi
   k.box('slate', [h * 0.3, 2.2, 2.6], pr(h * 0.57), rot);
   k.box('lamp', [0.5, 0.05, 1.2], pr(h * 0.25, 0, 1.52), rot);
   k.box('lamp', [0.5, 0.05, 1.2], pr(h * 0.25, 0, -1.52), rot);
+  for (const t of [0.12, 0.3, 0.5, 0.7]) strut(k, 'dark', pr(h * t - 0.12), pr(h * t + 0.12), 1.1, 8);
+  for (const t of [0.42, 0.6]) for (const y of [-1.52, 1.52]) k.box('lamp', [0.45, 0.05, 0.9], pr(h * t, 0, y), rot);
+  k.box('amber', [0.12, 0.12, 0.12], pr(h * 0.9));
   strut(k, 'slate', pr(h * 0.45), pr(h * 0.95), 0.6, 6);
   strut(k, 'slate', pr(h * 0.95), pr(h * 1.35), 0.32, 6);
   strut(k, 'dark', pr(h * 1.35), pr(h * 1.7), 0.07, 4);
@@ -136,6 +139,21 @@ function buildLane(): Group {
     }
     arc(k, 'slate', OUT, OUT + 0.22, -1.6 + rnd() * 0.3, 1.3, a0 + 0.015, a1 - 0.015, 0.03);
     arc(k, 'dark', IN + 0.6, OUT - 0.6, BOT - 0.2, BOT, a0 + 0.02, a1 - 0.02, 0.02);
+    // rivet rows along the seams, a recessed grille of bars, an X brace on one panel
+    for (let r = 0; r < 6; r++) {
+      const ar = a0 + 0.02 + (r / 5) * (STEP - 0.04);
+      for (const rr of [IN + 0.35, OUT - 0.35]) { const [vx, vz] = polar(rr, ar); k.box('dark', [0.16, 0.1, 0.16], [vx, TOP + 0.05, vz]); }
+      const [ox, oz] = polar(OUT + 0.22, ar);
+      k.box('dark', [0.1, 0.16, 0.16], [ox, -1.2, oz], [0, -ar, 0]);
+      k.box('dark', [0.1, 0.16, 0.16], [ox, 0.9, oz], [0, -ar, 0]);
+    }
+    const [bx, bz] = polar(IN + 1.6, am);
+    for (let r = 0; r < 4; r++) { const [qx, qz] = polar(IN + 1.6 + r * 0.45, am); k.box('dark', [0.18, 0.2, 2.1], [qx, TOP + 0.1, qz], [0, -am, 0]); }
+    if (i % 3 === 1) {
+      const [xx, xz] = polar((IN + OUT) / 2 + 0.5, am);
+      for (const d of [-0.62, 0.62]) k.box('dark', [4.6, 0.12, 0.2], [xx, TOP + 0.2, xz], [0, -am + d, 0]);
+    }
+    void bx; void bz;
     // a grille or a vent, a few small housings
     const [gx, gz] = polar(OUT - 1.4 - rnd() * 1.5, am + (rnd() - 0.5) * 0.04);
     k.box('dark', [1.2 + rnd(), 0.18, 0.9 + rnd() * 0.7], [gx, TOP + 0.09, gz], [0, -am, 0]);
