@@ -451,7 +451,7 @@ function boot(review: typeof import('./review') | null): void {
       else if (bay.open) bay.padInput(p);
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
-      else if (chart.open && journey) chart.padInput(p, journey);
+      else if (chart.open && journey) chart.padInput(p);
       else if (opening.open) opening.padInput(p);
       else if (heatNote.open) heatNote.padInput(p);
       else if (ending.open) ending.padInput(p);

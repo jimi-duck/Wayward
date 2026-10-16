@@ -1,15 +1,16 @@
 import { PLACES, REWARD_WORD } from '../content/phenomena';
-import { HOLDER_NAMES, SYSTEMS, type SystemKind } from '../content/systems';
-import { LOW_SUPPLIES } from '../sim/breakout';
+import type { SystemKind } from '../content/systems';
 import { overRatings, weightFuel } from '../sim/budgets';
 import { fileLines } from '../sim/calloway';
 import { QUESTIONS } from '../content/situations';
 import { longIndex, situationLine } from '../sim/situations';
-import { gateOf, jumps, cyriteKnown, lanesFrom, netted, placeAt, regionCount, regionDef, regionSystems, sysById, viewOf, type Chart, type Place, type StarSystem } from '../sim/chart';
-import { stance, type Stance } from '../sim/lanes';
+import { netted, placeAt, regionCount, regionDef, regionSystems, sysById, viewOf, type Place, type StarSystem } from '../sim/chart';
+import { forks, gateProgress, goalOf, trouble, type Fork } from '../sim/forks';
+import { behind } from '../sim/hunt';
+import type { Stance } from '../sim/lanes';
 import { fleetAt, raided, threnAt, THREN_ABOUT } from '../sim/scatter';
 import { survivalOf } from '../content/survival';
-import { here, options, type Chip, type Journey, type Outcome } from '../sim/journey';
+import { here, type Chip, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { act, actLine, fileCount } from '../sim/story';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -17,59 +18,68 @@ import { INK } from './palette';
 import { num, plural, t } from '../i18n';
 
 // ── the chart ─────────────────────────────────────────────────────────────
-// Between systems the drive cools and the chart comes up: the region you
-// are in as you know it (one of three, content/regions.ts; through a gate,
-// the next), and the lanes out of where you are. Systems are nodes coloured
-// by kind; the Net's edge is red (as of the day you last had news); your
-// trail is a line behind you; Calloway is a red shadow where she was last
-// seen. Pick a lane by its number, a tap on the list or on the map, or the
-// pad, and the next sortie begins. Under the stores, each faction that has
-// marked you: its notice tier, how far to the next, your standing with it,
-// and its named captain (sim/notice.ts readout). A small diamond marks a
-// system with a place in it you know of (content/phenomena.ts), and the
-// lane list says what it is. The factions on the move (sim/scatter.ts) show
-// too: the Thren as a green haze, a Drift fleet as a teal pennant, a Gutter
-// raid as a red slash. The goal (the region's gate out) is named over
-// the stores and on the map, and when the lanes differ, the ones that bring
-// it nearer are marked and the highlight starts on one. The same panel tells you when you are
+// Between systems the drive cools and the chart comes up. It answers a few
+// questions and no more: where you are, how far the gate is, which lanes lead
+// on, what each costs (jump fluid, supplies, days) and what it offers, and
+// which one you are about to take. Header: the system, the gate with the jumps
+// left, the stores. Map: the region as the simulation has it, the lanes out
+// of here lit and the rest quiet. List: the real lanes out, each with its
+// facts (sim/forks.ts). Strip: the one lane selected and the one button that
+// takes it. A tap, a click, the arrows or the pad only select; Enter, the pad's
+// A or the button jumps. What else the chart knows (what the last system
+// changed, the story's questions, the file, Calloway's trail, the Net, each
+// faction's notice) sits behind Intel. The same panel tells you when you are
 // adrift after a wreck, and how the journey ended.
 
 const NS = 'http://www.w3.org/2000/svg';
-const W = 640, H = 300, PAD_X = 44, PAD_Y = 34;
+/** The map is drawn in screen pixels: its box is measured when it is drawn. */
+const FALLBACK = { w: 640, h: 320 };
+const PAD_X = 38, PAD_Y = 40;
 const KIND_COLOUR: Record<SystemKind, string> = {
-  home: INK.white, port: INK.teal, mining: INK.cyrite, contested: INK.red, transit: INK.dust, gate: INK.amber, edge: INK.amber,
+  home: INK.white, port: INK.teal, mining: INK.cyrite, contested: INK.red, transit: INK.dust, gate: INK.caution, edge: INK.caution,
 };
 const KIND_WORD: Record<SystemKind, string> = {
   home: 'Home', port: 'Port', mining: 'Mining', contested: 'Contested', transit: 'Transit', gate: 'Gate', edge: 'The last lane',
 };
+/** A lane's style, in words (sim/lanes.ts). */
+const STANCE_WORD: Record<Stance, string> = { quiet: 'Quiet', watched: 'Watched', hostile: 'Hostile' };
+const KEY_DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
 
-/** Where a system sits on the map of a region: its columns spread across the width. */
+/**
+ * Where a system sits on the map of a region: columns left to right in the order the simulation has them, y as it
+ * has it. The columns round the ship are given more room than the far ones, so the lanes you can take are easy to
+ * read and the whole region (and its gate) still fits.
+ */
 type Proj = { px: (s: StarSystem) => number; py: (s: StarSystem) => number };
-function project(shown: StarSystem[]): Proj {
-  const lo = Math.min(...shown.map((s) => s.col)), hi = Math.max(lo + 1, ...shown.map((s) => s.col));
-  return { px: (s) => PAD_X + ((s.col - lo) / (hi - lo)) * (W - PAD_X * 2), py: (s) => PAD_Y + s.y * (H - PAD_Y * 2) };
+const NEAR = { back: 1, ahead: 2 };
+function project(shown: StarSystem[], w: number, hgt: number, focus: number): Proj {
+  const cols = [...new Set(shown.map((s) => s.col))].sort((a, b) => a - b);
+  const near = w < 520 ? 2.2 : 3.2;
+  const weight = (col: number) => (col >= focus - NEAR.back && col <= focus + NEAR.ahead ? near : 1);
+  // each column's centre sits at the middle of its share of the width
+  const start = new Map<number, number>();
+  let sum = 0;
+  for (const col of cols) { start.set(col, sum); sum += weight(col); }
+  const span = w - PAD_X * 2;
+  const at = (col: number) => PAD_X + ((start.get(col)! + (weight(col) - 1) / 2) / Math.max(1, sum - 1)) * span;
+  return { px: (s) => at(s.col), py: (s) => PAD_Y + s.y * (hgt - PAD_Y * 2) };
 }
 const days = (n: number) => plural(n, '{n} day', '{n} days');
 const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { fuel: 'Jump fluid', cyrite: 'Cyrite', plates: 'Plates', supplies: 'Supplies' };
-/** A lane's style, as a mark and a word (sim/lanes.ts). */
-const STANCE_TAG: Record<Stance, [string, string]> = { quiet: ['○', 'Quiet'], watched: ['◐', 'Watched'], hostile: ['▲', 'Hostile'] };
-const richWord = (k: number) => t(k >= 0.7 ? 'rich' : k >= 0.4 ? 'fair' : 'poor');
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
 /** A place in a few words: what it is, and what it pays (a strange signal's is not known till it is read). */
 const placeText = (p: Place) => `${t(PLACES[p.id].name)}, ${t(REWARD_WORD[PLACES[p.id].reward === 'unknown' ? 'unknown' : p.reward])}`;
+/** A place that bends space: the chart marks it apart. */
+const isAnomaly = (p: Place | null) => !!p && PLACES[p.id].plays === 'anomaly';
 
-/** The goal from where you are: the way out of the region you are in (its gate, or the Threshold). */
-const goalOf = (c: Chart, at: string) => gateOf(c, viewOf(c, at));
-/** Jumps from a system to the goal (Infinity with no way). */
-const toGoal = (c: Chart, at: string, id: string) => jumps(c, id, goalOf(c, at).id);
+/** The region's name, when the chart has more than one. */
+export const regionName = (c: Journey['chart'], at: string) => (regionCount(c) > 1 ? t(regionDef(c, viewOf(c, at))?.name ?? '') : '');
+
 /** The two things the region you are heading into asks: one about the people, one about what is not. */
-function regionAsks(c: Chart, at: string): HTMLElement[] {
+function regionAsks(c: Journey['chart'], at: string): HTMLElement[] {
   const q = QUESTIONS[longIndex(c, viewOf(c, at))];
   return q ? [h('p', 'ch-asks', `${t('The region asks')} · ${t(q.human)} ${t(q.unknown)}`)] : [];
 }
-
-/** The region's name, when the chart has more than one. */
-export const regionName = (c: Chart, at: string) => (regionCount(c) > 1 ? t(regionDef(c, viewOf(c, at))?.name ?? '') : '');
 
 /** A faction's notice in a line: its tier, how far to the next, standing, and its captain. */
 function noticeText(l: NoticeLine, day: number): string {
@@ -87,14 +97,32 @@ function svg(tag: string, attrs: Record<string, string | number>, text = ''): SV
   return e;
 }
 
-/** The ship's trouble, in a line each: thin stores, and weight that costs Cyrite (it flies on, worse). */
+/** Small line glyphs on a 16 unit grid: a kind of system, and the four things a lane costs. */
+const GLYPH: Record<string, string> = {
+  port: 'M2 13h12M3 13V7l5-4 5 4v6M6.5 13V9.5h3V13',
+  mining: 'M8 2l5 5-5 7-5-7zM3 7h10',
+  transit: 'M3 4l4 4-4 4M9 4l4 4-4 4',
+  contested: 'M8 2.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM8 .5v4M8 11.5v4M.5 8h4M11.5 8h4',
+  gate: 'M3 14V8a5 5 0 0110 0v6M6 14V9a2 2 0 014 0v5',
+  edge: 'M2 8l6-6 6 6-6 6zM8 5.5v5',
+  home: 'M2 13h12M4 13V6l4-3 4 3v7',
+  clock: 'M8 2.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM8 5v3.4l2.2 1.4',
+  drop: 'M8 2s4.5 4.8 4.5 8A4.5 4.5 0 013.5 10C3.5 6.8 8 2 8 2z',
+  box: 'M2.5 5L8 2.5 13.5 5v6L8 13.5 2.5 11zM2.5 5L8 7.5 13.5 5M8 7.5v6',
+  arrow: 'M2 8h11M9 4l4 4-4 4',
+};
+function glyph(name: string): SVGElement {
+  const e = svg('svg', { viewBox: '0 0 16 16', class: 'cg', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+  e.append(svg('path', { d: GLYPH[name] ?? GLYPH.transit! }));
+  return e;
+}
+
+/** The ship's trouble that is not about the choice: weight that costs jump fluid, and guns that run hot (it flies on, worse). */
 function shipTrouble(j: Journey): string[] {
-  const c = j.carry, out: string[] = [];
-  if (c.supplies <= 0) out.push(t('Out of supplies · the ship flies slower and worse'));
-  else if (c.supplies <= LOW_SUPPLIES) out.push(t('Supplies low · buy more at a port'));
-  const fuel = weightFuel(c.levels);
+  const out: string[] = [];
+  const fuel = weightFuel(j.carry.levels);
   if (fuel) out.push(t('Heavy · each jump burns {n} more jump fluid', { n: fuel }));
-  if (overRatings(c.levels).heat) out.push(t('Weapons overheating · slower fire rate'));
+  if (overRatings(j.carry.levels).heat) out.push(t('Weapons overheating · slower fire rate'));
   return out;
 }
 
@@ -102,10 +130,12 @@ export class ChartPanel {
   private off: (() => void) | null = null;
   private sel = 0;
   private opened = 0;
-  private ids: string[] = [];
+  private fs: Fork[] = [];
+  private j: Journey | null = null;
   private onPick: ((id: string) => void) | null = null;
   private onGo: (() => void) | null = null;
   private chips: Chip[] = [];
+  private watch: ResizeObserver | null = null;
 
   get open(): boolean {
     return !$('chart').hidden;
@@ -118,36 +148,48 @@ export class ChartPanel {
 
   /** The chart, to plot the next jump. `lines`: what happened on the way here. */
   plot(j: Journey, lines: string[], onPick: (id: string) => void): void {
-    this.begin(j, lines);
+    this.begin(j, false);
     const s = here(j);
-    const rn = regionName(j.chart, j.at);
-    $('ch-k').textContent = [t('The chart'), rn, t('day {n}', { n: Math.floor(j.day) + 1 })].filter(Boolean).join(' · ');
+    this.j = j;
+    $('ch-k').textContent = [t('The chart'), regionName(j.chart, j.at), t('day {n}', { n: Math.floor(j.day) + 1 })].filter(Boolean).join(' · ');
     $('ch-t').textContent = j.legs.length ? `${t('Arrived')} · ${s.name}` : s.name;
-    $('ch-s').textContent = `${t(KIND_WORD[s.kind])}${s.quiet && !netted(j.chart, s.id) ? ` · ${t('Quiet')}` : ''} · ${t(SYSTEMS[s.kind].blurb)}`;
+    $('ch-s').textContent = `${t(KIND_WORD[s.kind])}${s.quiet && !netted(j.chart, s.id) ? ` · ${t('Quiet')}` : ''}`;
     this.onPick = onPick;
     this.onGo = null;
     $('ch-go').hidden = true;
-    const opts = options(j);
-    this.ids = opts.map((o) => o.to.id);
-    // the highlight starts on a lane toward the goal, so Enter alone keeps the journey moving
-    const now = toGoal(j.chart, j.at, j.at);
-    this.sel = Math.max(0, opts.findIndex((o) => toGoal(j.chart, j.at, o.to.id) < now));
-    this.renderList(j);
-    this.draw(j);
+    // nearest the gate first: Enter alone keeps the journey moving
+    this.fs = forks(j).sort((a, b) => (a.gateAfter ?? 1e9) - (b.gateAfter ?? 1e9) || a.fuel - b.fuel || a.to.y - b.to.y);
+    this.sel = 0;
+    this.renderHead(j);
+    ($('ch-alerts') as HTMLElement).replaceChildren(...this.alerts(j).map((a) => h('li', a.hot ? 'hot' : '', a.text)));
+    this.renderList();
+    this.renderStrip();
+    this.draw();
+    this.renderIntel(j, lines);
+    // opened, Intel comes into view above the strip
+    const intel = $('ch-intel') as HTMLDetailsElement;
+    intel.ontoggle = () => { if (intel.open) intel.scrollIntoView({ block: 'nearest' }); };
+    const jump = $('ch-jump');
+    jump.onclick = guarded(this.opened, () => this.pick());
+    jump.onpointerdown = (e) => e.stopPropagation();
     this.off = keys((e) => {
-      const n = this.ids.length;
-      const i = Math.max(['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].indexOf(e.code), ['Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5'].indexOf(e.code));
-      if (i >= 0 && i < n) return this.pick(i), true;
-      if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') { this.move(-1, j); return true; }
-      if (e.code === 'ArrowDown' || e.code === 'ArrowRight' || e.code === 'Tab') { this.move(1, j); return true; }
-      if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') return this.pick(this.sel), true;
-      return ['KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyE', 'KeyF', 'Escape'].includes(e.code);
+      const n = this.fs.length;
+      const i = KEY_DIGITS.indexOf(e.code) >= 0 ? KEY_DIGITS.indexOf(e.code) : ['Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5', 'Numpad6'].indexOf(e.code);
+      if (i >= 0 && i < n) return this.select(i), true;
+      if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') { this.move(-1); return true; }
+      if (e.code === 'ArrowDown' || e.code === 'ArrowRight' || e.code === 'Tab') { this.move(1); return true; }
+      // the keyboard's Enter on the list or the button is the jump; on the Intel summary it opens it
+      if (e.code === 'KeyI') { this.intel(); return true; }
+      if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') return (document.activeElement as HTMLElement | null)?.closest('summary') ? false : (this.pick(), true);
+      if (e.code === 'Escape') { this.intel(false); return true; }
+      return ['KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyE', 'KeyF'].includes(e.code);
     }, ['ArrowUp', 'ArrowDown']);
   }
 
   /** A notice with one way on: adrift after a wreck, a region lost, or a journey's end. */
   notice(j: Journey, out: Outcome, onGo: () => void): void {
-    this.begin(j, out.lines);
+    this.begin(j, true);
+    this.j = j;
     const s = here(j);
     const end = out.kind === 'through' || out.kind === 'captured' || out.kind === 'wrecked';
     const rn = regionName(j.chart, j.at);
@@ -163,12 +205,17 @@ export class ChartPanel {
       : t('She flies again from here, a day later. A share of the stores gone.');
     this.onPick = null;
     this.onGo = onGo;
+    this.fs = [];
     const go = $('ch-go');
     go.hidden = false;
     go.textContent = t(end ? 'New journey' : out.kind === 'lost' ? 'Restart this region' : 'Fly on');
     go.onclick = guarded(this.opened, () => this.go());
     go.onpointerdown = (e) => e.stopPropagation();
-    this.ids = [];
+    $('ch-gate').hidden = true;
+    ($('ch-alerts') as HTMLElement).replaceChildren();
+    $('ch-res').replaceChildren(...this.resCells(j));
+    this.renderIntel(j, out.lines);
+    ($('ch-intel') as HTMLDetailsElement).open = true;
     if (end) {
       // the journey, system by system
       $('ch-list').replaceChildren(...j.legs.map((l, i) => h('div', `ch-leg${l.ended === 'destroyed' ? ' wreck' : ''}`, '',
@@ -179,7 +226,7 @@ export class ChartPanel {
       const left = survivalOf(j.survival).voyage.wrecks - j.lost;
       $('ch-list').replaceChildren(h('p', 'ch-rule', left > 1 ? t('Wrecks left in this region · {n}', { n: left }) : t('The next wreck in this region will end the journey · restart the region to continue')));
     } else $('ch-list').replaceChildren();
-    this.draw(j);
+    this.draw();
     this.off = keys((e) => {
       if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') return this.go(), true;
       return ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Escape'].includes(e.code);
@@ -189,35 +236,37 @@ export class ChartPanel {
   close(): void {
     this.off?.();
     this.off = null;
+    this.watch?.disconnect();
+    this.watch = null;
     $('chart').hidden = true;
     $('chart').classList.remove('alert');
+    $('chart').querySelector('.chartp')?.classList.remove('notice');
   }
 
-  padInput(p: PadEdges, j: Journey): void {
+  padInput(p: PadEdges): void {
     if (!this.open || performance.now() - this.opened < GUARD) return;
     if (this.onGo) { if (p.a) this.go(); return; }
-    if (p.up || p.left) this.move(-1, j);
-    else if (p.down || p.right) this.move(1, j);
-    else if (p.a) this.pick(this.sel);
+    if (p.up || p.left) this.move(-1);
+    else if (p.down || p.right) this.move(1);
+    else if (p.a) this.pick();
+    else if (p.b) this.intel(false);
+    else if (p.x) this.intel();
   }
 
-  private begin(j: Journey, lines: string[]): void {
+  private begin(j: Journey, notice: boolean): void {
     this.close();
     this.opened = performance.now();
-    // what the last system changed as chips, then the first two lines; the rest sit behind a tap
-    const shown = lines.slice(0, 2), rest = lines.slice(2);
-    $('ch-news').replaceChildren(...shown.map((l) => h('li', '', t(l))));
-    $('ch-more').hidden = !rest.length;
-    ($('ch-more') as HTMLDetailsElement).open = false;
-    $('ch-more-s').textContent = plural(rest.length, '{n} more line', '{n} more lines');
-    $('ch-more-l').replaceChildren(...rest.map((l) => h('li', '', t(l))));
-    $('ch-chips').replaceChildren(...this.chips.map((c) => {
-      const label = c.key === 'day' ? days(Math.abs(c.d)) : `${t(CHIP_WORD[c.key])} ${num(Math.abs(c.d))}`;
-      return h('span', `ch-chip ${c.key === 'day' ? 'day' : c.d > 0 ? 'up' : 'down'}`, '', c.key === 'day' ? null : h('i', '', c.d > 0 ? '▲' : '▼'), h('b', '', label));
-    }));
-    this.chips = [];
-    this.renderStat(j);
+    $('chart').querySelector('.chartp')?.classList.toggle('notice', notice);
+    ($('ch-intel') as HTMLDetailsElement).open = false;
     $('chart').hidden = false;
+    // the map is drawn in pixels: draw again when its box changes (a phone turning, a window resized)
+    const map = $('ch-map');
+    if (typeof ResizeObserver !== 'undefined') {
+      let first = true;
+      this.watch = new ResizeObserver(() => { if (first) { first = false; return; } if (this.j) this.draw(); });
+      this.watch.observe(map);
+    }
+    this.j = j;
   }
 
   private go(): void {
@@ -226,156 +275,279 @@ export class ChartPanel {
     fn?.();
   }
 
-  private pick(i: number): void {
-    const id = this.ids[i], fn = this.onPick;
-    if (!id || !fn) return;
+  /** Take the selected lane. */
+  private pick(): void {
+    const f = this.fs[this.sel], fn = this.onPick;
+    if (!f || !fn) return;
     this.close();
-    fn(id);
+    fn(f.to.id);
   }
 
-  private move(d: number, j: Journey): void {
-    const n = this.ids.length;
-    if (!n) return;
-    this.sel = (this.sel + d + n) % n;
-    this.mark();
-    this.draw(j);
+  /** Preview a lane: the list, the map and the strip follow; nothing is committed. */
+  private select(i: number): void {
+    if (i < 0 || i >= this.fs.length) return;
+    this.sel = i;
+    this.syncList();
+    this.renderStrip();
+    this.draw();
   }
 
-  private mark(): void {
-    $('ch-list').querySelectorAll('.ch-l').forEach((b, i) => b.classList.toggle('sel', i === this.sel));
+  private move(d: number): void {
+    const n = this.fs.length;
+    if (n) this.select((this.sel + d + n) % n);
   }
 
-  private renderList(j: Journey): void {
-    const opts = options(j), now = toGoal(j.chart, j.at, j.at);
-    // marked only where it tells lanes apart: when every lane closes on the goal, the goal line says enough
-    const near = opts.map((o) => toGoal(j.chart, j.at, o.to.id) < now), some = near.some((n) => !n);
-    $('ch-list').replaceChildren(...opts.map((o, i) => {
-      const s = o.to;
-      // a lane that brings the goal a jump nearer says so, at a glance
-      const left = toGoal(j.chart, j.at, s.id), closer = some && near[i]!;
-      const st = stance(j.chart, o), [mark, word] = STANCE_TAG[st];
-      const notes = [
-        `${o.supplies} ${t('supplies')}`, s.port ? s.port.name : t('no port'), `Cyrite ${richWord(cyriteKnown(j.chart, s))}${j.chart.visited.includes(s.id) ? '' : '?'}`,
-      ];
-      if (o.place) notes.push(placeText(o.place));
-      if (o.scene) notes.push(o.scene);
-      if (fleetAt(j.chart, s.id)) notes.push(t('Drift fleet'));
-      if (threnAt(j.chart, s.id) >= THREN_ABOUT) notes.push('Thren');
-      if (raided(j.chart, s.id)) notes.push(t('raided'));
-      if (o.netted) notes.push(t('netted'));
-      if (o.shadow) notes.push(t('Calloway last seen'));
-      const b = h('button', `port-l ch-l${i === this.sel ? ' sel' : ''}${o.netted ? ' net' : ''}`, '',
-        h('kbd', '', String(i + 1)),
-        h('span', 'pl-n', '', h('b', '', s.name), left === 0 ? h('span', 'ch-goal-c', t('Goal')) : closer ? h('span', 'ch-goal-c', t('Toward goal')) : null, h('span', 'ch-kind', ` ${t(KIND_WORD[s.kind])}${s.kind === 'edge' || s.kind === 'gate' ? '' : ` · ${t(HOLDER_NAMES[s.holder])}`}`)),
-        h('span', 'pl-note', '', h('span', 'ch-tags', '', h('span', `ch-tag ${st}`, '', h('i', '', mark), h('b', '', t(word))), h('span', 'ch-tag', days(o.route.days))), h('span', '', notes.join(' · '))),
-        h('b', 'pl-p', String(o.fuel)),
+  private intel(open?: boolean): void {
+    const d = $('ch-intel') as HTMLDetailsElement;
+    d.open = open ?? !d.open;
+  }
+
+  private syncList(): void {
+    $('ch-list').querySelectorAll<HTMLElement>('.ch-opt').forEach((b, i) => {
+      b.classList.toggle('sel', i === this.sel);
+      b.setAttribute('aria-checked', String(i === this.sel));
+      b.tabIndex = i === this.sel ? 0 : -1;
+    });
+  }
+
+  /** The stores, compact: what the jumps burn, what buys, what the trip eats, what keeps the hull. */
+  private resCells(j: Journey): HTMLElement[] {
+    const c = j.carry;
+    const cell = (k: string, v: string, cls = '', why = '') => { const e = h('span', cls, '', h('span', 'k', k), h('b', '', v)); if (why) e.title = why; return e; };
+    const hull = c.plates <= 1 ? 'crit' : c.plates <= 2 ? 'low' : '';
+    return [
+      cell(t('Jump fluid'), String(Math.floor(c.fuel)), '', t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')),
+      cell(t('Cyrite'), num(c.cyrite), '', t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')),
+      cell(t('Supplies'), String(c.supplies), c.supplies <= 4 ? 'low' : '', t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')),
+      cell(t('Hull'), String(c.plates), hull, t('Hull plates: each is one hit the Wayward can take.')),
+    ];
+  }
+
+  private renderHead(j: Journey): void {
+    $('ch-res').replaceChildren(...this.resCells(j));
+    const g = gateProgress(j), el = $('ch-gate');
+    if (g.left === null || g.left <= 0) { el.hidden = true; return; }
+    el.hidden = false;
+    const total = g.total ?? g.left, done = Math.max(0, Math.min(1, 1 - g.left / Math.max(1, total)));
+    const bar = h('div', 'ch-bar', '', h('i'));
+    (bar.firstElementChild as HTMLElement).style.width = `${(done * 100).toFixed(1)}%`;
+    bar.style.setProperty('--step', `${100 / Math.max(1, total)}%`);
+    bar.setAttribute('role', 'progressbar');
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-valuemax', String(total));
+    bar.setAttribute('aria-valuenow', String(Math.max(0, total - g.left)));
+    el.replaceChildren(h('span', 'k', '', document.createTextNode(`${g.gate.name} · `), h('b', '', plural(g.left, '{n} jump remaining', '{n} jumps remaining'))), bar);
+  }
+
+  /** What needs the eye before the choice, and only when it is true now: stores, the tank, a Net or Calloway too near to ignore. */
+  private alerts(j: Journey): Array<{ text: string; hot?: boolean }> {
+    const out = trouble(j, this.fs);
+    if (netted(j.chart, j.at)) out.push({ text: t('The Net holds {name}', { name: here(j).name }), hot: true });
+    const gap = behind(j.hunt, j.trail);
+    if (j.trail.length > 1 && gap <= 1) out.push({ text: gap === 0 ? t('Calloway is in this system') : t('Calloway is one jump behind'), hot: true });
+    return out;
+  }
+
+  private renderList(): void {
+    const list = $('ch-list');
+    list.replaceChildren(...this.fs.map((f, i) => {
+      const s = f.to;
+      const tag = [t(KIND_WORD[s.kind]), t(STANCE_WORD[f.stance])].join(' · ');
+      const gate = f.atGate ? t('The gate') : f.gateAfter === null ? '' : t('{n} to gate', { n: f.gateAfter });
+      const b = h('button', `ch-opt ${f.stance}${i === this.sel ? ' sel' : ''}`, '',
+        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', 'tag', tag)),
+        h('div', 'ch-o2', '',
+          h('span', '', '', glyph('clock'), h('b', '', days(f.days))),
+          h('span', f.short ? 'short' : '', '', glyph('drop'), h('b', '', String(f.fuel)), document.createTextNode(` ${t('jump fluid')}`), ...(f.short ? [document.createTextNode(` · ${t('{n} short', { n: f.short })}`)] : [])),
+          h('span', f.thin ? 'short' : '', '', glyph('box'), h('b', '', String(f.supplies)), document.createTextNode(` ${t('supplies')}`)),
+          gate ? h('span', '', '', glyph('arrow'), h('b', '', gate)) : null),
+        f.up || f.down ? h('div', 'ch-o3', '',
+          f.up ? h('span', '', '', h('em', '', t('Upside')), document.createTextNode(f.up.text)) : null,
+          f.down ? h('span', f.down.hot ? 'hot' : '', '', h('em', '', t('Trade-off')), document.createTextNode(f.down.text)) : null) : null,
       ) as HTMLButtonElement;
       b.type = 'button';
-      b.title = t('{n} jump fluid to jump', { n: o.fuel });
-      b.onclick = guarded(this.opened, () => this.pick(i));
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(i === this.sel));
+      b.tabIndex = i === this.sel ? 0 : -1;
+      b.onclick = guarded(this.opened, () => this.select(i));
       b.onpointerdown = (e) => e.stopPropagation();
-      // hover marks it in place: a tap must not replace the button it is landing on
-      b.onpointerenter = () => { if (this.sel !== i) { this.sel = i; this.mark(); this.draw(j); } };
       return b;
     }));
   }
 
-  private renderStat(j: Journey): void {
+  /** The strip: the selected lane's cost in four numbers, and the button that takes it. */
+  private renderStrip(): void {
+    const f = this.fs[this.sel], jump = $('ch-jump') as HTMLButtonElement, sum = $('ch-sum');
+    if (!f) { sum.replaceChildren(); jump.disabled = true; return; }
+    const st = (k: string, v: string, short = false) => h('div', `st${short ? ' short' : ''}`, '', h('span', 'k', k), h('b', '', v));
+    sum.replaceChildren(
+      h('div', 'nm', '', h('span', 'k', `${t(KIND_WORD[f.to.kind])} · ${t(STANCE_WORD[f.stance])}`), h('b', '', f.to.name)),
+      st(t('Jump fluid'), f.short ? `${f.fuel} · ${t('{n} short', { n: f.short })}` : String(f.fuel), f.short > 0),
+      st(t('Travel time'), days(f.days)),
+      st(t('Supplies'), String(f.supplies), f.thin),
+      ...(f.gateAfter === null && !f.atGate ? [] : [st(t('Gate after arrival'), f.atGate ? t('Arrived') : plural(f.gateAfter ?? 0, '{n} jump', '{n} jumps'))]),
+    );
+    jump.disabled = false;
+    jump.textContent = t('Jump to {name}', { name: f.to.name });
+  }
+
+  /** Intel: the rest of what the chart knows. */
+  private renderIntel(j: Journey, lines: string[]): void {
     const c = j.carry, ago = Math.max(0, Math.floor(j.day - j.hunt.seenDay));
     const seen = j.trail[j.hunt.seenIdx];
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
-    // what each is for, on hover: Cyrite moves the ship, supplies keep it going and pays for the rest
-    const cells: Array<[string, string, string]> = [
-      [t('Jump fluid'), String(Math.floor(c.fuel)), t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')],
-      [t('Cyrite'), String(c.cyrite), t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')],
-      [t('Supplies'), String(c.supplies), t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')],
-    ];
-    const goal = goalOf(j.chart, j.at), left = toGoal(j.chart, j.at, j.at);
+    // what the last system changed as chips, then the first two lines; the rest sit behind a tap
+    const shown = lines.slice(0, 2), rest = lines.slice(2);
+    $('ch-news').replaceChildren(...shown.map((l) => h('li', '', t(l))));
+    $('ch-more').hidden = !rest.length;
+    ($('ch-more') as HTMLDetailsElement).open = false;
+    $('ch-more-s').textContent = plural(rest.length, '{n} more line', '{n} more lines');
+    $('ch-more-l').replaceChildren(...rest.map((l) => h('li', '', t(l))));
+    $('ch-chips').replaceChildren(...this.chips.map((ch) => {
+      const label = ch.key === 'day' ? days(Math.abs(ch.d)) : `${t(CHIP_WORD[ch.key])} ${num(Math.abs(ch.d))}`;
+      return h('span', `ch-chip ${ch.key === 'day' ? 'day' : ch.d > 0 ? 'up' : 'down'}`, '', ch.key === 'day' ? null : h('i', '', ch.d > 0 ? '▲' : '▼'), h('b', '', label));
+    }));
+    const notes = this.chips.length + lines.length;
+    $('ch-intel-s').textContent = notes ? `${t('Intel')} · ${plural(notes, '{n} note', '{n} notes')}` : t('Intel');
+    this.chips = [];
     const file = fileCount(c.flags, j.chart.regionSet ?? 'three');
+    // the factions on the move, by name, for the systems this region shows
+    const view = viewOf(j.chart, j.at), moving = regionSystems(j.chart, view).flatMap((s) => [
+      fleetAt(j.chart, s.id) ? `${t('Drift fleet')} · ${s.name}` : '', threnAt(j.chart, s.id) >= THREN_ABOUT ? `Thren · ${s.name}` : '', raided(j.chart, s.id) ? `${t('raided')} · ${s.name}` : '',
+    ]).filter(Boolean);
     $('ch-stat').replaceChildren(
       h('p', 'ch-act', actLine(act(j)), h('span', 'ch-filec', t('File {n}/{of}', { n: file.found, of: file.of }))),
       ...regionAsks(j.chart, j.at),
-      ...(left > 0 && left < Infinity ? [h('p', 'ch-goal', `${t('Goal')} · ${t('Reach {name}', { name: goal.name })} · ${plural(left, '{n} jump', '{n} jumps')}`)] : []),
       ...shipTrouble(j).map((l) => h('p', 'ch-warn', l)),
-      h('div', 'port-stock', '', ...cells.map(([k, v, why]) => { const e = h('span', '', '', h('span', 'k', k), h('b', '', v)); e.title = why; return e; })),
+      h('p', 'ch-goal', `${t('Goal')} · ${t('Reach {name}', { name: goalOf(j.chart, j.at).name })}`),
       h('p', 'ch-hunt', j.trail.length < 2
         ? `Calloway · ${t('Not on your trail yet')}`
         : `Calloway · ${t('last seen {where}', { where: seen ? sysById(j.chart, seen).name : t('unknown') })}, ${ago ? plural(ago, '{n} day ago', '{n} days ago') : t('today')} · ${gap === 0 ? t('in this system') : plural(gap, 'About {n} jump behind', 'About {n} jumps behind')}`),
       ...fileLines(j.calloway, j.hunt.hunch).map((l) => h('p', 'ch-file', t(l))),
       h('p', 'ch-netl', `${t('The Net')} · ${plural(netN, '{n} system', '{n} systems')} · ${t('as of day {n}', { n: Math.floor(j.chart.seenDay) + 1 })}`),
+      ...(moving.length ? [h('p', 'ch-netl', moving.join(' · '))] : []),
       ...readout(j.notice, c.standing).map((l) => h('p', `ch-notice t-${l.tier}`, noticeText(l, j.day))),
     );
   }
 
-  private draw(j: Journey): void {
+  /** The map: the region as the simulation has it. The lanes out of here are lit, the selected one bright with its cost; the rest is quiet. */
+  private draw(): void {
+    const j = this.j;
+    if (!j) return;
     const map = $('ch-map') as unknown as SVGSVGElement;
+    const box = map.getBoundingClientRect();
+    const W = Math.round(box.width) || FALLBACK.w, H = Math.round(box.height) || FALLBACK.h;
+    map.setAttribute('viewBox', `0 0 ${W} ${H}`);
     const c = j.chart, at = j.at;
     // one region at a time: the way in, its systems, and its gate
     const view = viewOf(c, at), shown = regionSystems(c, view), vis = new Set(shown.map((s) => s.id));
-    const { px, py } = project(shown);
-    const out = new Set(lanesFrom(c, at).map((l) => l.to.id));
-    const target = this.ids[this.sel];
+    const { px, py } = project(shown, W, H, sysById(c, at).col);
+    const live = new Map(this.fs.map((f, i) => [f.to.id, i]));
+    const target = this.fs[this.sel]?.to.id;
+    const goal = goalOf(c, at);
     const extra = weightFuel(j.carry.levels);
     const kids: SVGElement[] = [];
     const rn = regionName(c, at);
-    if (rn) kids.push(svg('text', { x: W / 2, y: 14, 'text-anchor': 'middle', class: 'ch-region' }, rn));
-    // lanes: faint; the ones out of here amber, the selected one bright, with its cost
+    if (rn) kids.push(svg('text', { x: W / 2, y: 16, 'text-anchor': 'middle', class: 'ch-region' }, rn));
+    // taken space, for labels to keep clear of: every node and every cost
+    const taken: Array<[number, number, number, number]> = [];
+    for (const s of shown) taken.push([px(s) - 10, py(s) - 10, px(s) + 10, py(s) + 10]);
+    // lanes: the graph quiet; the ones out of here lit, the selected one bright, with its cost
+    const costs: SVGElement[] = [];
     for (const r of c.routes) {
       if (!vis.has(r.a) || !vis.has(r.b)) continue;
       const a = sysById(c, r.a), b = sysById(c, r.b);
-      const live = (r.a === at && out.has(r.b)) || (r.b === at && out.has(r.a));
-      const sel = live && (r.a === target || r.b === target);
-      kids.push(svg('line', { x1: px(a), y1: py(a), x2: px(b), y2: py(b), class: `ch-r${live ? ' live' : ''}${sel ? ' sel' : ''}` }));
-      if (live) kids.push(svg('text', { x: (px(a) + px(b)) / 2, y: (py(a) + py(b)) / 2 - 5, class: `ch-cost${sel ? ' sel' : ''}`, 'text-anchor': 'middle' }, `${r.cyrite + extra}`));
+      const out = (r.a === at && live.has(r.b)) || (r.b === at && live.has(r.a));
+      const sel = out && (r.a === target || r.b === target);
+      const hot = out && (c.seenNet.includes(r.a === at ? r.b : r.a));
+      kids.push(svg('line', { x1: px(a), y1: py(a), x2: px(b), y2: py(b), class: `ch-r${out ? ' live' : ''}${sel ? ' sel' : ''}${hot && !sel ? ' net' : ''}` }));
+      // a lane's number is shown on the selected lane, and on the others where there is room for it
+      if (out && (sel || Math.hypot(px(a) - px(b), py(a) - py(b)) > 64)) {
+        const x = (px(a) + px(b)) / 2, y = (py(a) + py(b)) / 2, label = String(r.cyrite + extra);
+        const w = label.length * 7 + 10;
+        const g = svg('g', { class: `ch-cost${sel ? ' sel' : ''}` });
+        g.append(svg('rect', { x: x - w / 2, y: y - 8, width: w, height: 16, rx: 2 }), svg('text', { x, y: y + 4 }, label));
+        costs.push(g);
+        taken.push([x - w / 2 - 2, y - 10, x + w / 2 + 2, y + 10]);
+      }
     }
-    // your trail
+    // your trail, faint
     for (let i = 1; i < j.trail.length; i++) {
       if (!vis.has(j.trail[i - 1]!) || !vis.has(j.trail[i]!)) continue;
       const a = sysById(c, j.trail[i - 1]!), b = sysById(c, j.trail[i]!);
       kids.push(svg('line', { x1: px(a), y1: py(a), x2: px(b), y2: py(b), class: 'ch-trail' }));
     }
+    // names go to the places that matter, each to the first free side of its node
+    const named = new Set([at, goal.id, ...live.keys(), ...(target ? [target] : [])]);
+    const place = (s: StarSystem, tagged: boolean): { x: number; y: number; anchor: string; tagY: number } => {
+      const x = px(s), y = py(s), r = s.kind === 'gate' || s.kind === 'edge' || s.id === at ? 9 : 7;
+      const w = s.name.length * 6.6 + 4, hgt = tagged ? 26 : 12;
+      const tries: Array<{ x: number; y: number; anchor: string; box: [number, number, number, number]; tagY: number }> = [
+        { x, y: y + r + 13, anchor: 'middle', box: [x - w / 2, y + r + 2, x + w / 2, y + r + 2 + hgt], tagY: y + r + 24 },
+        { x, y: y - r - 6 - (tagged ? 13 : 0), anchor: 'middle', box: [x - w / 2, y - r - 4 - hgt, x + w / 2, y - r - 2], tagY: y - r - 6 },
+        { x: x + r + 6, y: y + 4, anchor: 'start', box: [x + r + 4, y - 7, x + r + 8 + w, y - 7 + hgt], tagY: y + 16 },
+        { x: x - r - 6, y: y + 4, anchor: 'end', box: [x - r - 8 - w, y - 7, x - r - 4, y - 7 + hgt], tagY: y + 16 },
+      ];
+      const free = (b: [number, number, number, number]) => b[0] >= 2 && b[2] <= W - 2 && b[1] >= 22 && b[3] <= H - 2
+        && !taken.some((o) => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1] && !(o[0] === x - 10 && o[1] === y - 10));
+      const pick = tries.find((t2) => free(t2.box)) ?? tries[0]!;
+      taken.push(pick.box);
+      return pick;
+    };
+    // here and the selection first, so they get the best sides
+    const order = [...shown].sort((a, b) => Number(b.id === at) - Number(a.id === at) || Number(b.id === target) - Number(a.id === target) || Number(b.id === goal.id) - Number(a.id === goal.id));
+    const labelAt = new Map<string, ReturnType<typeof place>>();
+    for (const s of order) if (named.has(s.id) && (this.onPick || s.id === at || s.id === goal.id)) labelAt.set(s.id, place(s, s.id === at || s.id === goal.id));
     // systems
-    const goal = goalOf(c, at);
     for (const s of shown) {
-      const x = px(s), y = py(s), net = c.seenNet.includes(s.id), visited = c.visited.includes(s.id);
-      const g = svg('g', { class: `ch-s${out.has(s.id) ? ' out' : ''}${s.id === target ? ' sel' : ''}` });
-      // the Thren as a haze, thicker where there are more of them
-      const thren = threnAt(c, s.id);
-      if (thren >= THREN_ABOUT * 0.5) g.append(svg('circle', { cx: x, cy: y, r: 13 + 9 * thren, class: 'ch-thren', opacity: Math.min(1, 0.35 + thren) }));
-      if (net) g.append(svg('circle', { cx: x, cy: y, r: 15, class: 'ch-net' }));
-      if (j.chart.stall[s.id]) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-stall' }));
-      if (fleetAt(c, s.id)) g.append(svg('path', { d: `M${x + 9} ${y + 4}l4 8h-8z`, class: 'ch-drift' }));
-      if (raided(c, s.id)) g.append(svg('path', { d: `M${x - 13} ${y + 9}l5 -6M${x - 9} ${y + 11}l5 -6`, class: 'ch-raid' }));
-      if (s.quiet && !net) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-quiet' }));
-      g.append(svg('circle', { cx: x, cy: y, r: s.kind === 'edge' || s.kind === 'home' || s.kind === 'gate' ? 8 : 6.5, fill: visited ? KIND_COLOUR[s.kind] : 'rgba(11,12,15,.9)', stroke: KIND_COLOUR[s.kind], 'stroke-width': 2 }));
-      if (s.port) g.append(svg('rect', { x: x + 6, y: y - 11, width: 5, height: 5, fill: INK.teal }));
-      const place = placeAt(c, s.id), scene = situationLine(c, s.id);
-      if (place || scene) {
-        const m = svg('path', { d: `M${x - 9} ${y - 14}l3 3l-3 3l-3-3z`, class: 'ch-place' });
-        m.append(svg('title', {}, place ? placeText(place) : scene!));
-        g.append(m);
+      const x = px(s), y = py(s), net = c.seenNet.includes(s.id), visited = c.visited.includes(s.id), isGate = s.kind === 'gate' || s.kind === 'edge';
+      const out = live.has(s.id), isSel = s.id === target;
+      const g = svg('g', { class: `ch-s${out ? ' out' : ' far'}${isSel ? ' sel' : ''}${s.id === at ? ' here' : ''}${net ? ' net' : ''}${isGate ? ' gate' : ''}` });
+      // the lanes out, here and the gate carry the detail; the rest of the graph is context, small and plain
+      const ctx = !out && s.id !== at && !isGate;
+      if (net) {
+        g.append(svg('circle', { cx: x, cy: y, r: ctx ? 9 : 13, class: 'ch-net' }));
+        // a lane you could take into it carries a mark besides the colour
+        if (out) g.append(svg('path', { d: `M${x + 9} ${y - 12}l4 7h-8z`, fill: INK.red }));
       }
-      g.append(svg('text', { x, y: y + 20, 'text-anchor': 'middle', class: 'ch-name' }, s.name));
-      if (s.id === goal.id) g.append(svg('text', { x, y: y + 31, 'text-anchor': 'middle', class: 'ch-goalm' }, t('Goal')));
-      const n = this.ids.indexOf(s.id);
-      if (n >= 0) g.append(svg('text', { x, y: y - 13, 'text-anchor': 'middle', class: 'ch-num' }, String(n + 1)));
-      if (n >= 0 && this.onPick) {
-        g.style.cursor = 'pointer';
-        g.addEventListener('click', guarded(this.opened, () => this.pick(n)) as EventListener);
+      if (s.quiet && !net && !ctx) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-quiet' }));
+      const col = KIND_COLOUR[s.kind], r = isGate || s.id === at ? 8 : ctx ? 4.5 : 6.5;
+      if (isGate) g.append(svg('path', { d: `M${x} ${y - r - 2}L${x + r + 2} ${y}L${x} ${y + r + 2}L${x - r - 2} ${y}Z`, class: 'ch-node', stroke: col, 'fill-opacity': visited ? 1 : 0.9 }));
+      else g.append(svg('circle', { cx: x, cy: y, r, class: 'ch-node', stroke: col, fill: visited ? `${col}33` : 'rgba(11,12,15,.92)' }));
+      if (s.port && !ctx) g.append(svg('rect', { x: x + 6, y: y - 11, width: 5, height: 5, class: 'ch-port' }));
+      const p = placeAt(c, s.id), scene = situationLine(c, s.id);
+      if (ctx && !isAnomaly(p)) { /* no mark */ }
+      else if (isAnomaly(p)) g.append(svg('path', { d: `M${x - 10} ${y - 15}l4 4l-4 4l-4-4z`, class: 'ch-anom' }));
+      else if (p || scene) g.append(svg('path', { d: `M${x - 9} ${y - 14}l3 3l-3 3l-3-3z`, class: 'ch-place' }));
+      if (p || scene) { const ti = svg('title', {}); ti.textContent = p ? placeText(p) : scene!; g.append(ti); }
+      if (out) g.append(svg('circle', { cx: x, cy: y, r: r + 5, class: isSel ? 'ch-ring' : 'ch-ring dim', ...(isSel ? {} : { opacity: 0.25 }) }));
+      if (s.id === at) g.append(svg('circle', { cx: x, cy: y, r: r + 5, class: 'ch-ring here' }));
+      const lab = labelAt.get(s.id);
+      if (lab) {
+        g.append(svg('text', { x: lab.x, y: lab.y, 'text-anchor': lab.anchor, class: 'ch-name' }, s.name));
+        const tag = s.id === at ? t('Here') : isGate ? t(s.kind === 'edge' ? 'The last lane' : 'Gate') : '';
+        if (tag) {
+          const tw = tag.length * 7 + 8, ax = lab.anchor === 'middle' ? lab.x - tw / 2 : lab.anchor === 'start' ? lab.x : lab.x - tw;
+          g.append(svg('rect', { x: ax, y: lab.tagY - 9, width: tw, height: 12, rx: 1.5, class: 'ch-tagb' }), svg('text', { x: ax + tw / 2, y: lab.tagY, 'text-anchor': 'middle', class: 'ch-tagm' }, tag));
+        }
+      }
+      const n = live.get(s.id);
+      if (n !== undefined && this.onPick) {
+        const hit = svg('circle', { cx: x, cy: y, r: 18, fill: 'transparent' });
+        g.append(hit);
+        g.addEventListener('click', guarded(this.opened, () => this.select(n)) as EventListener);
         g.addEventListener('pointerdown', (e) => e.stopPropagation());
       }
       kids.push(g);
     }
+    kids.push(...costs);
     // Calloway's shadow, where she was last seen
     const seen = j.trail.length > 1 ? j.trail[j.hunt.seenIdx] : undefined;
-    if (seen && vis.has(seen)) {
+    if (seen && vis.has(seen) && seen !== at) {
       const s = sysById(c, seen), x = px(s) - 14, y = py(s) - 14;
       kids.push(svg('path', { d: `M${x} ${y - 6}L${x + 6} ${y}L${x} ${y + 6}L${x - 6} ${y}Z`, class: 'ch-cal' }));
     }
-    // you
-    const me = sysById(c, at);
-    kids.push(svg('path', { d: `M${px(me)} ${py(me) - 22}l5 8h-10z`, class: 'ch-you' }));
     map.replaceChildren(...kids);
   }
 }
