@@ -362,10 +362,20 @@ const PLANET_F = /* glsl */ `
       col = mix(uB, uA, smoothstep(0.45, 0.7, h) * 0.6);
       col *= 0.85 + 0.3 * smoothstep(0.48, 0.5, fbm(p * 9.0 + s, 3));
     }
+    // weather: thin cloud over rock and ice worlds that hold some air, torn into streaks and lit white
+    if (uKind > 0.5) {
+      float warp = fbm(p * 2.0 + s, 3);
+      float cl = smoothstep(0.5, 0.95, fbm(p * vec3(2.4, 11.0, 2.4) + vec3(warp * 1.4) + s * 1.7 + 4.0, 5)) * smoothstep(0.35, 0.7, fbm(p * 1.6 + s * 0.6, 3));
+      col = mix(col, vec3(0.78, 0.8, 0.84), cl * (0.12 + 0.3 * uAir));
+    }
     float l = dot(n, uL);
     float day = smoothstep(-0.08, 0.5, l);
     float fres = pow(1.0 - max(dot(n, vV), 0.0), 2.5);
-    vec3 c = col * day * 0.95 + uAtmo * fres * smoothstep(-0.35, 0.45, l) * uAir * 0.25;
+    // twilight: a warm band where day becomes night, and a faint glow of the dark side, with a few city lights on a rock world
+    float dusk = smoothstep(-0.18, 0.0, l) * smoothstep(0.34, 0.04, l);
+    float city = uKind > 0.5 && uKind < 1.5 ? smoothstep(0.78, 0.84, fbm(p * 38.0 + s, 3)) * smoothstep(0.6, 0.35, fbm(p * 2.6 + s, 4)) * (1.0 - day) : 0.0;
+    vec3 c = col * day * 0.95 + col * 0.018 + uAtmo * fres * smoothstep(-0.35, 0.45, l) * uAir * 0.34
+      + vec3(0.55, 0.26, 0.12) * dusk * fres * uAir * 0.5 + vec3(0.7, 0.5, 0.25) * city * 0.22;
     gl_FragColor = vec4(c * uDim, 1.0);
   }`;
 
@@ -376,7 +386,7 @@ const HALO_F = /* glsl */ `
     vec3 n = normalize(vN);
     float edge = -dot(n, normalize(vV));
     float a = pow(smoothstep(0.0, 0.46, edge), 2.0);
-    float lit = smoothstep(-0.5, 0.6, dot(-n, uL));
+    float lit = smoothstep(-0.45, 0.55, dot(n, uL));
     gl_FragColor = vec4(uAtmo * a * lit * 0.2 * uAir * uDim, 1.0);
   }`;
 

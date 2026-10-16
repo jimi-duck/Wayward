@@ -204,3 +204,7 @@ The kit metal shader (every hull part) darkens grooves and seams (a cavity term 
 ## Graphics pass 4: debris and haze
 
 A layer of small stone chips (160 Low, 360 Medium, 560 High; `QualityTier.debris`) drifts and turns in a box that follows the ship. One instanced mesh, one draw call, a shared plain material, ~80 triangles a chip, positions rewritten on the CPU each frame (a few hundred matrix writes). Chips melt to nothing within 9 units of the ship so they never cover the hull or shots; the simulation never sees them. The distance fog also takes a faint wash of the sky's own colour. Not measured: GPU time on a phone and the CPU cost of the update on one (it is small next to the HUD's). Shots in `/mnt/project-files/graphics-research/task4-debris/`.
+
+## Graphics pass 5: planets
+
+The far-planet shader gains thin streaked cloud on rock and ice worlds, a warm twilight band at the terminator, a faint glow of the dark side, a crisper limb, and a few city lights on rock worlds. The atmosphere halo used the wrong sign for its light, so it ringed the dark side; it now hugs the lit limb. Same shaders and programs (more noise taps in the planet fragment: three extra fbm calls on rock and ice, a few extra on rock worlds); one planet per sky. Bench: `tools/planets.html` (`?sun=40,10,-30` for a crescent). Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/task5-planets/`. (The "before" bench shots are from this branch with the old shader.)
