@@ -210,6 +210,8 @@ export interface Carry {
   supplies: number;
   /** Plates whole (never more than the build allows). */
   plates: number;
+  /** Hardened plating and high-yield torpedoes aboard: they stay until a hit or a launch uses one. Saves from before have neither. */
+  stock?: { shield: number; yield: number };
   levels: Levels;
   /** Installs made in the refit bay. */
   refit: number;
