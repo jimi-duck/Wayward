@@ -16,6 +16,6 @@ export function goalOf(w: World): Goal {
   if (e && !e.done && e.id === 'scene' && w.stage?.taken) return { goal: w.stage.line, jobs };
   const scope = w.stage?.onScope ? w.stage.def.name : undefined;
   if (w.bk) return { goal: w.fuel >= w.jumpCost ? 'Head for the lane entrance and jump' : 'Mine Cyrite to fill the jump tank', jobs, scope };
-  if (e && !e.done) return { goal: ENCOUNTERS[e.id].name, jobs };
+  if (e && !e.done && !e.dormant) return { goal: ENCOUNTERS[e.id].name, jobs };
   return { goal: 'Collect Cyrite and upgrade your ship', jobs };
 }

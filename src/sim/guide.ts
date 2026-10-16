@@ -66,7 +66,7 @@ export function guideTarget(world: World): Guide | null {
   const places = world.seenPlaces();
   const lane = places.find((p) => p.kind === 'lane'), port = places.find((p) => p.kind === 'port');
   const busy = !!bk && (bk.spool > 0 || bk.dockT > 0 || bk.jumpT >= 0);
-  if (e && !e.done && e.r > 0 && !busy) return { kind: 'event', name: e.label ?? e.place ?? ENCOUNTERS[e.id].name, x: e.x, z: e.z, r: e.r };
+  if (e && !e.done && !e.dormant && e.r > 0 && !busy) return { kind: 'event', name: e.label ?? e.place ?? ENCOUNTERS[e.id].name, x: e.x, z: e.z, r: e.r };
   if (bk) {
     if (bk.dockT > 0 && port) return { kind: 'port', name: port.name, x: port.x, z: port.z, r: port.r };
     if (lane) return { kind: 'lane', name: lane.name, x: lane.x, z: lane.z, r: lane.r };

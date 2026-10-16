@@ -3,6 +3,7 @@ import type { ActorSpec, Goal, SituationDef } from '../content/situations';
 import type { Outcome } from './comms';
 import { leave, type Alien } from './enemies';
 import { topSpeed } from './ship';
+import { stealthOf } from './rules';
 import type { World } from './world';
 
 // ── missions ──────────────────────────────────────────────────────────────
@@ -220,10 +221,8 @@ export class Run {
       case 'sneak': {
         this.points = [{ x, z, on: true }];
         this.focus = { x, z, r: DROP_R };
-        const L = w.levels;
         // what the ship carries to look like something else
-        this.stealth = 1 - 0.28 * (L.md_spoofer ?? 0) - 0.2 * (L.md_ghost ?? 0) - 0.12 * (L.md_baffles ?? 0);
-        this.stealth = Math.max(0.25, this.stealth);
+        this.stealth = stealthOf(w.levels);
         break;
       }
     }
@@ -400,10 +399,12 @@ export class Run {
   private sneak(w: World, dt: number): Verdict {
     const s = w.ship, drop = this.points[0]!;
     // the sweep: patrols orbit the site, the ship inside any one's reach is read
+    // (inside cover, a shroud or rubble, the sweep reaches less far: the drop is better made through it)
     let seen = false;
+    const reach = SCAN_R * w.air.conceal;
     for (const a of w.aliens) {
       if (!a.ward || a.ward.act !== 'patrol') continue;
-      if (Math.hypot(a.x - s.x, a.z - s.z) < SCAN_R) seen = true;
+      if (Math.hypot(a.x - s.x, a.z - s.z) < reach) seen = true;
     }
     this.exposure = Math.min(1, Math.max(0, this.exposure + (seen ? EXPOSE * this.stealth : -COOL) * dt));
     const near = Math.hypot(drop.x - s.x, drop.z - s.z);

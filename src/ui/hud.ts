@@ -532,8 +532,8 @@ export class Hud {
     const e = world.encounter, obj = $('objective');
     const bk = world.bk;
     obj.classList.toggle('on', world.alive);
-    const course = !!bk && world.alive && (!e || e.done || bk.spool > 0 || bk.dockT > 0);
-    const event = !!e && !e.done;
+    const course = !!bk && world.alive && (!e || e.done || e.dormant || bk.spool > 0 || bk.dockT > 0);
+    const event = !!e && !e.done && !e.dormant;
     obj.classList.toggle('course', (course && bk.spool === 0 && bk.dockT === 0 && bk.jumpT < 0) || (!bk && !event));
     obj.classList.toggle('event', event && !course);
     const les = world.alive ? lessonOf(world) : null;
@@ -573,6 +573,8 @@ export class Hud {
         const lines: string[] = [];
         if (!ready) lines.push(`${t('Reach the lane entrance')} · <b>${range(dl)}</b>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
+        // a place asleep in the sky: off the course, there if the ship wants it
+        if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);
         const sc = world.stage;
         if (sc?.onScope) lines.push(`${t('On the scope')} · ${t(sc.def.name)} · <b>${range(Math.hypot(sc.x - s.x, sc.z - s.z))}</b>`);
         if (bk.port && bk.docks === 0) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);

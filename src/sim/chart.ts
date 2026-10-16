@@ -4,6 +4,7 @@ import {
 } from '../content/systems';
 import { PLACE_CHANCE, PLACE_ORDER, PLACES, SIGNAL_REWARDS, type PlaceId, type Reward } from '../content/phenomena';
 import { REGIONS, REGION_SETS, type RegionDef, type RegionSet } from '../content/regions';
+import type { Exp } from '../content/profiles';
 import { Rng } from './rng';
 import { layScatter, RAID_MARKUP, type Fleet } from './scatter';
 
@@ -110,6 +111,8 @@ export interface Chart {
   /** What is going on, by system (sim/situations.ts), and the prices it has moved. Absent in a save from before them. */
   situations?: Record<string, Sit>;
   market?: Market[];
+  /** The sky each open system was dealt (sim/experience.ts). Absent in a save from before them: composed on load. */
+  exp?: Record<string, Exp>;
   /** What the factions are doing on their own (sim/scatter.ts): Drift fleets on the move, Thren by system, Gutter raids (days left). Absent in a save from before them. */
   drifts?: Fleet[];
   thren?: Record<string, number>;

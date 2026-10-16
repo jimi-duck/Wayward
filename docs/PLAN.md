@@ -44,6 +44,7 @@ is off.
 | Onb Onboarding | Done: a short lesson on every new Story journey, once in the Arcade ([ONBOARDING.md](ONBOARDING.md)) |
 | H The HUD | Done, pending a device look: a quieter, contextual HUD ([HUD.md](HUD.md)) |
 | A Artwork slots | Built: nine slots with the current look as fallback; 64 generated pictures are installed and the rest wait on the set ([ART-SLOTS.md](ART-SLOTS.md)) |
+| Var Variety | Built, first guesses: a seeded sky composer with column memory, one shared spot for each site, regional rules (claims, watch, lanterns), cover that works ([VARIETY.md](VARIETY.md), [BALANCE-VARIETY.md](BALANCE-VARIETY.md)). A playtest is still to do |
 
 Real-device play is still to do for most of the later milestones: no pilot
 can judge feel or frame rate ([PERF.md](PERF.md)).

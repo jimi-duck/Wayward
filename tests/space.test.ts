@@ -34,7 +34,8 @@ describe('the library', () => {
   it('is not all hazard: most features are harmless', () => {
     const hazard = FEATURE_ORDER.filter((id) => FEATURES[id].purpose.includes('hazard'));
     expect(hazard.length / FEATURE_ORDER.length).toBeLessThan(0.25);
-    expect(FEATURE_ORDER.filter((id) => !Object.keys(FEATURES[id].effects).length).length).toBeGreaterThanOrEqual(5);
+    // (the lantern line steadies navigation, so it has an effect; it is still an aid, not a hazard)
+    expect(FEATURE_ORDER.filter((id) => !Object.keys(FEATURES[id].effects).length).length).toBeGreaterThanOrEqual(4);
   });
 
   it('keeps every roster to real features, and every feature in some roster', () => {

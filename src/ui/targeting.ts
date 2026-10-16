@@ -285,7 +285,7 @@ export class Targeting {
       const les = lessonOf(world);
       if (les?.mark) put(les.mark.x, 0.5, les.mark.z, 'm dia obj', `${tr(les.mark.name)}\n${range(Math.hypot(les.mark.x - s.x, les.mark.z - s.z))}`);
       const e = world.encounter;
-      if (e && !e.done && (e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy' || e.id === 'scene')) {
+      if (e && !e.done && (e.dormant || e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy' || e.id === 'scene')) {
         put(e.x, 0.5, e.z, 'm dia obj', `${tr(e.label ?? ENCOUNTERS[e.id].name)}\n${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
       }
       // the Breakout's two places, when they are in view
