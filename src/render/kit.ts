@@ -457,6 +457,51 @@ export class Kit {
     this.add(key, g, pos, rot);
   }
 
+  /**
+   * A fuselage lofted through cross-sections, tail to nose. Each station is
+   * [x, half-width, top, bottom, chamfer]: an eight-sided section with a flat
+   * deck (chamfer 0 is a box, 1 a diamond). Faces are flat, so the hull
+   * reads as plated, with real slopes at the nose and under the belly.
+   */
+  loft(key: string, stations: Array<[number, number, number, number, number?]>, pos: V3 = [0, 0, 0]): void {
+    const ring = (st: [number, number, number, number, number?]): V3[] => {
+      const [x, w, top, bot, ch = 0.5] = st;
+      const dz = w * (0.35 + 0.6 * (1 - ch)), dy = (top + bot) * 0.3 * (0.4 + ch);
+      return [[x, top, dz], [x, top - dy, w], [x, -bot + dy * 0.8, w], [x, -bot, dz], [x, -bot, -dz], [x, -bot + dy * 0.8, -w], [x, top - dy, -w], [x, top, -dz]];
+    };
+    const v: number[] = [];
+    const tri = (a: V3, b: V3, c: V3): void => { v.push(...a, ...b, ...c); };
+    const rings = stations.map(ring);
+    for (let i = 0; i + 1 < rings.length; i++) {
+      const a = rings[i]!, b = rings[i + 1]!;
+      for (let j = 0; j < 8; j++) {
+        const k = (j + 1) % 8;
+        tri(a[j]!, b[j]!, a[k]!); tri(a[k]!, b[j]!, b[k]!);
+      }
+    }
+    const cap = (r: V3[], flip: boolean): void => {
+      for (let j = 1; j < 7; j++) flip ? tri(r[0]!, r[j]!, r[j + 1]!) : tri(r[0]!, r[j + 1]!, r[j]!);
+    };
+    cap(rings[0]!, false);
+    cap(rings[rings.length - 1]!, true);
+    // face every triangle away from the middle of the body (a loft is convex enough for that)
+    const mid = new Vector3();
+    for (let i = 0; i < v.length; i += 3) mid.add(P.set(v[i]!, v[i + 1]!, v[i + 2]!));
+    mid.divideScalar(v.length / 3);
+    const A = new Vector3(), B = new Vector3(), C = new Vector3();
+    for (let i = 0; i < v.length; i += 9) {
+      A.fromArray(v, i); B.fromArray(v, i + 3); C.fromArray(v, i + 6);
+      const n = B.clone().sub(A).cross(C.clone().sub(A));
+      const out = A.clone().add(B).add(C).divideScalar(3).sub(mid);
+      if (n.dot(out) < 0) { B.toArray(v, i + 6); C.toArray(v, i + 3); }
+    }
+    const g = new BufferGeometry();
+    g.setAttribute('position', new BufferAttribute(new Float32Array(v), 3));
+    g.computeVertexNormals();
+    g.setAttribute('uv', new BufferAttribute(new Float32Array(v.length / 3 * 2), 2));
+    this.add(key, g, pos);
+  }
+
   /** A faceted solid of revolution round +Y (six sides, flat-shaded): grown crystal. Profile is [radius, height] bottom to top. */
   shard(key: string, profile: Array<[number, number]>, pos: V3, rot: V3 = [0, 0, 0]): void {
     const g = new LatheGeometry(profile.map(([r, y]) => new Vector2(r, y)), 6).toNonIndexed();

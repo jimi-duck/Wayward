@@ -216,3 +216,7 @@ The key light goes from 4.4 to 4.9 and the sky fill from 0.8 to 0.58, so the sha
 ## Graphics pass 7: edges on Medium
 
 Medium had no edge smoothing at all, so rock and hull edges stair-stepped (Low still has none). Medium now runs SMAA at its light preset in the post chain; High keeps the full preset. Cost: SMAA's three small passes at the buffer's size, light preset, on Medium only (Low has no post chain). The shader programs compile behind the title with the rest of the chain (`warmFrame`). Dynamic resolution was considered and left out: the tier governor already steps down on slow frames, and resizing the buffer mid-flight would cost a visible shimmer. Not measured: GPU time on a phone; this is the pass to check on a mid-range phone on Medium. Zoomed before/after in `/mnt/project-files/graphics-research/task7-sharper/`.
+
+## Graphics pass 8: enemy hull shapes
+
+The scouts, stalkers, strike fighters, warbirds and probes had flat extruded bodies. The kit gains `loft`: a fuselage through cross-sections (eight-sided, flat deck, chamfered shoulders), so noses taper, bellies slope and wings thin to an edge. Seven main bodies use it, with armour strakes along the shoulders of the two birds. About 120 triangles a body, merged into the same `hull` mesh as before: no new draws, programs or textures. Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/task9-hulls/`.
