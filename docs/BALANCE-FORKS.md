@@ -4,15 +4,15 @@ Seeds per set: 60. A fork is a system with two or more lanes on. "Thin": the lan
 
 ## three regions
 
-- forks 1145, thin 43 (3.8%), no cost or opportunity apart 48 (4.2%)
-- lanes per fork: 2: 510, 3: 410, 4: 156, 5: 60, 6: 8, 7: 1
-- forks where the lanes differ in each: kind 97%, style 84%, port 53%, days 75%, gate 75%, fluid 41%
+- forks 1145, thin 43 (3.8%), no cost or opportunity apart 49 (4.3%)
+- lanes per fork: 2: 510, 3: 635
+- forks where the lanes differ in each: kind 97%, style 84%, port 51%, days 70%, gate 75%, fluid 35%
 
 ## eight regions
 
-- forks 12436, thin 228 (1.8%), no cost or opportunity apart 368 (3.0%)
-- lanes per fork: 2: 2627, 3: 4747, 4: 3320, 5: 1340, 6: 345, 7: 57
-- forks where the lanes differ in each: kind 96%, style 80%, port 62%, breather 49%, place 22%, days 71%, gate 93%, fluid 48%
+- forks 12436, thin 228 (1.8%), no cost or opportunity apart 375 (3.0%)
+- lanes per fork: 2: 2627, 3: 9809
+- forks where the lanes differ in each: kind 96%, style 80%, port 60%, breather 46%, place 19%, days 65%, gate 93%, fluid 39%
 
 ## Thin forks, examples
 

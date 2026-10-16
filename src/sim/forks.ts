@@ -50,6 +50,10 @@ export interface Fork {
   atGate: boolean;
   /** Brings the goal nearer than here (null when it cannot be told). */
   nearer: boolean | null;
+  /** How hard the far end is on you: 0 calm, 1 watched, 2 hostile. */
+  danger: 0 | 1 | 2;
+  /** Jumps this lane adds to the way to the gate over the shortest lane shown (0 for the shortest); null where it cannot be told. */
+  detour: number | null;
   netted: boolean;
   shadow: boolean;
   place: Place | null;
@@ -61,14 +65,37 @@ export interface Fork {
 /** What the chart knows of a place there, as a short phrase. */
 const placeNote = (p: Place) => `${t(PLACES[p.id].name)} · ${t(REWARD_WORD[PLACES[p.id].reward === 'unknown' ? 'unknown' : p.reward])}`;
 
-/** The lanes out of here, each with its facts. `lowFuel` lanes are the ones a jump cannot yet pay for. */
+/** The most lanes the chart offers at once: a choice is a few lanes that differ, not a list. */
+export const LANES_SHOWN = 3;
+const DANGER: Record<Stance, 0 | 1 | 2> = { quiet: 0, watched: 1, hostile: 2 };
+
+/**
+ * Down to the few lanes worth choosing between: the one that goes straight on, the calmest, and then whichever
+ * differs most from those (a port, another style, another kind). Lanes that only repeat one of them are left off the chart.
+ */
+function pickLanes<T extends { s: StarSystem; st: Stance; after: number | null; o: { fuel: number } }>(all: T[]): T[] {
+  if (all.length <= LANES_SHOWN) return all;
+  const far = (x: T) => x.after ?? 1e9;
+  const left = [...all], out: T[] = [];
+  const take = (best: (a: T, b: T) => number) => { left.sort(best); out.push(left.shift()!); };
+  take((a, b) => far(a) - far(b) || DANGER[a.st] - DANGER[b.st] || a.o.fuel - b.o.fuel);
+  take((a, b) => DANGER[a.st] - DANGER[b.st] || far(a) - far(b) || a.o.fuel - b.o.fuel);
+  while (out.length < LANES_SHOWN && left.length) {
+    const score = (x: T) => Number(out.every((y) => y.st !== x.st)) * 3 + Number(out.every((y) => y.s.kind !== x.s.kind)) * 2 + Number(!!x.s.port && out.every((y) => !y.s.port));
+    take((a, b) => score(b) - score(a) || far(a) - far(b) || a.o.fuel - b.o.fuel);
+  }
+  return all.filter((x) => out.includes(x));
+}
+
+/** The lanes out of here, each with its facts: at most `LANES_SHOWN`, chosen to differ. */
 export function forks(j: Journey): Fork[] {
   const c = j.chart, opts = options(j), now = toGoal(c, j.at, j.at);
   const goal = goalOf(c, j.at);
-  const base = opts.map((o) => {
+  const base = pickLanes(opts.map((o) => {
     const s = o.to, st = stance(c, o), after = toGoal(c, j.at, s.id);
     return { o, s, st, after };
-  });
+  }));
+  const shortest = Math.min(...base.map((b) => b.after ?? 1e9));
   // a comparison is only a fact when the lanes differ
   const cheapest = Math.min(...base.map((b) => b.o.fuel)), quickest = Math.min(...base.map((b) => b.o.route.days));
   const fuelDiffers = base.some((b) => b.o.fuel !== cheapest), daysDiffer = base.some((b) => b.o.route.days !== quickest);
@@ -94,17 +121,19 @@ export function forks(j: Journey): Fork[] {
     return {
       to: s, stance: st, days: o.route.days, fuel: o.fuel, short: Math.max(0, Math.ceil(o.fuel - j.carry.fuel)), supplies: o.supplies,
       thin: j.carry.supplies < o.supplies, gateAfter: after, atGate: s.id === goal.id, nearer,
+      danger: DANGER[st], detour: after === null || shortest >= 1e9 ? null : after - shortest,
       netted: o.netted, shadow: o.shadow, place: o.place, scene: o.scene, up, down,
     };
   });
 }
 
 /** The ship's trouble worth the player's eye before they choose: out of or low on supplies, and no lane the tank can pay for yet. */
-export function trouble(j: Journey, fs: Fork[]): Note[] {
+export function trouble(j: Journey): Note[] {
   const out: Note[] = [];
   const c = j.carry;
   if (c.supplies <= 0) out.push({ text: t('Out of supplies · a jump costs a plate'), hot: true });
   else if (c.supplies <= LOW_SUPPLIES) out.push({ text: t('Supplies low · buy more at a port') });
-  if (fs.length && fs.every((f) => f.short > 0)) out.push({ text: t('Not enough jump fluid yet · mine and refine before the jump') });
+  const all = options(j);
+  if (all.length && all.every((o) => Math.ceil(o.fuel - c.fuel) > 0)) out.push({ text: t('Not enough jump fluid yet · mine and refine before the jump') });
   return out;
 }
