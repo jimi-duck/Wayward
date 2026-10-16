@@ -323,22 +323,23 @@ export class ChartPanel {
 
   private renderList(): void {
     const list = $('ch-list');
+    // heat is shown where it tells the lanes apart; where it is the same on all of them it says nothing
+    const heatTells = new Set(this.fs.map((f) => f.heat)).size > 1;
     list.replaceChildren(...this.fs.map((f, i) => {
       const s = f.to;
-      // the way on: straight to the gate, or by how many jumps more
-      const way = f.atGate ? t('The gate') : f.detour === null ? '' : f.detour === 0 ? t('Straight on') : plural(f.detour, '{n} jump longer', '{n} jumps longer');
+      const left = f.atGate ? t('The gate') : f.gateAfter === null ? '' : plural(f.gateAfter, '{n} jump after arrival', '{n} jumps after arrival');
       const b = h('button', `ch-opt ${f.stance}${i === this.sel ? ' sel' : ''}`, '',
         h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', 'meters', '',
           h('span', `tag d${f.danger}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(STANCE_WORD[f.stance]))),
-          h('span', `tag heat h${f.heat}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(HEAT_WORD[f.heat]!))))),
+          ...(heatTells ? [h('span', `tag heat h${f.heat}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(HEAT_WORD[f.heat]!)))] : []))),
         h('div', 'ch-o3', '',
           f.up ? h('span', 'up', '', h('em', '', t('Upside')), document.createTextNode(f.up.text)) : null,
           f.down ? h('span', `down${f.down.hot ? ' hot' : ''}`, '', h('em', '', t('Trade-off')), document.createTextNode(f.down.text)) : null),
         h('div', 'ch-o2', '',
-          way ? h('span', '', '', glyph('arrow'), h('b', '', way)) : null,
           h('span', '', '', glyph('clock'), h('b', '', days(f.days))),
-          h('span', f.short ? 'short' : '', '', glyph('drop'), h('b', '', String(f.fuel)), document.createTextNode(` ${t('jump fluid')}`), ...(f.short ? [document.createTextNode(` · ${t('{n} short', { n: f.short })}`)] : [])),
-          f.thin ? h('span', 'short', '', glyph('box'), h('b', '', String(f.supplies)), document.createTextNode(` ${t('supplies')}`)) : null),
+          h('span', f.short ? 'short' : '', '', glyph('drop'), h('b', '', String(f.fuel)), document.createTextNode(` ${t('jump fluid')}`)),
+          h('span', f.thin ? 'short' : '', '', glyph('box'), h('b', '', String(f.supplies)), document.createTextNode(` ${t('supplies')}`)),
+          left ? h('span', '', '', glyph('arrow'), h('b', '', left)) : null),
       ) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('role', 'radio');
@@ -350,18 +351,27 @@ export class ChartPanel {
     }));
   }
 
-  /** The strip: the selected lane's name and what it takes, and the button that takes it. */
+  /**
+   * The strip: the selected lane, what it takes, and the one action. A shortage of jump fluid is said here once, with
+   * the amount: the course can still be plotted (the jump itself waits at the lane mouth for a full tank, so the fluid
+   * is mined and refined on the way), and the button says so rather than looking like a jump now.
+   */
   private renderStrip(): void {
-    const f = this.fs[this.sel], jump = $('ch-jump') as HTMLButtonElement, sum = $('ch-sum');
-    if (!f) { sum.replaceChildren(); jump.disabled = true; return; }
+    const f = this.fs[this.sel], jump = $('ch-jump') as HTMLButtonElement, sum = $('ch-sum'), why = $('ch-why');
+    if (!f) { sum.replaceChildren(); jump.disabled = true; why.hidden = true; return; }
     const st = (k: string, v: string, short = false) => h('div', `st${short ? ' short' : ''}`, '', h('span', 'k', k), h('b', '', v));
     sum.replaceChildren(
       h('div', 'nm', '', h('span', 'k', `${t(KIND_WORD[f.to.kind])} · ${t(STANCE_WORD[f.stance])}`), h('b', '', f.to.name)),
       st(t('Travel time'), days(f.days)),
-      st(t('Jump fluid'), f.short ? `${f.fuel} · ${t('{n} short', { n: f.short })}` : String(f.fuel), f.short > 0),
+      st(t('Jump fluid'), String(f.fuel), f.short > 0),
+      st(t('Supplies'), String(f.supplies), f.thin),
+      ...(f.gateAfter === null && !f.atGate ? [] : [st(t('Gate after arrival'), f.atGate ? t('Arrived') : plural(f.gateAfter ?? 0, '{n} jump', '{n} jumps'))]),
     );
     jump.disabled = false;
-    jump.textContent = t('Jump to {name}', { name: f.to.name });
+    jump.classList.toggle('short', f.short > 0);
+    jump.textContent = f.short > 0 ? t('Plot course · {n} more jump fluid', { n: f.short }) : t('Jump to {name}', { name: f.to.name });
+    why.hidden = f.short <= 0;
+    why.textContent = f.short > 0 ? t('Mine and refine on the way. The jump leaves once the tank holds enough.') : '';
   }
 
   /** Intel: the rest of what the chart knows. */
@@ -486,12 +496,12 @@ export class ChartPanel {
         const tag = role === 'here' ? t('Here') : role === 'gate' ? t(n.kind === 'edge' ? 'The last lane' : 'Gate') : '';
         // a lane out above the middle names itself above, so the names of the lanes do not sit on each other
         const up = role === 'out' && y < H / 2 - 4;
-        const nx = Math.max(44, Math.min(W - 44, x)), ny = up ? y - r - 18 : y + r + 16;
+        const nx = Math.max(44, Math.min(W - 44, x)), ny = up ? y - r - 24 : y + r + 16;
         g.append(svg('text', { x: nx, y: ny, 'text-anchor': 'middle', class: 'ch-name' }, n.name));
         if (tag) {
           const tw = tag.length * 7 + 8;
           g.append(svg('rect', { x: nx - tw / 2, y: ny + 5, width: tw, height: 12, rx: 1.5, class: 'ch-tagb' }), svg('text', { x: nx, y: ny + 14, 'text-anchor': 'middle', class: 'ch-tagm' }, tag));
-        } else if (f) g.append(svg('text', { x: nx, y: up ? ny + 12 : ny + 14, 'text-anchor': 'middle', class: 'ch-sub' }, days(f.days)));
+        } else if (f) g.append(svg('text', { x: nx, y: up ? ny + 10 : ny + 14, 'text-anchor': 'middle', class: 'ch-sub' }, days(f.days)));
       }
       if (idx !== undefined && this.onPick) {
         g.append(svg('circle', { cx: x, cy: y, r: 24, fill: 'transparent' }));

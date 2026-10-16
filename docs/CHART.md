@@ -19,8 +19,8 @@ own to the rules.
    along the chart, so each jump is a real fork, not a list. New charts only:
    a saved journey keeps the lanes it was laid out with.
 4. What does each cost? How hard its far end is on you (danger: quiet, watched
-   or hostile, from `stance`, three pips), how the Custody's heat goes there
-   (`heatAt`: it cools in a breather, is low, climbs, or climbs fast; from the
+   or hostile, from `stance`, three pips), how the Custody's heat goes there, shown only where it differs between the
+   lanes shown (`heatAt`: it cools in a breather, is low, climbs, or climbs fast; from the
    kind's start and rate, the region's, a Net blockade and watched space),
    whether it goes straight to the gate
    or is `n` jumps longer, time (`route.days`) and jump fluid (`options.fuel`,
@@ -35,9 +35,13 @@ own to the rules.
 
 - A tap, a click, the arrows, `1`–`6` or the pad's d-pad only **select**. Enter,
   Space, the pad's A or the button jump. Hovering changes nothing.
-- Nothing locks. A lane the tank cannot yet pay for shows `n short` in gold and
-  still selects: the jump itself waits on the refinery, as before. The tank is
-  never touched here.
+- A shortage of jump fluid is said once at the top (`trouble`: the exact amount
+  the cheapest lane is short by), and the button reads `Plot course · n more
+  jump fluid` in caution gold instead of `Jump to …`. It is not disabled: the
+  drive's jump happens at the lane mouth of the next system once the tank
+  holds the lane's cost (`world.ts`), and the fluid is mined and refined on
+  the way there, so blocking the plot would leave a ship with an empty tank
+  nowhere to go. The tank is never touched here.
 - Escape (or the pad's B) closes Intel. There is no screen behind the chart (the
   last system is over), so there is no Back button; it would have nowhere to go.
 - `I` (or the pad's X) opens Intel: what the last system changed, the story's

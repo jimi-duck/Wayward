@@ -137,7 +137,7 @@ export function forks(j: Journey): Fork[] {
     if (o.shadow) down = { text: t('Calloway was last seen here'), hot: true };
     else if (o.netted) down = { text: t('Netted as of day {n}', { n: Math.floor(c.seenDay) + 1 }), hot: true };
     else if (s.kind === 'contested') down = { text: t('Contested · patrols and raiders'), hot: true };
-    else if (st === 'hostile') down = { text: t('Hostile · raiders or Thren about'), hot: true };
+    else if (st === 'hostile') down = { text: t('Raiders or Thren about'), hot: true };
     else if (hazard) down = { text: t('Rough flying · a hazard in the way') };
     else if (heavy) down = { text: t('A hard job waits there · a fight or a chase') };
     else if (rules?.claim && s.kind === 'mining' && !quiet) down = { text: t('Claimed ground · linger and it costs') };
@@ -160,7 +160,8 @@ export function trouble(j: Journey): Note[] {
   const c = j.carry;
   if (c.supplies <= 0) out.push({ text: t('Out of supplies · a jump costs a plate'), hot: true });
   else if (c.supplies <= LOW_SUPPLIES) out.push({ text: t('Supplies low · buy more at a port') });
-  const all = options(j);
-  if (all.length && all.every((o) => Math.ceil(o.fuel - c.fuel) > 0)) out.push({ text: t('Not enough jump fluid yet · mine and refine before the jump') });
+  // one line for the tank, with the exact amount the cheapest lane is short by
+  const short = Math.min(...options(j).map((o) => Math.ceil(o.fuel - c.fuel)));
+  if (Number.isFinite(short) && short > 0) out.push({ text: c.fuel < 1 ? t('No jump fluid · {n} needed for the cheapest lane', { n: short }) : t('Jump fluid short · {n} more for the cheapest lane', { n: short }) });
   return out;
 }
