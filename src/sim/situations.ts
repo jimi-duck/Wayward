@@ -46,8 +46,14 @@ const TIRED_TWO = 0.5;
 const heavyAt = (c: Chart, q: Record<string, Sit>, col: number): boolean =>
   c.systems.some((x) => x.col === col && !!q[x.id] && HEAVY_GOALS.has(SITUATION_BY_ID[q[x.id]!.id]?.goal.kind ?? ''));
 /** The weight a def keeps in a system of this column: heavy ones are passed over after effort (pacing). */
-const rested = (c: Chart, q: Record<string, Sit>, col: number, d: SituationDef): number =>
-  HEAVY_GOALS.has(d.goal.kind) ? (heavyAt(c, q, col - 1) ? TIRED_ONE : heavyAt(c, q, col - 2) ? TIRED_TWO : 1) : 1;
+const rested = (c: Chart, q: Record<string, Sit>, col: number, d: SituationDef): number => {
+  if (!HEAVY_GOALS.has(d.goal.kind)) return 1;
+  // never a fourth heavy column in a row, counting the columns on both sides
+  let run = 1;
+  for (const dir of [-1, 1]) for (let k = 1; k <= 3 && heavyAt(c, q, col + dir * k); k++) run++;
+  if (run >= 4) return 0;
+  return heavyAt(c, q, col - 1) ? TIRED_ONE : heavyAt(c, q, col - 2) ? TIRED_TWO : 1;
+};
 /** Whether a situation is one of the optional jobs. */
 export const isJob = (id: string): boolean => JOB_IDS.has(id);
 
@@ -61,17 +67,19 @@ export function layJobs(c: Chart, seed: number, q: Record<string, Sit>, from = -
   const used = new Map<string, number>();
   for (const sit of Object.values(q)) if (isJob(sit.id)) used.set(sit.id, (used.get(sit.id) ?? 0) + 1);
   const laid: string[] = [];
-  const free = (x: StarSystem) => { const k = q[x.id]; return !k || (!k.arc && !k.seen && !k.done && !isJob(k.id)); };
+  const free = (x: StarSystem) => { if (x.quiet) return false; const k = q[x.id]; return !k || (!k.arc && !k.seen && !k.done && !isJob(k.id)); };
   for (let region = 0; region < (c.regionSet === 'eight' ? 8 : 3); region++) {
     const long = longIndex(c, region);
     const n = JOB_COLS[long] ?? 0;
-    const cols = columnsOf(c, region).filter((col) => col > from && !c.systems.some((x) => regionOf(x) === region && x.col === col && open(x) && q[x.id]?.arc));
+    // the first region's first two stops are the escape and the first refit: no job there
+    const lead = region === 0 ? columnsOf(c, 0).slice(0, 2) : [];
+    const cols = columnsOf(c, region).filter((col) => col > from && !lead.includes(col) && c.systems.some((x) => regionOf(x) === region && x.col === col && open(x) && free(x)) && !c.systems.some((x) => regionOf(x) === region && x.col === col && open(x) && q[x.id]?.arc));
     for (let i = 0; i < n && cols.length; i++) {
       const col = cols[Math.min(cols.length - 1, Math.floor(((i + 0.5) * cols.length) / n))]!;
       for (const s of c.systems.filter((x) => regionOf(x) === region && x.col === col && open(x) && free(x))) {
-        const pool = MISSIONS.filter((d) => d.kinds.includes(s.kind) && long >= d.regions[0] && long <= d.regions[1] && (!d.holders || d.holders.includes(s.holder)));
-        if (!pool.length) continue;
         const w = (d: SituationDef) => d.weight / (1 + 1.2 * (used.get(d.id) ?? 0)) * rested(c, q, s.col, d);
+        const pool = MISSIONS.filter((d) => d.kinds.includes(s.kind) && long >= d.regions[0] && long <= d.regions[1] && (!d.holders || d.holders.includes(s.holder)) && w(d) > 0);
+        if (!pool.length) continue;
         let roll = rng.next() * pool.reduce((a, d) => a + w(d), 0);
         let pick = pool[pool.length - 1]!;
         for (const d of pool) { roll -= w(d); if (roll <= 0) { pick = d; break; } }
@@ -115,9 +123,9 @@ export function laySituations(c: Chart, seed: number): Record<string, Sit> {
     const long = longIndex(c, regionOf(s));
     const pool = SITUATIONS.filter((d) => !d.variant && d.weight > 0 && d.kinds.includes(s.kind) && long >= d.regions[0] && long <= d.regions[1] && (!d.holders || d.holders.includes(s.holder)));
     // the unknown has its own timetable: the roll deals only what people do
-    const people = pool.filter((d) => d.group !== 'unknown');
-    if (!people.length) continue;
     const w = (d: SituationDef) => d.weight / (1 + 1.2 * (used.get(d.id) ?? 0)) * rested(c, out, s.col, d);
+    const people = pool.filter((d) => d.group !== 'unknown' && w(d) > 0);
+    if (!people.length) continue;
     let roll = rng.next() * people.reduce((a, d) => a + w(d), 0);
     let pick = people[people.length - 1]!;
     for (const d of people) { roll -= w(d); if (roll <= 0) { pick = d; break; } }

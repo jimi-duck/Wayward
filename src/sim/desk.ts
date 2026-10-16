@@ -34,6 +34,8 @@ export const DESK = {
   tight: 14,
   /** Seconds after arriving before a card may open (a radio line may come sooner). */
   arrive: 20,
+  /** The same for a scene's call (a job is offered on arrival). */
+  arriveCall: 4,
   /** Seconds of clear sky after the last hostile before a card opens, major/important and routine. */
   settle: { major: 4, important: 6, routine: 12, ambient: 0 } as Record<Weight, number>,
   /** Seconds after the lasers stop before a card opens. */
@@ -121,7 +123,7 @@ export class Desk {
   may(tier: Weight, busy: Busy, now: number, eager = false): boolean {
     if (busy === 'transit' || busy === 'fight') return false;
     if (tier === 'ambient') return true;
-    if (busy !== 'free' || (tier !== 'major' && now - this.arrived < DESK.arrive)) return false;
+    if (busy !== 'free' || (tier !== 'major' && now - this.arrived < (eager ? DESK.arriveCall : DESK.arrive))) return false;
     if (now - this.lastThreat < DESK.settle[tier] || now - this.lastMine < DESK.mineSettle) return false;
     return now - this.lastClose >= (eager ? Math.min(DESK.eager, DESK.gap[tier]) : DESK.gap[tier]);
   }
