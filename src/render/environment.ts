@@ -94,7 +94,7 @@ export class Environment {
     dust.frustumCulled = false;
     this.group.add(dust);
 
-    this.key = new DirectionalLight(0xffe6c8, 4.4);
+    this.key = new DirectionalLight(0xffe6c8, 4.9);
     // the sun's shadow covers only the ship's neighbourhood: rocks darken the hull and each other close in
     const cam = this.key.shadow.camera;
     cam.left = cam.bottom = -SHADOW_REACH;
@@ -105,7 +105,7 @@ export class Environment {
     this.key.shadow.normalBias = 0.06;
     this.key.shadow.radius = 2;
     this.rim = new DirectionalLight(0x7f9cc8, 0.9);
-    this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.8), this.rim);
+    this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.58), this.rim);
     this.group.add(this.parallax.group);
     scene.add(this.group);
     this.setSky(skyFor(1, 0));
@@ -156,7 +156,7 @@ export class Environment {
     this.parallax.dim(1 - nebula * 0.6);
     WORLD_RIM.value.copy(this.skyRim).multiplyScalar(1 + flash * 4);
     if (t) WORLD_RIM.value.r += t[0] * 0.25, WORLD_RIM.value.g += t[1] * 0.25, WORLD_RIM.value.b += t[2] * 0.25;
-    this.key.intensity = 4.4 + flash * 9;
+    this.key.intensity = 4.9 + flash * 9;
     this.key.color.setRGB(1, 0.9 + flash * 0.1, 0.78 + flash * 0.22);
     if (t) this.key.color.lerp(KEY_TINT.setRGB(0.55 + t[0] * 1.6, 0.6 + t[1] * 1.6, 0.7 + t[2] * 1.6), Math.min(0.6, (t[0] + t[1] + t[2]) * 1.1));
   }
