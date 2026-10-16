@@ -108,6 +108,10 @@ function spire(k: Kit, rnd: () => number, a: number, r0: number, h: number): voi
   k.box('slate', [h * 0.3, 2.2, 2.6], pr(h * 0.57), rot);
   k.box('lamp', [0.5, 0.05, 1.2], pr(h * 0.25, 0, 1.52), rot);
   k.box('lamp', [0.5, 0.05, 1.2], pr(h * 0.25, 0, -1.52), rot);
+  for (const t of [0.12, 0.3, 0.5, 0.7]) strut(k, 'dark', pr(h * t - 0.12), pr(h * t + 0.12), 1.1, 8);
+  for (const y of [-1.53, 1.53]) k.box('strip', [h * 0.36, 0.05, 0.3], pr(h * 0.24, 0, y), rot);
+  for (const y of [-0.62, 0.62]) strut(k, 'strip', pr(h * 0.55, 0, y), pr(h * 1.25, 0, y * 0.4), 0.05, 4);
+  k.box('amber', [0.12, 0.12, 0.12], pr(h * 0.9));
   strut(k, 'slate', pr(h * 0.45), pr(h * 0.95), 0.6, 6);
   strut(k, 'slate', pr(h * 0.95), pr(h * 1.35), 0.32, 6);
   strut(k, 'dark', pr(h * 1.35), pr(h * 1.7), 0.07, 4);
@@ -136,6 +140,21 @@ function buildLane(): Group {
     }
     arc(k, 'slate', OUT, OUT + 0.22, -1.6 + rnd() * 0.3, 1.3, a0 + 0.015, a1 - 0.015, 0.03);
     arc(k, 'dark', IN + 0.6, OUT - 0.6, BOT - 0.2, BOT, a0 + 0.02, a1 - 0.02, 0.02);
+    // rivet rows along the seams, a recessed grille of bars, an X brace on one panel
+    for (let r = 0; r < 6; r++) {
+      const ar = a0 + 0.02 + (r / 5) * (STEP - 0.04);
+      for (const rr of [IN + 0.35, OUT - 0.35]) { const [vx, vz] = polar(rr, ar); k.box('dark', [0.16, 0.1, 0.16], [vx, TOP + 0.05, vz]); }
+      const [ox, oz] = polar(OUT + 0.22, ar);
+      k.box('dark', [0.1, 0.16, 0.16], [ox, -1.2, oz], [0, -ar, 0]);
+      k.box('dark', [0.1, 0.16, 0.16], [ox, 0.9, oz], [0, -ar, 0]);
+    }
+    const [bx, bz] = polar(IN + 1.6, am);
+    for (let r = 0; r < 4; r++) { const [qx, qz] = polar(IN + 1.6 + r * 0.45, am); k.box('dark', [0.18, 0.2, 2.1], [qx, TOP + 0.1, qz], [0, -am, 0]); }
+    if (i % 3 === 1) {
+      const [xx, xz] = polar((IN + OUT) / 2 + 0.5, am);
+      for (const d of [-0.62, 0.62]) k.box('dark', [4.6, 0.12, 0.2], [xx, TOP + 0.2, xz], [0, -am + d, 0]);
+    }
+    void bx; void bz;
     // a grille or a vent, a few small housings
     const [gx, gz] = polar(OUT - 1.4 - rnd() * 1.5, am + (rnd() - 0.5) * 0.04);
     k.box('dark', [1.2 + rnd(), 0.18, 0.9 + rnd() * 0.7], [gx, TOP + 0.09, gz], [0, -am, 0]);
@@ -151,6 +170,22 @@ function buildLane(): Group {
     arc(k, 'strip', IN - 0.78, IN - 0.7, -0.75, -0.3, a, a + len, 0);
     arc(k, 'strip', IN - 0.4, IN - 0.05, 0.505, 0.54, a, a + len, 0);
     a += len + STEP * (0.18 + rnd() * 0.35);
+  }
+  // more light: broken lines on both faces and the outer wall, out of step with the inner ones
+  for (const [r0, r1, y0, y1] of [[19.5, 19.8, TOP + 0.17, TOP + 0.2], [21.1, 21.25, TOP + 0.17, TOP + 0.2], [19.5, 19.8, BOT - 0.2, BOT - 0.17], [OUT + 0.22, OUT + 0.26, -0.5, 0.1]] as const) {
+    let q = rnd() * STEP;
+    while (q < TAU - 0.3) {
+      const len = STEP * (0.35 + rnd() * 0.9);
+      arc(k, 'strip', r0, r1, y0, y1, q, q + len, 0);
+      q += len + STEP * (0.25 + rnd() * 0.5);
+    }
+  }
+  // a floating halo: sixteen separate armoured arcs round the ring, each lit on its inner edge, held off it by short struts
+  for (let i = 0; i < 16; i++) {
+    const h0 = i * (TAU / 16) + 0.05, h1 = h0 + (TAU / 16) * 0.62;
+    arc(k, 'slate', 26, 27.4, -0.7, 0.7, h0, h1, 0.06);
+    arc(k, 'strip', 25.9, 26, -0.25, 0.25, h0 + 0.02, h1 - 0.02, 0);
+    if (i % 2 === 0) { const hm = (h0 + h1) / 2, [x0, z0] = polar(OUT + 0.3, hm), [x1, z1] = polar(26.1, hm); strut(k, 'dark', [x0, 0, z0], [x1, 0, z1], 0.25, 6); }
   }
   // clamps: eight heavy junction blocks over the seams, with a warm window each
   for (let i = 0; i < 8; i++) {
@@ -172,36 +207,8 @@ function buildLane(): Group {
   return k.build(materials());
 }
 
-/** Where the ring's centre stands above the flight plane, and its outer radius. */
-const GATE_Y = 9, GATE_OUT = 22.4;
-
-/** The heavy pylons the ring stands on, in the world frame (x along the gate's axis): a footing under the rim, a leg and a tower block each side. */
-function buildBases(): Group {
-  const k = new Kit(), rnd = seeded(5521), Y0 = GATE_Y - GATE_OUT - 1.2;
-  k.box('dark', [18, 1.4, 15], [0, Y0 - 0.2, 0]);
-  k.box('slate', [13, 1.5, 11], [0, Y0 + 1.2, 0]);
-  k.box('dark', [9, 1.4, 8], [0, Y0 + 2.6, 0]);
-  for (const s of [-1, 1]) {
-    const zc = s * (GATE_OUT + 6);
-    k.box('dark', [16, 1.4, 13], [0, Y0 - 0.2, zc]);
-    k.box('slate', [12, 1.6, 10], [0, Y0 + 1.3, zc]);
-    k.box('slate', [8, 6, 6.4], [0, Y0 + 5, zc]);
-    k.box('dark', [9, 0.6, 7.2], [0, Y0 + 8.3, zc]);
-    k.box('lamp', [1.6, 0.3, 0.05], [0, Y0 + 5.5, zc - s * 3.23]);
-    k.box('lamp', [1.6, 0.3, 0.05], [0, Y0 + 5.5, zc + s * 3.23]);
-    // legs and pipes rise from the tower to the ring's flank
-    for (const o of [-3.2, 3.2]) {
-      strut(k, 'slate', [o, Y0 + 8, zc], [o * 0.55, GATE_Y - 7, s * 21], 1.2, 7);
-      strut(k, 'dark', [o * 1.5, Y0 + 7, zc + s * 1.8], [o * 0.8, GATE_Y - 9, s * 21.8], 0.38, 5);
-      cable(k, [o * 0.6, Y0 + 8.4, zc - s * 1.6], [o * 0.4, GATE_Y - 5, s * (GATE_OUT + 0.3)], 1.4, 0.08);
-    }
-    for (let j = 0; j < 5; j++) k.box('dark', [1.0, 1.4, 0.1], [-3 + j * 1.5, Y0 + 2.2, zc - s * 3.25]);
-    k.greebles('dark', rnd, -5, 5, zc - 4, zc + 4, Y0 + 0.8, 7, 0.9);
-  }
-  k.greebles('dark', rnd, -6, 6, -5, 5, Y0 + 3.3, 8, 0.8);
-  for (let i = 0; i < 6; i++) k.box('lamp', [0.25, 0.12, 0.25], [-4 + i * 1.6, Y0 + 3.4, 4.1]);
-  return k.build(materials());
-}
+/** Where the ring's centre floats above the flight plane. */
+const GATE_Y = 7;
 
 /** The depot: a hub with a habitat ring, docking arms, a tank farm, a mast. Fixed; the berth ring is drawn apart. */
 function buildPort(): Group {
@@ -296,7 +303,7 @@ export class BreakoutView {
     const ring = buildLane();
     ring.rotation.z = -Math.PI / 2;
     ring.position.y = GATE_Y;
-    this.gate.add(ring, buildBases());
+    this.gate.add(ring);
     this.lane.add(this.gate);
     this.throat = new Mesh(new RingGeometry(3, 16.4, 48, 1), new MeshBasicMaterial({ color: new Color(0.1, 0.5, 0.62), toneMapped: false, transparent: true, opacity: 0.12, side: DoubleSide, depthWrite: false, blending: AdditiveBlending }));
     this.throat.geometry.rotateY(Math.PI / 2);
