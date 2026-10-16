@@ -8,6 +8,7 @@ import type { Faction } from './enemies';
 import type { RockKind, RockSize } from './field';
 import type { Report } from './captains';
 import type { SurvivalId } from '../content/survival';
+import type { Exp, Rules } from '../content/profiles';
 import { NO_NEMESIS, type Nemesis } from './calloway';
 import { QUIET, type Pressure } from './notice';
 import type { RunStats, Weapon } from './run';
@@ -183,7 +184,11 @@ export interface SortieDef {
   /** What Calloway knows of you here (sim/calloway.ts): the tricks she is wise to, her ship, an offer, and whether she waits at the lane mouth for the last time. */
   nemesis: Nemesis;
   /** The place in this system still to be dealt with (content/phenomena.ts): the event it plays, a little after arrival. */
-  place?: { name: string; text: string; plays: EncounterId } | null;
+  place?: { name: string; text: string; plays: EncounterId; id?: string } | null;
+  /** The sky the chart dealt this system (sim/experience.ts): the expanse, the site, the ambient features. Absent: the earlier layout (sim/sites.ts). */
+  exp?: Exp;
+  /** What the region's ground does (content/profiles.ts Rules). */
+  rules?: Rules;
   /** The story beat due here (content/story.ts): its card calls a little after arrival. */
   story?: string | null;
   /** The situation playing here (content/situations.ts), as the chart has it now: its tightened variant where the Net holds the system. */

@@ -24,7 +24,8 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { pickEncounter, startEncounter, stepEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
+import { live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
+import { FEATURES } from '../content/features';
 import {
   ALIEN_FIRST, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SPAWN_FAR, SPAWN_NEAR, SQUADS, VARIANTS,
   WEB_R, alienBonus, alienFire, alienLabel, beamLive, cloaked, leave, moveAlien, moveShots, pickElite, pickVariant, rayDist,
@@ -37,7 +38,9 @@ import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type 
 import { Ids, newId, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, YIELD_BLAST, YIELD_DAMAGE, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
-import { laySortie } from './sites';
+import { laySortie, type Laid } from './sites';
+import { coverRate, stealthOf } from './rules';
+import { t as tr } from '../i18n';
 import { CALM, reports, weightAt, Space, type Influence, type Report as Condition } from './space';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
@@ -143,6 +146,8 @@ export class World implements EncounterHost {
   strikes: Strike[] = [];
   readonly command = new Command();
   encounter: Encounter | null = null;
+  /** A place asleep in the sky while a chance event runs in front of it. */
+  private parked: Encounter | null = null;
   /** The system's situation, played on the sector (sim/stage.ts). */
   stage: Stage | null = null;
   /** The target a torpedo launched now would lock, for the HUD. */
@@ -157,6 +162,8 @@ export class World implements EncounterHost {
   private spaceOn = false;
   /** The named place the ship is inside (content/features.ts NAMED), if any; its flag `site:<id>` is set on entering. */
   siteHere: string | null = null;
+  /** Where the system's place or job sits, and the feature it sits in (sim/sites.ts); null with no sky. */
+  siteAt: Laid | null = null;
   private stormT = 2;
   private coreT = 1;
   /** What the place does to the ship now (sim/space.ts), and what to tell the player of it. */
@@ -538,7 +545,7 @@ export class World implements EncounterHost {
 
   /** Sensors are down (the nebula, or the Thren close by): shorter radar and locks. */
   get sensorsDown(): boolean {
-    return (this.encounter?.id === 'nebula' && !this.encounter.done) || this.navNoise > 0.3 || this.air.sight < 0.7;
+    return (this.encounter?.id === 'nebula' && live(this.encounter) && !this.encounter.anchored) || this.navNoise > 0.3 || this.air.sight < 0.7;
   }
 
   /** How scrambled navigation is, 0 to 1: Thren hulls close by make the lane mouth swim on the scope and the drive spool slow. */
@@ -685,7 +692,11 @@ export class World implements EncounterHost {
   /** Heat, patching, the port and the lane mouth. */
   private stepBreakout(dt: number): void {
     const b = this.bk!, s = this.ship;
-    b.heat = b.def.quiet ? Math.max(0, b.heat - QUIET_COOL * dt) : Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * this.fx.heat * this.survival.heat.rate * dt);
+    // the hunt's clock runs slower in cover, and faster in the open where the region is watched (sim/rules.ts); only where there is a sky to read
+    const rate = this.space && this.siteAt !== undefined && !b.def.quiet ? coverRate(this.air.conceal, b.def.rules?.watch) : 1;
+    if (rate !== 1) { b.nextPursuit += (1 - rate) * dt; b.nextSwarm += (1 - rate) * dt; }
+    b.heat = b.def.quiet ? Math.max(0, b.heat - QUIET_COOL * dt) : Math.min(1, b.heat + HEAT_RATE * b.def.heatRate * this.fx.heat * this.survival.heat.rate * rate * dt);
+    this.stepClaim(dt);
     if (b.nagT > 0) b.nagT -= dt;
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
@@ -786,6 +797,31 @@ export class World implements EncounterHost {
         this.events.push({ type: 'needFuel', have: Math.floor(this.fuel), need: this.jumpCost });
       }
     } else b.spool = Math.max(0, b.spool - dt * 2);
+  }
+
+  /**
+   * Claimed ground (content/profiles.ts Rules.claim): time spent in a feature with something to take in it
+   * (rubble, wrecks, a seam) is noticed, slower the better the ship passes for something else. One warning, then a crew.
+   */
+  private claimT = 0;
+  private claimed = 0;
+  private stepClaim(dt: number): void {
+    const rule = this.bk?.def.rules?.claim, space = this.space;
+    if (!rule || !space || this.claimed >= 2 || this.bk!.def.quiet || this.bk!.def.netted) return;
+    const s = this.ship;
+    let rich = false;
+    for (const f of this.air.from) if (FEATURES[f.def].purpose.includes('resource') && weightAt(f, s.x, s.z) * f.level > 0.5) rich = true;
+    this.claimT = rich ? this.claimT + dt * stealthOf(this.levels) : Math.max(0, this.claimT - dt * 0.6);
+    if (this.claimed === 0 && this.claimT >= rule.after * 0.55) {
+      this.claimed = 1;
+      this.events.push({ type: 'ping', id: `claim_${this.sortie.system}_w`, from: tr('Scope'), caller: 'unknown', text: tr(rule.warn), moment: 'calm', system: this.sortie.name });
+    }
+    if (this.claimT >= rule.after && this.claimed === 1 && this.command.state === 'idle') {
+      this.claimed = 2;
+      // the crew hails first: pay, bluff, bill, or fight (a decision, so the world pauses)
+      const def = CARD_BY_ID[rule.card];
+      if (def && this.phase === 'play') this.openComms(def);
+    }
   }
 
   /** The pursuit holds off for this system's calm (SortieDef.pace): after an answered card, or when the last pursuer is beaten. */
@@ -1639,9 +1675,12 @@ export class World implements EncounterHost {
   /** Story's space: laid by hand along the course, not composed (sim/sites.ts). */
   private layStory(): void {
     this.siteHere = null;
+    this.siteAt = null;
     if (!this.spaceOn || this.mode !== 'breakout' || !this.bk) return;
     this.space = new Space(this.seed + this.sortie.lane, { hazard: this.mods.hazard, compose: false });
-    laySortie(this.space, this.sortie, this.ship, this.bk.lane);
+    // a situation's stage and its sky's site are one spot (sim/sites.ts); a place has its own
+    const anchor = this.stage ? { x: this.stage.x, z: this.stage.z } : undefined;
+    this.siteAt = laySortie(this.space, this.sortie, this.ship, this.bk.lane, this.bk.port, anchor);
   }
 
   /** The shared world: deal it, ask what it does here, and apply it (docs/ENVIRONMENT.md). */
@@ -1650,7 +1689,7 @@ export class World implements EncounterHost {
     space.step(dt, this.runTime, s);
     const a = space.sample(s.x, s.z, this.air);
     this.field.zone = a.rock;
-    this.navNoise = Math.max(a.jam, this.navNoise > 0 ? this.navNoise - dt * 0.5 : 0);
+    this.navNoise = Math.max(Math.max(0, a.jam - a.steady), this.navNoise > 0 ? this.navNoise - dt * 0.5 : 0);
     // heavy going slows the ship; a pull leans it
     if (a.drag > 1) { const k = Math.exp(-(a.drag - 1) * 1.5 * dt); s.vx *= k; s.vz *= k; }
     s.vx += a.ax * dt; s.vz += a.az * dt;
@@ -1671,7 +1710,7 @@ export class World implements EncounterHost {
   private stepAliens(dt: number, t: number, p: Pressure): void {
     const s = this.ship;
     const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
-    const well = this.encounter?.id === 'anomaly' && !this.encounter.done ? this.encounter : null;
+    const well = this.encounter?.id === 'anomaly' && live(this.encounter) && !this.encounter.anchored ? this.encounter : null;
     const safe = !!this.safe, keep = this.bk ? [this.bk.lane, ...(this.bk.port ? [this.bk.port] : [])] : [];
     for (let i = this.aliens.length - 1; i >= 0; i--) {
       const al = this.aliens[i];
@@ -1748,12 +1787,16 @@ export class World implements EncounterHost {
 
   private stepEncounter(dt: number, t: number): void {
     const e = this.encounter;
-    if (e) {
+    // a place pinned to the sky wakes when the ship comes near it; until then the sector's own events may still come (and park it)
+    if (e?.dormant) {
+      if (this.command.state === 'idle' && Math.hypot(this.ship.x - e.x, this.ship.z - e.z) < (e.act ?? 0)) { wakeEncounter(e, this); return; }
+    } else if (e) {
       if (stepEncounter(e, this, dt)) {
         this.run.events++;
         if (e.success) this.run.eventsWon++;
         if (e.place) this.placeWon = e.success;
-        this.encounter = null;
+        this.encounter = this.parked;
+        this.parked = null;
         this.nextEvent = t + eventGap(this.eventN) * this.survival.events.gap;
       }
       return;
@@ -1761,6 +1804,15 @@ export class World implements EncounterHost {
     // the system's own place comes first, a little after arrival, when the sky is clear; the sector's chance events wait for it
     const place = this.sortie.place;
     if (this.placeDue && place) {
+      // pinned to the feature it sits in: marked from the start, asleep until the ship comes near (sim/sites.ts)
+      const at = this.siteAt;
+      if (at) {
+        this.placeDue = false;
+        const far = FEATURES[at.feature].layer === 'far';
+        this.encounter = startEncounter(place.plays, this, place, { x: at.x, z: at.z, r: far ? 320 : at.r, act: far ? 480 : at.r * 0.8 });
+        this.lastEvent = place.plays;
+        return;
+      }
       if (this.runTime < PLACE_AT || this.command.state !== 'idle') return;
       this.placeDue = false;
       this.encounter = startEncounter(place.plays, this, place);
@@ -1771,6 +1823,7 @@ export class World implements EncounterHost {
     if (this.sortie.quiet || t < this.nextEvent || this.command.state !== 'idle' || this.command.next - t < 20) return;
     const id = pickEncounter(t, this.lastEvent, this.unlocked, this.rng, this.survival.events.weights);
     if (!id) { this.nextEvent = t + 20; return; }
+    if (e?.dormant) this.parked = e;
     this.encounter = startEncounter(id, this);
     this.lastEvent = id;
     this.eventN++;
@@ -1915,7 +1968,7 @@ export class World implements EncounterHost {
   }
 
   private stepPickups(dt: number): void {
-    const s = this.ship, well = this.encounter?.id === 'anomaly' && !this.encounter.done ? this.encounter : null;
+    const s = this.ship, well = this.encounter?.id === 'anomaly' && live(this.encounter) && !this.encounter.anchored ? this.encounter : null;
     if (well) {
       for (const pk of this.pickups) { const [ax, az] = wellPull(well, pk.x, pk.z, 6); pk.vx += ax * dt; pk.vz += az * dt; }
       for (const r of this.field.rocks) { const [ax, az] = wellPull(well, r.x, r.z, 4); r.vx += ax * dt; r.vz += az * dt; }
@@ -2519,7 +2572,7 @@ export class World implements EncounterHost {
     this.tele = []; this.strikes = []; this.sys = newSystems();
     this.closePressed = 0;
     this.command.reset();
-    this.encounter = null;
+    this.encounter = null; this.parked = null;
     this.tutor = null;
     this.pace = newPace(ALIEN_FIRST);
     this.mend = newMend();

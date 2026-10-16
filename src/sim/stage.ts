@@ -3,6 +3,7 @@ import { SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } fr
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
 import { bounty, Run, scaleOut, type Pt } from './mission';
+import { stageAnchor } from './sites';
 import type { Encounter } from './encounters';
 import type { Rng } from './rng';
 import type { World } from './world';
@@ -31,9 +32,6 @@ const GRACE_ERRAND = 22;
 /** How near the site the ship must be to hold (reach, watch), and how near to the lead ship to follow it. */
 const SITE_R = 30;
 const FOLLOW_R = 135;
-/** The site: how far along the line to the lane mouth, and how far off it. */
-const ALONG = 0.34;
-const OFF = 150;
 /** Seconds the lead ship may be out of reach before the follow is lost. */
 const LOST_AFTER = 14;
 /** Wards this far behind or beside the ship, after the scene is over, are gone. */
@@ -77,12 +75,9 @@ export class Stage {
     this.sx = w.ship.x; this.sz = w.ship.z;
     this.lx = b.lane.x; this.lz = b.lane.z;
     this.len = Math.hypot(this.lx - this.sx, this.lz - this.sz) || 1;
-    const ux = (this.lx - this.sx) / this.len, uz = (this.lz - this.sz) / this.len;
-    // the port sits to one side of the line; the site takes the other
-    const side = b.port ? (Math.sign((b.port.x - this.sx) * uz - (b.port.z - this.sz) * ux) || 1) * -1 : hash(at) & 1 ? 1 : -1;
-    const along = ALONG + ((hash(at + 'a') % 100) / 100) * 0.1;
-    this.x = this.sx + ux * this.len * along + -uz * side * OFF;
-    this.z = this.sz + uz * this.len * along + ux * side * OFF;
+    // the port sits to one side of the line; the site takes the other (sim/sites.ts: the sky's feature is laid here too)
+    const at0 = stageAnchor(at, { x: this.sx, z: this.sz }, { x: this.lx, z: this.lz }, b.port);
+    this.x = at0.x; this.z = at0.z;
     // site actors are there from the start: you see them before you hear them
     for (const a of def.actors ?? []) if ((a.from ?? 'site') === 'site' && !a.foe) this.spawn(w, a);
   }

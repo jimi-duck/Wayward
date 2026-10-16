@@ -441,9 +441,10 @@ export class Sector {
     this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz, dt);
     // the weather: a nebula thickens the fog; an ion storm flickers
     const e = world.encounter;
-    const fog = e && !e.done && e.id === 'nebula' ? Math.min(1, e.t / 3, (e.dur - e.t) / 3) : 0;
+    // (a nebula or storm that rides a feature in the sky is weather of the feature: its murk and light come from the place the ship is in)
+    const fog = e && !e.done && !e.dormant && !e.anchored && e.id === 'nebula' ? Math.min(1, e.t / 3, (e.dur - e.t) / 3) : 0;
     this.nebula += (fog - this.nebula) * Math.min(1, dt * 2);
-    const storm = e && !e.done && e.id === 'ion_storm';
+    const storm = e && !e.done && !e.dormant && e.id === 'ion_storm' && (!e.anchored || Math.hypot(world.ship.x - e.x, world.ship.z - e.z) < e.r * 0.8);
     if (storm && dt > 0 && Math.random() < dt * 0.7) this.flash = Math.max(this.flash, 0.4 + Math.random() * 0.4);
     this.flash = Math.max(0, this.flash - dt * 5);
     // the place the ship is in: its murk and its light ease in over a couple of seconds
@@ -490,7 +491,7 @@ export class Sector {
     }
     // the anomaly drinks the light in
     const e = world.encounter;
-    if (e && !e.done && e.id === 'anomaly') {
+    if (e && !e.done && !e.dormant && !e.anchored && e.id === 'anomaly') {
       for (let i = 0; i < 3; i++) {
         const ang = Math.random() * Math.PI * 2, r = 8 + Math.random() * 22;
         const x = e.x + Math.cos(ang) * r, z = e.z + Math.sin(ang) * r;

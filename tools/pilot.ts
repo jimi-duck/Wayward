@@ -342,7 +342,12 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     const dx = e.x - s.x, dz = e.z - s.z, d = Math.hypot(dx, dz) || 1;
     push(dx / d, dz / d, d > e.r * 0.6 ? 2.5 : 0);
   }
-  if (e && !e.done && e.id === 'anomaly') {
+  // weather pinned to a feature in the sky (a storm cell, a shroud): worth the diversion when the hull is whole, and the time inside is what pays
+  if (e && !e.done && e.anchored && e.id !== 'anomaly' && w.plates >= st.maxPlates - 1) {
+    const dx = e.x - s.x, dz = e.z - s.z, d = Math.hypot(dx, dz) || 1;
+    push(dx / d, dz / d, d > e.r * 0.4 ? 2.5 : 0);
+  }
+  if (e && !e.done && e.id === 'anomaly' && !e.dormant) {
     const dx = s.x - e.x, dz = s.z - e.z, d = Math.hypot(dx, dz) || 1;
     if (d < 20) push(dx / d, dz / d, 6 * (1 - d / 20));
   }

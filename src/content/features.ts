@@ -66,6 +66,8 @@ export interface Effects {
   krail?: number;
   /** Shield recharge. */
   shield?: number;
+  /** Steadies navigation: taken off the interference (`jam`) from anywhere, 0 to 1. A lantern line is the way through a static field. */
+  steady?: number;
 }
 
 export interface Look {
@@ -178,7 +180,7 @@ export const FEATURES: Record<FeatureId, FeatureDef> = {
   lanterns: {
     id: 'lanterns', name: 'Lantern line', blurb: 'Old marker buoys, still lit, a few hundred metres apart. They lead somewhere.',
     purpose: ['navigation', 'exploration'], layer: 'matter', size: [140, 260], rarity: 'uncommon', gap: 2800, from: 90,
-    effects: {}, look: { tint: [0.1, 0.34, 0.36], shape: 'buoys', far: 3000 },
+    effects: { steady: 0.95 }, look: { tint: [0.1, 0.34, 0.36], shape: 'buoys', far: 3000 },
     voice: { hum: 82, grit: 0 }, load: 'calm', story: ['route', 'signal', 'place'],
   },
   relic: {

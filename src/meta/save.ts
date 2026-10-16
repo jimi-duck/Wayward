@@ -3,6 +3,7 @@ import { CHITS_PER_CYRITE, TANK_MAX, refine } from '../sim/purse';
 import { hunchOf, newDossier } from '../sim/calloway';
 import { layPlaces, sightPlaces, sysById, SIGHT } from '../sim/chart';
 import { dealSituations, layJobs } from '../sim/situations';
+import { composeChart } from '../sim/experience';
 import { layScatter } from '../sim/scatter';
 import { newNotice } from '../sim/notice';
 import { VERSION, type Journey } from '../sim/journey';
@@ -77,6 +78,8 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 15) driveTank(j.carry as unknown as Record<string, number>);
   // 15 → 16: jobs on the timetable. A journey saved before gets them in the columns still ahead.
   if (j.version >= 12 && j.version < 16) addJobs(j as Journey);
+  // 16 → 17: every open system gets a sky (sim/experience.ts), dealt from the seed and the chart as it stands
+  if (j.version < 17) composeChart(j.chart, j.seed ?? 0);
   j.version = VERSION;
   return j as Journey;
 }

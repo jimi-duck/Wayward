@@ -163,6 +163,7 @@ export class HazardView {
     });
 
     // the events' props
+    // (a dormant place shows its props from the start; an anchored well is the feature's own, drawn by the sky)
     const live = e && !e.done ? e : null;
     const beacon = live?.id === 'distress';
     this.beacon.visible = this.zone.visible = this.zoneFill.visible = beacon || live?.id === 'derelict';
@@ -181,8 +182,9 @@ export class HazardView {
       this.wreck.position.set(live.x, 0.6, live.z);
       this.wreck.rotation.set(0.5 + this.time * 0.07, this.time * 0.11, 0.3);
     } else if (this.wreck) this.wreck.visible = false;
-    this.well.visible = live?.id === 'anomaly';
-    if (live?.id === 'anomaly') {
+    const core = live?.id === 'anomaly' && !live.anchored;
+    this.well.visible = core;
+    if (live && core) {
       this.well.position.set(live.x, 0.5, live.z);
       this.wellRings.forEach((r, i) => { r.rotation.z = this.time * (0.8 - i * 0.15) * (i % 2 ? -1 : 1); r.rotation.x = Math.PI / 2 + Math.sin(this.time * 0.4 + i) * 0.12; });
     }

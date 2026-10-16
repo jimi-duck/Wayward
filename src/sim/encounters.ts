@@ -80,7 +80,24 @@ export interface Encounter {
   fight?: Fight;
   /** A situation's marker (sim/stage.ts): the name on the HUD and the compass. */
   label?: string;
+  /**
+   * A place pinned to a feature in the sky (sim/sites.ts): it is there from the start, marked on the compass and
+   * the radar, and does nothing until the ship comes inside `act` of it. Its clock and its effects wait.
+   */
+  dormant?: boolean;
+  act?: number;
+  /** The feature does the weather (lightning, fog, pull): the event keeps count of the ship's time in it and pays for that. */
+  anchored?: boolean;
+  /** The banner the place brings when it wakes. */
+  wake?: { name: string; text: string };
 }
+
+/** Seconds the ship must spend inside an anchored weather event for it to pay. */
+export const DWELL: Partial<Record<EncounterId, number>> = { ion_storm: 8, nebula: 6, anomaly: 6 };
+/** The events that are weather, and ride the feature they sit in. */
+const WEATHER = new Set<EncounterId>(['ion_storm', 'nebula', 'anomaly']);
+/** Whether an event is live: begun, and not over. A dormant place is neither. */
+export const live = (e: Encounter | null | undefined): e is Encounter => !!e && !e.done && !e.dormant;
 
 export interface Fight {
   a: number[];
@@ -137,29 +154,48 @@ export function pickEncounter(t: number, last: EncounterId | null, unlocked: Rea
 }
 
 /** Start an event; `place`, a place on the chart playing it, with its own name and banner line. */
-export function startEncounter(id: EncounterId, h: EncounterHost, place?: { name: string; text: string }): Encounter {
-  const def = ENCOUNTERS[id], s = h.ship, rng = h.rng;
+export function startEncounter(id: EncounterId, h: EncounterHost, place?: { name: string; text: string }, at?: { x: number; z: number; r: number; act: number }): Encounter {
+  const def = ENCOUNTERS[id], s = h.ship;
   const e: Encounter = { id, t: 0, dur: def.duration, x: s.x, z: s.z, r: 0, progress: 0, done: false, success: false, timer: 1, ids: [], place: place?.name };
+  if (!at) return begin(e, h, place);
+  // pinned to a feature: marked from the start, asleep until the ship comes near
+  e.x = at.x; e.z = at.z; e.r = at.r; e.act = at.act; e.dormant = true; e.anchored = WEATHER.has(id);
+  if (place) e.wake = place;
+  return e;
+}
+
+/** A dormant event wakes: its banner, its hulls, its clock. */
+export function wakeEncounter(e: Encounter, h: EncounterHost): void {
+  e.dormant = false;
+  e.t = 0;
+  begin(e, h, e.wake);
+}
+
+function begin(e: Encounter, h: EncounterHost, place?: { name: string; text: string }): Encounter {
+  const id = e.id, def = ENCOUNTERS[id], s = h.ship, rng = h.rng;
+  const pinned = !!e.act;
+  // the hold circle of a located event, where the dormant marker showed the feature's whole reach
+  const keep = pinned ? { x: e.x, z: e.z } : null;
   switch (id) {
     case 'rich_field':
       h.field.richBoost = 0.35;
       h.field.density = 1.25;
       break;
     case 'distress': {
-      [e.x, e.z] = ahead(s, 55, rng.range(-20, 20));
+      if (keep) { e.x = keep.x; e.z = keep.z; } else [e.x, e.z] = ahead(s, 55, rng.range(-20, 20));
       e.r = 11;
       // the signal draws attention
       for (let i = 0; i < 2; i++) h.spawnHostile('scout', { x: e.x + rng.range(-30, 30), y: rng.range(4, 12), z: e.z + rng.range(-30, 30) }, null, true);
       break;
     }
     case 'derelict':
-      [e.x, e.z] = ahead(s, 60, rng.range(-25, 25));
+      if (keep) { e.x = keep.x; e.z = keep.z; } else [e.x, e.z] = ahead(s, 60, rng.range(-25, 25));
       e.r = 7;
       break;
     case 'convoy': {
       // three freighters crossing ahead, one escort fighter each side
       const side = rng.next() < 0.5 ? 1 : -1;
-      const [cx, cz] = ahead(s, 70, -side * 90);
+      const [cx, cz] = keep ? [keep.x, keep.z] : ahead(s, 70, -side * 90);
       const dx = Math.sin(s.heading) * side, dz = Math.cos(s.heading) * side; // the ship's starboard, flipped by side
       for (let i = 0; i < 3; i++) {
         const al = h.spawnHostile('freighter', { x: cx - dx * i * 12, y: rng.range(-1, 3), z: cz - dz * i * 12 }, null, true);
@@ -194,10 +230,10 @@ export function startEncounter(id: EncounterId, h: EncounterHost, place?: { name
     case 'scene':
       break;
     case 'anomaly':
-      [e.x, e.z] = ahead(s, 38, rng.range(-15, 15));
-      e.r = 3.5;
+      if (!e.anchored) { [e.x, e.z] = ahead(s, 38, rng.range(-15, 15)); e.r = 3.5; }
       break;
   }
+  if (e.anchored) e.dur = Math.max(e.dur, 40);
   h.events.push({ type: 'sectorEvent', id, name: place?.name ?? def.name, text: place?.text ?? def.text });
   return e;
 }
@@ -205,8 +241,14 @@ export function startEncounter(id: EncounterId, h: EncounterHost, place?: { name
 /** Advance an event. Returns true when it is over (finish() has been called). */
 export function stepEncounter(e: Encounter, h: EncounterHost, dt: number): boolean {
   if (e.done) return true;
+  if (e.dormant) return false;
   e.t += dt;
   const s = h.ship, rng = h.rng;
+  // weather that rides a feature pays for the time spent in it
+  if (e.anchored) {
+    if (Math.hypot(s.x - e.x, s.z - e.z) < e.r * 0.8) e.progress = Math.min(1, e.progress + dt / (DWELL[e.id] ?? 6));
+    if (e.progress >= 1) return finish(e, h, true);
+  }
   switch (e.id) {
     case 'distress': {
       if (Math.hypot(s.x - e.x, s.z - e.z) < e.r) e.progress = Math.min(1, e.progress + dt / 7);
@@ -284,6 +326,7 @@ export function stepEncounter(e: Encounter, h: EncounterHost, dt: number): boole
       break;
     }
     case 'ion_storm':
+      if (e.anchored) break; // the storm cell throws its own lightning (sim/world.ts spaceThreats)
       e.timer -= dt;
       if (e.timer <= 0) {
         e.timer = rng.range(0.7, 1.4);
@@ -296,11 +339,12 @@ export function stepEncounter(e: Encounter, h: EncounterHost, dt: number): boole
       }
       break;
     case 'anomaly':
+      if (e.anchored) break; // the well is fixed, and pulls on its own
       e.x += (s.x - e.x) * 0.02 * dt;
       e.z += (s.z - e.z) * 0.02 * dt;
       break;
   }
-  if (e.t >= e.dur) return finish(e, h, e.id === 'rich_field' || e.id === 'ion_storm' || e.id === 'nebula' || e.id === 'anomaly' || (e.id === 'convoy' && e.progress > 0));
+  if (e.t >= e.dur) return finish(e, h, e.anchored ? false : e.id === 'rich_field' || e.id === 'ion_storm' || e.id === 'nebula' || e.id === 'anomaly' || (e.id === 'convoy' && e.progress > 0));
   return false;
 }
 
@@ -326,9 +370,9 @@ function finish(e: Encounter, h: EncounterHost, success: boolean): true {
       text = e.progress >= 1 ? 'Convoy destroyed' : e.progress > 0 ? 'Convoy broken' : 'Convoy got away';
       break;
     case 'skirmish': text = success ? 'The fight is over · the wrecks are yours' : 'They broke it off'; break;
-    case 'ion_storm': text = 'The storm passes'; break;
-    case 'nebula': text = 'Sensors restored'; break;
-    case 'anomaly': text = 'The anomaly collapses'; h.addScore(600); break;
+    case 'ion_storm': text = e.anchored && !success ? 'The storm gives nothing' : 'The storm passes'; break;
+    case 'nebula': text = e.anchored && !success ? 'The dust thins' : 'Sensors restored'; break;
+    case 'anomaly': text = e.anchored && !success ? 'The pull lets go' : 'The anomaly collapses'; if (!e.anchored || success) h.addScore(600); break;
   }
   h.events.push({ type: 'sectorEventEnd', id: e.id, name: e.place ?? def.name, text, success });
   return true;

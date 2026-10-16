@@ -17,7 +17,9 @@ import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './
 import { arrival, delay as keysDelay, KEYS_NOTED, shift } from './consequences';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
 import { BEATEN_DELAY, behind, crossGate, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
-import { dealSituations, liveSituation, settle, situationLine } from './situations';
+import { dealSituations, liveSituation, longIndex, settle, situationLine } from './situations';
+import { composeChart, expOf } from './experience';
+import { PROFILES } from '../content/profiles';
 import { cool, newNotice, noticeFromRun, pressure, raise, remember, type Notice } from './notice';
 import { openChapter, type Chapter } from './chapters';
 import { effects } from './modules';
@@ -86,7 +88,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 16;
+export const VERSION = 17;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -182,6 +184,7 @@ export function newJourney(seed: number, hardcore = false, set: RegionSet = 'thr
     for (const r of chart.routes) r.cyrite = Math.max(1, Math.round(r.cyrite * V.jump));
   }
   dealSituations(chart, seed);
+  composeChart(chart, seed);
   const j: Journey = {
     version: VERSION, seed, hardcore, survival: survivalOf(survival).id, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry: startCarry(survival),
     wrecks: 0, lost: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
@@ -231,7 +234,9 @@ export function sortieDef(j: Journey): SortieDef {
     rich: quiet ? Math.max(QUIET_RICH, t.rich * (0.6 + s.cyrite * 0.8)) : t.rich * (0.6 + s.cyrite * 0.8), density: quiet ? Math.max(QUIET_DENSITY, t.density) : t.density, gutter: Math.min(0.8, ahead + notice.gutter), calls: t.calls, pace: t.pace, quiet,
     ahead: raid ? undefined : AHEAD[s.holder], thren: threnAt(j.chart, s.id), here: presence(j.chart, s.id),
     blockade: net, netted: net, calloway: finale || quiet || met ? Infinity : until <= 0 ? WAITING : until * DAY, behind: behind(j.hunt, j.trail), home: false, notice,
-    place: pd ? { name: pd.name, text: pd.text, plays: pd.plays } : null,
+    place: pd ? { name: pd.name, text: pd.text, plays: pd.plays, id: pd.id } : null,
+    exp: expOf(j.chart, s.id, j.seed),
+    rules: PROFILES[longIndex(j.chart, regionOf(s))]?.rules,
     nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer }),
     story: quiet ? null : dueBeat(j),
     situation: liveSituation(j.chart, s.id)?.id ?? null,
@@ -409,7 +414,10 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   if (res.situation) {
     const flag = (f: string) => { if (!res.carry.flags.includes(f)) res.carry.flags.push(f); };
     const hunt = (d: number) => { if (d > 0) j.hunt.delay += d; else if (d < 0) huntOn(j.hunt, j.chart, j.trail, -d); };
+    const before = new Set(Object.keys(j.chart.situations ?? {}));
     lines.push(...settle(j.chart, res.situation.id, res.situation.result, { at: s.id, day: j.day, flag, hunt }));
+    // a follow-up situation turned up further on: its system gets the sky that fits it
+    for (const id of Object.keys(j.chart.situations ?? {})) if (!before.has(id)) composeChart(j.chart, j.seed, id);
   }
   const flags = new Set(res.carry.flags);
   const news = flags.delete('news');

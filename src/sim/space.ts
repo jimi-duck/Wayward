@@ -66,6 +66,8 @@ export interface Influence {
   ax: number;
   az: number;
   conceal: number;
+  /** Interference taken off the lane mouth's wander, 0 to 1 (a lantern line). */
+  steady: number;
   rock: number;
   rich: number;
   krail: number;
@@ -84,7 +86,7 @@ export interface Influence {
 }
 
 export const CALM: Readonly<Influence> = Object.freeze({
-  sight: 1, lock: 1, jam: 0, drag: 1, ax: 0, az: 0, conceal: 1, rock: 1, rich: 0, krail: 1, shield: 1,
+  sight: 1, lock: 1, jam: 0, drag: 1, ax: 0, az: 0, conceal: 1, steady: 0, rock: 1, rich: 0, krail: 1, shield: 1,
   fog: 0, dim: 0, tint: [0, 0, 0] as [number, number, number], weight: 0, from: [] as Feature[], expanse: null, depth: 0,
 });
 
@@ -138,11 +140,11 @@ export class Space {
   // ── placing ─────────────────────────────────────────────────────────
 
   /** One feature, by hand (Story) or by the composer. */
-  place(def: FeatureId, x: number, z: number, o: { r?: number; named?: string; expanse?: number; t?: number; bearing?: number } = {}): Feature {
+  place(def: FeatureId, x: number, z: number, o: { r?: number; named?: string; expanse?: number; t?: number; bearing?: number; still?: boolean } = {}): Feature {
     const d = FEATURES[def];
     const named = o.named ? NAMED[o.named] : undefined;
     const r = o.r ?? named?.radius ?? this.rng.range(d.size[0], d.size[1]);
-    const drift = d.drift ?? 0, a = this.rng.range(0, Math.PI * 2);
+    const drift = o.still ? 0 : d.drift ?? 0, a = this.rng.range(0, Math.PI * 2);
     const f: Feature = {
       n: this.nextFeature++, def, x, z, r,
       vx: Math.cos(a) * drift * this.rng.range(0.5, 1), vz: Math.sin(a) * drift * this.rng.range(0.5, 1),
@@ -329,6 +331,7 @@ export class Space {
       out.sight *= mix(e.sight, w); out.lock *= mix(e.lock, w); out.drag *= mix(e.drag, w);
       out.conceal *= mix(e.conceal, w); out.rock *= mix(e.rock, w); out.krail *= mix(e.krail, w); out.shield *= mix(e.shield, w);
       out.jam = Math.max(out.jam, (e.jam ?? 0) * w);
+      out.steady = Math.max(out.steady, (e.steady ?? 0) * w);
       out.rich += (e.rich ?? 0) * w;
       if (e.pull) {
         const dx = f.x - x, dz = f.z - z, d = Math.hypot(dx, dz) || 1;
@@ -360,7 +363,7 @@ function fresh(): Influence {
 }
 
 function reset(o: Influence): void {
-  o.sight = 1; o.lock = 1; o.jam = 0; o.drag = 1; o.ax = 0; o.az = 0; o.conceal = 1; o.rock = 1; o.rich = 0; o.krail = 1; o.shield = 1;
+  o.sight = 1; o.lock = 1; o.jam = 0; o.drag = 1; o.ax = 0; o.az = 0; o.conceal = 1; o.steady = 0; o.rock = 1; o.rich = 0; o.krail = 1; o.shield = 1;
   o.fog = 0; o.dim = 0; o.tint[0] = o.tint[1] = o.tint[2] = 0; o.weight = 0; o.from.length = 0; o.expanse = null; o.depth = 0;
 }
 
@@ -371,7 +374,7 @@ function reset(o: Influence): void {
 // reported at all. Conditions never raise the Yellow or Red alert: those are
 // for being watched and being targeted.
 
-export type ReportKind = 'sight' | 'lock' | 'jam' | 'pull' | 'drag' | 'conceal';
+export type ReportKind = 'sight' | 'lock' | 'jam' | 'pull' | 'drag' | 'conceal' | 'steady';
 export interface Report { kind: ReportKind; value: number; }
 
 /** Least hold before an effect is worth a word. */
@@ -388,6 +391,7 @@ export function reports(inf: Influence, max = 2): Report[] {
   add('pull', Math.hypot(inf.ax, inf.az), Math.hypot(inf.ax, inf.az) / 12);
   add('drag', inf.drag, inf.drag - 1 > 0.05 ? (inf.drag - 1) * 4 : 0);
   add('conceal', inf.conceal, 1 - inf.conceal);
+  add('steady', inf.steady, inf.steady * 0.8);
   return out.sort((a, b) => b.s - a.s).slice(0, max).map(({ kind, value }) => ({ kind, value }));
 }
 
@@ -399,6 +403,7 @@ export const REPORT_TEXT: Record<ReportKind, string> = {
   pull: 'Gravity pull',
   drag: 'Heavy going',
   conceal: 'Hidden from hulls',
+  steady: 'Navigation steady',
 };
 
 export type { Effects };
