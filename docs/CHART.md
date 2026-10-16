@@ -66,24 +66,22 @@ drawn a little brighter than the rest. A red halo is the Net as last seen, a
 red diamond Calloway's last sighting, a small square a port, a dotted ring a
 breather.
 
-## Upside and trade-off
+## What to expect
 
-Chosen in `forks()` in this order, first match wins, and only from known state.
-
-- Upside: the gate itself; a port (trade, supplies, refit); a breather (the
-  system is `quiet` and the Net has not reached it); a place already sighted;
-  rich rock (a survey if it has not been flown); the cheapest jump or the
-  shortest crossing, when the lanes differ.
-- Trade-off: Calloway last seen there; the Net as of the day you last had news;
-  a contested system; hostile (raiders, Thren); a hazard in a place already
-  sighted (storm, gravity well); a heavy job already sighted (fight, chase,
-  survey, sneak, haul); claimed ground (the Marches, the Salvage Belt: mining
-  there); watched space (the Breaker Yards, the Last Lanes); a watched port; the
-  days in a two-day lane; no port.
+Each card carries one sentence, chosen in `forks()` (`say`), first match wins,
+only from known state: the gate; Calloway last seen there; held by the Net; a
+contested system; hostile (raiders, Thren); a hazard in a place already sighted;
+a heavy job already sighted; a breather (quiet, not netted); a port (and that a
+watched one draws the Custody); a place already sighted; claimed ground; watched
+space; rich or open rock; otherwise open space with no port. A sentence about
+danger reads red. The map numbers its lanes with the same 1, 2, 3 as the cards
+and the keys, and lights only those lanes; the heading names the goal ("Which
+way to The Narrows?") and the header's goal block says it again with the jumps
+left.
 
 There is no score and no ranking. The list is sorted by the gate's distance
 after arrival, then by jump fluid; on a phone on its side the cards keep the
-upside and trade-off (days and jumps are on the map, fluid in the strip); the first row is selected, so Enter alone keeps
+sentence (days and jumps are on the map, fluid in the strip); the first row is selected, so Enter alone keeps
 the journey moving.
 
 ## Tuning
