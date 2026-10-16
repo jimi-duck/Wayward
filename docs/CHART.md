@@ -97,3 +97,5 @@ The map sits on a dark backdrop with a fine grid, faint dust and a compass. Lane
 ## Layout
 
 On a wide window the header, alerts, body and strip share one two-column grid: the title and goal over the map, the four stores over the cards. The type steps down in four sizes: the system name, the section heading and the lane names, the sentence, the small labels. The strip at the bottom is only the selected lane's name and the one action; what the lane takes is on its card.
+
+The goal block ends with one line of quest, per region (`WHYS` in `content/situations.ts`, in the order of the region questions): why the player is going on. Hidden on a phone on its side.

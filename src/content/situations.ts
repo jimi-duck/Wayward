@@ -503,6 +503,19 @@ export const QUESTIONS: Array<{ human: string; unknown: string }> = [
   { human: 'What do I do with the truth?', unknown: 'What are the lanes connected to?' },
 ];
 
+// Why the player is going on, one line a region, for the chart's goal: a reminder of the quest.
+// Each answers the region's human question above, in the same order.
+export const WHYS: string[] = [
+  'The Continuance wants the Wayward back. Reach the Narrows before the Net closes the road.',
+  'You carry the Archive. Cross the Marches and learn who survived out here.',
+  'Old wrecks keep old secrets. Find what was left behind, and keep the Archive safe.',
+  'The Drift remembers the old routes. Find who still knows them.',
+  'The Continuance took ships apart here to hide something. Get through with the Archive.',
+  'Everyone trades here and nobody asks. Find someone you can trust with the truth.',
+  'Nothing human lives here. Learn what the Continuance already knows, and stay ahead of it.',
+  'One gate left. Carry the truth out before Calloway takes it back.',
+];
+
 // ── the observations ──────────────────────────────────────────────────────
 // What the Archive keeps of the unknown: what you saw, and what people say
 // about it. Theories contradict each other on purpose.

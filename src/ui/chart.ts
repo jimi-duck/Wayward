@@ -1,7 +1,7 @@
 import type { SystemKind } from '../content/systems';
 import { overRatings, weightFuel } from '../sim/budgets';
 import { fileLines } from '../sim/calloway';
-import { QUESTIONS } from '../content/situations';
+import { QUESTIONS, WHYS } from '../content/situations';
 import { longIndex } from '../sim/situations';
 import { lanesFrom, netted, regionCount, regionDef, regionSystems, sysById, viewOf, type StarSystem } from '../sim/chart';
 import { forks, gateProgress, goalOf, trouble, type Fork } from '../sim/forks';
@@ -328,7 +328,8 @@ export class ChartPanel {
     bar.setAttribute('aria-valuemin', '0');
     bar.setAttribute('aria-valuemax', String(total));
     bar.setAttribute('aria-valuenow', String(Math.max(0, total - g.left)));
-    el.replaceChildren(h('span', 'k', '', document.createTextNode(`${t('Goal')} · ${t('Reach {name}', { name: g.gate.name })} · `), h('b', '', plural(g.left, '{n} jump remaining', '{n} jumps remaining'))), bar);
+    const why = WHYS[longIndex(j.chart, viewOf(j.chart, j.at))];
+    el.replaceChildren(h('span', 'k', '', document.createTextNode(`${t('Goal')} · ${t('Reach {name}', { name: g.gate.name })} · `), h('b', '', plural(g.left, '{n} jump remaining', '{n} jumps remaining'))), bar, ...(why ? [h('p', 'ch-quest', t(why))] : []));
   }
 
   /** What needs the eye before the choice, and only when it is true now: stores, the tank, a Net or Calloway too near to ignore. */
