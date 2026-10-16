@@ -124,6 +124,9 @@ seven hours. `?short` plays the older three-region chart, for testing.
   the Gutter, nobody), a Cyrite richness and maybe a port with its own
   prices. Lanes run one column on, now and then sideways. Every lane costs
   jump fluid and takes one or two days. The chart shows one region at a time.
+  The screen that plots the next jump is the jump chart ([CHART.md](CHART.md)):
+  `sim/forks.ts` reads the lanes out of here (fluid, supplies, days, jumps to
+  the gate, one known upside and trade-off) and `ui/chart.ts` shows them.
 - **Chapters.** Each gate opens a chapter (`sim/chapters.ts`): a record, a
   snapshot to start the region again from, and a recap on the title.
 - **Plotting.** The jump you plot sets the sortie's lane: the lane mouth
@@ -294,7 +297,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Story communications: weights, pacing, calls, radio | `DESK` in `sim/desk.ts`, `CHATTER` in `content/chatter.ts`, `tier` on a card | `Desk`, `weightOf`, `World.stepComms` / `openCall`, `ui/radio.ts`; see [COMMS.md](COMMS.md) |
 | Missions: optional jobs (destroy, strike, defend, race, survey, sneak) | `MISSIONS` and `MISSION_CARDS` in `content/missions.ts`, `Goal.kind` in `content/situations.ts` | `Run` in `sim/mission.ts`, played by `Stage` (`sim/stage.ts`), drawn in `render/site.ts`; see [MISSIONS.md](MISSIONS.md) |
 | Adrift and total loss: the per-region wreck count, the tow, the restart | `Journey.lost`, `voyage.wrecks` in `content/survival.ts`, `driftTo` in `sim/journey.ts`, `regionLost` in `main.ts`, `ui/adrift.ts`; see [ADRIFT.md](ADRIFT.md) |
-| The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `meta/save.ts`, `ui/chart.ts` |
+| The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `sim/forks.ts` (what each lane out asks and offers), `meta/save.ts`, `ui/chart.ts` (the jump chart, [CHART.md](CHART.md)) |
 | Score and the record | `sim/run.ts`, `sim/tuning.ts` | `World.addScore`, `World.finish` |
 | Between runs | `content/unlocks.ts` | `meta/profile.ts` (localStorage), `ui/panels.ts` |
 | The review world (`?dev`) | the exhibits, in `review/gallery.ts` | `World.review` / `stepReview`, `review/panel.ts`; see [REVIEW.md](REVIEW.md) |

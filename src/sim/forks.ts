@@ -1,0 +1,110 @@
+import { PLACES, REWARD_WORD } from '../content/phenomena';
+import { cyriteKnown, gateOf, jumps, viewOf, type Chart, type Place, type StarSystem } from './chart';
+import { LOW_SUPPLIES } from './breakout';
+import { options, type Journey } from './journey';
+import { stance, type Stance } from './lanes';
+import { t } from '../i18n';
+
+// ── the fork: what each lane out of here asks and offers ──────────────────
+// The chart's next-jump list reads these (ui/chart.ts). Every number is the
+// journey's own: `options` gives the lane, its jump fluid (the lane's base
+// plus the weight surcharge) and the supplies the crossing eats; the graph
+// gives the jumps left to the gate. An upside and a trade-off are named only
+// where the chart knows them (a port, a breather, a place already sighted,
+// the Net's edge as last seen); nothing is scored or ranked.
+
+/** The way out of the region the chart shows from a system: its gate, or the Threshold. */
+export const goalOf = (c: Chart, at: string): StarSystem => gateOf(c, viewOf(c, at));
+
+/** Jumps from `id` to that goal by the lanes, or null where there is no way. */
+export function toGoal(c: Chart, at: string, id: string): number | null {
+  const n = jumps(c, id, goalOf(c, at).id);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Where the journey stands in its region: the gate it is heading for, and the jumps left of the jumps the region asks from its way in. */
+export function gateProgress(j: Journey): { gate: StarSystem; left: number | null; total: number | null } {
+  const c = j.chart, view = viewOf(c, j.at), gate = goalOf(c, j.at);
+  // the way in: Cerro, or the gate behind
+  const entry = view > 0 ? gateOf(c, view - 1).id : c.home;
+  const total = jumps(c, entry, gate.id);
+  return { gate, left: toGoal(c, j.at, j.at), total: Number.isFinite(total) && total > 0 ? total : null };
+}
+
+/** A line the chart knows to be true, and whether it is a threat (red) or a cost (plain). */
+export interface Note { text: string; hot?: boolean }
+
+export interface Fork {
+  to: StarSystem;
+  stance: Stance;
+  days: number;
+  /** Jump fluid the lane needs now, with the weight surcharge. */
+  fuel: number;
+  /** Jump fluid short in the tank for it (0 when it is covered); the jump waits on the refinery, never blocks the choice. */
+  short: number;
+  supplies: number;
+  /** The stores do not cover the crossing: a plate goes. */
+  thin: boolean;
+  /** Jumps from there to the goal; null where the graph has no way. */
+  gateAfter: number | null;
+  atGate: boolean;
+  /** Brings the goal nearer than here (null when it cannot be told). */
+  nearer: boolean | null;
+  netted: boolean;
+  shadow: boolean;
+  place: Place | null;
+  scene: string | null;
+  up: Note | null;
+  down: Note | null;
+}
+
+/** What the chart knows of a place there, as a short phrase. */
+const placeNote = (p: Place) => `${t(PLACES[p.id].name)} · ${t(REWARD_WORD[PLACES[p.id].reward === 'unknown' ? 'unknown' : p.reward])}`;
+
+/** The lanes out of here, each with its facts. `lowFuel` lanes are the ones a jump cannot yet pay for. */
+export function forks(j: Journey): Fork[] {
+  const c = j.chart, opts = options(j), now = toGoal(c, j.at, j.at);
+  const goal = goalOf(c, j.at);
+  const base = opts.map((o) => {
+    const s = o.to, st = stance(c, o), after = toGoal(c, j.at, s.id);
+    return { o, s, st, after };
+  });
+  // a comparison is only a fact when the lanes differ
+  const cheapest = Math.min(...base.map((b) => b.o.fuel)), quickest = Math.min(...base.map((b) => b.o.route.days));
+  const fuelDiffers = base.some((b) => b.o.fuel !== cheapest), daysDiffer = base.some((b) => b.o.route.days !== quickest);
+  return base.map(({ o, s, st, after }): Fork => {
+    const nearer = now === null || after === null ? null : after < now;
+    const quiet = !!s.quiet && !o.netted;
+    // the first known upside, then the first known trade-off
+    let up: Note | null = null, down: Note | null = null;
+    if (s.id === goal.id) up = { text: t('The way on · the gate out') };
+    else if (s.port) up = { text: t('Port · trade, supplies, refit') };
+    else if (quiet) up = { text: t('A breather · no pursuit here') };
+    else if (o.place) up = { text: placeNote(o.place) };
+    else if (cyriteKnown(c, s) >= 0.7 && s.kind === 'mining') up = { text: c.visited.includes(s.id) ? t('Rich rock · Cyrite to mine') : t('Survey: rich rock · not yet flown') };
+    else if (fuelDiffers && o.fuel === cheapest) up = { text: t('The cheapest jump here') };
+    else if (daysDiffer && o.route.days === quickest) up = { text: t('The shortest crossing here') };
+    if (o.shadow) down = { text: t('Calloway was last seen here'), hot: true };
+    else if (o.netted) down = { text: t('Netted as of day {n}', { n: Math.floor(c.seenDay) + 1 }), hot: true };
+    else if (s.kind === 'contested') down = { text: t('Contested · patrols and raiders'), hot: true };
+    else if (st === 'hostile') down = { text: t('Hostile · raiders or Thren about'), hot: true };
+    else if (s.port) down = { text: t('Watched · a busy port draws the Custody') };
+    else if (o.route.days > 1 && daysDiffer) down = { text: t('{n} days in the lane · the Net spreads', { n: o.route.days }) };
+    else if (!s.port) down = { text: t('No port') };
+    return {
+      to: s, stance: st, days: o.route.days, fuel: o.fuel, short: Math.max(0, Math.ceil(o.fuel - j.carry.fuel)), supplies: o.supplies,
+      thin: j.carry.supplies < o.supplies, gateAfter: after, atGate: s.id === goal.id, nearer,
+      netted: o.netted, shadow: o.shadow, place: o.place, scene: o.scene, up, down,
+    };
+  });
+}
+
+/** The ship's trouble worth the player's eye before they choose: out of or low on supplies, and no lane the tank can pay for yet. */
+export function trouble(j: Journey, fs: Fork[]): Note[] {
+  const out: Note[] = [];
+  const c = j.carry;
+  if (c.supplies <= 0) out.push({ text: t('Out of supplies · a jump costs a plate'), hot: true });
+  else if (c.supplies <= LOW_SUPPLIES) out.push({ text: t('Supplies low · buy more at a port') });
+  if (fs.length && fs.every((f) => f.short > 0)) out.push({ text: t('Not enough jump fluid yet · mine and refine before the jump') });
+  return out;
+}

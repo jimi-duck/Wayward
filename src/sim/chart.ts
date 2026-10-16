@@ -121,6 +121,13 @@ export interface Chart {
   regionSet?: RegionSet;
 }
 
+/**
+ * What a lane costs to jump, in jump fluid: a base and so much for each unit of distance. A long lane costs
+ * clearly more than a short one (the same mean as before, about 16, over a wider spread), so the choice at a
+ * fork is also a choice of what to spend (docs/BALANCE-FORKS.md). A journey already saved keeps its own lanes.
+ */
+export const LANE_COST = { base: 8, perDistance: 20 } as const;
+
 /** The Net's pace: progress a day into a system next to a netted one, before richness. */
 export const NET_RATE = 0.45;
 /** How much harder each further netted neighbour presses a system. */
@@ -224,7 +231,7 @@ export function makeChart(seed: number, set: RegionSet = 'three', breathers = 1)
   const link = (a: StarSystem, b: StarSystem) => {
     if (routes.some((r) => (r.a === a.id && r.b === b.id) || (r.a === b.id && r.b === a.id))) return;
     const d = Math.hypot((a.x - b.x) * 1.6, a.y - b.y);
-    routes.push({ a: a.id, b: b.id, cyrite: round5(12 + 9 * d + rng.range(-1, 2)), days: d > 0.42 ? 2 : 1 });
+    routes.push({ a: a.id, b: b.id, cyrite: round5(LANE_COST.base + LANE_COST.perDistance * d + rng.range(-1, 2)), days: d > 0.42 ? 2 : 1 });
   };
   for (let col = 0; col < COLS - 1; col++) {
     const here = systems.filter((s) => s.col === col), next = systems.filter((s) => s.col === col + 1);

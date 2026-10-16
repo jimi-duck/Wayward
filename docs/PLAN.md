@@ -43,6 +43,7 @@ is off.
 | Mis Missions | Done: seven goal kinds, 32 jobs, on a timetable so every region has them ([MISSIONS.md](MISSIONS.md)) |
 | Onb Onboarding | Done: a short lesson on every new Story journey, once in the Arcade ([ONBOARDING.md](ONBOARDING.md)) |
 | H The HUD | Done, pending a device look: a quieter, contextual HUD ([HUD.md](HUD.md)) |
+| J The jump chart | Done: header, map, a short next-jump list and one jump strip; lanes show fluid, supplies, days and jumps to the gate; the rest sits behind Intel ([CHART.md](CHART.md), [BALANCE-FORKS.md](BALANCE-FORKS.md)). A device look is pending |
 | A Artwork slots | Built: nine slots with the current look as fallback; 64 generated pictures are installed and the rest wait on the set ([ART-SLOTS.md](ART-SLOTS.md)) |
 | Var Variety | Built, first guesses: a seeded sky composer with column memory, one shared spot for each site, regional rules (claims, watch, lanterns), cover that works ([VARIETY.md](VARIETY.md), [BALANCE-VARIETY.md](BALANCE-VARIETY.md)). A playtest is still to do |
 
