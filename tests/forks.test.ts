@@ -102,7 +102,13 @@ describe('the next jump', () => {
     j.carry.fuel = 3;
     const before = JSON.stringify(j.carry);
     for (const f of forks(j)) expect(f.short).toBe(Math.max(0, f.fuel - 3));
-    expect(trouble(j).some((n) => /jump fluid/.test(n.text))).toBe(true);
+    const cheapest = Math.min(...options(j).map((o) => Math.ceil(o.fuel - 3)));
+    expect(trouble(j).some((n) => /jump fluid/i.test(n.text) && n.text.includes(String(cheapest)))).toBe(true);
+    // one line for the tank, not one per lane; and none when the tank holds a lane
+    expect(trouble(j).filter((n) => /jump fluid/i.test(n.text))).toHaveLength(1);
+    j.carry.fuel = 999;
+    expect(trouble(j).some((n) => /jump fluid/i.test(n.text))).toBe(false);
+    j.carry.fuel = 3;
     expect(JSON.stringify(j.carry)).toBe(before);
   });
 
