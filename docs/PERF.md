@@ -188,3 +188,7 @@ device down a tier. In software GL the first frame after launch also took
 several seconds with no new programs; whether any driver links lazily on its
 first draw is a real-device question. Real device: flying through a graveyard,
 a seam and a storm on a phone, and the first two seconds after Start.
+
+## Graphics pass 1: rock silhouettes
+
+Rocks get more cleaved faces (planes ×2.2, wider reach), stepped ledges in the outline, and baked ambient occlusion in vertex colours (dark in creases and crater floors). The surface relief is angular (chipped facets, sharp crests) rather than a soft swell. Triangle counts, draw calls and shader programs are unchanged (same subdivisions, same instancing; the material gains a vertex-colour read). Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/task1-rocks/`.
