@@ -215,6 +215,12 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
   const planes = Array.from({ length: Math.round(cuts * 2.2) }, () => ({
     n: new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.7, rnd() * 2 - 1).normalize(), d: 0.46 + rnd() * 0.3,
   }));
+  // faults: the rock sheared along a plane and one half slid, so the outline gets real steps and overhangs
+  const faults = Array.from({ length: Math.min(3, 1 + Math.floor(cuts / 4)) }, () => {
+    const n = new Vector3(rnd() * 2 - 1, (rnd() * 2 - 1) * 0.6, rnd() * 2 - 1).normalize();
+    const t = new Vector3(rnd() * 2 - 1, rnd() * 2 - 1, rnd() * 2 - 1).cross(n).normalize();
+    return { n, t, d: (rnd() - 0.5) * 0.7, slide: (0.2 + rnd() * 0.22) * (rnd() < 0.5 ? -1 : 1), lift: 0.07 + rnd() * 0.1 };
+  });
   const st = new Vector3(...stretch);
   const ledge = new Vector3(rnd() - 0.5, rnd() * 0.8 + 0.2, rnd() - 0.5).normalize();
   for (let i = 0; i < p.count; i++) {
@@ -234,10 +240,20 @@ export function rockGeometry(seed: number, detail: number, craters: number, roug
     }
     v.multiplyScalar(k);
     for (const c of planes) { const over = v.dot(c.n) - c.d; if (over > 0) v.addScaledVector(c.n, -over * 0.94); }
+    for (const f of faults) {
+      const side = v.dot(f.n) - f.d;
+      // a soft shoulder over a few hundredths of a unit keeps the sheared face from tearing the mesh
+      const w = Math.min(1, Math.max(0, side / 0.09 + 0.5));
+      if (w > 0) v.addScaledVector(f.t, f.slide * w).addScaledVector(f.n, f.lift * w);
+    }
     v.multiply(st);
     v.y *= 0.84;
     p.setXYZ(i, v.x, v.y, v.z);
   }
+  // the slid halves reach past the old outline: bring the farthest point back to where the hit radius expects it
+  let far = 0;
+  for (let i = 0; i < p.count; i++) far = Math.max(far, Math.hypot(p.getX(i), p.getY(i), p.getZ(i)));
+  if (far > 1.2) g.scale(1.2 / far, 1.2 / far, 1.2 / far);
   g.computeVertexNormals();
   bakeOcclusion(g);
   return g;
