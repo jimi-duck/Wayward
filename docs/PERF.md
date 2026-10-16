@@ -232,3 +232,7 @@ Each rock shape now carries one to three faults: the rock is cut along a plane a
 ## Graphics pass 11: cruiser and freighter shapes
 
 The Custody heavy cruiser's keel and the freighter's bridge head are lofted like the fighters (the cruiser keeps a thin arrowhead deck over its keel). The Grinder drone stays a cube on purpose and the Thren hulls are already faceted crystal. All designed hulls already bake occlusion (pass 10), so the warm-up cost is unchanged apart from these two bodies (a few hundred triangles). Not measured: GPU time and load time on a phone. Shots in `/mnt/project-files/graphics-research/task12-more-hulls/`.
+
+## The Wayward, reshaped to the artwork
+
+The model was a wide, square brick with square pods far out on arms. It is now a long, slim hull (about 2.4 wide for 5.9 long) of octagonal armour stepping in to a rounded, sloping bow, with two round engine drums low on the flanks, banded in amber plate, each with a ringed drive housing and a small pale-blue ring round the throat (the flame colour is unchanged). The spine is lower, the name runs along both upper flanks and "03" is on the bow and stern. Play scale and hit size are unchanged; nozzles, running lights, the shield ellipsoid and the refit bay's part marks were moved to the new parts. With the occlusion bake the model is about 36k triangles (was about 57k): fewer, because the old pods and mounting carried much more detail than a round drum needs. Same draws and programs. Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/wayward-ship/shots/`.
