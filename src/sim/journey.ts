@@ -261,7 +261,8 @@ export function options(j: Journey) {
 function onward(j: Journey, to: StarSystem): boolean {
   if (to.kind === 'home') return false;
   const s = here(j);
-  return s.kind === 'gate' ? regionOf(to) > regionOf(s) : regionOf(to) >= regionOf(s);
+  // and never back along the chart: the way is on
+  return to.col >= s.col && (s.kind === 'gate' ? regionOf(to) > regionOf(s) : regionOf(to) >= regionOf(s));
 }
 
 /** Plot the next jump. False if there is no lane there from here. */

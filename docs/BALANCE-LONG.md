@@ -290,3 +290,14 @@ How the last meeting ended:
 | offer_identity | 24 | refuse 8, accept 16 |
 | offer_home | 23 | silence 7, think 8, answer 8 |
 | calloway_last | 19 | run 6, remind 5, owe 2, fight 6 |
+
+## Two lanes on, no way back (jump chart pass 2)
+
+New charts give every system its two nearest lanes in the next column (no
+sideways lanes) and `options` no longer goes back along the chart. A 12-journey
+pilot run on the eight-region set (JOURNEY_RUNS=2) against the 24-journey run
+above: through 10 of 12 (21 of 24 before), systems flown 74 to 81 (same),
+days 157 to 164 for the tuned strategy against 142 to 147 (the lanes are
+fewer, so the Net and Calloway have fewer ways to meet a ship, and a lane
+detour costs a day more often). Within run-to-run noise for the 12 runs; the
+report above stays as the long reference.

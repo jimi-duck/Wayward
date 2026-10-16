@@ -29,9 +29,10 @@ function axes(j: Journey): { n: number; axes: string[] } | null {
   if (differs((x) => !!x.to.quiet && !x.netted)) out.push('breather');
   if (differs((x) => x.place?.id ?? '')) out.push('place');
   if (differs((x) => x.days)) out.push('days');
+  if (differs((x) => x.heat)) out.push('heat');
   if (Math.max(...fs.map((x) => x.fuel)) - Math.min(...fs.map((x) => x.fuel)) >= 4) out.push('fluid');
   // the choice as the player feels it: kind and the gate's distance are labels, the rest are costs and opportunities
-  if (!out.some((k) => ['style', 'port', 'breather', 'place', 'days', 'fluid'].includes(k))) out.push('TIGHT');
+  if (!out.some((k) => ['style', 'port', 'breather', 'place', 'days', 'fluid', 'heat'].includes(k))) out.push('TIGHT');
   if (differs((x) => x.nearer)) out.push('gate');
   return { n: fs.length, axes: out };
 }

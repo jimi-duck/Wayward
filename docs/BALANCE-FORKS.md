@@ -4,21 +4,21 @@ Seeds per set: 60. A fork is a system with two or more lanes on. "Thin": the lan
 
 ## three regions
 
-- forks 1145, thin 43 (3.8%), no cost or opportunity apart 49 (4.3%)
-- lanes per fork: 2: 510, 3: 635
-- forks where the lanes differ in each: kind 97%, style 84%, port 51%, days 70%, gate 75%, fluid 35%
+- forks 780, thin 14 (1.8%), no cost or opportunity apart 14 (1.8%)
+- lanes per fork: 2: 720, 3: 60
+- forks where the lanes differ in each: kind 100%, style 76%, port 45%, heat 78%, days 79%, fluid 34%
 
 ## eight regions
 
-- forks 12436, thin 228 (1.8%), no cost or opportunity apart 375 (3.0%)
-- lanes per fork: 2: 2627, 3: 9809
-- forks where the lanes differ in each: kind 96%, style 80%, port 60%, breather 46%, place 19%, days 65%, gate 93%, fluid 39%
+- forks 11460, thin 83 (0.7%), no cost or opportunity apart 83 (0.7%)
+- lanes per fork: 2: 11160, 3: 300
+- forks where the lanes differ in each: kind 100%, style 69%, port 46%, breather 34%, place 14%, days 81%, heat 74%, fluid 39%
 
 ## Thin forks, examples
 
-- The Breaker Yards · Bracecradle: Torchslip (port, 1d, 14) / Sparberth (port, 1d, 14)
-- The Free Ports · The Tollgate: Bleakmere (transit, 2d, 17) / Deadforge (contested, 2d, 18)
-- The Hollows · Mutecinder: Huskcairn (transit, 1d, 15) / Serereach (transit, 1d, 16)
-- The Reach · Halgrove: Corgrove (port, 1d, 15) / Ketk (port, 1d, 15)
-- The Drift Deep · Tidelight: Ninthlight (mining, 1d, 14) / Stillrain (mining, 1d, 15)
-- The Breaker Yards · Davitberth: Davitcradle (transit, 1d, 14) / Rakecradle (transit, 1d, 14)
+- The Free Ports · Giltquay: Rumstreet (transit, 1d, 14) / Pennyport (mining, 1d, 15)
+- The Reach · Vesden: Kettle (mining, 1d, 16) / Tollford (transit, 1d, 18)
+- The Free Ports · Rumharbour: Dicestreet (mining, 1d, 14) / Dicemarket (transit, 1d, 15)
+- The Marches · Cairnwick: Barfast (mining, 1d, 15) / Kesthold (transit, 1d, 16)
+- The Drift Deep · Wanderfold: Longlea (transit, 1d, 14) / Farmile (mining, 1d, 15)
+- The Free Ports · Luckypier: Tinkercross (mining, 1d, 16) / Luckyport (transit, 1d, 17)
