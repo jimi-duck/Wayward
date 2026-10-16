@@ -11,11 +11,15 @@ own to the rules.
 2. How far is the way out? The header: the gate's name, the jumps remaining
    (counted on the graph by `jumps()`, never from the screen) and a bar from the
    region's way in.
-3. Which lanes can I take? The next-jump list: exactly `options(j)`, nothing else.
-4. What does each cost? Time (`route.days`), jump fluid (`options.fuel`, the
-   lane's base plus the weight surcharge; this is the number the drive burns),
-   supplies (`options.supplies`, days plus the drive's wear) and the jumps left
-   to the gate after arriving.
+3. Which lanes can I take? The next-jump list: at most three of `options(j)`
+   (`LANES_SHOWN`), picked to differ: the way straight on, the calmest, and
+   whichever differs most from those. A lane that only repeats one of them is
+   left off the chart (it stays in the sim; the journey is unchanged).
+4. What does each cost? How hard its far end is on you (danger: quiet, watched
+   or hostile, from `stance`, three pips), whether it goes straight to the gate
+   or is `n` jumps longer, time (`route.days`) and jump fluid (`options.fuel`,
+   the lane's base plus the weight surcharge; this is the number the drive
+   burns). Supplies show only when the stores do not cover the crossing.
 5. What does each offer and ask? One upside and one trade-off, only from what
    the chart knows (below).
 6. Which one am I taking? The strip at the foot: the selected lane's four
@@ -40,25 +44,15 @@ own to the rules.
 
 ## The map
 
-Drawn in screen pixels (the box is measured on every draw, so a phone turning
-redraws it). Columns keep the order and the rows the heights the simulation has;
-the columns round the ship get more width than the far ones so the lanes out are
-readable. The lanes you can take are dashed steel blue with their jump fluid on
-a small plate; the selected one is solid and bright. Everything else is a faint
-line and a small plain dot. Names go to here, the gate, the lanes out and the
-selected system, each on the first free side of its node.
-
-| Mark | Meaning |
-|---|---|
-| Ringed white, `HERE` | where the ship is |
-| Bright ring and solid lane | the selected lane |
-| Dashed lane | another lane out |
-| Red halo (and a triangle, on a lane out) | the Net, as last seen |
-| Red diamond | where Calloway was last seen |
-| Violet diamond | a known anomaly (a gravity well, a Thren lane) |
-| Gold diamond, `GATE` | the region's way out |
-| Teal square | a port |
-| Dotted teal ring | a breather |
+Three kinds of mark, drawn in screen pixels (the box is measured on every
+draw, so a phone turning redraws it): here on the left, the lanes you can
+take in the middle, the gate on the right. The graph itself is not drawn.
+Each lane is coloured by its danger (teal quiet, gold watched, red hostile)
+and carries its days; from each a dotted line runs on to the gate with the
+jumps still to go, so the straight way and the longer ones read at once. The
+selected lane is solid and bright. A red halo is the Net as last seen, a red
+diamond Calloway's last sighting, a small square a port, a dotted ring a
+breather.
 
 ## Upside and trade-off
 
@@ -73,7 +67,8 @@ Chosen in `forks()` in this order, first match wins, and only from known state.
   two-day lane; no port.
 
 There is no score and no ranking. The list is sorted by the gate's distance
-after arrival, then by jump fluid; the first row is selected, so Enter alone keeps
+after arrival, then by jump fluid; on a phone on its side the cards keep the
+upside and trade-off (days and jumps are on the map, fluid in the strip); the first row is selected, so Enter alone keeps
 the journey moving.
 
 ## Tuning

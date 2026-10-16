@@ -1,10 +1,9 @@
-import { PLACES, REWARD_WORD } from '../content/phenomena';
 import type { SystemKind } from '../content/systems';
 import { overRatings, weightFuel } from '../sim/budgets';
 import { fileLines } from '../sim/calloway';
 import { QUESTIONS } from '../content/situations';
-import { longIndex, situationLine } from '../sim/situations';
-import { netted, placeAt, regionCount, regionDef, regionSystems, sysById, viewOf, type Place, type StarSystem } from '../sim/chart';
+import { longIndex } from '../sim/situations';
+import { netted, regionCount, regionDef, regionSystems, sysById, viewOf } from '../sim/chart';
 import { forks, gateProgress, goalOf, trouble, type Fork } from '../sim/forks';
 import { behind } from '../sim/hunt';
 import type { Stance } from '../sim/lanes';
@@ -34,10 +33,6 @@ import { num, plural, t } from '../i18n';
 const NS = 'http://www.w3.org/2000/svg';
 /** The map is drawn in screen pixels: its box is measured when it is drawn. */
 const FALLBACK = { w: 640, h: 320 };
-const PAD_X = 38, PAD_Y = 40;
-const KIND_COLOUR: Record<SystemKind, string> = {
-  home: INK.white, port: INK.teal, mining: INK.cyrite, contested: INK.red, transit: INK.dust, gate: INK.caution, edge: INK.caution,
-};
 const KIND_WORD: Record<SystemKind, string> = {
   home: 'Home', port: 'Port', mining: 'Mining', contested: 'Contested', transit: 'Transit', gate: 'Gate', edge: 'The last lane',
 };
@@ -45,33 +40,9 @@ const KIND_WORD: Record<SystemKind, string> = {
 const STANCE_WORD: Record<Stance, string> = { quiet: 'Quiet', watched: 'Watched', hostile: 'Hostile' };
 const KEY_DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
 
-/**
- * Where a system sits on the map of a region: columns left to right in the order the simulation has them, y as it
- * has it. The columns round the ship are given more room than the far ones, so the lanes you can take are easy to
- * read and the whole region (and its gate) still fits.
- */
-type Proj = { px: (s: StarSystem) => number; py: (s: StarSystem) => number };
-const NEAR = { back: 1, ahead: 2 };
-function project(shown: StarSystem[], w: number, hgt: number, focus: number): Proj {
-  const cols = [...new Set(shown.map((s) => s.col))].sort((a, b) => a - b);
-  const near = w < 520 ? 2.2 : 3.2;
-  const weight = (col: number) => (col >= focus - NEAR.back && col <= focus + NEAR.ahead ? near : 1);
-  // each column's centre sits at the middle of its share of the width
-  const start = new Map<number, number>();
-  let sum = 0;
-  for (const col of cols) { start.set(col, sum); sum += weight(col); }
-  const span = w - PAD_X * 2;
-  const at = (col: number) => PAD_X + ((start.get(col)! + (weight(col) - 1) / 2) / Math.max(1, sum - 1)) * span;
-  return { px: (s) => at(s.col), py: (s) => PAD_Y + s.y * (hgt - PAD_Y * 2) };
-}
 const days = (n: number) => plural(n, '{n} day', '{n} days');
 const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { fuel: 'Jump fluid', cyrite: 'Cyrite', plates: 'Plates', supplies: 'Supplies' };
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
-/** A place in a few words: what it is, and what it pays (a strange signal's is not known till it is read). */
-const placeText = (p: Place) => `${t(PLACES[p.id].name)}, ${t(REWARD_WORD[PLACES[p.id].reward === 'unknown' ? 'unknown' : p.reward])}`;
-/** A place that bends space: the chart marks it apart. */
-const isAnomaly = (p: Place | null) => !!p && PLACES[p.id].plays === 'anomaly';
-
 /** The region's name, when the chart has more than one. */
 export const regionName = (c: Journey['chart'], at: string) => (regionCount(c) > 1 ? t(regionDef(c, viewOf(c, at))?.name ?? '') : '');
 
@@ -341,7 +312,7 @@ export class ChartPanel {
 
   /** What needs the eye before the choice, and only when it is true now: stores, the tank, a Net or Calloway too near to ignore. */
   private alerts(j: Journey): Array<{ text: string; hot?: boolean }> {
-    const out = trouble(j, this.fs);
+    const out = trouble(j);
     if (netted(j.chart, j.at)) out.push({ text: t('The Net holds {name}', { name: here(j).name }), hot: true });
     const gap = behind(j.hunt, j.trail);
     if (j.trail.length > 1 && gap <= 1) out.push({ text: gap === 0 ? t('Calloway is in this system') : t('Calloway is one jump behind'), hot: true });
@@ -352,18 +323,18 @@ export class ChartPanel {
     const list = $('ch-list');
     list.replaceChildren(...this.fs.map((f, i) => {
       const s = f.to;
-      const tag = [t(KIND_WORD[s.kind]), t(STANCE_WORD[f.stance])].join(' · ');
-      const gate = f.atGate ? t('The gate') : f.gateAfter === null ? '' : t('{n} to gate', { n: f.gateAfter });
+      // the way on: straight to the gate, or by how many jumps more
+      const way = f.atGate ? t('The gate') : f.detour === null ? '' : f.detour === 0 ? t('Straight on') : plural(f.detour, '{n} jump longer', '{n} jumps longer');
       const b = h('button', `ch-opt ${f.stance}${i === this.sel ? ' sel' : ''}`, '',
-        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', 'tag', tag)),
+        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', `tag d${f.danger}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(STANCE_WORD[f.stance])))),
+        h('div', 'ch-o3', '',
+          f.up ? h('span', 'up', '', h('em', '', t('Upside')), document.createTextNode(f.up.text)) : null,
+          f.down ? h('span', `down${f.down.hot ? ' hot' : ''}`, '', h('em', '', t('Trade-off')), document.createTextNode(f.down.text)) : null),
         h('div', 'ch-o2', '',
+          way ? h('span', '', '', glyph('arrow'), h('b', '', way)) : null,
           h('span', '', '', glyph('clock'), h('b', '', days(f.days))),
           h('span', f.short ? 'short' : '', '', glyph('drop'), h('b', '', String(f.fuel)), document.createTextNode(` ${t('jump fluid')}`), ...(f.short ? [document.createTextNode(` · ${t('{n} short', { n: f.short })}`)] : [])),
-          h('span', f.thin ? 'short' : '', '', glyph('box'), h('b', '', String(f.supplies)), document.createTextNode(` ${t('supplies')}`)),
-          gate ? h('span', '', '', glyph('arrow'), h('b', '', gate)) : null),
-        f.up || f.down ? h('div', 'ch-o3', '',
-          f.up ? h('span', '', '', h('em', '', t('Upside')), document.createTextNode(f.up.text)) : null,
-          f.down ? h('span', f.down.hot ? 'hot' : '', '', h('em', '', t('Trade-off')), document.createTextNode(f.down.text)) : null) : null,
+          f.thin ? h('span', 'short', '', glyph('box'), h('b', '', String(f.supplies)), document.createTextNode(` ${t('supplies')}`)) : null),
       ) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('role', 'radio');
@@ -375,17 +346,15 @@ export class ChartPanel {
     }));
   }
 
-  /** The strip: the selected lane's cost in four numbers, and the button that takes it. */
+  /** The strip: the selected lane's name and what it takes, and the button that takes it. */
   private renderStrip(): void {
     const f = this.fs[this.sel], jump = $('ch-jump') as HTMLButtonElement, sum = $('ch-sum');
     if (!f) { sum.replaceChildren(); jump.disabled = true; return; }
     const st = (k: string, v: string, short = false) => h('div', `st${short ? ' short' : ''}`, '', h('span', 'k', k), h('b', '', v));
     sum.replaceChildren(
       h('div', 'nm', '', h('span', 'k', `${t(KIND_WORD[f.to.kind])} · ${t(STANCE_WORD[f.stance])}`), h('b', '', f.to.name)),
-      st(t('Jump fluid'), f.short ? `${f.fuel} · ${t('{n} short', { n: f.short })}` : String(f.fuel), f.short > 0),
       st(t('Travel time'), days(f.days)),
-      st(t('Supplies'), String(f.supplies), f.thin),
-      ...(f.gateAfter === null && !f.atGate ? [] : [st(t('Gate after arrival'), f.atGate ? t('Arrived') : plural(f.gateAfter ?? 0, '{n} jump', '{n} jumps'))]),
+      st(t('Jump fluid'), f.short ? `${f.fuel} · ${t('{n} short', { n: f.short })}` : String(f.fuel), f.short > 0),
     );
     jump.disabled = false;
     jump.textContent = t('Jump to {name}', { name: f.to.name });
@@ -431,7 +400,11 @@ export class ChartPanel {
     );
   }
 
-  /** The map: the region as the simulation has it. The lanes out of here are lit, the selected one bright with its cost; the rest is quiet. */
+  /**
+   * The map: a few big marks, not the graph. Here on the left, the gate on the right, and between them the lanes you
+   * can take, each coloured by how hard its far end is on you (teal calm, gold watched, red hostile). From each a
+   * dotted line runs on to the gate with the jumps still to go, so the shorter way and the longer one read at a glance.
+   */
   private draw(): void {
     const j = this.j;
     if (!j) return;
@@ -439,115 +412,73 @@ export class ChartPanel {
     const box = map.getBoundingClientRect();
     const W = Math.round(box.width) || FALLBACK.w, H = Math.round(box.height) || FALLBACK.h;
     map.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const c = j.chart, at = j.at;
-    // one region at a time: the way in, its systems, and its gate
-    const view = viewOf(c, at), shown = regionSystems(c, view), vis = new Set(shown.map((s) => s.id));
-    const { px, py } = project(shown, W, H, sysById(c, at).col);
-    const live = new Map(this.fs.map((f, i) => [f.to.id, i]));
-    const target = this.fs[this.sel]?.to.id;
-    const goal = goalOf(c, at);
-    const extra = weightFuel(j.carry.levels);
+    const c = j.chart, at = j.at, me = sysById(c, at), goal = goalOf(c, at);
+    const fs = this.fs, sel = this.fs[this.sel];
     const kids: SVGElement[] = [];
     const rn = regionName(c, at);
     if (rn) kids.push(svg('text', { x: W / 2, y: 16, 'text-anchor': 'middle', class: 'ch-region' }, rn));
-    // taken space, for labels to keep clear of: every node and every cost
-    const taken: Array<[number, number, number, number]> = [];
-    for (const s of shown) taken.push([px(s) - 10, py(s) - 10, px(s) + 10, py(s) + 10]);
-    // lanes: the graph quiet; the ones out of here lit, the selected one bright, with its cost
-    const costs: SVGElement[] = [];
-    for (const r of c.routes) {
-      if (!vis.has(r.a) || !vis.has(r.b)) continue;
-      const a = sysById(c, r.a), b = sysById(c, r.b);
-      const out = (r.a === at && live.has(r.b)) || (r.b === at && live.has(r.a));
-      const sel = out && (r.a === target || r.b === target);
-      const hot = out && (c.seenNet.includes(r.a === at ? r.b : r.a));
-      kids.push(svg('line', { x1: px(a), y1: py(a), x2: px(b), y2: py(b), class: `ch-r${out ? ' live' : ''}${sel ? ' sel' : ''}${hot && !sel ? ' net' : ''}` }));
-      // a lane's number is shown on the selected lane, and on the others where there is room for it
-      if (out && (sel || Math.hypot(px(a) - px(b), py(a) - py(b)) > 64)) {
-        const x = (px(a) + px(b)) / 2, y = (py(a) + py(b)) / 2, label = String(r.cyrite + extra);
-        const w = label.length * 7 + 10;
-        const g = svg('g', { class: `ch-cost${sel ? ' sel' : ''}` });
+    const X = { here: 58, mid: W * 0.5, goal: W - 58 };
+    const top = 44, bot = H - 40;
+    // the lanes, top to bottom as the chart has them
+    const lanes = fs.map((f, i) => ({ f, i })).sort((a, b) => a.f.to.y - b.f.to.y);
+    const ys = new Map<number, number>();
+    const n = lanes.length;
+    lanes.forEach(({ i }, k) => ys.set(i, n === 1 ? H / 2 : top + ((bot - top) * k) / (n - 1)));
+    const gateNow = fs.findIndex((f) => f.atGate);
+    const pos = (i: number) => (fs[i]!.atGate ? { x: X.goal, y: H / 2 } : { x: X.mid, y: ys.get(i)! });
+    const hy = H / 2, gx = X.goal;
+    const danger = ['teal', 'caution', 'red'] as const;
+    // dotted lines on to the gate, then the lanes out, so the lanes lie on top
+    fs.forEach((f, i) => {
+      if (f.atGate) return;
+      const p = pos(i);
+      kids.push(svg('line', { x1: p.x, y1: p.y, x2: gx, y2: hy, class: `ch-onward${f === sel ? ' sel' : ''}` }));
+      if (f.gateAfter !== null && W >= 340) {
+        const x = p.x + (gx - p.x) * 0.55, y = p.y + (hy - p.y) * 0.55, label = f.gateAfter === 1 ? t('1 to gate') : t('{n} to gate', { n: f.gateAfter });
+        const w = label.length * 6.4 + 10;
+        const g = svg('g', { class: `ch-cost${f === sel ? ' sel' : ''}` });
         g.append(svg('rect', { x: x - w / 2, y: y - 8, width: w, height: 16, rx: 2 }), svg('text', { x, y: y + 4 }, label));
-        costs.push(g);
-        taken.push([x - w / 2 - 2, y - 10, x + w / 2 + 2, y + 10]);
+        kids.push(g);
       }
-    }
-    // your trail, faint
-    for (let i = 1; i < j.trail.length; i++) {
-      if (!vis.has(j.trail[i - 1]!) || !vis.has(j.trail[i]!)) continue;
-      const a = sysById(c, j.trail[i - 1]!), b = sysById(c, j.trail[i]!);
-      kids.push(svg('line', { x1: px(a), y1: py(a), x2: px(b), y2: py(b), class: 'ch-trail' }));
-    }
-    // names go to the places that matter, each to the first free side of its node
-    const named = new Set([at, goal.id, ...live.keys(), ...(target ? [target] : [])]);
-    const place = (s: StarSystem, tagged: boolean): { x: number; y: number; anchor: string; tagY: number } => {
-      const x = px(s), y = py(s), r = s.kind === 'gate' || s.kind === 'edge' || s.id === at ? 9 : 7;
-      const w = s.name.length * 6.6 + 4, hgt = tagged ? 26 : 12;
-      const tries: Array<{ x: number; y: number; anchor: string; box: [number, number, number, number]; tagY: number }> = [
-        { x, y: y + r + 13, anchor: 'middle', box: [x - w / 2, y + r + 2, x + w / 2, y + r + 2 + hgt], tagY: y + r + 24 },
-        { x, y: y - r - 6 - (tagged ? 13 : 0), anchor: 'middle', box: [x - w / 2, y - r - 4 - hgt, x + w / 2, y - r - 2], tagY: y - r - 6 },
-        { x: x + r + 6, y: y + 4, anchor: 'start', box: [x + r + 4, y - 7, x + r + 8 + w, y - 7 + hgt], tagY: y + 16 },
-        { x: x - r - 6, y: y + 4, anchor: 'end', box: [x - r - 8 - w, y - 7, x - r - 4, y - 7 + hgt], tagY: y + 16 },
-      ];
-      const free = (b: [number, number, number, number]) => b[0] >= 2 && b[2] <= W - 2 && b[1] >= 22 && b[3] <= H - 2
-        && !taken.some((o) => b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1] && !(o[0] === x - 10 && o[1] === y - 10));
-      const pick = tries.find((t2) => free(t2.box)) ?? tries[0]!;
-      taken.push(pick.box);
-      return pick;
-    };
-    // here and the selection first, so they get the best sides
-    const order = [...shown].sort((a, b) => Number(b.id === at) - Number(a.id === at) || Number(b.id === target) - Number(a.id === target) || Number(b.id === goal.id) - Number(a.id === goal.id));
-    const labelAt = new Map<string, ReturnType<typeof place>>();
-    for (const s of order) if (named.has(s.id) && (this.onPick || s.id === at || s.id === goal.id)) labelAt.set(s.id, place(s, s.id === at || s.id === goal.id));
-    // systems
-    for (const s of shown) {
-      const x = px(s), y = py(s), net = c.seenNet.includes(s.id), visited = c.visited.includes(s.id), isGate = s.kind === 'gate' || s.kind === 'edge';
-      const out = live.has(s.id), isSel = s.id === target;
-      const g = svg('g', { class: `ch-s${out ? ' out' : ' far'}${isSel ? ' sel' : ''}${s.id === at ? ' here' : ''}${net ? ' net' : ''}${isGate ? ' gate' : ''}` });
-      // the lanes out, here and the gate carry the detail; the rest of the graph is context, small and plain
-      const ctx = !out && s.id !== at && !isGate;
-      if (net) {
-        g.append(svg('circle', { cx: x, cy: y, r: ctx ? 9 : 13, class: 'ch-net' }));
-        // a lane you could take into it carries a mark besides the colour
-        if (out) g.append(svg('path', { d: `M${x + 9} ${y - 12}l4 7h-8z`, fill: INK.red }));
-      }
-      if (s.quiet && !net && !ctx) g.append(svg('circle', { cx: x, cy: y, r: 12, class: 'ch-quiet' }));
-      const col = KIND_COLOUR[s.kind], r = isGate || s.id === at ? 8 : ctx ? 4.5 : 6.5;
-      if (isGate) g.append(svg('path', { d: `M${x} ${y - r - 2}L${x + r + 2} ${y}L${x} ${y + r + 2}L${x - r - 2} ${y}Z`, class: 'ch-node', stroke: col, 'fill-opacity': visited ? 1 : 0.9 }));
-      else g.append(svg('circle', { cx: x, cy: y, r, class: 'ch-node', stroke: col, fill: visited ? `${col}33` : 'rgba(11,12,15,.92)' }));
-      if (s.port && !ctx) g.append(svg('rect', { x: x + 6, y: y - 11, width: 5, height: 5, class: 'ch-port' }));
-      const p = placeAt(c, s.id), scene = situationLine(c, s.id);
-      if (ctx && !isAnomaly(p)) { /* no mark */ }
-      else if (isAnomaly(p)) g.append(svg('path', { d: `M${x - 10} ${y - 15}l4 4l-4 4l-4-4z`, class: 'ch-anom' }));
-      else if (p || scene) g.append(svg('path', { d: `M${x - 9} ${y - 14}l3 3l-3 3l-3-3z`, class: 'ch-place' }));
-      if (p || scene) { const ti = svg('title', {}); ti.textContent = p ? placeText(p) : scene!; g.append(ti); }
-      if (out) g.append(svg('circle', { cx: x, cy: y, r: r + 5, class: isSel ? 'ch-ring' : 'ch-ring dim', ...(isSel ? {} : { opacity: 0.25 }) }));
-      if (s.id === at) g.append(svg('circle', { cx: x, cy: y, r: r + 5, class: 'ch-ring here' }));
-      const lab = labelAt.get(s.id);
-      if (lab) {
-        g.append(svg('text', { x: lab.x, y: lab.y, 'text-anchor': lab.anchor, class: 'ch-name' }, s.name));
-        const tag = s.id === at ? t('Here') : isGate ? t(s.kind === 'edge' ? 'The last lane' : 'Gate') : '';
-        if (tag) {
-          const tw = tag.length * 7 + 8, ax = lab.anchor === 'middle' ? lab.x - tw / 2 : lab.anchor === 'start' ? lab.x : lab.x - tw;
-          g.append(svg('rect', { x: ax, y: lab.tagY - 9, width: tw, height: 12, rx: 1.5, class: 'ch-tagb' }), svg('text', { x: ax + tw / 2, y: lab.tagY, 'text-anchor': 'middle', class: 'ch-tagm' }, tag));
-        }
-      }
-      const n = live.get(s.id);
-      if (n !== undefined && this.onPick) {
-        const hit = svg('circle', { cx: x, cy: y, r: 18, fill: 'transparent' });
-        g.append(hit);
-        g.addEventListener('click', guarded(this.opened, () => this.select(n)) as EventListener);
+    });
+    if (!fs.length || gateNow < 0) kids.push(svg('line', { x1: X.here, y1: hy, x2: gx, y2: hy, class: 'ch-onward faint' }));
+    fs.forEach((f, i) => {
+      const p = pos(i);
+      kids.push(svg('line', { x1: X.here, y1: hy, x2: p.x, y2: p.y, class: `ch-lane ${danger[f.danger]}${f === sel ? ' sel' : ''}` }));
+    });
+    // a node and its name, below it, with a small tag where there is one
+    const mark = (x: number, y: number, name: string, opts: { gate?: boolean; here?: boolean; f?: Fork; idx?: number; tag?: string }) => {
+      const f = opts.f, isSel = !!f && f === sel;
+      const g = svg('g', { class: `ch-s${f ? ' out' : ''}${isSel ? ' sel' : ''}${opts.here ? ' here' : ''}${opts.gate ? ' gate' : ''}${f?.netted ? ' net' : ''}` });
+      const r = opts.gate ? 11 : opts.here ? 11 : 10;
+      const col = opts.here ? INK.white : opts.gate ? INK.caution : INK[danger[f?.danger ?? 0]];
+      if (f?.netted) g.append(svg('circle', { cx: x, cy: y, r: r + 9, class: 'ch-net' }));
+      if (f && f.to.quiet && !f.netted) g.append(svg('circle', { cx: x, cy: y, r: r + 7, class: 'ch-quiet' }));
+      if (opts.gate) g.append(svg('path', { d: `M${x} ${y - r - 2}L${x + r + 2} ${y}L${x} ${y + r + 2}L${x - r - 2} ${y}Z`, class: 'ch-node', stroke: col }));
+      else g.append(svg('circle', { cx: x, cy: y, r, class: 'ch-node', stroke: col, fill: `${col}33` }));
+      if (f?.to.port) g.append(svg('rect', { x: x + r - 2, y: y - r - 3, width: 6, height: 6, class: 'ch-port' }));
+      if (f?.shadow) g.append(svg('path', { d: `M${x - r - 4} ${y - r - 8}l5 5l-5 5l-5-5z`, class: 'ch-cal' }));
+      if (isSel) g.append(svg('circle', { cx: x, cy: y, r: r + 6, class: 'ch-ring' }));
+      if (opts.here) g.append(svg('circle', { cx: x, cy: y, r: r + 5, class: 'ch-ring here' }));
+      const ny = y + r + 16;
+      g.append(svg('text', { x, y: ny, 'text-anchor': 'middle', class: 'ch-name' }, name));
+      if (opts.tag) {
+        const tw = opts.tag.length * 7 + 8;
+        g.append(svg('rect', { x: x - tw / 2, y: ny + 5, width: tw, height: 12, rx: 1.5, class: 'ch-tagb' }), svg('text', { x, y: ny + 14, 'text-anchor': 'middle', class: 'ch-tagm' }, opts.tag));
+      } else if (f) g.append(svg('text', { x, y: ny + 14, 'text-anchor': 'middle', class: 'ch-sub' }, days(f.days)));
+      if (f && this.onPick && opts.idx !== undefined) {
+        g.append(svg('circle', { cx: x, cy: y, r: 26, fill: 'transparent' }));
+        g.addEventListener('click', guarded(this.opened, () => this.select(opts.idx!)) as EventListener);
         g.addEventListener('pointerdown', (e) => e.stopPropagation());
       }
       kids.push(g);
+    };
+    fs.forEach((f, i) => { if (!f.atGate) mark(pos(i).x, pos(i).y, f.to.name, { f, idx: i }); });
+    if (goal.id !== at) {
+      const gi = gateNow;
+      mark(gx, hy, goal.name, { gate: true, f: gi >= 0 ? fs[gi] : undefined, idx: gi >= 0 ? gi : undefined, tag: t(goal.kind === 'edge' ? 'The last lane' : 'Gate') });
     }
-    kids.push(...costs);
-    // Calloway's shadow, where she was last seen
-    const seen = j.trail.length > 1 ? j.trail[j.hunt.seenIdx] : undefined;
-    if (seen && vis.has(seen) && seen !== at) {
-      const s = sysById(c, seen), x = px(s) - 14, y = py(s) - 14;
-      kids.push(svg('path', { d: `M${x} ${y - 6}L${x + 6} ${y}L${x} ${y + 6}L${x - 6} ${y}Z`, class: 'ch-cal' }));
-    }
+    mark(X.here, hy, me.name, { here: true, tag: t('Here') });
     map.replaceChildren(...kids);
   }
 }

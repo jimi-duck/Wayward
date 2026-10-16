@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { gateOf, jumps, makeChart, regionOf } from '../src/sim/chart';
-import { forks, gateProgress, goalOf, toGoal, trouble } from '../src/sim/forks';
+import { LANES_SHOWN, forks, gateProgress, goalOf, toGoal, trouble } from '../src/sim/forks';
 import { RATION, endSortie, newJourney, options, type Journey } from '../src/sim/journey';
+import { stance } from '../src/sim/lanes';
 import { budgets, weightFuel } from '../src/sim/budgets';
 import { WEB } from '../src/content/web';
 import { stockLevels } from '../src/sim/bay';
@@ -63,10 +64,10 @@ function sysById(c: ReturnType<typeof makeChart>, id: string) {
 }
 
 describe('the next jump', () => {
-  it('lists exactly the lanes the journey offers, with their own costs', () => {
+  it('lists lanes the journey offers, with their own costs', () => {
     const j = arrived();
     const opts = options(j), fs = forks(j);
-    expect(fs.map((f) => f.to.id).sort()).toEqual(opts.map((o) => o.to.id).sort());
+    for (const f of fs) expect(opts.some((o) => o.to.id === f.to.id)).toBe(true);
     for (const f of fs) {
       const o = opts.find((x) => x.to.id === f.to.id)!;
       expect(f.fuel).toBe(o.fuel);
@@ -100,9 +101,8 @@ describe('the next jump', () => {
     const j = arrived();
     j.carry.fuel = 3;
     const before = JSON.stringify(j.carry);
-    const fs = forks(j);
-    for (const f of fs) expect(f.short).toBe(Math.max(0, f.fuel - 3));
-    expect(trouble(j, fs).some((n) => /jump fluid/.test(n.text))).toBe(true);
+    for (const f of forks(j)) expect(f.short).toBe(Math.max(0, f.fuel - 3));
+    expect(trouble(j).some((n) => /jump fluid/.test(n.text))).toBe(true);
     expect(JSON.stringify(j.carry)).toBe(before);
   });
 
@@ -121,4 +121,25 @@ describe('the next jump', () => {
   it('is the same on every call for a seed', () => {
     expect(forks(arrived(13)).map((f) => [f.to.id, f.fuel, f.up?.text, f.down?.text])).toEqual(forks(arrived(13)).map((f) => [f.to.id, f.fuel, f.up?.text, f.down?.text]));
   });
+
+  it('shows at most a few lanes, and keeps the way on and the calm way among them', () => {
+    for (const set of ['three', 'eight'] as const) {
+      for (const seed of [2, 5, 11, 19]) {
+        const j = arrived(seed, set), c = j.chart;
+        for (const s of c.systems) {
+          if (s.kind === 'home' || s.kind === 'edge') continue;
+          j.at = s.id;
+          const opts = options(j), fs = forks(j);
+          if (!opts.length) continue;
+          expect(fs.length).toBeLessThanOrEqual(LANES_SHOWN);
+          expect(fs.length).toBe(Math.min(opts.length, LANES_SHOWN));
+          const best = Math.min(...opts.map((o) => toGoal(c, j.at, o.to.id) ?? 1e9));
+          expect(Math.min(...fs.map((f) => f.gateAfter ?? 1e9))).toBe(best);
+          const calm = (st: ReturnType<typeof stance>) => (st === 'quiet' ? 0 : st === 'watched' ? 1 : 2);
+          expect(Math.min(...fs.map((f) => f.danger))).toBe(Math.min(...opts.map((o) => calm(stance(c, o)))));
+          expect(fs.some((f) => f.detour === 0)).toBe(true);
+        }
+      }
+    }
+  }, 30000);
 });
