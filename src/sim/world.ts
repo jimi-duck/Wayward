@@ -36,7 +36,7 @@ import { CHITS_PER_CYRITE, cy, fluidPrice, refine, tankFor } from './purse';
 import { newTutor, skipTutor, stepOf, stepTutor, LESSON_NODE, type Tutor } from './tutor';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type Rock } from './field';
 import { Ids, newId, useIds } from './ids';
-import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, YIELD_BLAST, YIELD_DAMAGE, type CellSource, type Pickup, type PickupKind } from './pickups';
+import { CELL, dropCrystals, dropItem, POWERS, POWER_STOCK, POWER_STOCK_MAX, POWER_TIME, STOCKED, stepPickups, YIELD_BLAST, YIELD_DAMAGE, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
 import { laySortie, type Laid } from './sites';
 import { claimPatience, coverRate, easeSky, stealthOf } from './rules';
@@ -418,6 +418,8 @@ export class World implements EncounterHost {
     this.refreshStats();
     this.fuel = c.fuel;
     this.plates = Math.max(1, Math.min(this.stats.maxPlates, c.plates));
+    this.powers.shield = c.stock?.shield ?? 0;
+    this.powers.yield = c.stock?.yield ?? 0;
     this.refit = c.refit;
     this.techs = new Set(c.techs);
     this.flags = new Set(c.flags);
@@ -436,7 +438,7 @@ export class World implements EncounterHost {
   /** What the ship carries now, into the next system. */
   carry(): Carry {
     return {
-      cyrite: this.cyrite, fuel: this.fuel, supplies: this.supplies, plates: this.plates, levels: { ...this.levels },
+      cyrite: this.cyrite, fuel: this.fuel, supplies: this.supplies, plates: this.plates, stock: { shield: this.powers.shield, yield: this.powers.yield }, levels: { ...this.levels },
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
       hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
@@ -603,7 +605,10 @@ export class World implements EncounterHost {
     let fireStats = this.sensorsDown || this.air.lock < 1 ? { ...st, torpSeek: st.torpSeek * (this.sensorsDown ? 0.6 : 1) * this.air.lock } : st;
     if (this.powers.yield > 0) fireStats = { ...fireStats, torpDamage: fireStats.torpDamage * YIELD_DAMAGE, torpBlast: fireStats.torpBlast * YIELD_BLAST };
     if (this.alive) {
+      const seen = this.events.length;
       fireWeapons(this.arms, s, c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
+      // each press that launched under high-yield warheads uses one up
+      if (this.powers.yield > 0) for (let i = seen; i < this.events.length; i++) if (this.events[i]!.type === 'torpedo') this.powers.yield = Math.max(0, this.powers.yield - 1);
       const laid = laySystems(this.sys, s, st, dt, fm.rapid);
       if (laid) this.events.push({ type: 'mineLaid', x: laid.x, z: laid.z });
     }
@@ -1018,7 +1023,7 @@ export class World implements EncounterHost {
   /** Clocks: boosters, the chain, shields, regeneration. */
   private tick(dt: number): void {
     const st = this.stats;
-    for (const k of POWERS) if (this.powers[k] > 0) this.powers[k] = Math.max(0, this.powers[k] - dt);
+    for (const k of POWERS) if (this.powers[k] > 0 && !STOCKED.has(k)) this.powers[k] = Math.max(0, this.powers[k] - dt);
     if (this.cloakT > 0) this.cloakT = Math.max(0, this.cloakT - dt);
     if (this.repairCd > 0) this.repairCd -= dt;
     if (this.boostCd > 0) this.boostCd -= dt;
@@ -2032,7 +2037,9 @@ export class World implements EncounterHost {
       default: {
         const kind = pk.kind as PowerKind;
         this.run.powerups++;
-        this.powers[kind] = POWER_TIME[kind] * this.stats.powerTime;
+        const stock = POWER_STOCK[kind];
+        // plating and warheads add to what is aboard; the rest run on a clock
+        this.powers[kind] = stock ? Math.min(POWER_STOCK_MAX[kind]!, this.powers[kind] + stock) : POWER_TIME[kind] * this.stats.powerTime;
         this.events.push({ type: 'power', x: pk.x, z: pk.z, kind });
       }
     }
@@ -2269,7 +2276,9 @@ export class World implements EncounterHost {
     this.shieldT = st.shieldDelay;
     // hardened plating (booster) turns every hit for its few seconds; then a whole shield charge, then the hull
     if (this.powers.shield > 0 || this.shields >= 1) {
-      if (this.powers.shield <= 0) this.shields -= 1;
+      // a plate of hardened plating goes first; then a shield charge
+      if (this.powers.shield > 0) this.powers.shield--;
+      else this.shields -= 1;
       s.invuln = SHIELD_GRACE;
       this.run.shieldsAbsorbed++;
       this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source });

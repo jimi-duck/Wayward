@@ -5,7 +5,8 @@ import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
 import { alienLabel, cloaked } from '../sim/enemies';
 import type { GameEvent } from '../sim/events';
 import { DOCK_TIME, LOW_SUPPLIES } from '../sim/breakout';
-import { POWER_HINT, POWER_LABEL } from '../sim/pickups';
+import type { PowerKind } from '../sim/events';
+import { POWER_HINT, POWER_LABEL, STOCKED } from '../sim/pickups';
 import { NAMED } from '../content/features';
 import { REPORT_TEXT } from '../sim/space';
 import { lessonOf, stepOf } from '../sim/tutor';
@@ -481,15 +482,20 @@ export class Hud {
       this.powerKey = pk;
       // a chip each: name, seconds left and a bar that drains (its full length is the longest it has been seen)
       const chip = (id: string, label: string, secs: number) => {
+        const stocked = STOCKED.has(id as PowerKind);
         const full = Math.max(this.powerFull.get(id) ?? 0, secs);
         this.powerFull.set(id, full);
         const s = document.createElement('span');
         const b = document.createElement('b');
-        b.textContent = `${Math.ceil(secs)}s`;
-        const bar = document.createElement('i');
-        bar.style.setProperty('--left', String(Math.min(1, secs / full)));
+        // plating and warheads stay until used: a count and no clock
+        b.textContent = stocked ? `×${Math.ceil(secs)}` : `${Math.ceil(secs)}s`;
         s.dataset.power = id;
-        s.append(label, b, bar);
+        s.append(label, b);
+        if (!stocked) {
+          const bar = document.createElement('i');
+          bar.style.setProperty('--left', String(Math.min(1, secs / full)));
+          s.append(bar);
+        }
         return s;
       };
       for (const id of [...this.powerFull.keys()]) if (!live.includes(id as never) && !(id === 'cloak' && world.cloakT > 0)) this.powerFull.delete(id);
@@ -499,6 +505,7 @@ export class Hud {
     }
     // the bars drain smoothly between the whole seconds
     for (const c of Array.from($('powers').children) as HTMLElement[]) {
+      if (STOCKED.has(c.dataset.power as PowerKind)) continue;
       const id = c.dataset.power!, left = id === 'cloak' ? world.cloakT : world.powers[id as keyof typeof world.powers];
       (c.lastElementChild as HTMLElement).style.setProperty('--left', String(Math.min(1, left / (this.powerFull.get(id) || 1))));
     }

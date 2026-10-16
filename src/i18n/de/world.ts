@@ -47,9 +47,9 @@ export const WORLD: Record<string, string> = {
   'Unlimited lasers': 'Unbegrenzte Laser',
   'High-yield torpedoes': 'Hochleistungstorpedos',
   'Overdrive': 'Overdrive',
-  'Every hit glances off': 'Jeder Treffer prallt ab',
+  'Each plate turns one hit': 'Jede Platte hält einen Treffer ab',
   'Lasers never run dry, twice as fast': 'Laser laufen nie leer, doppelt so schnell',
-  'Torpedoes hit twice as hard, wider': 'Torpedos treffen doppelt so hart, weiter',
+  'Each one hits twice as hard, wider': 'Jeder trifft doppelt so hart, weiter',
   'Lasers hit half as hard again': 'Laser treffen anderthalbmal so hart',
 
   // ── sector events ──

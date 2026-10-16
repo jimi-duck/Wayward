@@ -605,11 +605,15 @@ iron (from about 3:00, three times the hull, splits into more iron); rich
 (violet veins, a shower of Cyrite); volatile (from about 5:00, goes off
 when broken, you included); singles, clusters, and a big rock in its own debris.
 
-**Boosters** are short, loud, timed: **hardened plating** (7 s, every hit
-glances off), **unlimited lasers** (8 s, the bank is not drawn, twice the
-rate), **high-yield torpedoes** (10 s, twice the damage, half as wide again)
-and **overdrive** (8 s, lasers hit half as hard again). Each running booster
-is a chip under the ship panel with its name, seconds left and a draining bar
+**Boosters** are short and loud. Two are a stock that stays aboard until
+used, across systems too: **hardened plating** (a find gives 3, each turns one
+hit, six at most) and **high-yield torpedoes** (a find gives 8, each launch
+uses one, sixteen at most; twice the damage, half as wide again). The other
+two run on a clock: **unlimited lasers** (8 s, the bank is not drawn, twice the
+rate) and **overdrive** (8 s, lasers hit half as hard again). `STOCKED`,
+`POWER_STOCK` and `POWER_STOCK_MAX` in `sim/pickups.ts` say which; the stock
+rides in `Carry.stock` (a save without it starts empty). Each booster
+is a chip under the ship panel with its name and seconds left and a draining bar, or ×count for a stock
 (`#powers` in the HUD, filled in `hud.ts`; one self-contained block). A
 rescued crew gives plating, a derelict's warheads give high-yield torpedoes
 (unlimited lasers if there is no torpedo bay), an elite's wreck its fire

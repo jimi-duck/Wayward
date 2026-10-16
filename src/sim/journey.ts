@@ -456,7 +456,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     }
     // adrift: a Drift tug tows her to another system of the region. The fee is some of everything you carry.
     const c = res.carry;
-    j.carry = { ...c, supplies: Math.max(3, Math.floor(c.supplies * V.kept)), cyrite: Math.floor(c.cyrite * V.kept), fuel: Math.floor(c.fuel * V.kept), plates: 2 };
+    j.carry = { ...c, supplies: Math.max(3, Math.floor(c.supplies * V.kept)), cyrite: Math.floor(c.cyrite * V.kept), fuel: Math.floor(c.fuel * V.kept), plates: 2, stock: { shield: 0, yield: 0 } };
     pass(j, ADRIFT);
     const to = driftTo(j, s);
     note(j, t('Wrecked in {name} · towed to {to}', { name: s.name, to: to.name }));

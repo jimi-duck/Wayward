@@ -389,17 +389,41 @@ describe('boosters', () => {
     expect(w.arms.bank).toBeGreaterThanOrEqual(bank);
   });
 
-  it('hardened plating turns every hit for its time, and runs out', () => {
+  it('hardened plating turns one hit a plate, stays until used, and runs out', () => {
     const w = quiet();
     w.powers.shield = 3;
     const plates = w.plates, shields = w.shields;
+    run(w, 5);
+    expect(w.powers.shield).toBe(3);
     for (let i = 0; i < 3; i++) {
       (w as unknown as { hitShip(s: string): void }).hitShip('hazard');
       w.ship.invuln = 0;
     }
     expect(w.plates).toBe(plates);
     expect(w.shields).toBe(shields);
-    expect(w.powers.shield).toBeGreaterThan(0);
+    expect(w.powers.shield).toBe(0);
+    (w as unknown as { hitShip(s: string): void }).hitShip('hazard');
+    expect(w.shields + w.plates).toBeLessThan(shields + plates);
+  });
+
+  it('a find of plating or warheads adds to the stock, up to the racks', () => {
+    const w = quiet();
+    const take = (kind: 'shield' | 'yield') => {
+      w.pickups.push({ id: 1, kind, x: w.ship.x, z: w.ship.z, vx: 0, vz: 0, life: 5, value: 0, age: 1 });
+      w.step(STEP, input());
+    };
+    take('yield');
+    expect(w.powers.yield).toBe(8);
+    take('yield'); take('yield');
+    expect(w.powers.yield).toBe(16);
+    take('shield');
+    expect(w.powers.shield).toBe(3);
+  });
+
+  it('the stock goes with the ship into the next system', () => {
+    const w = quiet();
+    w.powers.yield = 6; w.powers.shield = 2;
+    expect(w.carry().stock).toEqual({ shield: 2, yield: 6 });
   });
 
   it('high-yield torpedoes hit harder and wider', () => {
@@ -418,6 +442,8 @@ describe('boosters', () => {
     const boosted = fire();
     expect(boosted.dmg).toBeCloseTo(base.dmg * 2);
     expect(boosted.blast).toBeCloseTo(base.blast * 1.5);
+    // each launch uses one warhead
+    expect(w.powers.yield).toBe(4);
   });
 });
 

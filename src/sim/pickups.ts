@@ -39,8 +39,15 @@ export const POWER_LABEL: Record<PowerKind, string> = {
 export const POWERS: PowerKind[] = ['shield', 'rapid', 'yield', 'overdrive'];
 /** What each does, in a line: shown with the name when you take it. */
 export const POWER_HINT: Record<PowerKind, string> = {
-  shield: 'Every hit glances off', rapid: 'Lasers never run dry, twice as fast', yield: 'Torpedoes hit twice as hard, wider', overdrive: 'Lasers hit half as hard again',
+  shield: 'Each plate turns one hit', rapid: 'Lasers never run dry, twice as fast', yield: 'Each one hits twice as hard, wider', overdrive: 'Lasers hit half as hard again',
 };
+/**
+ * Plating and warheads are a stock, not a clock: they stay aboard (across systems too) until a hit or a launch
+ * uses one. A find gives `POWER_STOCK`, and the racks hold no more than `POWER_STOCK_MAX`. The other boosters run on time.
+ */
+export const STOCKED: ReadonlySet<PowerKind> = new Set<PowerKind>(['shield', 'yield']);
+export const POWER_STOCK: Partial<Record<PowerKind, number>> = { shield: 3, yield: 8 };
+export const POWER_STOCK_MAX: Partial<Record<PowerKind, number>> = { shield: 6, yield: 16 };
 /** A high-yield torpedo: damage and blast radius, times the usual. */
 export const YIELD_DAMAGE = 2;
 export const YIELD_BLAST = 1.5;
