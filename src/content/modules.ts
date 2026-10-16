@@ -124,12 +124,12 @@ export const MODULES: ModuleDef[] = [
   },
   {
     id: 'md_array', name: 'Long-range array', system: 'signals', max: 1,
-    text: 'Better reads. Spots Calloway more often.',
+    text: 'Better reads, and sight back in dust and shrouds. Spots Calloway more often.',
     sensors: 0.15,
   },
   {
     id: 'md_jammer', name: 'Jammer', system: 'signals', max: 1,
-    text: 'Opens jam choices.',
+    text: 'Opens jam choices. Filters a static field.',
     counts: ['ut_scanner'],
   },
   {
