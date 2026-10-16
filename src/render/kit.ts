@@ -280,14 +280,24 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         vec3 kitW = pow(abs(normalize(vKitN)), vec3(4.0)); kitW /= (kitW.x + kitW.y + kitW.z);
         vec4 kitC = texture2D(map, vKitP.zy) * kitW.x + texture2D(map, vKitP.xz) * kitW.y + texture2D(map, vKitP.xy) * kitW.z;
         float kitH = texture2D(uKitBump, vKitP.zy).r * kitW.x + texture2D(uKitBump, vKitP.xz).r * kitW.y + texture2D(uKitBump, vKitP.xy).r * kitW.z;
-        diffuseColor *= kitC;`)
+        diffuseColor *= kitC;
+        // grooves and seams hold shadow and grime; raised edges stay clean and catch the light
+        float kitCavity = smoothstep(0.46, 0.14, kitH), kitEdge = smoothstep(0.62, 0.9, kitH);
+        diffuseColor.rgb *= 1.0 - 0.38 * kitCavity;
+        diffuseColor.rgb += diffuseColor.rgb * 0.16 * kitEdge;
+        // long streaks of grime, laid along the flight direction
+        vec2 kitS = vec2(vKitP.x * 0.55, (vKitP.y * 7.0 + vKitP.z * 5.0));
+        vec2 kitI = floor(kitS), kitF = fract(kitS); kitF = kitF * kitF * (3.0 - 2.0 * kitF);
+        float kitN = mix(mix(fract(sin(dot(kitI, vec2(12.9898, 78.233))) * 43758.5453), fract(sin(dot(kitI + vec2(1.0, 0.0), vec2(12.9898, 78.233))) * 43758.5453), kitF.x),
+                         mix(fract(sin(dot(kitI + vec2(0.0, 1.0), vec2(12.9898, 78.233))) * 43758.5453), fract(sin(dot(kitI + vec2(1.0, 1.0), vec2(12.9898, 78.233))) * 43758.5453), kitF.x), kitF.y);
+        diffuseColor.rgb *= 1.0 - 0.22 * smoothstep(0.5, 0.95, kitN);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);`);
     if (worn > 0) wearShader(shader, painted);
   };
-  m.customProgramCacheKey = () => `kit-metal-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}`;
+  m.customProgramCacheKey = () => `kit-metal2-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}`;
   return m;
 }
 

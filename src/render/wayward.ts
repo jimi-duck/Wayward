@@ -255,6 +255,11 @@ function hull(k: Kit, rnd: Rnd): void {
     if (c < 0.4) block(k, rnd() < 0.5 ? 'dark' : pickAmber(rnd), [len * (0.4 + rnd() * 0.3), 0.08 + rnd() * 0.08, 0.32], [mid + (rnd() - 0.5) * 0.15, crown + 0.06, 0], [0, 0, 0], 0.02);
     else if (c < 0.7) for (const z of [-0.12, 0.12]) block(k, 'pipe', [len * 0.8, 0.03, 0.08], [mid, crown + 0.015, z], [0, 0, 0], 0.008);
     else hatch(k, key, { f: 0, rad: 0, wid: 0.4 }, crown, 0, mid, 0, len * 0.6, 0.36);
+    // tie-down straps over the module: a dark band either side of centre, a steel buckle on the crown
+    for (const e of [-0.28, 0.28]) {
+      block(k, 'dark', [0.04, h + 0.02, sw + 0.03], [mid + e * len, base + 0.06 + h / 2, 0], [0, 0, 0], 0.008);
+      block(k, 'hull', [0.05, 0.02, 0.07], [mid + e * len, base + 0.07 + h, 0], [0, 0, 0], 0.005);
+    }
     // vents in the spine's flanks
     for (const s of [-1, 1]) if (rnd() < 0.6) vent(k, { f: s * Math.PI / 2, rad: sw / 2, wid: h }, base + 0.06 + h / 2, 0, mid, 0, len * 0.5, h * 0.55);
   }
