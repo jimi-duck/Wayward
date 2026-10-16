@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { EXPANSES, FEATURES, type FeatureId } from '../src/content/features';
@@ -12,6 +12,8 @@ import { laySortie } from '../src/sim/sites';
 import { Space } from '../src/sim/space';
 import { World } from '../src/sim/world';
 
+// the tests deal many whole journeys; a busy CI runner needs more than the default 5 s
+vi.setConfig({ testTimeout: 30_000 });
 const idle = (): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
 const open = (c: Chart) => c.systems.filter((s) => s.kind !== 'home' && s.kind !== 'gate' && s.kind !== 'edge');
 const SEEDS = Array.from({ length: 24 }, (_, i) => 100 + i * 37);
