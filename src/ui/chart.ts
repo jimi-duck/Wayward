@@ -144,7 +144,8 @@ export class ChartPanel {
     this.j = j;
     $('ch-k').textContent = [t('The chart'), regionName(j.chart, j.at), t('day {n}', { n: Math.floor(j.day) + 1 })].filter(Boolean).join(' · ');
     $('ch-t').textContent = j.legs.length ? `${t('Arrived')} · ${s.name}` : s.name;
-    $('ch-s').textContent = `${t(KIND_WORD[s.kind])}${s.quiet && !netted(j.chart, s.id) ? ` · ${t('Quiet')}` : ''}`;
+    $('ch-s').textContent = `${t('You are here')} · ${t(KIND_WORD[s.kind])}${s.quiet && !netted(j.chart, s.id) ? ` · ${t('Quiet')}` : ''}`;
+    $('ch-lh').textContent = t('Which way to {name}?', { name: goalOf(j.chart, j.at).name });
     this.onPick = onPick;
     this.onGo = null;
     $('ch-go').hidden = true;
@@ -327,7 +328,7 @@ export class ChartPanel {
     bar.setAttribute('aria-valuemin', '0');
     bar.setAttribute('aria-valuemax', String(total));
     bar.setAttribute('aria-valuenow', String(Math.max(0, total - g.left)));
-    el.replaceChildren(h('span', 'k', '', document.createTextNode(`${g.gate.name} · `), h('b', '', plural(g.left, '{n} jump remaining', '{n} jumps remaining'))), bar);
+    el.replaceChildren(h('span', 'k', '', document.createTextNode(`${t('Goal')} · ${t('Reach {name}', { name: g.gate.name })} · `), h('b', '', plural(g.left, '{n} jump remaining', '{n} jumps remaining'))), bar);
   }
 
   /** What needs the eye before the choice, and only when it is true now: stores, the tank, a Net or Calloway too near to ignore. */
@@ -350,13 +351,11 @@ export class ChartPanel {
         h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', 'meters', '',
           h('span', `tag d${f.danger}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(STANCE_WORD[f.stance]))),
           ...(heatTells ? [h('span', `tag heat h${f.heat}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(HEAT_WORD[f.heat]!)))] : []))),
-        h('div', 'ch-o3', '',
-          f.up ? h('span', 'up', '', h('em', '', t('Upside')), document.createTextNode(f.up.text)) : null,
-          f.down ? h('span', `down${f.down.hot ? ' hot' : ''}`, '', h('em', '', t('Trade-off')), document.createTextNode(f.down.text)) : null),
+        h('p', `ch-say${f.danger === 2 || f.netted || f.shadow ? ' hot' : ''}`, f.say),
         h('div', 'ch-o2', '',
           h('span', '', '', glyph('clock'), h('b', '', days(f.days))),
           h('span', f.short ? 'short' : '', '', glyph('drop'), h('b', '', String(f.fuel)), document.createTextNode(` ${t('jump fluid')}`)),
-          h('span', f.thin ? 'short' : '', '', glyph('box'), h('b', '', String(f.supplies)), document.createTextNode(` ${t('supplies')}`)),
+          ...(f.thin ? [h('span', 'short', '', glyph('box'), h('b', '', String(f.supplies)), document.createTextNode(` ${t('supplies')}`))] : []),
           left ? h('span', '', '', glyph('arrow'), h('b', '', left)) : null),
       ) as HTMLButtonElement;
       b.type = 'button';
@@ -508,7 +507,7 @@ export class ChartPanel {
     const rank = ({ a, b }: { a: StarSystem; b: StarSystem }) => (a.id === at ? 2 : reach.has(a.id) && reach.has(b.id) ? 1 : 0);
     let pill: { x: number; y: number; n: number; short: boolean } | null = null;
     for (const l of lanes.sort((x, y) => rank(x) - rank(y))) {
-      const out = l.a.id === at, f = out ? fs[live.get(l.b.id) ?? -1] : undefined;
+      const f = l.a.id === at ? fs[live.get(l.b.id) ?? -1] : undefined, out = !!f;
       const isSel = !!f && f === sel;
       const cv = curve(px(l.a), py(l.a), px(l.b), py(l.b), l.a.id + l.b.id, out ? 0.14 : 0.2);
       const cls = out ? `ch-lane ${f ? danger[f.danger] : 'teal'}${isSel ? ' sel' : ''}${f && f.short > 0 ? ' short' : ''}` : `ch-net-lane${reach.has(l.a.id) && reach.has(l.b.id) ? ' on' : ''}`;
@@ -538,12 +537,14 @@ export class ChartPanel {
         const s = ((role === 'gate' ? r + 3 : r) * 2 + 4) / 16;
         g.append(svg('path', { d: GLYPH[shape] ?? GLYPH.transit!, transform: `translate(${x - 8 * s} ${y - 8 * s}) scale(${s})`, class: 'ch-node', stroke: col, fill: `${col}26`, 'vector-effect': 'non-scaling-stroke' }));
       }
-      if (f?.danger === 2) g.append(svg('path', { d: `M${x + r + 2} ${y - r - 10}l6 10.5h-12z`, class: 'ch-hostile' }));
-      if (f?.shadow) g.append(svg('path', { d: `M${x - r - 4} ${y - r - 8}l5 5l-5 5l-5-5z`, class: 'ch-cal' }));
+      if (f?.danger === 2) g.append(svg('path', { d: `M${x - r - 7} ${y - r - 13}l6 10.5h-12z`, class: 'ch-hostile' }));
+      if (f?.shadow) g.append(svg('path', { d: `M${x + r + 6} ${y + r - 3}l5 5l-5 5l-5-5z`, class: 'ch-cal' }));
+      // the number is the one on the card and on the key
+      if (idx !== undefined && role !== 'net') g.append(svg('circle', { cx: x + r + 3, cy: y - r - 3, r: 7.5, class: 'ch-num' }), svg('text', { x: x + r + 3, y: y - r + 0.6, 'text-anchor': 'middle', class: 'ch-numt' }, String(idx + 1)));
       if (isSel) g.append(svg('circle', { cx: x, cy: y, r: r + 7, class: 'ch-ring' }));
       if (role === 'here') g.append(svg('circle', { cx: x, cy: y, r: r + 6, class: 'ch-ring here' }));
       if (role !== 'net') {
-        const tag = role === 'here' ? t('Here') : role === 'gate' ? t(n.kind === 'edge' ? 'The last lane' : 'Gate') : '';
+        const tag = role === 'here' ? t('Here') : role === 'gate' ? t(n.kind === 'edge' ? 'The last lane' : 'Goal') : '';
         // a lane out above the middle names itself above, so the names of the lanes do not sit on each other
         const up = role === 'out' && y < H / 2 - 4;
         const nx = Math.max(44, Math.min(W - 44, x)), ny = up ? y - r - 24 : y + r + 16;

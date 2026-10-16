@@ -112,20 +112,20 @@ describe('the next jump', () => {
     expect(JSON.stringify(j.carry)).toBe(before);
   });
 
-  it('names an upside and a trade-off only from what is known, and never goes back to Cerro', () => {
+  it('says one sentence of what to expect, only from what is known, and never goes back to Cerro', () => {
     for (const seed of [3, 7, 11, 19]) {
       const j = arrived(seed);
       for (const f of forks(j)) {
         expect(f.to.kind).not.toBe('home');
-        if (f.to.port) expect(f.up?.text).toMatch(/Port/);
-        if (f.shadow) expect(f.down?.hot).toBe(true);
-        if (f.to.kind === 'contested') expect(f.down?.hot).toBe(true);
+        expect(f.say.length).toBeGreaterThan(10);
+        if (f.shadow) expect(f.say).toMatch(/Calloway/);
+        if (f.to.kind === 'contested' && !f.shadow && !f.netted) expect(f.say).toMatch(/fight/);
       }
     }
   });
 
   it('is the same on every call for a seed', () => {
-    expect(forks(arrived(13)).map((f) => [f.to.id, f.fuel, f.up?.text, f.down?.text])).toEqual(forks(arrived(13)).map((f) => [f.to.id, f.fuel, f.up?.text, f.down?.text]));
+    expect(forks(arrived(13)).map((f) => [f.to.id, f.fuel, f.say])).toEqual(forks(arrived(13)).map((f) => [f.to.id, f.fuel, f.say]));
   });
 
   it('shows at most a few lanes, and keeps the way on and the calm way among them', () => {

@@ -64,8 +64,8 @@ export interface Fork {
   shadow: boolean;
   place: Place | null;
   scene: string | null;
-  up: Note | null;
-  down: Note | null;
+  /** One sentence on what to expect there. */
+  say: string;
 }
 
 /** What the chart knows of a place there, as a short phrase. */
@@ -116,40 +116,33 @@ export function forks(j: Journey): Fork[] {
     return { o, s, st, after };
   }));
   const shortest = Math.min(...base.map((b) => b.after ?? 1e9));
-  // a comparison is only a fact when the lanes differ
-  const cheapest = Math.min(...base.map((b) => b.o.fuel)), quickest = Math.min(...base.map((b) => b.o.route.days));
-  const fuelDiffers = base.some((b) => b.o.fuel !== cheapest), daysDiffer = base.some((b) => b.o.route.days !== quickest);
   return base.map(({ o, s, st, after }): Fork => {
     const nearer = now === null || after === null ? null : after < now;
     const quiet = !!s.quiet && !o.netted && st !== 'hostile';
-    // the first known upside, then the first known trade-off
-    let up: Note | null = null, down: Note | null = null;
-    if (s.id === goal.id) up = { text: t('The way on · the gate out') };
-    else if (s.port) up = { text: t('Port · trade, supplies, refit') };
-    else if (quiet) up = { text: t('A breather · no pursuit here') };
-    else if (o.place) up = { text: placeNote(o.place) };
-    else if (cyriteKnown(c, s) >= 0.7 && s.kind === 'mining') up = { text: c.visited.includes(s.id) ? t('Rich rock · Cyrite to mine') : t('Survey: rich rock · not yet flown') };
-    else if (fuelDiffers && o.fuel === cheapest) up = { text: t('The cheapest jump here') };
-    else if (daysDiffer && o.route.days === quickest) up = { text: t('The shortest crossing here') };
+    // one sentence on what to expect there, from what is known: the worst news first, then what it offers
     const hazard = o.place && HAZARDS.has(SITE_OF_PLACE[o.place.id]);
     const job = situationAt(c, s.id), heavy = !!job && HEAVY_GOALS.has(SITUATION_BY_ID[job.id]?.goal.kind ?? '');
     const rules = PROFILES[longIndex(c, regionOf(s))]?.rules;
-    if (o.shadow) down = { text: t('Calloway was last seen here'), hot: true };
-    else if (o.netted) down = { text: t('Netted as of day {n}', { n: Math.floor(c.seenDay) + 1 }), hot: true };
-    else if (s.kind === 'contested') down = { text: t('Contested · patrols and raiders'), hot: true };
-    else if (st === 'hostile') down = { text: t('Raiders or Thren about'), hot: true };
-    else if (hazard) down = { text: t('Rough flying · a hazard in the way') };
-    else if (heavy) down = { text: t('A hard job waits there · a fight or a chase') };
-    else if (rules?.claim && s.kind === 'mining' && !quiet) down = { text: t('Claimed ground · linger and it costs') };
-    else if ((rules?.watch ?? 1) > 1 && !quiet) down = { text: t('Watched space · the hunt runs fast in the open') };
-    else if (s.port) down = { text: t('Watched · a busy port draws the Custody') };
-    else if (o.route.days > 1 && daysDiffer) down = { text: t('{n} days in the lane · the Net spreads', { n: o.route.days }) };
-    else if (!s.port) down = { text: t('No port') };
+    let say: string;
+    if (s.id === goal.id) say = t('The gate: jump on and this region is behind you.');
+    else if (o.shadow) say = t('Calloway was last seen here, so expect him close.');
+    else if (o.netted) say = t('The Net holds it: expect a blockade and a hard fight.');
+    else if (s.kind === 'contested') say = t('Patrols and raiders hold it: expect a fight.');
+    else if (st === 'hostile') say = t('Raiders or Thren are about: expect a fight.');
+    else if (hazard) say = t('Rough flying: a hazard sits in the way.');
+    else if (quiet) say = t('A quiet breather: no pursuit, and your heat cools.');
+    else if (s.port) say = st === 'watched' ? t('A port to refit and resupply, but it draws the Custody.') : t('A port to trade, resupply and refit.');
+    else if (heavy) say = t('A hard job waits here, a fight or a chase.');
+    else if (o.place) say = placeNote(o.place);
+    else if (rules?.claim && s.kind === 'mining') say = t('Claimed ground: linger and it costs.');
+    else if ((rules?.watch ?? 1) > 1) say = t('Watched space: the hunt runs fast in the open.');
+    else if (s.kind === 'mining') say = cyriteKnown(c, s) >= 0.7 ? t('Rich rock to mine; no port.') : t('Open rock to mine; no port.');
+    else say = t('Open space: nothing known, no port.');
     return {
       to: s, stance: st, days: o.route.days, fuel: o.fuel, short: Math.max(0, Math.ceil(o.fuel - j.carry.fuel)), supplies: o.supplies,
       thin: j.carry.supplies < o.supplies, gateAfter: after, atGate: s.id === goal.id, nearer,
       danger: DANGER[st], heat: heatAt(c, s, o.netted), detour: after === null || shortest >= 1e9 ? null : after - shortest,
-      netted: o.netted, shadow: o.shadow, place: o.place, scene: o.scene, up, down,
+      netted: o.netted, shadow: o.shadow, place: o.place, scene: o.scene, say,
     };
   });
 }
