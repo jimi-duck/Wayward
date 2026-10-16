@@ -55,7 +55,7 @@ draw, so a phone turning redraws it): here on the left, the lanes you can
 take in the middle, the gate on the right. The graph itself is not drawn.
 Each lane is coloured by its danger (teal quiet, gold watched, red hostile)
 and carries its days; from each a dotted line runs on to the gate with the
-jumps still to go, so the straight way and the longer ones read at once. The
+jumps still to go (and, between each lane and the gate, one small mark for every system still to cross, so the count matches the header's), so the straight way and the longer ones read at once. The
 selected lane is solid and bright. A red halo is the Net as last seen, a red
 diamond Calloway's last sighting, a small square a port, a dotted ring a
 breather.
