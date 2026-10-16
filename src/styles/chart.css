@@ -13,6 +13,7 @@
 .ch-gate[hidden] { display: none; }
 .ch-gate .k { font: 600 calc(var(--fs) * 1.1 * 1.18)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
 .ch-gate .k b { color: var(--ink); font-weight: 600; }
+.ch-quest { margin: 2px 0 0; font: 400 15px/1.35 var(--font-display); color: var(--ink); }
 .ch-bar { position: relative; height: 4px; background: rgba(216, 213, 198, .14); }
 .ch-bar i { position: absolute; inset: 0 auto 0 0; background: var(--hud); }
 .ch-bar::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(var(--step, 10%) - 1px), rgba(8, 13, 14, .9) calc(var(--step, 10%) - 1px) var(--step, 10%)); }
@@ -220,7 +221,7 @@ circle.ch-net { fill: rgba(201, 74, 63, .07); stroke: rgba(224, 87, 75, .5); str
 @media (max-height: 520px) {
   .chartp { gap: 6px; padding-top: 8px; }
   /* a phone on its side: the map already shows the days and the way to the gate, the strip the fluid; the cards keep the trade */
-  .ch-o2, .ch-why { display: none; }
+  .ch-o2, .ch-why, .ch-quest { display: none; }
   .ch-say { font-size: 12px; }
   .ch-opt { padding: 5px 10px 5px 12px; gap: 2px; }
   .ch-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
