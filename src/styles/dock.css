@@ -396,6 +396,8 @@
   #comms .panel.comms > .cm-list { grid-column: 2; grid-row: 3; }
   #comms .cm-body:not(.solo) { grid-template-columns: minmax(0, 1fr); }
   #comms .cm-c { min-height: 40px; }
+  /* the world is held while a job is open, so the card takes the top of a short screen: all its answers stay on it */
+  #rd-call.job { --rd-top: calc(var(--safe-t) + 8px); }
   #rd-call.job { width: min(470px, 56vw); left: 40%; padding: 8px 12px; gap: 4px 10px; grid-template-columns: 64px minmax(0, 1fr); }
   #rd-call.job .rd-art { width: 64px; }
   #rd-call.job .rd-art .ico { width: 30px; height: 30px; }
