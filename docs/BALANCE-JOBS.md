@@ -19,13 +19,13 @@ more time, so read it as a floor.
 
 | Region | Jobs dealt per chart | Stops | Offered |
 |---|---|---|---|
-| 1 The Reach | 3.0 | 10.0 | 1.0 |
-| 2 The Marches | 7.4 | 10.0 | 2.3 |
-| 3 The Salvage Belt | 8.0 | 9.5 | 2.5 |
-| 4 The Drift Deep | 7.7 | 10.0 | 2.5 |
-| 5 The Breaker Yards | 9.3 | 9.8 | 2.0 |
-| 6 The Free Ports | 8.7 | 7.0 | 2.0 |
-| 7 The Hollows | 6.4 | 7.0 | 2.8 |
-| 8 The Last Lanes | 8.5 | 7.3 | 1.5 |
+| 1 The Reach | 5.7 | 9.8 | 1.5 |
+| 2 The Marches | 14.4 | 9.5 | 3.8 |
+| 3 The Salvage Belt | 17.0 | 9.8 | 4.8 |
+| 4 The Drift Deep | 16.7 | 10.0 | 3.5 |
+| 5 The Breaker Yards | 17.9 | 9.8 | 6.3 |
+| 6 The Free Ports | 17.6 | 9.5 | 4.5 |
+| 7 The Hollows | 12.3 | 11.8 | 5.8 |
+| 8 The Last Lanes | 16.9 | 8.0 | 5.0 |
 
 The first job was offered at stop 3.0 on average (4 of 4 journeys).

@@ -1,4 +1,5 @@
 import { t } from '../i18n';
+import { MISSIONS } from '../content/missions';
 import { SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
@@ -26,6 +27,8 @@ import type { World } from './world';
 //
 // What came of it goes back to the journey as a SitResult (sim/situations.ts).
 
+/** Seconds after arriving that a job is in the sky and its call may ring (a job is offered on arrival, wherever the site is). */
+const JOB_AT = 3;
 /** Seconds a territorial ward waits after its warning before it turns; longer while the player is on an errand it has been told about. */
 const GRACE = 7;
 const GRACE_ERRAND = 22;
@@ -36,6 +39,8 @@ const FOLLOW_R = 135;
 const LOST_AFTER = 14;
 /** Wards this far behind or beside the ship, after the scene is over, are gone. */
 const GONE = 520;
+
+const JOB_IDS = new Set(MISSIONS.map((m) => m.id));
 
 const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 
@@ -175,9 +180,11 @@ export class Stage {
     const near = this.dist(w);
 
     if (!this.result) {
-      if (!this.begun && now >= d.at) this.begin(w);
+      if (!this.begun && now >= (JOB_IDS.has(d.id) ? Math.min(d.at, JOB_AT) : d.at)) this.begin(w);
       // the call
-      if (this.begun && d.card && !this.offered && near <= d.hail && w.phase === 'play') {
+      // a job rings on arrival, wherever its site is; never over the training; a plain scene rings when the ship is near
+      const rings = JOB_IDS.has(d.id) ? !w.tutor : near <= d.hail;
+      if (this.begun && d.card && !this.offered && rings && w.phase === 'play') {
         const card = CARD_BY_ID[d.card];
         if (card) { w.desk.offer(card, weightOf(card), now, false, true); this.offered = true; }
       }

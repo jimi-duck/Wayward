@@ -44,17 +44,21 @@ costs nothing) and at least one other way to settle it:
 ## How often, and how you know
 
 Jobs are dealt on a timetable as well as by the roll (`JOB_COLS`, `layJobs` in
-`sim/situations.ts`): one column of the first region (about the third stop) and
-two columns of every other region carry a job in each of their systems, so any
-lane meets one. The roll adds more. A journey saved before this (version 15)
-gets them in the columns still ahead. The pilot's count is in
-[BALANCE-JOBS.md](BALANCE-JOBS.md) (`npm run pilot:jobs`).
+`sim/situations.ts`): four columns of the first region (never its first two stops,
+the escape and the first refit) and six of every other region (eight in the last)
+carry a job in each of their systems, so about two stops in three offer one. Quiet
+systems and story beats are left alone, and a column of heavy jobs never runs past
+three. The roll adds more. The pilot's count is in
+[BALANCE-JOBS.md](BALANCE-JOBS.md) (`npm run pilot:jobs`). A journey saved before
+this keeps the jobs it was dealt, but they ring on arrival too.
 
-Thirty seconds into a sortie the job is on the scope: a pin with its name and
-range on the HUD, the compass and the radar, a quiet "On the scope" line under the
-objective, and the same line on the pause card. The call rings within 480 units
-of the site. If the desk drops the call unheard it rings again; refusing it, or
-taking another answer, clears the pin.
+The call rings on arrival, three seconds into the sortie, wherever the site is:
+the desk waits only four seconds (`DESK.arriveCall`) and a fight or tight flying holds it back
+(it pauses like any call, and never rings over the training). The job is pinned on the
+HUD, the compass and the radar with its name and range, a quiet "On the scope"
+line under the objective, and the same line on the pause card. Refusing it, or
+taking another answer, clears the pin. If the desk drops the call unheard it
+rings again.
 
 ## What each one changes
 
