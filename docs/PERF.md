@@ -220,3 +220,7 @@ Medium had no edge smoothing at all, so rock and hull edges stair-stepped (Low s
 ## Graphics pass 8: enemy hull shapes
 
 The scouts, stalkers, strike fighters, warbirds and probes had flat extruded bodies. The kit gains `loft`: a fuselage through cross-sections (eight-sided, flat deck, chamfered shoulders), so noses taper, bellies slope and wings thin to an edge. Seven main bodies use it, with armour strakes along the shoulders of the two birds. About 120 triangles a body, merged into the same `hull` mesh as before: no new draws, programs or textures. Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/task9-hulls/`.
+
+## Graphics pass 9: sheared rocks
+
+Each rock shape now carries one to three faults: the rock is cut along a plane and the far half slides sideways and lifts, so the outline gains real steps, shelves and overhangs that no noise on a sphere gives. Done once in `rockGeometry` when the shapes are built; the shape is then scaled so its farthest point stays at 1.2 (the hit radius the simulation uses is unchanged). Same triangle counts, instancing, draws and programs. A normal map on High was left out: the rock shader already paints its relief per pixel from procedural noise, and a texture would add memory for little. Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/task10-sculpted-rocks/`.
