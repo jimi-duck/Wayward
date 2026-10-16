@@ -73,3 +73,20 @@ bluff fails. Lingering is slowed by `stealthOf`.
 The skies are laid and tested headless. How they look and feel, whether the
 claim fee and warning timing are fair, and phone readability need a human
 playtest on a device.
+
+## A new verb: recover
+
+`recover` (sim/mission.ts, job The Drift Cache): four cases drift round a
+wreck field. Slow beside each to take it; the Rig's ore tractor widens the
+reach and shortens the hold, so the same job is flown differently with and
+without one. A salvage crew arrives after the first case, so the order and
+the pace are the player's. Time out with some aboard pays for those. It is
+dealt where a graveyard or breakers lie (`SITE_OF_GOAL.recover`).
+
+## Lanterns stay special
+
+A lantern line is the only thing that makes a static field navigable, so it
+should be a find. It is `rare`, passed over six times in ten when it would be
+dealt, paired with static only six times in ten, and a smaller share of the
+job-site tables. It now shows in about 15% of systems outside Drift Deep
+(24%) and the Last Lanes (29%).

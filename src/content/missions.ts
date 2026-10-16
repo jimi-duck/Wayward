@@ -330,6 +330,18 @@ export const MISSIONS: SituationDef[] = [
     ignore: { text: 'You stay away from the patrol' },
     after: { won: { text: 'Your trail was erased under the patrol’s nose · Calloway falls behind', hunt: -1 }, lost: { text: 'The patrol catches a ship trying to erase its trail', hunt: 0.5 } },
   },
+  {
+    id: 'drift_cache', name: 'The Drift Cache', blurb: 'A cargo train broke up here; the cases are still drifting.', group: 'frontier',
+    kinds: ['mining', 'transit', 'contested'], regions: [1, 6], weight: 1.1,
+    prop: 'wreck',
+    actors: [act('scout', 2, 'pass', 'hostile', 'Salvage crew', { foe: true, ring: 170 })],
+    card: 'sc_cache', at: 30, hail: 480, accept: ['recover'],
+    goal: { kind: 'recover', hold: 0, limit: 160, line: 'Pick up the drifting cases', caches: 4 },
+    win: { text: 'The cases are aboard · the hold is heavy', chits: 140, supplies: 2, notice: { gutter: 1 } },
+    lose: { text: 'The field is picked clean before you reach it' },
+    ignore: { text: 'You leave the cases to drift' },
+    after: { won: { text: 'The Drift Cache was recovered · the salvage crews are watching for you', flag: 'cache_taken' } },
+  },
 ];
 
 const mission = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: 'scene', repeat: true, ...c });
@@ -597,6 +609,17 @@ export const MISSION_CARDS: CardDef[] = [
       { id: 'lose', label: 'Erase your trace', tone: 'trade', hint: 'Hold still at the relay for 6 seconds. A spoofer slows the detection meter.', win: { text: 'Heading to the relay' } },
       { id: 'pay', label: 'Pay the broker to erase it', tone: 'pay', hint: 'Pay 10 Cyrite and the broker will erase the trace for you.', cost: { chits: 50 }, win: { text: 'The broker erases the trace · Calloway loses a day', notice: { custody: -1 } } },
       { id: 'no', label: 'Leave the trace in place', tone: 'refuse', hint: 'Calloway keeps the tracking data.', win: { text: 'The broker ends the call' } },
+    ],
+  }),
+  mission({
+    id: 'sc_cache', kind: 'job', caller: 'guild', tier: 'important',
+    from: 'Guild salvage desk · open claim', title: 'The Drift Cache',
+    text: '“A cargo train broke up in this field. Four cases are still drifting, the rest is picked over. Slow beside each to take it in. A crew will notice the first.”',
+    cargo: 'Four cases · drifting, one crew nearby',
+    choices: [
+      { id: 'recover', label: 'Pick up the cases', tone: 'help', hint: 'Slow beside each case to take it. An ore tractor reaches further and takes less time.', win: { text: 'Heading to the field' } },
+      { id: 'winch', label: 'Winch them in', tone: 'trade', hint: 'Requires an ore tractor. Pull three cases in from where you float, with no crew.', needs: { fitted: 'md_tractor' }, win: { text: 'Three cases winched aboard', chits: 100, supplies: 1, standing: { guild: 1 } } },
+      { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Let the cases drift.', win: { text: 'The desk marks the claim open' } },
     ],
   }),
 ];

@@ -470,3 +470,42 @@ describe('jobs on the timetable', () => {
     for (const [id, s] of Object.entries(m.chart.situations!)) if (isJob(s.id)) expect(s.arc, id).toBeFalsy();
   });
 });
+
+describe('the drift cache', () => {
+  const pins = (st: { pins: Array<{ x: number; z: number; on: boolean }> }) => st.pins;
+  const gather = (w: World, st: { pins: Array<{ x: number; z: number; on: boolean }> }, n: number) => {
+    for (let k = 0; k < n; k++) {
+      const p = pins(st).find((q) => q.on)!;
+      for (let i = 0; i < 70 && p.on; i++) { put(w, p.x, p.z); run(w, 0.05); }
+    }
+  };
+
+  it('pays in full for every case, and a crew comes after the first', () => {
+    const { w, st } = take('drift_cache', 'recover');
+    const before = w.cyrite, aliens = w.aliens.length;
+    gather(w, st, 1);
+    run(w, 0.2);
+    expect(w.aliens.length).toBeGreaterThan(aliens);
+    gather(w, st, 3);
+    run(w, 0.5);
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(140));
+  });
+
+  it('pays for the cases aboard when time runs out', () => {
+    const { w, st } = take('drift_cache', 'recover');
+    const before = w.cyrite;
+    gather(w, st, 2);
+    put(w, st.x + 900, st.z);
+    run(w, 170);
+    expect(st.result).toBe('won');
+    expect(gain(w, before)).toBe(cy(70));
+  });
+
+  it('is lost when no case is taken', () => {
+    const { w, st } = take('drift_cache', 'recover');
+    put(w, st.x + 900, st.z);
+    run(w, 170);
+    expect(st.result).not.toBe('won');
+  });
+});

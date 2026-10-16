@@ -9,9 +9,9 @@ active (non-breather) systems do not repeat one.
 |---|---|
 | Systems walked | 4560 (22% breathers) |
 | Distinct signatures in the first 12 active systems | 12.0 of 12 |
-| Distinct signatures over a whole journey, per active system | 100% |
+| Distinct signatures over a whole journey, per active system | 99% |
 | Neighbouring active systems with the same objective, expanse and features | 0% |
-| Windows of 3 active systems repeating an objective and expanse | 11% |
+| Windows of 3 active systems repeating an objective and expanse | 10% |
 | Active systems that are a plain crossing (no job, no place) | 31% |
 | Active systems with at least one feature in the sky | 98% |
 
@@ -19,42 +19,42 @@ active (non-breather) systems do not repeat one.
 
 | Region | Systems | Expanses | Features | Objectives |
 |---|---|---|---|---|
-| 1 | 540 | veil 44%, open 44%, scrap 12% | veil 25%, passage 18%, lanterns 15%, works 15%, breakers 14% | job:call 33%, quiet 26%, crossing 13%, job:reach 9% |
-| 2 | 540 | veil 32%, open 30%, scrap 28%, front 10% | breakers 26%, lanterns 26%, seam 25%, curtain 23%, veil 22% | job:call 36%, quiet 21%, crossing 17%, job:reach 7% |
-| 3 | 540 | open 28%, scrap 27%, yards 25%, veil 21% | breakers 32%, graveyard 30%, passage 23%, lanterns 20%, seam 19% | quiet 26%, crossing 20%, job:call 19%, job:watch 9% |
-| 4 | 540 | open 33%, veil 32%, front 27%, shoals 8% | lanterns 33%, curtain 22%, static 22%, veil 20%, passage 16% | quiet 40%, job:call 21%, crossing 15%, job:reach 3% |
-| 5 | 540 | yards 36%, open 33%, scrap 31% | breakers 36%, lanterns 31%, passage 27%, graveyard 27%, works 26% | crossing 29%, job:reach 16%, quiet 13%, job:call 11% |
-| 6 | 540 | open 32%, veil 21%, yards 17%, front 16% | lanterns 29%, passage 23%, breakers 17%, veil 17%, curtain 16% | crossing 29%, quiet 18%, job:call 11%, job:follow 11% |
-| 7 | 540 | hush 39%, shoals 27%, veil 22%, open 12% | breakers 26%, well 24%, carrier 21%, curtain 20%, graveyard 20% | crossing 27%, quiet 21%, job:call 19%, job:destroy 8% |
-| 8 | 780 | hush 22%, front 18%, veil 17%, shoals 16% | lanterns 46%, breakers 34%, graveyard 31%, curtain 27%, static 25% | crossing 36%, job:call 16%, quiet 12%, job:race 6% |
+| 1 | 540 | veil 44%, open 44%, scrap 13% | veil 23%, passage 20%, curtain 16%, works 16%, breakers 15% | job:call 33%, quiet 26%, crossing 13%, job:reach 9% |
+| 2 | 540 | veil 34%, open 29%, scrap 28%, front 10% | seam 28%, breakers 27%, veil 26%, curtain 21%, graveyard 21% | job:call 36%, quiet 21%, crossing 17%, job:strike 5% |
+| 3 | 540 | open 27%, scrap 27%, yards 25%, veil 21% | breakers 32%, graveyard 32%, works 23%, passage 22%, curtain 20% | quiet 26%, crossing 20%, job:call 19%, job:watch 9% |
+| 4 | 540 | open 33%, veil 31%, front 28%, shoals 8% | lanterns 24%, static 23%, curtain 22%, passage 18%, veil 17% | quiet 40%, job:call 21%, crossing 15%, job:reach 4% |
+| 5 | 540 | yards 36%, open 35%, scrap 29% | breakers 39%, graveyard 30%, passage 28%, works 26%, seam 21% | crossing 29%, job:reach 16%, quiet 13%, job:call 12% |
+| 6 | 540 | open 32%, veil 22%, yards 17%, front 16% | passage 22%, curtain 19%, breakers 19%, lanterns 17%, veil 17% | crossing 29%, quiet 18%, job:call 11%, job:follow 10% |
+| 7 | 540 | hush 39%, shoals 26%, veil 23%, open 11% | breakers 26%, curtain 25%, well 23%, carrier 20%, veil 20% | crossing 27%, quiet 21%, job:call 19%, job:destroy 6% |
+| 8 | 780 | hush 22%, front 18%, veil 17%, shoals 17% | breakers 35%, graveyard 31%, lanterns 29%, curtain 27%, static 27% | crossing 36%, job:call 16%, quiet 12%, job:survey 7% |
 
 ## Expanses
 | Expanse | Systems |
 |---|---|
-| open | 1141 |
-| veil | 1066 |
-| scrap | 680 |
-| yards | 546 |
-| front | 429 |
-| hush | 381 |
-| shoals | 317 |
+| open | 1138 |
+| veil | 1083 |
+| scrap | 670 |
+| yards | 542 |
+| front | 431 |
+| hush | 380 |
+| shoals | 316 |
 
 ## Features
 | Feature | Systems |
 |---|---|
-| lanterns | 1283 |
-| breakers | 1151 |
-| graveyard | 972 |
-| curtain | 890 |
-| works | 814 |
-| veil | 802 |
-| passage | 793 |
-| seam | 697 |
-| shroud | 590 |
-| static | 558 |
-| carrier | 512 |
-| well | 378 |
-| relic | 359 |
+| breakers | 1187 |
+| graveyard | 1009 |
+| curtain | 946 |
+| works | 862 |
+| lanterns | 828 |
+| veil | 814 |
+| passage | 807 |
+| seam | 726 |
+| carrier | 583 |
+| shroud | 564 |
+| static | 548 |
+| relic | 392 |
+| well | 377 |
 | storm | 250 |
 
 ## Objectives
@@ -62,19 +62,20 @@ active (non-breather) systems do not repeat one.
 |---|---|
 | crossing | 1091 |
 | quiet | 985 |
-| job:call | 924 |
-| job:reach | 291 |
-| job:destroy | 173 |
-| job:follow | 144 |
-| job:watch | 137 |
-| job:sneak | 134 |
-| job:strike | 131 |
-| job:race | 102 |
-| job:survey | 100 |
-| job:defend | 89 |
+| job:call | 930 |
+| job:reach | 280 |
+| job:destroy | 165 |
+| job:watch | 136 |
+| job:follow | 131 |
+| job:sneak | 126 |
+| job:strike | 115 |
+| job:race | 115 |
+| job:survey | 97 |
+| job:defend | 88 |
 | place:nebula | 87 |
 | place:ion_storm | 75 |
 | place:anomaly | 62 |
+| job:recover | 42 |
 | place:distress | 19 |
 | place:derelict | 11 |
 | place:convoy | 5 |

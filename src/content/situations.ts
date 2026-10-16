@@ -68,8 +68,9 @@ export interface Goal {
    *   race     the beacons in order, ahead of a rival
    *   survey   readings at rings round a hazard, as close as you dare
    *   sneak    reach the drop without the patrols reading the hold
+   *   recover  drifting cases to pick up, in any order; a crew arrives after the first
    */
-  kind: 'call' | 'reach' | 'follow' | 'watch' | 'destroy' | 'strike' | 'defend' | 'race' | 'survey' | 'sneak';
+  kind: 'call' | 'reach' | 'follow' | 'watch' | 'destroy' | 'strike' | 'defend' | 'race' | 'survey' | 'sneak' | 'recover';
   /** Seconds to hold inside the ring (reach, watch) or stay with the lead ship (follow). */
   hold: number;
   /** Seconds after taking it before it is missed. */
@@ -86,6 +87,8 @@ export interface Goal {
   /** Missions: the distances of the readings, outermost first (survey); the share of the pay each earns. */
   rings?: number[];
   shares?: number[];
+  /** Missions: how many cases to pick up (recover). */
+  caches?: number;
 }
 
 /** What a situation does to the chart when it is over. */

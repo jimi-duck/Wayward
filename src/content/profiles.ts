@@ -109,14 +109,15 @@ export const SITE_OF_PLACE: Record<PlaceId, FeatureId> = {
  * dealt) has no site. Hazards are for the job that is about them (a survey).
  */
 export const SITE_OF_GOAL: Record<string, Partial<Record<FeatureId, number>>> = {
-  call: { lanterns: 0.5, passage: 0.8, veil: 0.8, breakers: 0.7, works: 0.6, curtain: 0.4 },
-  reach: { works: 1, lanterns: 0.8, breakers: 0.8, seam: 0.5, veil: 0.4 },
+  call: { lanterns: 0.25, passage: 0.8, veil: 0.8, breakers: 0.7, works: 0.6, curtain: 0.4 },
+  reach: { works: 1, lanterns: 0.4, breakers: 0.8, seam: 0.5, veil: 0.4 },
   follow: { lanterns: 1, static: 0.7, veil: 0.6, passage: 0.5 },
   watch: { curtain: 1, relic: 0.7, passage: 0.8, carrier: 0.3, veil: 0.5 },
   destroy: { breakers: 1, graveyard: 0.9, shroud: 0.7, works: 0.5 },
   strike: { breakers: 1, graveyard: 0.8, shroud: 0.9, static: 0.5 },
   defend: { breakers: 1, graveyard: 0.9, works: 0.7, seam: 0.4 },
-  race: { lanterns: 1, static: 0.8, breakers: 0.6 },
+  race: { lanterns: 0.5, static: 0.8, breakers: 0.6 },
+  recover: { graveyard: 1, breakers: 0.9, works: 0.5, seam: 0.4 },
   survey: { storm: 1, static: 1, well: 0.5 },
   sneak: { shroud: 1.3, breakers: 0.9, graveyard: 0.8, static: 0.4 },
 };
