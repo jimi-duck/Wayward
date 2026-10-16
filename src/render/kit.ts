@@ -1,5 +1,5 @@
 import {
-  BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, CylinderGeometry, Euler, ExtrudeGeometry, Group, LatheGeometry, Matrix4, Mesh,
+  Box3, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Color, CylinderGeometry, Euler, ExtrudeGeometry, Group, LatheGeometry, Matrix4, Mesh,
   MeshStandardMaterial, OctahedronGeometry, PlaneGeometry, Quaternion, RepeatWrapping, SRGBColorSpace, Shape, TorusGeometry, Vector2,
   Vector3, Vector4, type Material, type Texture,
 } from 'three';
@@ -265,11 +265,11 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
     if (o.engine) shader.uniforms.uEngine = { value: o.engine };
     shader.uniforms.uKitStrength = { value: strength };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vKitP; varying vec3 vKitN; uniform float uKitScale;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvKitP = position * uKitScale; vKitN = normal;');
+      .replace('#include <common>', '#include <common>\nvarying vec3 vKitP; varying vec3 vKitN; uniform float uKitScale;\n#ifdef USE_KITOCC\nattribute float kitOcc;\n#endif\nvarying float vKitOcc;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvKitP = position * uKitScale; vKitN = normal;\n#ifdef USE_KITOCC\nvKitOcc = kitOcc;\n#else\nvKitOcc = 0.0;\n#endif');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
-        varying vec3 vKitP; varying vec3 vKitN; uniform sampler2D uKitBump; uniform float uKitStrength;
+        varying vec3 vKitP; varying vec3 vKitN; varying float vKitOcc; uniform sampler2D uKitBump; uniform float uKitStrength;
         uniform vec3 uRim; uniform float uKitScale;${o.engine ? ' uniform vec3 uEngine;' : ''}
         ${PERTURB}`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
@@ -283,7 +283,7 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         diffuseColor *= kitC;
         // grooves and seams hold shadow and grime; raised edges stay clean and catch the light
         float kitCavity = smoothstep(0.46, 0.14, kitH), kitEdge = smoothstep(0.62, 0.9, kitH);
-        diffuseColor.rgb *= 1.0 - 0.38 * kitCavity;
+        diffuseColor.rgb *= (1.0 - 0.38 * kitCavity) * (1.0 - 0.72 * vKitOcc);
         diffuseColor.rgb += diffuseColor.rgb * 0.16 * kitEdge;
         // long streaks of grime, laid along the flight direction
         vec2 kitS = vec2(vKitP.x * 0.55, (vKitP.y * 7.0 + vKitP.z * 5.0));
@@ -297,7 +297,7 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);`);
     if (worn > 0) wearShader(shader, painted);
   };
-  m.customProgramCacheKey = () => `kit-metal2-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}`;
+  m.customProgramCacheKey = () => `kit-metal3-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}`;
   return m;
 }
 
@@ -379,6 +379,32 @@ function along(g: BufferGeometry, axis: Axis): BufferGeometry {
   return g;
 }
 
+/** Split triangles whose longest edge passes `maxEdge` (always across the longest edge), keeping flat normals, uv and wear. */
+function splitLong(g: BufferGeometry, maxEdge: number): BufferGeometry {
+  const names = ['position', 'normal', 'uv', 'wear'].filter((a) => g.attributes[a]);
+  const size = names.map((a) => g.attributes[a]!.itemSize);
+  const out: number[][] = names.map(() => []);
+  const V = (i: number): number[][] => names.map((a, k) => Array.from({ length: size[k]! }, (_, c) => g.attributes[a]!.array[i * size[k]! + c]!));
+  const dist = (a: number[], b: number[]): number => Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!);
+  const emit = (t: number[][][], depth: number): void => {
+    const e = [dist(t[0]![0]!, t[1]![0]!), dist(t[1]![0]!, t[2]![0]!), dist(t[2]![0]!, t[0]![0]!)];
+    const m = Math.max(...e);
+    if (m <= maxEdge || depth > 6) {
+      for (const v of t) v.forEach((vals, k) => out[k]!.push(...vals));
+      return;
+    }
+    const i = e.indexOf(m), a = t[i]!, b = t[(i + 1) % 3]!, c = t[(i + 2) % 3]!;
+    const mid = a.map((va, k) => va.map((x, j) => (x + b[k]![j]!) / 2));
+    emit([a, mid, c], depth + 1);
+    emit([mid, b, c], depth + 1);
+  };
+  const n = g.attributes.position!.count;
+  for (let i = 0; i < n; i += 3) emit([V(i), V(i + 1), V(i + 2)], 0);
+  const r = new BufferGeometry();
+  names.forEach((a, k) => r.setAttribute(a, new BufferAttribute(new Float32Array(out[k]!), size[k]!)));
+  return r;
+}
+
 /**
  * Collects parts, by material key, and merges each key's parts into one
  * geometry. Model space: nose +X, up +Y, starboard +Z.
@@ -400,7 +426,7 @@ export class Kit {
    */
   addMatrix(key: string, geo: BufferGeometry, m: Matrix4): void {
     const g = geo.index ? geo.toNonIndexed() : geo.clone();
-    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'wear'].includes(k)) g.deleteAttribute(k);
+    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'wear', 'kitOcc'].includes(k)) g.deleteAttribute(k);
     const n = g.attributes.position!.count, tone = toneOf(this.count++);
     const wear = new Float32Array(n * 2), edge = g.attributes.wear;
     for (let i = 0; i < n; i++) { wear[i * 2] = edge ? edge.getX(i) : 0; wear[i * 2 + 1] = tone; }
@@ -523,8 +549,78 @@ export class Kit {
     }
   }
 
+  /**
+   * Bake ambient occlusion into the parts: every surface is split to a fine
+   * grid, a coarse voxel map of all the parts is made, and each vertex looks
+   * out along its normal for anything close (the foot of a plate, the gap
+   * between pipe and deck). Stored as `kitOcc`, 0 open to 1 shut; the metal
+   * shader darkens by it. `cell` is the voxel size in model units. Costs
+   * nothing per frame; the price is a few more triangles on big faces.
+   */
+  bakeOcclusion(cell: number): void {
+    if (this.baked) return;
+    this.baked = true;
+    const maxEdge = cell * 9;
+    // 1. split long triangles so occlusion has somewhere to vary across a big plate
+    for (const [key, list] of this.parts) this.parts.set(key, list.map((g) => splitLong(g, maxEdge)));
+    // 2. the voxel map
+    const box = new Box3();
+    for (const list of this.parts.values()) for (const g of list) { g.computeBoundingBox(); box.union(g.boundingBox!); }
+    box.expandByScalar(cell * 4);
+    const size = box.getSize(new Vector3());
+    const nx = Math.ceil(size.x / cell), ny = Math.ceil(size.y / cell), nz = Math.ceil(size.z / cell);
+    if (nx * ny * nz > 24e6) return;
+    const grid = new Uint8Array(nx * ny * nz);
+    const put = (x: number, y: number, z: number): void => {
+      const i = Math.floor((x - box.min.x) / cell), j = Math.floor((y - box.min.y) / cell), l = Math.floor((z - box.min.z) / cell);
+      if (i >= 0 && j >= 0 && l >= 0 && i < nx && j < ny && l < nz) grid[(l * ny + j) * nx + i] = 1;
+    };
+    const A = new Vector3(), B = new Vector3(), C = new Vector3();
+    for (const list of this.parts.values()) for (const g of list) {
+      const p = g.attributes.position!;
+      for (let t = 0; t < p.count; t += 3) {
+        A.fromBufferAttribute(p, t); B.fromBufferAttribute(p, t + 1); C.fromBufferAttribute(p, t + 2);
+        const steps = Math.max(1, Math.ceil(Math.max(A.distanceTo(B), B.distanceTo(C), C.distanceTo(A)) / (cell * 0.7)));
+        for (let a = 0; a <= steps; a++) for (let b = 0; b <= steps - a; b++) {
+          const u = a / steps, v = b / steps, w = 1 - u - v;
+          put(A.x * w + B.x * u + C.x * v, A.y * w + B.y * u + C.y * v, A.z * w + B.z * u + C.z * v);
+        }
+      }
+    }
+    // 3. look out from every vertex: the normal, and a ring of eight leaning 50 degrees off it
+    const dist = [cell * 1.8, cell * 3.4, cell * 5.6];
+    const ring = Array.from({ length: 8 }, (_, i) => [Math.cos((i / 8) * Math.PI * 2), Math.sin((i / 8) * Math.PI * 2)]);
+    const n = new Vector3(), t1 = new Vector3(), t2 = new Vector3(), d = new Vector3(), q = new Vector3();
+    const hit = (x: number, y: number, z: number): number => {
+      const i = Math.floor((x - box.min.x) / cell), j = Math.floor((y - box.min.y) / cell), l = Math.floor((z - box.min.z) / cell);
+      return i >= 0 && j >= 0 && l >= 0 && i < nx && j < ny && l < nz ? grid[(l * ny + j) * nx + i]! : 0;
+    };
+    for (const list of this.parts.values()) for (const g of list) {
+      const p = g.attributes.position!, nm = g.attributes.normal!, occ = new Float32Array(p.count);
+      for (let i = 0; i < p.count; i++) {
+        n.fromBufferAttribute(nm, i).normalize();
+        t1.set(Math.abs(n.y) < 0.9 ? 0 : 1, Math.abs(n.y) < 0.9 ? 1 : 0, 0).cross(n).normalize();
+        t2.crossVectors(n, t1);
+        q.fromBufferAttribute(p, i);
+        let shut = 0;
+        for (let r = -1; r < 8; r++) {
+          if (r < 0) d.copy(n);
+          else d.copy(n).multiplyScalar(0.64).addScaledVector(t1, ring[r]![0]! * 0.77).addScaledVector(t2, ring[r]![1]! * 0.77);
+          for (let k = 0; k < dist.length; k++) {
+            if (hit(q.x + d.x * dist[k]!, q.y + d.y * dist[k]!, q.z + d.z * dist[k]!)) { shut += r < 0 ? 2.2 - k * 0.5 : 1.3 - k * 0.3; break; }
+          }
+        }
+        occ[i] = Math.min(1, shut / 9);
+      }
+      g.setAttribute('kitOcc', new BufferAttribute(occ, 1));
+    }
+  }
+
+  private baked = false;
+
   /** Merge each key's parts into one mesh, with the material given for that key. */
-  build(mats: Record<string, Material>): Group {
+  build(mats: Record<string, Material>, occlusion = 0): Group {
+    if (occlusion > 0) this.bakeOcclusion(occlusion);
     const g = new Group();
     for (const [key, list] of this.parts) {
       const mat = mats[key];
@@ -532,6 +628,9 @@ export class Kit {
       const merged = mergeGeometries(list);
       if (!merged) continue;
       merged.computeBoundingSphere();
+      // every kit mesh carries the occlusion attribute (zero where none was baked), so the metal shader can read it
+      if (!merged.attributes.kitOcc) merged.setAttribute('kitOcc', new BufferAttribute(new Float32Array(merged.attributes.position!.count), 1));
+      if ((mat as MeshStandardMaterial).isMeshStandardMaterial) (mat as MeshStandardMaterial).defines = { ...(mat as MeshStandardMaterial).defines, USE_KITOCC: '' };
       const mesh = new Mesh(merged, mat);
       mesh.name = key;
       g.add(mesh);
