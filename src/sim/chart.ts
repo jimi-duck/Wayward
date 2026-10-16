@@ -235,16 +235,14 @@ export function makeChart(seed: number, set: RegionSet = 'three', breathers = 1)
   };
   for (let col = 0; col < COLS - 1; col++) {
     const here = systems.filter((s) => s.col === col), next = systems.filter((s) => s.col === col + 1);
-    // each system links on to the nearest one or two in the next column
+    // each system links on to the two nearest in the next column: a real fork at every step, never a list
     for (const s of here) {
       const by = [...next].sort((p, q) => Math.abs(p.y - s.y) - Math.abs(q.y - s.y));
       link(s, by[0]!);
-      if (by[1] && (col === 0 || rng.next() < 0.55)) link(s, by[1]);
+      if (by[1]) link(s, by[1]);
     }
     // and nothing is left without a way in
     for (const t of next) if (!routes.some((r) => r.b === t.id || r.a === t.id)) link([...here].sort((p, q) => Math.abs(p.y - t.y) - Math.abs(q.y - t.y))[0]!, t);
-    // now and then a lane runs sideways
-    for (let i = 0; i + 1 < next.length; i++) if (col + 1 < COLS - 1 && rng.next() < 0.35) link(next[i]!, next[i + 1]!);
   }
   const home = systems[0]!.id, edge = systems[systems.length - 1]!.id;
   const c: Chart = { systems, routes, home, edge, net: { [home]: 1 }, stall: {}, visited: [home], seenNet: [home], seenDay: 0, places: {} };

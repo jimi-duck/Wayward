@@ -13,10 +13,16 @@ own to the rules.
    region's way in.
 3. Which lanes can I take? The next-jump list: at most three of `options(j)`
    (`LANES_SHOWN`), picked to differ: the way straight on, the calmest, and
-   whichever differs most from those. A lane that only repeats one of them is
-   left off the chart (it stays in the sim; the journey is unchanged).
+   whichever differs most from those. The chart is laid out so that nearly
+   every system has two lanes on (`makeChart`: each system links to the two
+   nearest in the next column, no sideways lanes) and `options` never goes back
+   along the chart, so each jump is a real fork, not a list. New charts only:
+   a saved journey keeps the lanes it was laid out with.
 4. What does each cost? How hard its far end is on you (danger: quiet, watched
-   or hostile, from `stance`, three pips), whether it goes straight to the gate
+   or hostile, from `stance`, three pips), how the Custody's heat goes there
+   (`heatAt`: it cools in a breather, is low, climbs, or climbs fast; from the
+   kind's start and rate, the region's, a Net blockade and watched space),
+   whether it goes straight to the gate
    or is `n` jumps longer, time (`route.days`) and jump fluid (`options.fuel`,
    the lane's base plus the weight surcharge; this is the number the drive
    burns). Supplies show only when the stores do not cover the crossing.
@@ -63,8 +69,11 @@ Chosen in `forks()` in this order, first match wins, and only from known state.
   rich rock (a survey if it has not been flown); the cheapest jump or the
   shortest crossing, when the lanes differ.
 - Trade-off: Calloway last seen there; the Net as of the day you last had news;
-  a contested system; hostile (raiders, Thren); a watched port; the days in a
-  two-day lane; no port.
+  a contested system; hostile (raiders, Thren); a hazard in a place already
+  sighted (storm, gravity well); a heavy job already sighted (fight, chase,
+  survey, sneak, haul); claimed ground (the Marches, the Salvage Belt: mining
+  there); watched space (the Breaker Yards, the Last Lanes); a watched port; the
+  days in a two-day lane; no port.
 
 There is no score and no ranking. The list is sorted by the gate's distance
 after arrival, then by jump fluid; on a phone on its side the cards keep the

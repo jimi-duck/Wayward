@@ -1,5 +1,9 @@
 import { PLACES, REWARD_WORD } from '../content/phenomena';
-import { cyriteKnown, gateOf, jumps, viewOf, type Chart, type Place, type StarSystem } from './chart';
+import { PROFILES, SITE_OF_PLACE, HAZARDS } from '../content/profiles';
+import { SYSTEMS } from '../content/systems';
+import { SITUATION_BY_ID } from '../content/situations';
+import { cyriteKnown, gateOf, jumps, regionDef, regionOf, viewOf, type Chart, type Place, type StarSystem } from './chart';
+import { HEAVY_GOALS, longIndex, situationAt } from './situations';
 import { LOW_SUPPLIES } from './breakout';
 import { options, type Journey } from './journey';
 import { stance, type Stance } from './lanes';
@@ -52,6 +56,8 @@ export interface Fork {
   nearer: boolean | null;
   /** How hard the far end is on you: 0 calm, 1 watched, 2 hostile. */
   danger: 0 | 1 | 2;
+  /** How the Custody's heat goes there: 0 it cools (a breather), 1 low, 2 it climbs, 3 it climbs fast. */
+  heat: 0 | 1 | 2 | 3;
   /** Jumps this lane adds to the way to the gate over the shortest lane shown (0 for the shortest); null where it cannot be told. */
   detour: number | null;
   netted: boolean;
@@ -68,6 +74,20 @@ const placeNote = (p: Place) => `${t(PLACES[p.id].name)} · ${t(REWARD_WORD[PLAC
 /** The most lanes the chart offers at once: a choice is a few lanes that differ, not a list. */
 export const LANES_SHOWN = 3;
 const DANGER: Record<Stance, 0 | 1 | 2> = { quiet: 0, watched: 1, hostile: 2 };
+
+/**
+ * How the heat (how hard the Custody is looking) goes in a system, from what the sortie will start with
+ * (journey.ts sortieDef): the kind's start and climb, the region's, a Net blockade's, and watched space.
+ * A breather cools it. Read as a word; the numbers are the sim's own.
+ */
+export function heatAt(c: Chart, s: StarSystem, net: boolean): 0 | 1 | 2 | 3 {
+  if (s.quiet && !net) return 0;
+  const t = SYSTEMS[s.kind], R = regionDef(c, regionOf(s));
+  const watch = PROFILES[longIndex(c, regionOf(s))]?.rules.watch ?? 1;
+  const score = t.heat + (net ? 0.25 : 0) + t.heatRate * (net ? 1.3 : (R?.heatRate ?? 1)) * Math.max(1, watch);
+  return net || score >= HEAT_FAST ? 3 : score >= HEAT_RISING ? 2 : 1;
+}
+const HEAT_RISING = 0.95, HEAT_FAST = 1.25;
 
 /**
  * Down to the few lanes worth choosing between: the one that goes straight on, the calmest, and then whichever
@@ -101,7 +121,7 @@ export function forks(j: Journey): Fork[] {
   const fuelDiffers = base.some((b) => b.o.fuel !== cheapest), daysDiffer = base.some((b) => b.o.route.days !== quickest);
   return base.map(({ o, s, st, after }): Fork => {
     const nearer = now === null || after === null ? null : after < now;
-    const quiet = !!s.quiet && !o.netted;
+    const quiet = !!s.quiet && !o.netted && st !== 'hostile';
     // the first known upside, then the first known trade-off
     let up: Note | null = null, down: Note | null = null;
     if (s.id === goal.id) up = { text: t('The way on · the gate out') };
@@ -111,17 +131,24 @@ export function forks(j: Journey): Fork[] {
     else if (cyriteKnown(c, s) >= 0.7 && s.kind === 'mining') up = { text: c.visited.includes(s.id) ? t('Rich rock · Cyrite to mine') : t('Survey: rich rock · not yet flown') };
     else if (fuelDiffers && o.fuel === cheapest) up = { text: t('The cheapest jump here') };
     else if (daysDiffer && o.route.days === quickest) up = { text: t('The shortest crossing here') };
+    const hazard = o.place && HAZARDS.has(SITE_OF_PLACE[o.place.id]);
+    const job = situationAt(c, s.id), heavy = !!job && HEAVY_GOALS.has(SITUATION_BY_ID[job.id]?.goal.kind ?? '');
+    const rules = PROFILES[longIndex(c, regionOf(s))]?.rules;
     if (o.shadow) down = { text: t('Calloway was last seen here'), hot: true };
     else if (o.netted) down = { text: t('Netted as of day {n}', { n: Math.floor(c.seenDay) + 1 }), hot: true };
     else if (s.kind === 'contested') down = { text: t('Contested · patrols and raiders'), hot: true };
     else if (st === 'hostile') down = { text: t('Hostile · raiders or Thren about'), hot: true };
+    else if (hazard) down = { text: t('Rough flying · a hazard in the way') };
+    else if (heavy) down = { text: t('A hard job waits there · a fight or a chase') };
+    else if (rules?.claim && s.kind === 'mining' && !quiet) down = { text: t('Claimed ground · linger and it costs') };
+    else if ((rules?.watch ?? 1) > 1 && !quiet) down = { text: t('Watched space · the hunt runs fast in the open') };
     else if (s.port) down = { text: t('Watched · a busy port draws the Custody') };
     else if (o.route.days > 1 && daysDiffer) down = { text: t('{n} days in the lane · the Net spreads', { n: o.route.days }) };
     else if (!s.port) down = { text: t('No port') };
     return {
       to: s, stance: st, days: o.route.days, fuel: o.fuel, short: Math.max(0, Math.ceil(o.fuel - j.carry.fuel)), supplies: o.supplies,
       thin: j.carry.supplies < o.supplies, gateAfter: after, atGate: s.id === goal.id, nearer,
-      danger: DANGER[st], detour: after === null || shortest >= 1e9 ? null : after - shortest,
+      danger: DANGER[st], heat: heatAt(c, s, o.netted), detour: after === null || shortest >= 1e9 ? null : after - shortest,
       netted: o.netted, shadow: o.shadow, place: o.place, scene: o.scene, up, down,
     };
   });

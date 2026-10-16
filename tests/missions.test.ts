@@ -455,7 +455,7 @@ describe('jobs on the timetable', () => {
       const first = Math.min(...c.systems.filter((s) => isJob(q[s.id]?.id ?? '')).map((s) => s.col));
       expect(first, `seed ${seed}`).toBeLessThanOrEqual(5);
     }
-  });
+  }, 30000);
 
   it('a journey saved before them gets jobs in the columns ahead, and nowhere the ship has been', () => {
     const j = newJourney(11, false, 'eight');

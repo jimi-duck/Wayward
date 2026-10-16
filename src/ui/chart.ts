@@ -38,6 +38,8 @@ const KIND_WORD: Record<SystemKind, string> = {
 };
 /** A lane's style, in words (sim/lanes.ts). */
 const STANCE_WORD: Record<Stance, string> = { quiet: 'Quiet', watched: 'Watched', hostile: 'Hostile' };
+/** How the Custody's heat goes on a lane (sim/forks.ts heatAt). */
+const HEAT_WORD = ['Heat cools', 'Heat low', 'Heat climbs', 'Heat climbs fast'];
 const KEY_DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
 
 const days = (n: number) => plural(n, '{n} day', '{n} days');
@@ -326,7 +328,9 @@ export class ChartPanel {
       // the way on: straight to the gate, or by how many jumps more
       const way = f.atGate ? t('The gate') : f.detour === null ? '' : f.detour === 0 ? t('Straight on') : plural(f.detour, '{n} jump longer', '{n} jumps longer');
       const b = h('button', `ch-opt ${f.stance}${i === this.sel ? ' sel' : ''}`, '',
-        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', `tag d${f.danger}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(STANCE_WORD[f.stance])))),
+        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', 'meters', '',
+          h('span', `tag d${f.danger}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(STANCE_WORD[f.stance]))),
+          h('span', `tag heat h${f.heat}`, '', h('i', 'pips', '', h('u'), h('u'), h('u')), document.createTextNode(t(HEAT_WORD[f.heat]!))))),
         h('div', 'ch-o3', '',
           f.up ? h('span', 'up', '', h('em', '', t('Upside')), document.createTextNode(f.up.text)) : null,
           f.down ? h('span', `down${f.down.hot ? ' hot' : ''}`, '', h('em', '', t('Trade-off')), document.createTextNode(f.down.text)) : null),
@@ -441,7 +445,7 @@ export class ChartPanel {
         kids.push(g);
       }
     });
-    if (!fs.length || gateNow < 0) kids.push(svg('line', { x1: X.here, y1: hy, x2: gx, y2: hy, class: 'ch-onward faint' }));
+    if (!fs.length) kids.push(svg('line', { x1: X.here, y1: hy, x2: gx, y2: hy, class: 'ch-onward faint' }));
     fs.forEach((f, i) => {
       const p = pos(i);
       kids.push(svg('line', { x1: X.here, y1: hy, x2: p.x, y2: p.y, class: `ch-lane ${danger[f.danger]}${f === sel ? ' sel' : ''}` }));
