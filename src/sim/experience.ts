@@ -36,6 +36,8 @@ const SIDE = 0.35;
 const TIRED = 0.4;
 /** The most busy features (the site included) in one system's sky. */
 const BUSY_MAX = 2;
+/** How often a lantern line is passed over when it would be dealt. */
+const LANTERN_SKIP = 0.6;
 
 /** What a system asks of the player, in one word, from what the chart dealt it. */
 export function objectiveOf(c: Chart, id: string): string {
@@ -128,6 +130,8 @@ function composeOne(c: Chart, s: StarSystem, seed: number, back: [Seen, Seen], s
     for (const [f, w0] of Object.entries(EXPANSES[x].roster) as Array<[FeatureId, number]>) {
       const fd = FEATURES[f];
       if (f === site || feats.includes(f)) continue;
+      // a lantern line is meant to be a find: most of the time it is not on offer
+      if (f === 'lanterns' && rng.next() < LANTERN_SKIP) continue;
       if (quiet && (fd.load === 'busy' || HAZARDS.has(f))) continue;
       if (HAZARDS.has(f) && hazard()) continue;
       if (fd.load === 'busy' && fd.layer !== 'far' && busy() >= BUSY_MAX) continue;
@@ -137,7 +141,7 @@ function composeOne(c: Chart, s: StarSystem, seed: number, back: [Seen, Seen], s
     if (f) feats.push(f);
   }
   // a lantern line is the way through a static field: where there is one, there is the other
-  if ((feats.includes('static') || site === 'static') && !feats.includes('lanterns') && site !== 'lanterns' && (P.lean.lanterns ?? 1) >= 1) feats.push('lanterns');
+  if ((feats.includes('static') || site === 'static') && !feats.includes('lanterns') && site !== 'lanterns' && (P.lean.lanterns ?? 1) >= 1 && rng.next() < 0.6) feats.push('lanterns');
 
   // about one site in three where a named place fits the region (as Story always did)
   const h = hash(s.id);

@@ -154,7 +154,8 @@ describe('the experience composer', () => {
     }
     expect(withStatic).toBeGreaterThan(40);
     // (the Hollows leave it out: nothing human lit a line there)
-    expect(withLine / withStatic).toBeGreaterThan(0.85);
+    // (about six in ten: a line is a find, so some static fields have none to follow)
+    expect(withLine / withStatic).toBeGreaterThan(0.45);
   });
 
   it('has a profile for every region, with only real expanses and features in it', () => {

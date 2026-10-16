@@ -25,6 +25,9 @@ import type { World } from './world';
 //            share of your top speed. Rock lies in the gaps.
 //   survey   a hazard with readings at rings: each is held for a moment. It
 //            pulls, it burns, and the pay is what the readings are worth.
+//   recover  cases drifting round a wreck field, picked up in any order by
+//            slowing beside each (a tractor reaches further and takes less
+//            time). A salvage crew comes after the first. Pay by cases aboard.
 //   sneak    reach the drop past patrols that sweep the site. Time spent
 //            inside a sweep builds exposure (a spoofer, ghost echo or baffles
 //            slow it); full exposure and the patrols turn.
@@ -59,6 +62,11 @@ const EXPOSE = 0.3;
 const COOL = 0.18;
 const DROP_R = 28;
 const DROP_HOLD = 3;
+/** A case is taken within this far (scaled by the tractor's reach) after this long, slow beside it. */
+const CACHE_R = 24;
+const CACHE_HOLD = 1.8;
+/** The ring the cases drift in, round the site. */
+const CACHE_RING: [number, number] = [90, 230];
 /** Seconds in the core between burns. */
 const BURN_EVERY = 1.6;
 
@@ -218,6 +226,15 @@ export class Run {
         this.maxReads = (g.rings ?? [250, 170, 100]).length;
         this.points = (g.rings ?? [250, 170, 100]).map((r) => ({ x, z, on: false, r } as Pt & { r: number }));
         break;
+      case 'recover': {
+        const n = g.caches ?? 4, a0 = (hash(d.id) % 628) / 100;
+        for (let i = 0; i < n; i++) {
+          const th = a0 + (i / n) * Math.PI * 2 + w.rng.range(-0.3, 0.3), r = CACHE_RING[0] + ((i * 37) % 100) / 100 * (CACHE_RING[1] - CACHE_RING[0]);
+          this.points.push({ x: x + Math.cos(th) * r, z: z + Math.sin(th) * r, on: true });
+        }
+        this.maxReads = n;
+        break;
+      }
       case 'sneak': {
         this.points = [{ x, z, on: true }];
         this.focus = { x, z, r: DROP_R };
@@ -247,6 +264,7 @@ export class Run {
       case 'race': v = this.race(w, dt); break;
       case 'survey': v = this.survey(w, dt); break;
       case 'sneak': v = this.sneak(w, dt); break;
+      case 'recover': v = this.recover(w, dt); break;
     }
     this.focusNow(w);
     return v;
@@ -396,6 +414,33 @@ export class Run {
     return null;
   }
 
+  private recover(w: World, dt: number): Verdict {
+    const s = w.ship, pts = this.points, g = this.goal;
+    // the tractor is the Rig's answer: it reaches further and pulls the case in sooner
+    const k = Math.max(0.6, w.stats.tractor / 42);
+    const reach = CACHE_R * k, need = CACHE_HOLD / k;
+    let on = -1, best = Infinity;
+    pts.forEach((p, i) => { if (!p.on) return; const d = Math.hypot(p.x - s.x, p.z - s.z); if (d < best) { best = d; on = i; } });
+    if (on < 0) { this.scale = 1; return 'won'; }
+    if (best < reach && w.stageSlow()) this.hold += dt; else this.hold = Math.max(0, this.hold - dt * 0.6);
+    if (this.hold >= need) {
+      pts[on]!.on = false; this.hold = 0; this.reads++;
+      w.events.push({ type: 'ping', id: `mis_${this.def.id}_c${this.reads}`, from: t('Scope'), caller: 'unknown', text: t('“Case {n}/{m} aboard.”', { n: this.reads, m: pts.length }), moment: 'calm', system: w.sortie.name });
+      // the first one is noticed
+      if (this.reads === 1) {
+        for (const a of this.def.actors ?? []) if (a.foe) this.foe(w, a);
+        w.events.push({ type: 'ping', id: `mis_${this.def.id}_crew`, from: t('Scope'), caller: 'unknown', text: t('“A salvage crew is closing on the field.”'), moment: 'calm', system: w.sortie.name });
+      }
+      if (this.reads >= pts.length) { this.scale = 1; for (const f of this.foes) leave(f); return 'won'; }
+    }
+    this.foes = this.alive(w, this.foes);
+    this.progress = (this.reads + Math.min(1, this.hold / need)) / pts.length;
+    this.status = t('Case {n}/{m} · {d} m', { n: Math.min(pts.length, this.reads + 1), m: pts.length, d: Math.round(best) });
+    // out of time with some aboard: paid for those
+    if (g.limit > 0 && this.clock >= g.limit - 0.5 && this.reads > 0) { this.scale = this.reads / pts.length; for (const f of this.foes) leave(f); return 'won'; }
+    return null;
+  }
+
   private sneak(w: World, dt: number): Verdict {
     const s = w.ship, drop = this.points[0]!;
     // the sweep: patrols orbit the site, the ship inside any one's reach is read
@@ -423,10 +468,10 @@ export class Run {
   // ── the marker ─────────────────────────────────────────────────────────
   private focusNow(w: World): void {
     const g = this.goal;
-    void w;
     switch (g.kind) {
       case 'strike': case 'defend': { const t0 = this.target; if (t0) this.focus = { x: t0.x, z: t0.z, r: this.state === 'disabled' ? TOW_R : 40 }; break; }
       case 'race': { const p = this.points.find((q) => q.on); if (p) this.focus = { x: p.x, z: p.z, r: BEACON_R }; break; }
+      case 'recover': { const s = w.ship; let b = Infinity; for (const p of this.points) { if (!p.on) continue; const d = Math.hypot(p.x - s.x, p.z - s.z); if (d < b) { b = d; this.focus = { x: p.x, z: p.z, r: CACHE_R }; } } break; }
       case 'survey': this.focus = { x: this.site.x, z: this.site.z, r: (g.rings ?? [250])[0]! }; break;
       case 'destroy': { const f = this.foes[0]; if (f) this.focus = { x: f.x, z: f.z, r: 60 }; break; }
       default: break;

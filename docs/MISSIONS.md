@@ -39,6 +39,7 @@ costs nothing) and at least one other way to settle it:
 | Two captains, one wreck | Belt onward | `destroy`: five hulls from two crews that turn on you; the wreck is yours | strip it while they shout |
 | The witness | Belt onward | `defend`: keep a freighter alive 80 s against two waves of pickets | hand her over |
 | Lose the Prefect | Marches to Hollows | `sneak`: wipe your trace at a relay inside a patrol loop; the Prefect loses a day | pay the broker |
+| The Drift Cache | Marches to Hollows | `recover`: pick up four drifting cases, a crew closes after the first | winch three in with an ore tractor |
 
 ## How often, and how you know
 
@@ -88,6 +89,7 @@ scene on that card's own outcome and never on the goal's.
 | `race` | beacons laid ahead; the rival flies the same course; three-second countdown |
 | `survey` | a pull and navigation noise inside 330 units; a reading is 2.2 s inside a ring; the core scorches a plate every 1.6 s |
 | `sneak` | patrols orbit the site; time inside a patrol's 62 units builds exposure, a spoofer, ghost echo or baffles slow it; full and the patrols turn |
+| `recover` | four cases drift round a wreck field; slow beside each to take it (an ore tractor reaches further and takes less time); a salvage crew comes after the first; time out with some aboard pays for those |
 
 Mission hulls carry `Alien.job` so the sector does not cull them beyond 210
 units, and the HUD shows `Stage.status` under the objective line.
