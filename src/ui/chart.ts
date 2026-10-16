@@ -42,6 +42,20 @@ const STANCE_WORD: Record<Stance, string> = { quiet: 'Quiet', watched: 'Watched'
 const HEAT_WORD = ['Heat cools', 'Heat low', 'Heat climbs', 'Heat climbs fast'];
 const KEY_DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
 
+const ANOMALY = '#9f8bd6';
+/** A steady hash of a string, 0 to 1: the same lane bends the same way every time it is drawn. */
+function hash01(s: string): number {
+  let x = 2166136261;
+  for (let i = 0; i < s.length; i++) x = Math.imul(x ^ s.charCodeAt(i), 16777619);
+  return ((x >>> 0) % 1000) / 1000;
+}
+/** A lane as a bent line between two systems; its middle is where a label can sit. */
+function curve(ax: number, ay: number, bx: number, by: number, id: string, amp: number) {
+  const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1, k = hash01(id);
+  const off = (k < 0.5 ? -1 : 1) * (0.35 + 0.65 * Math.abs(k - 0.5) * 2) * amp * len;
+  const cx = (ax + bx) / 2 - (dy / len) * off, cy = (ay + by) / 2 + (dx / len) * off;
+  return { d: `M${ax} ${ay}Q${cx.toFixed(1)} ${cy.toFixed(1)} ${bx} ${by}`, mx: 0.25 * ax + 0.5 * cx + 0.25 * bx, my: 0.25 * ay + 0.5 * cy + 0.25 * by };
+}
 const days = (n: number) => plural(n, '{n} day', '{n} days');
 const CHIP_WORD: Record<Exclude<Chip['key'], 'day'>, string> = { fuel: 'Jump fluid', cyrite: 'Cyrite', plates: 'Plates', supplies: 'Supplies' };
 const signed = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '0');
@@ -72,20 +86,24 @@ function svg(tag: string, attrs: Record<string, string | number>, text = ''): SV
 
 /** Small line glyphs on a 16 unit grid: a kind of system, and the four things a lane costs. */
 const GLYPH: Record<string, string> = {
-  port: 'M2 13h12M3 13V7l5-4 5 4v6M6.5 13V9.5h3V13',
-  mining: 'M8 2l5 5-5 7-5-7zM3 7h10',
-  transit: 'M3 4l4 4-4 4M9 4l4 4-4 4',
-  contested: 'M8 2.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM8 .5v4M8 11.5v4M.5 8h4M11.5 8h4',
-  gate: 'M3 14V8a5 5 0 0110 0v6M6 14V9a2 2 0 014 0v5',
-  edge: 'M2 8l6-6 6 6-6 6zM8 5.5v5',
-  home: 'M2 13h12M4 13V6l4-3 4 3v7',
+  // places: each its own silhouette, one outline weight (the map marks use the same paths)
+  port: 'M3 3h10v10H3zM6 8h4M8 6v4',
+  mining: 'M8 1.5l5.5 3.2v6.6L8 14.5l-5.5-3.2V4.7zM8 5.8l2.4 1.4v1.6L8 10.2 5.6 8.8V7.2z',
+  transit: 'M8 2.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM8 7a1 1 0 100 2 1 1 0 000-2z',
+  contested: 'M8 1.5l6.5 6.5L8 14.5 1.5 8zM8 5v3.5M8 10.4v.6',
+  gate: 'M8 1l7 7-7 7-7-7zM8 4.6L11.4 8 8 11.4 4.6 8z',
+  edge: 'M8 1l7 7-7 7-7-7zM8 4.6L11.4 8 8 11.4 4.6 8z',
+  home: 'M8 2.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM8 6a2 2 0 100 4 2 2 0 000-4z',
+  // what a lane costs and what the ship carries: the same size and weight
   clock: 'M8 2.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM8 5v3.4l2.2 1.4',
   drop: 'M8 2s4.5 4.8 4.5 8A4.5 4.5 0 013.5 10C3.5 6.8 8 2 8 2z',
+  gem: 'M5 2.5h6l3 4L8 14 2 6.5zM2 6.5h12M5.6 6.5L8 14l2.4-7.5',
   box: 'M2.5 5L8 2.5 13.5 5v6L8 13.5 2.5 11zM2.5 5L8 7.5 13.5 5M8 7.5v6',
+  hull: 'M2.5 2.5h11v6L8 14 2.5 8.5zM5.5 6h5',
   arrow: 'M2 8h11M9 4l4 4-4 4',
 };
 function glyph(name: string): SVGElement {
-  const e = svg('svg', { viewBox: '0 0 16 16', class: 'cg', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+  const e = svg('svg', { viewBox: '0 0 16 16', class: 'cg', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
   e.append(svg('path', { d: GLYPH[name] ?? GLYPH.transit! }));
   return e;
 }
@@ -286,13 +304,13 @@ export class ChartPanel {
   /** The stores, compact: what the jumps burn, what buys, what the trip eats, what keeps the hull. */
   private resCells(j: Journey): HTMLElement[] {
     const c = j.carry;
-    const cell = (k: string, v: string, cls = '', why = '') => { const e = h('span', cls, '', h('span', 'k', k), h('b', '', v)); if (why) e.title = why; return e; };
+    const cell = (ic: string, k: string, v: string, cls = '', why = '') => { const e = h('span', cls, '', h('span', 'k', '', glyph(ic), document.createTextNode(k)), h('b', '', v)); if (why) e.title = why; return e; };
     const hull = c.plates <= 1 ? 'crit' : c.plates <= 2 ? 'low' : '';
     return [
-      cell(t('Jump fluid'), String(Math.floor(c.fuel)), '', t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')),
-      cell(t('Cyrite'), num(c.cyrite), '', t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')),
-      cell(t('Supplies'), String(c.supplies), c.supplies <= 4 ? 'low' : '', t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')),
-      cell(t('Hull'), String(c.plates), hull, t('Hull plates: each is one hit the Wayward can take.')),
+      cell('drop', t('Jump fluid'), String(Math.floor(c.fuel)), '', t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')),
+      cell('gem', t('Cyrite'), num(c.cyrite), '', t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')),
+      cell('box', t('Supplies'), String(c.supplies), c.supplies <= 4 ? 'low' : '', t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')),
+      cell('hull', t('Hull'), String(c.plates), hull, t('Hull plates: each is one hit the Wayward can take.')),
     ];
   }
 
@@ -430,6 +448,15 @@ export class ChartPanel {
     const c = j.chart, at = j.at, me = sysById(c, at), goal = goalOf(c, at);
     const fs = this.fs, sel = this.fs[this.sel];
     const kids: SVGElement[] = [];
+    // the backdrop: a fine grid, faint dust, a compass
+    for (let x = 60; x < W; x += 60) kids.push(svg('line', { x1: x, y1: 0, x2: x, y2: H, class: 'ch-grid' }));
+    for (let y = 60; y < H; y += 60) kids.push(svg('line', { x1: 0, y1: y, x2: W, y2: y, class: 'ch-grid' }));
+    for (let i = 0; i < 46; i++) kids.push(svg('circle', { cx: (hash01(`${at}x${i}`) * W).toFixed(1), cy: (hash01(`${at}y${i}`) * H).toFixed(1), r: (0.5 + hash01(`${at}r${i}`) * 0.9).toFixed(2), class: 'ch-dust', opacity: (0.15 + hash01(`${at}o${i}`) * 0.35).toFixed(2) }));
+    if (W >= 480 && H >= 230) {
+      const compass = svg('g', { class: 'ch-compass', transform: 'translate(40 40)' });
+      compass.append(svg('circle', { r: 22 }), svg('circle', { r: 14, opacity: 0.5 }), svg('path', { d: 'M0-20L4-4 20 0 4 4 0 20-4 4-20 0-4-4z' }), svg('text', { y: -27, 'text-anchor': 'middle' }, 'N'));
+      kids.push(compass);
+    }
     const rn = regionName(c, at);
     if (rn && H >= 260) kids.push(svg('text', { x: W / 2, y: 16, 'text-anchor': 'middle', class: 'ch-region' }, rn));
     // the systems ahead: forward along the lanes from here, up to the gate
@@ -462,7 +489,14 @@ export class ChartPanel {
     let acc = 0;
     cols.forEach((col, i) => { xs.set(col, padX + ((W - padX * 2) * acc) / total); if (i < weights.length) acc += weights[i]!; });
     const px = (n: StarSystem) => xs.get(n.col)!;
-    const py = (n: StarSystem) => (n.id === at || n.id === goal.id ? H / 2 : padTop + n.y * (H - padTop - padBot));
+    // the lanes out are the choice: keep their systems apart so their names never sit on each other
+    const yOf = new Map<string, number>();
+    const outs = fs.map((f) => f.to).filter((n) => n.id !== goal.id).sort((a, b) => a.y - b.y);
+    const gap = Math.min(56, (H - padTop - padBot) / Math.max(1, outs.length));
+    outs.forEach((n, i) => { const y0 = padTop + n.y * (H - padTop - padBot); yOf.set(n.id, i && y0 < yOf.get(outs[i - 1]!.id)! + gap ? yOf.get(outs[i - 1]!.id)! + gap : y0); });
+    const over = Math.max(0, Math.max(0, ...[...yOf.values()]) - (H - padBot));
+    if (over) for (const [id, y] of yOf) yOf.set(id, y - over);
+    const py = (n: StarSystem) => (n.id === at || n.id === goal.id ? H / 2 : yOf.get(n.id) ?? padTop + n.y * (H - padTop - padBot));
     const danger = ['teal', 'caution', 'red'] as const;
     const live = new Map(fs.map((f, i) => [f.to.id, i]));
     // the lanes: the net faint, the selected lane's share a little brighter, the lanes out of here lit
@@ -472,26 +506,42 @@ export class ChartPanel {
       return { a, b };
     }).filter(({ a, b }) => a.col < b.col);
     const rank = ({ a, b }: { a: StarSystem; b: StarSystem }) => (a.id === at ? 2 : reach.has(a.id) && reach.has(b.id) ? 1 : 0);
+    let pill: { x: number; y: number; n: number; short: boolean } | null = null;
     for (const l of lanes.sort((x, y) => rank(x) - rank(y))) {
       const out = l.a.id === at, f = out ? fs[live.get(l.b.id) ?? -1] : undefined;
-      const cls = out ? `ch-lane ${f ? danger[f.danger] : 'teal'}${f === sel ? ' sel' : ''}` : `ch-net-lane${reach.has(l.a.id) && reach.has(l.b.id) ? ' on' : ''}`;
-      kids.push(svg('line', { x1: px(l.a), y1: py(l.a), x2: px(l.b), y2: py(l.b), class: cls }));
+      const isSel = !!f && f === sel;
+      const cv = curve(px(l.a), py(l.a), px(l.b), py(l.b), l.a.id + l.b.id, out ? 0.14 : 0.2);
+      const cls = out ? `ch-lane ${f ? danger[f.danger] : 'teal'}${isSel ? ' sel' : ''}${f && f.short > 0 ? ' short' : ''}` : `ch-net-lane${reach.has(l.a.id) && reach.has(l.b.id) ? ' on' : ''}`;
+      if (isSel) kids.push(svg('path', { d: cv.d, class: `ch-lane-under ${f ? danger[f.danger] : 'teal'}` }));
+      kids.push(svg('path', { d: cv.d, class: cls }));
+      if (isSel && f) pill = { x: cv.mx, y: cv.my, n: f.fuel, short: f.short > 0 };
     }
-    // the systems: small for the net, large for the lanes out, the gate and here
+    if (pill) {
+      const txt = String(pill.n), w = txt.length * 8 + 16;
+      kids.push(svg('g', { class: `ch-cost sel${pill.short ? ' short' : ''}` }, ''));
+      const g = kids[kids.length - 1]!;
+      g.append(svg('rect', { x: pill.x - w / 2, y: pill.y - 10, width: w, height: 20, rx: 10 }), svg('text', { x: pill.x, y: pill.y + 4, 'text-anchor': 'middle' }, txt));
+    }
+    // the systems: one outline weight for every marker; the kind is the shape, the danger is the colour
     const mark = (n: StarSystem, role: 'here' | 'gate' | 'out' | 'net', idx?: number) => {
       const f = idx === undefined ? undefined : fs[idx], isSel = !!f && f === sel, x = px(n), y = py(n);
       const g = svg('g', { class: `ch-s${role === 'out' ? ' out' : ''}${isSel ? ' sel' : ''}${role === 'here' ? ' here' : ''}${role === 'gate' ? ' gate' : ''}${c.seenNet.includes(n.id) ? ' net' : ''}` });
       const r = role === 'net' ? 4.5 : role === 'out' ? 10 : 11;
-      const col = role === 'here' ? INK.white : role === 'gate' ? INK.caution : role === 'out' ? INK[danger[f?.danger ?? 0]] : c.seenNet.includes(n.id) ? INK.red : INK.dust;
+      const calm = (n.kind === 'contested' || n.kind === 'edge') && !f?.danger;
+      const col = role === 'here' ? INK.white : role === 'gate' ? INK.caution : role === 'out' ? (calm ? ANOMALY : INK[danger[f?.danger ?? 0]]) : c.seenNet.includes(n.id) ? INK.red : INK.dust;
       if (role !== 'net' && f?.netted) g.append(svg('circle', { cx: x, cy: y, r: r + 9, class: 'ch-net' }));
       if (role === 'net' && c.seenNet.includes(n.id)) g.append(svg('circle', { cx: x, cy: y, r: 8, class: 'ch-net' }));
       if (f && f.to.quiet && !f.netted) g.append(svg('circle', { cx: x, cy: y, r: r + 7, class: 'ch-quiet' }));
-      if (role === 'gate') g.append(svg('path', { d: `M${x} ${y - r - 2}L${x + r + 2} ${y}L${x} ${y + r + 2}L${x - r - 2} ${y}Z`, class: 'ch-node', stroke: col }));
-      else g.append(svg('circle', { cx: x, cy: y, r, class: `ch-node${role === 'net' ? ' small' : ''}${role === 'net' && reach.has(n.id) ? ' on' : ''}`, stroke: col, fill: `${col}${role === 'net' ? '22' : '33'}` }));
-      if (f?.to.port) g.append(svg('rect', { x: x + r - 2, y: y - r - 3, width: 6, height: 6, class: 'ch-port' }));
+      if (role === 'net') g.append(svg('circle', { cx: x, cy: y, r, class: `ch-node small${reach.has(n.id) ? ' on' : ''}`, stroke: col, fill: `${col}22` }));
+      else {
+        const shape = role === 'here' ? 'home' : role === 'gate' ? 'gate' : n.kind;
+        const s = ((role === 'gate' ? r + 3 : r) * 2 + 4) / 16;
+        g.append(svg('path', { d: GLYPH[shape] ?? GLYPH.transit!, transform: `translate(${x - 8 * s} ${y - 8 * s}) scale(${s})`, class: 'ch-node', stroke: col, fill: `${col}26`, 'vector-effect': 'non-scaling-stroke' }));
+      }
+      if (f?.danger === 2) g.append(svg('path', { d: `M${x + r + 2} ${y - r - 10}l6 10.5h-12z`, class: 'ch-hostile' }));
       if (f?.shadow) g.append(svg('path', { d: `M${x - r - 4} ${y - r - 8}l5 5l-5 5l-5-5z`, class: 'ch-cal' }));
-      if (isSel) g.append(svg('circle', { cx: x, cy: y, r: r + 6, class: 'ch-ring' }));
-      if (role === 'here') g.append(svg('circle', { cx: x, cy: y, r: r + 5, class: 'ch-ring here' }));
+      if (isSel) g.append(svg('circle', { cx: x, cy: y, r: r + 7, class: 'ch-ring' }));
+      if (role === 'here') g.append(svg('circle', { cx: x, cy: y, r: r + 6, class: 'ch-ring here' }));
       if (role !== 'net') {
         const tag = role === 'here' ? t('Here') : role === 'gate' ? t(n.kind === 'edge' ? 'The last lane' : 'Gate') : '';
         // a lane out above the middle names itself above, so the names of the lanes do not sit on each other
