@@ -66,6 +66,9 @@ A sortie with a shape: get the stolen hauler out of the home system
   the three purchases, the quiet recommended row and the departure. Its icons
   and item art are in `assets/supply/` and load through `pic()` in `ui/port.ts`; the backdrop is
   `assets/wayward-supply-background.webp`.
+  Between the phone block (460px high) and a tall desktop, three height steps
+  in `dock.css` (860, 740, 660px) tighten the dock family, the opening card
+  and the bay so a laptop window with a tab bar is never cut off.
 - **Hunt pressure** (`heat`, 0 to 1) climbs with time, kills (Custody kills
   more) and mining noise. It decides how often pursuers come, how
   many at once and which: pickets, then cruisers, enforcers and, late,
