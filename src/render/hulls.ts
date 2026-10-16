@@ -51,6 +51,15 @@ class Ship {
     this.k.box(coat, [len, t, wid], [x, y, z]);
   }
 
+  /** Armour strakes along both shoulders of a lofted hull: a dark seam with a raised lip above it. */
+  chine(x0: number, x1: number, w: number): void {
+    const len = x1 - x0, mx = (x0 + x1) / 2;
+    for (const sd of [-1, 1]) {
+      this.k.box('dark', [len, 0.02, 0.03], [mx, 0.045, sd * (w - 0.015)], [sd * 0.5, 0, 0]);
+      this.k.box('hull', [len * 0.96, 0.025, 0.025], [mx, 0.075, sd * (w - 0.045)], [sd * 0.5, 0, 0]);
+    }
+  }
+
   /** A row of vent slats along x. */
   vents(x: number, z: number, y: number, n: number, len: number, wid: number): void {
     for (let i = 0; i < n; i++) this.k.box('dark', [len, 0.02, wid / n * 0.55], [x, y, z + (i - (n - 1) / 2) * (wid / n)]);
@@ -110,8 +119,8 @@ const gutterBird = (fwd: boolean): Draw => (s) => {
   const k = s.k, rnd = s.rnd;
   const f = fwd ? 0.4 : -0.3;
   // primary: a blunt fuselage and two long wings, one with its tip chopped
-  k.wedge('hull', [[1.0, 0], [0.5, 0.2], [-0.6, 0.23], [-0.72, 0], [-0.6, -0.23], [0.5, -0.2]], 0.28);
-  k.wedge('hull', [[0.62, 0.14], [0.2, 0.2], [-0.5, 0.2], [-0.55, 0.14]], 0.34, [0, -0.02, 0]);
+  k.loft('hull', [[-0.72, 0.07, 0.09, 0.09, 0.6], [-0.6, 0.23, 0.15, 0.14, 0.4], [-0.1, 0.23, 0.16, 0.14, 0.35], [0.45, 0.2, 0.14, 0.12, 0.45], [0.8, 0.1, 0.09, 0.08], [1.0, 0.03, 0.04, 0.04]]);
+  s.chine(-0.55, 0.62, 0.2);
   for (const sd of [-1, 1]) {
     const tip = sd === -1 ? 1.0 : 0.82;
     k.wedge('hull', [[0.2, 0.17 * sd], [f, tip * sd], [f - 0.34, tip * sd], [-0.5, 0.2 * sd]], 0.07, [0, -0.04, 0], [sd * 0.16, 0, 0]);
@@ -160,8 +169,8 @@ const gutterRaptor: Draw = (s) => {
   const k = s.k;
   // primary: the boom, the head, the broad wing
   k.box('hull', [0.9, 0.12, 0.16], [0.65, 0.02, 0]);
-  k.wedge('hull', [[1.32, 0], [1.1, 0.2], [0.82, 0.22], [0.82, -0.22], [1.1, -0.2]], 0.24);
-  k.wedge('hull', [[0.25, 0.14], [-0.4, 0.8], [-0.95, 0.8], [-0.95, -0.8], [-0.4, -0.8], [0.25, -0.14]], 0.2);
+  k.loft('hull', [[0.8, 0.22, 0.12, 0.12, 0.4], [1.1, 0.2, 0.12, 0.11, 0.4], [1.32, 0.03, 0.04, 0.04]]);
+  k.loft('hull', [[-0.95, 0.8, 0.1, 0.09, 0.5], [-0.4, 0.8, 0.1, 0.09, 0.5], [-0.1, 0.45, 0.1, 0.09, 0.4], [0.25, 0.14, 0.1, 0.09, 0.4]]);
   // secondary: head armour, wing armour (rust and primer), the raised dark panel
   k.wedge('paint', [[1.25, 0], [1.08, 0.15], [0.9, 0.17], [0.9, -0.17], [1.08, -0.15]], 0.04, [0, 0.13, 0]);
   s.plate('paint', -0.45, -0.38, 0.6, 0.5, 0.11);
@@ -205,7 +214,8 @@ const gutterRaptor: Draw = (s) => {
 /** The Patrol fighter and the Interdictor/Enforcer share the Gutter's archetypes, built to regulation. */
 const custodyBird = (fwd: boolean): Draw => (s) => {
   const k = s.k, f = fwd ? 0.38 : -0.3;
-  k.wedge('hull', [[1.0, 0], [0.55, 0.22], [-0.6, 0.26], [-0.72, 0.12], [-0.72, -0.12], [-0.6, -0.26], [0.55, -0.22]], 0.3);
+  k.loft('hull', [[-0.72, 0.12, 0.13, 0.13], [-0.6, 0.26, 0.16, 0.15, 0.35], [0.1, 0.25, 0.16, 0.15, 0.3], [0.55, 0.22, 0.14, 0.13, 0.4], [0.85, 0.1, 0.08, 0.08], [1.0, 0.03, 0.04, 0.04]]);
+  s.chine(-0.5, 0.6, 0.23);
   for (const sd of [-1, 1]) {
     k.wedge('hull', [[0.2, 0.2 * sd], [f, 0.95 * sd], [f - 0.34, 0.95 * sd], [-0.5, 0.22 * sd]], 0.08, [0, -0.05, 0], [sd * 0.12, 0, 0]);
     // regulation armour: three identical plates along each wing
@@ -330,7 +340,7 @@ const custodyFreighter: Draw = (s) => {
 const officeWarbird: Draw = (s) => {
   const k = s.k;
   // primary: a long slim spear of a hull and two crescents that sweep forward then back
-  k.wedge('hull', [[1.15, 0], [0.5, 0.14], [-0.3, 0.17], [-0.65, 0.1], [-0.65, -0.1], [-0.3, -0.17], [0.5, -0.14]], 0.26);
+  k.loft('hull', [[-0.65, 0.1, 0.13, 0.13], [-0.3, 0.17, 0.14, 0.13, 0.4], [0.5, 0.14, 0.12, 0.12, 0.45], [0.9, 0.07, 0.07, 0.07], [1.15, 0.015, 0.03, 0.03]]);
   for (const sd of [-1, 1]) {
     // the crescent: an arc of wing that curls forward at the tip
     k.wedge('hull', [[0.35, 0.12 * sd], [0.05, 0.55 * sd], [-0.3, 0.93 * sd], [-0.5, 1.05 * sd], [-0.56, 0.92 * sd], [-0.42, 0.55 * sd], [-0.55, 0.12 * sd]], 0.07, [0, 0.01, 0], [sd * 0.1, 0, 0]);
@@ -366,7 +376,7 @@ const officeWarbird: Draw = (s) => {
 /** The Ambush fighter (Whisper): a narrow dagger with crescent fins and lit edges. */
 const officeScout: Draw = (s) => {
   const k = s.k;
-  k.wedge('hull', [[1.05, 0], [0.5, 0.13], [-0.55, 0.16], [-0.72, 0.06], [-0.72, -0.06], [-0.55, -0.16], [0.5, -0.13]], 0.24);
+  k.loft('hull', [[-0.72, 0.06, 0.12, 0.12], [-0.55, 0.16, 0.13, 0.12, 0.4], [0.5, 0.13, 0.11, 0.1, 0.45], [0.85, 0.06, 0.06, 0.06], [1.05, 0.012, 0.03, 0.03]]);
   for (const sd of [-1, 1]) {
     k.wedge('hull', [[0.3, 0.1 * sd], [-0.05, 0.62 * sd], [-0.45, 0.95 * sd], [-0.52, 0.8 * sd], [-0.4, 0.4 * sd], [-0.5, 0.12 * sd]], 0.05, [0, 0, 0], [sd * 0.2, 0, 0]);
     k.wedge('paint', [[0.25, 0.12 * sd], [-0.03, 0.57 * sd], [-0.38, 0.84 * sd], [-0.4, 0.74 * sd], [-0.05, 0.42 * sd]], 0.03, [0, 0.03, 0], [sd * 0.2, 0, 0]);
@@ -435,7 +445,7 @@ const voiceDrone: Draw = (s) => {
 /** The Voice probe: a machine-built wedge, a sensor crown, modular flanks. */
 const voiceProbe: Draw = (s) => {
   const k = s.k, rnd = s.rnd;
-  k.wedge('hull', [[1.0, 0], [0.45, 0.2], [-0.6, 0.23], [-0.72, 0.1], [-0.72, -0.1], [-0.6, -0.23], [0.45, -0.2]], 0.3);
+  k.loft('hull', [[-0.72, 0.1, 0.13, 0.13], [-0.6, 0.23, 0.16, 0.15, 0.35], [0.1, 0.22, 0.16, 0.15, 0.3], [0.45, 0.2, 0.14, 0.13, 0.4], [0.8, 0.09, 0.08, 0.08], [1.0, 0.03, 0.04, 0.04]]);
   // flanks: four identical modules each side, stacked as a repeated unit
   for (const sd of [-1, 1]) {
     for (let i = 0; i < 4; i++) {
