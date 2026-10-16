@@ -91,3 +91,7 @@ the journey moving.
 `npm run pilot:forks` audits the forks of many seeds and writes
 [BALANCE-FORKS.md](BALANCE-FORKS.md): how often the lanes of a fork differ in
 something a player can weigh.
+
+## Map look
+
+The map sits on a dark backdrop with a fine grid, faint dust and a compass. Lanes bend (each one the same way every draw, from a hash of its ends). Lanes out of here are dashed and coloured by danger; the selected one is solid with a soft underlay and a pill with its jump fluid (gold when short). The rest of the net is small, dashed and unnamed. Systems share one outline weight: the kind is the shape (port square, mining hexagon, transit ring, anomaly diamond in violet, gate double diamond in gold, here double ring), danger is the colour, and a hostile system also carries a red triangle. The same shapes are the icons on the cards, and the resource icons (fluid, Cyrite, supplies, hull) share one size and weight. Heat pips are amber, threat pips teal, amber or red.

@@ -19,7 +19,7 @@
 .ch-res { display: flex; gap: 0; margin-left: auto; border: 1px solid var(--line); background: rgba(8, 13, 14, .55); }
 .ch-res > span { display: grid; gap: 3px; padding: 6px 14px; min-width: 0; }
 .ch-res > span + span { border-left: 1px solid var(--line); }
-.ch-res .k { font: 600 calc(var(--fs) * 1 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.ch-res .k { display: inline-flex; align-items: center; gap: 5px; font: 600 calc(var(--fs) * 1 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
 .ch-res b { font: 600 calc(var(--fs) * 1.7)/1 var(--font-rail); letter-spacing: .05em; color: var(--ink); }
 .ch-res .low b { color: var(--caution); }
 .ch-res .low .k::before { content: "! "; color: var(--caution); }
@@ -34,10 +34,10 @@
 .ch-alerts li.hot { color: #ef8a7f; }
 .ch-alerts li.hot::before { content: "▲"; font-size: 8px; }
 /* the body: the map takes the larger share */
-.ch-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 1.2fr); gap: 12px; align-items: stretch; }
+.ch-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(360px, 1fr); gap: 12px; align-items: stretch; }
 .ch-mapw { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; border: 1px solid var(--line); background:
-  radial-gradient(ellipse at 30% 50%, rgba(134, 169, 209, .045), transparent 62%), repeating-linear-gradient(0deg, rgba(216, 213, 198, .018) 0 1px, transparent 1px 4px), rgba(8, 13, 14, .62); }
-.ch-map { width: 100%; height: 100%; min-height: 260px; max-height: 56vh; display: block; }
+  radial-gradient(ellipse at 30% 50%, rgba(134, 169, 209, .07), transparent 62%), radial-gradient(ellipse at 100% 100%, rgba(159, 139, 214, .05), transparent 55%), repeating-linear-gradient(0deg, rgba(216, 213, 198, .018) 0 1px, transparent 1px 4px), rgb(7, 11, 12); }
+.ch-map { width: 100%; height: 100%; min-height: 330px; max-height: 58vh; display: block; }
 /* the lanes out of here */
 .ch-side { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 8px; min-width: 0; }
 .ch-lh { margin: 0; padding: 0 0 6px 2px; border-bottom: 1px solid var(--line); font: 700 calc(var(--fs) * 1.25 * 1.18)/1 var(--font-head); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
@@ -60,14 +60,18 @@
 .ch-o1 .meters { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 3px 14px; }
 .ch-o1 .tag { margin-left: 0; flex: none; font: 600 calc(var(--fs) * 1.02 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
 .ch-o1 .tag { display: inline-flex; align-items: center; gap: 7px; }
+@media (min-width: 901px) and (min-height: 521px) {
+  .ch-o1 .tag.d0, .ch-o1 .tag.d1, .ch-o1 .tag.d2 { min-width: 86px; }
+  .ch-o1 .tag.heat { min-width: 126px; }
+}
+.ch-res .cg { width: 13px; height: 13px; flex: none; color: var(--ink-3); }
 .ch-o1 .pips { display: inline-flex; gap: 2px; }
 .ch-o1 .pips u { width: 8px; height: 8px; border: 1px solid currentColor; opacity: .5; }
 .ch-o1 .tag.d0 { color: var(--cy); }
 .ch-o1 .tag.d1 { color: var(--caution); }
 .ch-o1 .tag.d2 { color: #ef8a7f; }
-.ch-o1 .tag.heat { color: var(--ink-2); }
-.ch-o1 .tag.h2 { color: var(--caution); }
-.ch-o1 .tag.h3 { color: #ef8a7f; }
+.ch-o1 .tag.heat, .ch-o1 .tag.h2, .ch-o1 .tag.h3 { color: var(--caution); }
+.ch-o1 .tag.h0, .ch-o1 .tag.h1 { color: var(--ink-2); }
 .ch-o1 .tag.h0 .pips u { opacity: .25; }
 .ch-o1 .tag.h1 .pips u:nth-child(-n+1), .ch-o1 .tag.h2 .pips u:nth-child(-n+2), .ch-o1 .tag.h3 .pips u { background: currentColor; opacity: 1; }
 .ch-o1 .tag.d0 .pips u:nth-child(-n+1), .ch-o1 .tag.d1 .pips u:nth-child(-n+2), .ch-o1 .tag.d2 .pips u { background: currentColor; opacity: 1; }
@@ -151,23 +155,35 @@
 .ch-notice.t-toll, .ch-notice.t-hunters { color: var(--caution); }
 .ch-notice.t-captain { color: #ef8a7f; }
 /* the map: here, the lanes out (coloured by how hard the far end is), the way on to the gate */
-.ch-lane { stroke-width: 2; stroke-dasharray: 6 5; opacity: .55; fill: none; }
+.ch-grid { stroke: rgba(216, 213, 198, .035); stroke-width: 1; }
+.ch-dust { fill: var(--ink-2); }
+.ch-compass circle, .ch-compass path { fill: none; stroke: rgba(216, 213, 198, .3); stroke-width: 1; }
+.ch-compass text { font: 600 10px var(--font-mono); fill: var(--ink-3); }
+.ch-lane { stroke-width: 2; stroke-dasharray: 7 5; opacity: .7; fill: none; stroke-linecap: round; }
+.ch-lane.short { stroke-dasharray: 2 6; }
 .ch-lane.teal { stroke: var(--cy); }
 .ch-lane.caution { stroke: var(--caution); }
 .ch-lane.red { stroke: var(--alert); }
-.ch-lane.sel { stroke-dasharray: none; stroke-width: 3; opacity: 1; }
+.ch-lane.sel { stroke-dasharray: none; stroke-width: 3.5; opacity: 1; }
+.ch-lane-under { fill: none; stroke-width: 9; opacity: .16; stroke-linecap: round; }
+.ch-lane-under.teal { stroke: var(--cy); }
+.ch-lane-under.caution { stroke: var(--caution); }
+.ch-lane-under.red { stroke: var(--alert); }
 .ch-onward { stroke: rgba(216, 213, 198, .28); stroke-width: 1.4; stroke-dasharray: 2 5; stroke-linecap: round; }
 .ch-onward.sel { stroke: rgba(216, 213, 198, .6); }
-.ch-net-lane { stroke: rgba(216, 213, 198, .13); stroke-width: 1.1; }
-.ch-net-lane.on { stroke: rgba(216, 213, 198, .4); stroke-width: 1.4; }
+.ch-net-lane { fill: none; stroke: rgba(216, 213, 198, .16); stroke-width: 1.1; stroke-dasharray: 4 5; }
+.ch-net-lane.on { stroke: rgba(216, 213, 198, .42); stroke-width: 1.4; }
 .ch-node.small { stroke-width: 1.4; opacity: .65; }
 .ch-node.small.on { opacity: 1; stroke: rgba(216, 213, 198, .75); }
 .ch-onward.faint { stroke: rgba(216, 213, 198, .14); }
 .ch-cost rect { fill: rgb(10, 15, 16); stroke: var(--line); stroke-width: 1; }
 .ch-cost text { font: 600 10.5px var(--font-rail); letter-spacing: .08em; text-transform: uppercase; fill: var(--ink-3); text-anchor: middle; }
-.ch-cost.sel rect { stroke: var(--ink-3); }
-.ch-cost.sel text { fill: var(--ink); }
-.ch-node { fill: rgba(11, 12, 15, .92); stroke-width: 2.2; }
+.ch-cost.sel rect { fill: var(--hud-fill); stroke: var(--hud); }
+.ch-cost.sel text { font-size: 12px; fill: var(--hud-hi); }
+.ch-cost.short rect { fill: #17170f; stroke: #7d6a40; }
+.ch-cost.short text { fill: var(--caution); }
+.ch-hostile { fill: var(--alert); stroke: #0a1118; stroke-width: 1; }
+.ch-node { stroke-width: 2; stroke-linejoin: round; }
 .ch-name { font: 600 13px var(--font-rail); letter-spacing: .1em; fill: var(--ink-2); text-transform: uppercase; paint-order: stroke; stroke: rgba(8, 13, 14, .85); stroke-width: 3px; }
 .ch-sub { font: 600 10.5px var(--font-rail); letter-spacing: .12em; fill: var(--ink-3); text-transform: uppercase; }
 .ch-s.sel .ch-name { fill: var(--hud-hi); }
@@ -181,7 +197,6 @@
 .ch-ring { fill: none; stroke: var(--hud-hi); stroke-width: 1.6; }
 .ch-ring.here { stroke: var(--ink); stroke-width: 1.4; }
 circle.ch-net { fill: rgba(201, 74, 63, .07); stroke: rgba(224, 87, 75, .5); stroke-width: 1; }
-.ch-port { fill: var(--cy); }
 .ch-quiet { fill: none; stroke: var(--cy-dim); stroke-width: 1.2; stroke-dasharray: 2 3; }
 .ch-cal { fill: var(--alert); stroke: #0a1118; stroke-width: 1; }
 .ch-region { font: 600 10px var(--font-mono); letter-spacing: .2em; text-transform: uppercase; fill: var(--ink-3); }
