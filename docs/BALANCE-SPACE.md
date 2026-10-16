@@ -17,8 +17,8 @@ flights with no busy expanse in the first minute.
 
 | Flight | In something | Told | In a busy expanse | Crowd | Longest empty (mean) | Longest empty (worst) | Expanses a minute | Calm start |
 |---|---|---|---|---|---|---|---|---|
-| Straight | 15% | 4% | 42% | 0% | 123 s | 217 s | 0.7 | 100% |
-| Wanderer | 10% | 2% | 28% | 0% | 125 s | 252 s | 0.5 | 100% |
+| Straight | 16% | 4% | 40% | 0% | 116 s | 217 s | 0.7 | 100% |
+| Wanderer | 10% | 2% | 27% | 0% | 116 s | 252 s | 0.5 | 100% |
 
 ## Features met a flight
 
@@ -26,18 +26,18 @@ Distinct features flown into, mean of a 15-minute flight.
 
 | Feature | Straight | Wanderer |
 |---|---|---|
-| Dust veil | 1.1 | 0.9 |
-| Shroud | 0.3 | 0.1 |
-| Curtain | 1.5 | 1.1 |
-| Static field | 0.8 | 0.4 |
-| Storm cell | 0.1 | 0.1 |
-| Breaker field | 0.8 | 0.5 |
-| Graveyard | 0.7 | 0.3 |
+| Dust veil | 1.2 | 0.9 |
+| Shroud | 0.3 | 0.2 |
+| Curtain | 1.9 | 1.0 |
+| Static field | 0.7 | 0.3 |
+| Storm cell | 0.0 | 0.1 |
+| Breaker field | 0.9 | 0.7 |
+| Graveyard | 0.7 | 0.4 |
 | Gravity well | 0.1 | 0.1 |
-| Cyrite seam | 0.3 | 0.1 |
-| Slipway | 0.1 | 0.1 |
-| Lantern line | 0.2 | 0.2 |
-| Relic | 0.1 | 0.1 |
+| Cyrite seam | 0.2 | 0.2 |
+| Slipway | 0.2 | 0.1 |
+| Lantern line | 0.2 | 0.1 |
+| Relic | 0.1 | 0.0 |
 | Passage | 0.0 | 0.0 |
 | Carrier | 0.0 | 0.0 |
 
@@ -46,9 +46,9 @@ Distinct features flown into, mean of a 15-minute flight.
 | Expanse | Straight | Wanderer |
 |---|---|---|
 | Open dark | 14% | 12% |
-| The Scrap | 13% | 9% |
-| The Veil | 19% | 17% |
-| The Front | 12% | 7% |
-| The Shoals | 7% | 5% |
+| The Scrap | 12% | 9% |
+| The Veil | 21% | 16% |
+| The Front | 10% | 6% |
+| The Shoals | 7% | 4% |
 | The Yards | 10% | 7% |
 | The Hush | 8% | 4% |

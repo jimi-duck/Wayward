@@ -13,19 +13,19 @@ after Cerro is 1).
 
 ## What the pilot meets
 
-3 whole journeys, flown to the end or to a wreck. "Stops" is the systems the pilot
+4 whole journeys, flown to the end or to a wreck. "Stops" is the systems the pilot
 flew in; "offered" is the jobs whose call rang. A person takes a different lane and
 more time, so read it as a floor.
 
 | Region | Jobs dealt per chart | Stops | Offered |
 |---|---|---|---|
 | 1 The Reach | 3.0 | 10.0 | 1.0 |
-| 2 The Marches | 7.3 | 10.0 | 2.7 |
-| 3 The Salvage Belt | 8.0 | 9.7 | 2.7 |
-| 4 The Drift Deep | 7.7 | 10.0 | 2.3 |
-| 5 The Breaker Yards | 9.2 | 10.0 | 2.3 |
-| 6 The Free Ports | 8.7 | 9.3 | 2.3 |
-| 7 The Hollows | 6.4 | 9.7 | 3.3 |
-| 8 The Last Lanes | 8.5 | 11.3 | 3.0 |
+| 2 The Marches | 7.4 | 10.0 | 2.3 |
+| 3 The Salvage Belt | 8.0 | 9.5 | 2.5 |
+| 4 The Drift Deep | 7.7 | 10.0 | 2.5 |
+| 5 The Breaker Yards | 9.3 | 9.8 | 2.0 |
+| 6 The Free Ports | 8.7 | 7.0 | 2.0 |
+| 7 The Hollows | 6.4 | 7.0 | 2.8 |
+| 8 The Last Lanes | 8.5 | 7.3 | 1.5 |
 
-The first job was offered at stop 3.0 on average (3 of 3 journeys).
+The first job was offered at stop 3.0 on average (4 of 4 journeys).
