@@ -28,6 +28,7 @@ const canvas = document.getElementById('c') as HTMLCanvasElement;
 const renderer = createRenderer(canvas, tier);
 const scene = new Scene();
 const env = new Environment(scene, renderer);
+env.setShadow(params.get("noshadow") ? 0 : tier.shadow);
 const camera = new PerspectiveCamera(52, 1, 0.1, 4000);
 const post = new Post(renderer, scene, camera, tier);
 const glow = glowTexture();

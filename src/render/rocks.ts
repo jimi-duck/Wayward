@@ -347,6 +347,7 @@ class Chunks {
     this.mesh = new InstancedMesh(rockGeometry(311, 1, 0, 0.5, 5), lavaRock(1.1, 1, 0.1, LOOKS.basalt, false), MAX_CHUNKS);
     this.mesh.instanceColor = new InstancedBufferAttribute(new Float32Array(MAX_CHUNKS * 3).fill(1), 3);
     this.mesh.frustumCulled = false;
+    this.mesh.receiveShadow = true;
     for (let i = 0; i < MAX_CHUNKS; i++) this.mesh.setMatrixAt(i, this.m.makeScale(0, 0, 0));
     scene.add(this.mesh);
   }
@@ -447,6 +448,7 @@ export class RockView {
         mesh.instanceColor = new InstancedBufferAttribute(new Float32Array(PER_VARIANT * 3).fill(1), 3);
         mesh.count = 0;
         mesh.frustumCulled = false;
+        mesh.castShadow = mesh.receiveShadow = true;
         this.meshes.push(mesh);
         scene.add(mesh);
       }
@@ -541,6 +543,7 @@ export class RockView {
       let mesh = this.bulwarks.get(b.id);
       if (!mesh) {
         mesh = new Mesh(this.bulwarkGeo[b.variant % this.bulwarkGeo.length]!, this.bulwarkMat);
+        mesh.castShadow = mesh.receiveShadow = true;
         this.scene.add(mesh);
         this.bulwarks.set(b.id, mesh);
       }

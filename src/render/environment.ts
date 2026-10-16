@@ -93,6 +93,15 @@ export class Environment {
     this.group.add(dust);
 
     this.key = new DirectionalLight(0xffe6c8, 4.4);
+    // the sun's shadow covers only the ship's neighbourhood: rocks darken the hull and each other close in
+    const cam = this.key.shadow.camera;
+    cam.left = cam.bottom = -SHADOW_REACH;
+    cam.right = cam.top = SHADOW_REACH;
+    cam.near = 20;
+    cam.far = 130;
+    this.key.shadow.bias = -0.0004;
+    this.key.shadow.normalBias = 0.06;
+    this.key.shadow.radius = 2;
     this.rim = new DirectionalLight(0x7f9cc8, 0.9);
     this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.8), this.rim);
     this.group.add(this.parallax.group);
@@ -109,7 +118,7 @@ export class Environment {
   private anchorPrograms(): void {
     const sky = skyFor(1, 0), [colA, colB, atmo] = sky.neb;
     sky.planet = { kind: 0, colA, colB, atmo, size: 6, az: 0, el: -10, ring: true, moon: true };
-    const proof = new FarBodies(sky, new Vector3(-40, 55, -10));
+    const proof = new FarBodies(sky, new Vector3(-40, 34, -10));
     proof.group.visible = false;
     this.stars.add(proof.group);
   }
@@ -122,7 +131,7 @@ export class Environment {
     old?.dispose();
     if (this.far) { this.far.group.removeFromParent(); this.far.dispose(); }
     // the planet takes its light from the key's quarter of the sky
-    this.far = new FarBodies(sky, new Vector3(-40, 55, -10));
+    this.far = new FarBodies(sky, new Vector3(-40, 34, -10));
     this.stars.add(this.far.group);
     this.parallax.setSky(sky);
     this.skyRim.copy(sky.neb[0]).lerp(sky.neb[2], 0.35).multiplyScalar(0.5);
@@ -149,6 +158,17 @@ export class Environment {
     if (t) this.key.color.lerp(KEY_TINT.setRGB(0.55 + t[0] * 1.6, 0.6 + t[1] * 1.6, 0.7 + t[2] * 1.6), Math.min(0.6, (t[0] + t[1] + t[2]) * 1.1));
   }
 
+  /** Shadow map size for the tier; 0 turns the sun's shadow off. */
+  setShadow(size: number): void {
+    const sh = this.key.shadow;
+    this.key.castShadow = size > 0;
+    if (sh.mapSize.x !== size && size > 0) {
+      sh.mapSize.set(size, size);
+      sh.map?.dispose();
+      sh.map = null;
+    }
+  }
+
   setPixelRatio(dpr: number): void {
     this.starMat.uniforms.uDpr!.value = dpr;
   }
@@ -157,8 +177,10 @@ export class Environment {
     this.stars.position.copy(camera.position);
     this.parallax.update(cx, cz, dt);
     // the key light keeps its angle, wherever the ship goes
-    this.key.position.set(cx - 40, 55, cz - 10);
-    this.key.target.position.set(cx, 0, cz);
+    // (the target snaps to a grid so the shadow edges do not crawl as the ship moves)
+    const kx = Math.round(cx * 4) / 4, kz = Math.round(cz * 4) / 4;
+    this.key.position.set(kx - 40, 34, kz - 10);
+    this.key.target.position.set(kx, 0, kz);
     this.rim.position.set(camera.position.x - cx, camera.position.y * 0.4, camera.position.z - cz).multiplyScalar(-1);
 
     const P = this.dustPos.array as Float32Array, B = this.dustBase;
@@ -213,6 +235,9 @@ function reflections(renderer: WebGLRenderer) {
   pmrem.dispose();
   return target.texture;
 }
+
+/** Half-width of the sun's shadow window, in world units. */
+const SHADOW_REACH = 38;
 
 function wrap(v: number, m: number): number {
   return ((v % m) + m) % m;

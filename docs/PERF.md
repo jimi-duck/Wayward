@@ -192,3 +192,7 @@ a seam and a storm on a phone, and the first two seconds after Start.
 ## Graphics pass 1: rock silhouettes
 
 Rocks get more cleaved faces (planes ×2.2, wider reach), stepped ledges in the outline, and baked ambient occlusion in vertex colours (dark in creases and crater floors). The surface relief is angular (chipped facets, sharp crests) rather than a soft swell. Triangle counts, draw calls and shader programs are unchanged (same subdivisions, same instancing; the material gains a vertex-colour read). Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/task1-rocks/`.
+
+## Graphics pass 2: the sun's shadow
+
+One shadow map from the key light, covering only 76 units around the ship (it follows the ship, snapped to a quarter-unit grid so edges do not crawl). Medium 512 px, High 1024 px, Low none (`QualityTier.shadow`). Cast and received by the Wayward, rocks, bulwarks and instanced hulls; the backdrop, places and pooled effects do not take part. The key light was lowered from 55 to 34 high so rocks and hull parts throw longer shadows; the planet's light follows. Cost: one extra depth pass of the nearby rocks, ships and hulls each frame, and a shadow lookup per lit pixel on those materials. Not measured: GPU time on a phone. Honest note: on the flat flight plane a convex rock rarely shades its neighbour (a pixel diff of isolated rocks was near zero), so the visible gain is hull self-shadow and rocks passing over or beside the ship. Medium is the tier to watch on phones.
