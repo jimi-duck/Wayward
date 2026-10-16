@@ -167,6 +167,8 @@ export class World implements EncounterHost {
   private stormT = 2;
   private coreT = 1;
   /** What the place does to the ship now (sim/space.ts), and what to tell the player of it. */
+  /** Seconds before the next "guns cold" cue inside a damping field. */
+  private coldT = 0;
   air: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
   conditions: Condition[] = [];
   private readonly there: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
@@ -591,7 +593,9 @@ export class World implements EncounterHost {
     stepShip(s, c, this.hull, dt);
     if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
-    if (rolling && !this.wasRolling && st.rollBurst) plasmaRing(this.sys, s, st);
+    // the gate's and the depot's damping field holds every gun cold, ours as well as theirs
+    const cold = !!this.safe;
+    if (rolling && !this.wasRolling && st.rollBurst && !cold) plasmaRing(this.sys, s, st);
     if (rolling && !this.wasRolling && st.rollCloak > 0) { this.cloakT = st.rollCloak; this.events.push({ type: 'cloak', x: s.x, z: s.z }); }
     this.wasRolling = rolling;
     const breaking = s.breakT >= 0;
@@ -605,11 +609,15 @@ export class World implements EncounterHost {
     let fireStats = this.sensorsDown || this.air.lock < 1 ? { ...st, torpSeek: st.torpSeek * (this.sensorsDown ? 0.6 : 1) * this.air.lock } : st;
     if (this.powers.yield > 0) fireStats = { ...fireStats, torpDamage: fireStats.torpDamage * YIELD_DAMAGE, torpBlast: fireStats.torpBlast * YIELD_BLAST };
     if (this.alive) {
+      if (cold) {
+        this.coldT = Math.max(0, this.coldT - dt);
+        if ((c.fire || c.torpedo) && this.coldT === 0) { this.coldT = 2.5; this.events.push({ type: 'gunsCold' }); }
+      }
       const seen = this.events.length;
-      fireWeapons(this.arms, s, c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
+      fireWeapons(this.arms, s, cold ? { ...c, fire: false, torpedo: false } : c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
       // each press that launched under high-yield warheads uses one up
       if (this.powers.yield > 0) for (let i = seen; i < this.events.length; i++) if (this.events[i]!.type === 'torpedo') this.powers.yield = Math.max(0, this.powers.yield - 1);
-      const laid = laySystems(this.sys, s, st, dt, fm.rapid);
+      const laid = cold ? null : laySystems(this.sys, s, st, dt, fm.rapid);
       if (laid) this.events.push({ type: 'mineLaid', x: laid.x, z: laid.z });
     }
 

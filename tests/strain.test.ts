@@ -88,6 +88,25 @@ describe('the gate and the depot keep their own', () => {
     expect(w.safe).toBeNull();
   });
 
+  it('holds our guns cold inside the ring too, and fires again outside', () => {
+    const { w } = story();
+    w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
+    const lane = w.bk!.lane, trigger = { ...idle, fire: true, torpedo: true };
+    w.ship.x = lane.x + 30; w.ship.z = lane.z;
+    w.step(1 / 60, idle);
+    if (w.phase === 'comms') w.answer(0);
+    w.events.length = 0;
+    w.step(1 / 60, trigger);
+    expect(w.bolts.length).toBe(0);
+    expect(w.torps.length).toBe(0);
+    expect(w.events.some((e) => e.type === 'gunsCold')).toBe(true);
+    w.ship.x = lane.x + 100;
+    w.ship.z = lane.z + 300;
+    expect(w.safe).toBeNull();
+    w.step(1 / 60, trigger);
+    expect(w.bolts.length).toBeGreaterThan(0);
+  });
+
   it('keeps hostile hulls outside it, circling', () => {
     const { w } = story();
     w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;

@@ -4,6 +4,7 @@ import {
 } from 'three';
 import { clamp } from '../core/math';
 import type { World } from '../sim/world';
+import { SAFE_R } from '../sim/breakout';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
 
@@ -234,6 +235,8 @@ export class BreakoutView {
   private readonly throat: Mesh;
   private readonly laneRing: Mesh;
   private readonly portRing: Mesh;
+  private readonly laneField: Mesh;
+  private readonly portField: Mesh;
   private time = 0;
 
   constructor(scene: Scene, glow: Texture) {
@@ -241,14 +244,17 @@ export class BreakoutView {
     this.throat = new Mesh(new RingGeometry(3, 15.5, 48, 1), new MeshBasicMaterial({ color: AMBER, toneMapped: false, transparent: true, opacity: 0.12, side: DoubleSide, depthWrite: false, blending: AdditiveBlending }));
     this.throat.rotation.x = -Math.PI / 2;
     this.laneRing = flatRing(16, 0.35, AMBER, 0.7);
-    this.lane.add(this.throat, this.laneRing);
+    this.laneField = flatRing(SAFE_R, 0.3, CYAN, 0.1);
+    this.lane.add(this.throat, this.laneRing, this.laneField);
     // the depot stands off to one side of its berth; the cyan ring is where you dock
     const depot = buildPort();
     depot.position.set(17, 0, -6);
     this.port.add(depot);
     this.portRing = flatRing(9, 0.25, CYAN, 0.6);
     this.portRing.position.y = 1.4;
-    this.port.add(this.portRing);
+    this.portField = flatRing(SAFE_R, 0.3, CYAN, 0.1);
+    this.portField.position.y = -0.4;
+    this.port.add(this.portRing, this.portField);
     this.lane.visible = this.port.visible = false;
     scene.add(this.lane, this.port);
 
@@ -268,6 +274,10 @@ export class BreakoutView {
     this.throat.rotation.z += dt * (0.2 + spool * 3);
     (this.throat.material as MeshBasicMaterial).opacity = 0.015 + 0.025 * ready + 0.18 * spool + (b.jumpT >= 0 ? 0.4 : 0);
     (this.laneRing.material as MeshBasicMaterial).opacity = 0.35 + 0.35 * ready + 0.2 * Math.sin(this.time * 3) * ready;
+    // the damping field's edge: a thin teal line, a little brighter while you are inside it
+    const inside = world.safe ? 0.08 : 0;
+    (this.laneField.material as MeshBasicMaterial).opacity = 0.09 + inside + 0.02 * Math.sin(this.time * 1.2);
+    (this.portField.material as MeshBasicMaterial).opacity = 0.09 + inside + 0.02 * Math.sin(this.time * 1.2 + 1);
     (this.portRing.material as MeshBasicMaterial).opacity = 0.35 + 0.25 * Math.sin(this.time * 2.4) + b.dockT;
   }
 }
