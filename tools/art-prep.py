@@ -31,7 +31,13 @@ ROOT = Path(__file__).resolve().parent.parent
 EXT = {'.png', '.jpg', '.jpeg', '.webp', '.avif'}
 # Slots drawn from a mask or blended on black: the black of the picture is made see-through.
 KEYED = {'emblems'}
-QUALITY = {'emblems': 90, 'ships': 88}
+QUALITY = {'emblems': 90, 'ships': 88, 'fleet': 88}
+# Slots drawn on black with a screen blend: the whole picture is kept and padded, never cut.
+CONTAIN = {'fleet'}
+# Generated sheets leave a thin frame line at the edge: this share is cut off each side first.
+TRIM = {'fleet': 0.055}
+LEFT_TRIM = {'fleet/wayward-guns': 0.14, 'fleet/wayward-rig': 0.14, 'fleet/wayward-signals': 0.14, 'fleet/wayward-stock': 0.14}  # a frame line sits further in
+SMALL_TRIM = 0.07  # a picture under 800 px wide was cut from a sheet and carries a frame
 
 
 def save(im, key, b):
@@ -39,7 +45,17 @@ def save(im, key, b):
     w, h = (int(n) for n in b['size'].split('×'))
     folder = key.split('/')[0]
     im = im.convert('RGBA' if folder in KEYED else 'RGB')
-    im = ImageOps.fit(im, (w, h), Image.LANCZOS, centering=(0.5, 0.5))
+    t = TRIM.get(folder, SMALL_TRIM if folder == 'phenomena' and im.width < 800 else 0)
+    if t:
+        dx, dy = round(im.width * t), round(im.height * t)
+        im = im.crop((max(dx, round(im.width * LEFT_TRIM.get(key, 0))), dy, im.width - dx, im.height - dy))
+    if folder in CONTAIN:
+        im = ImageOps.contain(im, (w, h), Image.LANCZOS)
+        canvas = Image.new('RGB', (w, h), (0, 0, 0))
+        canvas.paste(im, ((w - im.width) // 2, (h - im.height) // 2))
+        im = canvas
+    else:
+        im = ImageOps.fit(im, (w, h), Image.LANCZOS, centering=(0.5, 0.5))
     if folder in KEYED:
         # white mark on black: the brightness becomes the opacity, the colour white
         g = im.convert('L')

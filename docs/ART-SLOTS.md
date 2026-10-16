@@ -199,7 +199,7 @@ stages of the Wayward, faction liveries, stations, elites and debrief scenes.
 
 ## Where the set stands
 
-All 109 slots have a picture (5.1 MB), cut from ChatGPT contact sheets and
+All 109 first-set slots have a picture, plus the 65 continuation ones (8.4 MB), cut from ChatGPT contact sheets and
 installed through `art:prep`.
 
 - The first 64 were cut by hand: portraits 4:5 around the face, ships fitted
@@ -211,6 +211,12 @@ installed through `art:prep`.
 - Provisional: the `-scarred` portraits are the base portraits with light damage
   marks, and a few sightings and endings stand in for the event rather than
   showing it. No screen draws the regions yet.
+- The continuation export (2026-10-15) added 65 more: 27 fleet hulls, 24 job scenes
+  and 14 phenomena (8.4 MB in all). Fleet hulls go through `art:prep` with
+  contain-fit on black (no cut), after a small trim of the frame line the sheet
+  left at the edge. Only the comms owner hulls draw fleet pictures today; jobs,
+  phenomena and the capital and Wayward pictures wait for a screen.
+- Which of these should be redone: `/mnt/project-files/art-brief/REDO-AND-MISSING.md`.
 - The sheets that went unused are in `/mnt/project-files/art-brief/raw/`.
 
 A better picture for any slot just overwrites its file. Whether the set reads on
