@@ -198,6 +198,7 @@ export class Hud {
         case 'plasmaDown': this.note(world, t('Plasma torpedo shot down')); break;
         case 'tractor': this.note(world, t('Tractor lock · thrust away'), 'hit'); break;
         case 'bankEmpty': this.note(world, t('Laser bank low · slower fire'), 'hit'); break;
+        case 'gunsCold': this.note(world, t('Guns cold · the field damps every weapon'), 'hit'); break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':
           this.note(world, e.left > 0 ? t('Shield took it · {n} left', { n: e.left }) : t('Shield down'), 'hit');
@@ -641,7 +642,7 @@ export class Hud {
     // inside the gate's or the depot's safe ring: the card says so, teal and quiet, and nothing is firing
     const safe = world.alive ? world.safe : null;
     const word = !world.alive ? 'Hull breach' : safe ? 'Safe here' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
-    const note = safe ? t(safe === 'lane' ? 'The gate covers you · nothing can fire here' : 'The depot covers you · nothing can fire here') : sub;
+    const note = safe ? t(safe === 'lane' ? 'The gate’s field holds every gun cold' : 'The depot’s field holds every gun cold') : sub;
     const key = `${a}${word}${note}${safe ?? ''}`;
     if (key === this.modeKey) return;
     this.modeKey = key;

@@ -21,6 +21,12 @@ A sortie with a shape: get the stolen hauler out of the home system
   minute flat out); Frontier Supply, the port, is halfway and off the line.
   The HUD carries both as a name and a distance on the place itself, radar
   diamonds, the objective and its quiet lines (see [HUD.md](HUD.md)).
+- **The damping field.** The gate and the depot each project a field of
+  `SAFE_R` (40 units). Inside it every weapon is dead, theirs and yours:
+  hostile hulls keep out and hold fire, and the lasers, torpedoes, mines and
+  roll burst go cold (`World.safe`, `cold` in the step). A trigger pressed
+  there gives one "Guns cold" line (every 2.5 s at most); the edge is a thin
+  teal ring on the ground and the alert card reads "Safe here".
 - **The jump.** Inside the lane mouth with the lane's jump fluid in the tank
   (`World.fuel`, 20 on the first lane), the drive spools for five seconds;
   leave the ring and it winds down. The jump burns the fluid and ends the run

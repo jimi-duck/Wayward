@@ -26,6 +26,7 @@ export type GameEvent =
   | { type: 'mended'; plates: number }
   | { type: 'breach'; x: number; z: number; score: number }
   | { type: 'bankEmpty' }
+  | { type: 'gunsCold' }
   | { type: 'rackEmpty' }
   | { type: 'enemyFire'; x: number; y: number; z: number; faction: string }
   | { type: 'alienHit'; x: number; y: number; z: number; id: number }
