@@ -470,7 +470,7 @@ export function buildWayward(): BuiltHull {
     const x = onHull ? -2.1 + rnd() * 3.8 : -1.9 + rnd() * 2.5;
     patch(k, rnd, face, onHull ? HY : PY, z0, x, (rnd() - 0.5) * face.wid * 0.4);
   }
-  const root = k.build(materials(hits));
+  const root = k.build(materials(hits), 0.07);
   const tip = PZ + PW * 0.6;
   return { root, nozzles, wings: [[0.9, PY + PH / 2 - 0.05, -tip], [0.9, PY + PH / 2 - 0.05, tip]], shield: [3.1, 1.2, 2.45] };
 }

@@ -48,7 +48,7 @@ function materials(sky: Sky): Mats {
 
 /** One of the fleet's own designs, built in the far set. */
 function hullOf(m: Mats, kind: Parameters<typeof designFor>[0], faction: Parameters<typeof designFor>[1]): Group {
-  return designFor(kind, faction)!.k.build(m.keys);
+  return designFor(kind, faction)!.k.build(m.keys, 0.04);
 }
 
 /** A ring station: a wide hoop of habitat blocks round a hub, spokes, a lit rim. */

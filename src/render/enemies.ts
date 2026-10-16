@@ -137,7 +137,7 @@ function dress(k: Kit, kind: AlienKind, f: Faction, rnd: () => number): void {
 /** A hull of unit radius, nose +X, in a faction's metal. */
 function build(kind: AlienKind, faction: Faction): Model {
   const design = designFor(kind, faction);
-  if (design) return { root: design.k.build(factionMaterials(faction)), engines: design.engines, lamps: design.lamps };
+  if (design) return { root: design.k.build(factionMaterials(faction), 0.04), engines: design.engines, lamps: design.lamps };
   const k = new Kit(), rnd = seeded(kind.length * 31 + kind.charCodeAt(0));
   const engines: V3[] = [];
   // Running lights and windows are not geometry: they are drawn as light
