@@ -107,3 +107,21 @@ job-site tables. It now shows in about 15% of systems outside Drift Deep
   less (down to 0.5x) (`rules.claimPatience`). Paying or billing a claim raises
   that standing and fighting lowers it, so how you treated a region's claimants
   decides how long the next field lets you work.
+
+## Consequences and pacing
+
+- **A claim is remembered.** Paying or billing a claim sets a flag
+  (`claim_paid_frontier`, `claim_paid_guild`); for the rest of the journey that
+  claimant's fields let you work, with one line to say the tally stands.
+  Fighting a crew sets `claim_fought_*`; the next crew from them comes in 60% of
+  the time. Refusing both ways is still open (back off, leave the field).
+- **Effort rests.** `HEAVY_GOALS` (destroy, strike, defend, race, survey,
+  sneak, recover) are the jobs that ask for effort. A heavy job is much less
+  likely straight after one (x0.15 the column before, x0.5 two columns before),
+  in both the timetable and the roll (`situations.ts`, `rested`). The variety
+  report counts the longest run of heavy systems down a walk: the worst of 60
+  went from 5 to 3 (mean 1.8 to 1.6), and `tests/experience.test.ts` keeps it
+  at three or fewer down a chart.
+- **Not done.** Job pictures (`src/art/jobs/`) are not drawn by any screen yet,
+  so The Drift Cache has none; that is the job offer's screen, which the UI
+  thread owns.

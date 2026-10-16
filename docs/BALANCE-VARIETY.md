@@ -14,68 +14,70 @@ active (non-breather) systems do not repeat one.
 | Windows of 3 active systems repeating an objective and expanse | 10% |
 | Active systems that are a plain crossing (no job, no place) | 31% |
 | Active systems with at least one feature in the sky | 98% |
+| Heavy jobs (destroy, strike, defend, race, survey, sneak, recover) | 15% of systems |
+| Longest run of heavy systems in a row (mean, worst of 60) | 1.6, 3 |
 
 ## By region
 
 | Region | Systems | Expanses | Features | Objectives |
 |---|---|---|---|---|
 | 1 | 540 | veil 44%, open 44%, scrap 13% | veil 23%, passage 20%, curtain 16%, works 16%, breakers 15% | job:call 33%, quiet 26%, crossing 13%, job:reach 9% |
-| 2 | 540 | veil 34%, open 29%, scrap 28%, front 10% | seam 28%, breakers 27%, veil 26%, curtain 21%, graveyard 21% | job:call 36%, quiet 21%, crossing 17%, job:strike 5% |
-| 3 | 540 | open 27%, scrap 27%, yards 25%, veil 21% | breakers 32%, graveyard 32%, works 23%, passage 22%, curtain 20% | quiet 26%, crossing 20%, job:call 19%, job:watch 9% |
-| 4 | 540 | open 33%, veil 31%, front 28%, shoals 8% | lanterns 24%, static 23%, curtain 22%, passage 18%, veil 17% | quiet 40%, job:call 21%, crossing 15%, job:reach 4% |
-| 5 | 540 | yards 36%, open 35%, scrap 29% | breakers 39%, graveyard 30%, passage 28%, works 26%, seam 21% | crossing 29%, job:reach 16%, quiet 13%, job:call 12% |
-| 6 | 540 | open 32%, veil 22%, yards 17%, front 16% | passage 22%, curtain 19%, breakers 19%, lanterns 17%, veil 17% | crossing 29%, quiet 18%, job:call 11%, job:follow 10% |
-| 7 | 540 | hush 39%, shoals 26%, veil 23%, open 11% | breakers 26%, curtain 25%, well 23%, carrier 20%, veil 20% | crossing 27%, quiet 21%, job:call 19%, job:destroy 6% |
-| 8 | 780 | hush 22%, front 18%, veil 17%, shoals 17% | breakers 35%, graveyard 31%, lanterns 29%, curtain 27%, static 27% | crossing 36%, job:call 16%, quiet 12%, job:survey 7% |
+| 2 | 540 | veil 34%, open 29%, scrap 27%, front 10% | seam 28%, breakers 26%, veil 26%, curtain 21%, passage 20% | job:call 37%, quiet 21%, crossing 17%, job:strike 5% |
+| 3 | 540 | open 27%, scrap 26%, yards 25%, veil 21% | breakers 32%, graveyard 30%, works 24%, passage 21%, curtain 19% | quiet 26%, crossing 20%, job:call 19%, job:watch 9% |
+| 4 | 540 | open 32%, veil 32%, front 27%, shoals 9% | lanterns 24%, static 23%, curtain 21%, passage 18%, veil 18% | quiet 40%, job:call 21%, crossing 15%, job:reach 4% |
+| 5 | 540 | yards 37%, open 34%, scrap 29% | breakers 39%, graveyard 30%, passage 29%, works 24%, lanterns 22% | crossing 29%, job:reach 17%, quiet 13%, job:call 11% |
+| 6 | 540 | open 32%, veil 22%, yards 17%, front 16% | passage 24%, breakers 18%, lanterns 18%, curtain 18%, veil 16% | crossing 29%, quiet 18%, job:call 11%, job:follow 11% |
+| 7 | 540 | hush 39%, shoals 26%, veil 23%, open 12% | breakers 26%, curtain 25%, well 24%, carrier 20%, relic 20% | crossing 27%, quiet 21%, job:call 19%, job:destroy 5% |
+| 8 | 780 | hush 22%, front 18%, veil 17%, shoals 16% | breakers 35%, graveyard 31%, lanterns 28%, curtain 27%, carrier 27% | crossing 36%, job:call 16%, quiet 12%, job:survey 6% |
 
 ## Expanses
 | Expanse | Systems |
 |---|---|
-| open | 1138 |
-| veil | 1083 |
-| scrap | 670 |
-| yards | 542 |
-| front | 431 |
-| hush | 380 |
-| shoals | 316 |
+| open | 1140 |
+| veil | 1085 |
+| scrap | 666 |
+| yards | 544 |
+| front | 429 |
+| hush | 383 |
+| shoals | 313 |
 
 ## Features
 | Feature | Systems |
 |---|---|
-| breakers | 1187 |
-| graveyard | 1009 |
-| curtain | 946 |
-| works | 862 |
-| lanterns | 828 |
-| veil | 814 |
-| passage | 807 |
-| seam | 726 |
-| carrier | 583 |
-| shroud | 564 |
-| static | 548 |
-| relic | 392 |
+| breakers | 1194 |
+| graveyard | 991 |
+| curtain | 929 |
+| lanterns | 849 |
+| works | 842 |
+| passage | 818 |
+| veil | 804 |
+| seam | 739 |
+| carrier | 588 |
+| shroud | 562 |
+| static | 552 |
+| relic | 399 |
 | well | 377 |
-| storm | 250 |
+| storm | 255 |
 
 ## Objectives
 | Objective | Systems |
 |---|---|
 | crossing | 1091 |
 | quiet | 985 |
-| job:call | 930 |
-| job:reach | 280 |
-| job:destroy | 165 |
-| job:watch | 136 |
-| job:follow | 131 |
-| job:sneak | 126 |
-| job:strike | 115 |
-| job:race | 115 |
-| job:survey | 97 |
-| job:defend | 88 |
+| job:call | 933 |
+| job:reach | 301 |
+| job:follow | 152 |
+| job:destroy | 150 |
+| job:watch | 142 |
+| job:sneak | 120 |
+| job:strike | 110 |
+| job:race | 100 |
+| job:survey | 96 |
 | place:nebula | 87 |
+| job:defend | 82 |
 | place:ion_storm | 75 |
 | place:anomaly | 62 |
-| job:recover | 42 |
+| job:recover | 39 |
 | place:distress | 19 |
 | place:derelict | 11 |
 | place:convoy | 5 |

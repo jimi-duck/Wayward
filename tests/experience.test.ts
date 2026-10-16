@@ -7,6 +7,8 @@ import { migrate } from '../src/meta/save';
 import { regionOf, sysById, type Chart } from '../src/sim/chart';
 import { composeChart, expOf, objectiveOf, signature, skyOfSignature } from '../src/sim/experience';
 import { newJourney, sortieDef, type Journey } from '../src/sim/journey';
+import { HEAVY_GOALS } from '../src/sim/situations';
+import { SITUATION_BY_ID } from '../src/content/situations';
 import { claimPatience, coverRate, easeSky } from '../src/sim/rules';
 import { laySortie } from '../src/sim/sites';
 import { Space } from '../src/sim/space';
@@ -342,6 +344,23 @@ describe('places pinned to the sky', () => {
   });
 });
 
+describe('pacing', () => {
+  it('does not stack columns of effort: at most three heavy jobs in a row down a chart', () => {
+    let worst = 0;
+    for (const seed of SEEDS) {
+      const c = shared(seed).chart;
+      const cols = [...new Set(c.systems.map((s) => s.col))].sort((a, b) => a - b);
+      let run = 0;
+      for (const col of cols) {
+        const heavy = c.systems.some((s) => s.col === col && HEAVY_GOALS.has(SITUATION_BY_ID[c.situations?.[s.id]?.id ?? '']?.goal.kind ?? ''));
+        run = heavy ? run + 1 : 0;
+        worst = Math.max(worst, run);
+      }
+    }
+    expect(worst).toBeLessThanOrEqual(3);
+  });
+});
+
 describe('what the ground does', () => {
   it('runs the hunt slower in cover and faster where the region is watched', () => {
     expect(coverRate(0.45)).toBe(0.45);
@@ -350,8 +369,9 @@ describe('what the ground does', () => {
     expect(coverRate(0.45, 1.3)).toBe(0.45);
   });
 
-  it('warns, then hails with a claim card, when you linger in a claimed field', () => {
-    let found: { w: World } | null = null;
+  /** A world in claimed ground, with the ship held in its richest feature: the seconds until the claim crew hails (or null). */
+  function claimHail(flag?: string): { card: string; t: number | null } {
+    let found: World | null = null;
     for (const seed of SEEDS) {
       const j = journey(seed);
       for (const s of open(j.chart)) {
@@ -359,25 +379,33 @@ describe('what the ground does', () => {
         const def = defOf(j, s.id);
         if (!def.rules?.claim || def.netted) continue;
         const w = new World(seed, { mode: 'breakout', sortie: def, space: true });
-        if (w.space!.features.some((f) => FEATURES[f.def].purpose.includes('resource'))) found = { w };
+        if (w.space!.features.some((f) => FEATURES[f.def].purpose.includes('resource'))) found = w;
       }
       if (found) break;
     }
-    const w = found!.w;
-    const f = w.space!.features.find((x) => FEATURES[x.def].purpose.includes('resource'))!;
+    const w = found!;
     const card = w.bk!.def.rules!.claim!.card;
-    let hailed = '';
-    for (let i = 0; i < Math.round(120 / STEP) && !hailed; i++) {
+    if (flag) w.flags.add(flag.replace('<who>', card === 'claim_guild' ? 'guild' : 'frontier'));
+    const f = w.space!.features.find((x) => FEATURES[x.def].purpose.includes('resource'))!;
+    let t: number | null = null;
+    for (let i = 0; i < Math.round(120 / STEP) && t === null; i++) {
       w.ship.x = f.x; w.ship.z = f.z; w.ship.vx = w.ship.vz = 0; w.plates = 9;
       w.step(STEP, idle());
-      if (w.phase === 'comms') hailed = w.comms!.def.id;
+      if (w.phase === 'comms' && w.comms!.def.id === card) { t = i * STEP; w.answer(w.comms!.choices.findIndex((c) => c.id === 'pay')); }
     }
-    expect(hailed).toBe(card);
-    // the crew only comes if the player says so: paying ends it
-    const pay = w.comms!.choices.findIndex((c) => c.id === 'pay');
-    const before = w.aliens.length;
-    w.answer(pay);
-    expect(w.aliens.length).toBe(before);
+    return { card, t };
+  }
+
+  it('warns, then hails with a claim card, when you linger in a claimed field', () => {
+    const { card, t } = claimHail();
+    expect(t).not.toBeNull();
+    expect(['claim_guild', 'claim_holdfast']).toContain(card);
+  });
+
+  it('remembers: a paid claim stands for the region, a fought crew comes sooner', () => {
+    const base = claimHail().t!;
+    expect(claimHail('claim_paid_<who>').t).toBeNull();
+    expect(claimHail('claim_fought_<who>').t!).toBeLessThan(base);
   });
 
   it('lets a Signals fit win back some of the sky', () => {

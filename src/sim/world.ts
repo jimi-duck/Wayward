@@ -818,6 +818,7 @@ export class World implements EncounterHost {
    */
   private claimT = 0;
   private claimed = 0;
+  private claimNoted = false;
   private stepClaim(dt: number): void {
     const rule = this.bk?.def.rules?.claim, space = this.space;
     if (!rule || !space || this.claimed >= 2 || this.bk!.def.quiet || this.bk!.def.netted) return;
@@ -826,7 +827,13 @@ export class World implements EncounterHost {
     for (const f of this.air.from) if (FEATURES[f.def].purpose.includes('resource') && weightAt(f, s.x, s.z) * f.level > 0.5) rich = true;
     // those who stand well with the claimant are let linger; their enemies are not
     const who = rule.card === 'claim_guild' ? 'guild' : 'frontier';
-    this.claimT = rich ? this.claimT + dt * stealthOf(this.levels) / claimPatience(this.standing[who] ?? 0) : Math.max(0, this.claimT - dt * 0.6);
+    // a paid claim stands for the rest of the region; a crew that was fought comes sooner next time
+    if (this.flags.has(`claim_paid_${who}`)) {
+      if (rich && !this.claimNoted) { this.claimNoted = true; this.events.push({ type: 'ping', id: `claim_${this.sortie.system}_ok`, from: tr('Scope'), caller: 'unknown', text: tr('Claim paid · the tally stands'), moment: 'calm', system: this.sortie.name }); }
+      return;
+    }
+    const grudge = this.flags.has(`claim_fought_${who}`) ? 0.6 : 1;
+    this.claimT = rich ? this.claimT + dt * stealthOf(this.levels) / claimPatience(this.standing[who] ?? 0) / grudge : Math.max(0, this.claimT - dt * 0.6);
     if (this.claimed === 0 && this.claimT >= rule.after * 0.55) {
       this.claimed = 1;
       this.events.push({ type: 'ping', id: `claim_${this.sortie.system}_w`, from: tr('Scope'), caller: 'unknown', text: tr(rule.warn), moment: 'calm', system: this.sortie.name });

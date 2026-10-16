@@ -62,6 +62,11 @@ function walk(seed: number): Step[] {
   return out;
 }
 
+/** The jobs that ask for effort: not a plain call, a reach, a follow or a watch. */
+const HEAVY = new Set(['job:destroy', 'job:strike', 'job:defend', 'job:race', 'job:survey', 'job:sneak', 'job:recover']);
+/** The longest run of consecutive heavy systems on a walk, breathers included (a breather breaks a run). */
+const longestRun = (r: Step[]): number => { let best = 0, run = 0; for (const s of r) { run = HEAVY.has(s.objective) ? run + 1 : 0; best = Math.max(best, run); } return best; };
+
 const mean = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
@@ -116,6 +121,8 @@ active (non-breather) systems do not repeat one.
 | Windows of 3 active systems repeating an objective and expanse | ${pct(winRep / Math.max(1, win))} |
 | Active systems that are a plain crossing (no job, no place) | ${pct(corridor / Math.max(1, acts))} |
 | Active systems with at least one feature in the sky | ${pct(featureful / Math.max(1, acts))} |
+| Heavy jobs (destroy, strike, defend, race, survey, sneak, recover) | ${pct(runs.reduce((a, r) => a + r.filter((x) => HEAVY.has(x.objective)).length, 0) / Math.max(1, total))} of systems |
+| Longest run of heavy systems in a row (mean, worst of ${RUNS}) | ${mean(runs.map(longestRun)).toFixed(1)}, ${Math.max(...runs.map(longestRun))} |
 
 ## By region
 
