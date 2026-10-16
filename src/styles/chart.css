@@ -154,8 +154,10 @@
 .ch-lane.sel { stroke-dasharray: none; stroke-width: 3; opacity: 1; }
 .ch-onward { stroke: rgba(216, 213, 198, .28); stroke-width: 1.4; stroke-dasharray: 2 5; stroke-linecap: round; }
 .ch-onward.sel { stroke: rgba(216, 213, 198, .6); }
-.ch-stop { fill: rgb(10, 15, 16); stroke: rgba(216, 213, 198, .4); stroke-width: 1.3; }
-.ch-stop.sel { stroke: rgba(216, 213, 198, .85); }
+.ch-net-lane { stroke: rgba(216, 213, 198, .13); stroke-width: 1.1; }
+.ch-net-lane.on { stroke: rgba(216, 213, 198, .4); stroke-width: 1.4; }
+.ch-node.small { stroke-width: 1.4; opacity: .65; }
+.ch-node.small.on { opacity: 1; stroke: rgba(216, 213, 198, .75); }
 .ch-onward.faint { stroke: rgba(216, 213, 198, .14); }
 .ch-cost rect { fill: rgb(10, 15, 16); stroke: var(--line); stroke-width: 1; }
 .ch-cost text { font: 600 10.5px var(--font-rail); letter-spacing: .08em; text-transform: uppercase; fill: var(--ink-3); text-anchor: middle; }

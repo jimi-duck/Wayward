@@ -50,14 +50,16 @@ own to the rules.
 
 ## The map
 
-Three kinds of mark, drawn in screen pixels (the box is measured on every
-draw, so a phone turning redraws it): here on the left, the lanes you can
-take in the middle, the gate on the right. The graph itself is not drawn.
-Each lane is coloured by its danger (teal quiet, gold watched, red hostile)
-and carries its days; from each a dotted line runs on to the gate with the
-jumps still to go (and, between each lane and the gate, one small mark for every system still to cross, so the count matches the header's), so the straight way and the longer ones read at once. The
-selected lane is solid and bright. A red halo is the Net as last seen, a red
-diamond Calloway's last sighting, a small square a port, a dotted ring a
+The region ahead as it really is, drawn in screen pixels (the box is measured
+on every draw, so a phone turning redraws it). Columns run left to right from
+here to the gate, each system at the height the simulation gives it, and the
+lanes between them are the real forward lanes, so the way on reads as a
+connected net you cross. Only systems you can still reach are drawn, small and
+unnamed. The lanes out of here are coloured by their danger (teal quiet, gold
+watched, red hostile) with the lane's days under its name; the selected one is
+solid and bright, and the systems and lanes you could reach by taking it are
+drawn a little brighter than the rest. A red halo is the Net as last seen, a
+red diamond Calloway's last sighting, a small square a port, a dotted ring a
 breather.
 
 ## Upside and trade-off
