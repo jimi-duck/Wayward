@@ -11,7 +11,7 @@ import type { QualityTier } from './quality';
 // grain, for the grit. Tone mapping runs last, so everything before it can
 // stay in HDR. All in one pass.
 //
-// Anti-aliasing is SMAA on the high tier, not multisampling: a multisampled
+// Anti-aliasing is SMAA on Medium (light) and High (full), not multisampling: a multisampled
 // half-float chain drew nothing but black on some GPUs and canvas sizes.
 // (A chromatic split on hits was tried and dropped for the same reason:
 // postprocessing's effect blacks out the frame while its offset is zero.)
@@ -36,7 +36,7 @@ export class Post {
     const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: false });
     grain.blendMode.opacity.value = 0.06;
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC });
-    if (tier.msaa) this.composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: SMAAPreset.HIGH })));
+    if (tier.smaa) this.composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: tier.smaa === 'high' ? SMAAPreset.HIGH : SMAAPreset.LOW })));
     this.composer.addPass(new EffectPass(camera, bloom, vignette, grain, tone));
   }
 

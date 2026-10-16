@@ -18,8 +18,10 @@ export interface QualityTier {
   name: TierName;
   /** Ceiling on devicePixelRatio. The original capped at 1.5 everywhere. */
   dprCap: number;
-  /** Anti-aliasing (SMAA in the post chain). Only the high tier has it. */
+  /** Hardware multisampling on the direct canvas (unused: no tier asks for it; SMAA below is what smooths edges). */
   msaa: boolean;
+  /** Post-chain edge smoothing: a light SMAA on Medium, the full one on High, none on Low. */
+  smaa: 'low' | 'high' | null;
   /** Size of the sun's shadow map around the ship (0: no shadows). */
   shadow: number;
   /** Small stone chips drawn between the big rocks (0 hides the layer). */
@@ -29,9 +31,9 @@ export interface QualityTier {
 // Bloom resolution, shadow map size and particle budgets join these as the
 // effects that use them land (M3, M4).
 export const TIERS: readonly QualityTier[] = [
-  { name: 'low', dprCap: 1, msaa: false, shadow: 0, debris: 160 },
-  { name: 'medium', dprCap: 1.25, msaa: false, shadow: 512, debris: 360 },
-  { name: 'high', dprCap: 1.5, msaa: true, shadow: 1024, debris: 560 },
+  { name: 'low', dprCap: 1, msaa: false, smaa: null, shadow: 0, debris: 160 },
+  { name: 'medium', dprCap: 1.25, msaa: false, smaa: 'low', shadow: 512, debris: 360 },
+  { name: 'high', dprCap: 1.5, msaa: true, smaa: 'high', shadow: 1024, debris: 560 },
 ];
 
 const EMA = 0.05;
