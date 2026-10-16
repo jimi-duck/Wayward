@@ -90,3 +90,20 @@ should be a find. It is `rare`, passed over six times in ten when it would be
 dealt, paired with static only six times in ten, and a smaller share of the
 job-site tables. It now shows in about 15% of systems outside Drift Deep
 (24%) and the Last Lanes (29%).
+
+## Builds that change the sky, and a ground that remembers
+
+- **Signals.** `rules.easeSky` runs after the sky is sampled: a long-range
+  array wins back 40% of the sight and lock that dust and shrouds take; a
+  jammer cuts a static field's navigation interference by 35%. With neither,
+  the same veil or static is simply harder, so the fit changes where and how a
+  pilot is willing to fly. Spoofer, ghost echo and baffles already slowed a
+  claim crew and a patrol (`stealthOf`).
+- **Rig.** The ore tractor sets how far and how fast a drifting case is taken
+  (`recover`), and it opens the winch choice.
+- **Contacts.** The Guild ledger bills a claim cutter (`claim_guild`).
+- **Memory.** Claims read standing: friends of the claimant (frontier in the
+  Marches, Guild in the Belt) are let linger longer (up to 1.5x), enemies for
+  less (down to 0.5x) (`rules.claimPatience`). Paying or billing a claim raises
+  that standing and fighting lowers it, so how you treated a region's claimants
+  decides how long the next field lets you work.

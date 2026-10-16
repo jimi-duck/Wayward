@@ -7,7 +7,7 @@ import { migrate } from '../src/meta/save';
 import { regionOf, sysById, type Chart } from '../src/sim/chart';
 import { composeChart, expOf, objectiveOf, signature, skyOfSignature } from '../src/sim/experience';
 import { newJourney, sortieDef, type Journey } from '../src/sim/journey';
-import { coverRate } from '../src/sim/rules';
+import { claimPatience, coverRate, easeSky } from '../src/sim/rules';
 import { laySortie } from '../src/sim/sites';
 import { Space } from '../src/sim/space';
 import { World } from '../src/sim/world';
@@ -378,6 +378,23 @@ describe('what the ground does', () => {
     const before = w.aliens.length;
     w.answer(pay);
     expect(w.aliens.length).toBe(before);
+  });
+
+  it('lets a Signals fit win back some of the sky', () => {
+    const bare = { sight: 0.5, lock: 0.6, jam: 0.8 };
+    const a = { ...bare }; easeSky({}, a);
+    expect(a).toEqual(bare);
+    const fit = { ...bare }; easeSky({ md_array: 1, md_jammer: 1 }, fit);
+    expect(fit.sight).toBeGreaterThan(0.6);
+    expect(fit.lock).toBeGreaterThan(0.7);
+    expect(fit.jam).toBeCloseTo(0.52, 5);
+  });
+
+  it('makes the claimant more or less patient by standing', () => {
+    expect(claimPatience(0)).toBe(1);
+    expect(claimPatience(2)).toBeGreaterThan(claimPatience(1));
+    expect(claimPatience(-2)).toBeLessThan(claimPatience(0));
+    expect(claimPatience(9)).toBe(claimPatience(2));
   });
 
   it('makes a lantern line steady the lane mouth in a static field', () => {

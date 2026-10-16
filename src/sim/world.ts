@@ -39,7 +39,7 @@ import { Ids, newId, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_TIME, stepPickups, YIELD_BLAST, YIELD_DAMAGE, type CellSource, type Pickup, type PickupKind } from './pickups';
 import { Rng } from './rng';
 import { laySortie, type Laid } from './sites';
-import { coverRate, stealthOf } from './rules';
+import { claimPatience, coverRate, easeSky, stealthOf } from './rules';
 import { t as tr } from '../i18n';
 import { CALM, reports, weightAt, Space, type Influence, type Report as Condition } from './space';
 import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from './run';
@@ -811,7 +811,9 @@ export class World implements EncounterHost {
     const s = this.ship;
     let rich = false;
     for (const f of this.air.from) if (FEATURES[f.def].purpose.includes('resource') && weightAt(f, s.x, s.z) * f.level > 0.5) rich = true;
-    this.claimT = rich ? this.claimT + dt * stealthOf(this.levels) : Math.max(0, this.claimT - dt * 0.6);
+    // those who stand well with the claimant are let linger; their enemies are not
+    const who = rule.card === 'claim_guild' ? 'guild' : 'frontier';
+    this.claimT = rich ? this.claimT + dt * stealthOf(this.levels) / claimPatience(this.standing[who] ?? 0) : Math.max(0, this.claimT - dt * 0.6);
     if (this.claimed === 0 && this.claimT >= rule.after * 0.55) {
       this.claimed = 1;
       this.events.push({ type: 'ping', id: `claim_${this.sortie.system}_w`, from: tr('Scope'), caller: 'unknown', text: tr(rule.warn), moment: 'calm', system: this.sortie.name });
@@ -1688,6 +1690,7 @@ export class World implements EncounterHost {
     const space = this.space!;
     space.step(dt, this.runTime, s);
     const a = space.sample(s.x, s.z, this.air);
+    easeSky(this.levels, a);
     this.field.zone = a.rock;
     this.navNoise = Math.max(Math.max(0, a.jam - a.steady), this.navNoise > 0 ? this.navNoise - dt * 0.5 : 0);
     // heavy going slows the ship; a pull leans it
