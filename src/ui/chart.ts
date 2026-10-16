@@ -437,8 +437,15 @@ export class ChartPanel {
       if (f.atGate) return;
       const p = pos(i);
       kids.push(svg('line', { x1: p.x, y1: p.y, x2: gx, y2: hy, class: `ch-onward${f === sel ? ' sel' : ''}` }));
-      if (f.gateAfter !== null && W >= 340) {
-        const x = p.x + (gx - p.x) * 0.55, y = p.y + (hy - p.y) * 0.55, label = f.gateAfter === 1 ? t('1 to gate') : t('{n} to gate', { n: f.gateAfter });
+      // the systems still to cross between that lane and the gate, one small mark each, so the map counts what the header does
+      const between = Math.max(0, Math.min(9, (f.gateAfter ?? 1) - 1));
+      for (let k = 1; k <= between; k++) {
+        const u = k / (between + 1);
+        kids.push(svg('circle', { cx: p.x + (gx - p.x) * u, cy: p.y + (hy - p.y) * u, r: 3, class: `ch-stop${f === sel ? ' sel' : ''}` }));
+      }
+      if (f.gateAfter !== null && W >= 440) {
+        const off = p.y === hy ? -14 : p.y < hy ? -14 : 14;
+        const x = p.x + (gx - p.x) * 0.5, y = p.y + (hy - p.y) * 0.5 + off, label = f.gateAfter === 1 ? t('1 to gate') : t('{n} to gate', { n: f.gateAfter });
         const w = label.length * 6.4 + 10;
         const g = svg('g', { class: `ch-cost${f === sel ? ' sel' : ''}` });
         g.append(svg('rect', { x: x - w / 2, y: y - 8, width: w, height: 16, rx: 2 }), svg('text', { x, y: y + 4 }, label));
