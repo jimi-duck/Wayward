@@ -22,14 +22,16 @@ export interface QualityTier {
   msaa: boolean;
   /** Size of the sun's shadow map around the ship (0: no shadows). */
   shadow: number;
+  /** Small stone chips drawn between the big rocks (0 hides the layer). */
+  debris: number;
 }
 
 // Bloom resolution, shadow map size and particle budgets join these as the
 // effects that use them land (M3, M4).
 export const TIERS: readonly QualityTier[] = [
-  { name: 'low', dprCap: 1, msaa: false, shadow: 0 },
-  { name: 'medium', dprCap: 1.25, msaa: false, shadow: 512 },
-  { name: 'high', dprCap: 1.5, msaa: true, shadow: 1024 },
+  { name: 'low', dprCap: 1, msaa: false, shadow: 0, debris: 160 },
+  { name: 'medium', dprCap: 1.25, msaa: false, shadow: 512, debris: 360 },
+  { name: 'high', dprCap: 1.5, msaa: true, shadow: 1024, debris: 560 },
 ];
 
 const EMA = 0.05;

@@ -8,6 +8,7 @@ import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
 import { SiteView } from './site';
 import { CameraRig } from './camera';
+import { DebrisField } from './debris';
 import { Environment } from './environment';
 import { Effects, type RGB } from './fx';
 import { HazardView } from './hazards';
@@ -58,6 +59,7 @@ export class Sector {
   private readonly rocks: RockView;
   private readonly rockfx: RockFx;
   private readonly fx: Effects;
+  private readonly debris: DebrisField;
   private readonly streaks: Streaks;
   private readonly weapons: WeaponView;
   private readonly ship: ShipView;
@@ -90,6 +92,7 @@ export class Sector {
     const glow = glowTexture();
     this.env = new Environment(this.scene, renderer);
     this.rocks = new RockView(this.scene);
+    this.debris = new DebrisField(this.scene);
     this.fx = new Effects(this.scene, glow);
     this.rockfx = new RockFx(this.fx, this.rocks);
     this.streaks = new Streaks(this.scene);
@@ -133,6 +136,7 @@ export class Sector {
     this.post = new Post(this.renderer, this.scene, this.rig.camera, tier);
     this.fx.setLights(tier.name !== 'low');
     this.env.setShadow(tier.shadow);
+    this.debris.setCount(tier.debris);
   }
 
   resize(width: number, height: number, dpr: number, offsetY: number): void {
@@ -440,6 +444,7 @@ export class Sector {
     }
     this.fx.update(dt);
     this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz, dt);
+    this.debris.update(this.rig.target.x, this.rig.target.z, dt);
     // the weather: a nebula thickens the fog; an ion storm flickers
     const e = world.encounter;
     // (a nebula or storm that rides a feature in the sky is weather of the feature: its murk and light come from the place the ship is in)

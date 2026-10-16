@@ -200,3 +200,7 @@ One shadow map from the key light, covering only 76 units around the ship (it fo
 ## Graphics pass 3: the hull's finish
 
 The kit metal shader (every hull part) darkens grooves and seams (a cavity term from the height map), keeps raised edges a little brighter, and lays long grime streaks along the flight direction. The Wayward's spine modules get tie-down straps with steel buckles (about 24 more bevelled boxes in the one merged hull mesh; no extra draw calls). One cheap hash noise per pixel; no new textures. Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/task3-hull/`. Enemy hulls share the shader and so the finish; their own geometry pass is not part of this change.
+
+## Graphics pass 4: debris and haze
+
+A layer of small stone chips (160 Low, 360 Medium, 560 High; `QualityTier.debris`) drifts and turns in a box that follows the ship. One instanced mesh, one draw call, a shared plain material, ~80 triangles a chip, positions rewritten on the CPU each frame (a few hundred matrix writes). Chips melt to nothing within 9 units of the ship so they never cover the hull or shots; the simulation never sees them. The distance fog also takes a faint wash of the sky's own colour. Not measured: GPU time on a phone and the CPU cost of the update on one (it is small next to the HUD's). Shots in `/mnt/project-files/graphics-research/task4-debris/`.

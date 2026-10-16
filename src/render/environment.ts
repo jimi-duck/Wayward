@@ -28,6 +28,8 @@ const KEY_TINT = new Color();
 
 export class Environment {
   private readonly skyRim = new Color();
+  /** A faint wash of the sky's own colour in the distance haze. */
+  private readonly haze = new Color();
   readonly group = new Group();
   private readonly stars = new Group();
   private readonly dustBase: Float32Array;
@@ -134,6 +136,7 @@ export class Environment {
     this.far = new FarBodies(sky, new Vector3(-40, 34, -10));
     this.stars.add(this.far.group);
     this.parallax.setSky(sky);
+    this.haze.copy(sky.neb[0]).multiplyScalar(0.06);
     this.skyRim.copy(sky.neb[0]).lerp(sky.neb[2], 0.35).multiplyScalar(0.5);
     WORLD_RIM.value.copy(this.skyRim);
   }
@@ -146,7 +149,7 @@ export class Environment {
     // the place the ship is in (sim/space.ts): its murk, its dimming of the sky, and its light on everything
     const fog = mood?.fog ?? 0, dim = mood?.dim ?? 0, t = mood?.tint;
     this.fog.density = 0.0042 + nebula * 0.016 + fog * 0.012;
-    this.fog.color.copy(VOID).lerp(NEBULA, nebula);
+    this.fog.color.copy(VOID).add(this.haze).lerp(NEBULA, nebula);
     if (t) this.fog.color.r += t[0] * 0.3, this.fog.color.g += t[1] * 0.3, this.fog.color.b += t[2] * 0.3;
     this.scene.backgroundIntensity = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
     this.far?.dim(1 - nebula * 0.7);
