@@ -376,14 +376,8 @@ export class ChartPanel {
   private renderStrip(): void {
     const f = this.fs[this.sel], jump = $('ch-jump') as HTMLButtonElement, sum = $('ch-sum'), why = $('ch-why');
     if (!f) { sum.replaceChildren(); jump.disabled = true; why.hidden = true; return; }
-    const st = (k: string, v: string, short = false) => h('div', `st${short ? ' short' : ''}`, '', h('span', 'k', k), h('b', '', v));
-    sum.replaceChildren(
-      h('div', 'nm', '', h('span', 'k', `${t(KIND_WORD[f.to.kind])} · ${t(STANCE_WORD[f.stance])}`), h('b', '', f.to.name)),
-      st(t('Travel time'), days(f.days)),
-      st(t('Jump fluid'), String(f.fuel), f.short > 0),
-      st(t('Supplies'), String(f.supplies), f.thin),
-      ...(f.gateAfter === null && !f.atGate ? [] : [st(t('Gate after arrival'), f.atGate ? t('Arrived') : plural(f.gateAfter ?? 0, '{n} jump', '{n} jumps'))]),
-    );
+    // the selected lane, by name; what it takes is on its card and in the button
+    sum.replaceChildren(h('div', 'nm', '', h('span', 'k', `${t(KIND_WORD[f.to.kind])} · ${t(STANCE_WORD[f.stance])}`), h('b', '', f.to.name)));
     jump.disabled = false;
     jump.classList.toggle('short', f.short > 0);
     jump.textContent = f.short > 0 ? t('Plot course · {n} more jump fluid', { n: f.short }) : t('Jump to {name}', { name: f.to.name });
