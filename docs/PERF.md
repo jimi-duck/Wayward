@@ -208,3 +208,11 @@ A layer of small stone chips (160 Low, 360 Medium, 560 High; `QualityTier.debris
 ## Graphics pass 5: planets
 
 The far-planet shader gains thin streaked cloud on rock and ice worlds, a warm twilight band at the terminator, a faint glow of the dark side, a crisper limb, and a few city lights on rock worlds. The atmosphere halo used the wrong sign for its light, so it ringed the dark side; it now hugs the lit limb. Same shaders and programs (more noise taps in the planet fragment: three extra fbm calls on rock and ice, a few extra on rock worlds); one planet per sky. Bench: `tools/planets.html` (`?sun=40,10,-30` for a crescent). Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/task5-planets/`. (The "before" bench shots are from this branch with the old shader.)
+
+## Graphics pass 6: light
+
+The key light goes from 4.4 to 4.9 and the sky fill from 0.8 to 0.58, so the shadow side of rocks and hull is deeper and the contrast between lit and unlit faces is stronger. Bloom, vignette, grain and tone mapping are unchanged (bloom stays restrained by choice; only lamps, weapons, engines and gates exceed the threshold). Light shafts and lens glow were left out: they need a full-screen pass that costs more than it gives on a phone. No cost change (same lights). Shots in `/mnt/project-files/graphics-research/task6-light/`.
+
+## Graphics pass 7: edges on Medium
+
+Medium had no edge smoothing at all, so rock and hull edges stair-stepped (Low still has none). Medium now runs SMAA at its light preset in the post chain; High keeps the full preset. Cost: SMAA's three small passes at the buffer's size, light preset, on Medium only (Low has no post chain). The shader programs compile behind the title with the rest of the chain (`warmFrame`). Dynamic resolution was considered and left out: the tier governor already steps down on slow frames, and resizing the buffer mid-flight would cost a visible shimmer. Not measured: GPU time on a phone; this is the pass to check on a mid-range phone on Medium. Zoomed before/after in `/mnt/project-files/graphics-research/task7-sharper/`.
