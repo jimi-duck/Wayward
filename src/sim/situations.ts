@@ -38,6 +38,16 @@ function columnsOf(c: Chart, region: number): number[] {
 const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 
 const JOB_IDS = new Set(MISSIONS.map((m) => m.id));
+/** Goals that ask for effort: a fight, a chase, a hazard, a stealth run, a haul. The rest are a call, a reach, a follow, a watch. */
+export const HEAVY_GOALS: ReadonlySet<string> = new Set(['destroy', 'strike', 'defend', 'race', 'survey', 'sneak', 'recover']);
+/** How much likelier-not a heavy job is straight after one (the column before) or with one a column between. */
+const TIRED_ONE = 0.15;
+const TIRED_TWO = 0.5;
+const heavyAt = (c: Chart, q: Record<string, Sit>, col: number): boolean =>
+  c.systems.some((x) => x.col === col && !!q[x.id] && HEAVY_GOALS.has(SITUATION_BY_ID[q[x.id]!.id]?.goal.kind ?? ''));
+/** The weight a def keeps in a system of this column: heavy ones are passed over after effort (pacing). */
+const rested = (c: Chart, q: Record<string, Sit>, col: number, d: SituationDef): number =>
+  HEAVY_GOALS.has(d.goal.kind) ? (heavyAt(c, q, col - 1) ? TIRED_ONE : heavyAt(c, q, col - 2) ? TIRED_TWO : 1) : 1;
 /** Whether a situation is one of the optional jobs. */
 export const isJob = (id: string): boolean => JOB_IDS.has(id);
 
@@ -61,7 +71,7 @@ export function layJobs(c: Chart, seed: number, q: Record<string, Sit>, from = -
       for (const s of c.systems.filter((x) => regionOf(x) === region && x.col === col && open(x) && free(x))) {
         const pool = MISSIONS.filter((d) => d.kinds.includes(s.kind) && long >= d.regions[0] && long <= d.regions[1] && (!d.holders || d.holders.includes(s.holder)));
         if (!pool.length) continue;
-        const w = (d: SituationDef) => d.weight / (1 + 1.2 * (used.get(d.id) ?? 0));
+        const w = (d: SituationDef) => d.weight / (1 + 1.2 * (used.get(d.id) ?? 0)) * rested(c, q, s.col, d);
         let roll = rng.next() * pool.reduce((a, d) => a + w(d), 0);
         let pick = pool[pool.length - 1]!;
         for (const d of pool) { roll -= w(d); if (roll <= 0) { pick = d; break; } }
@@ -96,7 +106,7 @@ export function laySituations(c: Chart, seed: number): Record<string, Sit> {
   // the roll
   const firstCol = Math.min(...c.systems.filter((x) => regionOf(x) === 0 && open(x)).map((x) => x.col));
   const used = new Map<string, number>();
-  for (const s of c.systems) {
+  for (const s of [...c.systems].sort((a, b) => a.col - b.col)) {
     if (!open(s) || out[s.id]) continue;
     // the first region opens quiet: nothing is rolled in its first columns
     if (regionOf(s) === 0 && s.col <= firstCol + EARLY_QUIET - 1) continue;
@@ -107,7 +117,7 @@ export function laySituations(c: Chart, seed: number): Record<string, Sit> {
     // the unknown has its own timetable: the roll deals only what people do
     const people = pool.filter((d) => d.group !== 'unknown');
     if (!people.length) continue;
-    const w = (d: SituationDef) => d.weight / (1 + 1.2 * (used.get(d.id) ?? 0));
+    const w = (d: SituationDef) => d.weight / (1 + 1.2 * (used.get(d.id) ?? 0)) * rested(c, out, s.col, d);
     let roll = rng.next() * people.reduce((a, d) => a + w(d), 0);
     let pick = people[people.length - 1]!;
     for (const d of people) { roll -= w(d); if (roll <= 0) { pick = d; break; } }
