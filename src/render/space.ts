@@ -78,23 +78,24 @@ const CORE_MAT = new MeshBasicMaterial({ color: 0x000000 });
 let dead: Record<string, Material> | null = null;
 function deadMaterials(): Record<string, Material> {
   if (dead) return dead;
-  const coat = { painted: true, worn: 0.55, roughness: 0.74, metalness: 0.35 };
+  // a dead hull is drawn thirty or fifty units long on a model one unit long, so the plating is cut fine: panels, not slabs
+  const coat = { painted: true, worn: 0.55, roughness: 0.74, metalness: 0.35, emissive: new Color(0.014, 0.016, 0.022) }, grain = 3;
   const cold = new MeshBasicMaterial({ color: new Color(0.9, 0.22, 0.06), toneMapped: false });
   dead = {
-    hull: metal({ ...coat, tint: 0x34353a, scale: 1.6 }), paint: metal({ ...coat, tint: 0x5a5750, scale: 1.2 }), patch: metal({ ...coat, tint: 0x6a6458 }),
-    dark: metal({ ...coat, tint: 0x24262a, scale: 1.8 }), trim: metal({ ...coat, tint: 0x4e403a }), glow: new MeshBasicMaterial({ color: 0x050505 }),
-    lamp: cold, crystal: metal({ ...coat, tint: 0x3c3628 }), violet: new MeshBasicMaterial({ color: 0x0a0610 }),
+    hull: metal({ ...coat, tint: 0x34353a, scale: 1.6 * grain }), paint: metal({ ...coat, tint: 0x5a5750, scale: 1.2 * grain }), patch: metal({ ...coat, tint: 0x6a6458, scale: 0.9 * grain }),
+    dark: metal({ ...coat, tint: 0x24262a, scale: 1.8 * grain }), trim: metal({ ...coat, tint: 0x4e403a, scale: 0.9 * grain }), glow: new MeshBasicMaterial({ color: 0x050505 }),
+    lamp: cold, crystal: metal({ ...coat, tint: 0x3c3628, scale: 0.9 * grain }), violet: new MeshBasicMaterial({ color: 0x0a0610 }),
   };
   return dead;
 }
 const HULKS: Array<[Parameters<typeof designFor>[0], Parameters<typeof designFor>[1]]> = [['lancer', 'custody'], ['raptor', 'gutter'], ['warbird', 'office'], ['drone', 'voice'], ['freighter', 'custody']];
 const hulkModels = new Map<number, Group>();
 /** A dead hull of unit radius: one of the five designs, each built once. */
-function hulkModel(i: number): Group {
+export function hulkModel(i: number): Group {
   let g = hulkModels.get(i % HULKS.length);
   if (!g) {
     const [kind, faction] = HULKS[i % HULKS.length]!;
-    g = designFor(kind, faction)!.k.build(deadMaterials());
+    g = designFor(kind, faction)!.k.build(deadMaterials(), 0.09);
     hulkModels.set(i % HULKS.length, g);
   }
   return g.clone();

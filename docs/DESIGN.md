@@ -330,7 +330,9 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
   `?frames=N` fills `window.__bench` with draws and triangles). Rocks and the
   Krail stream have their own, `tools/rocks.html` (`?view=close|game`, `?r=`;
   `?view=break&kind=rich&src=torpedo&cam=near` plays a hit, split and break
-  sequence through the real `Field` and `RockFx`).
+  sequence through the real `Field` and `RockFx`). The sky's far works have
+  `tools/farworks.html` (`?work=0|1|2`, `?dist=`, `?scale=`), and the situation
+  props and dead hulls `tools/sites.html` (`?prop=wreck|yard|...`, `?hulk=0..4`).
 - **What a rock does when hit or broken**: the sim decides (`Field.split`,
   `destroyRock`) and the events carry kind, weapon and centre; the look is
   `render/rockfx.ts` (chips, dust, glints per kind, a torpedo heavier than a
