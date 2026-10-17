@@ -572,3 +572,133 @@ export function designFor(kind: AlienKind, faction: Faction): Design | null {
   draw(s);
   return { k: s.k, engines: s.engines, lamps: s.lamps };
 }
+
+// ═════════════════════════ THE CAPITALS ═════════════════════════
+// A boss is the fighter's design drawn some five times larger, so the eye has
+// room for more than the fighter carried: hangar mouths, a second battery,
+// cable runs, hull numbers, radiator fins and an antenna farm. Added to the same
+// kit before it is built, so the bake covers it. Each follows its faction's rule.
+
+type Dress = (s: Ship) => void;
+
+/** A hangar mouth let into a flank: a dark recess, a lit slit inside it, hazard bars at the lip. */
+function hangar(s: Ship, x: number, y: number, z: number, len: number, h: number): void {
+  const k = s.k, sd = Math.sign(z);
+  k.box('dark', [len, h, 0.05], [x, y, z]);
+  k.box('glow', [len * 0.8, 0.012, 0.012], [x, y + h * 0.3, z + sd * 0.03]);
+  k.box('trim', [len + 0.03, 0.014, 0.03], [x, y + h * 0.5 + 0.007, z + sd * 0.012]);
+  k.box('trim', [len + 0.03, 0.014, 0.03], [x, y - h * 0.5 - 0.007, z + sd * 0.012]);
+  for (let i = 0; i < 4; i++) k.box('trim', [0.012, h, 0.02], [x - len * 0.5 + (i + 0.5) * len / 4, y, z + sd * 0.03], [0, 0, 0.5]);
+  s.lamp(x, y + h * 0.3, z + sd * 0.04, len * 0.7, 0.02);
+}
+
+/** Hull numbering: a few short trim bars, as stencilled on a flank. */
+function numerals(s: Ship, x: number, y: number, z: number, n: number): void {
+  for (let i = 0; i < n; i++) s.k.box('trim', [0.012, 0.07 + (i % 2) * 0.03, 0.01], [x + i * 0.035, y, z]);
+}
+
+/** A fin radiator: a thin plate on a stalk, with ribs. */
+function radiator(s: Ship, x: number, y: number, z: number, w: number, h: number): void {
+  const k = s.k;
+  k.box('hull', [w, h, 0.012], [x, y + h / 2, z]);
+  for (let i = 0; i < 4; i++) k.box('dark', [w * 0.9, 0.01, 0.018], [x, y + h * (0.15 + i * 0.22), z]);
+  k.box('dark', [0.03, 0.04, 0.03], [x, y, z]);
+}
+
+const CAPITAL: Record<string, Dress> = {
+  // a regulation cruiser: a second battery, hangars on both flanks, hull numbers, an antenna farm
+  'lancer:custody': (s) => {
+    const k = s.k;
+    for (const sd of [-1, 1]) {
+      hangar(s, -0.52, -0.02, sd * 0.545, 0.34, 0.12);
+      numerals(s, 0.2, -0.02, sd * 0.545, 4);
+      s.pipe(-0.9, 0.6, -0.12, sd * 0.46, 0.014);
+      s.pipe(-0.8, 0.5, -0.15, sd * 0.4, 0.012);
+      // a point-defence mount on each shoulder
+      k.cyl('dark', 0.05, 0.06, 0.05, [0.5, 0.0, sd * 0.56], 'y', 8);
+      k.cyl('hull', 0.012, 0.012, 0.14, [0.58, 0.04, sd * 0.56], 'x', 5);
+      radiator(s, -0.95, 0.19, sd * 0.2, 0.22, 0.16);
+      // a docking collar under the bow, with a lit ring
+      k.ring('hull', 0.07, 0.016, [0.9, -0.06, sd * 0.1], 'y', 12);
+    }
+    // two heavy turrets on the spine, in front of the bridge
+    for (const x of [0.45, 0.12]) {
+      k.cyl('paint', 0.11, 0.13, 0.05, [x, 0.285, 0], 'y', 10);
+      k.cyl('dark', 0.08, 0.08, 0.06, [x, 0.335, 0], 'y', 10);
+      for (const o of [-0.03, 0.03]) k.cyl('dark', 0.016, 0.016, 0.3, [x + 0.19, 0.335, o], 'x', 6);
+    }
+    // seams across the keel plates, and an antenna farm behind the bridge
+    for (let i = 0; i < 7; i++) k.box('dark', [0.01, 0.012, 0.3], [0.6 - i * 0.14, 0.2, 0]);
+    for (let i = 0; i < 4; i++) s.mast(-0.5 - i * 0.13, 0.25, (i % 2 ? 1 : -1) * 0.06, 0.12 + (i % 3) * 0.08, i % 2 ? 'blade' : 'none');
+    s.lamp(-0.62, 0.42, 0.06, 0.03); s.lamp(-0.8, 0.45, -0.06, 0.03);
+  },
+  // a ruin that still works: a boom crane, spot lamps, welded patches and a cargo grab slung under the wing
+  'raptor:gutter': (s) => {
+    const k = s.k;
+    for (const sd of [-1, 1]) {
+      // a welded scab across the wing, with a row of bolts
+      k.box(sd > 0 ? 'patch' : 'paint', [0.34, 0.025, 0.24], [-0.15, 0.13, sd * 0.45], [0, sd * 0.3, 0]);
+      s.bolts(-0.3, 0, sd * 0.45, 0.145, 5);
+      // a floodlight on a stalk, lit
+      k.cyl('dark', 0.01, 0.012, 0.1, [-0.8, 0.12, sd * 0.7], 'y', 5);
+      k.box('hull', [0.05, 0.035, 0.05], [-0.8, 0.185, sd * 0.7]);
+      s.lamp(-0.78, 0.2, sd * 0.7, 0.05);
+      // cable swag along the wing's trailing edge
+      s.pipe(-0.95, -0.2, 0.0, sd * 0.78, 0.01);
+    }
+    // a crane boom on the neck, tipped with a hook
+    k.box('dark', [0.5, 0.03, 0.03], [0.55, 0.14, 0.0], [0, 0, 0.12]);
+    k.cyl('dark', 0.006, 0.006, 0.16, [0.8, 0.07, 0], 'y', 4);
+    k.box('hull', [0.04, 0.025, 0.04], [0.8, -0.02, 0]);
+    // a cargo grab slung under the neck, beside the existing fuel tank
+    for (const sd of [-1, 1]) k.box('dark', [0.22, 0.02, 0.02], [0.35, -0.1, sd * 0.07], [sd * 0.3, 0, 0]);
+    for (let i = 0; i < 3; i++) s.mast(-0.1 - i * 0.18, 0.22, 0.55 - i * 0.55, 0.1 + i * 0.05, 'none');
+    s.vents(-0.8, 0.3, 0.235, 3, 0.2, 0.2);
+  },
+  // quiet and swept: thin lit lines along the crescents, recessed sensor blades, one tall antenna
+  'warbird:office': (s) => {
+    const k = s.k;
+    for (const sd of [-1, 1]) {
+      s.slit(0.15, 0.13, sd * 0.12, 0.7, 0.01);
+      k.box('trim', [0.5, 0.01, 0.02], [-0.35, 0.02, sd * 0.45], [0, -0.25 * sd, 0]);
+      k.box('hull', [0.14, 0.05, 0.012], [0.55, 0.12, sd * 0.07], [0, sd * 0.2, 0]);
+      radiator(s, -0.55, 0.12, sd * 0.12, 0.28, 0.12);
+      // recessed gun housings in the crescents
+      k.box('dark', [0.14, 0.03, 0.05], [-0.25, 0.04, sd * 0.78], [sd * 0.2, 0, 0]);
+      s.lamp(-0.2, 0.06, sd * 0.78, 0.1, 0.012);
+    }
+    k.cyl('dark', 0.008, 0.012, 0.5, [-0.35, 0.4, 0], 'y', 5);
+    k.cyl('hull', 0.035, 0.01, 0.012, [-0.35, 0.65, 0], 'y', 10);
+    s.lamp(-0.35, 0.67, 0, 0.03);
+  },
+  // a foundry cube: frame ribs on every edge, chimney stacks and a heavy blast shield at the cutter
+  'drone:voice': (s) => {
+    const k = s.k;
+    for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+      k.box('hull', [1.3, 0.05, 0.05], [0, sy * 0.66, sz * 0.66]);
+      k.box('hull', [0.05, 0.05, 1.3], [sz * 0.66, sy * 0.66, 0]);
+      k.box('hull', [0.05, 1.3, 0.05], [sy * 0.66, 0, sz * 0.66]);
+    }
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2, y = 0.74 + (i % 2) * 0.08;
+      k.cyl('dark', 0.035, 0.05, 0.22 + (i % 3) * 0.08, [-0.2 + Math.cos(a) * 0.3, y + 0.1, Math.sin(a) * 0.3], 'y', 6);
+      k.ring('hull', 0.05, 0.01, [-0.2 + Math.cos(a) * 0.3, y + 0.2 + (i % 3) * 0.04, Math.sin(a) * 0.3], 'y', 8);
+    }
+    for (const sd of [-1, 1]) {
+      s.pipe(-0.5, 0.5, 0.78, sd * 0.45, 0.02);
+      s.pipe(-0.5, 0.5, -0.78, sd * 0.45, 0.02);
+      s.lamp(0.2, 0.74, sd * 0.2, 0.18, 0.025);
+    }
+    for (let i = 0; i < 4; i++) k.box('dark', [0.04, 0.5, 0.012], [1.02, 0, (i - 1.5) * 0.12]);
+  },
+};
+
+/** A capital ship's hull: the fighter's design plus a second pass of detail, or null where there is no design. */
+export function capitalDesign(kind: AlienKind, faction: Faction): Design | null {
+  const draw = DESIGNS[`${kind}:${faction}`];
+  if (!draw) return null;
+  const s = new Ship(seeded(kind.length * 31 + kind.charCodeAt(0) + faction.length * 7));
+  draw(s);
+  CAPITAL[`${kind}:${faction}`]?.(s);
+  return { k: s.k, engines: s.engines, lamps: s.lamps };
+}

@@ -311,3 +311,10 @@ The things that are drawn but never flown: the sky's far works, the situation pr
 - The anomaly's flat rings are gone; two faint flat rings (radius 14 and 19) stay on the gravity well as pull-radius cues. The old core, photon torus, halo and three rings of the lens feature are removed.
 - Bench: `tools/sites.html?prop=singularity`.
 - Not measured: phone frame rate (the quad covers a modest screen area; the fragment shader is about 4 noise lookups).
+
+## Graphics pass 19: capital ships
+
+- `capitalDesign` (`hulls.ts`): a boss is the fighter's design drawn about five times larger, so it gets a second pass of detail added to the same kit before the bake: the Custody cruiser carries hangar mouths with lit slits and hazard bars, two heavy spine turrets, point-defence mounts, hull numbers, cable runs, radiator fins and an antenna farm; the Gutter strike ship a boom crane, welded scabs with bolts, floodlights and a slung grab; the Office cruiser lit lines along its crescents, recessed gun housings, fins and one tall antenna; the Voice grinder frame ribs on every edge, chimney stacks and pipe runs.
+- Built the first time a boss arrives, as before. Triangles per capital: lancer 8.1k, raptor 3.9k, warbird 3.4k, drone 6.3k (the plan's cap was 25k). The Thren web layer has no capital pass.
+- Bench: `tools/enemies.html?view=capital&only=hulls&kind=lancer|raptor|warbird|drone&r=6` (logs the triangle count).
+- Not measured: phone frame rate. The far fleet's hulls were not changed in this pass (they already carry real lit lamps from pass 16).

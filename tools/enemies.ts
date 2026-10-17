@@ -60,7 +60,17 @@ const spot = (kind: Alien['kind'], faction: Faction | null, x: number, y: number
   aliens.push(a);
 };
 
-if (view === 'close') {
+if (view === 'capital') {
+  // a boss's hull on its own, as the boss view draws it: ?kind=lancer|raptor|warbird|drone &r=6
+  const kind = (params.get('kind') ?? 'lancer') as Alien['kind'];
+  const hull = enemies.capitalHull(kind, (params.get('faction') as Faction | null) ?? ALIEN_TYPES[kind].faction);
+  hull.scale.setScalar(Number(params.get('r') ?? '5') * 0.85);
+  hull.rotation.y = Number(params.get('face') ?? '2.4');
+  let tris = 0;
+  hull.traverse((o) => { const g = (o as { geometry?: { attributes: { position: { count: number } } } }).geometry; if (g) tris += g.attributes.position.count / 3; });
+  console.log('capital triangles', tris);
+  scene.add(hull);
+} else if (view === 'close') {
   const kind = (params.get('kind') ?? 'lancer') as Alien['kind'];
   const f = (params.get('faction') as Faction | null) ?? ALIEN_TYPES[kind].faction;
   spot(kind, f, 0, 0, 0, Number(params.get('face') ?? '2.4'));
@@ -103,10 +113,11 @@ const fit = () => {
 new ResizeObserver(fit).observe(canvas);
 fit();
 
-if (view === 'close') camera.position.set(-9, 3.4, 8);
+if (view === 'capital') camera.position.set(-9, 3.4, 8).multiplyScalar(Number(params.get('r') ?? '5') / 5 * 0.8);
+else if (view === 'close') camera.position.set(-9, 3.4, 8);
 else if (view === 'fire') camera.position.set(24, 8, 26);
 else camera.position.set(-12, 9, 0);
-camera.lookAt(view === 'close' ? 0 : view === 'fire' ? 36 : 40, view === 'fleet' ? 0 : 1, 0);
+camera.lookAt(view === 'close' || view === 'capital' ? 0 : view === 'fire' ? 36 : 40, view === 'fleet' ? 0 : 1, 0);
 
 let last = performance.now(), t = 0, n = 0, cpu = 0;
 const calls: number[] = [], tris: number[] = [];
