@@ -10,7 +10,7 @@ import {
 } from '../sim/enemies';
 import { Kit, metal, seeded, type V3 } from './kit';
 import { GLOW, HULL_LOOK } from './look';
-import { designFor } from './hulls';
+import { capitalDesign, designFor } from './hulls';
 import { STREAK, type Streaks } from './streaks';
 
 // ── the enemy ─────────────────────────────────────────────────────────────
@@ -512,11 +512,14 @@ export class EnemyView {
   }
 
   /** A capital ship's hull: the fighter's design in finer plating, built the first time one arrives. */
+  /** A capital's hull for the bench: the model on its own, nose +X, of unit radius. */
+  capitalHull(kind: AlienKind, faction: Faction): Group { return this.capitalModel(kind, faction).root.clone(); }
+
   private capitalModel(kind: AlienKind, faction: Faction): Model {
     const key = `${kind}:${faction}`;
     let m = this.capitals.get(key);
     if (!m) {
-      const design = designFor(kind, faction);
+      const design = capitalDesign(kind, faction);
       m = design ? { root: design.k.build(factionMaterials(faction, CAPITAL_GRAIN), 0.04), engines: design.engines, lamps: design.lamps } : this.model(kind, faction);
       this.capitals.set(key, m);
     }
