@@ -271,3 +271,11 @@ Close-up against the reference rock showed flat light and a smooth surface.
 - Rock shader: scoured pits (dark inside, pale rims) and pale bare edges on sharp crests, in the existing noise (no new textures or geometry).
 - Debris chips are lighter so their lit faces catch the sun; the star layers are finer and dimmer.
 - Cost: a few more noise reads per rock pixel. Phone cost is not measured here.
+
+## Graphics pass 14: engines, plume and shield ripple
+
+- Nozzles (`wayward.ts`): each drum's throat is stepped inward by three dark rings at falling radii in front of the glow, ten armoured petals sit on the lip, with a few pale ticks. The glow disc is smaller and dimmer (it was a flat bright disc). A sloped stern fairing takes the hull's aft flank down onto each drum housing, with a small amber lamp. The model is now 39k triangles (was about 36k).
+- Plume (`ships.ts`): the single cone is now a bell (a slight swell past the throat, a long taper) plus a second narrow hot core with shock diamonds. Streaks and wisps drift astern and build with distance; length and brightness follow the throttle as before, and each drive breathes on its own beat within a few percent. Same two meshes per drive and shared geometry; colours still come from the engine's core and bell. Plume starts at the exit lip, halo slightly smaller.
+- Shield: there is still no standing bubble. The hit flare now ripples out from the side the blow came from (a bright spot and a ring over the lattice, bending it as it passes). The hit events carry an optional source position (`fx`, `fz`) for this; it changes no rule. A hit with no known source flares as before.
+- Bench: `tools/ship.html?view=three&hit=30&age=0.2` freezes a flare from a bearing.
+- Not measured: phone frame rate (the plume shader does a few more sine reads; geometry is small).

@@ -13,6 +13,9 @@ const params = new URLSearchParams(location.search);
 const view = params.get('view') ?? 'three';
 const heat = Number(params.get('heat') ?? '0.6');
 const spin = params.get('spin') === '1';
+// ?hit=<bearing degrees>&age=<seconds into the flare>: freeze a shield flare from that bearing (0 ahead, 90 to starboard)
+const hitBearing = params.get('hit');
+const hitAge = Number(params.get('age') ?? '0.15');
 const tier = TIERS[Math.max(0, tierIndex(params.get('quality') ?? 'high'))]!;
 
 const canvas = document.getElementById('c') as HTMLCanvasElement;
@@ -48,7 +51,7 @@ const fit = () => {
 new ResizeObserver(fit).observe(canvas);
 fit();
 
-let last = performance.now(), t = 0;
+let last = performance.now(), t = 0, hitDone = false;
 const frame = (now: number) => {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
@@ -58,7 +61,13 @@ const frame = (now: number) => {
   // three.js yaw: heading 0 keeps the model's +X; the bench swings the camera, not the ship
   camera.position.set(x * c - z * sn, y, x * sn + z * c);
   camera.lookAt(lx, ly, lz);
-  ship.update(s, dt, true);
+  if (hitBearing !== null && !hitDone) {
+    const b = Number(hitBearing) * Math.PI / 180;
+    ship.flareShield(false, Math.cos(b) * 5, Math.sin(b) * 5);
+    ship.update(s, hitAge, true);
+    hitDone = true;
+  }
+  ship.update(s, hitBearing !== null ? 0 : dt, true);
   env.update(camera, 0, 0, 0, 0, dt);
   if (!post.render(dt)) renderer.render(scene, camera);
   requestAnimationFrame(frame);

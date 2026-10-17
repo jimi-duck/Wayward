@@ -2211,6 +2211,7 @@ export class World implements EncounterHost {
         const sh = this.shots[i]!;
         if ((sh.x - s.x) ** 2 + sh.y ** 2 + (sh.z - s.z) ** 2 < (sh.r + SHIP_R) ** 2) {
           this.shots.splice(i, 1);
+          this.impactAt = [sh.x, sh.z];
           return this.hitShip(sh.hp > 0 ? 'fire:plasma' : sh.from ? `fire:${sh.from}` : 'fire');
         }
       }
@@ -2273,12 +2274,17 @@ export class World implements EncounterHost {
     s.vx += (dx / d) * 6; s.vz += (dz / d) * 6;
     s.invuln = Math.max(s.invuln, 0.35);
     this.shieldT = Math.max(this.shieldT, st.shieldDelay * 0.5);
-    if (this.powers.shield > 0 || this.shields >= 1) this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source: 'rock' });
+    if (this.powers.shield > 0 || this.shields >= 1) this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source: 'rock', fx: fromX, fz: fromZ });
   }
+
+  /** Where the last blow came from (for the shield's ripple only; it changes no rule). */
+  private impactAt: [number, number] | null = null;
 
   private hitShip(source: string, fromX?: number, fromZ?: number): void {
     const s = this.ship, st = this.stats;
     if (!this.alive || this.safe) return;
+    const at = fromX !== undefined && fromZ !== undefined ? [fromX, fromZ] : this.impactAt;
+    this.impactAt = null;
     if (fromX !== undefined && fromZ !== undefined) {
       // knock the two apart, so the hit reads as a collision and not a pass
       const dx = s.x - fromX, dz = s.z - fromZ, d = Math.hypot(dx, dz) || 1;
@@ -2296,7 +2302,7 @@ export class World implements EncounterHost {
       else this.shields -= 1;
       s.invuln = SHIELD_GRACE;
       this.run.shieldsAbsorbed++;
-      this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source });
+      this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source, fx: at?.[0], fz: at?.[1] });
       if (st.reactive) this.reactive();
       if (st.arcShield) this.arcNova();
       return;
@@ -2304,7 +2310,7 @@ export class World implements EncounterHost {
     this.plates--;
     this.run.platesLost++;
     s.invuln = st.grace;
-    this.events.push({ type: 'shipHit', x: s.x, z: s.z, plates: this.plates, source });
+    this.events.push({ type: 'shipHit', x: s.x, z: s.z, plates: this.plates, source, fx: at?.[0], fz: at?.[1] });
     if (st.reactive) this.reactive();
     if (this.plates <= 0) {
       if (st.damageControl > 0 && !this.dcUsed) {

@@ -362,6 +362,15 @@ function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
     const a = (i / 6) * Math.PI * 2 + 0.26;
     k.box('dark', [0.04, R * 0.6, 0.035], [-2.62, y + Math.cos(a) * R * 0.62, z + Math.sin(a) * R * 0.62], [a, 0, 0]);
   }
+  // the throat, stepped inward: three dark rings at falling radii in front of the glow, each hiding more of it, so the light sits deep in a
+  // mechanical bell; ten armoured petals on the lip, two pale ticks on the first step
+  for (const [x, r, tube] of [[-2.8, 0.88, 0.034], [-2.74, 0.74, 0.03], [-2.68, 0.6, 0.026]] as const) k.ring('pipe', R * r, tube, [x, y, z], 'x', 28);
+  k.ring('hull', R * 0.86, 0.012, [-2.77, y, z], 'x', 28);
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    k.box('dark', [0.13, R * 0.2, 0.06], [-2.83, y + Math.cos(a) * R * 0.93, z + Math.sin(a) * R * 0.93], [a, 0, 0]);
+    if (i % 5 === 0) k.box('blue', [0.01, R * 0.1, 0.03], [-2.86, y + Math.cos(a + 0.31) * R * 0.88, z + Math.sin(a + 0.31) * R * 0.88], [a + 0.31, 0, 0]);
+  }
   // on the drum: a pipe run along its crown, utility modules, stencils, lamps
   pipeRun(k, -2.0, 0.2, y + R * 1.1, z - sd * 0.1, 0.022, 0.42);
   for (let x = -1.9; x < 0.2; x += 0.4 + rnd() * 0.4) {
@@ -385,6 +394,10 @@ function mounting(k: Kit, rnd: Rnd, z: number): void {
     k.cyl('hull', 0.03, 0.03, 0.4, [x + 0.15, DY + DR + 0.04, zc], 'z', 8);
   }
   for (const dz of [-0.06, 0.06]) pipeRun(k, -2.1, 0.4, DY + DR + 0.1, zc + dz, 0.02, 0.45);
+  // the stern fairing: sloped armour taking the hull's aft flank down onto the drum housing, so the drive grows out of the hull
+  block(k, 'paint2', [0.62, 0.05, 0.5], [-2.28, DY + DR + 0.1, sd * 0.68], [0, 0, 0.32], 0.02);
+  block(k, 'dark', [0.7, 0.1, 0.12], [-2.3, DY + DR - 0.02, sd * 0.45], [0, 0, 0.18], 0.02);
+  k.box('lamp', [0.03, 0.03, 0.03], [-2.0, DY + DR + 0.16, sd * 0.66]);
 }
 
 /** The model's own scale: built in kit units, brought to play scale where it is shown (the hitbox is 0.9). */

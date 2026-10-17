@@ -16,8 +16,8 @@ export type GameEvent =
   | { type: 'bulwarkHit'; x: number; y: number; z: number }
   | { type: 'bulwarkBroken'; x: number; z: number; r: number; points: number }
   | { type: 'blast'; x: number; y: number; z: number; radius: number; kind: BlastKind }
-  | { type: 'shipHit'; x: number; z: number; plates: number; source: string }
-  | { type: 'shieldHit'; x: number; z: number; left: number; source: string }
+  | { type: 'shipHit'; x: number; z: number; plates: number; source: string; fx?: number; fz?: number }
+  | { type: 'shieldHit'; x: number; z: number; left: number; source: string; fx?: number; fz?: number }
   | { type: 'shieldUp'; charges: number }
   | { type: 'damageControl'; x: number; z: number }
   | { type: 'regen'; plates: number }
