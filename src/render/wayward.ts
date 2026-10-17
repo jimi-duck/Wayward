@@ -26,9 +26,10 @@ function materials(hits: Hit[]): Record<string, Material> {
   const used = { worn: 1, soot: [2.15, 2.95] as [number, number], hits };
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(0.008, 0.004, 0), ...used });
   mats = {
-    paint: amber(0xdba836),
-    paint2: amber(0xb8862c),
-    paint3: amber(0xe4b444),
+    // weathered grey-blue plate, the odd ochre panel for her markings
+    paint: amber(0x7b848d),
+    paint2: amber(0x6a727a),
+    paint3: amber(0xa88c52),
     // field repairs: plate patched on in grey primer, never painted over
     primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
     hull: metal({ tint: 0x585d63, roughness: 0.55, metalness: 0.5, ...used }),
@@ -40,6 +41,8 @@ function materials(hits: Hit[]): Record<string, Material> {
     lamp: new MeshBasicMaterial({ color: new Color(3.2, 2.4, 1.5), toneMapped: false }),
     // small maintenance lights: a dull orange, under the bloom line
     orange: new MeshBasicMaterial({ color: new Color(1.5, 0.55, 0.08), toneMapped: false }),
+    // white navigation lights, tiny, under the bloom line
+    nav: new MeshBasicMaterial({ color: new Color(1.7, 1.8, 1.9), toneMapped: false }),
     blue: new MeshBasicMaterial({ color: new Color(0.55, 1.2, 2.1), toneMapped: false }),
     decal: new MeshStandardMaterial({
       map: decalTexture(), transparent: true, alphaTest: 0.35, roughness: 0.8, metalness: 0.1,
@@ -121,7 +124,7 @@ const UP: V3 = [0, 1, 0], FWD: V3 = [1, 0, 0];
 type Rnd = () => number;
 /** Its own stream, so which plates are knocked askew leaves the layout alone. */
 let knock = seeded(4471);
-const pickAmber = (rnd: Rnd): string => { const r = rnd(); return r < 0.55 ? 'paint' : r < 0.8 ? 'paint2' : 'paint3'; };
+const pickAmber = (rnd: Rnd): string => { const r = rnd(); return r < 0.5 ? 'paint' : r < 0.84 ? 'paint2' : 'paint3'; };
 
 // ── armour ────────────────────────────────────────────────────────────────
 
@@ -229,6 +232,35 @@ function patch(k: Kit, rnd: Rnd, face: Face, y0: number, z0: number, x: number, 
 // ── the central hull ──────────────────────────────────────────────────────
 // A long, slim tube of octagonal armour that steps in toward a rounded bow.
 
+/**
+ * The container deck: a truss frame down the back with two columns of
+ * boxes in it, some stacked, each braced across its lid, tie-downs at the
+ * corners and a small white light at each corner of the frame.
+ */
+function deck(k: Kit, rnd: Rnd, top: number): void {
+  const x0 = -2.28, x1 = 1.0, rows = 6, len = (x1 - x0) / rows, cw = 0.46, base = top + 0.03;
+  block(k, 'dark', [x1 - x0 + 0.1, 0.06, cw * 2 + 0.16], [(x0 + x1) / 2, base, 0], [0, 0, 0], 0.015);
+  for (const z of [-cw - 0.07, cw + 0.07]) block(k, 'hull', [x1 - x0 + 0.1, 0.05, 0.04], [(x0 + x1) / 2, base + 0.05, z], [0, 0, 0], 0.008);
+  for (let r = 0; r <= rows; r++) for (const sd of [-1, 1]) block(k, 'hull', [0.05, 0.13, 0.05], [x0 + r * len, base + 0.09, sd * (cw + 0.07)], [0, 0, 0], 0.008);
+  for (let r = 0; r < rows; r++) {
+    const x = x0 + (r + 0.5) * len;
+    for (const sd of [-1, 1]) {
+      const z = sd * (cw / 2 + 0.03), tall = rnd() < 0.3, h = 0.17 + (tall ? 0.15 : 0);
+      const key = rnd() < 0.22 ? 'dark' : pickAmber(rnd), y = base + 0.03 + h / 2;
+      block(k, key, [len - 0.05, h, cw - 0.04], [x, y, z], [0, 0, 0], 0.02);
+      // the lid: two diagonal braces and a seam down the middle
+      const top2 = y + h / 2 + 0.003, ang = Math.atan2(cw - 0.12, len - 0.14), d = Math.hypot(len - 0.14, cw - 0.12);
+      for (const e of [-1, 1]) k.box('dark', [d, 0.008, 0.022], [x, top2, z], [0, e * ang, 0]);
+      k.box('hull', [len - 0.08, 0.009, 0.016], [x, top2, z + (rnd() - 0.5) * 0.04]);
+      // ribs down the side of the box
+      for (let i = 1; i < 4; i++) k.box('dark', [0.012, h * 0.8, 0.012], [x - (len - 0.05) / 2 + (i * (len - 0.05)) / 4, y, z + sd * (cw / 2 - 0.02)]);
+      if (rnd() < 0.18) k.box('orange', [0.02, 0.02, 0.02], [x + len * 0.3, y, z + sd * (cw / 2 + 0.005)]);
+    }
+  }
+  for (const x of [x0, x1]) for (const sd of [-1, 1]) lamp(k, 'nav', [x, base + 0.17, sd * (cw + 0.07)], 0.02);
+  lamp(k, 'nav', [-0.6, top + 0.5, 0], 0.02);
+}
+
 const HY = 0.1, HW = 1.15, HH = 0.95;
 /** The run of armour, stern to bow: [x0, x1, width]. The height keeps the same proportion. */
 const RUN: Array<[number, number, number]> = [
@@ -260,45 +292,7 @@ function hull(k: Kit, rnd: Rnd): void {
   block(k, 'dark', [3.6, 0.12, 0.46], [-0.4, HY - HH / 2 - 0.08, 0], [0, 0, 0], 0.03);
   for (const x of [-1.8, -0.6, 0.6]) block(k, 'hull', [0.5, 0.07, 0.34], [x, HY - HH / 2 - 0.17, 0], [0, 0, 0], 0.02);
 
-  // the spine: a low run of modules down the back, amber and dark, some stacked
-  const xs = RUN.slice(0, 5).map((r) => r[0]).concat([0.85]);
-  for (let j = 0; j < xs.length - 1; j++) {
-    const a = xs[j]! + 0.06, b = xs[j + 1]! - 0.06, len = b - a, mid = (a + b) / 2;
-    const h = 0.1 + rnd() * 0.16, key = rnd() < 0.62 ? pickAmber(rnd) : 'dark', base = top + 0.04;
-    block(k, 'dark', [len + 0.08, 0.05, 0.5], [mid, base + 0.025, 0], [0, 0, 0], 0.015);
-    const sw = 0.3 + rnd() * 0.14;
-    block(k, key, [len, h, sw], [mid, base + 0.05 + h / 2, 0], [0, 0, 0], 0.03);
-    const crown = base + 0.05 + h;
-    const c = rnd();
-    if (c < 0.4) block(k, rnd() < 0.5 ? 'dark' : pickAmber(rnd), [len * (0.4 + rnd() * 0.3), 0.06 + rnd() * 0.06, 0.22], [mid + (rnd() - 0.5) * 0.12, crown + 0.05, 0], [0, 0, 0], 0.02);
-    else if (c < 0.7) for (const z of [-0.09, 0.09]) block(k, 'pipe', [len * 0.8, 0.03, 0.07], [mid, crown + 0.015, z], [0, 0, 0], 0.008);
-    else hatch(k, key, { f: 0, rad: 0, wid: 0.3 }, crown, 0, mid, 0, len * 0.6, 0.26);
-    // tie-down straps over the module
-    for (const e of [-0.28, 0.28]) {
-      block(k, 'dark', [0.04, h + 0.02, sw + 0.03], [mid + e * len, base + 0.05 + h / 2, 0], [0, 0, 0], 0.008);
-      block(k, 'hull', [0.05, 0.02, 0.07], [mid + e * len, base + 0.06 + h, 0], [0, 0, 0], 0.005);
-    }
-  }
-  // pipe runs either side of the spine
-  for (const sd of [-1, 1]) {
-    pipeRun(k, -2.25, 0.8, top + 0.07, sd * 0.3, 0.025, 0.36);
-    for (let x = -2.1; x < 0.8; x += 0.35 + rnd() * 0.35) {
-      if (rnd() < 0.4) continue;
-      const w = 0.1 + rnd() * 0.1, h = 0.05 + rnd() * 0.08;
-      block(k, rnd() < 0.45 ? pickAmber(rnd) : 'dark', [w, h, 0.09 + rnd() * 0.08], [x, top + 0.04 + h / 2, sd * (0.36 + rnd() * 0.08)], [0, 0, 0], 0.012);
-    }
-  }
-  // layered cargo on the shoulders: a container stack either side of the spine, a lower tier strapped down and a shorter one on top
-  for (const sd of [-1, 1]) {
-    for (const [x, len] of [[-1.55, 0.62], [-0.55, 0.7], [0.4, 0.58]] as const) {
-      const z = sd * 0.5, y = top + 0.03;
-      block(k, 'dark', [len + 0.04, 0.04, 0.2], [x, y + 0.02, z], [0, 0, 0], 0.01);
-      block(k, pickAmber(rnd), [len, 0.12, 0.17], [x, y + 0.1, z], [0, 0, 0], 0.02);
-      block(k, rnd() < 0.5 ? 'dark' : pickAmber(rnd), [len * 0.72, 0.1, 0.15], [x + (rnd() - 0.5) * 0.08, y + 0.22, z], [0, 0, 0], 0.02);
-      for (const e of [-0.34, 0, 0.34]) block(k, 'dark', [0.03, 0.27, 0.19], [x + e * len, y + 0.14, z], [0, 0, 0], 0.006);
-      k.box('orange', [0.025, 0.025, 0.025], [x + len * 0.5 + 0.02, y + 0.1, z + sd * 0.1]);
-    }
-  }
+  deck(k, rnd, top);
   // small orange maintenance lights, in pairs, by hatches and ladders, never in a straight line
   for (const sd of [-1, 1]) for (const [x, y] of [[-2.0, top + 0.07], [-1.05, top + 0.07], [0.0, top + 0.07], [0.7, top + 0.06], [1.1, HY + 0.16], [-0.8, HY - 0.46], [0.3, HY - 0.46]] as const) lamp(k, 'orange', [x, y, sd * (y > top ? 0.22 : 0.56)], 0.026);
   for (const sd of [-1, 1]) for (const y of [0.26, -0.2]) lamp(k, 'orange', [-2.6, HY + y, sd * 0.12], 0.024);
@@ -341,8 +335,8 @@ function hull(k: Kit, rnd: Rnd): void {
 // Two round drums low on the flanks, each armoured in banded rings, its drive
 // in a ringed housing astern.
 
-const DZ = 0.86, DY = -0.22, DR = 0.44;
-const BANDS = [-2.4, -1.78, -1.12, -0.46, 0.14, 0.46];
+const DZ = 0.98, DY = -0.12, DR = 0.5;
+const BANDS = [-2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0, 0.46];
 
 function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
   const sd = Math.sign(z), R = DR, y = DY;
