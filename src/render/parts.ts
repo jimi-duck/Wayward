@@ -166,7 +166,7 @@ export function bracket(k: Kit, key: string, pos: V3, size: V3, rot: V3 = [0, 0,
 }
 
 /** A small marker lamp on a dark socket. */
-export function lamp(k: Kit, key: 'red' | 'lamp', pos: V3, size = 0.035): void {
+export function lamp(k: Kit, key: 'red' | 'lamp' | 'orange', pos: V3, size = 0.035): void {
   k.box('dark', [size * 1.6, size * 0.6, size * 1.6], [pos[0], pos[1] - size * 0.5, pos[2]]);
   k.box(key, [size, size, size], pos);
 }

@@ -38,6 +38,8 @@ function materials(hits: Hit[]): Record<string, Material> {
     window: new MeshStandardMaterial({ color: 0x0b1416, roughness: 0.12, metalness: 0.9, emissive: new Color(0.02, 0.09, 0.11) }),
     red: new MeshBasicMaterial({ color: new Color(3.2, 0.35, 0.25), toneMapped: false }),
     lamp: new MeshBasicMaterial({ color: new Color(3.2, 2.4, 1.5), toneMapped: false }),
+    // small maintenance lights: a dull orange, under the bloom line
+    orange: new MeshBasicMaterial({ color: new Color(1.5, 0.55, 0.08), toneMapped: false }),
     blue: new MeshBasicMaterial({ color: new Color(0.55, 1.2, 2.1), toneMapped: false }),
     decal: new MeshStandardMaterial({
       map: decalTexture(), transparent: true, alphaTest: 0.35, roughness: 0.8, metalness: 0.1,
@@ -286,6 +288,20 @@ function hull(k: Kit, rnd: Rnd): void {
       block(k, rnd() < 0.45 ? pickAmber(rnd) : 'dark', [w, h, 0.09 + rnd() * 0.08], [x, top + 0.04 + h / 2, sd * (0.36 + rnd() * 0.08)], [0, 0, 0], 0.012);
     }
   }
+  // layered cargo on the shoulders: a container stack either side of the spine, a lower tier strapped down and a shorter one on top
+  for (const sd of [-1, 1]) {
+    for (const [x, len] of [[-1.55, 0.62], [-0.55, 0.7], [0.4, 0.58]] as const) {
+      const z = sd * 0.5, y = top + 0.03;
+      block(k, 'dark', [len + 0.04, 0.04, 0.2], [x, y + 0.02, z], [0, 0, 0], 0.01);
+      block(k, pickAmber(rnd), [len, 0.12, 0.17], [x, y + 0.1, z], [0, 0, 0], 0.02);
+      block(k, rnd() < 0.5 ? 'dark' : pickAmber(rnd), [len * 0.72, 0.1, 0.15], [x + (rnd() - 0.5) * 0.08, y + 0.22, z], [0, 0, 0], 0.02);
+      for (const e of [-0.34, 0, 0.34]) block(k, 'dark', [0.03, 0.27, 0.19], [x + e * len, y + 0.14, z], [0, 0, 0], 0.006);
+      k.box('orange', [0.025, 0.025, 0.025], [x + len * 0.5 + 0.02, y + 0.1, z + sd * 0.1]);
+    }
+  }
+  // small orange maintenance lights, in pairs, by hatches and ladders, never in a straight line
+  for (const sd of [-1, 1]) for (const [x, y] of [[-2.0, top + 0.07], [-1.05, top + 0.07], [0.0, top + 0.07], [0.7, top + 0.06], [1.1, HY + 0.16], [-0.8, HY - 0.46], [0.3, HY - 0.46]] as const) lamp(k, 'orange', [x, y, sd * (y > top ? 0.22 : 0.56)], 0.026);
+  for (const sd of [-1, 1]) for (const y of [0.26, -0.2]) lamp(k, 'orange', [-2.6, HY + y, sd * 0.12], 0.024);
   // masts and a sensor dish
   k.cyl('pipe', 0.012, 0.018, 0.36, [-1.5, top + 0.3, 0.1], 'y', 6);
   k.cyl('pipe', 0.01, 0.014, 0.28, [0.4, top + 0.26, -0.1], 'y', 6);

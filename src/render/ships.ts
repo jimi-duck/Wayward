@@ -79,7 +79,7 @@ function plumeMaterial(inner: boolean): ShaderMaterial {
         if (uInner > 0.5) {
           // the hot core: shock diamonds standing in the first third, fading out fast
           float diamonds = 0.72 + 0.28 * cos(along * 30.0 - uTime * 2.0 + sin(uTime * 9.0));
-          float a = pow(1.0 - along, 2.4) * pow(face, 1.3) * diamonds * flick * heat * 0.6;
+          float a = pow(1.0 - along, 2.4) * mix(0.38, 1.0, pow(face, 1.3)) * diamonds * flick * heat * 0.6;
           gl_FragColor = vec4(uCore * a, a);
           return;
         }
@@ -87,7 +87,7 @@ function plumeMaterial(inner: boolean): ShaderMaterial {
         float streak = 0.5 + 0.5 * sin(vUv.x * 37.7 + along * 9.0 - uTime * 21.0);
         float wisp = 0.5 + 0.5 * sin(vUv.x * 18.8 - along * 6.0 - uTime * 13.0 + 1.7);
         float turb = mix(1.0, 0.55 + 0.3 * streak + 0.25 * wisp, smoothstep(0.08, 0.7, along));
-        float a = pow(1.0 - along, 1.7) * pow(face, 1.6) * flick * turb * heat * 0.9;
+        float a = pow(1.0 - along, 1.7) * mix(0.16, 1.0, pow(face, 1.6)) * flick * turb * heat * 0.9;
         vec3 c = mix(uCore, uBell, smoothstep(0.0, 0.4, along));
         gl_FragColor = vec4(c * a, a);
       }`,
@@ -193,7 +193,7 @@ function shieldMaterial(): ShaderMaterial {
         vec2 g = dot(a, a) < dot(b, b) ? a : b;
         g = abs(g);
         float d = max(dot(g, normalize(r)), g.x);
-        return smoothstep(0.42, 0.5, d);
+        return smoothstep(0.455, 0.5, d);
       }
       void main() {
         // clamped: rounding can push the dot past 1, and pow of a negative is NaN,
@@ -210,7 +210,7 @@ function shieldMaterial(): ShaderMaterial {
         float pulse = uGrace * (0.12 + 0.08 * sin(uTime * 18.0));
         // a charged shield stands faintly at the rim, so the player can see it is up
         float standing = uCharge * (0.045 + 0.02 * sin(uTime * 2.4)) * (fres * 1.6 + hex * 0.3);
-        float a = (fres * 0.9 + hex * 0.4) * max(hitA, pulse) + standing;
+        float a = (fres * 0.75 + hex * 0.26) * max(hitA, pulse) + standing;
         gl_FragColor = vec4(uColor * a, a);
       }`,
   });
