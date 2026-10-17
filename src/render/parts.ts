@@ -16,8 +16,12 @@ const TAN = Math.tan(Math.PI / 8);
  * along Z. The chamfers catch the light, so a plate reads as manufactured
  * rather than cut.
  */
+let bevelScale = 1;
+/** Soften every chamfer made from here on (1 = as drawn); a model sets it for its build and puts it back. */
+export function setBevelScale(s: number): void { bevelScale = s; }
+
 export function bevelGeo(len: number, thick: number, wid: number, bevel = 0.02): BufferGeometry {
-  const b = Math.max(0.002, Math.min(bevel, len * 0.3, thick * 0.3, wid * 0.3));
+  const b = Math.max(0.002, Math.min(bevel * bevelScale, len * 0.3, thick * 0.3, wid * 0.3));
   const x = len / 2 - b, y = thick / 2 - b;
   const s = new Shape();
   s.moveTo(-x, -y); s.lineTo(x, -y); s.lineTo(x, y); s.lineTo(-x, y); s.closePath();

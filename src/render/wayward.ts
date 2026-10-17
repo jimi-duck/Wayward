@@ -1,7 +1,7 @@
 import { CanvasTexture, Color, Group, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
 import {
-  bevelGeo, block, bolts, bracket, frameRing, hatch, lamp, oct, octFaces, octFrame, panel, pipeRun, vent, type Face,
+  bevelGeo, block, setBevelScale, bolts, bracket, frameRing, hatch, lamp, oct, octFaces, octFrame, panel, pipeRun, vent, type Face,
 } from './parts';
 
 // ── the Wayward ───────────────────────────────────────────────────────────
@@ -27,13 +27,13 @@ function materials(hits: Hit[]): Record<string, Material> {
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(0.008, 0.004, 0), ...used });
   mats = {
     // dark weathered plate with a yellow tint, the odd ochre panel for her markings
-    paint: amber(0x6a6a5a),
-    paint2: amber(0x4c4d44),
-    paint3: amber(0x9a8040),
+    paint: amber(0x77714f),
+    paint2: amber(0x5a5535),
+    paint3: amber(0xb28f36),
     // field repairs: plate patched on in grey primer, never painted over
     primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
-    hull: metal({ tint: 0x45474a, roughness: 0.55, metalness: 0.5, ...used }),
-    dark: metal({ tint: 0x25272a, roughness: 0.55, metalness: 0.35, scale: 1.5, ...used }),
+    hull: metal({ tint: 0x4d4a38, roughness: 0.55, metalness: 0.5, ...used }),
+    dark: metal({ tint: 0x2e2c22, roughness: 0.55, metalness: 0.35, scale: 1.5, ...used }),
     pipe: metal({ tint: 0x34322f, roughness: 0.45, metalness: 0.55, scale: 2, ...used }),
     rubber: new MeshStandardMaterial({ color: 0x141414, roughness: 0.95, metalness: 0 }),
     window: new MeshStandardMaterial({ color: 0x0b1416, roughness: 0.12, metalness: 0.9, emissive: new Color(0.02, 0.09, 0.11) }),
@@ -335,12 +335,12 @@ function hull(k: Kit, rnd: Rnd): void {
 // Two round drums low on the flanks, each armoured in banded rings, its drive
 // in a ringed housing astern.
 
-const DZ = 1.16, DY = -0.06, DR = 0.42;
-const BANDS = [-2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0, 0.46];
+const DZ = 1.04, DY = -0.04, DR = 0.42;
+const BANDS = [-2.4, -2.0, -1.6, -1.2, -0.8, -0.45];
 
 function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
   const sd = Math.sign(z), R = DR, y = DY;
-  k.cyl('dark', R, R, 2.95, [-0.95, y, z], 'x', 28);
+  k.cyl('dark', R, R, 2.1, [-1.4, y, z], 'x', 28);
   for (let i = 0; i < BANDS.length - 1; i++) {
     const a = BANDS[i]!, b = BANDS[i + 1]!, mid = (a + b) / 2, len = b - a;
     k.cyl(rnd() < 0.72 ? pickAmber(rnd) : 'dark', R * 1.035, R * 1.035, len - 0.07, [mid, y, z], 'x', 28);
@@ -358,10 +358,10 @@ function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
     }
   }
   // the intake: a tapering cowl, a grille of rings
-  k.cyl('dark', R * 0.84, R * 1.05, 0.26, [0.6, y, z], 'x', 28);
-  k.cyl('pipe', R * 0.72, R * 0.72, 0.02, [0.73, y, z], 'x', 24);
-  for (const r of [0.3, 0.22, 0.14]) k.ring('dark', r, 0.016, [0.745, y, z], 'x', 24);
-  k.cyl('hull', 0.05, 0.08, 0.08, [0.75, y, z], 'x', 10);
+  k.cyl('dark', R * 0.84, R * 1.05, 0.26, [-0.32, y, z], 'x', 28);
+  k.cyl('pipe', R * 0.72, R * 0.72, 0.02, [-0.19, y, z], 'x', 24);
+  for (const r of [0.3, 0.22, 0.14]) k.ring('dark', r, 0.016, [-0.175, y, z], 'x', 24);
+  k.cyl('hull', 0.05, 0.08, 0.08, [-0.17, y, z], 'x', 10);
   // the drive housing astern: a ringed tube, a dark cap, a pale blue ring round the throat
   k.cyl('dark', R * 1.16, R * 1.2, 0.4, [-2.65, y, z], 'x', 28, true);
   k.cyl('dark', R * 1.12, R * 1.12, 0.02, [-2.47, y, z], 'x', 28);
@@ -382,22 +382,24 @@ function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
     if (i % 5 === 0) k.box('blue', [0.01, R * 0.1, 0.03], [-2.86, y + Math.cos(a + 0.31) * R * 0.88, z + Math.sin(a + 0.31) * R * 0.88], [a + 0.31, 0, 0]);
   }
   // on the drum: a pipe run along its crown, utility modules, stencils, lamps
-  pipeRun(k, -2.0, 0.2, y + R * 1.1, z - sd * 0.1, 0.022, 0.42);
-  for (let x = -1.9; x < 0.2; x += 0.4 + rnd() * 0.4) {
+  pipeRun(k, -2.0, -0.5, y + R * 1.1, z - sd * 0.1, 0.022, 0.42);
+  for (let x = -1.9; x < -0.5; x += 0.4 + rnd() * 0.4) {
     if (rnd() < 0.4) continue;
     block(k, rnd() < 0.5 ? 'dark' : pickAmber(rnd), [0.14 + rnd() * 0.16, 0.05 + rnd() * 0.07, 0.12 + rnd() * 0.12], [x, y + R * 1.1 + 0.03, z + sd * (0.05 + rnd() * 0.1)], [0, 0, 0], 0.015);
   }
-  k.decal('decal', DECAL.hazard, 0.34, 0.08, [-0.3, y - 0.05, z + sd * (R * 1.035 + 0.01)], [0, 0, sd], UP);
+  k.decal('decal', DECAL.hazard, 0.34, 0.08, [-0.9, y - 0.05, z + sd * (R * 1.035 + 0.01)], [0, 0, sd], UP);
   k.decal('decal', DECAL.n9f, 0.2, 0.2, [-1.4, y + R * 1.04 + 0.005, z + sd * 0.1], UP, FWD);
   lamp(k, 'red', [-2.46, y + R * 1.12, z + sd * 0.1]);
-  lamp(k, 'red', [0.9, y + 0.1, z + sd * (R + 0.02)], 0.03);
+  lamp(k, 'red', [-0.5, y + 0.1, z + sd * (R + 0.02)], 0.03);
+  // a seam light along the outboard flank
+  for (const x of [-2.2, -1.75, -1.3, -0.85]) k.box('blue', [0.34, 0.016, 0.016], [x, y + 0.04, z + sd * (R * 1.12)]);
   return { p: [-2.66, y, z], r: R * 0.98 };
 }
 
 /** The saddles holding a drum to the hull, and cable and machinery in the channel between. */
 function mounting(k: Kit, rnd: Rnd, z: number): void {
   const sd = Math.sign(z), zc = sd * 0.74;
-  for (const x of [-1.95, -1.1, -0.25, 0.4]) {
+  for (const x of [-2.0, -1.4, -0.8]) {
     // a cross-beam from the hull out to the drum
     block(k, 'dark', [0.24, 0.13, 0.62], [x, DY + 0.02, sd * 0.62], [0, 0, 0], 0.03);
     block(k, 'dark', [0.26, 0.12, 0.5], [x, DY + DR + 0.03, sd * 0.78], [0, 0, 0], 0.03);
@@ -405,9 +407,12 @@ function mounting(k: Kit, rnd: Rnd, z: number): void {
     if (rnd() < 0.7) block(k, pickAmber(rnd), [0.2, 0.04, 0.3], [x, DY + DR + 0.1, sd * 0.78], [0, 0, 0], 0.012);
     k.cyl('hull', 0.03, 0.03, 0.4, [x + 0.15, DY + DR + 0.04, zc], 'z', 8);
   }
-  for (const dz of [-0.06, 0.06]) pipeRun(k, -2.1, 0.4, DY + DR + 0.1, zc + dz, 0.02, 0.45);
+  // a rounded fairing taking the hull's flank out over the drum, so the two read as one form
+  block(k, 'dark', [2.0, 0.34, 0.5], [-1.4, DY + 0.12, sd * 0.64], [0, 0, 0], 0.12);
+  block(k, 'dark', [1.9, 0.22, 0.5], [-1.4, DY - DR * 0.5, sd * 0.66], [0, 0, 0], 0.1);
+  for (const dz of [-0.06, 0.06]) pipeRun(k, -2.1, -0.4, DY + DR + 0.1, zc + dz, 0.02, 0.45);
   // the stern fairing: sloped armour taking the hull's aft flank down onto the drum housing, so the drive grows out of the hull
-  block(k, 'paint2', [0.62, 0.05, 0.5], [-2.28, DY + DR + 0.1, sd * 0.68], [0, 0, 0.32], 0.02);
+  block(k, 'dark', [0.62, 0.05, 0.5], [-2.28, DY + DR + 0.1, sd * 0.68], [0, 0, 0.32], 0.02);
   block(k, 'dark', [0.7, 0.1, 0.12], [-2.3, DY + DR - 0.02, sd * 0.45], [0, 0, 0.18], 0.02);
   k.box('lamp', [0.03, 0.03, 0.03], [-2.0, DY + DR + 0.16, sd * 0.66]);
 }
@@ -416,6 +421,11 @@ function mounting(k: Kit, rnd: Rnd, z: number): void {
 export const MODEL_SCALE = 0.56;
 
 export function buildWayward(): BuiltHull {
+  setBevelScale(2.2);
+  try { return build(); } finally { setBevelScale(1); }
+}
+
+function build(): BuiltHull {
   const k = new Kit(), rnd = seeded(7731);
   knock = seeded(4471);
   hull(k, rnd);
@@ -435,5 +445,5 @@ export function buildWayward(): BuiltHull {
     patch(k, rnd, face, HY, 0, -2.0 + rnd() * 3.0, (rnd() - 0.5) * face.wid * 0.4);
   }
   const root = k.build(materials(hits), 0.07);
-  return { root, nozzles, wings: [[0.3, DY + DR - 0.05, -(DZ + DR)], [0.3, DY + DR - 0.05, DZ + DR]], shield: [3.1, 1.05, 1.75] };
+  return { root, nozzles, wings: [[-0.4, DY + DR - 0.05, -(DZ + DR)], [-0.4, DY + DR - 0.05, DZ + DR]], shield: [3.1, 1.05, 1.75] };
 }

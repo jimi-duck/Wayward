@@ -262,7 +262,7 @@ export class ShipView {
    * hull the chase camera looks at always reads, plates, wear and all,
    * whichever way the sector's sun falls.
    */
-  private readonly workLight = new PointLight(0xf2dba8, 3.4, 6, 1.6);
+  private readonly workLight = new PointLight(0xffd98a, 4, 6, 1.6);
   private readonly rimMat = new MeshBasicMaterial({ color: BELL.clone(), toneMapped: false });
   /** The engines' colours: stock red, or a cosmetic. */
   private readonly core = CORE.clone();
