@@ -702,3 +702,50 @@ export function capitalDesign(kind: AlienKind, faction: Faction): Design | null 
   CAPITAL[`${kind}:${faction}`]?.(s);
   return { k: s.k, engines: s.engines, lamps: s.lamps };
 }
+
+// ═════════════════════════ THE DEAD ═════════════════════════
+// A hulk is a design cut open: a breach torn through the top deck with its ribs showing, plates peeled back, cable
+// hanging from the edge and one cold lamp that has not died. Built into the same kit before the bake.
+
+/** Where each design is torn open: centre x, y (the deck top), z, and the breach's length (x) and width (z). */
+const BREACH: Record<string, [number, number, number, number, number]> = {
+  'lancer:custody': [0.3, 0.27, 0, 0.7, 0.3],
+  'raptor:gutter': [-0.55, 0.23, 0, 0.75, 0.8],
+  'warbird:office': [0.1, 0.15, 0, 0.6, 0.22],
+  'drone:voice': [0, 0.74, 0, 0.8, 0.8],
+  'freighter:custody': [0.0, 0.16, 0, 0.7, 0.24],
+};
+
+/** A design, torn open and cold, for the dead hulks. */
+export function deadDesign(kind: AlienKind, faction: Faction): Design | null {
+  const draw = DESIGNS[`${kind}:${faction}`];
+  const b = BREACH[`${kind}:${faction}`];
+  if (!draw || !b) return null;
+  const s = new Ship(seeded(kind.length * 31 + kind.charCodeAt(0) + faction.length * 7));
+  draw(s);
+  const k = s.k, rnd = seeded(kind.length * 57 + faction.length * 13 + 5), [x, y, z, w, d] = b;
+  // the hole: a dark recess, scorched round the edge
+  k.box('dark', [w, 0.03, d], [x, y + 0.004, z]);
+  k.box('dark', [w * 1.25, 0.012, d * 1.3], [x, y + 0.002, z]);
+  // ribs standing in it, some with their top bar still on, some broken short
+  for (let i = 0; i < 8; i++) {
+    const rx = x - w * 0.45 + (i / 7) * w * 0.9, h = 0.1 + rnd() * 0.12;
+    for (const sd of [-1, 1]) if (rnd() < 0.85) k.box('hull', [0.03, h, 0.03], [rx, y + h / 2, z + sd * d * 0.46]);
+    if (i % 2 === 0) {
+      const len = d * (0.45 + rnd() * 0.5), from = rnd() < 0.5 ? -1 : 1;
+      k.box('hull', [0.03, 0.026, len], [rx, y + h, z + from * (d * 0.46 - len / 2)]);
+      k.box('hull', [0.03, 0.026, len * 0.45], [rx, y + h * 0.55, z - from * (d * 0.46 - len * 0.22)], [0.4 * from, 0, 0]);
+    }
+  }
+  for (const sd of [-1, 1]) k.box('hull', [w * 0.8, 0.018, 0.02], [x, y + 0.045, z + sd * d * 0.46]);
+  // plates peeled back from the edge
+  for (let i = 0; i < 3; i++) {
+    const sd = i === 1 ? -1 : 1;
+    k.box(i === 2 ? 'patch' : 'paint', [0.2, 0.014, 0.15], [x - w * 0.3 + i * w * 0.3, y + 0.05, z + sd * (d * 0.58)], [sd * (0.7 + rnd() * 0.5), 0, 0]);
+  }
+  // cable hanging from the lip
+  for (let i = 0; i < 4; i++) k.cyl('dark', 0.005, 0.005, 0.12 + rnd() * 0.1, [x - w * 0.35 + i * w * 0.22, y - 0.03, z + (rnd() < 0.5 ? -1 : 1) * d * 0.5], 'y', 4);
+  // the lamp that has not quite died
+  k.box('lamp', [0.018, 0.012, 0.018], [x + w * 0.35, y + 0.02, z - d * 0.3]);
+  return { k, engines: s.engines, lamps: s.lamps };
+}
