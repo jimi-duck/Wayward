@@ -182,7 +182,14 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         float chipN = snoise(rp * 2.4 + 5.2) * 0.5 + 0.5;
         float chip = floor(chipN * 4.0) / 4.0 + smoothstep(0.0, 0.25, fract(chipN * 4.0)) * 0.25;
         float chipE = pow(1.0 - abs(snoise(rp * 5.5 + 2.9)), 5.0);
-        float rockH = crest * 0.38 + rn * 0.22 + chip * 0.5 + chipE * 0.28 + fine * 0.2 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + mix(incl * 0.2, incl * 0.4, uViolet);`)
+        float rockH = crest * 0.38 + rn * 0.22 + chip * 0.5 + chipE * 0.28 + fine * 0.2 - crack * 0.5 + lip * 0.25 - bed * uStrata * 0.12 + mix(incl * 0.2, incl * 0.4, uViolet);
+        // pitted stone: deep scoured holes, dark inside, with bare pale rock on their rims and on the sharp edges
+        float pitN = snoise(rp * 3.1 + 9.0) * 0.5 + snoise(rp * 6.3 + 2.0) * 0.28;
+        float pit = smoothstep(0.18, 0.5, pitN);
+        float rim = smoothstep(0.08, 0.2, pitN) * (1.0 - smoothstep(0.2, 0.34, pitN));
+        rockH = rockH - pit * 0.85 + rim * 0.2;
+        diffuseColor.rgb *= 1.0 - pit * 0.55;
+        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * 2.3 + vec3(0.012, 0.013, 0.015), clamp(chipE * 0.38 + rim * 0.5, 0.0, 0.6));`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(0.8 + fine * 0.15 - heat * 0.2 - incl * 0.1 * uViolet, 0.6, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
@@ -194,7 +201,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
         totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.012 * uViolet + 0.01 * uCool) * uLava;`);
   };
-  m.customProgramCacheKey = () => `stone-rock11-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock12-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 

@@ -29,7 +29,7 @@ export class DebrisField {
   private time = 0;
 
   constructor(scene: Scene) {
-    const material = new MeshStandardMaterial({ color: 0x45484e, roughness: 0.95, metalness: 0.05, vertexColors: true, envMapIntensity: 0.3 });
+    const material = new MeshStandardMaterial({ color: 0x52565c, roughness: 0.95, metalness: 0.05, vertexColors: true, envMapIntensity: 0.3 });
     this.mesh = new InstancedMesh(rockGeometry(77, 1, 0, 0.45, 4), material, MAX);
     this.mesh.frustumCulled = false;
     this.mesh.count = 0;
