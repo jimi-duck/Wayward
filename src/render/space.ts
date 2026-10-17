@@ -9,7 +9,8 @@ import type { Feature, Space } from '../sim/space';
 import { designFor } from './hulls';
 import { lavaRock, rockGeometry } from './rocks';
 import { metal } from './kit';
-import { cloudTexture, streamTexture } from './textures';
+import { cloudTexture, curtainTexture, streamTexture } from './textures';
+import { haulerModel, relicModel, RELIC_TOP } from './monuments';
 import { singularity } from './singularity';
 
 // ── the shared world, drawn ───────────────────────────────────────────────
@@ -74,6 +75,7 @@ const ROCK_MAT = lavaRock(2.6, 1, 0.07, undefined, false);
 const HULL_MAT = new MeshStandardMaterial({ color: 0x6a7480, roughness: 0.6, metalness: 0.3, flatShading: true, emissive: 0x0a1016, envMapIntensity: 1.3 });
 const SLAB_MAT = new MeshStandardMaterial({ color: 0x34404e, roughness: 0.32, metalness: 0.55, emissive: 0x05090e, envMapIntensity: 1.3 });
 const CORE_MAT = new MeshBasicMaterial({ color: 0x000000 });
+const SEAM_MAT = new MeshBasicMaterial({ color: new Color(0.35, 0.8, 1.1), toneMapped: false, fog: false });
 
 // the dead: hull models from the same designs the fleets fly, gone cold, scorched and breached
 let dead: Record<string, Material> | null = null;
@@ -207,24 +209,46 @@ export class SpaceView {
           add(this.glow, tint.clone().multiplyScalar(4 + r() * 3), f.r * 0.12, f.r * 0.12, Math.cos(a) * k, 10 + r() * 30, Math.sin(a) * k, 0.45);
           if (def.id === 'storm') pieces[pieces.length - 1]!.b = 1.5 + r() * 3;
         }
+        // fine dust carried through it at different depths and speeds, a few catching the light: this is what shows it has volume
+        for (let i = 0; i < 12; i++) {
+          const a = r() * Math.PI * 2, k = Math.sqrt(r()) * f.r * 0.6, z = 1.2 + r() * 2.4;
+          add(this.glow, tint.clone().multiplyScalar(3 + r() * 4), z, z, Math.cos(a) * k, 6 + r() * 40, 0, 0.3 + r() * 0.35);
+          const q = pieces[pieces.length - 1]!;
+          q.b = 0.25 + r() * 0.9;
+          q.flow = 2 + r() * 7;
+          q.z = Math.sin(a) * k;
+        }
         break;
       }
       case 'ribbon': {
-        // an aurora: tall ribbons strung along a slow curve
+        // an aurora: folds of curtain strung along a slow curve, in two layers so the near one crosses the far one
         const along = r() * Math.PI * 2, n = 22;
-        for (let i = 0; i < n; i++) {
-          const u = (i / (n - 1) - 0.5) * 2, bow = (1 - u * u) * f.r * 0.25;
-          const c = tint.clone().multiplyScalar((6 + r() * 2) * (0.6 + 0.8 * Math.abs(Math.sin(i * 1.7))));
-          const x = Math.cos(along) * u * f.r + Math.cos(along + Math.PI / 2) * bow, z = Math.sin(along) * u * f.r + Math.sin(along + Math.PI / 2) * bow;
-          add(this.glow, c, f.r * (0.1 + r() * 0.07), f.r * (0.9 + r() * 0.9), x, f.r * (0.45 + r() * 0.2), z, 0.22 + r() * 0.16);
+        for (let layer = 0; layer < 2; layer++) {
+          for (let i = 0; i < n; i++) {
+            const u = (i / (n - 1) - 0.5) * 2, bow = (1 - u * u) * f.r * (0.25 + layer * 0.12);
+            const shade = layer ? new Color(0.1, 0.5, 0.75) : tint.clone().multiplyScalar(1);
+            const c = shade.multiplyScalar((layer ? 2.6 : 3.4 + r()) * (0.5 + 0.9 * Math.abs(Math.sin(i * 1.7 + layer * 2.1))));
+            const x = Math.cos(along) * u * f.r + Math.cos(along + Math.PI / 2) * bow, z = Math.sin(along) * u * f.r + Math.sin(along + Math.PI / 2) * bow;
+            const h = f.r * (0.9 + r() * 0.9);
+            add(curtainTexture(1 + ((i + layer) % 3)), c, f.r * (0.13 + r() * 0.08), h, x, f.r * (0.45 + r() * 0.2 + layer * 0.1), z, 0.3 + r() * 0.2);
+            pieces[pieces.length - 1]!.b = 0.12 + r() * 0.3;
+          }
         }
         break;
       }
       case 'convoy': {
-        // a mile of lit windows, far off: a dim bar and a row of points
+        // a column of haulers, far off: each a real small ship with a lit window row and its drive, a thin lit line behind them
         const w = tint.clone().multiplyScalar(5);
-        add(this.glow, tint.clone().multiplyScalar(0.7), 520, 7, 0, 0, 0, 0.5);
-        for (let i = 0; i < 16; i++) add(this.glow, w, 12, 12, (i - 7.5) * 30 + (r() - 0.5) * 8, (r() - 0.5) * 4, 0, 0.7 + r() * 0.3);
+        add(this.glow, tint.clone().multiplyScalar(0.5), 520, 5, 0, 0, 0, 0.35);
+        for (let i = 0; i < 9; i++) {
+          const ship = haulerModel(), len = 26 + r() * 8;
+          ship.scale.setScalar(len);
+          ship.position.set((i - 4) * 60 + (r() - 0.5) * 8, (r() - 0.5) * 6, (r() - 0.5) * 20);
+          ship.rotation.y = (r() - 0.5) * 0.08;
+          ship.traverse((o) => { o.renderOrder = -3; o.frustumCulled = false; });
+          root.add(ship);
+          add(this.glow, w, 9, 9, ship.position.x + len * 0.5, ship.position.y + 1, ship.position.z, 0.6);
+        }
         break;
       }
       case 'rubble': case 'hulks': case 'frame': case 'slab': case 'lens': {
@@ -351,28 +375,21 @@ export class SpaceView {
       case 'slab': {
         // the relic: a tower of twisted, tapering sections of dark stone, cold light in the joints and down each face, and a shard hanging above it, turning
         face = true;
-        const seam = new MeshBasicMaterial({ color: new Color(0.35, 0.8, 1.1), toneMapped: false });
-        let y0 = 0;
-        for (let i = 0; i < 5; i++) {
-          const RB = [9.5, 6.4, 8.2, 5.2, 6.4][i]!, rb = RB, rt = RB * (i % 2 ? 1.3 : 0.62), h = 17;
-          const sec = mesh(new CylinderGeometry(rt, rb, h, 6, 1), SLAB_MAT, g, 0, y0 + h / 2, 0, 1, 1, 1);
-          sec.rotation.set(0, i * 0.42, 0);
-          // glyph strips down three of its faces
-          for (let k = 0; k < 3; k++) {
-            const a = i * 0.42 + (k / 3) * Math.PI * 2, rr = (rb + rt) / 2 * 0.87 + 0.12;
-            const strip = mesh(BOX, seam, g, Math.cos(a) * rr, y0 + h / 2, Math.sin(a) * rr, 0.22, h * (0.5 + 0.12 * ((i + k) % 3)), 0.06);
-            strip.rotation.set(0, Math.PI / 2 - a, 0);
-          }
-          y0 += h;
-          if (i < 4) {
-            const ring = mesh(new CylinderGeometry(rt * 0.92, [6.4, 8.2, 5.2, 6.4][i]! * 0.92, 1.2, 6, 1), seam, g, 0, y0 + 0.6, 0, 1, 1, 1);
-            ring.rotation.set(0, (i + 0.5) * 0.42, 0);
-            y0 += 1.2;
-          }
-        }
+        const relic = relicModel();
+        g.add(relic);
+        const y0 = RELIC_TOP;
         const shard = mesh(new OctahedronGeometry(1, 0), SLAB_MAT, g, 0, y0 + 14, 0, 4.2, 9, 4.2);
         spin.push({ m: shard, x: 0, y: 0.35, z: 0 });
-        mesh(new OctahedronGeometry(1, 0), seam, g, 0, y0 + 14, 0, 1.6, 3.6, 1.6);
+        mesh(new OctahedronGeometry(1, 0), SEAM_MAT, g, 0, y0 + 14, 0, 1.6, 3.6, 1.6);
+        // three small shards turning slowly about the big one, on their own tilt
+        const orbit = new Group();
+        orbit.position.set(0, y0 + 14, 0);
+        for (let i = 0; i < 3; i++) {
+          const a = (i / 3) * Math.PI * 2, s3 = 0.9 + r() * 0.8;
+          mesh(new OctahedronGeometry(1, 0), SLAB_MAT, orbit, Math.cos(a) * 9, Math.sin(a * 2) * 3, Math.sin(a) * 9, s3, s3 * 2.2, s3);
+        }
+        g.add(orbit);
+        spin.push({ m: orbit as unknown as Mesh, x: 0.02, y: 0.18, z: 0.02 });
         const halo = new Sprite(new SpriteMaterial({ map: this.glow, color: new Color(0.3, 0.8, 1.2), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0.5 }));
         halo.scale.setScalar(24); halo.position.set(0, y0 + 14, 0); g.add(halo);
         for (let i = 0; i < 9; i++) {
