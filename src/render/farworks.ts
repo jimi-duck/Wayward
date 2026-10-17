@@ -2,7 +2,7 @@ import { Box3, BoxGeometry, Color, CylinderGeometry, Group, IcosahedronGeometry,
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { dirOf, type Sky } from './sky';
 import { Kit, metal, seeded, type V3 } from './kit';
-import { designFor } from './hulls';
+import { capitalDesign, designFor } from './hulls';
 
 // ── far works ─────────────────────────────────────────────────────────────
 // The things men built that you will never reach: a ring station, a fleet at
@@ -140,7 +140,7 @@ function stationKit(): Kit {
 /** One of the fleet's own designs, with its lit slits made real so they read at range. */
 function shipKit(kind: Kind, faction: Faction): Kit {
   return once(`${kind}:${faction}`, () => {
-    const design = designFor(kind, faction)!;
+    const design = (capitalDesign(kind, faction) ?? designFor(kind, faction))!;
     for (const [x, y, z, len, wid] of design.lamps) design.k.add('lamp', new BoxGeometry(Math.max(len, 0.05) * 1.5, 0.028, Math.max(wid, 0.05) * 1.5), [x, y, z]);
     design.k.bakeOcclusion(0.04);
     return design.k;

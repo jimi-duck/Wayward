@@ -1,4 +1,4 @@
-import { BoxGeometry, CylinderGeometry, Color, Group, Matrix4, MeshBasicMaterial, MeshStandardMaterial, OctahedronGeometry, Vector3, type Material } from 'three';
+import { BoxGeometry, CylinderGeometry, Color, Group, Matrix4, MeshBasicMaterial, ShaderChunk, MeshStandardMaterial, OctahedronGeometry, Vector3, type Material } from 'three';
 import { Kit, metal } from './kit';
 
 // ── monuments and far convoys ─────────────────────────────────────────────
@@ -19,6 +19,20 @@ export function bar(k: Kit, key: string, a: Vector3, b: Vector3, t: number): voi
   k.addMatrix(key, new BoxGeometry(t, t, len), m);
 }
 
+/**
+ * Let a material take only `k` of the scene's fog (0 to 1): a relic stays dark and cold, a gantry keeps its shape, at
+ * a range where the fog would turn them into one flat tint. Patches the fog line of an existing material's shader.
+ */
+export function thinFog<T extends Material>(m: T, k: number): T {
+  const prev = m.onBeforeCompile, key = m.customProgramCacheKey.bind(m);
+  m.onBeforeCompile = (sh, r) => {
+    prev?.(sh, r);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <fog_fragment>', ShaderChunk.fog_fragment.replace('fogColor, fogFactor )', `fogColor, fogFactor * ${k.toFixed(2)} )`));
+  };
+  m.customProgramCacheKey = () => `${key()}-fog${k.toFixed(2)}`;
+  return m;
+}
+
 const lit = (c: Color): MeshBasicMaterial => new MeshBasicMaterial({ color: c, toneMapped: false, fog: false });
 
 // ── the relic ────────────────────────────────────────────────────────────
@@ -37,8 +51,8 @@ export function relicModel(): Group {
   if (!relic) {
     const k = new Kit();
     const mats: Record<string, Material> = {
-      stone: metal({ tint: 0x8794a4, roughness: 0.5, metalness: 0.2, scale: 0.28, worn: 0.4 }),
-      dark: metal({ tint: 0x262d36, roughness: 0.6, metalness: 0.3, scale: 0.4 }),
+      stone: thinFog(metal({ tint: 0x8794a4, roughness: 0.5, metalness: 0.2, scale: 0.28, worn: 0.4 }), 0.35),
+      dark: thinFog(metal({ tint: 0x262d36, roughness: 0.6, metalness: 0.3, scale: 0.4 }), 0.35),
       seam: lit(new Color(0.32, 0.74, 1.05)),
     };
     // a stepped plinth
@@ -129,9 +143,9 @@ export function slipwayModel(): Group {
   if (!slip) {
     const k = new Kit();
     const mats: Record<string, Material> = {
-      steel: metal({ tint: 0x8a939d, roughness: 0.55, metalness: 0.45, scale: 0.45, worn: 0.35 }),
+      steel: thinFog(metal({ tint: 0x8a939d, roughness: 0.55, metalness: 0.45, scale: 0.45, worn: 0.35 }), 0.5),
       dark: metal({ tint: 0x30353b, roughness: 0.6, metalness: 0.4, scale: 0.6 }),
-      hull: metal({ tint: 0x8d8478, roughness: 0.6, metalness: 0.35, scale: 0.3, worn: 0.3 }),
+      hull: thinFog(metal({ tint: 0x8d8478, roughness: 0.6, metalness: 0.35, scale: 0.3, worn: 0.3 }), 0.5),
       lamp: lit(new Color(2.4, 1.7, 0.9)),
     };
     const V = (x: number, y: number, z: number) => new Vector3(x, y, z);
@@ -233,7 +247,7 @@ export function buoyModel(): Group {
   if (!buoy) {
     const k = new Kit();
     const mats: Record<string, Material> = {
-      hull: metal({ tint: 0x9aa4ae, roughness: 0.5, metalness: 0.45, scale: 1.2, worn: 0.3 }),
+      hull: thinFog(metal({ tint: 0x9aa4ae, roughness: 0.5, metalness: 0.45, scale: 1.2, worn: 0.3 }), 0.6),
       dark: metal({ tint: 0x2a3036, roughness: 0.6, metalness: 0.4, scale: 1.6 }),
       lens: lit(new Color(0.5, 1.5, 1.7)),
     };

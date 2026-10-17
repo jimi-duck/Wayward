@@ -335,3 +335,11 @@ The things that are drawn but never flown: the sky's far works, the situation pr
 - Derelict (`enemies.ts`, `hazards.ts`): the hull is the Custody cruiser's capital design (hangars, turrets, antennas) in cold, worn metal, with a red beacon lamp that blinks and six drifting puffs of gas venting from a breach. Seven sprites, only while the event is live.
 - Dead hulls in graveyards were already lifted in pass 16 and are unchanged.
 - Bench: `tools/sites.html?prop=slipway|buoy|derelict`. Not measured: phone frame rate and phone build times.
+
+## Graphics pass 22: bent stars, breached hulks, fleet detail and fog response
+
+- Bent starfield (`singularity.ts`): a ring of stars is drawn in the same shader at the places the hole would put their images (a source position pulled in by the Einstein radius), stretched along the ring and brightest near it. It is a procedural field added over the real sky, which is not read, so there is no distortion pass and it costs one hash and a few multiplies a pixel on every tier, phones included. The real stars behind the hole are still eaten by the horizon.
+- Breached hulks (`deadDesign` in `hulls.ts`): each dead hull is cut open on its top deck: a scorched recess, eight ribs with broken top bars, peeled plates, hanging cable and one cold lamp. Built into the kit before the bake, so the cost is the existing hulk build (a few hundred extra triangles each).
+- Far fleet (`farworks.ts`): fleet hulls use the capital designs (hangars, turrets, antennas); the fleet work is 15k triangles (was 12k).
+- Fog response (`thinFog` in `monuments.ts`): a material takes only a share of the scene fog. Relic stone 35%, slipway steel 50%, dead hulks 60%, lantern hulls 60%, so each keeps its dark shape and contrast at range instead of fading to one tint. Lights were already unfogged. The sky-layer works (fleet, station, convoy) stay fully unfogged.
+- Not measured: phone frame rate.

@@ -7,7 +7,7 @@ import { Color, CustomBlending, DoubleSide, Mesh, OneFactor, OneMinusSrcAlphaFac
 // turning toward us, streaked and turning), and the far side of the same disc
 // bent up over and under the hole. Nothing reads the scene, so it costs one
 // quad of fill on any tier: no distortion pass, the same look on a phone.
-// The horizon is premultiplied black, so it eats the stars behind it.
+// The horizon is premultiplied black, so it eats the stars behind it, and a ring of stars is bent round it.
 
 const VERT = /* glsl */ `
   uniform float uSize;
@@ -75,6 +75,27 @@ const FRAG = /* glsl */ `
     light += vec3(1.7, 1.55, 1.4) * ring * 0.75;
     // a faint soft halo, so the edge of it is not a cut
     light += uTint * 0.05 * exp(-pow(rb / 2.7, 2.0));
+    // the stars behind it, bent: a procedural field read at the place each image would have come from, stretched along the
+    // ring and brightest near it. The real sky is not read, so the cost is one hash and a few multiplies a pixel.
+    float rE = 1.3 * RH;
+    if (r > rE && r < 0.78) {
+      vec2 n = p / r, t = vec2(-n.y, n.x);
+      float rs = r - rE * rE / r;
+      vec2 ps = n * rs;
+      float cell = 0.03;
+      vec2 ci = floor(ps / cell), cf = fract(ps / cell);
+      float h = hash(ci), h2 = hash(ci + 7.3), h3 = hash(ci + 19.1);
+      if (h > 0.8) {
+        vec2 sp = vec2(0.25 + 0.5 * h2, 0.25 + 0.5 * h3);
+        vec2 d = (cf - sp) * cell;
+        float stretch = 1.0 + 2.2 * pow(rE / r, 3.0);
+        float dt = dot(d, t) / stretch, dn = dot(d, n);
+        float star = exp(-(dt * dt + dn * dn) / (0.0028 * 0.0028));
+        float mag = clamp(rE / (r - rE * 0.7), 1.0, 3.2);
+        float fade = smoothstep(0.78, 0.42, r);
+        light += mix(vec3(0.8, 0.9, 1.3), vec3(1.3, 1.1, 0.9), h3) * star * mag * 0.55 * fade * (0.5 + h2);
+      }
+    }
     // the horizon: black, hard, and it hides the stars behind it (and the far half of the disc)
     float hor = 1.0 - smoothstep(0.985, 1.0, rb);
     light *= 1.0 - hor;

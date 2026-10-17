@@ -6,11 +6,11 @@ import {
 import { FEATURES, type FeatureDef } from '../content/features';
 import { clamp } from '../core/math';
 import type { Feature, Space } from '../sim/space';
-import { designFor } from './hulls';
+import { deadDesign, designFor } from './hulls';
 import { lavaRock, rockGeometry } from './rocks';
 import { metal } from './kit';
 import { cloudTexture, curtainTexture, streamTexture } from './textures';
-import { buoyModel, haulerModel, relicModel, RELIC_TOP, slipwayModel } from './monuments';
+import { thinFog, buoyModel, haulerModel, relicModel, RELIC_TOP, slipwayModel } from './monuments';
 import { singularity } from './singularity';
 
 // ── the shared world, drawn ───────────────────────────────────────────────
@@ -85,8 +85,8 @@ function deadMaterials(): Record<string, Material> {
   const coat = { painted: true, worn: 0.55, roughness: 0.74, metalness: 0.35, emissive: new Color(0.014, 0.016, 0.022) }, grain = 3;
   const cold = new MeshBasicMaterial({ color: new Color(0.9, 0.22, 0.06), toneMapped: false });
   dead = {
-    hull: metal({ ...coat, tint: 0x34353a, scale: 1.6 * grain }), paint: metal({ ...coat, tint: 0x5a5750, scale: 1.2 * grain }), patch: metal({ ...coat, tint: 0x6a6458, scale: 0.9 * grain }),
-    dark: metal({ ...coat, tint: 0x24262a, scale: 1.8 * grain }), trim: metal({ ...coat, tint: 0x4e403a, scale: 0.9 * grain }), glow: new MeshBasicMaterial({ color: 0x050505 }),
+    hull: thinFog(metal({ ...coat, tint: 0x34353a, scale: 1.6 * grain }), 0.6), paint: thinFog(metal({ ...coat, tint: 0x5a5750, scale: 1.2 * grain }), 0.6), patch: thinFog(metal({ ...coat, tint: 0x6a6458, scale: 0.9 * grain }), 0.6),
+    dark: thinFog(metal({ ...coat, tint: 0x24262a, scale: 1.8 * grain }), 0.6), trim: thinFog(metal({ ...coat, tint: 0x4e403a, scale: 0.9 * grain }), 0.6), glow: new MeshBasicMaterial({ color: 0x050505 }),
     lamp: cold, crystal: metal({ ...coat, tint: 0x3c3628, scale: 0.9 * grain }), violet: new MeshBasicMaterial({ color: 0x0a0610 }),
   };
   return dead;
@@ -98,7 +98,7 @@ export function hulkModel(i: number): Group {
   let g = hulkModels.get(i % HULKS.length);
   if (!g) {
     const [kind, faction] = HULKS[i % HULKS.length]!;
-    g = designFor(kind, faction)!.k.build(deadMaterials(), 0.09);
+    g = (deadDesign(kind, faction) ?? designFor(kind, faction)!).k.build(deadMaterials(), 0.09);
     hulkModels.set(i % HULKS.length, g);
   }
   return g.clone();
