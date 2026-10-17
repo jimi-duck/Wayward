@@ -116,3 +116,143 @@ export function haulerModel(): Group {
   }
   return hauler.clone();
 }
+
+// ── the slipway ──────────────────────────────────────────────────────────
+
+let slip: Group | null = null;
+/**
+ * The slipway: four lattice gantry towers on rails with cross-bracing, decks and working lamps, a travelling crane
+ * across the top, and an unfinished hull on the stocks: keel, ribs, stringers, the stern third already plated. In world
+ * units, the stocks along x. Built once.
+ */
+export function slipwayModel(): Group {
+  if (!slip) {
+    const k = new Kit();
+    const mats: Record<string, Material> = {
+      steel: metal({ tint: 0x8a939d, roughness: 0.55, metalness: 0.45, scale: 0.45, worn: 0.35 }),
+      dark: metal({ tint: 0x30353b, roughness: 0.6, metalness: 0.4, scale: 0.6 }),
+      hull: metal({ tint: 0x8d8478, roughness: 0.6, metalness: 0.35, scale: 0.3, worn: 0.3 }),
+      lamp: lit(new Color(2.4, 1.7, 0.9)),
+    };
+    const V = (x: number, y: number, z: number) => new Vector3(x, y, z);
+    // rails and sleepers
+    for (const z of [-22, 22]) {
+      k.box('dark', [84, 0.8, 1.4], [0, -2.4, z]);
+      for (let i = 0; i < 22; i++) k.box('dark', [0.8, 0.5, 6], [-40 + i * 3.8, -2.9, z]);
+    }
+    // the towers: four legs, rings every 7 units, a cross-brace in every bay on every face, decks, a lamp mast
+    for (const sx of [-26, 26]) for (const sz of [-22, 22]) {
+      const c: Array<[number, number]> = [[-3, -3], [3, -3], [3, 3], [-3, 3]];
+      const at = (cx: number, cz: number, h: number) => V(sx + cx * (1 - h * 0.4), -2 + h * 48, sz + cz * (1 - h * 0.4));
+      for (const [cx, cz] of c) bar(k, 'steel', at(cx, cz, 0), at(cx, cz, 1), 0.9);
+      for (let j = 0; j < 6; j++) {
+        const h0 = j / 6, h1 = (j + 1) / 6;
+        for (let q = 0; q < 4; q++) {
+          const [ax, az] = c[q]!, [bx, bz] = c[(q + 1) % 4]!;
+          bar(k, 'steel', at(ax, az, h1), at(bx, bz, h1), 0.5);
+          bar(k, 'steel', at(ax, az, h0), at(bx, bz, h1), 0.32);
+          bar(k, 'steel', at(bx, bz, h0), at(ax, az, h1), 0.32);
+        }
+      }
+      for (const h of [0.42, 0.8]) {
+        const y = -2 + h * 48, e = 5.2 * (1 - h * 0.4);
+        k.box('dark', [e * 2, 0.5, e * 2], [sx, y, sz]);
+        for (const [cx, cz] of c) k.box('steel', [0.25, 1.8, 0.25], [sx + cx * 1.55 * (1 - h * 0.4), y + 1, sz + cz * 1.55 * (1 - h * 0.4)]);
+      }
+      k.box('dark', [5, 1.2, 5], [sx, 46.6, sz]);
+      bar(k, 'steel', V(sx, 47, sz), V(sx, 54, sz), 0.4);
+      k.box('lamp', [1.3, 0.8, 1.3], [sx, 54.4, sz]);
+      k.box('lamp', [1.0, 0.7, 1.0], [sx, 28, sz + Math.sign(sz) * -2.6]);
+      k.box('dark', [9, 1.6, 9], [sx, -1.2, sz]);
+    }
+    // the bridge: twin chords with zigzag, and a crane on it
+    for (const z of [-1.6, 1.6]) { bar(k, 'steel', V(-26, 47, z), V(26, 47, z), 1.0); bar(k, 'steel', V(-26, 51, z), V(26, 51, z), 0.7); }
+    for (let j = 0; j < 20; j++) {
+      const x0 = -26 + j * 2.6, x1 = x0 + 2.6, up = j % 2;
+      bar(k, 'steel', V(x0, up ? 51 : 47, 0), V(x1, up ? 47 : 51, 0), 0.4);
+      bar(k, 'steel', V(x0, 47, -1.6), V(x0, 51, -1.6), 0.3);
+      bar(k, 'steel', V(x0, 47, 1.6), V(x0, 51, 1.6), 0.3);
+    }
+    for (const sx of [-26, 26]) bar(k, 'steel', V(sx, 47, -22), V(sx, 47, 22), 1.6);
+    k.box('dark', [8, 2.2, 6], [8, 45, 0]);
+    k.box('lamp', [0.8, 0.5, 0.8], [8, 43.7, 0]);
+    bar(k, 'dark', V(7.2, 43.6, 0), V(7.2, 19, 0), 0.14);
+    bar(k, 'dark', V(8.8, 43.6, 0), V(8.8, 19, 0), 0.14);
+    k.box('dark', [2.4, 1.4, 2.4], [8, 18.2, 0]);
+    k.box('hull', [9, 0.3, 4.5], [8, 16.6, 0]);
+    for (const dx of [-3.6, 3.6]) bar(k, 'dark', V(8 + dx, 17.5, -1.8), V(8, 18.2, 0), 0.1);
+    // the hull on the stocks: keel, ribs, stringers
+    const base = 4, prof: Array<[number, number]> = [[0, 0.4], [3.6, 1.6], [6.4, 5], [7.4, 9.5], [7.2, 12.5]];
+    for (let x = -34; x <= 30; x += 3.4) {
+      k.box('dark', [2.2, 2.6, 3.6], [x, 1.4, 0]);
+      k.box('dark', [1.0, 2.6, 1.0], [x, 0.4, -5]);
+      k.box('dark', [1.0, 2.6, 1.0], [x, 0.4, 5]);
+    }
+    k.box('hull', [66, 1.6, 2.2], [-2, base + 0.8, 0]);
+    k.box('dark', [66, 0.4, 3.0], [-2, base + 0.1, 0]);
+    const ribs: number[] = [];
+    for (let x = -32; x <= 26; x += 3.6) ribs.push(x);
+    ribs.forEach((x, i) => {
+      // the stern third is plated; the rest is frame
+      const taper = i < 4 ? 0.6 + i * 0.1 : i > ribs.length - 6 ? 1 - (i - (ribs.length - 6)) * 0.15 : 1;
+      for (const sd of [-1, 1]) for (let p = 0; p < prof.length - 1; p++) {
+        const a = prof[p]!, b = prof[p + 1]!;
+        bar(k, 'hull', V(x, base + a[1] * taper + 0.8, sd * a[0] * taper), V(x, base + b[1] * taper + 0.8, sd * b[0] * taper), 0.38);
+      }
+      bar(k, 'hull', V(x, base + 12.5 * taper + 0.8, -7.2 * taper), V(x, base + 12.5 * taper + 0.8, 7.2 * taper), 0.3);
+    });
+    for (const sd of [-1, 1]) for (let p = 1; p < prof.length; p++) {
+      const a = prof[p]!;
+      bar(k, 'hull', V(-32, base + a[1] * 0.6 + 0.8, sd * a[0] * 0.6), V(26, base + a[1] + 0.8, sd * a[0]), 0.28);
+    }
+    // plating on the first four bays at the stern end
+    for (let i = 0; i < 4; i++) for (const sd of [-1, 1]) for (let p = 0; p < prof.length - 1; p++) {
+      const a = prof[p]!, b = prof[p + 1]!, x = ribs[i]! + 1.8, t = 0.6 + i * 0.1;
+      const dz = (b[0] - a[0]) * t, dy = (b[1] - a[1]) * t, len = Math.hypot(dy, dz);
+      k.add('hull', new BoxGeometry(3.4, 0.22, len), [x, base + ((a[1] + b[1]) / 2) * t + 0.8, sd * ((a[0] + b[0]) / 2) * t], [-Math.atan2(dy, dz * sd) * 1, 0, 0]);
+    }
+    // work lamps on poles beside the stocks, and a couple of plates stacked ready
+    for (let i = 0; i < 6; i++) {
+      const x = -28 + i * 11, z = i % 2 ? 11 : -11;
+      bar(k, 'dark', V(x, -2, z), V(x, 9, z), 0.3);
+      k.box('dark', [1.3, 0.2, 0.9], [x, 9.2, z]);
+      k.box('lamp', [1.1, 0.3, 0.7], [x, 9.0, z - Math.sign(z) * 0.2]);
+    }
+    for (let i = 0; i < 3; i++) k.box('hull', [6, 0.35, 3.4], [-14, -1.2 + i * 0.4, 15]);
+    k.bakeOcclusion(1.0);
+    slip = k.build(mats);
+  }
+  return slip.clone();
+}
+
+// ── the lantern buoy ─────────────────────────────────────────────────────
+
+let buoy: Group | null = null;
+/** One navigation lantern, about three units tall: a ballast block, a cage, a lit lens, solar wings and a mast. */
+export function buoyModel(): Group {
+  if (!buoy) {
+    const k = new Kit();
+    const mats: Record<string, Material> = {
+      hull: metal({ tint: 0x9aa4ae, roughness: 0.5, metalness: 0.45, scale: 1.2, worn: 0.3 }),
+      dark: metal({ tint: 0x2a3036, roughness: 0.6, metalness: 0.4, scale: 1.6 }),
+      lens: lit(new Color(0.5, 1.5, 1.7)),
+    };
+    k.cyl('dark', 0.5, 0.65, 0.7, [0, -1.5, 0], 'y', 8);
+    for (const [sx, sz] of [[1, 1], [-1, 1], [1, -1], [-1, -1]] as const) bar(k, 'hull', new Vector3(sx * 0.55, -1.1, sz * 0.55), new Vector3(sx * 0.42, 1.2, sz * 0.42), 0.12);
+    for (const y of [-1.1, 0.05, 1.2]) k.ring('hull', 0.78, 0.07, [0, y, 0], 'y', 12);
+    k.cyl('lens', 0.42, 0.42, 1.4, [0, 0.05, 0], 'y', 10);
+    k.cyl('dark', 0.5, 0.5, 0.18, [0, 1.35, 0], 'y', 10);
+    bar(k, 'hull', new Vector3(0, 1.4, 0), new Vector3(0, 2.9, 0), 0.07);
+    k.box('lens', [0.16, 0.16, 0.16], [0, 3.0, 0]);
+    for (const s of [-1, 1]) {
+      bar(k, 'hull', new Vector3(s * 0.7, -0.4, 0), new Vector3(s * 1.3, -0.4, 0), 0.08);
+      k.box('dark', [1.5, 0.05, 0.9], [s * 2.0, -0.4, 0]);
+      k.box('hull', [1.4, 0.02, 0.82], [s * 2.0, -0.37, 0]);
+    }
+    k.cyl('hull', 0.012, 0.012, 3, [0, -3.4, 0], 'y', 4);
+    k.box('dark', [0.3, 0.3, 0.3], [0, -5, 0]);
+    k.bakeOcclusion(0.12);
+    buoy = k.build(mats);
+  }
+  return buoy.clone();
+}

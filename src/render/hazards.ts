@@ -45,9 +45,12 @@ export class HazardView {
   private readonly well: Group;
   private readonly wellRings: Mesh[] = [];
   private wreck: Object3D | null = null;
+  /** The derelict's blinking beacon lamp, and the puffs of gas venting from a breach. */
+  private wreckLamp: Sprite | null = null;
+  private readonly vent: Sprite[] = [];
   private time = 0;
 
-  constructor(private readonly scene: Scene, glow: Texture, private readonly makeWreck: () => Object3D) {
+  constructor(private readonly scene: Scene, private readonly glow: Texture, private readonly makeWreck: () => Object3D) {
     const line = new PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0.5, 0, 0);
     const ring = new RingGeometry(0.93, 1, 56).rotateX(-Math.PI / 2);
     const disc = new RingGeometry(0, 1, 40).rotateX(-Math.PI / 2);
@@ -174,10 +177,11 @@ export class HazardView {
       this.zoneFill.scale.setScalar(Math.max(0.01, live.r * live.progress));
     }
     if (live?.id === 'derelict' && live.progress < 1) {
-      if (!this.wreck) { this.wreck = this.makeWreck(); this.scene.add(this.wreck); }
+      if (!this.wreck) { this.wreck = this.makeWreck(); this.dressWreck(this.wreck); this.scene.add(this.wreck); }
       this.wreck.visible = true;
       this.wreck.position.set(live.x, 0.6, live.z);
       this.wreck.rotation.set(0.5 + this.time * 0.07, this.time * 0.11, 0.3);
+      this.animateWreck();
     } else if (this.wreck) this.wreck.visible = false;
     const core = live?.id === 'anomaly' && !live.anchored;
     this.well.visible = core;
@@ -186,7 +190,38 @@ export class HazardView {
       this.wellRings.forEach((r, i) => { r.rotation.z = this.time * (0.8 - i * 0.15) * (i % 2 ? -1 : 1); r.rotation.x = Math.PI / 2 + Math.sin(this.time * 0.4 + i) * 0.12; });
     }
   }
+
+  /** A beacon lamp that has not quite died, and gas still leaving a breach: both drawn as a few sprites riding the hull. */
+  private dressWreck(w: Object3D): void {
+    const lamp = new Sprite(new SpriteMaterial({ map: this.glow, color: new Color(1.4, 0.3, 0.12), blending: AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false }));
+    lamp.position.set(...LAMP_AT);
+    w.add(lamp);
+    this.wreckLamp = lamp;
+    for (let i = 0; i < 6; i++) {
+      const puff = new Sprite(new SpriteMaterial({ map: this.glow, color: new Color(0.5, 0.55, 0.6), blending: AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 }));
+      puff.userData.ph = i / 6;
+      w.add(puff);
+      this.vent.push(puff);
+    }
+  }
+
+  private animateWreck(): void {
+    if (this.wreckLamp) {
+      const blink = Math.max(0, Math.sin(this.time * 2.4)) ** 6;
+      this.wreckLamp.scale.setScalar(0.25 + blink * 0.35);
+      (this.wreckLamp.material as SpriteMaterial).opacity = 0.2 + blink * 0.8;
+    }
+    for (const p of this.vent) {
+      const t = (this.time * 0.35 + (p.userData.ph as number)) % 1;
+      p.position.set(VENT_AT[0] + t * 0.25, VENT_AT[1] + t * 0.1, VENT_AT[2] + t * 1.4);
+      p.scale.setScalar(0.08 + t * 0.55);
+      (p.material as SpriteMaterial).opacity = 0.22 * Math.sin(t * Math.PI);
+    }
+  }
 }
+
+/** Where the derelict's lamp sits and where it vents, in the wreck's own (scaled) space. */
+const LAMP_AT: [number, number, number] = [-0.3, 0.7, 0], VENT_AT: [number, number, number] = [-0.1, 0.1, 0.5];
 
 function tint(m: Mesh, c: Color, k: number): void {
   const mat = m.material as Material & { color: Color };

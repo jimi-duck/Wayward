@@ -10,7 +10,7 @@ import { designFor } from './hulls';
 import { lavaRock, rockGeometry } from './rocks';
 import { metal } from './kit';
 import { cloudTexture, curtainTexture, streamTexture } from './textures';
-import { haulerModel, relicModel, RELIC_TOP } from './monuments';
+import { buoyModel, haulerModel, relicModel, RELIC_TOP, slipwayModel } from './monuments';
 import { singularity } from './singularity';
 
 // ── the shared world, drawn ───────────────────────────────────────────────
@@ -130,6 +130,7 @@ export function prepareSpace(): void {
   streamTexture(1); streamTexture(2);
   chunk(0);
   for (let i = 0; i < HULKS.length; i++) hulkModel(i);
+  relicModel(); slipwayModel(); buoyModel(); haulerModel();
 }
 
 export class SpaceView {
@@ -344,32 +345,9 @@ export class SpaceView {
         }
         break;
       case 'frame': {
-        // a slipway: two gantry towers on rails, a lattice bridge, and an unfinished hull in the cradle, ribs and keel with no skin
-        const y = r() * 6, V = (x: number, yy: number, z: number) => new Vector3(x, yy, z);
-        for (let i = 0; i < 11; i++) {
-          const x = -36 + i * 7.2, h = 6 + Math.sin((i / 10) * Math.PI) * 8 * (i > 8 ? 0.4 : 1), w = 5 + Math.sin((i / 10) * Math.PI) * 5;
-          bar(g, HULL_MAT, V(x, 5 - h * 0.3, -w), V(x, 5 + h * 0.8, -w * 0.7), 0.6);
-          bar(g, HULL_MAT, V(x, 5 - h * 0.3, w), V(x, 5 + h * 0.8, w * 0.7), 0.6);
-          bar(g, HULL_MAT, V(x, 5 + h * 0.8, -w * 0.7), V(x, 5 + h * 0.8, w * 0.7), 0.5);
-          bar(g, HULL_MAT, V(x, 5 - h * 0.3, -w), V(x, 5 - h * 0.3, w), 0.5);
-          if (i < 10) bar(g, HULL_MAT, V(x, 5, 0), V(x + 7.2, 5, 0), 1.1);
-        }
-        for (const s2 of [-1, 1]) for (const x of [-26, 26]) {
-          const z = s2 * 22;
-          bar(g, HULL_MAT, V(x - 3, -2, z - 3), V(x, 46, z), 1.2);
-          bar(g, HULL_MAT, V(x + 3, -2, z - 3), V(x, 46, z), 1.2);
-          for (let j = 0; j < 6; j++) bar(g, HULL_MAT, V(x - 2.4 + (j % 2) * 4.8, 4 + j * 7, z), V(x + 2.4 - (j % 2) * 4.8, 11 + j * 7, z), 0.4);
-          mesh(BOX, HULL_MAT, g, x, -2, z, 9, 1.6, 9).rotation.set(0, 0, 0);
-        }
-        for (const x of [-26, 26]) bar(g, HULL_MAT, V(x, 46, -22), V(x, 46, 22), 1.4);
-        bar(g, HULL_MAT, V(-26, 47, 0), V(26, 47, 0), 1.6);
-        for (let j = 0; j < 9; j++) bar(g, HULL_MAT, V(-26 + j * 6.5, 46, 0), V(-26 + (j + 1) * 6.5, 50, 0), 0.4);
-        // the hull on the stocks: a freighter's, cold, riding in the cradle between the ribs
-        const keel = hulkModel(4);
-        keel.scale.setScalar(30);
-        keel.position.set(-2, 6, 0);
-        g.add(keel);
-        g.rotation.y = y;
+        // a slipway: lattice gantry towers on rails with decks and working lamps, a crane across the top, and an unfinished hull on the stocks
+        g.add(slipwayModel());
+        g.rotation.y = r() * 6;
         break;
       }
       case 'slab': {
@@ -395,6 +373,18 @@ export class SpaceView {
         for (let i = 0; i < 9; i++) {
           const a = r() * Math.PI * 2, k = 9 + r() * 14, s2 = 1.5 + r() * 4;
           mesh(chunk(i), ROCK_MAT, g, Math.cos(a) * k, s2 * 0.3, Math.sin(a) * k, s2, s2 * 0.6, s2);
+        }
+        break;
+      }
+      case 'buoys': {
+        // the lanterns: each a small designed object riding where its lamp sprite is
+        const along = rand(f.seed)() * Math.PI * 2;
+        for (let i = 0; i < 9; i++) {
+          const u = (i / 8 - 0.5) * 2, b = buoyModel();
+          b.position.set(Math.cos(along) * u * f.r, 5, Math.sin(along) * u * f.r);
+          b.rotation.set((r() - 0.5) * 0.2, r() * 6, (r() - 0.5) * 0.2);
+          b.scale.setScalar(1.4);
+          g.add(b);
         }
         break;
       }
