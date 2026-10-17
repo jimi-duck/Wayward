@@ -191,7 +191,7 @@ Three more slots are ready, with prompts, for a second run
 | Slot | Folder | Count | Size | For |
 | --- | --- | --- | --- | --- |
 | Fleet | `fleet/` | 27 | 960×480 on black | the nine capital ships (`capital-<captain>`), eight neutral hulls (tanker, hauler, courier, gunship, barge, salvager, drifter, ferry), the Wayward as fitted (`wayward-stock`, `-guns`, `-rig`, `-signals`), and six hulls in their real owner's colours (`<hull>-<caller>`, such as `freighter-miners`), which the comms call already uses in place of the plain hull |
-| Jobs | `jobs/` | 24 | 1280×720 | one scene per job card (`sc_*`) |
+| Jobs | `jobs/` | 25 | 1280×720 | one scene per job card (`sc_*`), drawn square-cropped on the job offer card. `sc_cache` (The Drift Cache) is still to make; its prompt is in `docs/art/briefs.md`, until then the card shows the caller's emblem |
 | Phenomena | `phenomena/` | 14 | 800×600 | the places on the chart (`veil` … `carrier`) |
 
 Left out on purpose, listed at the end of the brief: wrecks of each hull, damage
