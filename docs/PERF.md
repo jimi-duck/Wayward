@@ -250,7 +250,7 @@ Found by profiling the dev server (software GL, so CPU time only) and the simula
 | First dock fetched and decoded its pictures | `preloadPort` four seconds after Start | first dock shows at once |
 | The tier governor stepped down on the slow first frames of a system or after a panel | `QualityGovernor.hold(120)` on a new system and when the world resumes | fewer needless post-chain rebuilds and full warm-ups |
 
-Not changed: the sky's equirect-to-cube conversion links its own program for each sky (a throwaway material in three), left for the graphics work on the sky. Not measured: GPU time of the sky bake, real link and decode times on a phone.
+Followed up: the sky's equirect-to-cube conversion linked a throwaway program for every sky (694 ms of a 1.1 s first frame here). The sky is now drawn on a dome with one material for the page's life (`Environment.dome`), the same texture, tone mapping and colour space, no cube map at all. Eight region skies compared before and after in software GL: same nebulae and orientation. Not measured: GPU time of the sky bake, real link and decode times on a phone.
 ## Graphics pass 12: haze, grade and theme
 
 Matched to the reference shot: one cool steel-grey mood with teal and amber as the only accents.

@@ -1,7 +1,7 @@
 import {
   AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, FogExp2,
   Group, HemisphereLight, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, PlaneGeometry, PMREMGenerator, Points,
-  Scene, ShaderMaterial, SphereGeometry, Vector3, type Camera, type WebGLRenderer, type WebGLRenderTarget,
+  Scene, ShaderMaterial, SphereGeometry, Vector3, type Camera, type Texture, type WebGLRenderer, type WebGLRenderTarget,
 } from 'three';
 import { bakeSky, FarBodies, Parallax, skyFor, type Sky } from './sky';
 import { WORLD_RIM } from './kit';
@@ -45,10 +45,36 @@ export class Environment {
   private readonly parallax = new Parallax();
   private far: FarBodies | null = null;
   private baked: WebGLRenderTarget | null = null;
+  private readonly dome: ShaderMaterial;
 
   constructor(scene: Scene, private readonly renderer: WebGLRenderer) {
-    scene.backgroundIntensity = 1;
     this.scene = scene;
+    // The sky is drawn on a dome with one material for the page's life. As scene.background three
+    // would turn each new sky into a cube map through a throwaway program, linked again every system.
+    this.dome = new ShaderMaterial({
+      uniforms: { uMap: { value: null as Texture | null }, uLevel: { value: 1 } },
+      vertexShader: /* glsl */ `
+        varying vec3 vDir;
+        void main() {
+          vDir = position;
+          gl_Position = projectionMatrix * vec4(mat3(viewMatrix) * position, 1.0);
+          gl_Position.z = gl_Position.w * 0.99999;
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform sampler2D uMap; uniform float uLevel; varying vec3 vDir;
+        void main() {
+          vec3 d = normalize(vDir);
+          vec2 uv = vec2(atan(d.z, d.x) * 0.15915494 + 0.5, asin(clamp(d.y, -1.0, 1.0)) * 0.31830989 + 0.5);
+          gl_FragColor = vec4(texture2D(uMap, uv).rgb * uLevel, 1.0);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }`,
+      side: BackSide, depthWrite: false, fog: false,
+    });
+    const dome = new Mesh(new SphereGeometry(50, 32, 16), this.dome);
+    dome.renderOrder = -1000;
+    dome.frustumCulled = false;
+    this.group.add(dome);
     this.fog = new FogExp2(HAZE.getHex(), FOG_BASE);
     scene.fog = this.fog;
     scene.environment = reflections(renderer);
@@ -132,9 +158,8 @@ export class Environment {
   setSky(sky: Sky): void {
     const old = this.baked;
     this.baked = bakeSky(this.renderer, sky);
-    this.scene.background = this.baked.texture;
-    // the texture too: three keeps the cube map it made from the sky until the texture (not just its target) is disposed
-    if (old) { old.texture.dispose(); old.dispose(); }
+    this.dome.uniforms.uMap!.value = this.baked.texture;
+    old?.dispose();
     if (this.far) { this.far.group.removeFromParent(); this.far.dispose(); }
     // the planet takes its light from the key's quarter of the sky
     this.far = new FarBodies(sky, new Vector3(-40, 34, -10));
@@ -155,7 +180,7 @@ export class Environment {
     this.fog.density = FOG_BASE + nebula * 0.016 + fog * 0.012;
     this.fog.color.copy(HAZE).add(this.haze).lerp(NEBULA, nebula);
     if (t) this.fog.color.r += t[0] * 0.3, this.fog.color.g += t[1] * 0.3, this.fog.color.b += t[2] * 0.3;
-    this.scene.backgroundIntensity = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
+    this.dome.uniforms.uLevel!.value = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
     this.far?.dim(1 - nebula * 0.7);
     this.parallax.dim(1 - nebula * 0.6);
     WORLD_RIM.value.copy(this.skyRim).multiplyScalar(1 + flash * 4);
