@@ -26,14 +26,14 @@ function materials(hits: Hit[]): Record<string, Material> {
   const used = { worn: 1, soot: [2.15, 2.95] as [number, number], hits };
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(0.008, 0.004, 0), ...used });
   mats = {
-    // weathered grey-blue plate, the odd ochre panel for her markings
-    paint: amber(0x7b848d),
-    paint2: amber(0x6a727a),
-    paint3: amber(0xa88c52),
+    // dark weathered plate with a yellow tint, the odd ochre panel for her markings
+    paint: amber(0x6a6a5a),
+    paint2: amber(0x4c4d44),
+    paint3: amber(0x9a8040),
     // field repairs: plate patched on in grey primer, never painted over
     primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
-    hull: metal({ tint: 0x585d63, roughness: 0.55, metalness: 0.5, ...used }),
-    dark: metal({ tint: 0x30343a, roughness: 0.55, metalness: 0.35, scale: 1.5, ...used }),
+    hull: metal({ tint: 0x45474a, roughness: 0.55, metalness: 0.5, ...used }),
+    dark: metal({ tint: 0x25272a, roughness: 0.55, metalness: 0.35, scale: 1.5, ...used }),
     pipe: metal({ tint: 0x34322f, roughness: 0.45, metalness: 0.55, scale: 2, ...used }),
     rubber: new MeshStandardMaterial({ color: 0x141414, roughness: 0.95, metalness: 0 }),
     window: new MeshStandardMaterial({ color: 0x0b1416, roughness: 0.12, metalness: 0.9, emissive: new Color(0.02, 0.09, 0.11) }),
@@ -238,7 +238,7 @@ function patch(k: Kit, rnd: Rnd, face: Face, y0: number, z0: number, x: number, 
  * corners and a small white light at each corner of the frame.
  */
 function deck(k: Kit, rnd: Rnd, top: number): void {
-  const x0 = -2.28, x1 = 1.0, rows = 6, len = (x1 - x0) / rows, cw = 0.46, base = top + 0.03;
+  const x0 = -2.28, x1 = 1.0, rows = 6, len = (x1 - x0) / rows, cw = 0.36, base = top + 0.03;
   block(k, 'dark', [x1 - x0 + 0.1, 0.06, cw * 2 + 0.16], [(x0 + x1) / 2, base, 0], [0, 0, 0], 0.015);
   for (const z of [-cw - 0.07, cw + 0.07]) block(k, 'hull', [x1 - x0 + 0.1, 0.05, 0.04], [(x0 + x1) / 2, base + 0.05, z], [0, 0, 0], 0.008);
   for (let r = 0; r <= rows; r++) for (const sd of [-1, 1]) block(k, 'hull', [0.05, 0.13, 0.05], [x0 + r * len, base + 0.09, sd * (cw + 0.07)], [0, 0, 0], 0.008);
@@ -261,11 +261,11 @@ function deck(k: Kit, rnd: Rnd, top: number): void {
   lamp(k, 'nav', [-0.6, top + 0.5, 0], 0.02);
 }
 
-const HY = 0.1, HW = 1.15, HH = 0.95;
+const HY = 0.1, HW = 0.92, HH = 0.72;
 /** The run of armour, stern to bow: [x0, x1, width]. The height keeps the same proportion. */
 const RUN: Array<[number, number, number]> = [
-  [-2.4, -1.75, 1.15], [-1.75, -1.1, 1.15], [-1.1, -0.45, 1.15], [-0.45, 0.2, 1.15], [0.2, 0.85, 1.15],
-  [0.85, 1.3, 1.02], [1.3, 1.72, 0.88], [1.72, 2.1, 0.72],
+  [-2.4, -1.75, 0.92], [-1.75, -1.1, 0.92], [-1.1, -0.45, 0.92], [-0.45, 0.2, 0.92], [0.2, 0.85, 0.92],
+  [0.85, 1.3, 0.82], [1.3, 1.72, 0.7], [1.72, 2.1, 0.58],
 ];
 
 function hull(k: Kit, rnd: Rnd): void {
@@ -294,7 +294,7 @@ function hull(k: Kit, rnd: Rnd): void {
 
   deck(k, rnd, top);
   // small orange maintenance lights, in pairs, by hatches and ladders, never in a straight line
-  for (const sd of [-1, 1]) for (const [x, y] of [[-2.0, top + 0.07], [-1.05, top + 0.07], [0.0, top + 0.07], [0.7, top + 0.06], [1.1, HY + 0.16], [-0.8, HY - 0.46], [0.3, HY - 0.46]] as const) lamp(k, 'orange', [x, y, sd * (y > top ? 0.22 : 0.56)], 0.026);
+  for (const sd of [-1, 1]) for (const [x, y] of [[-2.0, top + 0.07], [-1.05, top + 0.07], [0.0, top + 0.07], [0.7, top + 0.06], [1.1, HY + 0.16], [-0.8, HY - 0.46], [0.3, HY - 0.46]] as const) lamp(k, 'orange', [x, y, sd * (y > top ? 0.18 : 0.46)], 0.026);
   for (const sd of [-1, 1]) for (const y of [0.26, -0.2]) lamp(k, 'orange', [-2.6, HY + y, sd * 0.12], 0.024);
   // masts and a sensor dish
   k.cyl('pipe', 0.012, 0.018, 0.36, [-1.5, top + 0.3, 0.1], 'y', 6);
@@ -335,7 +335,7 @@ function hull(k: Kit, rnd: Rnd): void {
 // Two round drums low on the flanks, each armoured in banded rings, its drive
 // in a ringed housing astern.
 
-const DZ = 0.98, DY = -0.12, DR = 0.5;
+const DZ = 1.16, DY = -0.06, DR = 0.42;
 const BANDS = [-2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0, 0.46];
 
 function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
@@ -396,11 +396,13 @@ function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
 
 /** The saddles holding a drum to the hull, and cable and machinery in the channel between. */
 function mounting(k: Kit, rnd: Rnd, z: number): void {
-  const sd = Math.sign(z), zc = sd * 0.58;
+  const sd = Math.sign(z), zc = sd * 0.74;
   for (const x of [-1.95, -1.1, -0.25, 0.4]) {
-    block(k, 'dark', [0.26, 0.12, 0.46], [x, DY + DR + 0.03, sd * 0.62], [0, 0, 0], 0.03);
-    block(k, 'dark', [0.22, 0.12, 0.34], [x, DY - DR + 0.02, sd * 0.5], [0, 0, 0], 0.03);
-    if (rnd() < 0.7) block(k, pickAmber(rnd), [0.2, 0.04, 0.3], [x, DY + DR + 0.1, sd * 0.62], [0, 0, 0], 0.012);
+    // a cross-beam from the hull out to the drum
+    block(k, 'dark', [0.24, 0.13, 0.62], [x, DY + 0.02, sd * 0.62], [0, 0, 0], 0.03);
+    block(k, 'dark', [0.26, 0.12, 0.5], [x, DY + DR + 0.03, sd * 0.78], [0, 0, 0], 0.03);
+    block(k, 'dark', [0.22, 0.12, 0.34], [x, DY - DR + 0.02, sd * 0.86], [0, 0, 0], 0.03);
+    if (rnd() < 0.7) block(k, pickAmber(rnd), [0.2, 0.04, 0.3], [x, DY + DR + 0.1, sd * 0.78], [0, 0, 0], 0.012);
     k.cyl('hull', 0.03, 0.03, 0.4, [x + 0.15, DY + DR + 0.04, zc], 'z', 8);
   }
   for (const dz of [-0.06, 0.06]) pipeRun(k, -2.1, 0.4, DY + DR + 0.1, zc + dz, 0.02, 0.45);

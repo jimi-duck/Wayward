@@ -15,7 +15,7 @@ import { buildWayward, MODEL_SCALE, type BuiltHull, type Nozzle } from './waywar
 // with her drives' glow, plumes and trails, running lights and the shield.
 
 /** Engines: white-hot at the core, ion blue in the bell. */
-const CORE = new Color(2.4, 3.5, 4.6);
+const CORE = new Color(1.9, 3.0, 4.4);
 const BELL = new Color(0.16, 0.85, 3.3);
 const HALO = new Color(0.1, 0.5, 2.1);
 
@@ -262,7 +262,7 @@ export class ShipView {
    * hull the chase camera looks at always reads, plates, wear and all,
    * whichever way the sector's sun falls.
    */
-  private readonly workLight = new PointLight(0xe9e4da, 5, 6, 1.6);
+  private readonly workLight = new PointLight(0xf2dba8, 3.4, 6, 1.6);
   private readonly rimMat = new MeshBasicMaterial({ color: BELL.clone(), toneMapped: false });
   /** The engines' colours: stock red, or a cosmetic. */
   private readonly core = CORE.clone();
