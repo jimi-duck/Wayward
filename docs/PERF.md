@@ -251,3 +251,14 @@ Found by profiling the dev server (software GL, so CPU time only) and the simula
 | The tier governor stepped down on the slow first frames of a system or after a panel | `QualityGovernor.hold(120)` on a new system and when the world resumes | fewer needless post-chain rebuilds and full warm-ups |
 
 Not changed: the sky's equirect-to-cube conversion links its own program for each sky (a throwaway material in three), left for the graphics work on the sky. Not measured: GPU time of the sky bake, real link and decode times on a phone.
+## Graphics pass 12: haze, grade and theme
+
+Matched to the reference shot: one cool steel-grey mood with teal and amber as the only accents.
+
+- Fog is a dark steel haze (`#25323f`, density 0.0072, was near-black 0.0042), so far rock fades up out of the dark.
+- The sky's floor is lifted to a dark blue-grey, and every palette is pulled 40% toward steel grey (the regions keep their hue).
+- Rocks: cooler charcoal basalt, less warm cast; the far-off kind tint on basalt is halved.
+- Post: saturation -14% and contrast +6% before tone mapping (Medium and High; Low has no composer). Faint star layer dimmed.
+- Debris: 800 chips (was 560) on High, 480 on Medium (was 360), Low unchanged at 160; darker and cooler. Cost is one instanced draw, but phone frame rate is not measured here.
+- Gate: a soft teal haze sprite behind the ring, and light materials (strips, lamps) are unfogged so the neon stays sharp at range.
+- Wayward: paint moved from copper-orange toward ochre gold, with darker frames, as in the reference hauler.

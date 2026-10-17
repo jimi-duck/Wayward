@@ -11,9 +11,9 @@ import { WORLD_RIM } from './kit';
 // a painted backdrop of galactic band and nebulae, a planet and a bright
 // star, all picked per system), three layers of resolved stars at infinity,
 // wisps and debris that slide past at their own depth, and space dust that
-// streaks with the ship's speed. Fog is thin,
-// so a hull 150 units out is still a silhouette with engines lit, but rock at
-// the edge of the field fades up out of the dark instead of appearing.
+// streaks with the ship's speed. Fog is a cool
+// steel haze: a hull 150 units out is still a silhouette with engines lit,
+// and rock fades into the haze with distance instead of staying a cut-out.
 //
 // Lights: a hard warm key from high on the left (the reference's sun), a
 // faint cold fill, and a dim rim from behind. Metal needs something to
@@ -21,6 +21,9 @@ import { WORLD_RIM } from './kit';
 // sky with a warm window where the key light is and a cold one opposite.
 
 const VOID = new Color('#030509');
+/** The distance haze: a dark, cool steel grey, so far rock fades up out of the dark instead of staying a cut-out. */
+const HAZE = new Color('#25323f');
+const FOG_BASE = 0.0072;
 const INK = new Color('#cfd6e0');
 const NEBULA = new Color('#1b0e28');
 const DUST_BOX = 130;
@@ -46,7 +49,7 @@ export class Environment {
   constructor(scene: Scene, private readonly renderer: WebGLRenderer) {
     scene.backgroundIntensity = 1;
     this.scene = scene;
-    this.fog = new FogExp2(VOID.getHex(), 0.0042);
+    this.fog = new FogExp2(HAZE.getHex(), FOG_BASE);
     scene.fog = this.fog;
     scene.environment = reflections(renderer);
 
@@ -69,7 +72,7 @@ export class Environment {
           gl_FragColor = vec4(vCol * a, a);
         }`,
     });
-    this.addStars(7000, 1.2, 1.9, 0.5);
+    this.addStars(7000, 1.2, 1.9, 0.34);
     this.addStars(1100, 1.9, 2.8, 0.9);
     this.addStars(90, 3.2, 5.0, 1.6);
     this.group.add(this.stars);
@@ -137,7 +140,7 @@ export class Environment {
     this.far = new FarBodies(sky, new Vector3(-40, 34, -10));
     this.stars.add(this.far.group);
     this.parallax.setSky(sky);
-    this.haze.copy(sky.neb[0]).multiplyScalar(0.06);
+    this.haze.copy(sky.neb[0]).multiplyScalar(0.08);
     this.skyRim.copy(sky.neb[0]).lerp(sky.neb[2], 0.35).multiplyScalar(0.5);
     WORLD_RIM.value.copy(this.skyRim);
   }
@@ -149,8 +152,8 @@ export class Environment {
   weather(nebula: number, flash: number, mood?: { fog: number; dim: number; tint: readonly [number, number, number] }): void {
     // the place the ship is in (sim/space.ts): its murk, its dimming of the sky, and its light on everything
     const fog = mood?.fog ?? 0, dim = mood?.dim ?? 0, t = mood?.tint;
-    this.fog.density = 0.0042 + nebula * 0.016 + fog * 0.012;
-    this.fog.color.copy(VOID).add(this.haze).lerp(NEBULA, nebula);
+    this.fog.density = FOG_BASE + nebula * 0.016 + fog * 0.012;
+    this.fog.color.copy(HAZE).add(this.haze).lerp(NEBULA, nebula);
     if (t) this.fog.color.r += t[0] * 0.3, this.fog.color.g += t[1] * 0.3, this.fog.color.b += t[2] * 0.3;
     this.scene.backgroundIntensity = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
     this.far?.dim(1 - nebula * 0.7);
