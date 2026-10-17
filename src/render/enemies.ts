@@ -257,8 +257,9 @@ function build(kind: AlienKind, faction: Faction): Model {
 
 /** The derelict for the sector event: a lancer hull, dark and dead. */
 export function wreck(): Group {
-  const m = build('lancer', 'custody');
-  const dead = metal({ tint: 0x2e2a28, roughness: 0.8, metalness: 0.6, scale: 1.6 });
+  const design = capitalDesign('lancer', 'custody')!;
+  const m: Model = { root: design.k.build(factionMaterials('custody', CAPITAL_GRAIN), 0.04), engines: design.engines, lamps: design.lamps };
+  const dead = metal({ tint: 0x4a443f, roughness: 0.8, metalness: 0.5, scale: 1.6 * CAPITAL_GRAIN, worn: 0.5 });
   for (const c of m.root.children as Mesh[]) c.material = c.name === 'lamp' ? new MeshBasicMaterial({ color: new Color(0.6, 0.15, 0.05), toneMapped: false }) : dead;
   m.root.scale.setScalar(4.5);
   return m.root;

@@ -327,3 +327,11 @@ The things that are drawn but never flown: the sky's far works, the situation pr
 - Convoy: nine real haulers (spine, cargo pods, bridge, lit window row, drive glow), 26 to 34 units long at 3.3 km, in the sky layer with the hull unfogged. About 350 triangles each, cloned from one build.
 - Bench: `tools/sites.html?prop=relic` and `?prop=convoy`.
 - Sprites per feature stay under the shared cap (220). Not measured: phone frame rate.
+
+## Graphics pass 21: slipway, lanterns and derelict
+
+- Slipway (`monuments.ts`): four lattice gantry towers on rails (legs, rings, cross-bracing in every bay on every face, decks, lamp masts), a travelling crane on the bridge, and an unfinished hull on the stocks (keel, 11 ribs, stringers, the stern end plated, cradle blocks, work lamps on poles, stacked plates). Lamps are unfogged. Built once, at the title warm-up with the other space models (`prepareSpace`): about 310 ms here, 20k triangles, almost all of it the occlusion bake. It is only shown when the ship is within 700 units. A phone will take longer to build; not measured.
+- Lanterns: each of the nine buoys is now a small designed object (ballast, cage with rings, a lit lens, solar wings, mast with a beacon, a tether and weight), 1.2k triangles, cloned from one build. The glow sprite and the blink stay.
+- Derelict (`enemies.ts`, `hazards.ts`): the hull is the Custody cruiser's capital design (hangars, turrets, antennas) in cold, worn metal, with a red beacon lamp that blinks and six drifting puffs of gas venting from a breach. Seven sprites, only while the event is live.
+- Dead hulls in graveyards were already lifted in pass 16 and are unchanged.
+- Bench: `tools/sites.html?prop=slipway|buoy|derelict`. Not measured: phone frame rate and phone build times.
