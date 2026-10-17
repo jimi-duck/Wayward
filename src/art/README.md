@@ -16,7 +16,7 @@ finds them on its own; a picture that is not there leaves the screen as it was.
 | `file/` | `frag_order`, … | 800×600 | Archive |
 | `regions/` | `reach`, `hollows`, … | 1280×480 | not drawn yet |
 | `fleet/` | `capital-vance`, `tanker`, `wayward-rig`, … | 960×480, on black | not drawn yet |
-| `jobs/` | `sc_toll`, `sc_wire`, … | 1280×720 | not drawn yet |
+| `jobs/` | `sc_toll`, `sc_wire`, … | 1280×720 | job offer card (the picture, cropped square) |
 | `phenomena/` | `veil`, `well`, … | 800×600 | not drawn yet |
 
 The full list, with a prompt for each, is `docs/art/briefs.md`

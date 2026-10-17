@@ -36,6 +36,21 @@ const KIND_WORD: Record<string, string> = {
 /** The keys of a call's answers: the first, a middle one, the last. */
 const KEY_OF = ['Y', 'U', 'N'];
 
+const NS = 'http://www.w3.org/2000/svg';
+/** A small padlock for an answer the ship cannot give yet. */
+function lock(): SVGSVGElement {
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'rd-lock');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('aria-hidden', 'true');
+  const body = document.createElementNS(NS, 'rect');
+  for (const [k, v] of [['x', '3'], ['y', '7'], ['width', '10'], ['height', '7'], ['rx', '1']] as const) body.setAttribute(k, v);
+  const shackle = document.createElementNS(NS, 'path');
+  shackle.setAttribute('d', 'M5 7V5a3 3 0 0 1 6 0v2');
+  svg.append(body, shackle);
+  return svg;
+}
+
 export class Radio {
   private shown: Open | null = null;
   private opened = 0;
@@ -122,12 +137,13 @@ export class Radio {
     const job = d.kind === 'job';
     card.classList.toggle('job', job);
     $('rd-k').textContent = t(job ? 'Job offer' : 'Incoming');
-    $('rd-kind').textContent = t(KIND_WORD[d.kind] ?? d.kind);
+    // a job's header is one line: the card, then who is offering it
+    $('rd-kind').textContent = job ? t(d.from) : t(KIND_WORD[d.kind] ?? d.kind);
     $('rd-prio').hidden = o.tier !== 'important';
     const [who, ...what] = t(d.from).split(' · ');
     // a job is read as a contract: its title, then who is offering it
     $('rd-who').textContent = job ? t(d.title) : who ?? '';
-    $('rd-what').textContent = job ? t(d.from) : what.join(' · ');
+    $('rd-what').textContent = job ? '' : what.join(' · ');
     this.contract(o, job);
     $('rd-text').textContent = o.text;
     // the read: one line, and only for a call that can be a lie
@@ -144,7 +160,7 @@ export class Radio {
       const key = i === 0 ? KEY_OF[0]! : i === o.choices.length - 1 ? KEY_OF[2]! : KEY_OF[1]!;
       const chips = c.ok
         ? [...c.gains.filter((g) => g !== 'Job').map((g) => h('span', /^−/.test(g) ? 'g-loss' : 'g-gain', t(g))), ...c.cost.map((x) => h('span', 'g-loss', x)), ...(c.chance !== null ? [h('span', 'g-odds', oddsWord(c.chance))] : [])]
-        : c.needs.map((n) => h('span', 'g-need', t(n)));
+        : c.needs.map((n) => h('span', 'g-need', '', lock(), document.createTextNode(t(n))));
       const b = h('button', `rd-c${i === o.choices.findIndex((x) => x.ok) ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), job && c.hint ? h('span', 'rd-hint', t(c.hint)) : null, chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('aria-disabled', String(!c.ok));
@@ -160,15 +176,17 @@ export class Radio {
     art.hidden = sheet.hidden = !job;
     if (!job) { art.replaceChildren(); sheet.replaceChildren(); return; }
     const a = artOf(o.def), [slot, id] = a.portrait ?? [null, ''];
-    const pic = (slot && artImg(slot, id, 'rd-pic')) || (a.ship ? artImg('ship', a.ship, 'rd-pic rd-hull') : null);
+    // the job's own picture first (one per card), then the caller's portrait or hull
+    const pic = artImg('job', o.def.id, 'rd-pic') || (slot && artImg(slot, id, 'rd-pic')) || (a.ship ? artImg('ship', a.ship, 'rd-pic rd-hull') : null);
     const emblem = a.emblem ? artUrl('emblem', a.emblem) : null;
     art.classList.toggle('emblem', !pic && !!emblem);
     if (emblem) art.style.setProperty('--emblem', `url("${emblem}")`); else art.style.removeProperty('--emblem');
     art.replaceChildren(...(pic ? [pic] : emblem ? [] : [icon('i-job')]));
     const terms = this.terms(o), lead = o.choices.find((c) => c.ok);
-    const asks = [...(lead?.cost ?? []), ...(terms?.limit ? [t('{n} s allowed', { n: terms.limit })] : [])];
+    const costs = lead?.cost ?? [];
+    const asks = [...costs, ...(terms?.limit ? [t('{n}s', { n: terms.limit })] : [])];
     const pays = terms?.reward ?? [];
     const col = (k: string, items: string[], cls: string, none: string) => h('div', 'rd-col', '', h('span', 'k', k), h('div', 'rd-items', '', ...(items.length ? items.map((x) => h('span', cls, x)) : [h('span', 'g-none', none)])));
-    sheet.replaceChildren(col(t('Requires'), asks, 'g-loss', t('Nothing')), col(t('Reward'), pays, 'g-gain', t('Not fixed')));
+    sheet.replaceChildren(col(t(costs.length ? 'Requires' : 'Time'), asks, 'g-loss', t('Nothing')), col(t('Reward'), pays, 'g-gain', t('Not fixed')));
   }
 }
