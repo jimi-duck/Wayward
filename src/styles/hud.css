@@ -580,7 +580,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #arms #rail b { color: var(--ink); }
 #score { font-size: 12px; letter-spacing: .04em; }
 #plate { position: relative; display: grid; grid-template-columns: max-content minmax(48px, 1fr) max-content; align-items: center; gap: 9px 10px; padding: 12px 14px 12px 16px; min-width: 190px;
-  background: linear-gradient(180deg, rgba(10, 16, 22, .5), rgba(6, 10, 14, .38)); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+  background: linear-gradient(180deg, rgba(10, 16, 22, .6), rgba(6, 10, 14, .5)); }
 #plate::before, #plate::after { content: ""; position: absolute; width: 12px; height: 12px; border: 0 solid var(--rule); }
 #plate::before { left: 0; top: 0; border-width: 1px 0 0 1px; }
 #plate::after { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
