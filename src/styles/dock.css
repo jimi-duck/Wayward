@@ -192,8 +192,10 @@
 /* ── the job offer ────────────────────────────────────────────────────── */
 /* dark see-through glass, a hairline edge, corner marks instead of a border, a round key on each answer */
 .rd-call .rd-ico, .rd-call .rd-art, .rd-call .rd-sheet { display: none; }
-#rd-call { --glass: rgba(8, 13, 14, .78); --edge: rgba(150, 190, 205, .22); --mark: rgba(170, 205, 215, .7); --glow: rgba(76, 194, 203, .35);
-  border: 1px solid var(--edge); border-left: 1px solid var(--edge); background: var(--glass); backdrop-filter: blur(10px) brightness(.8) saturate(1.1); box-shadow: 0 8px 28px rgba(0, 0, 0, .4); clip-path: none; }
+#rd-call, #rd-call button { touch-action: manipulation; }
+#rd-call { --glass: rgba(8, 13, 14, .86); --edge: rgba(150, 190, 205, .22); --mark: rgba(170, 205, 215, .7); --glow: rgba(76, 194, 203, .35);
+  border: 1px solid var(--edge); border-left: 1px solid var(--edge); background: var(--glass); box-shadow: 0 8px 28px rgba(0, 0, 0, .4); clip-path: none; }
+/* no backdrop blur here: the scene behind a held call is redrawn every frame, and a live blur over it made the card hitch on open */
 #rd-call::before { content: ""; position: absolute; inset: -1px; pointer-events: none; --m: 12px; --w: 1.5px;
   background:
     linear-gradient(var(--mark), var(--mark)) top left / var(--m) var(--w), linear-gradient(var(--mark), var(--mark)) top left / var(--w) var(--m),

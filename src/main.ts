@@ -741,7 +741,8 @@ function boot(review: typeof import('./review') | null): void {
     // toggled on those, and answering them here as well would undo it.
     // in Settings a key does not resume: Backspace goes back, the pause keys are Input's
     if (settingsOpen()) { if (e.code === 'Backspace') showSettings(false); return; }
-    if (loop.paused && !PAUSE_KEYS.includes(e.code)) setPaused(false);
+    // a call holds the world itself: its own keys (and any held key) must not lift that hold from under the card
+    if (loop.paused && !callHold && !PAUSE_KEYS.includes(e.code)) setPaused(false);
     if (e.code === 'KeyB') openBay();
     if (e.code === 'KeyZ') zoom(sector.rig.zoom === ZOOMS.length - 1 ? -sector.rig.zoom : 1); // cycles round
     if (e.code === 'Minus') zoom(1);

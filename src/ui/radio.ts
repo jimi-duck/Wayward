@@ -89,7 +89,10 @@ export class Radio {
     }
     if (call) {
       const total = call.tier === 'important' ? DESK.window.important : DESK.window.routine;
-      (($('rd-timer').firstElementChild) as HTMLElement).style.width = `${Math.max(0, Math.min(1, left / total)) * 100}%`;
+      // only when it moves: a held call stands still, and a style write each frame costs a layout under the glass
+      const w = `${Math.round(Math.max(0, Math.min(1, left / total)) * 1000) / 10}%`;
+      const bar = $('rd-timer').firstElementChild as HTMLElement;
+      if (bar.style.width !== w) bar.style.width = w;
       this.pad();
     }
   }
@@ -164,7 +167,7 @@ export class Radio {
       const b = h('button', `rd-c${i === o.choices.findIndex((x) => x.ok) ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), job && c.hint ? h('span', 'rd-hint', t(c.hint)) : null, chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('aria-disabled', String(!c.ok));
-      b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); if (performance.now() - this.opened > 350) this.pick(i); };
+      b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); if (performance.now() - this.opened > 250) this.pick(i); };
       b.onpointerdown = (e) => e.stopPropagation();
       return b;
     }));
