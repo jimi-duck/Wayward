@@ -151,6 +151,8 @@ export const UI: Record<string, string> = {
   'Wanted': 'Gesucht',
   'Wanted Lv 1': 'Gesucht St. 1',
   'Sector': 'Sektor',
+  '{n} hostile': '{n} Feind',
+  '{n} hostiles': '{n} Feinde',
   'Sector 83-37': 'Sektor 83-37',
   'Asteroid field': 'Asteroidenfeld',
   'Cruise': 'Reise',

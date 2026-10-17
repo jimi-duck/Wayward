@@ -97,7 +97,7 @@
       </div>
 
       <!-- upper left: the one thing to do, and only what is worth a second line -->
-      <section id="objective" class="hud-block glass" aria-live="polite" aria-label="Current objective">
+      <section id="objective" class="hud-block" aria-live="polite" aria-label="Current objective">
         <span class="obj-k" id="obj-k">Objective</span>
         <div class="obj-h"><b id="obj-t">Collect Cyrite</b><span id="obj-left"></span></div>
         <i class="ticks" id="obj-p"></i>
@@ -109,7 +109,7 @@
       <div id="heading" class="hud-block" aria-hidden="true"><div class="hdg-r"><span id="hdg-rel"></span><b id="hdg">000</b></div><i id="hdg-tape"></i><i id="hdg-obj" hidden></i></div>
 
       <!-- upper right: the ship's condition -->
-      <section id="systems" class="hud-block glass" aria-label="Ship status">
+      <section id="systems" class="hud-block" aria-label="Ship status">
         <div class="sys-row" id="sys-hull">
           <span class="lbl">Hull</span>
           <span class="plates" id="g-plates" role="img" aria-label="Hull 3 of 3"></span><b class="val" id="v-hull">3/3</b>
@@ -125,19 +125,6 @@
         <div class="sys-row" id="sys-ph">
           <span class="lbl">Energy</span>
           <i class="bar" id="g-bank"></i><b class="val" id="v-bank">100<small>%</small></b>
-        </div>
-        <div class="sys-row arms" id="sys-tp" hidden>
-          <span class="lbl">Torpedoes</span>
-          <span class="rack" id="g-rack"></span><b class="val word" id="v-rack">Ready</b>
-        </div>
-        <div class="sys-row arms" id="sys-mn" hidden>
-          <span class="lbl">Mines</span>
-          <span class="rack" id="g-mines"></span><b class="val" id="v-mines">0</b>
-        </div>
-        <div class="sys-foot">
-          <span class="stores" id="rail"><span class="lbl" id="xp-l">Cyrite</span><b id="xp-v">0</b><span id="xp-gain"></span></span>
-          <span class="stores vy-cells" id="vy-cells"><span class="lbl">Supplies</span><b id="vy-supplies">0</b></span>
-          <span id="sys-score"><span class="lbl">Score</span><b class="val" id="score">000000</b><span id="chain"><span class="lbl">Chain <span id="chain-n">0</span></span><b id="chain-x">×1</b></span></span>
         </div>
       </section>
       <div id="powers" aria-live="polite"></div>
@@ -159,7 +146,7 @@
       <section id="sensors" class="hud-block" aria-hidden="true">
         <canvas id="radar"></canvas>
         <div class="sens-side">
-          <div class="sec-id"><b id="sec-code">Sector 83-37</b><span id="sec-name">Asteroid field</span></div>
+          <div class="sec-id"><b id="sec-code">Sector 83-37</b><span id="sec-name">Asteroid field</span><em id="sec-host" hidden></em></div>
           <span class="range"><span class="lbl">Range</span><b id="radar-r">1.0 km</b></span>
         </div>
       </section>
@@ -168,10 +155,28 @@
       <section id="log" class="hud-block" aria-live="off">
           <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
           <div id="mode" class="glass clear" hidden><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span></div>
-        <div id="heat" hidden aria-label="System heat"><span class="ht-l">Heat</span><span class="ht-b"><i></i><i></i><i></i><i></i></span></div>
         <div id="log-lines"></div>
         <div id="cond" hidden></div>
         <button type="button" id="upg" class="glass" tabindex="-1" hidden><kbd class="only-desktop">B</kbd><span class="up-w"><span id="upg-t">Open bay</span><small id="upg-s">Upgrade ship</small></span><b id="upg-n"></b></button>
+        <!-- the stores in one quiet line, then the one plate: munitions, and what the place does to the ship -->
+        <div id="arms">
+          <div class="sys-foot">
+          <span class="stores" id="rail"><span class="lbl" id="xp-l">Cyrite</span><b id="xp-v">0</b><span id="xp-gain"></span></span>
+          <span class="stores vy-cells" id="vy-cells"><span class="lbl">Supplies</span><b id="vy-supplies">0</b></span>
+          <span id="sys-score"><span class="lbl">Score</span><b class="val" id="score">000000</b><span id="chain"><span class="lbl">Chain <span id="chain-n">0</span></span><b id="chain-x">×1</b></span></span>
+        </div>
+          <div id="plate">
+        <div class="sys-row arms" id="sys-tp" hidden>
+          <span class="lbl">Torpedoes</span>
+          <span class="rack" id="g-rack"></span><b class="val word" id="v-rack">Ready</b>
+        </div>
+        <div class="sys-row arms" id="sys-mn" hidden>
+          <span class="lbl">Mines</span>
+          <span class="rack" id="g-mines"></span><b class="val" id="v-mines">0</b>
+        </div>
+          <div id="heat" hidden aria-label="System heat"><span class="ht-l">Heat</span><span class="ht-b"><i></i><i></i><i></i><i></i></span></div>
+          </div>
+        </div>
       </section>
 
     </div>

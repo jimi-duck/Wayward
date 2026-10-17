@@ -500,3 +500,121 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #objective .h-touch, #objective .h-pad { display: none; }
 .touch-ui:not(.pad-ui) #objective .h-keys, .pad-ui #objective .h-keys { display: none; }
 .touch-ui:not(.pad-ui) #objective .h-touch, .pad-ui #objective .h-pad { display: inline; }
+
+/* ── lines, not boxes (the four-corner pass; docs/HUD.md) ─────────────────
+   The corners are hairline rules and brackets, no fill. Teal is the quiet
+   line and the glow (teal only, never on a label); gold and red say a state.
+   The one plate is the munitions, with two brackets and a light blur.
+   Only the scope's sweep, the hostile count and the eased gauges move. */
+@property --v { syntax: "<number>"; inherits: false; initial-value: 1; }
+:root { --rule: rgba(76, 194, 203, .3); --glow: 0 0 6px rgba(76, 194, 203, .35), 0 1px 5px rgba(0, 0, 0, .85); }
+/* the safe area: 40 px, 56 px on a big screen; a phone keeps its tight margins */
+@media (min-width: 1000px) { :root:not(.touch-ui) #hud { --pad: 40px; --top: calc(var(--safe-t) + 40px); } }
+@media (min-width: 1600px) { :root:not(.touch-ui) #hud { --pad: 56px; --top: calc(var(--safe-t) + 56px); } }
+/* a label: small, mono, wide, muted */
+.sys-row > .lbl, .sys-foot .lbl, .range .lbl, .ht-l, .obj-k { font: 400 10px/1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
+
+/* upper left */
+#objective { width: clamp(240px, 22vw, 300px); gap: 5px; padding: 1px 0 1px 12px; border-left: 1px solid var(--rule); }
+.obj-k { display: flex; align-items: center; gap: 8px; }
+.obj-k::before { content: ""; width: 6px; height: 6px; background: var(--amber); rotate: 45deg; }
+#objective.lesson .obj-k { color: var(--ink-2); }
+.obj-h { display: grid; gap: 4px; justify-content: start; }
+#obj-t { font: 600 clamp(15px, 1.25vw, 18px)/1.1 var(--font-rail); letter-spacing: .12em; }
+#obj-left { font: 400 12px/1 var(--font-mono); letter-spacing: .04em; color: var(--cy); text-shadow: var(--glow); }
+#obj-left:empty { display: none; }
+#obj-p { --off: var(--cy-dim); --on: var(--cy); height: 2px; }
+#obj-s, #obj-list { color: var(--ink-2); }
+
+/* upper centre: a line, not a tape */
+#heading { width: auto; top: calc(var(--top) - 2px); }
+#hdg-tape, #hdg-obj, #heading::after { display: none; }
+.hdg-r { display: flex; gap: 8px; width: auto; align-items: baseline; }
+#hdg { font: 400 12px/1 var(--font-mono); letter-spacing: .1em; padding: 0; color: var(--cy); text-shadow: var(--glow); }
+#hdg::after { content: "°"; }
+#hdg-rel { font: 400 12px/1 var(--font-mono); letter-spacing: .1em; color: var(--amber); text-shadow: 0 1px 5px rgba(0, 0, 0, .85); }
+#hdg-rel:not(:empty)::before { content: "· "; color: var(--ink-2); }
+
+/* upper right */
+#systems { width: clamp(236px, 19vw, 292px); padding: 1px 12px 1px 0; border-right: 1px solid var(--rule); column-gap: 12px; row-gap: 9px; }
+.sys-row > .lbl { min-width: 56px; text-align: right; }
+.sys-row .val { font: 400 clamp(11px, .9vw, 13px)/1 var(--font-mono); letter-spacing: .02em; color: var(--ink); }
+.sys-row .val small { font-size: 1em; color: inherit; margin: 0; }
+.bar { height: 3px; transition: --v .35s ease-out;
+  background: linear-gradient(90deg, var(--fillc) 0 calc(var(--v) * 100%), var(--cy-dim) 0); box-shadow: none; }
+#sys-ph .bar { --fillc: var(--ink); }
+#sys-fuel .bar, #sys-purse i { --fillc: var(--ink-2); opacity: .8; }
+#sys-ph.hot .bar { --fillc: var(--ink); }
+#sys-fuel.ready .bar { --fillc: var(--ink-2); }
+#sys-fuel.ready .val { color: var(--ink); }
+/* the hull: skewed pips; teal, then gold, then red as it drops */
+.plates { gap: 4px; }
+.plates i { max-width: 34px; height: 3px; transform: skewX(-25deg); box-shadow: none; background: var(--cy-dim); }
+.plates i.on, html.breakout .plates i.on:not(.sh) { --pc: var(--cy); background: var(--pc); box-shadow: 0 0 4px var(--pc); }
+#sys-hull.mid { --pc: var(--caution); }
+#sys-hull.low { --pc: var(--alert); }
+#sys-hull.mid .plates i.on:not(.sh), #sys-hull.low .plates i.on:not(.sh) { --pc: inherit; background: var(--pc); box-shadow: 0 0 4px var(--pc); }
+#sys-hull.mid #v-hull { color: var(--caution); }
+#sys-hull.low #v-hull { color: var(--alert-text); }
+/* the pulse at the screen edge says it; the pips stay still */
+#sys-hull.crit .plates i.on:not(.sh) { animation: none; }
+.plates i.sh { height: 3px; transform: skewX(-25deg); }
+
+/* lower left: the scope and the place */
+#sensors { align-items: flex-end; gap: 14px; }
+#radar { width: clamp(150px, 12vw, 180px); background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+.sens-side { gap: 8px; padding: 0 0 20px; }
+.sec-id { gap: 5px; }
+.sec-id b { font: 400 10px/1 var(--font-mono); letter-spacing: .22em; color: var(--ink-2); }
+.sec-id span { font: 700 clamp(15px, 1.25vw, 19px)/1 var(--font-rail); letter-spacing: .08em; color: var(--ink); }
+#sec-host { font: 400 10px/1 var(--font-mono); font-style: normal; letter-spacing: .18em; text-transform: uppercase; color: var(--alert-text); }
+#sec-host::before { content: "● "; animation: host-blink 1.2s steps(2, jump-none) infinite; }
+#sec-host[hidden] { display: none; }
+@keyframes host-blink { 50% { opacity: .25; } }
+#radar-r { font: 400 10px/1 var(--font-mono); letter-spacing: .12em; color: var(--ink-2); }
+
+/* lower right: stores in a line, then the one plate */
+#arms { display: grid; gap: 8px; justify-items: end; }
+#arms .sys-foot { grid-column: auto; padding: 0; border: 0; gap: 4px 16px; justify-content: flex-end; }
+#arms .sys-foot b { font: 400 12px/1 var(--font-mono); letter-spacing: .04em; margin: 0 0 0 2px; }
+#arms #rail b { color: var(--ink); }
+#score { font-size: 12px; letter-spacing: .04em; }
+#plate { position: relative; display: grid; grid-template-columns: max-content minmax(48px, 1fr) max-content; align-items: center; gap: 9px 10px; padding: 12px 14px 12px 16px; min-width: 190px;
+  background: linear-gradient(180deg, rgba(10, 16, 22, .5), rgba(6, 10, 14, .38)); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+#plate::before, #plate::after { content: ""; position: absolute; width: 12px; height: 12px; border: 0 solid var(--rule); }
+#plate::before { left: 0; top: 0; border-width: 1px 0 0 1px; }
+#plate::after { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
+#plate:not(:has(> :not([hidden]))) { display: none; }
+#plate .sys-row { display: contents; }
+#plate .sys-row > .lbl { min-width: 0; text-align: left; font-weight: 600; font-family: var(--font-rail); font-size: 12px; letter-spacing: .14em; color: var(--ink); }
+#plate .val { font-size: 11px; }
+#plate .val.word { font: 400 10px/1 var(--font-mono); letter-spacing: .16em; color: var(--ink-2); }
+#sys-tp.lock #v-rack { color: var(--caution); }
+#sys-tp.empty #v-rack { color: var(--alert-text); }
+#plate .rack i { max-width: 16px; height: 3px; transform: skewX(-25deg); clip-path: none; }
+#plate .rack i.on { background: var(--cy); box-shadow: 0 0 4px var(--cy); }
+#plate #g-mines i { height: 3px; max-width: 16px; }
+#plate #g-mines i.on { background: var(--ink-2); box-shadow: none; }
+#plate #heat { grid-column: 1 / -1; gap: 10px; position: relative; }
+#plate .ht-b { flex: 1; gap: 3px; }
+#plate .ht-b i { flex: 1; width: auto; height: 3px; }
+#heat[data-lit="3"] .ht-b { --on: var(--caution); }
+#log { width: clamp(220px, 17vw, 280px); }
+#upg { align-self: end; }
+.hn-bar .ht-b i { width: 30px; height: 3px; }
+
+/* a phone: the stick and the buttons own the bottom, so the readouts stay up and the munitions are on the buttons */
+.touch-ui #systems { border-right-width: 1px; }
+.touch-ui #arms { gap: 5px; }
+.touch-ui #plate .sys-row { display: none; }
+.touch-ui #plate:not(:has(> #heat:not([hidden]))) { display: none; }
+.touch-ui #plate { min-width: 0; padding: 6px 8px; }
+.touch-ui #arms .sys-foot b, .touch-ui #score { font-size: 11px; }
+.touch-ui #plate #heat { grid-column: 1 / -1; }
+@media (max-height: 460px) {
+  .touch-ui #objective { padding: 1px 0 1px 9px; }
+  .touch-ui #systems { padding: 1px 9px 1px 0; row-gap: 5px; }
+  .touch-ui .sys-row > .lbl { min-width: 0; }
+  .touch-ui #obj-t { font-size: 14px; letter-spacing: .08em; }
+}
+@media (prefers-reduced-motion: reduce) { #sec-host::before { animation: none; } .bar { transition: none; } }
