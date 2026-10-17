@@ -129,6 +129,35 @@ export function streamTexture(seed = 1): Texture {
   });
 }
 
+/**
+ * A fold of auroral curtain, tall and narrow: a hard bright lower edge, thinning rays rising from it, and a
+ * soft side falloff. White, so a material colour tints it. `seed` gives each fold its own rays.
+ */
+export function curtainTexture(seed = 1): Texture {
+  return once('curtain' + seed, () => {
+    const W = 64, H = 256, [c, g] = canvas(W, H);
+    const r = rand(500 + seed * 13), rays = new Float32Array(W);
+    for (let i = 0; i < W; i++) rays[i] = r();
+    const img = g.createImageData(W, H);
+    for (let j = 0; j < H; j++) {
+      const v = 1 - j / H; // 0 at the lower edge, 1 at the top
+      for (let i = 0; i < W; i++) {
+        const x = i / (W - 1), side = Math.pow(Math.sin(x * Math.PI), 0.8);
+        const ray = 0.45 + 0.55 * (0.5 * rays[i]! + 0.5 * rays[Math.min(W - 1, i + 1)]!);
+        // the edge is a thin hard line a little above the bottom, the rays fade up from it
+        const edge = Math.exp(-Math.pow((v - 0.1) / 0.035, 2));
+        const body = Math.pow(Math.max(0, 1 - v), 1.8) * Math.min(1, v / 0.08);
+        const a = Math.min(1, (edge * 0.9 + body * ray * 0.75) * side);
+        const k = (j * W + i) * 4;
+        img.data[k] = img.data[k + 1] = img.data[k + 2] = 255;
+        img.data[k + 3] = Math.round(a * 255);
+      }
+    }
+    g.putImageData(img, 0, 0);
+    return finish(c, false);
+  });
+}
+
 /** A ragged ball of flame, white at the heart: tinted and grown for fireballs. */
 export function fireTexture(): Texture {
   return once('fire', () => {

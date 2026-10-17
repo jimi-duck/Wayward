@@ -318,3 +318,12 @@ The things that are drawn but never flown: the sky's far works, the situation pr
 - Built the first time a boss arrives, as before. Triangles per capital: lancer 8.1k, raptor 3.9k, warbird 3.4k, drone 6.3k (the plan's cap was 25k). The Thren web layer has no capital pass.
 - Bench: `tools/enemies.html?view=capital&only=hulls&kind=lancer|raptor|warbird|drone&r=6` (logs the triangle count).
 - Not measured: phone frame rate. The far fleet's hulls were not changed in this pass (they already carry real lit lamps from pass 16).
+
+## Graphics pass 20: relic, curtain, veil and convoy
+
+- Relic (`monuments.ts`): built from the kit and baked once: a stepped plinth, five twisted hex sections in worn cut stone with bevelled caps, grooves and cut bands down every face, a narrow cold channel with dashes on alternate faces, lit joints, a crown of prisms. Its lights are unfogged, so the seams keep their colour at range while the stone goes into the haze. The shard above it now has three smaller shards turning about it. About 4.6k triangles.
+- Curtain: two layers of folds drawn with a new `curtainTexture` (a hard bright lower edge, rays thinning upward, soft sides), each fold shimmering slowly, instead of 22 vertical glow sprites. 44 sprites (was 22).
+- Veil, static, storm, shroud: 12 fine drifting motes at different depths and speeds inside each bank (sprites only), so the cloud has volume.
+- Convoy: nine real haulers (spine, cargo pods, bridge, lit window row, drive glow), 26 to 34 units long at 3.3 km, in the sky layer with the hull unfogged. About 350 triangles each, cloned from one build.
+- Bench: `tools/sites.html?prop=relic` and `?prop=convoy`.
+- Sprites per feature stay under the shared cap (220). Not measured: phone frame rate.
