@@ -92,7 +92,7 @@ interface RockLook {
 }
 
 const LOOKS: Record<RockKind, RockLook> = {
-  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1.04, 0.96, 0.88],         zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
+  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [0.9, 0.95, 1.02], zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
   iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
   rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.8, 0.72, 1.2], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
   volatile: { id: 'volatile', glow: [0.5, 1.7, 3.0],   tint: [0.7, 0.86, 1.22], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
@@ -155,7 +155,7 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
         // inclusions: lit crystals set in the stone, thresholded from fine noise
         float incl = smoothstep(0.63, 0.72, snoise(rp * vec3(1.6, 7.5, 2.2) + 4.7) * 0.6 + snoise(rp * 2.1 + 9.0) * 0.5) * uMineral * (1.0 - heat);
         stone = mix(stone, mix(vec3(0.5, 0.46, 0.42), vec3(0.2, 0.1, 0.34), uViolet), incl * 0.5);
-        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.5) * 0.34;
+        stone = mix(vec3(dot(stone, vec3(0.3, 0.5, 0.2))), stone, 0.35) * 0.34;
         stone *= 0.85 + 0.4 * pow(1.0 - abs(snoise(rp * 3.6 + 1.7)), 3.0);
         diffuseColor.rgb *= stone * uTint;
         float pulse = 0.78 + 0.22 * sin(uTime * uPulse + rn * 9.0);
@@ -190,11 +190,11 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         // at chase distance the cracks are sub-pixel: the kind shows as a faint cast of its own colour instead, well under the bloom line
         float farK = smoothstep(18.0, 70.0, length(vViewPosition));
-        totalEmissiveRadiance += uGlow / max(uGlow.r, max(uGlow.g, uGlow.b)) * farK * 0.035 * (uEmber * (1.0 - uCool * 0.0) + uViolet * 1.3 + uCool * 0.7) * uLava;
+        totalEmissiveRadiance += uGlow / max(uGlow.r, max(uGlow.g, uGlow.b)) * farK * 0.035 * (uEmber * 0.5 + uViolet * 1.3 + uCool * 0.7) * uLava;
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
         totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.012 * uViolet + 0.01 * uCool) * uLava;`);
   };
-  m.customProgramCacheKey = () => `stone-rock9-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock11-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 

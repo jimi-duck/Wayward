@@ -120,8 +120,12 @@ export function skyIn(seed: number, palette: number): Sky {
   return paint(seed, rand(seed), PALETTES[Math.max(0, Math.min(PALETTES.length - 1, palette))]!);
 }
 
+const STEEL = new Color('#4a5a6e');
+
 function paint(seed: number, r: () => number, p: Palette): Sky {
   const lin = (hex: string) => new Color(hex);
+  // the palettes keep their hue but sit nearer a cool steel grey, so every sky shares one mood
+  const calm = (hex: string) => new Color(hex).lerp(STEEL, 0.4);
   const pp = p.planets[Math.floor(r() * p.planets.length)]!;
   // most systems have a world in view; a few are just the deep
   const planet: Planet | null = r() < 0.85 ? {
@@ -132,7 +136,7 @@ function paint(seed: number, r: () => number, p: Palette): Sky {
   } : null;
   return {
     seed: seed % 9973,
-    neb: [lin(p.neb[0]), lin(p.neb[1]), lin(p.neb[2])],
+    neb: [calm(p.neb[0]), calm(p.neb[1]), calm(p.neb[2])],
     band: lin(p.band),
     glow: p.glow * (0.85 + r() * 0.3),
     clouds: 0.8 + r() * 0.4,
@@ -240,7 +244,7 @@ const BAKE = /* glsl */ `
     vec3 s = vec3(uSeed * 0.137, uSeed * 0.071, uSeed * 0.193);
 
     // the deep: not quite black, a breath of the palette
-    vec3 col = mix(vec3(0.0012, 0.0014, 0.0024), uNebB * 0.006, fbm(d * 1.5 + s, 3));
+    vec3 col = mix(vec3(0.03, 0.04, 0.06), uNebB * 0.03, fbm(d * 1.5 + s, 3));
 
     // the galactic band: unresolved stars and dust along a great circle, lanes through the middle
     float bd = dot(d, uBandN);

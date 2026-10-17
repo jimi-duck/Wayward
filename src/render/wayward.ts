@@ -26,13 +26,13 @@ function materials(hits: Hit[]): Record<string, Material> {
   const used = { worn: 1, soot: [2.15, 2.95] as [number, number], hits };
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(0.008, 0.004, 0), ...used });
   mats = {
-    paint: amber(0xd98a1c),
-    paint2: amber(0xb86a18),
-    paint3: amber(0xdc9228),
+    paint: amber(0xdba836),
+    paint2: amber(0xb8862c),
+    paint3: amber(0xe4b444),
     // field repairs: plate patched on in grey primer, never painted over
     primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
-    hull: metal({ tint: 0x6e7378, roughness: 0.55, metalness: 0.5, ...used }),
-    dark: metal({ tint: 0x4a4e52, roughness: 0.55, metalness: 0.35, scale: 1.5, ...used }),
+    hull: metal({ tint: 0x585d63, roughness: 0.55, metalness: 0.5, ...used }),
+    dark: metal({ tint: 0x30343a, roughness: 0.55, metalness: 0.35, scale: 1.5, ...used }),
     pipe: metal({ tint: 0x34322f, roughness: 0.45, metalness: 0.55, scale: 2, ...used }),
     rubber: new MeshStandardMaterial({ color: 0x141414, roughness: 0.95, metalness: 0 }),
     window: new MeshStandardMaterial({ color: 0x0b1416, roughness: 0.12, metalness: 0.9, emissive: new Color(0.02, 0.09, 0.11) }),

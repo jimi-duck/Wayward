@@ -32,8 +32,8 @@ export interface QualityTier {
 // effects that use them land (M3, M4).
 export const TIERS: readonly QualityTier[] = [
   { name: 'low', dprCap: 1, msaa: false, smaa: null, shadow: 0, debris: 160 },
-  { name: 'medium', dprCap: 1.25, msaa: false, smaa: 'low', shadow: 512, debris: 360 },
-  { name: 'high', dprCap: 1.5, msaa: true, smaa: 'high', shadow: 1024, debris: 560 },
+  { name: 'medium', dprCap: 1.25, msaa: false, smaa: 'low', shadow: 512, debris: 480 },
+  { name: 'high', dprCap: 1.5, msaa: true, smaa: 'high', shadow: 1024, debris: 800 },
 ];
 
 const EMA = 0.05;
