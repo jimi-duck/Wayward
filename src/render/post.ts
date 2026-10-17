@@ -1,5 +1,5 @@
 import {
-  BlendFunction, BloomEffect, EffectComposer, EffectPass, NoiseEffect, RenderPass, SMAAEffect, SMAAPreset,
+  BlendFunction, BloomEffect, BrightnessContrastEffect, EffectComposer, EffectPass, HueSaturationEffect, NoiseEffect, RenderPass, SMAAEffect, SMAAPreset,
   ToneMappingEffect, ToneMappingMode, VignetteEffect,
 } from 'postprocessing';
 import { HalfFloatType, type Camera, type Scene, type WebGLRenderer } from 'three';
@@ -35,9 +35,12 @@ export class Post {
     const vignette = new VignetteEffect({ offset: 0.28, darkness: 0.72 });
     const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: false });
     grain.blendMode.opacity.value = 0.06;
+    // one cool, slightly quiet grade over everything: colour is kept for the accents (the gate, the Wayward, a threat)
+    const grade = new HueSaturationEffect({ saturation: -0.14 });
+    const contrast = new BrightnessContrastEffect({ contrast: 0.06 });
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC });
     if (tier.smaa) this.composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: tier.smaa === 'high' ? SMAAPreset.HIGH : SMAAPreset.LOW })));
-    this.composer.addPass(new EffectPass(camera, bloom, vignette, grain, tone));
+    this.composer.addPass(new EffectPass(camera, bloom, vignette, grain, grade, contrast, tone));
   }
 
   setSize(width: number, height: number): void {

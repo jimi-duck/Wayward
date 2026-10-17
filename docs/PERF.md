@@ -236,3 +236,15 @@ The Custody heavy cruiser's keel and the freighter's bridge head are lofted like
 ## The Wayward, reshaped to the artwork
 
 The model was a wide, square brick with square pods far out on arms. It is now a long, slim hull (about 2.4 wide for 5.9 long) of octagonal armour stepping in to a rounded, sloping bow, with two round engine drums low on the flanks, banded in amber plate, each with a ringed drive housing and a small pale-blue ring round the throat (the flame colour is unchanged). The spine is lower, the name runs along both upper flanks and "03" is on the bow and stern. Play scale and hit size are unchanged; nozzles, running lights, the shield ellipsoid and the refit bay's part marks were moved to the new parts. With the occlusion bake the model is about 36k triangles (was about 57k): fewer, because the old pods and mounting carried much more detail than a round drum needs. Same draws and programs. Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/wayward-ship/shots/`.
+
+## Graphics pass 12: haze, grade and theme
+
+Matched to the reference shot: one cool steel-grey mood with teal and amber as the only accents.
+
+- Fog is a dark steel haze (`#25323f`, density 0.0072, was near-black 0.0042), so far rock fades up out of the dark.
+- The sky's floor is lifted to a dark blue-grey, and every palette is pulled 40% toward steel grey (the regions keep their hue).
+- Rocks: cooler charcoal basalt, less warm cast; the far-off kind tint on basalt is halved.
+- Post: saturation -14% and contrast +6% before tone mapping (Medium and High; Low has no composer). Faint star layer dimmed.
+- Debris: 800 chips (was 560) on High, 480 on Medium (was 360), Low unchanged at 160; darker and cooler. Cost is one instanced draw, but phone frame rate is not measured here.
+- Gate: a soft teal haze sprite behind the ring, and light materials (strips, lamps) are unfogged so the neon stays sharp at range.
+- Wayward: paint moved from copper-orange toward ochre gold, with darker frames, as in the reference hauler.

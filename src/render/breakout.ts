@@ -21,17 +21,18 @@ const STRIP = new Color(0.3, 1.25, 1.4);
 
 let mats: Record<string, Material> | null = null;
 /** The materials the Breakout's structures share (also the situations' sites, render/site.ts). */
+// lights are not fogged: the gate's neon and the lamps stay readable through the haze
 export function materials(): Record<string, Material> {
   if (mats) return mats;
   mats = {
     hull: metal({ tint: 0x7d8288, roughness: 0.7, metalness: 0.4 }),
     paint: metal({ tint: 0xf2b21f, roughness: 0.62, metalness: 0.06 }),
     dark: metal({ tint: 0x3e3c3a, roughness: 0.55, metalness: 0.6, scale: 1.4 }),
-    lamp: new MeshBasicMaterial({ color: new Color(3.2, 2.4, 1.5), toneMapped: false }),
-    amber: new MeshBasicMaterial({ color: AMBER, toneMapped: false }),
+    lamp: new MeshBasicMaterial({ color: new Color(3.2, 2.4, 1.5), toneMapped: false, fog: false }),
+    amber: new MeshBasicMaterial({ color: AMBER, toneMapped: false, fog: false }),
     slate: metal({ tint: 0x868b92, roughness: 0.74, metalness: 0.5, scale: 0.7, bump: 0.006, worn: 0.4 }),
-    strip: new MeshBasicMaterial({ color: STRIP.clone(), toneMapped: false }),
-    cyan: new MeshBasicMaterial({ color: CYAN, toneMapped: false }),
+    strip: new MeshBasicMaterial({ color: STRIP.clone(), toneMapped: false, fog: false }),
+    cyan: new MeshBasicMaterial({ color: CYAN, toneMapped: false, fog: false }),
   };
   return mats;
 }
@@ -296,6 +297,7 @@ export class BreakoutView {
   private readonly laneRing: Mesh;
   private readonly portRing: Mesh;
   private readonly laneField: Mesh;
+  private readonly lanehaze: Sprite;
   private readonly portField: Mesh;
   private time = 0;
 
@@ -312,6 +314,11 @@ export class BreakoutView {
     this.laneField = flatRing(SAFE_R, 0.3, CYAN, 0.1);
     this.laneRing.position.y = 0.2;
     this.gate.add(this.throat);
+    // a soft teal haze behind the ring, so the gate sits in the air round it instead of being cut out of the dark
+    this.lanehaze = new Sprite(new SpriteMaterial({ map: glow, color: new Color(0.1, 0.4, 0.5), toneMapped: false, transparent: true, opacity: 0.1, blending: AdditiveBlending, depthWrite: false, fog: false }));
+    this.lanehaze.scale.setScalar(110);
+    this.lanehaze.position.y = GATE_Y;
+    this.gate.add(this.lanehaze);
     this.lane.add(this.laneRing, this.laneField);
     // the depot stands off to one side of its berth; the cyan ring is where you dock
     const depot = buildPort();
@@ -341,6 +348,7 @@ export class BreakoutView {
     const ready = world.fuel >= b.jumpCost ? 1 : 0.35;
     const spool = b.spool / 5;
     this.throat.rotation.x += dt * (0.2 + spool * 3);
+    (this.lanehaze.material as SpriteMaterial).opacity = 0.022 + 0.034 * ready + 0.15 * spool;
     (this.throat.material as MeshBasicMaterial).opacity = 0.015 + 0.025 * ready + 0.18 * spool + (b.jumpT >= 0 ? 0.4 : 0);
     (this.laneRing.material as MeshBasicMaterial).opacity = 0.25 + 0.25 * ready + 0.12 * Math.sin(this.time * 3) * ready;
     // the light strips: dim while the tank is short, full when ready, brighter as the drive spools
