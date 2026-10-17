@@ -279,3 +279,9 @@ Close-up against the reference rock showed flat light and a smooth surface.
 - Shield: there is still no standing bubble. The hit flare now ripples out from the side the blow came from (a bright spot and a ring over the lattice, bending it as it passes). The hit events carry an optional source position (`fx`, `fz`) for this; it changes no rule. A hit with no known source flares as before.
 - Bench: `tools/ship.html?view=three&hit=30&age=0.2` freezes a flare from a bearing.
 - Not measured: phone frame rate (the plume shader does a few more sine reads; geometry is small).
+
+## Graphics pass 15: cargo, maintenance lights, lighter lattice
+
+- Wayward: a layered container stack on each shoulder (three bays a side, a strapped lower tier and a shorter upper one), small orange maintenance lights in pairs by the hatches, stern and flanks (a dull orange under the bloom line, new `orange` material), and the stacks stay below the spine's tallest modules, so the silhouette and hit size are unchanged.
+- Plume seen end-on: the bell and core keep a floor of brightness when viewed down the axis, so the flame stays readable from directly behind.
+- Shield hit: thinner hex lines and lower weights; the field reads lighter.
