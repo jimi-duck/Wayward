@@ -5,6 +5,7 @@ import { Environment } from '../src/render/environment';
 import { skyFor } from '../src/render/sky';
 import { BUILD } from '../src/render/site';
 import { hulkModel } from '../src/render/space';
+import { buildPort } from '../src/render/breakout';
 import { Post } from '../src/render/post';
 import { TIERS, tierIndex } from '../src/render/quality';
 import { createRenderer, fitRenderer } from '../src/render/renderer';
@@ -26,7 +27,7 @@ const t0 = performance.now();
 const prop = (params.get('prop') ?? 'wreck') as Prop;
 // ?hulk=0..4 shows one of the space layer's dead hulls at the size it is drawn (26 to 56 long)
 const hulk = params.get('hulk');
-const body = hulk !== null ? hulkModel(Number(hulk)) : BUILD[prop]();
+const body = hulk !== null ? hulkModel(Number(hulk)) : (params.get('prop') === 'port' ? buildPort() : BUILD[prop]());
 if (hulk !== null) body.scale.setScalar(Number(params.get('size') ?? '18'));
 let tris = 0;
 body.traverse((o) => { const g = (o as { geometry?: { attributes: { position: { count: number } } } }).geometry; if (g) tris += g.attributes.position.count / 3; });

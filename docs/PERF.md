@@ -297,3 +297,9 @@ The things that are drawn but never flown: the sky's far works, the situation pr
 - Capital ships (`enemies.ts`): their own metal at 2.6 times the fighter's plating grain and a little more wear, so the plates read as panels. Built the first time one arrives.
 - Benches: `tools/farworks.html`, `tools/sites.html`. Shots in `/mnt/project-files/graphics-research/background-objects/`.
 - Not measured: phone frame rate and memory (the added triangles are small; the plating shader is the one already in use).
+
+## Graphics pass 17: the port
+
+- `buildPort` (`breakout.ts`): pressure spheres in cradles and capsule tanks with bands and manifolds (were plain drums), a lit habitat ring with window decks, a control drum with a window band, docking arms with clamps, fenders, floodlight poles and hazard stripes, a cargo yard of corrugated containers, vent stacks. Windows use their own small, warm material (under the bloom line) so a lit deck reads as windows, not lamps. The beacon, damping ring and docking ring are unchanged.
+- Baked occlusion (cell 0.6). Built once when the sector view is made: about 250 ms on this machine (about 40 ms of it geometry, the rest the bake), 13.4k triangles (was about 4k). A phone will take longer; not measured there.
+- Bench: `tools/sites.html?prop=port`.
