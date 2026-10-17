@@ -17,7 +17,7 @@ block at the end of `hud.css`).
 - Upper centre: one mono line, the heading and the bearing to the goal (`317° · 45° →`); no tape. Never an alert.
 - Upper right: a mirrored rule; Hull as skewed pips (teal over two thirds, gold over a third, red below), Energy as a 3 px bar, Fluid in the Story. Gauges ease.
 - Lower left: the scope (36 rim ticks, a longer one at each point, two dashed rings, a sweep of one turn in four seconds), then the sector, its name, and `● n hostiles` with a stepped blink.
-- Lower right: the alert and the bay prompt, then one mono line of stores (Cyrite, supplies, score), then the one plate: torpedoes, mines and the place's heat, two corner brackets and a 3 px blur.
+- Lower right: the alert and the bay prompt, then one mono line of stores (Cyrite, supplies, score), then the one plate: torpedoes, mines and the place's heat, two corner brackets and a translucent fill (no blur, which costs a redraw every frame).
 - Safe area: 40 px, 56 px from 1600 px wide; a phone keeps its tight margins. On a phone the plate shows only the heat (the buttons carry the rounds) and the readouts stay up.
 - Teal glow on teal values only, never on a label. Labels are 10 px mono, wide-tracked, muted.
 - Only the sweep, the hostile count and the eased gauges move.
