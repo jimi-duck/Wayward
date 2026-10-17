@@ -5,6 +5,7 @@ import {
 import type { Boss, Strike, Telegraph } from '../sim/bosses';
 import type { Encounter } from '../sim/encounters';
 import { NEON } from './enemies';
+import { singularity } from './singularity';
 
 // ── warnings and set pieces ───────────────────────────────────────────────
 // Everything that tells the player where something is about to happen is
@@ -84,16 +85,12 @@ export class HazardView {
     this.zone.visible = this.zoneFill.visible = false;
     scene.add(this.beacon, this.zone, this.zoneFill);
 
-    // the anomaly: a black core in turning rings
+    // the anomaly: a black hole with its disc, and two faint rings on the plane that mark how far its pull reaches
     this.well = new Group();
-    const core = new Mesh(new SphereGeometry(1, 24, 16), new MeshBasicMaterial({ color: 0x000000 }));
-    core.scale.setScalar(2.6);
-    const rim = new Sprite(new SpriteMaterial({ map: glow, color: new Color(1.6, 0.7, 3), blending: AdditiveBlending, depthWrite: false }));
-    rim.scale.setScalar(11);
-    this.well.add(rim, core);
-    for (let i = 0; i < 4; i++) {
-      const r = new Mesh(new TorusGeometry(4 + i * 5, 0.08 + i * 0.03, 6, 64), additive(0.7 - i * 0.12));
-      (r.material as MeshBasicMaterial).color.setRGB(1.2 + i * 0.3, 0.5, 2.6 - i * 0.3);
+    this.well.add(singularity(2.6));
+    for (let i = 0; i < 2; i++) {
+      const r = new Mesh(new TorusGeometry(14 + i * 5, 0.06, 6, 72), additive(0.22 - i * 0.06));
+      (r.material as MeshBasicMaterial).color.setRGB(0.9, 0.45, 2.0);
       r.rotation.x = Math.PI / 2;
       this.well.add(r);
       this.wellRings.push(r);
