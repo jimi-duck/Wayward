@@ -207,6 +207,8 @@
 #rd-call .rd-prio { margin-left: auto; padding: 0; border: 0; background: none; font: 600 12px/1 var(--font-rail); letter-spacing: .18em; color: var(--dk-amber); }
 #rd-call.job { width: min(460px, 42vw); gap: 8px 16px; padding: 14px 20px 14px; border-left: 1px solid var(--edge);
   display: grid; grid-template-columns: 120px minmax(0, 1fr); grid-template-areas: "h h" "art id" "art text" "art sheet" "list list" "timer timer"; }
+/* the job card's display must not outrank the hidden attribute: a call that is answered has to leave the screen */
+#rd-call[hidden], #rd-call.job[hidden] { display: none; }
 #rd-call.job > .rd-h { grid-area: h; padding-bottom: 8px; border-bottom: 1px solid var(--dk-hair); gap: 8px; }
 #rd-call.job .tx-wave, #rd-call.job .rd-ico { display: none; }
 #rd-call.job .rd-k { font: 600 13px/1 var(--font-rail); letter-spacing: .2em; color: var(--dk-ink); }
