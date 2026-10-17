@@ -130,7 +130,8 @@ export class Environment {
     const old = this.baked;
     this.baked = bakeSky(this.renderer, sky);
     this.scene.background = this.baked.texture;
-    old?.dispose();
+    // the texture too: three keeps the cube map it made from the sky until the texture (not just its target) is disposed
+    if (old) { old.texture.dispose(); old.dispose(); }
     if (this.far) { this.far.group.removeFromParent(); this.far.dispose(); }
     // the planet takes its light from the key's quarter of the sky
     this.far = new FarBodies(sky, new Vector3(-40, 34, -10));

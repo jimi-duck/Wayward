@@ -236,3 +236,18 @@ The Custody heavy cruiser's keel and the freighter's bridge head are lofted like
 ## The Wayward, reshaped to the artwork
 
 The model was a wide, square brick with square pods far out on arms. It is now a long, slim hull (about 2.4 wide for 5.9 long) of octagonal armour stepping in to a rounded, sloping bow, with two round engine drums low on the flanks, banded in amber plate, each with a ringed drive housing and a small pale-blue ring round the throat (the flame colour is unchanged). The spine is lower, the name runs along both upper flanks and "03" is on the bow and stern. Play scale and hit size are unchanged; nozzles, running lights, the shield ellipsoid and the refit bay's part marks were moved to the new parts. With the occlusion bake the model is about 36k triangles (was about 57k): fewer, because the old pods and mounting carried much more detail than a round drum needs. Same draws and programs. Not measured: GPU time on a phone. Shots in `/mnt/project-files/graphics-research/wayward-ship/shots/`.
+
+## Pass 7: hitches on a new system and when a panel opens
+
+Found by profiling the dev server (software GL, so CPU time only) and the simulation in Node; write-up with scripts in `/mnt/project-files/perf-hitches/`.
+
+| Cause | Change | After |
+|---|---|---|
+| `arrive` searched the chart once per system (`sightPlaces`, the Net's near list) | `within()`: one search out to N jumps | `arrive` 225 ms to under 2 ms; `newJourney` about 250 ms less |
+| The far works baked hull occlusion (#255) and then dropped it | `farWorks` builds its hulls without the bake | about 300 ms less on every new sky, and fewer triangles in the far works |
+| The sky's cube map outlived its sky (three frees it with the texture, not the target) | `Environment.setSky` disposes the old texture too | textures flat over five systems (was +1 each, 25 to 33 MB a cube) |
+| The port drew the scene behind its opaque screen | `Sector.blind` while the port is open | no draw calls while docked |
+| First dock fetched and decoded its pictures | `preloadPort` four seconds after Start | first dock shows at once |
+| The tier governor stepped down on the slow first frames of a system or after a panel | `QualityGovernor.hold(120)` on a new system and when the world resumes | fewer needless post-chain rebuilds and full warm-ups |
+
+Not changed: the sky's equirect-to-cube conversion links its own program for each sky (a throwaway material in three), left for the graphics work on the sky. Not measured: GPU time of the sky bake, real link and decode times on a phone.

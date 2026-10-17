@@ -6,9 +6,19 @@ import { stopIdle, SUPPLIES_TARGET, type Stop } from '../sim/stop';
 import type { PortItem, World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { num, plural, t } from '../i18n';
+import supplyBackdrop from '../assets/wayward-supply-background.webp?url';
 
 // The pictures (icons, item art, the hangar) come from src/assets/supply.
 const PICS = import.meta.glob('../assets/supply/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+/** Fetch and decode the port's pictures now, in a quiet moment, so the first dock does not pay for them. */
+export function preloadPort(): void {
+  for (const url of [supplyBackdrop, ...Object.values(PICS)]) {
+    const img = new Image();
+    img.src = url;
+    void img.decode?.().catch(() => undefined);
+  }
+}
+
 function pic(name: string, cls: string): HTMLImageElement {
   const img = new Image();
   img.src = PICS[`../assets/supply/${name}.webp`] ?? '';

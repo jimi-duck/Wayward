@@ -87,6 +87,8 @@ export class Sector {
   reduceMotion = false;
   /** An opaque panel (the refit bay) is over the whole view. */
   covered = false;
+  /** An opaque panel (the port) fills the view: nothing behind it needs drawing. */
+  blind = false;
 
   constructor(private readonly renderer: WebGLRenderer, private tier: QualityTier) {
     const glow = glowTexture();
@@ -461,7 +463,7 @@ export class Sector {
     this.env.weather(this.nebula, this.reduceMotion ? 0 : this.flash, m);
 
     // the refit bay is opaque and covers the whole view once the ship has settled under it: nothing to draw, and phones animate its cards more smoothly without a full frame behind them
-    if (this.covered && this.bayK > COVERED) return;
+    if (this.blind || (this.covered && this.bayK > COVERED)) return;
     if (!this.post?.render(dt)) this.renderer.render(this.scene, this.rig.camera);
   }
 
