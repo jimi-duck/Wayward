@@ -290,28 +290,36 @@ function crystalMaterial(body: number, glow: number, core = 0.01, name = 'thren-
 /** How hot a faction's lit slits run: the Office's are a thin quiet line, the Gutter's a working lamp. */
 const SLIT: Record<Faction, number> = { gutter: 0.9, custody: 0.85, office: 0.4, voice: 0.55, thren: 0.6 };
 
-const factionMats = new Map<Faction, Record<string, Material>>();
-function factionMaterials(f: Faction): Record<string, Material> {
-  let m = factionMats.get(f);
+const factionMats = new Map<string, Record<string, Material>>();
+/**
+ * A faction's metal. `grain` multiplies the plating's repeats per model unit: a capital ship is drawn five times the
+ * size of a fighter, so on the fighter's grain its plates would be slabs; finer grain gives it panels and seams.
+ */
+function factionMaterials(f: Faction, grain = 1): Record<string, Material> {
+  const id = `${f}:${grain}`;
+  let m = factionMats.get(id);
   if (!m) {
     const l = HULL_LOOK[f];
-    const coat = { painted: true, worn: l.worn, roughness: 0.62, metalness: 0.1, engine: NEON[f].clone().multiplyScalar(0.12) };
+    const coat = { painted: true, worn: Math.min(1, l.worn + (grain > 1 ? 0.12 : 0)), roughness: 0.62, metalness: 0.1, engine: NEON[f].clone().multiplyScalar(0.12) };
     const lit = (c: number, k: number) => new MeshStandardMaterial({ color: c, emissive: new Color(c).multiplyScalar(k), roughness: 0.4, metalness: 0.2 });
     m = {
-      hull: metal({ ...coat, tint: l.base, roughness: 0.6, metalness: 0.45, scale: 1.8 }),
-      paint: metal({ ...coat, tint: l.paint, scale: 1.2 }),
-      patch: metal({ ...coat, tint: l.patch, scale: 1.4 }),
-      dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.5, scale: 1.8 }),
-      trim: f === 'thren' ? lit(l.trim, GLOW.trim * 0.35) : metal({ ...coat, tint: l.trim, scale: 1.6, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
+      hull: metal({ ...coat, tint: l.base, roughness: 0.6, metalness: 0.45, scale: 1.8 * grain }),
+      paint: metal({ ...coat, tint: l.paint, scale: 1.2 * grain }),
+      patch: metal({ ...coat, tint: l.patch, scale: 1.4 * grain }),
+      dark: metal({ ...coat, tint: l.under, roughness: 0.55, metalness: 0.5, scale: 1.8 * grain }),
+      trim: f === 'thren' ? lit(l.trim, GLOW.trim * 0.35) : metal({ ...coat, tint: l.trim, scale: 1.6 * grain, emissive: new Color(l.trim).multiplyScalar(GLOW.trim * 0.12) }),
       glow: lamp(NEON[f].clone().multiplyScalar(SLIT[f])),
       lamp: lamp(NEON[f].clone().multiplyScalar(0.9)),
       crystal: crystalMaterial(l.paint, l.trim, 0.07),
       violet: crystalMaterial(0x2a1040, 0x9a40ff, 0.5, 'thren-violet'),
     };
-    factionMats.set(f, m);
+    factionMats.set(id, m);
   }
   return m;
 }
+
+/** How much finer a capital ship's plating is cut than a fighter's. */
+const CAPITAL_GRAIN = 2.6;
 
 const FLASH = new MeshStandardMaterial({ color: 0x444444, emissive: new Color(3, 2.6, 2.2) });
 
@@ -454,6 +462,7 @@ class HullBatch {
 
 export class EnemyView {
   private readonly models = new Map<string, Model>();
+  private readonly capitals = new Map<string, Model>();
   private readonly pools = new Map<string, HullView[]>();
   private readonly live = new Map<number, HullView>();
   private readonly batches = new Map<string, HullBatch>();
@@ -500,6 +509,18 @@ export class EnemyView {
     g.add(new Mesh(new BoxGeometry(1, 1, 1), FLASH));
     for (const kind of ALIEN_ORDER) g.add(...this.batch(kind, ALIEN_TYPES[kind].faction).gallery());
     return g;
+  }
+
+  /** A capital ship's hull: the fighter's design in finer plating, built the first time one arrives. */
+  private capitalModel(kind: AlienKind, faction: Faction): Model {
+    const key = `${kind}:${faction}`;
+    let m = this.capitals.get(key);
+    if (!m) {
+      const design = designFor(kind, faction);
+      m = design ? { root: design.k.build(factionMaterials(faction, CAPITAL_GRAIN), 0.04), engines: design.engines, lamps: design.lamps } : this.model(kind, faction);
+      this.capitals.set(key, m);
+    }
+    return m;
   }
 
   private model(kind: AlienKind, faction: Faction): Model {
@@ -636,7 +657,7 @@ export class EnemyView {
 
   private makeBoss(b: Boss) {
     const kind = { gutter: 'raptor', custody: 'lancer', office: 'warbird', voice: 'drone', thren: 'weaver' }[b.faction] as AlienKind;
-    const model = this.model(kind, b.faction);
+    const model = this.capitalModel(kind, b.faction);
     // its own materials, so the cloak can fade them
     const own: Model = { root: model.root.clone(), engines: model.engines, lamps: model.lamps };
     const mats: Material[] = [];

@@ -285,3 +285,15 @@ Close-up against the reference rock showed flat light and a smooth surface.
 - Wayward: a layered container stack on each shoulder (three bays a side, a strapped lower tier and a shorter upper one), small orange maintenance lights in pairs by the hatches, stern and flanks (a dull orange under the bloom line, new `orange` material), and the stacks stay below the spine's tallest modules, so the silhouette and hit size are unchanged.
 - Plume seen end-on: the bell and core keep a floor of brightness when viewed down the axis, so the flame stays readable from directly behind.
 - Shield hit: thinner hex lines and lower weights; the field reads lighter.
+
+## Graphics pass 16: background objects
+
+The things that are drawn but never flown: the sky's far works, the situation props, the dead hulls in the space layer, and the capital ships.
+
+- Far works (`farworks.ts`): the ring station is now 24 habitat blocks with lit window rows, docking arms, solar wings, two inner rings, a banded hub and a lit mast. Fleet hulls get their design lamps as real lit boxes. The hulk is torn open at the stern (ribs, spars, peeled plates, a few lumps), kept small beside the hull. The colours were too dark to read (the hull key was mapped to the darkest paint); they are lighter, with a faint cool lift on the shaded side, and plating grain is set per build (a station is built in plain units, a hull in hull units).
+- The shapes and their occlusion bake are built once a session and re-skinned per sky. The earlier drop of the bake (about 300 ms per sky) is not undone: a new sky costs about 10 ms to re-skin and merge. First build (title warm-up) is about 40 ms for two works. Triangles: station 12k, fleet 12k, hulk 4k (it was 21k for the set).
+- Site props (`site.ts`): all baked with occlusion (cell 0.4), windows on the settlement, foundry and rig, the wreck rebuilt as a real broken ship (lofted fore half, tear with frames, a stern adrift), the yard holds a lofted hull. Built when the stage changes: 30 to 110 ms on this machine, 1.3k to 5k triangles.
+- Dead hulls (`space.ts`): plating cut three times finer (they are drawn 26 to 56 long on a one-unit model), baked occlusion (cell 0.09), a faint cool lift so a hull turned from the sun is not a hole. Five hulls built behind the title, about 40 to 110 ms each here.
+- Capital ships (`enemies.ts`): their own metal at 2.6 times the fighter's plating grain and a little more wear, so the plates read as panels. Built the first time one arrives.
+- Benches: `tools/farworks.html`, `tools/sites.html`. Shots in `/mnt/project-files/graphics-research/background-objects/`.
+- Not measured: phone frame rate and memory (the added triangles are small; the plating shader is the one already in use).
