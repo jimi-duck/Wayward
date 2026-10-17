@@ -303,3 +303,11 @@ The things that are drawn but never flown: the sky's far works, the situation pr
 - `buildPort` (`breakout.ts`): pressure spheres in cradles and capsule tanks with bands and manifolds (were plain drums), a lit habitat ring with window decks, a control drum with a window band, docking arms with clamps, fenders, floodlight poles and hazard stripes, a cargo yard of corrugated containers, vent stacks. Windows use their own small, warm material (under the bloom line) so a lit deck reads as windows, not lamps. The beacon, damping ring and docking ring are unchanged.
 - Baked occlusion (cell 0.6). Built once when the sector view is made: about 250 ms on this machine (about 40 ms of it geometry, the rest the bake), 13.4k triangles (was about 4k). A phone will take longer; not measured there.
 - Bench: `tools/sites.html?prop=port`.
+
+## Graphics pass 18: the singularity
+
+- `singularity.ts`: the anomaly (hazard event) and the gravity well (space feature) share one black hole drawn as a single camera-facing quad and one shader: a hard premultiplied-black horizon that eats the stars behind it, a thin photon ring, a tilted accretion disc (hot white inside, violet outside, brighter on the approaching side, streaks that turn faster inward) and the far side of the disc bent over and under the hole. Violet and teal, never red.
+- No scene read and no distortion pass, so the cost is one quad of fill and the look is the same on every tier, phones included. The starfield is not bent; the bent disc and the dark horizon carry the read.
+- The anomaly's flat rings are gone; two faint flat rings (radius 14 and 19) stay on the gravity well as pull-radius cues. The old core, photon torus, halo and three rings of the lens feature are removed.
+- Bench: `tools/sites.html?prop=singularity`.
+- Not measured: phone frame rate (the quad covers a modest screen area; the fragment shader is about 4 noise lookups).

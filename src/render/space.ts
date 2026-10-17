@@ -10,6 +10,7 @@ import { designFor } from './hulls';
 import { lavaRock, rockGeometry } from './rocks';
 import { metal } from './kit';
 import { cloudTexture, streamTexture } from './textures';
+import { singularity } from './singularity';
 
 // ── the shared world, drawn ───────────────────────────────────────────────
 // Reads sim/space.ts and builds a look for each feature that is near enough
@@ -392,18 +393,10 @@ export class SpaceView {
         break;
       }
       case 'lens': {
-        // a dark centre, a rim of light, rings turning
-        const core = new Mesh(new SphereGeometry(1, 20, 14), CORE_MAT);
-        core.scale.setScalar(f.r * 0.07); core.position.y = 3; g.add(core);
-        // a photon ring hugging the dark, and a soft halo behind it that the core cuts a hole in
-        const photon = new Mesh(new TorusGeometry(f.r * 0.073, f.r * 0.0035, 6, 96), new MeshBasicMaterial({ color: new Color(2.6, 1.8, 3.4), transparent: true, opacity: 0.85, blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
-        photon.rotation.x = Math.PI / 2; photon.position.y = 3; g.add(photon); rings.push(photon);
-        const halo = new Sprite(new SpriteMaterial({ map: this.glow, color: new Color(1.4, 0.7, 2.6), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0.55 }));
-        halo.scale.setScalar(f.r * 0.5); halo.position.set(0, 3, 0); g.add(halo);
-        for (let i = 0; i < 3; i++) {
-          const ring = new Mesh(new TorusGeometry(f.r * (0.12 + i * 0.1), 0.35 + i * 0.15, 6, 72), new MeshBasicMaterial({ color: new Color(1.1 + i * 0.3, 0.5, 2.4 - i * 0.3), transparent: true, opacity: 0.45 - i * 0.1, blending: AdditiveBlending, depthWrite: false, toneMapped: false }));
-          ring.rotation.x = Math.PI / 2; ring.position.y = 3; g.add(ring); rings.push(ring);
-        }
+        // a black hole: horizon, photon ring, tilted disc and its bent far side, all in one camera-facing quad
+        const hole = singularity(f.r * 0.07, new Color(0.9, 0.45, 1.5).multiplyScalar(0.9));
+        hole.position.y = 3;
+        g.add(hole);
         break;
       }
       default:
