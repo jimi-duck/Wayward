@@ -250,7 +250,7 @@ export class Sector {
           break;
         }
         case 'shipHit':
-          this.ship.flareShield();
+          this.ship.flareShield(false, e.fx, e.fz);
           this.fx.flash(e.x, 0.3, e.z, 4, ALERT, 0.2);
           this.fx.burst(e.x, 0.3, e.z, 34, FIRE, 14, 0.35, 0.6);
           this.fx.light(e.x, 0.5, e.z, [1, 0.35, 0.2], 140, 0.3);
@@ -258,7 +258,7 @@ export class Sector {
           hold = Math.max(hold, 0.06);
           break;
         case 'shieldHit':
-          this.ship.flareShield(true);
+          this.ship.flareShield(true, e.fx, e.fz);
           this.fx.flash(e.x, 0.3, e.z, 4, SHIELD, 0.2);
           this.fx.burst(e.x, 0.3, e.z, 26, SHIELD, 12, 0.3, 0.5);
           this.rig.shake(0.35);
