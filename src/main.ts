@@ -31,13 +31,15 @@ import type { Open } from './sim/comms';
 import { PadNav } from './ui/dom';
 import { cardView, CommsPanel, hailView } from './ui/comms';
 import { StartOptions, SummaryPanel } from './ui/panels';
-import { PortPanel } from './ui/port';
+import { PortPanel, preloadPort } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
 import { Feel, SOUND_AVAILABLE } from './audio/audio';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
+/** Frames the quality governor ignores after a new system or a closed panel (two seconds at 60 fps). */
+const GRACE = 120;
 const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
 /** `?train` plays the training whether or not it has been played (to look at it). */
 const TRAIN = new URLSearchParams(location.search).has('train');
@@ -545,6 +547,7 @@ function boot(review: typeof import('./review') | null): void {
       persist(profile);
     }
     started = true;
+    setTimeout(preloadPort, 4000);
     el('start').hidden = true;
     document.documentElement.classList.remove('prelaunch');
     fullscreen();
@@ -585,6 +588,8 @@ function boot(review: typeof import('./review') | null): void {
     () => openBay(),
   );
 
+  let lastRun: unknown = null, lastSystem = '', wasPaused = true;
+
   const loop = new FixedStepLoop({
     step(dt) {
       world.step(dt, input.sample());
@@ -617,6 +622,7 @@ function boot(review: typeof import('./review') | null): void {
       feel.bed(there && !loop.paused ? FEATURES[there.def].voice : null, world.air.weight);
       sector.console = bay.open ? bay.zone : loop.paused && started ? 'brief' : null;
       sector.covered = bay.covers;
+      sector.blind = port.open;
       // a card that stops the world (hail, comms, dock, bay) stops stepping: drawn between two old steps the ship and the hulls would shimmer back and forth, so hold on the latest
       const live = world.phase === 'play' || (world.phase === 'comms' && !!world.comms && world.comms.slow > 0);
       sector.frame(world, live ? alpha : 1, dt, frameDt);
@@ -626,6 +632,10 @@ function boot(review: typeof import('./review') | null): void {
       debug.frame(frameDt, renderer, quality, input, loop.paused);
     },
     measure(dt) {
+      // a new system, or a panel just closed: the first frames are slow for their own reasons, so the governor waits
+      const system = world.mode === 'breakout' ? world.sortie.system : '';
+      if (world.run !== lastRun || system !== lastSystem || (wasPaused && !loop.paused)) { lastRun = world.run; lastSystem = system; quality.hold(GRACE); }
+      wasPaused = loop.paused;
       if (!loop.paused && quality.sample(dt)) {
         matchTier(renderer, quality.tier);
         sector.setTier(quality.tier);

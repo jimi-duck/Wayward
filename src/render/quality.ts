@@ -53,6 +53,7 @@ export class QualityGovernor {
   private avg = 0;
   private jitter = 0;
   private samples = 0;
+  private grace = 0;
   private readonly locked: boolean;
 
   constructor(start: number, locked = false) {
@@ -69,9 +70,15 @@ export class QualityGovernor {
     return this.avg;
   }
 
+  /** Skip the next `frames` samples: a new sky or a closed panel makes a few slow frames that are not the machine. */
+  hold(frames: number): void {
+    this.grace = Math.max(this.grace, frames);
+  }
+
   /** Feed one raw frame interval. Returns true when the tier just dropped. */
   sample(dt: number): boolean {
     if (!(dt > 0) || dt > STALL) return false;
+    if (this.grace > 0) { this.grace--; return false; }
     // A tier change restarts the measurement: the new tier is a new machine.
     if (this.samples++ === 0) {
       this.avg = dt;

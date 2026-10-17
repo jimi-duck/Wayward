@@ -301,10 +301,23 @@ export function placeAt(c: Chart, id: string): Place | null {
 
 /** Bring the places within `n` jumps of a system onto the chart. */
 export function sightPlaces(c: Chart, id: string, n: number): void {
+  const near = within(c, id, n);
   for (const s of c.systems) {
     const p = c.places[s.id], q = c.situations?.[s.id];
-    if ((p || q) && jumps(c, id, s.id) <= n) { if (p) p.seen = true; if (q) q.seen = true; }
+    if ((p || q) && near.has(s.id)) { if (p) p.seen = true; if (q) q.seen = true; }
   }
+}
+
+/** Every system within `n` jumps of `id` (itself included), from one search rather than one per system. */
+export function within(c: Chart, id: string, n: number): Set<string> {
+  const dist = new Map([[id, 0]]);
+  const queue = [id];
+  for (let i = 0; i < queue.length; i++) {
+    const at = queue[i]!, d = dist.get(at)!;
+    if (d >= n) continue;
+    for (const { to } of lanesFrom(c, at)) if (!dist.has(to.id)) { dist.set(to.id, d + 1); queue.push(to.id); }
+  }
+  return new Set(dist.keys());
 }
 
 /**
@@ -395,7 +408,7 @@ function netPace(c: Chart, s: StarSystem): number {
 /** Arriving somewhere: the system is flown (its Cyrite is known, its prices too), and the news brings the Net's edge up to date nearby. */
 export function arrive(c: Chart, id: string, day: number): void {
   if (!c.visited.includes(id)) c.visited.push(id);
-  const near = c.systems.filter((s) => jumps(c, id, s.id) <= SIGHT).map((s) => s.id);
+  const near = [...within(c, id, SIGHT)];
   c.seenNet = [...c.seenNet.filter((s) => !near.includes(s)), ...near.filter((s) => netted(c, s))];
   c.seenDay = day;
   sightPlaces(c, id, SIGHT);
