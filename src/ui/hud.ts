@@ -287,6 +287,12 @@ export class Hud {
   // ── top left: the sector ────────────────────────────────────────────────
 
   private updateSector(world: World): void {
+    // hostiles in the sector: the ones that can shoot, not wards or freighters
+    let hostiles = 0;
+    for (const a of world.aliens) if (world.alive && !cloaked(a) && a.kind !== 'freighter' && !a.ward) hostiles++;
+    const host = $('sec-host');
+    host.hidden = hostiles === 0;
+    if (hostiles) text(host, plural(hostiles, '{n} hostile', '{n} hostiles'));
     if (world.seed !== this.seed) {
       this.seed = world.seed;
       text($('sec-code'), `${t('Sector')} ${10 + (world.seed % 89)}-${String(Math.floor(world.seed / 89) % 97).padStart(2, '0')}`);
@@ -462,7 +468,11 @@ export class Hud {
       host.setAttribute('aria-label', `${t('Hull {n} of {max}', { n: world.plates, max: st.maxPlates })}${shields ? `, ${t('shields {n}', { n: world.shields | 0 })}` : ''}`);
       text($('v-hull'), `${world.plates}/${st.maxPlates}`);
     }
-    $('sys-hull').classList.toggle('crit', world.plates <= 1 && world.alive);
+    // pips run teal, then gold, then red as the hull drops: over two thirds, over a third, the rest
+    const hf = world.plates / Math.max(1, st.maxPlates), hullEl = $('sys-hull');
+    hullEl.classList.toggle('mid', hf <= 0.67 && hf > 0.34);
+    hullEl.classList.toggle('low', hf <= 0.34);
+    hullEl.classList.toggle('crit', world.plates <= 1 && world.alive);
     $('sys-hull').classList.toggle('mending', mending);
     $('vignette').classList.toggle('critical', world.plates <= 1 && world.alive);
 

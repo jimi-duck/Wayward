@@ -28,6 +28,7 @@ const ROCK_DOT: Record<string, string> = {
 
 export class Radar {
   private readonly threat = new Float32Array(ARCS);
+  private readonly still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   constructor(private readonly canvas: HTMLCanvasElement) {}
 
@@ -67,20 +68,21 @@ export class Radar {
     g.translate(C, C);
     // a world bearing (heading convention) sits at this angle from the top of the scope
     const at = (bearing: number) => -angleDelta(h, bearing);
-    for (let i = 0; i < 12; i++) {
-      const a = at((i / 12) * Math.PI * 2) - Math.PI / 2;
-      const big = i % 3 === 0;
-      const r0 = Rb + (big ? 1 : 3) * dpr, r1 = Rb + 6 * dpr;
-      g.strokeStyle = big ? 'rgba(236,230,225,.45)' : 'rgba(236,230,225,.2)';
-      g.lineWidth = (big ? 1.4 : 1) * dpr;
+    // 36 ticks, a longer one at each point of the compass
+    for (let i = 0; i < 36; i++) {
+      const a = at((i / 36) * Math.PI * 2) - Math.PI / 2;
+      const big = i % 9 === 0;
+      const r0 = Rb + (big ? 0 : 2) * dpr, r1 = Rb + (big ? 7 : 5) * dpr;
+      g.strokeStyle = big ? rgba(RGB.teal, 0.75) : rgba(RGB.teal, 0.3);
+      g.lineWidth = dpr;
       g.beginPath(); g.moveTo(Math.cos(a) * r0, Math.sin(a) * r0); g.lineTo(Math.cos(a) * r1, Math.sin(a) * r1); g.stroke();
     }
-    g.font = `${8.5 * dpr}px ${FONT.mono}`;
-    g.textAlign = 'center'; g.textBaseline = 'middle';
-    for (const [label, bearing] of [['N', Math.PI / 2], ['E', 0], ['S', -Math.PI / 2], ['W', Math.PI]] as const) {
-      const a = at(bearing) - Math.PI / 2, r = Rb - 6 * dpr;
-      g.fillStyle = label === 'N' ? `rgb(${HUD})` : 'rgba(236,230,225,.55)';
-      g.fillText(label, Math.cos(a) * r, Math.sin(a) * r);
+    // north, the one letter
+    {
+      const a = at(Math.PI / 2) - Math.PI / 2, r = Rb - 7 * dpr;
+      g.font = `${10 * dpr}px ${FONT.mono}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillStyle = `rgb(${HUD})`;
+      g.fillText('N', Math.cos(a) * r, Math.sin(a) * r);
     }
     // threat: each slice of the ring lights toward a hostile in firing range, brighter the closer
     this.threat.fill(0);
@@ -100,11 +102,11 @@ export class Radar {
         this.threat[slot] = 1;
       }
     }
-    g.lineWidth = 3 * dpr;
+    g.lineWidth = 2 * dpr;
     for (let i = 0; i < ARCS; i++) {
       const v = this.threat[i]!;
       const a = (i / ARCS) * Math.PI * 2 - Math.PI / 2, half = Math.PI / ARCS - 0.03;
-      g.strokeStyle = v > 0 ? rgba(RGB.red, 0.35 + v * 0.6) : 'rgba(236,230,225,.07)';
+      g.strokeStyle = v > 0 ? rgba(RGB.red, 0.35 + v * 0.6) : 'transparent';
       g.beginPath(); g.arc(0, 0, Rb + 9.5 * dpr, a - half, a + half); g.stroke();
     }
     // where to go: an amber arrowhead on the ring along its bearing, larger than the rest; the other places are small diamonds (amber the lane, teal the port)
@@ -133,11 +135,21 @@ export class Radar {
     g.save();
     g.beginPath(); g.arc(C, C, R, 0, Math.PI * 2); g.clip();
     const bg = g.createRadialGradient(C, C, 0, C, C, R);
-    bg.addColorStop(0, 'rgba(14,24,25,.72)'); bg.addColorStop(1, 'rgba(8,13,14,.82)');
+    bg.addColorStop(0, rgba(RGB.teal, 0.07)); bg.addColorStop(1, 'rgba(8,13,14,.12)');
     g.fillStyle = bg; g.fillRect(0, 0, W, W);
-    g.strokeStyle = rgba(RGB.teal, 0.14); g.lineWidth = dpr;
+    // two dashed rings at two thirds and a third
+    g.strokeStyle = rgba(RGB.teal, 0.3); g.lineWidth = dpr;
+    g.setLineDash([2 * dpr, 5 * dpr]);
     for (const f of [1 / 3, 2 / 3]) { g.beginPath(); g.arc(C, C, R * f, 0, Math.PI * 2); g.stroke(); }
-    g.beginPath(); g.moveTo(C, C - R); g.lineTo(C, C + R); g.moveTo(C - R, C); g.lineTo(C + R, C); g.stroke();
+    g.setLineDash([]);
+    // the sweep: a faint wedge, one turn in four seconds (still under reduced motion)
+    if (!this.still) {
+      const sw = ((performance.now() / 4000) % 1) * Math.PI * 2 - Math.PI / 2, tail = Math.PI / 3;
+      g.fillStyle = rgba(RGB.teal, 0.07);
+      g.beginPath(); g.moveTo(C, C); g.arc(C, C, R, sw - tail, sw); g.closePath(); g.fill();
+      g.strokeStyle = rgba(RGB.teal, 0.28);
+      g.beginPath(); g.moveTo(C, C); g.lineTo(C + Math.cos(sw) * R, C + Math.sin(sw) * R); g.stroke();
+    }
 
     // what the camera sees: the horizontal field of view, from the ship
     const cam = sector.camera;
@@ -248,9 +260,9 @@ export class Radar {
     g.restore();
 
     // the rim, and our ship in the middle
-    g.strokeStyle = `rgba(${HUD},.55)`; g.lineWidth = 1.2 * dpr;
+    g.strokeStyle = rgba(RGB.teal, 0.55); g.lineWidth = dpr;
     g.beginPath(); g.arc(C, C, R, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = INK.amber;
+    g.fillStyle = '#eef2f4';
     g.beginPath(); g.moveTo(C, C - 6 * dpr); g.lineTo(C + 4 * dpr, C + 4.5 * dpr); g.lineTo(C, C + 2 * dpr); g.lineTo(C - 4 * dpr, C + 4.5 * dpr); g.closePath(); g.fill();
   }
 

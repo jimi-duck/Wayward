@@ -7,6 +7,23 @@ picture left alone, everything else shown only while it matters. The code is
 `src/ui/guide.ts` (the heading), `src/ui/radar.ts` (the scope) and
 `src/styles/hud.css` (all of the look).
 
+## The four corners: lines, not boxes
+
+The corners are hairlines and brackets, with no fill, so the scene reads
+through them (the pass from the Space HUD brief; the `lines, not boxes`
+block at the end of `hud.css`).
+
+- Upper left: a 1 px rule, a diamond and `OBJECTIVE`, the goal at 18 px, one mono line for the distance.
+- Upper centre: one mono line, the heading and the bearing to the goal (`317° · 45° →`); no tape. Never an alert.
+- Upper right: a mirrored rule; Hull as skewed pips (teal over two thirds, gold over a third, red below), Energy as a 3 px bar, Fluid in the Story. Gauges ease.
+- Lower left: the scope (36 rim ticks, a longer one at each point, two dashed rings, a sweep of one turn in four seconds), then the sector, its name, and `● n hostiles` with a stepped blink.
+- Lower right: the alert and the bay prompt, then one mono line of stores (Cyrite, supplies, score), then the one plate: torpedoes, mines and the place's heat, two corner brackets and a 3 px blur.
+- Safe area: 40 px, 56 px from 1600 px wide; a phone keeps its tight margins. On a phone the plate shows only the heat (the buttons carry the rounds) and the readouts stay up.
+- Teal glow on teal values only, never on a label. Labels are 10 px mono, wide-tracked, muted.
+- Only the sweep, the hostile count and the eased gauges move.
+
+Kept from the game where the brief differed: the brand fonts (Barlow Condensed, Share Tech Mono), the colour roles (steel blue is the goal and the player, teal information, gold caution and a lock, red threat), jump fluid for Fluid, system heat for Heat, no ETA (the game has no honest one), no demo buttons.
+
 ## Three levels
 
 1. **Always:** the objective, the heading, hull / fuel / energy, the scope,
@@ -22,8 +39,9 @@ picture left alone, everything else shown only while it matters. The code is
 | Place | What | When |
 |---|---|---|
 | Upper left | `OBJECTIVE`, the one thing to do, how far (or `6/20` jump fluid, "Fill the tank"), at most two quiet lines (the lane, a job, the optional port) | always; a red line only while a hostile is within 320 m or the Custody is at wanted 3 |
-| Upper centre | the heading tape with the objective on it, then one card: the capital ship or the target | tape always (not on phones); cards on cue |
-| Upper right | Hull, Fluid (Story: the drive tank, jump fluid against the lane's cost) and Cyrite (Story: the purse), Energy; Torpedoes and Mines (dimmed until a fight, a lock or a reload); one line of stores (Story: supplies, amber when low; Arcade: Cyrite, score and chain) | always |
+| Upper centre | the heading line (bearing and bearing to the goal), then one card: the capital ship or the target | line always (not on phones); cards on cue |
+| Upper right | Hull, Fluid (Story: the drive tank, jump fluid against the lane's cost) and Cyrite (Story: the purse), Energy | always |
+| Lower right, under the alert | one line of stores (Story: supplies, gold when low; Arcade: Cyrite, score and chain), then the plate: Torpedoes and Mines (dimmed until a fight, a lock or a reload), the place's heat | always |
 | Under the panel | power-ups running, one chip each with a countdown | while they run |
 | World | name and distance on the lane mouth, the port, an event, a neutral hull; brackets on hostiles; the target's brackets | in view |
 | Edge | a pointer for the objective and the capital ship, a chevron per hull out of view | when off screen |
