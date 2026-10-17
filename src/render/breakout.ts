@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, BoxGeometry, Color, CylinderGeometry, DoubleSide, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, Shape,
+  AdditiveBlending, BoxGeometry, Color, CylinderGeometry, DoubleSide, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, Shape,
   type Material, type Scene, type Texture,
 } from 'three';
 import { clamp } from '../core/math';
@@ -212,48 +212,106 @@ function buildLane(): Group {
 const GATE_Y = 7;
 
 /** The depot: a hub with a habitat ring, docking arms, a tank farm, a mast. Fixed; the berth ring is drawn apart. */
-function buildPort(): Group {
-  const k = new Kit(), rnd = seeded(9);
-  // the hub: a drum core, a ring of cabin blocks round it, lit windows between
-  k.cyl('hull', 4.5, 5.5, 3, [0, 0, 0], 'y', 24);
-  k.cyl('dark', 5.6, 5.6, 0.4, [0, -1.2, 0], 'y', 24);
-  k.cyl('paint', 3, 3.6, 1.6, [0, 2.2, 0], 'y', 16);
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
-    k.box('hull', [2.6, 1.6, 2.2], [Math.cos(a) * 7, 0.2, Math.sin(a) * 7], [0, -a, 0]);
-    k.box('lamp', [0.9, 0.18, 0.06], [Math.cos(a) * 8.35, 0.5, Math.sin(a) * 8.35], [0, -a, 0]);
-    k.box('dark', [0.5, 0.5, 2.2], [Math.cos(a + 0.26) * 7, -0.2, Math.sin(a + 0.26) * 7], [0, -a - 0.26, 0]);
+/** Port windows: warm and small, well under the bloom line, so a lit deck reads as windows and not as lamps. */
+let winMat: MeshBasicMaterial | null = null;
+function windowMaterial(): MeshBasicMaterial {
+  return winMat ??= new MeshBasicMaterial({ color: new Color(1.5, 1.05, 0.55), toneMapped: false, fog: false });
+}
+
+/** A row of lit windows: `n` along a line, a few dark, so the deck reads as lived in. */
+function windowRow(k: Kit, rnd: () => number, from: V3, to: V3, n: number, size: [number, number, number], rot: V3 = [0, 0, 0], dark = 0.22): void {
+  for (let i = 0; i < n; i++) {
+    if (rnd() < dark) continue;
+    const t = n > 1 ? i / (n - 1) : 0.5;
+    k.box('win', size, [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t, from[2] + (to[2] - from[2]) * t], rot);
   }
-  for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; k.box('lamp', [0.3, 0.2, 0.3], [Math.cos(a) * 4.6, 1.5, Math.sin(a) * 4.6]); }
-  // two docking arms reaching out to the berth, with mooring clamps and a crane
+}
+
+/** A pressure tank: a sphere in a ring cradle on four legs, a band round its waist, a manifold on top. */
+function tank(k: Kit, x: number, z: number, r: number, a: number): void {
+  k.add('paint', new SphereGeometry(r, 18, 12), [x, r + 0.9, z]);
+  k.ring('dark', r * 1.01, 0.09, [x, r + 0.9, z], 'y', 20);
+  k.ring('dark', r * 0.8, 0.07, [x, r + 0.9 + r * 0.6, z], 'y', 16);
+  k.cyl('dark', 0.32, 0.4, 0.7, [x, r * 2 + 1.2, z], 'y', 8);
+  k.cyl('hull', 0.5, 0.5, 0.18, [x, r * 2 + 1.6, z], 'y', 8);
+  for (let i = 0; i < 4; i++) {
+    const t = (i / 4) * TAU + a + 0.78, lx = x + Math.cos(t) * r * 0.78, lz = z + Math.sin(t) * r * 0.78;
+    strut(k, 'dark', [lx, 0.2, lz], [x + Math.cos(t) * r * 0.5, r * 0.9 + 0.9, z + Math.sin(t) * r * 0.5], 0.1, 5);
+  }
+  k.cyl('dark', r * 1.1, r * 1.2, 0.3, [x, -0.1, z], 'y', 16);
+  stripes(k, x, -0.3, z, 'x', r * 1.8, 0.5, 6);
+}
+
+/** A cargo container, stood on the deck: a corrugated slab with a lid band. */
+function crate(k: Kit, key: string, x: number, y: number, z: number, rot: number, w = 1.6, h = 1.0, d = 1.1): void {
+  k.box(key, [w, h, d], [x, y, z], [0, rot, 0]);
+  k.box('dark', [w + 0.04, 0.08, d + 0.04], [x, y + h / 2 + 0.02, z], [0, rot, 0]);
+  for (let i = -1; i <= 1; i += 2) k.box('dark', [0.06, h, d + 0.05], [x + Math.cos(rot) * i * w * 0.32, y, z - Math.sin(rot) * i * w * 0.32], [0, rot, 0]);
+}
+
+export function buildPort(): Group {
+  const k = new Kit(), rnd = seeded(9);
+  // the hub: a drum core on a broad skirt, a lit habitat ring round it, a control drum on top with a window band
+  k.cyl('hull', 4.5, 5.5, 3, [0, 0, 0], 'y', 28);
+  k.cyl('dark', 5.9, 5.9, 0.4, [0, -1.2, 0], 'y', 28);
+  k.cyl('paint', 3, 3.6, 1.6, [0, 2.2, 0], 'y', 20);
+  k.cyl('dark', 3.1, 3.1, 0.22, [0, 3.1, 0], 'y', 20);
+  k.cyl('hull', 2.4, 3, 1.0, [0, 3.7, 0], 'y', 20);
+  k.ring('dark', 5.55, 0.1, [0, 0.9, 0], 'y', 32);
+  k.ring('dark', 4.6, 0.08, [0, -0.6, 0], 'y', 32);
+  for (let i = 0; i < 36; i++) { const a = (i / 36) * TAU; if (rnd() > 0.22) k.box('win', [0.34, 0.2, 0.06], [Math.cos(a) * 3.62, 2.2, Math.sin(a) * 3.62], [0, -a + Math.PI / 2 - Math.PI / 2, 0]); }
+  for (let i = 0; i < 24; i++) { const a = (i / 24) * TAU; if (rnd() > 0.2) k.box('win', [0.28, 0.16, 0.06], [Math.cos(a) * 3.02, 3.7, Math.sin(a) * 3.02], [0, -a, 0]); }
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * TAU, ca = Math.cos(a), sa = Math.sin(a);
+    k.box('hull', [2.6, 1.6, 2.2], [ca * 7, 0.2, sa * 7], [0, -a, 0]);
+    k.box('paint', [2.2, 0.16, 1.8], [ca * 7, 1.08, sa * 7], [0, -a, 0]);
+    k.box('dark', [0.5, 0.5, 2.2], [Math.cos(a + 0.26) * 7, -0.2, Math.sin(a + 0.26) * 7], [0, -a - 0.26, 0]);
+    // a deck of windows on each block, and a vent stack
+    windowRow(k, rnd, [ca * 8.34 - sa * 0.8, 0.5, sa * 8.34 + ca * 0.8], [ca * 8.34 + sa * 0.8, 0.5, sa * 8.34 - ca * 0.8], 3, [0.06, 0.2, 0.3], [0, -a, 0]);
+    windowRow(k, rnd, [ca * 8.34 - sa * 0.8, 0.0, sa * 8.34 + ca * 0.8], [ca * 8.34 + sa * 0.8, 0.0, sa * 8.34 - ca * 0.8], 3, [0.06, 0.2, 0.3], [0, -a, 0]);
+    k.cyl('dark', 0.22, 0.22, 0.7, [ca * 6.4 + sa * 0.5, 1.5, sa * 6.4 - ca * 0.5], 'y', 6);
+  }
+  for (let i = 0; i < 16; i++) { const a = (i / 16) * TAU; k.box('lamp', [0.18, 0.12, 0.18], [Math.cos(a) * 4.6, 1.5, Math.sin(a) * 4.6]); }
+  // two docking arms reaching to the berth: clamps, fenders, floodlight poles, hazard stripes at the tips
   for (const s of [-1, 1]) {
     k.box('dark', [14, 0.7, 0.9], [-8, -0.2, s * 2.6]);
     k.box('hull', [1.4, 0.9, 1.4], [-15, -0.2, s * 2.6]);
     k.box('paint', [0.5, 1.6, 0.5], [-14, 0.8, s * 2.6]);
-    k.box('lamp', [0.3, 0.3, 0.3], [-14, 1.8, s * 2.6]);
+    k.box('lamp', [0.22, 0.22, 0.22], [-14, 1.7, s * 2.6]);
     for (let j = 0; j < 4; j++) k.box('dark', [0.12, 1.3, 0.12], [-3 - j * 3, 0.5, s * 2.6]);
+    for (const d of [-1, 1]) { strut(k, 'dark', [-15.4, -0.2, s * 2.6 + d * 0.7], [-16.6, 0.2, s * 2.6 + d * 1.1], 0.13, 5); k.box('hull', [0.5, 0.5, 0.22], [-16.7, 0.2, s * 2.6 + d * 1.15]); }
+    k.box('paint', [2.4, 0.1, 0.92], [-14.6, 0.16, s * 2.6]);
+    stripes(k, -9, 0.2, s * 2.6, 'x', 8, 0.5, 5);
+    for (let j = 0; j < 3; j++) { const px = -5 - j * 4.2; strut(k, 'dark', [px, 0.1, s * 3.1], [px, 2.2, s * 3.1], 0.05, 4); k.box('win', [0.32, 0.16, 0.32], [px, 2.3, s * 3.1]); }
   }
+  // cargo yard between the arms and the tanks
+  for (let i = 0; i < 6; i++) crate(k, ['paint', 'slate', 'hull'][i % 3]!, -3.2 - (i % 3) * 1.8, 0.1, 4.8 + Math.floor(i / 3) * 1.3, (rnd() - 0.5) * 0.3, 1.6, 0.95, 1.05);
+  for (let i = 0; i < 4; i++) crate(k, ['slate', 'paint'][i % 2]!, -7.4 - (i % 2) * 1.8, 0.1, -5.2 - Math.floor(i / 2) * 1.3, (rnd() - 0.5) * 0.3, 1.6, 0.95, 1.05);
+  crate(k, 'paint', -3.5, 1.1, 4.8, 0.05, 1.5, 0.9, 1.0);
   k.box('dark', [0.6, 7, 0.6], [4, 3.5, 4]);
   k.box('paint', [9, 0.6, 0.8], [0.5, 7, 4], [0, 0.3, 0]);
   k.box('dark', [0.1, 3, 0.1], [-3.6, 5.4, 4]);
-  // the tank farm: hazard-yellow spheres-ish drums on a frame, with piping to the hub
+  // the tank farm: pressure spheres in cradles, two long capsule tanks, manifold pipes to the hub
   for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2 + 0.4, tx = Math.cos(a) * 12.5, tz = Math.sin(a) * 12.5;
-    k.cyl('paint', 1.7, 1.7, 4.2, [tx, 0.3, tz], 'y', 14);
-    k.cyl('dark', 1.8, 1.8, 0.3, [tx, 2.5, tz], 'y', 14);
-    k.cyl('dark', 1.8, 1.8, 0.3, [tx, -1.9, tz], 'y', 14);
+    const a = (i / 5) * TAU + 0.4, tx = Math.cos(a) * 12.5, tz = Math.sin(a) * 12.5;
+    if (i % 2) {
+      k.cyl('paint', 1.5, 1.5, 4.6, [tx, 2.4, tz], 'x', 16);
+      for (const e of [-1, 1]) k.add('paint', new SphereGeometry(1.5, 14, 8, 0, TAU, 0, Math.PI / 2).rotateZ(-e * Math.PI / 2), [tx + e * 2.3, 2.4, tz]);
+      for (const e of [-1.4, 0, 1.4]) k.ring('dark', 1.52, 0.08, [tx + e, 2.4, tz], 'x', 16);
+      for (const e of [-1.6, 1.6]) k.box('dark', [0.4, 1.8, 2.6], [tx + e, 0.7, tz]);
+      k.cyl('dark', 0.3, 0.3, 0.5, [tx, 4.1, tz], 'y', 8);
+    } else tank(k, tx, tz, 1.9, a);
     k.cyl('dark', 0.2, 0.2, 7, [Math.cos(a) * 9, 0, Math.sin(a) * 9], 'x', 6);
-    k.box('lamp', [0.25, 0.25, 0.25], [tx, 2.8, tz]);
+    k.box('lamp', [0.2, 0.2, 0.2], [tx, 5.2, tz]);
   }
-  // second level: a long truss spine under the arms, cranes with hanging hooks, cable runs hub to tanks, radiator fins and a dish
+  // second level: a long truss spine under the arms, cable runs hub to tanks, radiator fins and a dish
   truss(k, [-17, -0.9, -2.6], [-5, -0.9, -2.6], 1.0, 8, 3);
   truss(k, [-17, -0.9, 2.6], [-5, -0.9, 2.6], 1.0, 8, 3);
   for (let i = 0; i < 4; i++) { const x = -16 + i * 3.4; strut(k, 'hull', [x, -0.9, -2.6], [x, -0.9, 2.6], 0.08, 4); }
   for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2 + 0.4;
+    const a = (i / 5) * TAU + 0.4;
     cable(k, [Math.cos(a) * 6, 1.4, Math.sin(a) * 6], [Math.cos(a) * 12.3, 2.7, Math.sin(a) * 12.3], 1.2, 0.09);
     cable(k, [Math.cos(a + 0.12) * 6, 1.0, Math.sin(a + 0.12) * 6], [Math.cos(a + 0.12) * 12.3, 2.3, Math.sin(a + 0.12) * 12.3], 0.7, 0.05);
-    stripes(k, Math.cos(a) * 12.5, -2.15, Math.sin(a) * 12.5, 'x', 4, 0.5, 8);
   }
   // the crane: boom, back-stay, two hanging hook lines and a cargo pod on them
   strut(k, 'paint', [4, 7, 4], [-6.5, 8.6, 4], 0.22, 5);
@@ -264,7 +322,7 @@ function buildPort(): Group {
   k.box('dark', [1.7, 0.1, 1.2], [-5.8, 2.7, 4]);
   // radiators: four fins off the hub, a comms dish on a boom
   for (let i = 0; i < 4; i++) {
-    const a = (i / 4) * Math.PI * 2 + 0.78;
+    const a = (i / 4) * TAU + 0.78;
     k.box('hull', [0.1, 3.4, 5.2], [Math.cos(a) * 5.4, 3.7, Math.sin(a) * 5.4], [0, -a, 0]);
     for (let j = 0; j < 4; j++) k.box('dark', [0.14, 3.5, 0.08], [Math.cos(a) * 5.4, 3.7, Math.sin(a) * 5.4 + 0], [0, -a, 0]);
     strut(k, 'dark', [Math.cos(a) * 4.6, 2.4, Math.sin(a) * 4.6], [Math.cos(a) * 5.3, 4.8, Math.sin(a) * 5.3], 0.12, 4);
@@ -278,7 +336,7 @@ function buildPort(): Group {
   k.box('amber', [0.25, 11, 0.25], [-3.45, 6.5, -3]);
   k.box('lamp', [1.2, 1.2, 1.2], [-3, 14.6, -3]);
   k.greebles('hull', rnd, -4, 4, -4, 4, 1.6, 14, 0.8);
-  return k.build(materials());
+  return k.build({ ...materials(), win: windowMaterial() }, 0.6);
 }
 
 export function flatRing(r: number, w: number, color: Color, opacity: number): Mesh {
