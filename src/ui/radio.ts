@@ -18,8 +18,8 @@ export interface JobTerms { reward: string[]; limit: number }
 //
 //   call  · a job, a trade, a warning or a plea. A small card with the caller,
 //           what they say, and the answers as buttons with what each brings.
-//           The app holds the world still while a call is up; Y answers the first, N the last (U a
-//           middle one), a tap does too, and it waits for one. Routine
+//           The app holds the world still while a call is up; the arrows mark an answer and Enter takes it, or Y answers
+//           the first, N the last (U a middle one), a tap does too, and it waits for one. Routine
 //           calls are cyan; an important one carries an amber PRIORITY stamp.
 //   line  · radio chatter: one line of subtitle, no answer, a few seconds.
 //
@@ -56,6 +56,8 @@ export class Radio {
   private opened = 0;
   private lineTimer = 0;
   private padHeld = false;
+  /** The answer Enter takes: the first the ship can give, until the arrows move it. */
+  private sel = 0;
 
   constructor(
     private readonly answer: (id: string) => void,
@@ -65,11 +67,30 @@ export class Radio {
     private readonly terms: (o: Open) => JobTerms | null = () => null,
   ) {
     window.addEventListener('keydown', (e) => {
-      if (!this.shown || e.repeat || e.metaKey || e.ctrlKey || e.altKey || this.blocked() || performance.now() - this.opened < 350) return;
+      if (!this.shown || e.metaKey || e.ctrlKey || e.altKey || this.blocked() || performance.now() - this.opened < 350) return;
       const n = this.shown.choices.length;
+      // the arrows walk the answers it can give; Enter or Space takes the marked one
+      const step = e.code === 'ArrowDown' || e.code === 'ArrowRight' ? 1 : e.code === 'ArrowUp' || e.code === 'ArrowLeft' ? -1 : 0;
+      if (step) { e.preventDefault(); this.move(step); return; }
+      if (e.repeat) return;
+      if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') { e.preventDefault(); this.pick(this.sel); return; }
       const i = e.code === 'KeyY' ? 0 : e.code === 'KeyN' ? n - 1 : e.code === 'KeyU' && n > 2 ? 1 : -1;
       if (i >= 0) this.pick(i);
     });
+  }
+
+  /** Mark the next (or previous) answer the ship can give. */
+  private move(by: number): void {
+    const cs = this.shown?.choices;
+    if (!cs?.some((c) => c.ok)) return;
+    let i = this.sel;
+    do i = (i + by + cs.length) % cs.length; while (!cs[i]!.ok);
+    this.sel = i;
+    this.mark();
+  }
+
+  private mark(): void {
+    [...$('rd-list').children].forEach((b, i) => b.classList.toggle('first', i === this.sel));
   }
 
   get open(): boolean {
@@ -101,7 +122,7 @@ export class Radio {
   private pad(): void {
     const pad = typeof navigator.getGamepads === 'function' ? navigator.getGamepads().find((p) => p && p.connected) : null;
     const on = !!pad?.buttons[11]?.pressed;
-    if (on && !this.padHeld && !this.blocked() && performance.now() - this.opened > 350) this.pick(0);
+    if (on && !this.padHeld && !this.blocked() && performance.now() - this.opened > 350) this.pick(this.sel);
     this.padHeld = on;
   }
 
@@ -159,12 +180,13 @@ export class Radio {
     terms.hidden = job || many || !first || !first.hint;
     terms.textContent = first && !many ? t(first.hint) : '';
     $('rd-list').classList.toggle('many', many);
+    this.sel = Math.max(0, o.choices.findIndex((x) => x.ok));
     $('rd-list').replaceChildren(...o.choices.map((c, i) => {
       const key = i === 0 ? KEY_OF[0]! : i === o.choices.length - 1 ? KEY_OF[2]! : KEY_OF[1]!;
       const chips = c.ok
         ? [...c.gains.filter((g) => g !== 'Job').map((g) => h('span', /^−/.test(g) ? 'g-loss' : 'g-gain', t(g))), ...c.cost.map((x) => h('span', 'g-loss', x)), ...(c.chance !== null ? [h('span', 'g-odds', oddsWord(c.chance))] : [])]
         : c.needs.map((n) => h('span', 'g-need', '', lock(), document.createTextNode(t(n))));
-      const b = h('button', `rd-c${i === o.choices.findIndex((x) => x.ok) ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), job && c.hint ? h('span', 'rd-hint', t(c.hint)) : null, chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
+      const b = h('button', `rd-c${i === this.sel ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), job && c.hint ? h('span', 'rd-hint', t(c.hint)) : null, chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('aria-disabled', String(!c.ok));
       b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); if (performance.now() - this.opened > 250) this.pick(i); };
