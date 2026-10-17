@@ -262,3 +262,12 @@ Matched to the reference shot: one cool steel-grey mood with teal and amber as t
 - Debris: 800 chips (was 560) on High, 480 on Medium (was 360), Low unchanged at 160; darker and cooler. Cost is one instanced draw, but phone frame rate is not measured here.
 - Gate: a soft teal haze sprite behind the ring, and light materials (strips, lamps) are unfogged so the neon stays sharp at range.
 - Wayward: paint moved from copper-orange toward ochre gold, with darker frames, as in the reference hauler.
+
+## Graphics pass 13: light and rock surface
+
+Close-up against the reference rock showed flat light and a smooth surface.
+
+- The sun is lower (about 25 degrees, was 40), near neutral white, a touch stronger, and the sky fill is cut (0.58 to 0.36), so rocks get a lit face, a dark face and long relief shadows.
+- Rock shader: scoured pits (dark inside, pale rims) and pale bare edges on sharp crests, in the existing noise (no new textures or geometry).
+- Debris chips are lighter so their lit faces catch the sun; the star layers are finer and dimmer.
+- Cost: a few more noise reads per rock pixel. Phone cost is not measured here.

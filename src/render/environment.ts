@@ -98,9 +98,9 @@ export class Environment {
           gl_FragColor = vec4(vCol * a, a);
         }`,
     });
-    this.addStars(7000, 1.2, 1.9, 0.34);
-    this.addStars(1100, 1.9, 2.8, 0.9);
-    this.addStars(90, 3.2, 5.0, 1.6);
+    this.addStars(7000, 1.0, 1.5, 0.28);
+    this.addStars(1100, 1.6, 2.4, 0.7);
+    this.addStars(90, 3.0, 4.6, 1.3);
     this.group.add(this.stars);
 
     const N = 300;
@@ -123,7 +123,7 @@ export class Environment {
     dust.frustumCulled = false;
     this.group.add(dust);
 
-    this.key = new DirectionalLight(0xffe6c8, 4.9);
+    this.key = new DirectionalLight(0xf0ebe4, 5.4);
     // the sun's shadow covers only the ship's neighbourhood: rocks darken the hull and each other close in
     const cam = this.key.shadow.camera;
     cam.left = cam.bottom = -SHADOW_REACH;
@@ -134,7 +134,7 @@ export class Environment {
     this.key.shadow.normalBias = 0.06;
     this.key.shadow.radius = 2;
     this.rim = new DirectionalLight(0x7f9cc8, 0.9);
-    this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.58), this.rim);
+    this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.36), this.rim);
     this.group.add(this.parallax.group);
     scene.add(this.group);
     this.setSky(skyFor(1, 0));
@@ -149,7 +149,7 @@ export class Environment {
   private anchorPrograms(): void {
     const sky = skyFor(1, 0), [colA, colB, atmo] = sky.neb;
     sky.planet = { kind: 0, colA, colB, atmo, size: 6, az: 0, el: -10, ring: true, moon: true };
-    const proof = new FarBodies(sky, new Vector3(-40, 34, -10));
+    const proof = new FarBodies(sky, new Vector3(-44, 22, -10));
     proof.group.visible = false;
     this.stars.add(proof.group);
   }
@@ -162,7 +162,7 @@ export class Environment {
     old?.dispose();
     if (this.far) { this.far.group.removeFromParent(); this.far.dispose(); }
     // the planet takes its light from the key's quarter of the sky
-    this.far = new FarBodies(sky, new Vector3(-40, 34, -10));
+    this.far = new FarBodies(sky, new Vector3(-44, 22, -10));
     this.stars.add(this.far.group);
     this.parallax.setSky(sky);
     this.haze.copy(sky.neb[0]).multiplyScalar(0.08);
@@ -185,8 +185,8 @@ export class Environment {
     this.parallax.dim(1 - nebula * 0.6);
     WORLD_RIM.value.copy(this.skyRim).multiplyScalar(1 + flash * 4);
     if (t) WORLD_RIM.value.r += t[0] * 0.25, WORLD_RIM.value.g += t[1] * 0.25, WORLD_RIM.value.b += t[2] * 0.25;
-    this.key.intensity = 4.9 + flash * 9;
-    this.key.color.setRGB(1, 0.9 + flash * 0.1, 0.78 + flash * 0.22);
+    this.key.intensity = 5.4 + flash * 9;
+    this.key.color.setRGB(0.94, 0.92 + flash * 0.08, 0.89 + flash * 0.11);
     if (t) this.key.color.lerp(KEY_TINT.setRGB(0.55 + t[0] * 1.6, 0.6 + t[1] * 1.6, 0.7 + t[2] * 1.6), Math.min(0.6, (t[0] + t[1] + t[2]) * 1.1));
   }
 
@@ -211,7 +211,7 @@ export class Environment {
     // the key light keeps its angle, wherever the ship goes
     // (the target snaps to a grid so the shadow edges do not crawl as the ship moves)
     const kx = Math.round(cx * 4) / 4, kz = Math.round(cz * 4) / 4;
-    this.key.position.set(kx - 40, 34, kz - 10);
+    this.key.position.set(kx - 44, 22, kz - 10);
     this.key.target.position.set(kx, 0, kz);
     this.rim.position.set(camera.position.x - cx, camera.position.y * 0.4, camera.position.z - cz).multiplyScalar(-1);
 
