@@ -205,7 +205,8 @@ export const here = (j: Journey): StarSystem => sysById(j.chart, j.at);
 export function sortieDef(j: Journey): SortieDef {
   const s = here(j);
   const notice = pressure(j.notice, j.day);
-  if (s.kind === 'home') return { ...HOME, survival: j.survival, jumpCost: Math.max(1, Math.round(HOME.jumpCost * (j.chart.fuel ?? 1))), system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice, story: dueBeat(j) };
+  // no checkpoint at Cerro's gate: the registry meets Juno beyond it (docs/ONBOARDING.md), and the run to the gate is a chase
+  if (s.kind === 'home') return { ...HOME, blockade: false, survival: j.survival, jumpCost: Math.max(1, Math.round(HOME.jumpCost * (j.chart.fuel ?? 1))), system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice, story: dueBeat(j) };
   const t = SYSTEMS[s.kind];
   const net = netted(j.chart, s.id);
   const route = j.dest ? routeBetween(j.chart, s.id, j.dest) : null;

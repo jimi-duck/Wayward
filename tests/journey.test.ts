@@ -150,7 +150,8 @@ describe('the journey', () => {
     expect(j.status).toBe('sortie');
     const d = sortieDef(j);
     expect(d.home).toBe(true);
-    expect(d.blockade).toBe(true);
+    // no checkpoint at Cerro's gate: the registry meets Juno beyond it, and the run to the gate is a chase
+    expect(d.blockade).toBe(false);
     expect(d.jumpCost).toBe(HOME.jumpCost);
     expect(d.calloway).toBe(Infinity);
     expect(lanesFrom(j.chart, j.at).map((l) => l.to.id)).toContain(j.dest);

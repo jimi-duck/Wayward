@@ -172,3 +172,29 @@ describe('the first minutes stay quiet', () => {
     expect(w.carry().contract).toEqual({ got: 7 });
   });
 });
+
+describe('the whole opening', () => {
+  it('runs from the mine through the gate to the breach: the Cyrite mined is what the settlement counts', async () => {
+    const { endSortie, plot, options, sortieDef } = await import('../src/sim/journey');
+    const { dueBeat } = await import('../src/sim/story');
+    const j = newJourney(7);
+    const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
+    w.train();
+    w.skipTraining();
+    w.run.cyrite = 6;
+    // the gate: no checkpoint in the way, and the drive spools with the jump fluid aboard
+    const b = w.bk!;
+    expect(b.blockade).toBe('none');
+    w.ship.x = b.lane.x; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0;
+    for (let i = 0; i < 60 * 12 && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
+    expect(w.phase).toBe('over');
+    const res = w.result();
+    expect(res.ended).toBe('jumped');
+    expect(res.carry.contract).toEqual({ got: 6 });
+    endSortie(j, res);
+    // the first sortie beyond opens the chain, with the real shortfall in its ledger
+    expect(dueBeat(j)).toBe('story_breach');
+    plot(j, options(j)[0]!.to.id);
+    expect(j.carry.contract).toEqual({ got: 6 });
+  });
+});
