@@ -9,7 +9,7 @@ import { DOCK_TIME, LOW_SUPPLIES } from '../sim/breakout';
 import type { PowerKind } from '../sim/events';
 import { POWER_HINT, POWER_LABEL, STOCKED } from '../sim/pickups';
 import { NAMED } from '../content/features';
-import { REPORT_TEXT } from '../sim/space';
+import { REPORT_TEXT, type ReportKind } from '../sim/space';
 import { lessonOf, stepOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { Radar } from './radar';
@@ -19,6 +19,10 @@ import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
+
+/** How long a centre notice stays (s), and how long before the same one may come again. */
+const NOTICE_SECS = 2.6;
+const NOTICE_GAP = 8;
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // The ship and the world come first; the HUD answers five questions and
@@ -102,6 +106,9 @@ export class Hud {
   private measureClock = 0;
   private radarClock = 1;
   private bannerT = 0;
+  private noticeT = 0;
+  /** When each centre notice last showed (world time), so a held key does not repeat it. */
+  private noticeAt: Record<string, number> = {};
   private gain = 0;
   private gainT = 0;
   private plateKey = '';
@@ -200,7 +207,16 @@ export class Hud {
         case 'plasmaDown': this.note(world, t('Plasma torpedo shot down')); break;
         case 'tractor': this.note(world, t('Tractor lock · thrust away'), 'hit'); break;
         case 'bankEmpty': this.note(world, t('Laser bank low · slower fire'), 'hit'); break;
-        case 'gunsCold': this.note(world, t('Guns cold · the field damps every weapon'), 'hit'); break;
+        case 'gunsCold':
+          this.note(world, t('Guns cold · the field damps every weapon'), 'hit');
+          this.notice(world, 'gunsCold', t('Damping field'), t('Guns cold'), '');
+          break;
+        case 'dockDenied':
+          this.notice(world, 'dock', t('Port'), t('Docking denied'), t('Until the fight is over'));
+          break;
+        case 'anomalyIn':
+          this.notice(world, 'anomaly', t('Space anomaly'), world.siteHere ? t(NAMED[world.siteHere]!.name) : t('Entering a strange place'), (e.kinds as ReportKind[]).map((k) => t(REPORT_TEXT[k])).join(' · '), 'calm');
+          break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':
           this.note(world, e.left > 0 ? t('Shield took it · {n} left', { n: e.left }) : t('Shield down'), 'hit');
@@ -262,6 +278,7 @@ export class Hud {
     // the heading tape, with the objective on it; it also says whether this is travel or a fight
     this.guide.update(world, sector.shipNow.heading, dt);
     if (this.bannerT > 0 && (this.bannerT -= dt) <= 0) $('banner').classList.remove('on');
+    if (this.noticeT > 0 && (this.noticeT -= dt) <= 0) $('notice').classList.remove('on');
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
     this.textClock += dt;
     if (this.textClock >= 0.1) { this.textClock = 0; this.updateText(world); }
@@ -654,14 +671,15 @@ export class Hud {
       : t(a === 'red' ? 'You are being targeted' : 'You are being observed');
     // inside the gate's or the depot's safe ring: the card says so, teal and quiet, and nothing is firing
     const safe = world.alive ? world.safe : null;
-    const word = !world.alive ? 'Hull breach' : safe ? 'Safe here' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
-    const note = safe ? t(safe === 'lane' ? 'The gate’s field holds every gun cold' : 'The depot’s field holds every gun cold') : sub;
-    const key = `${a}${word}${note}${safe ?? ''}`;
+    const held = world.alive && world.dockHeld;
+    const word = !world.alive ? 'Hull breach' : held ? 'Docking denied' : safe ? 'Safe here' : calm ? 'Capital ship spotted' : a === 'red' ? 'Red alert' : 'Yellow alert';
+    const note = held ? t('Until the fight is over') : safe ? t(safe === 'lane' ? 'The gate’s field holds every gun cold' : 'The depot’s field holds every gun cold') : sub;
+    const key = `${a}${word}${note}${safe ?? ''}${held}`;
     if (key === this.modeKey) return;
     this.modeKey = key;
     const mode = $('mode');
-    mode.className = `glass ${calm || safe ? 'sighted' : a}${sighted && !safe ? ' cap' : ''}`;
-    mode.hidden = a === 'clear' && !calm && !safe;
+    mode.className = `glass ${held ? 'yellow' : calm || safe ? 'sighted' : a}${sighted && !safe ? ' cap' : ''}`;
+    mode.hidden = a === 'clear' && !calm && !safe && !held;
     text($('mode-t'), t(word));
     text($('mode-s'), note);
     // a step up or down lights the card once, so a change is seen and not only read
@@ -712,6 +730,21 @@ export class Hud {
 
   private flashHit(): void {
     this.retrigger($('vignette'), 'hit');
+  }
+
+  /** The centre call: large, calm, gone in about two seconds. The same cue is not repeated inside NOTICE_GAP. */
+  private notice(world: World, key: string, kicker: string, title: string, sub: string, tone = ''): void {
+    const last = this.noticeAt[key];
+    if (last !== undefined && world.time - last < NOTICE_GAP) return;
+    this.noticeAt[key] = world.time;
+    text($('notice-k'), kicker);
+    text($('notice-t'), title);
+    text($('notice-s'), sub);
+    const n = $('notice');
+    n.className = '';
+    void n.offsetWidth;
+    n.className = `on ${tone}`;
+    this.noticeT = NOTICE_SECS;
   }
 
   private banner(kicker: string, title: string, sub: string, secs: number, tone = ''): void {

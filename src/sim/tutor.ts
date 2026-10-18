@@ -116,8 +116,9 @@ function begin(w: World, tu: Tutor): void {
     // the price, and a little over, so the first upgrade is only a press away
     w.cyrite = Math.max(w.cyrite, w.bk ? bayPrice() + SPARE : 6);
   } else {
+    // the hull waits: it comes once the ship is out past the depot's field
     tu.base = w.kills;
-    layShip(w, tu);
+    tu.alienId = -1;
   }
 }
 
@@ -177,7 +178,7 @@ export function stepTutor(w: World, dt: number): void {
   const id = tu.steps[tu.i]!;
   // if the rock is gone and nothing fell out, lay another; if the ship slipped away, send another
   if (id === 'mine' && !w.field.rocks.some((r) => r.id === tu.rockId) && stock(w) <= tu.base && !w.pickups.length) layRock(w, tu);
-  if (id === 'shoot' && tu.t > 2 && !w.aliens.some((a) => a.id === tu.alienId) && w.kills <= tu.base) layShip(w, tu);
+  if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && !w.aliens.some((a) => a.id === tu.alienId))) && w.kills <= tu.base) layShip(w, tu);
   if (met(w, tu)) tu.linger = LINGER;
 }
 
