@@ -353,8 +353,8 @@ Threshold.
 | Drift Deep | `story_charts` (Tarn Ilvo), `story_ferry`, `story_ferry_agent` | live |
 | Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | live (Draper's title change still to do) |
 | Free Ports | `story_harbour`, `story_ines_offer`, `story_witnesses`, `story_vell_reckoning`, `story_tollgate` | live; the signature chain sets `clue_sig_*` and `sig_used` |
-| Hollows | `story_voice`, `story_thren`, `story_echo_sable` | planned (two exist) |
-| Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | planned (two exist) |
+| Hollows | `story_voice`, `story_thren`, `story_echo_sable` | live |
+| Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | implant and ending epilogues live; Oren's three questions and Draper's fleet still to do |
 
 ## 17. Baseline (before any change)
 

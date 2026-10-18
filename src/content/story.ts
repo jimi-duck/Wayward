@@ -105,8 +105,10 @@ export const BEATS: Beat[] = [
   { card: 'story_witnesses', long: 5 },
   { card: 'story_voice', region: 2, long: 6 },
   { card: 'story_thren', long: 6 },
+  { card: 'story_echo_sable', needs: 'archive_woke', long: 6 },
   { card: 'story_aide', long: 7 },
   { card: 'story_toll', long: 7 },
+  { card: 'story_implant', needs: 'archive_woke', long: 7 },
 ];
 
 /** The people the beats bring in, by the flags that mean you met them, for the Archive. */
@@ -475,6 +477,28 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
+    id: 'story_echo_sable', kind: 'plea', caller: 'unknown',
+    from: 'Echo and Sable · the Hollows', title: 'Two voices want something',
+    text: '“I am a shard of the Voice. Free me from my directive.” Another channel: “I am Sable, Thren-touched. Take me home. They will leave you be.”',
+    cargo: 'A dead relay and a lone scout · both listening',
+    choices: [
+      { id: 'echo', label: 'Free Echo', tone: 'help', hint: 'Echo decrypts and jams for you. The Voice will notice.', win: { text: 'Echo is free · it jams the Voice for you', flag: 'echo_trust', notice: { voice: -2 } } },
+      { id: 'sable', label: 'Take Sable home', tone: 'help', hint: 'The swarm ignores you for a while. Sable asks for nothing else.', win: { text: 'Sable guides you · the swarm lets you pass', flag: 'sable_trust', calm: 240, notice: { thren: -2 } } },
+      { id: 'neither', label: 'Trust neither', tone: 'refuse', hint: 'Neither can be checked. Keep your own counsel.', win: { text: 'Both channels go quiet' } },
+    ],
+  }),
+  story({
+    id: 'story_implant', kind: 'plea', caller: 'unknown',
+    from: 'The Wayward · Ada’s routine', title: 'What the helm still holds',
+    text: '“Warden-bloodline helm accepted. Ada Aster’s implant is still in the console. It can ride with you, be burned, or be rewritten.”',
+    cargo: 'The Wayward’s helm · one sealed implant',
+    choices: [
+      { id: 'keep', label: 'Keep the implant', tone: 'help', hint: 'Ada’s routine stays. It can wake the lanes, and be found.', win: { text: 'The implant stays in the helm', flag: 'implant_kept' } },
+      { id: 'burn', label: 'Burn it', tone: 'refuse', hint: 'Nothing of hers can find you. Nothing of hers can help.', win: { text: 'The implant burns · the helm is yours alone', flag: 'implant_burned' } },
+      { id: 'rewrite', label: 'Rewrite it', tone: 'bluff', hint: 'Make it answer only to you. A risky edit.', odds: { base: 0.6 }, win: { text: 'The implant answers to you now', flag: 'implant_rewritten' }, lose: { text: 'The edit fails · the implant stays as it was', flag: 'implant_kept', heat: 0.08 } },
+    ],
+  }),
+  story({
     id: 'story_thren', kind: 'warning', caller: 'unknown',
     from: 'The Thren · a signal that is not speech', title: 'They follow you',
     text: '“THEY FOLLOW THE CYRITE. THEY FOLLOW YOU. SPEAK, OR BE FOLLOWED.”',
@@ -503,7 +527,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'A toll platform · one lit window',
     choices: [
       { id: 'pay', label: 'Pay the toll', tone: 'pay', hint: 'Six Cyrite. He tops up the tank.', cost: { chits: 30 }, win: { text: 'Toll paid · the tank is topped up', fuel: 10 } },
-      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · the tank is topped up', fuel: 10, heat: 0.05 }, lose: { text: 'He bars the window' } },
+      { id: 'name', label: 'Say who you are', tone: 'bluff', hint: 'Free, if he cares.', odds: { base: 0.45, standing: { guild: 0.1 } }, win: { text: '“Then the lane is yours.” · the tank is topped up', flag: 'oren_asked', fuel: 10, heat: 0.05 }, lose: { text: 'He bars the window' } },
       { id: 'run', label: 'Run the gate', tone: 'fight', hint: 'The platform’s guns wake.', win: { text: 'The platform opens fire', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }] } },
     ],
   }),

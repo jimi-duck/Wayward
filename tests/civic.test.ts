@@ -95,3 +95,34 @@ describe('follow-up beats', () => {
     for (const b of needs) expect(b.needs).toMatch(/^(brook_met|pact_holdfast|broker|frag_blackbox|ferry_met|archive_woke|ines_berth)$/);
   });
 });
+
+describe('nothing soft-locks', () => {
+  it('leaves every story card an answer that needs and costs nothing', async () => {
+    const { STORY_CARDS } = await import('../src/content/story');
+    for (const c of STORY_CARDS) {
+      const free = c.choices.filter((ch) => !ch.needs && !ch.cost && !ch.odds && !ch.loseIf);
+      expect(free.length, c.id).toBeGreaterThan(0);
+    }
+  });
+  it('never gates a fragment-bearing beat on a follow-up flag', async () => {
+    const { BEATS, FRAGMENT_FLAGS_LONG, STORY_CARDS } = await import('../src/content/story');
+    for (const b of BEATS.filter((x) => x.needs)) {
+      const card = STORY_CARDS.find((c) => c.id === b.card)!;
+      const flags = card.choices.flatMap((ch) => [ch.win.flag ?? [], ch.lose?.flag ?? []].flat());
+      expect(flags.filter((f) => FRAGMENT_FLAGS_LONG.includes(f)), b.card).toEqual([]);
+    }
+  });
+  it('leaves the registry open to a pilot with a Score of 100', () => {
+    const def = CARD_BY_ID.story_registry!;
+    const open = def.choices.filter((c) => choiceView(c, def, ctx({ civic: 100 }), 0).ok);
+    expect(open.length).toBeGreaterThanOrEqual(3);
+  });
+  it('keeps the tollgate answerable without the signature chain', () => {
+    const def = CARD_BY_ID.story_tollgate!;
+    const view = def.choices.map((c) => choiceView(c, def, ctx({ civic: 300 }), 0));
+    expect(view.find((v) => v.id === 'sign')!.ok).toBe(false);
+    expect(view.filter((v) => v.ok).length).toBeGreaterThanOrEqual(2);
+    const all = new Set(['clue_sig_reach', 'clue_sig_yards', 'clue_sig_ports']);
+    expect(choiceView(def.choices.find((c) => c.id === 'sign')!, def, ctx({ flags: all }), 0).ok).toBe(true);
+  });
+});
