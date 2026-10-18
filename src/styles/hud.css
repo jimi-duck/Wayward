@@ -428,7 +428,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 @keyframes hud-hit { 0%, 30% { background: rgba(201, 74, 63, .28); } }
 
 /* a refusal or a change of place, large and short, a little above the middle; the alert corner keeps the fact after it fades */
-#notice { position: absolute; left: 50%; top: 30%; translate: -50% -50%; display: none; grid-template-columns: 3px auto; max-width: min(92vw, 560px); pointer-events: none; --tone: var(--caution); }
+#notice { z-index: 5; position: absolute; left: 50%; top: 30%; translate: -50% -50%; display: none; grid-template-columns: 3px auto; max-width: min(92vw, 560px); pointer-events: none; --tone: var(--caution); }
 #notice.on { display: grid; animation: nt-in .25s var(--ez), nt-out .5s ease-in var(--out, 2.2s) forwards; }
 #notice.calm { --tone: var(--cy); }
 .nt-bar { background: var(--tone); }
@@ -482,6 +482,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 @media (max-height: 460px) {
   #hud { --pad: 10px; }
   #banner-t { font-size: 12px; letter-spacing: .05em; }
+  #notice { top: 53%; z-index: 5; }
   #notice-t { font-size: 18px; letter-spacing: .06em; }
   .nt-k, .nt-s { font-size: 10px; }
   .nt-body { padding: 8px 14px 9px 12px; }
