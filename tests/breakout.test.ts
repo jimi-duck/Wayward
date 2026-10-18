@@ -232,7 +232,7 @@ describe('the Breakout', () => {
     w.ship.x = b.lane.x; w.ship.z = b.lane.z + 300;
     run(w, 1);
     expect(w.phase).toBe('comms');
-    expect(w.comms?.def.id).toBe('checkpoint');
+    expect(w.comms?.def.id).toBe('story_registry');
     expect(w.answer('run')).toBe(true);
     expect(b.blockade).toBe('done');
     expect(b.heat).toBe(1);

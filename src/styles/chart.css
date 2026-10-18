@@ -265,3 +265,10 @@ circle.ch-net { fill: rgba(201, 74, 63, .07); stroke: rgba(224, 87, 75, .5); str
   .ch-o2 b { font-size: 1.15em; }
   .ch-foot { padding: 14px 18px; }
 }
+.ch-wall-l { list-style: none; padding: 0; display: grid; gap: 8px; }
+.ch-wall-l li { border-left: 2px solid var(--line); padding-left: 10px; }
+.ch-wall-l li.found { border-color: var(--hud); }
+.ch-wall-l li.open { opacity: .7; }
+.ch-wall-l p { margin: 2px 0 0; font-size: calc(var(--fs) * 1.05); color: var(--ink-2); }
+.ch-wall-l .tag { margin-left: 8px; font: 600 calc(var(--fs) * .9)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--hud); }
+.chartp.notice .ch-wall { display: none; }

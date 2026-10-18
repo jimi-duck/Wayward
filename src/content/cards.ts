@@ -1,6 +1,6 @@
 import type { CardDef } from '../sim/comms';
 import { CALLOWAY_FACE, OFFERS } from './calloway';
-import { STORY_CARDS } from './story';
+import { REGISTRY_CARD, STORY_CARDS } from './story';
 import { SCENE_CARDS } from './situationCards';
 
 // ── comms cards ───────────────────────────────────────────────────────────
@@ -22,6 +22,10 @@ export const FLAGS: Record<string, string> = {
   forger_known: 'a name at Frontier Supply',
   news: 'fresh news of the lanes',
   gutter_friend: 'a friend in the Gutter',
+  clue_sig_reach: 'the initials on the authorisation',
+  clue_sig_yards: 'the Prefect’s cipher',
+  clue_sig_ports: 'Lior Calloway’s signature',
+  vell_betrayed: 'proof Vell sold your heading',
 };
 
 export const CARDS: CardDef[] = [
@@ -37,6 +41,8 @@ export const CARDS: CardDef[] = [
       { if: { flag: 'codes' }, text: 'Your forged registration codes are ready.' },
       { if: { flag: 'fee_known' }, text: 'You heard she accepts bribes.' },
       { if: { notice: ['custody', 'toll'] }, text: 'There is already a surcharge on your record.' },
+      { if: { civicMax: 399 }, text: 'Your registry reads UNDER REVIEW. The ordinary doorway is closed.' },
+      { if: { civicMax: 299 }, text: 'Restricted pilots pay a surcharge here.' },
     ],
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'picket', n: 2 }], cargo: 'Custody blockade cutter, full magazines',
     fee: { base: 40, heat: 60, flags: { fee_known: 0.6 } },
@@ -47,13 +53,13 @@ export const CARDS: CardDef[] = [
     choices: [
       {
         id: 'run', label: 'Run the blockade', tone: 'run', hint: 'Make for the jump lane under her guns. She will chase you, and her field will slow your jump.',
-        win: { text: 'You break through the blockade · the system is alerted', blockade: 'run' },
+        win: { text: 'You break through the blockade · the system is alerted', blockade: 'run', civic: -25, civicWhy: 'Ran a registry checkpoint' },
       },
       {
         id: 'spoof', label: 'Send forged registration codes', tone: 'bluff', hint: 'Send your forged codes and hope the scan accepts them.',
         show: { flag: 'codes' }, odds: { base: 0.8, heat: -0.25, flags: { codes_bad: -0.6, freqs: 0.1 } },
-        win: { text: 'The registration matches · she lets you through', blockade: 'pass', heat: -0.1 },
-        lose: { text: 'The codes are flagged · she opens fire', blockade: 'fight', heat: 0.1 },
+        win: { text: 'The registration matches · she lets you through', blockade: 'pass', heat: -0.1, flag: 'codes_passed' },
+        lose: { text: 'The codes are flagged · she opens fire', blockade: 'fight', heat: 0.1, civic: -15, civicWhy: 'Forged registration detected' },
       },
       {
         id: 'rig', label: 'Spoof the transponder', tone: 'bluff', hint: 'Use supplies to create a false registration. It is risky while they are looking for you.',
@@ -64,18 +70,18 @@ export const CARDS: CardDef[] = [
       {
         id: 'pay', label: 'Pay the inspection fee', tone: 'pay', hint: 'If she is taking bribes, you may pass. If not, she may take the money and scan you anyway.',
         cost: { chits: 'fee' }, loseIf: ['by_book'],
-        win: { text: 'She takes the fee · the scan finds nothing', blockade: 'pass' },
+        win: { text: 'She takes the fee · the scan finds nothing', blockade: 'pass', civic: 5, civicWhy: 'Fee paid on time' },
         lose: { text: 'She takes the fee and orders the scan anyway', blockade: 'fight' },
       },
       {
         id: 'talk', label: 'Talk your way through', tone: 'bluff', hint: 'Claim you are a miner on an authorised run. This is easier before she recognises you.',
-        odds: { base: 0.6, heat: -0.55, standing: { custody: 0.12 }, flags: { passengers: -0.15, calloway_lied: -0.1 } },
+        odds: { base: 0.6, heat: -0.55, standing: { custody: 0.12 }, flags: { passengers: -0.15, calloway_lied: -0.1 }, civic: 0.3 },
         win: { text: 'She believes you · the lane is clear', blockade: 'pass' },
         lose: { text: '“Nice try, Wayward.” · she opens fire', blockade: 'fight', heat: 0.05 },
       },
       {
         id: 'fight', label: 'Fight through', tone: 'fight', hint: 'She is holding the lane with her escort. Break the blockade to clear the route and salvage the wrecks.',
-        win: { text: 'Weapons hot · you attack the blockade', blockade: 'fight' },
+        win: { text: 'Weapons hot · you attack the blockade', blockade: 'fight', civic: -40, civicWhy: 'Attacked the Custody' },
       },
     ],
   },
@@ -928,6 +934,7 @@ export const CARDS: CardDef[] = [
 
   // the story beats, one a sortie through the Run (content/story.ts)
   ...STORY_CARDS,
+  REGISTRY_CARD,
 
   // what is going on in a system: the calls situations make (content/situations.ts)
   ...SCENE_CARDS,

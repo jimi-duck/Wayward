@@ -1,3 +1,4 @@
+import { civicNote } from '../sim/civic';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
 import type { Sector } from '../render/sector';
@@ -187,6 +188,7 @@ export class Hud {
         case 'patched': this.note(world, `${t('Hull plate repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;
         case 'comms': this.note(world, `${t(e.slow ? 'Ambush' : 'Channel open')} · ${t(e.from)}`, e.slow ? 'hit' : undefined); break;
+        case 'civic': this.note(world, civicNote(e.to, e.why)); break;
         case 'commsAnswer': this.note(world, t(e.text), e.won ? undefined : 'hit'); break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;

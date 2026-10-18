@@ -1,5 +1,6 @@
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { t } from '../i18n';
+import { CIVIC_START, civicLabel } from '../sim/civic';
 
 // ── the opening ───────────────────────────────────────────────────────────
 // What the game is, in a few lines, read at the start of every new Story
@@ -24,21 +25,34 @@ export class OpeningPanel {
     this.opened = performance.now();
     $('op-k').textContent = t('Story 01');
     $('op-t').textContent = t('Breakout');
-    $('op-l').replaceChildren(
-      h('b', '', t('The Continuance controls the core. Everyone else is on their own.')),
-      h('p', '', t('Seventy years ago, the jump lanes went dark, cutting the outer systems off from the core. The Continuance blamed dwindling Krail. Millions were stranded, and the core tightened its grip on what remained.')),
-      h('p', '', t('Today, every citizen is scored, every resource is rationed, and every ship is tracked. The Offices of Peace deal with anyone they deem undesirable. People like you.')),
-      h('p', '', t('When they came for you, you escaped aboard a decommissioned Continuance ore hauler, the Wayward. Hidden in its systems is a sealed archive revealing the truth behind the blackout. The shortages were a cover. The isolation was used to purge those who could challenge the Continuance and secure its hold on power.')),
-      h('p', '', t('Your ship is still broadcasting its identity. The patrols are coming.')),
-      h('p', '', t('You don’t have to win a war. You just have to get out of this system.')),
+    // page one: the work order, the registry, the shortage story. Page two: the theft, the wake, the first job.
+    const row = (k: string, v: string, cls = '') => h('li', cls, '', h('span', '', t(k)), h('b', '', v));
+    const one = [
+      h('p', 'op-job', t('Extraction contract · renewal 08-441')),
+      h('ul', 'op-order', '',
+        row('Gross yield', t('{n} Cyrite', { n: 48 })),
+        row('Refinery allocation', '21'),
+        row('Equipment lease', '9'),
+        row('Fuel reserve', '11'),
+        row('Penalty escrow', '3'),
+        row('Your credit', '4', 'mine'),
+      ),
+      h('p', 'op-thanks', t('The Continuance thanks you for your contribution.')),
+      h('p', 'op-score', '', h('span', '', t('Civic Score')), h('b', '', String(CIVIC_START)), h('em', '', civicLabel(CIVIC_START))),
+      h('b', '', t('You mined 48. You keep 4.')),
+      h('p', '', t('Seventy years ago the lanes went dark. The Continuance said Krail was running out, and has rationed everything since.')),
+    ];
+    const two = [
+      h('p', '', t('Tonight the yard is scrapping the Wayward, an old Continuance ore hauler. Tam Okoro, the foreman, will look away at the gate for a minute.')),
+      h('p', '', t('You take her. The helm reads your hand, and something sealed inside wakes. The registry sees it too.')),
       h('b', 'op-job', t('Your first job')),
-      h('p', '', t('Break asteroids for Cyrite. Your ship’s refinery converts it into jump fluid until the drive tank is full. Any surplus can be spent on upgrades and supplies.')),
-      h('p', '', t('Keep moving, watch your hull, and choose carefully who to trust. The longer you stay, the closer the patrols get.')),
-    );
+      h('p', '', t('Break asteroids for Cyrite. Your refinery fills the drive tank first. Everything past that is yours to spend.')),
+      h('p', '', t('Keep moving, watch your hull, and choose carefully who to trust.')),
+    ];
+    for (const el of two) el.classList.add('op-p2');
+    $('op-l').replaceChildren(...one, ...two);
     this.paged = matchMedia('(max-height: 460px)').matches;
     this.page = 0;
-    // page two starts at the patrols: the story so far, then what is coming and the first job
-    Array.from($('op-l').children).forEach((el, i) => el.classList.toggle('op-p2', i >= 4));
     this.paint();
     const go = $('op-go');
     go.onclick = guarded(this.opened, () => this.done());

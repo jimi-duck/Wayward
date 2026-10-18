@@ -13,6 +13,7 @@ import { SUPPLIES_MAX } from '../sim/breakout';
 import { SCRAP_PRICE } from '../content/systems';
 import { survivalOf } from '../content/survival';
 import { atChapter } from '../sim/chapters';
+import { CIVIC_START, WAKE_DROP } from '../sim/civic';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
@@ -80,8 +81,19 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version >= 12 && j.version < 16) addJobs(j as Journey);
   // 16 → 17: every open system gets a sky (sim/experience.ts), dealt from the seed and the chart as it stands
   if (j.version < 17) composeChart(j.chart, j.seed ?? 0);
+  // 17 → 18: the Civic Score (the Story's registry). A journey still in Cerro starts at the new journey's 412. One that has left
+  // Cerro has had the archive wake and the reserves figure decrypt on that first jump, so it gets what the new opening would have
+  // given it: the wake's drop and both flags. Idempotent: a Score already there is kept.
+  if (j.version < 18) civicScore(j as Journey);
   j.version = VERSION;
   return j as Journey;
+}
+
+/** Give a journey from before v18 its Civic Score (see the 17 → 18 step). */
+function civicScore(j: Journey): void {
+  const c = j.carry;
+  if (c.civic === undefined) c.civic = j.trail.length < 2 ? CIVIC_START : CIVIC_START - WAKE_DROP;
+  if (j.trail.length >= 2) for (const f of ['archive_woke', 'clue_reserves']) if (!c.flags.includes(f)) c.flags.push(f);
 }
 
 /**

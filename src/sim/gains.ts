@@ -26,6 +26,8 @@ const STORY_SHORT: Record<string, string> = {
   frag_order: 'File +1', frag_ledger: 'File +1', frag_manifests: 'File +1', frag_keys: 'File +1',
   frag_blackbox: 'File +1', frag_charts: 'File +1', frag_workorder: 'File +1', frag_witnesses: 'File +1',
   copy_warden: 'Copy out', voice_read: 'Copy out',
+  clue_archive_log: 'Wall +1', clue_agent: 'Wall +1', clue_scarred: 'Wall +1', clue_cyrite: 'Wall +1',
+  clue_sig_reach: 'Wall +1', clue_sig_yards: 'Wall +1', clue_sig_ports: 'Wall +1',
 };
 const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['supplies', 'supplies']];
 
@@ -44,6 +46,8 @@ export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyo
   // the story first: a piece of the file, an ally, a buyer
   // a flag with consequences names them (what it brings, then what it costs) in place of its short name
   for (const f of [o.flag ?? []].flat()) for (const c of chipsOf(f) ?? [STORY_SHORT[f]]) if (c && !out.includes(c)) out.push(c);
+  // the registry's view of it
+  if (o.civic) out.push(`${o.civic > 0 ? '+' : '−'}${Math.abs(o.civic)} Score`);
   // where it leaves you: the lane mouth, Calloway, a named captain, a fight
   if (o.blockade) out.push(o.blockade === 'pass' ? 'Through the lane' : o.blockade === 'run' ? 'Run the blockade' : 'Fight');
   if (o.calloway) out.push(o.calloway === 'fight' ? 'Calloway fights' : 'Calloway chases');

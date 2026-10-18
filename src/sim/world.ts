@@ -56,6 +56,7 @@ import { feelBudgets, overRatings, weightFuel } from './budgets';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { planStop, type Stop } from './stop';
 import { reasonOf, type Advice } from './advice';
+import { CIVIC_START, clampCivic } from './civic';
 import { voiceId, voiceText } from './voice';
 import { hurtMend, newMend, SELF_REPAIR, stepMend, type Mend } from './repair';
 import { discounted, effects, type Effects } from './modules';
@@ -276,6 +277,8 @@ export class World implements EncounterHost {
   private fightT = 0;
   flags = new Set<string>();
   standing: Partial<Record<Standing, number>> = {};
+  /** The Civic Score (sim/civic.ts): the Story's only; undefined in the Arcade, which has no registry. */
+  civic: number | undefined;
   /** Jobs taken and not yet paid. */
   jobs: JobDef[] = [];
   /** Run time of the next chance card (Infinity: none), and whether the port's approach has called. */
@@ -398,6 +401,7 @@ export class World implements EncounterHost {
     }
     if (def.situation && !def.home) this.stage = makeStage(def.system, def.situation, this);
     if (this.carryIn) this.bringAboard(this.carryIn);
+    else if (this.bk) this.civic = CIVIC_START;
     this.stock();
     this.fitAboard();
   }
@@ -426,6 +430,7 @@ export class World implements EncounterHost {
     this.techs = new Set(c.techs);
     this.flags = new Set(c.flags);
     this.standing = { ...c.standing };
+    this.civic = this.bk ? c.civic ?? CIVIC_START : undefined;
     this.jobs = c.jobs.map((j) => ({ ...j }));
     this.heard = new Set(c.seen);
   }
@@ -444,6 +449,7 @@ export class World implements EncounterHost {
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
       hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
+      ...(this.civic !== undefined ? { civic: this.civic } : {}),
     };
   }
 
@@ -789,7 +795,8 @@ export class World implements EncounterHost {
         this.openComms(b.def.nemesis.finale);
       } else if (b.def.blockade) {
         b.blockade = 'checkpoint';
-        this.openComms(CARD_BY_ID.checkpoint!);
+        // Cerro's own: the registry reads the pilot first (content/story.ts); every later checkpoint is the generic one
+        this.openComms((b.def.home && CARD_BY_ID.story_registry) || CARD_BY_ID.checkpoint!);
       } else {
         b.blockade = 'done';
         // an open lane's toll is not every jump's: a roll, and not on the heels of another call
@@ -1243,7 +1250,7 @@ export class World implements EncounterHost {
       hostiles: this.aliens.filter((a) => !a.fleeing && !a.ward && Math.hypot(a.x - s.x, a.z - s.z) < 60).length,
       supplies: this.supplies, kind: this.sortie.kind, netted: this.sortie.netted, behind: this.behind,
       notice: this.sortie.notice.tiers, toll: this.sortie.notice.toll, region: this.sortie.region, captain: this.sortie.notice.captain,
-      wise: this.sortie.nemesis.wise, hunch: this.sortie.nemesis.hunch, here: this.sortie.here,
+      wise: this.sortie.nemesis.wise, hunch: this.sortie.nemesis.hunch, here: this.sortie.here, civic: this.civic,
     };
   }
 
@@ -1286,7 +1293,7 @@ export class World implements EncounterHost {
     if (due >= 0) {
       const [f] = this.follows.splice(due, 1);
       const def = CARD_BY_ID[f!.card];
-      if (def && !this.cardsSeen.has(def.id)) d.offer(def, weightOf(def), t);
+      if (def && !this.cardsSeen.has(def.id)) d.offer(def, weightOf(def), t, false, def.trigger === 'story');
     }
     // the port's approach calls once
     if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
@@ -1413,6 +1420,11 @@ export class World implements EncounterHost {
     if (b && out.calm) b.nextSwarm = Math.max(b.nextSwarm, this.runTime + out.calm);
     if (out.plates && out.plates > 0) this.repair(out.plates);
     if (out.score) this.addScore(out.score, 'events');
+    if (out.civic && this.civic !== undefined) {
+      const was = this.civic;
+      this.civic = clampCivic(was + out.civic);
+      if (this.civic !== was) this.events.push({ type: 'civic', from: was, to: this.civic, why: out.civicWhy ?? '' });
+    }
     if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
     for (const f of [out.flag ?? []].flat()) this.flags.add(f);
     for (const f of [out.unflag ?? []].flat()) this.flags.delete(f);
