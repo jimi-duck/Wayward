@@ -50,7 +50,7 @@ describe('the cards', () => {
       for (const ch of c.choices) {
         for (const t of ch.loseIf ?? []) expect(truths.has(t), `${c.id}.${ch.id} loses to ${t}`).toBe(true);
         if (ch.loseIf || ch.odds) expect(ch.lose, `${c.id}.${ch.id} can lose`).toBeDefined();
-        if (ch.needs?.flag) expect(FLAGS[ch.needs.flag], `${c.id}.${ch.id} flag ${ch.needs.flag}`).toBeDefined();
+        for (const f of [ch.needs?.flag ?? []].flat()) expect(FLAGS[f], `${c.id}.${ch.id} flag ${f}`).toBeDefined();
         for (const id of [ch.needs?.fitted ?? []].flat()) expect(ups.has(id), `${c.id}.${ch.id} needs ${id}`).toBe(true);
         for (const id of Object.keys(ch.odds?.fitted ?? {})) expect(ups.has(id), `${c.id}.${ch.id} odds ${id}`).toBe(true);
         for (const o of [ch.win, ch.lose]) {

@@ -42,6 +42,7 @@ export const CONTACT_LOOK: Record<string, string> = {
   story_broker: 'Vell, a broker of the Gutter: forties, elegant in a hard way; a long coat over scrap-plate shoulders, one copper-coloured earring, a smile. A back room of a free port.',
   story_kesh: 'Kesh, Gutter fixer: thirties, lean, quick grin, scrap-plate jacket with a stitched debt tally on one sleeve. A cramped skiff cab.',
   story_ada: 'Ada Aster, from a seventy-year-old recording: forties, tired and steady, a Lane Warden-grade jacket, a headset. A dim flight deck, a single lamp.',
+  story_tollgate: 'Prefect Idris Calloway: forties, composed, severe; a dark Offices coat with a pale collar and a Prefect’s pin. The bridge of a Continuance cutter, cold light.',
   story_salvor: 'Dov Kessin, salvor: forties, shoulders like a door, welding goggles pushed up, burn scars on the forearms; a pressure suit open at the chest. A wreck’s torn hull behind him.',
   story_charts: 'Tarn Ilvo, chartwright: sixties, gentle, ink on the fingers; a workshop apron, a loupe, hand-drawn charts pinned all round. Candle-warm light, an old room.',
   story_ferry: 'Ossi Rane of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab.',

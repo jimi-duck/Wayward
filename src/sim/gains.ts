@@ -26,7 +26,8 @@ const STORY_SHORT: Record<string, string> = {
   frag_order: 'File +1', frag_ledger: 'File +1', frag_manifests: 'File +1', frag_keys: 'File +1',
   frag_blackbox: 'File +1', frag_charts: 'File +1', frag_workorder: 'File +1', frag_witnesses: 'File +1',
   copy_warden: 'Copy out', voice_read: 'Copy out',
-  clue_archive_log: 'Wall +1',
+  clue_archive_log: 'Wall +1', clue_agent: 'Wall +1', clue_scarred: 'Wall +1', clue_cyrite: 'Wall +1',
+  clue_sig_reach: 'Wall +1', clue_sig_yards: 'Wall +1', clue_sig_ports: 'Wall +1',
 };
 const WHAT: Array<[keyof Cost, string]> = [['cyrite', 'Cyrite'], ['supplies', 'supplies']];
 

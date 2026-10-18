@@ -22,6 +22,10 @@ export const FLAGS: Record<string, string> = {
   forger_known: 'a name at Frontier Supply',
   news: 'fresh news of the lanes',
   gutter_friend: 'a friend in the Gutter',
+  clue_sig_reach: 'the initials on the authorisation',
+  clue_sig_yards: 'the Prefect’s cipher',
+  clue_sig_ports: 'Lior Calloway’s signature',
+  vell_betrayed: 'proof Vell sold your heading',
 };
 
 export const CARDS: CardDef[] = [

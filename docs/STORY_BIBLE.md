@@ -351,8 +351,8 @@ Threshold.
 | Marches | `story_oduya_rigs`, `story_moot`, `story_drift` (Wren) | live |
 | Salvage Belt | `story_broker`, `story_kesh`, `story_vell_betray`, `story_salvor`, `story_ada` | live |
 | Drift Deep | `story_charts` (Tarn Ilvo), `story_ferry`, `story_ferry_agent` | live |
-| Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | planned (two exist) |
-| Free Ports | `story_harbour`, `story_ines_offer`, `story_witnesses`, `story_vell_reckoning`, `story_tollgate` | planned (two exist) |
+| Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | live (Draper's title change still to do) |
+| Free Ports | `story_harbour`, `story_ines_offer`, `story_witnesses`, `story_vell_reckoning`, `story_tollgate` | live; the signature chain sets `clue_sig_*` and `sig_used` |
 | Hollows | `story_voice`, `story_thren`, `story_echo_sable` | planned (two exist) |
 | Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | planned (two exist) |
 

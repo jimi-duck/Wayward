@@ -202,7 +202,7 @@ export interface Outcome {
 /** What a choice asks to be possible. What it costs is in `cost`, and counts too. */
 export interface Need {
   fitted?: string | string[];
-  flag?: string;
+  flag?: string | string[];
   standing?: [Standing, number];
   cyrite?: number;
   supplies?: number;
@@ -514,7 +514,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
       const names = [...new Set([...list(n.fitted).map(upgradeName), ...list(n.fitted).flatMap((id) => countedBy(id).map((m) => m.name))])];
       needs.push(t('Needs {what}', { what: names.map((n) => t(n)).join(t(' or ')) }));
     }
-    if (n.flag && !x.flags.has(n.flag)) needs.push(t('Needs {what}', { what: t(FLAGS[n.flag] ?? n.flag) }));
+    for (const f of list(n.flag)) if (!x.flags.has(f)) needs.push(t('Needs {what}', { what: t(FLAGS[f] ?? f) }));
     if (n.standing && (x.standing[n.standing[0]] ?? 0) < n.standing[1]) needs.push(t('Needs standing with {who}', { who: t(standingName(n.standing[0])) }));
     if (n.civic !== undefined && !(x.civic !== undefined && x.civic >= n.civic)) needs.push(t('Needs a Civic Score of {n} or more · yours is {score}', { n: n.civic, score: x.civic ?? 0 }));
     if (n.cyrite !== undefined && x.cyrite < n.cyrite) needs.push(t('Needs {n} Cyrite', { n: n.cyrite }));
