@@ -161,3 +161,40 @@ describe('the Narrows at the Reach gate', () => {
     expect(dueBeat(j)).toBe('story_calloway_narrows');
   });
 });
+
+describe('a reader and a skimmer on the long chart', () => {
+  const run = async (flags: string[]) => {
+    const { endSortie, options, plot } = await import('../src/sim/journey');
+    const { jumps } = await import('../src/sim/chart');
+    const { newRun } = await import('../src/sim/run');
+    const { choices } = await import('../src/sim/endings');
+    const j = newJourney(7, false, 'eight');
+    const go = () => {
+      const r = newRun(1);
+      r.escaped = true;
+      endSortie(j, { ended: 'jumped', time: 60, carry: { ...j.carry, plates: 3, supplies: 30, cyrite: 20, flags: [...new Set([...j.carry.flags, ...flags])] }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
+    };
+    go();
+    let guard = 0;
+    while (j.status === 'chart' && guard++ < 120) {
+      const o = options(j).sort((a, b) => jumps(j.chart, a.to.id, j.chart.edge) - jumps(j.chart, b.to.id, j.chart.edge))[0]!;
+      plot(j, o.to.id);
+      go();
+    }
+    return { j, open: choices(j).filter((c) => c.open).map((c) => c.def.id) };
+  };
+  it('both reach the Threshold; the skimmer keeps Vanish, the reader opens more', { timeout: 60_000 }, async () => {
+    const { STORY_CARDS } = await import('../src/content/story');
+    const readerFlags = STORY_CARDS.flatMap((c) => c.choices.filter((ch) => ch.tone !== 'refuse').flatMap((ch) => [ch.win.flag ?? []].flat()));
+    const skim = await run([]);
+    const read = await run(readerFlags);
+    expect(skim.j.status).not.toBe('chart');
+    expect(read.j.status).not.toBe('chart');
+    expect(skim.open).toContain('vanish');
+    expect(read.open.length).toBeGreaterThan(skim.open.length);
+    for (const w of [skim.j, read.j]) {
+      expect(w.carry.civic).toBeGreaterThanOrEqual(0);
+      expect(w.carry.civic).toBeLessThanOrEqual(500);
+    }
+  });
+});
