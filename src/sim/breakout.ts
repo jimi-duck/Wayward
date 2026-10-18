@@ -120,6 +120,22 @@ export const HEAT_CLOCK = 420;
 /** The first pursuer, seconds in. */
 export const PURSUIT_FIRST = 45;
 
+// ── the chase ─────────────────────────────────────────────────────────────
+// The opening of the Story: once the training ship is down, Custody has seen the
+// hauler leave. Heavier hulls come from behind, faster and in greater number, all
+// the way to the lane. They are meant to be outrun, not beaten.
+
+/** How far ahead the lane is set when the chase begins (units; about 50 s at top speed). */
+export const CHASE_LANE = 1900;
+/** Seconds to the first wave. */
+export const CHASE_FIRST = 2;
+/** The ships a wave may leave alive at once, the gap to the next wave (s), and the heat the pursuit is picked at. */
+export const chaseCap = (wave: number) => Math.min(6, 2 + Math.floor(wave / 2));
+export const chaseGap = (wave: number) => Math.max(3.5, 9 - wave * 0.9);
+export const chaseHeat = (wave: number) => Math.min(0.9, 0.3 + wave * 0.12);
+/** What the HUD calls a wave when it comes. */
+export const chaseLabel = (wave: number) => (wave < 2 ? 'Custody pickets' : wave < 4 ? 'Heavy cruisers' : wave < 6 ? 'Enforcers' : 'Interdictors');
+
 export const pursuitInterval = (heat: number) => lerp(38, 10, clamp(heat, 0, 1));
 export const pursuitCap = (heat: number) => Math.round(lerp(1, 3, clamp(heat, 0, 1)));
 export const pursuitElite = (heat: number) => clamp((heat - 0.7) * 0.6, 0, 0.2);
@@ -356,6 +372,8 @@ export interface Breakout {
   prices: Prices;
   heat: number;
   nextPursuit: number;
+  /** The opening chase (World.startChase): null before it and in every later system. */
+  chase: { t0: number; wave: number } | null;
   /** When the next Thren swarm comes (Infinity: no Thren here). */
   nextSwarm: number;
   /** Seconds the drive has spooled inside the lane mouth, and the seconds it needs. */
@@ -380,7 +398,7 @@ export interface Breakout {
 export function newBreakout(heading: number, def: SortieDef = HOME): Breakout {
   const c = course(heading, 0, 0, def);
   return {
-    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
+    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, chase: null, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }

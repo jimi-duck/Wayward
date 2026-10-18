@@ -219,6 +219,7 @@ export class Hud {
         }
         case 'damageControl': this.banner(t('Ship system'), t('Hull stable'), t('One hull plate left · repair soon'), 2, 'caution'); break;
         case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
+        case 'chase': this.note(world, t('Custody has seen you · run for the jump gate'), 'hit'); break;
         case 'squad': this.note(world, t('{name} inbound', { name: t(e.label) }), 'hit'); break;
         case 'salvage': this.note(world, `${t('Salvage')}${e.tech ? ` · ${t('{f} tech recovered', { f: faction(e.faction) })}` : ''}`, 'gain'); break;
         case 'cloak': this.note(world, t('Cloak active · enemies cannot target you'), 'gain'); break;
@@ -586,10 +587,10 @@ export class Hud {
       } else {
         // the one thing to do now, and at most two quiet lines under it
         const ready = world.fuel >= world.jumpCost;
-        text($('obj-t'), t(ready ? 'Head for the lane entrance' : 'Fill the tank'));
+        text($('obj-t'), t(bk.chase && ready ? 'Run for the jump gate' : ready ? 'Head for the lane entrance' : 'Fill the tank'));
         text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
-        text($('obj-s'), '');
+        text($('obj-s'), bk.chase && ready ? t('Custody is behind you · do not stop') : '');
         const lines: string[] = [];
         if (!ready) lines.push(`${t('Reach the lane entrance')} · <b>${range(dl)}</b>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);

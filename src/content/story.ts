@@ -130,14 +130,54 @@ export const STORY_PEOPLE: Array<{ flags: string[]; name: string }> = [
   { flags: ['frag_witnesses'], name: 'Mirren, keeper of the list' },
 ];
 
-const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: 'story', ...c });
+/** One line for a glance at the pop-up: what is happening, before any of the detail. */
+const GIST: Record<string, string> = {
+  "story_wake": "The hauler’s archive woke · your Score drops",
+  "story_yard": "Tam offers forged codes or fuel",
+  "story_registry": "Lane checkpoint · your Score decides",
+  "story_warden": "A retired Warden heard the shutdown order",
+  "story_ledger": "A Kellern clerk sells the real books",
+  "story_brook_arrest": "Brook is in a Custody transport",
+  "story_calloway_narrows": "The Prefect asks where you are going",
+  "story_oduya_rigs": "Kessel Hold’s rigs are under attack",
+  "story_moot": "Kessel Hold wants the file read aloud",
+  "story_drift": "The Drift offer their lost-ship manifests",
+  "story_broker": "Vell offers an advance for the file",
+  "story_kesh": "Kesh warns Vell is selling your heading",
+  "story_vell_betray": "Vell sold your heading to the Offices",
+  "story_ada": "A recording of Ada Aster, your grandmother",
+  "story_salvor": "A salvor needs help cutting out a recorder",
+  "story_charts": "An old chartwright trades the lost charts",
+  "story_ferry": "The Quiet Ferry offers a ride",
+  "story_ferry_agent": "An Offices agent is aboard the ferry",
+  "story_workorder": "A yard clerk sells the lane-breaker order",
+  "story_crew": "Yard crews ask you to stand with them",
+  "story_tam_brother": "Tam asks you to warn his brother",
+  "story_draper": "Draper works for the Offices, not Kellern",
+  "story_harbour": "The Dust Traders offer a berth",
+  "story_ines_offer": "The Guild wants to buy a copy",
+  "story_witnesses": "Forty names of those who kept quiet",
+  "story_vell_reckoning": "Vell wants to settle your account",
+  "story_tollgate": "Calloway has closed the gate behind you",
+  "story_voice": "The Voice kept the lane keys",
+  "story_thren": "The Thren follow the Cyrite you carry",
+  "story_echo_sable": "Echo and Sable each ask a favour",
+  "story_aide": "The Prefect’s aide asks your plan",
+  "story_toll": "The Last Toll wants payment",
+  "story_oren_who": "Oren’s first question: who are you",
+  "story_oren_cost": "Oren’s second question: what it cost",
+  "story_oren_why": "Oren’s third question: what it is for",
+  "story_implant": "Ada’s implant is still in the helm"
+};
+
+const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: 'story', gist: GIST[c.id], ...c });
 
 /**
  * Cerro's lane mouth: the first time the Score is a door. The registry reads the pilot, not the hull: a compliant
  * pilot is waved through; one under review has to scan, pay, send the yard's codes, run or fight.
  */
 export const REGISTRY_CARD: CardDef = {
-  id: 'story_registry', kind: 'checkpoint', caller: 'custody', trigger: 'lane',
+  id: 'story_registry', gist: GIST.story_registry, kind: 'checkpoint', caller: 'custody', trigger: 'lane',
   from: 'Custody blockade · Cerro lane', title: 'Pilot under review',
   text: '“Hauler OB-7731-A, reported stolen. Registry status: UNDER REVIEW. Lane access is suspended pending inspection. Stand by.”',
   lines: [

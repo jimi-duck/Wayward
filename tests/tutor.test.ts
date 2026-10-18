@@ -88,3 +88,32 @@ describe('the first minutes', () => {
     expect(w.fuel).toBeGreaterThanOrEqual(w.jumpCost);
   });
 });
+
+describe('the chase', () => {
+  it('starts when the training ends: the lane is set a run ahead, and Custody comes in growing waves from behind', () => {
+    const w = story();
+    w.skipTraining();
+    expect(w.bk!.chase).not.toBeNull();
+    const d = Math.hypot(w.bk!.lane.x - w.ship.x, w.bk!.lane.z - w.ship.z);
+    expect(Math.round(d)).toBe(1900);
+    const seen = new Set<number>();
+    for (let i = 0; i < 60 * 40 && w.alive; i++) {
+      w.step(STEP, input());
+      if (w.phase === 'comms') w.answer('cut');
+      seen.add(w.bk!.chase!.wave);
+    }
+    expect(w.bk!.chase!.wave).toBeGreaterThanOrEqual(3);
+    expect(seen.size).toBeGreaterThan(2);
+  });
+  it('does not start in the Arcade', () => {
+    const w = new World(3);
+    expect((w as unknown as { bk: unknown }).bk).toBeNull();
+  });
+});
+
+describe('pop-up gist', () => {
+  it('is short on every story card that sets one', async () => {
+    const { STORY_CARDS } = await import('../src/content/story');
+    for (const c of STORY_CARDS) if (c.gist) expect(c.gist.split(/\s+/).length, c.id).toBeLessThanOrEqual(10);
+  });
+});
