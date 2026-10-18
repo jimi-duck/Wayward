@@ -126,3 +126,38 @@ describe('nothing soft-locks', () => {
     expect(choiceView(def.choices.find((c) => c.id === 'sign')!, def, ctx({ flags: all }), 0).ok).toBe(true);
   });
 });
+
+describe('the gate beat and the finale', () => {
+  it('lets only gate arrivals draw the Narrows', async () => {
+    const { BEATS } = await import('../src/content/story');
+    expect(BEATS.find((b) => b.card === 'story_calloway_narrows')!.gate).toBe(true);
+  });
+  it('turns the Patience aside when Calloway turned, and brings Draper’s fleet when he is the Director', async () => {
+    const { finaleCard, newDossier } = await import('../src/sim/calloway');
+    const base = finaleCard(newDossier(), { caught: 0, beaten: 0 });
+    const hot = finaleCard(newDossier(), { caught: 0, beaten: 0 }, ['draper_director', 'calloway_hostile']);
+    const cold = finaleCard(newDossier(), { caught: 0, beaten: 0 }, ['calloway_turned']);
+    const count = (c: typeof base) => (c.ships ?? []).reduce((n, x) => n + x.n, 0);
+    expect(count(hot)).toBeGreaterThan(count(base));
+    expect(count(cold)).toBe(0);
+    expect(cold.choices.some((c) => c.id === 'stand')).toBe(true);
+    expect(base.choices.some((c) => c.id === 'stand')).toBe(false);
+  });
+});
+
+describe('the Narrows at the Reach gate', () => {
+  it('is dealt on arriving at the gate out of the Reach, and nowhere else', async () => {
+    const { dueBeat } = await import('../src/sim/story');
+    const { viewOf } = await import('../src/sim/chart');
+    const j = newJourney(7, false, 'eight');
+    j.trail.push(j.at);
+    j.carry.seen = ['story_wake', 'story_yard', 'story_warden', 'story_ledger'];
+    j.carry.flags.push('archive_woke');
+    const gate = j.chart.systems.find((s) => s.kind === 'gate' && viewOf(j.chart, s.id) === 1)!;
+    const inside = j.chart.systems.find((s) => s.kind !== 'gate' && s.kind !== 'home' && viewOf(j.chart, s.id) === 0)!;
+    j.at = inside.id;
+    expect(dueBeat(j)).not.toBe('story_calloway_narrows');
+    j.at = gate.id;
+    expect(dueBeat(j)).toBe('story_calloway_narrows');
+  });
+});

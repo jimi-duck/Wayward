@@ -76,6 +76,8 @@ export interface Beat {
   card: string;
   /** Comes only once this flag is set: a follow-up to an earlier choice. Never gates the main spine. */
   needs?: string;
+  /** Comes only on arriving at a gate: the lane out of the region is where she waits. */
+  gate?: boolean;
   region?: number;
   long: number;
 }
@@ -84,6 +86,7 @@ export const BEATS: Beat[] = [
   { card: 'story_warden', region: 0, long: 0 },
   { card: 'story_ledger', region: 0, long: 0 },
   { card: 'story_brook_arrest', needs: 'brook_met', long: 0 },
+  { card: 'story_calloway_narrows', needs: 'archive_woke', gate: true, long: 0 },
   { card: 'story_moot', region: 1, long: 1 },
   { card: 'story_drift', region: 1, long: 1 },
   { card: 'story_oduya_rigs', needs: 'pact_holdfast', long: 1 },
@@ -243,6 +246,17 @@ export const STORY_CARDS: CardDef[] = [
   }),
 
   // ── Act II, the Marches ─────────────────────────────────────────────────
+  story({
+    id: 'story_calloway_narrows', kind: 'warning', caller: 'calloway',
+    from: 'Prefect Idris Calloway · CCV Patience', title: 'The Narrows',
+    text: '“I have read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you are going, and I will not stop you.”',
+    cargo: 'The Patience · weapons cold, for now',
+    choices: [
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan. Your Score rises.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told'], civic: 8, civicWhy: 'A cooperative report was logged', hunt: 1 } },
+      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: 'calloway_ada', hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: 'calloway_ada', heat: 0.1 } },
+      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices.', win: { text: 'The Patience turns away' } },
+    ],
+  }),
   story({
     id: 'story_brook_arrest', kind: 'warning', caller: 'custody',
     from: 'Ansel Brook · in Custody transport', title: 'They took the clerk',

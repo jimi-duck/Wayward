@@ -347,14 +347,14 @@ Threshold.
 
 | Region | Beats | Status |
 |---|---|---|
-| Reach | `story_warden`, `story_ledger`, `story_brook_arrest`, `story_calloway_narrows` | live except the Narrows (needs gate-bound beats) |
+| Reach | `story_warden`, `story_ledger`, `story_brook_arrest`, `story_calloway_narrows` | live; the Narrows is a gate beat (`Beat.gate`, dealt on arriving at the gate out of the Reach) |
 | Marches | `story_oduya_rigs`, `story_moot`, `story_drift` (Wren) | live |
 | Salvage Belt | `story_broker`, `story_kesh`, `story_vell_betray`, `story_salvor`, `story_ada` | live |
 | Drift Deep | `story_charts` (Tarn Ilvo), `story_ferry`, `story_ferry_agent` | live |
 | Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | live; `story_draper` is the Director reveal (needs `stalled`) |
 | Free Ports | `story_harbour`, `story_ines_offer`, `story_witnesses`, `story_vell_reckoning`, `story_tollgate` | live; the signature chain sets `clue_sig_*` and `sig_used` |
 | Hollows | `story_voice`, `story_thren`, `story_echo_sable` | live |
-| Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | implant, Oren's three questions (`story_oren_who`, `_cost`, `_why`) and ending epilogues live; Draper's fleet and the Narrows still to do |
+| Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | implant, Oren's three questions (`story_oren_who`, `_cost`, `_why`) and ending epilogues live; Draper's fleet joins the Patience at the lane mouth (`finaleCard` reads `draper_director`, `calloway_turned`, `calloway_hostile`) |
 
 ## 17. Baseline (before any change)
 

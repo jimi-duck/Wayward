@@ -187,7 +187,7 @@ export function offerFor(d: Dossier, o: { day: number; behind: number; caught: n
 }
 
 /** What a sortie knows of her. `finale`: this sortie ends at the Threshold's lane mouth. */
-export function nemesis(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }, o: { finale: boolean; offer: string | null }): Nemesis {
+export function nemesis(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }, o: { finale: boolean; offer: string | null; flags?: readonly string[] }): Nemesis {
   const hunch = hunchWords(hunt.hunch);
   return {
     wise: { ...d.tricks },
@@ -195,14 +195,16 @@ export function nemesis(d: Dossier, hunt: { caught: number; beaten: number; hunc
     wing: Math.min(3, Math.floor(uses(d, 'run') / WING_RUNS)),
     hunch,
     offer: o.finale ? null : o.offer,
-    finale: o.finale ? finaleCard(d, hunt) : null,
+    finale: o.finale ? finaleCard(d, hunt, o.flags) : null,
   };
 }
 
 const times = (n: number) => (n === 1 ? t('once') : n === 2 ? t('twice') : t('{n} times', { n }));
 
 /** The last meeting: at the lane mouth to the Threshold, built from everything between you. */
-export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }): CardDef {
+export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }, flags: readonly string[] = []): CardDef {
+  const has = (f: string) => flags.includes(f);
+  const turned = has('calloway_turned'), hostile = has('calloway_hostile'), fleet = has('draper_director');
   const trusted = trust(d), lied = lies(d), runs = uses(d, 'run');
   const wing = Math.min(3, Math.floor(runs / WING_RUNS));
   const said: string[] = [t(hunt.caught === 0
@@ -217,6 +219,9 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
   if (d.told && trusted > 0) said.push(t('“You told me the truth when it cost you. I remember.”'));
   if (hunt.beaten) said.push(t('The Patience was rebuilt {times}, heavier each time.', { times: times(hunt.beaten) }));
   if (wing) said.push(t('An interdictor flies with her. You ran too often.'));
+  if (turned) said.push(t('“I read my father’s hand twice. My guns are cold.”'));
+  else if (hostile) said.push(t('“You fired on my cutter. I have not forgotten.”'));
+  if (fleet) said.push(t('Draper’s tender holds behind her, with the Offices’ fleet.'));
   said.push(t('“The Threshold is behind me. Power down.”'));
 
   const fight = { text: 'Weapons hot on the Patience, one last time', calloway: 'fight' as const, blockade: 'pass' as const };
@@ -231,6 +236,12 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
       win: { text: 'Spooling · the Patience is on you', calloway: 'run', blockade: 'pass' },
     },
   ];
+  if (turned) {
+    choices.push({
+      id: 'stand', label: 'Thank her and go', tone: 'help', hint: 'She has stood her guns down. Draper’s fleet has not.',
+      win: { text: 'The Patience stands aside · you spool out', blockade: 'pass', score: 4000 },
+    });
+  }
   if (d.told > 0) {
     choices.push({
       id: 'archive', label: 'Show her the archive', tone: 'help',
@@ -277,7 +288,7 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
     id: 'calloway_last', kind: 'warning', caller: 'calloway', trigger: 'follow',
     from: 'Prefect Idris Calloway · CCV Patience', title: 'The Threshold',
     text: said.join(' '), face: CALLOWAY_FACE, scars: Math.min(3, hunt.beaten),
-    ships: [{ variant: 'lancer', n: 1 }, { variant: 'enforcer', n: 2 + wing }],
+    ships: [{ variant: 'lancer', n: turned ? 0 : 1 }, { variant: 'enforcer', n: (turned ? 0 : 2) + wing + (hostile ? 1 : 0) + (fleet ? 2 : 0) }].filter((x) => x.n > 0),
     cargo: `${t('Offices of Peace cutter')} · ${t('met {times}', { times: times(Math.max(1, hunt.caught)) })}`,
     truths: [{ id: 'file', weight: 1, read: known.length ? t('Her file on you: {list}', { list: known.join(', ') }) : 'Her file on you is thin · she has never seen you run' }],
     choices,

@@ -239,7 +239,7 @@ export function sortieDef(j: Journey): SortieDef {
     place: pd ? { name: pd.name, text: pd.text, plays: pd.plays, id: pd.id } : null,
     exp: expOf(j.chart, s.id, j.seed),
     rules: PROFILES[longIndex(j.chart, regionOf(s))]?.rules,
-    nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer }),
+    nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer, flags: j.carry.flags }),
     story: quiet ? null : dueBeat(j),
     situation: liveSituation(j.chart, s.id)?.id ?? null,
   };
