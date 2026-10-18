@@ -760,7 +760,7 @@ export class World implements EncounterHost {
 
     // the story beat: once, a little after arrival, if the journey has one due here
     const beat = b.def.story;
-    if (beat && !this.storyMade && this.runTime >= STORY_AT && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
+    if (beat && !this.storyMade && this.runTime >= STORY_AT && !(this.tutor && !this.tutor.done) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
       if (def && !this.heard.has(def.id) && !this.cardsSeen.has(def.id)) this.desk.offer(def, weightOf(def), this.runTime);

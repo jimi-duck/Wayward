@@ -25,33 +25,16 @@ export class OpeningPanel {
     this.opened = performance.now();
     $('op-k').textContent = t('Story 01');
     $('op-t').textContent = t('Breakout');
-    // page one: the work order, the registry, the shortage story. Page two: the theft, the wake, the first job.
-    const row = (k: string, v: string, cls = '') => h('li', cls, '', h('span', '', t(k)), h('b', '', v));
-    const one = [
+    // one short page: the contract, the Score, the theft, the first job
+    const lines = [
       h('p', 'op-job', t('Extraction contract · renewal 08-441')),
-      h('ul', 'op-order', '',
-        row('Gross yield', t('{n} Cyrite', { n: 48 })),
-        row('Refinery allocation', '21'),
-        row('Equipment lease', '9'),
-        row('Fuel reserve', '11'),
-        row('Penalty escrow', '3'),
-        row('Your credit', '4', 'mine'),
-      ),
-      h('p', 'op-thanks', t('The Continuance thanks you for your contribution.')),
       h('p', 'op-score', '', h('span', '', t('Civic Score')), h('b', '', String(CIVIC_START)), h('em', '', civicLabel(CIVIC_START))),
       h('b', '', t('You mined 48. You keep 4.')),
-      h('p', '', t('Seventy years ago the lanes went dark. The Continuance said Krail was running out, and has rationed everything since.')),
+      h('p', '', t('Tonight the yard scraps the Wayward, an old ore hauler. Tam, the foreman, looks away at the gate.')),
+      h('p', '', t('Take her. Mine some Cyrite, then run.')),
     ];
-    const two = [
-      h('p', '', t('Tonight the yard is scrapping the Wayward, an old Continuance ore hauler. Tam Okoro, the foreman, will look away at the gate for a minute.')),
-      h('p', '', t('You take her. The helm reads your hand, and something sealed inside wakes. The registry sees it too.')),
-      h('b', 'op-job', t('Your first job')),
-      h('p', '', t('Break asteroids for Cyrite. Your refinery fills the drive tank first. Everything past that is yours to spend.')),
-      h('p', '', t('Keep moving, watch your hull, and choose carefully who to trust.')),
-    ];
-    for (const el of two) el.classList.add('op-p2');
-    $('op-l').replaceChildren(...one, ...two);
-    this.paged = matchMedia('(max-height: 460px)').matches;
+    $('op-l').replaceChildren(...lines);
+    this.paged = false;
     this.page = 0;
     this.paint();
     const go = $('op-go');
