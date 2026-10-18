@@ -27,3 +27,11 @@ pick from its bay, a ship), behind a Begin and Exit card, and plays them once.
 - Nothing locks, and no card has a Skip training button.
 - The Story plays it on every new journey. In the Arcade `profile.trained` remembers it, and `?train` plays it again.
 - Hunters and comms cards wait while it runs.
+
+## The chase
+
+When the torpedo lesson ends, the training stops and the run begins. The gate is set 1.9 km ahead, the objective reads "Run for the jump gate", and Custody ships arrive from behind in growing waves: pickets, heavy cruisers, enforcers, interdictors (`chaseCap`, `chaseGap`, `chaseHeat` in `sim/breakout.ts`). Later waves are not meant to be fought. The jump loses them. Arcade has no chase.
+
+## Pop-up gist
+
+Story cards carry a `gist` of at most ten words (set in `content/story.ts`), shown above the text so a pop-up reads at a glance. Cards without one fall back to a derived line.

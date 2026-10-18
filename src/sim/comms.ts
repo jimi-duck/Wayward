@@ -258,6 +258,8 @@ export interface Truth {
 
 export interface CardDef {
   id: string;
+  /** One line, ten words at most: what is happening, for a glance. The panel derives one from the text when a card has none. */
+  gist?: string;
   kind: CardKind;
   caller: Caller;
   /** Who is speaking, and the card's title. */

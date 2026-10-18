@@ -452,3 +452,9 @@
 @media (prefers-reduced-motion: reduce) {
   #port .port-l, #comms .cm-c, #port .pl-go, #port-x, #op-go, #hn-go { transition: none; }
 }
+
+/* the glance line: what is happening, before any of the detail */
+#comms .cm-gist { margin: 4px 0 6px; font: 600 17px/1.25 var(--font-display); color: var(--dk-ink); border-left: 3px solid var(--cc, var(--dk-ink)); padding-left: 10px; }
+#comms .cm-gist:empty { display: none; }
+#comms .cm-gist + .cm-text { font-size: 13px; color: var(--ink-2); }
+@media (max-height: 420px) { #comms .cm-gist { font-size: 15px; margin: 2px 0 4px; } #comms .cm-gist + .cm-text { font-size: 12px; } }

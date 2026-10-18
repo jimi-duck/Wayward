@@ -186,8 +186,9 @@ function finish(w: World, tu: Tutor): void {
   tu.done = true;
   if (!w.bk) return;
   w.fuel = Math.max(w.fuel, w.jumpCost);
-  w.bk.nextPursuit = Math.max(w.bk.nextPursuit, w.runTime + 25);
   w.cardNext = Math.min(w.cardNext, w.runTime + 40);
+  // the quiet is over: Custody has seen the hauler leave
+  w.startChase();
 }
 
 /** The player's skip: the torpedo bay is fitted all the same, so the ship is as the run expects it. */

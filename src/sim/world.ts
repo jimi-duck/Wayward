@@ -13,7 +13,7 @@ import { Desk, DESK, HUSH, type Busy } from './desk';
 import { STORY_AT } from '../content/story';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
-  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, pursuitElite, pursuitInterval,
+  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHeat, chaseLabel, pursuitElite, pursuitInterval,
   rockYield, DOCK_SPEED, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
@@ -856,7 +856,25 @@ export class World implements EncounterHost {
   /** The pursuit holds off for this system's calm (SortieDef.pace): after an answered card, or when the last pursuer is beaten. */
   private rest(): void {
     const b = this.bk;
+    if (b?.chase) return;
     if (b?.def.pace) b.nextPursuit = Math.max(b.nextPursuit, this.runTime + b.def.pace.calm);
+  }
+
+  /**
+   * The opening chase (sim/breakout.ts): the lane is set a fixed run ahead, the heat jumps, and Custody comes
+   * from behind in waves that grow. Called once, when the training ends; Story's first system only.
+   */
+  startChase(): void {
+    const b = this.bk;
+    if (!b || b.chase || b.def.quiet) return;
+    const s = this.ship, dx = b.lane.x - s.x, dz = b.lane.z - s.z, d = Math.hypot(dx, dz) || 1;
+    b.lane.x = s.x + (dx / d) * CHASE_LANE;
+    b.lane.z = s.z + (dz / d) * CHASE_LANE;
+    b.def = { ...b.def, lane: CHASE_LANE };
+    b.heat = Math.max(b.heat, 0.4);
+    b.chase = { t0: this.runTime, wave: 0 };
+    b.nextPursuit = this.runTime + CHASE_FIRST;
+    this.events.push({ type: 'chase' });
   }
 
   /** The pursuit: Custody hulls from behind (from home), now and then a Gutter crew from ahead, as often as the heat says. */
@@ -864,6 +882,7 @@ export class World implements EncounterHost {
     const b = this.bk!, s = this.ship;
     const cs = this.command.state;
     if (b.def.quiet || cs === 'fight' || cs === 'inbound' || cs === 'hailing' || t < b.nextPursuit) return;
+    if (b.chase) return this.chaseWave(t);
     const regular = this.aliens.filter((a) => !a.escort && !a.extra).length;
     const cap = Math.max(1, Math.round(pursuitCap(b.heat) * this.survival.pursuit.cap));
     if (regular < cap) {
@@ -884,6 +903,25 @@ export class World implements EncounterHost {
     }
     // hunters: a faction that has marked you sends its pursuit oftener
     b.nextPursuit = t + pursuitInterval(b.heat) * b.def.notice.pursuit * this.survival.pursuit.gap * this.rng.range(0.8, 1.2);
+  }
+
+  /** One wave of the opening chase: heavier and more of them each time, always from behind. */
+  private chaseWave(t: number): void {
+    const b = this.bk!, c = b.chase!, s = this.ship;
+    const regular = this.aliens.filter((a) => !a.escort && !a.extra).length;
+    if (regular < chaseCap(c.wave)) {
+      const pick = pickPursuer(chaseHeat(c.wave), this.rng, 0);
+      const v = VARIANTS[pick.variant]!;
+      const home = Math.atan2(-(s.z - b.lane.z), s.x - b.lane.x);
+      const n = c.wave >= 3 ? 2 : 1;
+      for (let i = 0; i < n; i++) {
+        const a = home + this.rng.range(-0.6, 0.6), d = this.rng.range(85, 115);
+        this.spawnHostile(v.id, { x: s.x + Math.cos(a) * d, y: this.rng.range(-3, 10), z: s.z - Math.sin(a) * d });
+      }
+      this.events.push({ type: 'squad', label: chaseLabel(c.wave) });
+      c.wave++;
+    }
+    b.nextPursuit = t + chaseGap(c.wave) * this.rng.range(0.9, 1.1);
   }
 
   /**

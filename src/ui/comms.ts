@@ -47,6 +47,8 @@ export interface CommsView {
   colour: string;
   /** Red panel: someone means harm. */
   alert: boolean;
+  /** One line, for a glance: what is happening. */
+  gist: string;
   text: string;
   /** What the ship's state adds to the call: behind the (i), not on the panel. */
   more: string;
@@ -85,6 +87,14 @@ export function oddsWord(p: number): string {
   return t(p >= 0.8 ? 'Likely to succeed' : p >= 0.6 ? 'Good chance' : p >= 0.4 ? 'Even chance' : p >= 0.2 ? 'Low chance' : 'Very unlikely');
 }
 
+/** The first sentence of a call, trimmed to ten words: the glance line for a card that has no gist of its own. */
+export function gistOf(d: Pick<Open['def'], 'gist' | 'title'>, text: string): string {
+  if (d.gist) return t(d.gist);
+  const first = text.replace(/[“”"]/g, '').split(/(?<=[.!?])\s/)[0] ?? '';
+  const words = first.trim().split(/\s+/);
+  return words.length > 10 ? `${words.slice(0, 10).join(' ').replace(/[,;:]$/, '')}…` : first.trim() || t(d.title);
+}
+
 /** A card on the table, as the panel draws it. */
 export function cardView(o: Open): CommsView {
   const d = o.def, r = o.read;
@@ -94,6 +104,7 @@ export function cardView(o: Open): CommsView {
     sub: t(d.from),
     colour: CALLER_CSS[d.caller],
     alert: HOSTILE.has(d.kind) || o.slow > 0,
+    gist: gistOf(d, o.text),
     text: o.text,
     more: o.more.join(' '),
     // the read: strength as two bars, and the one line that matters (the
@@ -118,6 +129,7 @@ export function hailView(c: Contact): CommsView {
     : { label: t('Evade'), hint: t('Break away.'), lines: [], gains: [], tags: [], ok: false, needs: [t(c.faction === 'voice' ? 'You can’t outrun a foundry' : 'Not now: you dodged the last one')] };
   return {
     kick: t('Alarm'), title: t(c.name), sub: `${t('{f} capital ship', { f: t(FACTION_NAME[c.faction] ?? c.faction) })} · ${t('on intercept')}`, colour: NEON_CSS[c.faction], alert: true,
+    gist: t('A capital ship is on intercept'),
     text: t('She fights back with her escort · the area clears for the duel.'),
     more: '',
     read: null,
@@ -159,6 +171,8 @@ export class CommsPanel {
     $('cm-who').textContent = who ?? '';
     $('cm-who').style.color = view.colour;
     $('cm-s').textContent = what.join(' · ');
+    $('cm-gist').textContent = view.gist;
+    $('cm-gist').style.setProperty('--cc', view.colour);
     $('cm-text').textContent = view.text;
     // what the ship's state adds sits one tap behind the (i)
     this.info(false);
