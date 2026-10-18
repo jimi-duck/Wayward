@@ -12,6 +12,7 @@ import { survivalOf } from '../content/survival';
 import { here, type Chip, type Journey, type Outcome } from '../sim/journey';
 import { readout, type NoticeLine } from '../sim/notice';
 import { act, actLine, fileCount } from '../sim/story';
+import { wallRegion, wallView } from '../sim/wall';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
@@ -172,6 +173,7 @@ export class ChartPanel {
       if (e.code === 'ArrowDown' || e.code === 'ArrowRight' || e.code === 'Tab') { this.move(1); return true; }
       // the keyboard's Enter on the list or the button is the jump; on the Intel summary it opens it
       if (e.code === 'KeyI') { this.intel(); return true; }
+      if (e.code === 'KeyW') { const w = $('ch-wall') as HTMLDetailsElement; w.open = !w.open; if (w.open) w.scrollIntoView({ block: 'nearest' }); return true; }
       if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') return (document.activeElement as HTMLElement | null)?.closest('summary') ? false : (this.pick(), true);
       if (e.code === 'Escape') { this.intel(false); return true; }
       return ['KeyW', 'KeyS', 'KeyA', 'KeyD', 'KeyE', 'KeyF'].includes(e.code);
@@ -386,6 +388,18 @@ export class ChartPanel {
     why.textContent = f.short > 0 ? t('Mine and refine on the way. The jump leaves once the tank holds enough.') : '';
   }
 
+  /** The Wall: what the file holds, what each piece proves and does not, and the lead. */
+  private renderWall(j: Journey): void {
+    const set = j.chart.regionSet ?? 'three';
+    const v = wallView(j.carry.flags, wallRegion(j.trail.length, viewOf(j.chart, j.at), set), set);
+    $('ch-wall-s').textContent = `${t('Wall')} · ${t('File {n}/{of}', { n: v.file.found, of: v.file.of })}`;
+    $('ch-wall-lead').textContent = v.lead;
+    $('ch-wall-l').replaceChildren(...v.rows.map(({ item: w, found }) => found
+      ? h('li', 'found', '', h('b', '', t(w.name)), h('span', 'tag', t(w.certainty === 'fact' ? 'Fact' : 'Inference')),
+          h('p', '', `${t('Proves')} · ${t(w.proves)}`), h('p', '', `${t('Not yet proved')} · ${t(w.not)}`))
+      : h('li', 'open', '', h('b', '', t(w.name)), h('p', '', `${t('Still open')} · ${t(w.ask)}`))));
+  }
+
   /** Intel: the rest of what the chart knows. */
   private renderIntel(j: Journey, lines: string[]): void {
     const c = j.carry, ago = Math.max(0, Math.floor(j.day - j.hunt.seenDay));
@@ -393,7 +407,8 @@ export class ChartPanel {
     const gap = Math.max(0, j.trail.length - 1 - j.hunt.seenIdx);
     const netN = j.chart.seenNet.length;
     // what the last system changed as chips, then the first two lines; the rest sit behind a tap
-    const shown = lines.slice(0, 2), rest = lines.slice(2);
+    const evidence = lines[0]?.startsWith(t('Evidence')) ? 3 : 2;
+    const shown = lines.slice(0, evidence), rest = lines.slice(evidence);
     $('ch-news').replaceChildren(...shown.map((l) => h('li', '', t(l))));
     $('ch-more').hidden = !rest.length;
     ($('ch-more') as HTMLDetailsElement).open = false;
@@ -407,6 +422,7 @@ export class ChartPanel {
     $('ch-intel-s').textContent = notes ? `${t('Intel')} · ${plural(notes, '{n} note', '{n} notes')}` : t('Intel');
     this.chips = [];
     const file = fileCount(c.flags, j.chart.regionSet ?? 'three');
+    this.renderWall(j);
     // the factions on the move, by name, for the systems this region shows
     const view = viewOf(j.chart, j.at), moving = regionSystems(j.chart, view).flatMap((s) => [
       fleetAt(j.chart, s.id) ? `${t('Drift fleet')} · ${s.name}` : '', threnAt(j.chart, s.id) >= THREN_ABOUT ? `Thren · ${s.name}` : '', raided(j.chart, s.id) ? `${t('raided')} · ${s.name}` : '',

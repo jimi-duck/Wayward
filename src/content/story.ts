@@ -1,4 +1,5 @@
 import type { CardDef } from '../sim/comms';
+import { WAKE_DROP } from '../sim/civic';
 
 // ── the story ─────────────────────────────────────────────────────────────
 // Three acts. The Breakout (Cerro: steal her, get out). The Run (the Reach
@@ -32,8 +33,10 @@ export const ACTS: Act[] = [
 export const CHOICE_REGION = 2;
 /** Seconds into a sortie before the story beat calls. */
 export const STORY_AT = 40;
-/** Act I's one beat: a call from the yard in Cerro, before the first jump. */
+/** Act I's two beats in Cerro, before the first jump: the registry notice when the archive wakes, then the call from the yard. */
+export const WAKE_BEAT = 'story_wake';
 export const YARD_BEAT = 'story_yard';
+export const CERRO_BEATS = [WAKE_BEAT, YARD_BEAT] as const;
 
 /** A piece of the Severance's history: the flag that carries it, and how the Archive names it. */
 export interface Fragment {
@@ -71,6 +74,8 @@ export const FRAGMENT_FLAGS_LONG = FRAGMENTS_ALL.map((f) => f.flag);
  */
 export interface Beat {
   card: string;
+  /** Comes only once this flag is set: a follow-up to an earlier choice. Never gates the main spine. */
+  needs?: string;
   region?: number;
   long: number;
 }
@@ -78,8 +83,10 @@ export interface Beat {
 export const BEATS: Beat[] = [
   { card: 'story_warden', region: 0, long: 0 },
   { card: 'story_ledger', region: 0, long: 0 },
+  { card: 'story_brook_arrest', needs: 'brook_met', long: 0 },
   { card: 'story_moot', region: 1, long: 1 },
   { card: 'story_drift', region: 1, long: 1 },
+  { card: 'story_oduya_rigs', needs: 'pact_holdfast', long: 1 },
   { card: 'story_broker', region: 1, long: 2 },
   { card: 'story_salvor', long: 2 },
   { card: 'story_charts', long: 3 },
@@ -110,18 +117,85 @@ export const STORY_PEOPLE: Array<{ flags: string[]; name: string }> = [
 
 const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: 'story', ...c });
 
+/**
+ * Cerro's lane mouth: the first time the Score is a door. The registry reads the pilot, not the hull: a compliant
+ * pilot is waved through; one under review has to scan, pay, send the yard's codes, run or fight.
+ */
+export const REGISTRY_CARD: CardDef = {
+  id: 'story_registry', kind: 'checkpoint', caller: 'custody', trigger: 'lane',
+  from: 'Custody blockade · Cerro lane', title: 'Pilot under review',
+  text: '“Hauler OB-7731-A, reported stolen. Registry status: UNDER REVIEW. Lane access is suspended pending inspection. Stand by.”',
+  lines: [
+    { if: { civicMin: 400 }, text: 'Your registry still reads COMPLIANT. She hesitates.' },
+    { if: { civicMax: 399 }, text: 'The ordinary doorway is shut: it needs a Civic Score of 400.' },
+    { if: { flag: 'tam_codes' }, text: 'Okoro’s codes are loaded.' },
+    { if: { heatMin: 0.5 }, text: 'Your ship is flagged across the system.' },
+  ],
+  ships: [{ variant: 'lancer', n: 1 }, { variant: 'picket', n: 2 }], cargo: 'Custody blockade cutter, full magazines',
+  fee: { base: 40, heat: 60 },
+  truths: [
+    { id: 'corrupt', weight: 1, read: 'Her log shows she has waved ships through for a fee all week.' },
+    { id: 'by_book', weight: 1, read: 'Her record is clean. She follows the rules.' },
+  ],
+  choices: [
+    {
+      id: 'show', label: 'Show your registry', tone: 'pay', hint: 'A compliant pilot is waved through unlogged. Needs a Civic Score of 400.',
+      needs: { civic: 400 },
+      win: { text: 'She waves a compliant pilot through · the lane is clear', blockade: 'pass', civic: 3, civicWhy: 'Registry presented at a checkpoint' },
+    },
+    {
+      id: 'scan', label: 'Submit to the scan', tone: 'pay', hint: 'Slow and safe. The scan is logged, and the Offices see where you went.',
+      win: { text: 'The scan is logged · you reach the lane', blockade: 'pass', heat: 0.12, civic: -6, civicWhy: 'Mandatory scan logged', flag: 'scanned' },
+    },
+    {
+      id: 'pay', label: 'Pay the inspection fee', tone: 'pay', hint: 'If she takes bribes you pass. If not, she takes the money and scans you anyway.',
+      cost: { chits: 'fee' }, loseIf: ['by_book'],
+      win: { text: 'She takes the fee · the scan finds nothing', blockade: 'pass', civic: 5, civicWhy: 'Fee paid on time' },
+      lose: { text: 'She takes the fee and orders the scan anyway', blockade: 'fight' },
+    },
+    {
+      id: 'spoof', label: 'Send the forged codes', tone: 'bluff', hint: 'The codes from the yard. They may hold, or be flagged on the scan.',
+      needs: { flag: 'codes' }, odds: { base: 0.8, heat: -0.25, flags: { codes_bad: -0.6 } },
+      win: { text: 'The registration matches · she lets you through', blockade: 'pass', heat: -0.1, flag: 'codes_passed' },
+      lose: { text: 'The codes are flagged · she opens fire', blockade: 'fight', heat: 0.1, civic: -15, civicWhy: 'Forged registration detected' },
+    },
+    {
+      id: 'run', label: 'Run the blockade', tone: 'run', hint: 'Make for the lane under her guns. She chases you, and her field slows your jump.',
+      win: { text: 'You break through the blockade · the system is alerted', blockade: 'run', civic: -25, civicWhy: 'Ran a registry checkpoint' },
+    },
+    {
+      id: 'fight', label: 'Fight through', tone: 'fight', hint: 'Break the blockade and salvage the wrecks. Every pilot in Cerro hears of it.',
+      win: { text: 'Weapons hot · you attack the blockade', blockade: 'fight', civic: -40, civicWhy: 'Attacked the Custody' },
+    },
+  ],
+};
+
 /** The beats' cards. Short on words: what each answer is for shows in its chips (sim/gains.ts). */
 export const STORY_CARDS: CardDef[] = [
   // ── Act I, the Breakout ─────────────────────────────────────────────────
+  // The registry reads the Wayward's helm and logs the unauthorised access; the Score drops where the player
+  // can see it. The yard's call follows it: the forged codes are what the checkpoint's doorway turns on.
+  story({
+    id: 'story_wake', kind: 'warning', caller: 'office',
+    from: 'Registry · automated notice', title: 'Unauthorised archive access',
+    text: '“HELM ACCEPTED: ASTER. Sealed archive opened on OB-7731-A. Unauthorised access recorded. Civic Score 412 to 374. Status: UNDER REVIEW.”',
+    cargo: 'The Wayward · a hauler that was meant for scrap',
+    choices: [
+      { id: 'log', label: 'Open the archive log', tone: 'help', hint: 'Read what woke. It costs nothing, and the Wall keeps it.',
+        win: { text: 'A Warden routine woke on your hand · the log is on the Wall', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: ['archive_woke', 'clue_archive_log'], follow: { card: YARD_BEAT, after: 22 } } },
+      { id: 'later', label: 'Keep flying', tone: 'refuse', hint: 'The log stays sealed until you ask for it.',
+        win: { text: 'The log stays sealed · your status reads UNDER REVIEW', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: 'archive_woke', follow: { card: YARD_BEAT, after: 22 } } },
+    ],
+  }),
   story({
     id: 'story_yard', kind: 'trade', caller: 'miners',
     from: 'Tam Okoro · yard foreman', title: 'The gate crew owes you',
-    text: '“The gate crew looks away for a minute, Juno. I can get you codes, or fill your tank. Not both.”',
+    text: '“The gate crew looks away for one minute, Juno. Codes or a full tank. Not both. I am putting my name on it either way.”',
     cargo: 'Cerro yard · one open bay',
     choices: [
-      { id: 'codes', label: 'Take the codes', tone: 'pay', hint: 'A clean ID at the lane, if it passes the scan. Costs four supplies.', cost: { supplies: 4 }, win: { text: 'Forged codes loaded', flag: 'codes' } },
-      { id: 'fuel', label: 'Fill the tank', tone: 'help', hint: 'Enough jump fluid for the first jump. The yard logs it.', win: { text: 'Tank topped up · the yard logs it', fuel: 14, heat: 0.06 } },
-      { id: 'wave', label: 'Wave him off', tone: 'refuse', hint: 'Keep your supplies and your record.', win: { text: 'Okoro closes the channel' } },
+      { id: 'codes', label: 'Take the codes', tone: 'pay', hint: 'They pass the lane scan if they hold. Costs four supplies. Okoro will ask a favour.', cost: { supplies: 4 }, win: { text: 'Forged codes loaded · Okoro will ask a favour', flag: ['codes', 'tam_codes'] } },
+      { id: 'fuel', label: 'Fill the tank', tone: 'help', hint: 'Enough jump fluid for the first jump. The yard logs the draw and your Score drops.', win: { text: 'Tank topped up · the yard logs the draw', fuel: 14, heat: 0.06, civic: -10, civicWhy: 'Unscheduled fuel draw logged', flag: 'tam_fuel' } },
+      { id: 'wave', label: 'Wave him off', tone: 'refuse', hint: 'Keep your supplies and your record. He will remember.', win: { text: 'Okoro closes the channel', flag: 'tam_alone' } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────
@@ -147,10 +221,10 @@ export const STORY_CARDS: CardDef[] = [
     ],
     choices: [
       { id: 'buy', label: 'Pay for the ledger', tone: 'pay', hint: 'Six Cyrite.', cost: { chits: 30 }, loseIf: ['sting'],
-        win: { text: 'The ledger goes in the file', flag: 'frag_ledger' },
-        lose: { text: 'The ledger is real · so is the trace on it', flag: 'frag_ledger', heat: 0.15 } },
+        win: { text: 'The ledger goes in the file', flag: ['frag_ledger', 'brook_met'] },
+        lose: { text: 'The ledger is real · so is the trace on it', flag: ['frag_ledger', 'brook_met'], heat: 0.15 } },
       { id: 'ask', label: 'Ask him to do right', tone: 'bluff', hint: 'Free, if he believes in something.', odds: { base: 0.4, standing: { miners: 0.1 } },
-        win: { text: '“For my father.” · the ledger goes in the file', flag: 'frag_ledger', standing: { kellern: -1 } },
+        win: { text: '“For my father.” · the ledger goes in the file', flag: ['frag_ledger', 'brook_met'], standing: { kellern: -1 } },
         lose: { text: 'He goes quiet, and closes the channel' } },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Brook signs off' } },
     ],
@@ -158,12 +232,34 @@ export const STORY_CARDS: CardDef[] = [
 
   // ── Act II, the Marches ─────────────────────────────────────────────────
   story({
+    id: 'story_brook_arrest', kind: 'warning', caller: 'custody',
+    from: 'Ansel Brook · in Custody transport', title: 'They took the clerk',
+    text: '“They traced the ledger to me. I am in a Custody transport, ten minutes from a cell. Please. You have the only copy.”',
+    cargo: 'A Custody transport · one escort',
+    choices: [
+      { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it, and your Score falls.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', civic: -20, civicWhy: 'Interfered with a Custody transport', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
+      { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble; failure costs Score.', odds: { base: 0.45, civic: 0.2 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free', civic: -5, civicWhy: 'A forged order was logged' }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken', civic: -12, civicWhy: 'A forged order was logged' } },
+      { id: 'leave', label: 'Leave him', tone: 'refuse', hint: 'His account is already in your file.', win: { text: 'The channel closes · he is taken', flag: 'brook_taken' } },
+    ],
+  }),
+  story({
+    id: 'story_oduya_rigs', kind: 'plea', caller: 'miners',
+    from: 'Speaker Oduya · Kessel Hold', title: 'The rigs are under attack',
+    text: '“Kellern security is boarding our rigs. You stood with us in the moot. Stand with us now, or we lose the claims.”',
+    cargo: 'Kessel Hold · twelve claims, two raiders',
+    choices: [
+      { id: 'defend', label: 'Defend the rigs', tone: 'fight', hint: 'Fight the raiders. Kessel Hold will not forget it.', win: { text: 'The raiders break off · the claims hold', flag: 'oduya_rigs', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], standing: { miners: 1, kellern: -1 } } },
+      { id: 'stores', label: 'Send supplies', tone: 'help', hint: 'Three supplies for the crews. They hold on their own.', cost: { supplies: 3 }, win: { text: 'The crews hold the rigs on your stores', flag: 'oduya_rigs', standing: { miners: 1 } } },
+      { id: 'no', label: 'Not now', tone: 'refuse', hint: 'You cannot afford the fight.', win: { text: 'Oduya closes the channel' } },
+    ],
+  }),
+  story({
     id: 'story_moot', kind: 'plea', caller: 'miners',
     from: 'Speaker Oduya · Kessel Hold', title: 'Read it to the moot',
     text: '“The council wants to hear your file. Read it to us and Kessel Hold stands with you.”',
     cargo: 'Kessel Hold · twelve claims, one council',
     choices: [
-      { id: 'read', label: 'Read it to them', tone: 'help', hint: 'An ally. Everyone on the channel hears it too.', win: { text: 'Kessel Hold will stand with you', flag: 'pact_holdfast', standing: { miners: 1, frontier: 1 }, heat: 0.06, hunt: -0.5 } },
+      { id: 'read', label: 'Read it to them', tone: 'help', hint: 'An ally. Everyone on the channel hears it too.', win: { text: 'Kessel Hold will stand with you', flag: ['pact_holdfast', 'oduya_name'], standing: { miners: 1, frontier: 1 }, heat: 0.06, hunt: -0.5 } },
       { id: 'stores', label: 'Ask for stores', tone: 'trade', hint: 'Supplies, and no promises.', win: { text: 'Stores across · no promises', supplies: 5 } },
       { id: 'no', label: 'Not yet', tone: 'refuse', hint: 'The file stays aboard.', win: { text: 'Oduya closes the moot' } },
     ],
@@ -174,8 +270,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“We kept the manifests of every ship lost the night the lanes went dark. Our dead belong in your file.”',
     cargo: 'Drift fleet · forty hulls, lashed together',
     choices: [
-      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests, and the Drift stand with you. Copies get talked about.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift'], heat: 0.08, hunt: -0.5 } },
-      { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Four Cyrite. Just the manifests, quietly.', cost: { chits: 20 }, win: { text: 'The manifests go in the file', flag: 'frag_manifests' } },
+      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests, and the Drift stand with you. Copies get talked about.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift', 'wren_trust'], heat: 0.08, hunt: -0.5 } },
+      { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Four Cyrite. Just the manifests, quietly.', cost: { chits: 20 }, win: { text: 'The manifests go in the file', flag: ['frag_manifests', 'wren_family'] } },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
     ],
   }),

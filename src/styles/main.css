@@ -1495,6 +1495,14 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .op-l { display: grid; gap: 10px; padding: 4px 0 8px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; align-content: start; }
 .op-l p { margin: 0; font: 400 15px/1.5 var(--font-display); color: var(--ink); }
 .op-l b { font: 600 17px/1.3 var(--font-display); color: var(--ink); }
+.op-l .op-order { list-style: none; margin: 0; padding: 8px 12px; display: grid; gap: 3px; border: 1px solid var(--hair, rgba(160,170,170,.28)); background: var(--scrim); }
+.op-order li { display: flex; justify-content: space-between; gap: 12px; font: 500 13px/1.4 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.op-order li b { font: 600 13px/1.4 var(--font-mono); color: var(--ink); }
+.op-order li.mine { border-top: 1px solid var(--hair, rgba(160,170,170,.28)); padding-top: 4px; margin-top: 2px; color: var(--ink); }
+.op-l .op-thanks { font: 500 11.5px/1.3 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.op-l .op-score { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; padding: 6px 10px; border-left: 2px solid var(--teal); background: var(--scrim); font: 500 12px/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--teal); }
+.op-l .op-score b { font: 600 22px/1 var(--font-mono); color: var(--ink); }
+.op-l .op-score em { font-style: normal; color: var(--caution); }
 .op-l .op-job { margin-top: 6px; font: 600 12px/1.3 var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
 #opening .pf { display: flex; justify-content: flex-end; }
 #op-go, #hn-go { min-height: 44px; min-width: 120px; }

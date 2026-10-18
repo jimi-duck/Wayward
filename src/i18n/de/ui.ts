@@ -515,8 +515,8 @@ export const UI: Record<string, string> = {
   'The next one costs {n} Cyrite': 'Das nächste kostet {n} Cyrit',
   'Stealth · sensors · contacts': 'Tarnung · Sensoren · Kontakte',
   'Modules for Krail · the yard’s work only here': 'Module für Krail · Werftarbeit nur hier',
-  '<kbd>1</kbd>–<kbd>3</kbd> to select · arrows · <kbd>Enter</kbd> to jump · controller: <kbd>A</kbd>':
-    '<kbd>1</kbd>–<kbd>3</kbd> zum Wählen · Pfeile · <kbd>Enter</kbd> zum Springen · Controller: <kbd>A</kbd>',
+  '<kbd>1</kbd>–<kbd>3</kbd> to select · arrows · <kbd>Enter</kbd> to jump · <kbd>W</kbd> the Wall · controller: <kbd>A</kbd>':
+    '<kbd>1</kbd>–<kbd>3</kbd> zum Wählen · Pfeile · <kbd>Enter</kbd> zum Springen · <kbd>W</kbd> die Wand · Controller: <kbd>A</kbd>',
   'Heat cools': 'Hitze sinkt',
   'Heat low': 'Hitze gering',
   'Heat climbs': 'Hitze steigt',

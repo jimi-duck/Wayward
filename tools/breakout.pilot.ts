@@ -64,8 +64,8 @@ it('flies the Breakout', { timeout: 3_600_000 }, () => {
     const out = res.filter((r) => r.run.escaped);
     return `| ${p} | ${pct(out.length / res.length)} | ${mean(res.map((r) => r.answers.length)).toFixed(1)} | ${mean(res.map((r) => r.run.jobsDone)).toFixed(1)} | ${pct(mean(res.map((r) => r.combat / Math.max(1, r.run.time))))} | ${out.length ? mmss(mean(out.map((r) => r.run.time))) : '—'} |`;
   });
-  const check = all.flatMap((r) => r.answers.filter((a) => a.card === 'checkpoint').map((a) => ({ ...a, escaped: r.run.escaped })));
-  const checkRows = ['run', 'spoof', 'rig', 'pay', 'talk', 'fight'].map((c) => {
+  const check = all.flatMap((r) => r.answers.filter((a) => a.card === 'checkpoint' || a.card === 'story_registry').map((a) => ({ ...a, escaped: r.run.escaped })));
+  const checkRows = ['run', 'spoof', 'rig', 'pay', 'talk', 'fight', 'show', 'scan'].map((c) => {
     const v = check.filter((a) => a.choice === c);
     return v.length ? `| ${c} | ${v.length} | ${pct(v.filter((a) => a.won).length / v.length)} | ${pct(v.filter((a) => a.escaped).length / v.length)} |` : `| ${c} | 0 | — | — |`;
   });

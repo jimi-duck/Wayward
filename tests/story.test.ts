@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEATS, FRAGMENTS, FRAGMENTS_ALL, STORY_AT, STORY_CARDS, YARD_BEAT } from '../src/content/story';
+import { BEATS, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, STORY_AT, STORY_CARDS, WAKE_BEAT, YARD_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
 import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
@@ -38,7 +38,7 @@ describe('the acts', () => {
     expect(act(j).n).toBe(1);
     const out = endSortie(j, result(j));
     expect(act(j).n).toBe(2);
-    expect(out.lines[0]).toBe('Act II · The Run');
+    expect(out.lines).toContain('Act II · The Run');
     let guard = 0, third: string[] = [];
     while (j.status === 'chart' && viewOf(j.chart, j.at) < 2 && guard++ < 20) {
       const o = options(j).sort((a, b) => jumps(j.chart, a.to.id, j.chart.edge) - jumps(j.chart, b.to.id, j.chart.edge))[0]!;
@@ -58,7 +58,7 @@ describe('the acts', () => {
 
 describe('the story beats', () => {
   it('are real cards, never dealt by chance', () => {
-    for (const card of [YARD_BEAT, ...BEATS.map((b) => b.card)]) expect(CARD_BY_ID[card]?.trigger, card).toBe('story');
+    for (const card of [...CERRO_BEATS, ...BEATS.map((b) => b.card)]) expect(CARD_BY_ID[card]?.trigger, card).toBe('story');
     const seen = new Set<string>();
     for (let i = 0; i < 200; i++) {
       const c = pickCard(ctx(), seen, new Rng(i));
@@ -68,8 +68,10 @@ describe('the story beats', () => {
 
   it('come one a sortie: the yard’s call in Cerro, this region’s first, and a missed one later', () => {
     const j = newJourney(7);
+    expect(dueBeat(j)).toBe(WAKE_BEAT);
+    expect(sortieDef(j).story).toBe(WAKE_BEAT);
+    j.carry.seen.push(WAKE_BEAT);
     expect(dueBeat(j)).toBe(YARD_BEAT);
-    expect(sortieDef(j).story).toBe(YARD_BEAT);
     j.carry.seen.push(YARD_BEAT);
     expect(dueBeat(j)).toBeNull();
     endSortie(j, result(j));
@@ -116,6 +118,9 @@ describe('the story beats', () => {
       w.bk!.nextPursuit = Infinity;
       w.field.rocks = [];
       for (let t = 0; t < (STORY_AT + 2) * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); }
+      expect(w.comms?.def.id).toBe(WAKE_BEAT);
+      w.answer('later');
+      for (let t = 0; t < 120 * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); }
       expect(w.comms?.def.id).toBe(YARD_BEAT);
       const before = w.result().carry;
       w.answer(answer);
@@ -132,10 +137,10 @@ describe('the story beats', () => {
 
   it('show what each answer gives before any other chip', () => {
     for (const c of STORY_CARDS) {
-      const story = c.choices.filter((ch) => [ch.win.flag ?? []].flat().length);
+      const story = c.choices.filter((ch) => [ch.win.flag ?? []].flat().some((f) => /^(frag_|copy_|voice_|lane_|pact_|broker|codes$|clue_)/.test(f)));
       for (const ch of story) {
         const named = [ch.win.flag ?? []].flat().flatMap((f) => chipsOf(f) ?? []);
-        expect([...named, 'File +1', 'Copy out', 'Forged codes'], `${c.id}.${ch.id}`).toContain(gains(ch.win, ctx(), 0)[0]);
+        expect([...named, 'File +1', 'Copy out', 'Forged codes', 'Wall +1', '−38 Score', '−10 Score'], `${c.id}.${ch.id}`).toContain(gains(ch.win, ctx(), 0)[0]);
       }
     }
   });
@@ -172,8 +177,8 @@ describe('the file', () => {
 });
 
 describe('the long journey’s story', () => {
-  it('has two beats in each of the eight regions, and the three-region chart keeps its six', () => {
-    for (let r = 0; r < 8; r++) expect(BEATS.filter((b) => b.long === r), `region ${r}`).toHaveLength(2);
+  it('has two main beats in each of the eight regions (follow-ups wait on a choice), and the three-region chart keeps its six', () => {
+    for (let r = 0; r < 8; r++) expect(BEATS.filter((b) => b.long === r && !b.needs), `region ${r}`).toHaveLength(2);
     expect(BEATS.filter((b) => b.region !== undefined)).toHaveLength(6);
     expect(FRAGMENTS_ALL).toHaveLength(8);
   });

@@ -86,5 +86,7 @@ export type GameEvent =
   /** A line on the radio: no answer asked. */
   | { type: 'ping'; id: string; from: string; caller: string; text: string; moment: string; system: string }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
+  /** The Civic Score moved (sim/civic.ts): from, to, and why (English, for t()). */
+  | { type: 'civic'; from: number; to: number; why: string }
   | { type: 'jobDone'; id: string; text: string }
   | { type: 'jobShort'; id: string; text: string };
