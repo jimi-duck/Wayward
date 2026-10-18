@@ -8,7 +8,7 @@ Measured in the cloud container with the headless pilots; nothing here is a play
 ## After the rewrite (branch `claude/story-rewrite-ybj2ep`)
 - `npm run check`: 784 tests, green. `npm run build`: green.
 - `pilot:breakout`: passed (one test, about 640 s).
-- `JOURNEY_SET=eight pilot:journey`: see the section below once it has finished.
+- `JOURNEY_SET=eight pilot:journey`: no confirmed result. The baseline run on main hit the pilot's own 2 hour cap and failed; the run on this branch printed nothing, though `docs/BALANCE-LONG.md` was regenerated at 16:50 UTC. I cannot tell which run wrote it, so it is not committed (a copy is in `/mnt/project-files/story-rewrite/BALANCE-LONG.unverified.md`). The pilot needs a faster machine or a smaller seed count.
 
 ## What the rewrite changes in numbers
 - Civic Score starts at 412; the wake costs 38 (374, band "review"). Fuel draw from the yard costs 10, interfering with Custody 20 to 40, firing on an Offices cutter 30.
