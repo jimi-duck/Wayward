@@ -3,9 +3,11 @@ import { readFileSync } from 'node:fs';
 import { WALL } from '../src/content/wall';
 import { CIVIC_START, WAKE_DROP, civicBand, civicToll } from '../src/sim/civic';
 import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
-import { newJourney } from '../src/sim/journey';
+import { VERSION, newJourney, sortieDef } from '../src/sim/journey';
 import { migrate } from '../src/meta/save';
-import { cerroReveal, wallView } from '../src/sim/wall';
+import { wallView } from '../src/sim/wall';
+import { CUTS, DELIVERED_AT_START, PENALTY, QUOTA, ledgerFor, upgradePrice } from '../src/sim/contract';
+import { dueBeat } from '../src/sim/story';
 import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
 
@@ -38,22 +40,52 @@ describe('the Civic Score', () => {
   });
 });
 
-describe('the Cerro reveal', () => {
-  it('makes good a missed wake, once, and hands over the reserves clue', () => {
-    const c = newJourney(7).carry;
-    const lines = cerroReveal(c);
-    expect(c.civic).toBe(CIVIC_START - WAKE_DROP);
-    expect(c.flags).toEqual(expect.arrayContaining(['archive_woke', 'clue_reserves']));
-    expect(lines).toHaveLength(3);
-    expect(cerroReveal(c)).toEqual([]);
-    expect(c.civic).toBe(CIVIC_START - WAKE_DROP);
+describe('the opening chain beyond the gate', () => {
+  it('comes in order, ends when the archive has woken, and is not dealt in Cerro', () => {
+    const j = newJourney(7);
+    expect(dueBeat(j)).toBeNull();
+    j.trail.push('x');
+    expect(dueBeat(j)).toBe('story_breach');
+    j.carry.seen.push('story_breach');
+    expect(dueBeat(j)).toBe('story_yard');
+    j.carry.seen.push('story_yard', 'story_recovery');
+    expect(dueBeat(j)).toBe('story_wake');
+    j.carry.flags.push('archive_woke');
+    expect(dueBeat(j)).not.toBe('story_wake');
   });
-  it('does not charge twice when the wake was answered', () => {
-    const c = newJourney(7).carry;
-    c.flags.push('archive_woke');
-    c.civic = 374;
-    cerroReveal(c);
-    expect(c.civic).toBe(374);
+  it('plays through with every answer, the Score falling for a reason each time', () => {
+    for (const [yard, rec] of [['codes', 'override'], ['official', 'appeal']] as const) {
+      const j = newJourney(7);
+      j.trail.push('x');
+      j.carry.contract = { got: 6 };
+      const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), story: 'story_breach', calloway: Infinity }, carry: j.carry });
+      w.cardNext = Infinity;
+      w.field.rocks = [];
+      const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
+      const seen: string[] = [];
+      run(4);
+      for (const answer of ['audit', yard, rec, 'log']) {
+        seen.push(w.comms!.def.id);
+        w.answer(answer);
+        run(4);
+      }
+      expect(seen).toEqual(['story_breach', 'story_yard', 'story_recovery', 'story_wake']);
+      const c = w.result().carry;
+      expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'archive_woke', 'clue_reserves']));
+      expect(c.civic).toBeLessThan(CIVIC_START - 60);
+      expect(c.civic).toBeGreaterThanOrEqual(300);
+      expect(c.flags.includes('codes')).toBe(yard === 'codes');
+    }
+  });
+  it('shows the ledger from the live carry: the bay’s cuts, the breach’s shortfall', () => {
+    const rows = ledgerFor('bay', { flags: [] });
+    expect(rows[0]).toMatchObject({ k: 'Gross yield', n: QUOTA });
+    expect(rows.map((r) => r.n ?? 0).slice(0, 6).reduce((a, b) => a + b, 0)).toBe(QUOTA - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow - upgradePrice());
+    const breach = ledgerFor('breach', { contract: { got: 5 }, flags: ['lease_financed'] });
+    expect(breach.find((r) => r.k === 'Delivery window')).toBeUndefined();
+    expect(breach.find((r) => r.k === 'Delivered')?.n).toBe(DELIVERED_AT_START + 5);
+    expect(breach.find((r) => r.k === 'Balance owed')?.n).toBe(PENALTY + CUTS.lease + upgradePrice());
+    expect(ledgerFor('breach', { contract: { got: 5 }, flags: [] }).some((r) => r.k === 'Upgrade instalment')).toBe(false);
   });
 });
 
@@ -61,7 +93,7 @@ describe('save 17 to 18', () => {
   it('gives a past-Cerro save 374 and the two Cerro flags, and is idempotent', () => {
     const old = JSON.parse(readFileSync('tests/fixtures/journey-v17.json', 'utf8'));
     const a = migrate(structuredClone(old))!;
-    expect(a.version).toBe(18);
+    expect(a.version).toBe(VERSION);
     if (a.trail.length >= 2) {
       expect(a.carry.civic).toBe(374);
       expect(a.carry.flags).toEqual(expect.arrayContaining(['archive_woke', 'clue_reserves']));

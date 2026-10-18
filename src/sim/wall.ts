@@ -1,7 +1,6 @@
 import { t } from '../i18n';
 import { WALL, WALL_BY_FLAG, type WallItem } from '../content/wall';
 import type { RegionSet } from '../content/regions';
-import { CIVIC_START, WAKE_DROP, clampCivic } from './civic';
 import type { Carry } from './breakout';
 
 // ── the Wall ──────────────────────────────────────────────────────────────
@@ -58,21 +57,3 @@ export const newClues = (before: Iterable<string>, after: Iterable<string>): Wal
   return [...after].filter((f) => !was.has(f)).map((f) => WALL_BY_FLAG[f]).filter((w): w is WallItem => !!w);
 };
 
-/**
- * Out of Cerro: the archive finishes decrypting on the first jump, whatever was read or skipped. Any
- * wake the sortie missed is made good first (the Score drops, and the flag is set), then the reserves
- * figure is handed over. Changes `c`; returns the lines for the chart.
- */
-export function cerroReveal(c: Carry): string[] {
-  const lines: string[] = [];
-  if (!c.flags.includes('archive_woke')) {
-    c.flags.push('archive_woke');
-    c.civic = clampCivic((c.civic ?? CIVIC_START) - WAKE_DROP);
-  }
-  if (!c.flags.includes('clue_reserves')) {
-    c.flags.push('clue_reserves');
-    const w = WALL_BY_FLAG.clue_reserves!;
-    lines.push(`${t('Evidence')} · ${t(w.proves)}`, `${t('Not yet proved')} · ${t(w.not)}`, `${t('Lead')} · ${t(w.lead)}`);
-  }
-  return lines;
-}

@@ -1,4 +1,5 @@
 import { civicNote } from '../sim/civic';
+import { CONTRACT_ID, QUOTA, deliveredOf } from '../sim/contract';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
 import type { Sector } from '../render/sector';
@@ -196,7 +197,11 @@ export class Hud {
         case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;
         case 'comms': this.note(world, `${t(e.slow ? 'Ambush' : 'Channel open')} · ${t(e.from)}`, e.slow ? 'hit' : undefined); break;
         case 'civic': this.note(world, civicNote(e.to, e.why)); break;
-        case 'commsAnswer': this.note(world, t(e.text), e.won ? undefined : 'hit'); break;
+        case 'commsAnswer':
+          this.note(world, t(e.text), e.won ? undefined : 'hit');
+          // the lock is broken: the registry mark goes, and the name is hers (docs/ONBOARDING.md)
+          if (e.id === 'story_recovery') this.notice(world, 'rename', 'OB-7731-A', 'WAYWARD', t('Markings painted over · the name is yours'), 'calm');
+          break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
         case 'spool': this.banner(t('Lane entrance'), t('Jump drive charging'), t('Stay in the lane'), 1.6, 'calm'); break;
@@ -235,7 +240,7 @@ export class Hud {
         }
         case 'damageControl': this.banner(t('Ship system'), t('Hull stable'), t('One hull plate left · repair soon'), 2, 'caution'); break;
         case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
-        case 'chase': this.note(world, t('Custody has seen you · run for the jump gate'), 'hit'); break;
+        case 'chase': this.note(world, t('Pirate reinforcements · run for the jump gate'), 'hit'); break;
         case 'squad': this.note(world, t('{name} inbound', { name: t(e.label) }), 'hit'); break;
         case 'salvage': this.note(world, `${t('Salvage')}${e.tech ? ` · ${t('{f} tech recovered', { f: faction(e.faction) })}` : ''}`, 'gain'); break;
         case 'cloak': this.note(world, t('Cloak active · enemies cannot target you'), 'gain'); break;
@@ -585,7 +590,8 @@ export class Hud {
       text($('obj-t'), t(les.line));
       text($('obj-left'), m ? range(Math.hypot(m.x - s.x, m.z - s.z)) : '');
       ticks($('obj-p'), les.progress, 30);
-      text($('obj-s'), '');
+      // the work order, live: the last of the quota (sim/contract.ts)
+      text($('obj-s'), world.opening ? `${t('Contract {id}', { id: CONTRACT_ID })} · ${deliveredOf(world.run.cyrite)} / ${QUOTA}` : '');
       const html = `<li>${LESSON_HINT[les.hint]!.map(([c, k]) => `<span class="${c}">${t(k)}</span>`).join('')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
@@ -607,7 +613,7 @@ export class Hud {
         text($('obj-t'), t(bk.chase && ready ? 'Run for the jump gate' : ready ? 'Head for the lane entrance' : 'Fill the tank'));
         text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
-        text($('obj-s'), bk.chase && ready ? t('Custody is behind you · do not stop') : '');
+        text($('obj-s'), bk.chase && ready ? t('Pirates are closing · do not stop') : '');
         const lines: string[] = [];
         if (!ready) lines.push(`${t('Reach the lane entrance')} · <b>${range(dl)}</b>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);

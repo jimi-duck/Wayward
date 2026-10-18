@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEATS, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, STORY_AT, STORY_CARDS, WAKE_BEAT, YARD_BEAT } from '../src/content/story';
+import { BEATS, BREACH_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, OPENING_AT, STORY_AT, STORY_CARDS, WAKE_BEAT, YARD_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
 import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
@@ -15,7 +15,7 @@ import { World } from '../src/sim/world';
 function result(j: Journey, c: Partial<Journey['carry']> = {}): SortieResult {
   const r = newRun(1);
   r.escaped = true;
-  return { ended: 'jumped', time: 60, carry: { ...j.carry, plates: 3, supplies: 30, cyrite: 20, ...c }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} };
+  return { ended: 'jumped', time: 60, carry: { ...j.carry, plates: 3, supplies: 30, cyrite: 20, ...c, flags: [...(c.flags ?? j.carry.flags), 'archive_woke'] }, run: r, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} };
 }
 
 /** One jump nearer the Threshold. */
@@ -66,15 +66,17 @@ describe('the story beats', () => {
     }
   });
 
-  it('come one a sortie: the yard’s call in Cerro, this region’s first, and a missed one later', () => {
+  it('come one a sortie: none in Cerro, the opening chain past the gate, this region’s first, and a missed one later', () => {
     const j = newJourney(7);
-    expect(dueBeat(j)).toBe(WAKE_BEAT);
-    expect(sortieDef(j).story).toBe(WAKE_BEAT);
-    j.carry.seen.push(WAKE_BEAT);
-    expect(dueBeat(j)).toBe(YARD_BEAT);
-    j.carry.seen.push(YARD_BEAT);
     expect(dueBeat(j)).toBeNull();
-    endSortie(j, result(j));
+    expect(sortieDef(j).story).toBeNull();
+    // the chain is dealt in the first sortie beyond the gate
+    const out = result(j);
+    out.carry.flags = out.carry.flags.filter((f) => f !== 'archive_woke');
+    endSortie(j, out);
+    expect(sortieDef(j).story).toBe(BREACH_BEAT);
+    j.carry.seen.push(...CERRO_BEATS);
+    j.carry.flags.push('archive_woke');
     expect(dueBeat(j)).toBe('story_warden');
     expect(sortieDef(j).story).toBe('story_warden');
     j.carry.seen.push('story_warden');
@@ -110,29 +112,33 @@ describe('the story beats', () => {
     expect(w.result().carry.seen).toContain('story_warden');
   });
 
-  it('open with the yard’s call in Cerro, whose answers set the first lane up', () => {
+  it('open the chain a moment after arrival beyond the gate, and Tam’s answers set the first lane up', () => {
     const play = (answer: string) => {
       const j = newJourney(7);
+      j.trail.push('x');
       const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
       w.cardNext = Infinity;
       w.bk!.nextPursuit = Infinity;
       w.field.rocks = [];
-      for (let t = 0; t < (STORY_AT + 2) * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); }
-      expect(w.comms?.def.id).toBe(WAKE_BEAT);
-      w.answer('later');
-      for (let t = 0; t < 120 * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); }
+      const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
+      run(OPENING_AT - 1);
+      expect(w.phase).toBe('play');
+      run(2);
+      expect(w.comms?.def.id).toBe(BREACH_BEAT);
+      w.answer('audit');
+      run(3);
       expect(w.comms?.def.id).toBe(YARD_BEAT);
       const before = w.result().carry;
       w.answer(answer);
       return { before, after: w.result().carry };
     };
-    const fuel = play('fuel');
-    expect(fuel.after.fuel).toBe(Math.min(40, fuel.before.fuel + 14));
-    expect(fuel.after.cyrite).toBe(fuel.before.cyrite);
     const codes = play('codes');
-    expect(codes.after.flags).toContain('codes');
-    expect(codes.after.supplies).toBe(codes.before.supplies - 4);
+    expect(codes.after.flags).toEqual(expect.arrayContaining(['codes', 'tam_codes', 'tam_favour']));
     expect(codes.after.seen).toContain(YARD_BEAT);
+    const official = play('official');
+    expect(official.after.flags).toContain('tam_alone');
+    expect(official.after.flags).not.toContain('codes');
+    expect(official.after.civic!).toBeLessThan(official.before.civic!);
   });
 
   it('show what each answer gives before any other chip', () => {
@@ -185,12 +191,12 @@ describe('the long journey’s story', () => {
 
   it('deals the long chart’s beats by its own regions', () => {
     const j = newJourney(7, false, 'eight');
-    j.carry.seen.push(YARD_BEAT);
+    j.carry.seen.push(...CERRO_BEATS);
     endSortie(j, result(j));
     expect(dueBeat(j)).toBe('story_warden');
     // arriving in the Salvage Belt (the third region) with the Marches' beats seen: its own come first
     j.at = j.chart.systems.find((s) => viewOf(j.chart, s.id) === 2)!.id;
-    j.carry.seen = [YARD_BEAT, 'story_warden', 'story_ledger', 'story_moot', 'story_drift'];
+    j.carry.seen = [...CERRO_BEATS, 'story_warden', 'story_ledger', 'story_moot', 'story_drift'];
     expect(['story_broker', 'story_salvor']).toContain(dueBeat(j));
     j.carry.seen.push('story_broker', 'story_salvor');
     expect(dueBeat(j)).toBeNull();

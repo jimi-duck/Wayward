@@ -18,3 +18,17 @@ Measured in the cloud container with the headless pilots; nothing here is a play
 
 ## Not measured
 - Pacing and reading time of the new cards, phone layout of the Wall, and how often players see each follow-up. Needs a playtest.
+
+## The opening contract (Contract 08-441)
+
+Design targets, all in `sim/contract.ts` and `sim/civic.ts`, none playtested:
+
+| Number | Value | Why |
+|---|---|---|
+| Quota / delivered at start | 100 / 80 | Nearly there. One rock gives about 5 to 9 Cyrite, so the 20 still needed is out of reach in the lessons and the chase; a player who mined the rest in the chase still sees the delivery window closed. |
+| Company cuts | refinery 40, lease 12, fuel reserve 20, escrow 6 | Takes 78 of 100 before the upgrade. |
+| Upgrade instalment | the torpedo bay's real price (20 today) | Left: 2 Cyrite. The ledger is live, so a price change moves it. |
+| Breach | penalty 15 + lease 12 + instalment 20 = 47 owed | More than Juno holds; compliance leaves her in debt. |
+| Score steps | −14 breach, −6 or −3 Tam, −30 stolen, −38 archive | 412 to 324 at the end of the chain (the "under review" band, above the 300 toll line). |
+
+Measured: the unit tests in `tests/civic.test.ts`, `tests/story.test.ts` and `tests/tutor.test.ts` run the chain with every answer and check the Score stays at 300 or above. Not measured: how long the opening takes, whether 100 raiders-worth of chase is fair on a phone, and the pilots (`npm run pilot:breakout` was started but its result is not recorded here).

@@ -1,4 +1,5 @@
 import { LEARN } from '../content/calloway';
+import type { LedgerKind, LedgerRow } from './contract';
 import { t } from '../i18n';
 import { cy } from './purse';
 import { CARDS, FLAGS } from '../content/cards';
@@ -179,7 +180,9 @@ export interface Outcome {
   /** The lane mouth: fight her, run past her, or be let through. */
   blockade?: 'fight' | 'run' | 'pass';
   /** Another card, this many seconds on. */
-  follow?: { card: string; after: number };
+  follow?: { card: string; after: number; /** Opens as soon as it is due, without waiting for the desk's gap (the opening's chain). */ quick?: boolean };
+  /** A line on the radio, no answer asked (the opening's Tam and Prefect). */
+  radio?: { from: string; text: string };
   job?: JobDef;
   /** A job given up. */
   drop?: string;
@@ -260,6 +263,8 @@ export interface CardDef {
   id: string;
   /** One line, ten words at most: what is happening, for a glance. The panel derives one from the text when a card has none. */
   gist?: string;
+  /** A ledger under the text: the opening's contract in numbers (sim/contract.ts). */
+  ledger?: LedgerKind;
   kind: CardKind;
   caller: Caller;
   /** Who is speaking, and the card's title. */
@@ -347,6 +352,8 @@ export interface Open {
   brought: number[];
   /** Seconds of slow motion left before the default is taken; 0 when the world simply waits. */
   slow: number;
+  /** The contract ledger this card shows (sim/contract.ts), read off the live carry as it opens. */
+  ledger?: LedgerRow[];
 }
 
 /** Seconds into a Breakout before the first card, and the gap between chance cards. */

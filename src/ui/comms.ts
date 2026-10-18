@@ -49,6 +49,8 @@ export interface CommsView {
   alert: boolean;
   /** One line, for a glance: what is happening. */
   gist: string;
+  /** Contract rows under the text (label, amount or word, tone), or none. */
+  ledger: Array<{ k: string; v: string; tone: string }>;
   text: string;
   /** What the ship's state adds to the call: behind the (i), not on the panel. */
   more: string;
@@ -105,6 +107,7 @@ export function cardView(o: Open): CommsView {
     colour: CALLER_CSS[d.caller],
     alert: HOSTILE.has(d.kind) || o.slow > 0,
     gist: gistOf(d, o.text),
+    ledger: (o.ledger ?? []).map((r) => ({ k: t(r.k), v: r.n !== undefined ? (r.n < 0 ? '−' : '') + t('{n} Cyrite', { n: Math.abs(r.n) }) : t(r.v ?? ''), tone: r.tone ?? '' })),
     text: o.text,
     more: o.more.join(' '),
     // the read: strength as two bars, and the one line that matters (the
@@ -130,6 +133,7 @@ export function hailView(c: Contact): CommsView {
   return {
     kick: t('Alarm'), title: t(c.name), sub: `${t('{f} capital ship', { f: t(FACTION_NAME[c.faction] ?? c.faction) })} · ${t('on intercept')}`, colour: NEON_CSS[c.faction], alert: true,
     gist: t('A capital ship is on intercept'),
+    ledger: [],
     text: t('She fights back with her escort · the area clears for the duel.'),
     more: '',
     read: null,
@@ -174,6 +178,9 @@ export class CommsPanel {
     $('cm-gist').textContent = view.gist;
     $('cm-gist').style.setProperty('--cc', view.colour);
     $('cm-text').textContent = view.text;
+    $('cm-ledger').replaceChildren(...view.ledger.map((r) => h('li', r.tone, '', h('span', '', r.k), h('b', '', r.v))));
+    $('cm-ledger').hidden = !view.ledger.length;
+    $('comms').classList.toggle('ledgered', view.ledger.length > 0);
     // what the ship's state adds sits one tap behind the (i)
     this.info(false);
     $('cm-i').hidden = !view.more;

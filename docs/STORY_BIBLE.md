@@ -96,7 +96,7 @@ annotated.
 | Years 1 to 10 | The breakers (lane closers) are built in the Breaker Yards. The Forty are in the room; many keep silent for Krail rights, contracts or safety. | None. | Cover-up. |
 | Years 10 to 70 | The Emergency becomes the Continuance. Companies own the mines, leases, housing and food. The Net spreads. | Stability. | Purge, asset seizure, permanent power. |
 | 27 years ago | Juno Aster is born in Cerro. | | |
-| Day 0 | Juno steals the Wayward from the Cerro scrapyard. The helm reads her hand. The archive wakes. | | The Story begins. |
+| Day 0 | Juno, a contractor on Contract 08-441, misses her quota to a pirate attack on an unescorted route; the company terminates the lease and orders recovery of OB-7731-A. She overrides the owner lock and keeps the hull, which makes it stolen. She names it Wayward. The helm reads her hand and the archive wakes. | | The Story begins (docs/ONBOARDING.md). |
 
 ## 5. Juno and Ada
 
@@ -171,9 +171,9 @@ believes or can do.
 
 | Flag | Clue | Certainty | Where | Effect |
 |---|---|---|---|---|
-| `archive_woke` | The archive woke on Juno's hand | fact | Cerro wake card | Sets the Score drop; Wall entry. |
+| `archive_woke` | The archive woke on Juno's hand | fact | `story_wake`, the last card of the opening chain beyond the gate | Sets the Score drop; Wall entry. |
 | `clue_archive_log` | The Warden Line log: routine ADA-1, bloodline lock | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
-| `clue_reserves` | Krail reserves 94% on the shutdown date | fact | Cerro, first jump (always) | The Act I reveal. |
+| `clue_reserves` | Krail reserves 94% on the shutdown date | fact | `story_wake` (both answers) | The Act I reveal. |
 | `clue_sig_reach` | "L. C." on the authorisation line | inference | Reach, the ledger | One of three for the signature. |
 | `clue_sig_yards` | The Prefect's cipher on the work order | inference | Breaker Yards | Two of three. |
 | `clue_sig_ports` | Lior Calloway's full signature in the minutes | fact (with the others) | Free Ports | Three of three: leverage, once (`sig_used`). |
@@ -216,8 +216,8 @@ destroyed and Juno dead once it is too dangerous; his fleet arrives at the
 Threshold. (Open canon question Q1.)
 
 ### Tam Okoro, yard foreman (Cerro)
-Radio ally, never crew. Cerro: codes, fuel, or wave him off (`story_yard`).
-Flags: `tam_codes`, `tam_fuel`, `tam_alone`; `tam_ally` once the codes pass the
+Radio ally, never crew. At the work bay he explains the financed upgrade (`story_bay`); beyond the gate he offers a maintenance-berth code or leaves Juno to the official lane (`story_yard`).
+Flags: `tam_codes` and `tam_favour` (took the code), `tam_alone` (did not); `tam_ally` once the codes pass the
 checkpoint. Later: his brother on a Breaker crew (`story_tam_brother`, planned).
 If Juno left him alone, the brother beat still arrives, from Marit Voss, and he
 remembers.
@@ -306,13 +306,14 @@ Calloway, Tam, Wren, Kesh, Echo or Sable, and surviving clients.
 ## 14. Save and migration
 
 `VERSION` in `sim/journey.ts`. **v17** was current at the start of this work.
-**v18** adds `carry.civic` (and nothing else).
+**v18** adds `carry.civic`. **v19** adds the optional `carry.contract` (the Cyrite the outlying mine gave, for the opening's settlement) and moves the archive wake beyond the gate.
 
 - New journeys start at 412.
-- v17 and earlier saves: still in Cerro (`trail.length < 2`) gets 412. Past
-  Cerro gets `412 − 38 = 374` and the flags `archive_woke` and
-  `clue_reserves` (the Cerro beats they would have had), so their Wall and
-  band read as if they had played the new opening. The migration is
+- v17 and earlier saves: still in Cerro (`trail.length < 2`) gets 412 and plays the new
+  opening. Past Cerro gets `412 − 38 = 374` and the flags `archive_woke` and
+  `clue_reserves`, so their Wall and band read as if they had played it, and the
+  opening's chain (which ends when `archive_woke` is set) is skipped. v18 to v19
+  changes no data. The migration is
   idempotent. Chapter saves go through the same `migrate`.
 - Arcade never carries a Score; the world only applies it when `bk` is set.
 

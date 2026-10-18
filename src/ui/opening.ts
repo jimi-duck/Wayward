@@ -1,6 +1,7 @@
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { t } from '../i18n';
 import { CIVIC_START, civicLabel } from '../sim/civic';
+import { CONTRACT_ID, DELIVERED_AT_START, QUOTA } from '../sim/contract';
 
 // ── the opening ───────────────────────────────────────────────────────────
 // What the game is, in a few lines, read at the start of every new Story
@@ -25,13 +26,14 @@ export class OpeningPanel {
     this.opened = performance.now();
     $('op-k').textContent = t('Story 01');
     $('op-t').textContent = t('Breakout');
-    // one short page: the contract, the Score, the theft, the first job
+    // one short page, plain admin: the contract and how far along it is, the Score, whose hauler this is, the last of the quota
     const lines = [
-      h('p', 'op-job', t('Extraction contract · renewal 08-441')),
+      h('p', 'op-job', t('Extraction contract · renewal {id}', { id: CONTRACT_ID })),
+      h('p', 'op-score', '', h('span', '', t('Delivered')), h('b', '', `${DELIVERED_AT_START} / ${QUOTA}`), h('em', '', t('Cyrite'))),
       h('p', 'op-score', '', h('span', '', t('Civic Score')), h('b', '', String(CIVIC_START)), h('em', '', civicLabel(CIVIC_START))),
-      h('b', '', t('You mined 48. You keep 4.')),
-      h('p', '', t('Tonight the yard scraps the Wayward, an old ore hauler. Tam, the foreman, looks away at the gate.')),
-      h('p', '', t('Take her. Mine some Cyrite, then run.')),
+      h('p', 'op-thanks', t('Your productivity protects your future.')),
+      h('p', '', t('The hauler is the company’s. You may fly her while the contract holds.')),
+      h('b', '', t('Mine the last of the quota.')),
     ];
     $('op-l').replaceChildren(...lines);
     this.paged = false;

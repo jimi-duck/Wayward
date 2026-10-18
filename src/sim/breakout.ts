@@ -132,9 +132,10 @@ export const CHASE_FIRST = 2;
 /** The ships a wave may leave alive at once, the gap to the next wave (s), and the heat the pursuit is picked at. */
 export const chaseCap = (wave: number) => Math.min(6, 2 + Math.floor(wave / 2));
 export const chaseGap = (wave: number) => Math.max(3.5, 9 - wave * 0.9);
-export const chaseHeat = (wave: number) => Math.min(0.9, 0.3 + wave * 0.12);
 /** What the HUD calls a wave when it comes. */
-export const chaseLabel = (wave: number) => (wave < 2 ? 'Custody pickets' : wave < 4 ? 'Heavy cruisers' : wave < 6 ? 'Enforcers' : 'Interdictors');
+/** The pirates' reinforcements: raiders first, then strike wings, then hunters too big to fight. */
+export const chaseHull = (wave: number) => (wave < 2 ? 'scout' : wave < 4 ? 'raptor' : 'stalker');
+export const chaseLabel = (wave: number) => (wave < 2 ? 'Pirate raiders' : wave < 4 ? 'Pirate strike wing' : 'Pirate hunters');
 
 export const pursuitInterval = (heat: number) => lerp(38, 10, clamp(heat, 0, 1));
 export const pursuitCap = (heat: number) => Math.round(lerp(1, 3, clamp(heat, 0, 1)));
@@ -242,6 +243,8 @@ export interface Carry {
   hush: number;
   /** The Civic Score (sim/civic.ts): the Story's only. Absent in the Arcade, and in a save from before v18 until it is migrated. */
   civic?: number;
+  /** Contract 08-441 (sim/contract.ts): the Cyrite the outlying mine gave, kept for the settlement beyond the gate. Absent in the Arcade and in a save from before v19. */
+  contract?: { got: number };
 }
 
 /** What a sortie hands back to the journey. */

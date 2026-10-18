@@ -10,10 +10,11 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
-import { STORY_AT } from '../content/story';
+import { CERRO_BEATS, OPENING_AT, STORY_AT } from '../content/story';
+import { ledgerFor } from './contract';
 import {
   BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
-  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHeat, chaseLabel, pursuitElite, pursuitInterval,
+  PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval,
   rockYield, DOCK_SPEED, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
@@ -291,11 +292,13 @@ export class World implements EncounterHost {
   cardNext = COMMS_FIRST;
   /** The first minutes' training (sim/tutor.ts), while a new pilot is being taught. */
   tutor: Tutor | null = null;
+  /** The outlying mine of Contract 08-441 is being flown (set with the training): the Cyrite it gives is kept for the settlement. */
+  opening = false;
   portCalled = false;
   private cardsSeen = new Set<string>();
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
   private heard = new Set<string>();
-  private follows: Array<{ card: string; at: number }> = [];
+  private follows: Array<{ card: string; at: number; quick?: boolean }> = [];
   /** Seconds of a sold survey's veined rock left. */
   private seamT = 0;
 
@@ -456,6 +459,7 @@ export class World implements EncounterHost {
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
       hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
       ...(this.civic !== undefined ? { civic: this.civic } : {}),
+      ...(this.opening ? { contract: { got: Math.round(this.run.cyrite) } } : this.carryIn?.contract ? { contract: { ...this.carryIn.contract } } : {}),
     };
   }
 
@@ -568,7 +572,7 @@ export class World implements EncounterHost {
   navNoise = 0;
 
   /** Teach the first minutes: a few marked steps, then the run goes on as it was. */
-  train(): void { this.tutor = newTutor(); stepTutor(this, 0); }
+  train(): void { this.tutor = newTutor(); this.opening = true; stepTutor(this, 0); }
 
   /** End the training now. */
   skipTraining(): void { skipTutor(this); }
@@ -771,10 +775,15 @@ export class World implements EncounterHost {
 
     // the story beat: once, a little after arrival, if the journey has one due here
     const beat = b.def.story;
-    if (beat && !this.storyMade && this.runTime >= STORY_AT && !(this.tutor && !this.tutor.done) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
+    const opening = !!beat && (CERRO_BEATS as readonly string[]).includes(beat);
+    if (beat && !this.storyMade && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
-      if (def && !this.heard.has(def.id) && !this.cardsSeen.has(def.id)) this.desk.offer(def, weightOf(def), this.runTime);
+      if (def && !this.heard.has(def.id) && !this.cardsSeen.has(def.id)) {
+        // the opening's chain begins at once and runs on its own: a pop-up a moment after the last
+        if (opening) this.openComms(def);
+        else this.desk.offer(def, weightOf(def), this.runTime);
+      }
     }
 
     // her offer: once a sortie at most, when she has one to make (and is not here in person)
@@ -872,7 +881,7 @@ export class World implements EncounterHost {
   }
 
   /**
-   * The opening chase (sim/breakout.ts): the lane is set a fixed run ahead, the heat jumps, and Custody comes
+   * The opening chase (sim/breakout.ts): the lane is set a fixed run ahead, and the pirates' reinforcements come
    * from behind in waves that grow. Called once, when the training ends; Story's first system only.
    */
   startChase(): void {
@@ -882,7 +891,7 @@ export class World implements EncounterHost {
     b.lane.x = s.x + (dx / d) * CHASE_LANE;
     b.lane.z = s.z + (dz / d) * CHASE_LANE;
     b.def = { ...b.def, lane: CHASE_LANE };
-    b.heat = Math.max(b.heat, 0.4);
+    b.heat = Math.max(b.heat, 0.25);
     b.chase = { t0: this.runTime, wave: 0 };
     b.nextPursuit = this.runTime + CHASE_FIRST;
     this.events.push({ type: 'chase' });
@@ -921,8 +930,7 @@ export class World implements EncounterHost {
     const b = this.bk!, c = b.chase!, s = this.ship;
     const regular = this.aliens.filter((a) => !a.escort && !a.extra).length;
     if (regular < chaseCap(c.wave)) {
-      const pick = pickPursuer(chaseHeat(c.wave), this.rng, 0);
-      const v = VARIANTS[pick.variant]!;
+      const v = VARIANTS[chaseHull(c.wave)]!;
       const home = Math.atan2(-(s.z - b.lane.z), s.x - b.lane.x);
       const n = c.wave >= 3 ? 2 : 1;
       for (let i = 0; i < n; i++) {
@@ -1338,11 +1346,14 @@ export class World implements EncounterHost {
     }
 
     // follow-ups, once due
-    const due = this.follows.findIndex((f) => f.at <= t);
+    const due = this.follows.findIndex((f) => f.at <= t && (!f.quick || this.phase === 'play'));
     if (due >= 0) {
       const [f] = this.follows.splice(due, 1);
       const def = CARD_BY_ID[f!.card];
-      if (def && !this.cardsSeen.has(def.id)) d.offer(def, weightOf(def), t, false, def.trigger === 'story');
+      if (def && !this.cardsSeen.has(def.id)) {
+        if (f!.quick) this.openComms(def);
+        else d.offer(def, weightOf(def), t, false, def.trigger === 'story');
+      }
     }
     // the port's approach calls once
     if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
@@ -1415,6 +1426,7 @@ export class World implements EncounterHost {
     const o = openCard(def, x, this.rng);
     this.cardsSeen.add(def.id);
     this.desk.closed(this.runTime);
+    if (def.ledger) o.ledger = ledgerFor(def.ledger, this.carry());
     this.comms = o;
     this.phase = 'comms';
     if (def.arrive) o.brought.push(...this.applyOutcome(def.arrive, o.fee, []));
@@ -1479,7 +1491,8 @@ export class World implements EncounterHost {
     for (const f of [out.unflag ?? []].flat()) this.flags.delete(f);
     for (const [k, v] of Object.entries(out.standing ?? {}) as Array<[Standing, number]>) this.standing[k] = (this.standing[k] ?? 0) + v;
     for (const [k, v] of Object.entries(out.notice ?? {}) as Array<[Faction, number]>) this.noticeDelta[k] = (this.noticeDelta[k] ?? 0) + v;
-    if (out.follow) this.follows.push({ card: out.follow.card, at: this.runTime + out.follow.after });
+    if (out.follow) this.follows.push({ card: out.follow.card, at: this.runTime + out.follow.after, quick: out.follow.quick });
+    if (out.radio) this.events.push({ type: 'ping', id: `radio_${out.radio.text.slice(1, 12)}`, from: tr(out.radio.from), caller: 'unknown', text: tr(out.radio.text), moment: 'calm', system: this.sortie.name });
     if (out.job && !this.jobs.some((j) => j.id === out.job!.id)) this.jobs.push(out.job);
     if (out.drop) this.jobs = this.jobs.filter((j) => j.id !== out.drop);
     if (out.seam) { this.seamT = out.seam; this.field.richBoost = 0.35; this.field.density = 1.2; }
@@ -2670,6 +2683,7 @@ export class World implements EncounterHost {
     this.command.reset();
     this.encounter = null; this.parked = null;
     this.tutor = null;
+    this.opening = false;
     this.pace = newPace(ALIEN_FIRST);
     this.mend = newMend();
     this.score = 0; this.kills = 0; this.runTime = 0;

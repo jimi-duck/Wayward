@@ -1,4 +1,6 @@
 import { cost } from './bay';
+import { CARD_BY_ID } from './comms';
+import { t } from '../i18n';
 import type { World } from './world';
 
 // ── the first minutes ─────────────────────────────────────────────────────
@@ -34,6 +36,10 @@ export interface Tutor {
   skipped: boolean;
   /** Seconds to keep a finished step on screen before the next. */
   linger: number;
+  /** The pirates of the shoot step (two of them), and the radio lines said so far. */
+  pirates: number[];
+  billed: boolean;
+  toll: boolean;
 }
 
 /** What the HUD reads for the step in hand. */
@@ -68,7 +74,7 @@ const DEPOT_SIDE = 90;
 
 /** Mine, upgrade, shoot with it. The Story flies to a work bay for the upgrade; the Arcade fits it in flight. */
 export function newTutor(): Tutor {
-  return { steps: ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0 };
+  return { steps: ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], billed: false, toll: false };
 }
 
 /** Training is at its upgrade: the one thing on offer at the bay is the torpedo bay (the shop reads this to lock the rest). */
@@ -94,9 +100,20 @@ function layRock(w: World, tu: Tutor): void {
   tu.rockId = r.id;
 }
 
+/** Pirates in the shoot step: two, so a win is a win, and the chase that follows is not a surprise. */
+const PIRATES = 2;
+
 function layShip(w: World, tu: Tutor): void {
-  const p = ahead(w, SHIP_AT, 40);
-  tu.alienId = w.spawnHostile('scout', { x: p.x, y: 0, z: p.z }).id;
+  tu.pirates = tu.pirates.filter((id) => w.aliens.some((a) => a.id === id));
+  while (tu.pirates.length < PIRATES - (w.kills - tu.base)) {
+    const p = ahead(w, SHIP_AT + 18 * tu.pirates.length, 40 - 70 * tu.pirates.length);
+    tu.pirates.push(w.spawnHostile('scout', { x: p.x, y: 0, z: p.z }).id);
+  }
+  tu.alienId = tu.pirates[0] ?? -1;
+  if (!tu.toll) {
+    tu.toll = true;
+    w.events.push({ type: 'ping', id: 'train_toll', from: t('Raiders'), caller: 'unknown', text: t('“Cargo or a toll, hauler. Your pick.”'), moment: 'calm', system: w.sortie.name });
+  }
 }
 
 function begin(w: World, tu: Tutor): void {
@@ -144,8 +161,8 @@ export function lessonOf(w: World): Lesson | null {
     if (port) return { ...base, line: w.docked ? 'Fit the torpedo bay' : 'Fly to the work bay', hint: w.docked ? 'fit' : 'dock', mark: { x: port.x, z: port.z, r: port.r, name: port.name }, progress: 0 };
     return { ...base, line: 'Choose an upgrade', hint: 'bay', mark: null, progress: 0 };
   }
-  const a = w.aliens.find((x) => x.id === tu.alienId);
-  return { ...base, line: 'Shoot the ship with torpedoes', hint: 'torpedo', mark: a ? { x: a.x, z: a.z, r: 0, name: 'Gutter ship' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
+  const a = w.aliens.find((x) => x.id === tu.alienId) ?? w.aliens.find((x) => tu.pirates.includes(x.id));
+  return { ...base, line: 'Shoot the raiders with torpedoes', hint: 'torpedo', mark: a ? { x: a.x, z: a.z, r: 0, name: 'Raider' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
 }
 
 /** Is the step in hand done? */
@@ -153,7 +170,7 @@ function met(w: World, tu: Tutor): boolean {
   const id = tu.steps[tu.i]!;
   if (id === 'mine') return !w.field.rocks.some((r) => r.id === tu.rockId) && stock(w) > tu.base;
   if (id === 'bay') return fitted(w) > tu.base && w.phase !== 'bay';
-  return w.kills > tu.base;
+  return w.kills >= tu.base + PIRATES;
 }
 
 /** One step of the tutor: keep the quiet going, set the next thing up, watch for it done. */
@@ -178,7 +195,14 @@ export function stepTutor(w: World, dt: number): void {
   const id = tu.steps[tu.i]!;
   // if the rock is gone and nothing fell out, lay another; if the ship slipped away, send another
   if (id === 'mine' && !w.field.rocks.some((r) => r.id === tu.rockId) && stock(w) <= tu.base && !w.pickups.length) layRock(w, tu);
-  if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && !w.aliens.some((a) => a.id === tu.alienId))) && w.kills <= tu.base) layShip(w, tu);
+  if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && tu.pirates.some((p) => !w.aliens.some((a) => a.id === p)))) && w.kills < tu.base + PIRATES) layShip(w, tu);
+  // the work bay: Tam, and the company's cut, as the ship comes up to it
+  const port = w.bk?.port;
+  if (id === 'bay' && port && !tu.billed && w.phase === 'play' && Math.hypot(w.ship.x - port.x, w.ship.z - port.z) < port.r + 120) {
+    const card = CARD_BY_ID.story_bay;
+    tu.billed = true;
+    if (card) w.openComms(card);
+  }
   if (met(w, tu)) tu.linger = LINGER;
 }
 
@@ -188,8 +212,9 @@ function finish(w: World, tu: Tutor): void {
   if (!w.bk) return;
   w.fuel = Math.max(w.fuel, w.jumpCost);
   w.cardNext = Math.min(w.cardNext, w.runTime + 40);
-  // the quiet is over: Custody has seen the hauler leave
+  // the quiet is over: more raiders are coming, and the contract desk will not send cover
   w.startChase();
+  w.events.push({ type: 'ping', id: 'train_escort', from: t('Contract desk · 08-441'), caller: 'office', text: t('“Escort cover is not included in Contract 08-441. Continue at operator discretion.”'), moment: 'calm', system: w.sortie.name });
 }
 
 /** The player's skip: the torpedo bay is fitted all the same, so the ship is as the run expects it. */
