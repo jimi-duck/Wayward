@@ -88,9 +88,13 @@ export const BEATS: Beat[] = [
   { card: 'story_drift', region: 1, long: 1 },
   { card: 'story_oduya_rigs', needs: 'pact_holdfast', long: 1 },
   { card: 'story_broker', region: 1, long: 2 },
+  { card: 'story_kesh', needs: 'broker', long: 2 },
+  { card: 'story_vell_betray', needs: 'broker', long: 2 },
+  { card: 'story_ada', needs: 'frag_blackbox', long: 2 },
   { card: 'story_salvor', long: 2 },
   { card: 'story_charts', long: 3 },
   { card: 'story_ferry', long: 3 },
+  { card: 'story_ferry_agent', needs: 'ferry_met', long: 3 },
   { card: 'story_workorder', long: 4 },
   { card: 'story_crew', long: 4 },
   { card: 'story_harbour', long: 5 },
@@ -110,7 +114,7 @@ export const STORY_PEOPLE: Array<{ flags: string[]; name: string }> = [
   { flags: ['broker'], name: 'Vell, a Gutter broker' },
   { flags: ['frag_keys', 'lane_keys', 'voice_read'], name: 'The Voice' },
   { flags: ['frag_blackbox'], name: 'Dov Kessin, a salvor' },
-  { flags: ['frag_charts'], name: 'Hale Tarn, a chartwright' },
+  { flags: ['frag_charts'], name: 'Tarn Ilvo, a chartwright' },
   { flags: ['frag_workorder'], name: 'Pell Anand, a yard clerk' },
   { flags: ['frag_witnesses'], name: 'Mirren, keeper of the list' },
 ];
@@ -302,6 +306,50 @@ export const STORY_CARDS: CardDef[] = [
 
   // ── the long journey: the Salvage Belt to the Last Lanes ──────────────────
   story({
+    id: 'story_kesh', kind: 'trade', caller: 'gutter',
+    from: 'Kesh · a fixer of the Gutter', title: 'Vell talks too much',
+    text: '“I work for Vell. I also have ears. She is shopping your heading to the Offices. Pay my debt and I look the other way.”',
+    cargo: 'A fixer’s skiff · patched, fast',
+    choices: [
+      { id: 'pay', label: 'Settle his debt', tone: 'pay', hint: 'Six Cyrite. He warns you when Vell moves.', cost: { chits: 30 }, win: { text: 'Kesh is square · he will warn you', flag: ['kesh_trust', 'kesh_warned'], standing: { gutter: 1 } } },
+      { id: 'trust', label: 'Trust him', tone: 'bluff', hint: 'Free, if he believes you. He may sell you too.', odds: { base: 0.4, standing: { gutter: 0.1 } }, win: { text: '“Then I owe you.” · he will warn you', flag: ['kesh_trust', 'kesh_warned'] }, lose: { text: 'He laughs, and closes the channel' } },
+      { id: 'no', label: 'Wave him off', tone: 'refuse', hint: 'Trust nobody from the Gutter.', win: { text: 'Kesh drifts away' } },
+    ],
+  }),
+  story({
+    id: 'story_vell_betray', kind: 'warning', caller: 'gutter',
+    from: 'Vell · a broker of the Gutter', title: 'Your heading, sold',
+    text: '“Business, pilot. The Offices pay better than I do. They know where you are going. I wish you luck.”',
+    cargo: 'A broker’s yacht · leaving fast',
+    choices: [
+      { id: 'pay', label: 'Pay her to forget', tone: 'pay', hint: 'Eight Cyrite. She sells the next heading to you instead.', cost: { chits: 40 }, win: { text: 'Vell takes the money · the trail goes cold', flag: 'vell_paid', hunt: 1 } },
+      { id: 'jam', label: 'Jam her channel', tone: 'fight', hint: 'The Offices hear nothing more, and the Gutter hears of it.', win: { text: 'The channel dies · the Gutter will remember', flag: 'vell_exposed', standing: { gutter: -1 }, heat: 0.08 } },
+      { id: 'no', label: 'Let it go', tone: 'refuse', hint: 'Calloway gains on you.', win: { text: 'Vell is gone · the Offices have your heading', flag: 'vell_betrayed', hunt: -1 } },
+    ],
+  }),
+  story({
+    id: 'story_ada', kind: 'rumour', caller: 'unknown',
+    from: 'The black box · Ada Aster, recorded', title: 'A voice on the recorder',
+    text: '“If anyone hears this, the order was signed in the core. My name is Ada. Tell my granddaughter I tried. The lanes were switched off.”',
+    cargo: 'A wreck’s recorder · one voice, seventy years old',
+    choices: [
+      { id: 'keep', label: 'Keep the recording', tone: 'help', hint: 'It stays in the file, unshared. Ada was Juno’s grandmother.', win: { text: 'Ada’s voice is yours alone', flag: ['ada_heard', 'ada_kept'] } },
+      { id: 'share', label: 'Send it on', tone: 'help', hint: 'Copies get talked about, and believed.', win: { text: 'Ada’s voice goes out · the Gutter hears it', flag: 'ada_heard', heat: 0.08, standing: { miners: 1 } } },
+      { id: 'later', label: 'Not now', tone: 'refuse', hint: 'You cannot listen yet.', win: { text: 'The recorder goes quiet' } },
+    ],
+  }),
+  story({
+    id: 'story_ferry_agent', kind: 'warning', caller: 'office',
+    from: 'Ossi Rane · the Quiet Ferry', title: 'There is an agent aboard',
+    text: '“One of my passengers is an Offices agent. He has watched you the whole way. I will do what you ask.”',
+    cargo: 'The Quiet Ferry · forty passengers',
+    choices: [
+      { id: 'expose', label: 'Expose him', tone: 'fight', hint: 'The passengers put him off. The Offices lose a day.', win: { text: 'The agent is put off · the Offices lose a day', flag: 'agent_exposed', hunt: 1, civic: -8, civicWhy: 'Interfered with an Offices agent' } },
+      { id: 'shield', label: 'Let him be', tone: 'help', hint: 'He reports home. Rane keeps his licence.', win: { text: 'The agent stays aboard · the ferry runs on', flag: 'agent_shielded', civic: 6, civicWhy: 'A cooperative report was logged' } },
+      { id: 'use', label: 'Feed him a story', tone: 'bluff', hint: 'A gamble. A false trail, or the Offices learn the truth.', odds: { base: 0.5 }, win: { text: 'The agent carries your false trail home', flag: 'agent_used', hunt: 2 }, lose: { text: 'He sees through it, and marks you', flag: 'agent_exposed', heat: 0.1 } },
+    ],
+  }),
+  story({
     id: 'story_salvor', kind: 'trade', caller: 'miners',
     from: 'Dov Kessin · salvor', title: 'A recorder that still runs',
     text: '“That wreck’s recorder still runs. It heard the night the lanes went dark. I can’t cut it free alone.”',
@@ -314,7 +362,7 @@ export const STORY_CARDS: CardDef[] = [
   }),
   story({
     id: 'story_charts', kind: 'trade', caller: 'miners',
-    from: 'Hale Tarn · chartwright', title: 'The charts they burned',
+    from: 'Tarn Ilvo · chartwright', title: 'The charts they burned',
     text: '“I draw lanes by hand, from charts the Continuance burned. I’ll trade you a copy for something to eat.”',
     cargo: 'A drifting chart room · lamps and paper',
     choices: [
@@ -329,8 +377,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“Nobody hunts out here. I can carry you a lane ahead of anyone behind you. Stores, and no questions.”',
     cargo: 'A slow ferry · forty berths, all empty',
     choices: [
-      { id: 'ride', label: 'Ride the ferry', tone: 'trade', hint: 'Four food. Calloway loses a day.', cost: { supplies: 4 }, win: { text: 'The ferry carries you ahead', hunt: 1, standing: { miners: 1 } } },
-      { id: 'talk', label: 'Trade stories', tone: 'help', hint: 'Rane shares his stores for the news.', win: { text: 'Stores across · the news goes round', supplies: 3, heat: 0.05 } },
+      { id: 'ride', label: 'Ride the ferry', tone: 'trade', hint: 'Four food. Calloway loses a day.', cost: { supplies: 4 }, win: { text: 'The ferry carries you ahead', flag: 'ferry_met', hunt: 1, standing: { miners: 1 } } },
+      { id: 'talk', label: 'Trade stories', tone: 'help', hint: 'Rane shares his stores for the news.', win: { text: 'Stores across · the news goes round', flag: 'ferry_met', supplies: 3, heat: 0.05 } },
       { id: 'no', label: 'Wave him on', tone: 'refuse', hint: 'Keep your stores.', win: { text: 'The ferry idles away' } },
     ],
   }),

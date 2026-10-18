@@ -347,10 +347,10 @@ Threshold.
 
 | Region | Beats | Status |
 |---|---|---|
-| Reach | `story_warden`, `story_ledger`, `story_brook_arrest`, `story_calloway_narrows` | planned (first two exist, to be revised) |
-| Marches | `story_oduya_rigs`, `story_moot`, `story_drift` (Wren) | planned (two exist) |
-| Salvage Belt | `story_broker`, `story_kesh`, `story_vell_betray`, `story_salvor`, `story_ada` | planned (two exist) |
-| Drift Deep | `story_charts` (Tarn Ilvo), `story_ferry`, `story_ferry_agent` | planned (two exist) |
+| Reach | `story_warden`, `story_ledger`, `story_brook_arrest`, `story_calloway_narrows` | live except the Narrows (needs gate-bound beats) |
+| Marches | `story_oduya_rigs`, `story_moot`, `story_drift` (Wren) | live |
+| Salvage Belt | `story_broker`, `story_kesh`, `story_vell_betray`, `story_salvor`, `story_ada` | live |
+| Drift Deep | `story_charts` (Tarn Ilvo), `story_ferry`, `story_ferry_agent` | live |
 | Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | planned (two exist) |
 | Free Ports | `story_harbour`, `story_ines_offer`, `story_witnesses`, `story_vell_reckoning`, `story_tollgate` | planned (two exist) |
 | Hollows | `story_voice`, `story_thren`, `story_echo_sable` | planned (two exist) |

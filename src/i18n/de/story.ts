@@ -405,7 +405,7 @@ export const STORY: Record<string, string> = {
   'Five Cyrite. Quiet, and slower.': 'Fünf Cyrit. Leise, aber langsamer.',
   'Kessin goes back to his wreck': 'Kessin kehrt zu seinem Wrack zurück',
   'Not worth the time.': 'Die Zeit ist es nicht wert.',
-  'Hale Tarn · chartwright': 'Hale Tarn · Kartenzeichner',
+  
   'The charts they burned': 'Die Karten, die sie verbrannten',
   '“I draw lanes by hand, from charts the Continuance burned. I’ll trade you a copy for something to eat.”': '„Ich zeichne Bahnen von Hand, nach Karten, die die Continuance verbrannt hat. Ich tausche dir eine Kopie gegen etwas zu essen.“',
   'A drifting chart room · lamps and paper': 'Ein treibender Kartenraum · Lampen und Papier',
@@ -527,7 +527,7 @@ export const STORY: Record<string, string> = {
   'Forty names of people who were in the room, and kept quiet.': 'Vierzig Namen von Leuten, die im Raum waren und schwiegen.',
   'The Free Ports keep a list of who was there.': 'Die Freihäfen führen eine Liste, wer dort war.',
   'Dov Kessin, a salvor': 'Dov Kessin, Bergungsfahrer',
-  'Hale Tarn, a chartwright': 'Hale Tarn, Kartenzeichner',
+  
   'Pell Anand, a yard clerk': 'Pell Anand, Werftschreiber',
   'Mirren, keeper of the list': 'Mirren, Hüterin der Liste',
   'And behind it, the rest: the black box, the charts, the work order, the witnesses.': 'Und dahinter der Rest: die Blackbox, die Karten, der Arbeitsauftrag, die Zeugen.',
