@@ -212,7 +212,7 @@ export class Hud {
           this.notice(world, 'gunsCold', t('Damping field'), t('Guns cold'), '');
           break;
         case 'dockDenied':
-          this.notice(world, 'dock', t('Port'), t('Docking denied'), t('Until the fight is over'));
+          this.notice(world, 'dock', t('Port'), t('Docking denied'), '');
           break;
         case 'anomalyIn':
           this.notice(world, 'anomaly', t('Space anomaly'), world.siteHere ? t(NAMED[world.siteHere]!.name) : t('Entering a strange place'), (e.kinds as ReportKind[]).map((k) => t(REPORT_TEXT[k])).join(' · '), 'calm');
