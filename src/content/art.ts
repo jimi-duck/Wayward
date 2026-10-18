@@ -53,7 +53,7 @@ export const EMBLEMS = ['custody', 'office', 'kellern', 'guild', 'frontier', 'mi
 export const CONTACTS: Record<string, string | null> = {
   story_yard: null, story_warden: null, story_ledger: null, story_moot: null, story_drift: null, story_broker: null,
   story_salvor: null, story_charts: null, story_ferry: null, story_workorder: null, story_crew: null, story_harbour: null,
-  story_kesh: null, story_vell_betray: 'story_broker', story_ada: null, story_ferry_agent: 'story_ferry', story_tam_brother: 'story_yard', story_ines_offer: 'story_harbour', story_vell_reckoning: 'story_broker', story_tollgate: null, story_echo_sable: null, story_implant: null, story_witnesses: null, story_brook_arrest: 'story_ledger', story_oduya_rigs: 'story_moot', story_aide: null, story_toll: null,
+  story_kesh: null, story_vell_betray: 'story_broker', story_ada: null, story_ferry_agent: 'story_ferry', story_tam_brother: 'story_yard', story_ines_offer: 'story_harbour', story_vell_reckoning: 'story_broker', story_tollgate: null, story_echo_sable: null, story_implant: null, story_draper: 'foreman', story_oren_who: 'story_toll', story_oren_cost: 'story_toll', story_oren_why: 'story_toll', story_witnesses: null, story_brook_arrest: 'story_ledger', story_oduya_rigs: 'story_moot', story_aide: null, story_toll: null,
   foreman: null, foreman_again: 'foreman', krail_seller: null, fuel_runner: null,
 };
 

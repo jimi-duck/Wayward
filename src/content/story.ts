@@ -98,6 +98,7 @@ export const BEATS: Beat[] = [
   { card: 'story_workorder', long: 4 },
   { card: 'story_crew', long: 4 },
   { card: 'story_tam_brother', needs: 'archive_woke', long: 4 },
+  { card: 'story_draper', needs: 'stalled', long: 4 },
   { card: 'story_harbour', long: 5 },
   { card: 'story_ines_offer', needs: 'ines_berth', long: 5 },
   { card: 'story_vell_reckoning', needs: 'broker', long: 5 },
@@ -108,6 +109,7 @@ export const BEATS: Beat[] = [
   { card: 'story_echo_sable', needs: 'archive_woke', long: 6 },
   { card: 'story_aide', long: 7 },
   { card: 'story_toll', long: 7 },
+  { card: 'story_oren_who', needs: 'archive_woke', long: 7 },
   { card: 'story_implant', needs: 'archive_woke', long: 7 },
 ];
 
@@ -507,6 +509,50 @@ export const STORY_CARDS: CardDef[] = [
       { id: 'vent', label: 'Vent six Cyrite', tone: 'pay', hint: 'The swarm feeds and drifts off.', cost: { cyrite: 6 }, win: { text: 'The Thren feed on the Cyrite and go quiet', flag: 'clue_cyrite', calm: 120 } },
       { id: 'show', label: 'Show them the file', tone: 'bluff', hint: 'A gamble. They may read it as a threat.', odds: { base: 0.5 }, win: { text: 'They read it, and make room', flag: 'clue_cyrite', calm: 240, notice: { thren: -2 } }, lose: { text: 'They take it as a challenge' } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Whatever it is, it is not yours.', win: { text: 'The pulse fades' } },
+    ],
+  }),
+  story({
+    id: 'story_draper', kind: 'plea', caller: 'office',
+    from: 'Director Draper · asset recovery, the Offices', title: 'Same man, other badge',
+    text: '“Drop the Kellern act, Juno. I run asset recovery for the Offices. The file ends here, and so do you, unless you hand it over.”',
+    cargo: 'An Offices tender · Draper on the bridge',
+    choices: [
+      { id: 'press', label: 'Make him say it', tone: 'bluff', hint: 'Keep him talking. The recording goes in the file.', win: { text: 'Draper says it twice · the recording goes in the file', flag: ['clue_draper', 'draper_director'], hunt: -0.5 } },
+      { id: 'hand', label: 'Offer a copy', tone: 'pay', hint: 'A false one. A gamble; he checks it.', odds: { base: 0.4 }, win: { text: 'He takes the copy · the trail cools', flag: ['clue_draper', 'draper_director'], hunt: 1 }, lose: { text: 'He sees it is false · the hunt closes in', flag: 'clue_draper', hunt: -1, heat: 0.1 } },
+      { id: 'cut', label: 'End the call', tone: 'refuse', hint: 'You have heard enough.', win: { text: 'The channel closes' } },
+    ],
+  }),
+  story({
+    id: 'story_oren_who', kind: 'plea', caller: 'guild',
+    from: 'Keeper Oren · the Last Toll', title: 'First question: who',
+    text: '“Three questions, then the lane. First: who are you to carry that file?”',
+    cargo: 'A toll platform · one lit window',
+    choices: [
+      { id: 'pilot', label: 'A hauler pilot', tone: 'help', hint: 'Plain and true. Oren asks the second.', win: { text: '“A start.” · Oren asks the second', flag: 'oren_pilot', follow: { card: 'story_oren_cost', after: 20 } } },
+      { id: 'heir', label: 'A Warden’s heir', tone: 'help', hint: 'Ada Aster’s granddaughter. Oren asks the second.', win: { text: '“That weighs more.” · Oren asks the second', flag: 'oren_heir', follow: { card: 'story_oren_cost', after: 20 } } },
+      { id: 'none', label: 'Say nothing', tone: 'refuse', hint: 'He may still let you pass.', win: { text: 'Oren waits, then lowers the bar' } },
+    ],
+  }),
+  story({
+    id: 'story_oren_cost', kind: 'plea', caller: 'guild',
+    from: 'Keeper Oren · the Last Toll', title: 'Second question: what it cost',
+    text: '“Second: what has it cost others, that you carry it?”',
+    cargo: 'A toll platform · one lit window',
+    choices: [
+      { id: 'own', label: 'Own it', tone: 'help', hint: 'Name what you spent. Costs your Score nothing.', win: { text: '“Honest.” · Oren asks the third', flag: 'oren_owned', follow: { card: 'story_oren_why', after: 20 } } },
+      { id: 'blame', label: 'Blame the Offices', tone: 'bluff', hint: 'True, but not an answer.', win: { text: '“Hm.” · Oren asks the third', follow: { card: 'story_oren_why', after: 20 } } },
+      { id: 'none', label: 'Say nothing', tone: 'refuse', hint: 'He moves on.', win: { text: 'Oren moves on', follow: { card: 'story_oren_why', after: 20 } } },
+    ],
+  }),
+  story({
+    id: 'story_oren_why', kind: 'plea', caller: 'guild',
+    from: 'Keeper Oren · the Last Toll', title: 'Third question: what for',
+    text: '“Third: what is the file for? Truth, mercy, or freedom. Choose one. The Threshold will hold you to it.”',
+    cargo: 'A toll platform · one lit window',
+    choices: [
+      { id: 'truth', label: 'Truth', tone: 'help', hint: 'Say it aloud to everyone.', win: { text: '“Then say it.” · the answer is logged', flag: ['oren_asked', 'oren_truth'] } },
+      { id: 'mercy', label: 'Mercy', tone: 'help', hint: 'Spare those who only obeyed.', win: { text: '“Gentle.” · the answer is logged', flag: ['oren_asked', 'oren_mercy'] } },
+      { id: 'freedom', label: 'Freedom', tone: 'help', hint: 'Leave the Scatter its own choice.', win: { text: '“Costly.” · the answer is logged', flag: ['oren_asked', 'oren_freedom'] } },
     ],
   }),
   story({

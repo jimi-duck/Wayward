@@ -92,7 +92,7 @@ describe('follow-up beats', () => {
     const { BEATS } = await import('../src/content/story');
     const needs = BEATS.filter((b) => b.needs);
     expect(needs.map((b) => b.card)).toEqual(expect.arrayContaining(['story_brook_arrest', 'story_oduya_rigs']));
-    for (const b of needs) expect(b.needs).toMatch(/^(brook_met|pact_holdfast|broker|frag_blackbox|ferry_met|archive_woke|ines_berth)$/);
+    for (const b of needs) expect(b.needs).toMatch(/^(brook_met|pact_holdfast|broker|frag_blackbox|ferry_met|archive_woke|ines_berth|stalled)$/);
   });
 });
 
