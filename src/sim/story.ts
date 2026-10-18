@@ -1,7 +1,7 @@
 import { t } from '../i18n';
 import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENT_FLAGS_LONG, FRAGMENTS_ALL, CERRO_BEATS, type Act } from '../content/story';
 import type { RegionSet } from '../content/regions';
-import { tierOf, viewOf } from './chart';
+import { sysById, tierOf, viewOf } from './chart';
 import type { Journey } from './journey';
 
 // ── the story ─────────────────────────────────────────────────────────────
@@ -38,6 +38,8 @@ export function dueBeat(j: Journey): string | null {
   const long = j.chart.regionSet === 'eight';
   const seen = new Set(j.carry.seen), has = new Set(j.carry.flags), r = long ? viewOf(j.chart, j.at) : tierOf(j.chart, viewOf(j.chart, j.at));
   const at = (b: (typeof BEATS)[number]) => (long ? b.long : b.region);
-  const open = BEATS.filter((b) => at(b) !== undefined && at(b)! <= r && !seen.has(b.card) && (!b.needs || has.has(b.needs)));
-  return (open.find((b) => at(b) === r) ?? open[0])?.card ?? null;
+  const atGate = sysById(j.chart, j.at).kind === 'gate';
+  const open = BEATS.filter((b) => at(b) !== undefined && at(b)! <= r && !seen.has(b.card) && (!b.needs || has.has(b.needs)) && (!b.gate || (atGate && at(b)! + 1 === r)));
+  // a gate beat belongs to the gate out of its own region (a gate shows the next region): it comes before that region's own
+  return (open.find((b) => b.gate) ?? open.find((b) => at(b) === r) ?? open[0])?.card ?? null;
 }
