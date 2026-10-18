@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import {
-  HEAT_START, JUMP_COST, LANE_DIST, PATCH_COST, PATCH_QUIET, PATCH_TIME, PRICE, PURSUIT_FIRST, SPOOL, START_CYRITE, pickPursuer, rockYield, rockTake, TORP_YIELD,
+  HEAT_START, JUMP_COST, LANE_DIST, PATCH_COST, PATCH_QUIET, PATCH_TIME, PRICE, PURSUIT_FIRST, SPOOL, APPROACH, JUMP_T, START_CYRITE, pickPursuer, rockYield, rockTake, TORP_YIELD,
 } from '../src/sim/breakout';
 import type { Rock } from '../src/sim/field';
 import { Rng } from '../src/sim/rng';
@@ -217,13 +217,38 @@ describe('the Breakout', () => {
     expect(w.fuel).toBe(JUMP_COST - 1);
     w.fuel = JUMP_COST + 3;
     w.cyrite = 3;
-    run(w, SPOOL + 2.5);
+    run(w, SPOOL + JUMP_T + 1);
     expect(w.phase).toBe('over');
     expect(w.run.escaped).toBe(true);
     expect(w.fuel).toBe(3);
     expect(w.cyrite).toBe(3);
     expect(w.run.cyriteLeft).toBe(3);
     expect(w.run.cause).toBe('escaped');
+  });
+
+  it('charges the drive on the way in and goes through the ring as soon as it reaches it', () => {
+    const w = quiet();
+    const b = w.bk!;
+    b.blockade = 'done';
+    w.fuel = JUMP_COST + 1;
+    // inside the approach, outside the ring: the drive charges, the ship does not go
+    w.ship.x = b.lane.x - (APPROACH - 20); w.ship.z = b.lane.z;
+    w.ship.vx = w.ship.vz = 0;
+    run(w, 2);
+    expect(b.spool).toBeGreaterThan(1.5);
+    expect(b.jumpT).toBe(-1);
+    // outside it, nothing charges
+    w.ship.x = b.lane.x - APPROACH - 50;
+    run(w, 1);
+    expect(b.spool).toBeLessThan(1.6);
+    // charged, and in the ring: through, the instant it is there
+    b.spool = b.spoolNeed;
+    w.ship.x = b.lane.x; w.ship.z = b.lane.z;
+    run(w, 2 * STEP);
+    expect(b.jumpT).toBeGreaterThan(0);
+    expect(w.run.escaped).toBe(true);
+    run(w, JUMP_T + 0.2);
+    expect(w.phase).toBe('over');
   });
 
   it('calls the checkpoint near the lane mouth, and running it brings her after you', () => {

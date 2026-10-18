@@ -332,6 +332,12 @@ export class ShipView {
     this.root.add(this.yawG);
   }
 
+  /** The jump draws the hull out along its length and thins it (1: as built). */
+  stretch(k: number): void {
+    const n = 1 / Math.sqrt(k);
+    this.yawG.scale.set(k, n, n);
+  }
+
   /** Put the engines, running lights and shield on the model. */
   private place(): void {
     const S = MODEL_SCALE;

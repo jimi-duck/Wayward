@@ -61,6 +61,10 @@
   --left: calc(var(--pad) + var(--safe-l));
 }
 #hud button { pointer-events: auto; }
+/* the jump: the HUD steps back for the fly-through, and a pale teal veil closes over the view at the end of it */
+#hud, #touch { transition: opacity .45s var(--ez); }
+#app.warping #hud, #app.warping #touch { opacity: 0; }
+#warp { position: absolute; inset: 0; z-index: 3; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 50% 46%, #effcfd 0%, #bdeff2 42%, #6fc3cc 100%); }
 /* the HUD powers up when the run starts: no delay and no fill, so if it never runs the HUD is simply there */
 :root:not(.prelaunch) .hud-block { animation: hud-boot .42s var(--ez); }
 @keyframes hud-boot { from { opacity: 0; transform: translateY(6px); } }

@@ -206,7 +206,7 @@ export const UI: Record<string, string> = {
   'Channel open': 'Kanal offen',
   'Job done': 'Auftrag erledigt',
   'Job open': 'Auftrag offen',
-  'Stay in the lane': 'Bleib in der Bahn',
+  'Fly through the gate': 'Flieg durch das Tor',
   'Not enough Cyrite': 'Zu wenig Cyrit',
   '{have} of {need} in the tank': '{have} von {need} im Tank',
   'Into the lane': 'Ab in die Bahn',

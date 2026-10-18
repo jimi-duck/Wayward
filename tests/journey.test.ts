@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { CARDS } from '../src/content/cards';
-import { HOME, SUPPLIES_START, TANK_MAX, type SortieResult } from '../src/sim/breakout';
+import { HOME, JUMP_T, SUPPLIES_START, TANK_MAX, type SortieResult } from '../src/sim/breakout';
 import {
   arrive, COLS, jumps, lanesFrom, makeChart, NET_MARKUP, NET_RATE, netted, pricesAt, pushNet, spreadNet, sysById, viewOf, type Chart,
 } from '../src/sim/chart';
@@ -394,7 +394,7 @@ describe('a sortie in the world', () => {
     b.blockade = 'done';
     w.fuel = o.route.cyrite;
     w.ship.x = b.lane.x; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0;
-    run(w, 8);
+    run(w, 8 + JUMP_T);
     expect(w.phase).toBe('over');
     const res = w.result();
     expect(res.ended).toBe('jumped');
