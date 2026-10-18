@@ -27,6 +27,10 @@ export type GameEvent =
   | { type: 'breach'; x: number; z: number; score: number }
   | { type: 'bankEmpty' }
   | { type: 'gunsCold' }
+  /** The port will not take the ship while a fight is on. */
+  | { type: 'dockDenied' }
+  /** The ship has flown into a place that changes it: what it does, by report kind (sim/space.ts). */
+  | { type: 'anomalyIn'; kinds: string[] }
   | { type: 'rackEmpty' }
   | { type: 'enemyFire'; x: number; y: number; z: number; faction: string }
   | { type: 'alienHit'; x: number; y: number; z: number; id: number }

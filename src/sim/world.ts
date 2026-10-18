@@ -112,6 +112,8 @@ const BOSS_PLATES = 1;
 export type Alert = 'clear' | 'yellow' | 'red';
 /** A hostile hull this close (units) puts the ship on yellow alert: a little outside its guns' reach (FIRE_RANGE 70), well inside where hulls arrive. */
 export const WATCH_RANGE = 85;
+/** Seconds between two "docking denied" calls while the ship waits at a port in a fight. */
+const DENIED_EVERY = 6;
 
 /** The arcade's bay opens by itself after this long with the alert clear and a price of Krail aboard. */
 export const BAY_QUIET = 2;
@@ -170,6 +172,10 @@ export class World implements EncounterHost {
   /** What the place does to the ship now (sim/space.ts), and what to tell the player of it. */
   /** Seconds before the next "guns cold" cue inside a damping field. */
   private coldT = 0;
+  /** Inside the port's ring, slow, and the port refusing the clamps because a fight is on. */
+  dockHeld = false;
+  private deniedT = 0;
+  private wasInPlace = false;
   air: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
   conditions: Condition[] = [];
   private readonly there: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
@@ -747,7 +753,12 @@ export class World implements EncounterHost {
     // the port: slow inside its ring, and the clamps take you
     const dp = b.port ? Math.hypot(s.x - b.port.x, s.z - b.port.z) : Infinity;
     if (b.port && dp > b.port.r) b.castOff = false;
-    if (b.port && !b.castOff && dp < b.port.r && speed < DOCK_SPEED && this.command.state !== 'fight' && this.phase === 'play') {
+    // the clamps stay open while a fight is on: slow at the ring and under attack, the port says no
+    const ready = !!b.port && !b.castOff && dp < b.port.r && speed < DOCK_SPEED && this.phase === 'play';
+    this.dockHeld = ready && this.inDanger();
+    this.deniedT = Math.max(0, this.deniedT - dt);
+    if (this.dockHeld && this.deniedT === 0) { this.deniedT = DENIED_EVERY; this.events.push({ type: 'dockDenied' }); }
+    if (ready && !this.dockHeld) {
       if ((b.dockT += dt) >= DOCK_TIME) this.dock();
     } else b.dockT = Math.max(0, b.dockT - dt * 2);
 
@@ -1772,7 +1783,9 @@ export class World implements EncounterHost {
         al.vx += h.ax * dt; al.vz += h.az * dt;
       }
     }
+    const was = this.conditions.length > 0;
     this.conditions = reports(a);
+    if (!was && this.conditions.length) this.events.push({ type: 'anomalyIn', kinds: this.conditions.map((c) => c.kind) });
     this.spaceThreats(dt, s, a);
     // inside a named place: say so once, and let the story read the flag
     const f = space.features.find((q) => q.named && Math.hypot(s.x - q.x, s.z - q.z) < q.r);

@@ -63,10 +63,15 @@ describe('the first minutes', () => {
     expect(w.install(LESSON_NODE)).toBeNull();
     w.closeBay();
     for (let i = 0; i < 120; i++) w.step(STEP, input());
-    // only now does the ship appear, and the lesson is the torpedo
+    // the lesson is the torpedo, but under the depot's field nothing comes
     expect(stepOf(w)).toBe('shoot');
     expect(w.stats.torpedoes).toBe(true);
     expect(lessonOf(w)!.hint).toBe('torpedo');
+    expect(w.safe).toBe('port');
+    expect(w.aliens.some((a) => a.id === w.tutor!.alienId)).toBe(false);
+    // out past the ring, the ship appears
+    w.ship.x = p.x + SAFE_R + 6;
+    for (let i = 0; i < 30; i++) w.step(STEP, input());
     expect(w.aliens.some((a) => a.id === w.tutor!.alienId)).toBe(true);
     // it is outside the depot's safe ring, so it can be shot
     const al = w.aliens.find((a) => a.id === w.tutor!.alienId)!;
@@ -115,6 +120,23 @@ describe('pop-up gist', () => {
   it('is short on every story card that sets one', async () => {
     const { STORY_CARDS } = await import('../src/content/story');
     for (const c of STORY_CARDS) if (c.gist) expect(c.gist.split(/\s+/).length, c.id).toBeLessThanOrEqual(10);
+  });
+
+  it('refuses the clamps while a fight is on, says so once in a while, and takes the ship when it is over', () => {
+    const w = story();
+    const p = w.bk!.port!;
+    w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+    w.spawnHostile('scout', { x: p.x + 30, y: 0, z: p.z });
+    w.aliens.forEach((a) => { a.mode = 'attack' as never; });
+    let denied = 0;
+    for (let i = 0; i < 300; i++) { w.step(STEP, input()); denied += w.events.filter((e) => e.type === 'dockDenied').length; w.events.length = 0; }
+    expect(w.phase).toBe('play');
+    expect(w.dockHeld).toBe(true);
+    expect(denied).toBeGreaterThan(0);
+    expect(denied).toBeLessThan(3);
+    w.aliens = [];
+    for (let i = 0; i < 400 && w.phase === 'play'; i++) w.step(STEP, input());
+    expect(w.phase).toBe('dock');
   });
 });
 
