@@ -442,6 +442,8 @@ export const REWRITE: Record<string, string> = {
   "Custody has seen you · run for the jump gate": "Custody hat dich gesehen · lauf zum Sprungtor",
   "Run for the jump gate": "Lauf zum Sprungtor",
   "Custody is behind you · do not stop": "Custody ist hinter dir · nicht anhalten",
+  "Tonight the yard scraps the Wayward, an old ore hauler. Tam, the foreman, looks away at the gate.": "Heute Nacht verschrottet die Werft die Wayward, einen alten Erzfrachter. Tam, der Vorarbeiter, sieht am Tor weg.",
+  "Take her. Mine some Cyrite, then run.": "Nimm sie. Bau etwas Cyrit ab, dann lauf.",
   "Custody pickets": "Custody-Wachen",
   "A capital ship is on intercept": "Ein Großkampfschiff fängt dich ab",
   "Heavy cruisers": "Schwere Kreuzer",

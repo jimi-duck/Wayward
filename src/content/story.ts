@@ -237,9 +237,9 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The Wayward · a hauler that was meant for scrap',
     choices: [
       { id: 'log', label: 'Open the archive log', tone: 'help', hint: 'Read what woke. It costs nothing, and the Wall keeps it.',
-        win: { text: 'A Warden routine woke on your hand · the log is on the Wall', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: ['archive_woke', 'clue_archive_log'], follow: { card: YARD_BEAT, after: 22 } } },
+        win: { text: 'A Warden routine woke on your hand · the log is on the Wall', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: ['archive_woke', 'clue_archive_log'], follow: { card: YARD_BEAT, after: 4 } } },
       { id: 'later', label: 'Keep flying', tone: 'refuse', hint: 'The log stays sealed until you ask for it.',
-        win: { text: 'The log stays sealed · your status reads UNDER REVIEW', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: 'archive_woke', follow: { card: YARD_BEAT, after: 22 } } },
+        win: { text: 'The log stays sealed · your status reads UNDER REVIEW', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: 'archive_woke', follow: { card: YARD_BEAT, after: 4 } } },
     ],
   }),
   story({

@@ -117,3 +117,19 @@ describe('pop-up gist', () => {
     for (const c of STORY_CARDS) if (c.gist) expect(c.gist.split(/\s+/).length, c.id).toBeLessThanOrEqual(10);
   });
 });
+
+describe('the first minutes stay quiet', () => {
+  it('holds the registry card until the training is over', async () => {
+    const { sortieDef } = await import('../src/sim/journey');
+    const j = newJourney(7);
+    const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
+    w.train();
+    w.cardNext = Infinity;
+    w.field.rocks = [];
+    for (let i = 0; i < 60 * 60 && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
+    expect(w.phase).toBe('play');
+    w.skipTraining();
+    for (let i = 0; i < 60 * 70 && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
+    expect(w.comms?.def.id).toBe('story_wake');
+  });
+});
