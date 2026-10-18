@@ -17,6 +17,9 @@ export const CIVIC_START = 412;
 export const CIVIC_MAX = 500;
 /** The archive wakes on Juno's hand and the registry logs the unauthorised access. */
 export const WAKE_DROP = 38;
+/** The opening's other registry events: a short delivery filed as a reliability failure, and the hull reported stolen. */
+export const BREACH_DROP = 14;
+export const STOLEN_DROP = 30;
 /** At or above this the registry still vouches for you (the doorway at a checkpoint). */
 export const CIVIC_REGISTERED = 400;
 /** Below this the Continuance's own fees rise: your access is restricted. */

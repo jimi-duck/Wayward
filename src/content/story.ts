@@ -1,5 +1,5 @@
 import type { CardDef } from '../sim/comms';
-import { WAKE_DROP } from '../sim/civic';
+import { BREACH_DROP, STOLEN_DROP, WAKE_DROP } from '../sim/civic';
 
 // ── the story ─────────────────────────────────────────────────────────────
 // Three acts. The Breakout (Cerro: steal her, get out). The Run (the Reach
@@ -33,10 +33,19 @@ export const ACTS: Act[] = [
 export const CHOICE_REGION = 2;
 /** Seconds into a sortie before the story beat calls. */
 export const STORY_AT = 40;
-/** Act I's two beats in Cerro, before the first jump: the registry notice when the archive wakes, then the call from the yard. */
-export const WAKE_BEAT = 'story_wake';
+/**
+ * Act I past the gate (docs/ONBOARDING.md): the lease breached, Tam's code, the recovery order, and the archive that wakes when
+ * Juno overrides the lock. They come in a chain, one a moment after the last, at the start of the first sortie beyond Cerro.
+ * `story_bay` is the odd one out: Tam at the work bay, played inside the training.
+ */
+export const BAY_BEAT = 'story_bay';
+export const BREACH_BEAT = 'story_breach';
 export const YARD_BEAT = 'story_yard';
-export const CERRO_BEATS = [WAKE_BEAT, YARD_BEAT] as const;
+export const RECOVERY_BEAT = 'story_recovery';
+export const WAKE_BEAT = 'story_wake';
+export const CERRO_BEATS = [BREACH_BEAT, YARD_BEAT, RECOVERY_BEAT, WAKE_BEAT] as const;
+/** Seconds into that sortie before the chain begins. */
+export const OPENING_AT = 2;
 
 /** A piece of the Severance's history: the flag that carries it, and how the Archive names it. */
 export interface Fragment {
@@ -132,8 +141,11 @@ export const STORY_PEOPLE: Array<{ flags: string[]; name: string }> = [
 
 /** One line for a glance at the pop-up: what is happening, before any of the detail. */
 const GIST: Record<string, string> = {
-  "story_wake": "The hauler’s archive woke · your Score drops",
-  "story_yard": "Tam offers forged codes or fuel",
+  "story_bay": "The company finances your upgrade · you pay twice",
+  "story_breach": "Short delivery · berth denied, report filed",
+  "story_yard": "Tam offers a maintenance code, off the books",
+  "story_recovery": "Your job is gone and the ship is being taken",
+  "story_wake": "The ship’s archive wakes · Krail reserves were 94%",
   "story_registry": "Lane checkpoint · your Score decides",
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
@@ -228,29 +240,63 @@ export const REGISTRY_CARD: CardDef = {
 /** The beats' cards. Short on words: what each answer is for shows in its chips (sim/gains.ts). */
 export const STORY_CARDS: CardDef[] = [
   // ── Act I, the Breakout ─────────────────────────────────────────────────
-  // The registry reads the Wayward's helm and logs the unauthorised access; the Score drops where the player
-  // can see it. The yard's call follows it: the forged codes are what the checkpoint's doorway turns on.
+  // The work bay (inside the training), then the chain beyond the gate: the registry's berth notice, Tam's code, the
+  // company's recovery order, and the archive that wakes on the override. The company and the registry stay apart: the
+  // company withholds pay and recovers the ship; the registry files the reliability report and closes the berth.
   story({
-    id: 'story_wake', kind: 'warning', caller: 'office',
-    from: 'Registry · automated notice', title: 'Unauthorised archive access',
-    text: '“HELM ACCEPTED: ASTER. Sealed archive opened on OB-7731-A. Unauthorised access recorded. Civic Score 412 to 374. Status: UNDER REVIEW.”',
-    cargo: 'The Wayward · a hauler that was meant for scrap',
+    id: 'story_bay', kind: 'trade', caller: 'miners', ledger: 'bay',
+    from: 'Tam Okoro · yard foreman', title: 'The rack is serviceable',
+    text: '“Rack’s serviceable. They’ll finance it against the lease.” “So I pay for it twice.” “Once for the rack. Again for the privilege of keeping it.”',
+    cargo: 'Cerro work bay · company lease',
     choices: [
-      { id: 'log', label: 'Open the archive log', tone: 'help', hint: 'Read what woke. It costs nothing, and the Wall keeps it.',
-        win: { text: 'A Warden routine woke on your hand · the log is on the Wall', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: ['archive_woke', 'clue_archive_log'], follow: { card: YARD_BEAT, after: 4 } } },
-      { id: 'later', label: 'Keep flying', tone: 'refuse', hint: 'The log stays sealed until you ask for it.',
-        win: { text: 'The log stays sealed · your status reads UNDER REVIEW', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: 'archive_woke', follow: { card: YARD_BEAT, after: 4 } } },
+      { id: 'sign', label: 'Sign the instalment', tone: 'pay', hint: 'The torpedo bay is fitted now. The cost is added to what you owe.',
+        win: { text: 'Instalment signed · the rack is yours to fit', flag: 'lease_financed' } },
+    ],
+  }),
+  story({
+    id: 'story_breach', kind: 'warning', caller: 'office', ledger: 'breach',
+    from: 'Lane control · registry notice', title: 'Berth denied · audit lane',
+    text: '“Berth withdrawn: route deviation, hull damage, missed delivery. Reliability report filed. Proceed to the audit lane.”',
+    cargo: 'Contract 08-441 · short delivery',
+    choices: [
+      { id: 'audit', label: 'Proceed to the audit lane', tone: 'pay', hint: 'A missed delivery is a reliability failure. Your Score drops.',
+        win: { text: 'Reliability report filed · you are in the audit lane', civic: -BREACH_DROP, civicWhy: 'Short delivery reported', follow: { card: YARD_BEAT, after: 1, quick: true } } },
     ],
   }),
   story({
     id: 'story_yard', kind: 'trade', caller: 'miners',
-    from: 'Tam Okoro · yard foreman', title: 'The gate crew owes you',
-    text: '“The gate crew looks away for one minute, Juno. Codes or a full tank. Not both. I am putting my name on it either way.”',
+    from: 'Tam Okoro · yard foreman', title: 'Tam has a maintenance code',
+    text: '“The audit lane means a full scan, Juno. I can give you a maintenance-berth code. It holds for a few minutes. After that, you’re on your own.”',
     cargo: 'Cerro yard · one open bay',
     choices: [
-      { id: 'codes', label: 'Take the codes', tone: 'pay', hint: 'They pass the lane scan if they hold. Costs four supplies. Okoro will ask a favour.', cost: { supplies: 4 }, win: { text: 'Forged codes loaded · Okoro will ask a favour', flag: ['codes', 'tam_codes'] } },
-      { id: 'fuel', label: 'Fill the tank', tone: 'help', hint: 'Enough jump fluid for the first jump. The yard logs the draw and your Score drops.', win: { text: 'Tank topped up · the yard logs the draw', fuel: 14, heat: 0.06, civic: -10, civicWhy: 'Unscheduled fuel draw logged', flag: 'tam_fuel' } },
-      { id: 'wave', label: 'Wave him off', tone: 'refuse', hint: 'Keep your supplies and your record. He will remember.', win: { text: 'Okoro closes the channel', flag: 'tam_alone' } },
+      { id: 'codes', label: 'Take Tam’s code', tone: 'bluff', hint: 'The scan skips you for a few minutes. It is off the books, and you owe Tam.',
+        win: { text: 'Code loaded · the scan skips you · you owe Tam', flag: ['codes', 'tam_codes', 'tam_favour'], civic: -6, civicWhy: 'Scan evaded with a maintenance code', follow: { card: RECOVERY_BEAT, after: 2, quick: true } } },
+      { id: 'official', label: 'Use the official lane', tone: 'refuse', hint: 'You owe Tam nothing. The scan is logged, and recovery crews read it.',
+        win: { text: 'The scan is logged · recovery has your position', flag: 'tam_alone', heat: 0.1, civic: -3, civicWhy: 'Inspection logged', follow: { card: RECOVERY_BEAT, after: 2, quick: true } } },
+    ],
+  }),
+  story({
+    id: 'story_recovery', kind: 'warning', caller: 'office', ledger: 'recovery',
+    from: 'Kellern Mining · contracts desk', title: 'Contract terminated',
+    text: '“CONTRACT TERMINATED. ASSET RECOVERY ACTIVE. Vessel OB-7731-A is company property under a conditional lease. Return it to the recovery berth. Balances remain payable.”',
+    cargo: 'OB-7731-A · conditional operator lease',
+    choices: [
+      { id: 'override', label: 'Override the owner lock', tone: 'run', hint: 'Keep the ship and the debt. From this moment you are a thief.',
+        win: { text: 'Lock overridden · the hull is yours, and stolen', flag: ['ship_stolen', 'lease_broken'], heat: 0.12, civic: -STOLEN_DROP, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Prefect’s desk', text: '“A registered hull is missing. Escalate it to the Prefect.”' }, follow: { card: WAKE_BEAT, after: 3, quick: true } } },
+      { id: 'appeal', label: 'Ask Tam to appeal', tone: 'help', hint: 'An appeal does not suspend recovery. The crew closes in while it is read.',
+        win: { text: 'Appeal denied in seconds · you override the lock', flag: ['ship_stolen', 'lease_broken', 'appealed'], heat: 0.2, civic: -STOLEN_DROP, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Prefect’s desk', text: '“A registered hull is missing. Escalate it to the Prefect.”' }, follow: { card: WAKE_BEAT, after: 3, quick: true } } },
+    ],
+  }),
+  story({
+    id: 'story_wake', kind: 'warning', caller: 'unknown',
+    from: 'The hauler’s archive · ADA-1', title: 'Helm accepted: Aster',
+    text: '“Helm accepted: ASTER. Stock report: Krail reserves 94%. Shortage order: same day. Both are signed.” The registry logs the unauthorised access.',
+    cargo: 'The Wayward · a hauler that was meant for scrap',
+    choices: [
+      { id: 'log', label: 'Open the archive log', tone: 'help', hint: 'Read what woke. It costs nothing, and the Wall keeps it.',
+        win: { text: 'A Warden routine woke · the log and the reserves are on the Wall', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'], radio: { from: 'Tam Okoro', text: '“Get to the Reach, Juno. Don’t call me. I’ll call you.”' } } },
+      { id: 'later', label: 'Keep flying', tone: 'refuse', hint: 'The log stays sealed until you ask for it.',
+        win: { text: 'The log stays sealed · the reserves are on the Wall', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: ['archive_woke', 'clue_reserves'], radio: { from: 'Tam Okoro', text: '“Get to the Reach, Juno. Don’t call me. I’ll call you.”' } } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────

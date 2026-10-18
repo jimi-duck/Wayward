@@ -31,6 +31,8 @@ function result(j: Journey, o: Partial<SortieResult> = {}, c: Partial<Journey['c
 function pastBreakout(seed = 7): Journey {
   const j = newJourney(seed);
   endSortie(j, result(j, {}, { cyrite: 20, supplies: 12}));
+  // the opening's chain beyond the gate is played already
+  j.carry.flags.push('archive_woke');
   return j;
 }
 
@@ -148,7 +150,8 @@ describe('the journey', () => {
     expect(j.status).toBe('sortie');
     const d = sortieDef(j);
     expect(d.home).toBe(true);
-    expect(d.blockade).toBe(true);
+    // no checkpoint at Cerro's gate: the registry meets Juno beyond it, and the run to the gate is a chase
+    expect(d.blockade).toBe(false);
     expect(d.jumpCost).toBe(HOME.jumpCost);
     expect(d.calloway).toBe(Infinity);
     expect(lanesFrom(j.chart, j.at).map((l) => l.to.id)).toContain(j.dest);

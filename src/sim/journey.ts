@@ -31,7 +31,6 @@ import type { EndingId } from '../content/endings';
 import { ACTS, CHOICE_REGION } from '../content/story';
 import { actLine, dueBeat } from './story';
 import { CIVIC_START, clampCivic } from './civic';
-import { cerroReveal } from './wall';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -90,7 +89,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 18;
+export const VERSION = 19;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -206,7 +205,8 @@ export const here = (j: Journey): StarSystem => sysById(j.chart, j.at);
 export function sortieDef(j: Journey): SortieDef {
   const s = here(j);
   const notice = pressure(j.notice, j.day);
-  if (s.kind === 'home') return { ...HOME, survival: j.survival, jumpCost: Math.max(1, Math.round(HOME.jumpCost * (j.chart.fuel ?? 1))), system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice, story: dueBeat(j) };
+  // no checkpoint at Cerro's gate: the registry meets Juno beyond it (docs/ONBOARDING.md), and the run to the gate is a chase
+  if (s.kind === 'home') return { ...HOME, blockade: false, survival: j.survival, jumpCost: Math.max(1, Math.round(HOME.jumpCost * (j.chart.fuel ?? 1))), system: s.id, dest: j.dest ? sysById(j.chart, j.dest).name : HOME.dest, behind: Infinity, notice, story: dueBeat(j) };
   const t = SYSTEMS[s.kind];
   const net = netted(j.chart, s.id);
   const route = j.dest ? routeBetween(j.chart, s.id, j.dest) : null;
@@ -504,8 +504,6 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   const turn = j.trail.length === 2 ? ACTS[1] : there.kind === 'gate' && tierOf(j.chart, viewOf(j.chart, to)) === CHOICE_REGION && tierOf(j.chart, regionOf(there)) < CHOICE_REGION ? ACTS[2] : null;
   if (turn) { lines.unshift(actLine(turn)); note(j, actLine(turn)); }
   lines.push(...arrival(c.flags, { holder: there.holder, here: presence(j.chart, to), port: !!there.port }).map((l) => t(l)));
-  // out of Cerro the archive finishes decrypting, whatever was read or skipped: the first evidence leads the chart
-  if (s.kind === 'home') { const reveal = cerroReveal(c); if (reveal.length) { lines.unshift(...reveal); note(j, t('Archive decrypted · Krail reserves stood at 94%')); } }
   const fleet = fleetAt(j.chart, to);
   if (fleet) lines.push(t('Drift fleet here · {name} trades food and news', { name: fleet.name }));
   if (threnAt(j.chart, to) >= THREN_ABOUT) lines.push(t('Thren here · they come for Cyrite'));

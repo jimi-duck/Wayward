@@ -31,9 +31,14 @@ export const fragmentsFound = (flags: Iterable<string>): string[] => {
   return FRAGMENTS_ALL.filter((x) => f.has(x.flag)).map((x) => x.flag);
 };
 
-/** The story beat due in this system's sortie, if any: Cerro's two before the first jump (the wake, then the yard's call), then this region's first and any missed before. */
+/**
+ * The story beat due in this system's sortie, if any. Cerro's sortie is the training and the chase and has none. The first sortie
+ * beyond the gate opens the chain (breach, Tam's code, the recovery order, the archive), which any later sortie finishes if it was
+ * cut short. After that: this region's first beat and any missed before.
+ */
 export function dueBeat(j: Journey): string | null {
-  if (j.trail.length < 2) return CERRO_BEATS.find((b) => !j.carry.seen.includes(b)) ?? null;
+  if (j.trail.length < 2) return null;
+  if (!j.carry.flags.includes('archive_woke')) { const next = CERRO_BEATS.find((b) => !j.carry.seen.includes(b)); if (next) return next; }
   // the three-region chart's beats come by tier; the eight-region chart's by its own regions
   const long = j.chart.regionSet === 'eight';
   const seen = new Set(j.carry.seen), has = new Set(j.carry.flags), r = long ? viewOf(j.chart, j.at) : tierOf(j.chart, viewOf(j.chart, j.at));

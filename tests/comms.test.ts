@@ -41,7 +41,8 @@ describe('the cards', () => {
   it('only refer to things that exist', () => {
     const ups = new Set([...UPGRADES.map((u) => u.id), ...MODULES.map((m) => m.id)]);
     for (const c of CARDS) {
-      expect(c.choices.length, c.id).toBeGreaterThanOrEqual(2);
+      // a notice with a ledger (the opening's bay and breach) asks only for a signature
+      expect(c.choices.length, c.id).toBeGreaterThanOrEqual(c.ledger && c.choices.length === 1 ? 1 : 2);
       expect(c.choices.length, c.id).toBeLessThanOrEqual(6);
       expect(new Set(c.choices.map((ch) => ch.id)).size, c.id).toBe(c.choices.length);
       for (const s of c.ships ?? []) expect(VARIANTS[s.variant], `${c.id} ship ${s.variant}`).toBeDefined();

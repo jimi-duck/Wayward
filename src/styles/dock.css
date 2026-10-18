@@ -458,3 +458,19 @@
 #comms .cm-gist:empty { display: none; }
 #comms .cm-gist + .cm-text { font-size: 13px; color: var(--ink-2); }
 @media (max-height: 420px) { #comms .cm-gist { font-size: 15px; margin: 2px 0 4px; } #comms .cm-gist + .cm-text { font-size: 12px; } }
+
+/* The contract ledger on an opening card: hairline rows, the company's cuts in caution gold, Juno's own line in steel blue. */
+#comms .cm-ledger { list-style: none; margin: 8px 0 4px; padding: 6px 10px; display: grid; gap: 2px; border: 1px solid var(--hair, rgba(160,170,170,.28)); background: var(--scrim); }
+#comms .cm-ledger li { display: flex; justify-content: space-between; gap: 12px; font: 500 12px/1.4 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+#comms .cm-ledger li b { font: 600 13px/1.4 var(--font-mono); color: var(--ink); white-space: nowrap; }
+#comms .cm-ledger li.warn b, #comms .cm-ledger li.bad b { color: var(--caution); }
+#comms .cm-ledger li.bad { border-top: 1px solid var(--hair, rgba(160,170,170,.28)); padding-top: 3px; margin-top: 2px; color: var(--ink); }
+#comms .cm-ledger li.mine { border-top: 1px solid var(--hair, rgba(160,170,170,.28)); padding-top: 3px; margin-top: 2px; color: var(--ink); }
+#comms .cm-ledger li.mine b { color: var(--blue); }
+@media (max-height: 420px) {
+  /* a short phone: the ledger is the point, so the glance line steps aside and the rows stay on one line each */
+  #comms.ledgered .cm-gist { display: none; }
+  #comms .cm-ledger { padding: 3px 8px; margin: 4px 0 2px; gap: 0; }
+  #comms .cm-ledger li { font-size: 10px; line-height: 1.25; letter-spacing: .04em; white-space: nowrap; }
+  #comms .cm-ledger li b { font-size: 11px; line-height: 1.25; }
+}

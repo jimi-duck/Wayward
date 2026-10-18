@@ -57,6 +57,12 @@ describe('the first minutes', () => {
     // docked, it offers the one card and takes the torpedo bay
     const p = w.bk!.port!;
     w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+    // Tam and the company's cut come first, on the approach
+    for (let i = 0; i < 60 && w.phase === 'play'; i++) w.step(STEP, input());
+    expect(w.comms?.def.id).toBe('story_bay');
+    expect(w.comms?.ledger?.[0]).toMatchObject({ k: 'Gross yield' });
+    w.answer('sign');
+    expect(w.result().carry.flags).toContain('lease_financed');
     for (let i = 0; i < 400 && w.phase === 'play'; i++) w.step(STEP, input());
     expect(w.phase).toBe('dock');
     expect(w.openBay()).toBe(true);
@@ -76,6 +82,13 @@ describe('the first minutes', () => {
     // it is outside the depot's safe ring, so it can be shot
     const al = w.aliens.find((a) => a.id === w.tutor!.alienId)!;
     expect(Math.hypot(al.x - p.x, al.z - p.z)).toBeGreaterThan(SAFE_R);
+    // two raiders, and a win takes both
+    expect(w.tutor!.pirates).toHaveLength(2);
+    w.aliens = [];
+    w.kills++;
+    for (let i = 0; i < 120; i++) w.step(STEP, input());
+    expect(w.tutor!.done).toBe(false);
+    expect(w.aliens.filter((a) => w.tutor!.pirates.includes(a.id))).toHaveLength(1);
     w.aliens = [];
     w.kills++;
     for (let i = 0; i < 120; i++) w.step(STEP, input());
@@ -141,17 +154,47 @@ describe('pop-up gist', () => {
 });
 
 describe('the first minutes stay quiet', () => {
-  it('holds the registry card until the training is over', async () => {
+  it('has no story card in Cerro: the chain waits beyond the gate', async () => {
     const { sortieDef } = await import('../src/sim/journey');
     const j = newJourney(7);
+    expect(sortieDef(j).story).toBeNull();
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
     w.train();
     w.cardNext = Infinity;
     w.field.rocks = [];
-    for (let i = 0; i < 60 * 60 && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
-    expect(w.phase).toBe('play');
     w.skipTraining();
     for (let i = 0; i < 60 * 70 && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
-    expect(w.comms?.def.id).toBe('story_wake');
+    expect(w.comms?.def.id ?? '').not.toMatch(/^story_(breach|yard|recovery|wake)$/);
+  });
+  it('keeps the Cyrite it mined for the settlement beyond the gate', () => {
+    const w = story();
+    w.run.cyrite = 7;
+    expect(w.carry().contract).toEqual({ got: 7 });
+  });
+});
+
+describe('the whole opening', () => {
+  it('runs from the mine through the gate to the breach: the Cyrite mined is what the settlement counts', async () => {
+    const { endSortie, plot, options, sortieDef } = await import('../src/sim/journey');
+    const { dueBeat } = await import('../src/sim/story');
+    const j = newJourney(7);
+    const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
+    w.train();
+    w.skipTraining();
+    w.run.cyrite = 6;
+    // the gate: no checkpoint in the way, and the drive spools with the jump fluid aboard
+    const b = w.bk!;
+    expect(b.blockade).toBe('none');
+    w.ship.x = b.lane.x; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0;
+    for (let i = 0; i < 60 * 12 && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
+    expect(w.phase).toBe('over');
+    const res = w.result();
+    expect(res.ended).toBe('jumped');
+    expect(res.carry.contract).toEqual({ got: 6 });
+    endSortie(j, res);
+    // the first sortie beyond opens the chain, with the real shortfall in its ledger
+    expect(dueBeat(j)).toBe('story_breach');
+    plot(j, options(j)[0]!.to.id);
+    expect(j.carry.contract).toEqual({ got: 6 });
   });
 });
