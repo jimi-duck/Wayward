@@ -351,10 +351,10 @@ Threshold.
 | Marches | `story_oduya_rigs`, `story_moot`, `story_drift` (Wren) | live |
 | Salvage Belt | `story_broker`, `story_kesh`, `story_vell_betray`, `story_salvor`, `story_ada` | live |
 | Drift Deep | `story_charts` (Tarn Ilvo), `story_ferry`, `story_ferry_agent` | live |
-| Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | live (Draper's title change still to do) |
+| Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | live; `story_draper` is the Director reveal (needs `stalled`) |
 | Free Ports | `story_harbour`, `story_ines_offer`, `story_witnesses`, `story_vell_reckoning`, `story_tollgate` | live; the signature chain sets `clue_sig_*` and `sig_used` |
 | Hollows | `story_voice`, `story_thren`, `story_echo_sable` | live |
-| Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | implant and ending epilogues live; Oren's three questions and Draper's fleet still to do |
+| Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | implant, Oren's three questions (`story_oren_who`, `_cost`, `_why`) and ending epilogues live; Draper's fleet and the Narrows still to do |
 
 ## 17. Baseline (before any change)
 

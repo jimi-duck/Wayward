@@ -149,6 +149,14 @@ export const WALL: WallItem[] = [
     ask: 'What scarred these hulls?',
     lead: 'Something besides the Continuance was in this. Ask who was in the room.',
   }),
+  clue({
+    flag: 'clue_draper', name: 'One man, two badges', certainty: 'fact', at: 4,
+    proves: 'Foreman Draper of Kellern answers to the Offices’ asset recovery desk.',
+    not: 'Whether he acts on orders or on his own.',
+    detail: 'Draper has worn the Kellern badge since Cerro. Under it, the Offices of Peace hold his contract.',
+    ask: 'Who does the foreman really work for?',
+    lead: 'He wants the file destroyed, and the fleet that destroys it is on its way to the Threshold.',
+  }),
   fragment({
     flag: 'frag_witnesses', certainty: 'fact', at: 5,
     proves: 'Forty people were in the room when the order was read, and kept quiet.',
