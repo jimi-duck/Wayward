@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, BoxGeometry, Color, CylinderGeometry, DoubleSide, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, Shape,
+  AdditiveBlending, BoxGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide, ShaderMaterial, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, Shape,
   type Material, type Scene, type Texture,
 } from 'three';
 import { clamp } from '../core/math';
@@ -210,6 +210,40 @@ function buildLane(): Group {
 
 /** Where the ring's centre floats above the flight plane. */
 const GATE_Y = 7;
+const MEMBRANE_R = 44;
+const smooth01 = (x: number) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
+
+const MEMBRANE_VERT = /* glsl */ `
+  varying vec2 vP;
+  void main() {
+    vP = position.zy;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+// inside the ring (radius 16.4): slow rings and a cool-white middle, scaled by uSkin. Outside it: one thin bright wave, uPulse 0 to 1 as it runs out.
+const MEMBRANE_FRAG = /* glsl */ `
+  uniform float uSkin;
+  uniform float uPulse;
+  uniform float uTime;
+  varying vec2 vP;
+  void main() {
+    float r = length(vP);
+    float inner = 1.0 - step(16.4, r);
+    float x = r / 16.4;
+    float rip = 0.55 + 0.45 * sin(x * 22.0 - uTime * 7.0);
+    vec3 skin = mix(vec3(0.05, 0.4, 0.52), vec3(0.8, 1.45, 1.65), pow(1.0 - x, 2.6)) * (0.45 + 0.55 * rip);
+    float edge = smoothstep(0.55, 1.0, x) * 0.5;
+    vec3 col = skin * uSkin * inner * (1.0 + edge);
+    if (uPulse >= 0.0 && uPulse <= 1.0) {
+      float ring = 16.8 + uPulse * 26.0;
+      float w = 0.9 + uPulse * 2.2;
+      float k = exp(-pow((r - ring) / w, 2.0)) * (1.0 - uPulse) * (1.0 - uPulse);
+      col += vec3(0.9, 2.2, 2.6) * k * 2.0;
+    }
+    if (max(col.r, max(col.g, col.b)) < 0.01) discard;
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
 
 /** The depot: a hub with a habitat ring, docking arms, a tank farm, a mast. Fixed; the berth ring is drawn apart. */
 /** Port windows: warm and small, well under the bloom line, so a lit deck reads as windows and not as lamps. */
@@ -357,7 +391,11 @@ export class BreakoutView {
   private readonly laneField: Mesh;
   private readonly lanehaze: Sprite;
   private readonly portField: Mesh;
+  /** The skin across the ring: faint while the drive charges, a bright ripple as the ship goes through. */
+  private readonly membrane: Mesh;
   private time = 0;
+  /** The way through the ring: the direction a ship leaves by, as the sector's jump latched it. */
+  get axis(): number { return this.gate.rotation.y; }
 
   constructor(scene: Scene, glow: Texture) {
     const ring = buildLane();
@@ -372,6 +410,15 @@ export class BreakoutView {
     this.laneField = flatRing(SAFE_R, 0.3, CYAN, 0.1);
     this.laneRing.position.y = 0.2;
     this.gate.add(this.throat);
+    this.membrane = new Mesh(new CircleGeometry(MEMBRANE_R, 56).rotateY(Math.PI / 2), new ShaderMaterial({
+      vertexShader: MEMBRANE_VERT, fragmentShader: MEMBRANE_FRAG,
+      uniforms: { uSkin: { value: 0 }, uPulse: { value: -1 }, uTime: { value: 0 } },
+      transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide, toneMapped: false, fog: false,
+    }));
+    this.membrane.position.y = GATE_Y;
+    this.membrane.renderOrder = 2;
+    this.membrane.visible = false;
+    this.gate.add(this.membrane);
     // a soft teal haze behind the ring, so the gate sits in the air round it instead of being cut out of the dark
     this.lanehaze = new Sprite(new SpriteMaterial({ map: glow, color: new Color(0.1, 0.4, 0.5), toneMapped: false, transparent: true, opacity: 0.1, blending: AdditiveBlending, depthWrite: false, fog: false }));
     this.lanehaze.scale.setScalar(110);
@@ -392,7 +439,8 @@ export class BreakoutView {
 
   }
 
-  update(world: World, ship: { x: number; z: number; heading: number }, fx: Effects, dt: number): void {
+  /** `jump`: the ship is going through the ring: seconds in, seconds to the crossing, and how bright the ring should stand (render/warp.ts). */
+  update(world: World, ship: { x: number; z: number; heading: number }, fx: Effects, dt: number, jump: { t: number; cross: number; flare: number } | null = null): void {
     this.time += dt;
     const b = world.bk ?? world.review?.bk ?? null;
     this.lane.visible = !!b;
@@ -404,16 +452,25 @@ export class BreakoutView {
     if (b.port) this.port.position.set(b.port.x, -2, b.port.z);
     // the throat brightens as the tank fills and blazes while the drive spools
     const ready = world.fuel >= b.jumpCost ? 1 : 0.35;
-    const spool = b.spool / 5;
+    const spool = Math.min(1, b.spool / b.spoolNeed);
     this.throat.rotation.x += dt * (0.2 + spool * 3);
     (this.lanehaze.material as SpriteMaterial).opacity = 0.022 + 0.034 * ready + 0.15 * spool;
-    (this.throat.material as MeshBasicMaterial).opacity = 0.015 + 0.025 * ready + 0.18 * spool + (b.jumpT >= 0 ? 0.4 : 0);
-    (this.laneRing.material as MeshBasicMaterial).opacity = 0.25 + 0.25 * ready + 0.12 * Math.sin(this.time * 3) * ready;
+    (this.throat.material as MeshBasicMaterial).opacity = 0.015 + 0.025 * ready + 0.18 * spool + 0.4 * (jump?.flare ?? 0);
+    // (the flat marker rings on the plane let go as the jump begins: nothing cuts across the view)
+    const away = jump ? 1 - smooth01(jump.t / 0.3) : 1;
+    (this.laneRing.material as MeshBasicMaterial).opacity = (0.25 + 0.25 * ready + 0.12 * Math.sin(this.time * 3) * ready) * away;
     // the light strips: dim while the tank is short, full when ready, brighter as the drive spools
-    (materials().strip as MeshBasicMaterial).color.copy(STRIP).multiplyScalar(0.4 + 0.45 * ready + 0.4 * spool + (b.jumpT >= 0 ? 0.5 : 0));
+    (materials().strip as MeshBasicMaterial).color.copy(STRIP).multiplyScalar(0.4 + 0.45 * ready + 0.4 * spool + 1.5 * (jump?.flare ?? 0));
+    // the skin: fills in as the drive charges, blazes at the crossing, then a ripple runs out of the ring
+    const skin = jump ? (0.6 + 0.4 * smooth01(jump.t / 0.2)) * (1 - smooth01((jump.t - jump.cross - 0.15) / 0.55)) : spool * ready * 0.55;
+    const u = (this.membrane.material as ShaderMaterial).uniforms;
+    u.uSkin!.value = skin;
+    u.uPulse!.value = jump && jump.t > jump.cross ? (jump.t - jump.cross) / 0.9 : -1;
+    u.uTime!.value = this.time;
+    this.membrane.visible = skin > 0.01 || (jump !== null && jump.t > jump.cross && jump.t < jump.cross + 1);
     // the damping field's edge: a thin teal line, a little brighter while you are inside it
     const inside = world.safe ? 0.08 : 0;
-    (this.laneField.material as MeshBasicMaterial).opacity = 0.09 + inside + 0.02 * Math.sin(this.time * 1.2);
+    (this.laneField.material as MeshBasicMaterial).opacity = (0.09 + inside + 0.02 * Math.sin(this.time * 1.2)) * away;
     (this.portField.material as MeshBasicMaterial).opacity = 0.09 + inside + 0.02 * Math.sin(this.time * 1.2 + 1);
     (this.portRing.material as MeshBasicMaterial).opacity = 0.35 + 0.25 * Math.sin(this.time * 2.4) + b.dockT;
   }

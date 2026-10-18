@@ -588,7 +588,7 @@ function boot(review: typeof import('./review') | null): void {
     () => openBay(),
   );
 
-  let lastRun: unknown = null, lastSystem = '', wasPaused = true;
+  let lastRun: unknown = null, lastSystem = '', wasPaused = true, veil = 0;
 
   const loop = new FixedStepLoop({
     step(dt) {
@@ -626,6 +626,10 @@ function boot(review: typeof import('./review') | null): void {
       // a card that stops the world (hail, comms, dock, bay) stops stepping: drawn between two old steps the ship and the hulls would shimmer back and forth, so hold on the latest
       const live = world.phase === 'play' || (world.phase === 'comms' && !!world.comms && world.comms.slow > 0);
       sector.frame(world, live ? alpha : 1, dt, frameDt);
+      // the jump: the HUD steps back, and the view goes pale teal at the end of it; once the sortie is over the veil lifts again, off the chart
+      el('app').classList.toggle('warping', sector.jumping);
+      veil = world.phase === 'over' ? Math.max(0, veil - frameDt / 0.9) : sector.warpVeil;
+      el('warp').style.opacity = veil.toFixed(3);
       tour?.frame();
       hud.update(world, sector, frameDt);
       if (started) stops();

@@ -1,8 +1,9 @@
 import { Scene, Vector3, type Object3D, type WebGLRenderer } from 'three';
 import { COSMETICS } from '../content/unlocks';
-import { lerp } from '../core/math';
+import { clamp, lerp } from '../core/math';
+import { JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
-import { newShip, topSpeed } from '../sim/ship';
+import { newShip, topSpeed, type ShipState } from '../sim/ship';
 import type { World } from '../sim/world';
 import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
@@ -23,6 +24,7 @@ import { ShipView } from './ships';
 import { hashSeed, skyFor, type Sky } from './sky';
 import { cloudTexture, glowTexture } from './textures';
 import { Streaks } from './streaks';
+import { flare, launchFrom, lens, pose, stretch, whiteout, WarpView, type Launch } from './warp';
 import { WeaponView } from './weapons';
 
 // The scene root: reads the simulation and its events, never writes them.
@@ -71,6 +73,15 @@ export class Sector {
   private readonly mood = { fog: 0, dim: 0, tint: [0, 0, 0] as [number, number, number] };
   private readonly breakout: BreakoutView;
   private readonly site: SiteView;
+  private readonly warp: WarpView;
+  /** The jump's path, latched when the drive lets go, and the run it belongs to. */
+  private launch: Launch | null = null;
+  private launchRun: unknown = null;
+  private seenRun: unknown = null;
+  /** Seconds into the jump on the last frame, to catch the moment the ship crosses the ring. */
+  private warpWas = -1;
+  /** Seconds into the jump (negative: not jumping). */
+  private warpT = -1;
   private post: Post | null = null;
   private readonly lerped = newShip();
   private readonly v = new Vector3();
@@ -107,6 +118,7 @@ export class Sector {
     this.breakout = new BreakoutView(this.scene, glow);
     this.site = new SiteView(this.scene);
     this.space = new SpaceView(this.scene, glow);
+    this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'medium' ? 110 : 170);
     this.scene.add(this.ship.root);
   }
 
@@ -125,6 +137,16 @@ export class Sector {
     this.snapped = false;
   }
 
+  /** How far the screen has gone to pale teal at the end of a jump (0 to 1). The page puts a veil over the canvas for it. */
+  get warpVeil(): number {
+    return this.warpT < 0 ? 0 : whiteout(this.warpT);
+  }
+
+  /** The ship is going through the ring: the HUD steps back. */
+  get jumping(): boolean {
+    return this.warpT >= 0;
+  }
+
   /** Engine colours: a cosmetic id from content/unlocks.ts. */
   setCosmetic(id: string): void {
     const c = COSMETICS[id] ?? COSMETICS['engine-stock']!;
@@ -138,6 +160,7 @@ export class Sector {
     this.post = new Post(this.renderer, this.scene, this.rig.camera, tier);
     this.fx.setLights(tier.name !== 'low');
     this.env.setShadow(tier.shadow);
+    this.warp.setDetail(tier.name === 'low');
     this.debris.setCount(tier.debris);
   }
 
@@ -369,11 +392,9 @@ export class Sector {
           break;
         }
         case 'jumped':
-          this.fx.flash(e.x, 0.5, e.z, 30, [4, 3, 1.4], 0.8);
-          this.fx.ring(e.x, 0.2, e.z, 40, AMBER, 1.2);
-          this.fx.light(e.x, 1, e.z, [1, 0.7, 0.3], 4000, 1.4);
-          this.rig.shake(0.8);
-          hold = Math.max(hold, 0.1);
+          // the drive lets go at the ring; the ship's fly-through (frame) does the rest
+          this.fx.ring(e.x, 0.2, e.z, 30, [0.4, 2.4, 3.2], 1);
+          this.rig.shake(0.25);
           break;
         case 'breach':
           this.fx.explode(e.x, 0.2, e.z, 4, ALERT, 'metal');
@@ -417,10 +438,17 @@ export class Sector {
     s.heading = lerp(a.heading, b.heading, alpha);
     s.yawRate = lerp(a.yawRate, b.yawRate, alpha);
 
+    // a new run (or the next system): the camera is where the ship is, with no swoop from the last one's gate
+    if (this.seenRun !== world.run) { this.seenRun = world.run; this.snapped = false; }
+    const wt = this.jumpClock(world, s);
     const subject = { x: s.x, z: s.z, heading: s.heading, yawRate: s.yawRate, speedFrac: Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(world.hull)) };
     if (!this.snapped) { this.rig.snap(subject); this.snapped = true; }
+    this.rig.warp.lens = wt >= 0 ? lens(wt) : 0;
+    this.rig.warp.lock = wt >= 0 ? Math.min(1, wt / 0.35) : 0;
+    if (wt >= 0 && !this.reduceMotion && wt < 2.4) this.rig.hum(0.28 * Math.min(1, wt / 0.6));
     this.rig.update(subject, dt, this.reduceMotion);
-    this.ship.root.visible = world.alive && !(world.bk && world.bk.jumpT >= 0 && world.bk.jumpT < 1.3);
+    this.ship.root.visible = world.alive && (wt < 0 || whiteout(wt) < 0.97);
+    this.ship.stretch(wt >= 0 && !this.reduceMotion ? stretch(wt) : 1);
     // the shield stands at the rim as it fills, and fully once a charge is up
     this.ship.status.charged = world.powers.shield > 0 ? 1 : Math.min(1, world.shields);
     this.ship.status.cloaked = world.cloakT > 0;
@@ -435,7 +463,9 @@ export class Sector {
     this.pickups.update(world.pickups, alpha, dt, this.fx);
     this.arsenal.update(world.sys, dt, this.rig.camera.position);
     this.hazards.update(world.tele, world.strikes, world.encounter, dt, world.command.boss);
-    this.breakout.update(world, s, this.fx, dt);
+    const go = wt >= 0 && this.launch ? this.launch : null;
+    this.breakout.update(world, s, this.fx, dt, go ? { t: wt, cross: go.cross, flare: flare(go, wt) } : null);
+    this.warp.update(wt, this.rig.camera, go?.dx ?? 0, go?.dz ?? 0, dt, this.reduceMotion);
     this.site.update(world, dt);
     if (dt > 0) this.ambient(world, s.heading);
     // self-repair: the odd welding spark off the plating while it works
@@ -478,6 +508,34 @@ export class Sector {
     if (key === this.skyFor) return;
     this.skyFor = key;
     this.env.setSky(breakout ? skyFor(hashSeed(world.sortie.system), world.sortie.sky ?? world.sortie.region ?? 0) : skyFor(Math.floor(Math.random() * 1e9), null));
+  }
+
+  /**
+   * Seconds into the jump, or -1. From the moment the drive lets go the sim
+   * ship is no longer the one on screen: the ship is drawn on the jump's own
+   * path (render/warp.ts), through the ring and away down its axis.
+   */
+  private jumpClock(world: World, s: ShipState): number {
+    const bk = world.bk;
+    const wt = !world.review && bk && (bk.jumpT >= 0 || world.run.escaped) ? clamp(JUMP_T - bk.jumpT, 0, JUMP_T) : -1;
+    const was = this.warpWas;
+    this.warpT = this.warpWas = wt;
+    if (wt < 0 || !bk) { this.launch = null; return -1; }
+    if (!this.launch || this.launchRun !== world.run) {
+      this.launch = launchFrom(bk.lane, this.breakout.axis, s);
+      this.launchRun = world.run;
+    }
+    const l = this.launch, p = pose(l, wt);
+    s.x = p.x; s.z = p.z; s.heading = p.heading;
+    s.vx = l.dx * 1500 * p.rush; s.vz = l.dz * 1500 * p.rush;
+    s.thrust = 1 - 0.5 * p.rush; s.yawRate = 0; s.invuln = 0; s.rollT = -1; s.breakT = -1;
+    // across the ring: it blazes and a ripple runs out of it
+    if (was >= 0 && was < l.cross && wt >= l.cross) {
+      this.fx.flash(l.gx, 7, l.gz, 34, [0.9, 2.6, 3.2], 0.5);
+      this.fx.light(l.gx, 7, l.gz, [0.4, 0.9, 1], 3000, 0.8);
+      this.rig.shake(0.3);
+    }
+    return wt;
   }
 
   /** Particles that come from state rather than events: exhaust, burning hulls, the anomaly's pull. */

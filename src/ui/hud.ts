@@ -199,7 +199,7 @@ export class Hud {
         case 'commsAnswer': this.note(world, t(e.text), e.won ? undefined : 'hit'); break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
-        case 'spool': this.banner(t('Lane entrance'), t('Jump drive charging'), t('Stay in the lane'), 1.6, 'calm'); break;
+        case 'spool': this.banner(t('Lane entrance'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
         case 'needFuel': this.banner(t('Ship system'), t('Not enough jump fluid'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
@@ -597,7 +597,7 @@ export class Hud {
         text($('obj-t'), t('Jump')); text($('obj-left'), ''); ticks($('obj-p'), 1, 30); text($('obj-s'), t('Into the lane'));
       } else if (bk.spool > 0) {
         text($('obj-t'), t('Jump drive')); text($('obj-left'), `${Math.max(0, bk.spoolNeed - bk.spool).toFixed(1)}s`);
-        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), t('Jump drive charging · stay in the lane'));
+        ticks($('obj-p'), bk.spool / bk.spoolNeed, 30); text($('obj-s'), t('Jump drive charging · fly through the gate'));
       } else if (bk.dockT > 0) {
         text($('obj-t'), bk.port?.name ?? ''); text($('obj-left'), '');
         ticks($('obj-p'), bk.dockT / DOCK_TIME, 30); text($('obj-s'), t('Docking clamps'));

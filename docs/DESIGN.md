@@ -27,10 +27,13 @@ A sortie with a shape: get the stolen hauler out of the home system
   roll burst go cold (`World.safe`, `cold` in the step). A trigger pressed
   there gives one "Guns cold" line (every 2.5 s at most); the edge is a thin
   teal ring on the ground and the alert card reads "Safe here".
-- **The jump.** Inside the lane mouth with the lane's jump fluid in the tank
-  (`World.fuel`, 20 on the first lane), the drive spools for five seconds;
-  leave the ring and it winds down. The jump burns the fluid and ends the run
-  as an escape.
+- **The jump.** With the lane's jump fluid in the tank (`World.fuel`, 20 on
+  the first lane) the drive charges for five seconds on the way in (from
+  `APPROACH`, 230 units out, further when it needs longer); fly through the
+  ring with it charged and the ship goes through: it burns the fluid and ends
+  the run as an escape after `JUMP_T`, three seconds of fly-through
+  ([JUMP.md](JUMP.md)). Arrive early and the drive finishes charging in the
+  ring; leave the reach and it winds down.
 - **Cyrite is what rock gives, and the tank comes first.** Veined (rich,
   violet) rock and the rare gold rock carry it, mined clean with the lasers
   (`rockYield`); ordinary rock and the wrecks of what you destroy give a
@@ -87,8 +90,8 @@ A sortie with a shape: get the stolen hauler out of the home system
   ship (`BLOCKADE_HP`), and her checkpoint is a comms card: "Your ID doesn't
   match the registry". Run it (make for the lane under her guns: she and her wing
   come after you, the hunt pressure goes to full, and her interdiction field
-  more than doubles the spool, eleven seconds in the lane mouth instead of
-  five; survive it and you are gone, with no need to kill her), spoof it (with forged codes, likely; or
+  more than doubles the charge, eleven seconds instead of five (the reach
+  grows with it); survive it and you are gone, with no need to kill her), spoof it (with forged codes, likely; or
   rig the transponder from spare parts, a long shot when the heat is up), pay the
   fee (it rises with heat; a captain who goes by the book takes it and
   scans you anyway), talk your way through (easier before they know your

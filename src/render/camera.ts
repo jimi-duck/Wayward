@@ -26,6 +26,10 @@ const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
 const BASE_VFOV = 52;
 const FOV_KICK = 6;
+/** In the jump: the lens opens this many degrees, and the camera drops to this angle (the ship stays where it is in the picture). */
+const WARP_FOV = 38;
+const WARP_ELEV = MathUtils.degToRad(9);
+const WARP_PULL = 0.18;
 
 /**
  * A phone on its side is a small, short window: there the camera stands a
@@ -72,6 +76,8 @@ export class CameraRig {
   private pull = 1;
   /** 0 in flight, 1 with the refit bay open: the camera comes in on the ship. */
   bay = 0;
+  /** The jump (render/warp.ts): `lens` 0 to 1 widens the view and drops the camera low behind the ship; `lock` 0 to 1 holds it rigidly on the ship, whatever the speed. */
+  warp = { lens: 0, lock: 0 };
 
   /** `offsetY` lifts the centre of the picture by that many CSS pixels. */
   resize(width: number, height: number, offsetY: number): void {
@@ -87,6 +93,11 @@ export class CameraRig {
   /** Shake: 0 to 1, squared on its way to an offset (the original's trauma). */
   shake(amount: number): void {
     this.trauma = Math.min(1, this.trauma + amount);
+  }
+
+  /** A steady rumble at least this strong (0 to 1), for as long as it is asked for each frame. */
+  hum(level: number): void {
+    this.trauma = Math.max(this.trauma, level);
   }
 
   /** A shove backward along the view, for the weight of a shot. */
@@ -109,20 +120,29 @@ export class CameraRig {
     this.target.x = smoothDamp(this.target.x, gx, this.vx, FOLLOW, dt);
     this.target.z = smoothDamp(this.target.z, gz, this.vz, FOLLOW, dt);
     this.yaw = smoothDampAngle(this.yaw, s.heading, this.vyaw, YAW_FOLLOW, dt);
+    // a ship at a thousand a second would leave a camera that eases after it far behind: in the jump the rig holds on
+    const { lens, lock } = this.warp;
+    if (lock > 0) {
+      this.target.x += (gx - this.target.x) * lock;
+      this.target.z += (gz - this.target.z) * lock;
+      this.yaw += Math.atan2(Math.sin(s.heading - this.yaw), Math.cos(s.heading - this.yaw)) * lock;
+    }
     this.zoomNow = smoothDamp(this.zoomNow, ZOOMS[this.zoom] ?? 1, this.vzoom, 0.3, dt);
     this.recoil = Math.max(0, this.recoil - this.recoil * 9 * dt - 0.2 * dt);
 
-    const vfov = BASE_VFOV + FOV_KICK * s.speedFrac;
+    const vfov = BASE_VFOV + FOV_KICK * s.speedFrac + (reduceMotion ? 0 : WARP_FOV * lens);
     if (Math.abs(this.camera.fov - vfov) > 0.01) {
       this.camera.fov = vfov;
       this.applyOffset();
     }
     const tanV = Math.tan(MathUtils.degToRad(vfov) / 2);
-    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 - 0.12 * this.bay);
+    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 - 0.12 * this.bay) * (1 + (reduceMotion ? 0 : WARP_PULL * lens));
 
     // forward along the yaw, and the camera behind and above
     const fx = Math.cos(this.yaw), fz = -Math.sin(this.yaw);
-    const back = Math.cos(ELEV) * dist, up = Math.sin(ELEV) * dist;
+    // the ship keeps its place in the picture (ELEV - PITCH below the middle) while the camera comes down to the plane
+    const elev = ELEV + (WARP_ELEV - ELEV) * lens, pitch = PITCH + (elev - ELEV);
+    const back = Math.cos(elev) * dist, up = Math.sin(elev) * dist;
     let px = this.target.x - fx * back, py = up, pz = this.target.z - fz * back;
     this.trauma = Math.max(0, this.trauma - 1.8 * dt);
     if (this.trauma > 0 && !reduceMotion) {
@@ -134,7 +154,7 @@ export class CameraRig {
     this.camera.position.set(px, py, pz);
     this.camera.up.set(0, 1, 0);
     // look down by PITCH along the yaw
-    this.camera.lookAt(px + fx * Math.cos(PITCH), py - Math.sin(PITCH), pz + fz * Math.cos(PITCH));
+    this.camera.lookAt(px + fx * Math.cos(pitch), py - Math.sin(pitch), pz + fz * Math.cos(pitch));
 
     const wantRoll = clamp(-s.yawRate * 0.03, -0.06, 0.06);
     this.roll += (wantRoll - this.roll) * Math.min(1, 6 * dt);
