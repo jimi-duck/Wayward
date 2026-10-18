@@ -790,7 +790,7 @@ export const COPY: Record<string, string> = {
   'All weapons firing': 'Alle Waffen feuern',
   'Reinforcements approaching': 'Verstärkung im Anflug',
   'System event': 'Systemereignis',
-  'Jump drive charging · stay in the lane': 'Sprungantrieb lädt · bleib in der Bahn',
+  'Jump drive charging · fly through the gate': 'Sprungantrieb lädt · flieg durchs Tor',
   'Head for the lane entrance': 'Ab zum Sprungpunkt',
   'Reach the lane entrance': 'Zum Sprungpunkt',
   'Holding position at the beacon': 'Halte Position am Leuchtfeuer',

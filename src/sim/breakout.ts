@@ -19,8 +19,8 @@ import type { Rng } from './rng';
 // sortie has a shape instead of an endless clock:
 //
 //   the lane mouth · far across the system, the old jump lane out. Reach it
-//                    with enough jump fluid in the tank, hold inside it while the
-//                    drive spools, and you are gone. A Custody capital ship
+//                    with enough jump fluid in the tank, let the drive charge
+//                    on the way in, and fly through the ring: you are gone. A Custody capital ship
 //                    blockades it, and her checkpoint is a comms card: run
 //                    it, spoof it, pay it, talk through it, or fight her.
 //   the port       · a work bay off the direct line, a little under halfway,
@@ -75,6 +75,10 @@ export const HOLD_MAX = 999;
 export { TANK_MAX };
 /** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
+/** The drive charges from this far out (further when it needs longer: about 46 units a second of charge, a little over the top speed), so a ship flying in is ready as it reaches the ring and goes straight through. */
+export const APPROACH = 230;
+/** Seconds from the ship entering the ring to the jump being over: the fly-through (render/warp.ts). */
+export const JUMP_T = 3;
 export const SPOOL_RUN = 2.2;
 /** Within this distance of the lane mouth, the blockade's checkpoint calls. */
 export const BLOCKADE_AT = 420;

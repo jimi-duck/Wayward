@@ -13,7 +13,7 @@ import { Desk, DESK, HUSH, type Busy } from './desk';
 import { CERRO_BEATS, OPENING_AT, STORY_AT } from '../content/story';
 import { ledgerFor } from './contract';
 import {
-  BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
+  APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval,
   rockYield, DOCK_SPEED, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
@@ -826,13 +826,14 @@ export class World implements EncounterHost {
     }
     if (b.blockade === 'called' && this.command.state === 'idle' && !this.command.boss) b.blockade = 'done';
 
-    // the lane mouth: hold inside it with the Cyrite to jump while the drive spools
-    if (dl < b.lane.r) {
-      if (this.fuel >= this.jumpCost && this.phase === 'play') {
-        if (b.spool === 0) this.events.push({ type: 'spool' });
-        b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
-        if (b.spool >= b.spoolNeed) this.jump();
-      } else if (b.nagT <= 0) {
+    // the lane mouth: the drive charges on the way in (with the fluid in the tank) and the ship goes through the ring as soon as it is ready
+    const near = dl < Math.max(APPROACH, b.spoolNeed * 46);
+    if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
+      if (b.spool === 0) this.events.push({ type: 'spool' });
+      b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
+      if (b.spool >= b.spoolNeed && dl < b.lane.r) this.jump();
+    } else if (near) {
+      if (this.fuel < this.jumpCost && b.nagT <= 0) {
         b.nagT = 6;
         this.events.push({ type: 'needFuel', have: Math.floor(this.fuel), need: this.jumpCost });
       }
@@ -1094,7 +1095,7 @@ export class World implements EncounterHost {
     this.run.cyriteLeft = this.cyrite;
     this.run.cause = 'escaped';
     this.addScore(5000 + (this.cyrite + this.fuel) * 50 + this.plates * 500, 'events');
-    b.jumpT = 1.6;
+    b.jumpT = JUMP_T;
     s.invuln = 99;
     this.events.push({ type: 'jumped', x: s.x, z: s.z });
   }
