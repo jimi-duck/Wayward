@@ -259,6 +259,16 @@ export function options(j: Journey) {
   }));
 }
 
+/**
+ * The first jump out of Cerro has no choice, so it has no chart: called as the ship lands in the first system beyond (the
+ * trail is Cerro and here), it plots the next lane at once. Returns whether it did. Every later jump is the player's to plot.
+ */
+export function autoCourse(j: Journey): boolean {
+  if (j.status !== 'chart' || j.trail.length !== 2) return false;
+  const o = options(j)[0];
+  return !!o && plot(j, o.to.id);
+}
+
 /** A lane you may take from here: not to Cerro, and never back through a gate (from one, only on into the region beyond). */
 function onward(j: Journey, to: StarSystem): boolean {
   if (to.kind === 'home') return false;
