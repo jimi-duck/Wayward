@@ -114,12 +114,14 @@ describe('the first minutes', () => {
     for (let i = 0; i < 10; i++) w.step(STEP, input());
     expect(lessonOf(w)!.mark?.name).toBe('Raider');
     // refusing draws a missile at once, homing on the ship
-    expect(w.tutor!.missile).toBe(true);
-    expect(w.shots.length).toBeGreaterThan(0);
+    expect(w.tutor!.missile).toBeGreaterThan(0);
+    expect(w.shots.some((s) => s.from === 'tutor-missile')).toBe(true);
     expect(w.tutor!.lost).toBe(false);
-    // its hit tears the pod away and rings on the hull
+    // it always hits, a moment later (scripted, no kill needed): the pod goes and the hit rings on the hull
     w.events.length = 0;
-    for (let i = 0; i < 600 && !w.tutor!.lost; i++) { w.ship.invuln = 0; w.step(STEP, input()); }
+    for (let i = 0; i < 240 && !w.tutor!.lost; i++) { w.ship.vx = 30; w.step(STEP, input()); }
+    expect(w.kills).toBe(0);
+    expect(w.shots.some((s) => s.from === 'tutor-missile')).toBe(false);
     expect(w.tutor!.lost).toBe(true);
     expect(cargoOf(w)!.onboard).toBe(0);
     expect(w.events.some((e) => e.type === 'cargoLost' && e.n === FIRST_LOAD)).toBe(true);

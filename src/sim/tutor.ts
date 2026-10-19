@@ -55,8 +55,8 @@ export interface Tutor {
   credit: number;
   /** The raiders' offer: 0 not yet, 1 on the table, 2 answered (refused). */
   parley: 0 | 1 | 2;
-  /** The missile that takes the pod has been fired. */
-  missile: boolean;
+  /** Seconds until the scripted missile hits (0: none in flight, or already hit). */
+  missile: number;
 }
 
 /** What the HUD reads for the step in hand. */
@@ -93,7 +93,7 @@ const DEPOT_SIDE = 90;
 
 /** Mine, upgrade, shoot with it. The Story flies to a work bay for the settlement and the upgrade, then hauls the last of the contract; the Arcade fits it in flight. */
 export function newTutor(story = true): Tutor {
-  return { steps: story ? ['mine', 'bay', 'haul', 'shoot'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], said: [], onboard: 0, delivered: 0, lost: false, settled: false, credit: 0, parley: 0, missile: false };
+  return { steps: story ? ['mine', 'bay', 'haul', 'shoot'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], said: [], onboard: 0, delivered: 0, lost: false, settled: false, credit: 0, parley: 0, missile: 0 };
 }
 
 /** The cargo the HUD reads, or null where there is no contract (the Arcade, or the training over). */
@@ -158,15 +158,29 @@ function parley(w: World, tu: Tutor): void {
   w.openComms(card);
 }
 
-/** Refused: the nearer raider fires a missile at the ship at once. It homes, and its hit tears the pod away (`loseCargo`). */
+/** Seconds from the missile's launch to its hit. */
+const MISSILE_T = 1.5;
+/** Marks the scripted missile among the shots. */
+const MISSILE = 'tutor-missile';
+
+/**
+ * Refused: the nearer raider fires a missile at once, and it always hits (scripted: it cannot be shot down or dodged, so the
+ * beat plays the same every time). It flies as a harmless shot timed to arrive on the hit, which tears the pod away.
+ */
 function missile(w: World, tu: Tutor): void {
   const from = tu.pirates.map((id) => w.aliens.find((a) => a.id === id)).filter((a): a is NonNullable<typeof a> => !!a)
     .sort((a, b) => Math.hypot(a.x - w.ship.x, a.z - w.ship.z) - Math.hypot(b.x - w.ship.x, b.z - w.ship.z))[0];
   if (!from) return;
-  const s = w.ship, a = Math.atan2(-(s.z - from.z), s.x - from.x), sp = 44;
-  w.shots.push({ id: newId(), x: from.x, y: from.y, z: from.z, vx: Math.cos(a) * sp, vy: 0, vz: -Math.sin(a) * sp, life: 6, r: 0.9, faction: from.faction, hp: 1, seek: 2.4, split: 0, from: from.variant });
+  const s = w.ship, d = Math.hypot(s.x - from.x, s.z - from.z) || 1, sp = d / MISSILE_T;
+  w.shots.push({ id: newId(), x: from.x, y: from.y, z: from.z, vx: ((s.x - from.x) / d) * sp, vy: 0, vz: ((s.z - from.z) / d) * sp, life: MISSILE_T + 1, r: 0.02, faction: from.faction, hp: 99, seek: 0, split: 0, from: MISSILE });
   w.events.push({ type: 'plasma', x: from.x, z: from.z });
-  tu.missile = true;
+  tu.missile = MISSILE_T;
+}
+
+/** The scripted missile arrives: it is gone, and the pod with it. */
+function missileHit(w: World, tu: Tutor): void {
+  w.shots = w.shots.filter((x) => x.from !== MISSILE);
+  loseCargo(w, tu);
 }
 
 /** The hold is torn open by the raiders' fire: once, and it is gone. */
@@ -312,7 +326,7 @@ export function stepTutor(w: World, dt: number): void {
   if (id === 'shoot' && story(w, tu) && !tu.lost) {
     // the raiders turn hostile when the offer is refused; their first hit on the ship, or the first one down, opens the hold
     if (tu.parley === 1 && w.phase === 'play' && tu.pirates.every((p) => { const a = w.aliens.find((x) => x.id === p); return !a || !a.ward; })) { tu.parley = 2; missile(w, tu); }
-    if (tu.parley === 2 && (w.kills > tu.base || w.events.some((e) => e.type === 'shipHit' || e.type === 'shieldHit'))) loseCargo(w, tu);
+    if (tu.missile > 0 && (tu.missile -= dt) <= 0) { tu.missile = 0; missileHit(w, tu); }
   }
   if (id === 'shoot' && story(w, tu) && tu.parley === 0 && tu.pirates.length) parley(w, tu);
   if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && tu.pirates.some((p) => !w.aliens.some((a) => a.id === p)))) && w.kills < tu.base + PIRATES) layShip(w, tu);

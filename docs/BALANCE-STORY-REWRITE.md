@@ -25,7 +25,7 @@ Design targets, all in `sim/contract.ts` and `sim/civic.ts`, none playtested:
 
 | Number | Value | Why |
 |---|---|---|
-| Quota / held | 1,000 / 800, unchanged by the lesson rocks | The Work Bay takes nothing. A missile fired the moment the raiders' offer is refused destroys the whole hold. |
+| Quota / held | 1,000 / 800, unchanged by the lesson rocks | The Work Bay takes nothing. A scripted missile (always hits) fired the moment the raiders' offer is refused destroys the whole hold. |
 | Company charges (credit) | refinery 40, lease 12, fuel reserve 20, escrow 6 of 100 | Leaves 22 before the launcher. |
 | Credit at the bay | 4 | "Credit is low": nothing to spare for a surprise. |
 | Launcher | the torpedo bay's real price (20), financed against the payout | Projection shows 2 left. The purse is untouched. Torpedo ammunition is unlimited in the Story opening (the rack reloads on its own); the stocked high-yield torpedoes of the Story economy (`POWER_STOCK`) are unchanged. |
