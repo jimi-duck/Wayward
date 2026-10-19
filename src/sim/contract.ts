@@ -6,39 +6,42 @@ import { cost } from './bay';
 // under a Cerro extraction contract. Nothing here is a payroll simulation. Four
 // things are kept apart, in two units:
 //
-//   cargo (Cyrite ore, the hold)  · `onboard`: in the hold, not yet counted
-//                                 · `delivered`: accepted by the Work Bay, counted against the contract
-//   credit (the purse)            · the settlement's net, spent on the rack, then what is left
-//   debt (credit owed)            · the short-delivery penalty and the lease, when the contract breaches
+//   cargo (Cyrite ore, the hold)  · `onboard`: in the hold; the Work Bay never takes it, only Cerro does, at the end
+//   credit (the purse)            · what Juno can spend now: very little
+//   financing                     · the torpedo launcher, put on the company's account against the contract's payout
+//   debt (credit owed)            · the penalty, the lease and the launcher, when the contract breaches
 //
-// The Work Bay's acceptance is the one transition from onboard to delivered. The
-// figures are design targets, tuned in docs/BALANCE-STORY-REWRITE.md.
+// The figures are design targets, tuned in docs/BALANCE-STORY-REWRITE.md.
 
 export const CONTRACT_ID = '08-441';
-/** What the contract asks for (Cyrite cargo), the hold, and what the first load is. */
+/** What the contract asks for (Cyrite cargo) and what the hold carries. */
 export const QUOTA = 1000;
 export const HOLD = 1000;
+/** What is already in the hold when the shift is picked up in flight. */
 export const FIRST_LOAD = 800;
-/** The last of the contract, mined on the second trip and lost to the raiders. */
+/** What each of the opening's two rocks adds, to reach the quota. */
+export const ROCK_LOAD = 100;
 export const FINAL_LOAD = QUOTA - FIRST_LOAD;
-/** Where the hold's meter starts: the shift is already under way, so the first rock tops it up to the load. */
-export const HOLD_AT_START = 600;
+/** Where the hold's meter starts. */
+export const HOLD_AT_START = FIRST_LOAD;
 
-/** The settlement's gross credit, and the company's cuts, taken before Juno sees anything (all credit). */
+/** The contract's gross credit, and the company's cuts, taken before Juno sees anything (all credit). */
 export const GROSS = 100;
 export const CUTS = { refinery: 40, lease: 12, reserve: 20, escrow: 6 } as const;
-/** What is left to Juno once the cuts are taken. */
+/** What the contract leaves once the cuts are taken, before the launcher. */
 export const NET = GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow;
-/** What the torpedo rack costs, paid from the net (Cyrite credit, the bay's own price). */
+/** Credit in the purse at the Work Bay: almost nothing. */
+export const CREDIT_START = 4;
+/** What the torpedo launcher costs (credit, the bay's own price). The company finances it. */
 export const upgradePrice = (): number => cost(LESSON_NODE, 1, false);
-/** What is in the purse once the rack is paid. */
-export const balanceAfterRack = (price = upgradePrice()): number => NET - price;
+/** What the contract would leave Juno with, launcher paid off: the figure the Work Bay shows. */
+export const projectedAfterLauncher = (price = upgradePrice()): number => NET - price;
 
 /** The short-delivery penalty added when the contract is missed, and the lease due on top of it (credit). */
 export const PENALTY = 15;
 export const LEASE_DUE = CUTS.lease;
-/** What Juno owes once the contract breaches. */
-export const OWED = PENALTY + LEASE_DUE;
+/** What Juno owes once the contract breaches: penalty, lease and the financed launcher. */
+export const owed = (price = upgradePrice()): number => PENALTY + LEASE_DUE + price;
 
 export type RowTone = '' | 'mine' | 'warn' | 'bad';
 /**
@@ -50,30 +53,53 @@ export interface LedgerRow { k: string; n?: number; cr?: number; v?: string; ton
 /** A figure of the cargo, read as "800 / 1,000". */
 export const ratio = (n: number, m = QUOTA): string => `${n.toLocaleString('en')} / ${m.toLocaleString('en')}`;
 
-/** The Work Bay's receipt: the load it takes in, what that counts for, and the credit left after the company's cuts. */
+/** The Work Bay's account: what is held, what is left to spend, and what 1,000 Cyrite would earn after the company's charges. */
 export function bayLedger(): LedgerRow[] {
+  const price = upgradePrice();
   return [
-    { k: 'Delivered', v: ratio(FIRST_LOAD) },
-    { k: 'Remaining', n: FINAL_LOAD },
+    { k: 'Cargo held', v: ratio(FIRST_LOAD) },
+    { k: 'Available credit', cr: CREDIT_START },
     { k: 'Gross contract credit', cr: GROSS },
     { k: 'Refinery & handling', cr: -CUTS.refinery },
     { k: 'Vessel lease', cr: -CUTS.lease },
     { k: 'Fuel reserve', cr: -CUTS.reserve },
     { k: 'Reliability escrow', cr: -CUTS.escrow },
-    { k: 'Available credit', cr: NET, tone: 'mine' },
+    { k: 'Torpedo launcher · financed', cr: -price, tone: 'warn' },
+    { k: 'Left after charges', cr: projectedAfterLauncher(price), tone: 'mine' },
   ];
 }
 
-/** The short-delivery result: the cargo counted, the shortfall, the payout withheld, the debt. */
+/** The short-delivery result: nothing delivered, the payout withheld, the debt. */
 export function breachLedger(): LedgerRow[] {
   return [
-    { k: 'Contract delivery', v: ratio(FIRST_LOAD) },
-    { k: 'Remaining shortfall', n: FINAL_LOAD, tone: 'warn' },
+    { k: 'Contract delivery', v: ratio(0), tone: 'warn' },
     { k: 'Payout', v: 'Withheld', tone: 'warn' },
     { k: 'Short-delivery penalty', cr: -PENALTY, tone: 'warn' },
     { k: 'Vessel lease due', cr: -LEASE_DUE, tone: 'warn' },
+    { k: 'Torpedo launcher · financed', cr: -upgradePrice(), tone: 'warn' },
     { k: 'Vessel asset recovery', v: 'Authorised', tone: 'warn' },
-    { k: 'Balance owed', cr: OWED, tone: 'bad' },
+    { k: 'Balance owed', cr: owed(), tone: 'bad' },
+  ];
+}
+
+/** The raiders' terms taken: the ship, the cargo and the pilot. */
+export function seizedLedger(): LedgerRow[] {
+  return [
+    { k: 'Cargo', v: 'Seized', tone: 'warn' },
+    { k: 'Vessel', v: 'Seized', tone: 'warn' },
+    { k: 'Pilot', v: 'Forced labour', tone: 'bad' },
+    { k: 'Contract 08-441', v: 'Terminated', tone: 'bad' },
+  ];
+}
+
+/** Sam's offer: what the audit lane takes, and what the override costs. */
+export function lockLedger(): LedgerRow[] {
+  return [
+    { k: 'Vessel', v: 'Leased · owner lock' },
+    { k: 'Audit lane', v: 'Repossession', tone: 'warn' },
+    { k: 'Your debt', v: 'Stays with you', tone: 'warn' },
+    { k: 'Maintenance code', v: 'Sam Okoro' },
+    { k: 'If used', v: 'Hull reported stolen', tone: 'bad' },
   ];
 }
 
@@ -89,11 +115,11 @@ export function archiveLedger(): LedgerRow[] {
   ];
 }
 
-export type LedgerKind = 'bay' | 'breach' | 'archive';
+export type LedgerKind = 'bay' | 'breach' | 'archive' | 'seized' | 'lock';
 
 /** The rows a card shows (the sim's side; the panel only draws them). */
 export function ledgerFor(kind: LedgerKind): LedgerRow[] {
-  return kind === 'bay' ? bayLedger() : kind === 'breach' ? breachLedger() : archiveLedger();
+  return kind === 'bay' ? bayLedger() : kind === 'breach' ? breachLedger() : kind === 'seized' ? seizedLedger() : kind === 'lock' ? lockLedger() : archiveLedger();
 }
 
 /** The cargo as the HUD reads it: what is aboard, what the Work Bay has counted, and what the contract asks. */

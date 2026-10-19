@@ -318,18 +318,18 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 Folder `src/art/contacts/` · 640×800 · shown in: comms header
 
-### `contacts/story_bay.webp`
+### `contacts/story_sam.webp`
 
 - Size 640×800 · full picture (a dark setting)
-- Shown: The comms call "Settlement received" (story_bay), top left of the transmission. The caller's emblem is used if this is missing.
-- From the game: from "Sam Okoro · yard foreman" · caller miners · title "Settlement received"
+- Shown: The comms call "A code for the owner lock" (story_sam), top left of the transmission. The caller's emblem is used if this is missing.
+- From the game: from "Sam Okoro · private channel" · caller miners · title "A code for the owner lock"
 
 ```text
 Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, "used, not dirty": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.
 
-Subject: Sam Okoro, yard foreman. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.
+Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.
 Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked.
-Mood: what they say to the player: “Eight hundred in the hold, and after their deductions you can almost afford the rack. Almost. You still owe them two hundred.”
+Mood: what they say to the player: “Juno, don’t dock. They take the hauler and your debt stays. I have a maintenance code that overrides the owner lock. It makes her stolen, but she is yours to run.”
 
 Framing: head and shoulders portrait, 4:5 vertical, the face filling about two thirds of the frame height so it still reads when shown 48 pixels wide. Eyes in the upper third, looking toward the viewer. Lighting: the key light from the side or the screens in front; a plain dark, out-of-focus setting behind. The person is the whole picture.
 The viewer is "Juno", a miner who stole the wrong ship; this person is someone met over a comms channel.

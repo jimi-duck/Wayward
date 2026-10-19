@@ -34,14 +34,16 @@ export const CHOICE_REGION = 2;
 /** Seconds into a sortie before the story beat calls. */
 export const STORY_AT = 40;
 /**
- * Act I past the gate (docs/ONBOARDING.md): the breach notice with Sam cutting in on the same channel (one action: break the
- * owner lock), then the archive that wakes. Two cards, one a moment after the other, at the start of the first sortie beyond
- * Cerro. `story_bay` is the odd one out: the work bay's settlement, played inside the training.
+ * Act I past the gate (docs/ONBOARDING.md): Lane Control's breach notice (no way out offered), Sam's private offer of a
+ * maintenance code a little way on, then the archive that wakes. Three cards, one a moment after the other, at the start of the
+ * first sortie beyond Cerro. `story_bay` (the work bay's account) and `story_raiders` (the intercept) are the odd ones out:
+ * they are played inside the training.
  */
 export const BAY_BEAT = 'story_bay';
 export const BREACH_BEAT = 'story_breach';
+export const SAM_BEAT = 'story_sam';
 export const WAKE_BEAT = 'story_wake';
-export const CERRO_BEATS = [BREACH_BEAT, WAKE_BEAT] as const;
+export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, WAKE_BEAT] as const;
 /** Seconds into that sortie before the chain begins. */
 export const OPENING_AT = 2;
 
@@ -139,8 +141,11 @@ export const STORY_PEOPLE: Array<{ flags: string[]; name: string }> = [
 
 /** One line for a glance at the pop-up: what is happening, before any of the detail. */
 const GIST: Record<string, string> = {
-  "story_bay": "Load counted · the company takes its cut",
-  "story_breach": "Contract in breach · Sam offers one way out",
+  "story_bay": "The company will finance a launcher",
+  "story_raiders": "Two unknown ships · pay or refuse",
+  "story_seized": "The raiders took everything",
+  "story_breach": "Contract in breach · the hauler is recalled",
+  "story_sam": "Sam has a code for the owner lock",
   "story_wake": "The archive woke · Krail reserves were 94%",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
@@ -240,23 +245,54 @@ export const STORY_CARDS: CardDef[] = [
   // cutting in on the same channel (one action, the override), and the archive that wakes on it.
   story({
     id: 'story_bay', kind: 'trade', caller: 'miners', ledger: 'bay',
-    from: 'Sam Okoro · yard foreman', title: 'Settlement received',
-    text: '“Eight hundred in the hold, and after their deductions you can almost afford the rack. Almost. You still owe them two hundred.”',
+    from: 'Cerro Work Bay · automated', title: 'Account and launcher',
+    text: '“No cargo accepted here. Credit is low. A launcher can be financed against the Contract 08-441 payout.”',
+    reply: { from: 'Sam Okoro · radio', portrait: 'story_sam', text: '“Juno, I’ve heard raiders are working near the field. Take the launcher. The payout will cover it, and the company carries it until then.”' },
     cargo: 'Cerro work bay · Contract 08-441',
     choices: [
-      { id: 'install', label: 'Install the rack', tone: 'pay', hint: 'Fitted now, paid from your credit. Two credit left.', cost: { cyrite: 20 }, unit: 'credit',
-        win: { text: 'Torpedo rack fitted · two credit left', fit: 'tp_bay' } },
+      { id: 'install', label: 'Install the launcher', tone: 'pay', hint: 'Financed by the company and charged against the payout. Torpedoes are unlimited.',
+        win: { text: 'Launcher fitted · financed against the contract', fit: 'tp_bay' } },
+    ],
+  }),
+  story({
+    id: 'story_raiders', kind: 'warning', caller: 'unknown',
+    from: 'Unknown raider · incoming transmission', title: 'Incoming transmission',
+    text: '“Mining hauler, we’ve got you trapped. We can see the Cyrite in your hold. You’re a long way from anyone who gives a damn about you. Pay the toll and grant us boarding rights: we take the cargo and the ship, and you might live long enough to work off your debt. Refuse, and we’ll crack your hull. One chance, pilot.”',
+    cargo: 'Two unknown ships · closing',
+    choices: [
+      { id: 'pay', label: 'Pay up & allow boarding', tone: 'pay', hint: 'They take the ship and the cargo, and sell you into forced labour.',
+        win: { text: 'Boarding allowed · the raiders take everything', follow: { card: 'story_seized', after: 0.5, quick: true } } },
+      { id: 'refuse', label: 'Refuse', tone: 'fight', hint: 'Arm the launcher. The raiders turn hostile.',
+        win: { text: 'Weapons hot · the raiders turn on you', hostile: true } },
+    ],
+  }),
+  story({
+    id: 'story_seized', kind: 'warning', caller: 'unknown', ledger: 'seized',
+    from: 'Unknown raider · boarding', title: 'Game over · contract terminated',
+    text: '“Boarding complete. Cargo and hull seized. The pilot is sold into forced labour.”',
+    choices: [
+      { id: 'again', label: 'Start the contract again', tone: 'run', hint: 'The opening begins from the top.',
+        win: { text: 'The contract starts again', redo: true } },
     ],
   }),
   story({
     id: 'story_breach', kind: 'warning', caller: 'office', ledger: 'breach',
     from: 'Lane Control · registry notice', title: 'Contract 08-441 · in breach',
-    text: '“Final delivery was not received. The company accepts no responsibility for cargo lost. Berth access is restricted. Proceed to the audit lane for inspection and repossession. Unpaid balances go to compulsory labour.”',
-    reply: { from: 'Sam Okoro · private channel', portrait: 'story_bay', text: '“Juno, don’t dock. They’re taking the hauler, and your debt stays with you after they strip her. I’ve got one shot at the owner lock. It won’t make her yours. It’ll make them work to take her back.”' },
+    text: '“The 1,000 Cyrite was not delivered. Payout withheld. The launcher stays on your account. Proceed to the audit lane for inspection and ship repossession.”',
     cargo: 'Contract 08-441 · short delivery',
     arrive: { text: 'Short delivery reported', civic: -BREACH_DROP, civicWhy: 'Short delivery reported' },
     choices: [
-      { id: 'code', label: 'Use Sam’s code · break the owner lock', tone: 'run', hint: 'The hull is flagged as stolen and Continuance access is revoked. Your Civic Score drops.',
+      { id: 'proceed', label: 'Proceed to the audit lane', tone: 'run', hint: 'The company takes the ship. The debt stays with you, or it is compulsory labour.',
+        win: { text: 'Course set for the audit lane', follow: { card: SAM_BEAT, after: 8, quick: true } } },
+    ],
+  }),
+  story({
+    id: 'story_sam', kind: 'warning', caller: 'miners', ledger: 'lock',
+    from: 'Sam Okoro · private channel', title: 'A code for the owner lock',
+    text: '“Juno, don’t dock. They take the hauler and your debt stays. I have a maintenance code that overrides the owner lock. It makes her stolen, but she is yours to run.”',
+    cargo: 'The audit lane · ahead',
+    choices: [
+      { id: 'code', label: 'Enter Sam’s code · override the lock', tone: 'run', hint: 'The hull is flagged as stolen and your access revoked. You are on the run.',
         win: { text: 'Lock broken · the hull is yours, and stolen', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Governor’s desk', text: '“A registered hull is missing. Escalate it to the Governor.”' }, follow: { card: WAKE_BEAT, after: 3, quick: true } } },
     ],
   }),

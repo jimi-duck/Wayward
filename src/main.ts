@@ -353,8 +353,14 @@ function boot(review: typeof import('./review') | null): void {
     });
   };
   /** The sortie is over: fold it into the journey, then the chart, a notice, the Threshold, or the end. */
+  /** The opening is lost before the jump gate (a wreck, or the raiders' offer taken): the whole level starts again, nothing kept. */
+  const restartOpening = () => {
+    startSortie();
+    hud.note(world, t('Contract 08-441 starts again from the top'), 'hit');
+  };
   const sortieOver = () => {
     const j = journey!;
+    if (world.sortie.home && !world.run.escaped) return restartOpening();
     const rec = recordRun(profile, world.run);
     const out = endSortie(j, world.result());
     // the third wreck in a region: it is flown again from its gate
@@ -411,6 +417,7 @@ function boot(review: typeof import('./review') | null): void {
         // the answer is banked in the journey now, so a closed tab does not take it back
         const before = world.carry();
         world.answer(i);
+        if (world.redo && journey) { restartOpening(); input.reset(); return; }
         if (journey && world.mode === 'breakout' && journey.status === 'sortie') { bankAnswer(journey, before, world.carry()); saveJourney(journey); }
         input.reset();
       });

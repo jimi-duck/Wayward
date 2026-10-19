@@ -34,7 +34,7 @@ export const CONTACT_LOOK: Record<string, string> = {
   foreman: 'Foreman Draper of Kellern Mining: fifties, heavy, a tired decent man with a boss’s voice; amber hi-vis over grey overalls, company badge, a hard hat under one arm. A yard office behind him.',
   krail_seller: 'Old Hesketh, independent prospector: sixties, sun-and-dust skin, white stubble, patched mining suit, a lamp on his forehead. The cockpit of a small tug behind him, a few crates.',
   fuel_runner: 'Tallow, a fuel runner: thirties, wiry, cheerful and not to be trusted; oil-stained jacket with a hand-painted call sign, a siphon hose over one shoulder. Fuel cans in a cramped cab.',
-  story_bay: 'Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.',
+  story_sam: 'Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.',
   story_warden: 'Ilse Marrow, retired Lane Warden: eighties, upright, sharp-eyed; a faded Warden coat without insignia, a cane. A small kitchen or a relay station’s old console behind.',
   story_ledger: 'Adam Brook, Kellern accounts clerk with a conscience: thirties, thin, ink-stained cuffs, nervous; Kellern amber lanyard, glasses. A grey office cubicle, ledgers.',
   story_moot: 'Councillor Oduya of Kessel Hold: fifties, dignified, carries the weight of a council; a long coat of patched cloth with a speaker’s sash. A hall of rough steel with lamps.',

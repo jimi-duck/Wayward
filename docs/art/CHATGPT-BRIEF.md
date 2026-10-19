@@ -293,13 +293,13 @@ Nine people (and machines). The most important faces in the game.
 
 Eighteen named people. Same lighting and framing as the captains.
 
-#### contacts/story_bay
+#### contacts/story_sam
 
-`FILE: contacts/story_bay`
+`FILE: contacts/story_sam`
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
-- **Shown:** The comms call "Settlement received" (story_bay), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Sam Okoro, yard foreman. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Eight hundred in the hold, and after their deductions you can almost afford the rack. Almost. You still owe them two hundred.” (portrait framing: section 5)
+- **Shown:** The comms call "A code for the owner lock" (story_sam), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Juno, don’t dock. They take the hauler and your debt stays. I have a maintenance code that overrides the owner lock. It makes her stolen, but she is yours to run.” (portrait framing: section 5)
 
 #### contacts/story_warden
 

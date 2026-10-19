@@ -25,10 +25,11 @@ Design targets, all in `sim/contract.ts` and `sim/civic.ts`, none playtested:
 
 | Number | Value | Why |
 |---|---|---|
-| Quota / delivered / onboard | 1,000 / 800 after the Work Bay / 600 at the start | The shift is under way; the first rock tops the hold up to 800; the second rock's 200 is lost to the raiders. |
-| Company cuts (credit) | refinery 40, lease 12, fuel reserve 20, escrow 6 of 100 | Leaves 22. |
-| Rack | the torpedo bay's real price (20), paid up front | Leaves 2. Not also added to the lease. |
-| Breach | penalty 15 + lease 12 = 27 owed | Payout withheld; asset recovery authorised. |
+| Quota / held | 1,000 / 800 at the start, 900 after the first rock, 1,000 after the second | The shift is under way; each lesson rock adds 100. The Work Bay takes nothing. The raiders' fire destroys the whole hold. |
+| Company charges (credit) | refinery 40, lease 12, fuel reserve 20, escrow 6 of 100 | Leaves 22 before the launcher. |
+| Credit at the bay | 4 | "Credit is low": nothing to spare for a surprise. |
+| Launcher | the torpedo bay's real price (20), financed against the payout | Projection shows 2 left. The purse is untouched. Torpedo ammunition is unlimited in the Story opening (the rack reloads on its own); the stocked high-yield torpedoes of the Story economy (`POWER_STOCK`) are unchanged. |
+| Breach | penalty 15 + lease 12 + launcher 20 = 47 owed | Payout withheld; asset recovery authorised. |
 | Score steps | −14 breach, −30 stolen, −38 archive | 412 to 330 (the "under review" band, above the 300 toll line). |
 
-Measured: `npm run check` (tsc and 806 tests) and `npm run build` on this branch; the unit tests run the chain with every answer and check the arithmetic and the Score stay at 300 or above (`tests/civic.test.ts`, `tests/story.test.ts`, `tests/tutor.test.ts`), including a migrated v19 save that carries the old `contract` field. Not measured: how long the opening takes, whether the chase is fair on a phone, and the pilots (not re-run after this change).
+Measured: `npm run check` (tsc and 807 tests) and `npm run build` on this branch; the unit tests run the chain with every answer and check the arithmetic and the Score stay at 300 or above (`tests/civic.test.ts`, `tests/story.test.ts`, `tests/tutor.test.ts`), including a migrated v19 save that carries the old `contract` field. Not measured: how long the opening takes, whether the chase is fair on a phone, and the pilots (not re-run after this change).
