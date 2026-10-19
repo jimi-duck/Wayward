@@ -13,7 +13,7 @@ import type { Face } from './captains';
 import { ALIEN_TYPES, VARIANTS, type Faction } from './enemies';
 import { atLeast, type CaptainCall } from './notice';
 import { gains } from './gains';
-import { civicToll } from './civic';
+import { civicLabel, civicToll } from './civic';
 import type { Rng } from './rng';
 
 // ── the comms card ────────────────────────────────────────────────────────
@@ -531,7 +531,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
     }
     for (const f of list(n.flag)) if (!x.flags.has(f)) needs.push(t('Needs {what}', { what: t(FLAGS[f] ?? f) }));
     if (n.standing && (x.standing[n.standing[0]] ?? 0) < n.standing[1]) needs.push(t('Needs standing with {who}', { who: t(standingName(n.standing[0])) }));
-    if (n.civic !== undefined && !(x.civic !== undefined && x.civic >= n.civic)) needs.push(t('Needs a Civic Score of {n} or more · yours is {score}', { n: n.civic, score: x.civic ?? 0 }));
+    if (n.civic !== undefined && !(x.civic !== undefined && x.civic >= n.civic)) needs.push(t('Needs the registry to vouch for you · yours reads {band}', { band: civicLabel(x.civic ?? 0) }));
     if (n.cyrite !== undefined && x.cyrite < n.cyrite) needs.push(t('Needs {n} Cyrite', { n: n.cyrite }));
     if (n.supplies !== undefined && x.supplies < n.supplies) needs.push(t('Needs {n} supplies', { n: n.supplies }));
   }

@@ -236,10 +236,9 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .pf { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--line); }
 .pf .keys { font: 600 calc(var(--fs) * .9 * 1.18)/1.6 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 
-/* comms: a transmission received (and the arcade's hail). It comes in at
-   the side of the view, as in the brand's gameplay frame, the world dimmed
-   behind it and still there. */
-#comms { place-items: center end; background: linear-gradient(90deg, rgba(8, 13, 14, .12), rgba(8, 13, 14, .5) 45%, rgba(8, 13, 14, .86)); }
+/* comms: a transmission received (and the arcade's hail). It holds the view and sits in the middle of it,
+   the world dimmed behind it and still there. */
+#comms { place-items: center; background: radial-gradient(ellipse at center, rgba(6, 10, 12, .5), rgba(6, 10, 12, .8)); }
 .panel.comms { width: min(600px, 100%); overflow-y: auto; gap: 12px; padding: 14px 20px 14px 24px; }
 /* the header: a signal trace, the words, a hazard band */
 .tx-h { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }

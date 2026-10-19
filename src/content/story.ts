@@ -142,7 +142,7 @@ const GIST: Record<string, string> = {
   "story_bay": "Load counted · the company takes its cut",
   "story_breach": "Contract in breach · Sam offers one way out",
   "story_wake": "The archive woke · Krail reserves were 94%",
-  "story_registry": "Lane checkpoint · your Score decides",
+  "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
   "story_brook_arrest": "Brook is in a Custody transport",
@@ -190,7 +190,7 @@ export const REGISTRY_CARD: CardDef = {
   text: '“Hauler OB-7731-A, reported stolen. Registry status: UNDER REVIEW. Lane access is suspended pending inspection. Stand by.”',
   lines: [
     { if: { civicMin: 400 }, text: 'Your registry still reads COMPLIANT. She hesitates.' },
-    { if: { civicMax: 399 }, text: 'The ordinary doorway is shut: it needs a Civic Score of 400.' },
+    { if: { civicMax: 399 }, text: 'The ordinary doorway is shut: it needs the registry to vouch for you.' },
     { if: { flag: 'tam_codes' }, text: 'Okoro’s codes are loaded.' },
     { if: { heatMin: 0.5 }, text: 'Your ship is flagged across the system.' },
   ],
@@ -202,7 +202,7 @@ export const REGISTRY_CARD: CardDef = {
   ],
   choices: [
     {
-      id: 'show', label: 'Show your registry', tone: 'pay', hint: 'A compliant pilot is waved through unlogged. Needs a Civic Score of 400.',
+      id: 'show', label: 'Show your registry', tone: 'pay', hint: 'A compliant pilot is waved through unlogged. Needs the registry to vouch for you.',
       needs: { civic: 400 },
       win: { text: 'She waves a compliant pilot through · the lane is clear', blockade: 'pass', civic: 3, civicWhy: 'Registry presented at a checkpoint' },
     },
@@ -256,7 +256,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'Contract 08-441 · short delivery',
     arrive: { text: 'Short delivery reported', civic: -BREACH_DROP, civicWhy: 'Short delivery reported' },
     choices: [
-      { id: 'code', label: 'Use Sam’s code · break the owner lock', tone: 'run', hint: 'The hull is flagged as stolen and Continuance access is revoked. Your Score drops.',
+      { id: 'code', label: 'Use Sam’s code · break the owner lock', tone: 'run', hint: 'The hull is flagged as stolen and Continuance access is revoked. Your registry status drops.',
         win: { text: 'Lock broken · the hull is yours, and stolen', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Governor’s desk', text: '“A registered hull is missing. Escalate it to the Governor.”' }, follow: { card: WAKE_BEAT, after: 3, quick: true } } },
     ],
   }),
@@ -309,7 +309,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“I have read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you are going, and I will not stop you.”',
     cargo: 'The Patience · weapons cold, for now',
     choices: [
-      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan. Your Score rises.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told'], civic: 8, civicWhy: 'A cooperative report was logged', hunt: 1 } },
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan. Your registry status rises.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told'], civic: 8, civicWhy: 'A cooperative report was logged', hunt: 1 } },
       { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: 'calloway_ada', hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: 'calloway_ada', heat: 0.1 } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices.', win: { text: 'The Patience turns away' } },
     ],
@@ -320,8 +320,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“They traced the ledger to me. I am in a Custody transport, ten minutes from a cell. Please. You have the only copy.”',
     cargo: 'A Custody transport · one escort',
     choices: [
-      { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it, and your Score falls.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', civic: -20, civicWhy: 'Interfered with a Custody transport', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
-      { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble; failure costs Score.', odds: { base: 0.45, civic: 0.2 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free', civic: -5, civicWhy: 'A forged order was logged' }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken', civic: -12, civicWhy: 'A forged order was logged' } },
+      { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it, and your registry status falls.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', civic: -20, civicWhy: 'Interfered with a Custody transport', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
+      { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble; failure costs registry status.', odds: { base: 0.45, civic: 0.2 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free', civic: -5, civicWhy: 'A forged order was logged' }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken', civic: -12, civicWhy: 'A forged order was logged' } },
       { id: 'leave', label: 'Leave him', tone: 'refuse', hint: 'His account is already in your file.', win: { text: 'The channel closes · he is taken', flag: 'brook_taken' } },
     ],
   }),
@@ -489,7 +489,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“My brother Eben works the Breaker Yards. Something is wrong with the hulls they bring in, scarred like claws. Take him a message?”',
     cargo: 'A yard relay · patched through three ports',
     choices: [
-      { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file. Your Score falls.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'clue_scarred'], civic: -6, civicWhy: 'An unlicensed crew message was logged', standing: { frontier: 1 } } },
+      { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file. Your registry status falls.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'clue_scarred'], civic: -6, civicWhy: 'An unlicensed crew message was logged', standing: { frontier: 1 } } },
       { id: 'look', label: 'Look at the hulls', tone: 'trade', hint: 'Two supplies for a quiet look. Nobody is told.', cost: { supplies: 2 }, win: { text: 'You see the claw marks · they go in the file', flag: 'clue_scarred' } },
       { id: 'no', label: 'Not now', tone: 'refuse', hint: 'Sam will remember.', win: { text: 'Sam closes the channel' } },
     ],
@@ -523,7 +523,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'Needs all three clues to the signature. Once.', needs: { flag: ['clue_sig_reach', 'clue_sig_yards', 'clue_sig_ports'] }, win: { text: 'She reads her father’s hand · the field drops', flag: ['calloway_turned', 'sig_used'], hunt: 2 } },
       { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: 'calloway_bargain', hunt: 1 } },
-      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way. Your Score falls.', win: { text: 'The cutter breaks off · the Offices mark you', flag: 'calloway_hostile', civic: -30, civicWhy: 'Fired on an Offices cutter', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12 } },
+      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way. Your registry status falls.', win: { text: 'The cutter breaks off · the Offices mark you', flag: 'calloway_hostile', civic: -30, civicWhy: 'Fired on an Offices cutter', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12 } },
       { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: heat and a day lost.', win: { text: 'You limp out of the field', flag: 'calloway_hostile', civic: -10, civicWhy: 'Fled an Offices cutter', hunt: -1, heat: 0.1 } },
     ],
   }),
@@ -610,7 +610,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“Second: what has it cost others, that you carry it?”',
     cargo: 'A toll platform · one lit window',
     choices: [
-      { id: 'own', label: 'Own it', tone: 'help', hint: 'Name what you spent. Costs your Score nothing.', win: { text: '“Honest.” · Oren asks the third', flag: 'oren_owned', follow: { card: 'story_oren_why', after: 20 } } },
+      { id: 'own', label: 'Own it', tone: 'help', hint: 'Name what you spent. Costs your registry status nothing.', win: { text: '“Honest.” · Oren asks the third', flag: 'oren_owned', follow: { card: 'story_oren_why', after: 20 } } },
       { id: 'blame', label: 'Blame the Offices', tone: 'bluff', hint: 'True, but not an answer.', win: { text: '“Hm.” · Oren asks the third', follow: { card: 'story_oren_why', after: 20 } } },
       { id: 'none', label: 'Say nothing', tone: 'refuse', hint: 'He moves on.', win: { text: 'Oren moves on', follow: { card: 'story_oren_why', after: 20 } } },
     ],
