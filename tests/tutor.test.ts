@@ -172,8 +172,11 @@ describe('pop-up gist', () => {
     expect(w.dockHeld).toBe(true);
     expect(denied).toBeGreaterThan(0);
     expect(denied).toBeLessThan(3);
+    expect(w.engaged()).toBeGreaterThan(0);
     w.aliens = [];
-    for (let i = 0; i < 400 && w.phase === 'play'; i++) w.step(STEP, input());
+    let cleared = 0;
+    for (let i = 0; i < 400 && w.phase === 'play'; i++) { w.step(STEP, input()); cleared += w.events.filter((e) => e.type === 'dockCleared').length; w.events.length = 0; }
+    expect(cleared).toBe(1);
     expect(w.phase).toBe('dock');
   });
 });

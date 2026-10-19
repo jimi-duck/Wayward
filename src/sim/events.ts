@@ -29,6 +29,8 @@ export type GameEvent =
   | { type: 'gunsCold' }
   /** The port will not take the ship while a fight is on. */
   | { type: 'dockDenied' }
+  /** The fight is over and the clamps take the ship. */
+  | { type: 'dockCleared' }
   /** The ship has flown into a place that changes it: what it does, by report kind (sim/space.ts). */
   | { type: 'anomalyIn'; kinds: string[] }
   | { type: 'rackEmpty' }

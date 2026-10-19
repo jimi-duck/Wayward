@@ -406,4 +406,7 @@ export const REPORT_TEXT: Record<ReportKind, string> = {
   steady: 'Navigation steady',
 };
 
+/** The reports that help the ship; the rest hurt it. */
+export const REPORT_GOOD: ReadonlySet<ReportKind> = new Set<ReportKind>(['conceal', 'steady']);
+
 export type { Effects };
