@@ -36,7 +36,7 @@ flags and the purse); no migration was needed, and an older save that still carr
 | 6 Rename | same | A centre notice: "Vessel registry · unrecognised". The 3D hull is not repainted yet | |
 | 7 Archive | same | `story_wake`: the override wakes a sealed partition. Krail reserves 94% against a shortage order of the same day; the relay in Halden's Reach; a legacy key good for this hull only (the Wayward's obsolete hardware and registry handshake are why the ship is needed). Score −38 | One contradiction and a lead |
 
-Score: 412 → 398 (breach) → 368 (stolen) → 330 (archive wake). The Wall keeps the
+Civic Score: the number is hidden from the player (2026-10-19). Inside, 412 → 398 (breach) → 368 (stolen) → 330 (archive wake); the player sees only the band word (COMPLIANT, UNDER REVIEW, RESTRICTED …) and a "Civic Score ↓" chip on a choice that lowers it. The Wall keeps the
 archive entry; Lior Calloway's signature (the minutes) is a different clue from Ada's
 black box recording.
 

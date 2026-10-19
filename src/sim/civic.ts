@@ -65,6 +65,6 @@ export function civicToll(caller: string, civic: number | undefined): number {
 
 /** The line the HUD shows when the Score moves: what it is now, the band, and why. */
 export function civicNote(to: number, why: string | undefined): string {
-  const head = t('Civic Score {n} · {band}', { n: to, band: civicLabel(to) });
+  const head = t('Civic Score · {band}', { band: civicLabel(to) });
   return why ? `${head} · ${t(why)}` : head;
 }

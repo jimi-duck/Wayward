@@ -144,7 +144,7 @@ describe('the story beats', () => {
       const story = c.choices.filter((ch) => [ch.win.flag ?? []].flat().some((f) => /^(frag_|copy_|voice_|lane_|pact_|broker|codes$|clue_)/.test(f)));
       for (const ch of story) {
         const named = [ch.win.flag ?? []].flat().flatMap((f) => chipsOf(f) ?? []);
-        expect([...named, 'File +1', 'Copy out', 'Forged codes', 'Hull stolen', 'Wall +1', '−38 Score', '−10 Score'], `${c.id}.${ch.id}`).toContain(gains(ch.win, ctx(), 0)[0]);
+        expect([...named, 'File +1', 'Copy out', 'Forged codes', 'Hull stolen', 'Wall +1', 'Civic Score ↓'], `${c.id}.${ch.id}`).toContain(gains(ch.win, ctx(), 0)[0]);
       }
     }
   });

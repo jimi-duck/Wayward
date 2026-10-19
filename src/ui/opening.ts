@@ -31,7 +31,7 @@ export class OpeningPanel {
     const lines = [
       h('p', 'op-job', t('Extraction contract · renewal {id}', { id: CONTRACT_ID })),
       h('p', 'op-score', '', h('span', '', t('Delivered')), h('b', '', ratio(0, QUOTA)), h('em', '', t('Cyrite'))),
-      h('p', 'op-score', '', h('span', '', t('Civic Score')), h('b', '', String(CIVIC_START)), h('em', '', civicLabel(CIVIC_START))),
+      h('p', 'op-score', '', h('span', '', t('Civic Score')), h('b', '', civicLabel(CIVIC_START))),
       h('p', 'op-thanks', t('Your productivity protects your future.')),
       h('p', '', t('The hauler is the company’s. You may fly her while the contract holds.')),
       h('b', '', t('Fill the hold, then bring it to the work bay.')),
