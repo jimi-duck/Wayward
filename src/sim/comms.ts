@@ -181,7 +181,9 @@ export interface Outcome {
   blockade?: 'fight' | 'run' | 'pass';
   /** Another card, this many seconds on. */
   follow?: { card: string; after: number; /** Opens as soon as it is due, without waiting for the desk's gap (the opening's chain). */ quick?: boolean };
-  /** A line on the radio, no answer asked (the opening's Tam and Prefect). */
+  /** A part fitted at once (the opening's torpedo rack, bought at the work bay's settlement). */
+  fit?: string;
+  /** A line on the radio, no answer asked (the opening's Sam and Governor). */
   radio?: { from: string; text: string };
   job?: JobDef;
   /** A job given up. */
@@ -242,6 +244,8 @@ export interface ChoiceDef {
   show?: Cond;
   needs?: Need;
   cost?: Cost;
+  /** The word for what `cost` takes, when it is not Cyrite (the opening's rack is paid in credit). */
+  unit?: string;
   /** The truth decides: if it is one of these, the choice loses. */
   loseIf?: string[];
   odds?: Odds;
@@ -265,6 +269,8 @@ export interface CardDef {
   gist?: string;
   /** A ledger under the text: the opening's contract in numbers (sim/contract.ts). */
   ledger?: LedgerKind;
+  /** A second voice on the same channel, under the ledger (Sam cutting in on the registry's notice). */
+  reply?: { from: string; text: string; /** A contact portrait (content/art.ts) for the voice. */ portrait?: string };
   kind: CardKind;
   caller: Caller;
   /** Who is speaking, and the card's title. */
@@ -536,7 +542,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
     if (!c.cost || (k === 'cyrite' ? c.cost.cyrite === undefined && c.cost.chits === undefined : k === 'chits' || c.cost[k] === undefined)) continue;
     if (cost[k] > held[k]) needs.push(`${t('Needs')} ${cost[k]} ${t(AMOUNT_WORDS[k])}`);
     else if (cost[k] === 0) needs.push(t(NONE_WORDS[k]));
-    costWords.push(`−${cost[k]} ${t(AMOUNT_WORDS[k])}`);
+    costWords.push(`−${cost[k]} ${t(c.unit && (k === 'cyrite' || k === 'chits') ? c.unit : AMOUNT_WORDS[k])}`);
   }
   const odds = c.odds ? oddsFor(c.odds, x) : null;
   const risky = !!(c.loseIf?.length && def.truths?.some((t) => c.loseIf!.includes(t.id)));

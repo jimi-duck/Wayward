@@ -38,7 +38,7 @@ costs nothing) and at least one other way to settle it:
 | One filter left | Marches to Free Ports | `reach` on a ninety-second clock with two supplies of parts | sell them the parts |
 | Two captains, one wreck | Belt onward | `destroy`: five hulls from two crews that turn on you; the wreck is yours | strip it while they shout |
 | The witness | Belt onward | `defend`: keep a freighter alive 80 s against two waves of pickets | hand her over |
-| Lose the Prefect | Marches to Hollows | `sneak`: wipe your trace at a relay inside a patrol loop; the Prefect loses a day | pay the broker |
+| Lose the Governor | Marches to Hollows | `sneak`: wipe your trace at a relay inside a patrol loop; the Governor loses a day | pay the broker |
 | The Drift Cache | Marches to Hollows | `recover`: pick up four drifting cases, a crew closes after the first | winch three in with an ore tractor |
 
 ## How often, and how you know

@@ -96,7 +96,7 @@ describe('named captains: how they come', () => {
     // and they say so
     const back = captainCard(kade, mem('kade', { met: 1, bargained: 1, last: 'bargained' }), 5, 5);
     expect(back.text).toContain(kade.lines.back.bargained);
-    expect(back.title).toBe('Brannoch Kade again');
+    expect(back.title).toBe('Brennan Kade again');
   });
 });
 

@@ -4,7 +4,8 @@ import { newJourney } from '../src/sim/journey';
 import { SAFE_R } from '../src/sim/breakout';
 import { goalOf } from '../src/sim/goal';
 import { metres } from '../src/sim/world';
-import { lessonOf, needsTorpedoFit, stepOf, LESSON_NODE } from '../src/sim/tutor';
+import { cargoOf, lessonOf, needsTorpedoFit, stepOf, LESSON_NODE } from '../src/sim/tutor';
+import { FINAL_LOAD, FIRST_LOAD, HOLD_AT_START, NET, upgradePrice } from '../src/sim/contract';
 import type { InputFrame } from '../src/input/types';
 
 const input = (o: Partial<InputFrame> = {}): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...o });
@@ -39,9 +40,11 @@ describe('the first minutes', () => {
     expect(w.bk!.nextPursuit).toBeGreaterThan(w.runTime + 20);
   });
 
-  it('goes rock, a short flight to the work bay, then a ship shot with the new torpedoes, and leaves the tank holding the jump', () => {
+  it('goes rock, the work bay settlement, a second rock, then raiders who take the load, and leaves the tank holding the jump', () => {
     const w = story();
     w.field.step = () => {};
+    // before docking the cargo is on board, not delivered
+    expect(cargoOf(w)).toMatchObject({ onboard: HOLD_AT_START, delivered: 0 });
     const rock = w.field.rocks.find((r) => r.id === w.tutor!.rockId)!;
     w.field.rocks = [rock];
     w.dropCrystals(w.ship.x, w.ship.z, 5, 0);
@@ -49,50 +52,72 @@ describe('the first minutes', () => {
     w.fuel = w.jumpCost - 2; // stand in for the pickup
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(stepOf(w)).toBe('bay');
+    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD, delivered: 0 });
     // the depot is a short hop away, and the bay stays shut in flight
     const les = lessonOf(w)!;
     expect(les.mark && Math.hypot(les.mark.x - w.ship.x, les.mark.z - w.ship.z)).toBeLessThan(250);
     expect(w.bayClosed()).toBe('away');
     expect(w.aliens.some((a) => a.id === w.tutor!.alienId)).toBe(false);
-    // docked, it offers the one card and takes the torpedo bay
+    // no panel on the approach: the settlement is the dock itself
     const p = w.bk!.port!;
     w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
-    // Tam and the company's cut come first, on the approach
-    for (let i = 0; i < 60 && w.phase === 'play'; i++) w.step(STEP, input());
-    expect(w.comms?.def.id).toBe('story_bay');
-    expect(w.comms?.ledger?.[0]).toMatchObject({ k: 'Gross yield' });
-    w.answer('sign');
-    expect(w.result().carry.flags).toContain('lease_financed');
     for (let i = 0; i < 400 && w.phase === 'play'; i++) w.step(STEP, input());
-    expect(w.phase).toBe('dock');
-    expect(w.openBay()).toBe(true);
-    expect(w.install(LESSON_NODE)).toBeNull();
-    w.closeBay();
-    for (let i = 0; i < 120; i++) w.step(STEP, input());
-    // the lesson is the torpedo, but under the depot's field nothing comes
-    expect(stepOf(w)).toBe('shoot');
+    expect(w.phase).toBe('comms');
+    expect(w.comms?.def.id).toBe('story_bay');
+    expect(w.docked).toBe(true);
+    // the work bay has counted the load: 800 of 1,000 delivered, nothing left in the hold, the credit in the purse
+    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: FIRST_LOAD });
+    expect(w.cyrite).toBe(NET);
+    expect(w.comms?.ledger?.find((r) => r.k === 'Available credit')?.cr).toBe(NET);
+    expect(w.answer('install')).toBe(true);
+    // the rack was paid once, from the credit, and the ship is away again with no second panel
+    expect(w.levels[LESSON_NODE]).toBe(1);
     expect(w.stats.torpedoes).toBe(true);
+    expect(w.cyrite).toBe(NET - upgradePrice());
+    expect(w.result().carry.flags).not.toContain('lease_financed');
+    for (let i = 0; i < 120; i++) w.step(STEP, input());
+    expect(w.phase).toBe('play');
+    expect(w.docked).toBe(false);
+    // back out for the last of the contract, clear of the depot's damping field
+    expect(stepOf(w)).toBe('haul');
+    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: FIRST_LOAD });
+    const rock2 = w.field.rocks.find((r) => r.id === w.tutor!.rockId)!;
+    expect(Math.hypot(rock2.x - p.x, rock2.z - p.z)).toBeGreaterThan(SAFE_R);
+    w.field.rocks = [rock2];
+    w.dropCrystals(w.ship.x, w.ship.z, 5, 0);
+    w.field.rocks = [];
+    for (let i = 0; i < 120; i++) w.step(STEP, input());
+    expect(cargoOf(w)).toMatchObject({ onboard: FINAL_LOAD, delivered: FIRST_LOAD });
+    for (let i = 0; i < 120; i++) w.step(STEP, input());
+    // the lesson is the torpedo
+    expect(stepOf(w)).toBe('shoot');
     expect(lessonOf(w)!.hint).toBe('torpedo');
-    expect(w.safe).toBe('port');
-    expect(w.aliens.some((a) => a.id === w.tutor!.alienId)).toBe(false);
-    // out past the ring, the ship appears
     w.ship.x = p.x + SAFE_R + 6;
     for (let i = 0; i < 30; i++) w.step(STEP, input());
     expect(w.aliens.some((a) => a.id === w.tutor!.alienId)).toBe(true);
-    // it is outside the depot's safe ring, so it can be shot
     const al = w.aliens.find((a) => a.id === w.tutor!.alienId)!;
     expect(Math.hypot(al.x - p.x, al.z - p.z)).toBeGreaterThan(SAFE_R);
-    // two raiders, and a win takes both
+    // two raiders, and a win takes both; they say what they want over the radio, in flight
     expect(w.tutor!.pirates).toHaveLength(2);
+    expect(w.tutor!.said).toContain('demand');
     w.aliens = [];
     w.kills++;
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(w.tutor!.done).toBe(false);
+    expect(cargoOf(w)!.onboard).toBe(FINAL_LOAD);
     expect(w.aliens.filter((a) => w.tutor!.pirates.includes(a.id))).toHaveLength(1);
     w.aliens = [];
     w.kills++;
+    w.events.length = 0;
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(w.tutor!.done).toBe(true);
+    // the load is torn away where the player can see it, and the contract keeps the 800
+    expect(w.tutor!.lost).toBe(true);
+    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: FIRST_LOAD });
+    expect(w.events.some((e) => e.type === 'cargoLost' && e.n === FINAL_LOAD)).toBe(true);
+    // what the second rock gave is lost with the hold: the credit is what the settlement left
+    expect(w.cyrite).toBeLessThanOrEqual(NET - upgradePrice());
+    expect(w.bk!.chase).not.toBeNull();
     expect(w.fuel).toBeGreaterThanOrEqual(w.jumpCost);
     expect(lessonOf(w)).toBeNull();
   });
@@ -166,22 +191,19 @@ describe('the first minutes stay quiet', () => {
     for (let i = 0; i < 60 * 70 && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
     expect(w.comms?.def.id ?? '').not.toMatch(/^story_(breach|yard|recovery|wake)$/);
   });
-  it('keeps the Cyrite it mined for the settlement beyond the gate', () => {
-    const w = story();
-    w.run.cyrite = 7;
-    expect(w.carry().contract).toEqual({ got: 7 });
-  });
 });
 
 describe('the whole opening', () => {
-  it('runs from the mine through the gate to the breach: the Cyrite mined is what the settlement counts', async () => {
+  it('runs from the mine through the gate to the breach: the same figures at every step, no contract state saved', async () => {
     const { endSortie, plot, options, sortieDef } = await import('../src/sim/journey');
     const { dueBeat } = await import('../src/sim/story');
     const j = newJourney(7);
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
     w.train();
     w.skipTraining();
-    w.run.cyrite = 6;
+    // a skipped training still leaves the contract at 800 counted, the hold empty and the rack fitted
+    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: FIRST_LOAD });
+    expect(w.levels[LESSON_NODE]).toBe(1);
     // the gate: no checkpoint in the way, and the drive spools with the jump fluid aboard
     const b = w.bk!;
     expect(b.blockade).toBe('none');
@@ -190,11 +212,23 @@ describe('the whole opening', () => {
     expect(w.phase).toBe('over');
     const res = w.result();
     expect(res.ended).toBe('jumped');
-    expect(res.carry.contract).toEqual({ got: 6 });
+    expect(res.carry).not.toHaveProperty('contract');
     endSortie(j, res);
-    // the first sortie beyond opens the chain, with the real shortfall in its ledger
+    // the first sortie beyond opens the chain
     expect(dueBeat(j)).toBe('story_breach');
     plot(j, options(j)[0]!.to.id);
-    expect(j.carry.contract).toEqual({ got: 6 });
+    expect(j.carry).not.toHaveProperty('contract');
+  });
+  it('is the same thing in a save made before the rework: a journey with the old field carries on, unused', async () => {
+    const { VERSION } = await import('../src/sim/journey');
+    const { migrate } = await import('../src/meta/save');
+    const { readFileSync } = await import('node:fs');
+    const old = JSON.parse(readFileSync('tests/fixtures/journey-v19.json', 'utf8'));
+    old.carry.contract = { got: 6 };
+    const j = migrate(structuredClone(old))!;
+    expect(j.version).toBe(VERSION);
+    const w = new World(5, { mode: 'breakout', carry: j.carry });
+    expect(w.carry().flags).toEqual(expect.arrayContaining(['archive_woke']));
+    expect(w.carry()).not.toHaveProperty('contract');
   });
 });

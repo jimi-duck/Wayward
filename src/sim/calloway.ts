@@ -286,7 +286,7 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
   const known = (Object.keys(d.tricks) as Trick[]).filter((k) => uses(d, k) > 0).map((k) => t(TRICK_WORDS[k]));
   return {
     id: 'calloway_last', kind: 'warning', caller: 'calloway', trigger: 'follow',
-    from: 'Prefect Idris Calloway · CCV Patience', title: 'The Threshold',
+    from: 'Governor Idris Calloway · CCV Patience', title: 'The Threshold',
     text: said.join(' '), face: CALLOWAY_FACE, scars: Math.min(3, hunt.beaten),
     ships: [{ variant: 'lancer', n: turned ? 0 : 1 }, { variant: 'enforcer', n: (turned ? 0 : 2) + wing + (hostile ? 1 : 0) + (fleet ? 2 : 0) }].filter((x) => x.n > 0),
     cargo: `${t('Offices of Peace cutter')} · ${t('met {times}', { times: times(Math.max(1, hunt.caught)) })}`,

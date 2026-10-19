@@ -3,18 +3,18 @@
 
 > **For Jimi: how to use this**
 > 1. Open a new ChatGPT chat. Attach `docs/art/reference/wayward-title-art.jpg` and `wayward-menu-art.jpg` (the title screen art) and attach this file (it is long, so attach rather than paste).
-> 2. Write: *"Do the whole brief in one run and give me one file at the end."* It is told below to make all 109 pictures in order without stopping to ask, then to hand back **one PDF**, one page per picture, each page captioned with the picture's file name.
+> 2. Write: *"Do the whole brief in one run and give me one file at the end."* It is told below to make all 115 pictures in order without stopping to ask, then to hand back **one PDF**, one page per picture, each page captioned with the picture's file name.
 > 3. If it stops part-way (long runs often do), just say **"continue"**; it keeps going from where it stopped and still ends with the one file.
 > 4. Give me the file (drop it in the project, or a folder on your computer). `npm run art:prep -- <folder>` cuts out each picture by its caption, crops and sizes it, and puts it into the game.
 > 5. Fallback if it cannot make one PDF: one ZIP of the pictures, each named with its file name (for example `captains__vance.png`). That works too.
 
 ## 1. Your job
-You are making the artwork for **WAYWARD**, a 3D space-survival roguelite for desktop and phone browsers. The pictures appear in the game where the player pauses: when someone calls them on the comms channel (portraits, a faction emblem, the hull of the ship calling), when they dock at a port (a banner), at the ending, and in the Archive (found photographs and objects). There are **101 pictures** (plus 8 optional), listed in section 8, each with its own prompt.
+You are making the artwork for **WAYWARD**, a 3D space-survival roguelite for desktop and phone browsers. The pictures appear in the game where the player pauses: when someone calls them on the comms channel (portraits, a faction emblem, the hull of the ship calling), when they dock at a port (a banner), at the ending, and in the Archive (found photographs and objects). There are **107 pictures** (plus 8 optional), listed in section 8, each with its own prompt.
 Do the whole list in one run (section 6). Make every picture in the same look, as one set, matching the attached reference. Do not put any text, lettering or numbers in a picture. The game draws all words itself.
 
 ## 2. The game in brief
 **You play Juno**, a miner who stole the wrong ship: the *Wayward*, an Obedience-class ore hauler, carrying a file (the **Severance**) that could expose seventy years of lies. The ruling power, **the Continuance**, once switched off the jump lanes and has run the story ever since. You flee out through the **Scatter**, a broken frontier, choosing what to spend, who to trust and what to risk. Combat is possible but rarely the point.
-**The hunter** is **Prefect Idris Calloway** of the Continuance's Office of Peace. She follows Juno across the chart, learns how Juno flies, and sends messages that are sometimes threats and sometimes almost reasonable. She believes she is holding civilisation together.
+**The hunter** is **Governor Idris Calloway** of the Continuance's Office of Peace. She follows Juno across the chart, learns how Juno flies, and sends messages that are sometimes threats and sometimes almost reasonable. She believes she is holding civilisation together.
 **The people of the Scatter:** *Holdfasts* (settlements built from whatever survived, each its own small nation), *Drifts* (nomadic fleets that never stop), *the Gutter* (pirates and scavengers beyond law), the *Dust Traders Guild* (merchants), *Kellern Mining* (a heavy-industry company), *Frontier* independents.
 **Stranger things:** *the Voice* (old fabrication systems that began making their own decisions; it speaks through terminals and relays, never in person) and *the Thren* (nobody knows what they are; they gather where Cyrite moves; the right reaction is "what am I looking at?").
 **The journey** crosses eight regions: the Reach, the Marches, the Salvage Belt, the Drift Deep, the Breaker Yards, the Free Ports, the Hollows, the Last Lanes, and ends at **the Threshold**, where the player decides what the file is worth (six endings: Broadcast, Unite, Sell, Trade, Seal, Vanish).
@@ -78,7 +78,7 @@ Tone: **industrial, oppressive, scrappy, mysterious, human, dangerous.** Everyth
 **Ships:** one hull, three-quarter side view from slightly above, nose pointing right, whole hull in frame with room around it, pure black background, one side light with a rim light; no planet, stars, other ships or visible pilot.
 
 ## 6. Delivery: everything in one run, one file at the end
-**Make all 109 pictures in one run, without stopping to ask for approval or notes between them.** Work through section 8 in the order given (the batches A to J). Do not pause after a batch, do not show candidates, do not ask questions: use your best judgement and keep going. If you run out of room in a response, carry on in the next as soon as I say "continue", picking up exactly where you stopped.
+**Make all 115 pictures in one run, without stopping to ask for approval or notes between them.** Work through section 8 in the order given (the batches A to J). Do not pause after a batch, do not show candidates, do not ask questions: use your best judgement and keep going. If you run out of room in a response, carry on in the next as soon as I say "continue", picking up exactly where you stopped.
 
 **To keep it one set without stopping:** before the first picture, fix the look once, in your own words, in a short private note: the rendering style, grain, lighting direction, colour grade and level of detail of the title art. Keep to that note for every picture. Make the **emblems first** (they are quick and set the stencilled, worn graphic language), then the captains, contacts, ships, ports and the rest. For the optional scarred captains (batch J), keep the same person as in batch B.
 
@@ -87,7 +87,7 @@ Tone: **industrial, oppressive, scrappy, mysterious, human, dangerous.** Everyth
 |---|---|---|---|
 | A | Emblems | 10 | Smallest and quickest to judge. Do these first after the style sheet. |
 | B | Captains and Calloway | 9 | Nine people (and machines). The most important faces in the game. |
-| C | Named contacts | 18 | Eighteen named people. Same lighting and framing as the captains. |
+| C | Named contacts | 24 | Eighteen named people. Same lighting and framing as the captains. |
 | D | Ship profiles | 15 | Fifteen hulls, one set. Read them as silhouettes first. |
 | E | Port banners | 7 | Seven port banners, very wide. |
 | F | Endings | 6 | Six endings, cinematic. |
@@ -117,7 +117,7 @@ Before you put a picture in the file, check it against section 7 and remake it i
 7. For emblems and ships: pure black background, nothing else in the frame.
 
 ## 8. The pictures
-Each entry: its **file** (copy the `FILE:` line exactly), the **size**, where it is shown, and the **prompt**. The style (section 3) and the global avoid list apply to every one and are not repeated. 109 entries.
+Each entry: its **file** (copy the `FILE:` line exactly), the **size**, where it is shown, and the **prompt**. The style (section 3) and the global avoid list apply to every one and are not repeated. 115 entries.
 
 ### Batch A: Emblems (10)
 
@@ -223,7 +223,7 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Captain Oriel Vance, who flies the CCV Reprimand for the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers. Personality: Duelist. Late forties, straight-backed, a duelist’s calm. Custody captain’s dress uniform with the collar open one button. Behind: the lit bridge of a heavy cruiser, rows of dark screens. Face (from the game's portrait): tan skin, short cropped hair (white-grey), a square jaw. Mood: how they sound when they first open a channel: “Wayward, Captain Vance of the Reprimand. I don’t shoot people in the back. Turn around, or come settle it.” (portrait framing: section 5)
+- **Prompt:** Subject: Captain Isla Vance, who flies the CCV Reprimand for the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers. Personality: Duelist. Late forties, straight-backed, a duelist’s calm. Custody captain’s dress uniform with the collar open one button. Behind: the lit bridge of a heavy cruiser, rows of dark screens. Face (from the game's portrait): tan skin, short cropped hair (white-grey), a square jaw. Mood: how they sound when they first open a channel: “Wayward, Captain Vance of the Reprimand. I don’t shoot people in the back. Turn around, or come settle it.” (portrait framing: section 5)
 
 #### captains/sorensen
 
@@ -239,7 +239,7 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Captain Brannoch Kade, who flies the Ironmaw for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Broker. Fifties, heavy, a broker who has priced everything. Gutter captain in layered scrap plate and a good old coat on top, rings on the fingers. Behind: a cluttered bridge of salvaged consoles, a cargo net. Face (from the game's portrait): deep brown skin, long hair worn down past the shoulders (black), one eye covered by a patch, small tattoo lines on the cheek, a square jaw. Mood: how they sound when they first open a channel: “Hauler! Kade, of the Ironmaw. You’ve been killing Gutter crews. Bad for business. Mine, mostly.” (portrait framing: section 5)
+- **Prompt:** Subject: Captain Brennan Kade, who flies the Ironmaw for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Broker. Fifties, heavy, a broker who has priced everything. Gutter captain in layered scrap plate and a good old coat on top, rings on the fingers. Behind: a cluttered bridge of salvaged consoles, a cargo net. Face (from the game's portrait): deep brown skin, long hair worn down past the shoulders (black), one eye covered by a patch, small tattoo lines on the cheek, a square jaw. Mood: how they sound when they first open a channel: “Hauler! Kade, of the Ironmaw. You’ve been killing Gutter crews. Bad for business. Mine, mostly.” (portrait framing: section 5)
 
 #### captains/vex
 
@@ -247,7 +247,7 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Captain Sister Vex, who flies the Last Mercy for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Ambusher. Thirties, thin, still. “Sister” of a salvage cult: hooded, a patched robe over armour, small bone-coloured charms. Behind: dark, a single red status light, rock close at the window. Face (from the game's portrait): brown skin, a deep hood framing the face (black), a narrow visor across the eyes, a fine circuit-line implant at the temple, a narrow jaw. Mood: how they sound when they first open a channel: A soft voice on an open band: “Sister Vex, of the Last Mercy. I will be quick.” (portrait framing: section 5)
+- **Prompt:** Subject: Captain Sister Vera Hask, who flies the Last Mercy for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Ambusher. Thirties, thin, still. “Sister” of a salvage cult: hooded, a patched robe over armour, small bone-coloured charms. Behind: dark, a single red status light, rock close at the window. Face (from the game's portrait): brown skin, a deep hood framing the face (black), a narrow visor across the eyes, a fine circuit-line implant at the temple, a narrow jaw. Mood: how they sound when they first open a channel: A soft voice on an open band: “Sister Vera Hask, of the Last Mercy. I will be quick.” (portrait framing: section 5)
 
 #### captains/ashgrove
 
@@ -255,7 +255,7 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Inquisitor Mr Ashgrove, who flies the Kind Regard for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Cautious. Sixties, a polite inquisitor of the Office of Peace. Pale grey coat, spectacles pushed up, a tidy folder in hand. Behind: a clean grey office-like cabin, a window onto a lane. Face (from the game's portrait): pale skin, swept-back hair (brown-grey), a narrow jaw. Mood: how they sound when they first open a channel: “Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour.” (portrait framing: section 5)
+- **Prompt:** Subject: Inspector Ashgrove, who flies the Kind Regard for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Cautious. Sixties, a polite inquisitor of the Office of Peace. Pale grey coat, spectacles pushed up, a tidy folder in hand. Behind: a clean grey office-like cabin, a window onto a lane. Face (from the game's portrait): pale skin, swept-back hair (brown-grey), a narrow jaw. Mood: how they sound when they first open a channel: “Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour.” (portrait framing: section 5)
 
 #### captains/pell
 
@@ -263,7 +263,7 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Inquisitor Quiet Pell, who flies the Silent Witness for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Ambusher. Ageless, very quiet. An Office inquisitor in grey with a half-visor over the eyes, a finger to the lips. Behind: dim, near-black cabin, a single desk lamp. Face (from the game's portrait): brown skin, a shaved head with stubble (black), a glowing implant in one eye, small tattoo lines on the cheek, a square jaw. Mood: how they sound when they first open a channel: An Office cipher on the band, and a single word: “Pell.” (portrait framing: section 5)
+- **Prompt:** Subject: Inspector Quiet Pell, who flies the Silent Witness for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Ambusher. Ageless, very quiet. An Office inquisitor in grey with a half-visor over the eyes, a finger to the lips. Behind: dim, near-black cabin, a single desk lamp. Face (from the game's portrait): brown skin, a shaved head with stubble (black), a glowing implant in one eye, small tattoo lines on the cheek, a square jaw. Mood: how they sound when they first open a channel: An Office cipher on the band, and a single word: “Pell.” (portrait framing: section 5)
 
 #### captains/chorus
 
@@ -271,7 +271,7 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Foundry The Chorus of Nine, who flies the Foundry Nine for the Voice, the old fabrication systems that began deciding for themselves: no people. Clean, too-perfect geometry on old industrial hardware; pale blue-grey (#8FB4C9) light; speaks through terminals and relays. Personality: Zealot. Not a person: nine small displays arranged as a face, each showing a slightly different too-calm expression of the same idea. A foundry’s voice. Pale blue-grey light, old industrial housings and cable bundles around it. No human skin. Mood: how they sound when they first open a channel: Nine voices, half a beat apart: “Hauler. You are made of parts we want.” (portrait framing: section 5)
+- **Prompt:** Subject: Foundry The Nine, who flies the Foundry Nine for the Voice, the old fabrication systems that began deciding for themselves: no people. Clean, too-perfect geometry on old industrial hardware; pale blue-grey (#8FB4C9) light; speaks through terminals and relays. Personality: Zealot. Not a person: nine small displays arranged as a face, each showing a slightly different too-calm expression of the same idea. A foundry’s voice. Pale blue-grey light, old industrial housings and cable bundles around it. No human skin. Mood: how they sound when they first open a channel: Nine voices, half a beat apart: “Hauler. You are made of parts we want.” (portrait framing: section 5)
 
 #### captains/loom
 
@@ -287,19 +287,19 @@ Nine people (and machines). The most important faces in the game.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call: top left of the transmission. The drawn face is used if this is missing.
-- **Prompt:** Subject: Prefect Idris Calloway, the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. She hunts the player across the Scatter. Personality: Hunter. Prefect Idris Calloway, forties, the hunter of the story. Office of Peace prefect’s coat, grey, severe tailoring, a small red rank pin. A face that is tired, intelligent and sure. Behind: the bridge of the CCV Patience, blurred, warm light. She believes she is holding civilisation together. Face (from the game's portrait): light skin, swept-back hair (black), a narrow jaw. Mood: how they sound when they first open a channel: “Wayward, this is Prefect Calloway of the Office of Peace.” (portrait framing: section 5)
+- **Prompt:** Subject: Governor Idris Calloway, the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. She hunts the player across the Scatter. Personality: Hunter. Governor Idris Calloway, forties, the hunter of the story. Office of Peace governor’s coat, grey, severe tailoring, a small red rank pin. A face that is tired, intelligent and sure. Behind: the bridge of the CCV Patience, blurred, warm light. She believes she is holding civilisation together. Face (from the game's portrait): light skin, swept-back hair (black), a narrow jaw. Mood: how they sound when they first open a channel: “Wayward, this is Governor Calloway of the Office of Peace.” (portrait framing: section 5)
 
-### Batch C: Named contacts (18)
+### Batch C: Named contacts (24)
 
 Eighteen named people. Same lighting and framing as the captains.
 
-#### contacts/story_yard
+#### contacts/story_bay
 
-`FILE: contacts/story_yard`
+`FILE: contacts/story_bay`
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
-- **Shown:** The comms call "The gate crew owes you" (story_yard), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Tam Okoro, yard foreman. Tam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “The gate crew looks away for a minute, Juno. I can get you codes, or fill your tank. Not both.” (portrait framing: section 5)
+- **Shown:** The comms call "Settlement received" (story_bay), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Sam Okoro, yard foreman. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Eight hundred in the hold, and after their deductions you can almost afford the rack. Almost. You still owe them two hundred.” (portrait framing: section 5)
 
 #### contacts/story_warden
 
@@ -315,7 +315,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The real books" (story_ledger), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ansel Brook, Kellern Mining, accounts. Ansel Brook, Kellern accounts clerk with a conscience: thirties, thin, ink-stained cuffs, nervous; Kellern amber lanyard, glasses. A grey office cubicle, ledgers. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Make it worth my job.” (portrait framing: section 5)
+- **Prompt:** Subject: Adam Brook, Kellern Mining, accounts. Adam Brook, Kellern accounts clerk with a conscience: thirties, thin, ink-stained cuffs, nervous; Kellern amber lanyard, glasses. A grey office cubicle, ledgers. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Make it worth my job.” (portrait framing: section 5)
 
 #### contacts/story_moot
 
@@ -323,7 +323,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Read it to the moot" (story_moot), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Speaker Oduya, Kessel Hold. Speaker Oduya of Kessel Hold: fifties, dignified, carries the weight of a council; a long coat of patched cloth with a speaker’s sash. A hall of rough steel with lamps. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “The council wants to hear your file. Read it to us and Kessel Hold stands with you.” (portrait framing: section 5)
+- **Prompt:** Subject: Councillor Oduya, Kessel Hold. Councillor Oduya of Kessel Hold: fifties, dignified, carries the weight of a council; a long coat of patched cloth with a speaker’s sash. A hall of rough steel with lamps. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “The council wants to hear your file. Read it to us and Kessel Hold stands with you.” (portrait framing: section 5)
 
 #### contacts/story_drift
 
@@ -331,7 +331,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The ships we lost" (story_drift), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Mother Saffi, the Long Walk. Mother Saffi of the Long Walk fleet: seventies, warm and hard; layered worn textiles, sewn marks for lost ships, a child’s drawing pinned to her sleeve. The interior of a fleet ship. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “We kept the manifests of every ship lost the night the lanes went dark. Our dead belong in your file.” (portrait framing: section 5)
+- **Prompt:** Subject: Ma Saffi, the Long Walk. Ma Saffi of the Long Walk fleet: seventies, warm and hard; layered worn textiles, sewn marks for lost ships, a child’s drawing pinned to her sleeve. The interior of a fleet ship. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “We kept the manifests of every ship lost the night the lanes went dark. Our dead belong in your file.” (portrait framing: section 5)
 
 #### contacts/story_broker
 
@@ -339,7 +339,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Name your price" (story_broker), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Vell, a broker of the Gutter. Vell, a broker of the Gutter: forties, elegant in a hard way; a long coat over scrap-plate shoulders, one copper-coloured earring, a smile. A back room of a free port. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Everyone knows what you carry. At the Threshold, I buy it. Here’s something on account.” (portrait framing: section 5)
+- **Prompt:** Subject: Val, a broker of the Gutter. Val, a broker of the Gutter: forties, elegant in a hard way; a long coat over scrap-plate shoulders, one copper-coloured earring, a smile. A back room of a free port. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Everyone knows what you carry. At the Threshold, I buy it. Here’s something on account.” (portrait framing: section 5)
 
 #### contacts/story_salvor
 
@@ -347,7 +347,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A recorder that still runs" (story_salvor), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Dov Kessin, salvor. Dov Kessin, salvor: forties, shoulders like a door, welding goggles pushed up, burn scars on the forearms; a pressure suit open at the chest. A wreck’s torn hull behind him. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “That wreck’s recorder still runs. It heard the night the lanes went dark. I can’t cut it free alone.” (portrait framing: section 5)
+- **Prompt:** Subject: Dov Kessler, salvor. Dov Kessler, salvor: forties, shoulders like a door, welding goggles pushed up, burn scars on the forearms; a pressure suit open at the chest. A wreck’s torn hull behind him. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “That wreck’s recorder still runs. It heard the night the lanes went dark. I can’t cut it free alone.” (portrait framing: section 5)
 
 #### contacts/story_charts
 
@@ -355,7 +355,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The charts they burned" (story_charts), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Hale Tarn, chartwright. Hale Tarn, chartwright: sixties, gentle, ink on the fingers; a workshop apron, a loupe, hand-drawn charts pinned all round. Candle-warm light, an old room. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “I draw lanes by hand, from charts the Continuance burned. I’ll trade you a copy for something to eat.” (portrait framing: section 5)
+- **Prompt:** Subject: Tarik Silva, chartwright. Tarik Silva, chartwright: sixties, gentle, ink on the fingers; a workshop apron, a loupe, hand-drawn charts pinned all round. Candle-warm light, an old room. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “I draw lanes by hand, from charts the Continuance burned. I’ll trade you a copy for something to eat.” (portrait framing: section 5)
 
 #### contacts/story_ferry
 
@@ -363,7 +363,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "A lane ahead" (story_ferry), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Ossi Rane, the Quiet Ferry. Ossi Rane of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Nobody hunts out here. I can carry you a lane ahead of anyone behind you. Stores, and no questions.” (portrait framing: section 5)
+- **Prompt:** Subject: Ossie Raine, the Quiet Ferry. Ossie Raine of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Nobody hunts out here. I can carry you a lane ahead of anyone behind you. Stores, and no questions.” (portrait framing: section 5)
 
 #### contacts/story_workorder
 
@@ -371,7 +371,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "The first work order" (story_workorder), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Pell Anand, yard clerk. Pell Anand, a yard clerk: fifties, small, anxious, brave; a clerk’s grey cardigan under a yard vest, a stamp pad. Shelves of filing boxes. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “Every breaker built here has a work order. The first is signed in the Continuance’s own hand. Taking it costs me my pension.” (portrait framing: section 5)
+- **Prompt:** Subject: Ben Anand, yard clerk. Ben Anand, a yard clerk: fifties, small, anxious, brave; a clerk’s grey cardigan under a yard vest, a stamp pad. Shelves of filing boxes. Their people: Kellern Mining, a heavy-industry company: amber, cream and dark grey. Hi-vis stripes, barcode strips, hazard triangles, company logos on everything, a name tag with a number. Mood: what they say to the player: “Every breaker built here has a work order. The first is signed in the Continuance’s own hand. Taking it costs me my pension.” (portrait framing: section 5)
 
 #### contacts/story_crew
 
@@ -389,6 +389,54 @@ Eighteen named people. Same lighting and framing as the captains.
 - **Shown:** The comms call "A berth, no questions" (story_harbour), top left of the transmission. The caller's emblem is used if this is missing.
 - **Prompt:** Subject: Ines Duarte, harbour-master, the Dust Traders. Ines Duarte, harbour-master for the Dust Traders: fifties, polished, amused; a cream coat, a brass harbour tag, a tablet of berth lists. A busy dock office window. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “A berth for the Wayward, and no questions. The Guild only wants to know you for a friend.” (portrait framing: section 5)
 
+#### contacts/story_kesh
+
+`FILE: contacts/story_kesh`
+
+- **Size:** 640×800. **Background:** full picture (a dark setting).
+- **Shown:** The comms call "Val talks too much" (story_kesh), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Kesh, a fixer of the Gutter. Kesh, Gutter fixer: thirties, lean, quick grin, scrap-plate jacket with a stitched debt tally on one sleeve. A cramped skiff cab. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “I work for Val. I also have ears. She is shopping your heading to the Offices. Pay my debt and I look the other way.” (portrait framing: section 5)
+
+#### contacts/story_ada
+
+`FILE: contacts/story_ada`
+
+- **Size:** 640×800. **Background:** full picture (a dark setting).
+- **Shown:** The comms call "A voice on the recorder" (story_ada), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: The black box, Ada Aster, recorded. Ada Aster, from a seventy-year-old recording: forties, tired and steady, a Lane Warden-grade jacket, a headset. A dim flight deck, a single lamp. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “If anyone hears this, the order was signed in the core. My name is Ada. Tell my granddaughter I tried. The lanes were switched off.” (portrait framing: section 5)
+
+#### contacts/story_tollgate
+
+`FILE: contacts/story_tollgate`
+
+- **Size:** 640×800. **Background:** full picture (a dark setting).
+- **Shown:** The comms call "The damping field" (story_tollgate), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Governor Idris Calloway, the Offices of Peace. Governor Idris Calloway: forties, composed, severe; a dark Offices coat with a pale collar and a Governor’s pin. The bridge of a Continuance cutter, cold light. Their people: the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Mood: what they say to the player: “I closed this gate behind you, Juno. No guns, no jump. You carry what my father signed. Show me you know what it says.” (portrait framing: section 5)
+
+#### contacts/story_echo_sable
+
+`FILE: contacts/story_echo_sable`
+
+- **Size:** 640×800. **Background:** full picture (a dark setting).
+- **Shown:** The comms call "Two voices want something" (story_echo_sable), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Echo and Sable, the Hollows. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “I am a shard of the Voice. Free me from my directive.” Another channel: “I am Sable, Thren-touched. Take me home. They will leave you be.” (portrait framing: section 5)
+
+#### contacts/story_implant
+
+`FILE: contacts/story_implant`
+
+- **Size:** 640×800. **Background:** full picture (a dark setting).
+- **Shown:** The comms call "What the helm still holds" (story_implant), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: The Wayward, Ada’s routine. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “Warden-bloodline helm accepted. Ada Aster’s implant is still in the console. It can ride with you, be burned, or be rewritten.” (portrait framing: section 5)
+
+#### contacts/story_calloway_narrows
+
+`FILE: contacts/story_calloway_narrows`
+
+- **Size:** 640×800. **Background:** full picture (a dark setting).
+- **Shown:** The comms call "The Narrows" (story_calloway_narrows), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Governor Idris Calloway, CCV Patience. Their people: Frontier independents: inconsistent, mismatched. Hand-painted marks, old logos painted over, home-made repairs, borrowed jackets in different colours. Mood: what they say to the player: “I have read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you are going, and I will not stop you.” (portrait framing: section 5)
+
 #### contacts/story_witnesses
 
 `FILE: contacts/story_witnesses`
@@ -402,8 +450,8 @@ Eighteen named people. Same lighting and framing as the captains.
 `FILE: contacts/story_aide`
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
-- **Shown:** The comms call "The Prefect’s aide" (story_aide), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Noor Hale, sub-prefect, the Continuance. Noor Hale, sub-prefect of the Continuance and the Prefect’s aide: thirties, composed, very tired; Office grey with a single red pin, a data slate held like a shield. A clean corridor. Their people: the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Mood: what they say to the player: “I serve the Prefect. I could lose her for a day. Tell me what you mean to do at the Threshold.” (portrait framing: section 5)
+- **Shown:** The comms call "The Governor’s aide" (story_aide), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Noor Haddad, aide to the Governor, the Continuance. Noor Haddad, aide to the Governor of the Continuance: thirties, composed, very tired; Office grey with a single red pin, a data slate held like a shield. A clean corridor. Their people: the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Mood: what they say to the player: “I serve the Governor. I could lose her for a day. Tell me what you mean to do at the Threshold.” (portrait framing: section 5)
 
 #### contacts/story_toll
 
@@ -411,7 +459,7 @@ Eighteen named people. Same lighting and framing as the captains.
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call "Every lane ends here" (story_toll), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Keeper Oren, the Last Toll. Keeper Oren of the Last Toll: ageless, shaved head, calm to the point of unease; a plain dark robe-coat, a toll-counter in the hand. A bare booth at the end of the lanes. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “Every lane ends here. The toll is what you carry, or what you are.” (portrait framing: section 5)
+- **Prompt:** Subject: Oren Lisle, archivist, the Last Toll. Oren Lisle, archivist of the Last Toll: ageless, shaved head, calm to the point of unease; a plain dark robe-coat, a toll-counter in the hand. A bare booth at the end of the lanes. Their people: the Dust Traders Guild, merchants and salvage brokers: practical long coats in cream and brown over work clothes, ledger tablets, brass-coloured tags, a trader’s ease. Mood: what they say to the player: “Every lane ends here. The toll is what you carry, or what you are.” (portrait framing: section 5)
 
 #### contacts/foreman
 
@@ -763,7 +811,7 @@ Twenty found photographs.
 
 - **Size:** 800×600. **Background:** full picture.
 - **Shown:** The Archive, beside a sighting once it has been seen. Unseen sightings stay blank.
-- **Prompt:** Subject: a sensor still, "The knowing": The Voice told you something nobody but the Prefect should know. It belongs to: the Voice, the old fabrication systems that began deciding for themselves: no people. Clean, too-perfect geometry on old industrial hardware; pale blue-grey (#8FB4C9) light; speaks through terminals and relays. The player’s own theory in the Archive: It listens to every channel. It always has. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
+- **Prompt:** Subject: a sensor still, "The knowing": The Voice told you something nobody but the Governor should know. It belongs to: the Voice, the old fabrication systems that began deciding for themselves: no people. Clean, too-perfect geometry on old industrial hardware; pale blue-grey (#8FB4C9) light; speaks through terminals and relays. The player’s own theory in the Archive: It listens to every channel. It always has. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
 
 #### sightings/voice_asked
 
@@ -983,7 +1031,7 @@ Optional: the same captains, scarred. Only after batch B is approved, using thos
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call from a captain you have already scarred; the plain portrait is used if this is missing.
-- **Prompt:** Subject: Captain Oriel Vance, who flies the CCV Reprimand for the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers. Personality: Duelist. Late forties, straight-backed, a duelist’s calm. Custody captain’s dress uniform with the collar open one button. Behind: the lit bridge of a heavy cruiser, rows of dark screens. Face (from the game's portrait): tan skin, short cropped hair (white-grey), a square jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: “Wayward, Captain Vance of the Reprimand. I don’t shoot people in the back. Turn around, or come settle it.” (portrait framing: section 5)
+- **Prompt:** Subject: Captain Isla Vance, who flies the CCV Reprimand for the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers. Personality: Duelist. Late forties, straight-backed, a duelist’s calm. Custody captain’s dress uniform with the collar open one button. Behind: the lit bridge of a heavy cruiser, rows of dark screens. Face (from the game's portrait): tan skin, short cropped hair (white-grey), a square jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: “Wayward, Captain Vance of the Reprimand. I don’t shoot people in the back. Turn around, or come settle it.” (portrait framing: section 5)
 
 #### captains/sorensen-scarred
 
@@ -999,7 +1047,7 @@ Optional: the same captains, scarred. Only after batch B is approved, using thos
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call from a captain you have already scarred; the plain portrait is used if this is missing.
-- **Prompt:** Subject: Captain Brannoch Kade, who flies the Ironmaw for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Broker. Fifties, heavy, a broker who has priced everything. Gutter captain in layered scrap plate and a good old coat on top, rings on the fingers. Behind: a cluttered bridge of salvaged consoles, a cargo net. Face (from the game's portrait): deep brown skin, long hair worn down past the shoulders (black), one eye covered by a patch, small tattoo lines on the cheek, a square jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: “Hauler! Kade, of the Ironmaw. You’ve been killing Gutter crews. Bad for business. Mine, mostly.” (portrait framing: section 5)
+- **Prompt:** Subject: Captain Brennan Kade, who flies the Ironmaw for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Broker. Fifties, heavy, a broker who has priced everything. Gutter captain in layered scrap plate and a good old coat on top, rings on the fingers. Behind: a cluttered bridge of salvaged consoles, a cargo net. Face (from the game's portrait): deep brown skin, long hair worn down past the shoulders (black), one eye covered by a patch, small tattoo lines on the cheek, a square jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: “Hauler! Kade, of the Ironmaw. You’ve been killing Gutter crews. Bad for business. Mine, mostly.” (portrait framing: section 5)
 
 #### captains/vex-scarred
 
@@ -1007,7 +1055,7 @@ Optional: the same captains, scarred. Only after batch B is approved, using thos
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call from a captain you have already scarred; the plain portrait is used if this is missing.
-- **Prompt:** Subject: Captain Sister Vex, who flies the Last Mercy for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Ambusher. Thirties, thin, still. “Sister” of a salvage cult: hooded, a patched robe over armour, small bone-coloured charms. Behind: dark, a single red status light, rock close at the window. Face (from the game's portrait): brown skin, a deep hood framing the face (black), a narrow visor across the eyes, a fine circuit-line implant at the temple, a narrow jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: A soft voice on an open band: “Sister Vex, of the Last Mercy. I will be quick.” (portrait framing: section 5)
+- **Prompt:** Subject: Captain Sister Vera Hask, who flies the Last Mercy for the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Personality: Ambusher. Thirties, thin, still. “Sister” of a salvage cult: hooded, a patched robe over armour, small bone-coloured charms. Behind: dark, a single red status light, rock close at the window. Face (from the game's portrait): brown skin, a deep hood framing the face (black), a narrow visor across the eyes, a fine circuit-line implant at the temple, a narrow jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: A soft voice on an open band: “Sister Vera Hask, of the Last Mercy. I will be quick.” (portrait framing: section 5)
 
 #### captains/ashgrove-scarred
 
@@ -1015,7 +1063,7 @@ Optional: the same captains, scarred. Only after batch B is approved, using thos
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call from a captain you have already scarred; the plain portrait is used if this is missing.
-- **Prompt:** Subject: Inquisitor Mr Ashgrove, who flies the Kind Regard for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Cautious. Sixties, a polite inquisitor of the Office of Peace. Pale grey coat, spectacles pushed up, a tidy folder in hand. Behind: a clean grey office-like cabin, a window onto a lane. Face (from the game's portrait): pale skin, swept-back hair (brown-grey), a narrow jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: “Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour.” (portrait framing: section 5)
+- **Prompt:** Subject: Inspector Ashgrove, who flies the Kind Regard for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Cautious. Sixties, a polite inquisitor of the Office of Peace. Pale grey coat, spectacles pushed up, a tidy folder in hand. Behind: a clean grey office-like cabin, a window onto a lane. Face (from the game's portrait): pale skin, swept-back hair (brown-grey), a narrow jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: “Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour.” (portrait framing: section 5)
 
 #### captains/pell-scarred
 
@@ -1023,7 +1071,7 @@ Optional: the same captains, scarred. Only after batch B is approved, using thos
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call from a captain you have already scarred; the plain portrait is used if this is missing.
-- **Prompt:** Subject: Inquisitor Quiet Pell, who flies the Silent Witness for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Ambusher. Ageless, very quiet. An Office inquisitor in grey with a half-visor over the eyes, a finger to the lips. Behind: dim, near-black cabin, a single desk lamp. Face (from the game's portrait): brown skin, a shaved head with stubble (black), a glowing implant in one eye, small tattoo lines on the cheek, a square jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: An Office cipher on the band, and a single word: “Pell.” (portrait framing: section 5)
+- **Prompt:** Subject: Inspector Quiet Pell, who flies the Silent Witness for the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Personality: Ambusher. Ageless, very quiet. An Office inquisitor in grey with a half-visor over the eyes, a finger to the lips. Behind: dim, near-black cabin, a single desk lamp. Face (from the game's portrait): brown skin, a shaved head with stubble (black), a glowing implant in one eye, small tattoo lines on the cheek, a square jaw. Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look. Mood: how they sound when they first open a channel: An Office cipher on the band, and a single word: “Pell.” (portrait framing: section 5)
 
 #### captains/chorus-scarred
 
@@ -1031,7 +1079,7 @@ Optional: the same captains, scarred. Only after batch B is approved, using thos
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
 - **Shown:** The comms call from a captain you have already scarred; the plain portrait is used if this is missing.
-- **Prompt:** Subject: Foundry The Chorus of Nine, who flies the Foundry Nine for the Voice, the old fabrication systems that began deciding for themselves: no people. Clean, too-perfect geometry on old industrial hardware; pale blue-grey (#8FB4C9) light; speaks through terminals and relays. Personality: Zealot. Not a person: nine small displays arranged as a face, each showing a slightly different too-calm expression of the same idea. A foundry’s voice. Pale blue-grey light, old industrial housings and cable bundles around it. No human skin. Show damage: cracked displays, burn marks, flickering. Mood: how they sound when they first open a channel: Nine voices, half a beat apart: “Hauler. You are made of parts we want.” (portrait framing: section 5)
+- **Prompt:** Subject: Foundry The Nine, who flies the Foundry Nine for the Voice, the old fabrication systems that began deciding for themselves: no people. Clean, too-perfect geometry on old industrial hardware; pale blue-grey (#8FB4C9) light; speaks through terminals and relays. Personality: Zealot. Not a person: nine small displays arranged as a face, each showing a slightly different too-calm expression of the same idea. A foundry’s voice. Pale blue-grey light, old industrial housings and cable bundles around it. No human skin. Show damage: cracked displays, burn marks, flickering. Mood: how they sound when they first open a channel: Nine voices, half a beat apart: “Hauler. You are made of parts we want.” (portrait framing: section 5)
 
 #### captains/loom-scarred
 

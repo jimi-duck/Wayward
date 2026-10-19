@@ -1,5 +1,5 @@
 import { civicNote } from '../sim/civic';
-import { CONTRACT_ID, QUOTA, deliveredOf } from '../sim/contract';
+import { CONTRACT_ID, type Cargo } from '../sim/contract';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
 import type { Sector } from '../render/sector';
@@ -11,7 +11,7 @@ import type { PowerKind } from '../sim/events';
 import { POWER_HINT, POWER_LABEL, STOCKED } from '../sim/pickups';
 import { NAMED } from '../content/features';
 import { REPORT_TEXT, type ReportKind } from '../sim/space';
-import { lessonOf, stepOf } from '../sim/tutor';
+import { cargoOf, lessonOf, stepOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { Radar } from './radar';
 import { Heading } from './guide';
@@ -70,6 +70,13 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron rock broken', rich: 'Rich rock broken', volatile: 'Volatile rock broken' };
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
 const fmt = num;
+
+/** The hold and the contract on one line: cargo aboard is not counted until the work bay has taken it (sim/contract.ts). */
+function cargoLine(c: Cargo): string {
+  const n = (v: number) => v.toLocaleString('en');
+  const aboard = t('Cargo onboard {n} / {m}', { n: n(c.onboard), m: n(c.hold) });
+  return c.delivered > 0 ? `${t('Delivered {n} / {m}', { n: n(c.delivered), m: n(c.quota) })}${c.onboard > 0 ? ` · ${t('Cargo onboard {n}', { n: n(c.onboard) })}` : ''}` : `${t('Contract {id}', { id: CONTRACT_ID })} · ${aboard}`;
+}
 
 /** Set a node's text only when it changed. */
 function text(el: HTMLElement, t: string): void {
@@ -200,7 +207,7 @@ export class Hud {
         case 'commsAnswer':
           this.note(world, t(e.text), e.won ? undefined : 'hit');
           // the lock is broken: the registry mark goes, and the name is hers (docs/ONBOARDING.md)
-          if (e.id === 'story_recovery') this.notice(world, 'rename', 'OB-7731-A', 'WAYWARD', t('Markings painted over · the name is yours'), 'calm');
+          if (e.id === 'story_breach' && e.won) this.notice(world, 'rename', 'OB-7731-A', 'WAYWARD', t('Vessel registry · unrecognised'), 'calm');
           break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
@@ -212,6 +219,10 @@ export class Hud {
         case 'plasmaDown': this.note(world, t('Plasma torpedo shot down')); break;
         case 'tractor': this.note(world, t('Tractor lock · thrust away'), 'hit'); break;
         case 'bankEmpty': this.note(world, t('Laser bank low · slower fire'), 'hit'); break;
+        case 'cargoLost':
+          this.note(world, `${t('Cargo pod lost')} · ${t('{n} Cyrite', { n: e.n })}`, 'hit');
+          this.notice(world, 'cargo', t('Raiders'), t('Cargo pod lost'), t('{n} Cyrite', { n: e.n }));
+          break;
         case 'gunsCold':
           this.note(world, t('Guns cold · the field damps every weapon'), 'hit');
           this.notice(world, 'gunsCold', t('Damping field'), t('Guns cold'), '');
@@ -590,8 +601,9 @@ export class Hud {
       text($('obj-t'), t(les.line));
       text($('obj-left'), m ? range(Math.hypot(m.x - s.x, m.z - s.z)) : '');
       ticks($('obj-p'), les.progress, 30);
-      // the work order, live: the last of the quota (sim/contract.ts)
-      text($('obj-s'), world.opening ? `${t('Contract {id}', { id: CONTRACT_ID })} · ${deliveredOf(world.run.cyrite)} / ${QUOTA}` : '');
+      // the work order, live (sim/contract.ts): what is in the hold, and what the work bay has counted. Never one number for both.
+      const cg = cargoOf(world);
+      text($('obj-s'), cg ? cargoLine(cg) : '');
       const html = `<li>${LESSON_HINT[les.hint]!.map(([c, k]) => `<span class="${c}">${t(k)}</span>`).join('')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
@@ -613,7 +625,7 @@ export class Hud {
         text($('obj-t'), t(bk.chase && ready ? 'Run for the jump gate' : ready ? 'Head for the lane entrance' : 'Fill the tank'));
         text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
         ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
-        text($('obj-s'), bk.chase && ready ? t('Pirates are closing · do not stop') : '');
+        text($('obj-s'), bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
         const lines: string[] = [];
         if (!ready) lines.push(`${t('Reach the lane entrance')} · <b>${range(dl)}</b>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);

@@ -2,7 +2,7 @@ import type { Hunch } from './calloway';
 import { routeBetween, sysById, type Chart } from './chart';
 
 // ── the hunt ──────────────────────────────────────────────────────────────
-// Prefect Idris Calloway follows the Wayward personally. She does not guess:
+// Governor Idris Calloway follows the Wayward personally. She does not guess:
 // she follows the trail, the systems you have flown in the order you flew
 // them, a lane at a time. Each lane takes her as long as it took you, and
 // then she spends half a day in the system asking questions before she

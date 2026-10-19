@@ -15,7 +15,7 @@ export const SCENE_CARDS: CardDef[] = [
   // ══ frontier ═══════════════════════════════════════════════════════════
   scene({
     id: 'sc_trader', kind: 'trade', caller: 'frontier', tier: 'routine',
-    from: 'Orlo Pike · independent hauler', title: 'Trade for supplies',
+    from: 'Owen Pike · independent hauler', title: 'Trade for supplies',
     text: '“I am running light, but I sell supplies at a fair price. Cyrite buys most things out here: repairs, supplies and favours.”',
     cargo: 'A hauler · hold half empty',
     choices: [

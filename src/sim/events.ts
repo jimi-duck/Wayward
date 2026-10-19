@@ -70,6 +70,8 @@ export type GameEvent =
   | { type: 'sectorEvent'; id: string; name: string; text: string }
   | { type: 'sectorEventEnd'; id: string; name: string; text: string; success: boolean }
   | { type: 'squad'; label: string }
+  /** The raiders tore the hold away (the opening): `n` Cyrite of cargo, lost. */
+  | { type: 'cargoLost'; n: number }
   /** The opening chase begins: Custody has seen the hauler leave. */
   | { type: 'chase' }
   /** The arcade's encounters: a group on its way, a hull that has made up its mind, and the quiet after. */

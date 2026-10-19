@@ -120,7 +120,7 @@ export interface JourneyRecord {
 
 export function journeyRecord(j: Journey): JourneyRecord {
   const people: string[] = [];
-  if (j.hunt.caught > 0 || j.carry.flags.some((f) => f.startsWith('calloway_'))) people.push('Prefect Idris Calloway');
+  if (j.hunt.caught > 0 || j.carry.flags.some((f) => f.startsWith('calloway_'))) people.push('Governor Idris Calloway');
   for (const id of [...j.notice.captains.map((c) => c.id), ...j.notice.fallen]) {
     const c = CAPTAIN_BY_ID[id];
     if (c && !people.includes(`${c.rank} ${c.name}`)) people.push(`${c.rank} ${c.name}`);

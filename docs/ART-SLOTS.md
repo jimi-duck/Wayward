@@ -41,7 +41,7 @@ messages.
 | Slot | Folder | Count | Size | Where it shows | Why it helps | Status |
 |---|---|---|---|---|---|---|
 | Captain portraits | `captains/` | 9 (+8 scarred) | 640×800 | comms call, top left | Eight named hunters and Calloway become people you remember and meet again. The optional `<id>-scarred` shows the face of a captain you have already beaten | built |
-| Contact portraits | `contacts/` | 18 | 640×800 | comms call, top left | The named people in story beats and cards (Okoro, Mirren, Draper, Saffi, Vell…) stop being a line of text | built |
+| Contact portraits | `contacts/` | 18 | 640×800 | comms call, top left | The named people in story beats and cards (Okoro, Mirren, Draper, Saffi, Val…) stop being a line of text | built |
 | Emblems | `emblems/` | 10 | 256×256 | comms call, in place of the plain diamond | A call sign for each faction: who is calling, at a glance, in the panel's own colour (red when it is an alert) | built |
 | Ship profiles | `ships/` | 15 | 960×480 | comms call, above the strength bars | "Call signs for the ships": the player sees the hull a Custody blockade or a Gutter raid has, before choosing. On phones it stands in for the bars that are hidden there | built |
 | Port banners | `places/` | 7 | 1280×320 | port panel, above the title | Each holder's port has its own face (Kellern, Frontier, Guild, Gutter, Holdfast, free dock, and one under Continuance order) | built |
@@ -92,7 +92,7 @@ An example (a captain, shortened; the full text is in the briefs):
 ```text
 Style: industrial cyberpunk frontier, "used, not dirty"… [the style block]
 
-Subject: Captain Oriel Vance, who flies the CCV Reprimand for the Continuance's
+Subject: Captain Isla Vance, who flies the CCV Reprimand for the Continuance's
 Custody: institutional, strict, black, white and red… Personality: Duelist. Late
 forties, straight-backed, a duelist's calm… Face: tan skin, short cropped hair
 (white-grey), a square jaw.

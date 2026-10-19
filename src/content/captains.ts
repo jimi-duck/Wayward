@@ -22,7 +22,7 @@ export const PERSONALITIES: Record<Personality, PersonalityDef> = {
 
 export const CAPTAINS: CaptainDef[] = [
   {
-    id: 'vance', name: 'Oriel Vance', rank: 'Captain', ship: 'CCV Reprimand', faction: 'custody', personality: 'duelist',
+    id: 'vance', name: 'Isla Vance', rank: 'Captain', ship: 'CCV Reprimand', faction: 'custody', personality: 'duelist',
     face: { skin: '#c99a7a', hair: 'crop', hairColour: '#d8d2c4', eye: 'none', mark: 'none', jaw: 'square' },
     lines: {
       hail: '“Wayward, Captain Vance of the Reprimand. I don’t shoot people in the back. Turn around, or come settle it.”',
@@ -58,7 +58,7 @@ export const CAPTAINS: CaptainDef[] = [
     },
   },
   {
-    id: 'kade', name: 'Brannoch Kade', rank: 'Captain', ship: 'Ironmaw', faction: 'gutter', personality: 'broker',
+    id: 'kade', name: 'Brennan Kade', rank: 'Captain', ship: 'Ironmaw', faction: 'gutter', personality: 'broker',
     face: { skin: '#8d5a3c', hair: 'long', hairColour: '#2a2220', eye: 'patch', mark: 'tattoo', jaw: 'square' },
     lines: {
       hail: '“Hauler! Kade, of the Ironmaw. You’ve been killing Gutter crews. Bad for business. Mine, mostly.”',
@@ -76,10 +76,10 @@ export const CAPTAINS: CaptainDef[] = [
     },
   },
   {
-    id: 'vex', name: 'Sister Vex', rank: 'Captain', ship: 'Last Mercy', faction: 'gutter', personality: 'ambusher',
+    id: 'vex', name: 'Sister Vera Hask', rank: 'Captain', ship: 'Last Mercy', faction: 'gutter', personality: 'ambusher',
     face: { skin: '#b07f62', hair: 'hood', hairColour: '#1c1a1a', eye: 'visor', mark: 'circuit', jaw: 'narrow' },
     lines: {
-      hail: 'A soft voice on an open band: “Sister Vex, of the Last Mercy. I will be quick.”',
+      hail: 'A soft voice on an open band: “Sister Vera Hask, of the Last Mercy. I will be quick.”',
       ambush: '“Peace be with you.” The Last Mercy decloaks behind you, guns warm.',
       bargain: '',
       leave: 'The Last Mercy slides back into the dark.',
@@ -94,7 +94,7 @@ export const CAPTAINS: CaptainDef[] = [
     },
   },
   {
-    id: 'ashgrove', name: 'Mr Ashgrove', rank: 'Inquisitor', ship: 'Kind Regard', faction: 'office', personality: 'cautious',
+    id: 'ashgrove', name: 'Ashgrove', rank: 'Inspector', ship: 'Kind Regard', faction: 'office', personality: 'cautious',
     face: { skin: '#f0d6c0', hair: 'swept', hairColour: '#8a7e72', eye: 'none', mark: 'none', jaw: 'narrow' },
     lines: {
       hail: '“Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour.”',
@@ -112,7 +112,7 @@ export const CAPTAINS: CaptainDef[] = [
     },
   },
   {
-    id: 'pell', name: 'Quiet Pell', rank: 'Inquisitor', ship: 'Silent Witness', faction: 'office', personality: 'ambusher',
+    id: 'pell', name: 'Quiet Pell', rank: 'Inspector', ship: 'Silent Witness', faction: 'office', personality: 'ambusher',
     face: { skin: '#a6866e', hair: 'shaved', hairColour: '#2e2a28', eye: 'implant', mark: 'tattoo', jaw: 'square' },
     lines: {
       hail: 'An Office cipher on the band, and a single word: “Pell.”',
@@ -130,19 +130,19 @@ export const CAPTAINS: CaptainDef[] = [
     },
   },
   {
-    id: 'chorus', name: 'The Chorus of Nine', rank: 'Foundry', ship: 'Foundry Nine', faction: 'voice', personality: 'zealot',
+    id: 'chorus', name: 'The Nine', rank: 'Foundry', ship: 'Foundry Nine', faction: 'voice', personality: 'zealot',
     face: { skin: '#9aa3ab', hair: 'hood', hairColour: '#2b3036', eye: 'visor', mark: 'circuit', jaw: 'square' },
     lines: {
       hail: 'Nine voices, half a beat apart: “Hauler. You are made of parts we want.”',
       ambush: 'The rock around you opens, and it is not rock. Foundry Nine has been waiting.',
       bargain: '',
-      leave: 'The Chorus falls silent and Foundry Nine grinds away.',
+      leave: 'The Nine falls silent and Foundry Nine grinds away.',
       back: {
         won: '“We kept a piece of your hull. We have learned its shape.”',
         scarred: '“You cut away three of us. We have grown four.”',
         escaped: '“We withdrew to grow. We have grown.”',
         evaded: '“We have mapped the way you run. All nine of us.”',
-        bargained: '“Payment was noted. The Chorus does not take it again.”',
+        bargained: '“Payment was noted. The Nine does not take it again.”',
         left: '“We let you pass once. The nine have voted otherwise.”',
       },
     },

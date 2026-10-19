@@ -98,7 +98,7 @@ pressured, resistance gone. You can slow it (help a settlement hold out,
 sabotage a checkpoint, destroy a relay, supply a resistance group, expose an
 operation), and every intervention costs something.
 
-**The hunter. Prefect Idris Calloway** follows you personally. She is on the
+**The hunter. Governor Idris Calloway** follows you personally. She is on the
 Net, moving through the same systems, shown on the chart as a shadow a few
 jumps behind. She learns from where you've been. You can feed her false
 information, lay misleading trails, go dark, bribe contacts, sabotage her

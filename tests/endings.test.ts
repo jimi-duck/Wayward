@@ -117,7 +117,7 @@ describe('the Archive', () => {
     expect(q.archive.endings).toEqual(['vanish']);
     expect(q.archive.files.length).toBe(1);
     expect(q.archive.people).toContain('The Okafor family');
-    expect(q.archive.people).toContain('Prefect Idris Calloway');
+    expect(q.archive.people).toContain('Governor Idris Calloway');
   });
 
   it('gives a profile from before the Archive an empty one', () => {

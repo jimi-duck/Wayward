@@ -85,8 +85,9 @@ export function migrate(raw: unknown): Journey | null {
   // Cerro has had the archive wake and the reserves figure decrypt on that first jump, so it gets what the new opening would have
   // given it: the wake's drop and both flags. Idempotent: a Score already there is kept.
   if (j.version < 18) civicScore(j as Journey);
-  // 18 → 19: the opening is Contract 08-441 (docs/ONBOARDING.md). `Carry.contract` is optional and read only by the opening's chain,
-  // so a save from before simply has none; a journey that left Cerro has the archive woken already, which ends the chain.
+  // 18 → 19: the opening is Contract 08-441 (docs/ONBOARDING.md). The first cut of it kept the Cyrite mined in an optional `Carry.contract`;
+  // the settlement is fixed figures now, so that field is not read and a save that has it simply carries it unused. A journey that left
+  // Cerro has the archive woken already, which ends the chain, and the chain's cards that no longer exist are skipped (sim/story.ts).
   j.version = VERSION;
   return j as Journey;
 }

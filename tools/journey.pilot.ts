@@ -121,7 +121,7 @@ it('flies whole journeys', { timeout: 7_200_000 }, () => {
   const restRows = [...new Set(allRest.map((x) => x.kind))].map((k) => `| ${k} | ${restOf(allRest.filter((x) => x.kind === k && !x.quiet))} |`);
   const quietRest = allRest.filter((x) => x.quiet);
   if (quietRest.length) restRows.push(`| breather | ${restOf(quietRest)} |`);
-  // the Prefect's choices, and the M3 cards
+  // the Governor's choices, and the M3 cards
   const m3 = ['calloway_here', 'calloway_word', 'lane_toll', 'port_scan', 'port_news', 'food_trader', 'drift_fleet', 'holdout', 'relay', 'false_trail', ...OFFERS.map((o) => o.id), 'calloway_last'];
   const cardRows = m3.map((id) => {
     const v = all.flatMap((r) => r.answers.filter((a) => a.card === id));

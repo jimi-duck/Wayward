@@ -409,11 +409,12 @@
   #comms .cm-c.sel .cm-h { display: block; font-size: 12px; }
   #comms .cm-list { gap: 4px; }
   /* a short window: the call on the left, the answers on the right, so five answers fit without scrolling */
-  #comms .panel.comms { width: min(780px, 100%); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto auto 1fr; column-gap: 12px; align-items: start; overflow-y: auto; }
+  #comms .panel.comms { width: min(780px, 100%); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto auto auto 1fr; column-gap: 12px; align-items: start; overflow-y: auto; }
   #comms .panel.comms > .tx-h { grid-column: 1 / -1; grid-row: 1; }
-  #comms .panel.comms > .tx-card { grid-column: 1; grid-row: 2 / 4; }
+  #comms .panel.comms > .tx-card { grid-column: 1; grid-row: 2 / 5; }
   #comms .panel.comms > .cm-timer { grid-column: 2; grid-row: 2; }
-  #comms .panel.comms > .cm-list { grid-column: 2; grid-row: 3; }
+  #comms .panel.comms > .cm-reply-s { grid-column: 2; grid-row: 3; }
+  #comms .panel.comms > .cm-list { grid-column: 2; grid-row: 4; }
   #comms .cm-body:not(.solo) { grid-template-columns: minmax(0, 1fr); }
   #comms .cm-c { min-height: 40px; }
   /* the world is held while a job is open, so the card takes the top of a short screen: all its answers stay on it */
@@ -467,10 +468,26 @@
 #comms .cm-ledger li.bad { border-top: 1px solid var(--hair, rgba(160,170,170,.28)); padding-top: 3px; margin-top: 2px; color: var(--ink); }
 #comms .cm-ledger li.mine { border-top: 1px solid var(--hair, rgba(160,170,170,.28)); padding-top: 3px; margin-top: 2px; color: var(--ink); }
 #comms .cm-ledger li.mine b { color: var(--blue); }
+/* A second voice on the same channel: Sam cutting in under the notice, a hairline and his name, nothing more. */
+#comms .cm-reply { margin: 6px 0 2px; padding: 4px 10px; border-left: 2px solid var(--cy); display: flex; gap: 10px; align-items: flex-start; }
+#comms .cm-reply[hidden] { display: none; }
+#comms .cm-reply-face:empty { display: none; }
+#comms .cm-reply-pic { width: 48px; height: 60px; object-fit: cover; border: 1px solid var(--hair, rgba(160,170,170,.28)); display: block; }
+#comms .cm-reply b { display: block; font: 600 11px/1.4 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--cy); }
+#comms .cm-reply p { margin: 1px 0 0; font: italic 400 13px/1.35 var(--font-display); color: var(--ink); }
+#comms .cm-reply-s { display: none; }
 @media (max-height: 420px) {
+  /* a short phone: Sam's line sits over the answers, where there is room, and not under the ledger */
+  #comms .cm-reply { display: none; }
+  #comms .cm-reply-s:not([hidden]) { display: block; margin: 0 0 4px; padding: 2px 8px; border-left: 2px solid var(--cy); }
+  #comms .cm-reply-s b { display: block; font: 600 10px/1.25 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--cy); }
+  #comms .cm-reply-s p { margin: 1px 0 0; font: italic 400 11px/1.25 var(--font-display); color: var(--ink); }
   /* a short phone: the ledger is the point, so the glance line steps aside and the rows stay on one line each */
   #comms.ledgered .cm-gist { display: none; }
   #comms .cm-ledger { padding: 3px 8px; margin: 4px 0 2px; gap: 0; }
   #comms .cm-ledger li { font-size: 10px; line-height: 1.25; letter-spacing: .04em; white-space: nowrap; }
   #comms .cm-ledger li b { font-size: 11px; line-height: 1.25; }
+  /* a ledger is wider than a card: more of the width to the call, less to the answers, and the strip above it steps aside */
+  #comms.ledgered .panel.comms { grid-template-columns: minmax(0, 1.25fr) minmax(0, .85fr); }
+  #comms.ledgered .tx-h { display: none; }
 }

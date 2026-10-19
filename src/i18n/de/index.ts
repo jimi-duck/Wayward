@@ -26,14 +26,17 @@ export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS,
 export const KEEP = new Set<string>([
   'Wayward', 'OB-7731-A', 'Drifter', 'Ironmaw', '1.0 km',
   // captains and their ships
-  'Oriel Vance', 'Hale Sorensen', 'Brannoch Kade', 'Mr Ashgrove', 'Quiet Pell', 'CCV Reprimand', 'CCV Due Process', 'Last Mercy',
+  'Isla Vance', 'Hale Sorensen', 'Brennan Kade', 'Ashgrove', 'Quiet Pell', 'CCV Reprimand', 'CCV Due Process', 'Last Mercy',
   'Kind Regard', 'Silent Witness', 'Foundry Nine', 'Thren Hollow',
   // capital ships
   'Red Tithe', 'Butcher’s Due', 'CCV Diligence', 'CCV Vigilance', 'CCV Patience', 'CCV Temperance', 'Quiet Hand', 'Gentle Inquiry',
   // systems and ports
-  'Halden’s Reach', 'Tollmere', 'Vesk', 'Ashgrove', 'Corrin Deep', 'Marrow', 'Sallow', 'Pell', 'Ninefold', 'Dunmore', 'Kettle', 'Brask',
-  'Oriel', 'Wick', 'Lantern', 'Hask', 'Sable Run', 'Greyhollow', 'Imbrie', 'Coldwater', 'Tamsin’s Rest', 'Orrin', 'Fallow', 'Quarry Nine',
+  'Halden’s Reach', 'Tollmere', 'Vesta', 'Ashgrove', 'Corrin Deep', 'Marlow', 'Sallow', 'Pell', 'Northfold', 'Dunmore', 'Kettle', 'Branford',
+  'Oriel', 'Wick', 'Lantern', 'Hask', 'Sable Run', 'Greyhollow', 'Imbrie', 'Coldwater', 'Tamsin’s Rest', 'Hollis', 'Fallow', 'Quarry Nine',
   'Cerro', 'Kellern Fuel Dock', 'Kellern Claim Office', 'Frontier Supply Depot', 'Dust Traders Exchange', 'Guild Hall', 'The Bent Nail',
   'Salvage Barge', 'Holdfast Stores', 'The Claim Hall', 'Free Dock', 'Claim Shack', 'Kellern Mining',
+  // the made-up names a region deals (content/regions.ts NAME_PEOPLE, NAME_PLACES)
+  'Hadley', 'Morgan', 'Kowalski', 'Amara', 'Okafor', 'Jansen', 'Ibarra', 'Lindqvist', 'Castell', 'Nakamura', 'Brandt', 'Quill',
+  '’s Rest', 'Deep', 'Yard', 'Station', 'Reach', 'Mere', 'Fell', 'Watch',
   'Foundry Seven', 'Mother Lathe', 'Foundry Thirty', 'The Hesse Choir', 'Thren Lattice', 'Thren Bloom', 'Thren Knot',
 ]);

@@ -247,8 +247,6 @@ export interface Carry {
   hush: number;
   /** The Civic Score (sim/civic.ts): the Story's only. Absent in the Arcade, and in a save from before v18 until it is migrated. */
   civic?: number;
-  /** Contract 08-441 (sim/contract.ts): the Cyrite the outlying mine gave, kept for the settlement beyond the gate. Absent in the Arcade and in a save from before v19. */
-  contract?: { got: number };
 }
 
 /** What a sortie hands back to the journey. */
