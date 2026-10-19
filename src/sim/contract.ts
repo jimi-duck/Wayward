@@ -19,8 +19,8 @@ export const QUOTA = 1000;
 export const HOLD = 1000;
 /** What is already in the hold when the shift is picked up in flight. */
 export const FIRST_LOAD = 800;
-/** What each of the opening's two rocks adds, to reach the quota. */
-export const ROCK_LOAD = 100;
+/** What each of the opening's two lesson rocks adds to the hold: nothing. The 800 is what she has, from the first minute to the raiders. */
+export const ROCK_LOAD = 0;
 export const FINAL_LOAD = QUOTA - FIRST_LOAD;
 /** Where the hold's meter starts. */
 export const HOLD_AT_START = FIRST_LOAD;
@@ -37,11 +37,18 @@ export const upgradePrice = (): number => cost(LESSON_NODE, 1, false);
 /** What the contract would leave Juno with, launcher paid off: the figure the Work Bay shows. */
 export const projectedAfterLauncher = (price = upgradePrice()): number => NET - price;
 
-/** The short-delivery penalty added when the contract is missed, and the lease due on top of it (credit). */
-export const PENALTY = 15;
-export const LEASE_DUE = CUTS.lease;
-/** What Juno owes once the contract breaches: penalty, lease and the financed launcher. */
-export const owed = (price = upgradePrice()): number => PENALTY + LEASE_DUE + price;
+/**
+ * What the company bills when the contract breaches, in the same credit as everything else (2026-10-19: made extreme on
+ * purpose, to show the unfairness). The cargo it never received is charged at its replacement rate, ten times what a
+ * delivery would have paid her; the penalty, the whole lease term and the collection fees come on top, and the financed
+ * launcher stays on the account.
+ */
+export const REPLACEMENT = 1000;
+export const PENALTY = 250;
+export const LEASE_DUE = 120;
+export const COLLECTION = 110;
+/** What Juno owes once the contract breaches. */
+export const owed = (price = upgradePrice()): number => REPLACEMENT + PENALTY + LEASE_DUE + COLLECTION + price;
 
 export type RowTone = '' | 'mine' | 'warn' | 'bad';
 /**
@@ -74,8 +81,10 @@ export function breachLedger(): LedgerRow[] {
   return [
     { k: 'Contract delivery', v: ratio(0), tone: 'warn' },
     { k: 'Payout', v: 'Withheld', tone: 'warn' },
+    { k: 'Undelivered cargo · replacement rate', cr: -REPLACEMENT, tone: 'warn' },
     { k: 'Short-delivery penalty', cr: -PENALTY, tone: 'warn' },
     { k: 'Vessel lease due', cr: -LEASE_DUE, tone: 'warn' },
+    { k: 'Collection fees', cr: -COLLECTION, tone: 'warn' },
     { k: 'Torpedo launcher · financed', cr: -upgradePrice(), tone: 'warn' },
     { k: 'Vessel asset recovery', v: 'Authorised', tone: 'warn' },
     { k: 'Balance owed', cr: owed(), tone: 'bad' },

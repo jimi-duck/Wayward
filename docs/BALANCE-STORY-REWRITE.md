@@ -25,11 +25,11 @@ Design targets, all in `sim/contract.ts` and `sim/civic.ts`, none playtested:
 
 | Number | Value | Why |
 |---|---|---|
-| Quota / held | 1,000 / 800 at the start, 900 after the first rock, 1,000 after the second | The shift is under way; each lesson rock adds 100. The Work Bay takes nothing. The raiders' fire destroys the whole hold. |
+| Quota / held | 1,000 / 800, unchanged by the lesson rocks | The Work Bay takes nothing. A missile fired the moment the raiders' offer is refused destroys the whole hold. |
 | Company charges (credit) | refinery 40, lease 12, fuel reserve 20, escrow 6 of 100 | Leaves 22 before the launcher. |
 | Credit at the bay | 4 | "Credit is low": nothing to spare for a surprise. |
 | Launcher | the torpedo bay's real price (20), financed against the payout | Projection shows 2 left. The purse is untouched. Torpedo ammunition is unlimited in the Story opening (the rack reloads on its own); the stocked high-yield torpedoes of the Story economy (`POWER_STOCK`) are unchanged. |
-| Breach | penalty 15 + lease 12 + launcher 20 = 47 owed | Payout withheld; asset recovery authorised. |
+| Breach | replacement 1,000 + penalty 250 + lease 120 + collection 110 + launcher 20 = 1,500 owed | Extreme on purpose: she would have netted 2; she owes 750 times that. Payout withheld; asset recovery authorised. |
 | Score steps | −130 at the theft; nothing else in the opening | 412 to 282: RESTRICTED from the theft on, so the Continuance's own fees run a quarter higher for the whole journey (2026-10-19, owner's call). Not measured in a full-journey pilot. |
 
 Measured: `npm run check` (tsc and 809 tests) and `npm run build` on this branch; the unit tests run the chain with every answer and check the arithmetic and the Score stay at 300 or above (`tests/civic.test.ts`, `tests/story.test.ts`, `tests/tutor.test.ts`), including a migrated v19 save that carries the old `contract` field. Not measured: how long the opening takes, whether the chase is fair on a phone, and the pilots (not re-run after this change).

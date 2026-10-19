@@ -6,7 +6,7 @@ import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
 import { VERSION, newJourney, sortieDef } from '../src/sim/journey';
 import { migrate } from '../src/meta/save';
 import { wallView } from '../src/sim/wall';
-import { CREDIT_START, CUTS, FINAL_LOAD, FIRST_LOAD, GROSS, LEASE_DUE, NET, PENALTY, QUOTA, ledgerFor, owed, projectedAfterLauncher, upgradePrice } from '../src/sim/contract';
+import { COLLECTION, CREDIT_START, CUTS, FINAL_LOAD, FIRST_LOAD, GROSS, LEASE_DUE, NET, PENALTY, QUOTA, REPLACEMENT, ledgerFor, owed, projectedAfterLauncher, upgradePrice } from '../src/sim/contract';
 import { dueBeat } from '../src/sim/story';
 import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
@@ -111,8 +111,13 @@ describe('the opening chain beyond the gate', () => {
     expect(breach.find((r) => r.k === 'Vessel lease due')?.cr).toBe(-LEASE_DUE);
     // the financed launcher stays on her account with the penalty and the lease
     expect(breach.find((r) => r.k === 'Torpedo launcher · financed')?.cr).toBe(-upgradePrice());
+    // the extreme bill: the whole 1,000 at the replacement rate, then every fee, the launcher kept
+    expect(breach.find((r) => r.k === 'Undelivered cargo · replacement rate')?.cr).toBe(-REPLACEMENT);
+    expect(breach.find((r) => r.k === 'Collection fees')?.cr).toBe(-COLLECTION);
     expect(breach.find((r) => r.k === 'Balance owed')?.cr).toBe(owed());
-    expect(owed()).toBe(PENALTY + LEASE_DUE + upgradePrice());
+    expect(REPLACEMENT).toBe(QUOTA);
+    expect(owed()).toBe(REPLACEMENT + PENALTY + LEASE_DUE + COLLECTION + upgradePrice());
+    expect(owed()).toBeGreaterThan(GROSS * 10);
   });
   it('shows the archive’s one record: 94% on the day of the order', () => {
     const rows = ledgerFor('archive');
