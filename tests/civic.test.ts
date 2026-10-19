@@ -6,7 +6,7 @@ import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
 import { VERSION, newJourney, sortieDef } from '../src/sim/journey';
 import { migrate } from '../src/meta/save';
 import { wallView } from '../src/sim/wall';
-import { CUTS, DELIVERED_AT_START, PENALTY, QUOTA, ledgerFor, upgradePrice } from '../src/sim/contract';
+import { CUTS, FINAL_LOAD, FIRST_LOAD, GROSS, LEASE_DUE, NET, OWED, PENALTY, QUOTA, balanceAfterRack, ledgerFor, upgradePrice } from '../src/sim/contract';
 import { dueBeat } from '../src/sim/story';
 import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
@@ -47,45 +47,70 @@ describe('the opening chain beyond the gate', () => {
     j.trail.push('x');
     expect(dueBeat(j)).toBe('story_breach');
     j.carry.seen.push('story_breach');
-    expect(dueBeat(j)).toBe('story_yard');
-    j.carry.seen.push('story_yard', 'story_recovery');
     expect(dueBeat(j)).toBe('story_wake');
     j.carry.flags.push('archive_woke');
     expect(dueBeat(j)).not.toBe('story_wake');
   });
-  it('plays through with every answer, the Score falling for a reason each time', () => {
-    for (const [yard, rec] of [['codes', 'override'], ['official', 'appeal']] as const) {
-      const j = newJourney(7);
-      j.trail.push('x');
-      j.carry.contract = { got: 6 };
-      const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), story: 'story_breach', calloway: Infinity }, carry: j.carry });
-      w.cardNext = Infinity;
-      w.field.rocks = [];
-      const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
-      const seen: string[] = [];
-      run(4);
-      for (const answer of ['audit', yard, rec, 'log']) {
-        seen.push(w.comms!.def.id);
-        w.answer(answer);
-        run(4);
-      }
-      expect(seen).toEqual(['story_breach', 'story_yard', 'story_recovery', 'story_wake']);
-      const c = w.result().carry;
-      expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'archive_woke', 'clue_reserves']));
-      expect(c.civic).toBeLessThan(CIVIC_START - 60);
-      expect(c.civic).toBeGreaterThanOrEqual(300);
-      expect(c.flags.includes('codes')).toBe(yard === 'codes');
-    }
+  it('skips the cards the first cut of the opening had and this one does not, so a save part-way through plays on', () => {
+    const j = newJourney(7);
+    j.trail.push('x');
+    j.carry.seen.push('story_breach', 'story_yard', 'story_recovery');
+    expect(dueBeat(j)).toBe('story_wake');
   });
-  it('shows the ledger from the live carry: the bay’s cuts, the breach’s shortfall', () => {
-    const rows = ledgerFor('bay', { flags: [] });
-    expect(rows[0]).toMatchObject({ k: 'Gross yield', n: QUOTA });
-    expect(rows.map((r) => r.n ?? 0).slice(0, 6).reduce((a, b) => a + b, 0)).toBe(QUOTA - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow - upgradePrice());
-    const breach = ledgerFor('breach', { contract: { got: 5 }, flags: ['lease_financed'] });
-    expect(breach.find((r) => r.k === 'Delivery window')).toBeUndefined();
-    expect(breach.find((r) => r.k === 'Delivered')?.n).toBe(DELIVERED_AT_START + 5);
-    expect(breach.find((r) => r.k === 'Balance owed')?.n).toBe(PENALTY + CUTS.lease + upgradePrice());
-    expect(ledgerFor('breach', { contract: { got: 5 }, flags: [] }).some((r) => r.k === 'Upgrade instalment')).toBe(false);
+  it('plays through in two cards, the Score falling for a reason each time', () => {
+    const j = newJourney(7);
+    j.trail.push('x');
+    const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), story: 'story_breach', calloway: Infinity }, carry: j.carry });
+    w.cardNext = Infinity;
+    w.field.rocks = [];
+    const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
+    const seen: string[] = [];
+    run(4);
+    // the breach notice already marks the Score down, before anything is answered
+    expect(w.civic).toBeLessThan(CIVIC_START);
+    for (const answer of ['code', 'lead']) {
+      seen.push(w.comms!.def.id);
+      // one action each: the notice and Sam share one card, and the archive is one card
+      expect(w.comms!.choices).toHaveLength(1);
+      w.answer(answer);
+      run(4);
+    }
+    expect(seen).toEqual(['story_breach', 'story_wake']);
+    expect(w.phase).toBe('play');
+    const c = w.result().carry;
+    expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'archive_woke', 'clue_reserves']));
+    expect(c.civic).toBeLessThan(CIVIC_START - 60);
+    expect(c.civic).toBeGreaterThanOrEqual(300);
+  });
+  it('adds up: the settlement’s cuts, the rack paid from what is left, and the debt kept apart from the credit', () => {
+    const bay = ledgerFor('bay');
+    const credit = (k: string) => bay.find((r) => r.k === k)?.cr;
+    expect(credit('Gross contract credit')).toBe(GROSS);
+    expect(bay.filter((r) => r.cr !== undefined && r.k !== 'Available credit').reduce((a, r) => a + r.cr!, 0)).toBe(NET);
+    expect(credit('Available credit')).toBe(NET);
+    expect(NET).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow);
+    // the cargo rows are in Cyrite and the credit rows in credit: 800 delivered, 200 to go
+    expect(bay.find((r) => r.k === 'Delivered')?.v).toBe('800 / 1,000');
+    expect(bay.find((r) => r.k === 'Remaining')?.n).toBe(QUOTA - FIRST_LOAD);
+    expect(FINAL_LOAD).toBe(200);
+    // the rack comes out of the credit once: the balance is what is left, and no instalment is added to the debt
+    expect(balanceAfterRack()).toBe(NET - upgradePrice());
+    expect(CARD_BY_ID.story_bay!.choices[0]!.cost).toEqual({ cyrite: upgradePrice() });
+    const breach = ledgerFor('breach');
+    expect(breach.find((r) => r.k === 'Contract delivery')?.v).toBe('800 / 1,000');
+    expect(breach.find((r) => r.k === 'Remaining shortfall')?.n).toBe(200);
+    expect(breach.find((r) => r.k === 'Payout')?.v).toBe('Withheld');
+    expect(breach.find((r) => r.k === 'Vessel asset recovery')?.v).toBe('Authorised');
+    expect(breach.find((r) => r.k === 'Short-delivery penalty')?.cr).toBe(-PENALTY);
+    expect(breach.find((r) => r.k === 'Vessel lease due')?.cr).toBe(-LEASE_DUE);
+    expect(breach.find((r) => r.k === 'Balance owed')?.cr).toBe(OWED);
+    expect(OWED).toBe(PENALTY + LEASE_DUE);
+    expect(breach.some((r) => r.k === 'Upgrade instalment')).toBe(false);
+  });
+  it('shows the archive’s one record: 94% on the day of the order', () => {
+    const rows = ledgerFor('archive');
+    expect(rows.find((r) => r.k === 'Validated reserves')?.v).toBe('94% remaining');
+    expect(rows.find((r) => r.k === 'Authorisation')?.v).toBe('Redacted');
   });
 });
 
@@ -132,7 +157,8 @@ describe('nothing soft-locks', () => {
   it('leaves every story card an answer that needs and costs nothing', async () => {
     const { STORY_CARDS } = await import('../src/content/story');
     for (const c of STORY_CARDS) {
-      const free = c.choices.filter((ch) => !ch.needs && !ch.cost && !ch.odds && !ch.loseIf);
+      // the work bay's settlement puts the credit for the rack in the purse as it opens (sim/tutor.ts), so its one answer is payable
+      const free = c.choices.filter((ch) => !ch.needs && (!ch.cost || c.id === 'story_bay') && !ch.odds && !ch.loseIf);
       expect(free.length, c.id).toBeGreaterThan(0);
     }
   });

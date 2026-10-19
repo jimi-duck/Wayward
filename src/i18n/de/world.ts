@@ -162,7 +162,7 @@ export const WORLD: Record<string, string> = {
   'What you missed there is still out there.': 'Was du dort verpasst hast, wartet noch.',
   'Out of food in the lane · a plate down': 'Kein Essen mehr in der Bahn · eine Platte weniger',
   'No parts for the drive · a plate down': 'Keine Teile für den Antrieb · eine Platte weniger',
-  'Your news: the Net’s edge and the Prefect’s last port': 'Deine News: der Rand des Netzes und der letzte Hafen der Präfektin',
+  'Your news: the Net’s edge and the Governor’s last port': 'Deine News: der Rand des Netzes und der letzte Hafen der Gouverneurin',
   'Jumped to {name}': 'Gesprungen nach {name}',
   'The Net has taken {name}': 'Das Netz hat {name} geschluckt',
   '{name} here': 'Hier: {name}',
@@ -184,7 +184,7 @@ export const WORLD: Record<string, string> = {
   'The Severance file': 'Die Severance-Akte',
 
   // the people met, as the Archive keeps them
-  'Prefect Idris Calloway': 'Präfektin Idris Calloway',
+  'Governor Idris Calloway': 'Gouverneurin Idris Calloway',
   'Foreman Draper': 'Vorarbeiter Draper',
   'The crew of the Leaky Tin': 'Die Crew der Leaky Tin',
   'Tallow, a fuel runner': 'Tallow, ein Spritschmuggler',

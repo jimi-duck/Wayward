@@ -156,12 +156,12 @@ understand the central conflict. Every one is recoverable (see §11).
 | # | Flag | Name | Proves | Does **not** prove | Where | Recovery | Next lead / unlocks |
 |---|---|---|---|---|---|---|---|
 | 1 | `frag_order` | The order | The lanes were shut by signed order, not by failure. | Who signed it or why. | Reach, Ilse Marrow (`story_warden`) | Re-offered each sortie in the Reach and later; the Narrows hail repeats it. | The ledger; Calloway's hail at the Narrows. |
-| 2 | `frag_ledger` | The ledger | Krail never ran short: books show it moved to core stores and private accounts. | Who ordered the closing; the Thren. | Reach, Ansel Brook (`story_ledger`) | Missed: the Marches' manifests mention the same date. | Initials on the authorisation (`clue_sig_reach`). |
-| 3 | `frag_manifests` | The manifests | Ships "lost" in the blackout were redirected or scuttled on purpose. | Who gave the orders. | Marches, Mother Saffi and Wren (`story_drift`) | Offered again at the Rift and in the Salvage Belt. | Wren's parents' ship; the Salvage Belt. |
+| 2 | `frag_ledger` | The ledger | Krail never ran short: books show it moved to core stores and private accounts. | Who ordered the closing; the Thren. | Reach, Adam Brook (`story_ledger`) | Missed: the Marches' manifests mention the same date. | Initials on the authorisation (`clue_sig_reach`). |
+| 3 | `frag_manifests` | The manifests | Ships "lost" in the blackout were redirected or scuttled on purpose. | Who gave the orders. | Marches, Ma Saffi and Wren (`story_drift`) | Offered again at the Rift and in the Salvage Belt. | Wren's parents' ship; the Salvage Belt. |
 | 4 | `frag_keys` | The keys | Who built the lane breakers and who still guards them. | Why they were built. | Hollows, the Voice (`story_voice`) | The Voice calls again at the Seam. | The Thren and Cyrite (`clue_cyrite`). |
-| 5 | `frag_blackbox` | The black box | Ada's Warden vessel recorded the night; the Aster routine was deliberate. | Ada's full motive. | Salvage Belt, Dov Kessin (`story_salvor`) | A second wreck beat in the Belt; the Drift Deep charts cite it. | Ada's voice (`story_ada`). |
-| 6 | `frag_charts` | The charts | The closures form a ring, a containment pattern, not a supply line. | What is inside the ring. | Drift Deep, Tarn Ilvo (`story_charts`) | The Quiet Ferry carries a copy. | The Breaker Yards. |
-| 7 | `frag_workorder` | The work order | The Continuance ordered the breakers, with a date and a seal. | The signer's name in full. | Breaker Yards, Pell Anand (`story_workorder`) | Marit Voss's crews hold the yard copy. | `clue_sig_yards`; Thren-scarred hulls (`clue_scarred`). |
+| 5 | `frag_blackbox` | The black box | Ada's Warden vessel recorded the night; the Aster routine was deliberate. | Ada's full motive. | Salvage Belt, Dov Kessler (`story_salvor`) | A second wreck beat in the Belt; the Drift Deep charts cite it. | Ada's voice (`story_ada`). |
+| 6 | `frag_charts` | The charts | The closures form a ring, a containment pattern, not a supply line. | What is inside the ring. | Drift Deep, Tarik Silva (`story_charts`) | The Quiet Ferry carries a copy. | The Breaker Yards. |
+| 7 | `frag_workorder` | The work order | The Continuance ordered the breakers, with a date and a seal. | The signer's name in full. | Breaker Yards, Ben Anand (`story_workorder`) | Marit Voss's crews hold the yard copy. | `clue_sig_yards`; Thren-scarred hulls (`clue_scarred`). |
 | 8 | `frag_witnesses` | The witnesses | Forty people were in the room and kept quiet, Scatter leaders among them. | That each took a bargain; that descendants are guilty. | Free Ports, Old Mirren (`story_witnesses`) | Ines Duarte's brokers hold a copy. | `clue_sig_ports`; Oduya's and Saffi's names. |
 
 ## 9. Supporting clues and leads
@@ -175,7 +175,7 @@ believes or can do.
 | `clue_archive_log` | The Warden Line log: routine ADA-1, bloodline lock | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
 | `clue_reserves` | Krail reserves 94% on the shutdown date | fact | `story_wake` (both answers) | The Act I reveal. |
 | `clue_sig_reach` | "L. C." on the authorisation line | inference | Reach, the ledger | One of three for the signature. |
-| `clue_sig_yards` | The Prefect's cipher on the work order | inference | Breaker Yards | Two of three. |
+| `clue_sig_yards` | The Governor's cipher on the work order | inference | Breaker Yards | Two of three. |
 | `clue_sig_ports` | Lior Calloway's full signature in the minutes | fact (with the others) | Free Ports | Three of three: leverage, once (`sig_used`). |
 | `clue_scarred` | Thren-scarred hulls under restriction | fact | Breaker Yards | Points at the Thren early. |
 | `clue_agent` | An Office agent aboard the Quiet Ferry | fact | Drift Deep | Expose, protect or use. |
@@ -190,9 +190,9 @@ region the player is in or, at a gate, the next.
 Persistent state is **flags** (no new persisted fields beyond `civic`).
 Naming convention: `<who>_met`, `<who>_<outcome>`.
 
-### Prefect Idris Calloway (Offices of Peace)
+### Governor Idris Calloway (Offices of Peace)
 Believes the Continuance is necessary because she has seen what happens when
-central control fails. Her secret: her father, Prefect **Lior Calloway**, signed
+central control fails. Her secret: her father, Governor **Lior Calloway**, signed
 the Severance order. Three set pieces:
 1. **The Narrows** (`story_calloway_narrows`, planned): a personal hail. She
    has read Ada's file too. Flag `calloway_ada`.
@@ -215,8 +215,8 @@ changes because the state and the company are one chain. He wants the file
 destroyed and Juno dead once it is too dangerous; his fleet arrives at the
 Threshold. (Open canon question Q1.)
 
-### Tam Okoro, yard foreman (Cerro)
-Radio ally, never crew. At the work bay he explains the financed upgrade (`story_bay`); beyond the gate he offers a maintenance-berth code or leaves Juno to the official lane (`story_yard`).
+### Sam Okoro, yard foreman (Cerro)
+Radio ally, never crew. At the work bay his settlement is the opening's main exposition (`story_bay`: 800 / 1,000 delivered, the company's cuts, the rack paid once); beyond the gate he cuts in on Lane Control's breach notice with a maintenance code (`story_breach`, one confirmed action).
 Flags: `tam_codes` and `tam_favour` (took the code), `tam_alone` (did not); `tam_ally` once the codes pass the
 checkpoint. Later: his brother on a Breaker crew (`story_tam_brother`, planned).
 If Juno left him alone, the brother beat still arrives, from Marit Voss, and he
@@ -225,13 +225,13 @@ remembers.
 ### Clients (setup, twist, reckoning)
 | Client | Region | Setup | Twist | Reckoning | Flags |
 |---|---|---|---|---|---|
-| Ansel Brook, Kellern clerk | Reach | `story_ledger` | `story_brook_arrest`: Custody transport | rescue, divert or leave | `brook_met`, `brook_free`, `brook_taken` |
-| Speaker Oduya, Kessel Hold | Marches | `story_oduya_rigs`: defend the rigs | `story_moot`: carry the vote | predecessor among the Forty at Free Ports | `oduya_rigs`, `pact_holdfast`, `oduya_name` |
+| Adam Brook, Kellern clerk | Reach | `story_ledger` | `story_brook_arrest`: Custody transport | rescue, divert or leave | `brook_met`, `brook_free`, `brook_taken` |
+| Councillor Oduya, Kessel Hold | Marches | `story_oduya_rigs`: defend the rigs | `story_moot`: carry the vote | predecessor among the Forty at Free Ports | `oduya_rigs`, `pact_holdfast`, `oduya_name` |
 | Wren Saffi, Drift navigator | Marches | `story_drift` | manifests: her parents' ship | the Forty include her family | `pact_drift`, `wren_trust`, `wren_family` |
-| Vell, Gutter broker | Belt to Free Ports | `story_broker` | `story_vell_betray`: sells your heading | `story_vell_reckoning` | `broker`, `vell_betrayed`, `vell_paid`, `vell_exposed` |
+| Val, Gutter broker | Belt to Free Ports | `story_broker` | `story_vell_betray`: sells your heading | `story_vell_reckoning` | `broker`, `vell_betrayed`, `vell_paid`, `vell_exposed` |
 | Kesh, Gutter fixer | Belt | `story_kesh` | switches sides or not | settle the debt | `kesh_trust`, `kesh_warned` |
-| Dov Kessin, salvor | Belt | `story_salvor` | the recorder | `story_ada`: Ada's voice | `frag_blackbox`, `ada_heard`, `ada_kept` |
-| Ossi Rane, Quiet Ferry | Drift Deep | `story_ferry` | `story_ferry_agent` | expose, protect or use | `ferry_met`, `agent_exposed`, `agent_shielded`, `agent_used` |
+| Dov Kessler, salvor | Belt | `story_salvor` | the recorder | `story_ada`: Ada's voice | `frag_blackbox`, `ada_heard`, `ada_kept` |
+| Ossie Raine, Quiet Ferry | Drift Deep | `story_ferry` | `story_ferry_agent` | expose, protect or use | `ferry_met`, `agent_exposed`, `agent_shielded`, `agent_used` |
 | Marit Voss, strike steward | Breaker Yards | `story_crew` | the picket | break the yard or broker a deal | `strike_stood`, `strike_broker` |
 | Ines Duarte, Dust Traders | Free Ports | `story_harbour` | tries to buy the file | `story_ines_offer` | `ines_berth`, `ines_refused` |
 | Keeper Oren | Last Lanes | `story_toll` | three questions | the Wall answers | `oren_asked` |
@@ -289,7 +289,7 @@ extended, not replaced. Vanish is always open.
 |---|---|---|---|
 | Broadcast | Release the truth to the Core. | Signals 2 or the array, four-piece file, Echo or Calloway turned. | Open lanes let the Thren follow. |
 | Unite | Organise the Scatter into a force. | Two pacts or two friends, Wren trusted. | Partners include heirs of the compromised. |
-| Sell | Sell the file for freedom or wealth. | Guild or Gutter friend, Vell or a buyer, Kesh trusted. | Someone weaponises it. |
+| Sell | Sell the file for freedom or wealth. | Guild or Gutter friend, Val or a buyer, Kesh trusted. | Someone weaponises it. |
 | Trade | Bargain for amnesty and a way home. | Calloway told or turned, Offices calm, implant kept. | The ones left outside stay outside. |
 | Seal | Keep the lanes closed. | Guns or Rig 3, keys, Echo trusted. | The lie survives; the Scatter stays cut off. |
 | Vanish | Take the Wayward beyond the routes. | Always. | Few learn what happened. |
@@ -301,7 +301,7 @@ decision, recorded as a flag `implant_keep|burn|rewrite`, shown as short
 trade-off lines, changes epilogues only.
 
 **Epilogues:** a stable base per ending plus conditional lines (`if`) for
-Calloway, Tam, Wren, Kesh, Echo or Sable, and surviving clients.
+Calloway, Sam, Wren, Kesh, Echo or Sable, and surviving clients.
 
 ## 14. Save and migration
 
@@ -322,9 +322,9 @@ Calloway, Tam, Wren, Kesh, Echo or Sable, and surviving clients.
 | # | Question | Recommendation |
 |---|---|---|
 | Q1 | The brief's **Director Draper** (Offices) and the code's **Foreman Draper** (Kellern) are one man or two? | One man, two badges (§10). Cheapest, and it shows state and company are one chain. |
-| Q2 | The code's chartwright is **Hale Tarn**, the brief's is **Tarn Ilvo**, and there are two other Hales (Noor Hale, Hale Sorensen). | Rename to **Tarn Ilvo**. Removes the collision. Old Archive entries keep the old name as written. |
+| Q2 | The code's chartwright is **Haddad Tarn**, the brief's is **Tarik Silva**, and there are two other Hales (Noor Haddad, Hale Sorensen). | Rename to **Tarik Silva**. Removes the collision. Old Archive entries keep the old name as written. |
 | Q3 | The brief's Ilse Marrow is "retired Lane Warden"; the code says she ran the Narrows relay 70 years ago. | She is old and alive; the Scatter's long lives are not explained (no cryo, no rejuvenation). Recommend: she was a junior relay operator, so she is about 90 today. |
-| Q4 | Who is **Old Mirren**, **Pell Anand**, **Kade**, **Sorensen**, **Vance**, **Ashgrove**? | All exist in code (STORY_PEOPLE, captains) and stay as they are. |
+| Q4 | Who is **Old Mirren**, **Ben Anand**, **Kade**, **Sorensen**, **Vance**, **Ashgrove**? | All exist in code (STORY_PEOPLE, captains) and stay as they are. |
 
 ## 16. The content matrix
 
@@ -334,10 +334,11 @@ miss. L10n = English and German twins.
 ### Cerro (Act I)
 | Beat | Trigger | Player action | New information | State | Fallback | Status | L10n |
 |---|---|---|---|---|---|---|---|
-| Contribution (opening card) | New Story journey | read | The work order: 48 gross, 4 to Juno; Score 412 | none | skippable | live | en, de |
-| `story_wake` | 40 s into the Breakout | Open the log or not | The archive woke; Score 412 to 374; status UNDER REVIEW | `archive_woke`, civic −38, optional `clue_archive_log` | due again on reload | live | en, de |
+| Contribution (opening card) | New Story journey | read | Contract 08-441: 0 / 1,000 delivered; Score 412 | none | skippable | live | en, de |
 | Tutor | automatic | mine, fit torpedoes, torpedo one hostile | the controls | tutor state | Skip | live (unchanged) | en, de |
-| `story_yard` | follow of the wake | codes, fuel, wave | Tam's offer | `codes`/`tam_codes`, `tam_fuel`, `tam_alone` | due on reload | live | en, de |
+| `story_bay` | docking at the work bay | install the rack | delivered 800 / 1,000; 22 credit, rack −20 | purse 2 | auto-undock | live | en, de |
+| `story_breach` | first sortie beyond the gate | use Sam's code (one action) | breach: owed 27, payout withheld, no responsibility for lost cargo; the hull is renamed | `ship_stolen`, `lease_broken`, `tam_codes`, civic −14, −30 | due again on reload | live | en, de |
+| `story_wake` | follow of the breach | next lead | the archive: 94% vs the shortage order; Halden's Reach relay; legacy key | `archive_woke`, civic −38 | due again on reload | live | en, de |
 | Checkpoint | lane mouth | show registry (needs 400), scan, pay, spoof, run, fight | the Score as a door | civic ±, `tam_ally` or burned | any answer passes or fights | live | en, de |
 | Reveal | the first jump | none (automatic) | Krail reserves 94% vs the shortage; next lead the Reach | `clue_reserves` | always runs | live | en, de |
 
@@ -351,7 +352,7 @@ Threshold.
 | Reach | `story_warden`, `story_ledger`, `story_brook_arrest`, `story_calloway_narrows` | live; the Narrows is a gate beat (`Beat.gate`, dealt on arriving at the gate out of the Reach) |
 | Marches | `story_oduya_rigs`, `story_moot`, `story_drift` (Wren) | live |
 | Salvage Belt | `story_broker`, `story_kesh`, `story_vell_betray`, `story_salvor`, `story_ada` | live |
-| Drift Deep | `story_charts` (Tarn Ilvo), `story_ferry`, `story_ferry_agent` | live |
+| Drift Deep | `story_charts` (Tarik Silva), `story_ferry`, `story_ferry_agent` | live |
 | Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | live; `story_draper` is the Director reveal (needs `stalled`) |
 | Free Ports | `story_harbour`, `story_ines_offer`, `story_witnesses`, `story_vell_reckoning`, `story_tollgate` | live; the signature chain sets `clue_sig_*` and `sig_used` |
 | Hollows | `story_voice`, `story_thren`, `story_echo_sable` | live |
@@ -366,3 +367,9 @@ Recorded 2026-10-18, branch `story-rewrite` from `main` at `1e318c4`:
 - `JOURNEY_SET=eight npm run pilot:journey`: see
   [BALANCE-STORY-REWRITE.md](BALANCE-STORY-REWRITE.md).
 - Working tree clean at the start; no user changes touched.
+
+## Naming (third pass)
+
+The people and titles follow the owner's third naming pass: Tam is Sam Okoro; Ansel is Adam Brook; Speaker Oduya is Councillor Oduya; Mother Saffi is Ma Saffi; Vell is Val; Dov Kessler; Ossie Raine; Tarik Silva; Ben Anand; Keeper Oren is Oren Lisle, the archivist; Owen Pike; Hester; Brother Orrin (not Witness); Noor Haddad, aide to the Governor. Prefect Idris Calloway is Governor Idris Calloway and Prefect Lior Calloway is Deputy Governor Lior Calloway. Captain Isla Vance, Captain Hale Sorensen, Brennan Kade, Sister Vera Hask, Inspector Ashgrove (the title Inquisitor is gone), and The Nine (was the Chorus of Nine). Systems: Marlow, Northfold, Hollis, Vesta, Branford. Regions, factions, gates and ports keep their names. Flag and card ids (`tam_codes`, `story_vell_betray`, ...) keep the old spelling so saves still read. Procedural system names: about six in ten are plain words, about four in ten a real name plus a place-word (Hadley’s Rest, Morgan Deep), chosen from the same two draws as before so a seed lays out as it did.
+
+The Tollgate signature (Lior Calloway’s, found in the minutes) is a different clue from Ada Aster’s recording (the black box). The Wall and the dialogue keep them apart.

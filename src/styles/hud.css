@@ -79,7 +79,7 @@
 #obj-left { white-space: nowrap; font: 600 calc(var(--fs) * 1.45)/1 var(--font-rail); letter-spacing: .06em; color: var(--amber); font-variant-numeric: tabular-nums; }
 #obj-p { --n: 30; --on: var(--amber); --off: var(--amber-dim); height: 3px; margin-top: 2px; }
 /* in the Story the lane is a place, not a count: the line under the title says how far */
-html.breakout #objective.course #obj-p, #objective.course #obj-s { display: none; }
+html.breakout #objective.course #obj-p { display: none; }
 #obj-s { font: 600 calc(var(--fs) * 1.15)/1.25 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
 #obj-s:empty { display: none; }
 #obj-list { display: none; margin: 2px 0 0; padding: 7px 0 0; list-style: none; gap: 4px; border-top: 1px solid var(--line);

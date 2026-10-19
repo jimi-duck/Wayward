@@ -59,7 +59,7 @@ export interface Face {
 export interface CaptainDef {
   id: string;
   name: string;
-  /** How the channel names them: Captain, Commander, Inquisitor. */
+  /** How the channel names them: Captain, Commander, Inspector. */
   rank: string;
   ship: string;
   /** The faction whose capital ship they fly (and whose notice names them: content/factions.ts lists them in order). */

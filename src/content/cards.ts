@@ -23,9 +23,9 @@ export const FLAGS: Record<string, string> = {
   news: 'fresh news of the lanes',
   gutter_friend: 'a friend in the Gutter',
   clue_sig_reach: 'the initials on the authorisation',
-  clue_sig_yards: 'the Prefect’s cipher',
+  clue_sig_yards: 'the Governor’s cipher',
   clue_sig_ports: 'Lior Calloway’s signature',
-  vell_betrayed: 'proof Vell sold your heading',
+  vell_betrayed: 'proof Val sold your heading',
 };
 
 export const CARDS: CardDef[] = [
@@ -347,13 +347,13 @@ export const CARDS: CardDef[] = [
   },
   {
     id: 'calloway', kind: 'warning', caller: 'calloway', when: { after: 150 }, weight: 2, face: CALLOWAY_FACE,
-    from: 'Prefect Idris Calloway · Offices of Peace', title: 'Come home, Juno',
+    from: 'Governor Idris Calloway · Offices of Peace', title: 'Come home, Juno',
     text: '“Juno, Idris Calloway. I am not your enemy. That archive is not worth your life. Tell me where you are going.”',
     lines: [
       { if: { flag: 'passengers' }, text: '“And the Okafors. They have children, Juno.”' },
       { if: { heatMin: 0.7 }, text: '“That is a lot of noise for someone trying to disappear.”' },
     ],
-    cargo: 'A Prefect’s channel · priority override',
+    cargo: 'A Governor’s channel · priority override',
     choices: [
       { id: 'lie', label: 'Give her a false heading', tone: 'bluff', hint: 'Send her toward the wrong lane.', odds: { base: 0.5, heat: -0.3, learn: 'lie' }, win: { text: 'Calloway redirects her search', heat: -0.15, hunt: 1, flag: 'calloway_lied' }, lose: { text: '“You were always a poor liar.”', heat: 0.1, hunt: -0.5, flag: 'calloway_lied' } },
       { id: 'answer', label: 'Tell her the truth', tone: 'help', hint: 'Tell her what you found in the archive and see how she responds.', win: { text: 'A long silence on the channel', heat: 0.05, score: 500, flag: 'calloway_told' } },
@@ -564,8 +564,8 @@ export const CARDS: CardDef[] = [
   },
   {
     id: 'rumour_prefect', kind: 'rumour', caller: 'miners', when: { kind: 'home', after: 95 },
-    from: 'Ore buyer’s chatter', title: 'A Prefect came through',
-    text: '“A Prefect came to the moon this morning. Offices of Peace. Asked for you by name. Calloway.”',
+    from: 'Ore buyer’s chatter', title: 'A Governor came through',
+    text: '“A Governor came to the moon this morning. Offices of Peace. Asked for you by name. Calloway.”',
     cargo: 'Gossip, frightened',
     choices: [
       { id: 'ask', label: 'Ask what she asked', tone: 'trade', hint: 'One Cyrite loosens a tongue.', cost: { chits: 5 }, win: { text: 'She asked where your family lives', flag: 'calloway_known' } },
@@ -576,7 +576,7 @@ export const CARDS: CardDef[] = [
   // ── the journey: Calloway in the system, open lanes, the Net, food ──────
   {
     id: 'calloway_here', kind: 'warning', caller: 'calloway', trigger: 'hunt', repeat: true, face: CALLOWAY_FACE,
-    from: 'Prefect Idris Calloway · CCV Patience', title: 'There you are',
+    from: 'Governor Idris Calloway · CCV Patience', title: 'There you are',
     text: '“Juno. I’ve been one system behind you for days. I’m tired. Power down and nobody else gets hurt.”',
     lines: [
       { if: { flag: 'calloway_beaten' }, text: 'Her ship still carries the scars of the last time.' },
@@ -588,7 +588,7 @@ export const CARDS: CardDef[] = [
       { if: { wise: ['run', 2] }, text: 'An interdictor flies with her. She has watched you run too often.' },
       { if: { hunch: 'straight' }, text: '“You never turn aside. So I stopped following and started waiting.”' },
     ],
-    ships: [{ variant: 'lancer', n: 1 }, { variant: 'enforcer', n: 2 }], cargo: 'Offices of Peace cutter · full magazines · a Prefect aboard',
+    ships: [{ variant: 'lancer', n: 1 }, { variant: 'enforcer', n: 2 }], cargo: 'Offices of Peace cutter · full magazines · a Governor aboard',
     truths: [
       { id: 'patient', weight: 2, read: 'Her wing holds back · she wants you alive' },
       { id: 'tired', weight: 1, read: 'Her drive is running hot · she has pushed hard to get here', boost: { if: { flag: 'calloway_beaten' }, mult: 2 } },
@@ -624,7 +624,7 @@ export const CARDS: CardDef[] = [
   },
   {
     id: 'calloway_word', kind: 'warning', caller: 'calloway', when: { after: 40, hunted: 1 }, weight: 2, repeat: true, face: CALLOWAY_FACE,
-    from: 'Prefect Idris Calloway · Offices of Peace', title: 'One system behind',
+    from: 'Governor Idris Calloway · Offices of Peace', title: 'One system behind',
     text: '“I’m one lane behind you, Juno. Every system you stop in, I stop in.”',
     lines: [
       { if: { flag: 'calloway_told' }, text: '“I keep thinking about what you told me. It doesn’t change my job.”' },
@@ -635,7 +635,7 @@ export const CARDS: CardDef[] = [
       { if: { hunch: 'contested' }, text: '“You always go where the shooting is. Like following a flare.”' },
       { if: { hunch: 'transit' }, text: '“The quiet lanes again. I have stopped asking where you went.”' },
     ],
-    cargo: 'A Prefect’s channel · priority override',
+    cargo: 'A Governor’s channel · priority override',
     choices: [
       { id: 'lie', label: 'Send her a false heading', tone: 'bluff', hint: 'She checks it. Each lie that holds costs her a day.', odds: { base: 0.45, heat: -0.2, learn: 'lie' }, win: { text: 'She turns for the wrong lane', hunt: 1, flag: 'calloway_lied' }, lose: { text: '“Wrong lane, Juno.” · she pushes harder', hunt: -0.5, flag: 'calloway_lied' } },
       { id: 'ask', label: 'Ask what she believes', tone: 'help', hint: 'She might tell you. She might be stalling.', win: { text: '“That it holds. That it has to.” · a long silence', score: 400, flag: 'calloway_told', heat: 0.04 } },
@@ -717,10 +717,10 @@ export const CARDS: CardDef[] = [
     id: 'port_news', kind: 'rumour', caller: 'frontier', trigger: 'port', when: { netted: false, kind: ['port', 'mining', 'contested'] }, repeat: true,
     from: 'Dockmaster', title: 'Who came through',
     text: '“Welcome in. You look like you want to know who’s been asking around.”',
-    lines: [{ if: { hunted: 1 }, text: '“A Prefect’s cutter came through the next system over. Yesterday, maybe.”' }],
+    lines: [{ if: { hunted: 1 }, text: '“A Governor’s cutter came through the next system over. Yesterday, maybe.”' }],
     cargo: 'Dock office · the gossip of every lane',
     choices: [
-      { id: 'buy', label: 'Buy the news', tone: 'trade', hint: 'Where the Prefect is, and where the Net has reached.', cost: { chits: 10 }, win: { text: 'The dockmaster tells you who has passed through', flag: 'news' } },
+      { id: 'buy', label: 'Buy the news', tone: 'trade', hint: 'Where the Governor is, and where the Net has reached.', cost: { chits: 10 }, win: { text: 'The dockmaster tells you who has passed through', flag: 'news' } },
       { id: 'no', label: 'Just dock', tone: 'refuse', hint: 'You will find out soon enough.', win: { text: 'Clamps on' } },
     ],
   },
@@ -739,14 +739,14 @@ export const CARDS: CardDef[] = [
     from: 'Drift fleet · the Long Walk', title: 'Forty ships, going nowhere fast',
     text: '“A Drift crossing. We trade, we talk, we don’t fight. What do you need?”',
     lines: [
-      { if: { hunted: 2 }, text: '“A Prefect has been asking the fleets about a yellow hauler.”' },
+      { if: { hunted: 2 }, text: '“A Governor has been asking the fleets about a yellow hauler.”' },
       { if: { wise: ['fleet', 1] }, text: '“She doesn’t believe the fleets any more. Somebody lied for you.”' },
     ],
     ships: [{ variant: 'freighter', n: 2 }], cargo: 'A Drift fleet · stores, spares, rumours',
     choices: [
       { id: 'food', label: 'Buy two supplies', tone: 'trade', hint: 'Three Cyrite for two.', cost: { chits: 15 }, win: { text: 'Two crates aboard', supplies: 2, standing: { miners: 1 } } },
       { id: 'news', label: 'Ask about the lanes', tone: 'trade', hint: 'One Cyrite: where the Net is, and who follows you.', cost: { chits: 5 }, win: { text: 'The Drift tell you what they have seen', flag: 'news' } },
-      { id: 'trail', label: 'Ask them to lie for you', tone: 'help', hint: 'If the Prefect asks the fleet, they send her the wrong way.', needs: { standing: ['miners', 2] }, odds: { base: 0.95, learn: 'fleet' }, win: { text: 'The Long Walk will tell her you went the other way', hunt: 1 }, lose: { text: 'The Prefect has heard that story from a Drift fleet before' } },
+      { id: 'trail', label: 'Ask them to lie for you', tone: 'help', hint: 'If the Governor asks the fleet, they send her the wrong way.', needs: { standing: ['miners', 2] }, odds: { base: 0.95, learn: 'fleet' }, win: { text: 'The Long Walk will tell her you went the other way', hunt: 1 }, lose: { text: 'The Governor has heard that story from a Drift fleet before' } },
       { id: 'no', label: 'Pass by', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
     ],
   },
@@ -818,7 +818,7 @@ export const CARDS: CardDef[] = [
     text: '“{fee} Cyrite and I file a flight plan for a lane you’re not taking. Anyone asking gets the wrong answer.”',
     lines: [
       { if: { hunted: 1 }, text: '“Someone is asking after you already.”' },
-      { if: { wise: ['plan', 1] }, text: '“A Prefect came through checking our filings. She knows the trick.”' },
+      { if: { wise: ['plan', 1] }, text: '“A Governor came through checking our filings. She knows the trick.”' },
     ],
     cargo: 'A Guild flight office', fee: { base: 25 },
     truths: [

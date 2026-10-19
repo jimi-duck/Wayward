@@ -29,14 +29,14 @@ describe('the weights', () => {
 describe('the desk', () => {
   it('holds every card in a fight, and on a jump or a dock', () => {
     const d = desk();
-    d.offer(CARD_BY_ID.story_yard!, 'major', 0);
+    d.offer(CARD_BY_ID.story_wake!, 'major', 0);
     for (const busy of ['fight', 'transit'] as const) expect(d.next(busy, 100)).toBeNull();
-    expect(d.next('free', 100)?.def.id).toBe('story_yard');
+    expect(d.next('free', 100)?.def.id).toBe('story_wake');
   });
 
   it('lets a card wait through a fight and speak a few seconds after it', () => {
     const d = desk();
-    d.offer(CARD_BY_ID.story_yard!, 'major', 0);
+    d.offer(CARD_BY_ID.story_wake!, 'major', 0);
     d.watch('fight', 50);
     expect(d.next('free', 51)).toBeNull();
     expect(d.next('free', 50 + DESK.settle.major + 0.1)).not.toBeNull();
@@ -55,7 +55,7 @@ describe('the desk', () => {
     const d = desk();
     d.offer(CARD_BY_ID.haul_job!, 'routine', 0);
     d.offer(CARD_BY_ID.sweep_warning!, 'important', 1);
-    d.offer(CARD_BY_ID.story_yard!, 'major', 2);
+    d.offer(CARD_BY_ID.story_wake!, 'major', 2);
     expect(d.next('free', 300)?.tier).toBe('major');
     d.closed(300);
     expect(d.next('free', 301)).toBeNull();
@@ -83,8 +83,8 @@ describe('the desk', () => {
 
   it('hears a card once, however often it is offered', () => {
     const d = desk();
-    d.offer(CARD_BY_ID.story_yard!, 'major', 0);
-    d.offer(CARD_BY_ID.story_yard!, 'major', 1);
+    d.offer(CARD_BY_ID.story_wake!, 'major', 0);
+    d.offer(CARD_BY_ID.story_wake!, 'major', 1);
     expect(d.queue).toHaveLength(1);
   });
 

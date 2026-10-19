@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEATS, BREACH_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, OPENING_AT, STORY_AT, STORY_CARDS, WAKE_BEAT, YARD_BEAT } from '../src/content/story';
+import { BEATS, BREACH_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, OPENING_AT, STORY_AT, STORY_CARDS, WAKE_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
 import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
@@ -112,33 +112,31 @@ describe('the story beats', () => {
     expect(w.result().carry.seen).toContain('story_warden');
   });
 
-  it('open the chain a moment after arrival beyond the gate, and Tam’s answers set the first lane up', () => {
-    const play = (answer: string) => {
-      const j = newJourney(7);
-      j.trail.push('x');
-      const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
-      w.cardNext = Infinity;
-      w.bk!.nextPursuit = Infinity;
-      w.field.rocks = [];
-      const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
-      run(OPENING_AT - 1);
-      expect(w.phase).toBe('play');
-      run(2);
-      expect(w.comms?.def.id).toBe(BREACH_BEAT);
-      w.answer('audit');
-      run(3);
-      expect(w.comms?.def.id).toBe(YARD_BEAT);
-      const before = w.result().carry;
-      w.answer(answer);
-      return { before, after: w.result().carry };
-    };
-    const codes = play('codes');
-    expect(codes.after.flags).toEqual(expect.arrayContaining(['codes', 'tam_codes', 'tam_favour']));
-    expect(codes.after.seen).toContain(YARD_BEAT);
-    const official = play('official');
-    expect(official.after.flags).toContain('tam_alone');
-    expect(official.after.flags).not.toContain('codes');
-    expect(official.after.civic!).toBeLessThan(official.before.civic!);
+  it('open the chain a moment after arrival beyond the gate: one notice with Sam on it, then the archive', () => {
+    const j = newJourney(7);
+    j.trail.push('x');
+    const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
+    w.cardNext = Infinity;
+    w.bk!.nextPursuit = Infinity;
+    w.field.rocks = [];
+    const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
+    run(OPENING_AT - 1);
+    expect(w.phase).toBe('play');
+    run(2);
+    expect(w.comms?.def.id).toBe(BREACH_BEAT);
+    // Lane Control and Sam are one thread: one card, two voices, one answer
+    expect(w.comms?.def.reply?.from).toMatch(/^Sam Okoro/);
+    expect(w.comms?.choices.map((c) => c.id)).toEqual(['code']);
+    expect(w.comms?.ledger?.find((r) => r.k === 'Remaining shortfall')?.n).toBe(200);
+    const before = w.result().carry;
+    w.answer('code');
+    run(4);
+    expect(w.comms?.def.id).toBe(WAKE_BEAT);
+    const after = w.result().carry;
+    expect(after.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour']));
+    expect(after.flags).not.toContain('tam_alone');
+    expect(after.civic!).toBeLessThan(before.civic!);
+    expect(after.seen).toContain(BREACH_BEAT);
   });
 
   it('show what each answer gives before any other chip', () => {
@@ -146,7 +144,7 @@ describe('the story beats', () => {
       const story = c.choices.filter((ch) => [ch.win.flag ?? []].flat().some((f) => /^(frag_|copy_|voice_|lane_|pact_|broker|codes$|clue_)/.test(f)));
       for (const ch of story) {
         const named = [ch.win.flag ?? []].flat().flatMap((f) => chipsOf(f) ?? []);
-        expect([...named, 'File +1', 'Copy out', 'Forged codes', 'Wall +1', '−38 Score', '−10 Score'], `${c.id}.${ch.id}`).toContain(gains(ch.win, ctx(), 0)[0]);
+        expect([...named, 'File +1', 'Copy out', 'Forged codes', 'Hull stolen', 'Wall +1', '−38 Score', '−10 Score'], `${c.id}.${ch.id}`).toContain(gains(ch.win, ctx(), 0)[0]);
       }
     }
   });

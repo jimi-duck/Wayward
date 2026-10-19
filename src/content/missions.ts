@@ -69,7 +69,7 @@ export const MISSIONS: SituationDef[] = [
     id: 'last_shift', name: 'Hold the Last Shift', blurb: 'A mining crew refuses to abandon its rig while raiders close in.', group: 'frontier',
     kinds: ['mining', 'contested', 'transit'], regions: [2, 5], weight: 1.2,
     prop: 'rig',
-    actors: [act('freighter', 1, 'hold', 'meek', 'Rig Hesper', { target: true, hp: 2.2, ring: 20 })],
+    actors: [act('freighter', 1, 'hold', 'meek', 'Rig Hester', { target: true, hp: 2.2, ring: 20 })],
     waves: [{ variant: 'scout', n: 2, at: 14 }, { variant: 'raptor', n: 1, at: 46 }, { variant: 'scout', n: 3, at: 78 }],
     card: 'sc_shift', at: 30, hail: 480, accept: ['stand'],
     goal: { kind: 'defend', hold: 105, limit: 0, line: 'Defend the rig until the crew can finish the shift' },
@@ -309,7 +309,7 @@ export const MISSIONS: SituationDef[] = [
   {
     id: 'the_witness', name: 'Get the Witness Out', blurb: 'A witness has evidence against Custody, and they want the witness silenced.', group: 'corporate',
     kinds: ['transit', 'contested', 'port'], regions: [2, 7], weight: 0.9,
-    actors: [act('freighter', 1, 'hold', 'meek', 'Witness Orrin', { target: true, hp: 1.3, ring: 20 })],
+    actors: [act('freighter', 1, 'hold', 'meek', 'Brother Orrin', { target: true, hp: 1.3, ring: 20 })],
     waves: [{ variant: 'picket', n: 2, at: 12 }, { variant: 'picket', n: 3, at: 50 }],
     card: 'sc_witness', at: 30, hail: 500, accept: ['guard'],
     goal: { kind: 'defend', hold: 80, limit: 0, line: 'Keep the witness alive until they can escape' },
@@ -319,10 +319,10 @@ export const MISSIONS: SituationDef[] = [
     after: { won: { text: 'The witness escaped alive · the Offices want answers', hunt: 0.5, flag: 'witness_saved' } },
   },
   {
-    id: 'lose_prefect', name: 'Lose the Prefect’s Trail', blurb: 'A patrol is using a relay to report your position to Calloway.', group: 'corporate',
+    id: 'lose_prefect', name: 'Lose the Governor’s Trail', blurb: 'A patrol is using a relay to report your position to Calloway.', group: 'corporate',
     kinds: ['transit', 'contested', 'port'], regions: [1, 6], weight: 0.9,
     prop: 'checkpoint',
-    actors: [act('picket', 3, 'patrol', 'wary', 'Prefect’s patrol', { from: 'site', ring: 64 })],
+    actors: [act('picket', 3, 'patrol', 'wary', 'Governor’s patrol', { from: 'site', ring: 64 })],
     card: 'sc_prefect', at: 30, hail: 480, accept: ['lose'],
     goal: { kind: 'sneak', hold: 6, limit: 200, line: 'Erase your trail at the relay without being spotted' },
     win: { text: 'Your trail is erased · Calloway loses a day', chits: 100, notice: { custody: -2 } },
@@ -382,7 +382,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_shift', kind: 'plea', caller: 'miners', tier: 'important',
-    from: 'Rig foreman · Hesper', title: 'Hold the Last Shift',
+    from: 'Rig foreman · Hester', title: 'Hold the Last Shift',
     text: '“Raiders are coming for the rig. Forty of us are aboard. Hold them off for 100 seconds and Guild patrol will arrive. We need your guns.”',
     cargo: 'A rig · forty crew, no guns',
     choices: [
@@ -591,8 +591,8 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_witness', kind: 'plea', caller: 'frontier', tier: 'important',
-    from: 'Witness Orrin', title: 'Get the Witness Out',
-    text: '“I saw what Custody did at Ninefold, and I kept the log. They know I have it. Keep me alive for eighty seconds.”',
+    from: 'Brother Orrin', title: 'Get the Witness Out',
+    text: '“I saw what Custody did at Northfold, and I kept the log. They know I have it. Keep me alive for eighty seconds.”',
     cargo: 'A freighter · a log nobody should have',
     choices: [
       { id: 'guard', label: 'Protect the witness', tone: 'help', hint: 'Keep the witness alive for 80 seconds. Custody ships arrive in two waves.', win: { text: 'Heading to the freighter' } },
@@ -602,7 +602,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_prefect', kind: 'job', caller: 'frontier', tier: 'important',
-    from: 'A broker · no name', title: 'Lose the Prefect’s Trail',
+    from: 'A broker · no name', title: 'Lose the Governor’s Trail',
     text: '“Your tracking trace is stored on a relay inside that patrol’s route. Erase it without being seen and Calloway loses a day.”',
     cargo: 'A relay · three hulls sweeping it',
     choices: [

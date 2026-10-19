@@ -34,7 +34,7 @@ import {
 } from './enemies';
 import type { BlastKind, GameEvent, PowerKind } from './events';
 import { CHITS_PER_CYRITE, cy, fluidPrice, refine, tankFor } from './purse';
-import { newTutor, skipTutor, stepOf, stepTutor, LESSON_NODE, type Tutor } from './tutor';
+import { newTutor, settleAtBay, skipTutor, stepOf, stepTutor, LESSON_NODE, type Tutor } from './tutor';
 import { Field, ROCK_KINDS, VOLATILE_BLAST, VOLATILE_DAMAGE, type Bulwark, type Rock } from './field';
 import { Ids, newId, useIds } from './ids';
 import { CELL, dropCrystals, dropItem, POWERS, POWER_STOCK, POWER_STOCK_MAX, POWER_TIME, STOCKED, stepPickups, YIELD_BLAST, YIELD_DAMAGE, type CellSource, type Pickup, type PickupKind } from './pickups';
@@ -459,7 +459,6 @@ export class World implements EncounterHost {
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
       hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
       ...(this.civic !== undefined ? { civic: this.civic } : {}),
-      ...(this.opening ? { contract: { got: Math.round(this.run.cyrite) } } : this.carryIn?.contract ? { contract: { ...this.carryIn.contract } } : {}),
     };
   }
 
@@ -572,7 +571,7 @@ export class World implements EncounterHost {
   navNoise = 0;
 
   /** Teach the first minutes: a few marked steps, then the run goes on as it was. */
-  train(): void { this.tutor = newTutor(); this.opening = true; stepTutor(this, 0); }
+  train(): void { this.tutor = newTutor(!!this.bk); this.opening = true; stepTutor(this, 0); }
 
   /** End the training now. */
   skipTraining(): void { skipTutor(this); }
@@ -1011,6 +1010,8 @@ export class World implements EncounterHost {
     for (const pk of [...this.pickups]) if (Math.hypot(pk.x - s.x, pk.z - s.z) < this.stats.tractor) { this.pickups.splice(this.pickups.indexOf(pk), 1); this.collect(pk); }
     this.events.push({ type: 'docked', name: b.port!.name });
     this.settleJobs('port');
+    // the training's work bay is a settlement, one panel, and then straight back to flight (sim/tutor.ts)
+    settleAtBay(this);
   }
 
   /** What the port here charges (Cerro's prices outside a sortie), less what the ship's contacts knock off, and the survival mode's rate for ore. */
@@ -1427,7 +1428,7 @@ export class World implements EncounterHost {
     const o = openCard(def, x, this.rng);
     this.cardsSeen.add(def.id);
     this.desk.closed(this.runTime);
-    if (def.ledger) o.ledger = ledgerFor(def.ledger, this.carry());
+    if (def.ledger) o.ledger = ledgerFor(def.ledger);
     this.comms = o;
     this.phase = 'comms';
     if (def.arrive) o.brought.push(...this.applyOutcome(def.arrive, o.fee, []));
@@ -1488,6 +1489,7 @@ export class World implements EncounterHost {
       if (this.civic !== was) this.events.push({ type: 'civic', from: was, to: this.civic, why: out.civicWhy ?? '' });
     }
     if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
+    if (out.fit && !this.levels[out.fit]) { this.setLevels({ ...this.levels, [out.fit]: 1 }); this.events.push({ type: 'fitted', id: out.fit }); }
     for (const f of [out.flag ?? []].flat()) this.flags.add(f);
     for (const f of [out.unflag ?? []].flat()) this.flags.delete(f);
     for (const [k, v] of Object.entries(out.standing ?? {}) as Array<[Standing, number]>) this.standing[k] = (this.standing[k] ?? 0) + v;

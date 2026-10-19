@@ -33,7 +33,7 @@ export const fragmentsFound = (flags: Iterable<string>): string[] => {
 
 /**
  * The story beat due in this system's sortie, if any. Cerro's sortie is the training and the chase and has none. The first sortie
- * beyond the gate opens the chain (breach, Tam's code, the recovery order, the archive), which any later sortie finishes if it was
+ * beyond the gate opens the chain (breach, Sam's code, the recovery order, the archive), which any later sortie finishes if it was
  * cut short. After that: this region's first beat and any missed before.
  */
 export function dueBeat(j: Journey): string | null {

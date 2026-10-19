@@ -100,7 +100,7 @@ export interface ChartFx {
   pushNear?: number;
   /** Prices around move for a while: multipliers on what the ports charge in this region, and the days it lasts. */
   market?: { supplies?: number; cyrite?: number; plate?: number; days: number };
-  /** What the ship knew of the Net and the Prefect is lost. */
+  /** What the ship knew of the Net and the Governor is lost. */
   forget?: boolean;
   /** Another situation turns up this many jumps on. */
   follow?: { id: string; jumps: number };
@@ -531,7 +531,7 @@ export const OBSERVATIONS: Observation[] = [
   { flag: 'thren_watch', name: 'The line', line: 'The Thren, in a straight line, facing the way you were going.', theory: 'A border. A welcome. A warning.' },
   { flag: 'saw_voice', name: 'The relay', line: 'A relay that should be dead answered, and used the Wayward’s name.', theory: 'A fault in the old network, say the Dust Traders. A person, say the Drift.' },
   { flag: 'voice_mended', name: 'The mending', line: 'A factory hull repaired the Wayward and asked for nothing.', theory: 'It was practising on you. Or it was being kind. The Voice does not say.' },
-  { flag: 'voice_knows', name: 'The knowing', line: 'The Voice told you something nobody but the Prefect should know.', theory: 'It listens to every channel. It always has.' },
+  { flag: 'voice_knows', name: 'The knowing', line: 'The Voice told you something nobody but the Governor should know.', theory: 'It listens to every channel. It always has.' },
   { flag: 'voice_asked', name: 'The request', line: 'The Voice asked you to carry something.', theory: 'Why would a machine need a courier?' },
   { flag: 'voice_guide', name: 'The guide', line: 'An unknown ship led you past a trap and left.', theory: 'The same hand that built the breakers. The same hand that kept the keys.' },
   { flag: 'voice_direct', name: 'The voice', line: 'Every terminal in a system spoke to you at once.', theory: 'One mind, or many agreeing. The Voice calls itself “we” and means it.' },

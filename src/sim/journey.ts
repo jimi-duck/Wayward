@@ -489,7 +489,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   arrive(j.chart, to, j.day);
   if (news) {
     hearNews(j);
-    lines.push(t('Your news: the Net’s edge and the Prefect’s last port'));
+    lines.push(t('Your news: the Net’s edge and the Governor’s last port'));
   } else sight(j, false);
   leg.cyriteOut = c.cyrite;
   leg.fuelOut = c.fuel;

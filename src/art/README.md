@@ -7,7 +7,7 @@ finds them on its own; a picture that is not there leaves the screen as it was.
 | Folder | Ids | Size | Shown in |
 | --- | --- | --- | --- |
 | `captains/` | `vance`, `calloway`, `vance-scarred`, … | 640×800 | comms call |
-| `contacts/` | `story_yard`, `foreman`, … | 640×800 | comms call |
+| `contacts/` | `story_bay`, `foreman`, … | 640×800 | comms call |
 | `emblems/` | `custody`, `gutter`, … | 256×256, white on transparent | comms call |
 | `ships/` | `lancer`, `picket`, … | 960×480, on black | comms call (the read) |
 | `places/` | `kellern`, `gutter`, `netted`, … | 1280×320 | port |

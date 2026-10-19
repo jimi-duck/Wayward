@@ -26,7 +26,7 @@ export const CAPTAIN_LOOK: Record<string, string> = {
   pell: 'Ageless, very quiet. An Office inquisitor in grey with a half-visor over the eyes, a finger to the lips. Behind: dim, near-black cabin, a single desk lamp.',
   chorus: 'Not a person: nine small displays arranged as a face, each showing a slightly different too-calm expression of the same idea. A foundry’s voice. Pale blue-grey light, old industrial housings and cable bundles around it. No human skin.',
   loom: 'Not a person and not a ship: an unfamiliar thing the viewer cannot read, with a faint hint of a face made of repeating asymmetric forms, woven, lit from inside by a cool green-teal. No human features; no eyes you could point to.',
-  calloway: 'Prefect Idris Calloway, forties, the hunter of the story. Office of Peace prefect’s coat, grey, severe tailoring, a small red rank pin. A face that is tired, intelligent and sure. Behind: the bridge of the CCV Patience, blurred, warm light. She believes she is holding civilisation together.',
+  calloway: 'Governor Idris Calloway, forties, the hunter of the story. Office of Peace governor’s coat, grey, severe tailoring, a small red rank pin. A face that is tired, intelligent and sure. Behind: the bridge of the CCV Patience, blurred, warm light. She believes she is holding civilisation together.',
 };
 
 /** Hand notes per contact card. */
@@ -34,24 +34,24 @@ export const CONTACT_LOOK: Record<string, string> = {
   foreman: 'Foreman Draper of Kellern Mining: fifties, heavy, a tired decent man with a boss’s voice; amber hi-vis over grey overalls, company badge, a hard hat under one arm. A yard office behind him.',
   krail_seller: 'Old Hesketh, independent prospector: sixties, sun-and-dust skin, white stubble, patched mining suit, a lamp on his forehead. The cockpit of a small tug behind him, a few crates.',
   fuel_runner: 'Tallow, a fuel runner: thirties, wiry, cheerful and not to be trusted; oil-stained jacket with a hand-painted call sign, a siphon hose over one shoulder. Fuel cans in a cramped cab.',
-  story_yard: 'Tam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.',
+  story_bay: 'Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.',
   story_warden: 'Ilse Marrow, retired Lane Warden: eighties, upright, sharp-eyed; a faded Warden coat without insignia, a cane. A small kitchen or a relay station’s old console behind.',
-  story_ledger: 'Ansel Brook, Kellern accounts clerk with a conscience: thirties, thin, ink-stained cuffs, nervous; Kellern amber lanyard, glasses. A grey office cubicle, ledgers.',
-  story_moot: 'Speaker Oduya of Kessel Hold: fifties, dignified, carries the weight of a council; a long coat of patched cloth with a speaker’s sash. A hall of rough steel with lamps.',
-  story_drift: 'Mother Saffi of the Long Walk fleet: seventies, warm and hard; layered worn textiles, sewn marks for lost ships, a child’s drawing pinned to her sleeve. The interior of a fleet ship.',
-  story_broker: 'Vell, a broker of the Gutter: forties, elegant in a hard way; a long coat over scrap-plate shoulders, one copper-coloured earring, a smile. A back room of a free port.',
+  story_ledger: 'Adam Brook, Kellern accounts clerk with a conscience: thirties, thin, ink-stained cuffs, nervous; Kellern amber lanyard, glasses. A grey office cubicle, ledgers.',
+  story_moot: 'Councillor Oduya of Kessel Hold: fifties, dignified, carries the weight of a council; a long coat of patched cloth with a speaker’s sash. A hall of rough steel with lamps.',
+  story_drift: 'Ma Saffi of the Long Walk fleet: seventies, warm and hard; layered worn textiles, sewn marks for lost ships, a child’s drawing pinned to her sleeve. The interior of a fleet ship.',
+  story_broker: 'Val, a broker of the Gutter: forties, elegant in a hard way; a long coat over scrap-plate shoulders, one copper-coloured earring, a smile. A back room of a free port.',
   story_kesh: 'Kesh, Gutter fixer: thirties, lean, quick grin, scrap-plate jacket with a stitched debt tally on one sleeve. A cramped skiff cab.',
   story_ada: 'Ada Aster, from a seventy-year-old recording: forties, tired and steady, a Lane Warden-grade jacket, a headset. A dim flight deck, a single lamp.',
-  story_tollgate: 'Prefect Idris Calloway: forties, composed, severe; a dark Offices coat with a pale collar and a Prefect’s pin. The bridge of a Continuance cutter, cold light.',
-  story_salvor: 'Dov Kessin, salvor: forties, shoulders like a door, welding goggles pushed up, burn scars on the forearms; a pressure suit open at the chest. A wreck’s torn hull behind him.',
-  story_charts: 'Tarn Ilvo, chartwright: sixties, gentle, ink on the fingers; a workshop apron, a loupe, hand-drawn charts pinned all round. Candle-warm light, an old room.',
-  story_ferry: 'Ossi Rane of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab.',
-  story_workorder: 'Pell Anand, a yard clerk: fifties, small, anxious, brave; a clerk’s grey cardigan under a yard vest, a stamp pad. Shelves of filing boxes.',
+  story_tollgate: 'Governor Idris Calloway: forties, composed, severe; a dark Offices coat with a pale collar and a Governor’s pin. The bridge of a Continuance cutter, cold light.',
+  story_salvor: 'Dov Kessler, salvor: forties, shoulders like a door, welding goggles pushed up, burn scars on the forearms; a pressure suit open at the chest. A wreck’s torn hull behind him.',
+  story_charts: 'Tarik Silva, chartwright: sixties, gentle, ink on the fingers; a workshop apron, a loupe, hand-drawn charts pinned all round. Candle-warm light, an old room.',
+  story_ferry: 'Ossie Raine of the Quiet Ferry: thirties, calm, a ferryman’s patience; plain dark jacket, a small ship’s bell on a cord. A dim, tidy cab.',
+  story_workorder: 'Ben Anand, a yard clerk: fifties, small, anxious, brave; a clerk’s grey cardigan under a yard vest, a stamp pad. Shelves of filing boxes.',
   story_crew: 'Marit Voss, crew steward: forties, strong, plain-spoken; yard-crew overalls, a union patch, arms folded. A crew canteen behind.',
   story_harbour: 'Ines Duarte, harbour-master for the Dust Traders: fifties, polished, amused; a cream coat, a brass harbour tag, a tablet of berth lists. A busy dock office window.',
   story_witnesses: 'Old Mirren, keeper of the free ports’ list: seventies, bent, bright-eyed; wrapped in a blanket-coat, a long scroll of names. A cramped archive hung with paper strips.',
-  story_aide: 'Noor Hale, sub-prefect of the Continuance and the Prefect’s aide: thirties, composed, very tired; Office grey with a single red pin, a data slate held like a shield. A clean corridor.',
-  story_toll: 'Keeper Oren of the Last Toll: ageless, shaved head, calm to the point of unease; a plain dark robe-coat, a toll-counter in the hand. A bare booth at the end of the lanes.',
+  story_aide: 'Noor Haddad, aide to the Governor of the Continuance: thirties, composed, very tired; Office grey with a single red pin, a data slate held like a shield. A clean corridor.',
+  story_toll: 'Oren Lisle, archivist of the Last Toll: ageless, shaved head, calm to the point of unease; a plain dark robe-coat, a toll-counter in the hand. A bare booth at the end of the lanes.',
 };
 
 /** Hand notes per emblem: the shape, so the set reads as one family and each as itself. */
@@ -127,7 +127,7 @@ export const CAPITAL_LOOK: Record<string, string> = {
   pell: 'Silent Witness, an Office ambush cruiser: matte near-black hull, a single long visor-slit of sensors, cloaking panels, one small warm lamp near the stern. It looks like a place where nobody lives.',
   chorus: 'Foundry Nine, a Voice foundry: an old industrial works made into a ship, pale blue-grey housings, huge rings and cable bundles, nine lit display windows across the front like a face. Slow, enormous, machine-calm.',
   loom: 'Thren Hollow, a Thren capital: a vast woven lattice that is almost a cavity, green-teal light deep inside, repeating asymmetric forms, grown rather than built. No human features, no windows.',
-  calloway: 'CCV Patience, the Prefect’s own cutter of the Office of Peace: grey, severe, tailored lines, a small red rank mark, a long sensor mast, clean and fast for its size. Calm and tired, like its owner.',
+  calloway: 'CCV Patience, the Governor’s own cutter of the Office of Peace: grey, severe, tailored lines, a small red rank mark, a long sensor mast, clean and fast for its size. Calm and tired, like its owner.',
 };
 
 /** Ships about their business in a system: the ones the jobs and the traffic use. */
@@ -184,6 +184,6 @@ export const OWNED_LOOK: Record<string, { hull: string; owner: string; cards: st
   'freighter-frontier': { hull: 'a blocky service tender with spares racks and a crane arm', owner: 'Frontier Supply: mismatched replacement panels, hand-painted numbers, tarpaulin over a rack, string lights; a depot’s own ship', cards: 'ares_tender' },
   'freighter-guild': { hull: 'a plain blocky food freighter with stacked containers', owner: 'the Dust Traders Guild: brass-and-cream trim on a dark hull, ledger-number stencils on the containers, berth tags; merchant-clean', cards: 'food_trader' },
   'freighter-miners': { hull: 'a plain blocky hauler with stacked containers', owner: 'a Drift fleet of independent miners: patchwork plating, sewn textile banners, lanterns, a child’s drawing pinned to a plate; slow and warm', cards: 'drift_fleet' },
-  'lancer-calloway': { hull: 'a heavy cruiser, long, low and layered', owner: 'the Office of Peace under Prefect Calloway: pale grey, severe and tidy, a small red rank mark, a tall sensor mast; the same bones as a Custody cruiser with a quieter coat', cards: 'calloway_here' },
+  'lancer-calloway': { hull: 'a heavy cruiser, long, low and layered', owner: 'the Office of Peace under Governor Calloway: pale grey, severe and tidy, a small red rank mark, a tall sensor mast; the same bones as a Custody cruiser with a quieter coat', cards: 'calloway_here' },
   'scout-guild': { hull: 'a small fast interceptor, a narrow wedge with split engine pods', owner: 'a Dust Traders Guild escort: brass-and-cream trim over dark paint, a chin lamp, a ledger number on the wing; not a pirate', cards: 'distress_freighter' },
 };

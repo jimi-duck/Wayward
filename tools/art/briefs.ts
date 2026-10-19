@@ -78,10 +78,10 @@ function captainBrief(id: string, scarred = false): Raw {
   const face = c?.face ?? CALLOWAY_FACE;
   const look = CAPTAIN_LOOK[id] ?? '';
   const faction = c ? FACTION_LOOK[c.faction] : FACTION_LOOK.office;
-  const name = c ? `${c.rank} ${c.name}` : 'Prefect Idris Calloway';
+  const name = c ? `${c.rank} ${c.name}` : 'Governor Idris Calloway';
   const human = id !== 'chorus' && id !== 'loom';
   const personality = c ? PERSONALITIES[c.personality].word.split(' · ')[0] : 'Hunter';
-  const hail = c?.lines.hail ?? '“Wayward, this is Prefect Calloway of the Office of Peace.”';
+  const hail = c?.lines.hail ?? '“Wayward, this is Governor Calloway of the Office of Peace.”';
   const scar = scarred ? (human ? ' Show the damage Juno has done: two or three fresh scars, a burn, a dressing, a harder look.' : ' Show damage: cracked displays, burn marks, flickering.') : '';
   return {
     slot: 'captain', id: scarred ? `${id}-scarred` : id, file: `${dir('captain')}/${scarred ? `${id}-scarred` : id}.webp`,

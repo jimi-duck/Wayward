@@ -3,7 +3,7 @@ import {
   BASE_PRICES, EDGE_NAME, HOLDER_PRICES, HOME_NAME, NAMES, PORT_NAMES, SYSTEMS, type Holder, type Prices, type SystemKind,
 } from '../content/systems';
 import { PLACE_CHANCE, PLACE_ORDER, PLACES, SIGNAL_REWARDS, type PlaceId, type Reward } from '../content/phenomena';
-import { REGIONS, REGION_SETS, type RegionDef, type RegionSet } from '../content/regions';
+import { REGIONS, REGION_SETS, NAME_PEOPLE, NAME_PLACES, type RegionDef, type RegionSet } from '../content/regions';
 import type { Exp } from '../content/profiles';
 import { Rng } from './rng';
 import { layScatter, RAID_MARKUP, type Fleet } from './scatter';
@@ -184,11 +184,15 @@ function pricesFor(holder: Holder, rng: Rng): Prices {
   return p;
 }
 
+const joinPlace = (p: string): string => (p.startsWith('’') ? p : ` ${p}`);
+
 /** A name for a system in a region that makes its own: an opening and an ending, not used yet on this chart. */
 function nameIn(R: RegionDef, rng: Rng, used: Set<string>): string {
   const { pre, post } = R.names!;
   for (let tries = 0; tries < 40; tries++) {
-    const name = pre[rng.int(pre.length)]! + post[rng.int(post.length)]!;
+    const a = rng.int(pre.length), b = rng.int(post.length);
+    // about four in ten read as a real name and a place-word; chosen from the same two draws, so the rest of the chart is unchanged
+    const name = (a * 7 + b * 3) % 10 < 4 ? NAME_PEOPLE[(a + b * 5) % NAME_PEOPLE.length]! + joinPlace(NAME_PLACES[(a * 3 + b) % NAME_PLACES.length]!) : pre[a]! + post[b]!;
     if (!used.has(name)) { used.add(name); return name; }
   }
   // the pairs ran out: number it

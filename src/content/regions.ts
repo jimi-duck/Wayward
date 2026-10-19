@@ -93,56 +93,56 @@ export const REGIONS_LONG: RegionDef[] = [
     name: 'The Reach', blurb: 'Kellern space. The Net spreads from Cerro.',
     cols: cycle(9, ['port', 'mining', 'transit'], ['mining', 'contested', 'port', 'transit'], ['contested', 'port', 'mining', 'transit']), sizes: sizes(9, 3),
     holders: {}, gate: 'The Narrows', last: false, tier: 0, net: 1.1, calloway: { risk: 0.25 }, thren: {}, drifts: 1, port: 1, heatRate: 1, ahead: 1, quiet: 0.4,
-    names: { pre: ['Hal', 'Toll', 'Ves', 'Ash', 'Cor', 'Mar', 'Sal', 'Pell', 'Dun', 'Ket', 'Bras', 'Ori'], post: ['den', 'mere', 'k', 'grove', 'rin', 'row', 'tle', 'wick', 'moor', 'ford'] },
+    names: { pre: ['Hal', 'Toll', 'Ash', 'Cor', 'Mar', 'Sal', 'Pell', 'Dun', 'Ket', 'Bran', 'Orm', 'West'], post: ['ford', 'mere', 'wick', 'moor', 'by', 'ton', 'dale', 'fell', 'reach', 'watch', 'rest', 'row'] },
   },
   {
     name: 'The Marches', blurb: 'Holdfasts, Drift fleets, and the Gutter raiding both.',
     cols: cycle(9, ['mining', 'contested', 'port', 'transit'], ['contested', 'mining', 'transit', 'port']), sizes: sizes(9, 3),
     holders: { mining: ['holdfast', 'holdfast', 'none'], port: ['holdfast', 'guild'], contested: ['gutter'], transit: ['none'] },
     gate: 'The Rift', last: false, tier: 1, net: 0.825, calloway: { risk: 0.3 }, thren: { none: 0.15 }, drifts: 2, port: 0.9, heatRate: 0.85, ahead: 1.3, quiet: 0.35,
-    names: { pre: ['Stone', 'Hard', 'Rook', 'Cairn', 'Grim', 'Bar', 'Hold', 'Gall', 'Thorn', 'Wen', 'Rust', 'Kest'], post: ['hold', 'stead', 'fast', 'gate', 'by', 'wick', 'mark', 'ridge'] },
+    names: { pre: ['Stone', 'Hard', 'Rook', 'Cairn', 'Grim', 'Bar', 'Hold', 'Gall', 'Thorn', 'Wen', 'Rust', 'Kest'], post: ['hold', 'stead', 'fast', 'gate', 'by', 'wick', 'mark', 'ridge', 'reach', 'mere', 'fell', 'watch'] },
   },
   {
     name: 'The Salvage Belt', blurb: 'Dust Trader wrecks and claims. Everything is for sale.',
     cols: cycle(9, ['mining', 'port', 'transit'], ['contested', 'mining', 'transit'], ['port', 'mining', 'contested', 'transit']), sizes: sizes(9, 3),
     holders: { mining: ['guild', 'guild', 'none'], port: ['guild'], contested: ['gutter', 'guild'], transit: ['none'] },
     gate: 'The Scrapgate', last: false, tier: 1, sky: 5, net: 0.77, calloway: { risk: 0.35 }, thren: { none: 0.1 }, drifts: 1, port: 0.9, heatRate: 0.9, ahead: 1.2, quiet: 0.4,
-    names: { pre: ['Scrap', 'Rivet', 'Tally', 'Ledger', 'Barrow', 'Cinder', 'Bolt', 'Slag', 'Hawser', 'Weld', 'Gantry', 'Dross'], post: ['yard', 'reach', 'fall', 'mouth', 'shoal', 'wharf', 'row', 'bank'] },
+    names: { pre: ['Scrap', 'Rivet', 'Tally', 'Ledger', 'Barrow', 'Cinder', 'Bolt', 'Slag', 'Hawser', 'Weld', 'Gantry', 'Dross'], post: ['yard', 'reach', 'fall', 'mouth', 'shoal', 'wharf', 'row', 'bank', 'mere', 'fell', 'watch', 'rest'] },
   },
   {
     name: 'The Drift Deep', blurb: 'Fleets that never stop. The Net has not found this far.',
     cols: cycle(9, ['transit', 'mining', 'port'], ['mining', 'transit', 'contested']), sizes: sizes(9, 3),
     holders: { mining: ['none', 'holdfast'], port: ['none', 'holdfast'], contested: ['gutter'], transit: ['none'] },
     gate: 'The Slow Door', last: false, tier: 1, sky: 6, net: 0.275, calloway: { risk: 0.4 }, thren: { none: 0.1 }, drifts: 3, port: 0.7, heatRate: 0.7, ahead: 1.1, quiet: 0.6,
-    names: { pre: ['Slow', 'Long', 'Tide', 'Lantern', 'Hush', 'Wander', 'Ninth', 'Kind', 'Dawn', 'Mile', 'Far', 'Still'], post: ['water', 'rain', 'mile', 'walk', 'light', 'fold', 'lea', 'drift'] },
+    names: { pre: ['Slow', 'Long', 'Tide', 'Lantern', 'Hush', 'Wander', 'Ninth', 'Kind', 'Dawn', 'Mile', 'Far', 'Still'], post: ['water', 'rain', 'mile', 'walk', 'light', 'fold', 'lea', 'drift', 'reach', 'mere', 'fell', 'watch'] },
   },
   {
     name: 'The Breaker Yards', blurb: 'Custody yards where ships are taken apart. Watched.',
     cols: cycle(9, ['contested', 'port', 'mining'], ['contested', 'mining', 'transit']), sizes: sizes(9, 3),
     holders: { contested: ['kellern', 'gutter'], mining: ['kellern', 'none'], port: ['kellern', 'frontier'], transit: ['none'] },
     gate: 'The Breaker', last: false, tier: 1, sky: 7, net: 0.88, calloway: { risk: 0.5 }, thren: { none: 0.1 }, drifts: 0, port: 0.8, heatRate: 1.1, ahead: 0.9, quiet: 0.25,
-    names: { pre: ['Cut', 'Anvil', 'Keel', 'Spar', 'Gird', 'Torch', 'Plate', 'Brace', 'Hull', 'Rake', 'Stay', 'Davit'], post: ['ton', 'yard', 'dock', 'slip', 'berth', 'gap', 'wall', 'cradle'] },
+    names: { pre: ['Cut', 'Anvil', 'Keel', 'Spar', 'Gird', 'Torch', 'Plate', 'Brace', 'Hull', 'Rake', 'Stay', 'Davit'], post: ['ton', 'yard', 'dock', 'slip', 'berth', 'gap', 'wall', 'cradle', 'reach', 'mere', 'fell', 'watch'] },
   },
   {
     name: 'The Free Ports', blurb: 'Gutter ports. Everyone trades and nobody asks.',
     cols: cycle(9, ['port', 'contested', 'mining'], ['mining', 'port', 'transit'], ['contested', 'transit', 'mining']), sizes: sizes(9, 3),
     holders: { contested: ['gutter'], port: ['gutter', 'none', 'guild'], mining: ['gutter', 'none'], transit: ['none'] },
     gate: 'The Tollgate', last: false, tier: 1, sky: 8, net: 0.55, calloway: { risk: 0.55 }, thren: { none: 0.2 }, drifts: 1, port: 1.1, heatRate: 0.85, ahead: 1.4, quiet: 0.3,
-    names: { pre: ['Dice', 'Penny', 'Marrow', 'Toll', 'Rum', 'Gilt', 'Jack', 'Wager', 'Lucky', 'Salt', 'Tinker', 'Nine'], post: ['harbour', 'quay', 'port', 'street', 'cross', 'haven', 'pier', 'market'] },
+    names: { pre: ['Dice', 'Penny', 'Marrow', 'Toll', 'Rum', 'Gilt', 'Jack', 'Wager', 'Lucky', 'Salt', 'Tinker', 'Nine'], post: ['harbour', 'quay', 'port', 'street', 'cross', 'haven', 'pier', 'market', 'reach', 'mere', 'fell', 'watch'] },
   },
   {
     name: 'The Hollows', blurb: 'Voice foundries and Thren lanes. Nothing human lives here.',
     cols: cycle(9, ['mining', 'transit', 'contested'], ['contested', 'transit', 'mining']), sizes: sizes(9, 2),
     holders: { mining: ['voice', 'none'], contested: ['voice', 'thren'], transit: ['thren', 'none'], port: ['none'] },
     gate: 'The Seam', last: false, tier: 2, net: 0.44, calloway: { risk: 0.75 }, thren: { thren: 0.8, none: 0.35, voice: 0.1 }, drifts: 0, port: 0.35, heatRate: 0.7, ahead: 1.6, quiet: 0.3,
-    names: { pre: ['Hollow', 'Ash', 'Void', 'Cold', 'Dead', 'Pale', 'Gaunt', 'Mute', 'Bleak', 'Husk', 'Sere', 'Ghost'], post: ['forge', 'deep', 'cairn', 'reach', 'vault', 'mere', 'cinder', 'hall'] },
+    names: { pre: ['Hollow', 'Ash', 'Void', 'Cold', 'Dead', 'Pale', 'Gaunt', 'Mute', 'Bleak', 'Husk', 'Sere', 'Ghost'], post: ['forge', 'deep', 'cairn', 'reach', 'vault', 'mere', 'cinder', 'hall', 'fell', 'watch', 'rest'] },
   },
   {
     name: 'The Last Lanes', blurb: 'The Voice’s keys and the Thren’s cuts. Then the Threshold.',
     cols: cycle(13, ['transit', 'contested', 'mining'], ['contested', 'mining', 'transit']), sizes: sizes(13, 2),
     holders: { mining: ['voice', 'none'], contested: ['voice', 'thren'], transit: ['thren', 'none'], port: ['none'] },
     gate: 'The Threshold', last: true, tier: 2, sky: 9, net: 0.33, calloway: { risk: 1 }, thren: { thren: 0.8, none: 0.4, voice: 0.15 }, drifts: 0, port: 0.25, heatRate: 0.7, ahead: 1.6, quiet: 0.2,
-    names: { pre: ['Last', 'Final', 'Far', 'End', 'Late', 'Thin', 'Dim', 'Lone', 'Rimed', 'Gray', 'Wane', 'Dusk'], post: ['lane', 'light', 'mark', 'cut', 'gap', 'rim', 'step', 'watch'] },
+    names: { pre: ['Last', 'Final', 'Far', 'End', 'Late', 'Thin', 'Dim', 'Lone', 'Rimed', 'Gray', 'Wane', 'Dusk'], post: ['lane', 'light', 'mark', 'cut', 'gap', 'rim', 'step', 'watch', 'reach', 'mere', 'fell', 'rest'] },
   },
 ];
 
@@ -154,3 +154,7 @@ export const FLEETS = [
   'the Long Walk', 'the Slow Rain', 'the Kindly Ann', 'the Ninth Mile', 'the Lantern Fleet',
   'the Patient Hand', 'the Dawn Tithe', 'the Quiet Mercy', 'the Far Wheel', 'the Tin Cathedral',
 ];
+
+/** Real names and place-words for the names a region makes: about four in ten read "Morgan Deep", "Amara Station". */
+export const NAME_PEOPLE = ['Hadley', 'Morgan', 'Kowalski', 'Amara', 'Okafor', 'Jansen', 'Ibarra', 'Lindqvist', 'Castell', 'Nakamura', 'Brandt', 'Quill'];
+export const NAME_PLACES = ['’s Rest', 'Deep', 'Yard', 'Station', 'Reach', 'Mere', 'Fell', 'Watch'];

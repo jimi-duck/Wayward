@@ -1,5 +1,6 @@
 import type { Contact } from '../sim/bosses';
 import type { Caller, Open } from '../sim/comms';
+import type { LedgerRow } from '../sim/contract';
 import { NEON_CSS } from './colors';
 import { artImg, artUrl } from './art';
 import { CALLOWAY_ID, CONTACTS } from '../content/art';
@@ -51,6 +52,8 @@ export interface CommsView {
   gist: string;
   /** Contract rows under the text (label, amount or word, tone), or none. */
   ledger: Array<{ k: string; v: string; tone: string }>;
+  /** A second voice on the same channel (Sam cutting in), under the ledger. */
+  reply: { from: string; text: string; portrait: string | null } | null;
   text: string;
   /** What the ship's state adds to the call: behind the (i), not on the panel. */
   more: string;
@@ -97,6 +100,14 @@ export function gistOf(d: Pick<Open['def'], 'gist' | 'title'>, text: string): st
   return words.length > 10 ? `${words.slice(0, 10).join(' ').replace(/[,;:]$/, '')}…` : first.trim() || t(d.title);
 }
 
+/** A ledger row's figure: cargo in Cyrite, credit as credit (the two are never one number), or a word. */
+function ledgerValue(r: LedgerRow): string {
+  const amount = r.n ?? r.cr;
+  if (amount === undefined) return t(r.v ?? '');
+  const sign = amount < 0 ? '−' : r.cr !== undefined && r.tone !== 'mine' && r.tone !== 'bad' && r.tone !== 'warn' && amount > 0 ? '+' : '';
+  return sign + t(r.n !== undefined ? '{n} Cyrite' : '{n} credit', { n: Math.abs(amount) });
+}
+
 /** A card on the table, as the panel draws it. */
 export function cardView(o: Open): CommsView {
   const d = o.def, r = o.read;
@@ -107,7 +118,8 @@ export function cardView(o: Open): CommsView {
     colour: CALLER_CSS[d.caller],
     alert: HOSTILE.has(d.kind) || o.slow > 0,
     gist: gistOf(d, o.text),
-    ledger: (o.ledger ?? []).map((r) => ({ k: t(r.k), v: r.n !== undefined ? (r.n < 0 ? '−' : '') + t('{n} Cyrite', { n: Math.abs(r.n) }) : t(r.v ?? ''), tone: r.tone ?? '' })),
+    ledger: (o.ledger ?? []).map((r) => ({ k: t(r.k), v: ledgerValue(r), tone: r.tone ?? '' })),
+    reply: d.reply ? { from: t(d.reply.from), text: t(d.reply.text), portrait: d.reply.portrait ?? null } : null,
     text: o.text,
     more: o.more.join(' '),
     // the read: strength as two bars, and the one line that matters (the
@@ -134,6 +146,7 @@ export function hailView(c: Contact): CommsView {
     kick: t('Alarm'), title: t(c.name), sub: `${t('{f} capital ship', { f: t(FACTION_NAME[c.faction] ?? c.faction) })} · ${t('on intercept')}`, colour: NEON_CSS[c.faction], alert: true,
     gist: t('A capital ship is on intercept'),
     ledger: [],
+    reply: null,
     text: t('She fights back with her escort · the area clears for the duel.'),
     more: '',
     read: null,
@@ -180,6 +193,20 @@ export class CommsPanel {
     $('cm-text').textContent = view.text;
     $('cm-ledger').replaceChildren(...view.ledger.map((r) => h('li', r.tone, '', h('span', '', r.k), h('b', '', r.v))));
     $('cm-ledger').hidden = !view.ledger.length;
+    $('cm-reply').hidden = !view.reply;
+    // on a short screen the second voice moves beside the answers (the card's left column is full): the same words
+    $('cm-reply-s').hidden = !view.reply;
+    if (view.reply) {
+      $('cm-reply-s-who').textContent = view.reply.from;
+      $('cm-reply-s-text').textContent = view.reply.text;
+      $('cm-reply-who').textContent = view.reply.from;
+      $('cm-reply-text').textContent = view.reply.text;
+      // the voice's portrait, where the build has one
+      const pic = view.reply.portrait ? artImg('contact', view.reply.portrait, 'cm-reply-pic') : null;
+      $('cm-reply').classList.toggle('pic', !!pic);
+      $('cm-reply-face').replaceChildren(...(pic ? [pic] : []));
+    }
+    $('comms').classList.toggle('replied', !!view.reply);
     $('comms').classList.toggle('ledgered', view.ledger.length > 0);
     // what the ship's state adds sits one tap behind the (i)
     this.info(false);
