@@ -115,6 +115,10 @@ export type Alert = 'clear' | 'yellow' | 'red';
 export const WATCH_RANGE = 85;
 /** Seconds between two "docking denied" calls while the ship waits at a port in a fight. */
 const DENIED_EVERY = 6;
+/** The depot shield: a fight this close to the depot (units) raises it, it holds this long after the fight (s), and the card shows while the ship is this far outside it (units). */
+const SHIELD_FIGHT_R = 150;
+const SHIELD_HOLD = 2.5;
+const SHIELD_NEAR = 25;
 
 /** The arcade's bay opens by itself after this long with the alert clear and a price of Krail aboard. */
 export const BAY_QUIET = 2;
@@ -175,6 +179,9 @@ export class World implements EncounterHost {
   private coldT = 0;
   /** Inside the port's ring, slow, and the port refusing the clamps because a fight is on. */
   dockHeld = false;
+  /** The depot's shield is up: a fight is on, so nobody outside gets in and no enemy fire crosses it. Never up while the ship is inside the ring. */
+  shield = false;
+  private shieldHold = 0;
   private deniedT = 0;
   private wasInPlace = false;
   air: Influence = { ...CALM, tint: [0, 0, 0], from: [] };
@@ -760,8 +767,10 @@ export class World implements EncounterHost {
     if (b.port && dp > b.port.r) b.castOff = false;
     // the clamps stay open while a fight is on: slow at the ring and under attack, the port says no
     const ready = !!b.port && !b.castOff && dp < b.port.r && speed < DOCK_SPEED && this.phase === 'play';
-    const held = ready && this.inDanger();
-    if (this.dockHeld && !held && ready) this.events.push({ type: 'dockCleared' });
+    this.stepShield(dt, dp);
+    const nearDepot = !!b.port && dp < SAFE_R + SHIELD_NEAR;
+    const held = (ready && this.inDanger()) || (this.shield && nearDepot);
+    if (this.dockHeld && !held && (ready || nearDepot)) this.events.push({ type: 'dockCleared' });
     this.dockHeld = held;
     this.deniedT = Math.max(0, this.deniedT - dt);
     if (this.dockHeld && this.deniedT === 0) { this.deniedT = DENIED_EVERY; this.events.push({ type: 'dockDenied' }); }
@@ -1152,6 +1161,36 @@ export class World implements EncounterHost {
     for (const a of this.aliens) if (this.committed(a) && Math.hypot(a.x - s.x, a.z - s.z) < SELF_REPAIR.danger) return true;
     for (const sh of this.shots) if (Math.hypot(sh.x - s.x, sh.z - s.z) < SELF_REPAIR.fireDanger) return true;
     return false;
+  }
+
+  /**
+   * The depot shield (every depot, every system). While a fight is on near the
+   * depot it raises the field: the ship cannot cross the edge, and enemy fire
+   * that reaches the edge is absorbed. It never comes up while the ship is
+   * already inside, and it drops a moment after the fight is over.
+   */
+  private stepShield(dt: number, dp: number): void {
+    const port = this.bk?.port;
+    if (!port) { this.shield = false; return; }
+    const was = Math.hypot(this.prev.x - port.x, this.prev.z - port.z);
+    if (was < SAFE_R) { this.shield = false; this.shieldHold = 0; return; }
+    const fight = this.inDanger() || this.aliens.some((a) => this.committed(a) && Math.hypot(a.x - port.x, a.z - port.z) < SHIELD_FIGHT_R);
+    if (fight) { this.shield = true; this.shieldHold = SHIELD_HOLD; }
+    else if (this.shield && (this.shieldHold -= dt) <= 0) this.shield = false;
+    if (!this.shield) return;
+    // the edge holds the ship: pushed back out, the inward drift gone
+    const s = this.ship;
+    if (dp < SAFE_R + 0.5) {
+      const nx = (s.x - port.x) / (dp || 1), nz = (s.z - port.z) / (dp || 1);
+      s.x = port.x + nx * (SAFE_R + 0.5); s.z = port.z + nz * (SAFE_R + 0.5);
+      const vin = s.vx * nx + s.vz * nz;
+      if (vin < 0) { s.vx -= vin * nx; s.vz -= vin * nz; }
+    }
+    // enemy fire that meets the edge is absorbed
+    for (let i = this.shots.length - 1; i >= 0; i--) {
+      const sh = this.shots[i]!;
+      if (Math.hypot(sh.x - port.x, sh.z - port.z) < SAFE_R) this.shots.splice(i, 1);
+    }
   }
 
   /** A hostile that has committed to a fight with the ship. */
