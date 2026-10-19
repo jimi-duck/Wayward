@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEATS, BREACH_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, OPENING_AT, STORY_AT, STORY_CARDS, WAKE_BEAT } from '../src/content/story';
+import { BEATS, BREACH_BEAT, SAM_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, OPENING_AT, STORY_AT, STORY_CARDS, WAKE_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
 import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
@@ -112,7 +112,7 @@ describe('the story beats', () => {
     expect(w.result().carry.seen).toContain('story_warden');
   });
 
-  it('open the chain a moment after arrival beyond the gate: one notice with Sam on it, then the archive', () => {
+  it('open the chain a moment after arrival beyond the gate: the notice, Sam’s offer, then the archive', () => {
     const j = newJourney(7);
     j.trail.push('x');
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
@@ -124,11 +124,15 @@ describe('the story beats', () => {
     expect(w.phase).toBe('play');
     run(2);
     expect(w.comms?.def.id).toBe(BREACH_BEAT);
-    // Lane Control and Sam are one thread: one card, two voices, one answer
-    expect(w.comms?.def.reply?.from).toMatch(/^Sam Okoro/);
-    expect(w.comms?.choices.map((c) => c.id)).toEqual(['code']);
-    expect(w.comms?.ledger?.find((r) => r.k === 'Remaining shortfall')?.n).toBe(200);
+    // Lane Control's notice offers no way out: one action, on towards the audit lane
+    expect(w.comms?.choices.map((c) => c.id)).toEqual(['proceed']);
+    expect(w.comms?.ledger?.find((r) => r.k === 'Contract delivery')?.v).toBe('0 / 1,000');
     const before = w.result().carry;
+    w.answer('proceed');
+    run(10);
+    // then Sam, privately, with the override
+    expect(w.comms?.def.id).toBe(SAM_BEAT);
+    expect(w.comms?.choices.map((c) => c.id)).toEqual(['code']);
     w.answer('code');
     run(4);
     expect(w.comms?.def.id).toBe(WAKE_BEAT);

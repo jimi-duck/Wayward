@@ -6,7 +6,7 @@ import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
 import { VERSION, newJourney, sortieDef } from '../src/sim/journey';
 import { migrate } from '../src/meta/save';
 import { wallView } from '../src/sim/wall';
-import { CUTS, FINAL_LOAD, FIRST_LOAD, GROSS, LEASE_DUE, NET, OWED, PENALTY, QUOTA, balanceAfterRack, ledgerFor, upgradePrice } from '../src/sim/contract';
+import { CREDIT_START, CUTS, FINAL_LOAD, FIRST_LOAD, GROSS, LEASE_DUE, NET, PENALTY, QUOTA, ledgerFor, owed, projectedAfterLauncher, upgradePrice } from '../src/sim/contract';
 import { dueBeat } from '../src/sim/story';
 import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
@@ -47,6 +47,8 @@ describe('the opening chain beyond the gate', () => {
     j.trail.push('x');
     expect(dueBeat(j)).toBe('story_breach');
     j.carry.seen.push('story_breach');
+    expect(dueBeat(j)).toBe('story_sam');
+    j.carry.seen.push('story_sam');
     expect(dueBeat(j)).toBe('story_wake');
     j.carry.flags.push('archive_woke');
     expect(dueBeat(j)).not.toBe('story_wake');
@@ -54,10 +56,10 @@ describe('the opening chain beyond the gate', () => {
   it('skips the cards the first cut of the opening had and this one does not, so a save part-way through plays on', () => {
     const j = newJourney(7);
     j.trail.push('x');
-    j.carry.seen.push('story_breach', 'story_yard', 'story_recovery');
+    j.carry.seen.push('story_breach', 'story_sam', 'story_yard', 'story_recovery');
     expect(dueBeat(j)).toBe('story_wake');
   });
-  it('plays through in two cards, the Score falling for a reason each time', () => {
+  it('plays through in three cards, the Score falling for a reason each time', () => {
     const j = newJourney(7);
     j.trail.push('x');
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), story: 'story_breach', calloway: Infinity }, carry: j.carry });
@@ -68,44 +70,46 @@ describe('the opening chain beyond the gate', () => {
     run(4);
     // the breach notice already marks the Score down, before anything is answered
     expect(w.civic).toBeLessThan(CIVIC_START);
-    for (const answer of ['code', 'lead']) {
+    for (const answer of ['proceed', 'code', 'lead']) {
       seen.push(w.comms!.def.id);
-      // one action each: the notice and Sam share one card, and the archive is one card
+      // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
-      run(4);
+      run(10);
     }
-    expect(seen).toEqual(['story_breach', 'story_wake']);
+    expect(seen).toEqual(['story_breach', 'story_sam', 'story_wake']);
     expect(w.phase).toBe('play');
     const c = w.result().carry;
     expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'archive_woke', 'clue_reserves']));
     expect(c.civic).toBeLessThan(CIVIC_START - 60);
     expect(c.civic).toBeGreaterThanOrEqual(300);
   });
-  it('adds up: the settlement’s cuts, the rack paid from what is left, and the debt kept apart from the credit', () => {
+  it('adds up: the work bay takes no cargo, the launcher is financed, and the debt is kept apart from the credit', () => {
     const bay = ledgerFor('bay');
     const credit = (k: string) => bay.find((r) => r.k === k)?.cr;
     expect(credit('Gross contract credit')).toBe(GROSS);
-    expect(bay.filter((r) => r.cr !== undefined && r.k !== 'Available credit').reduce((a, r) => a + r.cr!, 0)).toBe(NET);
-    expect(credit('Available credit')).toBe(NET);
+    expect(credit('Available credit')).toBe(CREDIT_START);
     expect(NET).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow);
-    // the cargo rows are in Cyrite and the credit rows in credit: 800 delivered, 200 to go
-    expect(bay.find((r) => r.k === 'Delivered')?.v).toBe('800 / 1,000');
-    expect(bay.find((r) => r.k === 'Remaining')?.n).toBe(QUOTA - FIRST_LOAD);
-    expect(FINAL_LOAD).toBe(200);
-    // the rack comes out of the credit once: the balance is what is left, and no instalment is added to the debt
-    expect(balanceAfterRack()).toBe(NET - upgradePrice());
-    expect(CARD_BY_ID.story_bay!.choices[0]!.cost).toEqual({ cyrite: upgradePrice() });
+    // the cargo stays in the hold: 800 of 1,000 held, nothing delivered
+    expect(bay.find((r) => r.k === 'Cargo held')?.v).toBe('800 / 1,000');
+    expect(bay.some((r) => r.k === 'Delivered')).toBe(false);
+    expect(FINAL_LOAD).toBe(QUOTA - FIRST_LOAD);
+    // the projection: the payout, the company's charges and the launcher, and what is left
+    expect(credit('Torpedo launcher · financed')).toBe(-upgradePrice());
+    expect(credit('Left after charges')).toBe(projectedAfterLauncher());
+    expect(projectedAfterLauncher()).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow - upgradePrice());
+    // financed, not bought: no cost at the bay
+    expect(CARD_BY_ID.story_bay!.choices[0]!.cost).toBeUndefined();
     const breach = ledgerFor('breach');
-    expect(breach.find((r) => r.k === 'Contract delivery')?.v).toBe('800 / 1,000');
-    expect(breach.find((r) => r.k === 'Remaining shortfall')?.n).toBe(200);
+    expect(breach.find((r) => r.k === 'Contract delivery')?.v).toBe('0 / 1,000');
     expect(breach.find((r) => r.k === 'Payout')?.v).toBe('Withheld');
     expect(breach.find((r) => r.k === 'Vessel asset recovery')?.v).toBe('Authorised');
     expect(breach.find((r) => r.k === 'Short-delivery penalty')?.cr).toBe(-PENALTY);
     expect(breach.find((r) => r.k === 'Vessel lease due')?.cr).toBe(-LEASE_DUE);
-    expect(breach.find((r) => r.k === 'Balance owed')?.cr).toBe(OWED);
-    expect(OWED).toBe(PENALTY + LEASE_DUE);
-    expect(breach.some((r) => r.k === 'Upgrade instalment')).toBe(false);
+    // the financed launcher stays on her account with the penalty and the lease
+    expect(breach.find((r) => r.k === 'Torpedo launcher · financed')?.cr).toBe(-upgradePrice());
+    expect(breach.find((r) => r.k === 'Balance owed')?.cr).toBe(owed());
+    expect(owed()).toBe(PENALTY + LEASE_DUE + upgradePrice());
   });
   it('shows the archive’s one record: 94% on the day of the order', () => {
     const rows = ledgerFor('archive');

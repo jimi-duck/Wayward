@@ -5,7 +5,7 @@ import { SAFE_R } from '../src/sim/breakout';
 import { goalOf } from '../src/sim/goal';
 import { metres } from '../src/sim/world';
 import { cargoOf, lessonOf, needsTorpedoFit, stepOf, LESSON_NODE } from '../src/sim/tutor';
-import { FINAL_LOAD, FIRST_LOAD, HOLD_AT_START, NET, upgradePrice } from '../src/sim/contract';
+import { CREDIT_START, FIRST_LOAD, HOLD_AT_START, ROCK_LOAD } from '../src/sim/contract';
 import type { InputFrame } from '../src/input/types';
 
 const input = (o: Partial<InputFrame> = {}): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...o });
@@ -40,11 +40,12 @@ describe('the first minutes', () => {
     expect(w.bk!.nextPursuit).toBeGreaterThan(w.runTime + 20);
   });
 
-  it('goes rock, the work bay settlement, a second rock, then raiders who take the load, and leaves the tank holding the jump', () => {
+  it('goes rock, the work bay account, a second rock, then raiders who stop the world and take the hold, and leaves the tank holding the jump', () => {
     const w = story();
     w.field.step = () => {};
-    // before docking the cargo is on board, not delivered
+    // the shift is picked up in flight: 800 of the 1,000 are in the hold, nothing delivered
     expect(cargoOf(w)).toMatchObject({ onboard: HOLD_AT_START, delivered: 0 });
+    expect(w.civic).toBeGreaterThan(0);
     const rock = w.field.rocks.find((r) => r.id === w.tutor!.rockId)!;
     w.field.rocks = [rock];
     w.dropCrystals(w.ship.x, w.ship.z, 5, 0);
@@ -52,74 +53,111 @@ describe('the first minutes', () => {
     w.fuel = w.jumpCost - 2; // stand in for the pickup
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(stepOf(w)).toBe('bay');
-    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD, delivered: 0 });
+    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD + ROCK_LOAD, delivered: 0 });
+    expect(lessonOf(w)!.line).toBe('Dock at the Work Bay');
     // the depot is a short hop away, and the bay stays shut in flight
     const les = lessonOf(w)!;
     expect(les.mark && Math.hypot(les.mark.x - w.ship.x, les.mark.z - w.ship.z)).toBeLessThan(250);
     expect(w.bayClosed()).toBe('away');
     expect(w.aliens.some((a) => a.id === w.tutor!.alienId)).toBe(false);
-    // no panel on the approach: the settlement is the dock itself
+    // no panel on the approach: the account is the dock itself
     const p = w.bk!.port!;
     w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
     for (let i = 0; i < 400 && w.phase === 'play'; i++) w.step(STEP, input());
     expect(w.phase).toBe('comms');
     expect(w.comms?.def.id).toBe('story_bay');
     expect(w.docked).toBe(true);
-    // the work bay has counted the load: 800 of 1,000 delivered, nothing left in the hold, the credit in the purse
-    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: FIRST_LOAD });
-    expect(w.cyrite).toBe(NET);
-    expect(w.comms?.ledger?.find((r) => r.k === 'Available credit')?.cr).toBe(NET);
+    // the bay takes no cargo: the hold stays full, the credit is low, the launcher is on offer
+    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD + ROCK_LOAD, delivered: 0 });
+    expect(w.cyrite).toBe(CREDIT_START);
+    expect(w.comms?.ledger?.find((r) => r.k === 'Available credit')?.cr).toBe(CREDIT_START);
+    expect(w.comms?.def.reply?.from).toMatch(/^Sam Okoro/);
     expect(w.answer('install')).toBe(true);
-    // the rack was paid once, from the credit, and the ship is away again with no second panel
+    // the launcher is financed, not paid for: the purse is untouched, and the ship is away again with no second panel
     expect(w.levels[LESSON_NODE]).toBe(1);
     expect(w.stats.torpedoes).toBe(true);
-    expect(w.cyrite).toBe(NET - upgradePrice());
-    expect(w.result().carry.flags).not.toContain('lease_financed');
+    expect(w.cyrite).toBe(CREDIT_START);
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(w.phase).toBe('play');
     expect(w.docked).toBe(false);
     // back out for the last of the contract, clear of the depot's damping field
     expect(stepOf(w)).toBe('haul');
-    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: FIRST_LOAD });
+    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD + ROCK_LOAD, delivered: 0 });
     const rock2 = w.field.rocks.find((r) => r.id === w.tutor!.rockId)!;
     expect(Math.hypot(rock2.x - p.x, rock2.z - p.z)).toBeGreaterThan(SAFE_R);
     w.field.rocks = [rock2];
     w.dropCrystals(w.ship.x, w.ship.z, 5, 0);
     w.field.rocks = [];
-    for (let i = 0; i < 120; i++) w.step(STEP, input());
-    expect(cargoOf(w)).toMatchObject({ onboard: FINAL_LOAD, delivered: FIRST_LOAD });
-    for (let i = 0; i < 120; i++) w.step(STEP, input());
-    // the lesson is the torpedo
+    for (let i = 0; i < 240; i++) w.step(STEP, input());
+    // the hold is full
+    expect(cargoOf(w)).toMatchObject({ onboard: 1000, delivered: 0 });
+    // the lesson is the launcher
     expect(stepOf(w)).toBe('shoot');
     expect(lessonOf(w)!.hint).toBe('torpedo');
     w.ship.x = p.x + SAFE_R + 6;
-    for (let i = 0; i < 30; i++) w.step(STEP, input());
-    expect(w.aliens.some((a) => a.id === w.tutor!.alienId)).toBe(true);
-    const al = w.aliens.find((a) => a.id === w.tutor!.alienId)!;
-    expect(Math.hypot(al.x - p.x, al.z - p.z)).toBeGreaterThan(SAFE_R);
-    // two raiders, and a win takes both; they say what they want over the radio, in flight
+    // two ships close in, white and unknown; the world stops when they are in range
+    for (let i = 0; i < 900 && w.phase === 'play'; i++) w.step(STEP, input());
+    expect(w.phase).toBe('comms');
+    expect(w.comms?.def.id).toBe('story_raiders');
     expect(w.tutor!.pirates).toHaveLength(2);
-    expect(w.tutor!.said).toContain('demand');
+    const raiders = w.aliens.filter((a) => w.tutor!.pirates.includes(a.id));
+    expect(raiders).toHaveLength(2);
+    for (const a of raiders) { expect(a.ward?.tag).toBe('UNKNOWN'); expect(Math.hypot(a.x - w.ship.x, a.z - w.ship.z)).toBeLessThan(80); }
+    expect(lessonOf(w)!.mark?.name).toBe('Unknown');
+    // the transmission waits: no time passes while it is open
+    const t0 = w.runTime;
+    for (let i = 0; i < 60; i++) w.step(STEP, input());
+    expect(w.runTime).toBe(t0);
+    expect(w.answer('refuse')).toBe(true);
+    // refused: they turn hostile (no longer wards), and the fight begins
+    expect(raiders.every((a) => !a.ward)).toBe(true);
+    for (let i = 0; i < 10; i++) w.step(STEP, input());
+    expect(lessonOf(w)!.mark?.name).toBe('Raider');
+    expect(w.tutor!.lost).toBe(false);
+    // raider fire (or the first kill) opens the hold
     w.aliens = [];
     w.kills++;
-    for (let i = 0; i < 120; i++) w.step(STEP, input());
+    w.events.length = 0;
+    for (let i = 0; i < 30; i++) w.step(STEP, input());
+    expect(w.tutor!.lost).toBe(true);
+    expect(cargoOf(w)!.onboard).toBe(0);
+    expect(w.events.some((e) => e.type === 'cargoLost' && e.n === 1000)).toBe(true);
     expect(w.tutor!.done).toBe(false);
-    expect(cargoOf(w)!.onboard).toBe(FINAL_LOAD);
-    expect(w.aliens.filter((a) => w.tutor!.pirates.includes(a.id))).toHaveLength(1);
-    w.aliens = [];
     w.kills++;
     w.events.length = 0;
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(w.tutor!.done).toBe(true);
-    // the load is torn away where the player can see it, and the contract keeps the 800
-    expect(w.tutor!.lost).toBe(true);
-    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: FIRST_LOAD });
-    expect(w.events.some((e) => e.type === 'cargoLost' && e.n === FINAL_LOAD)).toBe(true);
-    // what the second rock gave is lost with the hold: the credit is what the settlement left
-    expect(w.cyrite).toBeLessThanOrEqual(NET - upgradePrice());
+    // the warning and the gate distance, then the chase
+    expect(w.events.some((e) => e.type === 'inbound')).toBe(true);
+    expect(w.tutor!.said).toContain('reinforce');
+    // nothing was delivered: the launcher is financed, the credit is what it was
+    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: 0 });
+    expect(w.cyrite).toBeLessThanOrEqual(CREDIT_START);
     expect(w.bk!.chase).not.toBeNull();
     expect(w.fuel).toBeGreaterThanOrEqual(w.jumpCost);
     expect(lessonOf(w)).toBeNull();
+  });
+
+  it('ends in the raiders’ hands when their offer is taken, and asks for the opening to start again', () => {
+    const w = story();
+    w.field.step = () => {};
+    w.tutor!.i = 3;
+    w.tutor!.begun = false;
+    w.levels[LESSON_NODE] = 1;
+    w.setLevels({ ...w.levels });
+    for (let i = 0; i < 900 && w.phase === 'play'; i++) w.step(STEP, input());
+    expect(w.comms?.def.id).toBe('story_raiders');
+    expect(w.answer('pay')).toBe(true);
+    expect(w.redo).toBe(false);
+    for (let i = 0; i < 120 && w.phase === 'play'; i++) w.step(STEP, input());
+    expect(w.comms?.def.id).toBe('story_seized');
+    expect(w.comms?.ledger?.find((r) => r.k === 'Pilot')?.v).toBe('Forced labour');
+    expect(w.answer('again')).toBe(true);
+    expect(w.redo).toBe(true);
+    expect(w.events.some((e) => e.type === 'redo')).toBe(true);
+    // a restarted world clears it
+    w.restart({ mode: 'breakout' });
+    expect(w.redo).toBe(false);
   });
 
   it('keeps the Story bay shut in flight before and after, and fits the torpedo bay on a skip', () => {
@@ -201,8 +239,8 @@ describe('the whole opening', () => {
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
     w.train();
     w.skipTraining();
-    // a skipped training still leaves the contract at 800 counted, the hold empty and the rack fitted
-    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: FIRST_LOAD });
+    // a skipped training still leaves the hold empty (the raiders took it), nothing delivered, and the launcher fitted
+    expect(cargoOf(w)).toMatchObject({ onboard: 0, delivered: 0 });
     expect(w.levels[LESSON_NODE]).toBe(1);
     // the gate: no checkpoint in the way, and the drive spools with the jump fluid aboard
     const b = w.bk!;

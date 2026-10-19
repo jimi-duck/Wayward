@@ -29,7 +29,7 @@ import { live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, well
 import { FEATURES } from '../content/features';
 import {
   ALIEN_FIRST, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SPAWN_FAR, SPAWN_NEAR, SQUADS, VARIANTS,
-  WEB_R, alienBonus, alienFire, alienLabel, beamLive, cloaked, leave, moveAlien, moveShots, pickElite, pickVariant, rayDist,
+  WEB_R, alienBonus, alienFire, alienLabel, beamLive, cloaked, leave, moveAlien, moveShots, pickElite, pickVariant, provoke, rayDist,
   spawnAlien, stepBeam, stepWebs, type Alien, type Arena, type EliteId, type Faction, type Shot, type Web,
 } from './enemies';
 import type { BlastKind, GameEvent, PowerKind } from './events';
@@ -292,6 +292,8 @@ export class World implements EncounterHost {
   cardNext = COMMS_FIRST;
   /** The first minutes' training (sim/tutor.ts), while a new pilot is being taught. */
   tutor: Tutor | null = null;
+  /** The opening ended in the raiders' hands: the app starts it again from the top (set by a card, read by main.ts). */
+  redo = false;
   /** The outlying mine of Contract 08-441 is being flown (set with the training): the Cyrite it gives is kept for the settlement. */
   opening = false;
   portCalled = false;
@@ -1489,6 +1491,8 @@ export class World implements EncounterHost {
       if (this.civic !== was) this.events.push({ type: 'civic', from: was, to: this.civic, why: out.civicWhy ?? '' });
     }
     if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
+    if (out.hostile) for (const al of this.aliens) if (al.ward) provoke(al, this.events);
+    if (out.redo) { this.redo = true; this.events.push({ type: 'redo' }); }
     if (out.fit && !this.levels[out.fit]) { this.setLevels({ ...this.levels, [out.fit]: 1 }); this.events.push({ type: 'fitted', id: out.fit }); }
     for (const f of [out.flag ?? []].flat()) this.flags.add(f);
     for (const f of [out.unflag ?? []].flat()) this.flags.delete(f);
@@ -2686,6 +2690,7 @@ export class World implements EncounterHost {
     this.command.reset();
     this.encounter = null; this.parked = null;
     this.tutor = null;
+    this.redo = false;
     this.opening = false;
     this.pace = newPace(ALIEN_FIRST);
     this.mend = newMend();
