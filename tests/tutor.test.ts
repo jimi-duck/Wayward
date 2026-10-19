@@ -282,4 +282,30 @@ describe('the whole opening', () => {
     expect(w.carry().flags).toEqual(expect.arrayContaining(['archive_woke']));
     expect(w.carry()).not.toHaveProperty('contract');
   });
+
+  it('raises the depot shield in a fight: the ship cannot cross, fire is absorbed, and it never comes up with the ship inside', () => {
+    const w = story();
+    const p = w.bk!.port!;
+    // outside, fighting: the edge holds
+    w.ship.x = p.x + SAFE_R + 30; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+    w.spawnHostile('scout', { x: p.x + SAFE_R + 60, y: 0, z: p.z });
+    w.aliens.forEach((a) => { a.mode = 'attack' as never; });
+    w.step(STEP, input());
+    expect(w.shield).toBe(true);
+    for (let i = 0; i < 240; i++) { w.ship.vx = -40; w.step(STEP, input({ thrust: 1 })); w.aliens.forEach((a) => { a.fleeing = false; }); }
+    expect(Math.hypot(w.ship.x - p.x, w.ship.z - p.z)).toBeGreaterThanOrEqual(SAFE_R);
+    expect(w.safe).toBe(null);
+    // the fight over, the shield drops and the ship can go in
+    w.aliens = []; w.shots = [];
+    for (let i = 0; i < 400; i++) w.step(STEP, input());
+    expect(w.shield).toBe(false);
+    // inside when a fight starts: no shield, and the ship stays safe
+    w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
+    w.step(STEP, input());
+    w.spawnHostile('scout', { x: p.x + SAFE_R + 20, y: 0, z: p.z });
+    w.aliens.forEach((a) => { a.mode = 'attack' as never; });
+    for (let i = 0; i < 30; i++) w.step(STEP, input());
+    expect(w.shield).toBe(false);
+    expect(w.safe).toBe('port');
+  });
 });

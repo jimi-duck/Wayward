@@ -391,6 +391,8 @@ export class BreakoutView {
   private readonly laneField: Mesh;
   private readonly lanehaze: Sprite;
   private readonly portField: Mesh;
+  private readonly portDome: Mesh;
+  private shieldLevel = 0;
   /** The skin across the ring: faint while the drive charges, a bright ripple as the ship goes through. */
   private readonly membrane: Mesh;
   private time = 0;
@@ -433,7 +435,9 @@ export class BreakoutView {
     this.portRing.position.y = 1.4;
     this.portField = flatRing(SAFE_R, 0.3, CYAN, 0.1);
     this.portField.position.y = -0.4;
-    this.port.add(this.portRing, this.portField);
+    this.portDome = new Mesh(new SphereGeometry(SAFE_R, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), new MeshBasicMaterial({ color: CYAN, transparent: true, opacity: 0, side: DoubleSide, depthWrite: false }));
+    this.portDome.visible = false;
+    this.port.add(this.portRing, this.portField, this.portDome);
     this.lane.visible = this.port.visible = false;
     scene.add(this.lane, this.port);
 
@@ -471,7 +475,11 @@ export class BreakoutView {
     // the damping field's edge: a thin teal line, a little brighter while you are inside it
     const inside = world.safe ? 0.08 : 0;
     (this.laneField.material as MeshBasicMaterial).opacity = (0.09 + inside + 0.02 * Math.sin(this.time * 1.2)) * away;
-    (this.portField.material as MeshBasicMaterial).opacity = 0.09 + inside + 0.02 * Math.sin(this.time * 1.2 + 1);
+    // the depot shield while a fight is on: the edge brightens and a faint dome fades in
+    this.shieldLevel += ((world.shield ? 1 : 0) - this.shieldLevel) * Math.min(1, dt * 6);
+    (this.portField.material as MeshBasicMaterial).opacity = 0.09 + inside + 0.02 * Math.sin(this.time * 1.2 + 1) + 0.3 * this.shieldLevel;
+    (this.portDome.material as MeshBasicMaterial).opacity = 0.1 * this.shieldLevel;
+    this.portDome.visible = this.shieldLevel > 0.01;
     (this.portRing.material as MeshBasicMaterial).opacity = 0.35 + 0.25 * Math.sin(this.time * 2.4) + b.dockT;
   }
 }
