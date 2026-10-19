@@ -431,14 +431,13 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 @keyframes hud-blink { 50% { opacity: .35; } }
 @keyframes hud-hit { 0%, 30% { background: rgba(201, 74, 63, .28); } }
 
-/* the quiet centre message (ui/notify.ts): low between the crosshair and the ship, no box, no icon; a feathered halo for reading, a colour for the kind */
-#notice { --tone: #f06064; position: absolute; z-index: 5; left: 50%; top: 44%; translate: -50% -50%; display: grid; justify-items: center; gap: 4px; width: max-content; max-width: min(90vw, 640px); padding: 14px 34px; text-align: center; pointer-events: none; opacity: 0; transition: opacity .5s ease-out; }
+/* the quiet centre message (ui/notify.ts): low between the crosshair and the ship, a dark band with hairlines and feathered ends, no icon, a colour for the kind */
+#notice { --tone: #f06064; position: absolute; z-index: 5; left: 50%; top: 44%; translate: -50% -50%; display: grid; justify-items: center; gap: 5px; width: min(94vw, 880px); padding: 14px 40px 15px; box-sizing: border-box; text-align: center; pointer-events: none; opacity: 0; transition: opacity .8s ease-out; background: linear-gradient(rgba(6, 10, 13, .74), rgba(6, 10, 13, .74)); border-block: 1px solid color-mix(in srgb, var(--tone) 70%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
 #notice.on { opacity: 1; transition-duration: .12s; }
 #notice.warning { --tone: var(--caution); }
 #notice.arrival { --tone: var(--cy); }
-.nt-halo { position: absolute; z-index: -1; inset: -35% -30%; background: radial-gradient(ellipse closest-side, rgba(5, 9, 12, .6), rgba(5, 9, 12, .36) 55%, rgba(5, 9, 12, 0) 100%); filter: blur(8px); }
-#notice-t { font: 700 clamp(15px, 2.5vh, 30px)/1.1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--tone); text-wrap: balance; }
-#notice-s { font: 500 clamp(10px, 1.3vh, 15px)/1.3 var(--font-rail); letter-spacing: .04em; color: var(--ink-2); text-wrap: balance; }
+#notice-t { font: 700 clamp(18px, 3.3vh, 40px)/1.1 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--tone); text-wrap: balance; }
+#notice-s { font: 500 clamp(11px, 1.8vh, 20px)/1.3 var(--font-rail); letter-spacing: .04em; color: #e4e1d3; text-wrap: balance; }
 #notice-s:empty { display: none; }
 #cond .good { color: var(--cy); }
 #cond .bad { color: var(--caution); }
