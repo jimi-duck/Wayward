@@ -397,6 +397,13 @@ export class Hud {
     $('g-fuel').style.setProperty('--v', Math.min(1, world.fuel / need).toFixed(2));
     fuel.classList.toggle('ready', world.fuel >= need);
     text($('v-purse'), String(Math.floor(world.cyrite)));
+    // the contract's load, aboard from the first minute: the hold as a count of the quota (the opening's training holds it)
+    const cg = cargoOf(world);
+    $('sys-cargo').hidden = !cg;
+    if (cg) {
+      text($('v-cargo'), `${cg.onboard.toLocaleString('en')}/${cg.quota.toLocaleString('en')}`);
+      $('g-cargo').style.setProperty('--v', Math.min(1, cg.onboard / cg.quota).toFixed(2));
+    }
     // the stores: supplies; they go amber when they are running low
     const sup = $('vy-supplies');
     text(sup, String(world.supplies));

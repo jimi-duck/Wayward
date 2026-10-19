@@ -558,7 +558,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 .bar { height: 3px; transition: --v .35s ease-out;
   background: linear-gradient(90deg, var(--fillc) 0 calc(var(--v) * 100%), var(--cy-dim) 0); box-shadow: none; }
 #sys-ph .bar { --fillc: var(--ink); }
-#sys-fuel .bar, #sys-purse i { --fillc: var(--ink-2); opacity: .8; }
+#sys-fuel .bar, #sys-cargo .bar, #sys-purse i { --fillc: var(--ink-2); opacity: .8; }
 #sys-ph.hot .bar { --fillc: var(--ink); }
 #sys-fuel.ready .bar { --fillc: var(--ink-2); }
 #sys-fuel.ready .val { color: var(--ink); }
