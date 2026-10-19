@@ -5,7 +5,7 @@ import { SAFE_R } from '../src/sim/breakout';
 import { goalOf } from '../src/sim/goal';
 import { metres } from '../src/sim/world';
 import { cargoOf, lessonOf, needsTorpedoFit, stepOf, LESSON_NODE } from '../src/sim/tutor';
-import { CREDIT_START, FIRST_LOAD, HOLD_AT_START, ROCK_LOAD } from '../src/sim/contract';
+import { CREDIT_START, FIRST_LOAD, HOLD_AT_START } from '../src/sim/contract';
 import type { InputFrame } from '../src/input/types';
 
 const input = (o: Partial<InputFrame> = {}): InputFrame => ({ turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard', ...o });
@@ -53,7 +53,7 @@ describe('the first minutes', () => {
     w.fuel = w.jumpCost - 2; // stand in for the pickup
     for (let i = 0; i < 120; i++) w.step(STEP, input());
     expect(stepOf(w)).toBe('bay');
-    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD + ROCK_LOAD, delivered: 0 });
+    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD, delivered: 0 });
     expect(lessonOf(w)!.line).toBe('Dock at the Work Bay');
     // the depot is a short hop away, and the bay stays shut in flight
     const les = lessonOf(w)!;
@@ -68,7 +68,7 @@ describe('the first minutes', () => {
     expect(w.comms?.def.id).toBe('story_bay');
     expect(w.docked).toBe(true);
     // the bay takes no cargo: the hold stays full, the credit is low, the launcher is on offer
-    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD + ROCK_LOAD, delivered: 0 });
+    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD, delivered: 0 });
     expect(w.cyrite).toBe(CREDIT_START);
     expect(w.comms?.ledger?.find((r) => r.k === 'Available credit')?.cr).toBe(CREDIT_START);
     expect(w.comms?.def.reply?.from).toMatch(/^Sam Okoro/);
@@ -82,15 +82,15 @@ describe('the first minutes', () => {
     expect(w.docked).toBe(false);
     // back out for the last of the contract, clear of the depot's damping field
     expect(stepOf(w)).toBe('haul');
-    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD + ROCK_LOAD, delivered: 0 });
+    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD, delivered: 0 });
     const rock2 = w.field.rocks.find((r) => r.id === w.tutor!.rockId)!;
     expect(Math.hypot(rock2.x - p.x, rock2.z - p.z)).toBeGreaterThan(SAFE_R);
     w.field.rocks = [rock2];
     w.dropCrystals(w.ship.x, w.ship.z, 5, 0);
     w.field.rocks = [];
     for (let i = 0; i < 240; i++) w.step(STEP, input());
-    // the hold is full
-    expect(cargoOf(w)).toMatchObject({ onboard: 1000, delivered: 0 });
+    // the hold still holds the 800: the lesson rocks add nothing to it
+    expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD, delivered: 0 });
     // the lesson is the launcher
     expect(stepOf(w)).toBe('shoot');
     expect(lessonOf(w)!.hint).toBe('torpedo');
@@ -113,15 +113,21 @@ describe('the first minutes', () => {
     expect(raiders.every((a) => !a.ward)).toBe(true);
     for (let i = 0; i < 10; i++) w.step(STEP, input());
     expect(lessonOf(w)!.mark?.name).toBe('Raider');
+    // refusing draws a missile at once, homing on the ship
+    expect(w.tutor!.missile).toBeGreaterThan(0);
+    expect(w.shots.some((s) => s.from === 'tutor-missile')).toBe(true);
     expect(w.tutor!.lost).toBe(false);
-    // raider fire (or the first kill) opens the hold
-    w.aliens = [];
-    w.kills++;
+    // it always hits, a moment later (scripted, no kill needed): the pod goes and the hit rings on the hull
     w.events.length = 0;
-    for (let i = 0; i < 30; i++) w.step(STEP, input());
+    for (let i = 0; i < 240 && !w.tutor!.lost; i++) { w.ship.vx = 30; w.step(STEP, input()); }
+    expect(w.kills).toBe(0);
+    expect(w.shots.some((s) => s.from === 'tutor-missile')).toBe(false);
     expect(w.tutor!.lost).toBe(true);
     expect(cargoOf(w)!.onboard).toBe(0);
-    expect(w.events.some((e) => e.type === 'cargoLost' && e.n === 1000)).toBe(true);
+    expect(w.events.some((e) => e.type === 'cargoLost' && e.n === FIRST_LOAD)).toBe(true);
+    expect(w.events.some((e) => e.type === 'shieldHit')).toBe(true);
+    w.aliens = [];
+    w.kills++;
     expect(w.tutor!.done).toBe(false);
     w.kills++;
     w.events.length = 0;

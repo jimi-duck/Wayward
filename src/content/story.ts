@@ -278,7 +278,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_breach', kind: 'warning', caller: 'office', ledger: 'breach',
     from: 'Lane Control · registry notice', title: 'Contract 08-441 · in breach',
-    text: '“The 1,000 Cyrite was not delivered. Payout withheld. The launcher stays on your account. Proceed to the audit lane for inspection and ship repossession.”',
+    text: '“The 1,000 Cyrite was not delivered. Payout withheld. The company bills the shortfall, the lease and its fees to you, launcher included. Proceed to the audit lane for inspection and ship repossession.”',
     cargo: 'Contract 08-441 · short delivery',
     choices: [
       { id: 'proceed', label: 'Proceed to the audit lane', tone: 'run', hint: 'The company takes the ship. The debt stays with you, or it is compulsory labour.',

@@ -1,6 +1,7 @@
 import { CARD_BY_ID } from './comms';
 import { CREDIT_START, HOLD, HOLD_AT_START, QUOTA, ROCK_LOAD, type Cargo } from './contract';
 import { t } from '../i18n';
+import { newId } from './ids';
 import type { World } from './world';
 
 // ── the first minutes ─────────────────────────────────────────────────────
@@ -54,6 +55,8 @@ export interface Tutor {
   credit: number;
   /** The raiders' offer: 0 not yet, 1 on the table, 2 answered (refused). */
   parley: 0 | 1 | 2;
+  /** Seconds until the scripted missile hits (0: none in flight, or already hit). */
+  missile: number;
 }
 
 /** What the HUD reads for the step in hand. */
@@ -90,7 +93,7 @@ const DEPOT_SIDE = 90;
 
 /** Mine, upgrade, shoot with it. The Story flies to a work bay for the settlement and the upgrade, then hauls the last of the contract; the Arcade fits it in flight. */
 export function newTutor(story = true): Tutor {
-  return { steps: story ? ['mine', 'bay', 'haul', 'shoot'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], said: [], onboard: 0, delivered: 0, lost: false, settled: false, credit: 0, parley: 0 };
+  return { steps: story ? ['mine', 'bay', 'haul', 'shoot'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], said: [], onboard: 0, delivered: 0, lost: false, settled: false, credit: 0, parley: 0, missile: 0 };
 }
 
 /** The cargo the HUD reads, or null where there is no contract (the Arcade, or the training over). */
@@ -155,6 +158,31 @@ function parley(w: World, tu: Tutor): void {
   w.openComms(card);
 }
 
+/** Seconds from the missile's launch to its hit. */
+const MISSILE_T = 1.5;
+/** Marks the scripted missile among the shots. */
+const MISSILE = 'tutor-missile';
+
+/**
+ * Refused: the nearer raider fires a missile at once, and it always hits (scripted: it cannot be shot down or dodged, so the
+ * beat plays the same every time). It flies as a harmless shot timed to arrive on the hit, which tears the pod away.
+ */
+function missile(w: World, tu: Tutor): void {
+  const from = tu.pirates.map((id) => w.aliens.find((a) => a.id === id)).filter((a): a is NonNullable<typeof a> => !!a)
+    .sort((a, b) => Math.hypot(a.x - w.ship.x, a.z - w.ship.z) - Math.hypot(b.x - w.ship.x, b.z - w.ship.z))[0];
+  if (!from) return;
+  const s = w.ship, d = Math.hypot(s.x - from.x, s.z - from.z) || 1, sp = d / MISSILE_T;
+  w.shots.push({ id: newId(), x: from.x, y: from.y, z: from.z, vx: ((s.x - from.x) / d) * sp, vy: 0, vz: ((s.z - from.z) / d) * sp, life: MISSILE_T + 1, r: 0.02, faction: from.faction, hp: 99, seek: 0, split: 0, from: MISSILE });
+  w.events.push({ type: 'plasma', x: from.x, z: from.z });
+  tu.missile = MISSILE_T;
+}
+
+/** The scripted missile arrives: it is gone, and the pod with it. */
+function missileHit(w: World, tu: Tutor): void {
+  w.shots = w.shots.filter((x) => x.from !== MISSILE);
+  loseCargo(w, tu);
+}
+
 /** The hold is torn open by the raiders' fire: once, and it is gone. */
 function loseCargo(w: World, tu: Tutor): void {
   if (tu.lost || !story(w, tu)) return;
@@ -163,6 +191,8 @@ function loseCargo(w: World, tu: Tutor): void {
   tu.onboard = 0;
   w.cyrite = Math.min(w.cyrite, tu.credit);
   w.events.push({ type: 'cargoLost', n });
+  // the hit rings on the hull (the shield ripple; the Wayward has no bubble)
+  w.events.push({ type: 'shieldHit', x: w.ship.x, z: w.ship.z, left: Math.floor(w.shields), source: 'missile' });
 }
 
 /** One radio line, once: over live flight, so it never stops the ship. */
@@ -185,7 +215,7 @@ function begin(w: World, tu: Tutor): void {
     const port = w.bk?.port;
     if (port) { const p = ahead(w, DEPOT_AT, -DEPOT_SIDE); port.x = p.x; port.z = p.z; }
     if (w.bk) { const p = ahead(w, TRAIN_LANE); w.bk.def = { ...w.bk.def, lane: TRAIN_LANE }; w.bk.lane.x = p.x; w.bk.lane.z = p.z; }
-    say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay is open for supplies. Take the upgrade you need and top the hold up after. A late return comes out of your allocation.”'));
+    say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay is open for supplies. Take the upgrade you need and get back to the field. A late return comes out of your allocation.”'));
   } else if (id === 'bay') {
     tu.base = fitted(w);
     // the Arcade's upgrade is a press away; the Story's is bought from the settlement, at the bay
@@ -289,14 +319,14 @@ export function stepTutor(w: World, dt: number): void {
     if (id === 'mine') tu.onboard = tens(HOLD_AT_START + ROCK_LOAD * filled(rockProgress(w, tu)));
     else if (id === 'haul') tu.onboard = tens(HOLD_AT_START + ROCK_LOAD + ROCK_LOAD * filled(rockProgress(w, tu)));
     else if (id === 'bay') tu.onboard = HOLD_AT_START + ROCK_LOAD;
-    if (met(w, tu)) tu.onboard = id === 'mine' ? HOLD_AT_START + ROCK_LOAD : id === 'haul' ? QUOTA : tu.onboard;
+    if (met(w, tu)) tu.onboard = id === 'mine' ? HOLD_AT_START + ROCK_LOAD : id === 'haul' ? HOLD_AT_START + 2 * ROCK_LOAD : tu.onboard;
   }
   // if the rock is gone and nothing fell out, lay another; if the ship slipped away, send another
   if ((id === 'mine' || id === 'haul') && !w.field.rocks.some((r) => r.id === tu.rockId) && stock(w) <= tu.base && !w.pickups.length) layRock(w, tu, id === 'haul' ? HAUL_AT : ROCK_AT);
   if (id === 'shoot' && story(w, tu) && !tu.lost) {
     // the raiders turn hostile when the offer is refused; their first hit on the ship, or the first one down, opens the hold
-    if (tu.parley === 1 && w.phase === 'play' && tu.pirates.every((p) => { const a = w.aliens.find((x) => x.id === p); return !a || !a.ward; })) tu.parley = 2;
-    if (tu.parley === 2 && (w.kills > tu.base || w.events.some((e) => e.type === 'shipHit'))) loseCargo(w, tu);
+    if (tu.parley === 1 && w.phase === 'play' && tu.pirates.every((p) => { const a = w.aliens.find((x) => x.id === p); return !a || !a.ward; })) { tu.parley = 2; missile(w, tu); }
+    if (tu.missile > 0 && (tu.missile -= dt) <= 0) { tu.missile = 0; missileHit(w, tu); }
   }
   if (id === 'shoot' && story(w, tu) && tu.parley === 0 && tu.pirates.length) parley(w, tu);
   if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && tu.pirates.some((p) => !w.aliens.some((a) => a.id === p)))) && w.kills < tu.base + PIRATES) layShip(w, tu);
