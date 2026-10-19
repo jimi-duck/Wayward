@@ -760,7 +760,9 @@ export class World implements EncounterHost {
     if (b.port && dp > b.port.r) b.castOff = false;
     // the clamps stay open while a fight is on: slow at the ring and under attack, the port says no
     const ready = !!b.port && !b.castOff && dp < b.port.r && speed < DOCK_SPEED && this.phase === 'play';
-    this.dockHeld = ready && this.inDanger();
+    const held = ready && this.inDanger();
+    if (this.dockHeld && !held && ready) this.events.push({ type: 'dockCleared' });
+    this.dockHeld = held;
     this.deniedT = Math.max(0, this.deniedT - dt);
     if (this.dockHeld && this.deniedT === 0) { this.deniedT = DENIED_EVERY; this.events.push({ type: 'dockDenied' }); }
     if (ready && !this.dockHeld) {
@@ -1147,12 +1149,20 @@ export class World implements EncounterHost {
   inDanger(): boolean {
     const s = this.ship, cs = this.command.state;
     if (cs === 'fight' || cs === 'inbound') return true;
-    for (const a of this.aliens) {
-      if (a.fleeing || a.ward || ALIEN_TYPES[a.kind].fire === 'none' || a.mode === 'patrol' || a.mode === 'watch' || a.mode === 'brawl') continue;
-      if (Math.hypot(a.x - s.x, a.z - s.z) < SELF_REPAIR.danger) return true;
-    }
+    for (const a of this.aliens) if (this.committed(a) && Math.hypot(a.x - s.x, a.z - s.z) < SELF_REPAIR.danger) return true;
     for (const sh of this.shots) if (Math.hypot(sh.x - s.x, sh.z - s.z) < SELF_REPAIR.fireDanger) return true;
     return false;
+  }
+
+  /** A hostile that has committed to a fight with the ship. */
+  private committed(a: Alien): boolean {
+    return !(a.fleeing || a.ward || ALIEN_TYPES[a.kind].fire === 'none' || a.mode === 'patrol' || a.mode === 'watch' || a.mode === 'brawl');
+  }
+
+  /** How many committed hostiles are inside the danger range: the live count the port quotes when it refuses the clamps. */
+  engaged(): number {
+    const s = this.ship;
+    return this.aliens.filter((a) => this.committed(a) && Math.hypot(a.x - s.x, a.z - s.z) < SELF_REPAIR.danger).length;
   }
 
   /** Inside the lane mouth's or the depot's safe ring: nothing hurts the ship here and hostile hulls keep out. */
