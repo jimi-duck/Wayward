@@ -261,7 +261,7 @@ Flags `echo_trust` or `sable_trust` (never both).
 
 ## 12. The Civic Score (live)
 
-**Display (2026-10-19):** the number is never shown. The player reads the registry band (COMPLIANT / UNDER REVIEW / RESTRICTED …) as "Registry status", and a choice that moves it carries a "Registry ↑/↓" chip. The number still lives in `carry.civic` and drives the doors and fees below.
+**Display (2026-10-19):** the number is never shown. The player reads the registry band (COMPLIANT / UNDER REVIEW / RESTRICTED …) as "Civic Score", and a choice that moves it carries a "Civic Score ↑/↓" chip. The number still lives in `carry.civic` and drives the doors and fees below.
 
 `carry.civic`, 0 to 500, starts at **412**. Persisted. Arcade never reads it.
 

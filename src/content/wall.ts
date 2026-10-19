@@ -49,7 +49,7 @@ export const WALL: WallItem[] = [
     flag: 'archive_woke', name: 'The archive woke', certainty: 'fact', at: -1, short: true,
     proves: 'The sealed archive opened on your hand, and the registry logged it.',
     not: 'Why it knew you, or who sealed it.',
-    detail: 'A legacy key, good for this hull only, opened it. It points to the old relay in Halden’s Reach. Your registry status fell and now reads UNDER REVIEW.',
+    detail: 'A legacy key, good for this hull only, opened it. It points to the old relay in Halden’s Reach. Your Civic Score fell and now reads UNDER REVIEW.',
     ask: 'Why did the hauler wake?',
     lead: 'Reach the old relay in Halden’s Reach, then find what the shortage story hides.',
   }),
