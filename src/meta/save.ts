@@ -13,7 +13,7 @@ import { SUPPLIES_MAX } from '../sim/breakout';
 import { SCRAP_PRICE } from '../content/systems';
 import { survivalOf } from '../content/survival';
 import { atChapter } from '../sim/chapters';
-import { CIVIC_START, WAKE_DROP } from '../sim/civic';
+import { CIVIC_START, STOLEN_DROP } from '../sim/civic';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
@@ -95,7 +95,7 @@ export function migrate(raw: unknown): Journey | null {
 /** Give a journey from before v18 its Civic Score (see the 17 → 18 step). */
 function civicScore(j: Journey): void {
   const c = j.carry;
-  if (c.civic === undefined) c.civic = j.trail.length < 2 ? CIVIC_START : CIVIC_START - WAKE_DROP;
+  if (c.civic === undefined) c.civic = j.trail.length < 2 ? CIVIC_START : CIVIC_START - STOLEN_DROP;
   if (j.trail.length >= 2) for (const f of ['archive_woke', 'clue_reserves']) if (!c.flags.includes(f)) c.flags.push(f);
 }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { WALL } from '../src/content/wall';
-import { CIVIC_START, WAKE_DROP, civicBand, civicToll } from '../src/sim/civic';
+import { CIVIC_START, STOLEN_DROP, civicBand, civicToll } from '../src/sim/civic';
 import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
 import { VERSION, newJourney, sortieDef } from '../src/sim/journey';
 import { migrate } from '../src/meta/save';
@@ -21,7 +21,7 @@ describe('the Civic Score', () => {
     const j = newJourney(7);
     expect(j.carry.civic).toBe(CIVIC_START);
     expect(CIVIC_START).toBe(412);
-    expect(civicBand(CIVIC_START - WAKE_DROP)).not.toBe(civicBand(CIVIC_START));
+    expect(civicBand(CIVIC_START - STOLEN_DROP)).not.toBe(civicBand(CIVIC_START));
   });
   it('is absent in Arcade', () => {
     expect(new World(3).civic).toBeUndefined();
@@ -59,7 +59,7 @@ describe('the opening chain beyond the gate', () => {
     j.carry.seen.push('story_breach', 'story_sam', 'story_yard', 'story_recovery');
     expect(dueBeat(j)).toBe('story_wake');
   });
-  it('plays through in three cards, the Score falling for a reason each time', () => {
+  it('plays through in three cards, the Score falling once, at the theft', () => {
     const j = newJourney(7);
     j.trail.push('x');
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), story: 'story_breach', calloway: Infinity }, carry: j.carry });
@@ -68,21 +68,24 @@ describe('the opening chain beyond the gate', () => {
     const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
     const seen: string[] = [];
     run(4);
-    // the breach notice already marks the Score down, before anything is answered
-    expect(w.civic).toBeLessThan(CIVIC_START);
+    // the breach notice and the override's lead-up do not move the Score: the theft is the one fall
+    expect(w.civic).toBe(CIVIC_START);
     for (const answer of ['proceed', 'code', 'lead']) {
       seen.push(w.comms!.def.id);
       // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
+      if (answer === 'proceed') expect(w.civic).toBe(CIVIC_START);
+      if (answer === 'code') expect(civicBand(w.civic!)).toBe('restricted');
       run(10);
     }
     expect(seen).toEqual(['story_breach', 'story_sam', 'story_wake']);
     expect(w.phase).toBe('play');
     const c = w.result().carry;
     expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'archive_woke', 'clue_reserves']));
-    expect(c.civic).toBeLessThan(CIVIC_START - 60);
-    expect(c.civic).toBeGreaterThanOrEqual(300);
+    // the theft took it to RESTRICTED, and the archive did not take more
+    expect(c.civic).toBe(CIVIC_START - STOLEN_DROP);
+    expect(civicBand(c.civic!)).toBe('restricted');
   });
   it('adds up: the work bay takes no cargo, the launcher is financed, and the debt is kept apart from the credit', () => {
     const bay = ledgerFor('bay');
@@ -119,12 +122,12 @@ describe('the opening chain beyond the gate', () => {
 });
 
 describe('save 17 to 18', () => {
-  it('gives a past-Cerro save 374 and the two Cerro flags, and is idempotent', () => {
+  it('gives a past-Cerro save the post-theft Score and the two Cerro flags, and is idempotent', () => {
     const old = JSON.parse(readFileSync('tests/fixtures/journey-v17.json', 'utf8'));
     const a = migrate(structuredClone(old))!;
     expect(a.version).toBe(VERSION);
     if (a.trail.length >= 2) {
-      expect(a.carry.civic).toBe(374);
+      expect(a.carry.civic).toBe(CIVIC_START - STOLEN_DROP);
       expect(a.carry.flags).toEqual(expect.arrayContaining(['archive_woke', 'clue_reserves']));
     } else expect(a.carry.civic).toBe(412);
     expect(migrate(JSON.parse(JSON.stringify(a)))!.carry.civic).toBe(a.carry.civic);

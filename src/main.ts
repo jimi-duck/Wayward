@@ -15,7 +15,7 @@ import { bounty } from './sim/mission';
 import { cy } from './sim/purse';
 import { FEATURES } from './content/features';
 import { SURVIVAL } from './content/survival';
-import { bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
+import { autoCourse, bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { regionsOf, routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
@@ -368,7 +368,8 @@ function boot(review: typeof import('./review') | null): void {
     saveJourney(j);
     chart.debrief(sortieStart ? debrief(sortieStart, j) : []);
     const lines = [...out.lines, ...rec.unlocked.map((u) => `${t('Unlocked')} · ${t(u.name)}`)];
-    if (out.kind === 'jumped') return openChart(lines);
+    // the first jump has one lane and nowhere to look: no chart, straight on
+    if (out.kind === 'jumped') { if (autoCourse(j)) { saveJourney(j); return startSortie(); } return openChart(lines); }
     if (pending(j)) return threshold(j, lines);
     if (out.kind === 'adrift') {
       loop.paused = true;

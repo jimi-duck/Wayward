@@ -30,17 +30,20 @@ the Score, the flags and the purse); no migration was needed.
 | 2 Work Bay | Depot, a short hop off | Docking is the one pausing card of the lessons: **Account and launcher** (`story_bay`). The Work Bay takes no cargo. The ledger shows the 800 / 1,000 held, the credit (4), the contract's charges and a projection (2 left after the launcher). Sam Okoro, a friend and not Work Bay staff, speaks over the radio. One choice, "Install the launcher": financed, nothing paid now. Torpedoes are unlimited (the rack reloads by itself) | The company's grip, in one place; a practical reason to take on debt |
 | 3 Raiders | Past the depot's field | Second rock (hold full, 1,000), then two ships close in as white **UNKNOWN** markers. In range the world stops: `story_raiders`, the raider's transmission. **Pay up & allow boarding** ends in `story_seized` ("Game over · contract terminated") and the opening starts again. **Refuse** turns both red and the fight starts. Their first hit, or the first kill, tears the hold open (`cargoLost`) | A real choice; the cargo loss is seen, so the breach feels fair |
 | 4 Escape | gate 1.9 km ahead | After the second raider: "Inbound contacts detected" centre notice, radio "Additional hostile contacts detected. Jump gate distance: 1.9 kilometres.", objective "Reach the jump gate". Waves of Custody raiders, not meant to be fought | Danger, and a forced exit |
-| 5 Breach | beyond the gate | `story_breach`: Lane Control's notice (delivery 0 / 1,000, payout withheld, penalty, lease, the financed launcher, asset recovery authorised, balance owed 47). One action, "Proceed to the audit lane": no escape yet. Score −14 | State and company kept apart; the debt outlives the ship |
-| 6 The theft | on the way to the audit lane | `story_sam` a few seconds later: Sam, privately, with a maintenance code for the owner lock. One action, "Enter Sam's code · override the lock". The hull is stolen; Score −30 | Juno becomes a thief by one choice |
+| 5 Breach | beyond the gate | `story_breach`: Lane Control's notice (delivery 0 / 1,000, payout withheld, penalty, lease, the financed launcher, asset recovery authorised, balance owed 47). One action, "Proceed to the audit lane": no escape yet. No Score change | State and company kept apart; the debt outlives the ship |
+| 6 The theft | on the way to the audit lane | `story_sam` a few seconds later: Sam, privately, with a maintenance code for the owner lock. One action, "Enter Sam's code · override the lock". The hull is stolen; Score −130 (COMPLIANT to RESTRICTED), the one big fall | Juno becomes a thief by one choice |
 | 7 Rename | same | A centre notice: "Vessel registry · unrecognised", then WAYWARD. The 3D hull is not repainted yet | |
-| 8 Archive | same | `story_wake`: the override wakes a sealed partition. Krail reserves 94% against a shortage order of the same day; the relay in Halden's Reach; a legacy key good for this hull only. Score −38 | One contradiction and a lead |
+| 8 Archive | same | `story_wake`: the override wakes a sealed partition. Krail reserves 94% against a shortage order of the same day; the relay in Halden's Reach; a legacy key good for this hull only | One contradiction and a lead |
+
+The first jump shows no chart: the lane out of Cerro is the only way, and it goes straight to the next system
+(`autoCourse` in `sim/journey.ts`, used by `sortieOver`).
 
 Dying before the jump gate (a wreck, or taking the raiders' offer) restarts the whole
 opening from fresh: a new world, the training again, nothing kept (`restartOpening` in
 `main.ts`; `Outcome.redo`). The wreck does not count against the region. Later systems
 play as before.
 
-Civic Score: the number is hidden from the player (2026-10-19). Inside, 412 → 398 (breach) → 368 (stolen) → 330 (archive wake); the player sees only the band word (COMPLIANT, UNDER REVIEW, RESTRICTED …) and a "Civic Score ↓" chip on a choice that lowers it. The Wall keeps the
+Civic Score: the number is hidden from the player (2026-10-19). Inside, 412 → 282 at the theft (one fall, COMPLIANT to RESTRICTED); the breach and the archive do not move it; the player sees only the band word (COMPLIANT, UNDER REVIEW, RESTRICTED …) and a "Civic Score ↓" chip on a choice that lowers it. The Wall keeps the
 archive entry; Lior Calloway's signature (the minutes) is a different clue from Ada's
 black box recording.
 

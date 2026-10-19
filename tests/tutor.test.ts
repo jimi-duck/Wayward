@@ -236,7 +236,7 @@ describe('the first minutes stay quiet', () => {
 
 describe('the whole opening', () => {
   it('runs from the mine through the gate to the breach: the same figures at every step, no contract state saved', async () => {
-    const { endSortie, plot, options, sortieDef } = await import('../src/sim/journey');
+    const { autoCourse, endSortie, options, sortieDef } = await import('../src/sim/journey');
     const { dueBeat } = await import('../src/sim/story');
     const j = newJourney(7);
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
@@ -257,7 +257,11 @@ describe('the whole opening', () => {
     endSortie(j, res);
     // the first sortie beyond opens the chain
     expect(dueBeat(j)).toBe('story_breach');
-    plot(j, options(j)[0]!.to.id);
+    // the first jump has no chart: the one lane is plotted at once, and a later jump is not
+    expect(autoCourse(j)).toBe(true);
+    expect(j.status).toBe('sortie');
+    expect(j.dest).toBe(options(j)[0]!.to.id);
+    expect(autoCourse(j)).toBe(false);
     expect(j.carry).not.toHaveProperty('contract');
   });
   it('is the same thing in a save made before the rework: a journey with the old field carries on, unused', async () => {
