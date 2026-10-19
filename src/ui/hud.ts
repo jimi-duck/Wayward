@@ -234,7 +234,7 @@ export class Hud {
           this.notify(world, { type: 'arrival', headline: 'Docking cleared', key: 'cleared' });
           break;
         case 'anomalyIn':
-          this.notify(world, { type: 'arrival', headline: world.siteHere ? NAMED[world.siteHere]!.name : 'Entering a strange place', reason: (e.kinds as ReportKind[]).map((k) => t(REPORT_TEXT[k])).join(' · '), key: 'anomaly' });
+          this.notify(world, { type: 'arrival', headline: 'Approaching anomaly', reason: [...(world.siteHere ? [t(NAMED[world.siteHere]!.name)] : []), ...(e.kinds as ReportKind[]).map((k) => t(REPORT_TEXT[k]))].join(' · '), key: 'anomaly' });
           break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':

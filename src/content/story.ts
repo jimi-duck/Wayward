@@ -1,5 +1,5 @@
 import type { CardDef } from '../sim/comms';
-import { BREACH_DROP, STOLEN_DROP, WAKE_DROP } from '../sim/civic';
+import { STOLEN_DROP } from '../sim/civic';
 
 // ── the story ─────────────────────────────────────────────────────────────
 // Three acts. The Breakout (Cerro: steal her, get out). The Run (the Reach
@@ -280,7 +280,6 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Lane Control · registry notice', title: 'Contract 08-441 · in breach',
     text: '“The 1,000 Cyrite was not delivered. Payout withheld. The launcher stays on your account. Proceed to the audit lane for inspection and ship repossession.”',
     cargo: 'Contract 08-441 · short delivery',
-    arrive: { text: 'Short delivery reported', civic: -BREACH_DROP, civicWhy: 'Short delivery reported' },
     choices: [
       { id: 'proceed', label: 'Proceed to the audit lane', tone: 'run', hint: 'The company takes the ship. The debt stays with you, or it is compulsory labour.',
         win: { text: 'Course set for the audit lane', follow: { card: SAM_BEAT, after: 8, quick: true } } },
@@ -303,7 +302,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The Wayward · a hauler that was meant for scrap',
     choices: [
       { id: 'lead', label: 'Next lead · the Reach archive relay', tone: 'help', hint: 'The record goes on the Wall. The registry logs the access.',
-        win: { text: 'The record is on the Wall · next lead: the Reach', civic: -WAKE_DROP, civicWhy: 'Unauthorised archive access recorded', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'], radio: { from: 'Sam Okoro', text: '“Get to the Reach, Juno. Don’t call me. I’ll call you.”' } } },
+        win: { text: 'The record is on the Wall · next lead: the Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'], radio: { from: 'Sam Okoro', text: '“Get to the Reach, Juno. Don’t call me. I’ll call you.”' } } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────

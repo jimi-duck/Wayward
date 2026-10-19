@@ -3,7 +3,7 @@ import { t } from '../i18n';
 // ── the centre notice ─────────────────────────────────────────────────────
 // One small, quiet message low in the middle of the screen, between the
 // crosshair and the ship (never the top: that is the way you are flying).
-// No box and no icon: a feathered dark halo behind the words and a colour
+// No icon: a dark band with hairlines top and bottom, feathered at the ends, and a colour
 // that says the kind. It never takes input and fades on its own. The
 // persistent fact then lives in the alert corner, which the HUD derives from
 // the world each frame; this only decides what the centre says and when.
@@ -29,7 +29,7 @@ export interface Notice {
 
 const RANK: Record<NoticeType, number> = { arrival: 0, warning: 1, denied: 2 };
 /** Seconds on screen, and before the same message may come again. */
-export const SECS = 2.2;
+export const SECS = 4;
 export const GAP = 8;
 
 export class Notifier {

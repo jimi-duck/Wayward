@@ -15,11 +15,11 @@ import { t } from '../i18n';
 /** Where a new Story journey starts: COMPLIANT / LOW MERIT. */
 export const CIVIC_START = 412;
 export const CIVIC_MAX = 500;
-/** The archive wakes on Juno's hand and the registry logs the unauthorised access. */
-export const WAKE_DROP = 38;
-/** The opening's other registry events: a short delivery filed as a reliability failure, and the hull reported stolen. */
-export const BREACH_DROP = 14;
-export const STOLEN_DROP = 30;
+/**
+ * The theft is the opening's one big fall (2026-10-19): the hull reported stolen takes the Score from COMPLIANT to RESTRICTED
+ * (412 to 282), and nothing small follows it in the opening. The breach notice and the archive no longer move it.
+ */
+export const STOLEN_DROP = 130;
 /** At or above this the registry still vouches for you (the doorway at a checkpoint). */
 export const CIVIC_REGISTERED = 400;
 /** Below this the Continuance's own fees rise: your access is restricted. */

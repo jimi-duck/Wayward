@@ -32,7 +32,7 @@ export const ECONOMY: Record<string, string> = {
   '{n} hostiles engaged': '{n} Gegner im Gefecht',
   'Docking denied': 'Andocken verweigert',
   'Until the fight is over': 'Bis der Kampf vorbei ist',
-  'Entering a strange place': 'Ein seltsamer Ort',
+  'Approaching anomaly': 'Anomalie voraus',
   'Fly to the work bay': 'Flieg zur Werkbucht',
   'Fly in slowly to dock': 'Langsam einfliegen zum Andocken',
   'Open the bay and pick the torpedo bay': 'Öffne die Bucht und wähl die Torpedobucht',

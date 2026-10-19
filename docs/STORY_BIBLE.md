@@ -312,7 +312,7 @@ Calloway, Sam, Wren, Kesh, Echo or Sable, and surviving clients.
 
 - New journeys start at 412.
 - v17 and earlier saves: still in Cerro (`trail.length < 2`) gets 412 and plays the new
-  opening. Past Cerro gets `412 − 38 = 374` and the flags `archive_woke` and
+  opening. Past Cerro gets `412 − 130 = 282` (the theft, band RESTRICTED) and the flags `archive_woke` and
   `clue_reserves`, so their Wall and band read as if they had played it, and the
   opening's chain (which ends when `archive_woke` is set) is skipped. v18 to v19
   changes no data. The migration is
