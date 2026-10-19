@@ -1,22 +1,22 @@
-import { cost } from './bay';
 import { CARD_BY_ID } from './comms';
-import { FINAL_LOAD, FIRST_LOAD, HOLD, HOLD_AT_START, NET, QUOTA, type Cargo } from './contract';
+import { CREDIT_START, HOLD, HOLD_AT_START, QUOTA, ROCK_LOAD, type Cargo } from './contract';
 import { t } from '../i18n';
 import type { World } from './world';
 
 // ── the first minutes ─────────────────────────────────────────────────────
 // An onboarding level, short and plain, and the first act of Contract 08-441
-// (docs/ONBOARDING.md). The pilot lasers a Cyrite rock set close ahead and
-// fills the hold to the load (cargo on board, not yet delivered), flies to the
-// work bay, where the settlement is the one panel that explains the work: the
-// load is counted, the company's cuts come off, and the torpedo bay is bought
-// from what is left (the ship starts without it). Then back out for the last of
-// the contract, a second rock, and the raiders come for the load: two to shoot
-// with the torpedoes just earned, and the hold is torn away as the last one
-// breaks up. After that the jump is in reach and the run goes on. Each step is
-// a thing the game already does; the tutor only sets one up (a rock, a purse, a
-// ship) and watches for it. Nothing locks, and Skip ends it. Plain data, so a
-// test flies it. The Arcade keeps the short version: rock, upgrade, shot.
+// (docs/ONBOARDING.md). The ship starts in flight with 800 of the 1,000 Cyrite
+// in the hold. The pilot lasers a rock set close ahead, flies to the work bay,
+// which does not take the load: it shows the account (the company's charges, a
+// projection of the payout) and finances the torpedo launcher against it (the
+// ship starts without one). Then back out for the last of the contract, a second
+// rock, and two raiders close in, shown as UNKNOWN. The world stops for their
+// offer: pay and be taken (the opening starts again), or refuse and shoot them
+// with the launcher just fitted. Their fire tears the hold open. After that the
+// jump is in reach and the run goes on. Each step is a thing the game already
+// does; the tutor only sets one up (a rock, a purse, a ship) and watches for it.
+// Nothing locks, and Skip ends it. Plain data, so a test flies it. The Arcade
+// keeps the short version: rock, upgrade, shot.
 
 export type LessonId = 'mine' | 'bay' | 'haul' | 'shoot';
 
@@ -48,10 +48,12 @@ export interface Tutor {
   delivered: number;
   /** The load was torn away. */
   lost: boolean;
-  /** The work bay has taken the load; the settlement was shown. */
+  /** The work bay has shown the account. */
   settled: boolean;
-  /** Credit left in the purse once the rack was paid, kept to settle the purse after the loss. */
+  /** Credit in the purse at the bay, kept to settle the purse after the loss. */
   credit: number;
+  /** The raiders' offer: 0 not yet, 1 on the table, 2 answered (refused). */
+  parley: 0 | 1 | 2;
 }
 
 /** What the HUD reads for the step in hand. */
@@ -88,7 +90,7 @@ const DEPOT_SIDE = 90;
 
 /** Mine, upgrade, shoot with it. The Story flies to a work bay for the settlement and the upgrade, then hauls the last of the contract; the Arcade fits it in flight. */
 export function newTutor(story = true): Tutor {
-  return { steps: story ? ['mine', 'bay', 'haul', 'shoot'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], said: [], onboard: 0, delivered: 0, lost: false, settled: false, credit: 0 };
+  return { steps: story ? ['mine', 'bay', 'haul', 'shoot'] : ['mine', 'bay', 'shoot'], i: 0, begun: false, base: 0, rockId: -1, alienId: -1, t: 0, done: false, skipped: false, linger: 0, pirates: [], said: [], onboard: 0, delivered: 0, lost: false, settled: false, credit: 0, parley: 0 };
 }
 
 /** The cargo the HUD reads, or null where there is no contract (the Arcade, or the training over). */
@@ -123,15 +125,44 @@ function layRock(w: World, tu: Tutor, at = ROCK_AT): void {
 
 /** Pirates in the shoot step: two, so a win is a win, and the chase that follows is not a surprise. */
 const PIRATES = 2;
+/** The raiders call when they are this close (units): the ships are on the scope and in sight. */
+const PARLEY_R = 70;
 
+/** Two ships close in, white and unnamed: the Story's raiders are wards until the offer is refused. */
 function layShip(w: World, tu: Tutor): void {
   tu.pirates = tu.pirates.filter((id) => w.aliens.some((a) => a.id === id));
   while (tu.pirates.length < PIRATES - (w.kills - tu.base)) {
     const p = ahead(w, SHIP_AT + 18 * tu.pirates.length, 40 - 70 * tu.pirates.length);
-    tu.pirates.push(w.spawnHostile('scout', { x: p.x, y: 0, z: p.z }).id);
+    const al = w.spawnHostile('scout', { x: p.x, y: 0, z: p.z });
+    if (story(w, tu) && tu.parley === 0) {
+      al.ward = { act: 'hold', temper: 'wary', hx: p.x, hz: p.z, ring: 0, warned: 0, tag: 'UNKNOWN' };
+      al.mode = 'drift';
+    }
+    tu.pirates.push(al.id);
   }
   tu.alienId = tu.pirates[0] ?? -1;
-  say(w, tu, 'demand', t('Unregistered raider'), 'unknown', t('“Cut thrust. Pay the toll and grant boarding rights, or we’ll open the hold for you.”'));
+  if (!story(w, tu)) say(w, tu, 'demand', t('Unregistered raider'), 'unknown', t('“Cut thrust. Pay the toll and grant boarding rights, or we’ll open the hold for you.”'));
+}
+
+/** Until the offer is answered the raiders close on the ship without a shot; in range, the world stops for them. */
+function parley(w: World, tu: Tutor): void {
+  const live = tu.pirates.map((id) => w.aliens.find((a) => a.id === id)).filter((a): a is NonNullable<typeof a> => !!a);
+  for (const al of live) { al.ax = w.ship.x; al.az = w.ship.z; }
+  if (live.length < PIRATES || w.phase !== 'play' || live.some((a) => Math.hypot(a.x - w.ship.x, a.z - w.ship.z) > PARLEY_R)) return;
+  const card = CARD_BY_ID.story_raiders;
+  if (!card) return;
+  tu.parley = 1;
+  w.openComms(card);
+}
+
+/** The hold is torn open by the raiders' fire: once, and it is gone. */
+function loseCargo(w: World, tu: Tutor): void {
+  if (tu.lost || !story(w, tu)) return;
+  const n = tu.onboard;
+  tu.lost = true;
+  tu.onboard = 0;
+  w.cyrite = Math.min(w.cyrite, tu.credit);
+  w.events.push({ type: 'cargoLost', n });
 }
 
 /** One radio line, once: over live flight, so it never stops the ship. */
@@ -154,27 +185,21 @@ function begin(w: World, tu: Tutor): void {
     const port = w.bk?.port;
     if (port) { const p = ahead(w, DEPOT_AT, -DEPOT_SIDE); port.x = p.x; port.z = p.z; }
     if (w.bk) { const p = ahead(w, TRAIN_LANE); w.bk.def = { ...w.bk.def, lane: TRAIN_LANE }; w.bk.lane.x = p.x; w.bk.lane.z = p.z; }
-    say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay wants the load on this shift. Finish your hold and come in. A late return comes out of your allocation.”'));
+    say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay is open for supplies. Take the upgrade you need and top the hold up after. A late return comes out of your allocation.”'));
   } else if (id === 'bay') {
     tu.base = fitted(w);
     // the Arcade's upgrade is a press away; the Story's is bought from the settlement, at the bay
     if (!w.bk) w.cyrite = Math.max(w.cyrite, 6);
   } else if (id === 'haul') {
     tu.base = stock(w);
-    tu.onboard = 0;
     // out past the depot's damping field: the lasers are cold inside it
     layRock(w, tu, HAUL_AT);
-    say(w, tu, 'tam', t('Sam Okoro'), 'miners', t('“Keep your transponder on until you clear the lane. And Juno, don’t take risks for a contract that would never take one for you.”'));
+    say(w, tu, 'tam', t('Sam Okoro'), 'miners', t('“Juno, I’ve heard raiders are working past the field. Eyes up, and don’t take risks for a contract that would never take one for you.”'));
   } else {
     // the hull waits: it comes once the ship is out past the depot's field
     tu.base = w.kills;
     tu.alienId = -1;
   }
-}
-
-/** What the torpedo bay costs in the lesson's bay. */
-function bayPrice(): number {
-  return cost(LESSON_NODE, 1, false);
 }
 
 /** The Story's training holds a contract: the Arcade's does not. */
@@ -207,11 +232,11 @@ export function lessonOf(w: World): Lesson | null {
   }
   if (id === 'bay') {
     const port = w.bk?.port;
-    if (port) return { ...base, line: w.docked ? 'Fit the torpedo bay' : 'Deliver the load to the work bay', hint: w.docked ? 'fit' : 'dock', mark: { x: port.x, z: port.z, r: port.r, name: port.name }, progress: 0 };
+    if (port) return { ...base, line: w.docked ? 'Fit the torpedo launcher' : 'Dock at the Work Bay', hint: w.docked ? 'fit' : 'dock', mark: { x: port.x, z: port.z, r: port.r, name: port.name }, progress: 0 };
     return { ...base, line: 'Choose an upgrade', hint: 'bay', mark: null, progress: 0 };
   }
   const a = w.aliens.find((x) => x.id === tu.alienId) ?? w.aliens.find((x) => tu.pirates.includes(x.id));
-  return { ...base, line: story(w, tu) ? 'Defend the cargo · shoot the raiders' : 'Shoot the raiders with torpedoes', hint: 'torpedo', mark: a ? { x: a.x, z: a.z, r: 0, name: 'Raider' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
+  return { ...base, line: story(w, tu) ? (tu.parley === 2 ? 'Destroy the raiders' : 'Raiders closing') : 'Shoot the raiders with torpedoes', hint: 'torpedo', mark: a ? { x: a.x, z: a.z, r: 0, name: story(w, tu) && tu.parley < 2 ? 'Unknown' : 'Raider' } : null, progress: a ? 1 - a.hp / Math.max(1, a.maxHp) : 1 };
 }
 
 /** Is the step in hand done? */
@@ -223,18 +248,16 @@ function met(w: World, tu: Tutor): boolean {
 }
 
 /**
- * The ship has docked at the work bay in the story training: the load is counted and the settlement is the one panel
- * (the company's cuts, the credit left, the torpedo rack to fit with it). Returns whether it opened.
+ * The ship has docked at the work bay in the story training. It takes no cargo: the account is the one panel (the
+ * company's charges, what the contract leaves), with the torpedo launcher on offer, financed. Returns whether it opened.
  */
 export function settleAtBay(w: World): boolean {
   const tu = w.tutor, card = CARD_BY_ID.story_bay;
   if (!tu || tu.done || !w.bk || !card || tu.steps[tu.i] !== 'bay' || tu.settled || !story(w, tu)) return false;
   tu.settled = true;
-  // the load moves from the hold to the contract, and the credit it earned is the purse: what was mined on the way does not count twice
-  tu.delivered = FIRST_LOAD;
-  tu.onboard = 0;
-  w.cyrite = NET;
-  tu.credit = NET - bayPrice();
+  // the hold stays full; what mining on the way put in the purse does not count
+  w.cyrite = CREDIT_START;
+  tu.credit = CREDIT_START;
   w.openComms(card);
   return true;
 }
@@ -263,16 +286,22 @@ export function stepTutor(w: World, dt: number): void {
   const id = tu.steps[tu.i]!;
   // the hold's meter follows the laser: the first rock tops it up to the load, the second is the rest of the contract
   if (story(w, tu)) {
-    if (id === 'mine') tu.onboard = tens(HOLD_AT_START + (FIRST_LOAD - HOLD_AT_START) * filled(rockProgress(w, tu)));
-    else if (id === 'haul') tu.onboard = tens(FINAL_LOAD * filled(rockProgress(w, tu)));
-    else if (id === 'bay' && !tu.settled) tu.onboard = FIRST_LOAD;
-    if (met(w, tu)) tu.onboard = id === 'mine' ? FIRST_LOAD : id === 'haul' ? FINAL_LOAD : tu.onboard;
+    if (id === 'mine') tu.onboard = tens(HOLD_AT_START + ROCK_LOAD * filled(rockProgress(w, tu)));
+    else if (id === 'haul') tu.onboard = tens(HOLD_AT_START + ROCK_LOAD + ROCK_LOAD * filled(rockProgress(w, tu)));
+    else if (id === 'bay') tu.onboard = HOLD_AT_START + ROCK_LOAD;
+    if (met(w, tu)) tu.onboard = id === 'mine' ? HOLD_AT_START + ROCK_LOAD : id === 'haul' ? QUOTA : tu.onboard;
   }
   // if the rock is gone and nothing fell out, lay another; if the ship slipped away, send another
   if ((id === 'mine' || id === 'haul') && !w.field.rocks.some((r) => r.id === tu.rockId) && stock(w) <= tu.base && !w.pickups.length) layRock(w, tu, id === 'haul' ? HAUL_AT : ROCK_AT);
+  if (id === 'shoot' && story(w, tu) && !tu.lost) {
+    // the raiders turn hostile when the offer is refused; their first hit on the ship, or the first one down, opens the hold
+    if (tu.parley === 1 && w.phase === 'play' && tu.pirates.every((p) => { const a = w.aliens.find((x) => x.id === p); return !a || !a.ward; })) tu.parley = 2;
+    if (tu.parley === 2 && (w.kills > tu.base || w.events.some((e) => e.type === 'shipHit'))) loseCargo(w, tu);
+  }
+  if (id === 'shoot' && story(w, tu) && tu.parley === 0 && tu.pirates.length) parley(w, tu);
   if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && tu.pirates.some((p) => !w.aliens.some((a) => a.id === p)))) && w.kills < tu.base + PIRATES) layShip(w, tu);
   // the raiders know a company hauler when they see one
-  if (id === 'shoot' && tu.t > 7 && tu.pirates.length) say(w, tu, 'lock', t('Unregistered raider'), 'unknown', t('“Company hauler. Owner lock and all. Nobody’s coming to claim you out here.”'));
+  if (id === 'shoot' && tu.t > 7 && tu.pirates.length && !(story(w, tu) && tu.parley < 2)) say(w, tu, 'lock', t('Unregistered raider'), 'unknown', t('“Company hauler. Owner lock and all. Nobody’s coming to claim you out here.”'));
   if (met(w, tu)) tu.linger = LINGER;
 }
 
@@ -285,14 +314,12 @@ function finish(w: World, tu: Tutor): void {
   // the quiet is over: more raiders are coming, and the contract desk will not send cover
   w.startChase();
   if (!tu.skipped && story(w, tu)) {
-    // the last raider's grapnel takes the hold with it: the shortfall is something the player saw
-    tu.lost = true;
-    tu.onboard = 0;
-    w.cyrite = Math.min(w.cyrite, tu.credit);
-    w.events.push({ type: 'cargoLost', n: FINAL_LOAD });
-    say(w, tu, 'reinforce', t('Unregistered raider'), 'unknown', t('“Hauler’s still running. Bring everyone.”'));
+    // the last raider's guns have taken the hold if nothing did before: the shortfall is something the player saw
+    loseCargo(w, tu);
+    w.events.push({ type: 'inbound' });
+    say(w, tu, 'reinforce', t('Cerro Lane Control'), 'office', t('“Additional hostile contacts detected. Jump gate distance: 1.9 kilometres.”'));
   }
-  say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover is not included in Contract 08-441. Continue at operator discretion.”'));
+  if (!story(w, tu) || tu.skipped) say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover is not included in Contract 08-441. Continue at operator discretion.”'));
 }
 
 /** The player's skip: the torpedo bay is fitted all the same, so the ship is as the run expects it. */
@@ -301,6 +328,6 @@ export function skipTutor(w: World): void {
   if (!tu || tu.done) return;
   tu.skipped = true;
   if (w.bk && !w.levels[LESSON_NODE]) w.setLevels({ ...w.levels, [LESSON_NODE]: 1 });
-  if (w.bk && story(w, tu)) { tu.delivered = FIRST_LOAD; tu.onboard = 0; tu.lost = true; }
+  if (w.bk && story(w, tu)) { tu.onboard = 0; tu.lost = true; }
   finish(w, tu);
 }

@@ -11,30 +11,34 @@ new thing about the world.
 
 | Thing | Unit | Where it lives |
 |---|---|---|
-| Cargo onboard | Cyrite ore | Tutor state (`onboard`); the HUD reads "Cargo onboard n / 1,000". Not counted yet. |
-| Delivered | Cyrite ore | Tutor state (`delivered`), set only when the Work Bay accepts the load: 800 / 1,000, 200 remaining. |
-| Credit | the purse (`w.cyrite`) | The settlement's net after the company's cuts, then what is left after the rack. |
-| Debt | credit | Short-delivery penalty plus the lease, only if the contract breaches. |
+| Cargo held | Cyrite ore | Tutor state (`onboard`); the HUD reads "Cargo 800 / 1,000" with the Civic Score band word. The Work Bay never takes it. |
+| Credit | the purse (`w.cyrite`) | Almost nothing: 4 at the Work Bay. |
+| Financing | credit | The torpedo launcher (20), put on the company's account against the payout. Not paid at the bay. |
+| Debt | credit | Short-delivery penalty, the lease and the financed launcher, only when the contract breaches. |
 
-Arithmetic (`sim/contract.ts`): gross 100 − refinery 40 − lease 12 − fuel reserve 20 −
-escrow 6 = **22 credit**. The torpedo rack costs the bay's real price (20), **paid up
-front** from that 22, leaving **2**. It is never also added to the lease, so it is
-charged once. If the contract breaches: penalty 15 + lease due 12 = **27 owed**; the
-payout is withheld. Nothing of the contract is saved (the journey keeps the Score, the
-flags and the purse); no migration was needed, and an older save that still carries a
-`contract` field ignores it.
+Arithmetic (`sim/contract.ts`): the Work Bay shows what 1,000 Cyrite would earn:
+gross 100 − refinery 40 − lease 12 − fuel reserve 20 − escrow 6 − launcher 20 = **2
+credit left**. If the contract breaches: penalty 15 + lease due 12 + launcher 20 =
+**47 owed**; the payout is withheld. Nothing of the contract is saved (the journey keeps
+the Score, the flags and the purse); no migration was needed.
 
 ## The beats
 
 | Beat | Where | Play | What it shows |
 |---|---|---|---|
-| 1 Quota | Cerro, outlying mine | One opening page (`ui/opening.ts`: contract, Delivered 0 / 1,000, Civic Score), then the controls card, then mine. The hold meter starts at 600 and the first rock tops it up to 800 | Ordinary admin; the cargo is aboard, not delivered |
-| 2 Work Bay | Depot, a short hop off | Docking is the one pausing card of the lessons: **Settlement received** (`story_bay`), with the ledger down to 22 credit. One choice, "Install the rack" (−20 credit). Sam Okoro's line is the quote | The company's cut, in one place; the upgrade is real and charged once. Delivered 800 / 1,000 |
-| 3 Pirates | Past the depot's field | Second rock, then raiders on the radio only (live play, no pop-up): they demand the toll and boarding rights. Shoot both. The hold's last 200 is lost with the pod (`cargoLost`, a centre notice), reinforcements called | The cargo loss is seen, so the breach feels fair |
-| 4 Escape | gate 1.9 km ahead | The first jump is not a choice: waves of Custody raiders, strike wings and hunters, not meant to be fought | Danger, and a forced exit |
-| 5 Breach | beyond the gate | One comms thread, `story_breach`: Lane Control's registry notice (delivery 800 / 1,000, shortfall 200, payout withheld, penalty and lease, balance owed 27, asset recovery authorised, no responsibility for cargo lost, compulsory labour for unpaid balances) with Sam cutting in on the private channel. One confirmed action, "Use Sam's code · break the owner lock". Score −14, then −30 | State and company kept apart; Juno becomes a thief by one choice |
-| 6 Rename | same | A centre notice: "Vessel registry · unrecognised". The 3D hull is not repainted yet | |
-| 7 Archive | same | `story_wake`: the override wakes a sealed partition. Krail reserves 94% against a shortage order of the same day; the relay in Halden's Reach; a legacy key good for this hull only (the Wayward's obsolete hardware and registry handshake are why the ship is needed). Score −38 | One contradiction and a lead |
+| 1 Mining | Cerro, outlying mine | One opening page (`ui/opening.ts`), then the controls card, then mine. The hold starts at 800 of 1,000; each of the two lesson rocks adds 100. The HUD shows cargo, the quota and the Civic Score band word. Objective: dock at the Work Bay | Ordinary admin; the cargo is aboard, not delivered |
+| 2 Work Bay | Depot, a short hop off | Docking is the one pausing card of the lessons: **Account and launcher** (`story_bay`). The Work Bay takes no cargo. The ledger shows the 800 / 1,000 held, the credit (4), the contract's charges and a projection (2 left after the launcher). Sam Okoro, a friend and not Work Bay staff, speaks over the radio. One choice, "Install the launcher": financed, nothing paid now. Torpedoes are unlimited (the rack reloads by itself) | The company's grip, in one place; a practical reason to take on debt |
+| 3 Raiders | Past the depot's field | Second rock (hold full, 1,000), then two ships close in as white **UNKNOWN** markers. In range the world stops: `story_raiders`, the raider's transmission. **Pay up & allow boarding** ends in `story_seized` ("Game over · contract terminated") and the opening starts again. **Refuse** turns both red and the fight starts. Their first hit, or the first kill, tears the hold open (`cargoLost`) | A real choice; the cargo loss is seen, so the breach feels fair |
+| 4 Escape | gate 1.9 km ahead | After the second raider: "Inbound contacts detected" centre notice, radio "Additional hostile contacts detected. Jump gate distance: 1.9 kilometres.", objective "Reach the jump gate". Waves of Custody raiders, not meant to be fought | Danger, and a forced exit |
+| 5 Breach | beyond the gate | `story_breach`: Lane Control's notice (delivery 0 / 1,000, payout withheld, penalty, lease, the financed launcher, asset recovery authorised, balance owed 47). One action, "Proceed to the audit lane": no escape yet. Score −14 | State and company kept apart; the debt outlives the ship |
+| 6 The theft | on the way to the audit lane | `story_sam` a few seconds later: Sam, privately, with a maintenance code for the owner lock. One action, "Enter Sam's code · override the lock". The hull is stolen; Score −30 | Juno becomes a thief by one choice |
+| 7 Rename | same | A centre notice: "Vessel registry · unrecognised", then WAYWARD. The 3D hull is not repainted yet | |
+| 8 Archive | same | `story_wake`: the override wakes a sealed partition. Krail reserves 94% against a shortage order of the same day; the relay in Halden's Reach; a legacy key good for this hull only. Score −38 | One contradiction and a lead |
+
+Dying before the jump gate (a wreck, or taking the raiders' offer) restarts the whole
+opening from fresh: a new world, the training again, nothing kept (`restartOpening` in
+`main.ts`; `Outcome.redo`). The wreck does not count against the region. Later systems
+play as before.
 
 Civic Score: the number is hidden from the player (2026-10-19). Inside, 412 → 398 (breach) → 368 (stolen) → 330 (archive wake); the player sees only the band word (COMPLIANT, UNDER REVIEW, RESTRICTED …) and a "Civic Score ↓" chip on a choice that lowers it. The Wall keeps the
 archive entry; Lior Calloway's signature (the minutes) is a different clue from Ada's
@@ -42,23 +46,27 @@ black box recording.
 
 ## How it is built
 
-- `sim/contract.ts`: the three ledgers (`bayLedger`, `breachLedger`, `archiveLedger`)
-  and the constants. A card shows one with `CardDef.ledger`; the panel draws it under
-  the text. `CardDef.reply` is a second voice on the same card; `ChoiceDef.unit` names
-  credit in the cost chip; `Outcome.fit` fits an upgrade.
-- `sim/tutor.ts`: mine, bay, haul, shoot. `settleAtBay` runs when the player docks.
-  Radio lines are once-only pings. It ends in `World.startChase`.
-- `content/story.ts`: `CERRO_BEATS` is the chain past the gate (breach, wake). `dueBeat`
-  (`sim/story.ts`) deals it on the first sortie beyond Cerro and finishes it later if it
-  was cut short; a journey whose `archive_woke` is set skips it (older saves).
-- Cerro itself has no story card, so nothing interrupts the lessons except the one
-  settlement, which the player asked for by docking.
+- `sim/contract.ts`: the ledgers (`bayLedger`, `breachLedger`, `seizedLedger`,
+  `lockLedger`, `archiveLedger`) and the constants. A card shows one with
+  `CardDef.ledger`; the panel draws it under the text. `CardDef.reply` is a second voice
+  on the same card; `Outcome.fit` fits an upgrade; `Outcome.hostile` turns every ward in
+  sight hostile; `Outcome.redo` asks the app to start the opening again.
+- `sim/tutor.ts`: mine, bay, haul, shoot. `settleAtBay` runs when the player docks. The
+  raiders are wards tagged `UNKNOWN` (`sim/enemies.ts`) until the offer is refused, and
+  `parley` opens `story_raiders` when both are within 70 units. Radio lines are
+  once-only pings. It ends in `World.startChase`.
+- `content/story.ts`: `CERRO_BEATS` is the chain past the gate (breach, Sam, wake).
+  `dueBeat` (`sim/story.ts`) deals it on the first sortie beyond Cerro and finishes it
+  later if it was cut short; a journey whose `archive_woke` is set skips it.
+- Cerro itself has no story card, so nothing interrupts the lessons except the account
+  the player asked for by docking and the raiders' offer.
 
-Nothing locks. Every answer in the chain leads on.
+Nothing else locks. Every answer in the chain leads on (the raiders' offer is the one
+failure state).
 
 ## The chase
 
-When the second raider falls the training stops and the run begins. The gate is set 1.9 km ahead, the objective reads "Run for the jump gate" with "Reinforcements inbound · break contact", and growing waves arrive from behind (`chaseCap`, `chaseGap`, `chaseHull`, `chaseLabel` in `sim/breakout.ts`). Arcade has no chase and no cargo.
+When the second raider falls the training stops and the run begins. The gate is set 1.9 km ahead, the objective reads "Reach the jump gate" with "Reinforcements inbound · break contact", and growing waves arrive from behind (`chaseCap`, `chaseGap`, `chaseHull`, `chaseLabel` in `sim/breakout.ts`). Arcade has no chase and no cargo.
 
 ## Pop-up gist
 

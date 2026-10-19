@@ -183,6 +183,10 @@ export interface Outcome {
   follow?: { card: string; after: number; /** Opens as soon as it is due, without waiting for the desk's gap (the opening's chain). */ quick?: boolean };
   /** A part fitted at once (the opening's torpedo rack, bought at the work bay's settlement). */
   fit?: string;
+  /** Every unnamed ship in sight turns hostile (the opening's raiders, once their offer is refused). */
+  hostile?: boolean;
+  /** The opening ends here and starts again from the top (the raiders took the ship). */
+  redo?: boolean;
   /** A line on the radio, no answer asked (the opening's Sam and Governor). */
   radio?: { from: string; text: string };
   job?: JobDef;
