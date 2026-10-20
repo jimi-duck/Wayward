@@ -33,6 +33,8 @@ function world(id: string, carry: Partial<Journey['carry']> = {}) {
   const w = new World(j.seed * 31 + 1, { mode: 'breakout', sortie: def, carry: { ...j.carry, ...carry } });
   w.ship.invuln = 1e9;
   // the first system past Cerro has traffic of its own (tests/postjump.test.ts); a scene is counted on its own
+  // and so are its docks' hails
+  w.portCalled = w.auditCalled = true;
   if (w.traffic) { const tr = w.traffic; w.aliens = w.aliens.filter((a) => !tr.owns(a)); w.traffic = null; }
   return w;
 }

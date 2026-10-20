@@ -713,6 +713,27 @@ export const CARDS: CardDef[] = [
       { id: 'refuse', label: 'Refuse the scan', tone: 'refuse', hint: 'Dock anyway and let them make a fuss.', win: { text: 'Docking unscanned · the fuss goes up the line', heat: 0.12 } },
     ],
   },
+  // the first system past Cerro: the approach to its two docks always calls (sim/world.ts), `scene` keeps them out of the chance pool
+  {
+    id: 'depot_hail', kind: 'rumour', caller: 'frontier', trigger: 'scene', tier: 'major',
+    from: 'Frontier Supply Depot', title: 'Berth open',
+    text: '“Depot control. Fuel, plating and stores at posted prices, and a berth free. Slow into the ring and we take you in.”',
+    cargo: 'Depot office · fuel, plating, stores',
+    choices: [
+      { id: 'dock', label: 'Dock at the depot', tone: 'trade', hint: 'Slow inside the ring to dock.', win: { text: 'Berth open · slow into the ring' } },
+      { id: 'on', label: 'Fly on', tone: 'refuse', hint: 'The Jump Gate is still ahead.', win: { text: 'Clear to pass' } },
+    ],
+  },
+  {
+    id: 'audit_hail', kind: 'rumour', caller: 'custody', trigger: 'scene', tier: 'major',
+    from: 'Kellern Audit Dock', title: 'Hold for audit',
+    text: '“Audit dock. Your hull is on the company’s list. Hold off the arch while the clerks find your file.”',
+    cargo: 'Audit dock · a clerk and a scanning arch',
+    choices: [
+      { id: 'hold', label: 'Hold off the arch', tone: 'refuse', hint: 'Wait for the clerks.', win: { text: 'Holding · the clerks are slow' } },
+      { id: 'on', label: 'Fly on', tone: 'refuse', hint: 'Not your file to wait for.', win: { text: 'Clear to pass' } },
+    ],
+  },
   {
     id: 'port_news', kind: 'rumour', caller: 'frontier', trigger: 'port', when: { netted: false, kind: ['port', 'mining', 'contested'] }, repeat: true,
     from: 'Dockmaster', title: 'Who came through',

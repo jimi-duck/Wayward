@@ -25,6 +25,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
+import { lockLifted } from './postjump';
 import { Traffic } from './traffic';
 import { live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
@@ -307,6 +308,7 @@ export class World implements EncounterHost {
   /** The outlying mine of Contract 08-441 is being flown (set with the training): the Cyrite it gives is kept for the settlement. */
   opening = false;
   portCalled = false;
+  auditCalled = false;
   private cardsSeen = new Set<string>();
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
   private heard = new Set<string>();
@@ -390,6 +392,7 @@ export class World implements EncounterHost {
     this.cardsSeen = new Set();
     this.follows = [];
     this.portCalled = false;
+    this.auditCalled = false;
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
@@ -1414,6 +1417,14 @@ export class World implements EncounterHost {
         if (f!.quick) this.openComms(def);
         else d.offer(def, weightOf(def), t, false, def.trigger === 'story');
       }
+    }
+    // the first system's docks always call when you come up on them, the depot once and the audit dock while its lock holds
+    if (b.def.first && !this.docked) {
+      const near = (p: { x: number; z: number } | null) => !!p && Math.hypot(s.x - p.x, s.z - p.z) < PORT_CALL;
+      const hail = !this.portCalled && near(b.port) ? 'depot_hail' : !this.auditCalled && !lockLifted(this.flags) && near(b.audit) ? 'audit_hail' : null;
+      if (hail === 'depot_hail') this.portCalled = true;
+      else if (hail) this.auditCalled = true;
+      if (hail) d.offer(CARD_BY_ID[hail]!, 'major', t, true);
     }
     // the port's approach calls once
     if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
