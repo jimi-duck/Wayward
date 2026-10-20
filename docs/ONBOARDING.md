@@ -98,3 +98,7 @@ grey and yellow thumbnails, the quick note and the neon `Take the helm` button. 
 (`src/art/fleet/wayward-registry*.webp`, true alpha, no baked checkerboard). On a phone on its side only the identity, the
 rows, the ship and the button show. The other pop-ups (comms cards, the opening) take the same cyan hairline edge, glow and
 button. After the override (flag `ship_stolen`) the in-game hull is repainted yellow (`setLivery` in `render/wayward.ts`).
+
+## Registry card, closer to the mock-up
+
+The card is about 94% of the screen width, with a chamfered neon frame, a nebula behind the ship and thumbnails on a space backdrop. Its type is Rajdhani (400, 500), for this card only; every other panel stays on Barlow. The hull ID is the real `OB-7731-A`, not the mock-up's invented numbers. On 568x320 phones the repaint and quick-note boxes are hidden, so the ship, status rows and button stay reachable.
