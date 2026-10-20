@@ -545,83 +545,96 @@
 @media (max-height: 460px) { #comms .cm-juno { display: none; } }
 .op-attbody[hidden], #comms .cm-ledger[hidden], #comms .cm-att[hidden], #comms .cm-juno[hidden] { display: none; }
 
-/* ── the registry notice (#comms.reg), after the supplied mock-up: neon cyan hairlines, amber for the warning ── */
+/* ── the registry notice (#comms.reg), after the supplied mock-up: bright neon cyan frame cut at all four corners, a lighter wide-set face (Rajdhani), amber for the warning, the ship over a nebula ── */
 #comms.reg .panel.comms, #comms:not(.reg) .panel.registry { display: none; }
 #comms .panel.registry {
-  --c: 16px; --edge: rgba(76, 194, 203, .72); --lit: var(--cy); --fill: rgba(4, 10, 18, .84);
-  width: min(1080px, 100%); max-height: calc(100dvh - 24px); overflow-y: auto; display: grid; gap: 14px; padding: 18px 26px 12px;
-  filter: drop-shadow(0 0 14px rgba(76, 194, 203, .26)); color: var(--ink);
+  --c: 20px; --neon: #5fd8e6; --fill: rgba(3, 9, 17, .78);
+  font-family: "Rajdhani", var(--font-head); font-size: clamp(12.5px, 1.04vw, 19px);
+  width: min(1440px, 94vw); max-height: calc(100dvh - 24px); overflow-y: auto; display: grid; gap: 1.1em; padding: 1.5em 2.1em 1em; color: #dbe9ee;
+  filter: drop-shadow(0 0 .9em rgba(95, 216, 230, .38)) drop-shadow(0 0 2.2em rgba(60, 160, 210, .16));
+}
+#comms .panel.registry::before {
+  background: linear-gradient(135deg, #8ff0f8, var(--neon) 40%, #2fa6c2); z-index: -2;
+  clip-path: polygon(evenodd, var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c), var(--c) 0,
+    calc(var(--c) + .9px) 1.5px, calc(100% - var(--c) - .9px) 1.5px, calc(100% - 1.5px) calc(var(--c) + .9px), calc(100% - 1.5px) calc(100% - var(--c) - .9px), calc(100% - var(--c) - .9px) calc(100% - 1.5px), calc(var(--c) + .9px) calc(100% - 1.5px), 1.5px calc(100% - var(--c) - .9px), 1.5px calc(var(--c) + .9px), calc(var(--c) + .9px) 1.5px);
+}
+#comms .panel.registry::after {
+  inset: 1.5px; backdrop-filter: blur(5px);
+  background: radial-gradient(120% 90% at 78% 30%, rgba(20, 70, 110, .35), transparent 60%), repeating-linear-gradient(0deg, rgba(120, 210, 230, .03) 0 1px, transparent 1px 3px), var(--fill);
+  clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
 }
 .registry .rg-ico { display: inline-grid; place-items: center; flex: none; }
-.registry .rg-ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.registry .rg-h { display: flex; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(76, 194, 203, .35); }
-.registry .rg-h .rg-ico { width: 54px; height: 54px; color: var(--cy); filter: drop-shadow(0 0 6px rgba(76, 194, 203, .6)); }
-.registry .rg-org { display: grid; gap: 3px; }
-.registry .rg-org b { font: 500 clamp(18px, 2.2vw, 26px)/1.1 var(--font-head); letter-spacing: .26em; text-transform: uppercase; color: #dfeff2; }
-.registry .rg-org span { font: 500 12px/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
-.registry .rg-tag { margin-left: auto; display: flex; gap: 0; font: 500 12px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--cy); }
-.registry .rg-tag span { padding: 2px 16px; border-left: 1px solid rgba(76, 194, 203, .4); }
-.registry .rg-main { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); grid-template-rows: auto auto auto 1fr; column-gap: 28px; row-gap: 12px; align-items: start; min-height: 0; }
-.registry .rg-id { grid-column: 1; display: flex; align-items: center; gap: 16px; }
-.registry .rg-id .rg-ico { width: 62px; height: 62px; padding: 12px; border: 1.5px solid var(--caution); color: var(--caution); box-shadow: 0 0 14px rgba(201, 171, 102, .28), inset 0 0 12px rgba(201, 171, 102, .12); background: rgba(40, 28, 8, .45); }
-.registry .rg-id em { display: block; font: 500 16px/1.2 var(--font-rail); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--caution); }
-.registry .rg-id h2 { margin: 4px 0 0; display: flex; align-items: baseline; gap: 14px; font: 500 clamp(24px, 3vw, 38px)/1.1 var(--font-head); letter-spacing: .08em; text-transform: uppercase; }
-.registry .rg-id h2 .a { color: #eef6f7; }
-.registry .rg-id h2 i { font-style: normal; font-size: .7em; color: var(--cy); }
-.registry .rg-id h2 .b { color: var(--caution); text-shadow: 0 0 14px rgba(201, 171, 102, .35); }
-.registry .rg-body { grid-column: 1; margin: 0; font: 400 clamp(14px, 1.3vw, 17px)/1.55 var(--font-display); color: var(--ink); max-width: 46ch; }
-.registry .rg-rows { grid-column: 1; margin: 2px 0 0; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid rgba(76, 194, 203, .4); background: rgba(8, 20, 30, .45); }
-.registry .rg-rows dt, .registry .rg-rows dd { margin: 0; padding: 9px 14px; border-top: 1px solid rgba(76, 194, 203, .22); font: 500 clamp(13px, 1.2vw, 16px)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
+.registry .rg-ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.registry .rg-h { display: flex; align-items: center; gap: 1.1em; padding-bottom: .9em; border-bottom: 1px solid rgba(95, 216, 230, .35); }
+.registry .rg-h .rg-ico { width: 3.5em; height: 3.5em; color: var(--neon); filter: drop-shadow(0 0 .35em rgba(95, 216, 230, .7)); }
+.registry .rg-org { display: grid; gap: .3em; }
+.registry .rg-org b { font: 500 1.7em/1.1 "Rajdhani", var(--font-head); letter-spacing: .3em; text-transform: uppercase; color: #e6f3f6; }
+.registry .rg-org span { font: 500 .88em/1.2 "Rajdhani", var(--font-head); letter-spacing: .26em; text-transform: uppercase; color: #9fb4bc; }
+.registry .rg-tag { margin-left: auto; display: flex; font: 500 .9em/1 "Rajdhani", var(--font-head); letter-spacing: .18em; text-transform: uppercase; color: #6fd0dc; }
+.registry .rg-tag span { padding: .2em 1.2em; border-left: 1px solid rgba(95, 216, 230, .4); }
+.registry .rg-main { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); grid-template-rows: auto auto auto 1fr; column-gap: 1.6em; row-gap: .8em; align-items: start; min-height: 0; }
+.registry .rg-id { grid-column: 1; display: flex; align-items: center; gap: 1.1em; }
+.registry .rg-id .rg-ico { width: 4.2em; height: 4.2em; padding: .8em; border: 1.5px solid #e0a52c; color: #f0b43a; box-shadow: 0 0 1em rgba(240, 180, 58, .3), inset 0 0 .8em rgba(240, 180, 58, .12); background: rgba(48, 32, 6, .5); }
+.registry .rg-id em { display: block; font: 500 1.05em/1.2 "Rajdhani", var(--font-head); font-style: normal; letter-spacing: .2em; text-transform: uppercase; color: #f0b43a; }
+.registry .rg-id h2 { margin: .15em 0 0; display: flex; align-items: baseline; gap: .5em; font: 500 2.25em/1.1 "Rajdhani", var(--font-head); letter-spacing: .06em; text-transform: uppercase; }
+.registry .rg-id h2 .a { color: #f1f7f9; }
+.registry .rg-id h2 i { font-style: normal; font-size: .7em; color: var(--neon); }
+.registry .rg-id h2 .b { color: #f0b43a; text-shadow: 0 0 .5em rgba(240, 180, 58, .4); }
+.registry .rg-body { grid-column: 1; margin: 0; font: 500 1.1em/1.55 "Rajdhani", var(--font-display); color: #dbe9ee; max-width: 38em; }
+.registry .rg-rows { grid-column: 1; margin: .2em 0 0; display: grid; grid-template-columns: 1fr 1fr; max-width: 34em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(6, 18, 30, .5); }
+.registry .rg-rows dt, .registry .rg-rows dd { margin: 0; padding: .7em 1em; border-top: 1px solid rgba(95, 216, 230, .25); font: 500 1.05em/1.2 "Rajdhani", var(--font-head); letter-spacing: .12em; text-transform: uppercase; }
 .registry .rg-rows dt:first-of-type, .registry .rg-rows dt:first-of-type + dd { border-top: 0; }
-.registry .rg-rows dt { color: #9ed8de; }
-.registry .rg-rows dd { color: var(--caution); }
-.registry .rg-ship { grid-column: 2; grid-row: 1 / span 4; align-self: center; display: grid; place-items: center; }
-.registry .rg-hero { width: 100%; height: auto; max-height: 330px; object-fit: contain; filter: drop-shadow(0 6px 22px rgba(76, 194, 203, .22)); }
-.registry .rg-low { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(250px, .62fr); gap: 16px; align-items: stretch; padding-top: 12px; border-top: 1px solid rgba(76, 194, 203, .3); }
-.registry .rg-box { padding: 12px 14px; border: 1px solid rgba(76, 194, 203, .4); background: rgba(8, 20, 30, .45); display: grid; gap: 6px; align-content: start; }
-.registry .rg-box header { display: flex; align-items: center; gap: 10px; }
-.registry .rg-box header .rg-ico { width: 24px; height: 24px; color: var(--cy); }
-.registry .rg-box header b { font: 500 15px/1.2 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--cy); }
-.registry .rg-box p { margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink-2); }
-.registry .rg-ths { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
-.registry .rg-th { margin: 0; padding: 6px; border: 1px solid rgba(76, 194, 203, .4); background: rgba(4, 10, 18, .6); display: grid; gap: 4px; }
-.registry .rg-th.now { border-color: var(--caution); box-shadow: 0 0 10px rgba(201, 171, 102, .25); }
-.registry .rg-thimg { width: 100%; height: 74px; object-fit: contain; }
-.registry .rg-th figcaption { font: 500 11px/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--cy); }
-.registry .rg-th.now figcaption { color: var(--caution); }
+.registry .rg-rows dt { color: #a6dce2; }
+.registry .rg-rows dd { color: #f0b43a; }
+.registry .rg-ship { position: relative; grid-column: 2; grid-row: 1 / span 4; align-self: stretch; display: grid; place-items: center; min-height: 15em; }
+.registry .rg-ship::before { content: ""; position: absolute; inset: -1.4em -2.1em -1em -.6em; background: url("../assets/registry-nebula.webp") center / cover; opacity: .95; -webkit-mask-image: radial-gradient(ellipse at 55% 50%, #000 30%, transparent 74%); mask-image: radial-gradient(ellipse at 55% 50%, #000 30%, transparent 74%); }
+.registry .rg-hero { position: relative; width: 108%; max-width: none; margin-left: -4%; height: auto; max-height: 21em; object-fit: contain; filter: drop-shadow(0 .5em 1.4em rgba(0, 0, 0, .55)); }
+.registry .rg-low { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(15em, .62fr); gap: 1.2em; align-items: stretch; padding-top: 1em; border-top: 1px solid rgba(95, 216, 230, .3); }
+.registry .rg-box { padding: .9em 1.1em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(6, 18, 30, .55); display: grid; gap: .5em; align-content: start; }
+.registry .rg-box header { display: flex; align-items: center; gap: .7em; }
+.registry .rg-box header .rg-ico { width: 1.7em; height: 1.7em; color: var(--neon); }
+.registry .rg-box header b { font: 500 1.05em/1.2 "Rajdhani", var(--font-head); letter-spacing: .2em; text-transform: uppercase; color: var(--neon); }
+.registry .rg-box p { margin: 0; font: 500 .98em/1.45 "Rajdhani", var(--font-display); color: #b9cbd2; }
+.registry .rg-ths { display: grid; grid-template-columns: 1fr 1fr; gap: .9em; margin-top: .3em; }
+.registry .rg-th { margin: 0; padding: .3em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(4, 10, 18, .7); display: grid; gap: .3em; }
+.registry .rg-th.now { border-color: #e0a52c; box-shadow: 0 0 .8em rgba(240, 180, 58, .3); }
+.registry .rg-thimg { width: 100%; height: 5.4em; object-fit: contain; background: url("../assets/registry-nebula.webp") center / cover; }
+.registry .rg-th figcaption { padding: .1em .3em .2em; font: 500 .78em/1 "Rajdhani", var(--font-head); letter-spacing: .16em; text-transform: uppercase; color: #6fd0dc; }
+.registry .rg-th.now figcaption { color: #f0b43a; }
 .registry .rg-quick { align-self: start; }
-.registry .rg-go { white-space: nowrap; align-self: end; display: flex; align-items: center; gap: 0; min-height: 56px; padding: 0; border: 1px solid var(--cy); background: rgba(10, 40, 52, .55); color: #dff6f8; cursor: pointer; box-shadow: 0 0 18px rgba(76, 194, 203, .32), inset 0 0 14px rgba(76, 194, 203, .14); font: 500 17px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; transition: background .14s, box-shadow .14s; }
-.registry .rg-go .rg-ico { width: 56px; height: 54px; padding: 14px 16px; border-right: 1px solid rgba(76, 194, 203, .5); color: var(--cy); }
-.registry .rg-go span { flex: 1; padding: 0 18px; text-align: center; }
-.registry .rg-go:hover, .registry .rg-go:focus-visible { background: rgba(20, 70, 86, .7); box-shadow: 0 0 26px rgba(76, 194, 203, .5), inset 0 0 14px rgba(76, 194, 203, .22); outline: none; }
-.registry .rg-foot { padding-top: 8px; border-top: 1px solid rgba(76, 194, 203, .22); font: 400 11px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.registry .rg-go { white-space: nowrap; align-self: end; display: flex; align-items: center; min-height: 3.6em; padding: 0; border: 1px solid var(--neon); background: rgba(10, 44, 58, .6); color: #e4f7fa; cursor: pointer; box-shadow: 0 0 1.1em rgba(95, 216, 230, .4), inset 0 0 .9em rgba(95, 216, 230, .15); font: 500 1.15em/1 "Rajdhani", var(--font-head); letter-spacing: .2em; text-transform: uppercase; transition: background .14s, box-shadow .14s; }
+.registry .rg-go .rg-ico { width: 3.6em; height: 3.5em; padding: .95em 1em; border-right: 1px solid rgba(95, 216, 230, .55); color: var(--neon); }
+.registry .rg-go span { flex: 1; padding: 0 1em; text-align: center; }
+.registry .rg-go:hover, .registry .rg-go:focus-visible { background: rgba(20, 74, 92, .75); box-shadow: 0 0 1.6em rgba(95, 216, 230, .6), inset 0 0 .9em rgba(95, 216, 230, .25); outline: none; }
+.registry .rg-foot { padding-top: .6em; border-top: 1px solid rgba(95, 216, 230, .22); font: 400 .72em/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: #6f8791; }
 @media (max-width: 860px) {
   .registry .rg-main { grid-template-columns: 1fr; }
   .registry .rg-ship { grid-column: 1; grid-row: auto; order: -1; }
-  .registry .rg-hero { max-height: 200px; }
+  .registry .rg-hero { max-height: 13em; }
   .registry .rg-low { grid-template-columns: 1fr; }
 }
 /* a phone on its side: the identity, the rows, the ship and the button; the repaint box and the note stay for taller screens */
 @media (max-height: 460px) {
-  #comms .panel.registry { gap: 6px; padding: 8px 14px 6px; --c: 10px; }
-  .registry .rg-h { padding-bottom: 6px; gap: 10px; }
-  .registry .rg-h .rg-ico { width: 30px; height: 30px; }
-  .registry .rg-org b { font-size: 14px; letter-spacing: .2em; }
+  #comms .panel.registry { --c: 12px; font-size: 11px; gap: .5em; padding: .8em 1.3em .6em; }
+  .registry .rg-h { padding-bottom: .5em; gap: .8em; }
+  .registry .rg-h .rg-ico { width: 2.8em; height: 2.8em; }
+  .registry .rg-org b { font-size: 1.3em; letter-spacing: .24em; }
   .registry .rg-org span, .registry .rg-tag { display: none; }
-  .registry .rg-main { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); column-gap: 12px; row-gap: 5px; }
-  .registry .rg-ship { grid-column: 2; grid-row: 1 / span 4; order: 0; }
-  .registry .rg-hero { max-height: 120px; }
-  .registry .rg-id { gap: 8px; }
-  .registry .rg-id .rg-ico { width: 34px; height: 34px; padding: 6px; }
-  .registry .rg-id em { font-size: 11px; }
-  .registry .rg-id h2 { font-size: 19px; gap: 8px; }
-  .registry .rg-body { font-size: 11.5px; line-height: 1.35; }
+  .registry .rg-main { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: .9em; row-gap: .4em; }
+  .registry .rg-ship { grid-column: 2; grid-row: 1 / span 4; order: 0; min-height: 0; }
+  .registry .rg-ship::before { inset: -.6em -1.3em -.6em -.3em; }
+  .registry .rg-hero { max-height: 10em; width: 112%; }
+  .registry .rg-id { gap: .6em; }
+  .registry .rg-id .rg-ico { width: 3em; height: 3em; padding: .55em; }
+  .registry .rg-id em { font-size: 1em; }
+  .registry .rg-id h2 { font-size: 1.9em; gap: .35em; }
+  .registry .rg-body { font-size: 1.05em; line-height: 1.35; }
   .registry .rg-body + .rg-body { display: none; }
-  .registry .rg-rows dt, .registry .rg-rows dd { padding: 3px 8px; font-size: 10.5px; }
-  .registry .rg-low { grid-template-columns: 1fr; padding-top: 6px; }
+  .registry .rg-rows dt, .registry .rg-rows dd { padding: .3em .7em; font-size: 1em; }
+  .registry .rg-low { grid-template-columns: 1fr; padding-top: .5em; }
   .registry .rg-box { display: none; }
-  .registry .rg-go { min-height: 44px; }
-  .registry .rg-go .rg-ico { height: 42px; padding: 10px 12px; }
+  .registry .rg-go { min-height: 3.6em; font-size: 1.25em; }
+  .registry .rg-go .rg-ico { height: 3.5em; }
   .registry .rg-foot { display: none; }
 }
 
