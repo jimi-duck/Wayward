@@ -79,7 +79,7 @@ export const regionSlug = (name: string) => name.replace(/^the\s+/i, '').trim().
 export const FLEET = [
   'capital-vance', 'capital-sorensen', 'capital-kade', 'capital-vex', 'capital-ashgrove', 'capital-pell', 'capital-chorus', 'capital-loom', 'capital-calloway',
   'tanker', 'hauler', 'courier', 'gunship', 'barge', 'salvager', 'drifter', 'ferry',
-  'wayward-stock', 'wayward-guns', 'wayward-rig', 'wayward-signals',
+  'wayward-stock', 'wayward-guns', 'wayward-rig', 'wayward-signals', 'wayward-registry',
   // a card's first hull, drawn for its caller: `<variant>-<caller>` is used before the plain hull (ui/comms.ts)
   'enforcer-kellern', 'freighter-frontier', 'freighter-guild', 'freighter-miners', 'lancer-calloway', 'scout-guild',
 ] as const;

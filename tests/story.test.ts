@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BEATS, BREACH_BEAT, SAM_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, OPENING_AT, STORY_AT, STORY_CARDS, WAKE_BEAT } from '../src/content/story';
+import { BEATS, BREACH_BEAT, RENAME_BEAT, SAM_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, OPENING_AT, STORY_AT, STORY_CARDS, WAKE_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
 import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
@@ -135,7 +135,15 @@ describe('the story beats', () => {
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['code']);
     w.answer('code');
     run(4);
+    // the registry reports the result (state already committed), with no score or portrait, then the archive wakes
+    expect(w.comms?.def.id).toBe(RENAME_BEAT);
+    expect(w.comms?.ledger?.map((r) => [r.k, r.v])).toEqual([['Registry status', 'Unregistered'], ['Owner lock', 'Overridden'], ['Core ports', 'Closed']]);
+    expect(w.comms?.choices.map((c) => c.id)).toEqual(['helm']);
+    expect(w.result().carry.flags).toContain('ship_stolen');
+    w.answer('helm');
+    run(3);
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
+    expect(w.result().carry.seen).toContain(RENAME_BEAT);
     const after = w.result().carry;
     expect(after.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour']));
     expect(after.flags).not.toContain('tam_alone');
