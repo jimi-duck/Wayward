@@ -561,7 +561,7 @@
 }
 #comms .panel.registry::after {
   inset: 1.5px; backdrop-filter: blur(8px);
-  background: radial-gradient(120% 90% at 78% 30%, rgba(10, 28, 50, .14), transparent 60%), repeating-linear-gradient(0deg, rgba(120, 210, 230, .02) 0 1px, transparent 1px 3px), var(--fill);
+  background: radial-gradient(120% 90% at 78% 30%, rgba(10, 28, 50, .14), transparent 60%), repeating-linear-gradient(0deg, rgba(120, 210, 230, .02) 0 1px, transparent 1px 3px), linear-gradient(rgba(0, 2, 5, .8), rgba(0, 2, 5, .8)), url("../assets/registry-nebula.webp") 70% 40% / cover, var(--fill);
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
 }
 .registry .rg-ico { display: inline-grid; place-items: center; flex: none; }
@@ -588,7 +588,7 @@
 .registry .rg-rows dt { color: #a6dce2; }
 .registry .rg-rows dd { color: #f0b43a; }
 .registry .rg-ship { position: relative; grid-column: 2; grid-row: 1 / span 4; align-self: stretch; display: grid; place-items: center; min-height: 15em; }
-.registry .rg-ship::before { content: ""; position: absolute; inset: -1.4em -2.1em -1em -.6em; background: url("../assets/registry-nebula.webp") center / cover; opacity: .7; filter: brightness(.5) saturate(.85); -webkit-mask-image: radial-gradient(ellipse at 55% 50%, #000 30%, transparent 74%); mask-image: radial-gradient(ellipse at 55% 50%, #000 30%, transparent 74%); }
+.registry .rg-ship::before { content: ""; position: absolute; inset: -1.4em -2.1em -1em -.6em; background: url("../assets/registry-nebula.webp") center / cover; opacity: .95; filter: brightness(.78) saturate(.95); -webkit-mask-image: radial-gradient(ellipse at 55% 50%, #000 38%, transparent 80%); mask-image: radial-gradient(ellipse at 55% 50%, #000 38%, transparent 80%); }
 .registry .rg-hero { position: relative; width: 108%; max-width: none; margin-left: -4%; height: auto; max-height: 21em; object-fit: contain; filter: drop-shadow(0 .5em 1.4em rgba(0, 0, 0, .55)); }
 .registry .rg-low { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(15em, .62fr); gap: 1.2em; align-items: stretch; padding-top: 1em; border-top: 1px solid rgba(95, 216, 230, .3); }
 .registry .rg-box { padding: .9em 1.1em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(0, 3, 7, .75); display: grid; gap: .5em; align-content: start; }
