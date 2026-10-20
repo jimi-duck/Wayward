@@ -547,8 +547,9 @@
 
 /* ── the registry notice (#comms.reg), after the supplied mock-up: bright neon cyan frame cut at all four corners, a lighter wide-set face (Rajdhani), amber for the warning, the ship over a nebula ── */
 #comms.reg .panel.comms, #comms:not(.reg) .panel.registry { display: none; }
+#comms.reg { background: radial-gradient(ellipse at center, rgba(1, 3, 6, .78), rgba(0, 1, 3, .94)); }
 #comms .panel.registry {
-  --c: 20px; --neon: #5fd8e6; --fill: rgba(1, 4, 9, .94);
+  --c: 20px; --neon: #5fd8e6; --fill: rgba(0, 2, 5, .97);
   font-family: "Rajdhani", var(--font-head); font-size: clamp(12.5px, 1.04vw, 19px);
   width: min(1440px, 94vw); max-height: calc(100dvh - 24px); overflow-y: auto; display: grid; gap: 1.1em; padding: 1.5em 2.1em 1em; color: #dbe9ee;
   filter: drop-shadow(0 0 .7em rgba(95, 216, 230, .3)) drop-shadow(0 0 2em rgba(60, 160, 210, .1));
@@ -560,7 +561,7 @@
 }
 #comms .panel.registry::after {
   inset: 1.5px; backdrop-filter: blur(8px);
-  background: radial-gradient(120% 90% at 78% 30%, rgba(14, 40, 70, .22), transparent 60%), repeating-linear-gradient(0deg, rgba(120, 210, 230, .02) 0 1px, transparent 1px 3px), var(--fill);
+  background: radial-gradient(120% 90% at 78% 30%, rgba(10, 28, 50, .14), transparent 60%), repeating-linear-gradient(0deg, rgba(120, 210, 230, .02) 0 1px, transparent 1px 3px), var(--fill);
   clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
 }
 .registry .rg-ico { display: inline-grid; place-items: center; flex: none; }
@@ -581,16 +582,16 @@
 .registry .rg-id h2 i { font-style: normal; font-size: .7em; color: var(--neon); }
 .registry .rg-id h2 .b { color: #f0b43a; text-shadow: 0 0 .5em rgba(240, 180, 58, .4); }
 .registry .rg-body { grid-column: 1; margin: 0; font: 500 1.1em/1.55 "Rajdhani", var(--font-display); color: #dbe9ee; max-width: 38em; }
-.registry .rg-rows { grid-column: 1; margin: .2em 0 0; display: grid; grid-template-columns: 1fr 1fr; max-width: 34em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(2, 8, 15, .6); }
+.registry .rg-rows { grid-column: 1; margin: .2em 0 0; display: grid; grid-template-columns: 1fr 1fr; max-width: 34em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(0, 3, 7, .7); }
 .registry .rg-rows dt, .registry .rg-rows dd { margin: 0; padding: .7em 1em; border-top: 1px solid rgba(95, 216, 230, .25); font: 500 1.05em/1.2 "Rajdhani", var(--font-head); letter-spacing: .12em; text-transform: uppercase; }
 .registry .rg-rows dt:first-of-type, .registry .rg-rows dt:first-of-type + dd { border-top: 0; }
 .registry .rg-rows dt { color: #a6dce2; }
 .registry .rg-rows dd { color: #f0b43a; }
 .registry .rg-ship { position: relative; grid-column: 2; grid-row: 1 / span 4; align-self: stretch; display: grid; place-items: center; min-height: 15em; }
-.registry .rg-ship::before { content: ""; position: absolute; inset: -1.4em -2.1em -1em -.6em; background: url("../assets/registry-nebula.webp") center / cover; opacity: .8; filter: brightness(.7) saturate(.9); -webkit-mask-image: radial-gradient(ellipse at 55% 50%, #000 30%, transparent 74%); mask-image: radial-gradient(ellipse at 55% 50%, #000 30%, transparent 74%); }
+.registry .rg-ship::before { content: ""; position: absolute; inset: -1.4em -2.1em -1em -.6em; background: url("../assets/registry-nebula.webp") center / cover; opacity: .7; filter: brightness(.5) saturate(.85); -webkit-mask-image: radial-gradient(ellipse at 55% 50%, #000 30%, transparent 74%); mask-image: radial-gradient(ellipse at 55% 50%, #000 30%, transparent 74%); }
 .registry .rg-hero { position: relative; width: 108%; max-width: none; margin-left: -4%; height: auto; max-height: 21em; object-fit: contain; filter: drop-shadow(0 .5em 1.4em rgba(0, 0, 0, .55)); }
 .registry .rg-low { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(15em, .62fr); gap: 1.2em; align-items: stretch; padding-top: 1em; border-top: 1px solid rgba(95, 216, 230, .3); }
-.registry .rg-box { padding: .9em 1.1em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(2, 8, 15, .65); display: grid; gap: .5em; align-content: start; }
+.registry .rg-box { padding: .9em 1.1em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(0, 3, 7, .75); display: grid; gap: .5em; align-content: start; }
 .registry .rg-box header { display: flex; align-items: center; gap: .7em; }
 .registry .rg-box header .rg-ico { width: 1.7em; height: 1.7em; color: var(--neon); }
 .registry .rg-box header b { font: 500 1.05em/1.2 "Rajdhani", var(--font-head); letter-spacing: .2em; text-transform: uppercase; color: var(--neon); }
@@ -598,7 +599,7 @@
 .registry .rg-ths { display: grid; grid-template-columns: 1fr 1fr; gap: .9em; margin-top: .3em; }
 .registry .rg-th { margin: 0; padding: .3em; border: 1px solid rgba(95, 216, 230, .45); background: rgba(1, 4, 9, .85); display: grid; gap: .3em; }
 .registry .rg-th.now { border-color: #e0a52c; box-shadow: 0 0 .8em rgba(240, 180, 58, .3); }
-.registry .rg-thimg { width: 100%; height: 5.4em; object-fit: contain; background: #02060c url("../assets/registry-nebula.webp") center / cover; }
+.registry .rg-thimg { width: 100%; height: 5.4em; object-fit: contain; background: #01030a url("../assets/registry-nebula.webp") center / cover; filter: brightness(.6); }
 .registry .rg-th figcaption { padding: .1em .3em .2em; font: 500 .78em/1 "Rajdhani", var(--font-head); letter-spacing: .16em; text-transform: uppercase; color: #6fd0dc; }
 .registry .rg-th.now figcaption { color: #f0b43a; }
 .registry .rg-quick { align-self: start; }
