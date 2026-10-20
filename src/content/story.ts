@@ -302,11 +302,11 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: RENAME_BEAT, kind: 'warning', caller: 'office', ledger: 'rename', hero: 'wayward-registry',
-    from: 'Continuance Registry · automated notice', title: 'OB-7731-A → WAYWARD',
+    id: RENAME_BEAT, kind: 'warning', caller: 'office', ledger: 'rename', layout: 'registry',
+    from: 'Continuance Registry · Automated registration notice', title: 'OB-7731-A → WAYWARD',
     text: 'The owner lock has been overridden. This vessel is now unregistered, and Core ports are closed to its transponder.',
-    juno: 'Wayward. Fine. She needed a name.',
-    note: ['Temporary repaint', 'The yellow livery may pass a quick visual inspection. A proper scan will still expose the hull.'],
+    repaint: ['Temporary repaint', 'The yellow livery may pass a quick visual inspection. A proper scan will still expose the hull.'],
+    quick: ['Quick note', 'A fresh coat of paint helps get past a quick visual inspection. It won’t hold up to a proper scan, but it’ll get you through the gate.'],
     cargo: 'Registration updated',
     choices: [
       { id: 'helm', label: 'Take the helm', tone: 'run', hint: 'The new name is active in all local systems.',

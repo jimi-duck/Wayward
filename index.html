@@ -49,6 +49,11 @@
 
     <!-- The HUD's icons: the brand's line set (24px grid, square caps, 45°). -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i-reg-seal" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21"/><path d="M27 8 17 26h8l-4 14 12-20h-8z M8 40 40 8"/></symbol>
+      <symbol id="i-reg-warn" viewBox="0 0 48 48"><path d="M24 7 44 41H4z M24 20v10 M24 35v2"/></symbol>
+      <symbol id="i-reg-brush" viewBox="0 0 48 48"><path d="M36 6l6 6-18 18-6-6z M18 24c-6 0-8 4-8 8 0 3-2 5-4 6 8 3 18 0 18-8"/></symbol>
+      <symbol id="i-reg-info" viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><path d="M24 21v13 M24 14v2"/></symbol>
+      <symbol id="i-reg-go" viewBox="0 0 48 48"><path d="M6 24h32 M26 12l12 12-12 12"/></symbol>
       <symbol id="i-laser" viewBox="0 0 24 24"><path d="M3 9h5v6H3z M8 12h13 M13 7.5l2 2.5 M13 16.5l2-2.5"/></symbol>
       <symbol id="i-torp" viewBox="0 0 24 24"><path d="M7 9h9l5 3-5 3H7z M7 9L3 5 M7 15l-4 4 M11 9v6"/></symbol>
       <symbol id="i-mine" viewBox="0 0 24 24"><path d="M12 7l4.3 2.5v5L12 17l-4.3-2.5v-5z M12 2v5 M12 17v5 M3.3 7l4.4 2.5 M16.3 14.5l4.4 2.5 M3.3 17l4.4-2.5 M16.3 9.5l4.4-2.5"/></symbol>
@@ -347,7 +352,7 @@
               <span class="tx-stamp" id="cm-k">Incoming</span>
             </div>
             <div id="cm-body" class="cm-body">
-              <div class="tx-msg"><h2 id="cm-t">Channel open</h2><p id="cm-gist" class="cm-gist"></p><p id="cm-text" class="cm-text"></p><p id="cm-juno" class="cm-juno" hidden></p><p id="cm-note" class="cm-note" hidden></p><button id="cm-att" class="cm-att" type="button" aria-expanded="false" hidden></button><ul id="cm-ledger" class="cm-ledger" hidden></ul><div id="cm-reply" class="cm-reply" hidden><div id="cm-reply-face" class="cm-reply-face"></div><div class="cm-reply-body"><b id="cm-reply-who"></b><p id="cm-reply-text"></p></div></div><button id="cm-i" class="cm-i" type="button" aria-expanded="false" aria-label="More" title="More" hidden>i</button><p id="cm-more" class="cm-text cm-more" hidden></p></div>
+              <div class="tx-msg"><h2 id="cm-t">Channel open</h2><p id="cm-gist" class="cm-gist"></p><p id="cm-text" class="cm-text"></p><p id="cm-juno" class="cm-juno" hidden></p><button id="cm-att" class="cm-att" type="button" aria-expanded="false" hidden></button><ul id="cm-ledger" class="cm-ledger" hidden></ul><div id="cm-reply" class="cm-reply" hidden><div id="cm-reply-face" class="cm-reply-face"></div><div class="cm-reply-body"><b id="cm-reply-who"></b><p id="cm-reply-text"></p></div></div><button id="cm-i" class="cm-i" type="button" aria-expanded="false" aria-label="More" title="More" hidden>i</button><p id="cm-more" class="cm-text cm-more" hidden></p></div>
               <div id="cm-read" class="cm-read"></div>
             </div>
           </div>
@@ -357,6 +362,8 @@
         <div id="cm-list" class="cm-list"></div>
         <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>6</kbd> to answer · <kbd>↑</kbd>/<kbd>↓</kbd> then <kbd>Enter</kbd> · controller: <kbd>A</kbd></span></footer>
       </div>
+      <!-- the registry notice, after the supplied mock-up: filled by ui/comms.ts -->
+      <div id="cm-reg" class="panel registry" role="document"></div>
     </div>
 
     <!-- The port: the refit bay, the stores, a sensible stop and cast off. -->
