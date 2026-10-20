@@ -87,7 +87,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_convoy', kind: 'job', caller: 'guild', tier: 'important',
     from: 'Convoy master Aisha Reen', title: 'Escort the convoy to the lane',
-    text: '“Three unarmed haulers have raiders waiting on their route. Fly alongside us to the lane entrance and we will pay ten Cyrite.”',
+    text: '“Three unarmed haulers have raiders waiting on their route. Fly alongside us to the Jump Gate and we will pay ten Cyrite.”',
     cargo: 'A convoy · three haulers, heavy with ore',
     choices: [
       { id: 'escort', label: 'Escort the convoy', tone: 'help', hint: 'Stay near the haulers until they reach the lane. Raiders may attack.', win: { text: 'The convoy forms up on your wing' } },

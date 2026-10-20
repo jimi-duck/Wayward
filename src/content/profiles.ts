@@ -14,7 +14,7 @@ import type { PlaceId } from './phenomena';
 //                       watched, so mining the best rock has a price, and rubble is cover.
 //   the Salvage Belt  · wrecks and yards. The best salvage is on ground somebody has staked,
 //                       and a claim crew comes if you linger in it.
-//   the Drift Deep    · standing static. The lane mouth swims and locks fail; a lantern line
+//   the Drift Deep    · standing static. The Jump Gate swims and locks fail; a lantern line
 //                       is the way through, and the way to read it is to follow it.
 //   the Breaker Yards · the Custody watches the open dark. Heat climbs faster in clear
 //                       space; the rubble and the shrouds are where you can breathe.
@@ -28,7 +28,7 @@ import type { PlaceId } from './phenomena';
 export interface Exp {
   /** The expanse the system's space is a part of. */
   x: ExpanseId;
-  /** Features besides the site, ambient: laid off the straight line to the lane mouth. */
+  /** Features besides the site, ambient: laid off the straight line to the Jump Gate. */
   f: FeatureId[];
   /** The feature the system's place or job sits in. */
   s?: FeatureId;

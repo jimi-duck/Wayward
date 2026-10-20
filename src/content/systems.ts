@@ -3,7 +3,7 @@
 // (sim/chart.ts) lays a region out from these: every system is one template
 // with a name, a Cyrite richness and a food supply rolled inside the
 // template's range. A sortie (one system, flown in real time) reads the
-// rest: how far the lane mouth is, whether there is a port and what it
+// rest: how far the Jump Gate is, whether there is a port and what it
 // charges, how much rock there is and how much of it is veined, who flies
 // there besides the Custody, and how much the Custody already cares.
 //
@@ -37,7 +37,7 @@ export interface SystemTemplate {
   supplies: [number, number];
   /** A port, and the chance of one when it is not certain. */
   port: number;
-  /** Distance to the lane mouth, world units. */
+  /** Distance to the Jump Gate, world units. */
   lane: [number, number];
   /** The rock: veined share and density (1 is the Breakout's field). */
   rich: number;

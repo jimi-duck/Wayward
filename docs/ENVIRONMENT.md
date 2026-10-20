@@ -35,7 +35,7 @@ Read from the code, not guessed.
   for Story, but it plays the same timed event, so the place is a mini-game
   and not a location.
 - **Two hooks already exist for effects.** `World.sensorsDown` (radar, lock)
-  and `World.navNoise` (the lane mouth swims) are the same idea as a gas
+  and `World.navNoise` (the Jump Gate swims) are the same idea as a gas
   cloud and a static field, wired to one event and to the Thren.
 
 ## Why it feels repetitive
@@ -107,7 +107,7 @@ nothing to the ship at all.
 | **Dust veil** | V · | 420–900 | common | nothing; drifts; light on the hull goes cold blue | no damage, no jam | a bank of lit dust, seen from 3,600 off |
 | **Shroud** | T M | 280–520 | uncommon | sensors 40%, lock 50%, hulls see you from 45% as far | no damage | dense violet murk, the sky dims behind it |
 | **Curtain** | V · | 600–1,100 | uncommon | nothing; ribbons breathe over 38 s | no jam, no alert | verdigris aurora, tall, seen from 6,000 |
-| **Static field** | N T | 380–760 | uncommon | lane mouth swims, lock 25%, radar 70%, pulses | no damage | faint blue haze with crawling fine lines |
+| **Static field** | N T | 380–760 | uncommon | Jump Gate swims, lock 25%, radar 70%, pulses | no damage | faint blue haze with crawling fine lines |
 | **Storm cell** | H R | 260–480 | rare | shields charge twice as fast; lightning on telegraphed circles | only strikes hurt | a cloud that flashes from inside |
 | **Breaker field** | T R | 260–560 | common | rock ×2.6, torpedo lock 55%, Krail ×1.3 | no direct damage | rubble in a loose ring round a dead hull |
 | **Graveyard** | E S R | 320–620 | uncommon | rock ×1.4, Krail ×1.6; wrecks to salvage | none | a battle's worth of hulks, drifting very slowly |
@@ -303,7 +303,7 @@ Small PRs off `main`, one stage at a time, each shippable.
    feature that looks like it: ion storm to storm, nebula to shroud,
    gravity well to well, derelict to graveyard, convoy to passage. A call
    for help is a ship, so it gets none. The site sits a third of the way to
-   the lane mouth and well to one side, so flying into it is a choice. About
+   the Jump Gate and well to one side, so flying into it is a choice. About
    one system in three that fits a region has one of the four named places
    (the same system always gets the same answer). Inside a named place the
    HUD shows its name as a teal line and the run's flags get `site:<id>`;

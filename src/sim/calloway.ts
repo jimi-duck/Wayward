@@ -27,7 +27,7 @@ import type { RunStats } from './run';
 //   trust   · the truth told her and offers taken, less the lies and any
 //             word broken. It decides whether she can be reached at the end.
 //   the end · when you plot the last jump, to the Threshold, she is waiting
-//             at the lane mouth. That meeting is built from the file: what
+//             at the Jump Gate. That meeting is built from the file: what
 //             she says, the ship she brings, and which ways past her exist.
 
 /** Her read on your route: the kind of system you stop in, and whether you go straight for the Threshold. */
@@ -67,7 +67,7 @@ export interface Nemesis {
   hunch: string[];
   /** The offer she calls with (an id in content/calloway.ts OFFERS), if she has one this sortie. */
   offer: string | null;
-  /** The last meeting, at the lane mouth to the Threshold. */
+  /** The last meeting, at the Jump Gate to the Threshold. */
   finale: CardDef | null;
 }
 
@@ -186,7 +186,7 @@ export function offerFor(d: Dossier, o: { day: number; behind: number; caught: n
   return want.find(([id, ok]) => ok && !d.offers.includes(id))?.[0] ?? null;
 }
 
-/** What a sortie knows of her. `finale`: this sortie ends at the Threshold's lane mouth. */
+/** What a sortie knows of her. `finale`: this sortie ends at the Threshold's Jump Gate. */
 export function nemesis(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }, o: { finale: boolean; offer: string | null; flags?: readonly string[] }): Nemesis {
   const hunch = hunchWords(hunt.hunch);
   return {
@@ -201,7 +201,7 @@ export function nemesis(d: Dossier, hunt: { caught: number; beaten: number; hunc
 
 const times = (n: number) => (n === 1 ? t('once') : n === 2 ? t('twice') : t('{n} times', { n }));
 
-/** The last meeting: at the lane mouth to the Threshold, built from everything between you. */
+/** The last meeting: at the Jump Gate to the Threshold, built from everything between you. */
 export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }, flags: readonly string[] = []): CardDef {
   const has = (f: string) => flags.includes(f);
   const turned = has('calloway_turned'), hostile = has('calloway_hostile'), fleet = has('draper_director');

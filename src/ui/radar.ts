@@ -115,7 +115,7 @@ export class Radar {
     for (const wp of sidePlaces(world, lead)) {
       const a = at(Math.atan2(-(wp.z - s.z), wp.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 4 * dpr;
       g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(Math.PI / 4);
-      g.fillStyle = wp.kind === 'lane' ? INK.amber : INK.teal;
+      g.fillStyle = wp.kind === 'port' ? INK.teal : INK.amber;
       g.fillRect(-sz / 2, -sz / 2, sz, sz);
       g.restore();
     }
@@ -186,12 +186,12 @@ export class Radar {
       g.fillStyle = p.kind === 'crystal' ? INK.krail : p.kind === 'cyrite' ? INK.cyrite : p.kind === 'ore' ? 'rgba(236,200,160,.8)' : rgba(RGB.teal, 0.8);
       if (!out) g.fillRect(x - 0.8 * dpr, y - 0.8 * dpr, 1.6 * dpr, 1.6 * dpr);
     }
-    // the port and the lane mouth, when they are in the scope's reach
+    // the port and the Jump Gate, when they are in the scope's reach
     if (bk) {
       for (const wp of world.seenPlaces()) {
         const [x, y, out] = to(wp.x, wp.z);
         if (out) continue;
-        g.strokeStyle = wp.kind === 'lane' ? INK.amber : INK.teal; g.lineWidth = 1.5 * dpr;
+        g.strokeStyle = wp.kind === 'port' ? INK.teal : INK.amber; g.lineWidth = 1.5 * dpr;
         g.beginPath(); g.moveTo(x, y - 5 * dpr); g.lineTo(x + 5 * dpr, y); g.lineTo(x, y + 5 * dpr); g.lineTo(x - 5 * dpr, y); g.closePath(); g.stroke();
         g.beginPath(); g.arc(x, y, Math.max(3 * dpr, wp.r * k), 0, Math.PI * 2); g.stroke();
       }

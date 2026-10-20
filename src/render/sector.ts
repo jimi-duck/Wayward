@@ -22,7 +22,7 @@ import { RockView } from './rocks';
 import { RockFx } from './rockfx';
 import { EnemyView, NEON, wreck } from './enemies';
 import { ShipView } from './ships';
-import { hashSeed, skyFor, type Sky } from './sky';
+import { hashSeed, industrial, skyFor, type Sky } from './sky';
 import { cloudTexture, glowTexture } from './textures';
 import { Streaks } from './streaks';
 import { flare, launchFrom, lens, pose, stretch, whiteout, WarpView, type Launch } from './warp';
@@ -506,10 +506,11 @@ export class Sector {
   private paintSky(world: World): void {
     if (this.pinned) return;
     const breakout = world.mode === 'breakout';
-    const key = breakout ? `${world.sortie.system}:${world.sortie.region ?? 0}` : world.run;
+    const key = breakout ? `${world.sortie.system}:${world.sortie.region ?? 0}${world.sortie.first ? ':first' : ''}` : world.run;
     if (key === this.skyFor) return;
     this.skyFor = key;
-    this.env.setSky(breakout ? skyFor(hashSeed(world.sortie.system), world.sortie.sky ?? world.sortie.region ?? 0) : skyFor(Math.floor(Math.random() * 1e9), null));
+    const sky = breakout ? skyFor(hashSeed(world.sortie.system), world.sortie.sky ?? world.sortie.region ?? 0) : skyFor(Math.floor(Math.random() * 1e9), null);
+    this.env.setSky(breakout && world.sortie.first ? industrial(sky, world.ship.heading) : sky);
   }
 
   /**

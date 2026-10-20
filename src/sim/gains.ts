@@ -6,7 +6,7 @@ import { cy } from './purse';
 // ── what a choice brings ──────────────────────────────────────────────────
 // A comms choice's outcome in a few short words, worked out from the data so
 // no card has to say it twice: what lands in the hold, what happens next at
-// the lane mouth, who likes you more, whether the hunt gets hotter. The
+// the Jump Gate, who likes you more, whether the hunt gets hotter. The
 // panel draws them beside the costs and the odds, so a player who reads
 // none of the card can still see what each answer is for. Losses start with
 // a minus sign (U+2212), like costs, so the panel colours them the same.
@@ -49,7 +49,7 @@ export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyo
   for (const f of [o.flag ?? []].flat()) for (const c of chipsOf(f) ?? [STORY_SHORT[f]]) if (c && !out.includes(c)) out.push(c);
   // the registry's view of it
   if (o.civic && !o.civicQuiet) out.push(o.civic > 0 ? 'Civic Score ↑' : 'Civic Score ↓');
-  // where it leaves you: the lane mouth, Calloway, a named captain, a fight
+  // where it leaves you: the Jump Gate, Calloway, a named captain, a fight
   if (o.blockade) out.push(o.blockade === 'pass' ? 'Through the lane' : o.blockade === 'run' ? 'Run the blockade' : 'Fight');
   if (o.calloway) out.push(o.calloway === 'fight' ? 'Calloway fights' : 'Calloway chases');
   if (o.captain) out.push(o.captain === 'fight' ? 'Fight' : o.captain === 'run' ? 'Run' : o.captain === 'pay' ? 'They let you go' : 'They leave');

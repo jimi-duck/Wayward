@@ -23,7 +23,7 @@ Rules for every line the player reads. German twins follow the English
 - **Respect the player's time.** Short sentences, active voice, familiar words.
   No filler, repeated warnings or unexplained abbreviations.
 - **Consistent terms.** Cyrite, jump fluid, supplies, work bay, Custody, the Offices of
-  Peace, the Net, the Voice, the Thren, jump lane, lane entrance. Cyrite is what is found and
+  Peace, the Net, the Voice, the Thren, jump lane, Jump Gate (always these two words, capital G: never "lane entrance" or "lane mouth"; German Sprungtor; Lane Control and the shipping lanes keep their names). Cyrite is what is found and
   the money; jump fluid is what the jump burns, refined from Cyrite (see
   [ECONOMY.md](ECONOMY.md)). Never call the fuel Cyrite or the money fluid. There are no
   chits; Krail is a word of the story (what the Continuance said ran short), never a price.

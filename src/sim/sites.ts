@@ -12,9 +12,9 @@ import type { Space } from './space';
 //   the site      · the feature the system's place or job sits in. One spot, shared
 //                   by everything that points at it: the feature you can see from far
 //                   off, the place's event, the job's hail ring and radar marker.
-//   the ambient   · other features, off the straight line to the lane mouth, so the
+//   the ambient   · other features, off the straight line to the Jump Gate, so the
 //                   player chooses whether to fly into them. Hazards are never on the
-//                   line, never on the start, the lane mouth or the port.
+//                   line, never on the start, the Jump Gate or the port.
 //
 // A def without a sky (the Breakout, an old test) keeps the earlier layout:
 // one calm backdrop and the place's feature off the line.
@@ -45,7 +45,7 @@ export function siteFor(def: SortieDef): Site | null {
   return { feature: f, named: named?.id };
 }
 
-/** The unit vectors along the course (from the start to the lane mouth) and to its right, and its length. */
+/** The unit vectors along the course (from the start to the Jump Gate) and to its right, and its length. */
 function frame(from: { x: number; z: number }, to: { x: number; z: number }) {
   const dx = to.x - from.x, dz = to.z - from.z, len = Math.hypot(dx, dz) || 1;
   const fx = dx / len, fz = dz / len;
@@ -81,11 +81,11 @@ export function placeAnchor(system: string, r: number, from: { x: number; z: num
 }
 
 /**
- * Lay a sortie's space: `from` is the start, `to` the lane mouth, `port` the port if there is one. The
+ * Lay a sortie's space: `from` is the start, `to` the Jump Gate, `port` the port if there is one. The
  * expanse is centred on the middle of the course; the site is where the system's place or job is
  * (`site`, from `placeAnchor` or `stageAnchor`); the ambient features sit off the line.
  */
-export function laySortie(space: Space, def: SortieDef, from: { x: number; z: number }, to: { x: number; z: number }, port: Disc | null = null, anchor?: { x: number; z: number }): Laid | null {
+export function laySortie(space: Space, def: SortieDef, from: { x: number; z: number }, to: { x: number; z: number }, port: Disc | null = null, anchor?: { x: number; z: number }, also: Disc[] = []): Laid | null {
   const { fx, fz, rx, rz, len } = frame(from, to);
   const h = hash(def.system);
   const exp = def.exp;
@@ -98,6 +98,7 @@ export function laySortie(space: Space, def: SortieDef, from: { x: number; z: nu
   const taken: Disc[] = [
     { x: from.x, z: from.z, r: 260 }, { x: to.x, z: to.z, r: 320 },
     ...(port ? [{ x: port.x, z: port.z, r: 260 }] : []),
+    ...also.map((d) => ({ x: d.x, z: d.z, r: 260 })),
   ];
   let laid: Laid | null = null;
   if (exp.s) {

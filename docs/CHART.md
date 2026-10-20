@@ -38,7 +38,7 @@ own to the rules.
 - A shortage of jump fluid is said once at the top (`trouble`: the exact amount
   the cheapest lane is short by), and the button reads `Plot course · n more
   jump fluid` in caution gold instead of `Jump to …`. It is not disabled: the
-  drive's jump happens at the lane mouth of the next system once the tank
+  drive's jump happens at the Jump Gate of the next system once the tank
   holds the lane's cost (`world.ts`), and the fluid is mined and refined on
   the way there, so blocking the plot would leave a ship with an empty tank
   nowhere to go. The tank is never touched here.

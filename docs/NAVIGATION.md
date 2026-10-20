@@ -12,13 +12,13 @@ diamond slides along the tape at the objective's bearing and pins to the end
 as a chevron when it is further round than the tape shows (behind you it
 sits at the end you turn toward, and pulses). Either side of the heading
 number: how far off the nose ("30° left") and how far away. The objective is
-an event's marker, else the lane mouth (the port while the clamps close).
+an event's marker, else the Jump Gate (the port while the clamps close).
 Phones keep the tape hidden; the objective card and the edge
 pointer carry it there.
 
 ## The world and the scope
 
-- The lane mouth and the port are marked in the world at any range, larger
+- The Jump Gate and the port are marked in the world at any range, larger
   and glowing, with name and distance; off screen, the edge pointer says
   the same.
 - The scope draws a dashed steel blue line to the objective and a steel blue

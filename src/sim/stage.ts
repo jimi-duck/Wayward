@@ -14,7 +14,7 @@ import type { World } from './world';
 // a Stage when the chart says the system has something going on, and steps it
 // every frame. Four jobs:
 //
-//   the site    · a place off the straight line to the lane mouth, so it is on
+//   the site    · a place off the straight line to the Jump Gate, so it is on
 //                 the way but not in the way, with the ships that belong to it
 //   the call    · when the ship comes near, the situation's card is offered to
 //                 the comms desk (eagerly: a scene is the point of the system,
@@ -89,7 +89,7 @@ export class Stage {
 
   // ── geometry ───────────────────────────────────────────────────────────
   private dir(): { ux: number; uz: number } { return { ux: (this.lx - this.sx) / this.len, uz: (this.lz - this.sz) / this.len }; }
-  /** How far along the course to the lane mouth a point is, 0 to 1 (and past). */
+  /** How far along the course to the Jump Gate a point is, 0 to 1 (and past). */
   private progress(x: number, z: number): number {
     const { ux, uz } = this.dir();
     return ((x - this.sx) * ux + (z - this.sz) * uz) / this.len;
@@ -290,7 +290,7 @@ export class Stage {
     w.supplies -= give.supplies ?? 0; w.chits -= give.chits ?? 0; w.cyrite -= give.cyrite ?? 0;
   }
 
-  /** Hostiles waiting on the line to the lane mouth, sprung as the ship passes. */
+  /** Hostiles waiting on the line to the Jump Gate, sprung as the ship passes. */
   private trap(w: World): void {
     const tr = this.def.trap;
     if (!tr || this.sprang) return;

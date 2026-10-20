@@ -221,7 +221,7 @@ describe('the last meeting', () => {
     expect(oddsFor(honest.odds!, ctx())).toBeGreaterThan(oddsFor(liar.odds!, ctx()) + 0.4);
   });
 
-  it('is waiting at the lane mouth when you plot the jump to the Threshold', () => {
+  it('is waiting at the Jump Gate when you plot the jump to the Threshold', () => {
     const j = newJourney(3);
     endSortie(j, result(j));
     // fly on toward the edge until it is one jump away

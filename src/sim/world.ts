@@ -25,6 +25,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
+import { Traffic } from './traffic';
 import { live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
@@ -158,6 +159,8 @@ export class World implements EncounterHost {
   private parked: Encounter | null = null;
   /** The system's situation, played on the sector (sim/stage.ts). */
   stage: Stage | null = null;
+  /** The first system past Cerro's working traffic and the guards its dock sends (sim/traffic.ts). */
+  traffic: Traffic | null = null;
   /** The target a torpedo launched now would lock, for the HUD. */
   lock: number | null = null;
   score = 0;
@@ -392,6 +395,7 @@ export class World implements EncounterHost {
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     this.stage = null;
+    this.traffic = null;
     if (this.mode !== 'breakout') {
       this.bk = null; this.cyrite = 0; this.fuel = 0; this.supplies = 0; this.callowayAt = Infinity;
       this.bayAt = ARCADE_PRICE; this.bayQuiet = 0;
@@ -418,6 +422,7 @@ export class World implements EncounterHost {
       if (r.size === 0 && this.rng.next() < 0.12 && n < most) { r.kind = 'rich'; r.hp = r.maxHp = Math.round(r.maxHp * 1.6); n++; }
     }
     if (def.situation && !def.home) this.stage = makeStage(def.system, def.situation, this);
+    if (def.first) this.traffic = new Traffic(this);
     if (this.carryIn) this.bringAboard(this.carryIn);
     else if (this.bk) this.civic = CIVIC_START;
     this.stock();
@@ -576,7 +581,7 @@ export class World implements EncounterHost {
     return (this.encounter?.id === 'nebula' && live(this.encounter) && !this.encounter.anchored) || this.navNoise > 0.3 || this.air.sight < 0.7;
   }
 
-  /** How scrambled navigation is, 0 to 1: Thren hulls close by make the lane mouth swim on the scope and the drive spool slow. */
+  /** How scrambled navigation is, 0 to 1: Thren hulls close by make the Jump Gate swim on the scope and the drive spool slow. */
   navNoise = 0;
 
   /** Teach the first minutes: a few marked steps, then the run goes on as it was. */
@@ -585,13 +590,14 @@ export class World implements EncounterHost {
   /** End the training now. */
   skipTraining(): void { skipTutor(this); }
 
-  /** The places as the scope shows them: the lane mouth wanders while the Thren scramble navigation. */
+  /** The places as the scope shows them: the Jump Gate wanders while the Thren scramble navigation. */
   seenPlaces(): Waypoint[] {
     const b = this.bk;
     if (!b) return [];
-    if (this.navNoise <= 0) return places(b);
+    const all = places(b);
+    if (this.navNoise <= 0) return all;
     const t = this.runTime, n = this.navNoise * 60;
-    return places(b).map((w) => (w.kind === 'lane' ? { ...w, x: w.x + Math.sin(t * 1.3) * n, z: w.z + Math.cos(t * 0.9) * n } : w));
+    return all.map((w) => (w.kind === 'lane' ? { ...w, x: w.x + Math.sin(t * 1.3) * n, z: w.z + Math.cos(t * 0.9) * n } : w));
   }
 
   // ── the step ──────────────────────────────────────────────────────────
@@ -726,7 +732,7 @@ export class World implements EncounterHost {
 
   // ── the Breakout ──────────────────────────────────────────────────────
 
-  /** Heat, patching, the port and the lane mouth. */
+  /** Heat, patching, the port and the Jump Gate. */
   private stepBreakout(dt: number): void {
     const b = this.bk!, s = this.ship;
     // the hunt's clock runs slower in cover, and faster in the open where the region is watched (sim/rules.ts); only where there is a sky to read
@@ -738,6 +744,7 @@ export class World implements EncounterHost {
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
     this.stage?.step(this, dt);
+    if (this.phase === 'play') this.traffic?.step(this, dt);
 
     if (this.mineT > 0) this.mineT -= dt;
 
@@ -754,7 +761,7 @@ export class World implements EncounterHost {
     // keep the places clear: rock and bulwarks drift off them
     const st = this.stage;
     for (const w of st ? [...places(b), { kind: 'site' as const, x: st.x, z: st.z }] : places(b)) {
-      const clear = w.kind === 'port' || w.kind === 'site' ? 30 : 24;
+      const clear = w.kind === 'port' || w.kind === 'site' ? 30 : w.kind === 'audit' ? 40 : 24;
       for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
         const dx = o.x - w.x, dz = o.z - w.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
         if (d < min) { o.x = w.x + (dx / d) * min; o.z = w.z + (dz / d) * min; }
@@ -817,7 +824,7 @@ export class World implements EncounterHost {
       } else { const cc = captainCard(cdef, cap.memory, you, them); this.desk.offer(cc, weightOf(cc), this.runTime); }
     }
 
-    // the lane mouth: a blockade's checkpoint is a comms card; an open lane may still have someone waiting
+    // the Jump Gate: a blockade's checkpoint is a comms card; an open lane may still have someone waiting
     const dl = Math.hypot(s.x - b.lane.x, s.z - b.lane.z);
     if (b.blockade === 'none' && dl < BLOCKADE_AT && this.command.state === 'idle' && this.phase === 'play') {
       if (b.def.nemesis.finale) {
@@ -838,7 +845,7 @@ export class World implements EncounterHost {
     }
     if (b.blockade === 'called' && this.command.state === 'idle' && !this.command.boss) b.blockade = 'done';
 
-    // the lane mouth: the drive charges on the way in (with the fluid in the tank) and the ship goes through the ring as soon as it is ready
+    // the Jump Gate: the drive charges on the way in (with the fluid in the tank) and the ship goes through the ring as soon as it is ready
     const near = dl < Math.max(APPROACH, b.spoolNeed * 46);
     if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
       if (b.spool === 0) this.events.push({ type: 'spool' });
@@ -921,7 +928,7 @@ export class World implements EncounterHost {
     if (regular < cap) {
       const pick = pickPursuer(b.heat, this.rng, b.def.gutter, b.def.ahead);
       const v = VARIANTS[pick.variant]!;
-      // behind: the bearing from the lane mouth back past the ship, spread a little
+      // behind: the bearing from the Jump Gate back past the ship, spread a little
       const home = Math.atan2(-(s.z - b.lane.z), s.x - b.lane.x);
       const a = (pick.ahead ? home + Math.PI : home) + this.rng.range(-0.7, 0.7);
       const d = this.rng.range(115, 145);
@@ -1082,7 +1089,7 @@ export class World implements EncounterHost {
     return plan;
   }
 
-  /** Docked: the journey plotted another lane out of here (sim/journey.ts replot). The lane mouth stays where it is. */
+  /** Docked: the journey plotted another lane out of here (sim/journey.ts replot). The Jump Gate stays where it is. */
   replot(dest: string, jumpCost: number): boolean {
     const b = this.bk;
     if (!b || this.phase !== 'dock') return false;
@@ -1204,7 +1211,7 @@ export class World implements EncounterHost {
     return this.aliens.filter((a) => this.committed(a) && Math.hypot(a.x - s.x, a.z - s.z) < SELF_REPAIR.danger).length;
   }
 
-  /** Inside the lane mouth's or the depot's safe ring: nothing hurts the ship here and hostile hulls keep out. */
+  /** Inside the Jump Gate's or the depot's safe ring: nothing hurts the ship here and hostile hulls keep out. */
   get safe(): 'lane' | 'port' | null {
     const b = this.bk;
     if (!b || !this.alive) return null;
@@ -1832,7 +1839,7 @@ export class World implements EncounterHost {
     this.space = new Space(this.seed + this.sortie.lane, { hazard: this.mods.hazard, compose: false });
     // a situation's stage and its sky's site are one spot (sim/sites.ts); a place has its own
     const anchor = this.stage ? { x: this.stage.x, z: this.stage.z } : undefined;
-    this.siteAt = laySortie(this.space, this.sortie, this.ship, this.bk.lane, this.bk.port, anchor);
+    this.siteAt = laySortie(this.space, this.sortie, this.ship, this.bk.lane, this.bk.port, anchor, this.bk.audit ? [this.bk.audit] : []);
   }
 
   /** The shared world: deal it, ask what it does here, and apply it (docs/ENVIRONMENT.md). */
@@ -1866,7 +1873,7 @@ export class World implements EncounterHost {
     const s = this.ship;
     const arena: Arena = { bulwarks: this.field.bulwarks, rocks: this.field.rocks, aliens: this.aliens, bolts: this.bolts, notice: this.stats.notice };
     const well = this.encounter?.id === 'anomaly' && live(this.encounter) && !this.encounter.anchored ? this.encounter : null;
-    const safe = !!this.safe, keep = this.bk ? [this.bk.lane, ...(this.bk.port ? [this.bk.port] : [])] : [];
+    const safe = !!this.safe, keep = this.bk ? [this.bk.lane, ...(this.bk.port ? [this.bk.port] : []), ...(this.bk.audit ? [this.bk.audit] : [])] : [];
     for (let i = this.aliens.length - 1; i >= 0; i--) {
       const al = this.aliens[i];
       // a hull moving can clear another from the list (a ram, a break); skip the hole
@@ -2493,6 +2500,7 @@ export class World implements EncounterHost {
     if (FACTION_TRAITS[al.faction].adapt && al.soaked >= al.maxHp * (BORG_ADAPT / 16)) dmg *= 0.5;
     if (src === 'torpedo' && al.mark > 0) dmg *= this.stats.markBonus;
     if (al.ward && src !== 'hazard' && src !== 'plasma') this.stage?.shot(this, al);
+    if (this.traffic && src !== 'hazard' && src !== 'plasma') this.traffic.hit(this, al, al.hp - dmg <= 0);
     al.soaked += dmg;
     al.hp -= dmg;
     al.calm = 0;

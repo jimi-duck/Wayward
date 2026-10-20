@@ -191,7 +191,7 @@ describe('Story sites, laid from the sky', () => {
     return { def, space, laid, port };
   };
 
-  it('keeps every feature off the straight line, the start, the lane mouth and the port', () => {
+  it('keeps every feature off the straight line, the start, the Jump Gate and the port', () => {
     for (const seed of SEEDS.slice(0, 10)) {
       const j = journey(seed);
       for (const s of open(j.chart)) {
@@ -202,7 +202,7 @@ describe('Story sites, laid from the sky', () => {
           const isSite = laid && f.x === laid.x && f.z === laid.z;
           if (!isSite && d.layer !== 'air') continue;
           if (isSite && !j.chart.places[s.id]) continue; // a job's stage is on the way by design
-          // clear of the lane mouth and the start
+          // clear of the Jump Gate and the start
           expect(Math.hypot(f.x - def.lane, f.z), `${s.id} ${f.def} at lane`).toBeGreaterThan(f.r * (isSite ? 0.4 : 1) * 0.8);
           if (!isSite) {
             expect(Math.abs(f.z), `${s.id} ${f.def} on the line`).toBeGreaterThan(f.r * 0.9);
@@ -425,7 +425,7 @@ describe('what the ground does', () => {
     expect(claimPatience(9)).toBe(claimPatience(2));
   });
 
-  it('makes a lantern line steady the lane mouth in a static field', () => {
+  it('makes a lantern line steady the Jump Gate in a static field', () => {
     const sp = new Space(1, { compose: false });
     sp.place('static', 0, 0, { r: 500 });
     sp.place('lanterns', 0, 0, { r: 200 });

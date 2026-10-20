@@ -12,6 +12,7 @@ import { BEHIND, threats } from '../sim/guide';
 import { lessonOf } from '../sim/tutor';
 import { NEON_CSS } from './colors';
 import { t as tr } from '../i18n';
+import { lockLifted } from '../sim/postjump';
 
 // ── targeting, in the world ───────────────────────────────────────────────
 // What the targeting computer is looking at, drawn where it is:
@@ -221,10 +222,12 @@ export class Targeting {
     if (t.kind === 'hull') {
       const a = t.ref as Alien;
       name = tr(alienLabel(a));
-      sub = `<b>${tr(cap(a.faction))}</b> · +${alienBonus(a)}`;
+      // working traffic is nobody's bounty: it reads as a civilian hull, in the friendly colour
+      const civil = !!world.traffic?.owns(a) && !!a.ward;
+      sub = civil ? `<b>${tr('Civilian')}</b> · ${tr('Not hostile')}` : `<b>${tr(cap(a.faction))}</b> · +${alienBonus(a)}`;
       hp = a.hp / a.maxHp;
       if (a.elite) cls = 'elite';
-      else if (a.kind === 'freighter') cls = 'friendly';
+      else if (a.kind === 'freighter' || civil) cls = 'friendly';
     } else if (t.kind === 'boss') {
       const b = t.ref as Boss;
       name = tr(b.name);
@@ -336,11 +339,13 @@ export class Targeting {
     const lesson = live && !!lessonOf(world);
     if (bk && !bk.port) $('ptr-port').classList.remove('on');
     for (const wp of world.seenPlaces()) {
-      const id = wp.kind === 'lane' ? 'ptr-lane' : 'ptr-port';
+      if (wp.kind === 'audit' && lockLifted(world.flags)) continue;
+      const id = wp.kind === 'lane' ? 'ptr-lane' : wp.kind === 'audit' ? 'ptr-audit' : 'ptr-port';
       this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live && !lesson ? { x: wp.x, y: 0.5, z: wp.z } : null,
         `${tr(wp.name)} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);
     }
-    if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); }
+    if (bk && lockLifted(world.flags)) $('ptr-audit').classList.remove('on');
+    if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); $('ptr-audit').classList.remove('on'); }
     const boss = world.command.boss;
     const showBoss = live && !!boss && !boss.leaving && boss.cloak < 0.5;
     this.pointer($('ptr-cap'), $('ptr-cap-t'), sector, s.x, s.z, s.heading, showBoss ? boss! : null,

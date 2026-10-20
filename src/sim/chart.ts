@@ -20,7 +20,7 @@ import { layScatter, RAID_MARKUP, type Fleet } from './scatter';
 //              one column on, a few run sideways.
 //   the Net  · Continuance control, spreading from Cerro along the lanes a
 //              little every day, faster into systems with Cyrite to take.
-//              A netted system has a blockade at its lane mouth, a Custody
+//              A netted system has a blockade at its Jump Gate, a Custody
 //              that starts out looking for you, dearer markets and fewer
 //              friendly calls. A stall holds it out of one system for a
 //              while.
@@ -54,7 +54,7 @@ export interface StarSystem {
   supplies: number;
   /** The port's name and prices (before the Net's mark-up), or no port. */
   port: { name: string; prices: Prices } | null;
-  /** World units from the arrival point to the lane mouth. */
+  /** World units from the arrival point to the Jump Gate. */
   lane: number;
   /** The survey's estimate of `cyrite`, until it has been flown. */
   survey: number;

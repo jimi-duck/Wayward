@@ -1,6 +1,6 @@
 // ── German: the HUD, the panels, the start card ───────────────────────────
 // Words used the same way everywhere:
-//   lane · Bahn         lane mouth · Sprungpunkt   jump · Sprung
+//   lane · Bahn         Jump Gate · Sprungtor   jump · Sprung
 //   hull · Rumpf        plate · Platte             hold · Laderaum
 //   ore · Erz           parts · Teile              food · Essen
 //   refit · Umbau       core · Kern                capital ship · Kapitalschiff
@@ -9,8 +9,8 @@
 
 export const UI: Record<string, string> = {
   // ── the start card ──
-  '<li>Mine <b class="v">violet asteroids</b> for Cyrite (torpedoes yield half)</li><li>Fill the tank with <b class="v">jump fluid</b></li><li>Jump from the <b class="a">lane entrance</b></li>':
-    '<li>Baue <b class="v">violette Asteroiden</b> für Cyrite ab (Torpedos bringen die Hälfte)</li><li>Füll den Tank mit <b class="v">Sprungfluid</b></li><li>Spring am <b class="a">Sprungpunkt</b></li>',
+  '<li>Mine <b class="v">violet asteroids</b> for Cyrite (torpedoes yield half)</li><li>Fill the tank with <b class="v">jump fluid</b></li><li>Jump from the <b class="a">Jump Gate</b></li>':
+    '<li>Baue <b class="v">violette Asteroiden</b> für Cyrite ab (Torpedos bringen die Hälfte)</li><li>Füll den Tank mit <b class="v">Sprungfluid</b></li><li>Spring am <b class="a">Sprungtor</b></li>',
   'Obedience-class ore hauler': 'Erzfrachter der Obedience-Klasse',
   'Wayward, Obedience-class ore hauler': 'Wayward, Erzfrachter der Obedience-Klasse',
   'Game mode': 'Spielmodus',
@@ -98,7 +98,6 @@ export const UI: Record<string, string> = {
   'Current objective': 'Aktuelles Ziel',
   'Objective': 'Ziel',
   'Capital': 'Kapitalschiff',
-  'Lane mouth': 'Sprungpunkt',
   'Port': 'Hafen',
   'Collect Cyrite': 'Cyrit sammeln',
   'Hull': 'Rumpf',

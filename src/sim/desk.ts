@@ -56,7 +56,7 @@ export const DESK = {
   opportunity: 100,
   /** Radio lines: seconds between, a sortie's most, seconds a line stays up, and the least between two. */
   ping: { between: [240, 420] as const, max: 2, show: 7, least: 60, arrive: 0.12, moment: 0.4 },
-  /** The chance the open lane's toll is called at the lane mouth, and a routine port call at the port's approach. */
+  /** The chance the open lane's toll is called at the Jump Gate, and a routine port call at the port's approach. */
   toll: 0.3,
   portNews: 0.5,
 };

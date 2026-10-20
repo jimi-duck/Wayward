@@ -19,7 +19,7 @@ function story() {
 }
 
 describe('the first minutes', () => {
-  it('puts the lane entrance 10 km off, and says so on the pause card', () => {
+  it('puts the Jump Gate 10 km off, and says so on the pause card', () => {
     const w = story();
     const d = Math.hypot(w.bk!.lane.x - w.ship.x, w.bk!.lane.z - w.ship.z);
     expect(metres(d)).toBe(10000);

@@ -43,7 +43,7 @@ Kept from the game where the brief differed: the brand fonts (Barlow Condensed, 
 | Upper right | Hull, Fluid (Story: the drive tank, jump fluid against the lane's cost) and Cyrite (Story: the purse), Energy | always |
 | Lower right, under the alert | one line of stores (Story: supplies, gold when low; Arcade: Cyrite, score and chain), then the plate: Torpedoes and Mines (dimmed until a fight, a lock or a reload), the place's heat | always |
 | Under the panel | power-ups running, one chip each with a countdown | while they run |
-| World | name and distance on the lane mouth, the port, an event, a neutral hull; brackets on hostiles; the target's brackets | in view |
+| World | name and distance on the Jump Gate, the port, an event, a neutral hull; brackets on hostiles; the target's brackets | in view |
 | Edge | a pointer for the objective and the capital ship, a chevron per hull out of view | when off screen |
 | Lower left | the scope; sector code and name; the scope's range | always (the text is hidden on phones) |
 | Lower right (top right under the ship panel on phones) | the alert (yellow or red, one compact plate); the last thing that happened | on cue |

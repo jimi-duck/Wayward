@@ -115,7 +115,7 @@ describe('mining', () => {
 });
 
 describe('the Breakout', () => {
-  it('lays the lane mouth out ahead, a minute flat out, with the port off the line about halfway', () => {
+  it('lays the Jump Gate out ahead, a minute flat out, with the port off the line about halfway', () => {
     const w = new World(1, { mode: 'breakout' });
     const b = w.bk!;
     expect(Math.hypot(b.lane.x, b.lane.z)).toBeCloseTo(LANE_DIST, 0);
@@ -251,7 +251,7 @@ describe('the Breakout', () => {
     expect(w.phase).toBe('over');
   });
 
-  it('calls the checkpoint near the lane mouth, and running it brings her after you', () => {
+  it('calls the checkpoint near the Jump Gate, and running it brings her after you', () => {
     const w = quiet();
     const b = w.bk!;
     w.ship.x = b.lane.x; w.ship.z = b.lane.z + 300;
