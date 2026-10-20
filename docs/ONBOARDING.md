@@ -89,3 +89,12 @@ The rename card (`story_rename`, 2026-10-20) comes after Sam's code and before t
 `OB-7731-A → WAYWARD`, three status rows, the temporary-repaint note, one button. It only reports the state the code
 already set. The ship picture is the supplied canonical art (`src/art/fleet/wayward-registry.webp`): the game's own
 3D hull is a darker single-engine design and does not match it, so a new angle of the yellow ship needs a new model.
+
+### Registry card, to the mock-up (2026-10-20, second pass)
+
+The rename card now has its own panel after the supplied mock-up (`#cm-reg`, `drawReg` in `ui/comms.ts`): emblem and
+header, `OB-7731-A → WAYWARD` with the amber warning box, the three status rows, the yellow ship, the repaint box with the
+grey and yellow thumbnails, the quick note and the neon `Take the helm` button. The ships are cut from the sticker sheet
+(`src/art/fleet/wayward-registry*.webp`, true alpha, no baked checkerboard). On a phone on its side only the identity, the
+rows, the ship and the button show. The other pop-ups (comms cards, the opening) take the same cyan hairline edge, glow and
+button. After the override (flag `ship_stolen`) the in-game hull is repainted yellow (`setLivery` in `render/wayward.ts`).

@@ -52,6 +52,24 @@ function materials(hits: Hit[]): Record<string, Material> {
   return mats;
 }
 
+/**
+ * The paint after the rename (docs/ONBOARDING.md): the hull goes from dark weathered plate to the yellow repaint of the
+ * registry notice. The materials are shared, so this tints them in place; the stock tints come back with `false`.
+ */
+const LIVERY = { stock: [0x77714f, 0x5a5535, 0xb28f36], yellow: [0xf0bd36, 0xd19824, 0xf8d058] } as const;
+let liveryOn = false;
+export function setLivery(yellow: boolean): void {
+  if (!mats || yellow === liveryOn) return;
+  liveryOn = yellow;
+  const tints = yellow ? LIVERY.yellow : LIVERY.stock;
+  (['paint', 'paint2', 'paint3'] as const).forEach((k, i) => {
+    const m = mats![k] as MeshStandardMaterial;
+    m.color.setHex(tints[i]!);
+    // the stock plate is nearly unlit; the repaint reads as paint in the sector's dim light
+    m.emissive.setRGB(yellow ? 0.1 : 0.008, yellow ? 0.065 : 0.004, 0);
+  });
+}
+
 // ── the stencils ──────────────────────────────────────────────────────────
 // One small atlas, painted at startup: hull numbers, a hazard band and the
 // registry, in dark paint worn through in places.

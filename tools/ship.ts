@@ -7,12 +7,15 @@ import { Post } from '../src/render/post';
 import { TIERS, tierIndex } from '../src/render/quality';
 import { createRenderer, fitRenderer } from '../src/render/renderer';
 import { ShipView } from '../src/render/ships';
+import { setLivery } from '../src/render/wayward';
 import { newShip } from '../src/sim/ship';
 
 const params = new URLSearchParams(location.search);
 const view = params.get('view') ?? 'three';
 const heat = Number(params.get('heat') ?? '0.6');
 const spin = params.get('spin') === '1';
+// ?livery=1: the yellow repaint after the rename
+const livery = params.get('livery') === '1';
 // ?hit=<bearing degrees>&age=<seconds into the flare>: freeze a shield flare from that bearing (0 ahead, 90 to starboard)
 const hitBearing = params.get('hit');
 const hitAge = Number(params.get('age') ?? '0.15');
@@ -27,6 +30,7 @@ const camera = new PerspectiveCamera(32, 1, 0.05, 4000);
 const post = new Post(renderer, scene, camera, tier);
 const ship = new ShipView();
 scene.add(ship.root);
+setLivery(livery);
 const s = newShip();
 s.heading = 0;
 s.thrust = heat;

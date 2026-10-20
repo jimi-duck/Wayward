@@ -9,6 +9,7 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
 import { num, t } from '../i18n';
 import { FACTION_NAME } from './hud';
+import { icon } from './icons';
 
 // ── the comms panel ───────────────────────────────────────────────────────
 // Grown out of the hail panel: every channel opened to the ship, drawn the
@@ -56,8 +57,8 @@ export interface CommsView {
   attach: string;
   /** Juno's line, or ''. */
   juno: string;
-  /** A note under the rows: title and line, or null. */
-  note: [string, string] | null;
+  /** The registry notice's layout (its own panel), or null for an ordinary card. */
+  reg: RegView | null;
   /** A second voice on the same channel (Sam cutting in), under the ledger. */
   reply: { from: string; text: string; portrait: string | null } | null;
   text: string;
@@ -72,7 +73,7 @@ export interface CommsView {
 }
 
 /** Which pictures a call could show: a portrait, the caller's emblem, the first hull on the read. */
-export interface ArtRef { portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; /** The hull drawn for this caller (`lancer-calloway`), tried before `ship`. */ owned?: string | null; scarred?: boolean; /** A hull picture for the right side of a notice (a `fleet` id). */ hero?: string | null }
+export interface ArtRef { portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; /** The hull drawn for this caller (`lancer-calloway`), tried before `ship`. */ owned?: string | null; scarred?: boolean }
 const NO_ART: ArtRef = { portrait: null, emblem: null, ship: null };
 
 /** The pictures a card could show, worked out from the card alone. */
@@ -81,7 +82,7 @@ export function artOf(d: Open['def']): ArtRef {
   const contact = d.id in CONTACTS ? CONTACTS[d.id] ?? d.id : null;
   const emblem = d.caller === 'calloway' ? 'office' : d.caller !== 'unknown' && d.caller !== 'captain' ? d.caller
     : /^The Voice/.test(d.from) ? 'voice' : /^The Thren/.test(d.from) ? 'thren' : null;
-  return { portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, owned: d.ships?.[0] ? `${d.ships[0].variant}-${d.caller}` : null, scarred: (d.scars ?? 0) > 0, hero: d.hero ?? null };
+  return { portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, owned: d.ships?.[0] ? `${d.ships[0].variant}-${d.caller}` : null, scarred: (d.scars ?? 0) > 0 };
 }
 
 const CALLER_CSS: Record<Caller, string> = {
@@ -114,6 +115,27 @@ function ledgerValue(r: LedgerRow): string {
   return sign + t(r.n !== undefined ? '{n} Cyrite' : '{n} credit', { n: Math.abs(amount) });
 }
 
+/** What the registry notice draws (a layout of its own, after the supplied mock-up). */
+export interface RegView {
+  org: string; sub: string; tag: string; label: string; from: string; to: string; body: string; hint: string;
+  rows: Array<[string, string]>; repaint: [string, string]; quick: [string, string]; button: string; foot: string;
+  before: string; after: string;
+}
+
+function regView(d: Open['def'], o: Open): RegView {
+  const [org = '', sub = ''] = d.from.split(' · ');
+  const [from = '', to = ''] = d.title.split(' → ');
+  return {
+    org: t(org), sub: t(sub), tag: t('Registry update'), label: t(d.gist ?? 'Registration updated'), from, to,
+    body: o.text, hint: t(d.choices[0]?.hint ?? ''),
+    rows: (o.ledger ?? []).map((r) => [t(r.k), ledgerValue(r)]),
+    repaint: [t(d.repaint?.[0] ?? ''), t(d.repaint?.[1] ?? '')], quick: [t(d.quick?.[0] ?? ''), t(d.quick?.[1] ?? '')],
+    button: t(d.choices[0]?.label ?? ''), foot: `${t(org)} // ${from}`, before: t('Original livery'), after: t('Current livery'),
+  };
+}
+
+const regIcon = (cls: string, id: string): HTMLElement => { const e = h('i', `rg-ico ${cls}`); e.append(icon(id)); e.setAttribute('aria-hidden', 'true'); return e; };
+
 /** A card on the table, as the panel draws it. */
 export function cardView(o: Open): CommsView {
   const d = o.def, r = o.read;
@@ -127,7 +149,7 @@ export function cardView(o: Open): CommsView {
     ledger: (o.ledger ?? []).map((r) => ({ k: t(r.k), v: ledgerValue(r), tone: r.tone ?? '' })),
     attach: d.attach ? t(d.attach) : '',
     juno: d.juno ? t(d.juno) : '',
-    note: d.note ? [t(d.note[0]), t(d.note[1])] : null,
+    reg: d.layout === 'registry' ? regView(d, o) : null,
     reply: d.reply ? { from: t(d.reply.from), text: t(d.reply.text), portrait: d.reply.portrait ?? null } : null,
     text: o.text,
     more: o.more.join(' '),
@@ -157,7 +179,7 @@ export function hailView(c: Contact): CommsView {
     ledger: [],
     attach: '',
     juno: '',
-    note: null,
+    reg: null,
     reply: null,
     text: t('She fights back with her escort · the area clears for the duel.'),
     more: '',
@@ -192,6 +214,8 @@ export class CommsPanel {
     this.onAnswer = onAnswer;
     this.opened = performance.now();
     this.sel = Math.max(0, view.choices.findIndex((c) => c.ok));
+    $('comms').classList.toggle('reg', !!view.reg);
+    if (view.reg) this.drawReg(view.reg);
     $('comms').classList.toggle('alert', view.alert);
     $('cm-k').textContent = view.kick;
     $('cm-t').textContent = view.title;
@@ -206,8 +230,6 @@ export class CommsPanel {
     $('cm-ledger').replaceChildren(...view.ledger.map((r) => h('li', r.tone, '', h('span', '', r.k), h('b', '', r.v))));
     $('cm-juno').textContent = view.juno;
     $('cm-juno').hidden = !view.juno;
-    $('cm-note').hidden = !view.note;
-    $('cm-note').replaceChildren(...(view.note ? [h('b', '', view.note[0]), h('span', '', view.note[1])] : []));
     // an attachment starts closed: a bar with its title, and Open / Close
     const att = $('cm-att');
     att.hidden = !view.attach || !view.ledger.length;
@@ -255,9 +277,7 @@ export class CommsPanel {
     if (emblem) $('cm-sigil').style.setProperty('--emblem', `url("${emblem}")`);
     else $('cm-sigil').style.removeProperty('--emblem');
     this.drawRead(view);
-    $('cm-body').classList.toggle('solo', !view.read && !view.art.hero);
-    $('cm-body').classList.toggle('hero', !!view.art.hero && !view.read);
-    $('comms').classList.toggle('heroed', !!view.art.hero && !view.read);
+    $('cm-body').classList.toggle('solo', !view.read);
     this.timer(0);
     this.render();
     $('comms').hidden = false;
@@ -274,6 +294,33 @@ export class CommsPanel {
       if (!view.read && e.code === 'KeyE') return this.pick(1), true;
       return e.code === 'Space' || e.code === 'Tab';
     }, ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+  }
+
+  /** The registry notice: its own panel, drawn after the mock-up (header, identity, status rows, ship, repaint, note, button). */
+  private drawReg(r: RegView): void {
+    const pic = (id: string, cls: string) => artImg('fleet', id, cls);
+    const thumb = (id: string, label: string, now: boolean) => h('figure', `rg-th${now ? ' now' : ''}`, '', pic(id, 'rg-thimg'), h('figcaption', '', label));
+    const btn = h('button', 'rg-go', '', regIcon('go', 'i-reg-go'), h('span', '', r.button));
+    (btn as HTMLButtonElement).type = 'button';
+    btn.onclick = () => this.pick(0);
+    btn.onpointerdown = (e) => e.stopPropagation();
+    $('cm-reg').replaceChildren(
+      h('header', 'rg-h', '', regIcon('seal', 'i-reg-seal'), h('div', 'rg-org', '', h('b', '', r.org), h('span', '', r.sub)), h('div', 'rg-tag', '', h('span', '', r.tag), h('span', '', r.from))),
+      h('div', 'rg-main', '',
+        h('div', 'rg-id', '', regIcon('warn', 'i-reg-warn'), h('div', '', '', h('em', '', r.label), h('h2', '', '', h('span', 'a', r.from), h('i', '', '→'), h('span', 'b', r.to)))),
+        h('p', 'rg-body', r.body),
+        h('p', 'rg-body', r.hint),
+        h('dl', 'rg-rows', '', ...r.rows.flatMap(([k, v]) => [h('dt', '', k), h('dd', '', v)])),
+        h('div', 'rg-ship', '', pic('wayward-registry', 'rg-hero')),
+      ),
+      h('div', 'rg-low', '',
+        h('section', 'rg-box rg-repaint', '', h('header', '', '', regIcon('brush', 'i-reg-brush'), h('b', '', r.repaint[0])), h('p', '', r.repaint[1]),
+          h('div', 'rg-ths', '', thumb('wayward-registry-before', r.before, false), thumb('wayward-registry-after', r.after, true))),
+        h('section', 'rg-box rg-quick', '', h('header', '', '', regIcon('info', 'i-reg-info'), h('b', '', r.quick[0])), h('p', '', r.quick[1])),
+        btn,
+      ),
+      h('footer', 'rg-foot', r.foot),
+    );
   }
 
   /** Show or hide the lines behind the (i). */
@@ -326,10 +373,8 @@ export class CommsPanel {
 
   private drawRead(v: CommsView): void {
     const box = $('cm-read');
-    const hero = v.art.hero ? artImg('fleet', v.art.hero, 'cm-hero') : null;
-    box.hidden = !v.read && !hero;
-    box.classList.toggle('hero', !!hero && !v.read);
-    if (!v.read) { box.replaceChildren(...(hero ? [hero] : [])); return; }
+    box.hidden = !v.read;
+    if (!v.read) { box.replaceChildren(); return; }
     const r = v.read, top = Math.max(r.them, r.you, 1);
     const bar = (label: string, n: number, cls: string) => {
       const b = h('div', `cm-bar ${cls}`, '', h('span', 'k', label), h('i'), h('b', '', n ? n.toFixed(0) : '—'));

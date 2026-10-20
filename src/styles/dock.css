@@ -545,12 +545,98 @@
 @media (max-height: 460px) { #comms .cm-juno { display: none; } }
 .op-attbody[hidden], #comms .cm-ledger[hidden], #comms .cm-att[hidden], #comms .cm-juno[hidden] { display: none; }
 
-#comms .cm-note { margin: 8px 0 0; display: grid; gap: 2px; padding: 6px 10px; border-left: 2px solid var(--caution); background: var(--scrim); }
-#comms .cm-note b { font: 600 11px/1.3 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--caution); }
-#comms .cm-note span { font: 400 13px/1.4 var(--font-display); color: var(--ink-2); }
-#comms .cm-note[hidden] { display: none; }
-#comms .cm-read.hero { display: grid; align-content: center; }
-#comms .cm-hero { mix-blend-mode: screen; display: block; width: 100%; height: auto; max-height: 300px; object-fit: contain; }
-@media (max-height: 460px) { #comms .cm-note { display: none; } #comms .cm-hero { max-height: 84px; } #comms .cm-read.hero { order: -1; } }
-#comms .cm-body.hero:not(.solo) { grid-template-columns: minmax(0, 1fr) minmax(120px, .55fr); align-items: center; }
-@media (max-height: 460px) { #comms .cm-body.hero:not(.solo) { grid-template-columns: minmax(0, 1fr); } #comms .cm-hero { max-height: 92px; } #comms.heroed .cm-ledger { display: none; } }
+/* ── the registry notice (#comms.reg), after the supplied mock-up: neon cyan hairlines, amber for the warning ── */
+#comms.reg .panel.comms, #comms:not(.reg) .panel.registry { display: none; }
+#comms .panel.registry {
+  --c: 16px; --edge: rgba(76, 194, 203, .72); --lit: var(--cy); --fill: rgba(4, 10, 18, .84);
+  width: min(1080px, 100%); max-height: calc(100dvh - 24px); overflow-y: auto; display: grid; gap: 14px; padding: 18px 26px 12px;
+  filter: drop-shadow(0 0 14px rgba(76, 194, 203, .26)); color: var(--ink);
+}
+.registry .rg-ico { display: inline-grid; place-items: center; flex: none; }
+.registry .rg-ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.registry .rg-h { display: flex; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(76, 194, 203, .35); }
+.registry .rg-h .rg-ico { width: 54px; height: 54px; color: var(--cy); filter: drop-shadow(0 0 6px rgba(76, 194, 203, .6)); }
+.registry .rg-org { display: grid; gap: 3px; }
+.registry .rg-org b { font: 500 clamp(18px, 2.2vw, 26px)/1.1 var(--font-head); letter-spacing: .26em; text-transform: uppercase; color: #dfeff2; }
+.registry .rg-org span { font: 500 12px/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.registry .rg-tag { margin-left: auto; display: flex; gap: 0; font: 500 12px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--cy); }
+.registry .rg-tag span { padding: 2px 16px; border-left: 1px solid rgba(76, 194, 203, .4); }
+.registry .rg-main { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); grid-template-rows: auto auto auto 1fr; column-gap: 28px; row-gap: 12px; align-items: start; min-height: 0; }
+.registry .rg-id { grid-column: 1; display: flex; align-items: center; gap: 16px; }
+.registry .rg-id .rg-ico { width: 62px; height: 62px; padding: 12px; border: 1.5px solid var(--caution); color: var(--caution); box-shadow: 0 0 14px rgba(201, 171, 102, .28), inset 0 0 12px rgba(201, 171, 102, .12); background: rgba(40, 28, 8, .45); }
+.registry .rg-id em { display: block; font: 500 16px/1.2 var(--font-rail); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--caution); }
+.registry .rg-id h2 { margin: 4px 0 0; display: flex; align-items: baseline; gap: 14px; font: 500 clamp(24px, 3vw, 38px)/1.1 var(--font-head); letter-spacing: .08em; text-transform: uppercase; }
+.registry .rg-id h2 .a { color: #eef6f7; }
+.registry .rg-id h2 i { font-style: normal; font-size: .7em; color: var(--cy); }
+.registry .rg-id h2 .b { color: var(--caution); text-shadow: 0 0 14px rgba(201, 171, 102, .35); }
+.registry .rg-body { grid-column: 1; margin: 0; font: 400 clamp(14px, 1.3vw, 17px)/1.55 var(--font-display); color: var(--ink); max-width: 46ch; }
+.registry .rg-rows { grid-column: 1; margin: 2px 0 0; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid rgba(76, 194, 203, .4); background: rgba(8, 20, 30, .45); }
+.registry .rg-rows dt, .registry .rg-rows dd { margin: 0; padding: 9px 14px; border-top: 1px solid rgba(76, 194, 203, .22); font: 500 clamp(13px, 1.2vw, 16px)/1.2 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
+.registry .rg-rows dt:first-of-type, .registry .rg-rows dt:first-of-type + dd { border-top: 0; }
+.registry .rg-rows dt { color: #9ed8de; }
+.registry .rg-rows dd { color: var(--caution); }
+.registry .rg-ship { grid-column: 2; grid-row: 1 / span 4; align-self: center; display: grid; place-items: center; }
+.registry .rg-hero { width: 100%; height: auto; max-height: 330px; object-fit: contain; filter: drop-shadow(0 6px 22px rgba(76, 194, 203, .22)); }
+.registry .rg-low { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(250px, .62fr); gap: 16px; align-items: stretch; padding-top: 12px; border-top: 1px solid rgba(76, 194, 203, .3); }
+.registry .rg-box { padding: 12px 14px; border: 1px solid rgba(76, 194, 203, .4); background: rgba(8, 20, 30, .45); display: grid; gap: 6px; align-content: start; }
+.registry .rg-box header { display: flex; align-items: center; gap: 10px; }
+.registry .rg-box header .rg-ico { width: 24px; height: 24px; color: var(--cy); }
+.registry .rg-box header b { font: 500 15px/1.2 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--cy); }
+.registry .rg-box p { margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink-2); }
+.registry .rg-ths { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+.registry .rg-th { margin: 0; padding: 6px; border: 1px solid rgba(76, 194, 203, .4); background: rgba(4, 10, 18, .6); display: grid; gap: 4px; }
+.registry .rg-th.now { border-color: var(--caution); box-shadow: 0 0 10px rgba(201, 171, 102, .25); }
+.registry .rg-thimg { width: 100%; height: 74px; object-fit: contain; }
+.registry .rg-th figcaption { font: 500 11px/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--cy); }
+.registry .rg-th.now figcaption { color: var(--caution); }
+.registry .rg-quick { align-self: start; }
+.registry .rg-go { white-space: nowrap; align-self: end; display: flex; align-items: center; gap: 0; min-height: 56px; padding: 0; border: 1px solid var(--cy); background: rgba(10, 40, 52, .55); color: #dff6f8; cursor: pointer; box-shadow: 0 0 18px rgba(76, 194, 203, .32), inset 0 0 14px rgba(76, 194, 203, .14); font: 500 17px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; transition: background .14s, box-shadow .14s; }
+.registry .rg-go .rg-ico { width: 56px; height: 54px; padding: 14px 16px; border-right: 1px solid rgba(76, 194, 203, .5); color: var(--cy); }
+.registry .rg-go span { flex: 1; padding: 0 18px; text-align: center; }
+.registry .rg-go:hover, .registry .rg-go:focus-visible { background: rgba(20, 70, 86, .7); box-shadow: 0 0 26px rgba(76, 194, 203, .5), inset 0 0 14px rgba(76, 194, 203, .22); outline: none; }
+.registry .rg-foot { padding-top: 8px; border-top: 1px solid rgba(76, 194, 203, .22); font: 400 11px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+@media (max-width: 860px) {
+  .registry .rg-main { grid-template-columns: 1fr; }
+  .registry .rg-ship { grid-column: 1; grid-row: auto; order: -1; }
+  .registry .rg-hero { max-height: 200px; }
+  .registry .rg-low { grid-template-columns: 1fr; }
+}
+/* a phone on its side: the identity, the rows, the ship and the button; the repaint box and the note stay for taller screens */
+@media (max-height: 460px) {
+  #comms .panel.registry { gap: 6px; padding: 8px 14px 6px; --c: 10px; }
+  .registry .rg-h { padding-bottom: 6px; gap: 10px; }
+  .registry .rg-h .rg-ico { width: 30px; height: 30px; }
+  .registry .rg-org b { font-size: 14px; letter-spacing: .2em; }
+  .registry .rg-org span, .registry .rg-tag { display: none; }
+  .registry .rg-main { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); column-gap: 12px; row-gap: 5px; }
+  .registry .rg-ship { grid-column: 2; grid-row: 1 / span 4; order: 0; }
+  .registry .rg-hero { max-height: 120px; }
+  .registry .rg-id { gap: 8px; }
+  .registry .rg-id .rg-ico { width: 34px; height: 34px; padding: 6px; }
+  .registry .rg-id em { font-size: 11px; }
+  .registry .rg-id h2 { font-size: 19px; gap: 8px; }
+  .registry .rg-body { font-size: 11.5px; line-height: 1.35; }
+  .registry .rg-body + .rg-body { display: none; }
+  .registry .rg-rows dt, .registry .rg-rows dd { padding: 3px 8px; font-size: 10.5px; }
+  .registry .rg-low { grid-template-columns: 1fr; padding-top: 6px; }
+  .registry .rg-box { display: none; }
+  .registry .rg-go { min-height: 44px; }
+  .registry .rg-go .rg-ico { height: 42px; padding: 10px 12px; }
+  .registry .rg-foot { display: none; }
+}
+
+/* ── the other pop-ups, a little toward the registry notice's neon: cyan hairline edge with a soft glow, wider-set titles, the same button ── */
+#comms:not(.reg) .panel.comms, #opening .panel.opening {
+  --edge: rgba(76, 194, 203, .6); --lit: var(--cy); --fill: rgba(4, 10, 18, .86);
+  filter: drop-shadow(0 0 12px rgba(76, 194, 203, .22));
+}
+#comms.alert:not(.reg) .panel.comms { --edge: var(--alert-dim); --lit: var(--alert); filter: drop-shadow(0 0 12px rgba(240, 96, 100, .2)); }
+#comms .tx-h { border-bottom-color: rgba(76, 194, 203, .35); }
+#comms.alert .tx-h { border-bottom-color: var(--alert-dim); }
+#comms .tx-msg h2, #opening .ph h2 { font-weight: 500; letter-spacing: .12em; }
+#comms .cm-c { border-color: rgba(76, 194, 203, .38); }
+#comms .cm-c.sel { border-color: var(--cy); box-shadow: 0 0 14px rgba(76, 194, 203, .28), inset 0 0 10px rgba(76, 194, 203, .1); }
+#op-go { border: 1px solid var(--cy); background: rgba(10, 40, 52, .55); color: #dff6f8; box-shadow: 0 0 16px rgba(76, 194, 203, .3), inset 0 0 12px rgba(76, 194, 203, .12); letter-spacing: .18em; }
+#op-go::before, #op-go::after { display: none; }
+#op-go:hover, #op-go:focus-visible { background: rgba(20, 70, 86, .7); box-shadow: 0 0 24px rgba(76, 194, 203, .48), inset 0 0 12px rgba(76, 194, 203, .2); }
+.op-att, #comms .cm-att { border-color: rgba(76, 194, 203, .38); }

@@ -3,6 +3,7 @@ import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
+import { setLivery } from './wayward';
 import { newShip, topSpeed, type ShipState } from '../sim/ship';
 import type { World } from '../sim/world';
 import { ArsenalView } from './arsenal';
@@ -453,6 +454,7 @@ export class Sector {
     this.ship.status.charged = world.powers.shield > 0 ? 1 : Math.min(1, world.shields);
     this.ship.status.cloaked = world.cloakT > 0;
     this.ship.status.rapid = world.powers.rapid > 0;
+    setLivery(world.flags.has('ship_stolen'));
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);
     this.streaks.begin();

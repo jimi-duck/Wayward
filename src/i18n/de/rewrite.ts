@@ -782,4 +782,12 @@ export const REWRITE: Record<string, string> = {
   "Registry status": "Registerstatus",
   "Owner lock": "Eignersperre",
   "Overridden": "Aufgehoben",
+  "Continuance Registry": "Continuance-Register",
+  "Automated registration notice": "Automatische Registrierungsmeldung",
+  "Registry update": "Register-Update",
+  "Original livery": "Ursprünglicher Anstrich",
+  "Current livery": "Aktueller Anstrich",
+  "Quick note": "Kurzer Hinweis",
+  "A fresh coat of paint helps get past a quick visual inspection. It won’t hold up to a proper scan, but it’ll get you through the gate.": "Ein frischer Anstrich hilft bei einer flüchtigen Sichtprüfung. Einem richtigen Scan hält er nicht stand, aber er bringt dich durchs Tor.",
+  "Continuance Registry · Automated registration notice": "Continuance-Register · Automatische Registrierungsmeldung",
 };
