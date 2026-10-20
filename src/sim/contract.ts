@@ -87,6 +87,7 @@ export function breachLedger(): LedgerRow[] {
     { k: 'Collection fees', cr: -COLLECTION, tone: 'warn' },
     { k: 'Torpedo launcher · financed', cr: -upgradePrice(), tone: 'warn' },
     { k: 'Vessel asset recovery', v: 'Authorised', tone: 'warn' },
+    { k: 'Repayment', v: 'Referral pending', tone: 'warn' },
     { k: 'Balance owed', cr: owed(), tone: 'bad' },
   ];
 }
@@ -101,23 +102,20 @@ export function seizedLedger(): LedgerRow[] {
   ];
 }
 
-/** Sam's offer: what the audit lane takes, and what the override costs. */
+/** Sam's offer: what the override does, said before the player confirms it. */
 export function lockLedger(): LedgerRow[] {
   return [
-    { k: 'Vessel', v: 'Leased · owner lock' },
-    { k: 'Audit lane', v: 'Repossession', tone: 'warn' },
-    { k: 'Your debt', v: 'Stays with you', tone: 'warn' },
-    { k: 'Maintenance code', v: 'Sam Okoro' },
-    { k: 'If used', v: 'Hull reported stolen', tone: 'bad' },
+    { k: 'Hull', v: 'Reported stolen', tone: 'bad' },
+    { k: 'Debt', v: 'Remains', tone: 'warn' },
+    { k: 'Core ports', v: 'Closed', tone: 'warn' },
   ];
 }
 
 /** The archive's one record: the reserve figure and the order it contradicts, with whoever signed it struck out. */
 export function archiveLedger(): LedgerRow[] {
   return [
-    { k: 'Krail reserve status', v: 'Day of shortage order' },
-    { k: 'Validated reserves', v: '94% remaining', tone: 'mine' },
-    { k: 'Shortage order', v: 'Issued 03:14' },
+    { k: 'Reserves', v: '94% nominal', tone: 'mine' },
+    { k: 'Shortage order', v: 'Same day · 23:14' },
     { k: 'Authorisation', v: 'Redacted', tone: 'warn' },
     { k: 'Relay reference', v: 'Halden’s Reach' },
     { k: 'Access key', v: 'Legacy · this hull only' },

@@ -170,6 +170,8 @@ export interface Outcome {
   /** The Civic Score moves by this (sim/civic.ts), and `civicWhy` says why, in a line the player sees. */
   civic?: number;
   civicWhy?: string;
+  /** The Score moves without a chip or a notice (the opening shows no number, band or delta). */
+  civicQuiet?: boolean;
   flag?: string | string[];
   unflag?: string | string[];
   standing?: Partial<Record<Standing, number>>;
@@ -273,6 +275,10 @@ export interface CardDef {
   gist?: string;
   /** A ledger under the text: the opening's contract in numbers (sim/contract.ts). */
   ledger?: LedgerKind;
+  /** The ledger is an optional attachment, closed until opened: its title. */
+  attach?: string;
+  /** Juno's own line under the call (hidden on short screens). */
+  juno?: string;
   /** A second voice on the same channel, under the ledger (Sam cutting in on the registry's notice). */
   reply?: { from: string; text: string; /** A contact portrait (content/art.ts) for the voice. */ portrait?: string };
   kind: CardKind;

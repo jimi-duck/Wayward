@@ -11,7 +11,7 @@ import { CARDS } from '../src/content/cards';
 
 const CAP = { title: 7, from: 10, text: 32, line: 15, read: 14, label: 8, hint: 19, win: 16, lose: 13 };
 /** Lines already over their cap, held at today's length. */
-const LEGACY: Record<string, number> = { 'text story_raiders': 62 };
+const LEGACY: Record<string, number> = {};
 
 const words = (s: string) => s.trim().split(/\s+/).length;
 

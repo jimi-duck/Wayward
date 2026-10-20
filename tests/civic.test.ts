@@ -121,7 +121,7 @@ describe('the opening chain beyond the gate', () => {
   });
   it('shows the archive’s one record: 94% on the day of the order', () => {
     const rows = ledgerFor('archive');
-    expect(rows.find((r) => r.k === 'Validated reserves')?.v).toBe('94% remaining');
+    expect(rows.find((r) => r.k === 'Reserves')?.v).toBe('94% nominal');
     expect(rows.find((r) => r.k === 'Authorisation')?.v).toBe('Redacted');
   });
 });

@@ -1,4 +1,4 @@
-import { civicLabel, civicNote } from '../sim/civic';
+import { civicNote } from '../sim/civic';
 import { CONTRACT_ID, type Cargo } from '../sim/contract';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
@@ -203,7 +203,7 @@ export class Hud {
         case 'commsAnswer':
           this.note(world, t(e.text), e.won ? undefined : 'hit');
           // the lock is broken: the registry mark goes, and the name is hers (docs/ONBOARDING.md)
-          if (e.id === 'story_sam' && e.won) this.notify(world, { type: 'arrival', headline: 'WAYWARD', reason: `OB-7731-A · ${t('Vessel registry · unrecognised')}`, key: 'rename' });
+          if (e.id === 'story_sam' && e.won) this.notify(world, { type: 'arrival', headline: 'WAYWARD', reason: `OB-7731-A · ${t('Unregistered · Core ports closed')}`, key: 'rename' });
           break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
@@ -614,8 +614,7 @@ export class Hud {
       // the work order, live (sim/contract.ts): what is in the hold, and what the work bay has counted. Never one number for both.
       const cg = cargoOf(world);
       text($('obj-s'), cg ? cargoLine(cg) : '');
-      const civic = cg && world.civic !== undefined ? `<li>${t('Civic Score')} · <b>${civicLabel(world.civic)}</b></li>` : '';
-      const html = `${civic}<li>${LESSON_HINT[les.hint]!.map(([c, k]) => `<span class="${c}">${t(k)}</span>`).join('')}</li>`;
+      const html = `<li>${LESSON_HINT[les.hint]!.map(([c, k]) => `<span class="${c}">${t(k)}</span>`).join('')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
     } else if (bk && course) {
