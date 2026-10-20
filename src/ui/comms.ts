@@ -52,6 +52,10 @@ export interface CommsView {
   gist: string;
   /** Contract rows under the text (label, amount or word, tone), or none. */
   ledger: Array<{ k: string; v: string; tone: string }>;
+  /** The ledger's attachment title (it starts closed), or '' when the rows just show. */
+  attach: string;
+  /** Juno's line, or ''. */
+  juno: string;
   /** A second voice on the same channel (Sam cutting in), under the ledger. */
   reply: { from: string; text: string; portrait: string | null } | null;
   text: string;
@@ -119,6 +123,8 @@ export function cardView(o: Open): CommsView {
     alert: HOSTILE.has(d.kind) || o.slow > 0,
     gist: gistOf(d, o.text),
     ledger: (o.ledger ?? []).map((r) => ({ k: t(r.k), v: ledgerValue(r), tone: r.tone ?? '' })),
+    attach: d.attach ? t(d.attach) : '',
+    juno: d.juno ? t(d.juno) : '',
     reply: d.reply ? { from: t(d.reply.from), text: t(d.reply.text), portrait: d.reply.portrait ?? null } : null,
     text: o.text,
     more: o.more.join(' '),
@@ -146,6 +152,8 @@ export function hailView(c: Contact): CommsView {
     kick: t('Alarm'), title: t(c.name), sub: `${t('{f} capital ship', { f: t(FACTION_NAME[c.faction] ?? c.faction) })} · ${t('on intercept')}`, colour: NEON_CSS[c.faction], alert: true,
     gist: t('A capital ship is on intercept'),
     ledger: [],
+    attach: '',
+    juno: '',
     reply: null,
     text: t('She fights back with her escort · the area clears for the duel.'),
     more: '',
@@ -192,7 +200,19 @@ export class CommsPanel {
     $('cm-gist').style.setProperty('--cc', view.colour);
     $('cm-text').textContent = view.text;
     $('cm-ledger').replaceChildren(...view.ledger.map((r) => h('li', r.tone, '', h('span', '', r.k), h('b', '', r.v))));
-    $('cm-ledger').hidden = !view.ledger.length;
+    $('cm-juno').textContent = view.juno;
+    $('cm-juno').hidden = !view.juno;
+    // an attachment starts closed: a bar with its title, and Open / Close
+    const att = $('cm-att');
+    att.hidden = !view.attach || !view.ledger.length;
+    const setAtt = (on: boolean) => {
+      $('cm-ledger').hidden = !view.ledger.length || (!!view.attach && !on);
+      att.setAttribute('aria-expanded', String(on));
+      att.replaceChildren(h('span', '', `${t('Attached')} · ${view.attach}`), h('b', '', t(on ? 'Close' : 'Open')));
+    };
+    setAtt(false);
+    att.onclick = () => setAtt(att.getAttribute('aria-expanded') !== 'true');
+    att.onpointerdown = (e) => e.stopPropagation();
     $('cm-reply').hidden = !view.reply;
     // on a short screen the second voice moves beside the answers (the card's left column is full): the same words
     $('cm-reply-s').hidden = !view.reply;

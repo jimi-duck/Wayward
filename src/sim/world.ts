@@ -1537,7 +1537,7 @@ export class World implements EncounterHost {
     if (out.civic && this.civic !== undefined) {
       const was = this.civic;
       this.civic = clampCivic(was + out.civic);
-      if (this.civic !== was) this.events.push({ type: 'civic', from: was, to: this.civic, why: out.civicWhy ?? '' });
+      if (this.civic !== was && !out.civicQuiet) this.events.push({ type: 'civic', from: was, to: this.civic, why: out.civicWhy ?? '' });
     }
     if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
     if (out.hostile) for (const al of this.aliens) if (al.ward) provoke(al, this.events);

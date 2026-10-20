@@ -539,3 +539,8 @@
   #rd-call:not(.job) .rd-text { font-size: 16px; line-height: 1.45; }
   #rd-call:not(.job) .rd-id b { font-size: 19px; }
 }
+
+#comms .cm-juno { margin: 6px 0 0; padding-left: 10px; border-left: 2px solid var(--blue); font: 400 14px/1.4 var(--font-display); font-style: italic; color: var(--ink-2); }
+#comms .cm-att { margin: 8px 0 4px; }
+@media (max-height: 460px) { #comms .cm-juno { display: none; } }
+.op-attbody[hidden], #comms .cm-ledger[hidden], #comms .cm-att[hidden], #comms .cm-juno[hidden] { display: none; }

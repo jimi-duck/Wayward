@@ -74,3 +74,13 @@ When the second raider falls the training stops and the run begins. The gate is 
 ## Pop-up gist
 
 Story cards carry a `gist` of at most ten words (set in `content/story.ts`), shown above the text so a pop-up reads at a glance.
+
+## v5 handover (2026-10-20)
+
+The opening follows the "Pop-ups, v2" sheet and the v5 handover: two opening cards (resident record, then the contract
+notice), each with one button and an optional file that starts closed. The Work Bay, raiders, breach, Sam and archive
+cards use the sheet's headlines, with Juno's line (hidden on short phones) and an optional attachment (`attach` on the
+card). No score, band or delta shows in the onboarding: the Score still moves behind the scenes (`civicQuiet`).
+
+Where the sheet and the code differ, the code stands: the breach bill is 1,500 credit (user's call, 2026-10-19), not
+47, and the short-delivery penalty is 250, not 15. The contract file reads its figures from `sim/contract.ts`.
