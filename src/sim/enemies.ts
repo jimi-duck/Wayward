@@ -190,6 +190,10 @@ export const VARIANTS: Record<string, Variant> = {
   enforcer: { id: 'enforcer', kind: 'raptor',  faction: 'custody',     label: 'Enforcer',       at: Infinity, weight: 0, cap: 2 },
   interdictor: { id: 'interdictor', kind: 'stalker', faction: 'custody', label: 'Interdictor', at: Infinity, weight: 0, cap: 2 },
   freighter: { id: 'freighter', kind: 'freighter', faction: 'custody', label: 'Freighter', at: Infinity, weight: 0, cap: 0 },
+  // the first system past Cerro's working traffic (sim/traffic.ts): nobody's enemy until the ship makes them one
+  hauler:   { id: 'hauler',   kind: 'freighter', faction: 'custody', label: 'Ore hauler',    at: Infinity, weight: 0, cap: 0 },
+  barge:    { id: 'barge',    kind: 'freighter', faction: 'gutter',  label: 'Mining barge',  at: Infinity, weight: 0, cap: 0 },
+  liner:    { id: 'liner',    kind: 'freighter', faction: 'office',  label: 'Freight liner', at: Infinity, weight: 0, cap: 0 },
 };
 export const VARIANT_ORDER = Object.keys(VARIANTS);
 

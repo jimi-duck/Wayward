@@ -56,7 +56,7 @@ is still quiet: it has no pursuit.
   systems and lanes do not move), swaps in the Net's tightened variant,
   settles a finished one into the chart.
 - `sim/stage.ts` plays one in a sortie: places the site off the straight line
-  to the lane mouth (on the way, not in the way), spawns the ships, offers the
+  to the Jump Gate (on the way, not in the way), spawns the ships, offers the
   call to the comms desk, runs the goal, ends it.
 - `render/site.ts` draws the prop.
 - The goal is an ordinary sector event to the HUD (`Encounter` id `scene`, with

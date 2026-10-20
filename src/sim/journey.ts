@@ -30,6 +30,7 @@ import type { Faction } from './enemies';
 import type { EndingId } from '../content/endings';
 import { ACTS, CHOICE_REGION } from '../content/story';
 import { actLine, dueBeat } from './story';
+import { postJump } from './postjump';
 import { CIVIC_START, clampCivic } from './civic';
 
 // ── the journey ───────────────────────────────────────────────────────────
@@ -212,7 +213,7 @@ export function sortieDef(j: Journey): SortieDef {
   const route = j.dest ? routeBetween(j.chart, s.id, j.dest) : null;
   // Calloway: here already (she calls once you are clear of the arrival), or due in so many days of lingering
   const until = daysUntil(j.hunt, j.chart, j.trail);
-  // the jump to the Threshold: she is not behind you, she is waiting at the lane mouth
+  // the jump to the Threshold: she is not behind you, she is waiting at the Jump Gate
   const finale = j.dest === j.chart.edge;
   const offer = offerFor(j.calloway, { day: j.day, behind: behind(j.hunt, j.trail), caught: j.hunt.caught, flown: j.trail.length - 1, flags: j.carry.flags, hurt: j.carry.plates <= 2, netted: net });
   const p = placeAt(j.chart, s.id), pd = p && PLACES[p.id];
@@ -229,7 +230,7 @@ export function sortieDef(j: Journey): SortieDef {
   const quoted = s.port ? pricesAt(j.chart, s.id)! : null;
   // a copy: the chart's own prices are not the flags' to change
   const prices = quoted && { ...quoted, plate: Math.round(quoted.plate * echo.plates) };
-  return {
+  const def: SortieDef = {
     survival: j.survival, threat: threatAt(j.chart, s.id), pay: bountyAt(j.chart, s.id), system: s.id, region: tierOf(j.chart, regionOf(s)), sky: R.sky, name: s.name, kind: s.kind, dest: j.dest ? sysById(j.chart, j.dest).name : 'nowhere', jumpCost: route?.cyrite ?? JUMP_COST, lane: s.lane,
     port: prices ? { name: s.port!.name, prices } : null,
     heat: Math.max(0, Math.min(0.6, t.heat + (net ? 0.25 : 0) + echo.heat)), heatRate: t.heatRate * (net ? 1.3 : R.heatRate),
@@ -243,6 +244,8 @@ export function sortieDef(j: Journey): SortieDef {
     story: quiet ? null : dueBeat(j),
     situation: liveSituation(j.chart, s.id)?.id ?? null,
   };
+  // the first system past Cerro is its own level (sim/postjump.ts)
+  return j.trail.length === 2 ? postJump(def) : def;
 }
 
 /** The lanes on offer from here, with what each costs and what is known at the other end. */

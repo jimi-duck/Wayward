@@ -2,6 +2,7 @@ import { angleDelta } from '../core/math';
 import { ENCOUNTERS } from './encounters';
 import { ALIEN_TYPES, cloaked, FIRE_RANGE } from './enemies';
 import { topSpeed } from './ship';
+import { lockLifted } from './postjump';
 import type { World } from './world';
 
 // ── the guide ─────────────────────────────────────────────────────────────
@@ -21,7 +22,7 @@ export const BEHIND = (135 * Math.PI) / 180;
 export const FIGHT_RANGE = FIRE_RANGE * 1.25;
 
 export interface Guide {
-  kind: 'lane' | 'port' | 'event';
+  kind: 'lane' | 'port' | 'audit' | 'event';
   /** English; the strip runs it through t(). */
   name: string;
   x: number;
@@ -31,7 +32,7 @@ export interface Guide {
 }
 
 export interface Place {
-  kind: 'lane' | 'port';
+  kind: 'lane' | 'port' | 'audit';
   name: string;
   x: number;
   z: number;
@@ -59,16 +60,17 @@ export function fix(sx: number, sz: number, heading: number, x: number, z: numbe
   return { rel: angleDelta(heading, Math.atan2(-(z - sz), x - sx)), dist: Math.hypot(x - sx, z - sz) };
 }
 
-/** The one thing to go to now: an event's marker, else the lane mouth (the port while the clamps close). Null in the arcade between events. */
+/** The one thing to go to now: an event's marker, else the audit dock until the owner lock is lifted, then the Jump Gate (the port while the clamps close). Null in the arcade between events. */
 export function guideTarget(world: World): Guide | null {
   if (!world.alive || world.phase === 'over') return null;
   const e = world.encounter, bk = world.bk;
   const places = world.seenPlaces();
-  const lane = places.find((p) => p.kind === 'lane'), port = places.find((p) => p.kind === 'port');
+  const lane = places.find((p) => p.kind === 'lane'), port = places.find((p) => p.kind === 'port'), audit = places.find((p) => p.kind === 'audit');
   const busy = !!bk && (bk.spool > 0 || bk.dockT > 0 || bk.jumpT >= 0);
   if (e && !e.done && !e.dormant && e.r > 0 && !busy) return { kind: 'event', name: e.label ?? e.place ?? ENCOUNTERS[e.id].name, x: e.x, z: e.z, r: e.r };
   if (bk) {
     if (bk.dockT > 0 && port) return { kind: 'port', name: port.name, x: port.x, z: port.z, r: port.r };
+    if (audit && !lockLifted(world.flags)) return { kind: 'audit', name: audit.name, x: audit.x, z: audit.z, r: audit.r };
     if (lane) return { kind: 'lane', name: lane.name, x: lane.x, z: lane.z, r: lane.r };
   }
   return null;

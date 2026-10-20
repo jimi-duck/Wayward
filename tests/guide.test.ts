@@ -32,7 +32,7 @@ function hull(w: World, kind: 'scout' | 'lancer' | 'freighter', deg: number, dis
 }
 
 describe('the guide: where to go', () => {
-  it('names the lane mouth in the Story, ahead and slightly left, as an angle and a distance', () => {
+  it('names the Jump Gate in the Story, ahead and slightly left, as an angle and a distance', () => {
     const w = story();
     lane(w, 30, 240);
     const g = guideTarget(w)!;

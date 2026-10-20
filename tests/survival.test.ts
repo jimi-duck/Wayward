@@ -748,7 +748,7 @@ describe('the voyage', () => {
 });
 
 describe('a mode that is playable', () => {
-  /** One sortie, flown by holding the nose at the lane mouth and firing; with the ship kept whole, it must neither stall nor spiral. */
+  /** One sortie, flown by holding the nose at the Jump Gate and firing; with the ship kept whole, it must neither stall nor spiral. */
   it('lets every mode begin a sortie, cut rock and reach a state it can leave', () => {
     for (const id of SURVIVAL_IDS) {
       const j = newJourney(7, false, 'three', id);

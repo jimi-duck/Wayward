@@ -2,6 +2,7 @@ import { CARDS } from './cards';
 import { COPY } from './copy';
 import { ECONOMY } from './economy';
 import { MISSIONS } from './missions';
+import { POSTJUMP } from './postjump';
 import { REWRITE } from './rewrite';
 import { SCENES } from './scenes';
 import { SPACE } from './space';
@@ -20,7 +21,7 @@ import { WORLD } from './world';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([
@@ -33,7 +34,7 @@ export const KEEP = new Set<string>([
   // systems and ports
   'Halden’s Reach', 'Tollmere', 'Vesta', 'Ashgrove', 'Corrin Deep', 'Marlow', 'Sallow', 'Pell', 'Northfold', 'Dunmore', 'Kettle', 'Branford',
   'Oriel', 'Wick', 'Lantern', 'Hask', 'Sable Run', 'Greyhollow', 'Imbrie', 'Coldwater', 'Tamsin’s Rest', 'Hollis', 'Fallow', 'Quarry Nine',
-  'Cerro', 'Kellern Fuel Dock', 'Kellern Claim Office', 'Frontier Supply Depot', 'Dust Traders Exchange', 'Guild Hall', 'The Bent Nail',
+  'Cerro', 'Kellern Fuel Dock', 'Kellern Claim Office', 'Frontier Supply Depot', 'Kellern Audit Dock', 'Dust Traders Exchange', 'Guild Hall', 'The Bent Nail',
   'Salvage Barge', 'Holdfast Stores', 'The Claim Hall', 'Free Dock', 'Claim Shack', 'Kellern Mining',
   // the made-up names a region deals (content/regions.ts NAME_PEOPLE, NAME_PLACES)
   'Hadley', 'Morgan', 'Kowalski', 'Amara', 'Okafor', 'Jansen', 'Ibarra', 'Lindqvist', 'Castell', 'Nakamura', 'Brandt', 'Quill',

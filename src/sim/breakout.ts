@@ -18,7 +18,7 @@ import type { Rng } from './rng';
 // The opening of WAYWARD: get the stolen hauler out of the home system. The
 // sortie has a shape instead of an endless clock:
 //
-//   the lane mouth · far across the system, the old jump lane out. Reach it
+//   the Jump Gate · far across the system, the old jump lane out. Reach it
 //                    with enough jump fluid in the tank, let the drive charge
 //                    on the way in, and fly through the ring: you are gone. A Custody capital ship
 //                    blockades it, and her checkpoint is a comms card: run
@@ -46,7 +46,7 @@ import type { Rng } from './rng';
 export type Mode = 'breakout' | 'arcade';
 
 export interface Waypoint {
-  kind: 'port' | 'lane';
+  kind: 'port' | 'lane' | 'audit';
   name: string;
   x: number;
   z: number;
@@ -54,7 +54,10 @@ export interface Waypoint {
   r: number;
 }
 
-/** Straight-line distance from the start to the lane mouth: about a minute flat out. */
+/** The audit dock's ring (units): the company's yard in the first system past Cerro. It takes no docking; it is the first mark on the way. */
+export const AUDIT_R = 24;
+
+/** Straight-line distance from the start to the Jump Gate: about a minute flat out. */
 export const LANE_DIST = 2600;
 /** The port: this far along the line, this far off it. */
 export const PORT_ALONG = 1000;
@@ -73,14 +76,14 @@ export const START_CYRITE = 6;
 export const HOLD_MAX = 999;
 /** The drive tank (sim/purse.ts): a lane and a half. The Thren swarms read the tank against it. */
 export { TANK_MAX };
-/** Seconds inside the lane mouth for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
+/** Seconds inside the Jump Gate for the drive to spool; and how much longer once you have run the blockade (her interdiction field drags on the drive). */
 export const SPOOL = 5;
 /** The drive charges from this far out (further when it needs longer: about 46 units a second of charge, a little over the top speed), so a ship flying in is ready as it reaches the ring and goes straight through. */
 export const APPROACH = 230;
 /** Seconds from the ship entering the ring to the jump being over: the fly-through (render/warp.ts). */
 export const JUMP_T = 3;
 export const SPOOL_RUN = 2.2;
-/** Within this distance of the lane mouth, the blockade's checkpoint calls. */
+/** Within this distance of the Jump Gate, the blockade's checkpoint calls. */
 export const BLOCKADE_AT = 420;
 /** The blockade's hull against an arcade run's first capital ship: she is the system's picket flagship, not an introduction. */
 export const BLOCKADE_HP = 3;
@@ -168,10 +171,13 @@ export interface SortieDef {
   /** Where the plotted lane goes, and the jump fluid it takes to jump. */
   dest: string;
   jumpCost: number;
-  /** Distance to the lane mouth. */
+  /** Distance to the Jump Gate. */
   lane: number;
   /** The port, if there is one: its name and today's prices. */
   port: { name: string; prices: Prices } | null;
+  /** The first system past Cerro (sim/postjump.ts): the company's audit dock stands off the course under this name, and the port is the supply depot on the way to the Jump Gate. */
+  audit?: string;
+  first?: boolean;
   /** Heat at arrival, and a multiplier on how fast it climbs. */
   heat: number;
   heatRate: number;
@@ -192,7 +198,7 @@ export interface SortieDef {
   calls: number;
   /** The pursuit's room to breathe (content/systems.ts): the first pursuer's time, and the quiet after an answered card or a beaten pursuer. The Breakout has none. */
   pace?: { first: number; calm: number };
-  /** A Custody blockade holds the lane mouth (Cerro, and every netted system). */
+  /** A Custody blockade holds the Jump Gate (Cerro, and every netted system). */
   blockade: boolean;
   netted: boolean;
   /** Seconds into the sortie that Calloway arrives (Infinity: not in this sortie), and jumps she is behind at arrival. */
@@ -202,7 +208,7 @@ export interface SortieDef {
   home: boolean;
   /** What the factions' notice brings here: tiers the cards read, fees, the pursuit, a captain. */
   notice: Pressure;
-  /** What Calloway knows of you here (sim/calloway.ts): the tricks she is wise to, her ship, an offer, and whether she waits at the lane mouth for the last time. */
+  /** What Calloway knows of you here (sim/calloway.ts): the tricks she is wise to, her ship, an offer, and whether she waits at the Jump Gate for the last time. */
   nemesis: Nemesis;
   /** The place in this system still to be dealt with (content/phenomena.ts): the event it plays, a little after arrival. */
   place?: { name: string; text: string; plays: EncounterId; id?: string } | null;
@@ -307,7 +313,7 @@ export function pickPursuer(heat: number, rng: Rng, gutter = 0.22, ahead: readon
 // with a web layer once they are thick, drawn by the fluid aboard. The
 // fuller the tank, the sooner and the oftener they come. Near them,
 // sensors and navigation go strange: the scope fills with static and the
-// lane mouth will not hold still (World.navNoise).
+// Jump Gate will not hold still (World.navNoise).
 
 /** Seconds to the first swarm, and between swarms, with an empty tank in thin Thren and a full one in thick; the fluid aboard divides it. */
 export const SWARM_FIRST = 50;
@@ -353,24 +359,32 @@ export function rockYield(kind: RockKind, size: RockSize, k = 1): Yield {
 
 // ── the course ────────────────────────────────────────────────────────────
 
-/** A sortie's places, laid out from the start along the ship's heading: the lane mouth ahead, the port (if any) off the line about halfway. */
-export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { lane: Waypoint; port: Waypoint | null } {
+/** Where the first system past Cerro puts its places, as a share of the way to the Jump Gate and how far off the line (right is positive). */
+export const FIRST_AUDIT = { along: 0.3, off: 300 };
+export const FIRST_DEPOT = { along: 0.8, off: -190 };
+
+/** A sortie's places, laid out from the start along the ship's heading: the Jump Gate ahead, the port (if any) off the line about halfway (the first system past Cerro: the audit dock early on one side, the depot late on the other). */
+export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { lane: Waypoint; port: Waypoint | null; audit: Waypoint | null } {
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
   const along = def.lane * (PORT_ALONG / LANE_DIST);
+  const at = (k: { along: number; off: number }) => ({ x: x + fx * def.lane * k.along + rx * k.off, z: z + fz * def.lane * k.along + rz * k.off });
   return {
-    lane: { kind: 'lane', name: 'Lane entrance', x: x + fx * def.lane, z: z + fz * def.lane, r: LANE_R },
-    port: def.port ? { kind: 'port', name: def.port.name, x: x + fx * along + rx * PORT_OFF, z: z + fz * along + rz * PORT_OFF, r: PORT_R } : null,
+    lane: { kind: 'lane', name: 'Jump Gate', x: x + fx * def.lane, z: z + fz * def.lane, r: LANE_R },
+    port: def.port ? { kind: 'port', name: def.port.name, ...(def.first ? at(FIRST_DEPOT) : { x: x + fx * along + rx * PORT_OFF, z: z + fz * along + rz * PORT_OFF }), r: PORT_R } : null,
+    audit: def.audit ? { kind: 'audit', name: def.audit, ...at(FIRST_AUDIT), r: AUDIT_R } : null,
   };
 }
 
-/** The places in a sortie: the lane mouth, and the port if there is one. */
-export const places = (b: Breakout): Waypoint[] => (b.port ? [b.lane, b.port] : [b.lane]);
+/** The places in a sortie: the Jump Gate, the port if there is one, and the audit dock where the system has it. */
+export const places = (b: Breakout): Waypoint[] => [b.lane, ...(b.port ? [b.port] : []), ...(b.audit ? [b.audit] : [])];
 
 /** The Breakout's state while it runs. */
 export interface Breakout {
   def: SortieDef;
   lane: Waypoint;
   port: Waypoint | null;
+  /** The company's audit dock (the first system past Cerro only): a mark to fly to, never a berth. */
+  audit: Waypoint | null;
   /** Jump fluid the plotted jump takes. */
   jumpCost: number;
   /** The port's prices today. */
@@ -381,7 +395,7 @@ export interface Breakout {
   chase: { t0: number; wave: number } | null;
   /** When the next Thren swarm comes (Infinity: no Thren here). */
   nextSwarm: number;
-  /** Seconds the drive has spooled inside the lane mouth, and the seconds it needs. */
+  /** Seconds the drive has spooled inside the Jump Gate, and the seconds it needs. */
   spool: number;
   spoolNeed: number;
   /** Seconds slow inside the port's ring. */
@@ -403,7 +417,7 @@ export interface Breakout {
 export function newBreakout(heading: number, def: SortieDef = HOME): Breakout {
   const c = course(heading, 0, 0, def);
   return {
-    def, lane: c.lane, port: c.port, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, chase: null, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
+    def, lane: c.lane, port: c.port, audit: c.audit, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, chase: null, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }

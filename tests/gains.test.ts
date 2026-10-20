@@ -14,7 +14,7 @@ describe('what a choice brings', () => {
     for (const c of CARDS) for (const ch of c.choices) expect(gains(ch.win, ctx(), 40).length, `${c.id}.${ch.id}`).toBeLessThanOrEqual(MAX_GAINS);
   });
 
-  it('says where the lane mouth leaves you', () => {
+  it('says where the Jump Gate leaves you', () => {
     const cp = CARD_BY_ID.checkpoint!;
     const of = (id: string) => gains(cp.choices.find((c) => c.id === id)!.win, ctx(), 40);
     expect(of('talk')).toContain('Through the lane');

@@ -188,7 +188,7 @@ const GIST: Record<string, string> = {
 const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: 'story', gist: GIST[c.id], ...c });
 
 /**
- * Cerro's lane mouth: the first time the Score is a door. The registry reads the pilot, not the hull: a compliant
+ * Cerro's Jump Gate: the first time the Score is a door. The registry reads the pilot, not the hull: a compliant
  * pilot is waved through; one under review has to scan, pay, send the yard's codes, run or fight.
  */
 export const REGISTRY_CARD: CardDef = {

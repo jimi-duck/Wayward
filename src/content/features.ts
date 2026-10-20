@@ -51,7 +51,7 @@ export interface Effects {
   sight?: number;
   /** Torpedo seek: 0 means no lock at all. */
   lock?: number;
-  /** Navigation noise, 0 to 1 (the lane mouth wanders; sim/world.ts navNoise). */
+  /** Navigation noise, 0 to 1 (the Jump Gate wanders; sim/world.ts navNoise). */
   jam?: number;
   /** Drag on the ship and every hull. */
   drag?: number;

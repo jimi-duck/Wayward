@@ -21,6 +21,7 @@ import { damageWord } from './panels';
 import { Notifier, type Notice } from './notify';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
+import { lockLifted } from '../sim/postjump';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // The ship and the world come first; the HUD answers five questions and
@@ -205,7 +206,7 @@ export class Hud {
           break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
-        case 'spool': this.banner(t('Lane entrance'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
+        case 'spool': this.banner(t('Jump Gate'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
         case 'needFuel': this.banner(t('Ship system'), t('Not enough jump fluid'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
@@ -252,7 +253,7 @@ export class Hud {
         }
         case 'damageControl': this.banner(t('Ship system'), t('Hull stable'), t('One hull plate left · repair soon'), 2, 'caution'); break;
         case 'chain': this.note(world, t('Chain {n} · score ×{m}', { n: e.count, m: e.mult }), 'gain'); break;
-        case 'chase': this.note(world, t('Pirate reinforcements · run for the jump gate'), 'hit'); break;
+        case 'chase': this.note(world, t('Pirate reinforcements · run for the Jump Gate'), 'hit'); break;
         case 'squad': this.note(world, t('{name} inbound', { name: t(e.label) }), 'hit'); break;
         case 'salvage': this.note(world, `${t('Salvage')}${e.tech ? ` · ${t('{f} tech recovered', { f: faction(e.faction) })}` : ''}`, 'gain'); break;
         case 'cloak': this.note(world, t('Cloak active · enemies cannot target you'), 'gain'); break;
@@ -616,7 +617,7 @@ export class Hud {
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
     } else if (bk && course) {
-      // the Breakout's course: the lane mouth, or what is happening at one of the two places
+      // the Breakout's course: the Jump Gate, or what is happening at one of the two places
       const s = world.ship;
       const dl = Math.hypot(bk.lane.x - s.x, bk.lane.z - s.z);
       if (bk.jumpT >= 0) {
@@ -630,12 +631,21 @@ export class Hud {
       } else {
         // the one thing to do now, and at most two quiet lines under it
         const ready = world.fuel >= world.jumpCost;
-        text($('obj-t'), t(bk.chase ? 'Reach the jump gate' : ready ? 'Head for the lane entrance' : 'Fill the tank'));
-        text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
-        ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
+        // the first system past Cerro: the audit dock is the course until Sam's code has lifted the owner lock
+        const aud = lockLifted(world.flags) ? undefined : world.seenPlaces().find((p) => p.kind === 'audit');
+        const da = aud ? Math.hypot(aud.x - s.x, aud.z - s.z) : 0;
+        if (aud) {
+          text($('obj-t'), t('Head for the audit dock'));
+          text($('obj-left'), range(da));
+          ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
+        } else {
+          text($('obj-t'), t(bk.chase ? 'Reach the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
+          text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
+          ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
+        }
         text($('obj-s'), bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
         const lines: string[] = [];
-        if (!ready) lines.push(`${t('Reach the lane entrance')} · <b>${range(dl)}</b>`);
+        if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
         // a place asleep in the sky: off the course, there if the ship wants it
         if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);

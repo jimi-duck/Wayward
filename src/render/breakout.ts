@@ -4,12 +4,12 @@ import {
 } from 'three';
 import { clamp } from '../core/math';
 import type { World } from '../sim/world';
-import { SAFE_R } from '../sim/breakout';
+import { AUDIT_R, SAFE_R } from '../sim/breakout';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
 
 // ── the Breakout's places, and the cutter ────────────────────────────────
-// The lane mouth: an old Accord gate, a ring of dead pylons round a slow
+// The Jump Gate: an old Accord gate, a ring of dead pylons round a slow
 // amber swirl, lighting up as the drive spools. The port: Frontier Supply, a
 // squat fuel depot on a rock-anchored spine, its docking ring drawn on the
 // plane in cyan.
@@ -373,6 +373,54 @@ export function buildPort(): Group {
   return k.build({ ...materials(), win: windowMaterial() }, 0.6);
 }
 
+
+/**
+ * The company's audit dock (the first system past Cerro): a scanning arch standing over a lane, an office block behind it,
+ * a quay of crates, and a mast with the company's amber light. Squarer and plainer than the depot: a checkpoint, not a harbour.
+ * It faces -x, where the ship comes from.
+ */
+export function buildAudit(): Group {
+  const k = new Kit(), rnd = seeded(31);
+  // the arch: two pylons and a gantry beam over the lane, hazard stripes on the legs, a scan strip underneath
+  for (const s of [-1, 1]) {
+    k.box('dark', [2.2, 0.5, 2.2], [0, 0.1, s * 7.6]);
+    k.box('hull', [1.5, 10, 1.5], [0, 5.2, s * 7.6]);
+    k.box('paint', [1.56, 0.5, 1.56], [0, 1.6, s * 7.6]);
+    k.box('paint', [1.56, 0.5, 1.56], [0, 3.2, s * 7.6]);
+    k.box('dark', [2.0, 0.5, 2.0], [0, 10.4, s * 7.6]);
+    k.box('amber', [0.35, 0.35, 0.35], [-0.9, 10.9, s * 7.6]);
+    for (let j = 0; j < 4; j++) k.box('dark', [0.2, 2.4, 0.12], [-0.78, 6.4 + j * 0.4 - 1.2 + (j % 2) * 0.2, s * 7.6 + (j - 1.5) * 0.28]);
+  }
+  k.box('hull', [1.4, 1.6, 17.6], [0, 10.6, 0]);
+  k.box('dark', [1.6, 0.3, 17.8], [0, 11.5, 0]);
+  k.box('strip', [0.1, 0.16, 14], [-0.76, 9.7, 0]);
+  for (let i = -3; i <= 3; i++) k.box('dark', [0.5, 0.5, 0.4], [-0.9, 10.6, i * 2.2]);
+  truss(k, [0, 12.2, -7.6], [0, 12.2, 7.6], 1.0, 8, 3);
+  // the audit lane under it: two rails, stripes across the deck
+  for (const s of [-1, 1]) k.box('dark', [34, 0.4, 0.5], [-9, -0.4, s * 3.4]);
+  stripes(k, -4, -0.1, 0, 'z', 6.8, 0.8, 7);
+  // the office block behind, windows on its long face, a deck on the roof
+  k.box('hull', [10, 4.4, 14], [12, 2.0, 0]);
+  k.box('dark', [10.4, 0.4, 14.4], [12, 4.4, 0]);
+  k.box('paint', [10.1, 0.35, 14.1], [12, 1.0, 0]);
+  windowRow(k, rnd, [6.9, 3.0, -5.4], [6.9, 3.0, 5.4], 9, [0.06, 0.34, 0.5], [0, 0, 0]);
+  windowRow(k, rnd, [6.9, 1.9, -5.4], [6.9, 1.9, 5.4], 9, [0.06, 0.3, 0.5], [0, 0, 0]);
+  k.box('hull', [4, 2.4, 5], [13, 6.0, 2]);
+  windowRow(k, rnd, [10.95, 6.0, -0.4], [10.95, 6.0, 4.4], 4, [0.06, 0.3, 0.5], [0, 0, 0]);
+  // the company mast and its amber light
+  k.box('dark', [0.7, 16, 0.7], [18, 9, -5]);
+  k.box('dark', [2.4, 0.3, 0.3], [18, 12, -5]);
+  k.box('amber', [0.22, 12, 0.22], [17.6, 8.5, -5]);
+  k.box('lamp', [1.1, 1.1, 1.1], [18, 17.4, -5]);
+  // tanks and a stack of crates on the quay, and a crane pylon
+  for (const s of [-1, 1]) tank(k, 20, s * 12, 2.1, s);
+  for (let i = 0; i < 8; i++) crate(k, ['paint', 'slate', 'hull'][i % 3]!, 4 + (i % 4) * 1.9, 0.4 + Math.floor(i / 4) * 1.0, -10.2 - Math.floor(i / 4) * 0.3, (rnd() - 0.5) * 0.3, 1.7, 0.95, 1.05);
+  strut(k, 'paint', [8, 4.6, 8.4], [-3, 9, 8.4], 0.2, 5);
+  k.box('dark', [0.5, 4.6, 0.5], [8, 2.3, 8.4]);
+  k.greebles('hull', rnd, 7, 17, -6, 6, 4.4, 18, 0.7);
+  return k.build({ ...materials(), win: windowMaterial() }, 0.6);
+}
+
 export function flatRing(r: number, w: number, color: Color, opacity: number): Mesh {
   const m = new Mesh(new RingGeometry(r - w, r, 64), new MeshBasicMaterial({ color, toneMapped: false, transparent: true, opacity, side: DoubleSide, depthWrite: false, blending: AdditiveBlending }));
   m.rotation.x = -Math.PI / 2;
@@ -385,6 +433,10 @@ export class BreakoutView {
   private readonly gate = new Group();
   private faced: unknown = null;
   private readonly port = new Group();
+  /** The company's audit dock, where the system has one. */
+  private readonly audit = new Group();
+  private readonly auditRing: Mesh;
+  private auditFaced: unknown = null;
   private readonly throat: Mesh;
   private readonly laneRing: Mesh;
   private readonly portRing: Mesh;
@@ -438,8 +490,12 @@ export class BreakoutView {
     this.portDome = new Mesh(new SphereGeometry(SAFE_R, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), new MeshBasicMaterial({ color: CYAN, transparent: true, opacity: 0, side: DoubleSide, depthWrite: false }));
     this.portDome.visible = false;
     this.port.add(this.portRing, this.portField, this.portDome);
-    this.lane.visible = this.port.visible = false;
-    scene.add(this.lane, this.port);
+    this.audit.add(buildAudit());
+    this.auditRing = flatRing(AUDIT_R, 0.3, AMBER, 0.3);
+    this.auditRing.position.y = 0.4;
+    this.audit.add(this.auditRing);
+    this.lane.visible = this.port.visible = this.audit.visible = false;
+    scene.add(this.lane, this.port, this.audit);
 
   }
 
@@ -449,11 +505,18 @@ export class BreakoutView {
     const b = world.bk ?? world.review?.bk ?? null;
     this.lane.visible = !!b;
     this.port.visible = !!b?.port;
+    this.audit.visible = !!b?.audit;
     if (!b) return;
     this.lane.position.set(b.lane.x, -1.5, b.lane.z);
     // the ring faces the way you come in: it follows your bearing from afar and holds still once you are near (the review world always follows)
     if (this.faced !== b || world.review || Math.hypot(ship.x - b.lane.x, ship.z - b.lane.z) > 150) { this.faced = b; this.gate.rotation.y = Math.atan2(-(ship.z - b.lane.z), ship.x - b.lane.x); }
     if (b.port) this.port.position.set(b.port.x, -2, b.port.z);
+    if (b.audit) {
+      this.audit.position.set(b.audit.x, -2, b.audit.z);
+      // the yard faces the way you came in, and holds still from there
+      if (this.auditFaced !== b) { this.auditFaced = b; this.audit.rotation.y = Math.atan2(-(ship.z - b.audit.z), ship.x - b.audit.x) + Math.PI; }
+      (this.auditRing.material as MeshBasicMaterial).opacity = 0.22 + 0.1 * Math.sin(this.time * 1.7);
+    }
     // the throat brightens as the tank fills and blazes while the drive spools
     const ready = world.fuel >= b.jumpCost ? 1 : 0.35;
     const spool = Math.min(1, b.spool / b.spoolNeed);

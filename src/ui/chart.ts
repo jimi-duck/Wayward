@@ -373,7 +373,7 @@ export class ChartPanel {
 
   /**
    * The strip: the selected lane, what it takes, and the one action. A shortage of jump fluid is said here once, with
-   * the amount: the course can still be plotted (the jump itself waits at the lane mouth for a full tank, so the fluid
+   * the amount: the course can still be plotted (the jump itself waits at the Jump Gate for a full tank, so the fluid
    * is mined and refined on the way), and the button says so rather than looking like a jump now.
    */
   private renderStrip(): void {

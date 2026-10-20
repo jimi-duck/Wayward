@@ -167,7 +167,7 @@ describe('the Thren in a sortie', () => {
     expect(full.t).toBeLessThan(120);
     // drawn by the jump fluid: with a full tank the second swarm comes sooner than with none (the first is on a clock)
     expect(full.w.bk!.nextSwarm - full.t).toBeLessThan(dry.w.bk!.nextSwarm - dry.t);
-    // close by, the scope and the lane mouth go strange
+    // close by, the scope and the Jump Gate go strange
     const w = full.w;
     const m = w.aliens.find((a) => a.variant === 'mote')!;
     m.x = w.ship.x + 10; m.z = w.ship.z + 10;

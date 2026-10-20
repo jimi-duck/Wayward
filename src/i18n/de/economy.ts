@@ -159,7 +159,7 @@ export const ECONOMY: Record<string, string> = {
   'Your refinery fills the jump tank first, leaving any surplus for upgrades and supplies.': 'Deine Raffinerie füllt zuerst den Sprungtank. Der Rest bleibt für Upgrades und Vorräte.',
   'Upgrade and resupply.': 'Rüste auf und versorge dich.',
   'Spend your remaining Cyrite to improve your ship and prepare for the journey ahead.': 'Gib dein übriges Cyrit aus, um dein Schiff zu verbessern und dich auf die Reise vorzubereiten.',
-  'Reach the lane entrance.': 'Erreiche den Routeneingang.',
+  'Reach the Jump Gate.': 'Erreiche das Sprungtor.',
   'Jump to the next system before the patrols close in.': 'Spring ins nächste System, bevor die Patrouillen dich einholen.',
   'Survive the waves': 'Überlebe die Wellen',
   'Mine asteroids for Cyrite. Use your haul to upgrade your ship and prepare for the next wave.': 'Baue Asteroiden für Cyrit ab. Rüste mit der Ausbeute dein Schiff auf und mach dich für die nächste Welle bereit.',
@@ -172,6 +172,6 @@ export const ECONOMY: Record<string, string> = {
   'Begin · press any key': 'Start · beliebige Taste drücken',
   'Exit': 'Beenden',
   'Mine Cyrite to fill the jump tank': 'Baue Cyrit ab, um den Sprungtank zu füllen',
-  'Head for the lane entrance and jump': 'Fliege zum Routeneingang und spring',
+  'Head for the Jump Gate and jump': 'Fliege zum Sprungtor und spring',
   'Collect Cyrite and upgrade your ship': 'Sammle Cyrit und rüste dein Schiff auf',
 };

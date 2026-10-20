@@ -66,7 +66,7 @@ export interface Influence {
   ax: number;
   az: number;
   conceal: number;
-  /** Interference taken off the lane mouth's wander, 0 to 1 (a lantern line). */
+  /** Interference taken off the Jump Gate's wander, 0 to 1 (a lantern line). */
   steady: number;
   rock: number;
   rich: number;

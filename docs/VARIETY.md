@@ -28,7 +28,7 @@ in) and a few ambient features.
   hold it, and a busy expanse after busy ones is damped.
 - **Fairness.** One hazard (storm or well) at most per system, never in a
   breather, never the site of a job that is not about it; everything is laid off
-  the straight line and clear of the start, the lane mouth and the port.
+  the straight line and clear of the start, the Jump Gate and the port.
 - **Signature.** objective, expanse, features, holder: the thing the pilot counts.
 
 ## One place for everything

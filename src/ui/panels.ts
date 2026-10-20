@@ -106,7 +106,7 @@ export class SummaryPanel {
     if (breakout) {
       const plain = (label: string, v: string, note: string) => h('div', 'tile', '', h('span', 'k', t(label)), h('b', '', v), h('span', 'cmp', note));
       $('sum-tiles').replaceChildren(
-        plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Reached the lane entrance' : 'Did not reach the lane')),
+        plain(r.escaped ? 'Escape time' : 'Lasted', mmss(r.time), t(r.escaped ? 'Reached the Jump Gate' : 'Did not reach the lane')),
         plain('Cyrite', String(r.cyrite), r.escaped ? t('{n} remaining after the jump', { n: r.cyriteLeft }) : t('Gathered')),
         plain('Scrap', String(r.ore), t('{n} Cyrite paid', { n: r.oreSold })),
         plain('Rock mined', String(r.mined), t('{n} blasted', { n: r.blasted })),

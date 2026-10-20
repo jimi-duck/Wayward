@@ -270,12 +270,12 @@ export class Gallery {
 
   private places(): void {
     const w = this.world;
-    const z = this.stop('places', 'places', 'Lane gate & port', 'The Story mode\'s two places: the Accord lane mouth, where the drive spools, and Frontier Supply\'s depot.');
+    const z = this.stop('places', 'places', 'Jump Gate & port', 'The Story mode\'s two places: the Accord Jump Gate, where the drive spools, and Frontier Supply\'s depot.');
     const bk = newBreakout(0);
     bk.lane.x = 90; bk.lane.z = z;
     bk.port!.x = 190; bk.port!.z = z;
     w.review!.bk = bk;
-    this.label('places', 90, 12, z, 'Lane entrance', 'Fly through the ring with the jump fluid to jump', 140);
+    this.label('places', 90, 12, z, 'Jump Gate', 'Fly through the ring with the jump fluid to jump', 140);
     this.label('places', 190, 12, z, 'Port', 'Slow inside the cyan ring to dock', 140);
   }
 

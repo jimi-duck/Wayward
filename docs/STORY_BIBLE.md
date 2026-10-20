@@ -129,7 +129,7 @@ the eighth region**: no extra region exists or is added.
 
 | Narrative area | Code | Region index (`long`) | Gate | Act | Question |
 |---|---|---|---|---|---|
-| Cerro / Breakout | `HOME` sortie, then the first jump | before 0 | the Cerro lane mouth | I | What does the system own about Juno? |
+| Cerro / Breakout | `HOME` sortie, then the first jump | before 0 | the Cerro Jump Gate | I | What does the system own about Juno? |
 | The Reach | The Reach | 0 | The Narrows | II | Who remembers Ada and keeps the records? |
 | The Marches | The Marches | 1 | The Rift | II | Can communities cooperate under scarcity? |
 | The Salvage Belt | The Salvage Belt | 2 | The Scrapgate | II | Who profits from wreckage and betrayal? |
@@ -341,7 +341,7 @@ miss. L10n = English and German twins.
 | `story_bay` | docking at the work bay | install the rack | delivered 800 / 1,000; 22 credit, rack −20 | purse 2 | auto-undock | live | en, de |
 | `story_breach` | first sortie beyond the gate | use Sam's code (one action) | breach: owed 27, payout withheld, no responsibility for lost cargo; the hull is renamed | `ship_stolen`, `lease_broken`, `tam_codes`, civic −14, −30 | due again on reload | live | en, de |
 | `story_wake` | follow of the breach | next lead | the archive: 94% vs the shortage order; Halden's Reach relay; legacy key | `archive_woke`, civic −38 | due again on reload | live | en, de |
-| Checkpoint | lane mouth | show registry (needs 400), scan, pay, spoof, run, fight | the Score as a door | civic ±, `tam_ally` or burned | any answer passes or fights | live | en, de |
+| Checkpoint | Jump Gate | show registry (needs 400), scan, pay, spoof, run, fight | the Score as a door | civic ±, `tam_ally` or burned | any answer passes or fights | live | en, de |
 | Reveal | the first jump | none (automatic) | Krail reserves 94% vs the shortage; next lead the Reach | `clue_reserves` | always runs | live | en, de |
 
 ### Regions 0 to 7
@@ -358,7 +358,7 @@ Threshold.
 | Breaker Yards | `story_workorder`, `story_crew`, `story_tam_brother`, Calloway in person | live; `story_draper` is the Director reveal (needs `stalled`) |
 | Free Ports | `story_harbour`, `story_ines_offer`, `story_witnesses`, `story_vell_reckoning`, `story_tollgate` | live; the signature chain sets `clue_sig_*` and `sig_used` |
 | Hollows | `story_voice`, `story_thren`, `story_echo_sable` | live |
-| Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | implant, Oren's three questions (`story_oren_who`, `_cost`, `_why`) and ending epilogues live; Draper's fleet joins the Patience at the lane mouth (`finaleCard` reads `draper_director`, `calloway_turned`, `calloway_hostile`) |
+| Last Lanes | `story_aide`, `story_toll` (Oren's three questions), Draper's fleet, implant, endings | implant, Oren's three questions (`story_oren_who`, `_cost`, `_why`) and ending epilogues live; Draper's fleet joins the Patience at the Jump Gate (`finaleCard` reads `draper_director`, `calloway_turned`, `calloway_hostile`) |
 
 ## 17. Baseline (before any change)
 

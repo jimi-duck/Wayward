@@ -56,7 +56,7 @@ export interface RunStats {
   cause: string;
   /** The Breakout or the arcade. */
   mode: 'breakout' | 'arcade';
-  /** The Story mode: out through the lane mouth; Cyrite collected, and left in the tank when it jumped. */
+  /** The Story mode: out through the Jump Gate; Cyrite collected, and left in the tank when it jumped. */
   escaped: boolean;
   cyrite: number;
   cyriteLeft: number;

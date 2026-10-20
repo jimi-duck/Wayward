@@ -87,7 +87,7 @@ const SPARE = 1;
 
 /** The Story's depot, set this far ahead and aside at the start: a short hop once the rock is mined. */
 const DEPOT_AT = 170;
-/** The training's lane entrance, this far ahead (units, 10 km): the real one is far off, and the lesson is not the trip. */
+/** The training's Jump Gate, this far ahead (units, 10 km): the real one is far off, and the lesson is not the trip. */
 const TRAIN_LANE = 1000;
 const DEPOT_SIDE = 90;
 

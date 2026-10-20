@@ -41,6 +41,8 @@ export interface Sky {
   /** How many stars: 1 is the Reach, less further out. */
   stars: number;
   planet: Planet | null;
+  /** More worlds in the same sky (the first system past Cerro, `industrial`). */
+  extra?: Planet[];
   /** The bright near star's colour. */
   star: Color;
 }
@@ -56,6 +58,8 @@ export interface Planet {
   el: number;
   ring: boolean;
   moon: boolean;
+  /** How far off it hangs (the sky sphere's radius): nearer reads bigger and brighter, further small and cold. */
+  dist?: number;
 }
 
 interface Palette {
@@ -437,32 +441,33 @@ export class FarBodies {
     const r = rand(sky.seed * 13 + 5);
     const D = 1800;
     const p = sky.planet;
-    if (p) {
-      const at = dirOf(p.az, p.el).multiplyScalar(D);
-      const rad = D * Math.sin(p.size * Math.PI / 180);
+    for (const pl of [...(p ? [p] : []), ...(sky.extra ?? [])]) {
+      const Dp = pl.dist ?? D;
+      const at = dirOf(pl.az, pl.el).multiplyScalar(Dp);
+      const rad = Dp * Math.sin(pl.size * Math.PI / 180);
       const body = new Group();
       body.position.copy(at);
       // a tilt, so bands and rings sit at an angle
       body.rotation.set((r() - 0.5) * 0.9, r() * Math.PI * 2, (r() - 0.5) * 0.9);
       // rock holds little air; giants and ice wear a thick halo
-      const common = { uL: { value: this.sun }, uDim: { value: 1 }, uAir: { value: p.kind === 1 ? 0.35 : 1 } };
+      const common = { uL: { value: this.sun }, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 } };
       const planetMat = new ShaderMaterial({
         vertexShader: PLANET_V, fragmentShader: PLANET_F,
-        uniforms: { ...common, uA: { value: p.colA }, uB: { value: p.colB }, uAtmo: { value: p.atmo }, uKind: { value: p.kind }, uSeed: { value: sky.seed % 50 } },
+        uniforms: { ...common, uA: { value: pl.colA }, uB: { value: pl.colB }, uAtmo: { value: pl.atmo }, uKind: { value: pl.kind }, uSeed: { value: sky.seed % 50 } },
       });
       const halo = new ShaderMaterial({
         vertexShader: PLANET_V, fragmentShader: HALO_F, side: BackSide, transparent: true, blending: AdditiveBlending, depthWrite: false,
-        uniforms: { ...common, uAtmo: { value: p.atmo } },
+        uniforms: { ...common, uAtmo: { value: pl.atmo } },
       });
       const sphere = new Mesh(new SphereGeometry(rad, 64, 32), planetMat);
       const shell = new Mesh(new SphereGeometry(rad * 1.12, 48, 24), halo);
       body.add(sphere, shell);
       this.mats.push(planetMat, halo);
-      if (p.ring) {
+      if (pl.ring) {
         const inner = rad * 1.35, outer = rad * (2 + r() * 0.5);
         const ringMat = new ShaderMaterial({
           vertexShader: RING_V, fragmentShader: RING_F, side: DoubleSide, transparent: true, depthWrite: false,
-          uniforms: { ...common, uA: { value: p.colA }, uB: { value: p.colB }, uCentre: { value: at }, uIn: { value: inner }, uOut: { value: outer }, uSeed: { value: sky.seed % 31 }, uRad: { value: rad } },
+          uniforms: { ...common, uA: { value: pl.colA }, uB: { value: pl.colB }, uCentre: { value: at }, uIn: { value: inner }, uOut: { value: outer }, uSeed: { value: sky.seed % 31 }, uRad: { value: rad } },
         });
         const ring = new Mesh(new RingGeometry(inner, outer, 128, 1), ringMat);
         ring.rotation.x = -Math.PI / 2 + 0.25;
@@ -470,13 +475,13 @@ export class FarBodies {
         this.mats.push(ringMat);
       }
       this.group.add(body);
-      if (p.moon) {
+      if (pl.moon) {
         const moonMat = new ShaderMaterial({
           vertexShader: PLANET_V, fragmentShader: PLANET_F,
           uniforms: { ...common, uAir: { value: 0 }, uA: { value: new Color(0.16, 0.16, 0.17) }, uB: { value: new Color(0.42, 0.41, 0.4) }, uAtmo: { value: new Color(0, 0, 0) }, uKind: { value: 1 }, uSeed: { value: sky.seed % 23 + 7 } },
         });
         const moon = new Mesh(new SphereGeometry(rad * (0.12 + r() * 0.1), 32, 16), moonMat);
-        moon.position.copy(dirOf(p.az + (r() < 0.5 ? -1 : 1) * p.size * (1.6 + r() * 0.8), p.el + (r() - 0.3) * p.size).multiplyScalar(D * 0.96));
+        moon.position.copy(dirOf(pl.az + (r() < 0.5 ? -1 : 1) * pl.size * (1.6 + r() * 0.8), pl.el + (r() - 0.3) * pl.size).multiplyScalar(Dp * 0.96));
         this.group.add(moon);
         this.mats.push(moonMat);
       }
@@ -634,4 +639,22 @@ function wispTexture(): Texture {
 
 function wrap(v: number, m: number): number {
   return ((v % m) + m) % m;
+}
+
+/**
+ * The first system past Cerro's sky: a spent mine's parent world and its neighbours. A near ringed giant with a moon, a
+ * small rock world further out and a cold ice moon-world beyond it, at different sizes and distances. `bearing` is the
+ * course's heading in radians, so the giant stands off the course on the left and the others to the right of it.
+ */
+export function industrial(sky: Sky, bearing: number): Sky {
+  const lin = (hex: string) => new Color(hex);
+  const course = -(bearing * 180) / Math.PI;
+  return {
+    ...sky,
+    planet: { kind: 0, colA: lin('#6e6252'), colB: lin('#c4b49a'), atmo: lin('#ffc890'), size: 10.5, az: course - 48, el: -13, ring: true, moon: true, dist: 1500 },
+    extra: [
+      { kind: 1, colA: lin('#4e463e'), colB: lin('#8e8476'), atmo: lin('#b8b0a4'), size: 3.4, az: course + 38, el: -9, ring: false, moon: true, dist: 2300 },
+      { kind: 2, colA: lin('#8fa6b8'), colB: lin('#dce7ef'), atmo: lin('#bfe0ff'), size: 2.1, az: course + 112, el: -19, ring: false, moon: false, dist: 2700 },
+    ],
+  };
 }

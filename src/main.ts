@@ -301,7 +301,7 @@ function boot(review: typeof import('./review') | null): void {
     setPaused(false);
     const d = world.sortie;
     if (d.home) world.train(); // every new Story journey starts with the training
-    hud.note(world, d.home ? t('Clear the yards · head for the lane entrance') : `${d.name} · ${t('Need {n} jump fluid to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
+    hud.note(world, d.home ? t('Clear the yards · head for the Jump Gate') : d.first ? t('Head for the audit dock') : `${d.name} · ${t('Need {n} jump fluid to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
   const openChart = (lines: string[]) => {
@@ -353,7 +353,7 @@ function boot(review: typeof import('./review') | null): void {
     });
   };
   /** The sortie is over: fold it into the journey, then the chart, a notice, the Threshold, or the end. */
-  /** The opening is lost before the jump gate (a wreck, or the raiders' offer taken): the whole level starts again, nothing kept. */
+  /** The opening is lost before the Jump Gate (a wreck, or the raiders' offer taken): the whole level starts again, nothing kept. */
   const restartOpening = () => {
     startSortie();
     hud.note(world, t('Contract 08-441 starts again from the top'), 'hit');

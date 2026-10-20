@@ -41,7 +41,7 @@ export interface ActorSpec {
   n: number;
   act: WardAct;
   temper: Temper;
-  /** Where it starts: at the site, out ahead of the ship on a line across its course, or beyond the lane mouth side of the site. */
+  /** Where it starts: at the site, out ahead of the ship on a line across its course, or beyond the Jump Gate side of the site. */
   from?: 'site' | 'ahead' | 'astern';
   /** The ring it keeps or guards (units); the default suits the act. */
   ring?: number;
@@ -146,7 +146,7 @@ export interface SituationDef {
   threat?: { variant: string; n: number; after: number };
   /** Missions: more foes in waves (defend): so many seconds into the goal, from out ahead. */
   waves?: Array<{ variant: string; n: number; at: number }>;
-  /** Hostiles waiting on the straight line to the lane mouth, sprung when the ship passes this far along it, unless the situation was won (the pickets the stranger led you round). */
+  /** Hostiles waiting on the straight line to the Jump Gate, sprung when the ship passes this far along it, unless the situation was won (the pickets the stranger led you round). */
   trap?: { variant: string; n: number; at: number };
   /** What it does in the sortie when the goal is carried, or missed. */
   win?: Outcome;
@@ -328,7 +328,7 @@ export const SITUATIONS: SituationDef[] = [
     kinds: ['transit', 'mining', 'contested'], regions: [3, 7], weight: 0.5,
     actors: [act('mote', 3, 'follow', 'wary', 'Unknown contacts', { from: 'astern', ring: 120, pace: 0.9 })],
     at: 60, hail: 9999, goal: CALL, seen: ['saw_thren', 'thren_lane'],
-    say: [{ on: 'start', from: 'Navigation', text: '“The jump-lane entrance is drifting. It is not us. Something else is moving it.”' }],
+    say: [{ on: 'start', from: 'Navigation', text: '“the Jump Gate is drifting. It is not us. Something else is moving it.”' }],
   },
   {
     id: 'thren_watch', name: 'They line the lane', blurb: 'The Thren are lined up along a lane. They face the way you are going.', group: 'unknown',
@@ -527,7 +527,7 @@ export const OBSERVATIONS: Observation[] = [
   { flag: 'thren_territory', name: 'The ring', line: 'They hold a seam and face outward, every one of them.', theory: 'A territory? A nest? A guard set by something that is not there?' },
   { flag: 'thren_trade', name: 'The exchange', line: 'A Thren object gave something back for Cyrite.', theory: 'An exchange. Or a test. Or a child learning what is edible.' },
   { flag: 'thren_hurt', name: 'The wounded', line: 'A Thren object, broken and adrift.', theory: 'They are not invulnerable. Somebody has been breaking them for a long time.' },
-  { flag: 'thren_lane', name: 'The shadow', line: 'The jump-lane entrance drifted while something steered it.', theory: 'The old lanes were never ours. We borrowed them.' },
+  { flag: 'thren_lane', name: 'The shadow', line: 'the Jump Gate drifted while something steered it.', theory: 'The old lanes were never ours. We borrowed them.' },
   { flag: 'thren_watch', name: 'The line', line: 'The Thren, in a straight line, facing the way you were going.', theory: 'A border. A welcome. A warning.' },
   { flag: 'saw_voice', name: 'The relay', line: 'A relay that should be dead answered, and used the Wayward’s name.', theory: 'A fault in the old network, say the Dust Traders. A person, say the Drift.' },
   { flag: 'voice_mended', name: 'The mending', line: 'A factory hull repaired the Wayward and asked for nothing.', theory: 'It was practising on you. Or it was being kind. The Voice does not say.' },

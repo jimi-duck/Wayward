@@ -17,7 +17,7 @@ the Cyrite purse.
 A sortie with a shape: get the stolen hauler out of the home system
 (`sim/breakout.ts`, `World` with `mode: 'breakout'`).
 
-- **The course.** The lane mouth is 2,600 units ahead of the start (about a
+- **The course.** The Jump Gate is 2,600 units ahead of the start (about a
   minute flat out); Frontier Supply, the port, is halfway and off the line.
   The HUD carries both as a name and a distance on the place itself, radar
   diamonds, the objective and its quiet lines (see [HUD.md](HUD.md)).
@@ -85,7 +85,7 @@ A sortie with a shape: get the stolen hauler out of the home system
   three at once); now and then
   a Gutter crew from ahead. It is also the clock the difficulty curve reads
   (heat 1 plays like seven minutes of the arcade).
-- **The checkpoint.** Within 420 units of the lane mouth a Custody capital
+- **The checkpoint.** Within 420 units of the Jump Gate a Custody capital
   ship holds the lane, three times the hull of an arcade run's first capital
   ship (`BLOCKADE_HP`), and her checkpoint is a comms card: "Your ID doesn't
   match the registry". Run it (make for the lane under her guns: she and her wing
@@ -138,7 +138,7 @@ seven hours. `?short` plays the older three-region chart, for testing.
   the gate, one known upside and trade-off) and `ui/chart.ts` shows them.
 - **Chapters.** Each gate opens a chapter (`sim/chapters.ts`): a record, a
   snapshot to start the region again from, and a recap on the title.
-- **Plotting.** The jump you plot sets the sortie's lane: the lane mouth
+- **Plotting.** The jump you plot sets the sortie's lane: the Jump Gate
   wants that lane's jump fluid. So the chart is where you decide how much
   mining the next system will ask of you.
 - **What a system is like.** Its kind sets the lane's distance (transit is
@@ -161,7 +161,7 @@ seven hours. `?short` plays the older three-region chart, for testing.
   little every day, faster into systems with Cyrite to take and harder
   where two or three netted systems press on one (`spreadNet`). Its pace
   is set to catch a pilot who keeps moving now and then.
-  A netted system has a blockade at its lane mouth (the checkpoint card),
+  A netted system has a blockade at its Jump Gate (the checkpoint card),
   starts a quarter hotter, heats faster, scans you at its port, marks its
   prices up (by 40%) and gets fewer friendly
   calls. Some answers stall it in a system for days (help a holdout, break
@@ -206,7 +206,7 @@ The Breakout's main interaction (`content/cards.ts`, `sim/comms.ts`,
 (`phase: 'comms'`) while you read the card and answer. Cards come by
 chance (never in the middle of a fight, none twice in a system, and the ones
 that tell a story once a journey), on the port's approach (the dock wants an
-implant scan), at the checkpoint on the lane mouth, as follow-ups that only
+implant scan), at the checkpoint on the Jump Gate, as follow-ups that only
 come because of an earlier answer, and for the journey's road (Calloway, the
 Lane Wardens, the Net, Drift traders). When anything is heard is the comms
 desk's call (`sim/desk.ts`, see [COMMS.md](COMMS.md)).
@@ -238,7 +238,7 @@ desk's call (`sim/desk.ts`, see [COMMS.md](COMMS.md)).
   Calloway within so many jumps, or a galley running low. Cerro's own
   story (the foreman, the stowaways, the moon's port scan) asks for the
   home system; the rest travel. Besides chance, follow-up, the port's
-  approach and the blockade, a card can come at an open lane mouth
+  approach and the blockade, a card can come at an open Jump Gate
   (`toll`: the Lane Wardens) or with Calloway (`hunt`).
 - **Jobs** are paid where they say: at the port on docking (with the goods
   in the hold) or at the lane on the jump. The HUD lists them under the
@@ -295,7 +295,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Artwork (pictures made outside the game) | `content/art.ts` (slots, emblems, contacts), `src/art/` (the files) | `ui/art.ts` (the loader), `artOf` in `ui/comms.ts`, `ui/port.ts`, `ui/ending.ts`, `ui/panels.ts`; prompts by `tools/art/` (see [ART-SLOTS.md](ART-SLOTS.md)) |
 | Enemies | `ALIEN_TYPES`, `FACTION_TRAITS`, `VARIANTS`, `SQUADS`, `ELITES` in `sim/enemies.ts` | the existing tactical AI, `World.spawn` |
 | Capital ships | `FACTIONS` in `sim/bosses.ts` | `Command` (contacts, hail, phases, telegraphs, faction movement) |
-| Calloway's file | `content/calloway.ts` (tricks, numbers, offers, her face) | `sim/calloway.ts` (the file, her read on your route, offers, the last meeting), `sim/hunt.ts` (the hunch), `World` (the offer, the lane mouth) |
+| Calloway's file | `content/calloway.ts` (tricks, numbers, offers, her face) | `sim/calloway.ts` (the file, her read on your route, offers, the last meeting), `sim/hunt.ts` (the hunch), `World` (the offer, the Jump Gate) |
 | Named captains | `CAPTAINS`, `PERSONALITIES` in `content/captains.ts`; who names whom in `content/factions.ts` | `sim/captains.ts` (how they come, the card, memory), `sim/notice.ts` (when, the roster), `World` (the meeting), `ui/face.ts` |
 | Survival modes | `content/survival.ts`: one row a mode (Drifter, Prospector, Raider) | `World.survival`, read by `sim/director.ts` (the sky), the pursuit and heat, `cutClean` / `destroyRock` (rock), `World.salvage` / `wreck` (wrecks), `pickEncounter` (events, the Raider's skirmish), `buildStats` (the hull), `sim/journey.ts` and `sim/chart.ts` (the voyage) |
 | Difficulty | `sim/director.ts` | the sky's multipliers, now the `sky` group of a survival mode |
@@ -305,6 +305,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
 | Story communications: weights, pacing, calls, radio | `DESK` in `sim/desk.ts`, `CHATTER` in `content/chatter.ts`, `tier` on a card | `Desk`, `weightOf`, `World.stepComms` / `openCall`, `ui/radio.ts`; see [COMMS.md](COMMS.md) |
 | Missions: optional jobs (destroy, strike, defend, race, survey, sneak) | `MISSIONS` and `MISSION_CARDS` in `content/missions.ts`, `Goal.kind` in `content/situations.ts` | `Run` in `sim/mission.ts`, played by `Stage` (`sim/stage.ts`), drawn in `render/site.ts`; see [MISSIONS.md](MISSIONS.md) |
+| The first system past Cerro: its places, ambient traffic, guards | `postJump()` in `sim/postjump.ts`, `ROUTES` in `sim/traffic.ts`, the three hulls in `VARIANTS` | `Traffic` (`sim/traffic.ts`), `guideTarget` (`sim/guide.ts`), drawn in `render/breakout.ts` (`buildAudit`) and `render/sky.ts` (`industrial`); see [POSTJUMP.md](POSTJUMP.md) |
 | Adrift and total loss: the per-region wreck count, the tow, the restart | `Journey.lost`, `voyage.wrecks` in `content/survival.ts`, `driftTo` in `sim/journey.ts`, `regionLost` in `main.ts`, `ui/adrift.ts`; see [ADRIFT.md](ADRIFT.md) |
 | The journey | `content/systems.ts` (system kinds, names, prices) | `sim/journey.ts` (the loop, `sortieDef`, `endSortie`), `sim/chart.ts` (the region, lanes, the Net), `sim/hunt.ts` (Calloway), `sim/forks.ts` (what each lane out asks and offers), `meta/save.ts`, `ui/chart.ts` (the jump chart, [CHART.md](CHART.md)) |
 | Score and the record | `sim/run.ts`, `sim/tuning.ts` | `World.addScore`, `World.finish` |
@@ -779,7 +780,7 @@ shows what is in it.
 - **Trust.** The truth told her and offers taken, less lies and any word
   broken (kill her people after promising not to, and she says so).
 - **The last meeting.** Plot the jump to the Threshold and she is waiting
-  at the lane mouth instead of following. The card is built from the file:
+  at the Jump Gate instead of following. The card is built from the file:
   what she says (never met, the lies she counted, the word you kept or
   broke, the route she read, the ship rebuilt for you), the ship she
   brings, and the ways past: fight, spool under her guns, show her the

@@ -43,11 +43,11 @@ export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refus
 export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' | 'miners';
 /** Who is on the channel, for the colour of the card. */
 export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
-/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded lane mouth, at an open one, with Calloway, as her offer (from her file), or as a story beat (sim/story.ts). */
+/** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded Jump Gate, at an open one, with Calloway, as her offer (from her file), or as a story beat (sim/story.ts). */
 export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer' | 'story' | 'scene';
 /** How much a transmission weighs (sim/desk.ts): what it may interrupt, and how it is shown. */
 export type Weight = 'major' | 'important' | 'routine' | 'ambient';
-/** Where the ship is: open space, the port's approach, the lane mouth. */
+/** Where the ship is: open space, the port's approach, the Jump Gate. */
 export type Place = 'open' | 'port' | 'lane';
 
 /** What a card can see of the ship and the run. */
@@ -146,7 +146,7 @@ export interface JobDef {
   id: string;
   /** The objective line. */
   text: string;
-  /** Paid at the port (on docking) or at the lane mouth (on the jump). */
+  /** Paid at the port (on docking) or at the Jump Gate (on the jump). */
   at: 'port' | 'lane';
   /** What has to be handed over there. */
   give?: { supplies?: number };
@@ -179,7 +179,7 @@ export interface Outcome {
   spawn?: Spawn[];
   /** The hulls the card brought in break off. */
   dismiss?: boolean;
-  /** The lane mouth: fight her, run past her, or be let through. */
+  /** The Jump Gate: fight her, run past her, or be let through. */
   blockade?: 'fight' | 'run' | 'pass';
   /** Another card, this many seconds on. */
   follow?: { card: string; after: number; /** Opens as soon as it is due, without waiting for the desk's gap (the opening's chain). */ quick?: boolean };
@@ -295,7 +295,7 @@ export interface CardDef {
   text: string;
   /** Lines added when their condition holds: the same card reads differently with a full hold or a checkpoint ahead. */
   lines?: Array<{ if: Cond; text: string }>;
-  /** How it comes: by chance (the default), only as a follow-up, on the port's approach, at the lane mouth (a blockade's, or an open one: a toll), or with Calloway. */
+  /** How it comes: by chance (the default), only as a follow-up, on the port's approach, at the Jump Gate (a blockade's, or an open one: a toll), or with Calloway. */
   trigger?: Trigger;
   when?: Cond;
   weight?: number;

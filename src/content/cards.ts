@@ -29,10 +29,10 @@ export const FLAGS: Record<string, string> = {
 };
 
 export const CARDS: CardDef[] = [
-  // ── the checkpoint: the lane mouth ──────────────────────────────────────
+  // ── the checkpoint: the Jump Gate ──────────────────────────────────────
   {
     id: 'checkpoint', kind: 'checkpoint', caller: 'custody', trigger: 'lane',
-    from: 'Custody blockade · lane entrance', title: 'Your ship does not match its registry',
+    from: 'Custody blockade · Jump Gate', title: 'Your ship does not match its registry',
     text: '“Hauler, your transponder identifies you as an Obedience Heavy Lift. Your ship does not match the record. Stop for inspection.”',
     lines: [
       { if: { heatMin: 0.7 }, text: 'Your ship is flagged across the system.' },
@@ -330,7 +330,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'office_watch', kind: 'warning', caller: 'unknown', when: { after: 110, noFlag: 'freqs' },
     from: 'A scrambled voice', title: 'The Offices are listening',
-    text: '“The Offices monitor every channel near the lane entrance. I can sell you the frequencies they use. Four Cyrite.”',
+    text: '“The Offices monitor every channel near the Jump Gate. I can sell you the frequencies they use. Four Cyrite.”',
     cargo: 'A scrambled channel',
     truths: [
       { id: 'real', weight: 3, read: 'The signal comes from the port’s own antenna.' },
@@ -551,7 +551,7 @@ export const CARDS: CardDef[] = [
   {
     id: 'rumour_captain', kind: 'rumour', caller: 'guild', when: { kind: 'home', after: 65, noFlag: 'fee_known' },
     from: 'A Guild pilot', title: 'The lane captain',
-    text: '“The captain at the jump-lane entrance? Some say she takes fees. Some say she hanged the last pilot who tried.”',
+    text: '“The captain at the Jump Gate? Some say she takes fees. Some say she hanged the last pilot who tried.”',
     cargo: 'Gossip',
     truths: [
       { id: 'true', weight: 2, read: 'Two other pilots tell it the same way' },

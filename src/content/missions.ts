@@ -226,7 +226,7 @@ export const MISSIONS: SituationDef[] = [
     kinds: ['transit', 'mining', 'contested'], regions: [1, 6], weight: 1.0,
     actors: [act('freighter', 1, 'lead', 'meek', 'Hauler Dunne', { from: 'ahead', pace: 0.55 })],
     card: 'sc_long_walk', at: 25, hail: 9999, accept: ['escort'],
-    goal: { kind: 'follow', hold: 80, limit: 200, line: 'Escort the hauler to the lane entrance' },
+    goal: { kind: 'follow', hold: 80, limit: 200, line: 'Escort the hauler to the Jump Gate' },
     threat: { variant: 'raptor', n: 2, after: 30 },
     win: { text: 'The hauler reaches the lane · the crew pays what it can', chits: 120, supplies: 2, standing: { miners: 1, frontier: 1 } },
     lose: { text: 'You lose the hauler before it reaches safety', standing: { miners: -1 } },

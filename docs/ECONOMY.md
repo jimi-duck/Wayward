@@ -73,7 +73,7 @@ what it always took; what is new is that the purse is only ever spare.
 
 - Status panel: `Fluid 9/20` (a bar that turns ready at the jump's cost) and
   `Cyrite 31`. The objective says "Fill the tank" with the same count until
-  the tank holds the jump, then "Head for the lane entrance".
+  the tank holds the jump, then "Head for the Jump Gate".
 - The chart's stock strip: `Jump fluid` and `Cyrite`, each with a tooltip.
   Lane costs on the chart and the chart's list are fluid.
 
@@ -90,7 +90,7 @@ is gone.
   contested 75%, gates always. The bay sits 1,000 along the lane, 200 off
   it, with a 150 call range, so it is a short detour on the way to the lane
   mouth.
-- **Safe inside.** The lane mouth and the bay are safe ground: shots do
+- **Safe inside.** The Jump Gate and the bay are safe ground: shots do
   nothing inside the ring, hunters circle outside, and the HUD says so.
 
 ## Upgrades: the one thing to spend on
