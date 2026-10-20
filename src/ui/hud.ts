@@ -202,8 +202,6 @@ export class Hud {
         case 'civic': this.note(world, civicNote(e.to, e.why)); break;
         case 'commsAnswer':
           this.note(world, t(e.text), e.won ? undefined : 'hit');
-          // the lock is broken: the registry mark goes, and the name is hers (docs/ONBOARDING.md)
-          if (e.id === 'story_sam' && e.won) this.notify(world, { type: 'arrival', headline: 'WAYWARD', reason: `OB-7731-A · ${t('Unregistered · Core ports closed')}`, key: 'rename' });
           break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;

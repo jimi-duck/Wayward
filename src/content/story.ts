@@ -42,8 +42,9 @@ export const STORY_AT = 40;
 export const BAY_BEAT = 'story_bay';
 export const BREACH_BEAT = 'story_breach';
 export const SAM_BEAT = 'story_sam';
+export const RENAME_BEAT = 'story_rename';
 export const WAKE_BEAT = 'story_wake';
-export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, WAKE_BEAT] as const;
+export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, RENAME_BEAT, WAKE_BEAT] as const;
 /** Seconds into that sortie before the chain begins. */
 export const OPENING_AT = 2;
 
@@ -146,6 +147,7 @@ const GIST: Record<string, string> = {
   "story_seized": "The raiders took everything",
   "story_breach": "Contract in breach · the hauler is recalled",
   "story_sam": "Sam has a code for the owner lock",
+  "story_rename": "Registration updated",
   "story_wake": "The archive woke · Krail reserves were 94%",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
@@ -296,7 +298,19 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The audit lane · ahead',
     choices: [
       { id: 'code', label: 'Enter Sam’s code', tone: 'run', hint: 'Override the owner lock.',
-        win: { text: 'Lock broken · the hull is yours, and stolen', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicQuiet: true, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Governor’s desk', text: '“A registered hull is missing. Escalate it to the Governor.”' }, follow: { card: WAKE_BEAT, after: 3, quick: true } } },
+        win: { text: 'Lock broken · the hull is yours, and stolen', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicQuiet: true, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Governor’s desk', text: '“A registered hull is missing. Escalate it to the Governor.”' }, follow: { card: RENAME_BEAT, after: 2, quick: true } } },
+    ],
+  }),
+  story({
+    id: RENAME_BEAT, kind: 'warning', caller: 'office', ledger: 'rename', hero: 'wayward-registry',
+    from: 'Continuance Registry · automated notice', title: 'OB-7731-A → WAYWARD',
+    text: 'The owner lock has been overridden. This vessel is now unregistered, and Core ports are closed to its transponder.',
+    juno: 'Wayward. Fine. She needed a name.',
+    note: ['Temporary repaint', 'The yellow livery may pass a quick visual inspection. A proper scan will still expose the hull.'],
+    cargo: 'Registration updated',
+    choices: [
+      { id: 'helm', label: 'Take the helm', tone: 'run', hint: 'The new name is active in all local systems.',
+        win: { text: 'Registration updated · the hull is WAYWARD', follow: { card: WAKE_BEAT, after: 1.5, quick: true } } },
     ],
   }),
   story({

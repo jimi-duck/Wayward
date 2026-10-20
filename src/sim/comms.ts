@@ -279,6 +279,10 @@ export interface CardDef {
   attach?: string;
   /** Juno's own line under the call (hidden on short screens). */
   juno?: string;
+  /** A picture of the Wayward for the call's right side (a `fleet` art id), in place of the read. */
+  hero?: string;
+  /** A short note under the rows: a title and a line. */
+  note?: [string, string];
   /** A second voice on the same channel, under the ledger (Sam cutting in on the registry's notice). */
   reply?: { from: string; text: string; /** A contact portrait (content/art.ts) for the voice. */ portrait?: string };
   kind: CardKind;

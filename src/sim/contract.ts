@@ -111,6 +111,15 @@ export function lockLedger(): LedgerRow[] {
   ];
 }
 
+/** The registry's notice once the lock is broken: what the override left. */
+export function renameLedger(): LedgerRow[] {
+  return [
+    { k: 'Registry status', v: 'Unregistered', tone: 'warn' },
+    { k: 'Owner lock', v: 'Overridden', tone: 'warn' },
+    { k: 'Core ports', v: 'Closed', tone: 'warn' },
+  ];
+}
+
 /** The archive's one record: the reserve figure and the order it contradicts, with whoever signed it struck out. */
 export function archiveLedger(): LedgerRow[] {
   return [
@@ -122,11 +131,11 @@ export function archiveLedger(): LedgerRow[] {
   ];
 }
 
-export type LedgerKind = 'bay' | 'breach' | 'archive' | 'seized' | 'lock';
+export type LedgerKind = 'bay' | 'breach' | 'archive' | 'seized' | 'lock' | 'rename';
 
 /** The rows a card shows (the sim's side; the panel only draws them). */
 export function ledgerFor(kind: LedgerKind): LedgerRow[] {
-  return kind === 'bay' ? bayLedger() : kind === 'breach' ? breachLedger() : kind === 'seized' ? seizedLedger() : kind === 'lock' ? lockLedger() : archiveLedger();
+  return kind === 'bay' ? bayLedger() : kind === 'breach' ? breachLedger() : kind === 'seized' ? seizedLedger() : kind === 'lock' ? lockLedger() : kind === 'rename' ? renameLedger() : archiveLedger();
 }
 
 /** The cargo as the HUD reads it: what is aboard, what the Work Bay has counted, and what the contract asks. */

@@ -84,3 +84,8 @@ card). No score, band or delta shows in the onboarding: the Score still moves be
 
 Where the sheet and the code differ, the code stands: the breach bill is 1,500 credit (user's call, 2026-10-19), not
 47, and the short-delivery penalty is 250, not 15. The contract file reads its figures from `sim/contract.ts`.
+
+The rename card (`story_rename`, 2026-10-20) comes after Sam's code and before the archive: Continuance Registry,
+`OB-7731-A → WAYWARD`, three status rows, the temporary-repaint note, one button. It only reports the state the code
+already set. The ship picture is the supplied canonical art (`src/art/fleet/wayward-registry.webp`): the game's own
+3D hull is a darker single-engine design and does not match it, so a new angle of the yellow ship needs a new model.

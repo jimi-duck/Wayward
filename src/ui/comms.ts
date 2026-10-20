@@ -56,6 +56,8 @@ export interface CommsView {
   attach: string;
   /** Juno's line, or ''. */
   juno: string;
+  /** A note under the rows: title and line, or null. */
+  note: [string, string] | null;
   /** A second voice on the same channel (Sam cutting in), under the ledger. */
   reply: { from: string; text: string; portrait: string | null } | null;
   text: string;
@@ -70,7 +72,7 @@ export interface CommsView {
 }
 
 /** Which pictures a call could show: a portrait, the caller's emblem, the first hull on the read. */
-export interface ArtRef { portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; /** The hull drawn for this caller (`lancer-calloway`), tried before `ship`. */ owned?: string | null; scarred?: boolean }
+export interface ArtRef { portrait: ['captain' | 'contact', string] | null; emblem: string | null; ship: string | null; /** The hull drawn for this caller (`lancer-calloway`), tried before `ship`. */ owned?: string | null; scarred?: boolean; /** A hull picture for the right side of a notice (a `fleet` id). */ hero?: string | null }
 const NO_ART: ArtRef = { portrait: null, emblem: null, ship: null };
 
 /** The pictures a card could show, worked out from the card alone. */
@@ -79,7 +81,7 @@ export function artOf(d: Open['def']): ArtRef {
   const contact = d.id in CONTACTS ? CONTACTS[d.id] ?? d.id : null;
   const emblem = d.caller === 'calloway' ? 'office' : d.caller !== 'unknown' && d.caller !== 'captain' ? d.caller
     : /^The Voice/.test(d.from) ? 'voice' : /^The Thren/.test(d.from) ? 'thren' : null;
-  return { portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, owned: d.ships?.[0] ? `${d.ships[0].variant}-${d.caller}` : null, scarred: (d.scars ?? 0) > 0 };
+  return { portrait: person ? ['captain', person] : contact ? ['contact', contact] : null, emblem, ship: d.ships?.[0]?.variant ?? null, owned: d.ships?.[0] ? `${d.ships[0].variant}-${d.caller}` : null, scarred: (d.scars ?? 0) > 0, hero: d.hero ?? null };
 }
 
 const CALLER_CSS: Record<Caller, string> = {
@@ -125,6 +127,7 @@ export function cardView(o: Open): CommsView {
     ledger: (o.ledger ?? []).map((r) => ({ k: t(r.k), v: ledgerValue(r), tone: r.tone ?? '' })),
     attach: d.attach ? t(d.attach) : '',
     juno: d.juno ? t(d.juno) : '',
+    note: d.note ? [t(d.note[0]), t(d.note[1])] : null,
     reply: d.reply ? { from: t(d.reply.from), text: t(d.reply.text), portrait: d.reply.portrait ?? null } : null,
     text: o.text,
     more: o.more.join(' '),
@@ -154,6 +157,7 @@ export function hailView(c: Contact): CommsView {
     ledger: [],
     attach: '',
     juno: '',
+    note: null,
     reply: null,
     text: t('She fights back with her escort · the area clears for the duel.'),
     more: '',
@@ -202,6 +206,8 @@ export class CommsPanel {
     $('cm-ledger').replaceChildren(...view.ledger.map((r) => h('li', r.tone, '', h('span', '', r.k), h('b', '', r.v))));
     $('cm-juno').textContent = view.juno;
     $('cm-juno').hidden = !view.juno;
+    $('cm-note').hidden = !view.note;
+    $('cm-note').replaceChildren(...(view.note ? [h('b', '', view.note[0]), h('span', '', view.note[1])] : []));
     // an attachment starts closed: a bar with its title, and Open / Close
     const att = $('cm-att');
     att.hidden = !view.attach || !view.ledger.length;
@@ -249,7 +255,9 @@ export class CommsPanel {
     if (emblem) $('cm-sigil').style.setProperty('--emblem', `url("${emblem}")`);
     else $('cm-sigil').style.removeProperty('--emblem');
     this.drawRead(view);
-    $('cm-body').classList.toggle('solo', !view.read);
+    $('cm-body').classList.toggle('solo', !view.read && !view.art.hero);
+    $('cm-body').classList.toggle('hero', !!view.art.hero && !view.read);
+    $('comms').classList.toggle('heroed', !!view.art.hero && !view.read);
     this.timer(0);
     this.render();
     $('comms').hidden = false;
@@ -318,8 +326,10 @@ export class CommsPanel {
 
   private drawRead(v: CommsView): void {
     const box = $('cm-read');
-    box.hidden = !v.read;
-    if (!v.read) { box.replaceChildren(); return; }
+    const hero = v.art.hero ? artImg('fleet', v.art.hero, 'cm-hero') : null;
+    box.hidden = !v.read && !hero;
+    box.classList.toggle('hero', !!hero && !v.read);
+    if (!v.read) { box.replaceChildren(...(hero ? [hero] : [])); return; }
     const r = v.read, top = Math.max(r.them, r.you, 1);
     const bar = (label: string, n: number, cls: string) => {
       const b = h('div', `cm-bar ${cls}`, '', h('span', 'k', label), h('i'), h('b', '', n ? n.toFixed(0) : '—'));
