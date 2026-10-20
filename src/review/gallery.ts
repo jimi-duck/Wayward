@@ -102,7 +102,7 @@ export class Gallery {
     world.field.bulwarks = [];
     world.aliens = [];
     world.pickups = [];
-    // the lane gate and the depot read as lit and ready
+    // the Jump Gate and the depot read as lit and ready
     world.fuel = 99;
     this.hulls();
     this.elites();

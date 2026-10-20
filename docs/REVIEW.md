@@ -24,7 +24,7 @@ and next stop, `V` for the next sky, `H` to hide the names.
 |---|---|
 | Ships | Hulls (all fifteen variants), Elites (the seven marks), Capital ships (one per faction) |
 | Rock & items | Rock (four kinds, three sizes), Bulwarks, Krail and loose cargo (crystals 1 to 5, Cyrite, ore, parts), Cells and repair |
-| Places & fire | The lane gate and the port, enemy fire and the warning circles and lines |
+| Places & fire | The Jump Gate and the port, enemy fire and the warning circles and lines |
 | Space | The fourteen features, the four named places, five sector events (beacon, hulk, ion storm, nebula, anomaly) |
 
 The environment features show here whether or not they are on in play (`?nospace`). Each is built

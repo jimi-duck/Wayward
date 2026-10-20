@@ -322,7 +322,7 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
     push(dx / d, dz / d, want * (1 - d / 50));
   }
   // the Breakout: the course. Port when the hold is nearly full or the hull wants patching and there is
-  // money for it; the lane mouth once the tank holds the jump; drifting lane-ward meanwhile
+  // money for it; the Jump Gate once the tank holds the jump; drifting lane-ward meanwhile
   const bk = w.bk;
   const need = !!bk && w.fuel < bk.jumpCost;
   const pr = w.prices;

@@ -167,3 +167,23 @@ describe('firing on the traffic', () => {
     expect(far.every((a) => !!a.ward)).toBe(true);
   });
 });
+
+describe('the arrival after a jump', () => {
+  it('carries no jump state into the level: the veil’s inputs are clear on the first frame', () => {
+    const j = past();
+    const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(newJourney(7)), calloway: Infinity }, carry: j.carry });
+    w.train();
+    w.skipTraining();
+    // fly the first sortie out of Cerro's gate
+    const b = w.bk!;
+    w.ship.x = b.lane.x; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0;
+    for (let i = 0; i < 60 * 12 && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); }
+    expect(w.phase).toBe('over');
+    expect(w.run.escaped).toBe(true);
+    // and the next system, started the way the app does it
+    w.restart({ mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+    expect(w.phase).toBe('play');
+    expect(w.run.escaped).toBe(false);
+    expect(w.bk!.jumpT).toBe(-1);
+  });
+});
