@@ -14,18 +14,18 @@ way.
 
 | Strategy | Policy | Escaped | Time to escape | Lasted, if caught | Time in combat | Installs | Ore | Cyrite | Mined / blasted | Docked | Plates lost / gained |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| random | fight | 15/16 | 4:17 | 3:07 | 39% | 0.8 | 0 | 83 | 7.1 / 40.5 | 100% | 1.1 / 0.9 |
-| random | run | 14/16 | 4:22 | 3:15 | 40% | 0.8 | 0 | 84 | 7.6 / 46.9 | 100% | 1.6 / 1.3 |
-| random | pay | 16/16 | 3:43 | — | 21% | 0.7 | 0 | 66 | 5.4 / 37.7 | 81% | 0.0 / 0.0 |
-| random | bluff | 16/16 | 3:06 | — | 19% | 0.4 | 0 | 53 | 5.1 / 28.7 | 88% | 0.0 / 0.0 |
-| laser+defence | fight | 16/16 | 4:17 | — | 39% | 0.9 | 0 | 83 | 7.4 / 40.3 | 100% | 0.8 / 0.8 |
-| laser+defence | run | 15/16 | 4:22 | 2:36 | 41% | 0.8 | 0 | 82 | 7.7 / 44.1 | 100% | 1.0 / 0.8 |
-| laser+defence | pay | 16/16 | 3:44 | — | 20% | 0.6 | 0 | 61 | 5.2 / 35.4 | 81% | 0.0 / 0.0 |
-| laser+defence | bluff | 16/16 | 3:05 | — | 18% | 0.4 | 0 | 53 | 4.9 / 28.5 | 88% | 0.0 / 0.0 |
-| torpedo+defence | fight | 16/16 | 4:18 | — | 39% | 0.8 | 0 | 83 | 7.1 / 40.4 | 100% | 0.8 / 0.8 |
-| torpedo+defence | run | 15/16 | 4:18 | 2:36 | 41% | 0.8 | 0 | 81 | 7.7 / 43.8 | 100% | 1.0 / 0.8 |
-| torpedo+defence | pay | 16/16 | 3:44 | — | 20% | 0.6 | 0 | 61 | 5.2 / 35.4 | 81% | 0.0 / 0.0 |
-| torpedo+defence | bluff | 16/16 | 3:05 | — | 18% | 0.4 | 0 | 53 | 4.9 / 28.5 | 88% | 0.0 / 0.0 |
+| random | fight | 16/16 | 5:24 | — | 40% | 0.9 | 0 | 88 | 8.0 / 62.8 | 100% | 1.2 / 1.2 |
+| random | run | 14/16 | 4:26 | 3:15 | 38% | 0.8 | 0 | 83 | 8.8 / 48.6 | 100% | 1.8 / 1.4 |
+| random | pay | 16/16 | 4:51 | — | 26% | 1.1 | 0 | 79 | 7.4 / 55.4 | 81% | 0.3 / 0.3 |
+| random | bluff | 16/16 | 3:07 | — | 15% | 0.4 | 0 | 54 | 5.4 / 30.1 | 88% | 0.0 / 0.0 |
+| laser+defence | fight | 16/16 | 5:26 | — | 41% | 0.9 | 0 | 86 | 8.4 / 59.8 | 100% | 1.3 / 1.3 |
+| laser+defence | run | 14/16 | 4:18 | 4:28 | 39% | 0.8 | 0 | 82 | 8.6 / 46.8 | 100% | 1.4 / 1.0 |
+| laser+defence | pay | 15/16 | 4:39 | 7:27 | 25% | 1.1 | 0 | 77 | 7.3 / 54.9 | 81% | 0.5 / 0.3 |
+| laser+defence | bluff | 16/16 | 3:05 | — | 15% | 0.4 | 0 | 54 | 5.3 / 29.9 | 88% | 0.0 / 0.0 |
+| torpedo+defence | fight | 16/16 | 5:24 | — | 40% | 0.9 | 0 | 86 | 8.4 / 59.6 | 100% | 1.3 / 1.3 |
+| torpedo+defence | run | 14/16 | 4:18 | 4:28 | 39% | 0.8 | 0 | 83 | 8.6 / 47.5 | 100% | 1.4 / 1.0 |
+| torpedo+defence | pay | 15/16 | 4:39 | 7:27 | 26% | 1.0 | 0 | 76 | 7.0 / 54.8 | 81% | 0.5 / 0.3 |
+| torpedo+defence | bluff | 16/16 | 3:05 | — | 15% | 0.4 | 0 | 54 | 5.3 / 29.9 | 88% | 0.0 / 0.0 |
 
 "Time in combat" is the share of the run with a hostile in firing range of
 the ship.
@@ -34,31 +34,31 @@ the ship.
 
 | Policy | Escaped | Cards answered | Jobs done | Time in combat | Time to escape |
 |---|---|---|---|---|---|
-| fight | 98% | 2.0 | 0.0 | 39% | 4:17 |
-| run | 92% | 2.0 | 0.0 | 41% | 4:21 |
-| pay | 100% | 2.0 | 0.0 | 21% | 3:44 |
-| bluff | 100% | 1.9 | 0.0 | 18% | 3:05 |
+| fight | 100% | 2.0 | 0.0 | 40% | 5:25 |
+| run | 88% | 2.0 | 0.0 | 38% | 4:21 |
+| pay | 96% | 2.0 | 0.0 | 26% | 4:43 |
+| bluff | 100% | 1.9 | 0.0 | 15% | 3:06 |
 
 ## The checkpoint
 
 | Choice | Taken | Came off | Then escaped |
 |---|---|---|---|
-| run | 48 | 100% | 92% |
+| run | 48 | 100% | 88% |
 | spoof | 0 | — | — |
 | rig | 0 | — | — |
 | pay | 0 | — | — |
 | talk | 0 | — | — |
-| fight | 48 | 100% | 98% |
-| show | 96 | 100% | 100% |
+| fight | 48 | 100% | 100% |
+| show | 94 | 100% | 100% |
 | scan | 0 | — | — |
 
 ## The blockade, when it came to a fight
 
 | Outcome | Fights |
 |---|---|
-| killed | 91 |
+| killed | 92 |
 | escaped (she left) | 0 |
-| died | 5 |
+| died | 4 |
 
 ## Every card, every choice
 
@@ -69,37 +69,39 @@ not a gamble; the aim is that none does.
 
 | Card | Choice | Taken | Came off | Krail | Chits | Heat | Fight | Then escaped |
 |---|---|---|---|---|---|---|---|---|
-| port_check | bribe | 39 | 100% | -5.9 | 0 | 0.00 | 0% | 100% |
-| port_check | refuse | 102 | 100% | 0.0 | 0 | +0.08 | 0% | 95% |
+| port_check | bribe | 42 | 100% | -6.1 | 0 | 0.00 | 0% | 95% |
+| port_check | refuse | 99 | 100% | 0.0 | 0 | +0.08 | 0% | 94% |
 | port_check | scan | 45 | 53% | 0.0 | 0 | +0.07 | 0% | 100% |
-| story_registry | fight | 48 | 100% | 0.0 | 0 | 0.00 | 100% | 98% |
-| story_registry | run | 48 | 100% | 0.0 | 0 | +0.60 | 0% | 92% |
-| story_registry | show | 96 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
-| distress_tug | help | 2 | 0% | 0.0 | 0 | 0.00 | 100% | 100% |
+| story_registry | fight | 48 | 100% | 0.0 | 0 | 0.00 | 100% | 100% |
+| story_registry | run | 48 | 100% | 0.0 | 0 | +0.54 | 0% | 88% |
+| story_registry | show | 94 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| salvage_job | take | 1 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
+| pod | strip | 2 | 100% | 0.0 | 0 | 0.00 | 0% | 100% |
 
 ## What caught the ones who did not get out
 
 | Cause | Runs |
 |---|---|
 | ram:lancer | 3 |
-| fire:capital:ring | 1 |
+| bulwark | 2 |
+| fire:interdictor | 2 |
 | fire:capital:spiral | 1 |
 
 ## Where the damage comes from
 
 | Source | Hits | Share |
 |---|---|---|
-| fire:capital:spiral | 147 | 46% |
-| rock | 40 | 13% |
-| fire:interdictor | 24 | 8% |
-| fire:capital:ring | 19 | 6% |
-| fire:capital:volley | 18 | 6% |
-| fire:lancer | 15 | 5% |
-| bulwark | 10 | 3% |
-| ram:freighter | 10 | 3% |
-| fire:raptor | 9 | 3% |
-| fire:picket | 8 | 3% |
-| ram:enforcer | 4 | 1% |
-| ram:raptor | 4 | 1% |
-| ram:capital | 3 | 1% |
-| artillery | 3 | 1% |
+| fire:capital:spiral | 156 | 31% |
+| rock | 123 | 24% |
+| fire:interdictor | 50 | 10% |
+| fire:capital:volley | 25 | 5% |
+| fire:enforcer | 22 | 4% |
+| fire:lancer | 16 | 3% |
+| lightning | 15 | 3% |
+| fire:capital:ring | 15 | 3% |
+| fire:picket | 13 | 3% |
+| fire:raptor | 13 | 3% |
+| bulwark | 11 | 2% |
+| volatile | 8 | 2% |
+| ram:enforcer | 6 | 1% |
+| fire:scout | 6 | 1% |

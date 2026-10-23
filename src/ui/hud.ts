@@ -5,6 +5,7 @@ import type { SystemKind } from '../content/systems';
 import type { Sector } from '../render/sector';
 import { ENCOUNTERS, type EncounterId } from '../sim/encounters';
 import { alienLabel, cloaked } from '../sim/enemies';
+import { IDENT_RANGE } from '../sim/guide';
 import type { GameEvent } from '../sim/events';
 import { DOCK_TIME, LOW_SUPPLIES } from '../sim/breakout';
 import type { PowerKind } from '../sim/events';
@@ -432,7 +433,7 @@ export class Hud {
     }
     const near = hostile && hostile.d < THREAT_NEAR ? hostile : null;
     const heat = b.heat, level = heat < 0.3 ? 1 : heat < 0.55 ? 2 : heat < 0.8 ? 3 : 4;
-    const line = near ? `${t(near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact')} · ${range(near.d)}` : '';
+    const line = near ? `${t(near.d > IDENT_RANGE ? 'Unknown contact' : near.faction === 'custody' ? 'Custody patrol' : near.faction === 'gutter' ? 'Gutter crew' : 'Contact')} · ${range(near.d)}` : '';
     // the system's heat, lower right: four steps, gold from the third, red at the fourth
     const lit = Math.ceil(clamp(heat, 0, 1) * 4), ht = $('heat');
     ht.hidden = false;

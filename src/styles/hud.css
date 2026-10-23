@@ -338,9 +338,8 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #marks .m.dia::after, #marks .m.tag::after { left: calc(100% + 11px); top: 50%; translate: 0 -50%; text-align: left; }
 /* crowded: the label moves to the other side, above or below, so two near marks never print over each other */
 #marks .m[data-side="l"]::after { left: auto; right: calc(100% + 11px); top: 50%; translate: 0 -50%; text-align: right; }
-#marks .m[data-side="u"]::after { left: 50%; right: auto; top: auto; bottom: calc(100% + 9px); translate: -50% 0; text-align: center; }
-#marks .m[data-side="d"]::after { left: 50%; right: auto; top: calc(100% + 9px); translate: -50% 0; text-align: center; }
-#marks .m.dep { --d: var(--violet); }
+#marks .m[data-side="u"]::after { left: 50%; right: auto; top: auto; bottom: calc(100% + 13px); translate: -50% 0; text-align: center; }
+#marks .m[data-side="d"]::after { left: 50%; right: auto; top: calc(100% + 13px); translate: -50% 0; text-align: center; }
 #marks .m.obj.far { width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; }
 #marks .m.tag { width: 8px; height: 8px; margin: -4px 0 0 -4px; }
 #marks .m.tag::before { content: ""; position: absolute; inset: 0; border: 1px solid var(--cy); border-radius: 50%; }
