@@ -105,6 +105,13 @@ function fitWord(w: World, id: string, why: Block | null): string {
 /** The plain bay: one view of cards, no prices to read, closes on a pick. The Arcade's, and the training's one upgrade. */
 const isArcade = (w: World) => !w.bk || stepOf(w) === 'bay';
 
+/** The Recommended tag, up in the card's top row so the body text starts in the same place on every card; the reason is its tooltip. */
+function recTag(adv: Advice): HTMLElement {
+  const tag = h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`));
+  tag.title = t(adv.text, adv.vars);
+  return tag;
+}
+
 /** The views: the suggestions, then every tab with something for this mode (Signals is the Story mode's). */
 const viewsOf = (w: World): View[] => ['picks', ...TAB_ORDER.filter((tab) => WEB.some((n) => n.tab === tab && blockOf(n.id, { ...w.bayCtx(), krail: Infinity }) !== 'mode'))];
 
@@ -573,9 +580,8 @@ export class BayPanel {
       card.addEventListener('click', () => this.choose(i));
       card.append(
         this.shot(n.tab),
-        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(isArcade(w) ? ROLE_NAME[roleOf(n.id)] : TABS[n.tab].name)), ...this.stamp(n.id, 'pc-stamp'), h('kbd', 'only-desktop', String(i + 1))),
+        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(isArcade(w) ? ROLE_NAME[roleOf(n.id)] : TABS[n.tab].name)), ...(why1 ? [recTag(why1)] : []), ...this.stamp(n.id, 'pc-stamp'), h('kbd', 'only-desktop', String(i + 1))),
         h('span', 'pc-name', nameOf(n.id)),
-        ...(why1 ? [h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why1.text, why1.vars)}`))] : []),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
         h('span', 'pc-text', textOf(n.id, Math.min(max, lv + 1))),
         go,

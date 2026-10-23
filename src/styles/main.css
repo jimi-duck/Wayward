@@ -1074,6 +1074,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
   clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); background: rgba(8, 13, 14, .9); }
 .pc-oct .ico-img { width: 28px; height: 28px; }
 .pc-tab { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.pc-rec { flex: none; font: 600 max(10px, calc(var(--fs) * .95))/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); white-space: nowrap; }
 .pc-name { font: 700 clamp(17px, 1.7vw, 22px)/1.1 var(--font-head); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
 .pc-new { font: 600 calc(var(--fs) * 1.05)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--cy); }
 .pc-text { font: 400 14px/1.4 var(--font-display); color: var(--ink-2); min-height: 2.8em; }
