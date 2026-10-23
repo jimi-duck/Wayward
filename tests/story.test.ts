@@ -129,12 +129,12 @@ describe('the story beats', () => {
     expect(w.comms?.ledger?.find((r) => r.k === 'Outstanding')?.cr).toBe(80);
     const before = w.result().carry;
     w.answer('proceed');
-    run(10);
+    run(41);
     // then Sam, privately, with the override
     expect(w.comms?.def.id).toBe(SAM_BEAT);
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['code']);
     w.answer('code');
-    run(4);
+    run(7);
     // the registry reports the result (state already committed), with no score or portrait, then the archive wakes
     expect(w.comms?.def.id).toBe(RENAME_BEAT);
     expect(w.comms?.ledger?.map((r) => [r.k, r.v])).toEqual([['Registry status', 'Unregistered'], ['Owner lock', 'Lifted'], ['Hull finish', 'Grey → Ochre']]);

@@ -289,10 +289,10 @@ export const STORY_CARDS: CardDef[] = [
     side: { from: 'Lane Control', status: 'Status', glass: 'ochre', lines: ['Vessel flagged for recovery · Controls locked', 'Recovery autopilot active'] },
     cargo: 'Contract 08-441 · short delivery',
     choices: [
-      // the recovery (sim/recovery.ts): Lane Control flies her in, and Sam's channel opens after ten seconds of play
+      // the recovery (sim/recovery.ts): Lane Control flies her in, and Sam's channel opens after forty seconds of play
       { id: 'proceed', label: 'Proceed to the audit dock', tone: 'run', hint: 'Lane Control flies the ship in. The debt stays with you.',
         win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 1.5, text: ['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”'] } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 1.5, gap: 9, text: ['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”'] } } },
     ],
   }),
   story({
@@ -302,7 +302,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The audit dock · ahead',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
-        win: { text: 'Owner lock lifted · autopilot disabled', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: RENAME_BEAT, after: 2.4, quick: true } } },
+        win: { text: 'Owner lock lifted · autopilot disabled', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: RENAME_BEAT, after: 6.3, quick: true } } },
     ],
   }),
   story({
@@ -319,12 +319,11 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Stored message', quote: true,
-    hero: ['94%', 'Krail reserves'],
-    from: 'Legacy archive found', title: 'Krail reserves',
-    text: 'If you’re reading this, you’ve found the record I left in the system.\nSeventy years ago, the gates to the outer worlds went dark. They said Krail was running out. Those worlds were cut off. They became the Scatter.\nThen I found this reserve entry: 94%. Recorded on the very day the order to close the gates was signed.\nI don’t know what that number leaves out. But it doesn’t fit the story we were told.\nStart with Halden’s Reach. Follow the record. Find out why.',
-    doc: { kind: 'evidence', open: 'Open record', kick: 'Document · archive record', title: 'Krail reserve evidence', row: true, label: 'Stored note',
-      note: 'They called it the Severance. Seventy years later, the shortage is still the explanation.\nI’ve kept the reserve entry with this message. Check it against the order. Same day. That’s the part I can’t get past.\nOne entry doesn’t tell us what happened everywhere. It doesn’t explain why the gates were closed. Don’t mistake it for the whole answer.\nHalden’s Reach is the next lead.' },
+    // a message someone left in the ship's database (owner, 23 October 2026): no headline figure, no record to open
+    id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unsent', quote: true, notitle: true,
+    from: 'Ship database · stored message', title: 'For whoever flies her next',
+    letter: { head: [['To', 'Whoever flies her next'], ['From', 'No name given'], ['Kept in', 'Crew notes, hidden']], sign: '— No name. In case they read this before you do.' },
+    text: 'If you’re reading this, the owner lock is off and she answers to you. I hid this where the company’s audits never look.\nSeventy years ago the gates to the outer worlds went dark. We were told the Krail was running out. The worlds left outside became the Scatter.\nI pulled the reserve log for that day. Krail reserves: 94%. Logged the same day the order to close the gates was signed.\nI can’t tell you what that number leaves out. But it doesn’t fit the story we were told.\nStart at Halden’s Reach. Follow the record. Find out why.',
     cargo: 'The Wayward · a stored message in the hull’s archive',
     choices: [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',

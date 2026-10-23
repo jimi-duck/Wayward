@@ -95,7 +95,7 @@ describe('the objective follows the owner lock', () => {
     expect(w.phase).toBe('comms');
     expect(guideTarget(w)!.kind).toBe('audit');
     expect(w.flags.has('ship_stolen')).toBe(false);
-    play(w, 40);
+    play(w, 60);
     expect(w.flags.has('ship_stolen')).toBe(true);
     expect(guideTarget(w)).toMatchObject({ kind: 'lane', name: 'Jump Gate' });
   });

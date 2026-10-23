@@ -73,7 +73,7 @@ describe('the opening chain beyond the gate', () => {
       // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
-      run(10);
+      run(42);
     }
     expect(seen).toEqual(['story_breach', 'story_sam', 'story_rename', 'story_wake']);
     expect(w.phase).toBe('play');
@@ -119,7 +119,13 @@ describe('the opening chain beyond the gate', () => {
     expect(ledgerFor('evidence').find((r) => r.k === 'Reserve level')?.v).toBe('94%');
     expect(ledgerFor('evidence').find((r) => r.k === 'Reserve entry and gate-closure order')?.v).toBe('same day');
     expect(ledgerFor('archive').find((r) => r.k === 'Next lead')?.v).toBe('Halden’s Reach');
-    expect(CARD_BY_ID.story_wake!.hero).toEqual(['94%', 'Krail reserves']);
+    // a written message: no headline figure, no record to open, the 94% in the writer's own words
+    const wake = CARD_BY_ID.story_wake!;
+    expect(wake.hero).toBeUndefined();
+    expect(wake.doc).toBeUndefined();
+    expect(wake.letter?.head.map(([k]) => k)).toEqual(['To', 'From', 'Kept in']);
+    expect(wake.text).toContain('Krail reserves: 94%');
+    expect(wake.text).toContain('Halden’s Reach');
   });
 });
 

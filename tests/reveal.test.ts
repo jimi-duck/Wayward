@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ARC_END, LOCK_AT, RenameReveal, SWEEP_END } from '../src/render/reveal';
+import { ARC_END, CARD_AT, LOCK_AT, RenameReveal, SWEEP_END } from '../src/render/reveal';
+import { CARD_BY_ID } from '../src/sim/comms';
 
 // The rename reveal is presentation only: the `ship_stolen` flag is the livery, and the reveal plays once, when the
 // flag turns on in play, never on a load.
@@ -35,10 +36,10 @@ describe('rename reveal', () => {
     expect(c.last.livery).toBe(1);
     expect(c.last.arc).toBeCloseTo(1, 2);
     // the registry card: the game pauses, the view holds
-    const d = run(r, 11 + 2.4, 11 + 2.4 + 3, { paused: true });
+    const d = run(r, 11 + CARD_AT, 11 + CARD_AT + 3, { paused: true });
     expect(d.frames.every((f) => f.arc > 0.99)).toBe(true);
     // answered: the camera comes back and the reveal ends, ochre
-    const e = run(r, 11 + 2.4, 11 + 4);
+    const e = run(r, 11 + CARD_AT, 11 + CARD_AT + 1.7);
     expect(e.last).toEqual({ livery: 1, sweep: null, arc: 0 });
     expect(r.active).toBe(false);
     // it never plays again while the flag stays on
@@ -59,8 +60,21 @@ describe('rename reveal', () => {
     const r = new RenameReveal();
     run(r, 0, 1, { stolen: false });
     run(r, 1, 1 + 2);
-    const { last } = run(r, 3, 4.5, { calm: false });
+    const { last } = run(r, 3, 5, { calm: false });
     expect(last.arc).toBe(0);
+  });
+
+  it('takes its time: a long, wide arc, and the registry card only once it has settled', () => {
+    expect(ARC_END).toBeGreaterThanOrEqual(5);
+    expect(CARD_AT).toBeGreaterThan(ARC_END);
+    const sam = CARD_BY_ID.story_sam!.choices.find((c) => c.id === 'code')!;
+    expect(sam.win?.follow?.after).toBe(CARD_AT);
+    // mid-arc the camera is still moving
+    const r = new RenameReveal();
+    run(r, 0, 1, { stolen: false });
+    const { last } = run(r, 1, 1 + ARC_END / 2);
+    expect(last.arc).toBeGreaterThan(0.2);
+    expect(last.arc).toBeLessThan(0.8);
   });
 
   it('skips it all with reduced motion', () => {

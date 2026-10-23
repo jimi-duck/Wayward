@@ -30,10 +30,10 @@ const FOV_KICK = 6;
 const WARP_FOV = 38;
 const WARP_ELEV = MathUtils.degToRad(9);
 const WARP_PULL = 0.18;
-/** The rename reveal (render/reveal.ts): the rig swings this far round the ship, a little lower and further off, so the flank shows. */
-const REVEAL_ARC = MathUtils.degToRad(24);
-const REVEAL_ELEV = MathUtils.degToRad(13);
-const REVEAL_PULL = 0.1;
+/** The rename reveal (render/reveal.ts): the rig swings this far round the ship, lower and further off, so the whole flank shows. */
+const REVEAL_ARC = MathUtils.degToRad(105);
+const REVEAL_ELEV = MathUtils.degToRad(9);
+const REVEAL_PULL = 0.35;
 
 /**
  * A phone on its side is a small, short window: there the camera stands a
