@@ -84,6 +84,8 @@ button.ng-n:focus-visible { outline: 2px solid var(--blue); outline-offset: 7px;
 button.ng-n:active { border-image-source: var(--ng-n-press); }
 /* a phone: less blur to pay for, and tighter spacing */
 @media (max-height: 620px), (pointer: coarse) { :root { --ng-blur: blur(10px) saturate(150%); } }
+/* a laptop window: the call's sheets take one step less padding and gap, so the last answer is on screen */
+@media (min-height: 521px) and (max-height: 900px) { #comms { --ng-pad: 24px 32px; --ng-gap: 12px; } }
 @media (max-height: 520px) {
   :root { --ng-pad: 18px 26px; --ng-pad-card: 14px 18px; --ng-gap: 10px; }
   /* a phone on its side keeps every pop-up on one screen: the sheet itself leaves only a thin margin top and bottom */
@@ -107,10 +109,10 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 .ns-stack { display: grid; gap: clamp(24px, 6vh, 90px); width: min(680px, 100%); min-height: 0; }
 .ns-wrap[data-lay="col"] .ns-stack { width: min(560px, 100%); }
 .ns-wrap[data-lay="doc"] .ns-stack { width: min(600px, 100%); }
-.ns-p { display: grid; gap: var(--ng-gap); align-content: start; min-width: 0; padding: var(--ng-pad); color: var(--ink); }
+.ns-p { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--ng-gap); align-content: start; min-width: 0; padding: var(--ng-pad); color: var(--ink); }
 .ns-h { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(var(--halo), .4); }
 #comms .ns-h .tx-wave { width: 22px; height: 10px; background: var(--rim); opacity: .85; }
-.ns-from { flex: 1; min-width: 0; font: 600 13px/1.2 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
+.ns-from { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 13px/1.2 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
 .ns-st { display: inline-flex; align-items: center; gap: 7px; font: 600 12px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--rim); }
 .ns-st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 4px currentColor; }
 .ns-st.cyan { color: #7fdce6; }
