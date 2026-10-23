@@ -309,9 +309,12 @@ function hull(k: Kit, rnd: Rnd): void {
   // the bow: a rounded, sloping nose of amber plate over a dark chin
   k.loft('paint', [[2.06, 0.34, 0.27, 0.27, 0.4], [2.4, 0.3, 0.24, 0.22, 0.5], [2.72, 0.2, 0.16, 0.14, 0.55], [2.96, 0.05, 0.07, 0.06]], [0, HY, 0]);
   k.loft('dark', [[2.0, 0.3, 0.2, 0.3, 0.4], [2.45, 0.2, 0.12, 0.3, 0.5], [2.8, 0.08, 0.05, 0.2]], [0, HY - 0.1, 0]);
+  // the prow's flanks: a long chined wedge each side, from the shoulder to the tip, filling the neck so the nose runs on from the body
   for (const sd of [-1, 1]) {
-    k.wedge('paint', [[1.0, sd * 0.4], [1.75, sd * 0.32], [2.35, sd * 0.1], [1.75, sd * 0.2], [1.0, sd * 0.24]], 0.05, [0, HY + 0.2, 0], [sd * 0.5, 0, 0]);
-    k.wedge('dark', [[0.9, sd * 0.44], [1.9, sd * 0.3], [2.5, sd * 0.07], [1.9, sd * 0.18], [0.9, sd * 0.3]], 0.1, [0, HY - 0.2, 0], [sd * -0.45, 0, 0]);
+    k.wedge('paint', [[0.95, 0], [0.95, sd * 0.47], [2.0, sd * 0.35], [2.96, sd * 0.02]], 0.17, [0, HY + 0.0, 0]);
+    k.wedge('paint2', [[1.1, sd * 0.2], [1.1, sd * 0.43], [1.95, sd * 0.33], [2.5, sd * 0.1]], 0.05, [0, HY + 0.1, 0]);
+    k.wedge('dark', [[0.9, 0], [0.9, sd * 0.44], [2.0, sd * 0.3], [2.8, sd * 0.02]], 0.1, [0, HY - 0.15, 0], [sd * -0.25, 0, 0]);
+    k.box('hull', [0.9, 0.012, 0.014], [1.7, HY + 0.095, sd * 0.2], [0, sd * -0.12, 0]);
   }
   // the prow's armour: two stacked arrowhead plates stepping down the bow, a centre seam between, so it reads as a faceted wedge
   k.wedge('paint', [[1.5, -0.36], [2.5, -0.15], [2.95, -0.02], [2.95, 0.02], [2.5, 0.15], [1.5, 0.36]], 0.045, [0, HY + 0.285, 0], [0, 0, -0.1]);
