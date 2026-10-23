@@ -36,6 +36,7 @@ const s = newShip();
 s.heading = 0;
 s.thrust = heat;
 s.invuln = 0;
+s.yawRate = Number(params.get('yaw') ?? '0');
 
 // where the camera sits, in the model's frame (nose +X, starboard +Z), and what it looks at
 const VIEWS: Record<string, [number, number, number, number, number, number]> = {

@@ -266,6 +266,8 @@ export class ShipView {
   private readonly model: BuiltHull;
   private readonly engines: Engine[] = [];
   private readonly lights: Sprite[] = [];
+  /** Attitude jets at the bow and stern: one fires on the side the turn needs, fading as the yaw rate settles. */
+  private readonly jets: Array<{ sprite: Sprite; turn: number }> = [];
   private readonly shield: Mesh;
   private readonly shieldMat = shieldMaterial();
   private readonly plumeMat = plumeMaterial(false);
@@ -331,6 +333,13 @@ export class ShipView {
       s.scale.setScalar(0.17);
       this.lights.push(s);
       this.rollG.add(s);
+    }
+    // bow jets fire to the outside of the turn's push, stern jets opposite, so the nose and tail swing together
+    for (const [x, y, z, turn] of [[2.35, 0.1, 0.3, 1], [2.35, 0.1, -0.3, -1], [-2.5, 0.38, 0.5, -1], [-2.5, 0.38, -0.5, 1]] as const) {
+      const sprite = new Sprite(new SpriteMaterial({ map: glow, color: new Color(0, 0, 0), blending: AdditiveBlending, depthWrite: false }));
+      sprite.position.set(x * MODEL_SCALE, y * MODEL_SCALE, z * MODEL_SCALE + Math.sign(z) * 0.05);
+      this.jets.push({ sprite, turn });
+      this.rollG.add(sprite);
     }
     for (const [zone, pts] of Object.entries(MARKS)) {
       for (const p of pts) {
@@ -491,6 +500,13 @@ export class ShipView {
       e.plume.scale.set(len, r * 0.95, r * 0.95);
       e.hot.scale.set(len * 0.5, r * 0.36, r * 0.36);
       e.halo.scale.setScalar(r * (1.3 + 0.7 * h + 0.5 * this.surge) * flick);
+    }
+    // attitude jets: puff while the yaw rate is up, never when she is flying straight
+    for (const j of this.jets) {
+      const want = clamp(Math.max(0, j.turn * s.yawRate) * 0.9 - 0.12, 0, 1), m = j.sprite.material as SpriteMaterial;
+      m.color.setRGB(0.18 * want, 0.4 * want, 0.9 * want);
+      j.sprite.visible = want > 0.01;
+      j.sprite.scale.setScalar(0.04 + 0.05 * want);
     }
     this.glowLight.intensity = (1.1 + 1.6 * h) * flick;
     const blink = Math.sin(this.time * Math.PI * 2) > 0.6;
