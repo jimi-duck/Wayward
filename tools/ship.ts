@@ -69,6 +69,8 @@ const fit = () => {
 new ResizeObserver(fit).observe(canvas);
 fit();
 
+// ?shield=1: a standing charge; ?ready=<0..1>: freeze the charge-complete shimmer at that point (1 just started)
+const shield = params.get('shield') === '1', ready = params.get('ready');
 let last = performance.now(), t = 0, hitDone = false;
 const frame = (now: number) => {
   const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
@@ -85,7 +87,9 @@ const frame = (now: number) => {
     ship.update(s, hitAge, true);
     hitDone = true;
   }
-  ship.update(s, hitBearing !== null ? 0 : dt, true);
+  if (shield) ship.status.charged = 1;
+  if (ready !== null) { ship.status.charged = 0; ship.update(s, 0, true); ship.status.charged = 1; ship.update(s, (1 - Number(ready)) * 0.7, true); }
+  else ship.update(s, hitBearing !== null ? 0 : dt, true);
   env.update(camera, 0, 0, 0, 0, dt);
   // ?fight=gutter|custody|office|voice|thren: the rim as in a fight with that faction
   const fight = params.get('fight');
