@@ -72,9 +72,10 @@ Unknown callers keep a white status dot until combat makes them hostile.
 
 ## Type and contrast
 
-- Barlow Condensed 500 to 800 for headings, labels, actions and figures;
-  Barlow Semi Condensed for sentences; Share Tech Mono for numbers and codes.
-  No Rajdhani, no other faces.
+- Space Grotesk (one variable file, 300 to 700) for headings, labels, actions
+  and sentences; Share Tech Mono for numbers and codes. No Barlow, no
+  Rajdhani, no other faces. Space Grotesk is wider than the old condensed
+  face, so check German lines and 568x320 phones for overflow.
 - Uppercase for structure, sentence case for anything spoken.
 - WCAG AA on the composited glass over dark space and bright scenes: text
   4.5:1, large text and rims 3:1. The dimmest text on glass is `#A9A89C`

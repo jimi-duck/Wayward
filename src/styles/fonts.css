@@ -1,10 +1,5 @@
-/* Self-hosted brand faces (SIL OFL, from Google Fonts), latin subset only, so the
-   game looks the same offline from the Home Screen. */
-@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 500; font-display: swap; src: url('../assets/fonts/barlow-condensed-500.woff2') format('woff2'); }
-@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url('../assets/fonts/barlow-condensed-600.woff2') format('woff2'); }
-@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 700; font-display: swap; src: url('../assets/fonts/barlow-condensed-700.woff2') format('woff2'); }
-@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 800; font-display: swap; src: url('../assets/fonts/barlow-condensed-800.woff2') format('woff2'); }
-@font-face { font-family: 'Barlow Semi Condensed'; font-style: normal; font-weight: 400; font-display: swap; src: url('../assets/fonts/barlow-semi-condensed-400.woff2') format('woff2'); }
-@font-face { font-family: 'Barlow Semi Condensed'; font-style: normal; font-weight: 500; font-display: swap; src: url('../assets/fonts/barlow-semi-condensed-500.woff2') format('woff2'); }
-@font-face { font-family: 'Barlow Semi Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url('../assets/fonts/barlow-semi-condensed-600.woff2') format('woff2'); }
+/* Self-hosted faces (SIL OFL, from Google Fonts), latin subset only, so the
+   game looks the same offline from the Home Screen. Space Grotesk is one
+   variable file (weights 300 to 700); Share Tech Mono is for readouts. */
+@font-face { font-family: 'Space Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('../assets/fonts/space-grotesk-latin-wght.woff2') format('woff2'); }
 @font-face { font-family: 'Share Tech Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('../assets/fonts/share-tech-mono-400.woff2') format('woff2'); }

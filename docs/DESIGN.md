@@ -496,8 +496,8 @@ in small print along the web and on the pause card. Pop-up kickers speak as
 the ship (`Ship system`, `Warning`, `Continuance signal`).
 
 The pause card (`#pause`, styled as `.pause-card.term`) is a terminal readout:
-mono for the machine's words (id line, rules, keys, the foot), Barlow
-Condensed for what you do, Barlow Semi Condensed for the sentence. Sections
+mono for the machine's words (id line, rules, keys, the foot), Space
+Grotesk for what you do and the sentence. Sections
 are `.term-s` with a `.th` rule; add a line to Orders, not a new box. No
 icons on it. The state word comes from `ui/ops.ts` as everywhere else.
 

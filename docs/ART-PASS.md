@@ -25,11 +25,11 @@ red. Torpedoes stay amber. Loose finds are never red.
 
 ## Type
 
-Three layers, no more: Barlow Condensed for names, Barlow Semi Condensed for
-sentences, Share Tech Mono for data. The stencil look is only on the wordmark
+Two faces, no more: Space Grotesk for names and sentences (Barlow before
+2026-10-23), Share Tech Mono for data. The stencil look is only on the wordmark
 and the designation, as a mask on the existing face (`.lk-w`). The
 Continuance layer (`Continuance signal`, `Registry`) is mono caps with wide
-tracking; the ship's own lines stay Barlow.
+tracking; the ship's own lines stay Space Grotesk.
 
 ## History on the console
 

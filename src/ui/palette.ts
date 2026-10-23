@@ -37,6 +37,6 @@ export const INK = {
 
 /** The display faces, for canvas text. */
 export const FONT = {
-  rail: '"Barlow Condensed", "Arial Narrow", sans-serif',
+  rail: '"Space Grotesk", system-ui, sans-serif',
   mono: '"Share Tech Mono", ui-monospace, monospace',
 } as const;
