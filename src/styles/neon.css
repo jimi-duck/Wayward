@@ -1,79 +1,100 @@
 /* ── Neon Glass: every pop-up's material (docs/DESIGN-GUIDELINES.md, from guidelines v6 §5a) ──────────
-   Built once here; screens pick a role, never restyle it. Back to front: the blurred world, a dark teal
-   fill with faint static scanlines and one top-left sheen, an inner edge light and a top highlight, a crisp
-   2px rim in the role colour with a tight glow (no wide bloom), a 1px hairline 6px inside the rim, and
-   code-style corner brackets 7px outside each corner. The rim is a spread shadow, the hairline an inset
-   outline and the brackets a border image, so none of them is cut off by a panel that scrolls.
+   Built once here; screens pick a role, never restyle it. Corners are chamfered, never rounded (owner, 23 October
+   2026): 14px on panels, 10px on cards, buttons, rows and thumbnails. Three layers, back to front:
+   - the element's border image: the 2px rim just outside the edge, its tight glow (2px at .8, 6px at .35, nothing
+     wider) and the code-style brackets 8px outside each corner, drawn as nine-slice SVGs (src/styles/neon-frames.css,
+     made by tools/neon-frames.mjs) so the corners keep their size on any panel;
+   - ::before, the glass: the blurred world, a dark teal fill with faint static scanlines and one top-left sheen, the
+     inner edge light, cut to the chamfer, with the 1px hairline 6px inside the rim as its own border image;
+   - ::after, the light that moves (see "motion" below), masked to the edge band.
+   A panel never scrolls itself (the glass would scroll away with its content): its sheet or stack scrolls instead.
    Roles: cyan (default) systems, radio, documents; ochre WAYWARD, Sam's private channel, the helm;
    red breach, threat, refusal, debt. Text on glass is never dimmer than --ink-2 (#A9A89C). */
 :root {
   --ng-fill: linear-gradient(180deg, rgba(12, 28, 38, .80), rgba(8, 20, 28, .76));
-  --ng-fill-n: linear-gradient(180deg, rgba(18, 40, 52, .62), rgba(12, 30, 40, .58));
   --ng-scan: repeating-linear-gradient(0deg, rgba(0, 0, 0, .02) 0 1px, transparent 1px 4px);
   --ng-sheen: linear-gradient(135deg, rgba(255, 255, 255, .03), transparent 45%);
   --ng-blur: blur(18px) saturate(160%);
-  --ng-bk-cyan: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><path d='M1 29V1H29M61 1H89V29M1 61V89H29M61 89H89V61' fill='none' stroke='%23B4E4EE' stroke-width='2'/></svg>");
-  --ng-bks-cyan: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='54' height='54' viewBox='0 0 54 54'><path d='M1 17V1H17M37 1H53V17M1 37V53H17M37 53H53V37' fill='none' stroke='%23B4E4EE' stroke-width='2'/></svg>");
-  --ng-bk-ochre: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><path d='M1 29V1H29M61 1H89V29M1 61V89H29M61 89H89V61' fill='none' stroke='%23FFDEA0' stroke-width='2'/></svg>");
-  --ng-bks-ochre: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='54' height='54' viewBox='0 0 54 54'><path d='M1 17V1H17M37 1H53V17M1 37V53H17M37 53H53V37' fill='none' stroke='%23FFDEA0' stroke-width='2'/></svg>");
-  --ng-bk-red: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><path d='M1 29V1H29M61 1H89V29M1 61V89H29M61 89H89V61' fill='none' stroke='%23FFBEB9' stroke-width='2'/></svg>");
-  --ng-bks-red: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='54' height='54' viewBox='0 0 54 54'><path d='M1 17V1H17M37 1H53V17M1 37V53H17M37 53H53V37' fill='none' stroke='%23FFBEB9' stroke-width='2'/></svg>");
+  --ng-solid: linear-gradient(rgba(8, 13, 14, .92), rgba(8, 13, 14, .92));
+  /* the spacing inside every panel: 24 by 32 on a screen, 12 by 18 on a phone; 16 between blocks */
+  --ng-pad: 24px 32px; --ng-pad-card: 16px 20px; --ng-gap: 16px;
+}
+/* a chamfered shape for clip-path, from the cut in --c */
+.ng, .sheet > .panel, #pause .pause-card, #rd-call, .ng-n, .ng-cut {
+  --chamfer: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c));
 }
 .ng, .sheet > .panel, #pause .pause-card, #rd-call {
-  --rim: #b4e4ee; --halo: 40, 150, 190; --ng-r: 34px; --ng-w: 2px; --ng-bk: var(--ng-bk-cyan); --ng-bw: 30px;
-  position: relative; isolation: isolate; border: 0 solid transparent; border-radius: var(--ng-r); clip-path: none; filter: none;
+  --rim: #b4e4ee; --halo: 40, 150, 190; --c: var(--ng-cut);
+  --ng-frame: var(--ngf-panel-cyan); --ng-hair: var(--ngh-panel-cyan); --ng-fs: var(--ngf-panel-slice); --ng-fo: var(--ngf-panel-out); --ng-hs: var(--ngh-panel-slice);
+  position: relative; isolation: isolate; clip-path: none; filter: none; border-radius: 0; outline: 0;
+  background: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .4);
+  border: 0 solid transparent;
+  border-image-source: var(--ng-frame); border-image-slice: var(--ng-fs); border-image-width: calc(var(--ng-fs) * 1px);
+  border-image-outset: var(--ng-fo); border-image-repeat: stretch;
+}
+/* the glass, cut to the chamfer, with the hairline on top of it */
+:is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; display: block;
+  clip-path: var(--chamfer); border-radius: 0; filter: none; opacity: 1; transform: none;
   background: var(--ng-scan), var(--ng-sheen), var(--ng-fill);
-  backdrop-filter: var(--ng-blur);
-  box-shadow: 0 0 0 var(--ng-w) var(--rim), 0 0 2px var(--ng-w) rgba(var(--halo), .8), 0 0 6px var(--ng-w) rgba(var(--halo), .35),
-    0 18px 50px rgba(0, 0, 0, .4), inset 0 0 26px rgba(var(--halo), .18), inset 0 1px 0 rgba(255, 255, 255, .3);
-  outline: 1px solid rgba(var(--halo), .35); outline-offset: -6px;
-  border-image: var(--ng-bk) 30 / var(--ng-bw) / 9px stretch;
+  backdrop-filter: var(--ng-blur); -webkit-backdrop-filter: var(--ng-blur);
+  box-shadow: inset 0 0 26px rgba(var(--halo), .18), inset 0 1px 0 rgba(255, 255, 255, .3);
+  border: 0 solid transparent;
+  border-image-source: var(--ng-hair); border-image-slice: var(--ng-hs); border-image-width: calc(var(--ng-hs) * 1px); border-image-outset: 0; border-image-repeat: stretch;
 }
-/* the old cut frame's edge and glass are drawn by the material now */
-:is(.sheet > .panel, #pause .pause-card, #rd-call)::before, :is(.sheet > .panel, #pause .pause-card)::after { content: none; }
-.ng.card { --ng-r: 20px; --ng-bk: var(--ng-bks-cyan); --ng-bw: 18px; border-image-slice: 18; }
-.ng.ochre { --rim: #ffdea0; --halo: 210, 140, 40; --ng-bk: var(--ng-bk-ochre); }
-.ng.red, .sheet.alert > .panel { --rim: #ffbeb9; --halo: 210, 60, 60; --ng-bk: var(--ng-bk-red); }
-.ng.card.ochre { --ng-bk: var(--ng-bks-ochre); }
-.ng.card.red { --ng-bk: var(--ng-bks-red); }
-/* nested glass: buttons, choice rows, thumbnails. The same rim, thinner, a smaller glow, a lighter fill, no blur of its own */
+.ng.card { --c: var(--ng-cut-card); --ng-frame: var(--ngf-card-cyan); --ng-hair: var(--ngh-card-cyan); --ng-fs: var(--ngf-card-slice); --ng-fo: var(--ngf-card-out); --ng-hs: var(--ngh-card-slice); }
+.ng.ochre { --rim: #ffdea0; --halo: 210, 140, 40; --ng-frame: var(--ngf-panel-ochre); --ng-hair: var(--ngh-panel-ochre); }
+.ng.red, .sheet.alert > .panel { --rim: #ffbeb9; --halo: 210, 60, 60; --ng-frame: var(--ngf-panel-red); --ng-hair: var(--ngh-panel-red); }
+.ng.card.ochre { --ng-frame: var(--ngf-card-ochre); --ng-hair: var(--ngh-card-ochre); }
+.ng.card.red { --ng-frame: var(--ngf-card-red); --ng-hair: var(--ngh-card-red); }
+/* a call that rides along while flying: no blur (a live blur over the moving scene hitched on phones), a denser fill */
+#rd-call::before { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--ng-scan), var(--ng-sheen), linear-gradient(180deg, rgba(10, 24, 32, .9), rgba(8, 18, 24, .88)); }
+/* a panel never scrolls itself: its sheet does, and a panel taller than the screen starts at the top */
+.sheet > .panel, #pause .pause-card { overflow: visible; max-height: none; }
+.sheet, #pause { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; place-items: safe center; }
+/* the same margin all round inside every panel (the old frame's lit left edge, and its wider left margin, are gone) */
+.sheet > .panel, #pause .pause-card, .sheet.dk > .panel.dk-panel, #comms > .panel.comms { padding: var(--ng-pad); }
+#rd-call.job { padding: var(--ng-pad-card); }
+/* nested glass: buttons, choice rows, thumbnails. The same rim, thinner, a smaller glow, a lighter fill, no blur of its
+   own, cut at 10px; the fill is part of the frame, so a hover or a press swaps the frame */
 .ng-n {
-  --rim: #b4e4ee; --halo: 40, 150, 190; --ng-w: 1.5px; --ng-a: .8; --ng-b: .35;
-  position: relative; border: 0; border-radius: 14px; clip-path: none; background: var(--ng-fill-n); color: var(--ink);
-  box-shadow: 0 0 0 var(--ng-w) var(--rim), 0 0 1.5px var(--ng-w) rgba(var(--halo), var(--ng-a)), 0 0 4px var(--ng-w) rgba(var(--halo), var(--ng-b)),
-    inset 0 0 14px rgba(var(--halo), .16), inset 0 1px 0 rgba(255, 255, 255, .22);
-  transition: box-shadow var(--dk-ez, .16s), background var(--dk-ez, .16s);
+  --rim: #b4e4ee; --halo: 40, 150, 190; --c: var(--ng-cut-n);
+  --ng-n: var(--ngn-cyan); --ng-n-hi: var(--ngn-cyan-hi); --ng-n-press: var(--ngn-cyan-press);
+  position: relative; border: 0 solid transparent; border-radius: 0; clip-path: none; background: none; box-shadow: none; color: var(--ink);
+  border-image-source: var(--ng-n); border-image-slice: var(--ngn-slice) fill; border-image-width: calc(var(--ngn-slice) * 1px);
+  border-image-outset: var(--ngn-out); border-image-repeat: stretch;
 }
-.ng-n.ochre { --rim: #ffdea0; --halo: 210, 140, 40; }
-.ng-n.red { --rim: #ffbeb9; --halo: 210, 60, 60; }
-.ng-n.dim { --rim: rgba(180, 228, 238, .55); --ng-a: .4; --ng-b: .15; }
+.ng-n.ochre { --rim: #ffdea0; --halo: 210, 140, 40; --ng-n: var(--ngn-ochre); --ng-n-hi: var(--ngn-ochre-hi); --ng-n-press: var(--ngn-ochre-press); }
+.ng-n.red { --rim: #ffbeb9; --halo: 210, 60, 60; --ng-n: var(--ngn-red); --ng-n-hi: var(--ngn-red-hi); --ng-n-press: var(--ngn-red-press); }
+.ng-n.dim { --rim: rgba(180, 228, 238, .55); --ng-n: var(--ngn-dim); }
 button.ng-n { cursor: pointer; font: inherit; }
-button.ng-n:hover, button.ng-n:focus-visible, .ng-n.sel { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg, rgba(var(--halo), .2), rgba(var(--halo), .1)); }
-button.ng-n:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+button.ng-n:hover, button.ng-n:focus-visible, .ng-n.sel { border-image-source: var(--ng-n-hi); }
+button.ng-n:focus-visible { outline: 2px solid var(--blue); outline-offset: 7px; }
 /* pressed: a brief brighten inside the button, the glow no wider than on hover */
-button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg, rgba(var(--halo), .3), rgba(var(--halo), .16)); transition-duration: .04s; }
-/* a phone: less blur to pay for */
+button.ng-n:active { border-image-source: var(--ng-n-press); }
+/* a phone: less blur to pay for, and tighter spacing */
 @media (max-height: 620px), (pointer: coarse) { :root { --ng-blur: blur(10px) saturate(150%); } }
+@media (max-height: 520px) { :root { --ng-pad: 12px 18px; --ng-pad-card: 10px 14px; --ng-gap: 8px; } }
 /* no blur, or the player asked for less transparency: the same rim on an opaque body */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .ng, .sheet > .panel, #pause .pause-card, #rd-call { background: var(--ng-scan), linear-gradient(rgba(8, 13, 14, .92), rgba(8, 13, 14, .92)); }
+  :is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::before { background: var(--ng-scan), var(--ng-solid); }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .ng, .sheet > .panel, #pause .pause-card, #rd-call { backdrop-filter: none; background: var(--ng-scan), linear-gradient(rgba(8, 13, 14, .92), rgba(8, 13, 14, .92)); }
+  :is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::before { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--ng-scan), var(--ng-solid); }
 }
-@media (prefers-reduced-motion: reduce) { .ng-n { transition: none; } }
 
 /* ── the opening's sheets (#comms.ns): Work Bay, raiders, breach, Sam's channel, the archive (mockups v10, B–I) ── */
 #comms.ns .panel.comms, #comms.ns .panel.registry, #comms:not(.ns) .ns-wrap { display: none; }
 #comms.ns, #comms.reg { background: radial-gradient(ellipse at center, rgba(4, 10, 14, .35), rgba(4, 8, 12, .72)); }
-.ns-wrap { display: flex; align-items: flex-start; justify-content: center; gap: clamp(20px, 4vw, 64px); width: min(1240px, 100%); max-height: 100%; min-height: 0; }
+.ns-wrap { display: flex; align-items: flex-start; justify-content: center; gap: clamp(20px, 4vw, 64px); width: min(1240px, 100%); min-height: 0; }
 .ns-wrap[data-lay="row"] { align-items: flex-start; }
 .ns-wrap[data-lay="row"] > .ns-side { flex: 0 1 520px; }
 .ns-wrap[data-lay="row"] > .ns-main { flex: 0 1 600px; }
-.ns-stack { display: grid; gap: clamp(24px, 6vh, 90px); width: min(680px, 100%); max-height: 100%; min-height: 0; }
+.ns-stack { display: grid; gap: clamp(24px, 6vh, 90px); width: min(680px, 100%); min-height: 0; }
 .ns-wrap[data-lay="col"] .ns-stack { width: min(560px, 100%); }
 .ns-wrap[data-lay="doc"] .ns-stack { width: min(600px, 100%); }
-.ns-p { display: grid; gap: 14px; align-content: start; min-width: 0; max-height: calc(100dvh - 40px); overflow-y: auto; padding: 22px 30px 26px; color: var(--ink); scrollbar-width: thin; }
+.ns-p { display: grid; gap: var(--ng-gap); align-content: start; min-width: 0; padding: var(--ng-pad); color: var(--ink); }
 .ns-h { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(var(--halo), .4); }
 #comms .ns-h .tx-wave { width: 22px; height: 10px; background: var(--rim); opacity: .85; }
 .ns-from { flex: 1; min-width: 0; font: 600 13px/1.2 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
@@ -118,8 +139,6 @@ button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg,
 .ns-cb { display: grid; gap: 3px; }
 .ns-c .ns-l { font: 700 16px/1.15 var(--font-head); letter-spacing: .18em; text-transform: uppercase; color: #f2f1ea; }
 .ns-hint { font: 400 14.5px/1.3 var(--font-display); color: #d9d7cc; }
-.ns-c.red { background: linear-gradient(180deg, rgba(60, 16, 18, .62), rgba(40, 10, 12, .58)); }
-.ns-c.ochre { background: linear-gradient(180deg, rgba(60, 42, 12, .55), rgba(40, 28, 8, .52)); }
 .ns-x { justify-self: start; display: inline-flex; align-items: center; gap: 12px; min-height: 40px; padding: 8px 18px; font: 700 13px/1 var(--font-head); letter-spacing: .22em; text-transform: uppercase; }
 .ns-xi { font-size: 13px; color: var(--ink-2); }
 .ns-side .ns-q p { font-size: 17px; }
@@ -127,7 +146,6 @@ button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg,
 @media (max-height: 520px) {
   .ns-wrap { gap: 18px; }
   .ns-stack { gap: 16px; }
-  .ns-p { gap: 7px; max-height: calc(100dvh - 26px); padding: 10px 16px 12px; }
   .ns-h { padding-bottom: 6px; gap: 8px; }
   .ns-from { font-size: 10.5px; letter-spacing: .16em; }
   .ns-st { font-size: 10px; letter-spacing: .14em; }
@@ -160,18 +178,15 @@ button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg,
   .ns-side .ns-q, .ns-side .ns-q p { min-width: 0; overflow-wrap: anywhere; }
   .ns-wrap[data-lay="row"] > .ns-side .ns-st { display: none; }
   .ns-from { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  /* a stack (the breach and its status line) scrolls as one, with room for the brackets */
-  .ns-stack { max-height: 100%; overflow-y: auto; padding: 10px; margin: -10px; scrollbar-width: none; }
-  .ns-stack > .ns-p { max-height: none; overflow: visible; }
 }
 
 /* ── the registry update (#comms.reg, sheet H): the master reference. The new identity and the ship dominate ── */
 #comms.reg .panel.comms, #comms:not(.reg) .panel.registry { display: none; }
 #comms .panel.registry {
-  font-size: clamp(12px, 1.02vw, 18px); width: min(1440px, 94vw); max-height: calc(100dvh - 30px); overflow-y: auto; display: grid; gap: 1.1em;
-  padding: 1.5em 2.2em 1em; color: var(--ink);
-  background: var(--ng-scan), var(--ng-sheen), radial-gradient(70% 90% at 72% 42%, rgba(12, 30, 46, .1), transparent 70%), var(--ng-fill);
+  font-size: clamp(12px, 1.02vw, 18px); width: min(1440px, 94vw); display: grid; gap: 1.1em;
+  padding: 1.5em 2.2em; color: var(--ink);
 }
+#comms .panel.registry::before { background: var(--ng-scan), var(--ng-sheen), radial-gradient(70% 90% at 72% 42%, rgba(12, 30, 46, .1), transparent 70%), var(--ng-fill); }
 .registry .rg-h { display: flex; align-items: flex-start; gap: 1em; padding-bottom: .9em; border-bottom: 1px solid rgba(var(--halo), .35); }
 .registry .rg-org { display: grid; gap: .3em; }
 .registry .rg-org b { display: flex; align-items: center; gap: .7em; font: 600 1.5em/1.1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: #8fe2ec; }
@@ -195,7 +210,7 @@ button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg,
 .registry .rg-rp { margin: .9em 0 .1em; padding-bottom: .5em; border-bottom: 1px solid rgba(var(--halo), .28); font: 600 1em/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: #8fe2ec; }
 .registry .rg-ths { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: .7em; max-width: 30em; }
 .registry .rg-th { margin: 0; padding: .45em; display: grid; gap: .35em; }
-.registry .rg-thimg { width: 100%; aspect-ratio: 2.1; object-fit: contain; border-radius: 9px; background: #02060b url("../assets/registry-nebula.webp") center / cover; }
+.registry .rg-thimg { --c: 7px; width: 100%; aspect-ratio: 2.1; object-fit: contain; clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px); background: #02060b url("../assets/registry-nebula.webp") center / cover; }
 .registry .rg-th figcaption { font: 600 .74em/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: #8fe2ec; }
 .registry .rg-th.ochre figcaption { color: #f2c063; }
 .registry .rg-tharrow { font-style: normal; color: #8fe2ec; }
@@ -227,7 +242,7 @@ button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg,
 }
 /* a phone on its side: the name, the rows, the ship, the warning and the action stay; the repaint comparison takes a second look (scroll) */
 @media (max-height: 520px) {
-  #comms .panel.registry { font-size: 10.5px; gap: .5em; padding: .8em 1.3em .7em; max-height: calc(100dvh - 24px); }
+  #comms .panel.registry { font-size: 10.5px; gap: .5em; padding: 12px 18px; }
   .registry .rg-h { padding-bottom: .4em; }
   .registry .rg-org b { font-size: 1.35em; }
   .registry .rg-main { column-gap: 1.2em; }
@@ -248,13 +263,21 @@ button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg,
 }
 
 /* ── every other transmission: the same nested glass on its answers, and nothing dimmer than --ink-2 on the glass ── */
-#comms .panel.comms .cm-c { --rim: rgba(180, 228, 238, .55); --halo: 40, 150, 190; border: 0; border-radius: 14px; clip-path: none; background: var(--ng-fill-n);
-  box-shadow: 0 0 0 1.5px var(--rim), 0 0 1.5px 1.5px rgba(var(--halo), .4), 0 0 4px 1.5px rgba(var(--halo), .15), inset 0 0 14px rgba(var(--halo), .12), inset 0 1px 0 rgba(255, 255, 255, .18); }
+#comms .panel.comms .cm-c { --rim: rgba(180, 228, 238, .55); --halo: 40, 150, 190; border: 0 solid transparent; border-radius: 0; clip-path: none; background: none; box-shadow: none;
+  border-image: var(--ngn-dim) var(--ngn-slice) fill / calc(var(--ngn-slice) * 1px) / var(--ngn-out) stretch; }
 #comms .panel.comms .cm-c::before, #comms .panel.comms .cm-c::after { content: none; }
-#comms .panel.comms .cm-c.sel, #comms .panel.comms .cm-c:hover:not([aria-disabled="true"]) { --rim: #b4e4ee; background: linear-gradient(180deg, rgba(40, 150, 190, .2), rgba(40, 150, 190, .1));
-  box-shadow: 0 0 0 1.5px var(--rim), 0 0 1.5px 1.5px rgba(var(--halo), 1), 0 0 4px 1.5px rgba(var(--halo), .55), inset 0 0 14px rgba(var(--halo), .16), inset 0 1px 0 rgba(255, 255, 255, .22); }
+#comms .panel.comms .cm-c.sel, #comms .panel.comms .cm-c:hover:not([aria-disabled="true"]) { --rim: #b4e4ee; border-image-source: var(--ngn-cyan-hi); }
+#comms .panel.comms .cm-c:active:not([aria-disabled="true"]) { border-image-source: var(--ngn-cyan-press); }
 #comms .panel.comms .cm-list { gap: 10px; }
 #comms .panel.comms .cm-c kbd, #comms .panel.comms .cm-side .need, #comms .panel.comms .pf .keys, #pause .pause-card .th { color: var(--ink-2); }
+
+/* ── the radio call's answers and picture: the same chamfered nested glass ── */
+#rd-call.job .rd-c, #rd-call:not(.job) .rd-c { border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
+  border-image: var(--ngn-dim) var(--ngn-slice) fill / calc(var(--ngn-slice) * 1px) / var(--ngn-out) stretch; }
+#rd-call.job .rd-c.first, #rd-call:not(.job) .rd-c.first { background: none; box-shadow: none; border-image-source: var(--ngn-cyan-hi); }
+#rd-call.job .rd-c:hover:not([aria-disabled="true"]), #rd-call:not(.job) .rd-c:hover:not([aria-disabled="true"]) { background: none; border-image-source: var(--ngn-cyan-hi); }
+#rd-call.job .rd-c:active:not([aria-disabled="true"]), #rd-call:not(.job) .rd-c:active:not([aria-disabled="true"]) { border-image-source: var(--ngn-cyan-press); }
+#rd-call.job .rd-art { border: 0; border-radius: 0; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
 
 /* ── motion: ambient light and incoming transmissions (docs/DESIGN-GUIDELINES.md, "Motion") ──────────────
    Text and panel geometry never move; only the glass and the edge light do. Nothing here sits under body text:
@@ -283,21 +306,21 @@ button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg,
 /* the ring's antenna is the bars: one thin ring, expanding once */
 .rx-bars::after { content: ""; position: absolute; left: 50%; bottom: 3px; width: 10px; height: 10px; border: 1px solid var(--rim, #b4e4ee); border-radius: 50%; translate: -50% 50%; opacity: 0; pointer-events: none; }
 
-/* the reflection: one diagonal glint across the glass's edge band as the panel opens, then gone */
-:is(.ns-p, .sheet > .panel, #pause .pause-card, #rd-call)::before {
-  content: ""; position: absolute; inset: 0; z-index: 0; padding: 12px; border-radius: inherit; pointer-events: none;
-  clip-path: none; backdrop-filter: none; -webkit-backdrop-filter: none;
-  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, .09) 50%, transparent 58%) no-repeat 130% 0 / 260% 100%;
+/* the light that moves, on ::after above the glass and masked to the 12px edge band outside the text: one diagonal
+   glint as the panel opens (--ng-gx, --ng-ga), and on the main panel a short highlight that now and then runs along part
+   of the top edge (--ng-dx, --ng-da), the one slow loop. Registered, so the two run on their own clocks. */
+@property --ng-gx { syntax: '<percentage>'; inherits: false; initial-value: 130%; }
+@property --ng-ga { syntax: '<number>'; inherits: false; initial-value: 0; }
+@property --ng-dx { syntax: '<percentage>'; inherits: false; initial-value: 8%; }
+@property --ng-da { syntax: '<number>'; inherits: false; initial-value: 0; }
+:is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; padding: 12px; pointer-events: none; display: block;
+  clip-path: var(--chamfer); border: 0; border-radius: 0; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; opacity: 1;
+  background:
+    linear-gradient(105deg, transparent 42%, rgb(255 255 255 / calc(.09 * var(--ng-ga))) 50%, transparent 58%) no-repeat var(--ng-gx) 0 / 260% 100% border-box,
+    linear-gradient(90deg, transparent, rgb(255 255 255 / calc(.65 * var(--ng-da))), transparent) no-repeat var(--ng-dx) 0 / 96px 1.5px border-box;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  opacity: 0;
-}
-/* the edge light: a short highlight that now and then runs along part of the top edge, the one slow loop */
-:is(.ns-main, .ns-doc, .sheet > .panel, #pause .pause-card, #rd-call)::after {
-  content: ""; position: absolute; inset: 0 auto auto 0; z-index: 1; width: 100%; height: 1.5px; pointer-events: none;
-  clip-path: none; backdrop-filter: none; -webkit-backdrop-filter: none;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .65), transparent) no-repeat 0 0 / 96px 100%;
-  opacity: 0;
 }
 /* the old breaking scanline ran down the glass behind the text, so it is off on every pop-up */
 :is(.sheet, #pause, #rd-call) .wear::after { content: none; animation: none; }
@@ -314,25 +337,25 @@ button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg,
   [data-rx] .rx-bars > i:nth-child(3) { animation-delay: .65s; }
   [data-rx] .rx-bars > i:nth-child(4) { animation-delay: .9s; }
   [data-ring] .rx-bars::after { animation: rx-ring .9s ease-out both; }
-  :is(.ns-p, .sheet > .panel, #pause .pause-card, #rd-call)::before { animation: ng-glint 1.2s .08s ease-in-out both; }
+  :is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::after { animation: ng-glint 1.2s .08s ease-in-out both; }
+  :is(.ns-main, .ns-doc, .sheet > .panel, #pause .pause-card, #rd-call)::after { animation: ng-glint 1.2s .08s ease-in-out both, ng-drift 14s 3s linear infinite; }
   /* a transmission plays its reflection only as it arrives, never on a redraw */
-  #comms:not([data-rx]) :is(.ns-p, .panel)::before, #rd-call:not([data-rx])::before { animation: none; }
-  :is(.ns-main, .ns-doc, .sheet > .panel, #pause .pause-card, #rd-call)::after { animation: ng-drift 14s 3s linear infinite; }
+  #comms:not([data-rx]) :is(.ns-main, .ns-doc, .panel)::after, #rd-call:not([data-rx])::after { animation: ng-drift 14s 3s linear infinite; }
+  #comms:not([data-rx]) .ns-side::after { animation: none; }
   .rx-bearing { display: block; animation: rx-draw 1.7s .25s ease-out both; }
 }
 @keyframes rx-bar { from { opacity: .18; } }
 @keyframes rx-ring { from { opacity: .65; scale: 1; } to { opacity: 0; scale: 3.2; } }
-@keyframes ng-glint { 0% { opacity: 0; background-position: 130% 0; } 20%, 75% { opacity: 1; } 100% { opacity: 0; background-position: -30% 0; } }
-@keyframes ng-drift { 0% { opacity: 0; transform: translateX(8%); } 4%, 21% { opacity: .9; } 26% { opacity: 0; transform: translateX(62%); } 100% { opacity: 0; transform: translateX(62%); } }
+@keyframes ng-glint { 0% { --ng-ga: 0; --ng-gx: 130%; } 20%, 75% { --ng-ga: 1; } 100% { --ng-ga: 0; --ng-gx: -30%; } }
+@keyframes ng-drift { 0% { --ng-da: 0; --ng-dx: 8%; } 4%, 21% { --ng-da: 1; } 26% { --ng-da: 0; --ng-dx: 62%; } 100% { --ng-da: 0; --ng-dx: 62%; } }
 @keyframes rx-draw { 0% { opacity: .75; clip-path: inset(0 100% 0 0); } 45% { opacity: .75; clip-path: inset(0 0 0 0); } 65% { opacity: .75; } 100% { opacity: 0; clip-path: inset(0 0 0 0); } }
 /* a hidden page: the ambient light stops where it is */
-.page-hidden :is(.ns-main, .ns-doc, .sheet > .panel, #pause .pause-card, #rd-call)::after,
-.page-hidden :is(.ns-p, .sheet > .panel, #pause .pause-card, #rd-call)::before,
+.page-hidden :is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::after,
 .page-hidden :is(.rx-bars > i, .rx-bars, .rx-bearing) { animation-play-state: paused; }
 .page-hidden .rx-bars::after { animation-play-state: paused; }
 @media (max-height: 520px) {
   /* phones: the text sits closer to the edge, so the reflection's band is narrower */
-  :is(.ns-p, .sheet > .panel, #pause .pause-card, #rd-call)::before { padding: 7px; }
+  :is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::after { padding: 7px; }
   .ns-h .rx-deg { font-size: 10px; }
   .rx-bars { height: 9px; gap: 1.5px; }
   .rx-bars > i:nth-child(4) { height: 9px; }
