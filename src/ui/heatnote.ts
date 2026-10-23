@@ -18,14 +18,14 @@ export class HeatNote {
     this.close();
     this.onDone = onDone;
     this.opened = performance.now();
-    $('hn-t').textContent = t('Heat');
+    $('hn-t').textContent = t('Wanted');
     const bar = h('span', 'ht-b');
     bar.dataset.lit = '2';
     for (let i = 0; i < 4; i++) bar.append(document.createElement('i'));
     $('hn-l').replaceChildren(
-      h('p', '', t('Every Continuance ship you fight raises the system’s heat. Spending too much time in the system increases it too. The more heat you generate, the more ships the Continuance sends and the greater the risk of getting trapped behind a blockade.')),
-      h('div', 'hn-bar', '', h('span', 'ht-l', t('Heat')), bar),
-      h('p', '', t('System heat is displayed in the bottom-right corner.')),
+      h('p', '', t('Every Continuance ship you fight raises your Wanted level. Lingering in a system raises it too. The higher it climbs, the more ships the Continuance sends and the greater the risk of getting trapped behind a blockade.')),
+      h('div', 'hn-bar', '', h('span', 'ht-l', t('Wanted')), bar),
+      h('p', '', t('Your Wanted level is shown in the bottom-right corner.')),
     );
     const go = $('hn-go');
     go.textContent = t('Got it');

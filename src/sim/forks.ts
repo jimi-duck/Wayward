@@ -130,7 +130,7 @@ export function forks(j: Journey): Fork[] {
     else if (s.kind === 'contested') say = t('Patrols and raiders hold it: expect a fight.');
     else if (st === 'hostile') say = t('Raiders or Thren are about: expect a fight.');
     else if (hazard) say = t('Rough flying: a hazard sits in the way.');
-    else if (quiet) say = t('A quiet breather: no pursuit, and your heat cools.');
+    else if (quiet) say = t('A quiet breather: no pursuit, and your Wanted level falls.');
     else if (s.port) say = st === 'watched' ? t('A port to refit and resupply, but it draws the Custody.') : t('A port to trade, resupply and refit.');
     else if (heavy) say = t('A hard job waits here, a fight or a chase.');
     else if (o.place) say = placeNote(o.place);

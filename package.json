@@ -28,6 +28,7 @@
     "art:brief": "vitest run --config tools/vitest.config.ts tools/art-brief.pilot.ts",
     "art:prep": "python3 tools/art-prep.py",
     "pilot:variety": "vitest run --config tools/vitest.config.ts tools/variety.pilot.ts",
+    "pilot:arcade": "vitest run --config tools/vitest.config.ts tools/arcade.pilot.ts",
     "pilot:feel": "vitest run --config tools/vitest.config.ts tools/feel.pilot.ts"
   },
   "engines": {

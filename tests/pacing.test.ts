@@ -5,7 +5,7 @@ import type { InputFrame } from '../src/input/types';
 import { UPGRADES } from '../src/content/upgrades';
 import { computeStats, upgradeFigures } from '../src/sim/build';
 import { pressure } from '../src/sim/director';
-import { ALIEN_FIRST, alienFire, moveAlien, SPAWN_NEAR, spawnAlien, type Arena } from '../src/sim/enemies';
+import { ARCADE_OPENING, alienFire, moveAlien, SPAWN_NEAR, spawnAlien, type Arena } from '../src/sim/enemies';
 import type { GameEvent } from '../src/sim/events';
 import { blockOf } from '../src/sim/bay';
 import { APPROACHES, PACING, pickApproach, waveSize } from '../src/sim/pacing';
@@ -144,12 +144,18 @@ describe('self-repair (in the arcade)', () => {
 });
 
 describe('encounters', () => {
-  it('opens on a single scout that looks you over before it commits', () => {
+  it('opens in a fight: easy scouts, close, straight in, within seconds', () => {
     for (let seed = 1; seed <= 12; seed++) {
       const w = open(seed);
-      run(w, ALIEN_FIRST + 0.2);
-      expect(w.aliens.length).toBe(1);
-      expect(['patrol', 'investigate']).toContain(w.aliens[0]!.approach);
+      run(w, ARCADE_OPENING.first + 0.2);
+      expect(w.aliens.length).toBeGreaterThan(0);
+      for (const a of w.aliens) {
+        expect(a.kind).toBe('scout');
+        expect(a.approach).toBe('direct');
+        expect(Math.hypot(a.x - w.ship.x, a.z - w.ship.z)).toBeLessThan(ARCADE_OPENING.far + 2);
+      }
+      run(w, 20);
+      expect(w.run.waves).toBeGreaterThanOrEqual(1);
     }
   });
 
@@ -166,7 +172,8 @@ describe('encounters', () => {
         n++;
         const off = Math.abs(angleDelta(x.ship.heading, Math.atan2(-(a.z - x.ship.z), a.x - x.ship.x)));
         expect(off).toBeGreaterThan(PACING.noseClear - 0.12);
-        expect(Math.hypot(a.x - x.ship.x, a.z - x.ship.z)).toBeGreaterThan(SPAWN_NEAR - 10);
+        // the opening wave is the one hull group dropped in close
+        if (x.run.waves > 1) expect(Math.hypot(a.x - x.ship.x, a.z - x.ship.z)).toBeGreaterThan(SPAWN_NEAR - 10);
       }
       x.ship.invuln = 1;
     });
@@ -289,7 +296,7 @@ describe('the whole loop', () => {
       }
     };
     // the first encounter
-    fly(ALIEN_FIRST + 1);
+    fly(ARCADE_OPENING.first + 1);
     expect(seen).toContain('contacts');
     expect(w.aliens.length).toBeGreaterThan(0);
     // taking damage stops any repair

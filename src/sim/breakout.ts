@@ -132,8 +132,8 @@ export const PURSUIT_FIRST = 45;
 // hauler leave. Heavier hulls come from behind, faster and in greater number, all
 // the way to the lane. They are meant to be outrun, not beaten.
 
-/** How far ahead the lane is set when the chase begins (units; about 50 s at top speed). */
-export const CHASE_LANE = 1900;
+/** How far ahead the lane is set when the chase begins (units, 8 km; about 18 s at top speed). */
+export const CHASE_LANE = 800;
 /** Seconds to the first wave. */
 export const CHASE_FIRST = 2;
 /** The ships a wave may leave alive at once, the gap to the next wave (s), and the heat the pursuit is picked at. */
@@ -361,7 +361,7 @@ export function rockYield(kind: RockKind, size: RockSize, k = 1): Yield {
 
 /** Where the first system past Cerro puts its places, as a share of the way to the Jump Gate and how far off the line (right is positive). */
 export const FIRST_AUDIT = { along: 0.3, off: 300 };
-export const FIRST_DEPOT = { along: 0.8, off: -190 };
+export const FIRST_DEPOT = { along: 0.55, off: -190 };
 
 /** A sortie's places, laid out from the start along the ship's heading: the Jump Gate ahead, the port (if any) off the line about halfway (the first system past Cerro: the audit dock early on one side, the depot late on the other). */
 export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { lane: Waypoint; port: Waypoint | null; audit: Waypoint | null } {

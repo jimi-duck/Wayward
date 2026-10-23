@@ -341,7 +341,7 @@ export const WORLD: Record<string, string> = {
   'Capacitor bank': 'Kondensatorbank',
   'Your shield recharges sooner and faster.': 'Dein Schild lädt früher und schneller.',
   'Baffles': 'Dämpfer',
-  'Heat builds slower.': 'Die Fahndung steigt langsamer.',
+  'Wanted builds slower.': 'Die Fahndung steigt langsamer.',
   'Long-range array': 'Fernsensor',
   'Better reads, and sight back in dust and shrouds. Spots Calloway more often.': 'Bessere Scans und mehr Sicht in Staub und Schleiern. Sieht Calloway öfter.',
   'Jammer': 'Störsender',
@@ -355,7 +355,7 @@ export const WORLD: Record<string, string> = {
   'Names in the Gutter': 'Namen im Gutter',
   'A friend in the Gutter.': 'Ein Freund im Gutter.',
   'Friends on the docks': 'Freunde im Hafen',
-  'Docking cools heat more.': 'Andocken senkt die Fahndung stärker.',
+  'Docking lowers Wanted more.': 'Andocken senkt die Fahndung stärker.',
 
   // ── places (content/phenomena.ts) ──
   'A standing storm. The lightning charges whatever it misses.': 'Ein Dauersturm. Die Blitze laden, was sie verfehlen.',

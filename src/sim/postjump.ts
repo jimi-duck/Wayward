@@ -22,8 +22,8 @@ export const SUPPLY_DEPOT = 'Frontier Supply Depot';
 export const LOCK_LIFTED = 'ship_stolen';
 export const lockLifted = (flags: ReadonlySet<string> | readonly string[]): boolean => (flags instanceof Set ? flags.has(LOCK_LIFTED) : (flags as readonly string[]).includes(LOCK_LIFTED));
 
-/** The straight run from the arrival to the Jump Gate, in units: about a minute flat out. */
-export const POSTJUMP_LANE = 2400;
+/** The straight run from the arrival to the Jump Gate, in units: 10 km, about 25 s flat out. */
+export const POSTJUMP_LANE = 1000;
 
 /**
  * The sky: a worked-over scrap expanse. A gantry works, a breaker field and a graveyard of hulls are the spent

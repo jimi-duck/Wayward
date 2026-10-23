@@ -175,3 +175,10 @@ export const SHIELD_GRACE = 0.7;
 export const BOOST_FIRST = 40;
 export const BOOST_CHANCE = 0.05;
 export const BOOST_GAP = 30;
+
+/**
+ * The Arcade pays for fighting, not mining: a dead hull (and a capital ship) leaves this many times the Krail,
+ * and rock a little less, so a refit comes out of the wrecks (sim/world.ts `salvage`, `income`).
+ */
+export const ARCADE_BOUNTY = 2.5;
+export const ARCADE_ROCK = 0.85;

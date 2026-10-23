@@ -1,3 +1,4 @@
+import { ARCADE_BOUNTY } from '../src/sim/tuning';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { STEP } from '../src/core/loop';
 import { DEFAULT_SURVIVAL, SURVIVAL, SURVIVAL_IDS, survivalOf, type SurvivalId } from '../src/content/survival';
@@ -268,7 +269,7 @@ describe('the sky', () => {
   it('never goes quiet for too long, or sends hulls without a break', { timeout: 30_000 }, () => {
     for (const id of SURVIVAL_IDS) for (const seed of [1, 2, 3]) {
       const { gap } = traffic(sky(id, seed), 420);
-      // the longest stretch with nothing new on the way: the opening quiet is ALIEN_FIRST (about 20 s) and the quiet spells run to 30 s
+      // the longest stretch with nothing new on the way: the opening quiet is ARCADE_OPENING.first (3 s) and the quiet spells run to 30 s
       expect(gap, `${id} seed ${seed}`).toBeLessThan(id === 'drifter' ? 75 : 55);
     }
   });
@@ -449,8 +450,8 @@ describe('wrecks', () => {
   it('pays the arcade in Krail only, more from a Raider\'s kills', () => {
     const [d, p, r] = SURVIVAL_IDS.map((id) => wrecked(id, 'arcade').by.lancer!);
     for (const x of [d!, p!, r!]) { expect(x.cyrite).toBe(0); expect(x.ore).toBe(0); expect(x.parts).toBe(0); }
-    // a lancer is worth 7; the arcade's income factor (and only the arcade's: the Story's 4 Krail above is untouched) takes a quarter off
-    expect(p!.krail).toBeCloseTo(7 * SURVIVAL.prospector.sky.income, 0);
+    // a lancer is worth 7; the arcade's income factor (and only the arcade's: the Story's 4 Krail above is untouched) takes a quarter off and the arcade's bounty pays it back and more
+    expect(p!.krail).toBeCloseTo(7 * SURVIVAL.prospector.sky.income * ARCADE_BOUNTY, 0);
     expect(r!.krail).toBeGreaterThan(p!.krail);
   });
 

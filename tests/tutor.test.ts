@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { World } from '../src/sim/world';
 import { newJourney } from '../src/sim/journey';
-import { SAFE_R } from '../src/sim/breakout';
+import { CHASE_LANE, SAFE_R } from '../src/sim/breakout';
 import { goalOf } from '../src/sim/goal';
 import { metres } from '../src/sim/world';
 import { cargoOf, lessonOf, needsTorpedoFit, stepOf, LESSON_NODE } from '../src/sim/tutor';
@@ -183,7 +183,7 @@ describe('the chase', () => {
     w.skipTraining();
     expect(w.bk!.chase).not.toBeNull();
     const d = Math.hypot(w.bk!.lane.x - w.ship.x, w.bk!.lane.z - w.ship.z);
-    expect(Math.round(d)).toBe(1900);
+    expect(Math.round(d)).toBe(CHASE_LANE);
     const seen = new Set<number>();
     for (let i = 0; i < 60 * 40 && w.alive; i++) {
       w.step(STEP, input());

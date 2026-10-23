@@ -26,6 +26,9 @@ export const SECURITY_TO = 180;
 export const SECURITY_TTL = 70;
 export const SECURITY_GAP = 45;
 export const SECURITY_MAX = 4;
+/** The first system past Cerro is a busy yard: fire on a civilian there and Wanted goes to the top, with a bigger and faster response. */
+export const FIRST_SECURITY_MAX = 7;
+export const FIRST_SECURITY_GAP = 25;
 /** Seconds between the shot and the guns arriving. */
 export const SECURITY_DELAY = 3.5;
 /** A second hit inside this many seconds calls them. */
@@ -181,7 +184,12 @@ export class Traffic {
     }
     this.strikes.push(now);
     if (dies) this.kills++;
-    const alarm = dies || this.strikes.length >= 2;
+    const busy = !!w.bk?.def.first;
+    if (busy && w.bk) {
+      w.bk.heat = 1;
+      w.bk.nextPursuit = Math.min(w.bk.nextPursuit, now + 8);
+    }
+    const alarm = busy || dies || this.strikes.length >= 2;
     if (!alarm) {
       if (now - this.warnAt > 12) {
         this.warnAt = now;
@@ -190,8 +198,8 @@ export class Traffic {
       return;
     }
     if (now < this.nextDispatch) return;
-    this.nextDispatch = now + SECURITY_GAP;
-    const n = Math.min(this.kills >= 2 ? 3 : 2, SECURITY_MAX - this.security.length);
+    this.nextDispatch = now + (busy ? FIRST_SECURITY_GAP : SECURITY_GAP);
+    const n = Math.min(busy ? (this.kills >= 1 ? 5 : 4) : this.kills >= 2 ? 3 : 2, (busy ? FIRST_SECURITY_MAX : SECURITY_MAX) - this.security.length);
     if (n <= 0) return;
     this.pending.push({ at: now + SECURITY_DELAY, n });
     w.events.push({ type: 'ping', id: `traffic_call_${Math.floor(now)}`, from: t('Dock security'), caller: 'custody', text: t('“Fire on civilian traffic. Patrol is on its way. Stand down.”'), moment: 'calm', system: w.sortie.name });

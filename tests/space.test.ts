@@ -385,6 +385,7 @@ describe('Storm lightning and the well core', () => {
   it('never raises the alert by itself', () => {
     const w = bare();
     w.space!.place('storm', 0, 0, { r: 600 });
+    w.pace.until = Infinity; // the opening fight would raise it
     fly(w, 6);
     expect(w.alert()).toBe('clear');
   });

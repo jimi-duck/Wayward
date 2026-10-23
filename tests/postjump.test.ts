@@ -6,7 +6,7 @@ import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
 import { lockLifted, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
-import { SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
+import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
@@ -133,31 +133,29 @@ describe('the traffic', () => {
 });
 
 describe('firing on the traffic', () => {
-  it('warns on a first hit: the hull runs, nobody is sent', () => {
+  it('answers a first hit in this busy yard at once: Wanted to the top, the hull runs, four guards come', () => {
     const w = quiet();
-    const before = w.aliens.length;
     hurt(w, 0, 0.1);
-    expect(w.traffic!.responders).toBe(0);
-    run(w, SECURITY_DELAY + 2);
-    expect(w.aliens.filter((a) => a.faction === 'custody' && a.variant === 'picket')).toHaveLength(0);
-    expect(w.aliens.length).toBeGreaterThanOrEqual(before - 1);
+    expect(w.bk!.heat).toBe(1);
+    run(w, SECURITY_DELAY + 0.5);
+    expect(w.aliens.filter((a) => a.faction === 'custody' && a.variant === 'picket')).toHaveLength(4);
   });
 
-  it('sends two guards after a second hit, never closer than the safe distance, and only once a while', () => {
+  it('sends four guards, never closer than the safe distance, and only once a while', () => {
     const w = quiet();
     hurt(w, 0, 0.1);
     hurt(w, 1, 0.1);
     run(w, SECURITY_DELAY + 0.5);
     const g = w.aliens.filter((a) => a.variant === 'picket');
-    expect(g).toHaveLength(2);
+    expect(g).toHaveLength(4);
     for (const a of g) expect(Math.hypot(a.x - w.ship.x, a.z - w.ship.z)).toBeGreaterThanOrEqual(SECURITY_FROM - 4);
     for (const a of g) expect(Math.hypot(a.x - w.ship.x, a.z - w.ship.z)).toBeLessThan(SECURITY_TO + 40);
     // more fire inside the gap calls nobody else
     hurt(w, 2, 0.1);
     run(w, SECURITY_DELAY + 1);
-    expect(w.aliens.filter((a) => a.variant === 'picket')).toHaveLength(2);
+    expect(w.aliens.filter((a) => a.variant === 'picket')).toHaveLength(4);
     run(w, SECURITY_GAP);
-    expect(w.traffic!.responders).toBeLessThanOrEqual(4);
+    expect(w.traffic!.responders).toBeLessThanOrEqual(FIRST_SECURITY_MAX);
   });
 
   it('is local: ships beyond the scatter do not run', () => {

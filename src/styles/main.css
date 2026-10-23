@@ -50,6 +50,9 @@
   /* objectives and pick-ups: the same blue under its older name */
   --amber: var(--blue);
   --amber-dim: rgba(134, 169, 209, .3);
+  /* the one thing to go to now: yellow. Everything else worth a mark (places, finds, events) is blue */
+  --goal: #f0c85a;
+  --goal-dim: rgba(240, 200, 90, .34);
   /* caution: a dull gold for a yellow alert, a low reading, a cost you pay */
   --caution: #c9ab66;
   --caution-dim: rgba(201, 171, 102, .34);
