@@ -1,4 +1,4 @@
-import { CanvasTexture, Color, Group, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
+import { CanvasTexture, Color, Group, Vector3, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
 import {
   bevelGeo, block, setBevelScale, bolts, bracket, frameRing, hatch, lamp, oct, octFaces, octFrame, panel, pipeRun, vent, type Face,
@@ -27,9 +27,9 @@ function materials(hits: Hit[]): Record<string, Material> {
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(...LIVERY.stockGlow), ...used });
   mats = {
     // weathered grey plate, one shade lighter and one darker, the repaint's three tints under them
-    paint: amber(LIVERY.stock[0]),
-    paint2: amber(LIVERY.stock[1]),
-    paint3: amber(LIVERY.stock[2]),
+    paint: sweepable(amber(LIVERY.stock[0]), 0),
+    paint2: sweepable(amber(LIVERY.stock[1]), 1),
+    paint3: sweepable(amber(LIVERY.stock[2]), 2),
     // field repairs: plate patched on in grey primer, never painted over
     primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
     hull: metal({ tint: 0x6a6f78, roughness: 0.55, metalness: 0.5, emissive: new Color(0.018, 0.022, 0.03), ...used }),
@@ -76,6 +76,44 @@ export function setLiveryBlend(t: number): void {
 }
 export function setLivery(yellow: boolean): void {
   setLiveryBlend(yellow ? 1 : 0);
+}
+
+/**
+ * The rename's one livery pass (render/reveal.ts): a narrow amber band crosses the hull from bow to stern, and the plate
+ * forward of it is already ochre. `at` is the band's place along the model's length (+X is the bow, the hull spans about
+ * ±3.2); null ends the pass and hands the paint back to `setLiveryBlend`. Presentation only: the flag is the livery.
+ */
+const SWEEP = { on: { value: 0 }, at: { value: 0 } };
+export const SWEEP_SPAN = 3.4;
+export function setLiverySweep(at: number | null): void {
+  if (at === null) { SWEEP.on.value = 0; return; }
+  setLiveryBlend(0);
+  SWEEP.on.value = 1;
+  SWEEP.at.value = at;
+}
+
+/** Give a paint material the sweep: ochre forward of the band, the band itself a thin amber light. */
+function sweepable(m: MeshStandardMaterial, i: number): MeshStandardMaterial {
+  const prev = m.onBeforeCompile, key = m.customProgramCacheKey.bind(m);
+  const col = new Color().setHex(LIVERY.yellow[i]!);
+  const glow = new Vector3(...LIVERY.yellowGlow.map((v, j) => v - LIVERY.stockGlow[j]!));
+  m.onBeforeCompile = (sh, r) => {
+    prev(sh, r);
+    sh.uniforms.uSweepOn = SWEEP.on;
+    sh.uniforms.uSweepAt = SWEEP.at;
+    sh.uniforms.uSweepCol = { value: col };
+    sh.uniforms.uSweepGlow = { value: glow };
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uSweepOn; uniform float uSweepAt; uniform vec3 uSweepCol; uniform vec3 uSweepGlow;')
+      .replace('vec4 diffuseColor = vec4( diffuse, opacity );', `
+        float swX = vKitP.x / uKitScale - uSweepAt;
+        float swIn = uSweepOn * smoothstep(-0.04, 0.04, swX);
+        vec4 diffuseColor = vec4( mix( diffuse, uSweepCol, swIn ), opacity );`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        totalEmissiveRadiance += uSweepGlow * swIn + vec3(1.6, 0.92, 0.22) * uSweepOn * exp(-swX * swX / 0.01);`);
+  };
+  m.customProgramCacheKey = () => `${key()}-sweep`;
+  return m;
 }
 
 // ── the stencils ──────────────────────────────────────────────────────────

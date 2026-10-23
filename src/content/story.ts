@@ -303,7 +303,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The audit dock · ahead',
     choices: [
       { id: 'code', label: 'Use the code', tone: 'run', hint: '',
-        win: { text: 'Lock broken · the hull is yours, and stolen', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicQuiet: true, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Governor’s desk', text: '“A registered hull is missing. Escalate it to the Governor.”' }, follow: { card: RENAME_BEAT, after: 2, quick: true } } },
+        win: { text: 'Lock broken · the hull is yours, and stolen', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicQuiet: true, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Governor’s desk', text: '“A registered hull is missing. Escalate it to the Governor.”' }, follow: { card: RENAME_BEAT, after: 2.4, quick: true } } },
     ],
   }),
   story({

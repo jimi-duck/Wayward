@@ -139,6 +139,7 @@ above still holds.
 | Material and the opening's sheets and registry layout | `src/styles/neon.css` |
 | Chamfered frames (rim, glow, hairline) | `tools/neon-frames.mjs` writes `src/styles/neon-frames.css` |
 | Sheet and registry drawing | `src/ui/comms.ts` (`sheetView`, `drawSheet`, `drawReg`) |
+| The rename reveal (lock lifted, ochre sweep, camera arc) | `src/render/reveal.ts`; the sweep in `src/render/wayward.ts`, the arc in `src/render/camera.ts` |
 | Arrivals (signal bars, ring, bearing line) | `src/ui/arrive.ts`; the motion CSS is the last part of `neon.css` |
 | Card fields (`glass`, `status`, `hero`, `quote`, `note`, `doc`, `side`) | `CardDef` in `src/sim/comms.ts` |
 | The opening's copy | `src/content/story.ts` (Act I) and `src/sim/contract.ts` (ledgers) |

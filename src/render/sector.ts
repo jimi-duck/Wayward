@@ -3,7 +3,9 @@ import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
-import { setLivery } from './wayward';
+import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
+import { RenameReveal } from './reveal';
+import { inFight } from '../sim/guide';
 import { newShip, topSpeed, type ShipState } from '../sim/ship';
 import type { World } from '../sim/world';
 import { ArsenalView } from './arsenal';
@@ -99,6 +101,8 @@ export class Sector {
   /** The review world pins a sky of its own; the run's is left alone while it holds. */
   private pinned = false;
   reduceMotion = false;
+  private readonly reveal = new RenameReveal();
+  private seenWorld: World | null = null;
   /** An opaque panel (the refit bay) is over the whole view. */
   covered = false;
   /** An opaque panel (the port) fills the view: nothing behind it needs drawing. */
@@ -461,6 +465,7 @@ export class Sector {
 
     // a new run (or the next system): the camera is where the ship is, with no swoop from the last one's gate
     if (this.seenRun !== world.run) { this.seenRun = world.run; this.snapped = false; }
+    if (this.seenWorld !== world) { this.seenWorld = world; this.reveal.reset(); }
     const wt = this.jumpClock(world, s);
     const subject = { x: s.x, z: s.z, heading: s.heading, yawRate: s.yawRate, speedFrac: Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(world.hull)) };
     if (!this.snapped) { this.rig.snap(subject); this.snapped = true; }
@@ -474,7 +479,15 @@ export class Sector {
     this.ship.status.charged = world.powers.shield > 0 ? 1 : Math.min(1, world.shields);
     this.ship.status.cloaked = world.cloakT > 0;
     this.ship.status.rapid = world.powers.rapid > 0;
-    setLivery(world.flags.has('ship_stolen'));
+    // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
+    const stolen = world.flags.has('ship_stolen');
+    const rv = this.reveal.update({
+      stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
+      calm: !inFight(world), reduced: this.reduceMotion,
+    }, uiDt);
+    setLiverySweep(rv.sweep === null ? null : -rv.sweep * SWEEP_SPAN);
+    if (rv.sweep === null) setLiveryBlend(rv.livery);
+    this.rig.reveal = rv.arc;
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);
     this.streaks.begin();

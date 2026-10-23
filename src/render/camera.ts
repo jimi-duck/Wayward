@@ -30,6 +30,10 @@ const FOV_KICK = 6;
 const WARP_FOV = 38;
 const WARP_ELEV = MathUtils.degToRad(9);
 const WARP_PULL = 0.18;
+/** The rename reveal (render/reveal.ts): the rig swings this far round the ship, a little lower and further off, so the flank shows. */
+const REVEAL_ARC = MathUtils.degToRad(24);
+const REVEAL_ELEV = MathUtils.degToRad(13);
+const REVEAL_PULL = 0.1;
 
 /**
  * A phone on its side is a small, short window: there the camera stands a
@@ -78,6 +82,8 @@ export class CameraRig {
   bay = 0;
   /** The jump (render/warp.ts): `lens` 0 to 1 widens the view and drops the camera low behind the ship; `lock` 0 to 1 holds it rigidly on the ship, whatever the speed. */
   warp = { lens: 0, lock: 0 };
+  /** 0 to 1: how far into the rename reveal's camera arc (render/reveal.ts). The ship and its physics never move for it. */
+  reveal = 0;
 
   /** `offsetY` lifts the centre of the picture by that many CSS pixels. */
   resize(width: number, height: number, offsetY: number): void {
@@ -136,12 +142,13 @@ export class CameraRig {
       this.applyOffset();
     }
     const tanV = Math.tan(MathUtils.degToRad(vfov) / 2);
-    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 - 0.12 * this.bay) * (1 + (reduceMotion ? 0 : WARP_PULL * lens));
+    const dist = (Math.max(VIEW_H / (2 * tanV), VIEW_W / (2 * tanV * this.aspect)) + (reduceMotion ? 0 : this.recoil)) * this.zoomNow * this.pull * (1 - 0.12 * this.bay) * (1 + (reduceMotion ? 0 : WARP_PULL * lens)) * (1 + REVEAL_PULL * this.reveal);
 
     // forward along the yaw, and the camera behind and above
-    const fx = Math.cos(this.yaw), fz = -Math.sin(this.yaw);
+    const yaw = this.yaw + REVEAL_ARC * this.reveal;
+    const fx = Math.cos(yaw), fz = -Math.sin(yaw);
     // the ship keeps its place in the picture (ELEV - PITCH below the middle) while the camera comes down to the plane
-    const elev = ELEV + (WARP_ELEV - ELEV) * lens, pitch = PITCH + (elev - ELEV);
+    const elev = ELEV + (WARP_ELEV - ELEV) * lens + (REVEAL_ELEV - ELEV) * this.reveal, pitch = PITCH + (elev - ELEV);
     const back = Math.cos(elev) * dist, up = Math.sin(elev) * dist;
     let px = this.target.x - fx * back, py = up, pz = this.target.z - fz * back;
     this.trauma = Math.max(0, this.trauma - 1.8 * dt);
