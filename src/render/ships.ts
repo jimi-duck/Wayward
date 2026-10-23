@@ -258,6 +258,8 @@ const STROBE_COLOR = [new Color(3, 0.25, 0.25), new Color(0.25, 3, 0.6)];
 const STROBE_PERIOD = [2.0, 2.35];
 const STROBE_PHASE = [0, 0.43];
 
+const SPOOL_UP = 13, SPOOL_DOWN = 4.5;
+
 // ── the view ──────────────────────────────────────────────────────────────
 interface Engine { nozzle: Nozzle; disc: Mesh; plume: Mesh; hot: Mesh; phase: number; halo: Sprite; trail: Trail; mat: ShaderMaterial; side: number; }
 
@@ -478,8 +480,9 @@ export class ShipView {
     this.bank = lerp(this.bank, wantBank, k);
     this.pitch = lerp(this.pitch, wantPitch, k);
     // a throttle snap lights the drives past the steady burn for a moment, then settles
-    const burn = lerp(this.heat, s.thrust, Math.min(1, 8 * dt));
-    this.surge = Math.max(0, this.surge - 2.4 * dt, Math.min(1, (burn - this.heat) * 14));
+    // heavy drives come up fast and wind down slowly; presentation only, s.thrust stays the truth for the sim
+    const burn = lerp(this.heat, s.thrust, Math.min(1, (s.thrust > this.heat ? SPOOL_UP : SPOOL_DOWN) * dt));
+    this.surge = Math.max(0, this.surge - 2.4 * dt, Math.min(1, (burn - this.heat) * 9));
     this.heat = burn;
     this.steer = lerp(this.steer, clamp(s.yawRate * 0.12, -0.3, 0.3), Math.min(1, 7 * dt));
 
@@ -531,7 +534,7 @@ export class ShipView {
       m.color.copy(STROBE_COLOR[i]!).multiplyScalar(f);
       l.visible = f > 0.03;
     });
-    animateLamps(this.time, dt);
+    animateLamps(this.time, dt, h);
 
     this.hit = Math.max(0, this.hit - dt * 2.2);
     const st = this.status;
