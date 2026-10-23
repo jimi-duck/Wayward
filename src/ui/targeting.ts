@@ -297,10 +297,10 @@ export class Targeting {
       let side = '';
       if (label) {
         // the label's rough box on each side in turn: beside a hexagon (right, left, above, below), under anything else
-        const lines = label.split('\n'), w = Math.max(...lines.map((l) => l.length)) * 9 + 6, hh = lines.length * 16 + 4;
+        const lines = label.split('\n'), w = Math.max(...lines.map((l) => l.length)) * 7.5 + 4, hh = lines.length * 15 + 2;
         const beside = cls.includes('dia') || cls.includes('tag');
         const tries = beside
-          ? [['', p.x + 12, p.y - hh / 2], ['l', p.x - 12 - w, p.y - hh / 2], ['u', p.x - w / 2, p.y - 10 - hh], ['d', p.x - w / 2, p.y + 10]] as const
+          ? [['', p.x + 12, p.y - hh / 2], ['l', p.x - 12 - w, p.y - hh / 2], ['u', p.x - w / 2, p.y - 18 - hh], ['d', p.x - w / 2, p.y + 18]] as const
           : [['', p.x - w / 2, p.y + 8]] as const;
         const free = tries.find(([, x0, y0]) => !this.avoid.some((r) => !(x0 + w < r.left || x0 > r.right || y0 + hh < r.top || y0 > r.bottom))
           && !placed.some((q) => !(x0 + w < q.l || x0 > q.r || y0 + hh < q.t || y0 > q.b)));

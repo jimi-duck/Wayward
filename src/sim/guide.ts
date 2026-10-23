@@ -14,8 +14,8 @@ import type { World } from './world';
 
 /** Hulls further than this (units, 1.1 km) are not worth a mark. */
 export const GUIDE_RANGE = 110;
-/** A hull further than this (units, 3 km) shows only as an unknown contact: no faction, no worth, no type. */
-export const IDENT_RANGE = 300;
+/** A hull further than this (units, 1.2 km: hulls are culled at 2.1 km) shows only as an unknown contact: no faction, no worth, no type. */
+export const IDENT_RANGE = 120;
 /** Within this off the nose a thing counts as dead ahead. */
 export const AHEAD = (8 * Math.PI) / 180;
 /** Further round than this it counts as behind. */
