@@ -21,6 +21,8 @@ const sweep = params.get('sweep');
 // ?hit=<bearing degrees>&age=<seconds into the flare>: freeze a shield flare from that bearing (0 ahead, 90 to starboard)
 const hitBearing = params.get('hit');
 const hitAge = Number(params.get('age') ?? '0.15');
+// ?plates=<left>&maxplates=<of>: show the wounds for the plates lost (default: none lost)
+const plates = Number(params.get('plates') ?? '3'), maxPlates = Number(params.get('maxplates') ?? '3');
 const tier = TIERS[Math.max(0, tierIndex(params.get('quality') ?? 'high'))]!;
 
 const canvas = document.getElementById('c') as HTMLCanvasElement;
@@ -34,6 +36,7 @@ const ship = new ShipView();
 scene.add(ship.root);
 (window as unknown as { ship: ShipView }).ship = ship;
 setLivery(livery);
+ship.setDamage(plates, maxPlates);
 if (sweep !== null) setLiverySweep(Number(sweep));
 const s = newShip();
 s.heading = 0;
@@ -51,6 +54,9 @@ const VIEWS: Record<string, [number, number, number, number, number, number]> = 
   front: [4.6, 0.8, 0.6, 0, 0, 0],
   drive: [-3.3, 0.5, 1.4, -1.6, 0, 0.9],
   close: [-0.6, 1.5, 2.2, -0.3, 0.2, 0.2],
+  hull: [0.5, 2.2, 1.7, 0.5, 0.3, 0],
+  sidep: [0.4, 0.5, -3.2, 0.4, 0.1, 0],
+  sidew: [0.9, 0.6, 2.4, 0.9, 0.1, 0],
 };
 const fit = () => {
   fitRenderer(renderer, tier);
@@ -63,7 +69,7 @@ fit();
 
 let last = performance.now(), t = 0, hitDone = false;
 const frame = (now: number) => {
-  const dt = Math.min(0.05, (now - last) / 1000);
+  const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
   last = now;
   t += dt;
   const [x, y, z, lx, ly, lz] = VIEWS[view] ?? VIEWS.three!;

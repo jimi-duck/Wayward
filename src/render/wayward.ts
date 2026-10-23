@@ -1,4 +1,4 @@
-import { CanvasTexture, Color, Group, Vector3, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
+import { CanvasTexture, Color, Group, Vector3, Vector4, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
 import {
   bevelGeo, block, setBevelScale, bolts, bracket, frameRing, hatch, lamp, oct, octFaces, octFrame, panel, pipeRun, vent, type Face,
@@ -20,10 +20,13 @@ import {
 // The model faces +X with +Y up, so its starboard side is +Z.
 
 let mats: Record<string, Material> | null = null;
+/** The hull's six scorch uniforms, shared by every worn material: four old hits, then two kept for live damage (setDamage). */
+const HITS = Array.from({ length: 6 }, () => new Vector4(0, -1e4, 0, 0.001));
 function materials(hits: Hit[]): Record<string, Material> {
   if (mats) return mats;
   // all of her worn by hard use (wear.ts), sooted astern by her own drives
-  const used = { worn: 1, shade: true, soot: [2.15, 2.95] as [number, number], hits };
+  hits.forEach((h, i) => HITS[i]!.set(...h));
+  const used = { worn: 1, shade: true, soot: [2.15, 2.95] as [number, number], hitUniforms: HITS };
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(...LIVERY.stockGlow), ...used });
   mats = {
     // weathered grey plate, one shade lighter and one darker, the repaint's three tints under them
@@ -54,9 +57,40 @@ function materials(hits: Hit[]): Record<string, Material> {
 
 const ORANGE = new Color(1.5, 0.55, 0.08);
 /** The maintenance lamps breathe a little, slow and off the drive's beat (the shared material is tinted, the mesh never moves). */
-export function animateLamps(time: number): void {
+export function animateLamps(time: number, dt = 0): void {
   const o = mats?.orange as MeshBasicMaterial | undefined;
-  if (o) o.color.copy(ORANGE).multiplyScalar(1 + 0.12 * Math.sin(time * Math.PI * 2 * 0.4));
+  // with one plate left the lamps stutter hard, as if the wiring were open
+  const stutter = critical ? 0.35 + 0.65 * (Math.sin(time * 41) * Math.sin(time * 17.3) > -0.2 ? 1 : 0) : 1;
+  if (o) o.color.copy(ORANGE).multiplyScalar((1 + 0.12 * Math.sin(time * Math.PI * 2 * 0.4)) * stutter);
+  // a wound's burn spreads over about half a second rather than popping
+  WOUNDS.forEach((w, i) => {
+    w.level += clampStep(w.want - w.level, 2 * dt);
+    const u = HITS[4 + i]!;
+    if (w.level < 0.002) u.set(0, -1e4, 0, 0.001);
+    else u.set(w.at[0], w.at[1], w.at[2], w.at[3] * w.level);
+  });
+}
+const clampStep = (d: number, m: number) => Math.max(-m, Math.min(m, d));
+
+// ── damage on the hull ────────────────────────────────────────────────────
+// A lost plate shows: the first burns a scorch into the hull and tears a crater in its plating; the second a larger one on the
+// other flank. With one plate left the wound smokes and the lamps stutter (render/sector.ts reads `woundPoints`).
+interface Wound { at: Hit; want: number; level: number }
+const WOUNDS: Wound[] = [{ at: [0, 0, 0, 0.4], want: 0, level: 0 }, { at: [0, 0, 0, 0.4], want: 0, level: 0 }];
+const woundGroups: Group[][] = [];
+let critical = false;
+
+/** `plates` left of `maxPlates`: the hull wears the wounds for what is lost. */
+export function setDamage(plates: number, maxPlates: number): void {
+  const lost = Math.max(0, maxPlates - plates);
+  critical = maxPlates > 1 && plates <= 1;
+  WOUNDS.forEach((w, i) => { w.want = lost > i ? 1 : 0; });
+  for (const g of woundGroups) g.forEach((grp, i) => { grp.visible = lost > i; });
+}
+
+/** Where the live wounds are, model space: for smoke and sparks. `hard` is true at one plate left. */
+export function woundPoints(): { points: V3[]; hard: boolean } {
+  return { points: WOUNDS.filter((w) => w.level > 0.3).map((w) => [w.at[0], w.at[1], w.at[2]] as V3), hard: critical };
 }
 
 /**
@@ -182,6 +216,8 @@ export interface Nozzle { p: V3; r: number; }
 
 export interface BuiltHull {
   root: Group;
+  /** The torn plating of each live wound, hidden until a plate is lost (a child of `root`, not merged into the hull). */
+  wounds: Group[];
   /** Engine nozzles, model space: where the plumes, trails and halos sit. */
   nozzles: Nozzle[];
   /** Wingtips, for running lights: port then starboard. */
@@ -548,6 +584,18 @@ function build(): BuiltHull {
     const face = hf[[0, 1, 7, 2, 6][Math.floor(rnd() * 5)]!]!;
     patch(k, rnd, face, HY, 0, -2.0 + rnd() * 3.0, (rnd() - 0.5) * face.wid * 0.4);
   }
-  const root = k.build(materials(hits), 0.07);
-  return { root, nozzles, wings: [[-0.4, DY + DR - 0.05, -(DZ + DR)], [-0.4, DY + DR - 0.05, DZ + DR]], shield: [3.1, 1.05, 1.75] };
+  const m = materials(hits);
+  const root = k.build(m, 0.07);
+  // the two wounds kept for lost plates: each its own small kit, shown only when its plate is gone
+  const wounds: Group[] = [];
+  for (const [i, [fi, x, v, r]] of ([[2, 0.9, 0.02, 0.2], [6, 0.2, -0.03, 0.18]] as const).entries()) {
+    const wk = new Kit();
+    WOUNDS[i]!.at = crater(wk, rnd, hf[fi]!, HY, 0, x, v, r);
+    const g = wk.build(m);
+    g.visible = false;
+    root.add(g);
+    wounds.push(g);
+  }
+  woundGroups.push(wounds);
+  return { root, wounds, nozzles, wings: [[-0.4, DY + DR - 0.05, -(DZ + DR)], [-0.4, DY + DR - 0.05, DZ + DR]], shield: [3.1, 1.05, 1.75] };
 }

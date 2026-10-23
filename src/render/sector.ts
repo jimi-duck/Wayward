@@ -479,6 +479,7 @@ export class Sector {
     this.ship.status.charged = world.powers.shield > 0 ? 1 : Math.min(1, world.shields);
     this.ship.status.cloaked = world.cloakT > 0;
     this.ship.status.rapid = world.powers.rapid > 0;
+    this.ship.setDamage(world.plates, world.stats.maxPlates);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
     const stolen = world.flags.has('ship_stolen');
     const rv = this.reveal.update({
@@ -588,6 +589,14 @@ export class Sector {
           this.fx.mote(x, y, z, -Math.cos(heading) * 7 + (Math.random() - 0.5) * 2.5, (Math.random() - 0.5) * 1.5, Math.sin(heading) * 7 + (Math.random() - 0.5) * 2.5,
             Math.random() < 0.6 ? [3.4, 0.4, 0.9] : [3.6, 1.6, 0.5], 0.2, 0.32);
         }
+      }
+    }
+    // a wounded hull smokes where it was hit, and at one plate left throws the odd spark
+    if (world.alive && !this.reduceMotion) {
+      const w = this.ship.wound();
+      for (const [x, y, z] of w.points) {
+        if (Math.random() < (w.hard ? 0.55 : 0.12)) this.fx.dust(x, y + 0.1, z, w.hard ? 0.6 : 0.4, [0.1, 0.1, 0.11], 1, 0.7, 1.1, w.hard ? 0.3 : 0.2);
+        if (w.hard && Math.random() < 0.06) this.fx.mote(x, y + 0.1, z, (Math.random() - 0.5) * 3, 1 + Math.random() * 2, (Math.random() - 0.5) * 3, [3.4, 1.4, 0.4], 0.12, 0.35);
       }
     }
     // hulls burning from the plasma trail

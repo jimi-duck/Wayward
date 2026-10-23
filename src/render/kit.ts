@@ -241,6 +241,8 @@ export interface MetalOptions {
   shade?: boolean;
   /** With `worn`: old hits, [x, y, z, reach] in model space, up to six: scorched, the paint burnt back round each. */
   hits?: Array<[number, number, number, number]>;
+  /** With `worn`: six shared [x, y, z, reach] uniforms to use as they are, so a caller can write into them at runtime (`hits` is then unused). */
+  hitUniforms?: Vector4[];
 }
 
 /** Weathered metal: the plating, triplanar in model space, with bump from the height map. */
@@ -258,7 +260,7 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
       shader.uniforms.uWearTex = { value: scratchTexture() };
       shader.uniforms.uWorn = { value: worn };
       shader.uniforms.uSoot = { value: o.soot ? new Vector2(...o.soot) : new Vector2(-1e4, -1e4 - 1) };
-      const hits = (o.hits ?? []).slice(0, 6).map((h) => new Vector4(...h));
+      const hits = o.hitUniforms ?? (o.hits ?? []).slice(0, 6).map((h) => new Vector4(...h));
       while (hits.length < 6) hits.push(new Vector4(0, -1e4, 0, 0.001));
       shader.uniforms.uHits = { value: hits };
     }
