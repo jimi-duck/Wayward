@@ -194,6 +194,8 @@ export interface SortieDef {
   here?: string[];
   /** A quiet system (a breather): no pursuit, no Thren, no chance cards or events; the heat fades. */
   quiet?: boolean;
+  /** No anomalies (the first system past Cerro, owner 2026-10-23): no ion storm, nebula or gravity well, as an event or a place, and the sky's features leave the ship's sensors, locks and flight alone. Rock, pursuit and the other events as usual. */
+  calm?: boolean;
   /** A multiplier on the gap between chance calls. */
   calls: number;
   /** The pursuit's room to breathe (content/systems.ts): the first pursuer's time, and the quiet after an answered card or a beaten pursuer. The Breakout has none. */

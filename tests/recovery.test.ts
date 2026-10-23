@@ -6,7 +6,11 @@ import type { SortieResult } from '../src/sim/breakout';
 import { autoCourse, bankAnswer, endSortie, newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { newRun } from '../src/sim/run';
 import { lockLifted } from '../src/sim/postjump';
-import { HOLD_R, RECOVERY_FLAG, RECOVERY_T, recovering } from '../src/sim/recovery';
+import { HOLD_R, RECOVERY_FLAG, RECOVERY_T, clearCourse, recovering } from '../src/sim/recovery';
+import { postJump } from '../src/sim/postjump';
+import { WEATHER, calmWeights, pickEncounter } from '../src/sim/encounters';
+import { Rng } from '../src/sim/rng';
+import { SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 
 // ── the forced recovery (the opening handover, 2026-10-23, F → G) ─────────
@@ -173,6 +177,72 @@ describe('the forced recovery', () => {
     expect(recovering(w.flags)).toBe(false);
     expect(j.carry.seen.filter((s) => s === SAM_BEAT)).toHaveLength(1);
   });
+});
+
+describe('the autopilot keeps clear (owner, 23 October 2026)', () => {
+  it('turns aside for something dead ahead, and holds the line when the way is clear', () => {
+    const s = { x: 0, z: 0, vx: 20, vz: 0 } as Parameters<typeof clearCourse>[0];
+    expect(clearCourse(s, 1, 0, [])).toMatchObject({ x: 1, z: 0, danger: 0 });
+    const c = clearCourse(s, 1, 0, [{ x: 50, z: 0, r: 12 }]);
+    expect(Math.abs(c.z)).toBeGreaterThan(0.3);
+    expect(c.danger).toBeGreaterThan(0.3);
+    // well off to one side, or behind: no change
+    expect(clearCourse(s, 1, 0, [{ x: 50, z: 60, r: 12 }]).z).toBe(0);
+    expect(clearCourse(s, 1, 0, [{ x: -60, z: 0, r: 12 }]).z).toBe(0);
+  });
+
+  it('flies round a big rock on the way to the dock without touching it', () => {
+    const j = beyond();
+    const w = breach(j);
+    const dock = w.bk!.audit!;
+    const dx = dock.x - w.ship.x, dz = dock.z - w.ship.z, d = Math.hypot(dx, dz);
+    // a big rock across the line a little way on
+    const rock = w.field.spawn(0, w.ship.x + (dx / d) * 90, w.ship.z + (dz / d) * 90, 0, 0);
+    let close = Infinity, hits = 0;
+    w.events.length = 0;
+    for (let i = 0; i < (RECOVERY_T - 1) * 60 && w.phase === 'play'; i++) {
+      rock.vx = 0; rock.vz = 0;
+      w.step(1 / 60, FULL);
+      if (w.field.rocks.includes(rock)) close = Math.min(close, Math.hypot(w.ship.x - rock.x, w.ship.z - rock.z) - rock.r * 0.88 - SHIP_R);
+      hits += w.events.filter((e) => e.type === 'shipHit').length;
+      w.events.length = 0;
+    }
+    expect(close).toBeGreaterThan(0);
+    expect(hits).toBe(0);
+    expect(Math.hypot(dock.x - w.ship.x, dock.z - w.ship.z)).toBeLessThan(d - 100);
+  });
+});
+
+describe('no anomalies in the first system past Cerro (owner, 23 October 2026)', () => {
+  it('deals no weather, as an event or a place, and the sky leaves the ship alone', () => {
+    const j = beyond();
+    const def = sortieDef(j);
+    expect(def.calm).toBe(true);
+    expect(postJump({ ...def, place: { name: 'x', text: 'x', plays: 'anomaly' } }).place).toBeNull();
+    expect(postJump({ ...def, place: { name: 'x', text: 'x', plays: 'convoy' } }).place?.plays).toBe('convoy');
+    const w = new World(9, { mode: 'breakout', sortie: { ...def, calloway: Infinity }, carry: j.carry, space: true });
+    w.cardNext = Infinity;
+    w.bk!.nextPursuit = Infinity;
+    w.skipTraining();
+    const weather: string[] = [];
+    let reports = 0;
+    for (let i = 0; i < 300 * 60; i++) {
+      if (w.phase === 'comms') { w.answer(0); continue; }
+      if (w.phase !== 'play') break;
+      w.ship.invuln = 1;
+      w.step(1 / 60, { ...FULL, turn: i % 900 < 450 ? 0.2 : -0.2, fire: false });
+      if (w.encounter && WEATHER.has(w.encounter.id)) weather.push(w.encounter.id);
+      if (w.conditions.length) reports++;
+    }
+    expect(weather).toEqual([]);
+    expect(reports).toBe(0);
+  });
+});
+
+it('never picks weather from calm weights', () => {
+  const rng = new Rng(3);
+  const all = new Set(['ion_storm', 'nebula', 'anomaly']);
+  for (let i = 0; i < 500; i++) expect(WEATHER.has(pickEncounter(9999, null, all, rng, calmWeights({}))!)).toBe(false);
 });
 
 describe('the forced recovery across a reload', () => {
