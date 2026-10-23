@@ -52,6 +52,13 @@ function materials(hits: Hit[]): Record<string, Material> {
   return mats;
 }
 
+const ORANGE = new Color(1.5, 0.55, 0.08);
+/** The maintenance lamps breathe a little, slow and off the drive's beat (the shared material is tinted, the mesh never moves). */
+export function animateLamps(time: number): void {
+  const o = mats?.orange as MeshBasicMaterial | undefined;
+  if (o) o.color.copy(ORANGE).multiplyScalar(1 + 0.12 * Math.sin(time * Math.PI * 2 * 0.4));
+}
+
 /**
  * The paint, one switch for the whole hull (docs/ONBOARDING.md): weathered grey steel plate before the rename, worn ochre after it.
  * The paint materials are shared, so this tints them in place; the geometry never changes. `setLivery` snaps, `setLiveryBlend` takes

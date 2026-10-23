@@ -8,7 +8,7 @@ import { breakEase, type ShipState } from '../sim/ship';
 import { BREAK_TIME, ROLL_TIME } from '../sim/tuning';
 import type { V3 } from './kit';
 import { glowTexture } from './textures';
-import { buildWayward, MODEL_SCALE, type BuiltHull, type Nozzle } from './wayward';
+import { animateLamps, buildWayward, MODEL_SCALE, type BuiltHull, type Nozzle } from './wayward';
 
 // ── the player's ship ─────────────────────────────────────────────────────
 // The Wayward in flight: her model (wayward.ts) on a banking, pitching rig,
@@ -253,6 +253,11 @@ const MARKS: Record<string, V3[]> = {
 const BRIEF_ZONES: Record<string, number> = { weapons: 0.5, ordnance: 0.4, engines: 0.6, utility: 0.35, reactor: 0.35 };
 const MARK = new Color(3.2, 1.8, 0.35);
 
+// wingtip strobes: red to port, green to starboard, at slightly different rates so they never flash together
+const STROBE_COLOR = [new Color(3, 0.25, 0.25), new Color(0.25, 3, 0.6)];
+const STROBE_PERIOD = [2.0, 2.35];
+const STROBE_PHASE = [0, 0.43];
+
 // ── the view ──────────────────────────────────────────────────────────────
 interface Engine { nozzle: Nozzle; disc: Mesh; plume: Mesh; hot: Mesh; phase: number; halo: Sprite; trail: Trail; mat: ShaderMaterial; side: number; }
 
@@ -326,7 +331,7 @@ export class ShipView {
       this.root.add(e.trail.mesh);
       this.engines.push(e);
     }
-    for (const c of [new Color(3, 0.25, 0.25), new Color(0.25, 3, 0.6)]) {
+    for (const c of STROBE_COLOR) {
       const s = new Sprite(new SpriteMaterial({ map: glow, color: c, blending: AdditiveBlending, depthWrite: false }));
       s.scale.setScalar(0.17);
       this.lights.push(s);
@@ -507,8 +512,15 @@ export class ShipView {
       j.sprite.scale.setScalar(0.04 + 0.05 * want);
     }
     this.glowLight.intensity = (1.1 + 1.6 * h) * flick;
-    const blink = Math.sin(this.time * Math.PI * 2) > 0.6;
-    for (const l of this.lights) l.visible = blink;
+    // wingtip strobes: port and starboard on their own rates and phases, a sharp flash that dies away
+    this.lights.forEach((l, i) => {
+      const period = STROBE_PERIOD[i]!, u = (this.time / period + STROBE_PHASE[i]!) % 1;
+      const f = reduceMotion ? 0.5 : Math.exp(-u * 7);
+      const m = l.material as SpriteMaterial;
+      m.color.copy(STROBE_COLOR[i]!).multiplyScalar(f);
+      l.visible = f > 0.03;
+    });
+    animateLamps(this.time);
 
     this.hit = Math.max(0, this.hit - dt * 2.2);
     const st = this.status;
