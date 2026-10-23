@@ -39,6 +39,8 @@ scene.add(ship.root);
 (window as unknown as { ship: ShipView }).ship = ship;
 setLivery(livery);
 ship.setDamage(plates, maxPlates);
+// ?cargo=0..1: the hold's fill
+ship.setCargo(Number(params.get('cargo') ?? '1'));
 if (sweep !== null) setLiverySweep(Number(sweep));
 const s = newShip();
 s.heading = 0;

@@ -102,6 +102,12 @@ export function setDamage(plates: number, maxPlates: number): void {
   for (const g of woundGroups) g.forEach((grp, i) => { grp.visible = lost > i; });
 }
 
+const cargoGroups: Group[][] = [];
+/** The deck answers the hold: `frac` (0 to 1) of the hold's capacity fills the boxes from astern, stern run first, then the middle, then the bow. */
+export function setCargo(frac: number): void {
+  for (const g of cargoGroups) g.forEach((grp, i) => { grp.visible = frac > i / 3 + 1e-6; });
+}
+
 /** Where the live wounds are, model space: for smoke and sparks. `hard` is true at one plate left. */
 export function woundPoints(): { points: V3[]; hard: boolean } {
   return { points: WOUNDS.filter((w) => w.level > 0.3).map((w) => [w.at[0], w.at[1], w.at[2]] as V3), hard: critical };
@@ -230,6 +236,8 @@ export interface Nozzle { p: V3; r: number; }
 
 export interface BuiltHull {
   root: Group;
+  /** The deck's boxes in three runs, stern first: shown as the hold fills (setCargo). */
+  cargo: Group[];
   /** The torn plating of each live wound, hidden until a plate is lost (a child of `root`, not merged into the hull). */
   wounds: Group[];
   /** Engine nozzles, model space: where the plumes, trails and halos sit. */
@@ -359,13 +367,18 @@ function patch(k: Kit, rnd: Rnd, face: Face, y0: number, z0: number, x: number, 
  * boxes in it, some stacked, each braced across its lid, tie-downs at the
  * corners and a small white light at each corner of the frame.
  */
+/** The boxes of the deck in three runs, stern, middle, bow, each its own kit so the hold can fill them in that order (setCargo). */
+let deckKits: Kit[] = [];
 function deck(k: Kit, rnd: Rnd, top: number): void {
+  deckKits = [new Kit(), new Kit(), new Kit()];
   const x0 = -2.28, x1 = 1.0, rows = 6, len = (x1 - x0) / rows, cw = 0.36, base = top + 0.03;
   block(k, 'dark', [x1 - x0 + 0.1, 0.06, cw * 2 + 0.16], [(x0 + x1) / 2, base, 0], [0, 0, 0], 0.015);
   for (const z of [-cw - 0.07, cw + 0.07]) block(k, 'hull', [x1 - x0 + 0.1, 0.05, 0.04], [(x0 + x1) / 2, base + 0.05, z], [0, 0, 0], 0.008);
   for (let r = 0; r <= rows; r++) for (const sd of [-1, 1]) block(k, 'hull', [0.05, 0.13, 0.05], [x0 + r * len, base + 0.09, sd * (cw + 0.07)], [0, 0, 0], 0.008);
   for (let r = 0; r < rows; r++) {
     const x = x0 + (r + 0.5) * len;
+    const bk = k;
+    k = deckKits[Math.floor(r / 2)]!;
     for (const sd of [-1, 1]) {
       const z = sd * (cw / 2 + 0.03), tall = rnd() < 0.3, h = 0.17 + (tall ? 0.15 : 0);
       const key = rnd() < 0.22 ? 'dark' : pickAmber(rnd), y = base + 0.03 + h / 2;
@@ -379,6 +392,13 @@ function deck(k: Kit, rnd: Rnd, top: number): void {
       // ribs down the side of the box
       for (let i = 1; i < 4; i++) k.box('dark', [0.012, h * 0.8, 0.012], [x - (len - 0.05) / 2 + (i * (len - 0.05)) / 4, y, z + sd * (cw / 2 - 0.02)]);
       if (rnd() < 0.18) k.box('orange', [0.02, 0.02, 0.02], [x + len * 0.3, y, z + sd * (cw / 2 + 0.005)]);
+    }
+    k = bk;
+    // an empty slot reads as open truss on the deck: cross lashings and a thin rail, never a hole
+    for (const sd of [-1, 1]) {
+      const z = sd * (cw / 2 + 0.03), ang = Math.atan2(cw - 0.12, len - 0.14), d = Math.hypot(len - 0.14, cw - 0.12);
+      for (const e of [-1, 1]) k.box('dark', [d, 0.012, 0.022], [x, base + 0.045, z], [0, e * ang, 0]);
+      for (const dz of [-1, 1]) k.box('hull', [len - 0.1, 0.014, 0.014], [x, base + 0.05, z + dz * (cw / 2 - 0.03)]);
     }
   }
   for (const x of [x0, x1]) for (const sd of [-1, 1]) lamp(k, 'nav', [x, base + 0.17, sd * (cw + 0.07)], 0.02);
@@ -611,5 +631,7 @@ function build(): BuiltHull {
     wounds.push(g);
   }
   woundGroups.push(wounds);
-  return { root, wounds, nozzles, wings: [[-0.4, DY + DR - 0.05, -(DZ + DR)], [-0.4, DY + DR - 0.05, DZ + DR]], shield: [3.1, 1.05, 1.75] };
+  const cargo = deckKits.map((dk) => { const g = dk.build(m, 0.07); root.add(g); return g; });
+  cargoGroups.push(cargo);
+  return { root, wounds, cargo, nozzles, wings: [[-0.4, DY + DR - 0.05, -(DZ + DR)], [-0.4, DY + DR - 0.05, DZ + DR]], shield: [3.1, 1.05, 1.75] };
 }
