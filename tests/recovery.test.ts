@@ -6,7 +6,7 @@ import type { SortieResult } from '../src/sim/breakout';
 import { autoCourse, bankAnswer, endSortie, newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { newRun } from '../src/sim/run';
 import { lockLifted } from '../src/sim/postjump';
-import { HOLD_R, RECOVERY_FLAG, RECOVERY_T, clearCourse, recovering } from '../src/sim/recovery';
+import { HOLD_R, RECOVERY_FLAG, RECOVERY_T, SAM_CALL_R, clearCourse, recovering } from '../src/sim/recovery';
 import { postJump } from '../src/sim/postjump';
 import { WEATHER, calmWeights, pickEncounter } from '../src/sim/encounters';
 import { Rng } from '../src/sim/rng';
@@ -61,6 +61,15 @@ function breach(j: Journey): World {
   return w;
 }
 
+/** How far the ship is from the audit dock. */
+const fromDock = (w: World) => { const d = w.bk!.audit!; return Math.hypot(d.x - w.ship.x, d.z - w.ship.z); };
+/** Fly on until something stops the world (Sam's card), at most `secs` seconds; returns the seconds flown. */
+const until = (w: World, secs = 100, each?: () => void) => {
+  let t = 0;
+  for (; t < secs && w.phase === 'play'; t += 1 / 60) { w.ship.invuln = 1; w.step(1 / 60, FULL); each?.(); }
+  return t;
+};
+
 describe('the forced recovery', () => {
   it('locks the controls and flies the ship toward the audit dock, without docking or a hail', () => {
     const j = beyond();
@@ -73,7 +82,9 @@ describe('the forced recovery', () => {
     // full right turn, full throttle and the trigger held: none of it reaches the ship
     let bolts = 0;
     w.events.length = 0;
-    for (let i = 0; i < (RECOVERY_T - 0.5) * 60 && w.phase === 'play'; i++) {
+    while (fromDock(w) > SAM_CALL_R + 3 && w.phase === 'play') {
+      // open sky, so the nose is on the dock and not turned aside for rock
+      w.field.rocks.length = 0;
       w.step(1 / 60, FULL);
       bolts += w.events.filter((e) => e.type === 'bolt' || e.type === 'torpedo').length;
       w.events.length = 0;
@@ -96,29 +107,43 @@ describe('the forced recovery', () => {
     const w = breach(j);
     w.events.length = 0;
     const heard: Array<[number, string]> = [];
-    for (let i = 0; i < RECOVERY_T * 60 && w.phase === 'play'; i++) {
-      w.step(1 / 60, FULL);
+    const t = until(w, 100, () => {
       for (const e of w.events) if (e.type === 'ping' && e.from === 'Sam Okoro') heard.push([w.recoverT, e.text]);
       w.events.length = 0;
-    }
+    });
+    expect(w.comms?.def.id).toBe(SAM_BEAT);
     expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”']);
-    // spread over the forty seconds, the last well before his channel opens
-    expect(heard[1]![0] - heard[0]![0]).toBeGreaterThan(6);
-    expect(heard[3]![0]).toBeLessThan(RECOVERY_T - 5);
+    // spread over the run in, the last a few seconds before his channel opens
+    expect(heard[1]![0] - heard[0]![0]).toBeGreaterThan(5);
+    expect(heard[3]![0]).toBeLessThan(t - 3);
   });
 
-  it('opens Sam’s channel after forty seconds of play, not before', () => {
-    expect(RECOVERY_T).toBe(40);
+  it('opens Sam’s channel 2 km from the dock, not before, about half a minute in', () => {
+    expect(SAM_CALL_R).toBe(200);
+    expect(HOLD_R).toBeLessThan(SAM_CALL_R);
     const j = beyond();
     const w = breach(j);
-    run(w, RECOVERY_T - 0.2);
-    expect(w.phase).toBe('play');
-    run(w, 0.4);
+    let last = Infinity;
+    const t = until(w, 100, () => { if (w.phase === 'play') last = fromDock(w); });
     expect(w.comms?.def.id).toBe(SAM_BEAT);
     expect(w.comms?.choices.map((c) => c.label)).toEqual(['Input the code']);
+    expect(last).toBeGreaterThan(SAM_CALL_R - 3);
+    expect(fromDock(w)).toBeLessThanOrEqual(SAM_CALL_R);
+    expect(t).toBeGreaterThan(20);
+    expect(t).toBeLessThan(RECOVERY_T);
   });
 
-  it('does not count time the world is paused', () => {
+  it('opens it anyway, at the latest, if she is held off the dock', () => {
+    const j = beyond();
+    const w = breach(j);
+    // something holds her where she is
+    const t = until(w, 100, () => { w.ship.x = w.prev.x; w.ship.z = w.prev.z; });
+    expect(w.comms?.def.id).toBe(SAM_BEAT);
+    expect(fromDock(w)).toBeGreaterThan(SAM_CALL_R);
+    expect(t).toBeCloseTo(RECOVERY_T, 0);
+  });
+
+  it('does not count time the world is paused, and the card still comes at 2 km', () => {
     const j = beyond();
     const w = breach(j);
     run(w, 4);
@@ -128,10 +153,9 @@ describe('the forced recovery', () => {
     for (let i = 0; i < 30 * 60; i++) w.step(1 / 60, FULL);
     expect(w.recoverT).toBe(t);
     w.answer(0);
-    run(w, RECOVERY_T - t - 0.3);
-    expect(w.phase).toBe('play');
-    run(w, 0.5);
+    until(w);
     expect(w.comms?.def.id).toBe(SAM_BEAT);
+    expect(fromDock(w)).toBeLessThanOrEqual(SAM_CALL_R);
   });
 
   it('holds short of the dock however long it runs, and Sam’s card comes once', () => {
@@ -246,14 +270,18 @@ it('never picks weather from calm weights', () => {
 });
 
 describe('the forced recovery across a reload', () => {
-  it('during the recovery: still locked, and Sam’s card a moment in, not forty seconds', () => {
+  it('during the recovery: still locked, flown in again, and Sam’s card at 2 km', () => {
     const j = beyond();
     const w0 = breach(j);
     run(w0, 5);
     const w = arrive(j);
     expect(recovering(w.flags)).toBe(true);
     run(w, OPENING_AT + 0.5);
+    // not dealt as the system's story beat: the recovery deals it
+    expect(w.comms).toBeNull();
+    until(w);
     expect(w.comms?.def.id).toBe(SAM_BEAT);
+    expect(fromDock(w)).toBeLessThanOrEqual(SAM_CALL_R);
   });
 
   it('on Sam’s card: it comes again, and the code is not bypassed', () => {
@@ -263,7 +291,7 @@ describe('the forced recovery across a reload', () => {
     expect(w0.comms?.def.id).toBe(SAM_BEAT);
     const w = arrive(j);
     expect(lockLifted(w.flags)).toBe(false);
-    run(w, OPENING_AT + 0.5);
+    until(w);
     expect(w.comms?.def.id).toBe(SAM_BEAT);
     answer(j, w, 'code');
     expect(recovering(w.flags)).toBe(false);

@@ -129,7 +129,8 @@ describe('the story beats', () => {
     expect(w.comms?.ledger?.find((r) => r.k === 'Outstanding')?.cr).toBe(80);
     const before = w.result().carry;
     w.answer('proceed');
-    run(41);
+    // Lane Control flies her in; Sam calls 2 km out from the dock
+    run(95);
     // then Sam, privately, with the override
     expect(w.comms?.def.id).toBe(SAM_BEAT);
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['code']);
