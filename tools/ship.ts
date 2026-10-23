@@ -30,10 +30,12 @@ const camera = new PerspectiveCamera(32, 1, 0.05, 4000);
 const post = new Post(renderer, scene, camera, tier);
 const ship = new ShipView();
 scene.add(ship.root);
+(window as unknown as { ship: ShipView }).ship = ship;
 setLivery(livery);
 const s = newShip();
 s.heading = 0;
 s.thrust = heat;
+s.invuln = 0;
 
 // where the camera sits, in the model's frame (nose +X, starboard +Z), and what it looks at
 const VIEWS: Record<string, [number, number, number, number, number, number]> = {

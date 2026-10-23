@@ -24,12 +24,12 @@ function materials(hits: Hit[]): Record<string, Material> {
   if (mats) return mats;
   // all of her worn by hard use (wear.ts), sooted astern by her own drives
   const used = { worn: 1, soot: [2.15, 2.95] as [number, number], hits };
-  const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(0.008, 0.004, 0), ...used });
+  const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(...LIVERY.stockGlow), ...used });
   mats = {
-    // dark weathered plate with a yellow tint, the odd ochre panel for her markings
-    paint: amber(0x77714f),
-    paint2: amber(0x5a5535),
-    paint3: amber(0xb28f36),
+    // weathered grey plate, one shade lighter and one darker, the repaint's three tints under them
+    paint: amber(LIVERY.stock[0]),
+    paint2: amber(LIVERY.stock[1]),
+    paint3: amber(LIVERY.stock[2]),
     // field repairs: plate patched on in grey primer, never painted over
     primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
     hull: metal({ tint: 0x4d4a38, roughness: 0.55, metalness: 0.5, ...used }),
@@ -53,21 +53,29 @@ function materials(hits: Hit[]): Record<string, Material> {
 }
 
 /**
- * The paint after the rename (docs/ONBOARDING.md): the hull goes from dark weathered plate to the yellow repaint of the
- * registry notice. The materials are shared, so this tints them in place; the stock tints come back with `false`.
+ * The paint, one switch for the whole hull (docs/ONBOARDING.md): weathered grey steel plate before the rename, worn ochre after it.
+ * The paint materials are shared, so this tints them in place; the geometry never changes. `setLivery` snaps, `setLiveryBlend` takes
+ * 0 (grey) to 1 (ochre) so the rename can sweep it. Primer patches and the dark machinery stay as they are in both.
  */
-const LIVERY = { stock: [0x77714f, 0x5a5535, 0xb28f36], yellow: [0xf0bd36, 0xd19824, 0xf8d058] } as const;
-let liveryOn = false;
-export function setLivery(yellow: boolean): void {
-  if (!mats || yellow === liveryOn) return;
-  liveryOn = yellow;
-  const tints = yellow ? LIVERY.yellow : LIVERY.stock;
+const LIVERY = {
+  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xdba92c, 0xb98420, 0xe6c150],
+  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.085, 0.056, 0],
+} as const;
+const A = new Color(), B = new Color();
+let liveryMix = 0;
+export function setLiveryBlend(t: number): void {
+  t = Math.min(1, Math.max(0, t));
+  if (!mats || t === liveryMix) return;
+  liveryMix = t;
   (['paint', 'paint2', 'paint3'] as const).forEach((k, i) => {
     const m = mats![k] as MeshStandardMaterial;
-    m.color.setHex(tints[i]!);
-    // the stock plate is nearly unlit; the repaint reads as paint in the sector's dim light
-    m.emissive.setRGB(yellow ? 0.1 : 0.008, yellow ? 0.065 : 0.004, 0);
+    m.color.copy(A.setHex(LIVERY.stock[i]!).lerp(B.setHex(LIVERY.yellow[i]!), t));
+    // the grey plate sits quiet in the sector's dim light; the repaint reads as paint
+    m.emissive.setRGB(...(LIVERY.stockGlow.map((v, j) => v + (LIVERY.yellowGlow[j]! - v) * t) as [number, number, number]));
   });
+}
+export function setLivery(yellow: boolean): void {
+  setLiveryBlend(yellow ? 1 : 0);
 }
 
 // ── the stencils ──────────────────────────────────────────────────────────
@@ -142,6 +150,7 @@ const UP: V3 = [0, 1, 0], FWD: V3 = [1, 0, 0];
 type Rnd = () => number;
 /** Its own stream, so which plates are knocked askew leaves the layout alone. */
 let knock = seeded(4471);
+let braces = seeded(5521);
 const pickAmber = (rnd: Rnd): string => { const r = rnd(); return r < 0.5 ? 'paint' : r < 0.84 ? 'paint2' : 'paint3'; };
 
 // ── armour ────────────────────────────────────────────────────────────────
@@ -268,7 +277,9 @@ function deck(k: Kit, rnd: Rnd, top: number): void {
       block(k, key, [len - 0.05, h, cw - 0.04], [x, y, z], [0, 0, 0], 0.02);
       // the lid: two diagonal braces and a seam down the middle
       const top2 = y + h / 2 + 0.003, ang = Math.atan2(cw - 0.12, len - 0.14), d = Math.hypot(len - 0.14, cw - 0.12);
-      for (const e of [-1, 1]) k.box('dark', [d, 0.008, 0.022], [x, top2, z], [0, e * ang, 0]);
+      // one strong diagonal on most lids, a cross only on the odd one (its own stream, so the layout stays put)
+      const cross = braces() < 0.3, lean = braces() < 0.5 ? -1 : 1;
+      for (const e of cross ? [-1, 1] : [lean]) k.box('dark', [d, 0.011, 0.03], [x, top2, z], [0, e * ang, 0]);
       k.box('hull', [len - 0.08, 0.009, 0.016], [x, top2, z + (rnd() - 0.5) * 0.04]);
       // ribs down the side of the box
       for (let i = 1; i < 4; i++) k.box('dark', [0.012, h * 0.8, 0.012], [x - (len - 0.05) / 2 + (i * (len - 0.05)) / 4, y, z + sd * (cw / 2 - 0.02)]);
@@ -380,6 +391,15 @@ function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
   k.cyl('pipe', R * 0.72, R * 0.72, 0.02, [-0.19, y, z], 'x', 24);
   for (const r of [0.3, 0.22, 0.14]) k.ring('dark', r, 0.016, [-0.175, y, z], 'x', 24);
   k.cyl('hull', 0.05, 0.08, 0.08, [-0.17, y, z], 'x', 10);
+  // the nose: the drum closes to an ogive of stepped cones, a dark sensor cap on the tip, so it reads as a nacelle and not a can
+  const noseKey = pickAmber(rnd);
+  k.cyl(noseKey, R * 0.8, R * 1.0, 0.14, [-0.1, y, z], 'x', 28);
+  k.cyl('dark', R * 0.78, R * 0.8, 0.02, [-0.19, y, z], 'x', 28);
+  k.cyl(noseKey, R * 0.56, R * 0.78, 0.17, [0.04, y, z], 'x', 28);
+  k.cyl('dark', R * 0.3, R * 0.56, 0.15, [0.18, y, z], 'x', 24);
+  k.cyl('pipe', R * 0.1, R * 0.3, 0.08, [0.3, y, z], 'x', 16);
+  k.ring('hull', R * 0.56, 0.014, [-0.03, y, z], 'x', 28);
+  lamp(k, 'nav', [0.35, y, z], 0.018);
   // the drive housing astern: a ringed tube, a dark cap, a pale blue ring round the throat
   k.cyl('dark', R * 1.16, R * 1.2, 0.4, [-2.65, y, z], 'x', 28, true);
   k.cyl('dark', R * 1.12, R * 1.12, 0.02, [-2.47, y, z], 'x', 28);
@@ -429,6 +449,9 @@ function mounting(k: Kit, rnd: Rnd, z: number): void {
   block(k, 'dark', [2.0, 0.34, 0.5], [-1.4, DY + 0.12, sd * 0.64], [0, 0, 0], 0.12);
   block(k, 'dark', [1.9, 0.22, 0.5], [-1.4, DY - DR * 0.5, sd * 0.66], [0, 0, 0], 0.1);
   for (const dz of [-0.06, 0.06]) pipeRun(k, -2.1, -0.4, DY + DR + 0.1, zc + dz, 0.02, 0.45);
+  // the shoulder: a low wedge from the hull's flank forward over the drum's inboard side, so hull and nacelle meet in one sweep
+  k.wedge('dark', [[-0.5, sd * 0.43], [-0.5, sd * 0.88], [0.18, sd * 0.5]], 0.2, [0, DY + 0.1, 0]);
+  k.wedge(pickAmber(rnd), [[-0.46, sd * 0.5], [-0.46, sd * 0.8], [0.0, sd * 0.54]], 0.05, [0, DY + 0.22, 0]);
   // the stern fairing: sloped armour taking the hull's aft flank down onto the drum housing, so the drive grows out of the hull
   block(k, 'dark', [0.62, 0.05, 0.5], [-2.28, DY + DR + 0.1, sd * 0.68], [0, 0, 0.32], 0.02);
   block(k, 'dark', [0.7, 0.1, 0.12], [-2.3, DY + DR - 0.02, sd * 0.45], [0, 0, 0.18], 0.02);
@@ -446,6 +469,7 @@ export function buildWayward(): BuiltHull {
 function build(): BuiltHull {
   const k = new Kit(), rnd = seeded(7731);
   knock = seeded(4471);
+  braces = seeded(5521);
   hull(k, rnd);
   const nozzles = [drum(k, rnd, -DZ), drum(k, rnd, DZ)];
   mounting(k, rnd, -DZ);
