@@ -119,7 +119,7 @@ export const MODULES: ModuleDef[] = [
   // ── signals ───────────────────────────────────────────────────────────
   {
     id: 'md_baffles', name: 'Baffles', system: 'signals', max: 2,
-    text: 'Heat builds slower.',
+    text: 'Wanted builds slower.',
     quiet: 0.125,
   },
   {
@@ -156,7 +156,7 @@ export const MODULES: ModuleDef[] = [
   },
   {
     id: 'md_dock', name: 'Friends on the docks', system: 'contacts', max: 1,
-    text: 'Docking cools heat more.',
+    text: 'Docking lowers Wanted more.',
     dockCool: 0.2,
   },
 ];

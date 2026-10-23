@@ -172,6 +172,10 @@ export function regionSystems(c: Chart, region: number): StarSystem[] {
 /** The regions a chart was laid out with (one, for a save from before them). */
 export const regionCount = (c: Chart) => 1 + Math.max(0, ...c.systems.map(regionOf));
 
+/** The first columns past Cerro run short (units, about 10 km), so the early game is a hop and not a haul. */
+const EARLY_COLS = 4;
+const EARLY_LANE = [900, 1100] as const;
+
 const round5 = (n: number) => Math.max(1, Math.round(n));
 
 function pricesFor(holder: Holder, rng: Rng): Prices {
@@ -226,7 +230,7 @@ export function makeChart(seed: number, set: RegionSet = 'three', breathers = 1)
         id: `s${systems.length}`, name, kind, col, region, x: col / 5, y, holder, cyrite,
         supplies: Math.round(rng.range(t.supplies[0], t.supplies[1]) * 100) / 100,
         port: hasPort ? { name: kind === 'home' ? 'Frontier Supply' : portNames[rng.int(portNames.length)]!, prices: kind === 'home' ? { ...BASE_PRICES } : pricesFor(holder, rng) } : null,
-        lane: Math.round(rng.range(t.lane[0], t.lane[1]) / 50) * 50,
+        lane: Math.round((col <= EARLY_COLS ? rng.range(EARLY_LANE[0], EARLY_LANE[1]) : rng.range(t.lane[0], t.lane[1])) / 50) * 50,
         survey: clamp(Math.round((cyrite + rng.range(-0.25, 0.25)) * 100) / 100, 0, 1),
       });
     }

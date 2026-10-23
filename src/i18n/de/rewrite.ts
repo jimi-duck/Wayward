@@ -312,7 +312,7 @@ export const REWRITE: Record<string, string> = {
   "The cutter breaks off · the Offices mark you": "Der Cutter dreht ab · die Offices merken dich vor",
   "Fired on an Offices cutter": "Auf Offices-Cutter geschossen",
   "Run the field": "Flieh durchs Feld",
-  "Cost: heat and a day lost.": "Kostet Hitze und einen Tag.",
+  "Cost: Wanted and a day lost.": "Kostet Fahndung und einen Tag.",
   "You limp out of the field": "Du humpelst aus dem Feld",
   "Fled an Offices cutter": "Vor Offices-Cutter geflohen",
   "the initials on the authorisation": "die Initialen auf der Genehmigung",

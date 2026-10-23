@@ -109,20 +109,20 @@ export class Radar {
       g.strokeStyle = v > 0 ? rgba(RGB.red, 0.35 + v * 0.6) : 'transparent';
       g.beginPath(); g.arc(0, 0, Rb + 9.5 * dpr, a - half, a + half); g.stroke();
     }
-    // where to go: an amber arrowhead on the ring along its bearing, larger than the rest; the other places are small diamonds (amber the lane, teal the port)
+    // where to go: a yellow arrowhead on the ring along its bearing, larger than the rest; the other places are small blue diamonds
     const bk = world.bk;
     const lead = world.alive ? guideTarget(world) : null;
     for (const wp of sidePlaces(world, lead)) {
       const a = at(Math.atan2(-(wp.z - s.z), wp.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 4 * dpr;
       g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(Math.PI / 4);
-      g.fillStyle = wp.kind === 'port' ? INK.teal : INK.amber;
+      g.fillStyle = INK.amberHi;
       g.fillRect(-sz / 2, -sz / 2, sz, sz);
       g.restore();
     }
     if (lead) {
       const a = at(Math.atan2(-(lead.z - s.z), lead.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr, sz = 5.5 * dpr;
       g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r); g.rotate(a + Math.PI / 2);
-      g.fillStyle = INK.amber;
+      g.fillStyle = INK.goal;
       g.beginPath(); g.moveTo(0, -sz * 1.2); g.lineTo(sz, sz * 0.8); g.lineTo(0, sz * 0.2); g.lineTo(-sz, sz * 0.8); g.closePath(); g.fill();
       g.restore();
     }

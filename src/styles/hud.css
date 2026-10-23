@@ -330,10 +330,16 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #marks .m::after { content: attr(data-t); position: absolute; left: 50%; top: calc(100% + 5px); translate: -50% 0; white-space: pre; text-shadow: 0 1px 5px #000, 0 0 2px #000;
   font: 600 calc(var(--fs) * 1.25)/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
 #marks .m.cap::after { color: var(--alert); }
-#marks .m.dia, #marks .m.tag { background: none; --d: var(--amber); }
+#marks .m.dia, #marks .m.tag { background: none; --d: var(--hud-hi); }
+#marks .m.dia.pri { --d: var(--goal); }
+#marks .m.dia.pri::after { color: var(--goal); }
 #marks .m.dia { width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; }
 #marks .m.dia::before { content: ""; position: absolute; inset: 0; background: var(--d); rotate: 45deg; box-shadow: 0 0 0 3px rgba(8, 14, 17, .28); }
 #marks .m.dia::after, #marks .m.tag::after { left: calc(100% + 11px); top: 50%; translate: 0 -50%; text-align: left; }
+/* crowded: the label moves to the other side, above or below, so two near marks never print over each other */
+#marks .m[data-side="l"]::after { left: auto; right: calc(100% + 11px); top: 50%; translate: 0 -50%; text-align: right; }
+#marks .m[data-side="u"]::after { left: 50%; right: auto; top: auto; bottom: calc(100% + 9px); translate: -50% 0; text-align: center; }
+#marks .m[data-side="d"]::after { left: 50%; right: auto; top: calc(100% + 9px); translate: -50% 0; text-align: center; }
 #marks .m.dep { --d: var(--violet); }
 #marks .m.obj.far { width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; }
 #marks .m.tag { width: 8px; height: 8px; margin: -4px 0 0 -4px; }
@@ -346,8 +352,9 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 .ptr i { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-right: 2px solid var(--pc); border-top: 2px solid var(--pc); rotate: var(--a, 0deg); }
 .ptr span { position: absolute; left: 0; top: 14px; translate: -50% 0; white-space: nowrap; text-shadow: 0 1px 5px #000, 0 0 2px #000;
   font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--pc); }
-#ptr-obj, #ptr-lane, #ptr-audit { --pc: var(--amber); }
-#ptr-port { --pc: var(--hud-hi, var(--cy)); }
+#ptr-obj, #ptr-lane, #ptr-audit, #ptr-port { --pc: var(--hud-hi); }
+.ptr.pri { --pc: var(--goal); }
+.ptr[data-crowd] span { display: none; }
 /* hulls off screen: a smaller chevron each, in the faction's colour, brighter the closer; it blinks when one is close behind */
 #threats .thr { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }
 #threats .thr i { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-right: 2px solid var(--pc); border-top: 2px solid var(--pc); rotate: var(--a, 0deg); }
