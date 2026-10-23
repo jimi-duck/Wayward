@@ -157,7 +157,7 @@ describe('the loads, felt', () => {
   it('leave the stock ship as it flies, and say nothing', () => {
     const f = feel(stockLevels());
     expect(f).toEqual({ accel: 1, speed: 1, turn: 1, cooldown: 1 });
-    expect(felt(stockLevels())).toEqual({ accel: 1, speed: 1, cooldown: 1 });
+    expect(felt(stockLevels())).toMatchObject({ accel: 1, speed: 1, cooldown: 1 });
     expect(overRatings(stockLevels())).toEqual({ mass: false, heat: false, power: false });
   });
 

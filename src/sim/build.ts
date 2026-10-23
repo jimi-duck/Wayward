@@ -94,12 +94,16 @@ export interface Fig {
 }
 
 /**
- * The three things a ship feels, as a share of the stock ship's (1 is the stock ship): acceleration, top speed, and the
- * guns' cooldown (a share above 1 is slower). The upgrades and the loads together, as the ship flies.
+ * The three things a ship feels: acceleration, top speed, and the guns' cooldown, as a share of the stock ship's (1 is
+ * the stock ship; a cooldown above 1 is slower) and in real units. The upgrades and the loads together, as the ship flies.
  */
-export function felt(levels: Levels): { accel: number; speed: number; cooldown: number } {
+export function felt(levels: Levels): { accel: number; speed: number; cooldown: number; accelAbs: number; speedAbs: number; cooldownAbs: number } {
   const s = feelBudgets(computeStats(levels), levels), h = flightHull(s), b = flightHull(BASE);
-  return { accel: thrustPerStep(h) / thrustPerStep(b), speed: topSpeed(h) / topSpeed(b), cooldown: s.laserCooldown / BASE.laserCooldown };
+  return {
+    accel: thrustPerStep(h) / thrustPerStep(b), speed: topSpeed(h) / topSpeed(b), cooldown: s.laserCooldown / BASE.laserCooldown,
+    // in the game's own units: metres per second squared, metres per second, seconds between laser shots
+    accelAbs: (thrustPerStep(h) * HZ) / PX, speedAbs: topSpeed(h) / PX, cooldownAbs: s.laserCooldown,
+  };
 }
 
 /** What one more level of an upgrade would change, as figures (in the Story mode, `arcade` false, without the arcade's own). */

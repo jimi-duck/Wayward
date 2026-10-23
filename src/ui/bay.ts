@@ -74,13 +74,13 @@ const OVER_WORD: Record<keyof Budget, string> = {
   heat: 'Past the cooling rating: the guns take longer to cycle',
 };
 /** The felt stat a load sets, in `felt()` (sim/build.ts), and which way is better. */
-const FELT: Record<keyof Budget, { key: 'accel' | 'speed' | 'cooldown'; lower: boolean }> = {
-  mass: { key: 'accel', lower: false }, power: { key: 'speed', lower: false }, heat: { key: 'cooldown', lower: true },
+const FELT: Record<keyof Budget, { key: 'accel' | 'speed' | 'cooldown'; lower: boolean; unit: string; abs: 'accelAbs' | 'speedAbs' | 'cooldownAbs'; dp: number }> = {
+  mass: { key: 'accel', lower: false, unit: 'm/s²', abs: 'accelAbs', dp: 0 },
+  power: { key: 'speed', lower: false, unit: 'm/s', abs: 'speedAbs', dp: 0 },
+  heat: { key: 'cooldown', lower: true, unit: 's', abs: 'cooldownAbs', dp: 2 },
 };
 /** The bar's scale: from 40% to 140% of the stock ship, the stock ship at 60% along. */
 const BAR = { lo: 0.4, hi: 1.4 } as const;
-/** A felt stat as a share of the stock ship's: "104%". */
-const feltPct = (v: number): string => `${Math.round(v * 100)}%`;
 
 const nameOf = (id: string) => t(nodeName(id));
 const textOf = (id: string, lv: number) => t(nodeText(id, lv));
@@ -764,12 +764,12 @@ export class BayPanel {
     const can = sel && blockOf(sel.id, w.bayCtx()) !== 'full';
     const next = can ? felt({ ...w.levels, [sel!.id]: (w.levels[sel!.id] ?? 0) + 1 }) : null;
     $('bay-budget').replaceChildren(...(['mass', 'power', 'heat'] as const).map((k) => {
-      const { key, lower } = FELT[k];
+      const { key, lower, unit, abs, dp } = FELT[k], fmt = (v: number) => `${v.toFixed(dp)}`;
       // the warning light: only once the load is past its rating. A little short of it the bar warms, with no word.
       const share = use[k] / cap[k], state = share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
       const word = state === 'over' ? LIGHT_WORD[k] : '';
       // a fit just moved this stat: it ticks from what it said to what it says now, with the old figure struck beside it
-      const shownNow = feltPct(now[key]), was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== shownNow;
+      const shownNow = fmt(now[abs]), was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== shownNow;
       this.shown[k] = shownNow;
       // the bar is the stat, longer is better (cooldown is drawn as the guns' rate); the tick is the stock ship
       const at = (v: number) => Math.round(Math.min(1, Math.max(0, ((lower ? 1 / v : v) - BAR.lo) / (BAR.hi - BAR.lo))) * 1000) / 10;
@@ -787,12 +787,14 @@ export class BayPanel {
       bar.title = `${t('Load')} ${use[k]}/${cap[k]}`;
       const fig = h('span', 'bb-n', shownNow);
       const val = h('b', `bb-v${moved ? ' bump' : ''}`, '', fig);
-      const then = next ? feltPct(next[key]) : shownNow;
+      const u = h('small', '', ` ${unit}`);
+      const then = next ? fmt(next[abs]) : shownNow;
       if (moved) {
         tick(fig, was!, shownNow);
         val.prepend(h('s', 'bb-was', was!));
         setTimeout(() => this.open && this.world && this.budgetBar(this.world), 1500);
       } else if (then !== shownNow) val.append(h('em', '', ` → ${then}`));
+      val.append(u);
       // better (teal) or worse (gold): cooldown is better when lower
       if (then !== shownNow) val.classList.add((next![key] < now[key]) === lower ? 'better' : 'worse');
       return h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : []), val), bar);
