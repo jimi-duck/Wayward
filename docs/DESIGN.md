@@ -538,7 +538,7 @@ The branches:
   micro-torpedoes spread across targets; unlockable) or **precision
   guidance** (all-round locks, faster, harder on hulls; with a target
   painter that marks laser hits).
-- **Mines** (laid in your wake): yield, racks, proximity seekers.
+- **Mines** (laid in your wake, only on red alert): yield, racks, proximity seekers.
   Specialise into a **minefield**, **chain reaction** (blasts set off mines
   near them and leave a burning cloud) or **graviton mines** (pull targets
   in; unlockable).

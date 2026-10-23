@@ -242,8 +242,8 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'mn_layer', name: 'Seismic mine layer', branch: 'mine', cat: 'weapons', kind: 'system', max: 1, tags: ['mine', 'unlock', 'area'],
     weight: 1.2,
-    text: 'Lays mines in your wake that wait for anything that follows you.',
-    note: 'They lay themselves. Where you fly is where they go.',
+    text: 'Under attack, you drop a mine in your wake now and then.',
+    note: 'Only on red alert. Where you fly is where they go.',
     apply: (s) => { s.mines = true; },
   },
   {
@@ -255,7 +255,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'mn_racks', name: 'Mine racks', branch: 'mine', cat: 'weapons', kind: 'stat', max: 3, tags: ['mine', 'rate'],
     requires: [{ id: 'mn_layer' }],
-    text: 'You lay mines more often and keep more of them out.',
+    text: 'Mines drop sooner and more can be out.',
     apply: (s) => { s.mineInterval *= 0.82; s.mineMax += 2; },
   },
   {

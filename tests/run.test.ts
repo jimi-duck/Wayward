@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 import { DETECT_R, FACTIONS, WARY_R } from '../src/sim/bosses';
@@ -337,7 +337,10 @@ describe('the systems that fire themselves', () => {
   it('mines go down in the wake and go off under a hull', () => {
     const w = quiet();
     w.setLevels({ mn_layer: 1 });
-    run(w, 3, { thrust: 1 });
+    run(w, 6, { thrust: 1 });
+    expect(w.sys.mines.length).toBe(0); // clear skies: nothing laid
+    vi.spyOn(w, 'alert').mockReturnValue('red');
+    run(w, 6, { thrust: 1 });
     expect(w.sys.mines.length).toBeGreaterThan(0);
     const m = w.sys.mines[0]!;
     expect(Math.hypot(m.x - w.ship.x, m.z - w.ship.z)).toBeGreaterThan(20);
