@@ -1,4 +1,4 @@
-import { CARD_BY_ID } from './comms';
+import { CARD_BY_ID, RADIO_GAP } from './comms';
 import { CREDIT_START, HOLD, HOLD_AT_START, QUOTA, ROCK_LOAD, type Cargo } from './contract';
 import { t } from '../i18n';
 import { newId } from './ids';
@@ -191,16 +191,20 @@ function loseCargo(w: World, tu: Tutor): void {
   tu.onboard = 0;
   w.cyrite = Math.min(w.cyrite, tu.credit);
   w.events.push({ type: 'cargoLost', n });
+  sam(w, tu, 'hold', ['“The hold’s gone, Juno. There’s nothing left to deliver.”']);
   // the hit rings on the hull (the shield ripple; the Wayward has no bubble)
   w.events.push({ type: 'shieldHit', x: w.ship.x, z: w.ship.z, left: Math.floor(w.shields), source: 'missile' });
 }
 
-/** One radio line, once: over live flight, so it never stops the ship. */
-function say(w: World, tu: Tutor, id: string, from: string, caller: string, text: string): void {
+/** A radio line, once, or a voice's lines as beats one after another: over live flight, so it never stops the ship. */
+function say(w: World, tu: Tutor, id: string, from: string, caller: string, text: string | string[], delay = 0): void {
   if (tu.said.includes(id)) return;
   tu.said.push(id);
-  w.events.push({ type: 'ping', id: `train_${id}`, from, caller, text, moment: 'calm', system: w.sortie.name });
+  w.radioLines(`train_${id}`, from, caller, [text].flat(), delay);
 }
+
+/** Sam Okoro, Juno's friend on the radio (the opening handover, 2026-10-23). */
+const sam = (w: World, tu: Tutor, id: string, lines: string[], delay = 0): void => say(w, tu, id, t('Sam Okoro'), 'miners', lines.map((l) => t(l)), delay);
 
 function begin(w: World, tu: Tutor): void {
   const id = tu.steps[tu.i]!;
@@ -215,7 +219,8 @@ function begin(w: World, tu: Tutor): void {
     const port = w.bk?.port;
     if (port) { const p = ahead(w, DEPOT_AT, -DEPOT_SIDE); port.x = p.x; port.z = p.z; }
     if (w.bk) { const p = ahead(w, TRAIN_LANE); w.bk.def = { ...w.bk.def, lane: TRAIN_LANE }; w.bk.lane.x = p.x; w.bk.lane.z = p.z; }
-    say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay is open for supplies. Take the upgrade you need and get back to the field. A late return comes out of your allocation.”'));
+    if (story(w, tu)) sam(w, tu, 'dispatch', ['“Juno. Two hundred more and the hold’s full. Then it’s back to the home port.”', '“A thousand Cyrite out of Cerro, and only two credits left after their charges.”']);
+    else say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay is open for supplies. Take the upgrade you need and get back to the field. A late return comes out of your allocation.”'));
   } else if (id === 'bay') {
     tu.base = fitted(w);
     // the Arcade's upgrade is a press away; the Story's is bought from the settlement, at the bay
@@ -224,7 +229,8 @@ function begin(w: World, tu: Tutor): void {
     tu.base = stock(w);
     // out past the depot's damping field: the lasers are cold inside it
     layRock(w, tu, HAUL_AT);
-    say(w, tu, 'tam', t('Sam Okoro'), 'miners', t('“Juno, I’ve heard raiders are working past the field. Eyes up, and don’t take risks for a contract that would never take one for you.”'));
+    if (story(w, tu)) sam(w, tu, 'tam', ['“Launcher’s ready. You still need the last two hundred. Save the torpedoes for anyone who comes after the hold.”']);
+    else say(w, tu, 'tam', t('Sam Okoro'), 'miners', t('“Juno, I’ve heard raiders are working past the field. Eyes up, and don’t take risks for a contract that would never take one for you.”'));
   } else {
     // the hull waits: it comes once the ship is out past the depot's field
     tu.base = w.kills;
@@ -331,7 +337,7 @@ export function stepTutor(w: World, dt: number): void {
   if (id === 'shoot' && story(w, tu) && tu.parley === 0 && tu.pirates.length) parley(w, tu);
   if (id === 'shoot' && !w.safe && (tu.alienId < 0 || (tu.t > 2 && tu.pirates.some((p) => !w.aliens.some((a) => a.id === p)))) && w.kills < tu.base + PIRATES) layShip(w, tu);
   // the raiders know a company hauler when they see one
-  if (id === 'shoot' && tu.t > 7 && tu.pirates.length && !(story(w, tu) && tu.parley < 2)) say(w, tu, 'lock', t('Unregistered raider'), 'unknown', t('“Company hauler. Owner lock and all. Nobody’s coming to claim you out here.”'));
+  if (id === 'shoot' && tu.t > 7 && tu.pirates.length && !story(w, tu)) say(w, tu, 'lock', t('Unregistered raider'), 'unknown', t('“Company hauler. Owner lock and all. Nobody’s coming to claim you out here.”'));
   if (met(w, tu)) tu.linger = LINGER;
 }
 
@@ -345,9 +351,11 @@ function finish(w: World, tu: Tutor): void {
   w.startChase();
   if (!tu.skipped && story(w, tu)) {
     // the last raider's guns have taken the hold if nothing did before: the shortfall is something the player saw
+    const fresh = !tu.lost;
     loseCargo(w, tu);
     w.events.push({ type: 'inbound' });
-    say(w, tu, 'reinforce', t('Cerro Lane Control'), 'office', t('“Additional hostile contacts detected. Reach the Jump Gate.”'));
+    // if the hold went only now, Sam's word on it comes first
+    sam(w, tu, 'reinforce', ['“More ships coming in. Don’t stay to settle it. Get to the jump gate. Get yourself out.”'], fresh ? RADIO_GAP : 0);
   }
   if (!story(w, tu) || tu.skipped) say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover is not included in Contract 08-441. Continue at operator discretion.”'));
 }

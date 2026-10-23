@@ -77,7 +77,7 @@ describe('the objective follows the owner lock', () => {
     const w = level();
     expect(lockLifted(w.flags)).toBe(false);
     expect(guideTarget(w)).toMatchObject({ kind: 'audit', name: AUDIT_DOCK });
-    expect(goalOf(w).goal).toBe('Head for the audit dock');
+    expect(goalOf(w).goal).toBe('Dock at the company port');
     w.flags.add('ship_stolen');
     w.fuel = w.jumpCost;
     expect(guideTarget(w)).toMatchObject({ kind: 'lane', name: 'Jump Gate' });

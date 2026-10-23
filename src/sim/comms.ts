@@ -42,6 +42,9 @@ export type Tone = 'fight' | 'run' | 'pay' | 'bluff' | 'trade' | 'help' | 'refus
 /** Who you can stand well or badly with. */
 export type Standing = 'custody' | 'gutter' | 'frontier' | 'guild' | 'kellern' | 'miners';
 /** Who is on the channel, for the colour of the card. */
+/** Seconds between one radio beat and the next of the same voice (`World.radioLines`). */
+export const RADIO_GAP = 4.5;
+
 export type Caller = Standing | 'office' | 'calloway' | 'captain' | 'unknown';
 /** How a card comes: by chance, only as a follow-up, on the port's approach, at a blockaded Jump Gate, at an open one, with Calloway, as her offer (from her file), or as a story beat (sim/story.ts). */
 export type Trigger = 'chance' | 'follow' | 'port' | 'lane' | 'toll' | 'hunt' | 'offer' | 'story' | 'scene';
@@ -189,8 +192,8 @@ export interface Outcome {
   hostile?: boolean;
   /** The opening ends here and starts again from the top (the raiders took the ship). */
   redo?: boolean;
-  /** A line on the radio, no answer asked (the opening's Sam and Governor). */
-  radio?: { from: string; text: string };
+  /** Lines on the radio, no answer asked: one subtitle beat each, the first `delay` seconds of play after the answer. */
+  radio?: { from: string; text: string | string[]; caller?: Caller; delay?: number };
   job?: JobDef;
   /** A job given up. */
   drop?: string;
@@ -297,13 +300,16 @@ export interface CardDef {
   note?: string;
   /**
    * An optional document behind the card: opened on request, closed back to the card, never shown beside it. `open` is the
-   * row that opens it (`at`: after that many ledger rows; `row`: a numbered row after the choices instead).
+   * row that opens it (`at`: after that many ledger rows; `row`: a numbered row after the choices instead). The note may run
+   * to paragraphs (split on a line break), under its own `label`.
    */
-  doc?: { kind: LedgerKind; open: string; kick: string; title: string; sub?: string; note?: string; at?: number; row?: boolean };
+  doc?: { kind: LedgerKind; open: string; kick: string; title: string; sub?: string; note?: string; label?: string; at?: number; row?: boolean };
   /** A second, smaller panel beside the card: a voice on the radio, or a status line. */
   side?: { from: string; status?: string; glass?: GlassRole; title?: string; sub?: string; label?: string; lines: string[] };
   /** The registry notice draws as its own panel (ui/comms.ts regView). */
   layout?: 'registry';
+  /** The registry notice's lines under the new name (the reveal copy). */
+  copy?: string[];
   /** The repaint box: a title and a line, with the livery pictures. */
   repaint?: [string, string];
   kind: CardKind;

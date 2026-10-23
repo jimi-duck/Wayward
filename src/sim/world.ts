@@ -10,7 +10,7 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
-import { CERRO_BEATS, OPENING_AT, STORY_AT } from '../content/story';
+import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT } from '../content/story';
 import { ledgerFor } from './contract';
 import {
   APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
@@ -18,7 +18,7 @@ import {
   rockYield, DOCK_SPEED, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
-  CARD_BY_ID, COMMS_FIRST, PORT_CALL, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
+  CARD_BY_ID, COMMS_FIRST, PORT_CALL, RADIO_GAP, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
   type Outcome, type Standing,
 } from './comms';
 import { computeStats, identity, type Levels } from './build';
@@ -26,6 +26,7 @@ import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
 import { lockLifted } from './postjump';
+import { RECOVERY_T, recovering, recoveryControls } from './recovery';
 import { Traffic } from './traffic';
 import { live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
@@ -309,6 +310,10 @@ export class World implements EncounterHost {
   opening = false;
   portCalled = false;
   auditCalled = false;
+  /** Seconds of play since Lane Control took the ship (sim/recovery.ts); counts only while it has her. */
+  recoverT = 0;
+  /** Radio lines waiting their turn, by run time: a voice's beats one after another (`radioLines`). */
+  private radioQ: Array<{ at: number; id: string; from: string; caller: string; text: string }> = [];
   private cardsSeen = new Set<string>();
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
   private heard = new Set<string>();
@@ -393,6 +398,8 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.auditCalled = false;
+    this.recoverT = 0;
+    this.radioQ = [];
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
@@ -622,8 +629,12 @@ export class World implements EncounterHost {
     Object.assign(this.prev, this.ship);
     const s = this.ship, t = this.runTime, st = this.stats;
     const p = pressure(this.clock, this.mods);
-    const c = this.alive && !slowed && (!this.bk || this.bk.jumpT < 0) ? flightControls(input) : IDLE;
+    // Lane Control's recovery has the helm until Sam's code lifts the owner lock
+    const held = !!this.bk && recovering(this.flags);
+    const c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held ? recoveryControls(s, this.bk!.audit, this.hull) : flightControls(input);
     stepShip(s, c, this.hull, dt);
+    if (held) this.recoverT += dt;
+    this.flushRadio();
     if (this.space) this.stepSpace(dt, s);
     const rolling = s.rollT >= 0;
     // the gate's and the depot's damping field holds every gun cold, ours as well as theirs
@@ -1397,6 +1408,11 @@ export class World implements EncounterHost {
     this.wasBusy = busy;
     d.watch(busy, t);
     d.sweep(t, this.docked);
+    // the recovery: nobody else calls while Lane Control flies her in, and Sam's channel opens once, on time
+    if (recovering(this.flags)) {
+      if (this.recoverT >= RECOVERY_T - 1e-6 && !this.cardsSeen.has(SAM_BEAT)) { const sam = CARD_BY_ID[SAM_BEAT]; if (sam) this.openComms(sam); }
+      return;
+    }
     // a call nobody picked up: the channel closes
     if (this.call && t >= this.callUntil) this.lapse();
 
@@ -1453,6 +1469,26 @@ export class World implements EncounterHost {
     if (!this.call) {
       const m = d.pingFor(busy, t, this.deskRng);
       if (m) this.say(m);
+    }
+  }
+
+  /**
+   * A voice's lines on the radio one after another, as subtitle beats: the first after `delay` seconds of play, then one
+   * every `gap`. They wait out a pause, and a new sortie drops any still waiting.
+   */
+  radioLines(id: string, from: string, caller: string, texts: readonly string[], delay = 0, gap = RADIO_GAP): void {
+    const at = this.runTime + delay;
+    texts.forEach((text, i) => this.radioQ.push({ at: at + i * gap, id: i ? `${id}_${i}` : id, from, caller, text }));
+    this.radioQ.sort((a, b) => a.at - b.at);
+    this.flushRadio();
+  }
+
+  private flushRadio(): void {
+    if (!this.radioQ.length || this.phase !== 'play') return;
+    const name = this.bk?.def.name ?? '';
+    while (this.radioQ.length && this.radioQ[0]!.at <= this.runTime) {
+      const r = this.radioQ.shift()!;
+      this.events.push({ type: 'ping', id: r.id, from: r.from, caller: r.caller, text: r.text, moment: 'calm', system: name });
     }
   }
 
@@ -1567,7 +1603,10 @@ export class World implements EncounterHost {
     for (const [k, v] of Object.entries(out.standing ?? {}) as Array<[Standing, number]>) this.standing[k] = (this.standing[k] ?? 0) + v;
     for (const [k, v] of Object.entries(out.notice ?? {}) as Array<[Faction, number]>) this.noticeDelta[k] = (this.noticeDelta[k] ?? 0) + v;
     if (out.follow) this.follows.push({ card: out.follow.card, at: this.runTime + out.follow.after, quick: out.follow.quick });
-    if (out.radio) this.events.push({ type: 'ping', id: `radio_${out.radio.text.slice(1, 12)}`, from: tr(out.radio.from), caller: 'unknown', text: tr(out.radio.text), moment: 'calm', system: this.sortie.name });
+    if (out.radio) {
+      const lines = [out.radio.text].flat();
+      this.radioLines(`radio_${lines[0]!.slice(1, 12)}`, tr(out.radio.from), out.radio.caller ?? 'unknown', lines.map((l) => tr(l)), out.radio.delay ?? 0);
+    }
     if (out.job && !this.jobs.some((j) => j.id === out.job!.id)) this.jobs.push(out.job);
     if (out.drop) this.jobs = this.jobs.filter((j) => j.id !== out.drop);
     if (out.seam) { this.seamT = out.seam; this.field.richBoost = 0.35; this.field.density = 1.2; }

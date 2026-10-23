@@ -41,7 +41,7 @@ export const CARDS: CardDef[] = [
       { if: { flag: 'codes' }, text: 'Your forged registration codes are ready.' },
       { if: { flag: 'fee_known' }, text: 'You heard she accepts bribes.' },
       { if: { notice: ['custody', 'toll'] }, text: 'There is already a surcharge on your record.' },
-      { if: { civicMax: 399 }, text: 'Your registry reads UNDER REVIEW. The ordinary doorway is closed.' },
+      { if: { civicMax: 399 }, text: 'Your registry is under review. The ordinary doorway is closed.' },
       { if: { civicMax: 299 }, text: 'Restricted pilots pay a surcharge here.' },
     ],
     ships: [{ variant: 'lancer', n: 1 }, { variant: 'picket', n: 2 }], cargo: 'Custody blockade cutter, full magazines',

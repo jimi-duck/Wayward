@@ -10,8 +10,8 @@ import { CARDS } from '../src/content/cards';
 // its row.
 
 const CAP = { title: 7, from: 10, text: 32, line: 15, read: 14, label: 8, hint: 19, win: 16, lose: 13 };
-/** Lines already over their cap, held at today's length. */
-const LEGACY: Record<string, number> = {};
+/** Lines already over their cap, held at today's length, and the owner's own copy (the opening handover, 2026-10-23). */
+const LEGACY: Record<string, number> = { 'title story_raiders': 8 };
 
 const words = (s: string) => s.trim().split(/\s+/).length;
 
@@ -23,7 +23,10 @@ function over(): string[] {
     if (n > (LEGACY[key] ?? CAP[part])) out.push(`${key}: ${n} words (cap ${LEGACY[key] ?? CAP[part]}) · ${s}`);
   };
   for (const c of CARDS) {
-    check('title', c.title, c.id); check('from', c.from, c.id); check('text', c.text, c.id);
+    check('title', c.title, c.id); check('from', c.from, c.id);
+    // a voice in quoted lines is read a line at a time, each its own beat
+    if (c.quote) c.text.split('\n').forEach((l, i) => check('text', l, i ? `${c.id}#${i}` : c.id));
+    else check('text', c.text, c.id);
     for (const l of c.lines ?? []) check('line', l.text, c.id);
     for (const t of c.truths ?? []) check('read', t.read, c.id);
     for (const ch of c.choices) {
@@ -44,7 +47,7 @@ describe('the reading budget', () => {
     const live = new Map<string, number>();
     for (const c of CARDS) {
       const add = (part: string, s: unknown, id: string) => { if (typeof s === 'string') live.set(`${part} ${id}`, words(s)); };
-      add('text', c.text, c.id);
+      add('title', c.title, c.id); add('text', c.text, c.id);
       for (const ch of c.choices) { add('label', ch.label, `${c.id}:${ch.id}`); add('hint', ch.hint, `${c.id}:${ch.id}`); add('win', ch.win?.text, `${c.id}:${ch.id}`); }
     }
     const stale = Object.entries(LEGACY).filter(([k, n]) => (live.get(k) ?? 0) > n || (live.get(k) ?? 0) <= CAP[k.split(' ')[0] as keyof typeof CAP]);

@@ -91,14 +91,17 @@ describe('the opening chain beyond the gate', () => {
     expect(c.civic).toBe(CIVIC_START - STOLEN_DROP);
     expect(civicBand(c.civic!)).toBe('restricted');
   });
-  it('adds up (opening sheets B and F): a projection, not a balance, and a breach bill of 47 CR kept apart from it', () => {
+  it('adds up (opening sheets B and F): a projection, not a balance, and a breach bill of 80 CR kept apart from it', () => {
     const bay = ledgerFor('bay');
     const credit = (rows: LedgerRow[], k: string) => rows.find((r) => r.k === k)?.cr;
     // B: 100 CR gross − 98 CR charges = 2 CR, on delivery; the launcher's 20 CR is among the charges
     expect(upgradePrice()).toBe(20);
     expect(credit(bay, 'Gross')).toBe(GROSS);
-    expect(credit(bay, 'Projected charges')).toBe(-98);
-    expect(credit(bay, 'Projected settlement')).toBe(2);
+    expect(credit(bay, 'Charges')).toBe(-98);
+    expect(credit(bay, 'Settlement')).toBe(2);
+    // the bay's card shows the projection only: no itemised charges, no launcher row
+    expect(bay.map((r) => r.k)).toEqual(['Gross', 'Charges', 'Settlement']);
+    expect(CARD_BY_ID.story_bay!.ledger).toBe('bay');
     expect(projectedAfterLauncher()).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow - upgradePrice());
     expect(NET).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow);
     expect(credit(ledgerFor('launcher'), 'Torpedo launcher')).toBe(upgradePrice());
@@ -110,18 +113,22 @@ describe('the opening chain beyond the gate', () => {
     expect(CREDIT_START).toBeLessThan(GROSS);
     // financed, not bought: no cost at the bay
     expect(CARD_BY_ID.story_bay!.choices[0]!.cost).toBeUndefined();
-    // F: 15 CR penalty + 12 CR lease + 20 CR financed launcher = 47 CR, never netted against the projection
+    // F: 25 CR penalty + 35 CR lease + 20 CR financed launcher = 80 CR, never netted against the projection
     const invoice = ledgerFor('invoice');
     expect(credit(invoice, 'Penalty')).toBe(PENALTY);
     expect(credit(invoice, 'Lease')).toBe(LEASE_DUE);
     expect(credit(invoice, 'Financed launcher')).toBe(upgradePrice());
-    expect(credit(invoice, 'Outstanding')).toBe(owed());
+    expect(credit(invoice, 'Total outstanding')).toBe(owed());
     expect(credit(ledgerFor('breach'), 'Outstanding')).toBe(owed());
-    expect(owed()).toBe(47);
+    expect([PENALTY, LEASE_DUE, upgradePrice()]).toEqual([25, 35, 20]);
+    expect(owed()).toBe(80);
+    expect(invoice.map((r) => r.cr)).toEqual([25, 35, 20, 80]);
+    // no settlement row on the invoice: the projected 2 CR is never deducted
+    expect(invoice.some((r) => /settlement|balance/i.test(r.k))).toBe(false);
   });
   it('shows the archive’s one record: 94% on the day of the order, Halden’s Reach next', () => {
     expect(ledgerFor('evidence').find((r) => r.k === 'Reserve level')?.v).toBe('94%');
-    expect(ledgerFor('evidence').find((r) => r.k === 'Record and order')?.v).toBe('same day');
+    expect(ledgerFor('evidence').find((r) => r.k === 'Reserve entry and gate-closure order')?.v).toBe('same day');
     expect(ledgerFor('archive').find((r) => r.k === 'Next lead')?.v).toBe('Halden’s Reach');
     expect(CARD_BY_ID.story_wake!.hero).toEqual(['94%', 'Krail reserves']);
   });
