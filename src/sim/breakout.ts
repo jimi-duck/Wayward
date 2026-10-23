@@ -251,8 +251,6 @@ export interface Carry {
   seen: string[];
   /** Seconds of flight since the last card or call closed: the comms desk's pacing runs on across systems (sim/desk.ts). */
   hush: number;
-  /** The Civic Score (sim/civic.ts): the Story's only. Absent in the Arcade, and in a save from before v18 until it is migrated. */
-  civic?: number;
 }
 
 /** What a sortie hands back to the journey. */

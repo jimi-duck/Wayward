@@ -206,7 +206,8 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   /* the stored message's two actions side by side; its record's Close beside the title */
   .ns-main:has(.ns-hero) .ns-acts { grid-template-columns: 1fr 1fr; }
   .ns-doc { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
-  .ns-main:has(.ns-hero) { row-gap: 5px; }
+  .ns-main:has(.ns-hero) { row-gap: 4px; }
+  .ns-main:has(.ns-hero) .ns-q { gap: 4px; }
   .ns-doc > * { grid-column: 1 / -1; }
   .ns-doc > .ns-t { grid-column: 1; grid-row: 2; align-self: center; }
   .ns-doc > .ns-acts { grid-column: 2; grid-row: 2; margin: 0; padding: 0; border: 0; }
@@ -293,7 +294,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .registry .rg-thimg { aspect-ratio: 3.6; }
   .registry .rg-th { padding: .3em; }
   .registry .rg-ship figcaption { display: none; }
-  .registry .rg-active { margin-bottom: .2em; }
+  .registry .rg-active { margin-bottom: .1em; letter-spacing: .14em; }
   .registry .rg-rows dt, .registry .rg-rows dd { padding: .22em 0; font-size: 1.05em; }
   .registry .rg-left { gap: .22em; }
   .registry .rg-rp { margin-top: .4em; }

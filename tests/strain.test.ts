@@ -94,7 +94,8 @@ describe('the gate and the depot keep their own', () => {
     const lane = w.bk!.lane, trigger = { ...idle, fire: true, torpedo: true };
     w.ship.x = lane.x + 30; w.ship.z = lane.z;
     w.step(1 / 60, idle);
-    if (w.phase === 'comms') w.answer(0);
+    // the lane's registry check, if it calls: submit to the scan (showing the registry needs a registration that has passed one)
+    if (w.phase === 'comms') w.answer('scan');
     w.events.length = 0;
     w.step(1 / 60, trigger);
     expect(w.bolts.length).toBe(0);

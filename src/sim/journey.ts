@@ -31,7 +31,6 @@ import type { EndingId } from '../content/endings';
 import { ACTS, CHOICE_REGION } from '../content/story';
 import { actLine, dueBeat } from './story';
 import { postJump } from './postjump';
-import { CIVIC_START, clampCivic } from './civic';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -90,7 +89,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 19;
+export const VERSION = 20;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -172,7 +171,7 @@ const rng = (j: Journey) => new Rng((j.seed * 7919 + ++j.rolls * 104729) >>> 0);
 export function startCarry(survival: SurvivalId = DEFAULT_SURVIVAL): Carry {
   const K = survivalOf(survival).voyage.start;
   return {
-    cyrite: 0, fuel: K.cyrite, supplies: K.supplies, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], hush: HUSH, civic: CIVIC_START,
+    cyrite: 0, fuel: K.cyrite, supplies: K.supplies, plates: 99, levels: stockLevels(), refit: 0, techs: [], flags: [], standing: {}, jobs: [], seen: [], hush: HUSH,
   };
 }
 
@@ -558,7 +557,6 @@ export function bankAnswer(j: Journey, before: Carry, after: Carry): void {
   const c = j.carry;
   for (const k of ['cyrite', 'supplies'] as const) c[k] = Math.max(0, c[k] + after[k] - before[k]);
   const diff = (a: string[], b: string[]) => a.filter((x) => !b.includes(x));
-  if (after.civic !== undefined && before.civic !== undefined && after.civic !== before.civic) c.civic = clampCivic((c.civic ?? CIVIC_START) + after.civic - before.civic);
   c.flags = [...diff(c.flags, diff(before.flags, after.flags)), ...diff(diff(after.flags, before.flags), c.flags)];
   // every card shown so far this sortie, the one just answered among them (it was counted as seen when it opened, so a
   // diff against `before` would miss it, and a reload would deal it again)

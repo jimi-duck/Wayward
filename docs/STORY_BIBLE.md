@@ -259,7 +259,9 @@ Flags `echo_trust` or `sable_trust` (never both).
 - The Score never gates the main route: every checkpoint has a forward answer
   (scan, pay, run, fight) whatever the Score.
 
-## 12. The Civic Score (live)
+## 12. The Civic Score (removed)
+
+**Removed (owner, 2026-10-20; code 2026-10-23, save v20):** the game keeps no Civic Score, shows none and gates nothing on it. The notes below are history only.
 
 **Display (2026-10-19):** the number is never shown. The player reads the registry band (COMPLIANT / UNDER REVIEW / RESTRICTED …) as "Civic Score", and a choice that moves it carries a "Civic Score ↑/↓" chip. The number still lives in `carry.civic` and drives the doors and fees below.
 

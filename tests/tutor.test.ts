@@ -45,7 +45,6 @@ describe('the first minutes', () => {
     w.field.step = () => {};
     // the shift is picked up in flight: 800 of the 1,000 are in the hold, nothing delivered
     expect(cargoOf(w)).toMatchObject({ onboard: HOLD_AT_START, delivered: 0 });
-    expect(w.civic).toBeGreaterThan(0);
     const rock = w.field.rocks.find((r) => r.id === w.tutor!.rockId)!;
     w.field.rocks = [rock];
     w.dropCrystals(w.ship.x, w.ship.z, 5, 0);

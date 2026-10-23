@@ -1,5 +1,4 @@
 import type { CardDef } from '../sim/comms';
-import { STOLEN_DROP } from '../sim/civic';
 import { RECOVERY_FLAG } from '../sim/recovery';
 
 // ── the story ─────────────────────────────────────────────────────────────
@@ -199,8 +198,6 @@ export const REGISTRY_CARD: CardDef = {
   from: 'Custody blockade · Cerro lane', title: 'Pilot under review',
   text: '“Hauler OB-7731-A, reported stolen. Lane access is suspended pending inspection. Stand by.”',
   lines: [
-    { if: { civicMin: 400 }, text: 'Your registry still vouches for you. She hesitates.' },
-    { if: { civicMax: 399 }, text: 'The ordinary doorway is shut: it needs the registry to vouch for you.' },
     { if: { flag: 'tam_codes' }, text: 'Okoro’s codes are loaded.' },
     { if: { heatMin: 0.5 }, text: 'Your ship is flagged across the system.' },
   ],
@@ -212,33 +209,33 @@ export const REGISTRY_CARD: CardDef = {
   ],
   choices: [
     {
-      id: 'show', label: 'Show your registry', tone: 'pay', hint: 'A compliant pilot is waved through unlogged. Needs the registry to vouch for you.',
-      needs: { civic: 400 },
-      win: { text: 'She waves a compliant pilot through · the lane is clear', blockade: 'pass', civic: 3, civicWhy: 'Registry presented at a checkpoint' },
+      id: 'show', label: 'Show your registry', tone: 'pay', hint: 'Waved through unlogged. Needs a registration that has already passed a scan.',
+      needs: { flag: 'codes_passed' },
+      win: { text: 'She waves you through · the lane is clear', blockade: 'pass' },
     },
     {
       id: 'scan', label: 'Submit to the scan', tone: 'pay', hint: 'Slow and safe. The scan is logged, and the Offices see where you went.',
-      win: { text: 'The scan is logged · you reach the lane', blockade: 'pass', heat: 0.12, civic: -6, civicWhy: 'Mandatory scan logged', flag: 'scanned' },
+      win: { text: 'The scan is logged · you reach the lane', blockade: 'pass', heat: 0.12, flag: 'scanned' },
     },
     {
       id: 'pay', label: 'Pay the inspection fee', tone: 'pay', hint: 'If she takes bribes you pass. If not, she takes the money and scans you anyway.',
       cost: { chits: 'fee' }, loseIf: ['by_book'],
-      win: { text: 'She takes the fee · the scan finds nothing', blockade: 'pass', civic: 5, civicWhy: 'Fee paid on time' },
+      win: { text: 'She takes the fee · the scan finds nothing', blockade: 'pass' },
       lose: { text: 'She takes the fee and orders the scan anyway', blockade: 'fight' },
     },
     {
       id: 'spoof', label: 'Send the forged codes', tone: 'bluff', hint: 'The codes from the yard. They may hold, or be flagged on the scan.',
       needs: { flag: 'codes' }, odds: { base: 0.8, heat: -0.25, flags: { codes_bad: -0.6 } },
       win: { text: 'The registration matches · she lets you through', blockade: 'pass', heat: -0.1, flag: 'codes_passed' },
-      lose: { text: 'The codes are flagged · she opens fire', blockade: 'fight', heat: 0.1, civic: -15, civicWhy: 'Forged registration detected' },
+      lose: { text: 'The codes are flagged · she opens fire', blockade: 'fight', heat: 0.1 },
     },
     {
       id: 'run', label: 'Run the blockade', tone: 'run', hint: 'Make for the lane under her guns. She chases you, and her field slows your jump.',
-      win: { text: 'You break through the blockade · the system is alerted', blockade: 'run', civic: -25, civicWhy: 'Ran a registry checkpoint' },
+      win: { text: 'You break through the blockade · the system is alerted', blockade: 'run' },
     },
     {
       id: 'fight', label: 'Fight through', tone: 'fight', hint: 'Break the blockade and salvage the wrecks. Every pilot in Cerro hears of it.',
-      win: { text: 'Weapons hot · you attack the blockade', blockade: 'fight', civic: -40, civicWhy: 'Attacked the Custody' },
+      win: { text: 'Weapons hot · you attack the blockade', blockade: 'fight' },
     },
   ],
 };
@@ -305,7 +302,7 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The audit dock · ahead',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
-        win: { text: 'Owner lock lifted · autopilot disabled', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicQuiet: true, civicWhy: 'Vessel reported stolen', radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: RENAME_BEAT, after: 2.4, quick: true } } },
+        win: { text: 'Owner lock lifted · autopilot disabled', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: RENAME_BEAT, after: 2.4, quick: true } } },
     ],
   }),
   story({
@@ -374,7 +371,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“I have read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you are going, and I will not stop you.”',
     cargo: 'The Patience · weapons cold, for now',
     choices: [
-      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told'], civic: 8, civicWhy: 'A cooperative report was logged', hunt: 1 } },
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told'], hunt: 1 } },
       { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: 'calloway_ada', hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: 'calloway_ada', heat: 0.1 } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices.', win: { text: 'The Patience turns away' } },
     ],
@@ -385,8 +382,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“They traced the ledger to me. I am in a Custody transport, ten minutes from a cell. Please. You have the only copy.”',
     cargo: 'A Custody transport · one escort',
     choices: [
-      { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', civic: -20, civicWhy: 'Interfered with a Custody transport', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
-      { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble.', odds: { base: 0.45, civic: 0.2 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free', civic: -5, civicWhy: 'A forged order was logged' }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken', civic: -12, civicWhy: 'A forged order was logged' } },
+      { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
+      { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble.', odds: { base: 0.45 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free' }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken' } },
       { id: 'leave', label: 'Leave him', tone: 'refuse', hint: 'His account is already in your file.', win: { text: 'The channel closes · he is taken', flag: 'brook_taken' } },
     ],
   }),
@@ -488,8 +485,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“One of my passengers is an Offices agent. He has watched you the whole way. I will do what you ask.”',
     cargo: 'The Quiet Ferry · forty passengers',
     choices: [
-      { id: 'expose', label: 'Expose him', tone: 'fight', hint: 'The passengers put him off. The Offices lose a day.', win: { text: 'The agent is put off · the Offices lose a day', flag: ['agent_exposed', 'clue_agent'], hunt: 1, civic: -8, civicWhy: 'Interfered with an Offices agent' } },
-      { id: 'shield', label: 'Let him be', tone: 'help', hint: 'He reports home. Raine keeps his licence.', win: { text: 'The agent stays aboard · the ferry runs on', flag: 'agent_shielded', civic: 6, civicWhy: 'A cooperative report was logged' } },
+      { id: 'expose', label: 'Expose him', tone: 'fight', hint: 'The passengers put him off. The Offices lose a day.', win: { text: 'The agent is put off · the Offices lose a day', flag: ['agent_exposed', 'clue_agent'], hunt: 1 } },
+      { id: 'shield', label: 'Let him be', tone: 'help', hint: 'He reports home. Raine keeps his licence.', win: { text: 'The agent stays aboard · the ferry runs on', flag: 'agent_shielded' } },
       { id: 'use', label: 'Feed him a story', tone: 'bluff', hint: 'A gamble. A false trail, or the Offices learn the truth.', odds: { base: 0.5 }, win: { text: 'The agent carries your false trail home', flag: ['agent_used', 'clue_agent'], hunt: 2 }, lose: { text: 'He sees through it, and marks you', flag: 'agent_exposed', heat: 0.1 } },
     ],
   }),
@@ -554,7 +551,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“My brother Eben works the Breaker Yards. Something is wrong with the hulls they bring in, scarred like claws. Take him a message?”',
     cargo: 'A yard relay · patched through three ports',
     choices: [
-      { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'clue_scarred'], civic: -6, civicWhy: 'An unlicensed crew message was logged', standing: { frontier: 1 } } },
+      { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'clue_scarred'], standing: { frontier: 1 } } },
       { id: 'look', label: 'Look at the hulls', tone: 'trade', hint: 'Two supplies for a quiet look. Nobody is told.', cost: { supplies: 2 }, win: { text: 'You see the claw marks · they go in the file', flag: 'clue_scarred' } },
       { id: 'no', label: 'Not now', tone: 'refuse', hint: 'Sam will remember.', win: { text: 'Sam closes the channel' } },
     ],
@@ -588,8 +585,8 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'Needs all three clues to the signature. Once.', needs: { flag: ['clue_sig_reach', 'clue_sig_yards', 'clue_sig_ports'] }, win: { text: 'She reads her father’s hand · the field drops', flag: ['calloway_turned', 'sig_used'], hunt: 2 } },
       { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: 'calloway_bargain', hunt: 1 } },
-      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: 'calloway_hostile', civic: -30, civicWhy: 'Fired on an Offices cutter', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12 } },
-      { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', win: { text: 'You limp out of the field', flag: 'calloway_hostile', civic: -10, civicWhy: 'Fled an Offices cutter', hunt: -1, heat: 0.1 } },
+      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: 'calloway_hostile', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12 } },
+      { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', win: { text: 'You limp out of the field', flag: 'calloway_hostile', hunt: -1, heat: 0.1 } },
     ],
   }),
   story({

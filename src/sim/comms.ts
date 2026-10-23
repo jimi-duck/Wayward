@@ -13,7 +13,6 @@ import type { Face } from './captains';
 import { ALIEN_TYPES, VARIANTS, type Faction } from './enemies';
 import { atLeast, type CaptainCall } from './notice';
 import { gains } from './gains';
-import { civicLabel, civicToll } from './civic';
 import type { Rng } from './rng';
 
 // ── the comms card ────────────────────────────────────────────────────────
@@ -90,8 +89,6 @@ export interface Ctx {
   hunch?: readonly string[];
   /** Who else is in the system (sim/scatter.ts): 'drift', 'holdfast', 'raid', 'voice', 'thren'. */
   here?: readonly string[];
-  /** The Continuance's Civic Score for the pilot (sim/civic.ts); absent in the Arcade, which has none. */
-  civic?: number;
 }
 
 /** A condition on the ship and the run. Every field given must hold. */
@@ -134,9 +131,6 @@ export interface Cond {
   hunch?: string;
   /** Someone is in the system (sim/scatter.ts presence): a Drift fleet, a Holdfast, a raid, the Voice, the Thren. */
   here?: string;
-  /** The Civic Score is at least / at most this (never holds where there is no Score, as in the Arcade). */
-  civicMin?: number;
-  civicMax?: number;
 }
 
 /** A number, or a token read off the ship: the card's fee, all of it, half of it. */
@@ -170,11 +164,6 @@ export interface Outcome {
   plates?: number;
   heat?: number;
   score?: number;
-  /** The Civic Score moves by this (sim/civic.ts), and `civicWhy` says why, in a line the player sees. */
-  civic?: number;
-  civicWhy?: string;
-  /** The Score moves without a chip or a notice (the opening shows no number, band or delta). */
-  civicQuiet?: boolean;
   flag?: string | string[];
   unflag?: string | string[];
   standing?: Partial<Record<Standing, number>>;
@@ -220,8 +209,6 @@ export interface Need {
   standing?: [Standing, number];
   cyrite?: number;
   supplies?: number;
-  /** The Civic Score at least this much. */
-  civic?: number;
 }
 
 /** What a choice takes: a number, the card's fee, all of it, or half of it. */
@@ -237,8 +224,6 @@ export interface Odds {
   flags?: Record<string, number>;
   fitted?: Record<string, number>;
   standing?: Partial<Record<Standing, number>>;
-  /** Added per 100 points of Civic Score above 350 (negative below it): the registry vouches for you, or does not. */
-  civic?: number;
   /** A trick Calloway learns (content/calloway.ts): LEARN off for every time she has seen it. */
   learn?: string;
 }
@@ -442,8 +427,6 @@ export function condOk(c: Cond | undefined, x: Ctx): boolean {
   if (c.wise && (x.wise?.[c.wise[0]] ?? 0) < c.wise[1]) return false;
   if (c.hunch !== undefined && !x.hunch?.includes(c.hunch)) return false;
   if (c.here !== undefined && !x.here?.includes(c.here)) return false;
-  if (c.civicMin !== undefined && !(x.civic !== undefined && x.civic >= c.civicMin)) return false;
-  if (c.civicMax !== undefined && !(x.civic !== undefined && x.civic <= c.civicMax)) return false;
   return true;
 }
 
@@ -457,7 +440,6 @@ export function feeFor(def: CardDef, x: Ctx): number {
   let v = f.base + (f.heat ?? 0) * x.heat;
   for (const [flag, m] of Object.entries(f.flags ?? {})) if (x.flags.has(flag)) v *= m;
   v *= x.toll?.[def.caller as Faction] ?? 1;
-  v *= civicToll(def.caller, x.civic);
   v *= 1 + FEE_REGION * (x.region ?? 0);
   // written in chits, paid in Cyrite
   return cy(Math.max(5, Math.round(v / 5) * 5));
@@ -527,7 +509,6 @@ export function oddsFor(o: Odds, x: Ctx): number {
   for (const [f, d] of Object.entries(o.flags ?? {})) if (x.flags.has(f)) p += d;
   for (const [id, d] of Object.entries(o.fitted ?? {})) if (hasFitted(x.levels, id)) p += d;
   for (const [s, d] of Object.entries(o.standing ?? {}) as Array<[Standing, number]>) p += d * (x.standing[s] ?? 0);
-  if (o.civic && x.civic !== undefined) p += o.civic * ((x.civic - 350) / 100);
   if (o.learn) p -= LEARN * (x.wise?.[o.learn] ?? 0);
   return Math.min(0.95, Math.max(0.05, p));
 }
@@ -574,7 +555,6 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
     }
     for (const f of list(n.flag)) if (!x.flags.has(f)) needs.push(t('Needs {what}', { what: t(FLAGS[f] ?? f) }));
     if (n.standing && (x.standing[n.standing[0]] ?? 0) < n.standing[1]) needs.push(t('Needs standing with {who}', { who: t(standingName(n.standing[0])) }));
-    if (n.civic !== undefined && !(x.civic !== undefined && x.civic >= n.civic)) needs.push(t('Needs the registry to vouch for you · yours reads {band}', { band: civicLabel(x.civic ?? 0) }));
     if (n.cyrite !== undefined && x.cyrite < n.cyrite) needs.push(t('Needs {n} Cyrite', { n: n.cyrite }));
     if (n.supplies !== undefined && x.supplies < n.supplies) needs.push(t('Needs {n} supplies', { n: n.supplies }));
   }

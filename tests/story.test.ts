@@ -147,7 +147,6 @@ describe('the story beats', () => {
     const after = w.result().carry;
     expect(after.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour']));
     expect(after.flags).not.toContain('tam_alone');
-    expect(after.civic!).toBeLessThan(before.civic!);
     expect(after.seen).toContain(BREACH_BEAT);
   });
 
