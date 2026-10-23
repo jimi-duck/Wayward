@@ -39,3 +39,5 @@
 /* no blur to lean on: a darker body instead */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { :root { --gl-under: rgba(6, 10, 15, .72); } }
 @media (prefers-reduced-transparency: reduce) { :root { --gl-glass: none; --gl-under: rgba(6, 10, 15, .9); } }
+
+/* Every pop-up's material, Neon Glass, is in neon.css: loaded last, so it wins over each screen's older frame. */

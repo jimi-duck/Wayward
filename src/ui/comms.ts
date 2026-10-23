@@ -1,5 +1,5 @@
 import type { Contact } from '../sim/bosses';
-import type { Caller, Open } from '../sim/comms';
+import type { Caller, GlassRole, Open } from '../sim/comms';
 import type { LedgerRow } from '../sim/contract';
 import { NEON_CSS } from './colors';
 import { artImg, artUrl } from './art';
@@ -9,7 +9,6 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
 import { num, t } from '../i18n';
 import { FACTION_NAME } from './hud';
-import { icon } from './icons';
 
 // ── the comms panel ───────────────────────────────────────────────────────
 // Grown out of the hail panel: every channel opened to the ship, drawn the
@@ -40,6 +39,8 @@ export interface CommsChoice {
   gains: string[];
   ok: boolean;
   needs: string[];
+  /** The answer's tone: a fight draws red on the opening's sheets. */
+  tone?: string;
 }
 
 export interface CommsView {
@@ -52,15 +53,11 @@ export interface CommsView {
   /** One line, for a glance: what is happening. */
   gist: string;
   /** Contract rows under the text (label, amount or word, tone), or none. */
-  ledger: Array<{ k: string; v: string; tone: string }>;
-  /** The ledger's attachment title (it starts closed), or '' when the rows just show. */
-  attach: string;
-  /** Juno's line, or ''. */
-  juno: string;
+  ledger: Row[];
   /** The registry notice's layout (its own panel), or null for an ordinary card. */
   reg: RegView | null;
-  /** A second voice on the same channel (Sam cutting in), under the ledger. */
-  reply: { from: string; text: string; portrait: string | null } | null;
+  /** The opening's Neon Glass sheet (its own panels), or null for an ordinary card. */
+  sheet: SheetView | null;
   text: string;
   /** What the ship's state adds to the call: behind the (i), not on the panel. */
   more: string;
@@ -107,34 +104,98 @@ export function gistOf(d: Pick<Open['def'], 'gist' | 'title'>, text: string): st
   return words.length > 10 ? `${words.slice(0, 10).join(' ').replace(/[,;:]$/, '')}…` : first.trim() || t(d.title);
 }
 
-/** A ledger row's figure: cargo in Cyrite, credit as credit (the two are never one number), or a word. */
-function ledgerValue(r: LedgerRow): string {
+/** A ledger row's figure: cargo in Cyrite, credit in CR (the two are never one number), or a word. */
+export function ledgerValue(r: LedgerRow): string {
   const amount = r.n ?? r.cr;
   if (amount === undefined) return t(r.v ?? '');
-  const sign = amount < 0 ? '−' : r.cr !== undefined && r.tone !== 'mine' && r.tone !== 'bad' && r.tone !== 'warn' && amount > 0 ? '+' : '';
-  return sign + t(r.n !== undefined ? '{n} Cyrite' : '{n} credit', { n: Math.abs(amount) });
+  return (amount < 0 ? '−' : '') + t(r.n !== undefined ? '{n} Cyrite' : '{n} CR', { n: Math.abs(amount) });
 }
 
-/** What the registry notice draws (a layout of its own, after the supplied mock-up). */
-export interface RegView {
-  org: string; sub: string; tag: string; label: string; from: string; to: string; body: string; hint: string;
-  rows: Array<[string, string]>; repaint: [string, string]; quick: [string, string]; button: string; foot: string;
-  before: string; after: string;
+/** A ledger row as the panel draws it. */
+export interface Row { k: string; v: string; tone: string }
+const rowsOf = (rows: LedgerRow[] | undefined): Row[] => (rows ?? []).map((r) => ({ k: t(r.k), v: ledgerValue(r), tone: r.tone ?? '' }));
+
+/** One Neon Glass panel of the opening's sheets: who, a status word, then what it says. */
+export interface SheetPanel {
+  role: GlassRole;
+  from: string;
+  status: string;
+  /** The status dot's colour: the role's, or white for an unknown caller. */
+  dot: string;
+  title: string;
+  sub: string;
+  /** A small label over quoted lines (the radio voice). */
+  label: string;
+  lines: string[];
 }
 
-function regView(d: Open['def'], o: Open): RegView {
-  const [org = '', sub = ''] = d.from.split(' · ');
-  const [from = '', to = ''] = d.title.split(' → ');
+/** The opening's sheets (docs/DESIGN-GUIDELINES.md): a main panel, maybe a second one beside it, and an optional document. */
+export interface SheetView {
+  main: SheetPanel & { hero: [string, string] | null; rows: Row[]; note: string };
+  side: SheetPanel | null;
+  /** The document behind the card: the row that opens it (after `at` rows, or as a numbered row), and what it shows. */
+  doc: { open: string; at: number; row: boolean; kick: string; title: string; sub: string; rows: Row[]; note: string } | null;
+}
+
+function sheetView(d: Open['def'], o: Open): SheetView {
+  const role = d.glass ?? 'cyan';
+  const lines = o.text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const side = d.side;
   return {
-    org: t(org), sub: t(sub), tag: t('Registry update'), label: t(d.gist ?? 'Registration updated'), from, to,
-    body: o.text, hint: t(d.choices[0]?.hint ?? ''),
-    rows: (o.ledger ?? []).map((r) => [t(r.k), ledgerValue(r)]),
-    repaint: [t(d.repaint?.[0] ?? ''), t(d.repaint?.[1] ?? '')], quick: [t(d.quick?.[0] ?? ''), t(d.quick?.[1] ?? '')],
-    button: t(d.choices[0]?.label ?? ''), foot: `${t(org)} // ${from}`, before: t('Original livery'), after: t('Current livery'),
+    main: {
+      role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role,
+      title: d.notitle || d.hero ? '' : t(d.title), sub: d.quote ? '' : lines.join(' '), label: '', lines: d.quote ? lines : [],
+      hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '',
+    },
+    side: side ? {
+      role: side.glass ?? 'cyan', from: t(side.from), status: side.status ? t(side.status) : '', dot: side.glass ?? 'cyan',
+      title: side.title ? t(side.title) : '', sub: side.sub ? t(side.sub) : '', label: side.label ? t(side.label) : '', lines: side.lines.map((l) => t(l)),
+    } : null,
+    doc: d.doc ? {
+      open: t(d.doc.open), at: d.doc.at ?? (o.ledger?.length ?? 0), row: !!d.doc.row, kick: t(d.doc.kick), title: t(d.doc.title),
+      sub: d.doc.sub ? t(d.doc.sub) : '', rows: rowsOf(o.doc), note: d.doc.note ? t(d.doc.note) : '',
+    } : null,
   };
 }
 
-const regIcon = (cls: string, id: string): HTMLElement => { const e = h('i', `rg-ico ${cls}`); e.append(icon(id)); e.setAttribute('aria-hidden', 'true'); return e; };
+/** What the registry notice draws (opening chapter sheet H, after the approved mock-up). */
+export interface RegView {
+  head: string; sub: string; tag: string;
+  /** The verified previous hull ID (struck through), or '' to leave it out; and the new name. */
+  from: string; to: string;
+  active: string;
+  rows: Array<{ k: string; v: string; to: string }>;
+  repaint: [string, string];
+  before: string; after: string; now: string;
+  button: string; foot: string;
+}
+
+function regView(d: Open['def'], o: Open): RegView {
+  const [head = '', sub = ''] = d.from.split(' · ');
+  const [from = '', to = ''] = d.title.split(' → ');
+  return {
+    head: t(head), sub: t(sub), tag: d.status ? t(d.status) : '', from, to, active: o.text,
+    // a row with an arrow in it is a change: what it was, then what it is
+    rows: (o.ledger ?? []).map((r) => { const [v = '', after = ''] = ledgerValue(r).split(' → '); return { k: t(r.k), v, to: after }; }),
+    repaint: [t(d.repaint?.[0] ?? ''), t(d.repaint?.[1] ?? '')],
+    before: t('Original livery'), after: t('Current livery'), now: t('Current livery'),
+    button: t(d.choices[0]?.label ?? ''), foot: t('Local identity updated · Registration not restored'),
+  };
+}
+
+/** The game's own mark (the title's `.st-mark`): its lower segment stands apart. */
+function mark(cls: string): SVGSVGElement {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 40 34');
+  svg.setAttribute('class', cls);
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', 'M0 0H15L20 9L25 0H40L30.88 15.5H9.12Z M10.29 17.5H29.71L20 34Z');
+  svg.append(path);
+  return svg;
+}
+const wave = () => { const i = h('i', 'tx-wave'); i.setAttribute('aria-hidden', 'true'); return i; };
 
 /** A card on the table, as the panel draws it. */
 export function cardView(o: Open): CommsView {
@@ -146,11 +207,9 @@ export function cardView(o: Open): CommsView {
     colour: CALLER_CSS[d.caller],
     alert: HOSTILE.has(d.kind) || o.slow > 0,
     gist: gistOf(d, o.text),
-    ledger: (o.ledger ?? []).map((r) => ({ k: t(r.k), v: ledgerValue(r), tone: r.tone ?? '' })),
-    attach: d.attach ? t(d.attach) : '',
-    juno: d.juno ? t(d.juno) : '',
+    ledger: rowsOf(o.ledger),
     reg: d.layout === 'registry' ? regView(d, o) : null,
-    reply: d.reply ? { from: t(d.reply.from), text: t(d.reply.text), portrait: d.reply.portrait ?? null } : null,
+    sheet: d.glass && d.layout !== 'registry' ? sheetView(d, o) : null,
     text: o.text,
     more: o.more.join(' '),
     // the read: strength as two bars, and the one line that matters (the
@@ -158,7 +217,7 @@ export function cardView(o: Open): CommsView {
     // only when there is something to read: hulls to weigh up, or a story that could be a lie
     read: d.ships?.length || d.truths?.length ? { them: r.them, you: r.you, bars: !!d.ships?.length, rows: d.truths?.length ? [[t('Intent'), t(r.intent)]] : [] } : null,
     choices: o.choices.map((c) => ({
-      label: t(c.label), hint: t(c.hint), lines: [], ok: c.ok, needs: c.needs.map((n) => t(n)), gains: c.gains,
+      label: t(c.label), hint: c.hint ? t(c.hint) : '', lines: [], ok: c.ok, needs: c.needs.map((n) => t(n)), gains: c.gains, tone: c.tone,
       tags: [...c.cost, ...(c.chance !== null ? [oddsWord(c.chance)] : [])],
     })),
     face: d.face ? faceSvg(d.face, CALLER_CSS[d.caller], d.scars ?? 0) : null,
@@ -177,10 +236,8 @@ export function hailView(c: Contact): CommsView {
     kick: t('Alarm'), title: t(c.name), sub: `${t('{f} capital ship', { f: t(FACTION_NAME[c.faction] ?? c.faction) })} · ${t('on intercept')}`, colour: NEON_CSS[c.faction], alert: true,
     gist: t('A capital ship is on intercept'),
     ledger: [],
-    attach: '',
-    juno: '',
     reg: null,
-    reply: null,
+    sheet: null,
     text: t('She fights back with her escort · the area clears for the duel.'),
     more: '',
     read: null,
@@ -215,7 +272,9 @@ export class CommsPanel {
     this.opened = performance.now();
     this.sel = Math.max(0, view.choices.findIndex((c) => c.ok));
     $('comms').classList.toggle('reg', !!view.reg);
+    $('comms').classList.toggle('ns', !!view.sheet);
     if (view.reg) this.drawReg(view.reg);
+    if (view.sheet) return this.showSheet(view, view.sheet);
     $('comms').classList.toggle('alert', view.alert);
     $('cm-k').textContent = view.kick;
     $('cm-t').textContent = view.title;
@@ -228,33 +287,7 @@ export class CommsPanel {
     $('cm-gist').style.setProperty('--cc', view.colour);
     $('cm-text').textContent = view.text;
     $('cm-ledger').replaceChildren(...view.ledger.map((r) => h('li', r.tone, '', h('span', '', r.k), h('b', '', r.v))));
-    $('cm-juno').textContent = view.juno;
-    $('cm-juno').hidden = !view.juno;
-    // an attachment starts closed: a bar with its title, and Open / Close
-    const att = $('cm-att');
-    att.hidden = !view.attach || !view.ledger.length;
-    const setAtt = (on: boolean) => {
-      $('cm-ledger').hidden = !view.ledger.length || (!!view.attach && !on);
-      att.setAttribute('aria-expanded', String(on));
-      att.replaceChildren(h('span', '', `${t('Attached')} · ${view.attach}`), h('b', '', t(on ? 'Close' : 'Open')));
-    };
-    setAtt(false);
-    att.onclick = () => setAtt(att.getAttribute('aria-expanded') !== 'true');
-    att.onpointerdown = (e) => e.stopPropagation();
-    $('cm-reply').hidden = !view.reply;
-    // on a short screen the second voice moves beside the answers (the card's left column is full): the same words
-    $('cm-reply-s').hidden = !view.reply;
-    if (view.reply) {
-      $('cm-reply-s-who').textContent = view.reply.from;
-      $('cm-reply-s-text').textContent = view.reply.text;
-      $('cm-reply-who').textContent = view.reply.from;
-      $('cm-reply-text').textContent = view.reply.text;
-      // the voice's portrait, where the build has one
-      const pic = view.reply.portrait ? artImg('contact', view.reply.portrait, 'cm-reply-pic') : null;
-      $('cm-reply').classList.toggle('pic', !!pic);
-      $('cm-reply-face').replaceChildren(...(pic ? [pic] : []));
-    }
-    $('comms').classList.toggle('replied', !!view.reply);
+    $('cm-ledger').hidden = !view.ledger.length;
     $('comms').classList.toggle('ledgered', view.ledger.length > 0);
     // what the ship's state adds sits one tap behind the (i)
     this.info(false);
@@ -296,28 +329,138 @@ export class CommsPanel {
     }, ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
   }
 
-  /** The registry notice: its own panel, drawn after the mock-up (header, identity, status rows, ship, repaint, note, button). */
+  /**
+   * The opening's sheets (opening chapter mockups v10, docs/DESIGN-GUIDELINES.md): Neon Glass panels in their role colour,
+   * numbered actions, and a document behind the card that opens on request and closes back to it. The arrows (a pad's
+   * stick) walk every action, the document's row among them; the number keys answer; Escape closes the document.
+   */
+  private showSheet(view: CommsView, sv: SheetView): void {
+    $('comms').classList.remove('alert');
+    this.docOpen = false;
+    this.drawSheet(view, sv);
+    $('comms').hidden = false;
+    this.off = keys((e) => {
+      if (this.docOpen) {
+        if (['Escape', 'Backspace', 'Enter', 'NumpadEnter', 'Space'].includes(e.code)) return this.setDoc(view, sv, false), true;
+        return e.code === 'Tab';
+      }
+      const n = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'].indexOf(e.code);
+      const np = ['Numpad1', 'Numpad2', 'Numpad3', 'Numpad4', 'Numpad5', 'Numpad6'].indexOf(e.code);
+      const k = Math.max(n, np);
+      if (k >= 0) { const item = this.items.find((x) => x.n === k + 1); if (item) item.act(); return true; }
+      if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') return this.moveItem(-1), true;
+      if (e.code === 'ArrowDown' || e.code === 'ArrowRight') return this.moveItem(1), true;
+      if (e.code === 'Enter' || e.code === 'NumpadEnter') return this.items[this.sel]?.act(), true;
+      return e.code === 'Space' || e.code === 'Tab';
+    }, ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+  }
+
+  /** Every action on the sheet, in reading order: what Enter, the arrows and the number keys reach. */
+  private items: Array<{ el: HTMLElement; act: () => void; n: number }> = [];
+  private docOpen = false;
+
+  private moveItem(d: number): void {
+    const n = this.items.length;
+    if (!n) return;
+    this.sel = (this.sel + d + n) % n;
+    this.items.forEach((x, i) => x.el.classList.toggle('sel', i === this.sel));
+  }
+
+  private setDoc(view: CommsView, sv: SheetView, on: boolean): void {
+    this.docOpen = on;
+    this.drawSheet(view, sv);
+  }
+
+  private drawSheet(view: CommsView, sv: SheetView): void {
+    this.items = [];
+    const item = (el: HTMLElement, act: () => void, n = 0) => {
+      (el as HTMLButtonElement).type = 'button';
+      el.onclick = guarded(this.opened, act);
+      el.onpointerdown = (e) => e.stopPropagation();
+      this.items.push({ el, act, n });
+      return el;
+    };
+    const head = (p: { from: string; status: string; dot: string }, box = false) => h('header', 'ns-h', '', wave(), h('span', 'ns-from', p.from),
+      p.status ? h('span', `ns-st ${box ? 'box' : p.dot}`, p.status) : null);
+    const rows = (rs: Row[]) => rs.map((r) => h('div', `ns-r ${r.tone}`, '', h('span', 'k', r.k), h('b', 'v', r.v)));
+    const quotes = (ls: string[]) => (ls.length ? h('div', 'ns-q', '', ...ls.map((l) => h('p', '', l))) : null);
+    const d = sv.doc;
+    if (this.docOpen && d) {
+      // the document, in place of the card: read only, and one way back
+      const x = item(h('button', 'ng-n ns-x sel', '', h('span', 'ns-xi', '✕'), h('span', '', t('Close'))), () => this.setDoc(view, sv, false));
+      this.sel = 0;
+      $('cm-ng').replaceChildren(h('div', 'ns-stack', '', h('section', 'ng cyan ns-p ns-doc', '',
+        head({ from: d.kick, status: t('Read only'), dot: 'cyan' }, true),
+        h('h2', 'ns-t', d.title), d.sub ? h('p', 'ns-sub', d.sub) : null,
+        h('div', 'ns-rows', '', ...rows(d.rows)),
+        d.note ? h('p', 'ns-note', d.note) : null,
+        h('div', 'ns-acts', '', x))));
+      $('cm-ng').dataset.lay = 'doc';
+      return;
+    }
+    const m = sv.main;
+    const opener = d ? item(h('button', `ng-n ${d.row ? 'ns-c' : 'ns-open'}${m.role === 'cyan' ? '' : ` ${m.role}`}`, '',
+      d.row ? h('kbd', '', String(view.choices.length + 1).padStart(2, '0')) : null, h('span', 'ns-l', d.open), d.row ? null : h('b', '', t('Open'))),
+    () => this.setDoc(view, sv, true), d.row ? view.choices.length + 1 : 0) : null;
+    const main = rows(m.rows);
+    if (opener && !d!.row) main.splice(Math.min(d!.at, main.length), 0, opener);
+    // the answers first in the reading order, the document's row after them; the first answer is where the selection starts
+    const acts = view.choices.map((c, i) => {
+      const tone = c.tone === 'fight' ? ' red' : m.role === 'cyan' ? '' : ` ${m.role}`;
+      return item(h('button', `ng-n ns-c${tone}`, '', h('kbd', '', String(i + 1).padStart(2, '0')),
+        h('span', 'ns-cb', '', h('span', 'ns-l', c.label), c.hint ? h('span', 'ns-hint', c.hint) : null)), () => this.pick(i), i + 1);
+    });
+    const panel = h('section', `ng ${m.role} ns-p ns-main`, '',
+      head(m),
+      m.hero ? h('div', 'ns-hero', '', h('b', '', m.hero[0]), h('span', '', m.hero[1])) : null,
+      m.title ? h('h2', 'ns-t', m.title) : null,
+      m.sub ? h('p', 'ns-sub', m.sub) : null,
+      quotes(m.lines),
+      main.length ? h('div', 'ns-rows', '', ...main) : null,
+      m.note ? h('p', 'ns-note', m.note) : null,
+      h('div', 'ns-acts', '', ...acts, ...(opener && d!.row ? [opener] : [])));
+    const sd = sv.side;
+    const side = sd ? h('section', `ng ${sd.role} ns-p ns-side`, '', head(sd),
+      sd.title ? h('h2', 'ns-t', sd.title) : null, sd.sub ? h('p', 'ns-sub', sd.sub) : null,
+      sd.label ? h('p', 'ns-label', sd.label) : null, quotes(sd.lines)) : null;
+    // a voice on the radio sits beside the card, to its left; a status line sits under it
+    const lay = sd ? (sd.title ? 'row' : 'col') : 'one';
+    $('cm-ng').dataset.lay = lay;
+    $('cm-ng').replaceChildren(...(lay === 'row' ? [side!, panel] : [h('div', 'ns-stack', '', panel, side)]));
+    // the arrows walk the actions in reading order; the selection starts on the first answer
+    this.items.sort((a, b) => (a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+    this.sel = Math.max(0, this.items.findIndex((x) => x.n === 1));
+    this.items.forEach((x, i) => x.el.classList.toggle('sel', i === this.sel));
+  }
+
+  /**
+   * The registry update (sheet H): owner lock lifted, the old hull ID struck through and the new name, the ship in its new
+   * paint, the repaint's before and after at one scale, the warning and one action. The reveal settles in under a second
+   * (none with reduced motion); the identity is already committed by the answer's flags, not by the animation.
+   */
   private drawReg(r: RegView): void {
     const pic = (id: string, cls: string) => artImg('fleet', id, cls);
-    const thumb = (id: string, label: string, now: boolean) => h('figure', `rg-th${now ? ' now' : ''}`, '', pic(id, 'rg-thimg'), h('figcaption', '', label));
-    const btn = h('button', 'rg-go', '', regIcon('go', 'i-reg-go'), h('span', '', r.button));
-    (btn as HTMLButtonElement).type = 'button';
-    btn.onclick = () => this.pick(0);
-    btn.onpointerdown = (e) => e.stopPropagation();
+    const thumb = (id: string, label: string, now: boolean) => h('figure', `ng-n rg-th${now ? ' ochre' : ''}`, '', pic(id, 'rg-thimg'), h('figcaption', '', label));
+    const go = h('button', 'ng-n ochre rg-go sel', '', h('kbd', '', '01'), h('span', '', r.button), h('i', 'rg-arrow', '→')) as HTMLButtonElement;
+    go.type = 'button';
+    go.onclick = guarded(this.opened, () => this.pick(0));
+    go.onpointerdown = (e) => e.stopPropagation();
+    const [w1 = '', w2 = ''] = r.repaint[1].split(/(?<=\.)\s+/);
     $('cm-reg').replaceChildren(
-      h('header', 'rg-h', '', regIcon('seal', 'i-reg-seal'), h('div', 'rg-org', '', h('b', '', r.org), h('span', '', r.sub)), h('div', 'rg-tag', '', h('span', '', r.tag), h('span', '', r.from))),
+      h('header', 'rg-h', '', h('div', 'rg-org', '', h('b', '', '', wave(), h('span', '', r.head)), h('span', '', r.sub)), h('span', 'rg-tag', r.tag)),
       h('div', 'rg-main', '',
-        h('div', 'rg-id', '', regIcon('warn', 'i-reg-warn'), h('div', '', '', h('em', '', r.label), h('h2', '', '', h('span', 'a', r.from), h('i', '', '→'), h('span', 'b', r.to)))),
-        h('p', 'rg-body', r.body),
-        h('p', 'rg-body', r.hint),
-        h('dl', 'rg-rows', '', ...r.rows.flatMap(([k, v]) => [h('dt', '', k), h('dd', '', v)])),
-        h('div', 'rg-ship', '', pic('wayward-registry', 'rg-hero')),
-      ),
-      h('div', 'rg-low', '',
-        h('section', 'rg-box rg-repaint', '', h('header', '', '', regIcon('brush', 'i-reg-brush'), h('b', '', r.repaint[0])), h('p', '', r.repaint[1]),
-          h('div', 'rg-ths', '', thumb('wayward-registry-before', r.before, false), thumb('wayward-registry-after', r.after, true))),
-        h('section', 'rg-box rg-quick', '', h('header', '', '', regIcon('info', 'i-reg-info'), h('b', '', r.quick[0])), h('p', '', r.quick[1])),
-        btn,
+        h('div', 'rg-left', '',
+          r.from ? h('p', 'rg-old', '', h('s', '', r.from), h('i', '', '→')) : null,
+          h('h2', 'rg-name', '', mark('rg-mark'), h('span', '', r.to)),
+          h('p', 'rg-active', r.active),
+          h('dl', 'rg-rows', '', ...r.rows.flatMap((x) => [h('dt', '', x.k), h('dd', x.to ? 'chg' : '', '', h('span', 'a', x.v), ...(x.to ? [h('i', '', '→'), h('span', 'b', x.to)] : []))])),
+          h('h3', 'rg-rp', r.repaint[0]),
+          h('div', 'rg-ths', '', thumb('wayward-registry-before', r.before, false), h('i', 'rg-tharrow', '→'), thumb('wayward-registry-after', r.after, true)),
+        ),
+        h('div', 'rg-right', '',
+          h('figure', 'rg-ship', '', pic('wayward-registry', 'rg-hero'), h('figcaption', '', r.now)),
+          h('div', 'rg-act', '', h('p', 'rg-warn', '', h('span', '', w1), h('span', '', w2)), go),
+        ),
       ),
       h('footer', 'rg-foot', r.foot),
     );
@@ -339,6 +482,8 @@ export class CommsPanel {
   }
 
   close(): void {
+    this.docOpen = false;
+    this.items = [];
     this.off?.();
     this.off = null;
     this.view = null;
@@ -348,6 +493,13 @@ export class CommsPanel {
 
   padInput(p: PadEdges): void {
     if (!this.view || performance.now() - this.opened < GUARD) return;
+    if (this.view.sheet) {
+      if (this.docOpen) { if (p.a || p.b) this.setDoc(this.view, this.view.sheet, false); return; }
+      if (p.up || p.left) this.moveItem(-1);
+      else if (p.down || p.right) this.moveItem(1);
+      else if (p.a) this.items[this.sel]?.act();
+      return;
+    }
     if (p.up || p.left) this.move(-1);
     else if (p.down || p.right) this.move(1);
     else if (p.a) this.pick(this.sel);

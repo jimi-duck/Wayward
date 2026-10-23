@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="./src/styles/title.css">
   <link rel="stylesheet" href="./src/styles/dock.css">
   <link rel="stylesheet" href="./src/styles/chart.css">
+  <link rel="stylesheet" href="./src/styles/neon.css">
 </head>
 <body>
   <div id="app">
@@ -353,18 +354,19 @@
               <span class="tx-stamp" id="cm-k">Incoming</span>
             </div>
             <div id="cm-body" class="cm-body">
-              <div class="tx-msg"><h2 id="cm-t">Channel open</h2><p id="cm-gist" class="cm-gist"></p><p id="cm-text" class="cm-text"></p><p id="cm-juno" class="cm-juno" hidden></p><button id="cm-att" class="cm-att" type="button" aria-expanded="false" hidden></button><ul id="cm-ledger" class="cm-ledger" hidden></ul><div id="cm-reply" class="cm-reply" hidden><div id="cm-reply-face" class="cm-reply-face"></div><div class="cm-reply-body"><b id="cm-reply-who"></b><p id="cm-reply-text"></p></div></div><button id="cm-i" class="cm-i" type="button" aria-expanded="false" aria-label="More" title="More" hidden>i</button><p id="cm-more" class="cm-text cm-more" hidden></p></div>
+              <div class="tx-msg"><h2 id="cm-t">Channel open</h2><p id="cm-gist" class="cm-gist"></p><p id="cm-text" class="cm-text"></p><ul id="cm-ledger" class="cm-ledger" hidden></ul><button id="cm-i" class="cm-i" type="button" aria-expanded="false" aria-label="More" title="More" hidden>i</button><p id="cm-more" class="cm-text cm-more" hidden></p></div>
               <div id="cm-read" class="cm-read"></div>
             </div>
           </div>
         </div>
         <div id="cm-timer" class="cm-timer" hidden><i></i></div>
-        <div id="cm-reply-s" class="cm-reply-s" hidden><b id="cm-reply-s-who"></b><p id="cm-reply-s-text"></p></div>
         <div id="cm-list" class="cm-list"></div>
         <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>6</kbd> to answer · <kbd>↑</kbd>/<kbd>↓</kbd> then <kbd>Enter</kbd> · controller: <kbd>A</kbd></span></footer>
       </div>
-      <!-- the registry notice, after the supplied mock-up: filled by ui/comms.ts -->
+      <!-- the registry update (opening chapter sheet H): filled by ui/comms.ts -->
       <div id="cm-reg" class="panel registry" role="document"></div>
+      <!-- the opening's Neon Glass sheets (Work Bay, raiders, breach, Sam, archive): filled by ui/comms.ts -->
+      <div id="cm-ng" class="ns-wrap" role="document"></div>
     </div>
 
     <!-- The port: the refit bay, the stores, a sensible stop and cast off. -->
@@ -415,15 +417,6 @@
         <ul id="en-l" class="unlocks ends"></ul>
         <div id="en-epi" class="en-epi"></div>
         <footer class="pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>6</kbd> to choose · arrows then <kbd>Enter</kbd> · controller: <kbd>A</kbd></span></footer>
-      </div>
-    </div>
-
-    <!-- The opening: what the game is, at the start of every new Story journey. -->
-    <div id="opening" class="sheet" role="dialog" aria-labelledby="op-t" hidden>
-      <div class="panel narrow opening">
-        <header class="ph"><span class="kick" id="op-k">Story 01</span><h2 id="op-t">Breakout</h2></header>
-        <div id="op-l" class="op-l"></div>
-        <footer class="pf"><button type="button" id="op-go">Continue</button></footer>
       </div>
     </div>
 

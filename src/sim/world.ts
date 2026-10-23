@@ -1498,6 +1498,7 @@ export class World implements EncounterHost {
     this.cardsSeen.add(def.id);
     this.desk.closed(this.runTime);
     if (def.ledger) o.ledger = ledgerFor(def.ledger);
+    if (def.doc) o.doc = ledgerFor(def.doc.kind);
     this.comms = o;
     this.phase = 'comms';
     if (def.arrive) o.brought.push(...this.applyOutcome(def.arrive, o.fee, []));

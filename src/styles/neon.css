@@ -1,0 +1,253 @@
+/* ── Neon Glass: every pop-up's material (docs/DESIGN-GUIDELINES.md, from guidelines v6 §5a) ──────────
+   Built once here; screens pick a role, never restyle it. Back to front: the blurred world, a dark teal
+   fill with faint static scanlines and one top-left sheen, an inner edge light and a top highlight, a crisp
+   2px rim in the role colour with a tight glow (no wide bloom), a 1px hairline 6px inside the rim, and
+   code-style corner brackets 7px outside each corner. The rim is a spread shadow, the hairline an inset
+   outline and the brackets a border image, so none of them is cut off by a panel that scrolls.
+   Roles: cyan (default) systems, radio, documents; ochre WAYWARD, Sam's private channel, the helm;
+   red breach, threat, refusal, debt. Text on glass is never dimmer than --ink-2 (#A9A89C). */
+:root {
+  --ng-fill: linear-gradient(180deg, rgba(12, 28, 38, .80), rgba(8, 20, 28, .76));
+  --ng-fill-n: linear-gradient(180deg, rgba(18, 40, 52, .62), rgba(12, 30, 40, .58));
+  --ng-scan: repeating-linear-gradient(0deg, rgba(0, 0, 0, .02) 0 1px, transparent 1px 4px);
+  --ng-sheen: linear-gradient(135deg, rgba(255, 255, 255, .03), transparent 45%);
+  --ng-blur: blur(18px) saturate(160%);
+  --ng-bk-cyan: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><path d='M1 29V1H29M61 1H89V29M1 61V89H29M61 89H89V61' fill='none' stroke='%23B4E4EE' stroke-width='2'/></svg>");
+  --ng-bks-cyan: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='54' height='54' viewBox='0 0 54 54'><path d='M1 17V1H17M37 1H53V17M1 37V53H17M37 53H53V37' fill='none' stroke='%23B4E4EE' stroke-width='2'/></svg>");
+  --ng-bk-ochre: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><path d='M1 29V1H29M61 1H89V29M1 61V89H29M61 89H89V61' fill='none' stroke='%23FFDEA0' stroke-width='2'/></svg>");
+  --ng-bks-ochre: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='54' height='54' viewBox='0 0 54 54'><path d='M1 17V1H17M37 1H53V17M1 37V53H17M37 53H53V37' fill='none' stroke='%23FFDEA0' stroke-width='2'/></svg>");
+  --ng-bk-red: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'><path d='M1 29V1H29M61 1H89V29M1 61V89H29M61 89H89V61' fill='none' stroke='%23FFBEB9' stroke-width='2'/></svg>");
+  --ng-bks-red: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='54' height='54' viewBox='0 0 54 54'><path d='M1 17V1H17M37 1H53V17M1 37V53H17M37 53H53V37' fill='none' stroke='%23FFBEB9' stroke-width='2'/></svg>");
+}
+.ng, .sheet > .panel, #pause .pause-card, #rd-call {
+  --rim: #b4e4ee; --halo: 40, 150, 190; --ng-r: 34px; --ng-w: 2px; --ng-bk: var(--ng-bk-cyan); --ng-bw: 30px;
+  position: relative; isolation: isolate; border: 0 solid transparent; border-radius: var(--ng-r); clip-path: none; filter: none;
+  background: var(--ng-scan), var(--ng-sheen), var(--ng-fill);
+  backdrop-filter: var(--ng-blur);
+  box-shadow: 0 0 0 var(--ng-w) var(--rim), 0 0 2px var(--ng-w) rgba(var(--halo), .8), 0 0 6px var(--ng-w) rgba(var(--halo), .35),
+    0 18px 50px rgba(0, 0, 0, .4), inset 0 0 26px rgba(var(--halo), .18), inset 0 1px 0 rgba(255, 255, 255, .3);
+  outline: 1px solid rgba(var(--halo), .35); outline-offset: -6px;
+  border-image: var(--ng-bk) 30 / var(--ng-bw) / 9px stretch;
+}
+/* the old cut frame's edge and glass are drawn by the material now */
+:is(.sheet > .panel, #pause .pause-card, #rd-call)::before, :is(.sheet > .panel, #pause .pause-card)::after { content: none; }
+.ng.card { --ng-r: 20px; --ng-bk: var(--ng-bks-cyan); --ng-bw: 18px; border-image-slice: 18; }
+.ng.ochre { --rim: #ffdea0; --halo: 210, 140, 40; --ng-bk: var(--ng-bk-ochre); }
+.ng.red, .sheet.alert > .panel { --rim: #ffbeb9; --halo: 210, 60, 60; --ng-bk: var(--ng-bk-red); }
+.ng.card.ochre { --ng-bk: var(--ng-bks-ochre); }
+.ng.card.red { --ng-bk: var(--ng-bks-red); }
+/* nested glass: buttons, choice rows, thumbnails. The same rim, thinner, a smaller glow, a lighter fill, no blur of its own */
+.ng-n {
+  --rim: #b4e4ee; --halo: 40, 150, 190; --ng-w: 1.5px; --ng-a: .8; --ng-b: .35;
+  position: relative; border: 0; border-radius: 14px; clip-path: none; background: var(--ng-fill-n); color: var(--ink);
+  box-shadow: 0 0 0 var(--ng-w) var(--rim), 0 0 1.5px var(--ng-w) rgba(var(--halo), var(--ng-a)), 0 0 4px var(--ng-w) rgba(var(--halo), var(--ng-b)),
+    inset 0 0 14px rgba(var(--halo), .16), inset 0 1px 0 rgba(255, 255, 255, .22);
+  transition: box-shadow var(--dk-ez, .16s), background var(--dk-ez, .16s);
+}
+.ng-n.ochre { --rim: #ffdea0; --halo: 210, 140, 40; }
+.ng-n.red { --rim: #ffbeb9; --halo: 210, 60, 60; }
+.ng-n.dim { --rim: rgba(180, 228, 238, .55); --ng-a: .4; --ng-b: .15; }
+button.ng-n { cursor: pointer; font: inherit; }
+button.ng-n:hover, button.ng-n:focus-visible, .ng-n.sel { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg, rgba(var(--halo), .2), rgba(var(--halo), .1)); }
+button.ng-n:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+button.ng-n:active { --ng-a: .5; --ng-b: .2; }
+/* a phone: less blur to pay for */
+@media (max-height: 620px), (pointer: coarse) { :root { --ng-blur: blur(10px) saturate(150%); } }
+/* no blur, or the player asked for less transparency: the same rim on an opaque body */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ng, .sheet > .panel, #pause .pause-card, #rd-call { background: var(--ng-scan), linear-gradient(rgba(8, 13, 14, .92), rgba(8, 13, 14, .92)); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .ng, .sheet > .panel, #pause .pause-card, #rd-call { backdrop-filter: none; background: var(--ng-scan), linear-gradient(rgba(8, 13, 14, .92), rgba(8, 13, 14, .92)); }
+}
+@media (prefers-reduced-motion: reduce) { .ng-n { transition: none; } }
+
+/* ── the opening's sheets (#comms.ns): Work Bay, raiders, breach, Sam's channel, the archive (mockups v10, B–I) ── */
+#comms.ns .panel.comms, #comms.ns .panel.registry, #comms:not(.ns) .ns-wrap { display: none; }
+#comms.ns, #comms.reg { background: radial-gradient(ellipse at center, rgba(4, 10, 14, .35), rgba(4, 8, 12, .72)); }
+.ns-wrap { display: flex; align-items: flex-start; justify-content: center; gap: clamp(20px, 4vw, 64px); width: min(1240px, 100%); max-height: 100%; min-height: 0; }
+.ns-wrap[data-lay="row"] { align-items: flex-start; }
+.ns-wrap[data-lay="row"] > .ns-side { flex: 0 1 520px; }
+.ns-wrap[data-lay="row"] > .ns-main { flex: 0 1 600px; }
+.ns-stack { display: grid; gap: clamp(24px, 6vh, 90px); width: min(680px, 100%); max-height: 100%; min-height: 0; }
+.ns-wrap[data-lay="col"] .ns-stack { width: min(560px, 100%); }
+.ns-wrap[data-lay="doc"] .ns-stack { width: min(600px, 100%); }
+.ns-p { display: grid; gap: 14px; align-content: start; min-width: 0; max-height: calc(100dvh - 40px); overflow-y: auto; padding: 22px 30px 26px; color: var(--ink); scrollbar-width: thin; }
+.ns-h { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(var(--halo), .4); }
+#comms .ns-h .tx-wave { width: 22px; height: 10px; background: var(--rim); opacity: .85; }
+.ns-from { flex: 1; min-width: 0; font: 600 13px/1.2 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
+.ns-st { display: inline-flex; align-items: center; gap: 7px; font: 600 12px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--rim); }
+.ns-st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 4px currentColor; }
+.ns-st.cyan { color: #7fdce6; }
+.ns-st.ochre { color: #f2c063; }
+.ns-st.red { color: #ff8f86; }
+.ns-st.white { color: #f2f1ea; }
+.ns-st.box { padding: 5px 9px; border: 1px solid rgba(228, 225, 211, .55); color: var(--ink); }
+.ns-st.box::before { content: none; }
+.ns-t { margin: 4px 0 0; font: 700 clamp(24px, 2.3vw, 32px)/1.05 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: #f2f1ea; }
+.ns-sub { margin: -4px 0 0; font: 400 16px/1.45 var(--font-display); color: #cfd2c8; }
+.ns-hero { display: grid; gap: 6px; }
+.ns-hero b { font: 600 clamp(64px, 7vw, 92px)/.9 var(--font-head); letter-spacing: .02em; color: #6fe0ea; text-shadow: 0 0 2px rgba(76, 194, 203, .6); }
+.ns-hero span { font: 700 22px/1.1 var(--font-head); letter-spacing: .12em; text-transform: uppercase; color: #f2f1ea; }
+.ns-label { margin: 6px 0 -4px; font: 600 12px/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: #7fdce6; }
+.ns-q { display: grid; gap: 10px; }
+.ns-q p { margin: 0; padding: 1px 0 1px 14px; border-left: 2px solid rgba(var(--halo), .9); font: 400 17px/1.45 var(--font-display); color: #eceae0; }
+.ns-rows { display: grid; padding-top: 8px; border-top: 1px solid rgba(var(--halo), .3); }
+.ns-r { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 7px 0; }
+.ns-r .k { font: 600 13px/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.ns-r .v { font: 400 18px/1.2 var(--font-mono); letter-spacing: .06em; color: #f2f1ea; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ns-r.mine .k, .ns-r.bad .k { color: #f2f1ea; }
+.ns-r.mine .v { color: #6fe0ea; }
+.ns-r.warn .v { color: #f2c063; }
+.ns-r.bad .v { color: #ff8f86; }
+.ns-open { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0; min-height: 40px; padding: 8px 16px; text-align: left; }
+.ns-open .ns-l { font: 600 13px/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); }
+.ns-open b { font: 600 12px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--rim); }
+.ns-open + .ns-r { margin-top: 8px; padding-top: 14px; border-top: 1px solid rgba(var(--halo), .3); }
+.ns-note { margin: 0; font: 400 15px/1.4 var(--font-display); color: var(--ink-2); }
+.ns-note::before { content: "› "; }
+.ns-acts { display: grid; gap: 14px; margin-top: 4px; }
+.ns-c { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 10px; min-height: 52px; padding: 10px 18px; text-align: left; }
+.ns-c kbd, .registry .rg-go kbd { min-width: 0; border: 0; padding: 0; background: none; box-shadow: none; }
+.ns-c kbd { font: 400 15px/1 var(--font-mono); color: var(--rim); }
+.ns-q + .ns-note { padding-top: 12px; border-top: 1px solid rgba(var(--halo), .3); }
+.ns-sub + .ns-acts, .ns-q + .ns-acts { padding-top: 16px; border-top: 1px solid rgba(var(--halo), .3); }
+.ns-c.red kbd { color: #ff8f86; }
+.ns-c.ochre kbd { color: #f2c063; }
+.ns-cb { display: grid; gap: 3px; }
+.ns-c .ns-l { font: 700 16px/1.15 var(--font-head); letter-spacing: .18em; text-transform: uppercase; color: #f2f1ea; }
+.ns-hint { font: 400 14.5px/1.3 var(--font-display); color: #d9d7cc; }
+.ns-c.red { background: linear-gradient(180deg, rgba(60, 16, 18, .62), rgba(40, 10, 12, .58)); }
+.ns-c.ochre { background: linear-gradient(180deg, rgba(60, 42, 12, .55), rgba(40, 28, 8, .52)); }
+.ns-x { justify-self: start; display: inline-flex; align-items: center; gap: 12px; min-height: 40px; padding: 8px 18px; font: 700 13px/1 var(--font-head); letter-spacing: .22em; text-transform: uppercase; }
+.ns-xi { font-size: 13px; color: var(--ink-2); }
+.ns-side .ns-q p { font-size: 17px; }
+/* a phone on its side (568×320 and up): one column per panel, everything on one screen or one short scroll, the answers reachable */
+@media (max-height: 520px) {
+  .ns-wrap { gap: 18px; }
+  .ns-stack { gap: 16px; }
+  .ns-p { gap: 7px; max-height: calc(100dvh - 26px); padding: 10px 16px 12px; }
+  .ns-h { padding-bottom: 6px; gap: 8px; }
+  .ns-from { font-size: 10.5px; letter-spacing: .16em; }
+  .ns-st { font-size: 10px; letter-spacing: .14em; }
+  .ns-st.box { padding: 3px 6px; }
+  .ns-t { margin: 0; font-size: 19px; }
+  .ns-sub { margin: 0; font-size: 13px; line-height: 1.3; }
+  .ns-hero b { font-size: 46px; }
+  .ns-hero span { font-size: 16px; }
+  .ns-label { margin: 0; font-size: 10px; }
+  .ns-q { gap: 5px; }
+  .ns-q p, .ns-side .ns-q p { padding-left: 9px; font-size: 13.5px; line-height: 1.3; }
+  .ns-rows { padding-top: 3px; }
+  .ns-r { padding: 3px 0; }
+  .ns-r .k { font-size: 10.5px; letter-spacing: .14em; }
+  .ns-r .v { font-size: 14px; }
+  .ns-open { margin: 3px 0; min-height: 40px; padding: 4px 12px; }
+  .ns-open .ns-l { font-size: 11px; letter-spacing: .14em; }
+  .ns-open + .ns-r { margin-top: 3px; padding-top: 6px; }
+  .ns-note { font-size: 12.5px; }
+  .ns-acts { gap: 8px; margin-top: 2px; }
+  .ns-c { grid-template-columns: 26px minmax(0, 1fr); min-height: 42px; padding: 5px 12px; gap: 6px; }
+  .ns-c kbd { font-size: 12px; }
+  .ns-c .ns-l { font-size: 13.5px; letter-spacing: .12em; }
+  .ns-hint { font-size: 12px; }
+  .ns-x { min-height: 40px; }
+  .ns-wrap[data-lay="row"] > .ns-side .ns-t, .ns-wrap[data-lay="row"] > .ns-side .ns-sub { display: none; }
+  .ns-wrap[data-lay="row"] { align-items: stretch; height: 100%; }
+  .ns-wrap[data-lay="row"] > .ns-side { flex-basis: 220px; }
+  .ns-from { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* a stack (the breach and its status line) scrolls as one, with room for the brackets */
+  .ns-stack { max-height: 100%; overflow-y: auto; padding: 10px; margin: -10px; scrollbar-width: none; }
+  .ns-stack > .ns-p { max-height: none; overflow: visible; }
+}
+
+/* ── the registry update (#comms.reg, sheet H): the master reference. The new identity and the ship dominate ── */
+#comms.reg .panel.comms, #comms:not(.reg) .panel.registry { display: none; }
+#comms .panel.registry {
+  font-size: clamp(12px, 1.02vw, 18px); width: min(1440px, 94vw); max-height: calc(100dvh - 30px); overflow-y: auto; display: grid; gap: 1.1em;
+  padding: 1.5em 2.2em 1em; color: var(--ink);
+  background: var(--ng-scan), var(--ng-sheen), radial-gradient(70% 90% at 72% 42%, rgba(12, 30, 46, .1), transparent 70%), var(--ng-fill);
+}
+.registry .rg-h { display: flex; align-items: flex-start; gap: 1em; padding-bottom: .9em; border-bottom: 1px solid rgba(var(--halo), .35); }
+.registry .rg-org { display: grid; gap: .3em; }
+.registry .rg-org b { display: flex; align-items: center; gap: .7em; font: 600 1.5em/1.1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: #8fe2ec; }
+.registry .rg-org b .tx-wave { width: 1.5em; height: .7em; background: #8fe2ec; }
+.registry .rg-org > span { padding-left: 2.2em; font: 600 .85em/1.2 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
+.registry .rg-tag { margin-left: auto; padding-top: .3em; font: 600 .9em/1 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
+.registry .rg-main { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); column-gap: 2.2em; align-items: stretch; min-height: 0; }
+.registry .rg-left { display: grid; align-content: start; gap: .6em; min-width: 0; }
+.registry .rg-old { margin: 0; display: flex; align-items: center; gap: .8em; font: 400 1.05em/1 var(--font-mono); letter-spacing: .14em; color: #f2c063; }
+.registry .rg-old s { color: var(--ink-2); text-decoration-color: #f2c063; text-decoration-thickness: 2px; }
+.registry .rg-old i { font-style: normal; color: #f2c063; }
+.registry .rg-name { margin: 0; display: flex; align-items: center; gap: .35em; font: 600 clamp(40px, 5.6vw, 96px)/1 var(--font-head); letter-spacing: .06em; text-transform: uppercase; color: var(--logo, #d99a27); }
+.registry .rg-mark { flex: none; width: .62em; height: auto; fill: var(--logo, #d99a27); }
+.registry .rg-active { margin: 0 0 .5em; font: 600 .95em/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: #8fe2ec; }
+.registry .rg-rows { margin: 0; display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr); max-width: 32em; }
+.registry .rg-rows dt, .registry .rg-rows dd { margin: 0; padding: .65em 0; border-bottom: 1px solid rgba(var(--halo), .28); font: 600 1em/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; }
+.registry .rg-rows dt { color: var(--ink-2); }
+.registry .rg-rows dd { display: flex; align-items: center; gap: .8em; color: #f2c063; }
+.registry .rg-rows dd.chg .a { color: var(--ink); }
+.registry .rg-rows dd i { font-style: normal; color: #8fe2ec; }
+.registry .rg-rp { margin: .9em 0 .1em; padding-bottom: .5em; border-bottom: 1px solid rgba(var(--halo), .28); font: 600 1em/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: #8fe2ec; }
+.registry .rg-ths { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: .7em; max-width: 30em; }
+.registry .rg-th { margin: 0; padding: .45em; display: grid; gap: .35em; }
+.registry .rg-thimg { width: 100%; aspect-ratio: 2.1; object-fit: contain; border-radius: 9px; background: #02060b url("../assets/registry-nebula.webp") center / cover; }
+.registry .rg-th figcaption { font: 600 .74em/1 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: #8fe2ec; }
+.registry .rg-th.ochre figcaption { color: #f2c063; }
+.registry .rg-tharrow { font-style: normal; color: #8fe2ec; }
+.registry .rg-right { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 1em; min-width: 0; }
+.registry .rg-ship { position: relative; margin: 0; display: grid; place-items: center; align-content: center; gap: .3em; min-height: 14em; }
+/* the starfield, softly blended behind the ship: never a hard-edged picture */
+.registry .rg-ship::before { content: ""; position: absolute; inset: -1em -1.4em -.5em -1em; background: url("../assets/registry-nebula.webp") center / cover; opacity: .8; filter: brightness(.7);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 48%, #000 35%, transparent 75%); mask-image: radial-gradient(ellipse at 50% 48%, #000 35%, transparent 75%); }
+.registry .rg-hero { position: relative; width: 100%; max-height: 24em; height: auto; object-fit: contain; filter: drop-shadow(0 .6em 1.4em rgba(0, 0, 0, .55)); }
+.registry .rg-ship figcaption { position: relative; font: 600 .78em/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: #f2c063; }
+.registry .rg-act { display: flex; align-items: center; justify-content: flex-end; gap: 2em; }
+.registry .rg-warn { margin: 0; display: grid; gap: .2em; padding: .2em 0 .2em 1em; border-left: 2px solid #f2c063; font: 400 1.15em/1.35 var(--font-display); color: #eceae0; }
+.registry .rg-go { flex: none; display: flex; align-items: center; gap: 1em; min-height: 3.4em; padding: 0 1.3em; font: 600 1.15em/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: #fff5e0; }
+.registry .rg-go kbd { padding-right: 1em; border-right: 1px solid rgba(255, 222, 160, .5); font: 400 .9em/1 var(--font-mono); color: #f2c063; }
+.registry .rg-go .rg-arrow { font-style: normal; color: #f2c063; }
+.registry .rg-foot { padding-top: .6em; border-top: 1px solid rgba(var(--halo), .25); font: 600 .74em/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+/* the reveal: the old ID is struck, the name and the ship settle in, inside a second; none with reduced motion */
+#comms.reg:not([hidden]) .rg-old s { animation: rg-strike .5s .15s both ease-out; }
+#comms.reg:not([hidden]) .rg-name, #comms.reg:not([hidden]) .rg-active { animation: rg-in .6s .25s both cubic-bezier(.2, .7, .2, 1); }
+#comms.reg:not([hidden]) .rg-hero { animation: rg-ship .8s .1s both cubic-bezier(.2, .7, .2, 1); }
+@keyframes rg-strike { from { text-decoration-color: transparent; } }
+@keyframes rg-in { from { opacity: 0; translate: -.4em 0; } }
+@keyframes rg-ship { from { opacity: 0; translate: 1.2em 0; } }
+@media (prefers-reduced-motion: reduce) { #comms.reg .rg-old s, #comms.reg .rg-name, #comms.reg .rg-active, #comms.reg .rg-hero { animation: none; } }
+@media (max-width: 860px) and (min-height: 521px) {
+  .registry .rg-main { grid-template-columns: 1fr; }
+  .registry .rg-right { order: -1; }
+  .registry .rg-hero { max-height: 13em; }
+}
+/* a phone on its side: the name, the rows, the ship, the warning and the action stay; the repaint comparison takes a second look (scroll) */
+@media (max-height: 520px) {
+  #comms .panel.registry { font-size: 10.5px; gap: .5em; padding: .8em 1.3em .7em; max-height: calc(100dvh - 24px); }
+  .registry .rg-h { padding-bottom: .4em; }
+  .registry .rg-org b { font-size: 1.35em; }
+  .registry .rg-main { column-gap: 1.2em; }
+  .registry .rg-name { font-size: 32px; }
+  .registry .rg-old { font-size: .95em; }
+  .registry .rg-thimg { aspect-ratio: 2.6; }
+  .registry .rg-th { padding: .3em; }
+  .registry .rg-ship figcaption { display: none; }
+  .registry .rg-active { margin-bottom: .2em; }
+  .registry .rg-rows dt, .registry .rg-rows dd { padding: .35em 0; font-size: 1.05em; }
+  .registry .rg-rp { margin-top: .4em; }
+  .registry .rg-ship { min-height: 0; }
+  .registry .rg-hero { max-height: 9em; }
+  .registry .rg-act { flex-direction: column; align-items: stretch; gap: .5em; }
+  .registry .rg-warn { font-size: 1.25em; }
+  .registry .rg-go { justify-content: space-between; min-height: 40px; font-size: 1.3em; }
+  .registry .rg-foot { display: none; }
+}
+
+/* ── every other transmission: the same nested glass on its answers, and nothing dimmer than --ink-2 on the glass ── */
+#comms .panel.comms .cm-c { --rim: rgba(180, 228, 238, .55); --halo: 40, 150, 190; border: 0; border-radius: 14px; clip-path: none; background: var(--ng-fill-n);
+  box-shadow: 0 0 0 1.5px var(--rim), 0 0 1.5px 1.5px rgba(var(--halo), .4), 0 0 4px 1.5px rgba(var(--halo), .15), inset 0 0 14px rgba(var(--halo), .12), inset 0 1px 0 rgba(255, 255, 255, .18); }
+#comms .panel.comms .cm-c::before, #comms .panel.comms .cm-c::after { content: none; }
+#comms .panel.comms .cm-c.sel, #comms .panel.comms .cm-c:hover:not([aria-disabled="true"]) { --rim: #b4e4ee; background: linear-gradient(180deg, rgba(40, 150, 190, .2), rgba(40, 150, 190, .1));
+  box-shadow: 0 0 0 1.5px var(--rim), 0 0 1.5px 1.5px rgba(var(--halo), 1), 0 0 4px 1.5px rgba(var(--halo), .55), inset 0 0 14px rgba(var(--halo), .16), inset 0 1px 0 rgba(255, 255, 255, .22); }
+#comms .panel.comms .cm-list { gap: 10px; }
+#comms .panel.comms .cm-c kbd, #comms .panel.comms .cm-side .need, #comms .panel.comms .pf .keys, #pause .pause-card .th { color: var(--ink-2); }

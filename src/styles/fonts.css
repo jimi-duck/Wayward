@@ -8,6 +8,3 @@
 @font-face { font-family: 'Barlow Semi Condensed'; font-style: normal; font-weight: 500; font-display: swap; src: url('../assets/fonts/barlow-semi-condensed-500.woff2') format('woff2'); }
 @font-face { font-family: 'Barlow Semi Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url('../assets/fonts/barlow-semi-condensed-600.woff2') format('woff2'); }
 @font-face { font-family: 'Share Tech Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('../assets/fonts/share-tech-mono-400.woff2') format('woff2'); }
-/* the registry notice's lighter, wider face (after the supplied mock-up) */
-@font-face { font-family: 'Rajdhani'; font-style: normal; font-weight: 400; font-display: swap; src: url('../assets/fonts/rajdhani-400.woff2') format('woff2'); }
-@font-face { font-family: 'Rajdhani'; font-style: normal; font-weight: 500; font-display: swap; src: url('../assets/fonts/rajdhani-500.woff2') format('woff2'); }

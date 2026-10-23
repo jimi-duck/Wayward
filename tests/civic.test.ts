@@ -6,7 +6,7 @@ import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
 import { VERSION, newJourney, sortieDef } from '../src/sim/journey';
 import { migrate } from '../src/meta/save';
 import { wallView } from '../src/sim/wall';
-import { COLLECTION, CREDIT_START, CUTS, FINAL_LOAD, FIRST_LOAD, GROSS, LEASE_DUE, NET, PENALTY, QUOTA, REPLACEMENT, ledgerFor, owed, projectedAfterLauncher, upgradePrice } from '../src/sim/contract';
+import { CREDIT_START, CUTS, FINAL_LOAD, FIRST_LOAD, GROSS, LEASE_DUE, NET, PENALTY, QUOTA, ledgerFor, owed, projectedAfterLauncher, upgradePrice, type LedgerRow } from '../src/sim/contract';
 import { dueBeat } from '../src/sim/story';
 import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
@@ -91,42 +91,39 @@ describe('the opening chain beyond the gate', () => {
     expect(c.civic).toBe(CIVIC_START - STOLEN_DROP);
     expect(civicBand(c.civic!)).toBe('restricted');
   });
-  it('adds up: the work bay takes no cargo, the launcher is financed, and the debt is kept apart from the credit', () => {
+  it('adds up (opening sheets B and F): a projection, not a balance, and a breach bill of 47 CR kept apart from it', () => {
     const bay = ledgerFor('bay');
-    const credit = (k: string) => bay.find((r) => r.k === k)?.cr;
-    expect(credit('Gross contract credit')).toBe(GROSS);
-    expect(credit('Available credit')).toBe(CREDIT_START);
-    expect(NET).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow);
-    // the cargo stays in the hold: 800 of 1,000 held, nothing delivered
-    expect(bay.find((r) => r.k === 'Cargo held')?.v).toBe('800 / 1,000');
-    expect(bay.some((r) => r.k === 'Delivered')).toBe(false);
-    expect(FINAL_LOAD).toBe(QUOTA - FIRST_LOAD);
-    // the projection: the payout, the company's charges and the launcher, and what is left
-    expect(credit('Torpedo launcher · financed')).toBe(-upgradePrice());
-    expect(credit('Left after charges')).toBe(projectedAfterLauncher());
+    const credit = (rows: LedgerRow[], k: string) => rows.find((r) => r.k === k)?.cr;
+    // B: 100 CR gross − 98 CR charges = 2 CR, on delivery; the launcher's 20 CR is among the charges
+    expect(upgradePrice()).toBe(20);
+    expect(credit(bay, 'Gross')).toBe(GROSS);
+    expect(credit(bay, 'Projected charges')).toBe(-98);
+    expect(credit(bay, 'Projected settlement')).toBe(2);
     expect(projectedAfterLauncher()).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow - upgradePrice());
+    expect(NET).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow);
+    expect(credit(ledgerFor('launcher'), 'Torpedo launcher')).toBe(upgradePrice());
+    // the card's action names the bay's own price
+    expect(CARD_BY_ID.story_bay!.choices[0]!.label).toContain(`${upgradePrice()} CR`);
+    // nothing earned, nothing delivered: the cargo stays in the hold
+    expect(bay.some((r) => /balance|available|delivered/i.test(r.k))).toBe(false);
+    expect(FINAL_LOAD).toBe(QUOTA - FIRST_LOAD);
+    expect(CREDIT_START).toBeLessThan(GROSS);
     // financed, not bought: no cost at the bay
     expect(CARD_BY_ID.story_bay!.choices[0]!.cost).toBeUndefined();
-    const breach = ledgerFor('breach');
-    expect(breach.find((r) => r.k === 'Contract delivery')?.v).toBe('0 / 1,000');
-    expect(breach.find((r) => r.k === 'Payout')?.v).toBe('Withheld');
-    expect(breach.find((r) => r.k === 'Vessel asset recovery')?.v).toBe('Authorised');
-    expect(breach.find((r) => r.k === 'Short-delivery penalty')?.cr).toBe(-PENALTY);
-    expect(breach.find((r) => r.k === 'Vessel lease due')?.cr).toBe(-LEASE_DUE);
-    // the financed launcher stays on her account with the penalty and the lease
-    expect(breach.find((r) => r.k === 'Torpedo launcher · financed')?.cr).toBe(-upgradePrice());
-    // the extreme bill: the whole 1,000 at the replacement rate, then every fee, the launcher kept
-    expect(breach.find((r) => r.k === 'Undelivered cargo · replacement rate')?.cr).toBe(-REPLACEMENT);
-    expect(breach.find((r) => r.k === 'Collection fees')?.cr).toBe(-COLLECTION);
-    expect(breach.find((r) => r.k === 'Balance owed')?.cr).toBe(owed());
-    expect(REPLACEMENT).toBe(QUOTA);
-    expect(owed()).toBe(REPLACEMENT + PENALTY + LEASE_DUE + COLLECTION + upgradePrice());
-    expect(owed()).toBeGreaterThan(GROSS * 10);
+    // F: 15 CR penalty + 12 CR lease + 20 CR financed launcher = 47 CR, never netted against the projection
+    const invoice = ledgerFor('invoice');
+    expect(credit(invoice, 'Penalty')).toBe(PENALTY);
+    expect(credit(invoice, 'Lease')).toBe(LEASE_DUE);
+    expect(credit(invoice, 'Financed launcher')).toBe(upgradePrice());
+    expect(credit(invoice, 'Outstanding')).toBe(owed());
+    expect(credit(ledgerFor('breach'), 'Outstanding')).toBe(owed());
+    expect(owed()).toBe(47);
   });
-  it('shows the archive’s one record: 94% on the day of the order', () => {
-    const rows = ledgerFor('archive');
-    expect(rows.find((r) => r.k === 'Reserves')?.v).toBe('94% nominal');
-    expect(rows.find((r) => r.k === 'Authorisation')?.v).toBe('Redacted');
+  it('shows the archive’s one record: 94% on the day of the order, Halden’s Reach next', () => {
+    expect(ledgerFor('evidence').find((r) => r.k === 'Reserve level')?.v).toBe('94%');
+    expect(ledgerFor('evidence').find((r) => r.k === 'Record and order')?.v).toBe('same day');
+    expect(ledgerFor('archive').find((r) => r.k === 'Next lead')?.v).toBe('Halden’s Reach');
+    expect(CARD_BY_ID.story_wake!.hero).toEqual(['94%', 'Krail reserves']);
   });
 });
 

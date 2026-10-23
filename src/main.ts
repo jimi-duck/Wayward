@@ -19,7 +19,6 @@ import { autoCourse, bankAnswer, checkpoint, debrief, endSortie, hearNews, here,
 import { regionsOf, routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
-import { OpeningPanel } from './ui/opening';
 import { HeatNote } from './ui/heatnote';
 import { Cutscene } from './ui/adrift';
 import { ChartPanel, regionName } from './ui/chart';
@@ -139,13 +138,12 @@ function boot(review: typeof import('./review') | null): void {
   const port = new PortPanel();
   const chart = new ChartPanel();
   const ending = new EndingPanel();
-  const opening = new OpeningPanel();
   const heatNote = new HeatNote();
   const cut = new Cutscene();
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || opening.open || heatNote.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || heatNote.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   /** A call that asks for an answer holds the world still, like every other pop-up; it lets go when it is answered or lapses. */
   let callHold = false;
@@ -335,9 +333,10 @@ function boot(review: typeof import('./review') | null): void {
         journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
         saveJourney(journey);
         startSortie();
-        loop.paused = true;
+        // a new journey starts in flight: the HUD and the lessons carry it, no card first
+        loop.paused = false;
         input.reset();
-        return opening.show(() => { loop.paused = false; input.reset(); });
+        return;
       }
       startSortie();
     });
@@ -462,7 +461,6 @@ function boot(review: typeof import('./review') | null): void {
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p);
-      else if (opening.open) opening.padInput(p);
       else if (heatNote.open) heatNote.padInput(p);
       else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
@@ -579,12 +577,8 @@ function boot(review: typeof import('./review') | null): void {
     } else if (pending(journey)) return threshold(journey, [t('Journey resumed · you have passed the Threshold')]);
     else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cooled; plot your next jump')]);
     startSortie();
-    if (fresh) {
-      // a new journey opens on the story, read before the first lesson
-      loop.paused = true;
-      input.reset();
-      return opening.show(() => setPaused(true));
-    }
+    // a new journey starts in flight at Cerro (opening chapter, sheet A): the HUD and the lessons carry it, no card first
+    if (fresh) return setPaused(false);
     setPaused(true);
   };
 

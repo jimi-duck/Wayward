@@ -124,9 +124,9 @@ describe('the story beats', () => {
     expect(w.phase).toBe('play');
     run(2);
     expect(w.comms?.def.id).toBe(BREACH_BEAT);
-    // Lane Control's notice offers no way out: one action, on towards the audit lane
+    // Lane Control's notice offers no way out: one action, on towards the audit dock
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['proceed']);
-    expect(w.comms?.ledger?.find((r) => r.k === 'Contract delivery')?.v).toBe('0 / 1,000');
+    expect(w.comms?.ledger?.find((r) => r.k === 'Outstanding')?.cr).toBe(47);
     const before = w.result().carry;
     w.answer('proceed');
     run(10);
@@ -137,7 +137,7 @@ describe('the story beats', () => {
     run(4);
     // the registry reports the result (state already committed), with no score or portrait, then the archive wakes
     expect(w.comms?.def.id).toBe(RENAME_BEAT);
-    expect(w.comms?.ledger?.map((r) => [r.k, r.v])).toEqual([['Registry status', 'Unregistered'], ['Owner lock', 'Overridden'], ['Core ports', 'Closed']]);
+    expect(w.comms?.ledger?.map((r) => [r.k, r.v])).toEqual([['Registry status', 'Unregistered'], ['Owner lock', 'Lifted'], ['Hull finish', 'Grey → Yellow / Ochre']]);
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['helm']);
     expect(w.result().carry.flags).toContain('ship_stolen');
     w.answer('helm');

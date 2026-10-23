@@ -269,23 +269,41 @@ export interface Truth {
   boost?: { if: Cond; mult: number };
 }
 
+/** A Neon Glass panel's role colour (docs/DESIGN-GUIDELINES.md). */
+export type GlassRole = 'cyan' | 'ochre' | 'red';
+
 export interface CardDef {
   id: string;
   /** One line, ten words at most: what is happening, for a glance. The panel derives one from the text when a card has none. */
   gist?: string;
   /** A ledger under the text: the opening's contract in numbers (sim/contract.ts). */
   ledger?: LedgerKind;
-  /** The ledger is an optional attachment, closed until opened: its title. */
-  attach?: string;
-  /** Juno's own line under the call (hidden on short screens). */
-  juno?: string;
-  /** The registry notice draws as its own panel (ui/comms.ts regView), with this quick note beside the repaint. */
+  /**
+   * The opening's cards draw as Neon Glass sheets (docs/DESIGN-GUIDELINES.md, ui/comms.ts sheetView): the main panel's role
+   * colour. Cyan is systems, radio and documents; ochre is WAYWARD and Sam's private channel; red is breach and threat.
+   */
+  glass?: GlassRole;
+  /** The status word top right, beside a dot (Service, Unknown, Breach, Private, Recovered). */
+  status?: string;
+  /** No title on the sheet: a private voice speaks in quoted lines (Sam's channel). The title stays for the log. */
+  notitle?: boolean;
+  /** The text is drawn as quoted lines, one per paragraph (split on a line break). */
+  quote?: boolean;
+  /** A large figure and its label in place of the title (the archive's 94%). */
+  hero?: [string, string];
+  /** One quiet line above the actions, after a "›". */
+  note?: string;
+  /**
+   * An optional document behind the card: opened on request, closed back to the card, never shown beside it. `open` is the
+   * row that opens it (`at`: after that many ledger rows; `row`: a numbered row after the choices instead).
+   */
+  doc?: { kind: LedgerKind; open: string; kick: string; title: string; sub?: string; note?: string; at?: number; row?: boolean };
+  /** A second, smaller panel beside the card: a voice on the radio, or a status line. */
+  side?: { from: string; status?: string; glass?: GlassRole; title?: string; sub?: string; label?: string; lines: string[] };
+  /** The registry notice draws as its own panel (ui/comms.ts regView). */
   layout?: 'registry';
-  quick?: [string, string];
   /** The repaint box: a title and a line, with the livery pictures. */
   repaint?: [string, string];
-  /** A second voice on the same channel, under the ledger (Sam cutting in on the registry's notice). */
-  reply?: { from: string; text: string; /** A contact portrait (content/art.ts) for the voice. */ portrait?: string };
   kind: CardKind;
   caller: Caller;
   /** Who is speaking, and the card's title. */
@@ -375,6 +393,8 @@ export interface Open {
   slow: number;
   /** The contract ledger this card shows (sim/contract.ts), read off the live carry as it opens. */
   ledger?: LedgerRow[];
+  /** The optional document's rows, read off the same carry. */
+  doc?: LedgerRow[];
 }
 
 /** Seconds into a Breakout before the first card, and the gap between chance cards. */
