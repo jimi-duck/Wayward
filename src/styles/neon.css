@@ -49,6 +49,10 @@
 .ng.card.ochre { --ng-frame: var(--ngf-card-ochre); --ng-hair: var(--ngh-card-ochre); }
 .ng.card.red { --ng-frame: var(--ngf-card-red); --ng-hair: var(--ngh-card-red); }
 /* a call that rides along while flying: no blur (a live blur over the moving scene hitched on phones), a denser fill */
+/* the content sits on its own layer above the glass: Safari draws a blurred backdrop over anything that is not positioned,
+   so without this the text came out blurred under the glass (owner's iPad, 23 October 2026). Zero specificity, so a child
+   that is placed absolutely (the settings button) keeps its own position */
+:where(.ng, .sheet > .panel, #pause .pause-card, #rd-call) > * { position: relative; z-index: 0; }
 #rd-call::before { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--ng-scan), var(--ng-sheen), linear-gradient(180deg, rgba(10, 24, 32, .9), rgba(8, 18, 24, .88)); }
 /* a panel never scrolls itself: its sheet does, and a panel taller than the screen starts at the top */
 .sheet > .panel, #pause .pause-card { overflow: visible; max-height: none; }
