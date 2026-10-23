@@ -177,7 +177,7 @@ export const BASE: Readonly<Stats> = Object.freeze({
   torpTurn: TORP_TURN, torpSeek: TORP_SEEK, torpCone: TORP_CONE, torpMax: TORP_MAX, torpAccel: TORP_ACCEL,
   torpSalvo: 1, torpCluster: 0, torpVsShips: 1, markBonus: 1, torpPlasma: false, torpArc: 0,
 
-  mines: false, mineInterval: 2.2, mineMax: 5, mineLife: 16, mineDamage: 7, mineBlast: 6.5, mineTrigger: 4.2,
+  mines: false, mineInterval: 5, mineMax: 4, mineLife: 16, mineDamage: 7, mineBlast: 6.5, mineTrigger: 4.2,
   mineSeek: 0, mineChain: false, mineGravity: false, mineDetonate: false,
 
   plasma: false, plasmaDps: 10, plasmaLife: 1.5, plasmaRadius: 1.9, plasmaBurn: 0, rollBurst: false,

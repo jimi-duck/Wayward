@@ -51,11 +51,12 @@ export const GRAVITY_FUSE = 0.7;
 export const GRAVITY_PULL = 20;
 export const CHAIN_CLOUD = 2.5;
 
-/** Lay mines and plasma behind the ship as the build allows. Returns a mine laid this step, if any. */
-export function laySystems(sys: Systems, ship: ShipState, s: Stats, dt: number, rapid: boolean): Mine | null {
+/** Lay mines (when `underFire`) and plasma behind the ship as the build allows. Returns a mine laid this step, if any. */
+export function laySystems(sys: Systems, ship: ShipState, s: Stats, dt: number, rapid: boolean, underFire = true): Mine | null {
   const hx = Math.cos(ship.heading), hz = -Math.sin(ship.heading);
   let laid: Mine | null = null;
-  if (s.mines) {
+  // mines go down only under attack (red alert); the timer holds while it is quiet
+  if (s.mines && underFire) {
     sys.mineT -= dt * (rapid ? 2.5 : 1);
     if (sys.mineT <= 0) {
       if (sys.mines.length < s.mineMax) {

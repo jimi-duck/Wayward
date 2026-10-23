@@ -656,7 +656,7 @@ export class World implements EncounterHost {
       fireWeapons(this.arms, s, cold ? { ...c, fire: false, torpedo: false } : c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
       // each press that launched under high-yield warheads uses one up
       if (this.powers.yield > 0) for (let i = seen; i < this.events.length; i++) if (this.events[i]!.type === 'torpedo') this.powers.yield = Math.max(0, this.powers.yield - 1);
-      const laid = cold ? null : laySystems(this.sys, s, st, dt, fm.rapid);
+      const laid = cold ? null : laySystems(this.sys, s, st, dt, fm.rapid, this.alert() === 'red');
       if (laid) this.events.push({ type: 'mineLaid', x: laid.x, z: laid.z });
     }
 
