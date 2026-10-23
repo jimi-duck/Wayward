@@ -431,18 +431,18 @@
     <div id="chart" class="sheet" role="dialog" aria-labelledby="ch-t" hidden>
       <div class="panel wide chartp">
         <header class="ch-head">
-          <div class="ph"><span class="kick" id="ch-k">The chart</span><h2 id="ch-t">Plot the next jump</h2><span class="sub" id="ch-s"></span></div>
-          <div id="ch-gate" class="ch-gate" hidden></div>
+          <span class="kick" id="ch-k">The chart</span>
           <div id="ch-res" class="ch-res" aria-label="The ship’s stores"></div>
+          <div class="ch-l2"><h2 id="ch-t">Plot the next jump</h2><span class="sub" id="ch-s"></span><div id="ch-gate" class="ch-gate" hidden></div></div>
           <button type="button" id="ch-go" hidden>Fly on</button>
         </header>
-        <ul id="ch-alerts" class="ch-alerts"></ul>
         <div class="ch-body">
           <div class="ch-mapw">
             <svg id="ch-map" class="ch-map" viewBox="0 0 640 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The chart shows systems, jump lanes, the Net and Calloway’s last known position."></svg>
           </div>
           <div class="ch-side"><h3 id="ch-lh" class="ch-lh">Choose your next jump</h3><div id="ch-list" class="ch-list" role="radiogroup" aria-labelledby="ch-lh"></div></div>
         </div>
+        <div class="ch-aux">
         <details id="ch-intel" class="ch-intel"><summary><span id="ch-intel-s">Intel</span></summary>
           <div id="ch-chips" class="ch-chips" aria-label="What the last system changed"></div>
           <ul id="ch-news" class="ch-news"></ul>
@@ -453,11 +453,12 @@
           <p id="ch-wall-lead" class="ch-goal"></p>
           <ul id="ch-wall-l" class="ch-wall-l"></ul>
         </details>
+        </div>
         <footer id="ch-foot" class="ch-foot">
           <div id="ch-sum" class="ch-sum"></div>
+          <div class="ch-warn"><ul id="ch-alerts" class="ch-alerts"></ul><p id="ch-why" class="ch-why" hidden></p></div>
           <div class="ch-acts"><button type="button" id="ch-jump">Jump</button></div>
-          <p id="ch-why" class="ch-why" hidden></p>
-          <p class="ch-hint pf"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>3</kbd> to select · arrows · <kbd>Enter</kbd> to jump · <kbd>W</kbd> the Wall · controller: <kbd>A</kbd></span></p>
+          <p class="ch-hint"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>3</kbd> · <kbd>Enter</kbd> · <kbd>W</kbd> Wall</span></p>
         </footer>
       </div>
     </div>

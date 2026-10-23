@@ -7,8 +7,9 @@ own to the rules.
 
 ## What it answers
 
-1. Where am I? The header: `ARRIVED · system`, the region and the day.
-2. How far is the way out? The header: the gate's name, the jumps remaining
+1. Where am I? The header: the region and the day, then the system's name (a
+   small Quiet tag when it is).
+2. How far is the way out? The header, same row as the name: the gate's name, the jumps remaining
    (counted on the graph by `jumps()`, never from the screen) and a bar from the
    region's way in.
 3. Which lanes can I take? The next-jump list: at most three of `options(j)`
@@ -18,8 +19,8 @@ own to the rules.
    nearest in the next column, no sideways lanes) and `options` never goes back
    along the chart, so each jump is a real fork, not a list. New charts only:
    a saved journey keeps the lanes it was laid out with.
-4. What does each cost? How hard its far end is on you (danger: quiet, watched
-   or hostile, from `stance`, three pips), how the Custody's heat goes there, shown only where it differs between the
+4. What does each cost? How hard its far end is on you (a chip: Quiet, Watched
+   or Hostile, from `stance`), how the Custody's Wanted level goes there, shown only where it climbs and differs between the
    lanes shown (`heatAt`: it cools in a breather, is low, climbs, or climbs fast; from the
    kind's start and rate, the region's, a Net blockade and watched space),
    whether it goes straight to the gate
@@ -28,16 +29,17 @@ own to the rules.
    burns). Supplies show only when the stores do not cover the crossing.
 5. What does each offer and ask? One upside and one trade-off, only from what
    the chart knows (below).
-6. Which one am I taking? The strip at the foot: the selected lane's four
-   numbers and the one button, `Jump to …`.
+6. Which one am I taking? The selected card (amber edge) and the strip at the
+   foot: the warning, the one button, `Jump to …`, and its keys. On a phone the
+   strip also names the lane, because the cards may be off screen.
 
 ## Rules of the screen
 
 - A tap, a click, the arrows, `1`–`6` or the pad's d-pad only **select**. Enter,
   Space, the pad's A or the button jump. Hovering changes nothing.
-- A shortage of jump fluid is said once at the top (`trouble`: the exact amount
-  the cheapest lane is short by), and the button reads `Plot course · n more
-  jump fluid` in caution gold instead of `Jump to …`. It is not disabled: the
+- A shortage of jump fluid is said once: the stores cell turns caution gold (red
+  when the tank is empty) and the strip says `Needs n more fluid`; the button
+  reads `Plot course to …` instead of `Jump to …`. It is not disabled: the
   drive's jump happens at the Jump Gate of the next system once the tank
   holds the lane's cost (`world.ts`), and the fluid is mined and refined on
   the way there, so blocking the plot would leave a ship with an empty tank
@@ -48,9 +50,11 @@ own to the rules.
   questions, the file, Calloway's trail, the Net's size, each faction's notice,
   ship trouble (weight, hot guns) and the factions on the move. Nothing was
   removed from the game; it moved here.
-- Alerts show only what is true now: out of or low on supplies, no lane the tank
-  can pay for, the Net holding this system, Calloway in this system or one jump
-  behind.
+- Each fact is said once. Supplies, fluid and hull show in the stores strip
+  (gold low, red critical); the alerts beside the button are only threats, at
+  most two, in a few words: the Net holding this system, Calloway here or one
+  jump behind. The goal is in the header only, and the story line under it shows
+  on the first chart of a region only.
 
 ## The map
 
@@ -92,10 +96,14 @@ something a player can weigh.
 
 ## Map look
 
-The map sits on a dark backdrop with a fine grid, faint dust and a compass. Lanes bend (each one the same way every draw, from a hash of its ends). Lanes out of here are dashed and coloured by danger; the selected one is solid with a soft underlay and a pill with its jump fluid (gold when short). The rest of the net is small, dashed and unnamed. Systems share one outline weight: the kind is the shape (port square, mining hexagon, transit ring, anomaly diamond in violet, gate double diamond in gold, here double ring), danger is the colour, and a hostile system also carries a red triangle. The same shapes are the icons on the cards, and the resource icons (fluid, Cyrite, supplies, hull) share one size and weight. Heat pips are amber, threat pips teal, amber or red.
+The map sits on a dark backdrop with a fine grid, faint dust and the region's name as a watermark (12% opacity). Lanes bend (each one the same way every draw, from a hash of its ends). Lanes out of here are solid, 1.5px, coloured by danger; the selected one is amber, 2px, with a soft underlay and a pill with its jump fluid (gold when short); no other lane has a pill. The rest of the net is small (radius about 3), at 25% opacity, with lanes at 15%, and unnamed. Systems share one outline weight: the kind is the shape (port square, mining hexagon, transit ring, anomaly diamond in violet, gate double diamond in teal, here double ring), danger is the colour, and a hostile system also carries a red triangle. The same shapes are the icons on the cards, and the resource icons (fluid, Cyrite, supplies, hull) share one size and weight. The 1, 2, 3 badge sits at each node's top right and matches the card and the key.
+
+Names are placed after the map is drawn and measured: on the side of the node that is free, inside the box with a 12px margin, clear of every node and every other name (`place()`). The days show under the selected lane's name only. The heights the simulation gives are stretched so the drawn network fills the box top to bottom.
 
 ## Layout
 
-On a wide window the header, alerts, body and strip share one two-column grid: the title and goal over the map, the four stores over the cards. The type steps down in four sizes: the system name, the section heading and the lane names, the sentence, the small labels. The strip at the bottom is only the selected lane's name and the one action; what the lane takes is on its card.
+At 901px wide and wider the panel is one grid, header, body, the Intel and Wall row, strip, no taller than the screen (`100dvh - 32px`): the whole chart, with up to three lanes and the button, fits 1280×720 with no scroll. Only the card list may scroll, and only with four or more lanes; an open Intel lets the sheet scroll. Under 800px tall the story line, the keys line and the sentence on cards not selected are hidden. The header is two lines: region and day with the stores on the right, then the system name with the goal (name, a 160px bar, jumps left) beside it. A card is the key, the shape, the name (never cut: it wraps), a danger chip; one stats line (days · fluid · jumps to goal · Wanted); one sentence.
 
-The goal block ends with one line of quest, per region (`WHYS` in `content/situations.ts`, in the order of the region questions): why the player is going on. Hidden on a phone on its side.
+Colour: amber (`--pick`) is the player's pick and the action, the selected card, the selected lane and the button; teal is information (the goal bar, here, Quiet); dull gold is caution (low stores, a short tank, a Watched chip); red is a threat only. Upright and narrow (900px or less) the map sits over the list; on a phone on its side the map is left, the list right, and the sentences and the goal bar go.
+
+The goal block ends with one line of quest, per region (`WHYS` in `content/situations.ts`, in the order of the region questions): why the player is going on. First chart of a region only.
