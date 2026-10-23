@@ -1,6 +1,6 @@
 import {
-  AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, CircleGeometry, Color, DoubleSide, Group, LatheGeometry, Mesh,
-  MeshBasicMaterial, MeshStandardMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, TorusGeometry, Vector2, Vector3,
+  AdditiveBlending, BufferAttribute, BufferGeometry, CircleGeometry, Color, DoubleSide, Group, LatheGeometry, Mesh,
+  MeshBasicMaterial, MeshStandardMaterial, PointLight, ShaderMaterial, SphereGeometry, Sprite, SpriteMaterial, Vector2, Vector3,
   type Object3D, type Texture,
 } from 'three';
 import { clamp, lerp } from '../core/math';
@@ -17,37 +17,51 @@ import { buildWayward, MODEL_SCALE, type BuiltHull, type Nozzle } from './waywar
 /** Engines: white-hot at the core, ion blue in the bell. */
 const CORE = new Color(1.9, 3.0, 4.4);
 const BELL = new Color(0.16, 0.85, 3.3);
-const HALO = new Color(0.1, 0.5, 2.1);
+const HALO = new Color(0.07, 0.33, 1.4);
 
-/** The drive's throat, looking in: a white-hot centre, glow falling off through stator rings. White, tinted by the engine colour. */
-let vanes: Texture | null = null;
-function vaneTexture(): Texture {
-  if (vanes) return vanes;
-  const S = 256, c = document.createElement('canvas');
-  c.width = c.height = S;
-  const g = c.getContext('2d')!;
-  g.fillStyle = '#000'; g.fillRect(0, 0, S, S);
-  g.translate(S / 2, S / 2);
-  const glow = g.createRadialGradient(0, 0, 0, 0, 0, 124);
-  glow.addColorStop(0, 'rgba(255,255,255,1)');
-  glow.addColorStop(0.22, 'rgba(255,255,255,.9)');
-  glow.addColorStop(0.55, 'rgba(255,255,255,.42)');
-  glow.addColorStop(1, 'rgba(255,255,255,.12)');
-  g.fillStyle = glow;
-  g.beginPath(); g.arc(0, 0, 124, 0, Math.PI * 2); g.fill();
-  // stator rings and a few struts, dark against the light
-  g.strokeStyle = 'rgba(0,0,0,.55)';
-  for (const [r, wd] of [[58, 5], [84, 4], [108, 6]] as const) { g.lineWidth = wd; g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.stroke(); }
-  g.lineWidth = 5;
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2 + 0.3;
-    g.beginPath(); g.moveTo(Math.cos(a) * 60, Math.sin(a) * 60); g.lineTo(Math.cos(a) * 122, Math.sin(a) * 122); g.stroke();
-  }
-  g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 5;
-  g.beginPath(); g.arc(0, 0, 123, 0, Math.PI * 2); g.stroke();
-  vanes = new CanvasTexture(c);
-  vanes.colorSpace = SRGBColorSpace;
-  return vanes;
+/**
+ * The drive's face, looking in: a dark recessed throat, a ring of twelve segments that chase round on the throttle, slow stator vanes
+ * turning in front of a deep blue core, and a small hot centre that only whitens at full burn. Colours come from the engine's
+ * (stock or cosmetic) core and bell, and stay under the bloom ceiling so the metal round it keeps its shape.
+ */
+function driveMaterial(): ShaderMaterial {
+  return new ShaderMaterial({
+    side: DoubleSide, toneMapped: false,
+    uniforms: { uHeat: { value: 0 }, uTime: { value: 0 }, uPhase: { value: 0 }, uKick: { value: 0 }, uCore: { value: CORE.clone() }, uBell: { value: BELL.clone() }, uScale: { value: 1 } },
+    vertexShader: /* glsl */ `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: /* glsl */ `
+      uniform float uHeat; uniform float uTime; uniform float uPhase; uniform float uKick; uniform vec3 uCore; uniform vec3 uBell; uniform float uScale;
+      varying vec2 vUv;
+      const float TAU = 6.2831853;
+      void main() {
+        vec2 p = (vUv - 0.5) * 2.0;
+        float r = length(p), a = atan(p.y, p.x);
+        float h = uHeat, live = 0.3 + 0.7 * h;
+        // the throat falls away: dark at the lip, light only deep inside
+        float depth = pow(1.0 - smoothstep(0.0, 1.0, r), 1.6);
+        vec3 col = uBell * (0.035 + 0.2 * depth * live);
+        // the segmented ring: twelve cells with gaps between, a bright pulse chasing round
+        float cells = 12.0, f = fract(a / TAU * cells + 0.5);
+        float cell = smoothstep(0.0, 0.1, f) * (1.0 - smoothstep(0.84, 0.94, f));
+        float band = smoothstep(0.64, 0.68, r) * (1.0 - smoothstep(0.8, 0.84, r));
+        float chase = 0.5 + 0.5 * cos(a * 2.0 - uTime * (1.2 + 3.2 * h) + uPhase);
+        float cellLife = 0.55 + 0.45 * pow(chase, 2.0);
+        col += uBell * band * cell * cellLife * (0.3 + 0.38 * live + uKick * 0.3);
+        // a thin bright lip inside the ring, unbroken
+        col += uBell * smoothstep(0.855, 0.87, r) * (1.0 - smoothstep(0.87, 0.89, r)) * 0.22 * live;
+        // stator vanes, slowly turning: dark blades across the lit core
+        float turn = uTime * (0.35 + 1.5 * h);
+        float vane = smoothstep(0.34, 0.5, abs(sin((a + turn) * 3.0)));
+        float core = (1.0 - smoothstep(0.0, 0.62, r));
+        col += mix(uBell, uCore, smoothstep(0.35, 0.0, r)) * core * core * mix(0.35, 1.0, vane) * (0.14 + 0.28 * live + uKick * 0.25);
+        // the white-hot centre only on the throttle
+        col += uCore * pow(1.0 - smoothstep(0.0, 0.22, r), 2.0) * (0.06 + 0.3 * h + uKick * 0.3);
+        col *= 1.0 - smoothstep(0.93, 1.0, r) * 0.85;
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+  });
 }
 
 // ── engine plumes ─────────────────────────────────────────────────────────
@@ -61,21 +75,23 @@ function plumeMaterial(inner: boolean): ShaderMaterial {
     transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
     uniforms: { uHeat: { value: 0 }, uTime: { value: 0 }, uCore: { value: CORE }, uBell: { value: BELL }, uInner: { value: inner ? 1 : 0 } },
     vertexShader: /* glsl */ `
-      varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying float vAxial;
       void main() {
         vUv = uv;
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
         vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
+        // how far down the barrel the eye looks: the plume is thin there, so it must not paint over the drive face
+        vAxial = abs(dot(normalize(normalMatrix * vec3(-1.0, 0.0, 0.0)), vV));
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */ `
       uniform float uHeat; uniform float uTime; uniform vec3 uCore; uniform vec3 uBell; uniform float uInner;
-      varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying float vAxial;
       void main() {
         float along = vUv.y; // 0 at the nozzle, 1 at the tip
         float face = clamp(abs(dot(vN, vV)), 0.0, 1.0);
         float flick = 0.88 + 0.12 * sin(uTime * 63.0 + along * 20.0) * sin(uTime * 41.0);
-        float heat = 0.35 + 0.65 * uHeat;
+        float heat = (0.35 + 0.65 * uHeat) * (1.0 - 0.85 * pow(vAxial, 1.3));
         if (uInner > 0.5) {
           // the hot core: shock diamonds standing in the first third, fading out fast
           float diamonds = 0.72 + 0.28 * cos(along * 30.0 - uTime * 2.0 + sin(uTime * 9.0));
@@ -181,7 +197,9 @@ function shieldMaterial(): ShaderMaterial {
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       void main() {
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position;
+        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
+        // how far down the barrel the eye looks: the plume is thin there, so it must not paint over the drive face
+        vAxial = abs(dot(normalize(normalMatrix * vec3(-1.0, 0.0, 0.0)), vV)); vP = position;
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */ `
@@ -238,7 +256,7 @@ const BRIEF_ZONES: Record<string, number> = { weapons: 0.5, ordnance: 0.4, engin
 const MARK = new Color(3.2, 1.8, 0.35);
 
 // ── the view ──────────────────────────────────────────────────────────────
-interface Engine { nozzle: Nozzle; disc: Mesh; core: Mesh; rim: Mesh; plume: Mesh; hot: Mesh; phase: number; halo: Sprite; trail: Trail; }
+interface Engine { nozzle: Nozzle; disc: Mesh; plume: Mesh; hot: Mesh; phase: number; halo: Sprite; trail: Trail; mat: ShaderMaterial; side: number; }
 
 export class ShipView {
   readonly root = new Group();
@@ -253,8 +271,6 @@ export class ShipView {
   private readonly plumeMat = plumeMaterial(false);
   private readonly hotMat = plumeMaterial(true);
   private readonly plumeMats = [this.plumeMat, this.hotMat];
-  private readonly discMat = new MeshBasicMaterial({ color: BELL.clone(), map: vaneTexture(), side: DoubleSide, toneMapped: false });
-  private readonly coreMat = new MeshBasicMaterial({ color: CORE.clone(), side: DoubleSide, toneMapped: false });
   /** The engines light the ship's own stern and whatever is behind it. */
   private readonly glowLight = new PointLight(0xbfeaff, 0, 7, 2);
   /**
@@ -263,7 +279,6 @@ export class ShipView {
    * whichever way the sector's sun falls.
    */
   private readonly workLight = new PointLight(0xffd98a, 4, 6, 1.6);
-  private readonly rimMat = new MeshBasicMaterial({ color: BELL.clone(), toneMapped: false });
   /** The engines' colours: stock red, or a cosmetic. */
   private readonly core = CORE.clone();
   private readonly bell = BELL.clone();
@@ -280,6 +295,8 @@ export class ShipView {
   private hit = 0;
   private trailClock = 0;
   private time = 0;
+  private surge = 0;
+  private steer = 0;
 
   constructor(glow: Texture = glowTexture()) {
     this.model = buildWayward();
@@ -287,15 +304,16 @@ export class ShipView {
     this.rollG.add(this.model.root);
     this.model.root.traverse((o) => { if ((o as Mesh).isMesh && (o as Mesh).material instanceof MeshStandardMaterial) o.castShadow = o.receiveShadow = true; });
     const disc = new CircleGeometry(1, 24).rotateY(-Math.PI / 2);
-    const rimGeo = new TorusGeometry(1, 0.09, 6, 32).rotateY(Math.PI / 2);
     const plumeGeo = plumeGeometry();
     let engineNo = 0;
     for (const n of this.model.nozzles) {
+      const mat = driveMaterial();
+      mat.uniforms.uPhase!.value = engineNo * 1.9;
       const e: Engine = {
         nozzle: { p: [n.p[0] * MODEL_SCALE, n.p[1] * MODEL_SCALE, n.p[2] * MODEL_SCALE], r: n.r * MODEL_SCALE },
-        disc: new Mesh(disc, this.discMat),
-        core: new Mesh(disc, this.coreMat),
-        rim: new Mesh(rimGeo, this.rimMat),
+        disc: new Mesh(disc, mat),
+        mat,
+        side: Math.sign(n.p[2]),
         plume: new Mesh(plumeGeo, this.plumeMat),
         hot: new Mesh(plumeGeo, this.hotMat),
         phase: engineNo++ * 1.9,
@@ -304,7 +322,7 @@ export class ShipView {
       };
       e.plume.frustumCulled = false;
       e.hot.frustumCulled = false;
-      this.rollG.add(e.disc, e.core, e.rim, e.plume, e.hot, e.halo);
+      this.rollG.add(e.disc, e.plume, e.hot, e.halo);
       this.root.add(e.trail.mesh);
       this.engines.push(e);
     }
@@ -345,10 +363,6 @@ export class ShipView {
       const [x, y, z] = e.nozzle.p, r = e.nozzle.r;
       e.disc.position.set(x + 0.04, y, z);
       e.disc.scale.setScalar(r * 0.92);
-      e.core.position.set(x + 0.02, y, z);
-      e.core.scale.setScalar(r * 0.2);
-      e.rim.position.set(x + 0.01, y, z);
-      e.rim.scale.setScalar(r * 0.93);
       e.plume.position.set(x - 0.1, y, z);
       e.hot.position.set(x - 0.1, y, z);
       e.halo.position.set(x - r * 0.4, y, z);
@@ -418,9 +432,10 @@ export class ShipView {
   setEngine(core: [number, number, number], bell: [number, number, number]): void {
     this.core.setRGB(...core);
     this.bell.setRGB(...bell);
-    this.halo.setRGB(bell[0] * 0.65, bell[1] * 0.65, bell[2] * 0.65);
+    this.halo.setRGB(bell[0] * 0.42, bell[1] * 0.42, bell[2] * 0.42);
     for (const m of this.plumeMats) { m.uniforms.uCore!.value = this.core; m.uniforms.uBell!.value = this.bell; }
     for (const e of this.engines) {
+      e.mat.uniforms.uCore!.value = this.core; e.mat.uniforms.uBell!.value = this.bell;
       e.trail.head.setRGB(bell[0] * 0.78, bell[1] * 0.9, bell[2] * 0.9);
       e.trail.tail.setRGB(bell[0] * 0.18, bell[1] * 0.14, bell[2] * 0.14);
     }
@@ -439,7 +454,11 @@ export class ShipView {
     const k = Math.min(1, 6 * dt);
     this.bank = lerp(this.bank, wantBank, k);
     this.pitch = lerp(this.pitch, wantPitch, k);
-    this.heat = lerp(this.heat, s.thrust, Math.min(1, 8 * dt));
+    // a throttle snap lights the drives past the steady burn for a moment, then settles
+    const burn = lerp(this.heat, s.thrust, Math.min(1, 8 * dt));
+    this.surge = Math.max(0, this.surge - 2.4 * dt, Math.min(1, (burn - this.heat) * 14));
+    this.heat = burn;
+    this.steer = lerp(this.steer, clamp(s.yawRate * 0.12, -0.3, 0.3), Math.min(1, 7 * dt));
 
     let roll = 0;
     if (s.rollT >= 0 && !reduceMotion) {
@@ -459,18 +478,19 @@ export class ShipView {
     this.pitchG.position.y = Math.sin(this.time * 1.3) * 0.03 + lift;
 
     const h = this.heat, flick = 1 + Math.sin(this.time * 47) * 0.05, hot = this.status.rapid ? 1.6 : 1;
-    this.discMat.color.copy(this.bell).multiplyScalar((0.22 + 0.3 * h) * hot);
-    this.rimMat.color.copy(this.bell).multiplyScalar((0.22 + 0.3 * h) * flick * hot);
-    this.coreMat.color.copy(this.core).multiplyScalar((0.22 + 0.5 * h) * flick * hot);
     for (const m of this.plumeMats) { m.uniforms.uHeat!.value = h; m.uniforms.uTime!.value = this.time; }
     for (const e of this.engines) {
-      const r = e.nozzle.r;
+      const r = e.nozzle.r, u = e.mat.uniforms;
+      u.uHeat!.value = h * hot; u.uTime!.value = this.time; u.uKick!.value = this.surge;
+      // turning vectors each drive's thrust a little and works the outer one harder
+      const diff = 1 + e.side * this.steer * 0.9;
+      e.plume.rotation.y = e.hot.rotation.y = -this.steer * 0.9;
       // the length breathes a little, each drive on its own beat; the two stay within a few percent of each other
       const breath = flick + Math.sin(this.time * 13 + e.phase) * 0.04 * (0.4 + h);
-      const len = r * (1.2 + 3.2 * h) * breath;
+      const len = r * (1.2 + 3.2 * h + 1.2 * this.surge) * breath * diff;
       e.plume.scale.set(len, r * 0.95, r * 0.95);
       e.hot.scale.set(len * 0.5, r * 0.36, r * 0.36);
-      e.halo.scale.setScalar(r * (1.4 + 0.9 * h) * flick);
+      e.halo.scale.setScalar(r * (1.3 + 0.7 * h + 0.5 * this.surge) * flick);
     }
     this.glowLight.intensity = (1.1 + 1.6 * h) * flick;
     const blink = Math.sin(this.time * Math.PI * 2) > 0.6;
