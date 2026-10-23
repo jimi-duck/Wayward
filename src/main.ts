@@ -114,8 +114,11 @@ function boot(review: typeof import('./review') | null): void {
   fit();
   // the console's text sizes change once the web fonts arrive
   document.fonts?.ready.then(fit);
+  // The sky of the run about to begin (Arcade makes a new one every run) is painted behind the title, after the next
+  // frame has shown the card, so the first frame of play does not pay for it.
+  const stageSky = () => setTimeout(() => { if (!started) sector.stageSky(world); }, 120);
   // compile every shader behind the start card, once it has painted
-  setTimeout(() => void sector.warm().then(() => { if (!started) sector.warmFrame(); }), 60);
+  setTimeout(() => void sector.warm().then(() => { if (!started) { sector.stageSky(world); sector.warmFrame(); } }), 60);
 
   // ── the run's stops: the bay, comms, port, report ──────────────────────
   // The world pauses itself at each and waits (an ambush only slows it); the
@@ -395,7 +398,7 @@ function boot(review: typeof import('./review') | null): void {
     persist(profile);
     sector.setCosmetic(profile.cosmetic);
     // before the first launch nothing has happened yet, so the run can be re-made in the new survival mode
-    if (!started) world.restart({ survival: profile.survival, mode: profile.mode });
+    if (!started) { world.restart({ survival: profile.survival, mode: pick === 'arcade' ? 'arcade' : profile.mode }); stageSky(); }
     showBrief();
     showResume();
   }, () => launch(pick));
@@ -561,7 +564,8 @@ function boot(review: typeof import('./review') | null): void {
     fit();
     setPaused(false);
     if (mode === 'arcade') {
-      if (world.mode !== 'arcade' || world.survival.id !== profile.survival) { world.restart({ survival: profile.survival, mode, carry: null }); showMode(); }
+      if (world.mode !== 'arcade' || world.survival.id !== profile.survival) world.restart({ survival: profile.survival, mode, carry: null });
+      showMode();
       hud.note(world, `${t('Journey started')} · ${t(world.hull.name)}`);
       // how to play first: the pause card, until any key or tap
       setPaused(true);
@@ -704,7 +708,13 @@ function boot(review: typeof import('./review') | null): void {
   };
   press('m-continue', () => launch('breakout', true));
   press('m-journey', () => { pick = 'breakout'; showStep('diff'); });
-  press('m-arcade', () => { pick = 'arcade'; showStep('diff'); });
+  press('m-arcade', () => {
+    pick = 'arcade';
+    // the run's sky is made behind the title (Arcade has a new one every run), not on the first frame after Begin
+    if (!started && (world.mode !== 'arcade' || world.survival.id !== profile.survival)) world.restart({ survival: profile.survival, mode: 'arcade', carry: null });
+    stageSky();
+    showStep('diff');
+  });
   press('m-settings', () => showStep('set'));
   press('d-back', () => showStep('menu'));
   press('s-back', () => showStep('menu'));

@@ -343,3 +343,14 @@ The things that are drawn but never flown: the sky's far works, the situation pr
 - Far fleet (`farworks.ts`): fleet hulls use the capital designs (hangars, turrets, antennas); the fleet work is 15k triangles (was 12k).
 - Fog response (`thinFog` in `monuments.ts`): a material takes only a share of the scene fog. Relic stone 35%, slipway steel 50%, dead hulks 60%, lantern hulls 60%, so each keeps its dark shape and contrast at range instead of fading to one tint. Lights were already unfogged. The sky-layer works (fleet, station, convoy) stay fully unfogged.
 - Not measured: phone frame rate.
+
+## Pass 8: the first seconds of Arcade
+
+Reported: the game feels slow for the first three or four seconds after Begin. Measured the CPU side only (draws stubbed so the software renderer's fill does not hide it; 568x320, dev server, Medium): `Begin` to the first frames.
+
+| Cause | Change | After |
+|---|---|---|
+| Arcade makes a new sky every run and the title draws nothing, so the sky bake (planet, far works, cube dome) landed on the first frame of play | `Sector.stageSky`: the sky is painted behind the title when Arcade is picked (and after a difficulty change), and the world is restarted as Arcade then, not on Begin | first frame 116 ms to 46 ms of JS (the sky share, 46 ms plus the far works, is gone) |
+| Two shader programs still linked after Begin: the sun's depth pass for the Wayward's hull parts (one with the alpha-tested plates). The warm frame never reached them: the sun sits at the origin until the first real frame, so its shadow camera culled everything | `warmFrame` places the sun first, shows the hidden pools and the throwaway hull gallery (casting), gives empty instanced pools one instance for that frame, and draws once through the chain | programs compiled after Begin: 0 (was 2, on Low none). Buffers and textures of the hidden pools and the gallery are uploaded behind the title too |
+
+**Not measured here:** the GPU. The sky bake and the first draw of every hull, plus real link time, are phone costs; the CPU numbers only show the work moved off the first frame. Trade-off as before: a very fast tap on Begin can wait for the end of the warm-up. Real device: the first four seconds of an Arcade run on a phone, and the title's own load.
