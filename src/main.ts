@@ -114,8 +114,17 @@ function boot(review: typeof import('./review') | null): void {
   fit();
   // the console's text sizes change once the web fonts arrive
   document.fonts?.ready.then(fit);
+  // The sky of the run about to begin (Arcade makes a new one every run) is painted behind the title, after the next
+  // frame has shown the card, so the first frame of play does not pay for it.
+  const stageSky = () => setTimeout(() => { if (!started) sector.stageSky(world); }, 120);
   // compile every shader behind the start card, once it has painted
-  setTimeout(() => void sector.warm().then(() => { if (!started) sector.warmFrame(); }), 60);
+  setTimeout(() => void sector.warm().then(() => {
+    if (started) return;
+    // Arcade is the title's first row and starts at a tap, so its run is made now: the world, then its sky
+    if (world.mode !== 'arcade' || world.survival.id !== ARCADE_SURVIVAL) world.restart({ survival: ARCADE_SURVIVAL, mode: 'arcade', carry: null });
+    sector.stageSky(world);
+    sector.warmFrame();
+  }), 60);
 
   // ── the run's stops: the bay, comms, port, report ──────────────────────
   // The world pauses itself at each and waits (an ambush only slows it); the
@@ -395,7 +404,7 @@ function boot(review: typeof import('./review') | null): void {
     persist(profile);
     sector.setCosmetic(profile.cosmetic);
     // before the first launch nothing has happened yet, so the run can be re-made in the new survival mode
-    if (!started) world.restart({ survival: profile.mode === 'arcade' ? ARCADE_SURVIVAL : profile.survival, mode: profile.mode });
+    if (!started) { world.restart({ survival: ARCADE_SURVIVAL, mode: 'arcade', carry: null }); stageSky(); }
     showBrief();
     showResume();
   }, () => launch(pick));
@@ -561,7 +570,8 @@ function boot(review: typeof import('./review') | null): void {
     fit();
     setPaused(false);
     if (mode === 'arcade') {
-      if (world.mode !== 'arcade' || world.survival.id !== ARCADE_SURVIVAL) { world.restart({ survival: ARCADE_SURVIVAL, mode, carry: null }); showMode(); }
+      if (world.mode !== 'arcade' || world.survival.id !== ARCADE_SURVIVAL) world.restart({ survival: ARCADE_SURVIVAL, mode, carry: null });
+      showMode();
       hud.note(world, `${t('Journey started')} · ${t(world.hull.name)}`);
       // how to play first: the pause card, until any key or tap
       setPaused(true);

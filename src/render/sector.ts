@@ -1,4 +1,4 @@
-import { Scene, Vector3, type Object3D, type WebGLRenderer } from 'three';
+import { Scene, Vector3, type Group, type InstancedMesh, type Object3D, type WebGLRenderer } from 'three';
 import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { JUMP_T } from '../sim/breakout';
@@ -94,6 +94,8 @@ export class Sector {
   private weld = 0;
   /** The run or system the sky was painted for. */
   private skyFor: unknown = null;
+  /** The warm-up's throwaway hulls, kept to draw once behind the title. */
+  private warmSet: Group | null = null;
   /** The review world pins a sky of its own; the run's is left alone while it holds. */
   private pinned = false;
   reduceMotion = false;
@@ -185,7 +187,7 @@ export class Sector {
     prepareSpace(); // and the places' own textures and shapes, not the first sight of one
     const hidden: Object3D[] = [];
     this.scene.traverse((o) => { if (!o.visible) { hidden.push(o); o.visible = true; } });
-    const gallery = this.enemies.gallery();
+    const gallery = this.warmSet = this.enemies.gallery();
     gallery.add(wreck());
     this.scene.add(gallery);
     const { renderer, post } = this, was = renderer.getRenderTarget();
@@ -211,7 +213,25 @@ export class Sector {
    * Start. Behind the title only: the canvas is blanked again.
    */
   warmFrame(): void {
-    this.post?.render(0);
+    // Draw everything once, hidden pools and the gallery included (and casting, so the sun's depth
+    // programs link too): compiling is not enough, a buffer or texture is uploaded by the first draw.
+    const hidden: Object3D[] = [], empty: InstancedMesh[] = [], gallery = this.warmSet;
+    this.scene.traverse((o) => {
+      if (!o.visible) { hidden.push(o); o.visible = true; }
+      // a pool with no instances yet is skipped, depth pass and all, so give each one for this frame
+      const im = o as InstancedMesh;
+      if (im.isInstancedMesh && im.count === 0) { empty.push(im); im.count = 1; }
+    });
+    if (gallery) { gallery.traverse((o) => { o.castShadow = true; }); this.scene.add(gallery); }
+    // the sun sits at the origin until the first frame places it, and a shadow camera with no direction culls everything
+    this.env.update(this.rig.camera, 0, 0, 0, 0, 0);
+    try {
+      if (!this.post?.render(0)) this.renderer.render(this.scene, this.rig.camera);
+    } finally {
+      gallery?.removeFromParent();
+      for (const o of hidden) o.visible = false;
+      for (const im of empty) im.count = 0;
+    }
     this.renderer.clear();
   }
 
@@ -498,6 +518,9 @@ export class Sector {
     if (this.blind || (this.covered && this.bayK > COVERED)) return;
     if (!this.post?.render(dt)) this.renderer.render(this.scene, this.rig.camera);
   }
+
+  /** Make the sky of a run before it begins, behind the title; the first frame of the run then finds it done. */
+  stageSky(world: World): void { this.paintSky(world); }
 
   /**
    * The Breakout's sky belongs to the system (the same one each visit, in its

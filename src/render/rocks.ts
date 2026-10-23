@@ -480,6 +480,7 @@ export class RockView {
     // a bulwark is a plain mesh, not an instance: hidden here so the warm-up compiles its program too
     const proxy = new Mesh(this.bulwarkGeo[0]!, this.bulwarkMat);
     proxy.visible = false;
+    proxy.castShadow = true; // so the warm frame links the sun's depth program for it as well
     scene.add(proxy);
 
     // the backdrop: far asteroids above, below and all around
