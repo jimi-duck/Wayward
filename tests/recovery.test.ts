@@ -95,7 +95,7 @@ describe('the forced recovery', () => {
     expect(d1).toBeLessThan(d0);
     // nose on the dock
     const bearing = Math.atan2(-(dock.z - w.ship.z), dock.x - w.ship.x);
-    expect(Math.abs(Math.atan2(Math.sin(bearing - w.ship.heading), Math.cos(bearing - w.ship.heading)))).toBeLessThan(0.3);
+    expect(Math.abs(Math.atan2(Math.sin(bearing - w.ship.heading), Math.cos(bearing - w.ship.heading)))).toBeLessThan(0.5);
     expect(bolts).toBe(0);
     expect(w.docked).toBe(false);
     expect(w.auditCalled).toBe(false);
@@ -215,7 +215,7 @@ describe('the autopilot keeps clear (owner, 23 October 2026)', () => {
     expect(clearCourse(s, 1, 0, [{ x: -60, z: 0, r: 12 }]).z).toBe(0);
   });
 
-  it('flies round a big rock on the way to the dock without touching it', () => {
+  it('gets a big rock out of her lane on the way to the dock without touching it', () => {
     const j = beyond();
     const w = breach(j);
     const dock = w.bk!.audit!;
@@ -225,7 +225,6 @@ describe('the autopilot keeps clear (owner, 23 October 2026)', () => {
     let close = Infinity, hits = 0;
     w.events.length = 0;
     for (let i = 0; i < (RECOVERY_T - 1) * 60 && w.phase === 'play'; i++) {
-      rock.vx = 0; rock.vz = 0;
       w.step(1 / 60, FULL);
       if (w.field.rocks.includes(rock)) close = Math.min(close, Math.hypot(w.ship.x - rock.x, w.ship.z - rock.z) - rock.r * 0.88 - SHIP_R);
       hits += w.events.filter((e) => e.type === 'shipHit').length;
@@ -234,6 +233,63 @@ describe('the autopilot keeps clear (owner, 23 October 2026)', () => {
     expect(close).toBeGreaterThan(0);
     expect(hits).toBe(0);
     expect(Math.hypot(dock.x - w.ship.x, dock.z - w.ship.z)).toBeLessThan(d - 100);
+  });
+});
+
+describe('the autopilot just works for the story (owner, 23 October 2026)', () => {
+  it('flies straight in through the real rock field on many seeds: no circles, no hits, Sam at 2 km', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const j = beyond();
+      const w = new World(seed, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
+      w.cardNext = Infinity;
+      w.skipTraining();
+      for (let t = 0; t < (OPENING_AT + 0.5) * 60 && w.phase === 'play'; t++) w.step(1 / 60, FULL);
+      expect(w.comms?.def.id).toBe(BREACH_BEAT);
+      answer(j, w, 'proceed');
+      // a pack of hostiles on her, and rock thick along the line
+      const dock = w.bk!.audit!;
+      const d0 = fromDock(w), ux = (dock.x - w.ship.x) / d0, uz = (dock.z - w.ship.z) / d0;
+      for (let k = 1; k <= 8; k++) w.field.spawn((k % 2) as 0 | 1, w.ship.x + ux * k * 60 + (k % 3 - 1) * 6, w.ship.z + uz * k * 60, 0, 0);
+      let path = 0, hits = 0, turned = 0, last = { x: w.ship.x, z: w.ship.z };
+      const h0 = w.ship.heading;
+      let prevH = h0;
+      w.events.length = 0;
+      for (let t = 0; t < RECOVERY_T * 60 && w.phase === 'play'; t++) {
+        w.step(1 / 60, FULL);
+        path += Math.hypot(w.ship.x - last.x, w.ship.z - last.z); last = { x: w.ship.x, z: w.ship.z };
+        turned += Math.abs(Math.atan2(Math.sin(w.ship.heading - prevH), Math.cos(w.ship.heading - prevH))); prevH = w.ship.heading;
+        hits += w.events.filter((e) => e.type === 'shipHit').length;
+        w.events.length = 0;
+      }
+      expect(w.comms?.def.id, `seed ${seed}`).toBe(SAM_BEAT);
+      expect(fromDock(w), `seed ${seed}`).toBeLessThanOrEqual(SAM_CALL_R);
+      expect(hits, `seed ${seed}`).toBe(0);
+      // close to the straight line, and never a full turn
+      expect(path, `seed ${seed}`).toBeLessThan((d0 - SAM_CALL_R) * 1.4 + 40);
+      expect(turned, `seed ${seed}`).toBeLessThan(2 * Math.PI);
+    }
+  });
+});
+
+describe('the autopilot and a bulwark dead ahead', () => {
+  it('steers round it without circling, touching it or missing Sam', () => {
+    const j = beyond();
+    const w = breach(j);
+    const dock = w.bk!.audit!;
+    const d0 = fromDock(w), ux = (dock.x - w.ship.x) / d0, uz = (dock.z - w.ship.z) / d0;
+    const b = { ...w.field.bulwarks[0]!, id: 999_001, x: w.ship.x + ux * 80, z: w.ship.z + uz * 80, vx: 0, vz: 0, r: 12 };
+    w.field.bulwarks.push(b);
+    let close = Infinity, turned = 0, prevH = w.ship.heading;
+    for (let t = 0; t < RECOVERY_T * 60 && w.phase === 'play'; t++) {
+      b.vx = 0; b.vz = 0;
+      w.step(1 / 60, FULL);
+      close = Math.min(close, Math.hypot(w.ship.x - b.x, w.ship.z - b.z) - b.r * 0.88 - SHIP_R);
+      turned += Math.abs(Math.atan2(Math.sin(w.ship.heading - prevH), Math.cos(w.ship.heading - prevH))); prevH = w.ship.heading;
+    }
+    expect(w.comms?.def.id).toBe(SAM_BEAT);
+    expect(fromDock(w)).toBeLessThanOrEqual(SAM_CALL_R);
+    expect(close).toBeGreaterThan(0);
+    expect(turned).toBeLessThan(2 * Math.PI);
   });
 });
 

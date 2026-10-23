@@ -26,7 +26,7 @@ import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
 import { lockLifted } from './postjump';
-import { RECOVERY_T, SAM_CALL_R, recovering, recoveryControls } from './recovery';
+import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic } from './traffic';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
@@ -626,8 +626,21 @@ export class World implements EncounterHost {
     const p = pressure(this.clock, this.mods);
     // Lane Control's recovery has the helm until Sam's code lifts the owner lock
     const held = !!this.bk && recovering(this.flags);
-    const c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held ? recoveryControls(s, this.bk!.audit, this.hull, [...this.field.rocks, ...this.field.bulwarks, ...this.aliens]) : flightControls(input);
-    stepShip(s, c, this.hull, dt);
+    const c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held ? RECOVERY_CONTROLS : flightControls(input);
+    if (held && this.alive && !slowed) {
+      // Lane Control flies her on rails; everyone else keeps clear of a ship under recovery
+      // she steers round the bulwarks only; loose rock in her lane drifts aside ahead of her
+      recoveryStep(s, this.bk!.audit, this.hull, this.field.bulwarks, dt);
+      const fx = Math.cos(s.heading), fz = -Math.sin(s.heading);
+      for (const r of this.field.rocks) {
+        const rx = r.x - s.x, rz = r.z - s.z, ahead = rx * fx + rz * fz, side = rx * -fz + rz * fx, clear = r.r + SHIP_R + 4;
+        if (ahead < -clear || ahead > 60 || Math.abs(side) > clear) continue;
+        const away = side >= 0 ? 1 : -1;
+        r.vx += -fz * away * 12 * dt; r.vz += fx * away * 12 * dt;
+      }
+      for (const al of this.aliens) if (!al.fleeing) leave(al);
+      this.shots.length = 0;
+    } else stepShip(s, c, this.hull, dt);
     if (held) this.recoverT += dt;
     this.flushRadio();
     if (this.space) this.stepSpace(dt, s);
@@ -662,7 +675,7 @@ export class World implements EncounterHost {
 
     // the sector
     this.field.step(dt, s.x, s.z, this.bk ? { ...p, rockHp: p.rockHp * MINE_HP, rich: this.richShare } : p);
-    if (this.bk) { this.pursue(t); this.swarm(t); this.jam(dt); }
+    if (this.bk && !held) { this.pursue(t); this.swarm(t); this.jam(dt); }
     else this.spawn(t, p);
     this.stepAliens(dt, t, p);
     const before = this.command.state, sighted = this.command.boss;
@@ -2421,7 +2434,14 @@ export class World implements EncounterHost {
       // webs
       for (const w of this.webs) if (w.r > 1 && Math.hypot(s.x - w.x, s.z - w.z) < w.r * 0.92) return this.hitShip('web');
     }
-    // ramming: hulls and the boss
+    // ramming: hulls and the boss (not while Lane Control flies her: she passes, nobody is hurt)
+    if (this.bk && recovering(this.flags)) {
+      for (const r of rocks) {
+        const dx = r.x - s.x, dz = r.z - s.z, d = Math.hypot(dx, dz) || 1;
+        if (d < r.r * 0.88 + SHIP_R) { r.vx = (dx / d) * 8; r.vz = (dz / d) * 8; }
+      }
+      return;
+    }
     for (const al of [...this.aliens]) {
       if (Math.hypot(s.x - al.x, al.y, s.z - al.z) >= al.r + SHIP_R) continue;
       if (al.calm < 0.3 && !vulnerable) continue;
@@ -2465,6 +2485,7 @@ export class World implements EncounterHost {
   private graze(fromX: number, fromZ: number): void {
     const s = this.ship, st = this.stats;
     if (!this.alive || this.safe) return;
+    if (this.bk && recovering(this.flags)) return this.hitShip('rock', fromX, fromZ);
     const dx = s.x - fromX, dz = s.z - fromZ, d = Math.hypot(dx, dz) || 1;
     s.vx += (dx / d) * 6; s.vz += (dz / d) * 6;
     s.invuln = Math.max(s.invuln, 0.35);
@@ -2478,6 +2499,11 @@ export class World implements EncounterHost {
   private hitShip(source: string, fromX?: number, fromZ?: number): void {
     const s = this.ship, st = this.stats;
     if (!this.alive || this.safe) return;
+    // nothing hurts her while Lane Control flies her in; rock she touches is pushed off the course
+    if (this.bk && recovering(this.flags)) {
+      if (fromX !== undefined && fromZ !== undefined) for (const r of this.field.rocks) if (r.x === fromX && r.z === fromZ) { const dx = r.x - s.x, dz = r.z - s.z, d = Math.hypot(dx, dz) || 1; r.vx = (dx / d) * 8; r.vz = (dz / d) * 8; }
+      return;
+    }
     const at = fromX !== undefined && fromZ !== undefined ? [fromX, fromZ] : this.impactAt;
     this.impactAt = null;
     if (fromX !== undefined && fromZ !== undefined) {

@@ -83,20 +83,44 @@ export function clearCourse(s: ShipState, ux: number, uz: number, obs: readonly 
   return { x: cx / n, z: cz / n, danger };
 }
 
-/** The autopilot's hand on the controls: nose to the dock round whatever is in the way, a slow cruise, and a hold short of it. No guns. */
-export function recoveryControls(s: ShipState, to: { x: number; z: number } | null, hull: Hull, obs: readonly Obstacle[] = []): FlightControls {
-  const idle: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false };
-  if (!to) return idle;
-  const dx = to.x - s.x, dz = to.z - s.z;
-  const d = Math.hypot(dx, dz) || 1;
+/** How far the autopilot's course may swing off the straight line to the dock: never so far that she circles. */
+const SWING = 0.9;
+/** How fast the autopilot turns her, radians a second. */
+const TURN = 1.6;
+
+/**
+ * The autopilot flies her itself, on rails (owner, 23 October 2026: "it doesn't need to be perfect, just working for
+ * the story"). Nose round toward the dock, swinging off the straight line round what is ahead but never more than
+ * SWING, so she cannot fly in circles; a steady cruise that slows to turn and to clear what is close; no drift, no
+ * thrust physics; a stop short of the dock. Rock that still touches her is shoved aside (world.ts), and nothing hurts
+ * her while Lane Control has her.
+ */
+export function recoveryStep(s: ShipState, to: { x: number; z: number } | null, hull: Hull, obs: readonly Obstacle[], dt: number): void {
+  const before = s.heading;
+  let want = 0;
+  if (to) {
+    const dx = to.x - s.x, dz = to.z - s.z, d = Math.hypot(dx, dz) || 1;
+    const ux = dx / d, uz = dz / d;
+    const path = d > HOLD_R ? clearCourse(s, ux, uz, obs) : { x: ux, z: uz, danger: 0 };
+    const line = Math.atan2(-uz, ux);
+    const course = line + Math.max(-SWING, Math.min(SWING, wrap(Math.atan2(-path.z, path.x) - line)));
+    const err = wrap(course - s.heading);
+    s.heading += Math.max(-TURN * dt, Math.min(TURN * dt, err));
+    // slow to turn and with something close ahead, and none at the hold
+    if (d > HOLD_R) want = Math.min(topSpeed(hull) * CRUISE * (1 - 0.6 * path.danger) * Math.max(0.25, Math.cos(Math.min(Math.abs(err), Math.PI / 2))), (d - HOLD_R) * 0.6);
+  }
   const speed = Math.hypot(s.vx, s.vz);
-  // at the hold she only turns to face the dock; on the way she picks a course round what is ahead
-  const path = d > HOLD_R ? clearCourse(s, dx / d, dz / d, obs) : { x: dx / d, z: dz / d, danger: 0 };
-  // forward is (cos h, -sin h); turning right lowers the heading
-  const err = wrap(Math.atan2(-path.z, path.x) - s.heading);
-  const turn = Math.max(-1, Math.min(1, -err * 1.5));
-  // slower with something close ahead, and none at the hold
-  const want = d > HOLD_R ? Math.min(topSpeed(hull) * CRUISE * (1 - 0.6 * path.danger), (d - HOLD_R) * 0.6) : 0;
-  const thrust = speed < want && Math.abs(err) < 0.7 ? 0.7 : 0;
-  return { ...idle, turn, thrust };
+  const v = speed + (want - speed) * Math.min(1, 2 * dt);
+  s.vx = Math.cos(s.heading) * v;
+  s.vz = -Math.sin(s.heading) * v;
+  s.x += s.vx * dt;
+  s.z += s.vz * dt;
+  s.thrust = want > speed ? 0.7 : 0;
+  s.helm = 0;
+  s.breakT = -1; s.rollT = -1;
+  if (s.invuln > 0) s.invuln = Math.max(0, s.invuln - dt);
+  s.yawRate = wrap(s.heading - before) / dt;
 }
+
+/** The autopilot's hand on the controls, as controls: none. It flies her itself (`recoveryStep`); no guns. */
+export const RECOVERY_CONTROLS: FlightControls = { turn: 0, thrust: 0, roll: false, brk: false, rollDir: 0, fire: false, torpedo: false };
