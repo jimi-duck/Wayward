@@ -8,7 +8,7 @@ import { breakEase, type ShipState } from '../sim/ship';
 import { BREAK_TIME, ROLL_TIME } from '../sim/tuning';
 import type { V3 } from './kit';
 import { glowTexture } from './textures';
-import { animateLamps, buildWayward, MODEL_SCALE, type BuiltHull, type Nozzle } from './wayward';
+import { animateLamps, buildWayward, MODEL_SCALE, setDamage, woundPoints, type BuiltHull, type Nozzle } from './wayward';
 
 // ── the player's ship ─────────────────────────────────────────────────────
 // The Wayward in flight: her model (wayward.ts) on a banking, pitching rig,
@@ -426,6 +426,17 @@ export class ShipView {
     return { points: this.engines.map((e) => [...tipWorld(this.rollG, e.nozzle.p)] as [number, number, number]), heat: this.heat };
   }
 
+  /** The hull wears a wound for each plate lost (eased in over half a second). */
+  setDamage(plates: number, maxPlates: number): void {
+    setDamage(plates, maxPlates);
+  }
+
+  /** World positions of the live wounds, for smoke; `hard` at one plate left. */
+  wound(): { points: Array<[number, number, number]>; hard: boolean } {
+    const w = woundPoints(), S = MODEL_SCALE;
+    return { points: w.points.map((p) => [...tipWorld(this.rollG, [p[0] * S, p[1] * S, p[2] * S])] as [number, number, number]), hard: w.hard };
+  }
+
   /** Flare the shield: a hit landed. `absorbed` when a shield charge took it. */
   flareShield(absorbed = false, fromX?: number, fromZ?: number): void {
     this.hit = 1;
@@ -520,7 +531,7 @@ export class ShipView {
       m.color.copy(STROBE_COLOR[i]!).multiplyScalar(f);
       l.visible = f > 0.03;
     });
-    animateLamps(this.time);
+    animateLamps(this.time, dt);
 
     this.hit = Math.max(0, this.hit - dt * 2.2);
     const st = this.status;
