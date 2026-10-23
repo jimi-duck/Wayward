@@ -216,6 +216,11 @@ installed through `art:prep`.
   contain-fit on black (no cut), after a small trim of the frame line the sheet
   left at the edge. Only the comms owner hulls draw fleet pictures today; jobs,
   phenomena and the capital and Wayward pictures wait for a screen.
+- The third run (2026-10-23) added 28 more (11 MB in all): four wrecks, three Wayward
+  damage stages and three elite hulls (all in `fleet/`), eight gate stations
+  (`gates/`), four planets (`planets/`), two debrief scenes (`debrief/`), and
+  replacements for `drifter`, `ferry`, `gunship` and `sc_payroll`. Its brief is
+  `docs/art/NEXT-BRIEF.md`. No screen draws the new ones yet.
 - Which of these should be redone: `/mnt/project-files/art-brief/REDO-AND-MISSING.md`.
 - The sheets that went unused are in `/mnt/project-files/art-brief/raw/`.
 

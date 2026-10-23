@@ -150,6 +150,43 @@ export const WAYWARD_LOOK: Record<string, string> = {
   'wayward-signals': 'the Wayward fitted for Signals: the same hull with antenna masts and a dish array, baffles along the engines, matte dark patches over the yellow, a jammer boom; quiet, a little ghostly',
 };
 
+/** The third run: wrecks, the Wayward hurt, and three nastier hulls. */
+export const EXTRA_LOOK: Record<string, string> = {
+  'wreck-scout': 'a dead scout: a small fast ship, hull split along one side, cockpit dark, one wing torn off, frost on the metal',
+  'wreck-hauler': 'a dead cargo hauler: long boxy hull, container racks half empty and bent, one engine pod gone, scorch marks',
+  'wreck-gunship': 'a dead gunship: blunt armed hull, gun pods hanging by cables, armour plates peeled back, a red warning lamp long dead',
+  'wreck-capital': 'a dead capital ship seen from far away: a kilometre of hull broken in two, tiny gantries and windows lit by nothing to show scale',
+  'wayward-scuffed': 'the Wayward scuffed: paint scraped, a few dents and scorch marks, everything still working, engines lit blue',
+  'wayward-half': 'the Wayward at half hull: a hole in the plating showing ribs and cables, one engine pod sparking, a little vented gas trailing',
+  'wayward-last': 'the Wayward on her last plate: barely holding together, large sections torn away, one engine out, a restrained red glow inside the breach',
+  raider: 'a named raider: a patched gunship with trophy plates welded to the nose, red lamps and a painted stripe',
+  hunter: 'a hunter: a lean fast hull with long guns and a sensor boom, dark matte paint',
+  'custody-cruiser': 'a Custody cruiser seen close: grey, regimented, flat armour plates, rows of identical lit windows',
+};
+
+export const GATE_LOOK: Record<string, string> = {
+  reach: 'a clean regulated hub station with a net of fine cables spreading out from it, a pale planet behind',
+  marches: 'a heavily armed holdfast built on a rock, Drift ships tied up near it, burn scars from raiders',
+  'salvage-belt': 'a market built from wrecks, hulls bolted together, claim flags, work lights',
+  'drift-deep': 'a slow fleet of ships lashed together into a moving town, far from any star',
+  'breaker-yards': 'huge Custody dry docks tearing ships apart, sparks, cranes, searchlights',
+  'free-ports': 'a crowded patchwork port of mismatched ships and unreadable hand-painted signs, warm windows',
+  hollows: 'a silent foundry station in a dark nebula, long cold chimneys, nothing alive in sight',
+  'last-lanes': 'a lone beacon and a broken lane gate at the edge, the Threshold glowing faintly far behind',
+};
+
+export const PLANET_LOOK: Record<string, string> = {
+  rocky: 'a dry rocky world with dust seas and a thin orange haze at the rim, a fuel station in low orbit',
+  ice: 'an ice world with cracked white plains and a faint blue atmosphere line, a port on the cliff edge',
+  gas: 'a banded gas giant with a dark storm and a tiny port hanging in orbit',
+  dead: 'a dead burnt-out world with dark glass plains and no light on the night side',
+};
+
+export const DEBRIEF_LOOK: Record<string, string> = {
+  castoff: 'calm: the Wayward leaving a work bay, bay doors open, work lights, plenty of black ahead',
+  limping: 'the damaged Wayward approaching a port on one engine, trailing vented gas, a figure watching from the dock',
+};
+
 /** What each job looks like as a scene: the moment, not the whole story. */
 export const JOB_SCENE: Record<string, string> = {
   sc_toll: 'a toll beacon blinking over an asteroid lane, four raider ships holding station around it, the Wayward approaching',
