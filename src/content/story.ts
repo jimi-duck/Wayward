@@ -42,6 +42,8 @@ export const STORY_AT = 40;
 export const BAY_BEAT = 'story_bay';
 export const BREACH_BEAT = 'story_breach';
 export const SAM_BEAT = 'story_sam';
+/** Where Sam's private channel always comes in from, in degrees (the bearing line and the RX readout on his calls). */
+export const SAM_BEARING = 47;
 export const RENAME_BEAT = 'story_rename';
 export const WAKE_BEAT = 'story_wake';
 export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, RENAME_BEAT, WAKE_BEAT] as const;
@@ -294,7 +296,7 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', notitle: true, quote: true,
+    id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, notitle: true, quote: true,
     from: 'Sam Okoro · private channel', title: 'Sam’s code',
     text: 'They’ll take the hauler. The debt stays with you.\nI’ve got a code to lift the owner lock. It won’t make the ship legal.',
     note: 'Using the code lifts the owner lock.',

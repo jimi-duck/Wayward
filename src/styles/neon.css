@@ -50,7 +50,8 @@
 button.ng-n { cursor: pointer; font: inherit; }
 button.ng-n:hover, button.ng-n:focus-visible, .ng-n.sel { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg, rgba(var(--halo), .2), rgba(var(--halo), .1)); }
 button.ng-n:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
-button.ng-n:active { --ng-a: .5; --ng-b: .2; }
+/* pressed: a brief brighten inside the button, the glow no wider than on hover */
+button.ng-n:active { --ng-a: 1; --ng-b: .55; background: linear-gradient(180deg, rgba(var(--halo), .3), rgba(var(--halo), .16)); transition-duration: .04s; }
 /* a phone: less blur to pay for */
 @media (max-height: 620px), (pointer: coarse) { :root { --ng-blur: blur(10px) saturate(150%); } }
 /* no blur, or the player asked for less transparency: the same rim on an opaque body */
@@ -254,3 +255,86 @@ button.ng-n:active { --ng-a: .5; --ng-b: .2; }
   box-shadow: 0 0 0 1.5px var(--rim), 0 0 1.5px 1.5px rgba(var(--halo), 1), 0 0 4px 1.5px rgba(var(--halo), .55), inset 0 0 14px rgba(var(--halo), .16), inset 0 1px 0 rgba(255, 255, 255, .22); }
 #comms .panel.comms .cm-list { gap: 10px; }
 #comms .panel.comms .cm-c kbd, #comms .panel.comms .cm-side .need, #comms .panel.comms .pf .keys, #pause .pause-card .th { color: var(--ink-2); }
+
+/* ── motion: ambient light and incoming transmissions (docs/DESIGN-GUIDELINES.md, "Motion") ──────────────
+   Text and panel geometry never move; only the glass and the edge light do. Nothing here sits under body text:
+   the reflection is masked to the edge band outside the text, the drift runs on the top edge, the ring and the
+   bearing line start at the header's corner and leave outward. Nothing is brighter than the rim. With reduced motion
+   none of it runs and the bars are simply full; on a hidden page everything stops where it is.
+   Arrivals are keyed to `data-rx` (a fresh message) and `data-ring` (one that replaced a message already open),
+   which src/ui/arrive.ts sets for a moment on #comms and #rd-call. */
+
+/* the signal bars in a transmission's header: full, in the role colour */
+.rx-bars { position: relative; display: inline-flex; flex: none; align-items: flex-end; gap: 2px; height: 11px; margin-left: auto; }
+.rx-bars > i { width: 2px; border-radius: 1px; background: var(--rim, #b4e4ee); }
+.rx-bars > i:nth-child(1) { height: 4px; }
+.rx-bars > i:nth-child(2) { height: 6px; }
+.rx-bars > i:nth-child(3) { height: 8px; }
+.rx-bars > i:nth-child(4) { height: 11px; }
+.rx-bars + .ns-st { margin-left: 2px; }
+.registry .rg-h .rx-bars { margin-top: .4em; }
+.registry .rx-bars + .rg-tag { margin-left: -.4em; }
+.ns-h .ns-from { flex: 0 1 auto; }
+.ns-h .rx-deg { flex: none; margin-left: auto; font: 400 12px/1 var(--font-mono, 'Share Tech Mono', monospace); letter-spacing: .08em; color: var(--rim); }
+.ns-h .rx-deg + .rx-bars { margin-left: 4px; }
+#comms .tx-h .rx-bars { --rim: var(--dk-hud); }
+.sheet.alert#comms .tx-h .rx-bars { --rim: var(--dk-red); }
+#rd-call .rx-bars { --rim: var(--cc, #b4e4ee); }
+/* the ring's antenna is the bars: one thin ring, expanding once */
+.rx-bars::after { content: ""; position: absolute; left: 50%; bottom: 3px; width: 10px; height: 10px; border: 1px solid var(--rim, #b4e4ee); border-radius: 50%; translate: -50% 50%; opacity: 0; pointer-events: none; }
+
+/* the reflection: one diagonal glint across the glass's edge band as the panel opens, then gone */
+:is(.ns-p, .sheet > .panel, #pause .pause-card, #rd-call)::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; padding: 12px; border-radius: inherit; pointer-events: none;
+  clip-path: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, .09) 50%, transparent 58%) no-repeat 130% 0 / 260% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+}
+/* the edge light: a short highlight that now and then runs along part of the top edge, the one slow loop */
+:is(.ns-main, .ns-doc, .sheet > .panel, #pause .pause-card, #rd-call)::after {
+  content: ""; position: absolute; inset: 0 auto auto 0; z-index: 1; width: 100%; height: 1.5px; pointer-events: none;
+  clip-path: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .65), transparent) no-repeat 0 0 / 96px 100%;
+  opacity: 0;
+}
+/* the old breaking scanline ran down the glass behind the text, so it is off on every pop-up */
+:is(.sheet, #pause, #rd-call) .wear::after { content: none; animation: none; }
+/* Sam's bearing: a fine dotted line toward where his calls come from, drawn once and gone */
+.ns-wrap { position: relative; }
+.rx-bearing { display: none; position: absolute; width: min(38vw, 520px); height: 2px; transform-origin: 0 50%; rotate: var(--a, -43deg); pointer-events: none;
+  background: radial-gradient(circle, #ffdea0 0 .8px, transparent 1.1px) 0 50% / 6px 2px repeat-x;
+  -webkit-mask: linear-gradient(90deg, #000 55%, transparent); mask: linear-gradient(90deg, #000 55%, transparent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-rx] .rx-bars > i { animation: rx-bar .16s ease-out both; }
+  [data-rx] .rx-bars > i:nth-child(1) { animation-delay: .15s; }
+  [data-rx] .rx-bars > i:nth-child(2) { animation-delay: .4s; }
+  [data-rx] .rx-bars > i:nth-child(3) { animation-delay: .65s; }
+  [data-rx] .rx-bars > i:nth-child(4) { animation-delay: .9s; }
+  [data-ring] .rx-bars::after { animation: rx-ring .9s ease-out both; }
+  :is(.ns-p, .sheet > .panel, #pause .pause-card, #rd-call)::before { animation: ng-glint 1.2s .08s ease-in-out both; }
+  /* a transmission plays its reflection only as it arrives, never on a redraw */
+  #comms:not([data-rx]) :is(.ns-p, .panel)::before, #rd-call:not([data-rx])::before { animation: none; }
+  :is(.ns-main, .ns-doc, .sheet > .panel, #pause .pause-card, #rd-call)::after { animation: ng-drift 14s 3s linear infinite; }
+  .rx-bearing { display: block; animation: rx-draw 1.7s .25s ease-out both; }
+}
+@keyframes rx-bar { from { opacity: .18; } }
+@keyframes rx-ring { from { opacity: .65; scale: 1; } to { opacity: 0; scale: 3.2; } }
+@keyframes ng-glint { 0% { opacity: 0; background-position: 130% 0; } 20%, 75% { opacity: 1; } 100% { opacity: 0; background-position: -30% 0; } }
+@keyframes ng-drift { 0% { opacity: 0; transform: translateX(8%); } 4%, 21% { opacity: .9; } 26% { opacity: 0; transform: translateX(62%); } 100% { opacity: 0; transform: translateX(62%); } }
+@keyframes rx-draw { 0% { opacity: .75; clip-path: inset(0 100% 0 0); } 45% { opacity: .75; clip-path: inset(0 0 0 0); } 65% { opacity: .75; } 100% { opacity: 0; clip-path: inset(0 0 0 0); } }
+/* a hidden page: the ambient light stops where it is */
+.page-hidden :is(.ns-main, .ns-doc, .sheet > .panel, #pause .pause-card, #rd-call)::after,
+.page-hidden :is(.ns-p, .sheet > .panel, #pause .pause-card, #rd-call)::before,
+.page-hidden :is(.rx-bars > i, .rx-bars, .rx-bearing) { animation-play-state: paused; }
+.page-hidden .rx-bars::after { animation-play-state: paused; }
+@media (max-height: 520px) {
+  /* phones: the text sits closer to the edge, so the reflection's band is narrower */
+  :is(.ns-p, .sheet > .panel, #pause .pause-card, #rd-call)::before { padding: 7px; }
+  .ns-h .rx-deg { font-size: 10px; }
+  .rx-bars { height: 9px; gap: 1.5px; }
+  .rx-bars > i:nth-child(4) { height: 9px; }
+  .rx-bars > i:nth-child(3) { height: 7px; }
+}

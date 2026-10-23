@@ -285,6 +285,8 @@ export interface CardDef {
   glass?: GlassRole;
   /** The status word top right, beside a dot (Service, Unknown, Breach, Private, Recovered). */
   status?: string;
+  /** A private channel's bearing in degrees: where the call comes in from, shown as it arrives. Sam's never changes. */
+  rx?: number;
   /** No title on the sheet: a private voice speaks in quoted lines (Sam's channel). The title stays for the log. */
   notitle?: boolean;
   /** The text is drawn as quoted lines, one per paragraph (split on a line break). */
