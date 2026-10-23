@@ -26,7 +26,7 @@ import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
 import { lockLifted } from './postjump';
-import { RECOVERY_T, recovering, recoveryControls } from './recovery';
+import { RECOVERY_T, SAM_CALL_R, recovering, recoveryControls } from './recovery';
 import { Traffic } from './traffic';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
@@ -807,7 +807,8 @@ export class World implements EncounterHost {
     if (beat && !this.storyMade && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
-      if (def && !this.heard.has(def.id) && !this.cardsSeen.has(def.id)) {
+      // Sam's card is the recovery's to deal, at 2 km from the dock, even after a load mid-recovery
+      if (def && !this.heard.has(def.id) && !this.cardsSeen.has(def.id) && !(def.id === SAM_BEAT && recovering(this.flags))) {
         // the opening's chain begins at once and runs on its own: a pop-up a moment after the last
         if (opening) this.openComms(def);
         else this.desk.offer(def, weightOf(def), this.runTime);
@@ -1403,9 +1404,15 @@ export class World implements EncounterHost {
     this.wasBusy = busy;
     d.watch(busy, t);
     d.sweep(t, this.docked);
-    // the recovery: nobody else calls while Lane Control flies her in, and Sam's channel opens once, on time
+    // the recovery: nobody else calls while Lane Control flies her in, and Sam's channel opens once, 2 km out from the dock
     if (recovering(this.flags)) {
-      if (this.recoverT >= RECOVERY_T - 1e-6 && !this.cardsSeen.has(SAM_BEAT)) { const sam = CARD_BY_ID[SAM_BEAT]; if (sam) this.openComms(sam); }
+      const dock = b.audit, near = !!dock && Math.hypot(dock.x - s.x, dock.z - s.z) <= SAM_CALL_R;
+      if ((near || this.recoverT >= RECOVERY_T - 1e-6) && !this.cardsSeen.has(SAM_BEAT)) {
+        const sam = CARD_BY_ID[SAM_BEAT];
+        // his lines on the way in are said by now: any still waiting would land after his code
+        this.radioQ.length = 0;
+        if (sam) this.openComms(sam);
+      }
       return;
     }
     // a call nobody picked up: the channel closes

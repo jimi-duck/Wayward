@@ -8,22 +8,24 @@ import type { Hull } from '../content/hulls';
 // The opening handover (2026-10-23, F → G). The breach notice is answered and
 // Lane Control takes the ship: the recovery flag is set, the player's flight
 // controls lock, and an autopilot flies her toward the company's audit dock.
-// After forty seconds of play (the game clock, so a pause or a document does not
-// count; the owner, 23 October 2026) Sam's private channel opens, once. His code lifts the owner lock: the
+// When she is 2 km from the dock (the owner, 23 October 2026: "so it always comes
+// just in time, no matter what happens") Sam's private channel opens, once; from
+// the breach that is about half a minute of play. His code lifts the owner lock: the
 // autopilot lets go and the controls come back. The flag stays for good.
 //
-// Nothing here docks her. The autopilot stops short of the dock's call range
-// and holds, and the dock does not hail while the recovery runs. One flag and
-// the owner lock decide it, so a reload picks it up: the flag is banked with the
-// breach's answer and the lock with Sam's, and the chain deals Sam's card again
-// a couple of seconds into the system (sim/story.ts `dueBeat`) rather than
-// running the whole forty seconds once more.
+// Nothing here docks her. The autopilot stops short of the dock and holds, past
+// Sam's range so his call always comes first, and the dock does not hail while
+// the recovery runs. One flag and the owner lock decide it, so a reload picks it
+// up: the flag is banked with the breach's answer and the lock with Sam's, and
+// a load mid-recovery flies her in again from the system's edge to the same 2 km.
 
 /** Set by the breach notice's answer and never cleared: the vessel stays flagged for recovery. */
 export const RECOVERY_FLAG = 'recovery_flag';
-/** Seconds of play from the breach to Sam's channel. */
-export const RECOVERY_T = 40;
-/** Where the autopilot holds, short of the dock (its call range is 150). */
+/** Sam's channel opens this close to the dock: 2 km (units are 10 cm, sim/tuning.ts PX). */
+export const SAM_CALL_R = 200;
+/** The latest it comes, in seconds of play, should she ever be held off the dock (a fight, a jam). */
+export const RECOVERY_T = 90;
+/** Where the autopilot holds, short of the dock and inside Sam's range. */
 export const HOLD_R = 170;
 /** The autopilot's top speed, as a share of the hull's. */
 const CRUISE = 0.25;

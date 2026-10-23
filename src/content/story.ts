@@ -292,7 +292,7 @@ export const STORY_CARDS: CardDef[] = [
       // the recovery (sim/recovery.ts): Lane Control flies her in, and Sam's channel opens after forty seconds of play
       { id: 'proceed', label: 'Proceed to the audit dock', tone: 'run', hint: 'Lane Control flies the ship in. The debt stays with you.',
         win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 1.5, gap: 9, text: ['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”'] } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 1.5, gap: 6, text: ['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”'] } } },
     ],
   }),
   story({

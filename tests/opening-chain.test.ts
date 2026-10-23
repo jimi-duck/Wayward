@@ -73,7 +73,8 @@ describe('the opening chain beyond the gate', () => {
       // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
-      run(42);
+      // Sam's card comes 2 km out from the dock; the rest a few seconds apart
+      run(95);
     }
     expect(seen).toEqual(['story_breach', 'story_sam', 'story_rename', 'story_wake']);
     expect(w.phase).toBe('play');
