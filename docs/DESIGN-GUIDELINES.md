@@ -10,7 +10,7 @@ the project folder `design-guidelines/`.
 
 Clean code edges on an Apple-glass body: a dark teal glass that blurs the
 world behind it, a crisp neon rim with a tight glow, a hairline inside the
-rim, corner brackets outside it, and faint static scanlines. Never a wide,
+rim and faint static scanlines. Never a wide,
 soft, hazy glow. If a screenshot shows a halo around a corner, it fails.
 
 ## The material (`src/styles/neon.css`)
@@ -29,14 +29,15 @@ rounded (owner, 23 October 2026).
 | Rim | 2px, role colour, just outside the edge |
 | Glow | 2px blur at .8 and 6px at .35 along the rim, nothing wider |
 | Hairline | 1px, halo at 35%, 6px inside the rim |
-| Brackets | 2px L-shapes, 28px long (16px on cards), 8px outside each corner |
+| Brackets | none: just the box (owner, 23 October 2026) |
 | Corners | 45° cuts: 14px panels, 10px cards, buttons, rows and thumbnails (7px on registry thumbnails) |
-| Padding | 24px top and bottom, 32px sides on panels (16×20 on cards); 16px between blocks. Phones: 12×18, 10×14, 8px |
+| Padding | 32px top and bottom, 40px sides on panels (20×24 on cards); 16px between blocks. Phones: 18×26, 14×18, 10px |
+| Width | as wide as the content needs, up to the layout's limit; the pause card fits its content (the Arcade start is narrow) |
 
 How it is built: a chamfer cannot come from `clip-path` alone, because the
-clip would cut the glow and brackets. So each panel has three layers:
+clip would cut the glow. So each panel has three layers:
 
-- the element's **border image**: the rim, glow and brackets as a nine-slice
+- the element's **border image**: the rim and glow as a nine-slice
   SVG, drawn outside the box, so corners keep their size and edges stretch;
 - `::before`: the **glass** (fill, scanlines, sheen, blur, inner light) clipped
   to the chamfer, with the hairline as its own border image;
@@ -136,7 +137,7 @@ above still holds.
 | What | Where |
 |---|---|
 | Material and the opening's sheets and registry layout | `src/styles/neon.css` |
-| Chamfered frames (rim, glow, hairline, brackets) | `tools/neon-frames.mjs` writes `src/styles/neon-frames.css` |
+| Chamfered frames (rim, glow, hairline) | `tools/neon-frames.mjs` writes `src/styles/neon-frames.css` |
 | Sheet and registry drawing | `src/ui/comms.ts` (`sheetView`, `drawSheet`, `drawReg`) |
 | Arrivals (signal bars, ring, bearing line) | `src/ui/arrive.ts`; the motion CSS is the last part of `neon.css` |
 | Card fields (`glass`, `status`, `hero`, `quote`, `note`, `doc`, `side`) | `CardDef` in `src/sim/comms.ts` |
@@ -145,6 +146,6 @@ above still holds.
 ## Checks for every UI change
 
 Screenshots at 1600x900 and 568x320, English, every changed pop-up next to
-the mockup: rim, tight glow, see-through glass, brackets, role colour, no
+the mockup: rim, tight glow, see-through glass, role colour, no
 clipping, every answer reachable on the phone. For motion, sample the animations at fixed times
 (pause them and set `currentTime`; headless frames are too slow to catch them live) and check once with reduced motion.

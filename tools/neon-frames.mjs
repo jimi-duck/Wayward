@@ -23,7 +23,7 @@ const blur = (id, sd) => `<filter id="${id}" x="-50%" y="-50%" width="200%" heig
 
 /**
  * A panel's outer frame: the rim just outside the box edge, its tight glow (2px at .8, 6px at .35) and, on panels and
- * cards, the L brackets 8px outside each corner. Drawn on the element's own border image, outset `o`.
+ * cards (`arm` above 0), L brackets 8px outside each corner; the owner took them off (23 October 2026). Drawn on the element's own border image, outset `o`.
  */
 function frame({ c, o, k, arm, rim, halo, w = 2, a = 0.8, b = 0.35, fill = '' }) {
   const s = o + k, n = 2 * s + 2, box = n - 2 * o;
@@ -50,8 +50,8 @@ function hairline({ c, k, halo }) {
   return { url: uri(svg), slice: k };
 }
 
-const PANEL = { c: 14, o: 16, k: 24, arm: 28 };
-const CARD = { c: 10, o: 16, k: 20, arm: 16 };
+const PANEL = { c: 14, o: 12, k: 24, arm: 0 };
+const CARD = { c: 10, o: 12, k: 20, arm: 0 };
 const NEST = { c: 10, o: 6, k: 12, arm: 0, w: 1.5 };
 // nested glass fills: the role's dark glass, then its tint when marked or pressed
 const FILL = ROLES.cyan.base;

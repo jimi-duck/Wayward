@@ -17,7 +17,7 @@
   --ng-blur: blur(18px) saturate(160%);
   --ng-solid: linear-gradient(rgba(8, 13, 14, .92), rgba(8, 13, 14, .92));
   /* the spacing inside every panel: 24 by 32 on a screen, 12 by 18 on a phone; 16 between blocks */
-  --ng-pad: 24px 32px; --ng-pad-card: 16px 20px; --ng-gap: 16px;
+  --ng-pad: 32px 40px; --ng-pad-card: 20px 24px; --ng-gap: 16px;
 }
 /* a chamfered shape for clip-path, from the cut in --c */
 .ng, .sheet > .panel, #pause .pause-card, #rd-call, .ng-n, .ng-cut {
@@ -52,6 +52,8 @@
 #rd-call::before { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--ng-scan), var(--ng-sheen), linear-gradient(180deg, rgba(10, 24, 32, .9), rgba(8, 18, 24, .88)); }
 /* a panel never scrolls itself: its sheet does, and a panel taller than the screen starts at the top */
 .sheet > .panel, #pause .pause-card { overflow: visible; max-height: none; }
+/* the pause card is as wide as what it holds, never wider than the screen allows (the Arcade start is a short line and two buttons) */
+#pause .pause-card { width: fit-content; min-width: min(360px, 100%); max-width: min(720px, 94vw); }
 .sheet, #pause { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; place-items: safe center; }
 /* the same margin all round inside every panel (the old frame's lit left edge, and its wider left margin, are gone) */
 .sheet > .panel, #pause .pause-card, .sheet.dk > .panel.dk-panel, #comms > .panel.comms { padding: var(--ng-pad); }
@@ -75,7 +77,7 @@ button.ng-n:focus-visible { outline: 2px solid var(--blue); outline-offset: 7px;
 button.ng-n:active { border-image-source: var(--ng-n-press); }
 /* a phone: less blur to pay for, and tighter spacing */
 @media (max-height: 620px), (pointer: coarse) { :root { --ng-blur: blur(10px) saturate(150%); } }
-@media (max-height: 520px) { :root { --ng-pad: 12px 18px; --ng-pad-card: 10px 14px; --ng-gap: 8px; } }
+@media (max-height: 520px) { :root { --ng-pad: 18px 26px; --ng-pad-card: 14px 18px; --ng-gap: 10px; } }
 /* no blur, or the player asked for less transparency: the same rim on an opaque body */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::before { background: var(--ng-scan), var(--ng-solid); }
@@ -184,7 +186,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #comms.reg .panel.comms, #comms:not(.reg) .panel.registry { display: none; }
 #comms .panel.registry {
   font-size: clamp(12px, 1.02vw, 18px); width: min(1440px, 94vw); display: grid; gap: 1.1em;
-  padding: 1.5em 2.2em; color: var(--ink);
+  padding: 2em 2.6em; color: var(--ink);
 }
 #comms .panel.registry::before { background: var(--ng-scan), var(--ng-sheen), radial-gradient(70% 90% at 72% 42%, rgba(12, 30, 46, .1), transparent 70%), var(--ng-fill); }
 .registry .rg-h { display: flex; align-items: flex-start; gap: 1em; padding-bottom: .9em; border-bottom: 1px solid rgba(var(--halo), .35); }
@@ -242,7 +244,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 }
 /* a phone on its side: the name, the rows, the ship, the warning and the action stay; the repaint comparison takes a second look (scroll) */
 @media (max-height: 520px) {
-  #comms .panel.registry { font-size: 10.5px; gap: .5em; padding: 12px 18px; }
+  #comms .panel.registry { font-size: 10.5px; gap: .5em; padding: 16px 24px; }
   .registry .rg-h { padding-bottom: .4em; }
   .registry .rg-org b { font-size: 1.35em; }
   .registry .rg-main { column-gap: 1.2em; }
