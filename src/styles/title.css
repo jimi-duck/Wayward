@@ -104,13 +104,13 @@
 @media (max-aspect-ratio: 3/2) { #start { --art-pos: 100% 56%; } }
 /* a short screen (a phone on its side, a small window): the list, tighter, and no panels */
 @media (max-height: 620px) {
-  #start { padding-top: max(10px, calc(var(--safe-t) + 8px)); column-gap: 12px; }
+  #start { padding-top: max(10px, calc(var(--safe-t) + 8px)); column-gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(0, 160px); }
   .st-col { margin-top: 12px; gap: 8px; width: min(340px, 100%); }
   .st-w { font-size: clamp(24px, 7vh, 34px); letter-spacing: .3em; }
   .st-mark { width: clamp(28px, 7vh, 40px); }
   .st-tag { font-size: 10px; letter-spacing: .4em; margin-top: 4px; }
   .st-row { min-height: 40px; padding: 6px 14px 6px 36px; }
-  .st-t { font-size: 17px; }
+  .st-t { font-size: 15px; letter-spacing: .12em; }
   .st-s { font-size: 11px; }
   .st-step { background: linear-gradient(90deg, rgba(4, 7, 11, .94), rgba(4, 7, 11, .78) 72%, rgba(4, 7, 11, 0)); }
   .st-list { background: linear-gradient(90deg, rgba(4, 7, 11, .92), rgba(4, 7, 11, .72) 72%, rgba(4, 7, 11, 0)); }

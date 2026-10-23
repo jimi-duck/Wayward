@@ -12,9 +12,8 @@
      red    · the threat: the Continuance, hostiles, damage, pursuit. Only
               ever a meaning, never decoration
      white  · core readability; dust grey for anything inactive
-   Type: Barlow Condensed for titles, labels and figures (stencil-plate
-   uppercase), Barlow Semi Condensed for the sentences a player reads, Share
-   Tech Mono for data: serials, coordinates, key caps. The legacy names below
+   Type: Space Grotesk for titles, labels and the sentences a player reads
+   (uppercase for labels), Share Tech Mono for data: serials, coordinates, key caps. The legacy names below
    (--hud, --cy, --violet) now point at those roles. */
 :root {
   /* the brand palette */
@@ -67,9 +66,9 @@
   --line: rgba(216, 213, 198, .12);
   --frame: rgba(216, 213, 198, .2);
   --frame-hi: rgba(216, 213, 198, .42);
-  --font-display: "Barlow Semi Condensed", "Arial Narrow", sans-serif;
-  --font-head: "Barlow Condensed", "Arial Narrow", sans-serif;
-  --font-rail: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-head: "Space Grotesk", system-ui, sans-serif;
+  --font-rail: "Space Grotesk", system-ui, sans-serif;
   --font-mono: "Share Tech Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --ez: cubic-bezier(.2, .7, .2, 1);
   --safe-t: env(safe-area-inset-top, 0px);
@@ -1286,8 +1285,8 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
    The pause card reads top down like the ship's own printout: an id line and
    the state word, the title, the ship's one line at a prompt, then Orders,
    Status and Controls as ruled sections, then what to press. Mono for the
-   machine's words (the id, the rules, the keys, the foot), Barlow Condensed
-   for what you do, Barlow Semi Condensed for the sentence. No icons: the
+   machine's words (the id, the rules, the keys, the foot), Space Grotesk
+   for what you do and the sentence. No icons: the
    order numbers and the rules carry the hierarchy. */
 .pause-card.term { justify-items: stretch; gap: .8rem; width: min(680px, 94vw); text-align: left; }
 .term-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line);

@@ -81,7 +81,7 @@ The opening's pop-ups follow the owner's opening chapter mockups v10 and design 
 registry update (sheet H): Neon Glass in the role colour, numbered actions, documents that open on request and close
 back to their card. The rules and where they live are in [DESIGN-GUIDELINES.md](DESIGN-GUIDELINES.md); the cards'
 fields (`glass`, `status`, `hero`, `quote`, `note`, `doc`, `side`) are in `CardDef`. They replace the v5 handover's
-opening cards, Juno's lines, the attachments and the Rajdhani registry card.
+opening cards, Juno's lines, the attachments and the registry card.
 
 The registry update shows the real previous hull ID, `OB-7731-A`, struck through. Its hero is the owner's clean ochre
 ship (2026-10-22). The "Original livery" thumbnail is the earlier grey art, which already has WAYWARD painted on it, so

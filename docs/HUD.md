@@ -22,7 +22,7 @@ block at the end of `hud.css`).
 - Teal glow on teal values only, never on a label. Labels are 10 px mono, wide-tracked, muted.
 - Only the sweep, the hostile count and the eased gauges move.
 
-Kept from the game where the brief differed: the brand fonts (Barlow Condensed, Share Tech Mono), the colour roles (steel blue is the goal and the player, teal information, gold caution and a lock, red threat), jump fluid for Fluid, system heat for Heat, no ETA (the game has no honest one), no demo buttons.
+Kept from the game where the brief differed: the brand fonts (Space Grotesk, Share Tech Mono), the colour roles (steel blue is the goal and the player, teal information, gold caution and a lock, red threat), jump fluid for Fluid, system heat for Heat, no ETA (the game has no honest one), no demo buttons.
 
 ## Three levels
 

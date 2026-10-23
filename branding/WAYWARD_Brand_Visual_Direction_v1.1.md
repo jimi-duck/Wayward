@@ -228,7 +228,7 @@ rather than a typical gaming logo.
 
 ## Interface
 
-Use a clean condensed sans-serif.
+Use a clean sans-serif. In the game this is Space Grotesk (set 2026-10-23, replacing Barlow).
 
 Prefer:
 
