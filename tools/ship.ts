@@ -46,6 +46,7 @@ const s = newShip();
 s.heading = 0;
 s.thrust = heat;
 s.invuln = 0;
+ship.speedFrac = Number(params.get('speed') ?? '0.5'); // ?speed=0..1 and ?yaw=<rad/s>: the lean
 s.yawRate = Number(params.get('yaw') ?? '0');
 
 // where the camera sits, in the model's frame (nose +X, starboard +Z), and what it looks at

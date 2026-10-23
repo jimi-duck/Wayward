@@ -478,6 +478,9 @@ export class ShipView {
     }
   }
 
+  /** How fast she is going against her top speed (0 to 1), set by the sector: the lean scales with it. */
+  speedFrac = 0.5;
+
   /** The visible state the build adds: shield charges up, rapid fire, cloaked. */
   status = { charged: 0, rapid: false, cloaked: false };
 
@@ -486,11 +489,11 @@ export class ShipView {
     this.yawG.position.set(s.x, 0, s.z);
     this.yawG.rotation.y = s.heading;
 
-    const wantBank = clamp(-s.yawRate * 0.16, -0.6, 0.6);
-    const wantPitch = -0.07 * s.thrust;
-    const k = Math.min(1, 6 * dt);
-    this.bank = lerp(this.bank, wantBank, k);
-    this.pitch = lerp(this.pitch, wantPitch, k);
+    // mass reads in the lean: a turn at walking pace barely heels her, the same helm at speed leans harder, and she arrives in it a beat late
+    const wantBank = clamp(-s.yawRate * 0.16 * (0.5 + 0.9 * clamp(this.speedFrac, 0, 1)), -0.65, 0.65);
+    const wantPitch = -0.1 * s.thrust;
+    this.bank = lerp(this.bank, wantBank, Math.min(1, 4.2 * dt));
+    this.pitch = lerp(this.pitch, wantPitch, Math.min(1, 6 * dt));
     // a throttle snap lights the drives past the steady burn for a moment, then settles
     // heavy drives come up fast and wind down slowly; presentation only, s.thrust stays the truth for the sim
     const burn = lerp(this.heat, s.thrust, Math.min(1, (s.thrust > this.heat ? SPOOL_UP : SPOOL_DOWN) * dt));
