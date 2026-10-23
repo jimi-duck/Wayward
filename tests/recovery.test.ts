@@ -87,7 +87,7 @@ describe('the forced recovery', () => {
     expect(d1).toBeGreaterThan(Math.min(d0, PORT_CALL));
   });
 
-  it('has Sam on the radio in two beats while Lane Control flies her in', () => {
+  it('has Sam on the radio in four beats while Lane Control flies her in', () => {
     const j = beyond();
     const w = breach(j);
     w.events.length = 0;
@@ -97,12 +97,14 @@ describe('the forced recovery', () => {
       for (const e of w.events) if (e.type === 'ping' && e.from === 'Sam Okoro') heard.push([w.recoverT, e.text]);
       w.events.length = 0;
     }
-    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”']);
-    expect(heard[1]![0] - heard[0]![0]).toBeGreaterThan(4);
-    expect(heard[1]![0]).toBeLessThan(RECOVERY_T);
+    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”']);
+    // spread over the forty seconds, the last well before his channel opens
+    expect(heard[1]![0] - heard[0]![0]).toBeGreaterThan(6);
+    expect(heard[3]![0]).toBeLessThan(RECOVERY_T - 5);
   });
 
-  it('opens Sam’s channel after ten seconds of play, not before', () => {
+  it('opens Sam’s channel after forty seconds of play, not before', () => {
+    expect(RECOVERY_T).toBe(40);
     const j = beyond();
     const w = breach(j);
     run(w, RECOVERY_T - 0.2);
@@ -159,7 +161,7 @@ describe('the forced recovery', () => {
     run(w, 1);
     expect(w.comms).toBeNull();
     expect(w.ship.heading).toBeLessThan(h - 0.3);
-    run(w, 3);
+    run(w, 6);
     expect(w.comms?.def.id).toBe(RENAME_BEAT);
     answer(j, w, 'helm');
     run(w, 3);
@@ -174,7 +176,7 @@ describe('the forced recovery', () => {
 });
 
 describe('the forced recovery across a reload', () => {
-  it('during the recovery: still locked, and Sam’s card a moment in, not ten seconds', () => {
+  it('during the recovery: still locked, and Sam’s card a moment in, not forty seconds', () => {
     const j = beyond();
     const w0 = breach(j);
     run(w0, 5);

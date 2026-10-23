@@ -1595,7 +1595,7 @@ export class World implements EncounterHost {
     if (out.follow) this.follows.push({ card: out.follow.card, at: this.runTime + out.follow.after, quick: out.follow.quick });
     if (out.radio) {
       const lines = [out.radio.text].flat();
-      this.radioLines(`radio_${lines[0]!.slice(1, 12)}`, tr(out.radio.from), out.radio.caller ?? 'unknown', lines.map((l) => tr(l)), out.radio.delay ?? 0);
+      this.radioLines(`radio_${lines[0]!.slice(1, 12)}`, tr(out.radio.from), out.radio.caller ?? 'unknown', lines.map((l) => tr(l)), out.radio.delay ?? 0, out.radio.gap ?? RADIO_GAP);
     }
     if (out.job && !this.jobs.some((j) => j.id === out.job!.id)) this.jobs.push(out.job);
     if (out.drop) this.jobs = this.jobs.filter((j) => j.id !== out.drop);

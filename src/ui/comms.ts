@@ -134,7 +134,7 @@ export interface SheetPanel {
 
 /** The opening's sheets (docs/DESIGN-GUIDELINES.md): a main panel, maybe a second one beside it, and an optional document. */
 export interface SheetView {
-  main: SheetPanel & { hero: [string, string] | null; rows: Row[]; note: string };
+  main: SheetPanel & { hero: [string, string] | null; rows: Row[]; note: string; letter: { head: Array<[string, string]>; sign: string } | null };
   side: SheetPanel | null;
   /** The document behind the card: the row that opens it (after `at` rows, or as a numbered row), and what it shows. */
   doc: { open: string; at: number; row: boolean; kick: string; title: string; sub: string; rows: Row[]; note: string[]; label: string } | null;
@@ -149,6 +149,7 @@ function sheetView(d: Open['def'], o: Open): SheetView {
       role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role,
       title: d.notitle || d.hero ? '' : t(d.title), sub: d.quote ? '' : lines.join(' '), label: '', lines: d.quote ? lines : [],
       hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '', rx: d.rx ?? null,
+      letter: d.letter ? { head: d.letter.head.map(([k, v]) => [t(k), t(v)] as [string, string]), sign: t(d.letter.sign) } : null,
     },
     side: side ? {
       role: side.glass ?? 'cyan', from: t(side.from), status: side.status ? t(side.status) : '', dot: side.glass ?? 'cyan',
@@ -441,7 +442,11 @@ export class CommsPanel {
       m.hero ? h('div', 'ns-hero', '', h('b', '', m.hero[0]), h('span', '', m.hero[1])) : null,
       m.title ? h('h2', 'ns-t', m.title) : null,
       m.sub ? h('p', 'ns-sub', m.sub) : null,
-      quotes(m.lines),
+      // a written message: who it is for and from, then the writer's own paragraphs and sign-off
+      ...(m.letter ? [
+        h('dl', 'ns-mail', '', ...m.letter.head.map(([k, v]) => h('div', '', '', h('dt', '', k), h('dd', '', v)))),
+        h('div', 'ns-letter', '', ...m.lines.map((l) => h('p', '', l)), h('p', 'ns-sign', m.letter.sign)),
+      ] : [quotes(m.lines)]),
       main.length ? h('div', 'ns-rows', '', ...main) : null,
       m.note ? h('p', 'ns-note', m.note) : null,
       h('div', 'ns-acts', '', ...acts, ...(opener && d!.row ? [opener] : [])));

@@ -182,7 +182,7 @@ export interface Outcome {
   /** The opening ends here and starts again from the top (the raiders took the ship). */
   redo?: boolean;
   /** Lines on the radio, no answer asked: one subtitle beat each, the first `delay` seconds of play after the answer. */
-  radio?: { from: string; text: string | string[]; caller?: Caller; delay?: number };
+  radio?: { from: string; text: string | string[]; caller?: Caller; delay?: number; gap?: number };
   job?: JobDef;
   /** A job given up. */
   drop?: string;
@@ -283,6 +283,11 @@ export interface CardDef {
   hero?: [string, string];
   /** One quiet line above the actions, after a "›". */
   note?: string;
+  /**
+   * The text is a written message (the archive): a mail head of key and value lines over plain paragraphs, and the
+   * writer's sign-off under them. No quote bars, no title.
+   */
+  letter?: { head: Array<[string, string]>; sign: string };
   /**
    * An optional document behind the card: opened on request, closed back to the card, never shown beside it. `open` is the
    * row that opens it (`at`: after that many ledger rows; `row`: a numbered row after the choices instead). The note may run

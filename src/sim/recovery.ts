@@ -7,8 +7,8 @@ import type { Hull } from '../content/hulls';
 // The opening handover (2026-10-23, F → G). The breach notice is answered and
 // Lane Control takes the ship: the recovery flag is set, the player's flight
 // controls lock, and an autopilot flies her toward the company's audit dock.
-// After ten seconds of play (the game clock, so a pause or a document does not
-// count) Sam's private channel opens, once. His code lifts the owner lock: the
+// After forty seconds of play (the game clock, so a pause or a document does not
+// count; the owner, 23 October 2026) Sam's private channel opens, once. His code lifts the owner lock: the
 // autopilot lets go and the controls come back. The flag stays for good.
 //
 // Nothing here docks her. The autopilot stops short of the dock's call range
@@ -16,16 +16,16 @@ import type { Hull } from '../content/hulls';
 // the owner lock decide it, so a reload picks it up: the flag is banked with the
 // breach's answer and the lock with Sam's, and the chain deals Sam's card again
 // a couple of seconds into the system (sim/story.ts `dueBeat`) rather than
-// running the whole ten seconds once more.
+// running the whole forty seconds once more.
 
 /** Set by the breach notice's answer and never cleared: the vessel stays flagged for recovery. */
 export const RECOVERY_FLAG = 'recovery_flag';
 /** Seconds of play from the breach to Sam's channel. */
-export const RECOVERY_T = 10;
+export const RECOVERY_T = 40;
 /** Where the autopilot holds, short of the dock (its call range is 150). */
 export const HOLD_R = 170;
 /** The autopilot's top speed, as a share of the hull's. */
-const CRUISE = 0.45;
+const CRUISE = 0.3;
 
 /** Lane Control has the ship: flagged for recovery, and the owner lock not yet lifted. */
 export const recovering = (flags: ReadonlySet<string> | readonly string[]): boolean => {

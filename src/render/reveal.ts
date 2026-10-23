@@ -1,21 +1,24 @@
 // ── the rename reveal ─────────────────────────────────────────────────────
 // Sam's code lifts the owner lock (the `ship_stolen` flag, set once by the story card's answer) and the ship takes
-// her new identity in about two and a half seconds (the owner's rename reveal kit, 2026-10-22):
+// her new identity in about six seconds (the owner's rename reveal kit, 2026-10-22; longer and wider, owner 2026-10-23):
 //   0.00–0.35  the lock lifts: the HUD's centre notice says so, the hull is still grey
-//   0.35–1.45  one amber band crosses the hull from bow to stern; the plate behind it is ochre
-//   1.45–2.35  the camera swings about 24° round the ship (only when no hostile gun can reach her)
-//   2.40       the registry card (`story_rename`, a follow-up of the Sam card) pauses the game over that view
+//   0.35–2.40  one amber band crosses the hull from bow to stern; the plate behind it is ochre
+//   0.60–6.00  the camera swings slowly round to her flank and pulls back (only when no hostile gun can reach her)
+//   6.30       the registry card (`story_rename`, a follow-up of the Sam card) pauses the game over that view
 // After the card is answered the camera eases back. The flag is the livery: this only decides how it is shown, so a
 // save made at any point loads straight into the ochre hull with no replay. Reduced motion: ochre at once, no arc.
 // No Three.js here, so the timing is tested headless.
 
 export const LOCK_AT = 0.35;
-export const SWEEP_END = 1.45;
-export const ARC_END = 2.35;
+export const SWEEP_END = 2.4;
+export const ARC_START = 0.6;
+export const ARC_END = 6;
+/** When the registry card comes (the Sam card's follow-up, content/story.ts), just after the camera settles. */
+export const CARD_AT = 6.3;
 /** Seconds the camera takes to ease back once the card is answered. */
-const BACK = 0.9;
+const BACK = 1.6;
 /** The arc gives up if no card came (a save, a death, a jump) by then. */
-const GIVE_UP = 12;
+const GIVE_UP = 16;
 
 export interface RevealFrame {
   /** 0 grey to 1 ochre, when no sweep is running. */
@@ -81,14 +84,14 @@ export class RenameReveal {
 
     let arc = 0;
     if (this.orbit) {
-      if (i.paused && e >= SWEEP_END) this.held = true;
+      if (i.paused && e >= ARC_END - 0.05) this.held = true;
       // a gun in range, the card answered, or no card at all: the camera comes back
       const done = (this.held && !i.paused) || (!i.paused && !i.calm) || e > GIVE_UP;
-      if (done && this.release < 0) { this.release = 0; this.back = smooth((e - SWEEP_END) / (ARC_END - SWEEP_END)); }
+      if (done && this.release < 0) { this.release = 0; this.back = smooth((e - ARC_START) / (ARC_END - ARC_START)); }
       if (this.release >= 0) {
         this.release += i.paused ? 0 : dt;
         arc = this.back * (1 - smooth(this.release / BACK));
-      } else arc = smooth((e - SWEEP_END) / (ARC_END - SWEEP_END));
+      } else arc = smooth((e - ARC_START) / (ARC_END - ARC_START));
     }
     const over = e >= SWEEP_END && (!this.orbit || (this.release >= BACK));
     if (over) { this.t0 = -1; return { livery: 1, sweep: null, arc: 0 }; }

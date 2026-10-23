@@ -140,6 +140,15 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 .ns-open b { font: 600 12px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--rim); }
 .ns-open + .ns-r { margin-top: 8px; padding-top: 14px; border-top: 1px solid rgba(var(--halo), .3); }
 .ns-note { margin: 0; font: 400 15px/1.4 var(--font-display); color: var(--ink-2); }
+/* a written message (the archive): a quiet mail head, then plain paragraphs in the writer's voice and a sign-off */
+.ns-mail { display: grid; gap: 4px; margin: 2px 0 0; padding-bottom: 12px; border-bottom: 1px solid rgba(var(--halo), .3); }
+.ns-mail div { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.ns-mail dt { font: 600 12px/1.3 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.ns-mail dd { margin: 0; font: 500 15px/1.3 var(--font-display); color: #eceae0; }
+.ns-letter { display: grid; gap: 12px; max-width: 62ch; }
+.ns-letter p { margin: 0; font: 400 17px/1.5 var(--font-display); color: #eceae0; }
+.ns-letter .ns-sign { padding-top: 2px; color: #cfd2c8; }
+.ns-letter + .ns-acts { padding-top: 16px; border-top: 1px solid rgba(var(--halo), .3); }
 .ns-note::before { content: "› "; }
 .ns-acts { display: grid; gap: 14px; margin-top: 4px; }
 .ns-c { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 10px; min-height: 52px; padding: 10px 18px; text-align: left; }
@@ -199,8 +208,17 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-wrap[data-lay="row"] .ns-c .ns-l { letter-spacing: .08em; }
   .ns-from { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* the long reads (the stored message, its record, the breach and its status) keep their side margins and give a little height */
-  .ns-doc, .ns-main:has(.ns-hero), .ns-wrap[data-lay="col"] .ns-p { padding-top: 12px; padding-bottom: 12px; }
+  .ns-doc, .ns-main:has(.ns-hero), .ns-main:has(.ns-letter), .ns-wrap[data-lay="col"] .ns-p { padding-top: 12px; padding-bottom: 12px; }
   .ns-doc .ns-q p, .ns-main:has(.ns-hero) .ns-q p { font-size: 12.5px; line-height: 1.22; }
+  .ns-main:has(.ns-letter) { row-gap: 5px; }
+  /* the mail head on one line: a phone on its side needs the height for the message */
+  .ns-mail { display: flex; flex-wrap: wrap; gap: 0 14px; padding-bottom: 4px; }
+  .ns-mail div { display: flex; gap: 6px; }
+  .ns-mail dt { font-size: 10px; letter-spacing: .14em; }
+  .ns-mail dd { font-size: 12px; }
+  .ns-letter { gap: 4px; }
+  .ns-letter p { font-size: 12.5px; line-height: 1.24; }
+  .ns-letter + .ns-acts { padding-top: 8px; }
   .ns-doc .ns-q { gap: 3px; }
   .ns-doc .ns-r { padding: 2px 0; }
   /* a status panel sits beside its card, not under it */
