@@ -22,14 +22,14 @@ describe('the ship\'s computer', () => {
     for (const w of WEB) expect(reasonOf(w.id, ctx())).toBeNull();
   });
 
-  it('recommends the reactor core when power is full, and heat exchangers when hot', () => {
+  it('recommends the reactor core when power is full, and coolant loops when hot', () => {
     let l = stockLevels();
     for (let i = 0; i < 40 && !reasonOf('rx_core', ctx({ levels: l })); i++) {
       const next = WEB.find((n) => !NODE[n.id]!.gives && typeof install(n.id, bctx(l)) !== 'string' && (NODE[n.id]!.draw.power ?? 0) > 0);
       if (!next) break;
       l = fit(l, next.id, 1);
     }
-    expect(reasonOf('rx_core', ctx({ levels: l }))?.text).toBe('Power running short');
+    expect(reasonOf('rx_core', ctx({ levels: l }))?.text).toBe('Top speed slipping');
   });
 
   it('recommends defence when the plates are worn, and close work under pressure', () => {

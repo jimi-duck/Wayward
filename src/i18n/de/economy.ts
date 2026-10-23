@@ -92,7 +92,7 @@ export const ECONOMY: Record<string, string> = {
   'Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.': 'Cyrit ist dein Geld, für Upgrades und Häfen. Was der Tank nicht fasst, bleibt Cyrit.',
   'Not enough jump fluid': 'Zu wenig Sprungfluid',
   'Heavy · slower, +{n} jump fluid a jump': 'Schwer · langsamer, +{n} Sprungfluid pro Sprung',
-  'Heavy load · slower turning and {n} extra jump fluid per jump. Sell cargo or refit at the Bay to reduce the load.': 'Schwere Last · langsameres Drehen und {n} Sprungfluid mehr pro Sprung. Verkauf Fracht oder bau in der Werft um, um die Last zu senken.',
+  'Heavy load · sluggish handling and {n} extra jump fluid per jump. Sell cargo or refit at the Bay to reduce the load.': 'Schwere Last · träges Fliegen und {n} Sprungfluid mehr pro Sprung. Verkauf Fracht oder bau in der Werft um, um die Last zu senken.',
   'Need {n} more jump fluid to jump': 'Noch {n} Sprungfluid bis zum Sprung nötig',
   'to spend': 'zum Ausgeben',
   '{n} more to jump': 'noch {n} bis zum Sprung',

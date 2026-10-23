@@ -420,8 +420,8 @@ locked · yellow alert"). The badge is dim with nothing to fit, amber with a
 count of the suggestions you can pay for, yellow or red when locked.
 
 **Suggested first.** The bay opens on three suggestions (`quickPicks`):
-modules that suit the build (by its tags), a reactor core, heat exchangers
-or frame when that budget runs short, cheaper favoured, from different tabs,
+modules that suit the build (by its tags), a reactor core, coolant loops
+or frame when that load runs high, cheaper favoured, from different tabs,
 at most one new system. Each is a card with one line, the number that
 matters and the price on its button: one tap, or 1 2 3. A player who never opens the bay still gets a coherent
 ship; one who wants to plan opens a tab: Hull, Weapons, Ordnance, Engines,
@@ -433,16 +433,24 @@ costs Cyrite by tier in the Story mode (`STORY_PRICE`: 20, 27, 36, 48 for the
 first level; a quarter dearer for each level of the same part, and 7% dearer for
 every level already on the ship; the deep torpedo and mine modules cost 0.65
 to 0.7 of that, so ordnance builds keep pace), the same in the Arcade whatever
-the module or the level (`ARCADE_PRICE`), and draws power, mass or heat,
+the module or the level (`ARCADE_PRICE`), and loads the ship's power, mass or heat,
 against ratings of 8 each (the stock ship draws 5 power, 3 heat, 1 mass).
-Power is a ceiling; nothing comes out once fitted. Mass and heat can be run
-over, at a price (`sim/budgets.ts`): over the mass rating the ship loses
-thrust and helm (0.7 and 0.55 of the share over, never below 60%); over the
-heat rating the laser bank refills, and torpedoes, mines and the hull arc come
-round, slower (0.9 of the share over, never below half).
+The player never reads those; the bay shows what they do (`felt` in
+`sim/build.ts`, `FEEL` in `sim/budgets.ts`): mass is **Acceleration** (and a
+little top speed and helm), power is **Top speed** (and a little cooldown),
+heat is **Cooldown** (laser cycle, bank refill, torpedo reload, mines, the
+hull arc). Every module nudges its load, measured from the stock ship, so a
+ship handles a little differently with each part and nothing is refused.
+Past a rating a warning light comes on in the bay, the HUD line, the port and
+the chart (Sluggish, Strained, Slow guns) and the cost climbs faster (mass
+0.7 and 0.55 of the share over; power 0.5; heat 0.9; floors at 55 to 60%
+and half). Nothing comes out once fitted. The flight hull keeps acceleration
+and top speed apart (`flightHull`: the drag is solved to hold the top speed).
+Weapon "heat" here is the guns' cooldown; the HUD's Wanted bar is the alert
+and nothing to do with it.
 
 **Balance parts and endless ladders (the Story mode).** The reactor core
-(+3 power, draws 1 heat), the heat exchangers (+4 heat, draw 1 mass) and the
+(+3 power, draws 1 heat), the coolant loops (+4 heat, draw 1 mass) and the
 structural frame (+4 mass, draws 1 power) raise the ratings, are always open
 and have no top level (`limitOf`), so a build can always be brought back into
 trim, and never for free: each takes a little of the next gauge. Every stat
@@ -453,7 +461,7 @@ until the ship's own limits (`CAPS` in `sim/stats.ts`) leave a further level
 nothing to change; then it reads "At its limit" (`gains`). The bay shows what
 the next level costs and the one after. The Arcade's levels stop where they
 are written. The bay shows it all before an
-install: the budgets after, the figures that would suffer in red, and a line
+install: the three felt stats after, the figures that would suffer in gold, and a line
 saying what running over costs. A capital ship destroyed opens her faction's
 tech in Synergies. The HUD's "[B] Open bay" lights once a module can be
 fitted.
@@ -559,7 +567,7 @@ The branches:
   repairs, longer boosters) or **deep scanners** (boosters twice as
   often, elites carry twice the Cyrite).
 - **Reactor** (a bay tab, not an upgrade branch): the reactor core and the
-  heat exchangers raise the ship's power and cooling. There is no
+  coolant loops raise the ship's power and cooling. There is no
   overcharge.
 - **Synergies** (needing both halves): plasma warheads, laser detonators,
   the capacitor shield, arc warheads, and the ramjet

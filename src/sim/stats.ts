@@ -4,6 +4,7 @@ import {
   SHIELD_DELAY, SHIELD_MAX, SHIELD_RECHARGE, SHOT_COOLDOWN, TORP_ACCEL, TORP_BLAST, TORP_CONE, TORP_DAMAGE, TORP_MAX, TORP_RELOAD, TORP_SEEK, TORP_TURN,
 } from './tuning';
 import { SELF_REPAIR } from './repair';
+import { thrustPerStep, topSpeed } from './ship';
 
 // ── the ship's numbers ────────────────────────────────────────────────────
 // Everyone flies the same hull, so everything an upgrade can change lives in
@@ -101,8 +102,12 @@ export interface Stats {
   ramjet: boolean;
 
   // the ship
+  /** Upgrades: thrust raises both acceleration and top speed. */
   thrust: number;
   turn: number;
+  /** What the ship's loads do (sim/budgets.ts): multipliers on acceleration and on top speed, 1 for the stock ship. */
+  accel: number;
+  speed: number;
   grip: number;
   rollCooldown: number;
   rollKick: number;
@@ -181,7 +186,7 @@ export const BASE: Readonly<Stats> = Object.freeze({
 
   ramDamage: 3, ramSafe: false, ramjet: false,
 
-  thrust: 1, turn: 1, grip: HULL.grip, rollCooldown: ROLL_COOLDOWN, rollKick: ROLL_KICK, rollIframes: ROLL_IFRAMES,
+  thrust: 1, turn: 1, accel: 1, speed: 1, grip: HULL.grip, rollCooldown: ROLL_COOLDOWN, rollKick: ROLL_KICK, rollIframes: ROLL_IFRAMES,
   drift: false,
 
   maxPlates: HULL.plates, shieldMax: SHIELD_MAX, shieldRecharge: SHIELD_RECHARGE, shieldDelay: SHIELD_DELAY, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
@@ -288,10 +293,14 @@ export function capStats(s: Stats): Stats {
 
 /** The hull the flight model flies, with the build's engines, thrusters and dampers. */
 export function flightHull(s: Stats): Hull {
+  // acceleration and top speed are set apart: the drive pushes `a`, and the drag is what holds the top speed at `top`
+  const a = HULL.thrust * s.thrust * s.accel, base = topSpeed(HULL), top = base * s.thrust * s.speed;
+  const push = thrustPerStep({ ...HULL, thrust: a });
   return {
     ...HULL,
     plates: s.maxPlates,
-    thrust: HULL.thrust * s.thrust,
+    thrust: a,
+    drag: top / (push + top),
     rot: HULL.rot * s.turn,
     grip: s.grip,
     rollCooldown: s.rollCooldown,

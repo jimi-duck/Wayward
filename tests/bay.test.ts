@@ -3,8 +3,8 @@ import { UPGRADES, UPGRADE } from '../src/content/upgrades';
 import { MODULES } from '../src/content/modules';
 import { ARCADE_PRICE, FITTING, FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
 import { blockOf, budgets, cheapest, cost, install, maxLevel, PICKS, quickPicks, reachable, roleOf, stockLevels, type BayCtx } from '../src/sim/bay';
-import { computeStats, upgradeFigures } from '../src/sim/build';
-import { feelBudgets, overload, OVERLOAD } from '../src/sim/budgets';
+import { computeStats, felt, upgradeFigures } from '../src/sim/build';
+import { feel, feelBudgets, FEEL, overRatings } from '../src/sim/budgets';
 import { World } from '../src/sim/world';
 import { Rng } from '../src/sim/rng';
 
@@ -114,7 +114,7 @@ describe('the bay’s rules', () => {
     expect(blockOf('tech_gutter', ctx({ techs: new Set(['gutter']) }))).toBeNull();
   });
 
-  it('never fits past the power, and never twice past the top level', () => {
+  it('lets a ship draw past its power (the warning light, not a wall), and never fits twice past the top level', () => {
     let levels = stockLevels();
     // fill the power with whatever draws it
     for (const w of WEB.filter((x) => (x.draw.power ?? 0) > 0)) {
@@ -125,12 +125,12 @@ describe('the bay’s rules', () => {
       }
     }
     const { use, cap } = budgets(levels);
-    expect(use.power).toBeLessThanOrEqual(cap.power);
-    expect(WEB.some((w) => blockOf(w.id, ctx({ levels })) === 'power')).toBe(true);
+    expect(use.power).toBeGreaterThan(cap.power);
+    expect(overRatings(levels).power).toBe(true);
     for (const w of WEB) expect(levels[w.id] ?? 0).toBeLessThanOrEqual(maxLevel(w.id));
   });
 
-  it('never leaves a build stuck for power while the reactor core has room: there is no refund', () => {
+  it('keeps the reactor core open while it has room: there is no refund', () => {
     const rng = new Rng(5);
     for (let trial = 0; trial < 40; trial++) {
       let levels = stockLevels();
@@ -144,7 +144,7 @@ describe('the bay’s rules', () => {
     }
   });
 
-  it('lights what could be fitted with Krail enough, power or not', () => {
+  it('lights what could be fitted with Krail enough', () => {
     const lit = reachable(ctx({ krail: 0 })).map((w) => w.id);
     expect(lit).toContain('ph_emitters');
     expect(lit).toContain('rx_core');
@@ -153,33 +153,68 @@ describe('the bay’s rules', () => {
   });
 });
 
-describe('the budgets, felt (step 3)', () => {
-  it('cost nothing within the ratings', () => {
-    const o = overload(stockLevels());
-    expect(o.handling).toEqual({ thrust: 1, turn: 1 });
-    expect(o.cooling).toBe(1);
+describe('the loads, felt', () => {
+  it('leave the stock ship as it flies, and say nothing', () => {
+    const f = feel(stockLevels());
+    expect(f).toEqual({ accel: 1, speed: 1, turn: 1, cooldown: 1 });
+    expect(felt(stockLevels())).toEqual({ accel: 1, speed: 1, cooldown: 1 });
+    expect(overRatings(stockLevels())).toEqual({ mass: false, heat: false, power: false });
   });
 
-  it('a hot ship recharges and reloads slower; heat exchangers take it back', () => {
+  it('nudge a little with every module, long before a warning light', () => {
+    const one = { ...stockLevels(), df_armour: 1 }; // 3 mass of 8
+    expect(overRatings(one).mass).toBe(false);
+    const f = feel(one);
+    expect(f.accel).toBeLessThan(1);
+    expect(f.accel).toBeGreaterThan(0.9);
+    expect(f.turn).toBeLessThan(1);
+    // and a lighter module nudges less than a heavier one
+    expect(feel({ ...stockLevels(), mo_dampers: 1, mo_thrusters: 1 }).accel).toBeGreaterThan(f.accel);
+  });
+
+  it('a hot ship cycles its guns slower; coolant loops take it back', () => {
     const hot = { ...stockLevels(), ph_emitters: 5, ph_capacitors: 4, ph_pierce: 3 };
     const { use, cap } = budgets(hot);
     expect(use.heat).toBeGreaterThan(cap.heat);
+    expect(overRatings(hot).heat).toBe(true);
     const s = feelBudgets(computeStats(hot), hot), base = computeStats(hot);
     expect(s.bankRefill).toBeLessThan(base.bankRefill);
     expect(s.torpReload).toBeGreaterThan(base.torpReload);
-    const cooled = { ...hot, rx_sinks: 2 };
-    expect(feelBudgets(computeStats(cooled), cooled).bankRefill).toBe(computeStats(cooled).bankRefill);
+    expect(s.laserCooldown).toBeGreaterThan(base.laserCooldown);
+    const cooled = { ...hot, rx_sinks: 3 };
+    expect(overRatings(cooled).heat).toBe(false);
+    expect(feel(cooled).cooldown).toBeLessThan(feel(hot).cooldown);
   });
 
-  it('a heavy ship turns and speeds up slower, never below the floor; a frame takes it back', () => {
+  it('a heavy ship is slow off the mark and slow to turn, never below the floor; a frame takes it back', () => {
     const heavy = { ...stockLevels(), df_armour: 2, cl_ram: 3, cl_juggernaut: 1 };
-    const s = feelBudgets(computeStats(heavy), heavy), base = computeStats(heavy);
-    expect(s.thrust).toBeLessThan(base.thrust);
-    expect(s.turn).toBeLessThan(base.turn);
-    const worst = overload({ ...heavy, df_armour: 50 });
-    expect(worst.handling.thrust).toBe(OVERLOAD.massFloor);
-    const framed = { ...heavy, hl_frame: 3 };
-    expect(overload(framed).handling.thrust).toBe(1);
+    expect(overRatings(heavy).mass).toBe(true);
+    const s = feelBudgets(computeStats(heavy), heavy);
+    expect(s.accel).toBeLessThan(1);
+    expect(s.turn).toBeLessThan(1);
+    expect(s.speed).toBeLessThan(1);
+    expect(feel({ ...heavy, df_armour: 50 }).accel).toBe(FEEL.floor.accel);
+    expect(feel({ ...heavy, hl_frame: 3 }).accel).toBeGreaterThan(feel(heavy).accel);
+  });
+
+  it('a starved reactor lowers the top speed; a core takes it back', () => {
+    const flat = { ...stockLevels(), df_shield: 1, df_armour: 1, df_repair: 1, df_regen: 1 };
+    expect(overRatings(flat).power).toBe(true);
+    expect(feel(flat).speed).toBeLessThan(1);
+    expect(feel({ ...flat, rx_core: 2 }).speed).toBeGreaterThan(feel(flat).speed);
+  });
+
+  it('shows in the flight hull: acceleration and top speed are set apart', () => {
+    const w = new World(1), light = w.hull;
+    w.setLevels({ ...stockLevels(), cl_juggernaut: 1, df_armour: 2, cl_ram: 3 });
+    expect(w.hull.thrust).toBeLessThan(light.thrust);
+    const f = felt(w.levels);
+    expect(f.accel).toBeLessThan(1);
+    expect(f.speed).toBeLessThan(1);
+    // a drive upgrade that raises thrust raises both, as it did
+    w.setLevels({ ...stockLevels(), mo_impulse: 1 });
+    expect(felt(w.levels).accel).toBeGreaterThan(1);
+    expect(felt(w.levels).speed).toBeGreaterThan(1);
   });
 
   it('both modes fly with it, and the figures show it', () => {

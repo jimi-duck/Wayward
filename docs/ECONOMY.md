@@ -98,12 +98,13 @@ is gone.
 The ship is the point of the money. Every part has an upside and a downside,
 and there is always something to fit.
 
-- **Three gauges.** Every part draws Power, Heat or Mass (`WEB` in
-  `content/web.ts`). Power is a ceiling: a part that needs more than is free
-  cannot be fitted. Over the Heat rating the guns recharge and reload slower;
-  over the Mass rating the ship is slower and each jump burns more fluid.
+- **Three loads, felt as Acceleration, Top speed and Cooldown.** Every part
+  loads Power, Heat or Mass (`WEB` in `content/web.ts`). Each nudges the ship a
+  little (`sim/budgets.ts`), nothing is refused, and a warning light comes on
+  past a rating. Over the Heat rating the guns cycle slower; over the Mass
+  rating the ship is slower off the mark and each jump burns more fluid.
 - **Balance parts, with no end.** The reactor core (+3 power, 1 heat), the heat
-  exchangers (+4 heat, 1 mass) and the frame (+4 mass, 1 power) are open at
+  coolant loops (+4 heat, 1 mass) and the frame (+4 mass, 1 power) are open at
   every work bay and have no top level. Each takes a little of the next gauge,
   so a big ship needs about one balance part for every three or four parts
   it carries, and a ring of them never runs out.
@@ -145,8 +146,8 @@ The ship still flies. It flies worse.
 - **Out of supplies**: thrust, turning and the guns' cycle run at 85%
   (`EMPTY_STORES`), patching stops, and each jump in the lane costs a plate
   (never below one). A crate brings it back at once.
-- **Heavy** (mass over the frame's rating of 8): thrust and turning fall by
-  the overload rule in `sim/budgets.ts` (down to 60%), and each jump burns one
+- **Heavy** (mass over the frame's rating of 8): acceleration and turning fall by
+  the overload rule in `sim/budgets.ts` (down to 55 and 60%), and each jump burns one
   more Cyrite per point over, up to six (`WEIGHT_FUEL`). The chart shows the
   full price of each lane.
 - **Running hot** (heat over the rating): the guns recharge and reload slower.

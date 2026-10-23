@@ -32,9 +32,9 @@ const GUARD = new Set<Branch>(['defence']);
 export function reasonOf(id: string, ctx: AdviceCtx): Advice | null {
   const node = NODE[id], u = UPGRADE[id];
   const { use, cap } = budgets(ctx.levels);
-  if (node?.gives?.power && use.power >= cap.power - 1) return { text: 'Power running short', rank: 0 };
-  if (node?.gives?.heat && use.heat / cap.heat >= 0.8) return { text: 'Running hot', rank: 0 };
-  if (node?.gives?.mass && use.mass / cap.mass >= 0.8) return { text: 'Running heavy', rank: 0 };
+  if (node?.gives?.power && use.power >= cap.power - 1) return { text: 'Top speed slipping', rank: 0 };
+  if (node?.gives?.heat && use.heat / cap.heat >= 0.8) return { text: 'Cooldown creeping up', rank: 0 };
+  if (node?.gives?.mass && use.mass / cap.mass >= 0.8) return { text: 'Handling getting heavy', rank: 0 };
   if (!u) return null;
   if (ctx.plates < ctx.maxPlates && ctx.plates <= Math.ceil(ctx.maxPlates / 2) && GUARD.has(u.branch)) return { text: 'Plates down to {n}/{max}', vars: { n: ctx.plates, max: ctx.maxPlates }, rank: 1 };
   if (ctx.pressure >= 3 && CLOSE_WORK.has(u.branch)) return { text: 'Hostiles pressing close', rank: 2 };

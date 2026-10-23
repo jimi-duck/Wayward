@@ -9,15 +9,15 @@
 // A node opens once any node it comes `from` is fitted (a node with none is
 // open from the start), and then by the upgrade's own rules: what it
 // requires, one specialisation per group, a branch deep enough
-// (sim/build.ts `available`). Each level costs Krail, more by tier, and
-// draws on the ship's budgets:
+// (sim/build.ts `available`). Each level costs Krail, more by tier,
+// and loads the ship's three ratings, which it feels (sim/budgets.ts):
 //
-//   power · drawn by what runs: guns, drives, shields, kit. A hard ceiling:
-//           what needs more than is free cannot be fitted.
-//   mass  · added by plating, racks and heavy gear. Over the frame's rating
-//           the ship turns and speeds up slower.
-//   heat  · made by weapons and the drive. Over the sinks' rating the guns
-//           recharge and reload slower.
+//   mass  · added by plating, racks and heavy gear: acceleration and helm.
+//   power · drawn by what runs: guns, drives, shields, kit: top speed.
+//   heat  · made by weapons and the drive: the guns' cooldown.
+//
+// Every module nudges these a little; past a rating a warning light comes on
+// and the cost climbs. Nothing is refused for them: the bay only tells.
 //
 // In the Story mode the yard's modules (content/modules.ts) sit here too,
 // every install is fitted only while docked, and the ladders do not end:
@@ -43,7 +43,7 @@ export const TABS: Record<Tab, TabDef> = {
   defence: { name: 'Defence', sub: 'Shields · the hull arc' },
   utility: { name: 'Utility', sub: 'Tractor · scanners · Cyrite' },
   signals: { name: 'Signals', sub: 'Stealth · sensors · contacts' },
-  reactor: { name: 'Reactor', sub: 'Power · heat · the core' },
+  reactor: { name: 'Reactor', sub: 'Speed · cooling · the core' },
   synergies: { name: 'Synergies', sub: 'Pairings · salvaged tech' },
 };
 export const TAB_ORDER = Object.keys(TABS) as Tab[];
@@ -92,9 +92,9 @@ export interface WebNode {
 export interface Fitting { id: string; name: string; text: string; max: number; }
 
 export const FITTINGS: Fitting[] = [
-  { id: 'rx_core', name: 'Reactor core', text: 'A bigger core: more power for everything you fit.', max: 3 },
-  { id: 'rx_sinks', name: 'Heat exchangers', text: 'More sinks: your guns and drive run hotter before they suffer.', max: 3 },
-  { id: 'hl_frame', name: 'Structural frame', text: 'A stronger frame: the hull carries more mass before it slows.', max: 3 },
+  { id: 'rx_core', name: 'Reactor core', text: 'A bigger core: the drive keeps its top speed as you fit more.', max: 3 },
+  { id: 'rx_sinks', name: 'Coolant loops', text: 'More cooling: your guns keep their cooldown as you fit more.', max: 3 },
+  { id: 'hl_frame', name: 'Structural frame', text: 'A stronger frame: the hull stays quick off the mark under a heavier load.', max: 3 },
 ];
 export const FITTING: Record<string, Fitting> = Object.fromEntries(FITTINGS.map((f) => [f.id, f]));
 

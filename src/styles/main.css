@@ -779,7 +779,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bi-pips i.add { background: var(--hud); opacity: .45; animation: hud-blink 1.2s ease-in-out infinite; }
 .bi-text { margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink); }
 .bi-note { margin: 0; font: 400 12px/1.4 var(--font-display); color: var(--ink-2); }
-.bi-warn { margin: 0; padding: 6px 8px; border-left: 2px solid var(--alert); background: rgba(40, 12, 10, .45); font: 600 calc(var(--fs) * .95 * 1.18)/1.3 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--alert); }
+.bi-warn { margin: 0; padding: 6px 8px; border-left: 2px solid var(--caution); background: rgba(40, 32, 12, .45); font: 600 calc(var(--fs) * .95 * 1.18)/1.3 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--caution); }
 /* the delta chips: what a part moves and by how much (teal with an arrow for a gain, amber and no arrow for a cost; before and after in the tooltip) */
 .bi-dl { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
 .dl { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 10px; background: rgba(76, 194, 203, .06); border-left: 2px solid var(--cy); }
@@ -920,6 +920,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 /* the bay: tab state, installing, the Before → After the player reads */
 .bay-tab { position: relative; }
 .bb-v em { font-style: normal; color: var(--hud); }
+.bb-v.better em { color: var(--cy); }
+.bb-v.worse em { color: var(--caution); }
 .bb-v.bump, .bb.bump .bb-v { animation: bay-bump .7s var(--ez); }
 @keyframes bay-bump { 0% { color: var(--hud-hi); text-shadow: 0 0 10px var(--hud); } 100% { color: var(--ink); text-shadow: none; } }
 .bay-node.fresh .bn-oct { animation: bay-fit .7s var(--ez); }
@@ -934,9 +936,9 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bb-bar i { flex: 1; background: rgba(216, 213, 198, .1); }
 .bb-bar i.on { background: var(--cy); }
 .bb-bar.warn i.on { background: var(--hud); }
-.bb-bar.over i { background: var(--alert); }
+.bb-bar.over i { background: var(--caution); }
 .bb-bar i.add { background: var(--hud-mid); animation: seg-blink 1.25s ease-in-out infinite; }
-.bb-bar.will i.add { background: var(--alert); }
+.bb-bar.will i.add { background: var(--caution); }
 .bb-bar i.new { animation: seg-on .22s var(--ez) backwards; animation-delay: calc(var(--k, 0) * 40ms + 100ms); }
 .bb-bar i.pop { animation: seg-pop .26s var(--ez) backwards; animation-delay: calc(var(--k, 0) * 40ms); }
 @keyframes seg-blink { 50% { opacity: .35; } }
@@ -948,8 +950,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bb-l { display: flex; align-items: center; gap: 8px; }
 .bb-w { display: inline-flex; align-items: center; gap: 4px; font-size: calc(var(--fs) * .8 * 1.18); letter-spacing: .12em; color: var(--hud); }
 .bb-w i { font-style: normal; font-size: 9px; }
-.bb.over .bb-w { color: var(--alert); animation: hud-blink 1s ease-in-out infinite; }
-.bb.over .bb-v { color: var(--alert); }
+.bb.over .bb-w { color: var(--caution); animation: hud-blink 1s ease-in-out infinite; }
+.bb.over .bb-v { color: var(--caution); }
 @media (max-width: 900px), (max-height: 520px) { .bb-wt { display: none; } }
 /* the install line: from the module to the ship part it belongs to */
 @media (prefers-reduced-motion: reduce) { .bb.over .bb-w { animation: none; } }
@@ -1088,7 +1090,7 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bi-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { padding: 3px 7px; font: 600 calc(var(--fs) * .95)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--cy); border: 1px solid var(--cy-dim); }
 .chip.gives { color: var(--green); border-color: rgba(157, 179, 90, .4); }
-.chip.over { color: var(--alert); border-color: var(--alert-dim); }
+.chip.over { color: var(--caution); border-color: var(--caution); }
 .bi-name { font-size: clamp(16px, 1.6vw, 20px); }
 @media (max-width: 760px) and (min-height: 521px) { .pick-row { grid-template-columns: 1fr; } }
 @media (max-height: 520px) { .pick-row { gap: 8px; } .pc-name { font-size: 15px; } .pc-oct { width: 30px; height: 30px; } .pc-oct .ico-img { width: 21px; height: 21px; } }

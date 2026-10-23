@@ -24,3 +24,20 @@ Before (same seeds, 6 runs, 10:00 cap):
 | mine+mobility | 8:17 | 28.7 | 368 / 284 | 56% | 0:57 | 11.8 | 90,313 | 2/6 |
 
 Reading it: wrecks went from about half the Krail to about three quarters, refits came 50 to 150 percent more often, and survival is level (0 to 2 of 6 before, 0 to 3 after). Feel is not measured: the pilot cannot say whether the opening reads as a fight or the extra upgrades feel earned. That wants a real-device play.
+
+## Felt stats (Acceleration, Top speed, Cooldown)
+
+Every module now nudges the ship a little (`sim/budgets.ts` `FEEL`), and the power ceiling is a warning light instead of a wall. 12 seeded runs per strategy, 10:00 cap, the same seeds on `main` and on this change (the table above is the older 6-run set).
+
+| Strategy | Mean time | Contacts | Krail wreck / rock | Refits | Score | Survived |
+|---|---|---|---|---|---|---|
+| random, before | 7:34 | 29.3 | 780 / 262 | 16.6 | 93,876 | 0/12 |
+| random, after | 7:20 | 24.4 | 591 / 229 | 14.0 | 68,950 | 0/12 |
+| laser+defence, before | 7:58 | 30.6 | 998 / 574 | 19.9 | 347,602 | 2/12 |
+| laser+defence, after | 8:05 | 28.4 | 853 / 495 | 19.2 | 270,877 | 3/12 |
+| torpedo+laser, before | 7:40 | 34.3 | 1057 / 261 | 16.8 | 132,860 | 0/12 |
+| torpedo+laser, after | 7:58 | 30.7 | 1073 / 256 | 17.8 | 126,828 | 3/12 |
+| mine+mobility, before | 8:34 | 35.7 | 1102 / 258 | 19.3 | 118,308 | 5/12 |
+| mine+mobility, after | 8:12 | 30.6 | 913 / 226 | 17.2 | 95,957 | 3/12 |
+
+Reading it: runs last about as long (7:20 to 8:12 against 7:34 to 8:34) and survival is level (9 of 48 after, 7 of 48 before). Fewer contacts and a little less Krail, since a loaded ship is slower to reach the next wreck. The pilot flies a heavy build as well as a light one; whether the nudges are noticeable, and whether they are pleasant, is not measured here. That wants a real-device play.

@@ -3,7 +3,8 @@ import { UPGRADE } from '../content/upgrades';
 import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
 import { blockOf, budgets, cost, endless, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
 import type { Advice } from '../sim/advice';
-import { upgradeFigures, type Fig } from '../sim/build';
+import { feel } from '../sim/budgets';
+import { felt, upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
 import { profileOf } from '../sim/profile';
 import { stepOf } from '../sim/tutor';
@@ -61,12 +62,24 @@ const WHY: Record<Block, string> = {
   path: 'Fit the one before it first',
   needs: 'Needs more of its system, or a rival is fitted',
   yard: 'Fitted only at a port',
-  power: 'Not enough power · fit a reactor core',
   krail: 'Not enough Cyrite',
 };
-const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass', heat: 'Heat' };
-/** What running over a soft rating costs (sim/budgets.ts). */
-const OVER_WORD = { mass: 'Over the mass rating: slower to turn and to speed up', heat: 'Over the heat rating: the guns recharge and reload slower' } as const;
+/** The three things a ship feels, which the three loads set (sim/budgets.ts): mass is acceleration, power is top speed, heat is cooldown. */
+const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Top speed', mass: 'Acceleration', heat: 'Cooldown' };
+/** What the warning light says when a load is past its rating. */
+const LIGHT_WORD: Record<keyof Budget, string> = { power: 'Strained', mass: 'Sluggish', heat: 'Slow guns' };
+/** What running past a rating costs (sim/budgets.ts). */
+const OVER_WORD: Record<keyof Budget, string> = {
+  mass: 'Past the load rating: slow off the mark and slow to turn',
+  power: 'Past the reactor rating: lower top speed and slower guns',
+  heat: 'Past the cooling rating: the guns take longer to cycle',
+};
+/** The felt stat a load sets, in `felt()` (sim/build.ts), and which way is better. */
+const FELT: Record<keyof Budget, { key: 'accel' | 'speed' | 'cooldown'; lower: boolean }> = {
+  mass: { key: 'accel', lower: false }, power: { key: 'speed', lower: false }, heat: { key: 'cooldown', lower: true },
+};
+/** A felt stat as a share of the stock ship's: "104%". */
+const feltPct = (v: number): string => `${Math.round(v * 100)}%`;
 
 const nameOf = (id: string) => t(nodeName(id));
 const textOf = (id: string, lv: number) => t(nodeText(id, lv));
@@ -113,7 +126,7 @@ function stateOf(world: World, id: string): 'max' | 'owned' | 'open' | 'short' |
   const lv = world.levels[id] ?? 0, b = blockOf(id, world.bayCtx());
   if (b === 'full') return 'max';
   if (b === null) return lv ? 'owned' : 'open';
-  if (b === 'krail' || b === 'power') return lv ? 'owned' : 'short';
+  if (b === 'krail') return lv ? 'owned' : 'short';
   return lv ? 'owned' : 'locked';
 }
 
@@ -143,6 +156,8 @@ export class BayPanel {
   private fresh: { id: string; moved: Set<string> } | null = null;
   /** The budget readouts as last drawn, so a fit can tick from what they said (see budgetBar). */
   private shown: Record<string, string> = {};
+  /** And the loads behind them, as use and rating, for the segments to light from. */
+  private loads: Record<string, [number, number]> = {};
   /** The ship's answer to a fit, in the voice line, until this timer puts the voice back. */
   private logT = 0;
   /** The choice the ship link was last drawn for. */
@@ -181,6 +196,7 @@ export class BayPanel {
     this.closing = false;
     $('bay').classList.remove('chosen', 'leaving', 'warm');
     this.shown = {};
+    this.loads = {};
     this.linked = '';
     // the bay opens on the suggestions; the tabs are a step further in
     this.view = 'picks';
@@ -292,11 +308,11 @@ export class BayPanel {
   private install(id: string): void {
     const w = this.world;
     if (!w || this.closing) return;
-    const before = budgets(w.levels), krailBefore = Math.floor(w.purse);
+    const before = budgets(w.levels), feltBefore = felt(w.levels), krailBefore = Math.floor(w.purse);
     let fitted = false;
     if (w.install(id) === null) {
       const after = budgets(w.levels), moved = new Set<string>(['krail']);
-      for (const k of ['power', 'mass', 'heat'] as const) if (after.use[k] !== before.use[k] || after.cap[k] !== before.cap[k]) moved.add(k);
+      for (const k of ['power', 'mass', 'heat'] as const) if (after.use[k] !== before.use[k] || after.cap[k] !== before.cap[k] || feltBefore[FELT[k].key] !== felt(w.levels)[FELT[k].key]) moved.add(k);
       this.fresh = { id, moved };
       fitted = true;
       // the web's panel flashes; in the suggestions it is see-through, so the flash would only draw a stray frame
@@ -551,7 +567,7 @@ export class BayPanel {
       damaged: tab === 'hull' && worn(w.plates, w.stats.maxPlates),
       ready: blocks.filter((b) => b === null).length,
       fitted: nodes.some((n) => (w.levels[n.id] ?? 0) > 0),
-      reachable: blocks.some((b) => b === null || b === 'krail' || b === 'power' || b === 'yard'),
+      reachable: blocks.some((b) => b === null || b === 'krail' || b === 'yard'),
     });
   }
 
@@ -741,11 +757,13 @@ export class BayPanel {
       const { use, cap } = budgets(w.levels);
       const chips = h('div', 'bi-chips');
       const warn: string[] = [];
+      // what the module's weight, draw and heat do to the ship, apart from what it is for (the figures above)
+      const now = feel(w.levels), then = feel({ ...w.levels, [id]: lv + 1 });
+      const effect: Record<keyof Budget, [number, number]> = { mass: [now.accel, then.accel], power: [now.speed, then.speed], heat: [now.cooldown, then.cooldown] };
       for (const k of ['power', 'mass', 'heat'] as const) {
-        const d = node.draw[k] ?? 0, g = node.gives?.[k] ?? 0;
-        if (d) chips.append(h('span', `chip ${k}${use[k] + d > cap[k] ? ' over' : ''}`, `+${d} ${t(BUDGET_WORD[k])}`));
-        if (g) chips.append(h('span', `chip ${k} gives`, `${t(BUDGET_WORD[k])} ${t('limit')} +${g}`));
-        if (d && k !== 'power' && use[k] + d > cap[k]) warn.push(t(OVER_WORD[k]));
+        const d = node.draw[k] ?? 0, [a, b] = effect[k], pctChange = Math.round((b / a - 1) * 100);
+        if (pctChange) chips.append(h('span', `chip ${k}${FELT[k].lower === pctChange > 0 ? ' over' : ' gives'}`, `${t(BUDGET_WORD[k])} ${pctChange > 0 ? '+' : '−'}${Math.abs(pctChange)}%`));
+        if (d && use[k] + d > cap[k]) warn.push(t(OVER_WORD[k]));
       }
       if (chips.childElementCount) out.push(chips);
       out.push(...warn.map((x) => h('p', 'bi-warn', x)));
@@ -769,39 +787,46 @@ export class BayPanel {
     el.replaceChildren(...out);
   }
 
-  /** The ship's three budgets along the bottom, with what the selected module would take. */
+  /** What the ship feels along the bottom: acceleration, top speed, cooldown, with what the selected module would make of each. */
   private budgetBar(w: World): void {
-    const { use, cap } = budgets(w.levels);
+    const { use, cap } = budgets(w.levels), now = felt(w.levels);
     const sel = this.view === 'picks' ? this.picks()[this.pick] ?? null : this.sel ? NODE[this.sel] : null;
     const can = sel && blockOf(sel.id, w.bayCtx()) !== 'full';
-    $('bay-budget').replaceChildren(...(['power', 'mass', 'heat'] as const).map((k) => {
-      const add = can ? sel!.draw[k] ?? 0 : 0;
-      // the rating's state: a word from 80%, a louder one over (power is a ceiling: it fills, it never goes over)
-      const share = use[k] / cap[k], state = k === 'power' ? (share >= 1 ? 'warn' : '') : share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
-      const word = state === 'over' ? 'Over limit' : state === 'warn' ? (k === 'power' ? 'Full' : 'Warning') : '';
-      // a fit just moved this rating: it ticks from what it said to what it says now, with the old figure struck beside it
-      const now = `${use[k]}/${cap[k]}`, was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== now;
-      this.shown[k] = now;
-      // one segment per point of rating: lit for what the ship draws, blinking for what the selected part would add;
+    const next = can ? felt({ ...w.levels, [sel!.id]: (w.levels[sel!.id] ?? 0) + 1 }) : null;
+    $('bay-budget').replaceChildren(...(['mass', 'power', 'heat'] as const).map((k) => {
+      const add = can ? sel!.draw[k] ?? 0 : 0, { key, lower } = FELT[k];
+      // the warning light: only once the load is past its rating. A little short of it the bar warms, with no word.
+      const share = use[k] / cap[k], state = share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
+      const word = state === 'over' ? LIGHT_WORD[k] : '';
+      // a fit just moved this stat: it ticks from what it said to what it says now, with the old figure struck beside it
+      const shownNow = feltPct(now[key]), was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== shownNow;
+      this.shown[k] = shownNow;
+      // one segment per point of rating: lit for the load the ship carries, blinking for what the selected part would add;
       // after a fit the new ones light one by one and a raised rating's new slots pop in
-      const [wasUse = 0, wasCap = 0] = moved ? was!.split('/').map(Number) : [];
+      const wasLoad = this.loads[k], wasUse = wasLoad?.[0] ?? 0, wasCap = wasLoad?.[1] ?? 0;
+      this.loads[k] = [use[k], cap[k]];
+      const lit = moved && !!wasLoad;
       const segs: HTMLElement[] = [];
       for (let j = 0; j < cap[k]; j++) {
-        const on = j < use[k], fresh = moved && on && j >= wasUse, slot = moved && j >= wasCap;
+        const on = j < use[k], fresh = lit && on && j >= wasUse, slot = lit && j >= wasCap;
         const seg = h('i', [on ? 'on' : j < use[k] + add ? 'add' : '', fresh ? 'new' : '', slot ? 'pop' : ''].filter(Boolean).join(' '));
         if (fresh || slot) seg.style.setProperty('--k', String(fresh ? j - wasUse : j - wasCap));
         segs.push(seg);
       }
-      // a part that would take it past a soft rating shows red before it is fitted (power is a ceiling: it never goes over)
-      const will = k !== 'power' && add > 0 && use[k] + add > cap[k];
+      // a part that would take the load past its rating shows before it is fitted
+      const will = add > 0 && use[k] + add > cap[k];
       const bar = h('i', `bb-bar${state ? ` ${state}` : ''}${will ? ' will' : ''}`, '', ...segs);
-      const fig = h('span', 'bb-n', now);
+      bar.title = `${t('Load')} ${use[k]}/${cap[k]}`;
+      const fig = h('span', 'bb-n', shownNow);
       const val = h('b', `bb-v${moved ? ' bump' : ''}`, '', fig);
+      const then = next ? feltPct(next[key]) : shownNow;
       if (moved) {
-        tick(fig, was!, now);
+        tick(fig, was!, shownNow);
         val.prepend(h('s', 'bb-was', was!));
         setTimeout(() => this.open && this.world && this.budgetBar(this.world), 1500);
-      } else if (add) val.append(h('em', '', ` → ${use[k] + add}`));
+      } else if (then !== shownNow) val.append(h('em', '', ` → ${then}`));
+      // better (teal) or worse (gold): cooldown is better when lower
+      if (then !== shownNow) val.classList.add((next![key] < now[key]) === lower ? 'better' : 'worse');
       return h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : [])), bar, val);
     }));
   }

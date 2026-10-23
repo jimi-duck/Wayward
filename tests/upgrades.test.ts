@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { UPGRADES } from '../src/content/upgrades';
-import { STORY_PRICE, WEB } from '../src/content/web';
+import { NODE, STORY_PRICE, WEB } from '../src/content/web';
 import { blockOf, budgets, built, cost, endless, install, limitOf, maxLevel, stockLevels, type BayCtx } from '../src/sim/bay';
 import { computeStats, gains, overhaul } from '../src/sim/build';
 import { depthOf, DEPTH, bountyAt, newJourney, sortieDef, threatAt } from '../src/sim/journey';
@@ -98,12 +98,14 @@ describe('endless ladders', () => {
   });
 
   it('let a ship that keeps adding gear find its way back into balance, at a price that rises', () => {
-    // a heavy gun build: keep fitting emitters and capacitors, adding a core when power runs out
+    // a heavy gun build: keep fitting emitters and capacitors, adding a core before power runs out
     let levels = stockLevels();
     const ctx = (l: typeof levels) => story({ levels: l });
     for (let i = 0; i < 40; i++) {
+      const { use, cap } = budgets(levels);
       for (const id of ['ph_emitters', 'ph_capacitors', 'df_shield', 'rx_core']) {
-        if (blockOf(id, ctx(levels)) === null) { levels = { ...levels, [id]: (levels[id] ?? 0) + 1 }; break; }
+        // a ship that means to stay in trim adds a core before the gear that would run its reactor over
+        if (blockOf(id, ctx(levels)) === null && (id === 'rx_core' || use.power + (NODE[id]!.draw.power ?? 0) <= cap.power)) { levels = { ...levels, [id]: (levels[id] ?? 0) + 1 }; break; }
       }
     }
     const { use, cap } = budgets(levels);
