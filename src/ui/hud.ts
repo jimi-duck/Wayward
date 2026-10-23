@@ -22,7 +22,7 @@ import { Notifier, type Notice } from './notify';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
 import { lockLifted } from '../sim/postjump';
-import { SAM_BEAT, WAKE_BEAT } from '../content/story';
+import { BREACH_BEAT, SAM_BEAT, WAKE_BEAT } from '../content/story';
 import { recovering } from '../sim/recovery';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
@@ -212,6 +212,8 @@ export class Hud {
         case 'comms': this.note(world, `${t(e.slow ? 'Ambush' : 'Channel open')} · ${t(e.from)}`, e.slow ? 'hit' : undefined); break;
         case 'commsAnswer':
           this.note(world, t(e.text), e.won ? undefined : 'hit');
+          // Lane Control's status, as the recovery autopilot takes her (the owner, 23 October 2026)
+          if (e.id === BREACH_BEAT) this.notify(world, { type: 'warning', headline: 'Vessel flagged for recovery', reason: 'Controls locked · Recovery autopilot active', key: 'recovery' });
           // the rename reveal's first beat (render/reveal.ts): Sam's code took, say so while the hull is still grey
           if (e.id === SAM_BEAT && lockLifted(world.flags)) this.notify(world, { type: 'arrival', headline: 'Owner lock lifted', reason: 'Autopilot disabled', key: 'lock' });
           // after the archive (sheet J): the new name is paint, not papers

@@ -103,8 +103,8 @@ Unknown callers keep a white status dot until combat makes them hostile.
   invented serials, dates or itemisation.
 - **Money:** credit reads `20 CR`; a projection is never a balance and a debt
   is never netted against it.
-- **Inside a panel:** thin rules and quoted lines with a left bar, no extra
-  neon on every region. Glow only where it means something.
+- **Inside a panel:** thin rules; a speaker's lines run as one block of text
+  with no left bar (the owner, 23 October 2026). No extra neon on every region. Glow only where it means something.
 - **HUD is not a pop-up:** instruments, objectives and the low-centre notices
   keep their thin lines and restrained glow (`docs/DESIGN.md`).
 

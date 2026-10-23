@@ -126,7 +126,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 .ns-hero span { font: 700 22px/1.1 var(--font-head); letter-spacing: .12em; text-transform: uppercase; color: #f2f1ea; }
 .ns-label { margin: 6px 0 -4px; font: 600 12px/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: #7fdce6; }
 .ns-q { display: grid; gap: 10px; }
-.ns-q p { margin: 0; padding: 1px 0 1px 14px; border-left: 2px solid rgba(var(--halo), .9); font: 400 17px/1.45 var(--font-display); color: #eceae0; }
+.ns-q p { margin: 0; font: 400 17px/1.45 var(--font-display); color: #eceae0; }
 .ns-rows { display: grid; padding-top: 8px; border-top: 1px solid rgba(var(--halo), .3); }
 .ns-r { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 7px 0; }
 .ns-r .k { font: 600 13px/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
@@ -181,7 +181,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-hero span { font-size: 16px; padding-bottom: 3px; }
   .ns-label { margin: 0; font-size: 10px; }
   .ns-q { gap: 5px; }
-  .ns-q p, .ns-side .ns-q p { padding-left: 9px; font-size: 13.5px; line-height: 1.25; }
+  .ns-q p, .ns-side .ns-q p { font-size: 13.5px; line-height: 1.25; }
   .ns-rows { padding-top: 3px; }
   .ns-r { padding: 3px 0; }
   .ns-r .k { font-size: 10.5px; letter-spacing: .14em; }
