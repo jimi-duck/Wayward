@@ -84,6 +84,12 @@ const frame = (now: number) => {
   // three.js yaw: heading 0 keeps the model's +X; the bench swings the camera, not the ship
   camera.position.set(x * c - z * sn, y, x * sn + z * c);
   camera.lookAt(lx, ly, lz);
+  // ?view=hulk&n=<0..3>: look at one of the sky's dead hulks from 160 units off, for judging them
+  if (view === 'hulk') {
+    const hs = (env as unknown as { parallax: { hulks: Array<{ g: { position: { x: number; y: number; z: number } } }> } }).parallax.hulks, h = hs[Number(params.get('n') ?? '0') % hs.length]!.g.position;
+    camera.position.set(h.x - 120, h.y + 70, h.z + 90);
+    camera.lookAt(h.x, h.y, h.z);
+  }
   if (hitBearing !== null && !hitDone) {
     const b = Number(hitBearing) * Math.PI / 180;
     ship.flareShield(false, Math.cos(b) * 5, Math.sin(b) * 5);

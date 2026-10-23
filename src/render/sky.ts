@@ -1,9 +1,10 @@
 import {
-  AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedMesh,
+  AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, Euler, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedMesh,
   LinearFilter, Mesh, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, RingGeometry, Scene, ShaderMaterial,
   SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer,
 } from 'three';
 import { farWorks } from './farworks';
+import { hulkModel } from './space';
 import { glowTexture } from './textures';
 
 // ── the sky ───────────────────────────────────────────────────────────────
@@ -537,6 +538,7 @@ function spikeTexture(): Texture {
 
 const WISP_BOX = 900;
 const DEBRIS_BOX = 260;
+const HULK_BOX = 1100;
 
 /** Nearer stars, nebula wisps far below the plane, and debris under the field: things that slide past at their own depth. */
 export class Parallax {
@@ -545,6 +547,8 @@ export class Parallax {
   private readonly debris: InstancedMesh;
   private readonly rocks: { x: number; y: number; z: number; s: number; ax: Vector3; spin: number }[] = [];
   private readonly dummy = new Object3D();
+  /** The dead: two to four hulks of the fleets' own designs, huge and cold, far under the plane, each tumbling on its own slow axis. Scenery, never in the sim. */
+  private readonly hulks: { g: Group; x: number; y: number; z: number; ax: Vector3; spin: number; phase: number }[] = [];
   private t = 0;
 
   constructor() {
@@ -564,6 +568,17 @@ export class Parallax {
   setSky(sky: Sky): void {
     for (const w of this.wisps) { w.s.material.dispose(); w.s.removeFromParent(); }
     this.wisps.length = 0;
+    for (const h of this.hulks) h.g.removeFromParent();
+    this.hulks.length = 0;
+    const hr = rand(sky.seed * 5 + 9), n = 2 + Math.floor(hr() * 3);
+    for (let i = 0; i < n; i++) {
+      const g = hulkModel(Math.floor(hr() * 5)), size = 34 + hr() * 30;
+      g.scale.setScalar(size);
+      g.quaternion.setFromEuler(new Euler(hr() * 6, hr() * 6, hr() * 6));
+      // a fraction of a degree a second, each its own way round
+      this.hulks.push({ g, x: hr() * HULK_BOX, y: -95 - hr() * 90, z: hr() * HULK_BOX, ax: new Vector3(hr() - 0.5, hr() - 0.5, hr() - 0.5).normalize(), spin: (0.004 + hr() * 0.008) * (hr() < 0.5 ? -1 : 1), phase: hr() * 6 });
+      this.group.add(g);
+    }
     const r = rand(sky.seed * 3 + 1);
     for (let i = 0; i < 12; i++) {
       const c = sky.neb[i % 2]!.clone().multiplyScalar(0.8 + r() * 0.4);
@@ -586,6 +601,10 @@ export class Parallax {
     this.t += dt;
     for (const w of this.wisps) {
       w.s.position.set(cx + wrap(w.x - cx, WISP_BOX) - WISP_BOX / 2, w.y, cz + wrap(w.z - cz, WISP_BOX) - WISP_BOX / 2);
+    }
+    for (const k of this.hulks) {
+      k.g.position.set(cx + wrap(k.x - cx, HULK_BOX) - HULK_BOX / 2, k.y, cz + wrap(k.z - cz, HULK_BOX) - HULK_BOX / 2);
+      k.g.quaternion.premultiply(this.dummy.quaternion.setFromAxisAngle(k.ax, k.spin * dt));
     }
     const d = this.dummy, h = DEBRIS_BOX / 2;
     for (let i = 0; i < this.rocks.length; i++) {
