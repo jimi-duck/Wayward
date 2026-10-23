@@ -197,9 +197,7 @@ function shieldMaterial(): ShaderMaterial {
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       void main() {
         vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
-        // how far down the barrel the eye looks: the plume is thin there, so it must not paint over the drive face
-        vAxial = abs(dot(normalize(normalMatrix * vec3(-1.0, 0.0, 0.0)), vV)); vP = position;
+        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position;
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */ `
