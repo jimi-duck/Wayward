@@ -374,7 +374,9 @@
   #port .pl-ico .ico { width: 18px; height: 18px; }
   #port .port-l.buy { grid-template-columns: 40px minmax(0, 1fr); gap: 4px 8px; }
   #port .port-l.buy .pl-d { display: none; }
-  #port .pl-t { font-size: 13px; }
+  #port .pl-t { font-size: 12px; letter-spacing: .06em; }
+  #port .pl-p, #port .pl-badge, #port .pl-chip { letter-spacing: .04em; }
+  #port .port-l { min-width: 0; }
   #port .pl-q { width: 40px; height: 40px; }
   #port .pl-go { min-height: 40px; }
   #port .pl-tot { display: none; }
@@ -443,6 +445,26 @@
   #port .port-list.buys { grid-template-columns: 1fr; }
   #port .port-stock { grid-template-columns: 1fr 1fr; }
   #port .ps-c:nth-child(3) { border-left: 0; }
+}
+/* the wider face on phones on their side: three buy cards are narrow, so rows wrap instead of running into the next card */
+@media (max-height: 460px) and (max-width: 900px) {
+  #port .pl-t { overflow-wrap: break-word; }
+  #port .port-l.buy .pl-buy { flex-wrap: wrap; }
+  #port .port-l.buy .pl-go { margin-left: 0; padding: 6px 8px; letter-spacing: .04em; }
+  #port .port-l.buy .pl-q { width: 32px; }
+  #port .port-l.stop { flex-wrap: wrap; }
+  #port .port-l.stop .pl-m { flex: 1 1 100%; }
+  #port .port-l.stop .pl-r { margin-left: 0; flex-wrap: wrap; gap: 6px 10px; }
+  #port .port-l.stop .pl-chips { flex-wrap: wrap; }
+  #port .port-l.bay { grid-template-columns: minmax(0, 1fr) minmax(0, auto); }
+  #port .port-l.bay .pl-go { min-width: 0; padding: 8px 10px; letter-spacing: .04em; }
+}
+/* 568x320: three buy cards leave 36px for words beside the picture, so the picture goes */
+@media (max-height: 460px) and (max-width: 600px) {
+  #port .port-l.buy { grid-template-columns: minmax(0, 1fr); grid-template-areas: "m" "st" "buy"; }
+  #port .port-l.buy .pl-art { display: none; }
+  #port .pl-t { font-size: 11px; letter-spacing: .02em; }
+  #port .port-l.bay .pl-go { font-size: 11px; letter-spacing: .02em; padding: 8px 8px; }
 }
 @media (max-height: 460px) and (max-width: 1000px) {
   #port .port-list.buys { grid-template-columns: repeat(3, minmax(0, 1fr)); }
