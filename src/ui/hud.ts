@@ -694,11 +694,12 @@ export class Hud {
         : e.id === 'anomaly' ? t('Keep clear of the core')
         : t(def.text));
     } else if (!bk) {
-      // the arcade between events: break rock toward the next refit, which opens by itself
-      text($('obj-t'), t('Collect Cyrite'));
-      text($('obj-left'), `${Math.floor(world.krail)}/${this.next || '—'}`);
+      // the arcade between events: how long you have lasted, and the Krail toward the next refit, which opens by itself
+      const sec = Math.floor(world.runTime);
+      text($('obj-t'), t('Survive'));
+      text($('obj-left'), `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`);
       ticks($('obj-p'), this.next ? Math.min(1, world.krail / this.next) : 1, 30);
-      text($('obj-s'), '');
+      text($('obj-s'), `${t('Upgrade')} · ${Math.floor(world.krail)}/${this.next || '—'}`);
       const list = $('obj-list');
       if (list.innerHTML) list.innerHTML = '';
     }
