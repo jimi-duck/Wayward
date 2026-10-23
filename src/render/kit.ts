@@ -237,6 +237,8 @@ export interface MetalOptions {
   worn?: number;
   /** With `worn`: soot from the drives, rising from nothing at x = soot[0] to full at soot[1] (model units, aft is -X). */
   soot?: [number, number];
+  /** With `worn`: broad shading over the whole model (plate-to-plate tone and hue, light from above, a sooty underside), for the hero ship. */
+  shade?: boolean;
   /** With `worn`: old hits, [x, y, z, reach] in model space, up to six: scorched, the paint burnt back round each. */
   hits?: Array<[number, number, number, number]>;
 }
@@ -295,9 +297,9 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);`);
-    if (worn > 0) wearShader(shader, painted);
+    if (worn > 0) wearShader(shader, painted, !!o.shade);
   };
-  m.customProgramCacheKey = () => `kit-metal3-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}`;
+  m.customProgramCacheKey = () => `kit-metal5-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}-${o.shade ? 1 : 0}`;
   return m;
 }
 
@@ -306,7 +308,7 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
  * see wear.ts. `painted` decides what wear does to the colour: paint comes
  * off to bright steel; bare metal only scuffs lighter.
  */
-function wearShader(shader: { vertexShader: string; fragmentShader: string }, painted: number): void {
+function wearShader(shader: { vertexShader: string; fragmentShader: string }, painted: number, shade: boolean): void {
   shader.vertexShader = shader.vertexShader
     .replace('varying vec3 vKitP;', 'varying vec3 vKitP; attribute vec2 wear; varying vec2 vWear; varying vec3 vKitM;')
     .replace('vKitP = position * uKitScale;', 'vKitP = position * uKitScale; vKitM = position; vWear = wear;');
@@ -331,7 +333,8 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
       float wStreak = smoothstep(0.5, 0.85, wFbm(wp * vec3(7.0, 0.7, 7.0) + 2.3)) * smoothstep(0.35, 0.6, wLow);
       vec3 wSteel = vec3(0.45, 0.44, 0.42) * (0.7 + 0.5 * wN);
       // each plate its own shade; a few sun-faded
-      diffuseColor.rgb *= ${painted ? '0.84 + 0.3 * wTone' : '0.88 + 0.24 * wTone'};
+      diffuseColor.rgb *= ${shade ? (painted ? '0.66 + 0.62 * wTone' : '0.76 + 0.5 * wTone') : (painted ? '0.84 + 0.3 * wTone' : '0.88 + 0.24 * wTone')};
+      ${shade ? (painted ? 'diffuseColor.rgb *= mix(vec3(1.0), vec3(1.12, 0.92, 0.66), smoothstep(0.5, 0.9, fract(wTone * 5.7)) * 0.8);' : 'diffuseColor.rgb *= mix(vec3(1.0), vec3(0.84, 0.96, 1.18), smoothstep(0.4, 0.8, fract(wTone * 3.1)) * 0.85);') : ''}
       ${painted ? 'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11))) * 1.2, step(0.85, wTone) * 0.16 * uWorn);' : ''}
       // grime worked in, heaviest in the dents; soot astern; scorch marks from old hits
       float wGrime = smoothstep(0.38, 0.78, wFbm(wp * vec3(0.8, 3.2, 3.2) + 3.7)) * 0.6 + wDent.x * 0.45 + wStreak * 0.35;
@@ -349,6 +352,9 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
       wCol *= 1.0 - min(wGrime + step(0.62, fract(wTone * 7.3)) * 0.3, 0.65) * uWorn;
       ${painted ? 'wCol = mix(wCol, vec3(0.2, 0.09, 0.04), wStreak * 0.45 * uWorn * (1.0 - wBare));' : ''}
       wCol = mix(wCol, vec3(0.04, 0.035, 0.03), clamp(wSoot * 0.6 + wScorch * 0.9, 0.0, 0.92) * uWorn);
+      // light and dirt across the whole hull: the upper surfaces sun-bleached and clean, the underside sooty, broad patches darker or warmer
+      ${shade ? "wCol *= mix(0.62, 1.2, smoothstep(-0.55, 0.55, wp.y)) * (0.74 + 0.52 * wLow);" : ''}
+      ${shade && painted ? 'wCol = mix(wCol, wCol * vec3(1.14, 0.88, 0.66), smoothstep(0.5, 0.72, wFbm(wp * 0.9 + 8.0)) * 0.7);' : ''}
       diffuseColor.rgb = wCol;
       float wDirt = (wGrime + wSoot + wScorch) * uWorn;`)
     .replace('roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);', `roughnessFactor = clamp(roughnessFactor + (0.5 - kitC.g) * 0.5, 0.2, 1.0);

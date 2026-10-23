@@ -23,7 +23,7 @@ let mats: Record<string, Material> | null = null;
 function materials(hits: Hit[]): Record<string, Material> {
   if (mats) return mats;
   // all of her worn by hard use (wear.ts), sooted astern by her own drives
-  const used = { worn: 1, soot: [2.15, 2.95] as [number, number], hits };
+  const used = { worn: 1, shade: true, soot: [2.15, 2.95] as [number, number], hits };
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(...LIVERY.stockGlow), ...used });
   mats = {
     // weathered grey plate, one shade lighter and one darker, the repaint's three tints under them
@@ -32,9 +32,9 @@ function materials(hits: Hit[]): Record<string, Material> {
     paint3: amber(LIVERY.stock[2]),
     // field repairs: plate patched on in grey primer, never painted over
     primer: metal({ tint: 0x8a8f80, roughness: 0.7, metalness: 0.15, scale: 1.1, painted: true, ...used }),
-    hull: metal({ tint: 0x4d4a38, roughness: 0.55, metalness: 0.5, ...used }),
-    dark: metal({ tint: 0x2e2c22, roughness: 0.55, metalness: 0.35, scale: 1.5, ...used }),
-    pipe: metal({ tint: 0x34322f, roughness: 0.45, metalness: 0.55, scale: 2, ...used }),
+    hull: metal({ tint: 0x6a6f78, roughness: 0.55, metalness: 0.5, emissive: new Color(0.018, 0.022, 0.03), ...used }),
+    dark: metal({ tint: 0x41454d, roughness: 0.55, metalness: 0.35, scale: 1.5, emissive: new Color(0.014, 0.018, 0.026), ...used }),
+    pipe: metal({ tint: 0x454850, roughness: 0.45, metalness: 0.55, scale: 2, ...used }),
     rubber: new MeshStandardMaterial({ color: 0x141414, roughness: 0.95, metalness: 0 }),
     window: new MeshStandardMaterial({ color: 0x0b1416, roughness: 0.12, metalness: 0.9, emissive: new Color(0.02, 0.09, 0.11) }),
     red: new MeshBasicMaterial({ color: new Color(3.2, 0.35, 0.25), toneMapped: false }),
@@ -313,6 +313,11 @@ function hull(k: Kit, rnd: Rnd): void {
     k.wedge('paint', [[1.0, sd * 0.4], [1.75, sd * 0.32], [2.35, sd * 0.1], [1.75, sd * 0.2], [1.0, sd * 0.24]], 0.05, [0, HY + 0.2, 0], [sd * 0.5, 0, 0]);
     k.wedge('dark', [[0.9, sd * 0.44], [1.9, sd * 0.3], [2.5, sd * 0.07], [1.9, sd * 0.18], [0.9, sd * 0.3]], 0.1, [0, HY - 0.2, 0], [sd * -0.45, 0, 0]);
   }
+  // the prow's armour: two stacked arrowhead plates stepping down the bow, a centre seam between, so it reads as a faceted wedge
+  k.wedge('paint', [[1.5, -0.36], [2.5, -0.15], [2.95, -0.02], [2.95, 0.02], [2.5, 0.15], [1.5, 0.36]], 0.045, [0, HY + 0.285, 0], [0, 0, -0.1]);
+  k.wedge('paint2', [[1.75, -0.27], [2.4, -0.12], [2.78, 0], [2.4, 0.12], [1.75, 0.27]], 0.04, [0, HY + 0.34, 0], [0, 0, -0.16]);
+  k.box('dark', [1.05, 0.012, 0.016], [2.3, HY + 0.375, 0], [0, 0, -0.16]);
+  k.wedge('hull', [[1.6, -0.2], [2.5, -0.06], [2.5, 0.06], [1.6, 0.2]], 0.03, [0, HY - 0.36, 0], [0, 0, 0.12]);
   k.cyl('pipe', 0.045, 0.06, 0.16, [3.0, HY + 0.02, 0], 'x', 10);
   k.cyl('hull', 0.018, 0.018, 0.18, [3.12, HY + 0.02, 0], 'x', 6);
   for (const x of [2.18, 2.5]) k.box('dark', [0.03, 0.02, 0.5 - (x - 2.18) * 0.7], [x, HY + 0.24 - (x - 2.18) * 0.28, 0], [0, 0, -0.55]);
