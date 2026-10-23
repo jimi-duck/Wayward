@@ -28,6 +28,10 @@ adds its own shape.
   (pace 0.8 to 2.8 of a hauler's cruise) and distances. They are wards, `meek`, never
   armed, outside the director's count; none starts within 140 units of the ship or
   inside a ring, and routes miss the start, the gate and both docks.
+- **No anomalies** (owner, 23 October 2026; `calm` on the sortie). No ion storm, nebula
+  or gravity well, as a chance event or as the system's place (`calmWeights`), and the
+  sky's features keep their rock and their look but do nothing to sensors, locks or
+  flight, so no "anomaly" report. Other events (a distress call, a derelict) still come.
 
 ## The objective follows one flag
 

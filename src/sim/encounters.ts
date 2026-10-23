@@ -95,7 +95,7 @@ export interface Encounter {
 /** Seconds the ship must spend inside an anchored weather event for it to pay. */
 export const DWELL: Partial<Record<EncounterId, number>> = { ion_storm: 8, nebula: 6, anomaly: 6 };
 /** The events that are weather, and ride the feature they sit in. */
-const WEATHER = new Set<EncounterId>(['ion_storm', 'nebula', 'anomaly']);
+export const WEATHER: ReadonlySet<EncounterId> = new Set<EncounterId>(['ion_storm', 'nebula', 'anomaly']);
 /** Whether an event is live: begun, and not over. A dormant place is neither. */
 export const live = (e: Encounter | null | undefined): e is Encounter => !!e && !e.done && !e.dormant;
 
@@ -152,6 +152,9 @@ export function pickEncounter(t: number, last: EncounterId | null, unlocked: Rea
   for (const id of pool) { roll -= w(id); if (roll <= 0) return id; }
   return pool[pool.length - 1]!;
 }
+
+/** The event weights with the weather taken out: a calm system has no ion storm, nebula or gravity well. */
+export const calmWeights = <W extends Partial<Record<EncounterId, number>>>(w: W): W => ({ ...w, ion_storm: 0, nebula: 0, anomaly: 0 });
 
 /** Start an event; `place`, a place on the chart playing it, with its own name and banner line. */
 export function startEncounter(id: EncounterId, h: EncounterHost, place?: { name: string; text: string }, at?: { x: number; z: number; r: number; act: number }): Encounter {

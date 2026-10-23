@@ -1,6 +1,7 @@
 import type { Exp } from '../content/profiles';
 import { BASE_PRICES } from '../content/systems';
 import type { SortieDef } from './breakout';
+import { WEATHER } from './encounters';
 
 // ── the first system past Cerro ───────────────────────────────────────────
 // The level the first jump lands in (docs/POSTJUMP.md). A mined-out industrial
@@ -52,5 +53,8 @@ export function postJump(def: SortieDef): SortieDef {
     pace: { ...WORKED.pace },
     heatRate: Math.min(def.heatRate, WORKED.heatRate),
     exp: POSTJUMP_SKY,
+    // no anomalies here (owner, 23 October 2026): no storm, nebula or gravity well, as an event or as the system's place
+    calm: true,
+    place: def.place && WEATHER.has(def.place.plays) ? null : def.place,
   };
 }

@@ -28,7 +28,7 @@ import { Stage, makeStage } from './stage';
 import { lockLifted } from './postjump';
 import { RECOVERY_T, recovering, recoveryControls } from './recovery';
 import { Traffic } from './traffic';
-import { live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
+import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
   ALIEN_FIRST, ARCADE_OPENING, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SPAWN_FAR, SPAWN_NEAR, SQUADS, VARIANTS,
@@ -626,7 +626,7 @@ export class World implements EncounterHost {
     const p = pressure(this.clock, this.mods);
     // Lane Control's recovery has the helm until Sam's code lifts the owner lock
     const held = !!this.bk && recovering(this.flags);
-    const c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held ? recoveryControls(s, this.bk!.audit, this.hull) : flightControls(input);
+    const c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held ? recoveryControls(s, this.bk!.audit, this.hull, [...this.field.rocks, ...this.field.bulwarks, ...this.aliens]) : flightControls(input);
     stepShip(s, c, this.hull, dt);
     if (held) this.recoverT += dt;
     this.flushRadio();
@@ -1890,6 +1890,11 @@ export class World implements EncounterHost {
     const space = this.space!;
     space.step(dt, this.runTime, s);
     const a = space.sample(s.x, s.z, this.air);
+    // a calm system has no anomalies: the sky's features keep their rock and their look, and nothing else
+    if (this.sortie.calm) {
+      Object.assign(a, { sight: CALM.sight, lock: CALM.lock, jam: CALM.jam, drag: CALM.drag, ax: 0, az: 0, conceal: CALM.conceal, steady: CALM.steady, shield: CALM.shield });
+      a.from = a.from.filter((f) => f.def !== 'storm' && f.def !== 'well');
+    }
     easeSky(this.levels, a);
     this.field.zone = a.rock;
     this.navNoise = Math.max(Math.max(0, a.jam - a.steady), this.navNoise > 0 ? this.navNoise - dt * 0.5 : 0);
@@ -2026,7 +2031,8 @@ export class World implements EncounterHost {
     }
     // only in open sky: no capital ship about, and not just before one; a quiet system has no chance events
     if (this.sortie.quiet || t < this.nextEvent || this.command.state !== 'idle' || this.command.next - t < 20) return;
-    const id = pickEncounter(t, this.lastEvent, this.unlocked, this.rng, this.survival.events.weights);
+    const weights = this.sortie.calm ? calmWeights(this.survival.events.weights) : this.survival.events.weights;
+    const id = pickEncounter(t, this.lastEvent, this.unlocked, this.rng, weights);
     if (!id) { this.nextEvent = t + 20; return; }
     if (e?.dormant) this.parked = e;
     this.encounter = startEncounter(id, this);
