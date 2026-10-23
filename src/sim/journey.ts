@@ -560,7 +560,9 @@ export function bankAnswer(j: Journey, before: Carry, after: Carry): void {
   const diff = (a: string[], b: string[]) => a.filter((x) => !b.includes(x));
   if (after.civic !== undefined && before.civic !== undefined && after.civic !== before.civic) c.civic = clampCivic((c.civic ?? CIVIC_START) + after.civic - before.civic);
   c.flags = [...diff(c.flags, diff(before.flags, after.flags)), ...diff(diff(after.flags, before.flags), c.flags)];
-  c.seen = [...c.seen, ...diff(diff(after.seen, before.seen), c.seen)];
+  // every card shown so far this sortie, the one just answered among them (it was counted as seen when it opened, so a
+  // diff against `before` would miss it, and a reload would deal it again)
+  c.seen = [...c.seen, ...diff(after.seen, c.seen)];
   for (const k of Object.keys(after.standing) as Array<keyof Carry['standing']>) {
     const d = (after.standing[k] ?? 0) - (before.standing[k] ?? 0);
     if (d) c.standing[k] = (c.standing[k] ?? 0) + d;

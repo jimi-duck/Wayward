@@ -70,7 +70,7 @@ describe('the first minutes', () => {
     // the bay takes no cargo: the hold stays full, the credit is low, the launcher is on offer
     expect(cargoOf(w)).toMatchObject({ onboard: FIRST_LOAD, delivered: 0 });
     expect(w.cyrite).toBe(CREDIT_START);
-    expect(w.comms?.ledger?.find((r) => r.k === 'Projected settlement')?.cr).toBe(2);
+    expect(w.comms?.ledger?.find((r) => r.k === 'Settlement')?.cr).toBe(2);
     expect(w.comms?.doc?.find((r) => r.k === 'Gross')?.cr).toBe(100);
     expect(w.comms?.def.side?.label).toMatch(/^Sam Okoro/);
     expect(w.answer('install')).toBe(true);

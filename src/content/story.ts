@@ -1,5 +1,6 @@
 import type { CardDef } from '../sim/comms';
 import { STOLEN_DROP } from '../sim/civic';
+import { RECOVERY_FLAG } from '../sim/recovery';
 
 // ── the story ─────────────────────────────────────────────────────────────
 // Three acts. The Breakout (Cerro: steal her, get out). The Run (the Reach
@@ -147,10 +148,10 @@ const GIST: Record<string, string> = {
   "story_bay": "The company will finance a launcher",
   "story_raiders": "Two unknown ships · pay or refuse",
   "story_seized": "The raiders took everything",
-  "story_breach": "Contract in breach · the hauler is recalled",
+  "story_breach": "Contract in breach · recovery ordered",
   "story_sam": "Sam has a code for the owner lock",
-  "story_rename": "Registration updated",
-  "story_wake": "The archive woke · Krail reserves were 94%",
+  "story_rename": "Local identity updated",
+  "story_wake": "A stored message · Krail reserves 94%",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
@@ -196,9 +197,9 @@ const story = (c: Omit<CardDef, 'trigger' | 'repeat'>): CardDef => ({ trigger: '
 export const REGISTRY_CARD: CardDef = {
   id: 'story_registry', gist: GIST.story_registry, kind: 'checkpoint', caller: 'custody', trigger: 'lane',
   from: 'Custody blockade · Cerro lane', title: 'Pilot under review',
-  text: '“Hauler OB-7731-A, reported stolen. Civic Score: UNDER REVIEW. Lane access is suspended pending inspection. Stand by.”',
+  text: '“Hauler OB-7731-A, reported stolen. Lane access is suspended pending inspection. Stand by.”',
   lines: [
-    { if: { civicMin: 400 }, text: 'Your registry still reads COMPLIANT. She hesitates.' },
+    { if: { civicMin: 400 }, text: 'Your registry still vouches for you. She hesitates.' },
     { if: { civicMax: 399 }, text: 'The ordinary doorway is shut: it needs the registry to vouch for you.' },
     { if: { flag: 'tam_codes' }, text: 'Okoro’s codes are loaded.' },
     { if: { heatMin: 0.5 }, text: 'Your ship is flagged across the system.' },
@@ -250,28 +251,28 @@ export const STORY_CARDS: CardDef[] = [
   // as Neon Glass sheets after the opening chapter mockups (docs/DESIGN-GUIDELINES.md).
   story({
     id: 'story_bay', kind: 'trade', caller: 'miners', glass: 'cyan', status: 'Live',
-    from: 'Contract 08-441 · Projected', title: 'Projected settlement',
-    text: 'On delivery of 1,000 Cyrite. Not yet earned.',
-    ledger: 'launcher',
-    doc: { kind: 'bay', open: 'View account summary', kick: 'Document · account summary', title: 'Contract 08-441', sub: 'Projected on delivery of 1,000 Cyrite.', note: 'This is not an available account balance.', at: 3 },
-    side: { from: 'Work Bay · docked', status: 'Service', title: 'Service stop', sub: 'Hold kept aboard: 800 Cyrite', label: 'Sam Okoro · radio',
-      lines: ['Raiders have been seen near Cerro. You should fit a launcher before you head back out.', 'The company will finance it. More debt, but I’d rather you had it.'] },
+    from: 'Account', title: 'Projected settlement',
+    text: 'On delivery of 1,000 Cyrite.',
+    ledger: 'bay',
+    doc: { kind: 'bay', open: 'View account summary', kick: 'Document · account summary', title: 'Contract 08-441', sub: 'Projected on delivery of 1,000 Cyrite.', note: 'The delivery is not complete. These figures are a projection, not an available account balance.', at: 3 },
+    side: { from: 'Work Bay · docked', status: '800 Cyrite', title: 'Service stop', label: 'Sam Okoro · radio',
+      lines: ['Raiders have been spotted out your way. I suggest fitting torpedoes before you head back.', 'The company will finance the launcher. You’ll owe them twenty credits. But I’d rather you make it back safely.'] },
     cargo: 'Cerro work bay · Contract 08-441',
     choices: [
-      { id: 'install', label: 'Install launcher · finance 20 CR', tone: 'pay', hint: 'Company-financed. Ammunition unlimited.',
+      { id: 'install', label: 'Install torpedo launcher · finance 20 CR', tone: 'pay', hint: 'Company-financed. 20 CR of debt.',
         win: { text: 'Launcher fitted · financed against the contract', fit: 'tp_bay' } },
     ],
   }),
   story({
     id: 'story_raiders', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unknown',
-    from: 'Incoming transmission', title: 'Cut your drive. Open the hold.',
-    text: 'We’re taking the ore.',
+    from: 'Unknown', title: 'Cut your main drive and open the hold.',
+    text: 'That ore isn’t reaching the company port. We’re taking it. Cut your drive and let us aboard, or we open the hold ourselves.',
     cargo: 'Two unknown ships · closing',
     choices: [
-      { id: 'pay', label: 'Pay up & allow boarding', tone: 'pay', hint: 'You are captured. The run ends.',
-        win: { text: 'Boarding allowed · the raiders take everything', follow: { card: 'story_seized', after: 0.5, quick: true } } },
+      { id: 'pay', label: 'Surrender', tone: 'pay', hint: 'You are captured and sold into slavery. The run ends.',
+        win: { text: 'You surrender · the raiders take everything', follow: { card: 'story_seized', after: 0.5, quick: true } } },
       { id: 'refuse', label: 'Refuse', tone: 'fight', hint: 'They attack. Combat begins.',
-        win: { text: 'Weapons hot · the raiders turn on you', hostile: true } },
+        win: { text: 'Weapons hot · the raiders turn on you', hostile: true, radio: { from: 'Unknown', text: '“Then we do it the hard way.”' } } },
     ],
   }),
   story({
@@ -286,30 +287,33 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_breach', kind: 'warning', caller: 'office', glass: 'red', status: 'Breach', ledger: 'breach',
     from: 'Contract notice', title: 'Contract 08-441 · Breach',
-    text: 'Delivery not received. Settlement withheld. Vessel recovery ordered.',
-    doc: { kind: 'invoice', open: 'View breach invoice', kick: 'Document · breach invoice', title: 'Contract 08-441' },
-    side: { from: 'Lane Control', status: 'Status', glass: 'ochre', lines: ['Vessel flagged for recovery.'] },
+    text: 'Required delivery not received. Outstanding charges remain immediately payable.\nVessel recovery and impound ordered.',
+    doc: { kind: 'invoice', open: 'View breach invoice', kick: 'Document · breach invoice', title: 'Contract 08-441 · Outstanding charges', sub: 'Delivery not received.', note: 'Vessel recovery initiated.' },
+    side: { from: 'Lane Control', status: 'Status', glass: 'ochre', lines: ['Vessel flagged for recovery · Controls locked', 'Recovery autopilot active'] },
     cargo: 'Contract 08-441 · short delivery',
     choices: [
-      { id: 'proceed', label: 'Proceed to the audit dock', tone: 'run', hint: 'The company takes the ship. The debt stays with you.',
-        win: { text: 'Course set for the audit dock', follow: { card: SAM_BEAT, after: 8, quick: true } } },
+      // the recovery (sim/recovery.ts): Lane Control flies her in, and Sam's channel opens after ten seconds of play
+      { id: 'proceed', label: 'Proceed to the audit dock', tone: 'run', hint: 'Lane Control flies the ship in. The debt stays with you.',
+        win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 1.5, text: ['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”'] } } },
     ],
   }),
   story({
-    id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, notitle: true, quote: true,
-    from: 'Sam Okoro · private channel', title: 'Sam’s code',
-    text: 'They’ll take the hauler. The debt stays with you.\nI’ve got a code to lift the owner lock. It won’t make the ship legal.',
-    note: 'Using the code lifts the owner lock.',
+    id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
+    from: 'Sam Okoro · private channel', title: 'A way out',
+    text: 'Juno. Keep this off the open channel.\nI’ve got a maintenance code to lift the owner lock. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name.\nBut you’ll have control of her again—and a chance to escape.',
     cargo: 'The audit dock · ahead',
     choices: [
-      { id: 'code', label: 'Use the code', tone: 'run', hint: '',
-        win: { text: 'Lock broken · the hull is yours, and stolen', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicQuiet: true, civicWhy: 'Vessel reported stolen', radio: { from: 'Office of Peace · Governor’s desk', text: '“A registered hull is missing. Escalate it to the Governor.”' }, follow: { card: RENAME_BEAT, after: 2.4, quick: true } } },
+      { id: 'code', label: 'Input the code', tone: 'run', hint: '',
+        win: { text: 'Owner lock lifted · autopilot disabled', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, civic: -STOLEN_DROP, civicQuiet: true, civicWhy: 'Vessel reported stolen', radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: RENAME_BEAT, after: 2.4, quick: true } } },
     ],
   }),
   story({
-    id: RENAME_BEAT, kind: 'warning', caller: 'office', ledger: 'rename', layout: 'registry', glass: 'cyan', status: 'Local systems',
-    from: 'Registry update · Owner lock lifted', title: 'OB-7731-A → WAYWARD',
+    id: RENAME_BEAT, kind: 'warning', caller: 'office', ledger: 'rename', layout: 'registry', glass: 'cyan', status: 'Owner lock lifted',
+    from: 'Local identity updated', title: 'OB-7731-A → WAYWARD',
     text: 'New name active in local systems',
+    copy: ['An Obedience-class hauler. A name of your own.', 'The Continuance names its ships after virtues. This one doesn’t have to carry theirs.'],
+    side: { from: 'Sam Okoro', label: 'Sam Okoro · radio', lines: ['Wayward. That sounds like yours. Take the helm, Juno.'] },
     repaint: ['Temporary repaint', 'The paint will pass a glance. It won’t pass a scan.'],
     cargo: 'Registration updated',
     choices: [
@@ -318,15 +322,17 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Recovered', ledger: 'archive', quote: true,
+    id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Stored message', quote: true,
     hero: ['94%', 'Krail reserves'],
-    from: 'Legacy hull archive', title: 'Krail reserves: 94%',
-    text: 'Logged on the day the official shortage order was signed.',
-    doc: { kind: 'evidence', open: 'Open record', kick: 'Document · archive record', title: 'Krail reserve evidence', row: true },
-    cargo: 'The Wayward · a hauler that was meant for scrap',
+    from: 'Legacy archive found', title: 'Krail reserves',
+    text: 'If you’re reading this, you’ve found the record I left in the system.\nSeventy years ago, the gates to the outer worlds went dark. They said Krail was running out. Those worlds were cut off. They became the Scatter.\nThen I found this reserve entry: 94%. Recorded on the very day the order to close the gates was signed.\nI don’t know what that number leaves out. But it doesn’t fit the story we were told.\nStart with Halden’s Reach. Follow the record. Find out why.',
+    doc: { kind: 'evidence', open: 'Open record', kick: 'Document · archive record', title: 'Krail reserve evidence', row: true, label: 'Stored note',
+      note: 'They called it the Severance. Seventy years later, the shortage is still the explanation.\nI’ve kept the reserve entry with this message. Check it against the order. Same day. That’s the part I can’t get past.\nOne entry doesn’t tell us what happened everywhere. It doesn’t explain why the gates were closed. Don’t mistake it for the whole answer.\nHalden’s Reach is the next lead.' },
+    cargo: 'The Wayward · a stored message in the hull’s archive',
     choices: [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
-        win: { text: 'The record is on the Wall · next lead: the Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'], radio: { from: 'Sam Okoro', text: '“Get to the Reach, Juno. Don’t call me. I’ll call you.”' } } },
+        win: { text: 'The record is on the Wall · next lead: Halden’s Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: ['“You’re through. The paint may fool a glance; a scan will still find an unregistered ship.”', '“You’ve got a name of your own now. And a lead. Keep moving, Juno.”'] } } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────
@@ -368,7 +374,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“I have read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you are going, and I will not stop you.”',
     cargo: 'The Patience · weapons cold, for now',
     choices: [
-      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan. Your Civic Score rises.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told'], civic: 8, civicWhy: 'A cooperative report was logged', hunt: 1 } },
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told'], civic: 8, civicWhy: 'A cooperative report was logged', hunt: 1 } },
       { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: 'calloway_ada', hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: 'calloway_ada', heat: 0.1 } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices.', win: { text: 'The Patience turns away' } },
     ],
@@ -379,8 +385,8 @@ export const STORY_CARDS: CardDef[] = [
     text: '“They traced the ledger to me. I am in a Custody transport, ten minutes from a cell. Please. You have the only copy.”',
     cargo: 'A Custody transport · one escort',
     choices: [
-      { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it, and your Civic Score falls.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', civic: -20, civicWhy: 'Interfered with a Custody transport', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
-      { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble; failure costs Civic Score.', odds: { base: 0.45, civic: 0.2 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free', civic: -5, civicWhy: 'A forged order was logged' }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken', civic: -12, civicWhy: 'A forged order was logged' } },
+      { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', civic: -20, civicWhy: 'Interfered with a Custody transport', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 } } },
+      { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble.', odds: { base: 0.45, civic: 0.2 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free', civic: -5, civicWhy: 'A forged order was logged' }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken', civic: -12, civicWhy: 'A forged order was logged' } },
       { id: 'leave', label: 'Leave him', tone: 'refuse', hint: 'His account is already in your file.', win: { text: 'The channel closes · he is taken', flag: 'brook_taken' } },
     ],
   }),
@@ -548,7 +554,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“My brother Eben works the Breaker Yards. Something is wrong with the hulls they bring in, scarred like claws. Take him a message?”',
     cargo: 'A yard relay · patched through three ports',
     choices: [
-      { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file. Your Civic Score falls.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'clue_scarred'], civic: -6, civicWhy: 'An unlicensed crew message was logged', standing: { frontier: 1 } } },
+      { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'clue_scarred'], civic: -6, civicWhy: 'An unlicensed crew message was logged', standing: { frontier: 1 } } },
       { id: 'look', label: 'Look at the hulls', tone: 'trade', hint: 'Two supplies for a quiet look. Nobody is told.', cost: { supplies: 2 }, win: { text: 'You see the claw marks · they go in the file', flag: 'clue_scarred' } },
       { id: 'no', label: 'Not now', tone: 'refuse', hint: 'Sam will remember.', win: { text: 'Sam closes the channel' } },
     ],
@@ -582,7 +588,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'Needs all three clues to the signature. Once.', needs: { flag: ['clue_sig_reach', 'clue_sig_yards', 'clue_sig_ports'] }, win: { text: 'She reads her father’s hand · the field drops', flag: ['calloway_turned', 'sig_used'], hunt: 2 } },
       { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: 'calloway_bargain', hunt: 1 } },
-      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way. Your Civic Score falls.', win: { text: 'The cutter breaks off · the Offices mark you', flag: 'calloway_hostile', civic: -30, civicWhy: 'Fired on an Offices cutter', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12 } },
+      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: 'calloway_hostile', civic: -30, civicWhy: 'Fired on an Offices cutter', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12 } },
       { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', win: { text: 'You limp out of the field', flag: 'calloway_hostile', civic: -10, civicWhy: 'Fled an Offices cutter', hunt: -1, heat: 0.1 } },
     ],
   }),
@@ -669,7 +675,7 @@ export const STORY_CARDS: CardDef[] = [
     text: '“Second: what has it cost others, that you carry it?”',
     cargo: 'A toll platform · one lit window',
     choices: [
-      { id: 'own', label: 'Own it', tone: 'help', hint: 'Name what you spent. Costs your Civic Score nothing.', win: { text: '“Honest.” · Oren asks the third', flag: 'oren_owned', follow: { card: 'story_oren_why', after: 20 } } },
+      { id: 'own', label: 'Own it', tone: 'help', hint: 'Name what you spent.', win: { text: '“Honest.” · Oren asks the third', flag: 'oren_owned', follow: { card: 'story_oren_why', after: 20 } } },
       { id: 'blame', label: 'Blame the Offices', tone: 'bluff', hint: 'True, but not an answer.', win: { text: '“Hm.” · Oren asks the third', follow: { card: 'story_oren_why', after: 20 } } },
       { id: 'none', label: 'Say nothing', tone: 'refuse', hint: 'He moves on.', win: { text: 'Oren moves on', follow: { card: 'story_oren_why', after: 20 } } },
     ],

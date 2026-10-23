@@ -1,4 +1,3 @@
-import { civicNote } from '../sim/civic';
 import { CONTRACT_ID, ratio, type Cargo } from '../sim/contract';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
@@ -23,7 +22,8 @@ import { Notifier, type Notice } from './notify';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
 import { lockLifted } from '../sim/postjump';
-import { SAM_BEAT } from '../content/story';
+import { SAM_BEAT, WAKE_BEAT } from '../content/story';
+import { recovering } from '../sim/recovery';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // The ship and the world come first; the HUD answers five questions and
@@ -209,11 +209,14 @@ export class Hud {
         case 'patched': this.note(world, `${t('Hull plate repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;
         case 'comms': this.note(world, `${t(e.slow ? 'Ambush' : 'Channel open')} · ${t(e.from)}`, e.slow ? 'hit' : undefined); break;
-        case 'civic': this.note(world, civicNote(e.to, e.why)); break;
+        // the Civic Score was taken out of the game (owner, 2026-10-20): nothing on screen for it
+        case 'civic': break;
         case 'commsAnswer':
           this.note(world, t(e.text), e.won ? undefined : 'hit');
           // the rename reveal's first beat (render/reveal.ts): Sam's code took, say so while the hull is still grey
-          if (e.id === SAM_BEAT && lockLifted(world.flags)) this.notify(world, { type: 'arrival', headline: 'Owner lock lifted', key: 'lock' });
+          if (e.id === SAM_BEAT && lockLifted(world.flags)) this.notify(world, { type: 'arrival', headline: 'Owner lock lifted', reason: 'Autopilot disabled', key: 'lock' });
+          // after the archive (sheet J): the new name is paint, not papers
+          if (e.id === WAKE_BEAT) this.notify(world, { type: 'warning', headline: 'Registry: Unregistered', reason: 'Repaint will not pass a scan.', key: 'registry' });
           break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
@@ -229,13 +232,13 @@ export class Hud {
           // the opening's scripted loss (sheet E): what is left of the contract's cargo, in red
           const cg = cargoOf(world);
           const left = cg ? t('{n} Cyrite', { n: ratio(cg.onboard, cg.quota) }) : t('{n} Cyrite', { n: e.n });
-          this.note(world, `${t('Cargo lost')} · ${left}`, 'hit');
-          this.notify(world, { type: 'denied', headline: 'Cargo lost', reason: left, key: 'cargo' });
+          this.note(world, `${t('Cargo pods hit')} · ${left}`, 'hit');
+          this.notify(world, { type: 'denied', headline: 'Cargo pods hit', reason: left, key: 'cargo' });
           break;
         }
         case 'inbound':
-          this.note(world, `${t('Hostile reinforcements inbound')} · ${t('Reach the Jump Gate')}`, 'hit');
-          this.notify(world, { type: 'denied', headline: 'Hostile reinforcements inbound', reason: 'Reach the Jump Gate', key: 'inbound' });
+          this.note(world, `${t('Hostile reinforcements inbound')} · ${t('Escape to the Jump Gate')}`, 'hit');
+          this.notify(world, { type: 'denied', headline: 'Hostile reinforcements inbound', reason: 'Escape to the Jump Gate', key: 'inbound' });
           break;
         case 'fitted':
           // the Work Bay's launcher (sheet C): brief, non-blocking, with this device's own control for it
@@ -654,15 +657,16 @@ export class Hud {
         const aud = lockLifted(world.flags) ? undefined : world.seenPlaces().find((p) => p.kind === 'audit');
         const da = aud ? Math.hypot(aud.x - s.x, aud.z - s.z) : 0;
         if (aud) {
-          text($('obj-t'), t('Head for the audit dock'));
+          text($('obj-t'), t('Dock at the company port'));
           text($('obj-left'), range(da));
           ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
         } else {
-          text($('obj-t'), t(bk.chase ? 'Reach the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
+          text($('obj-t'), t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
           text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
           ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         }
-        text($('obj-s'), bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
+        // Lane Control has the helm (sim/recovery.ts): the readout says so, and nothing counts down
+        text($('obj-s'), recovering(world.flags) ? t('Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
         const lines: string[] = [];
         if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);

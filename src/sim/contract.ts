@@ -38,11 +38,12 @@ export const upgradePrice = (): number => cost(LESSON_NODE, 1, false);
 export const projectedAfterLauncher = (price = upgradePrice()): number => NET - price;
 
 /**
- * What the company bills when the contract breaches (the opening chapter sheets, 2026-10-22): the short-delivery penalty,
+ * What the company bills when the contract breaches (the opening handover, 2026-10-23: 25 + 35 + 20 = 80 CR): the short-delivery penalty,
  * the lease that was due anyway, and the launcher it financed. The projected settlement is never netted against it.
  */
-export const PENALTY = 15;
-export const LEASE_DUE = CUTS.lease;
+export const PENALTY = 25;
+/** The lease that falls due on breach (the 2026-10-23 handover): its own figure, not the share the projection takes. */
+export const LEASE_DUE = 35;
 /** What Juno owes once the contract breaches. */
 export const owed = (price = upgradePrice()): number => PENALTY + LEASE_DUE + price;
 
@@ -61,8 +62,8 @@ export function bayLedger(): LedgerRow[] {
   const price = upgradePrice();
   return [
     { k: 'Gross', cr: GROSS },
-    { k: 'Projected charges', cr: -(GROSS - projectedAfterLauncher(price)) },
-    { k: 'Projected settlement', cr: projectedAfterLauncher(price), tone: 'mine' },
+    { k: 'Charges', cr: -(GROSS - projectedAfterLauncher(price)) },
+    { k: 'Settlement', cr: projectedAfterLauncher(price), tone: 'mine' },
   ];
 }
 
@@ -82,7 +83,7 @@ export function invoiceLedger(): LedgerRow[] {
     { k: 'Penalty', cr: PENALTY },
     { k: 'Lease', cr: LEASE_DUE },
     { k: 'Financed launcher', cr: upgradePrice() },
-    { k: 'Outstanding', cr: owed(), tone: 'bad' },
+    { k: 'Total outstanding', cr: owed(), tone: 'bad' },
   ];
 }
 
@@ -101,7 +102,7 @@ export function renameLedger(): LedgerRow[] {
   return [
     { k: 'Registry status', v: 'Unregistered', tone: 'warn' },
     { k: 'Owner lock', v: 'Lifted', tone: 'warn' },
-    { k: 'Hull finish', v: 'Grey → Yellow / Ochre', tone: 'warn' },
+    { k: 'Hull finish', v: 'Grey → Ochre', tone: 'warn' },
   ];
 }
 
@@ -114,7 +115,7 @@ export function archiveLedger(): LedgerRow[] {
 export function evidenceLedger(): LedgerRow[] {
   return [
     { k: 'Reserve level', v: '94%', tone: 'mine' },
-    { k: 'Record and order', v: 'same day' },
+    { k: 'Reserve entry and gate-closure order', v: 'same day' },
     { k: 'Next lead', v: 'Halden’s Reach', tone: 'warn' },
   ];
 }

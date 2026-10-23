@@ -137,7 +137,7 @@ export interface SheetView {
   main: SheetPanel & { hero: [string, string] | null; rows: Row[]; note: string };
   side: SheetPanel | null;
   /** The document behind the card: the row that opens it (after `at` rows, or as a numbered row), and what it shows. */
-  doc: { open: string; at: number; row: boolean; kick: string; title: string; sub: string; rows: Row[]; note: string } | null;
+  doc: { open: string; at: number; row: boolean; kick: string; title: string; sub: string; rows: Row[]; note: string[]; label: string } | null;
 }
 
 function sheetView(d: Open['def'], o: Open): SheetView {
@@ -156,7 +156,8 @@ function sheetView(d: Open['def'], o: Open): SheetView {
     } : null,
     doc: d.doc ? {
       open: t(d.doc.open), at: d.doc.at ?? (o.ledger?.length ?? 0), row: !!d.doc.row, kick: t(d.doc.kick), title: t(d.doc.title),
-      sub: d.doc.sub ? t(d.doc.sub) : '', rows: rowsOf(o.doc), note: d.doc.note ? t(d.doc.note) : '',
+      sub: d.doc.sub ? t(d.doc.sub) : '', rows: rowsOf(o.doc), label: d.doc.label ? t(d.doc.label) : '',
+      note: (d.doc.note ? t(d.doc.note) : '').split('\n').map((l) => l.trim()).filter(Boolean),
     } : null,
   };
 }
@@ -166,7 +167,11 @@ export interface RegView {
   head: string; sub: string; tag: string;
   /** The verified previous hull ID (struck through), or '' to leave it out; and the new name. */
   from: string; to: string;
+  /** The reveal copy under the name. */
+  copy: string[];
   active: string;
+  /** A voice on the radio by the action (Sam's closing line), or null. */
+  voice: { label: string; line: string } | null;
   rows: Array<{ k: string; v: string; to: string }>;
   repaint: [string, string];
   before: string; after: string; now: string;
@@ -177,7 +182,9 @@ function regView(d: Open['def'], o: Open): RegView {
   const [head = '', sub = ''] = d.from.split(' · ');
   const [from = '', to = ''] = d.title.split(' → ');
   return {
-    head: t(head), sub: t(sub), tag: d.status ? t(d.status) : '', from, to, active: o.text,
+    head: t(head), sub: sub ? t(sub) : '', tag: d.status ? t(d.status) : '', from, to, active: o.text,
+    copy: (d.copy ?? []).map((l) => t(l)),
+    voice: d.side?.lines[0] ? { label: t(d.side.label ?? d.side.from), line: t(d.side.lines[0]) } : null,
     // a row with an arrow in it is a change: what it was, then what it is
     rows: (o.ledger ?? []).map((r) => { const [v = '', after = ''] = ledgerValue(r).split(' → '); return { k: t(r.k), v, to: after }; }),
     repaint: [t(d.repaint?.[0] ?? ''), t(d.repaint?.[1] ?? '')],
@@ -410,7 +417,9 @@ export class CommsPanel {
         head({ from: d.kick, status: t('Read only'), dot: 'cyan' }, true),
         h('h2', 'ns-t', d.title), d.sub ? h('p', 'ns-sub', d.sub) : null,
         h('div', 'ns-rows', '', ...rows(d.rows)),
-        d.note ? h('p', 'ns-note', d.note) : null,
+        ...(d.label
+          ? [h('p', 'ns-label', d.label), quotes(d.note)]
+          : d.note.map((l) => h('p', 'ns-note', l))),
         h('div', 'ns-acts', '', x))));
       $('cm-ng').dataset.lay = 'doc';
       return;
@@ -469,6 +478,7 @@ export class CommsPanel {
         h('div', 'rg-left', '',
           r.from ? h('p', 'rg-old', '', h('s', '', r.from), h('i', '', '→')) : null,
           h('h2', 'rg-name', '', mark('rg-mark'), h('span', '', r.to)),
+          ...r.copy.map((l) => h('p', 'rg-copy', l)),
           h('p', 'rg-active', r.active),
           h('dl', 'rg-rows', '', ...r.rows.flatMap((x) => [h('dt', '', x.k), h('dd', x.to ? 'chg' : '', '', h('span', 'a', x.v), ...(x.to ? [h('i', '', '→'), h('span', 'b', x.to)] : []))])),
           h('h3', 'rg-rp', r.repaint[0]),
@@ -476,7 +486,8 @@ export class CommsPanel {
         ),
         h('div', 'rg-right', '',
           h('figure', 'rg-ship', '', pic('wayward-registry', 'rg-hero'), h('figcaption', '', r.now)),
-          h('div', 'rg-act', '', h('p', 'rg-warn', '', h('span', '', w1), h('span', '', w2)), go),
+          h('div', 'rg-act', '', h('p', 'rg-warn', '', h('span', '', w1), h('span', '', w2)),
+            r.voice ? h('div', 'rg-voice', '', h('p', 'ns-label', r.voice.label), h('div', 'ns-q', '', h('p', '', r.voice.line))) : null, go),
         ),
       ),
       h('footer', 'rg-foot', r.foot),

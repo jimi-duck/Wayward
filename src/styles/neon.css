@@ -215,6 +215,8 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 .registry .rg-old i { font-style: normal; color: #f2c063; }
 .registry .rg-name { margin: 0; display: flex; align-items: center; gap: .35em; font: 600 clamp(40px, 5.6vw, 96px)/1 var(--font-head); letter-spacing: .06em; text-transform: uppercase; color: var(--logo, #d99a27); }
 .registry .rg-mark { flex: none; width: .62em; height: auto; fill: var(--logo, #d99a27); }
+.registry .rg-copy { margin: 0; max-width: 34em; font: 400 1.12em/1.4 var(--font-display); color: #eceae0; }
+.registry .rg-copy + .rg-active { margin-top: .4em; }
 .registry .rg-active { margin: 0 0 .5em; font: 600 .95em/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: #8fe2ec; }
 .registry .rg-rows { margin: 0; display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr); max-width: 32em; }
 .registry .rg-rows dt, .registry .rg-rows dd { margin: 0; padding: .65em 0; border-bottom: 1px solid rgba(var(--halo), .28); font: 600 1em/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; }
@@ -236,7 +238,11 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   -webkit-mask-image: radial-gradient(ellipse at 50% 48%, #000 35%, transparent 75%); mask-image: radial-gradient(ellipse at 50% 48%, #000 35%, transparent 75%); }
 .registry .rg-hero { position: relative; width: 100%; max-height: 24em; height: auto; object-fit: contain; filter: drop-shadow(0 .6em 1.4em rgba(0, 0, 0, .55)); }
 .registry .rg-ship figcaption { position: relative; font: 600 .78em/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: #f2c063; }
-.registry .rg-act { display: flex; align-items: center; justify-content: flex-end; gap: 2em; }
+.registry .rg-act { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 1em 2em; }
+/* Sam's closing line, on its own row above the warning and the action */
+.registry .rg-voice { flex: 1 1 100%; order: -1; display: grid; gap: .45em; }
+.registry .rg-voice .ns-label { margin: 0; font-size: .8em; }
+.registry .rg-voice .ns-q p { font-size: 1.15em; line-height: 1.35; }
 .registry .rg-warn { margin: 0; display: grid; gap: .2em; padding: .2em 0 .2em 1em; border-left: 2px solid #f2c063; font: 400 1.15em/1.35 var(--font-display); color: #eceae0; }
 .registry .rg-go { flex: none; display: flex; align-items: center; gap: 1em; min-height: 3.4em; padding: 0 1.3em; font: 600 1.15em/1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: #fff5e0; }
 .registry .rg-go kbd { padding-right: 1em; border-right: 1px solid rgba(255, 222, 160, .5); font: 400 .9em/1 var(--font-mono); color: #f2c063; }
@@ -272,6 +278,9 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .registry .rg-ship { min-height: 0; }
   .registry .rg-hero { max-height: 9em; }
   .registry .rg-act { flex-direction: column; align-items: stretch; gap: .5em; }
+  .registry .rg-voice { gap: .25em; }
+  .registry .rg-voice .ns-q p { font-size: 1.2em; line-height: 1.3; }
+  .registry .rg-copy { font-size: 1.15em; line-height: 1.3; }
   .registry .rg-warn { font-size: 1.25em; }
   .registry .rg-go { justify-content: space-between; min-height: 40px; font-size: 1.3em; }
   .registry .rg-foot { display: none; }
