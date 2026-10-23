@@ -31,7 +31,7 @@ rounded (owner, 23 October 2026).
 | Hairline | 1px, halo at 35%, 6px inside the rim |
 | Brackets | none: just the box (owner, 23 October 2026) |
 | Corners | 45° cuts: 14px panels, 10px cards, buttons, rows and thumbnails (7px on registry thumbnails) |
-| Padding | 32px top and bottom, 40px sides on panels (20×24 on cards); 16px between blocks. Phones: 18×26, 14×18, 10px |
+| Padding | 32px top and bottom, 40px sides on panels (20×24 on cards); 16px between blocks. Phones: 18×26, 14×18, 10px; on one screen at 568×320, so two-panel and stacked sheets go to 10–12×18–22 and the sheet keeps a 6px edge |
 | Width | as wide as the content needs, up to the layout's limit; the pause card fits its content (the Arcade start is narrow) |
 
 How it is built: a chamfer cannot come from `clip-path` alone, because the

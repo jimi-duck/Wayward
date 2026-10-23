@@ -77,7 +77,11 @@ button.ng-n:focus-visible { outline: 2px solid var(--blue); outline-offset: 7px;
 button.ng-n:active { border-image-source: var(--ng-n-press); }
 /* a phone: less blur to pay for, and tighter spacing */
 @media (max-height: 620px), (pointer: coarse) { :root { --ng-blur: blur(10px) saturate(150%); } }
-@media (max-height: 520px) { :root { --ng-pad: 18px 26px; --ng-pad-card: 14px 18px; --ng-gap: 10px; } }
+@media (max-height: 520px) {
+  :root { --ng-pad: 18px 26px; --ng-pad-card: 14px 18px; --ng-gap: 10px; }
+  /* a phone on its side keeps every pop-up on one screen: the sheet itself leaves only a thin margin top and bottom */
+  .sheet, #pause { padding-top: max(6px, var(--safe-t)); padding-bottom: max(6px, var(--safe-b)); }
+}
 /* no blur, or the player asked for less transparency: the same rim on an opaque body */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :is(.ng, .sheet > .panel, #pause .pause-card, #rd-call)::before { background: var(--ng-scan), var(--ng-solid); }
@@ -147,7 +151,8 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 /* a phone on its side (568×320 and up): one column per panel, everything on one screen or one short scroll, the answers reachable */
 @media (max-height: 520px) {
   .ns-wrap { gap: 18px; }
-  .ns-stack { gap: 16px; }
+  .ns-stack { gap: 8px; }
+  .ns-stack > .ns-p { padding: 10px 22px; }
   .ns-h { padding-bottom: 6px; gap: 8px; }
   .ns-from { font-size: 10.5px; letter-spacing: .16em; }
   .ns-st { font-size: 10px; letter-spacing: .14em; }
@@ -179,6 +184,10 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-wrap[data-lay="row"] > .ns-main { flex: 1 1 0; }
   .ns-side .ns-q, .ns-side .ns-q p { min-width: 0; overflow-wrap: anywhere; }
   .ns-wrap[data-lay="row"] > .ns-side .ns-st { display: none; }
+  /* the Work Bay (two panels side by side) fits on one phone screen: a closer margin and narrower side panel, just here */
+  .ns-wrap[data-lay="row"] > .ns-p { padding: 12px 18px; gap: 6px; }
+  .ns-wrap[data-lay="row"] > .ns-side { flex-basis: 176px; }
+  .ns-wrap[data-lay="row"] .ns-c .ns-l { letter-spacing: .08em; }
   .ns-from { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
@@ -244,7 +253,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 }
 /* a phone on its side: the name, the rows, the ship, the warning and the action stay; the repaint comparison takes a second look (scroll) */
 @media (max-height: 520px) {
-  #comms .panel.registry { font-size: 10.5px; gap: .5em; padding: 16px 24px; }
+  #comms .panel.registry { font-size: 10.5px; gap: .5em; padding: 12px 22px; }
   .registry .rg-h { padding-bottom: .4em; }
   .registry .rg-org b { font-size: 1.35em; }
   .registry .rg-main { column-gap: 1.2em; }
