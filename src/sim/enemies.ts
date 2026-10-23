@@ -244,6 +244,11 @@ export const ELITE_ORDER = Object.keys(ELITES) as EliteId[];
 export const ELITE_BLAST_DAMAGE = 5;
 
 export const ALIEN_FIRST = 40;
+/**
+ * The Arcade opens in a fight: the first hulls come in this many seconds from the start, from this close, and
+ * straight at the ship. The first wave is `ARCADE_OPENING.size` scouts, the easy kind (sim/world.ts `arrive`).
+ */
+export const ARCADE_OPENING = { first: 3, near: 60, far: 80, size: 3 } as const;
 /** Kept for the HUD and tests: the regular ceiling at time t. */
 export const alienMax = (t: number) => pressure(t).enemyCap;
 

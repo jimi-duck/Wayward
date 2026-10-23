@@ -14,7 +14,7 @@ import { recap } from './sim/chapters';
 import { bounty } from './sim/mission';
 import { cy } from './sim/purse';
 import { FEATURES } from './content/features';
-import { SURVIVAL } from './content/survival';
+import { ARCADE_SURVIVAL, SURVIVAL } from './content/survival';
 import { autoCourse, bankAnswer, checkpoint, debrief, endSortie, hearNews, here, newJourney, options, plot, sortieDef, tally, type Journey, type Outcome, type Tally } from './sim/journey';
 import { regionsOf, routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
@@ -71,7 +71,7 @@ function boot(review: typeof import('./review') | null): void {
   // ?dev is the review world (docs/REVIEW.md): a gallery of everything in the game, flown without risk, and nothing it does is saved
   const dev = review !== null;
   const persist = (p: typeof profile) => { if (!dev) saveProfile(p); };
-  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: profile.survival, mode: dev ? 'arcade' : profile.mode, space: !params.has('nospace'), review: dev });
+  const world = new World(Math.floor(Math.random() * 1e9), { unlocked: grants(profile), survival: dev || profile.mode === 'arcade' ? ARCADE_SURVIVAL : profile.survival, mode: dev ? 'arcade' : profile.mode, space: !params.has('nospace'), review: dev });
   const showMode = () => document.documentElement.classList.toggle('breakout', world.mode === 'breakout');
   showMode();
   const renderer = createRenderer(canvas, quality.tier);
@@ -159,9 +159,9 @@ function boot(review: typeof import('./review') | null): void {
   // between them. It is saved between systems and at every port, so the
   // start card can carry on where the last session left off.
   let journey: Journey | null = loadJourney();
-  // The title offers two ways to play, Arcade picked whenever the game opens;
+  // The title offers two ways to play, Arcade picked whenever the game opens (it starts at once, on one fixed difficulty);
   // Story mode carries on a saved journey, with a fresh one a click below.
-  let pick: 'arcade' | 'breakout' = 'arcade';
+  let pick: 'arcade' | 'breakout' = 'breakout';
   /** The title is a plain list; Arcade and New journey lead to one step more (the difficulty, Normal ready), Settings to another. */
   type Step = 'menu' | 'diff' | 'set';
   let step: Step = 'menu';
@@ -395,7 +395,7 @@ function boot(review: typeof import('./review') | null): void {
     persist(profile);
     sector.setCosmetic(profile.cosmetic);
     // before the first launch nothing has happened yet, so the run can be re-made in the new survival mode
-    if (!started) world.restart({ survival: profile.survival, mode: profile.mode });
+    if (!started) world.restart({ survival: profile.mode === 'arcade' ? ARCADE_SURVIVAL : profile.survival, mode: profile.mode });
     showBrief();
     showResume();
   }, () => launch(pick));
@@ -438,7 +438,7 @@ function boot(review: typeof import('./review') | null): void {
       input.reset();
       const rec = recordRun(profile, world.run);
       summary.show(world.run, rec, () => {
-        world.restart({ unlocked: grants(profile), survival: profile.survival, mode: profile.mode });
+        world.restart({ unlocked: grants(profile), survival: profile.mode === 'arcade' ? ARCADE_SURVIVAL : profile.survival, mode: profile.mode });
         showMode();
         reported = false;
         startOpts.render();
@@ -561,7 +561,7 @@ function boot(review: typeof import('./review') | null): void {
     fit();
     setPaused(false);
     if (mode === 'arcade') {
-      if (world.mode !== 'arcade' || world.survival.id !== profile.survival) { world.restart({ survival: profile.survival, mode, carry: null }); showMode(); }
+      if (world.mode !== 'arcade' || world.survival.id !== ARCADE_SURVIVAL) { world.restart({ survival: ARCADE_SURVIVAL, mode, carry: null }); showMode(); }
       hud.note(world, `${t('Journey started')} · ${t(world.hull.name)}`);
       // how to play first: the pause card, until any key or tap
       setPaused(true);
@@ -704,7 +704,7 @@ function boot(review: typeof import('./review') | null): void {
   };
   press('m-continue', () => launch('breakout', true));
   press('m-journey', () => { pick = 'breakout'; showStep('diff'); });
-  press('m-arcade', () => { pick = 'arcade'; showStep('diff'); });
+  press('m-arcade', () => launch('arcade'));
   press('m-settings', () => showStep('set'));
   press('d-back', () => showStep('menu'));
   press('s-back', () => showStep('menu'));

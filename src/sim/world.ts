@@ -30,7 +30,7 @@ import { Traffic } from './traffic';
 import { live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
-  ALIEN_FIRST, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SPAWN_FAR, SPAWN_NEAR, SQUADS, VARIANTS,
+  ALIEN_FIRST, ARCADE_OPENING, ALIEN_TYPES, BEAM_LEN, BEAM_W, BORG_ADAPT, CULL, ELITE_BLAST_DAMAGE, ELITES, FACTION_TRAITS, SPAWN_FAR, SPAWN_NEAR, SQUADS, VARIANTS,
   WEB_R, alienBonus, alienFire, alienLabel, beamLive, cloaked, leave, moveAlien, moveShots, pickElite, pickVariant, provoke, rayDist,
   spawnAlien, stepBeam, stepWebs, type Alien, type Arena, type EliteId, type Faction, type Shot, type Web,
 } from './enemies';
@@ -49,7 +49,7 @@ import { newRun, TIMELINE, type RunStats, type ScoreSource, type Weapon } from '
 import { drifting, newShip, stepShip, topSpeed, type ShipState } from './ship';
 import { BASE, flightHull, type Stats } from './stats';
 import {
-  BREACH_GRACE, CHAIN_WINDOW, DYING, PX, BOOST_FIRST, BOOST_CHANCE, BOOST_GAP, REPAIR_CHANCE,
+  BREACH_GRACE, CHAIN_WINDOW, DYING, PX, BOOST_FIRST, BOOST_CHANCE, ARCADE_BOUNTY, ARCADE_ROCK, BOOST_GAP, REPAIR_CHANCE,
   REPAIR_CHANCE_ELITE, REPAIR_GAP, BULWARK_POINTS, MINE_HP, MINE_KRAIL, ROCK_BUMP, ROCK_POINTS, ROCK_PUSH, SCORE_PER_CRYSTAL, SCORE_PER_SECOND, SHIELD_GRACE, SHIP_R, TORP_FUSE, chainMult,
 } from './tuning';
 import { SCRAP_PRICE, type Prices } from '../content/systems';
@@ -194,7 +194,7 @@ export class World implements EncounterHost {
   /** Rocks and hulls broken this run. */
   kills = 0;
   /** The arcade's encounters: a wave on its way or being fought, or the quiet between (sim/pacing.ts). */
-  pace: Pace = newPace(ALIEN_FIRST);
+  pace: Pace = newPace(ARCADE_OPENING.first);
   /** The arcade's self-repair (sim/repair.ts). */
   mend: Mend = newMend();
   /** The arcade's bay: the Krail it opens at next, and how long it has been quiet with that much aboard. */
@@ -550,7 +550,7 @@ export class World implements EncounterHost {
 
   /** The arcade's Krail income: the mode's sky says how much; the Story's income is in its rock and salvage rows. */
   private get income(): number {
-    return this.bk ? 1 : this.mods.income;
+    return this.bk ? 1 : this.mods.income * ARCADE_ROCK;
   }
 
   /** The share of veined rock in this system: the system's own, and the mode's. */
@@ -1705,6 +1705,7 @@ export class World implements EncounterHost {
       if (t < pc.until) return;
       pc.state = 'wave';
       pc.left = waveSize(p, this.refit);
+      if (pc.n === 0) pc.left = Math.max(pc.left, ARCADE_OPENING.size);
       pc.next = t;
       pc.last = t;
       pc.ids.clear();
@@ -1744,7 +1745,8 @@ export class World implements EncounterHost {
     const v = pickVariant(t, this.aliens, this.rng, this.theatre, p.theatre);
     if (!v) { pc.next = t + 1; return; }
     const T = ALIEN_TYPES[v.kind];
-    const lead = this.sendHostile(v.id, pickApproach(T.role, t, this.rng), this.rollElite(v.kind, v.faction, p));
+    const first = pc.n === 1;
+    const lead = this.sendHostile(v.id, first ? 'direct' : pickApproach(T.role, t, this.rng), first ? null : this.rollElite(v.kind, v.faction, p), first);
     pc.ids.add(lead.id);
     pc.left--;
     pc.last = t;
@@ -1758,9 +1760,9 @@ export class World implements EncounterHost {
   }
 
   /** A hostile from far out, clear of the nose, closing its own way (sim/pacing.ts). */
-  private sendHostile(variant: string, approach: Approach, elite: EliteId | null = null): Alien {
+  private sendHostile(variant: string, approach: Approach, elite: EliteId | null = null, opening = false): Alien {
     const v = VARIANTS[variant] ?? VARIANTS.scout!, s = this.ship;
-    const at = arrival(s, approach, this.rng, this.rng.range(SPAWN_NEAR, SPAWN_FAR));
+    const at = arrival(s, approach, this.rng, opening ? this.rng.range(ARCADE_OPENING.near, ARCADE_OPENING.far) : this.rng.range(SPAWN_NEAR, SPAWN_FAR));
     const y = ALIEN_TYPES[v.kind].role === 'cruiser' ? this.rng.range(-4, 9) : this.rng.range(-6, 18);
     const al = this.spawnHostile(v.id, { x: at.x, y, z: at.z }, elite);
     al.approach = approach;
@@ -2572,7 +2574,7 @@ export class World implements EncounterHost {
     const K = this.survival.salvage, loot = al.elite ? this.stats.eliteLoot : 1, life = K.life;
     const v = { x: al.x, z: al.z, vx: al.vx, vz: al.vz };
     if (!this.bk) {
-      this.loot('wreck', 'crystal', this.share(al.xp * loot, K.krail * this.income), v.x, v.z, 5, v.vx, v.vz, life);
+      this.loot('wreck', 'crystal', this.share(al.xp * loot, K.krail * this.mods.income * ARCADE_BOUNTY), v.x, v.z, 5, v.vx, v.vz, life);
       return;
     }
     const C = K.cargo[ALIEN_TYPES[al.kind].role];
@@ -2615,7 +2617,7 @@ export class World implements EncounterHost {
     this.events.push({ type: 'bossDestroyed', x: b.x, y: b.y, z: b.z, name: b.name, faction: b.faction, points: bounty });
     // the salvage: krail, a hull repair, a power-up, the faction's tech; in the Story mode a top-up of Cyrite and parts
     const cap = this.survival.salvage.capital, life = this.survival.salvage.life;
-    this.loot('wreck', 'crystal', this.share(this.bk ? CAPITAL_KRAIL : 26 + 8 * b.n, cap), b.x, b.z, 12, 0, 0, life);
+    this.loot('wreck', 'crystal', this.share(this.bk ? CAPITAL_KRAIL : (26 + 8 * b.n) * ARCADE_BOUNTY, cap), b.x, b.z, 12, 0, 0, life);
     if (this.bk) { this.loot('wreck', 'cyrite', this.share(CAPITAL_CYRITE, cap), b.x, b.z, 10, 0, 0, life); this.loot('wreck', 'parts', this.share(CAPITAL_SUPPLIES, cap), b.x, b.z, 10, 0, 0, life); }
     if (this.callowayShip && b.name.startsWith('Calloway')) { this.callowayShip = false; this.callowayBeaten = true; this.flags.add('calloway_beaten'); }
     if (this.captainFighting && b.name === this.sortie.notice.captain?.ship) { this.captainFighting = false; this.captainEnd = 'beaten'; }
@@ -2761,7 +2763,7 @@ export class World implements EncounterHost {
     this.tutor = null;
     this.redo = false;
     this.opening = false;
-    this.pace = newPace(ALIEN_FIRST);
+    this.pace = newPace(this.mode === 'arcade' ? ARCADE_OPENING.first : ALIEN_FIRST);
     this.mend = newMend();
     this.score = 0; this.kills = 0; this.runTime = 0;
     this.space = this.spaceOn && this.mode === 'arcade' ? new Space(this.rng.int(1e9), { hazard: this.mods.hazard }) : null;
