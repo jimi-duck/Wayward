@@ -40,7 +40,7 @@ const KIND_WORD: Record<SystemKind, string> = {
 /** A lane's style, in words (sim/lanes.ts). */
 const STANCE_WORD: Record<Stance, string> = { quiet: 'Quiet', watched: 'Watched', hostile: 'Hostile' };
 /** How the Custody's heat goes on a lane (sim/forks.ts heatAt). */
-const HEAT_WORD = ['Heat cools', 'Heat low', 'Heat climbs', 'Heat climbs fast'];
+const HEAT_WORD = ['Wanted falls', 'Wanted low', 'Wanted climbs', 'Wanted climbs fast'];
 const KEY_DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
 
 const ANOMALY = '#9f8bd6';

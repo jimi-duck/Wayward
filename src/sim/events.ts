@@ -74,7 +74,7 @@ export type GameEvent =
   | { type: 'squad'; label: string }
   /** The raiders tore the hold away (the opening): `n` Cyrite of cargo, lost. */
   | { type: 'cargoLost'; n: number }
-  /** The first raiders are down (the opening): more are inbound, and the gate is 1.9 km off. */
+  /** The first raiders are down (the opening): more are inbound, and the gate is 8 km off. */
   | { type: 'inbound' }
   /** The opening ends in the raiders' hands: the app starts it again. */
   | { type: 'redo' }

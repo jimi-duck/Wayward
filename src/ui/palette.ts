@@ -26,6 +26,7 @@ export const INK = {
   amber: '#86a9d1',   // the player's blue; the name is older than the palette
   amberHi: '#b3cdea',
   caution: '#c9ab66',
+  goal: '#f0c85a',   // the objective: the one yellow mark
   teal: '#4cc2cb',
   red: '#e0574b',
   dust: '#757a74',

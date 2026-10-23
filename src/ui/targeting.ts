@@ -8,7 +8,7 @@ import { LOOSE, POWER_LABEL } from '../sim/pickups';
 import type { PowerKind } from '../sim/events';
 import { BOLT_ELEVATE_CONE, PX } from '../sim/tuning';
 import type { World } from '../sim/world';
-import { BEHIND, threats } from '../sim/guide';
+import { BEHIND, guideTarget, IDENT_RANGE, threats } from '../sim/guide';
 import { lessonOf } from '../sim/tutor';
 import { NEON_CSS } from './colors';
 import { t as tr } from '../i18n';
@@ -64,7 +64,9 @@ export class Targeting {
 
   private readonly marks: HTMLSpanElement[] = [];
   private readonly threats: HTMLElement[] = [];
-  private readonly markState: Array<{ cls: string; t: string }> = [];
+  private readonly markState: Array<{ cls: string; t: string; side: string }> = [];
+  /** Pointers drawn this frame, to keep their words apart. */
+  private ptrs: Array<{ el: HTMLElement; x: number; y: number; pri: boolean }> = [];
   private readonly box = $('tgt');
   private readonly ret = $('reticle');
   private readonly card = $('tgt-card');
@@ -83,7 +85,7 @@ export class Targeting {
       s.hidden = true;
       host.append(s);
       this.marks.push(s);
-      this.markState.push({ cls: 'm', t: '' });
+      this.markState.push({ cls: 'm', t: '', side: '' });
     }
     const th = $('threats');
     for (let i = 0; i < MAX_THREATS; i++) {
@@ -221,6 +223,20 @@ export class Targeting {
     let name = '', sub = '', intK = tr('Hull'), hp = 1, cls = '';
     if (t.kind === 'hull') {
       const a = t.ref as Alien;
+      if (Math.hypot(a.x - world.ship.x, a.z - world.ship.z) > IDENT_RANGE) {
+        // too far to make out: nothing of what it is, whose or how it fares
+        const unk = Math.hypot(t.x - world.ship.x, t.y, t.z - world.ship.z);
+        text($('tgt-name'), tr('Unknown contact'));
+        const u = `<b>${range(unk)}</b> · ${tr('Unidentified')}`;
+        const ue = $('tgt-sub');
+        if (ue.innerHTML !== u) ue.innerHTML = u;
+        text($('tgt-int-k'), `${intK}:`);
+        $('tgt-int').style.setProperty('--v', '1');
+        $('tgt-hp').style.setProperty('--v', '1');
+        text($('tgt-int-v'), '—');
+        for (const k of ['elite', 'friendly', 'boss']) { this.box.classList.remove(k); this.card.classList.remove(k); }
+        return;
+      }
       name = tr(alienLabel(a));
       // working traffic is nobody's bounty: it reads as a civilian hull, in the friendly colour
       const civil = !!world.traffic?.owns(a) && !!a.ward;
@@ -265,6 +281,12 @@ export class Targeting {
   private drawMarks(world: World, sector: Sector, t: Pick | null, live: boolean): void {
     let n = 0;
     const s = world.ship;
+    // the one thing to go to now is yellow; every other mark is blue
+    const les0 = live ? lessonOf(world) : null;
+    const lead = live && !les0 ? guideTarget(world) : null;
+    const primary = (x: number, z: number): boolean => (les0 ? !!les0.mark && les0.mark.x === x && les0.mark.z === z : !!lead && Math.abs(lead.x - x) < 0.5 && Math.abs(lead.z - z) < 0.5);
+    /** Label boxes already placed this frame: a later label takes another side, or goes, rather than print over one. */
+    const placed: Array<{ l: number; r: number; t: number; b: number }> = [];
     const put = (x: number, y: number, z: number, cls: string, label0: string) => {
       let label = label0;
       if (n >= MAX_MARKS) return;
@@ -272,32 +294,42 @@ export class Targeting {
       if (!p || p.x < 8 || p.y < 8 || p.x > this.w - 8 || p.y > this.h - 8) return;
       const m = this.marks[n]!, st = this.markState[n]!;
       n++;
+      let side = '';
       if (label) {
-        // the label's rough box: beside a hexagon, under anything else
-        const side = cls.includes('dia') || cls.includes('tag');
-        const lx0 = side ? p.x + 12 : p.x - 70, lx1 = side ? p.x + 170 : p.x + 70, ly0 = side ? p.y - 16 : p.y + 8, ly1 = side ? p.y + 16 : p.y + 34;
-        if (this.avoid.some((r) => !(lx1 < r.left || lx0 > r.right || ly1 < r.top || ly0 > r.bottom))) label = '';
+        // the label's rough box on each side in turn: beside a hexagon (right, left, above, below), under anything else
+        const lines = label.split('\n'), w = Math.max(...lines.map((l) => l.length)) * 9 + 6, hh = lines.length * 16 + 4;
+        const beside = cls.includes('dia') || cls.includes('tag');
+        const tries = beside
+          ? [['', p.x + 12, p.y - hh / 2], ['l', p.x - 12 - w, p.y - hh / 2], ['u', p.x - w / 2, p.y - 10 - hh], ['d', p.x - w / 2, p.y + 10]] as const
+          : [['', p.x - w / 2, p.y + 8]] as const;
+        const free = tries.find(([, x0, y0]) => !this.avoid.some((r) => !(x0 + w < r.left || x0 > r.right || y0 + hh < r.top || y0 > r.bottom))
+          && !placed.some((q) => !(x0 + w < q.l || x0 > q.r || y0 + hh < q.t || y0 > q.b)));
+        if (free) { side = free[0]; placed.push({ l: free[1], r: free[1] + w, t: free[2], b: free[2] + hh }); } else label = '';
       }
       if (st.cls !== cls) { st.cls = cls; m.className = cls; }
       if (st.t !== label) { st.t = label; m.dataset.t = label; }
+      if (st.side !== side) { st.side = side; if (side) m.dataset.side = side; else delete m.dataset.side; }
       m.hidden = false;
       m.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px)`;
     };
     if (live) {
       // the objective first: it must never be crowded out
       const les = lessonOf(world);
-      if (les?.mark) put(les.mark.x, 0.5, les.mark.z, 'm dia obj', `${tr(les.mark.name)}\n${range(Math.hypot(les.mark.x - s.x, les.mark.z - s.z))}`);
+      if (les?.mark) put(les.mark.x, 0.5, les.mark.z, 'm dia obj pri', `${tr(les.mark.name)}\n${range(Math.hypot(les.mark.x - s.x, les.mark.z - s.z))}`);
+      // the yellow one is placed first, so its words are never the ones that give way
       const e = world.encounter;
-      if (e && !e.done && (e.dormant || e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy' || e.id === 'scene')) {
-        put(e.x, 0.5, e.z, 'm dia obj', `${tr(e.label ?? ENCOUNTERS[e.id].name)}\n${range(Math.hypot(e.x - s.x, e.z - s.z))}`);
-      }
-      // the Breakout's two places, when they are in view
+      const ev = e && !e.done && (e.dormant || e.id === 'distress' || e.id === 'derelict' || e.id === 'anomaly' || e.id === 'convoy' || e.id === 'scene') ? e : null;
+      const putEvent = () => { if (ev) put(ev.x, 0.5, ev.z, primary(ev.x, ev.z) ? 'm dia obj pri' : 'm dia obj', `${tr(ev.label ?? ENCOUNTERS[ev.id].name)}\n${range(Math.hypot(ev.x - s.x, ev.z - s.z))}`); };
+      if (ev && primary(ev.x, ev.z)) putEvent();
+      // the Breakout's places, when they are in view
       if (world.bk && !les) {
-        for (const wp of world.seenPlaces()) {
+        const here = [...world.seenPlaces()].sort((p, q) => Number(primary(q.x, q.z)) - Number(primary(p.x, p.z)));
+        for (const wp of here) {
           const d = Math.hypot(wp.x - s.x, wp.z - s.z);
-          put(wp.x, 0.5, wp.z, 'm dia obj far', `${tr(wp.name)}\n${range(d)}`);
+          put(wp.x, 0.5, wp.z, primary(wp.x, wp.z) ? 'm dia obj far pri' : 'm dia obj far', `${tr(wp.name)}\n${range(d)}`);
         }
       }
+      if (ev && !primary(ev.x, ev.z)) putEvent();
       const boss = world.command.boss;
       if (boss && !boss.leaving && boss.cloak < 0.5 && boss.id !== t?.id) put(boss.x, boss.y, boss.z, 'm cap', tr(boss.name));
       // things to go and get
@@ -325,7 +357,7 @@ export class Targeting {
       // every other hull: brackets only, amber for an elite
       for (const a of world.aliens) {
         if (cloaked(a) || a.id === t?.id || a === trader) continue;
-        put(a.x, a.y, a.z, a.elite ? 'm elite' : 'm', '');
+        put(a.x, a.y, a.z, a.elite && Math.hypot(a.x - s.x, a.z - s.z) <= IDENT_RANGE ? 'm elite' : 'm', '');
       }
     }
     for (; n < MAX_MARKS; n++) if (!this.marks[n]!.hidden) this.marks[n]!.hidden = true;
@@ -337,12 +369,16 @@ export class Targeting {
     const s = sector.shipNow;
     const bk = world.bk;
     const lesson = live && !!lessonOf(world);
+    const lead = live && !lesson ? guideTarget(world) : null;
+    const isLead = (x: number, z: number) => !!lead && Math.abs(lead.x - x) < 0.5 && Math.abs(lead.z - z) < 0.5;
+    this.ptrs = [];
     if (bk && !bk.port) $('ptr-port').classList.remove('on');
     for (const wp of world.seenPlaces()) {
       if (wp.kind === 'audit' && lockLifted(world.flags)) continue;
       const id = wp.kind === 'lane' ? 'ptr-lane' : wp.kind === 'audit' ? 'ptr-audit' : 'ptr-port';
       this.pointer($(id), $(`${id}-t`), sector, s.x, s.z, s.heading, live && !lesson ? { x: wp.x, y: 0.5, z: wp.z } : null,
         `${tr(wp.name)} · ${range(Math.hypot(wp.x - s.x, wp.z - s.z))}`);
+      $(id).classList.toggle('pri', isLead(wp.x, wp.z));
     }
     if (bk && lockLifted(world.flags)) $('ptr-audit').classList.remove('on');
     if (!bk) { $('ptr-lane').classList.remove('on'); $('ptr-port').classList.remove('on'); $('ptr-audit').classList.remove('on'); }
@@ -356,6 +392,15 @@ export class Targeting {
     const pt = les?.mark ? { x: les.mark.x, y: 0.5, z: les.mark.z, name: les.mark.name } : showObj ? { x: e!.x, y: 0.5, z: e!.z, name: e!.label ?? ENCOUNTERS[e!.id].name } : null;
     this.pointer($('ptr-obj'), $('ptr-obj-t'), sector, s.x, s.z, s.heading, pt,
       pt ? `${tr(pt.name)} · ${range(Math.hypot(pt.x - s.x, pt.z - s.z))}` : '');
+    $('ptr-obj').classList.toggle('pri', !!pt && (!!les?.mark || isLead(pt.x, pt.z)));
+    // two pointers on nearly one bearing: the yellow one keeps its words, the other keeps its arrow
+    const on = this.ptrs;
+    for (const p of on) { p.el.removeAttribute('data-crowd'); p.pri = p.el.classList.contains('pri'); }
+    for (let i = 0; i < on.length; i++) for (let j = i + 1; j < on.length; j++) {
+      if (Math.hypot(on[i]!.x - on[j]!.x, on[i]!.y - on[j]!.y) > 90) continue;
+      const loser = on[j]!.pri && !on[i]!.pri ? on[i]! : on[j]!;
+      loser.el.setAttribute('data-crowd', '');
+    }
   }
 
   /** Hulls out of view: the most pressing first (armed and near, then what you cannot see), each pinned to the edge along its bearing. */
@@ -406,6 +451,7 @@ export class Targeting {
     const k = Math.min(kx, ky);
     const x = cx + dx * k, y = cy + dy * k;
     el.classList.add('on');
+    this.ptrs.push({ el, x, y, pri: false });
     el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
     el.style.setProperty('--a', `${((Math.atan2(dy, dx) * 180) / Math.PI + 45).toFixed(0)}deg`);
     text(label, t);
