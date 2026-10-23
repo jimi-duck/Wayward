@@ -312,17 +312,17 @@
       "slot": "contact",
       "id": "story_sam",
       "file": "src/art/contacts/story_sam.webp",
-      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.\nTheir people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked.\nMood: what they say to the player: “Juno, don’t dock. They take the hauler and your debt stays. I have a maintenance code that overrides the owner lock. It makes her stolen, but she is yours to run.”\n\nFraming: head and shoulders portrait, 4:5 vertical, the face filling about two thirds of the frame height so it still reads when shown 48 pixels wide. Eyes in the upper third, looking toward the viewer. Lighting: the key light from the side or the screens in front; a plain dark, out-of-focus setting behind. The person is the whole picture.\nThe viewer is \"Juno\", a miner who stole the wrong ship; this person is someone met over a comms channel.",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.\nTheir people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked.\nMood: what they say to the player: Juno. Keep this off the open channel.\nI’ve got a maintenance code to lift the owner lock. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name.\nBut you’ll have control of her ag\n\nFraming: head and shoulders portrait, 4:5 vertical, the face filling about two thirds of the frame height so it still reads when shown 48 pixels wide. Eyes in the upper third, looking toward the viewer. Lighting: the key light from the side or the screens in front; a plain dark, out-of-focus setting behind. The person is the whole picture.\nThe viewer is \"Juno\", a miner who stole the wrong ship; this person is someone met over a comms channel.",
       "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
       "size": "640×800",
       "background": "full picture (a dark setting)",
-      "where": "The comms call \"A code for the owner lock\" (story_sam), top left of the transmission. The caller's emblem is used if this is missing.",
+      "where": "The comms call \"A way out\" (story_sam), top left of the transmission. The caller's emblem is used if this is missing.",
       "facts": [
         "from \"Sam Okoro · private channel\"",
         "caller miners",
-        "title \"A code for the owner lock\""
+        "title \"A way out\""
       ],
-      "body": "Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.\nTheir people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked.\nMood: what they say to the player: “Juno, don’t dock. They take the hauler and your debt stays. I have a maintenance code that overrides the owner lock. It makes her stolen, but she is yours to run.”\n\nFraming: head and shoulders portrait, 4:5 vertical, the face filling about two thirds of the frame height so it still reads when shown 48 pixels wide. Eyes in the upper third, looking toward the viewer. Lighting: the key light from the side or the screens in front; a plain dark, out-of-focus setting behind. The person is the whole picture.\nThe viewer is \"Juno\", a miner who stole the wrong ship; this person is someone met over a comms channel."
+      "body": "Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind.\nTheir people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked.\nMood: what they say to the player: Juno. Keep this off the open channel.\nI’ve got a maintenance code to lift the owner lock. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name.\nBut you’ll have control of her ag\n\nFraming: head and shoulders portrait, 4:5 vertical, the face filling about two thirds of the frame height so it still reads when shown 48 pixels wide. Eyes in the upper third, looking toward the viewer. Lighting: the key light from the side or the screens in front; a plain dark, out-of-focus setting behind. The person is the whole picture.\nThe viewer is \"Juno\", a miner who stole the wrong ship; this person is someone met over a comms channel."
     },
     {
       "slot": "contact",
@@ -1088,6 +1088,57 @@
       "body": "Subject: a spacecraft, the \"Freighter\" (special) of the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers.\nSilhouette: a Continuance freighter: a large, plain, blocky hauler with stacked cargo containers; not a warship Relative size in the game: large. It fights by cross (none fire).\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1.\nThe ship must read at 120 pixels wide: a clear silhouette first, detail second."
     },
     {
+      "slot": "ship",
+      "id": "hauler",
+      "file": "src/art/ships/hauler.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a spacecraft, the \"Ore hauler\" (special) of the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers.\nSilhouette:  Relative size in the game: large. It fights by cross (none fire).\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1.\nThe ship must read at 120 pixels wide: a clear silhouette first, detail second.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed; a transparent PNG is also fine)",
+      "where": "The comms call: above the strength bars when the card has ships. Nothing is shown if this is missing.",
+      "facts": [
+        "variant hauler",
+        "kind freighter, role special",
+        "faction custody",
+        "size r=3.4"
+      ],
+      "body": "Subject: a spacecraft, the \"Ore hauler\" (special) of the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers.\nSilhouette:  Relative size in the game: large. It fights by cross (none fire).\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1.\nThe ship must read at 120 pixels wide: a clear silhouette first, detail second."
+    },
+    {
+      "slot": "ship",
+      "id": "barge",
+      "file": "src/art/ships/barge.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a spacecraft, the \"Mining barge\" (special) of the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish.\nSilhouette:  Relative size in the game: large. It fights by cross (none fire).\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1.\nThe ship must read at 120 pixels wide: a clear silhouette first, detail second.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed; a transparent PNG is also fine)",
+      "where": "The comms call: above the strength bars when the card has ships. Nothing is shown if this is missing.",
+      "facts": [
+        "variant barge",
+        "kind freighter, role special",
+        "faction gutter",
+        "size r=3.4"
+      ],
+      "body": "Subject: a spacecraft, the \"Mining barge\" (special) of the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish.\nSilhouette:  Relative size in the game: large. It fights by cross (none fire).\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1.\nThe ship must read at 120 pixels wide: a clear silhouette first, detail second."
+    },
+    {
+      "slot": "ship",
+      "id": "liner",
+      "file": "src/art/ships/liner.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a spacecraft, the \"Freight liner\" (special) of the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms.\nSilhouette:  Relative size in the game: large. It fights by cross (none fire).\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1.\nThe ship must read at 120 pixels wide: a clear silhouette first, detail second.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed; a transparent PNG is also fine)",
+      "where": "The comms call: above the strength bars when the card has ships. Nothing is shown if this is missing.",
+      "facts": [
+        "variant liner",
+        "kind freighter, role special",
+        "faction office",
+        "size r=3.4"
+      ],
+      "body": "Subject: a spacecraft, the \"Freight liner\" (special) of the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms.\nSilhouette:  Relative size in the game: large. It fights by cross (none fire).\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1.\nThe ship must read at 120 pixels wide: a clear silhouette first, detail second."
+    },
+    {
       "slot": "place",
       "id": "kellern",
       "file": "src/art/places/kellern.webp",
@@ -1381,7 +1432,7 @@
       "slot": "sighting",
       "id": "thren_lane",
       "file": "src/art/sightings/thren_lane.webp",
-      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a sensor still, \"The shadow\": The jump-lane entrance drifted while something steered it.\nIt belongs to: the Thren: not a human faction and not \"an alien spaceship\". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at?\nThe player’s own theory in the Archive: The old lanes were never ours. We borrowed them.\nFraming: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a sensor still, \"The shadow\": the Jump Gate drifted while something steered it.\nIt belongs to: the Thren: not a human faction and not \"an alien spaceship\". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at?\nThe player’s own theory in the Archive: The old lanes were never ours. We borrowed them.\nFraming: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.",
       "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
       "size": "800×600",
       "background": "full picture",
@@ -1389,9 +1440,9 @@
       "facts": [
         "flag thren_lane",
         "name \"The shadow\"",
-        "line \"The jump-lane entrance drifted while something steered it.\""
+        "line \"the Jump Gate drifted while something steered it.\""
       ],
-      "body": "Subject: a sensor still, \"The shadow\": The jump-lane entrance drifted while something steered it.\nIt belongs to: the Thren: not a human faction and not \"an alien spaceship\". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at?\nThe player’s own theory in the Archive: The old lanes were never ours. We borrowed them.\nFraming: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text."
+      "body": "Subject: a sensor still, \"The shadow\": the Jump Gate drifted while something steered it.\nIt belongs to: the Thren: not a human faction and not \"an alien spaceship\". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at?\nThe player’s own theory in the Archive: The old lanes were never ours. We borrowed them.\nFraming: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text."
     },
     {
       "slot": "sighting",
@@ -2161,6 +2212,188 @@
     },
     {
       "slot": "fleet",
+      "id": "wayward-registry",
+      "file": "src/art/fleet/wayward-registry.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: .\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for the bay (the ship as fitted) and the debrief.",
+      "facts": [
+        "id wayward-registry"
+      ],
+      "body": "Subject: .\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wayward-registry-before",
+      "file": "src/art/fleet/wayward-registry-before.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: .\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for the bay (the ship as fitted) and the debrief.",
+      "facts": [
+        "id wayward-registry-before"
+      ],
+      "body": "Subject: .\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wayward-registry-after",
+      "file": "src/art/fleet/wayward-registry-after.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: .\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for the bay (the ship as fitted) and the debrief.",
+      "facts": [
+        "id wayward-registry-after"
+      ],
+      "body": "Subject: .\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wreck-scout",
+      "file": "src/art/fleet/wreck-scout.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a dead scout: a small fast ship, hull split along one side, cockpit dark, one wing torn off, frost on the metal.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for jobs and neutral traffic cards.",
+      "facts": [
+        "id wreck-scout"
+      ],
+      "body": "Subject: a dead scout: a small fast ship, hull split along one side, cockpit dark, one wing torn off, frost on the metal.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wreck-hauler",
+      "file": "src/art/fleet/wreck-hauler.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a dead cargo hauler: long boxy hull, container racks half empty and bent, one engine pod gone, scorch marks.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for jobs and neutral traffic cards.",
+      "facts": [
+        "id wreck-hauler"
+      ],
+      "body": "Subject: a dead cargo hauler: long boxy hull, container racks half empty and bent, one engine pod gone, scorch marks.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wreck-gunship",
+      "file": "src/art/fleet/wreck-gunship.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a dead gunship: blunt armed hull, gun pods hanging by cables, armour plates peeled back, a red warning lamp long dead.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for jobs and neutral traffic cards.",
+      "facts": [
+        "id wreck-gunship"
+      ],
+      "body": "Subject: a dead gunship: blunt armed hull, gun pods hanging by cables, armour plates peeled back, a red warning lamp long dead.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wreck-capital",
+      "file": "src/art/fleet/wreck-capital.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a dead capital ship seen from far away: a kilometre of hull broken in two, tiny gantries and windows lit by nothing to show scale.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for jobs and neutral traffic cards.",
+      "facts": [
+        "id wreck-capital"
+      ],
+      "body": "Subject: a dead capital ship seen from far away: a kilometre of hull broken in two, tiny gantries and windows lit by nothing to show scale.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wayward-scuffed",
+      "file": "src/art/fleet/wayward-scuffed.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the Wayward scuffed: paint scraped, a few dents and scorch marks, everything still working, engines lit blue.\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for the bay (the ship as fitted) and the debrief.",
+      "facts": [
+        "id wayward-scuffed"
+      ],
+      "body": "Subject: the Wayward scuffed: paint scraped, a few dents and scorch marks, everything still working, engines lit blue.\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wayward-half",
+      "file": "src/art/fleet/wayward-half.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the Wayward at half hull: a hole in the plating showing ribs and cables, one engine pod sparking, a little vented gas trailing.\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for the bay (the ship as fitted) and the debrief.",
+      "facts": [
+        "id wayward-half"
+      ],
+      "body": "Subject: the Wayward at half hull: a hole in the plating showing ribs and cables, one engine pod sparking, a little vented gas trailing.\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "wayward-last",
+      "file": "src/art/fleet/wayward-last.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the Wayward on her last plate: barely holding together, large sections torn away, one engine out, a restrained red glow inside the breach.\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for the bay (the ship as fitted) and the debrief.",
+      "facts": [
+        "id wayward-last"
+      ],
+      "body": "Subject: the Wayward on her last plate: barely holding together, large sections torn away, one engine out, a restrained red glow inside the breach.\nKeep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "raider",
+      "file": "src/art/fleet/raider.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a named raider: a patched gunship with trophy plates welded to the nose, red lamps and a painted stripe.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for jobs and neutral traffic cards.",
+      "facts": [
+        "id raider"
+      ],
+      "body": "Subject: a named raider: a patched gunship with trophy plates welded to the nose, red lamps and a painted stripe.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "hunter",
+      "file": "src/art/fleet/hunter.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a hunter: a lean fast hull with long guns and a sensor boom, dark matte paint.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for jobs and neutral traffic cards.",
+      "facts": [
+        "id hunter"
+      ],
+      "body": "Subject: a hunter: a lean fast hull with long guns and a sensor boom, dark matte paint.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
+      "id": "custody-cruiser",
+      "file": "src/art/fleet/custody-cruiser.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a Custody cruiser seen close: grey, regimented, flat armour plates, rows of identical lit windows.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face, background scenery, stars, planets, cockpit pilot visible",
+      "size": "960×480",
+      "background": "pure black (blended in the game, no cut-out needed)",
+      "where": "Not drawn yet: ready for jobs and neutral traffic cards.",
+      "facts": [
+        "id custody-cruiser"
+      ],
+      "body": "Subject: a Custody cruiser seen close: grey, regimented, flat armour plates, rows of identical lit windows.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text."
+    },
+    {
+      "slot": "fleet",
       "id": "enforcer-kellern",
       "file": "src/art/fleet/enforcer-kellern.webp",
       "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a blunt armoured strike craft, built to the same silhouette as the game's existing \"enforcer\" but owned by Kellern Mining security: amber and cream hazard stripes over the hull, company numbering, a claims-office lamp bar; hired muscle, not Custody.\nMedium in the game.\nFraming: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text.",
@@ -2858,6 +3091,202 @@
         "name \"Carrier\""
       ],
       "body": "Subject: \"Carrier\": A signal on the scope with nothing at its bearing yet. Follow it.\nFraming: a found photograph from the Wayward’s external camera, 4:3, slightly grainy, a little overexposed, no HUD. The thing is large, strange and unexplained; the Wayward may be a tiny silhouette for scale. Keep it atmospheric and a little mysterious."
+    },
+    {
+      "slot": "gate",
+      "id": "reach",
+      "file": "src/art/gates/reach.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the gate station of The Reach: a clean regulated hub station with a net of fine cables spreading out from it, a pale planet behind.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the region gate card.",
+      "facts": [
+        "gate reach"
+      ],
+      "body": "Subject: the gate station of The Reach: a clean regulated hub station with a net of fine cables spreading out from it, a pale planet behind.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "gate",
+      "id": "marches",
+      "file": "src/art/gates/marches.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the gate station of The Marches: a heavily armed holdfast built on a rock, Drift ships tied up near it, burn scars from raiders.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the region gate card.",
+      "facts": [
+        "gate marches"
+      ],
+      "body": "Subject: the gate station of The Marches: a heavily armed holdfast built on a rock, Drift ships tied up near it, burn scars from raiders.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "gate",
+      "id": "salvage-belt",
+      "file": "src/art/gates/salvage-belt.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the gate station of The Salvage Belt: a market built from wrecks, hulls bolted together, claim flags, work lights.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the region gate card.",
+      "facts": [
+        "gate salvage-belt"
+      ],
+      "body": "Subject: the gate station of The Salvage Belt: a market built from wrecks, hulls bolted together, claim flags, work lights.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "gate",
+      "id": "drift-deep",
+      "file": "src/art/gates/drift-deep.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the gate station of The Drift Deep: a slow fleet of ships lashed together into a moving town, far from any star.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the region gate card.",
+      "facts": [
+        "gate drift-deep"
+      ],
+      "body": "Subject: the gate station of The Drift Deep: a slow fleet of ships lashed together into a moving town, far from any star.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "gate",
+      "id": "breaker-yards",
+      "file": "src/art/gates/breaker-yards.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the gate station of The Breaker Yards: huge Custody dry docks tearing ships apart, sparks, cranes, searchlights.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the region gate card.",
+      "facts": [
+        "gate breaker-yards"
+      ],
+      "body": "Subject: the gate station of The Breaker Yards: huge Custody dry docks tearing ships apart, sparks, cranes, searchlights.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "gate",
+      "id": "free-ports",
+      "file": "src/art/gates/free-ports.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the gate station of The Free Ports: a crowded patchwork port of mismatched ships and unreadable hand-painted signs, warm windows.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the region gate card.",
+      "facts": [
+        "gate free-ports"
+      ],
+      "body": "Subject: the gate station of The Free Ports: a crowded patchwork port of mismatched ships and unreadable hand-painted signs, warm windows.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "gate",
+      "id": "hollows",
+      "file": "src/art/gates/hollows.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the gate station of The Hollows: a silent foundry station in a dark nebula, long cold chimneys, nothing alive in sight.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the region gate card.",
+      "facts": [
+        "gate hollows"
+      ],
+      "body": "Subject: the gate station of The Hollows: a silent foundry station in a dark nebula, long cold chimneys, nothing alive in sight.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "gate",
+      "id": "last-lanes",
+      "file": "src/art/gates/last-lanes.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the gate station of The Last Lanes: a lone beacon and a broken lane gate at the edge, the Threshold glowing faintly far behind.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the region gate card.",
+      "facts": [
+        "gate last-lanes"
+      ],
+      "body": "Subject: the gate station of The Last Lanes: a lone beacon and a broken lane gate at the edge, the Threshold glowing faintly far behind.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "planet",
+      "id": "rocky",
+      "file": "src/art/planets/rocky.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a rocky planet: a dry rocky world with dust seas and a thin orange haze at the rim, a fuel station in low orbit.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the fuel stops.",
+      "facts": [
+        "planet rocky"
+      ],
+      "body": "Subject: a rocky planet: a dry rocky world with dust seas and a thin orange haze at the rim, a fuel station in low orbit.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "planet",
+      "id": "ice",
+      "file": "src/art/planets/ice.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a ice planet: an ice world with cracked white plains and a faint blue atmosphere line, a port on the cliff edge.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the fuel stops.",
+      "facts": [
+        "planet ice"
+      ],
+      "body": "Subject: a ice planet: an ice world with cracked white plains and a faint blue atmosphere line, a port on the cliff edge.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "planet",
+      "id": "gas",
+      "file": "src/art/planets/gas.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a gas planet: a banded gas giant with a dark storm and a tiny port hanging in orbit.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the fuel stops.",
+      "facts": [
+        "planet gas"
+      ],
+      "body": "Subject: a gas planet: a banded gas giant with a dark storm and a tiny port hanging in orbit.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "planet",
+      "id": "dead",
+      "file": "src/art/planets/dead.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: a dead planet: a dead burnt-out world with dark glass plains and no light on the night side.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the chart and the fuel stops.",
+      "facts": [
+        "planet dead"
+      ],
+      "body": "Subject: a dead planet: a dead burnt-out world with dark glass plains and no light on the night side.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "debrief",
+      "id": "castoff",
+      "file": "src/art/debrief/castoff.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the castoff debrief scene: calm: the Wayward leaving a work bay, bay doors open, work lights, plenty of black ahead.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the dock and debrief screens.",
+      "facts": [
+        "debrief castoff"
+      ],
+      "body": "Subject: the castoff debrief scene: calm: the Wayward leaving a work bay, bay doors open, work lights, plenty of black ahead.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "debrief",
+      "id": "limping",
+      "file": "src/art/debrief/limping.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the limping debrief scene: the damaged Wayward approaching a port on one engine, trailing vented gas, a figure watching from the dock.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Not drawn yet: ready for the dock and debrief screens.",
+      "facts": [
+        "debrief limping"
+      ],
+      "body": "Subject: the limping debrief scene: the damaged Wayward approaching a port on one engine, trailing vented gas, a figure watching from the dock.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
     }
   ]
 }

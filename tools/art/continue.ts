@@ -1,6 +1,6 @@
 import { SLOTS, type SlotId } from '../../src/content/art';
 import { player, portraitSpec, type Brief } from './briefs';
-import { OWNED_LOOK } from './looks';
+import { EXTRA_LOOK, OWNED_LOOK } from './looks';
 import { STYLE_SHORT } from './starter';
 
 // The second brief: a continuation for an image generator that has already made the
@@ -25,7 +25,9 @@ const BATCHES: Array<{ id: string; title: string; note: string; pick: (b: Brief)
   { id: 'P', title: 'Phenomena', note: 'Fourteen strange things out in space, as found camera stills.', pick: (b) => b.slot === 'phenomenon' },
 ];
 
-export function continueBrief(list: Brief[]): string {
+export function continueBrief(all3: Brief[]): string {
+  // the third run (wrecks, gates, planets, debrief) has its own brief: docs/art/NEXT-BRIEF.md
+  const list = all3.filter((b) => !(b.slot === 'fleet' && b.id in EXTRA_LOOK) && !['gate', 'planet', 'debrief'].includes(b.slot));
   const md: string[] = [];
   const P = (...l: string[]) => md.push(...l, '');
   const all = BATCHES.flatMap((bt) => list.filter(bt.pick));

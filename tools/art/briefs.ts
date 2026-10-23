@@ -12,7 +12,7 @@ import { FEATURES, type FeatureId } from '../../src/content/features';
 import { ALIEN_TYPES, VARIANTS } from '../../src/sim/enemies';
 import type { Face } from '../../src/sim/captains';
 import { artIds, artOptional } from './ids';
-import { CAPITAL_LOOK, JOB_SCENE, OWNED_LOOK, TRAFFIC_LOOK, WAYWARD_LOOK, CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
+import { DEBRIEF_LOOK, EXTRA_LOOK, GATE_LOOK, PLANET_LOOK, CAPITAL_LOOK, JOB_SCENE, OWNED_LOOK, TRAFFIC_LOOK, WAYWARD_LOOK, CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
 
 // The prompt for every picture, written from the game's rows and tools/art/looks.ts.
 // Plain text, one block per picture, to paste into any image generator.
@@ -196,7 +196,7 @@ function fleetBrief(id: string): Raw {
   const cap = /^capital-/.test(id), way = /^wayward-/.test(id);
   const key = id.replace(/^capital-/, '');
   const owned = OWNED_LOOK[id];
-  const look = owned ? `${owned.hull}, built to the same silhouette as the game's existing "${id.split('-')[0]}" but owned by ${owned.owner}` : (cap ? CAPITAL_LOOK[key] : way ? WAYWARD_LOOK[id] : TRAFFIC_LOOK[id]) ?? "";
+  const look = owned ? `${owned.hull}, built to the same silhouette as the game's existing "${id.split('-')[0]}" but owned by ${owned.owner}` : EXTRA_LOOK[id] ?? (cap ? CAPITAL_LOOK[key] : way ? WAYWARD_LOOK[id] : TRAFFIC_LOOK[id]) ?? "";
   const c = CAPTAINS.find((x) => x.id === key);
   const faction = c ? FACTION_LOOK[c.faction] : cap ? FACTION_LOOK.office : '';
   const scale = cap ? 'Very large: a capital ship, far bigger than the Wayward, with a sense of scale from tiny lit windows and gantries.' : 'Medium in the game.';
@@ -207,6 +207,14 @@ function fleetBrief(id: string): Raw {
     size: sz('fleet'), background: 'pure black (blended in the game, no cut-out needed)',
     where: owned ? `The comms call for ${owned.cards}: shown instead of the plain ${id.split('-')[0]} hull, which has the wrong owner for this caller.` : cap ? 'Not drawn yet: ready for the capital ship hail and the Arcade capital warning.' : way ? 'Not drawn yet: ready for the bay (the ship as fitted) and the debrief.' : 'Not drawn yet: ready for jobs and neutral traffic cards.',
     facts: [`id ${id}`, ...(owned ? [`replaces the plain hull on card ${owned.cards}`] : []), ...(c ? [`ship ${c.ship}`, `captain ${c.name}`] : [])],
+  };
+}
+
+function sceneBrief(slot: 'gate' | 'planet' | 'debrief', id: string, look: string, subject: string, where: string): Raw {
+  return {
+    slot, id, file: `${dir(slot)}/${id}.webp`,
+    prompt: `${STYLE}\n\nSubject: ${subject}: ${look}.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.`,
+    avoid: AVOID_ALL, size: sz(slot), background: 'full picture', where, facts: [`${slot} ${id}`],
   };
 }
 
@@ -233,7 +241,7 @@ function phenomenonBrief(id: string): Raw {
 }
 
 /** The slots added after the first set, for the continuation brief. */
-export const CONTINUATION: SlotId[] = ['fleet', 'job', 'phenomenon'];
+export const CONTINUATION: SlotId[] = ['fleet', 'job', 'phenomenon', 'gate', 'planet', 'debrief'];
 
 export function allBriefs(): Brief[] {
   const ids = artIds(), opt = artOptional();
@@ -251,5 +259,8 @@ export function allBriefs(): Brief[] {
   for (const id of ids.fleet) out.push(fleetBrief(id));
   for (const id of ids.job) out.push(jobBrief(id));
   for (const id of ids.phenomenon) out.push(phenomenonBrief(id));
+  for (const id of ids.gate) out.push(sceneBrief('gate', id, GATE_LOOK[id] ?? '', `the gate station of ${REGIONS_LONG.find((r) => regionSlug(r.name) === id)!.name}`, 'Not drawn yet: ready for the chart and the region gate card.'));
+  for (const id of ids.planet) out.push(sceneBrief('planet', id, PLANET_LOOK[id] ?? '', `a ${id} planet`, 'Not drawn yet: ready for the chart and the fuel stops.'));
+  for (const id of ids.debrief) out.push(sceneBrief('debrief', id, DEBRIEF_LOOK[id] ?? '', `the ${id} debrief scene`, 'Not drawn yet: ready for the dock and debrief screens.'));
   return out.map((b) => ({ ...b, body: b.prompt.startsWith(STYLE) ? b.prompt.slice(STYLE.length).trimStart() : b.prompt }));
 }

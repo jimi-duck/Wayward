@@ -9,7 +9,7 @@ import { PORT_NAMES } from './systems';
 // prompt for every one. docs/ART-SLOTS.md says what each is for and how to
 // brief it; src/art/README.md says how to drop the files in.
 
-export type SlotId = 'captain' | 'contact' | 'emblem' | 'ship' | 'place' | 'ending' | 'sighting' | 'file' | 'region' | 'fleet' | 'job' | 'phenomenon';
+export type SlotId = 'captain' | 'contact' | 'emblem' | 'ship' | 'place' | 'ending' | 'sighting' | 'file' | 'region' | 'fleet' | 'job' | 'phenomenon' | 'gate' | 'planet' | 'debrief';
 
 export interface SlotDef {
   id: SlotId;
@@ -37,7 +37,14 @@ export const SLOTS: Record<SlotId, SlotDef> = {
   fleet:    { id: 'fleet',    dir: 'fleet',     w: 960,  h: 480,  alpha: false, shownIn: '' },
   job:      { id: 'job',      dir: 'jobs',      w: 1280, h: 720,  alpha: false, shownIn: '' },
   phenomenon: { id: 'phenomenon', dir: 'phenomena', w: 800, h: 600, alpha: false, shownIn: '' },
+  gate:     { id: 'gate',     dir: 'gates',     w: 1280, h: 720,  alpha: false, shownIn: '' },
+  planet:   { id: 'planet',   dir: 'planets',   w: 1280, h: 720,  alpha: false, shownIn: '' },
+  debrief:  { id: 'debrief',  dir: 'debrief',   w: 1280, h: 720,  alpha: false, shownIn: '' },
 };
+
+/** The planets the fuel stops hang over, and the two debrief scenes. */
+export const PLANETS = ['rocky', 'ice', 'gas', 'dead'] as const;
+export const DEBRIEFS = ['castoff', 'limping'] as const;
 
 /** Formats the loader takes, best first. */
 export const ART_EXT = ['webp', 'avif', 'png', 'jpg', 'jpeg'] as const;
@@ -80,6 +87,8 @@ export const FLEET = [
   'capital-vance', 'capital-sorensen', 'capital-kade', 'capital-vex', 'capital-ashgrove', 'capital-pell', 'capital-chorus', 'capital-loom', 'capital-calloway',
   'tanker', 'hauler', 'courier', 'gunship', 'barge', 'salvager', 'drifter', 'ferry',
   'wayward-stock', 'wayward-guns', 'wayward-rig', 'wayward-signals', 'wayward-registry', 'wayward-registry-before', 'wayward-registry-after',
+  // dead hulks for salvage, the Wayward hurt, and the nastier versions of three hulls
+  'wreck-scout', 'wreck-hauler', 'wreck-gunship', 'wreck-capital', 'wayward-scuffed', 'wayward-half', 'wayward-last', 'raider', 'hunter', 'custody-cruiser',
   // a card's first hull, drawn for its caller: `<variant>-<caller>` is used before the plain hull (ui/comms.ts)
   'enforcer-kellern', 'freighter-frontier', 'freighter-guild', 'freighter-miners', 'lancer-calloway', 'scout-guild',
 ] as const;

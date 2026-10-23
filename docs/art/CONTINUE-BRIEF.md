@@ -1,5 +1,5 @@
 # Wayward artwork: the continuation
-*Written by `npm run art:brief`. Give this whole file to the image generator that made the first set (same chat if you still have it). 66 new pictures in six batches.*
+*Written by `npm run art:brief`. Give this whole file to the image generator that made the first set (same chat if you still have it). 69 new pictures in six batches.*
 
 ## Read this first
 The first 109 pictures for the game WAYWARD are done and in use: captains, contacts, emblems, fifteen ships, ports, endings, sightings, pieces of the file and regions. This is **the same job, continued**: new subjects, the identical look. If you remember the first set, match it. If you do not, match the attached reference pictures (the Wayward title art).
@@ -8,7 +8,7 @@ The first 109 pictures for the game WAYWARD are done and in use: captains, conta
 - One subject per image, filling the frame, at the shape asked for.
 
 ## What to deliver
-- 66 pictures, **each a separate PNG**, named exactly as the `Save as` line says (for example `fleet__capital-vance.png`; two underscores after the folder name).
+- 69 pictures, **each a separate PNG**, named exactly as the `Save as` line says (for example `fleet__capital-vance.png`; two underscores after the folder name).
 - Hand them back as **one ZIP** of PNGs. If you cannot make a ZIP, give one PDF with one picture per page and the file name written on the page, in a caption **outside** the picture.
 - No text, lettering, numbers, logos, captions, watermark, frame or border **inside** any picture.
 - Do the batches in order K, L, M, N, O, P. If you run out of room, stop at the end of a picture and carry on when told "continue".
@@ -101,7 +101,7 @@ Save as: **`fleet__capital-calloway.png`**
 Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: CCV Patience, the Governor’s own cutter of the Office of Peace: grey, severe, tailored lines, a small red rank mark, a long sensor mast, clean and fast for its size. Calm and tired, like its owner. It belongs to: the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Very large: a capital ship, far bigger than the Wayward, with a sense of scale from tiny lit windows and gantries. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
 ```
 
-## Batch L: The Wayward, fitted (4)
+## Batch L: The Wayward, fitted (7)
 Her four ways of being fitted. Keep her the same ship as in the title art: only the fittings change.
 
 ### fleet/wayward-stock
@@ -134,6 +134,30 @@ Save as: **`fleet__wayward-signals.png`**
 
 ```text
 Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: the Wayward fitted for Signals: the same hull with antenna masts and a dish array, baffles along the engines, matte dark patches over the yellow, a jammer boom; quiet, a little ghostly. Keep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+### fleet/wayward-registry
+
+Save as: **`fleet__wayward-registry.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: . Keep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+### fleet/wayward-registry-before
+
+Save as: **`fleet__wayward-registry-before.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: . Keep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
+```
+
+### fleet/wayward-registry-after
+
+Save as: **`fleet__wayward-registry-after.png`**
+
+```text
+Cinematic, richly detailed sci-fi concept art, painterly-realistic, dark and muted, in the look of the Wayward title art. Industrial cyberpunk frontier, "used, not dirty": worn painted metal, faded paint, patches, stencils, cables. Mostly dark, one warm yellow-orange anchor, teal only for screens, red only for danger, no neon pink. Soft haze, one key light with a rim light, small restrained glow. No text, lettering, numbers, logos, watermark or border anywhere in the picture. Subject: . Keep the Wayward consistent with the first set of pictures: a long, low, worn yellow-orange ore hauler with split side engine pods. Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with generous room around it, on a pure black background, lit from one side with a soft rim light. Make the silhouette read clearly at small size. No people, no scenery, no text. Make it a wide landscape picture (3:2), the ship on pure black. One picture only, full frame, not a sheet or a grid.
 ```
 
 ## Batch M: Ships going about their business (8)

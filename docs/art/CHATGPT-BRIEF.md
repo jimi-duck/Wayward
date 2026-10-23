@@ -3,13 +3,13 @@
 
 > **For Jimi: how to use this**
 > 1. Open a new ChatGPT chat. Attach `docs/art/reference/wayward-title-art.jpg` and `wayward-menu-art.jpg` (the title screen art) and attach this file (it is long, so attach rather than paste).
-> 2. Write: *"Do the whole brief in one run and give me one file at the end."* It is told below to make all 115 pictures in order without stopping to ask, then to hand back **one PDF**, one page per picture, each page captioned with the picture's file name.
+> 2. Write: *"Do the whole brief in one run and give me one file at the end."* It is told below to make all 118 pictures in order without stopping to ask, then to hand back **one PDF**, one page per picture, each page captioned with the picture's file name.
 > 3. If it stops part-way (long runs often do), just say **"continue"**; it keeps going from where it stopped and still ends with the one file.
 > 4. Give me the file (drop it in the project, or a folder on your computer). `npm run art:prep -- <folder>` cuts out each picture by its caption, crops and sizes it, and puts it into the game.
 > 5. Fallback if it cannot make one PDF: one ZIP of the pictures, each named with its file name (for example `captains__vance.png`). That works too.
 
 ## 1. Your job
-You are making the artwork for **WAYWARD**, a 3D space-survival roguelite for desktop and phone browsers. The pictures appear in the game where the player pauses: when someone calls them on the comms channel (portraits, a faction emblem, the hull of the ship calling), when they dock at a port (a banner), at the ending, and in the Archive (found photographs and objects). There are **107 pictures** (plus 8 optional), listed in section 8, each with its own prompt.
+You are making the artwork for **WAYWARD**, a 3D space-survival roguelite for desktop and phone browsers. The pictures appear in the game where the player pauses: when someone calls them on the comms channel (portraits, a faction emblem, the hull of the ship calling), when they dock at a port (a banner), at the ending, and in the Archive (found photographs and objects). There are **110 pictures** (plus 8 optional), listed in section 8, each with its own prompt.
 Do the whole list in one run (section 6). Make every picture in the same look, as one set, matching the attached reference. Do not put any text, lettering or numbers in a picture. The game draws all words itself.
 
 ## 2. The game in brief
@@ -78,7 +78,7 @@ Tone: **industrial, oppressive, scrappy, mysterious, human, dangerous.** Everyth
 **Ships:** one hull, three-quarter side view from slightly above, nose pointing right, whole hull in frame with room around it, pure black background, one side light with a rim light; no planet, stars, other ships or visible pilot.
 
 ## 6. Delivery: everything in one run, one file at the end
-**Make all 115 pictures in one run, without stopping to ask for approval or notes between them.** Work through section 8 in the order given (the batches A to J). Do not pause after a batch, do not show candidates, do not ask questions: use your best judgement and keep going. If you run out of room in a response, carry on in the next as soon as I say "continue", picking up exactly where you stopped.
+**Make all 118 pictures in one run, without stopping to ask for approval or notes between them.** Work through section 8 in the order given (the batches A to J). Do not pause after a batch, do not show candidates, do not ask questions: use your best judgement and keep going. If you run out of room in a response, carry on in the next as soon as I say "continue", picking up exactly where you stopped.
 
 **To keep it one set without stopping:** before the first picture, fix the look once, in your own words, in a short private note: the rendering style, grain, lighting direction, colour grade and level of detail of the title art. Keep to that note for every picture. Make the **emblems first** (they are quick and set the stencilled, worn graphic language), then the captains, contacts, ships, ports and the rest. For the optional scarred captains (batch J), keep the same person as in batch B.
 
@@ -88,7 +88,7 @@ Tone: **industrial, oppressive, scrappy, mysterious, human, dangerous.** Everyth
 | A | Emblems | 10 | Smallest and quickest to judge. Do these first after the style sheet. |
 | B | Captains and Calloway | 9 | Nine people (and machines). The most important faces in the game. |
 | C | Named contacts | 24 | Eighteen named people. Same lighting and framing as the captains. |
-| D | Ship profiles | 15 | Fifteen hulls, one set. Read them as silhouettes first. |
+| D | Ship profiles | 18 | Fifteen hulls, one set. Read them as silhouettes first. |
 | E | Port banners | 7 | Seven port banners, very wide. |
 | F | Endings | 6 | Six endings, cinematic. |
 | G | Sightings | 20 | Twenty found photographs. |
@@ -117,7 +117,7 @@ Before you put a picture in the file, check it against section 7 and remake it i
 7. For emblems and ships: pure black background, nothing else in the frame.
 
 ## 8. The pictures
-Each entry: its **file** (copy the `FILE:` line exactly), the **size**, where it is shown, and the **prompt**. The style (section 3) and the global avoid list apply to every one and are not repeated. 115 entries.
+Each entry: its **file** (copy the `FILE:` line exactly), the **size**, where it is shown, and the **prompt**. The style (section 3) and the global avoid list apply to every one and are not repeated. 118 entries.
 
 ### Batch A: Emblems (10)
 
@@ -298,8 +298,8 @@ Eighteen named people. Same lighting and framing as the captains.
 `FILE: contacts/story_sam`
 
 - **Size:** 640×800. **Background:** full picture (a dark setting).
-- **Shown:** The comms call "A code for the owner lock" (story_sam), top left of the transmission. The caller's emblem is used if this is missing.
-- **Prompt:** Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: “Juno, don’t dock. They take the hauler and your debt stays. I have a maintenance code that overrides the owner lock. It makes her stolen, but she is yours to run.” (portrait framing: section 5)
+- **Shown:** The comms call "A way out" (story_sam), top left of the transmission. The caller's emblem is used if this is missing.
+- **Prompt:** Subject: Sam Okoro, private channel. Sam Okoro, yard foreman at a gate: forties, broad, careful; yard-crew jacket, a clipboard, looks past the camera as if someone is listening. The yard’s gantry lights behind. Their people: Scatter miners and Holdfast settlers: dust-stained work overalls, headlamps pushed up, patched knees, respirator marks on the face, hands that have worked. Mood: what they say to the player: Juno. Keep this off the open channel. I’ve got a maintenance code to lift the owner lock. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name. But you’ll have control of her ag (portrait framing: section 5)
 
 #### contacts/story_warden
 
@@ -485,7 +485,7 @@ Eighteen named people. Same lighting and framing as the captains.
 - **Shown:** The comms call "Cyrite at a price" (fuel_runner), top left of the transmission. The caller's emblem is used if this is missing.
 - **Prompt:** Subject: Fuel runner, call sign Tallow. Tallow, a fuel runner: thirties, wiry, cheerful and not to be trusted; oil-stained jacket with a hand-painted call sign, a siphon hose over one shoulder. Fuel cans in a cramped cab. Their people: the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Mood: what they say to the player: “Heard a hauler is running dry. I can get you six Cyrite: pay two supplies now, or owe me a favour. Your call, Wayward.” (portrait framing: section 5)
 
-### Batch D: Ship profiles (15)
+### Batch D: Ship profiles (18)
 
 Fifteen hulls, one set. Read them as silhouettes first.
 
@@ -608,6 +608,30 @@ Fifteen hulls, one set. Read them as silhouettes first.
 - **Size:** 960×480. **Background:** pure black (blended in the game, no cut-out needed; a transparent PNG is also fine).
 - **Shown:** The comms call: above the strength bars when the card has ships. Nothing is shown if this is missing.
 - **Prompt:** Subject: a spacecraft, the "Freighter" (special) of the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers. Silhouette: a Continuance freighter: a large, plain, blocky hauler with stacked cargo containers; not a warship Relative size in the game: large. It fights by cross (none fire). Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1. The ship must read at 120 pixels wide: a clear silhouette first, detail second.
+
+#### ships/hauler
+
+`FILE: ships/hauler`
+
+- **Size:** 960×480. **Background:** pure black (blended in the game, no cut-out needed; a transparent PNG is also fine).
+- **Shown:** The comms call: above the strength bars when the card has ships. Nothing is shown if this is missing.
+- **Prompt:** Subject: a spacecraft, the "Ore hauler" (special) of the Continuance’s Custody: institutional, governmental, strict. Black, white and red. Mass-produced and stamped; uniforms identical, regulation grey-black with a white collar tab and thin red piping, rank bars, serial numbers. Silhouette: Relative size in the game: large. It fights by cross (none fire). Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1. The ship must read at 120 pixels wide: a clear silhouette first, detail second.
+
+#### ships/barge
+
+`FILE: ships/barge`
+
+- **Size:** 960×480. **Background:** pure black (blended in the game, no cut-out needed; a transparent PNG is also fine).
+- **Shown:** The comms call: above the strength bars when the card has ships. Nothing is shown if this is missing.
+- **Prompt:** Subject: a spacecraft, the "Mining barge" (special) of the Gutter, pirates and scavengers beyond the law: scrap armour in coppery orange (#C9845A), plates bolted over plates, painted tallies, tools worn as ornaments. Hard, not cartoonish. Silhouette: Relative size in the game: large. It fights by cross (none fire). Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1. The ship must read at 120 pixels wide: a clear silhouette first, detail second.
+
+#### ships/liner
+
+`FILE: ships/liner`
+
+- **Size:** 960×480. **Background:** pure black (blended in the game, no cut-out needed; a transparent PNG is also fine).
+- **Shown:** The comms call: above the strength bars when the card has ships. Nothing is shown if this is missing.
+- **Prompt:** Subject: a spacecraft, the "Freight liner" (special) of the Continuance’s Office of Peace: the civil arm. Pale grey and off-white, cut like a clerk’s coat rather than a soldier’s; quiet, tidy, a single red rule as the only colour. Paper, stamps, forms. Silhouette: Relative size in the game: large. It fights by cross (none fire). Framing: one ship, three-quarter side view from slightly above, nose pointing right, the whole hull in frame with room around it, on a pure black background, lit from one side with a rim light. No planet, no other ships, no stars, no text. Wide 2:1. The ship must read at 120 pixels wide: a clear silhouette first, detail second.
 
 ### Batch E: Port banners (7)
 
@@ -779,7 +803,7 @@ Twenty found photographs.
 
 - **Size:** 800×600. **Background:** full picture.
 - **Shown:** The Archive, beside a sighting once it has been seen. Unseen sightings stay blank.
-- **Prompt:** Subject: a sensor still, "The shadow": The jump-lane entrance drifted while something steered it. It belongs to: the Thren: not a human faction and not "an alien spaceship". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at? The player’s own theory in the Archive: The old lanes were never ours. We borrowed them. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
+- **Prompt:** Subject: a sensor still, "The shadow": the Jump Gate drifted while something steered it. It belongs to: the Thren: not a human faction and not "an alien spaceship". Geometry, asymmetry, biological shapes, unfamiliar repetition, strange light (a cool green-teal, #5CC3A2). The viewer should think: what am I looking at? The player’s own theory in the Archive: The old lanes were never ours. We borrowed them. Framing: a found photograph from the Wayward’s external camera, 4:3, grainy and slightly overexposed, a little motion blur, a HUD-less raw frame. The thing is far away and hard to read; leave the mystery intact. A faint timestamp-style corner mark is fine as a shape, not as legible text.
 
 #### sightings/thren_watch
 
