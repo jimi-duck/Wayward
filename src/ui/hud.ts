@@ -23,6 +23,7 @@ import { Notifier, type Notice } from './notify';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
 import { lockLifted } from '../sim/postjump';
+import { SAM_BEAT } from '../content/story';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // The ship and the world come first; the HUD answers five questions and
@@ -211,6 +212,8 @@ export class Hud {
         case 'civic': this.note(world, civicNote(e.to, e.why)); break;
         case 'commsAnswer':
           this.note(world, t(e.text), e.won ? undefined : 'hit');
+          // the rename reveal's first beat (render/reveal.ts): Sam's code took, say so while the hull is still grey
+          if (e.id === SAM_BEAT && lockLifted(world.flags)) this.notify(world, { type: 'arrival', headline: 'Owner lock lifted', key: 'lock' });
           break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;

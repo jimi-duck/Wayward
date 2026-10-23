@@ -475,6 +475,7 @@ export const REWRITE: Record<string, string> = {
   "Contract terminated": "Vertrag gekündigt",
   "“CONTRACT TERMINATED. ASSET RECOVERY ACTIVE. Vessel OB-7731-A is company property under a conditional lease. Return it to the recovery berth. Balances remain payable.”": "„VERTRAG GEKÜNDIGT. RÜCKHOLUNG AKTIV. Schiff OB-7731-A ist Firmeneigentum unter bedingtem Leasing. Bringe es zum Rückgabeplatz. Offene Beträge bleiben fällig.“",
   "Override the owner lock": "Eignersperre aufbrechen",
+  "Owner lock lifted": "Eignersperre aufgehoben",
   "Keep the ship and the debt. From this moment you are a thief.": "Du behältst Schiff und Schulden. Ab jetzt bist du eine Diebin.",
   "Lock overridden · the hull is yours, and stolen": "Sperre aufgebrochen · der Rumpf gehört dir, und er ist gestohlen",
   "Vessel reported stolen": "Schiff als gestohlen gemeldet",
