@@ -42,6 +42,8 @@ export interface CommsChoice {
   needs: string[];
   /** The answer's tone: a fight draws red on the opening's sheets. */
   tone?: string;
+  /** The kind of risk, in words: it stands in for the odds word. */
+  risk?: string;
 }
 
 export interface CommsView {
@@ -237,7 +239,8 @@ export function cardView(o: Open): CommsView {
     read: d.ships?.length || d.truths?.length ? { them: r.them, you: r.you, bars: !!d.ships?.length, rows: d.truths?.length ? [[t('Intent'), t(r.intent)]] : [] } : null,
     choices: o.choices.map((c) => ({
       label: t(c.label), hint: c.hint ? t(c.hint) : '', lines: [], ok: c.ok, needs: c.needs.map((n) => t(n)), gains: c.gains, tone: c.tone,
-      tags: [...c.cost, ...(c.chance !== null ? [oddsWord(c.chance)] : [])],
+      risk: c.risk ? t(c.risk) : '',
+      tags: [...c.cost, ...(c.chance !== null && !c.risk ? [oddsWord(c.chance)] : [])],
     })),
     face: d.face ? faceSvg(d.face, CALLER_CSS[d.caller], d.scars ?? 0) : null,
     art: artOf(d),
@@ -590,11 +593,11 @@ export class CommsPanel {
       // one row: the key, the label and its sentence, then what it brings, what it costs and the odds (or what it still needs)
       const chip = (cls: string, text: string) => h('span', `cm-chip ${cls}`, text);
       const chips = c.gains.filter((g) => plain(t(g)) !== plain(c.label)).map((g) => chip(gainClass(g), t(g)));
-      const side = c.ok ? c.tags.map((tag) => (/^−/.test(tag) ? chip('cost', tag) : h('span', 'odds', tag))) : c.needs.map((n) => h('span', 'need', n));
+      const side = c.ok ? c.tags.map((tag) => (/^−/.test(tag) ? chip('cost', tag) : h('span', 'odds', tag))).concat(c.risk ? [h('span', 'risk', c.risk)] : []) : c.needs.map((n) => h('span', 'need', n));
       const sel = i === this.sel;
       const b = h('button', `cm-c${sel ? ' sel' : ''}`, '',
         h('kbd', '', String(i + 1).padStart(2, '0')),
-        h('span', 'cm-main', '', h('span', 'cm-l', c.label), c.hint ? h('span', 'cm-h', c.hint) : null, c.lines.length ? h('span', 'cm-lines', c.lines.join(' · ')) : null),
+        h('span', 'cm-main', '', h('span', 'cm-l', c.label), c.hint ? h('span', 'cm-h', c.hint) : null, c.ok && c.risk ? h('span', 'cm-risk', c.risk) : null, c.lines.length ? h('span', 'cm-lines', c.lines.join(' · ')) : null),
         c.ok && chips.length ? h('span', 'cm-gains', '', ...chips) : null,
         h('span', 'cm-side', '', ...side),
       ) as HTMLButtonElement;
