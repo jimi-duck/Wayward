@@ -10,13 +10,14 @@ the project folder `design-guidelines/`.
 
 Clean code edges on an Apple-glass body: a dark teal glass that blurs the
 world behind it, a crisp neon rim with a tight glow, a hairline inside the
-rim, corner brackets outside it, and faint static scanlines. Never a wide,
+rim and faint static scanlines. Never a wide,
 soft, hazy glow. If a screenshot shows a halo around a corner, it fails.
 
 ## The material (`src/styles/neon.css`)
 
 Built once; screens pick a role and never restyle it. `neon.css` loads last
-so it wins over each screen's older frame.
+so it wins over each screen's older frame. Corners are chamfered, never
+rounded (owner, 23 October 2026).
 
 | Layer | Value |
 |---|---|
@@ -25,17 +26,38 @@ so it wins over each screen's older frame.
 | Scanlines | 1px every 4px, 2% darker, static |
 | Sheen | one top-left diagonal, white 3% to 0 over 45% |
 | Inner light | `inset 0 0 26px` halo at .18, 1px top highlight |
-| Rim | 2px, role colour (a spread shadow, so scrolling never cuts it) |
-| Glow | `0 0 2px` halo at .8 and `0 0 6px` at .35, nothing wider |
-| Hairline | 1px, halo at 35%, 6px inside the rim (an inset outline) |
-| Brackets | 2px L-shapes, 28px long (16px on cards), 7px outside each corner (a border image) |
-| Corners | 34px panels, 20px cards, 14px buttons, rows and thumbnails |
+| Rim | 2px, role colour, just outside the edge |
+| Glow | 2px blur at .8 and 6px at .35 along the rim, nothing wider |
+| Hairline | 1px, halo at 35%, 6px inside the rim |
+| Brackets | none: just the box (owner, 23 October 2026) |
+| Corners | 45° cuts: 14px panels, 10px cards, buttons, rows and thumbnails (7px on registry thumbnails) |
+| Padding | 32px top and bottom, 40px sides on panels (20×24 on cards); 16px between blocks. Phones: 18×26, 14×18, 10px; on one screen at 568×320, so two-panel and stacked sheets go to 10–12×18–22 and the sheet keeps a 6px edge |
+| Width | as wide as the content needs, up to the layout's limit; the pause card fits its content (the Arcade start is narrow) |
+
+How it is built: a chamfer cannot come from `clip-path` alone, because the
+clip would cut the glow. So each panel has three layers:
+
+- the element's **border image**: the rim and glow as a nine-slice
+  SVG, drawn outside the box, so corners keep their size and edges stretch;
+- `::before`: the **glass** (fill, scanlines, sheen, blur, inner light) clipped
+  to the chamfer, with the hairline as its own border image;
+- `::after`: the **edge light** (see Motion), masked to the edge band.
+
+The SVG frames come from `tools/neon-frames.mjs`, which writes
+`src/styles/neon-frames.css`; change a cut, colour or glow there and run
+`node tools/neon-frames.mjs`. Never hand-edit the generated file.
+
+A panel never scrolls itself (its glass layer would scroll away): when it is
+taller than the screen, the sheet behind it scrolls instead. Nothing inside a
+panel may set its own rectangular background; put it on `::before` or use
+nested glass.
 
 Classes: `.ng` is a panel (every `.sheet > .panel`, the pause card and the
 job call get it automatically); add `.card` for a small one. `.ng-n` is
-nested glass for buttons, choice rows and thumbnails: the same rim at
-1.5px, a smaller glow, a lighter fill, no blur of its own. Hover and focus
-brighten the glow, pressed dims it, selected takes the role colour.
+nested glass for buttons, choice rows and thumbnails: the same chamfer and
+rim at 1.5px, a smaller glow, its fill in the frame, no blur of its own.
+Hover and focus brighten the glow and tint the fill, pressed tints it more,
+`dim` is the quiet row. Add `ochre` or `red` for the role.
 
 ## Roles
 
@@ -115,6 +137,7 @@ above still holds.
 | What | Where |
 |---|---|
 | Material and the opening's sheets and registry layout | `src/styles/neon.css` |
+| Chamfered frames (rim, glow, hairline) | `tools/neon-frames.mjs` writes `src/styles/neon-frames.css` |
 | Sheet and registry drawing | `src/ui/comms.ts` (`sheetView`, `drawSheet`, `drawReg`) |
 | Arrivals (signal bars, ring, bearing line) | `src/ui/arrive.ts`; the motion CSS is the last part of `neon.css` |
 | Card fields (`glass`, `status`, `hero`, `quote`, `note`, `doc`, `side`) | `CardDef` in `src/sim/comms.ts` |
@@ -123,6 +146,6 @@ above still holds.
 ## Checks for every UI change
 
 Screenshots at 1600x900 and 568x320, English, every changed pop-up next to
-the mockup: rim, tight glow, see-through glass, brackets, role colour, no
+the mockup: rim, tight glow, see-through glass, role colour, no
 clipping, every answer reachable on the phone. For motion, sample the animations at fixed times
 (pause them and set `currentTime`; headless frames are too slow to catch them live) and check once with reduced motion.
