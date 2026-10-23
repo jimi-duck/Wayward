@@ -1,3 +1,4 @@
+import { arrive } from './arrive';
 import { DESK } from '../sim/desk';
 import type { Caller, Open } from '../sim/comms';
 import type { GameEvent } from '../sim/events';
@@ -102,9 +103,11 @@ export class Radio {
     const root = $('radio');
     root.classList.toggle('under', this.blocked());
     if (call !== this.shown) {
+      // a call that replaces one still on screen rings the antenna; a fresh one fills the signal bars
+      const again = !!call && !!this.shown;
       this.shown = call;
       this.opened = performance.now();
-      if (call) this.draw(call);
+      if (call) { this.draw(call); arrive($('rd-call'), again); }
       $('rd-call').hidden = !call;
       if (call) this.line(null);
     }

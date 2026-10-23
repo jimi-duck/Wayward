@@ -85,12 +85,38 @@ Unknown callers keep a white status dot until combat makes them hostile.
 - **HUD is not a pop-up:** instruments, objectives and the low-centre notices
   keep their thin lines and restrained glow (`docs/DESIGN.md`).
 
+## Motion
+
+From the owner's ambient motion and incoming-transmission rules (23 October 2026). Text and panel geometry never
+move; only the glass and the edge light do. Motion never changes the reading area's brightness, so the contrast
+above still holds.
+
+| Effect | When | How |
+|---|---|---|
+| Signal bars | Every transmission (story cards, sheets, the registry, radio calls) | Four bars in the header fill one by one over about a second, then hold, full |
+| Reflection | Once as a pop-up opens | One faint diagonal glint, masked to the 12px edge band outside the text (7px on phones) |
+| Edge light | The one loop | A short highlight runs along part of the top edge for about 3.5s every 14s, starting 3s after opening |
+| Ring | A message that replaces one still on screen | One thin ring from the bars (the antenna), once; the bars stay full |
+| Bearing | Sam's private channel only | A dotted line draws once from the panel's corner toward his bearing (047°, `SAM_BEARING`), then fades; the header's `RX 047°` settles its digits |
+| Press | Buttons and choice rows | A brief brighten inside the button, the glow no wider than on hover |
+
+- Arrivals fire once per message: `src/ui/arrive.ts` marks the pop-up `data-rx` (fresh) or `data-ring` (it
+  replaced an open one) for a moment. A redraw, such as opening a document, never replays them.
+- Nothing from an arrival is brighter than the rim. Nothing moves under body text.
+- Forbidden: hazy or blurry corner glows, falling code, bouncing, pulsing panels, continuous shimmer, anything
+  behind the text. The old breaking scanline (`.wear::after`) is off on every pop-up for this reason.
+- Reduced motion: nothing moves; the bars are simply full. A hidden page pauses everything where it is.
+- A new card that speaks over the air takes the bars in its header (`bars()` in `arrive.ts`, or the
+  `.rx-bars` markup). A private channel takes `rx` (its bearing) on its `CardDef`.
+- Left out, though the rules allow them: the static settle (a speckle on open) and edge ticks.
+
 ## Where it lives
 
 | What | Where |
 |---|---|
 | Material and the opening's sheets and registry layout | `src/styles/neon.css` |
 | Sheet and registry drawing | `src/ui/comms.ts` (`sheetView`, `drawSheet`, `drawReg`) |
+| Arrivals (signal bars, ring, bearing line) | `src/ui/arrive.ts`; the motion CSS is the last part of `neon.css` |
 | Card fields (`glass`, `status`, `hero`, `quote`, `note`, `doc`, `side`) | `CardDef` in `src/sim/comms.ts` |
 | The opening's copy | `src/content/story.ts` (Act I) and `src/sim/contract.ts` (ledgers) |
 
@@ -98,4 +124,5 @@ Unknown callers keep a white status dot until combat makes them hostile.
 
 Screenshots at 1600x900 and 568x320, English, every changed pop-up next to
 the mockup: rim, tight glow, see-through glass, brackets, role colour, no
-clipping, every answer reachable on the phone.
+clipping, every answer reachable on the phone. For motion, sample the animations at fixed times
+(pause them and set `currentTime`; headless frames are too slow to catch them live) and check once with reduced motion.

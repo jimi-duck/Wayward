@@ -844,6 +844,7 @@ export const REWRITE: Record<string, string> = {
   "Document · archive record": "Dokument · Archiveintrag",
   "Krail reserve evidence": "Beweis: Krail-Reserven",
   "{n} CR": "{n} CR",
+  "RX {n}°": "RX {n}°",
   "Local identity updated · Registration not restored": "Lokale Kennung aktualisiert · Registrierung nicht wiederhergestellt",
   "Read only": "Nur lesen",
   "Cargo lost": "Ladung verloren",

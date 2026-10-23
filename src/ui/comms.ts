@@ -9,6 +9,7 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
 import { num, t } from '../i18n';
 import { FACTION_NAME } from './hud';
+import { arrive, arriving, bars, bearingLine, settle, settleDigits } from './arrive';
 
 // ── the comms panel ───────────────────────────────────────────────────────
 // Grown out of the hail panel: every channel opened to the ship, drawn the
@@ -127,6 +128,8 @@ export interface SheetPanel {
   /** A small label over quoted lines (the radio voice). */
   label: string;
   lines: string[];
+  /** A private channel's bearing in degrees (Sam's is always the same), or null. */
+  rx: number | null;
 }
 
 /** The opening's sheets (docs/DESIGN-GUIDELINES.md): a main panel, maybe a second one beside it, and an optional document. */
@@ -145,11 +148,11 @@ function sheetView(d: Open['def'], o: Open): SheetView {
     main: {
       role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role,
       title: d.notitle || d.hero ? '' : t(d.title), sub: d.quote ? '' : lines.join(' '), label: '', lines: d.quote ? lines : [],
-      hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '',
+      hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '', rx: d.rx ?? null,
     },
     side: side ? {
       role: side.glass ?? 'cyan', from: t(side.from), status: side.status ? t(side.status) : '', dot: side.glass ?? 'cyan',
-      title: side.title ? t(side.title) : '', sub: side.sub ? t(side.sub) : '', label: side.label ? t(side.label) : '', lines: side.lines.map((l) => t(l)),
+      title: side.title ? t(side.title) : '', sub: side.sub ? t(side.sub) : '', label: side.label ? t(side.label) : '', lines: side.lines.map((l) => t(l)), rx: null,
     } : null,
     doc: d.doc ? {
       open: t(d.doc.open), at: d.doc.at ?? (o.ledger?.length ?? 0), row: !!d.doc.row, kick: t(d.doc.kick), title: t(d.doc.title),
@@ -257,6 +260,8 @@ const gainClass = (g: string) => (THREAT.test(g) ? 'g-threat' : /^−/.test(g) ?
 export class CommsPanel {
   private off: (() => void) | null = null;
   private opened = 0;
+  /** When the panel last closed: a card that follows at once arrives in a window that is already open. */
+  private closedAt = -1e9;
   private sel = 0;
   private view: CommsView | null = null;
   private onAnswer: ((i: number) => void) | null = null;
@@ -266,7 +271,9 @@ export class CommsPanel {
   }
 
   show(view: CommsView, onAnswer: (i: number) => void): void {
+    const again = performance.now() - this.closedAt < 400;
     this.close();
+    arrive($('comms'), again);
     this.view = view;
     this.onAnswer = onAnswer;
     this.opened = performance.now();
@@ -339,6 +346,9 @@ export class CommsPanel {
     this.docOpen = false;
     this.drawSheet(view, sv);
     $('comms').hidden = false;
+    // a private channel: the line toward where the call comes from, once, as it arrives
+    const main = $('cm-ng').querySelector<HTMLElement>('.ns-main');
+    if (sv.main.rx !== null && main && arriving($('comms'))) bearingLine($('cm-ng'), main, sv.main.rx);
     this.off = keys((e) => {
       if (this.docOpen) {
         if (['Escape', 'Backspace', 'Enter', 'NumpadEnter', 'Space'].includes(e.code)) return this.setDoc(view, sv, false), true;
@@ -368,6 +378,8 @@ export class CommsPanel {
 
   private setDoc(view: CommsView, sv: SheetView, on: boolean): void {
     this.docOpen = on;
+    // the same message, redrawn: nothing arrives again
+    settle($('comms'));
     this.drawSheet(view, sv);
   }
 
@@ -380,8 +392,13 @@ export class CommsPanel {
       this.items.push({ el, act, n });
       return el;
     };
-    const head = (p: { from: string; status: string; dot: string }, box = false) => h('header', 'ns-h', '', wave(), h('span', 'ns-from', p.from),
-      p.status ? h('span', `ns-st ${box ? 'box' : p.dot}`, p.status) : null);
+    const head = (p: { from: string; status: string; dot: string; rx?: number | null }, box = false) => {
+      const deg = p.rx != null ? h('span', 'rx-deg') : null;
+      const rx = t('RX {n}°', { n: String(p.rx).padStart(3, '0') });
+      if (deg) { if (arriving($('comms'))) settleDigits(deg, rx); else deg.textContent = rx; }
+      return h('header', 'ns-h', '', wave(), h('span', 'ns-from', p.from), deg, bars(),
+        p.status ? h('span', `ns-st ${box ? 'box' : p.dot}`, p.status) : null);
+    };
     const rows = (rs: Row[]) => rs.map((r) => h('div', `ns-r ${r.tone}`, '', h('span', 'k', r.k), h('b', 'v', r.v)));
     const quotes = (ls: string[]) => (ls.length ? h('div', 'ns-q', '', ...ls.map((l) => h('p', '', l))) : null);
     const d = sv.doc;
@@ -447,7 +464,7 @@ export class CommsPanel {
     go.onpointerdown = (e) => e.stopPropagation();
     const [w1 = '', w2 = ''] = r.repaint[1].split(/(?<=\.)\s+/);
     $('cm-reg').replaceChildren(
-      h('header', 'rg-h', '', h('div', 'rg-org', '', h('b', '', '', wave(), h('span', '', r.head)), h('span', '', r.sub)), h('span', 'rg-tag', r.tag)),
+      h('header', 'rg-h', '', h('div', 'rg-org', '', h('b', '', '', wave(), h('span', '', r.head)), h('span', '', r.sub)), bars(), h('span', 'rg-tag', r.tag)),
       h('div', 'rg-main', '',
         h('div', 'rg-left', '',
           r.from ? h('p', 'rg-old', '', h('s', '', r.from), h('i', '', '→')) : null,
@@ -482,6 +499,7 @@ export class CommsPanel {
   }
 
   close(): void {
+    if (!$('comms').hidden) this.closedAt = performance.now();
     this.docOpen = false;
     this.items = [];
     this.off?.();
