@@ -5,6 +5,7 @@ import { JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
 import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
+import type { Faction } from '../sim/enemies';
 import { inFight } from '../sim/guide';
 import { newShip, topSpeed, type ShipState } from '../sim/ship';
 import type { World } from '../sim/world';
@@ -92,6 +93,8 @@ export class Sector {
   private time = 0;
   private nebula = 0;
   private flash = 0;
+  private fightK = 0;
+  private fightFaction: Faction | null = null;
   /** Seconds to the next self-repair spark. */
   private weld = 0;
   /** The run or system the sky was painted for. */
@@ -527,6 +530,16 @@ export class Sector {
     for (let i = 0; i < 3; i++) m.tint[i] = m.tint[i]! + ((there?.tint[i] ?? 0) - m.tint[i]!) * k;
     this.space.update(world.space, this.rig.target.x, this.rig.target.z, dt, this.reduceMotion);
     this.env.weather(this.nebula, this.reduceMotion ? 0 : this.flash, m);
+    // a fight lifts the rim off the black and cools it toward the faction you face; it eases back out after
+    if (inFight(world)) {
+      let near = 1e9;
+      for (const a of world.aliens) {
+        const d = Math.hypot(a.x - world.ship.x, a.z - world.ship.z);
+        if (d < near && !a.fleeing) { near = d; this.fightFaction = a.faction; }
+      }
+    }
+    this.fightK += ((inFight(world) ? 1 : 0) - this.fightK) * Math.min(1, dt * (inFight(world) ? 2.5 : 1));
+    this.env.fight(this.fightFaction ? NEON[this.fightFaction] : null, this.fightK);
 
     // the refit bay is opaque and covers the whole view once the ship has settled under it: nothing to draw, and phones animate its cards more smoothly without a full frame behind them
     if (this.blind || (this.covered && this.bayK > COVERED)) return;

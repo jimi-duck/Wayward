@@ -28,6 +28,8 @@ const INK = new Color('#cfd6e0');
 const NEBULA = new Color('#1b0e28');
 const DUST_BOX = 130;
 const KEY_TINT = new Color();
+const RIM_COLOUR = new Color(0x7f9cc8), FIGHT_TINT = new Color();
+const RIM_BASE = 0.9, RIM_FIGHT = 2.2;
 
 export class Environment {
   private readonly skyRim = new Color();
@@ -38,6 +40,7 @@ export class Environment {
   private readonly dustBase: Float32Array;
   private readonly dustPos: BufferAttribute;
   private readonly rim: DirectionalLight;
+  private fightK = 0;
   private readonly key: DirectionalLight;
   private readonly starMat: ShaderMaterial;
   private readonly scene: Scene;
@@ -133,7 +136,7 @@ export class Environment {
     this.key.shadow.bias = -0.0004;
     this.key.shadow.normalBias = 0.06;
     this.key.shadow.radius = 2;
-    this.rim = new DirectionalLight(0x7f9cc8, 0.9);
+    this.rim = new DirectionalLight(RIM_COLOUR, RIM_BASE);
     this.group.add(this.key, this.key.target, new HemisphereLight(0x56607a, 0x0b0907, 0.36), this.rim);
     this.group.add(this.parallax.group);
     scene.add(this.group);
@@ -152,6 +155,20 @@ export class Environment {
     const proof = new FarBodies(sky, new Vector3(-44, 22, -10));
     proof.group.visible = false;
     this.stars.add(proof.group);
+  }
+
+  /**
+   * A fight lifts the rim: stronger, and cooled toward the faction you are fighting (`tint`, HDR, any scale; null keeps the sky's).
+   * `k` 0 to 1 is how far into the fight the view is. One directional light and a uniform: no second light.
+   */
+  fight(tint: Color | null, k: number): void {
+    this.fightK = k;
+    this.rim.intensity = RIM_BASE + (RIM_FIGHT - RIM_BASE) * k;
+    this.rim.color.copy(RIM_COLOUR);
+    if (tint) {
+      const m = Math.max(tint.r, tint.g, tint.b, 1e-3);
+      this.rim.color.lerp(FIGHT_TINT.setRGB(tint.r / m, tint.g / m, tint.b / m), 0.3 * k);
+    }
   }
 
   /** A new sky: repaint the backdrop and put up its far bodies. */
@@ -183,7 +200,7 @@ export class Environment {
     this.dome.uniforms.uLevel!.value = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
     this.far?.dim(1 - nebula * 0.7);
     this.parallax.dim(1 - nebula * 0.6);
-    WORLD_RIM.value.copy(this.skyRim).multiplyScalar(1 + flash * 4);
+    WORLD_RIM.value.copy(this.skyRim).multiplyScalar((1 + flash * 4) * (1 + this.fightK * 0.8));
     if (t) WORLD_RIM.value.r += t[0] * 0.25, WORLD_RIM.value.g += t[1] * 0.25, WORLD_RIM.value.b += t[2] * 0.25;
     this.key.intensity = 5.4 + flash * 9;
     this.key.color.setRGB(0.94, 0.92 + flash * 0.08, 0.89 + flash * 0.11);

@@ -2,6 +2,8 @@
 // in the sector's lights and post chain, from a fixed set of views, for
 // working on the model without flying her.
 import { PerspectiveCamera, Scene } from 'three';
+import { NEON } from '../src/render/enemies';
+import type { Faction } from '../src/sim/enemies';
 import { Environment } from '../src/render/environment';
 import { Post } from '../src/render/post';
 import { TIERS, tierIndex } from '../src/render/quality';
@@ -85,6 +87,9 @@ const frame = (now: number) => {
   }
   ship.update(s, hitBearing !== null ? 0 : dt, true);
   env.update(camera, 0, 0, 0, 0, dt);
+  // ?fight=gutter|custody|office|voice|thren: the rim as in a fight with that faction
+  const fight = params.get('fight');
+  env.fight(fight ? NEON[fight as Faction] ?? null : null, fight ? 1 : 0);
   if (!post.render(dt)) renderer.render(scene, camera);
   requestAnimationFrame(frame);
 };
