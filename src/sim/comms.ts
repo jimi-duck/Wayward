@@ -243,6 +243,8 @@ export interface ChoiceDef {
   /** The truth decides: if it is one of these, the choice loses. */
   loseIf?: string[];
   odds?: Odds;
+  /** The kind of risk, in a few words (`High risk · pursuit likely`). Shown in place of the odds word: the choice is what you will risk, not which button has the best chance. */
+  risk?: string;
   win: Outcome;
   lose?: Outcome;
 }
@@ -356,6 +358,8 @@ export interface ChoiceView {
   chance: number | null;
   /** What it brings if it comes off, in a few words each (sim/gains). */
   gains: string[];
+  /** The kind of risk, in words (empty: the panel shows the odds word instead). */
+  risk: string;
 }
 
 export interface Read {
@@ -582,7 +586,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
   }
   return {
     id: c.id, label: c.label, tone: c.tone, hint: c.hint, ok: needs.length === 0, needs, cost: costWords,
-    odds, risky, chance, gains: gains(c.win, x, fee, cost),
+    odds, risky, chance, gains: gains(c.win, x, fee, cost), risk: c.risk ?? '',
   };
 }
 

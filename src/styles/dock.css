@@ -560,7 +560,10 @@
 #comms .cm-chip.g-gain, #comms .cm-side .odds { color: var(--dk-info); }
 #comms .cm-chip.g-loss, #comms .cm-chip.cost { color: var(--dk-amber); }
 #comms .cm-chip.g-threat { color: var(--dk-red); }
-#comms .cm-side .odds, #comms .cm-side .need { text-transform: uppercase; white-space: nowrap; }
+#comms .cm-side .odds, #comms .cm-side .need, #comms .cm-side .risk { text-transform: uppercase; white-space: nowrap; }
+/* the kind of risk, in words: caution gold, wrapping onto two lines rather than squeezing the label */
+#comms .cm-risk { display: none; }
+#comms .cm-side .risk { max-width: 22ch; color: var(--dk-amber); text-align: right; white-space: normal; line-height: 1.25; }
 #comms .cm-side .need { max-width: 18ch; color: var(--dk-ink2); text-align: right; white-space: normal; }
 @media (min-width: 721px) and (min-height: 521px) { #comms .cm-c { padding: 10px 16px; } }
 @media (max-height: 520px) {
@@ -573,4 +576,6 @@
   #comms .cm-side .need { white-space: normal; text-align: right; }
   #comms .cm-gains { display: none; grid-column: 2 / -1; grid-row: 2; flex-wrap: wrap; padding-top: 4px; }
   #comms .cm-c.sel .cm-gains { display: flex; }
+  #comms .cm-side .risk { display: none; }
+  #comms .cm-c.sel .cm-risk { display: block; padding-top: 3px; font: 500 var(--cm-label)/1.25 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--dk-amber); }
 }

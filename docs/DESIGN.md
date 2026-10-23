@@ -92,10 +92,11 @@ A sortie with a shape: get the stolen hauler out of the home system
   come after you, the hunt pressure goes to full, and her interdiction field
   more than doubles the charge, eleven seconds instead of five (the reach
   grows with it); survive it and you are gone, with no need to kill her), spoof it (with forged codes, likely; or
-  rig the transponder from spare parts, a long shot when the heat is up), pay the
-  fee (it rises with heat; a captain who goes by the book takes it and
-  scans you anyway), talk your way through (easier before they know your
-  face), or fight: the usual three-phase duel, and her wreck pays a little
+  rig the transponder from spare parts, a long shot when the heat is up) or talk
+  your way through (easier before they know your face). Three ways, three
+  kinds of risk (fly, hack, bluff), each shown as a risk line (`risk` on the
+  choice) in place of the odds word; there is no fee and no fight button. A
+  failed spoof or bluff turns into the usual three-phase duel, and her wreck pays a little
   Cyrite (`CAPITAL_CYRITE`, a top-up rather than a jump), supplies and more
   Cyrite for the bay, and opens her faction's tech in the bay.
 - **Comms.** See below: everyone else who opens a channel.

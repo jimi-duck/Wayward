@@ -18,8 +18,8 @@ describe('what a choice brings', () => {
     const cp = CARD_BY_ID.checkpoint!;
     const of = (id: string) => gains(cp.choices.find((c) => c.id === id)!.win, ctx(), 40);
     expect(of('talk')).toContain('Through the lane');
-    expect(of('fight')).toContain('Fight');
     expect(of('run')).toContain('Run the blockade');
+    expect(gains(CARD_BY_ID.story_registry!.choices.find((c) => c.id === 'fight')!.win, ctx(), 40)).toContain('Fight');
   });
 
   it('marks losses with a minus, like a cost', () => {
