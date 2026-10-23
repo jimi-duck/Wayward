@@ -342,19 +342,17 @@
     <div id="comms" class="sheet dk" role="dialog" aria-labelledby="cm-t" hidden>
       <div class="panel comms dk-panel">
         <i class="wear v2" aria-hidden="true"></i>
-        <header class="tx-h"><i class="tx-wave" aria-hidden="true"></i><span class="tx-k">Incoming transmission</span><i class="rx-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></i></header>
+        <header class="tx-h"><i class="tx-wave" aria-hidden="true"></i><span class="tx-k" id="cm-k">Incoming transmission</span><i class="rx-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></i></header>
         <div class="tx-card">
           <div class="tx-pic">
             <span id="cm-sigil" class="cm-sigil" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="sg-calm" d="M12 2l10 10-10 10L2 12z M12 7l5 5-5 5-5-5z"/><path class="sg-alert" d="M12 3l10 17H2z M12 9v5 M12 16.5v1.5"/></svg></span>
             <div id="cm-face" class="cm-face" hidden></div>
           </div>
           <div class="tx-main">
-            <div class="tx-id">
-              <span class="tx-who"><b id="cm-who">Channel open</b><span id="cm-s"></span></span>
-              <span class="tx-stamp" id="cm-k">Incoming</span>
-            </div>
+            <h2 id="cm-t" class="cm-title">Channel open</h2>
+            <div class="tx-id"><span class="tx-who"><b id="cm-who">Channel open</b><span id="cm-s"></span></span></div>
             <div id="cm-body" class="cm-body">
-              <div class="tx-msg"><h2 id="cm-t">Channel open</h2><p id="cm-gist" class="cm-gist"></p><p id="cm-text" class="cm-text"></p><ul id="cm-ledger" class="cm-ledger" hidden></ul><button id="cm-i" class="cm-i" type="button" aria-expanded="false" aria-label="More" title="More" hidden>i</button><p id="cm-more" class="cm-text cm-more" hidden></p></div>
+              <div class="tx-msg"><p id="cm-gist" class="cm-gist"></p><p id="cm-text" class="cm-text"></p><ul id="cm-ledger" class="cm-ledger" hidden></ul><button id="cm-i" class="cm-i" type="button" aria-expanded="false" aria-label="More" title="More" hidden>i</button><p id="cm-more" class="cm-text cm-more" hidden></p></div>
               <div id="cm-read" class="cm-read"></div>
             </div>
           </div>

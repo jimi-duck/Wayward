@@ -158,34 +158,16 @@
 #comms .cm-face.art { width: 96px; aspect-ratio: 4 / 5; border: 1px solid var(--dk-line); }
 #comms .cm-face { width: 84px; }
 #comms .cm-sigil { width: 64px; height: 64px; }
-#comms .tx-id { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-#comms #cm-who { font-size: clamp(18px, 1.8vw, 22px); letter-spacing: .14em; }
-#comms #cm-s { color: var(--dk-info); letter-spacing: .14em; }
-.sheet.alert#comms #cm-s { color: var(--dk-ink2); }
-#comms .tx-stamp { border-width: 1px; padding: 4px 8px 3px; font-size: calc(var(--fs) * 1.0 * 1.18); letter-spacing: .16em; color: var(--dk-ink2); border-color: var(--dk-line); rotate: 0deg; background: none; }
-.sheet.alert#comms .tx-stamp { color: var(--dk-red); border-color: var(--dk-red); }
 #comms .cm-body { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 #comms .cm-body:not(.solo) { grid-template-columns: minmax(0, 1fr) minmax(150px, .6fr); }
 #comms .tx-msg { border-left: 0; padding-left: 0; gap: 6px; }
-#comms .tx-msg h2 { font: 700 calc(var(--fs) * 1.3 * 1.18)/1.2 var(--font-rail); letter-spacing: .1em; color: var(--dk-ink); }
-#comms .cm-text { font: 400 15px/1.5 var(--font-display); color: var(--dk-ink); max-width: 46ch; }
-#comms .cm-more { color: var(--dk-ink2); }
 #comms .cm-read { border-color: var(--dk-hair); background: var(--dk-raised); }
 /* the answers: full-width rows, a number, a title with its line under it, what it costs at the right */
 #comms .cm-list { gap: 6px; }
-#comms .cm-c { grid-template-columns: 4ch minmax(0, 1fr) auto; gap: 12px; padding: 9px 12px; border: 1px solid var(--dk-hair); background: var(--dk-raised); transition: border-color var(--dk-ez), background var(--dk-ez); }
-#comms .cm-c kbd { font: 500 calc(var(--fs) * 1.5)/1 var(--font-mono); color: var(--dk-off); }
 #comms .cm-c.sel { background: linear-gradient(90deg, var(--hud-ghost), var(--dk-raised)); border-color: var(--hud-mid); box-shadow: inset 2px 0 0 var(--hud), 0 0 14px rgba(134, 169, 209, .22); }
 #comms .cm-c.sel kbd { color: var(--hud-hi); }
 #comms .cm-c:hover:not(.sel):not([aria-disabled="true"]) { border-color: var(--dk-line); background: var(--dk-raised); }
 #comms .cm-c:focus-visible { outline: 2px solid var(--dk-hud); outline-offset: 1px; }
-#comms .cm-l { font: 700 calc(var(--fs) * 1.25 * 1.18)/1.1 var(--font-head); letter-spacing: .14em; color: var(--dk-ink); }
-#comms .cm-h { font: 400 13px/1.3 var(--font-display); color: var(--dk-ink2); }
-#comms .cm-c.sel .cm-h { color: var(--dk-ink); }
-#comms .cm-gains .g-gain, #comms .cm-side .odds { color: var(--dk-info); }
-#comms .cm-gains .g-loss, #comms .cm-side .cost { color: var(--dk-amber); }
-#comms .cm-gains .g-threat { color: var(--dk-red); }
-#comms .cm-side .need { color: var(--dk-off); }
 #comms .pf { border-top-color: var(--dk-hair); }
 #comms .pf .keys { color: var(--dk-off); }
 
@@ -283,8 +265,6 @@
   #port .pl-art { width: 78px; max-height: 92px; }
   #comms .panel.comms { padding: 12px 16px 12px 22px; gap: 8px; }
   #comms .cm-face.art { width: 84px; }
-  #comms .cm-text { line-height: 1.4; }
-  #comms .cm-c { padding: 7px 12px; }
 }
 @media (min-height: 461px) and (max-height: 740px) {
   .opening { width: min(640px, 100%); }
@@ -308,8 +288,6 @@
   #comms .cm-face.art { width: 72px; }
   #comms .cm-face { width: 64px; }
   #comms .cm-sigil { width: 52px; height: 52px; }
-  #comms .cm-text { font-size: 14px; line-height: 1.35; }
-  #comms .cm-c { padding: 5px 12px; }
   #comms .cm-list { gap: 4px; }
   #rd-call.job .rd-hint { display: none; }
   #rd-call.job .rd-c.first .rd-hint { display: block; }
@@ -332,7 +310,6 @@
   #comms .cm-face.art { width: 60px; }
   #comms .cm-face { width: 56px; }
   #comms .cm-sigil { width: 44px; height: 44px; }
-  #comms .cm-text { font-size: 13.5px; line-height: 1.3; }
   #rd-call.job .rd-art { width: 84px; }
   #rd-call.job { grid-template-columns: 84px minmax(0, 1fr); padding: 10px 14px 10px 18px; gap: 6px 12px; }
 }
@@ -403,12 +380,7 @@
   #comms .cm-face.art { width: 64px; }
   #comms .cm-face { width: 56px; }
   #comms .cm-sigil { width: 44px; height: 44px; }
-  #comms .cm-text { font-size: 13px; line-height: 1.35; }
-  #comms .cm-c { padding: 6px 8px; grid-template-columns: 3ch minmax(0, 1fr) auto; }
-  #comms .cm-c kbd { font-size: 15px; }
-  #comms .cm-l { font-size: 14px; }
   #comms .cm-h { display: none; }
-  #comms .cm-c.sel .cm-h { display: block; font-size: 12px; }
   #comms .cm-list { gap: 4px; }
   /* a short window: the call on the left, the answers on the right, so five answers fit without scrolling */
   #comms .panel.comms { width: min(780px, 100%); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-rows: auto auto auto 1fr; column-gap: 12px; align-items: start; overflow-y: auto; }
@@ -417,7 +389,6 @@
   #comms .panel.comms > .cm-timer { grid-column: 2; grid-row: 2; }
   #comms .panel.comms > .cm-list { grid-column: 2; grid-row: 4; }
   #comms .cm-body:not(.solo) { grid-template-columns: minmax(0, 1fr); }
-  #comms .cm-c { min-height: 40px; }
   /* the world is held while a job is open, so the card takes the top of a short screen: all its answers stay on it */
   #rd-call.job { --rd-top: calc(var(--safe-t) + 6px); }
   #rd-call.job { width: min(430px, 56vw); left: 40%; padding: 6px 12px 8px; gap: 3px 10px; grid-template-columns: 56px minmax(0, 1fr); }
@@ -476,12 +447,9 @@
 }
 
 /* the glance line: what is happening, before any of the detail */
-#comms .cm-gist { margin: 4px 0 6px; font: 600 17px/1.25 var(--font-display); color: var(--dk-ink); border-left: 3px solid var(--cc, var(--dk-ink)); padding-left: 10px; }
-#comms .cm-gist:empty { display: none; }
-#comms .cm-gist + .cm-text { font-size: 13px; color: var(--ink-2); }
-@media (max-height: 420px) { #comms .cm-gist { font-size: 15px; margin: 2px 0 4px; } #comms .cm-gist + .cm-text { font-size: 12px; } }
 
 /* The contract ledger on an opening card: hairline rows, the company's cuts in caution gold, Juno's own line in steel blue. */
+#comms .cm-ledger[hidden] { display: none; }
 #comms .cm-ledger { list-style: none; margin: 8px 0 4px; padding: 6px 10px; display: grid; gap: 2px; border: 1px solid var(--hair, rgba(160,170,170,.28)); background: var(--scrim); }
 #comms .cm-ledger li { display: flex; justify-content: space-between; gap: 12px; font: 500 12px/1.4 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
 #comms .cm-ledger li b { font: 600 13px/1.4 var(--font-mono); color: var(--ink); white-space: nowrap; }
@@ -506,28 +474,18 @@
    On a desktop or laptop the call sits in the middle of the held view, wider, with the words at reading size and full ink
    (the glance line and the text under it used to be small and dim). Phones keep their own layout above. */
 @media (min-width: 721px) and (min-height: 521px) {
-  #comms { place-items: center; background: radial-gradient(ellipse at center, rgba(6, 10, 12, .5), rgba(6, 10, 12, .8)); }
+  #comms { place-items: center; background: radial-gradient(ellipse at center, rgba(6, 10, 12, .65), rgba(6, 10, 12, .9)); }
   #comms .panel.comms { width: min(880px, 100%); padding: 18px 26px 16px 30px; gap: 12px; }
   #comms .tx-card { gap: 6px 20px; }
   #comms .cm-face.art { width: 104px; }
   #comms .cm-face { width: 96px; }
-  #comms .cm-gist { font-size: 19px; line-height: 1.3; }
-  #comms .cm-text, #comms .cm-gist + .cm-text { font-size: 16px; line-height: 1.5; color: var(--dk-ink); max-width: 64ch; }
   #comms .cm-ledger li { font-size: 13.5px; }
   #comms .cm-ledger li b { font-size: 14.5px; }
-  #comms .cm-c { padding: 10px 14px; }
-  #comms .cm-h { font-size: 14.5px; line-height: 1.35; }
 }
 @media (min-width: 721px) and (min-height: 760px) {
   #comms .panel.comms { width: min(920px, 100%); padding: 24px 32px 20px 36px; gap: 16px; }
-  #comms .tx-msg h2 { font-size: 26px; }
-  #comms .cm-gist { font-size: 21px; }
-  #comms .cm-text, #comms .cm-gist + .cm-text { font-size: 17.5px; line-height: 1.55; }
   #comms .cm-ledger li { font-size: 14.5px; }
   #comms .cm-ledger li b { font-size: 15.5px; }
-  #comms .cm-l { font-size: 19px; }
-  #comms .cm-h { font-size: 15.5px; }
-  #comms .cm-c { padding: 12px 16px; }
 }
 
 /* the job offer and the radio call: the same reading size as the transmission (the quote used to be small, dim and cut at two lines) */
@@ -545,4 +503,74 @@
   #rd-call:not(.job) { width: min(560px, 54vw); }
   #rd-call:not(.job) .rd-text { font-size: 16px; line-height: 1.45; }
   #rd-call:not(.job) .rd-id b { font-size: 19px; }
+}
+
+/* ── the call, on one scale ───────────────────────────────────────────────
+   Four sizes and nothing between: the title, the words (full ink: the most readable text on the card), the labels and
+   chips, and the odds. Labels use --ink-2, not --ink-3: nothing on the glass is dimmer than #A9A89C. A phone on its side
+   keeps smaller words and 40px rows so every answer stays on one screen. */
+#comms { --cm-title: clamp(20px, 1.8vw, 26px); --cm-body: 15px; --cm-label: 12px; --cm-odds: 13px; --cm-row: 56px; }
+@media (min-width: 721px) and (min-height: 521px) { #comms { --cm-body: 16px; } }
+@media (max-height: 520px) { #comms { --cm-body: 13.5px; --cm-row: 40px; } }
+
+/* the header: the kind of call on the left, the signal on the right */
+#comms .tx-h { align-items: center; gap: 12px; }
+#comms .tx-k { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 var(--cm-label)/1 var(--font-rail); letter-spacing: .18em; }
+
+/* who: the title on its own line, the caller under it, small, on one baseline */
+#comms .cm-title { margin: 0; font: 700 var(--cm-title)/1.15 var(--font-head); letter-spacing: .1em; text-transform: uppercase; color: var(--dk-ink); overflow-wrap: anywhere; }
+#comms .tx-main { gap: 6px; }
+#comms .tx-id { display: block; }
+#comms .tx-who { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 .7em; }
+#comms #cm-who, #comms #cm-s { font: 600 var(--cm-label)/1.3 var(--font-rail); letter-spacing: .18em; text-transform: uppercase; color: var(--dk-ink2); }
+#comms #cm-s:not(:empty)::before { content: "·"; margin-right: .7em; }
+
+/* the words: the glance line says it once; the quote is the caller's own, in full ink */
+#comms .tx-msg { gap: 8px; }
+#comms .cm-gist { margin: 0; font: 600 var(--cm-body)/1.4 var(--font-display); color: var(--dk-ink); border-left: 3px solid var(--cc, var(--dk-ink)); padding-left: 10px; }
+#comms .cm-gist:empty { display: none; }
+#comms .cm-text { font: 400 var(--cm-body)/1.5 var(--font-display); color: var(--dk-ink); max-width: 62ch; }
+#comms .cm-more { color: var(--dk-ink2); }
+@media (max-height: 520px) { #comms .cm-text { line-height: 1.35; } }
+
+/* the read: the hull across the top, one grid for the bars so both numbers line up, the intent under a rule */
+#comms .cm-read { gap: 10px; padding: 10px 12px; }
+#comms .cm-hull { width: 100%; max-height: 72px; object-fit: contain; object-position: center; margin: 0; }
+#comms .cm-str { grid-template-columns: max-content minmax(0, 1fr) max-content; align-items: center; gap: 10px; padding: 0; border: 0; }
+#comms .cm-bar { display: contents; font: 600 var(--cm-label)/1 var(--font-rail); letter-spacing: .18em; color: var(--dk-ink2); }
+#comms .cm-bar i { height: 6px; }
+#comms .cm-bar b { justify-self: end; font: 600 var(--cm-odds)/1 var(--font-mono); letter-spacing: 0; }
+#comms .cm-str + .cm-row { padding-top: 10px; border-top: 1px solid var(--dk-hair); }
+#comms .cm-row { gap: 4px; font: 400 var(--cm-odds)/1.4 var(--font-display); color: var(--dk-ink2); }
+#comms .cm-row .k { font: 600 var(--cm-label)/1.2 var(--font-rail); letter-spacing: .18em; color: var(--dk-ink2); }
+#comms .cm-row.intent .v { color: var(--dk-ink2); }
+
+/* the answers: key, label with its one line, then chips and the odds, on the same three columns in every row */
+#comms .cm-c { grid-template-columns: 34px minmax(0, 1fr) auto auto; align-items: center; gap: 12px; min-height: var(--cm-row); padding: 8px 14px;
+  transition: border-color var(--dk-ez), background var(--dk-ez); }
+#comms .cm-c kbd { justify-self: center; font: 500 15px/1 var(--font-mono); text-align: center; }
+#comms .cm-main { min-width: 0; gap: 2px; }
+#comms .cm-l { display: block; font: 700 16px/1.2 var(--font-head); letter-spacing: .14em; color: var(--dk-ink); }
+#comms .cm-l, #comms .cm-h { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#comms .cm-h { font: 400 var(--cm-odds)/1.3 var(--font-display); color: var(--dk-ink2); }
+#comms .cm-c.sel .cm-h { color: var(--dk-ink); }
+#comms .cm-gains { grid-column: 3; display: flex; align-items: center; gap: 8px; }
+#comms .cm-side { grid-column: 4; display: flex; align-items: center; justify-content: flex-end; gap: 6px 8px; font: 600 var(--cm-odds)/1 var(--font-mono); letter-spacing: .06em; }
+#comms .cm-chip { padding: 4px 7px; border: 1px solid currentColor; border-radius: 0; font: 500 var(--cm-label)/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+#comms .cm-chip.g-gain, #comms .cm-side .odds { color: var(--dk-info); }
+#comms .cm-chip.g-loss, #comms .cm-chip.cost { color: var(--dk-amber); }
+#comms .cm-chip.g-threat { color: var(--dk-red); }
+#comms .cm-side .odds, #comms .cm-side .need { text-transform: uppercase; white-space: nowrap; }
+#comms .cm-side .need { max-width: 18ch; color: var(--dk-ink2); text-align: right; white-space: normal; }
+@media (min-width: 721px) and (min-height: 521px) { #comms .cm-c { padding: 10px 16px; } }
+@media (max-height: 520px) {
+  /* a phone on its side: the cost and the odds stay on the row; what it brings shows under the highlighted answer */
+  #comms .cm-c { grid-template-columns: 26px minmax(0, 1fr) fit-content(46%); gap: 0 8px; padding: 5px 10px; }
+  #comms .cm-l { font-size: 13px; letter-spacing: .06em; white-space: normal; overflow-wrap: break-word; }
+  #comms .cm-c.sel .cm-h { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; }
+  #comms .cm-side { grid-column: 3; grid-row: 1; flex-direction: column; align-items: flex-end; justify-content: center; gap: 3px; min-width: 0; }
+  #comms .cm-side .cm-chip { padding: 2px 5px; }
+  #comms .cm-side .need { white-space: normal; text-align: right; }
+  #comms .cm-gains { display: none; grid-column: 2 / -1; grid-row: 2; flex-wrap: wrap; padding-top: 4px; }
+  #comms .cm-c.sel .cm-gains { display: flex; }
 }

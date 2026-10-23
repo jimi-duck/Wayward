@@ -240,7 +240,7 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 
 /* comms: a transmission received (and the arcade's hail). It holds the view and sits in the middle of it,
    the world dimmed behind it and still there. */
-#comms { place-items: center; background: radial-gradient(ellipse at center, rgba(6, 10, 12, .5), rgba(6, 10, 12, .8)); }
+#comms { place-items: center; background: radial-gradient(ellipse at center, rgba(6, 10, 12, .65), rgba(6, 10, 12, .9)); }
 .panel.comms { width: min(600px, 100%); overflow-y: auto; gap: 12px; padding: 14px 20px 14px 24px; }
 /* the header: a signal trace, the words, a hazard band */
 .tx-h { display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
