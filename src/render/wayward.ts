@@ -309,6 +309,10 @@ function hull(k: Kit, rnd: Rnd): void {
   // the bow: a rounded, sloping nose of amber plate over a dark chin
   k.loft('paint', [[2.06, 0.34, 0.27, 0.27, 0.4], [2.4, 0.3, 0.24, 0.22, 0.5], [2.72, 0.2, 0.16, 0.14, 0.55], [2.96, 0.05, 0.07, 0.06]], [0, HY, 0]);
   k.loft('dark', [[2.0, 0.3, 0.2, 0.3, 0.4], [2.45, 0.2, 0.12, 0.3, 0.5], [2.8, 0.08, 0.05, 0.2]], [0, HY - 0.1, 0]);
+  for (const sd of [-1, 1]) {
+    k.wedge('paint', [[1.0, sd * 0.4], [1.75, sd * 0.32], [2.35, sd * 0.1], [1.75, sd * 0.2], [1.0, sd * 0.24]], 0.05, [0, HY + 0.2, 0], [sd * 0.5, 0, 0]);
+    k.wedge('dark', [[0.9, sd * 0.44], [1.9, sd * 0.3], [2.5, sd * 0.07], [1.9, sd * 0.18], [0.9, sd * 0.3]], 0.1, [0, HY - 0.2, 0], [sd * -0.45, 0, 0]);
+  }
   k.cyl('pipe', 0.045, 0.06, 0.16, [3.0, HY + 0.02, 0], 'x', 10);
   k.cyl('hull', 0.018, 0.018, 0.18, [3.12, HY + 0.02, 0], 'x', 6);
   for (const x of [2.18, 2.5]) k.box('dark', [0.03, 0.02, 0.5 - (x - 2.18) * 0.7], [x, HY + 0.24 - (x - 2.18) * 0.28, 0], [0, 0, -0.55]);
@@ -452,6 +456,11 @@ function mounting(k: Kit, rnd: Rnd, z: number): void {
   // the shoulder: a low wedge from the hull's flank forward over the drum's inboard side, so hull and nacelle meet in one sweep
   k.wedge('dark', [[-0.5, sd * 0.43], [-0.5, sd * 0.88], [0.18, sd * 0.5]], 0.2, [0, DY + 0.1, 0]);
   k.wedge(pickAmber(rnd), [[-0.46, sd * 0.5], [-0.46, sd * 0.8], [0.0, sd * 0.54]], 0.05, [0, DY + 0.22, 0]);
+  // the saddle fairing: a long plate sloping from the hull's upper flank down over the drum's crown, thin at the front and deep astern,
+  // with a dark lower cheek beneath, so the drive is cowled into the body and not hung on it
+  k.wedge(pickAmber(rnd), [[-2.3, sd * 0.47], [-2.3, sd * 0.98], [-1.2, sd * 0.86], [-0.55, sd * 0.5]], 0.07, [0, DY + DR + 0.12, 0], [sd * 0.06, 0, 0]);
+  k.wedge('dark', [[-2.3, sd * 0.47], [-2.3, sd * 0.9], [-0.6, sd * 0.5]], 0.1, [0, DY - DR * 0.78, 0], [sd * -0.28, 0, 0]);
+  for (const x of [-1.9, -1.45, -1.0]) k.box('hull', [0.012, 0.03, 0.36], [x, DY + DR + 0.165, sd * 0.72], [sd * 0.06, 0, 0]);
   // the stern fairing: sloped armour taking the hull's aft flank down onto the drum housing, so the drive grows out of the hull
   block(k, 'dark', [0.62, 0.05, 0.5], [-2.28, DY + DR + 0.1, sd * 0.68], [0, 0, 0.32], 0.02);
   block(k, 'dark', [0.7, 0.1, 0.12], [-2.3, DY + DR - 0.02, sd * 0.45], [0, 0, 0.18], 0.02);
