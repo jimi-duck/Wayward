@@ -408,7 +408,8 @@ export class CommsPanel {
         p.status ? h('span', `ns-st ${box ? 'box' : p.dot}`, p.status) : null);
     };
     const rows = (rs: Row[]) => rs.map((r) => h('div', `ns-r ${r.tone}`, '', h('span', 'k', r.k), h('b', 'v', r.v)));
-    const quotes = (ls: string[]) => (ls.length ? h('div', 'ns-q', '', ...ls.map((l) => h('p', '', l))) : null);
+    // the lines read as one block of text, no bar (the owner, 23 October 2026)
+    const quotes = (ls: string[]) => (ls.length ? h('div', 'ns-q', '', h('p', '', ls.join(' '))) : null);
     const d = sv.doc;
     if (this.docOpen && d) {
       // the document, in place of the card: read only, and one way back

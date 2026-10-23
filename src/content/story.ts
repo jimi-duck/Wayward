@@ -286,13 +286,13 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Contract notice', title: 'Contract 08-441 · Breach',
     text: 'Required delivery not received. Outstanding charges remain immediately payable.\nVessel recovery and impound ordered.',
     doc: { kind: 'invoice', open: 'View breach invoice', kick: 'Document · breach invoice', title: 'Contract 08-441 · Outstanding charges', sub: 'Delivery not received.', note: 'Vessel recovery initiated.' },
-    side: { from: 'Lane Control', status: 'Status', glass: 'ochre', lines: ['Vessel flagged for recovery · Controls locked', 'Recovery autopilot active'] },
     cargo: 'Contract 08-441 · short delivery',
     choices: [
-      // the recovery (sim/recovery.ts): Lane Control flies her in, and Sam's channel opens after forty seconds of play
-      { id: 'proceed', label: 'Proceed to the audit dock', tone: 'run', hint: 'Lane Control flies the ship in. The debt stays with you.',
+      // the recovery (sim/recovery.ts): Lane Control flies her in and says so in an alert (ui/hud.ts), then Sam on the
+      // radio, whose channel opens 2 km out from the dock. One plain acknowledgement (the owner, 23 October 2026).
+      { id: 'proceed', label: 'Acknowledge', tone: 'run', hint: '',
         win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 1.5, gap: 6, text: ['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”'] } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 3.5, gap: 5, text: ['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”'] } } },
     ],
   }),
   story({
