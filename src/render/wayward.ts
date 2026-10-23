@@ -20,13 +20,21 @@ import {
 // The model faces +X with +Y up, so its starboard side is +Z.
 
 let mats: Record<string, Material> | null = null;
+/** Her own drives' light on her stern: the bell colour at the faction coats' scale (0.12), shared by every painted material so it can follow the burn. */
+const ENGINE = new Color(0, 0, 0), ENGINE_BASE = new Color(0.16, 0.85, 3.3).multiplyScalar(0.12);
+let engineBurn = 0;
+/** The drive's bell colour (HDR), when a cosmetic changes it: the stern's warmth follows. */
+export function setHullGlow(bell: [number, number, number]): void {
+  ENGINE_BASE.setRGB(...bell).multiplyScalar(0.12);
+  ENGINE.copy(ENGINE_BASE).multiplyScalar(engineBurn);
+}
 /** The hull's six scorch uniforms, shared by every worn material: four old hits, then two kept for live damage (setDamage). */
 const HITS = Array.from({ length: 6 }, () => new Vector4(0, -1e4, 0, 0.001));
 function materials(hits: Hit[]): Record<string, Material> {
   if (mats) return mats;
   // all of her worn by hard use (wear.ts), sooted astern by her own drives
   hits.forEach((h, i) => HITS[i]!.set(...h));
-  const used = { worn: 1, shade: true, soot: [2.15, 2.95] as [number, number], hitUniforms: HITS };
+  const used = { worn: 1, shade: true, soot: [2.15, 2.95] as [number, number], hitUniforms: HITS, engine: ENGINE };
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(...LIVERY.stockGlow), ...used });
   mats = {
     // weathered grey plate, one shade lighter and one darker, the repaint's three tints under them
@@ -62,6 +70,9 @@ export function animateLamps(time: number, dt = 0, burn = 1): void {
   // with one plate left the lamps stutter hard, as if the wiring were open
   const stutter = critical ? 0.35 + 0.65 * (Math.sin(time * 41) * Math.sin(time * 17.3) > -0.2 ? 1 : 0) : 1;
   if (o) o.color.copy(ORANGE).multiplyScalar((1 + 0.12 * Math.sin(time * Math.PI * 2 * 0.4)) * stutter);
+  // the cargo face and drum housings pick up the drive's light as it burns, and go quiet when the throttle is cut
+  engineBurn = burn;
+  ENGINE.copy(ENGINE_BASE).multiplyScalar(burn);
   // the drum's blue seam lights wind up and down with the drives, so the whole stern settles together
   const bl = mats?.blue as MeshBasicMaterial | undefined;
   if (bl) bl.color.copy(BLUE).multiplyScalar(0.4 + 0.6 * burn);
