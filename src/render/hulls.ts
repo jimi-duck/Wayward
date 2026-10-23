@@ -83,6 +83,12 @@ class Ship {
     }
   }
 
+  /** A strut or blade from a to b: a box `h` tall and `w` wide, its length along the line. */
+  beam(key: string, a: V3, b: V3, h: number, w = h): void {
+    const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+    this.k.box(key, [Math.hypot(dx, dy, dz), h, w], [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], [0, -Math.atan2(dz, dx), Math.atan2(dy, Math.hypot(dx, dz))]);
+  }
+
   /** A mast with a dish or a sensor head. */
   mast(x: number, y: number, z: number, h: number, head: 'dish' | 'blade' | 'none' = 'dish'): void {
     const k = this.k;
@@ -546,7 +552,74 @@ const threnScout: Draw = (s) => {
   shard(s, 'violet', 0.08, 0.3, [-0.62, 0, 0], [0, 0, Math.PI / 2]);
 };
 
-const DESIGNS: Record<string, Draw> = {
+// ═════════════════════════ THE FACTION MARKS ═════════════════════════
+// At 150 units a hull is a few dozen pixels: colour says a faction is near, only
+// shape says which. Each faction hangs one oversized mark on every hull it
+// builds, at the scale of the primary silhouette, so a scout and a fighter of
+// the same faction share it. Drawn after the hull (and so on a capital's too).
+
+/** A crane far too big for the hull, on the starboard side only: a base, a long boom, a cable and a hook. */
+const gutterMark: Draw = (s) => {
+  const k = s.k;
+  k.cyl('dark', 0.13, 0.16, 0.24, [0.0, 0.14, 0.35], 'y', 8);
+  s.beam('patch', [0.0, 0.22, 0.35], [0.55, 0.8, 0.95], 0.1);
+  s.beam('patch', [0.55, 0.8, 0.95], [1.05, 0.45, 1.5], 0.08);
+  s.beam('trim', [0.05, 0.28, 0.4], [0.5, 0.74, 0.92], 0.025, 0.12);
+  s.beam('dark', [1.05, 0.45, 1.5], [1.07, -0.1, 1.52], 0.025);
+  k.box('dark', [0.14, 0.1, 0.16], [1.07, -0.15, 1.52]);
+  s.lamp(1.07, -0.15, 1.52, 0.07);
+  s.lamp(0.55, 0.8, 0.95, 0.06);
+};
+
+/** A tall, ordered row of fins down the spine, evenly spaced: the fleet's drill-square signature. */
+const custodyMark: Draw = (s) => {
+  const k = s.k;
+  k.box('dark', [1.5, 0.05, 0.1], [-0.15, 0.1, 0]);
+  for (let i = 0; i < 6; i++) {
+    const x = 0.45 - i * 0.26;
+    k.box('paint', [0.05, 0.4, 0.2], [x, 0.3, 0]);
+    k.box('trim', [0.06, 0.04, 0.22], [x, 0.51, 0]);
+  }
+  s.lamp(0.45, 0.55, 0, 0.05);
+  s.lamp(-1.05, 0.55, 0, 0.05);
+};
+
+/** A long sweeping crescent: a blade that rises from midships and runs well back past the tail. */
+const officeMark: Draw = (s) => {
+  const N = 10, at = (t: number): V3 => [0.35 - 2.3 * t, 0.12 + 0.55 * Math.sin(Math.PI * Math.pow(t, 0.8) * 0.85), 0];
+  for (let i = 0; i < N; i++) {
+    const a = at(i / N), b = at((i + 1) / N), h = 0.05 + 0.1 * Math.sin(Math.PI * (i + 0.5) / N);
+    s.beam(i % 3 === 0 ? 'patch' : 'paint', a, b, h, 0.04);
+  }
+  s.beam('trim', at(0.1), at(0.9), 0.012, 0.06);
+  for (const t of [0.12, 0.3, 0.5]) s.beam('dark', [at(t)[0], 0.1, 0], at(t), 0.03);
+  s.lamp(...at(1), 0.07, 0.03);
+};
+
+/** A crusted foundry mass on the deck, off to one side, its stacks leaning aft. */
+const voiceMark: Draw = (s) => {
+  const k = s.k, rnd = s.rnd;
+  for (let i = 0; i < 6; i++) k.box(i % 2 ? 'hull' : 'dark', [0.2 + rnd() * 0.2, 0.12 + rnd() * 0.18, 0.16 + rnd() * 0.16], [0.35 - i * 0.14, 0.14 + rnd() * 0.1, -0.2 - rnd() * 0.12], [rnd() * 0.3, rnd() * 0.5, rnd() * 0.3]);
+  for (let i = 0; i < 3; i++) {
+    const x = 0.2 - i * 0.2, z = -0.3 + i * 0.05, top: V3 = [x - 0.5 - i * 0.08, 0.7 + i * 0.1, z];
+    s.beam('dark', [x, 0.2, z], top, 0.1);
+    s.beam('hull', [x - 0.15, 0.32, z], [top[0] - 0.02, top[1] - 0.05, z], 0.13);
+    s.lamp(top[0], top[1] + 0.03, z, 0.05);
+  }
+};
+
+/** One long dark crystal spike, grown out of the hull and not built. */
+const threnMark: Draw = (s) => {
+  const k = s.k;
+  k.shard('crystal', [[0, -0.8], [0.12, -0.7], [0.2, -0.1], [0.2, 0.3], [0.08, 0.6], [0, 1.1]], [-0.3, 0.55, 0.1], [0, 0, 1.05]);
+  k.shard('violet', [[0, -0.4], [0.06, -0.3], [0.08, 0.1], [0, 0.55]], [-0.3, 0.55, 0.1], [0, 0, 1.05]);
+  s.lamp(-0.78, 1.1, 0.1, 0.05);
+};
+
+const MARKS: Record<Faction, Draw> = { gutter: gutterMark, custody: custodyMark, office: officeMark, voice: voiceMark, thren: threnMark };
+const marked = (faction: Faction, draw: Draw): Draw => (s) => { draw(s); MARKS[faction](s); };
+
+const DESIGNS_BASE: Record<string, Draw> = {
   'scout:gutter': gutterBird(false),
   'stalker:gutter': gutterBird(true),
   'raptor:gutter': gutterRaptor,
@@ -563,6 +636,8 @@ const DESIGNS: Record<string, Draw> = {
   'lancer:thren': threnLancer,
   'scout:thren': threnScout,
 };
+
+const DESIGNS: Record<string, Draw> = Object.fromEntries(Object.entries(DESIGNS_BASE).map(([key, draw]) => [key, marked(key.split(':')[1] as Faction, draw)]));
 
 /** The designed hull for an archetype in a faction's colours, or null for a pairing with no design yet. */
 export function designFor(kind: AlienKind, faction: Faction): Design | null {
