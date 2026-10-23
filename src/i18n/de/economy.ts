@@ -173,5 +173,5 @@ export const ECONOMY: Record<string, string> = {
   'Exit': 'Beenden',
   'Mine Cyrite to fill the jump tank': 'Baue Cyrit ab, um den Sprungtank zu füllen',
   'Head for the Jump Gate and jump': 'Fliege zum Sprungtor und spring',
-  'Collect Cyrite and upgrade your ship': 'Sammle Cyrit und rüste dein Schiff auf',
+  'Survive as long as you can': 'Überlebe so lange du kannst',
 };

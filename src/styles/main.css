@@ -1130,6 +1130,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .only-touch-l, .only-pad { display: none; }
 .touch-ui .only-keys, .pad-ui .only-keys, .pad-ui .only-touch-l { display: none; }
 .touch-ui:not(.pad-ui) .only-touch-l, .pad-ui .only-pad { display: flex; }
+/* the arcade's card on a phone: no controls, the goal and Begin */
+html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 .only-touch-l dt { font: 600 calc(9px * 1.18)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink); }
 .pause-card { width: min(720px, 94vw); }
 .howto { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: 100%; margin: 0; padding: 0; list-style: none; counter-reset: how; }
@@ -1329,6 +1331,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .pause-card .keys-l.only-touch-l div { grid-template-columns: 1fr; gap: 4px; align-items: start; }
 .pause-card .keys-l.only-touch-l dt { font-size: 11px; letter-spacing: .12em; }
 .pause-card .keys-l dd { font: 500 11px/1 var(--font-mono); letter-spacing: .12em; }
+.pause-card .keys-l.keys-short { grid-template-columns: repeat(4, max-content); justify-content: space-between; gap: 8px 12px; }
+.pause-card .keys-l.keys-short div { grid-template-columns: auto auto; }
 
 /* what to press: Resume at a prompt, the rest flat */
 .pause-card .pause-acts { justify-content: flex-start; gap: 8px; padding-top: 4px; }
