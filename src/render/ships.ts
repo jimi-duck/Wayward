@@ -192,7 +192,7 @@ class Trail {
 function shieldMaterial(): ShaderMaterial {
   return new ShaderMaterial({
     transparent: true, depthWrite: false, blending: AdditiveBlending, side: DoubleSide,
-    uniforms: { uHit: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uCharge: { value: 0 }, uLocal: { value: 0 }, uImpact: { value: new Vector3(1, 0, 0) }, uColor: { value: new Color(2.6, 0.9, 0.35) } },
+    uniforms: { uHit: { value: 0 }, uGrace: { value: 0 }, uTime: { value: 0 }, uCharge: { value: 0 }, uReady: { value: 0 }, uLocal: { value: 0 }, uImpact: { value: new Vector3(1, 0, 0) }, uColor: { value: new Color(2.6, 0.9, 0.35) } },
     vertexShader: /* glsl */ `
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       void main() {
@@ -201,7 +201,7 @@ function shieldMaterial(): ShaderMaterial {
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */ `
-      uniform float uHit; uniform float uGrace; uniform float uTime; uniform float uCharge; uniform float uLocal; uniform vec3 uImpact; uniform vec3 uColor;
+      uniform float uHit; uniform float uGrace; uniform float uTime; uniform float uCharge; uniform float uReady; uniform float uLocal; uniform vec3 uImpact; uniform vec3 uColor;
       varying vec3 vN; varying vec3 vV; varying vec3 vP;
       float hexEdge(vec2 p) {
         vec2 r = vec2(1.0, 1.7320508), h = r * 0.5;
@@ -225,8 +225,12 @@ function shieldMaterial(): ShaderMaterial {
         float hitA = mix(uHit, 0.08 * uHit + ring * 1.0 + spot * 1.7, uLocal);
         float pulse = uGrace * (0.12 + 0.08 * sin(uTime * 18.0));
         // a charged shield stands faintly at the rim, so the player can see it is up
-        float standing = uCharge * (0.045 + 0.02 * sin(uTime * 2.4)) * (fres * 1.6 + hex * 0.3);
-        float a = (fres * 0.75 + hex * 0.26) * max(hitA, pulse) + standing;
+        float standing = uCharge * (0.08 + 0.025 * sin(uTime * 2.4)) * (fres * 1.5 + hex * 0.45);
+        // a charge completing: one bright hex band runs up the field, over about 0.7 s
+        float up = 1.0 - uReady;
+        float band = exp(-pow((vP.y - (-1.0 + 2.2 * up)) / 0.2, 2.0)) * uReady;
+        float ready = band * (0.18 + hex * 0.7 + fres * 0.5);
+        float a = (fres * 0.75 + hex * 0.26) * max(hitA, pulse) + standing + ready;
         gl_FragColor = vec4(uColor * a, a);
       }`,
   });
@@ -304,6 +308,8 @@ export class ShipView {
   private time = 0;
   private surge = 0;
   private steer = 0;
+  private ready = 0;
+  private lastCharged: number | null = null;
 
   constructor(glow: Texture = glowTexture()) {
     this.model = buildWayward();
@@ -546,11 +552,16 @@ export class ShipView {
     u.uGrace!.value = grace;
     u.uTime!.value = this.time;
     u.uCharge!.value = st.charged;
+    // the moment a charge completes (not the first frame, not a refit that starts full): a shimmer
+    if (this.lastCharged !== null && this.lastCharged < 1 && st.charged >= 1) this.ready = 1;
+    this.lastCharged = st.charged;
+    this.ready = Math.max(0, this.ready - dt / 0.7);
+    u.uReady!.value = this.ready;
     // a hit that got through flares red (damage); a charge or the grace after a hit stands in teal (the ship's own state)
     const tint: [number, number, number] = st.cloaked ? [0.6, 2.4, 1.3]
       : this.hit > 0 && !this.absorbed ? [2.6, 0.55, 0.35] : this.absorbed || st.charged > 0 ? [0.7, 1.5, 3.4] : [0.45, 1.6, 1.8];
     (u.uColor!.value as Color).setRGB(...tint);
-    this.shield.visible = this.hit > 0 || grace > 0 || st.charged > 0;
+    this.shield.visible = this.hit > 0 || grace > 0 || st.charged > 0 || this.ready > 0;
 
     this.root.updateMatrixWorld(true);
     this.trailClock += dt;
