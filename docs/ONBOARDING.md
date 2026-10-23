@@ -16,24 +16,24 @@ new thing about the world.
 | Financing | credit | The torpedo launcher (20), put on the company's account against the payout. Not paid at the bay. |
 | Debt | credit | Short-delivery penalty, the lease and the financed launcher, only when the contract breaches. |
 
-Arithmetic (`sim/contract.ts`): the Work Bay shows what 1,000 Cyrite would earn:
-gross 100 − refinery 40 − lease 12 − fuel reserve 20 − escrow 6 − launcher 20 = **2
-credit left**. If the contract breaches, the bill is made extreme on purpose (2026-10-19): the 1,000 undelivered at the replacement rate (ten times what a delivery would have paid her) + penalty 250 + whole lease term 120 + collection fees 110 + launcher 20 =
-**1,500 owed**; the payout is withheld. Nothing of the contract is saved (the journey keeps
-the Score, the flags and the purse); no migration was needed.
+Arithmetic (`sim/contract.ts`), as the opening sheets show it (2026-10-22): the Work Bay projects what 1,000 Cyrite
+would settle for, **100 CR gross − 98 CR charges = 2 CR**, on delivery and not yet earned (the charges are refinery 40,
+lease 12, fuel reserve 20, escrow 6 and the launcher 20). If the contract breaches, the bill is **15 CR penalty + 12 CR
+lease + 20 CR financed launcher = 47 CR outstanding**; the settlement is withheld and never netted against it. Credit
+reads `CR` everywhere. Nothing of the contract is saved; no migration was needed.
 
 ## The beats
 
 | Beat | Where | Play | What it shows |
 |---|---|---|---|
-| 1 Mining | Cerro, outlying mine | One opening page (`ui/opening.ts`), then the controls card, then mine. The hold has 800 of 1,000 from the first minute to the raiders; the lesson rocks teach mining and add nothing to it. The HUD shows cargo, the quota and the Civic Score band word. Objective: dock at the Work Bay | Ordinary admin; the cargo is aboard, not delivered |
-| 2 Work Bay | Depot, a short hop off | Docking is the one pausing card of the lessons: **Account and launcher** (`story_bay`). The Work Bay takes no cargo. The ledger shows the 800 / 1,000 held, the credit (4), the contract's charges and a projection (2 left after the launcher). Sam Okoro, a friend and not Work Bay staff, speaks over the radio. One choice, "Install the launcher": financed, nothing paid now. Torpedoes are unlimited (the rack reloads by itself) | The company's grip, in one place; a practical reason to take on debt |
+| 1 Mining | Cerro, outlying mine | No card first: the journey starts in flight (sheet A). The objective reads "Contract 08-441", the lesson, and "200 Cyrite remaining · Cerro". The hold has 800 of 1,000 from the first minute to the raiders; the lesson rocks teach mining and add nothing to it. The HUD shows cargo, the quota and the Civic Score band word. Objective: dock at the Work Bay | Ordinary admin; the cargo is aboard, not delivered |
+| 2 Work Bay | Depot, a short hop off | Docking is the one pausing card of the lessons (`story_bay`, sheets B and B2): Sam Okoro, a friend on the radio and not Work Bay staff, beside the projected settlement, with an optional account summary. One action, "Install launcher · finance 20 CR": nothing paid now. Then a centre notice, "Torpedo launcher online", with this device's torpedo control (sheet C). Torpedoes are unlimited (the rack reloads by itself) | The company's grip, in one place; a practical reason to take on debt |
 | 3 Raiders | Past the depot's field | Second rock (the hold still 800), then two ships close in as white **UNKNOWN** markers. In range the world stops: `story_raiders`, the raider's transmission. **Pay up & allow boarding** ends in `story_seized` ("Game over · contract terminated") and the opening starts again. **Refuse** turns both red, and the nearer one fires a missile at once, scripted to always hit (it cannot be shot down or dodged): the hit tears the pod away (`cargoLost`, a centre notice, and the hit ripple on the hull; no bubble) | A real choice; the cargo loss is seen, so the breach feels fair |
-| 4 Escape | gate 1.9 km ahead | After the second raider: "Inbound contacts detected" centre notice, radio "Additional hostile contacts detected. Jump gate distance: 1.9 kilometres.", objective "Reach the Jump Gate". Waves of Custody raiders, not meant to be fought | Danger, and a forced exit |
-| 5 Breach | beyond the gate | `story_breach`: Lane Control's notice (delivery 0 / 1,000, payout withheld, penalty, lease, the financed launcher, asset recovery authorised, balance owed 1,500). One action, "Proceed to the audit lane": no escape yet. No Score change | State and company kept apart; the debt outlives the ship |
-| 6 The theft | on the way to the audit lane | `story_sam` a few seconds later: Sam, privately, with a maintenance code for the owner lock. One action, "Enter Sam's code · override the lock". The hull is stolen; Score −130 (COMPLIANT to RESTRICTED), the one big fall | Juno becomes a thief by one choice |
-| 7 Rename | same | A centre notice: "Vessel registry · unrecognised", then WAYWARD. The 3D hull is not repainted yet | |
-| 8 Archive | same | `story_wake`: the override wakes a sealed partition. Krail reserves 94% against a shortage order of the same day; the relay in Halden's Reach; a legacy key good for this hull only | One contradiction and a lead |
+| 4 Escape | gate 1.9 km ahead | "Cargo lost · 0 / 1,000 Cyrite" and, after the second raider, "Hostile reinforcements inbound" (red centre notices, sheet E), radio "Additional hostile contacts detected. Reach the Jump Gate." (the HUD shows the live distance), objective "Reach the Jump Gate". Waves of Custody raiders, not meant to be fought | Danger, and a forced exit |
+| 5 Breach | beyond the gate | `story_breach` (sheet F, red): delivery not received, settlement withheld, vessel recovery ordered, 47 CR outstanding, an optional breach invoice, and Lane Control's status beside it (ochre). One action, "Proceed to the audit dock": no escape yet | State and company kept apart; the debt outlives the ship |
+| 6 The theft | on the way to the audit dock | `story_sam` a few seconds later (sheet G, ochre): Sam's private channel, two lines, "Using the code lifts the owner lock." One action, "Use the code". The hull is stolen | Juno becomes a thief by one choice |
+| 7 Rename | same | `story_rename` (sheet H): the registry update, `OB-7731-A` struck through, WAYWARD, the ship in its new paint, one action "Take the helm". The 3D hull turns yellow | The new identity, not a legal one |
+| 8 Archive | same | `story_wake` (sheet I): 94% Krail reserves, logged on the day the shortage order was signed; Halden's Reach next. "Set course: Halden's Reach", or "Open record" first | One contradiction and a lead |
 
 The first jump shows no chart: the lane out of Cerro is the only way, and it goes straight to the next system
 (`autoCourse` in `sim/journey.ts`, used by `sortieOver`).
@@ -75,30 +75,14 @@ When the second raider falls the training stops and the run begins. The gate is 
 
 Story cards carry a `gist` of at most ten words (set in `content/story.ts`), shown above the text so a pop-up reads at a glance.
 
-## v5 handover (2026-10-20)
+## Opening chapter sheets (2026-10-23)
 
-The opening follows the "Pop-ups, v2" sheet and the v5 handover: two opening cards (resident record, then the contract
-notice), each with one button and an optional file that starts closed. The Work Bay, raiders, breach, Sam and archive
-cards use the sheet's headlines, with Juno's line (hidden on short phones) and an optional attachment (`attach` on the
-card). No score, band or delta shows in the onboarding: the Score still moves behind the scenes (`civicQuiet`).
+The opening's pop-ups follow the owner's opening chapter mockups v10 and design guidelines v6, and look like the
+registry update (sheet H): Neon Glass in the role colour, numbered actions, documents that open on request and close
+back to their card. The rules and where they live are in [DESIGN-GUIDELINES.md](DESIGN-GUIDELINES.md); the cards'
+fields (`glass`, `status`, `hero`, `quote`, `note`, `doc`, `side`) are in `CardDef`. They replace the v5 handover's
+opening cards, Juno's lines, the attachments and the Rajdhani registry card.
 
-Where the sheet and the code differ, the code stands: the breach bill is 1,500 credit (user's call, 2026-10-19), not
-47, and the short-delivery penalty is 250, not 15. The contract file reads its figures from `sim/contract.ts`.
-
-The rename card (`story_rename`, 2026-10-20) comes after Sam's code and before the archive: Continuance Registry,
-`OB-7731-A → WAYWARD`, three status rows, the temporary-repaint note, one button. It only reports the state the code
-already set. The ship picture is the supplied canonical art (`src/art/fleet/wayward-registry.webp`): the game's own
-3D hull is a darker single-engine design and does not match it, so a new angle of the yellow ship needs a new model.
-
-### Registry card, to the mock-up (2026-10-20, second pass)
-
-The rename card now has its own panel after the supplied mock-up (`#cm-reg`, `drawReg` in `ui/comms.ts`): emblem and
-header, `OB-7731-A → WAYWARD` with the amber warning box, the three status rows, the yellow ship, the repaint box with the
-grey and yellow thumbnails, the quick note and the neon `Take the helm` button. The ships are cut from the sticker sheet
-(`src/art/fleet/wayward-registry*.webp`, true alpha, no baked checkerboard). On a phone on its side only the identity, the
-rows, the ship and the button show. The other pop-ups (comms cards, the opening) take the same cyan hairline edge, glow and
-button. After the override (flag `ship_stolen`) the in-game hull is repainted yellow (`setLivery` in `render/wayward.ts`).
-
-## Registry card, closer to the mock-up
-
-The card is about 94% of the screen width, with a chamfered neon frame, a nebula behind the ship and thumbnails on a space backdrop. Its type is Rajdhani (400, 500), for this card only; every other panel stays on Barlow. The hull ID is the real `OB-7731-A`, not the mock-up's invented numbers. On 568x320 phones the repaint and quick-note boxes are hidden, so the ship, status rows and button stay reachable.
+The registry update shows the real previous hull ID, `OB-7731-A`, struck through. Its hero is the owner's clean ochre
+ship (2026-10-22). The "Original livery" thumbnail is the earlier grey art, which already has WAYWARD painted on it, so
+it is a finish reference only, not a verified picture of the hull before the rename.

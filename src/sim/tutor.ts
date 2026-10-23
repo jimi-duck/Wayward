@@ -347,7 +347,7 @@ function finish(w: World, tu: Tutor): void {
     // the last raider's guns have taken the hold if nothing did before: the shortfall is something the player saw
     loseCargo(w, tu);
     w.events.push({ type: 'inbound' });
-    say(w, tu, 'reinforce', t('Cerro Lane Control'), 'office', t('“Additional hostile contacts detected. Jump gate distance: 1.9 kilometres.”'));
+    say(w, tu, 'reinforce', t('Cerro Lane Control'), 'office', t('“Additional hostile contacts detected. Reach the Jump Gate.”'));
   }
   if (!story(w, tu) || tu.skipped) say(w, tu, 'escort', t('Contract desk · 08-441'), 'office', t('“Escort cover is not included in Contract 08-441. Continue at operator discretion.”'));
 }

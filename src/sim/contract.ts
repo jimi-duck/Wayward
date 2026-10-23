@@ -38,17 +38,13 @@ export const upgradePrice = (): number => cost(LESSON_NODE, 1, false);
 export const projectedAfterLauncher = (price = upgradePrice()): number => NET - price;
 
 /**
- * What the company bills when the contract breaches, in the same credit as everything else (2026-10-19: made extreme on
- * purpose, to show the unfairness). The cargo it never received is charged at its replacement rate, ten times what a
- * delivery would have paid her; the penalty, the whole lease term and the collection fees come on top, and the financed
- * launcher stays on the account.
+ * What the company bills when the contract breaches (the opening chapter sheets, 2026-10-22): the short-delivery penalty,
+ * the lease that was due anyway, and the launcher it financed. The projected settlement is never netted against it.
  */
-export const REPLACEMENT = 1000;
-export const PENALTY = 250;
-export const LEASE_DUE = 120;
-export const COLLECTION = 110;
+export const PENALTY = 15;
+export const LEASE_DUE = CUTS.lease;
 /** What Juno owes once the contract breaches. */
-export const owed = (price = upgradePrice()): number => REPLACEMENT + PENALTY + LEASE_DUE + COLLECTION + price;
+export const owed = (price = upgradePrice()): number => PENALTY + LEASE_DUE + price;
 
 export type RowTone = '' | 'mine' | 'warn' | 'bad';
 /**
@@ -60,35 +56,33 @@ export interface LedgerRow { k: string; n?: number; cr?: number; v?: string; ton
 /** A figure of the cargo, read as "800 / 1,000". */
 export const ratio = (n: number, m = QUOTA): string => `${n.toLocaleString('en')} / ${m.toLocaleString('en')}`;
 
-/** The Work Bay's account: what is held, what is left to spend, and what 1,000 Cyrite would earn after the company's charges. */
+/** The Work Bay's projection: what 1,000 Cyrite would settle for once the company's charges, the launcher among them, are taken. Not earned, and not a balance. */
 export function bayLedger(): LedgerRow[] {
   const price = upgradePrice();
   return [
-    { k: 'Cargo held', v: ratio(FIRST_LOAD) },
-    { k: 'Available credit', cr: CREDIT_START },
-    { k: 'Gross contract credit', cr: GROSS },
-    { k: 'Refinery & handling', cr: -CUTS.refinery },
-    { k: 'Vessel lease', cr: -CUTS.lease },
-    { k: 'Fuel reserve', cr: -CUTS.reserve },
-    { k: 'Reliability escrow', cr: -CUTS.escrow },
-    { k: 'Torpedo launcher · financed', cr: -price, tone: 'warn' },
-    { k: 'Left after charges', cr: projectedAfterLauncher(price), tone: 'mine' },
+    { k: 'Gross', cr: GROSS },
+    { k: 'Projected charges', cr: -(GROSS - projectedAfterLauncher(price)) },
+    { k: 'Projected settlement', cr: projectedAfterLauncher(price), tone: 'mine' },
   ];
 }
 
-/** The short-delivery result: nothing delivered, the payout withheld, the debt. */
+/** The torpedo launcher's price, on the bay's card under the projection. */
+export function launcherLedger(): LedgerRow[] {
+  return [...bayLedger(), { k: 'Torpedo launcher', cr: upgradePrice(), tone: 'warn' }];
+}
+
+/** The breach notice: only what is owed. The invoice behind it has the lines. */
 export function breachLedger(): LedgerRow[] {
+  return [{ k: 'Outstanding', cr: owed(), tone: 'bad' }];
+}
+
+/** The breach invoice: the penalty, the lease and the financed launcher. */
+export function invoiceLedger(): LedgerRow[] {
   return [
-    { k: 'Contract delivery', v: ratio(0), tone: 'warn' },
-    { k: 'Payout', v: 'Withheld', tone: 'warn' },
-    { k: 'Undelivered cargo · replacement rate', cr: -REPLACEMENT, tone: 'warn' },
-    { k: 'Short-delivery penalty', cr: -PENALTY, tone: 'warn' },
-    { k: 'Vessel lease due', cr: -LEASE_DUE, tone: 'warn' },
-    { k: 'Collection fees', cr: -COLLECTION, tone: 'warn' },
-    { k: 'Torpedo launcher · financed', cr: -upgradePrice(), tone: 'warn' },
-    { k: 'Vessel asset recovery', v: 'Authorised', tone: 'warn' },
-    { k: 'Repayment', v: 'Referral pending', tone: 'warn' },
-    { k: 'Balance owed', cr: owed(), tone: 'bad' },
+    { k: 'Penalty', cr: PENALTY },
+    { k: 'Lease', cr: LEASE_DUE },
+    { k: 'Financed launcher', cr: upgradePrice() },
+    { k: 'Outstanding', cr: owed(), tone: 'bad' },
   ];
 }
 
@@ -102,40 +96,38 @@ export function seizedLedger(): LedgerRow[] {
   ];
 }
 
-/** Sam's offer: what the override does, said before the player confirms it. */
-export function lockLedger(): LedgerRow[] {
-  return [
-    { k: 'Hull', v: 'Reported stolen', tone: 'bad' },
-    { k: 'Debt', v: 'Remains', tone: 'warn' },
-    { k: 'Core ports', v: 'Closed', tone: 'warn' },
-  ];
-}
-
-/** The registry's notice once the lock is broken: what the override left. */
+/** The registry's notice once the lock is lifted: what changed, and what did not. */
 export function renameLedger(): LedgerRow[] {
   return [
     { k: 'Registry status', v: 'Unregistered', tone: 'warn' },
-    { k: 'Owner lock', v: 'Overridden', tone: 'warn' },
-    { k: 'Core ports', v: 'Closed', tone: 'warn' },
+    { k: 'Owner lock', v: 'Lifted', tone: 'warn' },
+    { k: 'Hull finish', v: 'Grey → Yellow / Ochre', tone: 'warn' },
   ];
 }
 
-/** The archive's one record: the reserve figure and the order it contradicts, with whoever signed it struck out. */
+/** The archive's finding, on its card: where it points. */
 export function archiveLedger(): LedgerRow[] {
+  return [{ k: 'Next lead', v: 'Halden’s Reach', tone: 'warn' }];
+}
+
+/** The archive record, opened on request. No date, time or reference that is not known. */
+export function evidenceLedger(): LedgerRow[] {
   return [
-    { k: 'Reserves', v: '94% nominal', tone: 'mine' },
-    { k: 'Shortage order', v: 'Same day · 23:14' },
-    { k: 'Authorisation', v: 'Redacted', tone: 'warn' },
-    { k: 'Relay reference', v: 'Halden’s Reach' },
-    { k: 'Access key', v: 'Legacy · this hull only' },
+    { k: 'Reserve level', v: '94%', tone: 'mine' },
+    { k: 'Record and order', v: 'same day' },
+    { k: 'Next lead', v: 'Halden’s Reach', tone: 'warn' },
   ];
 }
 
-export type LedgerKind = 'bay' | 'breach' | 'archive' | 'seized' | 'lock' | 'rename';
+const LEDGERS = {
+  bay: bayLedger, launcher: launcherLedger, breach: breachLedger, invoice: invoiceLedger, seized: seizedLedger,
+  rename: renameLedger, archive: archiveLedger, evidence: evidenceLedger,
+} as const;
+export type LedgerKind = keyof typeof LEDGERS;
 
-/** The rows a card shows (the sim's side; the panel only draws them). */
+/** The rows a card or its document shows (the sim's side; the panel only draws them). */
 export function ledgerFor(kind: LedgerKind): LedgerRow[] {
-  return kind === 'bay' ? bayLedger() : kind === 'breach' ? breachLedger() : kind === 'seized' ? seizedLedger() : kind === 'lock' ? lockLedger() : kind === 'rename' ? renameLedger() : archiveLedger();
+  return LEDGERS[kind]();
 }
 
 /** The cargo as the HUD reads it: what is aboard, what the Work Bay has counted, and what the contract asks. */

@@ -24,8 +24,9 @@ things) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - **Balance from numbers.** Balance changes come from the pilot reports
   (`npm run pilot*`); update the matching `docs/BALANCE*.md`.
 - **The look is brand v1.1** (`branding/`): a muted steel blue is the player and their
-  hand, teal is information, a dull gold is caution only, red is threat and nothing else. UI passes come
-  with screenshots at desktop and phone sizes.
+  hand, teal is information, a dull gold is caution only, red is threat and nothing else. Every pop-up is
+  Neon Glass, built once in `src/styles/neon.css`; read [docs/DESIGN-GUIDELINES.md](docs/DESIGN-GUIDELINES.md)
+  before any UI work. UI passes come with screenshots at desktop and phone sizes.
 - **Before a push**, `npm run check` and `npm run build`; CI runs both on
   every pull request. Cloudflare deploys `main`, with previews on pull
   requests.

@@ -1,5 +1,5 @@
 import { civicNote } from '../sim/civic';
-import { CONTRACT_ID, type Cargo } from '../sim/contract';
+import { CONTRACT_ID, ratio, type Cargo } from '../sim/contract';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
 import type { Sector } from '../render/sector';
@@ -69,10 +69,17 @@ const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
 const fmt = num;
 
-/** The hold and the contract on one line: cargo aboard is not counted until the work bay has taken it (sim/contract.ts). */
+/** What the contract still asks, where (opening chapter, sheets A and C), or the loss once the raiders have the hold (E). */
 function cargoLine(c: Cargo): string {
-  const n = (v: number) => v.toLocaleString('en');
-  return `${t('Contract {id}', { id: CONTRACT_ID })} · ${t('Cargo {n} / {m}', { n: n(c.onboard), m: n(c.quota) })}`;
+  if (c.onboard <= 0) return `${t('Cargo lost')} · ${t('{n} Cyrite', { n: ratio(c.onboard, c.quota) })}`;
+  return `${t('{n} Cyrite remaining', { n: Math.max(0, c.quota - c.onboard).toLocaleString('en') })} · ${t('Cerro')}`;
+}
+
+/** A lesson's line for the device in hand (keys, touch or a pad), in English: the caller translates it. */
+function deviceHint(id: string): string {
+  const cls = document.documentElement.classList;
+  const want = cls.contains('touch-ui') ? 'h-touch' : cls.contains('pad-ui') ? 'h-pad' : 'h-keys';
+  return LESSON_HINT[id]?.find(([c]) => c === want)?.[1] ?? '';
 }
 
 /** Set a node's text only when it changed. */
@@ -214,13 +221,21 @@ export class Hud {
         case 'plasmaDown': this.note(world, t('Plasma torpedo shot down')); break;
         case 'tractor': this.note(world, t('Tractor lock · thrust away'), 'hit'); break;
         case 'bankEmpty': this.note(world, t('Laser bank low · slower fire'), 'hit'); break;
-        case 'cargoLost':
-          this.note(world, `${t('Cargo pod lost')} · ${t('{n} Cyrite', { n: e.n })}`, 'hit');
-          this.notify(world, { type: 'warning', headline: 'Cargo pod lost', reason: `${t('Raiders')} · ${t('{n} Cyrite', { n: e.n })}`, key: 'cargo' });
+        case 'cargoLost': {
+          // the opening's scripted loss (sheet E): what is left of the contract's cargo, in red
+          const cg = cargoOf(world);
+          const left = cg ? t('{n} Cyrite', { n: ratio(cg.onboard, cg.quota) }) : t('{n} Cyrite', { n: e.n });
+          this.note(world, `${t('Cargo lost')} · ${left}`, 'hit');
+          this.notify(world, { type: 'denied', headline: 'Cargo lost', reason: left, key: 'cargo' });
           break;
+        }
         case 'inbound':
-          this.note(world, `${t('Inbound contacts detected')} · ${t('Multiple raider signatures approaching')}`, 'hit');
-          this.notify(world, { type: 'warning', headline: 'Inbound contacts detected', reason: 'Multiple raider signatures approaching', key: 'inbound' });
+          this.note(world, `${t('Hostile reinforcements inbound')} · ${t('Reach the Jump Gate')}`, 'hit');
+          this.notify(world, { type: 'denied', headline: 'Hostile reinforcements inbound', reason: 'Reach the Jump Gate', key: 'inbound' });
+          break;
+        case 'fitted':
+          // the Work Bay's launcher (sheet C): brief, non-blocking, with this device's own control for it
+          if (e.id === 'tp_bay') this.notify(world, { type: 'arrival', headline: 'Torpedo launcher online', reason: deviceHint('torpedo'), key: 'fitted' });
           break;
         case 'gunsCold':
           this.note(world, t('Guns cold · the field damps every weapon'), 'hit');
@@ -601,7 +616,7 @@ export class Hud {
     obj.classList.toggle('event', event && !course);
     const les = world.alive ? lessonOf(world) : null;
     obj.classList.toggle('lesson', !!les);
-    text($('obj-k'), les ? t('Training {n}/{m}', { n: les.n, m: les.of }) : t('Objective'));
+    text($('obj-k'), les ? (cargoOf(world) ? t('Contract {id}', { id: CONTRACT_ID }) : t('Training {n}/{m}', { n: les.n, m: les.of })) : t('Objective'));
     if (les) {
       // the first minutes: one thing to do, where it is, and how to do it on this device
       obj.classList.add('on', 'course');

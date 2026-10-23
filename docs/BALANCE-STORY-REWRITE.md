@@ -29,7 +29,7 @@ Design targets, all in `sim/contract.ts` and `sim/civic.ts`, none playtested:
 | Company charges (credit) | refinery 40, lease 12, fuel reserve 20, escrow 6 of 100 | Leaves 22 before the launcher. |
 | Credit at the bay | 4 | "Credit is low": nothing to spare for a surprise. |
 | Launcher | the torpedo bay's real price (20), financed against the payout | Projection shows 2 left. The purse is untouched. Torpedo ammunition is unlimited in the Story opening (the rack reloads on its own); the stocked high-yield torpedoes of the Story economy (`POWER_STOCK`) are unchanged. |
-| Breach | replacement 1,000 + penalty 250 + lease 120 + collection 110 + launcher 20 = 1,500 owed | Extreme on purpose: she would have netted 2; she owes 750 times that. Payout withheld; asset recovery authorised. |
+| Breach | penalty 15 + lease 12 + financed launcher 20 = 47 CR outstanding | The opening chapter sheets (2026-10-22) replaced the 1,500 bill. Settlement withheld, never netted against the projected 2 CR; vessel recovery ordered. |
 | Score steps | −130 at the theft; nothing else in the opening | 412 to 282: RESTRICTED from the theft on, so the Continuance's own fees run a quarter higher for the whole journey (2026-10-19, owner's call). Not measured in a full-journey pilot. |
 
 Measured: `npm run check` (tsc and 809 tests) and `npm run build` on this branch; the unit tests run the chain with every answer and check the arithmetic and the Score stay at 300 or above (`tests/civic.test.ts`, `tests/story.test.ts`, `tests/tutor.test.ts`), including a migrated v19 save that carries the old `contract` field. Not measured: how long the opening takes, whether the chase is fair on a phone, and the pilots (not re-run after this change).
