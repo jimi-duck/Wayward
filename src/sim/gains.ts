@@ -47,8 +47,6 @@ export function gains(o: Outcome, x: Ctx, fee: number, paid: Partial<Record<keyo
   // the story first: a piece of the file, an ally, a buyer
   // a flag with consequences names them (what it brings, then what it costs) in place of its short name
   for (const f of [o.flag ?? []].flat()) for (const c of chipsOf(f) ?? [STORY_SHORT[f]]) if (c && !out.includes(c)) out.push(c);
-  // the registry's view of it
-  // the Civic Score was taken out of the game (owner, 2026-10-20): no chip for it
   // where it leaves you: the Jump Gate, Calloway, a named captain, a fight
   if (o.blockade) out.push(o.blockade === 'pass' ? 'Through the lane' : o.blockade === 'run' ? 'Run the blockade' : 'Fight');
   if (o.calloway) out.push(o.calloway === 'fight' ? 'Calloway fights' : 'Calloway chases');

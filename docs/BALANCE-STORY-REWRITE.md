@@ -11,7 +11,7 @@ Measured in the cloud container with the headless pilots; nothing here is a play
 - `JOURNEY_SET=eight pilot:journey`: no confirmed result. The baseline run on main hit the pilot's own 2 hour cap and failed; the run on this branch printed nothing, though `docs/BALANCE-LONG.md` was regenerated at 16:50 UTC. I cannot tell which run wrote it, so it is not committed (a copy is in `/mnt/project-files/story-rewrite/BALANCE-LONG.unverified.md`). The pilot needs a faster machine or a smaller seed count.
 
 ## What the rewrite changes in numbers
-- Civic Score starts at 412; the theft costs 130 (282, band RESTRICTED) and is the only fall in the opening; the breach notice and the archive no longer move it. Fuel draw from the yard costs 10, interfering with Custody 20 to 40, firing on an Offices cutter 30.
+- Civic Score: removed from the game (owner, 2026-10-20; save v20). No figure to balance.
 - Under 300 the officials' fees rise by a quarter.
 - Score never changes heat, standing, the Net or the hunt on its own; those keep their own rules.
 - New beats are follow-ups gated on an earlier choice (`Beat.needs`). The main spine, the eight fragments and the six endings are untouched, and every follow-up has a free answer (tests/civic.test.ts).

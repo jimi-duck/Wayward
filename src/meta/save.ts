@@ -13,7 +13,6 @@ import { SUPPLIES_MAX } from '../sim/breakout';
 import { SCRAP_PRICE } from '../content/systems';
 import { survivalOf } from '../content/survival';
 import { atChapter } from '../sim/chapters';
-import { CIVIC_START, STOLEN_DROP } from '../sim/civic';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
@@ -81,21 +80,21 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version >= 12 && j.version < 16) addJobs(j as Journey);
   // 16 → 17: every open system gets a sky (sim/experience.ts), dealt from the seed and the chart as it stands
   if (j.version < 17) composeChart(j.chart, j.seed ?? 0);
-  // 17 → 18: the Civic Score (the Story's registry). A journey still in Cerro starts at the new journey's 412. One that has left
-  // Cerro has had the archive wake and the reserves figure decrypt on that first jump, so it gets what the new opening would have
-  // given it: the wake's drop and both flags. Idempotent: a Score already there is kept.
-  if (j.version < 18) civicScore(j as Journey);
+  // 17 → 18: a journey that has left Cerro has had the archive wake and the reserves figure decrypt on that first jump, so it
+  // gets both flags. (This step also gave the Civic Score, which 19 → 20 takes away again.)
+  if (j.version < 18) wokenArchive(j as Journey);
   // 18 → 19: the opening is Contract 08-441 (docs/ONBOARDING.md). The first cut of it kept the Cyrite mined in an optional `Carry.contract`;
   // the settlement is fixed figures now, so that field is not read and a save that has it simply carries it unused. A journey that left
   // Cerro has the archive woken already, which ends the chain, and the chain's cards that no longer exist are skipped (sim/story.ts).
+  // 19 → 20: the Civic Score is gone from the game (the owner, 2026-10-20): its number is dropped from the carry.
+  if (j.version < 20) delete (j.carry as { civic?: number }).civic;
   j.version = VERSION;
   return j as Journey;
 }
 
-/** Give a journey from before v18 its Civic Score (see the 17 → 18 step). */
-function civicScore(j: Journey): void {
+/** A journey from before v18 that has left Cerro: the archive has woken (see the 17 → 18 step). */
+function wokenArchive(j: Journey): void {
   const c = j.carry;
-  if (c.civic === undefined) c.civic = j.trail.length < 2 ? CIVIC_START : CIVIC_START - STOLEN_DROP;
   if (j.trail.length >= 2) for (const f of ['archive_woke', 'clue_reserves']) if (!c.flags.includes(f)) c.flags.push(f);
 }
 

@@ -53,7 +53,7 @@ opening from fresh: a new world, the training again, nothing kept (`restartOpeni
 `main.ts`; `Outcome.redo`). The wreck does not count against the region. Later systems
 play as before.
 
-Civic Score: taken out of the game by the owner (2026-10-20). Nothing on screen shows it (no chip, no note, no band word on a card); the number is still kept inside and a few later choices still read it, which is for its own removal to clear.
+Civic Score: removed from the game by the owner (2026-10-20), calculations included; save v20 drops the number from older saves. At the registry checkpoint, "Show your registry" now needs a registration that has already passed a scan (`codes_passed`).
 archive entry; Lior Calloway's signature (the minutes) is a different clue from Ada's
 black box recording.
 

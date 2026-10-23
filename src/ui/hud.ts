@@ -209,8 +209,6 @@ export class Hud {
         case 'patched': this.note(world, `${t('Hull plate repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'docked': this.note(world, `${t('Docked')} · ${e.name}`, 'gain'); break;
         case 'comms': this.note(world, `${t(e.slow ? 'Ambush' : 'Channel open')} · ${t(e.from)}`, e.slow ? 'hit' : undefined); break;
-        // the Civic Score was taken out of the game (owner, 2026-10-20): nothing on screen for it
-        case 'civic': break;
         case 'commsAnswer':
           this.note(world, t(e.text), e.won ? undefined : 'hit');
           // the rename reveal's first beat (render/reveal.ts): Sam's code took, say so while the hull is still grey

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { WALL } from '../src/content/wall';
-import { CIVIC_START, STOLEN_DROP, civicBand, civicToll } from '../src/sim/civic';
 import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
 import { VERSION, newJourney, sortieDef } from '../src/sim/journey';
 import { migrate } from '../src/meta/save';
@@ -16,27 +15,24 @@ const ctx = (o: Partial<Ctx> = {}): Ctx => ({
   standing: {}, place: 'open', hostiles: 0, supplies: 10, kind: 'transit', netted: false, behind: 3, ...o,
 });
 
-describe('the Civic Score', () => {
-  it('starts at 412 on the Story journey and is its own number', () => {
+describe('no Civic Score (the owner, 2026-10-20)', () => {
+  it('keeps no score in the carry or the world', () => {
     const j = newJourney(7);
-    expect(j.carry.civic).toBe(CIVIC_START);
-    expect(CIVIC_START).toBe(412);
-    expect(civicBand(CIVIC_START - STOLEN_DROP)).not.toBe(civicBand(CIVIC_START));
+    expect('civic' in j.carry).toBe(false);
+    expect('civic' in new World(3)).toBe(false);
   });
-  it('is absent in Arcade', () => {
-    expect(new World(3).civic).toBeUndefined();
-  });
-  it('raises the toll for officials below 300 and not otherwise', () => {
-    expect(civicToll('office', 299)).toBeGreaterThan(1);
-    expect(civicToll('office', 350)).toBe(1);
-    expect(civicToll('drift', 100)).toBe(1);
-  });
-  it('greys "show" on the registry card once the Score is low, and opens it when high', () => {
+  it('opens "show" on the registry card with a registration that has passed a scan, and only then', () => {
     const def = CARD_BY_ID.story_registry!;
     expect(def.choices.length).toBeLessThanOrEqual(6);
     const show = def.choices.find((c) => c.id === 'show')!;
-    expect(choiceView(show, def, ctx({ civic: 374 }), 0).ok).toBe(false);
-    expect(choiceView(show, def, ctx({ civic: 412 }), 0).ok).toBe(true);
+    expect(choiceView(show, def, ctx(), 0).ok).toBe(false);
+    expect(choiceView(show, def, ctx({ flags: new Set(['codes_passed']) }), 0).ok).toBe(true);
+  });
+  it('names it nowhere a player reads', () => {
+    for (const f of ['src/content/story.ts', 'src/content/cards.ts', 'src/i18n/de/rewrite.ts']) {
+      const src = readFileSync(f, 'utf8').split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+      expect(src, f).not.toMatch(/civic/i);
+    }
   });
 });
 
@@ -63,7 +59,7 @@ describe('the opening chain beyond the gate', () => {
     j.carry.seen.push('story_rename');
     expect(dueBeat(j)).toBe('story_wake');
   });
-  it('plays through in four cards, the Score falling once, at the theft', () => {
+  it('plays through in four cards', () => {
     const j = newJourney(7);
     j.trail.push('x');
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), story: 'story_breach', calloway: Infinity }, carry: j.carry });
@@ -72,24 +68,17 @@ describe('the opening chain beyond the gate', () => {
     const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
     const seen: string[] = [];
     run(4);
-    // the breach notice and the override's lead-up do not move the Score: the theft is the one fall
-    expect(w.civic).toBe(CIVIC_START);
     for (const answer of ['proceed', 'code', 'helm', 'lead']) {
       seen.push(w.comms!.def.id);
       // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
-      if (answer === 'proceed') expect(w.civic).toBe(CIVIC_START);
-      if (answer === 'code') expect(civicBand(w.civic!)).toBe('restricted');
       run(10);
     }
     expect(seen).toEqual(['story_breach', 'story_sam', 'story_rename', 'story_wake']);
     expect(w.phase).toBe('play');
     const c = w.result().carry;
     expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'archive_woke', 'clue_reserves']));
-    // the theft took it to RESTRICTED, and the archive did not take more
-    expect(c.civic).toBe(CIVIC_START - STOLEN_DROP);
-    expect(civicBand(c.civic!)).toBe('restricted');
   });
   it('adds up (opening sheets B and F): a projection, not a balance, and a breach bill of 80 CR kept apart from it', () => {
     const bay = ledgerFor('bay');
@@ -134,16 +123,21 @@ describe('the opening chain beyond the gate', () => {
   });
 });
 
-describe('save 17 to 18', () => {
-  it('gives a past-Cerro save the post-theft Score and the two Cerro flags, and is idempotent', () => {
+describe('save migration', () => {
+  it('gives a past-Cerro v17 save the two Cerro flags and no score, and is idempotent', () => {
     const old = JSON.parse(readFileSync('tests/fixtures/journey-v17.json', 'utf8'));
     const a = migrate(structuredClone(old))!;
     expect(a.version).toBe(VERSION);
-    if (a.trail.length >= 2) {
-      expect(a.carry.civic).toBe(CIVIC_START - STOLEN_DROP);
-      expect(a.carry.flags).toEqual(expect.arrayContaining(['archive_woke', 'clue_reserves']));
-    } else expect(a.carry.civic).toBe(412);
-    expect(migrate(JSON.parse(JSON.stringify(a)))!.carry.civic).toBe(a.carry.civic);
+    if (a.trail.length >= 2) expect(a.carry.flags).toEqual(expect.arrayContaining(['archive_woke', 'clue_reserves']));
+    expect('civic' in a.carry).toBe(false);
+    expect(migrate(JSON.parse(JSON.stringify(a)))).toEqual(a);
+  });
+  it('drops the score from a v19 save', () => {
+    const old = JSON.parse(readFileSync('tests/fixtures/journey-v19.json', 'utf8'));
+    const a = migrate(structuredClone(old))!;
+    expect(a.version).toBe(VERSION);
+    expect('civic' in a.carry).toBe(false);
+    expect(a.carry.flags).toEqual(old.carry.flags);
   });
 });
 
@@ -190,14 +184,14 @@ describe('nothing soft-locks', () => {
       expect(flags.filter((f) => FRAGMENT_FLAGS_LONG.includes(f)), b.card).toEqual([]);
     }
   });
-  it('leaves the registry open to a pilot with a Score of 100', () => {
+  it('leaves the registry open to a pilot with no forged registration', () => {
     const def = CARD_BY_ID.story_registry!;
-    const open = def.choices.filter((c) => choiceView(c, def, ctx({ civic: 100 }), 0).ok);
+    const open = def.choices.filter((c) => choiceView(c, def, ctx(), 0).ok);
     expect(open.length).toBeGreaterThanOrEqual(3);
   });
   it('keeps the tollgate answerable without the signature chain', () => {
     const def = CARD_BY_ID.story_tollgate!;
-    const view = def.choices.map((c) => choiceView(c, def, ctx({ civic: 300 }), 0));
+    const view = def.choices.map((c) => choiceView(c, def, ctx(), 0));
     expect(view.find((v) => v.id === 'sign')!.ok).toBe(false);
     expect(view.filter((v) => v.ok).length).toBeGreaterThanOrEqual(2);
     const all = new Set(['clue_sig_reach', 'clue_sig_yards', 'clue_sig_ports']);
@@ -270,9 +264,5 @@ describe('a reader and a skimmer on the long chart', () => {
     expect(read.j.status).not.toBe('chart');
     expect(skim.open).toContain('vanish');
     expect(read.open.length).toBeGreaterThan(skim.open.length);
-    for (const w of [skim.j, read.j]) {
-      expect(w.carry.civic).toBeGreaterThanOrEqual(0);
-      expect(w.carry.civic).toBeLessThanOrEqual(500);
-    }
   });
 });
