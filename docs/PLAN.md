@@ -32,6 +32,7 @@ is off.
 | M8 The story | Done: three acts, story beats that piece the Severance file together, six endings with epilogues, the Archive ([BALANCE-ENDINGS.md](BALANCE-ENDINGS.md)) |
 | R The refit bay | Done: the web as data and rules, the bay on screen, the budgets felt, the work bay in the Story, the console pass |
 | SM Survival modes | Done: Drifter, Prospector and Raider, one table in `content/survival.ts` ([BALANCE-SURVIVAL.md](BALANCE-SURVIVAL.md)) |
+| AR Arcade opening | Done: first wave at 3 s, wrecks pay 2.5x, one difficulty ([BALANCE-ARCADE.md](BALANCE-ARCADE.md)) |
 | C Story communications | Done: one comms desk decides when anything is heard ([COMMS.md](COMMS.md), [BALANCE-COMMS.md](BALANCE-COMMS.md)) |
 | S Scale-up | Built: the eight regions are the default for new Story journeys (`?short` plays the old three), with breathers, the clocks, chapters at region gates and a longer story. A playtest of the long journey is still to do |
 | E The environment | Built, on by default (`?nospace` turns it off): features, expanses and their effects on the ship ([ENVIRONMENT.md](ENVIRONMENT.md), [BALANCE-SPACE.md](BALANCE-SPACE.md)). Pace and polish are left |
