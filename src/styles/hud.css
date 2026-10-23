@@ -536,16 +536,17 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 .sys-row > .lbl, .sys-foot .lbl, .range .lbl, .ht-l, .obj-k { font: 400 10px/1 var(--font-mono); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
 
 /* upper left */
-#objective { width: clamp(240px, 22vw, 300px); gap: 5px; padding: 1px 0 1px 12px; border-left: 1px solid var(--rule); }
+#objective { width: clamp(240px, 22vw, 300px); gap: 5px; padding: 1px 0 1px 12px; border-left: 1px solid var(--cy-dim); }
 .obj-k { display: flex; align-items: center; gap: 8px; }
 .obj-k::before { content: ""; width: 6px; height: 6px; background: var(--amber); rotate: 45deg; }
 #objective.lesson .obj-k { color: var(--ink-2); }
-.obj-h { display: grid; gap: 4px; justify-content: start; }
+.obj-h { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
 #obj-t { font: 600 clamp(15px, 1.25vw, 18px)/1.1 var(--font-rail); letter-spacing: .12em; }
 #obj-left { font: 400 12px/1 var(--font-mono); letter-spacing: .04em; color: var(--cy); text-shadow: var(--glow); }
 #obj-left:empty { display: none; }
-#obj-p { --off: var(--cy-dim); --on: var(--cy); height: 2px; }
+#obj-p { --off: var(--cy-dim); --on: var(--cy); height: 2px; width: 72px; }
 #obj-s, #obj-list { color: var(--ink-2); }
+#obj-s { font: 400 10px/1.2 var(--font-mono); letter-spacing: .14em; }
 
 /* upper centre: a line, not a tape */
 #heading { width: auto; top: calc(var(--top) - 2px); }

@@ -19,5 +19,5 @@ export function goalOf(w: World): Goal {
   if (w.bk && !lockLifted(w.flags) && w.seenPlaces().some((p) => p.kind === 'audit')) return { goal: 'Dock at the company port', jobs, scope };
   if (w.bk) return { goal: w.fuel >= w.jumpCost ? 'Head for the Jump Gate and jump' : 'Mine Cyrite to fill the jump tank', jobs, scope };
   if (e && !e.done && !e.dormant) return { goal: ENCOUNTERS[e.id].name, jobs };
-  return { goal: 'Survive as long as you can', jobs };
+  return { goal: 'Collect Cyrite to upgrade while fighting off hostile ships', jobs };
 }

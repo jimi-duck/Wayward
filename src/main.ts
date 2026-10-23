@@ -524,7 +524,8 @@ function boot(review: typeof import('./review') | null): void {
   const showBrief = () => {
     const first = !profile.briefed;
     el('pause').classList.toggle('first', first);
-    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : 'All stop');
+    // the arcade's card names the run; the Story's is the ship's "All stop"
+    el('pause-t').textContent = t(settingsOpen() ? 'Settings' : document.documentElement.classList.contains('breakout') ? 'All stop' : 'Survive the waves');
     for (const [id, on] of [['p-sound', feel.prefs.sound], ['p-buzz', feel.prefs.haptics]] as const) {
       el(id).classList.toggle('on', on);
       el(id).setAttribute('aria-pressed', String(on));
