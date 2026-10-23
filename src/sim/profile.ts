@@ -44,8 +44,8 @@ export function profileOf(levels: Levels): Profile {
     lines.push(...(name === 'Hybrid' ? ['No single strength', 'Good at nothing yet'] : LINES[top]));
   } else lines.push('Stock lasers, a shield, a torpedo bay');
   const { use, cap } = budgets(levels);
-  if (use.heat / cap.heat >= 0.8) lines.push('Runs hot');
-  else if (use.mass / cap.mass >= 0.8) lines.push('Heavy: slow to turn');
-  else if (use.power >= cap.power) lines.push('Power is tight');
+  if (use.heat > cap.heat) lines.push('Slow guns');
+  else if (use.mass > cap.mass) lines.push('Heavy: slow to turn');
+  else if (use.power > cap.power) lines.push('Reactor strained');
   return { name, axes, lines: lines.slice(0, 3) };
 }

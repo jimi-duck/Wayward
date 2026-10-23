@@ -109,12 +109,14 @@ function glyph(name: string): SVGElement {
   return e;
 }
 
-/** The ship's trouble that is not about the choice: weight that costs jump fluid, and guns that run hot (it flies on, worse). */
+/** The ship's trouble that is not about the choice: weight that costs jump fluid, and guns that cycle slowly and a strained reactor (it flies on, worse). */
 function shipTrouble(j: Journey): string[] {
   const out: string[] = [];
   const fuel = weightFuel(j.carry.levels);
   if (fuel) out.push(t('Heavy · each jump burns {n} more jump fluid', { n: fuel }));
-  if (overRatings(j.carry.levels).heat) out.push(t('Weapons overheating · slower fire rate'));
+  const over = overRatings(j.carry.levels);
+  if (over.heat) out.push(t('Guns slow · long cooldown'));
+  if (over.power) out.push(t('Reactor strained · lower top speed'));
   return out;
 }
 

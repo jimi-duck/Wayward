@@ -58,8 +58,9 @@ const LESSON_HINT: Record<string, Array<[string, string]>> = {
 const SHIP_WARN = {
   empty: 'Out of supplies · slower handling and weaker weapons',
   low: 'Supplies low',
-  heavy: 'Heavy load · slower turning',
-  hot: 'Weapons overheating · slower fire rate',
+  heavy: 'Heavy load · sluggish handling',
+  hot: 'Guns slow · long cooldown',
+  strained: 'Reactor strained · lower top speed',
 } as const;
 
 /** A hostile this close (units) earns the objective a threat line. */

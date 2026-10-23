@@ -1,7 +1,7 @@
 import { BRANCHES, UPGRADE, UPGRADES, type Branch, type UpgradeDef } from '../content/upgrades';
 import { applyModules } from './modules';
-import { flightHull, capStats, newStats, type Stats } from './stats';
-import { topSpeed, turnPerStep } from './ship';
+import { BASE, flightHull, capStats, newStats, type Stats } from './stats';
+import { thrustPerStep, topSpeed, turnPerStep } from './ship';
 import { HZ, PX } from './tuning';
 import { PACING } from './pacing';
 import { feelBudgets } from './budgets';
@@ -93,6 +93,19 @@ export interface Fig {
   delta: string;
 }
 
+/**
+ * The three things a ship feels: acceleration, top speed, and the guns' cooldown, as a share of the stock ship's (1 is
+ * the stock ship; a cooldown above 1 is slower) and in real units. The upgrades and the loads together, as the ship flies.
+ */
+export function felt(levels: Levels): { accel: number; speed: number; cooldown: number; accelAbs: number; speedAbs: number; cooldownAbs: number } {
+  const s = feelBudgets(computeStats(levels), levels), h = flightHull(s), b = flightHull(BASE);
+  return {
+    accel: thrustPerStep(h) / thrustPerStep(b), speed: topSpeed(h) / topSpeed(b), cooldown: s.laserCooldown / BASE.laserCooldown,
+    // in the game's own units: metres per second squared, metres per second, seconds between laser shots
+    accelAbs: (thrustPerStep(h) * HZ) / PX, speedAbs: topSpeed(h) / PX, cooldownAbs: s.laserCooldown,
+  };
+}
+
 /** What one more level of an upgrade would change, as figures (in the Story mode, `arcade` false, without the arcade's own). */
 export function upgradeFigures(levels: Levels, id: string, arcade = true): Fig[] {
   const next = { ...levels, [id]: (levels[id] ?? 0) + 1 };
@@ -147,6 +160,7 @@ export const FIGURES: FigDef[] = [
   { label: 'Arc reach', get: (s) => off(s.arc, s.arcRange), fmt: dash(m) },
   { label: 'Arc jumps', get: (s) => s.arcJumps, fmt: f0 },
   { label: 'Ram damage', get: (s) => s.ramDamage, fmt: f0 },
+  { label: 'Acceleration', get: (s) => (thrustPerStep(flightHull(s)) * HZ) / PX, fmt: (v) => `${v.toFixed(1)} m/s²` },
   { label: 'Top speed', get: (s) => topSpeed(flightHull(s)), fmt: (v) => `${Math.round(v / PX)} m/s` },
   { label: 'Turn rate', get: (s) => (turnPerStep(flightHull(s)) * HZ * 180) / Math.PI, fmt: (v) => `${Math.round(v)}°/s` },
   { label: 'Grip in turns', get: (s) => s.grip, fmt: (v) => `${Math.round(v * 1000) / 10}%/step` },

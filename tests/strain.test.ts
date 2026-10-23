@@ -6,7 +6,7 @@ import { budgets, weightFuel } from '../src/sim/budgets';
 import { newJourney, options, plot, sortieDef } from '../src/sim/journey';
 import { stockLevels } from '../src/sim/bay';
 
-/** A build run over the mass rating (the bay would not stop the weight, only the power). */
+/** A build run over the mass rating (the bay does not stop the weight). */
 function heavy(): Record<string, number> {
   const levels = stockLevels();
   for (const n of WEB) {

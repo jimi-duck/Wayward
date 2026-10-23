@@ -43,7 +43,6 @@ export type Block =
   | 'path' // nothing it comes from is fitted
   | 'needs' // the upgrade's own rules: what it requires, a specialisation taken, a branch not deep enough
   | 'yard' // fitted only at a port
-  | 'power' // not enough power free
   | 'krail'; // not enough Cyrite
 
 /** The levels a node was written with: the Arcade's limit, and where the Story's ladder starts to fade (`overhaul`, sim/build.ts). */
@@ -100,8 +99,6 @@ export function blockOf(id: string, ctx: BayCtx): Block | null {
   if (lv === 0 && node.from && !node.from.some((f) => (ctx.levels[f] ?? 0) > 0)) return 'path';
   if (u && !available(u, ctx.levels, ctx.unlocked, !ctx.arcade && endless(id))) return 'needs';
   if (yardWork(id, lv + 1, ctx.arcade) && !ctx.docked) return 'yard';
-  const { use, cap } = budgets(ctx.levels);
-  if ((node.draw.power ?? 0) > 0 && use.power + node.draw.power! > cap.power) return 'power';
   return ctx.krail < cost(id, lv + 1, ctx.arcade, ctx.levels) ? 'krail' : null;
 }
 
@@ -113,16 +110,16 @@ export function install(id: string, ctx: BayCtx): { levels: Levels; cost: number
   return { levels: { ...ctx.levels, [id]: lv + 1 }, cost: cost(id, lv + 1, ctx.arcade, ctx.levels) };
 }
 
-/** The nodes of a tab that could be fitted were there Krail and power enough: what the bay lights as available. */
+/** The nodes of a tab that could be fitted were there Krail enough: what the bay lights as available. */
 export function reachable(ctx: BayCtx, nodes: readonly WebNode[] = WEB): WebNode[] {
   const rich = { ...ctx, krail: Infinity };
   return nodes.filter((w) => {
     const b = blockOf(w.id, rich);
-    return b === null || b === 'power';
+    return b === null;
   });
 }
 
-/** How many modules could be fitted right now, price, power and place all met: what the port tells of its bay. */
+/** How many modules could be fitted right now, price and place all met: what the port tells of its bay. */
 export function affordable(ctx: BayCtx): number {
   return WEB.filter((w) => (!ctx.only || w.id === ctx.only) && blockOf(w.id, ctx) === null).length;
 }
@@ -155,7 +152,7 @@ function suits(id: string, ctx: BayCtx, affinity: Map<string, number>, systems: 
   const { use, cap } = budgets(ctx.levels);
   const node = NODE[id]!;
   if (FITTING[id]) {
-    // the reactor core when power is nearly gone; cooling or a frame once the ship runs hot or heavy
+    // the reactor core when the drive is nearly starved; cooling or a frame once the ship runs hot or heavy
     if (id === 'rx_core') return cap.power - use.power < 2 ? 9 : 0.2;
     if (id === 'rx_sinks') return use.heat >= cap.heat ? 8 : 0.2;
     return use.mass >= cap.mass ? 7 : 0.2;
@@ -166,8 +163,8 @@ function suits(id: string, ctx: BayCtx, affinity: Map<string, number>, systems: 
   let v = 1 + u.tags.reduce((a, t) => a + Math.min(4, affinity.get(t) ?? 0), 0) * 0.6;
   if (u.kind === 'system' && systems < 2) v += 1.2;
   if (u.kind === 'spec' || u.kind === 'synergy' || u.kind === 'tech') v += 2.5;
-  // a module that would run the ship over a soft rating counts for less
-  if (use.mass + (node.draw.mass ?? 0) > cap.mass || use.heat + (node.draw.heat ?? 0) > cap.heat) v *= 0.45;
+  // a module that would run the ship over a rating (the warning lights) counts for less
+  if (use.mass + (node.draw.mass ?? 0) > cap.mass || use.heat + (node.draw.heat ?? 0) > cap.heat || use.power + (node.draw.power ?? 0) > cap.power) v *= 0.45;
   return v;
 }
 
@@ -225,7 +222,7 @@ function shuffle(id: string, deal: number, progress: number): number {
 /** The fitting a ship has run short of, if any: it takes the ship's slot, being the thing that stops the rest. */
 function shortOf(ctx: BayCtx): string | null {
   const { use, cap } = budgets(ctx.levels);
-  // power gone is the hard stop; heat and mass only count once they are over, and then every other opening, so the ship's slot is not always the same card
+  // a reactor at its limit asks first; heat and mass only count once they are over, and then every other opening, so the ship's slot is not always the same card
   // (one that was passed over waits a few openings before it asks again)
   const deal = ctx.deal ?? 0, asked = (id: string) => !ctx.passed?.includes(id) || deal % 3 === 0;
   if (cap.power - use.power < 1) return asked('rx_core') ? 'rx_core' : null;
@@ -263,7 +260,7 @@ export function arcadePicks(ctx: BayCtx): WebNode[] {
       .filter((w) => !FITTING[w.id] && roleOf(w.id) === role && !out.includes(w))
       .map((w) => ({ w, v: score(w, role) }))
       .sort((a, b) => b.v - a.v || a.w.id.localeCompare(b.w.id))[0]?.w;
-    // the ship's slot, with no part left to fit that the power allows, offers the cooling, frame or core that opens more
+    // the ship's slot, with no part left to fit, offers the cooling, frame or core that opens more
     const spare = role === 'ship' && !best ? ['rx_sinks', 'hl_frame', 'rx_core'].map((id) => open.find((w) => w.id === id)).find(Boolean) : undefined;
     if (best ?? spare) out.push((best ?? spare)!);
   }

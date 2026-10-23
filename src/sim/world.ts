@@ -515,8 +515,8 @@ export class World implements EncounterHost {
   thin = false;
 
   /** What is wrong with the ship, in the order it matters: for the HUD's quiet line. */
-  get warnings(): Array<'empty' | 'low' | 'heavy' | 'hot'> {
-    const out: Array<'empty' | 'low' | 'heavy' | 'hot'> = [];
+  get warnings(): Array<'empty' | 'low' | 'heavy' | 'hot' | 'strained'> {
+    const out: Array<'empty' | 'low' | 'heavy' | 'hot' | 'strained'> = [];
     if (this.bk) {
       if (this.supplies <= 0) out.push('empty');
       else if (this.supplies <= LOW_SUPPLIES) out.push('low');
@@ -524,6 +524,7 @@ export class World implements EncounterHost {
     const over = overRatings(this.levels);
     if (over.mass) out.push('heavy');
     if (over.heat) out.push('hot');
+    if (over.power) out.push('strained');
     return out;
   }
 

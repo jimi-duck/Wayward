@@ -2,7 +2,7 @@ import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { t } from '../i18n';
 
 // ── the heat note ─────────────────────────────────────────────────────────
-// Shown once, at the end of the Story's training: what the Heat bar in the
+// Shown once, at the end of the Story's training: what the Wanted bar in the
 // lower right of the HUD means. The bar here is the HUD's own, at half.
 
 export class HeatNote {

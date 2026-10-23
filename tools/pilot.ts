@@ -183,7 +183,7 @@ function shop(w: World, s: Strategy, rngPick: () => number, modules: readonly st
     } else {
       const best = open.map((n) => ({ id: n.id, v: want(w, s, n.id, modules) + rngPick() })).sort((a, b) => b.v - a.v)[0]!;
       const why = blockOf(best.id, ctx);
-      pick = why === null ? best.id : why === 'power' && blockOf('rx_core', ctx) === null ? 'rx_core' : null;
+      pick = why === null ? best.id : null;
     }
     // away from a port, keep back the Krail the next wanted yard module will cost, as a player saving for the yard would
     if (pick && !MODULE_BY_ID[pick] && !w.docked && w.purse - price(w, pick) < saveFor(w, modules)) break;

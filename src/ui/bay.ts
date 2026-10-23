@@ -3,7 +3,7 @@ import { UPGRADE } from '../content/upgrades';
 import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
 import { blockOf, budgets, cost, endless, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
 import type { Advice } from '../sim/advice';
-import { upgradeFigures, type Fig } from '../sim/build';
+import { felt, upgradeFigures } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
 import { profileOf } from '../sim/profile';
 import { stepOf } from '../sim/tutor';
@@ -61,12 +61,26 @@ const WHY: Record<Block, string> = {
   path: 'Fit the one before it first',
   needs: 'Needs more of its system, or a rival is fitted',
   yard: 'Fitted only at a port',
-  power: 'Not enough power · fit a reactor core',
   krail: 'Not enough Cyrite',
 };
-const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Power', mass: 'Mass', heat: 'Heat' };
-/** What running over a soft rating costs (sim/budgets.ts). */
-const OVER_WORD = { mass: 'Over the mass rating: slower to turn and to speed up', heat: 'Over the heat rating: the guns recharge and reload slower' } as const;
+/** The three things a ship feels, which the three loads set (sim/budgets.ts): mass is acceleration, power is top speed, heat is cooldown. */
+const BUDGET_WORD: Record<keyof Budget, string> = { power: 'Top speed', mass: 'Acceleration', heat: 'Cooldown' };
+/** What the warning light says when a load is past its rating. */
+const LIGHT_WORD: Record<keyof Budget, string> = { power: 'Strained', mass: 'Sluggish', heat: 'Slow guns' };
+/** What running past a rating costs (sim/budgets.ts). */
+const OVER_WORD: Record<keyof Budget, string> = {
+  mass: 'Past the load rating: slow off the mark and slow to turn',
+  power: 'Past the reactor rating: lower top speed and slower guns',
+  heat: 'Past the cooling rating: the guns take longer to cycle',
+};
+/** The felt stat a load sets, in `felt()` (sim/build.ts), and which way is better. */
+const FELT: Record<keyof Budget, { key: 'accel' | 'speed' | 'cooldown'; lower: boolean; unit: string; abs: 'accelAbs' | 'speedAbs' | 'cooldownAbs'; dp: number }> = {
+  mass: { key: 'accel', lower: false, unit: 'm/s²', abs: 'accelAbs', dp: 0 },
+  power: { key: 'speed', lower: false, unit: 'm/s', abs: 'speedAbs', dp: 0 },
+  heat: { key: 'cooldown', lower: true, unit: 's', abs: 'cooldownAbs', dp: 2 },
+};
+/** The bar's scale: from 40% to 140% of the stock ship, the stock ship at 60% along. */
+const BAR = { lo: 0.4, hi: 1.4 } as const;
 
 const nameOf = (id: string) => t(nodeName(id));
 const textOf = (id: string, lv: number) => t(nodeText(id, lv));
@@ -91,18 +105,11 @@ function fitWord(w: World, id: string, why: Block | null): string {
 /** The plain bay: one view of cards, no prices to read, closes on a pick. The Arcade's, and the training's one upgrade. */
 const isArcade = (w: World) => !w.bk || stepOf(w) === 'bay';
 
-/** One figure as a chip: what it moves and by how much. Teal with an arrow for a gain, amber and no arrow for a cost; before and after are in the tooltip. */
-function deltaChip(f: Fig, cls = 'dl'): HTMLElement {
-  const chip = h('span', `${cls}${f.cost ? ' cost' : ''}`, '', h('span', 'dl-l', t(f.label)),
-    h('b', 'dl-v', '', ...(f.cost ? [] : [h('i', 'dl-a')]), document.createTextNode(t(f.delta))));
-  chip.title = `${t(f.label)}: ${t(f.from)} → ${t(f.to)}`;
-  return chip;
-}
-
-/** One effect in words, as the card tells it: "3 → 5 beams per shot"; a cost reads "↓ 5 → 4 shots/sec" in amber. */
-function effectLine(f: Fig): HTMLElement {
-  return h('span', `pc-fl${f.cost ? ' cost' : ''}`, '', ...(f.cost ? [h('i', 'pc-dn', '↓')] : []),
-    h('b', '', f.from === '—' ? t(f.to) : `${t(f.from)} → ${t(f.to)}`), h('span', '', t(f.label).toLowerCase()));
+/** The Recommended tag, up in the card's top row so the body text starts in the same place on every card; the reason is its tooltip. */
+function recTag(adv: Advice): HTMLElement {
+  const tag = h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`));
+  tag.title = t(adv.text, adv.vars);
+  return tag;
 }
 
 /** The views: the suggestions, then every tab with something for this mode (Signals is the Story mode's). */
@@ -113,7 +120,7 @@ function stateOf(world: World, id: string): 'max' | 'owned' | 'open' | 'short' |
   const lv = world.levels[id] ?? 0, b = blockOf(id, world.bayCtx());
   if (b === 'full') return 'max';
   if (b === null) return lv ? 'owned' : 'open';
-  if (b === 'krail' || b === 'power') return lv ? 'owned' : 'short';
+  if (b === 'krail') return lv ? 'owned' : 'short';
   return lv ? 'owned' : 'locked';
 }
 
@@ -292,11 +299,11 @@ export class BayPanel {
   private install(id: string): void {
     const w = this.world;
     if (!w || this.closing) return;
-    const before = budgets(w.levels), krailBefore = Math.floor(w.purse);
+    const before = budgets(w.levels), feltBefore = felt(w.levels), krailBefore = Math.floor(w.purse);
     let fitted = false;
     if (w.install(id) === null) {
       const after = budgets(w.levels), moved = new Set<string>(['krail']);
-      for (const k of ['power', 'mass', 'heat'] as const) if (after.use[k] !== before.use[k] || after.cap[k] !== before.cap[k]) moved.add(k);
+      for (const k of ['power', 'mass', 'heat'] as const) if (after.use[k] !== before.use[k] || after.cap[k] !== before.cap[k] || feltBefore[FELT[k].key] !== felt(w.levels)[FELT[k].key]) moved.add(k);
       this.fresh = { id, moved };
       fitted = true;
       // the web's panel flashes; in the suggestions it is see-through, so the flash would only draw a stray frame
@@ -551,7 +558,7 @@ export class BayPanel {
       damaged: tab === 'hull' && worn(w.plates, w.stats.maxPlates),
       ready: blocks.filter((b) => b === null).length,
       fitted: nodes.some((n) => (w.levels[n.id] ?? 0) > 0),
-      reachable: blocks.some((b) => b === null || b === 'krail' || b === 'power' || b === 'yard'),
+      reachable: blocks.some((b) => b === null || b === 'krail' || b === 'yard'),
     });
   }
 
@@ -562,7 +569,6 @@ export class BayPanel {
     const ctx = w.bayCtx();
     const cards = picks.map((n, i) => {
       const lv = w.levels[n.id] ?? 0, max = maxLevel(n.id), why = blockOf(n.id, ctx);
-      const figs = upgradeFigures(w.levels, n.id, !w.bk), fx = [...figs.filter((f) => !f.cost).slice(0, 2), ...figs.filter((f) => f.cost).slice(0, 1)];
       const why1 = w.advise(n.id);
       const card = h('div', `pick-card${why ? ' short' : ' ready'}${i === this.pick ? ' sel' : ''}`);
       const go = h('button', 'pc-go', '') as HTMLButtonElement;
@@ -574,12 +580,10 @@ export class BayPanel {
       card.addEventListener('click', () => this.choose(i));
       card.append(
         this.shot(n.tab),
-        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(isArcade(w) ? ROLE_NAME[roleOf(n.id)] : TABS[n.tab].name)), ...this.stamp(n.id, 'pc-stamp'), h('kbd', 'only-desktop', String(i + 1))),
+        h('span', 'pc-top', '', h('span', 'pc-oct', '', nodeIcon(n.id)), h('span', 'pc-tab', t(isArcade(w) ? ROLE_NAME[roleOf(n.id)] : TABS[n.tab].name)), ...(why1 ? [recTag(why1)] : []), ...this.stamp(n.id, 'pc-stamp'), h('kbd', 'only-desktop', String(i + 1))),
         h('span', 'pc-name', nameOf(n.id)),
-        ...(why1 ? [h('span', 'pc-rec', '', h('b', '', `◆ ${t('Recommended')}`), document.createTextNode(` ${t(why1.text, why1.vars)}`))] : []),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
         h('span', 'pc-text', textOf(n.id, Math.min(max, lv + 1))),
-        h('span', 'pc-fx', '', ...fx.map(effectLine)),
         go,
       );
       return card;
@@ -733,21 +737,12 @@ export class BayPanel {
     const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', nodeIcon(id)),
       h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', levelWord(w, id, lv)), pips(lv, max, more))), info);
     const adv = more && !why ? this.advice(w).get(id) : undefined;
-    const figs = more ? upgradeFigures(w.levels, id, !w.bk) : [];
     const out: HTMLElement[] = [head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`))] : [])];
     if (more) {
-      if (figs.length) out.push(h('div', 'bi-dl', '', ...figs.slice(0, 3).map((f) => deltaChip(f))));
-      // what it draws, as chips: +1 power, +2 heat
+      // past a rating the module says so; the bars along the bottom carry the numbers
       const { use, cap } = budgets(w.levels);
-      const chips = h('div', 'bi-chips');
       const warn: string[] = [];
-      for (const k of ['power', 'mass', 'heat'] as const) {
-        const d = node.draw[k] ?? 0, g = node.gives?.[k] ?? 0;
-        if (d) chips.append(h('span', `chip ${k}${use[k] + d > cap[k] ? ' over' : ''}`, `+${d} ${t(BUDGET_WORD[k])}`));
-        if (g) chips.append(h('span', `chip ${k} gives`, `${t(BUDGET_WORD[k])} ${t('limit')} +${g}`));
-        if (d && k !== 'power' && use[k] + d > cap[k]) warn.push(t(OVER_WORD[k]));
-      }
-      if (chips.childElementCount) out.push(chips);
+      for (const k of ['power', 'mass', 'heat'] as const) if ((node.draw[k] ?? 0) > 0 && use[k] + node.draw[k]! > cap[k]) warn.push(t(OVER_WORD[k]));
       out.push(...warn.map((x) => h('p', 'bi-warn', x)));
     }
     if (this.more) {
@@ -755,7 +750,6 @@ export class BayPanel {
       out.push(h('div', 'bi-more', '',
         ...(adv ? [h('p', 'bi-why', t(adv.text, adv.vars))] : []),
         h('p', 'bi-text', textOf(id, next)),
-        ...figs.map((f) => h('p', `bi-fl${f.cost ? ' cost' : ''}`, '', h('span', '', t(f.label)), h('span', '', `${t(f.from)} → ${t(f.to)}`))),
         ...(note ? [h('p', 'bi-note', t(note))] : [])));
     }
     const btn = h('button', 'bi-go', '') as HTMLButtonElement;
@@ -769,40 +763,47 @@ export class BayPanel {
     el.replaceChildren(...out);
   }
 
-  /** The ship's three budgets along the bottom, with what the selected module would take. */
+  /** What the ship feels along the bottom: three bars, acceleration, top speed, cooldown. The selected module moves them before it is fitted. */
   private budgetBar(w: World): void {
-    const { use, cap } = budgets(w.levels);
+    const { use, cap } = budgets(w.levels), now = felt(w.levels);
     const sel = this.view === 'picks' ? this.picks()[this.pick] ?? null : this.sel ? NODE[this.sel] : null;
     const can = sel && blockOf(sel.id, w.bayCtx()) !== 'full';
-    $('bay-budget').replaceChildren(...(['power', 'mass', 'heat'] as const).map((k) => {
-      const add = can ? sel!.draw[k] ?? 0 : 0;
-      // the rating's state: a word from 80%, a louder one over (power is a ceiling: it fills, it never goes over)
-      const share = use[k] / cap[k], state = k === 'power' ? (share >= 1 ? 'warn' : '') : share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
-      const word = state === 'over' ? 'Over limit' : state === 'warn' ? (k === 'power' ? 'Full' : 'Warning') : '';
-      // a fit just moved this rating: it ticks from what it said to what it says now, with the old figure struck beside it
-      const now = `${use[k]}/${cap[k]}`, was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== now;
-      this.shown[k] = now;
-      // one segment per point of rating: lit for what the ship draws, blinking for what the selected part would add;
-      // after a fit the new ones light one by one and a raised rating's new slots pop in
-      const [wasUse = 0, wasCap = 0] = moved ? was!.split('/').map(Number) : [];
-      const segs: HTMLElement[] = [];
-      for (let j = 0; j < cap[k]; j++) {
-        const on = j < use[k], fresh = moved && on && j >= wasUse, slot = moved && j >= wasCap;
-        const seg = h('i', [on ? 'on' : j < use[k] + add ? 'add' : '', fresh ? 'new' : '', slot ? 'pop' : ''].filter(Boolean).join(' '));
-        if (fresh || slot) seg.style.setProperty('--k', String(fresh ? j - wasUse : j - wasCap));
-        segs.push(seg);
+    const next = can ? felt({ ...w.levels, [sel!.id]: (w.levels[sel!.id] ?? 0) + 1 }) : null;
+    $('bay-budget').replaceChildren(...(['mass', 'power', 'heat'] as const).map((k) => {
+      const { key, lower, unit, abs, dp } = FELT[k], fmt = (v: number) => `${v.toFixed(dp)}`;
+      // the warning light: only once the load is past its rating. A little short of it the bar warms, with no word.
+      const share = use[k] / cap[k], state = share > 1 ? 'over' : share >= 0.8 ? 'warn' : '';
+      const word = state === 'over' ? LIGHT_WORD[k] : '';
+      // a fit just moved this stat: it ticks from what it said to what it says now, with the old figure struck beside it
+      const shownNow = fmt(now[abs]), was = this.shown[k], moved = !!this.fresh?.moved.has(k) && was !== undefined && was !== shownNow;
+      this.shown[k] = shownNow;
+      // the bar is the stat, longer is better (cooldown is drawn as the guns' rate); the tick is the stock ship
+      const at = (v: number) => Math.round(Math.min(1, Math.max(0, ((lower ? 1 / v : v) - BAR.lo) / (BAR.hi - BAR.lo))) * 1000) / 10;
+      const from = at(now[key]), to = next ? at(next[key]) : from;
+      const bar = h('i', `bb-bar${state ? ` ${state}` : ''}`, '', h('i', 'bb-fill'), h('i', 'bb-mark'));
+      bar.style.setProperty('--at', `${from}%`);
+      bar.style.setProperty('--stock', `${at(1)}%`);
+      // what the selected module would do: teal ahead of the fill where it helps, gold over the end of it where it costs
+      if (to !== from) {
+        const d = h('i', `bb-delta ${to > from ? 'better' : 'worse'}`);
+        d.style.left = `${Math.min(from, to)}%`;
+        d.style.width = `${Math.abs(to - from)}%`;
+        bar.append(d);
       }
-      // a part that would take it past a soft rating shows red before it is fitted (power is a ceiling: it never goes over)
-      const will = k !== 'power' && add > 0 && use[k] + add > cap[k];
-      const bar = h('i', `bb-bar${state ? ` ${state}` : ''}${will ? ' will' : ''}`, '', ...segs);
-      const fig = h('span', 'bb-n', now);
+      bar.title = `${t('Load')} ${use[k]}/${cap[k]}`;
+      const fig = h('span', 'bb-n', shownNow);
       const val = h('b', `bb-v${moved ? ' bump' : ''}`, '', fig);
+      const u = h('small', '', ` ${unit}`);
+      const then = next ? fmt(next[abs]) : shownNow;
       if (moved) {
-        tick(fig, was!, now);
+        tick(fig, was!, shownNow);
         val.prepend(h('s', 'bb-was', was!));
         setTimeout(() => this.open && this.world && this.budgetBar(this.world), 1500);
-      } else if (add) val.append(h('em', '', ` → ${use[k] + add}`));
-      return h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : [])), bar, val);
+      } else if (then !== shownNow) val.append(h('em', '', ` → ${then}`));
+      val.append(u);
+      // better (teal) or worse (gold): cooldown is better when lower
+      if (then !== shownNow) val.classList.add((next![key] < now[key]) === lower ? 'better' : 'worse');
+      return h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : []), val), bar);
     }));
   }
 }
