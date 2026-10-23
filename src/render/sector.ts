@@ -1,7 +1,7 @@
 import { Scene, Vector3, type Group, type InstancedMesh, type Object3D, type WebGLRenderer } from 'three';
 import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
-import { JUMP_T } from '../sim/breakout';
+import { HOLD_MAX, JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
 import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
@@ -482,6 +482,7 @@ export class Sector {
     this.ship.status.charged = world.powers.shield > 0 ? 1 : Math.min(1, world.shields);
     this.ship.status.cloaked = world.cloakT > 0;
     this.ship.status.rapid = world.powers.rapid > 0;
+    this.ship.setCargo(world.cyrite / HOLD_MAX);
     this.ship.setDamage(world.plates, world.stats.maxPlates);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
     const stolen = world.flags.has('ship_stolen');

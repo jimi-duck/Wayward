@@ -8,7 +8,7 @@ import { breakEase, type ShipState } from '../sim/ship';
 import { BREAK_TIME, ROLL_TIME } from '../sim/tuning';
 import type { V3 } from './kit';
 import { glowTexture } from './textures';
-import { animateLamps, buildWayward, MODEL_SCALE, setDamage, setHullGlow, woundPoints, type BuiltHull, type Nozzle } from './wayward';
+import { animateLamps, buildWayward, MODEL_SCALE, setCargo, setDamage, setHullGlow, woundPoints, type BuiltHull, type Nozzle } from './wayward';
 
 // ── the player's ship ─────────────────────────────────────────────────────
 // The Wayward in flight: her model (wayward.ts) on a banking, pitching rig,
@@ -432,6 +432,11 @@ export class ShipView {
   /** World positions of the nozzles and how hard they are burning, for exhaust sparks. */
   exhaust(): { points: Array<[number, number, number]>; heat: number } {
     return { points: this.engines.map((e) => [...tipWorld(this.rollG, e.nozzle.p)] as [number, number, number]), heat: this.heat };
+  }
+
+  /** The deck shows the hold: `frac` of its capacity, filling from astern. */
+  setCargo(frac: number): void {
+    setCargo(frac);
   }
 
   /** The hull wears a wound for each plate lost (eased in over half a second). */
