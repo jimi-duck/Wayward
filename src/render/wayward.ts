@@ -55,13 +55,16 @@ function materials(hits: Hit[]): Record<string, Material> {
   return mats;
 }
 
-const ORANGE = new Color(1.5, 0.55, 0.08);
+const ORANGE = new Color(1.5, 0.55, 0.08), BLUE = new Color(0.55, 1.2, 2.1);
 /** The maintenance lamps breathe a little, slow and off the drive's beat (the shared material is tinted, the mesh never moves). */
-export function animateLamps(time: number, dt = 0): void {
+export function animateLamps(time: number, dt = 0, burn = 1): void {
   const o = mats?.orange as MeshBasicMaterial | undefined;
   // with one plate left the lamps stutter hard, as if the wiring were open
   const stutter = critical ? 0.35 + 0.65 * (Math.sin(time * 41) * Math.sin(time * 17.3) > -0.2 ? 1 : 0) : 1;
   if (o) o.color.copy(ORANGE).multiplyScalar((1 + 0.12 * Math.sin(time * Math.PI * 2 * 0.4)) * stutter);
+  // the drum's blue seam lights wind up and down with the drives, so the whole stern settles together
+  const bl = mats?.blue as MeshBasicMaterial | undefined;
+  if (bl) bl.color.copy(BLUE).multiplyScalar(0.4 + 0.6 * burn);
   // a wound's burn spreads over about half a second rather than popping
   WOUNDS.forEach((w, i) => {
     w.level += clampStep(w.want - w.level, 2 * dt);
