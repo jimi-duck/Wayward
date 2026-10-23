@@ -8,7 +8,7 @@ import { breakEase, type ShipState } from '../sim/ship';
 import { BREAK_TIME, ROLL_TIME } from '../sim/tuning';
 import type { V3 } from './kit';
 import { glowTexture } from './textures';
-import { animateLamps, buildWayward, MODEL_SCALE, setDamage, woundPoints, type BuiltHull, type Nozzle } from './wayward';
+import { animateLamps, buildWayward, MODEL_SCALE, setDamage, setHullGlow, woundPoints, type BuiltHull, type Nozzle } from './wayward';
 
 // ── the player's ship ─────────────────────────────────────────────────────
 // The Wayward in flight: her model (wayward.ts) on a banking, pitching rig,
@@ -457,6 +457,7 @@ export class ShipView {
   setEngine(core: [number, number, number], bell: [number, number, number]): void {
     this.core.setRGB(...core);
     this.bell.setRGB(...bell);
+    setHullGlow(bell);
     this.halo.setRGB(bell[0] * 0.42, bell[1] * 0.42, bell[2] * 0.42);
     for (const m of this.plumeMats) { m.uniforms.uCore!.value = this.core; m.uniforms.uBell!.value = this.bell; }
     for (const e of this.engines) {
