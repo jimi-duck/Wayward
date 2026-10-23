@@ -165,7 +165,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-sub { margin: 0; font-size: 13px; line-height: 1.3; }
   /* the figure and its label on one line: the archive's message needs the height */
   .ns-hero { grid-auto-flow: column; justify-content: start; align-items: end; gap: 12px; }
-  .ns-hero b { font-size: 42px; }
+  .ns-hero b { font-size: 38px; }
   .ns-hero span { font-size: 16px; padding-bottom: 3px; }
   .ns-label { margin: 0; font-size: 10px; }
   .ns-q { gap: 5px; }
@@ -197,7 +197,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-from { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* the long reads (the stored message, its record, the breach and its status) keep their side margins and give a little height */
   .ns-doc, .ns-main:has(.ns-hero), .ns-wrap[data-lay="col"] .ns-p { padding-top: 12px; padding-bottom: 12px; }
-  .ns-doc .ns-q p, .ns-main:has(.ns-hero) .ns-q p { font-size: 13px; line-height: 1.22; }
+  .ns-doc .ns-q p, .ns-main:has(.ns-hero) .ns-q p { font-size: 12.5px; line-height: 1.22; }
   .ns-doc .ns-q { gap: 3px; }
   .ns-doc .ns-r { padding: 2px 0; }
   /* a status panel sits beside its card, not under it */
@@ -205,7 +205,8 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-wrap[data-lay="col"] .ns-side .ns-st { display: none; }
   /* the stored message's two actions side by side; its record's Close beside the title */
   .ns-main:has(.ns-hero) .ns-acts { grid-template-columns: 1fr 1fr; }
-  .ns-doc { grid-template-columns: minmax(0, 1fr) auto; }
+  .ns-doc { grid-template-columns: minmax(0, 1fr) auto; row-gap: 6px; }
+  .ns-main:has(.ns-hero) { row-gap: 5px; }
   .ns-doc > * { grid-column: 1 / -1; }
   .ns-doc > .ns-t { grid-column: 1; grid-row: 2; align-self: center; }
   .ns-doc > .ns-acts { grid-column: 2; grid-row: 2; margin: 0; padding: 0; border: 0; }
@@ -281,25 +282,29 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 @media (max-height: 520px) {
   #comms .panel.registry { font-size: 10.5px; gap: .35em; padding: 10px 22px; }
   .registry .rg-h { padding-bottom: .3em; }
-  .registry .rg-org b { font-size: 1.35em; }
+  .registry .rg-org b { font-size: 1.2em; white-space: nowrap; }
+  .registry .rg-tag { white-space: nowrap; }
+  .registry .rg-act, .registry .rg-voice { min-width: 0; }
+  .registry .rg-voice .ns-q p { overflow-wrap: anywhere; }
+  .registry .rg-copy { max-width: none; }
   .registry .rg-main { column-gap: 1.2em; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); }
   .registry .rg-name { font-size: 28px; }
   .registry .rg-old { font-size: .95em; }
-  .registry .rg-thimg { aspect-ratio: 3.2; }
+  .registry .rg-thimg { aspect-ratio: 3.6; }
   .registry .rg-th { padding: .3em; }
   .registry .rg-ship figcaption { display: none; }
   .registry .rg-active { margin-bottom: .2em; }
   .registry .rg-rows dt, .registry .rg-rows dd { padding: .22em 0; font-size: 1.05em; }
-  .registry .rg-left { gap: .3em; }
+  .registry .rg-left { gap: .22em; }
   .registry .rg-rp { margin-top: .4em; }
   .registry .rg-ship { min-height: 0; }
   .registry .rg-hero { max-height: 9em; }
   .registry .rg-act { flex-direction: column; align-items: stretch; gap: .5em; }
   .registry .rg-voice { flex: none; gap: .25em; }
-  .registry .rg-voice .ns-q p { font-size: 1.2em; line-height: 1.3; }
-  .registry .rg-copy { font-size: 1.15em; line-height: 1.3; }
+  .registry .rg-voice .ns-q p { font-size: 1.15em; line-height: 1.25; }
+  .registry .rg-copy { font-size: 1.05em; line-height: 1.25; }
   .registry .rg-warn { font-size: 1.25em; }
-  .registry .rg-go { justify-content: space-between; min-height: 40px; font-size: 1.2em; white-space: nowrap; }
+  .registry .rg-go { justify-content: space-between; min-height: 40px; min-width: 0; padding: 0 1em; gap: .7em; font-size: 1.2em; letter-spacing: .08em; white-space: nowrap; }
   .registry .rg-foot { display: none; }
 }
 
