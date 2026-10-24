@@ -13,6 +13,12 @@
 #chart > .chartp:has(.ch-intel[open]) { max-height: none; }
 /* the header: the place and the stores on the first line, the name and the goal on the second */
 .ch-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "k res" "l2 l2"; align-items: center; gap: 8px 20px; }
+/* the region's banner: faint, fading out to the right, under the words */
+.ch-head { position: relative; isolation: isolate; }
+.ch-back { position: absolute; inset: -8px -12px; z-index: -1; background: center 40% / cover no-repeat; opacity: .5; pointer-events: none;
+  -webkit-mask: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, .55) 55%, transparent 100%); mask: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, .55) 55%, transparent 100%); }
+.ch-back[hidden] { display: none; }
+.ch-gpic { flex: none; display: block; width: 78px; height: 44px; object-fit: cover; border: 1px solid var(--line); }
 .ch-head .kick { grid-area: k; font: 600 12px/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
 .sheet.alert .ch-head .kick { color: var(--alert); }
 .ch-l2 { grid-area: l2; display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap; min-width: 0; }

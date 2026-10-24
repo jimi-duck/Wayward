@@ -48,7 +48,8 @@ messages.
 | Endings | `endings/` | 6 | 1280×720 | the Threshold's epilogue, and the Archive beside a reached ending | The payoff of a 7 hour journey gets a picture | built |
 | Sightings | `sightings/` | 20 | 800×600 | Archive, beside a sighting once seen | Found photographs of the Voice and the Thren: a collection to complete, never shown before it is found | built |
 | The file | `file/` | 8 | 800×600 | Archive, beside a piece of the Severance once found | Each piece is an object you can picture | built |
-| Regions | `regions/` | 8 | 1280×480 | not drawn yet | A banner for each region's chart header and gate card | slot and prompts ready, no screen yet |
+| Regions | `regions/` | 8 | 1280×480 | chart header, faint behind the title (`.ch-back`) | A banner for each region's chart | built |
+| Gates | `gates/` | 8 | 1280×720 | chart, a small thumbnail beside the goal (`.ch-gpic`) | The gate you are heading for | built |
 
 Not built, on purpose or for later:
 
@@ -226,6 +227,7 @@ installed through `art:prep`.
   Wayward fits. Still weak: `wayward-stock` and `wayward-guns` look alike
   (brief: `docs/art/WAYWARD-FITS-BRIEF.md`). The art briefs all start by telling the
   artist to check the pictures already in `src/art/` and match them.
+- Wired 2026-10-24: regions and gates in the chart header (`ui/chart.ts` `renderHead`), the port banner shown again on desktop and taller (`#port .port-art`, hidden on short phones), Archive thumbnails 148×83 (104×58 on phones). Still no screen: phenomena, planets and the two debrief scenes, because no system or run carries which one to show (a chart system has no planet type or feature list).
 - The ten refit bay tab banners (2026-10-24, `docs/art/UPGRADES-ART-BRIEF.md`, batch B) are
   installed in `src/art/baybanners/`, 1280×720. The refit bay draws the open tab's banner dim and soft behind the ship (`.bay-back`, `ui/bay.ts` `backdrop`); a tab with no file shows none. Arcade keeps its tabs locked, so it only shows Suggested. The 29 inspector pictures (2026-10-24, batch B of `docs/art/UPGRADES-FINISH-BRIEF.md`) are in `src/art/specs/`, 1280×720, and show above the name in the bay's inspector on desktop. The 93 bay icons (batch A: the 77 redrawn and the 16 yard modules that had none) are in `public/icons/node/`, 128 px masks cut by `tools/cut-bay-icon-sheets.py` from the nine 4×3 sheets (the older `tools/cut-bay-icons.py` cut the 96 px v2 sheet).
 - Which of these should be redone: `/mnt/project-files/art-brief/REDO-AND-MISSING.md`.

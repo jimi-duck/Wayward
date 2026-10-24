@@ -17,6 +17,8 @@ import { wallRegion, wallView } from '../sim/wall';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { INK } from './palette';
 import { num, plural, t } from '../i18n';
+import { regionSlug } from '../content/art';
+import { artImg, artUrl } from './art';
 
 // ── the chart ─────────────────────────────────────────────────────────────
 // Between systems the drive cools and the chart comes up. It answers a few
@@ -209,6 +211,7 @@ export class ChartPanel {
     go.onclick = guarded(this.opened, () => this.go());
     go.onpointerdown = (e) => e.stopPropagation();
     $('ch-gate').hidden = true;
+    $('ch-back').hidden = true;
     ($('ch-alerts') as HTMLElement).replaceChildren();
     $('ch-res').replaceChildren(...this.resCells(j));
     this.renderIntel(j, out.lines);
@@ -326,6 +329,10 @@ export class ChartPanel {
 
   private renderHead(j: Journey): void {
     $('ch-res').replaceChildren(...this.resCells(j));
+    // the region's painted banner, faint behind the header, and its gate beside the goal
+    const slug = regionSlug(regionDef(j.chart, viewOf(j.chart, j.at))?.name ?? ''), back = $('ch-back'), banner = artUrl('region', slug);
+    back.hidden = !banner;
+    back.style.backgroundImage = banner ? `url("${banner}")` : '';
     const g = gateProgress(j), el = $('ch-gate');
     if (g.left === null || g.left <= 0) { el.hidden = true; return; }
     el.hidden = false;
@@ -339,7 +346,7 @@ export class ChartPanel {
     bar.setAttribute('aria-valuenow', String(Math.max(0, total - g.left)));
     // the story line is for the way in to a region; later charts are about the choice
     const why = done === 0 ? WHYS[longIndex(j.chart, viewOf(j.chart, j.at))] : undefined;
-    el.replaceChildren(h('span', 'k', `${t('Goal')} · ${g.gate.name}`), bar, h('b', 'n', plural(g.left, '{n} jump', '{n} jumps')), ...(why ? [h('p', 'ch-quest', t(why))] : []));
+    el.replaceChildren(...[artImg('gate', slug, 'ch-gpic')].filter((x): x is HTMLImageElement => !!x), h('span', 'k', `${t('Goal')} · ${g.gate.name}`), bar, h('b', 'n', plural(g.left, '{n} jump', '{n} jumps')), ...(why ? [h('p', 'ch-quest', t(why))] : []));
   }
 
   /**
