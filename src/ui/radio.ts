@@ -8,6 +8,7 @@ import { icon } from './icons';
 import { NEON_CSS } from './colors';
 import { $, h } from './dom';
 import { INK } from './palette';
+import { jobLine } from './jobline';
 import { t } from '../i18n';
 
 /** What a job's call can say of its terms, read from the scene it opens: the pay (best case) and the seconds it allows. */
@@ -59,6 +60,9 @@ export class Radio {
   private padHeld = false;
   /** The answer Enter takes: the first the ship can give, until the arrows move it. */
   private sel = 0;
+  /** A job's lead answer, and what the terms strip already says of it (its costs), so its line does not repeat them. */
+  private lead: string | null = null;
+  private stated: string[] = [];
 
   constructor(
     private readonly answer: (id: string) => void,
@@ -111,6 +115,8 @@ export class Radio {
       $('rd-call').hidden = !call;
       if (call) this.line(null);
     }
+    // a job offer has the middle of the screen: the world's labels and the HUD under it step back until it goes
+    document.documentElement.classList.toggle('job-open', !!call && call.def.kind === 'job' && !this.blocked());
     if (call) {
       const total = call.tier === 'important' ? DESK.window.important : DESK.window.routine;
       // only when it moves: a held call stands still, and a style write each frame costs a layout under the glass
@@ -184,12 +190,24 @@ export class Radio {
     terms.textContent = first && !many ? t(first.hint) : '';
     $('rd-list').classList.toggle('many', many);
     this.sel = Math.max(0, o.choices.findIndex((x) => x.ok));
+    const stated = job ? this.stated : [];
     $('rd-list').replaceChildren(...o.choices.map((c, i) => {
       const key = i === 0 ? KEY_OF[0]! : i === o.choices.length - 1 ? KEY_OF[2]! : KEY_OF[1]!;
-      const chips = c.ok
-        ? [...c.gains.filter((g) => g !== 'Job').map((g) => h('span', /^−/.test(g) ? 'g-loss' : 'g-gain', t(g))), ...c.cost.map((x) => h('span', 'g-loss', x)), ...(c.chance !== null ? [h('span', 'g-odds', oddsWord(c.chance))] : [])]
-        : c.needs.map((n) => h('span', 'g-need', '', lock(), document.createTextNode(t(n))));
-      const b = h('button', `rd-c${i === this.sel ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), job && c.hint ? h('span', 'rd-hint', t(c.hint)) : null, chips.length ? h('span', 'rd-chips', '', ...chips) : null) as HTMLButtonElement;
+      const gains = c.gains.filter((g) => g !== 'Job').map((g) => t(g)), odds = c.chance !== null ? [oddsWord(c.chance)] : [];
+      let more: HTMLElement | null;
+      if (job) {
+        // one quiet line: the hint, then what it brings and costs, joined by a dot; what the strip says of this answer, once
+        const parts = c.ok ? jobLine([...(c.hint ? [t(c.hint)] : []), ...gains, ...c.cost, ...odds], c.id === this.lead ? stated : [])
+          : jobLine(c.hint ? [t(c.hint)] : []);
+        const needs = c.ok ? [] : c.needs.map((n) => h('span', 'g-need', '', lock(), document.createTextNode(t(n))));
+        more = parts.length || needs.length ? h('span', 'rd-more', '', ...[...parts.map((x) => h('span', '', x)), ...needs].flatMap((e, k) => (k ? [document.createTextNode(' · '), e] : [e]))) : null;
+      } else {
+        const chips = c.ok
+          ? [...gains.map((g) => h('span', /^−/.test(g) ? 'g-loss' : 'g-gain', g)), ...c.cost.map((x) => h('span', 'g-loss', x)), ...odds.map((x) => h('span', 'g-odds', x))]
+          : c.needs.map((n) => h('span', 'g-need', '', lock(), document.createTextNode(t(n))));
+        more = chips.length ? h('span', 'rd-chips', '', ...chips) : null;
+      }
+      const b = h('button', `rd-c${i === this.sel ? ' first' : ''}`, '', h('kbd', '', key), h('span', 'rd-l', t(c.label)), more) as HTMLButtonElement;
       b.type = 'button';
       b.setAttribute('aria-disabled', String(!c.ok));
       b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); if (performance.now() - this.opened > 250) this.pick(i); };
@@ -200,8 +218,10 @@ export class Radio {
 
   /** A job's picture and its terms: what it asks, what it pays. Hidden for every other call. */
   private contract(o: Open, job: boolean): void {
-    const art = $('rd-art'), sheet = $('rd-sheet');
+    const art = $('rd-art'), sheet = $('rd-sheet'), card = $('rd-call');
     art.hidden = sheet.hidden = !job;
+    this.stated = []; this.lead = null;
+    card.classList.remove('noart', 'emblem-only');
     if (!job) { art.replaceChildren(); sheet.replaceChildren(); return; }
     const a = artOf(o.def), [slot, id] = a.portrait ?? [null, ''];
     // the job's own picture first (one per card), then the caller's portrait or hull
@@ -209,12 +229,18 @@ export class Radio {
     const emblem = a.emblem ? artUrl('emblem', a.emblem) : null;
     art.classList.toggle('emblem', !pic && !!emblem);
     if (emblem) art.style.setProperty('--emblem', `url("${emblem}")`); else art.style.removeProperty('--emblem');
+    // no picture and no emblem: the words take the whole width rather than leave an empty slab
     art.replaceChildren(...(pic ? [pic] : emblem ? [] : [icon('i-job')]));
+    art.hidden = !pic && !emblem;
+    card.classList.toggle('noart', art.hidden);
+    card.classList.toggle('emblem-only', !pic && !!emblem);
     const terms = this.terms(o), lead = o.choices.find((c) => c.ok);
     const costs = lead?.cost ?? [];
-    const asks = [...costs, ...(terms?.limit ? [t('{n}s', { n: terms.limit })] : [])];
+    this.lead = lead?.id ?? null;
+    this.stated = costs;
+    const asks = [...costs, ...(terms?.limit ? [t('{n} s', { n: terms.limit })] : [])];
     const pays = terms?.reward ?? [];
     const col = (k: string, items: string[], cls: string, none: string) => h('div', 'rd-col', '', h('span', 'k', k), h('div', 'rd-items', '', ...(items.length ? items.map((x) => h('span', cls, x)) : [h('span', 'g-none', none)])));
-    sheet.replaceChildren(col(t(costs.length ? 'Requires' : 'Time'), asks, 'g-loss', t('Nothing')), col(t('Reward'), pays, 'g-gain', t('Not fixed')));
+    sheet.replaceChildren(col(t(costs.length ? 'Requires' : 'Time limit'), asks, 'g-loss', t('Nothing')), col(t('Reward'), pays, 'g-gain', t('Not fixed')));
   }
 }
