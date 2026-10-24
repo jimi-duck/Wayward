@@ -1,5 +1,7 @@
 # Wayward artwork: the upgrades centre (proposal and prompts, all in one)
 
+> **Status 2026-10-24:** the ten tab banners (batch B below) are done and installed. What is left (icons and inspector pictures) is in [`UPGRADES-FINISH-BRIEF.md`](UPGRADES-FINISH-BRIEF.md); give that file to the image tool, not this one.
+
 *Written for someone who has never seen this project: for ChatGPT, Lovable or any image tool. Everything you need is here or linked below. Proposal first, then the prompts.*
 
 ## The project
