@@ -41,9 +41,9 @@ messages.
 | Slot | Folder | Count | Size | Where it shows | Why it helps | Status |
 |---|---|---|---|---|---|---|
 | Captain portraits | `captains/` | 9 (+8 scarred) | 640×800 | comms call, top left | Eight named hunters and Calloway become people you remember and meet again. The optional `<id>-scarred` shows the face of a captain you have already beaten | built |
-| Contact portraits | `contacts/` | 18 | 640×800 | comms call, top left | The named people in story beats and cards (Okoro, Mirren, Draper, Saffi, Val…) stop being a line of text | built |
+| Contact portraits | `contacts/` | 24 | 640×800 | comms call, top left | The named people in story beats and cards (Okoro, Mirren, Draper, Saffi, Val…) stop being a line of text | built |
 | Emblems | `emblems/` | 10 | 256×256 | comms call, in place of the plain diamond | A call sign for each faction: who is calling, at a glance, in the panel's own colour (red when it is an alert) | built |
-| Ship profiles | `ships/` | 15 | 960×480 | comms call, above the strength bars | "Call signs for the ships": the player sees the hull a Custody blockade or a Gutter raid has, before choosing. On phones it stands in for the bars that are hidden there | built |
+| Ship profiles | `ships/` | 18 | 960×480 | comms call, above the strength bars | "Call signs for the ships": the player sees the hull a Custody blockade or a Gutter raid has, before choosing. On phones it stands in for the bars that are hidden there | built |
 | Port banners | `places/` | 7 | 1280×320 | port panel, above the title | Each holder's port has its own face (Kellern, Frontier, Guild, Gutter, Holdfast, free dock, and one under Continuance order) | built |
 | Endings | `endings/` | 6 | 1280×720 | the Threshold's epilogue, and the Archive beside a reached ending | The payoff of a 7 hour journey gets a picture | built |
 | Sightings | `sightings/` | 20 | 800×600 | Archive, beside a sighting once seen | Found photographs of the Voice and the Thren: a collection to complete, never shown before it is found | built |
@@ -192,7 +192,7 @@ Three more slots are ready, with prompts, for a second run
 | Slot | Folder | Count | Size | For |
 | --- | --- | --- | --- | --- |
 | Fleet | `fleet/` | 27 | 960×480 on black | the nine capital ships (`capital-<captain>`), eight neutral hulls (tanker, hauler, courier, gunship, barge, salvager, drifter, ferry), the Wayward as fitted (`wayward-stock`, `-guns`, `-rig`, `-signals`), and six hulls in their real owner's colours (`<hull>-<caller>`, such as `freighter-miners`), which the comms call already uses in place of the plain hull |
-| Jobs | `jobs/` | 25 | 1280×720 | one scene per job card (`sc_*`), drawn square-cropped on the job offer card. `sc_cache` (The Drift Cache) is still to make; its prompt is in `docs/art/briefs.md`, until then the card shows the caller's emblem |
+| Jobs | `jobs/` | 25 | 1280×720 | one scene per job card (`sc_*`), drawn square-cropped on the job offer card. all 25 are in |
 | Phenomena | `phenomena/` | 14 | 800×600 | the places on the chart (`veil` … `carrier`) |
 
 Left out on purpose, listed at the end of the brief: wrecks of each hull, damage
@@ -209,9 +209,8 @@ installed through `art:prep`.
   the eight `-scarred` portraits, three ports, two endings, 16 sightings, four
   file pieces and all eight regions. Where it repeated a picture already in, the
   existing file stayed, because its ships and emblems are larger and sharper.
-- Provisional: the `-scarred` portraits are the base portraits with light damage
-  marks, and a few sightings and endings stand in for the event rather than
-  showing it. No screen draws the regions yet.
+- Provisional: a few sightings and endings stand in for the event rather than
+  showing it. (The `-scarred` portraits were redrawn with real scars on 2026-10-24.)
 - The continuation export (2026-10-15) added 65 more: 27 fleet hulls, 24 job scenes
   and 14 phenomena (8.4 MB in all). Fleet hulls go through `art:prep` with
   contain-fit on black (no cut), after a small trim of the frame line the sheet
@@ -227,6 +226,7 @@ installed through `art:prep`.
   Wayward fits. Still weak: `wayward-stock` and `wayward-guns` look alike
   (brief: `docs/art/WAYWARD-FITS-BRIEF.md`). The art briefs all start by telling the
   artist to check the pictures already in `src/art/` and match them.
+- Last ten pictures (2026-10-24, `docs/art/REMAINING-ART-BRIEF.md`): six contact portraits (`story_kesh`, `story_ada`, `story_tollgate`, `story_echo_sable`, `story_implant`, `story_calloway_narrows`), the civilian hulls `hauler`, `barge` and `liner`, the `sc_cache` job scene, and eight redrawn `-scarred` captains. Every slot the game defines now has a picture.
 - Wired 2026-10-24: regions and gates in the chart header (`ui/chart.ts` `renderHead`), the port banner shown again on desktop and taller (`#port .port-art`, hidden on short phones), Archive thumbnails 148×83 (104×58 on phones). Still no screen: phenomena, planets and the two debrief scenes, because no system or run carries which one to show (a chart system has no planet type or feature list).
 - The ten refit bay tab banners (2026-10-24, `docs/art/UPGRADES-ART-BRIEF.md`, batch B) are
   installed in `src/art/baybanners/`, 1280×720. The refit bay draws the open tab's banner dim and soft behind the ship (`.bay-back`, `ui/bay.ts` `backdrop`); a tab with no file shows none. Arcade keeps its tabs locked, so it only shows Suggested. The 29 inspector pictures (2026-10-24, batch B of `docs/art/UPGRADES-FINISH-BRIEF.md`) are in `src/art/specs/`, 1280×720, and show above the name in the bay's inspector on desktop. The 93 bay icons (batch A: the 77 redrawn and the 16 yard modules that had none) are in `public/icons/node/`, 128 px masks cut by `tools/cut-bay-icon-sheets.py` from the nine 4×3 sheets (the older `tools/cut-bay-icons.py` cut the 96 px v2 sheet).
