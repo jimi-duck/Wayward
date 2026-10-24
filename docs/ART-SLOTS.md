@@ -221,6 +221,10 @@ installed through `art:prep`.
   (`gates/`), four planets (`planets/`), two debrief scenes (`debrief/`), and
   replacements for `drifter`, `ferry`, `gunship` and `sc_payroll`. Its brief is
   `docs/art/NEXT-BRIEF.md`. No screen draws the new ones yet.
+- The redo run (2026-10-24, `docs/art/REDO-BRIEF.md`) replaced 29 weaker ones: 17 job
+  scenes (now 1920×1088), five phenomena, three freighters and lancers, and the four
+  Wayward fits. Still weak: `wayward-stock` and `wayward-guns` look alike, and
+  `lancer-calloway` is white and grey, not Calloway's orange and grey.
 - Which of these should be redone: `/mnt/project-files/art-brief/REDO-AND-MISSING.md`.
 - The sheets that went unused are in `/mnt/project-files/art-brief/raw/`.
 
