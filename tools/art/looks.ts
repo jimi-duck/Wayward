@@ -202,6 +202,7 @@ export const DEBRIEF_LOOK: Record<string, string> = {
 
 /** What each job looks like as a scene: the moment, not the whole story. */
 export const JOB_SCENE: Record<string, string> = {
+  sc_cache: 'four battered cargo cases drifting apart in a broken cargo-train field, the Wayward slowing beside one with its tractor lamp on, a distant crew ship just turning toward her',
   sc_toll: 'a toll beacon blinking over an asteroid lane, four raider ships holding station around it, the Wayward approaching',
   sc_tanker: 'a heavy tanker under hail of fire from the Wayward, two escorts wheeling, its engine pod venting',
   sc_wanted: 'a fleeing fighter with one engine burning, the Wayward closing to disable it; a Custody notice-light glints on the dash',

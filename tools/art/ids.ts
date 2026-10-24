@@ -1,5 +1,5 @@
 import { CAPTAINS } from '../../src/content/captains';
-import { CONTACTS, BAYBANNERS, DEBRIEFS, EMBLEMS, FLEET, PLANETS, PLACES, regionSlug, SLOTS, type SlotId } from '../../src/content/art';
+import { CONTACTS, BAYBANNERS, DEBRIEFS, EMBLEMS, FLEET, PLANETS, PLACES, SPECS, regionSlug, SLOTS, type SlotId } from '../../src/content/art';
 import { ENDINGS } from '../../src/content/endings';
 import { REGIONS_LONG } from '../../src/content/regions';
 import { OBSERVATIONS } from '../../src/content/situations';
@@ -30,6 +30,7 @@ export function artIds(): Record<SlotId, string[]> {
     planet: [...PLANETS],
     debrief: [...DEBRIEFS],
     baybanner: [...BAYBANNERS],
+    spec: [...SPECS],
   };
 }
 

@@ -21,7 +21,8 @@ finds them on its own; a picture that is not there leaves the screen as it was.
 | `gates/` | `reach`, `breaker-yards`, … | 1280×720 | not drawn yet |
 | `planets/` | `rocky`, `ice`, `gas`, `dead` | 1280×720 | not drawn yet |
 | `debrief/` | `castoff`, `limping` | 1280×720 | not drawn yet |
-| `baybanners/` | one per refit bay tab | 1280×720 | not drawn yet |
+| `baybanners/` | one per refit bay tab | 1280×720 | drawn, shown behind the ship |
+| `specs/` | the bay's 24 specialisations and 5 techs (`ph_cone`, `tech_gutter`, …) | 1280×720 | drawn, shown in the inspector |
 
 The full list, with a prompt for each, is `docs/art/briefs.md`
 (`npm run art:brief` rewrites it). The plan, the workflow and the style rules are

@@ -10,7 +10,7 @@ import { stepOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
 import { icon, nodeIcon } from './icons';
-import { artUrl } from './art';
+import { artImg, artUrl } from './art';
 import { opsOf, opsText } from './ops';
 import { tick } from './tick';
 import { num, t } from '../i18n';
@@ -755,7 +755,9 @@ export class BayPanel {
     const head = h('div', 'bi-h', '', h('span', 'bi-oct', '', nodeIcon(id)),
       h('div', 'bi-hd', '', h('span', 'bi-name', nameOf(id)), h('span', 'bi-lv', '', h('span', '', levelWord(w, id, lv)), pips(lv, max, more))), info);
     const adv = more && !why ? this.advice(w).get(id) : undefined;
-    const out: HTMLElement[] = [head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`))] : [])];
+    // a specialisation or salvaged tech has a picture, above the name (desktop; a phone's inspector keeps to the words)
+    const pic = artImg('spec', id, 'bi-pic');
+    const out: HTMLElement[] = [...(pic ? [pic] : []), head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`))] : [])];
     if (more) {
       // past a rating the module says so; the bars along the bottom carry the numbers
       const { use, cap } = budgets(w.levels);

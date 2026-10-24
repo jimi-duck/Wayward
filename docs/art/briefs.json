@@ -2870,7 +2870,7 @@
       "slot": "job",
       "id": "sc_cache",
       "file": "src/art/jobs/sc_cache.webp",
-      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the job \"The Drift Cache\". \"A cargo train broke up in this field. Four cases are still drifting, the rest is picked over. Slow beside each to take it in. A crew will notice the first.\"\nScene: undefined.\nFraming: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.\nNo people's faces, no text, no UI.",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the job \"The Drift Cache\". \"A cargo train broke up in this field. Four cases are still drifting, the rest is picked over. Slow beside each to take it in. A crew will notice the first.\"\nScene: four battered cargo cases drifting apart in a broken cargo-train field, the Wayward slowing beside one with its tractor lamp on, a distant crew ship just turning toward her.\nFraming: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.\nNo people's faces, no text, no UI.",
       "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
       "size": "1280×720",
       "background": "full picture",
@@ -2880,7 +2880,7 @@
         "title \"The Drift Cache\"",
         "from \"Guild salvage desk · open claim\""
       ],
-      "body": "Subject: the job \"The Drift Cache\". \"A cargo train broke up in this field. Four cases are still drifting, the rest is picked over. Slow beside each to take it in. A crew will notice the first.\"\nScene: undefined.\nFraming: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.\nNo people's faces, no text, no UI."
+      "body": "Subject: the job \"The Drift Cache\". \"A cargo train broke up in this field. Four cases are still drifting, the rest is picked over. Slow beside each to take it in. A crew will notice the first.\"\nScene: four battered cargo cases drifting apart in a broken cargo-train field, the Wayward slowing beside one with its tractor lamp on, a distant crew ship just turning toward her.\nFraming: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.\nNo people's faces, no text, no UI."
     },
     {
       "slot": "phenomenon",
@@ -3427,6 +3427,441 @@
         "baybanner synergies"
       ],
       "body": "Subject: the refit bay's synergies tab backdrop: a salvaged alien-looking module bolted to a worn hauler section, teal cables between them.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "ph_cone",
+      "file": "src/art/specs/ph_cone.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Laser cone\" (ph_cone), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node ph_cone",
+        "name \"Laser cone\""
+      ],
+      "body": "Subject: the refit bay choice \"Laser cone\" (ph_cone), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "ph_lance",
+      "file": "src/art/specs/ph_lance.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Heavy lance\" (ph_lance), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node ph_lance",
+        "name \"Heavy lance\""
+      ],
+      "body": "Subject: the refit bay choice \"Heavy lance\" (ph_lance), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "ph_array",
+      "file": "src/art/specs/ph_array.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Targeting array\" (ph_array), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node ph_array",
+        "name \"Targeting array\""
+      ],
+      "body": "Subject: the refit bay choice \"Targeting array\" (ph_array), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "tp_heavy",
+      "file": "src/art/specs/tp_heavy.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Heavy payload\" (tp_heavy), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node tp_heavy",
+        "name \"Heavy payload\""
+      ],
+      "body": "Subject: the refit bay choice \"Heavy payload\" (tp_heavy), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "tp_swarm",
+      "file": "src/art/specs/tp_swarm.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Swarm launcher\" (tp_swarm), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node tp_swarm",
+        "name \"Swarm launcher\""
+      ],
+      "body": "Subject: the refit bay choice \"Swarm launcher\" (tp_swarm), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "tp_precision",
+      "file": "src/art/specs/tp_precision.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Precision guidance\" (tp_precision), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node tp_precision",
+        "name \"Precision guidance\""
+      ],
+      "body": "Subject: the refit bay choice \"Precision guidance\" (tp_precision), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "mn_field",
+      "file": "src/art/specs/mn_field.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Minefield doctrine\" (mn_field), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node mn_field",
+        "name \"Minefield doctrine\""
+      ],
+      "body": "Subject: the refit bay choice \"Minefield doctrine\" (mn_field), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "mn_chain",
+      "file": "src/art/specs/mn_chain.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Chain reaction\" (mn_chain), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node mn_chain",
+        "name \"Chain reaction\""
+      ],
+      "body": "Subject: the refit bay choice \"Chain reaction\" (mn_chain), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "mn_gravity",
+      "file": "src/art/specs/mn_gravity.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Graviton mines\" (mn_gravity), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node mn_gravity",
+        "name \"Graviton mines\""
+      ],
+      "body": "Subject: the refit bay choice \"Graviton mines\" (mn_gravity), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "pl_ignite",
+      "file": "src/art/specs/pl_ignite.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Ignition\" (pl_ignite), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node pl_ignite",
+        "name \"Ignition\""
+      ],
+      "body": "Subject: the refit bay choice \"Ignition\" (pl_ignite), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "pl_wake",
+      "file": "src/art/specs/pl_wake.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Afterburner wake\" (pl_wake), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node pl_wake",
+        "name \"Afterburner wake\""
+      ],
+      "body": "Subject: the refit bay choice \"Afterburner wake\" (pl_wake), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "cl_storm",
+      "file": "src/art/specs/cl_storm.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Arc storm\" (cl_storm), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node cl_storm",
+        "name \"Arc storm\""
+      ],
+      "body": "Subject: the refit bay choice \"Arc storm\" (cl_storm), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "cl_juggernaut",
+      "file": "src/art/specs/cl_juggernaut.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Juggernaut\" (cl_juggernaut), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node cl_juggernaut",
+        "name \"Juggernaut\""
+      ],
+      "body": "Subject: the refit bay choice \"Juggernaut\" (cl_juggernaut), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "mo_drift",
+      "file": "src/art/specs/mo_drift.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Drift drive\" (mo_drift), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node mo_drift",
+        "name \"Drift drive\""
+      ],
+      "body": "Subject: the refit bay choice \"Drift drive\" (mo_drift), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "mo_evasion",
+      "file": "src/art/specs/mo_evasion.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Evasive pattern\" (mo_evasion), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node mo_evasion",
+        "name \"Evasive pattern\""
+      ],
+      "body": "Subject: the refit bay choice \"Evasive pattern\" (mo_evasion), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "df_fortress",
+      "file": "src/art/specs/df_fortress.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Fortress\" (df_fortress), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node df_fortress",
+        "name \"Fortress\""
+      ],
+      "body": "Subject: the refit bay choice \"Fortress\" (df_fortress), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "df_reactive",
+      "file": "src/art/specs/df_reactive.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Reactive armour\" (df_reactive), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node df_reactive",
+        "name \"Reactive armour\""
+      ],
+      "body": "Subject: the refit bay choice \"Reactive armour\" (df_reactive), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "df_regenerative",
+      "file": "src/art/specs/df_regenerative.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Regenerative hull\" (df_regenerative), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node df_regenerative",
+        "name \"Regenerative hull\""
+      ],
+      "body": "Subject: the refit bay choice \"Regenerative hull\" (df_regenerative), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "pl_corona",
+      "file": "src/art/specs/pl_corona.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Plasma corona\" (pl_corona), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node pl_corona",
+        "name \"Plasma corona\""
+      ],
+      "body": "Subject: the refit bay choice \"Plasma corona\" (pl_corona), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "cl_shock",
+      "file": "src/art/specs/cl_shock.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Shock prow\" (cl_shock), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node cl_shock",
+        "name \"Shock prow\""
+      ],
+      "body": "Subject: the refit bay choice \"Shock prow\" (cl_shock), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "mo_afterburner",
+      "file": "src/art/specs/mo_afterburner.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Afterburner\" (mo_afterburner), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node mo_afterburner",
+        "name \"Afterburner\""
+      ],
+      "body": "Subject: the refit bay choice \"Afterburner\" (mo_afterburner), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "ut_prospector",
+      "file": "src/art/specs/ut_prospector.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Prospector\" (ut_prospector), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node ut_prospector",
+        "name \"Prospector\""
+      ],
+      "body": "Subject: the refit bay choice \"Prospector\" (ut_prospector), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "ut_salvager",
+      "file": "src/art/specs/ut_salvager.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Salvage drones\" (ut_salvager), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node ut_salvager",
+        "name \"Salvage drones\""
+      ],
+      "body": "Subject: the refit bay choice \"Salvage drones\" (ut_salvager), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "ut_scanner",
+      "file": "src/art/specs/ut_scanner.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Deep scanners\" (ut_scanner), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node ut_scanner",
+        "name \"Deep scanners\""
+      ],
+      "body": "Subject: the refit bay choice \"Deep scanners\" (ut_scanner), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "tech_gutter",
+      "file": "src/art/specs/tech_gutter.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Gutter scatterguns\" (tech_gutter), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node tech_gutter",
+        "name \"Gutter scatterguns\""
+      ],
+      "body": "Subject: the refit bay choice \"Gutter scatterguns\" (tech_gutter), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "tech_custody",
+      "file": "src/art/specs/tech_custody.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Custody compressors\" (tech_custody), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node tech_custody",
+        "name \"Custody compressors\""
+      ],
+      "body": "Subject: the refit bay choice \"Custody compressors\" (tech_custody), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "tech_office",
+      "file": "src/art/specs/tech_office.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Offices of Peace cloak\" (tech_office), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node tech_office",
+        "name \"Offices of Peace cloak\""
+      ],
+      "body": "Subject: the refit bay choice \"Offices of Peace cloak\" (tech_office), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "tech_voice",
+      "file": "src/art/specs/tech_voice.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Voice adaptive shield\" (tech_voice), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node tech_voice",
+        "name \"Voice adaptive shield\""
+      ],
+      "body": "Subject: the refit bay choice \"Voice adaptive shield\" (tech_voice), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
+    },
+    {
+      "slot": "spec",
+      "id": "tech_thren",
+      "file": "src/art/specs/tech_thren.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay choice \"Thren snares\" (tech_thren), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "The refit bay inspector, above the module name (desktop).",
+      "facts": [
+        "node tech_thren",
+        "name \"Thren snares\""
+      ],
+      "body": "Subject: the refit bay choice \"Thren snares\" (tech_thren), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI."
     }
   ]
 }

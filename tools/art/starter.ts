@@ -20,7 +20,7 @@ const PICKS: Array<[SlotId, string]> = [
 const SHAPE: Record<SlotId, string> = {
   captain: 'Make it a tall portrait picture (2:3).', contact: 'Make it a tall portrait picture (2:3).', emblem: 'Make it a square picture (1:1).',
   ship: 'Make it a wide landscape picture (3:2).', place: 'Make it a wide landscape picture (3:2); keep everything important in the middle third of the height, because it will be cropped to a thin banner.',
-  ending: 'Make it a wide landscape picture (3:2).', sighting: '', file: '', region: '', fleet: '', job: '', phenomenon: '', gate: '', planet: '', debrief: '', baybanner: '',
+  ending: 'Make it a wide landscape picture (3:2).', sighting: '', file: '', region: '', fleet: '', job: '', phenomenon: '', gate: '', planet: '', debrief: '', baybanner: '', spec: '',
 };
 
 const oneLine = (s: string) => s.replace(/\s+/g, ' ').trim();

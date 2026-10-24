@@ -227,7 +227,7 @@ installed through `art:prep`.
   (brief: `docs/art/WAYWARD-FITS-BRIEF.md`). The art briefs all start by telling the
   artist to check the pictures already in `src/art/` and match them.
 - The ten refit bay tab banners (2026-10-24, `docs/art/UPGRADES-ART-BRIEF.md`, batch B) are
-  installed in `src/art/baybanners/`, 1280×720. The refit bay draws the open tab's banner dim and soft behind the ship (`.bay-back`, `ui/bay.ts` `backdrop`); a tab with no file shows none. Arcade keeps its tabs locked, so it only shows Suggested. What is left of the upgrades art (icons, 29 inspector pictures) is in `docs/art/UPGRADES-FINISH-BRIEF.md`.
+  installed in `src/art/baybanners/`, 1280×720. The refit bay draws the open tab's banner dim and soft behind the ship (`.bay-back`, `ui/bay.ts` `backdrop`); a tab with no file shows none. Arcade keeps its tabs locked, so it only shows Suggested. The 29 inspector pictures (2026-10-24, batch B of `docs/art/UPGRADES-FINISH-BRIEF.md`) are in `src/art/specs/`, 1280×720, and show above the name in the bay's inspector on desktop. The 93 bay icons (batch A: the 77 redrawn and the 16 yard modules that had none) are in `public/icons/node/`, 128 px masks cut by `tools/cut-bay-icon-sheets.py` from the nine 4×3 sheets (the older `tools/cut-bay-icons.py` cut the 96 px v2 sheet).
 - Which of these should be redone: `/mnt/project-files/art-brief/REDO-AND-MISSING.md`.
 - The sheets that went unused are in `/mnt/project-files/art-brief/raw/`.
 

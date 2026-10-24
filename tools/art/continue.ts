@@ -27,7 +27,7 @@ const BATCHES: Array<{ id: string; title: string; note: string; pick: (b: Brief)
 
 export function continueBrief(all3: Brief[]): string {
   // the third run (wrecks, gates, planets, debrief) has its own brief: docs/art/NEXT-BRIEF.md
-  const list = all3.filter((b) => !(b.slot === 'fleet' && b.id in EXTRA_LOOK) && !['gate', 'planet', 'debrief', 'baybanner'].includes(b.slot));
+  const list = all3.filter((b) => !(b.slot === 'fleet' && b.id in EXTRA_LOOK) && !['gate', 'planet', 'debrief', 'baybanner', 'spec'].includes(b.slot));
   const md: string[] = [];
   const P = (...l: string[]) => md.push(...l, '');
   const all = BATCHES.flatMap((bt) => list.filter(bt.pick));

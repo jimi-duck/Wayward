@@ -1196,6 +1196,9 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 .bi-stamp { margin: -4px 0 -2px; }
 .pc-stamp { margin-left: auto; margin-right: 6px; font-size: 9px; padding: 2px 5px 1px; }
 .bay-insp { position: relative; }
+/* the picture of a specialisation or salvaged tech: 16:9 inside a hairline, hidden where room is short */
+.bi-pic { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--hud-mid); box-sizing: border-box; }
+@media (max-width: 760px), (max-height: 620px) { .bi-pic { display: none; } }
 
 /* a rating that has just moved: the old figure struck beside it, the new one ticking in */
 .bb-v { display: inline-flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
