@@ -1551,6 +1551,7 @@ export class World implements EncounterHost {
     this.call = o;
     this.callUntil = this.runTime + (o.tier === 'important' ? DESK.window.important : DESK.window.routine);
     this.desk.closed(this.runTime);
+    if (this.stage && this.stage.rangAt === null && def.id === this.stage.def.card) this.stage.rangAt = this.runTime;
     this.events.push({ type: 'call', id: def.id, tier: o.tier as 'important' | 'routine', kind: def.kind, from: o.def.from, title: o.def.title, seconds: this.callUntil - this.runTime });
   }
 

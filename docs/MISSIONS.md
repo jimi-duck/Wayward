@@ -53,8 +53,11 @@ three. The roll adds more. The pilot's count is in
 this keeps the jobs it was dealt, but they ring on arrival too.
 
 The call rings on arrival, three seconds into the sortie, wherever the site is:
-the desk waits only four seconds (`DESK.arriveCall`) and a fight or tight flying holds it back
-(it pauses like any call, and never rings over the training). The job is pinned on the
+the desk waits only four seconds (`DESK.arriveCall`), eight since the last card closed
+(`DESK.eager`) and three of clear sky after a hostile (`DESK.eagerSettle`), and never drops it
+for waiting. A fight, mining or tight flying holds it back (it pauses like any call, and never
+rings over the training). The pilot rings a job a median of 5 s after arrival, nine in ten
+within 15 s (`docs/BALANCE-JOBS.md`). The job is pinned on the
 HUD, the compass and the radar with its name and range, a quiet "On the scope"
 line under the objective, and the same line on the pause card. Refusing it, or
 taking another answer, clears the pin. If the desk drops the call unheard it
