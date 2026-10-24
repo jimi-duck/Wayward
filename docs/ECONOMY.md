@@ -60,9 +60,10 @@ what it always took; what is new is that the purse is only ever spare.
 
 - **Top up.** Fluid is a rescue, not an economy: about two Cyrite a unit
   (`FLUID_PRICE` 0.4 of the board's Cyrite price, so three under the Net).
-  The Sensible stop fills the tank to the jump first, then buys supplies and
-  plates from the purse. The "Buy jump fluid" card sells it a unit at a time.
-- The status strip reads `Cyrite 31 to spend · Jump fluid 9/20 · Supplies · Hull`.
+  The jump fluid and supplies cells each have a Fill button that buys up to
+  the tank or hold as far as the purse reaches. Hull plates are not sold: the
+  yard mends the hull on docking.
+- The status strip reads `Cyrite 31 to spend · Jump fluid 9/20 · Supplies`.
   The 20 is the plotted lane's jump plus the weight of a heavy ship
   (`World.jumpCost`), so the departure block names the same number.
 - The refit bay is free to enter; its card counts the modules the bay would let

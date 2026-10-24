@@ -1100,6 +1100,14 @@ export class World implements EncounterHost {
     return true;
   }
 
+  /** The yard mends the hull for nothing while the ship is docked: no plates to buy. Returns how many came back. */
+  mendAtDock(): number {
+    if (this.phase !== 'dock') return 0;
+    const before = this.plates;
+    this.repair(this.stats.maxPlates - before);
+    return this.plates - before;
+  }
+
   /** What the port would do for a sensible stop now (sim/stop.ts): the tank up to the jump first. */
   planStop(): Stop {
     return planStop({ supplyMax: this.supplyMax, cyrite: this.cyrite, prices: this.prices, jumpCost: this.jumpCost, fuel: this.fuel, fluidPrice: this.fluidPrice, supplies: this.supplies, plates: this.plates, maxPlates: this.stats.maxPlates });

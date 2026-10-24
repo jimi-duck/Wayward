@@ -40,7 +40,6 @@
   border: 1px solid var(--hud-mid); background: var(--hud-ghost); color: var(--hud-hi); cursor: pointer; min-height: 32px; padding: 6px 14px;
   font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; transition: background var(--dk-ez), color var(--dk-ez); }
 #port .pl-go:hover:not(:disabled), #port-x:hover, #port-x.sel, #port .sel .pl-go:not(:disabled) { background: var(--hud-dim); color: #fff; }
-#port .pl-go:focus-visible, #port-x:focus-visible, #port .pl-q:focus-visible { outline: 2px solid var(--dk-hud); outline-offset: 2px; }
 #port .pl-go:disabled { border-color: var(--dk-hair); background: transparent; color: var(--dk-off); cursor: not-allowed; }
 #port-x { min-height: 40px; padding: 9px 22px; }
 
@@ -56,7 +55,7 @@
 #port .port-pic { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; -webkit-mask: linear-gradient(180deg, #000 55%, transparent 100%); mask: linear-gradient(180deg, #000 55%, transparent 100%); }
 #port .dk-h, #port .port-stock { z-index: 1; }
 /* what the ship holds: an icon, the name, what is aboard against what fits */
-#port .port-stock { grid-template-columns: repeat(4, 1fr); border: 1px solid var(--dk-hair); background: var(--dk-raised); }
+#port .port-stock { grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--dk-hair); background: var(--dk-raised); }
 #port .ps-c { display: flex; align-items: center; gap: 12px; padding: 8px 12px; }
 #port .ps-pic { width: 52px; height: 52px; flex: none; object-fit: contain; }
 #port .ps-c + .ps-c { border-left: 1px solid var(--dk-hair); }
@@ -76,8 +75,6 @@
 #port .port-l::before, #port .port-l::after { content: none; }
 #port .port-l.sel { border-color: var(--hud-mid); background: linear-gradient(90deg, var(--hud-ghost), var(--dk-raised)); box-shadow: inset 3px 0 0 var(--hud); }
 #port .port-l:disabled { opacity: 1; }
-#port .pl-ico { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border: 1px solid var(--dk-hair); background: rgba(8, 13, 14, .6); }
-#port .pl-ico .ico { width: 22px; height: 22px; stroke: var(--dk-off); stroke-width: 1.5; }
 #port .pl-m { display: grid; gap: 3px; min-width: 0; }
 #port .pl-t { font: 700 calc(var(--fs) * 1.25 * 1.18)/1.1 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--dk-ink); }
 #port .pl-d { font: 400 13px/1.3 var(--font-display); color: var(--dk-ink2); }
@@ -100,36 +97,12 @@
 #port .port-l.bay .pl-d { font-size: calc(var(--fs) * 1.05 * 1.18); color: var(--dk-ink2); }
 #port .port-l.bay .bay-hero { position: absolute; z-index: 0; left: 46%; top: 0; bottom: 0; right: 0; width: 54%; height: 100%; object-fit: cover; object-position: 50% 50%; -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); pointer-events: none; opacity: .92; }
 #port .port-l.bay .pl-go { display: inline-flex; align-items: center; justify-content: center; gap: 10px; align-self: center; grid-column: 1; grid-row: 2; min-height: 52px; padding: 12px 24px; font-size: calc(var(--fs) * 1.2 * 1.18); letter-spacing: .12em; background: linear-gradient(var(--hud-ghost), var(--hud-dim)); border-color: var(--hud); color: #fff; justify-self: start; margin-left: 94px; }
-/* the three purchases: icon, words, the state, then the quantity and the one button */
-#port .port-list.buys { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-#port .port-l.buy { display: grid; grid-template-columns: 92px minmax(0, 1fr); grid-template-areas: "art m" "art st" "art buy"; gap: 4px 14px; align-content: center; }
-#port .pl-art { grid-area: art; width: 92px; max-height: 110px; object-fit: contain; align-self: center; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .55)); }
-#port .port-l.buy .pl-m { grid-area: m; }
-#port .port-l.buy .pl-r { grid-area: st; display: flex; margin: 0; }
-#port .port-l.buy .pl-buy { grid-area: buy; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
-#port .port-l.buy:not(.short):not(.done):not(.locked) .pl-r { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-#port .pl-qty { display: inline-flex; align-items: center; gap: 4px; }
-#port .pl-qty b { min-width: 2.4ch; text-align: center; font: 600 calc(var(--fs) * 1.4)/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--dk-ink); }
-#port .pl-q { width: 32px; height: 32px; padding: 0; border: 1px solid var(--dk-line); background: rgba(8, 13, 14, .6); color: var(--dk-ink); font: 600 16px/1 var(--font-head); cursor: pointer; }
-#port .pl-q:hover:not(:disabled) { border-color: var(--dk-hud); color: var(--dk-hud); }
-#port .pl-q:disabled { color: var(--dk-off); border-color: var(--dk-hair); cursor: not-allowed; }
-#port .pl-buy .pl-go { margin-left: auto; }
-#port .pl-tot { flex-basis: 100%; font: 600 calc(var(--fs) * 1.05 * 1.18)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--dk-amber); }
-#port .port-l.done, #port .port-l.locked { background: rgba(11, 16, 17, .5); }
-#port .port-l.locked .pl-t, #port .port-l.locked .pl-d, #port .port-l.locked .pl-p, #port .port-l.done .pl-p { color: var(--dk-off); }
-/* the sensible stop */
-#port .port-l.stop { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-height: 46px; padding: 6px 12px; }
-#port .port-l.stop .pl-t { font-size: calc(var(--fs) * 1.25 * 1.18); }
-#port .port-l.stop .stopico { grid-area: auto; width: 44px; max-height: 44px; }
-#port .port-l.stop .pl-m { flex: 1 1 200px; }
-#port .pl-cost { display: grid; gap: 2px; text-align: right; }
-#port .pl-cost .k { color: var(--dk-ink2); font: 600 calc(var(--fs) * 1.0 * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
-#port .port-l.stop .pl-r { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-#port .port-l.stop .pl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-#port .pl-chip { padding: 3px 9px; border: 1px solid var(--dk-line); color: var(--dk-info); font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; }
-#port .pl-sum { font: 600 calc(var(--fs) * 1.3)/1 var(--font-mono); color: var(--dk-amber); }
-#port .port-l.stop .pl-go { margin-left: 0; min-height: 30px; padding: 4px 12px; background: transparent; border-color: var(--dk-hair); color: var(--dk-ink2); font-size: calc(var(--fs) * 0.95 * 1.18); }
-#port .port-l.stop .pl-go:hover:not(:disabled), #port .port-l.stop.sel .pl-go { border-color: var(--dk-hud); color: var(--dk-ink); }
+/* the two purchases sit in the top row: the count, what a fill costs, one button */
+#port .port-stock { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+#port .ps-c.buyc { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
+#port .ps-c.buyc .pl-go { align-self: center; min-height: 40px; }
+#port .ps-c.buyc .ps-sub { white-space: normal; color: var(--dk-ink); }
+#port .ps-c.buyc.ok .ps-sub, #port .ps-c.buyc.short .ps-sub { color: var(--dk-ink); }
 #port .port-msg { margin: 0; min-height: 1.3em; font: 600 calc(var(--fs) * 1.1 * 1.18)/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--dk-info); }
 /* the departure: where to, whether the tank gets there, and Cast off */
 #port .port-dep { position: sticky; bottom: -14px; z-index: 2; display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--dk-hair); border-left: 3px solid var(--hud); background: rgb(10, 15, 16); }
@@ -213,8 +186,6 @@
   #port .ps-c { padding: 6px 12px; }
   #port .port-l { padding: 8px 12px; }
   #port .port-l.bay { min-height: 168px; padding: 12px 18px; }
-  #port .port-l.buy { grid-template-columns: 78px minmax(0, 1fr); }
-  #port .pl-art { width: 78px; max-height: 92px; }
   #comms .panel.comms { padding: 12px 16px 12px 22px; gap: 8px; }
   #comms .cm-face.art { width: 84px; }
 }
@@ -230,9 +201,6 @@
   #port .port-l.bay .bayico { width: 60px; }
   #port .port-l.bay .pl-t { font-size: calc(var(--fs) * 1.7 * 1.18); }
   #port .port-l.bay .pl-go { min-height: 42px; padding: 8px 20px; margin-left: 76px; }
-  #port .port-l.buy { grid-template-columns: 64px minmax(0, 1fr); gap: 3px 12px; }
-  #port .pl-art { width: 64px; max-height: 76px; }
-  #port .port-l.buy .pl-d { display: none; }
   #port .ps-pic { width: 36px; height: 36px; }
   #port .ps-c { padding: 4px 10px; gap: 10px; }
   #port .port-dep { padding: 8px 12px; bottom: -12px; }
@@ -247,12 +215,8 @@
   #port .port-l.bay .pl-d { display: none; }
   #port .port-l.bay .bayico { width: 48px; }
   #port .port-l.bay .pl-go { min-height: 38px; margin-left: 64px; }
-  #port .port-l.stop .pl-d { display: none; }
-  #port .port-l.stop { min-height: 40px; padding: 4px 12px; }
-  #port .port-l.stop .stopico { width: 34px; max-height: 34px; }
   #port .port-msg { min-height: 0; }
   #port .port-msg:empty { display: none; }
-  #port .ps-sub { display: none; }
   #port .dk-h { padding-bottom: 6px; }
   #comms .cm-h { display: none; }
   #comms .cm-c.sel .cm-h { display: block; }
@@ -276,46 +240,29 @@
   #port .port-dep .pd-stat { margin: 0; text-align: left; }
   #port .port-dep .pd-acts { width: 100%; }
   #port .port-dep #port-x { width: 100%; }
-  #port .port-stock { grid-template-columns: repeat(4, 1fr); }
+  #port .port-stock { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   #port .ps-c { gap: 6px; padding: 4px 8px; }
   #port .ps-pic { width: 26px; height: 26px; }
-  #port .port-l.buy .pl-art { width: 40px; max-height: 44px; }
-  #port .port-l.stop .stopico, #port .pd-pin { display: none; }
   #port .port-l.bay .bayico { width: 34px; max-height: 38px; }
   #port .port-l.bay { min-height: 0; grid-template-columns: minmax(0, 1fr) auto; }
   #port .port-l.bay .bay-hero { left: auto; right: 0; width: 55%; opacity: .5; }
   #port .port-l.bay .pl-go { grid-column: 2; grid-row: auto; justify-self: end; margin-left: 0; min-height: 40px; padding: 8px 14px; font-size: 13px; }
   #port .warnico { width: 16px; height: 16px; margin-right: 6px; }
   #port .ps-c b { font-size: 15px; }
-  #port .ps-sub { display: none; }
   #port .port-sv, #port .port-list { gap: 5px; }
+  #port .ps-sub { font-size: 10px; letter-spacing: .04em; }
+  #port .ps-c.buyc { grid-template-columns: minmax(0, 1fr) auto; }
+  #port .ps-c.buyc .ps-pic { display: none; }
+  #port .ps-c.buyc .pl-go { padding: 6px 8px; font-size: 11px; letter-spacing: .04em; }
+  #port .port-panel > .port-msg { display: none; }
   #port .port-l { padding: 6px 8px; }
   #port .port-l.bay { padding: 6px 10px; gap: 10px; min-height: 66px; }
   #port .port-l.bay .pl-d { display: none; }
   #port .port-l.bay .pl-t { font-size: 15px; }
   #port .port-l.bay .pl-id { gap: 10px; }
-  #port .pl-ico { width: 30px; height: 30px; }
-  #port .pl-ico .ico { width: 18px; height: 18px; }
-  #port .port-l.buy { grid-template-columns: 40px minmax(0, 1fr); gap: 4px 8px; }
-  #port .port-l.buy .pl-d { display: none; }
   #port .pl-t { font-size: 12px; letter-spacing: .06em; }
-  #port .pl-p, #port .pl-badge, #port .pl-chip { letter-spacing: .04em; }
   #port .port-l { min-width: 0; }
-  #port .pl-q { width: 40px; height: 40px; }
   #port .pl-go { min-height: 40px; }
-  #port .pl-tot { display: none; }
-  #port .port-l.stop { min-height: 44px; padding: 3px 8px; flex-wrap: nowrap; gap: 8px; }
-  #port .port-l.stop .pl-d { display: none; }
-  #port .port-l.stop .pl-m { flex: 0 1 auto; }
-  #port .port-l.stop .pl-go { padding: 6px 10px; font-size: 11px; }
-  #port .port-l.stop .pl-chips { flex-wrap: nowrap; }
-  #port .port-l.stop .pl-chip { padding: 2px 6px; font-size: 11px; }
-  #port .port-l.buy { grid-template-areas: "art m" "st st" "buy buy"; }
-  #port .port-l.buy .pl-buy { flex-wrap: nowrap; gap: 4px; }
-  #port .port-l.buy .pl-go { margin-left: auto; }
-  #port .pl-chip { white-space: nowrap; }
-  #port .port-l.buy .pl-q { width: 36px; }
-  #port .port-l.buy .pl-go { padding: 6px 8px; }
   #port .port-msg { min-height: 0; }
   #port .port-msg:empty { display: none; }
   #port .port-dep { padding: 6px 10px; }
@@ -340,34 +287,20 @@
   #rd-call .rd-prio { font-size: 11px; letter-spacing: .12em; }
 }
 @media (max-width: 700px) {
-  #port .port-list.buys { grid-template-columns: 1fr; }
-  #port .port-stock { grid-template-columns: 1fr 1fr; }
-  #port .ps-c:nth-child(3) { border-left: 0; }
 }
 /* the wider face on phones on their side: three buy cards are narrow, so rows wrap instead of running into the next card */
 @media (max-height: 460px) and (max-width: 900px) {
   #port .pl-t { overflow-wrap: break-word; }
-  #port .port-l.buy .pl-buy { flex-wrap: wrap; }
-  #port .port-l.buy .pl-go { margin-left: 0; padding: 6px 8px; letter-spacing: .04em; }
-  #port .port-l.buy .pl-q { width: 32px; }
-  #port .port-l.stop { flex-wrap: wrap; }
-  #port .port-l.stop .pl-m { flex: 1 1 100%; }
-  #port .port-l.stop .pl-r { margin-left: 0; flex-wrap: wrap; gap: 6px 10px; }
-  #port .port-l.stop .pl-chips { flex-wrap: wrap; }
   #port .port-l.bay { grid-template-columns: minmax(0, 1fr) minmax(0, auto); }
   #port .port-l.bay .pl-go { min-width: 0; padding: 8px 10px; letter-spacing: .04em; }
 }
 /* 568x320: three buy cards leave 36px for words beside the picture, so the picture goes */
 @media (max-height: 460px) and (max-width: 600px) {
-  #port .port-l.buy { grid-template-columns: minmax(0, 1fr); grid-template-areas: "m" "st" "buy"; }
-  #port .port-l.buy .pl-art { display: none; }
   #port .pl-t { font-size: 11px; letter-spacing: .02em; }
   #port .port-l.bay .pl-go { font-size: 11px; letter-spacing: .02em; padding: 8px 8px; }
 }
 @media (max-height: 460px) and (max-width: 1000px) {
-  #port .port-list.buys { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  #port .port-stock { grid-template-columns: repeat(4, 1fr); }
-  #port .ps-c:nth-child(3) { border-left: 1px solid var(--dk-hair); }
+  #port .port-stock { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
   #port .port-l, #comms .cm-c, #port .pl-go, #port-x, #op-go, #hn-go { transition: none; }

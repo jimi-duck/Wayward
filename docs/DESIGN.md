@@ -61,22 +61,17 @@ A sortie with a shape: get the stolen hauler out of the home system
   plate once the ship has gone six seconds unhit. Random repair drops are
   off.
 - **The port.** Slow inside its ring for a second and the clamps take you
-  (`phase: 'dock'`): top up jump fluid (about two Cyrite a unit), buy supplies, patch a
-  plate, or open the work bay, where every Story upgrade is fitted. The
+  (`phase: 'dock'`): top up jump fluid (about two Cyrite a unit), buy supplies, or open the work bay, where every Story upgrade is fitted. The yard mends the hull free on docking (`World.mendAtDock`), so no plates are sold. The
   first dock takes 0.2 off the hunt pressure. The panel (`ui/port.ts`) reads top
-  to bottom: a status strip (Cyrite to spend, jump fluid against the jump,
-  supplies, plates), the Ship services (the refit bay card, then jump fluid,
-  supplies and hull repair as cards that each say `Can afford`, `Need n more
-  Cyrite` or why they are done), the **sensible stop** (`sim/stop.ts`: from the
-  purse, the tank up to the jump first, then supplies up to ten, then the hull
-  whole, shown as chips) and the departure block (the lane, whether the tank
-  makes it, Cast off). The lane is plotted on the chart, not here. Each buy
-  card has a quantity stepper (`−`/`+`) over the unchanged one-at-a-time
-  `buy`. The arrows walk the cards, Space or a click uses one, Enter casts
+  to bottom: the resource row (Cyrite to spend; jump fluid and supplies, each
+  with its count, what a fill costs and one `Fill` button that buys as far as the
+  purse reaches), the refit bay as a wide hero, and the departure block (the lane,
+  whether the tank makes it, Cast off). The lane is plotted on the chart, not here.
+  The arrows walk fluid, supplies, bay and Cast off; Space or a click uses one, Enter casts
   off. The dock, the transmission and the job offer share one set of parts
-  in `styles/dock.css`. The supply screen runs header, the four stores, the refit bay as a
+  in `styles/dock.css`. The supply screen runs header, the three stores, the refit bay as a
   wide hero (the painted Wayward from the title art, `supply/bay-hero.webp`),
-  the three purchases, the quiet recommended row and the departure. Its icons
+  and the departure. Its icons
   and item art are in `assets/supply/` and load through `pic()` in `ui/port.ts`; the backdrop is
   `assets/wayward-supply-background.webp`.
   Between the phone block (460px high) and a tall desktop, three height steps

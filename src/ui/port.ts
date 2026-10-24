@@ -2,8 +2,7 @@ import { artImg } from './art';
 import { placeOfPort } from '../content/art';
 import { affordable, cheapest } from '../sim/bay';
 import { needsTorpedoFit } from '../sim/tutor';
-import { stopIdle, SUPPLIES_TARGET, type Stop } from '../sim/stop';
-import type { PortItem, World } from '../sim/world';
+import type { World } from '../sim/world';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
 import { num, plural, t } from '../i18n';
 import supplyBackdrop from '../assets/wayward-supply-background.webp?url';
@@ -30,35 +29,22 @@ function pic(name: string, cls: string): HTMLImageElement {
 
 // ── the port ──────────────────────────────────────────────────────────────
 // Docked: the world waits while you trade. Top to bottom: what the ship holds
-// (Cyrite to spend, jump fluid against the jump, supplies, hull plates), the
-// services (the refit bay, which is free to enter and prices its own
-// modules; jump fluid, supplies and hull plates a unit at a time), the
-// sensible stop (everything topped up in one go: sim/stop.ts) and the
+// (Cyrite to spend, then jump fluid and supplies, each with its one Fill
+// button), the refit bay (free to enter; it prices its own modules) and the
 // departure: where the lane goes, whether the tank can make it, and Cast off.
-// Every port sets its own prices, and the Net marks them up. The panel is
-// redrawn after every trade, so every price and every "can't" is live.
-// Entries sit in rows (bay · three purchases · stop · cast off); the arrows
-// move between them, Space or a click uses one, Enter casts off. A purchase
-// has a quantity (the − and + buttons, or the − and + keys on the selected
-// card) and buys that many in one press. The lane is chosen on the chart, not
-// here.
+// The yard mends the hull for nothing, so there is no hull to buy. Every port
+// sets its own prices, and the Net marks them up. The panel is redrawn after
+// every trade, so every price and every "can't" is live. Entries sit in rows
+// (bay · fluid and supplies · cast off); the arrows move between them, Space or
+// a click uses one, Enter casts off. The lane is chosen on the chart, not here.
 // The yard's modules are in the refit bay, fitted only while docked.
 
-/** What a sensible stop does, as chips: what comes aboard. */
-function deltas(s: Stop): string[] {
-  return [
-    ...(s.fuel ? [`+${s.fuel} ${t('Jump fluid')}`] : []),
-    ...(s.supplies ? [`+${s.supplies} ${t('Supplies')}`] : []),
-    ...(s.plate ? [`+${s.plate} ${t('Hull')}`] : []),
-  ];
-}
-
 /** One thing to press: a service, the stop or Cast off. */
-type Entry = { key: 'bay' | 'fuel' | 'supplies' | 'plate' | 'stop' | 'cast'; ok: boolean; go: () => void; el?: HTMLElement };
-type Buyable = 'fuel' | 'supplies' | 'plate';
+type Entry = { key: 'bay' | 'fuel' | 'supplies' | 'cast'; ok: boolean; go: () => void; el?: HTMLElement };
+type Buyable = 'fuel' | 'supplies';
 
 /** The rows the arrows walk (keys of the entries, left to right). */
-const ROWS: Entry['key'][][] = [['bay'], ['fuel', 'supplies', 'plate'], ['stop'], ['cast']];
+const ROWS: Entry['key'][][] = [['bay'], ['fuel', 'supplies'], ['cast']];
 
 /** The lane out of here, for the departure line (the lane itself is plotted on the chart). */
 export interface Course {
@@ -75,11 +61,6 @@ const PORT_WARN = {
   strained: 'Reactor strained · lower top speed. Fit a reactor core at the Bay to fix this.',
 } as const;
 
-/** The state words, the same on every service: say what you can do, or why not. Never colour alone. */
-function badge(kind: 'ok' | 'short' | 'done' | 'lock', text: string): HTMLElement {
-  return h('span', `pl-badge ${kind}`, text);
-}
-
 export class PortPanel {
   private off: (() => void) | null = null;
   private sel: Entry['key'] = 'bay';
@@ -89,8 +70,6 @@ export class PortPanel {
   private onLeave: (() => void) | null = null;
   private onBay: (() => void) | null = null;
   private course: Course | null = null;
-  /** How many of each the next press buys. */
-  private qty: Record<Buyable, number> = { fuel: 1, supplies: 1, plate: 1 };
   /** The line under the services: what the last press did. */
   private msg = '';
 
@@ -107,8 +86,9 @@ export class PortPanel {
     this.onBay = onBay;
     this.opened = performance.now();
     this.sel = 'bay';
-    this.qty = { fuel: 1, supplies: 1, plate: 1 };
-    this.msg = '';
+    // the yard mends the hull while the ship is docked
+    const mended = world.mendAtDock();
+    this.msg = mended ? t('Hull mended at the dock · {n} plates', { n: mended }) : '';
     $('port-t').textContent = world.bk?.port?.name ?? t('Port');
     // a banner of the place, where the build has one for who holds it
     const banner = world.bk?.port ? artImg('place', placeOfPort(world.bk.port.name, !!world.bk.def.netted), 'port-pic') : null;
@@ -119,8 +99,8 @@ export class PortPanel {
     const x = $('port-x');
     x.onclick = guarded(this.opened, () => this.leave());
     x.onpointerdown = (e) => e.stopPropagation();
-    // the header's three words are shortcuts: Trade and Repair walk to their card, Refit opens the bay
-    const jump: Record<string, () => void> = { trade: () => this.pick('fuel'), repair: () => this.pick('plate'), refit: () => this.act('bay') };
+    // the header's two words are shortcuts: Trade walks to the stores, Refit opens the bay
+    const jump: Record<string, () => void> = { trade: () => this.pick('fuel'), refit: () => this.act('bay') };
     for (const b of Array.from(document.querySelectorAll<HTMLButtonElement>('#port .dk-nav button'))) {
       b.onclick = guarded(this.opened, () => jump[b.dataset.go ?? '']?.());
       b.onpointerdown = (e) => e.stopPropagation();
@@ -132,8 +112,6 @@ export class PortPanel {
       if (e.code === 'ArrowUp' || e.code === 'ArrowDown') { this.move(0, e.code === 'ArrowUp' ? -1 : 1); return true; }
       if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') { this.move(e.code === 'ArrowLeft' ? -1 : 1, 0); return true; }
       if (e.code === 'Space') return this.act(this.sel), true;
-      if (e.code === 'Minus' || e.code === 'NumpadSubtract') return this.step(this.sel, -1), true;
-      if (e.code === 'Equal' || e.code === 'NumpadAdd') return this.step(this.sel, 1), true;
       return e.code.startsWith('Arrow') || e.code === 'Tab';
     }, ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
   }
@@ -201,19 +179,11 @@ export class PortPanel {
     for (const e of this.entries) e.el?.classList.toggle('sel', e.key === this.sel);
   }
 
-  /** The most one press can buy now: what is short, what there is room for, what the Cyrite reaches. */
+  /** The most one press can buy now: what there is room for, as far as the Cyrite reaches. */
   private most(w: World, key: Buyable): number {
     const price = key === 'fuel' ? w.fluidPrice : w.prices[key];
-    const room = key === 'fuel' ? Math.floor(w.tankCap - w.fuel) : key === 'plate' ? w.stats.maxPlates - w.plates : w.supplyMax - w.supplies;
+    const room = key === 'fuel' ? Math.floor(w.tankCap - w.fuel) : w.supplyMax - w.supplies;
     return Math.max(0, Math.min(room, Math.floor(w.cyrite / price)));
-  }
-
-  /** Change how many the selected card buys, kept between 1 and what can be bought. */
-  private step(key: Entry['key'], d: number): void {
-    const w = this.world;
-    if (!w || (key !== 'fuel' && key !== 'supplies' && key !== 'plate')) return;
-    this.qty[key] = Math.max(1, Math.min(Math.max(1, this.most(w, key)), this.qty[key] + d));
-    this.render();
   }
 
   private render(): void {
@@ -222,14 +192,13 @@ export class PortPanel {
     const p = this.plan(w);
     this.entries = p.entries;
     if (!this.entries.find((e) => e.key === this.sel)?.ok) this.sel = this.entries.find((e) => e.ok)?.key ?? 'cast';
-    // what the ship holds: an icon, the name, what is aboard against what fits
+    // what the ship holds: Cyrite, then the two things bought here, each with its one button
     const short = Math.max(0, Math.ceil(w.jumpCost - w.fuel));
-    const cell = (ico: string, k: string, v: string, sub?: string, cls = '') => h('span', `ps-c ${cls}`, '', pic(ico, 'ps-pic'), h('span', 'ps-t', '', h('span', 'k', k), h('b', '', v), ...(sub ? [h('span', 'ps-sub', sub)] : [])));
+    const cell = (ico: string, k: string, v: string, sub?: string, cls = '', act?: HTMLElement) => h('span', `ps-c ${cls}`, '', pic(ico, 'ps-pic'), h('span', 'ps-t', '', h('span', 'k', k), h('b', '', v), ...(sub ? [h('span', 'ps-sub', sub)] : [])), ...(act ? [act] : []));
     $('port-stock').replaceChildren(
       cell('ico-cyrite', t('Cyrite'), num(Math.floor(w.cyrite))),
-      cell('ico-fluid', t('Jump fluid'), `${num(Math.floor(w.fuel))}/${w.jumpCost}`, short ? t('{n} more to jump', { n: short }) : t('Ready to jump'), short ? 'short' : 'ok'),
-      cell('ico-supplies', t('Supplies'), `${w.supplies}/${w.supplyMax}`),
-      cell('ico-hull', t('Hull'), `${w.plates}/${w.stats.maxPlates}`),
+      cell('ico-fluid', t('Jump fluid'), `${num(Math.floor(w.fuel))}/${w.jumpCost}`, p.sub.fuel, `buyc ${short ? 'short' : 'ok'}`, p.act.fuel),
+      cell('ico-supplies', t('Supplies'), `${w.supplies}/${w.supplyMax}`, p.sub.supplies, 'buyc', p.act.supplies),
     );
     // the ship's trouble and where it is mended: the stores here, the weight in the bay
     const warn = w.warnings.map((k) => t(PORT_WARN[k], { n: w.weightFuel }));
@@ -237,7 +206,7 @@ export class PortPanel {
     el.hidden = !warn.length;
     el.replaceChildren(...warn.map((l) => h('span', '', l)));
     // the services
-    for (const [id, node] of [['port-bay', p.bay], ['port-buy', p.buy], ['port-stop', p.stop]] as const) $(id).replaceChildren(...node);
+    $('port-bay').replaceChildren(...p.bay);
     $('port-msg').textContent = this.msg;
     this.departure(w, short);
     this.mark();
@@ -260,7 +229,7 @@ export class PortPanel {
   }
 
   /** The port's entries and the rows that show them. */
-  private plan(w: World): { entries: Entry[]; bay: HTMLElement[]; buy: HTMLElement[]; stop: HTMLElement[] } {
+  private plan(w: World): { entries: Entry[]; bay: HTMLElement[]; act: Record<Buyable, HTMLElement>; sub: Record<Buyable, string> } {
     const P = w.prices;
     // the first visit of the training: only the bay is open, and it says to start there (sim/tutor.ts)
     const first = needsTorpedoFit(w);
@@ -280,73 +249,29 @@ export class PortPanel {
     bay.onclick = guarded(this.opened, () => this.act('bay'));
     bay.onpointerdown = (e) => e.stopPropagation();
     remember('bay', true, bay, () => { this.close(); this.onBay?.(); });
-    // a purchase: what is aboard, the unit price, a quantity, and the one state word that says if you can
-    const buy = (key: Buyable, ico: string, name: string, detail: string, price: number, full: string, tag: string, verb: string, did: (n: number, c: number) => string): HTMLElement => {
-      const done = key === 'fuel' ? w.fuel >= w.tankCap : key === 'plate' ? w.plates >= w.stats.maxPlates : w.supplies >= w.supplyMax;
+    // a purchase: one Fill button that tops the store up as far as the Cyrite reaches; the line under the count says what it costs
+    const act = {} as Record<Buyable, HTMLElement>, sub = {} as Record<Buyable, string>;
+    const buy = (key: Buyable, price: number, done: boolean, did: (n: number, c: number) => string) => {
       const most = this.most(w, key);
       const ok = !first && w.canBuy(key);
-      const n = Math.max(1, Math.min(Math.max(1, most), this.qty[key]));
-      this.qty[key] = n;
       const need = Math.max(0, Math.ceil(price - w.cyrite));
-      const state = first ? badge('lock', t('Locked · use the bay first')) : done ? badge('done', full) : need ? badge('short', t('Need {n} more Cyrite', { n: num(need) })) : badge('ok', t('Can afford'));
-      const stepper = (sign: 1 | -1, label: string) => {
-        const b = h('button', 'pl-q', sign < 0 ? '−' : '+') as HTMLButtonElement;
-        b.type = 'button';
-        b.disabled = !ok || (sign < 0 ? n <= 1 : n >= most);
-        b.setAttribute('aria-label', label);
-        b.onclick = guarded(this.opened, () => { this.sel = key; this.step(key, sign); });
-        b.onpointerdown = (e) => e.stopPropagation();
-        return b;
-      };
-      const go = h('button', 'pl-go', ok ? `${verb} ${n}` : verb) as HTMLButtonElement;
+      sub[key] = first ? t('Locked · use the bay first') : done ? t('Full') : need ? t('Need {n} more Cyrite', { n: num(need) }) : t('{n} for {c} Cyrite', { n: most, c: num(most * price) });
+      const go = h('button', 'pl-go', ok ? `${t('Fill')} +${most}` : t('Fill')) as HTMLButtonElement;
       go.type = 'button';
       go.disabled = !ok;
       go.onclick = guarded(this.opened, () => this.act(key));
-      go.onpointerdown = (e) => e.stopPropagation();
-      const card = h('div', `port-l buy${first ? ' locked' : done ? ' done' : need ? ' short' : ''}`, '',
-        pic(ico, 'pl-art'),
-        h('span', 'pl-m', '', h('span', 'pl-t', name), h('span', 'pl-d', detail), h('span', 'pl-p', tag)),
-        h('span', 'pl-r', '', state),
-        ...(ok ? [h('span', 'pl-buy', '', h('span', 'pl-qty', '', stepper(-1, t('Fewer')), h('b', '', String(n)), stepper(1, t('More'))), go, h('span', 'pl-tot', t('Total {n} Cyrite', { n: num(n * price) })))] : []),
-      );
-      card.setAttribute('role', 'group');
-      card.setAttribute('aria-label', `${name}. ${detail}. ${tag}`);
-      card.onpointerdown = () => { if (ok) this.sel = key; this.mark(); };
-      remember(key, ok, card, () => {
+      go.onpointerdown = (e) => { e.stopPropagation(); this.sel = key; this.mark(); };
+      act[key] = go;
+      remember(key, ok, go, () => {
         let got = 0;
-        for (let i = 0; i < n && w.buy(key); i++) got++;
+        for (let i = 0; i < most && w.buy(key); i++) got++;
         this.msg = got ? did(got, got * price) : '';
         this.render();
       });
-      return card;
     };
-    const room = w.supplyMax - w.supplies;
-    const buys = [
-      buy('fuel', 'art-fluid', t('Buy jump fluid'), t('{n} in the tank · {m} to jump', { n: Math.floor(w.fuel), m: w.jumpCost }), w.fluidPrice, t('Tank full'), t('{n} Cyrite each', { n: w.fluidPrice }), t('Buy'), (n, c) => t('Bought {n} jump fluid · −{c} Cyrite', { n, c: num(c) })),
-      buy('supplies', 'art-supplies', t('Buy supplies'), room > 0 ? t('{n} aboard · Room for {m} more', { n: w.supplies, m: room }) : t('{n} aboard · No room for more', { n: w.supplies }), P.supplies, t('At capacity'), t('{n} Cyrite each', { n: P.supplies }), t('Buy'), (n, c) => t('Bought {n} supplies · −{c} Cyrite', { n, c: num(c) })),
-      buy('plate', 'art-hull', t('Hull repair'), w.plates >= w.stats.maxPlates ? t('{n} of {m} plates', { n: w.plates, m: w.stats.maxPlates }) : t('{n} of {m} plates · {k} damaged', { n: w.plates, m: w.stats.maxPlates, k: w.stats.maxPlates - w.plates }), P.plate, t('Fully repaired'), t('{n} Cyrite per plate', { n: P.plate }), t('Repair'), (n, c) => t('Repaired {n} hull plates · −{c} Cyrite', { n, c: num(c) })),
-    ];
-    // the sensible stop: everything up to the jump, then supplies, then the hull, as far as the Cyrite reaches
-    const plan = w.planStop(), idle = stopIdle(plan);
-    const lack = Math.max(0, Math.ceil(w.jumpCost - w.fuel) - plan.fuel);
-    const missing = w.fuel < w.jumpCost || w.supplies < Math.min(w.supplyMax, SUPPLIES_TARGET) || w.plates < w.stats.maxPlates;
-    const stopOk = !idle && !first;
-    const stop = h('div', `port-l stop${stopOk ? '' : ' off'}`, '',
-      pic('act-buy', 'pl-art stopico'),
-      h('span', 'pl-m', '', h('span', 'pl-t', t('Recommended purchase')), h('span', 'pl-d', idle && lack ? t('Need {n} more jump fluid to jump', { n: lack }) : t('Sensible stop for your next jump.'))),
-      ...(idle ? [] : [h('span', 'pl-chips', '', ...deltas(plan).map((c) => h('span', 'pl-chip', c)))]),
-      h('span', 'pl-r', '', first ? badge('lock', t('Locked · use the bay first')) : idle ? (missing ? badge('short', t('Need Cyrite')) : badge('done', t('All topped up'))) : h('span', 'pl-cost', '', h('span', 'k', t('Total cost')), h('b', 'pl-sum', `${num(Math.abs(plan.cyrite))} ${t('Cyrite')}`))),
-    );
-    if (stopOk) {
-      const go = h('button', 'pl-go', t('Buy recommended')) as HTMLButtonElement;
-      go.type = 'button';
-      go.onclick = guarded(this.opened, () => this.act('stop'));
-      go.onpointerdown = (e) => e.stopPropagation();
-      stop.append(go);
-    }
-    stop.setAttribute('aria-label', t('Recommended purchase'));
-    remember('stop', stopOk, stop, () => { const done = w.sensibleStop(); this.msg = t('Topped up · −{c} Cyrite', { c: num(Math.abs(done.cyrite)) }); this.render(); });
+    buy('fuel', w.fluidPrice, w.fuel >= w.tankCap, (n, c) => t('Bought {n} jump fluid · −{c} Cyrite', { n, c: num(c) }));
+    buy('supplies', P.supplies, w.supplies >= w.supplyMax, (n, c) => t('Bought {n} supplies · −{c} Cyrite', { n, c: num(c) }));
     entries.push({ key: 'cast', ok: true, go: () => this.leave() });
-    return { entries, bay: [bay], buy: buys, stop: [stop] };
+    return { entries, bay: [bay], act, sub };
   }
 }
