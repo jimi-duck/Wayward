@@ -50,8 +50,10 @@
 #port::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(7, 16, 24, .35), rgba(7, 16, 24, .1) 50%, rgba(7, 16, 24, .35)); }
 #port > .panel { position: relative; }
 #port .panel.port-panel { width: min(1080px, 100%); overflow-y: auto; }
-#port .port-art { display: none; }
-#port .port-pic { width: 100%; height: 100%; object-fit: cover; }
+/* the holder's banner: a wide painted strip over the title, fading into the glass at the foot */
+#port .port-art { display: block; margin: 0; max-height: none; height: clamp(112px, 21vh, 190px); border: 1px solid var(--dk-hair); }
+#port .port-art[hidden] { display: none; }
+#port .port-pic { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; -webkit-mask: linear-gradient(180deg, #000 55%, transparent 100%); mask: linear-gradient(180deg, #000 55%, transparent 100%); }
 #port .dk-h, #port .port-stock { z-index: 1; }
 /* what the ship holds: an icon, the name, what is aboard against what fits */
 #port .port-stock { grid-template-columns: repeat(4, 1fr); border: 1px solid var(--dk-hair); background: var(--dk-raised); }
