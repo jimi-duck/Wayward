@@ -1425,6 +1425,8 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 .rd-call.prio { border-color: var(--amber-dim); border-left-color: var(--amber); }
 @keyframes rd-in { from { opacity: 0; translate: -50% -8px; } }
 .rd-call[hidden], .rd-line[hidden] { display: none; }
+/* the column a job offer lays beside its picture; every other call lays its parts out flat */
+.rd-body { display: contents; }
 .rd-h { display: flex; align-items: center; gap: 8px; }
 .rd-k { font: 600 12px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--cy); }
 .rd-kind { font: 600 12px/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }

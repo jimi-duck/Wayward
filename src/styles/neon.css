@@ -64,7 +64,6 @@
 .sheet, #pause { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; place-items: safe center; }
 /* the same margin all round inside every panel (the old frame's lit left edge, and its wider left margin, are gone) */
 .sheet > .panel, #pause .pause-card, .sheet.dk > .panel.dk-panel, #comms > .panel.comms { padding: var(--ng-pad); }
-#rd-call.job { padding: var(--ng-pad-card); }
 /* nested glass: buttons, choice rows, thumbnails. The same rim, thinner, a smaller glow, a lighter fill, no blur of its
    own, cut at 10px; the fill is part of the frame, so a hover or a press swaps the frame */
 .ng-n {
@@ -342,12 +341,11 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #comms .panel.comms .cm-c kbd, #comms .panel.comms .cm-side .need, #comms .panel.comms .pf .keys, #pause .pause-card .th { color: var(--ink-2); }
 
 /* ── the radio call's answers and picture: the same chamfered nested glass ── */
-#rd-call.job .rd-c, #rd-call:not(.job) .rd-c { border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
+#rd-call .rd-c { border: 0 solid transparent; border-radius: 0; background: none; box-shadow: none;
   border-image: var(--ngn-dim) var(--ngn-slice) fill / calc(var(--ngn-slice) * 1px) / var(--ngn-out) stretch; }
-#rd-call.job .rd-c.first, #rd-call:not(.job) .rd-c.first { background: none; box-shadow: none; border-image-source: var(--ngn-cyan-hi); }
-#rd-call.job .rd-c:hover:not([aria-disabled="true"]), #rd-call:not(.job) .rd-c:hover:not([aria-disabled="true"]) { background: none; border-image-source: var(--ngn-cyan-hi); }
-#rd-call.job .rd-c:active:not([aria-disabled="true"]), #rd-call:not(.job) .rd-c:active:not([aria-disabled="true"]) { border-image-source: var(--ngn-cyan-press); }
-#rd-call.job .rd-art { border: 0; border-radius: 0; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
+#rd-call:not(.job) .rd-c.first { background: none; box-shadow: none; border-image-source: var(--ngn-cyan-hi); }
+#rd-call .rd-c:hover:not([aria-disabled="true"]) { background: none; border-image-source: var(--ngn-cyan-hi); }
+#rd-call .rd-c:active:not([aria-disabled="true"]) { border-image-source: var(--ngn-cyan-press); }
 
 /* ── motion: ambient light and incoming transmissions (docs/DESIGN-GUIDELINES.md, "Motion") ──────────────
    Text and panel geometry never move; only the glass and the edge light do. Nothing here sits under body text:
@@ -430,4 +428,121 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .rx-bars { height: 9px; gap: 1.5px; }
   .rx-bars > i:nth-child(4) { height: 9px; }
   .rx-bars > i:nth-child(3) { height: 7px; }
+}
+
+/* ── the job offer (owner-approved layout, 24 October 2026) ─────────────────────────────────────────────
+   One Neon Glass frame: the header across the top, then the words and the answers on the left (about 62%) and the
+   job's picture on the right (about 34%), whole and never cropped. Every word on it is white; colour stays on the rim
+   and on the one amber answer that Enter takes. Titles and answers are sentence case here; structural labels stay
+   capitals. Laptop size first (1280 by 720 must hold three answers without scrolling), a big screen a step up, a phone
+   on its side drops the picture and sets the answers beside the words, a narrow upright phone stacks them. */
+#rd-call.job {
+  --rj-w: 1000px; --rj-px: 30px; --rj-py: 26px; --rj-col: 24px; --rj-block: 18px; --rj-gap: 12px;
+  --rj-title: 25px; --rj-body: 16px; --rj-label: 12px; --rj-value: 20px; --rj-choice: 16px; --rj-more: 14px; --rj-key: 36px; --rj-row: 64px;
+  --c: var(--ng-cut);
+  left: 50%; top: 50%; translate: -50% -50%; animation-name: rj-in;
+  width: min(var(--rj-w), calc(100vw - var(--safe-l) - var(--safe-r) - 48px));
+  max-height: calc(100dvh - var(--safe-t) - var(--safe-b) - 24px); overflow: visible;
+  display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 34fr); grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "h h" "body art" "timer timer"; column-gap: var(--rj-col); row-gap: var(--rj-block);
+  padding: var(--rj-py) var(--rj-px); color: var(--ink);
+}
+@keyframes rj-in { from { opacity: 0; translate: -50% calc(-50% - 8px); } }
+#rd-call.job.noart { grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body" "timer"; }
+#rd-call.job.noart .rd-art { display: none; }
+#rd-call.job::before { background: var(--ng-scan), var(--ng-sheen), linear-gradient(180deg, rgba(9, 20, 27, .95), rgba(7, 15, 20, .94)); }
+/* the header: JOB OFFER, who is offering it, the signal; the priority stays a state, not a stamp */
+#rd-call.job > .rd-h { grid-area: h; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid rgba(var(--halo), .3); min-width: 0; }
+#rd-call.job .tx-wave, #rd-call.job .rd-ico, #rd-call.job .rd-prio { display: none; }
+#rd-call.job .rd-k { flex: none; font: 600 13px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
+#rd-call.job .rd-kind::before { content: "·"; margin-right: .6em; }
+#rd-call.job .rd-kind { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 400 13px/1 var(--font-display); letter-spacing: .02em; text-transform: none; color: var(--ink); }
+/* the words and the answers: one column that scrolls on its own only if a long translation needs it, the glass stays put */
+#rd-call.job .rd-body { grid-area: body; display: flex; flex-direction: column; gap: var(--rj-block); min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  padding: 6px; margin: -6px; }
+#rd-call.job .rd-id { display: block; }
+#rd-call.job .rd-id b { display: block; font: 700 var(--rj-title)/1.15 var(--font-head); letter-spacing: 0; text-transform: none; color: var(--ink); overflow-wrap: anywhere; }
+#rd-call.job .rd-id span { display: none; }
+#rd-call.job .rd-text { margin: calc(var(--rj-block) * -0.45) 0 0; max-width: 60ch; font: 400 var(--rj-body)/1.48 var(--font-display); color: var(--ink); }
+#rd-call.job .rd-read { color: var(--ink); }
+#rd-call.job .rd-read::before { color: var(--ink); }
+#rd-call.job .rd-terms { display: none; }
+/* the terms: what it asks or how long it allows, and what it pays, under one hairline */
+#rd-call.job .rd-sheet { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 24px; padding-top: 14px; border-top: 1px solid rgba(var(--halo), .3); }
+#rd-call.job .rd-sheet[hidden] { display: none; }
+#rd-call.job .rd-col { display: grid; gap: 6px; align-content: start; min-width: 0; }
+#rd-call.job .rd-col .k { font: 600 var(--rj-label)/1.1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
+#rd-call.job .rd-items { display: flex; flex-wrap: wrap; gap: 2px 14px; font: 600 var(--rj-value)/1.2 var(--font-display); letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; color: var(--ink); }
+#rd-call.job .rd-items span { padding: 0; border: 0; color: var(--ink); }
+/* the answers: a square key, the action, and one quiet line of what it means. The marked one is amber, the rest a dim rim */
+#rd-call.job .rd-list { display: flex; flex-direction: column; flex-wrap: nowrap; gap: var(--rj-gap); }
+#rd-call.job .rd-c { flex: none; display: grid; grid-template-columns: var(--rj-key) minmax(0, 1fr); grid-template-areas: "k l" "k m"; align-content: center; align-items: center; column-gap: 16px; row-gap: 3px;
+  min-height: var(--rj-row); padding: 10px 18px 10px 14px; color: var(--ink); text-align: left; white-space: normal; font: inherit; letter-spacing: 0; text-transform: none; }
+#rd-call.job .rd-c:not(:has(.rd-more)) { grid-template-areas: "k l"; }
+#rd-call.job .rd-c kbd { grid-area: k; align-self: center; display: grid; place-items: center; width: var(--rj-key); height: var(--rj-key); box-sizing: border-box; padding: 0;
+  border: 1px solid rgba(180, 228, 238, .45); border-radius: 0; background: rgba(8, 18, 24, .5); font: 500 calc(var(--rj-key) * .42)/1 var(--font-mono); color: var(--ink); }
+#rd-call.job .rd-l { grid-area: l; min-width: 0; font: 600 var(--rj-choice)/1.25 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink); overflow-wrap: break-word; }
+#rd-call.job .rd-more { grid-area: m; min-width: 0; font: 400 var(--rj-more)/1.35 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink); overflow-wrap: break-word; }
+#rd-call.job .rd-more .g-need { display: inline-flex; align-items: center; gap: 5px; }
+/* the marked answer: the amber rim and its faint amber fill (the ochre nested frame, not the brighter press-ready one) */
+#rd-call.job .rd-c.first { --rim: #ffdea0; --halo: 210, 140, 40; border-image-source: var(--ngn-ochre); }
+#rd-call.job .rd-c.first kbd { border-color: #e9b65c; background: rgba(60, 40, 12, .45); }
+#rd-call.job .rd-c.first:active:not([aria-disabled="true"]) { border-image-source: var(--ngn-ochre-press); }
+#rd-call.job .rd-c.first:hover:not([aria-disabled="true"]) { border-image-source: var(--ngn-ochre); }
+#rd-call.job .rd-c:not(.first):hover:not([aria-disabled="true"]) { border-image-source: var(--ngn-cyan-hi); }
+#rd-call.job .rd-c:focus-visible { outline: 2px solid #ffdea0; outline-offset: 4px; }
+#rd-call.job .rd-c[aria-disabled="true"] { cursor: not-allowed; opacity: 1; }
+#rd-call.job .rd-c[aria-disabled="true"] :is(.rd-l, kbd) { color: var(--ink-2); }
+/* the picture: the job's own, whole, beside the words; sized by the words so it never moves them as it loads */
+#rd-call.job .rd-art { grid-area: art; contain: size; display: grid; place-items: center; min-height: 0; width: auto; aspect-ratio: auto; border: 0; border-radius: 0; background: none; overflow: hidden; clip-path: none; }
+#rd-call.job .rd-art[hidden] { display: none; }
+#rd-call.job .rd-pic { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; padding: 0;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
+#rd-call.job .rd-hull { mix-blend-mode: screen; clip-path: none; }
+#rd-call.job .rd-art.emblem::before { content: ""; width: 96px; height: 96px; background: var(--dk-hud, #86a9d1); -webkit-mask: var(--emblem) center / contain no-repeat; mask: var(--emblem) center / contain no-repeat; }
+#rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr) 160px; }
+/* the answer clock: a thin line along the foot, the rim's colour (amber only for a priority call) */
+#rd-call.job .rd-timer { grid-area: timer; height: 2px; margin-top: calc(var(--rj-block) * -0.4); background: rgba(var(--halo), .15); }
+#rd-call.job .rd-timer i { background: var(--rim); }
+#rd-call.job.prio .rd-timer i { background: #e9b65c; }
+/* the world's labels and the HUD step back while the offer has the middle of the screen; they come back with nothing in between */
+:root.job-open #hud > :not(#vignette), :root.job-open #touch { opacity: .12; }
+
+/* a big screen: one step up */
+@media (min-width: 1400px) and (min-height: 820px) {
+  #rd-call.job { --rj-w: 1100px; --rj-px: 40px; --rj-py: 32px; --rj-col: 32px; --rj-block: 22px; --rj-gap: 13px;
+    --rj-title: 29px; --rj-body: 18px; --rj-label: 13px; --rj-value: 23px; --rj-choice: 18px; --rj-more: 15px; --rj-key: 40px; --rj-row: 76px; }
+  #rd-call.job .rd-k, #rd-call.job .rd-kind { font-size: 14px; }
+}
+/* a short laptop window: a little tighter, the same sizes */
+@media (min-height: 521px) and (max-height: 700px) {
+  #rd-call.job { --rj-py: 22px; --rj-block: 14px; --rj-gap: 10px; --rj-row: 58px; }
+}
+/* a phone on its side: no picture; the words on the left and the answers on the right, so all three fit at 568 by 320 */
+@media (max-height: 520px) {
+  #rd-call.job { --rj-w: 760px; --rj-px: 16px; --rj-py: 10px; --rj-col: 0px; --rj-block: 8px; --rj-gap: 6px;
+    --rj-title: 17px; --rj-body: 13px; --rj-label: 10.5px; --rj-value: 15px; --rj-choice: 14px; --rj-more: 12px; --rj-key: 28px; --rj-row: 44px;
+    --c: var(--ng-cut-card); --ng-frame: var(--ngf-card-cyan); --ng-hair: var(--ngh-card-cyan); --ng-fs: var(--ngf-card-slice); --ng-fo: var(--ngf-card-out); --ng-hs: var(--ngh-card-slice);
+    width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); max-height: calc(100dvh - var(--safe-t) - var(--safe-b) - 12px);
+    grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body" "timer"; }
+  #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr); }
+  #rd-call.job .rd-art { display: none; }
+  #rd-call.job > .rd-h { padding-bottom: 6px; }
+  #rd-call.job .rd-k, #rd-call.job .rd-kind { font-size: 11px; }
+  #rd-call.job .rd-body { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.25fr); grid-template-rows: auto auto auto 1fr; column-gap: 14px; row-gap: var(--rj-block); align-content: start; }
+  #rd-call.job .rd-body > :not(.rd-list) { grid-column: 1; }
+  #rd-call.job .rd-body > .rd-list { grid-column: 2; grid-row: 1 / -1; align-self: start; }
+  #rd-call.job .rd-text { margin: 0; line-height: 1.35; }
+  #rd-call.job .rd-sheet { padding-top: 6px; gap: 4px 12px; }
+  #rd-call.job .rd-col { gap: 2px; }
+  #rd-call.job .rd-c { padding: 4px 10px 4px 7px; column-gap: 9px; row-gap: 1px; }
+  #rd-call.job .rd-more { line-height: 1.25; }
+  #rd-call.job .rd-timer { margin-top: -4px; }
+}
+/* a narrow upright phone: one column, the picture a small strip above the words */
+@media (max-width: 600px) and (min-height: 521px) {
+  #rd-call.job { --rj-px: 18px; --rj-py: 16px; --rj-block: 12px; --rj-gap: 8px; --rj-title: 21px; --rj-body: 15px; --rj-value: 18px; --rj-choice: 15px; --rj-more: 13px; --rj-key: 32px; --rj-row: 56px;
+    width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "art" "body" "timer"; }
+  #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr); }
+  #rd-call.job .rd-art { height: 132px; }
 }

@@ -105,6 +105,19 @@ Unknown callers keep a white status dot until combat makes them hostile.
   is never netted against it.
 - **Inside a panel:** thin rules; a speaker's lines run as one block of text
   with no left bar (the owner, 23 October 2026). No extra neon on every region. Glow only where it means something.
+- **Job offer** (`#rd-call.job`, the owner's approved layout, 24 October 2026): one
+  frame; the header across the top (`JOB OFFER` in capitals, the caller quieter,
+  signal bars; no priority stamp); then the title, description, a terms strip
+  (time limit or requirements, reward) and the answers on the left (about 62%),
+  and the job's own picture on the right (about 34%), whole (`contain`), never
+  cropped. No picture: the words take the full width. Title and answers are
+  sentence case; every word on the card is white, colour stays on the rims.
+  Answers keep their real keys (Y, U, N): a square key, the action, then one
+  quiet line of what it means joined by a middle dot, never outlined chips; a
+  fact the terms strip states for that same answer is not repeated. Only the
+  answer Enter takes has the amber rim and fill. The HUD steps back while it is
+  open. A phone on its side drops the picture and sets the answers beside the
+  words. Other radio calls keep their own smaller card.
 - **HUD is not a pop-up:** instruments, objectives and the low-centre notices
   keep their thin lines and restrained glow (`docs/DESIGN.md`).
 
