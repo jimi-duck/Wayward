@@ -917,4 +917,10 @@ export const REWRITE: Record<string, string> = {
   "Waved through unlogged. Needs a registration that has already passed a scan.": "Ungeloggt durchgewunken. Braucht eine Registrierung, die schon einen Scan bestanden hat.",
   "She waves you through · the lane is clear": "Sie winkt dich durch · die Bahn ist frei",
   "a registration that has passed a scan": "eine Registrierung, die einen Scan bestanden hat",
+  "Account system · Contract 08-441": "Kontosystem · Vertrag 08-441",
+  "Contract summary": "Vertragsübersicht",
+  "Payment on delivery · 1,000 Cyrite": "Zahlung bei Lieferung · 1.000 Cyrit",
+  "Company charges": "Firmenabzüge",
+  "Net profit": "Nettogewinn",
+  "Company-financed · 20 CR (deducted from your payout)": "Von der Firma finanziert · 20 CR (wird von deiner Auszahlung abgezogen)",
 };
