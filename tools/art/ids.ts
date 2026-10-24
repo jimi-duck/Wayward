@@ -1,5 +1,5 @@
 import { CAPTAINS } from '../../src/content/captains';
-import { CONTACTS, DEBRIEFS, EMBLEMS, FLEET, PLANETS, PLACES, regionSlug, SLOTS, type SlotId } from '../../src/content/art';
+import { CONTACTS, BAYBANNERS, DEBRIEFS, EMBLEMS, FLEET, PLANETS, PLACES, regionSlug, SLOTS, type SlotId } from '../../src/content/art';
 import { ENDINGS } from '../../src/content/endings';
 import { REGIONS_LONG } from '../../src/content/regions';
 import { OBSERVATIONS } from '../../src/content/situations';
@@ -29,6 +29,7 @@ export function artIds(): Record<SlotId, string[]> {
     gate: [...new Set(REGIONS_LONG.map((r) => regionSlug(r.name)))],
     planet: [...PLANETS],
     debrief: [...DEBRIEFS],
+    baybanner: [...BAYBANNERS],
   };
 }
 

@@ -226,6 +226,8 @@ installed through `art:prep`.
   Wayward fits. Still weak: `wayward-stock` and `wayward-guns` look alike
   (brief: `docs/art/WAYWARD-FITS-BRIEF.md`). The art briefs all start by telling the
   artist to check the pictures already in `src/art/` and match them.
+- The ten refit bay tab banners (2026-10-24, `docs/art/UPGRADES-ART-BRIEF.md`, batch B) are
+  installed in `src/art/baybanners/`, 1280×720. The bay does not draw them yet.
 - Which of these should be redone: `/mnt/project-files/art-brief/REDO-AND-MISSING.md`.
 - The sheets that went unused are in `/mnt/project-files/art-brief/raw/`.
 

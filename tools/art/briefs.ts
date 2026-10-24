@@ -12,7 +12,7 @@ import { FEATURES, type FeatureId } from '../../src/content/features';
 import { ALIEN_TYPES, VARIANTS } from '../../src/sim/enemies';
 import type { Face } from '../../src/sim/captains';
 import { artIds, artOptional } from './ids';
-import { DEBRIEF_LOOK, EXTRA_LOOK, GATE_LOOK, PLANET_LOOK, CAPITAL_LOOK, JOB_SCENE, OWNED_LOOK, TRAFFIC_LOOK, WAYWARD_LOOK, CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
+import { BAYBANNER_LOOK, DEBRIEF_LOOK, EXTRA_LOOK, GATE_LOOK, PLANET_LOOK, CAPITAL_LOOK, JOB_SCENE, OWNED_LOOK, TRAFFIC_LOOK, WAYWARD_LOOK, CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
 
 // The prompt for every picture, written from the game's rows and tools/art/looks.ts.
 // Plain text, one block per picture, to paste into any image generator.
@@ -210,7 +210,7 @@ function fleetBrief(id: string): Raw {
   };
 }
 
-function sceneBrief(slot: 'gate' | 'planet' | 'debrief', id: string, look: string, subject: string, where: string): Raw {
+function sceneBrief(slot: 'gate' | 'planet' | 'debrief' | 'baybanner', id: string, look: string, subject: string, where: string): Raw {
   return {
     slot, id, file: `${dir(slot)}/${id}.webp`,
     prompt: `${STYLE}\n\nSubject: ${subject}: ${look}.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.`,
@@ -241,7 +241,7 @@ function phenomenonBrief(id: string): Raw {
 }
 
 /** The slots added after the first set, for the continuation brief. */
-export const CONTINUATION: SlotId[] = ['fleet', 'job', 'phenomenon', 'gate', 'planet', 'debrief'];
+export const CONTINUATION: SlotId[] = ['fleet', 'job', 'phenomenon', 'gate', 'planet', 'debrief', 'baybanner'];
 
 export function allBriefs(): Brief[] {
   const ids = artIds(), opt = artOptional();
@@ -262,5 +262,6 @@ export function allBriefs(): Brief[] {
   for (const id of ids.gate) out.push(sceneBrief('gate', id, GATE_LOOK[id] ?? '', `the gate station of ${REGIONS_LONG.find((r) => regionSlug(r.name) === id)!.name}`, 'Not drawn yet: ready for the chart and the region gate card.'));
   for (const id of ids.planet) out.push(sceneBrief('planet', id, PLANET_LOOK[id] ?? '', `a ${id} planet`, 'Not drawn yet: ready for the chart and the fuel stops.'));
   for (const id of ids.debrief) out.push(sceneBrief('debrief', id, DEBRIEF_LOOK[id] ?? '', `the ${id} debrief scene`, 'Not drawn yet: ready for the dock and debrief screens.'));
+  for (const id of ids.baybanner) out.push(sceneBrief('baybanner', id, BAYBANNER_LOOK[id] ?? '', `the refit bay's ${id} tab backdrop`, 'Behind the ship at the top of the refit bay, one per tab (not wired yet).'));
   return out.map((b) => ({ ...b, body: b.prompt.startsWith(STYLE) ? b.prompt.slice(STYLE.length).trimStart() : b.prompt }));
 }
