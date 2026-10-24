@@ -87,16 +87,16 @@ describe('the opening chain beyond the gate', () => {
     // B: 100 CR gross − 98 CR charges = 2 CR, on delivery; the launcher's 20 CR is among the charges
     expect(upgradePrice()).toBe(20);
     expect(credit(bay, 'Gross')).toBe(GROSS);
-    expect(credit(bay, 'Charges')).toBe(-98);
-    expect(credit(bay, 'Settlement')).toBe(2);
+    expect(credit(bay, 'Company charges')).toBe(-98);
+    expect(credit(bay, 'Net profit')).toBe(2);
     // the bay's card shows the projection only: no itemised charges, no launcher row
-    expect(bay.map((r) => r.k)).toEqual(['Gross', 'Charges', 'Settlement']);
+    expect(bay.map((r) => r.k)).toEqual(['Gross', 'Company charges', 'Net profit']);
     expect(CARD_BY_ID.story_bay!.ledger).toBe('bay');
     expect(projectedAfterLauncher()).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow - upgradePrice());
     expect(NET).toBe(GROSS - CUTS.refinery - CUTS.lease - CUTS.reserve - CUTS.escrow);
     expect(credit(ledgerFor('launcher'), 'Torpedo launcher')).toBe(upgradePrice());
     // the card's action names the bay's own price
-    expect(CARD_BY_ID.story_bay!.choices[0]!.label).toContain(`${upgradePrice()} CR`);
+    expect(CARD_BY_ID.story_bay!.choices[0]!.hint).toContain(`${upgradePrice()} CR`);
     // nothing earned, nothing delivered: the cargo stays in the hold
     expect(bay.some((r) => /balance|available|delivered/i.test(r.k))).toBe(false);
     expect(FINAL_LOAD).toBe(QUOTA - FIRST_LOAD);

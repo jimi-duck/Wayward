@@ -248,15 +248,15 @@ export const STORY_CARDS: CardDef[] = [
   // as Neon Glass sheets after the opening chapter mockups (docs/DESIGN-GUIDELINES.md).
   story({
     id: 'story_bay', kind: 'trade', caller: 'miners', glass: 'cyan', status: 'Live',
-    from: 'Account', title: 'Projected settlement',
-    text: 'On delivery of 1,000 Cyrite.',
+    from: 'Account system · Contract 08-441', title: 'Contract summary',
+    text: 'Payment on delivery · 1,000 Cyrite',
     ledger: 'bay',
     doc: { kind: 'bay', open: 'View account summary', kick: 'Document · account summary', title: 'Contract 08-441', sub: 'Projected on delivery of 1,000 Cyrite.', note: 'The delivery is not complete. These figures are a projection, not an available account balance.', at: 3 },
     side: { from: 'Work Bay · docked', status: '800 Cyrite', title: 'Service stop', label: 'Sam Okoro · radio',
       lines: ['Raiders have been spotted out your way. I suggest fitting torpedoes before you head back.', 'The company will finance the launcher. You’ll owe them twenty credits. But I’d rather you make it back safely.'] },
     cargo: 'Cerro work bay · Contract 08-441',
     choices: [
-      { id: 'install', label: 'Install torpedo launcher · finance 20 CR', tone: 'pay', hint: 'Company-financed. 20 CR of debt.',
+      { id: 'install', label: 'Torpedo launcher', tone: 'pay', hint: 'Company-financed · 20 CR (deducted from your payout)',
         win: { text: 'Launcher fitted · financed against the contract', fit: 'tp_bay' } },
     ],
   }),

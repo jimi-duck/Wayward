@@ -62,8 +62,8 @@ export function bayLedger(): LedgerRow[] {
   const price = upgradePrice();
   return [
     { k: 'Gross', cr: GROSS },
-    { k: 'Charges', cr: -(GROSS - projectedAfterLauncher(price)) },
-    { k: 'Settlement', cr: projectedAfterLauncher(price), tone: 'mine' },
+    { k: 'Company charges', cr: -(GROSS - projectedAfterLauncher(price)) },
+    { k: 'Net profit', cr: projectedAfterLauncher(price), tone: 'mine' },
   ];
 }
 
