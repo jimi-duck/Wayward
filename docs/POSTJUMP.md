@@ -61,7 +61,47 @@ The target card reads working traffic as "Civilian · Not hostile" with no bount
 `tests/postjump.test.ts`: the level's shape, the objective on the real chain and after a
 reload, traffic placement and lifetime, the escalation and its limits.
 
-## The whiteout: one mechanism found, the report not confirmed
+## The whiteout at the Jump Gate
+
+Reported on 24 October with two screenshots, one in Cerro and one in the next
+system. Both show the whole canvas as one flat grey, the same value
+(229, 229, 229) at every pixel I sampled, with the HUD intact on top of it and the
+ship, rocks and sky gone. It began as the drive charged ("Jump drive
+charging · fly through the gate", a gate 1.6 to 1.8 km off), stayed through a
+pause, and went when the ship flew through the gate.
+
+**Cause (from the evidence, not seen to happen here).** The gate's skin, the
+disc that fills in across the ring while the drive charges, is a shader that took
+`pow(1.0 - x, 2.6)` with `x` up to 2.7 outside the ring. In GLSL `pow` of a negative
+number is undefined, and a real GPU gives NaN. The disc is drawn additively
+in the HDR buffer, so one NaN pixel is smeared by the bloom's blur over the whole
+frame, and tone mapping turns it into a flat colour. It fits every sign: it
+needs the skin to show (the drive charging with fluid aboard), it needs the
+gate in view, it stays while paused (nothing changes the frame) and it ends when
+the skin is hidden after the crossing. The software renderer used here does not
+produce NaN for that expression, so I could not reproduce the grey, and I have
+not seen it on a device.
+
+**Fix.** The base is clamped (`max(1.0 - x, 0.0)`), and the same flaw is gone from seven
+other shaders: the ripple on the skin, the shield's hit ring and ready band,
+the drives' plume, and the anomaly's bent disc and photon ring (`exp(-pow(d, 2.0))`
+is now `exp(-d * d)`). `tests/shaders.test.ts` reads every GLSL `pow(` in
+`src/render` and fails when its base can go negative without a clamp, so it
+cannot come back.
+
+**To confirm on a device.** Fly at a Jump Gate with the tank full, in Cerro and in the next
+system, in the desktop browser and on a phone: no grey screen once the drive starts
+to charge, with the gate in view and out of it, and with the game paused.
+
+### What was measured before this report
+
+An earlier reading, from my own runs, was a different thing: the page's
+teal veil (`#warp`) staying up for the first frame of a level that follows a jump
+with no chart between. It is real but short (it clears on the first draw) and does
+not match these screenshots, whose grey is neutral and not teal. It stays
+documented below.
+
+### The veil on arrival (measured in my own runs)
 
 The report: in the first level the screen goes almost entirely white. Nothing in this
 change claims to fix it. What was done, in headless Chromium on SwiftShader (software
