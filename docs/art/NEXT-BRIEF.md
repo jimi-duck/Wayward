@@ -2,6 +2,18 @@
 
 *Give this file to the image generator that made the first two sets (same chat if you still have it). 28 pictures in seven batches. The game has no screen for most of them yet, so make the best you can and we wire them in after.*
 
+## Check the repository's current pictures first, then match them
+The game already has about 280 finished pictures. **Before you draw anything, open the ones that sit next to yours and make the new picture look like they belong with them.** Do not work from this file's words alone.
+1. Open the folder for each picture on GitHub (links below). The files are `.webp`; GitHub shows them in the browser.
+2. Look at **at least five neighbours** in that folder, and the single closest one to each picture you are about to make.
+3. Match what you see: the **palette** (dark and muted, one warm yellow-orange anchor, teal only on screens, red only for danger), the **lighting** (one key light and a rim light, soft haze), the **level of detail and wear**, the **camera and framing**, and how much of the frame the subject fills.
+4. Where a picture replaces an existing one, open the old one and keep what works (the ship, the subject, the angle) and fix only what the brief names.
+5. If you cannot open the repository, say so before you start and ask for the neighbouring pictures to be attached. Do not guess the style.
+
+Folders: ships [`src/art/ships/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/ships), fleet [`src/art/fleet/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/fleet), jobs [`src/art/jobs/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/jobs), phenomena [`src/art/phenomena/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/phenomena), places [`src/art/places/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/places), regions [`src/art/regions/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/regions), gates [`src/art/gates/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/gates), planets [`src/art/planets/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/planets), debrief [`src/art/debrief/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/debrief), icons [`public/icons/node/`](https://github.com/jimi-duck/Wayward/tree/main/public/icons/node).
+
+**For this brief in particular:** wrecks and elites are the existing hulls in `src/art/fleet/` seen dead or at close range; gates, planets and debrief scenes should sit beside `src/art/places/` and `src/art/regions/`.
+
 ## Read this first
 - **One picture per image.** Never a sheet, a board, a grid or "variations".
 - Fill the frame with one subject, at the shape asked for. Ships on pure black.
