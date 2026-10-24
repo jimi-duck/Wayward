@@ -36,7 +36,7 @@ QUALITY = {'emblems': 90, 'ships': 88, 'fleet': 88}
 CONTAIN = {'fleet'}
 # Generated sheets leave a thin frame line at the edge: this share is cut off each side first.
 TRIM = {'fleet': 0.055}
-LEFT_TRIM = {'fleet/wayward-guns': 0.14, 'fleet/wayward-rig': 0.14, 'fleet/wayward-signals': 0.14, 'fleet/wayward-stock': 0.14}  # a frame line sits further in
+LEFT_TRIM: dict[str, float] = {}  # per picture, where a frame line sits further in than the usual trim
 SMALL_TRIM = 0.07  # a picture under 800 px wide was cut from a sheet and carries a frame
 
 
