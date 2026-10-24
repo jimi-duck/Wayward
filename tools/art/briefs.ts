@@ -11,6 +11,7 @@ import { MISSION_CARDS } from '../../src/content/missions';
 import { FEATURES, type FeatureId } from '../../src/content/features';
 import { ALIEN_TYPES, VARIANTS } from '../../src/sim/enemies';
 import type { Face } from '../../src/sim/captains';
+import { UPGRADE } from '../../src/content/upgrades';
 import { artIds, artOptional } from './ids';
 import { BAYBANNER_LOOK, DEBRIEF_LOOK, EXTRA_LOOK, GATE_LOOK, PLANET_LOOK, CAPITAL_LOOK, JOB_SCENE, OWNED_LOOK, TRAFFIC_LOOK, WAYWARD_LOOK, CAPTAIN_LOOK, CONTACT_LOOK, EMBLEM_IDEA, ENDING_SCENE, FACTION_LOOK, PLACE_LOOK, REGION_LOOK, SHIP_LOOK } from './looks';
 
@@ -218,6 +219,18 @@ function sceneBrief(slot: 'gate' | 'planet' | 'debrief' | 'baybanner', id: strin
   };
 }
 
+function specBrief(id: string): Raw {
+  const u = UPGRADE[id];
+  const name = u?.name ?? id;
+  return {
+    slot: 'spec', id, file: `${dir('spec')}/${id}.webp`,
+    prompt: `${STYLE}\n\nSubject: the refit bay choice "${name}" (${id}), a part of the Wayward or a weapon doing its thing, in the workshop or just after use.\nFraming: 16:9, one clear subject filling the frame, readable as a thumbnail, in the same dark industrial yard as the bay tab banners (src/art/baybanners). No text, no UI.`,
+    avoid: AVOID_ALL, size: sz('spec'), background: 'full picture',
+    where: 'The refit bay inspector, above the module name (desktop).',
+    facts: [`node ${id}`, `name "${name}"`],
+  };
+}
+
 function jobBrief(id: string): Raw {
   const c = MISSION_CARDS.find((x) => x.id === id)!;
   return {
@@ -241,7 +254,7 @@ function phenomenonBrief(id: string): Raw {
 }
 
 /** The slots added after the first set, for the continuation brief. */
-export const CONTINUATION: SlotId[] = ['fleet', 'job', 'phenomenon', 'gate', 'planet', 'debrief', 'baybanner'];
+export const CONTINUATION: SlotId[] = ['fleet', 'job', 'phenomenon', 'gate', 'planet', 'debrief', 'baybanner', 'spec'];
 
 export function allBriefs(): Brief[] {
   const ids = artIds(), opt = artOptional();
@@ -263,5 +276,6 @@ export function allBriefs(): Brief[] {
   for (const id of ids.planet) out.push(sceneBrief('planet', id, PLANET_LOOK[id] ?? '', `a ${id} planet`, 'Not drawn yet: ready for the chart and the fuel stops.'));
   for (const id of ids.debrief) out.push(sceneBrief('debrief', id, DEBRIEF_LOOK[id] ?? '', `the ${id} debrief scene`, 'Not drawn yet: ready for the dock and debrief screens.'));
   for (const id of ids.baybanner) out.push(sceneBrief('baybanner', id, BAYBANNER_LOOK[id] ?? '', `the refit bay's ${id} tab backdrop`, 'Behind the ship at the top of the refit bay, one per tab (not wired yet).'));
+  for (const id of ids.spec) out.push(specBrief(id));
   return out.map((b) => ({ ...b, body: b.prompt.startsWith(STYLE) ? b.prompt.slice(STYLE.length).trimStart() : b.prompt }));
 }

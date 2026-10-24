@@ -9,7 +9,7 @@ import { PORT_NAMES } from './systems';
 // prompt for every one. docs/ART-SLOTS.md says what each is for and how to
 // brief it; src/art/README.md says how to drop the files in.
 
-export type SlotId = 'captain' | 'contact' | 'emblem' | 'ship' | 'place' | 'ending' | 'sighting' | 'file' | 'region' | 'fleet' | 'job' | 'phenomenon' | 'gate' | 'planet' | 'debrief' | 'baybanner';
+export type SlotId = 'captain' | 'contact' | 'emblem' | 'ship' | 'place' | 'ending' | 'sighting' | 'file' | 'region' | 'fleet' | 'job' | 'phenomenon' | 'gate' | 'planet' | 'debrief' | 'baybanner' | 'spec';
 
 export interface SlotDef {
   id: SlotId;
@@ -41,12 +41,15 @@ export const SLOTS: Record<SlotId, SlotDef> = {
   planet:   { id: 'planet',   dir: 'planets',   w: 1280, h: 720,  alpha: false, shownIn: '' },
   debrief:  { id: 'debrief',  dir: 'debrief',   w: 1280, h: 720,  alpha: false, shownIn: '' },
   baybanner: { id: 'baybanner', dir: 'baybanners', w: 1280, h: 720, alpha: false, shownIn: '' },
+  spec:     { id: 'spec',     dir: 'specs',     w: 1280, h: 720,  alpha: false, shownIn: '' },
 };
 
 /** The planets the fuel stops hang over, and the two debrief scenes. */
 export const PLANETS = ['rocky', 'ice', 'gas', 'dead'] as const;
 export const DEBRIEFS = ['castoff', 'limping'] as const;
 /** One painted backdrop per refit bay tab (Suggested plus the nine in `content/web.ts`). */
+/** The refit bay's 24 specialisations and 5 salvaged techs: each has an inspector picture (a node id in `content/web.ts`). */
+export const SPECS = ['ph_cone', 'ph_lance', 'ph_array', 'tp_heavy', 'tp_swarm', 'tp_precision', 'mn_field', 'mn_chain', 'mn_gravity', 'pl_ignite', 'pl_wake', 'cl_storm', 'cl_juggernaut', 'mo_drift', 'mo_evasion', 'df_fortress', 'df_reactive', 'df_regenerative', 'pl_corona', 'cl_shock', 'mo_afterburner', 'ut_prospector', 'ut_salvager', 'ut_scanner', 'tech_gutter', 'tech_custody', 'tech_office', 'tech_voice', 'tech_thren'] as const;
 export const BAYBANNERS = ['suggested', 'hull', 'weapons', 'ordnance', 'engines', 'defence', 'utility', 'signals', 'reactor', 'synergies'] as const;
 
 /** Formats the loader takes, best first. */

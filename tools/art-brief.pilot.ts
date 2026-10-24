@@ -16,7 +16,7 @@ const TITLES: Record<SlotId, string> = {
   captain: 'Captains and Calloway', contact: 'Named contacts', emblem: 'Emblems', ship: 'Ships', place: 'Ports',
   ending: 'Endings', sighting: 'Sightings (Archive)', file: 'The file (Archive)', region: 'Regions',
   fleet: 'Fleet (continuation)', job: 'Jobs (continuation)', phenomenon: 'Phenomena (continuation)',
-  gate: 'Gate stations (third run)', planet: 'Planets (third run)', debrief: 'Debrief scenes (third run)', baybanner: 'Refit bay tab banners',
+  gate: 'Gate stations (third run)', planet: 'Planets (third run)', debrief: 'Debrief scenes (third run)', baybanner: 'Refit bay tab banners', spec: 'Inspector pictures',
 };
 
 test('write the briefs', () => {
