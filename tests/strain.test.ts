@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { World } from '../src/sim/world';
-import { EMPTY_STORES, LOW_SUPPLIES } from '../src/sim/breakout';
+import { EMPTY_STORES, LOW_SUPPLIES, SAFE_R } from '../src/sim/breakout';
 import { WEB } from '../src/content/web';
 import { budgets, weightFuel } from '../src/sim/budgets';
 import { newJourney, options, plot, sortieDef } from '../src/sim/journey';
@@ -106,6 +106,23 @@ describe('the gate and the depot keep their own', () => {
     expect(w.safe).toBeNull();
     w.step(1 / 60, trigger);
     expect(w.bolts.length).toBeGreaterThan(0);
+  });
+
+  it('is a wall: fire from outside stops at the ring, and rock is kept out', () => {
+    const { w } = story();
+    w.bk!.nextPursuit = Infinity; w.cardNext = Infinity;
+    const lane = w.bk!.lane;
+    w.field.rocks = [];
+    w.ship.x = lane.x + 200; w.ship.z = lane.z + 200;
+    const bolt = { x: lane.x + SAFE_R + 2, y: 0, z: lane.z, vx: -60, vy: 0, vz: 0, life: 2, dmg: 1, pierce: 0, hit: [], homing: 0 };
+    w.bolts.push(bolt);
+    for (let i = 0; i < 30; i++) { w.step(1 / 60, idle); if (w.phase === 'comms') w.answer('scan'); }
+    expect(w.bolts.includes(bolt)).toBe(false);
+    // a rock drifting in is turned at the edge
+    w.field.rocks = [{ id: 9001, kind: 'basalt', x: lane.x + SAFE_R + 12, z: lane.z, vx: -20, vz: 0, size: 'small', r: 3, hp: 99, maxHp: 99, variant: 0, ax: 0, az: 0, spin: 0, tilt: 0 } as never];
+    for (let i = 0; i < 60; i++) { w.step(1 / 60, idle); if (w.phase === 'comms') w.answer('scan'); }
+    const r = w.field.rocks.find((x) => x.id === 9001);
+    if (r) expect(Math.hypot(r.x - lane.x, r.z - lane.z)).toBeGreaterThanOrEqual(SAFE_R);
   });
 
   it('keeps hostile hulls outside it, circling', () => {

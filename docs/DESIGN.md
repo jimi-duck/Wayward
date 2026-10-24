@@ -27,6 +27,10 @@ A sortie with a shape: get the stolen hauler out of the home system
   roll burst go cold (`World.safe`, `cold` in the step). A trigger pressed
   there gives one "Guns cold" line (every 2.5 s at most); the edge is a thin
   teal ring on the ground and the alert card reads "Safe here".
+  The field is a wall too (`stepFieldWall`): fire from outside (lasers, torpedoes,
+  hostile shots, webs) is absorbed at the ring, and rock is turned at the edge
+  like a hull. The cue reads "Guns cold · Supply hub generating a jamming
+  field" ("Jump Gate" at the gate).
 - **The jump.** With the lane's jump fluid in the tank (`World.fuel`, 20 on
   the first lane) the drive charges for five seconds on the way in (from
   `APPROACH`, 230 units out, further when it needs longer); fly through the
