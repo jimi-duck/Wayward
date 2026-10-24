@@ -245,10 +245,12 @@ export class Hud {
           // the Work Bay's launcher (sheet C): brief, non-blocking, with this device's own control for it
           if (e.id === 'tp_bay') this.notify(world, { type: 'arrival', headline: 'Torpedo launcher online', reason: deviceHint('torpedo'), key: 'fitted' });
           break;
-        case 'gunsCold':
-          this.note(world, t('Guns cold · the field damps every weapon'), 'hit');
-          this.notify(world, { type: 'denied', headline: 'Guns cold', reason: 'The field damps every weapon', key: 'guns' });
+        case 'gunsCold': {
+          const reason = e.at === 'lane' ? 'Jump Gate generating a jamming field' : 'Supply hub generating a jamming field';
+          this.note(world, `${t('Guns cold')} · ${t(reason)}`, 'hit');
+          this.notify(world, { type: 'denied', headline: 'Guns cold', reason, key: 'guns' });
           break;
+        }
         case 'dockDenied':
           this.notify(world, { type: 'denied', headline: 'Docking denied', reason: 'Hostiles engaged · clear the fight to dock', key: 'dock' });
           break;

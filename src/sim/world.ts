@@ -663,7 +663,7 @@ export class World implements EncounterHost {
     if (this.alive) {
       if (cold) {
         this.coldT = Math.max(0, this.coldT - dt);
-        if ((c.fire || c.torpedo) && this.coldT === 0) { this.coldT = 2.5; this.events.push({ type: 'gunsCold' }); }
+        if ((c.fire || c.torpedo) && this.coldT === 0) { this.coldT = 2.5; this.events.push({ type: 'gunsCold', at: this.safe }); }
       }
       const seen = this.events.length;
       fireWeapons(this.arms, s, cold ? { ...c, fire: false, torpedo: false } : c, targets, fireStats, fm, this.bolts, this.torps, this.events, dt);
@@ -698,6 +698,7 @@ export class World implements EncounterHost {
     stepWebs(this.webs, dt);
     moveBolts(this.bolts, dt, targets);
     for (const tp of moveTorpedoes(this.torps, targets, dt)) this.torpBlast(tp);
+    this.stepFieldWall();
     this.stepSystems(dt, fm.rapid);
     this.stepStrikes(dt);
     for (let i = this.tele.length - 1; i >= 0; i--) if ((this.tele[i]!.t -= dt) <= 0) this.tele.splice(i, 1);
@@ -1220,6 +1221,30 @@ export class World implements EncounterHost {
     for (let i = this.shots.length - 1; i >= 0; i--) {
       const sh = this.shots[i]!;
       if (Math.hypot(sh.x - port.x, sh.z - port.z) < SAFE_R) this.shots.splice(i, 1);
+    }
+  }
+
+  /**
+   * The damping field is a wall as well as a dead zone: fire from outside stops at the ring (lasers, torpedoes, hostile
+   * shots and webs), and rock is held out of it, turned at the edge like a hull. Nothing crosses it either way.
+   */
+  private stepFieldWall(): void {
+    const b = this.bk;
+    if (!b) return;
+    const rings = [b.lane, ...(b.port ? [b.port] : [])];
+    const inside = (x: number, z: number) => rings.some((k) => Math.hypot(x - k.x, z - k.z) < SAFE_R);
+    for (const list of [this.bolts, this.torps, this.shots, this.webs] as Array<Array<{ x: number; z: number }>>) {
+      for (let i = list.length - 1; i >= 0; i--) if (inside(list[i]!.x, list[i]!.z)) list.splice(i, 1);
+    }
+    for (const r of this.field.rocks) {
+      for (const k of rings) {
+        const dx = r.x - k.x, dz = r.z - k.z, d = Math.hypot(dx, dz) || 0.01, edge = SAFE_R + r.r;
+        if (d >= edge) continue;
+        const nx = dx / d, nz = dz / d;
+        r.x = k.x + nx * edge; r.z = k.z + nz * edge;
+        const vin = r.vx * nx + r.vz * nz;
+        if (vin < 0) { r.vx -= 2 * vin * nx; r.vz -= 2 * vin * nz; }
+      }
     }
   }
 

@@ -26,7 +26,7 @@ export type GameEvent =
   | { type: 'mended'; plates: number }
   | { type: 'breach'; x: number; z: number; score: number }
   | { type: 'bankEmpty' }
-  | { type: 'gunsCold' }
+  | { type: 'gunsCold'; at: 'lane' | 'port' | null }
   /** The port will not take the ship while a fight is on. */
   | { type: 'dockDenied' }
   /** The fight is over and the clamps take the ship. */
