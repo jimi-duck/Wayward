@@ -448,6 +448,8 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   padding: var(--rj-py) var(--rj-px); color: var(--ink);
 }
 @keyframes rj-in { from { opacity: 0; translate: -50% calc(-50% - 8px); } }
+/* the card's display must not outrank hidden: an answered call has to leave the screen (tests/hidden.test.ts) */
+#rd-call[hidden], #rd-call.job[hidden] { display: none; }
 #rd-call.job.noart { grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body" "timer"; }
 #rd-call.job.noart .rd-art { display: none; }
 #rd-call.job::before { background: var(--ng-scan), var(--ng-sheen), linear-gradient(180deg, rgba(9, 20, 27, .95), rgba(7, 15, 20, .94)); }

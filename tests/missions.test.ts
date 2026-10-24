@@ -429,7 +429,7 @@ describe('a job in the sky', () => {
     expect(st.begun).toBe(false);
     for (let i = 0; i < 30 && !(w.call ?? w.comms); i++) run(w, 1);
     expect((w.call ?? w.comms)?.def.id).toBe(SITUATION_BY_ID.pirate_toll!.card);
-    expect(w.runTime).toBeLessThan(15);
+    expect(w.runTime).toBeLessThan(8);
     // the desk drops the card before it opens: it rings again
     const w2 = world('pirate_toll');
     const st2 = w2.stage!;

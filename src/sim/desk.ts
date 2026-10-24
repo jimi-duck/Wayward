@@ -42,8 +42,9 @@ export const DESK = {
   mineSettle: 3,
   /** Seconds since the last card closed before this weight may open. */
   gap: { major: 180, important: 150, routine: 220, ambient: 0 } as Record<Weight, number>,
-  /** The gap an eager (scene) call waits instead, seconds since the last card closed. */
-  eager: 50,
+  /** What an eager (scene) call waits instead: seconds since the last card closed, and seconds of clear sky after the last hostile. A job rings soon after arrival. */
+  eager: 8,
+  eagerSettle: 3,
   /** Seconds a call stays up unanswered, then lapses. */
   window: { important: 30, routine: 22 },
   /** Seconds a queued card waits before it is dropped. */
@@ -124,13 +125,13 @@ export class Desk {
     if (busy === 'transit' || busy === 'fight') return false;
     if (tier === 'ambient') return true;
     if (busy !== 'free' || (tier !== 'major' && now - this.arrived < (eager ? DESK.arriveCall : DESK.arrive))) return false;
-    if (now - this.lastThreat < DESK.settle[tier] || now - this.lastMine < DESK.mineSettle) return false;
+    if (now - this.lastThreat < (eager ? DESK.eagerSettle : DESK.settle[tier]) || now - this.lastMine < DESK.mineSettle) return false;
     return now - this.lastClose >= (eager ? Math.min(DESK.eager, DESK.gap[tier]) : DESK.gap[tier]);
   }
 
   /** Drop what has waited too long (or was bound to a place the ship has left). */
   sweep(now: number, docked: boolean): void {
-    this.queue = this.queue.filter((a) => now - a.at < DESK.stale[a.tier] && !(a.port && docked));
+    this.queue = this.queue.filter((a) => (a.eager || now - a.at < DESK.stale[a.tier]) && !(a.port && docked));
   }
 
   /** The card to open now, if any: the heaviest first, and nothing lighter while a heavier one waits, unless the lighter is a scene's call and the heavier has to wait its gap. */

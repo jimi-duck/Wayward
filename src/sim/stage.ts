@@ -61,6 +61,8 @@ export class Stage {
   actors: Alien[] = [];
   /** begun: the scene is on (past its time); offered: the call is with the desk; taken: the goal is on. */
   begun = false; offered = false; taken = false;
+  /** The sortie second its call first rang (null until it does): the pilot's time to offer. */
+  rangAt: number | null = null;
   result: SitResult | null = null;
   /** Seconds since the goal was taken, and seconds of hold or follow so far. */
   clock = 0; hold = 0; out = 0;

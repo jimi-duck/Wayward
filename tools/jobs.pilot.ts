@@ -31,6 +31,7 @@ it('reports the jobs', { timeout: 3_600_000 }, () => {
 
   const offered = Array(8).fill(0) as number[], stops = Array(8).fill(0) as number[];
   let firstStop = 0, firstN = 0;
+  const rang: number[] = [];
   for (let i = 0; i < SEEDS; i++) {
     const seed = 5000 + i * 17;
     const j = newJourney(seed, false, 'eight');
@@ -44,6 +45,7 @@ it('reports the jobs', { timeout: 3_600_000 }, () => {
       if (def.system !== j.chart.home) stops[region]!++;
       if (w.stage?.offered && ids.has(w.stage.def.id)) {
         offered[region]!++;
+        if (w.stage.rangAt !== null) rang.push(w.stage.rangAt);
         if (!seen) { seen = true; firstStop += n; firstN++; }
       }
       if (w.phase !== 'over') break;
@@ -51,6 +53,8 @@ it('reports the jobs', { timeout: 3_600_000 }, () => {
     }
   }
 
+  rang.sort((a, b) => a - b);
+  const pct = (p: number) => (rang.length ? rang[Math.min(rang.length - 1, Math.floor(p * rang.length))]!.toFixed(1) : '-');
   const rows = REGIONS_LONG.map((r, i) => `| ${i + 1} ${r.name} | ${(dealt[i]! / N).toFixed(1)} | ${(stops[i]! / SEEDS).toFixed(1)} | ${(offered[i]! / SEEDS).toFixed(1)} |`);
   writeFileSync(new URL('../docs/BALANCE-JOBS.md', import.meta.url), `# Jobs balance report
 
@@ -74,6 +78,9 @@ more time, so read it as a floor.
 | Region | Jobs dealt per chart | Stops | Offered |
 |---|---|---|---|
 ${rows.join('\n')}
+
+Seconds from arrival to the call ringing (${rang.length} offers): median ${pct(0.5)}, 90th percentile ${pct(0.9)}, longest ${pct(1)}.
+A call waits for clear sky, never for a long quiet.
 
 The first job was offered at stop ${(firstStop / Math.max(1, firstN)).toFixed(1)} on average (${firstN} of ${SEEDS} journeys).
 `);
