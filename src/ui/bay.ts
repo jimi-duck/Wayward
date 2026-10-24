@@ -10,6 +10,7 @@ import { stepOf } from '../sim/tutor';
 import type { World } from '../sim/world';
 import { $, GUARD, h, keys, type PadEdges } from './dom';
 import { icon, nodeIcon } from './icons';
+import { artUrl } from './art';
 import { opsOf, opsText } from './ops';
 import { tick } from './tick';
 import { num, t } from '../i18n';
@@ -218,6 +219,7 @@ export class BayPanel {
     this.off?.();
     this.off = null;
     $('bay-pts').replaceChildren();
+    $('bay').querySelectorAll<HTMLElement>('.bay-back i').forEach((l) => { l.classList.remove('on'); delete l.dataset.u; });
     this.rings.clear();
     $('bay').querySelector('.bay-link-pick')?.remove();
     for (const k of ['--ax', '--ay', '--aw']) $('bay').style.removeProperty(k);
@@ -414,7 +416,23 @@ export class BayPanel {
 
   // ── drawing ─────────────────────────────────────────────────────────────
 
+  /** The tab's painted backdrop fades in behind the ship; no picture, no layer. */
+  private backdrop(): void {
+    const layers = $('bay').querySelectorAll<HTMLElement>('.bay-back i');
+    const url = artUrl('baybanner', this.view === 'picks' ? 'suggested' : this.view);
+    const now = $('bay').querySelector<HTMLElement>('.bay-back i.on');
+    if (url && now?.dataset.u === url) return;
+    const next = [...layers].find((l) => l !== now);
+    if (!next) return;
+    now?.classList.remove('on');
+    if (!url) return;
+    next.dataset.u = url;
+    next.style.backgroundImage = `url("${url}")`;
+    next.classList.add('on');
+  }
+
   private render(): void {
+    this.backdrop();
     const w = this.world;
     if (!w) return;
     $('bay-voice').textContent = t(w.voice());

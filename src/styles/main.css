@@ -678,6 +678,13 @@ html:not(.breakout) .pause-card #brief { display: none; }
   -webkit-mask-image: radial-gradient(ellipse 58% 54% at 55% 64%, #000 58%, transparent 100%), linear-gradient(180deg, #000 78%, transparent 97%);
   mask-image: radial-gradient(ellipse 58% 54% at 55% 64%, #000 58%, transparent 100%), linear-gradient(180deg, #000 78%, transparent 97%);
   -webkit-mask-composite: source-in; mask-composite: intersect; }
+/* the tab's painted backdrop: dim and soft behind the ship, never the loudest thing on the screen */
+.bay-back { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  -webkit-mask-image: radial-gradient(ellipse 90% 85% at 55% 45%, #000 40%, transparent 100%); mask-image: radial-gradient(ellipse 90% 85% at 55% 45%, #000 40%, transparent 100%); }
+.bay-back i { position: absolute; inset: 0; background: center / cover no-repeat; opacity: 0; transition: opacity .5s var(--ez); filter: saturate(.85) brightness(.8); }
+.bay-back i.on { opacity: .5; }
+#bay.snap .bay-back i { transition: none; }
+@media (prefers-reduced-motion: reduce) { .bay-back i { transition: none; } }
 .bay-art.none, .bay-pts.none { display: none; }
 #bay.snap .bay-art, #bay.snap .bay-pts { transition: none; }
 @media (prefers-reduced-motion: reduce) { .bay-art, .bay-pts { transition: none; } }
