@@ -35,7 +35,7 @@ const FRAG = /* glsl */ `
   /** The disc's light at radius rho (in horizon radii, 1.5 to 4.6) and angle a. */
   vec3 disc(float rho, float a) {
     float t = clamp((rho - 1.5) / 3.1, 0.0, 1.0);
-    float body = smoothstep(0.0, 0.05, t) * pow(1.0 - t, 1.5);
+    float body = smoothstep(0.0, 0.05, t) * pow(max(1.0 - t, 0.0), 1.5);
     // streaks along the flow: angle stretched by radius so the inner turns faster
     float sw = a + uTime * uSpin / pow(rho, 1.5);
     vec2 cs = vec2(cos(sw), sin(sw));
@@ -67,11 +67,13 @@ const FRAG = /* glsl */ `
     // the far side of the disc bent up over and under the hole: a band hugging it, brightest at the poles
     float rb = r / RH;
     float pole = pow(abs(p.y) / max(r, 1e-4), 1.4);
-    float bend = exp(-pow((rb - 1.62) / 0.34, 2.0)) * (0.3 + 0.7 * pole);
+    float bd = (rb - 1.62) / 0.34;
+    float bend = exp(-bd * bd) * (0.3 + 0.7 * pole);
     vec3 bc = disc(2.1 + 0.5 * pole, atan(p.y, p.x) + 1.2);
     light += bc * bend * 0.62;
     // the photon ring: thin, bright, round
-    float ring = exp(-pow((rb - 1.07) / 0.04, 2.0));
+    float rr = (rb - 1.07) / 0.04;
+    float ring = exp(-rr * rr);
     light += vec3(1.7, 1.55, 1.4) * ring * 0.75;
     // a faint soft halo, so the edge of it is not a cut
     light += uTint * 0.05 * exp(-pow(rb / 2.7, 2.0));

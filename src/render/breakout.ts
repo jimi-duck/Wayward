@@ -231,13 +231,14 @@ const MEMBRANE_FRAG = /* glsl */ `
     float inner = 1.0 - step(16.4, r);
     float x = r / 16.4;
     float rip = 0.55 + 0.45 * sin(x * 22.0 - uTime * 7.0);
-    vec3 skin = mix(vec3(0.05, 0.4, 0.52), vec3(0.8, 1.45, 1.65), pow(1.0 - x, 2.6)) * (0.45 + 0.55 * rip);
+    vec3 skin = mix(vec3(0.05, 0.4, 0.52), vec3(0.8, 1.45, 1.65), pow(max(1.0 - x, 0.0), 2.6)) * (0.45 + 0.55 * rip);
     float edge = smoothstep(0.55, 1.0, x) * 0.5;
     vec3 col = skin * uSkin * inner * (1.0 + edge);
     if (uPulse >= 0.0 && uPulse <= 1.0) {
       float ring = 16.8 + uPulse * 26.0;
       float w = 0.9 + uPulse * 2.2;
-      float k = exp(-pow((r - ring) / w, 2.0)) * (1.0 - uPulse) * (1.0 - uPulse);
+      float e = (r - ring) / w;
+      float k = exp(-e * e) * (1.0 - uPulse) * (1.0 - uPulse);
       col += vec3(0.9, 2.2, 2.6) * k * 2.0;
     }
     if (max(col.r, max(col.g, col.b)) < 0.01) discard;
