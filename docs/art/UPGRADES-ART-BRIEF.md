@@ -15,6 +15,18 @@
 
 **Reference pictures for the look:** title art https://github.com/jimi-duck/Wayward/blob/main/docs/art/reference/wayward-title-art.jpg and menu art https://github.com/jimi-duck/Wayward/blob/main/docs/art/reference/wayward-menu-art.jpg. Good examples already made: `src/art/fleet/wayward-rig.webp`, `src/art/fleet/wayward-signals.webp`, `src/art/fleet/capital-vance.webp`, `src/art/jobs/sc_toll.webp`.
 
+## Check the repository's current pictures first, then match them
+The game already has about 280 finished pictures. **Before you draw anything, open the ones that sit next to yours and make the new picture look like they belong with them.** Do not work from this file's words alone.
+1. Open the folder for each picture on GitHub (links below). The files are `.webp`; GitHub shows them in the browser.
+2. Look at **at least five neighbours** in that folder, and the single closest one to each picture you are about to make.
+3. Match what you see: the **palette** (dark and muted, one warm yellow-orange anchor, teal only on screens, red only for danger), the **lighting** (one key light and a rim light, soft haze), the **level of detail and wear**, the **camera and framing**, and how much of the frame the subject fills.
+4. Where a picture replaces an existing one, open the old one and keep what works (the ship, the subject, the angle) and fix only what the brief names.
+5. If you cannot open the repository, say so before you start and ask for the neighbouring pictures to be attached. Do not guess the style.
+
+Folders: ships [`src/art/ships/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/ships), fleet [`src/art/fleet/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/fleet), jobs [`src/art/jobs/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/jobs), phenomena [`src/art/phenomena/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/phenomena), places [`src/art/places/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/places), regions [`src/art/regions/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/regions), gates [`src/art/gates/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/gates), planets [`src/art/planets/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/planets), debrief [`src/art/debrief/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/debrief), icons [`public/icons/node/`](https://github.com/jimi-duck/Wayward/tree/main/public/icons/node).
+
+**For this brief in particular:** icons must match the weight and style of `public/icons/node/` (bold, solid, readable at 40 px), only larger and cleaner. Tab banners should feel like `src/art/places/` and `src/art/regions/` (painted stations and space, same palette). Inspector pictures should feel like `src/art/jobs/` and `src/art/fleet/` (one clear subject, dark ground).
+
 ## 1. What the upgrades centre is
 The **refit bay** is where the player spends Cyrite (the money) on upgrades. On desktop it is one screen: a left column of **ten tabs** (Suggested, Hull, Weapons, Ordnance, Engines, Defence, Utility, Signals, Reactor, Synergies), the real 3D Wayward at the top with a painted station behind it, a **grid of upgrade icons** in the middle (about 77 of them), and an **inspector** on the right (icon, name, level pips, what it changes, the Fit button). On phones it is the same data in a compact layout where the **icons carry everything**: they must read at 40 px.
 

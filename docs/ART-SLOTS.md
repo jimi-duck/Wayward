@@ -223,8 +223,9 @@ installed through `art:prep`.
   `docs/art/NEXT-BRIEF.md`. No screen draws the new ones yet.
 - The redo run (2026-10-24, `docs/art/REDO-BRIEF.md`) replaced 29 weaker ones: 17 job
   scenes (now 1920×1088), five phenomena, three freighters and lancers, and the four
-  Wayward fits. Still weak: `wayward-stock` and `wayward-guns` look alike, and
-  `lancer-calloway` is white and grey, not Calloway's orange and grey.
+  Wayward fits. Still weak: `wayward-stock` and `wayward-guns` look alike
+  (brief: `docs/art/WAYWARD-FITS-BRIEF.md`). The art briefs all start by telling the
+  artist to check the pictures already in `src/art/` and match them.
 - Which of these should be redone: `/mnt/project-files/art-brief/REDO-AND-MISSING.md`.
 - The sheets that went unused are in `/mnt/project-files/art-brief/raw/`.
 

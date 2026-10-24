@@ -20,6 +20,18 @@
 
 **The Wayward:** a long, low, aerodynamic ore hauler in worn yellow-orange, split side engine pods. It must look like the same ship as in the title art in every picture.
 
+## Check the repository's current pictures first, then match them
+The game already has about 280 finished pictures. **Before you draw anything, open the ones that sit next to yours and make the new picture look like they belong with them.** Do not work from this file's words alone.
+1. Open the folder for each picture on GitHub (links below). The files are `.webp`; GitHub shows them in the browser.
+2. Look at **at least five neighbours** in that folder, and the single closest one to each picture you are about to make.
+3. Match what you see: the **palette** (dark and muted, one warm yellow-orange anchor, teal only on screens, red only for danger), the **lighting** (one key light and a rim light, soft haze), the **level of detail and wear**, the **camera and framing**, and how much of the frame the subject fills.
+4. Where a picture replaces an existing one, open the old one and keep what works (the ship, the subject, the angle) and fix only what the brief names.
+5. If you cannot open the repository, say so before you start and ask for the neighbouring pictures to be attached. Do not guess the style.
+
+Folders: ships [`src/art/ships/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/ships), fleet [`src/art/fleet/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/fleet), jobs [`src/art/jobs/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/jobs), phenomena [`src/art/phenomena/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/phenomena), places [`src/art/places/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/places), regions [`src/art/regions/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/regions), gates [`src/art/gates/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/gates), planets [`src/art/planets/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/planets), debrief [`src/art/debrief/`](https://github.com/jimi-duck/Wayward/tree/main/src/art/debrief), icons [`public/icons/node/`](https://github.com/jimi-duck/Wayward/tree/main/public/icons/node).
+
+**For this brief in particular:** every picture here replaces one that already exists under the same name. Open the old file first and the closest good one (`src/art/fleet/capital-vance.webp`, `src/art/jobs/sc_toll.webp`, `src/art/phenomena/well.webp`).
+
 ## What to deliver
 - Every picture a **separate PNG**, named exactly as its `Save as` line, for example `jobs__sc_bait.png` (two underscores after the folder name). The names match files already in `src/art/`, so the new ones replace the old.
 - One ZIP of all of them. If you cannot make a ZIP, one PDF with one picture per page and the file name in a caption outside the picture.
