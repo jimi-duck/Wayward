@@ -8,7 +8,7 @@ import { FACTION_LOOK } from './looks';
 const TITLES: Record<SlotId, string> = {
   captain: 'Captains and Calloway', contact: 'Named contacts', emblem: 'Emblems', ship: 'Ship profiles', place: 'Port banners',
   ending: 'Endings', sighting: 'Sightings', file: 'Pieces of the file', region: 'Regions',
-  fleet: 'Fleet', job: 'Jobs', phenomenon: 'Phenomena', gate: 'Gate stations', planet: 'Planets', debrief: 'Debrief scenes',
+  fleet: 'Fleet', job: 'Jobs', phenomenon: 'Phenomena', gate: 'Gate stations', planet: 'Planets', debrief: 'Debrief scenes', baybanner: 'Bay banners',
 };
 const BATCHES: Array<{ id: string; slot: SlotId; optional?: boolean; note: string }> = [
   { id: 'A', slot: 'emblem', note: 'Smallest and quickest to judge. Do these first after the style sheet.' },

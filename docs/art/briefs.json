@@ -3287,6 +3287,146 @@
         "debrief limping"
       ],
       "body": "Subject: the limping debrief scene: the damaged Wayward approaching a port on one engine, trailing vented gas, a figure watching from the dock.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "suggested",
+      "file": "src/art/baybanners/suggested.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's suggested tab backdrop: the Wayward in a work bay under cranes, a few crew at work, warm work lights on wet deck.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner suggested"
+      ],
+      "body": "Subject: the refit bay's suggested tab backdrop: the Wayward in a work bay under cranes, a few crew at work, warm work lights on wet deck.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "hull",
+      "file": "src/art/baybanners/hull.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's hull tab backdrop: close on the Wayward’s armoured prow, plating being welded, sparks, gantry arms.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner hull"
+      ],
+      "body": "Subject: the refit bay's hull tab backdrop: close on the Wayward’s armoured prow, plating being welded, sparks, gantry arms.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "weapons",
+      "file": "src/art/baybanners/weapons.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's weapons tab backdrop: a laser mount on a yard stand, coolant tanks beside it, a teal beam fired into the dark.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner weapons"
+      ],
+      "body": "Subject: the refit bay's weapons tab backdrop: a laser mount on a yard stand, coolant tanks beside it, a teal beam fired into the dark.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "ordnance",
+      "file": "src/art/baybanners/ordnance.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's ordnance tab backdrop: torpedoes racked on a loading rail, ammunition crates, a mine drum behind.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner ordnance"
+      ],
+      "body": "Subject: the refit bay's ordnance tab backdrop: torpedoes racked on a loading rail, ammunition crates, a mine drum behind.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "engines",
+      "file": "src/art/baybanners/engines.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's engines tab backdrop: an engine pod on a yard cradle, blue thrust glow, vanes and heavy mounts.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner engines"
+      ],
+      "body": "Subject: the refit bay's engines tab backdrop: an engine pod on a yard cradle, blue thrust glow, vanes and heavy mounts.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "defence",
+      "file": "src/art/baybanners/defence.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's defence tab backdrop: a shield projector dish with a teal field, stacked armour plates, a crew member at work.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner defence"
+      ],
+      "body": "Subject: the refit bay's defence tab backdrop: a shield projector dish with a teal field, stacked armour plates, a crew member at work.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "utility",
+      "file": "src/art/baybanners/utility.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's utility tab backdrop: the Wayward’s tractor emitter holding a rock in open space, cargo racks behind.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner utility"
+      ],
+      "body": "Subject: the refit bay's utility tab backdrop: the Wayward’s tractor emitter holding a rock in open space, cargo racks behind.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "signals",
+      "file": "src/art/baybanners/signals.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's signals tab backdrop: a comms mast and a large dish on a dock, a teal monitor, a planet low on the horizon.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner signals"
+      ],
+      "body": "Subject: the refit bay's signals tab backdrop: a comms mast and a large dish on a dock, a teal monitor, a planet low on the horizon.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "reactor",
+      "file": "src/art/baybanners/reactor.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's reactor tab backdrop: a glowing reactor core in a steel cage, steam and heavy pipework.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner reactor"
+      ],
+      "body": "Subject: the refit bay's reactor tab backdrop: a glowing reactor core in a steel cage, steam and heavy pipework.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
+    },
+    {
+      "slot": "baybanner",
+      "id": "synergies",
+      "file": "src/art/baybanners/synergies.webp",
+      "prompt": "Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward title art (the attached reference): dark space, painterly-realistic, high detail, volumetric haze. Industrial cyberpunk frontier, \"used, not dirty\": advanced technology that is old, patched, regulated and repurposed; everything has a previous owner, a serial number and a warning label. Worn painted metal, faded paint, replacement panels, exposed fasteners, cable runs, stencilled markings, maintenance labels; lava-veined dark rock where rock appears; warm amber window lights against deep blue-black shadow. Palette: mostly dark and desaturated (void black #080D0E, industrial off-white #D8D5C6, dust grey #596160, deep rust brown #4A3A27) with the Wayward's yellow-orange (#D99A27) as the warm anchor. Accents sparingly: signal teal #39AEB7 only for screens and information; alert red #C94A3F only for threat; a dull gold #C9AB66 only for caution. Nebula purple only far in the background. No neon pink. Lighting: low-key, one clear key light with soft rim light and haze, glow kept restrained and small (engine blue, window orange); nothing blown out.\n\nSubject: the refit bay's synergies tab backdrop: a salvaged alien-looking module bolted to a worn hauler section, teal cables between them.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI.",
+      "avoid": "text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face",
+      "size": "1280×720",
+      "background": "full picture",
+      "where": "Behind the ship at the top of the refit bay, one per tab (not wired yet).",
+      "facts": [
+        "baybanner synergies"
+      ],
+      "body": "Subject: the refit bay's synergies tab backdrop: a salvaged alien-looking module bolted to a worn hauler section, teal cables between them.\nFraming: cinematic 16:9, the Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) small in the frame with room around it; keep the lower third calm because text sits over it. One clear subject.\nNo text, no UI."
     }
   ]
 }

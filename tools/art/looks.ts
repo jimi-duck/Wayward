@@ -182,6 +182,19 @@ export const PLANET_LOOK: Record<string, string> = {
   dead: 'a dead burnt-out world with dark glass plains and no light on the night side',
 };
 
+export const BAYBANNER_LOOK: Record<string, string> = {
+  suggested: 'the Wayward in a work bay under cranes, a few crew at work, warm work lights on wet deck',
+  hull: 'close on the Wayward’s armoured prow, plating being welded, sparks, gantry arms',
+  weapons: 'a laser mount on a yard stand, coolant tanks beside it, a teal beam fired into the dark',
+  ordnance: 'torpedoes racked on a loading rail, ammunition crates, a mine drum behind',
+  engines: 'an engine pod on a yard cradle, blue thrust glow, vanes and heavy mounts',
+  defence: 'a shield projector dish with a teal field, stacked armour plates, a crew member at work',
+  utility: 'the Wayward’s tractor emitter holding a rock in open space, cargo racks behind',
+  signals: 'a comms mast and a large dish on a dock, a teal monitor, a planet low on the horizon',
+  reactor: 'a glowing reactor core in a steel cage, steam and heavy pipework',
+  synergies: 'a salvaged alien-looking module bolted to a worn hauler section, teal cables between them',
+};
+
 export const DEBRIEF_LOOK: Record<string, string> = {
   castoff: 'calm: the Wayward leaving a work bay, bay doors open, work lights, plenty of black ahead',
   limping: 'the damaged Wayward approaching a port on one engine, trailing vented gas, a figure watching from the dock',
