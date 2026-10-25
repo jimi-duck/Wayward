@@ -12,7 +12,7 @@ const oneLine = (s: string) => s.replace(/\s+/g, ' ').trim();
 
 const SHAPE: Partial<Record<SlotId, string>> = {
   fleet: 'Make it a wide landscape picture (3:2), the ship on pure black.',
-  job: 'Make it a wide landscape picture (16:9).',
+  job: 'Make it a tall portrait picture (2:3).',
   phenomenon: 'Make it a landscape picture (4:3).',
 };
 
@@ -53,7 +53,7 @@ export function continueBrief(all3: Brief[]): string {
   P('## Sizes and shapes',
     '| Kind | Shape to make | Notes |', '| --- | --- | --- |',
     `| Ships (fleet) | wide 3:2 | one ship, three-quarter side view from slightly above, nose pointing right, pure black background, the whole hull in frame and **large in the frame** (fill about 80% of the width) |`,
-    `| Jobs | 16:9 | cinematic, lower third calm |`,
+    `| Jobs | tall 2:3 | cinematic, subject in the middle, shown full height beside the job text |`,
     `| Phenomena | 4:3 | a found camera still, slightly grainy |`,
     '', 'The game crops and resizes from the centre, so keep the subject centred and away from the edges.');
 

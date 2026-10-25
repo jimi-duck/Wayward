@@ -192,7 +192,7 @@ Three more slots are ready, with prompts, for a second run
 | Slot | Folder | Count | Size | For |
 | --- | --- | --- | --- | --- |
 | Fleet | `fleet/` | 27 | 960×480 on black | the nine capital ships (`capital-<captain>`), eight neutral hulls (tanker, hauler, courier, gunship, barge, salvager, drifter, ferry), the Wayward as fitted (`wayward-stock`, `-guns`, `-rig`, `-signals`), and six hulls in their real owner's colours (`<hull>-<caller>`, such as `freighter-miners`), which the comms call already uses in place of the plain hull |
-| Jobs | `jobs/` | 25 | 1280×720 | one scene per job card (`sc_*`), drawn square-cropped on the job offer card. all 25 are in |
+| Jobs | `jobs/` | 25 | 960×1440 (2:3, the 25 in the game are still 1280×720 and are cropped to fit until redrawn: `docs/art/JOBS-BRIEF.md`) | one scene per job card (`sc_*`), drawn full height down the right side of the job offer card. all 25 are in |
 | Phenomena | `phenomena/` | 14 | 800×600 | the places on the chart (`veil` … `carrier`) |
 
 Left out on purpose, listed at the end of the brief: wrecks of each hull, damage

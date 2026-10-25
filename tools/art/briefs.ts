@@ -235,9 +235,9 @@ function jobBrief(id: string): Raw {
   const c = MISSION_CARDS.find((x) => x.id === id)!;
   return {
     slot: 'job', id, file: `${dir('job')}/${id}.webp`,
-    prompt: `${STYLE}\n\nSubject: the job "${c.title}". ${c.text.replace(/[“”]/g, '"')}\nScene: ${JOB_SCENE[id]}.\nFraming: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.\nNo people's faces, no text, no UI.`,
+    prompt: `${STYLE}\n\nSubject: the job "${c.title}". ${c.text.replace(/[“”]/g, '"')}\nScene: ${JOB_SCENE[id]}.\nFraming: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.\nNo people's faces, no text, no UI.`,
     avoid: AVOID_ALL, size: sz('job'), background: 'full picture',
-    where: 'Not drawn yet: ready for the job card in comms and the objective header.',
+    where: 'The job offer card: full height down its right side.',
     facts: [`card ${id}`, `title "${c.title}"`, `from "${c.from}"`],
   };
 }

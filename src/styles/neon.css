@@ -501,6 +501,12 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #rd-call.job .rd-pic { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; padding: 0;
   clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
 #rd-call.job .rd-hull { mix-blend-mode: screen; clip-path: none; }
+/* the job's own picture: full height, top to bottom, out to the card's edge on the right (cut to the chamfer), the words beside it.
+   Cropped to fill, so keep the subject in the middle of the picture (docs/art/JOBS-BRIEF.md) */
+#rd-call.job.bleed:not(.noart) { grid-template-areas: "h art" "body art" "timer art"; }
+#rd-call.job.bleed:not(.noart) .rd-art { margin: calc(var(--rj-py) * -1) calc(var(--rj-px) * -1) calc(var(--rj-py) * -1) 0; place-items: stretch;
+  clip-path: polygon(0 0, calc(100% - var(--ng-cut)) 0, 100% var(--ng-cut), 100% calc(100% - var(--ng-cut)), calc(100% - var(--ng-cut)) 100%, 0 100%); }
+#rd-call.job.bleed:not(.noart) .rd-pic { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: 50% 50%; clip-path: none; display: block; }
 #rd-call.job .rd-art.emblem::before { content: ""; width: 96px; height: 96px; background: var(--dk-hud, #86a9d1); -webkit-mask: var(--emblem) center / contain no-repeat; mask: var(--emblem) center / contain no-repeat; }
 #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr) 160px; }
 /* the answer clock: a thin line along the foot, the rim's colour (amber only for a priority call) */
@@ -529,6 +535,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
     grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body" "timer"; }
   #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr); }
   #rd-call.job .rd-art { display: none; }
+  #rd-call.job.bleed:not(.noart) { grid-template-areas: "h" "body" "timer"; }
   #rd-call.job > .rd-h { padding-bottom: 6px; }
   #rd-call.job .rd-k, #rd-call.job .rd-kind { font-size: 11px; }
   #rd-call.job .rd-body { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.25fr); grid-template-rows: auto auto auto 1fr; column-gap: 14px; row-gap: var(--rj-block); align-content: start; }
@@ -547,4 +554,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
     width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "art" "body" "timer"; }
   #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr); }
   #rd-call.job .rd-art { height: 132px; }
+  #rd-call.job.bleed:not(.noart) { grid-template-areas: "h" "art" "body" "timer"; }
+  #rd-call.job.bleed:not(.noart) .rd-art { margin: 0; clip-path: none; }
+  #rd-call.job.bleed:not(.noart) .rd-pic { object-position: 50% 40%; }
 }
