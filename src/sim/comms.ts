@@ -273,8 +273,13 @@ export interface CardDef {
    * colour. Cyan is systems, radio and documents; ochre is WAYWARD and Sam's private channel; red is breach and threat.
    */
   glass?: GlassRole;
-  /** The status word top right, beside a dot (Service, Unknown, Breach, Private, Recovered). */
+  /** The status word top right, beside a dot (Service, Unknown, Breach, Private, Recovered). A demand's call shows it as its tag. */
   status?: string;
+  /**
+   * What the caller wants of you, in one line over the answers; `{amount}` is the cost of the first answer that pays. A call
+   * with a demand holds the world until it is answered, and draws as the demand card (ui/radio.ts).
+   */
+  demand?: string;
   /** A private channel's bearing in degrees: where the call comes in from, shown as it arrives. Sam's never changes. */
   rx?: number;
   /** No title on the sheet: a private voice speaks in quoted lines (Sam's channel). The title stays for the log. */

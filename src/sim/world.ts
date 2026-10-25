@@ -614,6 +614,8 @@ export class World implements EncounterHost {
     // an ambush on the table slows the world rather than stopping it, and does not wait for ever
     const slowed = this.phase === 'comms' && !!this.comms && this.comms.slow > 0;
     if (this.phase !== 'play' && !slowed) return;
+    // a demand on the radio holds the world: pop-ups always pause, and the answer is the player's to give
+    if (this.call?.def.demand) return;
     if (slowed) {
       dt *= SLOW;
       const o = this.comms!;

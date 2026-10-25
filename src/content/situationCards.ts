@@ -161,13 +161,14 @@ export const SCENE_CARDS: CardDef[] = [
   }),
   scene({
     id: 'sc_sweep', kind: 'warning', caller: 'office', tier: 'important',
-    from: 'Net sweep · patrol lead', title: 'Report your cargo',
-    text: '“Net sweep in this system. All hulls report cargo and last port. The ones that do not will be asked again.”',
+    from: 'Net sweep · Patrol lead', title: 'Report your cargo', status: 'Patrol · Priority',
+    text: 'All ships: report your cargo and last port.\n\nRefuse, and we will ask again.',
+    demand: 'The officer wants {amount} for clearance.',
     cargo: 'A patrol · three hulls, wide formation',
     choices: [
-      { id: 'dark', label: 'Run dark', tone: 'bluff', hint: 'Cut the transponder till they turn. Needs baffles or a ghost echo.', needs: { fitted: ['md_baffles', 'md_ghost'] }, show: { fitted: ['md_baffles', 'md_ghost'] }, win: { text: 'The patrol sweeps past', heat: -0.05 } },
-      { id: 'report', label: 'Report a clean hold', tone: 'pay', hint: 'Three Cyrite for the officer’s cooperation.', cost: { chits: 15 }, win: { text: 'The officer logs you clean', dismiss: true } },
-      { id: 'no', label: 'Hold course', tone: 'refuse', hint: 'Keep clear of the patrol.', win: { text: 'The patrol watches you pass', heat: 0.04 } },
+      { id: 'dark', label: 'Run dark', tone: 'bluff', hint: 'Patrol sweeps past', needs: { fitted: ['md_baffles', 'md_ghost'] }, show: { fitted: ['md_baffles', 'md_ghost'] }, win: { text: 'The patrol sweeps past', heat: -0.05 } },
+      { id: 'report', label: 'Pay for clearance', tone: 'pay', hint: 'Patrol leaves', cost: { chits: 15 }, win: { text: 'The officer clears you · the patrol leaves', dismiss: true } },
+      { id: 'no', label: 'Hold course', tone: 'refuse', hint: 'Wanted level increases', win: { text: 'The patrol watches you pass', heat: 0.04 } },
     ],
   }),
 
