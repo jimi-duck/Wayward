@@ -5,12 +5,12 @@
 ## What this is
 **WAYWARD** is a 3D space-survival game for desktop and phone browsers. You fly a worn yellow-orange ore hauler, the *Wayward*, through a dark industrial frontier. The mood is cyberpunk frontier, "used, not dirty": old, patched, regulated technology.
 
-The game offers side jobs in a pop-up card: the words on the left, **one picture full height down the right side of the card**, top edge to bottom edge. The 25 pictures in the ZIP are **wide (16:9, 1280×720)**. The card now needs them **tall**, so each one has to be recomposed, not just cropped.
+The game offers side jobs in a pop-up card: the words on the left, **one tall picture down the right side of the card**, as tall as the words, inside the card's margins and in a thin pale border. The 25 pictures in the ZIP are **wide (16:9, 1280×720)**. The card now needs them **tall**, so each one has to be recomposed, not just cropped.
 
 ## The task
 Take each picture in the ZIP and make a **tall portrait version**.
 
-- **Size: 2:3 portrait, 1280×1920 pixels or larger** (the game resizes it to 960×1440). The card shows it about 355 px wide and 545 px tall on a laptop, so it must read at a glance.
+- **Size: 2:3 portrait, 1280×1920 pixels or larger** (the game resizes it to 960×1440). The card shows it about 325 to 350 px wide and 475 to 530 px tall, so it must read at a glance.
 - **Same picture, new shape.** Keep the scene, the ships, the palette, the lighting and the level of detail of the attached picture. Do not invent a different scene. Extend the sky, rock, haze and structure upward and downward to fill the tall frame, and move or stack the main elements so everything important sits in the **middle 60% of the width** and the **middle 80% of the height**. The card crops the sides a little on some screens, and its right-hand corners are cut, so keep detail away from the edges and corners.
 - The **Wayward** (a long, low, worn yellow-orange ore hauler with split side engine pods) stays in every picture it is in now, small in the frame, clearly readable.
 - Where the old picture spreads things out sideways (ships in a row, a wide station), **stack them vertically** instead: the main subject in the upper middle, the Wayward in the lower middle, calm dark space or rock between and around.

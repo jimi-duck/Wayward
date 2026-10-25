@@ -443,14 +443,14 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   left: 50%; top: 50%; translate: -50% -50%; animation-name: rj-in;
   width: min(var(--rj-w), calc(100vw - var(--safe-l) - var(--safe-r) - 48px));
   max-height: calc(100dvh - var(--safe-t) - var(--safe-b) - 24px); overflow: visible;
-  display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 34fr); grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-areas: "h h" "body art" "timer timer"; column-gap: var(--rj-col); row-gap: var(--rj-block);
+  display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 34fr); grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "h h" "body art"; column-gap: var(--rj-col); row-gap: var(--rj-block);
   padding: var(--rj-py) var(--rj-px); color: var(--ink);
 }
 @keyframes rj-in { from { opacity: 0; translate: -50% calc(-50% - 8px); } }
 /* the card's display must not outrank hidden: an answered call has to leave the screen (tests/hidden.test.ts) */
 #rd-call[hidden], #rd-call.job[hidden] { display: none; }
-#rd-call.job.noart { grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body" "timer"; }
+#rd-call.job.noart { grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body"; }
 #rd-call.job.noart .rd-art { display: none; }
 #rd-call.job::before { background: var(--ng-scan), var(--ng-sheen), linear-gradient(180deg, rgba(9, 20, 27, .95), rgba(7, 15, 20, .94)); }
 /* the header: JOB OFFER, who is offering it, the signal; the priority stays a state, not a stamp */
@@ -501,16 +501,17 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #rd-call.job .rd-pic { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; padding: 0;
   clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
 #rd-call.job .rd-hull { mix-blend-mode: screen; clip-path: none; }
-/* the job's own picture: full height, top to bottom, out to the card's edge on the right (cut to the chamfer), the words beside it.
+/* the job's own picture: as tall as the words, down the right side, inside the card's margins and in its own thin rim (the mockup).
    Cropped to fill, so keep the subject in the middle of the picture (docs/art/JOBS-BRIEF.md) */
-#rd-call.job.bleed:not(.noart) { grid-template-areas: "h art" "body art" "timer art"; }
-#rd-call.job.bleed:not(.noart) .rd-art { margin: calc(var(--rj-py) * -1) calc(var(--rj-px) * -1) calc(var(--rj-py) * -1) 0; place-items: stretch;
-  clip-path: polygon(0 0, calc(100% - var(--ng-cut)) 0, 100% var(--ng-cut), 100% calc(100% - var(--ng-cut)), calc(100% - var(--ng-cut)) 100%, 0 100%); }
-#rd-call.job.bleed:not(.noart) .rd-pic { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: 50% 50%; clip-path: none; display: block; }
+#rd-call.job.bleed:not(.noart) { grid-template-areas: "h art" "body art"; }
+#rd-call.job.bleed:not(.noart) .rd-art { place-items: stretch; padding: 1.5px; background: rgba(150, 215, 230, .9);
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
+#rd-call.job.bleed:not(.noart) .rd-pic { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; object-position: 50% 50%; display: block;
+  clip-path: polygon(8.5px 0, calc(100% - 8.5px) 0, 100% 8.5px, 100% calc(100% - 8.5px), calc(100% - 8.5px) 100%, 8.5px 100%, 0 calc(100% - 8.5px), 0 8.5px); }
 #rd-call.job .rd-art.emblem::before { content: ""; width: 96px; height: 96px; background: var(--dk-hud, #86a9d1); -webkit-mask: var(--emblem) center / contain no-repeat; mask: var(--emblem) center / contain no-repeat; }
 #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr) 160px; }
 /* the answer clock: a thin line along the foot, the rim's colour (amber only for a priority call) */
-#rd-call.job .rd-timer { grid-area: timer; height: 2px; margin-top: calc(var(--rj-block) * -0.4); background: rgba(var(--halo), .15); }
+#rd-call.job .rd-timer { display: none; grid-area: timer; height: 2px; margin-top: calc(var(--rj-block) * -0.4); background: rgba(var(--halo), .15); }
 #rd-call.job .rd-timer i { background: var(--rim); }
 #rd-call.job.prio .rd-timer i { background: #e9b65c; }
 /* the world's labels and the HUD step back while the offer has the middle of the screen; they come back with nothing in between */
@@ -532,10 +533,10 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
     --rj-title: 17px; --rj-body: 13px; --rj-label: 10.5px; --rj-value: 15px; --rj-choice: 14px; --rj-more: 12px; --rj-key: 28px; --rj-row: 44px;
     --c: var(--ng-cut-card); --ng-frame: var(--ngf-card-cyan); --ng-hair: var(--ngh-card-cyan); --ng-fs: var(--ngf-card-slice); --ng-fo: var(--ngf-card-out); --ng-hs: var(--ngh-card-slice);
     width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); max-height: calc(100dvh - var(--safe-t) - var(--safe-b) - 12px);
-    grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body" "timer"; }
+    grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body"; }
   #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr); }
   #rd-call.job .rd-art { display: none; }
-  #rd-call.job.bleed:not(.noart) { grid-template-areas: "h" "body" "timer"; }
+  #rd-call.job.bleed:not(.noart) { grid-template-areas: "h" "body"; }
   #rd-call.job > .rd-h { padding-bottom: 6px; }
   #rd-call.job .rd-k, #rd-call.job .rd-kind { font-size: 11px; }
   #rd-call.job .rd-body { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.25fr); grid-template-rows: auto auto auto 1fr; column-gap: 14px; row-gap: var(--rj-block); align-content: start; }
@@ -551,10 +552,10 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 /* a narrow upright phone: one column, the picture a small strip above the words */
 @media (max-width: 600px) and (min-height: 521px) {
   #rd-call.job { --rj-px: 18px; --rj-py: 16px; --rj-block: 12px; --rj-gap: 8px; --rj-title: 21px; --rj-body: 15px; --rj-value: 18px; --rj-choice: 15px; --rj-more: 13px; --rj-key: 32px; --rj-row: 56px;
-    width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "art" "body" "timer"; }
+    width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "art" "body"; grid-template-rows: auto auto auto; }
   #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr); }
   #rd-call.job .rd-art { height: 132px; }
-  #rd-call.job.bleed:not(.noart) { grid-template-areas: "h" "art" "body" "timer"; }
-  #rd-call.job.bleed:not(.noart) .rd-art { margin: 0; clip-path: none; }
+  #rd-call.job.bleed:not(.noart) { grid-template-areas: "h" "art" "body"; grid-template-rows: auto auto auto; }
+  #rd-call.job.bleed:not(.noart) .rd-art { padding: 1.5px; }
   #rd-call.job.bleed:not(.noart) .rd-pic { object-position: 50% 40%; }
 }
