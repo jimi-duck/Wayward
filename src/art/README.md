@@ -16,7 +16,7 @@ finds them on its own; a picture that is not there leaves the screen as it was.
 | `file/` | `frag_order`, … | 800×600 | Archive |
 | `regions/` | `reach`, `hollows`, … | 1280×480 | not drawn yet |
 | `fleet/` | `capital-vance`, `tanker`, `wayward-rig`, … | 960×480, on black | not drawn yet |
-| `jobs/` | `sc_toll`, `sc_wire`, … | 1280×720 | job offer card (the picture, cropped square) |
+| `jobs/` | `sc_toll`, `sc_wire`, … | 960×1440 (2:3; older ones 1280×720, cropped to fit) | job offer card (the picture, full height down its right side) |
 | `phenomena/` | `veil`, `well`, … | 800×600 | not drawn yet |
 | `gates/` | `reach`, `breaker-yards`, … | 1280×720 | not drawn yet |
 | `planets/` | `rocky`, `ice`, `gas`, `dead` | 1280×720 | not drawn yet |

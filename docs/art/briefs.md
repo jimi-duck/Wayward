@@ -2725,12 +2725,12 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ## Jobs (continuation) (25)
 
-Folder `src/art/jobs/` · 1280×720 · not shown yet
+Folder `src/art/jobs/` · 960×1440 · shown in: job offer card, full height
 
 ### `jobs/sc_toll.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_toll · title "Break the Pirate Toll" · from "Dispatch · mining guild"
 
 ```text
@@ -2738,7 +2738,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Break the Pirate Toll". "Someone has put a toll beacon on our lane. Four ships are guarding it, led by one captain. Take the captain out and the rest may scatter."
 Scene: a toll beacon blinking over an asteroid lane, four raider ships holding station around it, the Wayward approaching.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2746,8 +2746,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_tanker.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_tanker · title "The Heavy Tanker" · from "A fixer · no name"
 
 ```text
@@ -2755,7 +2755,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "The Heavy Tanker". "A tanker is carrying a valuable load with two escorts. Disable its engines without destroying the ship, then take the cargo."
 Scene: a heavy tanker under hail of fire from the Wayward, two escorts wheeling, its engine pod venting.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2763,8 +2763,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_wanted.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_wanted · title "Wanted: Alive" · from "Custody liaison · a bounty"
 
 ```text
@@ -2772,7 +2772,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Wanted: Alive". "Brannock is wanted for a Custody manifest she never filed. Alive pays double. Disable her engines without destroying the ship."
 Scene: a fleeing fighter with one engine burning, the Wayward closing to disable it; a Custody notice-light glints on the dash.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2780,8 +2780,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_shift.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_shift · title "Hold the Last Shift" · from "Rig foreman · Hester"
 
 ```text
@@ -2789,7 +2789,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Hold the Last Shift". "Raiders are coming for the rig. Forty of us are aboard. Hold them off for 100 seconds and Guild patrol will arrive. We need your guns."
 Scene: a mining rig on an asteroid, floodlit crew silhouettes at the rail, raider ships closing in over the rocks.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2797,8 +2797,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_needle.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_needle · title "Run the Needle" · from "Quill · independent pilot"
 
 ```text
@@ -2806,7 +2806,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Run the Needle". "Six beacons, one run, rocks between them. Pay five Cyrite to enter. Beat me to the finish and the prize is yours."
 Scene: a line of six lit beacons through a dense asteroid field, the Wayward and a rival racing between them.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2814,8 +2814,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_hole.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_hole · title "The Point of No Return" · from "Survey Office · open contract"
 
 ```text
@@ -2823,7 +2823,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "The Point of No Return". "Take three readings around the black hole, each closer than the last. Navigation may fail and the core will damage your ship. The closer you get, the more the Office pays."
 Scene: the Wayward very small at the edge of an accretion disc around a black hole, light bending, sensor arms out.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2831,8 +2831,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_declare.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_declare · title "Nothing to Declare" · from "A runner · no name"
 
 ```text
@@ -2840,7 +2840,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Nothing to Declare". "Deliver a package inside a Custody patrol route. Three ships are sweeping the area. Slip between them, hold at the drop point, then leave."
 Scene: a Custody patrol sweeping lamps across a lane, the Wayward drifting dark between them with a small package on a tether.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2848,8 +2848,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_kill_zone.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_kill_zone · title "Clear the Crossing" · from "Guild dispatch"
 
 ```text
@@ -2857,7 +2857,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Clear the Crossing". "Six raiders are blocking the crossing. No one gets through. Clear every ship and the Guild pays for each one."
 Scene: a busy crossing choked with stalled traffic, six raiders holding the middle, the Wayward heading in with guns warm.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2865,8 +2865,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_missing.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_missing · title "The Missing Shift" · from "Union clerk"
 
 ```text
@@ -2874,7 +2874,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "The Missing Shift". "Nine miners have been silent since yesterday. Their last beacon came from the wreck field. Bring one supply in case they survived."
 Scene: a silent wreck field, a dark rig with its lights out, the Wayward’s lamp on an open airlock.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2882,8 +2882,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_follow.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_follow · title "Follow the Cyrite Vein" · from "A prospector"
 
 ```text
@@ -2891,7 +2891,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Follow the Cyrite Vein". "I know where the vein runs. Stay close and I will share the find. Lose me, and you get nothing."
 Scene: a prospector’s battered tug leading the Wayward through a dust lane toward a faint glow of Cyrite veins in the rock.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2899,8 +2899,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_answered.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_answered · title "Someone Answered" · from "Survey Office"
 
 ```text
@@ -2908,7 +2908,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Someone Answered". "A relay responds when scanned. Three unknown contacts are circling it. Do not fire. Approach slowly, listen and record what happens."
 Scene: an old relay mast pulsing a slow answer, three unknown contacts circling it, the Wayward approaching without a shot.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2916,8 +2916,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_wreck.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_wreck · title "The Wreck That Remembered" · from "Salvage broker"
 
 ```text
@@ -2925,7 +2925,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "The Wreck That Remembered". "A derelict still holds a flight log. Recover an intact copy and the Offices will pay. Someone else is trying to erase it."
 Scene: a derelict hull with an open flight-recorder bay, a second ship closing to erase it, the Wayward in between.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2933,8 +2933,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_distance.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_distance · title "Copy the Patrol Codes" · from "A broker · no name"
 
 ```text
@@ -2942,7 +2942,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Copy the Patrol Codes". "Four patrol ships follow a loop. Their access codes change at each turn. Hold still in the middle, copy the codes and stay undetected."
 Scene: four Custody patrol ships on a loop around a still centre, the Wayward holding dead still inside it, a tiny antenna out.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2950,8 +2950,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_bait.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_bait · title "Draw Them Out" · from "Guild gunship"
 
 ```text
@@ -2959,7 +2959,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Draw Them Out". "A Custody picket is blocking our lane. Draw four ships out and we will finish the job. Break as many as you can."
 Scene: a Custody picket across a lane, the Wayward flashing past its guns to draw it out, a Guild gunship waiting in the rocks.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2967,8 +2967,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_dead_drop.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_dead_drop · title "The Dead Drop" · from "A broker · no name"
 
 ```text
@@ -2976,7 +2976,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "The Dead Drop". "A package is waiting at the beacon. Collect it and bring it back. Someone may have been tipped off, so watch for an ambush on the way out."
 Scene: a lone beacon with a sealed package clamped to it, the Wayward arriving, a shadow of a second ship in the dust behind.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -2984,8 +2984,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_long_walk.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_long_walk · title "Escort the Hauler" · from "Hauler Dunne"
 
 ```text
@@ -2993,7 +2993,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Escort the Hauler". "I have one working drive and half my speed. Escort me to the lane and my crew will pay what they can. Raiders will come."
 Scene: a damaged hauler limping toward a lane gate, the Wayward alongside as escort, one engine of the hauler dark.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3001,8 +3001,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_finders.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_finders · title "Race for the Wreck" · from "A claims clerk"
 
 ```text
@@ -3010,7 +3010,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Race for the Wreck". "The first crew to reach the claim owns it. A rival has the same chart. Pass four markers in one run and the wreck is yours."
 Scene: a wreck half-lit in a marker field, the Wayward and a rival salvage crew racing for the same claim.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3018,8 +3018,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_dark.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_dark · title "Something in the Dark" · from "Survey Office"
 
 ```text
@@ -3027,7 +3027,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Something in the Dark". "No chart shows this object, and our sensors disagree on its size. Take two readings and get as close as you dare."
 Scene: an uncharted dark object with no clear edge, the Wayward’s sensor arc sweeping across it, readings flickering.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3035,8 +3035,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_wire.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_wire · title "The Voice on the Wire" · from "An old relay · no callsign"
 
 ```text
@@ -3044,7 +3044,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "The Voice on the Wire". "A relay that was cut off years ago is broadcasting your ship’s name. It says it has a question, but nothing more."
 Scene: an abandoned relay broadcasting in the dark, a pale blue-teal glow on its dish, the Wayward’s hull lit by it.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3052,8 +3052,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_payroll.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_payroll · title "Stolen Payroll" · from "A fixer · no name"
 
 ```text
@@ -3061,7 +3061,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Stolen Payroll". "A courier carries a month of wages for three mining barges. One drive, no guns. Disable the ship, take the wages and leave the courier alive."
 Scene: a small courier running fast through rocks, the Wayward matching its speed to disable it, a cargo cage on its back.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3069,8 +3069,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_filter.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_filter · title "One Filter Left" · from "Settlement steward"
 
 ```text
@@ -3078,7 +3078,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "One Filter Left". "Our air filter is on its last cycle. We need two supplies of parts within ninety seconds; after that, we start counting breaths."
 Scene: a settlement’s failing air filter glowing weakly on a rock station, the Wayward arriving with a crate of replacement parts.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3086,8 +3086,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_captains.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_captains · title "Two Captains, One Wreck" · from "Two crews · one wreck"
 
 ```text
@@ -3095,7 +3095,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Two Captains, One Wreck". "Two captains are fighting over a valuable wreck. Neither will back down. Drive both crews off and the wreck is yours."
 Scene: two salvage crews with guns up facing each other across a valuable wreck, the Wayward arriving between them.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3103,8 +3103,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_witness.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_witness · title "Get the Witness Out" · from "Brother Orrin"
 
 ```text
@@ -3112,7 +3112,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Get the Witness Out". "I saw what Custody did at Northfold, and I kept the log. They know I have it. Keep me alive for eighty seconds."
 Scene: a back-dock at night, a hooded figure with a data case hurrying toward the Wayward’s open lock, Custody lamps sweeping behind.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3120,8 +3120,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_prefect.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_prefect · title "Lose the Governor’s Trail" · from "A broker · no name"
 
 ```text
@@ -3129,7 +3129,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "Lose the Governor’s Trail". "Your tracking trace is stored on a relay inside that patrol’s route. Erase it without being seen and Calloway loses a day."
 Scene: a relay mast inside a patrol route, the Wayward drifting dark to erase a trace, a Custody cutter passing close.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face
@@ -3137,8 +3137,8 @@ Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, 
 
 ### `jobs/sc_cache.webp`
 
-- Size 1280×720 · full picture
-- Shown: Not drawn yet: ready for the job card in comms and the objective header.
+- Size 960×1440 · full picture
+- Shown: The job offer card: full height down its right side.
 - From the game: card sc_cache · title "The Drift Cache" · from "Guild salvage desk · open claim"
 
 ```text
@@ -3146,7 +3146,7 @@ Style: cinematic, richly detailed sci-fi concept art in the look of the Wayward 
 
 Subject: the job "The Drift Cache". "A cargo train broke up in this field. Four cases are still drifting, the rest is picked over. Slow beside each to take it in. A crew will notice the first."
 Scene: four battered cargo cases drifting apart in a broken cargo-train field, the Wayward slowing beside one with its tractor lamp on, a distant crew ship just turning toward her.
-Framing: cinematic 16:9, the moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it; keep the lower third calm because the job text sits over it. One clear subject, the read at a glance.
+Framing: tall portrait 2:3, shown full height down the right side of the job card, no text over it. The moment just before the job starts. The Wayward (a long, low, worn yellow-orange ore hauler with split side engine pods) is small in the frame with room around it. One clear subject, the read at a glance; keep it in the middle 60% of the width and the middle 80% of the height, because the card crops the sides a little on some screens.
 No people's faces, no text, no UI.
 
 Avoid: text, lettering, captions, watermark, signature, logo, UI frame, border, lens flare, neon pink, purple cityscape, glossy chrome, sleek luxury sci-fi, clean new surfaces, cartoon, anime, extra fingers, distorted face

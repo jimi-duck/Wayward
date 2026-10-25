@@ -221,11 +221,14 @@ export class Radio {
     const art = $('rd-art'), sheet = $('rd-sheet'), card = $('rd-call');
     art.hidden = sheet.hidden = !job;
     this.stated = []; this.lead = null;
-    card.classList.remove('noart', 'emblem-only');
+    card.classList.remove('noart', 'emblem-only', 'bleed');
     if (!job) { art.replaceChildren(); sheet.replaceChildren(); return; }
     const a = artOf(o.def), [slot, id] = a.portrait ?? [null, ''];
     // the job's own picture first (one per card), then the caller's portrait or hull
-    const pic = artImg('job', o.def.id, 'rd-pic') || (slot && artImg(slot, id, 'rd-pic')) || (a.ship ? artImg('ship', a.ship, 'rd-pic rd-hull') : null);
+    const own = artImg('job', o.def.id, 'rd-pic');
+    const pic = own || (slot && artImg(slot, id, 'rd-pic')) || (a.ship ? artImg('ship', a.ship, 'rd-pic rd-hull') : null);
+    // the job's own picture runs the full height of the card, to its edge; a borrowed portrait or hull stays a framed picture
+    card.classList.toggle('bleed', !!own);
     const emblem = a.emblem ? artUrl('emblem', a.emblem) : null;
     art.classList.toggle('emblem', !pic && !!emblem);
     if (emblem) art.style.setProperty('--emblem', `url("${emblem}")`); else art.style.removeProperty('--emblem');

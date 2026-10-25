@@ -35,7 +35,7 @@ export const SLOTS: Record<SlotId, SlotDef> = {
   file:     { id: 'file',     dir: 'file',      w: 800,  h: 600,  alpha: false, shownIn: 'Archive' },
   region:   { id: 'region',   dir: 'regions',   w: 1280, h: 480,  alpha: false, shownIn: '' },
   fleet:    { id: 'fleet',    dir: 'fleet',     w: 960,  h: 480,  alpha: false, shownIn: '' },
-  job:      { id: 'job',      dir: 'jobs',      w: 1280, h: 720,  alpha: false, shownIn: '' },
+  job:      { id: 'job',      dir: 'jobs',      w: 960,  h: 1440, alpha: false, shownIn: 'job offer card, full height' },
   phenomenon: { id: 'phenomenon', dir: 'phenomena', w: 800, h: 600, alpha: false, shownIn: '' },
   gate:     { id: 'gate',     dir: 'gates',     w: 1280, h: 720,  alpha: false, shownIn: '' },
   planet:   { id: 'planet',   dir: 'planets',   w: 1280, h: 720,  alpha: false, shownIn: '' },
