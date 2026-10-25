@@ -117,6 +117,7 @@ export class Radio {
     }
     // a job offer has the middle of the screen: the world's labels and the HUD under it step back until it goes
     document.documentElement.classList.toggle('job-open', !!call && call.def.kind === 'job' && !this.blocked());
+    document.documentElement.classList.toggle('demand-open', !!call?.def.demand && !this.blocked());
     if (call) {
       const total = call.tier === 'important' ? DESK.window.important : DESK.window.routine;
       // only when it moves: a held call stands still, and a style write each frame costs a layout under the glass
@@ -169,10 +170,14 @@ export class Radio {
     card.style.setProperty('--cc', CALLER_CSS[d.caller]);
     const job = d.kind === 'job';
     card.classList.toggle('job', job);
-    $('rd-k').textContent = t(job ? 'Job offer' : 'Incoming');
+    // a demand (the patrol's) is read as one: who asks, what they want, then the price of each answer
+    const demand = !!d.demand;
+    card.classList.toggle('demand', demand);
+    $('rd-k').textContent = t(job ? 'Job offer' : demand ? 'Incoming transmission' : 'Incoming');
     // a job's header is one line: the card, then who is offering it
     $('rd-kind').textContent = job ? t(d.from) : t(KIND_WORD[d.kind] ?? d.kind);
     $('rd-prio').hidden = o.tier !== 'important';
+    $('rd-prio').textContent = t(d.status ?? 'Priority');
     const [who, ...what] = t(d.from).split(' · ');
     // a job is read as a contract: its title, then who is offering it
     $('rd-who').textContent = job ? t(d.title) : who ?? '';
@@ -186,8 +191,8 @@ export class Radio {
     // the terms of a plain offer: what the first answer means, in the card's own words
     const terms = $('rd-terms');
     const first = o.choices[0];
-    terms.hidden = job || many || !first || !first.hint;
-    terms.textContent = first && !many ? t(first.hint) : '';
+    terms.hidden = job || (many && !demand) || !first || !(first.hint || demand);
+    terms.textContent = demand ? t(d.demand!, { amount: this.price(o) }) : first && !many ? t(first.hint) : '';
     $('rd-list').classList.toggle('many', many);
     this.sel = Math.max(0, o.choices.findIndex((x) => x.ok));
     const stated = job ? this.stated : [];
@@ -195,7 +200,12 @@ export class Radio {
       const key = i === 0 ? KEY_OF[0]! : i === o.choices.length - 1 ? KEY_OF[2]! : KEY_OF[1]!;
       const gains = c.gains.filter((g) => g !== 'Job').map((g) => t(g)), odds = c.chance !== null ? [oddsWord(c.chance)] : [];
       let more: HTMLElement | null;
-      if (job) {
+      if (demand) {
+        // one line per answer: what it does, in teal or red, then what it costs, in amber
+        const say = c.hint ? [h('span', c.tone === 'refuse' ? 'cq-bad' : 'cq-ok', t(c.hint))] : [];
+        const line = c.ok ? [...say, ...c.cost.map((x) => h('span', 'cq-cost', x))] : c.needs.map((n) => h('span', 'g-need', '', lock(), document.createTextNode(t(n))));
+        more = line.length ? h('span', 'rd-more', '', ...line.flatMap((e, k) => (k ? [document.createTextNode(' · '), e] : [e]))) : null;
+      } else if (job) {
         // one quiet line: the hint, then what it brings and costs, joined by a dot; what the strip says of this answer, once
         const parts = c.ok ? jobLine([...(c.hint ? [t(c.hint)] : []), ...gains, ...c.cost, ...odds], c.id === this.lead ? stated : [])
           : jobLine(c.hint ? [t(c.hint)] : []);
@@ -214,6 +224,12 @@ export class Radio {
       b.onpointerdown = (e) => e.stopPropagation();
       return b;
     }));
+  }
+
+  /** What the first answer that pays asks, as the demand names it ("3 Cyrite"). */
+  private price(o: Open): string {
+    const c = o.choices.find((x) => x.cost.length);
+    return c ? c.cost[0]!.replace(/^−/, '') : '';
   }
 
   /** A job's picture and its terms: what it asks, what it pays. Hidden for every other call. */

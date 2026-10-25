@@ -118,6 +118,13 @@ Unknown callers keep a white status dot until combat makes them hostile.
   answer Enter takes has the amber rim and fill. The HUD steps back while it is
   open. A phone on its side drops the picture and sets the answers beside the
   words. Other radio calls keep their own smaller card.
+- **Demand** (`#rd-call.demand`, the owner's mockup, 25 October 2026; a card with a
+  `demand` line, today the patrol's Net sweep): who is asking, what they say in
+  white, what they want in one amber line, then the answers side by side. Each
+  answer is its label and one line: what it does (teal good, red bad) and what it
+  costs (amber), e.g. `Patrol leaves · −3 Cyrite`. The world waits for it, the
+  HUD steps back and the target labels go. A phone on its side puts the answers
+  beside the words.
 - **HUD is not a pop-up:** instruments, objectives and the low-centre notices
   keep their thin lines and restrained glow (`docs/DESIGN.md`).
 
