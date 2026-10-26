@@ -1,7 +1,7 @@
 import { t } from '../i18n';
 import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENT_FLAGS_LONG, FRAGMENTS_ALL, CERRO_BEATS, type Act } from '../content/story';
 import { isLongSet, type RegionSet } from '../content/regions';
-import { sysById, tierOf, viewOf } from './chart';
+import { regionOf, sysById, tierOf, viewOf } from './chart';
 import type { Journey } from './journey';
 
 // ── the story ─────────────────────────────────────────────────────────────
@@ -43,6 +43,8 @@ export function dueBeat(j: Journey): string | null {
   const long = isLongSet(j.chart.regionSet);
   // on the road the Reach's story is the stops' own script (sim/script.ts), not a beat to the sortie
   if (j.chart.regionSet === 'road' && viewOf(j.chart, j.at) === 0) return null;
+  // and so is the Narrows, the gate out: Ada's note, then the Patience (content/script/narrows.ts)
+  if (j.chart.regionSet === 'road' && sysById(j.chart, j.at).kind === 'gate' && regionOf(sysById(j.chart, j.at)) === 0) return null;
   const seen = new Set(j.carry.seen), has = new Set(j.carry.flags), r = long ? viewOf(j.chart, j.at) : tierOf(j.chart, viewOf(j.chart, j.at));
   const at = (b: (typeof BEATS)[number]) => (long ? b.long : b.region);
   const atGate = sysById(j.chart, j.at).kind === 'gate';

@@ -4,7 +4,7 @@ import {
 } from 'three';
 import { clamp } from '../core/math';
 import type { World } from '../sim/world';
-import { AUDIT_R, SAFE_R } from '../sim/breakout';
+import { AUDIT_R, SAFE_R, relayOf } from '../sim/breakout';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
 
@@ -380,6 +380,34 @@ export function buildPort(): Group {
  * a quay of crates, and a mast with the company's amber light. Squarer and plainer than the depot: a checkpoint, not a harbour.
  * It faces -x, where the ship comes from.
  */
+/** Lit sections up the Narrows' relay mast, bottom to top. */
+export const MAST_SECTIONS = 6;
+
+/** The Narrows' relay mast: a dark lattice stood off the gate's ring, a band of lamp for each section, lit from the bottom when the key is answered (content/script/narrows.ts). Metres. */
+export function buildMast(): { body: Group; lamps: Mesh[] } {
+  const k = new Kit(), rnd = seeded(71);
+  k.cyl('dark', 3.4, 4.2, 2.2, [0, 1, 0], 'y', 12);
+  for (const [x, z] of [[-1.4, -1.4], [1.4, -1.4], [1.4, 1.4], [-1.4, 1.4]] as const) strut(k, 'hull', [x * 1.6, 2, z * 1.6], [x * 0.5, 44, z * 0.5], 0.28, 5);
+  for (let i = 0; i < MAST_SECTIONS; i++) {
+    const y = 6 + i * 6.4, w = 2.6 - i * 0.28;
+    k.box('dark', [w * 2, 0.5, w * 2], [0, y, 0]);
+    k.ring('hull', w * 1.2, 0.14, [0, y + 3, 0], 'y', 10);
+  }
+  strut(k, 'dark', [0, 44, 0], [0, 52, 0], 0.12, 4);
+  k.greebles('dark', rnd, -2.6, 2.6, -2.6, 2.6, 2.2, 6, 0.6);
+  const body = k.build(materials(), 0.4);
+  const lamps: Mesh[] = [];
+  for (let i = 0; i <= MAST_SECTIONS; i++) {
+    const y = 6 + i * 6.4, w = Math.max(0.6, 2.6 - i * 0.28);
+    const m = new Mesh(new BoxGeometry(w * 2.12, 0.34, w * 2.12), new MeshBasicMaterial({ color: new Color(0.1, 0.5, 0.62), toneMapped: false, fog: false }));
+    m.position.y = y + 0.5;
+    m.visible = false;
+    lamps.push(m);
+    body.add(m);
+  }
+  return { body, lamps };
+}
+
 export function buildAudit(): Group {
   const k = new Kit(), rnd = seeded(31);
   // the arch: two pylons and a gantry beam over the lane, hazard stripes on the legs, a scan strip underneath
@@ -437,6 +465,10 @@ export class BreakoutView {
   /** The company's audit dock, where the system has one. */
   private readonly audit = new Group();
   private readonly auditRing: Mesh;
+  /** The Narrows' relay mast and how far it has lit (0 to 1, eased). */
+  private readonly mast = new Group();
+  private readonly mastLamps: Mesh[];
+  private mastLit = 0;
   private auditFaced: unknown = null;
   private readonly throat: Mesh;
   private readonly laneRing: Mesh;
@@ -491,12 +523,16 @@ export class BreakoutView {
     this.portDome = new Mesh(new SphereGeometry(SAFE_R, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), new MeshBasicMaterial({ color: CYAN, transparent: true, opacity: 0, side: DoubleSide, depthWrite: false }));
     this.portDome.visible = false;
     this.port.add(this.portRing, this.portField, this.portDome);
+    const m = buildMast();
+    this.mast.add(m.body);
+    this.mastLamps = m.lamps;
+    this.mast.visible = false;
     this.audit.add(buildAudit());
     this.auditRing = flatRing(AUDIT_R, 0.3, AMBER, 0.3);
     this.auditRing.position.y = 0.4;
     this.audit.add(this.auditRing);
     this.lane.visible = this.port.visible = this.audit.visible = false;
-    scene.add(this.lane, this.port, this.audit);
+    scene.add(this.lane, this.port, this.audit, this.mast);
 
   }
 
@@ -512,6 +548,18 @@ export class BreakoutView {
     // the ring faces the way you come in: it follows your bearing from afar and holds still once you are near (the review world always follows)
     if (this.faced !== b || world.review || Math.hypot(ship.x - b.lane.x, ship.z - b.lane.z) > 150) { this.faced = b; this.gate.rotation.y = Math.atan2(-(ship.z - b.lane.z), ship.x - b.lane.x); }
     if (b.port) this.port.position.set(b.port.x, -2, b.port.z);
+    // the Narrows' relay: dark until the key is answered, then lit section by section from the bottom over a few seconds
+    const relay = relayOf(b);
+    this.mast.visible = !!relay;
+    if (relay) {
+      this.mast.position.set(relay.x, -2, relay.z);
+      this.mastLit = world.flags.has('relay_broadcast') ? Math.min(1, this.mastLit + dt / 4) : 0;
+      this.mastLamps.forEach((l, i) => {
+        const on = this.mastLit * this.mastLamps.length > i;
+        l.visible = on;
+        if (on) (l.material as MeshBasicMaterial).color.setRGB(0.1, 0.5, 0.62).multiplyScalar(0.9 + 0.2 * Math.sin(this.time * 2 + i));
+      });
+    }
     if (b.audit) {
       this.audit.position.set(b.audit.x, -2, b.audit.z);
       // the yard faces the way you came in, and holds still from there
