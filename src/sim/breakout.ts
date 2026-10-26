@@ -200,6 +200,10 @@ export interface SortieDef {
   calls: number;
   /** The pursuit's room to breathe (content/systems.ts): the first pursuer's time, and the quiet after an answered card or a beaten pursuer. The Breakout has none. */
   pace?: { first: number; calm: number };
+  /** No raiders, no chance fights, no crew hails: only lingering draws the police (the road's first two systems). */
+  safe?: boolean;
+  /** The Jump Gate lies this many radians off the ship's heading (set adrift on the road: slightly off course). */
+  off?: number;
   /** A Custody blockade holds the Jump Gate (Cerro, and every netted system). */
   blockade: boolean;
   netted: boolean;

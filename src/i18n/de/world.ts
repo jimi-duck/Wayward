@@ -154,6 +154,8 @@ export const WORLD: Record<string, string> = {
   'Calloway’s boarders cut through the airlock.': 'Calloways Enterkommando schneidet sich durch die Schleuse.',
   'The Wayward is beyond saving.': 'Die Wayward ist nicht mehr zu retten.',
   'Wrecked in {name} · towed to {to}': 'Wrack in {name} · nach {to} geschleppt',
+  'Wrecked in {name} · set going again': 'Wrack in {name} · wieder flottgemacht',
+  'A Drift tug found the wreck and set her going again, a little off her course.': 'Ein Drift-Schlepper hat das Wrack gefunden und sie wieder flottgemacht, ein Stück vom Kurs ab.',
   'A Drift tug found the wreck and towed her to {to}.': 'Ein Drift-Schlepper hat das Wrack gefunden und sie nach {to} geschleppt.',
   'The fee: hold and Krail, and half your Cyrite, parts and Cyrite.': 'Die Gebühr: Laderaum und Krail, dazu die Hälfte von Cyrit, Teilen und Cyrit.',
   'Wrecks left in this region · {n}': 'Wracks übrig in dieser Region · {n}',
