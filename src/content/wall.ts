@@ -86,6 +86,22 @@ export const WALL: WallItem[] = [
     lead: 'Kellern’s books may carry the same initials.',
   }),
   clue({
+    flag: 'clue_relay_answered', name: 'The Narrows relay answered Ada’s key', certainty: 'fact', at: 0,
+    proves: 'The Narrows relay still answers Ada’s key, and it named the hull that carried it, on every band.',
+    not: 'Who was listening, or how many.',
+    detail: 'The mast lit section by section when the key reached it. The Warden channel opened and announced both.',
+    ask: 'Who knows the archive is aboard?',
+    lead: 'Anyone listening on the Warden channel. Keep moving.',
+  }),
+  clue({
+    flag: 'warden_note_1', name: 'Warden’s note 1 of 8', certainty: 'fact', at: 0,
+    proves: 'Ada Aster switched the Narrows off on order, kept the key, and left seven more relays that know her name.',
+    not: 'What she saw at the other relays.',
+    detail: 'Left in the Narrows relay for whoever the relays let through. It ends: find the Drift, they never stopped moving.',
+    ask: 'What did Ada leave on the road?',
+    lead: 'Find the Drift.',
+  }),
+  clue({
     flag: 'ada_named', name: 'Ada Aster', certainty: 'fact', at: 0,
     proves: 'The archive’s writer was Ada Aster, a Lane Warden on the Narrows watch.',
     not: 'What she saw there, or why she left the relay listening.',

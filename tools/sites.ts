@@ -5,7 +5,7 @@ import { Environment } from '../src/render/environment';
 import { skyFor } from '../src/render/sky';
 import { BUILD } from '../src/render/site';
 import { hulkModel } from '../src/render/space';
-import { buildPort } from '../src/render/breakout';
+import { buildMast, buildPort } from '../src/render/breakout';
 import { singularity } from '../src/render/singularity';
 import { wreck as derelict } from '../src/render/enemies';
 import { buoyModel, haulerModel, relicModel, slipwayModel } from '../src/render/monuments';
@@ -31,7 +31,7 @@ const t0 = performance.now();
 const prop = (params.get('prop') ?? 'wreck') as Prop;
 // ?hulk=0..4 shows one of the space layer's dead hulls at the size it is drawn (26 to 56 long)
 const hulk = params.get('hulk');
-const body = hulk !== null ? hulkModel(Number(hulk)) : (params.get('prop') === 'port' ? buildPort() : params.get('prop') === 'relic' ? relicModel() : params.get('prop') === 'slipway' ? slipwayModel() : params.get('prop') === 'buoy' ? buoyModel() : params.get('prop') === 'derelict' ? derelict() : params.get('prop') === 'convoy' ? (() => { const g = new Group(); for (let i = 0; i < 5; i++) { const h = haulerModel(); h.scale.setScalar(26); h.position.set((i - 2) * 60, 0, (i % 2) * 14); g.add(h); } return g; })() : params.get('prop') === 'singularity' ? (() => { const g = new Group(); g.add(singularity(Number(params.get('size') ?? '4'))); return g; })() : BUILD[prop]());
+const body = hulk !== null ? hulkModel(Number(hulk)) : (params.get('prop') === 'port' ? buildPort() : params.get('prop') === 'mast' ? (() => { const m = buildMast(), lit = Number(params.get('lit') ?? '0'); m.lamps.forEach((l, i) => { l.visible = lit * m.lamps.length > i; }); return m.body; })() : params.get('prop') === 'relic' ? relicModel() : params.get('prop') === 'slipway' ? slipwayModel() : params.get('prop') === 'buoy' ? buoyModel() : params.get('prop') === 'derelict' ? derelict() : params.get('prop') === 'convoy' ? (() => { const g = new Group(); for (let i = 0; i < 5; i++) { const h = haulerModel(); h.scale.setScalar(26); h.position.set((i - 2) * 60, 0, (i % 2) * 14); g.add(h); } return g; })() : params.get('prop') === 'singularity' ? (() => { const g = new Group(); g.add(singularity(Number(params.get('size') ?? '4'))); return g; })() : BUILD[prop]());
 if (hulk !== null) body.scale.setScalar(Number(params.get('size') ?? '18'));
 let tris = 0;
 body.traverse((o) => { const g = (o as { geometry?: { attributes: { position: { count: number } } } }).geometry; if (g) tris += g.attributes.position.count / 3; });
@@ -41,7 +41,7 @@ scene.add(body);
 
 const dist = Number(params.get('dist') ?? '34'), pitch = Number(params.get('pitch') ?? '0.45');
 camera.position.set(0, Math.sin(pitch) * dist, Math.cos(pitch) * dist);
-camera.lookAt(0, 1, 0);
+camera.lookAt(0, prop === ('mast' as Prop) ? 26 : 1, 0);
 
 const fit = () => {
   fitRenderer(renderer, tier);
