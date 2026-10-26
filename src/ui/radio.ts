@@ -184,6 +184,10 @@ export class Radio {
     $('rd-what').textContent = job ? '' : what.join(' · ');
     this.contract(o, job);
     $('rd-text').textContent = o.text;
+    // a job in one of the road's threads: its chip, and the one line it adds
+    const th = $('rd-thread');
+    th.hidden = !o.thread;
+    if (o.thread) { th.firstElementChild!.textContent = t(o.thread.chip); th.lastElementChild!.textContent = t(o.thread.line); }
     // the read: one line, and only for a call that can be a lie
     const read = $('rd-read');
     read.hidden = !d.truths?.length;

@@ -7,6 +7,9 @@ import type { Holder, SystemKind } from './systems';
 // breather. Skies and rock stay seeded. The column is the index in `ROAD`;
 // the Narrows, the gate out, follows the last row.
 
+/** The flag a road journey carries from its first day: the road's own lines and chips (a job's thread) are shown only with it. */
+export const ON_ROAD = 'on_road';
+
 /** What a stop is for in the story, so a script and a pilot can say why it is there. */
 export type RoadRole = 'start' | 'landfall' | 'hub' | 'work' | 'turn' | 'breather' | 'pressure' | 'reckoning';
 

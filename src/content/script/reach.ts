@@ -10,6 +10,9 @@ const SAM = 'Sam Okoro';
 const sam = (id: string, stop: string, on: Row['on'], text: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { radio: { from: SAM, caller: 'miners', text } }, ...extra });
 const notice = (id: string, stop: string, on: Row['on'], tone: 'teal' | 'amber' | 'red' | 'white', headline: string, reason?: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { notice: { tone, headline, reason } }, ...extra });
 const objective = (id: string, stop: string, on: Row['on'], main: string, quiet?: string): Row => ({ id, stop, on, do: { objective: { main, quiet } } });
+const voice = (from: string, caller: string) => (id: string, stop: string, flag: string, text: string, cond: Row['if'] = undefined): Row => ({ id, stop, on: { on: 'flag', flag }, do: { radio: { from, caller, text } }, ...(cond ? { if: cond } : {}) });
+const pike = (id: string, flag: string, text: string, cond?: Row['if']): Row => voice('Owen Pike', 'gutter')(id, 'halden', flag, text, cond);
+const hester = (id: string, flag: string, text: string): Row => voice('Hester', 'miners')(id, 'branford', flag, text);
 const card = (id: string, stop: string, on: Row['on'], def: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { card: def }, ...extra });
 
 export const REACH: Row[] = [
@@ -34,10 +37,16 @@ export const REACH: Row[] = [
   card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_warden'),
   card('hr_order', 'halden', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] } }),
   card('hr_hand', 'halden', { on: 'after', row: 'hr_order' }, 'story_handwriting'),
+  // the Quiet Line's first job (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
+  pike('hr_pike_won', 'job_nothing_to_declare_won', '“You never saw what was in it. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
+  pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you six. Remember what it cost.”'),
+  pike('hr_pike_no', 'job_nothing_to_declare_declined', '“No offence taken. The Line’s patient.”'),
   objective('hr_gate', 'halden', { on: 'leave' }, 'Jump to Hollis'),
 
   // ── Stop 3 · Hollis (work): the ghost and the job's thread lines follow ──
   notice('ho_notice', 'hollis', { on: 'arrive', delay: 2 }, 'teal', 'Hollis', 'mining claim, rich rock'),
+  // Hester's crews, step 1: the prospector's parting line
+  { id: 'ho_prospector', stop: 'hollis', on: { on: 'flag', flag: 'job_follow_cyrite_won' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Tell Hester you helped. She keeps a list of people who do.”' } } },
   // the ghost (sim/ghost.ts): the flag comes with the contact; the Wall is set the moment it triggers, so a jump before Sam speaks still logs it
   notice('ho_ghost', 'hollis', { on: 'flag', flag: 'ghost_here' }, 'white', 'UNKNOWN CONTACT', '4.2 km · holding', { wall: 'clue_ghost' }),
   sam('ho_sam_1', 'hollis', { on: 'after', row: 'ho_ghost' }, '“Ghost on the scope. Old rigs throw them.”'),
@@ -74,6 +83,10 @@ export const REACH: Row[] = [
   notice('bf_notice', 'branford', { on: 'arrive', delay: 2 }, 'teal', 'Branford', 'contested lane'),
   notice('bf_net', 'branford', { on: 'arrive', delay: 4 }, 'amber', 'The Net has reached Northfold'),
   objective('bf_objective', 'branford', { on: 'arrive', delay: 2 }, 'Branford · the lane to Copperline', 'Toll beacon · on the scope'),
+  // Hester's crews, step 2: her three results (flags from sim/stage.ts)
+  hester('bf_hester_won', 'job_pirate_toll_won', '“That’s two. I’m writing your name down.”'),
+  hester('bf_hester_lost', 'job_pirate_toll_lost', '“You tried. More than most.”'),
+  hester('bf_hester_no', 'job_pirate_toll_declined', '“Understood. We’ll find another way. We always do.”'),
   sam('bf_sam', 'branford', { on: 'free' }, '“Net’s spreading behind you. Don’t stop long.”'),
   objective('bf_gate', 'branford', { on: 'leave' }, 'Jump to Copperline'),
 

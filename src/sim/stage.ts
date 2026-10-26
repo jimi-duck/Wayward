@@ -1,5 +1,6 @@
 import { t } from '../i18n';
 import { MISSIONS } from '../content/missions';
+import { ON_ROAD } from '../content/road';
 import { SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
@@ -161,6 +162,7 @@ export class Stage {
     if (this.result || cardId !== this.def.card) return;
     const d = this.def;
     this.offered = true;
+    this.thread(w, choice);
     if (tone === 'refuse') { this.leaveAll(w); return this.finish(w, 'declined'); }
     if (out.dismiss) this.leaveAll(w);
     if (tone === 'fight') this.turnAll(w);
@@ -400,10 +402,16 @@ export class Stage {
   get onScope(): boolean { return this.begun && !this.taken && !this.result && this.def.goal.kind !== 'call'; }
 
   // ── the end ────────────────────────────────────────────────────────────
+  /** A job of the road's threads leaves a flag for each answer and each ending, which the stop's script answers on the radio (content/script/). */
+  private thread(w: World, what: string): void {
+    if (this.def.card && CARD_BY_ID[this.def.card]?.thread && w.flags.has(ON_ROAD)) w.flags.add(`job_${this.def.id}_${what}`);
+  }
+
   private finish(w: World, r: SitResult): void {
     if (this.result) return;
     this.result = r;
     const d = this.def;
+    this.thread(w, r === 'declined' ? 'declined' : r);
     // a goal pays only when it was taken on: a card answered some other way has paid in the card
     const goalOut = (o: Outcome | undefined): Outcome | undefined => (d.goal.kind === 'call' || !this.taken ? undefined : o);
     const out: Outcome | undefined = r === 'won' ? goalOut(d.win) : r === 'lost' ? goalOut(d.lose) : r === 'ignored' ? d.ignore : undefined;
