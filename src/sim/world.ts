@@ -11,6 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Script, type Output } from './script';
+import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT } from '../content/story';
@@ -317,6 +318,9 @@ export class World implements EncounterHost {
   private cardsSeen = new Set<string>();
   /** The stop's story script (sim/script.ts), if it has one, and the objective it has set. */
   private script: Script | null = null;
+  /** The contact at Hollis (sim/ghost.ts), once it has come. */
+  ghost: Ghost | null = null;
+  private ghostMade = false;
   storyObjective: { main?: string; quiet?: string } | null = null;
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
   private heard = new Set<string>();
@@ -403,6 +407,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.recoverT = 0;
     this.radioQ = [];
+    this.ghost = null; this.ghostMade = false;
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
@@ -1521,6 +1526,14 @@ export class World implements EncounterHost {
       }
     }
     // the stop's story script: its lines wait for a safe moment and never drop (sim/script.ts)
+    // the ghost: it comes at a free moment once the tank is half full, and never in a fight
+    if (this.ghost) stepGhost(this.ghost, s, this.tankCap ? this.fuel / this.tankCap : 0, 1 / 60);
+    else if (!this.ghostMade && b.def.script === GHOST_STOP && this.tankCap && this.fuel / this.tankCap >= GHOST_TANK && this.scriptFree(busy, t)) {
+      this.ghostMade = true;
+      this.ghost = spawnGhost({ x: s.x, z: s.z, heading: s.heading });
+      this.flags.add('ghost_here');
+    }
+    if (this.ghost?.near) this.flags.add('ghost_close');
     if (this.script) for (const o of this.script.step(this.scriptCtx(busy, t))) this.playOutput(o);
     // the first system's docks always call when you come up on them, the depot once and the audit dock while its lock holds
     if (b.def.first && !this.docked) {

@@ -228,6 +228,14 @@ export class Radar {
       g.restore();
       if (a.id === target && !out) this.bracket(g, x, y, 6 * dpr, dpr, INK.red);
     }
+    // the contact at Hollis (sim/ghost.ts): a faint white ring, never a hull
+    if (world.ghost) {
+      const [x, y, out] = to(world.ghost.x, world.ghost.z);
+      g.strokeStyle = rgba(RGB.white, out ? 0.3 : 0.55); g.lineWidth = dpr;
+      g.setLineDash([2 * dpr, 2 * dpr]);
+      g.beginPath(); g.arc(x, y, 4 * dpr, 0, Math.PI * 2); g.stroke();
+      g.setLineDash([]);
+    }
     const b = world.command.boss;
     if (b && b.cloak < 0.5) {
       const [x, y] = to(b.x, b.z);

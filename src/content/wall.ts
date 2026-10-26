@@ -86,6 +86,14 @@ export const WALL: WallItem[] = [
     lead: 'Kellern’s books may carry the same initials.',
   }),
   clue({
+    flag: 'clue_ghost', name: 'Unknown contact · Hollis', certainty: 'fact', at: 0,
+    proves: 'Something held at the edge of your scope and matched your speed, and it came closer as the tank filled.',
+    not: 'What it was, or what it wanted.',
+    detail: 'No transponder, no hull the scope could read, and no bolt touched it. Sam called it a ghost. Old rigs throw them.',
+    ask: 'What was on the scope at Hollis?',
+    lead: 'None yet.',
+  }),
+  clue({
     flag: 'clue_relay_answered', name: 'The Narrows relay answered Ada’s key', certainty: 'fact', at: 0,
     proves: 'The Narrows relay still answers Ada’s key, and it named the hull that carried it, on every band.',
     not: 'Who was listening, or how many.',

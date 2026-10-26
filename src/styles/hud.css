@@ -352,6 +352,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 .ptr span { position: absolute; left: 0; top: 14px; translate: -50% 0; white-space: nowrap; text-shadow: 0 1px 5px #000, 0 0 2px #000;
   font: 600 calc(var(--fs) * 1.2)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--pc); }
 #ptr-obj, #ptr-lane, #ptr-audit, #ptr-port { --pc: var(--hud-hi); }
+#ptr-unk { --pc: rgba(236, 230, 225, .62); }
 .ptr.pri { --pc: var(--goal); }
 .ptr[data-crowd] span { display: none; }
 /* hulls off screen: a smaller chevron each, in the faction's colour, brighter the closer; it blinks when one is close behind */
