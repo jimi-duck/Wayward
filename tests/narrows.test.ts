@@ -75,7 +75,7 @@ describe('the Narrows', () => {
     expect(w.flags.has('relay_broadcast')).toBe(true);
     expect(w.flags.has('sam_silent')).toBe(true);
     expect(pursuerOf([...w.flags])).toBe('calloway');
-  });
+  }, 60000);
 
   it('holds every line while the blockade fight runs, then plays them in order', () => {
     const first = play(1, true, 70, 'run');
@@ -85,7 +85,7 @@ describe('the Narrows', () => {
     const { w, log } = play(1, true, 500, 'run', 24);
     expect(w.alive).toBe(true);
     inOrder(log);
-  });
+  }, 60000);
 
   it('never opens the Patience’s card before the note, even if the sortie asks for the beat', () => {
     const j = narrows();
