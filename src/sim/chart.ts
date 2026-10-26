@@ -4,6 +4,7 @@ import {
 } from '../content/systems';
 import { PLACE_CHANCE, PLACE_ORDER, PLACES, SIGNAL_REWARDS, type PlaceId, type Reward } from '../content/phenomena';
 import { REGIONS, REGION_SETS, NAME_PEOPLE, NAME_PLACES, type RegionDef, type RegionSet } from '../content/regions';
+import type { RoadStop } from '../content/road';
 import type { Exp } from '../content/profiles';
 import { Rng } from './rng';
 import { layScatter, RAID_MARKUP, type Fleet } from './scatter';
@@ -140,10 +141,10 @@ export const SIGHT = 2;
 export const NET_MARKUP: Partial<Record<keyof Prices, number>> = { cyrite: 1.4, supplies: 1.4, plate: 1.25 };
 
 /** The chart's columns: Cerro, then for each region its columns and its gate, with the region each belongs to. */
-const layoutOf = (regions: RegionDef[]): Array<{ kinds: SystemKind[]; n: number; region: number }> => [
+const layoutOf = (regions: RegionDef[]): Array<{ kinds: SystemKind[]; n: number; region: number; stop?: RoadStop }> => [
   { kinds: ['home'], n: 1, region: 0 },
   ...regions.flatMap((r, i) => [
-    ...r.cols.map((kinds, k) => ({ kinds, n: r.sizes[k]!, region: i })),
+    ...r.cols.map((kinds, k) => ({ kinds, n: r.sizes[k]!, region: i, stop: r.road?.[k] })),
     { kinds: [r.last ? 'edge' : 'gate'] as SystemKind[], n: 1, region: i },
   ]),
 ];
@@ -210,7 +211,7 @@ export function makeChart(seed: number, set: RegionSet = 'three', breathers = 1)
   const names = [...NAMES], used = new Set<string>();
   const systems: StarSystem[] = [];
   for (let col = 0; col < COLS; col++) {
-    const { n, region } = LAYOUT[col]!;
+    const { n, region, stop } = LAYOUT[col]!;
     const R = regions[region]!;
     // each column deals its kinds from a shuffled list, so a region always has ports and mines spread across it
     const kinds = [...LAYOUT[col]!.kinds];
@@ -219,19 +220,24 @@ export function makeChart(seed: number, set: RegionSet = 'three', breathers = 1)
       const kind = kinds[i % kinds.length]!;
       const t = SYSTEMS[kind];
       const pool = R.holders[kind] ?? t.holders;
-      const holder = pool[rng.int(pool.length)]!;
-      const name = kind === 'home' ? HOME_NAME : kind === 'edge' ? EDGE_NAME : kind === 'gate' ? R.gate : R.names ? nameIn(R, rng, used) : names.splice(rng.int(names.length), 1)[0]!;
+      // a road stop (content/road.ts) fixes what the seed would have dealt; the draws are still made, so the sky and rock stay seeded
+      const dealt = pool[rng.int(pool.length)]!;
+      const holder = stop?.holder ?? dealt;
+      const dealtName = kind === 'home' ? HOME_NAME : kind === 'edge' ? EDGE_NAME : kind === 'gate' ? R.gate : R.names ? nameIn(R, rng, used) : names.splice(rng.int(names.length), 1)[0]!;
+      const name = stop?.name ?? dealtName;
       const cyrite = Math.round(rng.range(t.cyrite[0], t.cyrite[1]) * 100) / 100;
       // the Voice and the Thren keep no docks
       const portNames = PORT_NAMES[holder];
-      const hasPort = rng.next() < t.port * (kind === 'home' ? 1 : R.port) && portNames.length > 0;
+      const rolled = rng.next() < t.port * (kind === 'home' ? 1 : R.port) && portNames.length > 0;
+      const hasPort = stop?.port === undefined ? rolled : stop.port !== null;
       const y = n === 1 ? 0.5 : clamp((i + 0.5) / n + rng.range(-0.08, 0.08), 0.08, 0.92);
       systems.push({
         id: `s${systems.length}`, name, kind, col, region, x: col / 5, y, holder, cyrite,
         supplies: Math.round(rng.range(t.supplies[0], t.supplies[1]) * 100) / 100,
-        port: hasPort ? { name: kind === 'home' ? 'Frontier Supply' : portNames[rng.int(portNames.length)]!, prices: kind === 'home' ? { ...BASE_PRICES } : pricesFor(holder, rng) } : null,
+        port: hasPort ? { name: kind === 'home' ? 'Frontier Supply' : stop?.port ?? portNames[rng.int(portNames.length)]!, prices: kind === 'home' ? { ...BASE_PRICES } : pricesFor(holder, rng) } : null,
         lane: Math.round((col <= EARLY_COLS ? rng.range(EARLY_LANE[0], EARLY_LANE[1]) : rng.range(t.lane[0], t.lane[1])) / 50) * 50,
         survey: clamp(Math.round((cyrite + rng.range(-0.25, 0.25)) * 100) / 100, 0, 1),
+        ...(stop?.quiet ? { quiet: true } : {}),
       });
     }
   }

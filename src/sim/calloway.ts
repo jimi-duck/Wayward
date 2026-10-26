@@ -90,8 +90,14 @@ export function care(d: Dossier): keyof Dossier['cares'] | null {
   return best;
 }
 
+/** The flag the Narrows' handshake sets: the archive's route is on every band. */
+export const RELAY_BROADCAST = 'relay_broadcast';
+
 /** Her read on your route from the trail: a habit once READ_AT systems are flown. */
-export function hunchOf(c: Chart, trail: readonly string[]): Hunch {
+export function hunchOf(c: Chart, trail: readonly string[], flags: readonly string[] = []): Hunch {
+  // the road is straight by design, so reading it as a habit would stop her searching from the third stop on: she knows the
+  // route only once the relay has broadcast it (docs/ROAD.md), and then for good
+  if (c.regionSet === 'road') return { kind: null, straight: flags.includes(RELAY_BROADCAST) };
   const flown = trail.slice(1).map((id) => sysById(c, id)).filter((s) => s.kind !== 'edge' && s.kind !== 'home');
   if (flown.length < READ_AT) return { kind: null, straight: false };
   const count = new Map<SystemKind, number>();

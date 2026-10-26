@@ -88,6 +88,8 @@ export function migrate(raw: unknown): Journey | null {
   // Cerro has the archive woken already, which ends the chain, and the chain's cards that no longer exist are skipped (sim/story.ts).
   // 19 → 20: the Civic Score is gone from the game (the owner, 2026-10-20): its number is dropped from the carry.
   if (j.version < 20) delete (j.carry as { civic?: number }).civic;
+  // 20 → 21: the Warden's Road (`?road`) and the story queue. A journey saved before keeps its own chart; its carry gets an empty queue.
+  if (j.version < 21) j.carry.pending = [];
   j.version = VERSION;
   return j as Journey;
 }

@@ -1,4 +1,5 @@
 import type { Holder, SystemKind } from './systems';
+import { ROAD, type RoadStop } from './road';
 
 // ── regions ───────────────────────────────────────────────────────────────
 // The way out is three regions, each less human than the last, joined by a
@@ -55,6 +56,8 @@ export interface RegionDef {
   /** The pursuit here: a multiplier on how fast heat climbs (the Custody is far from home), and on the share from ahead. */
   heatRate: number;
   ahead: number;
+  /** The region as fixed stops, one lane each (content/road.ts): their rows set each system's name, kind, holder, port and quiet. */
+  road?: RoadStop[];
 }
 
 export const REGIONS: RegionDef[] = [
@@ -82,7 +85,10 @@ export const REGIONS: RegionDef[] = [
 ];
 
 /** The way out as eight regions, for the long journey. A chart is laid out from one set or the other and says which. */
-export type RegionSet = 'three' | 'eight';
+export type RegionSet = 'three' | 'eight' | 'road';
+
+/** A set that plays the eight regions (the road is the eight with a fixed Reach). */
+export const isLongSet = (set: RegionSet | undefined): boolean => set === 'eight' || set === 'road';
 
 /** `n` columns dealt from a few templates in turn. */
 const cycle = (n: number, ...templates: SystemKind[][]): SystemKind[][] => Array.from({ length: n }, (_, i) => templates[i % templates.length]!);
@@ -146,8 +152,14 @@ export const REGIONS_LONG: RegionDef[] = [
   },
 ];
 
+/** The Warden's Road: the long journey with the Reach as one fixed line of stops (content/road.ts). The regions beyond are the long journey's own. */
+export const REGIONS_ROAD: RegionDef[] = [
+  { ...REGIONS_LONG[0]!, cols: ROAD.map((r) => [r.kind]), sizes: sizes(ROAD.length, 1), quiet: undefined, road: ROAD },
+  ...REGIONS_LONG.slice(1),
+];
+
 /** The region table a chart was laid out with. */
-export const REGION_SETS: Record<RegionSet, RegionDef[]> = { three: REGIONS, eight: REGIONS_LONG };
+export const REGION_SETS: Record<RegionSet, RegionDef[]> = { three: REGIONS, eight: REGIONS_LONG, road: REGIONS_ROAD };
 
 /** Drift fleets' names, drawn without repeats. */
 export const FLEETS = [

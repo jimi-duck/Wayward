@@ -89,7 +89,7 @@ export const WAITING = 40;
 export const ECHO_DELAY = 0.5;
 export const ECHO_BLIND = 2;
 /** The save's version: bump it and add a migration in meta/save.ts when the shape changes. */
-export const VERSION = 20;
+export const VERSION = 21;
 /** A breather has rock to mine at your own pace: with no wrecks to cut for Cyrite, a thin sky would be a trap. */
 const QUIET_RICH = 0.16, QUIET_DENSITY = 1;
 /** Who comes from ahead in a system the Voice or the Thren hold (the Gutter's crews everywhere else). */
@@ -537,7 +537,7 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
   // with every system flown she reads your route a little better, unless the echoes left behind make it lie
   const echo = effects(c.levels).echo;
   if (echo > 0) { j.hunt.delay += ECHO_DELAY * echo; lines.push(t('A ghost echo lays a false trail behind you')); }
-  j.hunt.hunch = echo >= ECHO_BLIND ? undefined : hunchOf(j.chart, j.trail);
+  j.hunt.hunch = echo >= ECHO_BLIND ? undefined : hunchOf(j.chart, j.trail, c.flags);
   j.status = 'chart';
   return { kind: 'jumped', lines };
 }

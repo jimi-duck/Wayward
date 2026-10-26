@@ -3,7 +3,8 @@ import {
   ARC, EARLY_QUIET, JOB_COLS, SIT_CHANCE, SIT_CHANCE_QUIET, SITUATION_BY_ID, SITUATIONS, SWEEP_CHANCE, type ChartFx, type SitResult, type SituationDef,
 } from '../content/situations';
 import { MISSIONS } from '../content/missions';
-import { REGIONS_LONG } from '../content/regions';
+import { isLongSet, REGIONS_LONG } from '../content/regions';
+import { roadStop } from '../content/road';
 import { jumps, lanesFrom, netted, pushNet, regionOf, sysById, type Chart, type Sit, type StarSystem } from './chart';
 import { Rng } from './rng';
 
@@ -25,7 +26,10 @@ import { Rng } from './rng';
 // settlement). What a sortie did is folded in by `settle`.
 
 /** The eight-region chart's index for a region of this chart (the short chart plays the first, second and Hollows). */
-export const longIndex = (c: Chart, region: number): number => (c.regionSet === 'eight' ? region : [0, 1, 6][region] ?? region);
+export const longIndex = (c: Chart, region: number): number => (isLongSet(c.regionSet) ? region : [0, 1, 6][region] ?? region);
+
+/** Whether a region of this chart is the Warden's Road: fixed stops, with their jobs pinned (content/road.ts). */
+export const roadRegion = (c: Chart, region: number): boolean => c.regionSet === 'road' && region === 0;
 
 /** A system a situation can sit in: not Cerro, a gate, or the Threshold. */
 const open = (s: StarSystem) => s.kind !== 'home' && s.kind !== 'gate' && s.kind !== 'edge';
@@ -68,7 +72,9 @@ export function layJobs(c: Chart, seed: number, q: Record<string, Sit>, from = -
   for (const sit of Object.values(q)) if (isJob(sit.id)) used.set(sit.id, (used.get(sit.id) ?? 0) + 1);
   const laid: string[] = [];
   const free = (x: StarSystem) => { if (x.quiet) return false; const k = q[x.id]; return !k || (!k.arc && !k.seen && !k.done && !isJob(k.id)); };
-  for (let region = 0; region < (c.regionSet === 'eight' ? 8 : 3); region++) {
+  for (let region = 0; region < (isLongSet(c.regionSet) ? 8 : 3); region++) {
+    // the road's stops carry their own jobs (laySituations)
+    if (roadRegion(c, region)) continue;
     const long = longIndex(c, region);
     const n = JOB_COLS[long] ?? 0;
     // the first region's first two stops are the escape and the first refit: no job there
@@ -97,7 +103,8 @@ export function laySituations(c: Chart, seed: number): Record<string, Sit> {
   const rng = new Rng(seed ^ 0x51737);
   const out: Record<string, Sit> = {};
   // the timetable
-  for (let region = 0; region < (c.regionSet === 'eight' ? 8 : 3); region++) {
+  for (let region = 0; region < (isLongSet(c.regionSet) ? 8 : 3); region++) {
+    if (roadRegion(c, region)) continue;
     const long = longIndex(c, region);
     const rows = ARC.filter((r) => r.region === long);
     if (!rows.length) continue;
@@ -109,13 +116,18 @@ export function laySituations(c: Chart, seed: number): Record<string, Sit> {
       for (const s of c.systems.filter((x) => regionOf(x) === region && x.col === cols[k] && open(x))) out[s.id] = { id: row.id, seen: false, done: false, arc: true };
     }
   }
+  // the road's jobs, each on its own stop and nowhere else
+  for (const s of c.systems) {
+    const job = roadRegion(c, regionOf(s)) ? roadStop(s.name)?.job : undefined;
+    if (job) out[s.id] = { id: job, seen: false, done: false, arc: true };
+  }
   // the jobs
   layJobs(c, seed, out);
   // the roll
   const firstCol = Math.min(...c.systems.filter((x) => regionOf(x) === 0 && open(x)).map((x) => x.col));
   const used = new Map<string, number>();
   for (const s of [...c.systems].sort((a, b) => a.col - b.col)) {
-    if (!open(s) || out[s.id]) continue;
+    if (!open(s) || out[s.id] || roadRegion(c, regionOf(s))) continue;
     // the first region opens quiet: nothing is rolled in its first columns
     if (regionOf(s) === 0 && s.col <= firstCol + EARLY_QUIET - 1) continue;
     const chance = s.quiet ? SIT_CHANCE_QUIET : SIT_CHANCE[s.kind] ?? 0;
