@@ -99,6 +99,8 @@ export type GameEvent =
   | { type: 'callEnd'; id: string; lapsed: boolean }
   /** A line on the radio: no answer asked. */
   | { type: 'ping'; id: string; from: string; caller: string; text: string; moment: string; system: string }
+  /** A story row's notice, low centre (ui/notify.ts): teal, amber, red or white. */
+  | { type: 'storyNotice'; tone: 'teal' | 'amber' | 'red' | 'white'; headline: string; reason?: string }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
   | { type: 'jobDone'; id: string; text: string }
   | { type: 'jobShort'; id: string; text: string };

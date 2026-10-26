@@ -10,6 +10,8 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
+import { Script, type Output } from './script';
+import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT } from '../content/story';
 import { ledgerFor } from './contract';
 import {
@@ -312,6 +314,9 @@ export class World implements EncounterHost {
   /** Radio lines waiting their turn, by run time: a voice's beats one after another (`radioLines`). */
   private radioQ: Array<{ at: number; id: string; from: string; caller: string; text: string }> = [];
   private cardsSeen = new Set<string>();
+  /** The stop's story script (sim/script.ts), if it has one, and the objective it has set. */
+  private script: Script | null = null;
+  storyObjective: { main?: string; quiet?: string } | null = null;
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
   private heard = new Set<string>();
   private follows: Array<{ card: string; at: number; quick?: boolean }> = [];
@@ -431,6 +436,8 @@ export class World implements EncounterHost {
     if (def.situation && !def.home) this.stage = makeStage(def.system, def.situation, this);
     if (def.first) this.traffic = new Traffic(this);
     if (this.carryIn) this.bringAboard(this.carryIn);
+    this.script = def.script ? new Script(SCRIPT, def.script, this.heard, this.carryIn?.pending ?? []) : null;
+    this.storyObjective = null;
     this.stock();
     this.fitAboard();
   }
@@ -476,6 +483,7 @@ export class World implements EncounterHost {
       cyrite: this.cyrite, fuel: this.fuel, supplies: this.supplies, plates: this.plates, stock: { shield: this.powers.shield, yield: this.powers.yield }, levels: { ...this.levels },
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
+      pending: this.script?.pending() ?? [],
       hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
     };
   }
@@ -1443,6 +1451,32 @@ export class World implements EncounterHost {
     return 'free';
   }
 
+  /** A free moment for the story: nothing hostile near or firing, no card or call open, no job fight, not in a ring or a jump. */
+  private scriptFree(busy: Busy, t: number): boolean {
+    return busy === 'free' && !this.call && !this.comms && !this.safe && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
+  }
+
+  private scriptCtx(busy: Busy, t: number) {
+    const b = this.bk!, s = this.ship;
+    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit };
+    return {
+      t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,
+      dist: (site: string) => { const p = sites[site]; return p ? Math.hypot(p.x - s.x, p.z - s.z) : Infinity; },
+      cardDone: (id: string) => this.cardsSeen.has(id) && !this.comms && !this.call,
+    };
+  }
+
+  /** What a script row does when it plays. */
+  private playOutput(o: Output): void {
+    const name = this.bk?.def.name ?? '';
+    if ('radio' in o) this.events.push({ type: 'ping', id: `story_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text), moment: 'calm', system: name });
+    else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason });
+    else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet) };
+    else if ('card' in o) { const def = CARD_BY_ID[o.card]; if (def) this.desk.offer(def, 'major', this.runTime); }
+    else if ('wall' in o) this.flags.add(o.wall);
+    else this.flags.add(`pursuit_${o.pursuit}`);
+  }
+
   /** Who calls, and when. Everything that wants to talk is offered to the desk, which says when it is heard. */
   private stepComms(): void {
     const b = this.bk!, t = this.runTime, s = this.ship, d = this.desk;
@@ -1484,6 +1518,8 @@ export class World implements EncounterHost {
         else d.offer(def, weightOf(def), t, false, def.trigger === 'story');
       }
     }
+    // the stop's story script: its lines wait for a safe moment and never drop (sim/script.ts)
+    if (this.script) for (const o of this.script.step(this.scriptCtx(busy, t))) this.playOutput(o);
     // the first system's docks always call when you come up on them, the depot once and the audit dock while its lock holds
     if (b.def.first && !this.docked) {
       const near = (p: { x: number; z: number } | null) => !!p && Math.hypot(s.x - p.x, s.z - p.z) < PORT_CALL;
@@ -1516,7 +1552,7 @@ export class World implements EncounterHost {
       }
     }
     // the radio: a line, no answer. A card on the table has the screen.
-    if (!this.call) {
+    if (!this.call && !this.script?.waiting()) {
       const m = d.pingFor(busy, t, this.deskRng);
       if (m) this.say(m);
     }
