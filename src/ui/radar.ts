@@ -2,7 +2,7 @@ import { angleDelta } from '../core/math';
 import type { Sector } from '../render/sector';
 import { ALIEN_TYPES, cloaked, FIRE_RANGE } from '../sim/enemies';
 import { LOOSE } from '../sim/pickups';
-import { guideTarget, sidePlaces } from '../sim/guide';
+import { guideTarget, IDENT_RANGE, sidePlaces } from '../sim/guide';
 import type { World } from '../sim/world';
 import { FONT, INK, RGB, rgba } from './palette';
 
@@ -220,7 +220,9 @@ export class Radar {
     for (const a of world.aliens) {
       if (cloaked(a)) continue;
       const [x, y, out] = to(a.x, a.z);
-      g.fillStyle = out ? (a.ward ? rgba(RGB.white, 0.4) : rgba(RGB.red, 0.5)) : a.elite ? '#f08a7e' : a.kind === 'freighter' || a.ward ? INK.white2 : INK.red;
+      // red is for a hull attacking you; far or idle contacts stay grey
+      const grey = a.kind === 'freighter' || !!a.ward || !world.committed(a) || Math.hypot(a.x - world.ship.x, a.z - world.ship.z) > IDENT_RANGE;
+      g.fillStyle = out ? (grey ? rgba(RGB.white, 0.4) : rgba(RGB.red, 0.5)) : grey ? INK.white2 : a.elite ? '#f08a7e' : INK.red;
       g.save(); g.translate(x, y); g.rotate(-(a.face - h));
       const role = ALIEN_TYPES[a.kind].role;
       const sz = (role === 'cruiser' || a.kind === 'freighter' ? 4.6 : 3.4) * dpr;

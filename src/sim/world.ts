@@ -1273,7 +1273,7 @@ export class World implements EncounterHost {
   }
 
   /** A hostile that has committed to a fight with the ship. */
-  private committed(a: Alien): boolean {
+  committed(a: Alien): boolean {
     return !(a.fleeing || a.ward || ALIEN_TYPES[a.kind].fire === 'none' || a.mode === 'patrol' || a.mode === 'watch' || a.mode === 'brawl');
   }
 
@@ -2198,7 +2198,9 @@ export class World implements EncounterHost {
     if (st.arc && this.alive) {
       sys.arcT -= dt * (rapid ? 2 : 1);
       if (sys.arcT <= 0) {
-        const hits = arcTargets(this.ship, st, this.reachableHulls(), this.reachableRocks(), rapid);
+        // the arc is a defence: it only fires while a hull that has committed to a fight is in reach, and only at such hulls
+        const foes = this.reachableHulls().filter((h) => (h.al ? this.committed(h.al) : true));
+        const hits = foes.length ? arcTargets(this.ship, st, foes, [], rapid) : [];
         if (hits.length) {
           const pts: number[] = [];
           for (const h of hits) {

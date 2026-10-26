@@ -234,7 +234,7 @@ export class Targeting {
         $('tgt-int').style.setProperty('--v', '1');
         $('tgt-hp').style.setProperty('--v', '1');
         text($('tgt-int-v'), '—');
-        for (const k of ['elite', 'friendly', 'boss']) { this.box.classList.remove(k); this.card.classList.remove(k); }
+        for (const k of ['elite', 'friendly', 'boss', 'neutral']) { this.box.classList.toggle(k, k === 'neutral'); this.card.classList.toggle(k, k === 'neutral'); }
         return;
       }
       name = tr(alienLabel(a));
@@ -244,6 +244,8 @@ export class Targeting {
       hp = a.hp / a.maxHp;
       if (a.elite) cls = 'elite';
       else if (a.kind === 'freighter' || civil) cls = 'friendly';
+      // red is for a hull that is attacking you: anything else in sight is grey
+      else if (!world.committed(a)) cls = 'neutral';
     } else if (t.kind === 'boss') {
       const b = t.ref as Boss;
       name = tr(b.name);
@@ -263,7 +265,7 @@ export class Targeting {
     text($('tgt-int-v'), `${Math.round(v * 100)}%`);
     if (t.kind === 'boss') cls = 'boss';
     const card = this.card;
-    for (const k of ['elite', 'friendly', 'boss']) {
+    for (const k of ['elite', 'friendly', 'boss', 'neutral']) {
       const on = cls.split(' ').includes(k);
       this.box.classList.toggle(k, on);
       card.classList.toggle(k, on);
@@ -357,7 +359,7 @@ export class Targeting {
       // every other hull: brackets only, amber for an elite
       for (const a of world.aliens) {
         if (cloaked(a) || a.id === t?.id || a === trader) continue;
-        put(a.x, a.y, a.z, a.elite && Math.hypot(a.x - s.x, a.z - s.z) <= IDENT_RANGE ? 'm elite' : 'm', '');
+        put(a.x, a.y, a.z, Math.hypot(a.x - s.x, a.z - s.z) > IDENT_RANGE || !world.committed(a) ? 'm neutral' : a.elite ? 'm elite' : 'm', '');
       }
     }
     for (; n < MAX_MARKS; n++) if (!this.marks[n]!.hidden) this.marks[n]!.hidden = true;
