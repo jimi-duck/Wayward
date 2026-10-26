@@ -9,8 +9,8 @@
 .chartp { --anomaly: #9f8bd6; --pick: #e4a33b; --pick-hi: #f2bc62; --pick-fill: rgba(228, 163, 59, .08); --danger: #ef8a7f; --pad: 16px;
   width: min(1180px, 100%); gap: 12px; }
 /* the panel is the grid: header, body, the Intel and Wall row, the strip. Only an open Intel lets the sheet scroll. */
-#chart > .chartp { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; max-height: calc(100dvh - 32px); }
-#chart > .chartp:has(.ch-intel[open]) { max-height: none; }
+#chart > .chartp, #course > .chartp { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; max-height: calc(100dvh - 32px); }
+#chart > .chartp:has(.ch-intel[open]), #course > .chartp:has(.ch-intel[open]) { max-height: none; }
 /* the header: the place and the stores on the first line, the name and the goal on the second */
 .ch-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "k res" "l2 l2"; align-items: center; gap: 8px 20px; }
 /* the region's banner: faint, fading out to the right, under the words */
@@ -245,4 +245,4 @@ circle.ch-net { fill: rgba(201, 74, 63, .07); stroke: rgba(224, 87, 75, .5); str
   .touch-ui .ch-o1 kbd { display: none; }
 }
 .ch-head #ch-go { grid-column: 1 / -1; justify-self: start; }
-#chart > .chartp { min-height: min(680px, calc(100dvh - 32px)); }
+#chart > .chartp, #course > .chartp { min-height: min(680px, calc(100dvh - 32px)); }

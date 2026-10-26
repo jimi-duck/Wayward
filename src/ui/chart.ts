@@ -34,10 +34,10 @@ import { artImg, artUrl } from './art';
 // faction's notice) sits behind Intel. The same panel tells you when you are
 // adrift after a wreck, and how the journey ended.
 
-const NS = 'http://www.w3.org/2000/svg';
+export const NS = 'http://www.w3.org/2000/svg';
 /** The map is drawn in screen pixels: its box is measured when it is drawn. */
 const FALLBACK = { w: 640, h: 320 };
-const KIND_WORD: Record<SystemKind, string> = {
+export const KIND_WORD: Record<SystemKind, string> = {
   home: 'Home', port: 'Port', mining: 'Mining', contested: 'Contested', transit: 'Transit', gate: 'Gate', edge: 'The last lane',
 };
 /** A lane's style, in words (sim/lanes.ts). */
@@ -48,7 +48,7 @@ const KEY_DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
 
 const ANOMALY = '#9f8bd6';
 /** A steady hash of a string, 0 to 1: the same lane bends the same way every time it is drawn. */
-function hash01(s: string): number {
+export function hash01(s: string): number {
   let x = 2166136261;
   for (let i = 0; i < s.length; i++) x = Math.imul(x ^ s.charCodeAt(i), 16777619);
   return ((x >>> 0) % 1000) / 1000;
@@ -81,7 +81,7 @@ function noticeText(l: NoticeLine, day: number): string {
   return parts.join(' · ');
 }
 
-function svg(tag: string, attrs: Record<string, string | number>, text = ''): SVGElement {
+export function svg(tag: string, attrs: Record<string, string | number>, text = ''): SVGElement {
   const e = document.createElementNS(NS, tag);
   for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
   if (text) e.textContent = text;
@@ -89,7 +89,7 @@ function svg(tag: string, attrs: Record<string, string | number>, text = ''): SV
 }
 
 /** Small line glyphs on a 16 unit grid: a kind of system, and the four things a lane costs. */
-const GLYPH: Record<string, string> = {
+export const GLYPH: Record<string, string> = {
   // places: each its own silhouette, one outline weight (the map marks use the same paths)
   port: 'M3 3h10v10H3zM6 8h4M8 6v4',
   mining: 'M8 1.5l5.5 3.2v6.6L8 14.5l-5.5-3.2V4.7zM8 5.8l2.4 1.4v1.6L8 10.2 5.6 8.8V7.2z',
@@ -106,7 +106,7 @@ const GLYPH: Record<string, string> = {
   hull: 'M2.5 2.5h11v6L8 14 2.5 8.5zM5.5 6h5',
   arrow: 'M2 8h11M9 4l4 4-4 4',
 };
-function glyph(name: string): SVGElement {
+export function glyph(name: string): SVGElement {
   const e = svg('svg', { viewBox: '0 0 16 16', class: 'cg', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
   e.append(svg('path', { d: GLYPH[name] ?? GLYPH.transit! }));
   return e;
@@ -133,6 +133,21 @@ export function fillWall(j: Journey, to: { s: HTMLElement; lead: HTMLElement; li
     ? h('li', 'found', '', h('b', '', t(w.name)), h('span', 'tag', t(w.certainty === 'fact' ? 'Fact' : 'Inference')),
         h('p', '', `${t('Proves')} · ${t(w.proves)}`), h('p', '', `${t('Not yet proved')} · ${t(w.not)}`))
     : h('li', 'open', '', h('b', '', t(w.name)), h('p', '', `${t('Still open')} · ${t(w.ask)}`))));
+}
+
+/** The stores, one slim row: what the jumps burn, what buys, what the trip eats, what keeps the hull. Low is caution gold, critical red. */
+export function storeCells(j: Journey, short: boolean): HTMLElement[] {
+  const c = j.carry;
+  const cell = (ic: string, k: string, v: string, cls = '', why = '') => { const e = h('span', cls, '', h('span', 'k', '', glyph(ic), h('span', 'kt', k)), h('b', '', v)); if (why) e.title = why; return e; };
+  const tank = short ? (c.fuel < 1 ? 'crit' : 'low') : '';
+  const food = c.supplies <= 0 ? 'crit' : c.supplies <= LOW_SUPPLIES ? 'low' : '';
+  const hull = c.plates <= 1 ? 'crit' : c.plates <= 2 ? 'low' : '';
+  return [
+    cell('drop', t('Jump fluid'), String(Math.floor(c.fuel)), tank, t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')),
+    cell('gem', t('Cyrite'), num(c.cyrite), '', t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')),
+    cell('box', t('Supplies'), String(c.supplies), food, t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')),
+    cell('hull', t('Hull'), String(c.plates), hull, t('Hull plates: each is one hit the Wayward can take.')),
+  ];
 }
 
 export class ChartPanel {
@@ -322,21 +337,9 @@ export class ChartPanel {
     });
   }
 
-  /** The stores, one slim row: what the jumps burn, what buys, what the trip eats, what keeps the hull. Low is caution gold, critical red. */
+  /** The stores, one slim row (see `storeCells`). The tank is short when even the cheapest lane shown costs more than it holds. */
   private resCells(j: Journey): HTMLElement[] {
-    const c = j.carry;
-    const cell = (ic: string, k: string, v: string, cls = '', why = '') => { const e = h('span', cls, '', h('span', 'k', '', glyph(ic), h('span', 'kt', k)), h('b', '', v)); if (why) e.title = why; return e; };
-    // the tank is short when even the cheapest lane shown costs more than it holds
-    const short = this.fs.length ? Math.min(...this.fs.map((f) => f.short)) > 0 : false;
-    const tank = short ? (c.fuel < 1 ? 'crit' : 'low') : '';
-    const food = c.supplies <= 0 ? 'crit' : c.supplies <= LOW_SUPPLIES ? 'low' : '';
-    const hull = c.plates <= 1 ? 'crit' : c.plates <= 2 ? 'low' : '';
-    return [
-      cell('drop', t('Jump fluid'), String(Math.floor(c.fuel)), tank, t('Jump fluid: the drive burns it to jump. The ship refines what you mine into the tank first.')),
-      cell('gem', t('Cyrite'), num(c.cyrite), '', t('Cyrite is your money, for upgrades and ports. What the tank cannot hold stays Cyrite.')),
-      cell('box', t('Supplies'), String(c.supplies), food, t('Supplies: the lane’s days, the drive’s wear and hull patches. Run out and a jump costs a plate.')),
-      cell('hull', t('Hull'), String(c.plates), hull, t('Hull plates: each is one hit the Wayward can take.')),
-    ];
+    return storeCells(j, this.fs.length ? Math.min(...this.fs.map((f) => f.short)) > 0 : false);
   }
 
   private renderHead(j: Journey): void {
