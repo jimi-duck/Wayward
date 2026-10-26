@@ -220,7 +220,11 @@ export class Hud {
           if (e.id === WAKE_BEAT) this.notify(world, { type: 'warning', headline: 'Registry: Unregistered', reason: 'Repaint will not pass a scan.', key: 'registry' });
           break;
         case 'storyNotice': this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
-        case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
+        case 'jobDone':
+          this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain');
+          // at the port the pop-up says it (ui/jobdone.ts); at the Jump Gate a quiet notice does
+          if (e.at === 'lane') this.notify(world, { type: 'arrival', headline: 'Job complete', reason: e.job, key: `job:${e.id}` });
+          break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
         case 'spool': this.banner(t('Jump Gate'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
         case 'needFuel': this.banner(t('Ship system'), t('Not enough jump fluid'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;

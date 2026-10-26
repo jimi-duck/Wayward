@@ -338,14 +338,14 @@ kbd { display: inline-grid; place-items: center; min-width: 15px; height: 15px; 
 .cm-side .need { color: var(--ink-3); white-space: normal; text-align: right; max-width: 18ch; }
 
 /* buttons: cut like everything else */
-#again, #launch, #ch-go, #en-go, #op-go, #hn-go, .ghost { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
+#again, #launch, #ch-go, #en-go, #op-go, #hn-go, #jd-go, .ghost { --c: 10px; --edge: var(--hud); --fill: var(--hud-fill); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer;
   height: 44px; padding: 0 44px; font: 700 14px/1 var(--font-head); letter-spacing: .28em; text-transform: uppercase; color: var(--ink); }
-:is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, .ghost)::before, :is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
-:is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
+:is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, #jd-go, #jd-go, .ghost)::before, :is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, #jd-go, #jd-go, .ghost)::after { content: ""; position: absolute; pointer-events: none; }
+:is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, #jd-go, #jd-go, .ghost)::before { inset: 0; z-index: -2; background: var(--edge);
   clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-:is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
+:is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, #jd-go, #jd-go, .ghost)::after { inset: 1px; z-index: -1; background: var(--fill); transition: background .14s var(--ez);
   clip-path: polygon(calc(var(--c) - .4px) 0, 100% 0, 100% calc(100% - var(--c) + .4px), calc(100% - var(--c) + .4px) 100%, 0 100%, 0 calc(var(--c) - .4px)); }
-:is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go):hover, :is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go):focus-visible { --fill: rgba(134, 169, 209, .3); }
+:is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, #jd-go):hover, :is(#again, #launch, #ch-go, #en-go, #op-go, #hn-go, #jd-go):focus-visible { --fill: rgba(134, 169, 209, .3); }
 #again:focus-visible, #launch:focus-visible, #ch-go:focus-visible, #en-go:focus-visible, #op-go, #hn-go:focus-visible, .ghost:focus-visible, .mods button:focus-visible, .dif:focus-visible { outline: 2px solid var(--hud-hi); outline-offset: 3px; }
 .ghost { --c: 7px; --edge: var(--line); --fill: var(--glass); height: 30px; padding: 0 16px; font: 600 calc(var(--fs) * .9 * 1.18)/1 var(--font-rail); letter-spacing: .12em; }
 .ghost:hover { --edge: var(--hud); }
@@ -1525,7 +1525,7 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 .op-l .op-score em { font-style: normal; color: var(--caution); }
 .op-l .op-job { margin-top: 6px; font: 600 12px/1.3 var(--font-display); letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
 #opening .pf { display: flex; justify-content: flex-end; }
-#op-go, #hn-go { min-height: 44px; min-width: 120px; }
+#op-go, #hn-go, #jd-go { min-height: 44px; min-width: 120px; }
 @media (max-height: 460px) { .op-l { gap: 6px; } .opening .ph, .opening .pf { flex: none; } .op-l p { font-size: 12.5px; line-height: 1.4; } .op-l b { font-size: 15px; } }
 
 /* the opening's two cards and the attachments (opening and comms): quiet bars, closed until asked */

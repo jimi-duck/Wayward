@@ -20,6 +20,8 @@ import { regionsOf, routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
 import { HeatNote } from './ui/heatnote';
+import { JobDone } from './ui/jobdone';
+import type { GameEvent } from './sim/events';
 import { Cutscene } from './ui/adrift';
 import { ChartPanel, regionName } from './ui/chart';
 import { CoursePanel } from './ui/course';
@@ -155,11 +157,14 @@ function boot(review: typeof import('./review') | null): void {
   const course = new CoursePanel();
   const ending = new EndingPanel();
   const heatNote = new HeatNote();
+  const jobDone = new JobDone();
+  /** Jobs paid at a port, waiting for their pop-up (one at a time). */
+  const jobsPaid: Array<Extract<GameEvent, { type: 'jobDone' }>> = [];
   const cut = new Cutscene();
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || heatNote.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || heatNote.open || jobDone.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   /** A call that asks for an answer holds the world still, like every other pop-up; it lets go when it is answered or lapses. */
   let callHold = false;
@@ -473,7 +478,7 @@ function boot(review: typeof import('./review') | null): void {
       else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
     }
     // a gamepad answers the open panel
-    if (cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || !el('summary').hidden) {
+    if (cut.open || bay.open || comms.open || port.open || jobDone.open || chart.open || course.open || ending.open || !el('summary').hidden) {
       const p = padNav.poll();
       if (cut.open) cut.padInput(p);
       else if (bay.open) bay.padInput(p);
@@ -481,6 +486,7 @@ function boot(review: typeof import('./review') | null): void {
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p);
       else if (course.open) course.padInput(p);
+      else if (jobDone.open) jobDone.padInput(p);
       else if (heatNote.open) heatNote.padInput(p);
       else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
@@ -635,6 +641,15 @@ function boot(review: typeof import('./review') | null): void {
       const hold = sector.react(events);
       if (hold > 0 && !sector.reduceMotion) loop.freeze(hold);
       hud.events(events, world);
+      // a job paid at the port says so, in a pop-up that holds the world (the lane's are a quiet notice, hud.ts)
+      for (const e of events) if (e.type === 'jobDone' && e.at === 'port') jobsPaid.push(e);
+      if (jobsPaid.length && !jobDone.open && started) {
+        const e = jobsPaid.shift()!;
+        const was = loop.paused;
+        loop.paused = true;
+        input.reset();
+        jobDone.show(e, () => { loop.paused = was; input.reset(); });
+      }
       feel.events(events);
       radio.events(events);
       if (started && world.call && !callHold && !loop.paused && !panelOpen()) { callHold = true; loop.paused = true; input.reset(); }
