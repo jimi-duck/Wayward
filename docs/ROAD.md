@@ -1,7 +1,7 @@
 # The Warden's Road
 
-Behind `?road`, the Reach is one line of fixed stops instead of a chart to
-choose across. Main plays as before. The copy lives in the Claude Docs
+The Reach is one line of fixed stops (`?classic` brings the chart back) instead of a chart to
+choose across. The copy lives in the Claude Docs
 "The Reach: Chapter Script" and "WAYWARD: An Authored Road"; this file is how
 the code carries it.
 
@@ -57,3 +57,11 @@ explained.
 `npm run pilot:road` flies Cerro to the Narrows and writes
 [BALANCE-ROAD.md](BALANCE-ROAD.md). The pilot does not read or linger, so it
 shows the shape, not the pacing. The 40-minute target needs human playtests.
+
+## The first two systems, and a wreck
+
+- The audit dock's system and Northfold are safe (`SortieDef.safe`): no
+  raiders from ahead, no chance fights, no crew hails. Only lingering draws
+  the police: the first pursuer comes after 150 s, and the heat rises slowly.
+- A wreck on the road leaves Juno in the same system, set going again with the
+  gate a little off her heading (`SortieDef.off`). No chart, no tow.

@@ -421,7 +421,7 @@ export class World implements EncounterHost {
       return;
     }
     const def = this.sortie;
-    this.bk = newBreakout(this.ship.heading, def);
+    this.bk = newBreakout(this.ship.heading + (def.off ?? 0), def);
     this.callowayAt = def.calloway;
     this.captainAt = def.quiet ? Infinity : def.notice.captain?.at ?? Infinity;
     this.behind = def.behind;
@@ -908,7 +908,7 @@ export class World implements EncounterHost {
   private claimNoted = false;
   private stepClaim(dt: number): void {
     const rule = this.bk?.def.rules?.claim, space = this.space;
-    if (!rule || !space || this.claimed >= 2 || this.bk!.def.quiet || this.bk!.def.netted) return;
+    if (!rule || !space || this.claimed >= 2 || this.bk!.def.quiet || this.bk!.def.safe || this.bk!.def.netted) return;
     const s = this.ship;
     let rich = false;
     for (const f of this.air.from) if (FEATURES[f.def].purpose.includes('resource') && weightAt(f, s.x, s.z) * f.level > 0.5) rich = true;
@@ -2137,7 +2137,7 @@ export class World implements EncounterHost {
       return;
     }
     // only in open sky: no capital ship about, and not just before one; a quiet system has no chance events
-    if (this.sortie.quiet || t < this.nextEvent || this.command.state !== 'idle' || this.command.next - t < 20) return;
+    if (this.sortie.quiet || this.sortie.safe || t < this.nextEvent || this.command.state !== 'idle' || this.command.next - t < 20) return;
     const weights = this.sortie.calm ? calmWeights(this.survival.events.weights) : this.survival.events.weights;
     const id = pickEncounter(t, this.lastEvent, this.unlocked, this.rng, weights);
     if (!id) { this.nextEvent = t + 20; return; }

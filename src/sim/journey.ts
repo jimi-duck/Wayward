@@ -205,6 +205,9 @@ const note = (j: Journey, text: string) => { j.log.push({ day: Math.round(j.day 
 export const here = (j: Journey): StarSystem => sysById(j.chart, j.at);
 
 /** What the world needs to fly the current system. */
+/** The road's columns that are safe: the audit dock's system and Northfold. */
+const SAFE_COLS = 2;
+
 export function sortieDef(j: Journey): SortieDef {
   const s = here(j);
   const notice = pressure(j.notice, j.day);
@@ -249,6 +252,11 @@ export function sortieDef(j: Journey): SortieDef {
   };
   // the Narrows: Ashgrove holds the gate (content/script/narrows.ts)
   if (def.script === 'narrows') { def.blockade = true; def.checkpoint = 'narrows_checkpoint'; }
+  // set adrift here a moment ago: the gate is not dead ahead any more
+  const last = j.legs[j.legs.length - 1];
+  if (j.chart.regionSet === 'road' && last?.ended === 'destroyed' && last.system === s.id) def.off = (j.lost % 2 ? 1 : -1) * (0.25 + 0.1 * (j.lost % 3));
+  // the road's first two systems are safe: no raiders, no chance fights; only lingering draws the police (owner, 26 October 2026)
+  if (j.chart.regionSet === 'road' && regionOf(s) === 0 && s.col <= SAFE_COLS) { def.safe = true; def.gutter = 0; def.pace = { first: Math.max(def.pace?.first ?? 0, 150), calm: Math.max(def.pace?.calm ?? 0, 30) }; def.heatRate = Math.min(def.heatRate, 0.7); }
   // the first system past Cerro is its own level (sim/postjump.ts)
   return j.trail.length === 2 ? postJump(def) : def;
 }
@@ -398,6 +406,8 @@ export interface Outcome {
  */
 function driftTo(j: Journey, from: StarSystem): StarSystem {
   const region = viewOf(j.chart, from.id);
+  // on the road there is nowhere else to be towed: she stays in the system, a little off her course (sortieDef)
+  if (j.chart.regionSet === 'road' && regionOf(from) === 0) return from;
   const pool = j.chart.systems.filter((x) => x.id !== from.id && viewOf(j.chart, x.id) === region && x.kind !== 'home' && x.kind !== 'gate' && x.kind !== 'edge' && !netted(j.chart, x.id));
   const fresh = pool.filter((x) => !j.chart.visited.includes(x.id));
   const pick = fresh.length ? fresh : pool.length ? pool : [from];
@@ -480,8 +490,9 @@ export function endSortie(j: Journey, res: SortieResult): Outcome {
     j.carry = { ...c, supplies: Math.max(3, Math.floor(c.supplies * V.kept)), cyrite: Math.floor(c.cyrite * V.kept), fuel: Math.floor(c.fuel * V.kept), plates: 2, stock: { shield: 0, yield: 0 } };
     pass(j, ADRIFT);
     const to = driftTo(j, s);
-    note(j, t('Wrecked in {name} · towed to {to}', { name: s.name, to: to.name }));
-    lines.push(t('A Drift tug found the wreck and towed her to {to}.', { to: to.name }), t(V.kept > 0.5 ? 'The fee: a quarter of your Cyrite, jump fluid and supplies.' : 'The fee: half your Cyrite, jump fluid and supplies.'), t('Wrecks left in this region · {n}', { n: V.wrecks - j.lost }));
+    const stay = to.id === s.id;
+    note(j, stay ? t('Wrecked in {name} · set going again', { name: s.name }) : t('Wrecked in {name} · towed to {to}', { name: s.name, to: to.name }));
+    lines.push(stay ? t('A Drift tug found the wreck and set her going again, a little off her course.') : t('A Drift tug found the wreck and towed her to {to}.', { to: to.name }), t(V.kept > 0.5 ? 'The fee: a quarter of your Cyrite, jump fluid and supplies.' : 'The fee: half your Cyrite, jump fluid and supplies.'), t('Wrecks left in this region · {n}', { n: V.wrecks - j.lost }));
     j.status = 'sortie';
     return { kind: 'adrift', lines };
   }
