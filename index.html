@@ -479,26 +479,29 @@
       </div>
     </div>
 
-    <!-- The Course: the Warden's Road between two stops (?road), in place of the chart. -->
+    <!-- The Course: the Warden's Road between two stops, in the chart's own look. -->
     <div id="course" class="sheet" role="dialog" aria-labelledby="co-t" hidden>
-      <div class="panel wide coursep">
-        <header class="co-head">
+      <div class="panel wide chartp coursep">
+        <header class="ch-head">
           <span class="kick" id="co-k"></span>
-          <h2 id="co-t">Course</h2>
-          <p id="co-purs" class="co-purs"></p>
+          <div id="co-res" class="ch-res" aria-label="The ship’s stores"></div>
+          <div class="ch-l2"><h2 id="co-t">Course</h2><div id="co-gate" class="ch-gate"></div></div>
         </header>
-        <ol id="co-layers" class="co-layers"></ol>
-        <div class="co-mid">
-          <div id="co-road" class="co-road" role="img"></div>
-          <ul id="co-lanes" class="co-lanes"></ul>
+        <div class="ch-body">
+          <div class="ch-mapw">
+            <svg id="co-map" class="ch-map" viewBox="0 0 640 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The road: one line of stops to the Narrows."></svg>
+          </div>
+          <p id="co-blurb" class="co-blurb"></p>
         </div>
+        <div class="ch-aux">
         <details id="co-wall" class="ch-intel ch-wall"><summary><span id="co-wall-s">Wall</span></summary>
           <p id="co-wall-lead" class="ch-goal"></p>
           <ul id="co-wall-l" class="ch-wall-l"></ul>
         </details>
-        <footer class="co-foot">
-          <div id="co-cost" class="co-cost"></div>
-          <button type="button" id="co-go">Jump</button>
+        </div>
+        <footer class="ch-foot">
+          <div class="ch-warn"><p id="co-purs" class="co-purs"></p><p id="co-why" class="ch-why" hidden></p></div>
+          <div class="ch-acts"><button type="button" id="co-go">Jump</button></div>
           <p class="ch-hint"><span class="keys" data-i18n="html"><kbd>Enter</kbd> · <kbd>W</kbd> Wall</span></p>
         </footer>
       </div>
