@@ -1,0 +1,30 @@
+// ── German: the Course screen (ui/course.ts, sim/course.ts, content/road.ts) ──
+
+
+export const COURSE: Record<string, string> = {
+  'Course': 'Kurs',
+  'Leg goal': 'Etappenziel',
+  'Next stop': 'Nächster Halt',
+  'Then': 'Danach',
+  'The Reach': 'Die Reach',
+  'an old relay, dark seventy years': 'ein altes Relais, seit siebzig Jahren dunkel',
+  'the relay Ada watched': 'das Relais, das Ada bewachte',
+  'quiet landfall': 'ruhige Landung',
+  'find the Warden’s record': 'die Akte des Wardens finden',
+  'mine, and fill the tank': 'abbauen und den Tank füllen',
+  'someone here keeps the real books': 'hier führt jemand die echten Bücher',
+  'rest here, or keep moving': 'hier rasten oder weiterfliegen',
+  'the Net closes behind': 'hinter dir schließt sich das Netz',
+  'a clerk in trouble': 'ein Angestellter in Not',
+  'Netted · Custody holds this lane': 'Vernetzt · Custody hält diese Bahn',
+  'Jump to {name}': 'Spring nach {name}',
+  'The road: {n} stops': 'Die Straße: {n} Halte',
+  'Not shown while you rest': 'Nicht angezeigt, solange du rastest',
+  'Custody pursuit · {when} behind': 'Custody-Verfolgung · {when} hinter dir',
+  'Custody pursuit · here': 'Custody-Verfolgung · hier',
+  'Governor Calloway · {when} behind · knows your route': 'Gouverneurin Calloway · {when} hinter dir · kennt deine Route',
+  'Governor Calloway · here': 'Gouverneurin Calloway · hier',
+  'half a day': 'einen halben Tag',
+  'here': 'hier',
+  '<kbd>Enter</kbd> · <kbd>W</kbd> Wall': '<kbd>Enter</kbd> · <kbd>W</kbd> Wand',
+};

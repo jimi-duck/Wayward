@@ -22,6 +22,7 @@ import { EndingPanel } from './ui/ending';
 import { HeatNote } from './ui/heatnote';
 import { Cutscene } from './ui/adrift';
 import { ChartPanel, regionName } from './ui/chart';
+import { CoursePanel } from './ui/course';
 import { barsOut } from './ui/bars';
 import { Hud } from './ui/hud';
 import { DebugOverlay } from './ui/debug';
@@ -151,13 +152,14 @@ function boot(review: typeof import('./review') | null): void {
   const summary = new SummaryPanel();
   const port = new PortPanel();
   const chart = new ChartPanel();
+  const course = new CoursePanel();
   const ending = new EndingPanel();
   const heatNote = new HeatNote();
   const cut = new Cutscene();
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || ending.open || heatNote.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || heatNote.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   /** A call that asks for an answer holds the world still, like every other pop-up; it lets go when it is answered or lapses. */
   let callHold = false;
@@ -320,11 +322,14 @@ function boot(review: typeof import('./review') | null): void {
     const j = journey!;
     loop.paused = true;
     input.reset();
-    chart.plot(j, lines, (id) => {
+    const go = (id: string) => {
       plot(j, id);
       saveJourney(j);
       startSortie();
-    });
+    };
+    // the Warden's Road (?road) shows the Course in the Reach, not the chart
+    if (CoursePanel.applies(j)) course.show(j, go);
+    else chart.plot(j, lines, go);
   };
   /** Docked: the lanes out of here, to plot again with the dockmaster's news in hand. */
   const courseFor = (j: Journey) => {
@@ -468,13 +473,14 @@ function boot(review: typeof import('./review') | null): void {
       else if (shown !== world.command.pending || world.phase !== 'hail') { comms.close(); shown = null; }
     }
     // a gamepad answers the open panel
-    if (cut.open || bay.open || comms.open || port.open || chart.open || ending.open || !el('summary').hidden) {
+    if (cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || !el('summary').hidden) {
       const p = padNav.poll();
       if (cut.open) cut.padInput(p);
       else if (bay.open) bay.padInput(p);
       else if (comms.open) comms.padInput(p);
       else if (port.open) port.padInput(p);
       else if (chart.open && journey) chart.padInput(p);
+      else if (course.open) course.padInput(p);
       else if (heatNote.open) heatNote.padInput(p);
       else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
@@ -488,7 +494,7 @@ function boot(review: typeof import('./review') | null): void {
   // flight while the alert is clear, and always at a port; not in battle (the HUD's state says which), and
   // when it will not open the HUD says why in a line.
   const openBay = () => {
-    if (!started || comms.open || port.open || chart.open || ending.open || bay.open) return;
+    if (!started || comms.open || port.open || chart.open || course.open || ending.open || bay.open) return;
     const why = world.bayClosed();
     if (why) { hud.bayDenied(world, why); return; }
     setPaused(false);

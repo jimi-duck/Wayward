@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="./src/styles/title.css">
   <link rel="stylesheet" href="./src/styles/dock.css">
   <link rel="stylesheet" href="./src/styles/chart.css">
+  <link rel="stylesheet" href="./src/styles/course.css">
   <link rel="stylesheet" href="./src/styles/neon-frames.css">
   <link rel="stylesheet" href="./src/styles/neon.css">
 </head>
@@ -463,6 +464,31 @@
           <div class="ch-warn"><ul id="ch-alerts" class="ch-alerts"></ul><p id="ch-why" class="ch-why" hidden></p></div>
           <div class="ch-acts"><button type="button" id="ch-jump">Jump</button></div>
           <p class="ch-hint"><span class="keys" data-i18n="html"><kbd>1</kbd>–<kbd>3</kbd> · <kbd>Enter</kbd> · <kbd>W</kbd> Wall</span></p>
+        </footer>
+      </div>
+    </div>
+
+    <!-- The Course: the Warden's Road between two stops (?road), in place of the chart. -->
+    <div id="course" class="sheet" role="dialog" aria-labelledby="co-t" hidden>
+      <div class="panel wide coursep">
+        <header class="co-head">
+          <span class="kick" id="co-k"></span>
+          <h2 id="co-t">Course</h2>
+          <p id="co-purs" class="co-purs"></p>
+        </header>
+        <ol id="co-layers" class="co-layers"></ol>
+        <div class="co-mid">
+          <div id="co-road" class="co-road" role="img"></div>
+          <ul id="co-lanes" class="co-lanes"></ul>
+        </div>
+        <details id="co-wall" class="ch-intel ch-wall"><summary><span id="co-wall-s">Wall</span></summary>
+          <p id="co-wall-lead" class="ch-goal"></p>
+          <ul id="co-wall-l" class="ch-wall-l"></ul>
+        </details>
+        <footer class="co-foot">
+          <div id="co-cost" class="co-cost"></div>
+          <button type="button" id="co-go">Jump</button>
+          <p class="ch-hint"><span class="keys" data-i18n="html"><kbd>Enter</kbd> · <kbd>W</kbd> Wall</span></p>
         </footer>
       </div>
     </div>

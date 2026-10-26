@@ -26,6 +26,11 @@ import { routeBetween, sysById, type Chart } from './chart';
 export const SEARCH = 0.3;
 /** Days' start you have when you leave Cerro (on top of the lane she has to cross after you). */
 export const HUNT_START = 1;
+/** The pursuit on the road, counted in days (docs/ROAD.md): the leg starts at `start`; an amber notice fires at `amber`, a red one at `red`, and at 0 she is in the system. */
+export const PURSUIT = { start: 2, amber: 1, red: 0.5 } as const;
+/** Days to the half day: the one rounding every screen uses. */
+export const halfDays = (d: number): number => Math.round(d * 2) / 2;
+
 /** Jumps behind you she is when you leave a gate (the long journey): she starts each region close, not carrying the last one's debt. */
 export const GATE_LEAD = 2;
 /** Days she loses to a beating. */
