@@ -77,6 +77,22 @@ export const WALL: WallItem[] = [
     ask: 'Who shut the lanes, and on whose word?',
     lead: 'Kellern’s books should show where the Krail went.',
   }),
+  clue({
+    flag: 'clue_order_sig', name: 'The closing order, signed L. C.', certainty: 'fact', at: 0,
+    proves: 'The order to close the outer relays was written and signed, by someone marked L. C.',
+    not: 'Who L. C. is.',
+    detail: 'Order of Continuity 1: the relays powered down, the Wardens to surrender their keys, the closure to be recorded as neglect.',
+    ask: 'Who signed the closing order?',
+    lead: 'Kellern’s books may carry the same initials.',
+  }),
+  clue({
+    flag: 'ada_named', name: 'Ada Aster', certainty: 'fact', at: 0,
+    proves: 'The archive’s writer was Ada Aster, a Lane Warden on the Narrows watch.',
+    not: 'What she saw there, or why she left the relay listening.',
+    detail: 'A retired Warden knew the routine in the hull by its habits. Juno’s family were only ever told Ada was lost in service.',
+    ask: 'Who wrote the archive?',
+    lead: 'Go to the Narrows. Ada left it listening.',
+  }),
   fragment({
     flag: 'frag_ledger', certainty: 'fact', at: 0, short: true,
     proves: 'Krail never ran short. The books show it moved to core stores and private accounts.',

@@ -11,6 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Script, type Output } from './script';
+import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT } from '../content/story';
 import { ledgerFor } from './contract';
@@ -1461,6 +1462,7 @@ export class World implements EncounterHost {
     const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit };
     return {
       t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,
+      pursuit: Math.max(0, halfDays((this.sortie.calloway ?? Infinity) / DAY_SECONDS - t / DAY_SECONDS)),
       dist: (site: string) => { const p = sites[site]; return p ? Math.hypot(p.x - s.x, p.z - s.z) : Infinity; },
       cardDone: (id: string) => this.cardsSeen.has(id) && !this.comms && !this.call,
     };
@@ -1472,7 +1474,7 @@ export class World implements EncounterHost {
     if ('radio' in o) this.events.push({ type: 'ping', id: `story_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text), moment: 'calm', system: name });
     else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet) };
-    else if ('card' in o) { const def = CARD_BY_ID[o.card]; if (def) this.desk.offer(def, 'major', this.runTime); }
+    else if ('card' in o) { const def = CARD_BY_ID[o.card]; if (def) this.desk.offer(def, 'major', this.runTime, false, true); }
     else if ('wall' in o) this.flags.add(o.wall);
     else this.flags.add(`pursuit_${o.pursuit}`);
   }

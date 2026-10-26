@@ -12,7 +12,7 @@ import { migrate } from '../src/meta/save';
 // The story queue (sim/script.ts): lines wait for a safe moment and are never dropped.
 
 const radio = (id: string, stop: string, on: Row['on'], text = id, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { radio: { from: 'Sam', caller: 'miners', text } }, ...extra });
-const ctx = (over: Partial<Ctx> = {}): Ctx => ({ t: 10, arrived: 0, busy: 'free' as Busy, free: true, slow: true, tank: 0, dist: () => Infinity, flags: new Set<string>(), cardDone: () => true, ...over });
+const ctx = (over: Partial<Ctx> = {}): Ctx => ({ t: 10, arrived: 0, busy: 'free' as Busy, free: true, slow: true, tank: 0, pursuit: Infinity, dist: () => Infinity, flags: new Set<string>(), cardDone: () => true, ...over });
 const said = (o: Output[]) => o.flatMap((x) => ('radio' in x ? [x.radio.text] : []));
 
 describe('the story queue', () => {
@@ -113,7 +113,7 @@ describe('the story queue', () => {
 
 describe('Northfold plays from data', () => {
   it('has rows for the stop in the road, and no row is ever played twice', () => {
-    for (const r of REACH) expect(ROAD.some((s) => s.script === r.stop)).toBe(true);
+    for (const r of REACH) expect(r.stop === '*' || ROAD.some((s) => s.script === r.stop)).toBe(true);
     expect(new Set(REACH.map((r) => r.id)).size).toBe(REACH.length);
   });
 

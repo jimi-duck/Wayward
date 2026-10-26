@@ -155,6 +155,11 @@ const GIST: Record<string, string> = {
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
   "story_brook_arrest": "Brook is in a Custody transport",
+  "story_order": "The signed order to shut the relays",
+  "story_handwriting": "Ilse knows whose routine is in your hull",
+  "ilse_recording": "Ilse sends the order anyway",
+  "story_brook_road": "Brook is in a Custody transport",
+  "story_brook_declined": "Brook is in a Custody transport anyway",
   "story_calloway_narrows": "The Governor asks where you are going",
   "story_oduya_rigs": "Kessel Hold’s rigs are under attack",
   "story_moot": "Kessel Hold wants the file read aloud",
@@ -241,6 +246,16 @@ export const REGISTRY_CARD: CardDef = {
 };
 
 /** The beats' cards. Short on words: what each answer is for shows in its chips (sim/gains.ts). */
+/** Brook's three answers at Copperline, with his word on the radio after (the road's cards). */
+function BROOK_CHOICES(): CardDef['choices'] {
+  const brook = (text: string) => ({ from: 'Adam Brook', caller: 'kellern' as const, delay: 0.8, text });
+  return [
+    { id: 'rescue', label: 'Break him out', tone: 'fight', hint: 'Fight the escort. Custody hears of it.', win: { text: 'Brook is aboard the shuttle · Custody marks you', flag: 'brook_free', spawn: [{ variant: 'raptor', n: 1, from: 'ahead' }], standing: { custody: -1 }, radio: brook('“I’ll make copies. They can’t arrest every one of them.”') } },
+    { id: 'divert', label: 'Divert the transport', tone: 'bluff', hint: 'Spoof a priority order. A gamble.', odds: { base: 0.45 }, win: { text: 'The transport turns aside · Brook walks free', flag: 'brook_free', radio: brook('“I owe you a clean ledger. I’ll send it on ahead.”') }, lose: { text: 'The order fails · the transport runs on', flag: 'brook_taken' } },
+    { id: 'leave', label: 'Leave him', tone: 'refuse', hint: 'His account is already in your file.', win: { text: 'The channel closes · he is taken', flag: 'brook_taken' } },
+  ];
+}
+
 export const STORY_CARDS: CardDef[] = [
   // ── Act I, the Breakout ─────────────────────────────────────────────────
   // The Work Bay's projection (inside the training), the raiders' ultimatum, then the chain beyond the gate: the breach
@@ -359,8 +374,60 @@ export const STORY_CARDS: CardDef[] = [
       { id: 'ask', label: 'Ask him to do right', tone: 'bluff', hint: 'Free, if he believes in something.', odds: { base: 0.4, standing: { miners: 0.1 } },
         win: { text: '“For my father.” · the ledger goes in the file', flag: ['frag_ledger', 'brook_met', 'clue_sig_reach'], standing: { kellern: -1 } },
         lose: { text: 'He goes quiet, and closes the channel' } },
-      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Brook signs off' } },
+      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Brook signs off', flag: 'ledger_declined' } },
     ],
+  }),
+
+  // ── The Warden's Road: the Reach's new cards (content/script/reach.ts plays them; docs/ROAD.md) ──
+  story({
+    // the order as a document (the archive's written-message style): Ilse hands it over after her account
+    id: 'story_order', kind: 'rumour', caller: 'miners', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
+    from: 'Ilse Marrow · The order', title: 'The order',
+    letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1'], ['Kept by', 'Ilse Marrow, seventy years']], sign: '— Authorised: L. C.' },
+    text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
+    side: { from: 'Ilse Marrow', lines: ['“I kept the paper. Seventy years in a drawer. Read it, then take it. I’m too old to be brave with it.”'] },
+    cargo: 'An old Warden’s skiff · no guns',
+    choices: [
+      { id: 'take', label: 'Take the order', tone: 'help', hint: '', win: { text: 'The signed order · in the file', flag: ['frag_order', 'clue_order_sig'] } },
+    ],
+  }),
+  story({
+    id: 'story_handwriting', kind: 'rumour', caller: 'miners', glass: 'cyan',
+    from: 'Ilse Marrow · Her handwriting', title: 'Her handwriting',
+    text: '“That routine in your hull. I know its habits. Ada Aster ran the Narrows watch with me. You carry her name, don’t you?”',
+    cargo: 'An old Warden’s skiff · no guns',
+    choices: [
+      { id: 'grandmother', label: 'She was my grandmother', tone: 'help', hint: 'Your family only ever said she was lost in service.',
+        win: { text: 'Ada Aster · the archive has a name', flag: 'ada_named',
+          radio: { from: 'Ilse Marrow', caller: 'miners', delay: 0.8, text: '“Lost in service. That’s what they told your family. It’s all they told anyone. Go to the Narrows. Ada left it listening.”' } } },
+    ],
+  }),
+  story({
+    // Juno cut Ilse off at Halden's Reach: her recording carries the same document, and names Ada, to Vesta
+    id: 'ilse_recording', kind: 'rumour', caller: 'miners', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
+    from: 'Ilse Marrow · recorded', title: 'The order',
+    letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1'], ['Kept by', 'Ilse Marrow, seventy years']], sign: '— Authorised: L. C.' },
+    text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
+    side: { from: 'Ilse Marrow · recorded', lines: ['“You cut me off. Fair. I’m sending it anyway: the paper they made us sign. The routine in your hull is Ada Aster’s. Go to the Narrows.”'] },
+    cargo: 'A recorded message · no reply',
+    choices: [
+      { id: 'take', label: 'Take the order', tone: 'help', hint: '', win: { text: 'The signed order · in the file · Ada Aster · the archive has a name', flag: ['frag_order', 'clue_order_sig', 'ada_named'] } },
+    ],
+  }),
+  story({
+    // Brook's arrest at Copperline, as the road plays it: one card for the player who bought or won the ledger, one for the player who did not
+    id: 'story_brook_road', kind: 'warning', caller: 'custody',
+    from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
+    text: '“They traced the ledger to me. I am in a Custody transport, ten minutes from a cell. Please. You have the only copy.”',
+    cargo: 'A Custody transport · one escort',
+    choices: BROOK_CHOICES(),
+  }),
+  story({
+    id: 'story_brook_declined', kind: 'warning', caller: 'custody',
+    from: 'Adam Brook · in Custody transport', title: 'They took the clerk',
+    text: '“You turned my books down. They came for me anyway. I’m in a Custody transport. Please.”',
+    cargo: 'A Custody transport · one escort',
+    choices: BROOK_CHOICES(),
   }),
 
   // ── Act II, the Marches ─────────────────────────────────────────────────
