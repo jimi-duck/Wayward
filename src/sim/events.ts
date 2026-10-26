@@ -102,5 +102,5 @@ export type GameEvent =
   /** A story row's notice, low centre (ui/notify.ts): teal, amber, red or white. */
   | { type: 'storyNotice'; tone: 'teal' | 'amber' | 'red' | 'white'; headline: string; reason?: string }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
-  | { type: 'jobDone'; id: string; text: string }
+  | { type: 'jobDone'; id: string; text: string; job: string; at: 'port' | 'lane'; cyrite: number; supplies: number }
   | { type: 'jobShort'; id: string; text: string };

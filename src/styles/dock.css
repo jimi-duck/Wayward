@@ -171,9 +171,9 @@
 #rd-call:not(.job) .rd-c.first kbd { color: var(--dk-info); border-color: var(--dk-info); }
 
 /* the onboarding cards (opening, Heat) take the bay's quiet outlined button too */
-#op-go, #hn-go { --c: 0px; position: static; border: 1px solid var(--hud-mid); background: var(--hud-ghost); color: var(--hud-hi); padding: 9px 22px; cursor: pointer;
+#op-go, #hn-go, #jd-go { --c: 0px; position: static; border: 1px solid var(--hud-mid); background: var(--hud-ghost); color: var(--hud-hi); padding: 9px 22px; cursor: pointer;
   font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; transition: background var(--dk-ez), color var(--dk-ez); }
-#op-go::before, #op-go::after, #hn-go::before, #hn-go::after { content: none; }
+#op-go::before, #op-go::after, #hn-go::before, #hn-go::after, #jd-go::before, #jd-go::after { content: none; }
 #op-go:hover, #hn-go:hover, #op-go:focus-visible, #hn-go:focus-visible { background: var(--hud-dim); color: #fff; }
 #op-go:focus-visible, #hn-go:focus-visible { outline: 2px solid var(--hud); outline-offset: 2px; }
 
@@ -194,7 +194,7 @@
   .op-l { gap: 8px; }
   .op-l p { font-size: 14px; line-height: 1.42; }
   .op-l b { font-size: 16px; }
-  #op-go, #hn-go { min-height: 40px; }
+  #op-go, #hn-go, #jd-go { min-height: 40px; }
   #port .pf { display: none; }
   #comms .pf { display: none; }
   #port .port-l.bay { min-height: 132px; padding: 10px 16px; gap: 8px 16px; }
@@ -303,7 +303,7 @@
   #port .port-stock { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #port .port-l, #comms .cm-c, #port .pl-go, #port-x, #op-go, #hn-go { transition: none; }
+  #port .port-l, #comms .cm-c, #port .pl-go, #port-x, #op-go, #hn-go, #jd-go { transition: none; }
 }
 
 /* the glance line: what is happening, before any of the detail */
@@ -429,3 +429,7 @@
   #comms .cm-side .risk { display: none; }
   #comms .cm-c.sel .cm-risk { display: block; padding-top: 3px; font: 500 var(--cm-label)/1.25 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--dk-amber); }
 }
+
+/* the job-done pop-up: the pay, one line of chips */
+#jobdone .jd-pay { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: 14px 0 0; }
+#jobdone .jd-pay .k { font: 600 .8em/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2, #A9A89C); }

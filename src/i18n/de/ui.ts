@@ -204,6 +204,8 @@ export const UI: Record<string, string> = {
   'Ambush': 'Hinterhalt',
   'Channel open': 'Kanal offen',
   'Job done': 'Auftrag erledigt',
+  'Job complete': 'Auftrag abgeschlossen',
+  'Paid': 'Bezahlt',
   'Job open': 'Auftrag offen',
   'Fly through the gate': 'Flieg durch das Tor',
   'Not enough Cyrite': 'Zu wenig Cyrit',

@@ -1769,8 +1769,10 @@ export class World implements EncounterHost {
       this.supplies -= g.supplies ?? 0;
       this.jobs.splice(this.jobs.indexOf(j), 1);
       this.run.jobsDone++;
+      const cyrite = amount(j.pay.cyrite, this.cyrite, 0) + amount(j.pay.chits, this.cyrite, 0, true) + (j.pay.krail ? cy(j.pay.krail) : 0);
+      const supplies = amount(j.pay.supplies, this.supplies, 0);
       this.applyOutcome(j.pay, 0, []);
-      this.events.push({ type: 'jobDone', id: j.id, text: j.pay.text });
+      this.events.push({ type: 'jobDone', id: j.id, text: j.pay.text, job: j.text, at, cyrite: Math.max(0, cyrite), supplies: Math.max(0, supplies) });
     }
   }
 
