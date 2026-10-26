@@ -3,8 +3,8 @@ import type { Row } from '../../sim/script';
 // ── The Reach: chapter script ──────────────────────────────────────────────
 // One row per beat, stop by stop, word for word from "The Reach: Chapter
 // Script" (docs/ROAD.md). The text is English; the world runs it through t().
-// The ghost at Hollis, the jobs' thread lines and the Narrows follow in their
-// own pull requests.
+// The jobs' thread lines follow in their own pull request; the Narrows are in
+// narrows.ts.
 
 const SAM = 'Sam Okoro';
 const sam = (id: string, stop: string, on: Row['on'], text: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { radio: { from: SAM, caller: 'miners', text } }, ...extra });
@@ -38,6 +38,12 @@ export const REACH: Row[] = [
 
   // ── Stop 3 · Hollis (work): the ghost and the job's thread lines follow ──
   notice('ho_notice', 'hollis', { on: 'arrive', delay: 2 }, 'teal', 'Hollis', 'mining claim, rich rock'),
+  // the ghost (sim/ghost.ts): the flag comes with the contact; the Wall is set the moment it triggers, so a jump before Sam speaks still logs it
+  notice('ho_ghost', 'hollis', { on: 'flag', flag: 'ghost_here' }, 'white', 'UNKNOWN CONTACT', '4.2 km · holding', { wall: 'clue_ghost' }),
+  sam('ho_sam_1', 'hollis', { on: 'after', row: 'ho_ghost' }, '“Ghost on the scope. Old rigs throw them.”'),
+  sam('ho_sam_2', 'hollis', { on: 'after', row: 'ho_sam_1' }, '“Probably.”'),
+  notice('ho_ghost_2', 'hollis', { on: 'flag', flag: 'ghost_close' }, 'white', 'UNKNOWN CONTACT', '3.1 km'),
+  sam('ho_sam_3', 'hollis', { on: 'after', row: 'ho_ghost_2' }, '“It’s closer. I don’t like that.”'),
   objective('ho_gate', 'hollis', { on: 'leave' }, 'Jump to Marlow'),
 
   // ── Stop 4 · Marlow (turn) ──
