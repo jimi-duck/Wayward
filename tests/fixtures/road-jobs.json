@@ -1,0 +1,357 @@
+{
+ "missions": [
+  {
+   "id": "pirate_toll",
+   "name": "Break the Pirate Toll",
+   "blurb": "A toll beacon is blocking the lane, and the Gutter denies placing it.",
+   "group": "frontier",
+   "kinds": [
+    "transit",
+    "mining",
+    "contested"
+   ],
+   "regions": [
+    0,
+    3
+   ],
+   "weight": 1.4,
+   "prop": "beacon",
+   "actors": [
+    {
+     "variant": "raptor",
+     "n": 1,
+     "act": "pass",
+     "temper": "hostile",
+     "tag": "Toll captain",
+     "foe": true,
+     "scatter": true,
+     "ring": 50
+    },
+    {
+     "variant": "scout",
+     "n": 3,
+     "act": "pass",
+     "temper": "hostile",
+     "tag": "Toll crew",
+     "foe": true,
+     "ring": 90
+    }
+   ],
+   "card": "sc_toll",
+   "at": 30,
+   "hail": 480,
+   "accept": [
+    "break"
+   ],
+   "goal": {
+    "kind": "destroy",
+    "hold": 0,
+    "limit": 150,
+    "line": "Destroy the toll beacon and clear the lane",
+    "spoil": 0.7
+   },
+   "win": {
+    "text": "Toll beacon destroyed · the lane is open",
+    "chits": 110,
+    "standing": {
+     "frontier": 1,
+     "miners": 1
+    },
+    "notice": {
+     "gutter": 1
+    }
+   },
+   "lose": {
+    "text": "The toll remains · its crew now recognise your ship",
+    "heat": 0.05
+   },
+   "ignore": {
+    "text": "You take another route and leave the toll in place"
+   },
+   "after": {
+    "won": {
+     "text": "The toll is gone · supplies cost less on this lane",
+     "market": {
+      "supplies": 0.85,
+      "days": 12
+     },
+     "flag": "toll_broken"
+    },
+    "lost": {
+     "text": "The toll remains · prices rise on this lane",
+     "market": {
+      "supplies": 1.2,
+      "days": 8
+     }
+    }
+   }
+  },
+  {
+   "id": "nothing_to_declare",
+   "name": "Nothing to Declare",
+   "blurb": "A courier needs a package delivered through a Custody patrol without being detected.",
+   "group": "frontier",
+   "kinds": [
+    "port",
+    "transit",
+    "contested"
+   ],
+   "regions": [
+    0,
+    5
+   ],
+   "weight": 1.2,
+   "prop": "beacon",
+   "actors": [
+    {
+     "variant": "picket",
+     "n": 3,
+     "act": "patrol",
+     "temper": "wary",
+     "tag": "Custody patrol",
+     "from": "site",
+     "ring": 66
+    }
+   ],
+   "card": "sc_declare",
+   "at": 30,
+   "hail": 480,
+   "accept": [
+    "drop"
+   ],
+   "goal": {
+    "kind": "sneak",
+    "hold": 0,
+    "limit": 200,
+    "line": "Reach the drop point without being detected"
+   },
+   "win": {
+    "text": "Package delivered · no patrol detected you",
+    "chits": 130,
+    "standing": {
+     "gutter": 2
+    }
+   },
+   "lose": {
+    "text": "The patrol detects you and turns to intercept",
+    "standing": {
+     "gutter": -1
+    },
+    "notice": {
+     "custody": 2
+    }
+   },
+   "ignore": {
+    "text": "You take another route around the patrol"
+   },
+   "after": {
+    "won": {
+     "text": "A package passed through the patrol unseen · the Gutter remembers",
+     "flag": "drop_made"
+    },
+    "lost": {
+     "text": "The patrol caught the drop · the lane is under tighter watch",
+     "pushNear": 0.5
+    }
+   }
+  },
+  {
+   "id": "follow_cyrite",
+   "name": "Follow the Cyrite Vein",
+   "blurb": "A prospector offers to lead you to a rich Cyrite deposit for a share of the find.",
+   "group": "frontier",
+   "kinds": [
+    "mining",
+    "transit",
+    "contested"
+   ],
+   "regions": [
+    0,
+    6
+   ],
+   "weight": 1,
+   "actors": [
+    {
+     "variant": "freighter",
+     "n": 1,
+     "act": "lead",
+     "temper": "meek",
+     "tag": "Prospector",
+     "from": "ahead",
+     "pace": 1.2
+    }
+   ],
+   "card": "sc_follow",
+   "at": 25,
+   "hail": 9999,
+   "accept": [
+    "follow"
+   ],
+   "goal": {
+    "kind": "follow",
+    "hold": 50,
+    "limit": 150,
+    "line": "Stay with the prospector until she finds the vein"
+   },
+   "win": {
+    "text": "The prospector finds the vein and lets you mine your share",
+    "chits": 90,
+    "flag": "vein_found"
+   },
+   "lose": {
+    "text": "You lose sight of the prospector in the dust"
+   },
+   "ignore": {
+    "text": "The prospector continues without you"
+   },
+   "after": {
+    "won": {
+     "text": "A rich vein was found here · nearby rocks yield more Cyrite for a while",
+     "market": {
+      "cyrite": 0.9,
+      "days": 8
+     }
+    }
+   }
+  }
+ ],
+ "cards": [
+  {
+   "trigger": "scene",
+   "repeat": true,
+   "id": "sc_toll",
+   "kind": "job",
+   "caller": "miners",
+   "tier": "important",
+   "from": "Dispatch · mining guild",
+   "title": "Break the Pirate Toll",
+   "text": "“Someone has put a toll beacon on our lane. Four ships are guarding it, led by one captain. Take the captain out and the rest may scatter.”",
+   "cargo": "A toll beacon · four hulls at the gate",
+   "choices": [
+    {
+     "id": "break",
+     "label": "Attack the toll crew",
+     "tone": "fight",
+     "hint": "Four ships are guarding the beacon. Defeat their captain to weaken the rest.",
+     "win": {
+      "text": "Heading to the beacon"
+     }
+    },
+    {
+     "id": "jam",
+     "label": "Jam their communications",
+     "tone": "bluff",
+     "hint": "Requires a jammer. Disable their comms and slip past without being detected.",
+     "needs": {
+      "fitted": "md_jammer"
+     },
+     "win": {
+      "text": "The beacon goes to static · you slip by",
+      "standing": {
+       "gutter": -1
+      }
+     }
+    },
+    {
+     "id": "no",
+     "label": "Take another route",
+     "tone": "refuse",
+     "hint": "Leave the toll beacon for now.",
+     "win": {
+      "text": "Dispatch logs it"
+     }
+    }
+   ]
+  },
+  {
+   "trigger": "scene",
+   "repeat": true,
+   "id": "sc_declare",
+   "kind": "job",
+   "caller": "gutter",
+   "tier": "important",
+   "from": "A runner · no name",
+   "title": "Nothing to Declare",
+   "text": "“Deliver a package inside a Custody patrol route. Three ships are sweeping the area. Slip between them, hold at the drop point, then leave.”",
+   "cargo": "A patrol · three hulls, slow sweep",
+   "choices": [
+    {
+     "id": "drop",
+     "label": "Deliver the package unseen",
+     "tone": "trade",
+     "hint": "Avoid detection. A spoofer, ghost echo or baffles can slow the patrol’s exposure meter.",
+     "win": {
+      "text": "Heading to the drop point"
+     }
+    },
+    {
+     "id": "sell",
+     "label": "Sell the drop location to Custody",
+     "tone": "trade",
+     "hint": "Receive 6 Cyrite for giving up the location, but the Gutter will know you talked.",
+     "win": {
+      "text": "6 Cyrite received · the runner will remember your betrayal",
+      "chits": 30,
+      "standing": {
+       "gutter": -2
+      }
+     }
+    },
+    {
+     "id": "no",
+     "label": "Decline the job",
+     "tone": "refuse",
+     "hint": "Keep your hold clear of the package.",
+     "win": {
+      "text": "The runner ends the call and moves on"
+     }
+    }
+   ]
+  },
+  {
+   "trigger": "scene",
+   "repeat": true,
+   "id": "sc_follow",
+   "kind": "job",
+   "caller": "frontier",
+   "tier": "routine",
+   "from": "A prospector",
+   "title": "Follow the Cyrite Vein",
+   "text": "“I know where the vein runs. Stay close and I will share the find. Lose me, and you get nothing.”",
+   "cargo": "A prospector · slow, sure of herself",
+   "choices": [
+    {
+     "id": "follow",
+     "label": "Follow the prospector",
+     "tone": "help",
+     "hint": "Stay near her until she finds the vein. No one is expected to attack.",
+     "win": {
+      "text": "She leads the way"
+     }
+    },
+    {
+     "id": "buy",
+     "label": "Buy her chart",
+     "tone": "trade",
+     "hint": "Pay 4 Cyrite for her chart and a nearby area rich in ore.",
+     "cost": {
+      "chits": 20
+     },
+     "win": {
+      "text": "Chart received · rich ore nearby",
+      "seam": 30
+     }
+    },
+    {
+     "id": "no",
+     "label": "Decline and continue alone",
+     "tone": "refuse",
+     "hint": "Search for a vein yourself.",
+     "win": {
+      "text": "The prospector ends the call"
+     }
+    }
+   ]
+  }
+ ]
+}

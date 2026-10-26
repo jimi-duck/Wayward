@@ -351,6 +351,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_toll', kind: 'job', caller: 'miners', tier: 'important',
     from: 'Dispatch · mining guild', title: 'Break the Pirate Toll',
     text: '“Someone has put a toll beacon on our lane. Four ships are guarding it, led by one captain. Take the captain out and the rest may scatter.”',
+    thread: { chip: 'Hester’s crews', line: '“Break it, and my crews eat this month.”' },
     cargo: 'A toll beacon · four hulls at the gate',
     choices: [
       { id: 'break', label: 'Attack the toll crew', tone: 'fight', hint: 'Four ships are guarding the beacon. Defeat their captain to weaken the rest.', win: { text: 'Heading to the beacon' } },
@@ -417,6 +418,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_declare', kind: 'job', caller: 'gutter', tier: 'important',
     from: 'A runner · no name', title: 'Nothing to Declare',
     text: '“Deliver a package inside a Custody patrol route. Three ships are sweeping the area. Slip between them, hold at the drop point, then leave.”',
+    thread: { chip: 'Quiet Line', line: '“Pike says you’ve got reasons to keep quiet.”' },
     cargo: 'A patrol · three hulls, slow sweep',
     choices: [
       { id: 'drop', label: 'Deliver the package unseen', tone: 'trade', hint: 'Avoid detection. A spoofer, ghost echo or baffles can slow the patrol’s exposure meter.', win: { text: 'Heading to the drop point' } },
@@ -450,6 +452,7 @@ export const MISSION_CARDS: CardDef[] = [
     id: 'sc_follow', kind: 'job', caller: 'frontier', tier: 'routine',
     from: 'A prospector', title: 'Follow the Cyrite Vein',
     text: '“I know where the vein runs. Stay close and I will share the find. Lose me, and you get nothing.”',
+    thread: { chip: 'Hester’s crews', line: '“Kellern docked my crew for a missed quota. Same contract as yours, I’d bet.”' },
     cargo: 'A prospector · slow, sure of herself',
     choices: [
       { id: 'follow', label: 'Follow the prospector', tone: 'help', hint: 'Stay near her until she finds the vein. No one is expected to attack.', win: { text: 'She leads the way' } },

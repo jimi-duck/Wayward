@@ -466,6 +466,10 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #rd-call.job .rd-id b { display: block; font: 700 var(--rj-title)/1.15 var(--font-head); letter-spacing: 0; text-transform: none; color: var(--ink); overflow-wrap: anywhere; }
 #rd-call.job .rd-id span { display: none; }
 #rd-call.job .rd-text { margin: calc(var(--rj-block) * -0.45) 0 0; max-width: 60ch; font: 400 var(--rj-body)/1.48 var(--font-display); color: var(--ink); }
+/* a thread job: a quiet chip, then the one line it adds; white text, colour only on the chip's rim */
+#rd-call .rd-thread[hidden] { display: none; }
+#rd-call.job .rd-thread { display: flex; align-items: baseline; gap: 10px; margin: calc(var(--rj-block) * -0.2) 0 0; max-width: 60ch; font: 400 var(--rj-body)/1.4 var(--font-display); color: var(--ink); }
+#rd-call.job .rd-thread b { flex: none; padding: 3px 8px 2px; border: 1px solid rgba(var(--halo), .7); font: 600 11px/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
 #rd-call.job .rd-read { color: var(--ink); }
 #rd-call.job .rd-read::before { color: var(--ink); }
 #rd-call.job .rd-terms { display: none; }
@@ -616,6 +620,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   #rd-call.job .rd-body > :not(.rd-list) { grid-column: 1; }
   #rd-call.job .rd-body > .rd-list { grid-column: 2; grid-row: 1 / -1; align-self: start; }
   #rd-call.job .rd-text { margin: 0; line-height: 1.35; }
+  #rd-call.job .rd-thread { flex-direction: column; align-items: flex-start; gap: 4px; margin: 0; line-height: 1.35; }
   #rd-call.job .rd-sheet { padding-top: 6px; gap: 4px 12px; }
   #rd-call.job .rd-col { gap: 2px; }
   #rd-call.job .rd-c { padding: 4px 10px 4px 7px; column-gap: 9px; row-gap: 1px; }
