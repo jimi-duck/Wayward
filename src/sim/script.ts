@@ -31,6 +31,8 @@ export type Trigger =
   /** Another row has played, `delay` seconds ago at the least. */
   | { on: 'after'; row: string; delay?: number }
   | { on: 'flag'; flag: string }
+  /** The pursuit has closed to this many days or fewer (sim/hunt.ts PURSUIT); never at a breather. */
+  | { on: 'pursuit'; days: number }
   /** Near the Jump Gate. */
   | { on: 'leave' };
 
@@ -44,7 +46,7 @@ export type Output =
 
 export interface Row {
   id: string;
-  /** The stop it belongs to (content/road.ts `script`). */
+  /** The stop it belongs to (content/road.ts `script`), or `*` for any stop of the road. */
   stop: string;
   on: Trigger;
   /** Flags it needs, and flags that stop it. */
@@ -68,6 +70,8 @@ export interface Ctx {
   slow: boolean;
   /** The tank, 0 to 1. */
   tank: number;
+  /** Days until the pursuit is here, if the player stays (Infinity where none runs). */
+  pursuit: number;
   /** Units to a named site (Infinity: not here). */
   dist(site: string): number;
   flags: ReadonlySet<string>;
@@ -99,8 +103,8 @@ export class Script {
    */
   constructor(rows: readonly Row[], private readonly stop: string, private readonly seen: Set<string>, pending: readonly string[] = []) {
     this.all = new Map(rows.map((r) => [r.id, r]));
-    this.mine = rows.filter((r) => r.stop === stop && !seen.has(r.id));
-    for (const id of pending) if (this.all.has(id) && !seen.has(id) && !this.fired.has(id)) { this.fired.add(id); this.queue.push({ id, at: 0, carried: true }); }
+    this.mine = rows.filter((r) => (r.stop === stop || r.stop === '*') && !seen.has(r.id));
+    for (const id of pending) if (this.all.has(id) && !seen.has(id) && !this.fired.has(id)) { this.fired.add(id); this.queue.push({ id, at: -Infinity, carried: true }); }
   }
 
   /** Row ids waiting, for the save. */
@@ -123,6 +127,7 @@ export class Script {
       case 'near': return c.dist(o.site) <= o.within;
       case 'after': { const at = this.playedAt.get(o.row); return at !== undefined && c.t - at >= (o.delay ?? 0); }
       case 'flag': return c.flags.has(o.flag);
+      case 'pursuit': return c.pursuit <= o.days;
       case 'leave': return c.dist('gate') <= LEAVE_R;
     }
   }

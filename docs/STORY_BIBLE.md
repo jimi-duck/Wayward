@@ -155,7 +155,7 @@ understand the central conflict. Every one is recoverable (see §11).
 
 | # | Flag | Name | Proves | Does **not** prove | Where | Recovery | Next lead / unlocks |
 |---|---|---|---|---|---|---|---|
-| 1 | `frag_order` | The order | The lanes were shut by signed order, not by failure. | Who signed it or why. | Reach, Ilse Marrow (`story_warden`) | Re-offered each sortie in the Reach and later; the Narrows hail repeats it. | The ledger; Calloway's hail at the Narrows. |
+| 1 | `frag_order` | The order | The lanes were shut by signed order, not by failure. | Who signed it or why. | Reach, Ilse Marrow (`story_warden`) | Re-offered each sortie in the Reach and later; the Narrows hail repeats it. On the road she hands it over as a document (`story_order`); cut off, her recording brings it to Vesta (`ilse_recording`). | The ledger; Calloway's hail at the Narrows. |
 | 2 | `frag_ledger` | The ledger | Krail never ran short: books show it moved to core stores and private accounts. | Who ordered the closing; the Thren. | Reach, Adam Brook (`story_ledger`) | Missed: the Marches' manifests mention the same date. | Initials on the authorisation (`clue_sig_reach`). |
 | 3 | `frag_manifests` | The manifests | Ships "lost" in the blackout were redirected or scuttled on purpose. | Who gave the orders. | Marches, Ma Saffi and Wren (`story_drift`) | Offered again at the Rift and in the Salvage Belt. | Wren's parents' ship; the Salvage Belt. |
 | 4 | `frag_keys` | The keys | Who built the lane breakers and who still guards them. | Why they were built. | Hollows, the Voice (`story_voice`) | The Voice calls again at the Seam. | The Thren and Cyrite (`clue_cyrite`). |
@@ -174,7 +174,9 @@ believes or can do.
 | `archive_woke` | The archive woke on Juno's hand | fact | `story_wake`, the last card of the opening chain beyond the gate | Sets the Score drop; Wall entry. |
 | `clue_archive_log` | The Warden Line log: routine ADA-1, bloodline lock | fact | Cerro wake card, "open the log" (optional) | Deep layer; Ada's name early. |
 | `clue_reserves` | Krail reserves 94% on the shutdown date | fact | `story_wake` (both answers) | The Act I reveal. |
-| `clue_sig_reach` | "L. C." on the authorisation line | inference | Reach, the ledger | One of three for the signature. |
+| `clue_order_sig` | The closing order, signed L. C. | fact | Reach, Ilse's order as a document (`story_order`); at Vesta from her recording (`ilse_recording`) if she was cut off | The first L. C. Played on the Warden's Road only (`?road`). |
+| `ada_named` | Ada Aster, the archive's writer | fact | Reach, `story_handwriting`; at Vesta from her recording | The leg goal reads "the relay Ada watched". Road only. |
+| `clue_sig_reach` | "L. C." on the authorisation line | inference | Reach, the ledger | One of three for the signature. On the road it is the second L. C., after the order. |
 | `clue_sig_yards` | The Governor's cipher on the work order | inference | Breaker Yards | Two of three. |
 | `clue_sig_ports` | Lior Calloway's full signature in the minutes | fact (with the others) | Free Ports | Three of three: leverage, once (`sig_used`). |
 | `clue_scarred` | Thren-scarred hulls under restriction | fact | Breaker Yards | Points at the Thren early. |

@@ -16,7 +16,7 @@ import {
 import { fleetAt, presence, raided, stepScatter, threnAt, THREN_ABOUT } from './scatter';
 import { arrival, delay as keysDelay, KEYS_NOTED, shift } from './consequences';
 import { ENDING_LINES, ending, hunchOf, nemesis, newDossier, offerFor, study, type Dossier } from './calloway';
-import { BEATEN_DELAY, behind, crossGate, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
+import { BEATEN_DELAY, DAY_SECONDS, behind, crossGate, daysUntil, huntOn, newHunt, type Hunt } from './hunt';
 import { dealSituations, liveSituation, longIndex, settle, situationLine } from './situations';
 import { composeChart, expOf } from './experience';
 import { PROFILES } from '../content/profiles';
@@ -75,7 +75,7 @@ import { roadStop } from '../content/road';
 // that someone else hears about.
 
 /** Seconds of a sortie that make a day. */
-export const DAY = 240;
+export const DAY = DAY_SECONDS;
 /** Supplies a day: the Wayward is flown by one person. */
 export const RATION = 1;
 /** Supplies the drive wears through a jump, on top of the lane's days. */

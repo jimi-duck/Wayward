@@ -4,6 +4,7 @@ import { COURSE } from './course';
 import { ECONOMY } from './economy';
 import { MISSIONS } from './missions';
 import { POSTJUMP } from './postjump';
+import { REACH_DE } from './reach';
 import { REWRITE } from './rewrite';
 import { ROAD } from './road';
 import { SCENES } from './scenes';
@@ -23,7 +24,7 @@ import { WORLD } from './world';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...REACH_DE };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([
@@ -36,7 +37,7 @@ export const KEEP = new Set<string>([
   // systems and ports
   'Halden’s Reach', 'Tollmere', 'Vesta', 'Ashgrove', 'Corrin Deep', 'Marlow', 'Sallow', 'Pell', 'Northfold', 'Dunmore', 'Kettle', 'Branford',
   'Oriel', 'Wick', 'Lantern', 'Hask', 'Sable Run', 'Greyhollow', 'Imbrie', 'Coldwater', 'Tamsin’s Rest', 'Hollis', 'Fallow', 'Quarry Nine',
-  'Cerro', 'Kellern Fuel Dock', 'Kellern Claim Office', 'Frontier Supply Depot', 'Kellern Audit Dock', 'Dust Traders Exchange', 'Guild Hall', 'The Bent Nail',
+  'Hester', 'Adam Brook', 'Ilse Marrow', 'Cerro', 'Kellern Fuel Dock', 'Kellern Claim Office', 'Frontier Supply Depot', 'Kellern Audit Dock', 'Dust Traders Exchange', 'Guild Hall', 'The Bent Nail',
   'Copperline', 'Salvage Barge', 'Holdfast Stores', 'The Claim Hall', 'Free Dock', 'Claim Shack', 'Kellern Mining',
   // the made-up names a region deals (content/regions.ts NAME_PEOPLE, NAME_PLACES)
   'Hadley', 'Morgan', 'Kowalski', 'Amara', 'Okafor', 'Jansen', 'Ibarra', 'Lindqvist', 'Castell', 'Nakamura', 'Brandt', 'Quill',
