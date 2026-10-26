@@ -263,6 +263,11 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #tgt-card.friendly #tgt-int-v { color: var(--cy); }
 #tgt-card.friendly #tgt-int { background: linear-gradient(90deg, var(--cy) 0 calc(var(--v) * 100%), var(--cy-ghost) 0); }
 
+/* a hull too far to make out, or not attacking: grey, not red */
+#tgt-card.neutral { --edge: var(--glass-edge); --lit: var(--ink); --tint: linear-gradient(transparent, transparent); }
+#tgt-card.neutral #tgt-int-v { color: var(--ink); }
+#tgt-card.neutral #tgt-int { background: linear-gradient(90deg, rgba(216, 213, 198, .6) 0 calc(var(--v) * 100%), rgba(216, 213, 198, .14) 0); }
+
 /* ── in the world: the gunsight, the target, marks ────────────────────── */
 #world { position: absolute; inset: 0; overflow: hidden; }
 
@@ -305,6 +310,9 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, #8fe6e
 #tgt.friendly #tgt-box { --b: var(--cy); outline-color: rgba(76, 194, 203, .2); }
 #tgt.friendly #tgt-hp { --c-hp: var(--cy); }
 #tgt.friendly .tgt-x { background: linear-gradient(var(--cy), var(--cy)) center / 100% 1px no-repeat, linear-gradient(var(--cy), var(--cy)) center / 1px 100% no-repeat; }
+#tgt.neutral #tgt-box, #marks .m.neutral { --b: rgba(190, 192, 188, .7); outline-color: rgba(190, 192, 188, .16); }
+#tgt.neutral #tgt-hp { --c-hp: rgba(190, 192, 188, .7); }
+#tgt.neutral .tgt-x { background: linear-gradient(#bebcb8, #bebcb8) center / 100% 1px no-repeat, linear-gradient(#bebcb8, #bebcb8) center / 1px 100% no-repeat; }
 #tgt .tgt-x { background: linear-gradient(var(--alert), var(--alert)) center / 100% 1px no-repeat, linear-gradient(var(--alert), var(--alert)) center / 1px 100% no-repeat; }
 
 /* Corner brackets, from eight gradients: --b colour, --l arm, --t weight. */
