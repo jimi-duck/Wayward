@@ -11,6 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Script, type Output } from './script';
+import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT } from '../content/story';
@@ -18,7 +19,7 @@ import { ledgerFor } from './contract';
 import {
   APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval,
-  rockYield, DOCK_SPEED, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
+  rockYield, DOCK_SPEED, relayOf, SAFE_R, SAFE_HOLD, HOLD_MAX, SUPPLIES_MAX, SUPPLIES_START, LOW_SUPPLIES, EMPTY_STORES, HOME, places, type Breakout, type Carry, type Mode, type SortieDef, type SortieResult,
 } from './breakout';
 import {
   CARD_BY_ID, COMMS_FIRST, PORT_CALL, RADIO_GAP, SLOW, amount, condOk, openCard, pickCard, refresh, resolve, theirStrength, weightOf, yourStrength, type CardDef, type Ctx, type JobDef, type Open,
@@ -317,6 +318,9 @@ export class World implements EncounterHost {
   private cardsSeen = new Set<string>();
   /** The stop's story script (sim/script.ts), if it has one, and the objective it has set. */
   private script: Script | null = null;
+  /** The contact at Hollis (sim/ghost.ts), once it has come. */
+  ghost: Ghost | null = null;
+  private ghostMade = false;
   storyObjective: { main?: string; quiet?: string } | null = null;
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
   private heard = new Set<string>();
@@ -403,6 +407,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.recoverT = 0;
     this.radioQ = [];
+    this.ghost = null; this.ghostMade = false;
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
@@ -870,7 +875,7 @@ export class World implements EncounterHost {
       } else if (b.def.blockade) {
         b.blockade = 'checkpoint';
         // Cerro's own: the registry reads the pilot first (content/story.ts); every later checkpoint is the generic one
-        this.openComms((b.def.home && CARD_BY_ID.story_registry) || CARD_BY_ID.checkpoint!);
+        this.openComms((b.def.home && CARD_BY_ID.story_registry) || (b.def.checkpoint && CARD_BY_ID[b.def.checkpoint]) || CARD_BY_ID.checkpoint!);
       } else {
         b.blockade = 'done';
         // an open lane's toll is not every jump's: a roll, and not on the heels of another call
@@ -1459,7 +1464,7 @@ export class World implements EncounterHost {
 
   private scriptCtx(busy: Busy, t: number) {
     const b = this.bk!, s = this.ship;
-    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit };
+    const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: relayOf(b) };
     return {
       t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,
       pursuit: Math.max(0, halfDays((this.sortie.calloway ?? Infinity) / DAY_SECONDS - t / DAY_SECONDS)),
@@ -1521,6 +1526,14 @@ export class World implements EncounterHost {
       }
     }
     // the stop's story script: its lines wait for a safe moment and never drop (sim/script.ts)
+    // the ghost: it comes at a free moment once the tank is half full, and never in a fight
+    if (this.ghost) stepGhost(this.ghost, s, this.tankCap ? this.fuel / this.tankCap : 0, 1 / 60);
+    else if (!this.ghostMade && b.def.script === GHOST_STOP && this.tankCap && this.fuel / this.tankCap >= GHOST_TANK && this.scriptFree(busy, t)) {
+      this.ghostMade = true;
+      this.ghost = spawnGhost({ x: s.x, z: s.z, heading: s.heading });
+      this.flags.add('ghost_here');
+    }
+    if (this.ghost?.near) this.flags.add('ghost_close');
     if (this.script) for (const o of this.script.step(this.scriptCtx(busy, t))) this.playOutput(o);
     // the first system's docks always call when you come up on them, the depot once and the audit dock while its lock holds
     if (b.def.first && !this.docked) {

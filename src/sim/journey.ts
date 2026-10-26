@@ -245,8 +245,10 @@ export function sortieDef(j: Journey): SortieDef {
     nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer, flags: j.carry.flags }),
     story: quiet ? null : dueBeat(j),
     situation: liveSituation(j.chart, s.id)?.id ?? null,
-    script: j.chart.regionSet === 'road' && regionOf(s) === 0 ? roadStop(s.name)?.script : undefined,
+    script: j.chart.regionSet === 'road' && regionOf(s) === 0 ? (s.kind === 'gate' ? 'narrows' : roadStop(s.name)?.script) : undefined,
   };
+  // the Narrows: Ashgrove holds the gate (content/script/narrows.ts)
+  if (def.script === 'narrows') { def.blockade = true; def.checkpoint = 'narrows_checkpoint'; }
   // the first system past Cerro is its own level (sim/postjump.ts)
   return j.trail.length === 2 ? postJump(def) : def;
 }

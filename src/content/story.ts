@@ -161,6 +161,8 @@ const GIST: Record<string, string> = {
   "story_brook_road": "Brook is in a Custody transport",
   "story_brook_declined": "Brook is in a Custody transport anyway",
   "story_calloway_narrows": "The Governor asks where you are going",
+  "narrows_checkpoint": "Ashgrove holds the gate at the Narrows",
+  "warden_note_1": "Ada’s first note · the Narrows watch",
   "story_oduya_rigs": "Kessel Hold’s rigs are under attack",
   "story_moot": "Kessel Hold wants the file read aloud",
   "story_drift": "The Drift offer their lost-ship manifests",
@@ -430,16 +432,51 @@ export const STORY_CARDS: CardDef[] = [
     choices: BROOK_CHOICES(),
   }),
 
+  // ── The Narrows (content/script/narrows.ts plays them; docs/ROAD.md) ──
+  story({
+    // Ashgrove at the Narrows' gate: the registry's answers, in his words
+    id: 'narrows_checkpoint', kind: 'checkpoint', caller: 'custody',
+    from: 'Inspector Ashgrove · Offices of Peace · Kind Regard', title: 'Checkpoint',
+    text: '“Good afternoon. Ashgrove, Offices of Peace, aboard the Kind Regard. Let’s avoid a messy hour. Transmit your registry.”',
+    ships: [{ variant: 'lancer', n: 1 }, { variant: 'picket', n: 2 }], cargo: 'Custody blockade · the Kind Regard',
+    choices: [
+      { id: 'codes', label: 'Transmit Sam’s codes', tone: 'bluff', hint: 'A Kellern code on a Kellern hull. Likely, the first time.', odds: { base: 0.8, heat: -0.25 },
+        win: { text: 'Codes accepted · Ashgrove waves you on', blockade: 'pass', flag: ['codes_passed', 'ashgrove_met'] },
+        lose: { text: '“I don’t think so.” · weapons warm', blockade: 'fight', heat: 0.1, flag: 'ashgrove_met' } },
+      { id: 'talk', label: 'Talk your way through', tone: 'bluff', hint: 'Easier before they know your face.', odds: { base: 0.55, heat: -0.3 },
+        win: { text: '“Mind how you go.” · cleared', blockade: 'pass', flag: 'ashgrove_met' },
+        lose: { text: '“I don’t think so.” · weapons warm', blockade: 'fight', heat: 0.1, flag: 'ashgrove_met' } },
+      { id: 'run', label: 'Run the gate', tone: 'run', hint: 'Under their guns. Their field slows the drive.',
+        win: { text: 'You break through the blockade · the system is alerted', blockade: 'run', flag: 'ashgrove_met' } },
+    ],
+  }),
+  story({
+    // Ada's first note, in the archive's written-message style (the card's own layout, as story_wake)
+    id: 'warden_note_1', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
+    from: 'Ship database · Warden’s note 1 of 8', title: 'Warden’s note 1 of 8',
+    letter: { head: [['To', 'Whoever the relays let through'], ['From', 'A. Aster, Narrows watch'], ['Kept in', 'Narrows relay, Warden channel']], sign: '— A.' },
+    text: 'The Narrows was mine the night they closed it.\nI was told to switch it off and forget the key. I switched it off. I did not forget.\nThere are eight relays on this road that the Net stopped listening to. Each one keeps a piece of what I saw. Each one will know my name.\nIf the relays still know my name, so will they. Keep moving.\nFind the Drift. They never stopped moving.',
+    cargo: 'The Wayward · a note kept in the relay',
+    choices: [
+      { id: 'close', label: 'Close the note', tone: 'help', hint: '', win: { text: 'Warden’s note 1 of 8 · on the Wall', flag: 'warden_note_1' } },
+    ],
+  }),
+
   // ── Act II, the Marches ─────────────────────────────────────────────────
   story({
     id: 'story_calloway_narrows', kind: 'warning', caller: 'calloway',
     from: 'Governor Idris Calloway · CCV Patience', title: 'The Narrows',
     text: '“I have read Ada Aster’s file too, Juno. Not all of it. Enough to want the rest. Tell me where you are going, and I will not stop you.”',
     cargo: 'The Patience · weapons cold, for now',
+    lines: [
+      { if: { flag: 'relay_broadcast' }, text: '“Your grandmother’s relay just told the whole Reach who you are.”' },
+      { if: { flag: 'relay_broadcast' }, text: '“You can tell me the rest.”' },
+      { if: { flag: 'brook_free' }, text: '“Your clerk is making copies. That was unkind to him.”' },
+    ],
     choices: [
-      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told'], hunt: 1 } },
-      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: 'calloway_ada', hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: 'calloway_ada', heat: 0.1 } },
-      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices.', win: { text: 'The Patience turns away' } },
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told', 'calloway_asked'], hunt: 1 } },
+      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: ['calloway_ada', 'calloway_asked'], hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: ['calloway_ada', 'calloway_asked'], heat: 0.1 } },
+      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices.', win: { text: 'The Patience turns away', flag: 'calloway_asked' } },
     ],
   }),
   story({

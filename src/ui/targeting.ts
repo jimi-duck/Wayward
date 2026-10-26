@@ -386,6 +386,9 @@ export class Targeting {
     const showBoss = live && !!boss && !boss.leaving && boss.cloak < 0.5;
     this.pointer($('ptr-cap'), $('ptr-cap-t'), sector, s.x, s.z, s.heading, showBoss ? boss! : null,
       showBoss ? `${tr(boss!.name)} · ${range(Math.hypot(boss!.x - s.x, boss!.z - s.z))}` : '');
+    // the contact at Hollis: only where it points when it is off the screen, in white, with no hull to name
+    const gh = live ? world.ghost : null;
+    this.pointer($('ptr-unk'), $('ptr-unk-t'), sector, s.x, s.z, s.heading, gh ? { x: gh.x, y: 0.5, z: gh.z } : null, gh ? tr('Unknown · no transponder · not closing') : '');
     const e = world.encounter;
     const les = live ? lessonOf(world) : null;
     const showObj = live && !!e && !e.done && e.r > 0;
