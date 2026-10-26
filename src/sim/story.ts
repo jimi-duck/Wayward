@@ -1,6 +1,6 @@
 import { t } from '../i18n';
 import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENT_FLAGS_LONG, FRAGMENTS_ALL, CERRO_BEATS, type Act } from '../content/story';
-import type { RegionSet } from '../content/regions';
+import { isLongSet, type RegionSet } from '../content/regions';
 import { sysById, tierOf, viewOf } from './chart';
 import type { Journey } from './journey';
 
@@ -21,7 +21,7 @@ export const actLine = (a: Act): string => t('Act {n} · {name}', { n: ['I', 'II
 
 /** Pieces of the file found, out of all of them (the long journey's file has eight; the endings read the first four). */
 export function fileCount(flags: Iterable<string>, set: RegionSet = 'three'): { found: number; of: number } {
-  const f = new Set(flags), all = set === 'eight' ? FRAGMENT_FLAGS_LONG : FRAGMENT_FLAGS;
+  const f = new Set(flags), all = isLongSet(set) ? FRAGMENT_FLAGS_LONG : FRAGMENT_FLAGS;
   return { found: all.filter((x) => f.has(x)).length, of: all.length };
 }
 
@@ -40,7 +40,9 @@ export function dueBeat(j: Journey): string | null {
   if (j.trail.length < 2) return null;
   if (!j.carry.flags.includes('archive_woke')) { const next = CERRO_BEATS.find((b) => !j.carry.seen.includes(b)); if (next) return next; }
   // the three-region chart's beats come by tier; the eight-region chart's by its own regions
-  const long = j.chart.regionSet === 'eight';
+  const long = isLongSet(j.chart.regionSet);
+  // on the road the Reach's story is the stops' own script (sim/script.ts), not a beat to the sortie
+  if (j.chart.regionSet === 'road' && viewOf(j.chart, j.at) === 0) return null;
   const seen = new Set(j.carry.seen), has = new Set(j.carry.flags), r = long ? viewOf(j.chart, j.at) : tierOf(j.chart, viewOf(j.chart, j.at));
   const at = (b: (typeof BEATS)[number]) => (long ? b.long : b.region);
   const atGate = sysById(j.chart, j.at).kind === 'gate';

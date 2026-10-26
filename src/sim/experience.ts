@@ -1,6 +1,7 @@
 import { EXPANSES, FEATURES, NAMED, RARITY, type ExpanseId, type FeatureId } from '../content/features';
 import { PLACES } from '../content/phenomena';
 import { HAZARDS, PROFILES, SITE_OF_GOAL, SITE_OF_PLACE, type Exp, type RegionProfile } from '../content/profiles';
+import { isLongSet } from '../content/regions';
 import { SITUATION_BY_ID } from '../content/situations';
 import { regionOf, sysById, type Chart, type StarSystem } from './chart';
 import { Rng } from './rng';
@@ -153,7 +154,7 @@ function composeOne(c: Chart, s: StarSystem, seed: number, back: [Seen, Seen], s
 /** The old three-tier region of a system (what NAMED's regions are written in). */
 const longTier = (c: Chart, s: StarSystem): number => {
   const r = regionOf(s);
-  return c.regionSet === 'eight' ? ([0, 1, 1, 1, 1, 1, 2, 2][r] ?? 2) : r;
+  return isLongSet(c.regionSet) ? ([0, 1, 1, 1, 1, 1, 2, 2][r] ?? 2) : r;
 };
 
 /**

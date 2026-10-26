@@ -34,12 +34,17 @@ import { PortPanel, preloadPort } from './ui/port';
 import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
 import { Feel, SOUND_AVAILABLE } from './audio/audio';
+import type { RegionSet } from './content/regions';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
 /** Frames the quality governor ignores after a new system or a closed panel (two seconds at 60 fps). */
 const GRACE = 120;
 const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
+/** ?road plays the Reach as the Warden's Road, eight fixed stops (docs/ROAD.md); every other region is the long journey's own. */
+const ROAD = new URLSearchParams(location.search).has('road');
+/** The region table a new Story journey is laid out with. */
+const NEW_SET: RegionSet = ROAD ? 'road' : LONG_JOURNEY ? 'eight' : 'three';
 /** `?train` plays the training whether or not it has been played (to look at it). */
 const TRAIN = new URLSearchParams(location.search).has('train');
 
@@ -339,7 +344,7 @@ function boot(review: typeof import('./review') | null): void {
     if (j.status === 'over') recordJourney(profile, journeyRecord(j));
     chart.notice(j, out, () => {
       if (j.status === 'over') {
-        journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
+        journey = newJourney(Math.floor(Math.random() * 1e9), false, NEW_SET, profile.survival);
         saveJourney(journey);
         startSortie();
         // a new journey starts in flight: the HUD and the lessons carry it, no card first
@@ -389,7 +394,7 @@ function boot(review: typeof import('./review') | null): void {
   /** A total loss: back to the gate the region was entered by (the chapter save), or the start of the journey in the first. The Archive keeps nothing of it. */
   const regionLost = (j: Journey) => {
     const snap = chapterSave();
-    const back = snap && snap.seed === j.seed ? snap : newJourney(j.seed, false, regionsOf(j.chart).length > 3 ? 'eight' : 'three', j.survival);
+    const back = snap && snap.seed === j.seed ? snap : newJourney(j.seed, false, j.chart.regionSet ?? 'three', j.survival);
     journey = back;
     saveJourney(back);
     loop.paused = true;
@@ -583,7 +588,7 @@ function boot(review: typeof import('./review') | null): void {
       fresh = true;
       // a journey left at the Threshold still goes into the Archive, the file unchosen
       if (journey && pending(journey)) recordJourney(profile, journeyRecord(journey));
-      journey = newJourney(Math.floor(Math.random() * 1e9), false, LONG_JOURNEY ? 'eight' : 'three', profile.survival);
+      journey = newJourney(Math.floor(Math.random() * 1e9), false, NEW_SET, profile.survival);
       saveJourney(journey);
     } else if (pending(journey)) return threshold(journey, [t('Journey resumed · you have passed the Threshold')]);
     else if (journey.status === 'chart') return openChart([t('Journey resumed · drive cooled; plot your next jump')]);

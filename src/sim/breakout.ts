@@ -253,6 +253,8 @@ export interface Carry {
   seen: string[];
   /** Seconds of flight since the last card or call closed: the comms desk's pacing runs on across systems (sim/desk.ts). */
   hush: number;
+  /** Story rows triggered but not yet played, carried across a jump (sim/script.ts). Absent in a save from before v21. */
+  pending?: string[];
 }
 
 /** What a sortie hands back to the journey. */

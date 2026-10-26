@@ -1,6 +1,6 @@
 import { t } from '../i18n';
 import { WALL, WALL_BY_FLAG, type WallItem } from '../content/wall';
-import type { RegionSet } from '../content/regions';
+import { isLongSet, type RegionSet } from '../content/regions';
 import type { Carry } from './breakout';
 
 // ── the Wall ──────────────────────────────────────────────────────────────
@@ -28,10 +28,10 @@ export interface WallView {
 /** The region a journey is in, on the eight-region scale: -1 in Cerro. */
 export function wallRegion(trail: number, region: number, set: RegionSet): number {
   if (trail < 2) return -1;
-  return set === 'eight' ? region : THREE_AS_LONG[Math.min(region, 2)]!;
+  return isLongSet(set) ? region : THREE_AS_LONG[Math.min(region, 2)]!;
 }
 
-const playedOn = (set: RegionSet) => (w: WallItem) => set === 'eight' || !!w.short;
+const playedOn = (set: RegionSet) => (w: WallItem) => isLongSet(set) || !!w.short;
 
 export function wallView(flags: Iterable<string>, at: number, set: RegionSet = 'eight'): WallView {
   const have = new Set(flags);
