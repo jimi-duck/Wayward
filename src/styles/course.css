@@ -2,18 +2,17 @@
    Built from the chart's own parts (chart.css): the header with the goal bar
    and the stores, a map of the road as one calm line, one card for the jump,
    the strip with the pursuit and the button. This file only adds what the
-   road needs: the pursuit's tone and the "then" card. */
+   road needs: the pursuit's tone. */
 .co-purs { margin: 0; font: 600 13px/1.25 var(--font-rail); letter-spacing: .04em; color: var(--cy); }
 .co-purs.amber { color: var(--caution); }
 .co-purs.red { color: var(--danger); }
 .co-purs.rest { color: var(--ink-2); }
-.ch-opt.then { cursor: default; --fill: rgba(14, 19, 19, .8); opacity: .88; }
-.ch-opt.then .ch-o1 b { font-size: 15px; font-weight: 500; }
-.ch-opt .k { font: 600 11px/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
 .ch-lane.done { stroke: rgba(134, 169, 209, .55); }
 .ch-s.past .ch-name { fill: var(--ink-2); }
 .ch-s.past .ch-node { opacity: .7; }
-@media (max-height: 420px) {
-  #course .ch-body { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 10px; }
-  #course .ch-opt .chip { display: none; }
-}
+/* the map takes the whole width, with one line about the next stop under it */
+#course .ch-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 10px; }
+#course .ch-mapw { min-height: 260px; }
+.co-blurb { margin: 0; font: 400 15px/1.35 var(--font-display); color: var(--ink); }
+.co-blurb b { font: 600 15px/1.35 var(--font-rail); letter-spacing: .03em; color: var(--pick-hi); }
+@media (max-height: 420px) { #course .ch-mapw { min-height: 100px; } .co-blurb, .co-blurb b { font-size: 12px; } }

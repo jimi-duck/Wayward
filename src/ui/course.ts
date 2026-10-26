@@ -2,7 +2,7 @@ import { courseView, type Course } from '../sim/course';
 import type { Journey } from '../sim/journey';
 import { halfDays } from '../sim/hunt';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
-import { fillWall, glyph, hash01, KIND_WORD, storeCells, svg } from './chart';
+import { fillWall, glyph, hash01, storeCells, svg } from './chart';
 import { INK } from './palette';
 import { plural, t } from '../i18n';
 
@@ -57,7 +57,12 @@ export class CoursePanel {
     $('co-k').textContent = `${t(c.region)} · ${t('day {n}', { n: c.day })}`;
     $('co-t').textContent = t(c.here.name);
     const short = Math.max(0, c.fuel.need - c.fuel.have);
-    $('co-res').replaceChildren(...storeCells(j, short > 0));
+    const cells = storeCells(j, short > 0);
+    // the jump's fluid beside what the tank holds
+    const tank = cells[0]!.querySelector('b')!;
+    tank.textContent = `${tank.textContent} / ${c.fuel.need}`;
+    cells[0]!.title = t('Jump fluid aboard, and what this jump needs');
+    $('co-res').replaceChildren(...cells);
     // the leg goal: the bar and the jumps left, with its one line
     const total = c.road.length, done = Math.max(0, Math.min(1, 1 - c.goal.jumps / Math.max(1, total)));
     const bar = h('div', 'ch-bar', '', h('i'));
@@ -68,14 +73,8 @@ export class CoursePanel {
     bar.setAttribute('aria-valuemax', String(total));
     bar.setAttribute('aria-valuenow', String(total - c.goal.jumps));
     $('co-gate').replaceChildren(h('span', 'k', `${t('Leg goal')} · ${t(c.goal.name)}`), bar, h('b', 'n', plural(c.goal.jumps, '{n} jump', '{n} jumps')), h('p', 'ch-quest', t(c.goal.purpose)));
-    // the jump, and the stop after it
-    const card = (cls: string, k: string, l: Course['next']) => h('div', `ch-opt ${cls}`, '',
-      h('div', 'ch-o1', '', glyph(l.kind), h('b', '', t(l.name)), h('span', 'chip d0', t(KIND_WORD[l.kind]))),
-      h('span', 'k', t(k)),
-      h('p', 'ch-say', t(l.purpose)));
-    const next = card('sel', 'Next stop', c.next);
-    next.insertBefore(h('div', 'ch-o2', '', h('span', '', plural(1, '{n} day', '{n} days')), h('span', short > 0 ? 'short' : '', `${c.fuel.need} ${t('fluid')}`), h('span', '', plural(c.goal.jumps, '{n} jump to goal', '{n} jumps to goal'))), next.lastElementChild);
-    $('co-list').replaceChildren(next, ...(c.after ? [card('then', 'Then', c.after)] : []));
+    // one short line about the stop she jumps to
+    $('co-blurb').replaceChildren(h('b', '', t(c.next.name)), ` · ${t(c.next.purpose)}`);
     const purs = $('co-purs');
     purs.textContent = pursuitLine(c.pursuit);
     purs.className = `co-purs ${c.pursuit.hidden ? 'rest' : c.pursuit.tone}`;
@@ -130,12 +129,6 @@ export class CoursePanel {
       const d = `M${px(a)} ${py(a)}Q${((px(a) + px(i)) / 2).toFixed(1)} ${((py(a) + py(i)) / 2 + (a % 2 ? 6 : -6)).toFixed(1)} ${px(i)} ${py(i)}`;
       if (state === 'next') kids.push(svg('path', { d, class: 'ch-lane-under teal' }));
       kids.push(svg('path', { d, class: cls }));
-      if (state === 'next' && step > 70) {
-        const txt = String(c.fuel.need), w = txt.length * 8 + 16, mx = (px(a) + px(i)) / 2, my = (py(a) + py(i)) / 2;
-        const g = svg('g', { class: `ch-cost sel${c.fuel.have < c.fuel.need ? ' short' : ''}` });
-        g.append(svg('rect', { x: mx - w / 2, y: my - 10, width: w, height: 20, rx: 10 }), svg('text', { x: mx, y: my + 4, 'text-anchor': 'middle' }, txt));
-        kids.push(g);
-      }
     }
     nodes.forEach((n, i) => {
       const x = px(i), y = py(i), r = (n.gate ? 14 : 11) * (W < 380 ? 0.72 : 1), col = n.state === 'here' ? INK.white : n.gate ? INK.teal : n.state === 'done' ? INK.dust : INK.teal;

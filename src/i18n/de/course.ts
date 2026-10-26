@@ -4,7 +4,7 @@
 export const COURSE: Record<string, string> = {
   'Course': 'Kurs',
   'Leg goal': 'Etappenziel',
-  'Next jump': 'Nächster Sprung',
+  'Jump fluid aboard, and what this jump needs': 'Sprungflüssigkeit an Bord und was dieser Sprung braucht',
   'Next stop': 'Nächster Halt',
   'Then': 'Danach',
   'The Reach': 'Die Reach',
