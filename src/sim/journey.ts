@@ -31,6 +31,7 @@ import type { EndingId } from '../content/endings';
 import { ACTS, CHOICE_REGION } from '../content/story';
 import { actLine, dueBeat } from './story';
 import { postJump } from './postjump';
+import { roadStop } from '../content/road';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -242,6 +243,7 @@ export function sortieDef(j: Journey): SortieDef {
     nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer, flags: j.carry.flags }),
     story: quiet ? null : dueBeat(j),
     situation: liveSituation(j.chart, s.id)?.id ?? null,
+    script: j.chart.regionSet === 'road' && regionOf(s) === 0 ? roadStop(s.name)?.script : undefined,
   };
   // the first system past Cerro is its own level (sim/postjump.ts)
   return j.trail.length === 2 ? postJump(def) : def;

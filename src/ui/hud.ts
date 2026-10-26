@@ -219,6 +219,7 @@ export class Hud {
           // after the archive (sheet J): the new name is paint, not papers
           if (e.id === WAKE_BEAT) this.notify(world, { type: 'warning', headline: 'Registry: Unregistered', reason: 'Repaint will not pass a scan.', key: 'registry' });
           break;
+        case 'storyNotice': this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
         case 'jobDone': this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain'); break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
         case 'spool': this.banner(t('Jump Gate'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
@@ -664,7 +665,9 @@ export class Hud {
           text($('obj-left'), range(da));
           ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
         } else {
-          text($('obj-t'), t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
+          // a stop's script names the next place (sim/script.ts); the chase and an empty tank still come first
+          const named = !bk.chase && ready ? world.storyObjective?.main : undefined;
+          text($('obj-t'), named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
           text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
           ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         }
@@ -672,6 +675,7 @@ export class Hud {
         text($('obj-s'), recovering(world.flags) ? t('Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
         const lines: string[] = [];
         if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
+        if (world.storyObjective?.quiet) lines.push(world.storyObjective.quiet);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
         // a place asleep in the sky: off the course, there if the ship wants it
         if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);

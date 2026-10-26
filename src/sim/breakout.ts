@@ -220,6 +220,8 @@ export interface SortieDef {
   rules?: Rules;
   /** The story beat due here (content/story.ts): its card calls a little after arrival. */
   story?: string | null;
+  /** The key of this stop's story script (content/script/, content/road.ts), if it has one. */
+  script?: string;
   /** The situation playing here (content/situations.ts), as the chart has it now: its tightened variant where the Net holds the system. */
   situation?: string | null;
 }
