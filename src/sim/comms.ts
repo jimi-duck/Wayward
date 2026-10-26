@@ -1,4 +1,5 @@
 import { LEARN } from '../content/calloway';
+import { ON_ROAD } from '../content/road';
 import type { LedgerKind, LedgerRow } from './contract';
 import { t } from '../i18n';
 import { cy } from './purse';
@@ -318,6 +319,8 @@ export interface CardDef {
   text: string;
   /** Lines added when their condition holds: the same card reads differently with a full hold or a checkpoint ahead. */
   lines?: Array<{ if: Cond; text: string }>;
+  /** A job in a thread of the Warden's Road (docs/ROAD.md): the chip on its card and the one line it adds there. Shown on the road only. */
+  thread?: { chip: string; line: string };
   /** How it comes: by chance (the default), only as a follow-up, on the port's approach, at the Jump Gate (a blockade's, or an open one: a toll), or with Calloway. */
   trigger?: Trigger;
   when?: Cond;
@@ -402,6 +405,8 @@ export interface Open {
   ledger?: LedgerRow[];
   /** The optional document's rows, read off the same carry. */
   doc?: LedgerRow[];
+  /** The thread chip and line a job shows on the road (CardDef.thread). */
+  thread?: { chip: string; line: string };
 }
 
 /** Seconds into a Breakout before the first card, and the gap between chance cards. */
@@ -662,6 +667,7 @@ export function openCard(def: CardDef, x: Ctx, rng: Rng): Open {
     text, more,
     choices: def.choices.filter((c) => condOk(c.show, x)).map((c) => choiceView(c, def, x, fee, read)),
     slow: def.slow ? def.slow.timeout : 0,
+    ...(def.thread && x.flags.has(ON_ROAD) ? { thread: def.thread } : {}),
   };
 }
 

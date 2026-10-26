@@ -31,7 +31,7 @@ import type { EndingId } from '../content/endings';
 import { ACTS, CHOICE_REGION } from '../content/story';
 import { actLine, dueBeat } from './story';
 import { postJump } from './postjump';
-import { roadStop } from '../content/road';
+import { ON_ROAD, roadStop } from '../content/road';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -187,8 +187,10 @@ export function newJourney(seed: number, hardcore = false, set: RegionSet = 'thr
   }
   dealSituations(chart, seed);
   composeChart(chart, seed);
+  const carry = startCarry(survival);
+  if (set === 'road') carry.flags.push(ON_ROAD);
   const j: Journey = {
-    version: VERSION, seed, hardcore, survival: survivalOf(survival).id, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry: startCarry(survival),
+    version: VERSION, seed, hardcore, survival: survivalOf(survival).id, day: 0, chart, at: chart.home, dest: null, trail: [chart.home], hunt: newHunt(), calloway: newDossier(), notice: newNotice(), carry,
     wrecks: 0, lost: 0, hungry: 0, status: 'sortie', end: null, score: 0, legs: [], log: [], rolls: 0,
   };
   const out = lanesFrom(chart, chart.home);
