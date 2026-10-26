@@ -31,6 +31,7 @@ is off.
 | M7 The Scatter | Done: regions out through gates, the factions acting on their own, the Thren as swarms drawn to jump fluid, places |
 | M8 The story | Done: three acts, story beats that piece the Severance file together, six endings with epilogues, the Archive ([BALANCE-ENDINGS.md](BALANCE-ENDINGS.md)) |
 | R The refit bay | Done: the web as data and rules, the bay on screen, the budgets felt, the work bay in the Story, the console pass |
+| WR Warden's Road · Reach slice | Built behind `?road`, main unchanged: ten stops from Cerro to the Narrows as data, the Course screen, pursuit counted in days, a script runner for stop lines, the Hollis ghost, the Narrows blockade and relay handshake, and job thread chips ([ROAD.md](ROAD.md)). Pilot: all 6 reached the Narrows in about 21 min against a 40 min target ([BALANCE-ROAD.md](BALANCE-ROAD.md)); not playtested, no tuning by eye |
 | SM Survival modes | Done: Drifter, Prospector and Raider, one table in `content/survival.ts` ([BALANCE-SURVIVAL.md](BALANCE-SURVIVAL.md)) |
 | AR Arcade opening | Done: first wave at 3 s, wrecks pay 2.5x, one difficulty ([BALANCE-ARCADE.md](BALANCE-ARCADE.md)) |
 | C Story communications | Done: one comms desk decides when anything is heard ([COMMS.md](COMMS.md), [BALANCE-COMMS.md](BALANCE-COMMS.md)) |

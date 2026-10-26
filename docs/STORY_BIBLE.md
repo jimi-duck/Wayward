@@ -379,3 +379,7 @@ Recorded 2026-10-18, branch `story-rewrite` from `main` at `1e318c4`:
 The people and titles follow the owner's third naming pass: Tam is Sam Okoro; Ansel is Adam Brook; Speaker Oduya is Councillor Oduya; Mother Saffi is Ma Saffi; Vell is Val; Dov Kessler; Ossie Raine; Tarik Silva; Ben Anand; Keeper Oren is Oren Lisle, the archivist; Owen Pike; Hester; Brother Orrin (not Witness); Noor Haddad, aide to the Governor. Prefect Idris Calloway is Governor Idris Calloway and Prefect Lior Calloway is Deputy Governor Lior Calloway. Captain Isla Vance, Captain Hale Sorensen, Brennan Kade, Sister Vera Hask, Inspector Ashgrove (the title Inquisitor is gone), and The Nine (was the Chorus of Nine). Systems: Marlow, Northfold, Hollis, Vesta, Branford. Regions, factions, gates and ports keep their names. Flag and card ids (`tam_codes`, `story_vell_betray`, ...) keep the old spelling so saves still read. Procedural system names: about six in ten are plain words, about four in ten a real name plus a place-word (Hadley’s Rest, Morgan Deep), chosen from the same two draws as before so a seed lays out as it did.
 
 The Tollgate signature (Lior Calloway’s, found in the minutes) is a different clue from Ada Aster’s recording (the black box). The Wall and the dialogue keep them apart.
+
+## 11. The Reach on the road
+
+Behind `?road`, the Reach plays as a fixed line of stops with its own script (Northfold to the Narrows). The copy is in "The Reach: Chapter Script"; the code is described in [ROAD.md](ROAD.md). The ghost at Hollis is never explained.
