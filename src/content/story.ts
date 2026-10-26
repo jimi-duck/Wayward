@@ -392,7 +392,7 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_handwriting', kind: 'rumour', caller: 'miners',
+    id: 'story_handwriting', kind: 'rumour', caller: 'miners', glass: 'cyan',
     from: 'Ilse Marrow · Her handwriting', title: 'Her handwriting',
     text: '“That routine in your hull. I know its habits. Ada Aster ran the Narrows watch with me. You carry her name, don’t you?”',
     cargo: 'An old Warden’s skiff · no guns',

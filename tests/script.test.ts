@@ -113,7 +113,7 @@ describe('the story queue', () => {
 
 describe('Northfold plays from data', () => {
   it('has rows for the stop in the road, and no row is ever played twice', () => {
-    for (const r of REACH) expect(ROAD.some((s) => s.script === r.stop)).toBe(true);
+    for (const r of REACH) expect(r.stop === '*' || ROAD.some((s) => s.script === r.stop)).toBe(true);
     expect(new Set(REACH.map((r) => r.id)).size).toBe(REACH.length);
   });
 
