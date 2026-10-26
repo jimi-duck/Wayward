@@ -123,6 +123,18 @@ function shipTrouble(j: Journey): string[] {
   return out;
 }
 
+/** The Wall (what the journey has proved and what is still open) into a details block's three parts: the chart's, and the Course screen's. */
+export function fillWall(j: Journey, to: { s: HTMLElement; lead: HTMLElement; list: HTMLElement }): void {
+  const set = j.chart.regionSet ?? 'three';
+  const v = wallView(j.carry.flags, wallRegion(j.trail.length, viewOf(j.chart, j.at), set), set);
+  to.s.textContent = `${t('Wall')} · ${t('File {n}/{of}', { n: v.file.found, of: v.file.of })}`;
+  to.lead.textContent = v.lead;
+  to.list.replaceChildren(...v.rows.map(({ item: w, found }) => found
+    ? h('li', 'found', '', h('b', '', t(w.name)), h('span', 'tag', t(w.certainty === 'fact' ? 'Fact' : 'Inference')),
+        h('p', '', `${t('Proves')} · ${t(w.proves)}`), h('p', '', `${t('Not yet proved')} · ${t(w.not)}`))
+    : h('li', 'open', '', h('b', '', t(w.name)), h('p', '', `${t('Still open')} · ${t(w.ask)}`))));
+}
+
 export class ChartPanel {
   private off: (() => void) | null = null;
   private sel = 0;
@@ -409,14 +421,7 @@ export class ChartPanel {
 
   /** The Wall: what the file holds, what each piece proves and does not, and the lead. */
   private renderWall(j: Journey): void {
-    const set = j.chart.regionSet ?? 'three';
-    const v = wallView(j.carry.flags, wallRegion(j.trail.length, viewOf(j.chart, j.at), set), set);
-    $('ch-wall-s').textContent = `${t('Wall')} · ${t('File {n}/{of}', { n: v.file.found, of: v.file.of })}`;
-    $('ch-wall-lead').textContent = v.lead;
-    $('ch-wall-l').replaceChildren(...v.rows.map(({ item: w, found }) => found
-      ? h('li', 'found', '', h('b', '', t(w.name)), h('span', 'tag', t(w.certainty === 'fact' ? 'Fact' : 'Inference')),
-          h('p', '', `${t('Proves')} · ${t(w.proves)}`), h('p', '', `${t('Not yet proved')} · ${t(w.not)}`))
-      : h('li', 'open', '', h('b', '', t(w.name)), h('p', '', `${t('Still open')} · ${t(w.ask)}`))));
+    fillWall(j, { s: $('ch-wall-s'), lead: $('ch-wall-lead'), list: $('ch-wall-l') });
   }
 
   /** Intel: the rest of what the chart knows. */

@@ -89,15 +89,15 @@
 .ch-why { margin: 0; font: 600 13px/1.25 var(--font-rail); letter-spacing: .04em; color: var(--caution); }
 .ch-why[hidden] { display: none; }
 .ch-acts { display: flex; gap: 10px; margin-left: auto; }
-#ch-jump { --c: 10px; --edge: var(--pick); --fill: rgba(228, 163, 59, .16); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer; padding: 10px 20px; min-height: 40px; color: var(--pick-hi);
+#ch-jump, #co-go { --c: 10px; --edge: var(--pick); --fill: rgba(228, 163, 59, .16); position: relative; isolation: isolate; border: 0; background: none; cursor: pointer; padding: 10px 20px; min-height: 40px; color: var(--pick-hi);
   font: 600 15px/1.1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; touch-action: manipulation; max-width: 100%; }
-#ch-jump::before, #ch-jump::after { content: ""; position: absolute; pointer-events: none; }
-#ch-jump::before { inset: 0; z-index: -2; background: var(--edge); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-#ch-jump::after { inset: 1px; z-index: -1; background: linear-gradient(var(--fill), var(--fill)), rgb(10, 15, 16); transition: background .14s var(--ez); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-#ch-jump:hover, #ch-jump:focus-visible { --fill: rgba(228, 163, 59, .3); }
-#ch-jump:focus-visible { outline: 2px solid var(--pick-hi); outline-offset: 3px; }
-#ch-jump.short { --edge: rgba(228, 163, 59, .6); --fill: rgba(228, 163, 59, .08); }
-#ch-jump:disabled { cursor: not-allowed; color: var(--ink-3); --edge: rgba(216, 213, 198, .16); --fill: rgba(14, 19, 19, .7); }
+#ch-jump::before, #co-go::before, #ch-jump::after, #co-go::after { content: ""; position: absolute; pointer-events: none; }
+#ch-jump::before, #co-go::before { inset: 0; z-index: -2; background: var(--edge); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+#ch-jump::after, #co-go::after { inset: 1px; z-index: -1; background: linear-gradient(var(--fill), var(--fill)), rgb(10, 15, 16); transition: background .14s var(--ez); clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+#ch-jump:hover, #co-go:hover, #ch-jump:focus-visible, #co-go:focus-visible { --fill: rgba(228, 163, 59, .3); }
+#ch-jump:focus-visible, #co-go:focus-visible { outline: 2px solid var(--pick-hi); outline-offset: 3px; }
+#ch-jump.short, #co-go.short { --edge: rgba(228, 163, 59, .6); --fill: rgba(228, 163, 59, .08); }
+#ch-jump:disabled, #co-go:disabled { cursor: not-allowed; color: var(--ink-3); --edge: rgba(216, 213, 198, .16); --fill: rgba(14, 19, 19, .7); }
 .ch-hint { flex: none; margin: 0; padding: 0; border: 0; font: 600 11px/1.2 var(--font-rail); letter-spacing: .06em; color: var(--ink-2); white-space: nowrap; }
 .ch-hint .keys { font: inherit; letter-spacing: inherit; text-transform: none; color: inherit; }
 .chartp.notice .ch-body { grid-template-columns: minmax(0, 1fr); }
@@ -240,7 +240,7 @@ circle.ch-net { fill: rgba(201, 74, 63, .07); stroke: rgba(224, 87, 75, .5); str
   .ch-foot { padding: 6px 10px; gap: 6px 12px; }
   .ch-warn { font-size: 12px; }
   .ch-alerts li, .ch-why { font-size: 12px; }
-  #ch-jump { padding: 8px 14px; font-size: 14px; }
+  #ch-jump, #co-go { padding: 8px 14px; font-size: 14px; }
   .ch-intel > summary { min-height: 26px; padding: 3px 10px; font-size: 10px; }
   .touch-ui .ch-o1 kbd { display: none; }
 }
