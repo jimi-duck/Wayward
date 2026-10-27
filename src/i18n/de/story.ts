@@ -412,7 +412,7 @@ export const STORY: Record<string, string> = {
   'The old charts go in the file': 'Die alten Karten kommen in die Akte',
   'Trade supplies': 'Vorräte tauschen',
   'Three supplies for the old charts.': 'Drei Vorräte für die alten Karten.',
-  'Tarn copies your route · the charts go in the file': 'Tarn kopiert deine Route · die Karten kommen in die Akte',
+  'Tarik copies your route · the charts go in the file': 'Tarik kopiert deine Route · die Karten kommen in die Akte',
   'Share what you know': 'Dein Wissen teilen',
   'Free. He hears the file too, and talks.': 'Gratis. Er hört auch die Akte und redet darüber.',
   'The lamps drift astern': 'Die Lampen bleiben zurück',

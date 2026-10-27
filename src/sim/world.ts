@@ -132,6 +132,9 @@ export const BAY_QUIET = 2;
 /** Seconds into a sortie before the system's place shows itself. */
 export const PLACE_AT = 30;
 
+/** Seconds the Narrows gate holds after the handshake while the scene plays. */
+const NARROWS_HOLD = 240;
+
 export class World implements EncounterHost {
   readonly rng: Rng;
   readonly ids = new Ids();
@@ -443,6 +446,7 @@ export class World implements EncounterHost {
     if (def.first) this.traffic = new Traffic(this);
     if (this.carryIn) this.bringAboard(this.carryIn);
     this.script = def.script ? new Script(SCRIPT, def.script, this.heard, this.carryIn?.pending ?? []) : null;
+    this.relayAt = Infinity;
     this.storyObjective = null;
     this.stock();
     this.fitAboard();
@@ -879,14 +883,16 @@ export class World implements EncounterHost {
       } else {
         b.blockade = 'done';
         // an open lane's toll is not every jump's: a roll, and not on the heels of another call
-        const def = this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
+        const def = !b.def.quiet && !b.def.safe && this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
         if (def) this.openComms(def);
       }
     }
     if (b.blockade === 'called' && this.command.state === 'idle' && !this.command.boss) b.blockade = 'done';
 
     // the Jump Gate: the drive charges on the way in (with the fluid in the tank) and the ship goes through the ring as soon as it is ready
-    const near = dl < Math.max(APPROACH, b.spoolNeed * 46);
+    // the Narrows gate holds her while its scene plays: no spooling, so the script's lines are not held back as a jump's
+    const gateHeld = this.narrowsHeld();
+    const near = dl < Math.max(APPROACH, b.spoolNeed * 46) && !gateHeld;
     if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
       if (b.spool === 0) this.events.push({ type: 'spool' });
       b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
@@ -1458,8 +1464,23 @@ export class World implements EncounterHost {
   }
 
   /** A free moment for the story: nothing hostile near or firing, no card or call open, no job fight, not in a ring or a jump. */
+  /**
+   * The Narrows: the gate holds until the scene at the mast has played out (the note, the Patience's answer), so a jump never
+   * skips it. If it has not played four minutes after the handshake, something is wrong with it and the gate lets her go.
+   */
+  private narrowsHeld(): boolean {
+    if (this.bk?.def.script !== 'narrows' || this.flags.has('calloway_asked')) return false;
+    if (!this.flags.has('relay_broadcast')) return true;
+    if (this.relayAt === Infinity) this.relayAt = this.runTime;
+    return this.runTime - this.relayAt < NARROWS_HOLD;
+  }
+  private relayAt = Infinity;
+
+  /** A hub beat of the stop's script is still due: a job's call waits for it. */
+  scriptHoldsJob(): boolean { return !!this.script?.holdsJob(this.flags); }
+
   private scriptFree(busy: Busy, t: number): boolean {
-    return busy === 'free' && !this.call && !this.comms && !this.safe && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
+    return busy === 'free' && !this.call && !this.comms && (!this.safe || this.bk?.def.script === 'narrows') && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
   }
 
   private scriptCtx(busy: Busy, t: number) {

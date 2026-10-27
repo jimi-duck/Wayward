@@ -187,7 +187,7 @@ export class Stage {
       if (!this.begun && now >= (JOB_IDS.has(d.id) ? Math.min(d.at, JOB_AT) : d.at)) this.begin(w);
       // the call
       // a job rings on arrival, wherever its site is; never over the training; a plain scene rings when the ship is near
-      const rings = JOB_IDS.has(d.id) ? !w.tutor : near <= d.hail;
+      const rings = JOB_IDS.has(d.id) ? !w.tutor && !w.scriptHoldsJob() : near <= d.hail;
       if (this.begun && d.card && !this.offered && rings && w.phase === 'play') {
         const card = CARD_BY_ID[d.card];
         if (card) { w.desk.offer(card, weightOf(card), now, false, true); this.offered = true; }
