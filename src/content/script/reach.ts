@@ -34,9 +34,10 @@ export const REACH: Row[] = [
   objective('hr_objective', 'halden', { on: 'arrive' }, 'Halden’s Reach · find the Warden’s record', 'Frontier port · refit bay open'),
   sam('hr_sam', 'halden', { on: 'free' }, '“Halden’s Reach. Old Warden families retire here. If anyone remembers, it’s them.”'),
   // an old skiff hails from the hospice ring: her account, then (after either of the first two answers) the order, then the name
-  card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_warden'),
-  card('hr_order', 'halden', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] } }),
-  card('hr_hand', 'halden', { on: 'after', row: 'hr_order' }, 'story_handwriting'),
+  // the three hold any job's call; the order and the name follow her card wherever it is answered (it can be carried on)
+  card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_warden', { holdsJob: true }),
+  card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
+  card('hr_hand', '*', { on: 'after', row: 'hr_order' }, 'story_handwriting', { holdsJob: true }),
   // the Quiet Line's first job (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
   pike('hr_pike_won', 'job_nothing_to_declare_won', '“You never saw what was in it. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
   pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you six. Remember what it cost.”'),

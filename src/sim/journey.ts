@@ -251,7 +251,8 @@ export function sortieDef(j: Journey): SortieDef {
     script: j.chart.regionSet === 'road' && regionOf(s) === 0 ? (s.kind === 'gate' ? 'narrows' : roadStop(s.name)?.script) : undefined,
   };
   // the Narrows: Ashgrove holds the gate (content/script/narrows.ts)
-  if (def.script === 'narrows') { def.blockade = true; def.checkpoint = 'narrows_checkpoint'; }
+  // her offers wait: the Patience's scene is her first word here (content/script/narrows.ts)
+  if (def.script === 'narrows') { def.blockade = true; def.checkpoint = 'narrows_checkpoint'; def.nemesis = { ...def.nemesis, offer: null }; }
   // set adrift here a moment ago: the gate is not dead ahead any more
   const last = j.legs[j.legs.length - 1];
   if (j.chart.regionSet === 'road' && last?.ended === 'destroyed' && last.system === s.id) def.off = (j.lost % 2 ? 1 : -1) * (0.25 + 0.1 * (j.lost % 3));

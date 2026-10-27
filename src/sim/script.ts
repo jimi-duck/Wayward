@@ -54,6 +54,8 @@ export interface Row {
   /** A Wall flag set the moment the row triggers. */
   wall?: string;
   do: Output;
+  /** A job at this stop does not ring until this row has played (the hub's beat comes before any job). */
+  holdsJob?: boolean;
   /** Flavour only: seconds in the queue before it is dropped. Story rows never expire. */
   stale?: number;
 }
@@ -111,6 +113,16 @@ export class Script {
   pending(): string[] { return [...(this.holding ? [this.holding.row] : []), ...this.queue.map((q) => q.id)]; }
   /** Whether a story line is waiting (the radio's chatter holds back for it). */
   waiting(): boolean { return this.queue.length > 0 || this.holding !== null; }
+  /** Whether a hub beat is still due or out: a job's call waits for it. A row that waits on a flag or an earlier row holds only once that has come. */
+  holdsJob(flags: ReadonlySet<string>): boolean {
+    if (this.holding) return true;
+    return this.mine.some((r) => {
+      if (!r.holdsJob || this.seen.has(r.id) || !this.cond(r, flags)) return false;
+      if (r.on.on === 'flag') return flags.has(r.on.flag);
+      if (r.on.on === 'after') return this.played(r.on.row) || this.fired.has(r.on.row);
+      return true;
+    });
+  }
   played(id: string): boolean { return this.playedAt.has(id) || this.seen.has(id); }
 
   private cond(r: Row, flags: ReadonlySet<string>): boolean {
