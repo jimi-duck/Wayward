@@ -253,8 +253,8 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 .registry .rg-old { margin: 0; display: flex; align-items: center; gap: .8em; font: 400 1.05em/1 var(--font-mono); letter-spacing: .14em; color: var(--ochre); }
 .registry .rg-old s { color: var(--ink-2); text-decoration-color: var(--ochre); text-decoration-thickness: 2px; }
 .registry .rg-old i { font-style: normal; color: var(--ochre); }
-.registry .rg-name { margin: 0; display: flex; align-items: center; gap: .35em; font: 600 clamp(40px, 5.6vw, 96px)/1 var(--font-head); letter-spacing: .06em; text-transform: uppercase; color: var(--logo); }
-.registry .rg-mark { flex: none; width: .62em; height: auto; fill: var(--logo); }
+.registry .rg-name { margin: 0; display: flex; align-items: center; gap: .35em; font: 600 clamp(40px, 5.6vw, 96px)/1 var(--font-head); letter-spacing: .06em; text-transform: uppercase; color: var(--pick); }
+.registry .rg-mark { flex: none; width: .62em; height: auto; fill: var(--pick); }
 .registry .rg-copy { margin: 0; max-width: 34em; font: 400 1.12em/1.4 var(--font-display); color: var(--ink-body); }
 .registry .rg-copy + .rg-active { margin-top: .4em; }
 .registry .rg-active { margin: 0 0 .5em; font: 600 .95em/1.2 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--teal-bright); }
@@ -492,7 +492,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #rd-call.job .rd-more .g-need { display: inline-flex; align-items: center; gap: 5px; }
 /* the marked answer: the amber rim and its faint amber fill (the ochre nested frame, not the brighter press-ready one) */
 #rd-call.job .rd-c.first { --rim: var(--rim-ochre); --halo: var(--halo-ochre-rgb); border-image-source: var(--ngn-ochre); }
-#rd-call.job .rd-c.first kbd { border-color: var(--ochre-deep); background: rgba(var(--caution-deep-rgb), .45); }
+#rd-call.job .rd-c.first kbd { border-color: var(--ochre); background: rgba(var(--caution-deep-rgb), .45); }
 #rd-call.job .rd-c.first:active:not([aria-disabled="true"]) { border-image-source: var(--ngn-ochre-press); }
 #rd-call.job .rd-c.first:hover:not([aria-disabled="true"]) { border-image-source: var(--ngn-ochre); }
 #rd-call.job .rd-c:not(.first):hover:not([aria-disabled="true"]) { border-image-source: var(--ngn-cyan-hi); }
@@ -517,7 +517,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 /* the answer clock: a thin line along the foot, the rim's colour (amber only for a priority call) */
 #rd-call.job .rd-timer { display: none; grid-area: timer; height: 2px; margin-top: calc(var(--rj-block) * -0.4); background: rgba(var(--halo), .15); }
 #rd-call.job .rd-timer i { background: var(--rim); }
-#rd-call.job.prio .rd-timer i { background: var(--ochre-deep); }
+#rd-call.job.prio .rd-timer i { background: var(--ochre); }
 /* the world's labels and the HUD step back while the offer has the middle of the screen; they come back with nothing in between */
 :root.job-open #hud > :not(#vignette), :root.job-open #touch { opacity: .12; }
 
@@ -536,7 +536,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #rd-call.demand > .rd-h { gap: 10px; padding-bottom: 12px; margin-bottom: 24px; border-bottom: 1px solid rgba(var(--halo), .35); }
 #rd-call.demand .rd-ico, #rd-call.demand .rd-kind, #rd-call.demand .rd-timer { display: none; }
 #rd-call.demand .rd-k { font: 600 13px/1 var(--font-rail); letter-spacing: .16em; color: var(--rim); }
-#rd-call.demand .rd-prio { display: block; font: 600 13px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ochre-deep); }
+#rd-call.demand .rd-prio { display: block; font: 600 13px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ochre); }
 #rd-call.demand .rd-prio[hidden] { display: none; }
 #rd-call.demand[hidden] { display: none; }
 #rd-call.demand .rd-body { display: block; }
@@ -544,7 +544,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #rd-call.demand .rd-id b { display: block; font: 700 34px/1.05 var(--font-head); letter-spacing: .03em; text-transform: uppercase; color: var(--ink); }
 #rd-call.demand .rd-id span { display: block; margin-top: 4px; font: 400 18px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); }
 #rd-call.demand .rd-text { margin: 20px 0 0; font: 400 19px/1.5 var(--font-display); color: var(--ink); white-space: pre-line; max-width: 52ch; }
-#rd-call.demand .rd-terms { margin: 22px 0 0; padding-top: 18px; border-top: 1px solid rgba(var(--halo), .28); font: 400 18px/1.35 var(--font-display); letter-spacing: 0; color: var(--ochre-deep); }
+#rd-call.demand .rd-terms { margin: 22px 0 0; padding-top: 18px; border-top: 1px solid rgba(var(--halo), .28); font: 400 18px/1.35 var(--font-display); letter-spacing: 0; color: var(--ochre); }
 #rd-call.demand .rd-terms[hidden] { display: none; }
 #rd-call.demand .rd-list { display: flex; flex-direction: row; flex-wrap: wrap; gap: 14px; margin-top: 16px; }
 #rd-call.demand .rd-c { flex: 1 1 0; min-width: 190px; display: grid; grid-template-columns: 34px minmax(0, 1fr); grid-template-areas: "k l" "m m"; align-items: center; column-gap: 12px; row-gap: 8px;
@@ -555,7 +555,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #rd-call.demand .rd-l { grid-area: l; min-width: 0; font: 700 19px/1.15 var(--font-head); letter-spacing: .05em; text-transform: uppercase; color: var(--ink); overflow-wrap: break-word; }
 #rd-call.demand .rd-more { grid-area: m; min-width: 0; font: 400 18px/1.3 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-2); }
 #rd-call.demand .rd-more .cq-ok { color: var(--teal-hi); }
-#rd-call.demand .rd-more .cq-cost { color: var(--ochre-deep); }
+#rd-call.demand .rd-more .cq-cost { color: var(--ochre); }
 #rd-call.demand .rd-more .cq-bad { color: var(--alert-text); }
 #rd-call.demand .rd-more .g-need { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); }
 #rd-call.demand .rd-c.first { --rim: var(--rim-cyan); border-image-source: var(--ngn-cyan-hi); }

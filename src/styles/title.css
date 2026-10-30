@@ -30,7 +30,7 @@
 
 /* the word: the amber mark, wide-set letters, and the line under them */
 .st-brand { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: clamp(12px, 1.4vw, 20px); align-items: center; justify-self: start; padding: 10px 64px 10px 10px; margin: -10px; background: radial-gradient(ellipse at 38% 55%, rgba(var(--shade-rgb), .8), rgba(var(--shade-rgb), 0) 76%); }
-.st-mark { grid-row: 1 / span 2; width: clamp(40px, 4.4vw, 68px); height: auto; fill: var(--logo); filter: drop-shadow(0 2px 12px rgba(var(--black-rgb), .5)); }
+.st-mark { grid-row: 1 / span 2; width: clamp(40px, 4.4vw, 68px); height: auto; fill: var(--pick); filter: drop-shadow(0 2px 12px rgba(var(--black-rgb), .5)); }
 .st-w { font: 600 clamp(30px, 3.5vw, 52px)/1 var(--font-head); letter-spacing: .36em; text-transform: uppercase; color: var(--industrial-white); text-shadow: 0 2px 16px rgba(var(--black-rgb), .55); }
 .st-tag { font: 500 clamp(11px, .95vw, 14px)/1 var(--font-rail); letter-spacing: .5em; text-transform: uppercase; color: var(--ink); margin-top: 6px; padding-left: .1em; text-shadow: 0 1px 8px rgba(var(--black-rgb), .7); }
 
