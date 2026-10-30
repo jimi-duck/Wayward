@@ -27,4 +27,10 @@ export const POSTJUMP: Record<string, string> = {
   'Wait for the clerks.': 'Auf die Schreiber warten.',
   'Holding · the clerks are slow': 'Wartet · die Schreiber sind langsam',
   'Not your file to wait for.': 'Auf diese Akte wartest du nicht.',
+  '“And you’re running dry. The Frontier depot is on your way. Fill the tank there, then the gate.”': '„Und dein Tank ist leer. Das Frontier-Depot liegt auf dem Weg. Mach dort den Tank voll, dann ab zum Tor.“',
+  '“And you’re running dry, with nothing to pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”': '„Und dein Tank ist leer, und Geld für Fluid hast du keins. Bau unterwegs Adergestein ab. Die Raffinerie füllt zuerst den Tank.“',
+  'Hull reported stolen': 'Schiff als gestohlen gemeldet',
+  'Kellern has called in Custody': 'Kellern hat Custody gerufen',
+  'Refuel at {port}': 'Tanken bei {port}',
+  'Refuel at the supply depot': 'Am Versorgungsdepot tanken',
 };

@@ -23,7 +23,8 @@ function sortie(pace: SortieDef['pace'], quiet = false): World {
     calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {},
   });
   plot(j, lanesFrom(j.chart, j.at)[0]!.to.id);
-  const def = { ...sortieDef(j), pace, quiet, calloway: Infinity, story: null, place: null };
+  // the pace alone: the first system's own hold until Sam's code is tested in postjump.test.ts
+  const def = { ...sortieDef(j), first: false, pace, quiet, calloway: Infinity, story: null, place: null };
   const w = new World(5, { mode: 'breakout', sortie: def, carry: j.carry });
   w.cardNext = Infinity;
   w.portCalled = true;

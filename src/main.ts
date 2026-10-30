@@ -7,6 +7,7 @@ import { ZOOMS } from './render/camera';
 import { QualityGovernor, tierIndex } from './render/quality';
 import { createRenderer, fitRenderer, matchTier } from './render/renderer';
 import { Sector } from './render/sector';
+import { lockLifted } from './sim/postjump';
 import { World } from './sim/world';
 import { grants, loadProfile, recordJourney, recordRun, saveProfile } from './meta/profile';
 import { chapterSave, clearJourney, exportJourney, hasBackup, importJourney, loadJourney, restartChapter, restoreJourney, saveJourney, saveUnreadable } from './meta/save';
@@ -321,7 +322,7 @@ function boot(review: typeof import('./review') | null): void {
     setPaused(false);
     const d = world.sortie;
     if (d.home) world.train(); // every new Story journey starts with the training
-    hud.note(world, d.home ? t('Clear the yards · head for the Jump Gate') : d.first ? t('Dock at the company port') : `${d.name} · ${t('Need {n} jump fluid to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
+    hud.note(world, d.home ? t('Clear the yards · head for the Jump Gate') : d.first && !lockLifted(j.carry.flags) ? t('Dock at the company port') : `${d.name} · ${t('Need {n} jump fluid to jump to {dest}', { n: d.jumpCost, dest: t(d.dest) })}`);
   };
   /** Between systems: the chart, to plot the next jump. */
   const openChart = (lines: string[]) => {
@@ -630,8 +631,9 @@ function boot(review: typeof import('./review') | null): void {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
       if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly')); }
-      // the Story explains the Heat bar once: when training is over (or there is none) and the opening chase is behind her, the first time flying free (out of the safe rings) with nothing else open
-      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && !world.bk.chase && world.phase === 'play' && !world.safe && world.alive && !loop.paused && !panelOpen()) {
+      // the Story explains the Heat bar once: when training is over (or there is none) and the opening chase is behind her, the first time flying free (out of the safe rings) with nothing else open;
+      // past Cerro, not before the hull is reported stolen, so it explains the pursuit as it starts
+      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && !world.bk.chase && !world.beforeReport && world.phase === 'play' && !world.safe && world.alive && !loop.paused && !panelOpen()) {
         profile.heatTold = true;
         persist(profile);
         loop.paused = true;

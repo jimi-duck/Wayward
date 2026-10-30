@@ -5,9 +5,10 @@ import type { SortieResult } from '../src/sim/breakout';
 import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
-import { lockLifted, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
+import { lockLifted, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
+import { CARD_BY_ID } from '../src/sim/comms';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
 
@@ -105,6 +106,73 @@ describe('the objective follows the owner lock', () => {
     j.carry.flags.push('ship_stolen');
     const w = level(j);
     expect(guideTarget(w)).toMatchObject({ kind: 'lane' });
+  });
+});
+
+describe('after Sam’s code', () => {
+  const custody = (w: World) => w.aliens.filter((a) => !a.ward && !a.escort && !a.extra);
+  it('nobody hunts her before the unlock, however long she takes', () => {
+    const w = quiet();
+    let hunted = 0;
+    let calls = 0; // chance cards
+    // the old pace sent the first hull 150 s in, while the recovery autopilot still had the helm
+    for (let i = 0; i < 400 / STEP; i++) {
+      if (w.phase === 'comms') { if (CARD_BY_ID[w.comms!.def.id]?.trigger === undefined || CARD_BY_ID[w.comms!.def.id]?.trigger === 'chance') calls++; w.answer(0); continue; }
+      w.ship.invuln = 1; w.step(STEP, input());
+      hunted = Math.max(hunted, custody(w).length);
+    }
+    expect(lockLifted(w.flags)).toBe(false);
+    expect(hunted).toBe(0);
+    // and no chance card on top of the story here
+    expect(calls).toBe(0);
+  });
+
+  it('then Sam names the depot, the hull is reported stolen, and only then does Custody come', () => {
+    const w = quiet();
+    run(w, 200);
+    w.fuel = 0;
+    w.cyrite = 36;
+    w.flags.add('ship_stolen');
+    expect(w.bk!.docks).toBe(0);
+    expect(refuelAt(w)).toBe(true);
+    expect(goalOf(w).goal).toBe('Refuel at the supply depot');
+    const said: string[] = [];
+    let firstHull = Infinity;
+    const t0 = w.runTime;
+    while (w.runTime - t0 < STOLEN.pursuit + 20) {
+      if (w.phase === 'comms') { w.answer(0); continue; }
+      w.ship.invuln = 1; w.step(STEP, input());
+      for (const e of w.events) {
+        if (e.type === 'ping' && e.id === 'stolen_sam') said.push(`sam@${Math.round(w.runTime - t0)}`);
+        if (e.type === 'storyNotice' && e.headline === STOLEN_NOTICE[0]) said.push(`notice@${Math.round(w.runTime - t0)}`);
+      }
+      w.events.length = 0;
+      if (firstHull === Infinity && custody(w).length) firstHull = w.runTime - t0;
+    }
+    expect(said).toEqual([`sam@${STOLEN.sam}`, `notice@${STOLEN.notice}`]);
+    expect(firstHull).toBeGreaterThanOrEqual(STOLEN.pursuit - 0.1);
+    expect(STOLEN_SAM).toMatch(/depot/);
+  });
+
+  it('no pursuit banner in the first system: its own notice says it', () => {
+    const w = quiet();
+    w.flags.add('ship_stolen');
+    let banner = false;
+    for (let i = 0; i < Math.round(120 / STEP); i++) {
+      if (w.phase === 'comms') { w.answer(0); continue; }
+      w.ship.invuln = 1; w.step(STEP, input());
+      if (w.events.some((e) => e.type === 'storyNotice' && /Custody pursuit/.test(e.headline))) banner = true;
+      w.events.length = 0;
+    }
+    expect(banner).toBe(false);
+  });
+
+  it('once the tank is full, the gate is the objective again', () => {
+    const w = quiet();
+    w.flags.add('ship_stolen');
+    w.fuel = w.jumpCost;
+    expect(refuelAt(w)).toBe(false);
+    expect(goalOf(w).goal).toMatch(/Jump Gate/);
   });
 });
 

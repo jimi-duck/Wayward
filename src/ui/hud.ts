@@ -21,7 +21,7 @@ import { damageWord } from './panels';
 import { Notifier, type Notice } from './notify';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
-import { lockLifted } from '../sim/postjump';
+import { lockLifted, refuelAt } from '../sim/postjump';
 import { BREACH_BEAT, SAM_BEAT, WAKE_BEAT } from '../content/story';
 import { recovering } from '../sim/recovery';
 
@@ -668,6 +668,12 @@ export class Hud {
           text($('obj-t'), t('Dock at the company port'));
           text($('obj-left'), range(da));
           ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
+        } else if (refuelAt(world)) {
+          // the first system past Cerro with a short tank: the depot is the one place to go, the gate comes after
+          const pt = bk.port!, dp = Math.hypot(pt.x - s.x, pt.z - s.z);
+          text($('obj-t'), t('Refuel at {port}', { port: pt.name }));
+          text($('obj-left'), range(dp));
+          ticks($('obj-p'), Math.max(0, 1 - dp / (bk.def.lane * 0.65)), 30);
         } else {
           // a stop's script names the next place (sim/script.ts); the chase and an empty tank still come first
           const named = !bk.chase && ready ? world.storyObjective?.main : undefined;
@@ -685,7 +691,7 @@ export class Hud {
         if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);
         const sc = world.stage;
         if (sc?.onScope) lines.push(`${t('On the scope')} · ${t(sc.def.name)} · <b>${range(Math.hypot(sc.x - s.x, sc.z - s.z))}</b>`);
-        if (bk.port && bk.docks === 0) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
+        if (bk.port && bk.docks === 0 && !refuelAt(world)) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
         const html = lines.slice(0, 2).map((l) => `<li>${l}</li>`).join('');
         const list = $('obj-list');
         if (list.innerHTML !== html) list.innerHTML = html;
