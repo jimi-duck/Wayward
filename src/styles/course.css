@@ -5,7 +5,7 @@
    road needs: the pursuit's tone. */
 .co-purs { margin: 0; font: 600 13px/1.25 var(--font-rail); letter-spacing: .04em; color: var(--cy); }
 .co-purs.amber { color: var(--caution); }
-.co-purs.red { color: var(--danger); }
+.co-purs.red { color: var(--alert-text); }
 .co-purs.rest { color: var(--ink-2); }
 .ch-lane.done { stroke: rgba(var(--blue-rgb), .55); }
 .ch-s.past .ch-name { fill: var(--ink-2); }

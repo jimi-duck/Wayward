@@ -42,7 +42,7 @@
 .ch-res b { font: 600 21px/1 var(--font-rail); letter-spacing: .04em; color: var(--ink); }
 .ch-res .low b, .ch-res .low .cg { color: var(--caution); }
 .ch-res .crit { box-shadow: inset 0 0 0 1px var(--alert-dim); background: rgba(var(--alert-red-rgb), .1); }
-.ch-res .crit b, .ch-res .crit .k, .ch-res .crit .cg { color: var(--danger); }
+.ch-res .crit b, .ch-res .crit .k, .ch-res .crit .cg { color: var(--alert-text); }
 /* the body: the map takes the larger share */
 .ch-body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 16px; min-height: 220px; }
 .ch-mapw { position: relative; min-height: 220px; min-width: 0; border: 1px solid var(--line); background:
@@ -69,12 +69,12 @@
 .chip { flex: none; padding: 4px 8px; border: 1px solid; font: 600 11px/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
 .chip.d0 { color: var(--cy); border-color: var(--cy-dim); background: var(--cy-ghost); }
 .chip.d1 { color: var(--caution); border-color: var(--caution-dim); background: rgba(var(--caution-rgb), .1); }
-.chip.d2 { color: var(--danger); border-color: var(--alert-dim); background: rgba(var(--alert-red-rgb), .14); }
+.chip.d2 { color: var(--alert-text); border-color: var(--alert-dim); background: rgba(var(--alert-red-rgb), .14); }
 .ch-o2 { display: flex; flex-wrap: wrap; gap: 0 .55em; font: 400 14px/1.3 var(--font-rail); letter-spacing: .02em; color: var(--ink-2); }
 .ch-o2 > span + span::before { content: "·"; margin-right: .55em; color: var(--ink-2); }
 .ch-o2 .short, .ch-o2 .heat { color: var(--caution); }
 .ch-say { margin: 0; font: 400 13px/1.3 var(--font-display); color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ch-say.hot { color: var(--danger); }
+.ch-say.hot { color: var(--alert-text); }
 /* the strip: the warning, the one action and its keys, one row */
 .ch-foot { position: sticky; bottom: 0; z-index: 1; display: flex; align-items: center; gap: 8px 16px; padding: 8px 14px; border: 1px solid var(--line); border-left: 3px solid var(--pick); background: var(--glass-ink); }
 .ch-sum { display: none; min-width: 0; }
@@ -84,7 +84,7 @@
 .ch-warn { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 2px 16px; }
 .ch-alerts { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 2px 16px; }
 .ch-alerts:empty { display: none; }
-.ch-alerts li { display: flex; align-items: center; gap: 7px; font: 600 13px/1.25 var(--font-rail); letter-spacing: .04em; color: var(--danger); }
+.ch-alerts li { display: flex; align-items: center; gap: 7px; font: 600 13px/1.25 var(--font-rail); letter-spacing: .04em; color: var(--alert-text); }
 .ch-alerts li::before { content: "▲"; font-size: 9px; }
 .ch-why { margin: 0; font: 600 13px/1.25 var(--font-rail); letter-spacing: .04em; color: var(--caution); }
 .ch-why[hidden] { display: none; }
@@ -144,12 +144,12 @@
 .ch-filec { margin-left: 8px; padding: 1px 5px; border: 1px solid var(--hud-dim); border-radius: 2px; color: var(--hud); }
 .ch-goal { margin: 0; font: 600 calc(var(--fs) * 1.05 * 1.18)/1.35 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--cy); }
 .ch-hunt, .ch-netl { margin: 0; font: 600 calc(var(--fs) * .95 * 1.18)/1.35 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
-.ch-hunt { color: var(--danger); }
+.ch-hunt { color: var(--alert-text); }
 .ch-netl { color: var(--ink-2); }
 .ch-file, .ch-asks { margin: 0; font: 400 calc(var(--fs) * .85)/1.35 var(--font-mono); letter-spacing: .05em; color: var(--ink-2); }
 .ch-notice { margin: 0; font: 600 calc(var(--fs) * .85 * 1.18)/1.35 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); }
 .ch-notice.t-toll, .ch-notice.t-hunters { color: var(--caution); }
-.ch-notice.t-captain { color: var(--danger); }
+.ch-notice.t-captain { color: var(--alert-text); }
 /* the map: here, the lanes out (coloured by how hard the far end is, the selected one amber), the way on to the gate */
 .ch-grid { stroke: rgba(var(--white-rgb), .035); stroke-width: 1; }
 .ch-dust { fill: var(--ink-2); }
@@ -175,7 +175,7 @@
 .ch-sub { font: 600 11px var(--font-rail); letter-spacing: .04em; fill: var(--ink-2); }
 .ch-s.sel .ch-name { fill: var(--pick-hi); }
 .ch-s.here .ch-name { fill: var(--ink); }
-.ch-s.net .ch-name { fill: var(--danger); }
+.ch-s.net .ch-name { fill: var(--alert-text); }
 .ch-s.out { cursor: pointer; }
 .ch-tagm { font: 600 10px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; fill: var(--on-blue); }
 .ch-tagb { fill: var(--cy); }
