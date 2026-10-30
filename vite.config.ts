@@ -16,6 +16,7 @@ export default defineConfig({
     sourcemap: true,
     // Three.js is most of the download and changes only on an upgrade, so it
     // ships as its own file and stays cached while the game code changes.
+    // Vite 8 builds with Rolldown, so this key and codeSplitting are right; rollupOptions would not apply.
     rolldownOptions: {
       output: {
         codeSplitting: {

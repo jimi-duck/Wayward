@@ -8,6 +8,10 @@
 //   Krail, chits (Chits), the Scatter and every name stay as they are.
 
 export const UI: Record<string, string> = {
+  // ── an uncaught error ──
+  'Something went wrong': 'Etwas ist schiefgelaufen',
+  'Your save is safe. Reload to carry on.': 'Dein Stand ist sicher. Lad neu, um weiterzumachen.',
+  'Reload': 'Neu laden',
   // ── the start card ──
   '<li>Mine <b class="v">violet asteroids</b> for Cyrite (torpedoes yield half)</li><li>Fill the tank with <b class="v">jump fluid</b></li><li>Jump from the <b class="a">Jump Gate</b></li>':
     '<li>Baue <b class="v">violette Asteroiden</b> für Cyrite ab (Torpedos bringen die Hälfte)</li><li>Füll den Tank mit <b class="v">Sprungfluid</b></li><li>Spring am <b class="a">Sprungtor</b></li>',

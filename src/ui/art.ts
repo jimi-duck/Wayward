@@ -29,6 +29,8 @@ export function artImg(slot: SlotId, id: string, cls = 'art'): HTMLImageElement 
   img.alt = '';
   img.decoding = 'async';
   img.draggable = false;
+  // a picture that fails to load leaves its slot empty rather than a broken-image mark
+  img.addEventListener('error', () => img.remove(), { once: true });
   img.src = url;
   return img;
 }
