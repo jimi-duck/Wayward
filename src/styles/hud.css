@@ -453,26 +453,19 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 @keyframes hud-blink { 50% { opacity: .35; } }
 @keyframes hud-hit { 0%, 30% { background: rgba(var(--alert-red-rgb), .28); } }
 
-/* the notices (ui/notify.ts): compact tinted plates at the head of the lower-right column, above the banner, the log, the stores, torpedoes, mines and the Wanted callout, so they never cover any of them; two at most, a coloured bar and title and a quiet reason each; they never take input */
+/* the notices (ui/notify.ts): the alert plate's own style (a glass plate, chamfered, right-aligned capitals, a coloured headline over a white line), at the head of the lower-right column, above the banner, the log, the stores, torpedoes, mines and the Wanted callout, so they never cover any of them; two at most; they never take input */
 #notice { display: grid; gap: 8px; justify-self: end; width: min(320px, calc(100vw - 48px)); box-sizing: border-box; pointer-events: none; }
 #notice:empty { display: none; }
-.nt { --tone: var(--alert); display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 14px 10px 12px; box-sizing: border-box; background: linear-gradient(color-mix(in srgb, var(--tone) 14%, transparent), color-mix(in srgb, var(--tone) 14%, transparent)), rgba(8, 15, 20, .88); border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent); opacity: 0; translate: 0 6px; transition: opacity .15s ease-out; }
+.nt { --tone: var(--alert); --lit: var(--alert); --edge: rgba(var(--alert-rgb), .6); --tint: linear-gradient(rgba(var(--threat-deep-rgb), .55), rgba(var(--threat-deep-rgb), .5)); padding: 6px 12px 7px; text-align: right; opacity: 0; translate: 0 6px; transition: opacity .15s ease-out; }
 .nt.on { opacity: 1; translate: 0 0; transition: opacity .2s ease-out, translate .2s ease-out; }
 .nt.out { translate: 0 0; }
-.nt.warning { --tone: var(--caution); }
-.nt.arrival { --tone: var(--cy); }
-.nt::before { content: none; }
-.nt-m { display: grid; place-items: center; width: 30px; height: 30px; background: color-mix(in srgb, var(--tone) 32%, transparent); color: var(--tone); font: 700 17px/1 var(--font-display); }
-.nt-m::before { content: "✕"; }
-.nt.denied .nt-m { clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
-.nt.warning .nt-m { clip-path: polygon(50% 2%, 98% 94%, 2% 94%); padding-top: 6px; }
-.nt.warning .nt-m::before { content: "!"; }
-.nt.arrival .nt-m { border-radius: 50%; }
-.nt.arrival .nt-m::before { content: "✓"; }
-.nt-b { display: grid; gap: 3px; min-width: 0; }
-.nt-t { font: 600 15px/1.3 var(--font-display); color: var(--tone); overflow-wrap: anywhere; }
-.nt-s { font: 400 13px/1.4 var(--font-display); color: #cfd2c8; overflow-wrap: anywhere; }
-@media (max-height: 520px) { #notice { width: min(224px, calc(100vw - 48px)); gap: 6px; } .nt-t { font-size: 13px; } .nt-s { font-size: 12px; } .nt { padding: 7px 12px 7px 8px; grid-template-columns: 24px minmax(0, 1fr); gap: 9px; } .nt-m { width: 24px; height: 24px; font-size: 14px; } }
+.nt.warning { --tone: var(--caution); --lit: var(--caution); --edge: var(--caution-dim); --tint: linear-gradient(transparent, transparent); }
+.nt.arrival { --tone: var(--cy); --lit: var(--cy); --edge: var(--cy-dim); --tint: linear-gradient(transparent, transparent); }
+.nt-b { display: grid; gap: 3px; justify-items: end; min-width: 0; }
+.nt-t { font: 600 calc(var(--fs) * 1.3)/1.15 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--tone); overflow-wrap: anywhere; text-wrap: balance; }
+.nt.denied .nt-t { font-size: calc(var(--fs) * 1.45); letter-spacing: .22em; }
+.nt-s { font: 600 calc(var(--fs) * 1.05)/1.25 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); overflow-wrap: anywhere; }
+@media (max-height: 520px) { #notice { width: min(224px, calc(100vw - 48px)); gap: 6px; } .nt { padding: 5px 10px 6px; } .nt-t, .nt.denied .nt-t { font-size: 12px; letter-spacing: .1em; } .nt-s { font-size: 10.5px; letter-spacing: .08em; } }
 @media (prefers-reduced-motion: reduce) { .nt, .nt.on { translate: 0 0; transition-property: opacity; } }
 #cond .good { color: var(--cy); }
 #cond .bad { color: var(--caution); }
