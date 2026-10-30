@@ -26,6 +26,7 @@ export class HeatNote {
       h('p', '', t('Every Continuance ship you fight raises your Wanted level. Lingering in a system raises it too. The higher it climbs, the more ships the Continuance sends and the greater the risk of getting trapped behind a blockade.')),
       h('div', 'hn-bar', '', h('span', 'ht-l', t('Wanted')), bar),
       h('p', '', t('Your Wanted level is shown in the bottom-right corner.')),
+      h('p', '', t('Wanted is local to this system: leaving it resets it. Calloway follows your route across systems instead.')),
     );
     const go = $('hn-go');
     go.textContent = t('Got it');

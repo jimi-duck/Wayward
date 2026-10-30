@@ -1,3 +1,4 @@
+import { expects } from '../sim/calloway';
 import { courseView, type Course } from '../sim/course';
 import type { Journey } from '../sim/journey';
 import { halfDays } from '../sim/hunt';
@@ -74,7 +75,7 @@ export class CoursePanel {
     bar.setAttribute('aria-valuenow', String(total - c.goal.jumps));
     $('co-gate').replaceChildren(h('span', 'k', `${t('Leg goal')} · ${t(c.goal.name)}`), bar, h('b', 'n', plural(c.goal.jumps, '{n} jump', '{n} jumps')), h('p', 'ch-quest', t(c.goal.purpose)));
     // one short line about the stop she jumps to
-    $('co-blurb').replaceChildren(h('b', '', t(c.next.name)), ` · ${t(c.next.purpose)}`);
+    $('co-blurb').replaceChildren(h('b', '', t(c.next.name)), ` · ${t(c.next.purpose)}`, ...(expects(j.chart, j.at, c.to.id, j.hunt.hunch) ? [h('span', 'chip her', t('Calloway may expect this'))] : []));
     const purs = $('co-purs');
     purs.textContent = pursuitLine(c.pursuit);
     purs.className = `co-purs ${c.pursuit.hidden ? 'rest' : c.pursuit.tone}`;

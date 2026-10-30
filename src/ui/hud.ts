@@ -24,6 +24,7 @@ import { BREAK_COOLDOWN } from '../sim/tuning';
 import { lockLifted, refuelAt } from '../sim/postjump';
 import { BREACH_BEAT, SAM_BEAT, WAKE_BEAT } from '../content/story';
 import { recovering } from '../sim/recovery';
+import { wantedText } from './pressure';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // The ship and the world come first; the HUD answers five questions and
@@ -67,6 +68,8 @@ const SHIP_WARN = {
 const THREAT_NEAR = 320;
 /** Seconds before the log says again that the self-repair has started. */
 const MEND_QUIET = 10;
+/** How long the Wanted callout stays. */
+const HEAT_CALL_S = 6;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron rock broken', rich: 'Rich rock broken', volatile: 'Volatile rock broken' };
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
@@ -256,6 +259,7 @@ export class Hud {
           this.notify(world, { type: 'denied', headline: 'Guns cold', reason, key: 'guns' });
           break;
         }
+        case 'wanted': case 'pursuitUp': case 'eliteSeen': this.heatCall(wantedText(e, false), e.type === 'wanted' ? e.inbound : true); break;
         case 'dockDenied':
           this.notify(world, { type: 'denied', headline: 'Docking denied', reason: 'Hostiles engaged · clear the fight to dock', key: 'dock' });
           break;
@@ -810,6 +814,19 @@ export class Hud {
     el.classList.remove(cls);
     void el.offsetWidth;
     el.classList.add(cls);
+  }
+
+  private heatTimer = 0;
+
+  /** The Wanted bar's callout: gold, or red when ships are on their way; it ends with what to do. */
+  private heatCall(line: string, inbound: boolean): void {
+    const el = $('heat-call');
+    text(el, line);
+    el.hidden = false;
+    el.classList.toggle('hot', inbound);
+    this.retrigger(el, 'on');
+    clearTimeout(this.heatTimer);
+    this.heatTimer = window.setTimeout(() => { el.hidden = true; }, HEAT_CALL_S * 1000);
   }
 
   private flashHit(): void {

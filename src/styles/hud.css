@@ -670,3 +670,12 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 :root:not(.touch-ui) #plate .sys-row > .lbl { font-size: var(--fs-min); }
 /* a warning state: the shield is gone, the next hit is the hull */
 #log-lines p.hit.warn span { color: var(--caution); }
+
+/* Wanted's callout, at the bar: gold, or red when ships are on their way. It ends with what to do. */
+#heat-call { position: absolute; right: calc(100% + 14px); bottom: -4px; width: max-content; max-width: min(300px, 36vw); padding: 5px 9px; border-right: 2px solid var(--caution); background: rgba(var(--void-rgb), .78);
+  font: 600 max(12px, calc(var(--fs) * 1.1))/1.25 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; text-align: right; color: var(--caution); pointer-events: none; }
+#heat-call.hot { border-right-color: var(--alert); color: var(--alert-text); background: rgba(var(--threat-deep-rgb), .7); }
+#heat-call[hidden] { display: none; }
+#heat-call.on { animation: heat-call 6s linear forwards; }
+@keyframes heat-call { 0% { opacity: 0; } 4% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { #heat-call.on { animation: none; } }

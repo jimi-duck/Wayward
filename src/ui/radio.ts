@@ -4,11 +4,13 @@ import type { Caller, Open } from '../sim/comms';
 import type { GameEvent } from '../sim/events';
 import { artOf, oddsWord } from './comms';
 import { artImg, artUrl } from './art';
+import { CALLOWAY_ID } from '../content/art';
 import { icon } from './icons';
 import { NEON_CSS } from './colors';
 import { $, h } from './dom';
 import { INK } from './palette';
 import { jobLine } from './jobline';
+import { callowayText } from './pressure';
 import { t } from '../i18n';
 
 /** What a job's call can say of its terms, read from the scene it opens: the pay (best case) and the seconds it allows. */
@@ -146,12 +148,25 @@ export class Radio {
   events(evs: readonly GameEvent[]): void {
     for (const e of evs) {
       if (e.type === 'ping') this.line(e);
+      else if (e.type === 'callowayReads' || e.type === 'callowayClose' || e.type === 'callowayLost') this.herLine(callowayText(e));
     }
+  }
+
+  /** Calloway, as herself: her portrait and name, then what she has read of your route (sim/pressure.ts). Not at the Wanted bar. */
+  private herLine(text: string): void {
+    const box = $('rd-line');
+    this.line({ type: 'ping', id: 'calloway_route', from: 'Calloway', caller: 'calloway', text, moment: 'calm', system: '' });
+    box.classList.add('her');
+    $('rdl-from').style.color = '';
+    const face = artImg('captain', CALLOWAY_ID, 'rdl-face');
+    if (face) box.prepend(face);
   }
 
   private line(e: Extract<GameEvent, { type: 'ping' }> | null): void {
     const box = $('rd-line');
     clearTimeout(this.lineTimer);
+    box.classList.remove('her');
+    box.querySelector('.rdl-face')?.remove();
     if (!e) { box.hidden = true; return; }
     $('rdl-from').textContent = t(e.from);
     $('rdl-from').style.color = CALLER_CSS[e.caller as Caller] ?? INK.white2;

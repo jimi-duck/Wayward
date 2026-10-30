@@ -246,7 +246,7 @@ export function sortieDef(j: Journey): SortieDef {
     place: pd ? { name: pd.name, text: pd.text, plays: pd.plays, id: pd.id } : null,
     exp: expOf(j.chart, s.id, j.seed),
     rules: PROFILES[longIndex(j.chart, regionOf(s))]?.rules,
-    nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer, flags: j.carry.flags }),
+    nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer, flags: j.carry.flags, was: j.hunt.hunch && j.trail.length > 1 ? hunchOf(j.chart, j.trail.slice(0, -1), j.carry.flags) : undefined }),
     story: quiet ? null : dueBeat(j),
     situation: liveSituation(j.chart, s.id)?.id ?? null,
     script: scriptKey(j.chart, s),

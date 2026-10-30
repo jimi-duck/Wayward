@@ -1562,3 +1562,12 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 @media (max-width: 520px) { .op-facts { grid-template-columns: 1fr; } }
 .bb-v { white-space: nowrap; }
 @media (max-width: 700px), (max-height: 520px) { .bb-v small { display: none; } .bb-v { font-size: 12px; } }
+
+/* Calloway's lines on the radio: her portrait and name, in the Office's colour, never at the Wanted bar */
+.rd-line.her { --her: var(--faction-office); border-left-color: var(--her); align-items: center; gap: 3px 10px; }
+.rd-line.her b { color: var(--her); }
+.rd-line .rdl-face { width: 40px; height: 40px; flex: none; object-fit: cover; border: 1px solid var(--her, var(--cy-dim)); }
+@media (max-height: 520px) { .rd-line .rdl-face { width: 30px; height: 30px; } }
+/* the chart's chip on a stop her read expects */
+.chip.her { color: var(--faction-office); border-color: var(--faction-office); }
+.ch-o1 .chip.her, .co-blurb .chip.her { margin-left: 6px; }
