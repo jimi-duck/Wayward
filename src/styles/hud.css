@@ -74,7 +74,7 @@
 #objective.on { display: grid; }
 .obj-k { font: 600 calc(var(--fs) * 1.1)/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--hud); }
 .obj-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-#obj-t { font: 600 calc(var(--fs) * 1.95)/1.05 var(--font-rail); letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
+#obj-t { text-wrap: balance; font: 600 calc(var(--fs) * 1.95)/1.05 var(--font-rail); letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
 #obj-left { white-space: nowrap; font: 600 calc(var(--fs) * 1.45)/1 var(--font-rail); letter-spacing: .06em; color: var(--amber); font-variant-numeric: tabular-nums; }
 #obj-p { --n: 30; --on: var(--amber); --off: var(--amber-dim); height: 3px; margin-top: 2px; }
 /* in the Story the lane is a place, not a count: the line under the title says how far */
@@ -655,3 +655,13 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
   .touch-ui #obj-t { font-size: 14px; letter-spacing: .08em; }
 }
 @media (prefers-reduced-motion: reduce) { #sec-host::before { animation: none; } .bar { transition: none; } }
+
+/* desktop: small mid-flight text keeps a 12 px floor (the phone HUD has its own sizes) */
+:root:not(.touch-ui) #obj-s { font-size: max(var(--fs-min), calc(var(--fs) * 1.15)); }
+:root:not(.touch-ui) #hdg { font-size: max(var(--fs-min), calc(var(--fs) * 1.1)); }
+:root:not(.touch-ui) #hdg-rel { font-size: max(var(--fs-min), calc(var(--fs) * 1.2)); }
+:root:not(.touch-ui) #log-lines p { font-size: max(var(--fs-min), calc(var(--fs) * 1.1)); }
+:root:not(.touch-ui) .sys-foot .lbl, :root:not(.touch-ui) .ht-l { font-size: var(--fs-min); }
+:root:not(.touch-ui) #plate .sys-row > .lbl { font-size: var(--fs-min); }
+/* a warning state: the shield is gone, the next hit is the hull */
+#log-lines p.hit.warn span { color: var(--caution); }

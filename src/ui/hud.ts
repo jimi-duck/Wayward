@@ -267,7 +267,7 @@ export class Hud {
           break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':
-          this.note(world, e.left > 0 ? t('Shield took it · {n} left', { n: e.left }) : t('Shield down'), 'hit');
+          this.note(world, e.left > 0 ? t('Shield took it · {n} left', { n: e.left }) : t('Shield down'), e.left > 0 ? 'hit' : 'hit warn');
           this.flashHit();
           break;
         case 'shieldUp': if (e.charges >= world.stats.shieldMax) this.note(world, t('Shield up'), 'gain'); break;

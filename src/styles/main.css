@@ -66,6 +66,7 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
   --fs: clamp(8.5px, .6vw + .9px, 10px);
+  --fs-min: 12px; /* the floor for readouts that matter mid-flight (desktop HUD) */
   color-scheme: dark;
 }
 
