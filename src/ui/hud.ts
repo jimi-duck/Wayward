@@ -18,7 +18,7 @@ import { Heading } from './guide';
 import { range, Targeting } from './targeting';
 import { num, plural, t } from '../i18n';
 import { damageWord } from './panels';
-import { Notifier, type Notice } from './notify';
+import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
 import { lockLifted, refuelAt } from '../sim/postjump';
@@ -122,7 +122,7 @@ export class Hud {
   private radarClock = 1;
   private bannerT = 0;
   /** The quiet centre message; what it cannot show goes to the corner log. */
-  private readonly notifier = new Notifier(() => $('notice'), (l) => this.cornerLine(l));
+  private readonly notifier = new Notifier(new NoticePlates(() => $('notice')), (l) => this.cornerLine(l));
   private world: World | null = null;
   private gain = 0;
   private gainT = 0;
