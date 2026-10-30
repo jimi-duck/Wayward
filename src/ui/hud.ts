@@ -669,11 +669,10 @@ export class Hud {
           text($('obj-left'), range(da));
           ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
         } else if (refuelAt(world)) {
-          // the first system past Cerro with a short tank: the depot is the one place to go, the gate comes after
-          const pt = bk.port!, dp = Math.hypot(pt.x - s.x, pt.z - s.z);
-          text($('obj-t'), t('Refuel at {port}', { port: pt.name }));
-          text($('obj-left'), range(dp));
-          ticks($('obj-p'), Math.max(0, 1 - dp / (bk.def.lane * 0.65)), 30);
+          // the first system past Cerro with a short tank: fill it first (buy at the depot or mine), the gate comes after
+          text($('obj-t'), t('Fill the tank'));
+          text($('obj-left'), `${Math.floor(world.fuel)}/${world.jumpCost}`);
+          ticks($('obj-p'), world.fuel / world.jumpCost, 30);
         } else {
           // a stop's script names the next place (sim/script.ts); the chase and an empty tank still come first
           const named = !bk.chase && ready ? world.storyObjective?.main : undefined;
@@ -684,7 +683,11 @@ export class Hud {
         // Lane Control has the helm (sim/recovery.ts): the readout says so, and nothing counts down
         text($('obj-s'), recovering(world.flags) ? t('Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
         const lines: string[] = [];
-        if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
+        if (refuelAt(world)) {
+          // two ways to fill it, on one line (a phone shows only the first): buy, or mine
+          const pt = bk.port!;
+          lines.push(`${t('Buy fluid at {port}', { port: pt.name })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
+        } else if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         if (world.storyObjective?.quiet) lines.push(world.storyObjective.quiet);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
         // a place asleep in the sky: off the course, there if the ship wants it

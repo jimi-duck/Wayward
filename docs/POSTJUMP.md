@@ -57,8 +57,9 @@ One thing at a time, in seconds of play after the lock lifts (`STOLEN`):
 Until the lock lifts nothing hunts her and no hull comes for her (the recovery runs no
 waves), no chance card is dealt in this system at all, and the "Custody pursuit · N days
 behind" notices wait for the next stop. While the tank is short, she can pay and has not
-docked, the objective is "Refuel at Frontier Supply Depot" with the gate as the line
-under it (`refuelAt`); then "Head for the Jump Gate".
+docked, the objective is "Fill the tank" (n/16) with one line under it, "Buy fluid at
+Frontier Supply Depot · range · or mine Cyrite" (`refuelAt`; owner, 30 October 2026:
+mine or buy); then "Head for the Jump Gate".
 
 ## When you fire on the traffic
 
