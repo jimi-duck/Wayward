@@ -145,7 +145,6 @@
       <div id="powers" aria-live="polite"></div>
 
       <!-- the quiet centre message, low between the crosshair and the ship (ui/notify.ts); the alert corner keeps the fact after it fades -->
-      <div id="notice" role="status" aria-live="polite"></div>
 
       <!-- upper centre: the alert, or the most important thing out there (one at a time reads best) -->
       <div id="centre">
@@ -171,6 +170,8 @@
 
       <!-- lower right: the last thing that happened, the bay when it can be opened, what the place does to the ship -->
       <section id="log" class="hud-block" aria-live="off">
+          <!-- the notices (ui/notify.ts): first in this column, so they sit above the banner, the log, the stores, torpedoes, mines and the Wanted callout -->
+          <div id="notice" role="status" aria-live="polite"></div>
           <div id="banner" role="status"><i class="bn-stripes"></i><div class="bn-body"><span class="bn-k"><span id="banner-k">Alarm</span></span><b id="banner-t">Hull breach</b><span class="bn-s" id="banner-s"></span></div></div>
           <div id="mode" class="glass clear" hidden><span class="md-w"><span id="mode-t">Yellow alert</span><small id="mode-s">You are being observed</small></span></div>
         <div id="log-lines"></div>
