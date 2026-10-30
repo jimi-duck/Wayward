@@ -13,6 +13,7 @@ import { icon, nodeIcon } from './icons';
 import { artImg, artUrl } from './art';
 import { opsOf, opsText } from './ops';
 import { tick } from './tick';
+import { tradeRow } from './tradechips';
 import { num, t } from '../i18n';
 
 // ── the refit bay ─────────────────────────────────────────────────────────
@@ -603,6 +604,7 @@ export class BayPanel {
         h('span', 'pc-name', nameOf(n.id)),
         max > 1 ? pips(lv, max, true) : h('span', 'pc-new', t(lv ? 'Fitted' : 'New')),
         h('span', 'pc-text', textOf(n.id, Math.min(max, lv + 1))),
+        ...(why === 'full' ? [] : [tradeRow(w, n.id, true) ?? []].flat()),
         go,
       );
       return card;
@@ -790,7 +792,8 @@ export class BayPanel {
     btn.addEventListener('click', (e) => { e.stopPropagation(); this.install(id); });
     // the climb: what the level after this one will cost, so a ladder that never ends still shows where it goes
     if (more && endlessIn(w, id)) out.push(h('p', 'bi-then', t('The next one costs {n} Cyrite', { n: num(cost(id, lv + 2, false, { ...w.levels, [id]: lv + 1 })) })));
-    out.push(btn);
+    // the whole trade beside the button: what it gives, what it takes, what each jump will cost
+    out.push(h('div', 'bi-buy', '', why === 'full' ? null : tradeRow(w, id), btn));
     el.replaceChildren(...out);
   }
 

@@ -8,6 +8,7 @@ import { REACH_DE } from './reach';
 import { REWRITE } from './rewrite';
 import { ROAD } from './road';
 import { SCENES } from './scenes';
+import { SIGNALS } from './signals';
 import { SPACE } from './space';
 import { STORY } from './story';
 import { UI } from './ui';
@@ -25,7 +26,7 @@ import { OVERHAUL, OVERHAUL_KEEP } from './overhaul';
 //   space  · the shared world's features and expanses (content/features.ts)
 //   scenes · situations: their calls, goals and the Archive's sightings (content/situations.ts)
 
-export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...REACH_DE, ...OVERHAUL };
+export const DE: Record<string, string> = { ...UI, ...WORLD, ...SPACE, ...CARDS, ...STORY, ...SCENES, ...ECONOMY, ...MISSIONS, ...COPY, ...VARIETY, ...REWRITE, ...POSTJUMP, ...ROAD, ...COURSE, ...REACH_DE, ...OVERHAUL, ...SIGNALS };
 
 /** Names, the same in German: the ship, the people, the factions, the places. */
 export const KEEP = new Set<string>([
