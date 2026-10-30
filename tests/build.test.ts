@@ -79,6 +79,22 @@ describe('the figures', () => {
   });
 });
 
+describe('the cards', () => {
+  it('show at least one gain a player can feel for every upgrade, with its systems on', () => {
+    const systems = { tp_bay: 1, mn_layer: 1, pl_vent: 1, cl_arc: 1, df_shield: 1, ph_emitters: 2 };
+    const bare: string[] = [];
+    for (const u of UPGRADES) {
+      if (u.arcade) continue;
+      const have: Record<string, number> = { ...systems };
+      delete have[u.id];
+      for (const r of u.requires ?? []) have[r.id] = Math.max(have[r.id] ?? 0, r.lv ?? 1);
+      const gains = upgradeFigures(have, u.id, false).filter((f) => !f.cost && !f.minor);
+      if (!gains.length) bare.push(u.id);
+    }
+    expect(bare, 'upgrades whose card shows no gain').toEqual([]);
+  });
+});
+
 describe('what the ship became', () => {
   it('names a build by its deepest branch and its specialisation', () => {
     expect(identity({}).title).toBe('Stock Wayward');

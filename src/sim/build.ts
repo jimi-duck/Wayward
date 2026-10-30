@@ -91,6 +91,8 @@ export interface Fig {
   label: string; from: string; to: string; cost: boolean;
   /** The change in the figure's own unit, signed: "+0.4", "−0.5s", "+2 m". Where it rounds to nothing, the new value. */
   delta: string;
+  /** The change is under 3% of what it was: real, but nothing a player can feel, so a card leaves it out. */
+  minor: boolean;
 }
 
 /**
@@ -185,6 +187,24 @@ export const FIGURES: FigDef[] = [
   { label: 'Boosters', get: (s) => s.boostRate, fmt: pct },
   { label: 'Elite Cyrite', get: (s) => s.eliteLoot, fmt: pct },
   { label: 'Disruptor bolt every', get: (s) => s.disruptor, fmt: dash((v) => `${v} shots`), lower: true },
+  { label: 'Drift lance bonus', get: (s) => (s.drift ? s.driftBonus - 1 : 0), fmt: dash(pct) },
+  { label: 'Lance homing', get: (s) => s.laserHoming, fmt: dash((v) => `${Math.round((v * 180) / Math.PI)}°/s`) },
+  { label: 'Painted target bonus', get: (s) => (s.painter ? s.markBonus - 1 : 0), fmt: dash(pct) },
+  { label: 'Plate regrows after', get: (s) => s.regen, fmt: dash(sec), lower: true },
+  { label: 'Breach saved', get: (s) => s.damageControl, fmt: dash(() => t('Once a run')) },
+  { label: 'Mines seek hulls', get: (s) => s.mineSeek, fmt: dash(() => t('On')) },
+  { label: 'Chain reaction', get: (s) => +s.mineChain, fmt: dash(() => t('On')) },
+  { label: 'Graviton pull', get: (s) => +s.mineGravity, fmt: dash(() => t('On')) },
+  { label: 'Shootable mines', get: (s) => +s.mineDetonate, fmt: dash(() => t('On')) },
+  { label: 'Plasma clouds', get: (s) => +s.torpPlasma, fmt: dash(() => t('On')) },
+  { label: 'Arc blasts', get: (s) => s.torpArc, fmt: dash((v) => t('{n} hulls', { n: v })) },
+  { label: 'Plasma ring on roll', get: (s) => +s.rollBurst, fmt: dash(() => t('On')) },
+  { label: 'Plasma corona', get: (s) => +s.plasmaCorona, fmt: dash(() => t('On')) },
+  { label: 'Reactive blast', get: (s) => +s.reactive, fmt: dash(() => t('On')) },
+  { label: 'Shield-break arc', get: (s) => +s.arcShield, fmt: dash(() => t('On')) },
+  { label: 'Rolls ram safely', get: (s) => +s.ramjet, fmt: dash(() => t('On')) },
+  { label: 'Ram arcs', get: (s) => +s.ramArc, fmt: dash(() => t('On')) },
+  { label: 'Killing rams are free', get: (s) => +s.ramSafe, fmt: dash(() => t('On')) },
   { label: 'Roll cloak', get: (s) => s.rollCloak, fmt: dash(sec) },
   { label: 'Snare', get: (s) => s.snare, fmt: dash(sec) },
 ];
@@ -199,7 +219,7 @@ export function figures(before: Stats, after: Stats, arcade = true): Fig[] {
     // a figure appearing from nothing (a system switched on) is never a cost
     const step = d.fmt(Math.abs(b - a));
     const delta = /[1-9]/.test(step) ? `${b > a ? '+' : '−'}${step}` : fb;
-    out.push({ label: d.label, from: fa, to: fb, cost: a !== 0 && (d.lower ? b > a : b < a), delta });
+    out.push({ label: d.label, from: fa, to: fb, cost: a !== 0 && (d.lower ? b > a : b < a), delta, minor: a !== 0 && Math.abs(b - a) / Math.abs(a) < 0.03 });
   }
   return out;
 }

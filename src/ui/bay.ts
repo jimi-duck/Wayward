@@ -3,7 +3,7 @@ import { UPGRADE } from '../content/upgrades';
 import { NODE, STOCK, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
 import { blockOf, budgets, cost, endless, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
 import type { Advice } from '../sim/advice';
-import { felt, upgradeFigures } from '../sim/build';
+import { felt, upgradeFigures, type Fig } from '../sim/build';
 import { MARK_GLYPH, MARK_WORD, originOf, papersOf, tabMark, worn, type Mark } from '../sim/papers';
 import { profileOf } from '../sim/profile';
 import { stepOf } from '../sim/tutor';
@@ -759,6 +759,16 @@ export class BayPanel {
     // a specialisation or salvaged tech has a picture, above the name (desktop; a phone's inspector keeps to the words)
     const pic = artImg('spec', id, 'bi-pic');
     const out: HTMLElement[] = [...(pic ? [pic] : []), head, ...this.stamp(id, 'bi-stamp'), ...(adv ? [h('p', 'bi-rec', '', h('b', '', `◆ ${t('Recommended')}`))] : [])];
+    if (more) {
+      // what the next level does: the first gain large, the rest smaller, then only the costs a player would feel
+      const figs = upgradeFigures(w.levels, id, !w.bk).filter((f) => !f.minor);
+      const gains = figs.filter((f) => !f.cost), costs = figs.filter((f) => f.cost);
+      const main = gains[0];
+      const line = (f: Fig, cls: string) => h('p', `bi-fig ${cls}`, '', h('span', 'bi-fl', t(f.label)), h('span', 'bi-fv', `${f.from} → ${f.to}`));
+      if (main) out.push(h('div', 'bi-figs', '',
+        h('p', 'bi-main', '', h('b', '', main.delta), h('span', '', t(main.label))),
+        ...gains.slice(1, 3).map((f) => line(f, 'gain')), ...costs.slice(0, 2).map((f) => line(f, 'cost'))));
+    }
     if (more) {
       // past a rating the module says so; the bars along the bottom carry the numbers
       const { use, cap } = budgets(w.levels);
