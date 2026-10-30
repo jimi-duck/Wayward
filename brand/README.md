@@ -1,7 +1,9 @@
 > **Superseded for the game's look** by brand v1.1 in `branding/`
 > (amber for the Wayward, teal for information, red for the threat). See
 > "UI. Look and feel" in `docs/PLAN.md`. This folder is kept for its
-> generator and history.
+> generator and history. The game's colour roles live in the `ui` section of
+> `system/tokens.json`; `npm run tokens` writes them to `src/styles/tokens.css`.
+> `make_tokens.py` does not write `ui`, so keep that section when regenerating.
 
 # Brand
 

@@ -70,6 +70,15 @@ Hover and focus brighten the glow and tint the fill, pressed tints it more,
 Add `ochre` or `red` to `.ng` or `.ng-n`. A sheet in the `alert` state is red.
 Unknown callers keep a white status dot until combat makes them hostile.
 
+## Colour tokens
+
+Every colour comes from the `ui` list in `brand/system/tokens.json`. `npm run tokens`
+writes it to `src/styles/tokens.css` as `--name` (hex) and `--name-rgb` (for
+`rgba(var(--name-rgb), .4)`); `src/ui/palette.ts` reads the same list for canvas
+and SVG. No stylesheet or `src/ui` file repeats a colour as a literal (a test
+checks), so a new colour is a new token with a `usage` line, only when none fits.
+Gold is caution, red is threat, blue is the player, teal is information.
+
 ## Type and contrast
 
 - Space Grotesk (one variable file, 300 to 700) for headings, labels, actions

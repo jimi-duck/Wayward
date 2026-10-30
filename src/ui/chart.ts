@@ -46,7 +46,7 @@ const STANCE_WORD: Record<Stance, string> = { quiet: 'Quiet', watched: 'Watched'
 const HEAT_WORD = ['Wanted ↓', 'Wanted low', 'Wanted ↑', 'Wanted ↑↑'];
 const KEY_DIGITS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6'];
 
-const ANOMALY = '#9f8bd6';
+const ANOMALY = INK.anomaly;
 /** A steady hash of a string, 0 to 1: the same lane bends the same way every time it is drawn. */
 export function hash01(s: string): number {
   let x = 2166136261;

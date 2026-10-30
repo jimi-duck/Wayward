@@ -7,14 +7,13 @@
    step after Arcade or New journey, with Normal ready.
    Glass is the shared material (glass.css, .glass in hud.css). */
 #start {
-  --logo: #d99a27;
   --pad-x: clamp(20px, 4.2vw, 64px);
   position: absolute; inset: 0; z-index: 4;
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); grid-template-rows: auto 1fr auto; column-gap: 24px;
   padding: max(clamp(22px, 6vh, 64px), calc(var(--safe-t) + 14px)) max(var(--pad-x), calc(var(--safe-r) + 16px)) max(14px, calc(var(--safe-b) + 10px)) max(var(--pad-x), calc(var(--safe-l) + 16px));
   background:
-    linear-gradient(90deg, rgba(4, 7, 11, .82) 0%, rgba(4, 7, 11, .56) 24%, rgba(4, 7, 11, 0) 50%),
-    linear-gradient(180deg, rgba(4, 7, 11, .4) 0%, rgba(4, 7, 11, 0) 22%, rgba(4, 7, 11, 0) 84%, rgba(4, 7, 11, .5) 100%),
+    linear-gradient(90deg, rgba(var(--shade-rgb), .82) 0%, rgba(var(--shade-rgb), .56) 24%, rgba(var(--shade-rgb), 0) 50%),
+    linear-gradient(180deg, rgba(var(--shade-rgb), .4) 0%, rgba(var(--shade-rgb), 0) 22%, rgba(var(--shade-rgb), 0) 84%, rgba(var(--shade-rgb), .5) 100%),
     url("../assets/wayward-title-background.webp") var(--art-pos, 86% 56%) / cover no-repeat,
     var(--void);
   color: var(--ink); }
@@ -30,31 +29,31 @@
 #start:not([hidden]) .st-list > :nth-child(5) { animation-delay: .2s; }
 
 /* the word: the amber mark, wide-set letters, and the line under them */
-.st-brand { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: clamp(12px, 1.4vw, 20px); align-items: center; justify-self: start; padding: 10px 64px 10px 10px; margin: -10px; background: radial-gradient(ellipse at 38% 55%, rgba(4, 7, 11, .8), rgba(4, 7, 11, 0) 76%); }
-.st-mark { grid-row: 1 / span 2; width: clamp(40px, 4.4vw, 68px); height: auto; fill: var(--logo); filter: drop-shadow(0 2px 12px rgba(0, 0, 0, .5)); }
-.st-w { font: 600 clamp(30px, 3.5vw, 52px)/1 var(--font-head); letter-spacing: .36em; text-transform: uppercase; color: var(--industrial-white); text-shadow: 0 2px 16px rgba(0, 0, 0, .55); }
-.st-tag { font: 500 clamp(11px, .95vw, 14px)/1 var(--font-rail); letter-spacing: .5em; text-transform: uppercase; color: var(--ink); margin-top: 6px; padding-left: .1em; text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
+.st-brand { grid-column: 1; grid-row: 1; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: clamp(12px, 1.4vw, 20px); align-items: center; justify-self: start; padding: 10px 64px 10px 10px; margin: -10px; background: radial-gradient(ellipse at 38% 55%, rgba(var(--shade-rgb), .8), rgba(var(--shade-rgb), 0) 76%); }
+.st-mark { grid-row: 1 / span 2; width: clamp(40px, 4.4vw, 68px); height: auto; fill: var(--pick); filter: drop-shadow(0 2px 12px rgba(var(--black-rgb), .5)); }
+.st-w { font: 600 clamp(30px, 3.5vw, 52px)/1 var(--font-head); letter-spacing: .36em; text-transform: uppercase; color: var(--industrial-white); text-shadow: 0 2px 16px rgba(var(--black-rgb), .55); }
+.st-tag { font: 500 clamp(11px, .95vw, 14px)/1 var(--font-rail); letter-spacing: .5em; text-transform: uppercase; color: var(--ink); margin-top: 6px; padding-left: .1em; text-shadow: 0 1px 8px rgba(var(--black-rgb), .7); }
 
 .st-col { grid-column: 1; grid-row: 2; align-self: start; margin-top: clamp(26px, 8vh, 90px); display: grid; gap: 14px; justify-items: start; width: min(420px, 100%); }
 .st-col .recap, .st-col .ghost, .st-col .tip, .st-col .resume-s { margin-left: 18px; }
 .st-quiet { display: none !important; }
 
 /* the list: a hairline down its left edge, bare rows */
-.st-list { display: grid; gap: 2px; width: 100%; border-left: 1px solid rgba(216, 213, 198, .26); background: linear-gradient(90deg, rgba(4, 7, 11, .8), rgba(4, 7, 11, .5) 70%, rgba(4, 7, 11, 0)); }
+.st-list { display: grid; gap: 2px; width: 100%; border-left: 1px solid rgba(var(--white-rgb), .26); background: linear-gradient(90deg, rgba(var(--shade-rgb), .8), rgba(var(--shade-rgb), .5) 70%, rgba(var(--shade-rgb), 0)); }
 .st-list[hidden], .st-step[hidden] { display: none; }
-.st-step { display: grid; gap: 12px; width: 100%; padding-top: 10px; background: linear-gradient(90deg, rgba(4, 7, 11, .86), rgba(4, 7, 11, .66) 84%, rgba(4, 7, 11, 0)); }
+.st-step { display: grid; gap: 12px; width: 100%; padding-top: 10px; background: linear-gradient(90deg, rgba(var(--shade-rgb), .86), rgba(var(--shade-rgb), .66) 84%, rgba(var(--shade-rgb), 0)); }
 .st-step .st-list { background: none; }
-.st-h { margin: 0 0 2px 18px; font: 600 12px/1 var(--font-rail); letter-spacing: .4em; text-transform: uppercase; color: var(--industrial-white); text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
+.st-h { margin: 0 0 2px 18px; font: 600 12px/1 var(--font-rail); letter-spacing: .4em; text-transform: uppercase; color: var(--industrial-white); text-shadow: 0 1px 8px rgba(var(--black-rgb), .7); }
 .st-row { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 2px 14px; width: 100%; min-height: 44px;
   margin: 0; padding: 9px 20px 9px 42px; border: 0; background: none; cursor: pointer; text-align: left; color: var(--ink); -webkit-tap-highlight-color: transparent; }
 .st-row[hidden] { display: none; }
-.st-t { font: 500 clamp(17px, 1.55vw, 23px)/1.1 var(--font-head); letter-spacing: .22em; text-transform: uppercase; text-shadow: 0 1px 10px rgba(0, 0, 0, .6); }
-.st-s { font: 600 12px/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
+.st-t { font: 500 clamp(17px, 1.55vw, 23px)/1.1 var(--font-head); letter-spacing: .22em; text-transform: uppercase; text-shadow: 0 1px 10px rgba(var(--black-rgb), .6); }
+.st-s { font: 600 12px/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(var(--black-rgb), .7); }
 #m-continue .st-s { grid-column: 1 / -1; letter-spacing: .08em; }
 .st-v { font: 600 13px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
 /* the pick: a muted bar, bright at its left edge and fading out to the right; a chevron marks it */
 .st-row::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .18s var(--ez);
-  background: linear-gradient(90deg, rgba(34, 54, 84, .9) 0%, rgba(14, 24, 40, .74) 55%, rgba(0, 0, 0, 0) 96%); box-shadow: inset 3px 0 0 var(--gl-blue-e1); }
+  background: linear-gradient(90deg, rgba(var(--blue-deep-rgb), .9) 0%, rgba(var(--blue-deep-rgb), .74) 55%, rgba(var(--black-rgb), 0) 96%); box-shadow: inset 3px 0 0 var(--gl-blue-e1); }
 .st-row::after { content: "›"; position: absolute; left: 18px; top: 50%; translate: -4px -52%; font: 500 20px/1 var(--font-head); color: var(--industrial-white); opacity: 0; transition: opacity .18s var(--ez), translate .18s var(--ez); }
 .st-row:hover, .st-row:focus { outline: none; color: var(--industrial-white); }
 .st-row:hover::before, .st-row:focus::before, .st-row:hover::after, .st-row:focus::after { opacity: 1; }
@@ -66,16 +65,16 @@
 .st-row[aria-pressed="true"] .st-v { color: var(--gl-blue-e1); }
 .st-row[aria-pressed="false"] .st-v { color: var(--ink-2); }
 .st-go { margin-top: 4px; }
-.st-warn { margin: 0 0 0 18px; padding: 6px 10px; border-left: 2px solid var(--gl-blue-e1); background: rgba(6, 9, 12, .62); font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--hud-hi); }
+.st-warn { margin: 0 0 0 18px; padding: 6px 10px; border-left: 2px solid var(--caution); background: rgba(var(--shade-2-rgb), .62); font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--caution); }
 .st-warn[hidden] { display: none; }
 .st-lang { display: flex; gap: 8px; align-items: center; cursor: default; }
 .st-lang:hover::before, .st-lang:hover::after { opacity: 0; }
-.st-lang button { flex: none; height: 32px; min-width: 76px; padding: 0 12px; font: 600 12px/1 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink); background: rgba(6, 9, 12, .55); border: 1px solid rgba(216, 213, 198, .3); cursor: pointer; }
+.st-lang button { flex: none; height: 32px; min-width: 76px; padding: 0 12px; font: 600 12px/1 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink); background: rgba(var(--shade-2-rgb), .55); border: 1px solid rgba(var(--white-rgb), .3); cursor: pointer; }
 .st-lang button:hover, .st-lang button:focus { outline: none; border-color: var(--gl-blue-e1); }
 .st-lang button[aria-pressed="true"] { color: var(--industrial-white); border-color: var(--gl-blue-e1); background: var(--gl-blue-f); }
 
 /* what the picked difficulty means: one cyan line and three small meters */
-.sv-pre { display: grid; gap: 7px; margin-left: 18px; padding: 8px 12px; width: calc(100% - 18px); background: rgba(6, 12, 18, .62); border-left: 1px solid var(--cy-dim); }
+.sv-pre { display: grid; gap: 7px; margin-left: 18px; padding: 8px 12px; width: calc(100% - 18px); background: rgba(var(--void-rgb), .62); border-left: 1px solid var(--cy-dim); }
 .sv-t { font: 700 13px/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--industrial-white); }
 .diff-s { display: none; }
 .sv-rule { font: 400 12px/1.35 var(--font-display); color: var(--ink); }
@@ -84,21 +83,21 @@
 .sv-c { display: inline-flex; align-items: center; gap: 7px; font: 600 11px/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
 .sv-c em { font-style: normal; }
 .sv-c i { display: inline-flex; gap: 3px; }
-.sv-c s { display: block; width: 10px; height: 6px; background: rgba(255, 255, 255, .18); }
+.sv-c s { display: block; width: 10px; height: 6px; background: rgba(var(--ink-hi-rgb), .18); }
 .sv-c s.on { background: var(--blue); }
 .sv-c.sky s.on { background: var(--alert); }
 
 /* where the journey stands, under the word: two quiet lines */
 .st-trip { grid-column: 1 / -1; grid-row: 3; display: grid; gap: 3px; margin: 14px 0 0 2px; }
 .st-trip[hidden] { display: none; }
-.st-tl { display: flex; flex-wrap: wrap; gap: 0 12px; align-items: baseline; font: 600 12px/1.3 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(0, 0, 0, .8); }
+.st-tl { display: flex; flex-wrap: wrap; gap: 0 12px; align-items: baseline; font: 600 12px/1.3 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(var(--black-rgb), .8); }
 .st-tl i { font-style: normal; color: var(--hud-hi); min-width: 8.5em; }
 .st-tl b { font-weight: 600; color: var(--industrial-white); letter-spacing: .14em; }
 
 /* the foot: the version, the record, the save's file buttons */
 .st-foot { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: flex-end; gap: 10px 22px; flex-wrap: wrap; }
-.st-ver { font: 400 11px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(0, 0, 0, .8); padding-bottom: 3px; }
-.st-foot .records { background: rgba(6, 9, 12, .6); }
+.st-ver { font: 400 11px/1 var(--font-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--ink); text-shadow: 0 1px 8px rgba(var(--black-rgb), .8); padding-bottom: 3px; }
+.st-foot .records { background: rgba(var(--shade-2-rgb), .6); }
 
 /* a squarer screen: the art hangs a little to the right so the ship stays out from under the list */
 @media (max-aspect-ratio: 3/2) { #start { --art-pos: 100% 56%; } }
@@ -112,8 +111,8 @@
   .st-row { min-height: 40px; padding: 6px 14px 6px 36px; }
   .st-t { font-size: 15px; letter-spacing: .12em; }
   .st-s { font-size: 11px; }
-  .st-step { background: linear-gradient(90deg, rgba(4, 7, 11, .94), rgba(4, 7, 11, .78) 72%, rgba(4, 7, 11, 0)); }
-  .st-list { background: linear-gradient(90deg, rgba(4, 7, 11, .92), rgba(4, 7, 11, .72) 72%, rgba(4, 7, 11, 0)); }
+  .st-step { background: linear-gradient(90deg, rgba(var(--shade-rgb), .94), rgba(var(--shade-rgb), .78) 72%, rgba(var(--shade-rgb), 0)); }
+  .st-list { background: linear-gradient(90deg, rgba(var(--shade-rgb), .92), rgba(var(--shade-rgb), .72) 72%, rgba(var(--shade-rgb), 0)); }
   .sv-pre { padding: 5px 10px; gap: 5px; }
   .sv-rule { display: none; }
   .st-h { font-size: 11px; }

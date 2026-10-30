@@ -9,35 +9,35 @@
 
    The colour tokens are typed so a state change fades. Phones and short windows
    get a lighter tier at the foot; without backdrop-filter the body is darker. */
-@property --gl-e1 { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
-@property --gl-e2 { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
-@property --gl-f { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
-@property --gl-t { syntax: "<color>"; inherits: true; initial-value: rgba(0, 0, 0, 0); }
+@property --gl-e1 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --gl-e2 { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --gl-f { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --gl-t { syntax: "<color>"; inherits: true; initial-value: transparent; }
 :root {
   /* the blur and what it does to the colours behind it */
   --blur: 14px;
   --gl-glass: blur(var(--blur)) saturate(1.4) brightness(.8);
   --gl-under: transparent;
   /* small hardware: two fasteners and a row of ticks, on the big plates only */
-  --gl-dots: radial-gradient(circle at calc(100% - 8px) 8px, rgba(216, 213, 198, .4) 0 1.1px, transparent 1.7px) 0 0 / 100% 100% no-repeat,
-    radial-gradient(circle at 8px calc(100% - 8px), rgba(216, 213, 198, .4) 0 1.1px, transparent 1.7px) 0 0 / 100% 100% no-repeat,
-    repeating-linear-gradient(90deg, rgba(216, 213, 198, .42) 0 1px, transparent 1px 4px) 16px calc(100% - 7px) / 26px 3px no-repeat;
+  --gl-dots: radial-gradient(circle at calc(100% - 8px) 8px, rgba(var(--white-rgb), .4) 0 1.1px, transparent 1.7px) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle at 8px calc(100% - 8px), rgba(var(--white-rgb), .4) 0 1.1px, transparent 1.7px) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(90deg, rgba(var(--white-rgb), .42) 0 1px, transparent 1px 4px) 16px calc(100% - 7px) / 26px 3px no-repeat;
   /* states: rim bright (e1), rim dim (e2), body (f), inner light (t) */
-  --gl-smoke-e1: rgba(184, 224, 234, .66);  --gl-smoke-e2: rgba(150, 190, 200, .16); --gl-smoke-f: rgba(8, 15, 23, .5);   --gl-smoke-t: rgba(76, 194, 203, .08);
-  --gl-hover-e1: rgba(206, 238, 244, .8);   --gl-hover-e2: rgba(176, 214, 224, .24); --gl-hover-f: rgba(14, 26, 36, .42); --gl-hover-t: rgba(120, 214, 222, .17);
-  --gl-blue-e1: rgba(179, 205, 234, 1);    --gl-blue-e2: rgba(134, 169, 209, .5);   --gl-blue-f: rgba(22, 38, 62, .6);    --gl-blue-t: rgba(110, 152, 204, .46);
-  --gl-cyan-e1: rgba(124, 226, 234, .88);   --gl-cyan-e2: rgba(57, 174, 183, .32);   --gl-cyan-f: rgba(8, 36, 44, .6);     --gl-cyan-t: rgba(76, 194, 203, .26);
+  --gl-smoke-e1: rgba(var(--rim-cyan-rgb), .66);  --gl-smoke-e2: rgba(var(--blue-rgb), .16); --gl-smoke-f: rgba(var(--on-blue-rgb), .5);   --gl-smoke-t: rgba(var(--teal-hi-rgb), .08);
+  --gl-hover-e1: rgba(var(--rim-cyan-rgb), .8);   --gl-hover-e2: rgba(var(--rim-cyan-rgb), .24); --gl-hover-f: rgba(var(--blue-deep-rgb), .42); --gl-hover-t: rgba(var(--teal-bright-rgb), .17);
+  --gl-blue-e1: rgba(var(--blue-hi-rgb), 1);    --gl-blue-e2: rgba(var(--blue-rgb), .5);   --gl-blue-f: rgba(var(--blue-deep-rgb), .6);    --gl-blue-t: rgba(var(--blue-rgb), .46);
+  --gl-cyan-e1: rgba(var(--teal-bright-rgb), .88);   --gl-cyan-e2: rgba(var(--teal-rgb), .32);   --gl-cyan-f: rgba(var(--blue-deep-rgb), .6);     --gl-cyan-t: rgba(var(--teal-hi-rgb), .26);
   /* the old name, kept so nothing built on it breaks */
   --gl-amber-e1: var(--gl-blue-e1); --gl-amber-e2: var(--gl-blue-e2); --gl-amber-f: var(--gl-blue-f); --gl-amber-t: var(--gl-blue-t);
-  --gl-off-e1: rgba(150, 160, 160, .22);    --gl-off-e2: rgba(150, 160, 160, .08);   --gl-off-f: rgba(6, 9, 12, .62);      --gl-off-t: rgba(0, 0, 0, 0);
+  --gl-off-e1: rgba(var(--ink-2-rgb), .22);    --gl-off-e2: rgba(var(--ink-2-rgb), .08);   --gl-off-f: rgba(var(--shade-2-rgb), .62);      --gl-off-t: rgba(var(--black-rgb), 0);
 }
 /* a phone, a small window: less blur, none of the small hardware, a firmer body */
 @media (max-height: 620px), (pointer: coarse) {
   :root { --blur: 8px; --gl-dots: linear-gradient(transparent, transparent);
-    --gl-smoke-f: rgba(7, 13, 20, .6); --gl-blue-f: rgba(16, 26, 42, .66); --gl-cyan-f: rgba(7, 34, 42, .68); }
+    --gl-smoke-f: rgba(var(--glass-ink-rgb), .6); --gl-blue-f: rgba(var(--blue-deep-rgb), .66); --gl-cyan-f: rgba(var(--blue-deep-rgb), .68); }
 }
 /* no blur to lean on: a darker body instead */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { :root { --gl-under: rgba(6, 10, 15, .72); } }
-@media (prefers-reduced-transparency: reduce) { :root { --gl-glass: none; --gl-under: rgba(6, 10, 15, .9); } }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { :root { --gl-under: rgba(var(--void-rgb), .72); } }
+@media (prefers-reduced-transparency: reduce) { :root { --gl-glass: none; --gl-under: rgba(var(--void-rgb), .9); } }
 
 /* Every pop-up's material, Neon Glass, is in neon.css: loaded last, so it wins over each screen's older frame. */

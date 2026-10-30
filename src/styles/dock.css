@@ -5,8 +5,8 @@
    hand (selection, the main action), teal is information, dull gold is a
    price or a shortage, red is only ever danger. */
 :root {
-  --dk-panel: rgba(10, 15, 16, .95);
-  --dk-raised: rgba(11, 16, 17, .72);
+  --dk-panel: rgba(var(--glass-ink-rgb), .95);
+  --dk-raised: rgba(var(--glass-ink-rgb), .72);
   --dk-ink: var(--ink);
   --dk-ink2: var(--ink-2);
   --dk-off: var(--ink-3);
@@ -39,20 +39,20 @@
 #port .pl-go, #port-x {
   border: 1px solid var(--hud-mid); background: var(--hud-ghost); color: var(--hud-hi); cursor: pointer; min-height: 32px; padding: 6px 14px;
   font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; transition: background var(--dk-ez), color var(--dk-ez); }
-#port .pl-go:hover:not(:disabled), #port-x:hover, #port-x.sel, #port .sel .pl-go:not(:disabled) { background: var(--hud-dim); color: #fff; }
+#port .pl-go:hover:not(:disabled), #port-x:hover, #port-x.sel, #port .sel .pl-go:not(:disabled) { background: var(--hud-dim); color: var(--ink-hi); }
 #port .pl-go:disabled { border-color: var(--dk-hair); background: transparent; color: var(--dk-off); cursor: not-allowed; }
 #port-x { min-height: 40px; padding: 9px 22px; }
 
 /* ── Frontier Supply ──────────────────────────────────────────────────── */
 /* the supply is a place of its own: a painted backdrop, the game not shown behind it */
-#port { place-items: center; background: #071018 url("../assets/wayward-supply-background.webp") center / cover no-repeat; }
-#port::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(7, 16, 24, .35), rgba(7, 16, 24, .1) 50%, rgba(7, 16, 24, .35)); }
+#port { place-items: center; background: var(--on-blue) url("../assets/wayward-supply-background.webp") center / cover no-repeat; }
+#port::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(var(--on-blue-rgb), .35), rgba(var(--on-blue-rgb), .1) 50%, rgba(var(--on-blue-rgb), .35)); }
 #port > .panel { position: relative; }
 #port .panel.port-panel { width: min(1080px, 100%); overflow-y: auto; }
 /* the holder's banner: a wide painted strip over the title, fading into the glass at the foot */
 #port .port-art { display: block; margin: 0; max-height: none; height: clamp(112px, 21vh, 190px); border: 1px solid var(--dk-hair); }
 #port .port-art[hidden] { display: none; }
-#port .port-pic { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; -webkit-mask: linear-gradient(180deg, #000 55%, transparent 100%); mask: linear-gradient(180deg, #000 55%, transparent 100%); }
+#port .port-pic { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; -webkit-mask: linear-gradient(180deg, var(--black) 55%, transparent 100%); mask: linear-gradient(180deg, var(--black) 55%, transparent 100%); }
 #port .dk-h, #port .port-stock { z-index: 1; }
 /* what the ship holds: an icon, the name, what is aboard against what fits */
 #port .port-stock { grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--dk-hair); background: var(--dk-raised); }
@@ -85,9 +85,9 @@
 #port .pl-badge.done, #port .pl-badge.none, #port .pl-badge.lock { color: var(--dk-off); }
 /* the refit bay: a strip of its own, with the one button that opens it */
 /* the refit bay: the one big destination of the screen. Identity left, the ship in the middle, the one button right. */
-#port .port-l.bay { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-content: center; align-items: center; gap: 12px 18px; min-height: 196px; padding: 16px 20px; cursor: pointer; border: 1px solid var(--hud); background: linear-gradient(90deg, rgb(12, 20, 26), rgb(9, 14, 17)); box-shadow: inset 0 0 0 1px rgba(120, 160, 190, .12), 0 0 18px rgba(86, 134, 170, .14); grid-template-areas: none; grid-template-rows: auto; }
-#port .port-l.bay:hover, #port .port-l.bay.sel { border-color: var(--hud); box-shadow: inset 0 0 0 1px var(--hud-mid), 0 0 22px rgba(86, 134, 170, .26); }
-#port .port-l.bay.lead { box-shadow: inset 3px 0 0 var(--hud), 0 0 22px rgba(86, 134, 170, .26); }
+#port .port-l.bay { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-content: center; align-items: center; gap: 12px 18px; min-height: 196px; padding: 16px 20px; cursor: pointer; border: 1px solid var(--hud); background: linear-gradient(90deg, var(--on-blue), var(--glass-ink)); box-shadow: inset 0 0 0 1px rgba(var(--blue-rgb), .12), 0 0 18px rgba(var(--blue-rgb), .14); grid-template-areas: none; grid-template-rows: auto; }
+#port .port-l.bay:hover, #port .port-l.bay.sel { border-color: var(--hud); box-shadow: inset 0 0 0 1px var(--hud-mid), 0 0 22px rgba(var(--blue-rgb), .26); }
+#port .port-l.bay.lead { box-shadow: inset 3px 0 0 var(--hud), 0 0 22px rgba(var(--blue-rgb), .26); }
 #port .port-l.bay > * { position: relative; z-index: 1; }
 #port .port-l.bay .pl-id { display: flex; align-items: center; gap: 16px; min-width: 0; }
 #port .port-l.bay .bayico { width: 60px; height: auto; flex: none; grid-area: auto; }
@@ -95,8 +95,8 @@
 #port .port-l.bay .pl-t, #port .port-l.bay .pl-d, #port .port-l.bay .pl-go { grid-area: auto; }
 #port .port-l.bay .pl-t { font-size: calc(var(--fs) * 2 * 1.18); letter-spacing: .12em; }
 #port .port-l.bay .pl-d { font-size: calc(var(--fs) * 1.05 * 1.18); color: var(--dk-ink2); }
-#port .port-l.bay .bay-hero { position: absolute; z-index: 0; left: 46%; top: 0; bottom: 0; right: 0; width: 54%; height: 100%; object-fit: cover; object-position: 50% 50%; -webkit-mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); pointer-events: none; opacity: .92; }
-#port .port-l.bay .pl-go { display: inline-flex; align-items: center; justify-content: center; gap: 10px; align-self: center; grid-column: 1; grid-row: 2; min-height: 52px; padding: 12px 24px; font-size: calc(var(--fs) * 1.2 * 1.18); letter-spacing: .12em; background: linear-gradient(var(--hud-ghost), var(--hud-dim)); border-color: var(--hud); color: #fff; justify-self: start; margin-left: 94px; }
+#port .port-l.bay .bay-hero { position: absolute; z-index: 0; left: 46%; top: 0; bottom: 0; right: 0; width: 54%; height: 100%; object-fit: cover; object-position: 50% 50%; -webkit-mask: linear-gradient(90deg, transparent, var(--black) 22%, var(--black) 78%, transparent); mask: linear-gradient(90deg, transparent, var(--black) 22%, var(--black) 78%, transparent); pointer-events: none; opacity: .92; }
+#port .port-l.bay .pl-go { display: inline-flex; align-items: center; justify-content: center; gap: 10px; align-self: center; grid-column: 1; grid-row: 2; min-height: 52px; padding: 12px 24px; font-size: calc(var(--fs) * 1.2 * 1.18); letter-spacing: .12em; background: linear-gradient(var(--hud-ghost), var(--hud-dim)); border-color: var(--hud); color: var(--ink-hi); justify-self: start; margin-left: 94px; }
 /* the two purchases sit in the top row: the count, what a fill costs, one button */
 #port .port-stock { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 #port .ps-c.buyc { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
@@ -105,7 +105,7 @@
 #port .ps-c.buyc.ok .ps-sub, #port .ps-c.buyc.short .ps-sub { color: var(--dk-ink); }
 #port .port-msg { margin: 0; min-height: 1.3em; font: 600 calc(var(--fs) * 1.1 * 1.18)/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--dk-info); }
 /* the departure: where to, whether the tank gets there, and Cast off */
-#port .port-dep { position: sticky; bottom: -14px; z-index: 2; display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--dk-hair); border-left: 3px solid var(--hud); background: rgb(10, 15, 16); }
+#port .port-dep { position: sticky; bottom: -14px; z-index: 2; display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--dk-hair); border-left: 3px solid var(--hud); background: var(--glass-ink); }
 #port .pinico { width: 44px; height: 44px; object-fit: contain; }
 #port .pd-pin { display: grid; place-items: center; }
 #port .pd-stat::before { content: none; }
@@ -139,7 +139,7 @@
 #comms .cm-read { border-color: var(--dk-hair); background: var(--dk-raised); }
 /* the answers: full-width rows, a number, a title with its line under it, what it costs at the right */
 #comms .cm-list { gap: 6px; }
-#comms .cm-c.sel { background: linear-gradient(90deg, var(--hud-ghost), var(--dk-raised)); border-color: var(--hud-mid); box-shadow: inset 2px 0 0 var(--hud), 0 0 14px rgba(134, 169, 209, .22); }
+#comms .cm-c.sel { background: linear-gradient(90deg, var(--hud-ghost), var(--dk-raised)); border-color: var(--hud-mid); box-shadow: inset 2px 0 0 var(--hud), 0 0 14px rgba(var(--blue-rgb), .22); }
 #comms .cm-c.sel kbd { color: var(--hud-hi); }
 #comms .cm-c:hover:not(.sel):not([aria-disabled="true"]) { border-color: var(--dk-line); background: var(--dk-raised); }
 #comms .cm-c:focus-visible { outline: 2px solid var(--dk-hud); outline-offset: 1px; }
@@ -149,8 +149,8 @@
 /* ── the radio call (the job offer's own layout is in neon.css) ─────────── */
 .rd-call .rd-ico, .rd-call .rd-art, .rd-call .rd-sheet { display: none; }
 #rd-call, #rd-call button { touch-action: manipulation; }
-#rd-call { --glass: rgba(8, 13, 14, .86); --edge: rgba(150, 190, 205, .22); --mark: rgba(170, 205, 215, .7); --glow: rgba(76, 194, 203, .35);
-  border: 1px solid var(--edge); border-left: 1px solid var(--edge); background: var(--glass); box-shadow: 0 8px 28px rgba(0, 0, 0, .4); clip-path: none; }
+#rd-call { --glass: rgba(var(--void-rgb), .86); --edge: rgba(var(--blue-rgb), .22); --mark: rgba(var(--rim-cyan-rgb), .7); --glow: rgba(var(--teal-hi-rgb), .35);
+  border: 1px solid var(--edge); border-left: 1px solid var(--edge); background: var(--glass); box-shadow: 0 8px 28px rgba(var(--black-rgb), .4); clip-path: none; }
 /* no backdrop blur here: the scene behind a held call is redrawn every frame, and a live blur over it made the card hitch on open */
 #rd-call::before { content: ""; position: absolute; inset: -1px; pointer-events: none; --m: 12px; --w: 1.5px;
   background:
@@ -166,15 +166,15 @@
 #rd-call:not(.job) .rd-c kbd { grid-area: k; display: grid; place-items: center; width: 28px; height: 28px; box-sizing: border-box; border: 1px solid var(--dk-line); border-radius: 50%; font: 500 14px/1 var(--font-mono); color: var(--dk-ink2); }
 #rd-call .rd-lock { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 /* the other calls (a trade, a plea, a warning) borrow the same colours */
-#rd-call:not(.job) .rd-c { border-color: var(--dk-hair); background: rgba(8, 13, 14, .45); }
-#rd-call:not(.job) .rd-c.first { border-color: rgba(76, 194, 203, .55); background: linear-gradient(90deg, rgba(76, 194, 203, .16), rgba(8, 13, 14, .45)); box-shadow: inset 2px 0 0 var(--dk-info), 0 0 14px var(--glow); }
+#rd-call:not(.job) .rd-c { border-color: var(--dk-hair); background: rgba(var(--void-rgb), .45); }
+#rd-call:not(.job) .rd-c.first { border-color: rgba(var(--teal-hi-rgb), .55); background: linear-gradient(90deg, rgba(var(--teal-hi-rgb), .16), rgba(var(--void-rgb), .45)); box-shadow: inset 2px 0 0 var(--dk-info), 0 0 14px var(--glow); }
 #rd-call:not(.job) .rd-c.first kbd { color: var(--dk-info); border-color: var(--dk-info); }
 
 /* the onboarding cards (opening, Heat) take the bay's quiet outlined button too */
 #op-go, #hn-go, #jd-go { --c: 0px; position: static; border: 1px solid var(--hud-mid); background: var(--hud-ghost); color: var(--hud-hi); padding: 9px 22px; cursor: pointer;
   font: 600 calc(var(--fs) * 1.2 * 1.18)/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; transition: background var(--dk-ez), color var(--dk-ez); }
 #op-go::before, #op-go::after, #hn-go::before, #hn-go::after, #jd-go::before, #jd-go::after { content: none; }
-#op-go:hover, #hn-go:hover, #op-go:focus-visible, #hn-go:focus-visible { background: var(--hud-dim); color: #fff; }
+#op-go:hover, #hn-go:hover, #op-go:focus-visible, #hn-go:focus-visible { background: var(--hud-dim); color: var(--ink-hi); }
 #op-go:focus-visible, #hn-go:focus-visible { outline: 2px solid var(--hud); outline-offset: 2px; }
 
 /* ── a laptop window with a tab bar: not tall enough for the full layout, not short enough for the phone one.
@@ -310,12 +310,12 @@
 
 /* The contract ledger on an opening card: hairline rows, the company's cuts in caution gold, Juno's own line in steel blue. */
 #comms .cm-ledger[hidden] { display: none; }
-#comms .cm-ledger { list-style: none; margin: 8px 0 4px; padding: 6px 10px; display: grid; gap: 2px; border: 1px solid var(--hair, rgba(160,170,170,.28)); background: var(--scrim); }
+#comms .cm-ledger { list-style: none; margin: 8px 0 4px; padding: 6px 10px; display: grid; gap: 2px; border: 1px solid var(--hair, rgba(var(--ink-2-rgb), .28)); background: var(--scrim); }
 #comms .cm-ledger li { display: flex; justify-content: space-between; gap: 12px; font: 500 12px/1.4 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
 #comms .cm-ledger li b { font: 600 13px/1.4 var(--font-mono); color: var(--ink); white-space: nowrap; }
 #comms .cm-ledger li.warn b, #comms .cm-ledger li.bad b { color: var(--caution); }
-#comms .cm-ledger li.bad { border-top: 1px solid var(--hair, rgba(160,170,170,.28)); padding-top: 3px; margin-top: 2px; color: var(--ink); }
-#comms .cm-ledger li.mine { border-top: 1px solid var(--hair, rgba(160,170,170,.28)); padding-top: 3px; margin-top: 2px; color: var(--ink); }
+#comms .cm-ledger li.bad { border-top: 1px solid var(--hair, rgba(var(--ink-2-rgb), .28)); padding-top: 3px; margin-top: 2px; color: var(--ink); }
+#comms .cm-ledger li.mine { border-top: 1px solid var(--hair, rgba(var(--ink-2-rgb), .28)); padding-top: 3px; margin-top: 2px; color: var(--ink); }
 #comms .cm-ledger li.mine b { color: var(--blue); }
 /* A second voice on the same channel: Sam cutting in under the notice, a hairline and his name, nothing more. */
 @media (max-height: 420px) {
@@ -334,7 +334,7 @@
    On a desktop or laptop the call sits in the middle of the held view, wider, with the words at reading size and full ink
    (the glance line and the text under it used to be small and dim). Phones keep their own layout above. */
 @media (min-width: 721px) and (min-height: 521px) {
-  #comms { place-items: center; background: radial-gradient(ellipse at center, rgba(6, 10, 12, .65), rgba(6, 10, 12, .9)); }
+  #comms { place-items: center; background: radial-gradient(ellipse at center, rgba(var(--shade-2-rgb), .65), rgba(var(--shade-2-rgb), .9)); }
   #comms .panel.comms { width: min(880px, 100%); padding: 18px 26px 16px 30px; gap: 12px; }
   #comms .tx-card { gap: 6px 20px; }
   #comms .cm-face.art { width: 104px; }
@@ -357,7 +357,7 @@
 
 /* ── the call, on one scale ───────────────────────────────────────────────
    Four sizes and nothing between: the title, the words (full ink: the most readable text on the card), the labels and
-   chips, and the odds. Labels use --ink-2, not --ink-3: nothing on the glass is dimmer than #A9A89C. A phone on its side
+   chips, and the odds. Labels use --ink-2, not --ink-3: nothing on the glass is dimmer than var(--ink-2). A phone on its side
    keeps smaller words and 40px rows so every answer stays on one screen. */
 #comms { --cm-title: clamp(20px, 1.8vw, 26px); --cm-body: 15px; --cm-label: 12px; --cm-odds: 13px; --cm-row: 56px; }
 @media (min-width: 721px) and (min-height: 521px) { #comms { --cm-body: 16px; } }
@@ -432,4 +432,4 @@
 
 /* the job-done pop-up: the pay, one line of chips */
 #jobdone .jd-pay { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: 14px 0 0; }
-#jobdone .jd-pay .k { font: 600 .8em/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2, #A9A89C); }
+#jobdone .jd-pay .k { font: 600 .8em/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
