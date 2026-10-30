@@ -7,7 +7,7 @@
 .co-purs.amber { color: var(--caution); }
 .co-purs.red { color: var(--danger); }
 .co-purs.rest { color: var(--ink-2); }
-.ch-lane.done { stroke: rgba(134, 169, 209, .55); }
+.ch-lane.done { stroke: rgba(var(--blue-rgb), .55); }
 .ch-s.past .ch-name { fill: var(--ink-2); }
 .ch-s.past .ch-node { opacity: .7; }
 /* the map takes the whole width, with one line about the next stop under it */

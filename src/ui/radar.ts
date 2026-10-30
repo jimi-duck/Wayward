@@ -23,7 +23,7 @@ const BEZEL = 15;
 const ARCS = 24;
 
 const ROCK_DOT: Record<string, string> = {
-  basalt: 'rgba(236,230,225,.34)', iron: 'rgba(160,172,190,.55)', rich: INK.cyrite, volatile: 'rgba(255,90,60,.85)', rare: INK.amberHi,
+  basalt: rgba(RGB.ink, 0.34), iron: rgba(RGB.amber, 0.55), rich: INK.cyrite, volatile: rgba(RGB.alert, 0.85), rare: INK.amberHi,
 };
 
 export class Radar {
@@ -135,7 +135,7 @@ export class Radar {
     g.save();
     g.beginPath(); g.arc(C, C, R, 0, Math.PI * 2); g.clip();
     const bg = g.createRadialGradient(C, C, 0, C, C, R);
-    bg.addColorStop(0, rgba(RGB.teal, 0.07)); bg.addColorStop(1, 'rgba(8,13,14,.12)');
+    bg.addColorStop(0, rgba(RGB.teal, 0.07)); bg.addColorStop(1, rgba(RGB.void, 0.12));
     g.fillStyle = bg; g.fillRect(0, 0, W, W);
     // two dashed rings at two thirds and a third
     g.strokeStyle = rgba(RGB.teal, 0.3); g.lineWidth = dpr;
@@ -154,9 +154,9 @@ export class Radar {
     // what the camera sees: the horizontal field of view, from the ship
     const cam = sector.camera;
     const hf = Math.atan(Math.tan((cam.fov * Math.PI) / 360) * cam.aspect);
-    g.fillStyle = 'rgba(236,230,225,.045)';
+    g.fillStyle = rgba(RGB.ink, 0.045);
     g.beginPath(); g.moveTo(C, C); g.arc(C, C, R, -Math.PI / 2 - hf, -Math.PI / 2 + hf); g.closePath(); g.fill();
-    g.strokeStyle = 'rgba(236,230,225,.12)';
+    g.strokeStyle = rgba(RGB.ink, 0.12);
     for (const a of [-hf, hf]) { g.beginPath(); g.moveTo(C, C); g.lineTo(C + Math.sin(a) * R, C - Math.cos(a) * R); g.stroke(); }
 
     // the way to go: a dashed amber line from the ship to the objective, pinned at the rim when it is further than the scope reaches
@@ -168,7 +168,7 @@ export class Radar {
       g.setLineDash([]);
     }
     // the field
-    g.fillStyle = 'rgba(236,230,225,.1)'; g.strokeStyle = 'rgba(236,230,225,.2)';
+    g.fillStyle = rgba(RGB.ink, 0.1); g.strokeStyle = rgba(RGB.ink, 0.2);
     for (const b of world.field.bulwarks) {
       const [x, y, out] = to(b.x, b.z, R + b.r * k);
       if (out) continue;
@@ -183,7 +183,7 @@ export class Radar {
     for (const p of world.pickups) {
       if (!LOOSE.has(p.kind)) continue;
       const [x, y, out] = to(p.x, p.z);
-      g.fillStyle = p.kind === 'crystal' ? INK.krail : p.kind === 'cyrite' ? INK.cyrite : p.kind === 'ore' ? 'rgba(236,200,160,.8)' : rgba(RGB.teal, 0.8);
+      g.fillStyle = p.kind === 'crystal' ? INK.krail : p.kind === 'cyrite' ? INK.cyrite : p.kind === 'ore' ? rgba(RGB.krail, 0.8) : rgba(RGB.teal, 0.8);
       if (!out) g.fillRect(x - 0.8 * dpr, y - 0.8 * dpr, 1.6 * dpr, 1.6 * dpr);
     }
     // the port and the Jump Gate, when they are in the scope's reach
@@ -222,7 +222,7 @@ export class Radar {
       const [x, y, out] = to(a.x, a.z);
       // red is for a hull attacking you; far or idle contacts stay grey
       const grey = a.kind === 'freighter' || !!a.ward || !world.committed(a) || Math.hypot(a.x - world.ship.x, a.z - world.ship.z) > IDENT_RANGE;
-      g.fillStyle = out ? (grey ? rgba(RGB.white, 0.4) : rgba(RGB.red, 0.5)) : grey ? INK.white2 : a.elite ? '#f08a7e' : INK.red;
+      g.fillStyle = out ? (grey ? rgba(RGB.white, 0.4) : rgba(RGB.red, 0.5)) : grey ? INK.white2 : a.elite ? INK.redText : INK.red;
       g.save(); g.translate(x, y); g.rotate(-(a.face - h));
       const role = ALIEN_TYPES[a.kind].role;
       const sz = (role === 'cruiser' || a.kind === 'freighter' ? 4.6 : 3.4) * dpr;
@@ -246,7 +246,7 @@ export class Radar {
       g.fillStyle = rgba(RGB.red, 0.35);
       g.fillRect(x - 3 * dpr, y - 3 * dpr, 6 * dpr, 6 * dpr);
     }
-    g.fillStyle = 'rgba(255,170,150,.85)';
+    g.fillStyle = rgba(RGB.alertText, 0.85);
     for (const sh of world.shots) { const [x, y, out] = to(sh.x, sh.z); if (!out) g.fillRect(x - 0.9 * dpr, y - 0.9 * dpr, 1.8 * dpr, 1.8 * dpr); }
     for (const p of world.pickups) {
       if (LOOSE.has(p.kind)) continue;
@@ -257,13 +257,13 @@ export class Radar {
     // the target, if it is rock (hulls are bracketed above)
     if (target !== null) {
       const rock = world.field.find(target);
-      if (rock) { const [x, y, out] = to(rock.x, rock.z); if (!out) this.bracket(g, x, y, 5 * dpr, dpr, 'rgba(236,230,225,.85)'); }
+      if (rock) { const [x, y, out] = to(rock.x, rock.z); if (!out) this.bracket(g, x, y, 5 * dpr, dpr, rgba(RGB.ink, 0.85)); }
     }
 
     if (world.sensorsDown) {
       // sensors down: static over the scope
       for (let i = 0; i < 110; i++) {
-        g.fillStyle = `rgba(236,230,225,${Math.random() * 0.22})`;
+        g.fillStyle = rgba(RGB.ink, Math.random() * 0.22);
         g.fillRect(Math.random() * W, Math.random() * W, 1.5 * dpr, 1.5 * dpr);
       }
     }
@@ -272,7 +272,7 @@ export class Radar {
     // the rim, and our ship in the middle
     g.strokeStyle = rgba(RGB.teal, 0.55); g.lineWidth = dpr;
     g.beginPath(); g.arc(C, C, R, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = '#eef2f4';
+    g.fillStyle = INK.paper;
     g.beginPath(); g.moveTo(C, C - 6 * dpr); g.lineTo(C + 4 * dpr, C + 4.5 * dpr); g.lineTo(C, C + 2 * dpr); g.lineTo(C - 4 * dpr, C + 4.5 * dpr); g.closePath(); g.fill();
   }
 

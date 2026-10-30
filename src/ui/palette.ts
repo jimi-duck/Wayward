@@ -1,38 +1,62 @@
-// The brand palette for what the UI draws itself (canvas and SVG), matching
-// the tokens at the top of styles/main.css. Brand v1.1, muted: a steel blue is
-// the player's hand, teal is information, red is the threat and nothing else,
+// The brand palette for what the UI draws itself (canvas and SVG). Every value
+// comes from the `ui` section of brand/system/tokens.json, the same list that
+// writes src/styles/tokens.css. Brand v1.1, muted: a steel blue is the
+// player's hand, teal is information, red is the threat and nothing else,
 // white is readability. Amber is left to krail and the caution tone.
+import brand from '../../brand/system/tokens.json';
+
+const TOKENS = new Map(brand.ui.tokens.map((t) => [t.name, t.value.toLowerCase()]));
+
+/** A token's hex, for canvas and inline styles. */
+export const hex = (name: string): string => {
+  const v = TOKENS.get(name);
+  if (!v) throw new Error(`no ui token "${name}"`);
+  return v;
+};
 
 /** An `r,g,b` triple, for `rgba(${c},alpha)`. */
 export type Rgb = string;
 
+/** A token's `r,g,b` triple. */
+export const rgbOf = (name: string): Rgb => {
+  const h = hex(name);
+  return [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(',');
+};
+
 export const RGB = {
-  void: '8,13,14',
-  white: '216,213,198',
-  amber: '134,169,209',
-  caution: '201,171,102',
-  teal: '57,174,183',
-  red: '201,74,63',
-  dust: '89,97,96',
-  green: '116,136,65',
+  void: rgbOf('void'),
+  white: rgbOf('white'),
+  ink: rgbOf('ink-body'),
+  amber: rgbOf('blue'),
+  caution: rgbOf('caution'),
+  teal: rgbOf('teal'),
+  red: rgbOf('alert-red'),
+  alert: rgbOf('alert'),
+  alertText: rgbOf('alert-text'),
+  krail: rgbOf('krail'),
+  dust: rgbOf('dust'),
+  green: rgbOf('hazard-green'),
 } satisfies Record<string, Rgb>;
 
 export const rgba = (c: Rgb, a: number) => `rgba(${c},${a})`;
 
 /** Solid colours, tuned to read on the void as text and marks. */
 export const INK = {
-  white: '#e4e1d3',
-  white2: '#a9a89c',
-  amber: '#86a9d1',   // the player's blue; the name is older than the palette
-  amberHi: '#b3cdea',
-  caution: '#c9ab66',
-  goal: '#f0c85a',   // the objective: the one yellow mark
-  teal: '#4cc2cb',
-  red: '#e0574b',
-  dust: '#757a74',
-  green: '#9db35a',
-  krail: '#d8c48f',
-  cyrite: '#b590f2',
+  white: hex('ink'),
+  white2: hex('ink-2'),
+  amber: hex('blue'),   // the player's blue; the name is older than the palette
+  amberHi: hex('blue-hi'),
+  caution: hex('caution'),
+  goal: hex('goal'),   // the objective: the one yellow mark
+  teal: hex('teal-hi'),
+  red: hex('alert'),
+  redText: hex('alert-text'),
+  dust: hex('ink-3'),
+  green: hex('green'),
+  krail: hex('krail'),
+  cyrite: hex('cyrite'),
+  anomaly: hex('anomaly'),
+  paper: hex('ink-hi'),
 } as const;
 
 /** The display faces, for canvas text. */
