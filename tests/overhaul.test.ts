@@ -78,6 +78,29 @@ describe('the road', () => {
   });
 });
 
+describe('the reveals', () => {
+  /** Where on the road a card first plays: its stop's place, legs and gates in order. */
+  const order = LEGS.flatMap((leg, i) => [...leg.map((r) => r.script), GATES[i]!.script]);
+  const at = (def: string) => {
+    const r = SCRIPT.find((x) => 'card' in x.do && x.do.card === def);
+    expect(r, def).toBeDefined();
+    return order.indexOf(r!.stop);
+  };
+  const inOrder = (defs: string[]) => {
+    const pos = defs.map(at);
+    for (const p of pos) expect(p).toBeGreaterThanOrEqual(0);
+    expect([...pos].sort((a, b) => a - b)).toEqual(pos);
+  };
+
+  it('plays Ada’s notes one to seven at the gates, in order', () => inOrder(['warden_note_1', 'warden_note_2', 'warden_note_3', 'warden_note_4', 'warden_note_5', 'warden_note_6', 'warden_note_7']));
+  it('reveals the Severance in order: the recorder, the work order, the room, the implant', () => inOrder(['story_salvor', 'story_draper', 'story_witnesses', 'story_implant']));
+  it('lets the Voice speak before it asks, and the Thren be named before they are met', () => {
+    inOrder(['sc_voice_knows', 'story_voice', 'seam_voice', 'sc_voice_direct']);
+    inOrder(['story_thren', 'story_echo_sable', 'story_aide']);
+  });
+  it('asks Oren’s three questions in order', () => inOrder(['story_oren_who', 'story_oren_cost', 'story_oren_why']));
+});
+
 // ── the queue: main beats hold the gate, a release carries them, nothing is dropped or played twice ──
 
 const card = (id: string, stop: string, on: Row['on'], def: string, extra: Partial<Row> = {}): Row => ({ id, stop, on, do: { card: def }, ...extra });
