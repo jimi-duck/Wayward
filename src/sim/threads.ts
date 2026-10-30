@@ -30,7 +30,8 @@ export const THREAD_BY_ID = Object.fromEntries(THREADS.map((t) => [t.id, t])) as
 export const ACCOUNT_DEBT = 80;
 export const DEBT_STEP = 14;
 
-const has = (flags: Iterable<string>) => { const f = new Set(flags); return (x: string) => f.has(x); };
+/** A flag test; a set is used as it is, since this runs every step on the road (sim/evidence.ts `derive`). */
+const has = (flags: Iterable<string>) => { const f = flags instanceof Set ? flags : new Set(flags); return (x: string) => f.has(x); };
 
 /** Answers that settle a job some other way: sold, reported, warned off or stripped. Won like that, a job is not a step of its thread. */
 const ASIDE = ['sell', 'tell', 'warn', 'strip'];
@@ -40,7 +41,7 @@ export const stepWon = (flags: Iterable<string>, job: string): boolean => { cons
 
 /** Jobs of a thread won. */
 export function won(flags: Iterable<string>, id: ThreadId): number {
-  const list = [...flags];
+  const list = flags instanceof Set ? flags : new Set(flags);
   return THREAD_BY_ID[id].jobs.filter((j) => stepWon(list, j)).length;
 }
 
@@ -49,7 +50,7 @@ export function won(flags: Iterable<string>, id: ThreadId): number {
  * Stolen Payroll (their wages), if those were won for the Account.
  */
 export function count(flags: Iterable<string>, id: ThreadId): number {
-  const list = [...flags];
+  const list = flags instanceof Set ? flags : new Set(flags);
   let n = won(list, id);
   if (id === 'crews') n -= (stepWon(list, 'heavy_tanker') ? 1 : 0) + (stepWon(list, 'missing_payroll') ? 2 : 0);
   return Math.max(0, n);
