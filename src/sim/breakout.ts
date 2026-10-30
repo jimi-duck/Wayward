@@ -228,6 +228,8 @@ export interface SortieDef {
   script?: string;
   /** A card (content/story.ts) the Jump Gate's checkpoint opens in place of the generic one. */
   checkpoint?: string;
+  /** A road gate: a Warden relay mast stands by the Jump Gate, where the arrival's handshake plays (content/script/arrivals.ts). */
+  relay?: boolean;
   /** The situation playing here (content/situations.ts), as the chart has it now: its tightened variant where the Net holds the system. */
   situation?: string | null;
 }
@@ -387,8 +389,8 @@ export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { 
 
 /** Where the Narrows' relay mast stands against its gate (units): off the ring, never in the lane. */
 export const RELAY_OFF = { x: 80, z: -70 };
-/** The relay mast of the Narrows (content/script/narrows.ts), if this sortie has one. */
-export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' ? { x: b.lane.x + RELAY_OFF.x, z: b.lane.z + RELAY_OFF.z } : null);
+/** The relay mast of a road gate (the Narrows and every arrival after it), if this sortie has one. */
+export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay ? { x: b.lane.x + RELAY_OFF.x, z: b.lane.z + RELAY_OFF.z } : null);
 
 /** The places in a sortie: the Jump Gate, the port if there is one, and the audit dock where the system has it. */
 export const places = (b: Breakout): Waypoint[] => [b.lane, ...(b.port ? [b.port] : []), ...(b.audit ? [b.audit] : [])];

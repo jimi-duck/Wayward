@@ -1,6 +1,6 @@
 import { t } from '../i18n';
 import { MISSIONS } from '../content/missions';
-import { ON_ROAD } from '../content/road';
+import { COLLISIONS, ON_ROAD } from '../content/road';
 import { SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
@@ -404,7 +404,11 @@ export class Stage {
   // ── the end ────────────────────────────────────────────────────────────
   /** A job of the road's threads leaves a flag for each answer and each ending, which the stop's script answers on the radio (content/script/). */
   private thread(w: World, what: string): void {
-    if (this.def.card && CARD_BY_ID[this.def.card]?.thread && w.flags.has(ON_ROAD)) w.flags.add(`job_${this.def.id}_${what}`);
+    if (!(this.def.card && CARD_BY_ID[this.def.card]?.thread && w.flags.has(ON_ROAD))) return;
+    w.flags.add(`job_${this.def.id}_${what}`);
+    // a job won for one thread can cost another (content/road.ts COLLISIONS): the tanker carried Hester's filters, the payroll was her wages
+    const hit = COLLISIONS[this.def.id];
+    if (what === 'won' && hit && this.taken) w.applyOutcome({ text: '', standing: hit.standing, unflag: hit.unflag }, 1, []);
   }
 
   private finish(w: World, r: SitResult): void {

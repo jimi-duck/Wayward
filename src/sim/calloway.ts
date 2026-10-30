@@ -138,7 +138,7 @@ export function study(d: Dossier, cards: readonly Answer[], killedHers: boolean,
       d.lastOffer = day;
       if (a.choice === 'accept') {
         d.took.push(a.id);
-        if (a.id === 'offer_truce') d.promise = true;
+        if (a.id === 'offer_truce' || a.id === 'offer_stop') d.promise = true;
       }
       continue;
     }

@@ -1,3 +1,4 @@
+import { legOf, roadRegion } from './road';
 import { t } from '../i18n';
 import { ACTS, BEATS, CHOICE_REGION, FRAGMENT_FLAGS, FRAGMENT_FLAGS_LONG, FRAGMENTS_ALL, CERRO_BEATS, type Act } from '../content/story';
 import { isLongSet, type RegionSet } from '../content/regions';
@@ -41,16 +42,14 @@ export function dueBeat(j: Journey): string | null {
   if (!j.carry.flags.includes('archive_woke')) { const next = CERRO_BEATS.find((b) => !j.carry.seen.includes(b)); if (next) return next; }
   // the three-region chart's beats come by tier; the eight-region chart's by its own regions
   const long = isLongSet(j.chart.regionSet);
-  // on the road the Reach's story is the stops' own script (sim/script.ts), not a beat to the sortie
-  if (j.chart.regionSet === 'road' && viewOf(j.chart, j.at) === 0) return null;
-  // and so is the Narrows, the gate out: Ada's note, then the Patience (content/script/narrows.ts)
-  if (j.chart.regionSet === 'road' && sysById(j.chart, j.at).kind === 'gate' && regionOf(sysById(j.chart, j.at)) === 0) return null;
+  // on the road every leg's story is the stops' own script (sim/script.ts), its gates' arrivals too: never a beat to the sortie
+  if (legOf(j.chart, sysById(j.chart, j.at)) >= 0) return null;
   const seen = new Set(j.carry.seen), has = new Set(j.carry.flags), r = long ? viewOf(j.chart, j.at) : tierOf(j.chart, viewOf(j.chart, j.at));
   const at = (b: (typeof BEATS)[number]) => (long ? b.long : b.region);
   const atGate = sysById(j.chart, j.at).kind === 'gate';
-  // on the road the Reach's beats are the script's (sim/script.ts), so a region-0 beat never comes later as a missed one
-  const road = j.chart.regionSet === 'road';
-  const open = BEATS.filter((b) => at(b) !== undefined && at(b)! <= r && !(road && at(b) === 0) && !seen.has(b.card) && (!b.needs || has.has(b.needs)) && (!b.gate || (atGate && at(b)! + 1 === r)));
+  // on the road the legs' beats are the script's (sim/script.ts), so a road leg's beat never comes later as a missed one
+  const road = (b: (typeof BEATS)[number]) => roadRegion(j.chart, at(b)!);
+  const open = BEATS.filter((b) => at(b) !== undefined && at(b)! <= r && !road(b) && !seen.has(b.card) && (!b.needs || has.has(b.needs)) && (!b.gate || (atGate && at(b)! + 1 === r)));
   // a gate beat belongs to the gate out of its own region (a gate shows the next region): it comes before that region's own
   return (open.find((b) => b.gate) ?? open.find((b) => at(b) === r) ?? open[0])?.card ?? null;
 }

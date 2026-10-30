@@ -4,7 +4,7 @@ import {
 } from '../content/situations';
 import { MISSIONS } from '../content/missions';
 import { isLongSet, REGIONS_LONG } from '../content/regions';
-import { roadStop } from '../content/road';
+import { roadRegion, stopAt } from './road';
 import { jumps, lanesFrom, netted, pushNet, regionOf, sysById, type Chart, type Sit, type StarSystem } from './chart';
 import { Rng } from './rng';
 
@@ -28,8 +28,8 @@ import { Rng } from './rng';
 /** The eight-region chart's index for a region of this chart (the short chart plays the first, second and Hollows). */
 export const longIndex = (c: Chart, region: number): number => (isLongSet(c.regionSet) ? region : [0, 1, 6][region] ?? region);
 
-/** Whether a region of this chart is the Warden's Road: fixed stops, with their jobs pinned (content/road.ts). */
-export const roadRegion = (c: Chart, region: number): boolean => c.regionSet === 'road' && region === 0;
+/** Whether a region of this chart is the Warden's Road: fixed stops, with their jobs pinned (content/road.ts, sim/road.ts). */
+export { roadRegion };
 
 /** A system a situation can sit in: not Cerro, a gate, or the Threshold. */
 const open = (s: StarSystem) => s.kind !== 'home' && s.kind !== 'gate' && s.kind !== 'edge';
@@ -116,9 +116,9 @@ export function laySituations(c: Chart, seed: number): Record<string, Sit> {
       for (const s of c.systems.filter((x) => regionOf(x) === region && x.col === cols[k] && open(x))) out[s.id] = { id: row.id, seen: false, done: false, arc: true };
     }
   }
-  // the road's jobs, each on its own stop and nowhere else
+  // the road's jobs, each on its own stop and nowhere else, and its moments of the unknown, one a leg
   for (const s of c.systems) {
-    const job = roadRegion(c, regionOf(s)) ? roadStop(s.name)?.job : undefined;
+    const job = stopAt(c, s)?.job ?? stopAt(c, s)?.scene;
     if (job) out[s.id] = { id: job, seen: false, done: false, arc: true };
   }
   // the jobs

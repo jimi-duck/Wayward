@@ -548,12 +548,12 @@ export class BreakoutView {
     // the ring faces the way you come in: it follows your bearing from afar and holds still once you are near (the review world always follows)
     if (this.faced !== b || world.review || Math.hypot(ship.x - b.lane.x, ship.z - b.lane.z) > 150) { this.faced = b; this.gate.rotation.y = Math.atan2(-(ship.z - b.lane.z), ship.x - b.lane.x); }
     if (b.port) this.port.position.set(b.port.x, -2, b.port.z);
-    // the Narrows' relay: dark until the key is answered, then lit section by section from the bottom over a few seconds
+    // a road gate's relay (the Narrows and every arrival after it): dark until the key is answered, then lit section by section from the bottom over a few seconds
     const relay = relayOf(b);
     this.mast.visible = !!relay;
     if (relay) {
       this.mast.position.set(relay.x, -2, relay.z);
-      this.mastLit = world.flags.has('relay_broadcast') ? Math.min(1, this.mastLit + dt / 4) : 0;
+      this.mastLit = world.flags.has(`relay_${b.def.script}`) || (b.def.script === 'narrows' && world.flags.has('relay_broadcast')) ? Math.min(1, this.mastLit + dt / 4) : 0;
       this.mastLamps.forEach((l, i) => {
         const on = this.mastLit * this.mastLamps.length > i;
         l.visible = on;

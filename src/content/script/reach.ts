@@ -35,7 +35,7 @@ export const REACH: Row[] = [
   sam('hr_sam', 'halden', { on: 'free' }, '“Halden’s Reach. Old Warden families retire here. If anyone remembers, it’s them.”'),
   // an old skiff hails from the hospice ring: her account, then (after either of the first two answers) the order, then the name
   // the three hold any job's call; the order and the name follow her card wherever it is answered (it can be carried on)
-  card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_warden', { holdsJob: true }),
+  card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_warden', { holdsJob: true, main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
   card('hr_hand', '*', { on: 'after', row: 'hr_order' }, 'story_handwriting', { holdsJob: true }),
   // the Quiet Line's first job (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
@@ -59,7 +59,7 @@ export const REACH: Row[] = [
   // ── Stop 4 · Marlow (turn) ──
   notice('ml_notice', 'marlow', { on: 'arrive', delay: 2 }, 'teal', 'Marlow', 'Kellern accounts station'),
   objective('ml_objective', 'marlow', { on: 'arrive', delay: 2 }, 'Marlow · someone here keeps the real books'),
-  card('ml_ledger', 'marlow', { on: 'free', after: 6 }, 'story_ledger'),
+  card('ml_ledger', 'marlow', { on: 'free', after: 6 }, 'story_ledger', { main: true }),
   { id: 'ml_brook', stop: 'marlow', on: { on: 'flag', flag: 'frag_ledger' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“If anyone asks, I was never here. They will ask.”' } } },
   notice('ml_wall', 'marlow', { on: 'after', row: 'ml_brook' }, 'teal', 'The Wall', 'the same initials on the transfers: L. C.'),
   sam('ml_sam_1', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. again. On the order, and on the money.”', { if: { has: ['clue_order_sig'] } }),
@@ -73,9 +73,9 @@ export const REACH: Row[] = [
   objective('ve_objective', 'vesta', { on: 'arrive' }, 'Rest here, or keep moving', 'The Narrows · 3 jumps'),
   notice('ve_ghost', 'vesta', { on: 'settle' }, 'teal', 'The Wall', 'unknown contact logged', { if: { has: ['clue_ghost'] } }),
   // Juno cut Ilse off: her recording carries the order, and Ada's name, here
-  card('ve_ilse', 'vesta', { on: 'settle' }, 'ilse_recording', { if: { not: ['frag_order'] } }),
+  card('ve_ilse', 'vesta', { on: 'settle' }, 'ilse_recording', { if: { not: ['frag_order'] }, main: true }),
   { id: 've_hester', stop: 'vesta', on: { on: 'settle' }, do: { radio: { from: 'Hester', caller: 'miners', text: '“This is Hester, rig boss. My prospector says you’re decent. There’s a toll on our lane at Branford, and we can’t pay it.”' } } },
-  sam('ve_sam', 'vesta', { on: 'after', row: 've_hester' }, '“Ada Aster. My dad said the Wardens were the last honest people in the Reach. Never knew one had family in the yards.”', { if: { has: ['ada_named'] } }),
+  sam('ve_sam', 'vesta', { on: 'after', row: 've_hester' }, '“Ada Aster. My dad said the Wardens were the last honest people in the Reach. Eben says the same. He works the yards now.”', { if: { has: ['ada_named'] } }),
   // only if she stays: a flavour line, dropped if she jumps first
   sam('ve_stay', 'vesta', { on: 'after', row: 've_sam', delay: 20 }, '“You don’t have to talk. I’ll just stay on the line a bit.”', { stale: 30 }),
   objective('ve_gate', 'vesta', { on: 'leave' }, 'Jump to Branford'),
@@ -96,8 +96,8 @@ export const REACH: Row[] = [
   objective('cl_objective', 'copperline', { on: 'arrive', delay: 2 }, 'Copperline · refit before the Narrows'),
   sam('cl_sam', 'copperline', { on: 'free', after: 5 }, '“Last port before the Narrows. Fit what you can.”'),
   // a Custody transport crosses the system: Brook, whichever way the ledger went
-  card('cl_brook', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_road', { if: { has: ['brook_met'] } }),
-  card('cl_brook_no', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_declined', { if: { not: ['brook_met'] } }),
+  card('cl_brook', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_road', { if: { has: ['brook_met'] }, main: true }),
+  card('cl_brook_no', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_declined', { if: { not: ['brook_met'] }, main: true }),
   sam('cl_taken', 'copperline', { on: 'flag', flag: 'brook_taken' }, '“They’ll make an example of him. Don’t let it be for nothing.”'),
   objective('cl_gate', 'copperline', { on: 'leave' }, 'The Narrows · 1 jump'),
 ];

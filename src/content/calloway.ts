@@ -39,7 +39,7 @@ export const TRICKS: Record<string, Trick> = {
 };
 
 /** Answers that told her the truth, or met her halfway: what trust is made of. */
-export const TOLD = new Set(['calloway:answer', 'calloway_word:ask', 'offer_home:answer', 'offer_meet:accept', 'offer_info:tell']);
+export const TOLD = new Set(['calloway:answer', 'calloway_word:ask', 'offer_home:answer', 'offer_meet:accept', 'offer_info:tell', 'offer_see:tell']);
 
 /** Each time she has seen a trick, its odds fall by this much. A spoof works less well the second time. */
 export const LEARN = 0.15;
@@ -81,7 +81,7 @@ export const HUNCH_LINES: Record<string, string> = {
   straight: '“You never turn aside, Juno. I knew where you were going.”',
 };
 
-const offer = (o: Omit<CardDef, 'kind' | 'caller' | 'trigger' | 'repeat' | 'face' | 'cargo'>): CardDef => ({
+export const offer = (o: Omit<CardDef, 'kind' | 'caller' | 'trigger' | 'repeat' | 'face' | 'cargo'>): CardDef => ({
   kind: 'offer', caller: 'calloway', trigger: 'offer', face: CALLOWAY_FACE, cargo: 'A Governor’s channel · an offer', ...o,
 });
 
@@ -93,7 +93,7 @@ const offer = (o: Omit<CardDef, 'kind' | 'caller' | 'trigger' | 'repeat' | 'face
 export const OFFERS: CardDef[] = [
   offer({
     id: 'offer_meet', from: 'Governor Idris Calloway · Offices of Peace', title: 'Meet me',
-    text: '“I keep thinking about what you told me. Meet me: one ship each, no guns. I will listen. That is all I can promise.”',
+    text: '“You were honest at the Narrows, or tried to be. Meet me at the next port. Two chairs. No guns. One hour.”',
     truths: [{ id: 'listening', weight: 3, read: 'She is alone on the channel · no escort appears on your sensors' }, { id: 'stalling', weight: 1, read: 'Her escort is moving while she keeps you talking' }],
     choices: [
       { id: 'accept', label: 'Agree to meet', tone: 'help', hint: 'She learns your location; you get a chance to see whether she will listen.', loseIf: ['stalling'],
@@ -163,7 +163,7 @@ export const OFFERS: CardDef[] = [
   }),
   offer({
     id: 'offer_identity', from: 'Governor Idris Calloway · Offices of Peace', title: 'A name that is not yours',
-    text: '“I can give your transponder a new identity: clean history, no Custody notice. In return, you owe me one honest answer when I ask.”',
+    text: '“A clean registry. A name nobody hunts. Yours for one question answered, later, when I ask it.”',
     choices: [
       { id: 'accept', label: 'Take the name', tone: 'trade', hint: 'Custody and the Offices will lose your trail for a while. You will owe Calloway an answer.', win: { text: 'A new name · the bulletins go quiet', notice: { custody: -10, office: -8 }, hunt: -1, flag: 'owes_calloway' } },
       { id: 'refuse', label: 'Keep your own', tone: 'refuse', hint: 'It is the only one that is true.', win: { text: '“It is also the one they hunt.”' } },
