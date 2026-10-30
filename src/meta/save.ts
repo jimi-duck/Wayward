@@ -13,6 +13,10 @@ import { SUPPLIES_MAX } from '../sim/breakout';
 import { SCRAP_PRICE } from '../content/systems';
 import { survivalOf } from '../content/survival';
 import { atChapter } from '../sim/chapters';
+import { newJourney } from '../sim/journey';
+import { regionOf } from '../sim/chart';
+import { roadRegion } from '../sim/road';
+import { LEGS } from '../content/road';
 
 // ── the journey save ──────────────────────────────────────────────────────
 // A journey outlives a run, so it is kept in localStorage: written whenever
@@ -90,6 +94,9 @@ export function migrate(raw: unknown): Journey | null {
   if (j.version < 20) delete (j.carry as { civic?: number }).civic;
   // 20 → 21: the Warden's Road (`?road`) and the story queue. A journey saved before keeps its own chart; its carry gets an empty queue.
   if (j.version < 21) j.carry.pending = [];
+  // 21 → 22: the whole road is authored (docs/overhaul/). A road journey still in the Reach gets the authored legs ahead of it; one
+  // already past the Narrows keeps the legs it was dealt (sim/road.ts reads those as generated).
+  if (j.version < 22) authorRoad(j as Journey);
   j.version = VERSION;
   return j as Journey;
 }
@@ -311,4 +318,26 @@ export function importJourney(text: string): Journey | null {
   if (!j) return null;
   saveJourney(j);
   return j;
+}
+
+/**
+ * A road journey saved before the whole road was authored, still in the Reach: its chart past the Narrows is swapped for the authored
+ * one dealt from the same seed. The Reach is laid out the same either way; it is checked system by system, and what the journey
+ * knows of the Reach (flown, the Net, places, skies, situations) is kept. Anything that does not match leaves the save as it was.
+ */
+export function authorRoad(j: Journey): void {
+  const c = j.chart;
+  if (c.regionSet !== 'road' || roadRegion(c, LEGS.length - 1)) return;
+  const reach = new Set(c.systems.filter((s) => s.kind === 'home' || regionOf(s) === 0).map((s) => s.id));
+  if (![...j.trail, j.at, ...(j.dest ? [j.dest] : [])].every((id) => reach.has(id))) return;
+  const fresh = newJourney(j.seed ?? 0, false, 'road', j.survival).chart;
+  const same = (id: string) => { const a = c.systems.find((s) => s.id === id), b = fresh.systems.find((s) => s.id === id); return !!a && !!b && a.name === b.name && a.kind === b.kind; };
+  if (![...reach].every(same) || fresh.home !== c.home) return;
+  const keep = <T>(from: Record<string, T> | undefined, into: Record<string, T> | undefined) => { if (from && into) for (const id of reach) if (id in from) into[id] = from[id]!; };
+  fresh.systems = fresh.systems.map((s) => (reach.has(s.id) ? c.systems.find((x) => x.id === s.id)! : s));
+  keep(c.net, fresh.net); keep(c.stall, fresh.stall); keep(c.places, fresh.places); keep(c.situations, fresh.situations); keep(c.exp, fresh.exp); keep(c.thren, fresh.thren); keep(c.raid, fresh.raid);
+  fresh.visited = [...c.visited];
+  fresh.seenNet = [...c.seenNet];
+  fresh.seenDay = c.seenDay;
+  j.chart = fresh;
 }

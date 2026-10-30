@@ -12,6 +12,7 @@ import { legOf, roadRegion, scriptKey, stopAt } from '../src/sim/road';
 import { Script, type Ctx, type Output, type Row } from '../src/sim/script';
 import { count, debtLeft } from '../src/sim/threads';
 import { newRun } from '../src/sim/run';
+import { migrate } from '../src/meta/save';
 import { finaleCard } from '../src/sim/calloway';
 import { newDossier } from '../src/sim/calloway';
 import type { Busy } from '../src/sim/desk';
@@ -279,5 +280,41 @@ describe('Calloway at the Threshold', () => {
     expect(c.text).toContain('a machine that cannot say no');
     expect(c.text).toContain('He will still try to sell you.');
     expect(c.text.endsWith('“The Threshold is behind me. Power down.”')).toBe(true);
+  });
+});
+
+describe('a road save from before the whole road', () => {
+  /** A road journey in the Reach whose legs past the Narrows were dealt, not authored (as a v21 save has them). */
+  const oldSave = (at: number) => {
+    const j = newJourney(7, false, 'road');
+    const reach = stops(j.chart, 0);
+    j.trail = [j.chart.home, ...reach.slice(0, at + 1).map((s) => s.id)];
+    j.at = reach[at]!.id;
+    j.dest = null;
+    const o = JSON.parse(JSON.stringify(j)) as Journey;
+    o.version = 21;
+    o.chart.systems.filter((s) => regionOf(s) >= 1 && s.kind !== 'gate' && s.kind !== 'edge').forEach((s, i) => { s.name = `Dealt ${i}`; });
+    o.chart.visited = [...j.trail];
+    return o;
+  };
+
+  it('gets the authored road ahead while it is still in the Reach, and keeps what it knows', () => {
+    const o = oldSave(3);
+    expect(roadRegion(o.chart, 1)).toBe(false);
+    const back = migrate(o)!;
+    expect(back.version).toBe(22);
+    for (let i = 0; i < LEGS.length; i++) expect(roadRegion(back.chart, i), `leg ${i}`).toBe(true);
+    expect(back.at).toBe(o.at);
+    expect(back.chart.visited).toEqual(o.chart.visited);
+  });
+
+  it('keeps the legs it was dealt once past the Narrows', () => {
+    const o = oldSave(3);
+    const far = o.chart.systems.find((s) => regionOf(s) === 1 && s.kind !== 'gate')!;
+    o.trail.push(far.id);
+    o.at = far.id;
+    const back = migrate(o)!;
+    expect(roadRegion(back.chart, 1)).toBe(false);
+    expect(back.chart.systems.find((s) => s.id === far.id)!.name).toBe(far.name);
   });
 });
