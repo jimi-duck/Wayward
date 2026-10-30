@@ -221,6 +221,7 @@ export class Targeting {
     if (this.cardClock < 0.1) return;
     this.cardClock = 0;
     let name = '', sub = '', intK = tr('Hull'), hp = 1, cls = '';
+    this.card.classList.remove('unk');
     if (t.kind === 'hull') {
       const a = t.ref as Alien;
       if (Math.hypot(a.x - world.ship.x, a.z - world.ship.z) > IDENT_RANGE) {
@@ -234,6 +235,7 @@ export class Targeting {
         $('tgt-int').style.setProperty('--v', '1');
         $('tgt-hp').style.setProperty('--v', '1');
         text($('tgt-int-v'), '—');
+        this.card.classList.add('unk');
         for (const k of ['elite', 'friendly', 'boss', 'neutral']) { this.box.classList.toggle(k, k === 'neutral'); this.card.classList.toggle(k, k === 'neutral'); }
         return;
       }
