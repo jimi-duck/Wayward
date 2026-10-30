@@ -157,6 +157,8 @@ function boot(review: typeof import('./review') | null): void {
   const port = new PortPanel();
   const chart = new ChartPanel();
   const course = new CoursePanel();
+  // `?debug=1` also leaves the chart and the journey on window, for the screenshot scripts
+  if (params.get('debug') === '1') (window as unknown as { __ui: unknown }).__ui = { chart, course, journey: () => journey };
   const ending = new EndingPanel();
   const heatNote = new HeatNote();
   const jobDone = new JobDone();

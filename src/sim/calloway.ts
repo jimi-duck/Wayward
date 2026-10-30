@@ -65,13 +65,15 @@ export interface Nemesis {
   wing: number;
   /** Her read on your route, for the cards' `hunch` lines: a system kind, and 'straight'. */
   hunch: string[];
+  /** The same read on the way in: what she had of your route before this system (sim/pressure.ts says what changed). */
+  was: string[];
   /** The offer she calls with (an id in content/calloway.ts OFFERS), if she has one this sortie. */
   offer: string | null;
   /** The last meeting, at the Jump Gate to the Threshold. */
   finale: CardDef | null;
 }
 
-export const NO_NEMESIS: Nemesis = { wise: {}, hp: CALLOWAY_HP, wing: 0, hunch: [], offer: null, finale: null };
+export const NO_NEMESIS: Nemesis = { wise: {}, hp: CALLOWAY_HP, wing: 0, hunch: [], was: [], offer: null, finale: null };
 
 export function newDossier(): Dossier {
   return { tricks: {}, cares: { people: 0, profit: 0, fight: 0 }, told: 0, offers: [], took: [], lastOffer: null, promise: false, broken: 0, ending: null };
@@ -108,6 +110,18 @@ export function hunchOf(c: Chart, trail: readonly string[], flags: readonly stri
   let straight = 0;
   for (let i = 0; i < trail.length - 1; i++) if (jumps(c, trail[i]!, c.edge) - jumps(c, trail[i + 1]!, c.edge) === 1) straight++;
   return { kind, straight: straight / (trail.length - 1) >= STRAIGHT };
+}
+
+/**
+ * Would her read of your route have you at `to`, going from `from`? The same habit hunchOf reads: the kind of system you
+ * keep stopping in, or the next step straight toward the Threshold. The road is straight by design, so there one stop
+ * is the only way and she expects it once she has the route. For the chart's "Calloway may expect this".
+ */
+export function expects(c: Chart, from: string, to: string, hunch: Hunch | undefined): boolean {
+  if (!hunch) return false;
+  if (hunch.kind && sysById(c, to).kind === hunch.kind) return true;
+  if (!hunch.straight) return false;
+  return c.regionSet === 'road' || jumps(c, from, c.edge) - jumps(c, to, c.edge) === 1;
 }
 
 const hunchWords = (h: Hunch | undefined): string[] => [...(h?.kind ? [h.kind] : []), ...(h?.straight ? ['straight'] : [])];
@@ -193,13 +207,14 @@ export function offerFor(d: Dossier, o: { day: number; behind: number; caught: n
 }
 
 /** What a sortie knows of her. `finale`: this sortie ends at the Threshold's Jump Gate. */
-export function nemesis(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }, o: { finale: boolean; offer: string | null; flags?: readonly string[] }): Nemesis {
+export function nemesis(d: Dossier, hunt: { caught: number; beaten: number; hunch?: Hunch }, o: { finale: boolean; offer: string | null; flags?: readonly string[]; was?: Hunch }): Nemesis {
   const hunch = hunchWords(hunt.hunch);
   return {
     wise: { ...d.tricks },
     hp: Math.round(CALLOWAY_HP * (1 + HP_BEATEN * hunt.beaten) * 100) / 100,
     wing: Math.min(3, Math.floor(uses(d, 'run') / WING_RUNS)),
     hunch,
+    was: hunchWords(o.was),
     offer: o.finale ? null : o.offer,
     finale: o.finale ? finaleCard(d, hunt, o.flags) : null,
   };

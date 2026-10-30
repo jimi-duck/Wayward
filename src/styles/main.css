@@ -809,6 +809,21 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bi-cost span:last-child { font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; }
 .bi-cost.short b { color: var(--alert); }
 .bi-then { margin: 0; font: 600 calc(var(--fs) * 1.1)/1.3 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.bi-buy { display: flex; flex-direction: column; gap: 8px; }
+/* the trade chips: blue gives, gold takes, red only where the next jump cannot be paid; small on the Suggested cards */
+.tr-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.tr-chip, .tr-more { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border: 1px solid var(--c, var(--hud)); color: var(--c, var(--hud-hi));
+  background: rgba(var(--void-rgb), .35); font: 600 max(11px, calc(var(--fs) * 1.02))/1.1 var(--font-rail); letter-spacing: .06em; text-transform: uppercase; }
+.tr-chip.gain { --c: var(--blue-hi); border-color: var(--hud); }
+.tr-chip.loss { --c: var(--caution); }
+.tr-chip.stop { --c: var(--alert-text); border-color: var(--alert); background: rgba(var(--threat-deep-rgb), .55); }
+.tr-chip .ico { width: 13px; height: 13px; }
+.tr-more { --c: var(--ink-2); border-style: dashed; border-color: var(--ink-3); cursor: pointer; }
+.tr-hide { display: none; }
+.tr-row.open .tr-hide, .tr-row:hover .tr-hide, .tr-row:focus-within .tr-hide, .tr-row:has(+ .bi-go:focus-visible) .tr-hide, .pick-card:focus-within .tr-hide { display: inline-flex; }
+.tr-row.open .tr-more, .tr-row:hover .tr-more, .tr-row:focus-within .tr-more, .tr-row:has(+ .bi-go:focus-visible) .tr-more, .pick-card:focus-within .tr-more { display: none; }
+.tr-row.small { gap: 4px; }
+.tr-row.small .tr-chip, .tr-row.small .tr-more { padding: 2px 5px; font-size: max(10px, calc(var(--fs) * .92)); }
 .bi-go { padding: 12px; border: 1px solid var(--hud); background: var(--hud-ghost); color: var(--hud-hi); cursor: pointer;
   font: 700 calc(var(--fs) * 1.35)/1.2 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; }
 .bi-go:not(:disabled):hover { background: var(--hud-dim); }
@@ -1112,7 +1127,8 @@ html:not(.breakout) .pause-card #brief { display: none; }
 @media (max-height: 520px) {
   #bay { grid-template-rows: minmax(0, 1fr); }
   .bay-insp { padding-bottom: 0; gap: 5px; }
-  .bi-go { position: sticky; bottom: 0; background: linear-gradient(var(--hud-ghost), var(--hud-ghost)), var(--glass-ink); }
+  .bi-buy { position: sticky; bottom: 0; background: var(--glass-ink); }
+  .bi-go { background: linear-gradient(var(--hud-ghost), var(--hud-ghost)), var(--glass-ink); }
   .bi-go:disabled { background: var(--glass-ink); }
 }
 /* a phone on its side: the chips are a little tighter */
@@ -1546,3 +1562,12 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 @media (max-width: 520px) { .op-facts { grid-template-columns: 1fr; } }
 .bb-v { white-space: nowrap; }
 @media (max-width: 700px), (max-height: 520px) { .bb-v small { display: none; } .bb-v { font-size: 12px; } }
+
+/* Calloway's lines on the radio: her portrait and name, in the Office's colour, never at the Wanted bar */
+.rd-line.her { --her: var(--faction-office); border-left-color: var(--her); align-items: center; gap: 3px 10px; }
+.rd-line.her b { color: var(--her); }
+.rd-line .rdl-face { width: 40px; height: 40px; flex: none; object-fit: cover; border: 1px solid var(--her, var(--cy-dim)); }
+@media (max-height: 520px) { .rd-line .rdl-face { width: 30px; height: 30px; } }
+/* the chart's chip on a stop her read expects */
+.chip.her { color: var(--faction-office); border-color: var(--faction-office); }
+.ch-o1 .chip.her, .co-blurb .chip.her { margin-left: 6px; }

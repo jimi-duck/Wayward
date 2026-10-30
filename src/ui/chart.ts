@@ -1,6 +1,6 @@
 import type { SystemKind } from '../content/systems';
 import { overRatings, weightFuel } from '../sim/budgets';
-import { fileLines } from '../sim/calloway';
+import { expects, fileLines } from '../sim/calloway';
 import { QUESTIONS, WHYS } from '../content/situations';
 import { longIndex } from '../sim/situations';
 import { lanesFrom, netted, regionCount, regionDef, regionSystems, sysById, viewOf, type StarSystem } from '../sim/chart';
@@ -159,6 +159,8 @@ export class ChartPanel {
   private onPick: ((id: string) => void) | null = null;
   private onGo: (() => void) | null = null;
   private chips: Chip[] = [];
+  /** The stops her read of your route expects (sim/calloway.ts expects). */
+  private expected = new Set<string>();
   private watch: ResizeObserver | null = null;
 
   get open(): boolean {
@@ -185,6 +187,7 @@ export class ChartPanel {
     // nearest the gate first: Enter alone keeps the journey moving
     this.fs = forks(j).sort((a, b) => (a.gateAfter ?? 1e9) - (b.gateAfter ?? 1e9) || a.fuel - b.fuel || a.to.y - b.to.y);
     this.sel = 0;
+    this.expected = new Set(this.fs.filter((f) => expects(j.chart, j.at, f.to.id, j.hunt.hunch)).map((f) => f.to.id));
     this.renderHead(j);
     ($('ch-alerts') as HTMLElement).replaceChildren(...this.alerts(j).map((a) => h('li', a.hot ? 'hot' : '', a.text)));
     this.renderList();
@@ -386,7 +389,7 @@ export class ChartPanel {
       // one stats line: days, fluid (gold when the tank is short), the way to the goal, and where the Wanted level goes
       const stat = (cls: string, text: string) => h('span', cls, text);
       const b = h('button', `ch-opt ${f.stance}${i === this.sel ? ' sel' : ''}`, '',
-        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', `chip d${f.danger}`, t(STANCE_WORD[f.stance]))),
+        h('div', 'ch-o1', '', h('kbd', '', String(i + 1)), glyph(s.kind), h('b', '', s.name), h('span', `chip d${f.danger}`, t(STANCE_WORD[f.stance])), ...(this.expected.has(s.id) ? [h('span', 'chip her', t('Calloway may expect this'))] : [])),
         h('div', 'ch-o2', '',
           stat('', days(f.days)),
           stat(f.short ? 'short' : '', `${f.fuel} ${t('fluid')}`),

@@ -30,7 +30,17 @@ export class Radar {
   private readonly threat = new Float32Array(ARCS);
   private readonly still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /** Until when the Jump Gate's bearing is ringed (performance.now ms). */
+  private pingUntil = 0;
+  private pingFrom = 0;
+
   constructor(private readonly canvas: HTMLCanvasElement) {}
+
+  /** Ring the Jump Gate's bearing on the scope for a few seconds: the tank can make the jump now. */
+  ping(secs: number): void {
+    this.pingFrom = performance.now();
+    this.pingUntil = this.pingFrom + secs * 1000;
+  }
 
   /** Size the backing store to the element. */
   layout(): void {
@@ -125,6 +135,18 @@ export class Radar {
       g.fillStyle = INK.goal;
       g.beginPath(); g.moveTo(0, -sz * 1.2); g.lineTo(sz, sz * 0.8); g.lineTo(0, sz * 0.2); g.lineTo(-sz, sz * 0.8); g.closePath(); g.fill();
       g.restore();
+    }
+    // the Jump Gate, ringed for a few seconds once the tank can make the jump: a ring that opens and fades (still, with reduced motion)
+    if (bk && performance.now() < this.pingUntil) {
+      const gate = world.seenPlaces().find((p) => p.kind === 'lane');
+      if (gate) {
+        const a = at(Math.atan2(-(gate.z - s.z), gate.x - s.x)) - Math.PI / 2, r = Rb + 9.5 * dpr;
+        const ph = this.still ? 0.4 : ((performance.now() - this.pingFrom) / 1000) % 1;
+        g.save(); g.translate(Math.cos(a) * r, Math.sin(a) * r);
+        g.strokeStyle = rgba(RGB.teal, this.still ? 0.9 : 1 - ph); g.lineWidth = 2 * dpr;
+        g.beginPath(); g.arc(0, 0, (6 + 9 * ph) * dpr, 0, Math.PI * 2); g.stroke();
+        g.restore();
+      }
     }
     // the heading index: a notch at the top, where the nose points
     g.fillStyle = `rgb(${HUD})`;

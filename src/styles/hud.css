@@ -671,3 +671,26 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 :root:not(.touch-ui) #plate .sys-row > .lbl { font-size: var(--fs-min); }
 /* a warning state: the shield is gone, the next hit is the hull */
 #log-lines p.hit.warn span { color: var(--caution); }
+
+/* Wanted's callout, at the bar: gold, or red when ships are on their way. It ends with what to do. */
+#heat-call { position: absolute; right: calc(100% + 14px); bottom: -4px; width: max-content; max-width: min(300px, 36vw); padding: 5px 9px; border-right: 2px solid var(--caution); background: rgba(var(--void-rgb), .78);
+  font: 600 max(12px, calc(var(--fs) * 1.1))/1.25 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; text-align: right; color: var(--caution); pointer-events: none; }
+#heat-call.hot { border-right-color: var(--alert); color: var(--alert-text); background: rgba(var(--threat-deep-rgb), .7); }
+#heat-call[hidden] { display: none; }
+#heat-call.on { animation: heat-call 6s linear forwards; }
+@keyframes heat-call { 0% { opacity: 0; } 4% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { #heat-call.on { animation: none; } }
+
+/* Jump ready: one pulse on the fluid readout, the objective's ticks and its line; the Jump Gate's pointer opens a ring for a few seconds */
+#sys-fuel.cue .val, #sys-fuel.cue .bar { animation: cue-fuel 1.2s ease-out 1; }
+#obj-p.cue { animation: cue-ticks 1.2s ease-out 1; }
+#objective.cue #obj-t { animation: cue-line 1.4s ease-out 1; }
+@keyframes cue-fuel { 0% { filter: brightness(2.2); } 100% { filter: none; } }
+@keyframes cue-ticks { 0% { filter: brightness(2.4) drop-shadow(0 0 4px var(--teal)); } 100% { filter: none; } }
+@keyframes cue-line { 0% { text-shadow: 0 0 10px var(--teal-bright); color: var(--teal-bright); } 100% { text-shadow: none; } }
+#ptr-lane.ping i { animation: ptr-ping 1s ease-out infinite; border-color: var(--teal-bright); }
+@keyframes ptr-ping { 0% { scale: 1; } 60% { scale: 1.7; } 100% { scale: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  #sys-fuel.cue .val, #sys-fuel.cue .bar, #obj-p.cue, #objective.cue #obj-t, #ptr-lane.ping i { animation: none; }
+  #ptr-lane.ping i { scale: 1.4; }
+}
