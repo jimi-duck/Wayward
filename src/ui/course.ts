@@ -78,6 +78,10 @@ export class CoursePanel {
     const purs = $('co-purs');
     purs.textContent = pursuitLine(c.pursuit);
     purs.className = `co-purs ${c.pursuit.hidden ? 'rest' : c.pursuit.tone}`;
+    // the breach debt, once the Account has called: what is left, or Draper's hold on it once he has shown himself
+    const debt = $('co-debt');
+    debt.hidden = !c.debt;
+    debt.textContent = !c.debt ? '' : c.debt.settled ? `${t('Debt · Settled')} · ${t('held by Director Draper')}` : t('Debt · {n} CR · Kellern Recovery', { n: c.debt.left });
     const why = $('co-why');
     why.hidden = short <= 0;
     why.textContent = short > 0 ? t('Needs {n} more fluid', { n: short }) : '';
@@ -113,7 +117,7 @@ export class CoursePanel {
     const here = c.road.findIndex((r) => r.state === 'here');
     const nodes: Node[] = [
       ...(here < 0 ? [{ name: c.here.name, kind: c.here.kind, state: 'here' as const, gate: false }] : []),
-      ...c.road.map((r, i) => ({ name: r.name, kind: r.kind, state: (r.state === 'ahead' && (here < 0 ? i === 0 : i === here + 1) ? 'next' : r.state) as Node['state'], gate: r.kind === 'gate' })),
+      ...c.road.map((r, i) => ({ name: r.name, kind: r.kind, state: (r.state === 'ahead' && (here < 0 ? i === 0 : i === here + 1) ? 'next' : r.state) as Node['state'], gate: r.kind === 'gate' || r.kind === 'edge' })),
     ];
     const kids: SVGElement[] = [];
     for (let x = 60; x < W; x += 60) kids.push(svg('line', { x1: x, y1: 0, x2: x, y2: H, class: 'ch-grid' }));

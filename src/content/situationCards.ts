@@ -223,12 +223,12 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_voice_knows', kind: 'warning', caller: 'unknown', tier: 'important',
     from: 'The Voice · a relay', title: 'THE PREFECT IS BEHIND YOU',
-    text: '“THE PREFECT IS BEHIND YOU. SHE IS NOT ALONE. YOU WERE NOT TOLD THIS.”',
+    text: '“THE PREFECT IS BEHIND YOU. SHE IS NOT ALONE. YOU WERE NOT TOLD THIS. WE ARE TELLING YOU.”',
     lines: [{ if: { flag: 'voice_mended' }, text: '“YOU LET US MEND YOU. WE REMEMBER.”' }, { if: { flag: 'voice_cut' }, text: '“YOU CUT THE CHANNEL AT RELAY SEVEN. WE FORGIVE IT.”' }],
     cargo: 'No ship · a relay speaking to you alone',
     choices: [
       { id: 'listen', label: 'Ask what it knows', tone: 'help', hint: 'It names the lane she took. You gain time.', win: { text: 'It names the lane she took · you gain time', hunt: 1.5, flag: 'news' } },
-      { id: 'how', label: 'Ask how it knows', tone: 'bluff', hint: 'It will not say.', win: { text: '“THE WAYS ARE LONG. WE ARE IN ALL OF THEM.”', flag: 'voice_asked_how' } },
+      { id: 'how', label: 'Ask how it knows', tone: 'bluff', hint: 'It will not say.', win: { text: '“THE WAYS ARE LONG. WE ARE IN ALL OF THEM. WE HEARD THE NARROWS NAME HER.”', flag: 'voice_asked_how' } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'You do not want to be known.', win: { text: 'The relay goes quiet', flag: 'voice_cut' } },
     ],
   }),
@@ -259,7 +259,7 @@ export const SCENE_CARDS: CardDef[] = [
   scene({
     id: 'sc_voice_direct', kind: 'warning', caller: 'unknown', tier: 'major',
     from: 'The Voice · every terminal at once', title: 'WE WOULD LIKE TO ASK',
-    text: '“JUNO. WE KEPT THE KEYS. THE THREN KEEP THE LANES. YOU CARRY A FILE THAT SAYS WHY. WHO DO YOU TRUST WITH IT?”',
+    text: '“JUNO. WE KEPT THE KEYS. THEY KEEP THE LANES. YOU CARRY WHY. WHO DO YOU TRUST WITH IT?”',
     lines: [
       { if: { flag: 'voice_delivered' }, text: '“THE PARTS ARRIVED. WE ARE GRATEFUL. WE ARE NOT SORRY.”' },
       { if: { flag: 'voice_opened' }, text: '“YOU OPENED THE CASE. GOOD. WE WOULD HAVE.”' },

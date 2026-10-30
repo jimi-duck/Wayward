@@ -63,17 +63,40 @@ export interface EndingDef {
   /** The Archive's entry for the file, once this ending is reached. */
   file: string;
   epilogue: Array<{ if?: Need; text: string }>;
+  /**
+   * The road's epilogue (docs/overhaul/SCRIPT_EN_DE.md §12): an opener, then at most one line of each slot in this order, the
+   * thread payoff, a person and a cost, then Oren's third answer and the closing line, always shown.
+   */
+  road: { open: string; lines: Array<{ slot: 'thread' | 'person' | 'cost'; if?: Need; text: string }>; close: string };
 }
+
+/** Oren's third question, answered on the road: one line shared by every ending. */
+export const OREN_LINES: Array<{ flag: string; text: string }> = [
+  { flag: 'oren_truth', text: 'You said it was for the truth. Oren writes that down.' },
+  { flag: 'oren_mercy', text: 'You said mercy. Oren says that is the hardest one to keep.' },
+  { flag: 'oren_freedom', text: 'You said freedom. Oren asks whose.' },
+];
 
 export const ENDINGS: EndingDef[] = [
   {
-    id: 'broadcast', name: 'Broadcast', pitch: 'Send the file to the core worlds. Hope the truth is enough.',
+    id: 'broadcast', name: 'Broadcast', pitch: 'Send it everywhere. Let everyone decide.',
     needs: 'Needs: Signals 2 or the long-range array, Office frequencies and Calloway listening, the whole file, or the Voice.',
     ways: [
       { marks: { signals: 2 } }, { module: ['md_array'] }, { allFlags: ['freqs', 'calloway_told'] }, { flags: ['freqs'], marks: { signals: 1 } },
       { fragments: 4 }, { flags: ['voice_read'] }, { flags: ['copy_warden'], marks: { signals: 1 } },
     ],
     file: 'SEVERANCE · the broadcast copy',
+    road: {
+      open: 'The file goes out on every band the relays still know, all eight in a row, in Ada’s key.',
+      lines: [
+        { slot: 'thread', if: { flags: ['field_line', 'thread_line_5'] }, text: 'It doesn’t leave on one ship. Quill and a hundred hulls carry copies into the core.' },
+        { slot: 'person', if: { flags: ['frag_blackbox', 'ada_heard'] }, text: 'Ada’s voice goes first. “My name is Ada. I helped.”' },
+        { slot: 'person', if: { flags: ['copy_warden'] }, text: 'Ilse Marrow reads the order aloud at Halden’s Reach. She stops twice. Not from age.' },
+        { slot: 'person', if: { flags: ['brook_free'] }, text: 'Adam Brook reads Kellern’s real books on air, grandfather’s name and all.' },
+        { slot: 'cost', text: 'Within a month the Scatter demands its lanes back. Somewhere past the ring, a relay lights without a key.' },
+      ],
+      close: 'Everyone knows. That was the easy part.',
+    },
     epilogue: [
       { text: 'The Wayward’s array points down the old lane. The file goes out on every band.' },
       { text: 'For a day nothing happens. Then the core worlds start asking where seventy years of Krail went.' },
@@ -91,10 +114,19 @@ export const ENDINGS: EndingDef[] = [
     ],
   },
   {
-    id: 'unite', name: 'Unite', pitch: 'Bring the Holdfasts, the Drifts and the rest together to fight back.',
+    id: 'unite', name: 'Unite', pitch: 'Bring the Scatter together for the first time in seventy years.',
     needs: 'Needs: friends (standing 2) with two of miners, Frontier, Guild, Gutter. Or one, plus Contacts 2 or an ally. Or Kessel Hold and the Long Walk.',
     ways: [{ friends: 2 }, { friends: 1, marks: { contacts: 2 } }, { allFlags: ['pact_holdfast', 'pact_drift'] }, { friends: 1, flags: ['pact_holdfast', 'pact_drift'] }],
     file: 'SEVERANCE · the copy read at the Threshold moot',
+    road: {
+      open: 'Kessel Hold calls the first moot with more than one Holdfast in it.',
+      lines: [
+        { slot: 'thread', if: { flags: ['thread_crews_3'] }, text: 'Hester’s crews come with their strike fund and their own list. Your name is on it.' },
+        { slot: 'person', if: { flags: ['pact_drift', 'wren_trust'] }, text: 'The Long Walk turns its fleet toward the meeting. Wren flies point. Ma Saffi reads the list first.' },
+        { slot: 'cost', if: { flags: ['job_missing_payroll_won', 'job_drift_cache_won', 'job_heavy_tanker_won'] }, text: 'Not everyone comes. Some remember the wages, the cache, the wreck. A union built on a debt is still in debt.' },
+      ],
+      close: 'Divided on purpose. Together by choice. For now.',
+    },
     epilogue: [
       { text: 'Word goes out from the Threshold, and for once the Scatter comes when called.' },
       { if: { flags: ['pact_holdfast'] }, text: 'Kessel Hold opens its yards first, as Councillor Oduya promised.' },
@@ -115,6 +147,14 @@ export const ENDINGS: EndingDef[] = [
     needs: 'Needs: standing 2 with Guild or Gutter, a Gutter friend, Gutter names fitted, or Val’s advance.',
     ways: [{ standing: { guild: 2 } }, { standing: { gutter: 2 } }, { flags: ['gutter_friend', 'broker'] }, { module: ['md_names'] }],
     file: 'SEVERANCE · a receipt, and nothing else',
+    road: {
+      open: 'Val pays in full, in public, and smiles like she means it.',
+      lines: [
+        { slot: 'person', if: { flags: ['draper_revealed', 'broker'] }, text: 'Three days later the file turns up in Draper’s hands. It turns out Val has a buyer too.' },
+        { slot: 'cost', text: 'The truth is an asset now. It comes out when it is useful, and stays in when it isn’t.' },
+      ],
+      close: 'You are free. That was the deal.',
+    },
     epilogue: [
       { text: 'The auction takes four hours. The file goes for more Krail than Kellern Mining cut in a decade.' },
       { if: { standing: { gutter: 2 } }, text: 'The Gutter win it. A month later there are new lanes on their charts, with tolls.' },
@@ -128,10 +168,19 @@ export const ENDINGS: EndingDef[] = [
     ],
   },
   {
-    id: 'trade', name: 'Trade', pitch: 'Give it back for amnesty, a new name, maybe a way home.',
+    id: 'trade', name: 'Trade', pitch: 'Give it to Calloway for amnesty, a name, and a way home.',
     needs: 'Needs: Calloway told the truth, Draper given time, or Custody standing, and the Offices not hunting you. Or Calloway turned.',
     ways: [{ flags: ['calloway_told', 'stalled'], calm: ['office'] }, { standing: { custody: 1 }, calm: ['office'] }, { flags: ['calloway_turned'] }],
     file: 'SEVERANCE · a receipt stamped by the Offices of Peace',
+    road: {
+      open: 'Calloway publishes a version. It is shorter than yours, and more honest than anything before it.',
+      lines: [
+        { slot: 'thread', if: { flags: ['draper_recorded', 'stalled'] }, text: 'Director Draper is reassigned to a desk with no accounts on it.' },
+        { slot: 'person', if: { flags: ['sig_used'] }, text: 'It says her father asked for ten years. It does not say how many he got.' },
+        { slot: 'cost', text: 'The lanes stay closed. The contracts are rewritten. Kellern’s rates drop by a third. People notice.' },
+      ],
+      close: 'Your new registry has your real name on it.',
+    },
     epilogue: [
       { text: 'Calloway meets you at the Threshold with a pardon already signed. She does not look at the file.' },
       { if: { flags: ['draper_director'] }, text: 'Director Draper signs the pardon too, through his teeth. He did say it twice.' },
@@ -145,10 +194,19 @@ export const ENDINGS: EndingDef[] = [
     ],
   },
   {
-    id: 'seal', name: 'Seal', pitch: 'Destroy the lanes again. The Scatter stays free, the core stays dark.',
+    id: 'seal', name: 'Seal', pitch: 'Close the lanes for good. The Scatter stays free, and alone.',
     needs: 'Needs: Guns or Rig 3, Guns and Rig 2, Calloway beaten and Guns 1, or the Voice’s keys.',
     ways: [{ marks: { guns: 3 } }, { marks: { rig: 3 } }, { marks: { guns: 2, rig: 2 } }, { beaten: 1, marks: { guns: 1 } }, { flags: ['lane_keys'] }],
     file: 'SEVERANCE · burned; this is what was left',
+    road: {
+      open: 'You give the Voice one instruction. It says thank you, and then it says it to them.',
+      lines: [
+        { slot: 'thread', if: { flags: ['thread_survey_3', 'survey_map'] }, text: 'Beyond the ring, the motes stop gathering. The lanes go quiet in a way they haven’t been for seventy years.' },
+        { slot: 'person', if: { flags: ['sable_trust'] }, text: 'Sable stays in the lane. She sends one pattern back. It might mean goodbye.' },
+        { slot: 'cost', text: 'Nobody will cross again. Not the core’s pickets. Not the Ferry. Not anybody’s granddaughter.' },
+      ],
+      close: 'You decided for everyone. Somebody had to. That is what they said, too.',
+    },
     epilogue: [
       { if: { flags: ['lane_keys'] }, text: 'The Voice turns the keys it kept for seventy years. It does not say why.' },
       { text: 'The Threshold lane takes all the charges in the hold and most of the Wayward’s paint.' },
@@ -161,10 +219,19 @@ export const ENDINGS: EndingDef[] = [
     ],
   },
   {
-    id: 'vanish', name: 'Vanish', pitch: 'Take the Wayward off the charts. Let everyone else decide.',
+    id: 'vanish', name: 'Vanish', pitch: 'Take the Wayward off the charts. Let someone else decide.',
     needs: 'Always open.',
     ways: [{}],
     file: 'SEVERANCE · a copy left in a dead drop',
+    road: {
+      open: 'You turn the transponder off and leave it off.',
+      lines: [
+        { slot: 'person', if: { flags: ['implant_burned'] }, text: 'The helm is yours alone. Nobody, living or otherwise, knows your name.' },
+        { slot: 'person', if: { flags: ['implant_kept', 'implant_rewritten'] }, text: 'Some nights the routine opens a note you haven’t read. You don’t read it yet.' },
+        { slot: 'cost', text: 'The file is still aboard. Calloway keeps looking. So does Draper. One day someone else will need it.' },
+      ],
+      close: 'Keep moving.',
+    },
     epilogue: [
       { text: 'You leave a copy in a dead drop and point the Wayward at the dark.' },
       { if: { wrecksMin: 2 }, text: 'She has been wrecked twice and patched three times. She holds.' },

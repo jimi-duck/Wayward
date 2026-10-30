@@ -11,6 +11,9 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Script, type Output } from './script';
+import { derive, SIG_CLUES, relaysLit } from './evidence';
+import { ON_ROAD } from '../content/road';
+import { debtLeft } from './threads';
 import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
@@ -132,8 +135,10 @@ export const BAY_QUIET = 2;
 /** Seconds into a sortie before the system's place shows itself. */
 export const PLACE_AT = 30;
 
-/** Seconds the Narrows gate holds after the handshake while the scene plays. */
-const NARROWS_HOLD = 240;
+/** Seconds a road gate holds a stop's main beats once the player is at it (the Narrows rule, #384, for every stop). */
+const GATE_HOLD = 240;
+/** The Slow Door takes this long to open after arrival (content/script/arrivals.ts). */
+const SLOW_DOOR = 180;
 
 export class World implements EncounterHost {
   readonly rng: Rng;
@@ -446,7 +451,9 @@ export class World implements EncounterHost {
     if (def.first) this.traffic = new Traffic(this);
     if (this.carryIn) this.bringAboard(this.carryIn);
     this.script = def.script ? new Script(SCRIPT, def.script, this.heard, this.carryIn?.pending ?? []) : null;
-    this.relayAt = Infinity;
+    this.holdAt = Infinity;
+    this.gateLet = false;
+    this.holdNoted = false;
     this.storyObjective = null;
     this.stock();
     this.fitAboard();
@@ -891,8 +898,9 @@ export class World implements EncounterHost {
 
     // the Jump Gate: the drive charges on the way in (with the fluid in the tank) and the ship goes through the ring as soon as it is ready
     // the Narrows gate holds her while its scene plays: no spooling, so the script's lines are not held back as a jump's
-    const gateHeld = this.narrowsHeld();
-    const near = dl < Math.max(APPROACH, b.spoolNeed * 46) && !gateHeld;
+    const inReach = dl < Math.max(APPROACH, b.spoolNeed * 46);
+    const gateHeld = inReach && this.gateHeld();
+    const near = inReach && !gateHeld;
     if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
       if (b.spool === 0) this.events.push({ type: 'spool' });
       b.spool += dt * (1 - JAM_SPOOL * this.navNoise);
@@ -1463,24 +1471,39 @@ export class World implements EncounterHost {
     return 'free';
   }
 
-  /** A free moment for the story: nothing hostile near or firing, no card or call open, no job fight, not in a ring or a jump. */
   /**
-   * The Narrows: the gate holds until the scene at the mast has played out (the note, the Patience's answer), so a jump never
-   * skips it. If it has not played four minutes after the handshake, something is wrong with it and the gate lets her go.
+   * A road stop's Jump Gate holds while its main beats are owed (sim/script.ts `owed`): the card at a stop, the scene at a relay
+   * mast. A handshake not yet made holds it for as long as it takes: the mast is a short flight off. Anything else is given
+   * GATE_HOLD seconds from the moment she is at the gate; then the gate lets her go, and what was owed is carried to the next
+   * stop. The Slow Door also takes SLOW_DOOR seconds to open. Called only with the gate in reach.
    */
-  private narrowsHeld(): boolean {
-    if (this.bk?.def.script !== 'narrows' || this.flags.has('calloway_asked')) return false;
-    if (!this.flags.has('relay_broadcast')) return true;
-    if (this.relayAt === Infinity) this.relayAt = this.runTime;
-    return this.runTime - this.relayAt < NARROWS_HOLD;
+  private gateHeld(): boolean {
+    const sc = this.script, b = this.bk;
+    if (!sc || !b || this.gateLet) return false;
+    const tank = this.tankCap ? this.fuel / this.tankCap : 0;
+    const o = sc.owed(this.flags, tank);
+    const slow = b.def.script === 'slowdoor' && this.runTime - this.desk.arrived < SLOW_DOOR;
+    if (!o.any && !slow) return false;
+    if (!this.holdNoted) {
+      this.holdNoted = true;
+      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: o.handshake ? 'answer the relay first' : slow ? 'the gate is opening' : 'a call is coming in' });
+    }
+    if (o.handshake) return true;
+    if (this.holdAt === Infinity) this.holdAt = this.runTime;
+    if (!slow && this.runTime - this.holdAt >= GATE_HOLD) { sc.release(this.flags, tank); this.gateLet = true; return false; }
+    return true;
   }
-  private relayAt = Infinity;
+  /** When the gate first held her (Infinity: not yet), whether it has let go, and whether she was told. */
+  private holdAt = Infinity;
+  private gateLet = false;
+  private holdNoted = false;
 
   /** A hub beat of the stop's script is still due: a job's call waits for it. */
-  scriptHoldsJob(): boolean { return !!this.script?.holdsJob(this.flags); }
+  scriptHoldsJob(): boolean { return !!this.script?.holdsJob(this.flags, this.tankCap ? this.fuel / this.tankCap : 0); }
 
+  /** A free moment for the story: nothing hostile near or firing, no card or call open, no job fight, not in a ring or a jump (a road gate's ring is fine). */
   private scriptFree(busy: Busy, t: number): boolean {
-    return busy === 'free' && !this.call && !this.comms && (!this.safe || this.bk?.def.script === 'narrows') && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
+    return busy === 'free' && !this.call && !this.comms && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || this.holdAt < Infinity) && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
   }
 
   private scriptCtx(busy: Busy, t: number) {
@@ -1497,8 +1520,10 @@ export class World implements EncounterHost {
   /** What a script row does when it plays. */
   private playOutput(o: Output): void {
     const name = this.bk?.def.name ?? '';
-    if ('radio' in o) this.events.push({ type: 'ping', id: `story_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text), moment: 'calm', system: name });
-    else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason });
+    // a line may carry what the flags add up to: the debt left, the relays lit
+    const vars = { debt: debtLeft(this.flags), relays: relaysLit(this.flags) };
+    if ('radio' in o) this.events.push({ type: 'ping', id: `story_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
+    else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason) });
     else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet) };
     else if ('card' in o) { const def = CARD_BY_ID[o.card]; if (def) this.desk.offer(def, 'major', this.runTime, false, true); }
     else if ('wall' in o) this.flags.add(o.wall);
@@ -1555,6 +1580,9 @@ export class World implements EncounterHost {
       this.flags.add('ghost_here');
     }
     if (this.ghost?.near) this.flags.add('ghost_close');
+    // what the flags add up to (relays lit, thread steps, the proofs), kept as flags for the script and the cards (sim/evidence.ts)
+    if (this.flags.has(ON_ROAD)) derive(this.flags);
+    else for (const [clue, sig] of SIG_CLUES) if (this.flags.has(clue)) this.flags.add(sig);
     if (this.script) for (const o of this.script.step(this.scriptCtx(busy, t))) this.playOutput(o);
     // the first system's docks always call when you come up on them, the depot once and the audit dock while its lock holds
     if (b.def.first && !this.docked) {

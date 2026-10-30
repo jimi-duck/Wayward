@@ -361,6 +361,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_tanker', kind: 'job', caller: 'gutter', tier: 'important',
+    thread: { chip: 'Account · Hester’s crews ↓', line: 'It carries their filters.' },
     from: 'A fixer · no name', title: 'The Heavy Tanker',
     text: '“A tanker is carrying a valuable load with two escorts. Disable its engines without destroying the ship, then take the cargo.”',
     cargo: 'A tanker · slow, heavy, two escorts',
@@ -372,6 +373,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_wanted', kind: 'job', caller: 'custody', tier: 'important',
+    thread: { chip: 'The Account', line: '“Ms Aster. Your breach balance stands at eighty. We have a way to settle it. One bounty. Alive, please.”' },
     from: 'Custody liaison · a bounty', title: 'Wanted: Alive',
     text: '“Brannock is wanted for a Custody manifest she never filed. Alive pays double. Disable her engines without destroying the ship.”',
     cargo: 'A runner · fast for her size, one drive',
@@ -383,6 +385,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_shift', kind: 'plea', caller: 'miners', tier: 'important',
+    thread: { chip: 'Hester’s crews', line: '“My rig, my mother’s name on it. I’m not leaving.”' },
     from: 'Rig foreman · Hester', title: 'Hold the Last Shift',
     text: '“Raiders are coming for the rig. Forty of us are aboard. Hold them off for 100 seconds and Guild patrol will arrive. We need your guns.”',
     cargo: 'A rig · forty crew, no guns',
@@ -394,6 +397,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_needle', kind: 'job', caller: 'frontier', tier: 'routine',
+    thread: { chip: 'Quiet Line', line: '“Quill wants to see you fly before she trusts you.”' },
     from: 'Quill · independent pilot', title: 'Run the Needle',
     text: '“Six beacons, one run, rocks between them. Pay five Cyrite to enter. Beat me to the finish and the prize is yours.”',
     cargo: 'A racer · small, quick, polished',
@@ -405,6 +409,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_hole', kind: 'job', caller: 'office', tier: 'important',
+    thread: { chip: 'The Survey', line: '“Survey Office. The last reading. Where nobody came back from.”' },
     from: 'Survey Office · open contract', title: 'The Point of No Return',
     text: '“Take three readings around the black hole, each closer than the last. Navigation may fail and the core will damage your ship. The closer you get, the more the Office pays.”',
     cargo: 'A black hole · bends the lane',
@@ -428,6 +433,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_kill_zone', kind: 'job', caller: 'guild', tier: 'important',
+    thread: { chip: 'Hester’s crews', line: '“The guns at the yard point at my crews. Take them out.”' },
     from: 'Guild dispatch', title: 'Clear the Crossing',
     text: '“Six raiders are blocking the crossing. No one gets through. Clear every ship and the Guild pays for each one.”',
     cargo: 'A crossing · six raiders, two of them heavy',
@@ -439,6 +445,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_missing', kind: 'distress', caller: 'miners', tier: 'important',
+    thread: { chip: 'Hester’s crews', line: '“Eleven people, gone quiet at Gannet. Bring them home.”' },
     from: 'Union clerk', title: 'The Missing Shift',
     text: '“Nine miners have been silent since yesterday. Their last beacon came from the wreck field. Bring one supply in case they survived.”',
     cargo: 'A wreck · one faint beacon',
@@ -462,6 +469,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_answered', kind: 'job', caller: 'office', tier: 'important',
+    thread: { chip: 'The Survey', line: '“Survey Office. Note your tank when it answers. Every time.”' },
     from: 'Survey Office', title: 'Someone Answered',
     text: '“A relay responds when scanned. Three unknown contacts are circling it. Do not fire. Approach slowly, listen and record what happens.”',
     cargo: 'A relay · three unregistered contacts',
@@ -473,6 +481,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_wreck', kind: 'job', caller: 'office', tier: 'routine',
+    thread: { chip: 'The Survey', line: '“Survey Office. Your scope logs are worth money to us. The wreck at the Graveyard first. Careful questions, good pay.”' },
     from: 'Salvage broker', title: 'The Wreck That Remembered',
     text: '“A derelict still holds a flight log. Recover an intact copy and the Offices will pay. Someone else is trying to erase it.”',
     cargo: 'A wreck · its log still powered',
@@ -484,6 +493,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_distance', kind: 'job', caller: 'frontier', tier: 'important',
+    thread: { chip: 'Quiet Line', line: '“These codes are how we walk people past checkpoints. Copy them clean and nobody gets stopped.”' },
     from: 'A broker · no name', title: 'Copy the Patrol Codes',
     text: '“Four patrol ships follow a loop. Their access codes change at each turn. Hold still in the middle, copy the codes and stay undetected.”',
     cargo: 'A patrol · four hulls, one slow loop',
@@ -495,6 +505,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_bait', kind: 'job', caller: 'guild', tier: 'important',
+    thread: { chip: 'The Account', line: '“No more desks, Juno. Custody pickets, two of them, my word against theirs. You know who pays now. Still interested?”' },
     from: 'Guild gunship', title: 'Draw Them Out',
     text: '“A Custody picket is blocking our lane. Draw four ships out and we will finish the job. Break as many as you can.”',
     cargo: 'A gunship · holding off, waiting for a target',
@@ -506,6 +517,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_dead_drop', kind: 'job', caller: 'gutter', tier: 'important',
+    thread: { chip: 'Quiet Line', line: '“A drop only four people know. Keep it that way.”' },
     from: 'A broker · no name', title: 'The Dead Drop',
     text: '“A package is waiting at the beacon. Collect it and bring it back. Someone may have been tipped off, so watch for an ambush on the way out.”',
     cargo: 'A beacon · one small package',
@@ -517,6 +529,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_long_walk', kind: 'plea', caller: 'miners', tier: 'important',
+    thread: { chip: 'Hester’s crews', line: '“Hester’s people, walking home. Walk with them.”' },
     from: 'Hauler Dunne', title: 'Escort the Hauler',
     text: '“I have one working drive and half my speed. Escort me to the lane and my crew will pay what they can. Raiders will come.”',
     cargo: 'A hauler · one drive, slow, heavy',
@@ -528,6 +541,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_finders', kind: 'job', caller: 'guild', tier: 'routine',
+    thread: { chip: 'Quiet Line', line: '“Quill’s racing for it too. Pike says don’t let her win.”' },
     from: 'A claims clerk', title: 'Race for the Wreck',
     text: '“The first crew to reach the claim owns it. A rival has the same chart. Pass four markers in one run and the wreck is yours.”',
     cargo: 'A claim · a big wreck, and a rival salvor',
@@ -539,6 +553,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_dark', kind: 'job', caller: 'office', tier: 'important',
+    thread: { chip: 'The Survey', line: '“Survey Office again. The warm object at the Lantern. Look closer.”' },
     from: 'Survey Office', title: 'Something in the Dark',
     text: '“No chart shows this object, and our sensors disagree on its size. Take two readings and get as close as you dare.”',
     cargo: 'An object · dark, warm, no transponder',
@@ -550,6 +565,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_wire', kind: 'job', caller: 'unknown', tier: 'important',
+    thread: { chip: 'The Survey', line: '“Survey Office. Something on the wire is hailing you. Record it.”' },
     from: 'An old relay · no callsign', title: 'The Voice on the Wire',
     text: '“A relay that was cut off years ago is broadcasting your ship’s name. It says it has a question, but nothing more.”',
     cargo: 'A relay · dead on every chart',
@@ -561,6 +577,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_payroll', kind: 'job', caller: 'gutter', tier: 'important',
+    thread: { chip: 'Account · Hester’s crews ↓↓', line: 'These are their wages.' },
     from: 'A fixer · no name', title: 'Stolen Payroll',
     text: '“A courier carries a month of wages for three mining barges. One drive, no guns. Disable the ship, take the wages and leave the courier alive.”',
     cargo: 'A courier · lightly built, wages in the hold',
@@ -572,6 +589,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_filter', kind: 'plea', caller: 'miners', tier: 'important',
+    thread: { chip: 'Hester’s crews', line: '“One filter for a whole rig. Hester says it’s ours.”' },
     from: 'Settlement steward', title: 'One Filter Left',
     text: '“Our air filter is on its last cycle. We need two supplies of parts within ninety seconds; after that, we start counting breaths.”',
     cargo: 'A settlement · lamps low, a filter running hot',
@@ -583,6 +601,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_captains', kind: 'job', caller: 'gutter', tier: 'important',
+    thread: { chip: 'Account · Frontier ↓', line: 'One of the captains flies for the Frontier.' },
     from: 'Two crews · one wreck', title: 'Two Captains, One Wreck',
     text: '“Two captains are fighting over a valuable wreck. Neither will back down. Drive both crews off and the wreck is yours.”',
     cargo: 'A big wreck · five hulls at the cut',
@@ -594,6 +613,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_witness', kind: 'plea', caller: 'frontier', tier: 'important',
+    thread: { chip: 'Quiet Line', line: '“Pike’s witness. Get them out and the Line owes you.”' },
     from: 'Brother Orrin', title: 'Get the Witness Out',
     text: '“I saw what Custody did at Northfold, and I kept the log. They know I have it. Keep me alive for eighty seconds.”',
     cargo: 'A freighter · a log nobody should have',
@@ -605,6 +625,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_prefect', kind: 'job', caller: 'frontier', tier: 'important',
+    thread: { chip: 'Quiet Line', line: '“The Line’s last run. Pike says this one is for you.”' },
     from: 'A broker · no name', title: 'Lose the Governor’s Trail',
     text: '“Your tracking trace is stored on a relay inside that patrol’s route. Erase it without being seen and Calloway loses a day.”',
     cargo: 'A relay · three hulls sweeping it',
@@ -616,6 +637,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_cache', kind: 'job', caller: 'guild', tier: 'important',
+    thread: { chip: 'Account · Wren ↓', line: 'These cases are Drift property.' },
     from: 'Guild salvage desk · open claim', title: 'The Drift Cache',
     text: '“A cargo train broke up in this field. Four cases are still drifting, the rest is picked over. Slow beside each to take it in. A crew will notice the first.”',
     cargo: 'Four cases · drifting, one crew nearby',

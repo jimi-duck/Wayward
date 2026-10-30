@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { REGIONS_LONG, REGIONS_ROAD } from '../src/content/regions';
-import { ROAD } from '../src/content/road';
+import { LEGS, ROAD } from '../src/content/road';
 import { migrate } from '../src/meta/save';
 import { gateOf, lanesFrom, makeChart, regionOf, type Chart } from '../src/sim/chart';
 import { hunchOf, RELAY_BROADCAST } from '../src/sim/calloway';
@@ -50,8 +50,13 @@ describe('the Reach on the road', () => {
     expect(c.regionSet).toBe('road');
   });
 
-  it('plays the other seven regions as the long journey does', () => {
-    expect(REGIONS_ROAD.slice(1)).toEqual(REGIONS_LONG.slice(1));
+  it('keeps the long journey\'s seven other regions, each now one authored stop per lane', () => {
+    REGIONS_ROAD.slice(1).forEach((r, i) => {
+      const long = REGIONS_LONG[i + 1]!;
+      expect([r.name, r.gate]).toEqual([long.name, long.gate]);
+      expect(r.road).toBe(LEGS[i + 1]);
+      expect(r.cols).toHaveLength(LEGS[i + 1]!.length);
+    });
     expect(REGIONS_ROAD[0]!.name).toBe(REGIONS_LONG[0]!.name);
     expect(REGIONS_ROAD[0]!.gate).toBe('The Narrows');
   });

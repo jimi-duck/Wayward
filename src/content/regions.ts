@@ -1,5 +1,5 @@
 import type { Holder, SystemKind } from './systems';
-import { ROAD, type RoadStop } from './road';
+import { LEGS, ROAD, type RoadStop } from './road';
 
 // ── regions ───────────────────────────────────────────────────────────────
 // The way out is three regions, each less human than the last, joined by a
@@ -152,11 +152,14 @@ export const REGIONS_LONG: RegionDef[] = [
   },
 ];
 
-/** The Warden's Road: the long journey with the Reach as one fixed line of stops (content/road.ts). The regions beyond are the long journey's own. */
-export const REGIONS_ROAD: RegionDef[] = [
-  { ...REGIONS_LONG[0]!, cols: ROAD.map((r) => [r.kind]), sizes: sizes(ROAD.length, 1), quiet: undefined, road: ROAD },
-  ...REGIONS_LONG.slice(1),
-];
+/**
+ * The Warden's Road: the long journey with every region as one fixed line of stops (content/road.ts), each leg's gate after
+ * its last stop. The regions keep the long journey's skies, holders, pursuit and Net; only the columns are the road's.
+ */
+export const REGIONS_ROAD: RegionDef[] = REGIONS_LONG.map((R, i) => {
+  const road = LEGS[i] ?? ROAD;
+  return { ...R, cols: road.map((r) => [r.kind]), sizes: sizes(road.length, 1), quiet: undefined, road };
+});
 
 /** The region table a chart was laid out with. */
 export const REGION_SETS: Record<RegionSet, RegionDef[]> = { three: REGIONS, eight: REGIONS_LONG, road: REGIONS_ROAD };

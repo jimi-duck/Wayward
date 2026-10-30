@@ -42,14 +42,16 @@ describe('the Course', () => {
     expect(c.road.filter((r) => r.job)).toHaveLength(3);
   });
 
-  it('is only the road\'s own: no Course off the road, at the audit dock or through the gate', () => {
+  it('is only the road\'s own: no Course off the road; at the Narrows it shows the Marches ahead', () => {
     const three = newJourney(5, false, 'eight');
     expect(onRoad(three)).toBe(false);
     expect(courseView(three)).toBeNull();
     expect(courseView(at(0))).not.toBeNull();
     const j = at(7);
     j.at = j.chart.systems.find((s) => s.kind === 'gate')!.id;
-    expect(courseView(j)).toBeNull();
+    const c = courseView(j)!;
+    expect(c.next.name).toBe('Wake');
+    expect(c.goal).toMatchObject({ name: 'The Rift', jumps: 8 });
   });
 
   it('hides the pursuit while Juno rests at the breather', () => {

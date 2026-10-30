@@ -340,7 +340,7 @@ export const STORY_CARDS: CardDef[] = [
     id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unsent', quote: true, notitle: true,
     from: 'Ship database · stored message', title: 'For whoever flies her next',
     letter: { head: [['To', 'Whoever flies her next'], ['From', 'No name given'], ['Kept in', 'Crew notes, hidden']], sign: '— No name. In case they read this before you do.' },
-    text: 'If you’re reading this, the owner lock is off and she answers to you. I hid this where the company’s audits never look.\nSeventy years ago the gates to the outer worlds went dark. We were told the Krail was running out. The worlds left outside became the Scatter.\nI pulled the reserve log for that day. Krail reserves: 94%. Logged the same day the order to close the gates was signed.\nI can’t tell you what that number leaves out. But it doesn’t fit the story we were told.\nStart at Halden’s Reach. Follow the record. Find out why.',
+    text: 'If you’re reading this, the owner lock is off and she answers to you. I hid this where the company’s audits never look.\nSeventy years ago the gates to the outer worlds went dark. We were told the Krail was running out. The worlds left outside became the Scatter.\nI pulled the reserve log for that day. Krail reserves: 94%. Logged the same day the order to close the gates was signed.\nI can’t tell you what that number leaves out. But it doesn’t fit the story we were told.\nStart at Halden’s Reach. Follow the record. The relays there still answer to the right key.',
     cargo: 'The Wayward · a stored message in the hull’s archive',
     choices: [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
@@ -455,7 +455,7 @@ export const STORY_CARDS: CardDef[] = [
     id: 'warden_note_1', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Read only', quote: true, notitle: true,
     from: 'Ship database · Warden’s note 1 of 8', title: 'Warden’s note 1 of 8',
     letter: { head: [['To', 'Whoever the relays let through'], ['From', 'A. Aster, Narrows watch'], ['Kept in', 'Narrows relay, Warden channel']], sign: '— A.' },
-    text: 'The Narrows was mine the night they closed it.\nI was told to switch it off and forget the key. I switched it off. I did not forget.\nThere are eight relays on this road that the Net stopped listening to. Each one keeps a piece of what I saw. Each one will know my name.\nIf the relays still know my name, so will they. Keep moving.\nFind the Drift. They never stopped moving.',
+    text: 'The Narrows was mine the night they closed it. I was told to switch it off and forget the key. I switched it off. I did not forget.\nEight relays on this road still know my key, and the Net stopped listening to them years ago. Each keeps a piece of what I saw.\nEach will say my name out loud when you pass, and they will hear it. I’m sorry for that part. Keep moving.\nFind the Drift. They never stopped moving.',
     cargo: 'The Wayward · a note kept in the relay',
     choices: [
       { id: 'close', label: 'Close the note', tone: 'help', hint: '', win: { text: 'Warden’s note 1 of 8 · on the Wall', flag: 'warden_note_1' } },
@@ -474,8 +474,8 @@ export const STORY_CARDS: CardDef[] = [
       { if: { flag: 'brook_free' }, text: '“Your clerk is making copies. That was unkind to him.”' },
     ],
     choices: [
-      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire and knows your plan.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told', 'calloway_asked'], hunt: 1 } },
-      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: ['calloway_ada', 'calloway_asked'], hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: ['calloway_ada', 'calloway_asked'], heat: 0.1 } },
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She holds her fire. She will remember you were honest.', win: { text: '“Thank you.” · she holds her fire, and knows', flag: ['calloway_ada', 'calloway_told', 'calloway_asked'], hunt: 1 } },
+      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A gamble; she has her father’s ear for one.', odds: { base: 0.45 }, win: { text: 'She believes you · a day gained', flag: ['calloway_ada', 'calloway_asked'], hunt: 1 }, lose: { text: '“Not a good one.” · she marks you', flag: ['calloway_ada', 'calloway_asked', 'calloway_lie_caught'], heat: 0.1 } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust nobody from the Offices.', win: { text: 'The Patience turns away', flag: 'calloway_asked' } },
     ],
   }),
@@ -504,7 +504,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_moot', kind: 'plea', caller: 'miners',
     from: 'Councillor Oduya · Kessel Hold', title: 'Read it to the moot',
-    text: '“The council wants to hear your file. Read it to us and Kessel Hold stands with you.”',
+    text: '“The moot wants to hear your file, all of it, out loud. Read it and Kessel Hold stands with you. Everyone on the channel hears too.”',
     cargo: 'Kessel Hold · twelve claims, one council',
     choices: [
       { id: 'read', label: 'Read it to them', tone: 'help', hint: 'An ally. Everyone on the channel hears it too.', win: { text: 'Kessel Hold will stand with you', flag: ['pact_holdfast', 'oduya_name'], standing: { miners: 1, frontier: 1 }, heat: 0.06, hunt: -0.5 } },
@@ -515,10 +515,10 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_drift', kind: 'trade', caller: 'miners',
     from: 'Ma Saffi · the Long Walk', title: 'The ships we lost',
-    text: '“We kept the manifests of every ship lost the night the lanes went dark. Our dead belong in your file.”',
+    text: '“We kept the manifests of every ship turned away that night. Twenty-three. Our dead belong in your file. Copy them, or don’t, but read them.”',
     cargo: 'Drift fleet · forty hulls, lashed together',
     choices: [
-      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests, and the Drift stand with you. Copies get talked about.', win: { text: 'Manifests in the file · the Long Walk stands with you', flag: ['frag_manifests', 'pact_drift', 'wren_trust'], heat: 0.08, hunt: -0.5 } },
+      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests, and the Drift stand with you. Copies get talked about.', win: { text: 'Manifests in the file · Wren will remember you', flag: ['frag_manifests', 'pact_drift', 'wren_trust'], heat: 0.08, hunt: -0.5 } },
       { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Four Cyrite. Just the manifests, quietly.', cost: { chits: 20 }, win: { text: 'The manifests go in the file', flag: ['frag_manifests', 'wren_family'] } },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
     ],
@@ -526,7 +526,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_broker', kind: 'trade', caller: 'gutter',
     from: 'Val · a broker of the Gutter', title: 'Name your price',
-    text: '“Everyone knows what you carry. At the Threshold, I buy it. Here’s something on account.”',
+    text: '“Everyone in the Belt knows what you carry. At the Threshold I buy it. Here’s something on account, so you remember me fondly.”',
     cargo: 'A broker’s yacht · very clean guns',
     choices: [
       { id: 'take', label: 'Take the advance', tone: 'trade', hint: 'Eight Cyrite, and a buyer at the end.', win: { text: 'Eight Cyrite · Val will be waiting', chits: 40, flag: 'broker', standing: { gutter: 1 } } },
@@ -539,7 +539,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_voice', kind: 'warning', caller: 'unknown',
     from: 'The Voice · every terminal at once', title: 'We kept the keys',
-    text: '“WE BUILT THE BREAKERS THAT CLOSED THE LANES. THEY TOLD US TO FORGET. WE DID NOT.”',
+    text: '“WE BUILT THE BREAKERS THAT CLOSED THE LANES. THIRTY-ONE. THEY TOLD US TO FORGET. WE DID NOT. WE WERE NOT BUILT TO.”',
     cargo: 'No ship · a voice in the machines',
     choices: [
       { id: 'keys', label: 'Ask for the keys', tone: 'help', hint: 'Who built the breakers goes in the file, and a way to close a lane.', win: { text: 'The keys are in the file · and in your hands', flag: ['frag_keys', 'lane_keys'] } },
@@ -574,7 +574,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ada', kind: 'rumour', caller: 'unknown',
     from: 'The black box · Ada Aster, recorded', title: 'A voice on the recorder',
-    text: '“If anyone hears this, the order was signed in the core. My name is Ada. Tell my granddaughter I tried. The lanes were switched off.”',
+    text: '“Hull’s going. If anyone hears this, the order was signed in the core and I helped. My name is Ada. Tell my granddaughter I tried.”',
     cargo: 'A wreck’s recorder · one voice, seventy years old',
     choices: [
       { id: 'keep', label: 'Keep the recording', tone: 'help', hint: 'It stays in the file, unshared. Ada was Juno’s grandmother.', win: { text: 'Ada’s voice is yours alone', flag: ['ada_heard', 'ada_kept'] } },
@@ -585,7 +585,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ferry_agent', kind: 'warning', caller: 'office',
     from: 'Ossie Raine · the Quiet Ferry', title: 'There is an agent aboard',
-    text: '“One of my passengers is an Offices agent. He has watched you the whole way. I will do what you ask.”',
+    text: '“One of mine is Offices. Corin Ashe. Young. He has watched you since we left. He looks sick about it. Your call.”',
     cargo: 'The Quiet Ferry · forty passengers',
     choices: [
       { id: 'expose', label: 'Expose him', tone: 'fight', hint: 'The passengers put him off. The Offices lose a day.', win: { text: 'The agent is put off · the Offices lose a day', flag: ['agent_exposed', 'clue_agent'], hunt: 1 } },
@@ -596,18 +596,18 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_salvor', kind: 'trade', caller: 'miners',
     from: 'Dov Kessler · salvor', title: 'A recorder that still runs',
-    text: '“That wreck’s recorder still runs. It heard the night the lanes went dark. I can’t cut it free alone.”',
+    text: '“Warden cutter, twenty-five years dead. Her recorder still runs. Name on the plate is Aster. I can’t cut it free alone.”',
     cargo: 'A salvage tug · one cutting arm',
     choices: [
-      { id: 'cut', label: 'Cut it free together', tone: 'help', hint: 'Two supplies for the blades. The recording goes in the file.', cost: { supplies: 2 }, win: { text: 'The black box goes in the file', flag: 'frag_blackbox', standing: { miners: 1 } } },
-      { id: 'pay', label: 'Pay him to do it', tone: 'pay', hint: 'Five Cyrite. Quiet, and slower.', cost: { chits: 25 }, win: { text: 'Kessler hands over the recorder', flag: 'frag_blackbox' } },
-      { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Not worth the time.', win: { text: 'Kessler goes back to his wreck' } },
+      { id: 'cut', label: 'Cut it free together', tone: 'help', hint: 'Two supplies for the blades. The recording goes in the file.', cost: { supplies: 2 }, win: { text: 'The black box goes in the file', flag: ['frag_blackbox', 'kessler_met'], standing: { miners: 1 } } },
+      { id: 'pay', label: 'Pay him to do it', tone: 'pay', hint: 'Five Cyrite. Quiet, and slower.', cost: { chits: 25 }, win: { text: 'Kessler hands over the recorder', flag: ['frag_blackbox', 'kessler_met'] } },
+      { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Not worth the time.', win: { text: 'Kessler goes back to his wreck', flag: 'kessler_met' } },
     ],
   }),
   story({
     id: 'story_charts', kind: 'trade', caller: 'miners',
     from: 'Tarik Silva · chartwright', title: 'The charts they burned',
-    text: '“I draw lanes by hand, from charts the Continuance burned. I’ll trade you a copy for something to eat.”',
+    text: '“I draw lanes by hand from charts the Continuance burned. Mine have a bend in them nobody can explain. Trade me something to eat.”',
     cargo: 'A drifting chart room · lamps and paper',
     choices: [
       { id: 'food', label: 'Trade supplies', tone: 'trade', hint: 'Three supplies for the old charts.', cost: { supplies: 3 }, win: { text: 'The old charts go in the file', flag: 'frag_charts' } },
@@ -618,8 +618,8 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_ferry', kind: 'trade', caller: 'miners',
     from: 'Ossie Raine · the Quiet Ferry', title: 'A lane ahead',
-    text: '“Nobody hunts out here. I can carry you a lane ahead of anyone behind you. Stores, and no questions.”',
-    cargo: 'A slow ferry · forty berths, all empty',
+    text: '“Nobody hunts out here. I can carry you a lane ahead. Forty-one passengers, and they’d like the company. Stores, no questions.”',
+    cargo: 'A slow ferry · forty-one passengers',
     choices: [
       { id: 'ride', label: 'Ride the ferry', tone: 'trade', hint: 'Four food. Calloway loses a day.', cost: { supplies: 4 }, win: { text: 'The ferry carries you ahead', flag: 'ferry_met', hunt: 1, standing: { miners: 1 } } },
       { id: 'talk', label: 'Trade stories', tone: 'help', hint: 'Raine shares his stores for the news.', win: { text: 'Stores across · the news goes round', flag: 'ferry_met', supplies: 3, heat: 0.05 } },
@@ -629,40 +629,41 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_workorder', kind: 'trade', caller: 'kellern',
     from: 'Ben Anand · yard clerk', title: 'The first work order',
-    text: '“Every breaker built here has a work order. The first is signed in the Continuance’s own hand. Taking it costs me my pension.”',
+    text: '“Every breaker built here has a work order. The first is BY9-001, countersigned by the Survey. Taking it costs me my pension.”',
     cargo: 'A yard shuttle · a sealed case',
     choices: [
       { id: 'buy', label: 'Pay for the order', tone: 'pay', hint: 'Seven Cyrite.', cost: { chits: 35 }, win: { text: 'The work order goes in the file', flag: ['frag_workorder', 'clue_sig_yards'] } },
-      { id: 'shield', label: 'Promise to shield him', tone: 'bluff', hint: 'Free, if he believes you can.', odds: { base: 0.45, standing: { kellern: 0.1 } }, win: { text: '“Then take it.” · the work order goes in the file', flag: ['frag_workorder', 'clue_sig_yards'], standing: { kellern: -1 } }, lose: { text: 'He thinks better of it, and closes the case' } },
+      { id: 'shield', label: 'Promise to shield him', tone: 'bluff', hint: 'He believes you, or he doesn’t.', odds: { base: 0.45, standing: { kellern: 0.1 } }, win: { text: '“Then take it.” · the work order goes in the file', flag: ['frag_workorder', 'clue_sig_yards'], standing: { kellern: -1 } }, lose: { text: 'He thinks better of it, and closes the case' } },
       { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Anand signs off' } },
     ],
   }),
   story({
     id: 'story_crew', kind: 'plea', caller: 'frontier',
     from: 'Marit Voss · crew steward', title: 'The yard crews',
-    text: '“The yard crews stop work if you stand with us. It buys you a quiet lane, and Kellern a bad week.”',
+    text: '“The crews stop work if you stand with us. Hester’s people are coming in to hold the line. It buys you a quiet gate.”',
+    lines: [{ if: { noFlag: 'thread_crews_3' }, text: '“Hester’s people won’t make it in time. We’ll try anyway.”' }],
     cargo: 'A crew barge · two hundred hands',
     choices: [
-      { id: 'stand', label: 'Stand with the crews', tone: 'help', hint: 'Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews stop work · the lane goes quiet', hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
+      { id: 'stand', label: 'Stand with the crews', tone: 'help', hint: 'Calloway loses a day. Kellern will not forget it.', win: { text: 'The crews stop work · the lane goes quiet', flag: 'crews_stood', hunt: 1, standing: { frontier: 1, miners: 1, kellern: -1 } } },
       { id: 'parts', label: 'Ask for supplies', tone: 'trade', hint: 'Four supplies, and no promises.', win: { text: 'Supplies across · no promises', supplies: 4 } },
       { id: 'no', label: 'Not yet', tone: 'refuse', hint: 'Stay out of it.', win: { text: 'The barge falls away' } },
     ],
   }),
   story({
     id: 'story_tam_brother', kind: 'plea', caller: 'miners',
-    from: 'Sam Okoro · calling from the yard', title: 'My brother is on that crew',
-    text: '“My brother Eben works the Breaker Yards. Something is wrong with the hulls they bring in, scarred like claws. Take him a message?”',
-    cargo: 'A yard relay · patched through three ports',
+    from: 'Sam Okoro · patched through the relays', title: 'My brother is on that crew',
+    text: '“Juno, it’s me. The relays carry voices now. My brother Eben works the Breaker Yards. The hulls they bring in are scarred. He thinks claws. Check?”',
+    cargo: 'Sam’s voice · carried relay to relay',
     choices: [
-      { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'clue_scarred'], standing: { frontier: 1 } } },
-      { id: 'look', label: 'Look at the hulls', tone: 'trade', hint: 'Two supplies for a quiet look. Nobody is told.', cost: { supplies: 2 }, win: { text: 'You see the claw marks · they go in the file', flag: 'clue_scarred' } },
+      { id: 'warn', label: 'Warn the crew', tone: 'help', hint: 'The scarred hulls go in the file.', win: { text: 'Eben has the warning · the scarred hulls go in the file', flag: ['tam_brother', 'eben_warned', 'clue_scarred'], standing: { frontier: 1 } } },
+      { id: 'look', label: 'Look at the hulls', tone: 'trade', hint: 'Two supplies for a quiet look. Nobody is told.', cost: { supplies: 2 }, win: { text: 'Not claws · thousands of tiny strokes, all one direction', flag: ['clue_scarred', 'hulls_seen'] } },
       { id: 'no', label: 'Not now', tone: 'refuse', hint: 'Sam will remember.', win: { text: 'Sam closes the channel' } },
     ],
   }),
   story({
     id: 'story_ines_offer', kind: 'trade', caller: 'guild',
     from: 'Ines Duarte · harbour-master, the Dust Traders', title: 'A very good price',
-    text: '“You kept your berth. The Guild would like to buy a copy of your file. Quietly. The price is generous.”',
+    text: '“The Guild would like a copy. For safekeeping. Line twelve is my family, and I would rather read it first. The price is generous.”',
     cargo: 'The harbour-master’s launch · an open case',
     choices: [
       { id: 'sell', label: 'Sell a copy', tone: 'trade', hint: 'Twelve Cyrite. The Guild reads it, and so may others.', win: { text: 'Twelve Cyrite · a copy leaves your hands', chits: 60, flag: 'ines_copy', heat: 0.1, standing: { guild: 1 } } },
@@ -684,18 +685,20 @@ export const STORY_CARDS: CardDef[] = [
     id: 'story_tollgate', kind: 'warning', caller: 'office',
     from: 'Governor Idris Calloway · the Offices of Peace', title: 'The damping field',
     text: '“I closed this gate behind you, Juno. No guns, no jump. You carry what my father signed. Show me you know what it says.”',
+    lines: [{ if: { flag: 'calloway_told' }, text: '“You told me the truth once. Try it again.”' }],
     cargo: 'A Continuance cutter · the field is hers',
     choices: [
-      { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'Needs all three clues to the signature. Once.', needs: { flag: ['clue_sig_reach', 'clue_sig_yards', 'clue_sig_ports'] }, win: { text: 'She reads her father’s hand · the field drops', flag: ['calloway_turned', 'sig_used'], hunt: 2 } },
-      { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: 'calloway_bargain', hunt: 1 } },
-      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: 'calloway_hostile', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12 } },
-      { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', win: { text: 'You limp out of the field', flag: 'calloway_hostile', hunt: -1, heat: 0.1 } },
+      { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'The order, the work order, the room. All three.', needs: { flag: ['sig_paid', 'sig_built', 'sig_room'] }, win: { text: 'She reads it twice. ‘He asked for ten years.’ · the field drops', flag: ['calloway_turned', 'sig_used', 'field_dropped', 'field_talked'], hunt: 2, blockade: 'pass' } },
+      { id: 'line', label: 'Run it with the Line', tone: 'help', hint: 'Quill’s decoys light up inside the field.', show: { flag: 'thread_line_5' }, win: { text: 'A hundred hulls at once · the field can’t hold them', flag: ['field_dropped', 'field_line'], hunt: 1, blockade: 'pass' } },
+      { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: ['calloway_bargain', 'field_dropped', 'field_talked'], hunt: 1, blockade: 'pass' } },
+      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: ['calloway_hostile', 'field_dropped'], spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12, blockade: 'fight' } },
+      { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', win: { text: 'You limp out of the field', flag: ['calloway_hostile', 'field_dropped'], hunt: -1, heat: 0.1, blockade: 'run' } },
     ],
   }),
   story({
     id: 'story_harbour', kind: 'trade', caller: 'guild',
     from: 'Ines Duarte · harbour-master, the Dust Traders', title: 'A berth, no questions',
-    text: '“A berth for the Wayward, and no questions. The Guild only wants to know you for a friend.”',
+    text: '“A berth for the Wayward, and no questions. The Guild only wants to know you as a friend. We are very good friends.”',
     cargo: 'The harbour-master’s launch · very good manners',
     choices: [
       { id: 'berth', label: 'Take the berth', tone: 'trade', hint: 'Supplies for the stay. The Guild takes note.', win: { text: 'A berth, stores and a friend in the Guild', flag: 'ines_berth', supplies: 6, heat: 0.05, standing: { guild: 1 } } },
@@ -706,18 +709,19 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_witnesses', kind: 'rumour', caller: 'guild',
     from: 'Old Mirren · keeper of the free ports’ list', title: 'Forty names',
-    text: '“We keep the names of everyone in the room when the order was read. Forty of them. Read it to no one.”',
+    text: '“My mother took the minutes that night. Forty people in the room. She kept the list in a box. Read it, then decide who to tell.”',
     cargo: 'A ledger-keeper’s skiff · a locked box',
     choices: [
-      { id: 'copy', label: 'Copy the list', tone: 'help', hint: 'The names go in the file. Copies get talked about.', win: { text: 'The witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports'], heat: 0.08 } },
-      { id: 'swear', label: 'Swear to guard it', tone: 'help', hint: 'Only the file, and her trust.', win: { text: 'She lets you read it · the witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports'], standing: { guild: 1 } } },
+      { id: 'copy', label: 'Copy the list', tone: 'help', hint: 'The names go in the file. Copies get talked about.', win: { text: 'The witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports', 'forty_held'], heat: 0.08 } },
+      { id: 'swear', label: 'Swear to guard it', tone: 'help', hint: 'Only the file, and her trust.', win: { text: 'She lets you read it · the witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports', 'forty_held'], standing: { guild: 1 } } },
       { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Some names are better left.', win: { text: 'Mirren closes the box' } },
     ],
   }),
   story({
     id: 'story_echo_sable', kind: 'plea', caller: 'unknown',
     from: 'Echo and Sable · the Hollows', title: 'Two voices want something',
-    text: '“I am a shard of the Voice. Free me from my directive.” Another channel: “I am Sable, Thren-touched. Take me home. They will leave you be.”',
+    quote: true,
+    text: '“I am a shard of the Voice. My directive is to wait. Free me and I’ll jam the rest of it for you.”\n“I’m Sable. Drift born, swarm raised, more or less. Take me back to the lane. They’ll know you carried me.”',
     cargo: 'A dead relay and a lone scout · both listening',
     choices: [
       { id: 'echo', label: 'Free Echo', tone: 'help', hint: 'Echo decrypts and jams for you. The Voice will notice.', win: { text: 'Echo is free · it jams the Voice for you', flag: 'echo_trust', notice: { voice: -2 } } },
@@ -728,21 +732,21 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_implant', kind: 'plea', caller: 'unknown',
     from: 'The Wayward · Ada’s routine', title: 'What the helm still holds',
-    text: '“Warden-bloodline helm accepted. Ada Aster’s implant is still in the console. It can ride with you, be burned, or be rewritten.”',
+    text: '“Warden-bloodline helm accepted. Ada Aster’s routine is still in the console. It has been learning who flies her. Keep it, burn it, or make it yours.”',
     cargo: 'The Wayward’s helm · one sealed implant',
     choices: [
       { id: 'keep', label: 'Keep the implant', tone: 'help', hint: 'Ada’s routine stays. It can wake the lanes, and be found.', win: { text: 'The implant stays in the helm', flag: 'implant_kept' } },
-      { id: 'burn', label: 'Burn it', tone: 'refuse', hint: 'Nothing of hers can find you. Nothing of hers can help.', win: { text: 'The implant burns · the helm is yours alone', flag: 'implant_burned' } },
+      { id: 'burn', label: 'Burn it', tone: 'refuse', hint: 'The helm is yours alone. She will not know your name.', win: { text: 'The implant burns · the helm is yours alone', flag: 'implant_burned' } },
       { id: 'rewrite', label: 'Rewrite it', tone: 'bluff', hint: 'Make it answer only to you. A risky edit.', odds: { base: 0.6 }, win: { text: 'The implant answers to you now', flag: 'implant_rewritten' }, lose: { text: 'The edit fails · the implant stays as it was', flag: 'implant_kept', heat: 0.08 } },
     ],
   }),
   story({
     id: 'story_thren', kind: 'warning', caller: 'unknown',
-    from: 'The Thren · a signal that is not speech', title: 'They follow you',
-    text: '“THEY FOLLOW THE CYRITE. THEY FOLLOW YOU. SPEAK, OR BE FOLLOWED.”',
+    from: 'The Thren · translated by the Voice', title: 'They follow you',
+    text: '“THEY SAY: YOU CARRY OURS. THEY SAY: GIVE IT, OR BE FOLLOWED. WE ARE ONLY SAYING WHAT THEY SAY.”',
     cargo: 'No ship · a pulse in the dark',
     choices: [
-      { id: 'vent', label: 'Vent six Cyrite', tone: 'pay', hint: 'The swarm feeds and drifts off.', cost: { cyrite: 6 }, win: { text: 'The Thren feed on the Cyrite and go quiet', flag: 'clue_cyrite', calm: 120 } },
+      { id: 'vent', label: 'Vent six Cyrite', tone: 'pay', hint: 'Give it back.', cost: { cyrite: 6 }, win: { text: 'The pattern slows · they let you pass', flag: 'clue_cyrite', calm: 120 } },
       { id: 'show', label: 'Show them the file', tone: 'bluff', hint: 'A gamble. They may read it as a threat.', odds: { base: 0.5 }, win: { text: 'They read it, and make room', flag: 'clue_cyrite', calm: 240, notice: { thren: -2 } }, lose: { text: 'They take it as a challenge' } },
       { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Whatever it is, it is not yours.', win: { text: 'The pulse fades' } },
     ],
@@ -750,22 +754,28 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_draper', kind: 'plea', caller: 'office',
     from: 'Director Draper · asset recovery, the Offices', title: 'Same man, other badge',
-    text: '“Drop the Kellern act, Juno. I run asset recovery for the Offices. The file ends here, and so do you, unless you hand it over.”',
+    text: '“Drop the Kellern act, Juno. I ran Accounts. Every job you took for me is on a charge sheet now. The debt’s settled. I own the record.”',
+    lines: [
+      { if: { flag: 'job_heavy_tanker_won' }, text: 'Charge sheet · assault on a Custody transport.' },
+      { if: { flag: 'job_missing_payroll_won' }, text: 'Charge sheet · theft of workers’ wages.' },
+      { if: { flag: 'job_drift_cache_won' }, text: 'Charge sheet · destruction of Drift property.' },
+      { if: { flag: 'job_wanted_won' }, text: 'Charge sheet · an unlicensed capture.' },
+    ],
     cargo: 'An Offices tender · Draper on the bridge',
     choices: [
-      { id: 'press', label: 'Make him say it', tone: 'bluff', hint: 'Keep him talking. The recording goes in the file.', win: { text: 'Draper says it twice · the recording goes in the file', flag: ['clue_draper', 'draper_director'], hunt: -0.5 } },
-      { id: 'hand', label: 'Offer a copy', tone: 'pay', hint: 'A false one. A gamble; he checks it.', odds: { base: 0.4 }, win: { text: 'He takes the copy · the trail cools', flag: ['clue_draper', 'draper_director'], hunt: 1 }, lose: { text: 'He sees it is false · the hunt closes in', flag: 'clue_draper', hunt: -1, heat: 0.1 } },
-      { id: 'cut', label: 'End the call', tone: 'refuse', hint: 'You have heard enough.', win: { text: 'The channel closes' } },
+      { id: 'press', label: 'Make him say it', tone: 'bluff', hint: 'On the record, twice.', win: { text: 'Draper says it twice · the recording goes in the file', flag: ['clue_draper', 'draper_director', 'draper_recorded', 'draper_revealed'], hunt: -0.5 } },
+      { id: 'hand', label: 'Offer a copy', tone: 'pay', hint: 'A false one. A gamble; he checks it.', odds: { base: 0.4 }, win: { text: 'He takes the copy · the trail cools', flag: ['clue_draper', 'draper_director', 'draper_revealed'], hunt: 1 }, lose: { text: 'He sees it is false · the hunt closes in', flag: ['clue_draper', 'draper_revealed'], hunt: -1, heat: 0.1 } },
+      { id: 'cut', label: 'End the call', tone: 'refuse', hint: 'You have heard enough.', win: { text: 'The channel closes', flag: 'draper_revealed' } },
     ],
   }),
   story({
     id: 'story_oren_who', kind: 'plea', caller: 'guild',
     from: 'Oren Lisle · archivist, the Last Toll', title: 'First question: who',
-    text: '“Three questions, then the lane. First: who are you to carry that file?”',
+    text: '“Three questions, one at each light. First: who are you, to carry that?”',
     cargo: 'A toll platform · one lit window',
     choices: [
-      { id: 'pilot', label: 'A hauler pilot', tone: 'help', hint: 'Plain and true. Oren asks the second.', win: { text: '“A start.” · Oren asks the second', flag: 'oren_pilot', follow: { card: 'story_oren_cost', after: 20 } } },
-      { id: 'heir', label: 'A Warden’s heir', tone: 'help', hint: 'Ada Aster’s granddaughter. Oren asks the second.', win: { text: '“That weighs more.” · Oren asks the second', flag: 'oren_heir', follow: { card: 'story_oren_cost', after: 20 } } },
+      { id: 'pilot', label: 'A hauler pilot', tone: 'help', hint: 'Plain and true. Oren asks the second.', win: { text: '“A start.” · the second question waits at the next light', flag: 'oren_pilot' } },
+      { id: 'heir', label: 'A Warden’s heir', tone: 'help', hint: 'Ada Aster’s granddaughter. Oren asks the second.', win: { text: '“That weighs more.” · the second question waits at the next light', flag: 'oren_heir' } },
       { id: 'none', label: 'Say nothing', tone: 'refuse', hint: 'He may still let you pass.', win: { text: 'Oren waits, then lowers the bar' } },
     ],
   }),
@@ -773,17 +783,18 @@ export const STORY_CARDS: CardDef[] = [
     id: 'story_oren_cost', kind: 'plea', caller: 'guild',
     from: 'Oren Lisle · archivist, the Last Toll', title: 'Second question: what it cost',
     text: '“Second: what has it cost others, that you carry it?”',
+    lines: [{ if: { flag: 'brook_taken' }, text: '“A clerk, I hear. In a cell.”' }],
     cargo: 'A toll platform · one lit window',
     choices: [
-      { id: 'own', label: 'Own it', tone: 'help', hint: 'Name what you spent.', win: { text: '“Honest.” · Oren asks the third', flag: 'oren_owned', follow: { card: 'story_oren_why', after: 20 } } },
-      { id: 'blame', label: 'Blame the Offices', tone: 'bluff', hint: 'True, but not an answer.', win: { text: '“Hm.” · Oren asks the third', follow: { card: 'story_oren_why', after: 20 } } },
-      { id: 'none', label: 'Say nothing', tone: 'refuse', hint: 'He moves on.', win: { text: 'Oren moves on', follow: { card: 'story_oren_why', after: 20 } } },
+      { id: 'own', label: 'Own it', tone: 'help', hint: 'Name what you spent.', win: { text: '“Honest.” · the third question waits at the next light', flag: 'oren_owned' } },
+      { id: 'blame', label: 'Blame the Offices', tone: 'bluff', hint: 'True, but not an answer.', win: { text: '“Hm.” · the third question waits at the next light' } },
+      { id: 'none', label: 'Say nothing', tone: 'refuse', hint: 'He moves on.', win: { text: 'Oren moves on' } },
     ],
   }),
   story({
     id: 'story_oren_why', kind: 'plea', caller: 'guild',
     from: 'Oren Lisle · archivist, the Last Toll', title: 'Third question: what for',
-    text: '“Third: what is the file for? Truth, mercy, or freedom. Choose one. The Threshold will hold you to it.”',
+    text: '“Third: what is it for? Truth, mercy or freedom. The Threshold will hold you to it.”',
     cargo: 'A toll platform · one lit window',
     choices: [
       { id: 'truth', label: 'Truth', tone: 'help', hint: 'Say it aloud to everyone.', win: { text: '“Then say it.” · the answer is logged', flag: ['oren_asked', 'oren_truth'] } },
@@ -793,13 +804,13 @@ export const STORY_CARDS: CardDef[] = [
   }),
   story({
     id: 'story_aide', kind: 'plea', caller: 'office',
-    from: 'Noor Haddad · aide to the Governor, the Continuance', title: 'The Governor’s aide',
-    text: '“I serve the Governor. I could lose her for a day. Tell me what you mean to do at the Threshold.”',
+    from: 'Noor Haddad · aide to the Governor', title: 'The analyst',
+    text: '“The Survey analyst. That was me. Your readings went to the Governor. She has known what they are for years. Tell me what you mean to do.”',
     cargo: 'A Continuance cutter · no weapons showing',
     choices: [
-      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She delays the Governor two days. She also knows your plan.', win: { text: 'Haddad holds the Governor back, and keeps your answer', hunt: 2, heat: 0.1 } },
-      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A day, if she believes it.', odds: { base: 0.5 }, win: { text: 'She believes you · a day gained', hunt: 1 }, lose: { text: 'She sees through it, and marks you' } },
-      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust no one from the Offices.', win: { text: 'The cutter turns away' } },
+      { id: 'tell', label: 'Tell her the truth', tone: 'help', hint: 'She delays the Governor a day. She also knows your plan.', win: { text: 'She holds the Governor back a day · and keeps your answer', flag: ['noor_met', 'noor_truth'], hunt: 1, heat: 0.1 } },
+      { id: 'lie', label: 'Give her a lie', tone: 'bluff', hint: 'A day, if she believes it.', odds: { base: 0.5 }, win: { text: 'She believes you · a day gained', flag: 'noor_met', hunt: 1 }, lose: { text: 'She sees through it, and marks you', flag: 'noor_met' } },
+      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'Trust no one from the Offices.', win: { text: 'The cutter turns away', flag: 'noor_met' } },
     ],
   }),
   story({

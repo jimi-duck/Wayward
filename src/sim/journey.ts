@@ -31,7 +31,8 @@ import type { EndingId } from '../content/endings';
 import { ACTS, CHOICE_REGION } from '../content/story';
 import { actLine, dueBeat } from './story';
 import { postJump } from './postjump';
-import { ON_ROAD, roadStop } from '../content/road';
+import { ON_ROAD } from '../content/road';
+import { legOf, scriptKey } from './road';
 
 // ── the journey ───────────────────────────────────────────────────────────
 // The layer above the world: everything that lasts longer than one system.
@@ -248,18 +249,41 @@ export function sortieDef(j: Journey): SortieDef {
     nemesis: nemesis(j.calloway, j.hunt, { finale, offer: quiet ? null : offer, flags: j.carry.flags }),
     story: quiet ? null : dueBeat(j),
     situation: liveSituation(j.chart, s.id)?.id ?? null,
-    script: j.chart.regionSet === 'road' && regionOf(s) === 0 ? (s.kind === 'gate' ? 'narrows' : roadStop(s.name)?.script) : undefined,
+    script: scriptKey(j.chart, s),
   };
-  // the Narrows: Ashgrove holds the gate (content/script/narrows.ts)
-  // her offers wait: the Patience's scene is her first word here (content/script/narrows.ts)
-  if (def.script === 'narrows') { def.blockade = true; def.checkpoint = 'narrows_checkpoint'; def.nemesis = { ...def.nemesis, offer: null }; }
+  // on the road her offers are the stops' own (content/script/): one a leg at most, never dealt by the sortie
+  const leg = legOf(j.chart, s);
+  if (leg >= 0) def.nemesis = { ...def.nemesis, offer: null };
+  // a road gate: an arrival at a Warden relay, and what holds the gate there (content/script/arrivals.ts)
+  if (leg >= 0 && (s.kind === 'gate' || s.kind === 'edge')) {
+    def.relay = true;
+    const check = gateCheck(def.script, j.carry.flags);
+    if (check) { def.blockade = true; def.checkpoint = check; }
+  }
   // set adrift here a moment ago: the gate is not dead ahead any more
   const last = j.legs[j.legs.length - 1];
   if (j.chart.regionSet === 'road' && last?.ended === 'destroyed' && last.system === s.id) def.off = (j.lost % 2 ? 1 : -1) * (0.25 + 0.1 * (j.lost % 3));
   // the road's first two systems are safe: no raiders, no chance fights; only lingering draws the police (owner, 26 October 2026)
-  if (j.chart.regionSet === 'road' && regionOf(s) === 0 && s.col <= SAFE_COLS) { def.safe = true; def.gutter = 0; def.pace = { first: Math.max(def.pace?.first ?? 0, 150), calm: Math.max(def.pace?.calm ?? 0, 30) }; def.heatRate = Math.min(def.heatRate, 0.7); }
+  if (leg === 0 && s.col <= SAFE_COLS) { def.safe = true; def.gutter = 0; def.pace = { first: Math.max(def.pace?.first ?? 0, 150), calm: Math.max(def.pace?.calm ?? 0, 30) }; def.heatRate = Math.min(def.heatRate, 0.7); }
   // the first system past Cerro is its own level (sim/postjump.ts)
   return j.trail.length === 2 ? postJump(def) : def;
+}
+
+/**
+ * The card that holds a road gate, if any (content/story.ts): Ashgrove at the Narrows and again at the Rift, the pickets Val sold
+ * your heading to at the Scrapgate (unless she was paid), the cranes at the Breaker when the strike did not hold, and Calloway's
+ * damping field at the Tollgate. The Threshold's is her last meeting (sim/calloway.ts), dealt as before.
+ */
+export function gateCheck(script: string | undefined, flags: readonly string[]): string | null {
+  const has = (f: string) => flags.includes(f);
+  switch (script) {
+    case 'narrows': return 'narrows_checkpoint';
+    case 'rift': return 'rift_checkpoint';
+    case 'scrapgate': return has('vell_betrayed') && !has('vell_paid') ? 'scrapgate_pickets' : null;
+    case 'breaker': return has('strike_held') ? null : 'breaker_lockdown';
+    case 'tollgate': return 'story_tollgate';
+    default: return null;
+  }
 }
 
 /** The lanes on offer from here, with what each costs and what is known at the other end. */
@@ -408,7 +432,7 @@ export interface Outcome {
 function driftTo(j: Journey, from: StarSystem): StarSystem {
   const region = viewOf(j.chart, from.id);
   // on the road there is nowhere else to be towed: she stays in the system, a little off her course (sortieDef)
-  if (j.chart.regionSet === 'road' && regionOf(from) === 0) return from;
+  if (legOf(j.chart, from) >= 0) return from;
   const pool = j.chart.systems.filter((x) => x.id !== from.id && viewOf(j.chart, x.id) === region && x.kind !== 'home' && x.kind !== 'gate' && x.kind !== 'edge' && !netted(j.chart, x.id));
   const fresh = pool.filter((x) => !j.chart.visited.includes(x.id));
   const pick = fresh.length ? fresh : pool.length ? pool : [from];

@@ -15,6 +15,11 @@ import type { Busy } from './desk';
 // plays: clues live in the Wall. Rows still waiting at a jump are carried
 // (`Script.pending`, saved in `carry.pending`) and play at the next stop's
 // first free moment. Plain data: the tests and the pilot run it headless.
+//
+// A stop's main beats (`main`: its card, an arrival's handshake) hold the Jump
+// Gate until they have played (sim/world.ts `gateHeld`). If one still has not
+// after the hold's release, `release` carries it on, so it plays first thing
+// at the next stop: a beat is never dropped, and once played never returns.
 
 export type Tone = 'teal' | 'amber' | 'red' | 'white';
 
@@ -49,8 +54,8 @@ export interface Row {
   /** The stop it belongs to (content/road.ts `script`), or `*` for any stop of the road. */
   stop: string;
   on: Trigger;
-  /** Flags it needs, and flags that stop it. */
-  if?: { has?: string[]; not?: string[] };
+  /** Flags it needs, and flags that stop it; `full`: only with the tank over half (true) or at half or under (false). */
+  if?: { has?: string[]; not?: string[]; full?: boolean };
   /** A Wall flag set the moment the row triggers. */
   wall?: string;
   do: Output;
@@ -58,6 +63,8 @@ export interface Row {
   holdsJob?: boolean;
   /** Flavour only: seconds in the queue before it is dropped. Story rows never expire. */
   stale?: number;
+  /** A main beat of its stop: the Jump Gate holds until it has played, and a release carries it to the next stop. */
+  main?: boolean;
 }
 
 /** What the world tells the script each step. */
@@ -97,6 +104,8 @@ export class Script {
   private last = -Infinity;
   /** A card out with the desk: nothing else plays until it is answered. */
   private holding: { row: string; card: string } | null = null;
+  /** Main beats the gate let go of before they triggered: carried to the next stop. */
+  private released: string[] = [];
 
   /**
    * @param rows every row of the script; those of `stop` can trigger here
@@ -110,23 +119,72 @@ export class Script {
   }
 
   /** Row ids waiting, for the save. */
-  pending(): string[] { return [...(this.holding ? [this.holding.row] : []), ...this.queue.map((q) => q.id)]; }
+  pending(): string[] { return [...(this.holding ? [this.holding.row] : []), ...this.queue.map((q) => q.id), ...this.released]; }
   /** Whether a story line is waiting (the radio's chatter holds back for it). */
   waiting(): boolean { return this.queue.length > 0 || this.holding !== null; }
   /** Whether a hub beat is still due or out: a job's call waits for it. A row that waits on a flag or an earlier row holds only once that has come. */
-  holdsJob(flags: ReadonlySet<string>): boolean {
+  holdsJob(flags: ReadonlySet<string>, tank = 0): boolean {
     if (this.holding) return true;
-    return this.mine.some((r) => {
-      if (!r.holdsJob || this.seen.has(r.id) || !this.cond(r, flags)) return false;
-      if (r.on.on === 'flag') return flags.has(r.on.flag);
-      if (r.on.on === 'after') return this.played(r.on.row) || this.fired.has(r.on.row);
-      return true;
-    });
+    // a stop's main card comes before any job there (docs/overhaul/BEAT_MAP.md §0.2)
+    return this.mine.some((r) => (r.holdsJob || (r.main && 'card' in r.do)) && !this.seen.has(r.id) && this.cond(r, flags, tank) && this.due(r, flags, tank));
+  }
+
+  /**
+   * Whether a row's trigger could still come at this stop: it waits on nothing, or the flag or earlier row it waits on has come, or
+   * is itself due here (a chain of rows leading to a main card counts from its first link).
+   */
+  private due(r: Row, flags: ReadonlySet<string>, tank: number, depth = 0): boolean {
+    if (depth > 24) return false;
+    const link = (x: Row) => !this.seen.has(x.id) && this.cond(x, flags, tank) && this.due(x, flags, tank, depth + 1);
+    if (r.on.on === 'flag') {
+      const f = r.on.flag;
+      if (flags.has(f)) return true;
+      return this.mine.some((x) => (('card' in x.do && x.do.card === f) || ('wall' in x.do && x.do.wall === f) || x.wall === f) && link(x));
+    }
+    if (r.on.on === 'after') {
+      const id = r.on.row;
+      if (this.played(id) || this.fired.has(id)) return true;
+      const x = this.all.get(id);
+      return !!x && (x.stop === this.stop || x.stop === '*') && link(x);
+    }
+    if (r.on.on === 'tank') return tank >= r.on.share;
+    if (r.on.on === 'pursuit') return false;
+    return true;
+  }
+
+  /**
+   * The main beats still owed here: those that have triggered and not yet played, and those whose trigger is due. `handshake`: one
+   * of them waits on the player reaching a site (a relay mast), which no clock should let go of.
+   */
+  owed(flags: ReadonlySet<string>, tank = 0): { any: boolean; handshake: boolean } {
+    let any = false, handshake = false;
+    if (this.holding && this.all.get(this.holding.row)?.main) any = true;
+    for (const r of this.mine) {
+      if (!r.main || this.seen.has(r.id) || this.playedAt.has(r.id) || this.released.includes(r.id)) continue;
+      const waiting = this.fired.has(r.id);
+      if (!waiting && !(this.cond(r, flags, tank) && this.due(r, flags, tank))) continue;
+      any = true;
+      if (!waiting && r.on.on === 'near') handshake = true;
+    }
+    return { any, handshake };
+  }
+
+  /** The gate lets go: main beats owed here that have not triggered are carried on, to play first at the next stop. */
+  release(flags: ReadonlySet<string>, tank = 0): string[] {
+    const out: string[] = [];
+    for (const r of this.mine) {
+      if (!r.main || this.fired.has(r.id) || this.seen.has(r.id) || !this.cond(r, flags, tank) || !this.due(r, flags, tank) || 'wall' in r.do || 'objective' in r.do) continue;
+      this.fired.add(r.id);
+      this.released.push(r.id);
+      out.push(r.id);
+    }
+    return out;
   }
   played(id: string): boolean { return this.playedAt.has(id) || this.seen.has(id); }
 
-  private cond(r: Row, flags: ReadonlySet<string>): boolean {
-    return (r.if?.has ?? []).every((f) => flags.has(f)) && !(r.if?.not ?? []).some((f) => flags.has(f));
+  private cond(r: Row, flags: ReadonlySet<string>, tank = 0): boolean {
+    const full = r.if?.full;
+    return (r.if?.has ?? []).every((f) => flags.has(f)) && !(r.if?.not ?? []).some((f) => flags.has(f)) && (full === undefined || full === tank > 0.5);
   }
 
   private fires(r: Row, c: Ctx): boolean {
@@ -150,7 +208,7 @@ export class Script {
     const play = (id: string, keep = true) => { this.playedAt.set(id, c.t); if (keep) this.seen.add(id); };
     // triggers
     for (const r of this.mine) {
-      if (this.fired.has(r.id) || !this.fires(r, c) || !this.cond(r, c.flags)) continue;
+      if (this.fired.has(r.id) || !this.fires(r, c) || !this.cond(r, c.flags, c.tank)) continue;
       this.fired.add(r.id);
       if (r.wall) out.push({ wall: r.wall });
       const d = r.do;

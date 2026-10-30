@@ -1,6 +1,7 @@
 import type { CardDef } from '../sim/comms';
 import { CALLOWAY_FACE, OFFERS } from './calloway';
 import { REGISTRY_CARD, STORY_CARDS } from './story';
+import { NOTE_CARDS, ROAD_OFFERS } from './legs';
 import { SCENE_CARDS } from './situationCards';
 
 // ── comms cards ───────────────────────────────────────────────────────────
@@ -27,6 +28,9 @@ export const FLAGS: Record<string, string> = {
   clue_sig_yards: 'the Governor’s cipher',
   clue_sig_ports: 'Lior Calloway’s signature',
   vell_betrayed: 'proof Val sold your heading',
+  sig_paid: 'the ledger, or the order',
+  sig_built: 'the work order, or the hull serial',
+  sig_room: 'the Forty, or Ada’s room',
 };
 
 export const CARDS: CardDef[] = [
@@ -945,6 +949,9 @@ export const CARDS: CardDef[] = [
   // the story beats, one a sortie through the Run (content/story.ts)
   ...STORY_CARDS,
   REGISTRY_CARD,
+  // the road past the Reach: Ada's notes and the cards that hold its gates (content/legs.ts)
+  ...NOTE_CARDS,
+  ...ROAD_OFFERS,
 
   // what is going on in a system: the calls situations make (content/situations.ts)
   ...SCENE_CARDS,

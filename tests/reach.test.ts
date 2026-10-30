@@ -4,7 +4,7 @@ import { CARD_BY_ID } from '../src/sim/comms';
 import { newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { SCRIPT } from '../src/content/script';
-import { ROAD } from '../src/content/road';
+import { GATES, LEGS, ROAD } from '../src/content/road';
 
 // The Reach on the road: the chapter script plays stop by stop, from data, in a world with a quiet sky.
 
@@ -50,7 +50,7 @@ function fly(j: Journey, answers: Record<string, string> = {}, secs = 240): Play
 describe('the script', () => {
   it('has unique row ids, real cards, and a stop in the road for every row', () => {
     expect(new Set(SCRIPT.map((r) => r.id)).size).toBe(SCRIPT.length);
-    const stops = new Set([...ROAD.map((r) => r.script), 'narrows']);
+    const stops = new Set([...LEGS.flat().map((r) => r.script), ...GATES.map((g) => g.script)]);
     for (const r of SCRIPT) {
       expect(r.stop === '*' || stops.has(r.stop), r.id).toBe(true);
       if ('card' in r.do) expect(CARD_BY_ID[r.do.card], r.id).toBeDefined();
