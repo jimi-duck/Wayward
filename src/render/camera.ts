@@ -17,10 +17,12 @@ import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 // widens its field of view with speed, leans into hard turns, shakes on
 // impacts, and recoils a touch on every shot.
 
-const ELEV = MathUtils.degToRad(19);
-const PITCH = MathUtils.degToRad(13);
-const VIEW_W = 7.0;
-const VIEW_H = 3.9;
+// preview only: ?cam=elev,pitch,viewW,viewH (degrees, degrees, metres, metres)
+const CAM = (new URLSearchParams(location.search).get('cam') ?? '').split(',').map(Number);
+const ELEV = MathUtils.degToRad(CAM[0] || 19);
+const PITCH = MathUtils.degToRad(CAM[1] || 13);
+const VIEW_W = CAM[2] || 7.0;
+const VIEW_H = CAM[3] || 3.9;
 const LOOK_AHEAD = 0.6;
 const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
