@@ -228,6 +228,11 @@ export function finaleCard(d: Dossier, hunt: { caught: number; beaten: number; h
   if (turned) said.push(t('“I read my father’s hand twice. My guns are cold.”'));
   else if (hostile) said.push(t('“You fired on my cutter. I have not forgotten.”'));
   if (fleet) said.push(t('Draper’s tender holds behind her, with the Offices’ fleet.'));
+  // the road's last lines (docs/overhaul/SCRIPT_EN_DE.md §11): after your history with her, before the last word
+  if (has('sig_used') && has('field_dropped')) said.push(t('“Ten years. He asked for ten years. I have spent mine making sure nobody needed them.”'));
+  if (has('thread_survey_3') || has('noor_met')) said.push(t('“You have seen them now. Open the lanes and they follow every full tank home.”'));
+  if (has('seam_key_given')) said.push(t('“And you gave the keys to a machine that cannot say no.”'));
+  if (has('draper_recorded')) said.push(t('“You recorded him. Good. He will still try to sell you.”'));
   said.push(t('“The Threshold is behind me. Power down.”'));
 
   const fight = { text: 'Weapons hot on the Patience, one last time', calloway: 'fight' as const, blockade: 'pass' as const };

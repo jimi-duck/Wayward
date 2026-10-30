@@ -1,4 +1,5 @@
-import { choices, choose, type Choice } from '../sim/endings';
+import { NOTE_8 } from '../content/legs';
+import { authoredEnd, choices, choose, type Choice } from '../sim/endings';
 import type { Journey } from '../sim/journey';
 import { artImg } from './art';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
@@ -30,6 +31,38 @@ export class EndingPanel {
     this.opened = performance.now();
     this.list = choices(j);
     this.sel = Math.max(0, this.list.findIndex((c) => c.open));
+    // on the road, Ada's last note comes first: to Juno by name, or to whoever flies her if the implant was burned
+    if (authoredEnd(j)) { this.note(j); return; }
+    this.ask(j);
+  }
+
+  /** Ada's eighth note, before the choice. */
+  private note(j: Journey): void {
+    const n = j.carry.flags.includes('implant_burned') ? NOTE_8.burned : NOTE_8.kept;
+    $('en-k').textContent = t('The Threshold');
+    $('en-t').textContent = t(NOTE_8.title);
+    $('en-s').textContent = '';
+    $('en-l').replaceChildren();
+    $('en-epi').replaceChildren(...n.lines.map((l) => h('p', '', t(l))), h('p', 'sign', t(n.sign)));
+    $('ending').hidden = false;
+    const go = $('en-go');
+    go.hidden = false;
+    go.onclick = guarded(this.opened, () => this.ask(j));
+    go.onpointerdown = (e) => e.stopPropagation();
+    this.noting = true;
+    this.off = keys((e) => {
+      if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') return this.ask(j), true;
+      return ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Escape'].includes(e.code);
+    });
+  }
+  private noting = false;
+
+  /** The six endings, open and shut. */
+  private ask(j: Journey): void {
+    this.off?.();
+    this.off = null;
+    this.noting = false;
+    this.opened = performance.now();
     $('en-k').textContent = `${t('The Threshold')} · ${t('day {n}', { n: Math.floor(j.day) + 1 })}`;
     $('en-t').textContent = t('What is the Severance file worth?');
     $('en-s').textContent = t('The chase is over, but the Severance file is still aboard.');
@@ -55,6 +88,7 @@ export class EndingPanel {
 
   padInput(p: PadEdges): void {
     if (!this.open || performance.now() - this.opened < GUARD) return;
+    if (this.noting) { if (p.a && this.j) this.ask(this.j); return; }
     if (!$('en-go').hidden) { if (p.a) this.done(); return; }
     if (p.up || p.left) this.move(-1);
     else if (p.down || p.right) this.move(1);

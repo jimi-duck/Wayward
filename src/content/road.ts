@@ -130,7 +130,7 @@ export const HOLLOWS: RoadStop[] = [
 export const LAST: RoadStop[] = [
   stop('landfall', 'Lastlight', 'transit', 'none', 'l_lastlight', { purpose: 'the last relay ahead' }),
   stop('hub', 'The Last Toll', 'port', 'none', 'l_toll', { port: 'The Last Toll', purpose: 'every lane ends here' }),
-  stop('work', 'Thin Gap', 'transit', 'thren', 'l_gap', { purpose: 'the first question', scene: 'voice_direct' }),
+  stop('work', 'Thin Gap', 'transit', 'thren', 'l_gap', { purpose: 'the first question' }),
   stop('turn', 'Dimrim', 'mining', 'none', 'l_dimrim', { purpose: 'the second question' }),
   stop('breather', 'Lone Step', 'transit', 'none', 'l_step', { purpose: 'the third question' }),
   stop('pressure', 'Dusk Mark', 'contested', 'voice', 'l_dusk', { purpose: 'instruments disagree', scene: 'unknown_pulse' }),

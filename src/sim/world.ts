@@ -11,7 +11,7 @@ import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Script, type Output } from './script';
-import { derive, relaysLit } from './evidence';
+import { derive, SIG_CLUES, relaysLit } from './evidence';
 import { ON_ROAD } from '../content/road';
 import { debtLeft } from './threads';
 import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
@@ -1582,6 +1582,7 @@ export class World implements EncounterHost {
     if (this.ghost?.near) this.flags.add('ghost_close');
     // what the flags add up to (relays lit, thread steps, the proofs), kept as flags for the script and the cards (sim/evidence.ts)
     if (this.flags.has(ON_ROAD)) derive(this.flags);
+    else for (const [clue, sig] of SIG_CLUES) if (this.flags.has(clue)) this.flags.add(sig);
     if (this.script) for (const o of this.script.step(this.scriptCtx(busy, t))) this.playOutput(o);
     // the first system's docks always call when you come up on them, the depot once and the audit dock while its lock holds
     if (b.def.first && !this.docked) {

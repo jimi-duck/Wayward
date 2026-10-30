@@ -1,7 +1,7 @@
 import { OBSERVATIONS } from '../content/situations';
 import { CHITS_PER_CYRITE } from './purse';
 import { t } from '../i18n';
-import { ENDING_BY_ID, ENDINGS, FRIEND, SCATTER, type EndingDef, type EndingId, type Need } from '../content/endings';
+import { ENDING_BY_ID, ENDINGS, FRIEND, OREN_LINES, SCATTER, type EndingDef, type EndingId, type Need } from '../content/endings';
 import { CAPTAIN_BY_ID } from './captains';
 import type { Standing } from './comms';
 import type { Faction } from './enemies';
@@ -10,6 +10,8 @@ import { hasFitted, systemMarks, type Marks } from './modules';
 import { atLeast, tier } from './notice';
 import { fileCount, fragmentsFound } from './story';
 import { STORY_PEOPLE } from '../content/story';
+import { LEGS } from '../content/road';
+import { roadRegion } from './road';
 
 // ── the Choice ────────────────────────────────────────────────────────────
 // The third act. Through the Threshold, the journey is over (status 'over',
@@ -87,8 +89,16 @@ export function choices(j: Journey): Choice[] {
 /** The epilogue of an ending, for this journey. */
 export function epilogue(j: Journey, id: EndingId): string[] {
   const l = ledger(j);
-  return ENDING_BY_ID[id].epilogue.filter((e) => !e.if || meets(l, e.if)).map((e) => e.text);
+  const def = ENDING_BY_ID[id];
+  if (!authoredEnd(j)) return def.epilogue.filter((e) => !e.if || meets(l, e.if)).map((e) => e.text);
+  const r = def.road;
+  const slot = (k: 'thread' | 'person' | 'cost') => r.lines.find((x) => x.slot === k && (!x.if || meets(l, x.if)))?.text;
+  const oren = OREN_LINES.find((o) => l.flags.has(o.flag))?.text;
+  return [r.open, slot('thread'), slot('person'), slot('cost'), oren, r.close].filter((x): x is string => !!x);
 }
+
+/** The journey ran the authored road to its end (sim/road.ts): its endings read as the road's (content/endings.ts `road`). */
+export const authoredEnd = (j: Journey): boolean => roadRegion(j.chart, LEGS.length - 1);
 
 /** Make the choice. Returns the epilogue, or null if the choice is not waiting or the ending is shut. */
 export function choose(j: Journey, id: EndingId): string[] | null {

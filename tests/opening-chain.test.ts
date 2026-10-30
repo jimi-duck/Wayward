@@ -201,7 +201,7 @@ describe('nothing soft-locks', () => {
     const view = def.choices.map((c) => choiceView(c, def, ctx(), 0));
     expect(view.find((v) => v.id === 'sign')!.ok).toBe(false);
     expect(view.filter((v) => v.ok).length).toBeGreaterThanOrEqual(2);
-    const all = new Set(['clue_sig_reach', 'clue_sig_yards', 'clue_sig_ports']);
+    const all = new Set(['sig_paid', 'sig_built', 'sig_room']);
     expect(choiceView(def.choices.find((c) => c.id === 'sign')!, def, ctx({ flags: all }), 0).ok).toBe(true);
   });
 });

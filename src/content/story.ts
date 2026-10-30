@@ -685,12 +685,14 @@ export const STORY_CARDS: CardDef[] = [
     id: 'story_tollgate', kind: 'warning', caller: 'office',
     from: 'Governor Idris Calloway · the Offices of Peace', title: 'The damping field',
     text: '“I closed this gate behind you, Juno. No guns, no jump. You carry what my father signed. Show me you know what it says.”',
+    lines: [{ if: { flag: 'calloway_told' }, text: '“You told me the truth once. Try it again.”' }],
     cargo: 'A Continuance cutter · the field is hers',
     choices: [
-      { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'Needs all three clues to the signature. Once.', needs: { flag: ['clue_sig_reach', 'clue_sig_yards', 'clue_sig_ports'] }, win: { text: 'She reads her father’s hand · the field drops', flag: ['calloway_turned', 'sig_used'], hunt: 2 } },
-      { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: 'calloway_bargain', hunt: 1 } },
-      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: 'calloway_hostile', spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12 } },
-      { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', win: { text: 'You limp out of the field', flag: 'calloway_hostile', hunt: -1, heat: 0.1 } },
+      { id: 'sign', label: 'Show the signature', tone: 'bluff', hint: 'The order, the work order, the room. All three.', needs: { flag: ['sig_paid', 'sig_built', 'sig_room'] }, win: { text: 'She reads it twice. ‘He asked for ten years.’ · the field drops', flag: ['calloway_turned', 'sig_used', 'field_dropped', 'field_talked'], hunt: 2, blockade: 'pass' } },
+      { id: 'line', label: 'Run it with the Line', tone: 'help', hint: 'Quill’s decoys light up inside the field.', show: { flag: 'thread_line_5' }, win: { text: 'A hundred hulls at once · the field can’t hold them', flag: ['field_dropped', 'field_line'], hunt: 1, blockade: 'pass' } },
+      { id: 'bargain', label: 'Bargain', tone: 'pay', hint: 'Eight Cyrite and your word. She lets you through.', cost: { chits: 40 }, win: { text: 'The field drops · she keeps your word', flag: ['calloway_bargain', 'field_dropped', 'field_talked'], hunt: 1, blockade: 'pass' } },
+      { id: 'shoot', label: 'Shoot the cutter', tone: 'fight', hint: 'Break the field the hard way.', win: { text: 'The cutter breaks off · the Offices mark you', flag: ['calloway_hostile', 'field_dropped'], spawn: [{ variant: 'raptor', n: 2, from: 'ahead' }], heat: 0.12, blockade: 'fight' } },
+      { id: 'run', label: 'Run the field', tone: 'run', hint: 'Cost: Wanted and a day lost.', win: { text: 'You limp out of the field', flag: ['calloway_hostile', 'field_dropped'], hunt: -1, heat: 0.1, blockade: 'run' } },
     ],
   }),
   story({

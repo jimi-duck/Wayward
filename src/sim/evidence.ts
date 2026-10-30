@@ -25,6 +25,9 @@ const COUNTED = /^(relays_\d|thread_[a-z]+_\d)$/;
  * Bring the flags that add up up to date, in place. Counted ones follow the count both ways (a thread can lose steps); the
  * proofs and the strike, once made, stay made.
  */
+/** Off the road the Tollgate's three proofs are the three clues alone, as they always were. */
+export const SIG_CLUES: ReadonlyArray<[string, string]> = [['clue_sig_reach', 'sig_paid'], ['clue_sig_yards', 'sig_built'], ['clue_sig_ports', 'sig_room']];
+
 export function derive(flags: Set<string>): void {
   for (const f of [...flags]) if (COUNTED.test(f)) flags.delete(f);
   for (let n = 1, lit = relaysLit(flags); n <= lit; n++) flags.add(`relays_${n}`);
