@@ -456,7 +456,7 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 /* the notices (ui/notify.ts): the alert plate's own style (a glass plate, chamfered, right-aligned capitals, a coloured headline over a white line), at the head of the lower-right column, above the banner, the log, the stores, torpedoes, mines and the Wanted callout, so they never cover any of them; two at most; they never take input */
 #notice { display: grid; gap: 8px; justify-self: end; width: min(320px, calc(100vw - 48px)); box-sizing: border-box; pointer-events: none; }
 #notice:empty { display: none; }
-.nt { --tone: var(--alert); --lit: var(--alert); --edge: rgba(var(--alert-rgb), .6); --tint: linear-gradient(rgba(var(--threat-deep-rgb), .55), rgba(var(--threat-deep-rgb), .5)); padding: 6px 12px 7px; text-align: right; opacity: 0; translate: 0 6px; transition: opacity .15s ease-out; }
+.nt { --c: 14px; --tone: var(--alert); --lit: var(--alert); --edge: rgba(var(--alert-rgb), .6); --tint: linear-gradient(rgba(var(--threat-deep-rgb), .55), rgba(var(--threat-deep-rgb), .5)); padding: 6px 12px 7px; text-align: right; opacity: 0; translate: 0 6px; transition: opacity .15s ease-out; }
 .nt.on { opacity: 1; translate: 0 0; transition: opacity .2s ease-out, translate .2s ease-out; }
 .nt.out { translate: 0 0; }
 .nt.warning { --tone: var(--caution); --lit: var(--caution); --edge: var(--caution-dim); --tint: linear-gradient(transparent, transparent); }
