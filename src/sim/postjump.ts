@@ -58,3 +58,20 @@ export function postJump(def: SortieDef): SortieDef {
     place: def.place && WEATHER.has(def.place.plays) ? null : def.place,
   };
 }
+
+/**
+ * After Sam's code, in seconds of play: Sam names the depot (only if the tank is short), the company reports the
+ * hull stolen, a few seconds on the Wanted note explains it (once a profile, main.ts), and the first Custody hull comes. Nothing hunts her before the lock lifts (sim/world.ts `stolen`).
+ */
+export const STOLEN = { sam: 20, notice: 38, explain: 4, pursuit: 70 } as const;
+/** Sam's line once the registry card is closed: the short tank and where to fill it (the depot, or the rock when she cannot pay). */
+export const STOLEN_SAM = '“And you’re running dry. The Frontier depot is on your way. Fill the tank there, then the gate.”';
+export const STOLEN_SAM_POOR = '“And you’re running dry, with nothing to pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”';
+/** The amber notice that tells her the pursuit has started, and why. */
+export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
+
+/** The objective is the depot: the first system past Cerro, the lock lifted, a tank short of the jump, not docked yet, and Cyrite to buy with. */
+export function refuelAt(w: { bk: { def: { first?: boolean }; port: unknown; docks: number } | null; flags: ReadonlySet<string>; fuel: number; jumpCost: number; cyrite: number; fluidPrice: number }): boolean {
+  const b = w.bk;
+  return !!b?.def.first && !!b.port && b.docks === 0 && lockLifted(w.flags) && w.fuel < w.jumpCost && w.cyrite >= w.fluidPrice;
+}

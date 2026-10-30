@@ -32,7 +32,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { lockLifted } from './postjump';
+import { lockLifted, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic } from './traffic';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
@@ -702,7 +702,8 @@ export class World implements EncounterHost {
 
     // the sector
     this.field.step(dt, s.x, s.z, this.bk ? { ...p, rockHp: p.rockHp * MINE_HP, rich: this.richShare } : p);
-    if (this.bk && !held) { this.pursue(t); this.swarm(t); this.jam(dt); }
+    // under recovery nothing comes for her at all (the arcade's waves are not the Story's)
+    if (this.bk) { if (!held) { this.pursue(t); this.swarm(t); this.jam(dt); } }
     else this.spawn(t, p);
     this.stepAliens(dt, t, p);
     const before = this.command.state, sighted = this.command.boss;
@@ -974,6 +975,7 @@ export class World implements EncounterHost {
   /** The pursuit: Custody hulls from behind (from home), now and then a Gutter crew from ahead, as often as the heat says. */
   private pursue(t: number): void {
     const b = this.bk!, s = this.ship;
+    if (b.def.first && !this.stolen(t)) return;
     const cs = this.command.state;
     if (b.def.quiet || cs === 'fight' || cs === 'inbound' || cs === 'hailing' || t < b.nextPursuit) return;
     if (b.chase) return this.chaseWave(t);
@@ -997,6 +999,33 @@ export class World implements EncounterHost {
     }
     // hunters: a faction that has marked you sends its pursuit oftener
     b.nextPursuit = t + pursuitInterval(b.heat) * b.def.notice.pursuit * this.survival.pursuit.gap * this.rng.range(0.8, 1.2);
+  }
+
+  /** When Sam's code lifted the owner lock in the first system past Cerro (Infinity: not yet). */
+  private stolenAt = Infinity;
+  private stolenSaid = 0;
+  /** The first system past Cerro: the hull is not reported stolen yet, so nothing there explains Wanted yet (main.ts holds the note). */
+  get beforeReport(): boolean { return !!this.bk?.def.first && this.runTime < this.stolenAt + STOLEN.notice + STOLEN.explain; }
+
+  /**
+   * The first system past Cerro (sim/postjump.ts): nobody hunts the Wayward while she is still the company's. Once
+   * Sam's code has lifted the lock, Sam tells her where the fluid is, the company reports the hull stolen, and only
+   * then does the first Custody hull come (STOLEN). Returns whether the pursuit may run.
+   */
+  private stolen(t: number): boolean {
+    if (!lockLifted(this.flags)) return false;
+    const b = this.bk!;
+    if (this.stolenAt === Infinity) { this.stolenAt = t; b.nextPursuit = Math.max(b.nextPursuit, t + STOLEN.pursuit); }
+    const since = t - this.stolenAt, name = b.def.name;
+    if (this.stolenSaid === 0 && since >= STOLEN.sam) {
+      this.stolenSaid = 1;
+      if (this.fuel < this.jumpCost) this.events.push({ type: 'ping', id: 'stolen_sam', from: tr('Sam Okoro'), caller: 'miners', text: tr(b.port && this.cyrite >= this.fluidPrice ? STOLEN_SAM : STOLEN_SAM_POOR), moment: 'calm', system: name });
+    }
+    if (this.stolenSaid === 1 && since >= STOLEN.notice) {
+      this.stolenSaid = 2;
+      this.events.push({ type: 'storyNotice', tone: 'amber', headline: STOLEN_NOTICE[0], reason: STOLEN_NOTICE[1] });
+    }
+    return t >= this.stolenAt + STOLEN.pursuit;
   }
 
   /** One wave of the opening chase: heavier and more of them each time, always from behind. */
@@ -1511,7 +1540,8 @@ export class World implements EncounterHost {
     const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: relayOf(b) };
     return {
       t, arrived: this.desk.arrived, busy, free: this.scriptFree(busy, t), slow: this.stageSlow(), tank: this.tankCap ? this.fuel / this.tankCap : 0, flags: this.flags,
-      pursuit: Math.max(0, halfDays((this.sortie.calloway ?? Infinity) / DAY_SECONDS - t / DAY_SECONDS)),
+      // the first system past Cerro has its own word on the pursuit (stolen): the days count from the next stop
+      pursuit: b.def.first ? Infinity : Math.max(0, halfDays((this.sortie.calloway ?? Infinity) / DAY_SECONDS - t / DAY_SECONDS)),
       dist: (site: string) => { const p = sites[site]; return p ? Math.hypot(p.x - s.x, p.z - s.z) : Infinity; },
       cardDone: (id: string) => this.cardsSeen.has(id) && !this.comms && !this.call,
     };
@@ -1598,8 +1628,8 @@ export class World implements EncounterHost {
       const def = pickCard(this.commsCtx(), this.blocked(), this.rng, 'port');
       if (def && (weightOf(def) === 'major' || this.deskRng.next() < DESK.portNews)) d.offer(def, weightOf(def), t, true);
     }
-    // a new card by chance: only on an opportunity, never on a timer alone, and few a sortie
-    if (!b.def.quiet && t >= this.cardNext && d.wants(t, busy)) {
+    // a new card by chance: only on an opportunity, never on a timer alone, and few a sortie; none in the first system past Cerro, whose story is enough
+    if (!b.def.quiet && !b.def.first && t >= this.cardNext && d.wants(t, busy)) {
       const def = pickCard(this.commsCtx(), this.blocked(), this.rng);
       if (def) { d.offer(def, weightOf(def), t); d.used(); }
     }

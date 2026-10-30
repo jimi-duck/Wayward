@@ -11,8 +11,8 @@ adds its own shape.
 - **A worked-out industrial system.** A scrap expanse with a gantry works, a breaker
   field, a graveyard of hulls, a thin Cyrite seam and a far passage
   (`POSTJUMP_SKY`). Rock density 0.6 of the chart's, veined rock 0.1, heat rate 0.7, the
-  first pursuit no sooner than 150 s (`WORKED`). The Jump Gate is a straight 2,400 units
-  (about a minute flat out).
+  first pursuit no sooner than 150 s (`WORKED`) and never before Sam's code (below). The
+  Jump Gate is a straight 1,000 units (`POSTJUMP_LANE`, about 25 s flat out).
 - **Worlds in the sky.** A near ringed giant with a moon, a small rock world and a cold ice
   world at three sizes and distances (`industrial()` in `render/sky.ts`; the sphere
   radii are 1,500, 2,300 and 2,700). They stand either side of the course.
@@ -43,6 +43,22 @@ restart of the sortie lands on the right objective. The registry card, its order
 the story timing are untouched: the chain starts two seconds in and Sam's code comes after the breach
 notice, as before. The audit dock stays on the scope as a place after the code (nothing
 leads to it), and the depot stays on the strip throughout.
+
+## After Sam's code
+
+One thing at a time, in seconds of play after the lock lifts (`STOLEN`):
+
+1. The rename reveal, the registry card and the archive, as before.
+2. **+20 s:** Sam names the short tank: the depot if she can pay, the veined rock if not
+   (`STOLEN_SAM`, `STOLEN_SAM_POOR`). Only when the tank is short.
+3. **+38 s:** an amber notice, "Hull reported stolen · Kellern has called in Custody".
+4. **+70 s, and no sooner than 150 s in:** the first Custody hull, from behind.
+
+Until the lock lifts nothing hunts her and no hull comes for her (the recovery runs no
+waves), no chance card is dealt in this system at all, and the "Custody pursuit · N days
+behind" notices wait for the next stop. While the tank is short, she can pay and has not
+docked, the objective is "Refuel at Frontier Supply Depot" with the gate as the line
+under it (`refuelAt`); then "Head for the Jump Gate".
 
 ## When you fire on the traffic
 

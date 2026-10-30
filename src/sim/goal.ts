@@ -1,6 +1,6 @@
 import { ENCOUNTERS } from './encounters';
 import { lessonOf } from './tutor';
-import { lockLifted } from './postjump';
+import { lockLifted, refuelAt } from './postjump';
 import type { World } from './world';
 
 // ── the one line the pause card shows ─────────────────────────────────────
@@ -18,6 +18,7 @@ export function goalOf(w: World): Goal {
   const scope = w.stage?.onScope ? w.stage.def.name : undefined;
   if (w.storyObjective?.main) return { goal: w.storyObjective.main, jobs, scope };
   if (w.bk && !lockLifted(w.flags) && w.seenPlaces().some((p) => p.kind === 'audit')) return { goal: 'Dock at the company port', jobs, scope };
+  if (refuelAt(w)) return { goal: 'Refuel at the supply depot', jobs, scope };
   if (w.bk) return { goal: w.fuel >= w.jumpCost ? 'Head for the Jump Gate and jump' : 'Mine Cyrite to fill the jump tank', jobs, scope };
   if (e && !e.done && !e.dormant) return { goal: ENCOUNTERS[e.id].name, jobs };
   return { goal: 'Collect Cyrite to upgrade while fighting off hostile ships', jobs };
