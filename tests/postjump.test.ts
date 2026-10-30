@@ -135,7 +135,7 @@ describe('after Sam’s code', () => {
     w.flags.add('ship_stolen');
     expect(w.bk!.docks).toBe(0);
     expect(refuelAt(w)).toBe(true);
-    expect(goalOf(w).goal).toBe('Refuel at the supply depot');
+    expect(goalOf(w).goal).toBe('Fill the tank: buy fluid at the depot or mine Cyrite');
     const said: string[] = [];
     let firstHull = Infinity;
     const t0 = w.runTime;
