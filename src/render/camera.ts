@@ -2,9 +2,9 @@ import { MathUtils, PerspectiveCamera } from 'three';
 import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 
 // ── the chase camera ──────────────────────────────────────────────────────
-// Low behind the ship and a little above it, as in the reference frame: the
-// hull fills the lower middle of the picture, the horizon sits high, and the
-// sky ahead (where enemies come in from) takes most of the screen.
+// Behind the ship and well above it: the hull sits in the lower middle of the
+// picture, with room ahead (where enemies come in from) to see them early and
+// the corner HUD kept clear.
 //
 // Two angles define the framing. ELEV is how far above the ship the camera
 // sits, seen from the ship; PITCH is how far the view looks down. The ship
@@ -17,12 +17,10 @@ import { clamp, smoothDamp, smoothDampAngle } from '../core/math';
 // widens its field of view with speed, leans into hard turns, shakes on
 // impacts, and recoils a touch on every shot.
 
-// preview only: ?cam=elev,pitch,viewW,viewH (degrees, degrees, metres, metres)
-const CAM = (new URLSearchParams(location.search).get('cam') ?? '').split(',').map(Number);
-const ELEV = MathUtils.degToRad(CAM[0] || 19);
-const PITCH = MathUtils.degToRad(CAM[1] || 13);
-const VIEW_W = CAM[2] || 7.0;
-const VIEW_H = CAM[3] || 3.9;
+const ELEV = MathUtils.degToRad(38);
+const PITCH = MathUtils.degToRad(28);
+const VIEW_W = 10;
+const VIEW_H = 5.6;
 const LOOK_AHEAD = 0.6;
 const FOLLOW = 0.08;
 const YAW_FOLLOW = 0.26;
