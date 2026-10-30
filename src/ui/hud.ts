@@ -25,6 +25,7 @@ import { lockLifted, refuelAt } from '../sim/postjump';
 import { BREACH_BEAT, SAM_BEAT, WAKE_BEAT } from '../content/story';
 import { recovering } from '../sim/recovery';
 import { wantedText } from './pressure';
+import { wantedPips } from '../sim/pressure';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
 // The ship and the world come first; the HUD answers five questions and
@@ -70,6 +71,8 @@ const THREAT_NEAR = 320;
 const MEND_QUIET = 10;
 /** How long the Wanted callout stays. */
 const HEAT_CALL_S = 6;
+/** How long the Jump Gate stays marked once the tank can make the jump. */
+const GATE_PING_S = 4;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const ROCK_BROKEN: Record<string, string> = { basalt: 'Rock broken', iron: 'Iron rock broken', rich: 'Rich rock broken', volatile: 'Volatile rock broken' };
 const pad = (n: number, w: number) => String(Math.max(0, Math.round(n))).padStart(w, '0');
@@ -229,6 +232,8 @@ export class Hud {
           if (e.at === 'lane') this.notify(world, { type: 'arrival', headline: 'Job complete', reason: e.job, key: `job:${e.id}` });
           break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;
+        case 'jumpReady': this.jumpReady(world); break;
+        case 'jumpLost': this.notify(world, { type: 'warning', headline: 'Jump fluid short', reason: `${e.have}/${e.need}`, key: 'jumplost' }); break;
         case 'spool': this.banner(t('Jump Gate'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
         case 'needFuel': this.banner(t('Ship system'), t('Not enough jump fluid'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
         case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
@@ -817,6 +822,23 @@ export class Hud {
   }
 
   private heatTimer = 0;
+  private gateTimer = 0;
+
+  /**
+   * The tank can make the jump (sim/jumpready.ts): a short calm banner, one pulse on the fluid readout and the objective's
+   * ticks, the Jump Gate's pointer and scope bearing marked for a few seconds. In a hard fight the banner is shorter,
+   * so it does not sit over what is coming. The pulses are CSS and stand still with reduced motion.
+   */
+  private jumpReady(world: World): void {
+    const hot = !!world.bk && wantedPips(world.bk.heat) >= 4;
+    this.banner(t('Ship system'), t('Jump ready'), t('Head for the Jump Gate'), hot ? 0.9 : 1.6, 'calm');
+    for (const [id, cls] of [['sys-fuel', 'cue'], ['obj-p', 'cue'], ['objective', 'cue']] as const) this.retrigger($(id), cls);
+    const gate = $('ptr-lane');
+    gate.classList.add('ping');
+    clearTimeout(this.gateTimer);
+    this.gateTimer = window.setTimeout(() => gate.classList.remove('ping'), GATE_PING_S * 1000);
+    this.radar.ping(GATE_PING_S);
+  }
 
   /** The Wanted bar's callout: gold, or red when ships are on their way; it ends with what to do. */
   private heatCall(line: string, inbound: boolean): void {

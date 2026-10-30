@@ -11,6 +11,9 @@ import type { PressureEvent } from './pressure';
 
 export type GameEvent =
   | PressureEvent
+  /** The tank reached what the jump needs / fell short of it again (sim/jumpready.ts). */
+  | { type: 'jumpReady'; have: number; need: number }
+  | { type: 'jumpLost'; have: number; need: number }
   | { type: 'bolt'; x: number; z: number; heading: number }
   | { type: 'torpedo'; x: number; z: number; heading: number; target: number | null }
   /** A rock took a hit at (x, y, z): `rx`, `rz` is its centre, `hp` what is left of it (0 to 1), `src` the weapon (a string: the sim's Weapon names). */

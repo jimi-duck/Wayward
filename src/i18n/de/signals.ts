@@ -25,4 +25,7 @@ export const SIGNALS: Record<string, string> = {
   'contested systems': 'Kampf-Systeme',
   'Calloway may expect this': 'Calloway rechnet damit',
   'Wanted is local to this system: leaving it resets it. Calloway follows your route across systems instead.': 'Gesucht gilt nur in diesem System: Wer geht, setzt es zurück. Calloway folgt stattdessen deiner Route durch alle Systeme.',
+  // Jump ready (ui/hud.ts)
+  'Jump ready': 'Sprung bereit',
+  'Jump fluid short': 'Sprungfluid knapp',
 };

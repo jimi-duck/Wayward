@@ -65,6 +65,7 @@ import { ARCADE_PRICE } from '../content/web';
 import { blockOf, install as bayInstall, quickPicks, stockLevels, type BayCtx, type Block } from './bay';
 import { feelBudgets, overRatings, weightFuel } from './budgets';
 import { PressureWatch } from './pressure';
+import { JumpWatch } from './jumpready';
 import { arrival, newPace, PACING, patrolStart, pickApproach, waveSize, type Approach, type Pace } from './pacing';
 import { planStop, type Stop } from './stop';
 import { reasonOf, type Advice } from './advice';
@@ -353,6 +354,8 @@ export class World implements EncounterHost {
   behind = Infinity;
   /** Wanted and Calloway, as warnings (sim/pressure.ts). */
   private watch = new PressureWatch();
+  /** The tank against the jump's need (sim/jumpready.ts); a new one each system. */
+  private jumpWatch = new JumpWatch();
   huntDelay = 0;
   stall = 0;
   /** A named captain (sim/captains.ts): seconds into the sortie they find you; whether they have, their ship is the one fighting, and how it went. */
@@ -437,6 +440,7 @@ export class World implements EncounterHost {
     this.captainAt = def.quiet ? Infinity : def.notice.captain?.at ?? Infinity;
     this.behind = def.behind;
     this.watch = new PressureWatch();
+    this.jumpWatch = new JumpWatch();
     this.heard = new Set();
     // the course is laid out from where the ship is now
     const b = this.bk, s = this.ship;
@@ -800,6 +804,8 @@ export class World implements EncounterHost {
     if (!this.alive || b.jumpT >= 0) return;
     this.stage?.step(this, dt);
     if (this.phase === 'play') this.traffic?.step(this, dt);
+    const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
+    if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
     if (!b.def.quiet) this.events.push(...this.watch.step({
       t: this.runTime, heat: b.heat, cap: Math.max(1, Math.round(pursuitCap(b.heat) * this.survival.pursuit.cap)),
       elite: this.aliens.some((a) => !!a.elite), inbound: this.aliens.some((a) => !a.ward && !a.fleeing && a.kind !== 'freighter' && Math.hypot(a.x - s.x, a.z - s.z) < 260),

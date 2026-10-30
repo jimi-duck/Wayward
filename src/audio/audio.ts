@@ -103,6 +103,8 @@ function cueFor(e: GameEvent): string | undefined {
     case 'call': return e.tier === 'important' ? 'callPrio' : 'call';
     case 'ping': return 'ping';
     case 'jumped': return 'jump';
+    // the tank can make the jump: the shield's rising tone, no new sound
+    case 'jumpReady': return 'shieldUp';
     case 'break': return 'break';
     default: return undefined;
   }
