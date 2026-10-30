@@ -65,7 +65,7 @@
 .st-row[aria-pressed="true"] .st-v { color: var(--gl-blue-e1); }
 .st-row[aria-pressed="false"] .st-v { color: var(--ink-2); }
 .st-go { margin-top: 4px; }
-.st-warn { margin: 0 0 0 18px; padding: 6px 10px; border-left: 2px solid var(--gl-blue-e1); background: rgba(var(--shade-2-rgb), .62); font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--hud-hi); }
+.st-warn { margin: 0 0 0 18px; padding: 6px 10px; border-left: 2px solid var(--caution); background: rgba(var(--shade-2-rgb), .62); font: 600 12px/1.3 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--caution); }
 .st-warn[hidden] { display: none; }
 .st-lang { display: flex; gap: 8px; align-items: center; cursor: default; }
 .st-lang:hover::before, .st-lang:hover::after { opacity: 0; }
