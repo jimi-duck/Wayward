@@ -1,6 +1,7 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { it } from 'vitest';
-import { budgets } from '../src/sim/bay';
+import { blockOf, budgets, cost, reachable } from '../src/sim/bay';
+import { UPGRADE } from '../src/content/upgrades';
 import { endSortie, hearNews, newJourney, plot, replot, sortieDef, type Journey } from '../src/sim/journey';
 import { World } from '../src/sim/world';
 import { flyWorld, type Policy, type Strategy } from './pilot';
@@ -19,10 +20,13 @@ import { planRoute } from './route';
 
 const OUT = process.env.UPG_OUT;
 const REPORT = process.env.UPG_REPORT;
+const ECONOMY = process.env.UPG_ECONOMY;
 const POLICY = (process.env.UPG_POLICY ?? 'build') as 'none' | 'build';
 const SEED = Number(process.env.UPG_SEED ?? 3000);
 const MAX_LEGS = Number(process.env.UPG_LEGS ?? 140);
-const STRATEGY: Strategy = process.env.UPG_STRAT === 'random' ? { kind: 'random' } : process.env.UPG_STRAT === 'focus' ? { kind: 'focus', branch: 'torpedo', second: 'defence' } : { kind: 'wide' };
+const STRAT = process.env.UPG_STRAT ?? 'wide';
+// 'economy' pours Cyrite into the utility branch (tractor, matrix, prospector) and keeps a laser to fight with; 'combat' into lasers and torpedoes
+const STRATEGY: Strategy = STRAT === 'economy' ? { kind: 'focus', branch: 'utility', second: 'defence' } : STRAT === 'combat' ? { kind: 'focus', branch: 'laser', second: 'torpedo' } : process.env.UPG_STRAT === 'random' ? { kind: 'random' } : process.env.UPG_STRAT === 'focus' ? { kind: 'focus', branch: 'torpedo', second: 'defence' } : { kind: 'wide' };
 /** The yard's modules the build wants, most wanted first. */
 const MODULES_WANTED = ['md_plate', 'md_projector', 'md_hardpoints', 'md_gunnery', 'md_capacitor', 'md_tractor', 'md_plate', 'md_projector'];
 const ANSWERS: Policy = 'bluff';
@@ -41,9 +45,19 @@ interface Stop {
   platesLost: number;
   wrecked: boolean;
   levels: Record<string, number>;
+  /** Cyrite earned this sortie, and what the next meaningful (tier 2 or deeper) level costs at its end. */
+  earned: number;
+  nextCost: number;
 }
 
-interface Saved { policy: string; seed: number; end: string | null; stops: Stop[] }
+interface Saved { policy: string; strat?: string; seed: number; end: string | null; stops: Stop[] }
+
+/** The cheapest next level among nodes of tier 2 or deeper that could be fitted were the Cyrite there. */
+function nextMeaningful(w: World): number {
+  const ctx = w.bayCtx();
+  const open = reachable({ ...ctx, docked: true }).filter((n) => n.tier >= 2 && !n.id.startsWith('rx_') && !n.id.startsWith('hl_'));
+  return open.length ? Math.min(...open.map((n) => cost(n.id, (w.levels[n.id] ?? 0) + 1, false, w.levels))) : 0;
+}
 
 function fly(): Saved {
   const j: Journey = newJourney(SEED, false, 'eight');
@@ -65,11 +79,12 @@ function fly(): Saved {
       n, purse: Math.round(w.cyrite), fuel: Math.round(w.fuel), built: Object.values(w.levels).reduce((a, b) => a + b, 0) - 1,
       power: `${use.power}/${cap.power}`, mass: `${use.mass}/${cap.mass}`, heat: `${use.heat}/${cap.heat}`,
       time: Math.round(w.runTime), combat: Math.round(res.combat), platesLost: w.run.platesLost, wrecked: !w.run.escaped, levels: { ...w.levels },
+      earned: Math.round(w.run.cyrite), nextCost: nextMeaningful(w),
     });
     endSortie(j, w.result());
     n++;
   }
-  return { policy: POLICY, seed: SEED, end: j.end, stops };
+  return { policy: POLICY, strat: STRAT, seed: SEED, end: j.end, stops };
 }
 
 const mean = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
@@ -78,9 +93,10 @@ const pct = (n: number) => `${Math.round(n * 100)}%`;
 it('flies one journey, or folds the journeys flown into the report', { timeout: 7_200_000 }, () => {
   if (OUT) {
     mkdirSync(OUT, { recursive: true });
-    writeFileSync(`${OUT}/${POLICY}-${SEED}.json`, JSON.stringify(fly()));
+    writeFileSync(`${OUT}/${POLICY}-${STRAT}-${SEED}.json`, JSON.stringify(fly()));
     return;
   }
+  if (ECONOMY) return foldEconomy(ECONOMY);
   if (!REPORT) return;
   const runs: Saved[] = readdirSync(REPORT).filter((f) => f.endsWith('.json')).map((f) => JSON.parse(readFileSync(`${REPORT}/${f}`, 'utf8')) as Saved);
   const policies = [...new Set(runs.map((r) => r.policy))];
@@ -150,3 +166,54 @@ ${last.map((s, i) => `| ${i + 1} | ${s!.power} | ${s!.mass} | ${s!.heat} |`).joi
 `;
   writeFileSync(new URL('../docs/BALANCE-UPGRADES.md', import.meta.url), md);
 });
+
+// ── the economy comparison ────────────────────────────────────────────────
+// `UPG_ECONOMY=dir` folds the "build" journeys flown with UPG_STRAT=economy and UPG_STRAT=combat into docs/BALANCE-ECONOMY.md.
+
+const ECON_IDS = new Set(['ut_tractor', 'ut_matrix', 'ut_prospector', 'ut_salvager', 'ut_scanner', 'ut_tactical', 'md_tractor']);
+const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
+
+function foldEconomy(dir: string): void {
+  const runs = readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => JSON.parse(readFileSync(`${dir}/${f}`, 'utf8')) as Saved).filter((r) => r.policy === 'build');
+  const strats = [...new Set(runs.map((r) => r.strat ?? 'wide'))].sort();
+  const bands = [[0, 9], [10, 19], [20, 29], [30, 39], [40, 49], [50, 59], [60, 69]] as const;
+  const econLv = (s: Stop) => sum(Object.entries(s.levels).filter(([id]) => ECON_IDS.has(id) && UPGRADE[id]).map(([, v]) => v));
+  const fightLv = (s: Stop) => sum(Object.entries(s.levels).filter(([id]) => UPGRADE[id] && !ECON_IDS.has(id) && ['weapons', 'defence'].includes(UPGRADE[id]!.cat)).map(([, v]) => v));
+  const rows: string[] = [], ends: string[] = [];
+  for (const st of strats) {
+    const rs = runs.filter((r) => (r.strat ?? 'wide') === st);
+    ends.push(`| ${st} | ${rs.length} | ${rs.filter((r) => r.end === 'through').length} | ${rs.filter((r) => r.end === 'captured').length} | ${rs.filter((r) => r.end === 'wrecked').length} | ${mean(rs.map((r) => r.stops.length)).toFixed(1)} |`);
+    for (const [lo, hi] of bands) {
+      const stops = rs.flatMap((r) => r.stops.filter((s) => s.n >= lo && s.n <= hi));
+      if (!stops.length) continue;
+      const earned = mean(stops.map((s) => s.earned)), perMin = mean(stops.map((s) => (s.earned / Math.max(1, s.time)) * 60));
+      const toNext = mean(stops.filter((s) => s.nextCost > 0).map((s) => s.nextCost / Math.max(1, s.earned)));
+      rows.push(`| ${st} | ${lo + 1}-${hi + 1} | ${earned.toFixed(0)} | ${perMin.toFixed(1)} | ${toNext.toFixed(1)} | ${mean(stops.map(econLv)).toFixed(1)} | ${mean(stops.map(fightLv)).toFixed(1)} | ${mean(stops.map((s) => s.platesLost)).toFixed(1)} | ${pct(stops.filter((s) => s.wrecked).length / stops.length)} |`);
+    }
+  }
+  const md = `# Economy report: economy-first against combat-first
+
+Generated by \`UPG_ECONOMY=dir npx vitest run --config tools/vitest.config.ts tools/upgrades.pilot.ts\` from journeys flown with
+\`UPG_STRAT=economy\` (utility first: tractor, matrix, prospector, with a laser and some defence) and \`UPG_STRAT=combat\`
+(lasers, then torpedoes). The same four seeds each, "build" policy, the first 70 systems. The pilot does not chase jobs.
+
+Read it as a shape, not a verdict: four journeys a side, a scripted pilot that dodges better than most people.
+
+## How the journeys ended
+
+| Build | Journeys | Through | Captured | Wrecked out | Systems flown |
+|---|---|---|---|---|---|
+${ends.join('\n')}
+
+## Along the chart
+
+"Earned" is Cyrite picked up in a sortie (rock and wreck drops; the tank is topped up from it first). "Stops to the next upgrade" is the cheapest tier-2-or-deeper level on
+offer divided by what one sortie earns: how many sorties of saving it takes. "Economy" and "fight" are levels fitted by the end
+of the stretch, in the utility branch and in the weapons and defence branches.
+
+| Build | Systems | Earned a sortie | Earned a minute | Stops to the next upgrade | Economy levels | Fight levels | Plates lost | Wrecked |
+|---|---|---|---|---|---|---|---|---|
+${rows.join('\n')}
+`;
+  writeFileSync('docs/BALANCE-ECONOMY.md', md);
+}
