@@ -354,3 +354,12 @@ Reported: the game feels slow for the first three or four seconds after Begin. M
 | Two shader programs still linked after Begin: the sun's depth pass for the Wayward's hull parts (one with the alpha-tested plates). The warm frame never reached them: the sun sits at the origin until the first real frame, so its shadow camera culled everything | `warmFrame` places the sun first, shows the hidden pools and the throwaway hull gallery (casting), gives empty instanced pools one instance for that frame, and draws once through the chain; the hidden bulwark proxy casts too, so the depth program for the first bulwark (met when the first wave arrives, 3 s in) links early | programs compiled after Begin: 0 (was 2, on Low none). Buffers and textures of the hidden pools and the gallery are uploaded behind the title too |
 
 **Not measured here:** the GPU. The sky bake and the first draw of every hull, plus real link time, are phone costs; the CPU numbers only show the work moved off the first frame. Trade-off as before: a very fast tap on Begin can wait for the end of the warm-up. Real device: the first four seconds of an Arcade run on a phone, and the title's own load.
+
+## Pass 9: Chrome's first minute, and the road's flag sums
+
+Reported: much worse in Chrome than Safari, worst in the first minute. Nothing in the 2026-10-30 merges touches the renderer (checked: sim steps 0.05 to 0.08 ms on the road, layout and style counts equal to before #385, heap equal after a forced collection), so this pass takes the two older, safe costs found:
+
+- The HUD's glass blurred the live canvas under every box each frame (`backdrop-filter`, about 6 px). A phone already went without it; the desktop now does too, with the fill a little darker. Pop-ups keep their blur (the game is paused behind them).
+- `derive()` (`sim/evidence.ts`), run every step on the road, copied the flag set dozens of times: 100 to 360 us a step, now 20 to 34 us (`sim/threads.ts` reads a set as it is).
+
+**Not measured:** Chrome's GPU time. If it is still slow, try `?quality=low`, `?nospace` and `?classic` in the address bar and a DevTools Performance recording of the first 60 s.

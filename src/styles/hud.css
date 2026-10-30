@@ -9,12 +9,13 @@
 
 :root {
   /* smoked glass: built on the tokens in glass.css (the menu's), a lighter blur for a HUD that sits over the action */
-  --glass-fill: linear-gradient(180deg, rgba(22, 36, 42, .5), var(--gl-smoke-f));
+  --glass-fill: linear-gradient(180deg, rgba(18, 30, 36, .62), var(--gl-smoke-f));
   --glass-deep: linear-gradient(180deg, rgba(14, 24, 29, .74), rgba(6, 10, 12, .84));
   --glass-edge: var(--gl-smoke-e2);
   --glass-edge-hi: var(--gl-smoke-e1);
   --glass-sheen: rgba(255, 255, 255, .07);
-  --glass-blur: blur(calc(var(--blur) * .4)) saturate(1.15);
+  /* no backdrop blur over the live picture: Chrome re-blurs the canvas under every HUD box each frame, for a few pixels of softness (a phone already goes without) */
+  --glass-blur: none;
   /* small red type needs to be lighter than the red of a mark to hold 4.5:1 on glass over a bright nebula */
   --alert-text: #f08a7e;
 }
