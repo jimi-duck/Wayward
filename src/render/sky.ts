@@ -48,6 +48,8 @@ export interface Sky {
   star: Color;
   /** A warmer knot in the clouds: the second body turned toward magenta where it is blue or violet. */
   accent: Color;
+  /** Which palette painted it (0 to 9): the region's identity, for what else shows in its sky. */
+  palette?: number;
 }
 
 export interface Planet {
@@ -116,7 +118,8 @@ export function hashSeed(key: string): number {
 /** The sky for a seed: a region's palette (0 to 9), or any of the arcade's (null). */
 export function skyFor(seed: number, region: number | null): Sky {
   const r = rand(seed);
-  return paint(seed, r, region === null ? PALETTES[ARCADE[Math.floor(r() * ARCADE.length)]!]! : PALETTES[Math.max(0, Math.min(PALETTES.length - 1, region))]!);
+  const i = region === null ? ARCADE[Math.floor(r() * ARCADE.length)]! : Math.max(0, Math.min(PALETTES.length - 1, region));
+  return { ...paint(seed, r, PALETTES[i]!), palette: i };
 }
 
 /** How many palettes there are: the three regions' and the arcade's extras. */
@@ -124,7 +127,8 @@ export const PALETTE_COUNT = PALETTES.length;
 
 /** The sky for a seed in one named palette (the review world's switch; the game draws through skyFor). */
 export function skyIn(seed: number, palette: number): Sky {
-  return paint(seed, rand(seed), PALETTES[Math.max(0, Math.min(PALETTES.length - 1, palette))]!);
+  const i = Math.max(0, Math.min(PALETTES.length - 1, palette));
+  return { ...paint(seed, rand(seed), PALETTES[i]!), palette: i };
 }
 
 const STEEL = new Color('#4a5a6e');
@@ -228,6 +232,7 @@ const BAKE = /* glsl */ `
   varying vec2 vUv;
   uniform float uSeed, uGlow, uClouds, uStars, uMode;
   uniform vec3 uNebA, uNebB, uNebC, uNebD, uBand, uBandN;
+  uniform vec4 uKnot;
   uniform vec4 uC[5];
   ${NOISE}
   float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
@@ -294,6 +299,14 @@ const BAKE = /* glsl */ `
     vec3 neb = vec3(0.0);
     for (int i = 0; i < 5; i++) neb += nebula(d, uC[i].xyz, uC[i].w, uSeed + float(i) * 11.0, shade) * (1.0 - float(i) * 0.12);
     col += neb * uGlow;
+    // now and then a lit heart in a cloud: young stars inside the gas, lighting it from within (the brightest thing the
+    // sky paints, still well under the HUD's text)
+    if (uKnot.w > 0.0) {
+      float kd = 1.0 - dot(d, uKnot.xyz);
+      float lit = exp(-kd / 0.02) * uKnot.w;
+      col += neb * lit * 2.2 + mix(uNebC, uNebD, 0.3) * exp(-kd / 0.0012) * uKnot.w * 0.5;
+      shade *= 1.0 - exp(-kd / 0.004) * 0.6;
+    }
     col *= 1.0 - shade;
 
     // pinprick stars too small for points: thicker in the band
@@ -326,7 +339,7 @@ function bakePass() {
       uSeed: { value: 0 }, uGlow: { value: 0 }, uClouds: { value: 0 }, uStars: { value: 0 }, uMode: { value: 0 },
       uNebA: { value: new Color() }, uNebB: { value: new Color() }, uNebC: { value: new Color() }, uNebD: { value: new Color() },
       uBand: { value: new Color() }, uBandN: { value: new Vector3() },
-      uC: { value: [0, 1, 2, 3, 4].map(() => new Vector4()) },
+      uC: { value: [0, 1, 2, 3, 4].map(() => new Vector4()) }, uKnot: { value: new Vector4() },
     },
     depthTest: false, depthWrite: false,
   });
@@ -360,6 +373,12 @@ export function bakeSky(renderer: WebGLRenderer, sky: Sky, width = 2048): WebGLR
   (u.uBandN!.value as Vector3).copy(lay.bandN);
   u.uMode!.value = 0;
   u.uSeed!.value = lay.seed;
+  // a lit heart in one of the clouds, in about a third of skies (the violet palettes more often)
+  const kr = rand(sky.seed * 19 + 7), knot = u.uKnot!.value as Vector4;
+  if (kr() < (sky.palette === 0 || sky.palette === 1 || sky.palette === 3 ? 0.5 : 0.3)) {
+    const c = lay.clouds[Math.floor(kr() * 5)]!, d = new Vector3(c.x + (kr() - 0.5) * 0.15, c.y + (kr() - 0.5) * 0.1, c.z + (kr() - 0.5) * 0.15).normalize();
+    knot.set(d.x, d.y, d.z, 0.5 + kr() * 0.5);
+  } else knot.set(0, 1, 0, 0);
   u.uGlow!.value = sky.glow; u.uClouds!.value = sky.clouds; u.uStars!.value = sky.stars;
   (u.uNebA!.value as Color).copy(sky.neb[0]); (u.uNebB!.value as Color).copy(sky.neb[1]); (u.uNebC!.value as Color).copy(sky.neb[2]);
   (u.uNebD!.value as Color).copy(sky.accent);
@@ -491,6 +510,8 @@ const RING_F = /* glsl */ `
     gl_FragColor = vec4(c * a * uDim, a);
   }`;
 
+const UP = new Vector3(0, 1, 0);
+
 /** The far bodies: a planet (with its halo, maybe rings and a moon) and one bright near star. */
 export class FarBodies {
   readonly group = new Group();
@@ -511,8 +532,11 @@ export class FarBodies {
       body.position.copy(at);
       // a tilt, so bands and rings sit at an angle
       body.rotation.set((r() - 0.5) * 0.9, r() * Math.PI * 2, (r() - 0.5) * 0.9);
-      // rock holds little air; giants and ice wear a thick halo
-      const common = { uL: { value: this.sun }, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 } };
+      // each world has its own phase: most lit from the sun's side, some a half, a few a thin crescent with the air lit round
+      // the dark limb (the sun nearly behind them)
+      const ph = r(), turn = ph < 0.55 ? 0 : ph < 0.8 ? 1.2 + r() * 0.5 : 2.3 + r() * 0.5;
+      const lit = this.sun.clone().applyAxisAngle(UP, turn * (r() < 0.5 ? -1 : 1));
+      const common = { uL: { value: lit }, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 } };
       const planetMat = new ShaderMaterial({
         vertexShader: PLANET_V, fragmentShader: PLANET_F,
         uniforms: { ...common, uA: { value: pl.colA }, uB: { value: pl.colB }, uAtmo: { value: pl.atmo }, uKind: { value: pl.kind }, uSeed: { value: sky.seed % 50 } },

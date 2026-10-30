@@ -5,6 +5,7 @@ import {
 } from 'three';
 import { bakeSky, detailTile, FarBodies, Parallax, skyFor, type Sky } from './sky';
 import { Starfield } from './starfield';
+import { Phenomena } from './phenomena';
 import { WORLD_RIM } from './kit';
 
 // ── deep space ────────────────────────────────────────────────────────────
@@ -49,10 +50,13 @@ export class Environment {
   private fightK = 0;
   private readonly key: DirectionalLight;
   private readonly field = new Starfield();
+  /** The sky's rare and passing things: a hole, a rift, a storm cell, shooting stars, far flashes, far traffic. */
+  readonly phenomena = new Phenomena();
   private readonly hemi: HemisphereLight;
   /** Reduced motion holds the stars' twinkle and the gas still. */
   motion = true;
   private t = 0;
+  private readonly fwd = new Vector3();
   private readonly scene: Scene;
   private readonly fog: FogExp2;
   private readonly parallax = new Parallax();
@@ -106,7 +110,7 @@ export class Environment {
     scene.fog = this.fog;
     scene.environment = reflections(renderer);
 
-    this.stars.add(this.field.group);
+    this.stars.add(this.field.group, this.phenomena.group);
     this.group.add(this.stars);
 
     const N = 300;
@@ -187,6 +191,7 @@ export class Environment {
     this.stars.add(this.far.group);
     this.parallax.setSky(sky);
     this.field.setSky(sky);
+    this.phenomena.setSky(sky);
     // the ambient fill takes a breath of the sky's blue and violet
     this.hemi.color.copy(HEMI_SKY).lerp(sky.neb[0], 0.22).lerp(sky.accent, 0.08);
     this.haze.copy(sky.neb[0]).multiplyScalar(0.08);
@@ -206,6 +211,7 @@ export class Environment {
     if (t) this.fog.color.r += t[0] * 0.3, this.fog.color.g += t[1] * 0.3, this.fog.color.b += t[2] * 0.3;
     this.dome.uniforms.uLevel!.value = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
     this.far?.dim(1 - nebula * 0.7);
+    this.phenomena.group.visible = nebula < 0.6;
     this.parallax.dim(1 - nebula * 0.6);
     WORLD_RIM.value.copy(this.skyRim).multiplyScalar((1 + flash * 4) * (1 + this.fightK * 0.8));
     if (t) WORLD_RIM.value.r += t[0] * 0.25, WORLD_RIM.value.g += t[1] * 0.25, WORLD_RIM.value.b += t[2] * 0.25;
@@ -248,6 +254,9 @@ export class Environment {
     this.dome.uniforms.uTime!.value = this.t;
     this.dome.uniforms.uShift!.value.set(CLOUD_SLIDE * Math.sin(cx / SLIDE), 0, CLOUD_SLIDE * Math.sin(cz / SLIDE));
     this.far?.group.position.set(-WORLD_SLIDE * 2000 * Math.sin(cx / SLIDE), 0, -WORLD_SLIDE * 2000 * Math.sin(cz / SLIDE));
+    this.phenomena.group.position.set(-WORLD_SLIDE * 1500 * Math.sin(cx / SLIDE), 0, -WORLD_SLIDE * 1500 * Math.sin(cz / SLIDE));
+    if (dt > 0) this.phenomena.look(camera.getWorldDirection(this.fwd));
+    this.phenomena.update(dt, this.motion);
     // the key light keeps its angle, wherever the ship goes
     // (the target snaps to a grid so the shadow edges do not crawl as the ship moves)
     const kx = Math.round(cx * 4) / 4, kz = Math.round(cz * 4) / 4;
