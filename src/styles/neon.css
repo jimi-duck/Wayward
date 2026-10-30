@@ -638,6 +638,35 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   #rd-call.job.bleed:not(.noart) .rd-pic { object-position: 50% 40%; }
 }
 
+/* ── the story card (a blocking pop-up in #comms), popup spec of 30 October 2026 ──
+   One centred panel: category, thin divider, title, body, then the actions, set apart by a hairline. The text area
+   scrolls and the actions stay put. Only popups are styled here; the HUD is not touched. ─────────────────────── */
+#comms { --cm-title: 28px; }
+@media (max-width: 720px) { #comms { --cm-title: 22px; } }
+@media (max-height: 520px) { #comms { --cm-title: 20px; } }
+#comms:not(.ns):not(.reg) .panel.comms .cm-title { text-wrap: balance; }
+#comms:not(.ns):not(.reg) .panel.comms .cm-text { max-width: 60ch; }
+@media (min-height: 521px) {
+  #comms:not(.ns):not(.reg) .panel.comms { width: min(760px, calc(100vw - 48px)); max-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 16px; }
+  #comms:not(.ns):not(.reg) .panel.comms > .tx-card { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+  #comms:not(.ns):not(.reg) .panel.comms .tx-main { display: flex; flex-direction: column; min-height: 0; gap: 16px; }
+  #comms:not(.ns):not(.reg) .panel.comms .cm-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(var(--halo), .5) transparent; }
+  #comms:not(.ns):not(.reg) .panel.comms .tx-k, #comms:not(.ns):not(.reg) .panel.comms .cm-l, #comms:not(.ns):not(.reg) .panel.comms .cm-h { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
+  #comms:not(.ns):not(.reg) .panel.comms > .tx-card { min-height: 120px; }
+  #comms:not(.ns):not(.reg) .panel.comms > .cm-list { flex: 0 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; overscroll-behavior: contain; margin: 8px -8px 0; padding: 24px 8px 8px; background: linear-gradient(rgba(var(--halo), .3), rgba(var(--halo), .3)) 8px 0 / calc(100% - 16px) 1px no-repeat; }
+}
+@media (max-width: 720px) and (min-height: 521px) {
+  #comms:not(.ns):not(.reg) .panel.comms { width: calc(100vw - 32px); --ng-pad: 20px; }
+}
+/* the entrance: opacity and up to 6px of movement over 200ms; the exit is a 150ms fade (ui/comms.ts) */
+@keyframes pop-in { from { opacity: 0; translate: 0 6px; } }
+#comms:not([hidden]):not(.out) > :is(.panel.comms, .panel.registry, .ns-wrap) { animation: pop-in .2s ease-out both; }
+#comms.out { opacity: 0; pointer-events: none; transition: opacity .15s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  #comms:not([hidden]):not(.out) > :is(.panel.comms, .panel.registry, .ns-wrap) { animation: none; }
+  #comms.out { transition: none; }
+}
+
 /* the card for an uncaught error (src/ui/crash.ts): centred, over everything, one action */
 #crash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: rgba(var(--shade-2-rgb), .6); padding: 16px; }
 #crash .crash-card { max-width: min(480px, 94vw); padding: var(--ng-pad); text-align: center; }

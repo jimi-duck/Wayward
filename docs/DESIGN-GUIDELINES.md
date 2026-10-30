@@ -134,6 +134,23 @@ Gold is caution, red is threat, blue is the player, teal is information.
   costs (amber), e.g. `Patrol leaves · −3 Cyrite`. The world waits for it, the
   HUD steps back and the target labels go. A phone on its side puts the answers
   beside the words.
+- **Story card** (`#comms` ordinary card, popup spec of 30 October 2026): one centred panel,
+  `min(760px, 100vw - 48px)` (phones: 16px clear each side, 20px padding), at most
+  `100dvh - 32px` tall. Category, a thin divider, the title (28px, 22px on narrow
+  screens, 20px on a phone on its side; it wraps, never shrinks), the body (16px at 1.5,
+  60 characters wide at most), then the answers behind a hairline with 24px above. When the
+  card is too tall the text scrolls and the answers stay (they scroll only if they alone
+  are too tall). Nothing is cut with an ellipsis on desktop. It arrives with opacity and 6px
+  of movement over 200ms and leaves with a 150ms fade (`CommsPanel.fade`, `.out`); with
+  reduced motion there is neither. A fading card is already closed: it takes no input and the
+  next card may open. Keyboard, pad and tap answers all keep the 400ms guard and ignore held
+  keys, so one press never answers two cards. The opening's sheets keep their own layout.
+- **Centre notices** (`#notice`, `ui/notify.ts`): compact dark plates, up to 360px wide, an
+  accent bar (red denied, gold warning, teal arrival) and a sentence-case line plus one
+  quiet reason. Two at most at once; the rest wait in order (a denial goes first), and only
+  a backlog of eight sends the oldest to the corner log. Four seconds each, no input.
+  Low-centre like the zone notices before them; on a phone on its side they sit between the
+  stick and the buttons. They do not touch the HUD or the alert corner.
 - **HUD is not a pop-up:** instruments, objectives and the low-centre notices
   keep their thin lines and restrained glow (`docs/DESIGN.md`).
 
