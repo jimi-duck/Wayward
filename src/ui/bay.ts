@@ -1,6 +1,6 @@
 import { LOG, STAMP } from '../content/papers';
 import { UPGRADE } from '../content/upgrades';
-import { NODE, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
+import { NODE, STOCK, TAB_ORDER, TABS, WEB, type Budget, type Tab, type WebNode } from '../content/web';
 import { blockOf, budgets, cost, endless, maxLevel, nodeName, nodeText, quickPicks, roleOf, type Block, type PickRole } from '../sim/bay';
 import type { Advice } from '../sim/advice';
 import { felt, upgradeFigures } from '../sim/build';
@@ -99,6 +99,7 @@ const levelWord = (w: World, id: string, lv: number): string => (endlessIn(w, id
 function fitWord(w: World, id: string, why: Block | null): string {
   if (why === 'krail') return t('{n} more Cyrite', { n: num(Math.ceil(priceOf(w, id) - w.purse)) });
   if (why === 'full' && endlessIn(w, id)) return t('At its limit');
+  if (why === 'full' && STOCK[id] && (w.levels[id] ?? 0) <= STOCK[id]!) return t('Fitted at launch');
   return why ? t(WHY[why]) : `${t('Fit')} · ${num(priceOf(w, id))} ${t('Cyrite')}`;
 }
 

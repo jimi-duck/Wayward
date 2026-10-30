@@ -609,7 +609,7 @@ export const WORLD: Record<string, string> = {
   'Your trail is wider and lasts longer.': 'Deine Spur ist breiter und hält länger.',
   'Ignition': 'Zündung',
   'Hulls that touch your trail keep burning after they leave it.': 'Schiffe, die deine Spur berühren, brennen danach weiter.',
-  'Afterburner wake': 'Nachbrenner-Spur',
+  'Plasma wake': 'Plasma-Spur',
   'Your barrel roll dumps a ring of plasma, and comes round sooner.': 'Deine Rolle wirft einen Plasmaring ab und ist schneller wieder bereit.',
   // close
   'Hull arc emitter': 'Rumpfbogen-Emitter',
@@ -630,7 +630,7 @@ export const WORLD: Record<string, string> = {
   // mobility
   'Main drive': 'Hauptantrieb',
   'Manoeuvring thrusters': 'Manövrierdüsen',
-  'Inertial dampers': 'Trägheitsdämpfer',
+  'Grip dampers': 'Grip-Dämpfer',
   'Evasive jets': 'Ausweichdüsen',
   'Your barrel roll comes round sooner, throws you further and covers you longer.': 'Deine Rolle ist schneller bereit, trägt dich weiter und schützt länger.',
   'Drift drive': 'Driftantrieb',
@@ -662,9 +662,9 @@ export const WORLD: Record<string, string> = {
   'Tractor beam': 'Traktorstrahl',
   'You pull Cyrite in from further away.': 'Du ziehst Cyrit von weiter weg ran.',
   'Cyrite matrix': 'Cyrit-Matrix',
-  'Every crystal is worth more toward your next refit.': 'Jeder Kristall bringt mehr für deinen nächsten Umbau.',
+  'Every Cyrite pickup is worth 12% more.': 'Jedes Cyrit, das du einsammelst, ist 12% mehr wert.',
   'Quiet running': 'Schleichfahrt',
-  'Patrols and lookouts spot you from closer in, and the quiet between fights lasts longer.': 'Patrouillen und Späher entdecken dich erst näher dran, und die Ruhe zwischen Kämpfen hält länger.',
+  'Enemies notice you later, and the quiet between fights lasts longer.': 'Feinde bemerken dich später, und die Ruhe zwischen Kämpfen hält länger.',
   'Tactical computer': 'Taktikrechner',
   'All your weapons hit harder.': 'Alle deine Waffen treffen härter.',
   // synergies
@@ -683,9 +683,11 @@ export const WORLD: Record<string, string> = {
   'Every ram discharges an arc into the hulls near what you hit.': 'Jeder Rammstoß entlädt einen Bogen in die Schiffe um dein Ziel.',
   'Rock gives up Cyrite half again as often.': 'Fels gibt 50% öfter Cyrit.',
   'Salvage drones': 'Bergungsdrohnen',
-  'Hull repairs turn up more often, and boosters last half again as long.': 'Rumpfreparaturen tauchen öfter auf, und Booster halten 50% länger.',
+  'Hull repairs turn up 80% more often, and boosters last half again as long.': 'Rumpfreparaturen tauchen 80% öfter auf, und Booster halten 50% länger.',
   'Still no more than one repair every half minute.': 'Trotzdem höchstens eine Reparatur pro halbe Minute.',
-  'Deep scanners': 'Tiefenscanner',
+  'Salvage scanners': 'Bergungsscanner',
+  'Lance reach tops out at a set range.': 'Die Reichweite der Lanzen hat eine feste Obergrenze.',
+  'Fitted at launch': 'Ab Start verbaut',
   'Boosters turn up twice as often, and elites carry twice the Cyrite.': 'Booster tauchen doppelt so oft auf, und Elite-Schiffe tragen doppelt Cyrit.',
   // salvaged tech
   'Gutter scatterguns': 'Gutter-Schrotflinten',

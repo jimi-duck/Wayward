@@ -20,7 +20,7 @@ import type { Stats } from '../sim/stats';
 //   Ship ────┬─ Mobility ─── drive, thrusters, dampers, jets
 //            │                └─ specialise: Drift drive · Evasive pattern · Afterburner
 //            └─ Utility ──── tractor, krail matrix
-//                             └─ specialise: Prospector · Salvage drones · Deep scanners
+//                             └─ specialise: Prospector · Salvage drones · Salvage scanners
 //   Defence ──  Shields, armour, bulkheads, damage control
 //                             └─ specialise: Fortress · Reactive armour · Regenerative hull
 //   Synergies on the bridges between regions, once you own both halves.
@@ -126,6 +126,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ph_lenses', name: 'Focusing lenses', branch: 'laser', cat: 'weapons', kind: 'stat', max: 3, tags: ['laser', 'range'],
     text: 'Your lances fly faster and reach further.',
+    note: 'Lance reach tops out at a set range.',
     apply: (s) => { s.laserSpeed *= 1.14; s.laserLife *= 1.06; },
   },
   {
@@ -310,7 +311,7 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.plasmaBurn = s.plasmaDps * 0.6; },
   },
   {
-    id: 'pl_wake', name: 'Afterburner wake', branch: 'plasma', cat: 'weapons', kind: 'spec', max: 1, group: 'plasma', needs: 2,
+    id: 'pl_wake', name: 'Plasma wake', branch: 'plasma', cat: 'weapons', kind: 'spec', max: 1, group: 'plasma', needs: 2,
     tags: ['plasma', 'mobility', 'evasion'],
     text: 'Your barrel roll dumps a ring of plasma, and comes round sooner.',
     apply: (s) => { s.rollBurst = true; s.rollCooldown *= 0.7; },
@@ -367,7 +368,7 @@ export const UPGRADES: UpgradeDef[] = [
     apply: (s) => { s.turn *= 1.12; },
   },
   {
-    id: 'mo_dampers', name: 'Inertial dampers', branch: 'mobility', cat: 'ship', kind: 'stat', max: 2, tags: ['mobility', 'turning'],
+    id: 'mo_dampers', name: 'Grip dampers', branch: 'mobility', cat: 'ship', kind: 'stat', max: 2, tags: ['mobility', 'turning'],
     text: 'You carve tighter turns and slide less.',
     apply: (s) => { s.grip += 0.04; },
   },
@@ -457,13 +458,13 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ut_matrix', name: 'Cyrite matrix', branch: 'utility', cat: 'ship', kind: 'stat', max: 2, tags: ['utility', 'xp'],
     weight: 0.8,
-    text: 'Every crystal is worth more toward your next refit.',
+    text: 'Every Cyrite pickup is worth 12% more.',
     apply: (s) => { s.xpMult *= 1.12; },
   },
   {
     id: 'ut_quiet', name: 'Quiet running', branch: 'utility', cat: 'ship', kind: 'stat', system: 'signals', max: 2, tags: ['utility', 'stealth'],
     arcade: true,
-    text: 'Patrols and lookouts spot you from closer in, and the quiet between fights lasts longer.',
+    text: 'Enemies notice you later, and the quiet between fights lasts longer.',
     apply: (s) => { s.notice *= 0.8; s.lull *= 1.15; },
   },
   {
@@ -533,12 +534,12 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ut_salvager', name: 'Salvage drones', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'defence'],
-    text: 'Hull repairs turn up more often, and boosters last half again as long.',
+    text: 'Hull repairs turn up 80% more often, and boosters last half again as long.',
     note: 'Still no more than one repair every half minute.',
     apply: (s) => { s.repairChance *= 1.8; s.powerTime *= 1.5; },
   },
   {
-    id: 'ut_scanner', name: 'Deep scanners', branch: 'utility', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'utility', needs: 3,
+    id: 'ut_scanner', name: 'Salvage scanners', branch: 'utility', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'utility', needs: 3,
     tags: ['utility', 'xp', 'damage'],
     text: 'Boosters turn up twice as often, and elites carry twice the Cyrite.',
     apply: (s) => { s.boostRate *= 2; s.eliteLoot *= 2; },
