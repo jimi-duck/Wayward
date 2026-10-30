@@ -2,6 +2,7 @@
 // The Script's German, with du throughout (officials included) and the game's own words: Bahn, Voice, Scatter.
 
 export const OVERHAUL: Record<string, string> = {
+  '“Eleven people, gone quiet at Gannet. Bring them home.”': '„Elf Leute, still geworden bei Gannet. Hol sie nach Hause.“',
   'the ledger, or the order': 'das Kassenbuch oder der Befehl',
   'the work order, or the hull serial': 'der Werftauftrag oder die Rumpfnummer',
   'the Forty, or Ada’s room': 'die Vierzig oder Adas Raum',

@@ -445,6 +445,7 @@ export const MISSION_CARDS: CardDef[] = [
   }),
   mission({
     id: 'sc_missing', kind: 'distress', caller: 'miners', tier: 'important',
+    thread: { chip: 'Hester’s crews', line: '“Eleven people, gone quiet at Gannet. Bring them home.”' },
     from: 'Union clerk', title: 'The Missing Shift',
     text: '“Nine miners have been silent since yesterday. Their last beacon came from the wreck field. Bring one supply in case they survived.”',
     cargo: 'A wreck · one faint beacon',

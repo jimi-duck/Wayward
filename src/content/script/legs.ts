@@ -4,7 +4,7 @@ import { ACCOUNTS, after, ANALYST, arrive, card, flag, free, HESTER, leave, main
 // ── the road past the Narrows: the legs' scripts ───────────────────────────
 // Seven legs, seven stops each, in the order of the Beat Map
 // (docs/overhaul/BEAT_MAP.md §1): landfall, hub, work, turn, breather, work
-// under pressure, reckoning. Each stop has at most one main card, which holds
+// under pressure, reckoning. A stop has one main card (a few have a second), which holds
 // the gate and comes before the stop's job. Copy is the Script's
 // (docs/overhaul/SCRIPT_EN_DE.md); lines it does not give are short and in
 // the same voice. The arrivals at the gates are in arrivals.ts.
