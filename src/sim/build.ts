@@ -93,6 +93,8 @@ export interface Fig {
   delta: string;
   /** The change is under 3% of what it was: real, but nothing a player can feel, so a card leaves it out. */
   minor: boolean;
+  /** The change as a share of what it was (0.15 is +15%), or null where the figure comes from nothing. */
+  change: number | null;
 }
 
 /**
@@ -219,7 +221,7 @@ export function figures(before: Stats, after: Stats, arcade = true): Fig[] {
     // a figure appearing from nothing (a system switched on) is never a cost
     const step = d.fmt(Math.abs(b - a));
     const delta = /[1-9]/.test(step) ? `${b > a ? '+' : '−'}${step}` : fb;
-    out.push({ label: d.label, from: fa, to: fb, cost: a !== 0 && (d.lower ? b > a : b < a), delta, minor: a !== 0 && Math.abs(b - a) / Math.abs(a) < 0.03 });
+    out.push({ label: d.label, from: fa, to: fb, cost: a !== 0 && (d.lower ? b > a : b < a), delta, minor: a !== 0 && Math.abs(b - a) / Math.abs(a) < 0.03, change: a !== 0 ? (b - a) / Math.abs(a) : null });
   }
   return out;
 }

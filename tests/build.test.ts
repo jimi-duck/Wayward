@@ -33,7 +33,8 @@ describe('the refit tree', () => {
     expect(s.shieldMax).toBeLessThanOrEqual(CAPS.shieldMax);
     expect(s.laserSpeed * s.laserLife).toBeLessThanOrEqual(CAPS.laserReach + 1e-6);
     expect(s.torpRack).toBeLessThanOrEqual(CAPS.torpRack);
-    expect(s.thrust).toBeLessThanOrEqual(CAPS.thrust);
+    expect(s.drive).toBeLessThanOrEqual(CAPS.drive);
+    expect(s.topSpeed).toBeLessThanOrEqual(CAPS.topSpeed);
   });
 
   it('opens systems before their upgrades, and specialisations only once a branch is deep enough', () => {

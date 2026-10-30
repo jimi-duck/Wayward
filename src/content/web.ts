@@ -156,11 +156,11 @@ export const WEB: WebNode[] = [
   n('mn_gravity', 'ordnance', 3, 5, ['mn_seekers'], { power: 2 }, { price: 0.7 }),
 
   // ── engines: the drive and handling above, drive plasma below ───────────
-  n('mo_impulse', 'engines', 1, 0, null, { power: 1, heat: 1 }),
+  n('mo_impulse', 'engines', 1, 0, null, { heat: 1 }),
   n('mo_thrusters', 'engines', 1, 1, null, { power: 1 }),
   n('mo_dampers', 'engines', 2, 1, ['mo_thrusters'], { mass: 1 }),
   n('mo_jets', 'engines', 2, 2, ['mo_thrusters'], { power: 1 }),
-  n('mo_afterburner', 'engines', 3, 0, ['mo_impulse'], { heat: 2, power: 1 }),
+  n('mo_afterburner', 'engines', 3, 0, ['mo_impulse'], { heat: 2 }),
   n('mo_drift', 'engines', 3, 1, ['mo_dampers'], { power: 1 }),
   n('mo_evasion', 'engines', 3, 2, ['mo_jets'], { power: 1 }),
   n('pl_vent', 'engines', 1, 4, null, { power: 2, heat: 2 }),

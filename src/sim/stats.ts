@@ -102,8 +102,10 @@ export interface Stats {
   ramjet: boolean;
 
   // the ship
-  /** Upgrades: thrust raises both acceleration and top speed. */
-  thrust: number;
+  /** Upgrades: a multiplier on acceleration (the main drive). Top speed is its own stat, below. */
+  drive: number;
+  /** Upgrades: a multiplier on top speed (the afterburner, the armour's weight). Acceleration does not share it. */
+  topSpeed: number;
   turn: number;
   /** What the ship's loads do (sim/budgets.ts): multipliers on acceleration and on top speed, 1 for the stock ship. */
   accel: number;
@@ -186,7 +188,7 @@ export const BASE: Readonly<Stats> = Object.freeze({
 
   ramDamage: 3, ramSafe: false, ramjet: false,
 
-  thrust: 1, turn: 1, accel: 1, speed: 1, grip: HULL.grip, rollCooldown: ROLL_COOLDOWN, rollKick: ROLL_KICK, rollIframes: ROLL_IFRAMES,
+  drive: 1, topSpeed: 1, turn: 1, accel: 1, speed: 1, grip: HULL.grip, rollCooldown: ROLL_COOLDOWN, rollKick: ROLL_KICK, rollIframes: ROLL_IFRAMES,
   drift: false,
 
   maxPlates: HULL.plates, shieldMax: SHIELD_MAX, shieldRecharge: SHIELD_RECHARGE, shieldDelay: SHIELD_DELAY, grace: HIT_GRACE, damageControl: 0, reactive: false, regen: 0,
@@ -228,7 +230,8 @@ export const CAPS = {
   grace: 2.2,
   tractor: 42,
   xpMult: 1.5,
-  thrust: 1.45,
+  drive: 2,
+  topSpeed: 1.5,
   turn: 1.6,
   rollCooldown: 0.45,
   /** A roll covers the ship for at most this share of the time until the next, so rolling on the cooldown always leaves a gap. */
@@ -274,7 +277,8 @@ export function capStats(s: Stats): Stats {
   s.grace = Math.min(s.grace, CAPS.grace);
   s.tractor = Math.min(s.tractor, CAPS.tractor);
   s.xpMult = Math.min(s.xpMult, CAPS.xpMult);
-  s.thrust = Math.min(s.thrust, CAPS.thrust);
+  s.drive = Math.min(s.drive, CAPS.drive);
+  s.topSpeed = Math.min(s.topSpeed, CAPS.topSpeed);
   s.turn = Math.min(s.turn, CAPS.turn);
   s.rollCooldown = Math.max(s.rollCooldown, CAPS.rollCooldown);
   s.rollIframes = Math.min(s.rollIframes, s.rollCooldown * CAPS.rollCover);
@@ -293,8 +297,8 @@ export function capStats(s: Stats): Stats {
 
 /** The hull the flight model flies, with the build's engines, thrusters and dampers. */
 export function flightHull(s: Stats): Hull {
-  // acceleration and top speed are set apart: the drive pushes `a`, and the drag is what holds the top speed at `top`
-  const a = HULL.thrust * s.thrust * s.accel, base = topSpeed(HULL), top = base * s.thrust * s.speed;
+  // acceleration and top speed are set apart, each with its own upgrades and cap: the drive pushes `a`, and the drag is what holds the top speed at `top`
+  const a = HULL.thrust * s.drive * s.accel, base = topSpeed(HULL), top = base * s.topSpeed * s.speed;
   const push = thrustPerStep({ ...HULL, thrust: a });
   return {
     ...HULL,

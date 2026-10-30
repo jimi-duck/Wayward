@@ -27,17 +27,17 @@ const story = (levels?: Record<string, number>) => {
 describe('a ship that is short or heavy', () => {
   it('flies slower and worse with the stores gone, and recovers when a crate is aboard', () => {
     const { w } = story();
-    const fed = w.stats.thrust, gun = w.stats.bankRefill;
+    const fed = w.stats.drive, gun = w.stats.bankRefill;
     w.supplies = 0;
     w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
     expect(w.thin).toBe(true);
-    expect(w.stats.thrust).toBeCloseTo(fed * EMPTY_STORES, 5);
+    expect(w.stats.drive).toBeCloseTo(fed * EMPTY_STORES, 5);
     expect(w.stats.bankRefill).toBeCloseTo(gun * EMPTY_STORES, 5);
-    expect(w.stats.thrust).toBeGreaterThan(0);
+    expect(w.stats.drive).toBeGreaterThan(0);
     w.supplies = 3;
     w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' });
     expect(w.thin).toBe(false);
-    expect(w.stats.thrust).toBeCloseTo(fed, 5);
+    expect(w.stats.drive).toBeCloseTo(fed, 5);
   });
 
   it('warns about thin stores, and about nothing on a fed, light ship', () => {

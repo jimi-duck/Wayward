@@ -353,14 +353,14 @@ export const UPGRADES: UpgradeDef[] = [
     tags: ['close', 'ram', 'defence'], locked: true,
     text: 'An extra hull plate, and rams that hit nearly twice as hard.',
     note: 'The armour costs a little top speed.',
-    apply: (s) => { s.maxPlates += 1; s.ramDamage *= 1.8; s.thrust *= 0.94; s.grace += 0.3; },
+    apply: (s) => { s.maxPlates += 1; s.ramDamage *= 1.8; s.topSpeed *= 0.94; s.grace += 0.3; },
   },
 
   // ── mobility ───────────────────────────────────────────────────────────
   {
     id: 'mo_impulse', name: 'Main drive', branch: 'mobility', cat: 'ship', kind: 'stat', max: 4, tags: ['mobility', 'speed'],
-    text: 'More thrust and a higher top speed.',
-    apply: (s) => { s.thrust *= 1.08; },
+    text: 'You get up to speed faster.',
+    apply: (s) => { s.drive *= 1.15; },
   },
   {
     id: 'mo_thrusters', name: 'Manoeuvring thrusters', branch: 'mobility', cat: 'ship', kind: 'stat', max: 3, tags: ['mobility', 'turning'],
@@ -433,7 +433,7 @@ export const UPGRADES: UpgradeDef[] = [
     tags: ['defence', 'armour', 'shield'],
     text: 'Another hull plate and a second shield charge.',
     note: 'All that armour costs top speed.',
-    apply: (s) => { s.maxPlates += 1; s.shieldMax += 1; s.shieldRecharge *= 0.85; s.thrust *= 0.92; },
+    apply: (s) => { s.maxPlates += 1; s.shieldMax += 1; s.shieldRecharge *= 0.85; s.topSpeed *= 0.92; },
   },
   {
     id: 'df_reactive', name: 'Reactive armour', branch: 'defence', cat: 'defence', kind: 'spec', max: 1, group: 'defence', needs: 3,
@@ -523,7 +523,8 @@ export const UPGRADES: UpgradeDef[] = [
     id: 'mo_afterburner', name: 'Afterburner', branch: 'mobility', cat: 'ship', kind: 'spec', max: 1, group: 'mobility', needs: 4,
     tags: ['mobility', 'speed'],
     text: 'A much higher top speed.',
-    apply: (s) => { s.thrust *= 1.18; },
+    note: 'It does not change how fast you pick up speed.',
+    apply: (s) => { s.topSpeed *= 1.25; },
   },
   {
     id: 'ut_prospector', name: 'Prospector', branch: 'utility', cat: 'ship', kind: 'spec', max: 1, group: 'utility', needs: 3,
