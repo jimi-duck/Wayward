@@ -637,3 +637,10 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   #rd-call.job.bleed:not(.noart) .rd-art { padding: 1.5px; }
   #rd-call.job.bleed:not(.noart) .rd-pic { object-position: 50% 40%; }
 }
+
+/* the card for an uncaught error (src/ui/crash.ts): centred, over everything, one action */
+#crash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; background: rgba(4, 8, 12, .6); padding: 16px; }
+#crash .crash-card { max-width: min(480px, 94vw); padding: var(--ng-pad); text-align: center; }
+#crash h2 { margin: 0 0 8px; font: 600 22px/1.2 'Barlow Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+#crash p { margin: 0 0 18px; color: var(--ink); }
+#crash button { min-height: 44px; padding: 8px 28px; }

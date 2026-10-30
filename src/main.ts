@@ -38,6 +38,7 @@ import { BayPanel } from './ui/bay';
 import { showConsole } from './ui/briefing';
 import { Feel, SOUND_AVAILABLE } from './audio/audio';
 import type { RegionSet } from './content/regions';
+import { installCrashCard } from './ui/crash';
 import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18n';
 
 /** New Story journeys run the eight regions; ?short plays the old three, for testing. */
@@ -845,3 +846,4 @@ function boot(review: typeof import('./review') | null): void {
 // The review world's code is fetched only for ?dev.
 const reviewing = new URLSearchParams(location.search).has('dev');
 Promise.all([detect() === 'de' ? loadDe() : Promise.resolve(), reviewing ? import('./review') : null]).then(([, review]) => boot(review));
+installCrashCard();

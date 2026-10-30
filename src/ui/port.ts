@@ -24,6 +24,7 @@ function pic(name: string, cls: string): HTMLImageElement {
   img.alt = '';
   img.className = cls;
   img.draggable = false;
+  img.addEventListener('error', () => img.remove(), { once: true });
   return img;
 }
 
