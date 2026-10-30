@@ -1,7 +1,7 @@
 # The Warden's Road
 
 The road runs from Cerro to the Threshold as eight legs of fixed stops
-(`?classic` brings the chart back) instead of a chart to choose across. The
+(`?classic` plays the generated chart instead) instead of a chart to choose across. The
 copy and design are the overhaul's: [overhaul/STORY_BIBLE.md](overhaul/STORY_BIBLE.md),
 [overhaul/BEAT_MAP.md](overhaul/BEAT_MAP.md) and
 [overhaul/SCRIPT_EN_DE.md](overhaul/SCRIPT_EN_DE.md). This file is how the

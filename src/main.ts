@@ -44,7 +44,7 @@ import { detect, loadDe, localize, num, onLang, plural, setLang, t } from './i18
 /** Frames the quality governor ignores after a new system or a closed panel (two seconds at 60 fps). */
 const GRACE = 120;
 const LONG_JOURNEY = !new URLSearchParams(location.search).has('short');
-/** The Reach is the Warden's Road, eight fixed stops (docs/ROAD.md); every other region is the long journey's own. ?classic lays the Reach out as a chart again, for comparing. */
+/** The Story is the Warden's Road: Cerro to the Threshold as fixed stops (docs/ROAD.md). ?classic plays the generated eight-region chart instead, for comparing. */
 const ROAD = !new URLSearchParams(location.search).has('classic');
 /** The region table a new Story journey is laid out with. */
 const NEW_SET: RegionSet = !LONG_JOURNEY ? 'three' : ROAD ? 'road' : 'eight';
