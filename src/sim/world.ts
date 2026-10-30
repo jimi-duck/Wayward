@@ -1839,7 +1839,8 @@ export class World implements EncounterHost {
     // the Story's stores: out of them the crew tires and the drive goes unserviced
     this.thin = !!this.bk && this.supplies <= 0;
     if (this.thin) {
-      s.thrust *= EMPTY_STORES;
+      s.drive *= EMPTY_STORES;
+      s.topSpeed *= EMPTY_STORES;
       s.turn *= EMPTY_STORES;
       s.bankRefill *= EMPTY_STORES;
       s.torpReload /= EMPTY_STORES;

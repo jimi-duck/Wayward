@@ -171,15 +171,16 @@ describe('the loads, felt', () => {
     expect(overRatings(stockLevels())).toEqual({ mass: false, heat: false, power: false });
   });
 
-  it('nudge a little with every module, long before a warning light', () => {
-    const one = { ...stockLevels(), df_armour: 1 }; // 3 mass of 8
+  it('nudge a little once a load passes three quarters of its rating, before the warning light', () => {
+    const one = { ...stockLevels(), df_armour: 2 }; // 7 mass of 8
     expect(overRatings(one).mass).toBe(false);
     const f = feel(one);
     expect(f.accel).toBeLessThan(1);
     expect(f.accel).toBeGreaterThan(0.9);
     expect(f.turn).toBeLessThan(1);
-    // and a lighter module nudges less than a heavier one
-    expect(feel({ ...stockLevels(), mo_dampers: 1, mo_thrusters: 1 }).accel).toBeGreaterThan(f.accel);
+    // and the heavier the load, the more it nudges, with nothing below the threshold
+    expect(feel({ ...stockLevels(), df_armour: 2, mo_dampers: 1 }).accel).toBeLessThan(f.accel);
+    expect(feel({ ...stockLevels(), df_armour: 1 }).accel).toBe(1);
   });
 
   it('a hot ship cycles its guns slower; coolant loops take it back', () => {
@@ -221,10 +222,12 @@ describe('the loads, felt', () => {
     const f = felt(w.levels);
     expect(f.accel).toBeLessThan(1);
     expect(f.speed).toBeLessThan(1);
-    // a drive upgrade that raises thrust raises both, as it did
+    // the main drive raises acceleration and leaves top speed alone; the afterburner is the other way round
     w.setLevels({ ...stockLevels(), mo_impulse: 1 });
     expect(felt(w.levels).accel).toBeGreaterThan(1);
-    expect(felt(w.levels).speed).toBeGreaterThan(1);
+    expect(felt(w.levels).speed).toBeCloseTo(1, 5);
+    w.setLevels({ ...stockLevels(), mo_impulse: 1, mo_afterburner: 1 });
+    expect(felt(w.levels).speed).toBeGreaterThan(1.2);
   });
 
   it('both modes fly with it, and the figures show it', () => {
@@ -310,5 +313,43 @@ describe('the Arcade’s three picks', () => {
     w.phase = 'bay';
     w.closeBay();
     expect(w.bayCtx().deal).toBe((a ?? 0) + 1);
+  });
+});
+
+describe('the engines', () => {
+  const stock = stockLevels();
+  const build = (more: Record<string, number>) => ({ ...stock, ...more });
+  const heavy = build({ ph_emitters: 3, ph_capacitors: 2, ph_bank: 2, df_shield: 1, df_regen: 2, df_armour: 2, tp_magazine: 2, tp_yield: 3, tp_tracking: 1, ut_tractor: 1, md_plate: 1, md_hardpoints: 1 });
+
+  it('gives the main drive acceleration only, and never lowers it level by level', () => {
+    for (const base of [stock, heavy]) {
+      let prev = felt(base);
+      for (let lv = 1; lv <= 6; lv++) {
+        const f = felt({ ...base, mo_impulse: lv });
+        expect(f.accelAbs, `Main drive ${lv}`).toBeGreaterThanOrEqual(prev.accelAbs);
+        expect(f.speedAbs, `Main drive ${lv} leaves top speed`).toBeCloseTo(felt(base).speedAbs, 5);
+        prev = f;
+      }
+    }
+  });
+
+  it('gives the afterburner top speed only, and never lowers it', () => {
+    for (const base of [stock, heavy, build({ mo_impulse: 4, df_fortress: 1 })]) {
+      const before = felt(base), after = felt({ ...base, mo_afterburner: 1 });
+      expect(after.speedAbs).toBeGreaterThan(before.speedAbs);
+      expect(after.accelAbs).toBeCloseTo(before.accelAbs, 5);
+    }
+  });
+
+  it('lets the armour cost its top speed even with a full drive, as its card says', () => {
+    const drive = build({ mo_impulse: 4, mo_afterburner: 1 });
+    expect(felt({ ...drive, cl_juggernaut: 1 }).speedAbs).toBeLessThan(felt(drive).speedAbs);
+    expect(felt({ ...drive, df_fortress: 1 }).speedAbs).toBeLessThan(felt(drive).speedAbs);
+  });
+
+  it('keeps the first parts free: nothing slows the ship until a load passes 75% of its rating', () => {
+    const f = felt(build({ mo_thrusters: 1 }));
+    expect(f.speed).toBeCloseTo(1, 5);
+    expect(f.accel).toBeCloseTo(1, 5);
   });
 });

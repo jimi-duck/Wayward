@@ -766,7 +766,7 @@ export class BayPanel {
       const main = gains[0];
       const line = (f: Fig, cls: string) => h('p', `bi-fig ${cls}`, '', h('span', 'bi-fl', t(f.label)), h('span', 'bi-fv', `${f.from} → ${f.to}`));
       if (main) out.push(h('div', 'bi-figs', '',
-        h('p', 'bi-main', '', h('b', '', main.delta), h('span', '', t(main.label))),
+        h('p', 'bi-main', '', h('b', '', main.change !== null && Math.abs(main.change) >= 0.01 ? `${main.change > 0 ? '+' : '−'}${Math.round(Math.abs(main.change) * 100)}%` : main.delta), h('span', '', t(main.label))),
         ...gains.slice(1, 3).map((f) => line(f, 'gain')), ...costs.slice(0, 2).map((f) => line(f, 'cost'))));
     }
     if (more) {

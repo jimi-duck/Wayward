@@ -22,6 +22,8 @@ export const FEEL = {
   soft: { accel: 0.14, turn: 0.07, speedMass: 0.04, speedPower: 0.09, coolHeat: 0.14, coolPower: 0.05 },
   /** Per share of the rating run over: what the warning light costs, on top. */
   over: { accel: 0.7, turn: 0.55, speedMass: 0.3, speedPower: 0.5, coolHeat: 0.9, coolPower: 0.3 },
+  /** Share of a rating the ship carries before the nudge starts: the first parts up to it cost nothing. */
+  free: 0.75,
   /** The least each can fall to. */
   floor: { accel: 0.55, turn: 0.6, speed: 0.6, cool: 0.5 },
 } as const;
@@ -62,8 +64,8 @@ export function overRatings(levels: Record<string, number>): { mass: boolean; he
 /** What the ship leaves with draws: the nudge counts from here, so the stock ship flies as it always did. */
 const STOCK_USE: Readonly<Budget> = budgets(STOCK).use;
 
-/** A load as a share of its rating, counted from the stock ship's draw. */
-const softOf = (use: number, cap: number, stock: number) => Math.max(0, use - stock) / Math.max(1, cap);
+/** A load as a share of its rating, counted from the stock ship's draw or from `FEEL.free` of the rating, whichever is more. */
+const softOf = (use: number, cap: number, stock: number) => Math.max(0, use - Math.max(stock, FEEL.free * cap)) / Math.max(1, cap);
 
 /**
  * What a build's loads do to the ship, as multipliers (1 is the stock ship): acceleration, top speed and turn

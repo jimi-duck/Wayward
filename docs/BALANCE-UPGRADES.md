@@ -64,3 +64,47 @@ Purse and parts at the end of each stretch of systems. "Spare a stop" is how muc
 | 2 | 29/32 | 17/20 | 21/20 |
 | 3 | 28/32 | 17/20 | 17/16 |
 | 4 | 34/35 | 19/20 | 23/24 |
+
+## The engine split (Upgrade Center, 2026-10-30)
+
+Acceleration and top speed are separate stats with separate upgrades and separate caps (`Stats.drive`, `Stats.topSpeed`;
+caps 2.0 and 1.5). Main drive is acceleration only (+15% a level). Afterburner is top speed only (+25%). Fortress and
+Juggernaut now cost top speed for real, since nothing shared caps it. The main drive and Afterburner draw no power, so
+they never slow the ship they are meant to speed up. The loads' nudge starts at 75% of a rating (`FEEL.free`), so the
+first parts are free. Floors are unchanged (0.6 speed, 0.55 acceleration), as are the warning-light costs.
+
+Stock top speed 391 m/s, acceleration 826 m/s² (the bay's units):
+
+| Build | Acceleration | Top speed | Loads (power, mass, heat) |
+|---|---|---|---|
+| Stock ship | 826 | 391 | 5/8, 1/8, 3/8 |
+| Main drive 1 / 2 / 3 / 4 | 950 / 1092 / 1256 / 1444 | 391 | heat 4 to 7 of 8 |
+| Main drive 4 + Afterburner | 1444 | 489 | heat 9/8 (guns slow a little) |
+| Main drive 6 (cap) | 1652 | 391 | |
+| 12 parts, no balance parts | 454 | 235 | 14/8, 12/8, 11/8: both floors |
+| same + Main drive 4 + Afterburner | 794 | 293 | still over every rating |
+| same + Fortress + Juggernaut | 794 | 254 | |
+| 12 parts + 2 cores, 2 frames, 1 coolant | 819 | 348 | 16/14, 13/16, 13/12 |
+| same + Main drive 4 + Afterburner | 1432 | 435 | |
+
+Before the split, on the same 12 parts without balance parts, Main drive 4 reached 618 m/s² and 319 m/s, and with
+Afterburner 659 and 340. Its level 4 alone on a stock ship gave no top speed at all.
+
+What the table says: a ship far past its ratings still sits on the floors, by design ("worse, never useless"), but the
+engine parts now do their one job on top of that, and a ship that has bought its balance parts is faster than the stock
+ship. Pilot results for this change are below.
+
+### Pilot check of the split
+
+Same four builds (seeds 3000, 3013, 3026, 3039), the first 70 systems, main against this change (`UPG_LEGS=70`, "build" policy only):
+
+| | Main | Split |
+|---|---|---|
+| Parts fitted by stop 10 / 20 / 30 / 60 | 1.2 / 4.9 / 13.4 / 30.8 | 1.6 / 6.7 / 14.7 / 29.5 |
+| Plates lost a sortie, stops 51-60 / 61-70 | 0.6 / 0.8 | 0.6 / 1.0 |
+| Wrecked, stops 51-60 | 12% | 7% |
+| In combat, stops 61-70 | 30% | 35% |
+
+No shift beyond what four journeys can tell apart. The feel pilot (`docs/FEEL.md`, arcade fights with random builds) reads
+8.2 kills a minute and 0.28 plates hit a minute on main, 8.0 and 0.25 here. The eight-region `pilot:journey` set was
+not run (it takes hours); the upgrade and feel pilots stand in for it.
