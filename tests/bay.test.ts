@@ -3,6 +3,7 @@ import { UPGRADES, UPGRADE } from '../src/content/upgrades';
 import { MODULES } from '../src/content/modules';
 import { ARCADE_PRICE, FITTING, FITTINGS, NODE, RATINGS, STOCK_DRAW, TAB_ORDER, TABS, WEB } from '../src/content/web';
 import { blockOf, budgets, cheapest, cost, install, maxLevel, PICKS, quickPicks, reachable, roleOf, stockLevels, type BayCtx } from '../src/sim/bay';
+import { lifters } from '../src/sim/tradeoff';
 import { computeStats, felt, upgradeFigures } from '../src/sim/build';
 import { feel, feelBudgets, FEEL, overRatings } from '../src/sim/budgets';
 import { World } from '../src/sim/world';
@@ -351,5 +352,17 @@ describe('the engines', () => {
     const f = felt(build({ mo_thrusters: 1 }));
     expect(f.speed).toBeCloseTo(1, 5);
     expect(f.accel).toBeCloseTo(1, 5);
+  });
+});
+
+describe('what lifts a stat', () => {
+  it('names the engine parts for top speed and acceleration, best first, and nothing that does not help', () => {
+    const w = new World(1, { mode: 'breakout' });
+    w.cyrite = 900; w.docked = true;
+    const speed = lifters(w.bayCtx(), 'speed'), accel = lifters(w.bayCtx(), 'accel');
+    expect(speed.map((l) => l.id)).toContain('mo_afterburner');
+    expect(accel.map((l) => l.id)).toContain('mo_impulse');
+    for (const l of [...speed, ...accel]) expect(l.gain).toBeGreaterThanOrEqual(0.01);
+    expect(accel.map((l) => l.gain)).toEqual([...accel.map((l) => l.gain)].sort((a, b) => b - a));
   });
 });

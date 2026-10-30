@@ -1,5 +1,6 @@
-import { cost } from './bay';
-import { upgradeFigures, type Fig, type Levels } from './build';
+import { WEB } from '../content/web';
+import { blockOf, cost, type BayCtx } from './bay';
+import { felt, upgradeFigures, type Fig, type Levels } from './build';
 import { budgets, overRatings, weightFuel, WEIGHT_FUEL } from './budgets';
 
 // ── the whole trade, before the button ────────────────────────────────────
@@ -56,4 +57,33 @@ export function tradeoff(levels: Levels, id: string, arcade: boolean): Tradeoff 
     overBudget: { mass: over('mass'), heat: over('heat'), power: over('power') },
     price: cost(id, lv + 1, arcade, levels),
   };
+}
+
+// ── what lifts a stat ─────────────────────────────────────────────────────
+// For the bars along the bottom of the bay: which parts would move acceleration,
+// top speed or cooldown, best first, so a player who wants more speed knows what to fit.
+
+export type FeltKey = 'accel' | 'speed' | 'cooldown';
+
+export interface Lift {
+  id: string;
+  /** The stat's change as a share of what it is now (0.12 is 12% better). */
+  gain: number;
+  /** Fitted now (or one Cyrite short), or waiting on another part first. */
+  ready: boolean;
+  /** What it waits on, when it is not ready. */
+  wait?: 'path' | 'needs';
+}
+
+/** The parts that would make `key` better by at least 1% with one more level, best first. Cooldown is better lower. */
+export function lifters(ctx: BayCtx, key: FeltKey, limit = 3): Lift[] {
+  const now = felt(ctx.levels)[key], out: Lift[] = [];
+  for (const node of WEB) {
+    const why = blockOf(node.id, ctx);
+    if (why !== null && why !== 'krail' && why !== 'path' && why !== 'needs') continue;
+    const after = felt({ ...ctx.levels, [node.id]: (ctx.levels[node.id] ?? 0) + 1 })[key];
+    const gain = key === 'cooldown' ? (now - after) / now : (after - now) / now;
+    if (gain >= 0.01) out.push({ id: node.id, gain, ready: why === null || why === 'krail', ...(why === 'path' || why === 'needs' ? { wait: why } : {}) });
+  }
+  return out.sort((a, b) => Number(b.ready) - Number(a.ready) || b.gain - a.gain).slice(0, limit);
 }

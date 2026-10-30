@@ -837,6 +837,18 @@ html:not(.breakout) .pause-card #brief { display: none; }
 .bf-n { font: 600 calc(var(--fs) * 1.05 * 1.18)/1 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
 .bf-none { font: 600 calc(var(--fs) * 1.18)/1 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
 .bb { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+/* what would lift a stat: on hover, focus or tap of its bar */
+.bb { position: relative; outline: none; cursor: help; }
+.bb-lift { display: none; position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 6; width: max(100%, 230px); flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); background: rgba(var(--void-rgb), .94); box-shadow: 0 6px 22px rgba(var(--black-rgb), .5); }
+.bb:hover .bb-lift, .bb:focus-within .bb-lift, .bb:focus .bb-lift { display: flex; }
+.bb-lh { font: 600 12px/1.2 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--cy); }
+.bb-lw { font: 400 13px/1.35 var(--font-display); color: var(--ink); }
+.bb-up { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding: 6px 8px; border: 1px solid var(--line); background: none; color: var(--ink); font: 500 13px/1.2 var(--font-display); text-align: left; cursor: pointer; }
+.bb-up:hover, .bb-up:focus-visible { border-color: var(--cy); }
+.bb-un { flex: 1; min-width: 0; }
+.bb-up b { color: var(--cy); font: 600 13px/1 var(--font-mono); }
+.bb-up small { flex-basis: 100%; font-size: 12px; color: var(--ink-2); }
+.bi-effect { margin: 0; font: 400 14px/1.45 var(--font-display); color: var(--ink); }
 .bb-l { font: 600 calc(var(--fs) * 1.15 * 1.18)/1 var(--font-rail); letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
 .bb-v { margin-left: auto; font: 400 clamp(13px, 1.05vw, 16px)/1 var(--font-mono); letter-spacing: .02em; color: var(--ink); }
 

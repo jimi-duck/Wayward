@@ -14,6 +14,7 @@ import { artImg, artUrl } from './art';
 import { opsOf, opsText } from './ops';
 import { tick } from './tick';
 import { tradeRow } from './tradechips';
+import { lifters } from '../sim/tradeoff';
 import { num, t } from '../i18n';
 
 // ── the refit bay ─────────────────────────────────────────────────────────
@@ -770,6 +771,8 @@ export class BayPanel {
       if (main) out.push(h('div', 'bi-figs', '',
         h('p', 'bi-main', '', h('b', '', main.change !== null && Math.abs(main.change) >= 0.01 ? `${main.change > 0 ? '+' : '−'}${Math.round(Math.abs(main.change) * 100)}%` : main.delta), h('span', '', t(main.label))),
         ...gains.slice(1, 3).map((f) => line(f, 'gain')), ...costs.slice(0, 2).map((f) => line(f, 'cost'))));
+      // no figure to show (a signal or a story part): say what it does, not nothing
+      else out.push(h('p', 'bi-effect', textOf(id, next)));
     }
     if (more) {
       // past a rating the module says so; the bars along the bottom carry the numbers
@@ -837,7 +840,24 @@ export class BayPanel {
       val.append(u);
       // better (teal) or worse (gold): cooldown is better when lower
       if (then !== shownNow) val.classList.add((next![key] < now[key]) === lower ? 'better' : 'worse');
-      return h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : []), val), bar);
+      const lift = this.liftPanel(w, k, key, state === 'over' ? k : null);
+      const box = h('span', `bb ${k}${state ? ` ${state}` : ''}`, '', h('span', 'bb-l', t(BUDGET_WORD[k]), ...(word ? [h('span', 'bb-w', '', h('i', '', '▲'), h('span', 'bb-wt', t(word)))] : []), val), bar, lift);
+      box.tabIndex = 0;
+      return box;
     }));
+  }
+
+  /** What would lift a stat, shown on hover, focus or tap of its bar: the parts to fit, best first, and why it is held back. */
+  private liftPanel(w: World, load: keyof Budget, key: 'accel' | 'speed' | 'cooldown', over: keyof Budget | null): HTMLElement {
+    const list = lifters(w.bayCtx(), key);
+    const can = !isArcade(w);
+    const rows = list.map((l) => {
+      const row = h(can ? 'button' : 'span', 'bb-up', '', h('span', 'bb-un', nameOf(l.id)), h('b', '', `+${Math.round(l.gain * 100)}%`), ...(l.wait === 'path' && NODE[l.id]!.from?.length ? [h('small', '', t('Fit {name} first', { name: nameOf(NODE[l.id]!.from![0]!) }))] : l.wait ? [h('small', '', t(WHY.needs))] : []));
+      if (can) row.addEventListener('click', (e) => { e.stopPropagation(); this.view = NODE[l.id]!.tab; this.sel = l.id; this.render(); });
+      return row;
+    });
+    return h('span', 'bb-lift', '', h('span', 'bb-lh', t('To raise {stat}', { stat: t(BUDGET_WORD[load]) })),
+      ...(over ? [h('span', 'bb-lw', t(OVER_WORD[over]))] : []),
+      ...(rows.length ? rows : [h('span', 'bb-lw', t('Nothing in reach lifts this yet'))]));
   }
 }
