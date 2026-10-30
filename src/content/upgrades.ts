@@ -178,7 +178,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'tp_bay', name: 'Torpedo bay', branch: 'torpedo', cat: 'weapons', kind: 'system', max: 1, tags: ['torpedo', 'unlock'],
     weight: 1.4,
-    text: 'Adds torpedoes on button 2 that chase their target.',
+    text: 'Torpedoes on button 2 that chase their target.',
     note: 'They lock the best target in a cone ahead: ships before rock.',
     apply: (s) => { s.torpedoes = true; },
   },
@@ -387,8 +387,8 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'mo_evasion', name: 'Evasive pattern', branch: 'mobility', cat: 'ship', kind: 'spec', system: 'signals', max: 1, group: 'mobility', needs: 4,
     tags: ['mobility', 'evasion'],
-    text: 'A longer roll, and it comes round much sooner.',
-    apply: (s) => { s.rollIframes += 0.2; s.rollCooldown *= 0.75; },
+    text: 'Your roll covers you much longer, so you can fly through fire.',
+    apply: (s) => { s.rollIframes += 0.35; s.rollCooldown *= 0.9; },
   },
 
   // ── defence ────────────────────────────────────────────────────────────

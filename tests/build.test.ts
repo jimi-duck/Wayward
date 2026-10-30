@@ -56,6 +56,9 @@ describe('the refit tree', () => {
 describe('the figures', () => {
   it('shows every number a card changes, before and after', () => {
     expect(upgradeFigures({}, 'ph_capacitors').map((f) => f.label)).toContain('Laser shots/sec');
+    // the balance parts give room, so their cards say how much
+    expect(upgradeFigures({}, 'hl_frame').find((f) => f.label === 'Weight room')?.delta).toBe('+4');
+    expect(upgradeFigures({}, 'rx_core').find((f) => f.label === 'Power room')?.delta).toBe('+3');
     const rack = upgradeFigures({ tp_bay: 1, tp_yield: 1, tp_tracking: 1 }, 'tp_heavy').find((f) => f.label === 'Torpedo rack');
     expect(rack?.cost).toBe(true);
     // a system switched on is never a cost

@@ -2,9 +2,10 @@ import { BRANCHES, UPGRADE, UPGRADES, type Branch, type UpgradeDef } from '../co
 import { applyModules } from './modules';
 import { BASE, flightHull, capStats, newStats, type Stats } from './stats';
 import { thrustPerStep, topSpeed, turnPerStep } from './ship';
+import { HULL } from '../content/hulls';
 import { HZ, PX } from './tuning';
 import { PACING } from './pacing';
-import { feelBudgets } from './budgets';
+import { budgets, feelBudgets } from './budgets';
 import { midSentence, t } from '../i18n';
 
 // ── the build ─────────────────────────────────────────────────────────────
@@ -115,8 +116,17 @@ export function upgradeFigures(levels: Levels, id: string, arcade = true): Fig[]
   const next = { ...levels, [id]: (levels[id] ?? 0) + 1 };
   // the ship feels the budgets (sim/budgets.ts): a module that runs it hot or heavy shows it
   const at = (lv: Levels) => feelBudgets(computeStats(lv), lv);
-  return figures(at(levels), at(next), arcade);
+  const out = figures(at(levels), at(next), arcade);
+  // the balance parts (frame, cores, coolant) give room, not a stat: say how much
+  const was = budgets(levels).cap, now = budgets(next).cap;
+  for (const [key, label] of ROOMS) {
+    if (now[key] === was[key]) continue;
+    out.push({ label, from: String(was[key]), to: String(now[key]), cost: false, delta: `+${now[key] - was[key]}`, minor: false, change: null });
+  }
+  return out;
 }
+
+const ROOMS: Array<['power' | 'mass' | 'heat', string]> = [['power', 'Power room'], ['mass', 'Weight room'], ['heat', 'Cooling room']];
 
 // ── figures ───────────────────────────────────────────────────────────────
 // Every number a card can change, how to read it and which way is better.
@@ -167,7 +177,7 @@ export const FIGURES: FigDef[] = [
   { label: 'Acceleration', get: (s) => (thrustPerStep(flightHull(s)) * HZ) / PX, fmt: (v) => `${v.toFixed(1)} m/s²` },
   { label: 'Top speed', get: (s) => topSpeed(flightHull(s)), fmt: (v) => `${Math.round(v / PX)} m/s` },
   { label: 'Turn rate', get: (s) => (turnPerStep(flightHull(s)) * HZ * 180) / Math.PI, fmt: (v) => `${Math.round(v)}°/s` },
-  { label: 'Grip in turns', get: (s) => s.grip, fmt: (v) => `${Math.round(v * 1000) / 10}%/step` },
+  { label: 'Grip in turns', get: (s) => s.grip, fmt: (v) => `${Math.round((v / HULL.grip) * 100)}%` },
   { label: 'Roll every', get: (s) => s.rollCooldown, fmt: sec, lower: true },
   { label: 'Roll cover', get: (s) => s.rollIframes, fmt: sec },
   { label: 'Hull plates', get: (s) => s.maxPlates, fmt: f0 },
