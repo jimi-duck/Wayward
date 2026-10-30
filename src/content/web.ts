@@ -113,7 +113,7 @@ export const WEB: WebNode[] = [
   n('df_reactive', 'hull', 3, 1, ['df_bulkheads'], { power: 1, mass: 1 }),
   n('cl_shock', 'hull', 3, 2, ['cl_ram'], { power: 1, mass: 1 }),
   n('cl_juggernaut', 'hull', 3, 3, ['cl_ram'], { mass: 4 }),
-  n('df_regenerative', 'hull', 3, 4, ['df_repair'], { power: 1 }),
+  n('df_regenerative', 'hull', 3, 4, ['df_control', 'df_bulkheads'], { power: 1 }),
   // the yard (the Story mode)
   n('md_plate', 'hull', 2, 2, null, { mass: 2 }, { story: true }),
   n('md_shop', 'hull', 2, 4, null, { mass: 1 }, { story: true }),
@@ -133,6 +133,7 @@ export const WEB: WebNode[] = [
   // the yard (the Story mode)
   n('md_hardpoints', 'weapons', 2, 3, null, { power: 1, mass: 1 }, { story: true }),
   n('md_gunnery', 'weapons', 2, 4, null, { heat: 1 }, { story: true }),
+  n('ut_tactical', 'weapons', 2, 5, ['ph_emitters', 'ph_capacitors', 'ph_bank'], { power: 1, heat: 1 }),
 
   // ── ordnance: torpedoes above, mines below ──────────────────────────────
   n('tp_bay', 'ordnance', 1, 1, null, { power: 2, heat: 1, mass: 1 }),
@@ -184,8 +185,7 @@ export const WEB: WebNode[] = [
   n('ut_tractor', 'utility', 1, 0, null, { power: 1 }),
   n('ut_matrix', 'utility', 1, 1, null, { power: 1 }),
   n('ut_quiet', 'utility', 1, 2, null, { power: 1 }),
-  n('ut_tactical', 'utility', 2, 1, ['ut_tractor', 'ut_matrix'], { power: 1, heat: 1 }),
-  n('ut_prospector', 'utility', 3, 0, ['ut_tractor'], { power: 1 }),
+    n('ut_prospector', 'utility', 3, 0, ['ut_tractor'], { power: 1 }),
   n('ut_salvager', 'utility', 3, 1, ['ut_matrix'], { power: 1 }),
   n('ut_scanner', 'utility', 3, 2, ['ut_quiet', 'ut_matrix'], { power: 2 }),
   // the yard (the Story mode)

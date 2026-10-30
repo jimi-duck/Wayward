@@ -30,6 +30,16 @@ describe('the web', () => {
     expect(new Set(spots).size).toBe(spots.length);
   });
 
+  it('opens no Story node from an Arcade-only one, so every Story upgrade can be reached', () => {
+    for (const w of WEB) {
+      if (w.story || !w.from) continue;
+      const open = w.from.some((f) => !UPGRADE[f]?.arcade);
+      expect(open, `${w.id} comes only from Arcade-only nodes`).toBe(true);
+    }
+    const levels = { ...stockLevels(), df_control: 1, df_armour: 2 };
+    expect(blockOf('df_regenerative', ctx({ arcade: false, docked: true, levels }))).toBeNull();
+  });
+
   it('keeps every tab small enough to read at a glance', () => {
     for (const t of TAB_ORDER) {
       const nodes = WEB.filter((w) => w.tab === t);

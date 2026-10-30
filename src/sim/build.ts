@@ -217,7 +217,7 @@ export interface Identity {
 
 const SPEC_PREFIX: Record<string, string> = {
   ph_cone: 'Cone', ph_lance: 'Heavy-lance', ph_array: 'Array', tp_heavy: 'Heavy', tp_swarm: 'Swarm', tp_precision: 'Precision',
-  mn_field: 'Minefield', mn_chain: 'Chain-reaction', mn_gravity: 'Graviton', pl_ignite: 'Incendiary', pl_wake: 'Afterburner',
+  mn_field: 'Minefield', mn_chain: 'Chain-reaction', mn_gravity: 'Graviton', pl_ignite: 'Incendiary', pl_wake: 'Wake',
   cl_storm: 'Storm', cl_juggernaut: 'Juggernaut', mo_drift: 'Drift', mo_evasion: 'Evasive', df_fortress: 'Fortress',
   df_reactive: 'Reactive', df_regenerative: 'Regenerative',
   pl_corona: 'Corona', cl_shock: 'Shock', mo_afterburner: 'Redline', ut_prospector: 'Deep-core', ut_salvager: 'Salvager',
