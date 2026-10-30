@@ -30,7 +30,7 @@ export interface JobTerms { reward: string[]; limit: number }
 
 const CALLER_CSS: Record<Caller, string> = {
   custody: NEON_CSS.custody, gutter: NEON_CSS.gutter, office: NEON_CSS.office,
-  frontier: INK.teal, guild: INK.amber, kellern: '#d9c27a', miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2,
+  frontier: INK.teal, guild: INK.amber, kellern: INK.krail, miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2,
 };
 const KIND_WORD: Record<string, string> = {
   trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', distress: 'Distress call', rumour: 'Rumour',

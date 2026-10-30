@@ -1,4 +1,5 @@
 import type { Faction } from '../sim/enemies';
+import { hex } from './palette';
 
 /**
  * Faction colours for text and marks (brand v1.1, § 16). The Continuance's
@@ -8,9 +9,9 @@ import type { Faction } from '../sim/enemies';
  * is not any human faction's.
  */
 export const NEON_CSS: Record<Faction, string> = {
-  gutter: '#C9845A',
-  custody: '#E0574B',
-  office: '#EFA59B',
-  voice: '#8FB4C9',
-  thren: '#5CC3A2',
+  gutter: hex('faction-gutter'),
+  custody: hex('alert'),
+  office: hex('faction-office'),
+  voice: hex('faction-voice'),
+  thren: hex('faction-thren'),
 };

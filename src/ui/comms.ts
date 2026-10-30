@@ -87,7 +87,7 @@ export function artOf(d: Open['def']): ArtRef {
 
 const CALLER_CSS: Record<Caller, string> = {
   custody: NEON_CSS.custody, gutter: NEON_CSS.gutter, office: NEON_CSS.office,
-  frontier: INK.teal, guild: INK.amber, kellern: '#d9c27a', miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2,
+  frontier: INK.teal, guild: INK.amber, kellern: INK.krail, miners: INK.white, calloway: INK.red, captain: INK.red, unknown: INK.white2,
 };
 const KIND_WORD: Record<string, string> = {
   captain: 'Named captain', trade: 'Trade', plea: 'Plea', job: 'Job offer', warning: 'Warning', shakedown: 'Shakedown', checkpoint: 'Checkpoint', distress: 'Distress call', rumour: 'Rumour', offer: 'Offer',
@@ -276,6 +276,9 @@ const THREAT = /^(Fight|Hostiles|Run the blockade|Calloway fights|Calloway chase
 /** A chip's colour: red for trouble, amber for what it takes (like a cost), teal for what you get. */
 const gainClass = (g: string) => (THREAT.test(g) ? 'g-threat' : /^−/.test(g) ? 'g-loss' : 'g-gain');
 
+/** How long a closed card fades before it is gone. */
+const FADE_MS = 150;
+
 export class CommsPanel {
   private off: (() => void) | null = null;
   private opened = 0;
@@ -285,13 +288,16 @@ export class CommsPanel {
   private view: CommsView | null = null;
   private onAnswer: ((i: number) => void) | null = null;
 
+  /** Open and answerable: a card that is only fading out is already closed, so the next one may come. */
   get open(): boolean {
-    return !$('comms').hidden;
+    const el = $('comms');
+    return !el.hidden && !el.classList.contains('out');
   }
 
   show(view: CommsView, onAnswer: (i: number) => void): void {
     const again = performance.now() - this.closedAt < 400;
     this.close();
+    this.unfade();
     arrive($('comms'), again);
     this.view = view;
     this.onAnswer = onAnswer;
@@ -526,14 +532,32 @@ export class CommsPanel {
   }
 
   close(): void {
-    if (!$('comms').hidden) this.closedAt = performance.now();
+    if (this.open) this.closedAt = performance.now();
     this.docOpen = false;
     this.items = [];
     this.off?.();
     this.off = null;
     this.view = null;
     this.onAnswer = null;
-    $('comms').hidden = true;
+    this.fade();
+  }
+
+  private fadeTimer = 0;
+
+  /** Hide the sheet after a 150ms fade (at once with reduced motion); it takes no input meanwhile. */
+  private fade(): void {
+    const el = $('comms');
+    clearTimeout(this.fadeTimer);
+    if (el.hidden) return;
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) { el.hidden = true; return; }
+    el.classList.add('out');
+    this.fadeTimer = window.setTimeout(() => { el.hidden = true; el.classList.remove('out'); }, FADE_MS);
+  }
+
+  /** A new card arrives while the last is still fading: it takes the sheet over. */
+  private unfade(): void {
+    clearTimeout(this.fadeTimer);
+    $('comms').classList.remove('out');
   }
 
   padInput(p: PadEdges): void {
