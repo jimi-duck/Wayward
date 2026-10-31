@@ -68,6 +68,8 @@ export const STOLEN = { sam: 20, notice: 38, explain: 4, pursuit: 70 } as const;
 export const STOLEN_SAM = '“And you’re running dry. Buy fluid at the Frontier depot, or mine Cyrite on the way. Fill the tank, then the gate.”';
 export const STOLEN_SAM_POOR = '“And you’re running dry, with nothing to pay for fluid. Mine the veined rock on the way. The refinery fills the tank first.”';
 /** The amber notice that tells her the pursuit has started, and why. */
+/** The depot's word on the approach, on the radio (no card): what it sells, and how to dock. */
+export const DEPOT_LINE = '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”';
 export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
 
 /** The objective is the tank, bought at the depot or mined: the first system past Cerro, the lock lifted, a tank short of the jump, not docked yet, and Cyrite to buy with. */

@@ -219,12 +219,14 @@ function begin(w: World, tu: Tutor): void {
     const port = w.bk?.port;
     if (port) { const p = ahead(w, DEPOT_AT, -DEPOT_SIDE); port.x = p.x; port.z = p.z; }
     if (w.bk) { const p = ahead(w, TRAIN_LANE); w.bk.def = { ...w.bk.def, lane: TRAIN_LANE }; w.bk.lane.x = p.x; w.bk.lane.z = p.z; }
-    if (story(w, tu)) sam(w, tu, 'dispatch', ['“Juno. Two hundred more and the hold’s full. Then it’s back to the home port.”', '“A thousand Cyrite out of Cerro, and only two credits left after their charges.”']);
+    if (story(w, tu)) sam(w, tu, 'dispatch', ['“Juno. Two hundred more and the hold’s full. Then it’s back to the home port.”']);
     else say(w, tu, 'dispatch', t('Contract desk · 08-441'), 'office', t('“08-441, the Work Bay is open for supplies. Take the upgrade you need and get back to the field. A late return comes out of your allocation.”'));
   } else if (id === 'bay') {
     tu.base = fitted(w);
     // the Arcade's upgrade is a press away; the Story's is bought from the settlement, at the bay
     if (!w.bk) w.cyrite = Math.max(w.cyrite, 6);
+    // the money, as she heads for the bay that shows it (one line at a time: owner 2026-10-31)
+    if (story(w, tu)) sam(w, tu, 'bay', ['“A thousand Cyrite out of Cerro, and only two credits left after their charges.”']);
   } else if (id === 'haul') {
     tu.base = stock(w);
     // out past the depot's damping field: the lasers are cold inside it

@@ -135,16 +135,13 @@ describe('the story beats', () => {
     expect(w.comms?.def.id).toBe(SAM_BEAT);
     expect(w.comms?.choices.map((c) => c.id)).toEqual(['code']);
     w.answer('code');
-    run(7);
-    // the registry reports the result (state already committed), with no score or portrait, then the archive wakes
-    expect(w.comms?.def.id).toBe(RENAME_BEAT);
-    expect(w.comms?.ledger?.map((r) => [r.k, r.v])).toEqual([['Registry status', 'Unregistered'], ['Owner lock', 'Lifted'], ['Hull finish', 'Grey → Ochre']]);
-    expect(w.comms?.choices.map((c) => c.id)).toEqual(['helm']);
+    // no registry card (owner 2026-10-31): the state is committed at once, and the archive wakes 20 s or more on
     expect(w.result().carry.flags).toContain('ship_stolen');
-    w.answer('helm');
-    run(3);
+    run(18);
+    expect(w.comms).toBeNull();
+    run(40);
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
-    expect(w.result().carry.seen).toContain(RENAME_BEAT);
+    expect(w.result().carry.seen).not.toContain(RENAME_BEAT);
     const after = w.result().carry;
     expect(after.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour']));
     expect(after.flags).not.toContain('tam_alone');

@@ -20,7 +20,6 @@ import { autoCourse, bankAnswer, checkpoint, debrief, endSortie, hearNews, here,
 import { regionsOf, routeBetween, sysById } from './sim/chart';
 import { journeyRecord, pending } from './sim/endings';
 import { EndingPanel } from './ui/ending';
-import { HeatNote } from './ui/heatnote';
 import { JobDone } from './ui/jobdone';
 import type { GameEvent } from './sim/events';
 import { Cutscene } from './ui/adrift';
@@ -88,8 +87,8 @@ function boot(review: typeof import('./review') | null): void {
   const sector = new Sector(renderer, quality.tier);
   sector.setCosmetic(profile.cosmetic);
   const debug = new DebugOverlay(el('debug'), params.get('debug') === '1');
-  // `?debug=1` also leaves the world on window, for the screenshot scripts
-  if (params.get('debug') === '1') (window as unknown as { __world: World }).__world = world;
+  // `?debug=1` also leaves the world on window (the live one, after a new run too), for the screenshot scripts
+  if (params.get('debug') === '1') Object.defineProperty(window, '__world', { get: () => world });
 
   const feel = new Feel();
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -160,7 +159,6 @@ function boot(review: typeof import('./review') | null): void {
   // `?debug=1` also leaves the chart and the journey on window, for the screenshot scripts
   if (params.get('debug') === '1') (window as unknown as { __ui: unknown }).__ui = { chart, course, journey: () => journey };
   const ending = new EndingPanel();
-  const heatNote = new HeatNote();
   const jobDone = new JobDone();
   /** Jobs paid at a port, waiting for their pop-up (one at a time). */
   const jobsPaid: Array<Extract<GameEvent, { type: 'jobDone' }>> = [];
@@ -168,7 +166,7 @@ function boot(review: typeof import('./review') | null): void {
   const bay = new BayPanel();
   const padNav = new PadNav();
   let reported = false;
-  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || heatNote.open || jobDone.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
+  const panelOpen = () => cut.open || bay.open || comms.open || port.open || chart.open || course.open || ending.open || jobDone.open || world.phase === 'dock' || !el('summary').hidden || startOpts.logbookOpen;
   // the radio's calls ride along while the ship flies: answered by key or tap, banked in the journey like any card
   /** A call that asks for an answer holds the world still, like every other pop-up; it lets go when it is answered or lapses. */
   let callHold = false;
@@ -491,7 +489,6 @@ function boot(review: typeof import('./review') | null): void {
       else if (chart.open && journey) chart.padInput(p);
       else if (course.open) course.padInput(p);
       else if (jobDone.open) jobDone.padInput(p);
-      else if (heatNote.open) heatNote.padInput(p);
       else if (ending.open) ending.padInput(p);
       else summary.padInput(p);
     }
@@ -633,14 +630,12 @@ function boot(review: typeof import('./review') | null): void {
       const dt = loop.paused ? 0 : frameDt;
       const events = world.drain();
       if (world.tutor?.done && !profile.trained) { profile.trained = true; persist(profile); hud.note(world, t(world.tutor.skipped ? 'Training skipped' : 'Training complete · you are ready to fly')); }
-      // the Story explains the Heat bar once: when training is over (or there is none) and the opening chase is behind her, the first time flying free (out of the safe rings) with nothing else open;
-      // past Cerro, not before the hull is reported stolen, so it explains the pursuit as it starts
-      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && !world.bk.chase && !world.beforeReport && world.phase === 'play' && !world.safe && world.alive && !loop.paused && !panelOpen()) {
+      // the Story explains the Wanted bar once, as a hint line under the objective (no pop-up, owner 2026-10-31): when training is
+      // over and the opening chase is behind her, flying free; past Cerro, not before the hull is reported stolen
+      if (started && world.bk && !profile.heatTold && (!world.tutor || world.tutor.done) && !world.bk.chase && !world.beforeReport && world.phase === 'play' && !world.safe && world.alive) {
         profile.heatTold = true;
         persist(profile);
-        loop.paused = true;
-        input.reset();
-        heatNote.show(() => { loop.paused = false; input.reset(); });
+        hud.hint(world, t('Wanted rises while you fight or linger · bottom right'), 25);
       }
       // a kill lands harder for a beat of stillness (never with reduced motion)
       const hold = sector.react(events);

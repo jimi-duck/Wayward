@@ -443,7 +443,8 @@ describe('a sortie in the world', () => {
       // an open lane: the Net may already hold the first system at its pace
       delete j.chart.net[j.at];
       j.carry.hush = 600;
-      const w = new World(seed, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+      // as any later system: the first one past Cerro deals no toll, its story is enough
+      const w = new World(seed, { mode: 'breakout', sortie: { ...sortieDef(j), first: false }, carry: j.carry });
       w.cardNext = Infinity; w.portCalled = true; w.bk!.nextPursuit = Infinity;
       const b = w.bk!;
       w.ship.x = b.lane.x + 300; w.ship.z = b.lane.z; w.ship.vx = w.ship.vz = 0;

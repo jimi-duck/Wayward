@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ARC_END, CARD_AT, LOCK_AT, RenameReveal, SWEEP_END } from '../src/render/reveal';
+import { ARC_END, HOLD_END, LOCK_AT, RenameReveal, SWEEP_END } from '../src/render/reveal';
 import { CARD_BY_ID } from '../src/sim/comms';
 
 // The rename reveal is presentation only: the `ship_stolen` flag is the livery, and the reveal plays once, when the
@@ -23,7 +23,7 @@ describe('rename reveal', () => {
     expect(r.active).toBe(false);
   });
 
-  it('plays once when the lock lifts: grey, one sweep, the arc held under the card, then back', () => {
+  it('plays once when the lock lifts: grey, one sweep, the arc held on her flank, then back', () => {
     const r = new RenameReveal();
     run(r, 10, 11, { stolen: false });
     const a = run(r, 11, 11 + LOCK_AT - 0.05);
@@ -35,11 +35,11 @@ describe('rename reveal', () => {
     const c = run(r, 11 + SWEEP_END, 11 + ARC_END + 0.05);
     expect(c.last.livery).toBe(1);
     expect(c.last.arc).toBeCloseTo(1, 2);
-    // the registry card: the game pauses, the view holds
-    const d = run(r, 11 + CARD_AT, 11 + CARD_AT + 3, { paused: true });
+    // a pause (a menu) holds the view where it is
+    const d = run(r, 11 + ARC_END + 0.1, 11 + ARC_END + 3, { paused: true });
     expect(d.frames.every((f) => f.arc > 0.99)).toBe(true);
-    // answered: the camera comes back and the reveal ends, ochre
-    const e = run(r, 11 + CARD_AT, 11 + CARD_AT + 1.7);
+    // held a moment on her flank, then the camera comes back and the reveal ends, ochre; no card
+    const e = run(r, 11 + ARC_END + 0.1, 11 + HOLD_END + 1.7);
     expect(e.last).toEqual({ livery: 1, sweep: null, arc: 0 });
     expect(r.active).toBe(false);
     // it never plays again while the flag stays on
@@ -64,11 +64,12 @@ describe('rename reveal', () => {
     expect(last.arc).toBe(0);
   });
 
-  it('takes its time: a long, wide arc, and the registry card only once it has settled', () => {
+  it('takes its time: a long, wide arc, and no card over it (owner 2026-10-31)', () => {
     expect(ARC_END).toBeGreaterThanOrEqual(5);
-    expect(CARD_AT).toBeGreaterThan(ARC_END);
+    expect(HOLD_END).toBeGreaterThan(ARC_END);
     const sam = CARD_BY_ID.story_sam!.choices.find((c) => c.id === 'code')!;
-    expect(sam.win?.follow?.after).toBe(CARD_AT);
+    expect(sam.win?.follow?.quick).toBeFalsy();
+    expect(sam.win?.follow?.after).toBeGreaterThanOrEqual(20);
     // mid-arc the camera is still moving
     const r = new RenameReveal();
     run(r, 0, 1, { stolen: false });

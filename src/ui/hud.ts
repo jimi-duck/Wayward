@@ -22,7 +22,6 @@ import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
 import { lockLifted, refuelAt } from '../sim/postjump';
-import { BREACH_BEAT, SAM_BEAT, WAKE_BEAT } from '../content/story';
 import { recovering } from '../sim/recovery';
 import { wantedText } from './pressure';
 import { wantedPips } from '../sim/pressure';
@@ -184,6 +183,12 @@ export class Hud {
   }
 
   /** Put a line on the log. Kills of the same kind in a quick run add up on one line. */
+  /** A hint line under the objective (docs/DESIGN-GUIDELINES.md, "One voice at a time"): an explainer that never pauses, for `secs` of play. */
+  private hintLine: { text: string; until: number } | null = null;
+  hint(world: World, line: string, secs = 20): void {
+    this.hintLine = { text: line, until: world.runTime + secs };
+  }
+
   note(world: World, line: string, cls = '', kind = '', points = 0): void {
     const last = this.log[this.log.length - 1];
     if (kind && last && last.kind === kind && world.time - last.at < 1.6) {
@@ -218,12 +223,8 @@ export class Hud {
         case 'comms': this.note(world, `${t(e.slow ? 'Ambush' : 'Channel open')} · ${t(e.from)}`, e.slow ? 'hit' : undefined); break;
         case 'commsAnswer':
           this.note(world, t(e.text), e.won ? undefined : 'hit');
-          // Lane Control's status, as the recovery autopilot takes her (the owner, 23 October 2026)
-          if (e.id === BREACH_BEAT) this.notify(world, { type: 'warning', headline: 'Vessel flagged for recovery', reason: 'Controls locked · Recovery autopilot active', key: 'recovery' });
-          // the rename reveal's first beat (render/reveal.ts): Sam's code took, say so while the hull is still grey
-          if (e.id === SAM_BEAT && lockLifted(world.flags)) this.notify(world, { type: 'arrival', headline: 'Owner lock lifted', reason: 'Autopilot disabled', key: 'lock' });
-          // after the archive (sheet J): the new name is paint, not papers
-          if (e.id === WAKE_BEAT) this.notify(world, { type: 'warning', headline: 'Registry: Unregistered', reason: 'Repaint will not pass a scan.', key: 'registry' });
+          // the opening's notices (the lock lifted, the registry) are the cards' own Signals now, paced by the floor (sim/floor.ts);
+          // the recovery's status is the objective line
           break;
         case 'storyNotice': this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
         case 'jobDone':
@@ -256,7 +257,8 @@ export class Hud {
           break;
         case 'fitted':
           // the Work Bay's launcher (sheet C): brief, non-blocking, with this device's own control for it
-          if (e.id === 'tp_bay') this.notify(world, { type: 'arrival', headline: 'Torpedo launcher online', reason: deviceHint('torpedo'), key: 'fitted' });
+          // a hint line under the objective, not a notice: the work bay's card has just closed (one voice at a time)
+          if (e.id === 'tp_bay') this.hint(world, `${t('Torpedo launcher online')} · ${t(deviceHint('torpedo'))}`, 20);
           break;
         case 'gunsCold': {
           const reason = e.at === 'lane' ? 'Jump Gate generating a jamming field' : 'Supply hub generating a jamming field';
@@ -652,7 +654,8 @@ export class Hud {
       // the work order, live (sim/contract.ts): what is in the hold, and what the work bay has counted. Never one number for both.
       const cg = cargoOf(world);
       text($('obj-s'), cg ? cargoLine(cg) : '');
-      const html = `<li>${LESSON_HINT[les.hint]!.map(([c, k]) => `<span class="${c}">${t(k)}</span>`).join('')}</li>`;
+      const hint = this.hintLine && world.runTime < this.hintLine.until ? `<li><span class="hint">${this.hintLine.text}</span></li>` : '';
+      const html = `${hint}<li>${LESSON_HINT[les.hint]!.map(([c, k]) => `<span class="${c}">${t(k)}</span>`).join('')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
     } else if (bk && course) {
@@ -674,7 +677,8 @@ export class Hud {
         const aud = lockLifted(world.flags) ? undefined : world.seenPlaces().find((p) => p.kind === 'audit');
         const da = aud ? Math.hypot(aud.x - s.x, aud.z - s.z) : 0;
         if (aud) {
-          text($('obj-t'), t('Dock at the company port'));
+          // Lane Control has the helm (sim/recovery.ts): the objective says so, instead of a notice
+          text($('obj-t'), t(recovering(world.flags) ? 'Vessel flagged for recovery' : 'Dock at the company port'));
           text($('obj-left'), range(da));
           ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
         } else if (refuelAt(world)) {
@@ -689,8 +693,7 @@ export class Hud {
           text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
           ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         }
-        // Lane Control has the helm (sim/recovery.ts): the readout says so, and nothing counts down
-        text($('obj-s'), recovering(world.flags) ? t('Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
+        text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
         const lines: string[] = [];
         if (refuelAt(world)) {
           // two ways to fill it, on one line (a phone shows only the first): buy, or mine
@@ -698,6 +701,8 @@ export class Hud {
           lines.push(`${t('Buy fluid at {port}', { port: pt.name })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
         } else if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         if (world.storyObjective?.quiet) lines.push(world.storyObjective.quiet);
+        // first, so a phone (which shows one line) shows it while it lasts
+        if (this.hintLine && world.runTime < this.hintLine.until) lines.unshift(`<span class="hint">${this.hintLine.text}</span>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
         // a place asleep in the sky: off the course, there if the ship wants it
         if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);

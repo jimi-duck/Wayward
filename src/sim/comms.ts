@@ -182,6 +182,8 @@ export interface Outcome {
   hostile?: boolean;
   /** The opening ends here and starts again from the top (the raiders took the ship). */
   redo?: boolean;
+  /** A Signal (a short notice) the moment the card closes: what just changed, in a headline and a reason (sim/floor.ts). */
+  signal?: { tone: 'teal' | 'amber' | 'red'; headline: string; reason: string };
   /** Lines on the radio, no answer asked: one subtitle beat each, the first `delay` seconds of play after the answer. */
   radio?: { from: string; text: string | string[]; caller?: Caller; delay?: number; gap?: number };
   job?: JobDef;
@@ -265,6 +267,8 @@ export type GlassRole = 'cyan' | 'ochre' | 'red';
 
 export interface CardDef {
   id: string;
+  /** A Signal that goes out when the card is offered, so the player knows what is coming before it pauses the world. */
+  herald?: { headline: string; reason: string };
   /** One line, ten words at most: what is happening, for a glance. The panel derives one from the text when a card has none. */
   gist?: string;
   /** A ledger under the text: the opening's contract in numbers (sim/contract.ts). */

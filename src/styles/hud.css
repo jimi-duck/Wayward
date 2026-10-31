@@ -86,6 +86,8 @@ html.breakout #objective.course #obj-p { display: none; }
   font: 600 calc(var(--fs) * 1.15)/1.25 var(--font-rail); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-2); }
 #objective.course #obj-list:not(:empty) { display: grid; }
 #obj-list b { color: var(--cy); font-weight: 600; white-space: nowrap; }
+/* a hint line: an explainer that never pauses (ui/hud.ts hint), information teal */
+#obj-list .hint { color: var(--cy); }
 /* the threat worth a line: red, small, only while it is true */
 #obj-threat { margin: 0; display: flex; align-items: center; gap: 7px; font: 600 calc(var(--fs) * 1.2)/1.2 var(--font-rail); letter-spacing: .1em; text-transform: uppercase; color: var(--alert-text); }
 #obj-threat::before { content: ""; flex: none; width: 6px; height: 6px; background: currentColor; rotate: 45deg; }

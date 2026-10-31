@@ -33,7 +33,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { lockLifted, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
+import { DEPOT_LINE, lockLifted, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic } from './traffic';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
@@ -913,8 +913,8 @@ export class World implements EncounterHost {
         this.openComms((b.def.home && CARD_BY_ID.story_registry) || (b.def.checkpoint && CARD_BY_ID[b.def.checkpoint]) || CARD_BY_ID.checkpoint!);
       } else {
         b.blockade = 'done';
-        // an open lane's toll is not every jump's: a roll, and not on the heels of another call
-        const def = !b.def.quiet && !b.def.safe && this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
+        // an open lane's toll is not every jump's: a roll, and not on the heels of another call; none in the first system past Cerro, whose story is enough
+        const def = !b.def.quiet && !b.def.safe && !b.def.first && this.deskRng.next() < DESK.toll && this.desk.may('major', 'free', this.runTime) ? pickCard(this.commsCtx(), this.blocked(), this.rng, 'toll') : null;
         if (def) this.openComms(def);
       }
     }
@@ -1622,7 +1622,10 @@ export class World implements EncounterHost {
       const def = CARD_BY_ID[f!.card];
       if (def && !this.cardsSeen.has(def.id)) {
         if (f!.quick) this.openComms(def);
-        else d.offer(def, weightOf(def), t, false, def.trigger === 'story');
+        else {
+          if (def.herald) this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason });
+          d.offer(def, weightOf(def), t, false, def.trigger === 'story');
+        }
       }
     }
     // the stop's story script: its lines wait for a safe moment and never drop (sim/script.ts)
@@ -1642,9 +1645,14 @@ export class World implements EncounterHost {
     if (b.def.first && !this.docked) {
       const near = (p: { x: number; z: number } | null) => !!p && Math.hypot(s.x - p.x, s.z - p.z) < PORT_CALL;
       const hail = !this.portCalled && near(b.port) ? 'depot_hail' : !this.auditCalled && !lockLifted(this.flags) && near(b.audit) ? 'audit_hail' : null;
-      if (hail === 'depot_hail') this.portCalled = true;
-      else if (hail) this.auditCalled = true;
-      if (hail) d.offer(CARD_BY_ID[hail]!, 'major', t, true);
+      // the depot says so on the radio, no card (owner 2026-10-31): flying into its ring docks
+      if (hail === 'depot_hail') {
+        this.portCalled = true;
+        this.events.push({ type: 'ping', id: 'depot_hail', from: tr('Frontier Supply Depot'), caller: 'frontier', text: tr(DEPOT_LINE), moment: 'calm', system: b.def.name });
+      } else if (hail) {
+        this.auditCalled = true;
+        d.offer(CARD_BY_ID[hail]!, 'major', t, true);
+      }
     }
     // the port's approach calls once
     if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
@@ -1814,6 +1822,7 @@ export class World implements EncounterHost {
     for (const [k, v] of Object.entries(out.standing ?? {}) as Array<[Standing, number]>) this.standing[k] = (this.standing[k] ?? 0) + v;
     for (const [k, v] of Object.entries(out.notice ?? {}) as Array<[Faction, number]>) this.noticeDelta[k] = (this.noticeDelta[k] ?? 0) + v;
     if (out.follow) this.follows.push({ card: out.follow.card, at: this.runTime + out.follow.after, quick: out.follow.quick });
+    if (out.signal) this.events.push({ type: 'storyNotice', tone: out.signal.tone, headline: out.signal.headline, reason: out.signal.reason });
     if (out.radio) {
       const lines = [out.radio.text].flat();
       this.radioLines(`radio_${lines[0]!.slice(1, 12)}`, tr(out.radio.from), out.radio.caller ?? 'unknown', lines.map((l) => tr(l)), out.radio.delay ?? 0, out.radio.gap ?? RADIO_GAP);

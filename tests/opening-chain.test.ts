@@ -45,8 +45,7 @@ describe('the opening chain beyond the gate', () => {
     j.carry.seen.push('story_breach');
     expect(dueBeat(j)).toBe('story_sam');
     j.carry.seen.push('story_sam');
-    expect(dueBeat(j)).toBe('story_rename');
-    j.carry.seen.push('story_rename');
+    // no registry card any more (owner 2026-10-31): the code's notice says it, and the archive is next
     expect(dueBeat(j)).toBe('story_wake');
     j.carry.flags.push('archive_woke');
     expect(dueBeat(j)).not.toBe('story_wake');
@@ -55,11 +54,9 @@ describe('the opening chain beyond the gate', () => {
     const j = newJourney(7);
     j.trail.push('x');
     j.carry.seen.push('story_breach', 'story_sam', 'story_yard', 'story_recovery');
-    expect(dueBeat(j)).toBe('story_rename');
-    j.carry.seen.push('story_rename');
     expect(dueBeat(j)).toBe('story_wake');
   });
-  it('plays through in four cards', () => {
+  it('plays through in three cards', () => {
     const j = newJourney(7);
     j.trail.push('x');
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), story: 'story_breach', calloway: Infinity }, carry: j.carry });
@@ -68,15 +65,15 @@ describe('the opening chain beyond the gate', () => {
     const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
     const seen: string[] = [];
     run(4);
-    for (const answer of ['proceed', 'code', 'helm', 'lead']) {
+    for (const answer of ['proceed', 'code', 'lead']) {
       seen.push(w.comms!.def.id);
       // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
-      // Sam's card comes 2 km out from the dock; the rest a few seconds apart
+      // Sam's card comes 2 km out from the dock; the archive 20 s or more after his code
       run(95);
     }
-    expect(seen).toEqual(['story_breach', 'story_sam', 'story_rename', 'story_wake']);
+    expect(seen).toEqual(['story_breach', 'story_sam', 'story_wake']);
     expect(w.phase).toBe('play');
     const c = w.result().carry;
     expect(c.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'archive_woke', 'clue_reserves']));

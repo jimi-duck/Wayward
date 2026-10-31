@@ -114,13 +114,14 @@ export function woundPoints(): { points: V3[]; hard: boolean } {
 }
 
 /**
- * The paint, one switch for the whole hull (docs/ONBOARDING.md): weathered grey steel plate before the rename, worn ochre after it.
+ * The paint, one switch for the whole hull (docs/ONBOARDING.md): weathered grey steel plate before the rename, a dark, worn ochre after it.
  * The paint materials are shared, so this tints them in place; the geometry never changes. `setLivery` snaps, `setLiveryBlend` takes
  * 0 (grey) to 1 (ochre) so the rename can sweep it. Primer patches and the dark machinery stay as they are in both.
  */
 const LIVERY = {
-  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xdba92c, 0xb98420, 0xe6c150],
-  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.085, 0.056, 0],
+  // the repaint is a dull, dark ochre over old plate, done in a hurry (owner 2026-10-31: darker, more run down)
+  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xa48536, 0x7f652a, 0xb09444],
+  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.042, 0.028, 0.002],
 } as const;
 const A = new Color(), B = new Color();
 let liveryMix = 0;
@@ -133,6 +134,8 @@ export function setLiveryBlend(t: number): void {
     m.color.copy(A.setHex(LIVERY.stock[i]!).lerp(B.setHex(LIVERY.yellow[i]!), t));
     // the grey plate sits quiet in the sector's dim light; the repaint reads as paint
     m.emissive.setRGB(...(LIVERY.stockGlow.map((v, j) => v + (LIVERY.yellowGlow[j]! - v) * t) as [number, number, number]));
+    // the ochre is flatter and duller than the grey plate: cheap paint, no sheen
+    m.roughness = 0.62 + 0.16 * t;
   });
 }
 export function setLivery(yellow: boolean): void {
