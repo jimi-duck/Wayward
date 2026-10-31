@@ -12,7 +12,7 @@ import { capitalDesign, designFor } from './hulls';
 // shapes are built, and their occlusion baked, once a session; each sky only
 // re-skins them in its own haze and bakes the set into four draws.
 
-type Mats = { body: Material; mid: Material; dark: Material; lamp: Material; cold: Material; keys: Record<string, Material> };
+type Mats = { body: Material; mid: Material; dark: Material; lamp: Material; cold: Material; seam: Material; keys: Record<string, Material> };
 
 /** Bake every built work's parts into one mesh a material: hundreds of parts would be hundreds of draws, every frame, for things that never move. */
 function merged(all: Group): Group {
@@ -50,7 +50,9 @@ function materials(sky: Sky, grain: number): Mats {
   for (const m of [body, mid, dark]) m.fog = false;
   const lamp = new MeshBasicMaterial({ color: new Color(1.5, 1.05, 0.58), toneMapped: false, fog: false });
   const cold = new MeshBasicMaterial({ color: new Color(0.5, 0.16, 0.06), toneMapped: false, fog: false });
-  return { body, mid, dark, lamp, cold, keys: { body, mid, hull: mid, paint: body, patch: body, dark, trim: body, glow: cold, lamp, cold, crystal: dark, violet: dark } };
+  // the light in the joints of a thing nobody built: cold, pale, well under the bloom line
+  const seam = new MeshBasicMaterial({ color: sky.accent.clone().lerp(new Color(0.4, 0.75, 0.95), 0.6).multiplyScalar(0.7), toneMapped: false, fog: false });
+  return { body, mid, dark, lamp, cold, seam, keys: { body, mid, hull: mid, paint: body, patch: body, dark, trim: body, glow: cold, lamp, cold, seam, crystal: dark, violet: dark } };
 }
 
 /** Both sets for a sky: plain-unit builds (the station) and hull-unit builds (fleets, hulks). */
@@ -183,6 +185,124 @@ function hulkKit(): Kit {
   });
 }
 
+/** A broken orbital ring: an arc of a hoop that once went all the way round, snapped in three places, its sections drifting off true. */
+function brokenRingKit(): Kit {
+  return once('broken-ring', () => {
+    const k = new Kit(), rnd = seeded(2333);
+    const R = 120, N = 60;
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * Math.PI * 2;
+      // the gaps: whole sections gone
+      if ((i > 9 && i < 15) || (i > 31 && i < 34) || (i > 44 && i < 52)) continue;
+      // past each break the ring sags a little out of its plane, as the pieces drift apart
+      const sag = i > 34 && i < 45 ? (i - 34) * 0.9 : i >= 52 ? (i - 52) * 1.3 : 0;
+      const rot: V3 = [0, 0, a];
+      k.add('body', new BoxGeometry(7, 12.8, 9), onRing(a, R, 0, sag), rot);
+      k.add('dark', new BoxGeometry(2, 13.4, 3), onRing(a, R + 4, 0, sag), rot);
+      if (i % 5 === 0) k.add('mid', new BoxGeometry(3, 4, 22), onRing(a, R, 0, sag), rot);
+      // a few windows still lit on a timer, most dark
+      if (rnd() < 0.18) k.add('lamp', new BoxGeometry(0.3, 1.4, 0.8), onRing(a, R + 3.6, (rnd() - 0.5) * 6, sag), rot);
+    }
+    // the torn ends: spars and plating reaching into the gap
+    for (const a0 of [10, 15, 31, 34, 44, 52].map((i) => (i / N) * Math.PI * 2)) {
+      for (let j = 0; j < 4; j++) spar(k, 'dark', onRing(a0, R + (rnd() - 0.5) * 8, 0, 0), onRing(a0 + (rnd() - 0.5) * 0.12, R + (rnd() - 0.5) * 22, 0, (rnd() - 0.5) * 16), 0.9, 0.9);
+    }
+    // what came loose: plates and blocks strewn through the largest gap
+    for (let i = 0; i < 16; i++) {
+      const a = ((44 + rnd() * 8) / N) * Math.PI * 2;
+      k.add(i % 3 ? 'mid' : 'body', new BoxGeometry(2 + rnd() * 5, 2 + rnd() * 6, 2 + rnd() * 6), onRing(a, R + (rnd() - 0.5) * 30, 0, (rnd() - 0.5) * 30), [rnd() * 3, rnd() * 3, rnd() * 3]);
+    }
+    k.bakeOcclusion(3);
+    return k;
+  });
+}
+
+/** A dead relay: a dish on a truss, solar wings (one torn half away), a mast, one slow red-less lamp. */
+function relayKit(): Kit {
+  return once('relay', () => {
+    const k = new Kit(), rnd = seeded(2341);
+    k.cyl('body', 6, 6, 22, [0, 0, 0], 'y', 12);
+    k.cyl('mid', 7, 7, 2.4, [0, 6, 0], 'y', 12);
+    k.cyl('mid', 7, 7, 2.4, [0, -6, 0], 'y', 12);
+    // the dish: a shallow cone, and its feed horn on three struts
+    k.cyl('mid', 26, 6, 9, [0, 17, 0], 'y', 20, true);
+    k.cyl('dark', 6.5, 6.5, 1.5, [0, 12.5, 0], 'y', 12);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2;
+      spar(k, 'dark', [Math.cos(a) * 22, 21, Math.sin(a) * 22], [0, 38, 0], 0.7, 0.7);
+    }
+    k.box('dark', [2.4, 4, 2.4], [0, 38, 0]);
+    // wings: a truss, and panels on it; the far wing broken off half way, its last panels hanging
+    for (const side of [-1, 1]) {
+      spar(k, 'dark', [side * 6, -2, 0], [side * (side > 0 ? 74 : 40), -2, 0], 1.2, 1.2);
+      const n = side > 0 ? 6 : 3;
+      for (let p = 0; p < n; p++) k.add('body', new BoxGeometry(10, 0.5, 20), [side * (14 + p * 11), -2, 0], [0.04 * p * side, 0, 0]);
+    }
+    k.add('mid', new BoxGeometry(10, 0.5, 20), [-46, -8, 6], [0.9, 0.4, 0.5]);
+    k.add('mid', new BoxGeometry(10, 0.5, 20), [-58, -15, 3], [1.4, -0.2, 0.9]);
+    k.cyl('dark', 0.5, 0.8, 26, [0, -24, 0], 'y', 6);
+    k.box('lamp', [1.4, 1.4, 1.4], [0, -37, 0]);
+    for (let i = 0; i < 5; i++) k.add('dark', new BoxGeometry(1 + rnd() * 2, 1 + rnd() * 2, 1 + rnd() * 2), [-40 - rnd() * 30, -6 - rnd() * 20, (rnd() - 0.5) * 20], [rnd() * 3, rnd() * 3, rnd() * 3]);
+    k.bakeOcclusion(2);
+    return k;
+  });
+}
+
+/** A mining rig on a dead rock: the rock, a gantry clamped over it, a conveyor boom, ore cars, and a few work lamps left on. */
+function mineKit(): Kit {
+  return once('mine', () => {
+    const k = new Kit(), rnd = seeded(2357);
+    const rock = new IcosahedronGeometry(1, 2);
+    const p = rock.attributes.position!;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+      const n = 0.8 + 0.3 * Math.sin(x * 3.1 + z * 1.7) * Math.cos(y * 2.3 - x) + 0.1 * Math.sin(z * 9.0);
+      p.setXYZ(i, x * n, y * n * 0.85, z * n);
+    }
+    rock.computeVertexNormals();
+    k.add('dark', rock, [0, 0, 0], [0.3, 0.5, 0.1], [60, 50, 54]);
+    // the cut: a terraced pit face of slabs
+    for (let t = 0; t < 4; t++) k.add('mid', new BoxGeometry(34 - t * 6, 3, 12), [0, 40 - t * 5, 30 + t * 3], [0.3, 0, 0]);
+    // the gantry over the pit
+    for (const x of [-26, 26]) for (const z of [12, 48]) spar(k, 'dark', [x, 38, z], [x, 68, z], 2, 2);
+    for (const z of [12, 48]) spar(k, 'body', [-28, 68, z], [28, 68, z], 3, 4);
+    spar(k, 'body', [-28, 68, 12], [-28, 68, 48], 3, 4);
+    spar(k, 'body', [28, 68, 12], [28, 68, 48], 3, 4);
+    k.box('mid', [12, 8, 10], [8, 63, 30]);
+    // the boom and its conveyor out to a loading platform
+    spar(k, 'dark', [28, 66, 30], [120, 50, 40], 2.4, 3);
+    k.box('body', [26, 4, 20], [126, 48, 40]);
+    for (let i = 0; i < 5; i++) k.box(i % 2 ? 'mid' : 'body', [5, 4, 7], [114 + i * 6, 52, 40 + (rnd() - 0.5) * 6]);
+    // work lamps, a handful
+    for (const at of [[-26, 70, 12], [26, 70, 48], [8, 68, 30], [126, 51, 32], [70, 60, 35]] as V3[]) k.box('lamp', [1.6, 1.6, 1.6], at);
+    k.bakeOcclusion(3);
+    return k;
+  });
+}
+
+/** Something nobody built, or nobody who lived: a cluster of tall dark facets, cold light in the joints, leaning together. */
+function spireKit(): Kit {
+  return once('spire', () => {
+    const k = new Kit(), rnd = seeded(2371);
+    for (let i = 0; i < 7; i++) {
+      const h = 60 + rnd() * 110, w = 6 + rnd() * 9, a = (i / 7) * Math.PI * 2 + rnd() * 0.4, r = i === 0 ? 0 : 10 + rnd() * 14;
+      const lean: V3 = [Math.sin(a) * 0.18 * (r / 24), 0, -Math.cos(a) * 0.18 * (r / 24)];
+      const shard = new CylinderGeometry(0.15, 1, 1, 5, 1);
+      k.add('dark', shard, [Math.cos(a) * r, h / 2, Math.sin(a) * r], lean, [w, h, w * 0.8]);
+      // the seam: a thin line of light up one edge
+      k.add('seam', new BoxGeometry(0.5, h * 0.7, 0.5), [Math.cos(a) * (r + w * 0.55), h * 0.4, Math.sin(a) * (r + w * 0.5)], lean);
+    }
+    // a slow-turning shard above it, off true, and a ring of fallen pieces at its foot
+    k.add('dark', new CylinderGeometry(0.1, 1, 1, 4, 1), [4, 205, -3], [2.6, 0.3, 0.4], [10, 34, 8]);
+    for (let i = 0; i < 12; i++) {
+      const a = rnd() * Math.PI * 2, r = 34 + rnd() * 24;
+      k.add('dark', new CylinderGeometry(0.2, 1, 1, 5, 1), [Math.cos(a) * r, rnd() * 8, Math.sin(a) * r], [1.4 + rnd(), rnd() * 3, rnd()], [4 + rnd() * 3, 10 + rnd() * 20, 4]);
+    }
+    k.bakeOcclusion(4);
+    return k;
+  });
+}
+
 // ── the works ─────────────────────────────────────────────────────────────
 function ringStation(m: Skins, rnd: () => number): Group {
   const g = once('station', stationKit).build(m.station.keys);
@@ -216,22 +336,60 @@ function hulk(m: Skins, rnd: () => number): Group {
   return g;
 }
 
-/** One far work by index (0 ring station, 1 fleet, 2 hulk), merged, at the origin: the bench's way to look at one. */
+function brokenRing(m: Skins, rnd: () => number): Group {
+  const g = brokenRingKit().build(m.station.keys);
+  g.rotation.set(1.2 + rnd() * 0.3, rnd() * 0.8, rnd() * 6);
+  return g;
+}
+
+function relay(m: Skins, rnd: () => number): Group {
+  const g = relayKit().build(m.station.keys);
+  g.rotation.set(0.4 + rnd() * 0.5, rnd() * 6, 0.3 + rnd() * 0.4);
+  g.scale.setScalar(0.7);
+  return g;
+}
+
+function mine(m: Skins, rnd: () => number): Group {
+  const g = mineKit().build(m.station.keys);
+  g.rotation.set(0.2, rnd() * 6, 0.1);
+  g.scale.setScalar(0.6);
+  return g;
+}
+
+function spire(m: Skins, rnd: () => number): Group {
+  const g = spireKit().build(m.station.keys);
+  g.rotation.set(0.15, rnd() * 6, -0.1);
+  return g;
+}
+
+const MAKERS = [ringStation, fleet, hulk, brokenRing, relay, mine, spire];
+/** The names of the works, by index, for the bench. */
+export const FAR_WORKS = ['station', 'fleet', 'hulk', 'broken ring', 'relay', 'mine', 'spire'] as const;
+
+/** One far work by index (see FAR_WORKS), merged, at the origin: the bench's way to look at one. */
 export function farWork(sky: Sky, which: number): Group {
   const rnd = seeded(sky.seed * 7 + 3 + which);
-  return merged([ringStation, fleet, hulk][which % 3]!(skins(sky), rnd));
+  return merged(MAKERS[which % MAKERS.length]!(skins(sky), rnd));
 }
+
+/**
+ * Which works a palette leans to (indices into MAKERS). Each region tells its own story at the horizon: the Reach has
+ * its stations and relays, the Breaker Yards their wrecks, the Hollows the thing nobody built. The rest draw from all.
+ */
+const LEAN: Record<number, number[]> = {
+  0: [0, 4, 1, 3], 1: [3, 5, 2, 4], 2: [6, 2, 3], 5: [5, 2, 3, 4], 6: [2, 4, 6], 7: [2, 1, 3, 5], 8: [0, 5, 4, 1], 9: [6, 3, 2],
+};
 
 /** One or two far works for a sky, set on the sphere of radius `D`, away from the planet. */
 export function farWorks(sky: Sky, D: number): Group {
   const all = new Group();
   const rnd = seeded(sky.seed * 7 + 3);
   const m = skins(sky);
-  const makers = [ringStation, fleet, hulk];
+  const pool = LEAN[sky.palette ?? -1] ?? [0, 1, 2, 3, 4, 5, 6];
   const n = 2;
-  const start = Math.floor(rnd() * makers.length);
+  const start = Math.floor(rnd() * pool.length);
   for (let i = 0; i < n; i++) {
-    const work = makers[(start + i) % makers.length]!(m, rnd);
+    const work = MAKERS[pool[(start + i) % pool.length]!]!(m, rnd);
     const avoid = sky.planet ? sky.planet.az : 0;
     const az = avoid + 70 + rnd() * 100 + i * 120, el = -4 + rnd() * 16;
     work.position.copy(dirOf(az, el).multiplyScalar(D * (0.7 + rnd() * 0.15)));

@@ -170,6 +170,7 @@ export class Sector {
     this.post = new Post(this.renderer, this.scene, this.rig.camera, tier);
     this.fx.setLights(tier.name !== 'low');
     this.env.setShadow(tier.shadow);
+    this.env.setDetail(tier.name === 'low');
     this.warp.setDetail(tier.name === 'low');
     this.debris.setCount(tier.debris);
   }
@@ -516,6 +517,7 @@ export class Sector {
       this.fx.burst(s.x + Math.cos(a) * 0.9, 0.5, s.z - Math.sin(a) * 0.9, 3, SHIELD, 3, 0.12, 0.35);
     }
     this.fx.update(dt);
+    this.env.motion = !this.reduceMotion;
     this.env.update(this.rig.camera, this.rig.target.x, this.rig.target.z, s.vx, s.vz, dt);
     this.debris.update(this.rig.target.x, this.rig.target.z, dt);
     // the weather: a nebula thickens the fog; an ion storm flickers
