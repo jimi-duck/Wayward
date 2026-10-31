@@ -407,7 +407,7 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'grandmother', label: 'She was my grandmother', tone: 'help', hint: 'Your family only ever said she was lost in service.',
         win: { text: 'Ada Aster · the archive has a name', flag: 'ada_named',
-          radio: { from: 'Ilse Marrow', caller: 'miners', delay: 0.8, text: '“Lost in service. That’s what they told your family. It’s all they told anyone. Go to the Narrows. Ada left it listening.”' } } },
+          radio: { from: 'Ilse Marrow', caller: 'miners', delay: 0.8, text: '“Lost in service. That’s all they told your family, or anyone. Go to the Narrows. Ada left it listening.”' } } },
     ],
   }),
   story({

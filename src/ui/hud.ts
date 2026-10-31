@@ -703,6 +703,9 @@ export class Hud {
         if (world.storyObjective?.quiet) lines.push(world.storyObjective.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
         if (this.hintLine && world.runTime < this.hintLine.until) lines.unshift(`<span class="hint">${this.hintLine.text}</span>`);
+        // Custody's pursuit, once it is a day or less behind: a readout, never a notice (caution gold, then threat red)
+        const pd = world.pursuitDays;
+        if (pd <= 1) lines.push(`<span class="${pd <= 0.5 ? 'threat' : 'caution'}">${t(pd <= 0.5 ? 'Custody pursuit · half a day behind' : 'Custody pursuit · 1 day behind')}</span>`);
         for (const j of world.jobs) lines.push(`${t('Job')} · ${t(j.text)}`);
         // a place asleep in the sky: off the course, there if the ship wants it
         if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);

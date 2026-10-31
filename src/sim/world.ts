@@ -1558,6 +1558,13 @@ export class World implements EncounterHost {
     return busy === 'free' && !this.call && !this.comms && !this.floor.busy(t) && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || this.holdAt < Infinity) && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
   }
 
+  /** Days until Custody's pursuit is here, in half days (Infinity off the road, in the first system past Cerro, at a breather, or with no pursuit): the HUD's readout. */
+  get pursuitDays(): number {
+    const b = this.bk;
+    if (!b || !this.script || b.def.first || b.def.quiet) return Infinity;
+    return Math.max(0, halfDays((this.sortie.calloway ?? Infinity) / DAY_SECONDS - this.runTime / DAY_SECONDS));
+  }
+
   private scriptCtx(busy: Busy, t: number) {
     const b = this.bk!, s = this.ship;
     const sites: Record<string, { x: number; z: number } | null> = { gate: b.lane, port: b.port, audit: b.audit, relay: relayOf(b) };
@@ -1677,8 +1684,10 @@ export class World implements EncounterHost {
         }
       }
     }
-    // the radio: a line, no answer. A card on the table has the screen.
-    if (!this.call && !this.script?.waiting()) {
+    // the radio: a line, no answer. A card on the table has the screen. Filler (chatter, the weather desk, traffic advisories)
+    // only once the first chapter is over: never in Cerro or the first system, and on the road not before the Narrows
+    const filler = !b.def.home && !b.def.first && (!this.flags.has(ON_ROAD) || this.flags.has('sam_silent'));
+    if (filler && !this.call && !this.script?.waiting()) {
       const m = d.pingFor(busy, t, this.deskRng);
       if (m) this.say(m);
     }
