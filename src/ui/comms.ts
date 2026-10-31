@@ -144,7 +144,17 @@ export interface SheetPanel {
 
 /** The opening's sheets (docs/DESIGN-GUIDELINES.md): a main panel, maybe a second one beside it, and an optional document. */
 export interface SheetView {
-  main: SheetPanel & { hero: [string, string] | null; rows: Row[]; note: string; letter: { head: Array<[string, string]>; sign: string } | null };
+  /**
+   * Which of the card templates draws it (docs/DESIGN-GUIDELINES.md, one voice at a time): `sheet` is an opening sheet as
+   * designed (A–J), `channel` a person speaking (face, name and role over their words), `decision` a situation to answer
+   * (title and one line of context). Both templates give every answer one consequence line and at most two chips.
+   */
+  tpl: 'sheet' | 'channel' | 'decision';
+  main: SheetPanel & { hero: [string, string] | null; rows: Row[]; note: string; letter: { head: Array<[string, string]>; sign: string } | null;
+    /** The speaker on a channel: name and role, from `from`. */
+    who: { name: string; role: string } | null };
+  /** An ambush: a draining bar under the header (the world is slowed, not stopped). */
+  timer: boolean;
   side: SheetPanel | null;
   /** The document behind the card: the row that opens it (after `at` rows, or as a numbered row), and what it shows. */
   doc: { open: string; at: number; row: boolean; kick: string; title: string; sub: string; rows: Row[]; note: string[]; label: string } | null;
@@ -155,8 +165,9 @@ function sheetView(d: Open['def'], o: Open): SheetView {
   const lines = o.text.split('\n').map((l) => l.trim()).filter(Boolean);
   const side = d.side;
   return {
+    tpl: 'sheet', timer: false,
     main: {
-      role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role,
+      who: null, role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role,
       title: d.notitle || d.hero ? '' : t(d.title), sub: d.quote ? '' : lines.join(' '), label: '', lines: d.quote ? lines : [],
       hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '', rx: d.rx ?? null,
       letter: d.letter ? { head: d.letter.head.map(([k, v]) => [t(k), t(v)] as [string, string]), sign: t(d.letter.sign) } : null,
@@ -170,6 +181,41 @@ function sheetView(d: Open['def'], o: Open): SheetView {
       sub: d.doc.sub ? t(d.doc.sub) : '', rows: rowsOf(o.doc), label: d.doc.label ? t(d.doc.label) : '',
       note: (d.doc.note ? t(d.doc.note) : '').split('\n').map((l) => l.trim()).filter(Boolean),
     } : null,
+  };
+}
+
+/** Wrap a spoken line in quotes, unless it has them. */
+const quoted = (l: string) => (/^[“"„‘']/.test(l) ? l : `“${l}”`);
+
+/**
+ * Every other card in one of two templates (docs/DESIGN-GUIDELINES.md): a channel when a person with a face is speaking,
+ * a decision otherwise. Red when someone means harm; the read (strength, intent) is two rows, never prose.
+ */
+function templateView(d: Open['def'], o: Open, place: string): SheetView {
+  const hostile = HOSTILE.has(d.kind) || d.caller === 'calloway' || o.slow > 0;
+  const role: GlassRole = hostile ? 'red' : 'cyan';
+  const art = artOf(d);
+  const channel = !!(art.portrait || d.face);
+  const lines = o.text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const [name = '', ...what] = t(d.from).split(' · ');
+  const r = o.read;
+  const read: Row[] = [
+    ...(d.ships?.length ? [{ k: t('Strength'), v: t('Them {a} · You {b}', { a: r.them.toFixed(0), b: r.you.toFixed(0) }), tone: r.them > r.you ? 'bad' : '' }] : []),
+    ...(d.truths?.length ? [{ k: t('Intent'), v: t(r.intent), tone: '' }] : []),
+  ];
+  const status = t(o.slow > 0 ? 'Ambush · act now' : hostile ? 'Hostile' : KIND_WORD[d.kind] ?? d.kind);
+  return {
+    tpl: channel ? 'channel' : 'decision', timer: o.slow > 0,
+    main: {
+      role, status, dot: role, label: '', rx: null, hero: null, letter: null, note: o.more.join(' '),
+      from: channel ? [t('Channel'), place].filter(Boolean).join(' · ') : t(d.from),
+      who: channel ? { name, role: what.join(' · ') } : null,
+      title: channel ? '' : t(d.title),
+      sub: channel ? '' : lines.join(' '),
+      lines: channel ? lines.map(quoted) : [],
+      rows: [...rowsOf(o.ledger), ...read],
+    },
+    side: null, doc: null,
   };
 }
 
@@ -219,7 +265,7 @@ function mark(cls: string): SVGSVGElement {
 const wave = () => { const i = h('i', 'tx-wave'); i.setAttribute('aria-hidden', 'true'); return i; };
 
 /** A card on the table, as the panel draws it. */
-export function cardView(o: Open): CommsView {
+export function cardView(o: Open, place = ''): CommsView {
   const d = o.def, r = o.read;
   return {
     kick: t(o.slow > 0 ? 'Ambush · act now' : KIND_WORD[d.kind] ?? d.kind),
@@ -230,7 +276,7 @@ export function cardView(o: Open): CommsView {
     gist: glanceLine(gistOf(d, o.text), t(d.title), o.text),
     ledger: rowsOf(o.ledger),
     reg: d.layout === 'registry' ? regView(d, o) : null,
-    sheet: d.glass && d.layout !== 'registry' ? sheetView(d, o) : null,
+    sheet: d.layout === 'registry' ? null : d.glass ? sheetView(d, o) : templateView(d, o, place),
     text: o.text,
     more: o.more.join(' '),
     // the read: strength as two bars, and the one line that matters (the
@@ -275,6 +321,22 @@ export function hailView(c: Contact): CommsView {
 const THREAT = /^(Fight|Hostiles|Run the blockade|Calloway fights|Calloway chases|Calloway closer|Net spreads|Wanted ↑)$/;
 /** A chip's colour: red for trouble, amber for what it takes (like a cost), teal for what you get. */
 const gainClass = (g: string) => (THREAT.test(g) ? 'g-threat' : /^−/.test(g) ? 'g-loss' : 'g-gain');
+
+/** A template answer's chips, two at most: what it takes, then what it brings (trouble first); or what it still needs. */
+export function chipsOf(c: CommsChoice): Array<[string, string]> {
+  if (!c.ok) return c.needs.slice(0, 1).map((n) => [n, 'warn']);
+  const costs = c.tags.filter((x) => /^−/.test(x)).map((x): [string, string] => [x, 'warn']);
+  const gains = c.gains.filter((g) => plain(t(g)) !== plain(c.label))
+    .map((g): [string, string] => [t(g), /^(Fight|Hostiles)$/.test(g) ? 'warn' : gainClass(g) === 'g-threat' ? 'bad' : gainClass(g) === 'g-loss' ? 'warn' : ''])
+    .sort((a, b) => (b[1] === 'bad' ? 1 : 0) - (a[1] === 'bad' ? 1 : 0));
+  return [...costs, ...gains].slice(0, 2);
+}
+
+/** A template answer's one consequence line: its sentence, and the odds (or the kind of risk) after it. */
+export function consequenceOf(c: CommsChoice): string {
+  const odds = c.risk || c.tags.find((x) => !/^−/.test(x)) || '';
+  return [c.hint, c.ok ? odds : ''].filter(Boolean).join(' · ');
+}
 
 /** How long a closed card fades before it is gone. */
 const FADE_MS = 150;
@@ -449,16 +511,35 @@ export class CommsPanel {
     const main = rows(m.rows);
     if (opener && !d!.row) main.splice(Math.min(d!.at, main.length), 0, opener);
     // the answers first in the reading order, the document's row after them; the first answer is where the selection starts
+    const tpl = sv.tpl !== 'sheet';
     const acts = view.choices.map((c, i) => {
+      if (tpl) {
+        // a template's answer: the label, one consequence line, and at most two chips at the right
+        const line = consequenceOf(c), chips = chipsOf(c);
+        const b = item(h('button', `ng-n ns-c tpl${c.tone === 'fight' ? ' red' : ''}${c.ok ? '' : ' off'}`, '', h('kbd', '', String(i + 1).padStart(2, '0')),
+          h('span', 'ns-cb', '', h('span', 'ns-l', c.label), line ? h('span', 'ns-hint', line) : null),
+          chips.length ? h('span', 'ns-chips', '', ...chips.map(([x, k]) => h('i', `ns-chip${k ? ` ${k}` : ''}`, x))) : null), () => this.pick(i), i + 1);
+        b.setAttribute('aria-disabled', String(!c.ok));
+        return b;
+      }
       const tone = c.tone === 'fight' ? ' red' : m.role === 'cyan' ? '' : ` ${m.role}`;
       return item(h('button', `ng-n ns-c${tone}`, '', h('kbd', '', String(i + 1).padStart(2, '0')),
         h('span', 'ns-cb', '', h('span', 'ns-l', c.label), c.hint ? h('span', 'ns-hint', c.hint) : null)), () => this.pick(i), i + 1);
     });
-    const panel = h('section', `ng ${m.role} ns-p ns-main`, '',
+    // a channel's speaker: their face (a painted portrait, else the drawn one), name and role
+    const pslot = view.art.portrait;
+    const pic = pslot ? (view.art.scarred && artImg(pslot[0], `${pslot[1]}-scarred`, 'ns-face')) || artImg(pslot[0], pslot[1], 'ns-face') : null;
+    const face = pic ?? (view.face ? h('span', 'ns-face drawn') : null);
+    if (face && !pic) face.innerHTML = view.face!;
+    const who = m.who ? h('div', `ns-who${face ? '' : ' bare'}`, '', face, h('div', '', '', h('b', '', m.who.name), m.who.role ? h('span', '', m.who.role) : null)) : null;
+    const timer = sv.timer ? h('div', 'ns-timer', '', h('i')) : null;
+    const panel = h('section', `ng ${m.role} ns-p ns-main${tpl ? ` ns-${sv.tpl}` : ''}`, '',
       head(m),
+      timer,
+      who,
       m.hero ? h('div', 'ns-hero', '', h('b', '', m.hero[0]), h('span', '', m.hero[1])) : null,
       m.title ? h('h2', 'ns-t', m.title) : null,
-      m.sub ? h('p', 'ns-sub', m.sub) : null,
+      m.sub ? h('p', tpl ? 'ns-sub ns-ctx' : 'ns-sub', m.sub) : null,
       // a written message: who it is for and from, then the writer's own paragraphs and sign-off
       ...(m.letter ? [
         h('dl', 'ns-mail', '', ...m.letter.head.map(([k, v]) => h('div', '', '', h('dt', '', k), h('dd', '', v)))),
@@ -472,7 +553,7 @@ export class CommsPanel {
       sd.title ? h('h2', 'ns-t', sd.title) : null, sd.sub ? h('p', 'ns-sub', sd.sub) : null,
       sd.label ? h('p', 'ns-label', sd.label) : null, quotes(sd.lines)) : null;
     // a voice on the radio sits beside the card, to its left; a status line sits under it
-    const lay = sd ? (sd.title ? 'row' : 'col') : 'one';
+    const lay = sd ? (sd.title ? 'row' : 'col') : tpl ? 'col' : 'one';
     $('cm-ng').dataset.lay = lay;
     $('cm-ng').replaceChildren(...(lay === 'row' ? [side!, panel] : [h('div', 'ns-stack', '', panel, side)]));
     // the arrows walk the actions in reading order; the selection starts on the first answer
@@ -526,6 +607,8 @@ export class CommsPanel {
 
   /** The ambush's bar: the share of its time left (0 hides it). */
   timer(left: number): void {
+    const ns = $('cm-ng').querySelector<HTMLElement>('.ns-timer i');
+    if (ns) ns.style.width = `${Math.min(1, Math.max(0, left)) * 100}%`;
     const bar = $('cm-timer');
     bar.hidden = left <= 0;
     if (left > 0) (bar.firstElementChild as HTMLElement).style.width = `${Math.min(1, left) * 100}%`;

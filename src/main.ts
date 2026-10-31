@@ -439,7 +439,7 @@ function boot(review: typeof import('./review') | null): void {
     } else if (world.phase === 'comms' && world.comms && !comms.open) {
       input.reset();
       shown = world.comms;
-      comms.show(cardView(world.comms), (i) => {
+      comms.show(cardView(world.comms, world.bk?.def.name ? t(world.bk.def.name) : ''), (i) => {
         // the answer is banked in the journey now, so a closed tab does not take it back
         const before = world.carry();
         world.answer(i);

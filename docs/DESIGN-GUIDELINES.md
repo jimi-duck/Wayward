@@ -30,6 +30,23 @@ is one of four kinds.
   chapter is over.
 - `tests/floor.test.ts` and `tests/caps.test.ts` hold these.
 
+A Moment is drawn in one of three templates (`ui/comms.ts`), all Neon Glass:
+
+- **Document**: a written message. A mail head (To, From, Kept in), the
+  writer's paragraphs and sign-off, one action. The archive and Ada's notes.
+- **Channel**: a person speaking. Their face, name and role, then their
+  words in quotes. Any card from someone with a portrait.
+- **Decision**: a situation. A title and one line of context, the read
+  (strength, intent) as rows. Red when someone means harm; an ambush drains a
+  thin bar under the header.
+
+Every answer on a Channel or Decision has one consequence line (its sentence,
+then the odds or the risk) and at most two chips at its right: what it takes,
+then what it brings, trouble first. An answer the ship cannot give yet is
+dimmed, with what it needs as its chip. A Signal is always the one alert
+plate (`ui/notify.ts`). The opening's sheets (A to J) keep their own layout,
+and a job offer keeps its approved card.
+
 ## The look in one line
 
 Clean code edges on an Apple-glass body: a dark teal glass that blurs the

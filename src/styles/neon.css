@@ -112,7 +112,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 .ns-h { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(var(--halo), .4); }
 #comms .ns-h .tx-wave { width: 22px; height: 10px; background: var(--rim); opacity: .85; }
 .ns-from { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 13px/1.2 var(--font-rail); letter-spacing: .22em; text-transform: uppercase; color: var(--ink-2); }
-.ns-st { display: inline-flex; align-items: center; gap: 7px; font: 600 12px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--rim); }
+.ns-st { white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; font: 600 12px/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--rim); }
 .ns-st::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 4px currentColor; }
 .ns-st.cyan { color: var(--teal-bright); }
 .ns-st.ochre { color: var(--ochre); }
@@ -673,3 +673,37 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 #crash h2 { margin: 0 0 8px; font: 600 22px/1.2 'Barlow Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
 #crash p { margin: 0 0 18px; color: var(--ink); }
 #crash button { min-height: 44px; padding: 8px 28px; }
+
+/* ── the card templates (one voice at a time; docs/DESIGN-GUIDELINES.md) ─────────────────────────────
+   Channel: a person speaking, their face beside name and role, then their words. Decision: a title and one line of
+   context. Every answer has one consequence line and at most two chips at its right; an answer the ship cannot give
+   yet is dimmed, with what it needs as its chip. An ambush drains a thin bar under the header. */
+.ns-who { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px; align-items: center; }
+.ns-who.bare { grid-template-columns: minmax(0, 1fr); }
+.ns-face { display: block; width: 64px; height: 64px; object-fit: cover; border: 1px solid rgba(var(--halo), .6); clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+.ns-face.drawn svg { display: block; width: 100%; height: 100%; }
+.ns-who b { display: block; font: 700 18px/1.15 var(--font-head); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-hi); }
+.ns-who span { font: 600 12px/1.3 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+.ns-ctx { margin: 0; font-size: 17px; color: var(--ink-body); }
+.ns-c.tpl { grid-template-columns: 34px minmax(0, 1fr) auto; }
+.ns-c.tpl.off { opacity: .55; }
+.ns-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.ns-chip { font: 400 12px/1 var(--font-mono); font-style: normal; letter-spacing: .08em; text-transform: uppercase; padding: 5px 7px; border: 1px solid rgba(var(--teal-hi-rgb), .6); color: var(--teal-bright); white-space: nowrap; }
+.ns-chip.bad { border-color: rgba(var(--alert-red-rgb), .7); color: var(--alert-text); }
+.ns-chip.warn { border-color: var(--caution-dim); color: var(--caution); }
+.ns-timer { height: 2px; margin-top: -8px; background: rgba(var(--alert-red-rgb), .2); }
+.ns-timer i { display: block; height: 100%; width: 100%; background: var(--alert-text); }
+.ns-who + .ns-q { padding-top: 2px; }
+.ns-channel .ns-rows, .ns-decision .ns-rows { padding-top: 4px; }
+@media (max-height: 520px) {
+  .ns-who { grid-template-columns: 40px minmax(0, 1fr); gap: 10px; }
+  .ns-face { width: 40px; height: 40px; }
+  .ns-who b { font-size: 14px; }
+  .ns-who span { font-size: 10px; letter-spacing: .14em; }
+  .ns-ctx { font-size: 13.5px; line-height: 1.25; }
+  .ns-c.tpl { grid-template-columns: 26px minmax(0, 1fr) auto; }
+  .ns-chip { font-size: 10px; padding: 3px 5px; }
+  .ns-timer { margin-top: -4px; }
+}
+/* a long need wraps inside its chip rather than squeezing the answer */
+.ns-c.tpl .ns-chip { white-space: normal; max-width: 13em; line-height: 1.25; text-align: center; }
