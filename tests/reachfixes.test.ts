@@ -97,3 +97,26 @@ describe('arriving in a system on the road', () => {
     expect(order.indexOf('marker')).toBeGreaterThan(order.indexOf('call'));
   });
 });
+
+describe('a road gate after the Warden key', () => {
+  it('says the gate is resetting while it holds, then that it is open', () => {
+    const j = at(17);
+    j.carry.fuel = 40;
+    const w = new World(5, { mode: 'breakout', sortie: { ...quiet(j), blockade: false }, carry: j.carry });
+    const notices: string[] = [];
+    for (let i = 0; i < 240 / STEP; i++) {
+      if (i === 5) { w.ship.x = w.bk!.lane.x; w.ship.z = w.bk!.lane.z + 60; }
+      w.ship.invuln = 99;
+      w.step(STEP, NO);
+      for (const e of w.events) if (e.type === 'storyNotice') notices.push(e.headline);
+      w.events.length = 0;
+      const open = w.comms ?? w.call;
+      if (open) w.answer(open.def.choices[0]!.id);
+      if (w.bk!.jumpT >= 0) break;
+    }
+    expect(notices).toContain('Warden key accepted');
+    const reset = notices.indexOf('Jump Gate resetting');
+    expect(reset).toBeGreaterThan(notices.indexOf('Warden key accepted'));
+    expect(notices.indexOf('Jump Gate open')).toBeGreaterThan(reset);
+  });
+});
