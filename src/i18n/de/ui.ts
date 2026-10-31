@@ -718,4 +718,8 @@ export const UI: Record<string, string> = {
   'Ahead': 'Voraus',
   'Behind': 'Hinten',
   'Inside': 'Drin',
+  // ── the card templates ──
+  'Channel': 'Kanal',
+  'Strength': 'Stärke',
+  'Them {a} · You {b}': 'Gegner {a} · Du {b}',
 };
