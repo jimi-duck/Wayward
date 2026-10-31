@@ -304,6 +304,7 @@ next one (`World.restart` with a `SortieDef` and the `Carry`).
 | Self-repair (arcade) | `SELF_REPAIR` in `sim/repair.ts`; `repair*` in `Stats` | `stepMend` from `World.tick`, the hull row and mode card in `ui/hud.ts` |
 | Sector events | `ENCOUNTERS` in `sim/encounters.ts` | `startEncounter` / `stepEncounter` |
 | Comms cards | `CARDS`, `FLAGS` in `content/cards.ts` | `sim/comms.ts` (picking, the read, earned choices, resolving), `World.stepComms` / `answer` / `applyOutcome`, `ui/comms.ts` |
+| One voice at a time: radio lines and notices take turns, quiet after a card | `FLOOR` in `sim/floor.ts` | `Floor`, `World.speak`; `tests/floor.test.ts` |
 | Story communications: weights, pacing, calls, radio | `DESK` in `sim/desk.ts`, `CHATTER` in `content/chatter.ts`, `tier` on a card | `Desk`, `weightOf`, `World.stepComms` / `openCall`, `ui/radio.ts`; see [COMMS.md](COMMS.md) |
 | Missions: optional jobs (destroy, strike, defend, race, survey, sneak) | `MISSIONS` and `MISSION_CARDS` in `content/missions.ts`, `Goal.kind` in `content/situations.ts` | `Run` in `sim/mission.ts`, played by `Stage` (`sim/stage.ts`), drawn in `render/site.ts`; see [MISSIONS.md](MISSIONS.md) |
 | The first system past Cerro: its places, ambient traffic, guards | `postJump()` in `sim/postjump.ts`, `ROUTES` in `sim/traffic.ts`, the three hulls in `VARIANTS` | `Traffic` (`sim/traffic.ts`), `guideTarget` (`sim/guide.ts`), drawn in `render/breakout.ts` (`buildAudit`) and `render/sky.ts` (`industrial`); see [POSTJUMP.md](POSTJUMP.md) |

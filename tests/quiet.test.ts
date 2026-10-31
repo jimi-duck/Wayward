@@ -24,11 +24,13 @@ function inFirstSystem(seed = 7): Journey {
   return j;
 }
 
-/** Fly a sortie with the ship idle: whether any hostile came, whether a card or hail stopped the world, and the heat at the end. */
+/** Fly a sortie with the ship idle (and unhurt): whether any hostile came, whether a card or hail stopped the world, and the heat at the end. */
 function fly(j: Journey, seconds: number) {
   const w = new World(j.seed * 31 + 1, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
   let hostiles = 0, stopped = 0;
   for (let i = 0; i < Math.round(seconds / STEP); i++) {
+    // kept alive: an idle hull in a rock field can be wrecked before the pursuit is due, which is not what this asks
+    w.ship.invuln = 1;
     w.step(STEP, idle);
     hostiles = Math.max(hostiles, w.aliens.filter((a) => !a.ward).length);
     if (w.phase === 'comms') { stopped++; for (const c of w.comms!.choices) if (w.answer(c.id)) break; } else if (w.phase === 'hail') { stopped++; w.answerHail(false); }

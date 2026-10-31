@@ -309,7 +309,7 @@ export const STORY_CARDS: CardDef[] = [
       // radio, whose channel opens 2 km out from the dock. One plain acknowledgement (the owner, 23 October 2026).
       { id: 'proceed', label: 'Acknowledge', tone: 'run', hint: '',
         win: { text: 'Controls locked · recovery autopilot active', flag: RECOVERY_FLAG,
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 3.5, gap: 5, text: ['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”'] } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 3.5, gap: 12, text: ['“They’re calling it a breach and want the hauler back. Let the autopilot fly.”', '“Hold on, Juno. I’m working on a way out.”'] } } },
     ],
   }),
   story({

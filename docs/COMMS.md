@@ -47,6 +47,12 @@ Every card is offered to the desk; nothing opens itself.
 7. **The radio.** At most two lines a sortie, 60 s apart, on a fight won, a hold
    filling, the arrival (rarely) or the long quiet between. Never on a jump or in a
    fight. Lines ask nothing and carry no fact the story needs.
+8. **One voice at a time (the floor, `sim/floor.ts`).** Every radio line and notice
+   waits its turn: never over a card, a line at least 10 s after the last, no line
+   in the 15 s after a card closes (a notice may say what just happened), and the
+   next card 20 s after the last unless it answers it. A card waits while a story
+   line is still queued or on screen, so the story keeps its order. Chatter that
+   waits over 25 s is dropped; a story line never is.
 
 ## What each piece of the panel earns
 

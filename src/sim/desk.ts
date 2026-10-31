@@ -42,8 +42,8 @@ export const DESK = {
   mineSettle: 3,
   /** Seconds since the last card closed before this weight may open. */
   gap: { major: 180, important: 150, routine: 220, ambient: 0 } as Record<Weight, number>,
-  /** What an eager (scene) call waits instead: seconds since the last card closed, and seconds of clear sky after the last hostile. A job rings soon after arrival. */
-  eager: 8,
+  /** What an eager (scene) call waits instead: seconds since the last card closed, and seconds of clear sky after the last hostile. A job rings after the arrival has settled (the floor, sim/floor.ts, keeps it off the story). */
+  eager: 20,
   eagerSettle: 3,
   /** Seconds a call stays up unanswered, then lapses. */
   window: { important: 30, routine: 22 },
