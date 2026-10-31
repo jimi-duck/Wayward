@@ -334,7 +334,7 @@ export class World implements EncounterHost {
   /** The contact at Hollis (sim/ghost.ts), once it has come. */
   ghost: Ghost | null = null;
   private ghostMade = false;
-  storyObjective: { main?: string; quiet?: string } | null = null;
+  storyObjective: { main?: string; quiet?: string; from?: string } | null = null;
   /** Cards heard earlier in the journey: the ones that come once do not come again. */
   private heard = new Set<string>();
   private follows: Array<{ card: string; at: number; quick?: boolean }> = [];
@@ -924,6 +924,7 @@ export class World implements EncounterHost {
     // the Narrows gate holds her while its scene plays: no spooling, so the script's lines are not held back as a jump's
     const inReach = dl < Math.max(APPROACH, b.spoolNeed * 46);
     const gateHeld = inReach && this.gateHeld();
+    if (!gateHeld) this.gateWhy = '';
     const near = inReach && !gateHeld;
     if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
       if (b.spool === 0) this.events.push({ type: 'spool' });
@@ -1536,15 +1537,47 @@ export class World implements EncounterHost {
     const o = sc.owed(this.flags, tank);
     const slow = b.def.script === 'slowdoor' && this.runTime - this.desk.arrived < SLOW_DOOR;
     if (!o.any && !slow) return false;
+    this.gateWhy = o.handshake ? 'answer the relay first' : slow ? 'the gate is opening' : 'a call is coming in';
     if (!this.holdNoted) {
       this.holdNoted = true;
-      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: o.handshake ? 'answer the relay first' : slow ? 'the gate is opening' : 'a call is coming in' });
+      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: this.gateWhy });
     }
     if (o.handshake) return true;
     if (this.holdAt === Infinity) this.holdAt = this.runTime;
     if (!slow && this.runTime - this.holdAt >= GATE_HOLD) { sc.release(this.flags, tank); this.gateLet = true; return false; }
     return true;
   }
+  /** Why the Jump Gate is holding her now, in English for t() ('' when it is not): the HUD's sub-line. */
+  gateWhy = '';
+
+  /**
+   * What the stop asks of her now, for the HUD and the pause card (translated). A stop's arrival line holds while its main beat is
+   * still to come; once that has played, the goal is the way out (`Jump to …`) and the line goes, or stays as a quiet line where
+   * the stop has no beat of its own (it says what the place is). The Slow Door counts down.
+   */
+  storyGoal(): { main?: string; quiet: string[] } {
+    const sc = this.script;
+    // before the stop's line has played (a delayed one), it is shown already; a stop with none has the way out
+    const first = sc && !this.storyObjective ? sc.arrivalLine() : undefined;
+    const way = sc && !this.storyObjective && !first ? sc.leaveLine() : undefined;
+    const o = this.storyObjective ?? (first ? { main: first.main && tr(first.main), quiet: first.quiet && tr(first.quiet), from: 'arrive' } : way ? { main: tr(way) } : null);
+    if (!o) return { quiet: [] };
+    let main = o.main;
+    let quiet = o.quiet ? [o.quiet] : [];
+    if (o.from === 'arrive' && sc && main && main !== tr('Rest here, or keep moving') && !sc.mainsLeft(this.flags, this.tankCap ? this.fuel / this.tankCap : 0)) {
+      const out = sc.leaveLine();
+      // a stop with no beat keeps what it is, without its "Next:"
+      if (!sc.hasMains()) quiet = [main.replace(/^[^·:]+:\s*/, ''), ...quiet];
+      main = out ? tr(out) : undefined;
+    }
+    if (this.bk?.def.script === 'slowdoor') {
+      const left = Math.ceil(SLOW_DOOR - (this.runTime - this.desk.arrived));
+      const now = left > 0 ? `${tr('Opening')} · ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : tr('Gate open');
+      quiet = quiet.map((q) => (q === tr('Opening · 3:00') ? now : q));
+    }
+    return { main, quiet };
+  }
+
   /** When the gate first held her (Infinity: not yet), whether it has let go, and whether she was told. */
   private holdAt = Infinity;
   private gateLet = false;
@@ -1584,7 +1617,7 @@ export class World implements EncounterHost {
     const vars = { debt: debtLeft(this.flags), relays: relaysLit(this.flags) };
     if ('radio' in o) this.events.push({ type: 'ping', id: `story_${this.runTime.toFixed(1)}`, from: tr(o.radio.from), caller: o.radio.caller, text: tr(o.radio.text, vars), moment: 'calm', system: name });
     else if ('notice' in o) this.events.push({ type: 'storyNotice', tone: o.notice.tone, headline: o.notice.headline, reason: o.notice.reason && (o.notice.reason.includes('{') ? tr(o.notice.reason, vars) : o.notice.reason) });
-    else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet) };
+    else if ('objective' in o) this.storyObjective = { main: o.objective.main && tr(o.objective.main), quiet: o.objective.quiet && tr(o.objective.quiet), from: o.objective.from };
     else if ('card' in o) { const def = CARD_BY_ID[o.card]; if (def) this.desk.offer(def, 'major', this.runTime, false, true); }
     else if ('wall' in o) this.flags.add(o.wall);
     else this.flags.add(`pursuit_${o.pursuit}`);

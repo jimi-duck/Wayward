@@ -178,7 +178,7 @@
      "temper": "meek",
      "tag": "Prospector",
      "from": "ahead",
-     "pace": 1.2
+     "pace": 1.6
     }
    ],
    "card": "sc_follow",
@@ -189,8 +189,8 @@
    ],
    "goal": {
     "kind": "follow",
-    "hold": 50,
-    "limit": 150,
+    "hold": 25,
+    "limit": 90,
     "line": "Stay with the prospector until she finds the vein"
    },
    "win": {
@@ -330,16 +330,18 @@
      }
     },
     {
-     "id": "buy",
-     "label": "Buy her chart",
-     "tone": "trade",
-     "hint": "Pay 4 Cyrite for her chart and a nearby area rich in ore.",
-     "cost": {
-      "chits": 20
-     },
+     "id": "rob",
+     "label": "Take her find",
+     "tone": "fight",
+     "hint": "By force. She fights back, and Hester will hear of it.",
      "win": {
-      "text": "Chart received · rich ore nearby",
-      "seam": 30
+      "text": "Her find is yours · Hester will hear",
+      "chits": 60,
+      "flag": "prospector_robbed",
+      "standing": {
+       "miners": -1
+      },
+      "heat": 0.05
      }
     },
     {

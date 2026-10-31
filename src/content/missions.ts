@@ -153,9 +153,10 @@ export const MISSIONS: SituationDef[] = [
   {
     id: 'follow_cyrite', name: 'Follow the Cyrite Vein', blurb: 'A prospector offers to lead you to a rich Cyrite deposit for a share of the find.', group: 'frontier',
     kinds: ['mining', 'transit', 'contested'], regions: [0, 6], weight: 1.0,
-    actors: [act('freighter', 1, 'lead', 'meek', 'Prospector', { from: 'ahead', pace: 1.2 })],
+    // half the old hold, and a quicker lead: the owner found it too slow (31 October 2026)
+    actors: [act('freighter', 1, 'lead', 'meek', 'Prospector', { from: 'ahead', pace: 1.6 })],
     card: 'sc_follow', at: 25, hail: 9999, accept: ['follow'],
-    goal: { kind: 'follow', hold: 50, limit: 150, line: 'Stay with the prospector until she finds the vein' },
+    goal: { kind: 'follow', hold: 25, limit: 90, line: 'Stay with the prospector until she finds the vein' },
     win: { text: 'The prospector finds the vein and lets you mine your share', chits: 90, flag: 'vein_found' },
     lose: { text: 'You lose sight of the prospector in the dust' },
     ignore: { text: 'The prospector continues without you' },
@@ -463,7 +464,7 @@ export const MISSION_CARDS: CardDef[] = [
     cargo: 'A prospector · slow, sure of herself',
     choices: [
       { id: 'follow', label: 'Follow the prospector', tone: 'help', hint: 'Stay near her until she finds the vein. No one is expected to attack.', win: { text: 'She leads the way' } },
-      { id: 'buy', label: 'Buy her chart', tone: 'trade', hint: 'Pay 4 Cyrite for her chart and a nearby area rich in ore.', cost: { chits: 20 }, win: { text: 'Chart received · rich ore nearby', seam: 30 } },
+      { id: 'rob', label: 'Take her find', tone: 'fight', hint: 'By force. She fights back, and Hester will hear of it.', win: { text: 'Her find is yours · Hester will hear', chits: 60, flag: 'prospector_robbed', standing: { miners: -1 }, heat: 0.05 } },
       { id: 'no', label: 'Decline and continue alone', tone: 'refuse', hint: 'Search for a vein yourself.', win: { text: 'The prospector ends the call' } },
     ],
   }),

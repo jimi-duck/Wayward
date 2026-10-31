@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { REACH } from '../src/content/script/reach';
+import { SCRIPT } from '../src/content/script';
 import { Script, type Ctx, type Output, type Row } from '../src/sim/script';
 import type { Busy } from '../src/sim/desk';
 import { World } from '../src/sim/world';
@@ -137,6 +138,30 @@ describe('Northfold plays from data', () => {
     expect(heard.length).toBeGreaterThanOrEqual(1);
     expect(w.storyObjective?.main).toContain('Halden');
     expect(w.carry().seen).toContain('nf_notice');
+  });
+
+  it('knows when a stop’s beat is still to come, and its way out', () => {
+    const before = new Script(SCRIPT, 'marlow', new Set());
+    expect(before.mainsLeft(new Set())).toBe(true);
+    expect(before.hasMains()).toBe(true);
+    expect(before.leaveLine()).toBe('Jump to Vesta');
+    const after = new Script(SCRIPT, 'marlow', new Set(['ml_ledger']));
+    expect(after.mainsLeft(new Set())).toBe(false);
+    expect(new Script(SCRIPT, 'hollis', new Set()).hasMains()).toBe(false);
+  });
+
+  it('turns a stop’s line into the way out once its beat has played', () => {
+    // Northfold has no beat of its own: the goal is the jump at once, and what the stop is stays as a quiet line
+    const j = newJourney(5, false, 'road');
+    const north = j.chart.systems.find((s) => s.name === 'Northfold')!;
+    j.at = north.id;
+    j.trail = [j.chart.home, j.chart.systems.find((s) => s.col === 1)!.id, north.id];
+    j.carry.flags.push('archive_woke');
+    const w = new World(3, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
+    for (let i = 0; i < Math.round(5 / STEP); i++) { w.step(STEP, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); w.events.length = 0; }
+    const g = w.storyGoal();
+    expect(g.main).toBe('Jump to Halden’s Reach');
+    expect(g.quiet[0]).toBe('Halden’s Reach · find the Warden’s record');
   });
 
   it('keeps the queue in the save', () => {

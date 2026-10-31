@@ -318,7 +318,7 @@ export const STORY: Record<string, string> = {
   'It could be a trap.': 'Könnte eine Falle sein.',
   'Adam Brook · Kellern Mining, accounts': 'Adam Brook · Kellern Mining, Buchhaltung',
   'The real books': 'Die echten Bücher',
-  '“I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Make it worth my job.”': '„Ich führe Kellerns echte Bücher. Jede Einheit Krail, die der Scatter nie gekriegt hat, steht hier drin. Mach, dass es meinen Job wert ist.“',
+  '“I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Take them. Someone should.”': '„Ich führe Kellerns echte Bücher. Jede Einheit Krail, die der Scatter nie gekriegt hat, steht hier drin. Nimm sie. Einer muss es ja.“',
   'His channel is a private one · nobody listening': 'Sein Kanal ist privat · keiner hört mit',
   'A Kellern security band is open behind him': 'Hinter ihm ist ein Kellern-Sicherheitskanal offen',
   'Pay for the ledger': 'Für die Bücher zahlen',

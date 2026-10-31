@@ -44,7 +44,7 @@ export type Trigger =
 export type Output =
   | { radio: { from: string; caller: string; text: string } }
   | { notice: { tone: Tone; headline: string; reason?: string } }
-  | { objective: { main?: string; quiet?: string } }
+  | { objective: { main?: string; quiet?: string; /** The trigger of the row that set it (filled in by the runner). */ from?: Trigger['on'] } }
   | { card: string }
   | { wall: string }
   | { pursuit: string };
@@ -180,6 +180,28 @@ export class Script {
     }
     return out;
   }
+  /** Whether a main beat of this stop is still to play here (one played, carried on or let go of by the gate is done). */
+  mainsLeft(flags: ReadonlySet<string>, tank = 0): boolean {
+    if (this.holding && this.all.get(this.holding.row)?.main) return true;
+    return this.mine.some((r) => r.main && r.stop === this.stop && !this.played(r.id) && !this.released.includes(r.id)
+      && this.cond(r, flags, tank) && (this.fired.has(r.id) || this.due(r, flags, tank)));
+  }
+
+  /** Whether this stop has a main beat at all (played on an earlier visit or not). */
+  hasMains(): boolean { return [...this.all.values()].some((r) => r.main && r.stop === this.stop); }
+
+  /** This stop's arrival line (its `arrive` objective), before it has played: a delayed one is shown from the first moment. */
+  arrivalLine(): { main?: string; quiet?: string } | undefined {
+    for (const r of this.mine) if (r.stop === this.stop && r.on.on === 'arrive' && 'objective' in r.do && !this.played(r.id)) return r.do.objective;
+    return undefined;
+  }
+
+  /** This stop's line for the way out (its `leave` objective), whether or not she is near the gate yet. */
+  leaveLine(): string | undefined {
+    for (const r of this.all.values()) if (r.stop === this.stop && r.on.on === 'leave' && 'objective' in r.do && r.do.objective.main) return r.do.objective.main;
+    return undefined;
+  }
+
   played(id: string): boolean { return this.playedAt.has(id) || this.seen.has(id); }
 
   private cond(r: Row, flags: ReadonlySet<string>, tank = 0): boolean {
@@ -212,7 +234,7 @@ export class Script {
       this.fired.add(r.id);
       if (r.wall) out.push({ wall: r.wall });
       const d = r.do;
-      if ('objective' in d || 'wall' in d || 'pursuit' in d) { out.push(d); play(r.id); } else this.queue.push({ id: r.id, at: c.t, carried: false });
+      if ('objective' in d) { out.push({ objective: { ...d.objective, from: r.on.on } }); play(r.id); } else if ('wall' in d || 'pursuit' in d) { out.push(d); play(r.id); } else this.queue.push({ id: r.id, at: c.t, carried: false });
     }
     // flavour that waited too long
     this.queue = this.queue.filter((q) => { const s = this.all.get(q.id)?.stale; return s === undefined || c.t - q.at < s; });

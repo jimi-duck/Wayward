@@ -276,12 +276,13 @@ describe('the second batch', () => {
     expect(b.st.result).toBe('lost');
   });
 
-  it('the chart can be bought instead, and the goal is never paid', () => {
-    const { w, st } = take('follow_cyrite', 'buy', { cyrite: 40 });
+  it('her find can be taken by force instead: paid in the answer, never the goal', () => {
+    const { w, st } = take('follow_cyrite', 'rob', { cyrite: 40 });
     const before = w.cyrite;
     run(w, 1);
     expect(st.result).toBe('won');
     expect(w.cyrite).toBe(before);
+    expect(w.flags.has('prospector_robbed')).toBe(true);
   });
 
   it('a signal and a wreck are read by holding slow and close', () => {

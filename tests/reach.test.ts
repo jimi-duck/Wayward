@@ -59,25 +59,19 @@ describe('the script', () => {
 });
 
 describe('Halden’s Reach and Vesta', () => {
-  it('hear her out: the account, the order, then her name, in that order', () => {
+  it('Ilse sends the order, then her name, in that order', () => {
     const j = at(2);
-    const p = fly(j, { story_warden: 'hear', story_handwriting: 'grandmother' });
-    expect(p.cards).toEqual(['story_warden', 'story_order', 'story_handwriting']);
+    const p = fly(j, { story_handwriting: 'grandmother' });
+    expect(p.cards).toEqual(['story_order', 'story_handwriting']);
     expect(j.carry.flags).toEqual(expect.arrayContaining(['frag_order', 'clue_order_sig', 'ada_named']));
     expect(p.notices).toContain('The Wall · the closing order, signed L. C.');
     expect(p.pings.some((t) => t.includes('Ada left it listening'))).toBe(true);
     expect(j.carry.pending).toEqual([]);
   });
 
-  it('cut her off: no order at Halden’s Reach, her recording at Vesta, and the same flags after', () => {
-    const j = at(2);
-    const p = fly(j, { story_warden: 'cut' });
-    expect(p.cards).toEqual(['story_warden']);
-    expect(j.carry.flags).not.toContain('frag_order');
+  it('a player who somehow reaches Vesta without the order hears her recording there, and gets the same flags', () => {
     // jump on to Vesta (stop 5): the recording waits for Juno to settle, and nothing runs on a timer
     const v = at(5);
-    v.carry.flags = [...j.carry.flags];
-    v.carry.seen = [...j.carry.seen];
     const q = fly(v, {});
     expect(q.cards).toEqual(['ilse_recording']);
     expect(v.carry.flags).toEqual(expect.arrayContaining(['frag_order', 'ada_named', 'clue_order_sig']));
@@ -94,11 +88,11 @@ describe('Marlow and Copperline', () => {
   it('Sam’s lines follow the order: with it, L. C. again; without, L. C. means nothing', () => {
     const withOrder = at(4);
     withOrder.carry.flags.push('frag_order', 'clue_order_sig', 'ada_named');
-    const a = fly(withOrder, { story_ledger: 'buy' }, 320);
+    const a = fly(withOrder, { story_ledger: 'take' }, 320);
     expect(a.cards).toEqual(['story_ledger']);
     expect(a.pings).toEqual(expect.arrayContaining(['“L. C. again. On the order, and on the money.”', '“Whoever that is, they signed both.”']));
     const without = at(4);
-    const b = fly(without, { story_ledger: 'buy' }, 320);
+    const b = fly(without, { story_ledger: 'take' }, 320);
     expect(b.pings).toContain('“L. C. means nothing to me. Remember it anyway.”');
     expect(b.pings).not.toContain('“L. C. again. On the order, and on the money.”');
   });

@@ -34,7 +34,7 @@ export const DEBT_STEP = 14;
 const has = (flags: Iterable<string>) => { const f = flags instanceof Set ? flags : new Set(flags); return (x: string) => f.has(x); };
 
 /** Answers that settle a job some other way: sold, reported, warned off or stripped. Won like that, a job is not a step of its thread. */
-const ASIDE = ['sell', 'tell', 'warn', 'strip'];
+const ASIDE = ['sell', 'tell', 'warn', 'strip', 'rob'];
 
 /** Whether a job was won for its thread: taken on and done, not settled aside. */
 export const stepWon = (flags: Iterable<string>, job: string): boolean => { const h = has(flags); return h(`job_${job}_won`) && !ASIDE.some((a) => h(`job_${job}_${a}`)); };
