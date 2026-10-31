@@ -31,11 +31,11 @@ export const REACH: Row[] = [
   notice('hr_notice', 'halden', { on: 'arrive' }, 'teal', 'Halden’s Reach', 'Kellern port, hospice ring'),
   objective('hr_objective', 'halden', { on: 'arrive' }, 'Halden’s Reach · find the Warden’s record', 'Frontier port · refit bay open'),
   sam('hr_sam', 'halden', { on: 'free' }, '“Halden’s Reach. Old Warden families retire here. If anyone remembers, it’s them.”'),
-  // an old skiff hails from the hospice ring: her account, then (after either of the first two answers) the order, then the name
-  // the three hold any job's call; the order and the name follow her card wherever it is answered (it can be carried on)
-  card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_warden', { holdsJob: true, main: true }),
+  // an old skiff hails from the hospice ring: Ilse sends the order itself, with her account beside it (no choice: the owner,
+  // 31 October 2026), then the name. Both hold any job's call; the name follows the order wherever it is taken (it can be carried on)
+  card('hr_warden', 'halden', { on: 'after', row: 'hr_sam', delay: 4 }, 'story_order', { holdsJob: true, main: true }),
   card('hr_order', '*', { on: 'flag', flag: 'frag_order' }, 'story_order', { if: { not: ['clue_order_sig'] }, holdsJob: true }),
-  card('hr_hand', '*', { on: 'after', row: 'hr_order' }, 'story_handwriting', { holdsJob: true }),
+  card('hr_hand', '*', { on: 'flag', flag: 'clue_order_sig' }, 'story_handwriting', { if: { not: ['ada_named'] }, holdsJob: true }),
   // the Quiet Line's first job (content/missions.ts nothing_to_declare): Owen Pike answers by what the player did; flags from sim/stage.ts
   pike('hr_pike_won', 'job_nothing_to_declare_won', '“You never saw what was in it. Good. I’ll call again.”', { not: ['job_nothing_to_declare_sell'] }),
   pike('hr_pike_sold', 'job_nothing_to_declare_sell', '“Custody paid you six. Remember what it cost.”'),
@@ -45,7 +45,8 @@ export const REACH: Row[] = [
   // ── Stop 3 · Hollis (work): the ghost and the job's thread lines follow ──
   notice('ho_notice', 'hollis', { on: 'arrive', delay: 2 }, 'teal', 'Hollis', 'mining claim, rich rock'),
   // Hester's crews, step 1: the prospector's parting line
-  { id: 'ho_prospector', stop: 'hollis', on: { on: 'flag', flag: 'job_follow_cyrite_won' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Tell Hester you helped. She keeps a list of people who do.”' } } },
+  { id: 'ho_prospector', stop: 'hollis', if: { not: ['job_follow_cyrite_rob'] }, on: { on: 'flag', flag: 'job_follow_cyrite_won' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Tell Hester you helped. She keeps a list of people who do.”' } } },
+  { id: 'ho_robbed', stop: 'hollis', on: { on: 'flag', flag: 'job_follow_cyrite_rob' }, do: { radio: { from: 'The prospector', caller: 'frontier', text: '“Hester will hear about this. Every rig in the Reach will.”' } } },
   // the ghost (sim/ghost.ts): the flag comes with the contact; the Wall is set the moment it triggers, so a jump before Sam speaks still logs it
   notice('ho_ghost', 'hollis', { on: 'flag', flag: 'ghost_here' }, 'white', 'UNKNOWN CONTACT', '4.2 km · holding', { wall: 'clue_ghost' }),
   sam('ho_sam_1', 'hollis', { on: 'after', row: 'ho_ghost' }, '“Ghost on the scope. Old rigs throw them.”'),
@@ -63,7 +64,6 @@ export const REACH: Row[] = [
   sam('ml_sam_1', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. again. On the order, and on the money.”', { if: { has: ['clue_order_sig'] } }),
   sam('ml_sam_2', 'marlow', { on: 'after', row: 'ml_sam_1' }, '“Whoever that is, they signed both.”'),
   sam('ml_sam_alt', 'marlow', { on: 'after', row: 'ml_wall' }, '“L. C. means nothing to me. Remember it anyway.”', { if: { not: ['clue_order_sig'] } }),
-  { id: 'ml_declined', stop: 'marlow', on: { on: 'flag', flag: 'ledger_declined' }, do: { radio: { from: 'Adam Brook', caller: 'kellern', text: '“Then I’ll keep them. For now.”' } } },
   objective('ml_gate', 'marlow', { on: 'leave' }, 'Jump to Vesta'),
 
   // ── Stop 5 · Vesta (breather): nothing runs on a timer; lines come as Juno settles ──
@@ -97,5 +97,5 @@ export const REACH: Row[] = [
   card('cl_brook', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_road', { if: { has: ['brook_met'] }, main: true }),
   card('cl_brook_no', 'copperline', { on: 'after', row: 'cl_sam', delay: 6 }, 'story_brook_declined', { if: { not: ['brook_met'] }, main: true }),
   sam('cl_taken', 'copperline', { on: 'flag', flag: 'brook_taken' }, '“They’ll make an example of him. Don’t let it be for nothing.”'),
-  objective('cl_gate', 'copperline', { on: 'leave' }, 'The Narrows · 1 jump'),
+  objective('cl_gate', 'copperline', { on: 'leave' }, 'Jump to the Narrows'),
 ];

@@ -79,7 +79,7 @@ export const MARCHES_ROWS: Row[] = [
   objective('ms_objective', 'm_sallow', arrive(), 'Sallow Port · refit before the Rift'),
   accounts('ms_acc', 'm_sallow', 'heavy_tanker'),
   hester('ms_hester', 'm_sallow', 'job_heavy_tanker_won', '“That tanker carried our filters. I know whose name was on the job.”', { if: { not: ['job_heavy_tanker_warn'] } }),
-  objective('ms_gate', 'm_sallow', leave(), 'The Rift · 1 jump'),
+  objective('ms_gate', 'm_sallow', leave(), 'Jump to the Rift'),
 ];
 
 // ── Leg 3 · the Salvage Belt: what things are worth ───────────────────────
@@ -138,7 +138,7 @@ export const BELT_ROWS: Row[] = [
   main('bt_val', 'b_tarik', after('bt_tarik', 6), 'story_vell_betray', { if: { has: ['broker'] } }),
   hester('bt_hester_won', 'b_tarik', 'job_long_walk_won', '“That hauler was my cousin’s. You’re on the list twice now.”'),
   hester('bt_hester_lost', 'b_tarik', 'job_long_walk_lost', '“Not your fault. The Belt eats slow ships.”'),
-  objective('bt_gate', 'b_tarik', leave(), 'The Scrapgate · 1 jump'),
+  objective('bt_gate', 'b_tarik', leave(), 'Jump to the Scrapgate'),
 ];
 
 // ── Leg 4 · the Drift Deep: the ring ──────────────────────────────────────
@@ -186,7 +186,7 @@ export const DEEP_ROWS: Row[] = [
   objective('dk_objective', 'd_kindmere', arrive(), 'Kindmere · refit before the Slow Door'),
   radio('dk_tarik', 'd_kindmere', free(20), 'Tarik Silva', 'miners', '“Put every closed relay on one chart. It isn’t a bend. It’s a ring. Thirty years I’ve drawn it.”', { if: { has: ['frag_charts'] }, wall: 'ring_known' }),
   radio('dk_ossie', 'd_kindmere', free(20), 'Ossie Raine', 'miners', '“The old Drift say the closures go all the way round. Like a fence. I never asked what for.”', { if: { not: ['frag_charts'] }, wall: 'ring_known' }),
-  objective('dk_gate', 'd_kindmere', leave(), 'The Slow Door · 1 jump'),
+  objective('dk_gate', 'd_kindmere', leave(), 'Jump to the Slow Door'),
 ];
 
 // ── Leg 5 · the Breaker Yards: who built it ───────────────────────────────
@@ -238,7 +238,7 @@ export const YARDS_ROWS: Row[] = [
   notice('yd_notice', 'y_davit', arrive(), 'teal', 'Davit Dock', 'Frontier dock · before the Breaker'),
   objective('yd_objective', 'y_davit', arrive(), 'Davit Dock · who has been paying you'),
   main('yd_draper', 'y_davit', free(8), 'story_draper'),
-  objective('yd_gate', 'y_davit', leave(), 'The Breaker · 1 jump'),
+  objective('yd_gate', 'y_davit', leave(), 'Jump to the Breaker'),
 ];
 
 // ── Leg 6 · the Free Ports: who was in the room ───────────────────────────
@@ -291,7 +291,7 @@ export const PORTS_ROWS: Row[] = [
   objective('fn_objective', 'f_nine', arrive(), 'Ninehaven · refit before the Tollgate'),
   radio('fn_static', 'f_nine', free(8), 'Static', 'unknown', '“…if the relays still know my name…”'),
   main('fn_voice', 'f_nine', after('fn_static', 4), 'story_voice'),
-  objective('fn_gate', 'f_nine', leave(), 'The Tollgate · 1 jump'),
+  objective('fn_gate', 'f_nine', leave(), 'Jump to the Tollgate'),
 ];
 
 // ── Leg 7 · the Hollows: what it was for ──────────────────────────────────
@@ -334,7 +334,7 @@ export const HOLLOWS_ROWS: Row[] = [
   notice('hw_notice', 'h_gaunt', arrive(), 'teal', 'Gaunt Watch', 'a Continuance cutter · no weapons showing'),
   objective('hw_objective', 'h_gaunt', arrive(), 'Gaunt Watch · the Governor’s aide'),
   main('hw_noor', 'h_gaunt', free(6), 'story_aide'),
-  objective('hw_gate', 'h_gaunt', leave(), 'The Seam · 1 jump'),
+  objective('hw_gate', 'h_gaunt', leave(), 'Jump to the Seam'),
 ];
 
 // ── Leg 8 · the Last Lanes: what you do with it ───────────────────────────

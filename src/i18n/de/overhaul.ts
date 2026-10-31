@@ -432,6 +432,8 @@ export const OVERHAUL: Record<string, string> = {
   '“‘Don’t lose it.’ I said that. Seventy years and she listened to me once.”': '„‚Verlier ihn nicht.‘ Das hab ich gesagt. Siebzig Jahre, und einmal hat sie auf mich gehört.“',
   'Hold at the Slow Door': 'Am Slow Door warten',
   'Opening · 3:00': 'Öffnet sich · 3:00',
+  'Opening': 'Öffnet sich',
+  'Gate open': 'Tor offen',
   '“We’re crossing with you. Forty-one aboard. Stay between us and whatever comes.”': '„Wir fahren mit dir durch. Einundvierzig an Bord. Bleib zwischen uns und dem, was kommt.“',
   'Don’t fire. A full tank draws them.': 'Nicht schießen. Ein voller Tank zieht sie an.',
   '“They’re not touching us. They’re touching you. What are you carrying?”': '„Uns fassen sie nicht an. Dich schon. Was hast du geladen?“',

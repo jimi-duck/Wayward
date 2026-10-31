@@ -356,33 +356,22 @@ export const STORY_CARDS: CardDef[] = [
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────
   story({
-    id: 'story_warden', kind: 'rumour', caller: 'miners',
+    id: 'story_warden', handover: true, kind: 'rumour', caller: 'miners',
     from: 'Ilse Marrow · retired Lane Warden', title: 'I was on the relay that night',
     text: '“I heard about your file. Seventy years ago I ran the Narrows relay. The lanes didn’t fail. We were told to turn them off.”',
     cargo: 'An old Warden’s skiff · no guns',
+    // a key piece of the story is handed over, not haggled for: one answer (the owner, 31 October 2026)
     choices: [
-      { id: 'hear', label: 'Hear her out', tone: 'help', hint: 'Her account goes in the file. She talks for a long time.', win: { text: 'The order, in her words · it goes in the file', flag: 'frag_order', standing: { miners: 1 }, hunt: -0.5 } },
-      { id: 'copy', label: 'Send her a copy', tone: 'help', hint: 'Her account in the file, and a second voice to tell it.', win: { text: 'She has a copy now · two voices', flag: ['frag_order', 'copy_warden'], heat: 0.08 } },
-      { id: 'cut', label: 'Cut the channel', tone: 'refuse', hint: 'It could be a trap.', win: { text: 'Channel closed' } },
+      { id: 'hear', label: 'Hear her out', tone: 'help', hint: 'Her account goes in the file.', win: { text: 'The order, in her words · it goes in the file', flag: ['frag_order', 'copy_warden'], standing: { miners: 1 }, hunt: -0.5 } },
     ],
   }),
   story({
-    id: 'story_ledger', kind: 'trade', caller: 'kellern',
+    id: 'story_ledger', handover: true, kind: 'rumour', caller: 'kellern',
     from: 'Adam Brook · Kellern Mining, accounts', title: 'The real books',
-    text: '“I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Make it worth my job.”',
+    text: '“I keep Kellern’s real books. Every unit of Krail the Scatter never got is in here. Take them. Someone should.”',
     cargo: 'A clerk’s shuttle · a data spike',
-    truths: [
-      { id: 'honest', weight: 3, read: 'His channel is a private one · nobody listening' },
-      { id: 'sting', weight: 1, read: 'A Kellern security band is open behind him' },
-    ],
     choices: [
-      { id: 'buy', label: 'Pay for the ledger', tone: 'pay', hint: 'Six Cyrite.', cost: { chits: 30 }, loseIf: ['sting'],
-        win: { text: 'The ledger goes in the file', flag: ['frag_ledger', 'brook_met', 'clue_sig_reach'] },
-        lose: { text: 'The ledger is real · so is the trace on it', flag: ['frag_ledger', 'brook_met', 'clue_sig_reach'], heat: 0.15 } },
-      { id: 'ask', label: 'Ask him to do right', tone: 'bluff', hint: 'Free, if he believes in something.', odds: { base: 0.4, standing: { miners: 0.1 } },
-        win: { text: '“For my father.” · the ledger goes in the file', flag: ['frag_ledger', 'brook_met', 'clue_sig_reach'], standing: { kellern: -1 } },
-        lose: { text: 'He goes quiet, and closes the channel' } },
-      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Brook signs off', flag: 'ledger_declined' } },
+      { id: 'take', label: 'Take the ledger', tone: 'help', hint: 'It goes in the file.', win: { text: '“For my father.” · the ledger goes in the file', flag: ['frag_ledger', 'brook_met', 'clue_sig_reach'], standing: { kellern: -1 } } },
     ],
   }),
 
@@ -393,10 +382,10 @@ export const STORY_CARDS: CardDef[] = [
     from: 'Ilse Marrow · The order', title: 'The order',
     letter: { head: [['From', 'Continuance Emergency Authority'], ['Order', 'Order of Continuity 1'], ['Kept by', 'Ilse Marrow, seventy years']], sign: '— Authorised: L. C.' },
     text: 'Effective at once.\nThe outer relays at the Narrows and beyond are to be powered down.\nWardens on watch will surrender their keys to the attending officer.\nThe closure is to be recorded as a failure from neglect.',
-    side: { from: 'Ilse Marrow', lines: ['“I kept the paper. Seventy years in a drawer. Read it, then take it. I’m too old to be brave with it.”'] },
+    side: { from: 'Ilse Marrow', lines: ['“I ran the Narrows relay the night they closed it. The lanes didn’t fail. We were told to turn them off. I kept the paper. Take it.”'] },
     cargo: 'An old Warden’s skiff · no guns',
     choices: [
-      { id: 'take', label: 'Take the order', tone: 'help', hint: '', win: { text: 'The signed order · in the file', flag: ['frag_order', 'clue_order_sig'] } },
+      { id: 'take', label: 'Take the order', tone: 'help', hint: '', win: { text: 'The signed order · in the file', flag: ['frag_order', 'clue_order_sig', 'copy_warden'], standing: { miners: 1 }, hunt: -0.5 } },
     ],
   }),
   story({
@@ -519,14 +508,12 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_drift', kind: 'trade', caller: 'miners',
+    id: 'story_drift', handover: true, kind: 'trade', caller: 'miners',
     from: 'Ma Saffi · the Long Walk', title: 'The ships we lost',
     text: '“We kept the manifests of every ship turned away that night. Twenty-three. Our dead belong in your file. Copy them, or don’t, but read them.”',
     cargo: 'Drift fleet · forty hulls, lashed together',
     choices: [
-      { id: 'swap', label: 'Trade copies', tone: 'help', hint: 'The manifests, and the Drift stand with you. Copies get talked about.', win: { text: 'Manifests in the file · Wren will remember you', flag: ['frag_manifests', 'pact_drift', 'wren_trust'], heat: 0.08, hunt: -0.5 } },
-      { id: 'ore', label: 'Buy them', tone: 'trade', hint: 'Four Cyrite. Just the manifests, quietly.', cost: { chits: 20 }, win: { text: 'The manifests go in the file', flag: ['frag_manifests', 'wren_family'] } },
-      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep moving.', win: { text: 'The fleet drifts on' } },
+      { id: 'swap', label: 'Take the manifests', tone: 'help', hint: 'They go in the file, and the Drift stand with you.', win: { text: 'Manifests in the file · Wren will remember you', flag: ['frag_manifests', 'pact_drift', 'wren_trust'], hunt: -0.5 } },
     ],
   }),
   story({
@@ -578,14 +565,12 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_ada', kind: 'rumour', caller: 'unknown',
+    id: 'story_ada', handover: true, kind: 'rumour', caller: 'unknown',
     from: 'The black box · Ada Aster, recorded', title: 'A voice on the recorder',
     text: '“Hull’s going. If anyone hears this, the order was signed in the core and I helped. My name is Ada. Tell my granddaughter I tried.”',
     cargo: 'A wreck’s recorder · one voice, seventy years old',
     choices: [
       { id: 'keep', label: 'Keep the recording', tone: 'help', hint: 'It stays in the file, unshared. Ada was Juno’s grandmother.', win: { text: 'Ada’s voice is yours alone', flag: ['ada_heard', 'ada_kept'] } },
-      { id: 'share', label: 'Send it on', tone: 'help', hint: 'Copies get talked about, and believed.', win: { text: 'Ada’s voice goes out · the Gutter hears it', flag: 'ada_heard', heat: 0.08, standing: { miners: 1 } } },
-      { id: 'later', label: 'Not now', tone: 'refuse', hint: 'You cannot listen yet.', win: { text: 'The recorder goes quiet' } },
     ],
   }),
   story({
@@ -600,14 +585,12 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_salvor', kind: 'trade', caller: 'miners',
+    id: 'story_salvor', handover: true, kind: 'trade', caller: 'miners',
     from: 'Dov Kessler · salvor', title: 'A recorder that still runs',
     text: '“Warden cutter, twenty-five years dead. Her recorder still runs. Name on the plate is Aster. I can’t cut it free alone.”',
     cargo: 'A salvage tug · one cutting arm',
     choices: [
-      { id: 'cut', label: 'Cut it free together', tone: 'help', hint: 'Two supplies for the blades. The recording goes in the file.', cost: { supplies: 2 }, win: { text: 'The black box goes in the file', flag: ['frag_blackbox', 'kessler_met'], standing: { miners: 1 } } },
-      { id: 'pay', label: 'Pay him to do it', tone: 'pay', hint: 'Five Cyrite. Quiet, and slower.', cost: { chits: 25 }, win: { text: 'Kessler hands over the recorder', flag: ['frag_blackbox', 'kessler_met'] } },
-      { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Not worth the time.', win: { text: 'Kessler goes back to his wreck', flag: 'kessler_met' } },
+      { id: 'cut', label: 'Cut it free together', tone: 'help', hint: 'The recording goes in the file.', win: { text: 'The black box goes in the file', flag: ['frag_blackbox', 'kessler_met'], standing: { miners: 1 } } },
     ],
   }),
   story({
@@ -633,14 +616,12 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_workorder', kind: 'trade', caller: 'kellern',
+    id: 'story_workorder', handover: true, kind: 'trade', caller: 'kellern',
     from: 'Ben Anand · yard clerk', title: 'The first work order',
     text: '“Every breaker built here has a work order. The first is BY9-001, countersigned by the Survey. Taking it costs me my pension.”',
     cargo: 'A yard shuttle · a sealed case',
     choices: [
-      { id: 'buy', label: 'Pay for the order', tone: 'pay', hint: 'Seven Cyrite.', cost: { chits: 35 }, win: { text: 'The work order goes in the file', flag: ['frag_workorder', 'clue_sig_yards'] } },
-      { id: 'shield', label: 'Promise to shield him', tone: 'bluff', hint: 'He believes you, or he doesn’t.', odds: { base: 0.45, standing: { kellern: 0.1 } }, win: { text: '“Then take it.” · the work order goes in the file', flag: ['frag_workorder', 'clue_sig_yards'], standing: { kellern: -1 } }, lose: { text: 'He thinks better of it, and closes the case' } },
-      { id: 'no', label: 'Decline', tone: 'refuse', hint: 'Keep the Cyrite.', win: { text: 'Anand signs off' } },
+      { id: 'shield', label: 'Take the work order', tone: 'help', hint: 'It goes in the file.', win: { text: '“Then take it.” · the work order goes in the file', flag: ['frag_workorder', 'clue_sig_yards'], standing: { kellern: -1 } } },
     ],
   }),
   story({
@@ -713,14 +694,12 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_witnesses', kind: 'rumour', caller: 'guild',
+    id: 'story_witnesses', handover: true, kind: 'rumour', caller: 'guild',
     from: 'Old Mirren · keeper of the free ports’ list', title: 'Forty names',
     text: '“My mother took the minutes that night. Forty people in the room. She kept the list in a box. Read it, then decide who to tell.”',
     cargo: 'A ledger-keeper’s skiff · a locked box',
     choices: [
-      { id: 'copy', label: 'Copy the list', tone: 'help', hint: 'The names go in the file. Copies get talked about.', win: { text: 'The witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports', 'forty_held'], heat: 0.08 } },
-      { id: 'swear', label: 'Swear to guard it', tone: 'help', hint: 'Only the file, and her trust.', win: { text: 'She lets you read it · the witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports', 'forty_held'], standing: { guild: 1 } } },
-      { id: 'no', label: 'Leave it', tone: 'refuse', hint: 'Some names are better left.', win: { text: 'Mirren closes the box' } },
+      { id: 'swear', label: 'Take the list', tone: 'help', hint: 'The names go in the file.', win: { text: 'She lets you read it · the witnesses go in the file', flag: ['frag_witnesses', 'clue_sig_ports', 'forty_held'], standing: { guild: 1 } } },
     ],
   }),
   story({

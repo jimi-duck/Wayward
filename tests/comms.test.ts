@@ -42,7 +42,7 @@ describe('the cards', () => {
     const ups = new Set([...UPGRADES.map((u) => u.id), ...MODULES.map((m) => m.id)]);
     for (const c of CARDS) {
       // a notice with a ledger, or one of the opening's sheets (Sam's channel, the registry), asks for one action
-      expect(c.choices.length, c.id).toBeGreaterThanOrEqual((c.ledger || c.glass) && c.choices.length === 1 ? 1 : 2);
+      expect(c.choices.length, c.id).toBeGreaterThanOrEqual((c.ledger || c.glass || c.handover) && c.choices.length === 1 ? 1 : 2);
       expect(c.choices.length, c.id).toBeLessThanOrEqual(6);
       expect(new Set(c.choices.map((ch) => ch.id)).size, c.id).toBe(c.choices.length);
       for (const s of c.ships ?? []) expect(VARIANTS[s.variant], `${c.id} ship ${s.variant}`).toBeDefined();

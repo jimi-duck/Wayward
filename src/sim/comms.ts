@@ -278,6 +278,8 @@ export interface CardDef {
    * colour. Cyan is systems, radio and documents; ochre is WAYWARD and Sam's private channel; red is breach and threat.
    */
   glass?: GlassRole;
+  /** A key piece of the story handed over (a file, a ledger, a recording): one answer, no choice to make (the owner, 31 October 2026). */
+  handover?: boolean;
   /** The status word top right, beside a dot (Service, Unknown, Breach, Private, Recovered). A demand's call shows it as its tag. */
   status?: string;
   /**

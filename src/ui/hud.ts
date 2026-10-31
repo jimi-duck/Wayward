@@ -673,6 +673,8 @@ export class Hud {
       } else {
         // the one thing to do now, and at most two quiet lines under it
         const ready = world.fuel >= world.jumpCost;
+        // what the stop asks now (sim/world.ts storyGoal): its line while its beat is to come, then the way out
+        const goal = world.storyGoal();
         // the first system past Cerro: the audit dock is the course until Sam's code has lifted the owner lock
         const aud = lockLifted(world.flags) ? undefined : world.seenPlaces().find((p) => p.kind === 'audit');
         const da = aud ? Math.hypot(aud.x - s.x, aud.z - s.z) : 0;
@@ -688,19 +690,20 @@ export class Hud {
           ticks($('obj-p'), world.fuel / world.jumpCost, 30);
         } else {
           // a stop's script names the next place (sim/script.ts); the chase and an empty tank still come first
-          const named = !bk.chase && ready ? world.storyObjective?.main : undefined;
+          const named = !bk.chase && ready ? goal.main : undefined;
           text($('obj-t'), named ?? t(bk.chase ? 'Escape to the Jump Gate' : ready ? 'Head for the Jump Gate' : 'Fill the tank'));
           text($('obj-left'), ready ? range(dl) : `${Math.floor(world.fuel)}/${world.jumpCost}`);
           ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         }
-        text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact') : '');
+        text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
+          : world.gateWhy ? `${t('Jump Gate holding')} · ${t(world.gateWhy)}` : '');
         const lines: string[] = [];
         if (refuelAt(world)) {
           // two ways to fill it, on one line (a phone shows only the first): buy, or mine
           const pt = bk.port!;
           lines.push(`${t('Buy fluid at {port}', { port: pt.name })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
         } else if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
-        if (world.storyObjective?.quiet) lines.push(world.storyObjective.quiet);
+        lines.push(...goal.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
         if (this.hintLine && world.runTime < this.hintLine.until) lines.unshift(`<span class="hint">${this.hintLine.text}</span>`);
         // Custody's pursuit, once it is a day or less behind: a readout, never a notice (caution gold, then threat red)
