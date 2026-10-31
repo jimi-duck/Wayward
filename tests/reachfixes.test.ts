@@ -72,3 +72,28 @@ describe('the Reach, from the pilot flights', () => {
     expect(jumpedAt).toBeGreaterThan(0);
   });
 });
+
+describe('arriving in a system on the road', () => {
+  it('says the scan first, and pins a job only once its call has rung', () => {
+    const k = at(4);
+    const def = sortieDef(k);
+    const v = new World(7, { mode: 'breakout', sortie: { ...def, pace: { first: 1e9, calm: 1e9 }, heatRate: 0, gutter: 0, heat: 0, place: null, thren: 0, calloway: Infinity }, carry: k.carry });
+    const order: string[] = [];
+    for (let i = 0; i < 90 / STEP; i++) {
+      v.step(STEP, NO);
+      for (const e of v.events) {
+        if (e.type === 'storyNotice' && e.headline === 'Scanning for transmissions') order.push('scan');
+        if ((e.type === 'comms' || e.type === 'call') && e.id === v.stage?.def.card) order.push('call');
+      }
+      v.events.length = 0;
+      if (v.stage?.onScope && !order.includes('pin')) order.push('pin');
+      if (v.encounter?.id === 'scene' && !order.includes('marker')) order.push('marker');
+      const open = v.comms ?? v.call;
+      if (open && open.def.id !== v.stage?.def.card) v.answer(open.def.choices[0]!.id);
+      else if (open) v.answer(open.def.choices[0]!.id);
+    }
+    expect(v.stage?.def.id).toBe('follow_cyrite');
+    expect(order.slice(0, 2)).toEqual(['scan', 'call']);
+    expect(order.indexOf('marker')).toBeGreaterThan(order.indexOf('call'));
+  });
+});
