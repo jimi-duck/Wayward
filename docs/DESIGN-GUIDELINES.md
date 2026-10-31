@@ -6,6 +6,30 @@ registry update (opening sheet H). Read this before touching any panel,
 card, document, toast or button inside one. The owner's source files are in
 the project folder `design-guidelines/`.
 
+## One voice at a time
+
+The owner's rule (31 October 2026, plan "WAYWARD: One Voice at a Time"): the
+player is told one thing at a time, and the story is the spine. Every message
+is one of four kinds.
+
+| Kind | What it is | Pauses | Cap | Aim, first 15 minutes |
+|---|---|---|---|---|
+| Moment | a card: a turn in the story to read or decide | yes | 60 words (a written document 110) | 7 at most |
+| Voice | a person on the radio | no | 20 words | 10 at most |
+| Signal | a notice: what just changed | no | headline 3 words, reason 6 | 6 at most |
+| Ambient | the objective, a hint line, the HUD | no | one line | always there |
+
+- The floor (`src/sim/floor.ts`) lets one line out at a time: never over a
+  card, 10 s between radio lines, 15 s of quiet after a card, 20 s between
+  cards unless one answers the last. A card waits for a story line still
+  queued or on screen.
+- What lasts is Ambient: the pursuit in days, Wanted, the recovery's status.
+  One-off explainers (Wanted, the launcher) are hint lines under the
+  objective, never pop-ups.
+- No filler (chatter, weather desk, traffic advisories) before the first
+  chapter is over.
+- `tests/floor.test.ts` and `tests/caps.test.ts` hold these.
+
 ## The look in one line
 
 Clean code edges on an Apple-glass body: a dark teal glass that blurs the

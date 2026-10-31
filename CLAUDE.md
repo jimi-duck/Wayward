@@ -14,6 +14,9 @@ things) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
   new decision follows the same pattern.
 - **Data over code.** Cards, upgrades, systems, captains, story beats and
   endings are rows in `src/content/`; their rules live in `src/sim/`.
+- **One voice at a time.** Every message is a Moment (a card), a Voice (radio),
+  a Signal (a notice) or Ambient (the HUD); `src/sim/floor.ts` paces them and
+  `tests/caps.test.ts` holds the word caps. See [docs/DESIGN-GUIDELINES.md](docs/DESIGN-GUIDELINES.md).
 - **Playable without reading.** Goals sit on screen, choices read as a verb
   and chips; no mechanic lives only in prose.
 - **English and German.** Every line the player sees goes through `t()` and
