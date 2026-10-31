@@ -31,7 +31,8 @@ describe('the threads', () => {
 });
 
 /** A road journey at stop `i`, flown for `secs` with the job kept; `answer` is what each job call is answered with. */
-function fly(i: number, card: string, answer: string, secs = 120): { pings: string[]; flags: Set<string> } {
+// four minutes: a job call waits 30 s after a card, and every line takes its turn (sim/floor.ts)
+function fly(i: number, card: string, answer: string, secs = 240): { pings: string[]; flags: Set<string> } {
   const j = newJourney(5, false, 'road');
   const line = j.chart.systems.filter((s) => s.col >= 1 && s.col <= i + 1).sort((a, b) => a.col - b.col);
   j.trail = [j.chart.home, ...line.map((s) => s.id)];

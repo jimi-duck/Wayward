@@ -27,7 +27,7 @@ export const ARRIVAL_ROWS: Row[] = [
   // ── Arrival 3 · the Scrapgate: the gate made of ships ──
   objective('sg_obj', 'scrapgate', arrive(), 'The Scrapgate', 'Built from Severance hulls'),
   radio('sg_plates', 'scrapgate', free(4), 'Dov Kessler', 'miners', '“Read the plates as you pass. We painted the names back on. Took us twelve years.”', { if: { has: ['kessler_met'] } }),
-  notice('sg_amb', 'scrapgate', arrive(4), 'red', 'Offices pickets at the gate', 'Val sold your heading', { if: { has: ['vell_betrayed'], not: ['vell_paid'] } }),
+  notice('sg_amb', 'scrapgate', arrive(4), 'red', 'Pickets at gate', 'Val sold your heading', { if: { has: ['vell_betrayed'], not: ['vell_paid'] } }),
   radio('sg_kesh', 'scrapgate', after('sg_amb', 3), 'Kesh', 'gutter', '“Three pickets, port side, engines cold. Told you I’d warn you. We’re square.”', { if: { has: ['kesh_warned'] } }),
   ...handshake('sg_hand', 'scrapgate', 'a recording, not a note'),
   main('sg_note', 'scrapgate', after('sg_hand_lit', 2), 'warden_note_3'),
@@ -50,14 +50,14 @@ export const ARRIVAL_ROWS: Row[] = [
 
   // ── Arrival 5 · the Breaker: the machine itself ──
   objective('br_obj', 'breaker', arrive(), 'The Breaker', 'A lane breaker, still standing'),
-  notice('br_serial', 'breaker', arrive(6), 'white', 'Serial on the hull', 'BY9-001 · the first one', { wall: 'saw_serial' }),
+  notice('br_serial', 'breaker', arrive(6), 'white', 'Hull serial', 'BY9-001 · the first one', { wall: 'saw_serial' }),
   radio('br_marit', 'breaker', free(4), 'Marit Voss', 'frontier', '“Crews are off the cranes. Nobody’s stopping you today. Fly slow. They want to see you.”', { if: { has: ['strike_held'] } }),
   radio('br_hester', 'breaker', after('br_marit', 4), 'Hester Vane', 'miners', '“Told you I keep a list. Look out your port side. That’s the list.”', { if: { has: ['thread_crews_5'] } }),
   notice('br_lock', 'breaker', arrive(4), 'red', 'Yard lockdown', 'Custody cranes armed · fight through', { if: { not: ['strike_held'] } }),
   ...handshake('br_hand', 'breaker', 'five relays lit'),
   // the work order's second route: the serial on this hull, with Sam's scarred hulls seen
   wall('br_serial_sig', 'breaker', flag('relay_breaker'), 'clue_sig_serial', { if: { has: ['hulls_seen'] } }),
-  radio('br_sam', 'breaker', after('br_hand_lit', 2), SAM[0], SAM[1], '“Juno. Five relays lit, and they carry voices, turns out. Eben got your warning. He says thanks. He says it rudely.”', { if: { has: ['eben_warned'] } }),
+  radio('br_sam', 'breaker', after('br_hand_lit', 2), SAM[0], SAM[1], '“Five relays lit, and they carry voices. Eben got your warning. He says thanks. Rudely.”', { if: { has: ['eben_warned'] } }),
   radio('br_sam_b', 'breaker', after('br_hand_lit', 2), SAM[0], SAM[1], '“Juno. Five relays lit, and they carry voices. Eben’s fine. I think. Keep moving.”', { if: { not: ['eben_warned'] } }),
   main('br_note', 'breaker', after('br_hand_lit', 8), 'warden_note_5'),
   radio('br_draper', 'breaker', flag('warden_note_5'), 'Director Draper', 'office', '“Your gran built the case, Juno. I just collect on it. Family business, both of us.”', { if: { has: ['draper_revealed'] } }),
@@ -84,7 +84,7 @@ export const ARRIVAL_ROWS: Row[] = [
   radio('se_echo', 'seam', after('se_voice', 2), 'Echo', 'unknown', '“It means it. It has no other way of meaning things.”', { if: { has: ['echo_trust'] } }),
   radio('se_sable', 'seam', after('se_voice', 2), 'Sable', 'unknown', '“They hear the key too. They’re turning. Not toward you. Toward it.”', { if: { has: ['sable_trust'] } }),
   notice('se_map', 'seam', after('se_voice', 4), 'teal', 'Your readings fit', 'the ring’s centre is here', { if: { has: ['thread_survey_3'] }, wall: 'survey_map' }),
-  radio('se_noor', 'seam', after('se_voice', 6), 'Noor Haddad', 'office', '“I have the third key. The Governor gave it to me in case you got this far. I am choosing not to use it.”', { if: { has: ['noor_truth'] } }),
+  radio('se_noor', 'seam', after('se_voice', 6), 'Noor Haddad', 'office', '“I have the third key. The Governor gave it to me for this. I’m choosing not to use it.”', { if: { has: ['noor_truth'] } }),
   main('se_note', 'seam', after('se_voice', 10), 'warden_note_7'),
   main('se_implant', 'seam', flag('warden_note_7'), 'story_implant'),
   objective('se_gate', 'seam', flag('warden_note_7'), 'Jump to Lastlight', 'The Threshold. The last relay.'),

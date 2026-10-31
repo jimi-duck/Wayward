@@ -23,7 +23,7 @@ export const NARROWS_ROWS: Row[] = [
   notice('nr_key', { on: 'near', site: 'relay', within: 200 }, 'teal', 'Warden key accepted'),
   notice('nr_open', { on: 'after', row: 'nr_key' }, 'amber', 'Warden channel open', 'broadcasting on every band'),
   radio('nr_sam_2', 'Sam Okoro', 'miners', { on: 'after', row: 'nr_open', delay: 2 }, '“Juno. The relay’s lit. Did you do that?”'),
-  radio('nr_sam_3', 'Sam Okoro', 'miners', { on: 'after', row: 'nr_sam_2' }, '“It’s not just lit, it’s shouting. Every listening post in the Reach just heard Ada’s key, and your hull answer it.”'),
+  radio('nr_sam_3', 'Sam Okoro', 'miners', { on: 'after', row: 'nr_sam_2' }, '“It’s not just lit, it’s shouting. Every post in the Reach heard Ada’s key, and your hull answer.”'),
 
   // ── 3 · The note ──
   { id: 'nr_note', stop: STOP, on: { on: 'after', row: 'nr_sam_3', delay: 2 }, do: { card: 'warden_note_1' }, main: true },

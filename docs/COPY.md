@@ -42,3 +42,7 @@ Rules for every line the player reads. German twins follow the English
 The comms reading caps are in `tests/reading.test.ts` (text 32 words, hint 19,
 label 8, win 16, lose 13, read 14), wide enough for a line to state its cost
 and risk.
+
+On top of those, one voice at a time (`tests/caps.test.ts`): a radio line is 20
+words at most, a card's text 60 (a written document, the archive or Ada's notes,
+110), a notice's headline 3 words and its reason 6. The middle dot does not count.

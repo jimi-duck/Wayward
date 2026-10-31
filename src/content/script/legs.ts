@@ -75,7 +75,7 @@ export const MARCHES_ROWS: Row[] = [
   objective('mg_gate', 'm_gannet', leave(), 'Jump to Sallow Port'),
 
   // 7 · Sallow Port (reckoning): the Account's heavy tanker, which carries the crews' filters
-  notice('ms_notice', 'm_sallow', arrive(), 'teal', 'Sallow Port', 'Guild port · last stop before the Rift'),
+  notice('ms_notice', 'm_sallow', arrive(), 'teal', 'Sallow Port', 'Guild port · before the Rift'),
   objective('ms_objective', 'm_sallow', arrive(), 'Sallow Port · refit before the Rift'),
   accounts('ms_acc', 'm_sallow', 'heavy_tanker'),
   hester('ms_hester', 'm_sallow', 'job_heavy_tanker_won', '“That tanker carried our filters. I know whose name was on the job.”', { if: { not: ['job_heavy_tanker_warn'] } }),
@@ -86,7 +86,7 @@ export const MARCHES_ROWS: Row[] = [
 export const BELT_ROWS: Row[] = [
   // 1 · Breakwater (landfall): the quiet at the Rift lands one jump late; Hester's last filter
   notice('bb_notice', 'b_breakwater', arrive(), 'teal', 'Breakwater', 'the Salvage Belt · wrecks and claims'),
-  notice('bb_after', 'b_breakwater', arrive(5), 'red', 'Offices · the Rift relay lit', 'they know your next gate', { if: { has: ['relay_rift'] } }),
+  notice('bb_after', 'b_breakwater', arrive(5), 'red', 'Rift relay lit', 'they know your next gate', { if: { has: ['relay_rift'] } }),
   objective('bb_objective', 'b_breakwater', arrive(), 'Next: Scrap Exchange', 'The Scrapgate · 7 jumps'),
   hester('bb_hester_won', 'b_breakwater', 'job_one_filter_won', '“Air for another month. I won’t forget it.”'),
   hester('bb_hester_lost', 'b_breakwater', 'job_one_filter_lost', '“You came. Some didn’t.”'),
@@ -111,7 +111,7 @@ export const BELT_ROWS: Row[] = [
   objective('bk_objective', 'b_kessler', arrive(), 'Kessler’s Wreck · a recorder that still runs'),
   main('bk_kessler', 'b_kessler', free(6), 'story_salvor'),
   card('bk_box', 'b_kessler', flag('frag_blackbox'), 'story_ada', { holdsJob: true }),
-  notice('bk_wall', 'b_kessler', after('bk_box'), 'teal', 'The Wall', 'Ada Aster, died 25 years ago, Salvage Belt', { wall: 'ada_died' }),
+  notice('bk_wall', 'b_kessler', after('bk_box'), 'teal', 'The Wall', 'Ada Aster · died 25 years ago', { wall: 'ada_died' }),
   radio('bk_after', 'b_kessler', after('bk_wall', 2), 'Dov Kessler', 'miners', '“Granddaughter. Hm. I’ll paint her name on the gate.”'),
   pike('bk_pike_lost', 'b_kessler', 'job_dead_drop_lost', '“Pickets at a drop only four people knew. One of them’s me. I’m checking the other three.”'),
   pike('bk_pike_won', 'b_kessler', 'job_dead_drop_won', '“Drop’s clean. Somebody still talked, though. I’ll find who.”'),
@@ -119,7 +119,7 @@ export const BELT_ROWS: Row[] = [
 
   // 5 · Saltmarsh (breather): the first sighting, a river of motes; it turns toward a full tank
   ...rest('bs', 'b_saltmarsh', 'Saltmarsh', 'The Scrapgate · 3 jumps'),
-  notice('bs_river', 'b_saltmarsh', settle(), 'white', 'UNKNOWN', 'a river of motes · 1 km ahead', { wall: 'saw_thren' }),
+  notice('bs_river', 'b_saltmarsh', settle(), 'white', 'UNKNOWN', 'motes like a river · 1 km', { wall: 'saw_thren' }),
   objective('bs_river_obj', 'b_saltmarsh', after('bs_river'), undefined, 'Wait it out, or burn fluid to run dark.'),
   notice('bs_turn', 'b_saltmarsh', after('bs_river', 6), 'white', 'It turns', 'toward your tank', { if: { full: true }, wall: 'saw_turn' }),
   objective('bs_gate', 'b_saltmarsh', leave(), 'Jump to Kiln'),
@@ -132,7 +132,7 @@ export const BELT_ROWS: Row[] = [
   objective('bn_gate', 'b_kiln', leave(), 'Jump to Tarik’s Lamps'),
 
   // 7 · Tarik's Lamps (reckoning): the burned charts; Val's sale, if she was taken up; Hester's hauler
-  notice('bt_notice', 'b_tarik', arrive(), 'teal', 'Tarik’s Lamps', 'a chart room adrift · last stop before the Scrapgate'),
+  notice('bt_notice', 'b_tarik', arrive(), 'teal', 'Tarik’s Lamps', 'chart room adrift · before the Scrapgate'),
   objective('bt_objective', 'b_tarik', arrive(), 'Tarik’s Lamps · the charts they burned'),
   main('bt_tarik', 'b_tarik', free(6), 'story_charts'),
   main('bt_val', 'b_tarik', after('bt_tarik', 6), 'story_vell_betray', { if: { has: ['broker'] } }),
@@ -143,7 +143,7 @@ export const BELT_ROWS: Row[] = [
 
 // ── Leg 4 · the Drift Deep: the ring ──────────────────────────────────────
 export const DEEP_ROWS: Row[] = [
-  notice('dl_notice', 'd_longwater', arrive(), 'teal', 'Longwater', 'the Drift Deep · no Net this far'),
+  notice('dl_notice', 'd_longwater', arrive(), 'teal', 'Longwater', 'Drift Deep · no Net here'),
   objective('dl_objective', 'd_longwater', arrive(), 'Next: The Quiet Ferry', 'The Slow Door · 7 jumps'),
   objective('dl_gate', 'd_longwater', leave(), 'Jump to the Quiet Ferry'),
 
@@ -166,7 +166,7 @@ export const DEEP_ROWS: Row[] = [
   objective('dn_objective', 'd_fold', arrive(), 'Ninth Fold · someone aboard is watching'),
   main('dn_agent', 'd_fold', free(6), 'story_ferry_agent'),
   accounts('dn_acc', 'd_fold', 'missing_payroll'),
-  hester('dn_hester', 'd_fold', 'job_missing_payroll_won', '“Somebody took our wages at the Deep. I know it was you. I’m still writing your name. In the other column.”', { if: { not: ['job_missing_payroll_warn'] } }),
+  hester('dn_hester', 'd_fold', 'job_missing_payroll_won', '“Somebody took our wages at the Deep. I know it was you. Your name’s in the other column now.”', { if: { not: ['job_missing_payroll_warn'] } }),
   objective('dn_gate', 'd_fold', leave(), 'Jump to Hushlight'),
 
   // 5 · Hushlight (breather): the Voice, first contact, in a quiet stop so it lands
@@ -182,9 +182,9 @@ export const DEEP_ROWS: Row[] = [
   objective('ds_gate', 'd_still', leave(), 'Jump to Kindmere'),
 
   // 7 · Kindmere (reckoning): a signal that answers; the ring, from Tarik's charts or from Drift memory
-  notice('dk_notice', 'd_kindmere', arrive(), 'teal', 'Kindmere', 'Holdfast stores · last stop before the Slow Door'),
+  notice('dk_notice', 'd_kindmere', arrive(), 'teal', 'Kindmere', 'Holdfast stores · before the Slow Door'),
   objective('dk_objective', 'd_kindmere', arrive(), 'Kindmere · refit before the Slow Door'),
-  radio('dk_tarik', 'd_kindmere', free(20), 'Tarik Silva', 'miners', '“Put every closed relay on one chart. It isn’t a bend. It’s a ring. I’ve been drawing a ring for thirty years.”', { if: { has: ['frag_charts'] }, wall: 'ring_known' }),
+  radio('dk_tarik', 'd_kindmere', free(20), 'Tarik Silva', 'miners', '“Put every closed relay on one chart. It isn’t a bend. It’s a ring. Thirty years I’ve drawn it.”', { if: { has: ['frag_charts'] }, wall: 'ring_known' }),
   radio('dk_ossie', 'd_kindmere', free(20), 'Ossie Raine', 'miners', '“The old Drift say the closures go all the way round. Like a fence. I never asked what for.”', { if: { not: ['frag_charts'] }, wall: 'ring_known' }),
   objective('dk_gate', 'd_kindmere', leave(), 'The Slow Door · 1 jump'),
 ];
@@ -198,7 +198,7 @@ export const YARDS_ROWS: Row[] = [
   objective('yc_gate', 'y_cutton', leave(), 'Jump to Yard Nine'),
 
   // 2 · Yard Nine (hub): Ben Anand and the first work order; Quiet Line 6, the Needle, where Quill joins
-  notice('yn_notice', 'y_nine', arrive(), 'teal', 'Yard Nine', 'Kellern yard · where the breakers were built'),
+  notice('yn_notice', 'y_nine', arrive(), 'teal', 'Yard Nine', 'Kellern yard · the breakers’ birthplace'),
   objective('yn_objective', 'y_nine', arrive(), 'Yard Nine · the first work order', 'Kellern yard · refit bay open'),
   main('yn_anand', 'y_nine', free(6), 'story_workorder'),
   quill('yn_quill_won', 'y_nine', 'job_needle_won', '“You fly like you’ve got somewhere to be. Pike says you do. Fine. I’m in.”'),
@@ -206,7 +206,7 @@ export const YARDS_ROWS: Row[] = [
   objective('yn_gate', 'y_nine', leave(), 'Jump to Anvil Slip'),
 
   // 3 · Anvil Slip (work): the Account's Drift cache, which is Drift property
-  notice('ya_notice', 'y_anvil', arrive(), 'teal', 'Anvil Slip', 'Kellern claim · a cargo train broke up here'),
+  notice('ya_notice', 'y_anvil', arrive(), 'teal', 'Anvil Slip', 'Kellern claim · a wrecked cargo train'),
   objective('ya_objective', 'y_anvil', arrive(), 'Anvil Slip · cases drifting'),
   accounts('ya_acc', 'y_anvil', 'drift_cache'),
   radio('ya_wren', 'y_anvil', flag('job_drift_cache_won'), 'Wren Saffi', 'miners', '“Those were our cases. Gran says to stop calling you ours.”', { if: { has: ['pact_drift'] } }),
@@ -235,7 +235,7 @@ export const YARDS_ROWS: Row[] = [
   objective('yt_gate', 'y_torch', leave(), 'Jump to Davit Dock'),
 
   // 7 · Davit Dock (reckoning): Draper shows himself; Accounts was his desk
-  notice('yd_notice', 'y_davit', arrive(), 'teal', 'Davit Dock', 'Frontier dock · last stop before the Breaker'),
+  notice('yd_notice', 'y_davit', arrive(), 'teal', 'Davit Dock', 'Frontier dock · before the Breaker'),
   objective('yd_objective', 'y_davit', arrive(), 'Davit Dock · who has been paying you'),
   main('yd_draper', 'y_davit', free(8), 'story_draper'),
   objective('yd_gate', 'y_davit', leave(), 'The Breaker · 1 jump'),
@@ -265,7 +265,7 @@ export const PORTS_ROWS: Row[] = [
   notice('fm_notice', 'f_mirren', arrive(), 'teal', 'Mirren’s Pier', 'a ledger-keeper’s skiff'),
   objective('fm_objective', 'f_mirren', arrive(), 'Mirren’s Pier · forty names in a box'),
   main('fm_mirren', 'f_mirren', free(6), 'story_witnesses'),
-  notice('fm_names', 'f_mirren', flag('forty_held'), 'teal', 'The Wall', 'the Forty · Ada Aster is on it'),
+  notice('fm_names', 'f_mirren', flag('forty_held'), 'teal', 'The Wall', 'the Forty · Ada Aster listed'),
   radio('fm_ines', 'f_mirren', after('fm_names', 3), 'Old Mirren', 'guild', '“Duarte, line twelve. Ask your harbour-master who her great-grandmother was.”', { if: { has: ['ines_berth'] } }),
   objective('fm_gate', 'f_mirren', leave(), 'Jump to Lucky Haven'),
 
@@ -287,7 +287,7 @@ export const PORTS_ROWS: Row[] = [
   objective('fg_gate', 'f_gilt', leave(), 'Jump to Ninehaven'),
 
   // 7 · Ninehaven (reckoning): the Voice on the approach: Ada's note 1, back in static; then "We kept the keys"
-  notice('fn_notice', 'f_nine', arrive(), 'teal', 'Ninehaven', 'free port · last stop before the Tollgate'),
+  notice('fn_notice', 'f_nine', arrive(), 'teal', 'Ninehaven', 'free port · before the Tollgate'),
   objective('fn_objective', 'f_nine', arrive(), 'Ninehaven · refit before the Tollgate'),
   radio('fn_static', 'f_nine', free(8), 'Static', 'unknown', '“…if the relays still know my name…”'),
   main('fn_voice', 'f_nine', after('fn_static', 4), 'story_voice'),
@@ -297,14 +297,14 @@ export const PORTS_ROWS: Row[] = [
 // ── Leg 7 · the Hollows: what it was for ──────────────────────────────────
 export const HOLLOWS_ROWS: Row[] = [
   notice('ha_notice', 'h_ashdeep', arrive(), 'teal', 'Ashdeep', 'the Hollows · nothing human lives here'),
-  notice('ha_act', 'h_ashdeep', arrive(6), 'white', 'Act III · The Choice', 'what the file is worth'),
+  notice('ha_act', 'h_ashdeep', arrive(6), 'white', 'Act III', 'what the file is worth'),
   objective('ha_objective', 'h_ashdeep', arrive(), 'Next: Hollowforge', 'The Seam · 7 jumps'),
   objective('ha_gate', 'h_ashdeep', leave(), 'Jump to Hollowforge'),
 
   // 2 · Hollowforge (hub): the Thren speak, the Voice translating
   notice('hf_notice', 'h_forge', arrive(), 'teal', 'Hollowforge', 'a Voice foundry · still running'),
   objective('hf_objective', 'h_forge', arrive(), 'Hollowforge · a pattern on the scope'),
-  notice('hf_scope', 'h_forge', free(6), 'white', 'Pattern on the scope', 'it repeats when you move', { wall: 'saw_thren' }),
+  notice('hf_scope', 'h_forge', free(6), 'white', 'Scope pattern', 'it repeats when you move', { wall: 'saw_thren' }),
   main('hf_thren', 'h_forge', after('hf_scope', 4), 'story_thren'),
   objective('hf_gate', 'h_forge', leave(), 'Jump to Coldvault'),
 
@@ -315,7 +315,7 @@ export const HOLLOWS_ROWS: Row[] = [
   objective('hv_gate', 'h_vault', leave(), 'Jump to Palecairn'),
 
   // 4 · Palecairn (turn): Echo or Sable
-  notice('hc_notice', 'h_cairn', arrive(), 'teal', 'Palecairn', 'a dead relay, and a lone scout'),
+  notice('hc_notice', 'h_cairn', arrive(), 'teal', 'Palecairn', 'dead relay · one lone scout'),
   objective('hc_objective', 'h_cairn', arrive(), 'Palecairn · two voices want something'),
   main('hc_two', 'h_cairn', free(6), 'story_echo_sable'),
   objective('hc_gate', 'h_cairn', leave(), 'Jump to Mute Hall'),
