@@ -23,7 +23,6 @@ import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
 import { lockLifted, refuelAt } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
-import { wantedText } from './pressure';
 import { wantedPips } from '../sim/pressure';
 
 // ── the HUD ───────────────────────────────────────────────────────────────
@@ -69,7 +68,6 @@ const THREAT_NEAR = 320;
 /** Seconds before the log says again that the self-repair has started. */
 const MEND_QUIET = 10;
 /** How long the Wanted callout stays. */
-const HEAT_CALL_S = 6;
 /** How long the Jump Gate stays marked once the tank can make the jump. */
 const GATE_PING_S = 4;
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -266,7 +264,8 @@ export class Hud {
           this.notify(world, { type: 'denied', headline: 'Guns cold', reason, key: 'guns' });
           break;
         }
-        case 'wanted': case 'pursuitUp': case 'eliteSeen': this.heatCall(wantedText(e, false), e.type === 'wanted' ? e.inbound : true); break;
+        // no words for heat: the Wanted bar itself pulses, red when ships are on their way (the owner, 31 October 2026)
+        case 'wanted': case 'pursuitUp': case 'eliteSeen': this.heatPulse(e.type === 'wanted' ? e.inbound : true); break;
         case 'dockDenied':
           this.notify(world, { type: 'denied', headline: 'Docking denied', reason: 'Hostiles engaged · clear the fight to dock', key: 'dock' });
           break;
@@ -832,7 +831,6 @@ export class Hud {
     el.classList.add(cls);
   }
 
-  private heatTimer = 0;
   private gateTimer = 0;
 
   /**
@@ -851,15 +849,11 @@ export class Hud {
     this.radar.ping(GATE_PING_S);
   }
 
-  /** The Wanted bar's callout: gold, or red when ships are on their way; it ends with what to do. */
-  private heatCall(line: string, inbound: boolean): void {
-    const el = $('heat-call');
-    text(el, line);
-    el.hidden = false;
+  /** The Wanted bar pulses once: gold, or red when ships are on their way. */
+  private heatPulse(inbound: boolean): void {
+    const el = $('heat');
     el.classList.toggle('hot', inbound);
-    this.retrigger(el, 'on');
-    clearTimeout(this.heatTimer);
-    this.heatTimer = window.setTimeout(() => { el.hidden = true; }, HEAT_CALL_S * 1000);
+    this.retrigger(el, 'pulse');
   }
 
   private flashHit(): void {

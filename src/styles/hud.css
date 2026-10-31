@@ -677,14 +677,12 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 /* a warning state: the shield is gone, the next hit is the hull */
 #log-lines p.hit.warn span { color: var(--caution); }
 
-/* Wanted's callout, at the bar: gold, or red when ships are on their way. It ends with what to do. */
-#heat-call { position: absolute; right: calc(100% + 14px); bottom: -4px; width: max-content; max-width: min(300px, 36vw); padding: 5px 9px; border-right: 2px solid var(--caution); background: rgba(var(--void-rgb), .78);
-  font: 600 max(12px, calc(var(--fs) * 1.1))/1.25 var(--font-rail); letter-spacing: .08em; text-transform: uppercase; text-align: right; color: var(--caution); pointer-events: none; }
-#heat-call.hot { border-right-color: var(--alert); color: var(--alert-text); background: rgba(var(--threat-deep-rgb), .7); }
-#heat-call[hidden] { display: none; }
-#heat-call.on { animation: heat-call 6s linear forwards; }
-@keyframes heat-call { 0% { opacity: 0; } 4% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { #heat-call.on { animation: none; } }
+/* Wanted rises: the bar pulses once, gold, or red when ships are on their way. No words. */
+#heat.pulse .ht-b i { animation: heat-pulse 1.4s ease-out 1; }
+#heat.pulse.hot .ht-b i { animation-name: heat-pulse-hot; }
+@keyframes heat-pulse { 0%, 100% { box-shadow: none; } 25% { box-shadow: 0 0 0 1px var(--caution), 0 0 8px rgba(var(--caution-rgb), .5); } }
+@keyframes heat-pulse-hot { 0%, 100% { box-shadow: none; } 25% { box-shadow: 0 0 0 1px var(--alert), 0 0 8px var(--alert); } }
+@media (prefers-reduced-motion: reduce) { #heat.pulse .ht-b i { animation: none; } }
 
 /* Jump ready: one pulse on the fluid readout, the objective's ticks and its line; the Jump Gate's pointer opens a ring for a few seconds */
 #sys-fuel.cue .val, #sys-fuel.cue .bar { animation: cue-fuel 1.2s ease-out 1; }
