@@ -375,8 +375,8 @@ export class Stage {
   // ── the marker ─────────────────────────────────────────────────────────
   /** The scene's pin on the sector: while the goal is on, the HUD, compass, radar and edge pointers read it like any sector event. */
   private mark(w: World): void {
-    // a job is pinned from the moment it is in the sky, so the player can fly to it; the call rings when they are near
-    const live = (this.taken || (this.begun && this.def.goal.kind !== 'call')) && !this.result;
+    // a job is pinned once its call has rung, so the waypoint never comes before the word; a plain scene is pinned once it is on
+    const live = (this.taken || (this.begun && this.def.goal.kind !== 'call' && this.heard)) && !this.result;
     if (!live) {
       if (this.marker && w.encounter === this.marker) w.encounter = null;
       this.marker = null;
@@ -399,7 +399,9 @@ export class Stage {
   }
 
   /** A job in the sky that has not been taken on: on the scope, with its call still to ring. */
-  get onScope(): boolean { return this.begun && !this.taken && !this.result && this.def.goal.kind !== 'call'; }
+  get onScope(): boolean { return this.begun && this.heard && !this.taken && !this.result && this.def.goal.kind !== 'call'; }
+  /** A job is heard once its call has rung; a plain scene needs no call to be seen. */
+  private get heard(): boolean { return !JOB_IDS.has(this.def.id) || this.rangAt !== null; }
 
   // ── the end ────────────────────────────────────────────────────────────
   /** A job of the road's threads leaves a flag for each answer and each ending, which the stop's script answers on the radio (content/script/). */

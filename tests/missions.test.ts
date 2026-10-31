@@ -436,9 +436,10 @@ describe('a job in the sky', () => {
     const st2 = w2.stage!;
     put(w2, st2.x, st2.z + 900);
     run(w2, 4);
-    expect(st2.begun && st2.onScope).toBe(true);
-    expect(w2.encounter?.id).toBe('scene');
-    expect(w2.encounter?.label).toBe(st2.def.name);
+    // in the sky, but not pinned before its call has rung: the word comes before the waypoint
+    expect(st2.begun).toBe(true);
+    expect(st2.onScope).toBe(false);
+    expect(w2.encounter?.id).not.toBe('scene');
     (w2.desk as unknown as { queue: unknown[] }).queue.length = 0;
     for (let i = 0; i < 60 && !(w2.call ?? w2.comms); i++) run(w2, 1);
     expect((w2.call ?? w2.comms)?.def.id).toBe(SITUATION_BY_ID.pirate_toll!.card);

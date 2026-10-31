@@ -140,6 +140,8 @@ export const PLACE_AT = 30;
 
 /** Seconds a road gate holds a stop's main beats once the player is at it (the Narrows rule, #384, for every stop). */
 const GATE_HOLD = 240;
+/** Seconds after arriving on the road that the scan is said. */
+const SCAN_AT = 0.8;
 /** The Slow Door takes this long to open after arrival (content/script/arrivals.ts). */
 const SLOW_DOOR = 180;
 
@@ -353,6 +355,8 @@ export class World implements EncounterHost {
   offerMade = false;
   /** The story beat (sim/story.ts): played this sortie. */
   storyMade = false;
+  /** The arrival scan has been said this sortie (the road: a Signal on entry, before any call or waypoint). */
+  private scanned = false;
   /** Jumps she is behind, for the cards (Infinity: not on the trail yet). */
   behind = Infinity;
   /** Wanted and Calloway, as warnings (sim/pressure.ts). */
@@ -427,7 +431,7 @@ export class World implements EncounterHost {
     this.floor = new Floor();
     this.ghost = null; this.ghostMade = false;
     this.seamT = 0;
-    this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
+    this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.scanned = false; this.huntDelay = 0; this.stall = 0;
     this.captainMet = false; this.captainFighting = false; this.captainEnd = null; this.noticeDelta = {}; this.captainAt = Infinity;
     this.placeDue = this.mode === 'breakout' && !!this.sortie.place; this.placeWon = null;
     this.stage = null;
@@ -869,6 +873,12 @@ export class World implements EncounterHost {
     // the story beat: once, a little after arrival, if the journey has one due here
     const beat = b.def.story;
     const opening = !!beat && (CERRO_BEATS as readonly string[]).includes(beat);
+    // on the road, entering a system: the scan is said first, then the calls come in and their waypoints with them (the owner, 31 October 2026)
+    if (!this.scanned && this.script && this.runTime >= SCAN_AT && this.phase === 'play' && b.jumpT < 0 && !opening && !recovering(this.flags) && !this.tutor) {
+      this.scanned = true;
+      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Scanning for transmissions', reason: this.sortie.name });
+    }
+
     if (beat && !this.storyMade && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
