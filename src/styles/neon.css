@@ -218,6 +218,11 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-mail dt { font-size: 10px; letter-spacing: .14em; }
   .ns-mail dd { font-size: 12px; }
   .ns-letter { gap: 4px; }
+  /* one card width on a phone, never the whole screen (the owner, 31 October 2026); the Work Bay's two panels keep theirs */
+  .ns-stack, .ns-wrap[data-lay] .ns-stack { width: min(560px, 100%); }
+  .ns-wrap[data-lay="col"] > .ns-stack:has(> .ns-side) { width: min(680px, 100%); }
+  /* the stored message scrolls inside its card, so the card fits the screen and its answer is always in reach */
+  .ns-letter { max-height: calc(100dvh - var(--safe-t) - var(--safe-b) - 150px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 6px; }
   .ns-letter p { font-size: 12.5px; line-height: 1.24; }
   .ns-letter + .ns-acts { padding-top: 8px; }
   .ns-doc .ns-q { gap: 3px; }
@@ -437,7 +442,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
    capitals. Laptop size first (1280 by 720 must hold three answers without scrolling), a big screen a step up, a phone
    on its side drops the picture and sets the answers beside the words, a narrow upright phone stacks them. */
 #rd-call.job {
-  --rj-w: 1000px; --rj-px: 30px; --rj-py: 26px; --rj-col: 24px; --rj-block: 18px; --rj-gap: 12px;
+  --rj-w: 880px; --rj-px: 30px; --rj-py: 26px; --rj-col: 24px; --rj-block: 18px; --rj-gap: 12px;
   --rj-title: 25px; --rj-body: 16px; --rj-label: 12px; --rj-value: 20px; --rj-choice: 16px; --rj-more: 14px; --rj-key: 36px; --rj-row: 64px;
   --c: var(--ng-cut);
   left: 50%; top: 50%; translate: -50% -50%; animation-name: rj-in;
@@ -578,7 +583,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 @media (max-height: 520px) {
   #rd-call.demand { --rd-px: 16px; --rd-py: 10px; --rd-top: max(6px, var(--safe-t));
     --c: var(--ng-cut-card); --ng-frame: var(--ngf-card-cyan); --ng-hair: var(--ngh-card-cyan); --ng-fs: var(--ngf-card-slice); --ng-fo: var(--ngf-card-out); --ng-hs: var(--ngh-card-slice);
-    width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); max-width: 760px; left: 50%; overflow-y: auto; }
+    width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); max-width: 640px; left: 50%; overflow-y: auto; }
   #rd-call.demand > .rd-h { margin-bottom: 8px; padding-bottom: 6px; }
   #rd-call.demand .rd-k, #rd-call.demand .rd-prio { font-size: 11px; }
   #rd-call.demand .rd-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "id list" "text list" "terms list"; column-gap: 16px; align-items: start; }
@@ -596,7 +601,7 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 
 /* a big screen: one step up */
 @media (min-width: 1400px) and (min-height: 820px) {
-  #rd-call.job { --rj-w: 1100px; --rj-px: 40px; --rj-py: 32px; --rj-col: 32px; --rj-block: 22px; --rj-gap: 13px;
+  #rd-call.job { --rj-w: 960px; --rj-px: 40px; --rj-py: 32px; --rj-col: 32px; --rj-block: 22px; --rj-gap: 13px;
     --rj-title: 29px; --rj-body: 18px; --rj-label: 13px; --rj-value: 23px; --rj-choice: 18px; --rj-more: 15px; --rj-key: 40px; --rj-row: 76px; }
   #rd-call.job .rd-k, #rd-call.job .rd-kind { font-size: 14px; }
 }
@@ -606,10 +611,10 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 }
 /* a phone on its side: no picture; the words on the left and the answers on the right, so all three fit at 568 by 320 */
 @media (max-height: 520px) {
-  #rd-call.job { --rj-w: 760px; --rj-px: 16px; --rj-py: 10px; --rj-col: 0px; --rj-block: 8px; --rj-gap: 6px;
+  #rd-call.job { --rj-w: 700px; --rj-px: 16px; --rj-py: 10px; --rj-col: 0px; --rj-block: 8px; --rj-gap: 6px;
     --rj-title: 17px; --rj-body: 13px; --rj-label: 10.5px; --rj-value: 15px; --rj-choice: 14px; --rj-more: 12px; --rj-key: 28px; --rj-row: 44px;
     --c: var(--ng-cut-card); --ng-frame: var(--ngf-card-cyan); --ng-hair: var(--ngh-card-cyan); --ng-fs: var(--ngf-card-slice); --ng-fo: var(--ngf-card-out); --ng-hs: var(--ngh-card-slice);
-    width: calc(100vw - var(--safe-l) - var(--safe-r) - 24px); max-height: calc(100dvh - var(--safe-t) - var(--safe-b) - 12px);
+    width: min(var(--rj-w), calc(100vw - var(--safe-l) - var(--safe-r) - 24px)); max-height: calc(100dvh - var(--safe-t) - var(--safe-b) - 12px);
     grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "body"; }
   #rd-call.job.emblem-only { grid-template-columns: minmax(0, 1fr); }
   #rd-call.job .rd-art { display: none; }
