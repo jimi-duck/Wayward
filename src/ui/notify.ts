@@ -3,8 +3,8 @@ import { t } from '../i18n';
 // ── the centre notice ─────────────────────────────────────────────────────
 // Short, quiet messages low in the middle of the screen, between the
 // crosshair and the ship (never the top: that is the way you are flying).
-// A compact dark plate each with a small accent mark and a sentence-case line,
-// and a colour that says the kind. They never take input and fade on their
+// The alert plate's own style (a glass plate, right-aligned capitals, a coloured
+// headline over a white line), in a colour that says the kind. They never take input and fade on their
 // own. Two at most are on screen; the rest wait their turn in order (a denial
 // goes ahead of the others), and only a long backlog goes straight to the
 // corner log. The persistent fact then lives in the alert corner, which the
@@ -81,13 +81,13 @@ export class Notifier {
 
 const line = (n: Notice): string => n.corner ?? (n.reason ? `${t(n.headline)} · ${t(n.reason)}` : t(n.headline));
 
-/** The HUD's plates: one element per message inside `#notice`, faded in and out by CSS. */
+/** The HUD's plates: one glass plate per message inside `#notice`, faded in and out by CSS. */
 export class NoticePlates implements NoticeView {
   constructor(private readonly host: () => HTMLElement) {}
 
   add(type: NoticeType, headline: string, reason: string): HTMLElement {
     const el = document.createElement('div');
-    el.className = `nt ${type}`;
+    el.className = `nt glass ${type}`;
     const body = document.createElement('div');
     body.className = 'nt-b';
     const head = document.createElement('b');
@@ -100,10 +100,7 @@ export class NoticePlates implements NoticeView {
       why.textContent = reason;
       body.append(why);
     }
-    const mark = document.createElement('i');
-    mark.className = 'nt-m';
-    mark.setAttribute('aria-hidden', 'true');
-    el.append(mark, body);
+    el.append(body);
     this.host().append(el);
     void el.offsetWidth;
     el.classList.add('on');
