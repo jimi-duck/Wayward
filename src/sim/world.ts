@@ -12,7 +12,7 @@ import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
 import { Floor } from './floor';
 import { Script, type Output } from './script';
-import { derive, SIG_CLUES, relaysLit } from './evidence';
+import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
 import { ON_ROAD } from '../content/road';
 import { debtLeft } from './threads';
 import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
@@ -469,7 +469,7 @@ export class World implements EncounterHost {
     this.script = def.script ? new Script(SCRIPT, def.script, this.heard, this.carryIn?.pending ?? []) : null;
     this.holdAt = Infinity;
     this.gateLet = false;
-    this.holdNoted = false;
+    this.holdNoted = '';
     this.storyObjective = null;
     this.stock();
     this.fitAboard();
@@ -935,6 +935,11 @@ export class World implements EncounterHost {
     const inReach = dl < Math.max(APPROACH, b.spoolNeed * 46);
     const gateHeld = inReach && this.gateHeld();
     if (!gateHeld) this.gateWhy = '';
+    // a gate that held her and now lets her go says so
+    if (inReach && !gateHeld && this.holdNoted && this.holdNoted !== 'open') {
+      this.holdNoted = 'open';
+      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Jump Gate open', reason: 'fly through' });
+    }
     const near = inReach && !gateHeld;
     if (near && this.fuel >= this.jumpCost && this.phase === 'play') {
       if (b.spool === 0) this.events.push({ type: 'spool' });
@@ -1547,10 +1552,14 @@ export class World implements EncounterHost {
     const o = sc.owed(this.flags, tank);
     const slow = b.def.script === 'slowdoor' && this.runTime - this.desk.arrived < SLOW_DOOR;
     if (!o.any && !slow) return false;
-    this.gateWhy = o.handshake ? 'answer the relay first' : slow ? 'the gate is opening' : 'a call is coming in';
-    if (!this.holdNoted) {
-      this.holdNoted = true;
-      this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: this.gateWhy });
+    // with the Warden key in, the gate is resetting: say so, so a gate that will not take her yet is never a mystery (the owner, 31 October 2026)
+    const lit = this.flags.has(relayFlag(b.def.script ?? ''));
+    this.gateWhy = o.handshake ? 'answer the relay first' : slow ? 'the gate is opening' : lit ? 'resetting after the key' : 'a call is coming in';
+    if (this.holdNoted !== this.gateWhy) {
+      this.holdNoted = this.gateWhy;
+      this.events.push(lit && !o.handshake && !slow
+        ? { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate resetting', reason: 'Warden key accepted · opens in a moment' }
+        : { type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: this.gateWhy });
     }
     if (o.handshake) return true;
     if (this.holdAt === Infinity) this.holdAt = this.runTime;
@@ -1591,7 +1600,8 @@ export class World implements EncounterHost {
   /** When the gate first held her (Infinity: not yet), whether it has let go, and whether she was told. */
   private holdAt = Infinity;
   private gateLet = false;
-  private holdNoted = false;
+  /** The hold's reason last told to her ('' when none): a new reason is told again, and the gate opening is told once. */
+  private holdNoted = '';
 
   /** A hub beat of the stop's script is still due: a job's call waits for it. */
   scriptHoldsJob(): boolean { return !!this.script?.holdsJob(this.flags, this.tankCap ? this.fuel / this.tankCap : 0); }

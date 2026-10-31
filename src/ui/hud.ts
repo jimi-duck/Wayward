@@ -695,7 +695,7 @@ export class Hud {
           ticks($('obj-p'), 1 - dl / bk.def.lane, 30);
         }
         text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
-          : world.gateWhy ? `${t('Jump Gate holding')} · ${t(world.gateWhy)}` : '');
+          : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting') : world.gateWhy ? `${t('Jump Gate holding')} · ${t(world.gateWhy)}` : '');
         const lines: string[] = [];
         if (refuelAt(world)) {
           // two ways to fill it, on one line (a phone shows only the first): buy, or mine
