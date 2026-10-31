@@ -102,7 +102,7 @@ describe('the forced recovery', () => {
     expect(d1).toBeGreaterThan(Math.min(d0, PORT_CALL));
   });
 
-  it('has Sam on the radio in four beats while Lane Control flies her in', () => {
+  it('has Sam on the radio in two beats while Lane Control flies her in', () => {
     const j = beyond();
     const w = breach(j);
     w.events.length = 0;
@@ -112,10 +112,10 @@ describe('the forced recovery', () => {
       w.events.length = 0;
     });
     expect(w.comms?.def.id).toBe(SAM_BEAT);
-    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach. Blaming you for the lost cargo.”', '“Now they want the hauler back—and you sent to the mines.”', '“Let the autopilot fly. Don’t give Lane Control a reason.”', '“Hold on, Juno. I’m working on a way out.”']);
+    expect(heard.map(([, x]) => x)).toEqual(['“They’re calling it a breach and want the hauler back. Let the autopilot fly.”', '“Hold on, Juno. I’m working on a way out.”']);
     // spread over the run in, the last a few seconds before his channel opens
-    expect(heard[1]![0] - heard[0]![0]).toBeGreaterThan(4.5);
-    expect(heard[3]![0]).toBeLessThan(t - 3);
+    expect(heard[1]![0] - heard[0]![0]).toBeGreaterThanOrEqual(10);
+    expect(heard[1]![0]).toBeLessThan(t - 3);
   });
 
   it('opens Sam’s channel 2 km from the dock, not before, about half a minute in', () => {
@@ -127,7 +127,8 @@ describe('the forced recovery', () => {
     const t = until(w, 100, () => { if (w.phase === 'play') last = fromDock(w); });
     expect(w.comms?.def.id).toBe(SAM_BEAT);
     expect(w.comms?.choices.map((c) => c.label)).toEqual(['Input the code']);
-    expect(last).toBeGreaterThan(SAM_CALL_R - 3);
+    // his channel waits for his last line to be read, so the hauler may be held off the dock by then
+    expect(last).toBeGreaterThan(HOLD_R - 3);
     expect(fromDock(w)).toBeLessThanOrEqual(SAM_CALL_R);
     expect(t).toBeGreaterThan(20);
     expect(t).toBeLessThan(RECOVERY_T);

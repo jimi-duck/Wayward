@@ -10,6 +10,7 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
+import { Floor } from './floor';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit } from './evidence';
 import { ON_ROAD } from '../content/road';
@@ -325,6 +326,8 @@ export class World implements EncounterHost {
   recoverT = 0;
   /** Radio lines waiting their turn, by run time: a voice's beats one after another (`radioLines`). */
   private radioQ: Array<{ at: number; id: string; from: string; caller: string; text: string }> = [];
+  /** One voice at a time (sim/floor.ts): the radio lines and notices wait here for their turn. */
+  floor = new Floor();
   private cardsSeen = new Set<string>();
   /** The stop's story script (sim/script.ts), if it has one, and the objective it has set. */
   private script: Script | null = null;
@@ -421,6 +424,7 @@ export class World implements EncounterHost {
     this.auditCalled = false;
     this.recoverT = 0;
     this.radioQ = [];
+    this.floor = new Floor();
     this.ghost = null; this.ghostMade = false;
     this.seamT = 0;
     this.callowayMet = false; this.callowayBeaten = false; this.callowayShip = false; this.offerMade = false; this.storyMade = false; this.huntDelay = 0; this.stall = 0;
@@ -568,6 +572,8 @@ export class World implements EncounterHost {
 
   /** Everything that happened since the last call. */
   drain(): GameEvent[] {
+    // a line made outside a step (an answer's radio) waits its turn like any other
+    this.floor.take(this.events, this.runTime);
     return this.events.splice(0);
   }
 
@@ -756,6 +762,8 @@ export class World implements EncounterHost {
       }
     } else if ((this.dying -= dt) <= 0) this.finish();
     if (this.bk && this.bk.jumpT >= 0 && (this.bk.jumpT -= dt) <= 0) this.finish();
+
+    this.speak();
 
     // the decisions: a hail
     if (this.phase !== 'play') return;
@@ -1547,7 +1555,7 @@ export class World implements EncounterHost {
 
   /** A free moment for the story: nothing hostile near or firing, no card or call open, no job fight, not in a ring or a jump (a road gate's ring is fine). */
   private scriptFree(busy: Busy, t: number): boolean {
-    return busy === 'free' && !this.call && !this.comms && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || this.holdAt < Infinity) && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
+    return busy === 'free' && !this.call && !this.comms && !this.floor.busy(t) && (!this.safe || this.bk?.def.script === 'narrows' || !!this.bk?.def.relay || this.holdAt < Infinity) && !this.stage?.taken && t - this.desk.lastThreat >= DESK.settle.major && t - this.desk.lastMine >= DESK.mineSettle;
   }
 
   private scriptCtx(busy: Busy, t: number) {
@@ -1587,10 +1595,11 @@ export class World implements EncounterHost {
     // the recovery: nobody else calls while Lane Control flies her in, and Sam's channel opens once, 2 km out from the dock
     if (recovering(this.flags)) {
       const dock = b.audit, near = !!dock && Math.hypot(dock.x - s.x, dock.z - s.z) <= SAM_CALL_R;
-      if ((near || this.recoverT >= RECOVERY_T - 1e-6) && !this.cardsSeen.has(SAM_BEAT)) {
+      if (((near && !this.floor.busy(this.runTime)) || this.recoverT >= RECOVERY_T - 1e-6) && !this.cardsSeen.has(SAM_BEAT)) {
         const sam = CARD_BY_ID[SAM_BEAT];
-        // his lines on the way in are said by now: any still waiting would land after his code
+        // his lines on the way in are said by now (his channel waits for them): any still waiting would land after his code
         this.radioQ.length = 0;
+        this.floor.drop((e) => e.type === 'ping');
         if (sam) this.openComms(sam);
       }
       return;
@@ -1649,8 +1658,8 @@ export class World implements EncounterHost {
       if (def) { d.offer(def, weightOf(def), t); d.used(); }
     }
 
-    // deliver the one that is next, if the moment is right
-    if (!this.call) {
+    // deliver the one that is next, if the moment is right: a story line still waiting goes first, and a card is FLOOR.moments after the last
+    if (!this.call && !this.floor.busy(t) && this.floor.mayMoment(t)) {
       const a = d.next(busy, t);
       if (a) {
         const pre = a.def.trigger === 'chance' || a.def.trigger === 'follow' || a.def.trigger === 'port' || a.def.trigger === undefined;
@@ -1687,6 +1696,13 @@ export class World implements EncounterHost {
     }
   }
 
+  /** The floor (sim/floor.ts): this step's radio lines and notices join the queue, and one may go out. */
+  private speak(): void {
+    this.floor.take(this.events, this.runTime);
+    const e = this.floor.step(this.runTime, this.phase === 'play' && !this.call && this.alive);
+    if (e) this.events.push(e);
+  }
+
   /** One line on the radio for this moment, if one fits and has not been heard. */
   private say(m: Moment): void {
     const b = this.bk!, x = this.commsCtx();
@@ -1706,6 +1722,7 @@ export class World implements EncounterHost {
     this.call = o;
     this.callUntil = this.runTime + (o.tier === 'important' ? DESK.window.important : DESK.window.routine);
     this.desk.closed(this.runTime);
+    this.floor.opened(this.runTime, def.id);
     if (this.stage && this.stage.rangAt === null && def.id === this.stage.def.card) this.stage.rangAt = this.runTime;
     this.events.push({ type: 'call', id: def.id, tier: o.tier as 'important' | 'routine', kind: def.kind, from: o.def.from, title: o.def.title, seconds: this.callUntil - this.runTime });
   }
@@ -1716,6 +1733,7 @@ export class World implements EncounterHost {
     if (!o) return;
     this.call = null;
     this.desk.closed(this.runTime);
+    this.floor.closed(this.runTime);
     this.run.cards.push({ id: o.def.id, choice: 'lapsed', won: false, t: Math.round(this.runTime) });
     this.events.push({ type: 'callEnd', id: o.def.id, lapsed: true });
     this.stage?.lapsed(this, o.def.id);
@@ -1729,6 +1747,7 @@ export class World implements EncounterHost {
     const o = openCard(def, x, this.rng);
     this.cardsSeen.add(def.id);
     this.desk.closed(this.runTime);
+    this.floor.opened(this.runTime, def.id);
     if (def.ledger) o.ledger = ledgerFor(def.ledger);
     if (def.doc) o.doc = ledgerFor(def.doc.kind);
     this.comms = o;
@@ -1754,6 +1773,7 @@ export class World implements EncounterHost {
     if (o === this.call) this.call = null;
     else { this.comms = null; this.phase = 'play'; }
     this.desk.closed(this.runTime);
+    this.floor.closed(this.runTime);
     this.applyOutcome(res.outcome, o.fee, o.brought);
     this.rest();
     this.run.cards.push({ id: o.def.id, choice: res.choice.id, won: res.won, t: Math.round(this.runTime) });
