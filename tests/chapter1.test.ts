@@ -37,16 +37,15 @@ const callId = (w: World): string | undefined => w.comms?.def.id;
 const to = (w: World, p: { x: number; z: number }, off: number) => { w.ship.x = p.x - off; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; };
 
 describe('chapter one: the first system past Cerro, on every seed', () => {
-  it.each(SEEDS)('seed %i: the depot calls on the approach, can be docked at, and casts off to the Jump Gate', (seed) => {
+  it.each(SEEDS)('seed %i: the depot says so on the radio on the approach, can be docked at, and casts off to the Jump Gate', (seed) => {
     const w = level(past(seed, ['archive_woke', 'ship_stolen']));
     const b = w.bk!;
     to(w, b.port!, 100);
-    fly(w, 20, () => w.phase !== 'play');
-    expect(w.phase).toBe('comms');
-    expect(callId(w)).toBe('depot_hail');
-    // the answer ends the call and the ship is still where it was
-    w.answer(0);
+    // the depot's word is a radio line now (owner 2026-10-31), not a card: the world never stops for it
+    const heard: string[] = [];
+    fly(w, 20, () => { for (const e of w.events) if (e.type === 'ping') heard.push(e.id); return w.phase !== 'play'; });
     expect(w.phase).toBe('play');
+    expect(heard).toContain('depot_hail');
     // slow inside the ring: the clamps take it
     to(w, b.port!, 5);
     fly(w, 12, () => w.phase === 'dock');

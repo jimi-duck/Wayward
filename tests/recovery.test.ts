@@ -190,10 +190,10 @@ describe('the forced recovery', () => {
     run(w, 1);
     expect(w.comms).toBeNull();
     expect(w.ship.heading).toBeLessThan(h - 0.3);
-    run(w, 6);
-    expect(w.comms?.def.id).toBe(RENAME_BEAT);
-    answer(j, w, 'helm');
-    run(w, 3);
+    // no registry card: the archive comes on its own, 20 s or more after the code
+    run(w, 18);
+    expect(w.comms).toBeNull();
+    run(w, 40);
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w, 'lead');
     expect(j.carry.flags).toEqual(expect.arrayContaining(['archive_woke', RECOVERY_FLAG, 'ship_stolen']));
@@ -354,19 +354,14 @@ describe('the forced recovery across a reload', () => {
     expect(recovering(w.flags)).toBe(false);
   });
 
-  it('on the registry card and after it: no lock, no second debt, no replay', () => {
+  it('after the code: no lock, no second debt, no registry card, no replay', () => {
     const j = beyond();
     const w0 = breach(j);
     run(w0, RECOVERY_T + 0.2);
     answer(j, w0, 'code');
-    // loaded before the registry card was answered: it comes again, with the helm free
-    const w = arrive(j);
-    expect(recovering(w.flags)).toBe(false);
-    run(w, OPENING_AT + 0.5);
-    expect(w.comms?.def.id).toBe(RENAME_BEAT);
-    answer(j, w, 'helm');
-    // loaded after it: straight to the archive, never the registry again
+    // loaded before the archive came: straight to it, with the helm free, never a registry card
     const w2 = arrive(j);
+    expect(recovering(w2.flags)).toBe(false);
     run(w2, OPENING_AT + 0.5);
     expect(w2.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w2, 'lead');

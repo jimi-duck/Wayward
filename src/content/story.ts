@@ -46,7 +46,8 @@ export const SAM_BEAT = 'story_sam';
 export const SAM_BEARING = 47;
 export const RENAME_BEAT = 'story_rename';
 export const WAKE_BEAT = 'story_wake';
-export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, RENAME_BEAT, WAKE_BEAT] as const;
+/** The opening's chain past Cerro. The registry card (RENAME_BEAT) is no longer dealt: the code's notice says it (owner 2026-10-31). */
+export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, WAKE_BEAT] as const;
 /** Seconds into that sortie before the chain begins. */
 export const OPENING_AT = 2;
 
@@ -319,7 +320,10 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The audit dock · ahead',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
-        win: { text: 'Owner lock lifted · autopilot disabled', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12, radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: RENAME_BEAT, after: 6.3, quick: true } } },
+        // no registry card (owner 2026-10-31): the code repaints and renames her, the notice says so, the archive comes 20 s on
+        win: { text: 'Owner lock lifted · hull repainted, renamed WAYWARD', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
+          signal: { tone: 'teal', headline: 'Owner lock lifted', reason: 'Hull repainted · now the WAYWARD' },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: WAKE_BEAT, after: 20 } } },
     ],
   }),
   story({
@@ -338,6 +342,7 @@ export const STORY_CARDS: CardDef[] = [
   story({
     // a message someone left in the ship's database (owner, 23 October 2026): no headline figure, no record to open
     id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unsent', quote: true, notitle: true,
+    herald: { headline: 'Stored message', reason: 'Found in the ship database' },
     from: 'Ship database · stored message', title: 'For whoever flies her next',
     letter: { head: [['To', 'Whoever flies her next'], ['From', 'No name given'], ['Kept in', 'Crew notes, hidden']], sign: '— No name. In case they read this before you do.' },
     text: 'If you’re reading this, the owner lock is off and she answers to you. I hid this where the company’s audits never look.\nSeventy years ago the gates to the outer worlds went dark. We were told the Krail was running out. The worlds left outside became the Scatter.\nI pulled the reserve log for that day. Krail reserves: 94%. Logged the same day the order to close the gates was signed.\nI can’t tell you what that number leaves out. But it doesn’t fit the story we were told.\nStart at Halden’s Reach. Follow the record. The relays there still answer to the right key.',
@@ -345,7 +350,8 @@ export const STORY_CARDS: CardDef[] = [
     choices: [
       { id: 'lead', label: 'Set course: Halden’s Reach', tone: 'help', hint: '',
         win: { text: 'The record is on the Wall · next lead: Halden’s Reach', flag: ['archive_woke', 'clue_reserves', 'clue_archive_log'],
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: ['“You’re through. The paint may fool a glance; a scan will still find an unregistered ship.”', '“You’ve got a name of your own now. And a lead. Keep moving, Juno.”'] } } },
+          signal: { tone: 'amber', headline: 'Registry: unregistered', reason: 'Paint won’t pass a scan' },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.5, text: '“A name of your own now, and a lead. Keep moving, Juno.”' } } },
     ],
   }),
   // ── Act II, the Reach ───────────────────────────────────────────────────

@@ -39,8 +39,7 @@ adds its own shape.
 the audit dock; after, the Jump Gate. Nothing else holds state: `guideTarget`,
 `goal.ts`, the HUD's objective, the edge pointers and the arrival note all read
 `lockLifted(world.flags)`. The flag is banked with the card, so a save, reload or
-restart of the sortie lands on the right objective. The registry card, its order and
-the story timing are untouched: the chain starts two seconds in and Sam's code comes after the breach
+restart of the sortie lands on the right objective. The story timing is untouched: the chain starts two seconds in and Sam's code comes after the breach
 notice, as before. The audit dock stays on the scope as a place after the code (nothing
 leads to it), and the depot stays on the strip throughout.
 
@@ -48,11 +47,14 @@ leads to it), and the depot stays on the strip throughout.
 
 One thing at a time, in seconds of play after the lock lifts (`STOLEN`):
 
-1. The rename reveal, the registry card and the archive, as before.
+1. The rename reveal (no card since 2026-10-31), then the archive 20 s or more on, at a free moment.
 2. **+20 s:** Sam names the short tank: the depot if she can pay, the veined rock if not
    (`STOLEN_SAM`, `STOLEN_SAM_POOR`). Only when the tank is short.
 3. **+38 s:** an amber notice, "Hull reported stolen · Kellern has called in Custody".
 4. **+70 s, and no sooner than 150 s in:** the first Custody hull, from behind.
+
+The depot's call is a radio line, not a card: flying into its ring docks. No lane toll is dealt at this
+system's gate. Every line and notice here takes its turn on the floor (`sim/floor.ts`).
 
 Until the lock lifts nothing hunts her and no hull comes for her (the recovery runs no
 waves), no chance card is dealt in this system at all, and the "Custody pursuit · N days

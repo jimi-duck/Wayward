@@ -4,8 +4,8 @@
 //   0.00–0.35  the lock lifts: the HUD's centre notice says so, the hull is still grey
 //   0.35–2.40  one amber band crosses the hull from bow to stern; the plate behind it is ochre
 //   0.60–6.00  the camera swings slowly round to her flank and pulls back (only when no hostile gun can reach her)
-//   6.30       the registry card (`story_rename`, a follow-up of the Sam card) pauses the game over that view
-// After the card is answered the camera eases back. The flag is the livery: this only decides how it is shown, so a
+//   6.00–7.20  the view holds on her flank, then the camera eases back (no card: owner 2026-10-31, the HUD's notice says
+//              she is repainted and renamed) The flag is the livery: this only decides how it is shown, so a
 // save made at any point loads straight into the ochre hull with no replay. Reduced motion: ochre at once, no arc.
 // No Three.js here, so the timing is tested headless.
 
@@ -13,12 +13,10 @@ export const LOCK_AT = 0.35;
 export const SWEEP_END = 2.4;
 export const ARC_START = 0.6;
 export const ARC_END = 6;
-/** When the registry card comes (the Sam card's follow-up, content/story.ts), just after the camera settles. */
-export const CARD_AT = 6.3;
-/** Seconds the camera takes to ease back once the card is answered. */
+/** When the camera starts back, after a moment held on her flank. */
+export const HOLD_END = 7.2;
+/** Seconds the camera takes to ease back. */
 const BACK = 1.6;
-/** The arc gives up if no card came (a save, a death, a jump) by then. */
-const GIVE_UP = 16;
 
 export interface RevealFrame {
   /** 0 grey to 1 ochre, when no sweep is running. */
@@ -47,7 +45,6 @@ export class RenameReveal {
   private known: boolean | null = null;
   private t0 = -1;
   private orbit = false;
-  private held = false;
   private release = -1;
   private back = 0;
 
@@ -71,7 +68,6 @@ export class RenameReveal {
       if (!i.reduced) {
         this.t0 = i.time;
         this.orbit = i.calm;
-        this.held = false;
         this.release = -1;
       }
     }
@@ -84,9 +80,8 @@ export class RenameReveal {
 
     let arc = 0;
     if (this.orbit) {
-      if (i.paused && e >= ARC_END - 0.05) this.held = true;
-      // a gun in range, the card answered, or no card at all: the camera comes back
-      const done = (this.held && !i.paused) || (!i.paused && !i.calm) || e > GIVE_UP;
+      // a gun in range, or the view has been held long enough: the camera comes back
+      const done = (!i.paused && !i.calm) || e >= HOLD_END;
       if (done && this.release < 0) { this.release = 0; this.back = smooth((e - ARC_START) / (ARC_END - ARC_START)); }
       if (this.release >= 0) {
         this.release += i.paused ? 0 : dt;

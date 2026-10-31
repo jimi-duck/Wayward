@@ -122,7 +122,7 @@ describe('chapter one: Cerro, on every seed', () => {
 });
 
 describe('chapter one: from the gate through the story chain', () => {
-  it.each(SEEDS)('seed %i: the cards come in order, the lock lifts, the code and the rename are banked, and a reload keeps them', (seed) => {
+  it.each(SEEDS)('seed %i: the cards come in order, the lock lifts, the code and the repaint are banked, and a reload keeps them', (seed) => {
     const j = newJourney(seed);
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
     w.train(); w.skipTraining();
@@ -137,7 +137,8 @@ describe('chapter one: from the gate through the story chain', () => {
     const next = new World(5, { mode: 'breakout', sortie: sortieDef(j), carry: j.carry });
     next.skipTraining();
     const seen: string[] = [];
-    for (let i = 0; i < 60 * 90; i++) {
+    // the archive waits for a free sky (sim/floor.ts): an idle hull may sit out a fight first
+    for (let i = 0; i < 60 * 180; i++) {
       if (next.phase === 'comms') { seen.push(next.comms!.def.id); next.answer(0); continue; }
       next.ship.invuln = 1; next.step(STEP, input());
     }
