@@ -32,6 +32,8 @@ export function installCrashCard(): void {
   window.addEventListener('error', (e) => {
     // a missing picture fires 'error' on the element, not here: ignore resource errors
     if (!(e instanceof ErrorEvent)) return;
+    // Chrome reports a harmless ResizeObserver notice here; it is not a crash
+    if (/^ResizeObserver loop/.test(e.message)) return;
     console.error('Uncaught error:', e.error ?? e.message);
     showCrash();
   });
