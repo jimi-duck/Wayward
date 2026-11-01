@@ -188,9 +188,16 @@ export class Hud {
 
   /** Put a line on the log. Kills of the same kind in a quick run add up on one line. */
   /** A hint line under the objective (docs/DESIGN-GUIDELINES.md, "One voice at a time"): an explainer that never pauses, for `secs` of play. */
-  private hintLine: { text: string; until: number } | null = null;
+  private hintLine: { text: string; from: number; until: number; world: World } | null = null;
   hint(world: World, line: string, secs = 20): void {
-    this.hintLine = { text: line, until: world.runTime + secs };
+    this.hintLine = { text: line, from: world.runTime, until: world.runTime + secs, world };
+  }
+  /** A hint lasts only in the world and the stretch of play it was raised in (a restart or a load starts a fresh clock), and never while Lane Control has the helm. */
+  private hintOn(world: World): boolean {
+    const h = this.hintLine;
+    if (!h) return false;
+    if (h.world !== world || world.runTime < h.from || world.runTime >= h.until || recovering(world.flags)) { this.hintLine = null; return false; }
+    return true;
   }
 
   note(world: World, line: string, cls = '', kind = '', points = 0): void {
@@ -262,6 +269,8 @@ export class Hud {
           this.note(world, `${t('Hostile reinforcements inbound')} · ${t('Escape to the Jump Gate')}`, 'hit');
           this.notify(world, { type: 'denied', headline: 'Hostile reinforcements inbound', reason: 'Escape to the Jump Gate', key: 'inbound' });
           break;
+        // the hint has done its job once a torpedo has flown
+        case 'torpedo': this.hintLine = null; break;
         case 'fitted':
           // the Work Bay's launcher (sheet C): brief, non-blocking, with this device's own control for it
           // a hint line under the objective, not a notice: the work bay's card has just closed (one voice at a time)
@@ -664,7 +673,7 @@ export class Hud {
       // the work order, live (sim/contract.ts): what is in the hold, and what the work bay has counted. Never one number for both.
       const cg = cargoOf(world);
       text($('obj-s'), cg ? cargoLine(cg) : '');
-      const hint = this.hintLine && world.runTime < this.hintLine.until ? `<li><span class="hint">${this.hintLine.text}</span></li>` : '';
+      const hint = this.hintOn(world) ? `<li><span class="hint">${this.hintLine!.text}</span></li>` : '';
       const html = `${hint}<li>${LESSON_HINT[les.hint]!.map(([c, k]) => `<span class="${c}">${t(k)}</span>`).join('')}</li>`;
       const list = $('obj-list');
       if (list.innerHTML !== html) list.innerHTML = html;
@@ -715,7 +724,7 @@ export class Hud {
         } else if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         lines.push(...goal.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
-        if (this.hintLine && world.runTime < this.hintLine.until) lines.unshift(`<span class="hint">${this.hintLine.text}</span>`);
+        if (this.hintOn(world)) lines.unshift(`<span class="hint">${this.hintLine!.text}</span>`);
         // Custody's pursuit, once it is a day or less behind: a readout, never a notice (caution gold, then threat red)
         const pd = world.pursuitDays;
         if (pd <= 1) lines.push(`<span class="${pd <= 0.5 ? 'threat' : 'caution'}">${t(pd <= 0.5 ? 'Custody pursuit · half a day behind' : 'Custody pursuit · 1 day behind')}</span>`);
