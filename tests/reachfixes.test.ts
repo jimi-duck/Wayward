@@ -4,6 +4,7 @@ import { newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { dueBeat } from '../src/sim/story';
 import { regionOf } from '../src/sim/chart';
 import { World } from '../src/sim/world';
+import { FLOOR } from '../src/sim/floor';
 
 // Findings from the logged pilot flights through the Reach: the hub beat before any job, the Narrows scene never skipped,
 // no Calloway offer at the Narrows, no Reach beat coming back later.
@@ -118,5 +119,22 @@ describe('a road gate after the Warden key', () => {
     const reset = notices.indexOf('Jump Gate resetting');
     expect(reset).toBeGreaterThan(notices.indexOf('Warden key accepted'));
     expect(notices.indexOf('Jump Gate open')).toBeGreaterThan(reset);
+  });
+
+  it('says nothing but the scan, and opens nothing, while the arrival sweep plays', () => {
+    const k = at(4);
+    const v = new World(7, { mode: 'breakout', sortie: quiet(k), carry: k.carry });
+    const said: Array<{ t: number; what: string }> = [];
+    for (let i = 0; i < 30 / STEP; i++) {
+      v.step(STEP, NO);
+      for (const e of v.events) {
+        if (e.type === 'storyNotice' || e.type === 'ping' || e.type === 'comms' || e.type === 'call') said.push({ t: v.runTime, what: e.type === 'storyNotice' ? e.headline : e.type });
+      }
+      v.events.length = 0;
+      if (v.comms ?? v.call) { if (v.runTime < FLOOR.arrival) said.push({ t: v.runTime, what: 'card open' }); const o = (v.comms ?? v.call)!; v.answer(o.def.choices[0]!.id); }
+    }
+    const early = said.filter((x) => x.t < FLOOR.arrival);
+    expect(early.map((x) => x.what)).toEqual(['Scanning for transmissions']);
+    expect(said.some((x) => x.t >= FLOOR.arrival)).toBe(true);
   });
 });

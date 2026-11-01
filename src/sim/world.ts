@@ -10,7 +10,7 @@ import { CAPTAIN_BY_ID, captainCard, captainShips, form, turnsAway, type Report 
 import { OFFER_AT } from '../content/calloway';
 import { CHATTER, type Moment } from '../content/chatter';
 import { Desk, DESK, HUSH, type Busy } from './desk';
-import { Floor } from './floor';
+import { Floor, FLOOR, SCAN_LINE } from './floor';
 import { Script, type Output } from './script';
 import { derive, SIG_CLUES, relaysLit, relayFlag } from './evidence';
 import { ON_ROAD } from '../content/road';
@@ -874,9 +874,12 @@ export class World implements EncounterHost {
     const beat = b.def.story;
     const opening = !!beat && (CERRO_BEATS as readonly string[]).includes(beat);
     // on the road, entering a system: the scan is said first, then the calls come in and their waypoints with them (the owner, 31 October 2026)
-    if (!this.scanned && this.script && this.runTime >= SCAN_AT && this.phase === 'play' && b.jumpT < 0 && !opening && !recovering(this.flags) && !this.tutor) {
+    // ...and nothing else is said, and no card or call opens, until the camera's arrival sweep and the system's title are done
+    const arriving = !!this.script && !opening && !recovering(this.flags) && !this.tutor;
+    this.floor.hush = arriving && this.runTime < FLOOR.arrival;
+    if (!this.scanned && arriving && this.runTime >= SCAN_AT && this.phase === 'play' && b.jumpT < 0) {
       this.scanned = true;
-      this.events.push({ type: 'storyNotice', tone: 'teal', headline: 'Scanning for transmissions', reason: this.sortie.name });
+      this.events.push({ type: 'storyNotice', tone: 'teal', headline: SCAN_LINE, reason: this.sortie.name });
     }
 
     if (beat && !this.storyMade && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {

@@ -1,3 +1,4 @@
+import { SCAN_LINE } from '../sim/floor';
 import { CONTRACT_ID, ratio, type Cargo } from '../sim/contract';
 import { clamp } from '../core/math';
 import type { SystemKind } from '../content/systems';
@@ -116,7 +117,7 @@ const SECTOR_NAME: Record<EncounterId, string> = {
 };
 
 /** Seconds a jump arrival's title card stays up, fade in and out included. */
-const TITLE_SECS = 5.2;
+const TITLE_SECS = 8.5;
 
 export class Hud {
   private readonly radar = new Radar($<HTMLCanvasElement>('radar'));
@@ -239,7 +240,7 @@ export class Hud {
           break;
         case 'storyNotice':
           // the arrival scan, while the title card is up, is the card's last line, not a second message
-          if (this.titleT > 0 && e.headline === 'Scanning for transmissions') { text($('tc-s'), t(e.headline)); break; }
+          if (this.titleT > 0 && e.headline === SCAN_LINE) { text($('tc-s'), t(e.headline)); break; }
           this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
         case 'jobDone':
           this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain');
