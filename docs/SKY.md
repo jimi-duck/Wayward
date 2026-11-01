@@ -81,3 +81,6 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
 - **The planet.** A wide soft terminator, the nebula's light on the night side, a thin air rim all round, and the ring's shadow
   on the day side.
 - **More far events.** Far flashes in the Reach and two Arcade skies; shooting stars in the Hollows and the Last Lanes.
+- **Depth when turning.** About 420 dim near stars sit at a real distance far under the plane (`depth.ts`), in a box that
+  follows the ship, so they slide against the stars at infinity when the camera swings. Every 22 to 55 s a dark rock
+  tumbles past right by the lens at one edge of the picture (0.75 s, stretched along its path). Not with reduced motion.

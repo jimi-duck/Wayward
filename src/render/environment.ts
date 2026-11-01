@@ -6,6 +6,7 @@ import {
 import { bakeSky, detailTile, dirOf, FarBodies, Parallax, skyFor, SUN_AZ, SUN_EL, type Sky } from './sky';
 import { Starfield } from './starfield';
 import { Phenomena } from './phenomena';
+import { Depth } from './depth';
 import { WORLD_RIM } from './kit';
 
 // ── deep space ────────────────────────────────────────────────────────────
@@ -67,6 +68,8 @@ export class Environment {
   private readonly field = new Starfield();
   /** The sky's rare and passing things: a hole, a rift, a storm cell, shooting stars, far flashes, far traffic. */
   readonly phenomena = new Phenomena();
+  /** Near stars at a real distance, and the odd rock past the lens (render/depth.ts). */
+  private readonly depth = new Depth();
   private readonly hemi: HemisphereLight;
   /** Reduced motion holds the stars' twinkle and the gas still. */
   motion = true;
@@ -136,7 +139,7 @@ export class Environment {
     scene.environment = reflections(renderer);
 
     this.stars.add(this.field.group, this.phenomena.group);
-    this.group.add(this.stars);
+    this.group.add(this.stars, this.depth.group);
 
     const N = 300;
     this.dustBase = new Float32Array(N * 3);
@@ -276,6 +279,7 @@ export class Environment {
   setDetail(low: boolean): void {
     this.field.setThin(low);
     this.parallax.setThin(low);
+    this.depth.setThin(low);
     const mat = this.dome;
     if (mat.defines.DETAIL === (low ? undefined : '')) return;
     if (low) delete mat.defines.DETAIL; else { mat.defines.DETAIL = ''; mat.uniforms.uDetail!.value = detailTile(this.renderer); }
@@ -287,6 +291,7 @@ export class Environment {
     this.parallax.update(cx, cz, dt);
     if (dt > 0) this.t = (this.t + (this.motion ? dt : 0)) % 4000;
     this.field.update(cx, cz, dt, this.motion);
+    this.depth.update(camera, cx, cz, dt, this.motion);
     // the cloud and the far worlds slide against the ship's travel, each a sine of the distance so they never run off
     this.dome.uniforms.uTime!.value = this.t;
     // where the ship is on screen, for the calm in the middle of the cloud
