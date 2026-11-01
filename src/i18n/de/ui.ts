@@ -722,4 +722,7 @@ export const UI: Record<string, string> = {
   'Channel': 'Kanal',
   'Strength': 'Stärke',
   'Them {a} · You {b}': 'Gegner {a} · Du {b}',
+  // ── photo mode ──
+  'Photo mode': 'Fotomodus',
+  'Photo mode · any key or tap returns': 'Fotomodus · Taste oder Tippen bringt dich zurück',
 };

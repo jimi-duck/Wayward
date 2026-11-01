@@ -92,10 +92,10 @@ interface RockLook {
 }
 
 const LOOKS: Record<RockKind, RockLook> = {
-  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [0.9, 0.95, 1.02], zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
-  iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.72, 0.78, 0.9], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
-  rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.8, 0.72, 1.2], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
-  volatile: { id: 'volatile', glow: [0.5, 1.7, 3.0],   tint: [0.7, 0.86, 1.22], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
+  basalt:   { id: 'basalt',   glow: [3.6, 0.55, 0.08], tint: [1.08, 0.84, 0.68], zone: 0,    pulse: 1.4, metal: 0.04, mineral: 0,   strata: 0.5, rim: 0 },
+  iron:     { id: 'iron',     glow: [1.4, 0.3, 0.08],  tint: [0.66, 0.8, 1.04], zone: -0.2, pulse: 0.6, metal: 0.55, mineral: 0.25, strata: 0.9, rim: 0 },
+  rich:     { id: 'rich',     glow: [2.4, 0.9, 4.2],   tint: [0.86, 0.6, 1.36], zone: 0.3,  pulse: 2.2, metal: 0.1, mineral: 1,   strata: 0.6, rim: 0.25 },
+  volatile: { id: 'volatile', glow: [0.5, 1.7, 3.0],   tint: [0.6, 0.96, 1.2], zone: 0.45, pulse: 7,   metal: 0.04, mineral: 0,   strata: 0.3, rim: 0.7 },
 };
 const KINDS = Object.keys(LOOKS) as RockKind[];
 
@@ -195,13 +195,14 @@ export function lavaRock(detail: number, lava: number, bump: number, look: RockL
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
         normal = kitPerturb(-vViewPosition, normal, rockH * uBump, faceDirection);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        // at chase distance the cracks are sub-pixel: the kind shows as a faint cast of its own colour instead, well under the bloom line
+        // at chase distance the cracks are sub-pixel: the kind shows as a cast of its own colour instead (a hint of glow, so a field reads
+        // as a colourful scene and not grey gravel), still under the bloom line
         float farK = smoothstep(18.0, 70.0, length(vViewPosition));
-        totalEmissiveRadiance += uGlow / max(uGlow.r, max(uGlow.g, uGlow.b)) * farK * 0.035 * (uEmber * 0.5 + uViolet * 1.3 + uCool * 0.7) * uLava;
+        totalEmissiveRadiance += uGlow / max(uGlow.r, max(uGlow.g, uGlow.b)) * farK * 0.08 * (uEmber * 0.5 + uViolet * 1.3 + uCool * 0.7) * uLava;
         float rimK = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
-        totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.012 * uViolet + 0.01 * uCool) * uLava;`);
+        totalEmissiveRadiance += lavaGlow + uGlow * rimK * (0.03 * uViolet + 0.025 * uCool + 0.012 * uEmber) * uLava;`);
   };
-  m.customProgramCacheKey = () => `stone-rock12-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
+  m.customProgramCacheKey = () => `stone-rock13-${detail}-${lava}-${bump}-${look.id}-${ember ? 1 : 0}`;
   return m;
 }
 

@@ -27,8 +27,11 @@ const VOID = new Color('#030509');
 const HAZE = new Color('#25323f');
 const FOG_BASE = 0.0072;
 const INK = new Color('#cfd6e0');
+const WHITE_LIGHT = new Color(1, 1, 1);
 const NEBULA = new Color('#1b0e28');
 const DUST_BOX = 130;
+/** Speed (units/s) where the dust starts to streak; the hauler's top speed is about 39. */
+const DUST_FAST = 20;
 const KEY_TINT = new Color();
 const RIM_COLOUR = new Color(0x7f9cc8), FIGHT_TINT = new Color();
 /** The sun's warmth on the key light, and the sky's cool second colour on the rim behind. */
@@ -45,12 +48,16 @@ export class Environment {
   /** The key light's colour (the sun's) and the rim's (the sky's second colour, cooled), for this sky. */
   private readonly sunCol = new Color(0.94, 0.92, 0.89);
   private readonly rimCol = RIM_COLOUR.clone();
+  /** The system's colour mood for the grade (render/post.ts): its main colour lifts the shadows, its sun warms the lights. */
+  readonly mood = { shadow: new Color(), light: new Color(1, 1, 1) };
   /** A faint wash of the sky's own colour in the distance haze. */
   private readonly haze = new Color();
   readonly group = new Group();
   private readonly stars = new Group();
   private readonly dustBase: Float32Array;
   private readonly dustPos: BufferAttribute;
+  /** The dust's colour: the sun's, so the motes read as sunlit; brighter at speed. */
+  private readonly dustMat: LineBasicMaterial;
   private readonly rim: DirectionalLight;
   private fightK = 0;
   private readonly key: DirectionalLight;
@@ -131,10 +138,12 @@ export class Environment {
     const col = new Float32Array(N * 6);
     for (let i = 0; i < N; i++) {
       const b = 0.1 + Math.random() * 0.25;
-      col.set([INK.r * b, INK.g * b, INK.b * b, 0, 0, 0], i * 6);
+      // the head of each mote catches the light, the tail fades: a faint streak at speed
+      col.set([b, b, b, 0, 0, 0], i * 6);
     }
     g.setAttribute('color', new Float32BufferAttribute(col, 3));
-    const dust = new LineSegments(g, new LineBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, fog: false }));
+    this.dustMat = new LineBasicMaterial({ color: INK, vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, fog: false });
+    const dust = new LineSegments(g, this.dustMat);
     dust.frustumCulled = false;
     this.group.add(dust);
 
@@ -207,6 +216,9 @@ export class Environment {
     this.rimCol.setRGB(c2.r / m, c2.g / m, c2.b / m).lerp(COOL, 0.5);
     this.rim.color.copy(this.rimCol);
     this.skyRim.copy(sky.neb[0]).lerp(sky.neb[2], 0.35).multiplyScalar(0.5);
+    this.mood.shadow.copy(sky.neb[0]).lerp(sky.neb[1], 0.25).multiplyScalar(0.022);
+    const s = this.sunCol, top = Math.max(s.r, s.g, s.b, 1e-3);
+    this.mood.light.setRGB(s.r / top, s.g / top, s.b / top).lerp(WHITE_LIGHT, 0.82);
     WORLD_RIM.value.copy(this.skyRim);
   }
 
@@ -277,7 +289,11 @@ export class Environment {
     this.rim.position.set(camera.position.x - cx, camera.position.y * 0.4, camera.position.z - cz).multiplyScalar(-1);
 
     const P = this.dustPos.array as Float32Array, B = this.dustBase;
-    const sx = -vx * 0.035, sz = -vz * 0.035, h = DUST_BOX / 2;
+    // past about half of top speed the motes stretch into faint speed streaks and brighten a little
+    const fast = Math.min(1, Math.max(0, (Math.hypot(vx, vz) - DUST_FAST) / DUST_FAST));
+    const len = 0.035 + 0.045 * fast;
+    const sx = -vx * len, sz = -vz * len, h = DUST_BOX / 2;
+    this.dustMat.color.copy(this.sunCol).multiplyScalar(0.85 + 0.6 * fast);
     for (let i = 0; i < B.length / 3; i++) {
       const x = cx + wrap(B[i * 3]! - cx, DUST_BOX) - h;
       const z = cz + wrap(B[i * 3 + 2]! - cz, DUST_BOX) - h;

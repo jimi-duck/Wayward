@@ -1583,3 +1583,10 @@ html:not(.breakout).touch-ui:not(.pad-ui) #pause .term-s.full { display: none; }
 /* the chart's chip on a stop her read expects */
 .chip.her { color: var(--faction-office); border-color: var(--faction-office); }
 .ch-o1 .chip.her, .co-blurb .chip.her { margin-left: 6px; }
+
+/* ── photo mode (main.ts): the world alone, the camera drifting slowly round the ship ── */
+#photo-hint { position: fixed; left: 50%; bottom: calc(24px + var(--safe-b)); translate: -50% 0; z-index: 40; display: none; padding: 6px 14px; pointer-events: none;
+  font: 600 12px/1 var(--font-rail); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); background: rgba(var(--void-rgb), .5); }
+html.photo #photo-hint { display: block; animation: ph-hint 4s linear forwards; }
+@keyframes ph-hint { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+html.photo #hud, html.photo #pause, html.photo #touch, html.photo #pause-b, html.photo #rv-labels, html.photo #rv-btn, html.photo #rv { visibility: hidden; }

@@ -54,3 +54,18 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
   fades into the sky's colour, not into black.
 - **Grade.** No colour drain any more, a softer vignette and less grain (`post.ts`).
 - **The HUD.** Soft dark pools under the four corners (`#hud::before` in `hud.css`): no blur, one static layer.
+
+## The rest of the list (2026-11-01)
+
+- **Rocks.** Each mineral has its own tint and a faint glow on the rim and in the far cast: basalt warm brown, iron
+  steel blue, rich violet (cyrite), volatile cyan (`rocks.ts`, cache key `stone-rock13`).
+- **The ship.** Off-white plating with a bold worn ochre stripe (`LIVERY` in `wayward.ts`). Smaller on screen: the camera
+  sits lower and further back (`camera.ts` ELEV 20°, PITCH 13.5°, VIEW 11 x 6.2).
+- **Dust.** The motes take the sun's colour; past about half of top speed they stretch into faint speed streaks and brighten.
+- **Jump arrivals.** A slow sweep: the shot opens wide, high and 120° round to the side, holds 0.8 s, then swings in behind
+  the ship over 4.2 s (`Sector.arriveSweep`). A fight or a pop-up cuts it short; never with reduced motion. The HUD shows the
+  system's name like a film title, low in the middle, for 5.2 s (`Hud.titleCard`); the arrival scan becomes its last line.
+- **A still world.** Paused or docked, the shot sways slowly round the ship. Photo mode (pause card) hides the HUD and the
+  card and circles the ship, a little further off and lower; any key or tap brings the card back.
+- **Colour mood.** A split tone in the grade (`MoodEffect` in `post.ts`): the sky's main colour in the shadows, its sun in the
+  lights. Medium and High only (Low has no post chain).

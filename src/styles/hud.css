@@ -496,6 +496,25 @@ html.breakout .plates i.on:not(.sh) { background: linear-gradient(180deg, var(--
 #banner.calm { --tone: var(--cy); filter: none; }
 #banner.gain { --tone: var(--violet); filter: none; }
 
+/* ── a jump arrival's title card (ui/hud.ts titleCard) ─────────────────
+   A film title, not a pop-up: no box, a feathered dark halo, the name wide-spaced in thin capitals under the ship.
+   It never takes input and fades on its own. */
+#title-card { position: absolute; left: 50%; bottom: 17vh; translate: -50% 0; display: grid; justify-items: center; gap: 6px;
+  padding: 18px 64px; pointer-events: none; opacity: 0; text-align: center; white-space: nowrap;
+  background: radial-gradient(closest-side, rgba(var(--void-rgb), .55), rgba(var(--void-rgb), .3) 60%, transparent); }
+#title-card.on { animation: tc-run var(--tc-secs, 5.2s) linear forwards; }
+@keyframes tc-run { 0% { opacity: 0; } 18% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; } }
+#tc-k { font: 600 calc(var(--fs) * 1.0)/1 var(--font-rail); letter-spacing: .3em; text-transform: uppercase; color: var(--cy); }
+#tc-t { font: 300 clamp(30px, 3.6vw, 54px)/1.05 var(--font-display); letter-spacing: .4em; text-indent: .4em; text-transform: uppercase; color: var(--ink); }
+#title-card.on #tc-t { animation: tc-name var(--tc-secs, 5.2s) cubic-bezier(.2, .6, .2, 1) forwards; }
+@keyframes tc-name { from { letter-spacing: .32em; text-indent: .32em; } to { letter-spacing: .5em; text-indent: .5em; } }
+#tc-s { min-height: 1em; font: 600 calc(var(--fs) * 0.95)/1 var(--font-rail); letter-spacing: .2em; text-transform: uppercase; color: var(--ink-2); }
+@media (max-height: 520px) { #title-card { bottom: 13vh; padding: 10px 40px; gap: 4px; } #tc-t { font-size: 24px; } #tc-k, #tc-s { font-size: 10px; } }
+@media (prefers-reduced-motion: reduce) {
+  #title-card.on { animation: none; opacity: 1; }
+  #title-card.on #tc-t { animation: none; letter-spacing: .4em; }
+}
+
 /* ── a narrow window, and a phone ─────────────────────────────────────── */
 @media (max-width: 760px) {
   #systems { width: min(232px, 52vw); padding: 9px 11px 9px 12px; column-gap: 8px; row-gap: 7px; }

@@ -523,6 +523,7 @@ function boot(review: typeof import('./review') | null): void {
     if (on && started) carded = true;
     callHold = false;
     loop.paused = on;
+    if (!on && photo) setPhoto(false);
     if (on) showSettings(false);
     document.documentElement.classList.toggle('paused', on && started);
     if (on) {
@@ -531,6 +532,15 @@ function boot(review: typeof import('./review') | null): void {
       showConsole(world);
     }
   };
+  /** Photo mode, from the pause card: the HUD and the card step away and the camera drifts round the ship. Any key or tap brings the card back. */
+  let photo = false;
+  const setPhoto = (on: boolean) => {
+    photo = on;
+    sector.photo = on;
+    document.documentElement.classList.toggle('photo', on);
+    if (!on) el('p-go').focus({ preventScroll: true });
+  };
+  window.addEventListener('pointerdown', (e) => { if (photo) { e.preventDefault(); e.stopPropagation(); setPhoto(false); } }, true);
   /** The pause card's other face: sound, buzz and camera, kept off the card that explains the game. */
   const settingsOpen = () => el('pause').classList.contains('settings-on');
   const showSettings = (on: boolean) => {
@@ -615,7 +625,7 @@ function boot(review: typeof import('./review') | null): void {
     {
       layer: el('touch'), stick: el('stick'), knob: el('knob'), fire: el('fire'), torpedo: el('torp'), brk: el('brk'),
     },
-    () => (started ? (panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : menuEnter()),
+    () => (started ? (photo ? setPhoto(false) : panelOpen() ? undefined : settingsOpen() ? showSettings(false) : setPaused(!loop.paused)) : menuEnter()),
     () => openBay(),
   );
 
@@ -778,6 +788,7 @@ function boot(review: typeof import('./review') | null): void {
       return;
     }
     if (startOpts.logbookOpen) { if (e.code === 'Escape') startOpts.logbook(false); return; }
+    if (photo) { setPhoto(false); return; }
     if (panelOpen()) return;
     if (e.code === 'Tab') e.preventDefault();
     // Any key resumes, except the pause keys themselves: Input has already
@@ -824,6 +835,7 @@ function boot(review: typeof import('./review') | null): void {
   act('p-sound', () => { feel.setSound(!feel.prefs.sound); showBrief(); });
   act('p-buzz', () => { feel.setHaptics(!feel.prefs.haptics); showBrief(); });
   act('p-go', () => setPaused(false));
+  act('p-photo', () => setPhoto(true));
   // Story mode saves the journey as it stands (the last chart or dock); the arcade just leaves. Either way the page reloads to the title
   act('p-exit', () => {
     if (journey && world.mode === 'breakout') saveJourney(journey);

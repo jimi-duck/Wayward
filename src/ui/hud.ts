@@ -115,6 +115,9 @@ const SECTOR_NAME: Record<EncounterId, string> = {
   derelict: 'Derelict hulk', anomaly: 'Spatial anomaly', skirmish: 'Skirmish', scene: 'Situation',
 };
 
+/** Seconds a jump arrival's title card stays up, fade in and out included. */
+const TITLE_SECS = 5.2;
+
 export class Hud {
   private readonly radar = new Radar($<HTMLCanvasElement>('radar'));
   private readonly aim = new Targeting();
@@ -149,6 +152,9 @@ export class Hud {
   private mendNoted = -Infinity;
   private contactKey = '';
   private centreKey = '';
+  /** The run that ended in a jump: the next run's first frame shows the new system's title card. Seconds the card has left. */
+  private jumpedRun: unknown = null;
+  private titleT = 0;
 
   constructor() {
     // the refit bay's badge opens it, by tap or click; the flight controls behind never see the touch
@@ -224,7 +230,10 @@ export class Hud {
           // the opening's notices (the lock lifted, the registry) are the cards' own Signals now, paced by the floor (sim/floor.ts);
           // the recovery's status is the objective line
           break;
-        case 'storyNotice': this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
+        case 'storyNotice':
+          // the arrival scan, while the title card is up, is the card's last line, not a second message
+          if (this.titleT > 0 && e.headline === 'Scanning for transmissions') { text($('tc-s'), t(e.headline)); break; }
+          this.notify(world, { type: e.tone === 'amber' ? 'warning' : e.tone === 'red' ? 'denied' : 'arrival', headline: e.headline, reason: e.reason, key: `story:${e.headline}` }); break;
         case 'jobDone':
           this.note(world, `${t('Job done')} · ${t(e.text)}`, 'gain');
           // at the port the pop-up says it (ui/jobdone.ts); at the Jump Gate a quiet notice does
@@ -235,7 +244,7 @@ export class Hud {
         case 'jumpLost': this.notify(world, { type: 'warning', headline: 'Jump fluid short', reason: `${e.have}/${e.need}`, key: 'jumplost' }); break;
         case 'spool': this.banner(t('Jump Gate'), t('Jump drive charging'), t('Fly through the gate'), 1.6, 'calm'); break;
         case 'needFuel': this.banner(t('Ship system'), t('Not enough jump fluid'), t('{have} of {need} in the tank', { have: e.have, need: e.need }), 2.2, 'caution'); break;
-        case 'jumped': this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
+        case 'jumped': this.jumpedRun = world.run; this.banner(t('Jump'), t('Into the lane'), world.bk ? t('Bound for {dest}', { dest: t(world.bk.def.dest) }) : t('Out of the system'), 2, 'calm'); break;
         case 'pickup': this.note(world, `${t('Hull repaired')} · ${e.plates}/${world.stats.maxPlates}`, 'gain'); break;
         case 'power': this.note(world, `${t(POWER_LABEL[e.kind])} · ${t(POWER_HINT[e.kind])}`, 'gain'); break;
         case 'plasmaDown': this.note(world, t('Plasma torpedo shot down')); break;
@@ -336,6 +345,8 @@ export class Hud {
     // the heading tape, with the objective on it; it also says whether this is travel or a fight
     this.guide.update(world, sector.shipNow.heading, dt);
     if (this.bannerT > 0 && (this.bannerT -= dt) <= 0) $('banner').classList.remove('on');
+    if (this.jumpedRun && world.run !== this.jumpedRun) { this.jumpedRun = null; if (world.bk) this.titleCard(world.bk.def); }
+    if (this.titleT > 0 && (this.titleT -= dt) <= 0) $('title-card').classList.remove('on');
     this.notifier.step(dt);
     if (this.gainT > 0 && (this.gainT -= dt) <= 0) this.gain = 0;
     this.textClock += dt;
@@ -869,6 +880,19 @@ export class Hud {
   /** A line for the corner log, for a centre message that was pushed out or could not show. */
   private cornerLine(line: string): void {
     if (this.world) this.note(this.world, line);
+  }
+
+  /** A jump arrival: the new system's name, like a film's title, while the camera sweeps over it (render/sector.ts). */
+  private titleCard(d: { name: string; kind: SystemKind; netted?: boolean }): void {
+    text($('tc-k'), t(d.netted ? 'Netted · Custody control' : KIND_NAME[d.kind]));
+    text($('tc-t'), d.name);
+    text($('tc-s'), '');
+    const el = $('title-card');
+    el.classList.remove('on');
+    void el.offsetWidth;
+    el.style.setProperty('--tc-secs', `${TITLE_SECS}s`);
+    el.classList.add('on');
+    this.titleT = TITLE_SECS;
   }
 
   private banner(kicker: string, title: string, sub: string, secs: number, tone = ''): void {

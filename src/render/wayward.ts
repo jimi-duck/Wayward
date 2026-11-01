@@ -119,9 +119,10 @@ export function woundPoints(): { points: V3[]; hard: boolean } {
  * 0 (grey) to 1 (ochre) so the rename can sweep it. Primer patches and the dark machinery stay as they are in both.
  */
 const LIVERY = {
-  // the repaint is a dull, dark ochre over old plate, done in a hurry (owner 2026-10-31: darker, more run down)
-  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xa48536, 0x7f652a, 0xb09444],
-  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.042, 0.028, 0.002],
+  // the repaint: bold blocks, worn. Off-white plate with the ochre stripe as the strong colour (owner 2026-11-01: off-white and a
+  // bold stripe read far better than grey detail); the wear in metal() keeps it "repaired and stolen"
+  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xc2bdb0, 0xc0861f, 0xd2cec2],
+  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.03, 0.026, 0.02],
 } as const;
 const A = new Color(), B = new Color();
 let liveryMix = 0;
@@ -257,7 +258,8 @@ type Rnd = () => number;
 /** Its own stream, so which plates are knocked askew leaves the layout alone. */
 let knock = seeded(4471);
 let braces = seeded(5521);
-const pickAmber = (rnd: Rnd): string => { const r = rnd(); return r < 0.5 ? 'paint' : r < 0.84 ? 'paint2' : 'paint3'; };
+// plates take the off-white in two shades; the ochre stripe (paint2) is kept to the parts drawn as the stripe, so it reads as a bold block
+const pickAmber = (rnd: Rnd): string => (rnd() < 0.6 ? 'paint' : 'paint3');
 
 // ── armour ────────────────────────────────────────────────────────────────
 
