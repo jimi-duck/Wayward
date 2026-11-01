@@ -54,7 +54,7 @@ export class Post {
     const bloom = new BloomEffect({ mipmapBlur: true, luminanceThreshold: 0.7, luminanceSmoothing: 0.25, intensity: 1.25, radius: 0.7 });
     // half resolution on every tier: mipmap blur hides it, and it is cheaper
     bloom.resolution.scale = 0.5;
-    const vignette = new VignetteEffect({ offset: 0.34, darkness: 0.48 });
+    const vignette = new VignetteEffect({ offset: 0.3, darkness: 0.62 });
     const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: false });
     grain.blendMode.opacity.value = 0.035;
     // a light grade: the sky carries colour now (each system its own two), so nothing is drained; the HUD guards its own text

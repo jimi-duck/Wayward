@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, Euler, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedMesh,
-  LinearFilter, Mesh, MeshBasicMaterial, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial,
+  LinearFilter, Mesh, MeshBasicMaterial, MeshLambertMaterial, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial,
   SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer,
 } from 'three';
 import { farWorks } from './farworks';
@@ -425,18 +425,19 @@ export function detailTile(renderer: WebGLRenderer): Texture {
 // ── the far bodies ────────────────────────────────────────────────────────
 
 const PLANET_V = /* glsl */ `
-  varying vec3 vN; varying vec3 vP; varying vec3 vV;
+  varying vec3 vN; varying vec3 vP; varying vec3 vV; varying vec3 vW;
   void main() {
     vP = position;
     vN = normalize(mat3(modelMatrix) * normal);
     vec4 wp = modelMatrix * vec4(position, 1.0);
+    vW = wp.xyz;
     vV = normalize(cameraPosition - wp.xyz);
     gl_Position = projectionMatrix * viewMatrix * wp;
   }`;
 
 const PLANET_F = /* glsl */ `
-  varying vec3 vN; varying vec3 vP; varying vec3 vV;
-  uniform vec3 uA, uB, uAtmo, uL; uniform float uKind, uSeed, uDim, uAir;
+  varying vec3 vN; varying vec3 vP; varying vec3 vV; varying vec3 vW;
+  uniform vec3 uA, uB, uAtmo, uL, uNight, uCentre, uRingN; uniform float uKind, uSeed, uDim, uAir, uRingIn, uRingOut;
   ${NOISE}
   void main() {
     vec3 p = normalize(vP), n = normalize(vN);
@@ -470,12 +471,24 @@ const PLANET_F = /* glsl */ `
       col = mix(col, vec3(0.78, 0.8, 0.84), cl * (0.12 + 0.3 * uAir));
     }
     float l = dot(n, uL);
-    float day = smoothstep(-0.08, 0.5, l);
+    // a soft terminator: day fades into night over a wide band, not a cut
+    float day = smoothstep(-0.28, 0.62, l);
+    // the ring's shadow on the day side: follow the sunlight back from this point to the ring's plane
+    if (uRingOut > 0.0) {
+      float dn = dot(uL, uRingN);
+      float t = abs(dn) > 1e-3 ? dot(uCentre - vW, uRingN) / dn : -1.0;
+      float rr = length(vW + uL * t - uCentre);
+      float inRing = t > 0.0 ? smoothstep(uRingIn, uRingIn * 1.04, rr) * smoothstep(uRingOut, uRingOut * 0.96, rr) : 0.0;
+      day *= 1.0 - inRing * (0.4 + 0.25 * sin(rr / uRingOut * 90.0));
+    }
     float fres = pow(1.0 - max(dot(n, vV), 0.0), 2.5);
     // twilight: a warm band where day becomes night, and a faint glow of the dark side, with a few city lights on a rock world
     float dusk = smoothstep(-0.18, 0.0, l) * smoothstep(0.34, 0.04, l);
     float city = uKind > 0.5 && uKind < 1.5 ? smoothstep(0.78, 0.84, fbm(p * 38.0 + s, 3)) * smoothstep(0.6, 0.35, fbm(p * 2.6 + s, 4)) * (1.0 - day) : 0.0;
-    vec3 c = col * day * 0.95 + col * 0.018 + uAtmo * fres * smoothstep(-0.35, 0.45, l) * uAir * 0.6
+    // the night side is never pure black: the nebula's light lies on it faintly, and a thin rim of air glows all round
+    float rim = pow(1.0 - max(dot(n, vV), 0.0), 7.0);
+    vec3 c = col * day * 0.95 + col * 0.018 + uNight * (1.0 - day) * (0.6 + 0.4 * fres) + uAtmo * rim * uAir * (0.18 + 0.5 * smoothstep(-0.5, 0.4, l))
+      + uAtmo * fres * smoothstep(-0.35, 0.45, l) * uAir * 0.6
       + vec3(0.55, 0.26, 0.12) * dusk * fres * uAir * 0.5 + vec3(0.7, 0.5, 0.25) * city * 0.22;
     gl_FragColor = vec4(c * uDim, 1.0);
   }`;
@@ -523,6 +536,8 @@ const RING_F = /* glsl */ `
   }`;
 
 const UP = new Vector3(0, 1, 0);
+/** The flare's ghosts: how far along to the sun's mirror (0 the sun, 1 the mirror), size (of D), strength. */
+const GHOSTS: readonly [number, number, number][] = [[0.45, 0.035, 0.3], [0.75, 0.06, 0.16], [1.15, 0.02, 0.36], [1.5, 0.09, 0.1]];
 
 const RAYS_V = /* glsl */ `
   uniform float uSize;
@@ -555,6 +570,25 @@ export class FarBodies {
   private dimNow = 1;
   private rays: ShaderMaterial | null = null;
 
+  private readonly sunDir = new Vector3();
+  private readonly ghosts: { s: Sprite; t: number }[] = [];
+  private glare: Sprite | null = null;
+  private readonly gv = new Vector3();
+
+  /** Facing the sun (`fwd` the camera's forward): the glare swells a little and the flare's ghosts show. */
+  face(fwd: Vector3): void {
+    const fs = fwd.dot(this.sunDir), k = Math.max(0, Math.min(1, (fs - 0.55) / 0.4));
+    const kk = k * k * (3 - 2 * k) * this.dimNow;
+    if (this.glare) this.glare.material.opacity = this.dimNow * (1 + kk * 0.8);
+    for (const g of this.ghosts) {
+      // the mirror of the sun across the middle of the view is 2(f·s)f - s; the ghosts sit along the way to it
+      this.gv.copy(fwd).multiplyScalar(2 * fs).sub(this.sunDir).lerp(this.sunDir, 1 - g.t).normalize().multiplyScalar(1700);
+      g.s.position.copy(this.gv);
+      g.s.material.opacity = kk;
+      g.s.visible = kk > 0.01;
+    }
+  }
+
   /** The sun's rays turn, very slowly (`t` seconds; reduced motion holds it). */
   tick(t: number): void {
     if (this.rays) this.rays.uniforms.uTime!.value = t;
@@ -577,7 +611,9 @@ export class FarBodies {
       // the dark limb (the sun nearly behind them)
       const ph = r(), turn = ph < 0.55 ? 0 : ph < 0.8 ? 1.2 + r() * 0.5 : 2.3 + r() * 0.5;
       const lit = this.sun.clone().applyAxisAngle(UP, turn * (r() < 0.5 ? -1 : 1));
-      const common = { uL: { value: lit }, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 } };
+      // the nebula's light on the night side: the sky's two colours, faint
+      const night = sky.neb[0].clone().lerp(sky.neb[1], 0.4).multiplyScalar(0.07);
+      const common = { uL: { value: lit }, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 }, uNight: { value: night }, uCentre: { value: at }, uRingN: { value: new Vector3(0, 1, 0) }, uRingIn: { value: 0 }, uRingOut: { value: 0 } };
       const planetMat = new ShaderMaterial({
         vertexShader: PLANET_V, fragmentShader: PLANET_F,
         uniforms: { ...common, uA: { value: pl.colA }, uB: { value: pl.colB }, uAtmo: { value: pl.atmo }, uKind: { value: pl.kind }, uSeed: { value: sky.seed % 50 } },
@@ -599,13 +635,17 @@ export class FarBodies {
         const ring = new Mesh(new RingGeometry(inner, outer, 128, 1), ringMat);
         ring.rotation.x = -Math.PI / 2 + 0.25;
         body.add(ring);
+        // the ring's plane in the world, for its shadow on the planet
+        ring.updateMatrix(); body.updateMatrix();
+        common.uRingN.value.set(0, 0, 1).applyQuaternion(ring.quaternion).applyQuaternion(body.quaternion).normalize();
+        common.uRingIn.value = inner; common.uRingOut.value = outer;
         this.mats.push(ringMat);
       }
       this.group.add(body);
       if (pl.moon) {
         const moonMat = new ShaderMaterial({
           vertexShader: PLANET_V, fragmentShader: PLANET_F,
-          uniforms: { ...common, uAir: { value: 0 }, uA: { value: new Color(0.16, 0.16, 0.17) }, uB: { value: new Color(0.42, 0.41, 0.4) }, uAtmo: { value: new Color(0, 0, 0) }, uKind: { value: 1 }, uSeed: { value: sky.seed % 23 + 7 } },
+          uniforms: { ...common, uRingOut: { value: 0 }, uAir: { value: 0 }, uA: { value: new Color(0.16, 0.16, 0.17) }, uB: { value: new Color(0.42, 0.41, 0.4) }, uAtmo: { value: new Color(0, 0, 0) }, uKind: { value: 1 }, uSeed: { value: sky.seed % 23 + 7 } },
         });
         const moon = new Mesh(new SphereGeometry(rad * (0.06 + r() * 0.05), 32, 16), moonMat);
         moon.position.copy(dirOf(pl.az + (r() < 0.5 ? -1 : 1) * pl.size * (1.6 + r() * 0.8), pl.el + (r() - 0.3) * pl.size).multiplyScalar(Dp * 0.96));
@@ -630,6 +670,16 @@ export class FarBodies {
     const rays = new Mesh(new PlaneGeometry(2, 2), this.rays);
     for (const o of [core, glare, spike, rays]) o.position.copy(at);
     const flare = core;
+    // a faint lens flare when you face the sun: a few soft ghosts on the line from the sun through the middle of the view
+    this.sunDir.copy(at).normalize();
+    this.glare = glare;
+    for (const [t, size, a] of GHOSTS) {
+      const g = new Sprite(new SpriteMaterial({ map: glowTexture(), color: sky.star.clone().lerp(sky.neb[1], 0.4).multiplyScalar(a), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0 }));
+      g.scale.setScalar(D * size);
+      g.userData.ghost = true;
+      this.ghosts.push({ s: g, t });
+      this.group.add(g);
+    }
     this.group.add(glare, rays, flare, spike, farWorks(sky, D));
     this.group.traverse((o) => { o.renderOrder = -3; o.frustumCulled = false; });
   }
@@ -639,7 +689,7 @@ export class FarBodies {
     if (Math.abs(v - this.dimNow) < 0.005) return;
     this.dimNow = v;
     for (const m of this.mats) m.uniforms.uDim!.value = v;
-    this.group.traverse((o) => { if (o instanceof Sprite) o.material.opacity = v; });
+    this.group.traverse((o) => { if (o instanceof Sprite && !o.userData.ghost) o.material.opacity = v; });
   }
 
   dispose(): void {
@@ -706,7 +756,8 @@ export class Parallax {
       });
     }
     this.group.add(this.debris);
-    this.far = new InstancedMesh(rockGeometry(), new MeshBasicMaterial({ color: 0xffffff, fog: false }), FAR_ROCKS);
+    // lit by the sun like the near rock (flat facets), and lifted toward the sky's own haze so they sit back in it
+    this.far = new InstancedMesh(rockGeometry(), new MeshLambertMaterial({ color: 0xffffff, flatShading: true, fog: false }), FAR_ROCKS);
     this.far.frustumCulled = false;
     this.far.renderOrder = -4;
     this.group.add(this.far);
@@ -739,7 +790,7 @@ export class Parallax {
     for (let i = 0; i < 12; i++) {
       // violet, blue and a little magenta, each its own strength: a few brighter, most faint
       const c = (i % 4 === 3 ? sky.accent : sky.neb[i % 2]!).clone().multiplyScalar(0.8 + r() * 0.4);
-      const alpha = 0.18 + Math.pow(r(), 1.6) * 0.42;
+      const alpha = 0.1 + Math.pow(r(), 1.6) * 0.26;
       const s = new Sprite(new SpriteMaterial({ map: wispTexture(i % 3), color: c, blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: alpha, rotation: r() * Math.PI * 2 }));
       s.scale.setScalar(220 + r() * 280);
       s.renderOrder = -1;
@@ -751,12 +802,14 @@ export class Parallax {
     // far rock clusters: a few knots of small rock, each its own place, size and tilt; colder and darker the further out
     const fr = rand(sky.seed * 11 + 4), knots = 4 + Math.floor(fr() * 2);
     this.farRocks.length = 0;
-    const base = new Color(), shade = new Color(0x1a2030).lerp(sky.neb[0], 0.18);
+    // rock-brown faces turned toward the sky's colour (hazier and bluer the further out), and a glow of that haze in the shadows
+    const base = new Color(), shade = new Color(0x4a4440).lerp(sky.neb[0], 0.3);
+    (this.far.material as MeshLambertMaterial).emissive.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.16);
     const cx = Array.from({ length: knots }, () => ({ x: fr() * FAR_BOX, z: fr() * FAR_BOX, y: -330 - fr() * 260, w: 70 + fr() * 110 }));
     for (let i = 0; i < FAR_ROCKS; i++) {
       const k = cx[i % knots]!, a = fr() * Math.PI * 2, d = Math.sqrt(fr()) * k.w;
       this.farRocks.push({ x: k.x + Math.cos(a) * d * 1.6, y: k.y + (fr() - 0.5) * k.w * 0.5, z: k.z + Math.sin(a) * d * 1.6, s: 3 + Math.pow(fr(), 2.2) * 14, q: new Quaternion().setFromEuler(new Euler(fr() * 6, fr() * 6, fr() * 6)) });
-      this.far.setColorAt(i, base.copy(shade).multiplyScalar(0.55 + fr() * 0.7));
+      this.far.setColorAt(i, base.copy(shade).multiplyScalar(0.45 + fr() * 0.4));
     }
     this.far.instanceColor!.needsUpdate = true;
     this.farX = NaN;

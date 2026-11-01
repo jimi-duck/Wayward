@@ -1,9 +1,9 @@
 import {
   AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, Color, DirectionalLight, Float32BufferAttribute, FogExp2,
   Group, HemisphereLight, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, PlaneGeometry, PMREMGenerator,
-  Scene, ShaderMaterial, SphereGeometry, Vector3, type Camera, type Texture, type WebGLRenderer, type WebGLRenderTarget,
+  Scene, ShaderMaterial, SphereGeometry, Vector2, Vector3, type Camera, type Texture, type WebGLRenderer, type WebGLRenderTarget,
 } from 'three';
-import { bakeSky, detailTile, FarBodies, Parallax, skyFor, type Sky } from './sky';
+import { bakeSky, detailTile, dirOf, FarBodies, Parallax, skyFor, SUN_AZ, SUN_EL, type Sky } from './sky';
 import { Starfield } from './starfield';
 import { Phenomena } from './phenomena';
 import { WORLD_RIM } from './kit';
@@ -28,6 +28,8 @@ const HAZE = new Color('#25323f');
 const FOG_BASE = 0.0072;
 const INK = new Color('#cfd6e0');
 const WHITE_LIGHT = new Color(1, 1, 1);
+/** How much the cloud falls away in the middle of the picture, round the ship (0 none, 1 the full calm). */
+const CENTRE_CALM = 1;
 const NEBULA = new Color('#1b0e28');
 const DUST_BOX = 130;
 /** Speed (units/s) where the dust starts to streak; the hauler's top speed is about 39. */
@@ -45,6 +47,7 @@ const CLOUD_SLIDE = 0.07, WORLD_SLIDE = 0.06;
 
 export class Environment {
   private readonly skyRim = new Color();
+  private readonly focusV = new Vector3();
   /** The key light's colour (the sun's) and the rim's (the sky's second colour, cooled), for this sky. */
   private readonly sunCol = new Color(0.94, 0.92, 0.89);
   private readonly rimCol = RIM_COLOUR.clone();
@@ -81,7 +84,7 @@ export class Environment {
     // The sky is drawn on a dome with one material for the page's life. As scene.background three
     // would turn each new sky into a cube map through a throwaway program, linked again every system.
     this.dome = new ShaderMaterial({
-      uniforms: { uMap: { value: null as Texture | null }, uDetail: { value: null as Texture | null }, uLevel: { value: 1 }, uTime: { value: 0 }, uShift: { value: new Vector3() } },
+      uniforms: { uMap: { value: null as Texture | null }, uDetail: { value: null as Texture | null }, uLevel: { value: 1 }, uTime: { value: 0 }, uShift: { value: new Vector3() }, uFocus: { value: new Vector3(0.5, 0.4, 1) }, uRes: { value: new Vector2(1, 1) }, uSunD: { value: dirOf(SUN_AZ, SUN_EL) }, uSunC: { value: new Color(1, 0.9, 0.8) } },
       vertexShader: /* glsl */ `
         varying vec3 vDir;
         void main() {
@@ -90,7 +93,7 @@ export class Environment {
           gl_Position.z = gl_Position.w * 0.99999;
         }`,
       fragmentShader: /* glsl */ `
-        uniform sampler2D uMap, uDetail; uniform float uLevel, uTime; uniform vec3 uShift; varying vec3 vDir;
+        uniform sampler2D uMap, uDetail; uniform float uLevel, uTime; uniform vec3 uShift, uFocus, uSunD, uSunC; uniform vec2 uRes; varying vec3 vDir;
         vec2 eq(vec3 d) { return vec2(atan(d.z, d.x) * 0.15915494 + 0.5, asin(clamp(d.y, -1.0, 1.0)) * 0.31830989 + 0.5); }
         void main() {
           // the cloud sits far off: the ship's travel slides it a hair (uShift), so it is never quite pinned to the glass
@@ -108,6 +111,16 @@ export class Environment {
           col *= mix(1.0, 0.42 + wisps * 1.05, on);
           col += col * pow(wisps, 3.0) * 0.55 * on;
           #endif
+          // the sun warms the gas round it: the cloud near it lit warmer, and a wide soft wash of its colour
+          float sd = max(dot(normalize(vDir), uSunD), 0.0);
+          col = mix(col, col * (0.5 + uSunC), pow(sd, 6.0) * 0.6);
+          col += uSunC * (pow(sd, 18.0) * 0.1 + pow(sd, 4.0) * 0.02);
+          // the middle of the picture is the ship's: the cloud falls away round her (uFocus: where she is on screen, and how
+          // much to calm it) and keeps its colour toward the edges, so the hull, the hulls round her and the HUD read first
+          vec2 p = gl_FragCoord.xy / uRes - uFocus.xy;
+          p.x *= uRes.x / uRes.y;
+          float calm = mix(1.0, smoothstep(0.08, 0.72, length(p * vec2(0.8, 1.15))), uFocus.z);
+          col *= 0.14 + 0.86 * calm;
           gl_FragColor = vec4(col * uLevel, 1.0);
           #include <tonemapping_fragment>
           #include <colorspace_fragment>
@@ -209,9 +222,10 @@ export class Environment {
     // the ambient fill takes a breath of the sky's blue and violet
     this.hemi.color.copy(HEMI_SKY).lerp(sky.neb[0], 0.22).lerp(sky.accent, 0.08);
     // distant rock fades into the sky's own colour, not into black
-    this.haze.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.42);
+    this.haze.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.16);
     // warm sun on one side, the sky's cool second colour on the rim behind
     this.sunCol.copy(SUN_WARM).lerp(sky.star, 0.4);
+    this.dome.uniforms.uSunC!.value.copy(sky.star);
     const c2 = sky.neb[1], m = Math.max(c2.r, c2.g, c2.b, 1e-3);
     this.rimCol.setRGB(c2.r / m, c2.g / m, c2.b / m).lerp(COOL, 0.5);
     this.rim.color.copy(this.rimCol);
@@ -230,7 +244,7 @@ export class Environment {
     // the place the ship is in (sim/space.ts): its murk, its dimming of the sky, and its light on everything
     const fog = mood?.fog ?? 0, dim = mood?.dim ?? 0, t = mood?.tint;
     this.fog.density = FOG_BASE + nebula * 0.016 + fog * 0.012;
-    this.fog.color.copy(HAZE).lerp(this.haze, 0.75).lerp(NEBULA, nebula);
+    this.fog.color.copy(HAZE).lerp(this.haze, 0.6).lerp(NEBULA, nebula);
     if (t) this.fog.color.r += t[0] * 0.3, this.fog.color.g += t[1] * 0.3, this.fog.color.b += t[2] * 0.3;
     this.dome.uniforms.uLevel!.value = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
     this.far?.dim(1 - nebula * 0.7);
@@ -275,11 +289,16 @@ export class Environment {
     this.field.update(cx, cz, dt, this.motion);
     // the cloud and the far worlds slide against the ship's travel, each a sine of the distance so they never run off
     this.dome.uniforms.uTime!.value = this.t;
+    // where the ship is on screen, for the calm in the middle of the cloud
+    const f = this.focusV.set(cx, 0, cz).project(camera);
+    this.dome.uniforms.uFocus!.value.set(f.x * 0.5 + 0.5, f.y * 0.5 + 0.5, CENTRE_CALM);
+    this.renderer.getDrawingBufferSize(this.dome.uniforms.uRes!.value);
     this.dome.uniforms.uShift!.value.set(CLOUD_SLIDE * Math.sin(cx / SLIDE), 0, CLOUD_SLIDE * Math.sin(cz / SLIDE));
     this.far?.tick(this.t);
     this.far?.group.position.set(-WORLD_SLIDE * 2000 * Math.sin(cx / SLIDE), 0, -WORLD_SLIDE * 2000 * Math.sin(cz / SLIDE));
     this.phenomena.group.position.set(-WORLD_SLIDE * 1500 * Math.sin(cx / SLIDE), 0, -WORLD_SLIDE * 1500 * Math.sin(cz / SLIDE));
     if (dt > 0) this.phenomena.look(camera.getWorldDirection(this.fwd));
+    this.far?.face(camera.getWorldDirection(this.fwd));
     this.phenomena.update(dt, this.motion);
     // the key light keeps its angle, wherever the ship goes
     // (the target snaps to a grid so the shadow edges do not crawl as the ship moves)

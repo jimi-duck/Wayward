@@ -69,3 +69,15 @@ The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HU
   card and circles the ship, a little further off and lower; any key or tap brings the card back.
 - **Colour mood.** A split tone in the grade (`MoodEffect` in `post.ts`): the sky's main colour in the shadows, its sun in the
   lights. Medium and High only (Low has no post chain).
+
+## Calmer middle, lit far rocks, a softer planet (2026-11-01, owner's review)
+
+- **The middle is the ship's.** The dome dims the cloud round the ship's place on screen (`uFocus`, `CENTRE_CALM` in
+  `environment.ts`) to about a seventh, so colour sits toward the edges. The wisp layer is fainter; the vignette is back up a little.
+- **No flat blue blobs.** The backdrop rocks deep in the fog were fading to a bright flat haze; the haze is darker now, and the
+  far rock clusters are lit (flat-shaded Lambert) with a glow of the sky's haze in their shadows.
+- **The sun lights the sky.** The cloud near it is warmed in the dome, a faint four-ghost lens flare shows when you face it
+  (`FarBodies.face`), and the glare swells a little.
+- **The planet.** A wide soft terminator, the nebula's light on the night side, a thin air rim all round, and the ring's shadow
+  on the day side.
+- **More far events.** Far flashes in the Reach and two Arcade skies; shooting stars in the Hollows and the Last Lanes.
