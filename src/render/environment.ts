@@ -31,7 +31,9 @@ const NEBULA = new Color('#1b0e28');
 const DUST_BOX = 130;
 const KEY_TINT = new Color();
 const RIM_COLOUR = new Color(0x7f9cc8), FIGHT_TINT = new Color();
-const RIM_BASE = 0.9, RIM_FIGHT = 2.2;
+/** The sun's warmth on the key light, and the sky's cool second colour on the rim behind. */
+const SUN_WARM = new Color(1, 0.84, 0.66), COOL = new Color(0.45, 0.85, 0.95);
+const RIM_BASE = 1.5, RIM_FIGHT = 2.6;
 const HEMI_SKY = new Color(0x56607a);
 /** Each layer's slide against the ship's travel is a sine of the distance: this many units to the cycle (starfield.ts). */
 const SLIDE = 4000;
@@ -40,6 +42,9 @@ const CLOUD_SLIDE = 0.07, WORLD_SLIDE = 0.06;
 
 export class Environment {
   private readonly skyRim = new Color();
+  /** The key light's colour (the sun's) and the rim's (the sky's second colour, cooled), for this sky. */
+  private readonly sunCol = new Color(0.94, 0.92, 0.89);
+  private readonly rimCol = RIM_COLOUR.clone();
   /** A faint wash of the sky's own colour in the distance haze. */
   private readonly haze = new Color();
   readonly group = new Group();
@@ -172,7 +177,7 @@ export class Environment {
   fight(tint: Color | null, k: number): void {
     this.fightK = k;
     this.rim.intensity = RIM_BASE + (RIM_FIGHT - RIM_BASE) * k;
-    this.rim.color.copy(RIM_COLOUR);
+    this.rim.color.copy(this.rimCol);
     if (tint) {
       const m = Math.max(tint.r, tint.g, tint.b, 1e-3);
       this.rim.color.lerp(FIGHT_TINT.setRGB(tint.r / m, tint.g / m, tint.b / m), 0.3 * k);
@@ -194,7 +199,13 @@ export class Environment {
     this.phenomena.setSky(sky);
     // the ambient fill takes a breath of the sky's blue and violet
     this.hemi.color.copy(HEMI_SKY).lerp(sky.neb[0], 0.22).lerp(sky.accent, 0.08);
-    this.haze.copy(sky.neb[0]).multiplyScalar(0.08);
+    // distant rock fades into the sky's own colour, not into black
+    this.haze.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.42);
+    // warm sun on one side, the sky's cool second colour on the rim behind
+    this.sunCol.copy(SUN_WARM).lerp(sky.star, 0.4);
+    const c2 = sky.neb[1], m = Math.max(c2.r, c2.g, c2.b, 1e-3);
+    this.rimCol.setRGB(c2.r / m, c2.g / m, c2.b / m).lerp(COOL, 0.5);
+    this.rim.color.copy(this.rimCol);
     this.skyRim.copy(sky.neb[0]).lerp(sky.neb[2], 0.35).multiplyScalar(0.5);
     WORLD_RIM.value.copy(this.skyRim);
   }
@@ -207,7 +218,7 @@ export class Environment {
     // the place the ship is in (sim/space.ts): its murk, its dimming of the sky, and its light on everything
     const fog = mood?.fog ?? 0, dim = mood?.dim ?? 0, t = mood?.tint;
     this.fog.density = FOG_BASE + nebula * 0.016 + fog * 0.012;
-    this.fog.color.copy(HAZE).add(this.haze).lerp(NEBULA, nebula);
+    this.fog.color.copy(HAZE).lerp(this.haze, 0.75).lerp(NEBULA, nebula);
     if (t) this.fog.color.r += t[0] * 0.3, this.fog.color.g += t[1] * 0.3, this.fog.color.b += t[2] * 0.3;
     this.dome.uniforms.uLevel!.value = (1 - nebula * 0.55) * (1 - dim * 0.5) + flash * 0.6;
     this.far?.dim(1 - nebula * 0.7);
@@ -216,7 +227,7 @@ export class Environment {
     WORLD_RIM.value.copy(this.skyRim).multiplyScalar((1 + flash * 4) * (1 + this.fightK * 0.8));
     if (t) WORLD_RIM.value.r += t[0] * 0.25, WORLD_RIM.value.g += t[1] * 0.25, WORLD_RIM.value.b += t[2] * 0.25;
     this.key.intensity = 5.4 + flash * 9;
-    this.key.color.setRGB(0.94, 0.92 + flash * 0.08, 0.89 + flash * 0.11);
+    this.key.color.copy(this.sunCol).lerp(FIGHT_TINT.setRGB(1, 1, 1), flash);
     if (t) this.key.color.lerp(KEY_TINT.setRGB(0.55 + t[0] * 1.6, 0.6 + t[1] * 1.6, 0.7 + t[2] * 1.6), Math.min(0.6, (t[0] + t[1] + t[2]) * 1.1));
   }
 
@@ -253,6 +264,7 @@ export class Environment {
     // the cloud and the far worlds slide against the ship's travel, each a sine of the distance so they never run off
     this.dome.uniforms.uTime!.value = this.t;
     this.dome.uniforms.uShift!.value.set(CLOUD_SLIDE * Math.sin(cx / SLIDE), 0, CLOUD_SLIDE * Math.sin(cz / SLIDE));
+    this.far?.tick(this.t);
     this.far?.group.position.set(-WORLD_SLIDE * 2000 * Math.sin(cx / SLIDE), 0, -WORLD_SLIDE * 2000 * Math.sin(cz / SLIDE));
     this.phenomena.group.position.set(-WORLD_SLIDE * 1500 * Math.sin(cx / SLIDE), 0, -WORLD_SLIDE * 1500 * Math.sin(cz / SLIDE));
     if (dt > 0) this.phenomena.look(camera.getWorldDirection(this.fwd));

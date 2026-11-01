@@ -7,7 +7,7 @@ import type { QualityTier } from './quality';
 
 // Bloom is what turns HDR colour into light: engines, lava, lances,
 // explosions. Only colours well above white bloom (a high threshold), so
-// hulls and rock faces never do. Then a heavy vignette and a little film
+// hulls and rock faces never do. Then a soft vignette and a little film
 // grain, for the grit. Tone mapping runs last, so everything before it can
 // stay in HDR. All in one pass.
 //
@@ -32,11 +32,11 @@ export class Post {
     const bloom = new BloomEffect({ mipmapBlur: true, luminanceThreshold: 0.7, luminanceSmoothing: 0.25, intensity: 1.25, radius: 0.7 });
     // half resolution on every tier: mipmap blur hides it, and it is cheaper
     bloom.resolution.scale = 0.5;
-    const vignette = new VignetteEffect({ offset: 0.28, darkness: 0.72 });
+    const vignette = new VignetteEffect({ offset: 0.34, darkness: 0.48 });
     const grain = new NoiseEffect({ blendFunction: BlendFunction.OVERLAY, premultiply: false });
-    grain.blendMode.opacity.value = 0.06;
-    // one cool, slightly quiet grade over everything: colour is kept for the accents (the gate, the Wayward, a threat)
-    const grade = new HueSaturationEffect({ saturation: -0.14 });
+    grain.blendMode.opacity.value = 0.035;
+    // a light grade: the sky carries colour now (each system its own two), so nothing is drained; the HUD guards its own text
+    const grade = new HueSaturationEffect({ saturation: 0.04 });
     const contrast = new BrightnessContrastEffect({ contrast: 0.06 });
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC });
     if (tier.smaa) this.composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: tier.smaa === 'high' ? SMAAPreset.HIGH : SMAAPreset.LOW })));

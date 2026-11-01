@@ -61,6 +61,14 @@
   --left: calc(var(--pad) + var(--safe-l));
 }
 #hud button { pointer-events: auto; }
+/* the sky is colourful now, so the HUD guards its own text: a soft dark pool under each corner, no blur and no box,
+   one static layer under everything else in the HUD. The centre of the picture is left alone. */
+#hud::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 40vw 30vh at 0 0, rgba(var(--black-rgb), .62), rgba(var(--black-rgb), .34) 45%, transparent 75%),
+    radial-gradient(ellipse 36vw 26vh at 100% 0, rgba(var(--black-rgb), .62), rgba(var(--black-rgb), .34) 45%, transparent 75%),
+    radial-gradient(ellipse 40vw 40vh at 0 100%, rgba(var(--black-rgb), .62), rgba(var(--black-rgb), .34) 45%, transparent 75%),
+    radial-gradient(ellipse 38vw 38vh at 100% 100%, rgba(var(--black-rgb), .62), rgba(var(--black-rgb), .34) 45%, transparent 75%); }
 /* the jump: the HUD steps back for the fly-through, and a pale teal veil closes over the view at the end of it */
 #hud, #touch { transition: opacity .45s var(--ez); }
 #app.warping #hud, #app.warping #touch { opacity: 0; }

@@ -39,3 +39,18 @@ Planets now have phases: most are lit from the sun's side, some half, a few a th
 Seven far works: ring station, fleet at anchor, hulk, broken orbital ring, dead relay (one wing torn off), mining rig on a dead
 rock, and the spire (something nobody built, cold light in its joints). Each region leans to its own (`LEAN`): the Reach has
 stations and relays, the Breaker Yards wrecks, the Hollows the spire. The bench is `tools/farworks.html?work=0..6`.
+
+## Colour, the big planet and the sun (2026-11-01)
+
+The owner asked for a No Man's Sky kind of sky: colour in the sky itself, the HUD protected another way.
+
+- **Two colours a sky.** The ten palettes are bold pairs (the Reach violet and teal, the Marches rose and gold, the Hollows
+  green and magenta, the Salvage Belt amber and teal, the Free Ports gold and rose, and so on). The deep is washed with both,
+  never empty black. No sky is red.
+- **A big planet.** The main world is 22 to 36 degrees across, with a thicker glowing air edge. It is kept clear of the sun.
+- **The sun.** Low on the horizon on the key light's bearing (`SUN_AZ`, `SUN_EL`): a hot core that blooms, a wide glare,
+  slow rays and a faint spike. It replaces the old bright star.
+- **Warm and cool.** The key light takes the sun's warmth; the rim behind takes the sky's second colour, cooled. Distant rock
+  fades into the sky's colour, not into black.
+- **Grade.** No colour drain any more, a softer vignette and less grain (`post.ts`).
+- **The HUD.** Soft dark pools under the four corners (`#hud::before` in `hud.css`): no blur, one static layer.
