@@ -57,6 +57,13 @@ const BLAST_TINT: Record<string, RGB> = {
 
 /** How far the bay's ease must have run before it covers the view completely. */
 const COVERED = 0.985;
+/** The arrival sweep: seconds held on the wide shot, then seconds to swing in behind the ship. */
+const ARRIVE_HOLD = 0.8;
+const ARRIVE_SWING = 4.2;
+/** The still world's drift: photo mode's circle (radians a second), and the pause's slow sway (radians, and its pace). */
+const ORBIT_RATE = 0.12;
+const SWAY = 0.32;
+const SWAY_RATE = 0.16;
 
 export class Sector {
   readonly scene = new Scene();
@@ -82,6 +89,15 @@ export class Sector {
   private launch: Launch | null = null;
   private launchRun: unknown = null;
   private seenRun: unknown = null;
+  /** The last run ended in a jump; the next one opens on the arrival sweep. Seconds into that sweep, or -1. */
+  private jumpSeen = false;
+  private arriveT = -1;
+  /** Photo mode (main.ts): the camera circles the ship slowly. */
+  photo = false;
+  private orbitA = 0;
+  private swayT = 0;
+  private swayK = 0;
+  private photoK = 0;
   /** Seconds into the jump on the last frame, to catch the moment the ship crosses the ring. */
   private warpWas = -1;
   /** Seconds into the jump (negative: not jumping). */
@@ -140,6 +156,7 @@ export class Sector {
   setBackdrop(sky: Sky): void {
     this.pinned = true;
     this.env.setSky(sky);
+    this.post?.setMood(this.env.mood);
   }
 
   /** The next frame puts the camera straight behind the ship, with no swoop: after a jump across the gallery. */
@@ -168,6 +185,7 @@ export class Sector {
     this.tier = tier;
     this.post?.composer?.dispose();
     this.post = new Post(this.renderer, this.scene, this.rig.camera, tier);
+    this.post.setMood(this.env.mood);
     this.fx.setLights(tier.name !== 'low');
     this.env.setShadow(tier.shadow);
     this.env.setDetail(tier.name === 'low');
@@ -451,12 +469,40 @@ export class Sector {
     this.ship.flashZone(zone);
   }
 
+  /** The arrival sweep's share of the shot, 1 to 0: a beat held wide, then an easy swing in behind the ship. A fight or a pop-up cuts it short. */
+  private arriveSweep(world: World, dt: number): number {
+    if (this.arriveT < 0) return 0;
+    this.arriveT += dt * (inFight(world) || this.console !== null || this.reduceMotion ? 4 : 1);
+    const k = clamp((this.arriveT - ARRIVE_HOLD) / ARRIVE_SWING, 0, 1);
+    if (k >= 1) { this.arriveT = -1; return 0; }
+    const e = k * k * k * (k * (k * 6 - 15) + 10);
+    return 1 - e;
+  }
+
+  /**
+   * A still world is a chance to look: paused or docked, the shot sways slowly to and fro round the ship; in photo mode
+   * it circles her all the way, a little further off. Back in flight it settles behind her again. None of it with reduced motion.
+   */
+  private drift(world: World, uiDt: number): void {
+    const still = !this.reduceMotion && (this.photo || this.console === 'brief' || world.phase === 'dock');
+    const orbit = this.photo && !this.reduceMotion;
+    const ease = Math.min(1, 2.5 * uiDt);
+    if (orbit) this.orbitA = (this.orbitA + ORBIT_RATE * uiDt) % (Math.PI * 2);
+    else this.orbitA += (Math.round(this.orbitA / (Math.PI * 2)) * Math.PI * 2 - this.orbitA) * ease;
+    if (still) this.swayT += uiDt;
+    this.swayK += ((still && !orbit ? 1 : 0) - this.swayK) * Math.min(1, 1.2 * uiDt);
+    this.photoK += ((this.photo ? 1 : 0) - this.photoK) * ease;
+    this.rig.drift = this.orbitA + SWAY * Math.sin(this.swayT * SWAY_RATE) * this.swayK;
+    this.rig.photo = this.photoK;
+  }
+
   frame(world: World, alpha: number, dt: number, uiDt = dt): void {
     this.time += dt;
     const inBay = this.console !== null && this.console !== 'brief';
     this.bayK += ((inBay ? 1 : 0) - this.bayK) * Math.min(1, 4 * uiDt);
     this.rig.bay = this.bayK * this.bayK * (3 - 2 * this.bayK);
-    this.ship.light(this.console, uiDt);
+    // the pause card's light on the ship is for the card; a photo shows her as she is
+    this.ship.light(this.photo ? null : this.console, uiDt);
     this.paintSky(world);
     const a = world.prev, b = world.ship, s = this.lerped;
     Object.assign(s, b);
@@ -468,11 +514,19 @@ export class Sector {
     s.yawRate = lerp(a.yawRate, b.yawRate, alpha);
 
     // a new run (or the next system): the camera is where the ship is, with no swoop from the last one's gate
-    if (this.seenRun !== world.run) { this.seenRun = world.run; this.snapped = false; }
+    if (this.seenRun !== world.run) {
+      this.seenRun = world.run; this.snapped = false;
+      // through a Jump Gate into a new system: a slow sweep over it first (never with reduced motion)
+      this.arriveT = this.jumpSeen && world.bk && !this.reduceMotion ? 0 : -1;
+      this.jumpSeen = false;
+    }
     if (this.seenWorld !== world) { this.seenWorld = world; this.reveal.reset(); }
     const wt = this.jumpClock(world, s);
     const subject = { x: s.x, z: s.z, heading: s.heading, yawRate: s.yawRate, speedFrac: Math.min(1, Math.hypot(s.vx, s.vz) / topSpeed(world.hull)) };
     if (!this.snapped) { this.rig.snap(subject); this.snapped = true; }
+    if (wt >= 0) this.jumpSeen = true;
+    this.rig.arrive = this.arriveSweep(world, dt);
+    this.drift(world, uiDt);
     this.rig.warp.lens = wt >= 0 ? lens(wt) : 0;
     this.rig.warp.lock = wt >= 0 ? Math.min(1, wt / 0.35) : 0;
     if (wt >= 0 && !this.reduceMotion && wt < 2.4) this.rig.hum(0.28 * Math.min(1, wt / 0.6));
@@ -487,7 +541,8 @@ export class Sector {
     this.ship.setCargo(world.cyrite / HOLD_MAX);
     this.ship.setDamage(world.plates, world.stats.maxPlates);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
-    const stolen = world.flags.has('ship_stolen');
+    // the Arcade flies her in her own paint from the start (the grey company livery is the Story's before-state)
+    const stolen = world.flags.has('ship_stolen') || world.mode === 'arcade';
     const rv = this.reveal.update({
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,
@@ -565,6 +620,7 @@ export class Sector {
     this.skyFor = key;
     const sky = breakout ? skyFor(hashSeed(world.sortie.system), world.sortie.sky ?? world.sortie.region ?? 0) : skyFor(Math.floor(Math.random() * 1e9), null);
     this.env.setSky(breakout && world.sortie.first ? industrial(sky, world.ship.heading) : sky);
+    this.post?.setMood(this.env.mood);
   }
 
   /**

@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BackSide, CanvasTexture, Color, DoubleSide, Euler, EquirectangularReflectionMapping, Group, IcosahedronGeometry, InstancedMesh,
-  LinearFilter, Mesh, MeshBasicMaterial, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial,
+  LinearFilter, Mesh, MeshBasicMaterial, MeshLambertMaterial, MirroredRepeatWrapping, MeshStandardMaterial, Object3D, OrthographicCamera, PlaneGeometry, Quaternion, RepeatWrapping, RingGeometry, Scene, ShaderMaterial,
   SphereGeometry, Sprite, SpriteMaterial, SRGBColorSpace, Vector3, Vector4, WebGLRenderTarget, type Texture, type WebGLRenderer,
 } from 'three';
 import { farWorks } from './farworks';
@@ -18,7 +18,7 @@ import { glowTexture } from './textures';
 //                     per frame.
 //   the far bodies    a planet (banded giant, rock or ice), sometimes ringed,
 //                     sometimes with a moon, lit by the same sun as the ship;
-//                     and one bright near star. They ride with the camera, so
+//                     and the sun, low on the key light's bearing. They ride with the camera, so
 //                     they keep their place in the sky wherever the ship goes.
 //   parallax          a layer of nearer stars and a few nebula wisps far below
 //                     the plane, and dark debris tumbling under the field.
@@ -26,9 +26,10 @@ import { glowTexture } from './textures';
 //                     than the rock: the field has depth.
 //
 // The look is a Sky: picked per system from its region's palette, or at
-// random each arcade run. The colours keep clear of the signal colours
-// (amber is the player, teal information, red threat), and the brightest
-// cloud stays well under the HUD's text.
+// random each arcade run. Each is a bold main colour and a contrasting
+// second (violet and teal, rose and gold), and the deep is never empty
+// black; no sky is red, which stays the threat's. The HUD guards its own
+// text with soft dark pools in the corners (hud.css), not a dull sky.
 
 export interface Sky {
   seed: number;
@@ -78,26 +79,27 @@ interface Palette {
 
 // Per region, then extras the arcade also draws from. Hex is sRGB; the bake works in linear.
 const PALETTES: Palette[] = [
-  // the Reach: cold blues and violet, Kellern's tidy space
-  { neb: ['#24357a', '#5a3a9a', '#a9c6ff'], band: '#4a5677', planets: [['#3b5f8f', '#b8c6d8', '#7aa6ff'], ['#6e6a7e', '#2d2a3a', '#9aa8ff']], star: '#d6e4ff', stars: 1, glow: 1 },
-  // the Marches: dusky rose and indigo, a frontier sunset
-  { neb: ['#6a2a64', '#2c2a72', '#f0b6d8'], band: '#5e4a5c', planets: [['#8a6a5a', '#d8c2a8', '#ffb8d0'], ['#5a4a6a', '#a89ab8', '#d8a8ff']], star: '#fff0e0', stars: 0.85, glow: 1.05 },
-  // the Hollows: sour green and bruise violet, nothing human
-  { neb: ['#2a5a3a', '#3a1f5c', '#c8ffb0'], band: '#3a4a40', planets: [['#3a4a2e', '#8a9a6a', '#b0ff9a'], ['#2a2236', '#6a5a7a', '#a890ff']], star: '#e8ffe0', stars: 0.6, glow: 1.1 },
-  // arcade extras
-  { neb: ['#3a2a7a', '#7a2a6a', '#ffd0f0'], band: '#504a6a', planets: [['#6a5a9a', '#d0c0e8', '#e0a8ff']], star: '#f0e8ff', stars: 1, glow: 1.1 },
-  { neb: ['#1f4a6a', '#5a2a7a', '#d0e8ff'], band: '#40506a', planets: [['#c8d8e8', '#6a8aa8', '#c0e0ff']], star: '#ffffff', stars: 1.1, glow: 0.95 },
+  // Each sky is a bold main colour and a contrasting second, never empty black. The core is the hot light in the clouds.
+  // the Reach: violet and teal, Kellern's tidy space
+  { neb: ['#4a2f9a', '#1f7f8a', '#c8d8ff'], band: '#5a6a9a', planets: [['#3b5f8f', '#b8c6d8', '#7aa6ff'], ['#6e6a7e', '#2d2a3a', '#9aa8ff']], star: '#ffe2c0', stars: 1, glow: 1 },
+  // the Marches: rose and gold, a frontier sunset
+  { neb: ['#a03a6e', '#b07a2a', '#ffd6c8'], band: '#8a5a6a', planets: [['#8a6a5a', '#d8c2a8', '#ffb8d0'], ['#5a4a6a', '#a89ab8', '#d8a8ff']], star: '#ffd8a8', stars: 0.85, glow: 1.05 },
+  // the Hollows: sour green and magenta, nothing human
+  { neb: ['#2f7a4a', '#7a2a7a', '#d8ffc0'], band: '#4a6a50', planets: [['#3a4a2e', '#8a9a6a', '#b0ff9a'], ['#2a2236', '#6a5a7a', '#a890ff']], star: '#f0ffd8', stars: 0.6, glow: 1.1 },
+  // arcade extras: peach and teal, indigo and orchid
+  { neb: ['#b0604a', '#1f6f80', '#ffe0c8'], band: '#8a6a6a', planets: [['#6a5a9a', '#d0c0e8', '#e0a8ff']], star: '#ffd8b0', stars: 1, glow: 1.1 },
+  { neb: ['#2a3f9a', '#a85a8a', '#e0e8ff'], band: '#5a6a9a', planets: [['#c8d8e8', '#6a8aa8', '#c0e0ff']], star: '#fff0e0', stars: 1.1, glow: 0.95 },
   // the long journey's other regions (5 to 9), each a little less human
-  // the Salvage Belt: tarnished amber dust, trader lamps
-  { neb: ['#6a4a2a', '#3a2a24', '#e8c89a'], band: '#5a4a3c', planets: [['#7a5a3a', '#c8a880', '#ffd8a0']], star: '#fff2d8', stars: 0.8, glow: 1 },
-  // the Drift Deep: cold indigo, few stars, nothing near
-  { neb: ['#1a2a5a', '#2a1a4a', '#7aa0e0'], band: '#34405a', planets: [['#2a3a5a', '#7a8aa8', '#7aa0ff']], star: '#cfe0ff', stars: 0.7, glow: 0.95 },
-  // the Breaker Yards: iron, rust haze, hard light
-  { neb: ['#5a3a2a', '#2a2a3a', '#e8a888'], band: '#4a4448', planets: [['#5a4a44', '#a89a90', '#ffb090']], star: '#ffe8d8', stars: 0.75, glow: 1 },
-  // the Free Ports: warm smoke and lamplight
-  { neb: ['#6a4a1a', '#2a3a5a', '#ffd890'], band: '#5a5040', planets: [['#7a5a2a', '#d8b878', '#ffc870']], star: '#fff0d0', stars: 0.8, glow: 1.1 },
-  // the Last Lanes: near black, a thin violet, almost no stars
-  { neb: ['#2a1a4a', '#0a2a2a', '#d0b0ff'], band: '#2a2a3a', planets: [['#1a1a2a', '#5a4a7a', '#b890ff']], star: '#e8e0ff', stars: 0.4, glow: 1.15 },
+  // the Salvage Belt: amber dust and teal, trader lamps
+  { neb: ['#9a6a2a', '#2a6a6a', '#ffe0a8'], band: '#7a6a4c', planets: [['#7a5a3a', '#c8a880', '#ffd8a0']], star: '#ffd8a0', stars: 0.8, glow: 1 },
+  // the Drift Deep: deep blue and violet, few stars, nothing near
+  { neb: ['#1f3f8a', '#5a2a8a', '#a8c8ff'], band: '#44507a', planets: [['#2a3a5a', '#7a8aa8', '#7aa0ff']], star: '#e8f0ff', stars: 0.7, glow: 0.95 },
+  // the Breaker Yards: rust and steel teal, hard light
+  { neb: ['#8a4a2a', '#2a5a6a', '#ffc0a0'], band: '#6a5448', planets: [['#5a4a44', '#a89a90', '#ffb090']], star: '#ffd0a8', stars: 0.75, glow: 1 },
+  // the Free Ports: gold and rose, warm smoke and lamplight
+  { neb: ['#a07a2a', '#8a3a5a', '#ffe0a0'], band: '#7a6a50', planets: [['#7a5a2a', '#d8b878', '#ffc870']], star: '#ffe0b0', stars: 0.8, glow: 1.1 },
+  // the Last Lanes: deep violet and a cold cyan, almost no stars
+  { neb: ['#3a1f6a', '#1a5a6a', '#d8c0ff'], band: '#3a3a5a', planets: [['#1a1a2a', '#5a4a7a', '#b890ff']], star: '#f0e0ff', stars: 0.4, glow: 1.15 },
 ];
 
 /** The palettes the arcade draws from at random (the original five). */
@@ -132,6 +134,15 @@ export function skyIn(seed: number, palette: number): Sky {
 }
 
 const STEEL = new Color('#4a5a6e');
+
+/** Where the sun stands: the key light's bearing (environment.ts), low on the horizon. */
+export const SUN_AZ = (Math.atan2(-10, -44) * 180) / Math.PI;
+export const SUN_EL = 5;
+/** An azimuth pushed clear of the sun, so a planet never sits on it. */
+function offSun(az: number): number {
+  const d = ((az - SUN_AZ + 540) % 360) - 180;
+  return Math.abs(d) < 45 ? SUN_AZ + Math.sign(d || 1) * 45 + d * 0.5 : az;
+}
 const HSL = { h: 0, s: 0, l: 0 };
 
 /** The second body's hue pulled toward magenta when it is blue or violet; other palettes keep their own hue, a little lighter. */
@@ -144,13 +155,13 @@ function accentOf(c: Color): Color {
 function paint(seed: number, r: () => number, p: Palette): Sky {
   const lin = (hex: string) => new Color(hex);
   // the palettes keep their hue but sit nearer a cool steel grey, so every sky shares one mood
-  const calm = (hex: string) => new Color(hex).lerp(STEEL, 0.3);
+  const calm = (hex: string) => new Color(hex).lerp(STEEL, 0.06);
   const pp = p.planets[Math.floor(r() * p.planets.length)]!;
   // most systems have a world in view; a few are just the deep
   const planet: Planet | null = r() < 0.85 ? {
     kind: (r() < 0.5 ? 0 : r() < 0.6 ? 1 : 2) as 0 | 1 | 2,
     colA: lin(pp[0]), colB: lin(pp[1]), atmo: lin(pp[2]),
-    size: 4 + r() * 5, az: r() * 360, el: -8 - r() * 16,
+    size: 11 + r() * 7, az: offSun(r() * 360), el: -6 - r() * 14,
     ring: r() < 0.45, moon: r() < 0.6,
   } : null;
   const neb: [Color, Color, Color] = [calm(p.neb[0]), calm(p.neb[1]), calm(p.neb[2])];
@@ -158,7 +169,7 @@ function paint(seed: number, r: () => number, p: Palette): Sky {
   // now and then a second, much smaller world far off, so the deep is not always one planet
   const extra: Planet[] | undefined = r() < 0.3 ? [{
     kind: (r() < 0.5 ? 1 : 2) as 1 | 2, colA: lin(pp[1]), colB: lin(pp[0]), atmo: lin(pp[2]),
-    size: 1.3 + r() * 1.1, az: (planet ? planet.az + 90 + r() * 180 : r() * 360), el: -10 - r() * 22, ring: false, moon: r() < 0.3, dist: 2600,
+    size: 2.5 + r() * 2, az: offSun(planet ? planet.az + 90 + r() * 180 : r() * 360), el: -10 - r() * 22, ring: false, moon: r() < 0.3, dist: 2600,
   }] : undefined;
   return { seed: seed % 9973, neb, band: lin(p.band), glow, clouds, stars: p.stars, planet, extra, star: lin(p.star), accent: accentOf(neb[1]) };
 }
@@ -284,7 +295,8 @@ const BAKE = /* glsl */ `
     vec3 s = vec3(uSeed * 0.137, uSeed * 0.071, uSeed * 0.193);
 
     // the deep: not quite black, a breath of the palette
-    vec3 col = mix(vec3(0.03, 0.04, 0.06), uNebB * 0.045, fbm(d * 1.5 + s, 3));
+    // the deep is never empty black: both colours wash through it at a very large scale
+    vec3 col = mix(uNebA, uNebB, smoothstep(0.3, 0.7, fbm(d * 1.1 + s, 3))) * (0.05 + 0.09 * fbm(d * 2.3 + s * 1.7, 3)) + vec3(0.008, 0.01, 0.016);
     // enormous, faint: the far side of the nebula, a wash of the first colour at a very large scale
     col += uNebA * 0.05 * smoothstep(0.45, 0.8, fbm(d * 0.9 + s * 1.3 + 2.0, 3));
 
@@ -292,13 +304,13 @@ const BAKE = /* glsl */ `
     float bd = dot(d, uBandN);
     float band = exp(-bd * bd * 18.0);
     float haze = band * (0.4 + 0.8 * fbm(d * 4.0 + s, 5));
-    col += uBand * haze * 0.22 * uClouds;
+    col += uBand * haze * 0.3 * uClouds;
     float lanes = smoothstep(0.5, 0.72, fbm(d * vec3(9.0, 9.0, 9.0) + s * 2.0, 5)) * exp(-bd * bd * 60.0);
 
     float shade = lanes * 0.85;
     vec3 neb = vec3(0.0);
     for (int i = 0; i < 5; i++) neb += nebula(d, uC[i].xyz, uC[i].w, uSeed + float(i) * 11.0, shade) * (1.0 - float(i) * 0.12);
-    col += neb * uGlow;
+    col += neb * uGlow * 1.1;
     // now and then a lit heart in a cloud: young stars inside the gas, lighting it from within (the brightest thing the
     // sky paints, still well under the HUD's text)
     if (uKnot.w > 0.0) {
@@ -356,7 +368,7 @@ export function skyLayout(sky: Sky): { clouds: Vector4[]; bandN: Vector3; seed: 
   const az0 = r() * 360;
   const clouds = [0, 1, 2, 3, 4].map((i) => {
     const d = dirOf(az0 + i * 72 + (r() - 0.5) * 40, -32 + r() * 38);
-    return new Vector4(d.x, d.y, d.z, (0.05 + r() * 0.07) * sky.clouds);
+    return new Vector4(d.x, d.y, d.z, (0.1 + r() * 0.14) * sky.clouds);
   });
   // the band tilts down through the view somewhere round the compass
   const bandN = dirOf(r() * 360, 25 + r() * 40);
@@ -413,18 +425,19 @@ export function detailTile(renderer: WebGLRenderer): Texture {
 // ── the far bodies ────────────────────────────────────────────────────────
 
 const PLANET_V = /* glsl */ `
-  varying vec3 vN; varying vec3 vP; varying vec3 vV;
+  varying vec3 vN; varying vec3 vP; varying vec3 vV; varying vec3 vW;
   void main() {
     vP = position;
     vN = normalize(mat3(modelMatrix) * normal);
     vec4 wp = modelMatrix * vec4(position, 1.0);
+    vW = wp.xyz;
     vV = normalize(cameraPosition - wp.xyz);
     gl_Position = projectionMatrix * viewMatrix * wp;
   }`;
 
 const PLANET_F = /* glsl */ `
-  varying vec3 vN; varying vec3 vP; varying vec3 vV;
-  uniform vec3 uA, uB, uAtmo, uL; uniform float uKind, uSeed, uDim, uAir;
+  varying vec3 vN; varying vec3 vP; varying vec3 vV; varying vec3 vW;
+  uniform vec3 uA, uB, uAtmo, uL, uNight, uCentre, uRingN; uniform float uKind, uSeed, uDim, uAir, uRingIn, uRingOut;
   ${NOISE}
   void main() {
     vec3 p = normalize(vP), n = normalize(vN);
@@ -458,12 +471,24 @@ const PLANET_F = /* glsl */ `
       col = mix(col, vec3(0.78, 0.8, 0.84), cl * (0.12 + 0.3 * uAir));
     }
     float l = dot(n, uL);
-    float day = smoothstep(-0.08, 0.5, l);
+    // a soft terminator: day fades into night over a wide band, not a cut
+    float day = smoothstep(-0.28, 0.62, l);
+    // the ring's shadow on the day side: follow the sunlight back from this point to the ring's plane
+    if (uRingOut > 0.0) {
+      float dn = dot(uL, uRingN);
+      float t = abs(dn) > 1e-3 ? dot(uCentre - vW, uRingN) / dn : -1.0;
+      float rr = length(vW + uL * t - uCentre);
+      float inRing = t > 0.0 ? smoothstep(uRingIn, uRingIn * 1.04, rr) * smoothstep(uRingOut, uRingOut * 0.96, rr) : 0.0;
+      day *= 1.0 - inRing * (0.4 + 0.25 * sin(rr / uRingOut * 90.0));
+    }
     float fres = pow(1.0 - max(dot(n, vV), 0.0), 2.5);
     // twilight: a warm band where day becomes night, and a faint glow of the dark side, with a few city lights on a rock world
     float dusk = smoothstep(-0.18, 0.0, l) * smoothstep(0.34, 0.04, l);
     float city = uKind > 0.5 && uKind < 1.5 ? smoothstep(0.78, 0.84, fbm(p * 38.0 + s, 3)) * smoothstep(0.6, 0.35, fbm(p * 2.6 + s, 4)) * (1.0 - day) : 0.0;
-    vec3 c = col * day * 0.95 + col * 0.018 + uAtmo * fres * smoothstep(-0.35, 0.45, l) * uAir * 0.34
+    // the night side is never pure black: the nebula's light lies on it faintly, and a thin rim of air glows all round
+    float rim = pow(1.0 - max(dot(n, vV), 0.0), 7.0);
+    vec3 c = col * day * 0.95 + col * 0.018 + uNight * (1.0 - day) * (0.6 + 0.4 * fres) + uAtmo * rim * uAir * (0.18 + 0.5 * smoothstep(-0.5, 0.4, l))
+      + uAtmo * fres * smoothstep(-0.35, 0.45, l) * uAir * 0.6
       + vec3(0.55, 0.26, 0.12) * dusk * fres * uAir * 0.5 + vec3(0.7, 0.5, 0.25) * city * 0.22;
     gl_FragColor = vec4(c * uDim, 1.0);
   }`;
@@ -476,7 +501,7 @@ const HALO_F = /* glsl */ `
     float edge = -dot(n, normalize(vV));
     float a = pow(smoothstep(0.0, 0.46, edge), 2.0);
     float lit = smoothstep(-0.45, 0.55, dot(n, uL));
-    gl_FragColor = vec4(uAtmo * a * lit * 0.2 * uAir * uDim, 1.0);
+    gl_FragColor = vec4(uAtmo * a * lit * 0.55 * uAir * uDim, 1.0);
   }`;
 
 const RING_V = /* glsl */ `
@@ -511,6 +536,31 @@ const RING_F = /* glsl */ `
   }`;
 
 const UP = new Vector3(0, 1, 0);
+/** The flare's ghosts: how far along to the sun's mirror (0 the sun, 1 the mirror), size (of D), strength. */
+const GHOSTS: readonly [number, number, number][] = [[0.45, 0.035, 0.3], [0.75, 0.06, 0.16], [1.15, 0.02, 0.36], [1.5, 0.09, 0.1]];
+
+const RAYS_V = /* glsl */ `
+  uniform float uSize;
+  varying vec2 vUv;
+  void main() {
+    vUv = position.xy;
+    vec4 c = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    gl_Position = projectionMatrix * (c + vec4(position.xy * uSize, 0.0, 0.0));
+  }`;
+
+// soft rays out of the sun: thin and thick streaks round the compass, each breathing on its own, fading with distance
+const RAYS_F = /* glsl */ `
+  uniform float uTime, uDim; uniform vec3 uC;
+  varying vec2 vUv;
+  float h(float x) { return fract(sin(x * 127.1) * 43758.5453); }
+  float n1(float x) { float i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f); return mix(h(i), h(i + 1.0), f); }
+  void main() {
+    float r = length(vUv);
+    float a = atan(vUv.y, vUv.x) / 6.2831853 + 0.5;
+    float rays = pow(max(n1(a * 34.0 + uTime * 0.03), 0.0), 3.0) * 0.7 + pow(max(n1(a * 11.0 - uTime * 0.02 + 5.0), 0.0), 2.0) * 0.5;
+    float fall = exp(-r * 3.2) * smoothstep(1.0, 0.6, r);
+    gl_FragColor = vec4(uC * rays * fall * uDim, 1.0);
+  }`;
 
 /** The far bodies: a planet (with its halo, maybe rings and a moon) and one bright near star. */
 export class FarBodies {
@@ -518,6 +568,31 @@ export class FarBodies {
   private readonly mats: ShaderMaterial[] = [];
   private readonly sun: Vector3;
   private dimNow = 1;
+  private rays: ShaderMaterial | null = null;
+
+  private readonly sunDir = new Vector3();
+  private readonly ghosts: { s: Sprite; t: number }[] = [];
+  private glare: Sprite | null = null;
+  private readonly gv = new Vector3();
+
+  /** Facing the sun (`fwd` the camera's forward): the glare swells a little and the flare's ghosts show. */
+  face(fwd: Vector3): void {
+    const fs = fwd.dot(this.sunDir), k = Math.max(0, Math.min(1, (fs - 0.55) / 0.4));
+    const kk = k * k * (3 - 2 * k) * this.dimNow;
+    if (this.glare) this.glare.material.opacity = this.dimNow * (1 + kk * 0.8);
+    for (const g of this.ghosts) {
+      // the mirror of the sun across the middle of the view is 2(f·s)f - s; the ghosts sit along the way to it
+      this.gv.copy(fwd).multiplyScalar(2 * fs).sub(this.sunDir).lerp(this.sunDir, 1 - g.t).normalize().multiplyScalar(1700);
+      g.s.position.copy(this.gv);
+      g.s.material.opacity = kk;
+      g.s.visible = kk > 0.01;
+    }
+  }
+
+  /** The sun's rays turn, very slowly (`t` seconds; reduced motion holds it). */
+  tick(t: number): void {
+    if (this.rays) this.rays.uniforms.uTime!.value = t;
+  }
 
   constructor(sky: Sky, sun: Vector3) {
     this.sun = sun.clone().normalize();
@@ -536,7 +611,9 @@ export class FarBodies {
       // the dark limb (the sun nearly behind them)
       const ph = r(), turn = ph < 0.55 ? 0 : ph < 0.8 ? 1.2 + r() * 0.5 : 2.3 + r() * 0.5;
       const lit = this.sun.clone().applyAxisAngle(UP, turn * (r() < 0.5 ? -1 : 1));
-      const common = { uL: { value: lit }, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 } };
+      // the nebula's light on the night side: the sky's two colours, faint
+      const night = sky.neb[0].clone().lerp(sky.neb[1], 0.4).multiplyScalar(0.07);
+      const common = { uL: { value: lit }, uDim: { value: 1 }, uAir: { value: pl.kind === 1 ? 0.35 : 1 }, uNight: { value: night }, uCentre: { value: at }, uRingN: { value: new Vector3(0, 1, 0) }, uRingIn: { value: 0 }, uRingOut: { value: 0 } };
       const planetMat = new ShaderMaterial({
         vertexShader: PLANET_V, fragmentShader: PLANET_F,
         uniforms: { ...common, uA: { value: pl.colA }, uB: { value: pl.colB }, uAtmo: { value: pl.atmo }, uKind: { value: pl.kind }, uSeed: { value: sky.seed % 50 } },
@@ -546,7 +623,7 @@ export class FarBodies {
         uniforms: { ...common, uAtmo: { value: pl.atmo } },
       });
       const sphere = new Mesh(new SphereGeometry(rad, 64, 32), planetMat);
-      const shell = new Mesh(new SphereGeometry(rad * 1.12, 48, 24), halo);
+      const shell = new Mesh(new SphereGeometry(rad * 1.16, 64, 32), halo);
       body.add(sphere, shell);
       this.mats.push(planetMat, halo);
       if (pl.ring) {
@@ -558,29 +635,52 @@ export class FarBodies {
         const ring = new Mesh(new RingGeometry(inner, outer, 128, 1), ringMat);
         ring.rotation.x = -Math.PI / 2 + 0.25;
         body.add(ring);
+        // the ring's plane in the world, for its shadow on the planet
+        ring.updateMatrix(); body.updateMatrix();
+        common.uRingN.value.set(0, 0, 1).applyQuaternion(ring.quaternion).applyQuaternion(body.quaternion).normalize();
+        common.uRingIn.value = inner; common.uRingOut.value = outer;
         this.mats.push(ringMat);
       }
       this.group.add(body);
       if (pl.moon) {
         const moonMat = new ShaderMaterial({
           vertexShader: PLANET_V, fragmentShader: PLANET_F,
-          uniforms: { ...common, uAir: { value: 0 }, uA: { value: new Color(0.16, 0.16, 0.17) }, uB: { value: new Color(0.42, 0.41, 0.4) }, uAtmo: { value: new Color(0, 0, 0) }, uKind: { value: 1 }, uSeed: { value: sky.seed % 23 + 7 } },
+          uniforms: { ...common, uRingOut: { value: 0 }, uAir: { value: 0 }, uA: { value: new Color(0.16, 0.16, 0.17) }, uB: { value: new Color(0.42, 0.41, 0.4) }, uAtmo: { value: new Color(0, 0, 0) }, uKind: { value: 1 }, uSeed: { value: sky.seed % 23 + 7 } },
         });
-        const moon = new Mesh(new SphereGeometry(rad * (0.12 + r() * 0.1), 32, 16), moonMat);
+        const moon = new Mesh(new SphereGeometry(rad * (0.06 + r() * 0.05), 32, 16), moonMat);
         moon.position.copy(dirOf(pl.az + (r() < 0.5 ? -1 : 1) * pl.size * (1.6 + r() * 0.8), pl.el + (r() - 0.3) * pl.size).multiplyScalar(Dp * 0.96));
         this.group.add(moon);
         this.mats.push(moonMat);
       }
     }
-    // a bright near star, away from the planet, with a soft glow and a spike
-    const az = (p ? p.az + 120 + r() * 120 : r() * 360), el = -6 - r() * 18;
-    const flare = new Sprite(new SpriteMaterial({ map: glowTexture(), color: sky.star.clone().multiplyScalar(1.6), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true }));
-    flare.position.copy(dirOf(az, el).multiplyScalar(D));
-    flare.scale.setScalar(D * 0.05);
-    const spike = new Sprite(new SpriteMaterial({ map: spikeTexture(), color: sky.star.clone().multiplyScalar(1.1), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true }));
-    spike.scale.setScalar(D * 0.11);
-    spike.position.copy(flare.position);
-    this.group.add(flare, spike, farWorks(sky, D));
+    // the sun: low on the horizon on the key light's bearing, the light every shot is built round. A hot core that blooms,
+    // a wide soft glare, slow rays and a faint spike.
+    const at = dirOf(SUN_AZ, SUN_EL).multiplyScalar(D);
+    const core = new Sprite(new SpriteMaterial({ map: glowTexture(), color: sky.star.clone().multiplyScalar(5), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true }));
+    core.scale.setScalar(D * 0.045);
+    const glare = new Sprite(new SpriteMaterial({ map: glowTexture(), color: sky.star.clone().multiplyScalar(0.32), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true }));
+    glare.scale.setScalar(D * 0.5);
+    const spike = new Sprite(new SpriteMaterial({ map: spikeTexture(), color: sky.star.clone().multiplyScalar(0.9), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true }));
+    spike.scale.setScalar(D * 0.16);
+    this.rays = new ShaderMaterial({
+      vertexShader: RAYS_V, fragmentShader: RAYS_F, uniforms: { uSize: { value: D * 0.22 }, uTime: { value: 0 }, uC: { value: sky.star.clone().multiplyScalar(0.5) }, uDim: { value: 1 } },
+      transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false,
+    });
+    this.mats.push(this.rays);
+    const rays = new Mesh(new PlaneGeometry(2, 2), this.rays);
+    for (const o of [core, glare, spike, rays]) o.position.copy(at);
+    const flare = core;
+    // a faint lens flare when you face the sun: a few soft ghosts on the line from the sun through the middle of the view
+    this.sunDir.copy(at).normalize();
+    this.glare = glare;
+    for (const [t, size, a] of GHOSTS) {
+      const g = new Sprite(new SpriteMaterial({ map: glowTexture(), color: sky.star.clone().lerp(sky.neb[1], 0.4).multiplyScalar(a), blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: 0 }));
+      g.scale.setScalar(D * size);
+      g.userData.ghost = true;
+      this.ghosts.push({ s: g, t });
+      this.group.add(g);
+    }
+    this.group.add(glare, rays, flare, spike, farWorks(sky, D));
     this.group.traverse((o) => { o.renderOrder = -3; o.frustumCulled = false; });
   }
 
@@ -589,7 +689,7 @@ export class FarBodies {
     if (Math.abs(v - this.dimNow) < 0.005) return;
     this.dimNow = v;
     for (const m of this.mats) m.uniforms.uDim!.value = v;
-    this.group.traverse((o) => { if (o instanceof Sprite) o.material.opacity = v; });
+    this.group.traverse((o) => { if (o instanceof Sprite && !o.userData.ghost) o.material.opacity = v; });
   }
 
   dispose(): void {
@@ -656,7 +756,8 @@ export class Parallax {
       });
     }
     this.group.add(this.debris);
-    this.far = new InstancedMesh(rockGeometry(), new MeshBasicMaterial({ color: 0xffffff, fog: false }), FAR_ROCKS);
+    // lit by the sun like the near rock (flat facets), and lifted toward the sky's own haze so they sit back in it
+    this.far = new InstancedMesh(rockGeometry(), new MeshLambertMaterial({ color: 0xffffff, flatShading: true, fog: false }), FAR_ROCKS);
     this.far.frustumCulled = false;
     this.far.renderOrder = -4;
     this.group.add(this.far);
@@ -689,7 +790,7 @@ export class Parallax {
     for (let i = 0; i < 12; i++) {
       // violet, blue and a little magenta, each its own strength: a few brighter, most faint
       const c = (i % 4 === 3 ? sky.accent : sky.neb[i % 2]!).clone().multiplyScalar(0.8 + r() * 0.4);
-      const alpha = 0.18 + Math.pow(r(), 1.6) * 0.42;
+      const alpha = 0.1 + Math.pow(r(), 1.6) * 0.26;
       const s = new Sprite(new SpriteMaterial({ map: wispTexture(i % 3), color: c, blending: AdditiveBlending, depthWrite: false, fog: false, transparent: true, opacity: alpha, rotation: r() * Math.PI * 2 }));
       s.scale.setScalar(220 + r() * 280);
       s.renderOrder = -1;
@@ -701,12 +802,14 @@ export class Parallax {
     // far rock clusters: a few knots of small rock, each its own place, size and tilt; colder and darker the further out
     const fr = rand(sky.seed * 11 + 4), knots = 4 + Math.floor(fr() * 2);
     this.farRocks.length = 0;
-    const base = new Color(), shade = new Color(0x1a2030).lerp(sky.neb[0], 0.18);
+    // rock-brown faces turned toward the sky's colour (hazier and bluer the further out), and a glow of that haze in the shadows
+    const base = new Color(), shade = new Color(0x4a4440).lerp(sky.neb[0], 0.3);
+    (this.far.material as MeshLambertMaterial).emissive.copy(sky.neb[0]).lerp(sky.neb[1], 0.3).multiplyScalar(0.16);
     const cx = Array.from({ length: knots }, () => ({ x: fr() * FAR_BOX, z: fr() * FAR_BOX, y: -330 - fr() * 260, w: 70 + fr() * 110 }));
     for (let i = 0; i < FAR_ROCKS; i++) {
       const k = cx[i % knots]!, a = fr() * Math.PI * 2, d = Math.sqrt(fr()) * k.w;
       this.farRocks.push({ x: k.x + Math.cos(a) * d * 1.6, y: k.y + (fr() - 0.5) * k.w * 0.5, z: k.z + Math.sin(a) * d * 1.6, s: 3 + Math.pow(fr(), 2.2) * 14, q: new Quaternion().setFromEuler(new Euler(fr() * 6, fr() * 6, fr() * 6)) });
-      this.far.setColorAt(i, base.copy(shade).multiplyScalar(0.55 + fr() * 0.7));
+      this.far.setColorAt(i, base.copy(shade).multiplyScalar(0.45 + fr() * 0.4));
     }
     this.far.instanceColor!.needsUpdate = true;
     this.farX = NaN;
@@ -810,10 +913,10 @@ export function industrial(sky: Sky, bearing: number): Sky {
   const course = -(bearing * 180) / Math.PI;
   return {
     ...sky,
-    planet: { kind: 0, colA: lin('#6e6252'), colB: lin('#c4b49a'), atmo: lin('#ffc890'), size: 10.5, az: course - 48, el: -13, ring: true, moon: true, dist: 1500 },
+    planet: { kind: 0, colA: lin('#6e6252'), colB: lin('#c4b49a'), atmo: lin('#ffc890'), size: 20, az: course - 48, el: -11, ring: true, moon: true, dist: 1500 },
     extra: [
-      { kind: 1, colA: lin('#4e463e'), colB: lin('#8e8476'), atmo: lin('#b8b0a4'), size: 3.4, az: course + 38, el: -9, ring: false, moon: true, dist: 2300 },
-      { kind: 2, colA: lin('#8fa6b8'), colB: lin('#dce7ef'), atmo: lin('#bfe0ff'), size: 2.1, az: course + 112, el: -19, ring: false, moon: false, dist: 2700 },
+      { kind: 1, colA: lin('#4e463e'), colB: lin('#8e8476'), atmo: lin('#b8b0a4'), size: 5.5, az: course + 38, el: -9, ring: false, moon: true, dist: 2300 },
+      { kind: 2, colA: lin('#8fa6b8'), colB: lin('#dce7ef'), atmo: lin('#bfe0ff'), size: 3.4, az: course + 112, el: -19, ring: false, moon: false, dist: 2700 },
     ],
   };
 }

@@ -125,6 +125,10 @@ The yellow/orange ship is the key visual anchor, but the palette must remain dis
 
 The game should be overwhelmingly dark and desaturated.
 
+> **Changed 2026-11-01 (owner):** the world itself may be colourful: bold two-colour
+> skies, a big planet, a warm sun (docs/SKY.md). The ratio below now holds for the
+> HUD and pop-ups, which sit on soft dark pools; red still means danger only.
+
 **65% black / dark grey**
 **20% off-white / grey**
 **8% amber**

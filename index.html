@@ -90,6 +90,8 @@
            lower right  · the last thing that happened, and [B] Open bay when there is something to fit -->
     <div id="hud">
       <div id="vignette" aria-hidden="true"></div>
+      <!-- a jump arrival's title, like a film's (ui/hud.ts titleCard): low in the middle, under the ship, no box -->
+      <div id="title-card" role="status" aria-live="polite"><span id="tc-k"></span><b id="tc-t"></b><span id="tc-s"></span></div>
 
       <div id="world" aria-hidden="true">
         <div id="reticle"><i></i></div>
@@ -517,6 +519,8 @@
     </div>
 
     <!-- Copy from COPY-game.md § 07. -->
+    <!-- photo mode (main.ts): the world alone; this line fades after a moment -->
+    <div id="photo-hint" aria-live="polite">Photo mode · any key or tap returns</div>
     <div id="pause" role="status">
       <div class="pause-card panel term">
         <i class="wear v3" aria-hidden="true"></i>
@@ -578,6 +582,7 @@
         </section>
         <div class="pause-acts main-only">
           <button type="button" id="p-go"><span class="only-desktop"><span class="story-only">Resume · press any key</span><span class="arcade-only">Begin · press any key</span></span><span class="only-touch"><span class="story-only">Resume</span><span class="arcade-only">Begin</span></span></button>
+          <button type="button" id="p-photo"><span>Photo mode</span></button>
           <button type="button" id="p-exit"><span class="story-only">Save and exit</span><span class="arcade-only">Exit</span></button>
         </div>
         <div class="pause-acts set-only">

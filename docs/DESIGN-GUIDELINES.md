@@ -120,6 +120,21 @@ and SVG. No stylesheet or `src/ui` file repeats a colour as a literal (a test
 checks), so a new colour is a new token with a `usage` line, only when none fits.
 Gold is caution, red is threat, blue is the player, teal is information.
 
+## The world's colour and the HUD (owner, 2026-11-01)
+
+The game no longer drains the world to keep colour for the signals. Each system
+has a bold sky of two colours, a big planet with a glowing edge, a warm sun and
+its own colour mood (docs/SKY.md). The HUD guards itself instead:
+
+- **Dark pools.** `#hud::before` lays four soft dark corner pools under the
+  HUD's corners (no blur, no edge). Text on the HUD sits on one of them or on glass.
+- **Red is still only threat.** No sky, planet, haze or grade is red or red-led;
+  a warm sky leans amber or rose, never alarm red.
+- **Signals stay readable.** Blue, teal, gold and red on the HUD are checked on
+  the brightest sky in the review world (`?dev`), at desktop and phone sizes.
+- **Moments, not pop-ups.** A jump arrival's title card is a film title: no box,
+  a feathered halo, low in the middle under the ship, gone in about five seconds.
+
 ## Type and contrast
 
 - Space Grotesk (one variable file, 300 to 700) for headings, labels, actions

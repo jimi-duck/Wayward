@@ -119,9 +119,10 @@ export function woundPoints(): { points: V3[]; hard: boolean } {
  * 0 (grey) to 1 (ochre) so the rename can sweep it. Primer patches and the dark machinery stay as they are in both.
  */
 const LIVERY = {
-  // the repaint is a dull, dark ochre over old plate, done in a hurry (owner 2026-10-31: darker, more run down)
-  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xa48536, 0x7f652a, 0xb09444],
-  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.042, 0.028, 0.002],
+  // the repaint: bold blocks, worn. Off-white plate with the ochre stripe as the strong colour (owner 2026-11-01: off-white and a
+  // bold stripe read far better than grey detail); the wear in metal() keeps it "repaired and stolen"
+  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xd6d2c6, 0xcc8714, 0xe2ded2],
+  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.03, 0.026, 0.02],
 } as const;
 const A = new Color(), B = new Color();
 let liveryMix = 0;
@@ -257,7 +258,8 @@ type Rnd = () => number;
 /** Its own stream, so which plates are knocked askew leaves the layout alone. */
 let knock = seeded(4471);
 let braces = seeded(5521);
-const pickAmber = (rnd: Rnd): string => { const r = rnd(); return r < 0.5 ? 'paint' : r < 0.84 ? 'paint2' : 'paint3'; };
+// plates take the off-white in two shades; the ochre stripe (paint2) is kept to the parts drawn as the stripe, so it reads as a bold block
+const pickAmber = (rnd: Rnd): string => (rnd() < 0.6 ? 'paint' : 'paint3');
 
 // ── armour ────────────────────────────────────────────────────────────────
 
@@ -468,7 +470,8 @@ function hull(k: Kit, rnd: Rnd): void {
   block(k, pickAmber(rnd), [0.4, 0.05, 0.6], [1.32, top + 0.29, 0], [0, 0, 0], 0.02);
 
   // the stern: a cargo face between the drums, "03" on it
-  block(k, 'dark', [0.16, HH * 0.96, 0.78], [-2.46, HY, 0], [0, 0, 0], 0.04);
+  // painted in the stripe's ochre: the bold block the chase camera looks at all game
+  block(k, 'paint2', [0.16, HH * 0.96, 0.78], [-2.46, HY, 0], [0, 0, 0], 0.04);
   block(k, 'rubber', [0.06, 0.46, 0.4], [-2.55, HY + 0.02, 0], [0, 0, 0], 0.01);
   block(k, 'dark', [0.1, 0.38, 0.34], [-2.57, HY + 0.02, 0], [0, 0, 0], 0.02);
   for (const [w, h, y, z] of [[0.46, 0.06, 0.26, 0], [0.46, 0.06, -0.22, 0], [0.06, 0.5, 0.02, 0.23], [0.06, 0.5, 0.02, -0.23]] as const) block(k, 'hull', [0.1, h, w], [-2.58, HY + y, z], [0, 0, 0], 0.012);
@@ -502,7 +505,9 @@ function drum(k: Kit, rnd: Rnd, z: number): Nozzle {
   k.cyl('dark', R, R, 2.1, [-1.4, y, z], 'x', 28);
   for (let i = 0; i < BANDS.length - 1; i++) {
     const a = BANDS[i]!, b = BANDS[i + 1]!, mid = (a + b) / 2, len = b - a;
-    k.cyl(rnd() < 0.72 ? pickAmber(rnd) : 'dark', R * 1.035, R * 1.035, len - 0.07, [mid, y, z], 'x', 28);
+    // mostly off-white plate; the band nearest the stern is the bold ochre stripe, the one the chase camera sees first
+    const plate = rnd() < 0.86 ? pickAmber(rnd) : 'dark';
+    k.cyl(i === BANDS.length - 2 ? 'paint2' : plate, R * 1.035, R * 1.035, len - 0.07, [mid, y, z], 'x', 28);
     k.cyl('dark', R * 1.075, R * 1.075, 0.06, [a, y, z], 'x', 28);
     k.cyl('hull', R * 1.09, R * 1.09, 0.02, [a, y, z], 'x', 28);
     // a hatch or a vent on the outboard flank of the band

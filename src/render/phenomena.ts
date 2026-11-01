@@ -32,16 +32,16 @@ interface Lean {
 
 // by palette (render/sky.ts PALETTES)
 const PHENOM: Lean[] = [
-  { hole: 0.06, rift: 0.04, storm: 0.25, meteors: 40, flashes: 0, movers: 2 }, // the Reach: tidy, lit lanes
+  { hole: 0.06, rift: 0.04, storm: 0.25, meteors: 40, flashes: 150, movers: 2 }, // the Reach: tidy, lit lanes
   { hole: 0.08, rift: 0.08, storm: 0.35, meteors: 35, flashes: 90, movers: 1 }, // the Marches
-  { hole: 0.1, rift: 0.45, storm: 0.2, meteors: 0, flashes: 0, movers: 0 }, // the Hollows: nothing human
+  { hole: 0.1, rift: 0.45, storm: 0.2, meteors: 90, flashes: 0, movers: 0 }, // the Hollows: nothing human
   { hole: 0.15, rift: 0.15, storm: 0.4, meteors: 30, flashes: 80, movers: 1 },
-  { hole: 0.25, rift: 0.1, storm: 0.25, meteors: 30, flashes: 0, movers: 1 },
+  { hole: 0.25, rift: 0.1, storm: 0.25, meteors: 30, flashes: 140, movers: 1 },
   { hole: 0.05, rift: 0.04, storm: 0.15, meteors: 14, flashes: 45, movers: 2 }, // the Salvage Belt: mining charges, showers
   { hole: 0.45, rift: 0.1, storm: 0.1, meteors: 60, flashes: 0, movers: 0 }, // the Drift Deep: the quiet, and what lives in it
   { hole: 0.06, rift: 0.04, storm: 0.3, meteors: 25, flashes: 30, movers: 1 }, // the Breaker Yards: things still going up
   { hole: 0.04, rift: 0.04, storm: 0.15, meteors: 40, flashes: 120, movers: 4 }, // the Free Ports: traffic
-  { hole: 0.35, rift: 0.4, storm: 0.25, meteors: 0, flashes: 0, movers: 0 }, // the Last Lanes
+  { hole: 0.35, rift: 0.4, storm: 0.25, meteors: 90, flashes: 0, movers: 0 }, // the Last Lanes
 ];
 
 const D = 1500;
