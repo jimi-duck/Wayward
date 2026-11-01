@@ -541,7 +541,8 @@ export class Sector {
     this.ship.setCargo(world.cyrite / HOLD_MAX);
     this.ship.setDamage(world.plates, world.stats.maxPlates);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
-    const stolen = world.flags.has('ship_stolen');
+    // the Arcade flies her in her own paint from the start (the grey company livery is the Story's before-state)
+    const stolen = world.flags.has('ship_stolen') || world.mode === 'arcade';
     const rv = this.reveal.update({
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,
