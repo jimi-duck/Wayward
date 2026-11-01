@@ -81,7 +81,8 @@ describe('the ghost at Hollis', () => {
 
   it('logs the Wall at once: a jump before Sam speaks still has it', () => {
     const w = hollis(0.6);
-    run(w, 12);
+    // nothing comes before the arrival's sweep and title are done (FLOOR.arrival)
+    run(w, 20);
     expect(w.flags.has('ghost_here')).toBe(true);
     expect(w.flags.has('clue_ghost')).toBe(true);
     // the carry has it for the next stop

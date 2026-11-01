@@ -27,7 +27,12 @@ export const FLOOR = {
   moments: 20,
   /** Seconds a line of chatter (not story) may wait before it is dropped. */
   stale: 25,
+  /** Seconds after a road arrival that nothing is said but the scan: the camera's sweep over the new system and its title (render/sector.ts) play first. */
+  arrival: 9,
 } as const;
+
+/** The one Signal the arrival lets through: it is the title card's last line while the camera sweeps (ui/hud.ts). */
+export const SCAN_LINE = 'Scanning for transmissions';
 
 export type Kind = 'voice' | 'signal';
 type Held = Extract<GameEvent, { type: 'ping' }> | Extract<GameEvent, { type: 'storyNotice' }>;
@@ -44,6 +49,8 @@ export class Floor {
   private quietUntil = -Infinity;
   private momentClosed = -Infinity;
   private momentOpen = false;
+  /** The arrival's hush (FLOOR.arrival): set by the world each step while it lasts. No line but the scan, no Moment. */
+  hush = false;
   /** Lines already let out, so a later take does not hold them again. */
   private out = new WeakSet<object>();
   /** Every line let out, in order, with its time: what the budget test reads. */
@@ -64,9 +71,10 @@ export class Floor {
   step(now: number, free: boolean): Held | null {
     this.q = this.q.filter((l) => l.keep || now - l.at < FLOOR.stale);
     if (!free || this.momentOpen || now < this.floorUntil || !this.q.length) return null;
-    const pick = this.q[0]!;
+    const pick = this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q[0]!;
+    if (!pick) return null;
     if (pick.kind === 'voice' && (now < this.quietUntil || now - this.lastVoice < FLOOR.gap)) return null;
-    this.q.shift();
+    this.q.splice(this.q.indexOf(pick), 1);
     if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + FLOOR.hold; }
     else this.floorUntil = now + FLOOR.signal;
     this.log.push({ t: now, kind: pick.kind, id: pick.ev.type === 'ping' ? pick.ev.id : pick.ev.headline });
@@ -92,7 +100,7 @@ export class Floor {
 
   /** Whether a new Moment may go up: nothing open, and the gap since the last one has passed. */
   mayMoment(now: number): boolean {
-    return !this.momentOpen && now - this.momentClosed >= FLOOR.moments;
+    return !this.hush && !this.momentOpen && now - this.momentClosed >= FLOOR.moments;
   }
 
   /** Drop waiting Voices (Sam's lines still waiting when his card opens), by a test on the event. */
@@ -104,7 +112,7 @@ export class Floor {
   get holding(): boolean { return this.q.some((l) => l.keep); }
 
   /** A card waits while a story line is queued or any line is still on screen: it never cuts a voice off. */
-  busy(now: number): boolean { return this.holding || now < this.floorUntil; }
+  busy(now: number): boolean { return this.hush || this.holding || now < this.floorUntil; }
 
   /** Lines still waiting. */
   get waiting(): number { return this.q.length; }

@@ -133,7 +133,9 @@ its own colour mood (docs/SKY.md). The HUD guards itself instead:
 - **Signals stay readable.** Blue, teal, gold and red on the HUD are checked on
   the brightest sky in the review world (`?dev`), at desktop and phone sizes.
 - **Moments, not pop-ups.** A jump arrival's title card is a film title: no box,
-  a feathered halo, low in the middle under the ship, gone in about five seconds.
+  a feathered halo, low in the middle under the ship, gone in about eight seconds.
+  While it and the camera's sweep play, nothing else speaks: the scan is the card's
+  last line, and every other line, card and call waits (`FLOOR.arrival`, 9 s).
 
 ## Type and contrast
 
