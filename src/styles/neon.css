@@ -844,3 +844,18 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 }
 #rd-call.demand .rd-id b { font: 700 30px/1.15 var(--font-head); letter-spacing: 0; text-transform: none; color: var(--ink-hi); }
 @media (max-height: 520px) { #rd-call.demand .rd-id b { font-size: 20px; } }
+
+/* the plain hails' header and words (v0.1): a situation chip, who is speaking in sentence case, a body you can read at a glance */
+#rd-call:not(.job):not(.demand) { width: min(560px, 92vw); gap: 10px; padding: 18px 24px 20px; }
+#rd-call:not(.job):not(.demand) .rd-k { padding: 6px 10px; letter-spacing: .14em; color: var(--on-blue); background: var(--teal-hi); }
+#rd-call:not(.job):not(.demand) .rd-kind { font: 500 14px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink); }
+#rd-call:not(.job):not(.demand) .rd-id b { font: 700 22px/1.15 var(--font-head); letter-spacing: 0; text-transform: none; color: var(--ink-hi); }
+#rd-call:not(.job):not(.demand) .rd-id span { font: 400 14px/1.3 var(--font-display); color: var(--ink-2); }
+#rd-call:not(.job):not(.demand) .rd-text { font: 400 16px/1.5 var(--font-display); color: var(--ink-body); }
+#rd-call:not(.job):not(.demand) .rd-read, #rd-call:not(.job):not(.demand) .rd-terms { font-size: 14px; }
+@media (max-height: 520px) {
+  #rd-call:not(.job):not(.demand) { width: min(440px, 60vw); padding: 8px 14px 10px; gap: 5px; }
+  #rd-call:not(.job):not(.demand) .rd-k { padding: 4px 7px; }
+  #rd-call:not(.job):not(.demand) .rd-id b { font-size: 15px; }
+  #rd-call:not(.job):not(.demand) .rd-text { font-size: 12.5px; line-height: 1.3; }
+}
