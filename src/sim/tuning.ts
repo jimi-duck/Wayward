@@ -80,6 +80,12 @@ export const BOLT_DAMAGE = 1.4;
  * target's size) is lifted or dropped onto the target's altitude.
  */
 export const BOLT_ELEVATE_CONE = 0.14;
+/**
+ * Aim assist: a lance fired with a hull within this many radians of the nose
+ * (widened by its size) is bent toward it, by ASSIST_PULL of the gap.
+ */
+export const BOLT_ASSIST_CONE = 0.12;
+export const BOLT_ASSIST_PULL = 0.7;
 /** Laser bank: energy per shot, and refill per second. */
 export const BANK_MAX = 100;
 export const BANK_SHOT = 9;

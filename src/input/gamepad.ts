@@ -26,6 +26,8 @@ const PRESSES: Array<[number, Press]> = [
 
 // Hardware deadzone only: enough to stop a worn stick drifting the ship.
 const DEAD = 0.15;
+/** Response curve: above 1 makes small pushes gentle so the nose can be trimmed. */
+const STICK_CURVE = 1.5;
 
 export interface PadState {
   turn: number;
@@ -63,7 +65,7 @@ export class Gamepads {
     const x = pad.axes[0] ?? 0;
     const y = pad.axes[1] ?? 0;
     const mag = Math.min(1, Math.hypot(x, y));
-    const aim = mag > DEAD ? { angle: Math.atan2(-y, x), mag: (mag - DEAD) / (1 - DEAD) } : null;
+    const aim = mag > DEAD ? { angle: Math.atan2(-y, x), mag: Math.pow((mag - DEAD) / (1 - DEAD), STICK_CURVE) } : null;
     const turn = (down(DPAD_RIGHT) ? 1 : 0) - (down(DPAD_LEFT) ? 1 : 0);
     const thrust = Math.max(pad.buttons[RT]?.value ?? 0, down(DPAD_UP) ? 1 : 0);
 

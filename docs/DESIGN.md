@@ -865,3 +865,11 @@ long builds; settle a close call with more (`PILOT_RUNS=48`).
 The pilot is a steady player, not a strong one; expect people to last
 longer. Run the pilots before changing a number, and update the matching
 `docs/BALANCE*.md`.
+
+## Forgiving flight (2026-11-02)
+
+Desktop is the main target. Keys are on or off, so `input/keyboard.ts` eases
+the turn: a tap trims at half rate and a hold winds up to full over 0.35 s.
+Pad sticks use a 1.5 curve after the deadzone. Single lasers bend 70% of the
+way onto a hull within ~7 degrees of the nose (`assist` in `sim/weapons.ts`,
+`BOLT_ASSIST_*` in `sim/tuning.ts`). Not felt on a real device.
