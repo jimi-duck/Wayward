@@ -147,6 +147,30 @@ its own colour mood (docs/SKY.md). The HUD guards itself instead:
   (`--ink-2`); never `#757A74`. Lighten text before brightening glass.
 - Phones: 40px touch targets, 10px smallest text.
 
+## Choices (v0.1, owner, 2026-11-02)
+
+Applies to every pop-up that asks the player something. Space Grotesk and Share Tech Mono, as above.
+
+- **Only the panel glows.** A choice is a solid plate: 1px hairline, no glow, cut 10px on two corners (top-left and
+  bottom-right), the edge a layer behind the fill (not an inset shadow). Key caps and tags use a 5px cut.
+- **Types.** One primary per pop-up (blue fill, on-blue text), the rest secondary (glass-ink plate, hairline at about
+  22%). Irreversible (ends the run, loses cargo or money for good) is a secondary plate with a red edge and a red
+  outcome tag, and the key is held 0.8 s (a red fill sweeps across; letting go cancels). Never filled red at rest.
+  Unavailable: dust text and a caution tag that says what is missing. A link to a document is text with an arrow
+  under the facts, not a plate. A risky choice is not an irreversible one: Refuse and fight can be primary.
+- **Anatomy.** Key cap (40px, mono 18px), label (600, 19px, sentence case, verb first), one consequence line (14.5px,
+  ink-2), an optional outcome tag (11px caps, one or two words). At least 64px high, 10px apart.
+- **Keys.** 1, 2, 3 in the order shown, Enter confirms the focused one, a hint row under the choices. Exception:
+  calls that ride along in flight (job offers, hails) keep Y, U and N, because 1 and 2 fire the lasers and torpedoes.
+- **Order.** Header (situation chip in the rim's colour, who is speaking), title (sentence case, 26-30px), body,
+  facts row (2-4 numbers for this decision), choices (primary first, irreversible last), key hint row. 640-720px wide
+  on a desktop, 32px each side. Two panels: the one waiting for an answer keeps the rim, the other fades to 60%.
+- **Words.** Labels are verbs. Never a placeholder ("Nothing", "Not fixed", "Unknown"): hide the field or say what it
+  means ("No deadline").
+- In code: `ui/comms.ts` `plate()` and `hold()`, the `.ns-c` block at the end of `neon.css`, `ChoiceDef.end` and
+  `.tag`, `CardDef.facts` (the raiders' toll reads hull, torpedoes, raiders and cargo off the ship in `world.ts`).
+  Not yet moved over: the in-flight hails and demands (`#rd-call` outside jobs), the registry card.
+
 ## Fallbacks
 
 - No `backdrop-filter`, or reduced transparency: an opaque `rgba(8,13,14,.92)`

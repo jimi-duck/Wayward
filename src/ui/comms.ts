@@ -44,6 +44,10 @@ export interface CommsChoice {
   tone?: string;
   /** The kind of risk, in words: it stands in for the odds word. */
   risk?: string;
+  /** Cannot be undone: red tag, and the key is held to confirm (pop-up guidelines v0.1). */
+  end?: boolean;
+  /** The outcome tag: one or two words. */
+  tag?: string;
 }
 
 export interface CommsView {
@@ -150,7 +154,7 @@ export interface SheetView {
    * (title and one line of context). Both templates give every answer one consequence line and at most two chips.
    */
   tpl: 'sheet' | 'channel' | 'decision';
-  main: SheetPanel & { hero: [string, string] | null; rows: Row[]; note: string; letter: { head: Array<[string, string]>; sign: string } | null;
+  main: SheetPanel & { facts: boolean; hero: [string, string] | null; rows: Row[]; note: string; letter: { head: Array<[string, string]>; sign: string } | null;
     /** The speaker on a channel: name and role, from `from`. */
     who: { name: string; role: string } | null };
   /** An ambush: a draining bar under the header (the world is slowed, not stopped). */
@@ -169,7 +173,7 @@ function sheetView(d: Open['def'], o: Open): SheetView {
     main: {
       who: null, role, from: t(d.from), status: d.status ? t(d.status) : '', dot: d.status === 'Unknown' ? 'white' : role,
       title: d.notitle || d.hero ? '' : t(d.title), sub: d.quote ? '' : lines.join(' '), label: '', lines: d.quote ? lines : [],
-      hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '', rx: d.rx ?? null,
+      facts: !!d.facts, hero: d.hero ? [t(d.hero[0]), t(d.hero[1])] : null, rows: rowsOf(o.ledger), note: d.note ? t(d.note) : '', rx: d.rx ?? null,
       letter: d.letter ? { head: d.letter.head.map(([k, v]) => [t(k), t(v)] as [string, string]), sign: t(d.letter.sign) } : null,
     },
     side: side ? {
@@ -207,7 +211,7 @@ function templateView(d: Open['def'], o: Open, place: string): SheetView {
   return {
     tpl: channel ? 'channel' : 'decision', timer: o.slow > 0,
     main: {
-      role, status, dot: role, label: '', rx: null, hero: null, letter: null, note: o.more.join(' '),
+      role, status, dot: role, label: '', rx: null, facts: false, hero: null, letter: null, note: o.more.join(' '),
       from: channel ? [t('Channel'), place].filter(Boolean).join(' · ') : t(d.from),
       who: channel ? { name, role: what.join(' · ') } : null,
       title: channel ? '' : t(d.title),
@@ -285,7 +289,7 @@ export function cardView(o: Open, place = ''): CommsView {
     read: d.ships?.length || d.truths?.length ? { them: r.them, you: r.you, bars: !!d.ships?.length, rows: d.truths?.length ? [[t('Intent'), t(r.intent)]] : [] } : null,
     choices: o.choices.map((c) => ({
       label: t(c.label), hint: c.hint ? t(c.hint) : '', lines: [], ok: c.ok, needs: c.needs.map((n) => t(n)), gains: c.gains, tone: c.tone,
-      risk: c.risk ? t(c.risk) : '',
+      risk: c.risk ? t(c.risk) : '', end: c.end, tag: c.tag ? t(c.tag) : '',
       tags: [...c.cost, ...(c.chance !== null && !c.risk ? [oddsWord(c.chance)] : [])],
     })),
     face: d.face ? faceSvg(d.face, CALLER_CSS[d.caller], d.scars ?? 0) : null,
@@ -482,8 +486,8 @@ export class CommsPanel {
       const deg = p.rx != null ? h('span', 'rx-deg') : null;
       const rx = t('RX {n}°', { n: String(p.rx).padStart(3, '0') });
       if (deg) { if (arriving($('comms'))) settleDigits(deg, rx); else deg.textContent = rx; }
-      return h('header', 'ns-h', '', wave(), h('span', 'ns-from', p.from), deg, bars(),
-        p.status ? h('span', `ns-st ${box ? 'box' : p.dot}`, p.status) : null);
+      // the situation chip first (filled in the rim's colour), then who is speaking, then the signal bars
+      return h('header', 'ns-h', '', p.status ? h('span', `ns-st ${box ? 'box' : `chip ${p.dot}`}`, p.status) : null, h('span', 'ns-from', p.from), deg, bars());
     };
     const rows = (rs: Row[]) => rs.map((r) => h('div', `ns-r ${r.tone}`, '', h('span', 'k', r.k), h('b', 'v', r.v)));
     // the lines read as one block of text, no bar (the owner, 23 October 2026)
@@ -506,26 +510,37 @@ export class CommsPanel {
     }
     const m = sv.main;
     const opener = d ? item(h('button', `ng-n ${d.row ? 'ns-c' : 'ns-open'}${m.role === 'cyan' ? '' : ` ${m.role}`}`, '',
-      d.row ? h('kbd', '', String(view.choices.length + 1).padStart(2, '0')) : null, h('span', 'ns-l', d.open), d.row ? null : h('b', '', t('Open'))),
+      d.row ? h('kbd', '', String(view.choices.length + 1)) : null, h('span', 'ns-l', d.open), d.row ? null : h('b', '', '→')),
     () => this.setDoc(view, sv, true), d.row ? view.choices.length + 1 : 0) : null;
     const main = rows(m.rows);
     if (opener && !d!.row) main.splice(Math.min(d!.at, main.length), 0, opener);
     // the answers first in the reading order, the document's row after them; the first answer is where the selection starts
     const tpl = sv.tpl !== 'sheet';
+    // one primary (the first answer that can be taken and cannot be undone), the rest secondary plates (pop-up guidelines v0.1)
+    const first = view.choices.findIndex((c) => c.ok && !c.end);
+    const plate = (c: CommsChoice, i: number, under: HTMLElement[], tags: string[]) => {
+      const kind = !c.ok ? 'off' : c.end ? 'end' : i === first ? 'primary' : 'secondary';
+      const tagEl = c.ok ? tags.map((x, k) => h('i', `ns-tag${c.end && k === 0 ? ' end' : ''}`, x)) : (c.needs[0] ? [h('i', 'ns-tag need', c.needs[0])] : []);
+      const b = item(h('button', `ns-c ${kind}`, '', h('kbd', '', String(i + 1)),
+        h('span', 'ns-cb', '', h('span', 'ns-l', c.label), ...under), tagEl.length ? h('span', 'ns-tags', '', ...tagEl) : null),
+      c.end ? () => this.hold(b, i) : () => this.pick(i), i + 1);
+      b.setAttribute('aria-disabled', String(!c.ok));
+      if (c.end) b.onpointerdown = (e) => { e.stopPropagation(); this.hold(b, i); };
+      if (c.end) b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); };
+      return b;
+    };
     const acts = view.choices.map((c, i) => {
       if (tpl) {
         // a template's answer: the label, one consequence line, and at most two chips at the right
         const line = consequenceOf(c), chips = chipsOf(c);
-        const b = item(h('button', `ng-n ns-c tpl${c.tone === 'fight' ? ' red' : ''}${c.ok ? '' : ' off'}`, '', h('kbd', '', String(i + 1).padStart(2, '0')),
-          h('span', 'ns-cb', '', h('span', 'ns-l', c.label), line ? h('span', 'ns-hint', line) : null),
-          chips.length ? h('span', 'ns-chips', '', ...chips.map(([x, k]) => h('i', `ns-chip${k ? ` ${k}` : ''}`, x))) : null), () => this.pick(i), i + 1);
-        b.setAttribute('aria-disabled', String(!c.ok));
-        return b;
+        return plate(c, i, line ? [h('span', 'ns-hint', line)] : [], chips.map(([x]) => x).slice(0, c.ok ? 2 : 1));
       }
-      const tone = c.tone === 'fight' ? ' red' : m.role === 'cyan' ? '' : ` ${m.role}`;
-      return item(h('button', `ng-n ns-c${tone}`, '', h('kbd', '', String(i + 1).padStart(2, '0')),
-        h('span', 'ns-cb', '', h('span', 'ns-l', c.label), c.hint ? h('span', 'ns-hint', c.hint) : null)), () => this.pick(i), i + 1);
+      return plate(c, i, c.hint ? [h('span', 'ns-hint', c.hint)] : [], c.tag ? [c.tag] : []);
     });
+    const keyRow = view.choices.length ? h('p', 'ns-keys', '', ...(view.choices.length > 1 ? [...view.choices.map((_, i) => h('kbd', '', String(i + 1))), h('span', '', t('choose'))] : []),
+      h('kbd', '', 'Enter'), h('span', '', t('confirm')),
+      ...view.choices.flatMap((c, i) => (c.end ? [h('kbd', '', t('Hold {n}', { n: String(i + 1) })), h('span', '', t('to confirm'))] : []))) : null;
+
     // a channel's speaker: their face (a painted portrait, else the drawn one), name and role
     const pslot = view.art.portrait;
     const pic = pslot ? (view.art.scarred && artImg(pslot[0], `${pslot[1]}-scarred`, 'ns-face')) || artImg(pslot[0], pslot[1], 'ns-face') : null;
@@ -545,9 +560,9 @@ export class CommsPanel {
         h('dl', 'ns-mail', '', ...m.letter.head.map(([k, v]) => h('div', '', '', h('dt', '', k), h('dd', '', v)))),
         h('div', 'ns-letter', '', ...m.lines.map((l) => h('p', '', l)), h('p', 'ns-sign', m.letter.sign)),
       ] : [quotes(m.lines)]),
-      main.length ? h('div', 'ns-rows', '', ...main) : null,
+      main.length ? h('div', `ns-rows${m.facts ? ' ns-facts' : ''}`, '', ...main) : null,
       m.note ? h('p', 'ns-note', m.note) : null,
-      h('div', 'ns-acts', '', ...acts, ...(opener && d!.row ? [opener] : [])));
+      h('div', 'ns-acts', '', ...acts, ...(opener && d!.row ? [opener] : [])), keyRow);
     const sd = sv.side;
     const side = sd ? h('section', `ng ${sd.role} ns-p ns-side`, '', head(sd),
       sd.title ? h('h2', 'ns-t', sd.title) : null, sd.sub ? h('p', 'ns-sub', sd.sub) : null,
@@ -663,6 +678,33 @@ export class CommsPanel {
     if (!n) return;
     this.sel = (this.sel + d + n) % n;
     this.render();
+  }
+
+  /** Hold-to-confirm for an answer that cannot be undone (0.8 s): the key or the press must stay down, and letting go cancels. */
+  private holdEl: HTMLElement | null = null;
+  private hold(b: HTMLElement, at: number): void {
+    if (this.holdEl === b) return;
+    const i = this.items.findIndex((x) => x.el === b);
+    if (i < 0 || b.getAttribute('aria-disabled') === 'true') return;
+    this.holdEl = b;
+    this.sel = i;
+    this.items.forEach((x, k) => x.el.classList.toggle('sel', k === i));
+    b.classList.add('holding');
+    const stop = () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('keyup', up, true);
+      window.removeEventListener('pointerup', stop, true);
+      window.removeEventListener('pointercancel', stop, true);
+      b.removeEventListener('pointerleave', stop);
+      b.classList.remove('holding');
+      this.holdEl = null;
+    };
+    const up = (e: KeyboardEvent) => { if (/^(Digit|Numpad)\d$|^(Numpad)?Enter$/.test(e.code)) stop(); };
+    const timer = window.setTimeout(() => { stop(); this.pick(at); }, 800);
+    window.addEventListener('keyup', up, true);
+    window.addEventListener('pointerup', stop, true);
+    window.addEventListener('pointercancel', stop, true);
+    b.addEventListener('pointerleave', stop);
   }
 
   private pick(i: number): void {

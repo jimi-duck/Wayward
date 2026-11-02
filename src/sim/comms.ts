@@ -248,6 +248,10 @@ export interface ChoiceDef {
   odds?: Odds;
   /** The kind of risk, in a few words (`High risk · pursuit likely`). Shown in place of the odds word: the choice is what you will risk, not which button has the best chance. */
   risk?: string;
+  /** It cannot be undone (ends the run, loses cargo or money for good): a red outcome tag, and the key is held to confirm (pop-up guidelines v0.1). */
+  end?: boolean;
+  /** The outcome tag, one or two words: Combat, Safe, Ends the run. */
+  tag?: string;
   win: Outcome;
   lose?: Outcome;
 }
@@ -273,6 +277,8 @@ export interface CardDef {
   gist?: string;
   /** A ledger under the text: the opening's contract in numbers (sim/contract.ts). */
   ledger?: LedgerKind;
+  /** The facts row for this decision, read off the ship as the card opens (world.ts `factsFor`): the raiders' toll shows hull, torpedoes, raiders and cargo at risk. */
+  facts?: 'raid';
   /**
    * The opening's cards draw as Neon Glass sheets (docs/DESIGN-GUIDELINES.md, ui/comms.ts sheetView): the main panel's role
    * colour. Cyan is systems, radio and documents; ochre is WAYWARD and Sam's private channel; red is breach and threat.
@@ -355,6 +361,10 @@ export interface CardDef {
 /** One choice as the panel shows it. */
 export interface ChoiceView {
   id: string;
+  /** Cannot be undone: held to confirm. */
+  end: boolean;
+  /** The outcome tag, or ''. */
+  tag: string;
   label: string;
   tone: Tone;
   hint: string;
@@ -602,7 +612,7 @@ export function choiceView(c: ChoiceDef, def: CardDef, x: Ctx, fee: number, read
   }
   return {
     id: c.id, label: c.label, tone: c.tone, hint: c.hint, ok: needs.length === 0, needs, cost: costWords,
-    odds, risky, chance, gains: gains(c.win, x, fee, cost), risk: c.risk ?? '',
+    odds, risky, chance, gains: gains(c.win, x, fee, cost), risk: c.risk ?? '', end: !!c.end, tag: c.tag ?? '',
   };
 }
 
