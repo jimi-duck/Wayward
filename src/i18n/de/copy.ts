@@ -443,7 +443,7 @@ export const COPY: Record<string, string> = {
   'Decline and continue alone': 'Ablehnen und allein weiterfliegen',
   'Chart received · rich ore nearby': 'Karte erhalten · reiches Erz in der Nähe',
   'Pay 4 Cyrite for her chart and a nearby area rich in ore.': 'Zahle 4 Cyrit für ihre Karte und ein erzreiches Gebiet in der Nähe.',
-  'Stay near her until she finds the vein. No one is expected to attack.': 'Bleib bei ihr, bis sie die Ader findet. Niemand soll angreifen.',
+  'Stay near her until she finds the vein. Gutter scouts may follow her.': 'Bleib bei ihr, bis sie die Ader findet. Gutter-Späher könnten ihr folgen.',
   '“I know where the vein runs. Stay close and I will share the find. Lose me, and you get nothing.”': '„Ich weiß, wo die Ader verläuft. Bleib dicht bei mir, dann teile ich den Fund. Verlierst du mich, bekommst du nichts.“',
   'Follow the Cyrite Vein': 'Folge der Cyrit-Ader',
   'Leave the search to the union.': 'Überlass die Suche der Gewerkschaft.',

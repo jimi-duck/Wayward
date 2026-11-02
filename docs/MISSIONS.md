@@ -63,6 +63,10 @@ line under the objective, and the same line on the pause card. Refusing it, or
 taking another answer, clears the pin. If the desk drops the call unheard it
 rings again.
 
+## Twists and the quick bonus
+
+A job can turn mid-run: `threat` on its row brings hostiles in so many seconds after the goal is taken, with its own radio line (`say`). The Cyrite vein draws Gutter scouts, the missing shift a raider, the voice on the wire and the wreck's log company, the tanker its escort's reinforcements. A job done inside half its time limit pays a quarter more and the notice says "quick bonus" (`QUICK` in `sim/stage.ts`).
+
 ## What each one changes
 
 A job that ends leaves a mark on the chart (`after`) and often a flag:

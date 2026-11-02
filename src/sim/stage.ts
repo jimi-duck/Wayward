@@ -40,6 +40,9 @@ const FOLLOW_R = 135;
 const LOST_AFTER = 14;
 /** Wards this far behind or beside the ship, after the scene is over, are gone. */
 const GONE = 520;
+/** Done inside this share of the time allowed, a job pays this much more. */
+const QUICK = 0.5;
+const QUICK_BONUS = 0.25;
 
 const JOB_IDS = new Set(MISSIONS.map((m) => m.id));
 /** The optional jobs pay the job rate; plain scenes keep their rows. */
@@ -263,7 +266,7 @@ export class Stage {
     if (this.threatT >= 0 && (this.threatT -= dt) < 0 && d.threat) {
       const { ux, uz } = this.dir();
       for (let i = 0; i < d.threat.n; i++) w.spawnHostile(d.threat.variant, { x: s.x + ux * 340 + (i - d.threat.n / 2) * 30, y: 0, z: s.z + uz * 340 + (i - d.threat.n / 2) * 30 }, null, true);
-      w.events.push({ type: 'ping', id: `say_${d.id}_threat`, from: t('Scope'), caller: 'unknown', text: t('“Contacts ahead, closing fast.”'), moment: 'calm', system: w.sortie.name });
+      w.events.push({ type: 'ping', id: `say_${d.id}_threat`, from: t('Scope'), caller: 'unknown', text: t(d.threat.say ?? '“Contacts ahead, closing fast.”'), moment: 'calm', system: w.sortie.name });
     }
     if (this.run) {
       const v = this.run.step(w, dt);
@@ -425,11 +428,14 @@ export class Stage {
     const goalOut = (o: Outcome | undefined): Outcome | undefined => (d.goal.kind === 'call' || !this.taken ? undefined : o);
     const out: Outcome | undefined = r === 'won' ? goalOut(d.win) : r === 'lost' ? goalOut(d.lose) : r === 'ignored' ? d.ignore : undefined;
     let paid = out;
+    // done in under half the time allowed: a quarter more
+    const quick = !!out && r === 'won' && d.goal.limit > 0 && this.clock <= d.goal.limit * QUICK;
     if (out && r === 'won') paid = bounty(this.run ? scaleOut(out, this.run.scale) : this.share < 1 ? scaleOut(out, this.share) : out, w.pay * (JOB_PAY_IDS.has(d.id) ? JOB_PAY : 1));
+    if (paid && quick) paid = bounty(paid, 1 + QUICK_BONUS);
     // a job that ends in the sky says so, and what it paid (a green notice; hud.ts)
     if (this.taken && JOB_IDS.has(d.id) && (r === 'won' || r === 'lost')) {
       const worth = paid ? w.worth(paid) : { cyrite: 0, supplies: 0 };
-      w.events.push({ type: 'jobEnd', id: d.id, name: d.name, ok: r === 'won', cyrite: worth.cyrite, supplies: worth.supplies, partial: r === 'won' && !!out && (this.run?.scale ?? this.share) < 1, text: out?.text ?? '' });
+      w.events.push({ type: 'jobEnd', id: d.id, name: d.name, ok: r === 'won', cyrite: worth.cyrite, supplies: worth.supplies, quick, partial: r === 'won' && !!out && (this.run?.scale ?? this.share) < 1, text: out?.text ?? '' });
     }
     if (paid) w.applyOutcome(paid, 1, []);
     if (this.run && r === 'lost') for (const a of this.alive(w)) if (a.ward?.act === 'patrol') provoke(a, w.events);
