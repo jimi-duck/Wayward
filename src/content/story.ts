@@ -282,15 +282,15 @@ export const STORY_CARDS: CardDef[] = [
     ],
   }),
   story({
-    id: 'story_raiders', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unknown',
-    from: 'Unknown', title: 'Cut your main drive and open the hold.',
+    id: 'story_raiders', kind: 'warning', caller: 'unknown', glass: 'red', status: 'Hostile hail', facts: 'raid',
+    from: 'Unregistered raider · 2 ships closing', title: 'Cut your main drive and open the hold.',
     text: 'That ore isn’t reaching the company port. We’re taking it. Cut your drive and let us aboard, or we open the hold ourselves.',
     cargo: 'Two unknown ships · closing',
     choices: [
-      { id: 'pay', label: 'Surrender', tone: 'pay', hint: 'You are captured and sold into slavery. The run ends.',
-        win: { text: 'You surrender · the raiders take everything', follow: { card: 'story_seized', after: 0.5, quick: true } } },
-      { id: 'refuse', label: 'Refuse', tone: 'fight', hint: 'They attack. Combat begins.',
+      { id: 'refuse', label: 'Refuse and fight', tone: 'fight', hint: 'They attack. You keep the ore if you win.', tag: 'Combat',
         win: { text: 'Weapons hot · the raiders turn on you', hostile: true, radio: { from: 'Unknown', text: '“Then we do it the hard way.”' } } },
+      { id: 'pay', label: 'Surrender', tone: 'pay', hint: 'You are captured and sold into slavery.', tag: 'Ends the run', end: true,
+        win: { text: 'You surrender · the raiders take everything', follow: { card: 'story_seized', after: 0.5, quick: true } } },
     ],
   }),
   story({

@@ -19,7 +19,7 @@ import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './gho
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
 import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT } from '../content/story';
-import { ledgerFor } from './contract';
+import { ledgerFor, type LedgerRow } from './contract';
 import {
   APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
   PATCH_QUIET, PATCH_TIME, SPOOL, SPOOL_RUN, JAM_SPOOL, SWARM_WEAVER, THREN_JAM, swarmGap, swarmSize, type Waypoint, START_CYRITE, TANK_MAX, newBreakout, pickPursuer, pursuitCap, CHASE_LANE, CHASE_FIRST, chaseCap, chaseGap, chaseHull, chaseLabel, pursuitElite, pursuitInterval,
@@ -1812,6 +1812,17 @@ export class World implements EncounterHost {
     this.stage?.lapsed(this, o.def.id);
   }
 
+  /** The raiders' toll in four facts: what stands between the ship and the hold. */
+  private raidFacts(): LedgerRow[] {
+    const armed = this.tutor?.pirates.length || 2;
+    return [
+      { k: 'Your hull', v: `${this.plates} / ${this.stats.maxPlates}` },
+      { k: 'Torpedoes', v: String(this.arms.rack) },
+      { k: 'Raiders armed', v: String(armed), tone: 'bad' },
+      { k: 'Cargo at risk', n: Math.round(this.tutor?.onboard ?? this.cyrite) },
+    ];
+  }
+
   /** Put a card on the table: the world waits (or slows), and anyone it brings arrives. */
   openComms(def: CardDef): void {
     useIds(this.ids);
@@ -1822,6 +1833,7 @@ export class World implements EncounterHost {
     this.desk.closed(this.runTime);
     this.floor.opened(this.runTime, def.id);
     if (def.ledger) o.ledger = ledgerFor(def.ledger);
+    if (def.facts === 'raid') o.ledger = this.raidFacts();
     if (def.doc) o.doc = ledgerFor(def.doc.kind);
     this.comms = o;
     this.phase = 'comms';
