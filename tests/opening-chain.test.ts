@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { OPENING_AT } from '../src/content/story';
 import { readFileSync } from 'node:fs';
 import { WALL } from '../src/content/wall';
 import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
@@ -64,7 +65,7 @@ describe('the opening chain beyond the gate', () => {
     w.field.rocks = [];
     const run = (secs: number) => { for (let t = 0; t < secs * 60 && w.phase === 'play'; t++) { w.ship.invuln = 1; w.step(1 / 60, { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' }); } };
     const seen: string[] = [];
-    run(4);
+    run(OPENING_AT + 2);
     for (const answer of ['proceed', 'code', 'lead']) {
       seen.push(w.comms!.def.id);
       // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
