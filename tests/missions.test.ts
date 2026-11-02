@@ -51,6 +51,8 @@ function take(id: string, choice: string, carry: Partial<Journey['carry']> = {},
   for (let i = 0; i < 60 && !(w.call ?? w.comms); i++) run(w, 1);
   expect((w.call ?? w.comms)?.def.id, id).toBe(SITUATION_BY_ID[id]!.card);
   expect(w.answer(choice)).toBe(true);
+  // the quick bonus (done in under half the time) has its own test below: these play from just past it
+  if (st.def.goal.limit > 0) st.clock = st.def.goal.limit * 0.55;
   return { w, st };
 }
 const jy = (chits: number) => cy(Math.round(chits * JOB_PAY));
@@ -505,6 +507,7 @@ describe('the drift cache', () => {
 
   it('pays for the cases aboard when time runs out', () => {
     const { w, st } = take('drift_cache', 'recover');
+    st.clock = 0;
     const before = w.cyrite;
     gather(w, st, 2);
     put(w, st.x + 900, st.z);
@@ -538,5 +541,24 @@ describe('a job that ends in the sky says so', () => {
     const l = lost.w.drain().filter((x) => x.type === 'jobEnd');
     expect(l).toHaveLength(1);
     expect((l[0] as { ok: boolean }).ok).toBe(false);
+  });
+});
+
+describe('the quick bonus and the twists', () => {
+  it('a job done inside half its time pays a quarter more, and says so', () => {
+    const a = take('kill_zone', 'clear');
+    a.st.clock = 0;
+    for (let i = 0; i < 20 && !a.st.result; i++) { run(a.w, 1); for (const f of [...(a.st.run?.foes ?? [])]) kill(a.w, f); }
+    const e = a.w.drain().find((x) => x.type === 'jobEnd') as { quick: boolean; cyrite: number };
+    expect(e.quick).toBe(true);
+    expect(e.cyrite).toBeGreaterThan(jy(140));
+  });
+
+  it('the prospector\'s trail draws scouts, with a word on the radio', () => {
+    const { w, st } = take('follow_cyrite', 'follow');
+    st.clock = 0;
+    const said: string[] = [];
+    for (let i = 0; i < 40; i++) { run(w, 1); for (const e of w.drain()) if (e.type === 'ping') said.push(e.text); }
+    expect(said.some((x) => x.includes('Gutter scouts'))).toBe(true);
   });
 });

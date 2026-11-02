@@ -85,4 +85,9 @@ export const MISSIONS: Record<string, string> = {
   'Not your fight': 'Nicht dein Kampf',
   'Orrin closes the channel': 'Orrin schließt den Kanal',
   'Pay the broker': 'Makler bezahlen',
+  '“Raider on the wreck field. Someone got here first.”': '„Räuber im Wrackfeld. Jemand war vor uns da.“',
+  '“Gutter scouts on her tail. They want the vein.”': '„Gutter-Späher an ihrem Heck. Sie wollen die Ader.“',
+  '“The relay called more than you. Company.”': '„Das Relais hat mehr gerufen als dich. Besuch.“',
+  '“A wiper crew is closing. Copy it fast.”': '„Eine Löschcrew kommt näher. Kopier es schnell.“',
+  '“Escort reinforcements. Finish it quick.”': '„Verstärkung der Eskorte. Mach schnell.“',
 };

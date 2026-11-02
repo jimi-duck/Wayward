@@ -120,10 +120,10 @@ const SECTOR_NAME: Record<EncounterId, string> = {
 const TITLE_SECS = 8.5;
 
 /** The pay under a finished job's headline: "+34 Cyrite · +3 supplies", or the job's name when it paid nothing. */
-function payLine(cyrite: number, supplies: number, name: string, partial = false): string {
+function payLine(cyrite: number, supplies: number, name: string, partial = false, quick = false): string {
   const pay = [...(cyrite > 0 ? [t('+{n} Cyrite', { n: num(cyrite) })] : []), ...(supplies > 0 ? [t('+{n} supplies', { n: supplies })] : [])];
   if (!pay.length) return name;
-  return [...pay, ...(partial ? [t('part pay')] : [])].join(' · ');
+  return [...pay, ...(partial ? [t('part pay')] : []), ...(quick ? [t('quick bonus')] : [])].join(' · ');
 }
 
 export class Hud {
@@ -256,7 +256,7 @@ export class Hud {
           break;
         case 'jobEnd':
           // a job that ends in the sky: green with the pay when it is done, gold when it is lost
-          if (e.ok) this.notify(world, { type: 'done', headline: 'Job complete', reason: payLine(e.cyrite, e.supplies, e.name, e.partial), key: `jobend:${e.id}` });
+          if (e.ok) this.notify(world, { type: 'done', headline: 'Job complete', reason: payLine(e.cyrite, e.supplies, e.name, e.partial, e.quick), key: `jobend:${e.id}` });
           else this.notify(world, { type: 'warning', headline: 'Job failed', reason: e.name, key: `jobend:${e.id}` });
           break;
         case 'jobShort': this.note(world, `${t('Job open')} · ${t(e.text)}`, 'hit'); break;

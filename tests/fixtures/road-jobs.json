@@ -193,6 +193,12 @@
     "limit": 90,
     "line": "Stay on the prospector’s wing"
    },
+   "threat": {
+    "variant": "scout",
+    "n": 2,
+    "after": 12,
+    "say": "“Gutter scouts on her tail. They want the vein.”"
+   },
    "win": {
     "text": "The prospector finds the vein and lets you mine your share",
     "chits": 90,
@@ -324,7 +330,7 @@
      "id": "follow",
      "label": "Follow the prospector",
      "tone": "help",
-     "hint": "Stay near her until she finds the vein. No one is expected to attack.",
+     "hint": "Stay near her until she finds the vein. Gutter scouts may follow her.",
      "win": {
       "text": "She leads the way"
      }

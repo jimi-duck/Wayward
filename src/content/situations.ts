@@ -143,7 +143,7 @@ export interface SituationDef {
   accept?: string[];
   goal: Goal;
   /** Hostiles that come once the goal is taken on: so many seconds in, from ahead (a convoy's raiders). */
-  threat?: { variant: string; n: number; after: number };
+  threat?: { variant: string; n: number; after: number; /** The radio line when they come (a twist); the plain "Contacts ahead" otherwise. */ say?: string };
   /** Missions: more foes in waves (defend): so many seconds into the goal, from out ahead. */
   waves?: Array<{ variant: string; n: number; at: number }>;
   /** Hostiles waiting on the straight line to the Jump Gate, sprung when the ship passes this far along it, unless the situation was won (the pickets the stranger led you round). */

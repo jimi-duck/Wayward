@@ -212,6 +212,7 @@ export const UI: Record<string, string> = {
   'Job failed': 'Auftrag gescheitert',
   '+{n} Cyrite': '+{n} Cyrit',
   'part pay': 'Teillohn',
+  'quick bonus': 'Zeitbonus',
   'Paid': 'Bezahlt',
   'Job open': 'Auftrag offen',
   'Fly through the gate': 'Flieg durch das Tor',
