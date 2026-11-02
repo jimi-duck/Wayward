@@ -237,6 +237,32 @@ describe('the autopilot keeps clear (owner, 23 October 2026)', () => {
   });
 });
 
+describe('arrival sweep and autopilot hold (owner, 2 November 2026)', () => {
+  it('the breach notice waits for the arrival sweep (8 s)', () => {
+    const w = arrive(beyond());
+    run(w, 7.5);
+    expect(w.comms).toBeNull();
+    run(w, OPENING_AT - 7.5 + 0.5);
+    expect(w.comms?.def.id).toBe(BREACH_BEAT);
+  });
+  it('the autopilot keeps flying while Sam is held back and waits only within 1 km of the dock', () => {
+    const j = beyond();
+    const w = breach(j);
+    // another voice holds the floor: Sam cannot open yet
+    w.floor.hush = true;
+    const spy = () => { w.floor.hush = true; };
+    let waited = 0;
+    for (let t = 0; t < RECOVERY_T * 60 - 120 && w.phase === 'play'; t++) {
+      spy(); w.ship.invuln = 1; w.step(1 / 60, FULL);
+      const speed = Math.hypot(w.ship.vx, w.ship.vz);
+      if (fromDock(w) > 105 && speed < 0.5 && t > 120) waited++;
+    }
+    expect(waited).toBe(0);
+    // past Sam's 2 km it was still on its way in, not parked
+    expect(fromDock(w) < SAM_CALL_R || Math.hypot(w.ship.vx, w.ship.vz) > 0.5).toBe(true);
+  });
+});
+
 describe('the autopilot just works for the story (owner, 23 October 2026)', () => {
   it('flies straight in through the real rock field on many seeds: no circles, no hits, Sam at 2 km', () => {
     for (let seed = 1; seed <= 12; seed++) {
@@ -253,9 +279,11 @@ describe('the autopilot just works for the story (owner, 23 October 2026)', () =
       for (let k = 1; k <= 8; k++) w.field.spawn((k % 2) as 0 | 1, w.ship.x + ux * k * 60 + (k % 3 - 1) * 6, w.ship.z + uz * k * 60, 0, 0);
       let path = 0, hits = 0, turned = 0, last = { x: w.ship.x, z: w.ship.z };
       const h0 = w.ship.heading;
+      // she may start facing away (the player flew until the notice): that first turn-round is not a circle
+      const first = Math.abs(Math.atan2(Math.sin(Math.atan2(-uz, ux) - h0), Math.cos(Math.atan2(-uz, ux) - h0)));
       let prevH = h0;
       w.events.length = 0;
-      for (let t = 0; t < RECOVERY_T * 60 && w.phase === 'play'; t++) {
+      for (let t = 0; t < RECOVERY_T * 60 && w.phase === 'play' && !w.comms; t++) {
         w.step(1 / 60, FULL);
         path += Math.hypot(w.ship.x - last.x, w.ship.z - last.z); last = { x: w.ship.x, z: w.ship.z };
         turned += Math.abs(Math.atan2(Math.sin(w.ship.heading - prevH), Math.cos(w.ship.heading - prevH))); prevH = w.ship.heading;
@@ -267,7 +295,7 @@ describe('the autopilot just works for the story (owner, 23 October 2026)', () =
       expect(hits, `seed ${seed}`).toBe(0);
       // close to the straight line, and never a full turn
       expect(path, `seed ${seed}`).toBeLessThan((d0 - SAM_CALL_R) * 1.4 + 40);
-      expect(turned, `seed ${seed}`).toBeLessThan(2 * Math.PI);
+      expect(turned, `seed ${seed}`).toBeLessThan(first + 2 * Math.PI);
     }
   });
 });

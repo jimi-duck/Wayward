@@ -48,8 +48,11 @@ export const RENAME_BEAT = 'story_rename';
 export const WAKE_BEAT = 'story_wake';
 /** The opening's chain past Cerro. The registry card (RENAME_BEAT) is no longer dealt: the code's notice says it (owner 2026-10-31). */
 export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, WAKE_BEAT] as const;
-/** Seconds into that sortie before the chain begins. */
-export const OPENING_AT = 2;
+/**
+ * Seconds into that sortie before the chain begins: after the jump-arrival sweep and the system's title card are done
+ * (render/sector.ts ARRIVE_HOLD + ARRIVE_SWING = 8 s), so the breach notice never cuts the camera short (owner, 2 November 2026).
+ */
+export const OPENING_AT = 9;
 
 /** A piece of the Severance's history: the flag that carries it, and how the Archive names it. */
 export interface Fragment {

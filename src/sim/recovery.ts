@@ -13,8 +13,8 @@ import type { Hull } from '../content/hulls';
 // the breach that is about half a minute of play. His code lifts the owner lock: the
 // autopilot lets go and the controls come back. The flag stays for good.
 //
-// Nothing here docks her. The autopilot stops short of the dock and holds, past
-// Sam's range so his call always comes first, and the dock does not hail while
+// Nothing here docks her. The autopilot flies on until it is 1 km from the dock and only
+// then holds, so it waits only that close, well inside Sam's range; the dock does not hail while
 // the recovery runs. One flag and the owner lock decide it, so a reload picks it
 // up: the flag is banked with the breach's answer and the lock with Sam's, and
 // a load mid-recovery flies her in again from the system's edge to the same 2 km.
@@ -25,8 +25,11 @@ export const RECOVERY_FLAG = 'recovery_flag';
 export const SAM_CALL_R = 200;
 /** The latest it comes, in seconds of play, should she ever be held off the dock (a fight, a jam). */
 export const RECOVERY_T = 90;
-/** Where the autopilot holds, short of the dock and inside Sam's range. */
-export const HOLD_R = 170;
+/**
+ * Where the autopilot holds: 1 km from the dock centre (the owner, 2 November 2026). Outside that it keeps flying, so it
+ * never idles waiting for Sam's call while he is held back by another voice (sim/floor.ts); inside it, Sam's call is due.
+ */
+export const HOLD_R = 100;
 /** The autopilot's top speed, as a share of the hull's. */
 const CRUISE = 0.25;
 
