@@ -107,3 +107,11 @@ At 901px wide and wider the panel is one grid, header, body, the Intel and Wall 
 Colour: amber (`--pick`) is the player's pick and the action, the selected card, the selected lane and the button; teal is information (the goal bar, here, Quiet); dull gold is caution (low stores, a short tank, a Watched chip); red is a threat only. Upright and narrow (900px or less) the map sits over the list; on a phone on its side the map is left, the list right, and the sentences and the goal bar go.
 
 The goal block ends with one line of quest, per region (`WHYS` in `content/situations.ts`, in the order of the region questions): why the player is going on. First chart of a region only.
+
+## The Course map's look (2026-11-02)
+
+On the road the map is a quiet star chart (`ui/course.ts` `draw`, `styles/course.css`): a soft nebula, a faint dot
+lattice that fades to the edges, dust, and the stops on one wave with a core, a thin ring and a wide halo each. No
+icons by kind and no frame; the map fades out before its box. Names are small wide-tracked capitals. The next stop and
+the goal are amber (the pick), where she is is white with a second ring, stops behind are grey with a dotted line.
+Look at it alone with `/tools/course.html?stop=3` on the dev server.
