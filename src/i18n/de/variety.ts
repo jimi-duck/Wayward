@@ -41,7 +41,7 @@ export const VARIETY: Record<string, string> = {
   'You leave the cases to drift': 'Du lässt die Kisten treiben',
   'The Drift Cache was recovered · the salvage crews are watching for you': 'Der Drift-Container ist geborgen · die Bergungscrews halten nach dir Ausschau',
   'Guild salvage desk · open claim': 'Guild-Bergungsbüro · offener Claim',
-  '“A cargo train broke up in this field. Four cases are still drifting, the rest is picked over. Slow beside each to take it in. A crew will notice the first.”': '„In diesem Feld ist ein Frachtzug zerbrochen. Vier Kisten treiben noch, der Rest ist abgeräumt. Werde neben jeder langsam, um sie aufzunehmen. Eine Crew bemerkt die erste.“',
+  '“A cargo train broke up here. Four cases still drift. Slow beside each to take it. A crew will notice the first.”': '„Hier ist ein Frachtzug zerbrochen. Vier Kisten treiben noch. Werde neben jeder langsam, um sie zu nehmen. Eine Crew bemerkt die erste.“',
   'Four cases · drifting, one crew nearby': 'Vier Kisten · treibend, eine Crew in der Nähe',
   'Pick up the cases': 'Kisten aufsammeln',
   'Slow beside each case to take it. An ore tractor reaches further and takes less time.': 'Werde neben jeder Kiste langsam, um sie aufzunehmen. Ein Erztraktor reicht weiter und braucht weniger Zeit.',

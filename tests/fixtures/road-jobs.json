@@ -47,7 +47,7 @@
     "kind": "destroy",
     "hold": 0,
     "limit": 150,
-    "line": "Destroy the toll beacon and clear the lane",
+    "line": "Break the toll crew",
     "spoil": 0.7
    },
    "win": {
@@ -191,7 +191,7 @@
     "kind": "follow",
     "hold": 25,
     "limit": 90,
-    "line": "Stay with the prospector until she finds the vein"
+    "line": "Stay on the prospector’s wing"
    },
    "win": {
     "text": "The prospector finds the vein and lets you mine your share",
@@ -225,7 +225,7 @@
    "tier": "important",
    "from": "Dispatch · mining guild",
    "title": "Break the Pirate Toll",
-   "text": "“Someone has put a toll beacon on our lane. Four ships are guarding it, led by one captain. Take the captain out and the rest may scatter.”",
+   "text": "“A toll beacon on our lane, four ships, one captain. Drop the captain and the rest may scatter.”",
    "cargo": "A toll beacon · four hulls at the gate",
    "choices": [
     {

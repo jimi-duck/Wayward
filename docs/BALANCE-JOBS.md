@@ -13,22 +13,22 @@ after Cerro is 1).
 
 ## What the pilot meets
 
-3 whole journeys, flown to the end or to a wreck. "Stops" is the systems the pilot
+2 whole journeys, flown to the end or to a wreck. "Stops" is the systems the pilot
 flew in; "offered" is the jobs whose call rang. A person takes a different lane and
 more time, so read it as a floor.
 
 | Region | Jobs dealt per chart | Stops | Offered |
 |---|---|---|---|
-| 1 The Reach | 5.7 | 9.7 | 1.3 |
-| 2 The Marches | 14.4 | 8.0 | 4.0 |
-| 3 The Salvage Belt | 17.0 | 9.0 | 4.3 |
-| 4 The Drift Deep | 16.8 | 10.0 | 3.3 |
-| 5 The Breaker Yards | 17.9 | 12.7 | 6.3 |
-| 6 The Free Ports | 17.8 | 10.7 | 4.3 |
-| 7 The Hollows | 12.0 | 9.3 | 4.7 |
-| 8 The Last Lanes | 17.1 | 12.0 | 8.0 |
+| 1 The Reach | 5.7 | 9.5 | 1.5 |
+| 2 The Marches | 14.4 | 10.0 | 4.5 |
+| 3 The Salvage Belt | 17.0 | 11.5 | 5.0 |
+| 4 The Drift Deep | 16.8 | 10.0 | 3.0 |
+| 5 The Breaker Yards | 17.9 | 10.0 | 5.0 |
+| 6 The Free Ports | 17.8 | 10.0 | 5.0 |
+| 7 The Hollows | 12.0 | 9.0 | 4.0 |
+| 8 The Last Lanes | 17.1 | 15.0 | 9.0 |
 
-Seconds from arrival to the call ringing (109 offers): median 5.4, 90th percentile 14.1, longest 21.0.
+Seconds from arrival to the call ringing (74 offers): median 5.2, 90th percentile 15.6, longest 25.0.
 A call waits for clear sky, never for a long quiet.
 
-The first job was offered at stop 3.0 on average (3 of 3 journeys).
+The first job was offered at stop 3.0 on average (2 of 2 journeys).
