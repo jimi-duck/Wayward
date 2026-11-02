@@ -3,8 +3,7 @@ import { courseView, type Course } from '../sim/course';
 import type { Journey } from '../sim/journey';
 import { halfDays } from '../sim/hunt';
 import { $, GUARD, guarded, h, keys, type PadEdges } from './dom';
-import { fillWall, glyph, hash01, storeCells, svg } from './chart';
-import { INK } from './palette';
+import { fillWall, hash01, storeCells, svg } from './chart';
 import { plural, t } from '../i18n';
 
 // ── the Course ────────────────────────────────────────────────────────────
@@ -121,38 +120,67 @@ export class CoursePanel {
       ...c.road.map((r, i) => ({ name: r.name, kind: r.kind, state: (r.state === 'ahead' && (here < 0 ? i === 0 : i === here + 1) ? 'next' : r.state) as Node['state'], gate: r.kind === 'gate' || r.kind === 'edge' })),
     ];
     const kids: SVGElement[] = [];
-    for (let x = 60; x < W; x += 60) kids.push(svg('line', { x1: x, y1: 0, x2: x, y2: H, class: 'ch-grid' }));
-    for (let y = 60; y < H; y += 60) kids.push(svg('line', { x1: 0, y1: y, x2: W, y2: y, class: 'ch-grid' }));
-    // faint stars, the same every time
-    for (let i = 0; i < 46; i++) kids.push(svg('circle', { cx: (hash01(`co${i}x`) * W).toFixed(1), cy: (hash01(`co${i}y`) * H).toFixed(1), r: (0.5 + hash01(`co${i}r`) * 0.9).toFixed(2), class: 'ch-dust', opacity: (0.15 + hash01(`co${i}o`) * 0.35).toFixed(2) }));
-    const padX = 44, step = (W - padX * 2) / Math.max(1, nodes.length - 1), amp = Math.min(12, H * 0.04);
-    const px = (i: number) => padX + step * i, py = (i: number) => H / 2 + (i % 2 ? amp : -amp);
-        // the road itself
+    // the sky behind: soft blooms, a faint dot lattice that fades to the edges, dust. All gradients, no edges.
+    const defs = svg('defs', {});
+    const grad = (id: string, stops: Array<[number, string, number]>) => {
+      const g = svg('radialGradient', { id });
+      for (const [o, c, a] of stops) g.append(svg('stop', { offset: o, style: `stop-color:${c};stop-opacity:${a}` }));
+      defs.append(g);
+    };
+    grad('co-neb-a', [[0, 'var(--blue)', 0.5], [1, 'var(--blue)', 0]]);
+    grad('co-neb-b', [[0, 'var(--anomaly)', 0.4], [1, 'var(--anomaly)', 0]]);
+    grad('co-neb-c', [[0, 'var(--cy)', 0.32], [1, 'var(--cy)', 0]]);
+    for (const [id, c] of [['teal', 'var(--cy)'], ['amber', 'var(--pick)'], ['white', 'var(--ink)'], ['dim', 'var(--ink-2)']] as const) {
+      grad(`co-h-${id}`, [[0, c, 0.55], [0.22, c, 0.22], [0.6, c, 0.05], [1, c, 0]]);
+    }
+    const fade = svg('radialGradient', { id: 'co-fade' });
+    fade.append(svg('stop', { offset: 0.25, 'stop-color': '#fff' }), svg('stop', { offset: 1, 'stop-color': '#000' }));
+    const mask = svg('mask', { id: 'co-latm' });
+    mask.append(svg('rect', { width: W, height: H, fill: 'url(#co-fade)' }));
+    defs.append(fade, mask);
+    kids.push(defs);
+    const R = Math.max(W, H);
+    kids.push(
+      svg('ellipse', { cx: W * 0.5, cy: H * 0.5, rx: R * 0.4, ry: H * 0.45, fill: 'url(#co-neb-a)', opacity: 0.55 }),
+      svg('ellipse', { cx: W * 0.28, cy: H * 0.58, rx: R * 0.26, ry: H * 0.4, fill: 'url(#co-neb-b)', opacity: 0.5 }),
+      svg('ellipse', { cx: W * 0.72, cy: H * 0.48, rx: Math.min(R * 0.24, W * 0.26), ry: H * 0.4, fill: 'url(#co-neb-c)', opacity: 0.6 }),
+    );
+    const lat = svg('g', { class: 'co-lat', mask: 'url(#co-latm)' });
+    for (let x = 22; x < W; x += 44) for (let y = 22; y < H; y += 44) lat.append(svg('circle', { cx: x, cy: y, r: 0.8 }));
+    kids.push(lat);
+    for (let i = 0; i < 60; i++) kids.push(svg('circle', { cx: (hash01(`co${i}x`) * W).toFixed(1), cy: (hash01(`co${i}y`) * H).toFixed(1), r: (0.5 + hash01(`co${i}r`) * 0.9).toFixed(2), class: 'ch-dust', opacity: (0.12 + hash01(`co${i}o`) * 0.4).toFixed(2) }));
+    // the road as one soft wave: stops alternate above and below the middle, so each name sits on the side away from the line
+    const small = W < 380, padX = small ? 34 : 56, step = (W - padX * 2) / Math.max(1, nodes.length - 1), tight = H < 170, amp = Math.max(6, Math.min(H * 0.2, (H - (tight ? 76 : 120)) / 2, 74));
+    const pts = nodes.map((_, i) => ({ x: padX + step * i, y: H / 2 - (tight ? 8 : 0) + (i % 2 ? 1 : -1) * amp * (0.55 + 0.45 * hash01(`co-y${i}`)) }));
+    // a smooth curve through the stops (Catmull-Rom as cubic segments), one path per hop so each can take its own tone
+    const seg = (i: number) => {
+      const p0 = pts[Math.max(0, i - 2)]!, p1 = pts[i - 1]!, p2 = pts[i]!, p3 = pts[Math.min(pts.length - 1, i + 1)]!, k = 0.2;
+      return `M${p1.x.toFixed(1)} ${p1.y.toFixed(1)}C${(p1.x + (p2.x - p0.x) * k).toFixed(1)} ${(p1.y + (p2.y - p0.y) * k).toFixed(1)} ${(p2.x - (p3.x - p1.x) * k).toFixed(1)} ${(p2.y - (p3.y - p1.y) * k).toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    };
     for (let i = 1; i < nodes.length; i++) {
-      const a = i - 1, state = nodes[i]!.state;
-      const cls = state === 'next' ? 'ch-lane teal sel' : nodes[i]!.state === 'done' || nodes[i]!.state === 'here' ? 'ch-lane teal done' : 'ch-net-lane';
-      const d = `M${px(a)} ${py(a)}Q${((px(a) + px(i)) / 2).toFixed(1)} ${((py(a) + py(i)) / 2 + (a % 2 ? 6 : -6)).toFixed(1)} ${px(i)} ${py(i)}`;
-      if (state === 'next') kids.push(svg('path', { d, class: 'ch-lane-under teal' }));
-      kids.push(svg('path', { d, class: cls }));
+      const state = nodes[i]!.state, d = seg(i);
+      if (state === 'next') kids.push(svg('path', { d, class: 'co-lane-under' }));
+      kids.push(svg('path', { d, class: `co-lane ${state === 'next' ? 'next' : state === 'done' || state === 'here' ? 'done' : 'ahead'}` }));
     }
     nodes.forEach((n, i) => {
-      const x = px(i), y = py(i), r = (n.gate ? 14 : 11) * (W < 380 ? 0.72 : 1), col = n.state === 'here' ? INK.white : n.gate ? INK.teal : n.state === 'done' ? INK.dust : INK.teal;
-      const g = svg('g', { class: `ch-s${n.state === 'next' ? ' out sel' : ''}${n.state === 'here' ? ' here' : ''}${n.gate ? ' gate' : ''}${n.state === 'done' ? ' past' : ''}` });
-      const s = (r * 2 + 4) / 16;
-      const shape = n.state === 'here' ? 'home' : n.kind;
-      g.append(svg('path', { d: (glyph(shape).firstElementChild as SVGPathElement).getAttribute('d')!, transform: `translate(${x - 8 * s} ${y - 8 * s}) scale(${s})`, class: 'ch-node', stroke: col, fill: `${col}26`, 'vector-effect': 'non-scaling-stroke' }));
-      if (n.state === 'next') g.append(svg('circle', { cx: x, cy: y, r: r + 7, class: 'ch-ring' }));
-      if (n.state === 'here') g.append(svg('circle', { cx: x, cy: y, r: r + 6, class: 'ch-ring here' }));
-      // the name above or below, the other way to its neighbour's; the tag under the name for where she is and the goal
-      const up = i % 2 === 0, lab = svg('g', { class: 'ch-lab', transform: `translate(${Math.max(34, Math.min(W - 34, x)).toFixed(1)} ${(up ? y - r - 12 : y + r + 14).toFixed(1)})` });
-      lab.append(svg('text', { x: 0, y: 0, 'text-anchor': 'middle', class: 'ch-name' }, t(n.name)));
-      const tag = n.state === 'here' ? t('Here') : n.gate ? t('Goal') : '';
-      if (tag) {
-        const tw = tag.length * 7 + 8, ty = up ? -22 : 5;
-        lab.append(svg('rect', { x: -tw / 2, y: ty, width: tw, height: 12, rx: 1.5, class: `ch-tagb ${n.gate ? 'gate' : 'here'}` }), svg('text', { x: 0, y: ty + 9, 'text-anchor': 'middle', class: 'ch-tagm' }, tag));
-      }
+      const { x, y } = pts[i]!, up = y < H / 2, big = n.gate, here = n.state === 'here', next = n.state === 'next', done = n.state === 'done';
+      const k = small ? 0.75 : 1, core = (big ? 6.5 : here ? 5 : next ? 5 : 3.6) * k, ring = (big ? 15 : here ? 12 : next ? 12 : 9) * k, halo = (big ? 78 : here ? 62 : next ? 56 : done ? 30 : 36) * k;
+      const tone = here ? 'white' : done ? 'dim' : big || next ? 'amber' : 'teal';
+      const g = svg('g', { class: `ch-s co-s ${n.state}${big ? ' gate' : ''}` });
+      g.append(svg('circle', { cx: x, cy: y, r: halo, fill: `url(#co-h-${here ? 'teal' : tone})`, opacity: done ? 0.5 : 1 }));
+      if (!done) g.append(svg('circle', { cx: x, cy: y, r: halo * 2, fill: `url(#co-h-${here ? 'teal' : tone})`, opacity: 0.14 }));
+      g.append(svg('circle', { cx: x, cy: y, r: ring, class: `co-ring ${tone}` }));
+      if (here) g.append(svg('circle', { cx: x, cy: y, r: ring + 8 * k, class: 'co-ring outer' }));
+      if (big) g.append(svg('path', { d: `M${x} ${y - ring * 0.62}L${x + ring * 0.62} ${y}L${x} ${y + ring * 0.62}L${x - ring * 0.62} ${y}Z`, class: 'co-gem' }));
+      g.append(svg('circle', { cx: x, cy: y, r: core, class: `co-core ${tone}` }));
+      // a short leader, then the name in small wide-tracked capitals; the tag under it for where she is and the goal
+      const tag = here ? t('Here') : big ? t('Goal') : '';
+      const hw = Math.min(W / 2, (t(n.name).length + (tight && tag ? tag.length + 3 : 0)) * (big ? 5.6 : 4.8) + 14), off = ring + (tight ? 3 : 10), ly = up ? y - off : y + off, lab = svg('g', { class: `ch-lab co-lab ${n.state}${big ? ' gate' : ''}`, transform: `translate(${Math.max(hw, Math.min(W - hw, x)).toFixed(1)} ${ly.toFixed(1)})` });
+      if (!tight) lab.append(svg('line', { x1: 0, y1: up ? 4 : -4, x2: 0, y2: up ? 14 : -14, class: 'co-leader' }));
+      lab.append(svg('text', { x: 0, y: tight ? (up ? -2 : 12) : up ? -(tag ? 20 : 8) : 24, 'text-anchor': 'middle', class: 'ch-name' }, tight && tag ? `${t(n.name)} · ${tag}` : t(n.name)));
+      if (tag && !tight) lab.append(svg('text', { x: 0, y: tight ? (up ? 0 : 23) : up ? -6 : 38, 'text-anchor': 'middle', class: 'co-tag' }, tag));
       // on a small map only the stops that matter are named: where she is, the next, the goal
-      if (W < 380 && n.state !== 'here' && n.state !== 'next' && !n.gate) lab.setAttribute('display', 'none');
+      if ((small || (tight && W < 640)) && !here && !next && !big) lab.setAttribute('display', 'none');
       g.append(lab);
       kids.push(g);
     });

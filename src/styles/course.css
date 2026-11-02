@@ -7,12 +7,44 @@
 .co-purs.amber { color: var(--caution); }
 .co-purs.red { color: var(--alert-text); }
 .co-purs.rest { color: var(--ink-2); }
-.ch-lane.done { stroke: rgba(var(--blue-rgb), .55); }
-.ch-s.past .ch-name { fill: var(--ink-2); }
-.ch-s.past .ch-node { opacity: .7; }
 /* the map takes the whole width, with one line about the next stop under it */
 #course .ch-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 10px; }
 #course .ch-mapw { min-height: 260px; }
 .co-blurb { margin: 0; font: 400 15px/1.35 var(--font-display); color: var(--ink); }
 .co-blurb b { font: 600 15px/1.35 var(--font-rail); letter-spacing: .03em; color: var(--pick-hi); }
 @media (max-height: 420px) { #course .ch-mapw { min-height: 100px; } .co-blurb, .co-blurb b { font-size: 12px; } }
+
+/* ── the map as a star chart (2026-11-02): soft light, no frame, hairlines ──
+   Nodes are a small bright core, a thin ring and a wide halo (gradients in
+   ui/course.ts); names are small wide-tracked capitals; the route is one wave.
+   Amber is the pick (where the jump goes), teal is here and what is ahead. */
+#course .ch-mapw { border: 0; background: none; }
+/* the glow fades out before the edge of the box, so no rectangle shows */
+#course .ch-map { -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(0deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(0deg, transparent, #000 8%, #000 92%, transparent); mask-composite: intersect; }
+.co-lat { fill: var(--blue); opacity: .26; }
+.co-lane { fill: none; stroke-linecap: round; stroke-width: 1.3; }
+.co-lane.done { stroke: rgba(var(--ink-2-rgb), .4); stroke-dasharray: 1.5 7; }
+.co-lane.ahead { stroke: rgba(var(--pick-rgb), .5); stroke-dasharray: 7 6; }
+.co-lane.next { stroke: var(--pick-hi); stroke-dasharray: 8 6; opacity: .95; }
+.co-lane-under { fill: none; stroke: var(--pick); stroke-width: 5; opacity: .18; stroke-linecap: round; }
+.co-ring { fill: none; stroke-width: 1; opacity: .5; }
+.co-ring.teal { stroke: var(--cy); }
+.co-ring.amber { stroke: var(--pick-hi); }
+.co-ring.white { stroke: var(--cy); opacity: .7; }
+.co-ring.dim { stroke: var(--ink-2); opacity: .35; }
+.co-ring.outer { stroke: var(--cy); stroke-width: .8; opacity: .3; }
+.co-gem { fill: none; stroke: var(--pick-hi); stroke-width: 1; opacity: .8; }
+.co-core { stroke: none; }
+.co-core.teal { fill: var(--cy); }
+.co-core.amber { fill: var(--pick-hi); }
+.co-core.white { fill: var(--ink); }
+.co-core.dim { fill: var(--ink-2); }
+.co-leader { stroke: var(--ink-2); stroke-width: 1; opacity: .4; }
+.co-lab .ch-name { font: 500 12px var(--font-rail); letter-spacing: .22em; text-transform: uppercase; stroke: none; fill: var(--ink-2); }
+.co-s.here .ch-name { fill: var(--ink); }
+.co-s.next .ch-name { fill: var(--pick-hi); }
+.co-s.gate .ch-name { fill: var(--pick-hi); font-size: 14px; letter-spacing: .26em; }
+.co-s.ahead .ch-name { fill: var(--ink); opacity: .85; }
+.co-tag { font: 500 10px var(--font-mono); letter-spacing: .26em; text-transform: uppercase; fill: var(--cy); }
+.co-s.gate .co-tag { fill: var(--caution); }
+@media (max-height: 420px) { .co-lab .ch-name { font-size: 10px; letter-spacing: .16em; } .co-s.gate .ch-name { font-size: 11px; } }
