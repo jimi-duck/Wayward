@@ -171,7 +171,8 @@ Applies to every pop-up that asks the player something. Space Grotesk and Share 
   means ("No deadline").
 - In code: `ui/comms.ts` `plate()` and `hold()`, the `.ns-c` block at the end of `neon.css`, `ChoiceDef.end` and
   `.tag`, `CardDef.facts` (the raiders' toll reads hull, torpedoes, raiders and cargo off the ship in `world.ts`).
-  Not yet moved over: the in-flight hails and demands (`#rd-call` outside jobs), the registry card.
+  In-flight calls (job offers, demands, plain hails) use the same plates through `#rd-call#rd-call .rd-c`. Not yet moved
+  over: the registry card (no longer shown in the opening).
 
 ## Fallbacks
 

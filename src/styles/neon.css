@@ -811,21 +811,51 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
   .ns-t { font-size: 20px; }
 }
 
-/* the job offer's answers as plates too (v0.1): the marked answer is the one primary (blue), the rest glass-ink, no glow.
-   Its keys stay Y, U and N: 1 and 2 fire the lasers and torpedoes while a call is up in flight. */
-#rd-call.job .rd-c {
+/* every call's answers as plates (v0.1): the marked answer is the one primary (blue), the rest glass-ink, no glow, for job
+   offers, demands and the plain hails alike. The keys stay Y, U and N: 1 and 2 fire the lasers and torpedoes while a call
+   is up in flight. Doubled id: it outranks each call kind's own answer styles. */
+#rd-call#rd-call .rd-c {
   --cut: 10px; --edge: rgba(var(--white-rgb), .22); --fill: rgba(var(--void-rgb), .86); --ink-l: var(--ink-hi); --ink-s: var(--ink-2); --bar: transparent;
   --shape: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
   position: relative; isolation: isolate; border: 0; border-image: none; background: none; color: var(--ink-l);
 }
-#rd-call.job .rd-c::before, #rd-call.job .rd-c::after { content: ""; position: absolute; z-index: -1; pointer-events: none; clip-path: var(--shape); }
-#rd-call.job .rd-c::before { inset: 0; background: var(--edge); }
-#rd-call.job .rd-c::after { inset: 1px; background: linear-gradient(90deg, var(--bar) 0 4px, transparent 4px), var(--fill); }
+#rd-call#rd-call .rd-c::before, #rd-call#rd-call .rd-c::after { content: ""; position: absolute; z-index: -1; pointer-events: none; clip-path: var(--shape); }
+#rd-call#rd-call .rd-c::before { inset: 0; background: var(--edge); }
+#rd-call#rd-call .rd-c::after { inset: 1px; background: linear-gradient(90deg, var(--bar) 0 4px, transparent 4px), var(--fill); }
 #rd-call.job .rd-l { font-size: 19px; color: var(--ink-l); }
 #rd-call.job .rd-more { font-size: 14.5px; color: var(--ink-s); }
-#rd-call.job .rd-c kbd { border: 1px solid rgba(var(--white-rgb), .35); background: rgba(var(--void-rgb), .8); box-shadow: inset 0 -3px 0 rgba(var(--black-rgb), .5); clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); color: var(--ink-hi); }
-#rd-call.job .rd-c.first, #rd-call.job .rd-c.first:hover:not([aria-disabled="true"]) { --edge: var(--blue); --fill: var(--blue); --ink-l: var(--on-blue); --ink-s: rgba(var(--on-blue-rgb), .78); --bar: var(--ink-hi); border-image: none; }
-#rd-call.job .rd-c.first kbd { background: var(--on-blue); border-color: var(--on-blue); }
-#rd-call.job .rd-c:not(.first):hover:not([aria-disabled="true"]) { --edge: var(--blue-hi); --fill: rgba(var(--white-rgb), .1); --bar: var(--ink-hi); border-image: none; }
-#rd-call.job .rd-c[aria-disabled="true"] { --edge: rgba(var(--dust-rgb), .45); --fill: transparent; --ink-l: var(--dust); --ink-s: var(--dust); }
-#rd-call.job .rd-c.first .rd-more *, #rd-call.job .rd-c.first .rd-more { color: var(--ink-s); }
+#rd-call#rd-call .rd-c kbd { border: 1px solid rgba(var(--white-rgb), .35); background: rgba(var(--void-rgb), .8); box-shadow: inset 0 -3px 0 rgba(var(--black-rgb), .5); clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); color: var(--ink-hi); }
+#rd-call#rd-call .rd-c.first, #rd-call#rd-call .rd-c.first:hover:not([aria-disabled="true"]) { --edge: var(--blue); --fill: var(--blue); --ink-l: var(--on-blue); --ink-s: rgba(var(--on-blue-rgb), .78); --bar: var(--ink-hi); border-image: none; }
+#rd-call#rd-call .rd-c.first kbd { background: var(--on-blue); border-color: var(--on-blue); }
+#rd-call#rd-call .rd-c:not(.first):hover:not([aria-disabled="true"]) { --edge: var(--blue-hi); --fill: rgba(var(--white-rgb), .1); --bar: var(--ink-hi); border-image: none; }
+#rd-call#rd-call .rd-c[aria-disabled="true"] { --edge: rgba(var(--dust-rgb), .45); --fill: transparent; --ink-l: var(--dust); --ink-s: var(--dust); }
+#rd-call#rd-call .rd-c.first .rd-more *, #rd-call#rd-call .rd-c.first .rd-more { color: var(--ink-s); }
+#rd-call#rd-call .rd-l { font: 600 19px/1.2 var(--font-head); letter-spacing: 0; text-transform: none; color: var(--ink-l); }
+#rd-call#rd-call .rd-more { font: 400 14.5px/1.35 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink-s); }
+#rd-call#rd-call .rd-c kbd { border-radius: 0; width: 36px; height: 36px; font: 400 17px/1 var(--font-mono); color: var(--ink-hi); }
+#rd-call.demand#rd-call .rd-c.first kbd, #rd-call#rd-call .rd-c.first kbd { color: var(--ink-hi); }
+#rd-call#rd-call .rd-c .rd-more :is(.cq-ok, .cq-cost, .cq-bad, .g-gain, .g-loss, .g-odds, .g-need) { color: inherit; }
+#rd-call#rd-call .rd-c .rd-more .cq-bad { color: var(--alert-text); }
+#rd-call#rd-call .rd-c.first .rd-more .cq-bad { color: var(--on-blue); }
+@media (max-height: 520px) {
+  #rd-call#rd-call .rd-l { font-size: 15px; }
+  #rd-call#rd-call .rd-more { font-size: 12.5px; }
+  #rd-call#rd-call .rd-c kbd { width: 28px; height: 28px; font-size: 14px; }
+}
+#rd-call.demand .rd-id b { font: 700 30px/1.15 var(--font-head); letter-spacing: 0; text-transform: none; color: var(--ink-hi); }
+@media (max-height: 520px) { #rd-call.demand .rd-id b { font-size: 20px; } }
+
+/* the plain hails' header and words (v0.1): a situation chip, who is speaking in sentence case, a body you can read at a glance */
+#rd-call:not(.job):not(.demand) { width: min(560px, 92vw); gap: 10px; padding: 18px 24px 20px; }
+#rd-call:not(.job):not(.demand) .rd-k { padding: 6px 10px; letter-spacing: .14em; color: var(--on-blue); background: var(--teal-hi); }
+#rd-call:not(.job):not(.demand) .rd-kind { font: 500 14px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--ink); }
+#rd-call:not(.job):not(.demand) .rd-id b { font: 700 22px/1.15 var(--font-head); letter-spacing: 0; text-transform: none; color: var(--ink-hi); }
+#rd-call:not(.job):not(.demand) .rd-id span { font: 400 14px/1.3 var(--font-display); color: var(--ink-2); }
+#rd-call:not(.job):not(.demand) .rd-text { font: 400 16px/1.5 var(--font-display); color: var(--ink-body); }
+#rd-call:not(.job):not(.demand) .rd-read, #rd-call:not(.job):not(.demand) .rd-terms { font-size: 14px; }
+@media (max-height: 520px) {
+  #rd-call:not(.job):not(.demand) { width: min(440px, 60vw); padding: 8px 14px 10px; gap: 5px; }
+  #rd-call:not(.job):not(.demand) .rd-k { padding: 4px 7px; }
+  #rd-call:not(.job):not(.demand) .rd-id b { font-size: 15px; }
+  #rd-call:not(.job):not(.demand) .rd-text { font-size: 12.5px; line-height: 1.3; }
+}
