@@ -3,6 +3,9 @@ import type { Press } from './types';
 const LEFT = ['ArrowLeft', 'KeyA'];
 const RIGHT = ['ArrowRight', 'KeyD'];
 const UP = ['ArrowUp', 'KeyW'];
+/** Share of full turn rate a fresh key press gets, and seconds to wind up to full. */
+const TURN_TAP = 0.5;
+const TURN_WIND = 0.35;
 /** Button 1: lasers, held. */
 const FIRE = ['Digit1', 'Numpad1', 'Space', 'KeyJ'];
 
@@ -28,6 +31,9 @@ const OWNED = new Set([...LEFT, ...RIGHT, ...UP, ...FIRE, 'ArrowDown', 'KeyS', .
 
 export class Keyboard {
   private held = new Set<string>();
+  private dir = 0;
+  private held_s = 0;
+  private lastTurn = 0;
 
   constructor(
     target: Window,
@@ -41,8 +47,20 @@ export class Keyboard {
     target.addEventListener('blur', () => this.held.clear());
   }
 
-  turn(): number {
-    return (this.any(RIGHT) ? 1 : 0) - (this.any(LEFT) ? 1 : 0);
+  /**
+   * A key is on or off, so the turn is eased by hand: a tap trims the nose at
+   * about half rate and a hold winds up to full rate over TURN_WIND seconds.
+   * This lives here, not in the sim, so the scripted pilots are unchanged.
+   */
+  turn(now = performance.now()): number {
+    const dir = (this.any(RIGHT) ? 1 : 0) - (this.any(LEFT) ? 1 : 0);
+    const dt = Math.min(0.1, Math.max(0, (now - this.lastTurn) / 1000));
+    this.lastTurn = now;
+    if (dir === 0 || dir !== this.dir) this.held_s = 0;
+    else this.held_s += dt;
+    this.dir = dir;
+    if (dir === 0) return 0;
+    return dir * (TURN_TAP + (1 - TURN_TAP) * Math.min(1, this.held_s / TURN_WIND));
   }
 
   thrust(): number {

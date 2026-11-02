@@ -4,7 +4,7 @@ import type { GameEvent } from './events';
 import { newId } from './ids';
 import type { ShipState } from './ship';
 import { BASE, type Stats } from './stats';
-import { BOLT_ELEVATE_CONE, TORP_SPACING, TORP_SPEED } from './tuning';
+import { BOLT_ASSIST_CONE, BOLT_ASSIST_PULL, BOLT_ELEVATE_CONE, TORP_SPACING, TORP_SPEED } from './tuning';
 
 // ── lasers and torpedoes ─────────────────────────────────────────────────
 // Lasers (button 1): hold to fire, two emitters alternating, limited by the
@@ -136,6 +136,23 @@ export function elevation(t: Targets, x: number, z: number, heading: number, rea
   return best;
 }
 
+/**
+ * Aim assist: how far to turn a lance fired now so it meets the nearest hull
+ * in a slightly wider cone than the elevation one. Radians, signed like angleDelta.
+ */
+export function assist(t: Targets, x: number, z: number, heading: number, reach = BASE.laserSpeed * BASE.laserLife): number {
+  let best = 0, bestD = Infinity;
+  const consider = (o: Target) => {
+    const dx = o.x - x, dz = o.z - z, d = Math.hypot(dx, dz);
+    if (d > reach || d < 1 || d > bestD) return;
+    const gap = angleDelta(heading, Math.atan2(-dz, dx));
+    if (Math.abs(gap) < BOLT_ASSIST_CONE + o.r / d) { best = gap; bestD = d; }
+  };
+  for (const o of t.ships) consider(o);
+  if (t.boss) consider(t.boss);
+  return best * BOLT_ASSIST_PULL;
+}
+
 export function launchTorpedo(torps: Torpedo[], s: Stats, x: number, z: number, heading: number, speed: number, target: Target | null, dmg: number, small = false): Torpedo {
   const tp: Torpedo = {
     id: newId(), x, y: 0, z, vx: Math.cos(heading) * speed, vy: 0, vz: -Math.sin(heading) * speed, speed, life: 3.4,
@@ -167,7 +184,8 @@ export function fireWeapons(
       const heavy = s.disruptor > 0 && ++arms.shots % s.disruptor === 0;
       const dmg = s.laserDamage * m.damage * (m.drifting ? s.driftBonus : 1) * (heavy ? 3 : 1);
       for (let i = 0; i < n; i++) {
-        const a = ship.heading + (i - (n - 1) / 2) * s.laserSpread;
+        const a0 = ship.heading + (i - (n - 1) / 2) * s.laserSpread;
+        const a = n > 1 ? a0 : a0 + assist(targets, x, z, a0, reach);
         const ax = Math.cos(a), az = -Math.sin(a);
         const el = elevation(targets, x, z, a, reach);
         const vy = el ? el.y / (el.d / s.laserSpeed) : 0;
