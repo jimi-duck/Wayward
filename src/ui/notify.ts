@@ -13,8 +13,9 @@ import { t } from '../i18n';
 //   denied  · muted red   · something is refused
 //   warning · dull gold   · something is going wrong
 //   arrival · calm teal   · a welcome, not an alarm
+//   done    · soft green  · a job finished and paid; it stays a little longer so the pay can be read
 
-export type NoticeType = 'denied' | 'warning' | 'arrival';
+export type NoticeType = 'denied' | 'warning' | 'arrival' | 'done';
 
 export interface Notice {
   type: NoticeType;
@@ -35,9 +36,11 @@ export interface NoticeView {
   remove(handle: unknown): void;
 }
 
-const RANK: Record<NoticeType, number> = { arrival: 0, warning: 1, denied: 2 };
+const RANK: Record<NoticeType, number> = { arrival: 0, warning: 1, done: 2, denied: 3 };
 /** Seconds on screen, and before the same message may come again. */
 export const SECS = 4;
+/** A finished job is on screen this long. */
+export const SECS_DONE = 6;
 export const GAP = 8;
 /** How many plates show at once, and how many wait before the oldest waiting one goes to the corner log. */
 export const SHOWN = 2;
@@ -75,7 +78,7 @@ export class Notifier {
   }
 
   private show(n: Notice): void {
-    this.shown.push({ n, left: SECS, handle: this.view.add(n.type, t(n.headline), n.reason ? t(n.reason) : '') });
+    this.shown.push({ n, left: n.type === 'done' ? SECS_DONE : SECS, handle: this.view.add(n.type, t(n.headline), n.reason ? t(n.reason) : '') });
   }
 }
 

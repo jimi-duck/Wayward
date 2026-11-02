@@ -109,4 +109,6 @@ export type GameEvent =
   | { type: 'storyNotice'; tone: 'teal' | 'amber' | 'red' | 'white'; headline: string; reason?: string }
   | { type: 'commsAnswer'; id: string; choice: string; text: string; won: boolean }
   | { type: 'jobDone'; id: string; text: string; job: string; at: 'port' | 'lane'; cyrite: number; supplies: number }
-  | { type: 'jobShort'; id: string; text: string };
+  | { type: 'jobShort'; id: string; text: string }
+  /** An optional job ended in the sky, paid or failed (ok false); `partial` when it paid less than the row. */
+  | { type: 'jobEnd'; id: string; name: string; ok: boolean; cyrite: number; supplies: number; partial: boolean; text: string };

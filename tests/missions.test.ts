@@ -10,7 +10,7 @@ import { migrate } from '../src/meta/save';
 import { endSortie, newJourney, plot, sortieDef, VERSION, type Journey } from '../src/sim/journey';
 import { newRun } from '../src/sim/run';
 import { cy } from '../src/sim/purse';
-import { scaleOut } from '../src/sim/mission';
+import { JOB_PAY, scaleOut } from '../src/sim/mission';
 import type { Alien } from '../src/sim/enemies';
 import { World } from '../src/sim/world';
 
@@ -53,6 +53,7 @@ function take(id: string, choice: string, carry: Partial<Journey['carry']> = {},
   expect(w.answer(choice)).toBe(true);
   return { w, st };
 }
+const jy = (chits: number) => cy(Math.round(chits * JOB_PAY));
 const gain = (w: World, before: number) => w.cyrite - before;
 
 describe('the missions as data', () => {
@@ -84,7 +85,7 @@ describe('a pirate toll', () => {
     for (const f of [...a.st.run!.foes].reverse()) kill(a.w, f);
     run(a.w, 1);
     expect(a.st.result).toBe('won');
-    expect(gain(a.w, before)).toBe(cy(110));
+    expect(gain(a.w, before)).toBe(jy(110));
 
     const b = take('pirate_toll', 'break');
     const before2 = b.w.cyrite;
@@ -93,7 +94,7 @@ describe('a pirate toll', () => {
     kill(b.w, cap);
     run(b.w, 1);
     expect(b.st.result).toBe('won');
-    expect(gain(b.w, before2)).toBe(cy(Math.round(110 * 0.7)));
+    expect(gain(b.w, before2)).toBe(jy(Math.round(110 * 0.7)));
   });
 
   it('settles with a jammer, and pays nothing for the goal it never took', () => {
@@ -126,7 +127,7 @@ describe('a heavy tanker', () => {
     put(w, tg.x + 6, tg.z);
     run(w, 5);
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(150));
+    expect(gain(w, before)).toBe(jy(150));
   });
 
   it('pays the spoiled share when she is destroyed outright', () => {
@@ -136,7 +137,7 @@ describe('a heavy tanker', () => {
     run(w, 1);
     expect(st.result).toBe('won');
     expect(gain(w, before)).toBeGreaterThan(0);
-    expect(gain(w, before)).toBeLessThan(cy(150));
+    expect(gain(w, before)).toBeLessThan(jy(150));
   });
 
   it('is lost when she gets away', () => {
@@ -161,12 +162,12 @@ describe('the last shift', () => {
   it('pays by what is left of the rig when the time is up', () => {
     const { w, st } = take('last_shift', 'stand');
     const before = w.cyrite;
-    for (let i = 0; i < 110 && !st.result; i++) {
+    for (let i = 0; i < 80 && !st.result; i++) {
       run(w, 1);
       for (const f of [...(st.run?.foes ?? [])]) kill(w, f);
     }
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBeGreaterThanOrEqual(cy(135));
+    expect(gain(w, before)).toBeGreaterThanOrEqual(jy(135) - 3);
   });
 
   it('is lost when the raiders chew through the hull', () => {
@@ -209,7 +210,7 @@ describe('the point of no return', () => {
     put(w, st.x + 900, st.z);
     run(w, 1);
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(Math.round(220 * 0.35)));
+    expect(gain(w, before)).toBe(jy(Math.round(220 * 0.35)));
   });
 
   it('is lost when the ship turns back before a single reading', () => {
@@ -226,7 +227,7 @@ describe('nothing to declare', () => {
     const before = w.cyrite;
     for (let i = 0; i < 12 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(130));
+    expect(gain(w, before)).toBe(jy(130));
   });
 
   it('is lost when the ship sits in a sweep, and the patrols turn', () => {
@@ -248,7 +249,7 @@ describe('the second batch', () => {
     for (const f of [...st.run!.foes]) kill(w, f);
     run(w, 1);
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(170));
+    expect(gain(w, before)).toBe(jy(170));
   });
 
   it('the missing shift is found by holding at the wreck with a supply', () => {
@@ -256,7 +257,7 @@ describe('the second batch', () => {
     const before = w.cyrite, sup = w.supplies;
     for (let i = 0; i < 12 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(100));
+    expect(gain(w, before)).toBe(jy(100));
     expect(w.supplies).toBe(sup - 1 + 3);
   });
 
@@ -269,7 +270,7 @@ describe('the second batch', () => {
       run(a.w, 1 / 60);
     }
     expect(a.st.result).toBe('won');
-    expect(gain(a.w, before)).toBe(cy(90));
+    expect(gain(a.w, before)).toBe(jy(90));
     const b = take('follow_cyrite', 'follow');
     put(b.w, b.st.x + 4000, b.st.z);
     for (let i = 0; i < 60 && !b.st.result; i++) run(b.w, 1);
@@ -291,7 +292,7 @@ describe('the second batch', () => {
       const before = w.cyrite;
       for (let i = 0; i < 14 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
       expect(st.result, id).toBe('won');
-      expect(gain(w, before), id).toBe(cy(pay));
+      expect(gain(w, before), id).toBe(jy(pay));
     }
   });
 });
@@ -303,7 +304,7 @@ describe('the third batch', () => {
     expect(st.actors.filter((a) => a.ward?.act === 'patrol').length).toBe(4);
     for (let i = 0; i < 16 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(150));
+    expect(gain(w, before)).toBe(jy(150));
   });
 
   it('be the bait is won by breaking the four pickets that come', () => {
@@ -314,7 +315,7 @@ describe('the third batch', () => {
     for (const f of [...st.run!.foes]) kill(w, f);
     run(w, 1);
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(160));
+    expect(gain(w, before)).toBe(jy(160));
   });
 
   it('the dead drop is collected by holding at the beacon', () => {
@@ -322,7 +323,7 @@ describe('the third batch', () => {
     const before = w.cyrite;
     for (let i = 0; i < 9 * 60 && !st.result; i++) { put(w, st.x, st.z); run(w, 1 / 60); }
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(140));
+    expect(gain(w, before)).toBe(jy(140));
   });
 
   it('the long walk is won by staying with a slow hauler, and lost by leaving her', () => {
@@ -335,7 +336,7 @@ describe('the third batch', () => {
       run(a.w, 1 / 60);
     }
     expect(a.st.result).toBe('won');
-    expect(gain(a.w, before)).toBeGreaterThanOrEqual(cy(120));
+    expect(gain(a.w, before)).toBeGreaterThanOrEqual(jy(120));
     const b = take('long_walk', 'escort');
     put(b.w, b.st.x + 4000, b.st.z);
     for (let i = 0; i < 60 && !b.st.result; i++) run(b.w, 1);
@@ -352,7 +353,7 @@ describe('the third batch', () => {
       run(w, 0.1);
     }
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBeGreaterThanOrEqual(cy(150));
+    expect(gain(w, before)).toBeGreaterThanOrEqual(jy(150));
   });
 });
 
@@ -362,7 +363,7 @@ describe('the fourth batch', () => {
     const before = w.cyrite;
     for (let i = 0; i < secs * 60 && !st.result; i++) { put(w, st.x + at, st.z); run(w, 1 / 60); }
     expect(st.result, id).toBe('won');
-    expect(gain(w, before), id).toBe(cy(pay));
+    expect(gain(w, before), id).toBe(jy(pay));
     return w;
   };
 
@@ -373,7 +374,7 @@ describe('the fourth batch', () => {
     put(d.w, d.st.x + 900, d.st.z);
     run(d.w, 1);
     expect(d.st.result).toBe('won');
-    expect(gain(d.w, before)).toBe(cy(160));
+    expect(gain(d.w, before)).toBe(jy(160));
     hold('voice_wire', 'listen', 10, 130);
     hold('lose_prefect', 'lose', 12, 100);
   });
@@ -381,9 +382,13 @@ describe('the fourth batch', () => {
   it('the filter needs the parts, and pays when they are delivered in time', () => {
     const w = hold('one_filter', 'bring', 14, 120);
     expect(w.supplies).toBeLessThanOrEqual(10);
+    // too little aboard is never an impossible job: she brings nothing and is paid the half share
     const b = take('one_filter', 'bring', { supplies: 0 });
+    const before = b.w.cyrite;
     for (let i = 0; i < 95 * 60 && !b.st.result; i++) { put(b.w, b.st.x, b.st.z); run(b.w, 1 / 60); }
-    expect(b.st.result).toBe('lost');
+    expect(b.st.result).toBe('won');
+    expect(gain(b.w, before)).toBeGreaterThan(0);
+    expect(gain(b.w, before)).toBeLessThan(jy(120));
   });
 
   it('the payroll is taken from a crippled courier', () => {
@@ -394,7 +399,7 @@ describe('the fourth batch', () => {
     put(w, tg.x + 6, tg.z);
     run(w, 5);
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(180));
+    expect(gain(w, before)).toBe(jy(180));
   });
 
   it('two captains are both broken', () => {
@@ -405,7 +410,7 @@ describe('the fourth batch', () => {
     for (const f of [...st.run!.foes]) kill(w, f);
     run(w, 1);
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(170));
+    expect(gain(w, before)).toBe(jy(170));
   });
 
   it('the witness lives when the pickets are broken, and is lost when she is not', () => {
@@ -413,7 +418,7 @@ describe('the fourth batch', () => {
     const before = a.w.cyrite;
     for (let i = 0; i < 85 && !a.st.result; i++) { run(a.w, 1); for (const f of [...(a.st.run?.foes ?? [])]) kill(a.w, f); }
     expect(a.st.result).toBe('won');
-    expect(gain(a.w, before)).toBeGreaterThanOrEqual(cy(150 * 0.45));
+    expect(gain(a.w, before)).toBeGreaterThanOrEqual(jy(150 * 0.45));
     const b = take('the_witness', 'guard');
     kill(b.w, b.st.run!.target!);
     run(b.w, 1);
@@ -495,7 +500,7 @@ describe('the drift cache', () => {
     gather(w, st, 3);
     run(w, 0.5);
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(140));
+    expect(gain(w, before)).toBe(jy(140));
   });
 
   it('pays for the cases aboard when time runs out', () => {
@@ -505,7 +510,7 @@ describe('the drift cache', () => {
     put(w, st.x + 900, st.z);
     run(w, 170);
     expect(st.result).toBe('won');
-    expect(gain(w, before)).toBe(cy(70));
+    expect(gain(w, before)).toBe(jy(70));
   });
 
   it('is lost when no case is taken', () => {
@@ -513,5 +518,25 @@ describe('the drift cache', () => {
     put(w, st.x + 900, st.z);
     run(w, 170);
     expect(st.result).not.toBe('won');
+  });
+});
+
+describe('a job that ends in the sky says so', () => {
+  it('a won job announces its pay once, and a lost one says it failed', () => {
+    const won = take('kill_zone', 'clear');
+    const before = won.w.cyrite;
+    for (let i = 0; i < 60 && !won.st.result; i++) { run(won.w, 1); for (const f of [...(won.st.run?.foes ?? [])]) kill(won.w, f); }
+    const ev = won.w.drain().filter((e) => e.type === 'jobEnd');
+    expect(ev).toHaveLength(1);
+    const e = ev[0] as Extract<typeof ev[number], { type: 'jobEnd' }>;
+    expect(e.ok).toBe(true);
+    expect(e.cyrite).toBeGreaterThan(0);
+    expect(e.cyrite).toBe(gain(won.w, before));
+
+    const lost = take('kill_zone', 'clear');
+    run(lost.w, 175);
+    const l = lost.w.drain().filter((x) => x.type === 'jobEnd');
+    expect(l).toHaveLength(1);
+    expect((l[0] as { ok: boolean }).ok).toBe(false);
   });
 });

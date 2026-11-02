@@ -1948,6 +1948,12 @@ export class World implements EncounterHost {
     return ids;
   }
 
+  /** What an outcome pays in Cyrite and supplies, as the player is told it (the purse and the tank are one figure to them). */
+  worth(out: Outcome): { cyrite: number; supplies: number } {
+    const cyrite = amount(out.cyrite, this.cyrite, 1) + amount(out.chits, this.cyrite, 1, true) + (out.krail ? cy(out.krail) : 0);
+    return { cyrite: Math.max(0, Math.round(cyrite)), supplies: Math.max(0, amount(out.supplies, this.supplies, 1)) };
+  }
+
   /** Jobs paid where the ship is now: the port on docking, the lane on the jump. */
   private settleJobs(at: 'port' | 'lane'): void {
     for (const j of [...this.jobs]) {

@@ -204,7 +204,7 @@ its own colour mood (docs/SKY.md). The HUD guards itself instead:
   next card may open. Keyboard, pad and tap answers all keep the 400ms guard and ignore held
   keys, so one press never answers two cards. The opening's sheets keep their own layout.
 - **Centre notices** (`#notice`, `ui/notify.ts`): compact dark plates, up to 360px wide, an
-  accent bar (red denied, gold warning, teal arrival) and a sentence-case line plus one
+  accent bar (red denied, gold warning, teal arrival, green done: a job finished and paid, six seconds) and a sentence-case line plus one
   quiet reason. Two at most at once; the rest wait in order (a denial goes first), and only
   a backlog of eight sends the oldest to the corner log. Four seconds each, no input.
   Low-centre like the zone notices before them; on a phone on its side they sit between the

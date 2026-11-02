@@ -4,7 +4,7 @@ import { COLLISIONS, ON_ROAD } from '../content/road';
 import { SITUATION_BY_ID, type ActorSpec, type SitResult, type SituationDef } from '../content/situations';
 import { CARD_BY_ID, weightOf, type Outcome, type Tone } from './comms';
 import { leave, provoke, type Alien } from './enemies';
-import { bounty, Run, scaleOut, type Pt } from './mission';
+import { bounty, JOB_PAY, Run, scaleOut, type Pt } from './mission';
 import { stageAnchor } from './sites';
 import type { Encounter } from './encounters';
 import type { Rng } from './rng';
@@ -42,6 +42,8 @@ const LOST_AFTER = 14;
 const GONE = 520;
 
 const JOB_IDS = new Set(MISSIONS.map((m) => m.id));
+/** The optional jobs pay the job rate; plain scenes keep their rows. */
+const JOB_PAY_IDS = JOB_IDS;
 
 const hash = (s: string): number => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return h >>> 0; };
 
@@ -250,6 +252,8 @@ export class Stage {
   get exposed(): number { return this.run?.exposed ?? 0; }
   /** Whether what the site asks for is aboard (the HUD's 'holding' against 'not enough'). */
   ready = true;
+  /** The share of the pay a delivery earns: what was aboard of what was asked, never under half (a job is never left impossible). */
+  private share = 1;
 
   private leader(w: World): Alien | null { return this.alive(w).find((a) => a.ward?.act === 'lead') ?? null; }
 
@@ -273,25 +277,24 @@ export class Stage {
       if (this.out > LOST_AFTER) return this.finish(w, 'lost');
       if (this.hold >= g.hold) return this.finish(w, 'won');
     } else {
-      const have = this.has(w);
-      this.ready = have;
+      // a delivery with too little aboard still counts: she brings what she has, for a smaller share (never a job that cannot be done)
+      this.ready = true;
       const slow = g.kind !== 'watch' || w.stageSlow();
-      if (this.dist(w) < SITE_R && have && slow && !this.provoked) this.hold += dt;
+      if (this.dist(w) < SITE_R && slow && !this.provoked) this.hold += dt;
       else this.hold = Math.max(0, this.hold - dt * 0.5);
       if (this.hold >= g.hold) { this.pay(w); return this.finish(w, 'won'); }
     }
     if (g.limit > 0 && this.clock > g.limit) this.finish(w, 'lost');
   }
 
-  /** What the site wants has been brought. */
-  private has(w: World): boolean {
-    const give = this.def.goal.give;
-    return !give || ((give.supplies ?? 0) <= w.supplies && (give.chits ?? 0) <= w.chits && (give.cyrite ?? 0) <= w.cyrite);
-  }
+  /** Hand over what the site asked for, or what there is of it. */
   private pay(w: World): void {
     const give = this.def.goal.give;
     if (!give) return;
-    w.supplies -= give.supplies ?? 0; w.chits -= give.chits ?? 0; w.cyrite -= give.cyrite ?? 0;
+    const want = give.supplies ?? 0, took = Math.min(want, Math.max(0, Math.floor(w.supplies)));
+    w.supplies -= took;
+    this.share = want > 0 ? Math.max(0.5, took / want) : 1;
+    w.chits -= give.chits ?? 0; w.cyrite -= give.cyrite ?? 0;
   }
 
   /** Hostiles waiting on the line to the Jump Gate, sprung as the ship passes. */
@@ -421,7 +424,14 @@ export class Stage {
     // a goal pays only when it was taken on: a card answered some other way has paid in the card
     const goalOut = (o: Outcome | undefined): Outcome | undefined => (d.goal.kind === 'call' || !this.taken ? undefined : o);
     const out: Outcome | undefined = r === 'won' ? goalOut(d.win) : r === 'lost' ? goalOut(d.lose) : r === 'ignored' ? d.ignore : undefined;
-    if (out) w.applyOutcome(r === 'won' && this.run ? bounty(scaleOut(out, this.run.scale), w.pay) : out, 1, []);
+    let paid = out;
+    if (out && r === 'won') paid = bounty(this.run ? scaleOut(out, this.run.scale) : this.share < 1 ? scaleOut(out, this.share) : out, w.pay * (JOB_PAY_IDS.has(d.id) ? JOB_PAY : 1));
+    // a job that ends in the sky says so, and what it paid (a green notice; hud.ts)
+    if (this.taken && JOB_IDS.has(d.id) && (r === 'won' || r === 'lost')) {
+      const worth = paid ? w.worth(paid) : { cyrite: 0, supplies: 0 };
+      w.events.push({ type: 'jobEnd', id: d.id, name: d.name, ok: r === 'won', cyrite: worth.cyrite, supplies: worth.supplies, partial: r === 'won' && !!out && (this.run?.scale ?? this.share) < 1, text: out?.text ?? '' });
+    }
+    if (paid) w.applyOutcome(paid, 1, []);
     if (this.run && r === 'lost') for (const a of this.alive(w)) if (a.ward?.act === 'patrol') provoke(a, w.events);
     if (r === 'won' && !this.provoked) { for (const a of this.alive(w)) if (a.ward && a.ward.act !== 'lead') a.ward.act = 'pass'; }
     if (this.taken) this.said_(r === 'won' ? 'won' : 'lost', w);

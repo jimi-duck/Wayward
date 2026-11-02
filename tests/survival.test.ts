@@ -406,9 +406,9 @@ describe('wrecks', () => {
   it('leaves the Prospector\'s wrecks as they were: parts and Krail, no Cyrite, no cargo', () => {
     const { by } = wrecked('prospector', 'breakout');
     for (const k of Object.keys(by)) { expect(by[k]!.cyrite).toBe(0); expect(by[k]!.ore).toBe(0); }
-    // a lancer is worth 7: 4 parts (7 × 0.5, rounded), and 4 Krail (7 × 0.6, rounded)
+    // a lancer is worth 7: 4 parts (7 × 0.5, rounded), and 8 Krail (7 × 1.2, rounded: kills pay twice what they did, 2 Nov 2026)
     expect(by.lancer!.parts).toBe(4);
-    expect(by.lancer!.krail).toBe(4);
+    expect(by.lancer!.krail).toBe(8);
   });
 
   it('makes the Raider\'s wrecks a source of everything: Cyrite, ore, parts and Krail, by what the hull carried', () => {
@@ -441,7 +441,7 @@ describe('wrecks', () => {
       for (const [kind, loot] of Object.entries(by)) {
         const xp = spawnAlien(kind as 'scout', new World(1).ship, 0, new Rng(1)).xp;
         expect(loot.cyrite, `${id} ${kind} Cyrite`).toBeLessThanOrEqual(xp);
-        expect(loot.krail, `${id} ${kind} Krail`).toBeLessThanOrEqual(xp * 2.1);
+        expect(loot.krail, `${id} ${kind} Krail`).toBeLessThanOrEqual(xp * 4.2);
         expect(loot.parts, `${id} ${kind} parts`).toBeLessThanOrEqual(xp);
       }
     }

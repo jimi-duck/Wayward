@@ -90,8 +90,8 @@ export const BLOCKADE_HP = 3;
 /** Cyrite and supplies a capital ship's wreck leaves in a sortie: a top-up, not a jump, so a blockade or a captain is never a payday. */
 export const CAPITAL_CYRITE = 6;
 /** Krail in the Story mode, for the refit bay: a share of a wreck's worth, a share of what rock gives in the arcade (a cut gives it surely, a break by chance), and a capital ship's salvage. */
-export const WRECK_KRAIL = 0.6;
-export const ROCK_KRAIL = 0.6;
+export const WRECK_KRAIL = 1.2;
+export const ROCK_KRAIL = 0.45;
 export const CAPITAL_KRAIL = 40;
 export const CAPITAL_SUPPLIES = 6;
 
