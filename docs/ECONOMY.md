@@ -78,6 +78,24 @@ what it always took; what is new is that the purse is only ever spare.
 - The chart's stock strip: `Jump fluid` and `Cyrite`, each with a tooltip.
   Lane costs on the chart and the chart's list are fluid.
 
+## Where the money comes from (2 November 2026)
+
+The owner found mining was the only real income. Now jobs are the payday and
+mining is the slow grind:
+
+| Source | Change | Why |
+|---|---|---|
+| Jobs (`JOB_PAY` in `sim/mission.ts`) | pay x2.5 on the written row, still x1 to x2.5 more by depth (`bountyAt`) | one job buys two or three parts; early ones pay about 50 to 85 Cyrite against a first part at 20 to 48 |
+| Kills (`WRECK_KRAIL`) | 0.6 to 1.2: a wreck's crystals double | a fight with several hulls buys a part |
+| Rock (`ROCK_KRAIL`) | 0.6 to 0.45 | mining stays steady and safe, but slow; it still fills the tank |
+
+Parts do not get cheaper (`STORY_PRICE` is as it was), so upgrading stays the
+point of the money. A delivery job with too little aboard (the filter, the
+missing shift) is no longer impossible: she brings what she has and is paid at
+least half. A job that ends in the sky says so in a green notice with its pay
+(`jobEnd`, `ui/notify.ts` type `done`). Not played on a device: read the
+numbers as a first pass and re-check them by hand.
+
 ## The work bay
 
 In the Story the ship is upgraded only docked at a port, the work bay: every

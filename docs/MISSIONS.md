@@ -77,6 +77,8 @@ A job that ends leaves a mark on the chart (`after`) and often a flag:
 
 ## Pay
 
+Since 2 November 2026 every row below is paid at 2.5 times (`JOB_PAY`, [ECONOMY.md](ECONOMY.md)); the Cyrite figures after this are the old ones. A job that ends in the sky shows a green "Job complete" notice with the pay, or a gold "Job failed". Holds, waves and limits were cut by about a quarter to a third so a job takes one to two minutes.
+
 Written in the content rows in a small unit, converted at five to the Cyrite (`cy()`), and scaled by how
 the job went (`scaleOut`): 70% when the crew scattered, 40% for a spoiled cargo,
 the share of the rings reached, the share of the rig left. Between 20 and 45

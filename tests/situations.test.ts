@@ -182,7 +182,7 @@ describe('the stage', () => {
     expect(w.result().situation).toEqual({ id: w.sortie.system, result: 'won' });
   });
 
-  it('does not count the hold without what the site asks for', () => {
+  it('takes what is aboard when the site asks for more, and ends it for a smaller share', () => {
     const w = world('shortage', { supplies: 0 });
     const st = w.stage!;
     put(w, st.x + 60, st.z);
@@ -190,7 +190,7 @@ describe('the stage', () => {
     w.answer('bring');
     put(w, st.x, st.z);
     run(w, 8);
-    expect(st.result).toBeNull();
+    expect(st.result).toBe('won');
   });
 
   it('misses a goal that is not met in time', () => {

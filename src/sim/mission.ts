@@ -42,7 +42,7 @@ export type Verdict = 'won' | 'lost' | null;
 const DISABLED_AT = 0.3;
 /** Close in this near, slow, for this long, to take a crippled target. */
 const TOW_R = 28;
-const TOW_HOLD = 4;
+const TOW_HOLD = 2.5;
 /** Foes this near a rig chew at it, this much of its hull a second each. */
 const CHEW_R = 95;
 const CHEW = 0.9;
@@ -53,7 +53,7 @@ const COUNTDOWN = 3;
 const PULL_R = 330;
 const PULL = 14;
 /** A reading is held this long inside its ring. */
-const READ_HOLD = 2.2;
+const READ_HOLD = 1.6;
 /** Beyond this far from the hazard, after a reading, the survey is over. */
 const LEAVE_R = 470;
 /** A patrol's sweep reaches this far; exposure builds this fast (per second) and falls this fast outside. */
@@ -64,7 +64,7 @@ const DROP_R = 28;
 const DROP_HOLD = 3;
 /** A case is taken within this far (scaled by the tractor's reach) after this long, slow beside it. */
 const CACHE_R = 24;
-const CACHE_HOLD = 1.8;
+const CACHE_HOLD = 1.3;
 /** The ring the cases drift in, round the site. */
 const CACHE_RING: [number, number] = [90, 230];
 /** Seconds in the core between burns. */
@@ -81,6 +81,9 @@ export function scaleOut(out: Outcome, k: number): Outcome {
   if (o.score) o.score = Math.round(o.score * k);
   return o;
 }
+
+/** What a job pays against its written row: one job buys several parts (owner 2026-11-02; mining is the slow grind). */
+export const JOB_PAY = 2.5;
 
 /** An outcome's Cyrite at `k` times the pay: the Story's jobs pay more the further along the chart (sim/journey.ts `bountyAt`). */
 export function bounty(out: Outcome, k: number): Outcome {
@@ -142,7 +145,7 @@ export class Run {
   private spot(w: World, a: ActorSpec, i: number, n: number): { x: number; z: number } {
     const { x, z, ux, uz } = this.site;
     if (a.from === 'ahead') {
-      const d = 330 + w.rng.range(-30, 60), k = (i - (n - 1) / 2) * 34;
+      const d = 240 + w.rng.range(-30, 50), k = (i - (n - 1) / 2) * 34;
       return { x: w.ship.x + ux * d - uz * k, z: w.ship.z + uz * d + ux * k };
     }
     const r = (a.ring ?? 70) * (0.6 + w.rng.range(0, 0.5)), th = (i / Math.max(1, n)) * Math.PI * 2 + w.rng.range(0, 0.7);
