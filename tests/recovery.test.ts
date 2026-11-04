@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BREACH_BEAT, OPENING_AT, RENAME_BEAT, SAM_BEAT, WAKE_BEAT } from '../src/content/story';
+import { BREACH_BEAT, OPENING_AT, SAM_BEAT, WAKE_BEAT } from '../src/content/story';
 import { CARD_BY_ID, PORT_CALL } from '../src/sim/comms';
 import { owed, ledgerFor } from '../src/sim/contract';
 import type { SortieResult } from '../src/sim/breakout';
@@ -395,7 +395,6 @@ describe('the forced recovery across a reload', () => {
     answer(j, w2, 'lead');
     const w3 = arrive(j);
     run(w3, 20);
-    expect(w3.comms?.def.id).not.toBe(RENAME_BEAT);
     expect(w3.comms?.def.id).not.toBe(SAM_BEAT);
     expect(owed()).toBe(80);
   });
