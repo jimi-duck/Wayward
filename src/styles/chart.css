@@ -196,6 +196,8 @@ circle.ch-net { fill: rgba(var(--alert-red-rgb), .07); stroke: rgba(var(--alert-
 .ch-wall-l p { margin: 2px 0 0; font-size: calc(var(--fs) * 1.05); color: var(--ink-2); }
 .ch-wall-l .tag { margin-left: 8px; font: 600 calc(var(--fs) * .9)/1 var(--font-rail); letter-spacing: .12em; text-transform: uppercase; color: var(--hud); }
 .chartp.notice .ch-wall { display: none; }
+/* phones: the smallest text is 10px (docs/DESIGN-GUIDELINES.md), the wall's lines included */
+@media (max-height: 520px) { .ch-wall-l p, .ch-wall-l .tag { font-size: max(10px, calc(var(--fs) * 1.05)); } }
 
 /* a laptop: the story line, the keys and the lines of the lanes not chosen make way */
 @media (max-height: 800px) {
