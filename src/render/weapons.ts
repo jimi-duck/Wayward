@@ -51,6 +51,8 @@ export class WeaponView {
           fx.mote(x, y, z, -t.vx * 0.12 + (Math.random() - 0.5) * 3, -t.vy * 0.12 + (Math.random() - 0.5) * 2, -t.vz * 0.12 + (Math.random() - 0.5) * 3,
             [3.2, 0.9 + Math.random() * 0.8, 0.3], 0.4 + burn * 0.3, 0.45);
         }
+        // a thin grey trail hangs where it has been
+        if (!fx.calm && Math.random() < 0.5) fx.dust(x, y, z, 0.5 * k, [0.1, 0.095, 0.09], 1, 0.3, 1.1, 0.22);
       }
     }
   }

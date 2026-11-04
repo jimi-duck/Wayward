@@ -5,6 +5,7 @@ import {
 } from 'three';
 import { metal } from './kit';
 import { fireTexture, smokeTexture } from './textures';
+import { STREAK, type Streaks } from './streaks';
 
 // ── effects ───────────────────────────────────────────────────────────────
 // The language of impact. A small hit is a flash and a spray of sparks. A
@@ -98,6 +99,53 @@ class Sparks {
   }
 }
 
+const MAX_HOT = 120;
+const HOT_WHITE = new Color(4, 3.4, 2.4);
+
+/**
+ * Hot metal in flight: stretched streaks that cool from white to orange to a dull
+ * red, drawn through the shot streaks (one draw call, nothing new). Round dots
+ * read as embers; these read as sparks.
+ */
+class HotSparks {
+  private readonly p = new Float32Array(MAX_HOT * 3);
+  private readonly v = new Float32Array(MAX_HOT * 3);
+  private readonly life = new Float32Array(MAX_HOT);
+  private readonly decay = new Float32Array(MAX_HOT);
+  private readonly len = new Float32Array(MAX_HOT);
+  private next = 0;
+  private readonly c = new Color();
+
+  emit(x: number, y: number, z: number, vx: number, vy: number, vz: number, life: number, len: number): void {
+    const i = this.next;
+    this.next = (this.next + 1) % MAX_HOT;
+    this.p.set([x, y, z], i * 3);
+    this.v.set([vx, vy, vz], i * 3);
+    this.life[i] = 1; this.decay[i] = 1 / life; this.len[i] = len;
+  }
+
+  update(dt: number): void {
+    const d = Math.pow(0.93, dt * 60);
+    for (let i = 0; i < MAX_HOT; i++) {
+      if (this.life[i]! <= 0) continue;
+      this.life[i] = this.life[i]! - this.decay[i]! * dt;
+      for (let k = 0; k < 3; k++) { this.v[i * 3 + k]! *= d; this.p[i * 3 + k] = this.p[i * 3 + k]! + this.v[i * 3 + k]! * dt; }
+    }
+  }
+
+  draw(streaks: Streaks): void {
+    for (let i = 0; i < MAX_HOT; i++) {
+      const l = this.life[i]!;
+      if (l <= 0) continue;
+      const vx = this.v[i * 3]!, vy = this.v[i * 3 + 1]!, vz = this.v[i * 3 + 2]!, sp = Math.hypot(vx, vy, vz);
+      if (sp < 0.2) continue;
+      // white at birth, orange, then a dull red as it dies
+      this.c.setRGB(HOT_WHITE.r * l, HOT_WHITE.g * l * l * 0.8, HOT_WHITE.b * l * l * l * 0.5);
+      streaks.push(this.p[i * 3]!, this.p[i * 3 + 1]!, this.p[i * 3 + 2]!, vx, vy, vz, Math.min(this.len[i]!, 0.25 + sp * 0.05) * (0.4 + 0.6 * l), 0.13, STREAK.lance, this.c, 0.5);
+    }
+  }
+}
+
 const MAX_DEBRIS = 140;
 
 /** Fragments: tumbling chunks that fall away and shrink. One pool for rock, one for plating. */
@@ -132,6 +180,13 @@ class Debris {
     this.life[i] = 1;
   }
 
+  /** Visit each live fragment: where it is and how much of its life is left (1 new, 0 gone). */
+  each(cb: (x: number, y: number, z: number, life: number, size: number) => void): void {
+    for (let i = 0; i < MAX_DEBRIS; i++) {
+      if (this.life[i]! > 0) cb(this.p[i * 3]!, this.p[i * 3 + 1]!, this.p[i * 3 + 2]!, this.life[i]!, this.s[i * 2]!);
+    }
+  }
+
   update(dt: number): void {
     for (let i = 0; i < MAX_DEBRIS; i++) {
       if (this.life[i]! <= 0) continue;
@@ -149,16 +204,24 @@ class Debris {
   }
 }
 
-interface Puff { sprite: Sprite; alpha: number; life: number; decay: number; size: number; grow: number; vx: number; vy: number; vz: number; hot: boolean; }
+interface Puff { sprite: Sprite; alpha: number; life: number; decay: number; size: number; grow: number; vx: number; vy: number; vz: number; hot: boolean; warm: number; }
 interface Flash { sprite: Sprite; life: number; decay: number; max: number; }
 interface Ring { mesh: Mesh; life: number; decay: number; max: number; }
 interface Glow { light: PointLight; life: number; decay: number; peak: number; }
 
 const FIRE_HOT = new Color(4, 2.6, 1.1);
 const FIRE_COOL = new Color(0.9, 0.16, 0.04);
+const SMOKE_WARM = new Color(0.42, 0.2, 0.08);
+const SMOKE_SOOT = new Color(0.07, 0.065, 0.06);
+
+interface Later { t: number; run: () => void; }
 
 export class Effects {
   private readonly sparks = new Sparks();
+  private readonly hot = new HotSparks();
+  private readonly later: Later[] = [];
+  /** Reduced motion, or a phone that cannot spare it: one calm fade, no staged blasts, no white-out. */
+  calm = false;
   private readonly rock: Debris;
   private readonly plating: Debris;
   private readonly flashes: Flash[] = [];
@@ -179,7 +242,7 @@ export class Effects {
       scene.add(sprite);
       this.flashes.push({ sprite, life: 0, decay: 1, max: 1 });
     }
-    const ringGeo = new RingGeometry(0.88, 1, 64).rotateX(-Math.PI / 2);
+    const ringGeo = new RingGeometry(0.95, 1, 64).rotateX(-Math.PI / 2);
     for (let i = 0; i < 14; i++) {
       const mesh = new Mesh(ringGeo, new MeshBasicMaterial({ transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }));
       mesh.visible = false;
@@ -193,7 +256,7 @@ export class Effects {
         }));
         sprite.visible = false;
         scene.add(sprite);
-        list.push({ sprite, alpha: 0.85, life: 0, decay: 1, size: 1, grow: 1, vx: 0, vy: 0, vz: 0, hot: additive });
+        list.push({ sprite, alpha: 0.85, life: 0, decay: 1, size: 1, grow: 1, vx: 0, vy: 0, vz: 0, hot: additive, warm: 0 });
       }
     };
     puff(fireTexture(), true, this.fires, 64);
@@ -315,8 +378,64 @@ export class Effects {
       const o = size * 0.5;
       this.place(p, x + (Math.random() - 0.5) * o, y + (Math.random() - 0.5) * o, z + (Math.random() - 0.5) * o,
         size * (0.6 + Math.random() * 0.5), 2.2, 1.6 + Math.random() * 1.2, size * 0.5);
-      (p.sprite.material as SpriteMaterial).color.setRGB(0.09, 0.08, 0.075);
+      (p.sprite.material as SpriteMaterial).color.copy(SMOKE_WARM);
+      p.warm = 1;
     }
+  }
+
+  /** Run `fn` after `delay` seconds (the blasts that follow a kill). */
+  after(delay: number, fn: () => void): void {
+    if (this.later.length < 48) this.later.push({ t: delay, run: fn });
+  }
+
+  /** Drop what is still waiting (a new run). */
+  clearLater(): void {
+    this.later.length = 0;
+  }
+
+  /** Stretched hot sparks thrown out in every direction. */
+  streakBurst(x: number, y: number, z: number, n: number, speed: number, life = 0.7, len = 1.6): void {
+    for (let i = 0; i < n; i++) {
+      const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, r = Math.sqrt(1 - u * u), sp = speed * (0.35 + Math.random() * 0.9);
+      this.hot.emit(x, y, z, Math.cos(a) * r * sp, u * sp * 0.6, Math.sin(a) * r * sp, life * (0.6 + Math.random() * 0.8), len * (0.5 + Math.random()));
+    }
+  }
+
+  /** Hot sparks thrown one way: the spray off a hit. */
+  streakSpray(x: number, y: number, z: number, dx: number, dz: number, n: number, speed: number, cone = 0.5, life = 0.35): void {
+    const h = Math.atan2(dz, dx);
+    for (let i = 0; i < n; i++) {
+      const a = h + (Math.random() - 0.5) * Math.PI * cone, sp = speed * (0.4 + Math.random() * 0.8);
+      this.hot.emit(x, y, z, Math.cos(a) * sp, (Math.random() - 0.3) * sp * 0.3, Math.sin(a) * sp, life * (0.6 + Math.random() * 0.8), 1.2);
+    }
+  }
+
+  /**
+   * A hull on fire: smoke trailing behind it, embers, and a lick of flame as it gets worse.
+   * `k` is how bad (0 just smouldering, 1 nearly gone); (vx, vz) is its drift, so the trail hangs where it has been.
+   */
+  burning(x: number, y: number, z: number, k: number, vx = 0, vz = 0): void {
+    if (this.calm && Math.random() < 0.5) return;
+    if (Math.random() < 0.25 + k * 0.5) this.dust(x, y + 0.2, z, 0.5 + k * 0.7, [0.09, 0.085, 0.08], 1, 0.6, 1.3, 0.22 + k * 0.12);
+    if (Math.random() < 0.1 + k * 0.3) this.mote(x, y, z, vx * 0.2 + (Math.random() - 0.5) * 2.5, 1 + Math.random() * 2, vz * 0.2 + (Math.random() - 0.5) * 2.5, [3.4, 1.3 + Math.random() * 0.6, 0.35], 0.18 + k * 0.12, 0.45);
+    if (k > 0.55 && !this.calm && Math.random() < 0.18) this.fire1(x, y, z, 0.7 + k * 0.5);
+  }
+
+  /** One small flame puff. */
+  private fire1(x: number, y: number, z: number, size: number): void {
+    const p = this.fires.find((q) => q.life <= 0) ?? this.fires[0]!;
+    this.place(p, x, y, z, size, 1.4, 0.3 + Math.random() * 0.25, 0.8);
+  }
+
+  /** A secondary blast inside a dying hull: smaller than the kill, no ring, a different pitch of fire. */
+  pop(x: number, y: number, z: number, size: number, tint: RGB): void {
+    this.flash(x, y, z, size * 2.6, [3.6, 2.8, 2], 0.09);
+    this.flash(x, y, z, size * 3.2, [tint[0] * 0.35, tint[1] * 0.3, tint[2] * 0.25], 0.16);
+    this.light(x, y, z, [1, 0.58, 0.28], 130 * size, 0.3);
+    this.fireball(x, y, z, size * 1.2, 1);
+    this.streakBurst(x, y, z, Math.round(5 + size * 3), 9 + size * 4, 0.6);
+    this.burst(x, y, z, Math.round(6 + size * 3), [3.4, 1.7, 0.6], 6 + size * 3, 0.28, 0.6);
+    this.rubble('metal', x, y, z, Math.round(2 + size * 1.5), 0.2 + size * 0.1, 5 + size * 2);
   }
 
   /**
@@ -324,20 +443,50 @@ export class Effects {
    * `tint` is its colour (a faction's, or lava for rock).
    */
   explode(x: number, y: number, z: number, size: number, tint: RGB, kind: 'rock' | 'metal'): void {
-    this.flash(x, y, z, size * 4.5, [4, 3.6, 3.2], 0.12);
-    this.flash(x, y, z, size * 7, tint, 0.4);
-    this.light(x, y, z, [1, 0.62, 0.32], 260 * size, 0.45);
+    const k = this.calm ? 0.5 : 1;
+    this.flash(x, y, z, size * 3.4 * k, [4, 3.4, 2.6], 0.1);
+    this.flash(x, y, z, size * 4.6 * k, [tint[0] * 0.7, tint[1] * 0.7, tint[2] * 0.7], 0.34);
+    this.light(x, y, z, [1, 0.62, 0.32], 260 * size * k, 0.45);
     this.fireball(x, y, z, size * 1.6, kind === 'metal' ? 1 : 0.7);
     this.ring(x, y, z, size * 4.5, [2.6, 1.3, 0.5], 0.55);
-    this.burst(x, y, z, Math.round(30 + size * 16), [3.6, 1.9, 0.7], 10 + size * 6, 0.32, 0.9);
+    this.burst(x, y, z, Math.round((16 + size * 8) * (this.calm ? 0.6 : 1)), [3.6, 1.9, 0.7], 10 + size * 6, 0.32, 0.9);
     this.burst(x, y, z, Math.round(12 + size * 6), tint, 8 + size * 4, 0.4, 0.7);
     this.rubble(kind, x, y, z, Math.round(5 + size * 5), 0.22 + size * 0.14, 6 + size * 3);
+    if (this.calm) return;
+    this.streakBurst(x, y, z, Math.round(10 + size * 5), 12 + size * 6, 0.8, 1.8);
+    if (kind !== 'metal' || size < 1.2) return;
+    // a hull does not die in one frame: pieces tear off burning, and what is left cooks off
+    const hulk = size < 2.5 ? 2 : size < 4.5 ? 3 : 4;
+    this.rubble('metal', x, y, z, hulk, 0.55 + size * 0.12, 3 + size * 1.2);
+    const pops = size < 2.5 ? 1 : size < 4.5 ? 3 : 5;
+    for (let i = 0; i < pops; i++) {
+      const o = size * 0.8, px = x + (Math.random() - 0.5) * o, py = y + (Math.random() - 0.5) * o * 0.4, pz = z + (Math.random() - 0.5) * o;
+      this.after(0.1 + Math.random() * 0.45 + i * 0.05, () => this.pop(px, py, pz, size * (0.3 + Math.random() * 0.2), tint));
+    }
+  }
+
+  /** Draw the hot sparks into this frame's streaks (between its begin and end). */
+  drawStreaks(streaks: Streaks): void {
+    this.hot.draw(streaks);
   }
 
   update(dt: number): void {
     this.sparks.update(dt);
+    this.hot.update(dt);
     this.rock.update(dt);
     this.plating.update(dt);
+    for (let i = this.later.length - 1; i >= 0; i--) {
+      const q = this.later[i]!;
+      if ((q.t -= dt) <= 0) { this.later.splice(i, 1); q.run(); }
+    }
+    // torn plating burns while it is new: an ember trail, now and then a wisp of smoke
+    if (!this.calm && dt > 0) {
+      this.plating.each((x, y, z, life, size) => {
+        if (life < 0.5 || size < 0.3) return;
+        if (Math.random() < 0.5) this.mote(x, y, z, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, [3.2, 1.2, 0.3], 0.16, 0.35);
+        if (Math.random() < 0.15) this.dust(x, y, z, 0.45, [0.08, 0.075, 0.07], 1, 0.4, 0.9, 0.2);
+      });
+    }
     for (const f of this.flashes) {
       if (f.life <= 0) continue;
       f.life -= f.decay * dt;
@@ -352,7 +501,7 @@ export class Effects {
       if (r.life <= 0) { r.mesh.visible = false; continue; }
       const t = 1 - r.life;
       r.mesh.scale.setScalar(r.max * (0.15 + 0.85 * (1 - (1 - t) * (1 - t))));
-      (r.mesh.material as MeshBasicMaterial).opacity = r.life * 0.9;
+      (r.mesh.material as MeshBasicMaterial).opacity = r.life * r.life * 0.6;
     }
     for (const p of this.fires) this.stepPuff(p, dt);
     for (const p of this.smokes) this.stepPuff(p, dt);
@@ -365,7 +514,7 @@ export class Effects {
 
   private place(p: Puff, x: number, y: number, z: number, size: number, grow: number, life: number, speed: number): void {
     p.sprite.position.set(x, y, z);
-    p.size = size; p.grow = grow; p.life = 1; p.decay = 1 / life; p.alpha = 0.85;
+    p.size = size; p.grow = grow; p.life = 1; p.decay = 1 / life; p.alpha = 0.85; p.warm = 0;
     const a = Math.random() * Math.PI * 2, u = Math.random() * 2 - 1, r = Math.sqrt(1 - u * u);
     p.vx = Math.cos(a) * r * speed; p.vy = u * speed * 0.6 + speed * 0.15; p.vz = Math.sin(a) * r * speed;
     (p.sprite.material as SpriteMaterial).rotation = Math.random() * Math.PI * 2;
@@ -388,6 +537,8 @@ export class Effects {
       mat.opacity = p.life * p.life;
     } else {
       mat.opacity = Math.min(1, t * 6) * p.life * p.alpha;
+      // smoke the fire is still lighting starts warm and goes to soot
+      if (p.warm > 0) mat.color.copy(SMOKE_WARM).lerp(SMOKE_SOOT, Math.min(1, t * 2.4));
     }
   }
 }

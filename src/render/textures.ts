@@ -162,18 +162,26 @@ export function curtainTexture(seed = 1): Texture {
 export function fireTexture(): Texture {
   return once('fire', () => {
     const [c, g] = canvas(128, 128), r = rand(17);
-    for (let i = 0; i < 26; i++) {
-      const a = r() * Math.PI * 2, d = r() * 30, x = 64 + Math.cos(a) * d, y = 64 + Math.sin(a) * d, rad = 14 + r() * 26;
+    // billows: many small lobes of uneven strength, so the edge is lumpy and the inside has darker folds,
+    // then a small hot core. Flat blobs read as a soft ball; this reads as burning gas.
+    for (let i = 0; i < 46; i++) {
+      const a = r() * Math.PI * 2, d = Math.pow(r(), 0.7) * 38, x = 64 + Math.cos(a) * d, y = 64 + Math.sin(a) * d, rad = 8 + r() * 20;
       const grad = g.createRadialGradient(x, y, 0, x, y, rad);
-      grad.addColorStop(0, 'rgba(255,255,255,.55)');
-      grad.addColorStop(0.5, 'rgba(255,255,255,.18)');
+      const k = 0.2 + r() * 0.4;
+      grad.addColorStop(0, `rgba(255,255,255,${k})`);
+      grad.addColorStop(0.55, `rgba(255,255,255,${k * 0.35})`);
       grad.addColorStop(1, 'rgba(255,255,255,0)');
       g.fillStyle = grad;
       g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
     }
+    const core = g.createRadialGradient(64, 64, 0, 64, 64, 22);
+    core.addColorStop(0, 'rgba(255,255,255,.5)');
+    core.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = core;
+    g.fillRect(30, 30, 68, 68);
     // fade the square's corners right out
     g.globalCompositeOperation = 'destination-in';
-    const mask = g.createRadialGradient(64, 64, 20, 64, 64, 64);
+    const mask = g.createRadialGradient(64, 64, 18, 64, 64, 64);
     mask.addColorStop(0, 'rgba(0,0,0,1)');
     mask.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = mask;

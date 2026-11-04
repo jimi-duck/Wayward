@@ -60,7 +60,10 @@ const spot = (kind: Alien['kind'], faction: Faction | null, x: number, y: number
   aliens.push(a);
 };
 
-if (view === 'capital') {
+if (view === 'boom') {
+  // a kill, frozen ?at=0.4 seconds in: ?size=2.8 (the hull's radius) &calm=1
+  spot((params.get('kind') ?? 'lancer') as Alien['kind'], null, 0, 0, 0, 2.4);
+} else if (view === 'capital') {
   // a boss's hull on its own, as the boss view draws it: ?kind=lancer|raptor|warbird|drone &r=6
   const kind = (params.get('kind') ?? 'lancer') as Alien['kind'];
   const hull = enemies.capitalHull(kind, (params.get('faction') as Faction | null) ?? ALIEN_TYPES[kind].faction);
@@ -116,19 +119,35 @@ fit();
 if (view === 'capital') camera.position.set(-9, 3.4, 8).multiplyScalar(Number(params.get('r') ?? '5') / 5 * 0.8);
 else if (view === 'close') camera.position.set(-9, 3.4, 8);
 else if (view === 'fire') camera.position.set(24, 8, 26);
+else if (view === 'boom') camera.position.set(-16, 9, 12);
 else camera.position.set(-12, 9, 0);
-camera.lookAt(view === 'close' || view === 'capital' ? 0 : view === 'fire' ? 36 : 40, view === 'fleet' ? 0 : 1, 0);
+camera.lookAt(view === 'boom' ? 0 : view === 'close' || view === 'capital' ? 0 : view === 'fire' ? 36 : 40, view === 'fleet' ? 0 : 1, 0);
 
+let boomFrame = 0;
+const rgbFor = (f: Faction): [number, number, number] => ({ gutter: [3, 1.6, 0.5], custody: [1.4, 2, 3], office: [3, 2.4, 0.8], voice: [0.8, 2.6, 1.4], thren: [2.6, 1, 2.6] } as Record<Faction, [number, number, number]>)[f];
 let last = performance.now(), t = 0, n = 0, cpu = 0;
 const calls: number[] = [], tris: number[] = [];
 const frame = (now: number) => {
-  const dt = Math.min(0.05, (now - last) / 1000);
+  const boom = view === 'boom';
+  const dt = boom ? 1 / 60 : Math.min(0.05, (now - last) / 1000);
   last = now;
+  if (boom) {
+    // fixed steps so a shot lands at the same moment every time; the blast goes off on frame 5, and the stage freezes at ?at
+    fx.calm = params.get('calm') === '1';
+    const bf = ++boomFrame;
+    if (bf === 5) {
+      const al = aliens[0]!, sz = Number(params.get('size') ?? '2.8');
+      aliens.length = 0;
+      fx.explode(al.x, al.y, al.z, sz, rgbFor(al.faction), 'metal');
+    }
+    if (bf > 5 + Math.round(Number(params.get('at') ?? '0.4') * 60)) { (window as unknown as { __boom: boolean }).__boom = true; if (!post.render(0)) renderer.render(scene, camera); return; }
+  }
   t += dt;
   renderer.info.reset();
   const t0 = performance.now();
   streaks.begin();
   weapons.update(bolts, torps, 1, fx, dt, t);
+  fx.drawStreaks(streaks);
   enemies.eye.copy(camera.position);
   enemies.update(aliens, [], shots, [], 1, dt);
   streaks.end();
