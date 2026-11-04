@@ -795,6 +795,8 @@ button.ng-n:active { border-image-source: var(--ng-n-press); }
 .ns-open .ns-l { font: 600 15px/1.2 var(--font-display); letter-spacing: 0; text-transform: none; color: var(--blue-hi); text-decoration: underline; text-underline-offset: 3px; }
 .ns-open b { font: 600 16px/1 var(--font-display); letter-spacing: 0; color: var(--blue-hi); }
 .ns-open.sel .ns-l, .ns-open:hover .ns-l { color: var(--ink-hi); }
+/* phones: the link keeps its look and footprint but takes a 40px thumb target (padding in, margin out) */
+@media (max-height: 520px) { .ns-open.ng-n { padding: 11px 0; margin: -9px 0; } }
 /* two panels: the one waiting for an answer keeps the rim, the other fades */
 .ns-wrap[data-lay="row"] > .ns-side { opacity: .6; }
 /* the card is 640 to 720 wide on a desktop, 32 each side */

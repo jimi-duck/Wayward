@@ -334,7 +334,7 @@
    On a desktop or laptop the call sits in the middle of the held view, wider, with the words at reading size and full ink
    (the glance line and the text under it used to be small and dim). Phones keep their own layout above. */
 @media (min-width: 721px) and (min-height: 521px) {
-  #comms { place-items: center; background: radial-gradient(ellipse at center, rgba(var(--shade-2-rgb), .65), rgba(var(--shade-2-rgb), .9)); }
+  #comms { place-items: center; place-items: safe center; background: radial-gradient(ellipse at center, rgba(var(--shade-2-rgb), .65), rgba(var(--shade-2-rgb), .9)); }
   #comms .panel.comms { width: min(880px, 100%); padding: 18px 26px 16px 30px; gap: 12px; }
   #comms .tx-card { gap: 6px 20px; }
   #comms .cm-face.art { width: 104px; }

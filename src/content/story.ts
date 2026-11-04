@@ -44,9 +44,8 @@ export const BREACH_BEAT = 'story_breach';
 export const SAM_BEAT = 'story_sam';
 /** Where Sam's private channel always comes in from, in degrees (the bearing line and the RX readout on his calls). */
 export const SAM_BEARING = 47;
-export const RENAME_BEAT = 'story_rename';
 export const WAKE_BEAT = 'story_wake';
-/** The opening's chain past Cerro. The registry card (RENAME_BEAT) is no longer dealt: the code's notice says it (owner 2026-10-31). */
+/** The opening's chain past Cerro. There is no registry card: the code's notice says it (owner 2026-10-31). */
 export const CERRO_BEATS = [BREACH_BEAT, SAM_BEAT, WAKE_BEAT] as const;
 /**
  * Seconds into that sortie before the chain begins: after the jump-arrival sweep and the system's title card are done
@@ -153,7 +152,6 @@ const GIST: Record<string, string> = {
   "story_seized": "The raiders took everything",
   "story_breach": "Contract in breach · recovery ordered",
   "story_sam": "Sam has a code for the owner lock",
-  "story_rename": "Local identity updated",
   "story_wake": "A stored message · Krail reserves 94%",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
@@ -327,19 +325,6 @@ export const STORY_CARDS: CardDef[] = [
         win: { text: 'Owner lock lifted · hull repainted, renamed WAYWARD', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
           signal: { tone: 'teal', headline: 'Owner lock lifted', reason: 'Hull repainted · now the WAYWARD' },
           radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: WAKE_BEAT, after: 20 } } },
-    ],
-  }),
-  story({
-    id: RENAME_BEAT, kind: 'warning', caller: 'office', ledger: 'rename', layout: 'registry', glass: 'cyan', status: 'Owner lock lifted',
-    from: 'Local identity updated', title: 'OB-7731-A → WAYWARD',
-    text: 'New name active in local systems',
-    copy: ['An Obedience-class hauler. A name of your own.', 'The Continuance names its ships after virtues. This one doesn’t have to carry theirs.'],
-    side: { from: 'Sam Okoro', label: 'Sam Okoro · radio', lines: ['Wayward. That sounds like yours. Take the helm, Juno.'] },
-    repaint: ['Temporary repaint', 'The paint will pass a glance. It won’t pass a scan.'],
-    cargo: 'Registration updated',
-    choices: [
-      { id: 'helm', label: 'Take the helm', tone: 'run', hint: '',
-        win: { text: 'Local identity updated · the hull is WAYWARD', follow: { card: WAKE_BEAT, after: 1.5, quick: true } } },
     ],
   }),
   story({
