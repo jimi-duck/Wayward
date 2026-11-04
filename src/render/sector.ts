@@ -65,6 +65,8 @@ const ORBIT_RATE = 0.12;
 const SWAY = 0.32;
 const SWAY_RATE = 0.16;
 
+const DEATH_HOLD = 1.45;
+
 export class Sector {
   readonly scene = new Scene();
   readonly rig = new CameraRig();
@@ -187,6 +189,7 @@ export class Sector {
     this.post = new Post(this.renderer, this.scene, this.rig.camera, tier);
     this.post.setMood(this.env.mood);
     this.fx.setLights(tier.name !== 'low');
+    this.lowFx = tier.name === 'low';
     this.env.setShadow(tier.shadow);
     this.env.setDetail(tier.name === 'low');
     this.warp.setDetail(tier.name === 'low');
@@ -269,6 +272,37 @@ export class Sector {
     return { x: (this.v.x + 1) / 2 * c.clientWidth, y: (1 - this.v.y) / 2 * c.clientHeight };
   }
 
+  /** Seconds the dying hull is still shown after the last plate (render/sector.ts hides her at the last blast). */
+  private dyingT = 0;
+  /** The low tier or a phone that cannot spare it: the calm effects. */
+  lowFx = false;
+
+  /** The hull coming apart: three blasts stern to bow, then the break-up. Reduced motion gets one fade. */
+  private dyingBlasts(x: number, z: number): void {
+    const stern = this.ship.exhaust().points, n = stern.length || 1;
+    let sx = 0, sy = 0, sz = 0;
+    for (const p of stern) { sx += p[0] / n; sy += p[1] / n; sz += p[2] / n; }
+    if (!stern.length) { sx = x; sy = 0.2; sz = z; }
+    const cx = this.lerped.x, cz = this.lerped.z;
+    const at = (f: number): [number, number, number] => [cx + (sx - cx) * f, sy, cz + (sz - cz) * f];
+    if (this.reduceMotion) {
+      this.fx.after(DEATH_HOLD * 0.5, () => this.fx.explode(cx, 0.3, cz, 3.2, ALERT, 'metal'));
+      return;
+    }
+    // the stern goes first (the engines), then the middle, then the bow; the lamps stutter as it does
+    const beats: Array<[number, number, number]> = [[0.3, 1, 1.6], [0.62, 0.15, 2], [0.95, -1, 1.8]];
+    for (const [t, f, size] of beats) {
+      const [px, py, pz] = at(f);
+      this.fx.after(t, () => { this.fx.pop(px, py, pz, size, ALERT); this.rig.shake(0.35); });
+    }
+    this.fx.after(DEATH_HOLD - 0.05, () => {
+      this.fx.explode(cx, 0.3, cz, 4, ALERT, 'metal');
+      this.fx.ring(cx, 0.1, cz, 18, ALERT, 0.9);
+      this.fx.light(cx, 1, cz, [1, 0.6, 0.3], 900, 0.8);
+      this.rig.shake(0.8);
+    });
+  }
+
   /**
    * Turn simulation events into light and motion. Returns how long the
    * simulation should hold still (a hit-stop), in seconds: kills land harder
@@ -278,10 +312,15 @@ export class Sector {
     let hold = 0;
     for (const e of events) {
       switch (e.type) {
-        case 'bolt':
+        case 'bolt': {
           this.fx.flash(e.x, 0.15, e.z, 1.6, OURS, 0.08);
+          // a short hot flare thrown down the barrel, and a breath of light on the hull
+          const hx = Math.cos(e.heading), hz = -Math.sin(e.heading);
+          this.fx.streakSpray(e.x + hx * 0.6, 0.15, e.z + hz * 0.6, hx, hz, 2, 26, 0.18, 0.12);
+          this.fx.light(e.x, 0.4, e.z, [1, 0.2, 0.15], 24, 0.07);
           this.rig.kick(0.05);
           break;
+        }
         case 'break':
           this.fx.ring(e.x, 0.2, e.z, 5, OURS, 0.4);
           this.rig.shake(0.18);
@@ -345,6 +384,8 @@ export class Sector {
           this.fx.flash(e.x, e.y, e.z, 1.1, FIRE, 0.07);
           this.fx.burst(e.x, e.y, e.z, 10, FIRE, 10, 0.26, 0.4);
           this.fx.burst(e.x, e.y, e.z, 6, LANCE_SPARK, 16, 0.14, 0.25);
+          this.fx.streakBurst(e.x, e.y, e.z, 4, 14, 0.4, 1.2);
+          this.fx.flash(e.x, e.y, e.z, 0.8, [1.6, 0.5, 0.12], 0.3);
           this.fx.rubble('metal', e.x, e.y, e.z, 1, 0.12, 6);
           break;
         case 'alienDestroyed':
@@ -444,11 +485,12 @@ export class Sector {
           this.rig.shake(0.25);
           break;
         case 'breach':
-          this.fx.explode(e.x, 0.2, e.z, 4, ALERT, 'metal');
-          this.fx.explode(e.x + 1, 0.4, e.z - 1, 2.5, FIRE, 'metal');
-          this.fx.ring(e.x, 0, e.z, 16, ALERT, 0.8);
-          this.rig.shake(1);
-          hold = Math.max(hold, 0.11);
+          this.dyingT = DEATH_HOLD;
+          this.fx.explode(e.x, 0.2, e.z, 2.2, ALERT, 'metal');
+          this.fx.ring(e.x, 0, e.z, 9, ALERT, 0.6);
+          this.rig.shake(this.reduceMotion ? 0 : 0.7);
+          hold = Math.max(hold, this.reduceMotion ? 0 : 0.11);
+          this.dyingBlasts(e.x, e.z);
           break;
       }
     }
@@ -531,7 +573,9 @@ export class Sector {
     this.rig.warp.lock = wt >= 0 ? Math.min(1, wt / 0.35) : 0;
     if (wt >= 0 && !this.reduceMotion && wt < 2.4) this.rig.hum(0.28 * Math.min(1, wt / 0.6));
     this.rig.update(subject, dt, this.reduceMotion);
-    this.ship.root.visible = world.alive && (wt < 0 || whiteout(wt) < 0.97);
+    if (this.dyingT > 0) this.dyingT = Math.max(0, this.dyingT - dt);
+    this.ship.root.visible = (world.alive || this.dyingT > 0) && (wt < 0 || whiteout(wt) < 0.97);
+    this.fx.calm = this.reduceMotion || this.lowFx;
     this.ship.stretch(wt >= 0 && !this.reduceMotion ? stretch(wt) : 1);
     // the shield stands at the rim as it fills, and fully once a charge is up
     this.ship.status.charged = world.powers.shield > 0 ? 1 : Math.min(1, world.shields);
@@ -556,6 +600,7 @@ export class Sector {
     this.weapons.update(world.bolts, world.torps, alpha, this.fx, dt, this.time);
     this.enemies.eye.copy(this.rig.camera.position);
     this.enemies.update(world.aliens, world.review ? world.review.bosses : world.command.boss ? [world.command.boss] : [], world.shots, world.webs, alpha, dt);
+    this.fx.drawStreaks(this.streaks);
     this.streaks.end();
     this.pickups.update(world.pickups, alpha, dt, this.fx);
     this.arsenal.update(world.sys, dt, this.rig.camera.position);
@@ -664,6 +709,11 @@ export class Sector {
         }
       }
     }
+    // the dying hull vents fire from her wounds and nozzles until she goes
+    if (!world.alive && this.dyingT > 0) {
+      const k = 1 - this.dyingT / DEATH_HOLD;
+      for (const [x, y, z] of [...this.ship.wound().points, ...this.ship.exhaust().points]) this.fx.burning(x, y, z, 0.6 + k * 0.4);
+    }
     // a wounded hull smokes where it was hit, and at one plate left throws the odd spark
     if (world.alive && !this.reduceMotion) {
       const w = this.ship.wound();
@@ -674,6 +724,9 @@ export class Sector {
     }
     // hulls burning from the plasma trail
     for (const al of world.aliens) {
+      // a hull near its end smokes and sheds embers, worse the lower it gets
+      const left = al.hp / al.maxHp;
+      if (left < 0.34 && al.maxHp > 2) this.fx.burning(al.x, al.y, al.z, 1 - left / 0.34, al.vx, al.vz);
       if (al.burn > 0 && Math.random() < 0.5) this.fx.mote(al.x, al.y, al.z, (Math.random() - 0.5) * 3, 2 + Math.random() * 2, (Math.random() - 0.5) * 3, [3.6, 1.4, 0.4], 0.35, 0.4);
     }
     // the anomaly drinks the light in
