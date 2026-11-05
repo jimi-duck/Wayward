@@ -22,7 +22,7 @@ import { damageWord } from './panels';
 import { Notifier, NoticePlates, type Notice } from './notify';
 import { blockOf, cheapest, nodeName, quickPicks } from '../sim/bay';
 import { BREAK_COOLDOWN } from '../sim/tuning';
-import { lockLifted, refuelAt } from '../sim/postjump';
+import { lockLifted, paintAt, refuelAt } from '../sim/postjump';
 import { recovering } from '../sim/recovery';
 import { wantedPips } from '../sim/pressure';
 
@@ -715,6 +715,12 @@ export class Hud {
           text($('obj-t'), t(recovering(world.flags) ? 'Vessel flagged for recovery' : 'Dock at the company port'));
           text($('obj-left'), range(da));
           ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
+        } else if (paintAt(world)) {
+          // Sam's code is in and the hull is still grey: the paint bay at the depot, free, is the course
+          const pt = bk.port!, dpt = Math.hypot(pt.x - s.x, pt.z - s.z);
+          text($('obj-t'), t('Get the hull repainted'));
+          text($('obj-left'), range(dpt));
+          ticks($('obj-p'), Math.max(0, 1 - dpt / (bk.def.lane * 0.65)), 30);
         } else if (refuelAt(world)) {
           // the first system past Cerro with a short tank: fill it first (buy at the depot or mine), the gate comes after
           text($('obj-t'), t('Fill the tank'));
@@ -730,11 +736,13 @@ export class Hud {
         text($('obj-s'), recovering(world.flags) ? t('Controls locked · Recovery autopilot active') : bk.chase && ready ? t('Reinforcements inbound · break contact')
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting') : world.gateWhy ? `${t('Jump Gate holding')} · ${t(world.gateWhy)}` : '');
         const lines: string[] = [];
-        if (refuelAt(world)) {
+        if (paintAt(world)) {
+          lines.push(`${t('Paint bay at {port}', { port: bk.port!.name })} · ${t('free')}`);
+        } else if (refuelAt(world)) {
           // two ways to fill it, on one line (a phone shows only the first): buy, or mine
           const pt = bk.port!;
           lines.push(`${t('Buy fluid at {port}', { port: pt.name })} · <b>${range(Math.hypot(pt.x - s.x, pt.z - s.z))}</b> · ${t('or mine Cyrite')}`);
-        } else if (!ready && !aud) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
+        } else if (!ready && !aud && !paintAt(world)) lines.push(`${t('Reach the Jump Gate')} · <b>${range(dl)}</b>`);
         lines.push(...goal.quiet);
         // first, so a phone (which shows one line) shows it while it lasts
         if (this.hintOn(world)) lines.unshift(`<span class="hint">${this.hintLine!.text}</span>`);
@@ -746,7 +754,7 @@ export class Hud {
         if (e && e.dormant && e.place) lines.push(`${t('Off the course')} · ${t(e.place)} · <b>${range(Math.hypot(e.x - s.x, e.z - s.z))}</b>`);
         const sc = world.stage;
         if (sc?.onScope) lines.push(`${t('On the scope')} · ${t(sc.def.name)} · <b>${range(Math.hypot(sc.x - s.x, sc.z - s.z))}</b>`);
-        if (bk.port && bk.docks === 0 && !refuelAt(world)) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
+        if (bk.port && bk.docks === 0 && !refuelAt(world) && !paintAt(world)) lines.push(`${t('Dock at {port} (optional)', { port: bk.port.name })} · <b>${range(Math.hypot(bk.port.x - s.x, bk.port.z - s.z))}</b>`);
         const html = lines.slice(0, 2).map((l) => `<li>${l}</li>`).join('');
         const list = $('obj-list');
         if (list.innerHTML !== html) list.innerHTML = html;

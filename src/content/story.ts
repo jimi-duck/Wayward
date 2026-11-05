@@ -321,10 +321,10 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The audit dock · ahead',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
-        // no registry card (owner 2026-10-31): the code repaints and renames her, the notice says so, the archive comes 20 s on
-        win: { text: 'Owner lock lifted · hull repainted, renamed WAYWARD', flag: ['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
-          signal: { tone: 'teal', headline: 'Owner lock lifted', reason: 'Hull repainted · now the WAYWARD' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The jump gate. Keep moving.”' }, follow: { card: WAKE_BEAT, after: 20 } } },
+        // the code sets the call sign and nothing more (owner 2026-11-05): the paint is Ned's, at the depot (sim/postjump.ts PAINT_DUE)
+        win: { text: 'Owner lock lifted · call sign now WAYWARD', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
+          signal: { tone: 'teal', headline: 'Owner lock lifted', reason: 'Call sign now WAYWARD' },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The Frontier depot. Ned runs the paint bay, he owes me. Free. Go.”' } } },
     ],
   }),
   story({

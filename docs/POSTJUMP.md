@@ -36,27 +36,52 @@ adds its own shape.
 ## The objective follows one flag
 
 `ship_stolen` is set by Sam's code (the `story_sam` card). Until it is, the course is
-the audit dock; after, the Jump Gate. Nothing else holds state: `guideTarget`,
+the audit dock; after it, the paint bay at the Frontier Supply Depot (below); once she is
+repainted, the Jump Gate. Nothing else holds state: `guideTarget`,
 `goal.ts`, the HUD's objective, the edge pointers and the arrival note all read
 `lockLifted(world.flags)`. The flag is banked with the card, so a save, reload or
 restart of the sortie lands on the right objective. The story timing is untouched: the chain starts two seconds in and Sam's code comes after the breach
 notice, as before. The audit dock stays on the scope as a place after the code (nothing
 leads to it), and the depot stays on the strip throughout.
 
-## After Sam's code
+## The paint bay (owner, 5 November 2026)
 
-One thing at a time, in seconds of play after the lock lifts (`STOLEN`):
+Sam's code sets the call sign and lifts the lock; it no longer paints the hull. It also banks
+`paint_due`, and Sam sends her to the depot: Ned Varga, a friend of his, runs the paint bay there and
+does the hull for nothing. The course is the depot (objective "Get the hull repainted", the pause card's
+"Fly to the depot: free repaint at the paint bay"), and the Jump Gate holds ("Jump Gate holding · paint
+bay first") until she has been, so it is a thing she must do, not an option.
 
-1. The rename reveal (no card since 2026-10-31), then the archive 20 s or more on, at a free moment.
+1. She comes within 150 units of the depot: Ned's radio line (it replaces the depot's own hail).
+2. Once the line has been heard, 1.6 s on, the cut scene starts (about twelve seconds, no card, helm
+   locked, `sim/paintbay.ts` and `render/paintbay.ts`). The bay is an open work pad marked out beside the
+   depot, with no building and no people: a deck with hazard edges and guide lights, a gate arch at each
+   end and a gantry overhead. Ned brings her in on rails round to the pad, a light curtain closes across
+   the near gate, and the gantry's spray head sweeps the hull under flickering work lights. The far
+   curtain lifts as the paint goes on: `hull_repainted`, a teal notice "Hull repainted · Paint bay ·
+   Frontier Supply Depot", Ned's closing line, and the rename reveal (`render/reveal.ts`) plays. The helm
+   is hers again as she rolls out.
+3. 20 s later the archive's message (`story_wake`), at a free moment.
+
+`painted(flags)` is `hull_repainted`, or the lock lifted with no `paint_due` (a save from before the
+paint bay is painted already, so no save version bump). If she docks while the paint is due, it goes on
+when she casts off. From the code to the paint nothing hunts her: no pursuit, no Thren swarm, no jam,
+and the system is `calm` (no anomalies) anyway. Every line takes its turn on the floor.
+
+## After the paint
+
+One thing at a time, in seconds of play after the paint is on (`STOLEN`):
+
+1. The rename reveal, then the archive 20 s on, at a free moment.
 2. **+20 s:** Sam names the short tank: the depot if she can pay, the veined rock if not
    (`STOLEN_SAM`, `STOLEN_SAM_POOR`). Only when the tank is short.
 3. **+38 s:** an amber notice, "Hull reported stolen · Kellern has called in Custody".
-4. **+70 s, and no sooner than 150 s in:** the first Custody hull, from behind.
+4. **+70 s:** the first Custody hull, from behind.
 
 The depot's call is a radio line, not a card: flying into its ring docks. No lane toll is dealt at this
 system's gate. Every line and notice here takes its turn on the floor (`sim/floor.ts`).
 
-Until the lock lifts nothing hunts her and no hull comes for her (the recovery runs no
+Until the paint is on nothing hunts her and no hull comes for her (the recovery runs no
 waves), no chance card is dealt in this system at all, and the "Custody pursuit · N days
 behind" notices wait for the next stop. While the tank is short, she can pay and has not
 docked, the objective is "Fill the tank" (n/16) with one line under it, "Buy fluid at

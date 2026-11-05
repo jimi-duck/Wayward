@@ -5,6 +5,7 @@ import { HOLD_MAX, JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
 import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
+import { painted } from '../sim/postjump';
 import { SceneArc } from './scenes';
 import type { Faction } from '../sim/enemies';
 import { inFight } from '../sim/guide';
@@ -13,6 +14,7 @@ import type { World } from '../sim/world';
 import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
 import { SiteView } from './site';
+import { PaintBayView } from './paintbay';
 import { CameraRig } from './camera';
 import { DebrisField } from './debris';
 import { Environment } from './environment';
@@ -87,6 +89,7 @@ export class Sector {
   private readonly mood = { fog: 0, dim: 0, tint: [0, 0, 0] as [number, number, number] };
   private readonly breakout: BreakoutView;
   private readonly site: SiteView;
+  private readonly paintBay: PaintBayView;
   private readonly warp: WarpView;
   /** The jump's path, latched when the drive lets go, and the run it belongs to. */
   private launch: Launch | null = null;
@@ -149,6 +152,7 @@ export class Sector {
     this.hazards = new HazardView(this.scene, glow, wreck);
     this.breakout = new BreakoutView(this.scene, glow);
     this.site = new SiteView(this.scene);
+    this.paintBay = new PaintBayView(this.scene);
     this.space = new SpaceView(this.scene, glow);
     this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'medium' ? 110 : 170);
     this.scene.add(this.ship.root);
@@ -588,6 +592,9 @@ export class Sector {
     this.rig.warp.lock = wt >= 0 ? Math.min(1, wt / 0.35) : 0;
     if (wt >= 0 && !this.reduceMotion && wt < 2.4) this.rig.hum(0.28 * Math.min(1, wt / 0.6));
     this.rig.update(subject, dt, this.reduceMotion);
+    // the paint bay's cut scene takes the camera for its two shots (render/paintbay.ts); the chase rig keeps running underneath, so it cuts back clean
+    this.paintBay.update(world, dt, this.fx);
+    this.paintBay.cine(world, this.rig.camera);
     if (this.dyingT > 0) this.dyingT = Math.max(0, this.dyingT - dt);
     this.ship.root.visible = (world.alive || this.dyingT > 0) && (wt < 0 || whiteout(wt) < 0.97);
     this.fx.calm = this.reduceMotion || this.lowFx;
@@ -602,7 +609,7 @@ export class Sector {
     this.ship.setFit(world.levels, world.use);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
     // the Arcade flies her in her own paint from the start (the grey company livery is the Story's before-state)
-    const stolen = world.flags.has('ship_stolen') || world.mode === 'arcade';
+    const stolen = painted(world.flags) || world.mode === 'arcade';
     const rv = this.reveal.update({
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,

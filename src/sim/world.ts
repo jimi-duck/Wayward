@@ -18,7 +18,7 @@ import { debtLeft } from './threads';
 import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
-import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT } from '../content/story';
+import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
 import {
   APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
@@ -33,7 +33,8 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_AT, PAINT_DONE, PAINT_LINE, PAINT_NOTICE, PAINT_WAKE, PAINTED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
+import { BAY, bayExit, bayFrame, bayTimes, startBay, type Bay } from './paintbay';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
@@ -447,6 +448,7 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.auditCalled = false;
+    this.paintCalled = false; this.paintT = Infinity; this.bay = null; this.bayLine = false;
     this.recoverT = 0;
     this.radioQ = [];
     this.floor = new Floor();
@@ -734,7 +736,7 @@ export class World implements EncounterHost {
     const p = pressure(this.clock, this.mods);
     // Lane Control's recovery has the helm until Sam's code lifts the owner lock
     const held = !!this.bk && recovering(this.flags);
-    const c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) ? IDLE : held ? RECOVERY_CONTROLS : flightControls(input);
+    const c = !this.alive || slowed || (this.bk && this.bk.jumpT >= 0) || (this.bay && bayFrame(this.bay).locked) ? IDLE : held ? RECOVERY_CONTROLS : flightControls(input);
     if (held && this.alive && !slowed) {
       // Lane Control flies her on rails; everyone else keeps clear of a ship under recovery
       // she steers round the bulwarks only; loose rock in her lane drifts aside ahead of her
@@ -784,7 +786,8 @@ export class World implements EncounterHost {
     // the sector
     this.field.step(dt, s.x, s.z, this.bk ? { ...p, rockHp: p.rockHp * MINE_HP, rich: this.richShare } : p);
     // under recovery nothing comes for her at all (the arcade's waves are not the Story's)
-    if (this.bk) { if (!held) { this.pursue(t); this.swarm(t); this.jam(dt); } }
+    // ...and from the code to the paint bay nothing comes either (owner, 5 November 2026): no pursuit, no swarm, no jam
+    if (this.bk) { if (!held) { this.pursue(t); if (!(this.bk.def.first && paintDue(this.flags))) { this.swarm(t); this.jam(dt); } } }
     else this.spawn(t, p);
     this.stepAliens(dt, t, p);
     const before = this.command.state, sighted = this.command.boss;
@@ -830,6 +833,7 @@ export class World implements EncounterHost {
     } else if ((this.dying -= dt) <= 0) this.finish();
     if (this.bk && this.bk.jumpT >= 0 && (this.bk.jumpT -= dt) <= 0) this.finish();
 
+    if (this.bay) this.stepBay(dt);
     this.speak();
 
     // the decisions: a hail
@@ -877,7 +881,8 @@ export class World implements EncounterHost {
     if (b.nagT > 0) b.nagT -= dt;
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
-    this.stage?.step(this, dt);
+    // a situation (a patrol's sweep, a toll) waits in the first system until the paint is on (owner, 5 November 2026: nothing comes between the code and the depot)
+    if (!(b.def.first && paintDue(this.flags))) this.stage?.step(this, dt);
     if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
@@ -906,6 +911,15 @@ export class World implements EncounterHost {
       for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
         const dx = o.x - w.x, dz = o.z - w.z, d = Math.hypot(dx, dz) || 1, min = clear + o.r;
         if (d < min) { o.x = w.x + (dx / d) * min; o.z = w.z + (dz / d) * min; }
+      }
+    }
+
+    // the paint shed's room: no rock or bulwark in or before it while the work is due
+    if (b.port && (paintDue(this.flags) || this.bay)) {
+      const c = { x: b.port.x - BAY.off, z: b.port.z };
+      for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
+        const dx = o.x - c.x, dz = o.z - c.z, d = Math.hypot(dx, dz) || 1, min = BAY.clear + o.r;
+        if (d < min) { o.x = c.x + (dx / d) * min; o.z = c.z + (dz / d) * min; }
       }
     }
 
@@ -940,13 +954,13 @@ export class World implements EncounterHost {
     // on the road, entering a system: the scan is said first, then the calls come in and their waypoints with them (the owner, 31 October 2026)
     // ...and nothing else is said, and no card or call opens, until the camera's arrival sweep and the system's title are done
     const arriving = !!this.script && !opening && !recovering(this.flags) && !this.tutor;
-    this.floor.hush = arriving && this.runTime < FLOOR.arrival;
+    this.floor.hush = (arriving && this.runTime < FLOOR.arrival) || (!!this.bay && this.bay.e < bayTimes(this.bay).paint);
     if (!this.scanned && arriving && this.runTime >= SCAN_AT && this.phase === 'play' && b.jumpT < 0) {
       this.scanned = true;
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: SCAN_LINE, reason: this.sortie.name });
     }
 
-    if (beat && !this.storyMade && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
+    if (beat && !this.storyMade && !(beat === WAKE_BEAT && paintDue(this.flags)) && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
       // Sam's card is the recovery's to deal, at 2 km from the dock, even after a load mid-recovery
@@ -1111,6 +1125,12 @@ export class World implements EncounterHost {
   /** When Sam's code lifted the owner lock in the first system past Cerro (Infinity: not yet). */
   private stolenAt = Infinity;
   private stolenSaid = 0;
+  /** The paint bay (sim/postjump.ts): Ned has been heard (so the first stroke is due at `paintT`), and the paint is on. */
+  private paintCalled = false;
+  private paintT = Infinity;
+  /** The paint bay cut scene (sim/paintbay.ts), while it runs: the ship is flown on rails, and the renderer draws the shed from it. */
+  bay: Bay | null = null;
+  private bayLine = false;
   /** The first system past Cerro: the hull is not reported stolen yet, so nothing there explains Wanted yet (main.ts holds the note). */
   get beforeReport(): boolean { return !!this.bk?.def.first && this.runTime < this.stolenAt + STOLEN.notice + STOLEN.explain; }
 
@@ -1120,7 +1140,7 @@ export class World implements EncounterHost {
    * then does the first Custody hull come (STOLEN). Returns whether the pursuit may run.
    */
   private stolen(t: number): boolean {
-    if (!lockLifted(this.flags)) return false;
+    if (!painted(this.flags)) return false;
     const b = this.bk!;
     if (this.stolenAt === Infinity) { this.stolenAt = t; b.nextPursuit = Math.max(b.nextPursuit, t + STOLEN.pursuit); }
     const since = t - this.stolenAt, name = b.def.name;
@@ -1133,6 +1153,33 @@ export class World implements EncounterHost {
       this.events.push({ type: 'storyNotice', tone: 'amber', headline: STOLEN_NOTICE[0], reason: STOLEN_NOTICE[1] });
     }
     return t >= this.stolenAt + STOLEN.pursuit;
+  }
+
+  /**
+   * The paint bay cut scene (sim/paintbay.ts): the ship is flown on rails, nothing can hurt her, the paint goes on at the work's end,
+   * the helm comes back as she leaves the far door, and Ned has his last word. The pose is set after the step's flight, so the
+   * ordinary physics cannot move her off it.
+   */
+  private stepBay(dt: number): void {
+    const b = this.bay!, s = this.ship, tm = bayTimes(b);
+    b.e += dt;
+    s.invuln = Math.max(s.invuln, 0.5);
+    const pose = b.e < tm.release ? bayFrame(b) : b.e - dt < tm.release ? bayExit(b) : null;
+    if (pose) {
+      s.x = pose.x; s.z = pose.z; s.vx = pose.vx; s.vz = pose.vz;
+      s.heading += Math.atan2(Math.sin(pose.heading - s.heading), Math.cos(pose.heading - s.heading));
+      s.yawRate = 0; s.helm = 0; s.thrust = b.e < tm.mouth ? 0.5 : b.e < tm.inside ? 0.25 : b.e < tm.paint ? 0 : 0.6;
+    }
+    if (!this.flags.has(PAINTED) && b.e >= tm.paint) {
+      this.flags.add(PAINTED);
+      this.events.push({ type: 'storyNotice', tone: 'teal', headline: PAINT_NOTICE[0], reason: PAINT_NOTICE[1] });
+      this.follows.push({ card: WAKE_BEAT, at: this.runTime + PAINT_WAKE });
+    }
+    if (!this.bayLine && b.e >= tm.release - 0.4) {
+      this.bayLine = true;
+      this.events.push({ type: 'ping', id: 'paint_done', from: tr(PAINTER), caller: 'frontier', text: tr(PAINT_DONE), moment: 'calm', system: this.bk?.def.name ?? '' });
+    }
+    if (b.e >= tm.end) this.bay = null;
   }
 
   /** One wave of the opening chase: heavier and more of them each time, always from behind. */
@@ -1680,6 +1727,12 @@ export class World implements EncounterHost {
    */
   private gateHeld(): boolean {
     const sc = this.script, b = this.bk;
+    // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
+    if (b?.def.first && b.port && paintDue(this.flags)) {
+      this.gateWhy = 'paint bay first';
+      if (this.holdNoted !== this.gateWhy) { this.holdNoted = this.gateWhy; this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: this.gateWhy }); }
+      return true;
+    }
     if (!sc || !b || this.gateLet) return false;
     const tank = this.tankCap ? this.fuel / this.tankCap : 0;
     const o = sc.owed(this.flags, tank);
@@ -1842,11 +1895,22 @@ export class World implements EncounterHost {
       // the depot says so on the radio, no card (owner 2026-10-31): flying into its ring docks
       if (hail === 'depot_hail') {
         this.portCalled = true;
-        this.events.push({ type: 'ping', id: 'depot_hail', from: tr('Frontier Supply Depot'), caller: 'frontier', text: tr(DEPOT_LINE), moment: 'calm', system: b.def.name });
+        // with the paint due, Ned is the depot's voice (below): one line, not two
+        if (!paintDue(this.flags)) this.events.push({ type: 'ping', id: 'depot_hail', from: tr('Frontier Supply Depot'), caller: 'frontier', text: tr(DEPOT_LINE), moment: 'calm', system: b.def.name });
       } else if (hail) {
         this.auditCalled = true;
         d.offer(CARD_BY_ID[hail]!, 'major', t, true);
       }
+    }
+    // the paint bay (owner, 5 November 2026): Sam's code leaves the hull grey; Ned, at the depot, does it for nothing. His line comes when the
+    // ship comes up on the depot, the paint goes on a moment after it is heard (the reveal plays then), and the archive follows later
+    if (b.port && paintDue(this.flags) && !this.docked && this.phase === 'play') {
+      if (!this.paintCalled && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
+        this.paintCalled = true;
+        this.events.push({ type: 'ping', id: 'paint_bay', from: tr(PAINTER), caller: 'frontier', text: tr(PAINT_LINE), moment: 'calm', system: b.def.name });
+      }
+      // once his line has been heard, hands off the stick: the cut scene flies her in (sim/paintbay.ts); the paint goes on inside it
+      if (this.paintCalled && !this.bay && t >= this.paintT) { this.bay = startBay(s, b.port); this.bayLine = false; }
     }
     // the port's approach calls once
     if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
@@ -1904,7 +1968,11 @@ export class World implements EncounterHost {
   private speak(): void {
     this.floor.take(this.events, this.runTime);
     const e = this.floor.step(this.runTime, this.phase === 'play' && !this.call && this.alive);
-    if (e) this.events.push(e);
+    if (e) {
+      this.events.push(e);
+      // the first stroke of paint waits for her voice to have gone out
+      if (e.type === 'ping' && e.id === 'paint_bay') this.paintT = this.runTime + PAINT_AT;
+    }
   }
 
   /** One line on the radio for this moment, if one fits and has not been heard. */

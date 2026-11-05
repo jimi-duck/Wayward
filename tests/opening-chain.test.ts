@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OPENING_AT } from '../src/content/story';
+import { paintHull } from './paint';
 import { readFileSync } from 'node:fs';
 import { WALL } from '../src/content/wall';
 import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
@@ -71,8 +72,8 @@ describe('the opening chain beyond the gate', () => {
       // one action each: the notice offers no way out, Sam's card is the override, and the archive is one card
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
-      // Sam's card comes 2 km out from the dock; the archive 20 s or more after his code
-      run(95);
+      // Sam's card comes 2 km out from the dock; the archive only once Ned has painted her at the depot (owner 2026-11-05)
+      if (answer === 'code') { w.bk!.nextPursuit = Infinity; run(40); expect(w.comms).toBeNull(); paintHull(w); run(120); } else run(95);
     }
     expect(seen).toEqual(['story_breach', 'story_sam', 'story_wake']);
     expect(w.phase).toBe('play');
