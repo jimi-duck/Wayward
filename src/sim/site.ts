@@ -78,3 +78,14 @@ export class SiteBrain {
 export const MOOD_LIGHT: Record<Mood, number> = { calm: 0.8, busy: 1.15, alert: 1, shut: 1 };
 /** How far a mood turns the lamps from warm white towards amber, 0 to 1. Never red: red is the threat's colour only. */
 export const MOOD_AMBER: Record<Mood, number> = { calm: 0, busy: 0, alert: 0.7, shut: 1 };
+
+// ── what a holder's port does ─────────────────────────────────────────────
+/** A Holdfast's flak: how far it reaches (units), seconds between volleys calm and on alert, and what a round does. */
+export const FLAK_R = 120;
+export const FLAK_EVERY = 1.4;
+export const FLAK_EVERY_ALERT = 0.7;
+export const FLAK_DAMAGE = 8;
+/** The Gutter yard's crane: how far it reaches, how hard it hauls (units/s squared) and how long salvage it claims then keeps (s). */
+export const CRANE_R = 170;
+export const CRANE_PULL = 90;
+export const CRANE_KEEP = 14;

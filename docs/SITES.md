@@ -26,12 +26,29 @@ with a gutted hull bolted on, a Holdfast's hub grown into a rock, and the Dust
 Traders' raft with awnings and lanterns. The holder comes from the chart row via
 `SortieDef.holder`. The first system past Cerro keeps its own hand-laid depot.
 
+## What a holder's port does
+
+Read in `World.stepWorks`, constants in `sim/site.ts`.
+
+- **Holdfast flak.** Every 1.4 s (0.7 s once the port is alert or shut) it
+  fires at up to two targets within 120 units of the ring: rock drifting
+  *towards* the port, and committed hostile hulls. A round does 8 damage and
+  draws a small pop. Rock drifting away, wards and the player are left alone.
+  A rock that breaks drops what it drops, so flak near a Holdfast also feeds you.
+- **Gutter crane.** Loose salvage (Krail, Cyrite, ore, parts) within 170 units
+  that has under 3 s left is taken hold of: its life is reset to 14 s and it is
+  hauled towards the ring. Loot from a fight near a Gutter port is not lost
+  while you are held off by the shield.
+
+Kellern, the Dust Traders and everyone else keep a plain port for now.
+
 ## Next (plan: "Living stations and space objects")
 
-The rock colony with flak turrets and the salvage crane read the same signals
-and add their own behaviour on top.
+The refinery barge, the Dust Market and the Custody relay post read the same
+signals and add their own behaviour on top.
 
 ## Not measured
 
-A new look is built the first time it is needed (about 250 ms for the depot on
-the cloud machine, a phone will take longer). Phone frame rate was not measured.
+Flak and crane numbers come from tests only; no pilot has flown them and no
+phone has run them. A new look is built the first time it is needed (about
+250 ms for the depot on the cloud machine, a phone will take longer).
