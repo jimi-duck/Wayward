@@ -36,6 +36,8 @@ import { Stage, makeStage } from './stage';
 import { DEPOT_LINE, lockLifted, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
+import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
+import { LOOSE } from './pickups';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
@@ -202,6 +204,8 @@ export class World implements EncounterHost {
   dockHeld = false;
   /** The depot's shield is up: a fight is on, so nobody outside gets in and no enemy fire crosses it. Never up while the ship is inside the ring. */
   shield = false;
+  /** How the port stands: calm, busy, alert or shut (sim/site.ts). The renderer and the scope read it. */
+  readonly portSite = new SiteBrain();
   private shieldHold = 0;
   private deniedT = 0;
   private wasInPlace = false;
@@ -867,6 +871,7 @@ export class World implements EncounterHost {
     // the clamps stay open while a fight is on: slow at the ring and under attack, the port says no
     const ready = !!b.port && !b.castOff && dp < b.port.r && speed < DOCK_SPEED && this.phase === 'play';
     this.stepShield(dt, dp);
+    this.stepSite(dt);
     const nearDepot = !!b.port && dp < SAFE_R + SHIELD_NEAR;
     const held = (ready && this.inDanger()) || (this.shield && nearDepot);
     if (this.dockHeld && !held && (ready || nearDepot)) this.events.push({ type: 'dockCleared' });
@@ -1324,6 +1329,71 @@ export class World implements EncounterHost {
    * that reaches the edge is absorbed. It never comes up while the ship is
    * already inside, and it drops a moment after the fight is over.
    */
+  /** The port's mood from what is going on round its ring. */
+  private stepSite(dt: number): void {
+    const port = this.bk?.port;
+    if (!port) { this.portSite.reset(); return; }
+    let fight = 0, ships = 0;
+    for (const a of this.aliens) {
+      if (Math.hypot(a.x - port.x, a.z - port.z) > BUSY_R) continue;
+      if (a.ward) ships++; else if (this.committed(a)) fight++;
+    }
+    this.portSite.step(dt, { shield: this.shield, fight, heat: this.bk!.heat, ships });
+    this.stepWorks(dt, port);
+  }
+
+  private flakT = 0;
+  /** Pickups the yard crane has taken hold of (ids), so each is claimed once. */
+  private craned = new Set<number>();
+
+  /**
+   * What the holder's port does about what it senses. A Holdfast's flak shoots the rock drifting in and any
+   * hostile hull near the ring, twice as often once the port is alert. The Gutter yard's crane hauls loose
+   * salvage that would soon be lost to the ring's edge and keeps it a while, so a fight does not cost the loot.
+   */
+  private stepWorks(dt: number, port: { x: number; z: number }): void {
+    const holder = this.bk?.def.holder;
+    if (holder === 'holdfast') {
+      if ((this.flakT -= dt) > 0) return;
+      this.flakT = this.portSite.mood === 'alert' || this.portSite.mood === 'shut' ? FLAK_EVERY_ALERT : FLAK_EVERY;
+      const aim: Array<{ x: number; z: number; hit: () => void; d: number }> = [];
+      for (const r of this.field.rocks) {
+        const d = Math.hypot(r.x - port.x, r.z - port.z);
+        if (d > FLAK_R || d < SAFE_R * 0.5) continue;
+        // only what is drifting in
+        if ((port.x - r.x) * r.vx + (port.z - r.z) * r.vz <= 0) continue;
+        aim.push({ x: r.x, z: r.z, d, hit: () => { this.damageRock(r, FLAK_DAMAGE, 'hazard', r.x, 0, r.z); } });
+      }
+      for (const a of this.aliens) {
+        const d = Math.hypot(a.x - port.x, a.z - port.z);
+        if (d > FLAK_R || !this.committed(a)) continue;
+        aim.push({ x: a.x, z: a.z, d, hit: () => { this.hurtAlien(a, FLAK_DAMAGE, 'hazard', a.x, 0, a.z); } });
+      }
+      aim.sort((p, q) => p.d - q.d);
+      for (const t of aim.slice(0, 2)) {
+        this.events.push({ type: 'blast', x: t.x, y: 0, z: t.z, radius: 1.6, kind: 'bomblet' });
+        t.hit();
+      }
+    } else if (holder === 'gutter') {
+      for (const p of this.pickups) {
+        if (!LOOSE.has(p.kind)) continue;
+        const dx = port.x - p.x, dz = port.z - p.z, d = Math.hypot(dx, dz) || 1;
+        if (d > CRANE_R || d < SAFE_R * 0.8) continue;
+        if (!this.craned.has(p.id)) {
+          if (p.life > 3) continue;
+          this.craned.add(p.id);
+          p.life = CRANE_KEEP;
+        }
+        p.vx += (dx / d) * CRANE_PULL * dt;
+        p.vz += (dz / d) * CRANE_PULL * dt;
+      }
+      if (this.craned.size > 64) { const ids = new Set(this.pickups.map((p) => p.id)); for (const id of this.craned) if (!ids.has(id)) this.craned.delete(id); }
+    }
+  }
+
+  /** The port's mood now (calm when there is none). */
+  get portMood(): Mood { return this.portSite.mood; }
+
   private stepShield(dt: number, dp: number): void {
     const port = this.bk?.port;
     if (!port) { this.shield = false; return; }
