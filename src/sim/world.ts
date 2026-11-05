@@ -39,6 +39,7 @@ import { Traffic, trafficPlan } from './traffic';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
 import { LOOSE } from './pickups';
 import { Barge, bargeBerth } from './barge';
+import { Gantry, gantryBerth } from './gantry';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
@@ -184,6 +185,8 @@ export class World implements EncounterHost {
   traffic: Traffic | null = null;
   /** The mining system's refinery barge (sim/barge.ts), if it has one. */
   barge: Barge | null = null;
+  /** A transit system's repair gantry (sim/gantry.ts), if it has one. */
+  gantry: Gantry | null = null;
   /** The target a torpedo launched now would lock, for the HUD. */
   lock: number | null = null;
   score = 0;
@@ -480,6 +483,11 @@ export class World implements EncounterHost {
       if (d && d.kind === 'mining' && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
         const side = this.seed & 1 ? -1 : 1, at = bargeBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, side);
         this.barge = new Barge(at.x, at.z, at.dir);
+      }
+      // a transit system has a repair gantry on its lane; not where the Custody keeps the road clear of repairs (a safe system) or the first system past Cerro
+      if (d && d.kind === 'transit' && !d.home && !d.first && !d.situation && !d.safe && !(d.thren && d.thren > 0.3)) {
+        const at = gantryBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 2 ? -1 : 1);
+        this.gantry = new Gantry(at.x, at.z);
       }
     }
     if (this.carryIn) this.bringAboard(this.carryIn);
@@ -844,7 +852,7 @@ export class World implements EncounterHost {
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
     this.stage?.step(this, dt);
-    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); }
+    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
     if (!b.def.quiet) this.events.push(...this.watch.step({

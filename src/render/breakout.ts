@@ -6,6 +6,8 @@ import { clamp } from '../core/math';
 import type { World } from '../sim/world';
 import { AUDIT_R, SAFE_R, relayOf } from '../sim/breakout';
 import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
+import { setBuoyMood } from './monuments';
+import { GANTRY_R } from '../sim/gantry';
 import { MOOD_AMBER, MOOD_LIGHT, portStyleOf, type Mood, type PortStyle } from '../sim/site';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
@@ -332,6 +334,23 @@ function styleParts(k: Kit, rnd: () => number, st: PortStyle): void {
   }
 }
 
+/** The repair gantry: a hex cradle pad with two pylons and an overhead arm of clamp pads, hazard stripes on the pad. */
+export function buildGantry(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(29);
+  k.cyl('dark', 9, 10, 0.7, [0, 0, 0], 'y', 6);
+  k.cyl('hull', 7, 7.6, 0.4, [0, 0.5, 0], 'y', 6);
+  stripes(k, 0, 0.75, 0, 'x', 12, 1.2, 4);
+  for (const e of [-1, 1]) {
+    k.box('hull', [1.4, 11, 1.4], [-7.5 + (e + 1) * 7.5, 5.8, e * 3.5]);
+    k.box('dark', [1.8, 0.5, 1.8], [-7.5 + (e + 1) * 7.5, 0.6, e * 3.5]);
+    k.box('lamp', [0.35, 0.35, 0.35], [-7.5 + (e + 1) * 7.5, 11.6, e * 3.5]);
+  }
+  k.box('paint', [16, 1.1, 2], [0, 11, 0]);
+  for (const x of [-4, 4]) { strut(k, 'dark', [x, 10.4, 0], [x, 4.2, 0], 0.12, 4); k.box('hull', [1.6, 0.5, 1.4], [x, 3.9, 0]); }
+  k.greebles('hull', rnd, -5, 5, -5, 5, 0.8, 8, 0.5);
+  return k.build({ ...materials(), lamp }, 0.5);
+}
+
 /** The refinery barge: a long ore hull, a hopper, a grinder mouth at the bow (+x) ringed with teeth and tether winches along the flanks. Faces +x. */
 export function buildBarge(lamp: Material): Group {
   const k = new Kit(), rnd = seeded(23);
@@ -569,6 +588,10 @@ export class BreakoutView {
   private readonly barge = new Group();
   private readonly bargeLamp = (materials().lamp as MeshBasicMaterial).clone();
   private readonly tether: Line;
+  /** The repair gantry (sim/gantry.ts) and its lamp. */
+  private readonly gantry = new Group();
+  private readonly gantryLamp = (materials().lamp as MeshBasicMaterial).clone();
+  private readonly gantryRing: Mesh;
   private moodLight = 0.8;
   /** The company's audit dock, where the system has one. */
   private readonly audit = new Group();
@@ -648,13 +671,18 @@ export class BreakoutView {
     this.relay.visible = false;
     this.barge.add(buildBarge(this.bargeLamp));
     this.barge.visible = false;
+    this.gantry.add(buildGantry(this.gantryLamp));
+    this.gantryRing = flatRing(GANTRY_R, 0.25, CYAN, 0.4);
+    this.gantryRing.position.y = 1.2;
+    this.gantry.add(this.gantryRing);
+    this.gantry.visible = false;
     const tg = new BufferGeometry();
     tg.setAttribute('position', new Float32BufferAttribute(new Float32Array(6), 3));
     this.tether = new Line(tg, new LineBasicMaterial({ color: new Color(0.1, 0.5, 0.62), transparent: true, opacity: 0.5, toneMapped: false, fog: false }));
     this.tether.frustumCulled = false;
     this.tether.visible = false;
     this.lane.visible = this.port.visible = this.audit.visible = false;
-    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether);
+    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry);
 
   }
 
@@ -679,6 +707,7 @@ export class BreakoutView {
     const pulse = mood === 'shut' ? 0.88 + 0.12 * Math.sin(this.time * 4) : 1;
     const f = this.moodLight * pulse;
     this.lamp.color.copy(this.lampBase).lerp(AMBER, this.moodAmber).multiplyScalar(f);
+    setBuoyMood(this.moodAmber);
     this.win.color.copy(this.winBase).lerp(AMBER.clone().multiplyScalar(0.45), this.moodAmber).multiplyScalar(f);
   }
 
@@ -697,6 +726,14 @@ export class BreakoutView {
       const off = world.runTime < rp.jammedUntil;
       this.relayLamp.color.copy(off ? CYAN : AMBER).multiplyScalar(off ? 0.12 : 0.55 + 0.35 * Math.sin(this.time * 3) + 0.4 * Math.min(1, rp.lock / 3));
       (this.relayScan.material as MeshBasicMaterial).opacity = off ? 0.01 : 0.05 + 0.2 * Math.min(1, rp.lock / 3);
+    }
+    const gn = world.gantry;
+    this.gantry.visible = !!b && !!gn;
+    if (b && gn) {
+      this.gantry.position.set(gn.x, -2, gn.z);
+      const warn = gn.state === 'shut' || gn.state === 'refuses', spent = gn.state === 'spent';
+      this.gantryLamp.color.copy(warn ? AMBER : CYAN).multiplyScalar(spent ? 0.08 : gn.state === 'working' ? 0.8 + 0.4 * Math.sin(this.time * 8) : 0.5);
+      (this.gantryRing.material as MeshBasicMaterial).opacity = spent ? 0.04 : 0.25 + 0.35 * (gn.hold / 6) + (warn ? 0.1 : 0);
     }
     const bg = world.barge;
     this.barge.visible = !!b && !!bg;
@@ -728,7 +765,7 @@ export class BreakoutView {
         this.depotOf(st).visible = true;
       }
       this.lights(world.portMood, dt);
-    }
+    } else if (this.moodAmber > 0) { this.moodAmber = 0; setBuoyMood(0); }
     // a road gate's relay (the Narrows and every arrival after it): dark until the key is answered, then lit section by section from the bottom over a few seconds
     const relay = relayOf(b);
     this.mast.visible = !!relay;

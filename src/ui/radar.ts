@@ -224,6 +224,12 @@ export class Radar {
       const [x, y, out] = to(rp.x, rp.z);
       if (!out) { g.strokeStyle = INK.amber; g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
     }
+    // the repair gantry: a small teal square until it is spent
+    const gn = world.gantry;
+    if (bk && gn && gn.uses > 0) {
+      const [x, y, out] = to(gn.x, gn.z);
+      if (!out) { g.strokeStyle = INK.teal; g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
+    }
     g.fillStyle = rgba(RGB.red, 0.16);
     for (const w of world.webs) { const [x, y] = to(w.x, w.z); g.beginPath(); g.arc(x, y, w.r * k, 0, Math.PI * 2); g.fill(); }
     g.strokeStyle = rgba(RGB.red, 0.6); g.lineWidth = dpr;
