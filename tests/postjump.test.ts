@@ -6,7 +6,6 @@ import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
 import { paintHull } from './paint';
-import { BAY_AFTER, BAY_OUT } from '../src/sim/paintbay';
 import { lockLifted, painted, paintAt, PAINT_NOTICE, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
@@ -288,7 +287,11 @@ describe('the paint bay (owner 2026-11-05)', () => {
     w.ship.x = p.x - 100; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
     for (let i = 0; i < Math.round(40 / STEP) && !w.flags.has('hull_repainted'); i++) {
       if (w.phase === 'comms') { w.answer(0); continue; }
-      w.ship.invuln = 1; w.ship.x = Math.min(w.ship.x, p.x - 60); w.step(STEP, input());
+      w.ship.invuln = 1;
+      // Ned is heard on the way in; then she eases into the ring and holds
+      if (i > 3 / STEP) { w.ship.x = p.x; w.ship.z = p.z; } else { w.ship.x = p.x - 100; w.ship.z = p.z; }
+      w.ship.vx = w.ship.vz = 0;
+      w.step(STEP, input());
       for (const e of w.events) {
         if (e.type === 'ping' && e.id === 'paint_bay') said.push('ned');
         if (e.type === 'storyNotice' && e.headline === PAINT_NOTICE[0]) said.push('notice');
@@ -300,6 +303,22 @@ describe('the paint bay (owner 2026-11-05)', () => {
     // the notice goes out in the step that sets the flag
     expect(painted(w.flags)).toBe(true);
     expect(paintAt(w)).toBe(false);
+  });
+
+  it('the yard is a place to dock: no work while she is fast in the ring, the work at once when she holds, then a card says what happened', () => {
+    const w = afterCode();
+    const p = w.bk!.yard!;
+    for (let i = 0; i < Math.round(3 / STEP); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = 40; w.ship.vz = 0; w.step(STEP, input()); w.events.length = 0; }
+    expect(w.flags.has('hull_repainted')).toBe(false);
+    for (let i = 0; i < Math.round(3 / STEP) && !w.flags.has('hull_repainted'); i++) { w.ship.invuln = 1; w.ship.x = p.x; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0; w.step(STEP, input()); w.events.length = 0; }
+    expect(w.flags.has('hull_repainted')).toBe(true);
+    expect(w.flags.has('ship_renamed')).toBe(true);
+    expect(w.phase).toBe('play');
+    let seen = '';
+    for (let i = 0; i < Math.round(15 / STEP) && w.phase === 'play'; i++) { w.ship.invuln = 1; w.step(STEP, input()); w.events.length = 0; }
+    if (w.comms) seen = w.comms.def.id;
+    expect(seen).toBe('story_yard_done');
+    expect(CARD_BY_ID.story_sam!.text).toContain('Ned Varga’s yard');
   });
 
   it('nothing attacks and no swarm comes between the code and the paint, however long she takes', () => {
@@ -329,6 +348,6 @@ describe('the paint bay (owner 2026-11-05)', () => {
       if (first === Infinity && custody(w).length) first = w.runTime - t0;
     }
     // the cut scene's last seconds were already behind her when the helper returned
-    expect(first).toBeGreaterThanOrEqual(STOLEN.pursuit - BAY_OUT - BAY_AFTER - 0.1);
+    expect(first).toBeGreaterThanOrEqual(STOLEN.pursuit - 0.1);
   });
 });

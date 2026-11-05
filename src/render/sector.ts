@@ -14,8 +14,7 @@ import type { World } from '../sim/world';
 import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
 import { SiteView } from './site';
-import { PaintBayView } from './paintbay';
-import { bayFrame, bayTimes } from '../sim/paintbay';
+import { YardView } from './yard';
 import { CameraRig } from './camera';
 import { DebrisField } from './debris';
 import { Environment } from './environment';
@@ -90,7 +89,7 @@ export class Sector {
   private readonly mood = { fog: 0, dim: 0, tint: [0, 0, 0] as [number, number, number] };
   private readonly breakout: BreakoutView;
   private readonly site: SiteView;
-  private readonly paintBay: PaintBayView;
+  private readonly yard: YardView;
   private readonly warp: WarpView;
   /** The jump's path, latched when the drive lets go, and the run it belongs to. */
   private launch: Launch | null = null;
@@ -153,7 +152,7 @@ export class Sector {
     this.hazards = new HazardView(this.scene, glow, wreck);
     this.breakout = new BreakoutView(this.scene, glow);
     this.site = new SiteView(this.scene);
-    this.paintBay = new PaintBayView(this.scene);
+    this.yard = new YardView(this.scene);
     this.space = new SpaceView(this.scene, glow);
     this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'medium' ? 110 : 170);
     this.scene.add(this.ship.root);
@@ -593,9 +592,8 @@ export class Sector {
     this.rig.warp.lock = wt >= 0 ? Math.min(1, wt / 0.35) : 0;
     if (wt >= 0 && !this.reduceMotion && wt < 2.4) this.rig.hum(0.28 * Math.min(1, wt / 0.6));
     this.rig.update(subject, dt, this.reduceMotion);
-    // the paint bay's cut scene takes the camera for its two shots (render/paintbay.ts); the chase rig keeps running underneath, so it cuts back clean
-    this.paintBay.update(world, dt, this.fx);
-    this.paintBay.cine(world, this.rig.camera);
+    // Ned's yard, built into its rock (render/yard.ts)
+    this.yard.update(world, dt, this.fx);
     if (this.dyingT > 0) this.dyingT = Math.max(0, this.dyingT - dt);
     this.ship.root.visible = (world.alive || this.dyingT > 0) && (wt < 0 || whiteout(wt) < 0.97);
     this.fx.calm = this.reduceMotion || this.lowFx;
@@ -610,20 +608,16 @@ export class Sector {
     this.ship.setFit(world.levels, world.use);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
     // the Arcade flies her in her own paint from the start (the grey company livery is the Story's before-state)
-    // in Ned's yard the paint shows as she passes the spray arch, a moment before the flag is set at the end of the work
-    const sprayed = !!world.bay && world.bay.e >= bayTimes(world.bay).sprayAt + 0.4;
-    const stolen = painted(world.flags) || sprayed || world.mode === 'arcade';
-    // Ned's yard: the scan arch takes her lights out and brings them back white; the mark arch strikes out the registry and writes the name
-    const bf = world.bay ? bayFrame(world.bay) : null;
-    setMark(painted(world.flags) || world.mode === 'arcade' ? 1 : bf ? (bf.stage === 3 ? bf.prog : bayTimes(world.bay!).markAt <= world.bay!.e ? 1 : 0) : 0);
-    if (bf && bf.stage === 1) {
-      const p = bf.prog, tt = world.bay!.e;
-      setLightLevel(p < 0.2 ? 1 : p < 0.72 ? (Math.sin(tt * 37) * Math.sin(tt * 13) > 0.3 ? 0.35 : 0) : p < 0.88 ? 0.1 : 1.7);
-    } else setLightLevel(1);
+    const stolen = painted(world.flags) || world.mode === 'arcade';
     const rv = this.reveal.update({
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,
     }, uiDt);
+    // Ned's yard: as the band crosses, her lights go out and come back white, and the registry is struck out and the name written behind it
+    const sw = rv.sweep === null ? null : (rv.sweep + 1) / 2;
+    setMark(sw === null ? (stolen ? 1 : 0) : Math.min(1, Math.max(0, sw * 1.15 - 0.1)));
+    const tt = this.time;
+    setLightLevel(sw === null ? (this.reveal.active && rv.livery === 0 ? 0 : 1) : sw < 0.15 ? (Math.sin(tt * 37) * Math.sin(tt * 13) > 0.2 ? 0.35 : 0) : sw < 0.45 ? 0.1 : 1 + 0.7 * (1 - sw));
     setLiverySweep(rv.sweep === null ? null : -rv.sweep * SWEEP_SPAN);
     if (rv.sweep === null) setLiveryBlend(rv.livery);
     this.rig.reveal = Math.max(rv.arc, this.sceneArc.update(this.storyScene !== null, uiDt, this.reduceMotion));

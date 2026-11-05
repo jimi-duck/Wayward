@@ -40,14 +40,14 @@ export const painted = (flags: ReadonlySet<string> | readonly string[]): boolean
 export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolean => lockLifted(flags) && !painted(flags);
 /** Whose bay it is: Sam's friend, who does the work himself. */
 export const PAINTER = 'Ned Varga';
-/** Ned on the radio when the ship comes up on the depot (hands off: he brings her in), and his last word as she rolls out. */
-export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Hands off the stick, I’ll bring you in. New paint, new name, no charge.”';
-export const PAINT_DONE = '“That’s you done, Wayward. Tell Sam we’re square. Fly straight, Juno.”';
+/** Ned on the radio when the ship comes up on his yard: hold her in the ring and he does the rest. */
+export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Ease her into the ring and hold still. New paint, new name, no charge.”';
+/** The pop-up card once the work is done (content/story.ts `story_yard_done`). */
+export const YARD_DONE = 'story_yard_done';
 export const PAINT_NOTICE = ['Ship reprogrammed', 'Repainted · renamed WAYWARD'] as const;
-/** Seconds from his line being heard to the cut scene starting (sim/paintbay.ts); the paint goes on inside it, and the reveal (render/reveal.ts) plays as she rolls out. */
-export const PAINT_AT = 1.6;
-/** The archive's message comes this long after the paint is on (it used to follow the code). */
-export const PAINT_WAKE = 20;
+/** The explanation card comes this long after the work (the reveal has played by then), and the archive's message this long after the work. */
+export const PAINT_CARD = 7;
+export const PAINT_WAKE = 28;
 
 /** The straight run from the arrival to the Jump Gate, in units: 10 km, about 25 s flat out. */
 export const POSTJUMP_LANE = 1000;

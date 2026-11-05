@@ -145,6 +145,10 @@ describe('the story beats', () => {
     run(60);
     expect(w.comms).toBeNull();
     paintHull(w);
+    // the work is explained in a card first, then the archive follows
+    run(120);
+    expect(w.comms?.def.id).toBe('story_yard_done');
+    w.answer(0);
     run(120);
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
     const after = w.result().carry;

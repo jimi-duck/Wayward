@@ -153,6 +153,7 @@ const GIST: Record<string, string> = {
   "story_breach": "Contract in breach · recovery ordered",
   "story_sam": "Sam has a code for the owner lock",
   "story_wake": "A stored message · Krail reserves 94%",
+  "story_yard_done": "Reprogrammed, repainted, renamed",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
@@ -317,14 +318,24 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
     from: 'Sam Okoro · private channel', title: 'A way out',
-    text: 'Juno. Keep this off the open channel.\nI’ve got a maintenance code that overrides the recovery autopilot. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name.\nBut you’ll have control of her again—and a chance to escape.',
-    cargo: 'The audit dock · ahead',
+    text: 'Juno. Keep this off the open channel.\nThis code overrides the recovery autopilot. The debt stays in your name, but she’s yours to fly.\nFly to Ned Varga’s yard, off the lane. Hold her in his ring and he’ll reprogram, repaint and rename her. Free.',
+    cargo: 'Ned’s yard · off the lane',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
         // the code overrides the autopilot and nothing more (owner 2026-11-05): she is still the company's grey hull; Ned's yard makes her hers (sim/postjump.ts PAINT_DUE)
         win: { text: 'Autopilot overridden · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
           signal: { tone: 'teal', headline: 'Autopilot overridden', reason: 'Lane Control shut out' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Don’t dock. She’s still the company’s. Ned’s yard, off the lane. He’ll make her yours. Free. Go.”' } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Don’t dock. Ned’s yard first. Go.”' } } },
+    ],
+  }),
+  story({
+    // what Ned's yard did, in plain words (owner 2026-11-05): a simple text box after the work, one tap
+    id: 'story_yard_done', handover: true, kind: 'rumour', caller: 'miners',
+    from: 'Ned’s yard · work done', title: 'She’s the Wayward now',
+    text: 'Reprogrammed: her owner lock is gone.\nRepainted: company grey is now yellow.\nRenamed: OB-7731-A struck out. She’s the WAYWARD.\nPaint won’t pass a scan.',
+    cargo: 'The Wayward · call sign WAYWARD',
+    choices: [
+      { id: 'on', label: 'Fly on', tone: 'run', hint: '', win: { text: 'Reprogrammed · repainted · renamed' } },
     ],
   }),
   story({

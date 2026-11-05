@@ -382,6 +382,8 @@ export const FIRST_DEPOT = { along: 0.55, off: -190 };
 export const FIRST_YARD = { along: 0.58, off: 170 };
 /** The yard's mark (units): a work pad, never a berth. */
 export const YARD_R = 20;
+/** Rock and bulwarks are cleared this far round the yard while the hull waits for it. */
+export const YARD_CLEAR = 46;
 
 /** A sortie's places, laid out from the start along the ship's heading: the Jump Gate ahead, the port (if any) off the line about halfway (the first system past Cerro: the audit dock early on one side, the depot late on the other). */
 export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { lane: Waypoint; port: Waypoint | null; audit: Waypoint | null; yard: Waypoint | null } {

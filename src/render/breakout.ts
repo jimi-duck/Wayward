@@ -255,12 +255,12 @@ const MEMBRANE_FRAG = /* glsl */ `
 /** The depot: a hub with a habitat ring, docking arms, a tank farm, a mast. Fixed; the berth ring is drawn apart. */
 /** Port windows: warm and small, well under the bloom line, so a lit deck reads as windows and not as lamps. */
 let winMat: MeshBasicMaterial | null = null;
-function windowMaterial(): MeshBasicMaterial {
+export function windowMaterial(): MeshBasicMaterial {
   return winMat ??= new MeshBasicMaterial({ color: new Color(1.5, 1.05, 0.55), toneMapped: false, fog: false });
 }
 
 /** A row of lit windows: `n` along a line, a few dark, so the deck reads as lived in. */
-function windowRow(k: Kit, rnd: () => number, from: V3, to: V3, n: number, size: [number, number, number], rot: V3 = [0, 0, 0], dark = 0.22): void {
+export function windowRow(k: Kit, rnd: () => number, from: V3, to: V3, n: number, size: [number, number, number], rot: V3 = [0, 0, 0], dark = 0.22): void {
   for (let i = 0; i < n; i++) {
     if (rnd() < dark) continue;
     const t = n > 1 ? i / (n - 1) : 0.5;
@@ -269,7 +269,7 @@ function windowRow(k: Kit, rnd: () => number, from: V3, to: V3, n: number, size:
 }
 
 /** A pressure tank: a sphere in a ring cradle on four legs, a band round its waist, a manifold on top. */
-function tank(k: Kit, x: number, z: number, r: number, a: number): void {
+export function tank(k: Kit, x: number, z: number, r: number, a: number): void {
   k.add('paint', new SphereGeometry(r, 18, 12), [x, r + 0.9, z]);
   k.ring('dark', r * 1.01, 0.09, [x, r + 0.9, z], 'y', 20);
   k.ring('dark', r * 0.8, 0.07, [x, r + 0.9 + r * 0.6, z], 'y', 16);
@@ -284,7 +284,7 @@ function tank(k: Kit, x: number, z: number, r: number, a: number): void {
 }
 
 /** A cargo container, stood on the deck: a corrugated slab with a lid band. */
-function crate(k: Kit, key: string, x: number, y: number, z: number, rot: number, w = 1.6, h = 1.0, d = 1.1): void {
+export function crate(k: Kit, key: string, x: number, y: number, z: number, rot: number, w = 1.6, h = 1.0, d = 1.1): void {
   k.box(key, [w, h, d], [x, y, z], [0, rot, 0]);
   k.box('dark', [w + 0.04, 0.08, d + 0.04], [x, y + h / 2 + 0.02, z], [0, rot, 0]);
   for (let i = -1; i <= 1; i += 2) k.box('dark', [0.06, h, d + 0.05], [x + Math.cos(rot) * i * w * 0.32, y, z - Math.sin(rot) * i * w * 0.32], [0, rot, 0]);

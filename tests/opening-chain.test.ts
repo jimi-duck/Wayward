@@ -77,7 +77,7 @@ describe('the opening chain beyond the gate', () => {
       expect(w.comms!.choices).toHaveLength(1);
       w.answer(answer);
       // Sam's card comes 2 km out from the dock; the archive only once Ned has painted her at the depot (owner 2026-11-05)
-      if (answer === 'code') { w.bk!.nextPursuit = Infinity; run(40); expect(w.comms).toBeNull(); paintHull(w); run(120); } else run(95);
+      if (answer === 'code') { w.bk!.nextPursuit = Infinity; run(40); expect(w.comms).toBeNull(); paintHull(w); run(120); expect(w.comms?.def.id).toBe('story_yard_done'); w.answer(0); run(120); } else run(95);
     }
     expect(seen).toEqual(['story_breach', 'story_sam', 'story_wake']);
     expect(w.phase).toBe('play');

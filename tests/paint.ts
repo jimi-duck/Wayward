@@ -5,18 +5,20 @@ const STEP = 1 / 60;
 const IDLE = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
 
 /**
- * Sam's friend in his own yard (owner 2026-11-05): after the code the hull is the company's until the ship comes up on Ned's yard.
- * Put her 100 units off it, at rest, and let Ned speak and the paint go on. Cards that open meanwhile are answered with `answer`.
+ * Sam's friend in his own yard (owner 2026-11-05): after the code the hull is the company's until the ship holds in Ned's yard ring.
+ * Put her 100 units off it so he is heard, then at rest in the ring, and let the work be done. Cards that open meanwhile are answered with `answer`.
  */
 export function paintHull(w: World, answer: (w: World) => void = (x) => { x.answer(0); }, max = 60): number {
   const p = w.bk!.yard!;
   w.ship.x = p.x - 100; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
   const t0 = w.runTime;
-  for (let i = 0; i < Math.round(max / STEP) && !(w.flags.has(PAINTED) && !w.bay); i++) {
+  for (let i = 0; i < Math.round(max / STEP) && !w.flags.has(PAINTED); i++) {
     if (w.phase === 'comms') { answer(w); if (w.phase === 'comms') break; continue; }
     w.ship.invuln = 1;
-    // until his cut scene takes her (sim/paintbay.ts), she sits where she was put
-    if (!w.bay && !w.flags.has(PAINTED)) { w.ship.x = Math.min(w.ship.x, p.x - 60); w.ship.vx = w.ship.vz = 0; }
+    // Ned is heard on the way in (a few seconds), then she holds in the ring
+    if (i > 3 / STEP) { w.ship.x = p.x; w.ship.z = p.z; }
+    else { w.ship.x = p.x - 100; w.ship.z = p.z; }
+    w.ship.vx = w.ship.vz = 0;
     w.step(STEP, IDLE);
     w.events.length = 0;
   }

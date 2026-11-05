@@ -225,10 +225,10 @@ If Juno left him alone, the brother beat still arrives, from Marit Voss, and he
 remembers.
 
 ### Ned Varga, the yard
-Sam's friend, a voice on the radio and never crew, and never seen. He keeps a work yard of his own, off the lane in the first system
-past Cerro (not the Frontier depot), and makes the Wayward hers for nothing because he owes Sam (owner, 5 November 2026): he strips the
+Sam's friend, a voice on the radio and never crew, and never seen. He keeps a station of his own, built into an asteroid off the lane in the first system
+past Cerro (not the Frontier depot), and makes the Wayward hers for nothing because he owes Sam (owner, 5 November 2026): she holds in his ring and he strips the
 company lock (reprogram), paints her yellow, and writes her new name. The archive hidden in her database opens only once he has. Brisk
-and dry, like Sam, and he asks no questions. Flags: `paint_due` (Sam's code), `hull_repainted` (his work).
+and dry, like Sam, and he asks no questions. Flags: `paint_due` (Sam's code), `hull_repainted` and `ship_renamed` (his work).
 
 ### Clients (setup, twist, reckoning)
 | Client | Region | Setup | Twist | Reckoning | Flags |
