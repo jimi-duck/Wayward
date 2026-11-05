@@ -19,8 +19,13 @@ The hull stays on screen for 1.45 s after the last plate (`DEATH_HOLD`; the sim 
 ## Weapons
 Our lances throw two hot sparks and a faint light from the barrel. Torpedoes trail thin grey smoke. A hit on a hull leaves a hot spot that cools over 0.3 s.
 
+## Game feel
+- Hits: our lance or torpedo landing on a hull or boss gives the camera a small shake (0.1 to 0.14); hits on us shake harder (as before).
+- Slow motion (`src/core/slowmo.ts`, `loop.timeScale`): a cruiser (radius 2.4 up) or elite kill drops the clock to 0.4 (0.3 for radius 3+) for about 0.25 to 0.35 s, a boss kill to 0.25 for 0.6 s. Eases in over 60 ms and out over 350 ms; 4 s cooldown so a busy fight is not slow. A pause, a pop-up, death or reduced motion clears it at once.
+- Drifting wreckage: the larger hull pieces from a kill (`rubble(..., drift)`) keep their speed (0.997 per step), tumble slowly and last about 4.5 s; small plating still falls away in about 2 s.
+
 ## Calm path
-`Effects.calm` is on for reduced motion and the low tier: half the flash size, no staged blasts, no streak sparks, no ember trails on shards, half the burning smoke, one fade for the player's death with no shake or hit-stop.
+`Effects.calm` is on for reduced motion and the low tier: half the flash size, no staged blasts, no streak sparks, no ember trails on shards, half the burning smoke, one fade for the player's death with no shake or hit-stop. Reduced motion also has no slow motion and no camera shake.
 
 ## Cost
 No new draw calls (sparks go in Streaks, shards in the existing instanced pools). Puff pools are unchanged at 64 + 64; point lights stay 4. A cruiser kill adds up to 4 queued blasts, each about 6 puffs. Not measured on a phone GPU; the cloud has software WebGL only.
