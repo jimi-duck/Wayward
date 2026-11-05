@@ -397,7 +397,8 @@ describe('the forced recovery across a reload', () => {
     run(w2, OPENING_AT + 0.5);
     expect(w2.comms).toBeNull();
     expect(paintDue(w2.flags)).toBe(true);
-    paintHull(w2);
+    // a save made after the code plays the archive as soon as the paint is on (its own beat); leave the card up
+    paintHull(w2, () => undefined);
     run(w2, 60);
     expect(w2.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w2, 'lead');

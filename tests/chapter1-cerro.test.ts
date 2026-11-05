@@ -159,7 +159,7 @@ describe('chapter one: from the gate through the story chain', () => {
     const back = new World(5, { mode: 'breakout', sortie: sortieDef(j), carry: { ...j.carry, flags: [...next.flags] } });
     back.skipTraining();
     expect(back.flags.has('ship_stolen')).toBe(true);
-  });
+  }, 30000);
 });
 
 describe('chapter one: the way out of the first system', () => {

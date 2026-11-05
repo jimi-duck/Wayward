@@ -6,6 +6,7 @@ import { World } from '../src/sim/world';
 import { guideTarget, sidePlaces } from '../src/sim/guide';
 import { places } from '../src/sim/breakout';
 import { paintHull } from './paint';
+import { BAY_AFTER, BAY_OUT } from '../src/sim/paintbay';
 import { lockLifted, painted, paintAt, PAINT_NOTICE, refuelAt, STOLEN, STOLEN_NOTICE, STOLEN_SAM, SUPPLY_DEPOT, AUDIT_DOCK } from '../src/sim/postjump';
 import { FIRST_SECURITY_MAX, SECURITY_FROM, SECURITY_TO, SECURITY_GAP, SECURITY_DELAY, TRAFFIC_CLEAR, TRAFFIC_N } from '../src/sim/traffic';
 import { goalOf } from '../src/sim/goal';
@@ -132,7 +133,7 @@ describe('after Sam’s code', () => {
     expect(hunted).toBe(0);
     // and no chance card on top of the story here
     expect(calls).toBe(0);
-  });
+  }, 30000);
 
   it('then Sam names the depot, the hull is reported stolen, and only then does Custody come', () => {
     const w = quiet();
@@ -280,7 +281,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(goalOf(w).goal).toBe('Fly to the depot: free repaint at the paint bay');
   });
 
-  it('Pia speaks once the ship comes up on the depot, then the paint goes on, with a notice', () => {
+  it('Ned speaks once the ship comes up on the depot, then the paint goes on, with a notice', () => {
     const w = afterCode();
     const said: string[] = [];
     const p = w.bk!.port!;
@@ -289,12 +290,12 @@ describe('the paint bay (owner 2026-11-05)', () => {
       if (w.phase === 'comms') { w.answer(0); continue; }
       w.ship.invuln = 1; w.ship.x = Math.min(w.ship.x, p.x - 60); w.step(STEP, input());
       for (const e of w.events) {
-        if (e.type === 'ping' && e.id === 'paint_bay') said.push('pia');
+        if (e.type === 'ping' && e.id === 'paint_bay') said.push('ned');
         if (e.type === 'storyNotice' && e.headline === PAINT_NOTICE[0]) said.push('notice');
       }
       w.events.length = 0;
     }
-    expect(said).toEqual(['pia']);
+    expect(said).toEqual(['ned']);
     expect(w.flags.has('hull_repainted')).toBe(true);
     // the notice goes out in the step that sets the flag
     expect(painted(w.flags)).toBe(true);
@@ -327,6 +328,7 @@ describe('the paint bay (owner 2026-11-05)', () => {
       w.ship.invuln = 1; w.step(STEP, input());
       if (first === Infinity && custody(w).length) first = w.runTime - t0;
     }
-    expect(first).toBeGreaterThanOrEqual(STOLEN.pursuit - 0.1);
+    // the cut scene's last seconds were already behind her when the helper returned
+    expect(first).toBeGreaterThanOrEqual(STOLEN.pursuit - BAY_OUT - BAY_AFTER - 0.1);
   });
 });

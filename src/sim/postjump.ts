@@ -36,13 +36,14 @@ const has = (flags: ReadonlySet<string> | readonly string[], f: string): boolean
 export const painted = (flags: ReadonlySet<string> | readonly string[]): boolean => has(flags, PAINTED) || (has(flags, LOCK_LIFTED) && !has(flags, PAINT_DUE));
 /** The lock is lifted and the hull is still the company's grey: the objective is the paint bay. */
 export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolean => lockLifted(flags) && !painted(flags);
-/** Whose bay it is. */
-export const PAINTER = 'Pia Venn';
-/** Pia on the radio when the ship comes up on the depot, and the notice when the paint is on. */
-export const PAINT_LINE = '“Wayward, this is Pia at the paint bay. Sam said you’d come. Hold still by the ring. No charge, it’s done in a minute.”';
+/** Whose bay it is: Sam's friend, who does the work himself. */
+export const PAINTER = 'Ned Varga';
+/** Ned on the radio when the ship comes up on the depot (hands off: he brings her in), and his last word as she rolls out. */
+export const PAINT_LINE = '“Wayward, this is Ned at the paint bay. Sam said you’d come. Hands off the stick, I’ll bring you in. No charge.”';
+export const PAINT_DONE = '“That’s you done. Tell Sam we’re square. Fly straight, Juno.”';
 export const PAINT_NOTICE = ['Hull repainted', 'Paint bay · Frontier Supply Depot'] as const;
-/** Seconds from her line to the first stroke of paint (the reveal, render/reveal.ts, starts then). */
-export const PAINT_AT = 3.5;
+/** Seconds from his line being heard to the cut scene starting (sim/paintbay.ts); the paint goes on inside it, and the reveal (render/reveal.ts) plays as she rolls out. */
+export const PAINT_AT = 1.6;
 /** The archive's message comes this long after the paint is on (it used to follow the code). */
 export const PAINT_WAKE = 20;
 

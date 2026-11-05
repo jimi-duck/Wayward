@@ -321,10 +321,10 @@ export const STORY_CARDS: CardDef[] = [
     cargo: 'The audit dock · ahead',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
-        // the code sets the call sign and nothing more (owner 2026-11-05): the paint is Pia's, at the depot (sim/postjump.ts PAINT_DUE)
+        // the code sets the call sign and nothing more (owner 2026-11-05): the paint is Ned's, at the depot (sim/postjump.ts PAINT_DUE)
         win: { text: 'Owner lock lifted · call sign now WAYWARD', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
           signal: { tone: 'teal', headline: 'Owner lock lifted', reason: 'Call sign now WAYWARD' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The Frontier depot. Pia runs the paint bay, she owes me. Free. Go.”' } } },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The Frontier depot. Ned runs the paint bay, he owes me. Free. Go.”' } } },
     ],
   }),
   story({

@@ -224,10 +224,10 @@ checkpoint. Later: his brother on a Breaker crew (`story_tam_brother`, planned).
 If Juno left him alone, the brother beat still arrives, from Marit Voss, and he
 remembers.
 
-### Pia Venn, paint bay (Frontier Supply Depot)
-Sam's friend, a voice on the radio and never crew. She runs the paint bay at the depot in the first system past Cerro and repaints the
-Wayward for nothing because she owes Sam (owner, 5 November 2026). Brisk and dry, like Sam, and she asks no questions. One line when
-Juno comes up on the depot, one job done; she does not come back. Flags: `paint_due` (Sam's code), `hull_repainted` (her work).
+### Ned Varga, paint bay (Frontier Supply Depot)
+Sam's friend, a voice on the radio and never crew (and, in the paint bay cut scene, the painter you see). He runs the paint bay at the depot in the first system past Cerro and repaints the
+Wayward for nothing because he owes Sam (owner, 5 November 2026). Brisk and dry, like Sam, and he asks no questions. One line when
+Juno comes up on the depot, one job done; she does not come back. Flags: `paint_due` (Sam's code), `hull_repainted` (his work).
 
 ### Clients (setup, twist, reckoning)
 | Client | Region | Setup | Twist | Reckoning | Flags |
