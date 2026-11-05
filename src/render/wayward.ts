@@ -148,10 +148,10 @@ export function woundPoints(): { points: V3[]; hard: boolean } {
  * 0 (grey) to 1 (ochre) so the rename can sweep it. Primer patches and the dark machinery stay as they are in both.
  */
 const LIVERY = {
-  // the repaint: bold blocks, worn. Off-white plate with the ochre stripe as the strong colour (owner 2026-11-01: off-white and a
-  // bold stripe read far better than grey detail); the wear in metal() keeps it "repaired and stolen"
-  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xd6d2c6, 0xcc8714, 0xe2ded2],
-  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.03, 0.026, 0.02],
+  // the repaint: industrial yellow plate with a darker amber stripe (owner 2026-11-05: she still did not read as yellow, off-white was
+  // too pale); the wear in metal() keeps it "repaired and stolen"
+  stock: [0x969ca2, 0x70767c, 0xb0b6ba], yellow: [0xf0bb1c, 0xcf7d0c, 0xf6d553],
+  stockGlow: [0.02, 0.022, 0.026], yellowGlow: [0.07, 0.05, 0.008],
 } as const;
 const A = new Color(), B = new Color();
 let liveryMix = 0;

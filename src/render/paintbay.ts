@@ -1,4 +1,4 @@
-import { BoxGeometry, Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, SphereGeometry, Vector3, type PerspectiveCamera, type Scene } from 'three';
+import { BoxGeometry, BufferGeometry, CapsuleGeometry, Color, CylinderGeometry, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PointLight, SphereGeometry, Vector3, type PerspectiveCamera, type Scene } from 'three';
 import { BAY, bayAt, bayFrame, bayTimes } from '../sim/paintbay';
 import { paintDue } from '../sim/postjump';
 import type { World } from '../sim/world';
@@ -18,23 +18,44 @@ const DOOR_H = ROOF - FLOOR - 0.9;
 
 const box = (w: number, h: number, d: number, m: MeshBasicMaterial | MeshStandardMaterial): Mesh => new Mesh(new BoxGeometry(w, h, d), m);
 
-/** The painter: a small suited figure in ochre overalls with a grey helmet and a dark visor; his arm lifts for the wave. */
-function painterBody(): { root: Group; arm: Group; legs: [Mesh, Mesh] } {
-  const overall = new MeshStandardMaterial({ color: 0xc08a2c, roughness: 0.8 });
-  const grey = new MeshStandardMaterial({ color: 0x8b9096, roughness: 0.6, metalness: 0.3 });
-  const visor = new MeshBasicMaterial({ color: 0x1c3a44 });
+/** The painter: a worker in faded work overalls, hi-vis stripes, a hard hat, a half-mask and gloves; one arm lifts for the wave. Faces +x. */
+function painterBody(): { root: Group; arm: Group; legs: [Group, Group] } {
+  const cloth = new MeshStandardMaterial({ color: 0x5b5e52, roughness: 0.92 });
+  const dark = new MeshStandardMaterial({ color: 0x2a2b2b, roughness: 0.85 });
+  const vis = new MeshStandardMaterial({ color: 0xb59a2a, roughness: 0.7, emissive: new Color(0.05, 0.04, 0.01) });
+  const hat = new MeshStandardMaterial({ color: 0xc9c6b8, roughness: 0.5, metalness: 0.1 });
+  const skin = new MeshStandardMaterial({ color: 0x8a6a56, roughness: 0.8 });
+  const glass = new MeshStandardMaterial({ color: 0x10181c, roughness: 0.15, metalness: 0.8 });
   const root = new Group();
-  const torso = box(0.4, 0.5, 0.26, overall); torso.position.y = 0.6; root.add(torso);
-  const pack = box(0.28, 0.34, 0.14, grey); pack.position.set(-0.17, 0.62, 0); root.add(pack);
-  const head = new Mesh(new SphereGeometry(0.17, 10, 8), grey); head.position.y = 1.02; root.add(head);
-  const face = box(0.1, 0.12, 0.2, visor); face.position.set(0.1, 1.03, 0); root.add(face);
-  const l1 = box(0.16, 0.42, 0.14, overall), l2 = box(0.16, 0.42, 0.14, overall);
-  l1.position.set(0, 0.21, 0.09); l2.position.set(0, 0.21, -0.09); root.add(l1, l2);
-  const arm = new Group(); arm.position.set(0, 0.8, 0.26);
-  const up = box(0.12, 0.4, 0.12, overall); up.position.y = -0.18; arm.add(up);
+  const part = (g: BufferGeometry, m: MeshStandardMaterial, x: number, y: number, z: number, parent: Group = root): Mesh => {
+    const o = new Mesh(g, m); o.position.set(x, y, z); parent.add(o); return o;
+  };
+  // legs hang from the hip, so they can swing
+  const leg = (z: number): Group => {
+    const g = new Group(); g.position.set(0, 0.46, z); root.add(g);
+    part(new CapsuleGeometry(0.075, 0.3, 4, 8), cloth, 0, -0.2, 0, g);
+    part(new BoxGeometry(0.22, 0.1, 0.12), dark, 0.04, -0.43, 0, g);
+    return g;
+  };
+  const l1 = leg(0.09), l2 = leg(-0.09);
+  const torso = part(new CapsuleGeometry(0.15, 0.22, 4, 10), cloth, 0, 0.74, 0); torso.scale.z = 1.2;
+  part(new CylinderGeometry(0.162, 0.162, 0.05, 12), vis, 0, 0.7, 0).scale.z = 1.2;
+  part(new CylinderGeometry(0.162, 0.162, 0.05, 12), vis, 0, 0.82, 0).scale.z = 1.2;
+  part(new BoxGeometry(0.12, 0.1, 0.1), dark, 0.13, 0.5, 0.14); // a tool pouch
+  part(new SphereGeometry(0.075, 8, 6), skin, 0, 1.02, 0).scale.set(0.7, 0.7, 0.7);
+  part(new CapsuleGeometry(0.1, 0.04, 4, 10), skin, 0.01, 1.12, 0);
+  const cap = part(new SphereGeometry(0.125, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), hat, 0.01, 1.16, 0); cap.scale.set(1.1, 0.9, 1.05);
+  part(new BoxGeometry(0.1, 0.02, 0.2), hat, 0.1, 1.15, 0);
+  part(new BoxGeometry(0.05, 0.08, 0.15), glass, 0.1, 1.1, 0); // the mask
+  // the resting arm, and the waving one from the shoulder
+  const rest = new Group(); rest.position.set(0, 0.88, -0.22); root.add(rest); rest.rotation.z = 0.08;
+  part(new CapsuleGeometry(0.058, 0.3, 4, 8), cloth, 0, -0.2, 0, rest);
+  part(new SphereGeometry(0.06, 8, 6), dark, 0, -0.42, 0, rest);
+  const arm = new Group(); arm.position.set(0, 0.88, 0.22);
+  part(new CapsuleGeometry(0.058, 0.3, 4, 8), cloth, 0, -0.2, 0, arm);
+  part(new SphereGeometry(0.06, 8, 6), dark, 0, -0.42, 0, arm);
   root.add(arm);
-  const rest = box(0.12, 0.4, 0.12, overall); rest.position.set(0, 0.6, -0.26); root.add(rest);
-  root.scale.setScalar(1.25);
+  root.scale.setScalar(1.45);
   return { root, arm, legs: [l1, l2] };
 }
 
@@ -48,6 +69,7 @@ export class PaintBayView {
   private painter!: ReturnType<typeof painterBody>;
   private vents: Vector3[] = [];
   private time = 0;
+  private lamp!: PointLight;
   private mist = 0;
 
   constructor(private readonly scene: Scene) {
@@ -60,7 +82,7 @@ export class PaintBayView {
     const L = BAY.halfLen, W = BAY.halfWid, D = BAY.door;
     const k = new Kit();
     // the slab, the roof, the two flanks with a window of work light each, and the end walls round the doors
-    k.box('dark', [L * 2 + 2, 0.4, W * 2 + 2], [0, FLOOR - 0.2, 0]);
+    k.box('floor', [L * 2 + 2, 0.4, W * 2 + 2], [0, FLOOR - 0.2, 0]);
     k.box('hull', [L * 2 + 1, 0.5, W * 2 + 1], [0, ROOF + 0.25, 0]);
     for (const s of [-1, 1]) {
       k.box('hull', [L * 2, ROOF - FLOOR, 0.4], [0, (ROOF + FLOOR) / 2, s * W]);
@@ -87,14 +109,18 @@ export class PaintBayView {
     k.box('lamp', [1.0, 0.1, 0.06], [1, 1.9, W + 0.22]);
     k.box('dark', [1.3, 2.4, 0.5], [1, FLOOR + 1.2, W + 0.1]);
     // an apron outside the side door: a deck on two struts, with a rail, so he has ground to stand on
-    k.box('dark', [7, 0.25, 7], [1, FLOOR - 0.12, W + 3.9]);
+    k.box('floor', [7, 0.25, 7], [1, FLOOR - 0.12, W + 3.9]);
     k.box('paint', [7, 0.06, 0.2], [1, FLOOR + 0.03, W + 7.3]);
     for (const x of [-2.4, 4.4]) { k.box('dark', [0.12, 0.9, 0.12], [x, FLOOR + 0.45, W + 7.3]); }
     k.box('dark', [6.9, 0.1, 0.1], [1, FLOOR + 0.9, W + 7.3]);
-    const shed = k.build(materials(), 0.3);
+    // our own steel and concrete: the fleet's shared 'hull' and 'dark' read black beside the depot's lights, and the floor read white
+    const steel = new MeshStandardMaterial({ color: 0x8a949e, roughness: 0.7, metalness: 0.2, emissive: new Color(0.07, 0.085, 0.1) });
+    const shade = new MeshStandardMaterial({ color: 0x474d55, roughness: 0.65, metalness: 0.25, emissive: new Color(0.03, 0.035, 0.042) });
+    const concrete = new MeshStandardMaterial({ color: 0x2a2c2e, roughness: 0.95, metalness: 0, emissive: new Color(0.008, 0.008, 0.008) });
+    const shed = k.build({ ...materials(), hull: steel, dark: shade, floor: concrete }, 0.3);
     this.root.add(shed);
 
-    const shutter = (): Mesh => { const m = box(0.3, DOOR_H, D * 2 + 0.2, materials().dark as MeshStandardMaterial); return m; };
+    const shutter = (): Mesh => box(0.3, DOOR_H, D * 2 + 0.2, shade);
     this.near = shutter(); this.far = shutter();
     this.near.position.x = -L; this.far.position.x = L;
     this.root.add(this.near, this.far);
@@ -103,6 +129,11 @@ export class PaintBayView {
     this.glow = [this.gap.material as MeshBasicMaterial];
     this.gap.position.set(-L - 0.2, FLOOR + 0.1, 0);
     this.root.add(this.gap);
+
+    // the shed's own light: it comes up with the work, so the ship and the floor are lit from inside
+    this.lamp = new PointLight(0xffd9a0, 0, 16, 1.6);
+    this.lamp.position.set(0, ROOF - 0.9, 0);
+    this.root.add(this.lamp);
 
     this.painter = painterBody();
     this.painter.root.visible = false;
@@ -145,6 +176,7 @@ export class PaintBayView {
     }
     if (f && tm && b && b.e > tm.paint && b.e < tm.paint + 1 && dt > 0 && Math.random() < dt * 14) fx.burst(c.x + BAY.halfLen, FLOOR + 0.3, c.z, 2, [1.6, 1.1, 0.4], 3, 0.25, 0.4);
     // the painter: out of the side door, standing off the flank, a wave when she is out, and back in
+    this.lamp.intensity = f ? (f.near > 0.5 || f.far < 0.5 ? 14 : 4) : 0;
     const p = this.painter;
     if (f && f.painter > 0.01) {
       p.root.visible = true;
