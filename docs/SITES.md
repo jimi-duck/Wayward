@@ -42,6 +42,22 @@ Read in `World.stepWorks`, constants in `sim/site.ts`.
 
 Kellern, the Dust Traders and everyone else keep a plain port for now.
 
+## Custody relay post
+
+An unmanned beacon (`Traffic.relayPost`, `buildRelayPost`) off the course at
+40% of the way, 380-460 units to one side, in every system that has Custody
+patrols (so not the first system past Cerro, safe systems or edges).
+
+- **Scans.** A ship at Wanted 0.6 or more that stays within 110 units for 3 s
+  gets "Flagged hull in range. Patrol routed." and the next patrol is called
+  at once (the usual rules still hold: never in a fight, a scene or at a dock).
+  One call per 45 s at most. An unflagged ship is ignored.
+- **Jam.** Flying within 28 units at under 18 speed for 4 s takes it offline for
+  120 s ("Relay post offline. Signal lost.") for +0.03 Wanted. No gunfire is
+  needed, so it adds no new target to the shooting code.
+- **Seen.** An amber ring on the ground and a lamp that brightens as it locks;
+  a small amber square on the scope; all go dark when jammed.
+
 ## Next (plan: "Living stations and space objects")
 
 The refinery barge, the Dust Market and the Custody relay post read the same

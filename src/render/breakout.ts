@@ -5,6 +5,7 @@ import {
 import { clamp } from '../core/math';
 import type { World } from '../sim/world';
 import { AUDIT_R, SAFE_R, relayOf } from '../sim/breakout';
+import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
 import { MOOD_AMBER, MOOD_LIGHT, portStyleOf, type Mood, type PortStyle } from '../sim/site';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
@@ -331,6 +332,23 @@ function styleParts(k: Kit, rnd: () => number, st: PortStyle): void {
   }
 }
 
+/** The Custody's relay post: a short mast on a hex base, a dish, and a lamp that shows what it is doing (`lamp` is the caller's own). Small and plain: a roadside box, not a station. */
+export function buildRelayPost(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(17);
+  k.cyl('hull', 2.6, 3.2, 1.2, [0, 0, 0], 'y', 6);
+  k.cyl('dark', 1.5, 1.7, 1.4, [0, 1.2, 0], 'y', 8);
+  k.box('dark', [0.35, 8, 0.35], [0, 5, 0]);
+  k.box('hull', [0.3, 0.3, 4.2], [0, 7.6, 0]);
+  k.add('hull', new CylinderGeometry(1.8, 0.2, 0.5, 14, 1, true), [0, 8.8, 1.2], [0.5, 0, 0]);
+  strut(k, 'dark', [0, 8.4, 0], [0, 8.8, 1.2], 0.08, 4);
+  for (let i = 0; i < 3; i++) strut(k, 'dark', [Math.cos(i * 2.1) * 2.4, 0.4, Math.sin(i * 2.1) * 2.4], [0, 4.2, 0], 0.07, 4);
+  k.box('lamp', [0.5, 0.5, 0.5], [0, 9.8, 0]);
+  k.box('lamp', [0.3, 0.2, 0.3], [1.2, 1.7, 0.9]);
+  k.box('amber', [0.9, 0.12, 0.12], [0, 2.1, 1.75]);
+  k.greebles('hull', rnd, -1.5, 1.5, -1.5, 1.5, 2, 6, 0.5);
+  return k.build({ ...materials(), lamp }, 0.5);
+}
+
 export function buildPort(style: PortStyle = 'frontier', own?: { lamp: Material; win: Material }): Group {
   const k = new Kit(), rnd = seeded(9);
   // the hub: a drum core on a broad skirt, a lit habitat ring round it, a control drum on top with a window band
@@ -520,6 +538,10 @@ export class BreakoutView {
   private readonly lampBase = this.lamp.color.clone();
   private readonly winBase = this.win.color.clone();
   private moodAmber = 0;
+  /** The Custody relay post (sim/traffic.ts), where the system has one. */
+  private readonly relay = new Group();
+  private readonly relayLamp = (materials().lamp as MeshBasicMaterial).clone();
+  private readonly relayScan: Mesh;
   private moodLight = 0.8;
   /** The company's audit dock, where the system has one. */
   private readonly audit = new Group();
@@ -590,8 +612,15 @@ export class BreakoutView {
     this.auditRing = flatRing(AUDIT_R, 0.3, AMBER, 0.3);
     this.auditRing.position.y = 0.4;
     this.audit.add(this.auditRing);
+    this.relay.add(buildRelayPost(this.relayLamp));
+    this.relayScan = flatRing(RELAY_R, 0.25, AMBER, 0.06);
+    this.relayScan.position.y = 0.3;
+    const jamRing = flatRing(RELAY_JAM_R, 0.2, CYAN, 0.1);
+    jamRing.position.y = 0.3;
+    this.relay.add(this.relayScan, jamRing);
+    this.relay.visible = false;
     this.lane.visible = this.port.visible = this.audit.visible = false;
-    scene.add(this.lane, this.port, this.audit, this.mast);
+    scene.add(this.lane, this.port, this.audit, this.mast, this.relay);
 
   }
 
@@ -626,6 +655,15 @@ export class BreakoutView {
     this.lane.visible = !!b;
     this.port.visible = !!b?.port;
     this.audit.visible = !!b?.audit;
+    const rp = world.traffic?.relayPost ?? null;
+    this.relay.visible = !!b && !!rp;
+    if (b && rp) {
+      this.relay.position.set(rp.x, -2, rp.z);
+      // amber while it scans (brighter as it locks), cool and dim once jammed
+      const off = world.runTime < rp.jammedUntil;
+      this.relayLamp.color.copy(off ? CYAN : AMBER).multiplyScalar(off ? 0.12 : 0.55 + 0.35 * Math.sin(this.time * 3) + 0.4 * Math.min(1, rp.lock / 3));
+      (this.relayScan.material as MeshBasicMaterial).opacity = off ? 0.01 : 0.05 + 0.2 * Math.min(1, rp.lock / 3);
+    }
     if (!b) return;
     this.lane.position.set(b.lane.x, -1.5, b.lane.z);
     // the ring faces the way you come in: it follows your bearing from afar and holds still once you are near (the review world always follows)
