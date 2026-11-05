@@ -373,7 +373,9 @@ function boot(review: typeof import('./review') | null): void {
     loop.paused = true;
     input.reset();
     feel.win();
+    sector.storyScene = 'ending';
     ending.show(j, () => {
+      sector.storyScene = null;
       saveJourney(j);
       noticeOf(j, { kind: 'through', lines: [...j.log.slice(-1).map((l) => l.text), ...lines] });
     });

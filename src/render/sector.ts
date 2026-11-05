@@ -5,6 +5,7 @@ import { HOLD_MAX, JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
 import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
+import { SceneArc } from './scenes';
 import type { Faction } from '../sim/enemies';
 import { inFight } from '../sim/guide';
 import { newShip, topSpeed, type ShipState } from '../sim/ship';
@@ -123,6 +124,9 @@ export class Sector {
   private pinned = false;
   reduceMotion = false;
   private readonly reveal = new RenameReveal();
+  /** A story scene that holds the camera on her flank while it plays ('ending': the Threshold panel; render/scenes.ts). */
+  storyScene: 'ending' | null = null;
+  private readonly sceneArc = new SceneArc();
   private seenWorld: World | null = null;
   /** An opaque panel (the refit bay) is over the whole view. */
   covered = false;
@@ -604,7 +608,7 @@ export class Sector {
     }, uiDt);
     setLiverySweep(rv.sweep === null ? null : -rv.sweep * SWEEP_SPAN);
     if (rv.sweep === null) setLiveryBlend(rv.livery);
-    this.rig.reveal = rv.arc;
+    this.rig.reveal = Math.max(rv.arc, this.sceneArc.update(this.storyScene !== null, uiDt, this.reduceMotion));
     this.ship.update(s, dt, this.reduceMotion);
     this.rocks.update(world.field.rocks, world.field.bulwarks, alpha, dt, this.rig.target.x, this.rig.target.z);
     this.streaks.begin();
