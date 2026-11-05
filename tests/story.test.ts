@@ -7,7 +7,7 @@ import { CARD_BY_ID, pickCard, type Ctx } from '../src/sim/comms';
 import { choices, epilogue, journeyRecord } from '../src/sim/endings';
 import { chipsOf } from '../src/sim/consequences';
 import { gains } from '../src/sim/gains';
-import { endSortie, newJourney, options, plot, sortieDef, type Journey } from '../src/sim/journey';
+import { autoCourse, endSortie, newJourney, options, plot, sortieDef, type Journey } from '../src/sim/journey';
 import { Rng } from '../src/sim/rng';
 import { newRun } from '../src/sim/run';
 import { act, actLine, dueBeat, fileCount } from '../src/sim/story';
@@ -114,8 +114,11 @@ describe('the story beats', () => {
   });
 
   it('open the chain a moment after arrival beyond the gate: the notice, Sam’s offer, then the archive', () => {
+    // the first system past Cerro: the level that has Ned's yard
     const j = newJourney(7);
-    j.trail.push('x');
+    const r0 = newRun(1); r0.escaped = true;
+    endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3 }, run: r0, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
+    autoCourse(j);
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), calloway: Infinity }, carry: j.carry });
     w.cardNext = Infinity;
     w.bk!.nextPursuit = Infinity;

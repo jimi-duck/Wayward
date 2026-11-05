@@ -4,7 +4,8 @@ import { paintHull } from './paint';
 import { readFileSync } from 'node:fs';
 import { WALL } from '../src/content/wall';
 import { CARD_BY_ID, choiceView, type Ctx } from '../src/sim/comms';
-import { VERSION, newJourney, sortieDef } from '../src/sim/journey';
+import { VERSION, autoCourse, endSortie, newJourney, sortieDef } from '../src/sim/journey';
+import { newRun } from '../src/sim/run';
 import { migrate } from '../src/meta/save';
 import { wallView } from '../src/sim/wall';
 import { CREDIT_START, CUTS, FINAL_LOAD, FIRST_LOAD, GROSS, LEASE_DUE, NET, PENALTY, QUOTA, ledgerFor, owed, projectedAfterLauncher, upgradePrice, type LedgerRow } from '../src/sim/contract';
@@ -59,8 +60,11 @@ describe('the opening chain beyond the gate', () => {
     expect(dueBeat(j)).toBe('story_wake');
   });
   it('plays through in three cards', () => {
+    // the first system past Cerro: the level that has Ned's yard
     const j = newJourney(7);
-    j.trail.push('x');
+    const r0 = newRun(1); r0.escaped = true;
+    endSortie(j, { ended: 'jumped', time: 180, carry: { ...j.carry, plates: 3 }, run: r0, calloway: false, callowayBeaten: false, huntDelay: 0, stall: 0, captain: null, notice: {} });
+    autoCourse(j);
     const w = new World(5, { mode: 'breakout', sortie: { ...sortieDef(j), story: 'story_breach', calloway: Infinity }, carry: j.carry });
     w.cardNext = Infinity;
     w.field.rocks = [];

@@ -58,7 +58,7 @@ describe('the first system past Cerro', () => {
     expect(def.port?.name).toBe(SUPPLY_DEPOT);
     expect(def.blockade).toBe(false);
     const w = level();
-    expect(places(w.bk!).map((p) => p.name)).toEqual(['Jump Gate', SUPPLY_DEPOT, AUDIT_DOCK]);
+    expect(places(w.bk!).map((p) => p.name)).toEqual(['Jump Gate', SUPPLY_DEPOT, AUDIT_DOCK, 'Ned’s yard']);
     expect(w.traffic).not.toBeNull();
     // no later system is this one
     const j = past();
@@ -102,8 +102,8 @@ describe('the objective follows the owner lock', () => {
     expect(w.flags.has('ship_stolen')).toBe(true);
     // the code sets the call sign only: the course is the paint bay at the depot until she has been there
     expect(w.flags.has('paint_due')).toBe(true);
-    expect(guideTarget(w)).toMatchObject({ kind: 'port', name: SUPPLY_DEPOT });
-    expect(goalOf(w).goal).toMatch(/repaint/);
+    expect(guideTarget(w)).toMatchObject({ kind: 'yard', name: 'Ned’s yard' });
+    expect(goalOf(w).goal).toMatch(/Ned/);
     paintHull(w);
     expect(w.flags.has('hull_repainted')).toBe(true);
     expect(guideTarget(w)).toMatchObject({ kind: 'lane', name: 'Jump Gate' });
@@ -273,18 +273,18 @@ describe('the paint bay (owner 2026-11-05)', () => {
     expect(paintAt(w)).toBe(false);
   });
 
-  it('is the objective after the code: the depot, free, before the tank and before the gate', () => {
+  it('is the objective after the code: Ned’s yard, free, before the tank and before the gate', () => {
     const w = afterCode();
     w.fuel = 0;
     expect(paintAt(w)).toBe(true);
     expect(refuelAt(w)).toBe(false);
-    expect(goalOf(w).goal).toBe('Fly to the depot: free repaint at the paint bay');
+    expect(goalOf(w).goal).toBe('Fly to Ned’s yard: free reprogram, repaint and rename');
   });
 
-  it('Ned speaks once the ship comes up on the depot, then the paint goes on, with a notice', () => {
+  it('Ned speaks once the ship comes up on his yard, then the work is done, with a notice', () => {
     const w = afterCode();
     const said: string[] = [];
-    const p = w.bk!.port!;
+    const p = w.bk!.yard!;
     w.ship.x = p.x - 100; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
     for (let i = 0; i < Math.round(40 / STEP) && !w.flags.has('hull_repainted'); i++) {
       if (w.phase === 'comms') { w.answer(0); continue; }

@@ -5,11 +5,11 @@ const STEP = 1 / 60;
 const IDLE = { turn: 0, thrust: 0, aim: null, fire: false, torpedo: false, roll: false, brk: false, device: 'keyboard' } as const;
 
 /**
- * Sam's friend at the depot (owner 2026-11-05): after the code the hull is grey until the ship comes up on the Frontier Supply
- * Depot. Put her 100 units off it, at rest, and let Ned speak and the paint go on. Cards that open meanwhile are answered with `answer`.
+ * Sam's friend in his own yard (owner 2026-11-05): after the code the hull is the company's until the ship comes up on Ned's yard.
+ * Put her 100 units off it, at rest, and let Ned speak and the paint go on. Cards that open meanwhile are answered with `answer`.
  */
 export function paintHull(w: World, answer: (w: World) => void = (x) => { x.answer(0); }, max = 60): number {
-  const p = w.bk!.port!;
+  const p = w.bk!.yard!;
   w.ship.x = p.x - 100; w.ship.z = p.z; w.ship.vx = w.ship.vz = 0;
   const t0 = w.runTime;
   for (let i = 0; i < Math.round(max / STEP) && !(w.flags.has(PAINTED) && !w.bay); i++) {

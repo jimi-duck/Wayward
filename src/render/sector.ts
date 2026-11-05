@@ -15,6 +15,7 @@ import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
 import { SiteView } from './site';
 import { PaintBayView } from './paintbay';
+import { bayTimes } from '../sim/paintbay';
 import { CameraRig } from './camera';
 import { DebrisField } from './debris';
 import { Environment } from './environment';
@@ -609,7 +610,9 @@ export class Sector {
     this.ship.setFit(world.levels, world.use);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
     // the Arcade flies her in her own paint from the start (the grey company livery is the Story's before-state)
-    const stolen = painted(world.flags) || world.mode === 'arcade';
+    // in Ned's yard the paint shows as she passes the spray arch, a moment before the flag is set at the end of the work
+    const sprayed = !!world.bay && world.bay.e >= bayTimes(world.bay).sprayAt + 0.4;
+    const stolen = painted(world.flags) || sprayed || world.mode === 'arcade';
     const rv = this.reveal.update({
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,

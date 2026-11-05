@@ -224,10 +224,11 @@ checkpoint. Later: his brother on a Breaker crew (`story_tam_brother`, planned).
 If Juno left him alone, the brother beat still arrives, from Marit Voss, and he
 remembers.
 
-### Ned Varga, paint bay (Frontier Supply Depot)
-Sam's friend, a voice on the radio and never crew. He runs the paint bay at the depot in the first system past Cerro and repaints the
-Wayward for nothing because he owes Sam (owner, 5 November 2026). Brisk and dry, like Sam, and he asks no questions. One line when
-Juno comes up on the depot, one job done; she does not come back. Flags: `paint_due` (Sam's code), `hull_repainted` (his work).
+### Ned Varga, the yard
+Sam's friend, a voice on the radio and never crew, and never seen. He keeps a work yard of his own, off the lane in the first system
+past Cerro (not the Frontier depot), and makes the Wayward hers for nothing because he owes Sam (owner, 5 November 2026): he strips the
+company lock (reprogram), paints her yellow, and writes her new name. The archive hidden in her database opens only once he has. Brisk
+and dry, like Sam, and he asks no questions. Flags: `paint_due` (Sam's code), `hull_repainted` (his work).
 
 ### Clients (setup, twist, reckoning)
 | Client | Region | Setup | Twist | Reckoning | Flags |

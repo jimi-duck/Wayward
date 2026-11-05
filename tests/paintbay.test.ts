@@ -19,24 +19,24 @@ describe('the paint bay timeline', () => {
     const fm = bayFrame(b, tm.mouth);
     expect(Math.hypot(fm.x - m.x, fm.z - m.z)).toBeLessThan(0.01);
     const fi = bayFrame(b, tm.inside);
-    expect(Math.hypot(fi.x - c.x, fi.z - c.z)).toBeLessThan(0.01);
+    expect(Math.hypot(fi.x - (c.x - BAY.stn), fi.z - c.z)).toBeLessThan(0.01);
     expect(Math.hypot(fi.vx, fi.vz)).toBeLessThan(0.5);
     // held while the paint goes on
     const fp = bayFrame(b, tm.paint);
-    expect(fp.x).toBeCloseTo(c.x, 1);
+    expect(fp.x).toBeCloseTo(c.x + BAY.stn, 1);
     // out of the far door at the exit speed, with the helm back
     const out = bayExit(b);
     expect(out.vx).toBe(BAY_EXIT_SPEED);
-    expect(out.x).toBeGreaterThan(c.x + BAY.halfLen);
+    expect(out.x).toBeGreaterThan(c.x + BAY.stn);
     expect(bayFrame(b, tm.release - 0.01).locked).toBe(true);
     expect(bayFrame(b, tm.release + 0.01).locked).toBe(false);
   });
 
-  it('keeps about twelve seconds: concise', () => {
+  it('keeps to about sixteen seconds: concise', () => {
     for (const from of [{ x: 420, z: 220 }, { x: 600, z: 80 }, { x: 380, z: 100 }, { x: 560, z: 300 }]) {
       const tm = bayTimes(startBay({ ...from, heading: 0 }, PORT));
-      expect(tm.release).toBeGreaterThan(10);
-      expect(tm.release).toBeLessThan(14.5);
+      expect(tm.release).toBeGreaterThan(13);
+      expect(tm.release).toBeLessThan(17.5);
     }
   });
 
@@ -46,6 +46,17 @@ describe('the paint bay timeline', () => {
     expect(bayFrame(b, tm.inside + 1).near).toBe(1);
     expect(bayFrame(b, tm.paint - 0.1).far).toBe(1);
     expect(bayFrame(b, tm.paint + 1.2).far).toBe(0);
+  });
+
+  it('stops her under the scan, spray and mark arches in that order, and holds her still under each', () => {
+    const b = startBay({ x: 420, z: 220, heading: 0 }, PORT), tm = bayTimes(b), c = bayAt(PORT);
+    const at = (e: number) => bayFrame(b, e);
+    expect([at(tm.inside + 0.1).stage, at(tm.scanEnd + 0.4).stage, at(tm.sprayAt + 1).stage, at(tm.sprayEnd + 0.4).stage, at(tm.markAt + 0.5).stage, at(tm.paint + 0.1).stage]).toEqual([1, 0, 2, 0, 3, 0]);
+    expect(at(tm.inside + 0.9).x).toBeCloseTo(c.x - BAY.stn, 1);
+    expect(at(tm.sprayAt + 1.5).x).toBeCloseTo(c.x, 1);
+    expect(at(tm.markAt + 0.8).x).toBeCloseTo(c.x + BAY.stn, 1);
+    expect(Math.hypot(at(tm.sprayAt + 1.5).vx, at(tm.sprayAt + 1.5).vz)).toBeLessThan(0.5);
+    expect(at(tm.sprayAt + 1).prog).toBeGreaterThan(0.2);
   });
 
   it('cuts to the pad from the side as she nears the gate, to the far gate for the roll-out, and back to the chase', () => {
@@ -74,7 +85,7 @@ describe('the paint bay in the world', () => {
 
   it('flies her in with the helm locked, nothing can hurt her, the paint goes on inside it, and the helm comes back', () => {
     const w = level();
-    const p = w.bk!.port!;
+    const p = w.bk!.yard!;
     w.ship.x = p.x - 110; w.ship.z = p.z + 30; w.ship.vx = w.ship.vz = 0;
     let bolts0 = 99, lockedAt = Infinity, painted = Infinity, helm = Infinity, doneLine = false, hull = w.plates;
     for (let i = 0; i < Math.round(80 / STEP); i++) {
@@ -95,8 +106,8 @@ describe('the paint bay in the world', () => {
       }
     }
     expect(lockedAt).toBeLessThan(Infinity);
-    expect(painted).toBeGreaterThan(8);
-    expect(painted).toBeLessThan(12);
+    expect(painted).toBeGreaterThan(11);
+    expect(painted).toBeLessThan(15);
     expect(w.flags.has(PAINTED)).toBe(true);
     expect(doneLine).toBe(true);
     expect(helm).toBeLessThan(Infinity);

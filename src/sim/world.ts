@@ -707,7 +707,8 @@ export class World implements EncounterHost {
   seenPlaces(): Waypoint[] {
     const b = this.bk;
     if (!b) return [];
-    const all = places(b);
+    // Ned's yard shows only while the hull is waiting for it
+    const all = places(b).filter((w) => w.kind !== 'yard' || paintDue(this.flags) || !!this.bay);
     if (this.navNoise <= 0) return all;
     const t = this.runTime, n = this.navNoise * 60;
     return all.map((w) => (w.kind === 'lane' ? { ...w, x: w.x + Math.sin(t * 1.3) * n, z: w.z + Math.cos(t * 0.9) * n } : w));
@@ -915,8 +916,8 @@ export class World implements EncounterHost {
     }
 
     // the paint shed's room: no rock or bulwark in or before it while the work is due
-    if (b.port && (paintDue(this.flags) || this.bay)) {
-      const c = { x: b.port.x - BAY.off, z: b.port.z };
+    if (b.yard && (paintDue(this.flags) || this.bay)) {
+      const c = { x: b.yard.x, z: b.yard.z };
       for (const o of [...this.field.rocks, ...this.field.bulwarks]) {
         const dx = o.x - c.x, dz = o.z - c.z, d = Math.hypot(dx, dz) || 1, min = BAY.clear + o.r;
         if (d < min) { o.x = c.x + (dx / d) * min; o.z = c.z + (dz / d) * min; }
@@ -1728,8 +1729,8 @@ export class World implements EncounterHost {
   private gateHeld(): boolean {
     const sc = this.script, b = this.bk;
     // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
-    if (b?.def.first && b.port && paintDue(this.flags)) {
-      this.gateWhy = 'paint bay first';
+    if (b?.def.first && b.yard && paintDue(this.flags)) {
+      this.gateWhy = 'Ned’s yard first';
       if (this.holdNoted !== this.gateWhy) { this.holdNoted = this.gateWhy; this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: this.gateWhy }); }
       return true;
     }
@@ -1904,13 +1905,13 @@ export class World implements EncounterHost {
     }
     // the paint bay (owner, 5 November 2026): Sam's code leaves the hull grey; Ned, at the depot, does it for nothing. His line comes when the
     // ship comes up on the depot, the paint goes on a moment after it is heard (the reveal plays then), and the archive follows later
-    if (b.port && paintDue(this.flags) && !this.docked && this.phase === 'play') {
-      if (!this.paintCalled && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
+    if (b.yard && paintDue(this.flags) && !this.docked && this.phase === 'play') {
+      if (!this.paintCalled && Math.hypot(s.x - b.yard.x, s.z - b.yard.z) < PORT_CALL) {
         this.paintCalled = true;
         this.events.push({ type: 'ping', id: 'paint_bay', from: tr(PAINTER), caller: 'frontier', text: tr(PAINT_LINE), moment: 'calm', system: b.def.name });
       }
       // once his line has been heard, hands off the stick: the cut scene flies her in (sim/paintbay.ts); the paint goes on inside it
-      if (this.paintCalled && !this.bay && t >= this.paintT) { this.bay = startBay(s, b.port); this.bayLine = false; }
+      if (this.paintCalled && !this.bay && t >= this.paintT) { this.bay = startBay(s, b.yard); this.bayLine = false; }
     }
     // the port's approach calls once
     if (!this.portCalled && !this.docked && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {

@@ -46,7 +46,7 @@ import type { Rng } from './rng';
 export type Mode = 'breakout' | 'arcade';
 
 export interface Waypoint {
-  kind: 'port' | 'lane' | 'audit';
+  kind: 'port' | 'lane' | 'audit' | 'yard';
   name: string;
   x: number;
   z: number;
@@ -378,9 +378,13 @@ export function rockYield(kind: RockKind, size: RockSize, k = 1): Yield {
 /** Where the first system past Cerro puts its places, as a share of the way to the Jump Gate and how far off the line (right is positive). */
 export const FIRST_AUDIT = { along: 0.3, off: 300 };
 export const FIRST_DEPOT = { along: 0.55, off: -190 };
+/** Ned's yard (owner, 5 November 2026: a separate site, not the depot): between the two, near the line, a little to the depot's side. */
+export const FIRST_YARD = { along: 0.42, off: -50 };
+/** The yard's mark (units): a work pad, never a berth. */
+export const YARD_R = 20;
 
 /** A sortie's places, laid out from the start along the ship's heading: the Jump Gate ahead, the port (if any) off the line about halfway (the first system past Cerro: the audit dock early on one side, the depot late on the other). */
-export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { lane: Waypoint; port: Waypoint | null; audit: Waypoint | null } {
+export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { lane: Waypoint; port: Waypoint | null; audit: Waypoint | null; yard: Waypoint | null } {
   const fx = Math.cos(heading), fz = -Math.sin(heading), rx = Math.sin(heading), rz = Math.cos(heading);
   const along = def.lane * (PORT_ALONG / LANE_DIST);
   const at = (k: { along: number; off: number }) => ({ x: x + fx * def.lane * k.along + rx * k.off, z: z + fz * def.lane * k.along + rz * k.off });
@@ -388,6 +392,7 @@ export function course(heading: number, x = 0, z = 0, def: SortieDef = HOME): { 
     lane: { kind: 'lane', name: 'Jump Gate', x: x + fx * def.lane, z: z + fz * def.lane, r: LANE_R },
     port: def.port ? { kind: 'port', name: def.port.name, ...(def.first ? at(FIRST_DEPOT) : { x: x + fx * along + rx * PORT_OFF, z: z + fz * along + rz * PORT_OFF }), r: PORT_R } : null,
     audit: def.audit ? { kind: 'audit', name: def.audit, ...at(FIRST_AUDIT), r: AUDIT_R } : null,
+    yard: def.first ? { kind: 'yard', name: 'Ned’s yard', ...at(FIRST_YARD), r: YARD_R } : null,
   };
 }
 
@@ -397,7 +402,7 @@ export const RELAY_OFF = { x: 80, z: -70 };
 export const relayOf = (b: Breakout): { x: number; z: number } | null => (b.def.script === 'narrows' || b.def.relay ? { x: b.lane.x + RELAY_OFF.x, z: b.lane.z + RELAY_OFF.z } : null);
 
 /** The places in a sortie: the Jump Gate, the port if there is one, and the audit dock where the system has it. */
-export const places = (b: Breakout): Waypoint[] => [b.lane, ...(b.port ? [b.port] : []), ...(b.audit ? [b.audit] : [])];
+export const places = (b: Breakout): Waypoint[] => [b.lane, ...(b.port ? [b.port] : []), ...(b.audit ? [b.audit] : []), ...(b.yard ? [b.yard] : [])];
 
 /** The Breakout's state while it runs. */
 export interface Breakout {
@@ -406,6 +411,8 @@ export interface Breakout {
   port: Waypoint | null;
   /** The company's audit dock (the first system past Cerro only): a mark to fly to, never a berth. */
   audit: Waypoint | null;
+  /** Ned's yard (the first system past Cerro only): where the hull is reprogrammed, repainted and renamed. A mark to fly to, never a berth. */
+  yard: Waypoint | null;
   /** Jump fluid the plotted jump takes. */
   jumpCost: number;
   /** The port's prices today. */
@@ -438,7 +445,7 @@ export interface Breakout {
 export function newBreakout(heading: number, def: SortieDef = HOME): Breakout {
   const c = course(heading, 0, 0, def);
   return {
-    def, lane: c.lane, port: c.port, audit: c.audit, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, chase: null, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
+    def, lane: c.lane, port: c.port, audit: c.audit, yard: c.yard, jumpCost: def.jumpCost, prices: def.port?.prices ?? BASE_PRICES, heat: def.heat, nextPursuit: def.pace?.first ?? PURSUIT_FIRST, chase: null, nextSwarm: (def.thren ?? 0) > 0.05 ? SWARM_FIRST : Infinity, spool: 0, spoolNeed: SPOOL, dockT: 0, castOff: false, portCooled: false, docks: 0,
     blockade: 'none', jumpT: -1, nagT: 0,
   };
 }

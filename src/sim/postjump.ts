@@ -39,9 +39,9 @@ export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolea
 /** Whose bay it is: Sam's friend, who does the work himself. */
 export const PAINTER = 'Ned Varga';
 /** Ned on the radio when the ship comes up on the depot (hands off: he brings her in), and his last word as she rolls out. */
-export const PAINT_LINE = '“Wayward, this is Ned at the paint bay. Sam said you’d come. Hands off the stick, I’ll bring you in. No charge.”';
-export const PAINT_DONE = '“That’s you done. Tell Sam we’re square. Fly straight, Juno.”';
-export const PAINT_NOTICE = ['Hull repainted', 'Paint bay · Frontier Supply Depot'] as const;
+export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Hands off the stick, I’ll bring you in. New paint, new name, no charge.”';
+export const PAINT_DONE = '“That’s you done, Wayward. Tell Sam we’re square. Fly straight, Juno.”';
+export const PAINT_NOTICE = ['Ship reprogrammed', 'Repainted · renamed WAYWARD'] as const;
 /** Seconds from his line being heard to the cut scene starting (sim/paintbay.ts); the paint goes on inside it, and the reveal (render/reveal.ts) plays as she rolls out. */
 export const PAINT_AT = 1.6;
 /** The archive's message comes this long after the paint is on (it used to follow the code). */
@@ -97,8 +97,8 @@ export const DEPOT_LINE = '“Depot control. Fuel, plating and stores at posted 
 export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
 
 /** The objective is the paint bay: the first system past Cerro, the lock lifted, the hull not yet repainted. */
-export function paintAt(w: { bk: { port: unknown } | null; flags: ReadonlySet<string> }): boolean {
-  return !!w.bk?.port && paintDue(w.flags);
+export function paintAt(w: { bk: { yard: unknown } | null; flags: ReadonlySet<string> }): boolean {
+  return !!w.bk?.yard && paintDue(w.flags);
 }
 
 /** The objective is the tank, bought at the depot or mined: the first system past Cerro, the lock lifted, a tank short of the jump, not docked yet, and Cyrite to buy with. */

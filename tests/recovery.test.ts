@@ -197,7 +197,8 @@ describe('the forced recovery', () => {
     expect(painted(w.flags)).toBe(false);
     paintHull(w);
     expect(painted(w.flags)).toBe(true);
-    run(w, 60);
+    // the hands off the controls: shooting the yard's neighbours would start the hunt and keep the archive waiting
+    run(w, 60, { ...FULL, turn: 0, thrust: 0, fire: false });
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w, 'lead');
     expect(j.carry.flags).toEqual(expect.arrayContaining(['archive_woke', RECOVERY_FLAG, 'ship_stolen']));
