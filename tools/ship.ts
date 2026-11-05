@@ -10,6 +10,7 @@ import { TIERS, tierIndex } from '../src/render/quality';
 import { createRenderer, fitRenderer } from '../src/render/renderer';
 import { ShipView } from '../src/render/ships';
 import { setLivery, setLiverySweep } from '../src/render/wayward';
+import { FITTED } from '../src/render/fitted';
 import { newShip } from '../src/sim/ship';
 
 const params = new URLSearchParams(location.search);
@@ -39,6 +40,13 @@ scene.add(ship.root);
 (window as unknown as { ship: ShipView }).ship = ship;
 setLivery(livery);
 ship.setDamage(plates, maxPlates);
+// ?fit=all (every upgrade at its top level), or ?fit=tp_bay,ph_emitters:3 (ids, optional level): the fittings on the hull
+const fitParam = params.get('fit');
+const fitLevels: Record<string, number> = {};
+if (fitParam === 'all') for (const [id, parts] of Object.entries(FITTED)) fitLevels[id] = parts.length;
+else if (fitParam) for (const e of fitParam.split(',')) { const [id, n] = e.split(':'); fitLevels[id!] = Number(n ?? '9'); }
+// ?use=0..1: the run's wear (chips, grime, soot, scorch marks)
+ship.setFit(fitLevels, Number(params.get('use') ?? '0'));
 // ?cargo=0..1: the hold's fill
 ship.setCargo(Number(params.get('cargo') ?? '1'));
 if (sweep !== null) setLiverySweep(Number(sweep));

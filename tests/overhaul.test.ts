@@ -302,7 +302,7 @@ describe('a road save from before the whole road', () => {
     const o = oldSave(3);
     expect(roadRegion(o.chart, 1)).toBe(false);
     const back = migrate(o)!;
-    expect(back.version).toBe(22);
+    expect(back.version).toBe(23);
     for (let i = 0; i < LEGS.length; i++) expect(roadRegion(back.chart, i), `leg ${i}`).toBe(true);
     expect(back.at).toBe(o.at);
     expect(back.chart.visited).toEqual(o.chart.visited);

@@ -97,6 +97,8 @@ export function migrate(raw: unknown): Journey | null {
   // 21 → 22: the whole road is authored (docs/overhaul/). A road journey still in the Reach gets the authored legs ahead of it; one
   // already past the Narrows keeps the legs it was dealt (sim/road.ts reads those as generated).
   if (j.version < 22) authorRoad(j as Journey);
+  // 22 → 23: the hull's wear (Carry.scars): a hull from before starts clean, its history unknown
+  if (j.version < 23) j.carry.scars = 0;
   j.version = VERSION;
   return j as Journey;
 }

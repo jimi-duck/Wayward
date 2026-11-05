@@ -265,6 +265,8 @@ export interface Carry {
   hush: number;
   /** Story rows triggered but not yet played, carried across a jump (sim/script.ts). Absent in a save from before v21. */
   pending?: string[];
+  /** How hard the hull has been used: hits taken and time flown, summed over the journey. The hull's wear and scorch marks follow it (render/wayward.ts). */
+  scars?: number;
 }
 
 /** What a sortie hands back to the journey. */

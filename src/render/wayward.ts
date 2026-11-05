@@ -1,5 +1,6 @@
-import { CanvasTexture, Color, Group, Vector3, Vector4, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
+import { CanvasTexture, Color, Group, Vector3, type Mesh, Vector4, MeshBasicMaterial, MeshStandardMaterial, SRGBColorSpace, type Material, type Texture } from 'three';
 import { Kit, metal, seeded, type V3 } from './kit';
+import { buildFits, fitKey, shown } from './fitted';
 import {
   bevelGeo, block, setBevelScale, bolts, bracket, frameRing, hatch, lamp, oct, octFaces, octFrame, panel, pipeRun, vent, type Face,
 } from './parts';
@@ -20,6 +21,8 @@ import {
 // The model faces +X with +Y up, so its starboard side is +Z.
 
 let mats: Record<string, Material> | null = null;
+/** How hard the run has used her, 0 to 1: read by every worn material's shader. */
+const USE = { value: 0 };
 /** Her own drives' light on her stern: the bell colour at the faction coats' scale (0.12), shared by every painted material so it can follow the burn. */
 const ENGINE = new Color(0, 0, 0), ENGINE_BASE = new Color(0.16, 0.85, 3.3).multiplyScalar(0.12);
 let engineBurn = 0;
@@ -28,13 +31,13 @@ export function setHullGlow(bell: [number, number, number]): void {
   ENGINE_BASE.setRGB(...bell).multiplyScalar(0.12);
   ENGINE.copy(ENGINE_BASE).multiplyScalar(engineBurn);
 }
-/** The hull's six scorch uniforms, shared by every worn material: four old hits, then two kept for live damage (setDamage). */
-const HITS = Array.from({ length: 6 }, () => new Vector4(0, -1e4, 0, 0.001));
+/** The hull's six scorch uniforms, shared by every worn material: four old hits, two kept for live damage (setDamage), then four that a run burns in (setUse). */
+const HITS = Array.from({ length: 10 }, () => new Vector4(0, -1e4, 0, 0.001));
 function materials(hits: Hit[]): Record<string, Material> {
   if (mats) return mats;
   // all of her worn by hard use (wear.ts), sooted astern by her own drives
   hits.forEach((h, i) => HITS[i]!.set(...h));
-  const used = { worn: 1, shade: true, soot: [2.15, 2.95] as [number, number], hitUniforms: HITS, engine: ENGINE };
+  const used = { worn: 1, shade: true, run: USE, soot: [2.15, 2.95] as [number, number], hitUniforms: HITS, engine: ENGINE };
   const amber = (tint: number) => metal({ tint, roughness: 0.62, metalness: 0.08, scale: 0.85, painted: true, emissive: new Color(...LIVERY.stockGlow), ...used });
   mats = {
     // weathered grey plate, one shade lighter and one darker, the repaint's three tints under them
@@ -106,6 +109,32 @@ const cargoGroups: Group[][] = [];
 /** The deck answers the hold: `frac` (0 to 1) of the hold's capacity fills the boxes from astern, stern run first, then the middle, then the bow. */
 export function setCargo(frac: number): void {
   for (const g of cargoGroups) g.forEach((grp, i) => { grp.visible = frac > i / 3 + 1e-6; });
+}
+
+// ── fittings and use ──────────────────────────────────────────────────────
+let fitGroup: Group | null = null;
+let fitMats: Record<string, Material> | null = null;
+let fitSeen = '';
+/** What the upgrades put on her: only what is fitted is built, and only when it changes. */
+export function setFit(levels: Record<string, number>): void {
+  if (!fitGroup || !fitMats) return;
+  const s = shown(levels), key = fitKey(s);
+  if (key === fitSeen) return;
+  fitSeen = key;
+  for (const c of [...fitGroup.children]) { fitGroup.remove(c); (c as Mesh).geometry.dispose(); }
+  const g = buildFits(s).build(fitMats);
+  g.children.slice().forEach((c) => { (c as Mesh).castShadow = (c as Mesh).receiveShadow = true; fitGroup!.add(c); });
+}
+
+/** Scorch marks a run burns in, model space; each grows as `use` passes its turn. */
+const SCARS: Hit[] = [];
+/** `use` (0 to 1): how hard the run has used her. The paint chips, the grime builds, and scorch marks open one after another. */
+export function setUse(use: number): void {
+  USE.value = Math.max(0, Math.min(1, use));
+  SCARS.forEach((h, i) => {
+    const grow = Math.max(0, Math.min(1, (USE.value - 0.12 - i * 0.18) / 0.2));
+    HITS[6 + i]!.set(h[0], h[1], h[2], Math.max(0.001, h[3] * grow));
+  });
 }
 
 /** Where the live wounds are, model space: for smoke and sparks. `hard` is true at one plate left. */
@@ -639,6 +668,13 @@ function build(): BuiltHull {
     wounds.push(g);
   }
   woundGroups.push(wounds);
+  // the fittings: rebuilt into this group when an upgrade lands (setFit)
+  fitGroup = new Group();
+  fitMats = m;
+  root.add(fitGroup);
+  // where a run burns its own scorch marks in, in the order they come
+  const hit4 = (face: number, x: number, v: number, r: number): Hit => { const [px, py, pz] = onFace(hf[face]!, HY, 0, x, v, 0.03); return [px, py, pz, r]; };
+  SCARS.splice(0, SCARS.length, hit4(2, 0.3, 0.0, 0.5), hit4(6, -1.4, 0.0, 0.55), hit4(3, 0.9, 0.0, 0.42), hit4(2, -1.5, 0.05, 0.5));
   const cargo = deckKits.map((dk) => { const g = dk.build(m, 0.07); root.add(g); return g; });
   cargoGroups.push(cargo);
   return { root, wounds, cargo, nozzles, wings: [[-0.4, DY + DR - 0.05, -(DZ + DR)], [-0.4, DY + DR - 0.05, DZ + DR]], shield: [3.1, 1.05, 1.75] };

@@ -346,6 +346,8 @@ export class World implements EncounterHost {
   // the journey: the system being flown, what came aboard with the ship, and what this sortie did to the hunt
   sortie: SortieDef = HOME;
   private carryIn: Carry | null = null;
+  /** Wear brought from earlier systems (Carry.scars). */
+  private scarsIn = 0;
   /** Calloway: seconds into the sortie she arrives; whether she has, and whether her ship is the one fighting. */
   callowayAt = Infinity;
   callowayMet = false;
@@ -501,6 +503,7 @@ export class World implements EncounterHost {
     this.standing = { ...c.standing };
     this.jobs = c.jobs.map((j) => ({ ...j }));
     this.heard = new Set(c.seen);
+    this.scarsIn = c.scars ?? 0;
   }
 
   /** The cards that cannot come now: heard this sortie, or heard on the journey and not the kind that comes again. */
@@ -510,6 +513,16 @@ export class World implements EncounterHost {
     return out;
   }
 
+  /** Hits taken (a lost plate counts one, a shield charge a quarter) and time flown (900 s a point), over the journey. */
+  get scars(): number {
+    return this.scarsIn + this.run.platesLost + this.run.shieldsAbsorbed * 0.25 + this.runTime / 900;
+  }
+
+  /** How worn the hull shows, 0 to 1: about half after a dozen systems of flying and fighting. */
+  get use(): number {
+    return 1 - Math.exp(-this.scars / 12);
+  }
+
   /** What the ship carries now, into the next system. */
   carry(): Carry {
     return {
@@ -517,6 +530,7 @@ export class World implements EncounterHost {
       refit: this.refit, techs: [...this.techs], flags: [...this.flags], standing: { ...this.standing }, jobs: this.jobs.map((j) => ({ ...j })),
       seen: [...new Set([...this.heard, ...this.cardsSeen])],
       pending: this.script?.pending() ?? [],
+      scars: Math.round(this.scars * 100) / 100,
       hush: Math.min(HUSH, Math.round(this.runTime - this.desk.lastClose)),
     };
   }

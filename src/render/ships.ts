@@ -8,7 +8,7 @@ import { breakEase, type ShipState } from '../sim/ship';
 import { BREAK_TIME, ROLL_TIME } from '../sim/tuning';
 import type { V3 } from './kit';
 import { glowTexture } from './textures';
-import { animateLamps, buildWayward, MODEL_SCALE, setCargo, setDamage, setHullGlow, woundPoints, type BuiltHull, type Nozzle } from './wayward';
+import { animateLamps, buildWayward, MODEL_SCALE, setCargo, setDamage, setFit, setHullGlow, setUse, woundPoints, type BuiltHull, type Nozzle } from './wayward';
 
 // ── the player's ship ─────────────────────────────────────────────────────
 // The Wayward in flight: her model (wayward.ts) on a banking, pitching rig,
@@ -439,6 +439,12 @@ export class ShipView {
   /** The deck shows the hold: `frac` of its capacity, filling from astern. */
   setCargo(frac: number): void {
     setCargo(frac);
+  }
+
+  /** The upgrades show on the hull (their levels), and the run's wear builds with `use` (0 to 1). */
+  setFit(levels: Record<string, number>, use = 0): void {
+    setFit(levels);
+    setUse(use);
   }
 
   /** The hull wears a wound for each plate lost (eased in over half a second). */
