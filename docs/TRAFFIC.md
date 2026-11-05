@@ -45,4 +45,4 @@ The target card reads a patrol "Custody · Routine check".
 
 Patrols are the only part that can cost hull, and only for a ship already at
 Wanted 0.6 or more, where a pursuit is due anyway. Not re-piloted at length;
-`pilot:road` was run once after the change. Not measured on a phone.
+`pilot:road` after the change: 36/36 journeys reached the Narrows, 0 stuck, 0.0-0.5 wrecks a journey ([BALANCE-ROAD.md](BALANCE-ROAD.md)). Not measured on a phone.
