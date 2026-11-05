@@ -36,7 +36,7 @@ adds its own shape.
 ## The objective follows one flag
 
 `ship_stolen` is set by Sam's code (the `story_sam` card). Until it is, the course is
-the audit dock; after it, the paint bay at the Frontier Supply Depot (below); once she is
+the audit dock; after it, Ned's yard (below); once she is
 repainted, the Jump Gate. Nothing else holds state: `guideTarget`,
 `goal.ts`, the HUD's objective, the edge pointers and the arrival note all read
 `lockLifted(world.flags)`. The flag is banked with the card, so a save, reload or
@@ -44,29 +44,33 @@ restart of the sortie lands on the right objective. The story timing is untouche
 notice, as before. The audit dock stays on the scope as a place after the code (nothing
 leads to it), and the depot stays on the strip throughout.
 
-## The paint bay (owner, 5 November 2026)
+## Ned's yard (owner, 5 November 2026)
 
-Sam's code sets the call sign and lifts the lock; it no longer paints the hull. It also banks
-`paint_due`, and Sam sends her to the depot: Ned Varga, a friend of his, runs the paint bay there and
-does the hull for nothing. The course is the depot (objective "Get the hull repainted", the pause card's
-"Fly to the depot: free repaint at the paint bay"), and the Jump Gate holds ("Jump Gate holding · paint
-bay first") until she has been, so it is a thing she must do, not an option.
+Sam's code overrides the recovery autopilot and nothing more: the helm is hers, but she is still the company's grey hull. It also
+banks `paint_due`, and Sam's message says what to do: fly to Ned Varga's yard, hold her in his ring, and he reprograms, repaints and
+renames her, free. The yard is a site of its own (`yard` in `sim/breakout.ts`, `FIRST_YARD`), 0.58 of the way to the Jump Gate and 170
+units off the line, opposite the depot. It is a docking place like the depot, with no fly-by and no building to enter. Its own scope
+mark, edge pointer and objective ("Reach Ned's yard", "Make her yours · free") show only while the hull waits for it, and the Jump
+Gate holds ("Jump Gate holding · Ned's yard first") until she has been. The depot is untouched: fuel, plating and stores.
 
-1. She comes within 150 units of the depot: Ned's radio line (it replaces the depot's own hail).
-2. Once the line has been heard, 1.6 s on, the cut scene starts (about twelve seconds, no card, helm
-   locked, `sim/paintbay.ts` and `render/paintbay.ts`). The bay is an open work pad marked out beside the
-   depot, with no building and no people: a deck with hazard edges and guide lights, a gate arch at each
-   end and a gantry overhead. Ned brings her in on rails round to the pad, a light curtain closes across
-   the near gate, and the gantry's spray head sweeps the hull under flickering work lights. The far
-   curtain lifts as the paint goes on: `hull_repainted`, a teal notice "Hull repainted · Paint bay ·
-   Frontier Supply Depot", Ned's closing line, and the rename reveal (`render/reveal.ts`) plays. The helm
-   is hers again as she rolls out.
-3. 20 s later the archive's message (`story_wake`), at a free moment.
+1. She comes within 150 units: Ned's radio line ("ease her into the ring and hold still").
+2. She holds in the teal ring (`YARD_R`, slow like a dock, no fight on, `World.stepYard`) for the dock time. The work is done at once:
+   `hull_repainted` and `ship_renamed` are set, one teal notice "Ship reprogrammed · Repainted · renamed WAYWARD", and the rename
+   reveal plays (render/reveal.ts): her lights go out and come back white, one amber band takes the hull from grey to yellow, the
+   registry is struck out and WAYWARD written. The three arches light in turn, scan teal, spray amber with nozzle mist, mark white.
+3. Seven seconds on, a plain card (`story_yard_done`, one tap "Fly on") says what happened: reprogrammed, repainted, renamed.
+4. About 28 s after the work the archive unlocks: the herald "Hidden archive unlocked", then its message (`story_wake`), at a free moment.
 
-`painted(flags)` is `hull_repainted`, or the lock lifted with no `paint_due` (a save from before the
-paint bay is painted already, so no save version bump). If she docks while the paint is due, it goes on
-when she casts off. From the code to the paint nothing hunts her: no pursuit, no Thren swarm, no jam,
-and the system is `calm` (no anomalies) anyway. Every line takes its turn on the floor.
+The yard (`render/yard.ts`) is a deck and a few works set into a large asteroid: the game's own cratered basalt (`rockGeometry`,
+`lavaRock`), a pad ringed in yellow, post lamps and a hazard edge, the three arches and two spray masts, a shack, silo and conveyor,
+crates, fuel tanks, a portal cut into the rock with a lit hangar, a truss gantry with cable runs, and a lattice beacon mast with an
+orange lamp that pulses while the hull waits. It faces the company's dock. It is built a piece a frame from the moment the first
+system is entered (never at Sam's code, which froze), and its four lights exist from then at no intensity, so the scene's light count
+never changes while it plays (a change recompiles every lit material).
+
+`painted(flags)` is `hull_repainted`, or the lock lifted with no `paint_due` (a save from before the paint bay is painted already, so
+no save version bump). From the code to the paint nothing hunts her: no pursuit, no Thren swarm, no jam, and the system is `calm`
+anyway. Every line takes its turn on the floor.
 
 ## After the paint
 

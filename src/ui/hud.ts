@@ -716,9 +716,9 @@ export class Hud {
           text($('obj-left'), range(da));
           ticks($('obj-p'), Math.max(0, 1 - da / (bk.def.lane * 0.65)), 30);
         } else if (paintAt(world)) {
-          // Sam's code is in and the hull is still grey: the paint bay at the depot, free, is the course
-          const pt = bk.port!, dpt = Math.hypot(pt.x - s.x, pt.z - s.z);
-          text($('obj-t'), t('Get the hull repainted'));
+          // the autopilot is overridden and the hull is still the company's: Ned's yard, free, is the course
+          const pt = bk.yard!, dpt = Math.hypot(pt.x - s.x, pt.z - s.z);
+          text($('obj-t'), t('Reach Ned’s yard'));
           text($('obj-left'), range(dpt));
           ticks($('obj-p'), Math.max(0, 1 - dpt / (bk.def.lane * 0.65)), 30);
         } else if (refuelAt(world)) {
@@ -737,7 +737,7 @@ export class Hud {
           : world.gateWhy === 'resetting after the key' ? t('Jump Gate resetting') : world.gateWhy ? `${t('Jump Gate holding')} · ${t(world.gateWhy)}` : '');
         const lines: string[] = [];
         if (paintAt(world)) {
-          lines.push(`${t('Paint bay at {port}', { port: bk.port!.name })} · ${t('free')}`);
+          lines.push(`${t('Make her yours')} · ${t('free')}`);
         } else if (refuelAt(world)) {
           // two ways to fill it, on one line (a phone shows only the first): buy, or mine
           const pt = bk.port!;

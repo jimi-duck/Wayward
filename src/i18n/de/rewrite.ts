@@ -866,7 +866,7 @@ export const REWRITE: Record<string, string> = {
   "“They’re calling it a breach and want the hauler back. Let the autopilot fly.”": "„Sie nennen es Vertragsbruch und wollen den Frachter zurück. Lass den Autopiloten fliegen.“",
   "“Hold on, Juno. I’m working on a way out.”": "„Halt durch, Juno. Ich arbeite an einem Ausweg.“",
   "A way out": "Ein Ausweg",
-  "Juno. Keep this off the open channel.\nI’ve got a maintenance code to lift the owner lock. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name.\nBut you’ll have control of her again—and a chance to escape.": "Juno. Das bleibt aus dem offenen Kanal raus.\nIch hab einen Wartungscode, der die Eignersperre aufhebt. Die Rückholmarkierung bleibt, und legal wird das Schiff dadurch nicht. Die Schulden bleiben auf deinem Namen.\nAber du hast sie wieder in der Hand – und eine Chance zu entkommen.",
+  "Juno. Keep this off the open channel.\nI’ve got a maintenance code that overrides the recovery autopilot. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name.\nBut you’ll have control of her again—and a chance to escape.": "Juno. Das bleibt aus dem offenen Kanal raus.\nIch hab einen Wartungscode, der den Rückholautopiloten überschreibt. Die Rückholmarkierung bleibt, und legal wird das Schiff dadurch nicht. Die Schulden bleiben auf deinem Namen.\nAber du hast sie wieder in der Hand – und eine Chance zu entkommen.",
   "Input the code": "Code eingeben",
   "Unsent": "Nie gesendet",
   "Ship database · stored message": "Schiffsdatenbank · gespeicherte Nachricht",

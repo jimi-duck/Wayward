@@ -31,6 +31,8 @@ export const lockLifted = (flags: ReadonlySet<string> | readonly string[]): bool
  */
 export const PAINT_DUE = 'paint_due';
 export const PAINTED = 'hull_repainted';
+/** Set when Ned's yard has renamed and reprogrammed her: the call sign is OB-7731-A until then, WAYWARD after. */
+export const RENAMED = 'ship_renamed';
 const has = (flags: ReadonlySet<string> | readonly string[], f: string): boolean => (flags instanceof Set ? flags.has(f) : (flags as readonly string[]).includes(f));
 /** The hull wears the WAYWARD's paint: the depot did it, or the save is older than the paint bay. */
 export const painted = (flags: ReadonlySet<string> | readonly string[]): boolean => has(flags, PAINTED) || (has(flags, LOCK_LIFTED) && !has(flags, PAINT_DUE));
@@ -38,14 +40,14 @@ export const painted = (flags: ReadonlySet<string> | readonly string[]): boolean
 export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolean => lockLifted(flags) && !painted(flags);
 /** Whose bay it is: Sam's friend, who does the work himself. */
 export const PAINTER = 'Ned Varga';
-/** Ned on the radio when the ship comes up on the depot (hands off: he brings her in), and his last word as she rolls out. */
-export const PAINT_LINE = '“Wayward, this is Ned at the paint bay. Sam said you’d come. Hands off the stick, I’ll bring you in. No charge.”';
-export const PAINT_DONE = '“That’s you done. Tell Sam we’re square. Fly straight, Juno.”';
-export const PAINT_NOTICE = ['Hull repainted', 'Paint bay · Frontier Supply Depot'] as const;
-/** Seconds from his line being heard to the cut scene starting (sim/paintbay.ts); the paint goes on inside it, and the reveal (render/reveal.ts) plays as she rolls out. */
-export const PAINT_AT = 1.6;
-/** The archive's message comes this long after the paint is on (it used to follow the code). */
-export const PAINT_WAKE = 20;
+/** Ned on the radio when the ship comes up on his yard: hold her in the ring and he does the rest. */
+export const PAINT_LINE = '“OB-7731, this is Ned. Sam said you’d come. Ease her into the ring and hold still. New paint, new name, no charge.”';
+/** The pop-up card once the work is done (content/story.ts `story_yard_done`). */
+export const YARD_DONE = 'story_yard_done';
+export const PAINT_NOTICE = ['Ship reprogrammed', 'Repainted · renamed WAYWARD'] as const;
+/** The explanation card comes this long after the work (the reveal has played by then), and the archive's message this long after the work. */
+export const PAINT_CARD = 7;
+export const PAINT_WAKE = 28;
 
 /** The straight run from the arrival to the Jump Gate, in units: 10 km, about 25 s flat out. */
 export const POSTJUMP_LANE = 1000;
@@ -97,8 +99,8 @@ export const DEPOT_LINE = '“Depot control. Fuel, plating and stores at posted 
 export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
 
 /** The objective is the paint bay: the first system past Cerro, the lock lifted, the hull not yet repainted. */
-export function paintAt(w: { bk: { port: unknown } | null; flags: ReadonlySet<string> }): boolean {
-  return !!w.bk?.port && paintDue(w.flags);
+export function paintAt(w: { bk: { yard: unknown } | null; flags: ReadonlySet<string> }): boolean {
+  return !!w.bk?.yard && paintDue(w.flags);
 }
 
 /** The objective is the tank, bought at the depot or mined: the first system past Cerro, the lock lifted, a tank short of the jump, not docked yet, and Cyrite to buy with. */

@@ -3,7 +3,7 @@ import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { HOLD_MAX, JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
-import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
+import { setLightLevel, setLiveryBlend, setLiverySweep, setMark, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
 import { painted } from '../sim/postjump';
 import { SceneArc } from './scenes';
@@ -14,7 +14,7 @@ import type { World } from '../sim/world';
 import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
 import { SiteView } from './site';
-import { PaintBayView } from './paintbay';
+import { YardView } from './yard';
 import { CameraRig } from './camera';
 import { DebrisField } from './debris';
 import { Environment } from './environment';
@@ -89,7 +89,7 @@ export class Sector {
   private readonly mood = { fog: 0, dim: 0, tint: [0, 0, 0] as [number, number, number] };
   private readonly breakout: BreakoutView;
   private readonly site: SiteView;
-  private readonly paintBay: PaintBayView;
+  private readonly yard: YardView;
   private readonly warp: WarpView;
   /** The jump's path, latched when the drive lets go, and the run it belongs to. */
   private launch: Launch | null = null;
@@ -152,7 +152,7 @@ export class Sector {
     this.hazards = new HazardView(this.scene, glow, wreck);
     this.breakout = new BreakoutView(this.scene, glow);
     this.site = new SiteView(this.scene);
-    this.paintBay = new PaintBayView(this.scene);
+    this.yard = new YardView(this.scene);
     this.space = new SpaceView(this.scene, glow);
     this.warp = new WarpView(this.scene, glow, tier.name === 'low' ? 56 : tier.name === 'medium' ? 110 : 170);
     this.scene.add(this.ship.root);
@@ -592,9 +592,8 @@ export class Sector {
     this.rig.warp.lock = wt >= 0 ? Math.min(1, wt / 0.35) : 0;
     if (wt >= 0 && !this.reduceMotion && wt < 2.4) this.rig.hum(0.28 * Math.min(1, wt / 0.6));
     this.rig.update(subject, dt, this.reduceMotion);
-    // the paint bay's cut scene takes the camera for its two shots (render/paintbay.ts); the chase rig keeps running underneath, so it cuts back clean
-    this.paintBay.update(world, dt, this.fx);
-    this.paintBay.cine(world, this.rig.camera);
+    // Ned's yard, built into its rock (render/yard.ts)
+    this.yard.update(world, dt, this.fx);
     if (this.dyingT > 0) this.dyingT = Math.max(0, this.dyingT - dt);
     this.ship.root.visible = (world.alive || this.dyingT > 0) && (wt < 0 || whiteout(wt) < 0.97);
     this.fx.calm = this.reduceMotion || this.lowFx;
@@ -614,6 +613,11 @@ export class Sector {
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,
     }, uiDt);
+    // Ned's yard: as the band crosses, her lights go out and come back white, and the registry is struck out and the name written behind it
+    const sw = rv.sweep === null ? null : (rv.sweep + 1) / 2;
+    setMark(sw === null ? (stolen ? 1 : 0) : Math.min(1, Math.max(0, sw * 1.15 - 0.1)));
+    const tt = this.time;
+    setLightLevel(sw === null ? (this.reveal.active && rv.livery === 0 ? 0 : 1) : sw < 0.15 ? (Math.sin(tt * 37) * Math.sin(tt * 13) > 0.2 ? 0.35 : 0) : sw < 0.45 ? 0.1 : 1 + 0.7 * (1 - sw));
     setLiverySweep(rv.sweep === null ? null : -rv.sweep * SWEEP_SPAN);
     if (rv.sweep === null) setLiveryBlend(rv.livery);
     this.rig.reveal = Math.max(rv.arc, this.sceneArc.update(this.storyScene !== null, uiDt, this.reduceMotion));

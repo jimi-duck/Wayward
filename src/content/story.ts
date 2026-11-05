@@ -153,6 +153,7 @@ const GIST: Record<string, string> = {
   "story_breach": "Contract in breach · recovery ordered",
   "story_sam": "Sam has a code for the owner lock",
   "story_wake": "A stored message · Krail reserves 94%",
+  "story_yard_done": "Reprogrammed, repainted, renamed",
   "story_registry": "Lane checkpoint · your registry decides",
   "story_warden": "A retired Warden heard the shutdown order",
   "story_ledger": "A Kellern clerk sells the real books",
@@ -317,20 +318,30 @@ export const STORY_CARDS: CardDef[] = [
   story({
     id: 'story_sam', kind: 'warning', caller: 'miners', glass: 'ochre', status: 'Private', rx: SAM_BEARING, quote: true,
     from: 'Sam Okoro · private channel', title: 'A way out',
-    text: 'Juno. Keep this off the open channel.\nI’ve got a maintenance code to lift the owner lock. It won’t clear the recovery flag, and it won’t make the ship legal. The debt stays in your name.\nBut you’ll have control of her again—and a chance to escape.',
-    cargo: 'The audit dock · ahead',
+    text: 'Juno. Keep this off the open channel.\nThis code overrides the recovery autopilot. The debt stays in your name, but she’s yours to fly.\nFly to Ned Varga’s yard, off the lane. Hold her in his ring and he’ll reprogram, repaint and rename her. Free.',
+    cargo: 'Ned’s yard · off the lane',
     choices: [
       { id: 'code', label: 'Input the code', tone: 'run', hint: '',
-        // the code sets the call sign and nothing more (owner 2026-11-05): the paint is Ned's, at the depot (sim/postjump.ts PAINT_DUE)
-        win: { text: 'Owner lock lifted · call sign now WAYWARD', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
-          signal: { tone: 'teal', headline: 'Owner lock lifted', reason: 'Call sign now WAYWARD' },
-          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Not the port now. The Frontier depot. Ned runs the paint bay, he owes me. Free. Go.”' } } },
+        // the code overrides the autopilot and nothing more (owner 2026-11-05): she is still the company's grey hull; Ned's yard makes her hers (sim/postjump.ts PAINT_DUE)
+        win: { text: 'Autopilot overridden · the helm is yours', flag: ['ship_stolen', 'paint_due', 'lease_broken', 'codes', 'tam_codes', 'tam_favour'], heat: 0.12,
+          signal: { tone: 'teal', headline: 'Autopilot overridden', reason: 'Lane Control shut out' },
+          radio: { from: 'Sam Okoro', caller: 'miners', delay: 0.4, text: '“Don’t dock. Ned’s yard first. Go.”' } } },
+    ],
+  }),
+  story({
+    // what Ned's yard did, in plain words (owner 2026-11-05): a simple text box after the work, one tap
+    id: 'story_yard_done', handover: true, kind: 'warning', caller: 'miners', glass: 'cyan', status: 'Work done',
+    from: 'Ned’s yard', title: 'She’s the Wayward now',
+    text: 'Reprogrammed: her owner lock is gone.\nRepainted: company grey is now yellow.\nRenamed: OB-7731-A struck out. She’s the WAYWARD.\nPaint won’t pass a scan.',
+    cargo: 'The Wayward · call sign WAYWARD',
+    choices: [
+      { id: 'on', label: 'Fly on', tone: 'run', hint: '', win: { text: 'Reprogrammed · repainted · renamed' } },
     ],
   }),
   story({
     // a message someone left in the ship's database (owner, 23 October 2026): no headline figure, no record to open
     id: 'story_wake', kind: 'warning', caller: 'unknown', glass: 'cyan', status: 'Unsent', quote: true, notitle: true,
-    herald: { headline: 'Stored message', reason: 'Found in the ship database' },
+    herald: { headline: 'Hidden archive unlocked', reason: 'Found in the ship database' },
     from: 'Ship database · stored message', title: 'For whoever flies her next',
     letter: { head: [['To', 'Whoever flies her next'], ['From', 'No name given'], ['Kept in', 'Crew notes, hidden']], sign: '— No name. In case they read this before you do.' },
     text: 'If you’re reading this, the owner lock is off and she answers to you. I hid this where the company’s audits never look.\nSeventy years ago the gates to the outer worlds went dark. We were told the Krail was running out. The worlds left outside became the Scatter.\nI pulled the reserve log for that day. Krail reserves: 94%. Logged the same day the order to close the gates was signed.\nI can’t tell you what that number leaves out. But it doesn’t fit the story we were told.\nStart at Halden’s Reach. Follow the record. The relays there still answer to the right key.',

@@ -197,7 +197,11 @@ describe('the forced recovery', () => {
     expect(painted(w.flags)).toBe(false);
     paintHull(w);
     expect(painted(w.flags)).toBe(true);
-    run(w, 60);
+    // the hands off the controls: shooting the yard's neighbours would start the hunt and keep the archive waiting
+    run(w, 60, { ...FULL, turn: 0, thrust: 0, fire: false });
+    expect(w.comms?.def.id).toBe('story_yard_done');
+    w.answer(0);
+    run(w, 60, { ...FULL, turn: 0, thrust: 0, fire: false });
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w, 'lead');
     expect(j.carry.flags).toEqual(expect.arrayContaining(['archive_woke', RECOVERY_FLAG, 'ship_stolen']));
@@ -399,6 +403,9 @@ describe('the forced recovery across a reload', () => {
     expect(paintDue(w2.flags)).toBe(true);
     // a save made after the code plays the archive as soon as the paint is on (its own beat); leave the card up
     paintHull(w2, () => undefined);
+    run(w2, 60);
+    expect(w2.comms?.def.id).toBe('story_yard_done');
+    w2.answer(0);
     run(w2, 60);
     expect(w2.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w2, 'lead');
