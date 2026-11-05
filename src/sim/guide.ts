@@ -2,7 +2,7 @@ import { angleDelta } from '../core/math';
 import { ENCOUNTERS } from './encounters';
 import { ALIEN_TYPES, cloaked, FIRE_RANGE } from './enemies';
 import { topSpeed } from './ship';
-import { lockLifted } from './postjump';
+import { lockLifted, paintAt } from './postjump';
 import type { World } from './world';
 
 // ── the guide ─────────────────────────────────────────────────────────────
@@ -73,6 +73,8 @@ export function guideTarget(world: World): Guide | null {
   if (bk) {
     if (bk.dockT > 0 && port) return { kind: 'port', name: port.name, x: port.x, z: port.z, r: port.r };
     if (audit && !lockLifted(world.flags)) return { kind: 'audit', name: audit.name, x: audit.x, z: audit.z, r: audit.r };
+    // the paint bay: Sam's code is in, the hull is still grey, the depot is the course
+    if (port && paintAt(world)) return { kind: 'port', name: port.name, x: port.x, z: port.z, r: port.r };
     if (lane) return { kind: 'lane', name: lane.name, x: lane.x, z: lane.z, r: lane.r };
   }
   return null;

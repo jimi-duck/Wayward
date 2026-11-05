@@ -1,6 +1,6 @@
 import { ENCOUNTERS } from './encounters';
 import { lessonOf } from './tutor';
-import { lockLifted, refuelAt } from './postjump';
+import { lockLifted, paintAt, refuelAt } from './postjump';
 import type { World } from './world';
 
 // ── the one line the pause card shows ─────────────────────────────────────
@@ -16,6 +16,8 @@ export function goalOf(w: World): Goal {
   const e = w.encounter;
   if (e && !e.done && e.id === 'scene' && w.stage?.taken) return { goal: w.stage.line, jobs };
   const scope = w.stage?.onScope ? w.stage.def.name : undefined;
+  // the paint bay comes before everything (owner, 5 November 2026): Sam's code leaves the hull grey and Pia does it free at the depot
+  if (paintAt(w)) return { goal: 'Fly to the depot: free repaint at the paint bay', jobs, scope };
   const story = w.storyGoal().main;
   // the HUD's rule: an empty tank comes before the stop's line
   if (story && (!w.bk || w.fuel >= w.jumpCost)) return { goal: story, jobs, scope };

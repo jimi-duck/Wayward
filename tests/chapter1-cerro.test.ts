@@ -6,6 +6,7 @@ import { cargoOf, lessonOf, stepOf, LESSON_NODE } from '../src/sim/tutor';
 import { HOLD_AT_START } from '../src/sim/contract';
 import { STEP } from '../src/core/loop';
 import type { InputFrame } from '../src/input/types';
+import { paintHull } from './paint';
 
 // Chapter one, the Cerro opening on many seeds (docs/QA-CHAPTER-1.md): the same beats every time, flown with real
 // input where the player's hands are on the ship (the laser), and the sim's own answers where they are on a card.
@@ -138,8 +139,12 @@ describe('chapter one: from the gate through the story chain', () => {
     next.skipTraining();
     const seen: string[] = [];
     // the archive waits for a free sky (sim/floor.ts): an idle hull may sit out a fight first
-    for (let i = 0; i < 60 * 180; i++) {
+    for (let i = 0; i < 60 * 240; i++) {
       if (next.phase === 'comms') { seen.push(next.comms!.def.id); next.answer(0); continue; }
+      // a demand on the radio (a patrol's sweep) holds the world until it is answered, as it would for a player
+      if ((next as unknown as { call: unknown }).call) { next.answer(0, true); }
+      // the code leaves the hull grey: the archive waits until the ship has been to the depot (owner 2026-11-05)
+      if (next.flags.has('ship_stolen') && !next.flags.has('hull_repainted')) paintHull(next, (x) => { seen.push(x.comms!.def.id); x.answer(0); });
       next.ship.invuln = 1; next.step(STEP, input());
     }
     const at = (id: string) => seen.indexOf(id);

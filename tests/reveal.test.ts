@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ARC_END, HOLD_END, LOCK_AT, RenameReveal, SWEEP_END } from '../src/render/reveal';
 import { CARD_BY_ID } from '../src/sim/comms';
+import { PAINT_WAKE } from '../src/sim/postjump';
 
 // The rename reveal is presentation only: the `ship_stolen` flag is the livery, and the reveal plays once, when the
 // flag turns on in play, never on a load.
@@ -67,9 +68,9 @@ describe('rename reveal', () => {
   it('takes its time: a long, wide arc, and no card over it (owner 2026-10-31)', () => {
     expect(ARC_END).toBeGreaterThanOrEqual(5);
     expect(HOLD_END).toBeGreaterThan(ARC_END);
-    const sam = CARD_BY_ID.story_sam!.choices.find((c) => c.id === 'code')!;
-    expect(sam.win?.follow?.quick).toBeFalsy();
-    expect(sam.win?.follow?.after).toBeGreaterThanOrEqual(20);
+    // the archive follows the paint, not the code (owner 2026-11-05), and never as a quick card over the arc
+    expect(PAINT_WAKE).toBeGreaterThanOrEqual(20);
+    expect(CARD_BY_ID.story_sam!.choices.find((c) => c.id === 'code')!.win?.follow).toBeUndefined();
     // mid-arc the camera is still moving
     const r = new RenameReveal();
     run(r, 0, 1, { stolen: false });

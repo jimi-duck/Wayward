@@ -9,6 +9,7 @@ import { BASE } from '../src/sim/stats';
 import { SHIP_R } from '../src/sim/tuning';
 import { World } from '../src/sim/world';
 import { PATCH_COST } from '../src/sim/breakout';
+import { paintAt } from '../src/sim/postjump';
 import type { Tone } from '../src/sim/comms';
 import type { RunStats } from '../src/sim/run';
 import type { GameEvent } from '../src/sim/events';
@@ -329,8 +330,9 @@ function control(w: World, close: boolean, memo: Memo): InputFrame {
   // the purse is what the port and the bay can have; the tank is the jump's
   const over = bk ? w.cyrite : 0;
   const hungry = !!bk && w.supplies < 9 && over >= pr.supplies * 3;
-  const goPort = !!bk && !!bk.port && bk.docks === 0
-    && (hungry || over >= 24 || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && over >= pr.plate));
+  // Sam's friend paints the hull at the depot and the first Jump Gate waits for it (sim/postjump.ts): the pilot goes there first
+  const goPort = !!bk && !!bk.port && (paintAt(w) || (bk.docks === 0
+    && (hungry || over >= 24 || (w.plates < st.maxPlates && w.supplies < PATCH_COST + 2 && over >= pr.plate))));
   const dest = bk ? (goPort ? bk.port : !need ? bk.lane : null) : null;
   if (bk) {
     const wp = dest ?? bk.lane, dx = wp.x - s.x, dz = wp.z - s.z, d = Math.hypot(dx, dz) || 1;

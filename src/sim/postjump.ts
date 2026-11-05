@@ -23,6 +23,29 @@ export const SUPPLY_DEPOT = 'Frontier Supply Depot';
 export const LOCK_LIFTED = 'ship_stolen';
 export const lockLifted = (flags: ReadonlySet<string> | readonly string[]): boolean => (flags instanceof Set ? flags.has(LOCK_LIFTED) : (flags as readonly string[]).includes(LOCK_LIFTED));
 
+/**
+ * The repaint (owner, 5 November 2026). Sam's code lifts the lock and sets the call sign; the paint is another matter. A friend of
+ * Sam's runs the paint bay at the Frontier Supply Depot and does the hull for nothing, so the course is the depot until she has been
+ * there. `paint_due` is banked with the code, `hull_repainted` at the depot. A save that has the lock lifted and no `paint_due` (made
+ * before this) is repainted already, so no old save is sent back to the depot and the flag set needs no new save version.
+ */
+export const PAINT_DUE = 'paint_due';
+export const PAINTED = 'hull_repainted';
+const has = (flags: ReadonlySet<string> | readonly string[], f: string): boolean => (flags instanceof Set ? flags.has(f) : (flags as readonly string[]).includes(f));
+/** The hull wears the WAYWARD's paint: the depot did it, or the save is older than the paint bay. */
+export const painted = (flags: ReadonlySet<string> | readonly string[]): boolean => has(flags, PAINTED) || (has(flags, LOCK_LIFTED) && !has(flags, PAINT_DUE));
+/** The lock is lifted and the hull is still the company's grey: the objective is the paint bay. */
+export const paintDue = (flags: ReadonlySet<string> | readonly string[]): boolean => lockLifted(flags) && !painted(flags);
+/** Whose bay it is. */
+export const PAINTER = 'Pia Venn';
+/** Pia on the radio when the ship comes up on the depot, and the notice when the paint is on. */
+export const PAINT_LINE = '“Wayward, this is Pia at the paint bay. Sam said you’d come. Hold still by the ring. No charge, it’s done in a minute.”';
+export const PAINT_NOTICE = ['Hull repainted', 'Paint bay · Frontier Supply Depot'] as const;
+/** Seconds from her line to the first stroke of paint (the reveal, render/reveal.ts, starts then). */
+export const PAINT_AT = 3.5;
+/** The archive's message comes this long after the paint is on (it used to follow the code). */
+export const PAINT_WAKE = 20;
+
 /** The straight run from the arrival to the Jump Gate, in units: 10 km, about 25 s flat out. */
 export const POSTJUMP_LANE = 1000;
 
@@ -72,8 +95,13 @@ export const STOLEN_SAM_POOR = '“And you’re running dry, with nothing to pay
 export const DEPOT_LINE = '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”';
 export const STOLEN_NOTICE = ['Hull reported stolen', 'Kellern has called in Custody'] as const;
 
+/** The objective is the paint bay: the first system past Cerro, the lock lifted, the hull not yet repainted. */
+export function paintAt(w: { bk: { port: unknown } | null; flags: ReadonlySet<string> }): boolean {
+  return !!w.bk?.port && paintDue(w.flags);
+}
+
 /** The objective is the tank, bought at the depot or mined: the first system past Cerro, the lock lifted, a tank short of the jump, not docked yet, and Cyrite to buy with. */
 export function refuelAt(w: { bk: { def: { first?: boolean }; port: unknown; docks: number } | null; flags: ReadonlySet<string>; fuel: number; jumpCost: number; cyrite: number; fluidPrice: number }): boolean {
   const b = w.bk;
-  return !!b?.def.first && !!b.port && b.docks === 0 && lockLifted(w.flags) && w.fuel < w.jumpCost && w.cyrite >= w.fluidPrice;
+  return !!b?.def.first && !!b.port && b.docks === 0 && painted(w.flags) && w.fuel < w.jumpCost && w.cyrite >= w.fluidPrice;
 }

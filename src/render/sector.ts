@@ -5,6 +5,7 @@ import { HOLD_MAX, JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
 import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
+import { painted } from '../sim/postjump';
 import { SceneArc } from './scenes';
 import type { Faction } from '../sim/enemies';
 import { inFight } from '../sim/guide';
@@ -602,7 +603,7 @@ export class Sector {
     this.ship.setFit(world.levels, world.use);
     // the paint follows the flag; the rename's one sweep and camera arc only decide how it is shown (render/reveal.ts)
     // the Arcade flies her in her own paint from the start (the grey company livery is the Story's before-state)
-    const stolen = world.flags.has('ship_stolen') || world.mode === 'arcade';
+    const stolen = painted(world.flags) || world.mode === 'arcade';
     const rv = this.reveal.update({
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,

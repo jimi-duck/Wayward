@@ -42,4 +42,17 @@ export const POSTJUMP: Record<string, string> = {
   'Routine check': 'Routinekontrolle',
   '“Routine check. Hold your course.”': '„Routinekontrolle. Kurs halten.“',
   '“Your hull is flagged. Stand down.”': '„Dein Rumpf ist markiert. Stopp.“',
+  // the paint bay (owner 2026-11-05): Sam's code sets the call sign; Pia, at the depot, paints the hull for nothing
+  '“Not the port now. The Frontier depot. Pia runs the paint bay, she owes me. Free. Go.”': '„Nicht mehr der Hafen. Das Frontier-Depot. Pia führt dort die Lackierhalle, sie schuldet mir was. Kostenlos. Flieg hin.“',
+  'Owner lock lifted · call sign now WAYWARD': 'Eignersperre aufgehoben · Rufzeichen jetzt WAYWARD',
+  'Call sign now WAYWARD': 'Rufzeichen jetzt WAYWARD',
+  '“Wayward, this is Pia at the paint bay. Sam said you’d come. Hold still by the ring. No charge, it’s done in a minute.”': '„Wayward, hier Pia aus der Lackierhalle. Sam hat gesagt, du kommst. Bleib am Ring stehen. Kostet nichts, in einer Minute ist es erledigt.“',
+  'Hull repainted': 'Rumpf neu lackiert',
+  'Paint bay · Frontier Supply Depot': 'Lackierhalle · Frontier-Depot',
+  'Pia Venn': 'Pia Venn',
+  'Fly to the depot: free repaint at the paint bay': 'Zum Depot fliegen: kostenlos neu lackieren in der Lackierhalle',
+  'Get the hull repainted': 'Rumpf neu lackieren lassen',
+  'Paint bay at {port}': 'Lackierhalle am {port}',
+  'free': 'kostenlos',
+  'paint bay first': 'erst zur Lackierhalle',
 };

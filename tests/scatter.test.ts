@@ -158,6 +158,8 @@ describe('the Thren in a sortie', () => {
       const w = threnSortie(0.8, cyrite);
       for (let i = 0; i < Math.round(240 / STEP); i++) {
         if (w.phase === 'comms') w.answer(0, true);
+        // the code leaves the hull grey and nothing swarms until Pia has painted it (owner 2026-11-05): skip the errand here
+        if (w.flags.has('paint_due')) w.flags.add('hull_repainted');
         w.step(STEP, input());
         if (w.aliens.some((a) => a.variant === 'mote')) return { t: w.runTime, w };
       }

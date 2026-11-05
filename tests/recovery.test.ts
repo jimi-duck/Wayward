@@ -5,7 +5,8 @@ import { owed, ledgerFor } from '../src/sim/contract';
 import type { SortieResult } from '../src/sim/breakout';
 import { autoCourse, bankAnswer, endSortie, newJourney, sortieDef, type Journey } from '../src/sim/journey';
 import { newRun } from '../src/sim/run';
-import { lockLifted } from '../src/sim/postjump';
+import { lockLifted, painted, paintDue } from '../src/sim/postjump';
+import { paintHull } from './paint';
 import { HOLD_R, RECOVERY_FLAG, RECOVERY_T, SAM_CALL_R, clearCourse, recovering } from '../src/sim/recovery';
 import { postJump } from '../src/sim/postjump';
 import { WEATHER, calmWeights, pickEncounter } from '../src/sim/encounters';
@@ -190,10 +191,13 @@ describe('the forced recovery', () => {
     run(w, 1);
     expect(w.comms).toBeNull();
     expect(w.ship.heading).toBeLessThan(h - 0.3);
-    // no registry card: the archive comes on its own, 20 s or more after the code
-    run(w, 18);
+    // the code sets the call sign only: the archive waits for the paint at the depot (owner 2026-11-05), however long that takes
+    run(w, 60);
     expect(w.comms).toBeNull();
-    run(w, 40);
+    expect(painted(w.flags)).toBe(false);
+    paintHull(w);
+    expect(painted(w.flags)).toBe(true);
+    run(w, 60);
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w, 'lead');
     expect(j.carry.flags).toEqual(expect.arrayContaining(['archive_woke', RECOVERY_FLAG, 'ship_stolen']));
@@ -387,10 +391,14 @@ describe('the forced recovery across a reload', () => {
     const w0 = breach(j);
     run(w0, RECOVERY_T + 0.2);
     answer(j, w0, 'code');
-    // loaded before the archive came: straight to it, with the helm free, never a registry card
+    // loaded before the paint: the helm is free, the hull is grey, and the archive waits for the depot
     const w2 = arrive(j);
     expect(recovering(w2.flags)).toBe(false);
     run(w2, OPENING_AT + 0.5);
+    expect(w2.comms).toBeNull();
+    expect(paintDue(w2.flags)).toBe(true);
+    paintHull(w2);
+    run(w2, 60);
     expect(w2.comms?.def.id).toBe(WAKE_BEAT);
     answer(j, w2, 'lead');
     const w3 = arrive(j);

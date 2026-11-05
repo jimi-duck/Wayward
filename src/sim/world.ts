@@ -18,7 +18,7 @@ import { debtLeft } from './threads';
 import { GHOST_STOP, GHOST_TANK, spawnGhost, stepGhost, type Ghost } from './ghost';
 import { DAY_SECONDS, halfDays } from './hunt';
 import { SCRIPT } from '../content/script';
-import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT } from '../content/story';
+import { CERRO_BEATS, OPENING_AT, SAM_BEAT, STORY_AT, WAKE_BEAT } from '../content/story';
 import { ledgerFor, type LedgerRow } from './contract';
 import {
   APPROACH, JUMP_T, BLOCKADE_AT, BLOCKADE_HP, CAPITAL_CYRITE, CAPITAL_KRAIL, CAPITAL_SUPPLIES, ROCK_KRAIL, WRECK_KRAIL, DOCK_COOL, DOCK_TIME, HEAT_CLOCK, HEAT_MINE, MINE_WORK, rockTake, TORP_YIELD, HEAT_KILL, HEAT_KILL_CUSTODY, HEAT_RATE, QUIET_COOL, JUMP_COST, PATCH_COST,
@@ -33,7 +33,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_AT, PAINT_LINE, PAINT_NOTICE, PAINT_WAKE, PAINTED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
@@ -428,6 +428,7 @@ export class World implements EncounterHost {
     this.follows = [];
     this.portCalled = false;
     this.auditCalled = false;
+    this.paintCalled = false; this.paintT = Infinity;
     this.recoverT = 0;
     this.radioQ = [];
     this.floor = new Floor();
@@ -735,7 +736,8 @@ export class World implements EncounterHost {
     // the sector
     this.field.step(dt, s.x, s.z, this.bk ? { ...p, rockHp: p.rockHp * MINE_HP, rich: this.richShare } : p);
     // under recovery nothing comes for her at all (the arcade's waves are not the Story's)
-    if (this.bk) { if (!held) { this.pursue(t); this.swarm(t); this.jam(dt); } }
+    // ...and from the code to the paint bay nothing comes either (owner, 5 November 2026): no pursuit, no swarm, no jam
+    if (this.bk) { if (!held) { this.pursue(t); if (!(this.bk.def.first && paintDue(this.flags))) { this.swarm(t); this.jam(dt); } } }
     else this.spawn(t, p);
     this.stepAliens(dt, t, p);
     const before = this.command.state, sighted = this.command.boss;
@@ -828,7 +830,8 @@ export class World implements EncounterHost {
     if (b.nagT > 0) b.nagT -= dt;
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
-    this.stage?.step(this, dt);
+    // a situation (a patrol's sweep, a toll) waits in the first system until the paint is on (owner, 5 November 2026: nothing comes between the code and the depot)
+    if (!(b.def.first && paintDue(this.flags))) this.stage?.step(this, dt);
     if (this.phase === 'play') this.traffic?.step(this, dt);
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
@@ -896,7 +899,7 @@ export class World implements EncounterHost {
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: SCAN_LINE, reason: this.sortie.name });
     }
 
-    if (beat && !this.storyMade && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
+    if (beat && !this.storyMade && !(beat === WAKE_BEAT && paintDue(this.flags)) && this.runTime >= (opening ? OPENING_AT : STORY_AT) && this.command.state === 'idle' && this.phase === 'play' && b.blockade !== 'checkpoint' && b.jumpT < 0) {
       this.storyMade = true;
       const def = CARD_BY_ID[beat];
       // Sam's card is the recovery's to deal, at 2 km from the dock, even after a load mid-recovery
@@ -1061,6 +1064,9 @@ export class World implements EncounterHost {
   /** When Sam's code lifted the owner lock in the first system past Cerro (Infinity: not yet). */
   private stolenAt = Infinity;
   private stolenSaid = 0;
+  /** The paint bay (sim/postjump.ts): Pia has been heard (so the first stroke is due at `paintT`), and the paint is on. */
+  private paintCalled = false;
+  private paintT = Infinity;
   /** The first system past Cerro: the hull is not reported stolen yet, so nothing there explains Wanted yet (main.ts holds the note). */
   get beforeReport(): boolean { return !!this.bk?.def.first && this.runTime < this.stolenAt + STOLEN.notice + STOLEN.explain; }
 
@@ -1070,7 +1076,7 @@ export class World implements EncounterHost {
    * then does the first Custody hull come (STOLEN). Returns whether the pursuit may run.
    */
   private stolen(t: number): boolean {
-    if (!lockLifted(this.flags)) return false;
+    if (!painted(this.flags)) return false;
     const b = this.bk!;
     if (this.stolenAt === Infinity) { this.stolenAt = t; b.nextPursuit = Math.max(b.nextPursuit, t + STOLEN.pursuit); }
     const since = t - this.stolenAt, name = b.def.name;
@@ -1565,6 +1571,12 @@ export class World implements EncounterHost {
    */
   private gateHeld(): boolean {
     const sc = this.script, b = this.bk;
+    // the hull is still the company's grey (owner, 5 November 2026): the gate waits for the paint bay
+    if (b?.def.first && b.port && paintDue(this.flags)) {
+      this.gateWhy = 'paint bay first';
+      if (this.holdNoted !== this.gateWhy) { this.holdNoted = this.gateWhy; this.events.push({ type: 'storyNotice', tone: 'amber', headline: 'Jump Gate holding', reason: this.gateWhy }); }
+      return true;
+    }
     if (!sc || !b || this.gateLet) return false;
     const tank = this.tankCap ? this.fuel / this.tankCap : 0;
     const o = sc.owed(this.flags, tank);
@@ -1727,10 +1739,24 @@ export class World implements EncounterHost {
       // the depot says so on the radio, no card (owner 2026-10-31): flying into its ring docks
       if (hail === 'depot_hail') {
         this.portCalled = true;
-        this.events.push({ type: 'ping', id: 'depot_hail', from: tr('Frontier Supply Depot'), caller: 'frontier', text: tr(DEPOT_LINE), moment: 'calm', system: b.def.name });
+        // with the paint due, Pia is the depot's voice (below): one line, not two
+        if (!paintDue(this.flags)) this.events.push({ type: 'ping', id: 'depot_hail', from: tr('Frontier Supply Depot'), caller: 'frontier', text: tr(DEPOT_LINE), moment: 'calm', system: b.def.name });
       } else if (hail) {
         this.auditCalled = true;
         d.offer(CARD_BY_ID[hail]!, 'major', t, true);
+      }
+    }
+    // the paint bay (owner, 5 November 2026): Sam's code leaves the hull grey; Pia, at the depot, does it for nothing. Her line comes when the
+    // ship comes up on the depot, the paint goes on a moment after it is heard (the reveal plays then), and the archive follows later
+    if (b.port && paintDue(this.flags) && !this.docked && this.phase === 'play') {
+      if (!this.paintCalled && b.port && Math.hypot(s.x - b.port.x, s.z - b.port.z) < PORT_CALL) {
+        this.paintCalled = true;
+        this.events.push({ type: 'ping', id: 'paint_bay', from: tr(PAINTER), caller: 'frontier', text: tr(PAINT_LINE), moment: 'calm', system: b.def.name });
+      }
+      if (this.paintCalled && t >= this.paintT) {
+        this.flags.add(PAINTED);
+        this.events.push({ type: 'storyNotice', tone: 'teal', headline: PAINT_NOTICE[0], reason: PAINT_NOTICE[1] });
+        this.follows.push({ card: WAKE_BEAT, at: t + PAINT_WAKE });
       }
     }
     // the port's approach calls once
@@ -1789,7 +1815,11 @@ export class World implements EncounterHost {
   private speak(): void {
     this.floor.take(this.events, this.runTime);
     const e = this.floor.step(this.runTime, this.phase === 'play' && !this.call && this.alive);
-    if (e) this.events.push(e);
+    if (e) {
+      this.events.push(e);
+      // the first stroke of paint waits for her voice to have gone out
+      if (e.type === 'ping' && e.id === 'paint_bay') this.paintT = this.runTime + PAINT_AT;
+    }
   }
 
   /** One line on the radio for this moment, if one fits and has not been heard. */

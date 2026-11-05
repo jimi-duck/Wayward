@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { paintHull } from './paint';
 import { BEATS, BREACH_BEAT, SAM_BEAT, CERRO_BEATS, FRAGMENTS, FRAGMENTS_ALL, OPENING_AT, STORY_AT, STORY_CARDS, WAKE_BEAT } from '../src/content/story';
 import type { SortieResult } from '../src/sim/breakout';
 import { jumps, viewOf } from '../src/sim/chart';
@@ -137,9 +138,11 @@ describe('the story beats', () => {
     w.answer('code');
     // no registry card (owner 2026-10-31): the state is committed at once, and the archive wakes 20 s or more on
     expect(w.result().carry.flags).toContain('ship_stolen');
-    run(18);
+    // the code sets the call sign only; the archive waits for the paint at the depot (owner 2026-11-05)
+    run(60);
     expect(w.comms).toBeNull();
-    run(40);
+    paintHull(w);
+    run(120);
     expect(w.comms?.def.id).toBe(WAKE_BEAT);
     const after = w.result().carry;
     expect(after.flags).toEqual(expect.arrayContaining(['ship_stolen', 'lease_broken', 'codes', 'tam_codes', 'tam_favour']));
