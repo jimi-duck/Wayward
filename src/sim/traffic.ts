@@ -1,6 +1,6 @@
 import { t } from '../i18n';
 import { Rng } from './rng';
-import { leave, VARIANTS, type Alien } from './enemies';
+import { leave, provoke, VARIANTS, type Alien } from './enemies';
 import { lockLifted } from './postjump';
 import type { World } from './world';
 
@@ -38,6 +38,8 @@ const SCATTER_R = 170;
 
 interface Route {
   id: string;
+  /** Runs to or from the port: it may end at the ring's edge (a ship docking) and starts there (one casting off). */
+  port?: boolean;
   /** Points as [share of the way to the gate, units off the line (right positive)]. */
   pts: Array<[number, number]>;
   /** Loops forever instead of ending. */
@@ -65,7 +67,47 @@ export const ROUTES: Route[] = [
   { id: 'passage', pts: [[0.05, 1750], [0.55, 1550], [1.1, 1700]], ships: ['liner', 'hauler'], pace: [2, 2.8] },
 ];
 
+
+// ── every other system ────────────────────────────────────────────────────
+// The sky past the first is busy in proportion to the kind of place it is: a port is a
+// crowd, an empty crossing a few freighters, Thren and Voice space nobody at all. The lines
+// are laid from the course, so a crossing never runs through the Jump Gate, and a port gets
+// its own: ships coming in to dock, ships casting off, and a slow harbour loop about it.
+// A Custody patrol drops by now and then to look you over (see `patrolStep`).
+
+/** What a system's traffic is: how many hulls, whether patrols call, and the lines. */
+export interface TrafficPlan { n: number; patrols: boolean; routes: Route[]; busy: boolean }
+
+/** Hulls by the kind of place. */
+const KIND_N: Record<string, number> = { port: 7, mining: 3, transit: 4, contested: 3, gate: 4, edge: 1 };
+/** Who is about silences it: nobody trades in the Hollows, and a raid thins the lanes. */
+const here_ = (d: { here?: string[]; thren?: number }): number => (d.here?.some((h) => h === 'voice' || h === 'thren') || (d.thren ?? 0) > 0.3 ? 0 : d.here?.includes('raid') ? 0.5 : 1);
+
+/** A patrol drops by this long after arrival, then again after this many seconds. */
+export const PATROL_FIRST: [number, number] = [75, 110];
+export const PATROL_GAP: [number, number] = [150, 220];
+/** Per system, at most this many calls. */
+export const PATROL_MAX = 3;
+/** The patrol comes alongside to this far and keeps this long on the ship. */
+export const PATROL_STAND = 55;
+export const PATROL_LOOK = 6;
+/** The heat at which a patrol finds the ship flagged and turns on it. */
+export const PATROL_FLAG = 0.6;
+
+/** The plan for this world's system, or null where there is none (the opening, a scene's stage, a quiet hostile sky). */
+export function trafficPlan(w: World): TrafficPlan | null {
+  const b = w.bk;
+  if (!b) return null;
+  const d = b.def;
+  if (d.first) return { n: TRAFFIC_N, patrols: false, routes: ROUTES, busy: true };
+  if (d.home || (d.situation && !d.home)) return null;
+  const n = Math.round((KIND_N[d.kind] ?? 0) * here_(d));
+  if (n <= 0) return null;
+  return { n, patrols: !d.safe && d.kind !== 'edge', routes: [], busy: false };
+}
+
 interface Hull { al: Alien; route: Route; leg: number; }
+interface Patrol { al: Alien[]; phase: 'in' | 'look' | 'out'; since: number; side: number }
 
 const now_ = (w: World): number => w.runTime;
 
@@ -83,13 +125,64 @@ export class Traffic {
   private nextDispatch = 0;
   private warnAt = -Infinity;
   private pick = 0;
+  private routes: Route[];
+  private n: number;
+  private busy: boolean;
+  private patrols: boolean;
+  private patrol: Patrol | null = null;
+  private patrolled = 0;
+  private crews: Alien[] = [];
+  private nextPatrol = Infinity;
 
-  constructor(w: World) {
+  constructor(w: World, plan: TrafficPlan) {
     const b = w.bk!, h = w.ship.heading;
     this.fx = Math.cos(h); this.fz = -Math.sin(h); this.rx = Math.sin(h); this.rz = Math.cos(h);
     this.len = b.def.lane; this.x0 = w.ship.x; this.z0 = w.ship.z;
     this.rng = new Rng(0x7a1f ^ w.seed);
-    for (let i = 0; i < TRAFFIC_N; i++) this.launch(w, true);
+    this.n = plan.n; this.busy = plan.busy; this.patrols = plan.patrols;
+    this.routes = plan.routes.length ? plan.routes : this.lay(w);
+    if (this.patrols) this.nextPatrol = w.runTime + this.rng.range(PATROL_FIRST[0], PATROL_FIRST[1]);
+    for (let i = 0; i < this.n; i++) this.launch(w, true);
+  }
+
+  /** The lines of an ordinary system, from the course: crossings, the miners' circuit and, at a port, its own. */
+  private lay(w: World): Route[] {
+    const b = w.bk!, len = this.len;
+    const rs: Route[] = [
+      { id: 'freight', pts: [[0.25, -950], [0.45, 950]], ships: ['hauler', 'liner'], pace: [0.9, 1.4] },
+      { id: 'return', pts: [[0.62, 1100], [0.34, -1000]], ships: ['hauler', 'barge'], pace: [1.1, 1.7] },
+      { id: 'passage', pts: [[0.05, 1750], [0.55, 1550], [1.1, 1700]], ships: ['liner', 'hauler'], pace: [2, 2.8] },
+    ];
+    if (b.def.kind === 'mining') rs.push({ id: 'seam', pts: [[0.4, -450], [0.5, -650], [0.6, -480], [0.5, -300]], loop: true, ships: ['barge', 'barge', 'hauler'], pace: [0.8, 1.1] });
+    if (b.port) {
+      const dx = b.port.x - this.x0, dz = b.port.z - this.z0;
+      const pf = (dx * this.fx + dz * this.fz) / len, po = dx * this.rx + dz * this.rz;
+      const rel = (a: number, c: number): [number, number] => [pf + a / len, po + c];
+      const ring: Array<[number, number]> = [];
+      for (let i = 0; i < 8; i++) { const th = (i / 8) * Math.PI * 2; ring.push(rel(Math.cos(th) * 170, Math.sin(th) * 170)); }
+      rs.push(
+        // ships coming in to dock, ending at the ring's edge
+        { id: 'dock-in', port: true, pts: [rel(-620, 420), rel(-250, 150), rel(-62, 52)], ships: ['hauler', 'barge'], pace: [0.9, 1.3] },
+        { id: 'dock-in2', port: true, pts: [rel(300, -520), rel(130, -200), rel(52, -62)], ships: ['barge', 'hauler'], pace: [0.9, 1.2] },
+        // and ships casting off
+        { id: 'cast-off', port: true, pts: [rel(60, 52), rel(260, 160), rel(700, 460)], ships: ['hauler', 'liner'], pace: [0.8, 1.2] },
+        // the slow harbour round it
+        { id: 'harbour', port: true, pts: ring, loop: true, ships: ['barge', 'barge'], pace: [0.55, 0.8] },
+      );
+    }
+    // none runs through the Jump Gate, nor (but a port's own) through a dock
+    const clear = (r: Route): boolean => {
+      if (r.port) return true;
+      for (let i = 0; i < r.pts.length - 1; i++) {
+        for (let k = 0; k <= 12; k++) {
+          const a = this.at(r.pts[i]!), c = this.at(r.pts[i + 1]!), u = k / 12;
+          const x = a.x + (c.x - a.x) * u, z = a.z + (c.z - a.z) * u;
+          if (this.rings(w).some((q) => Math.hypot(x - q.x, z - q.z) < q.r + 40)) return false;
+        }
+      }
+      return true;
+    };
+    return rs.filter(clear);
   }
 
   /** A point of the course frame in the world. */
@@ -98,6 +191,9 @@ export class Traffic {
   }
 
   get count(): number { return this.hulls.length; }
+  /** A hull of a Custody patrol that has not turned on the ship (it reads as Custody, not as a hostile). */
+  isPatrol(al: Alien): boolean { return this.crews.includes(al) && !!(al.ward || al.fleeing); }
+  get patrolCalls(): number { return this.patrolled; }
   get responders(): number { return this.security.length; }
   owns(al: Alien): boolean { return this.hulls.some((h) => h.al === al); }
 
@@ -109,7 +205,7 @@ export class Traffic {
   /** Put a hull on a route: at a random stretch of it when the system is first dealt, else at its start. */
   private launch(w: World, deal: boolean): void {
     for (let tries = 0; tries < 8; tries++) {
-      const route = ROUTES[this.pick++ % ROUTES.length]!;
+      const route = this.routes[this.pick++ % this.routes.length]!;
       const leg = deal ? this.rng.int(route.pts.length - 1) : 0;
       const a = this.at(route.pts[leg]!), b2 = this.at(route.pts[Math.min(route.pts.length - 1, leg + 1)]!);
       const k = deal ? this.rng.range(0.05, 0.95) : 0;
@@ -158,8 +254,10 @@ export class Traffic {
     // keep the sky busy
     if ((this.respawn -= dt) <= 0) {
       this.respawn = 5;
-      if (this.hulls.length < TRAFFIC_N) this.launch(w, false);
+      if (this.hulls.length < this.n) this.launch(w, false);
     }
+    // a patrol, now and then
+    if (this.patrols) this.patrolStep(w);
     // the dock's security, when called
     const now = w.runTime;
     this.strikes = this.strikes.filter((t) => now - t < STRIKE_WINDOW);
@@ -170,10 +268,88 @@ export class Traffic {
     }
   }
 
+  /** A Custody patrol comes alongside, looks the ship over and goes. A flagged ship (Wanted high) gets more than a look. */
+  private patrolStep(w: World): void {
+    const s = w.ship, b = w.bk!, now = w.runTime;
+    this.crews = this.crews.filter((a) => w.aliens.includes(a));
+    const p = this.patrol;
+    if (!p) {
+      if (now < this.nextPatrol || this.patrolled >= PATROL_MAX || !w.alive) return;
+      // never while there is a fight, a dock, a gate or a scene to mind
+      if (w.aliens.some((a) => w.committed(a)) || w.inDanger() || w.stage) return;
+      if (this.rings(w).some((r) => Math.hypot(s.x - r.x, s.z - r.z) < 220)) return;
+      this.send2(w);
+      return;
+    }
+    p.al = p.al.filter((a) => w.aliens.includes(a));
+    // shot at, or one of them has turned: it is a fight now
+    if (!p.al.length) { this.patrol = null; return; }
+    if (p.al.some((a) => !a.ward)) { this.turn(w, p.al); return; }
+    if (w.aliens.some((a) => w.committed(a) && Math.hypot(a.x - s.x, a.z - s.z) < 500) || w.inDanger()) { this.part(w, p.al); return; }
+    const fx = Math.cos(s.heading), fz = -Math.sin(s.heading), rx = Math.sin(s.heading), rz = Math.cos(s.heading);
+    let near = 0;
+    p.al.forEach((a, i) => {
+      const k = PATROL_STAND * (1 + 0.7 * i), back = 14 * i;
+      const x = s.x + s.vx * 1.2 + rx * p.side * k - fx * back, z = s.z + s.vz * 1.2 + rz * p.side * k - fz * back;
+      a.mode = 'drift'; a.ax = x; a.az = z;
+      if (a.ward) { a.ward.hx = x; a.ward.hz = z; }
+      if (Math.hypot(a.x - s.x, a.z - s.z) < PATROL_STAND * 2.2) near++;
+    });
+    if (p.phase === 'in' && near === p.al.length) {
+      p.phase = 'look'; p.since = now;
+      w.events.push({ type: 'ping', id: `patrol_${this.patrolled}`, from: t('Custody patrol'), caller: 'custody', text: t('“Routine check. Hold your course.”'), moment: 'calm', system: w.sortie.name });
+    } else if (p.phase === 'look' && now - p.since >= PATROL_LOOK) {
+      if (b.heat >= PATROL_FLAG) {
+        w.events.push({ type: 'ping', id: `patrol_flag_${this.patrolled}`, from: t('Custody patrol'), caller: 'custody', text: t('“Your hull is flagged. Stand down.”'), moment: 'calm', system: w.sortie.name });
+        this.turn(w, p.al);
+      } else this.part(w, p.al);
+    }
+  }
+
+  private send2(w: World): void {
+    const s = w.ship, b = w.bk!;
+    const side = this.patrolled % 2 ? -1 : 1;
+    const fx = Math.cos(s.heading), fz = -Math.sin(s.heading), rx = Math.sin(s.heading), rz = Math.cos(s.heading);
+    const al: Alien[] = [];
+    for (let i = 0; i < 2; i++) {
+      const x = s.x + rx * side * (300 + 24 * i) - fx * (170 + 20 * i), z = s.z + rz * side * (300 + 24 * i) - fz * (170 + 20 * i);
+      const a = w.spawnHostile('picket', { x, y: this.rng.range(-1, 1), z }, null, true);
+      a.canCloak = false; a.cloak = 0; a.escort = false; a.ttl = 0; a.mode = 'drift';
+      a.spK *= 1.9;
+      a.ax = s.x; a.az = s.z;
+      a.face = Math.atan2(-(s.z - z), s.x - x);
+      a.ward = { act: 'pass', temper: 'wary', hx: s.x, hz: s.z, ring: 0, warned: 0, tag: 'Custody patrol' };
+      al.push(a);
+    }
+    this.crews.push(...al);
+    this.patrol = { al, phase: 'in', since: w.runTime, side };
+    this.patrolled++;
+    void b;
+  }
+
+  /** Looked over and let go: they peel away. */
+  private part(w: World, al: Alien[]): void {
+    for (const a of al) { delete a.ward; leave(a); }
+    this.patrol = null;
+    this.nextPatrol = w.runTime + this.rng.range(PATROL_GAP[0], PATROL_GAP[1]);
+  }
+
+  /** They turn on the ship, and give up after the dock's security time. */
+  private turn(w: World, al: Alien[]): void {
+    for (const a of al) {
+      if (a.ward) provoke(a, w.events);
+      this.security.push(a);
+      this.until.set(a, w.runTime + SECURITY_TTL);
+    }
+    this.patrol = null;
+    this.nextPatrol = w.runTime + this.rng.range(PATROL_GAP[0], PATROL_GAP[1]);
+  }
+
   private drop(h: Hull): void { this.hulls.splice(this.hulls.indexOf(h), 1); }
 
   /** The ship has hit a hull of the traffic (`dies`: it will not survive it). */
   hit(w: World, al: Alien, dies: boolean): void {
+    if (this.patrol?.al.includes(al)) { this.turn(w, this.patrol.al); return; }
     const h = this.hulls.find((x) => x.al === al);
     if (!h) return;
     const now = w.runTime;
@@ -184,7 +360,7 @@ export class Traffic {
     }
     this.strikes.push(now);
     if (dies) this.kills++;
-    const busy = !!w.bk?.def.first;
+    const busy = this.busy;
     if (busy && w.bk) {
       w.bk.heat = 1;
       w.bk.nextPursuit = Math.min(w.bk.nextPursuit, now + 8);

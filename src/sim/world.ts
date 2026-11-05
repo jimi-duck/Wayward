@@ -35,7 +35,7 @@ import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type P
 import { Stage, makeStage } from './stage';
 import { DEPOT_LINE, lockLifted, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
-import { Traffic } from './traffic';
+import { Traffic, trafficPlan } from './traffic';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
@@ -464,7 +464,7 @@ export class World implements EncounterHost {
       if (r.size === 0 && this.rng.next() < 0.12 && n < most) { r.kind = 'rich'; r.hp = r.maxHp = Math.round(r.maxHp * 1.6); n++; }
     }
     if (def.situation && !def.home) this.stage = makeStage(def.system, def.situation, this);
-    if (def.first) this.traffic = new Traffic(this);
+    { const plan = trafficPlan(this); if (plan) this.traffic = new Traffic(this, plan); }
     if (this.carryIn) this.bringAboard(this.carryIn);
     this.script = def.script ? new Script(SCRIPT, def.script, this.heard, this.carryIn?.pending ?? []) : null;
     this.holdAt = Infinity;

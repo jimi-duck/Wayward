@@ -45,7 +45,7 @@ describe('the ghost at Hollis', () => {
     run(w, 20);
     expect(w.ghost).not.toBeNull();
     expect(w.flags.has('ghost_here')).toBe(true);
-    expect(w.aliens.length).toBe(0);
+    expect(w.aliens.filter((a) => !a.extra).length).toBe(0); // working traffic (extra) flies on
   });
 
   it('never closes, however the ship flies at it, then comes nearer once at three quarters', () => {
@@ -68,7 +68,7 @@ describe('the ghost at Hollis', () => {
     const bearing = Math.atan2(-(w.ghost!.z - w.ship.z), w.ghost!.x - w.ship.x);
     w.ship.heading = bearing;
     run(w, 20, { ...NO_INPUT, fire: true });
-    expect(w.aliens.length).toBe(0);
+    expect(w.aliens.filter((a) => !a.extra).length).toBe(0); // working traffic (extra) flies on
     expect(w.ghost).not.toBeNull();
   });
 
