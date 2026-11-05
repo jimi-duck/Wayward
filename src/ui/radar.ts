@@ -230,6 +230,17 @@ export class Radar {
       const [x, y, out] = to(mk.x, mk.z);
       if (!out) { g.strokeStyle = INK.teal; g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
     }
+    // the raider den, once it has shown: a small red square (a threat); the Thren seed: a small teal diamond
+    const dn = world.den;
+    if (bk && dn && dn.seen && dn.state !== 'moving') {
+      const [x, y, out] = to(dn.x, dn.z);
+      if (!out) { g.strokeStyle = rgba(RGB.red, 0.8); g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
+    }
+    const sd = world.thrSeed;
+    if (bk && sd && sd.state !== 'dead') {
+      const [x, y, out] = to(sd.x, sd.z);
+      if (!out) { g.strokeStyle = INK.teal; g.lineWidth = dpr; g.beginPath(); g.moveTo(x, y - 3 * dpr); g.lineTo(x + 3 * dpr, y); g.lineTo(x, y + 3 * dpr); g.lineTo(x - 3 * dpr, y); g.closePath(); g.stroke(); }
+    }
     // the repair gantry: a small teal square until it is spent
     const gn = world.gantry;
     if (bk && gn && gn.uses > 0) {

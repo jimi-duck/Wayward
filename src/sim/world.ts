@@ -40,6 +40,8 @@ import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_
 import { LOOSE } from './pickups';
 import { Barge, bargeBerth } from './barge';
 import { Gantry, gantryBerth } from './gantry';
+import { ThrenSeed, seedBerth, seedLine, SEED_CYRITE, SEED_PARTS } from './thrseed';
+import { Den, denBerth, DEN_BOUNTY, DEN_CYRITE, DEN_HP, DEN_PARTS, DEN_R } from './den';
 import { Market, marketBerth } from './market';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
@@ -188,6 +190,10 @@ export class World implements EncounterHost {
   barge: Barge | null = null;
   /** A transit system's repair gantry (sim/gantry.ts), if it has one. */
   gantry: Gantry | null = null;
+  /** A mining system's raider den (sim/den.ts), if it has one. */
+  den: Den | null = null;
+  /** A Thren sky's seed (sim/thrseed.ts), if it has one. */
+  thrSeed: ThrenSeed | null = null;
   /** A Dust Traders system's market raft (sim/market.ts), if it has one. */
   market: Market | null = null;
   /** The target a torpedo launched now would lock, for the HUD. */
@@ -486,11 +492,23 @@ export class World implements EncounterHost {
       if (d && d.kind === 'mining' && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
         const side = this.seed & 1 ? -1 : 1, at = bargeBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, side);
         this.barge = new Barge(at.x, at.z, at.dir);
+        // and, on the other side of the course, a raider den hidden in a ring of rock
+        const dn = denBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, -side);
+        this.den = new Den(dn.x, dn.z, dn.second);
+        for (let i = 0; i < 7; i++) {
+          const a = (i / 7) * Math.PI * 2 + 0.3;
+          this.field.spawn(i % 3 === 0 ? 0 : 1, dn.x + Math.cos(a) * 30, dn.z + Math.sin(a) * 30, 0, 0, 'iron', 1, 0);
+        }
       }
       // a system the Dust Traders hold has a market raft; not the opening, the first system past Cerro, or a Thren sky
       if (d && d.holder === 'guild' && d.port !== undefined && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
         const at = marketBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 4 ? -1 : 1);
         this.market = new Market(at.x, at.z);
+      }
+      // a Thren sky grows a seed on a rock off the course (not the opening or the first system past Cerro)
+      if (d && d.thren && d.thren > 0.3 && !d.home && !d.first && !d.situation) {
+        const at = seedBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 8 ? -1 : 1);
+        this.thrSeed = new ThrenSeed(at.x, at.z);
       }
       // a transit system has a repair gantry on its lane; not where the Custody keeps the road clear of repairs (a safe system) or the first system past Cerro
       if (d && d.kind === 'transit' && !d.home && !d.first && !d.situation && !d.safe && !(d.thren && d.thren > 0.3)) {
@@ -860,7 +878,7 @@ export class World implements EncounterHost {
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
     this.stage?.step(this, dt);
-    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); }
+    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); this.den?.step(this, dt); this.thrSeed?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
     if (!b.def.quiet) this.events.push(...this.watch.step({
@@ -2778,6 +2796,10 @@ export class World implements EncounterHost {
         if (st.painter) al.mark = 4;
         this.hurtAlien(al, b.dmg, 'laser', b.x, b.y, b.z);
       }
+      const sd = this.thrSeed;
+      if (!spent && sd && sd.state !== 'dead' && hit(sd.x, 0, sd.z, sd.r)) { spent = true; this.hurtSeed(sd, b.dmg, b.x, b.y, b.z); }
+      const dn = this.den;
+      if (!spent && dn && dn.state !== 'dead' && dn.state !== 'moving' && hit(dn.x, 0, dn.z, DEN_R)) { spent = true; this.hurtDen(dn, b.dmg, b.x, b.y, b.z); }
       const boss = this.command.targetable();
       if (!spent && boss && !b.hit.includes(boss.id) && hit(boss.x, boss.y, boss.z, boss.r * 0.85)) { land(boss.id); this.hurtBoss(b.dmg, 'laser', b.x, b.y, b.z); }
       for (const r of [...rocks]) {
@@ -2798,6 +2820,10 @@ export class World implements EncounterHost {
       const tp = this.torps[i]!;
       const near = (x: number, y: number, z: number, r: number) => (tp.x - x) ** 2 + (tp.y - y) ** 2 + (tp.z - z) ** 2 < (r + TORP_FUSE) ** 2;
       const boss = this.command.targetable();
+      const sd = this.thrSeed;
+      if (sd && sd.state !== 'dead' && near(sd.x, 0, sd.z, sd.r)) { this.torps.splice(i, 1); this.torpBlast(tp); this.hurtSeed(sd, 30, tp.x, tp.y, tp.z); continue; }
+      const dn = this.den;
+      if (dn && dn.state !== 'dead' && dn.state !== 'moving' && near(dn.x, 0, dn.z, DEN_R)) { this.torps.splice(i, 1); this.torpBlast(tp); this.hurtDen(dn, 30, tp.x, tp.y, tp.z); continue; }
       if (this.aliens.some((a) => !cloaked(a) && near(a.x, a.y, a.z, a.r)) || (boss && !boss.arriving && near(boss.x, boss.y, boss.z, boss.r))
         || rocks.some((r) => near(r.x, 0, r.z, r.r)) || inBulwark(tp.x, tp.y, tp.z, TORP_FUSE)) {
         this.torps.splice(i, 1);
@@ -3144,6 +3170,36 @@ export class World implements EncounterHost {
     this.run.rocks++;
     this.field.shatter(b, pressure(this.clock, this.mods).rockHp * (this.bk ? MINE_HP : 1));
     this.events.push({ type: 'bulwarkBroken', x: b.x, z: b.z, r: b.r, points });
+  }
+
+  /** The Thren seed takes a hit; broken, it leaves a little Cyrite and parts where it grew. */
+  private hurtSeed(d: ThrenSeed, dmg: number, x: number, y: number, z: number): void {
+    this.events.push({ type: 'rockHit', x, y, z, id: -2, rx: d.x, rz: d.z, r: d.r, kind: 'volatile', size: 1, hp: Math.max(0, d.hp / 40), src: 'laser' });
+    if (!d.hurt(this, dmg)) return;
+    this.addScore(150, 'kills');
+    this.events.push({ type: 'alienDestroyed', x: d.x, y: 0, z: d.z, kind: 'scout', faction: 'thren', points: 150, r: d.r, elite: false, label: 'Thren seed' });
+    this.loot('rock', 'cyrite', SEED_CYRITE, d.x, d.z, 6);
+    this.loot('rock', 'parts', SEED_PARTS, d.x, d.z, 6);
+  }
+
+  /** A seed studied quietly: a little Cyrite and parts, a radio line, once. */
+  studySeed(d: ThrenSeed): void {
+    this.loot('rock', 'cyrite', SEED_CYRITE, d.x, d.z, 6);
+    this.loot('rock', 'parts', SEED_PARTS, d.x, d.z, 6);
+    this.events.push({ type: 'ping', id: 'seed_studied', from: tr('Scope'), caller: 'unknown', text: seedLine(), moment: 'calm', system: this.sortie.name });
+  }
+
+  /** The raider den takes a hit; when it breaks it spills its loot where it lay and pays its bounty. */
+  private hurtDen(d: Den, dmg: number, x: number, y: number, z: number): void {
+    this.events.push({ type: 'rockHit', x, y, z, id: -1, rx: d.x, rz: d.z, r: DEN_R, kind: 'iron', size: 0, hp: Math.max(0, d.hp / DEN_HP), src: 'laser' });
+    if (!d.hurt(this, dmg)) return;
+    const points = Math.round(DEN_BOUNTY * this.chainKill());
+    this.addScore(points, 'kills');
+    this.kills++;
+    this.events.push({ type: 'alienDestroyed', x: d.x, y: 0, z: d.z, kind: 'freighter', faction: 'gutter', points, r: DEN_R, elite: false, label: 'Raider den' });
+    this.loot('wreck', 'cyrite', DEN_CYRITE, d.x, d.z, 12);
+    this.loot('wreck', 'parts', DEN_PARTS, d.x, d.z, 12);
+    if (this.bk) this.bk.heat = Math.min(1, this.bk.heat + 0.05);
   }
 
   /** The refinery barge grinds a rock: it breaks as a blast would, its Cyrite spilling where it is. */
