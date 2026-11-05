@@ -9,6 +9,7 @@ import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
 import { setBuoyMood } from './monuments';
 import { GANTRY_R } from '../sim/gantry';
 import { MARKET_R } from '../sim/market';
+
 import { MOOD_AMBER, MOOD_LIGHT, portStyleOf, type Mood, type PortStyle } from '../sim/site';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
@@ -293,6 +294,7 @@ function crate(k: Kit, key: string, x: number, y: number, z: number, rot: number
 const STYLE_PAINT: Record<PortStyle, number> = { frontier: 0xf2b21f, kellern: 0xcfd2d6, gutter: 0x7a5a3c, holdfast: 0x8c8068, guild: 0x4f8088 };
 const styleMats = new Map<PortStyle, Material>();
 let stoneMat: Material | null = null;
+const stoneOf = (): Material => (stoneMat ??= metal({ tint: 0x6f675c, roughness: 0.95, metalness: 0.04, scale: 1.6, bump: 0.02, worn: 0.5 }));
 const paintFor = (st: PortStyle): Material => {
   let m = styleMats.get(st);
   if (!m) { m = st === 'frontier' ? materials().paint! : metal({ tint: STYLE_PAINT[st], roughness: 0.66, metalness: 0.08 }); styleMats.set(st, m); }
@@ -393,6 +395,52 @@ export function buildBarge(lamp: Material): Group {
   strut(k, 'dark', [-9, 0, 0], [-12, 0, 2], 0.2, 5);
   k.greebles('hull', rnd, -8, 8, -2.4, 2.4, 1.8, 14, 0.7);
   return k.build({ ...materials(), lamp, win: windowMaterial() }, 0.5);
+}
+
+/** A rough lump of rock: an icosahedron pushed about by a few sines, squashed by `sq`. */
+function lump(r: number, n: number, sq: V3 = [1, 0.75, 1]): BufferGeometry {
+  const g = new IcosahedronGeometry(r, 2), pos = g.attributes.position!;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const k = 1 + 0.2 * Math.sin(x * 0.8 + n) * Math.cos(y * 0.6 + z * 0.5 + n) + 0.1 * Math.sin(z * 1.6 + n * 2);
+    pos.setXYZ(i, x * k * sq[0], y * k * sq[1], z * k * sq[2]);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+/** The raider den: rock grown over a gutted hulk. A dock mouth on the +x side with a dull red lamp, cut plates and a bent mast. Dark: it is only seen close. */
+export function buildDen(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(41);
+  k.add('stone', lump(10, 1, [1.3, 0.7, 1]), [0, 0, 0]);
+  k.add('stone', lump(6, 2), [-7, 2.4, 5]);
+  k.add('stone', lump(5, 3), [3, -1.5, -7]);
+  k.add('stone', lump(4.5, 4), [-4, 3.6, -5]);
+  // the hulk's dock: a drum mouth ringed with teeth, lit inside
+  k.cyl('dark', 3.4, 3.8, 5, [11, -0.4, 0], 'x', 12);
+  k.ring('dark', 4.2, 0.45, [13.6, -0.4, 0], 'x', 12);
+  for (let i = 0; i < 8; i++) { const a = (i / 8) * TAU; k.box('dark', [0.8, 0.5, 0.5], [13.9, -0.4 + Math.sin(a) * 3.5, Math.cos(a) * 3.5], [a, 0, 0]); }
+  k.box('lamp', [0.5, 0.5, 0.5], [14, 3.8, 0]);
+  k.box('lamp', [0.5, 0.5, 0.5], [14, -4.6, 0]);
+  k.box('lamp', [0.2, 2.2, 2.2], [13.2, -0.4, 0]);
+  for (let i = 0; i < 6; i++) k.box(i % 2 ? 'hull' : 'slate', [2 + rnd() * 3, 0.25, 1.5 + rnd() * 2], [-6 + rnd() * 12, 2 + rnd() * 4, -6 + rnd() * 12], [rnd(), rnd() * 3, rnd()]);
+  strut(k, 'dark', [-2, 5, 1], [-6, 10, 3], 0.2, 4);
+  k.box('amber', [0.14, 0.14, 3], [9, 2.4, 0]);
+  return k.build({ ...materials(), stone: stoneOf(), lamp }, 0.5);
+}
+
+/** The Thren seed: a dark knot of grown rock cracked by pale veins that run over it, with a few bright nodes; `lamp` is the veins' colour. About 7 units across; the caller scales it with growth. */
+export function buildSeed(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(43);
+  k.add('stone', lump(4, 5, [1, 1.1, 1]), [0, 0, 0]);
+  k.add('stone', lump(2.4, 6), [2.6, 1.4, -1]);
+  k.add('stone', lump(2, 7), [-2.2, -1, 2]);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * TAU + rnd() * 0.4, h = (rnd() - 0.5) * 5, rr = Math.sqrt(Math.max(0.5, 16 - h * h * 0.9)) * 0.98;
+    k.box('lamp', [0.16, 0.16, 2 + rnd() * 2.4], [Math.cos(a) * rr, h, Math.sin(a) * rr], [rnd() * 0.6, -a + Math.PI / 2, rnd() - 0.5]);
+  }
+  for (let i = 0; i < 4; i++) k.box('lamp', [0.55, 0.55, 0.55], [(rnd() - 0.5) * 5, 2 + rnd() * 2.5, (rnd() - 0.5) * 5], [rnd(), rnd(), rnd()]);
+  return k.build({ ...materials(), stone: stoneOf(), lamp }, 0.5);
 }
 
 /** The Custody's relay post: a short mast on a hex base, a dish, and a lamp that shows what it is doing (`lamp` is the caller's own). Small and plain: a roadside box, not a station. */
@@ -500,8 +548,7 @@ export function buildPort(style: PortStyle = 'frontier', own?: { lamp: Material;
   k.box('lamp', [1.2, 1.2, 1.2], [-3, 14.6, -3]);
   k.greebles('hull', rnd, -4, 4, -4, 4, 1.6, 14, 0.8);
   if (style !== 'frontier') styleParts(k, seeded(31), style);
-  stoneMat ??= metal({ tint: 0x6f675c, roughness: 0.95, metalness: 0.04, scale: 1.6, bump: 0.02, worn: 0.5 });
-  return k.build({ ...materials(), paint: paintFor(style), stone: stoneMat, lamp: own?.lamp ?? materials().lamp!, win: own?.win ?? windowMaterial() }, 0.6);
+  return k.build({ ...materials(), paint: paintFor(style), stone: stoneOf(), lamp: own?.lamp ?? materials().lamp!, win: own?.win ?? windowMaterial() }, 0.6);
 }
 
 
@@ -616,6 +663,12 @@ export class BreakoutView {
   /** The Dust Market raft (sim/market.ts) and its lamp. */
   private readonly market = new Group();
   private readonly marketLamp = (materials().lamp as MeshBasicMaterial).clone();
+  /** The raider den (sim/den.ts) and its lamp: seen only once it shows. */
+  private readonly den = new Group();
+  private readonly denLamp = (materials().lamp as MeshBasicMaterial).clone();
+  /** The Thren seed (sim/thrseed.ts) and its vein lamp. */
+  private readonly seedG = new Group();
+  private readonly seedLamp = (materials().lamp as MeshBasicMaterial).clone();
   private moodLight = 0.8;
   /** The company's audit dock, where the system has one. */
   private readonly audit = new Group();
@@ -705,13 +758,17 @@ export class BreakoutView {
     mring.position.y = 0.6;
     this.market.add(mring);
     this.market.visible = false;
+    this.den.add(buildDen(this.denLamp));
+    this.den.visible = false;
+    this.seedG.add(buildSeed(this.seedLamp));
+    this.seedG.visible = false;
     const tg = new BufferGeometry();
     tg.setAttribute('position', new Float32BufferAttribute(new Float32Array(6), 3));
     this.tether = new Line(tg, new LineBasicMaterial({ color: new Color(0.1, 0.5, 0.62), transparent: true, opacity: 0.5, toneMapped: false, fog: false }));
     this.tether.frustumCulled = false;
     this.tether.visible = false;
     this.lane.visible = this.port.visible = this.audit.visible = false;
-    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry, this.market);
+    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry, this.market, this.den, this.seedG);
 
   }
 
@@ -770,6 +827,22 @@ export class BreakoutView {
       const warn = gn.state === 'shut' || gn.state === 'refuses', spent = gn.state === 'spent';
       this.gantryLamp.color.copy(warn ? AMBER : CYAN).multiplyScalar(spent ? 0.08 : gn.state === 'working' ? 0.8 + 0.4 * Math.sin(this.time * 8) : 0.5);
       (this.gantryRing.material as MeshBasicMaterial).opacity = spent ? 0.04 : 0.25 + 0.35 * (gn.hold / 6) + (warn ? 0.1 : 0);
+    }
+    const dn = world.den;
+    this.den.visible = !!b && !!dn && dn.seen && dn.state !== 'moving';
+    if (b && dn && this.den.visible) {
+      this.den.position.set(dn.x, -2, dn.z);
+      this.den.rotation.y = Math.atan2(-(ship.z - dn.z), ship.x - dn.x);
+      // a dull red while awake, near-dark when only seen; a flash when hit
+      this.denLamp.color.set(1.9, 0.28, 0.2).multiplyScalar((dn.state === 'awake' ? 0.5 + 0.2 * Math.sin(this.time * 5) : 0.12) + dn.hitT * 4);
+    }
+    const sd = world.thrSeed;
+    this.seedG.visible = !!b && !!sd && sd.state !== 'dead';
+    if (b && sd && this.seedG.visible) {
+      this.seedG.position.set(sd.x, -1, sd.z);
+      this.seedG.scale.setScalar(sd.r / 7 * 1.4);
+      this.seedG.rotation.y += dt * 0.04;
+      this.seedLamp.color.set(1.1, 0.7, 2.6).multiplyScalar(sd.state === 'quiet' || sd.state === 'studied' ? 0.12 : 0.35 + 0.5 * sd.growth + 0.15 * Math.sin(this.time * 2.2) + sd.hitT * 4);
     }
     const bg = world.barge;
     this.barge.visible = !!b && !!bg;

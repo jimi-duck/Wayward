@@ -61,4 +61,10 @@ export const POSTJUMP: Record<string, string> = {
   '“Flagged hull in range. Patrol routed.”': '„Markierter Rumpf in Reichweite. Patrouille unterwegs.“',
   '“Routine check. Hold your course.”': '„Routinekontrolle. Kurs halten.“',
   '“Your hull is flagged. Stand down.”': '„Dein Rumpf ist markiert. Stopp.“',
+  'Raider den': 'Räubernest',
+  'Thren seed': 'Thren-Keim',
+  '“Unregistered dock. Raiders launching.”': '„Nicht gemeldetes Dock. Räuber starten.“',
+  '“Wing round your flank!”': '„Eine Rotte kommt dir in die Flanke!“',
+  '“Den abandoned. They have gone to ground.”': '„Nest geräumt. Sie sind untergetaucht.“',
+  '“Growth stilled. It answers to nothing here. Logged.”': '„Wuchs beruhigt. Hier antwortet ihm nichts. Notiert.“',
 };

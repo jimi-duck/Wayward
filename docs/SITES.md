@@ -115,13 +115,50 @@ system without a port keeps them teal. It is one shared material, so it costs
 nothing per lantern. They are the early warning: lanterns turning amber says a
 fight is near the port before you can see it.
 
-## Next (plan: "Living stations and space objects")
+## Raider den
 
-The Raider Den (a hideout in a rock field) and the Thren Seed are not built: both
-need a new kind of enemy behaviour and a pilot run, and are left for a go-ahead.
+A hideout in the rock (`sim/den.ts`, `buildDen`) in every mining system the barge
+works, on the side of the course the barge is not: 55% of the way, 480 units off
+the line, ringed by seven iron rocks (rock is cover: enemy fire stops on it).
+
+- **Dark.** Hidden until you come within 140 units, or until it has launched or
+  been shot. Seen, it is a small red square on the scope and a dull red lamp.
+- **Waves.** Come within 220 units and it wakes: a radio line, then one scout
+  from the dock, and one more every 30 s (at most 4 waves, 2 of its raiders
+  alive at once). Raiders are ordinary Gutter hulls; the director does not count
+  them.
+- **Flank.** Shoot it and a scout appears 90 units round your flank, not at the
+  den (once per 15 s, inside the same two-alive cap).
+- **Runs.** At 35% hull it cuts its lights and goes to ground for 20 s, then
+  reappears dark at a second den 560 units off with 60% hull and its waves reset.
+  Crush it a second time and it is dead.
+- **Raid.** Dead, it spills 60 Cyrite and 8 parts and pays 400 points (+0.05
+  heat). Bolts and torpedoes hit it (hull 45; a bolt is about 1, a torpedo 30).
+
+## Thren seed
+
+A growth on a rock in a Thren sky (`sim/thrseed.ts`, `buildSeed`; thren above
+0.3, not the opening or the first system past Cerro), 50% of the way, 220 units
+off the line.
+
+- **Grows** while ignored: knot to bloom in 240 s. A bloomed seed calls two motes
+  every 30 s when you come within 200 units.
+- **Answers fire.** A bolt or torpedo makes 1 to 3 motes (more when grown), at most
+  every 12 s. Hull 40. Burned late (growth over 0.5) it bursts into two more.
+- **Goes quiet** if you stay slow (under 8) within 34 units: it stops growing,
+  its veins dim, and after 8 s you have studied it once: a radio line, 15 Cyrite,
+  6 parts. Firing resets the study.
+- **Burn it** and it leaves the same 15 Cyrite and 6 parts, and 150 points.
+- **Seen** as a dark knot with pale violet veins and a teal diamond on the scope.
+
+Numbers from `npm run pilot:sites` (docs/BALANCE-SITES.md): a stock hull flown by a
+plain script, which does not dodge. Of the dens it reached it crushed a third in
+150 s, and lost the ship about as often as the same flight does with no den.
 
 ## Not measured
 
 Flak and crane numbers come from tests only; no pilot has flown them and no
-phone has run them. A new look is built the first time it is needed (about
+phone has run them. The den and seed were flown only by a plain script (no
+dodging, no rock cover), never by a person; the render of both is judged from
+the bench (`tools/sites.html?prop=den|seed`) only. A new look is built the first time it is needed (about
 250 ms for the depot on the cloud machine, a phone will take longer).
