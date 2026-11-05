@@ -239,10 +239,12 @@ export interface MetalOptions {
   soot?: [number, number];
   /** With `worn`: broad shading over the whole model (plate-to-plate tone and hue, light from above, a sooty underside), for the hero ship. */
   shade?: boolean;
-  /** With `worn`: old hits, [x, y, z, reach] in model space, up to six: scorched, the paint burnt back round each. */
+  /** With `worn`: old hits, [x, y, z, reach] in model space, up to ten: scorched, the paint burnt back round each. */
   hits?: Array<[number, number, number, number]>;
-  /** With `worn`: six shared [x, y, z, reach] uniforms to use as they are, so a caller can write into them at runtime (`hits` is then unused). */
+  /** With `worn`: ten shared [x, y, z, reach] uniforms to use as they are, so a caller can write into them at runtime (`hits` is then unused). */
   hitUniforms?: Vector4[];
+  /** With `worn`: how hard the run has used her, 0 to 1 (shared, written at runtime): more paint chipped, more grime and soot. */
+  run?: { value: number };
 }
 
 /** Weathered metal: the plating, triplanar in model space, with bump from the height map. */
@@ -260,9 +262,10 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
       shader.uniforms.uWearTex = { value: scratchTexture() };
       shader.uniforms.uWorn = { value: worn };
       shader.uniforms.uSoot = { value: o.soot ? new Vector2(...o.soot) : new Vector2(-1e4, -1e4 - 1) };
-      const hits = o.hitUniforms ?? (o.hits ?? []).slice(0, 6).map((h) => new Vector4(...h));
-      while (hits.length < 6) hits.push(new Vector4(0, -1e4, 0, 0.001));
+      const hits = o.hitUniforms ?? (o.hits ?? []).slice(0, HITS_MAX).map((h) => new Vector4(...h));
+      while (hits.length < HITS_MAX) hits.push(new Vector4(0, -1e4, 0, 0.001));
       shader.uniforms.uHits = { value: hits };
+      shader.uniforms.uRun = o.run ?? { value: 0 };
     }
     shader.uniforms.uKitScale = { value: scale };
     shader.uniforms.uRim = WORLD_RIM;
@@ -301,7 +304,7 @@ export function metal(o: MetalOptions): MeshStandardMaterial {
         normal = kitPerturb(-vViewPosition, normal, kitH * uKitStrength, faceDirection);`);
     if (worn > 0) wearShader(shader, painted, !!o.shade);
   };
-  m.customProgramCacheKey = () => `kit-metal5-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}-${o.shade ? 1 : 0}`;
+  m.customProgramCacheKey = () => `kit-metal6-${scale}-${strength}-${worn > 0 ? 1 : 0}-${painted}-${o.engine ? 1 : 0}-${o.shade ? 1 : 0}`;
   return m;
 }
 
@@ -316,7 +319,7 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
     .replace('vKitP = position * uKitScale;', 'vKitP = position * uKitScale; vKitM = position; vWear = wear;');
   shader.fragmentShader = shader.fragmentShader
     .replace('varying vec3 vKitP;', `varying vec3 vKitP; varying vec3 vKitM; varying vec2 vWear;
-      uniform sampler2D uWearTex; uniform float uWorn; uniform vec2 uSoot; uniform vec4 uHits[6];
+      uniform sampler2D uWearTex; uniform float uWorn; uniform vec2 uSoot; uniform vec4 uHits[10]; uniform float uRun;
       ${WEAR_NOISE}`)
     .replace('diffuseColor *= kitC;', `diffuseColor *= kitC;
       vec3 wp = vKitM;
@@ -330,7 +333,7 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
       float wScrape = smoothstep(0.25, 0.6, wScr) * smoothstep(0.25, 0.5, wLow);
       // paint worn thin to the dark undercoat in patches, round the dents too
       float wThin = smoothstep(0.64, 0.7, wN * 0.6 + wFbm(wp * 2.2 + 5.3) * 0.6 + wDent.x * 0.25 + wEdge * 0.1);
-      float wBare = clamp(max(wChip, wScrape) * uWorn, 0.0, 1.0);
+      float wBare = clamp((max(wChip, wScrape) + uRun * (0.55 * wEdge + 0.3 * smoothstep(0.5, 0.68, wN))) * uWorn, 0.0, 1.0);
       // rust and dirt run down from the seams in streaks
       float wStreak = smoothstep(0.5, 0.85, wFbm(wp * vec3(7.0, 0.7, 7.0) + 2.3)) * smoothstep(0.35, 0.6, wLow);
       vec3 wSteel = vec3(0.45, 0.44, 0.42) * (0.7 + 0.5 * wN);
@@ -339,12 +342,12 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
       ${shade ? (painted ? 'diffuseColor.rgb *= mix(vec3(1.0), vec3(1.12, 0.92, 0.66), smoothstep(0.5, 0.9, fract(wTone * 5.7)) * 0.8);' : 'diffuseColor.rgb *= mix(vec3(1.0), vec3(0.84, 0.96, 1.18), smoothstep(0.4, 0.8, fract(wTone * 3.1)) * 0.85);') : ''}
       ${painted ? 'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11))) * 1.2, step(0.85, wTone) * 0.16 * uWorn);' : ''}
       // grime worked in, heaviest in the dents; soot astern; scorch marks from old hits
-      float wGrime = smoothstep(0.38, 0.78, wFbm(wp * vec3(0.8, 3.2, 3.2) + 3.7)) * 0.6 + wDent.x * 0.45 + wStreak * 0.35;
-      float wSoot = smoothstep(uSoot.x, uSoot.y, -wp.x) * (0.45 + 0.7 * wFbm(wp * 2.6));
+      float wGrime = smoothstep(0.38, 0.78, wFbm(wp * vec3(0.8, 3.2, 3.2) + 3.7)) * 0.6 + wDent.x * 0.45 + wStreak * 0.35 + uRun * 0.4 * wLow;
+      float wSoot = smoothstep(uSoot.x - uRun * 1.3, uSoot.y, -wp.x) * (0.45 + 0.7 * wFbm(wp * 2.6));
       vec2 wBurn = wCells(wp * 0.85 + 4.0, 0.78);
       float wScorch = wBurn.x * smoothstep(0.35, 0.65, wFbm(wp * 5.0 + 9.0));
       // the old hits: charred at the heart, paint blistered and burnt back round them
-      for (int i = 0; i < 6; i++) {
+      for (int i = 0; i < 10; i++) {
         float d = length(wp - uHits[i].xyz) / uHits[i].w * (0.8 + 0.4 * wN);
         wScorch = max(wScorch, 1.0 - smoothstep(0.15, 0.75, d));
         wBare = max(wBare, (smoothstep(0.3, 0.5, d) - smoothstep(0.5, 0.75, d)) * step(0.45, wN) * uWorn);
@@ -372,6 +375,8 @@ function wearShader(shader: { vertexShader: string; fragmentShader: string }, pa
 export type V3 = [number, number, number];
 type Axis = 'x' | 'y' | 'z';
 
+/** Scorch slots in the wear shader: four old hits, two for plates lost, four that a run burns in. */
+const HITS_MAX = 10;
 const M = new Matrix4(), Q = new Quaternion(), E = new Euler(), P = new Vector3(), S = new Vector3();
 
 /** A part's own tone, 0 to 1, from its place in the build: stable from run to run. */

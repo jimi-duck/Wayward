@@ -620,6 +620,25 @@ work faster and mend a second plate a spell; the regenerative hull works
 with hostiles close. The Story mode keeps its own repair: supplies patched into
 a plate when you are left alone.
 
+## The hull shows what she carries
+
+The Wayward grows on screen. `FITTED` in `render/fitted.ts` is a table of
+upgrade id to one small part per level (launch rails and spare rounds for the
+torpedo bay, a lens pod per laser emitter, primer plates and bulkhead ribs for
+armour, shield nodes, a mine rack, vent, arc spikes, tractor dish, thruster
+blocks). `ShipView.setFit(levels, use)` merges only what is fitted into one
+group and rebuilds it when a level changes, so a full ship costs a few draw
+calls. To add a part, add a row; nothing else changes. Bench:
+`tools/ship.html?fit=all` or `?fit=tp_bay,ph_emitters:3`.
+
+Wear builds over a journey. `Carry.scars` sums hits taken (a plate lost is
+one, a shield charge a quarter) and time flown (900 s a point); `World.use`
+turns it into 0 to 1 (`1 - exp(-scars / 12)`, about half after a dozen
+systems). At 0 the hull is as before. As it rises the paint chips back to
+steel along the edges, grime and soot spread forward, and four scorch marks
+burn in one after another (`setUse` in `render/wayward.ts`). Save v23 starts a
+hull from before clean. Bench: `?use=0..1`.
+
 ## The kill chain
 
 The **kill chain** is score only:
