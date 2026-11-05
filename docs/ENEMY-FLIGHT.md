@@ -88,6 +88,12 @@ Built on the same style (a roll of the id, no draws), hostile hulls only:
   once unlocked) comes in from its side. Event crews (`extra`) never run, so
   skirmishes still end.
 
+- **Packs take turns.** Raiders add a beat of their own (up to 1.2 s) to the
+  gap before each new pass, so a pack's runs come one after another, not
+  together. (A picket gun ripple was tried and dropped: a hull re-sets its
+  fire timer every step until it is lined up, so there is no timer to sync.)
+  Arcade pilot: 9 of 48 at the cap, still neutral.
+
 ## Not measured
 
 Feel on a real device, and how it reads through the chase camera, is the
