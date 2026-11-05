@@ -58,10 +58,27 @@ patrols (so not the first system past Cerro, safe systems or edges).
 - **Seen.** An amber ring on the ground and a lamp that brightens as it locks;
   a small amber square on the scope; all go dark when jammed.
 
+## Refinery barge
+
+A slow ore barge (`sim/barge.ts`, `buildBarge`) works the field of every
+mining system except the opening, the first system past Cerro and a Thren sky.
+It sits 320 units off the course at 45% of the way and sways about its berth.
+
+- **Hauls.** Each second it tethers the nearest ordinary rock within 100 units
+  and pulls it in (a push of 1.4 speed, rock held under 14). A rock that
+  reaches its mouth is ground: it breaks as a blast would (the usual 30% scrap
+  yield) and spills its Cyrite where it is, for your tractor. Volatile rock is
+  left alone. It only works where the field is, so it works the field you are
+  working.
+- **Runs.** A committed hostile within 220 units makes it stop hauling and run
+  from the nearest one at 12 speed; it settles again when the fight is gone.
+- **Seen.** A teal tether line to the rock on the hook; a lamp that goes amber
+  while it runs.
+
 ## Next (plan: "Living stations and space objects")
 
-The refinery barge, the Dust Market and the Custody relay post read the same
-signals and add their own behaviour on top.
+The Dust Market (trade on the fly) and the lantern buoys read the same signals
+and add their own behaviour on top.
 
 ## Not measured
 

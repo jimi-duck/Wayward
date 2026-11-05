@@ -1,5 +1,5 @@
 import {
-  AdditiveBlending, BoxGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide, ShaderMaterial, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, IcosahedronGeometry, Shape,
+  AdditiveBlending, BoxGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide, ShaderMaterial, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, IcosahedronGeometry, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, Line, Shape,
   type Material, type Scene, type Texture,
 } from 'three';
 import { clamp } from '../core/math';
@@ -332,6 +332,29 @@ function styleParts(k: Kit, rnd: () => number, st: PortStyle): void {
   }
 }
 
+/** The refinery barge: a long ore hull, a hopper, a grinder mouth at the bow (+x) ringed with teeth and tether winches along the flanks. Faces +x. */
+export function buildBarge(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(23);
+  k.box('hull', [18, 3.4, 5.4], [0, 0, 0]);
+  k.box('dark', [16, 0.5, 6], [-1, -1.5, 0]);
+  k.box('paint', [7, 1.2, 4.6], [-4, 2.2, 0]);
+  k.cyl('dark', 3.2, 3.2, 3, [-4.5, 3.6, 0], 'y', 10);
+  k.cyl('hull', 3.4, 4.2, 2.6, [11, 0, 0], 'x', 14);
+  k.ring('dark', 4.3, 0.35, [12.4, 0, 0], 'x', 14);
+  for (let i = 0; i < 10; i++) { const a = (i / 10) * TAU; k.box('dark', [0.9, 0.5, 0.5], [12.6, Math.sin(a) * 3.7, Math.cos(a) * 3.7], [a, 0, 0]); }
+  for (const e of [-1, 1]) {
+    k.box('hull', [2.4, 1.6, 1.8], [2, 0.4, e * 3.6]);
+    k.box('dark', [0.5, 2.2, 0.5], [2.6, 1.6, e * 3.6]);
+    k.box('lamp', [0.3, 0.3, 0.3], [2.6, 2.8, e * 3.6]);
+    for (let j = 0; j < 4; j++) k.box('win', [0.5, 0.18, 0.06], [-6 + j * 2.4, 0.6, e * 2.75]);
+  }
+  k.box('lamp', [0.5, 0.5, 0.5], [-8.6, 4.8, 0]);
+  k.box('amber', [0.14, 0.14, 4], [8.9, 1.9, 0]);
+  strut(k, 'dark', [-9, 0, 0], [-12, 0, 2], 0.2, 5);
+  k.greebles('hull', rnd, -8, 8, -2.4, 2.4, 1.8, 14, 0.7);
+  return k.build({ ...materials(), lamp, win: windowMaterial() }, 0.5);
+}
+
 /** The Custody's relay post: a short mast on a hex base, a dish, and a lamp that shows what it is doing (`lamp` is the caller's own). Small and plain: a roadside box, not a station. */
 export function buildRelayPost(lamp: Material): Group {
   const k = new Kit(), rnd = seeded(17);
@@ -542,6 +565,10 @@ export class BreakoutView {
   private readonly relay = new Group();
   private readonly relayLamp = (materials().lamp as MeshBasicMaterial).clone();
   private readonly relayScan: Mesh;
+  /** The refinery barge (sim/barge.ts), its lamp, and the tether to the rock it is hauling. */
+  private readonly barge = new Group();
+  private readonly bargeLamp = (materials().lamp as MeshBasicMaterial).clone();
+  private readonly tether: Line;
   private moodLight = 0.8;
   /** The company's audit dock, where the system has one. */
   private readonly audit = new Group();
@@ -619,8 +646,15 @@ export class BreakoutView {
     jamRing.position.y = 0.3;
     this.relay.add(this.relayScan, jamRing);
     this.relay.visible = false;
+    this.barge.add(buildBarge(this.bargeLamp));
+    this.barge.visible = false;
+    const tg = new BufferGeometry();
+    tg.setAttribute('position', new Float32BufferAttribute(new Float32Array(6), 3));
+    this.tether = new Line(tg, new LineBasicMaterial({ color: new Color(0.1, 0.5, 0.62), transparent: true, opacity: 0.5, toneMapped: false, fog: false }));
+    this.tether.frustumCulled = false;
+    this.tether.visible = false;
     this.lane.visible = this.port.visible = this.audit.visible = false;
-    scene.add(this.lane, this.port, this.audit, this.mast, this.relay);
+    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether);
 
   }
 
@@ -663,6 +697,22 @@ export class BreakoutView {
       const off = world.runTime < rp.jammedUntil;
       this.relayLamp.color.copy(off ? CYAN : AMBER).multiplyScalar(off ? 0.12 : 0.55 + 0.35 * Math.sin(this.time * 3) + 0.4 * Math.min(1, rp.lock / 3));
       (this.relayScan.material as MeshBasicMaterial).opacity = off ? 0.01 : 0.05 + 0.2 * Math.min(1, rp.lock / 3);
+    }
+    const bg = world.barge;
+    this.barge.visible = !!b && !!bg;
+    this.tether.visible = false;
+    if (b && bg) {
+      this.barge.position.set(bg.x, -2, bg.z);
+      this.barge.rotation.y = bg.face;
+      // warm while it works, amber while it runs from a fight
+      this.bargeLamp.color.copy(bg.mood === 'fleeing' ? AMBER : new Color(3.2, 2.4, 1.5)).multiplyScalar(bg.mood === 'fleeing' ? 0.7 + 0.3 * Math.sin(this.time * 6) : 0.9);
+      if (bg.target) {
+        const pos = this.tether.geometry.attributes.position as Float32BufferAttribute;
+        pos.setXYZ(0, bg.x + Math.cos(bg.face) * 12.6, -2, bg.z - Math.sin(bg.face) * 12.6);
+        pos.setXYZ(1, bg.target.x, 0, bg.target.z);
+        pos.needsUpdate = true;
+        this.tether.visible = true;
+      }
     }
     if (!b) return;
     this.lane.position.set(b.lane.x, -1.5, b.lane.z);
