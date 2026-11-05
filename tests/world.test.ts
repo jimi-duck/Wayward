@@ -45,7 +45,7 @@ describe('lasers', () => {
     expect(w.drain().some((e) => e.type === 'bankEmpty')).toBe(true);
     // a low bank still fires, steadily, as fast as it refills
     let shots = 0;
-    for (let i = 0; i < 240; i++) { w.step(STEP, input({ fire: true })); shots += w.drain().filter((e) => e.type === 'bolt').length; }
+    for (let i = 0; i < 240; i++) { w.ship.invuln = 1; w.step(STEP, input({ fire: true })); shots += w.drain().filter((e) => e.type === 'bolt').length; }
     expect(shots).toBeGreaterThanOrEqual(Math.floor((4 * BANK_REFILL) / BANK_SHOT) - 1);
     run(w, 6);
     expect(w.arms.bank).toBe(BANK_MAX);
