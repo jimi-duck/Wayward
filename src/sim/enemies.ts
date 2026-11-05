@@ -974,7 +974,7 @@ export function moveAlien(al: Alien, s: ShipState, dt: number, arena: Arena, web
       if (al.modeT <= 0) {
         if (++al.runs >= RUNS && !al.escort) leave(al);
         else if (T.tactic === 'ram') { al.mode = 'line'; al.modeT = 1.2 + (al.id % 5) * 0.16; }
-        else { al.mode = 'setup'; al.modeT = 5; if (rng.next() < 0.7) al.slide = al.slide === 1 ? -1 : 1; rollPass(al, rng); }
+        else { al.mode = 'setup'; al.modeT = 5 + (al.style.flank ? frac(al.id, 40 + al.runs) * 1.2 : 0); if (rng.next() < 0.7) al.slide = al.slide === 1 ? -1 : 1; rollPass(al, rng); }
       }
       break;
     }

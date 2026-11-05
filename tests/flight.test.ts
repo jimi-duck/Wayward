@@ -210,3 +210,18 @@ describe('enemy personalities', () => {
     expect(split).toBeGreaterThanOrEqual(5);
   });
 });
+
+describe('enemy personalities: the pack', () => {
+  it('raiders in a pack do not all start their next pass on the same beat', () => {
+    const times = new Set<string>();
+    for (let id = 1; id <= 12; id++) {
+      const w = calm(id);
+      const a = spawnAlien('scout', w.ship, 0, w.rng, { x: 40, y: 0, z: -60 });
+      a.escort = false; a.style.flank = true; a.mode = 'extend'; a.modeT = 0.001; a.runs = 0;
+      w.aliens.push(a);
+      w.step(STEP, idle); w.step(STEP, idle);
+      if ((a.mode as string) === 'setup') times.add(a.modeT.toFixed(1));
+    }
+    expect(times.size).toBeGreaterThan(2);
+  });
+});
