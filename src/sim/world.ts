@@ -1687,7 +1687,8 @@ export class World implements EncounterHost {
       if (def && !this.cardsSeen.has(def.id)) {
         if (f!.quick) this.openComms(def);
         else {
-          if (def.herald) this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason });
+          // the herald goes to the floor at once, so the card (offered below) waits for it, whatever else is quiet
+          if (def.herald) { this.events.push({ type: 'storyNotice', tone: 'teal', headline: def.herald.headline, reason: def.herald.reason }); this.floor.take(this.events, t); }
           d.offer(def, weightOf(def), t, false, def.trigger === 'story');
         }
       }
