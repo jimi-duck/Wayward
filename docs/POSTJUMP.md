@@ -54,11 +54,13 @@ bay first") until she has been, so it is a thing she must do, not an option.
 
 1. She comes within 150 units of the depot: Ned's radio line (it replaces the depot's own hail).
 2. Once the line has been heard, 1.6 s on, the cut scene starts (about twelve seconds, no card, helm
-   locked, `sim/paintbay.ts` and `render/paintbay.ts`): Ned brings her in on rails round to a shed beside
-   the depot, the shutter comes down and the work lamps flicker, a painter steps out to wait, and the far
-   shutter lifts on the new paint as she rolls out. The paint goes on as it lifts: `hull_repainted`, a teal
-   notice "Hull repainted · Paint bay · Frontier Supply Depot", Ned's closing line, and the rename reveal
-   (`render/reveal.ts`) plays. The helm is hers again at the roll-out; the painter waves and goes in.
+   locked, `sim/paintbay.ts` and `render/paintbay.ts`). The bay is an open work pad marked out beside the
+   depot, with no building and no people: a deck with hazard edges and guide lights, a gate arch at each
+   end and a gantry overhead. Ned brings her in on rails round to the pad, a light curtain closes across
+   the near gate, and the gantry's spray head sweeps the hull under flickering work lights. The far
+   curtain lifts as the paint goes on: `hull_repainted`, a teal notice "Hull repainted · Paint bay ·
+   Frontier Supply Depot", Ned's closing line, and the rename reveal (`render/reveal.ts`) plays. The helm
+   is hers again as she rolls out.
 3. 20 s later the archive's message (`story_wake`), at a free moment.
 
 `painted(flags)` is `hull_repainted`, or the lock lifted with no `paint_due` (a save from before the

@@ -40,19 +40,15 @@ describe('the paint bay timeline', () => {
     }
   });
 
-  it('shuts the near shutter once she is in, lifts the far one when the paint is on, and brings the painter out between', () => {
+  it('closes the near curtain once she is in and lifts the far one when the paint is on', () => {
     const b = startBay({ x: 420, z: 220, heading: 0 }, PORT), tm = bayTimes(b);
     expect(bayFrame(b, tm.mouth).near).toBe(0);
     expect(bayFrame(b, tm.inside + 1).near).toBe(1);
     expect(bayFrame(b, tm.paint - 0.1).far).toBe(1);
     expect(bayFrame(b, tm.paint + 1.2).far).toBe(0);
-    expect(bayFrame(b, tm.inside - 1).painter).toBe(0);
-    expect(bayFrame(b, tm.paint - 0.5).painter).toBeGreaterThan(0.9);
-    expect(bayFrame(b, tm.paint + 2).wave).toBeGreaterThan(0.9);
-    expect(bayFrame(b, tm.end + 0.1).painter).toBe(0);
   });
 
-  it('cuts to the shed from the side as she nears the door, to the far door for the roll-out, and back to the chase', () => {
+  it('cuts to the pad from the side as she nears the gate, to the far gate for the roll-out, and back to the chase', () => {
     const b = startBay({ x: 420, z: 220, heading: 0 }, PORT), tm = bayTimes(b);
     expect([bayFrame(b, 0.5).shot, bayFrame(b, tm.mouth + 0.5).shot, bayFrame(b, tm.paint + 0.5).shot, bayFrame(b, tm.release + 1).shot]).toEqual([0, 1, 2, 0]);
   });
