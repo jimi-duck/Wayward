@@ -33,7 +33,7 @@ import { computeStats, identity, type Levels } from './build';
 import { flightControls, type FlightControls } from './controls';
 import { EVENT_FIRST, eventGap, NO_MODS, pressure, threatened, type Mods, type Pressure } from './director';
 import { Stage, makeStage } from './stage';
-import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_AT, PAINT_DONE, PAINT_LINE, PAINT_NOTICE, PAINT_WAKE, PAINTED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
+import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_AT, PAINT_DONE, PAINT_LINE, PAINT_NOTICE, PAINT_WAKE, PAINTED, RENAMED, PAINTER, STOLEN, STOLEN_NOTICE, STOLEN_SAM, STOLEN_SAM_POOR } from './postjump';
 import { BAY, bayExit, bayFrame, bayTimes, startBay, type Bay } from './paintbay';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
@@ -1173,6 +1173,7 @@ export class World implements EncounterHost {
     }
     if (!this.flags.has(PAINTED) && b.e >= tm.paint) {
       this.flags.add(PAINTED);
+      this.flags.add(RENAMED);
       this.events.push({ type: 'storyNotice', tone: 'teal', headline: PAINT_NOTICE[0], reason: PAINT_NOTICE[1] });
       this.follows.push({ card: WAKE_BEAT, at: this.runTime + PAINT_WAKE });
     }
@@ -1896,8 +1897,7 @@ export class World implements EncounterHost {
       // the depot says so on the radio, no card (owner 2026-10-31): flying into its ring docks
       if (hail === 'depot_hail') {
         this.portCalled = true;
-        // with the paint due, Ned is the depot's voice (below): one line, not two
-        if (!paintDue(this.flags)) this.events.push({ type: 'ping', id: 'depot_hail', from: tr('Frontier Supply Depot'), caller: 'frontier', text: tr(DEPOT_LINE), moment: 'calm', system: b.def.name });
+        this.events.push({ type: 'ping', id: 'depot_hail', from: tr('Frontier Supply Depot'), caller: 'frontier', text: tr(DEPOT_LINE), moment: 'calm', system: b.def.name });
       } else if (hail) {
         this.auditCalled = true;
         d.offer(CARD_BY_ID[hail]!, 'major', t, true);

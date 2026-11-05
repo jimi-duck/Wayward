@@ -9,7 +9,7 @@ import { Post } from '../src/render/post';
 import { TIERS, tierIndex } from '../src/render/quality';
 import { createRenderer, fitRenderer } from '../src/render/renderer';
 import { ShipView } from '../src/render/ships';
-import { setLivery, setLiverySweep } from '../src/render/wayward';
+import { setLightLevel, setLivery, setLiverySweep, setMark } from '../src/render/wayward';
 import { FITTED } from '../src/render/fitted';
 import { newShip } from '../src/sim/ship';
 
@@ -39,6 +39,9 @@ const ship = new ShipView();
 scene.add(ship.root);
 (window as unknown as { ship: ShipView }).ship = ship;
 setLivery(livery);
+// ?mark=0..1: the registry struck out and the name written (Ned's yard); ?lights=<level>: her lights as the scan arch leaves them
+setMark(Number(params.get('mark') ?? '0'));
+setLightLevel(Number(params.get('lights') ?? '1'));
 ship.setDamage(plates, maxPlates);
 // ?fit=all (every upgrade at its top level), or ?fit=tp_bay,ph_emitters:3 (ids, optional level): the fittings on the hull
 const fitParam = params.get('fit');

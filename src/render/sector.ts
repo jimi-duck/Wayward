@@ -3,7 +3,7 @@ import { COSMETICS } from '../content/unlocks';
 import { clamp, lerp } from '../core/math';
 import { HOLD_MAX, JUMP_T } from '../sim/breakout';
 import type { GameEvent } from '../sim/events';
-import { setLiveryBlend, setLiverySweep, SWEEP_SPAN } from './wayward';
+import { setLightLevel, setLiveryBlend, setLiverySweep, setMark, SWEEP_SPAN } from './wayward';
 import { RenameReveal } from './reveal';
 import { painted } from '../sim/postjump';
 import { SceneArc } from './scenes';
@@ -15,7 +15,7 @@ import { ArsenalView } from './arsenal';
 import { BreakoutView } from './breakout';
 import { SiteView } from './site';
 import { PaintBayView } from './paintbay';
-import { bayTimes } from '../sim/paintbay';
+import { bayFrame, bayTimes } from '../sim/paintbay';
 import { CameraRig } from './camera';
 import { DebrisField } from './debris';
 import { Environment } from './environment';
@@ -613,6 +613,13 @@ export class Sector {
     // in Ned's yard the paint shows as she passes the spray arch, a moment before the flag is set at the end of the work
     const sprayed = !!world.bay && world.bay.e >= bayTimes(world.bay).sprayAt + 0.4;
     const stolen = painted(world.flags) || sprayed || world.mode === 'arcade';
+    // Ned's yard: the scan arch takes her lights out and brings them back white; the mark arch strikes out the registry and writes the name
+    const bf = world.bay ? bayFrame(world.bay) : null;
+    setMark(painted(world.flags) || world.mode === 'arcade' ? 1 : bf ? (bf.stage === 3 ? bf.prog : bayTimes(world.bay!).markAt <= world.bay!.e ? 1 : 0) : 0);
+    if (bf && bf.stage === 1) {
+      const p = bf.prog, tt = world.bay!.e;
+      setLightLevel(p < 0.2 ? 1 : p < 0.72 ? (Math.sin(tt * 37) * Math.sin(tt * 13) > 0.3 ? 0.35 : 0) : p < 0.88 ? 0.1 : 1.7);
+    } else setLightLevel(1);
     const rv = this.reveal.update({
       stolen, time: world.runTime, paused: world.phase !== 'play' || this.console !== null,
       calm: !inFight(world), reduced: this.reduceMotion,

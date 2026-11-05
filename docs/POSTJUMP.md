@@ -47,8 +47,8 @@ leads to it), and the depot stays on the strip throughout.
 ## Ned's yard (owner, 5 November 2026)
 
 Sam's code overrides the recovery autopilot and nothing more: the helm is hers, but she is still the company's grey hull. It also
-banks `paint_due`, and Sam sends her to Ned Varga's yard: a site of its own (`yard` in `sim/breakout.ts`, `FIRST_YARD`), 0.42 of the
-way to the Jump Gate and a little off the line, between the audit dock and the depot. Ned reprograms, repaints and renames her
+banks `paint_due`, and Sam sends her to Ned Varga's yard: a site of its own (`yard` in `sim/breakout.ts`, `FIRST_YARD`), 0.58 of the
+way to the Jump Gate and 170 units off the line, on the side opposite the depot. It is a deck set into a large asteroid: a shack, silo, conveyor and crates behind, fuel tanks and a lattice beacon mast with an orange lamp to one side (`render/paintbay.ts`). Ned reprograms, repaints and renames her
 for nothing. The course is the yard (objective "Reach Ned's yard", sub-line "Make her yours · free"; its own scope mark and edge
 pointer, shown only while the hull waits for it), and the Jump Gate holds ("Jump Gate holding · Ned's yard first") until she has been.
 The depot is untouched: fuel, plating and stores.
@@ -60,7 +60,7 @@ The depot is untouched: fuel, plating and stores.
    (teal sheet of light, the company lock stripped), the spray arch (the head sweeps the hull and the paint changes from grey to
    yellow), and the mark arch (a white line writes along the hull, the old registry struck out and WAYWARD written). The far curtain
    lifts and she rolls out. When all three are done: `hull_repainted`, one teal notice "Ship reprogrammed · Repainted · renamed
-   WAYWARD", Ned's closing line, and the rename reveal. The helm is hers again as she rolls out.
+   WAYWARD", Ned's closing line, and the rename reveal. The scene sets `hull_repainted` and `ship_renamed` (the call sign is OB-7731-A until then, WAYWARD after). The helm is hers again as she rolls out.
 3. About 20 s later the archive unlocks: the herald "Hidden archive unlocked", then its message (`story_wake`), at a free moment.
 
 `painted(flags)` is `hull_repainted`, or the lock lifted with no `paint_due` (a save from before the

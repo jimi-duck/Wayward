@@ -378,8 +378,8 @@ export function rockYield(kind: RockKind, size: RockSize, k = 1): Yield {
 /** Where the first system past Cerro puts its places, as a share of the way to the Jump Gate and how far off the line (right is positive). */
 export const FIRST_AUDIT = { along: 0.3, off: 300 };
 export const FIRST_DEPOT = { along: 0.55, off: -190 };
-/** Ned's yard (owner, 5 November 2026: a separate site, not the depot): between the two, near the line, a little to the depot's side. */
-export const FIRST_YARD = { along: 0.42, off: -50 };
+/** Ned's yard (owner, 5 November 2026: a separate site, a deck set in a big asteroid): past the middle of the way, off to the side opposite the depot. */
+export const FIRST_YARD = { along: 0.58, off: 170 };
 /** The yard's mark (units): a work pad, never a berth. */
 export const YARD_R = 20;
 

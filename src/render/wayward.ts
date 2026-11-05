@@ -72,7 +72,7 @@ export function animateLamps(time: number, dt = 0, burn = 1): void {
   const o = mats?.orange as MeshBasicMaterial | undefined;
   // with one plate left the lamps stutter hard, as if the wiring were open
   const stutter = critical ? 0.35 + 0.65 * (Math.sin(time * 41) * Math.sin(time * 17.3) > -0.2 ? 1 : 0) : 1;
-  if (o) o.color.copy(ORANGE).multiplyScalar((1 + 0.12 * Math.sin(time * Math.PI * 2 * 0.4)) * stutter);
+  if (o) o.color.copy(ORANGE).multiplyScalar((1 + 0.12 * Math.sin(time * Math.PI * 2 * 0.4)) * stutter * Math.min(1, lightLevel));
   // the cargo face and drum housings pick up the drive's light as it burns, and go quiet when the throttle is cut
   engineBurn = burn;
   ENGINE.copy(ENGINE_BASE).multiplyScalar(burn);
@@ -242,10 +242,6 @@ function decalTexture(): Texture {
   }
   g.restore();
   g.lineWidth = 8; g.strokeStyle = ink; g.strokeRect(780, 76, 232, 104);
-  g.font = '800 92px "Arial Black", Impact, "Helvetica Neue", sans-serif';
-  g.fillText('OB-7731-A', 512, 322);
-  g.font = '700 70px "Arial Black", Impact, "Helvetica Neue", sans-serif';
-  g.fillText('WAYWARD', 512, 450);
   // wear: chips and scratches through the paint
   g.globalCompositeOperation = 'destination-out';
   for (let i = 0; i < 900; i++) {
@@ -262,7 +258,74 @@ function decalTexture(): Texture {
   t.colorSpace = SRGBColorSpace;
   t.anisotropy = 8;
   decals = t;
+  decalCanvas = c;
+  drawNames(markDone);
   return t;
+}
+
+// ── the registry and the name (Ned's yard, render/paintbay.ts) ─────────────
+// The company registry OB-7731-A is on her from the start; the name WAYWARD is not. At the yard's mark arch the registry is struck
+// through and the name is written, left to right, and both stay. `setMark` takes 0 (the company's hull) to 1 (done); the two stencil
+// cells are redrawn when it moves a step, with their own wear, so the rest of the atlas is left alone.
+let decalCanvas: HTMLCanvasElement | null = null;
+let markDone = 0;
+const MARK_STEPS = 32;
+function drawNames(m: number): void {
+  if (!decalCanvas) return;
+  const g = decalCanvas.getContext('2d')!;
+  g.save();
+  g.globalCompositeOperation = 'source-over';
+  g.clearRect(0, 256, AW, 256);
+  const ink = 'rgba(30,27,24,.94)';
+  g.fillStyle = ink; g.strokeStyle = ink; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '800 92px "Arial Black", Impact, "Helvetica Neue", sans-serif';
+  g.fillText('OB-7731-A', 512, 322);
+  const rw = g.measureText('OB-7731-A').width;
+  // the registry struck through, drawn first half of the work
+  const strike = Math.min(1, m / 0.45);
+  if (strike > 0) { g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.moveTo(512 - rw / 2 - 14, 322); g.lineTo(512 - rw / 2 - 14 + (rw + 28) * strike, 322); g.stroke(); }
+  // the name, written from the left
+  const write = Math.min(1, Math.max(0, (m - 0.3) / 0.7));
+  if (write > 0) {
+    g.font = '700 70px "Arial Black", Impact, "Helvetica Neue", sans-serif';
+    const nw = g.measureText('WAYWARD').width;
+    g.save(); g.beginPath(); g.rect(512 - nw / 2 - 10, 384, (nw + 20) * write, 128); g.clip();
+    g.fillText('WAYWARD', 512, 450);
+    g.restore();
+  }
+  // the same wear as the rest of the stencils: chips and scratches through the paint
+  g.globalCompositeOperation = 'destination-out';
+  const rnd = seeded(2207);
+  for (let i = 0; i < 220; i++) {
+    g.fillStyle = `rgba(0,0,0,${0.4 + rnd() * 0.6})`;
+    g.beginPath(); g.arc(rnd() * AW, 256 + rnd() * 256, 1 + rnd() * 5, 0, Math.PI * 2); g.fill();
+  }
+  g.lineCap = 'round';
+  for (let i = 0; i < 40; i++) {
+    const x = rnd() * AW, y = 256 + rnd() * 256, a = rnd() * Math.PI, l = 10 + rnd() * 50;
+    g.strokeStyle = 'rgba(0,0,0,.8)'; g.lineWidth = 1 + rnd() * 2.5;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
+  }
+  g.restore();
+  if (decals) decals.needsUpdate = true;
+}
+/** 0 the company's registry alone, 1 struck out and the name written. */
+export function setMark(m: number): void {
+  const q = Math.round(Math.min(1, Math.max(0, m)) * MARK_STEPS) / MARK_STEPS;
+  if (q === markDone) return;
+  markDone = q;
+  drawNames(q);
+}
+
+/** Her lights as the scan arch leaves them: 1 as she is, 0 dark, above 1 a white flash as they come back. */
+const NAV = new Color(1.7, 1.8, 1.9), RED = new Color(3.2, 0.35, 0.25), LAMP = new Color(3.2, 2.4, 1.5);
+let lightLevel = 1;
+export function setLightLevel(v: number): void {
+  if (!mats || v === lightLevel) return;
+  lightLevel = v;
+  (mats.nav as MeshBasicMaterial).color.copy(NAV).multiplyScalar(v);
+  (mats.red as MeshBasicMaterial).color.copy(RED).multiplyScalar(v);
+  (mats.lamp as MeshBasicMaterial).color.copy(LAMP).multiplyScalar(v);
 }
 
 export interface Nozzle { p: V3; r: number; }

@@ -31,6 +31,8 @@ export const lockLifted = (flags: ReadonlySet<string> | readonly string[]): bool
  */
 export const PAINT_DUE = 'paint_due';
 export const PAINTED = 'hull_repainted';
+/** Set when Ned's yard has renamed and reprogrammed her: the call sign is OB-7731-A until then, WAYWARD after. */
+export const RENAMED = 'ship_renamed';
 const has = (flags: ReadonlySet<string> | readonly string[], f: string): boolean => (flags instanceof Set ? flags.has(f) : (flags as readonly string[]).includes(f));
 /** The hull wears the WAYWARD's paint: the depot did it, or the save is older than the paint bay. */
 export const painted = (flags: ReadonlySet<string> | readonly string[]): boolean => has(flags, PAINTED) || (has(flags, LOCK_LIFTED) && !has(flags, PAINT_DUE));
