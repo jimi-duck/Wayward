@@ -75,6 +75,29 @@ It sits 320 units off the course at 45% of the way and sways about its berth.
 - **Seen.** A teal tether line to the rock on the hook; a lamp that goes amber
   while it runs.
 
+## Repair gantry
+
+A small mend point (`sim/gantry.ts`, `buildGantry`) on the lane of every transit
+system except the opening, the first system past Cerro, safe systems and Thren
+sky: 65% of the way, 260 units off the line.
+
+- **Mends.** Slow (under 12) inside its 12-unit ring for 6 s mends one plate;
+  it has three mends in it, then the arm is spent.
+- **Refuses.** A flagged hull (the hunt at 0.6 or more) is turned away; it is
+  locked while a committed hostile is within 200 units or you are in danger;
+  and it has nothing to do when plating is full. One radio line says which,
+  at most every 20 s.
+- **Seen.** A teal ring that fills as the mend runs (amber when it refuses or is
+  shut, dark when spent); a small teal square on the scope.
+
+## Lantern buoys
+
+The lanterns' lens colour follows the port's mood (`setBuoyMood`, eased with the
+port's lamps): cool teal when calm, amber when the port is alert or shut. A
+system without a port keeps them teal. It is one shared material, so it costs
+nothing per lantern. They are the early warning: lanterns turning amber says a
+fight is near the port before you can see it.
+
 ## Next (plan: "Living stations and space objects")
 
 The Dust Market (trade on the fly) and the lantern buoys read the same signals
