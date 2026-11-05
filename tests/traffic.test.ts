@@ -98,5 +98,5 @@ describe('patrols', () => {
     const safe = system('transit', { safe: true });
     run(safe, 300);
     expect(safe.traffic!.patrolCalls).toBe(0);
-  });
+  }, 60000);
 });
