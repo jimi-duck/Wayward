@@ -29,6 +29,8 @@ export const FLOOR = {
   stale: 25,
   /** Seconds after a road arrival that nothing is said but the scan: the camera's sweep over the new system and its title (render/sector.ts) play first. */
   arrival: 9,
+  /** Seconds after a card closes in which a Voice made by its answer is a reply: it skips the quiet window and the gap, and waits only for the line on screen. Raiders answer a refusal; Sam answers a fitted launcher. Under the 3.5 s Sam's breach lines wait, so those keep the quiet. */
+  reply: 3,
 } as const;
 
 /** The one Signal the arrival lets through: it is the title card's last line while the camera sweeps (ui/hud.ts). */
@@ -36,7 +38,7 @@ export const SCAN_LINE = 'Scanning for transmissions';
 
 export type Kind = 'voice' | 'signal';
 type Held = Extract<GameEvent, { type: 'ping' }> | Extract<GameEvent, { type: 'storyNotice' }>;
-interface Line { ev: Held; kind: Kind; at: number; keep: boolean }
+interface Line { ev: Held; kind: Kind; at: number; keep: boolean; reply: boolean }
 
 const CHATTER_IDS = new Set(CHATTER.map((c) => c.id));
 /** Whether an event is a Voice or a Signal the floor paces, and which. */
@@ -54,7 +56,7 @@ export class Floor {
   /** Lines already let out, so a later take does not hold them again. */
   private out = new WeakSet<object>();
   /** Every line let out, in order, with its time: what the budget test reads. */
-  readonly log: Array<{ t: number; kind: Kind | 'moment' | 'close'; id: string }> = [];
+  readonly log: Array<{ t: number; kind: Kind | 'moment' | 'close'; id: string; reply?: boolean }> = [];
 
   /** Take the Voices and Signals out of a step's events (in place) into the queue. */
   take(events: GameEvent[], now: number): void {
@@ -62,7 +64,8 @@ export class Floor {
       const e = events[i]!, kind = kindOf(e);
       if (!kind || this.out.has(e)) continue;
       const ev = e as Held;
-      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && CHATTER_IDS.has(ev.id)) });
+      const reply = kind === 'voice' && !this.momentOpen && now - this.momentClosed < FLOOR.reply;
+      this.q.push({ ev, kind, at: now, keep: kind === 'signal' || !(ev.type === 'ping' && CHATTER_IDS.has(ev.id)), reply });
       events.splice(i--, 1);
     }
   }
@@ -73,11 +76,11 @@ export class Floor {
     if (!free || this.momentOpen || now < this.floorUntil || !this.q.length) return null;
     const pick = this.hush ? this.q.find((l) => l.ev.type === 'storyNotice' && l.ev.headline === SCAN_LINE) : this.q[0]!;
     if (!pick) return null;
-    if (pick.kind === 'voice' && (now < this.quietUntil || now - this.lastVoice < FLOOR.gap)) return null;
+    if (pick.kind === 'voice' && !pick.reply && (now < this.quietUntil || now - this.lastVoice < FLOOR.gap)) return null;
     this.q.splice(this.q.indexOf(pick), 1);
     if (pick.kind === 'voice') { this.lastVoice = now; this.floorUntil = now + FLOOR.hold; }
     else this.floorUntil = now + FLOOR.signal;
-    this.log.push({ t: now, kind: pick.kind, id: pick.ev.type === 'ping' ? pick.ev.id : pick.ev.headline });
+    this.log.push({ t: now, kind: pick.kind, id: pick.ev.type === 'ping' ? pick.ev.id : pick.ev.headline, ...(pick.reply ? { reply: true } : {}) });
     this.out.add(pick.ev);
     return pick.ev;
   }

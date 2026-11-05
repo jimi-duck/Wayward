@@ -31,7 +31,7 @@ export const RECOVERY_T = 90;
  */
 export const HOLD_R = 100;
 /** The autopilot's top speed, as a share of the hull's. */
-const CRUISE = 0.25;
+const CRUISE = 0.36;
 
 /** Lane Control has the ship: flagged for recovery, and the owner lock not yet lifted. */
 export const recovering = (flags: ReadonlySet<string> | readonly string[]): boolean => {
