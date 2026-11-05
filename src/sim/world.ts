@@ -2945,6 +2945,8 @@ export class World implements EncounterHost {
       return;
     }
     for (const al of [...this.aliens]) {
+      // neutral traffic is solid (sim/solids.ts) but nobody's enemy: no ram, no damage
+      if (al.ward) continue;
       if (Math.hypot(s.x - al.x, al.y, s.z - al.z) >= al.r + SHIP_R) continue;
       if (al.calm < 0.3 && !vulnerable) continue;
       const killed = this.hurtAlien(al, ramDmg, 'ram', al.x, al.y, al.z);
