@@ -382,6 +382,7 @@ export class Sector {
           break;
         case 'shieldHit':
           this.ship.flareShield(true, e.fx, e.fz);
+          if (e.source === 'solid') { this.fx.flash(e.x, 0.3, e.z, 2.5, SHIELD, 0.15); break; }
           this.fx.flash(e.x, 0.3, e.z, 4, SHIELD, 0.2);
           this.fx.burst(e.x, 0.3, e.z, 26, SHIELD, 12, 0.3, 0.5);
           this.rig.shake(0.35);

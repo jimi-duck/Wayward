@@ -308,6 +308,8 @@ export class Hud {
           break;
         case 'rackEmpty': this.retrigger($('sys-tp'), 'dry'); break;
         case 'shieldHit':
+          // a bump on a built thing is a flash, not a hit: no note, no red
+          if (e.source === 'solid') break;
           this.note(world, e.left > 0 ? t('Shield took it · {n} left', { n: e.left }) : t('Shield down'), e.left > 0 ? 'hit' : 'hit warn');
           this.flashHit();
           break;

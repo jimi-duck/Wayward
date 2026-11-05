@@ -41,6 +41,7 @@ import { LOOSE } from './pickups';
 import { Barge, bargeBerth } from './barge';
 import { Gantry, gantryBerth } from './gantry';
 import { ThrenSeed, seedBerth, seedLine, SEED_CYRITE, SEED_PARTS } from './thrseed';
+import { BUMP_QUIET, BUMP_SPEED, solidsOf } from './solids';
 import { Den, denBerth, DEN_BOUNTY, DEN_CYRITE, DEN_HP, DEN_PARTS, DEN_R } from './den';
 import { Market, marketBerth } from './market';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
@@ -2895,6 +2896,7 @@ export class World implements EncounterHost {
     }
 
     if (!this.alive) return;
+    this.stepSolids();
     // the ship against a bulwark: it is solid, whatever the grace
     for (const b of bulwarks) {
       const dx = s.x - b.x, dz = s.z - b.z, d = Math.hypot(dx, dz) || 1, min = b.r * 0.88 + SHIP_R;
@@ -2943,6 +2945,8 @@ export class World implements EncounterHost {
       return;
     }
     for (const al of [...this.aliens]) {
+      // neutral traffic is solid (sim/solids.ts) but nobody's enemy: no ram, no damage
+      if (al.ward) continue;
       if (Math.hypot(s.x - al.x, al.y, s.z - al.z) >= al.r + SHIP_R) continue;
       if (al.calm < 0.3 && !vulnerable) continue;
       const killed = this.hurtAlien(al, ramDmg, 'ram', al.x, al.y, al.z);
@@ -3242,6 +3246,33 @@ export class World implements EncounterHost {
     this.loot('rock', 'cyrite', SEED_CYRITE, d.x, d.z, 6);
     this.loot('rock', 'parts', SEED_PARTS, d.x, d.z, 6);
     this.events.push({ type: 'ping', id: 'seed_studied', from: tr('Scope'), caller: 'unknown', text: seedLine(), moment: 'calm', system: this.sortie.name });
+  }
+
+  /** Seconds before the next bump flash. */
+  private bumpT = 0;
+
+  /**
+   * Built things are solid (sim/solids.ts): the ship is pushed out and loses its inward way. A bump that is
+   * more than a touch flashes the shield, and that is all: no charge, no plate, no grace.
+   */
+  private stepSolids(): void {
+    this.bumpT = Math.max(0, this.bumpT - 1 / 60);
+    // Lane Control flies her on rails past the depot; the paint bay and the jump have the helm too
+    if (!this.bk || recovering(this.flags) || this.bk.jumpT >= 0 || this.phase !== 'play') return;
+    const s = this.ship;
+    for (const k of solidsOf(this)) {
+      const dx = s.x - k.x, dz = s.z - k.z, d = Math.hypot(dx, dz) || 0.01, min = k.r + SHIP_R;
+      if (d >= min) continue;
+      const nx = dx / d, nz = dz / d;
+      s.x = k.x + nx * min; s.z = k.z + nz * min;
+      const vn = s.vx * nx + s.vz * nz;
+      if (vn >= 0) continue;
+      s.vx -= 1.4 * vn * nx; s.vz -= 1.4 * vn * nz;
+      if (-vn > BUMP_SPEED && this.bumpT <= 0) {
+        this.bumpT = BUMP_QUIET;
+        this.events.push({ type: 'shieldHit', x: s.x, z: s.z, left: Math.floor(this.shields), source: 'solid', fx: k.x, fz: k.z });
+      }
+    }
   }
 
   /** The raider den takes a hit; when it breaks it spills its loot where it lay and pays its bounty. */

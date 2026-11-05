@@ -155,6 +155,19 @@ Numbers from `npm run pilot:sites` (docs/BALANCE-SITES.md): a stock hull flown b
 plain script, which does not dodge. Of the dens it reached it crushed a third in
 150 s, and lost the ship about as often as the same flight does with no den.
 
+## Solid places
+
+Every built thing is solid to the player (`sim/solids.ts`, `World.stepSolids`): the
+depot (a 9-unit core at its berth's side), the audit dock, the relay post and mast,
+Ned's yard (9), neutral traffic (a ward's hull; a ram no longer hurts it or you), the barge, the gantry (7), the Dust Market (9), the den (12), the seed, and a
+situation's site (settlement 12, wreck 8, and so on). The ship is pushed back out
+and its inward way is lost. A bump faster than 3 units/s flashes the shield
+(`shieldHit` with source `solid`, at most every 0.5 s): no charge, no plate, no
+grace, no HUD note. The Jump Gate, the berths and the seam and hole sites are
+flown through. Lane Control's recovery and the jump have the helm, so they skip it.
+The cores are the bodies, not the rings that show where a thing works, so docking,
+hailing and mending still work from the ring.
+
 ## Not measured
 
 Flak and crane numbers come from tests only; no pilot has flown them and no
