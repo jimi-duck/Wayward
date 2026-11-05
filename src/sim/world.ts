@@ -37,6 +37,11 @@ import { DEPOT_LINE, lockLifted, painted, paintDue, PAINT_AT, PAINT_DONE, PAINT_
 import { BAY, bayExit, bayFrame, bayTimes, startBay, type Bay } from './paintbay';
 import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } from './recovery';
 import { Traffic, trafficPlan } from './traffic';
+import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
+import { LOOSE } from './pickups';
+import { Barge, bargeBerth } from './barge';
+import { Gantry, gantryBerth } from './gantry';
+import { Market, marketBerth } from './market';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
@@ -180,6 +185,12 @@ export class World implements EncounterHost {
   stage: Stage | null = null;
   /** The first system past Cerro's working traffic and the guards its dock sends (sim/traffic.ts). */
   traffic: Traffic | null = null;
+  /** The mining system's refinery barge (sim/barge.ts), if it has one. */
+  barge: Barge | null = null;
+  /** A transit system's repair gantry (sim/gantry.ts), if it has one. */
+  gantry: Gantry | null = null;
+  /** A Dust Traders system's market raft (sim/market.ts), if it has one. */
+  market: Market | null = null;
   /** The target a torpedo launched now would lock, for the HUD. */
   lock: number | null = null;
   score = 0;
@@ -203,6 +214,8 @@ export class World implements EncounterHost {
   dockHeld = false;
   /** The depot's shield is up: a fight is on, so nobody outside gets in and no enemy fire crosses it. Never up while the ship is inside the ring. */
   shield = false;
+  /** How the port stands: calm, busy, alert or shut (sim/site.ts). The renderer and the scope read it. */
+  readonly portSite = new SiteBrain();
   private shieldHold = 0;
   private deniedT = 0;
   private wasInPlace = false;
@@ -469,6 +482,24 @@ export class World implements EncounterHost {
     }
     if (def.situation && !def.home) this.stage = makeStage(def.system, def.situation, this);
     { const plan = trafficPlan(this); if (plan) this.traffic = new Traffic(this, plan); }
+    {
+      const d = this.bk?.def;
+      // a mining system has a refinery barge on its field; the opening, the first system past Cerro and a Thren sky do not
+      if (d && d.kind === 'mining' && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
+        const side = this.seed & 1 ? -1 : 1, at = bargeBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, side);
+        this.barge = new Barge(at.x, at.z, at.dir);
+      }
+      // a system the Dust Traders hold has a market raft; not the opening, the first system past Cerro, or a Thren sky
+      if (d && d.holder === 'guild' && d.port !== undefined && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
+        const at = marketBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 4 ? -1 : 1);
+        this.market = new Market(at.x, at.z);
+      }
+      // a transit system has a repair gantry on its lane; not where the Custody keeps the road clear of repairs (a safe system) or the first system past Cerro
+      if (d && d.kind === 'transit' && !d.home && !d.first && !d.situation && !d.safe && !(d.thren && d.thren > 0.3)) {
+        const at = gantryBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, this.seed & 2 ? -1 : 1);
+        this.gantry = new Gantry(at.x, at.z);
+      }
+    }
     if (this.carryIn) this.bringAboard(this.carryIn);
     this.script = def.script ? new Script(SCRIPT, def.script, this.heard, this.carryIn?.pending ?? []) : null;
     this.holdAt = Infinity;
@@ -834,7 +865,7 @@ export class World implements EncounterHost {
     if (!this.alive || b.jumpT >= 0) return;
     // a situation (a patrol's sweep, a toll) waits in the first system until the paint is on (owner, 5 November 2026: nothing comes between the code and the depot)
     if (!(b.def.first && paintDue(this.flags))) this.stage?.step(this, dt);
-    if (this.phase === 'play') this.traffic?.step(this, dt);
+    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); this.gantry?.step(this, dt); this.market?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
     if (!b.def.quiet) this.events.push(...this.watch.step({
@@ -881,6 +912,7 @@ export class World implements EncounterHost {
     // the clamps stay open while a fight is on: slow at the ring and under attack, the port says no
     const ready = !!b.port && !b.castOff && dp < b.port.r && speed < DOCK_SPEED && this.phase === 'play';
     this.stepShield(dt, dp);
+    this.stepSite(dt);
     const nearDepot = !!b.port && dp < SAFE_R + SHIELD_NEAR;
     const held = (ready && this.inDanger()) || (this.shield && nearDepot);
     if (this.dockHeld && !held && (ready || nearDepot)) this.events.push({ type: 'dockCleared' });
@@ -1371,6 +1403,71 @@ export class World implements EncounterHost {
    * that reaches the edge is absorbed. It never comes up while the ship is
    * already inside, and it drops a moment after the fight is over.
    */
+  /** The port's mood from what is going on round its ring. */
+  private stepSite(dt: number): void {
+    const port = this.bk?.port;
+    if (!port) { this.portSite.reset(); return; }
+    let fight = 0, ships = 0;
+    for (const a of this.aliens) {
+      if (Math.hypot(a.x - port.x, a.z - port.z) > BUSY_R) continue;
+      if (a.ward) ships++; else if (this.committed(a)) fight++;
+    }
+    this.portSite.step(dt, { shield: this.shield, fight, heat: this.bk!.heat, ships });
+    this.stepWorks(dt, port);
+  }
+
+  private flakT = 0;
+  /** Pickups the yard crane has taken hold of (ids), so each is claimed once. */
+  private craned = new Set<number>();
+
+  /**
+   * What the holder's port does about what it senses. A Holdfast's flak shoots the rock drifting in and any
+   * hostile hull near the ring, twice as often once the port is alert. The Gutter yard's crane hauls loose
+   * salvage that would soon be lost to the ring's edge and keeps it a while, so a fight does not cost the loot.
+   */
+  private stepWorks(dt: number, port: { x: number; z: number }): void {
+    const holder = this.bk?.def.holder;
+    if (holder === 'holdfast') {
+      if ((this.flakT -= dt) > 0) return;
+      this.flakT = this.portSite.mood === 'alert' || this.portSite.mood === 'shut' ? FLAK_EVERY_ALERT : FLAK_EVERY;
+      const aim: Array<{ x: number; z: number; hit: () => void; d: number }> = [];
+      for (const r of this.field.rocks) {
+        const d = Math.hypot(r.x - port.x, r.z - port.z);
+        if (d > FLAK_R || d < SAFE_R * 0.5) continue;
+        // only what is drifting in
+        if ((port.x - r.x) * r.vx + (port.z - r.z) * r.vz <= 0) continue;
+        aim.push({ x: r.x, z: r.z, d, hit: () => { this.damageRock(r, FLAK_DAMAGE, 'hazard', r.x, 0, r.z); } });
+      }
+      for (const a of this.aliens) {
+        const d = Math.hypot(a.x - port.x, a.z - port.z);
+        if (d > FLAK_R || !this.committed(a)) continue;
+        aim.push({ x: a.x, z: a.z, d, hit: () => { this.hurtAlien(a, FLAK_DAMAGE, 'hazard', a.x, 0, a.z); } });
+      }
+      aim.sort((p, q) => p.d - q.d);
+      for (const t of aim.slice(0, 2)) {
+        this.events.push({ type: 'blast', x: t.x, y: 0, z: t.z, radius: 1.6, kind: 'bomblet' });
+        t.hit();
+      }
+    } else if (holder === 'gutter') {
+      for (const p of this.pickups) {
+        if (!LOOSE.has(p.kind)) continue;
+        const dx = port.x - p.x, dz = port.z - p.z, d = Math.hypot(dx, dz) || 1;
+        if (d > CRANE_R || d < SAFE_R * 0.8) continue;
+        if (!this.craned.has(p.id)) {
+          if (p.life > 3) continue;
+          this.craned.add(p.id);
+          p.life = CRANE_KEEP;
+        }
+        p.vx += (dx / d) * CRANE_PULL * dt;
+        p.vz += (dz / d) * CRANE_PULL * dt;
+      }
+      if (this.craned.size > 64) { const ids = new Set(this.pickups.map((p) => p.id)); for (const id of this.craned) if (!ids.has(id)) this.craned.delete(id); }
+    }
+  }
+
+  /** The port's mood now (calm when there is none). */
+  get portMood(): Mood { return this.portSite.mood; }
+
   private stepShield(dt: number, dp: number): void {
     const port = this.bk?.port;
     if (!port) { this.shield = false; return; }
@@ -1944,6 +2041,7 @@ export class World implements EncounterHost {
     this.desk.closed(this.runTime);
     this.floor.closed(this.runTime);
     this.applyOutcome(res.outcome, o.fee, o.brought);
+    if (o.def.id === 'market_stall' && key !== 'on') this.market?.sold();
     this.rest();
     this.run.cards.push({ id: o.def.id, choice: res.choice.id, won: res.won, t: Math.round(this.runTime) });
     this.events.push({ type: 'commsAnswer', id: o.def.id, choice: res.choice.id, text: res.outcome.text, won: res.won });
@@ -1973,6 +2071,7 @@ export class World implements EncounterHost {
     if (out.stall) this.stall += out.stall;
     if (b && out.calm) b.nextSwarm = Math.max(b.nextSwarm, this.runTime + out.calm);
     if (out.plates && out.plates > 0) this.repair(out.plates);
+    if (out.stock) for (const k of ['shield', 'yield'] as const) { const n = out.stock[k]; if (n) this.powers[k] = Math.min(POWER_STOCK_MAX[k]!, this.powers[k] + n); }
     if (out.score) this.addScore(out.score, 'events');
     if (b && out.heat) b.heat = Math.min(1, Math.max(0, b.heat + out.heat));
     if (out.hostile) for (const al of this.aliens) if (al.ward) provoke(al, this.events);
@@ -3114,6 +3213,9 @@ export class World implements EncounterHost {
     this.field.shatter(b, pressure(this.clock, this.mods).rockHp * (this.bk ? MINE_HP : 1));
     this.events.push({ type: 'bulwarkBroken', x: b.x, z: b.z, r: b.r, points });
   }
+
+  /** The refinery barge grinds a rock: it breaks as a blast would, its Cyrite spilling where it is. */
+  grindRock(r: Rock): void { this.damageRock(r, r.hp + 1, 'hazard', r.x, 0, r.z, true); }
 
   private destroyRock(r: Rock, src: Weapon): void {
     if (!this.field.rocks.includes(r)) return;

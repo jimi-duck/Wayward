@@ -213,10 +213,28 @@ export class Radar {
       for (const wp of world.seenPlaces()) {
         const [x, y, out] = to(wp.x, wp.z);
         if (out) continue;
-        g.strokeStyle = wp.kind === 'port' ? INK.teal : INK.amber; g.lineWidth = 1.5 * dpr;
+        g.strokeStyle = wp.kind === 'port' && world.portMood !== 'alert' && world.portMood !== 'shut' ? INK.teal : INK.amber; g.lineWidth = 1.5 * dpr;
         g.beginPath(); g.moveTo(x, y - 5 * dpr); g.lineTo(x + 5 * dpr, y); g.lineTo(x, y + 5 * dpr); g.lineTo(x - 5 * dpr, y); g.closePath(); g.stroke();
         g.beginPath(); g.arc(x, y, Math.max(3 * dpr, wp.r * k), 0, Math.PI * 2); g.stroke();
       }
+    }
+    // the Custody's relay post: a small amber mark while it scans, gone once jammed
+    const rp = world.traffic?.relayPost;
+    if (bk && rp && world.runTime >= rp.jammedUntil) {
+      const [x, y, out] = to(rp.x, rp.z);
+      if (!out) { g.strokeStyle = INK.amber; g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
+    }
+    // the Dust Market: a small teal square while it has stock
+    const mk = world.market;
+    if (bk && mk && mk.deals > 0) {
+      const [x, y, out] = to(mk.x, mk.z);
+      if (!out) { g.strokeStyle = INK.teal; g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
+    }
+    // the repair gantry: a small teal square until it is spent
+    const gn = world.gantry;
+    if (bk && gn && gn.uses > 0) {
+      const [x, y, out] = to(gn.x, gn.z);
+      if (!out) { g.strokeStyle = INK.teal; g.lineWidth = dpr; g.strokeRect(x - 2.5 * dpr, y - 2.5 * dpr, 5 * dpr, 5 * dpr); }
     }
     g.fillStyle = rgba(RGB.red, 0.16);
     for (const w of world.webs) { const [x, y] = to(w.x, w.z); g.beginPath(); g.arc(x, y, w.r * k, 0, Math.PI * 2); g.fill(); }

@@ -717,6 +717,18 @@ export const CARDS: CardDef[] = [
       { id: 'on', label: 'Fly on', tone: 'refuse', hint: 'The Jump Gate is still ahead.', win: { text: 'Clear to pass' } },
     ],
   },
+  // a Dust Traders' market raft (sim/market.ts): stalls on the lane, paid in Cyrite, no docking
+  {
+    id: 'market_stall', kind: 'rumour', caller: 'guild', trigger: 'scene', tier: 'major',
+    from: 'Dust Market', title: 'Stalls open',
+    text: '“Traders’ raft. Warheads and plating off the back deck, paid in Cyrite. Quick, before the Custody sees us.”',
+    cargo: 'Dust Traders · a raft of stalls',
+    choices: [
+      { id: 'warheads', label: 'Buy warheads', tone: 'trade', hint: 'Eight high-yield torpedoes.', needs: { cyrite: 30 }, cost: { cyrite: 30 }, win: { text: 'Racks loaded · 8 warheads', stock: { yield: 8 } } },
+      { id: 'plating', label: 'Buy plating', tone: 'trade', hint: 'Three plating charges.', needs: { cyrite: 24 }, cost: { cyrite: 24 }, win: { text: 'Plating bolted on · 3 charges', stock: { shield: 3 } } },
+      { id: 'on', label: 'Fly on', tone: 'refuse', hint: 'Not today.', win: { text: 'Raft falls astern' } },
+    ],
+  },
   {
     id: 'audit_hail', kind: 'rumour', caller: 'custody', trigger: 'scene', tier: 'major',
     from: 'Kellern Audit Dock', title: 'Hold for audit',

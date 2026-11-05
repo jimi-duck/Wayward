@@ -242,6 +242,14 @@ export function slipwayModel(): Group {
 // ── the lantern buoy ─────────────────────────────────────────────────────
 
 let buoy: Group | null = null;
+let buoyLens: { color: Color } | null = null;
+let buoyAmber = 0;
+const LENS_COOL = new Color(0.5, 1.5, 1.7), LENS_AMBER = new Color(1.7, 1.1, 0.3);
+/** The lanterns follow how the nearest port stands (0 calm, 1 shut): cool teal to amber, the lamps of a warning. Never red. */
+export function setBuoyMood(amber: number): void {
+  buoyAmber = amber;
+  buoyLens?.color.copy(LENS_COOL).lerp(LENS_AMBER, amber);
+}
 /** One navigation lantern, about three units tall: a ballast block, a cage, a lit lens, solar wings and a mast. */
 export function buoyModel(): Group {
   if (!buoy) {
@@ -251,6 +259,8 @@ export function buoyModel(): Group {
       dark: metal({ tint: 0x2a3036, roughness: 0.6, metalness: 0.4, scale: 1.6 }),
       lens: lit(new Color(0.5, 1.5, 1.7)),
     };
+    buoyLens = mats.lens as unknown as { color: Color };
+    setBuoyMood(buoyAmber);
     k.cyl('dark', 0.5, 0.65, 0.7, [0, -1.5, 0], 'y', 8);
     for (const [sx, sz] of [[1, 1], [-1, 1], [1, -1], [-1, -1]] as const) bar(k, 'hull', new Vector3(sx * 0.55, -1.1, sz * 0.55), new Vector3(sx * 0.42, 1.2, sz * 0.42), 0.12);
     for (const y of [-1.1, 0.05, 1.2]) k.ring('hull', 0.78, 0.07, [0, y, 0], 'y', 12);

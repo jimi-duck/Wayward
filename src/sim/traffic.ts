@@ -106,6 +106,17 @@ export function trafficPlan(w: World): TrafficPlan | null {
   return { n, patrols: !d.safe && d.kind !== 'edge', routes: [], busy: false };
 }
 
+/** The Custody's relay post (docs/SITES.md): an unmanned beacon off the course that scans a flagged ship and routes a patrol to it. Jammed by slow flight alongside it. */
+export interface RelayPost { x: number; z: number; lock: number; jam: number; jammedUntil: number; calledAt: number }
+/** How far it scans (units), how near and how slow the ship must be to jam it, how long that takes (s) and holds (s), and the quiet between its calls (s). */
+export const RELAY_R = 110;
+export const RELAY_JAM_R = 28;
+export const RELAY_JAM_SPEED = 18;
+export const RELAY_JAM_T = 4;
+export const RELAY_JAMMED = 120;
+export const RELAY_LOCK_T = 3;
+export const RELAY_GAP = 45;
+
 interface Hull { al: Alien; route: Route; leg: number; }
 interface Patrol { al: Alien[]; phase: 'in' | 'look' | 'out'; since: number; side: number }
 
@@ -133,6 +144,8 @@ export class Traffic {
   private patrolled = 0;
   private crews: Alien[] = [];
   private nextPatrol = Infinity;
+  /** The relay post of a system that has patrols, or null. */
+  relayPost: RelayPost | null = null;
 
   constructor(w: World, plan: TrafficPlan) {
     const b = w.bk!, h = w.ship.heading;
@@ -141,7 +154,12 @@ export class Traffic {
     this.rng = new Rng(0x7a1f ^ w.seed);
     this.n = plan.n; this.busy = plan.busy; this.patrols = plan.patrols;
     this.routes = plan.routes.length ? plan.routes : this.lay(w);
-    if (this.patrols) this.nextPatrol = w.runTime + this.rng.range(PATROL_FIRST[0], PATROL_FIRST[1]);
+    if (this.patrols) {
+      this.nextPatrol = w.runTime + this.rng.range(PATROL_FIRST[0], PATROL_FIRST[1]);
+      // off the line, a good way along: never in the flight path, never on the gate or the port
+      const side = this.rng.next() < 0.5 ? -1 : 1, off = 380 + this.rng.range(0, 80);
+      this.relayPost = { x: this.x0 + this.fx * this.len * 0.4 + this.rx * side * off, z: this.z0 + this.fz * this.len * 0.4 + this.rz * side * off, lock: 0, jam: 0, jammedUntil: 0, calledAt: -Infinity };
+    }
     for (let i = 0; i < this.n; i++) this.launch(w, true);
   }
 
@@ -257,7 +275,7 @@ export class Traffic {
       if (this.hulls.length < this.n) this.launch(w, false);
     }
     // a patrol, now and then
-    if (this.patrols) this.patrolStep(w);
+    if (this.patrols) { this.relayStep(w, dt); this.patrolStep(w); }
     // the dock's security, when called
     const now = w.runTime;
     this.strikes = this.strikes.filter((t) => now - t < STRIKE_WINDOW);
@@ -265,6 +283,30 @@ export class Traffic {
       if (now < p.at) continue;
       this.pending.splice(this.pending.indexOf(p), 1);
       this.send(w, p.n);
+    }
+  }
+
+  /** The relay post: a flagged ship in its reach for a few seconds calls the patrol now; slow flight alongside jams it for two minutes. */
+  private relayStep(w: World, dt: number): void {
+    const r = this.relayPost;
+    if (!r || !w.alive) return;
+    const s = w.ship, now = w.runTime, b = w.bk!;
+    if (now < r.jammedUntil) return;
+    const d = Math.hypot(s.x - r.x, s.z - r.z), speed = Math.hypot(s.vx, s.vz);
+    // jamming: close and slow
+    if (d < RELAY_JAM_R && speed < RELAY_JAM_SPEED) r.jam += dt; else r.jam = Math.max(0, r.jam - dt);
+    if (r.jam >= RELAY_JAM_T) {
+      r.jam = 0; r.lock = 0; r.jammedUntil = now + RELAY_JAMMED;
+      b.heat = Math.min(1, b.heat + 0.03);
+      w.events.push({ type: 'ping', id: `relay_jam_${this.patrolled}`, from: t('Relay post'), caller: 'custody', text: t('“Relay post offline. Signal lost.”'), moment: 'calm', system: w.sortie.name });
+      return;
+    }
+    // scanning: a flagged hull in reach
+    if (d < RELAY_R && b.heat >= PATROL_FLAG) r.lock += dt; else r.lock = Math.max(0, r.lock - dt);
+    if (r.lock >= RELAY_LOCK_T && now - r.calledAt > RELAY_GAP) {
+      r.lock = 0; r.calledAt = now;
+      if (!this.patrol) { this.nextPatrol = now; this.patrolled = Math.min(this.patrolled, PATROL_MAX - 1); }
+      w.events.push({ type: 'ping', id: `relay_call_${Math.floor(now)}`, from: t('Relay post'), caller: 'custody', text: t('“Flagged hull in range. Patrol routed.”'), moment: 'calm', system: w.sortie.name });
     }
   }
 

@@ -1,10 +1,15 @@
 import {
-  AdditiveBlending, BoxGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide, ShaderMaterial, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, Shape,
+  AdditiveBlending, BoxGeometry, CircleGeometry, Color, CylinderGeometry, DoubleSide, ShaderMaterial, Matrix4, Quaternion, Vector3, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry, Sprite, SpriteMaterial, ExtrudeGeometry, IcosahedronGeometry, BufferGeometry, Float32BufferAttribute, LineBasicMaterial, Line, Shape,
   type Material, type Scene, type Texture,
 } from 'three';
 import { clamp } from '../core/math';
 import type { World } from '../sim/world';
 import { AUDIT_R, SAFE_R, relayOf } from '../sim/breakout';
+import { RELAY_JAM_R, RELAY_R } from '../sim/traffic';
+import { setBuoyMood } from './monuments';
+import { GANTRY_R } from '../sim/gantry';
+import { MARKET_R } from '../sim/market';
+import { MOOD_AMBER, MOOD_LIGHT, portStyleOf, type Mood, type PortStyle } from '../sim/site';
 import type { Effects, RGB } from './fx';
 import { Kit, metal, seeded, type V3 } from './kit';
 
@@ -284,7 +289,130 @@ function crate(k: Kit, key: string, x: number, y: number, z: number, rot: number
   for (let i = -1; i <= 1; i += 2) k.box('dark', [0.06, h, d + 0.05], [x + Math.cos(rot) * i * w * 0.32, y, z - Math.sin(rot) * i * w * 0.32], [0, rot, 0]);
 }
 
-export function buildPort(): Group {
+/** The paint each holder gives its port (the base `paint` key), and the stone of a Holdfast's rock. */
+const STYLE_PAINT: Record<PortStyle, number> = { frontier: 0xf2b21f, kellern: 0xcfd2d6, gutter: 0x7a5a3c, holdfast: 0x8c8068, guild: 0x4f8088 };
+const styleMats = new Map<PortStyle, Material>();
+let stoneMat: Material | null = null;
+const paintFor = (st: PortStyle): Material => {
+  let m = styleMats.get(st);
+  if (!m) { m = st === 'frontier' ? materials().paint! : metal({ tint: STYLE_PAINT[st], roughness: 0.66, metalness: 0.08 }); styleMats.set(st, m); }
+  return m;
+};
+
+/** The parts a holder adds to the depot: what makes a Kellern yard, a Gutter hulk-port, a Holdfast rock hub or a Dust Traders' raft read at a glance. All drawn in the same kit, baked with the rest. */
+function styleParts(k: Kit, rnd: () => number, st: PortStyle): void {
+  if (st === 'kellern') {
+    // an inspection arch over the approach, with an amber scan strip: a checkpoint with berths
+    for (const s of [-1, 1]) { k.box('hull', [1.2, 9, 1.2], [-24, 4, s * 7]); k.box('dark', [1.5, 0.5, 1.5], [-24, -0.2, s * 7]); k.box('lamp', [0.3, 0.3, 0.3], [-24, 8.7, s * 7]); }
+    k.box('paint', [1.4, 1.2, 15.6], [-24, 8.6, 0]);
+    k.box('amber', [0.3, 0.3, 14], [-24.8, 8.6, 0]);
+  } else if (st === 'gutter') {
+    // a gutted hull bolted on at an angle, scrap plates, and a patchwork of lamps
+    k.box('dark', [18, 3.4, 5], [8, 6, -12], [0.1, 0.3, 0.32]);
+    k.box('hull', [10, 1.2, 5.4], [14, 7.8, -13.6], [0.1, 0.3, 0.32]);
+    for (let i = 0; i < 7; i++) k.box(i % 2 ? 'hull' : 'slate', [2 + rnd() * 3, 0.25, 1.5 + rnd() * 2], [-8 + rnd() * 20, 3 + rnd() * 5, -8 + rnd() * 16], [rnd(), rnd() * 3, rnd()]);
+    for (let i = 0; i < 6; i++) k.box('lamp', [0.2, 0.2, 0.2], [-6 + rnd() * 18, 1 + rnd() * 4, -10 + rnd() * 20]);
+  } else if (st === 'holdfast') {
+    // the hub is grown into a rock: a rough mass the habitat blocks sit against
+    const g = new IcosahedronGeometry(10, 2), pos = g.attributes.position!;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i), n = 1 + 0.22 * Math.sin(x * 0.9 + z * 0.4) * Math.cos(y * 0.7 + x * 0.3) + 0.1 * Math.sin(z * 1.7);
+      pos.setXYZ(i, x * n * 1.15, y * n * 0.7, z * n);
+    }
+    g.computeVertexNormals();
+    k.add('stone', g, [6, -3.2, 12]);
+    for (let i = 0; i < 9; i++) k.box('win', [0.34, 0.2, 0.06], [-1 + rnd() * 14, -1 + rnd() * 3, 5.2 + rnd() * 2]);
+    for (let i = 0; i < 3; i++) k.box('dark', [0.9, 0.9, 2.2], [2 + i * 4, 1.4, 17.2], [0, 0, 0]);
+  } else if (st === 'guild') {
+    // a raft: a wide low deck round the berth with awnings and strings of lanterns
+    k.cyl('dark', 17, 17.5, 0.35, [0, -1.6, 0], 'y', 36);
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * TAU, x = Math.cos(a) * 16.5, z = Math.sin(a) * 16.5;
+      k.box('paint', [3.4, 0.14, 2.2], [x, 2.4, z], [0, -a, 0]);
+      for (const e of [-1, 1]) k.box('dark', [0.1, 4, 0.1], [x + Math.sin(a) * e * 1.5, 0.4, z - Math.cos(a) * e * 1.5]);
+      k.box('lamp', [0.2, 0.2, 0.2], [x, 2.1, z]);
+    }
+  }
+}
+
+/** The Dust Market: a round raft deck with a ring of awnings and lantern posts round a mast hung with a banner, two moored skiffs. */
+export function buildMarket(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(37);
+  k.cyl('dark', 8.5, 9, 0.5, [0, 0, 0], 'y', 16);
+  k.cyl('hull', 7.8, 8, 0.25, [0, 0.35, 0], 'y', 16);
+  k.box('dark', [0.5, 9, 0.5], [0, 4.8, 0]);
+  k.box('paint', [0.1, 3.4, 2.6], [0.4, 7.2, 1.4]);
+  k.box('lamp', [0.5, 0.5, 0.5], [0, 9.6, 0]);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * TAU, x = Math.cos(a) * 5.8, z = Math.sin(a) * 5.8;
+    k.box('paint', [3.2, 0.14, 2.2], [x, 3.3, z], [0, -a, 0]);
+    for (const e of [-1, 1]) k.box('dark', [0.1, 3, 0.1], [x + Math.sin(a) * e * 1.4, 1.8, z - Math.cos(a) * e * 1.4]);
+    k.box('hull', [1.6, 0.9, 1.1], [x * 0.85, 0.9, z * 0.85], [0, -a, 0]);
+    k.box('lamp', [0.18, 0.18, 0.18], [x, 3.0, z]);
+  }
+  for (const e of [-1, 1]) { k.box('slate', [4, 0.8, 1.4], [e * 11, 0.3, e * 3], [0, 0.5 * e, 0]); k.box('win', [0.3, 0.14, 0.06], [e * 11, 0.9, e * 3 + 0.75]); }
+  k.greebles('hull', rnd, -5, 5, -5, 5, 0.9, 10, 0.5);
+  return k.build({ ...materials(), lamp, win: windowMaterial() }, 0.5);
+}
+
+/** The repair gantry: a hex cradle pad with two pylons and an overhead arm of clamp pads, hazard stripes on the pad. */
+export function buildGantry(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(29);
+  k.cyl('dark', 9, 10, 0.7, [0, 0, 0], 'y', 6);
+  k.cyl('hull', 7, 7.6, 0.4, [0, 0.5, 0], 'y', 6);
+  stripes(k, 0, 0.75, 0, 'x', 12, 1.2, 4);
+  for (const e of [-1, 1]) {
+    k.box('hull', [1.4, 11, 1.4], [-7.5 + (e + 1) * 7.5, 5.8, e * 3.5]);
+    k.box('dark', [1.8, 0.5, 1.8], [-7.5 + (e + 1) * 7.5, 0.6, e * 3.5]);
+    k.box('lamp', [0.35, 0.35, 0.35], [-7.5 + (e + 1) * 7.5, 11.6, e * 3.5]);
+  }
+  k.box('paint', [16, 1.1, 2], [0, 11, 0]);
+  for (const x of [-4, 4]) { strut(k, 'dark', [x, 10.4, 0], [x, 4.2, 0], 0.12, 4); k.box('hull', [1.6, 0.5, 1.4], [x, 3.9, 0]); }
+  k.greebles('hull', rnd, -5, 5, -5, 5, 0.8, 8, 0.5);
+  return k.build({ ...materials(), lamp }, 0.5);
+}
+
+/** The refinery barge: a long ore hull, a hopper, a grinder mouth at the bow (+x) ringed with teeth and tether winches along the flanks. Faces +x. */
+export function buildBarge(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(23);
+  k.box('hull', [18, 3.4, 5.4], [0, 0, 0]);
+  k.box('dark', [16, 0.5, 6], [-1, -1.5, 0]);
+  k.box('paint', [7, 1.2, 4.6], [-4, 2.2, 0]);
+  k.cyl('dark', 3.2, 3.2, 3, [-4.5, 3.6, 0], 'y', 10);
+  k.cyl('hull', 3.4, 4.2, 2.6, [11, 0, 0], 'x', 14);
+  k.ring('dark', 4.3, 0.35, [12.4, 0, 0], 'x', 14);
+  for (let i = 0; i < 10; i++) { const a = (i / 10) * TAU; k.box('dark', [0.9, 0.5, 0.5], [12.6, Math.sin(a) * 3.7, Math.cos(a) * 3.7], [a, 0, 0]); }
+  for (const e of [-1, 1]) {
+    k.box('hull', [2.4, 1.6, 1.8], [2, 0.4, e * 3.6]);
+    k.box('dark', [0.5, 2.2, 0.5], [2.6, 1.6, e * 3.6]);
+    k.box('lamp', [0.3, 0.3, 0.3], [2.6, 2.8, e * 3.6]);
+    for (let j = 0; j < 4; j++) k.box('win', [0.5, 0.18, 0.06], [-6 + j * 2.4, 0.6, e * 2.75]);
+  }
+  k.box('lamp', [0.5, 0.5, 0.5], [-8.6, 4.8, 0]);
+  k.box('amber', [0.14, 0.14, 4], [8.9, 1.9, 0]);
+  strut(k, 'dark', [-9, 0, 0], [-12, 0, 2], 0.2, 5);
+  k.greebles('hull', rnd, -8, 8, -2.4, 2.4, 1.8, 14, 0.7);
+  return k.build({ ...materials(), lamp, win: windowMaterial() }, 0.5);
+}
+
+/** The Custody's relay post: a short mast on a hex base, a dish, and a lamp that shows what it is doing (`lamp` is the caller's own). Small and plain: a roadside box, not a station. */
+export function buildRelayPost(lamp: Material): Group {
+  const k = new Kit(), rnd = seeded(17);
+  k.cyl('hull', 2.6, 3.2, 1.2, [0, 0, 0], 'y', 6);
+  k.cyl('dark', 1.5, 1.7, 1.4, [0, 1.2, 0], 'y', 8);
+  k.box('dark', [0.35, 8, 0.35], [0, 5, 0]);
+  k.box('hull', [0.3, 0.3, 4.2], [0, 7.6, 0]);
+  k.add('hull', new CylinderGeometry(1.8, 0.2, 0.5, 14, 1, true), [0, 8.8, 1.2], [0.5, 0, 0]);
+  strut(k, 'dark', [0, 8.4, 0], [0, 8.8, 1.2], 0.08, 4);
+  for (let i = 0; i < 3; i++) strut(k, 'dark', [Math.cos(i * 2.1) * 2.4, 0.4, Math.sin(i * 2.1) * 2.4], [0, 4.2, 0], 0.07, 4);
+  k.box('lamp', [0.5, 0.5, 0.5], [0, 9.8, 0]);
+  k.box('lamp', [0.3, 0.2, 0.3], [1.2, 1.7, 0.9]);
+  k.box('amber', [0.9, 0.12, 0.12], [0, 2.1, 1.75]);
+  k.greebles('hull', rnd, -1.5, 1.5, -1.5, 1.5, 2, 6, 0.5);
+  return k.build({ ...materials(), lamp }, 0.5);
+}
+
+export function buildPort(style: PortStyle = 'frontier', own?: { lamp: Material; win: Material }): Group {
   const k = new Kit(), rnd = seeded(9);
   // the hub: a drum core on a broad skirt, a lit habitat ring round it, a control drum on top with a window band
   k.cyl('hull', 4.5, 5.5, 3, [0, 0, 0], 'y', 28);
@@ -371,7 +499,9 @@ export function buildPort(): Group {
   k.box('amber', [0.25, 11, 0.25], [-3.45, 6.5, -3]);
   k.box('lamp', [1.2, 1.2, 1.2], [-3, 14.6, -3]);
   k.greebles('hull', rnd, -4, 4, -4, 4, 1.6, 14, 0.8);
-  return k.build({ ...materials(), win: windowMaterial() }, 0.6);
+  if (style !== 'frontier') styleParts(k, seeded(31), style);
+  stoneMat ??= metal({ tint: 0x6f675c, roughness: 0.95, metalness: 0.04, scale: 1.6, bump: 0.02, worn: 0.5 });
+  return k.build({ ...materials(), paint: paintFor(style), stone: stoneMat, lamp: own?.lamp ?? materials().lamp!, win: own?.win ?? windowMaterial() }, 0.6);
 }
 
 
@@ -462,6 +592,31 @@ export class BreakoutView {
   private readonly gate = new Group();
   private faced: unknown = null;
   private readonly port = new Group();
+  /** The depots built so far, by holder's look; one shows. Built the first time a system wants it. */
+  private readonly depots = new Map<PortStyle, Group>();
+  private depot: PortStyle = 'frontier';
+  /** The depot's own lamps and windows, tinted by its mood (sim/site.ts). */
+  private readonly lamp = (materials().lamp as MeshBasicMaterial).clone();
+  private readonly win = windowMaterial().clone();
+  private readonly lampBase = this.lamp.color.clone();
+  private readonly winBase = this.win.color.clone();
+  private moodAmber = 0;
+  /** The Custody relay post (sim/traffic.ts), where the system has one. */
+  private readonly relay = new Group();
+  private readonly relayLamp = (materials().lamp as MeshBasicMaterial).clone();
+  private readonly relayScan: Mesh;
+  /** The refinery barge (sim/barge.ts), its lamp, and the tether to the rock it is hauling. */
+  private readonly barge = new Group();
+  private readonly bargeLamp = (materials().lamp as MeshBasicMaterial).clone();
+  private readonly tether: Line;
+  /** The repair gantry (sim/gantry.ts) and its lamp. */
+  private readonly gantry = new Group();
+  private readonly gantryLamp = (materials().lamp as MeshBasicMaterial).clone();
+  private readonly gantryRing: Mesh;
+  /** The Dust Market raft (sim/market.ts) and its lamp. */
+  private readonly market = new Group();
+  private readonly marketLamp = (materials().lamp as MeshBasicMaterial).clone();
+  private moodLight = 0.8;
   /** The company's audit dock, where the system has one. */
   private readonly audit = new Group();
   private readonly auditRing: Mesh;
@@ -513,8 +668,8 @@ export class BreakoutView {
     this.gate.add(this.lanehaze);
     this.lane.add(this.laneRing, this.laneField);
     // the depot stands off to one side of its berth; the cyan ring is where you dock
-    const depot = buildPort();
-    depot.position.set(17, 0, -6);
+    const depot = this.depotOf('frontier');
+    depot.visible = true;
     this.port.add(depot);
     this.portRing = flatRing(9, 0.25, CYAN, 0.6);
     this.portRing.position.y = 1.4;
@@ -531,9 +686,58 @@ export class BreakoutView {
     this.auditRing = flatRing(AUDIT_R, 0.3, AMBER, 0.3);
     this.auditRing.position.y = 0.4;
     this.audit.add(this.auditRing);
+    this.relay.add(buildRelayPost(this.relayLamp));
+    this.relayScan = flatRing(RELAY_R, 0.25, AMBER, 0.06);
+    this.relayScan.position.y = 0.3;
+    const jamRing = flatRing(RELAY_JAM_R, 0.2, CYAN, 0.1);
+    jamRing.position.y = 0.3;
+    this.relay.add(this.relayScan, jamRing);
+    this.relay.visible = false;
+    this.barge.add(buildBarge(this.bargeLamp));
+    this.barge.visible = false;
+    this.gantry.add(buildGantry(this.gantryLamp));
+    this.gantryRing = flatRing(GANTRY_R, 0.25, CYAN, 0.4);
+    this.gantryRing.position.y = 1.2;
+    this.gantry.add(this.gantryRing);
+    this.gantry.visible = false;
+    this.market.add(buildMarket(this.marketLamp));
+    const mring = flatRing(MARKET_R, 0.25, CYAN, 0.3);
+    mring.position.y = 0.6;
+    this.market.add(mring);
+    this.market.visible = false;
+    const tg = new BufferGeometry();
+    tg.setAttribute('position', new Float32BufferAttribute(new Float32Array(6), 3));
+    this.tether = new Line(tg, new LineBasicMaterial({ color: new Color(0.1, 0.5, 0.62), transparent: true, opacity: 0.5, toneMapped: false, fog: false }));
+    this.tether.frustumCulled = false;
+    this.tether.visible = false;
     this.lane.visible = this.port.visible = this.audit.visible = false;
-    scene.add(this.lane, this.port, this.audit, this.mast);
+    scene.add(this.lane, this.port, this.audit, this.mast, this.relay, this.barge, this.tether, this.gantry, this.market);
 
+  }
+
+  /** The depot of a look, built the first time and kept; it stands off to one side of its berth. */
+  private depotOf(st: PortStyle): Group {
+    let g = this.depots.get(st);
+    if (!g) {
+      g = buildPort(st, { lamp: this.lamp, win: this.win });
+      g.position.set(17, 0, -6);
+      g.visible = false;
+      this.depots.set(st, g);
+      this.port.add(g);
+    }
+    return g;
+  }
+
+  /** The lamps and window rows follow the port's mood: warm and dim when calm, brighter when busy, amber when it watches or is shut. Never red. */
+  private lights(mood: Mood, dt: number): void {
+    const k = Math.min(1, dt * 3);
+    this.moodAmber += (MOOD_AMBER[mood] - this.moodAmber) * k;
+    this.moodLight += (MOOD_LIGHT[mood] - this.moodLight) * k;
+    const pulse = mood === 'shut' ? 0.88 + 0.12 * Math.sin(this.time * 4) : 1;
+    const f = this.moodLight * pulse;
+    this.lamp.color.copy(this.lampBase).lerp(AMBER, this.moodAmber).multiplyScalar(f);
+    setBuoyMood(this.moodAmber);
+    this.win.color.copy(this.winBase).lerp(AMBER.clone().multiplyScalar(0.45), this.moodAmber).multiplyScalar(f);
   }
 
   /** `jump`: the ship is going through the ring: seconds in, seconds to the crossing, and how bright the ring should stand (render/warp.ts). */
@@ -543,11 +747,61 @@ export class BreakoutView {
     this.lane.visible = !!b;
     this.port.visible = !!b?.port;
     this.audit.visible = !!b?.audit;
+    const rp = world.traffic?.relayPost ?? null;
+    this.relay.visible = !!b && !!rp;
+    if (b && rp) {
+      this.relay.position.set(rp.x, -2, rp.z);
+      // amber while it scans (brighter as it locks), cool and dim once jammed
+      const off = world.runTime < rp.jammedUntil;
+      this.relayLamp.color.copy(off ? CYAN : AMBER).multiplyScalar(off ? 0.12 : 0.55 + 0.35 * Math.sin(this.time * 3) + 0.4 * Math.min(1, rp.lock / 3));
+      (this.relayScan.material as MeshBasicMaterial).opacity = off ? 0.01 : 0.05 + 0.2 * Math.min(1, rp.lock / 3);
+    }
+    const mk = world.market;
+    this.market.visible = !!b && !!mk;
+    if (b && mk) {
+      this.market.position.set(mk.x, -2, mk.z);
+      this.market.rotation.y += dt * 0.05;
+      this.marketLamp.color.copy(mk.state === 'shut' ? AMBER : new Color(3.2, 2.4, 1.5)).multiplyScalar(mk.state === 'sold' ? 0.2 : 0.8);
+    }
+    const gn = world.gantry;
+    this.gantry.visible = !!b && !!gn;
+    if (b && gn) {
+      this.gantry.position.set(gn.x, -2, gn.z);
+      const warn = gn.state === 'shut' || gn.state === 'refuses', spent = gn.state === 'spent';
+      this.gantryLamp.color.copy(warn ? AMBER : CYAN).multiplyScalar(spent ? 0.08 : gn.state === 'working' ? 0.8 + 0.4 * Math.sin(this.time * 8) : 0.5);
+      (this.gantryRing.material as MeshBasicMaterial).opacity = spent ? 0.04 : 0.25 + 0.35 * (gn.hold / 6) + (warn ? 0.1 : 0);
+    }
+    const bg = world.barge;
+    this.barge.visible = !!b && !!bg;
+    this.tether.visible = false;
+    if (b && bg) {
+      this.barge.position.set(bg.x, -2, bg.z);
+      this.barge.rotation.y = bg.face;
+      // warm while it works, amber while it runs from a fight
+      this.bargeLamp.color.copy(bg.mood === 'fleeing' ? AMBER : new Color(3.2, 2.4, 1.5)).multiplyScalar(bg.mood === 'fleeing' ? 0.7 + 0.3 * Math.sin(this.time * 6) : 0.9);
+      if (bg.target) {
+        const pos = this.tether.geometry.attributes.position as Float32BufferAttribute;
+        pos.setXYZ(0, bg.x + Math.cos(bg.face) * 12.6, -2, bg.z - Math.sin(bg.face) * 12.6);
+        pos.setXYZ(1, bg.target.x, 0, bg.target.z);
+        pos.needsUpdate = true;
+        this.tether.visible = true;
+      }
+    }
     if (!b) return;
     this.lane.position.set(b.lane.x, -1.5, b.lane.z);
     // the ring faces the way you come in: it follows your bearing from afar and holds still once you are near (the review world always follows)
     if (this.faced !== b || world.review || Math.hypot(ship.x - b.lane.x, ship.z - b.lane.z) > 150) { this.faced = b; this.gate.rotation.y = Math.atan2(-(ship.z - b.lane.z), ship.x - b.lane.x); }
-    if (b.port) this.port.position.set(b.port.x, -2, b.port.z);
+    if (b.port) {
+      this.port.position.set(b.port.x, -2, b.port.z);
+      const st = portStyleOf(b.def.holder);
+      if (st !== this.depot || !this.depots.get(st)?.visible) {
+        const old = this.depots.get(this.depot);
+        if (old) old.visible = false;
+        this.depot = st;
+        this.depotOf(st).visible = true;
+      }
+      this.lights(world.portMood, dt);
+    } else if (this.moodAmber > 0) { this.moodAmber = 0; setBuoyMood(0); }
     // a road gate's relay (the Narrows and every arrival after it): dark until the key is answered, then lit section by section from the bottom over a few seconds
     const relay = relayOf(b);
     this.mast.visible = !!relay;
