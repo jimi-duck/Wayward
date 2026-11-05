@@ -37,4 +37,9 @@ export const POSTJUMP: Record<string, string> = {
   // one voice at a time (owner 2026-10-31): the Wanted explainer as a hint line
   'Wanted rises while you fight or linger · bottom right': 'Die Fahndung steigt, wenn du kämpfst oder trödelst · unten rechts',
   '“Depot control. Fuel, plating and stores at posted prices. Slow into the ring to dock.”': '„Depotkontrolle. Fluid, Panzerung und Vorräte zu festen Preisen. Langsam in den Ring, dann docken wir dich an.“',
+  // living traffic: patrols that look you over (sim/traffic.ts)
+  'Custody patrol': 'Custody-Patrouille',
+  'Routine check': 'Routinekontrolle',
+  '“Routine check. Hold your course.”': '„Routinekontrolle. Kurs halten.“',
+  '“Your hull is flagged. Stand down.”': '„Dein Rumpf ist markiert. Stopp.“',
 };

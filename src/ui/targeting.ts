@@ -242,7 +242,8 @@ export class Targeting {
       name = tr(alienLabel(a));
       // working traffic is nobody's bounty: it reads as a civilian hull, in the friendly colour
       const civil = !!world.traffic?.owns(a) && !!a.ward;
-      sub = civil ? `<b>${tr('Civilian')}</b> · ${tr('Not hostile')}` : `<b>${tr(cap(a.faction))}</b> · +${alienBonus(a)}`;
+      const patrol = !civil && !!world.traffic?.isPatrol(a);
+      sub = civil ? `<b>${tr('Civilian')}</b> · ${tr('Not hostile')}` : patrol ? `<b>${tr('Custody')}</b> · ${tr('Routine check')}` : `<b>${tr(cap(a.faction))}</b> · +${alienBonus(a)}`;
       hp = a.hp / a.maxHp;
       if (a.elite) cls = 'elite';
       else if (a.kind === 'freighter' || civil) cls = 'friendly';
