@@ -38,6 +38,7 @@ import { RECOVERY_CONTROLS, RECOVERY_T, SAM_CALL_R, recovering, recoveryStep } f
 import { Traffic, trafficPlan } from './traffic';
 import { BUSY_R, CRANE_KEEP, CRANE_PULL, CRANE_R, FLAK_DAMAGE, FLAK_EVERY, FLAK_EVERY_ALERT, FLAK_R, SiteBrain, type Mood } from './site';
 import { LOOSE } from './pickups';
+import { Barge, bargeBerth } from './barge';
 import { calmWeights, live, pickEncounter, startEncounter, stepEncounter, wakeEncounter, wellPull, type Encounter, type EncounterHost, type EncounterId } from './encounters';
 import { FEATURES } from '../content/features';
 import {
@@ -181,6 +182,8 @@ export class World implements EncounterHost {
   stage: Stage | null = null;
   /** The first system past Cerro's working traffic and the guards its dock sends (sim/traffic.ts). */
   traffic: Traffic | null = null;
+  /** The mining system's refinery barge (sim/barge.ts), if it has one. */
+  barge: Barge | null = null;
   /** The target a torpedo launched now would lock, for the HUD. */
   lock: number | null = null;
   score = 0;
@@ -471,6 +474,14 @@ export class World implements EncounterHost {
     }
     if (def.situation && !def.home) this.stage = makeStage(def.system, def.situation, this);
     { const plan = trafficPlan(this); if (plan) this.traffic = new Traffic(this, plan); }
+    {
+      const d = this.bk?.def;
+      // a mining system has a refinery barge on its field; the opening, the first system past Cerro and a Thren sky do not
+      if (d && d.kind === 'mining' && !d.home && !d.first && !d.situation && !(d.thren && d.thren > 0.3)) {
+        const side = this.seed & 1 ? -1 : 1, at = bargeBerth(this.ship.x, this.ship.z, this.ship.heading, d.lane, side);
+        this.barge = new Barge(at.x, at.z, at.dir);
+      }
+    }
     if (this.carryIn) this.bringAboard(this.carryIn);
     this.script = def.script ? new Script(SCRIPT, def.script, this.heard, this.carryIn?.pending ?? []) : null;
     this.holdAt = Infinity;
@@ -833,7 +844,7 @@ export class World implements EncounterHost {
     if (this.seamT > 0 && (this.seamT -= dt) <= 0) { this.field.richBoost = 0; this.field.density = b.def.density; }
     if (!this.alive || b.jumpT >= 0) return;
     this.stage?.step(this, dt);
-    if (this.phase === 'play') this.traffic?.step(this, dt);
+    if (this.phase === 'play') { this.traffic?.step(this, dt); this.barge?.step(this, dt); }
     const sig = this.jumpWatch.step(this.fuel, this.jumpCost, this.docked);
     if (sig) this.events.push({ type: sig, have: Math.floor(this.fuel), need: this.jumpCost });
     if (!b.def.quiet) this.events.push(...this.watch.step({
@@ -3116,6 +3127,9 @@ export class World implements EncounterHost {
     this.field.shatter(b, pressure(this.clock, this.mods).rockHp * (this.bk ? MINE_HP : 1));
     this.events.push({ type: 'bulwarkBroken', x: b.x, z: b.z, r: b.r, points });
   }
+
+  /** The refinery barge grinds a rock: it breaks as a blast would, its Cyrite spilling where it is. */
+  grindRock(r: Rock): void { this.damageRock(r, r.hp + 1, 'hazard', r.x, 0, r.z, true); }
 
   private destroyRock(r: Rock, src: Weapon): void {
     if (!this.field.rocks.includes(r)) return;
