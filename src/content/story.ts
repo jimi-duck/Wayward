@@ -330,8 +330,8 @@ export const STORY_CARDS: CardDef[] = [
   }),
   story({
     // what Ned's yard did, in plain words (owner 2026-11-05): a simple text box after the work, one tap
-    id: 'story_yard_done', handover: true, kind: 'rumour', caller: 'miners',
-    from: 'Ned’s yard · work done', title: 'She’s the Wayward now',
+    id: 'story_yard_done', handover: true, kind: 'warning', caller: 'miners', glass: 'cyan', status: 'Work done',
+    from: 'Ned’s yard', title: 'She’s the Wayward now',
     text: 'Reprogrammed: her owner lock is gone.\nRepainted: company grey is now yellow.\nRenamed: OB-7731-A struck out. She’s the WAYWARD.\nPaint won’t pass a scan.',
     cargo: 'The Wayward · call sign WAYWARD',
     choices: [

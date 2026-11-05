@@ -66,7 +66,7 @@ export const POSTJUMP: Record<string, string> = {
   'Juno. Keep this off the open channel.\nThis code overrides the recovery autopilot. The debt stays in your name, but she’s yours to fly.\nFly to Ned Varga’s yard, off the lane. Hold her in his ring and he’ll reprogram, repaint and rename her. Free.': 'Juno. Das bleibt aus dem offenen Kanal raus.\nDer Code überschreibt den Rückholautopiloten. Die Schulden bleiben auf deinem Namen, aber du fliegst sie wieder selbst.\nFlieg zu Ned Vargas Werft, abseits der Bahn. Halt sie in seinem Ring still, dann programmiert er sie um, lackiert sie neu und benennt sie um. Kostenlos.',
   'Ned’s yard · off the lane': 'Neds Werft · abseits der Bahn',
   'Reprogrammed, repainted, renamed': 'Umprogrammiert, lackiert, umbenannt',
-  'Ned’s yard · work done': 'Neds Werft · erledigt',
+  'Work done': 'Erledigt',
   'She’s the Wayward now': 'Sie ist jetzt die Wayward',
   'Reprogrammed: her owner lock is gone.\nRepainted: company grey is now yellow.\nRenamed: OB-7731-A struck out. She’s the WAYWARD.\nPaint won’t pass a scan.': 'Umprogrammiert: Ihre Eignersperre ist weg.\nNeu lackiert: Aus Firmengrau wird Gelb.\nUmbenannt: OB-7731-A gestrichen. Sie ist die WAYWARD.\nFarbe besteht keinen Scan.',
   'The Wayward · call sign WAYWARD': 'Die Wayward · Rufzeichen WAYWARD',
